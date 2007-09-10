@@ -28,8 +28,8 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include <sge.h>
 
 #include <neko.h>
 
@@ -38,5 +38,11 @@
 #define MUSIC( o )			(Mix_Music*)val_data( o );
 #define INT_FIELD( o, f )	val_int( val_field( o, val_id( f ) ) );
 #define OBJ_FIELD( o, f )	val_field( o, val_id( f ) );
+
+DECLARE_KIND( k_surf );
+DECLARE_KIND( k_bf );
+DECLARE_KIND( k_snd );
+DECLARE_KIND( k_mus );
+DECLARE_KIND( k_flic );
 
 #endif

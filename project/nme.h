@@ -56,4 +56,8 @@ typedef enum nme_spriteanimtype {
 #define MAX(a,b)	((a > b) ? a : b);
 #define MIN(a,b)	((a < b) ? a : b);
 
+SDL_Surface* nme_loadimage( value file );
+void nme_surface_free( value surface );
+
+
 #endif

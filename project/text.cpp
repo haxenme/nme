@@ -22,5 +22,44 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
+
  
-#include "text.h"
+#include "nsdl.h"
+#include "nme.h"
+
+
+// TTF_Init() must be called before using this function.
+// Remember to call TTF_Quit() when done.
+value nme_ttf_shaded( value* args, int nargs )
+{
+	if ( nargs < 9 ) failure( "not enough parameters passed to function nme_ttf_shaded. expected 9" );
+	val_check_kind( args[0], k_surf ); // screen
+	val_check( args[1], string ); // string
+	val_check( args[2], string ); // font
+	val_check( args[3], int ); // size
+	val_check( args[4], int ); // x
+	val_check( args[5], int ); // y
+	val_check( args[6], int ); // forecolor
+	val_check( args[7], int ); // backcolor
+	val_check( args[8], int ); // alpha
+
+	sge_TTFont* font = sge_TTF_OpenFont( val_string( args[2] ), val_int( args[3] ) );
+
+	int rbc = RRGB( args[7] );
+	int gbc = GRGB( args[7] );
+	int bbc = BRGB( args[7] );
+	int rfc = RRGB( args[6] );
+	int gfc = GRGB( args[6] );
+	int bfc = BRGB( args[6] );
+
+	SDL_Surface* scr = SURFACE( args[0] );
+
+	Uint32 foregroundColor = rfc << 16 | gfc << 8 | bfc;
+	Uint32 backgroundColor = rbc << 16 | gbc << 8 | bbc;
+
+	sge_tt_textout( scr, font, val_string( args[1] ), val_int( args[4] ), val_int( args[5] ), foregroundColor, backgroundColor, val_int( args[8] ) );
+
+	sge_TTF_CloseFont(font);
+}
+
+DEFINE_PRIM_MULT(nme_ttf_shaded);

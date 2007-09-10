@@ -19,6 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\include&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_image-1.2.5&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_mixer-1.2.7&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_ttf-2.0.8&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\sge030809&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
@@ -31,10 +32,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="sdl.lib sdlmain.lib sdl_ttf.lib sdl_image.lib sdl_mixer.lib sdl_net.lib neko.lib"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sge.lib neko.lib"
 				OutputFile="c:/haxe/nme.ndll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\VisualC\SDL\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\VisualC\SDLmain\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_image-1.2.5\VisualC\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_mixer-1.2.7\VisualC\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\sge030809\SGE\Release&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/NME.pdb"
 				SubSystem="2"
@@ -68,6 +69,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\include&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_image-1.2.5&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_mixer-1.2.7&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_ttf-2.0.8&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\sge030809&quot;;.\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -78,8 +80,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/nme.ndll"
+				AdditionalDependencies="sdl.lib sdlmain.lib SGE.lib sdl_image.lib sdl_mixer.lib neko.lib"
+				OutputFile="nme.ndll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\VisualC\SDL\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL-1.2.11\VisualC\SDLmain\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_image-1.2.5\VisualC\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\SDL_mixer-1.2.7\VisualC\Release&quot;;&quot;C:\Documents and Settings\Lee\My Documents\VS Projects\nme\SDL\src\sge030809\SGE\Release&quot;"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -115,13 +120,22 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\Main.cpp">
+				RelativePath=".\bitmap_font.cpp">
 			</File>
 			<File
-				RelativePath=".\net.cpp">
+				RelativePath=".\collision.cpp">
+			</File>
+			<File
+				RelativePath=".\nme.cpp">
+			</File>
+			<File
+				RelativePath=".\SDL_flic.cpp">
 			</File>
 			<File
 				RelativePath=".\sound.cpp">
+			</File>
+			<File
+				RelativePath=".\sprite.cpp">
 			</File>
 			<File
 				RelativePath=".\text.cpp">
@@ -135,19 +149,13 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\net.h">
-			</File>
-			<File
 				RelativePath=".\nme.h">
 			</File>
 			<File
 				RelativePath=".\nsdl.h">
 			</File>
 			<File
-				RelativePath=".\sound.h">
-			</File>
-			<File
-				RelativePath=".\text.h">
+				RelativePath=".\SDL_flic.h">
 			</File>
 		</Filter>
 		<Filter

@@ -32,24 +32,10 @@ import nme.Manager;
 
 class TTF
 {
-	var surface : Void;
-	
-	public function new( str : String, font : String, size : Int, fcolor : Int, bcolor : Int )
+	public static function draw( str : String, font : String, size : Int, location : Point, fcolor : Int, bcolor : Int, alpha : Int )
 	{
-		surface = nme_ttf_shaded( untyped str.__s, untyped font.__s, size, fcolor, bcolor );
+		nme_ttf_shaded( Manager.getScreen(), untyped str.__s, untyped font.__s, size, location.x, location.y, fcolor, bcolor, alpha );
 	}
 	
-	public function draw( loc : Point )
-	{
-		nme_ttf_draw( Manager.getScreen(), surface, loc );
-	}
-	
-	public function close()
-	{
-		nme_surface_free( surface );
-	}
-	
-	static var nme_ttf_shaded = neko.Lib.load("nme","nme_ttf_shaded",5);
-	static var nme_ttf_draw = neko.Lib.load("nme","nme_ttf_draw",3);
-	static var nme_surface_free = neko.Lib.load("nme","nme_surface_free",1);
+	static var nme_ttf_shaded = neko.Lib.load("nme","nme_ttf_shaded",-1);
 }

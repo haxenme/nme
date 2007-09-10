@@ -48,7 +48,7 @@ class Sprite
 	var surface : Surface;
 	var groups : Array<Array<Rect>>;
 	var currentgroup : Int;
-	var currentframe : Int;
+	public var currentframe : Int;
 	var animtype : AnimType;
 	var direction : Direction;
 	public var type : AnimType;
@@ -83,6 +83,21 @@ class Sprite
 		groups[ group ][ loc ] = rect;
 	}
 	
+	public function setFrameRange( xOffset : Int, yOffset : Int, spriteWidth : Int, spriteHeight : Int, cols : Int, count : Int, group : Int )
+	{
+		for ( loc in 0...count )
+		{
+			var rect = new Rect( xOffset + ( ( loc % cols ) * spriteWidth ), yOffset + ( Math.floor( loc / cols ) * spriteHeight ), spriteWidth, spriteHeight );
+			if ( groups[ loc ] == null ) groups[ loc ] = new Array();
+			if ( group >= groups.length || group < 0 )
+			{
+				neko.Lib.print( "unable to add sprite frame. specified group is out of bounds.\n" );
+				return;
+			}
+			groups[ group ][ loc ] = rect;
+		}
+	}
+	
 	public function animate( timer : Timer )
 	{
 		if ( group != currentgroup || type != animtype )
@@ -93,8 +108,7 @@ class Sprite
 			direction = d_forward;
 		}
 		
-		var point = new Point( x, y );
-		surface.draw( Manager.getScreen(), groups[ group ][ currentframe ], point );
+		drawFrame();
 		
 		if ( timer.isTime() )
 		{
@@ -138,6 +152,12 @@ class Sprite
 					currentframe++;
 			}
 		}
+	}
+	
+	public function drawFrame()
+	{
+		var point = new Point( x, y );
+		surface.draw( Manager.getScreen(), groups[ group ][ currentframe ], point );
 	}
 	
 	public function getCurrentRect() : Rect

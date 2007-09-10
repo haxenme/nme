@@ -32,9 +32,10 @@ class Surface
 {
 	var __srf : Void;
 	
-	public function new( file : String )
+	public function new( ?file : String )
 	{
-		__srf = nme_sprite_init( untyped file.__s );
+		if ( file != null && file != "" )
+			__srf = nme_sprite_init( untyped file.__s );
 	}
 	
 	public function draw( screen : Void, rect : Rect, point : Point )
@@ -64,6 +65,32 @@ class Surface
 			nme_surface_colourkey( __srf, r, g, b );
 	}
 	
+	public static var DEFAULT : Int = 0x00;
+	public static var TAA : Int = 0x01;
+	public static var TSAFE : Int = 0x02;
+	public static var TTMAP : Int = 0x04;
+	/*
+		FLAGS
+		=================
+		* DEFAULT - Default.
+		* TAA - Use the interpolating renderer. Much slower but can look better.
+		* TSAFE - Don't asume that the src and dst surfaces has the same pixel format. This is the default when the two surfaces don't have the same BPP. This is slower but will render weird pixel formats right.
+		* TTMAP - Use texture mapping. This is a bit faster but the result isn't as nice as in the normal mode. This mode will also ignore the px/py coordinates and the other flags. 
+
+		To get optimal performance PLEASE make sure that the two surfaces has the same pixel format (color depth) and doesn't use 24-bpp.
+	*/
+	public function transform( screen : Void, angle : Float, scale : Point, pivot : Point, destination : Point, flags : Int ) : Rect
+	{
+		var r = nme_sprite_transform( __srf, screen, angle, scale.x, scale.y, pivot.x, pivot.y, destination.x, destination.y, flags );
+		return new Rect( r.x, r.y, r.w, r.h );
+	}
+
+	public function transformSurface( bgColor : Int, angle : Float, scale : Point, flags : Int )
+	{
+		var srf = new Surface();
+		untyped srf.__srf = nme_sprite_transform_surface( __srf, bgColor, angle, scale.x, scale.y, flags );
+	}
+	
 	public function setAlpha( percentage : Int )
 	{
 		if ( percentage < 0 || percentage > 100 ) return;
@@ -87,6 +114,9 @@ class Surface
 	
 	static var nme_sprite_init = neko.Lib.load("nme","nme_sprite_init",1);
 	static var nme_sprite_draw = neko.Lib.load("nme","nme_sprite_draw",4);
+	
+	static var nme_sprite_transform = neko.Lib.load("nme","nme_sprite_transform",-1);
+	static var nme_sprite_transform_surface = neko.Lib.load("nme","nme_sprite_transform_surface",-1);
 	
 	static var nme_collision_pixel = neko.Lib.load("nme","nme_collision_pixel",5);
 	static var nme_collision_boundingbox = neko.Lib.load("nme","nme_collision_boundingbox",3);
