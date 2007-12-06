@@ -43,7 +43,7 @@ value nme_ttf_shaded( value* args, int nargs )
 	val_check( args[7], int ); // backcolor
 	val_check( args[8], int ); // alpha
 
-	sge_TTFont* font = sge_TTF_OpenFont( val_string( args[2] ), val_int( args[3] ) );
+	// sge_TTFont* font = sge_TTF_OpenFont( val_string( args[2] ), val_int( args[3] ) );
 
 	int rbc = RRGB( args[7] );
 	int gbc = GRGB( args[7] );
@@ -57,9 +57,11 @@ value nme_ttf_shaded( value* args, int nargs )
 	Uint32 foregroundColor = rfc << 16 | gfc << 8 | bfc;
 	Uint32 backgroundColor = rbc << 16 | gbc << 8 | bbc;
 
-	sge_tt_textout( scr, font, val_string( args[1] ), val_int( args[4] ), val_int( args[5] ), foregroundColor, backgroundColor, val_int( args[8] ) );
+	// sge_tt_textout( scr, font, val_string( args[1] ), val_int( args[4] ), val_int( args[5] ), foregroundColor, backgroundColor, val_int( args[8] ) );
 
-	sge_TTF_CloseFont(font);
+	// sge_TTF_CloseFont(font);
+        // TODO: sge replacement
+        return alloc_int(0);
 }
 
 DEFINE_PRIM_MULT(nme_ttf_shaded);

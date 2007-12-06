@@ -48,12 +48,22 @@ class Manager
 	static var __scr : Void;
 	static var __evt : Void;
 
-	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String )
+        static var FULLSCREEN = 0x0001;
+        static var OPENGL     = 0x0002;
+
+	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
 	{
+                var flags = 0;
+                if ( fullscreen!=null && fullscreen)
+                   flags += FULLSCREEN;
+
+                if ( opengl==null || opengl)
+                   flags += OPENGL;
+
 		if ( width < 100 || height < 20 ) return;
-		__scr = nme_screen_init( width, height, untyped title.__s, fullscreen, untyped icon.__s );
+		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
 	}
-	
+
 	public function close()
 	{
 		nme_screen_close();
@@ -79,6 +89,12 @@ class Manager
 	{
 		nme_flipbuffer( __scr );
 	}
+
+	public function swapBuffers()
+	{
+		nme_swapbuffer( );
+	}
+
 	
 	public function events()
 	{
@@ -133,6 +149,19 @@ class Manager
 	{
 		return Reflect.field( __evt, "key" );
 	}
+	public function lastKeyShift() : Bool
+	{
+		return Reflect.field( __evt, "shift" );
+	}
+	public function lastKeyCtrl() : Bool
+	{
+		return Reflect.field( __evt, "ctrl" );
+	}
+	public function lastKeyAlt() : Bool
+	{
+		return Reflect.field( __evt, "alt" );
+	}
+
 	
 	public function mouseButton() : Int
 	{
@@ -165,6 +194,7 @@ class Manager
 	}
 	
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
+	static var nme_swapbuffer = neko.Lib.load("nme","nme_swapbuffer",0);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
 	static var nme_screen_close = neko.Lib.load("nme","nme_screen_close",0);
 	static var nme_flipbuffer = neko.Lib.load("nme","nme_flipbuffer",1);
