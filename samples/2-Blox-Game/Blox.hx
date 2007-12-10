@@ -582,7 +582,7 @@ class Blox
 		}
 		
 		var destination = new Point( 0, 0 );
-		
+
 		g_Bitmap.draw( Manager.getScreen(), source, destination );
 	}
 	
@@ -639,13 +639,13 @@ class Blox
 		var level : String = "Level: " + g_Level;
 		
 		var text : TTF = new TTF( score, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
-		text.draw( new Point( scoreRectX, scoreRectY ) );
+		text.drawAt( new Point( scoreRectX, scoreRectY ) );
 		
 		text = new TTF( nextscore, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
-		text.draw( new Point( neededScoreRectX, neededScoreRectY ) );
+		text.drawAt( new Point( neededScoreRectX, neededScoreRectY ) );
 		
 		text = new TTF( level, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
-		text.draw( new Point( lvlRectX, lvlRectY ) );
+		text.drawAt( new Point( lvlRectX, lvlRectY ) );
 		
 
 		// Tell SDL to display our backbuffer. The four 0's will make //
@@ -661,10 +661,10 @@ class Blox
 		g_Mng.clear( 0x000000);
 		
 		var text : TTF = new TTF( "You Win!!!", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
-		text.draw( new Point( 100, 120 ) );
+		text.drawAt( new Point( 100, 120 ) );
 		
 		text = new TTF( "Quit Game (Y or N)?", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
-		text.draw( new Point( 100, 140 ) );
+		text.drawAt( new Point( 100, 140 ) );
 		
 		g_Mng.flip();
 	}
@@ -677,10 +677,10 @@ class Blox
 		g_Mng.clear( 0x000000);
 
 		var text : TTF = new TTF( "You Lose.", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
-		text.draw( new Point( 100, 120 ) );
+		text.drawAt( new Point( 100, 120 ) );
 		
 		text = new TTF( "Quit Game (Y or N)?", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
-		text.draw( new Point( 100, 140 ) );
+		text.drawAt( new Point( 100, 140 ) );
 		
 		g_Mng.flip();
 	}
