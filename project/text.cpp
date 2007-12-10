@@ -26,6 +26,7 @@
  
 #include "nsdl.h"
 #include "nme.h"
+#include <SDL_ttf.h>
 
 
 // TTF_Init() must be called before using this function.
@@ -43,24 +44,36 @@ value nme_ttf_shaded( value* args, int nargs )
 	val_check( args[7], int ); // backcolor
 	val_check( args[8], int ); // alpha
 
-	// sge_TTFont* font = sge_TTF_OpenFont( val_string( args[2] ), val_int( args[3] ) );
+	TTF_Font* font = TTF_OpenFont(val_string(args[2]), val_int(args[3]) );
 
-	int rbc = RRGB( args[7] );
-	int gbc = GRGB( args[7] );
-	int bbc = BRGB( args[7] );
-	int rfc = RRGB( args[6] );
-	int gfc = GRGB( args[6] );
-	int bfc = BRGB( args[6] );
+        SDL_Color fg,bg;
+
+        fg.r = RRGB( args[6] );
+        fg.g = GRGB( args[6] );
+        fg.b = BRGB( args[6] );
+        bg.r = RRGB( args[7] );
+        bg.g = GRGB( args[7] );
+        bg.b = BRGB( args[7] );
+
 
 	SDL_Surface* scr = SURFACE( args[0] );
 
-	Uint32 foregroundColor = rfc << 16 | gfc << 8 | bfc;
-	Uint32 backgroundColor = rbc << 16 | gbc << 8 | bbc;
 
-	// sge_tt_textout( scr, font, val_string( args[1] ), val_int( args[4] ), val_int( args[5] ), foregroundColor, backgroundColor, val_int( args[8] ) );
+        SDL_Surface *text_surf =TTF_RenderText_Shaded(font,val_string(args[1]),
+                     fg,bg);
 
-	// sge_TTF_CloseFont(font);
-        // TODO: sge replacement
+        SDL_Rect dest;
+        dest.x = val_int(args[4]);
+        dest.y = val_int(args[5]);
+        dest.w = text_surf->w;
+        dest.h = text_surf->h;
+
+
+        SDL_BlitSurface(text_surf,0,scr,&dest);
+
+        SDL_FreeSurface(text_surf);
+
+	TTF_CloseFont(font);
         return alloc_int(0);
 }
 

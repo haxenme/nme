@@ -135,7 +135,7 @@ value nme_surface_colourkey( value surface, value r, value g, value b )
 
 // screen relative functions
 
-
+static bool sOpenGL = false;
 
 value nme_delay( value period )
 {
@@ -146,18 +146,24 @@ value nme_delay( value period )
 
 value nme_flipbuffer( value buff )
 {
+   if (sOpenGL)
+   {
+	SDL_GL_SwapBuffers();
+   }
+   else
+   {
 	val_check_kind( buff, k_surf );
 
 	SDL_Surface* srf = SURFACE( buff );
 	SDL_Flip( srf );
 	SDL_Delay( 1 );
+   }
 
-	return alloc_int( 0 );
+    return alloc_int( 0 );
 }
 
 value nme_swapbuffer()
 {
-	SDL_GL_SwapBuffers();
 	return alloc_int( 0 );
 }
 
@@ -180,6 +186,8 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
         bool fullscreen = (val_int(in_flags) & NME_FULLSCREEN) != 0;
         bool opengl = (val_int(in_flags) & NME_OPENGL) != 0;
 
+        sOpenGL = opengl;
+
         Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
         if (opengl)
            init_flags |= SDL_OPENGL;
@@ -189,7 +197,6 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 	val_check( height, int );
 	val_check( title, string );
 
-	//Uint32 flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
 	Uint32 flags = opengl ? SDL_HWSURFACE | SDL_OPENGL :
 	                        SDL_HWSURFACE | SDL_DOUBLEBUF;
 	int bpp = 24;
@@ -367,7 +374,7 @@ value nme_screen_close()
 DEFINE_PRIM(nme_event, 0);
 DEFINE_PRIM(nme_delay, 1);
 DEFINE_PRIM(nme_flipbuffer, 1);
-DEFINE_PRIM(nme_swapbuffer, 0);
+
 
 DEFINE_PRIM(nme_create_image_32,3);
 DEFINE_PRIM(nme_copy_surface,1);

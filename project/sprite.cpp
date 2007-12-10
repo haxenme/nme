@@ -49,9 +49,8 @@ value nme_sprite_draw( value image, value screen, value rect, value point )
 	dstRect.w = val_int( val_field( rect, val_id( "w" ) ) );
 	dstRect.h = val_int( val_field( rect, val_id( "h" ) ) );
 
-        //TODO: SGE replacement
-	//return alloc_int( sge_Blit( imageSurface, screenSurface, srcRect.x, srcRect.y, dstRect.x, dstRect.y, srcRect.w, srcRect.h ) );
-        return alloc_int(0);
+        int r = SDL_BlitSurface(imageSurface,&srcRect,screenSurface, &dstRect);
+        return alloc_int(r);
 }
 
 /*

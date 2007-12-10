@@ -62,7 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib neko.lib opengl32.lib"
-				OutputFile="c:/haxe/nme.ndll"
+				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\SDL\Lib;..\..\thirdparty\SDL_image\lib;..\..\thirdparty\SDL_mixer\lib;..\..\thirdparty\SDL_ttf\lib"
 				GenerateDebugInformation="true"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib neko.lib opengl32.lib"
-				OutputFile="nme.ndll"
+				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\SDL\Lib;..\..\thirdparty\SDL_image\lib;..\..\thirdparty\SDL_mixer\lib;..\..\thirdparty\SDL_ttf\lib"
 				ModuleDefinitionFile=""
