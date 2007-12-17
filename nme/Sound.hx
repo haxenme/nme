@@ -27,7 +27,7 @@ package nme;
 
 class Sound
 {
-	static var __s;
+	var __s:Void;
 	
 	public function new ( file : String )
 	{
@@ -75,3 +75,4 @@ class Sound
 	static var nme_sound_fadeoutgroup = neko.Lib.load("nme","nme_sound_fadeoutgroup", 2);
 	static var nme_sound_stopgroup = neko.Lib.load("nme","nme_sound_stopgroup", 1);
 }
+
