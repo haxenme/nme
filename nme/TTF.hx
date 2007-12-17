@@ -32,9 +32,45 @@ import nme.Manager;
 
 class TTF
 {
-	public static function draw( str : String, font : String, size : Int, location : Point, fcolor : Int, bcolor : Int, alpha : Int )
+        public static var defaultFont = "Times";
+        public static var defaultSize = 12;
+        public static var defaultFGColor = 0xffffff;
+        public static var defaultBGColor = 0x000000;
+
+        public var text:String;
+        public var font:String;
+        public var size:Int;
+        public var position:Point;
+        public var alpha:Int;
+        public var bgColor:Int;
+        public var fgColor:Int;
+
+        public function new( ?str : String, ?in_font : String, ?in_size : Int,?fcolor : Int, ?bcolor : Int, ?in_alpha : Int, ?location:Point )
+        {
+           text = str==null ? "" : str;
+           font = in_font==null ? defaultFont : in_font;
+           size = in_size==null ? defaultSize : in_size;
+           position = location==null ? new Point(0,0) : location;
+           fgColor = fcolor==null ? defaultFGColor : fcolor;
+           bgColor = bcolor==null ? defaultBGColor : bcolor;
+           alpha = in_alpha==null ? 255 : alpha;
+        }
+
+        public function moveTo(x:Int, y:Int)
+        {
+           position.x = x;
+           position.y = y;
+        }
+
+	public function draw()
 	{
-		nme_ttf_shaded( Manager.getScreen(), untyped str.__s, untyped font.__s, size, location.x, location.y, fcolor, bcolor, alpha );
+		nme_ttf_shaded( Manager.getScreen(), untyped text.__s, untyped font.__s, size, position.x, position.y, fgColor, bgColor, alpha );
+	}
+
+
+	public function drawAt( location : Point )
+	{
+		nme_ttf_shaded( Manager.getScreen(), untyped text.__s, untyped font.__s, size, location.x, location.y, fgColor, bgColor, alpha );
 	}
 	
 	static var nme_ttf_shaded = neko.Lib.load("nme","nme_ttf_shaded",-1);
