@@ -40,11 +40,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image\include;..\..\thirdparty\SDL_mixer\include;..\..\thirdparty\SDL_ttf\include;..\..\thirdparty\sge\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image;..\..\thirdparty\SDL_mixer;..\..\thirdparty\SDL_ttf"
+				PreprocessorDefinitions="WIN32;_WINDOWS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib neko.lib opengl32.lib"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib neko.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib"
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\SDL\Lib;..\..\thirdparty\SDL_image\lib;..\..\thirdparty\SDL_mixer\lib;..\..\thirdparty\SDL_ttf\lib"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\static_libs;e:\VS8\DirectXSDK\Lib\x86"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/NME.pdb"
 				SubSystem="2"
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image\include;..\..\thirdparty\SDL_mixer\include;..\..\thirdparty\SDL_ttf\include;..\..\thirdparty\sge\src"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image;..\..\thirdparty\SDL_mixer;..\..\thirdparty\SDL_ttf"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -139,10 +139,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib neko.lib opengl32.lib"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib neko.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib"
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\SDL\Lib;..\..\thirdparty\SDL_image\lib;..\..\thirdparty\SDL_mixer\lib;..\..\thirdparty\SDL_ttf\lib"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
