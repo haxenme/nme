@@ -57,7 +57,7 @@ class Manager
                 if ( fullscreen!=null && fullscreen)
                    flags += FULLSCREEN;
 
-                if ( opengl==null || opengl)
+                if ( opengl!=null && opengl)
                    flags += OPENGL;
 
 		if ( width < 100 || height < 20 ) return;
@@ -90,16 +90,18 @@ class Manager
 		nme_flipbuffer( __scr );
 	}
 
-	public function swapBuffers()
-	{
-		nme_swapbuffer( );
-	}
-
 	
 	public function events()
 	{
 		__evt = nme_event();
 	}
+
+	public function nextEvent()
+	{
+		__evt = nme_event();
+                return getEventType();
+	}
+
 	
 	public function getEventType() : EventType
 	{
@@ -182,6 +184,8 @@ class Manager
 	{
 		return Reflect.field( __evt, "y" );
 	}
+
+	public function mousePoint() {return new nme.Point(mouseX(),mouseY());}
 	
 	public function mouseMoveX() : Int
 	{
@@ -194,7 +198,6 @@ class Manager
 	}
 	
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
-	static var nme_swapbuffer = neko.Lib.load("nme","nme_swapbuffer",0);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
 	static var nme_screen_close = neko.Lib.load("nme","nme_screen_close",0);
 	static var nme_flipbuffer = neko.Lib.load("nme","nme_flipbuffer",1);
