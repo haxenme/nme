@@ -104,6 +104,23 @@ static value nme_surface_clear( value surf, value c )
 	
 }
 
+value nme_surface_width( value surface )
+{
+	val_check_kind( surface, k_surf );
+
+	SDL_Surface* surf = SURFACE(surface);
+        return alloc_int(surf->w);
+}
+
+value nme_surface_height( value surface )
+{
+	val_check_kind( surface, k_surf );
+
+	SDL_Surface* surf = SURFACE(surface);
+        return alloc_int(surf->h);
+}
+
+
 void nme_surface_free( value surface )
 {
 	if ( val_is_kind( surface, k_surf ) )
@@ -384,4 +401,6 @@ DEFINE_PRIM(nme_screen_close, 0);
 
 DEFINE_PRIM(nme_surface_clear, 2);
 DEFINE_PRIM(nme_surface_free, 1);
+DEFINE_PRIM(nme_surface_width, 1);
+DEFINE_PRIM(nme_surface_height, 1);
 DEFINE_PRIM(nme_surface_colourkey, 4);
