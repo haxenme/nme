@@ -31,6 +31,8 @@ import nme.Point;
 class Surface
 {
 	var __srf : Void;
+        public var width(getWidth,null):Int;
+        public var height(getHeight,null):Int;
 	
 	public function new( ?file : String )
 	{
@@ -38,8 +40,10 @@ class Surface
 			__srf = nme_sprite_init( untyped file.__s );
 	}
 	
-	public function draw( screen : Void, rect : Rect, point : Point )
+	public function draw( screen : Void, ?rect : Rect, ?point : Point )
 	{
+                if (rect==null) rect = new Rect(0,0,width,height);
+                if (point==null) point = new Point(0,0);
 		nme_sprite_draw( __srf, screen, rect, point );
 	}
 	
@@ -52,6 +56,9 @@ class Surface
 	{
 		nme_surface_free( __srf );
 	}
+
+        public function getWidth() : Int { return nme_surface_width(__srf); }
+        public function getHeight()  : Int { return nme_surface_height(__srf); }
 	
 	public function setKey( r : Int, g : Int, b : Int )
 	{
@@ -108,6 +115,8 @@ class Surface
 	}
 	
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
+	static var nme_surface_width = neko.Lib.load("nme","nme_surface_width",1);
+	static var nme_surface_height = neko.Lib.load("nme","nme_surface_height",1);
 	static var nme_surface_free = neko.Lib.load("nme","nme_surface_free",1);
 	static var nme_surface_colourkey = neko.Lib.load("nme", "nme_surface_colourkey",4);
 	static var nme_sprite_alpha = neko.Lib.load("nme","nme_sprite_alpha",2);
