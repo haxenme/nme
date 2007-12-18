@@ -197,6 +197,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Matrix.h"
+				>
+			</File>
+			<File
 				RelativePath=".\net.cpp"
 				>
 			</File>

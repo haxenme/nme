@@ -59,5 +59,9 @@ typedef enum nme_spriteanimtype {
 SDL_Surface* nme_loadimage( value file );
 void nme_surface_free( value surface );
 
+bool IsOpenGLMode();
+bool IsOpenGLScreen(SDL_Surface *inSurface);
+
+
 
 #endif

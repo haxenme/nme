@@ -98,7 +98,23 @@ static value nme_surface_clear( value surf, value c )
 	Uint8 g = GRGB( c );
 	Uint8 b = BRGB( c );
 
-	SDL_FillRect( scr, NULL, SDL_MapRGB( scr->format, r, g, b ) );
+        if (IsOpenGLScreen(scr))
+        {
+           int w = scr->w;
+           int h = scr->h;
+           glViewport(0,0,w,h);
+           glMatrixMode(GL_PROJECTION);
+           glLoadIdentity();
+           glOrtho(0,w, h,0, -1000,1000);
+           glMatrixMode(GL_MODELVIEW);
+           glLoadIdentity();
+           glClearColor(r/255.0, g/255.0, b/255.0, 1.0 );
+           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+        else
+        {
+	   SDL_FillRect( scr, NULL, SDL_MapRGB( scr->format, r, g, b ) );
+        }
 
 	return alloc_int( 0 );
 	
@@ -153,6 +169,10 @@ value nme_surface_colourkey( value surface, value r, value g, value b )
 // screen relative functions
 
 static bool sOpenGL = false;
+SDL_Surface *sOpenGLScreen = 0;
+
+bool IsOpenGLMode() { return sOpenGL; }
+bool IsOpenGLScreen(SDL_Surface *inSurface) { return sOpenGL && inSurface==sOpenGLScreen; }
 
 value nme_delay( value period )
 {
@@ -271,6 +291,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
                 SDL_Quit();
                 exit(1);
             }
+            sOpenGLScreen = screen;
         }
         else
         {
