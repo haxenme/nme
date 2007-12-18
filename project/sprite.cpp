@@ -25,6 +25,7 @@
  
 #include "nsdl.h"
 #include "nme.h"
+#include "spg/SPriG.h"
 
 
 value nme_sprite_draw( value image, value screen, value rect, value point )
@@ -77,9 +78,7 @@ value nme_sprite_transform( value *args, int nargs )
 	Uint16 qy = (int)val_int( args[8] );
 	Uint8 flags = (int)val_int( args[9] );
 
-        //TODO: SGE replacement
-	//SDL_Rect rect = sge_transform( src, dst, angle, xscale, yscale, px, py, qx, qy, flags);
-	SDL_Rect rect;
+	SDL_Rect rect = SPG_TransformSurface( src, dst, angle, xscale, yscale, px, py, qx, qy, flags);
 	value o = alloc_object(NULL);
 	alloc_field( o, val_id("x"), alloc_int( rect.x ) );
 	alloc_field( o, val_id("y"), alloc_int( rect.y ) );
@@ -98,9 +97,7 @@ value nme_sprite_transform_surface( value *args, int nargs )
 	float yscale = val_number( args[4] );
 	Uint8 flags = val_int( args[5] );
 
-        //TODO: SGE replacement
-	//return alloc_abstract( k_surf, sge_transform_surface( src, bgcolor, angle, xscale, yscale, flags ) );
-	return alloc_abstract( k_surf, src );
+	return alloc_abstract( k_surf, SPG_Transform( src, bgcolor, angle, xscale, yscale, flags ) );
 }
 
 value nme_sprite_alpha( value sprite, value alpha )

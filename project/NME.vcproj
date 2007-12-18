@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib neko.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib neko.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib"
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\static_libs;e:\VS8\DirectXSDK\Lib\x86"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/NME.pdb"
 				SubSystem="2"
@@ -217,6 +217,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\spg\SPG_blib.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spg\SPG_primitives.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spg\SPG_rotation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spg\SPG_surface.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sprite.cpp"
 				>
 			</File>
@@ -260,6 +276,14 @@
 			</File>
 			<File
 				RelativePath=".\SDL_flic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\spg\SPriG.h"
+				>
+			</File>
+			<File
+				RelativePath=".\spg\SPriG_Inline.h"
 				>
 			</File>
 		</Filter>
