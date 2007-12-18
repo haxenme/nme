@@ -51,6 +51,8 @@ class Manager
         static var FULLSCREEN = 0x0001;
         static var OPENGL     = 0x0002;
 
+        static public var graphics(default,null):Graphics;
+
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
 	{
                 var flags = 0;
@@ -62,6 +64,7 @@ class Manager
 
 		if ( width < 100 || height < 20 ) return;
 		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
+                graphics = new Graphics(__scr);
 	}
 
 	public function close()
@@ -87,6 +90,7 @@ class Manager
 	
 	public function flip()
 	{
+                graphics.flush();
 		nme_flipbuffer( __scr );
 	}
 
