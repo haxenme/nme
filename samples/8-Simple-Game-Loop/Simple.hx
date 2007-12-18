@@ -21,6 +21,7 @@ class Simple
 		var prevTime : Float = 0.0;
 		var curTime : Float;
 		running = true;
+                var text = new TTF("FPS","ARIAL.TTF", 12, 0xffffff, 0x000000, 100, new Point(15,15));
 		while (running)
 		{
 			mng.events();
@@ -38,7 +39,8 @@ class Simple
 			prevTime = curTime;
 			
 			mng.clear( 0x000000 );
-			TTF.draw( Std.string( fps ), "ARIAL.TTF", 12, new Point( 15, 15 ), 0xFFFFFF, 0x000000, 100 );
+			text.text = Std.string( fps );
+                        text.draw();
 			mng.flip();
 		}
 		mng.close();
