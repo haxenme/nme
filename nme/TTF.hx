@@ -53,7 +53,7 @@ class TTF
            position = location==null ? new Point(0,0) : location;
            fgColor = fcolor==null ? defaultFGColor : fcolor;
            bgColor = bcolor==null ? defaultBGColor : bcolor;
-           alpha = in_alpha==null ? 255 : alpha;
+           alpha = in_alpha==null ? 255 : in_alpha;
         }
 
         public function moveTo(x:Int, y:Int)
