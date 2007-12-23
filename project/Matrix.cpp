@@ -30,7 +30,7 @@ inline static void Set(double &outVal, value inValue)
 
 Matrix::Matrix(value inMatrix)
 {
-   memset(this,0,sizeof(this));
+   m01 = m10 = mtx = mty = 0.0;
    m00 = m11 = 1.0;
 
    static int a_id = val_id("a");

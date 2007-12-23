@@ -26,5 +26,10 @@
 #ifndef __NME_TEXT_H__
 #define __NME_TEXT_H__
 
+#include<string>
+#include <SDL_ttf.h>
+
+TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize);
+
 
 #endif

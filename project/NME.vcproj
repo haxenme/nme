@@ -217,6 +217,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Pixel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SDL_Texture.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sound.cpp"
 				>
 			</File>
