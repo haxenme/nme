@@ -62,15 +62,19 @@ class TTF
            position.y = y;
         }
 
-	public function draw()
+	public function draw(?inSurface:Void)
 	{
-		nme_ttf_shaded( Manager.getScreen(), untyped text.__s, untyped font.__s, size, position.x, position.y, fgColor, bgColor, alpha );
+                if (inSurface==NULL)
+                   inSurface=Manager.getScreen();
+		nme_ttf_shaded( inSurface, untyped text.__s, untyped font.__s, size, position.x, position.y, fgColor, bgColor, alpha );
 	}
 
 
-	public function drawAt( location : Point )
+	public function drawAt( location : Point, ?inSurface:Void )
 	{
-		nme_ttf_shaded( Manager.getScreen(), untyped text.__s, untyped font.__s, size, location.x, location.y, fgColor, bgColor, alpha );
+                if (inSurface==NULL)
+                   inSurface=Manager.getScreen();
+		nme_ttf_shaded( inSurface, untyped text.__s, untyped font.__s, size, location.x, location.y, fgColor, bgColor, alpha );
 	}
 	
 	static var nme_ttf_shaded = neko.Lib.load("nme","nme_ttf_shaded",-1);

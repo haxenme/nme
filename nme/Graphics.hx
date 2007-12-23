@@ -26,6 +26,16 @@ typedef LineSegments = Array<LinePoint>;
 
 class Graphics
 {
+   public static var defaultFontName = "Times";
+   public static var defaultFontSize = 12;
+
+   public static var TOP = 0;
+   public static var CENTER = 1;
+   public static var BOTTOM = 2;
+
+   public static var LEFT = 0;
+   public static var RIGHT = 2;
+
    private var mPenX:Float;
    private var mPenY:Float;
    private var mDrawList:DrawList;
@@ -42,8 +52,8 @@ class Graphics
 
    public function new(?inSurface:Void)
    {
-      mPenX = 0;
-      mPenY = 0;
+      mPenX = 0.0;
+      mPenY = 0.0;
       mThickness = 1.0;
       mColour = 0;
       mFillColour = 0;
@@ -183,6 +193,20 @@ class Graphics
       lineTo(inX,inY);
    }
 
+   // Uses line style
+   public function text(text:String,?fontSize:Int,?fontName:String,?bgColor:Int,
+                     ?alignX:Int, ?alignY:Int)
+   {
+      CloseList(true);
+      var size:Int = fontSize==null ? defaultFontSize : fontSize;
+      var font:String = fontName==null ? defaultFontName: fontName;
+
+      AddDrawable( nme_create_text_drawable(
+          untyped text.__s,untyped font.__s,size,
+          mPenX, mPenY,
+          mColour, mAlpha, bgColor, alignX, alignY ) );
+   }
+
    public function flush() { CloseList(true); }
 
    private function AddDrawable(inDrawable:Void)
@@ -219,6 +243,7 @@ class Graphics
    static var nme_draw_object = neko.Lib.load("nme","nme_draw_object",1);
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",3);
+   static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
 
 }
 
