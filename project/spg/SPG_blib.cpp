@@ -50,6 +50,7 @@ extern void _AAmcLineAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Si
 		| (g >> format->Gloss) << format->Gshift\
 		| (b >> format->Bloss) << format->Bshift
 
+#define NULL_POSITION    (-0x7ffe)
 
 //==================================================================================
 // Draws a horisontal line, fading the colors
@@ -1032,9 +1033,6 @@ void SPG_QuadTex(SDL_Surface *dest,Sint16 x1,Sint16 y1,Sint16 x2,Sint16 y2,Sint1
 		SDL_UnlockSurface(dest);
 	
 }
-
-
-
 //==================================================================================
 // And now to something completly different: Polygons!
 //==================================================================================
@@ -1081,7 +1079,7 @@ pline* rsort(pline *inlist)
 	// Radix sort in 4 steps (16-bit numbers)
 	for( i = 0; i < 4; i++ ){
 		for( j = plist; j; j = j->next ){
-			nr = Uint8( ( j->x >> (4*i) ) & 0x000F);  // Get bucket number
+			nr = Uint8( ( (Uint16)(j->x+0x7fff) >> (4*i) ) & 0x000F);  // Get bucket number
 			
 			if( !bucket[nr] )
 				bucket[nr] = j;   // First in bucket
@@ -1192,6 +1190,7 @@ int SPG_PolygonFilledBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Ui
 		}
 		
 		// Reject polygons with negative coords
+                /*
 		if( y1 < 0  ||  x1 < 0  ||  x2 < 0 ){
 			if (SDL_MUSTLOCK(dest) && _SPG_lock)
 				SDL_UnlockSurface(dest);
@@ -1200,6 +1199,7 @@ int SPG_PolygonFilledBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Ui
 			delete[] plist;
 			return -1;
 		}
+                */
 		
 		if( y1 < ymin )
 			ymin = y1;
@@ -1253,21 +1253,21 @@ int SPG_PolygonFilledBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Ui
 		if( !list )
 			continue;     // nothing in list... hmmmm
 			
-		x1 = x2 = -1;
+		x1 = x2 = NULL_POSITION;
 		
 		// Draw horizontal lines between pairs
 		for( li = list; li; li = li->next ){
 			remove_dup(li, sy);
 			
-			if( x1 < 0 )
+			if( x1 == NULL_POSITION )
 				x1 = li->x+1;
-			else if( x2 < 0 )
+			else if( x2 == NULL_POSITION )
 				x2 = li->x;
 				
-			if( x1 >= 0  &&  x2 >= 0 ){
+			if( x1 != NULL_POSITION  &&  x2 !=NULL_POSITION ){
 				if( x2-x1 < 0  && alpha == SDL_ALPHA_OPAQUE ){
 					// Already drawn by the outline
-					x1 = x2 = -1;
+					x1 = x2 = NULL_POSITION;
 					continue;
 				}
 			
@@ -1276,7 +1276,7 @@ int SPG_PolygonFilledBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Ui
 				else
 					_HLineAlpha(dest, x1-1, x2, sy, color, alpha);
 					
-				x1 = x2 = -1;
+				x1 = x2 = NULL_POSITION;
 			}
 		}
 	}
@@ -1342,6 +1342,7 @@ int SPG_PolygonFilledAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint3
 		}
 		
 		// Reject polygons with negative coords
+                /*
 		if( y1 < 0  ||  x1 < 0  ||  x2 < 0 ){
 			if (SDL_MUSTLOCK(dest) && _SPG_lock)
 				SDL_UnlockSurface(dest);
@@ -1350,6 +1351,7 @@ int SPG_PolygonFilledAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint3
 			delete[] plist;
 			return -1;
 		}
+                */
 		
 		if( y1 < ymin )
 			ymin = y1;
@@ -1402,26 +1404,26 @@ int SPG_PolygonFilledAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint3
 		if( !list )
 			continue;     // nothing in list... hmmmm
 			
-		x1 = x2 = -1;
+		x1 = x2 = NULL_POSITION;
 		
 		// Draw horizontal lines between pairs
 		for( li = list; li; li = li->next ){
 			remove_dup(li, sy);
 			
-			if( x1 < 0 )
+			if( x1 ==NULL_POSITION )
 				x1 = li->x+1;
-			else if( x2 < 0 )
+			else if( x2 ==NULL_POSITION )
 				x2 = li->x;
 				
-			if( x1 >= 0  &&  x2 >= 0 ){
+			if( x1 != NULL_POSITION  &&  x2 !=NULL_POSITION ){
 				if( x2-x1 < 0 ){
-					x1 = x2 = -1;
+					x1 = x2 = NULL_POSITION;
 					continue;
 				}
 			
 				_HLine(dest, x1, x2, sy, color);
 
-				x1 = x2 = -1;
+				x1 = x2 = NULL_POSITION;
 			}
 		}
 	}
@@ -1517,6 +1519,7 @@ int SPG_PolygonFadeBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint
 		}
 		
 		// Reject polygons with negative coords
+                /*
 		if( y1 < 0  ||  x1 < 0  ||  x2 < 0 ){
 			if ( SDL_MUSTLOCK(dest) && _SPG_lock )
 				SDL_UnlockSurface(dest);
@@ -1525,6 +1528,7 @@ int SPG_PolygonFadeBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint
 			delete[] plist;
 			return -1;
 		}
+                */
 		
 		if( y1 < ymin )
 			ymin = y1;
@@ -1592,27 +1596,27 @@ int SPG_PolygonFadeBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint
 		if( !list )
 			continue;     // nothing in list... hmmmm
 			
-		x1 = x2 = -1;
+		x1 = x2 = NULL_POSITION;
 		
 		// Draw horizontal lines between pairs
 		for( li = list; li; li = (fpline *)li->next ){
 			remove_dup(li, sy);
 			
-			if( x1 < 0 ){
+			if( x1 == NULL_POSITION ){
 				x1 = li->x+1;
 				r1 = li->r;
 				g1 = li->g;
 				b1 = li->b;
-			}else if( x2 < 0 ){
+			}else if( x2 == NULL_POSITION ){
 				x2 = li->x;
 				r2 = li->r;
 				g2 = li->g;
 				b2 = li->b;
 			}
 				
-			if( x1 >= 0  &&  x2 >= 0 ){
+			if( x1 !=NULL_POSITION  &&  x2 !=NULL_POSITION ){
 				if( x2-x1 < 0 && (colors[i] & dest->format->Amask) == SDL_ALPHA_OPAQUE){
-					x1 = x2 = -1;
+					x1 = x2 = NULL_POSITION;
 					continue;
 				}
 			
@@ -1623,7 +1627,7 @@ int SPG_PolygonFadeBlend(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint
 					SPG_LineMultiFn(dest, x1-1, sy, x2, sy, SDL_MapRGB(dest->format, r1, g1, b1), SDL_MapRGB(dest->format, r2, g2, b2), callback_alpha_hack);
 				}
 				
-				x1 = x2 = -1;
+				x1 = x2 = NULL_POSITION;
 			}
 		}
 	}
@@ -1697,6 +1701,7 @@ int SPG_PolygonFadeAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint32*
 		}
 		
 		// Reject polygons with negative coords
+                /*
 		if( y1 < 0  ||  x1 < 0  ||  x2 < 0 ){
 			if ( SDL_MUSTLOCK(dest) && _SPG_lock )
 				SDL_UnlockSurface(dest);
@@ -1705,6 +1710,7 @@ int SPG_PolygonFadeAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint32*
 			delete[] plist;
 			return -1;
 		}
+                */
 		
 		if( y1 < ymin )
 			ymin = y1;
@@ -1771,7 +1777,7 @@ int SPG_PolygonFadeAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint32*
 		if( !list )
 			continue;     // nothing in list... hmmmm
 			
-		x1 = x2 = -1;
+		x1 = x2 = NULL_POSITION;
 		
 		// Draw horizontal lines between pairs
 		for( li = list; li; li = (fpline *)li->next ){
@@ -1789,15 +1795,15 @@ int SPG_PolygonFadeAA(SDL_Surface *dest, Uint16 n, Sint16 *x, Sint16 *y, Uint32*
 				b2 = li->b;
 			}
 				
-			if( x1 >= 0  &&  x2 >= 0 ){
+			if( x1 != NULL_POSITION &&  x2 !=NULL_POSITION ){
 				if( x2-x1 < 0 ){
-					x1 = x2 = -1;
+					x1 = x2 = NULL_POSITION;
 					continue;
 				}
 			
 				_FadedLine(dest, x1, x2, sy, r1, g1, b1, r2, g2, b2);
 
-				x1 = x2 = -1;
+				x1 = x2 = NULL_POSITION;
 			}
 		}
 	}
