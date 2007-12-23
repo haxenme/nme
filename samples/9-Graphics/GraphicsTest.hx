@@ -23,17 +23,11 @@
  * DAMAGE.
  *
  *
- *  This code test the image and sound formats that are not tested in the
- *   Blox demo.
- *
- *   mp3 music
- *   ogg,aiff,wav sounds
- *   png,jpg images
- *
  */
  
 import nme.Manager;
 import nme.Surface;
+import nme.Graphics;
 
 class GraphicsTest
 {
@@ -54,12 +48,14 @@ class GraphicsTest
       var square = new nme.Shape();
       square.beginFill(0x0000ff);
       square.drawRect(-10,-10,20,20);
+      square.moveTo(0,0);
+      square.text("Square",12,"Arial",null,Graphics.CENTER,Graphics.CENTER);
       square.matrix.tx = 400;
       square.matrix.ty = 300;
 
 
       var running = true;
-      var x = 0;
+      var x = -40;
       var rot = 0.0;
       var phase = 0.0;
 
@@ -83,13 +79,23 @@ class GraphicsTest
 
          var gfx = Manager.graphics;
 
+         // Drawing to the managers graphics draws immediately.
+         // This is not as efficient as building a display object.
          gfx.beginFill(0xff3030);
          gfx.drawCircle(x,100,60);
+         gfx.moveTo(x,100);
+         gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
+         gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
+         gfx.lineTo(x,100);
+
+         // You can set the matrix to move the display object around.
          square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*5.0));
          square.draw();
 
-         x = (x+1) % wndWidth;
+         x = x+1;
+         if (x>wndWidth) x = -10;
+
          rot += 0.01;
          phase += 0.01;
 
