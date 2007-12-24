@@ -64,7 +64,7 @@ class TTF
 
 	public function draw(?inSurface:Void)
 	{
-                if (inSurface==NULL)
+                if (inSurface==null)
                    inSurface=Manager.getScreen();
 		nme_ttf_shaded( inSurface, untyped text.__s, untyped font.__s, size, position.x, position.y, fgColor, bgColor, alpha );
 	}
@@ -72,7 +72,7 @@ class TTF
 
 	public function drawAt( location : Point, ?inSurface:Void )
 	{
-                if (inSurface==NULL)
+                if (inSurface==null)
                    inSurface=Manager.getScreen();
 		nme_ttf_shaded( inSurface, untyped text.__s, untyped font.__s, size, location.x, location.y, fgColor, bgColor, alpha );
 	}
