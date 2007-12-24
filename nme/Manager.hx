@@ -43,15 +43,72 @@ enum EventType
 	et_syswm;
 }
 
+enum MouseEventType
+{
+   met_Move;
+   met_LeftUp;
+   met_LeftDown;
+   met_MiddleUp;
+   met_MiddleDown;
+   met_RightUp;
+   met_RightDown;
+}
+
+typedef MouseEvent =
+{
+   var type : MouseEventType;
+   var x : Int;
+   var y : Int;
+   var shift : Bool;
+   var ctrl : Bool;
+   var alt : Bool;
+   var leftIsDown : Bool;
+   var middleIsDown : Bool;
+   var rightIsDown : Bool;
+}
+
+typedef KeyEvent =
+{
+   var isDown : Bool;
+   var code : Int;
+   var shift : Bool;
+   var ctrl : Bool;
+   var alt : Bool;
+}
+
+typedef MouseEventCallback = MouseEvent -> Void;
+typedef MouseEventCallbackList = Array<MouseEventCallback>;
+
+typedef KeyEventCallback = KeyEvent -> Void;
+typedef KeyEventCallbackList = Array<KeyEventCallback>;
+
+typedef UpdateCallback = Void -> Void;
+typedef UpdateCallbackList = Array<UpdateCallback>;
+
+typedef RenderCallback = Void -> Void;
+typedef RenderCallbackList = Array<RenderCallback>;
+
 class Manager
 {
 	static var __scr : Void;
 	static var __evt : Void;
+   // Set this to something else if yo do not want it...
+   static var closeKey = 27;
 
         static var FULLSCREEN = 0x0001;
         static var OPENGL     = 0x0002;
 
         static public var graphics(default,null):Graphics;
+
+   public var mainLoopRunning:Bool;
+   public var mouseEventCallbacks:MouseEventCallbackList;
+   public var mouseClickCallbacks:MouseEventCallbackList;
+   public var keyEventCallbacks:KeyEventCallbackList;
+   public var updateCallbacks:UpdateCallbackList;
+   public var renderCallbacks:RenderCallbackList;
+
+   public var tryQuitFunction: Void->Bool;
+
 
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
 	{
@@ -65,11 +122,148 @@ class Manager
 		if ( width < 100 || height < 20 ) return;
 		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
                 graphics = new Graphics(__scr);
+      mainLoopRunning = false;
+      mouseEventCallbacks = new MouseEventCallbackList();
+      mouseClickCallbacks = new MouseEventCallbackList();
+      keyEventCallbacks = new KeyEventCallbackList();
+      updateCallbacks = new UpdateCallbackList();
+      renderCallbacks = new RenderCallbackList();
+      tryQuitFunction = null;
 	}
+
+
+   // This function is optional - you can choose to do your own main loop, eg
+   //  samples/2-Blox-Game.  You can also use extend the "GameBase" class
+   //  and override the functions if you like.
+   public function mainLoop()
+   {
+      mainLoopRunning = true;
+      var left = false;
+
+      while(mainLoopRunning)
+      {
+         var type:nme.EventType;
+         do
+         {
+            type = nextEvent();
+            switch type
+            {
+               case et_quit:
+                  tryQuit();
+               case et_keydown:
+                  if (lastKey() == closeKey)
+                     tryQuit();
+                  else
+                  {
+                     fireKeyEvent(true);
+                  }
+               case et_keyup:
+                  fireKeyEvent(false);
+
+               case et_mousebutton:
+                  var left_now = mouseButtonState()!=0;
+                  if (left_now!=left)
+                  {
+                     left = left_now;
+                     fireMouseEvent( left ? met_LeftDown : met_LeftUp );
+                  }
+               case et_mousemove:
+                  fireMouseEvent( met_Move );
+
+               default:
+            }
+         } while(type!=et_noevent && mainLoopRunning);
+
+         for(f in updateCallbacks)
+            f( );
+
+         for(f in renderCallbacks)
+            f( );
+
+         flip();
+      }
+
+		nme_screen_close();
+   }
+
+   public function tryQuit()
+   {
+      if (tryQuitFunction==null || tryQuitFunction())
+         mainLoopRunning = false;
+   }
+
+   function fireMouseEvent(inType:MouseEventType)
+   {
+      // TODO: fill in shift etc.
+      var event: MouseEvent =
+      {
+         type : inType,
+         x : mouseX(),
+         y : mouseY(),
+         shift : false,
+         ctrl : false,
+         alt : false,
+         leftIsDown : mouseButtonState()!=0,
+         middleIsDown : false,
+         rightIsDown : false
+      };
+
+      for(e in mouseEventCallbacks)
+         e(event);
+
+      if (inType==met_LeftDown)
+         for(e in mouseClickCallbacks)
+            e(event);
+   }
+
+   function fireKeyEvent(inIsDown:Bool)
+   {
+      // TODO: fill in shift etc.
+      var event: KeyEvent =
+      {
+         isDown : inIsDown,
+         code : lastKey(),
+         shift : lastKeyShift(),
+         ctrl : lastKeyCtrl(),
+         alt : lastKeyAlt()
+      };
+
+      for(e in keyEventCallbacks)
+         e(event);
+   }
+
+
+   public function addMouseCallback(inCallback:MouseEventCallback)
+   {
+      mouseEventCallbacks.push(inCallback);
+   }
+
+   public function addClickCallback(inCallback:MouseEventCallback)
+   {
+      mouseClickCallbacks.push(inCallback);
+   }
+
+   public function addKeyCallback(inCallback:KeyEventCallback)
+   {
+      keyEventCallbacks.push(inCallback);
+   }
+
+   public function addRenderCallback(inCallback:RenderCallback)
+   {
+      renderCallbacks.push(inCallback);
+   }
+
+   public function addUpdateCallback(inCallback:UpdateCallback)
+   {
+      updateCallbacks.push(inCallback);
+   }
 
 	public function close()
 	{
-		nme_screen_close();
+      if (mainLoopRunning)
+         mainLoopRunning = false;
+      else
+		   nme_screen_close();
 	}
 	
 	public function delay( period : Int )

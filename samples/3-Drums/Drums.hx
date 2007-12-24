@@ -93,7 +93,7 @@ class Bang
 
 typedef BangList = Array<Bang>;
 
-class Drums
+class Drums extends nme.GameBase
 {
    var mRunning : Bool;
    var mDrumPicture : Surface;
@@ -107,8 +107,7 @@ class Drums
 
    public function new()
    {
-      var manager  = new Manager( wndWidth, wndHeight, wndCaption, false,
-                             "Data/ico.gif" );
+      super( wndWidth, wndHeight, wndCaption, false, "Data/ico.gif" );
 
       Sound.setChannels( 8 );
       Music.init( "Data/Party_Gu-Jeremy_S-8250_hifi.mp3" );
@@ -118,49 +117,57 @@ class Drums
       mBangs = new BangList();
       
       mDrumPicture = new Surface( "Data/drum_kit.jpg" );
-      
-      var running = true;
-      while (running)
-      {
-         var type:nme.EventType;
-         do
-         {
-            type = manager.nextEvent();
-            switch type
-            {
-               case et_quit:
-                  running = false;
-               case et_keydown:
-                  running =  manager.lastKey() != 27;
-               case et_mousebutton:
-                  mBangs.push( new Bang(manager) );
-               default:
-            }
-         } while(type!=et_noevent && running);
 
-         manager.clear( 0xFFFFFF );
-
-         mDrumPicture.draw( Manager.getScreen() );
-
-         // Remove old graphics ...
-         var remove = -1;
-         for(i in 0...mBangs.length)
-         {
-            if (mBangs[i].alive())
-               break;
-            remove = i;
-         }
-         if (remove>=0)
-            mBangs.splice(0,remove+1);
-
-         // Draw them ..
-         for(b in mBangs)
-            b.draw();
-
-         manager.flip();
-      }
-
-
-      manager.close();
+      run();
    }
+
+   public function onUpdate()
+   {
+      // Remove old graphics ...
+      var remove = -1;
+      for(i in 0...mBangs.length)
+      {
+         if (mBangs[i].alive())
+            break;
+         remove = i;
+      }
+      if (remove>=0)
+         mBangs.splice(0,remove+1);
+   }
+
+   public function onClick(inEvent:MouseEvent)
+   {
+      mBangs.push( new Bang(manager) );
+   }
+
+   public function onRender()
+   {
+      manager.clear( 0xFFFFFF );
+
+      mDrumPicture.draw( Manager.getScreen() );
+
+      // Remove old graphics ...
+      var remove = -1;
+      for(i in 0...mBangs.length)
+      {
+         if (mBangs[i].alive())
+            break;
+         remove = i;
+      }
+      if (remove>=0)
+         mBangs.splice(0,remove+1);
+
+      // Draw them ..
+      for(b in mBangs)
+         b.draw();
+   }
+
+   public function onKey(inEvent:KeyEvent)
+   {
+      // test/debug
+      neko.Lib.print(inEvent);
+      neko.Lib.print("\n");
+   }
+
 }
+

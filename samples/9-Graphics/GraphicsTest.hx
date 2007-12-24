@@ -29,7 +29,7 @@ import nme.Manager;
 import nme.Surface;
 import nme.Graphics;
 
-class GraphicsTest
+class GraphicsTest extends nme.GameBase
 {
    static var wndWidth = 640;
    static var wndHeight = 480;
@@ -37,15 +37,21 @@ class GraphicsTest
    
    static function main() { new GraphicsTest(); }
 
+
+   static var x = -40;
+   static var rot = 0.0;
+   static var phase = 0.0;
+
+   var square : nme.Shape;
+
    public function new()
    {
       // Try it both ways !
-      var opengl = false;
+      var opengl = true;
 
-      var manager  = new Manager( wndWidth, wndHeight, wndCaption, false,
-                             "ico.gif", opengl );
+      super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      var square = new nme.Shape();
+      square = new nme.Shape();
       square.beginFill(0x0000ff);
       square.drawRect(-10,-10,20,20);
       square.moveTo(0,0);
@@ -53,56 +59,38 @@ class GraphicsTest
       square.matrix.tx = 400;
       square.matrix.ty = 300;
 
+      run();
+   }
 
-      var running = true;
-      var x = -40;
-      var rot = 0.0;
-      var phase = 0.0;
+   public function onRender()
+   {
+      manager.clear( 0xffffff );
 
-      while (running)
-      {
-         var type:nme.EventType;
-         do
-         {
-            type = manager.nextEvent();
-            switch type
-            {
-               case et_quit:
-                  running = false;
-               case et_keydown:
-                  running =  manager.lastKey() != 27;
-               default:
-            }
-         } while(type!=et_noevent && running);
+      var gfx = Manager.graphics;
 
-         manager.clear( 0xffffff );
+      // Drawing to the managers graphics draws immediately.
+      // This is not as efficient as building a display object.
+      gfx.beginFill(0xff3030);
+      gfx.drawCircle(x,100,60);
+      gfx.moveTo(x,100);
+      gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
-         var gfx = Manager.graphics;
+      gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
+      gfx.lineTo(x,100);
 
-         // Drawing to the managers graphics draws immediately.
-         // This is not as efficient as building a display object.
-         gfx.beginFill(0xff3030);
-         gfx.drawCircle(x,100,60);
-         gfx.moveTo(x,100);
-         gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
+      // This has already been setup.
+      square.draw();
+   }
 
-         gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
-         gfx.lineTo(x,100);
+   public function onUpdate()
+   {
+      // You can set the matrix to move the display object around.
+      square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*5.0));
 
-         // You can set the matrix to move the display object around.
-         square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*5.0));
-         square.draw();
+      x = x+1;
+      if (x>wndWidth) x = -10;
 
-         x = x+1;
-         if (x>wndWidth) x = -10;
-
-         rot += 0.01;
-         phase += 0.01;
-
-         manager.flip();
-      }
-
-
-      manager.close();
+      rot += 0.01;
+      phase += 0.01;
    }
 }
