@@ -9,6 +9,13 @@ void Matrix::Transform(float inX,float inY,short &outX,short &outY) const
    outY = (short)( inX*m10 + inY*m11 + mty + 0.5);
 }
 
+void Matrix::TransformHQ(float inX,float inY,int &outX,int &outY) const
+{
+   outX = (int)( (inX*m00 + inY*m01 + mtx) * 65536.0 + 0.5);
+   outY = (int)( (inX*m10 + inY*m11 + mty) * 65536.0 + 0.5);
+}
+
+
 
 void Matrix::GLMult() const
 {

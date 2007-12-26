@@ -47,7 +47,7 @@ class GraphicsTest extends nme.GameBase
    public function new()
    {
       // Try it both ways !
-      var opengl = true;
+      var opengl = false;
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
@@ -85,7 +85,8 @@ class GraphicsTest extends nme.GameBase
    public function onUpdate()
    {
       // You can set the matrix to move the display object around.
-      square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*5.0));
+      square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*10.0));
+      //square.matrix.setRotation( Math.PI*1/4, 10.0);
 
       x = x+1;
       if (x>wndWidth) x = -10;

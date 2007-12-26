@@ -336,6 +336,8 @@ public:
 
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)
    {
+      bool hq = true;
+
       if (IsOpenGLScreen(inSurface))
       {
          CreateOGLTextureIfRequired();
@@ -352,9 +354,23 @@ public:
       }
       else
       {
-         if (inMatrix.IsIdentity() && 0)
+         if (inMatrix.IsIdentity() )
          {
             SDL_BlitSurface(mSurface, 0, inSurface, &mRect);
+         }
+         else if (hq)
+         {
+            for(int i=0;i<4;i++)
+               inMatrix.TransformHQ( mSX[i], mSY[i], mHQTX[i], mHQTY[i] );
+
+            int w = mSurface->w;
+            int h = mSurface->h;
+            SPG_QuadTexHQ(inSurface,
+                mHQTX[0], mHQTY[0], mHQTX[1], mHQTY[1],
+                mHQTX[2], mHQTY[2], mHQTX[3], mHQTY[3],
+                mSurface, 
+                0,0, w,0, 0,h , w,h,
+                (mHasAlpha?SPG_ALPHA_BLEND:0)  );
          }
          else
          {
@@ -364,11 +380,13 @@ public:
             int w = mSurface->w;
             int h = mSurface->h;
             SPG_QuadTex2(inSurface,
-                mTX[0], mTY[0], mTX[1], mTY[1], mTX[2], mTY[2], mTX[3], mTY[3],
+                mTX[0], mTY[0], mTX[1], mTY[1],
+                mTX[2], mTY[2], mTX[3], mTY[3],
                 mSurface, 
-                0,0, w-1,0, 0,h-1 , w-1,h-1,
-                (mHasAlpha?SPG_ALPHA_BLEND:0) | SPG_BILINEAR );
+                0,0, w,0, 0,h , w,h,
+                (mHasAlpha?SPG_ALPHA_BLEND:0)  );
          }
+
       }
    }
 
@@ -378,6 +396,8 @@ public:
    SDL_Rect    mRect;
    Sint16      mTX[4];
    Sint16      mTY[4];
+   Sint32      mHQTX[4];
+   Sint32      mHQTY[4];
    Sint16      mSX[4];
    Sint16      mSY[4];
    double      mOX;

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image;..\..\thirdparty\SDL_mixer;..\..\thirdparty\SDL_ttf"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\SDL\include;..\..\thirdparty\SDL_image;..\..\thirdparty\SDL_mixer;..\..\thirdparty\SDL_ttf"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"

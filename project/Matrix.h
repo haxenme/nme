@@ -24,6 +24,7 @@ public:
       { return memcmp(this,&inRHS,sizeof(this)); }
 
    void Transform(float inX,float inY,short &outX,short &outY) const;
+   void TransformHQ(float inX,float inY,int &outX,int &outY) const;
 
    void GLMult() const;
 
