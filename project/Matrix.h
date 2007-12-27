@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include <neko.h>
+#include <string.h>
 
 class Matrix
 {
@@ -21,7 +22,7 @@ public:
    inline bool operator==(const Matrix &inRHS) const
       { return !memcmp(this,&inRHS,sizeof(this)); }
    inline bool operator!=(const Matrix &inRHS) const
-      { return memcmp(this,&inRHS,sizeof(this)); }
+      { return memcmp(this,&inRHS,sizeof(this))!=0; }
 
    void Transform(float inX,float inY,short &outX,short &outY) const;
    void TransformHQ(float inX,float inY,int &outX,int &outY) const;

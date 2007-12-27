@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Gradient.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Matrix.cpp"
 				>
 			</File>
@@ -282,6 +286,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\Gradient.h"
+				>
+			</File>
 			<File
 				RelativePath=".\nme.h"
 				>

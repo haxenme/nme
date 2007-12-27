@@ -43,11 +43,12 @@ class GraphicsTest extends nme.GameBase
    static var phase = 0.0;
 
    var square : nme.Shape;
+   var grad_circle : nme.Shape;
 
    public function new()
    {
       // Try it both ways !
-      var opengl = false;
+      var opengl = true;
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
@@ -59,6 +60,18 @@ class GraphicsTest extends nme.GameBase
       square.matrix.tx = 400;
       square.matrix.ty = 300;
 
+      grad_circle = new nme.Shape();
+
+      var colours = [ 0xff0000, 0x000000 ];
+      var alphas = [ 1.0, 1.0 ];
+      var ratios = [ 0, 255 ];
+      var mtx = new nme.Matrix();
+      mtx.createGradientBox(200,200,1.00,150,20);
+      grad_circle.beginGradientFill(nme.GradientType.LINEAR,
+                       colours, alphas, ratios, mtx);
+      grad_circle.drawCircle(150,150,100);
+
+
       run();
    }
 
@@ -67,6 +80,16 @@ class GraphicsTest extends nme.GameBase
       manager.clear( 0xffffff );
 
       var gfx = Manager.graphics;
+
+      // TODO: thick line in software renderer...
+      gfx.moveTo(10,10);
+      gfx.lineStyle(1,0xff0000);
+      gfx.lineTo(100,100);
+      gfx.lineStyle(3,0x00ff00);
+      gfx.lineTo(200,200);
+      gfx.lineStyle(5,0x0000ff);
+      gfx.lineTo(300,300);
+
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
@@ -79,6 +102,7 @@ class GraphicsTest extends nme.GameBase
       gfx.lineTo(x,100);
 
       // This has already been setup.
+      grad_circle.draw();
       square.draw();
    }
 

@@ -16,6 +16,7 @@
 #include "texture_buffer.h"
 #include "text.h"
 #include "Extras.h"
+#include "Gradient.h"
 
 
 DECLARE_KIND( k_drawable );
@@ -67,6 +68,7 @@ class DrawObject : public Drawable
 {
 public:
    DrawObject(int inFillColour,double inFillAlpha, LineSegments &inSegments)
+      : mGradient(0)
    {
       mDisplayList = 0;
 
@@ -84,73 +86,39 @@ public:
          {
             mDisplayList = glGenLists(1);
             glNewList(mDisplayList,GL_COMPILE);
-   
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-   
-            if (inFillAlpha>0)
-            {
-               // TODO: tesselate
-               glColor4ub(inFillColour >> 16, inFillColour >> 8, inFillColour,
-                            (unsigned char)(inFillAlpha*255.0));
-               const LinePoint *p = &mLines[0];
-               glDisable(GL_TEXTURE_2D);
-               glBegin(GL_TRIANGLE_FAN);
-               for(size_t i=0;i<n;i++)
-               {
-                  glVertex2f( p->mX, p->mY );
-                  p++;
-               }
-               glEnd();
-            }
-      
-   
-            const LinePoint *p = &mLines[0];
-   
-            int col = p->mColour;
-            double alpha = p->mAlpha;
-            double lw = p->mThickness;
-   
-   
-            glLineWidth( (GLfloat)(lw==0 ? 1 : lw) );
-   
-            // TODO: handle z properly
-            glDisable(GL_DEPTH_TEST);
-   
-            glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-               (unsigned char)(alpha*255.0));
-   
-            glBegin(GL_LINE_STRIP);
-            for(size_t i=0;i<n;i++)
-            {
-               if (p->mColour!=col || p->mAlpha!=alpha)
-               {
-                   col = p->mColour;
-                   alpha = p->mAlpha;
-   
-                   glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-                      (unsigned char)(alpha*255.0));
-               }
-               if (p->mThickness!=lw)
-               {
-                  lw = p->mThickness;
-                  glLineWidth((GLfloat)lw);
-               }
-               glVertex2f( p->mX, p->mY );
-               p++;
-            }
-            glEnd();
-   
-            if (lw!=0)
-               glLineWidth(1);
-   
-            glDisable(GL_BLEND);
+            DrawOpenGL();
             glEndList();
          }
       }
    }
+   DrawObject(Gradient *inGradient, LineSegments &inSegments)
+       : mGradient(inGradient)
+   {
+      mFillColour = 0xff00ff;
+      mFillAlpha = 1.0;
+
+      // Just take the lot - they won't be needed again.
+      mLines.swap(inSegments);
+      mX = 0;
+      mY = 0;
+
+      size_t n = mLines.size();
+      if (n>0)
+      {
+         if (IsOpenGLMode())
+         {
+            mDisplayList = glGenLists(1);
+            glNewList(mDisplayList,GL_COMPILE);
+            DrawOpenGL();
+            glEndList();
+         }
+      }
+   }
+
+
    ~DrawObject()
    {
+      delete mGradient;
       if (mDisplayList!=0)
          glDeleteLists(mDisplayList,1);
       delete [] mX;
@@ -171,12 +139,94 @@ public:
       mY = new Sint16[n];
    }
 
+
+   void DrawOpenGL()
+   {
+      size_t n = mLines.size();
+
+      glDisable(GL_DEPTH_TEST);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+   
+      if (mGradient || mFillAlpha>0)
+      {
+         // TODO: tesselate
+         glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
+                      (unsigned char)(mFillAlpha*255.0));
+         const LinePoint *p = &mLines[0];
+
+         if (mGradient)
+            mGradient->BeginOpenGL();
+         else
+            glDisable(GL_TEXTURE_2D);
+
+         glBegin(GL_TRIANGLE_FAN);
+         for(size_t i=0;i<n;i++)
+         {
+            if (mGradient)
+               mGradient->OpenGLTexture(p->mX,p->mY);
+            glVertex2f( p->mX, p->mY );
+            p++;
+         }
+         glEnd();
+      }
+
+      if (mGradient)
+         mGradient->EndOpenGL();
+   
+      const LinePoint *p = &mLines[0];
+   
+      int col = p->mColour;
+      double alpha = p->mAlpha;
+      double lw = p->mThickness;
+   
+   
+      glLineWidth( (GLfloat)(lw==0 ? 1 : lw) );
+   
+   
+      glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
+         (unsigned char)(alpha*255.0));
+   
+      glBegin(GL_LINE_STRIP);
+      for(size_t i=0;i<n;i++)
+      {
+         if (i!=0 && (p->mColour!=col || p->mAlpha || p->mThickness!=lw))
+         {
+            glEnd();
+            if (p->mColour!=col || p->mAlpha!=alpha)
+            {
+                col = p->mColour;
+                alpha = p->mAlpha;
+
+                glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
+                   (unsigned char)(alpha*255.0));
+            }
+            if (p->mThickness!=lw)
+            {
+               lw = p->mThickness;
+               glLineWidth((GLfloat)lw);
+            }
+            glBegin(GL_LINE_STRIP);
+            glVertex2f( p[-1].mX, p[-1].mY );
+         }
+         glVertex2f( p->mX, p->mY );
+         p++;
+      }
+      glEnd();
+   
+      if (lw!=0)
+         glLineWidth(1);
+   
+      glDisable(GL_BLEND);
+   }
+
+
    void TransformPoints(const Matrix &inMatrix)
    {
       size_t n = mLines.size();
-      mMatrix = inMatrix;
+      mTransform = inMatrix;
 
-      if (mMatrix.IsIdentity())
+      if (mTransform.IsIdentity())
          for(size_t i=0;i<n;i++)
          {
             mX[i] = (Sint16)mLines[i].mX;
@@ -184,7 +234,7 @@ public:
          }
      else
          for(size_t i=0;i<n;i++)
-            inMatrix.Transform(mLines[i].mX,mLines[i].mY,mX[i],mY[i]);
+            mTransform.Transform(mLines[i].mX,mLines[i].mY,mX[i],mY[i]);
    }
 
 
@@ -212,7 +262,7 @@ public:
             AllocXY();
             TransformPoints(inMatrix);
          }
-         else if (inMatrix!=mMatrix)
+         else if (inMatrix!=mTransform)
             TransformPoints(inMatrix);
 
          Uint16 n = (Uint16)mLines.size();
@@ -226,18 +276,18 @@ public:
                     (Uint8)(mFillAlpha*255.0) );
          }
 
-         for(int i=0;i<n-1;i++)
+         for(int i=1;i<n;i++)
          {
-            const LinePoint &p0 = mLines[ i ];
-            if (p0.mAlpha > 0 )
+            const LinePoint &p1 = mLines[ i ];
+            if (p1.mAlpha > 0 )
             {
-               int p1 = i+1;
+               int p0 = i-1;
 
-               if (p0.mAlpha<1.0)
-                  SPG_LineBlend(inSurface,mX[i],mY[i],mX[p1],mY[p1],p0.mColour,
-                       (Uint8)(p0.mAlpha*255.0) );
+               if (p1.mAlpha<1.0)
+                  SPG_LineBlend(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour,
+                       (Uint8)(p1.mAlpha*255.0) );
                else
-                  SPG_Line(inSurface,mX[i],mY[i],mX[p1],mY[p1],p0.mColour);
+                  SPG_Line(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour);
             }
          }
       }
@@ -246,7 +296,8 @@ public:
 
    Sint16       *mX;
    Sint16       *mY;
-   Matrix       mMatrix;
+   Gradient     *mGradient;
+   Matrix       mTransform;
    int          mFillColour;
    double       mFillAlpha;
    LineSegments mLines;
@@ -283,6 +334,32 @@ value nme_create_draw_obj(value inFillColour, value inFillAlpha, value inLines)
    val_gc( v, delete_drawable );
    return v;
 }
+
+value nme_create_gradient_obj(value inIsLinear, value inGradPoints,
+                              value inMatrix, value inLines)
+{
+   val_check( inIsLinear, bool );
+   val_check( inGradPoints, array );
+   val_check( inLines, array );
+
+   int n = val_array_size(inLines);
+   value *items = val_array_ptr(inLines);
+
+   LineSegments line_segs(n);
+   for(int i=0;i<n;i++)
+      line_segs[i].FromValue(items[i]);
+
+   DrawObject *obj = new DrawObject(
+                        new Gradient(inIsLinear,inGradPoints,inMatrix),
+                        line_segs );
+
+   value v = alloc_abstract( k_drawable, obj );
+   val_gc( v, delete_drawable );
+   return v;
+}
+
+
+
 
 // ---- Surface Drawing -----------------------------------------------------
 
@@ -534,6 +611,7 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
 
 
 DEFINE_PRIM(nme_create_draw_obj, 3);
+DEFINE_PRIM(nme_create_gradient_obj, 4);
 DEFINE_PRIM(nme_draw_object, 1);
 DEFINE_PRIM(nme_draw_object_to, 3);
 DEFINE_PRIM_MULT(nme_create_text_drawable);

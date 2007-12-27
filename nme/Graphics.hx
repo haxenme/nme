@@ -22,6 +22,15 @@ class LinePoint
      { return x!=inRHS.x || y!=inRHS.y; }
 }
 
+typedef GradPoint = 
+{
+   var col:Int;
+   var alpha:Float;
+   var ratio:Int;
+}
+
+typedef GradPoints = Array<GradPoint>;
+
 typedef LineSegments = Array<LinePoint>;
 
 class Graphics
@@ -40,8 +49,12 @@ class Graphics
    private var mPenY:Float;
    private var mDrawList:DrawList;
    private var mFilling:Bool;
+   private var mFillingGradient:Bool;
    private var mLines:LineSegments;
    private var mSurface:Void;
+   private var mGradPoints:GradPoints;
+   private var mGradMatrix:nme.Matrix;
+   private var mGradType:nme.GradientType;
 
    var mThickness:Float;
    var mColour:Int;
@@ -64,6 +77,7 @@ class Graphics
       mDrawList = new DrawList();
       mLines = new LineSegments();
       mFilling = false;
+      mFillingGradient = false;
    }
 
    public function Render()
@@ -105,6 +119,7 @@ class Graphics
       mFillColour = color;
       mFillAlpha = alpha==null ? 1.0 : alpha;
       mFilling=true;
+      mFillingGradient=false;
    }
 
    public function endFill()
@@ -117,7 +132,7 @@ class Graphics
    {
       CloseList(false);
 
-      var steps = Math.round(rad*6);
+      var steps = Math.round(rad*3);
       if (steps>4)
       {
          var theta = 0.0;
@@ -126,7 +141,7 @@ class Graphics
          for(s in 1...steps)
          {
             theta += d_theta;
-            lineTo( x+rad*Math.cos(theta), y + rad*Math.sin(theta) );
+            lineTo( x+rad*Math.cos(theta)+0.5, y + rad*Math.sin(theta)+0.5 );
          }
          lineTo( x+rad, y );
       }
@@ -156,8 +171,20 @@ class Graphics
                  ?interpolationMethod : InterpolationMethod,
                  ?focalPointRatio : Float) : Void
    {
-      // TODO:
-      beginFill(0xff0000,1.0);
+      CloseList(true);
+      mFilling = true;
+      mFillingGradient = true;
+      mGradPoints = new GradPoints();
+      mGradType = type;
+      for(i in 0...colors.length)
+         mGradPoints.push({col:colors[i], alpha:alphas[i], ratio:ratios[i]});
+      if (matrix==null)
+      {
+         mGradMatrix = new nme.Matrix();
+         mGradMatrix.createGradientBox(25,25);
+      }
+      else
+         mGradMatrix = matrix.clone();
    }
 
 
@@ -229,9 +256,19 @@ class Graphics
             mLines.push( new LinePoint(mLines[0].x,mLines[0].y,
                                        mThickness,mColour,mAlpha) );
          
-         var alpha:Float = mFilling ? mFillAlpha : 0.0;
-         AddDrawable( nme_create_draw_obj(mFillColour, alpha,
+         if (mFilling && mFillingGradient)
+         {
+            AddDrawable( nme_create_gradient_obj(
+                      mGradType==nme.GradientType.LINEAR,
+                      untyped mGradPoints.__neko(),
+                      mGradMatrix, untyped mLines.__neko() ) );
+         }
+         else
+         {
+            var alpha:Float = mFilling ? mFillAlpha : 0.0;
+            AddDrawable( nme_create_draw_obj(mFillColour, alpha,
                       untyped mLines.__neko() ) );
+         }
 
          mLines = new LineSegments();
       }
@@ -243,6 +280,7 @@ class Graphics
    static var nme_draw_object = neko.Lib.load("nme","nme_draw_object",1);
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",3);
+   static var nme_create_gradient_obj = neko.Lib.load("nme","nme_create_gradient_obj",4);
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
 
 }

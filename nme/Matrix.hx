@@ -26,12 +26,24 @@ class Matrix
    public function createGradientBox(in_width : Float, in_height : Float,
          ?rotation : Float, ?in_tx : Float, ?in_ty : Float) : Void
    {
-      // TODO: what is going on here?
-      var rot:Float = rotation==null ? 0 : rotation;
-      tx = in_tx==null ? 0 : in_tx;
-      tx = in_ty==null ? 0 : in_ty;
       a = in_width!=0.0 ? 1.0/in_width : 0.0;
-      b = in_height!=0.0 ? 1.0/in_height : 0.0;
+      d = in_height!=0.0 ? 1.0/in_height : 0.0;
+
+
+      if (rotation!=null && rotation!=0.0)
+      {
+         var cos = Math.cos(rotation);
+         var sin = Math.sin(rotation);
+         b = sin*d;
+         c = -sin*a;
+         a *= cos;
+         d *= cos;
+      }
+      // By comparison with flash ...
+      tx = (in_tx==null ? 0 : in_tx) * a;
+      ty = (in_ty==null ? 0 : in_ty) * b;
+      //tx = x*a + y*b;
+      //ty = x*c + y*d;
    }
 
    public function setRotation(inTheta:Float,?inScale:Float)
