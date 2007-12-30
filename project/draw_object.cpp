@@ -68,7 +68,7 @@ class DrawObject : public Drawable
 {
 public:
    DrawObject(int inFillColour,double inFillAlpha, LineSegments &inSegments)
-      : mGradient(0)
+      : mGradient(0), mPolygon(0)
    {
       mDisplayList = 0;
 
@@ -78,6 +78,8 @@ public:
       mLines.swap(inSegments);
       mX = 0;
       mY = 0;
+      mHQX =0;
+      mHQY =0;
 
       size_t n = mLines.size();
       if (n>0)
@@ -92,7 +94,7 @@ public:
       }
    }
    DrawObject(Gradient *inGradient, LineSegments &inSegments)
-       : mGradient(inGradient)
+       : mGradient(inGradient), mPolygon(0)
    {
       mFillColour = 0xff00ff;
       mFillAlpha = 1.0;
@@ -101,6 +103,8 @@ public:
       mLines.swap(inSegments);
       mX = 0;
       mY = 0;
+      mHQX = 0;
+      mHQY = 0;
 
       size_t n = mLines.size();
       if (n>0)
@@ -123,6 +127,8 @@ public:
          glDeleteLists(mDisplayList,1);
       delete [] mX;
       delete [] mY;
+      delete [] mHQX;
+      delete [] mHQY;
    }
    void Render()
    {
@@ -134,9 +140,13 @@ public:
    {
       delete [] mX;
       delete [] mY;
+      delete [] mHQX;
+      delete [] mHQY;
       size_t n = mLines.size();
       mX = new Sint16[n];
       mY = new Sint16[n];
+      mHQX = new Sint32[n];
+      mHQY = new Sint32[n];
    }
 
 
@@ -174,49 +184,52 @@ public:
       if (mGradient)
          mGradient->EndOpenGL();
    
-      const LinePoint *p = &mLines[0];
-   
-      int col = p->mColour;
-      double alpha = p->mAlpha;
-      double lw = p->mThickness;
-   
-   
-      glLineWidth( (GLfloat)(lw==0 ? 1 : lw) );
-   
-   
-      glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-         (unsigned char)(alpha*255.0));
-   
-      glBegin(GL_LINE_STRIP);
-      for(size_t i=0;i<n;i++)
+      if (!mGradient)
       {
-         if (i!=0 && (p->mColour!=col || p->mAlpha || p->mThickness!=lw))
+         const LinePoint *p = &mLines[0];
+   
+         int col = p->mColour;
+         double alpha = p->mAlpha;
+         double lw = p->mThickness;
+   
+   
+         glLineWidth( (GLfloat)(lw==0 ? 1 : lw) );
+   
+   
+         glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
+            (unsigned char)(alpha*255.0));
+   
+         glBegin(GL_LINE_STRIP);
+         for(size_t i=0;i<n;i++)
          {
-            glEnd();
-            if (p->mColour!=col || p->mAlpha!=alpha)
+            if (i!=0 && (p->mColour!=col || p->mAlpha || p->mThickness!=lw))
             {
-                col = p->mColour;
-                alpha = p->mAlpha;
-
-                glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-                   (unsigned char)(alpha*255.0));
+               glEnd();
+               if (p->mColour!=col || p->mAlpha!=alpha)
+               {
+                   col = p->mColour;
+                   alpha = p->mAlpha;
+   
+                   glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
+                      (unsigned char)(alpha*255.0));
+               }
+               if (p->mThickness!=lw)
+               {
+                  lw = p->mThickness;
+                  glLineWidth((GLfloat)lw);
+               }
+               glBegin(GL_LINE_STRIP);
+               glVertex2f( p[-1].mX, p[-1].mY );
             }
-            if (p->mThickness!=lw)
-            {
-               lw = p->mThickness;
-               glLineWidth((GLfloat)lw);
-            }
-            glBegin(GL_LINE_STRIP);
-            glVertex2f( p[-1].mX, p[-1].mY );
+            glVertex2f( p->mX, p->mY );
+            p++;
          }
-         glVertex2f( p->mX, p->mY );
-         p++;
+         glEnd();
+      
+         if (lw!=0)
+            glLineWidth(1);
       }
-      glEnd();
-   
-      if (lw!=0)
-         glLineWidth(1);
-   
+
       glDisable(GL_BLEND);
    }
 
@@ -231,10 +244,15 @@ public:
          {
             mX[i] = (Sint16)mLines[i].mX;
             mY[i] = (Sint16)mLines[i].mY;
+            mHQX[i] =  (int)(mLines[i].mX * 65536.0);
+            mHQY[i] =  (int)(mLines[i].mY * 65536.0);
          }
      else
          for(size_t i=0;i<n;i++)
+         {
             mTransform.Transform(mLines[i].mX,mLines[i].mY,mX[i],mY[i]);
+            mTransform.TransformHQ(mLines[i].mX,mLines[i].mY,mHQX[i],mHQY[i]);
+         }
    }
 
 
@@ -263,31 +281,53 @@ public:
             TransformPoints(inMatrix);
          }
          else if (inMatrix!=mTransform)
+         {
             TransformPoints(inMatrix);
+            // TODO: allow for the possibility of simple translation...
+            delete mPolygon;
+            mPolygon = 0;
+         }
 
          Uint16 n = (Uint16)mLines.size();
 
          if (mFillAlpha>0)
          {
-            if (mFillAlpha<1)
+            if (mGradient)
+            {
+               if (!mPolygon)
+               {
+                  unsigned int flags = SPG_HIGH_QUALITY;
+                  mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
+                                 mHQX, mHQY,
+                                 SPG_clip_ymin(inSurface),
+                                 SPG_clip_ymax(inSurface),
+                                 flags, mGradient );
+               }
+               mPolygon->Render(inSurface);
+            }
+            else if (mFillAlpha<1)
                SPG_PolygonFilled(inSurface,n-1,mX,mY,mFillColour);
             else
                SPG_PolygonFilledBlend(inSurface,n-1,mX,mY,mFillColour,
                     (Uint8)(mFillAlpha*255.0) );
          }
 
-         for(int i=1;i<n;i++)
+         if (!mGradient)
          {
-            const LinePoint &p1 = mLines[ i ];
-            if (p1.mAlpha > 0 )
+            for(int i=1;i<n;i++)
             {
-               int p0 = i-1;
-
-               if (p1.mAlpha<1.0)
-                  SPG_LineBlend(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour,
-                       (Uint8)(p1.mAlpha*255.0) );
-               else
-                  SPG_Line(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour);
+               const LinePoint &p1 = mLines[ i ];
+               if (p1.mAlpha > 0 )
+               {
+                  int p0 = i-1;
+   
+                  if (p1.mAlpha<1.0)
+                     SPG_LineBlend(inSurface,mX[p0],mY[p0],
+                          mX[i],mY[i],p1.mColour,
+                          (Uint8)(p1.mAlpha*255.0) );
+                  else
+                     SPG_Line(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour);
+               }
             }
          }
       }
@@ -296,12 +336,16 @@ public:
 
    Sint16       *mX;
    Sint16       *mY;
+   Sint32       *mHQX;
+   Sint32       *mHQY;
    Gradient     *mGradient;
    Matrix       mTransform;
    int          mFillColour;
    double       mFillAlpha;
    LineSegments mLines;
    GLuint       mDisplayList;
+
+   PolygonRenderer *mPolygon;
 
 private: // Hide
    DrawObject(const DrawObject &inRHS);
@@ -335,10 +379,10 @@ value nme_create_draw_obj(value inFillColour, value inFillAlpha, value inLines)
    return v;
 }
 
-value nme_create_gradient_obj(value inIsLinear, value inGradPoints,
+value nme_create_gradient_obj(value inFlags, value inGradPoints,
                               value inMatrix, value inLines)
 {
-   val_check( inIsLinear, bool );
+   val_check( inFlags, int );
    val_check( inGradPoints, array );
    val_check( inLines, array );
 
@@ -350,7 +394,7 @@ value nme_create_gradient_obj(value inIsLinear, value inGradPoints,
       line_segs[i].FromValue(items[i]);
 
    DrawObject *obj = new DrawObject(
-                        new Gradient(inIsLinear,inGradPoints,inMatrix),
+                        new Gradient(inFlags,inGradPoints,inMatrix),
                         line_segs );
 
    value v = alloc_abstract( k_drawable, obj );
@@ -379,10 +423,11 @@ public:
       mRect.h = mSurface->h;
       mAlpha = inAlpha;
       mHasAlpha = inHasAlpha;
+      mRenderer = 0;
 
       for(int i=0;i<4;i++)
       {
-         mSX[i] = (Sint16)( mOX + (i==1||i==3) * mSurface->w + 0.5 );
+         mSX[i] = (Sint16)( mOX + (i==1||i==2) * mSurface->w + 0.5 );
          mSY[i] = (Sint16)( mOY + (i==2||i==3) * mSurface->h + 0.5 );
       }
    }
@@ -390,6 +435,7 @@ public:
    {
        SDL_FreeSurface(mSurface);
        delete mTexture;
+       delete mRenderer;
    }
 
    void CreateOGLTextureIfRequired()
@@ -435,35 +481,44 @@ public:
          {
             SDL_BlitSurface(mSurface, 0, inSurface, &mRect);
          }
-         else if (hq)
-         {
-            for(int i=0;i<4;i++)
-               inMatrix.TransformHQ( mSX[i], mSY[i], mHQTX[i], mHQTY[i] );
-
-            int w = mSurface->w;
-            int h = mSurface->h;
-            SPG_QuadTexHQ(inSurface,
-                mHQTX[0], mHQTY[0], mHQTX[1], mHQTY[1],
-                mHQTX[2], mHQTY[2], mHQTX[3], mHQTY[3],
-                mSurface, 
-                0,0, w,0, 0,h , w,h,
-                (mHasAlpha?SPG_ALPHA_BLEND:0)  );
-         }
          else
          {
-            for(int i=0;i<4;i++)
-               inMatrix.Transform( mSX[i], mSY[i], mTX[i], mTY[i] );
+            if (inMatrix!=mLastMatrix || !mRenderer)
+            {
+               mLastMatrix = inMatrix;
+               for(int i=0;i<4;i++)
+                  inMatrix.TransformHQ( mSX[i], mSY[i], mHQTX[i], mHQTY[i] );
 
-            int w = mSurface->w;
-            int h = mSurface->h;
-            SPG_QuadTex2(inSurface,
-                mTX[0], mTY[0], mTX[1], mTY[1],
-                mTX[2], mTY[2], mTX[3], mTY[3],
-                mSurface, 
-                0,0, w,0, 0,h , w,h,
-                (mHasAlpha?SPG_ALPHA_BLEND:0)  );
+               // Calculate mapping matrix.
+               /*
+                  Texture = [ M ][ position ], where T is in pixels
+                  Initially,
+                     Tex = [ I ][position]
+                     but need in terms of p' = [inMatrix][position],
+                     ie, [position] = [inMatrix] ^ -1 [p']
+                       so
+                     Tex = [inMatrix] ^ 1 [p']
+
+                   For numerical stability, we will invert the rotation
+                    component, and add offset to get first corner exact.
+               */
+
+               Matrix mapping = inMatrix.Invert2x2();
+               mapping.MatchTransform(mHQTX[0]/65536.0,mHQTY[0]/65536.0,0,0);
+
+               Uint32 flags = SPG_HIGH_QUALITY | SPG_EDGE_CLAMP;
+               if (mHasAlpha)
+                  flags |= SPG_ALPHA_BLEND;
+
+               delete mRenderer;
+               mRenderer = PolygonRenderer::CreateBitmapRenderer(4,
+                            mHQTX, mHQTY,
+                            SPG_clip_ymin(inSurface),
+                            SPG_clip_ymax(inSurface),
+                            flags, mapping, mSurface );
+            }
+            mRenderer->Render(inSurface);
          }
-
       }
    }
 
@@ -471,15 +526,17 @@ public:
    TextureRect *mTexture;
    bool        mHasAlpha;
    SDL_Rect    mRect;
-   Sint16      mTX[4];
-   Sint16      mTY[4];
-   Sint32      mHQTX[4];
-   Sint32      mHQTY[4];
    Sint16      mSX[4];
    Sint16      mSY[4];
+   Sint32      mHQTX[4];
+   Sint32      mHQTY[4];
    double      mOX;
    double      mOY;
    double      mAlpha;
+
+   Matrix           mLastMatrix;
+   Matrix           mMappingMatrix;
+   PolygonRenderer *mRenderer;
 };
 
 

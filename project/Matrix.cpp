@@ -58,3 +58,25 @@ Matrix::Matrix(value inMatrix)
    }
 }
 
+
+Matrix Matrix::Invert2x2() const
+{
+   double det = m00*m11 - m01*m10;
+   if (det==0)
+      return Matrix();
+   det = 1.0/det;
+   Matrix result(m11*det, m00*det);
+   result.m01 = -m01*det;
+   result.m10 = -m10*det;
+   return result;
+}
+
+
+void Matrix::MatchTransform(double inX,double inY,
+                            double inTargetX,double inTargetY)
+{
+   mtx = inTargetX-(m00*inX + m01*inY);
+   mty = inTargetY-(m10*inX + m11*inY);
+}
+
+

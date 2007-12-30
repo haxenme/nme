@@ -48,7 +48,7 @@ class GraphicsTest extends nme.GameBase
    public function new()
    {
       // Try it both ways !
-      var opengl = true;
+      var opengl = false;
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
@@ -66,10 +66,10 @@ class GraphicsTest extends nme.GameBase
       var alphas = [ 1.0, 1.0 ];
       var ratios = [ 0, 255 ];
       var mtx = new nme.Matrix();
-      mtx.createGradientBox(200,200,1.00,150,20);
+      mtx.createGradientBox(100,100,Math.PI/6,150,100);
       grad_circle.beginGradientFill(nme.GradientType.LINEAR,
-                       colours, alphas, ratios, mtx);
-      grad_circle.drawCircle(150,150,100);
+                       colours, alphas, ratios, mtx, nme.SpreadMethod.PAD);
+      grad_circle.drawCircle(200,150,75);
 
 
       run();
@@ -81,7 +81,7 @@ class GraphicsTest extends nme.GameBase
 
       var gfx = Manager.graphics;
 
-      // TODO: thick line in software renderer...
+      // TODO: thick line in software renderer (use quads?)
       gfx.moveTo(10,10);
       gfx.lineStyle(1,0xff0000);
       gfx.lineTo(100,100);

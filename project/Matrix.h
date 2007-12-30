@@ -27,6 +27,9 @@ public:
    void Transform(float inX,float inY,short &outX,short &outY) const;
    void TransformHQ(float inX,float inY,int &outX,int &outY) const;
 
+   Matrix Invert2x2() const;
+   void MatchTransform(double inX,double inY,double inTargetX,double inTargetY);
+
    void GLMult() const;
 
    double m00, m01, mtx;

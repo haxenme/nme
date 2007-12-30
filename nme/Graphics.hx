@@ -45,6 +45,11 @@ class Graphics
    public static var LEFT = 0;
    public static var RIGHT = 2;
 
+   public static var RADIAL  = 0x0001;
+
+   public static var REPEAT  = 0x0002;
+   public static var REFLECT = 0x0004;
+
    private var mPenX:Float;
    private var mPenY:Float;
    private var mDrawList:DrawList;
@@ -55,6 +60,7 @@ class Graphics
    private var mGradPoints:GradPoints;
    private var mGradMatrix:nme.Matrix;
    private var mGradType:nme.GradientType;
+   private var mSpreadMethod:nme.SpreadMethod;
 
    var mThickness:Float;
    var mColour:Int;
@@ -176,6 +182,7 @@ class Graphics
       mFillingGradient = true;
       mGradPoints = new GradPoints();
       mGradType = type;
+      mSpreadMethod = spreadMethod==null ? SpreadMethod.PAD : spreadMethod;
       for(i in 0...colors.length)
          mGradPoints.push({col:colors[i], alpha:alphas[i], ratio:ratios[i]});
       if (matrix==null)
@@ -258,8 +265,16 @@ class Graphics
          
          if (mFilling && mFillingGradient)
          {
+            var flags = 0;
+            if (mGradType==nme.GradientType.RADIAL)
+               flags |= RADIAL;
+            if (mSpreadMethod==nme.SpreadMethod.REPEAT)
+               flags |= REPEAT;
+            else if (mSpreadMethod==nme.SpreadMethod.REFLECT)
+               flags |= REFLECT;
+
             AddDrawable( nme_create_gradient_obj(
-                      mGradType==nme.GradientType.LINEAR,
+                      flags,
                       untyped mGradPoints.__neko(),
                       mGradMatrix, untyped mLines.__neko() ) );
          }

@@ -39,11 +39,14 @@ class Matrix
          a *= cos;
          d *= cos;
       }
-      // By comparison with flash ...
-      tx = (in_tx==null ? 0 : in_tx) * a;
-      ty = (in_ty==null ? 0 : in_ty) * b;
-      //tx = x*a + y*b;
-      //ty = x*c + y*d;
+
+      var w2 = in_width/2;
+      var h2 = in_height/2;
+
+      var x = (in_tx==null ? 0.0 : -in_tx) - w2;
+      var y = (in_ty==null ? 0.0 : -in_ty) - h2;
+      tx = x*a + y*b + 0.5;
+      ty = y*c + y*d + 0.5;
    }
 
    public function setRotation(inTheta:Float,?inScale:Float)

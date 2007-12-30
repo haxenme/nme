@@ -4,6 +4,7 @@
 #include "SDL.h"
 #include "spg/SPriG.h"
 #include "Extras.h"
+#include "Matrix.h"
 
 
 struct ImagePoint
@@ -12,27 +13,27 @@ struct ImagePoint
    Sint16 y;
 };
 
-struct FImagePoint
+struct FImagePoint2D
 {
-   inline FImagePoint() {}
-   inline FImagePoint(Sint32 inX,Sint32 inY) :x(inX), y(inY) {}
-   inline FImagePoint(const FImagePoint &inRHS) :x(inRHS.x), y(inRHS.y) {}
-   inline FImagePoint(const ImagePoint &inRHS) :
+   inline FImagePoint2D() {}
+   inline FImagePoint2D(Sint32 inX,Sint32 inY) :x(inX), y(inY) {}
+   inline FImagePoint2D(const FImagePoint2D &inRHS) :x(inRHS.x), y(inRHS.y) {}
+   inline FImagePoint2D(const ImagePoint &inRHS) :
                 x(inRHS.x<<16), y(inRHS.y<<16) { }
    
-   inline FImagePoint operator-(const FImagePoint inRHS) const
-      { return FImagePoint(x-inRHS.x,y-inRHS.y); }
-   inline FImagePoint operator+(const FImagePoint inRHS) const
-      { return FImagePoint(x+inRHS.x,y+inRHS.y); }
-   inline FImagePoint operator*(int inScalar) const
-      { return FImagePoint(x*inScalar,y*inScalar); }
-   inline FImagePoint operator/(int inDivisor) const
-      { return FImagePoint(x/inDivisor,y/inDivisor); }
-   inline FImagePoint operator>>(int inShift) const
-      { return FImagePoint(x>>inShift,y>>inShift); }
-   inline FImagePoint operator<<(int inShift) const
-      { return FImagePoint(x<<inShift,y<<inShift); }
-   inline void operator+=(const FImagePoint &inRHS)
+   inline FImagePoint2D operator-(const FImagePoint2D inRHS) const
+      { return FImagePoint2D(x-inRHS.x,y-inRHS.y); }
+   inline FImagePoint2D operator+(const FImagePoint2D inRHS) const
+      { return FImagePoint2D(x+inRHS.x,y+inRHS.y); }
+   inline FImagePoint2D operator*(int inScalar) const
+      { return FImagePoint2D(x*inScalar,y*inScalar); }
+   inline FImagePoint2D operator/(int inDivisor) const
+      { return FImagePoint2D(x/inDivisor,y/inDivisor); }
+   inline FImagePoint2D operator>>(int inShift) const
+      { return FImagePoint2D(x>>inShift,y>>inShift); }
+   inline FImagePoint2D operator<<(int inShift) const
+      { return FImagePoint2D(x<<inShift,y<<inShift); }
+   inline void operator+=(const FImagePoint2D &inRHS)
       { x+=inRHS.x, y+=inRHS.y; }
 
    Sint32 x;
@@ -41,15 +42,16 @@ struct FImagePoint
 
 
 
+
 #define GET_PIXEL_POINTERS \
-         int frac_x = (inPos.x & 0xff00) >> 8; \
+         int frac_x = (mPos.x & 0xff00) >> 8; \
          int frac_nx = 0x100 - frac_x; \
-         int frac_y = (inPos.y & 0xffff); \
+         int frac_y = (mPos.y & 0xffff); \
          int frac_ny = 0x10000 - frac_y; \
  \
          if (EDGE_ == SPG_EDGE_UNCHECKED) \
          { \
-            p00 = mBase + (inPos.y >> 16)*mPitch + (inPos.x>>16)*PixelSize; \
+            p00 = mBase + (mPos.y >> 16)*mPitch + (mPos.x>>16)*PixelSize; \
             p01 = p00 + PixelSize; \
             p10 = p00 + mPitch; \
             p11 = p10 + PixelSize; \
@@ -123,14 +125,13 @@ struct FImagePoint
          }
 
 
-template<int MODE_,int EDGE_>
-struct SurfaceSource8
-{
-   enum { PixelSize = 1 } ;
+// --- Sources ------------------------------------------------
 
-   SurfaceSource8(SDL_Surface *inSurface)
+struct SurfaceSourceBase
+{
+   SurfaceSourceBase(SDL_Surface *inSurface,const Matrix &inMapper) :
+     mSurface(inSurface), mMapper(inMapper)
    {
-      mSurface = inSurface;
       mWidth = inSurface->w;
       mHeight = inSurface->h;
       mW1 = mWidth-1;
@@ -138,16 +139,67 @@ struct SurfaceSource8
       mBase = (Uint8 *)inSurface->pixels;
       mPtr = mBase;
       mPitch = inSurface->pitch;
+
+
+      mDPDX.x = int((mMapper.m00)*65536);
+      mDPDX.y = int((mMapper.m10)*65536);
+   }
+
+   inline void SetPos(int inX,int inY)
+   {
+      mPos.x = int((mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx)*65536);
+      mPos.y = int((mMapper.m10 * inX + mMapper.m11*inY + mMapper.mty)*65536);
+   }
+
+   inline void Inc()
+   {
+      mPos.x += mDPDX.x;
+      mPos.y += mDPDX.y;
+   }
+
+   inline void Advance(int inX)
+   {
+      mPos.x += mDPDX.x * inX;
+      mPos.y += mDPDX.y * inX;
+   }
+
+
+   FImagePoint2D mPos;
+   FImagePoint2D mDPDX;
+
+   Matrix      mMapper;
+   SDL_Surface *mSurface;
+
+   int         mWidth;
+   int         mHeight;
+   int         mPitch;
+   int         mW1;
+   int         mH1;
+   Uint8       *mBase;
+   Uint8       *mPtr;
+};
+
+
+template<int FLAGS_,int EDGE_>
+struct SurfaceSource8 : public SurfaceSourceBase
+{
+   enum { PixelSize = 1 } ;
+   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+
+
+   SurfaceSource8(SDL_Surface *inSurface,const Matrix &inMapping)
+      : SurfaceSourceBase(inSurface,inMapping)
+   {
       mPalette = inSurface->format->palette->colors;
       r=g=b=a=255;
    }
 
-   inline void SetPos(const FImagePoint &inPos)
+   inline void DoSetPos()
    {
-      int x = inPos.x >> 16;
-      int y = inPos.y >> 16;
+      int x = mPos.x >> 16;
+      int y = mPos.y >> 16;
 
-      if (MODE_ & SPG_HIGH_QUALITY)
+      if (FLAGS_ & SPG_HIGH_QUALITY)
       {
          Uint8 *p00,*p01,*p10,*p11;
 
@@ -165,44 +217,47 @@ struct SurfaceSource8
       }
    }
 
+   inline void SetPos(int inX,int inY)
+   {
+      SurfaceSourceBase::SetPos(inX,inY);
+      DoSetPos();
+   }
+   inline void Inc()
+   {
+      SurfaceSourceBase::Inc();
+      DoSetPos();
+   }
+   inline void Advance(int inX)
+   {
+      SurfaceSourceBase::Advance(inX);
+      DoSetPos();
+   }
+
+
+
    inline Uint8 GetR() const { return mColor.r; }
    inline Uint8 GetG() const { return mColor.g; }
    inline Uint8 GetB() const { return mColor.b; }
    inline Uint8 GetA() const { return 255; }
 
 
-   int         mWidth;
-   int         mHeight;
-   int         mPitch;
-   int         mW1;
-   int         mH1;
-
    Uint8       r,g,b,a;
-   SDL_Surface *mSurface;
    SDL_Color   *mPalette;
    SDL_Color   mColor;
 
-   Uint8       *mBase;
-   Uint8       *mPtr;
    Uint8       mIndex;
 };
 
-template<int MODE_,int EDGE_,bool DO_ALPHA_ = false>
-struct SurfaceSource24
+template<int FLAGS_,int EDGE_,bool DO_ALPHA_ = false>
+struct SurfaceSource24 : public SurfaceSourceBase
 {
+   typedef FImagePoint2D iterator;
    enum { PixelSize = DO_ALPHA_ ? 4 : 3 };
+   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
 
-   SurfaceSource24(SDL_Surface *inSurface)
+   SurfaceSource24(SDL_Surface *inSurface,const Matrix &inMapper)
+      : SurfaceSourceBase(inSurface,inMapper)
    {
-      mSurface = inSurface;
-      mWidth = inSurface->w;
-      mHeight = inSurface->h;
-      mW1 = mWidth-1;
-      mH1 = mHeight-1;
-
-      mBase = (Uint8 *)inSurface->pixels;
-      mPtr = mBase;
-      mPitch = inSurface->pitch;
       // TODO:
       mROff = 2;
       mGOff = 1;
@@ -212,12 +267,12 @@ struct SurfaceSource24
       mA = 255;
    }
 
-   inline void SetPos(const FImagePoint &inPos)
+   inline void DoSetPos()
    {
-      int x = inPos.x >> 16;
-      int y = inPos.y >> 16;
+      int x = mPos.x >> 16;
+      int y = mPos.y >> 16;
 
-      if (MODE_ & SPG_HIGH_QUALITY)
+      if (FLAGS_ & SPG_HIGH_QUALITY)
       {
          Uint8 *p00,*p01,*p10,*p11;
 
@@ -241,20 +296,30 @@ struct SurfaceSource24
          mPtr = mBase + y*mPitch + x*PixelSize;
       }
    }
+   inline void SetPos(int inX,int inY)
+   {
+      SurfaceSourceBase::SetPos(inX,inY);
+      DoSetPos();
+   }
+   inline void Inc()
+   {
+      SurfaceSourceBase::Inc();
+      DoSetPos();
+   }
+   inline void Advance(int inX)
+   {
+      SurfaceSourceBase::Advance(inX);
+      DoSetPos();
+   }
 
-   inline Uint8 GetR() const { return (MODE_&SPG_HIGH_QUALITY)?mR:mPtr[mROff]; }
-   inline Uint8 GetG() const { return (MODE_&SPG_HIGH_QUALITY)?mG:mPtr[mGOff]; }
-   inline Uint8 GetB() const { return (MODE_&SPG_HIGH_QUALITY)?mB:mPtr[mBOff]; }
+
+
+   inline Uint8 GetR() const { return (FLAGS_&SPG_HIGH_QUALITY)?mR:mPtr[mROff]; }
+   inline Uint8 GetG() const { return (FLAGS_&SPG_HIGH_QUALITY)?mG:mPtr[mGOff]; }
+   inline Uint8 GetB() const { return (FLAGS_&SPG_HIGH_QUALITY)?mB:mPtr[mBOff]; }
    inline Uint8 GetA() const { return 255; }
 
    
-   int         mWidth;
-   int         mHeight;
-   int         mW1;
-   int         mH1;
-
-   int         mPitch;
-
    int         mROff;
    int         mGOff;
    int         mBOff;
@@ -266,34 +331,34 @@ struct SurfaceSource24
    Uint8       mG;
    Uint8       mB;
    Uint8       mA;
-
-   SDL_Surface *mSurface;
-   Uint8       *mBase;
-   Uint8       *mPtr;
-
 };
 
-template<int MODE_,int EDGE_>
-struct SurfaceSource32 : public SurfaceSource24<MODE_,EDGE_,true>
+template<int FLAGS_,int EDGE_>
+struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
 {
-   SurfaceSource32(SDL_Surface *inSurface):
-      SurfaceSource24( inSurface )
+   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+
+   SurfaceSource32(SDL_Surface *inSurface,const Matrix &inMapper):
+      SurfaceSource24( inSurface, inMapper )
    {
    }
 
-   inline Uint8 GetA() const { return (MODE_&SPG_HIGH_QUALITY)?mA:mPtr[mAOff]; }
+   inline Uint8 GetA() const { return (FLAGS_&SPG_HIGH_QUALITY)?mA:mPtr[mAOff]; }
 };
 
 
-struct CounstantSource32
+struct ConstantSource32
 {
-   inline CounstantSource32() { }
-   inline CounstantSource32(int inRGBA) :
+   inline ConstantSource32() { }
+   inline ConstantSource32(int inRGBA) :
       r(inRGBA>>16), g(inRGBA>>8), b(inRGBA), a(inRGBA>>24) { }
-   inline CounstantSource32(int inRGB,Uint8 inA) :
+   inline ConstantSource32(int inRGB,Uint8 inA) :
       r(inRGB>>16), g(inRGB>>8), b(inRGB), a(inA) { }
 
-   inline void SetPos(const FImagePoint &inPos) { }
+   inline void SetPos(int inX,int inY) { }
+   inline void Inc() { }
+   inline void Advance(int inX) { }
+
 
    inline Uint8 GetR() const { return r; }
    inline Uint8 GetG() const { return g; }
@@ -302,6 +367,9 @@ struct CounstantSource32
 
    Uint8 r,g,b,a;
 };
+
+
+// --- Destinations -----------------------------------------------------
 
 
 struct DestBase
@@ -343,11 +411,19 @@ struct DestSurface8 : public DestBase
    {
    }
 
-   template<int MODE_,typename SOURCE_>
-   void SetAdvance(SOURCE_ &inSource)
+   template<typename SOURCE_>
+   void SetInc(SOURCE_ &inSource)
    {
       *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
    }
+   inline void Advance(int inX) { mPtr += inX; }
+
+   template<int ALPHA_BITS_,typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   {
+      *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
+   }
+
 
 
 };
@@ -362,10 +438,10 @@ struct DestSurface24 : public DestBase
       mBOff = 0;
    }
 
-   template<int MODE_,typename SOURCE_>
-   void SetAdvance(SOURCE_ &inSource)
+   template<typename SOURCE_>
+   void SetInc(SOURCE_ &inSource)
    {
-      if (MODE_ & SPG_ALPHA_BLEND)
+      if (SOURCE_::AlphaBlend)
       {
          int a = inSource.GetA();
          a+=a>>7;
@@ -383,6 +459,31 @@ struct DestSurface24 : public DestBase
       mPtr += 3;
    }
 
+   template<int ALPHA_BITS_,typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   {
+      if (SOURCE_::AlphaBlend)
+      {
+         int a = inSource.GetA();
+         a+=a>>7;
+         a*=inAlpha;
+
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
+      }
+      else
+      {
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
+      }
+      mPtr += 3;
+   }
+
+   inline void Advance(int inX) { mPtr += inX*3; }
+
+
 
    int mROff;
    int mGOff;
@@ -396,14 +497,26 @@ struct DestSurface32 : public DestSurface24
       mAOff = 3;
    }
 
-   template<int MODE_,typename SOURCE_>
-   void SetAdvance(SOURCE_ &inSource)
+   template<typename SOURCE_>
+   void SetInc(SOURCE_ &inSource)
    {
+      // todo - if (SOURCE_::AlphaBlend)
       mPtr[mROff] = inSource.GetR();
       mPtr[mGOff] = inSource.GetG();
       mPtr[mBOff] = inSource.GetB();
       mPtr += 4;
    }
+
+   template<int ALPHA_BITS_,typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   {
+      mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
+      mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
+      mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
+      mPtr += 4;
+   }
+
+   inline void Advance(int inX) { mPtr += inX*4; }
 
 
    int mAOff;
