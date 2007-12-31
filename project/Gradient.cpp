@@ -38,6 +38,16 @@ struct GradPoint
 
 typedef std::vector<GradPoint> GradPoints;
 
+Gradient *CreateGradient(value inVal)
+{
+   if (val_is_null(inVal))
+      return 0;
+
+   return new Gradient( val_field(inVal,val_id("flags")),
+                        val_field(inVal,val_id("points")),
+                        val_field(inVal,val_id("matrix")) );
+}
+
 Gradient::Gradient(value inFlags,value inPoints,value inMatrix)
   : mMatrix(inMatrix)
 {

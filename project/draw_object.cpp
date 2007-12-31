@@ -33,7 +33,6 @@ class Drawable
 {
 public:
    virtual ~Drawable() { }
-   virtual void Render()=0;
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)=0;
 };
 
@@ -44,46 +43,80 @@ void delete_drawable( value drawable );
 
 // --- For drawing geometry -----------------------------------------
 
-struct LinePoint
+struct Point
 {
    float mX,mY;
-   int    mColour;
-   double mAlpha;
-   double mThickness;
 
    void FromValue(value inVal)
    {
       mX = (float)val_number(val_field(inVal,val_id("x")));
       mY = (float)val_number(val_field(inVal,val_id("y")));
+   }
+};
+
+typedef std::vector<Point> Points;
+typedef std::vector<int> IntVec;
+
+struct LineJob
+{
+   IntVec          mPointIndex;
+   int             mColour;
+   int             mJoints;
+   double          mAlpha;
+   double          mThickness;
+   Gradient        *mGradient;
+   PolygonRenderer *mRenderer;
+
+   void FromValue(value inVal)
+   {
+      mRenderer = 0;
+      mGradient = CreateGradient(val_field(inVal,val_id("grad")));
       mColour = val_int(val_field(inVal,val_id("colour")));
+      mJoints = val_int(val_field(inVal,val_id("joints")));
       mThickness = val_number(val_field(inVal,val_id("thickness")));
       mAlpha = val_number(val_field(inVal,val_id("alpha")));
+
+      value idx = val_field(inVal,val_id("point_idx"));
+      int n = val_array_size(idx);
+      value *items = val_array_ptr(idx);
+      mPointIndex.resize(n);
+      for(int i=0;i<n;i++)
+         mPointIndex[i] = val_int(items[i]);
    }
 
 };
 
-typedef std::vector<LinePoint> LineSegments;
+typedef std::vector<LineJob> LineJobs;
+
+typedef std::vector<Point> Points;
+
 
 class DrawObject : public Drawable
 {
 public:
-   DrawObject(int inFillColour,double inFillAlpha, LineSegments &inSegments)
-      : mGradient(0), mPolygon(0)
+   DrawObject(Points &inPoints, int inFillColour,double inFillAlpha,
+              Gradient *inFillGradient,
+              LineJobs &inLines)
    {
       mDisplayList = 0;
+      mPolygon = 0;
+      mSolidGradient = inFillGradient;
 
       mFillColour = inFillColour;
       mFillAlpha = inFillAlpha;
-      // Just take the lot - they won't be needed again.
-      mLines.swap(inSegments);
-      mX = 0;
-      mY = 0;
-      mHQX =0;
-      mHQY =0;
 
-      size_t n = mLines.size();
-      if (n>0)
-      {
+      mPoints.swap(inPoints);
+      mLineJobs.swap(inLines);
+
+      int n = (int)mPoints.size();
+      mX = new Sint16[n];
+      mY = new Sint16[n];
+      mHQX = new Sint32[n];
+      mHQY = new Sint32[n];
+      TransformPoints(mTransform);
+   }
+
+   /*
          if (IsOpenGLMode())
          {
             mDisplayList = glGenLists(1);
@@ -91,38 +124,28 @@ public:
             DrawOpenGL();
             glEndList();
          }
-      }
-   }
-   DrawObject(Gradient *inGradient, LineSegments &inSegments)
-       : mGradient(inGradient), mPolygon(0)
+         */
+
+   void ClearRenderers()
    {
-      mFillColour = 0xff00ff;
-      mFillAlpha = 1.0;
+      delete mPolygon;
+      mPolygon = 0;
 
-      // Just take the lot - they won't be needed again.
-      mLines.swap(inSegments);
-      mX = 0;
-      mY = 0;
-      mHQX = 0;
-      mHQY = 0;
-
-      size_t n = mLines.size();
-      if (n>0)
+      for(int i=0;i<mLineJobs.size();i++)
       {
-         if (IsOpenGLMode())
-         {
-            mDisplayList = glGenLists(1);
-            glNewList(mDisplayList,GL_COMPILE);
-            DrawOpenGL();
-            glEndList();
-         }
+         delete mLineJobs[i].mRenderer;
+         mLineJobs[i].mRenderer = 0;
       }
    }
-
 
    ~DrawObject()
    {
-      delete mGradient;
+      ClearRenderers();
+
+      for(int i=0;i<mLineJobs.size();i++)
+         delete mLineJobs[i].mGradient;
+
+      delete mSolidGradient;
       if (mDisplayList!=0)
          glDeleteLists(mDisplayList,1);
       delete [] mX;
@@ -130,60 +153,46 @@ public:
       delete [] mHQX;
       delete [] mHQY;
    }
-   void Render()
-   {
-      if (mDisplayList!=0 && IsOpenGLMode())
-         glCallList(mDisplayList);
-   }
-
-   void AllocXY()
-   {
-      delete [] mX;
-      delete [] mY;
-      delete [] mHQX;
-      delete [] mHQY;
-      size_t n = mLines.size();
-      mX = new Sint16[n];
-      mY = new Sint16[n];
-      mHQX = new Sint32[n];
-      mHQY = new Sint32[n];
-   }
 
 
    void DrawOpenGL()
    {
-      size_t n = mLines.size();
+      size_t n = mPoints.size();
 
       glDisable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    
-      if (mGradient || mFillAlpha>0)
+      if (mSolidGradient || mFillAlpha>0)
       {
          // TODO: tesselate
          glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
                       (unsigned char)(mFillAlpha*255.0));
-         const LinePoint *p = &mLines[0];
+         const Point *p = &mPoints[0];
+         int n = mPoints.size();
 
-         if (mGradient)
-            mGradient->BeginOpenGL();
+         if (mSolidGradient)
+            mSolidGradient->BeginOpenGL();
          else
             glDisable(GL_TEXTURE_2D);
 
          glBegin(GL_TRIANGLE_FAN);
          for(size_t i=0;i<n;i++)
          {
-            if (mGradient)
-               mGradient->OpenGLTexture(p->mX,p->mY);
-            glVertex2f( p->mX, p->mY );
+            if (mSolidGradient)
+               mSolidGradient->OpenGLTexture(mX[i],mY[i]);
+            glVertex2i( mX[i], mY[i] );
             p++;
          }
          glEnd();
       }
 
-      if (mGradient)
-         mGradient->EndOpenGL();
+      if (mSolidGradient)
+         mSolidGradient->EndOpenGL();
    
+
+      /*
+
       if (!mGradient)
       {
          const LinePoint *p = &mLines[0];
@@ -229,6 +238,7 @@ public:
          if (lw!=0)
             glLineWidth(1);
       }
+      */
 
       glDisable(GL_BLEND);
    }
@@ -236,22 +246,22 @@ public:
 
    void TransformPoints(const Matrix &inMatrix)
    {
-      size_t n = mLines.size();
+      size_t n = mPoints.size();
       mTransform = inMatrix;
 
       if (mTransform.IsIdentity())
          for(size_t i=0;i<n;i++)
          {
-            mX[i] = (Sint16)mLines[i].mX;
-            mY[i] = (Sint16)mLines[i].mY;
-            mHQX[i] =  (int)(mLines[i].mX * 65536.0);
-            mHQY[i] =  (int)(mLines[i].mY * 65536.0);
+            mX[i] = (Sint16)mPoints[i].mX;
+            mY[i] = (Sint16)mPoints[i].mY;
+            mHQX[i] =  (int)(mPoints[i].mX * 65536.0);
+            mHQY[i] =  (int)(mPoints[i].mY * 65536.0);
          }
      else
          for(size_t i=0;i<n;i++)
          {
-            mTransform.Transform(mLines[i].mX,mLines[i].mY,mX[i],mY[i]);
-            mTransform.TransformHQ(mLines[i].mX,mLines[i].mY,mHQX[i],mHQY[i]);
+            mTransform.Transform(mPoints[i].mX,mPoints[i].mY,mX[i],mY[i]);
+            mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,mHQX[i],mHQY[i]);
          }
    }
 
@@ -275,24 +285,19 @@ public:
       }
       else
       {
-         if (!mX)
-         {
-            AllocXY();
-            TransformPoints(inMatrix);
-         }
-         else if (inMatrix!=mTransform)
+         if (inMatrix!=mTransform)
          {
             TransformPoints(inMatrix);
             // TODO: allow for the possibility of simple translation...
-            delete mPolygon;
-            mPolygon = 0;
+            ClearRenderers();
          }
 
-         Uint16 n = (Uint16)mLines.size();
 
-         if (mFillAlpha>0)
+         Uint16 n = (Uint16)mPoints.size();
+
+         if (mSolidGradient || mFillAlpha>0)
          {
-            if (mGradient)
+            if (mSolidGradient)
             {
                if (!mPolygon)
                {
@@ -301,9 +306,10 @@ public:
                                  mHQX, mHQY,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
-                                 flags, mGradient );
+                                 flags, mSolidGradient );
                }
-               mPolygon->Render(inSurface);
+               if (mPolygon)
+                  mPolygon->Render(inSurface);
             }
             else if (mFillAlpha<1)
                SPG_PolygonFilled(inSurface,n-1,mX,mY,mFillColour);
@@ -312,11 +318,12 @@ public:
                     (Uint8)(mFillAlpha*255.0) );
          }
 
+         /*
          if (!mGradient)
          {
             for(int i=1;i<n;i++)
             {
-               const LinePoint &p1 = mLines[ i ];
+               const LinePoint &p1 = mLineJobs[ i ];
                if (p1.mAlpha > 0 )
                {
                   int p0 = i-1;
@@ -330,20 +337,27 @@ public:
                }
             }
          }
+         */
       }
    }
 
+
+
+
+   Points       mPoints;
+   Gradient     *mSolidGradient;
+   int          mFillColour;
+   double       mFillAlpha;
+   LineJobs     mLineJobs;
 
    Sint16       *mX;
    Sint16       *mY;
    Sint32       *mHQX;
    Sint32       *mHQY;
-   Gradient     *mGradient;
-   Matrix       mTransform;
-   int          mFillColour;
-   double       mFillAlpha;
-   LineSegments mLines;
+
    GLuint       mDisplayList;
+
+   Matrix       mTransform;
 
    PolygonRenderer *mPolygon;
 
@@ -354,31 +368,39 @@ private: // Hide
 
 
 
-value nme_create_draw_obj(value inFillColour, value inFillAlpha, value inLines)
+value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
+                          value inSolidGradient, value inLines)
 {
    val_check( inFillColour, int );
    val_check( inFillAlpha, number );
+   val_check( inPoints, array );
    val_check( inLines, array );
 
-   int n = val_array_size(inLines);
-   value *items = val_array_ptr(inLines);
+   int n = val_array_size(inPoints);
+   value *items = val_array_ptr(inPoints);
 
-   LineSegments line_segs(n);
+   Points points(n);
    for(int i=0;i<n;i++)
-   {
-      line_segs[i].FromValue(items[i]);
-    }
+      points[i].FromValue(items[i]);
 
+   n = val_array_size(inLines);
+   LineJobs lines(n);
+   items = val_array_ptr(inLines);
+   for(int j=0;j<n;j++)
+      lines[j].FromValue(items[j]);
 
-   DrawObject *obj = new DrawObject( val_int(inFillColour),
+   DrawObject *obj = new DrawObject( points,
+                                     val_int(inFillColour),
                                      val_number(inFillAlpha),
-                                     line_segs );
+                                     CreateGradient(inSolidGradient),
+                                     lines );
 
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
    return v;
 }
 
+/*
 value nme_create_gradient_obj(value inFlags, value inGradPoints,
                               value inMatrix, value inLines)
 {
@@ -401,6 +423,7 @@ value nme_create_gradient_obj(value inFlags, value inGradPoints,
    val_gc( v, delete_drawable );
    return v;
 }
+*/
 
 
 
@@ -643,16 +666,6 @@ void delete_drawable( value drawable )
 }
 
 
-value nme_draw_object(value drawable)
-{
-   if ( val_is_kind( drawable, k_drawable ) )
-   {
-      Drawable *d = DRAWABLE(drawable);
-      d->Render();
-   }
-   return alloc_int(0);
-}
-
 value nme_draw_object_to(value drawable,value surface,value matrix )
 {
    if ( val_is_kind( drawable, k_drawable ) && 
@@ -667,9 +680,7 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
 }
 
 
-DEFINE_PRIM(nme_create_draw_obj, 3);
-DEFINE_PRIM(nme_create_gradient_obj, 4);
-DEFINE_PRIM(nme_draw_object, 1);
+DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM(nme_draw_object_to, 3);
 DEFINE_PRIM_MULT(nme_create_text_drawable);
 

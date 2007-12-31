@@ -42,6 +42,8 @@ private:
    void operator=(const Gradient &inRHS);
 };
 
+Gradient *CreateGradient(value inValue);
+
 
 template<int SIZE_,int FLAGS_>
 struct GradientSource1D
