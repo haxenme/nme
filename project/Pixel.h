@@ -129,6 +129,8 @@ struct FImagePoint2D
 
 struct SurfaceSourceBase
 {
+   enum { AlreadyRoundedAlpha = 0 };
+
    SurfaceSourceBase(SDL_Surface *inSurface,const Matrix &inMapper) :
      mSurface(inSurface), mMapper(inMapper)
    {
@@ -347,13 +349,21 @@ struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
 };
 
 
+template<int FLAGS_>
 struct ConstantSource32
 {
+   enum { AlreadyRoundedAlpha = 1 };
+   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+
    inline ConstantSource32() { }
-   inline ConstantSource32(int inRGBA) :
-      r(inRGBA>>16), g(inRGBA>>8), b(inRGBA), a(inRGBA>>24) { }
-   inline ConstantSource32(int inRGB,Uint8 inA) :
-      r(inRGB>>16), g(inRGB>>8), b(inRGB), a(inA) { }
+
+   inline ConstantSource32(int inRGB,double inA) :
+      r(inRGB>>16), g(inRGB>>8), b(inRGB)
+   {
+      int val = (int)(inA*255);
+      a =val<0 ? 0 : val>255 ? 255 : val;
+      a+= a>>7;
+   }
 
    inline void SetPos(int inX,int inY) { }
    inline void Inc() { }
@@ -365,7 +375,8 @@ struct ConstantSource32
    inline Uint8 GetB() const { return b; }
    inline Uint8 GetA() const { return a; }
 
-   Uint8 r,g,b,a;
+   Uint8 r,g,b;
+   int   a;
 };
 
 
@@ -444,7 +455,8 @@ struct DestSurface24 : public DestBase
       if (SOURCE_::AlphaBlend)
       {
          int a = inSource.GetA();
-         a+=a>>7;
+         if (!SOURCE_::AlreadyRoundedAlpha)
+            a+=a>>7;
 
          mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
          mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;

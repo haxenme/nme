@@ -48,13 +48,15 @@ Gradient *CreateGradient(value inVal)
                         val_field(inVal,val_id("matrix")) );
 }
 
-Gradient::Gradient(value inFlags,value inPoints,value inMatrix)
+Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix)
   : mMatrix(inMatrix)
 {
    mFlags = (unsigned int)val_int(inFlags);
    mTextureID = 0;
 
-   int n = val_array_size(inPoints);
+   value inPoints = val_field(inHxPoints,val_id("__a"));
+   int n =  val_int( val_field(inHxPoints,val_id("length")));
+
    value *items = val_array_ptr(inPoints);
 
    GradPoints points(n);

@@ -22,6 +22,12 @@ public:
    virtual void Render(SDL_Surface *outDest,
                          Sint16 inOffsetX=0,Sint16 inOffsetY=0)=0;
 
+   static PolygonRenderer *CreateSolidRenderer(int inN,
+                              Sint32 *inX,Sint32 *inY,
+                              Sint32 inYMin, Sint32 inYMax,
+                              Uint32 inFlags,
+                              int inColour, double inAlpha );
+
 
    static PolygonRenderer *CreateGradientRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,

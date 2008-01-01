@@ -400,8 +400,7 @@ class SourcePolygonRenderer : public BasePolygonRenderer<AA_>
 {
 public:
    SourcePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
-            int inMinY,int inMaxY,Uint32 inFlags,
-            SOURCE_ &inSource)
+            int inMinY,int inMaxY, SOURCE_ &inSource)
       : BasePolygonRenderer(inN,inX,inY,inMinY,inMaxY),
          mSource(inSource)
    {
@@ -432,8 +431,7 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
    typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
    return new SourcePolygonRenderer<AA_,Source>(
-       inN, inX, inY, inYMin, inYMax, inFlags,
-         Source(inGradient) );
+       inN, inX, inY, inYMin, inYMax, Source(inGradient) );
 }
 
 
@@ -557,7 +555,7 @@ PolygonRenderer *CreateBitmapRenderer(int inN,
                               SOURCE_ &inSource )
 {
    return new SourcePolygonRenderer<AA_,SOURCE_>(inN,inX,inY,inYMin,inYMax,
-                                           inFlags,inSource );
+                                           inSource );
 }
 
 
@@ -641,5 +639,48 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
           return CreateBitmapRendererSource<AA0x,0>(
                    inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource);
 
+   }
+}
+
+// --- Solids -------------------------------------------------------
+
+template<typename AA_,int FLAGS_>
+PolygonRenderer *TCreateSolidRenderer(int inN,
+                              Sint32 *inX,Sint32 *inY,
+                              Sint32 inYMin, Sint32 inYMax,
+                              Uint32 inFlags,
+                              int inColour, double inAlpha=1.0)
+{
+   typedef ConstantSource32<FLAGS_> Source;
+
+   return new SourcePolygonRenderer<AA_,Source>(inN,inX,inY,inYMin,inYMax,
+                               Source(inColour,inAlpha) );
+}
+
+
+
+PolygonRenderer *PolygonRenderer::CreateSolidRenderer(int inN,
+                              Sint32 *inX,Sint32 *inY,
+                              Sint32 inYMin, Sint32 inYMax,
+                              Uint32 inFlags,
+                              int inColour, double inAlpha)
+{
+   if (inFlags & SPG_HIGH_QUALITY)
+   {
+      if (inAlpha < 1.0 )
+          return TCreateSolidRenderer<AA4x,SPG_ALPHA_BLEND>(
+                   inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha);
+      else
+          return TCreateSolidRenderer<AA4x,0>(
+                   inN,inX,inY,inYMin,inYMax, inFlags, inColour);
+   }
+   else
+   {
+      if (inAlpha < 1.0 )
+          return TCreateSolidRenderer<AA0x,SPG_ALPHA_BLEND>(
+                   inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha);
+      else
+          return TCreateSolidRenderer<AA0x,0>(
+                   inN,inX,inY,inYMin,inYMax, inFlags, inColour);
    }
 }

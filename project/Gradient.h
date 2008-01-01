@@ -49,6 +49,9 @@ template<int SIZE_,int FLAGS_>
 struct GradientSource1D
 {
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+   // TODO: make this one...
+   enum { AlreadyRoundedAlpha = 0 };
+
 
    GradientSource1D(Gradient *inGradient)
    {

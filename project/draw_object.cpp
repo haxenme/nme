@@ -76,8 +76,10 @@ struct LineJob
       mThickness = val_number(val_field(inVal,val_id("thickness")));
       mAlpha = val_number(val_field(inVal,val_id("alpha")));
 
-      value idx = val_field(inVal,val_id("point_idx"));
-      int n = val_array_size(idx);
+      value idx_obj = val_field(inVal,val_id("point_idx"));
+      value idx = val_field(idx_obj,val_id("__a"));
+      //int n = val_array_size(idx);
+      int n =  val_int( val_field(idx_obj,val_id("length")));
       value *items = val_array_ptr(idx);
       mPointIndex.resize(n);
       for(int i=0;i<n;i++)
@@ -297,47 +299,52 @@ public:
 
          if (mSolidGradient || mFillAlpha>0)
          {
+            unsigned int flags = SPG_HIGH_QUALITY;
+
             if (mSolidGradient)
             {
                if (!mPolygon)
                {
-                  unsigned int flags = SPG_HIGH_QUALITY;
                   mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
                                  mHQX, mHQY,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, mSolidGradient );
                }
-               if (mPolygon)
-                  mPolygon->Render(inSurface);
             }
-            else if (mFillAlpha<1)
-               SPG_PolygonFilled(inSurface,n-1,mX,mY,mFillColour);
             else
-               SPG_PolygonFilledBlend(inSurface,n-1,mX,mY,mFillColour,
-                    (Uint8)(mFillAlpha*255.0) );
+            {
+                  mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
+                                 mHQX, mHQY,
+                                 SPG_clip_ymin(inSurface),
+                                 SPG_clip_ymax(inSurface),
+                                 flags, mFillColour, mFillAlpha );
+            }
+
+            if (mPolygon)
+               mPolygon->Render(inSurface);
          }
 
-         /*
-         if (!mGradient)
+         int jobs = mLineJobs.size();
+         for(int j=0;j<jobs;j++)
          {
-            for(int i=1;i<n;i++)
+            const LineJob &job = mLineJobs[ j ];
+            if (!job.mRenderer)
             {
-               const LinePoint &p1 = mLineJobs[ i ];
-               if (p1.mAlpha > 0 )
+               for(int i=1;i<job.mPointIndex.size();i++)
                {
-                  int p0 = i-1;
-   
-                  if (p1.mAlpha<1.0)
-                     SPG_LineBlend(inSurface,mX[p0],mY[p0],
-                          mX[i],mY[i],p1.mColour,
-                          (Uint8)(p1.mAlpha*255.0) );
+                  int x0 = mX[ job.mPointIndex[i-1] ];
+                  int y0 = mY[ job.mPointIndex[i-1] ];
+                  int x1 = mX[ job.mPointIndex[i] ];
+                  int y1 = mY[ job.mPointIndex[i] ];
+                  if (job.mAlpha<1)
+                     SPG_LineBlend(inSurface,x0,y0,x1,y1,job.mColour,
+                          (Uint8)(job.mAlpha*255.0) );
                   else
-                     SPG_Line(inSurface,mX[p0],mY[p0],mX[i],mY[i],p1.mColour);
+                     SPG_Line(inSurface,x0,y0,x1,y1,job.mColour);
                }
             }
          }
-         */
       }
    }
 

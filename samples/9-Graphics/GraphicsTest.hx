@@ -81,7 +81,6 @@ class GraphicsTest extends nme.GameBase
 
       var gfx = Manager.graphics;
 
-      // TODO: thick line in software renderer (use quads?)
       gfx.moveTo(10,10);
       gfx.lineStyle(1,0xff0000);
       gfx.lineTo(100,100);
@@ -93,9 +92,11 @@ class GraphicsTest extends nme.GameBase
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
+      gfx.lineStyle(3,0x000000);
       gfx.beginFill(0xff3030);
       gfx.drawCircle(x,100,60);
       gfx.moveTo(x,100);
+      gfx.lineStyle(0,0x00ff80);
       gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
@@ -110,7 +111,6 @@ class GraphicsTest extends nme.GameBase
    {
       // You can set the matrix to move the display object around.
       square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*10.0));
-      //square.matrix.setRotation( Math.PI*1/4, 10.0);
 
       x = x+1;
       if (x>wndWidth) x = -10;

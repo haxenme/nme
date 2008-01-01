@@ -120,7 +120,7 @@ class Graphics
    {
       CloseList(true);
 
-      mFillColour = color;
+      mFillColour = color==null ? 0x000000 : color;
       mFillAlpha = alpha==null ? 1.0 : alpha;
       mFilling=true;
       mSolidGradient = null;
@@ -330,8 +330,10 @@ class Graphics
 
    private function CloseList(inCancelFill)
    {
-      CloseLines(mFilling);
       var l =  mPoints.length;
+      if (l<1) return;
+
+      CloseLines(mFilling);
       if (l!=0)
       {
          AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
