@@ -81,6 +81,7 @@ class GraphicsTest extends nme.GameBase
 
       var gfx = Manager.graphics;
 
+      gfx.clear();
       gfx.moveTo(10,10);
       gfx.lineStyle(1,0xff0000);
       gfx.lineTo(100,100);
@@ -92,11 +93,11 @@ class GraphicsTest extends nme.GameBase
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
-      gfx.lineStyle(3,0x000000);
+      gfx.lineStyle(11,0x0000ff);
       gfx.beginFill(0xff3030);
       gfx.drawCircle(x,100,60);
       gfx.moveTo(x,100);
-      gfx.lineStyle(0,0x00ff80);
+      gfx.lineStyle(1,0x00ff80);
       gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);

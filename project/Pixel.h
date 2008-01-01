@@ -373,6 +373,7 @@ struct ConstantSource32
    inline Uint8 GetR() const { return r; }
    inline Uint8 GetG() const { return g; }
    inline Uint8 GetB() const { return b; }
+   // TODO: does this need to be an int?
    inline Uint8 GetA() const { return a; }
 
    Uint8 r,g,b;

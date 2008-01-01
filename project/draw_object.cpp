@@ -55,15 +55,11 @@ struct Point
 };
 
 typedef std::vector<Point> Points;
-typedef std::vector<int> IntVec;
 
-struct LineJob
+struct LineJob : public PolyLine
 {
-   IntVec          mPointIndex;
    int             mColour;
-   int             mJoints;
    double          mAlpha;
-   double          mThickness;
    Gradient        *mGradient;
    PolygonRenderer *mRenderer;
 
@@ -297,13 +293,13 @@ public:
 
          Uint16 n = (Uint16)mPoints.size();
 
+         unsigned int flags = SPG_HIGH_QUALITY;
+
          if (mSolidGradient || mFillAlpha>0)
          {
-            unsigned int flags = SPG_HIGH_QUALITY;
-
-            if (mSolidGradient)
+            if (!mPolygon)
             {
-               if (!mPolygon)
+               if (mSolidGradient)
                {
                   mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
                                  mHQX, mHQY,
@@ -311,14 +307,14 @@ public:
                                  SPG_clip_ymax(inSurface),
                                  flags, mSolidGradient );
                }
-            }
-            else
-            {
+               else
+               {
                   mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
                                  mHQX, mHQY,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, mFillColour, mFillAlpha );
+               }
             }
 
             if (mPolygon)
@@ -328,22 +324,30 @@ public:
          int jobs = mLineJobs.size();
          for(int j=0;j<jobs;j++)
          {
-            const LineJob &job = mLineJobs[ j ];
+            LineJob &job = mLineJobs[ j ];
             if (!job.mRenderer)
             {
-               for(int i=1;i<job.mPointIndex.size();i++)
+               if (job.mGradient)
                {
-                  int x0 = mX[ job.mPointIndex[i-1] ];
-                  int y0 = mY[ job.mPointIndex[i-1] ];
-                  int x1 = mX[ job.mPointIndex[i] ];
-                  int y1 = mY[ job.mPointIndex[i] ];
-                  if (job.mAlpha<1)
-                     SPG_LineBlend(inSurface,x0,y0,x1,y1,job.mColour,
-                          (Uint8)(job.mAlpha*255.0) );
-                  else
-                     SPG_Line(inSurface,x0,y0,x1,y1,job.mColour);
+                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(n-1,
+                                 mHQX, mHQY,
+                                 SPG_clip_ymin(inSurface),
+                                 SPG_clip_ymax(inSurface),
+                                 flags, job.mGradient, &job );
+
+               }
+               else
+               {
+                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(n-1,
+                                 mHQX, mHQY,
+                                 SPG_clip_ymin(inSurface),
+                                 SPG_clip_ymax(inSurface),
+                                 flags, job.mColour, job.mAlpha, &job );
                }
             }
+
+            if (job.mRenderer)
+               job.mRenderer->Render(inSurface);
          }
       }
    }

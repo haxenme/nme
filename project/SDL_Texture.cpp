@@ -1,7 +1,9 @@
 #include "Pixel.h"
 #include "Gradient.h"
+#include <math.h>
 #include <algorithm>
 #include <map>
+
 
 // --- AA traits classes ----------------------------------------------------
 
@@ -11,7 +13,7 @@
 struct AA0x
 {
    enum { AlphaBits = 0 };
-   enum { AABits = 1 };
+   enum { AABits = 0 };
    enum { AA = (1<<AABits) };
 
    typedef Uint8 State;
@@ -37,6 +39,11 @@ struct AA0x
    {
       mVal ^= 0x01;
    }
+   inline void AddAA(int inX,int inY)
+   {
+      mVal ^= 0x01;
+   }
+
 
 };
 
@@ -85,8 +92,14 @@ struct AA4x
    inline void Add(int inX,int inY)
    {
       mPoints[inY & 0x03] ^= (1 << ( (inX>>14) & 0x03));
-      //printf("%d,%d : %d -> %d\n", inY>>2, inX>>16, inY & 0x03, (inX>>14) & 0x03);
    }
+
+   // x is fixed-aa, y is fixed-aa
+   inline void AddAA(int inX,int inY)
+   {
+      mPoints[inY & 0x03] ^= (1 << ( inX & 0x03));
+   }
+
 
    static void Init()
    {
@@ -264,23 +277,42 @@ template<typename AA_>
 class BasePolygonRenderer : public PolygonRenderer
 {
 public:
-   typedef std::map<int,AA_> LineInfo;
+   enum { ToAA = (16-AA_::AABits) };
+
+   typedef std::map<int,AA_>  LineInfo;
+   typedef std::map<int,bool> SpanInfo;
 
    BasePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
-            int inMinY,int inMaxY)
+            int inMinY,int inMaxY,const PolyLine *inLines)
    {
       mMinY = inMinY;
       mMaxY = inMaxY;
 
       int min_y = inY[0]>>16;
       int max_y = min_y;
-   
-      for(int i=1;i<inN;i++)
+
+      if (inLines)
       {
-         int y = inY[i]>>16;
-         if (y<min_y) min_y = y;
-         else if (y>max_y) max_y = y;
+         const IntVec &pids = inLines->mPointIndex;
+         int w = int(inLines->mThickness*0.5 + 0.999);
+
+         for(size_t i=0;i<pids.size();i++)
+         {
+            int y = inY[ pids[i] ]>>16;
+            if (y-w<min_y) min_y = y-w;
+            else if (y+w>max_y) max_y = y+w;
+         }
       }
+      else
+      {
+         for(int i=1;i<inN;i++)
+         {
+            int y = inY[i]>>16;
+            if (y<min_y) min_y = y;
+            else if (y>max_y) max_y = y;
+         }
+      }
+
       // exclusive of last point
       max_y++;
    
@@ -299,83 +331,397 @@ public:
       // After offset ...
       max_y = (mMaxY-mMinY) << (AA_::AABits);
    
-   
-      // X is fixed-16
-      int x0 = inX[inN-1];
-      // Convert to AA grid ...
-      int y0 = (inY[inN-1] - min_y) >> (16-AA_::AABits);
-   
-      int yprev = (inY[inN-2] - min_y) >> (16-AA_::AABits);
-      bool prev_horiz = yprev == y0;
-   
-      for(int i=0;i<inN;i++)
+      if (inLines)
       {
-         int x1 = inX[i];
-         int y1 = (inY[i] - min_y) >> (16-AA_::AABits);
-   
-         // clip whole line ?
-         if (!(y0<0 && y1<0) && !(y0>=max_y && y1>=max_y) )
+         mMaxSpan = max_y;
+         mSpans = new SpanInfo [ mMaxSpan ];
+         int thickness = (int)(inLines->mThickness * 0.5 * 65536);
+
+         const IntVec &pids = inLines->mPointIndex;
+         int x0 = inX[ pids[0] ];
+         int y0 = (inY[ pids[0] ]-min_y);
+         for(size_t i=1;i<pids.size();i++)
          {
-            // Draw a line from first point up to (not including) last point
-            int dy = y1-y0;
-            if (dy==0)
+             int x1 = inX[ pids[i] ];
+             int y1 = (inY[ pids[i] ]-min_y);
+             SpanLine( x0, y0, x1, y1, thickness );
+             x0 = x1;
+             y0 = y1;
+         }
+
+         // Convert spans to lines ....
+         for(int y=0;y<max_y;y++)
+         {
+            LineInfo &line = mLines[y>>AA_::AABits];
+            SpanInfo &span = mSpans[ y ];
+            for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
             {
-               // only put on first point of horizontal series ...
-               if (!prev_horiz)
-               {
-                  // X is fixed-16, y is fixed-aa
-                  mLines[y0>>AA_::AABits][x0>>16].Add(x0,y1);
-               }
-               prev_horiz = true;
-            }
-            else if (dy<0) // going up ...
-            {
-               int x = x0;
-               int dx_dy = (x1-x0)/dy;
-               int y = y0;
-               if (y0>=max_y)
-               {
-                  y  = max_y - 1;
-                  x-= (y0-y) * dx_dy;
-               }
-               int last =  (y1<0) ?  -1 : y1;
-   
-               for(; y>last; y--)
-               {
-                  // X is fixed-16, y is fixed-aa
-                  mLines[y>>AA_::AABits][x>>16].Add(x,y);
-                  // printf("%d %d\n", y>>AA_::AABits, x>>16);
-                  x-=dx_dy;
-               }
-   
-               prev_horiz = false;
-            }
-            else // going down ...
-            {
-               int x = x0;
-               int dx_dy = (x1-x0)/dy;
-               int y = y0;
-               if (y0<0)
-               {
-                  y  = 0;
-                  x+= y0 * dx_dy;
-               }
-               int last = y1>max_y ? max_y : y1;
-   
-               for(; y<last; y++)
-               {
-                  // X is fixed-16, y is fixed-aa
-                  mLines[y>>AA_::AABits][x>>16].Add(x,y);
-                  x+=dx_dy;
-               }
-               prev_horiz = false;
+               int x = i->first;
+               line[x>>AA_::AABits].AddAA(x,y);
             }
          }
-   
-         x0 = x1;
-         y0 = y1;
+
+         delete [] mSpans;
+         mSpans = 0;
+      }
+      else
+      {
+         // X is fixed-16
+         int x0 = inX[inN-1];
+         // Convert to AA grid ...
+         int y0 = (inY[inN-1] - min_y) >> ToAA;
+      
+         int yprev = (inY[inN-2] - min_y) >> ToAA;
+         bool prev_horiz = yprev == y0;
+      
+         for(int i=0;i<inN;i++)
+         {
+            int x1 = inX[i];
+            int y1 = (inY[i] - min_y) >> ToAA;
+      
+            // clip whole line ?
+            if (!(y0<0 && y1<0) && !(y0>=max_y && y1>=max_y) )
+            {
+               // Draw a line from first point up to (not including) last point
+               int dy = y1-y0;
+               if (dy==0)
+               {
+                  // only put on first point of horizontal series ...
+                  if (!prev_horiz)
+                  {
+                     // X is fixed-16, y is fixed-aa
+                     mLines[y0>>AA_::AABits][x0>>16].Add(x0,y1);
+                  }
+                  prev_horiz = true;
+               }
+               else if (dy<0) // going up ...
+               {
+                  int x = x0;
+                  int dx_dy = (x1-x0)/dy;
+                  int y = y0;
+                  if (y0>=max_y)
+                  {
+                     y  = max_y - 1;
+                     x-= (y0-y) * dx_dy;
+                  }
+                  int last =  (y1<0) ?  -1 : y1;
+      
+                  for(; y>last; y--)
+                  {
+                     // X is fixed-16, y is fixed-aa
+                     mLines[y>>AA_::AABits][x>>16].Add(x,y);
+                     // printf("%d %d\n", y>>AA_::AABits, x>>16);
+                     x-=dx_dy;
+                  }
+      
+                  prev_horiz = false;
+               }
+               else // going down ...
+               {
+                  int x = x0;
+                  int dx_dy = (x1-x0)/dy;
+                  int y = y0;
+                  if (y0<0)
+                  {
+                     y  = 0;
+                     x+= y0 * dx_dy;
+                  }
+                  int last = y1>max_y ? max_y : y1;
+      
+                  for(; y<last; y++)
+                  {
+                     // X is fixed-16, y is fixed-aa
+                     mLines[y>>AA_::AABits][x>>16].Add(x,y);
+                     x+=dx_dy;
+                  }
+                  prev_horiz = false;
+               }
+            }
+      
+            x0 = x1;
+            y0 = y1;
+         }
+      }
+   }
+
+   inline void SpanLine(int inY,int inX0,int inX1)
+   {
+      if (inY>=0 && inY<mMaxSpan)
+      {
+
+         inX0 = inX0 >> ToAA;
+         inX1 = (inX1>>ToAA) + 1;
+         if (inX0==inX1) return;
+         SpanInfo &span = mSpans[inY];
+
+         /*
+         printf("Inserting (%d,%d) into : ", inX0,inX1);
+         for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
+            printf("%d%c ", i->first,i->second ? '*' : ' ');
+         printf("\n");
+         */
+
+         // find element greater than, or equal to inX0 ...
+         SpanInfo::iterator i = span.lower_bound(inX0);
+         // insert span at end ...
+         if (i==span.end())
+         {
+            span[inX0] = true;
+            span[inX1] = false;
+         }
+         else
+         {
+            if (i->first == inX0)
+            {
+               // Previous range finished at this point - delete the ending
+               if (!i->second)
+               {
+                  SpanInfo::iterator p = i;
+                  --p;
+                  i = span.erase(i);
+                  i = p;
+               }
+               // Previous range starts here too - do nothing
+            }
+            else if (i==span.begin())
+            {
+               // insert new bit at beginning
+               span[inX0] = true;
+               i = span.begin();
+            }
+            else
+            {
+               SpanInfo::iterator prev = i;
+               --prev;
+               if (!prev->second)
+                  i = span.insert( span.end(), std::make_pair(inX0,true) );
+               else
+                  i = prev;
+            }
+
+            // find element greater than, or equal to inX1 ...
+            SpanInfo::iterator end = span.lower_bound(inX1);
+
+            if (end==span.end())
+            {
+               ++i;
+               span.erase(i,end);
+               span[inX1] = false;
+            }
+            else if (end->first == inX1)
+            {
+               // Delete the last on
+               if (end->second)
+                  end++;
+               // otherwise, already in place..
+               ++i;
+               span.erase(i,end);
+            }
+            else
+            {
+               SpanInfo::iterator prev = end;
+               --prev;
+               if (prev==i)
+               {
+                  if (end->second)
+                     span[inX1] = false;
+               }
+               else if (prev->second)
+               {
+                  ++i;
+                  span.erase(i,end);
+               }
+               else
+               {
+                  ++i;
+                  span.erase(i,end);
+                  span[inX1] = false;
+               }
+            }
+         }
+
+         /*
+         printf("GOT  :");
+         for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
+            printf("%d%c ", i->first,i->second ? '*' : ' ');
+         printf("\n");
+         */
+
+
+         // if (span.size() & 1) *(int *)0=0;
+      }
+   }
+
+   /*
+       |     +0      |
+     dy0    / \  xb  |      top triangle
+       |   /   \     dy1
+         1+.....\    |
+     |     \     \   |      middle parralelogram
+    dy2  xa \.....+2
+     |       \   / |        bottom triangle
+     |        \ /  dy3
+     |        3+   |
+
+*/
+
+
+   void SpanQuad(int inX0,int inY0,
+                 int inX1,int inY1,
+                 int inX2,int inY2,
+                 int inX3,int inY3 )
+   {
+      int y0 = inY0 >> ToAA;
+      int y1 = inY1 >> ToAA;
+      int y2 = inY2 >> ToAA;
+      int y3 = inY3 >> ToAA;
+
+      if (y3==y0) return;
+
+      int dy0 = y1-y0;
+      int dy1 = y2-y0;
+      int dy2 = y3-y1;
+      int dy3 = y3-y2;
+
+      int dxa_dy2 = dy2==0 ? 0 : (inX3-inX1)/dy2;
+      int dxb_dy1 = dy1==0 ? 0 : (inX2-inX0)/dy1;
+
+      int xa = inX0;
+      int xb = inX0;
+
+      int y = y0;
+      // Top triangle ...
+      if (dy0>0)
+      {
+         int dxa_dy0 = (inX1-inX0)/dy0;
+         while(y<y1)
+         {
+            if (xa<xb)
+               SpanLine(y,xa,xb);
+            else
+               SpanLine(y,xb,xa);
+            xa+=dxa_dy0;
+            xb+=dxb_dy1;
+            y++;
+         }
+      }
+      // middle bit
+      xa = inX1;
+      while(y<y2)
+      {
+         if (xa<xb)
+            SpanLine(y,xa,xb);
+         else
+            SpanLine(y,xb,xa);
+         xa+=dxa_dy2;
+         xb+=dxb_dy1;
+         y++;
+      }
+      // last bit ...
+      if (dy3>0)
+      {
+         xb = inX2;
+         int dxb_dy3 = (inX3-inX2)/dy3;
+         while(y<y3)
+         {
+            if (xa<xb)
+               SpanLine(y,xa,xb);
+            else
+               SpanLine(y,xb,xa);
+            xa+=dxa_dy2;
+            xb+=dxb_dy3;
+            y++;
+         }
+      }
+   }
+
+   void SpanAlignRectRectangle(int inX0,int inY0,int inX1,int inY1)
+   {
+      int y0 = inY0>>ToAA;
+      int y1 = inY1>>ToAA;
+      for(int y=y0;y<y1;y++)
+         SpanLine(y,inX0,inX1);
+   }
+
+
+   /*
+
+            *
+     adx,ady \
+               * x0,y0
+              /
+             /
+            /
+           /
+          * x1,y1
+
+
+   */
+
+   // Quantities are 16-bit fixed, with y-min removed.
+   void SpanLine(int inX0,int inY0,int inX1,int inY1,int inT)
+   {
+      if ((inY1>>ToAA) == (inY0>>ToAA))
+      {
+         if (inX0<inX1)
+            SpanAlignRectRectangle(inX0,inY0-inT,inX1,inY0+inT);
+         else
+            SpanAlignRectRectangle(inX1,inY0-inT,inX0,inY0+inT);
+         return;
       }
 
+      int dy = inY1-inY0;
+      if (dy<0)
+      {
+         std::swap(inX0,inX1);
+         std::swap(inY0,inY1);
+         dy = -dy;
+      }
+
+      int dx  = inX0-inX1;
+      double dub_x = dx;
+      double dub_y = dy;
+      double len = sqrt(dub_x*dub_x + dub_y*dub_y);
+      double norm = (inT/len);
+
+      // Perpendicular line, dx=dy, dy=-dx
+      int ady = (int)(dx*norm);
+
+      /*
+      if ( abs(ady)<0x8000 )
+      {
+         SpanAlignRectRectangle(inX0-inT,inY0,inX0+inT,inY1);
+         return;
+      }
+      */
+
+      int adx = (int)(dy*norm);
+      if (ady<0)
+      {
+         ady=-ady;
+         adx=-adx;
+      }
+
+      // ady >0 and y0<y1
+      // So y0-ady is min and y1+ady is max. 1 and 2 may be reversed...
+      int x0 = inX0 - adx;
+      int y0 = inY0 - ady;
+
+      int x1 = inX0 + adx;
+      int y1 = inY0 + ady;
+
+      int x2 = inX1 - adx;
+      int y2 = inY1 - ady;
+
+      int x3 = inX1 + adx;
+      int y3 = inY1 + ady;
+
+      if (y1>y2)
+      {
+         std::swap(x1,x2);
+         std::swap(y1,y2);
+      }
+      SpanQuad(x0,y0,x1,y1,x2,y2,x3,y3);
    }
 
    ~BasePolygonRenderer()
@@ -384,6 +730,8 @@ public:
    }
 
    LineInfo *mLines;
+   SpanInfo *mSpans;
+   int      mMaxSpan;
    int      mMinY;
    int      mMaxY;
 
@@ -400,8 +748,8 @@ class SourcePolygonRenderer : public BasePolygonRenderer<AA_>
 {
 public:
    SourcePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
-            int inMinY,int inMaxY, SOURCE_ &inSource)
-      : BasePolygonRenderer(inN,inX,inY,inMinY,inMaxY),
+            int inMinY,int inMaxY, const PolyLine *inLines, SOURCE_ &inSource)
+      : BasePolygonRenderer(inN,inX,inY,inMinY,inMaxY,inLines),
          mSource(inSource)
    {
       // mSource is copy-constructed, so yo ubetter be sure this will
@@ -426,12 +774,13 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
                         Sint32 *inX,Sint32 *inY,
                         Sint32 inYMin, Sint32 inYMax,
                         Uint32 inFlags,
-                        Gradient *inGradient )
+                        Gradient *inGradient,
+                        const PolyLine *inLines)
 {
    typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
    return new SourcePolygonRenderer<AA_,Source>(
-       inN, inX, inY, inYMin, inYMax, Source(inGradient) );
+       inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
 }
 
 
@@ -440,12 +789,13 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
                         Sint32 *inX,Sint32 *inY,
                         Sint32 inYMin, Sint32 inYMax,
                         Uint32 inFlags,
-                        class Gradient *inGradient )
+                        class Gradient *inGradient,
+                        const PolyLine *inLines)
 {
    if (inN<3)
       return 0;
 
-#define ARGS inN,inX,inY,inYMin,inYMax,inFlags,inGradient
+#define ARGS inN,inX,inY,inYMin,inYMax,inFlags,inGradient,inLines
 
    if (inFlags & SPG_HIGH_QUALITY)
    {
@@ -552,10 +902,11 @@ PolygonRenderer *CreateBitmapRenderer(int inN,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
+                              const PolyLine *inLines,
                               SOURCE_ &inSource )
 {
    return new SourcePolygonRenderer<AA_,SOURCE_>(inN,inX,inY,inYMin,inYMax,
-                                           inSource );
+                                           inLines,inSource );
 }
 
 
@@ -566,7 +917,8 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
-                              SDL_Surface *inSource )
+                              SDL_Surface *inSource,
+                              const PolyLine *inLines)
 {
    int edge = inFlags & SPG_EDGE_MASK;
    if (edge==SPG_EDGE_REPEAT && IsPOW2(inSource->w) && IsPOW2(inSource->h) )
@@ -577,19 +929,19 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
 #define SOURCE_EDGE(source) \
      if (edge == SPG_EDGE_REPEAT_POW2) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper, \
+          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_REPEAT_POW2>(inSource,inMapper));  \
      else if (edge == SPG_EDGE_REPEAT) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper, \
+          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_REPEAT>(inSource,inMapper));  \
      else if (edge == SPG_EDGE_UNCHECKED) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper, \
+          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_UNCHECKED>(inSource,inMapper));  \
      else \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper, \
+          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_CLAMP>(inSource,inMapper));
 
 
@@ -618,26 +970,27 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
-                              SDL_Surface *inSource )
+                              SDL_Surface *inSource,
+                              const PolyLine *inLines)
 {
    if (inFlags & SPG_HIGH_QUALITY)
    {
       if (inFlags & SPG_ALPHA_BLEND)
           return CreateBitmapRendererSource
               <AA4x,SPG_HIGH_QUALITY+SPG_ALPHA_BLEND>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource);
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
       else
           return CreateBitmapRendererSource<AA4x,SPG_HIGH_QUALITY>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource);
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
    else
    {
       if (inFlags & SPG_ALPHA_BLEND)
           return CreateBitmapRendererSource<AA0x,SPG_ALPHA_BLEND>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource);
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
       else
           return CreateBitmapRendererSource<AA0x,0>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource);
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
 
    }
 }
@@ -649,12 +1002,13 @@ PolygonRenderer *TCreateSolidRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
-                              int inColour, double inAlpha=1.0)
+                              int inColour, double inAlpha,
+                              const PolyLine *inLines)
 {
    typedef ConstantSource32<FLAGS_> Source;
 
    return new SourcePolygonRenderer<AA_,Source>(inN,inX,inY,inYMin,inYMax,
-                               Source(inColour,inAlpha) );
+                               inLines,Source(inColour,inAlpha) );
 }
 
 
@@ -663,24 +1017,25 @@ PolygonRenderer *PolygonRenderer::CreateSolidRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
-                              int inColour, double inAlpha)
+                              int inColour, double inAlpha,
+                              const PolyLine *inLines)
 {
    if (inFlags & SPG_HIGH_QUALITY)
    {
       if (inAlpha < 1.0 )
           return TCreateSolidRenderer<AA4x,SPG_ALPHA_BLEND>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha);
+                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
       else
           return TCreateSolidRenderer<AA4x,0>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inColour);
+                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
    }
    else
    {
       if (inAlpha < 1.0 )
           return TCreateSolidRenderer<AA0x,SPG_ALPHA_BLEND>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha);
+                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
       else
           return TCreateSolidRenderer<AA0x,0>(
-                   inN,inX,inY,inYMin,inYMax, inFlags, inColour);
+                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
    }
 }

@@ -2,7 +2,7 @@
 #define EXTRAS_H
 
 #include "SDL.h"
-
+#include <vector>
 
 #define SPG_ALPHA_BLEND      0x0001
 #define SPG_HIGH_QUALITY     0x0002
@@ -13,6 +13,14 @@
 #define SPG_EDGE_UNCHECKED   0x0020
 #define SPG_EDGE_REPEAT_POW2 0x0030
 
+typedef std::vector<int> IntVec;
+
+struct PolyLine
+{
+   IntVec          mPointIndex;
+   int             mJoints;
+   double          mThickness;
+};
 
 
 class PolygonRenderer
@@ -26,21 +34,24 @@ public:
                               Sint32 *inX,Sint32 *inY,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
-                              int inColour, double inAlpha );
+                              int inColour, double inAlpha,
+                              const PolyLine *inLines = 0);
 
 
    static PolygonRenderer *CreateGradientRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
-                              class Gradient *inGradient );
+                              class Gradient *inGradient,
+                              const PolyLine *inLines = 0);
 
    static PolygonRenderer *CreateBitmapRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
-                              SDL_Surface *inSource );
+                              SDL_Surface *inSource,
+                              const PolyLine *inLines=0);
 };
 
 
