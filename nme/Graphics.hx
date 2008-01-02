@@ -33,7 +33,10 @@ typedef LineJob =
    var thickness:Float;
    var alpha:Float;
    var colour:Int;
+   var pixel_hinting:Int;
    var joints:Int;
+   var caps:Int;
+   var miter_limit:Float;
 }
 
 typedef LineJobs = Array<LineJob>;
@@ -54,6 +57,27 @@ class Graphics
 
    public static var REPEAT  = 0x0002;
    public static var REFLECT = 0x0004;
+
+
+   private static var  EDGE_MASK        = 0x00f0;
+   private static var  EDGE_CLAMP       = 0x0000;
+   private static var  EDGE_REPEAT      = 0x0010;
+   private static var  EDGE_UNCHECKED   = 0x0020;
+   private static var  EDGE_REPEAT_POW2 = 0x0030;
+
+   private static var  END_NONE         = 0x0000;
+   private static var  END_ROUND        = 0x0100;
+   private static var  END_SQUARE       = 0x0200;
+   private static var  END_MASK         = 0x0300;
+   private static var  END_SHIFT        = 8;
+
+   private static var  CORNER_ROUND     = 0x0000;
+   private static var  CORNER_MITER     = 0x1000;
+   private static var  CORNER_BEVEL     = 0x2000;
+   private static var  CORNER_MASK      = 0x3000;
+   private static var  CORNER_SHIFT     = 12;
+
+   private static var  PIXEL_HINTING    = 0x4000;
 
 
    private var mSurface:Void;
@@ -113,7 +137,36 @@ class Graphics
       mCurrentLine.thickness = thickness;
       mCurrentLine.colour = color==null ? 0 : color;
       mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
-      mCurrentLine.joints = joints==null ? 0 : joints=="ROUND" ? 1 : 0;
+      mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
+      mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
+                                           0 : PIXEL_HINTING;
+
+      if (caps!=null)
+      {
+         switch(caps)
+         {
+            case nme.CapsStyle.ROUND:
+               mCurrentLine.caps = END_ROUND;
+            case nme.CapsStyle.SQUARE:
+               mCurrentLine.caps = END_SQUARE;
+            case nme.CapsStyle.NONE:
+               mCurrentLine.caps = END_NONE;
+         }
+      }
+
+
+      if (joints!=null)
+      {
+         switch(joints)
+         {
+            case JointStyle.ROUND:
+               mCurrentLine.joints = CORNER_ROUND;
+            case JointStyle.MITER:
+               mCurrentLine.joints = CORNER_MITER;
+            case JointStyle.BEVEL:
+               mCurrentLine.joints = CORNER_BEVEL;
+         }
+      }
    }
 
    public function beginFill(color:Null<Int>, ?alpha:Null<Float>)
@@ -241,7 +294,10 @@ class Graphics
                      thickness:0.0,
                      alpha:0.0,
                      colour:0x000,
-                     joints:0 };
+                     miter_limit: 3.0,
+                     caps:END_ROUND,
+                     joints:CORNER_ROUND,
+                     pixel_hinting : 0 };
 
       mLineJobs = [];
    }
@@ -313,7 +369,11 @@ class Graphics
       {
          // Close line to make loop, because this in implied by the solid.
          if (inTryClose && mCurrentLine.point_idx.length==mPoints.length)
-            mCurrentLine.point_idx.push(0);
+         {
+            var l = mPoints.length;
+            if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
+               mCurrentLine.point_idx.push(0);
+         }
 
          mLineJobs.push(
              {
@@ -321,8 +381,11 @@ class Graphics
                 point_idx:mCurrentLine.point_idx,
                 thickness:mCurrentLine.thickness,
                 alpha:mCurrentLine.alpha,
+                pixel_hinting:mCurrentLine.pixel_hinting,
                 colour:mCurrentLine.colour,
                 joints:mCurrentLine.joints,
+                caps:mCurrentLine.caps,
+                miter_limit:mCurrentLine.miter_limit,
              } );
       }
       mCurrentLine.point_idx = [];
@@ -333,7 +396,7 @@ class Graphics
       var l =  mPoints.length;
       if (l<1) return;
 
-      CloseLines(mFilling);
+      CloseLines(mFilling && l>2);
       if (l!=0)
       {
          AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),

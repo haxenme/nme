@@ -34,6 +34,8 @@ class Drawable
 public:
    virtual ~Drawable() { }
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)=0;
+
+   virtual bool IsGrad() { return false; }
 };
 
 
@@ -60,6 +62,8 @@ struct LineJob : public PolyLine
 {
    int             mColour;
    double          mAlpha;
+   double          mMiterLimit;
+   unsigned int    mFlags;
    Gradient        *mGradient;
    PolygonRenderer *mRenderer;
 
@@ -68,9 +72,12 @@ struct LineJob : public PolyLine
       mRenderer = 0;
       mGradient = CreateGradient(val_field(inVal,val_id("grad")));
       mColour = val_int(val_field(inVal,val_id("colour")));
-      mJoints = val_int(val_field(inVal,val_id("joints")));
       mThickness = val_number(val_field(inVal,val_id("thickness")));
       mAlpha = val_number(val_field(inVal,val_id("alpha")));
+      mJoints = val_int(val_field(inVal,val_id("joints")));
+      mCaps = val_int(val_field(inVal,val_id("caps")));
+      mPixelHinting = val_int(val_field(inVal,val_id("pixel_hinting")));
+      mMiterLimit = val_number(val_field(inVal,val_id("miter_limit")));
 
       value idx_obj = val_field(inVal,val_id("point_idx"));
       value idx = val_field(idx_obj,val_id("__a"));
@@ -129,7 +136,7 @@ public:
       delete mPolygon;
       mPolygon = 0;
 
-      for(int i=0;i<mLineJobs.size();i++)
+      for(size_t i=0;i<mLineJobs.size();i++)
       {
          delete mLineJobs[i].mRenderer;
          mLineJobs[i].mRenderer = 0;
@@ -140,7 +147,7 @@ public:
    {
       ClearRenderers();
 
-      for(int i=0;i<mLineJobs.size();i++)
+      for(size_t i=0;i<mLineJobs.size();i++)
          delete mLineJobs[i].mGradient;
 
       delete mSolidGradient;
@@ -167,7 +174,7 @@ public:
          glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
                       (unsigned char)(mFillAlpha*255.0));
          const Point *p = &mPoints[0];
-         int n = mPoints.size();
+         size_t n = mPoints.size();
 
          if (mSolidGradient)
             mSolidGradient->BeginOpenGL();
@@ -263,9 +270,11 @@ public:
          }
    }
 
+   virtual bool IsGrad() { return mPolygon!=0 || mSolidGradient!=0; }
 
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)
    {
+
       if (IsOpenGLScreen(inSurface))
       {
          if (mDisplayList)
@@ -321,15 +330,15 @@ public:
                mPolygon->Render(inSurface);
          }
 
-         int jobs = mLineJobs.size();
-         for(int j=0;j<jobs;j++)
+         size_t jobs = mLineJobs.size();
+         for(size_t j=0;j<jobs;j++)
          {
             LineJob &job = mLineJobs[ j ];
             if (!job.mRenderer)
             {
                if (job.mGradient)
                {
-                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(n-1,
+                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(n,
                                  mHQX, mHQY,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
@@ -338,7 +347,7 @@ public:
                }
                else
                {
-                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(n-1,
+                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(n,
                                  mHQX, mHQY,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
@@ -410,33 +419,6 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    val_gc( v, delete_drawable );
    return v;
 }
-
-/*
-value nme_create_gradient_obj(value inFlags, value inGradPoints,
-                              value inMatrix, value inLines)
-{
-   val_check( inFlags, int );
-   val_check( inGradPoints, array );
-   val_check( inLines, array );
-
-   int n = val_array_size(inLines);
-   value *items = val_array_ptr(inLines);
-
-   LineSegments line_segs(n);
-   for(int i=0;i<n;i++)
-      line_segs[i].FromValue(items[i]);
-
-   DrawObject *obj = new DrawObject(
-                        new Gradient(inFlags,inGradPoints,inMatrix),
-                        line_segs );
-
-   value v = alloc_abstract( k_drawable, obj );
-   val_gc( v, delete_drawable );
-   return v;
-}
-*/
-
-
 
 
 // ---- Surface Drawing -----------------------------------------------------

@@ -44,6 +44,7 @@ class GraphicsTest extends nme.GameBase
 
    var square : nme.Shape;
    var grad_circle : nme.Shape;
+   var lines : nme.Shape;
 
    public function new()
    {
@@ -71,6 +72,28 @@ class GraphicsTest extends nme.GameBase
                        colours, alphas, ratios, mtx, nme.SpreadMethod.PAD);
       grad_circle.drawCircle(200,150,75);
 
+      lines = new nme.Shape();
+      lines.lineStyle(20,0x000000,0.5,false,"normal",
+               nme.CapsStyle.ROUND, nme.JointStyle.ROUND );
+
+      lines.moveTo(50,300);
+      lines.lineTo(200,300);
+      lines.lineTo(250,200);
+
+      lines.lineStyle(20,0x000000,0.5,false,"normal",
+               nme.CapsStyle.SQUARE, nme.JointStyle.BEVEL );
+
+      lines.moveTo(50,330);
+      lines.lineTo(220,330);
+      lines.lineTo(270,230);
+
+      lines.lineStyle(20,0x000000,0.5,false,"normal",
+               nme.CapsStyle.NONE, nme.JointStyle.MITER );
+
+      lines.moveTo(50,360);
+      lines.lineTo(240,360);
+      lines.lineTo(290,260);
+
 
       run();
    }
@@ -89,11 +112,13 @@ class GraphicsTest extends nme.GameBase
       gfx.lineTo(200,200);
       gfx.lineStyle(5,0x0000ff);
       gfx.lineTo(300,300);
+      // Call flush now to ensure lines drawn before circle etc...
+      gfx.flush();
 
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
-      gfx.lineStyle(11,0x0000ff);
+      gfx.lineStyle(3,0x0000ff);
       gfx.beginFill(0xff3030);
       gfx.drawCircle(x,100,60);
       gfx.moveTo(x,100);
@@ -106,6 +131,7 @@ class GraphicsTest extends nme.GameBase
       // This has already been setup.
       grad_circle.draw();
       square.draw();
+      lines.draw();
    }
 
    public function onUpdate()

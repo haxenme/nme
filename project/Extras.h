@@ -13,13 +13,32 @@
 #define SPG_EDGE_UNCHECKED   0x0020
 #define SPG_EDGE_REPEAT_POW2 0x0030
 
+#define SPG_END_NONE         0x0000
+#define SPG_END_ROUND        0x0100
+#define SPG_END_SQUARE       0x0200
+#define SPG_END_MASK         0x0300
+#define SPG_END_SHIFT        8
+
+#define SPG_CORNER_ROUND     0x0000
+#define SPG_CORNER_MITER     0x1000
+#define SPG_CORNER_BEVEL     0x2000
+#define SPG_CORNER_MASK      0x3000
+#define SPG_CORNER_SHIFT     12
+
+#define SPG_PIXEL_HINTING    0x4000
+
+
+
 typedef std::vector<int> IntVec;
 
 struct PolyLine
 {
    IntVec          mPointIndex;
-   int             mJoints;
    double          mThickness;
+   unsigned int    mJoints;
+   unsigned int    mCaps;
+   unsigned int    mPixelHinting;
+   double          mMiterLimit;
 };
 
 

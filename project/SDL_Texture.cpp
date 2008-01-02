@@ -294,14 +294,16 @@ public:
       if (inLines)
       {
          const IntVec &pids = inLines->mPointIndex;
-         int w = int(inLines->mThickness*0.5 + 0.999);
+         int w = int(inLines->mThickness + 0.999);
 
          for(size_t i=0;i<pids.size();i++)
          {
             int y = inY[ pids[i] ]>>16;
-            if (y-w<min_y) min_y = y-w;
-            else if (y+w>max_y) max_y = y+w;
+            if (y<min_y) min_y = y;
+            else if (y>max_y) max_y = y;
          }
+         min_y -= w;
+         max_y += w;
       }
       else
       {
@@ -338,16 +340,33 @@ public:
          int thickness = (int)(inLines->mThickness * 0.5 * 65536);
 
          const IntVec &pids = inLines->mPointIndex;
+         int n = (int)pids.size();
+         bool loop = (inX[pids[0]]==inX[pids[n-1]]) &&
+                     (inY[pids[0]]==inY[pids[n-1]]);
+         int x1,y1;
+
          int x0 = inX[ pids[0] ];
          int y0 = (inY[ pids[0] ]-min_y);
+
+         mCaps = inLines->mCaps;
+         mJoints = inLines->mJoints;
+         mCircleRad = 0;
+
+         if (!loop && mCaps==SPG_END_ROUND)
+            SpanCircle(x0,y0,thickness);
+         
          for(size_t i=1;i<pids.size();i++)
          {
-             int x1 = inX[ pids[i] ];
-             int y1 = (inY[ pids[i] ]-min_y);
-             SpanLine( x0, y0, x1, y1, thickness );
+             x1 = inX[ pids[i] ];
+             y1 = (inY[ pids[i] ]-min_y);
+             SpanLine( x0, y0, x1, y1, thickness,
+                           !loop && i==1, !loop && i==n-1 );
              x0 = x1;
              y0 = y1;
          }
+
+         if (!loop && mCaps==SPG_END_ROUND)
+            SpanCircle(x1,y1,thickness);
 
          // Convert spans to lines ....
          for(int y=0;y<max_y;y++)
@@ -552,6 +571,38 @@ public:
       }
    }
 
+   IntVec mCircleArc;
+   int    mCircleOff;
+   int    mCircleRad;
+
+   // X is fixed16, y is fixed16-min, inRad is fixed16
+   void SpanCircle(int inX,int inY,int inRad)
+   {
+      if (inRad < (2<<16))
+         return;
+
+      if (inRad != mCircleRad)
+      {
+         mCircleRad = inRad;
+         mCircleOff = (inRad>>ToAA);
+         int n = 2*mCircleOff+1;
+         mCircleArc.resize(n);
+         for(int y=0;y<=mCircleOff;y++)
+         {
+            double yr = ((mCircleOff-y) << ToAA);
+            double r =  inRad;
+            int dx = (int)( sqrt(r*r - yr*yr ) );
+            mCircleArc[y] = dx;
+            mCircleArc[n-1-y] = dx;
+         }
+      }
+
+      int *ptr = &mCircleArc[mCircleOff];
+      int y0 = inY>>ToAA;
+      for(int y=1-mCircleOff;y<mCircleOff;y++)
+         SpanLine(y0 + y, inX-ptr[y], inX+ptr[y] );
+   }
+
    /*
        |     +0      |
      dy0    / \  xb  |      top triangle
@@ -659,14 +710,21 @@ public:
    */
 
    // Quantities are 16-bit fixed, with y-min removed.
-   void SpanLine(int inX0,int inY0,int inX1,int inY1,int inT)
+   void SpanLine(int inX0,int inY0,int inX1,int inY1,int inT,
+           bool inEnd0,bool inEnd1)
    {
+      if (!inEnd0 && mJoints==SPG_CORNER_ROUND)
+         SpanCircle(inX0,inY0,inT);
+
       if ((inY1>>ToAA) == (inY0>>ToAA))
       {
+         int e0 = (mCaps==SPG_END_SQUARE && inEnd0) ? inT : 0;
+         int e1 = (mCaps==SPG_END_SQUARE && inEnd1) ? inT : 0;
+
          if (inX0<inX1)
-            SpanAlignRectRectangle(inX0,inY0-inT,inX1,inY0+inT);
+            SpanAlignRectRectangle(inX0-e0,inY0-inT,inX1+e1,inY0+inT);
          else
-            SpanAlignRectRectangle(inX1,inY0-inT,inX0,inY0+inT);
+            SpanAlignRectRectangle(inX1-e1,inY0-inT,inX0+e1,inY0+inT);
          return;
       }
 
@@ -675,17 +733,33 @@ public:
       {
          std::swap(inX0,inX1);
          std::swap(inY0,inY1);
+         std::swap(inEnd0,inEnd1);
          dy = -dy;
       }
 
-      int dx  = inX0-inX1;
+      int dx  = inX1-inX0;
       double dub_x = dx;
       double dub_y = dy;
       double len = sqrt(dub_x*dub_x + dub_y*dub_y);
       double norm = (inT/len);
 
+      if (mCaps==SPG_END_SQUARE)
+      {
+         if (inEnd0)
+         {
+            inX0 -= (int)(dx*norm);
+            inY0 -= (int)(dy*norm);
+         }
+         if (inEnd1)
+         {
+            inX1 += (int)(dx*norm);
+            inY1 += (int)(dy*norm);
+         }
+
+      }
+
       // Perpendicular line, dx=dy, dy=-dx
-      int ady = (int)(dx*norm);
+      int ady = (int)(-dx*norm);
 
       /*
       if ( abs(ady)<0x8000 )
@@ -728,6 +802,9 @@ public:
    {
       delete [] mLines;
    }
+
+   Uint32   mCaps;
+   Uint32   mJoints;
 
    LineInfo *mLines;
    SpanInfo *mSpans;
@@ -779,6 +856,7 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
 {
    typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
+
    return new SourcePolygonRenderer<AA_,Source>(
        inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
 }
@@ -799,7 +877,6 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
 
    if (inFlags & SPG_HIGH_QUALITY)
    {
-      AA4x::Init();
       if (inGradient->mColours.size()==256)
       {
          if (inGradient->mUsesAlpha)
@@ -920,6 +997,9 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
                               SDL_Surface *inSource,
                               const PolyLine *inLines)
 {
+   if (inFlags & SPG_HIGH_QUALITY)
+      AA4x::Init();
+
    int edge = inFlags & SPG_EDGE_MASK;
    if (edge==SPG_EDGE_REPEAT && IsPOW2(inSource->w) && IsPOW2(inSource->h) )
       edge = SPG_EDGE_REPEAT_POW2;
@@ -1022,6 +1102,7 @@ PolygonRenderer *PolygonRenderer::CreateSolidRenderer(int inN,
 {
    if (inFlags & SPG_HIGH_QUALITY)
    {
+      AA4x::Init();
       if (inAlpha < 1.0 )
           return TCreateSolidRenderer<AA4x,SPG_ALPHA_BLEND>(
                   inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
