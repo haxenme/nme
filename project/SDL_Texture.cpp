@@ -294,7 +294,10 @@ public:
       if (inLines)
       {
          const IntVec &pids = inLines->mPointIndex;
-         int w = int(inLines->mThickness + 0.999);
+         double extra = 0.5;
+         if (inLines->mJoints == SPG_CORNER_MITER)
+            extra += inLines->mMiterLimit;
+         int w = int(inLines->mThickness*extra + 0.999);
 
          for(size_t i=0;i<pids.size();i++)
          {
@@ -341,8 +344,8 @@ public:
 
          const IntVec &pids = inLines->mPointIndex;
          int n = (int)pids.size();
-         bool loop = (inX[pids[0]]==inX[pids[n-1]]) &&
-                     (inY[pids[0]]==inY[pids[n-1]]);
+         bool loop = n>2 && (inX[pids[0]]==inX[pids[n-1]]) &&
+                            (inY[pids[0]]==inY[pids[n-1]]);
          int x1,y1;
 
          int x0 = inX[ pids[0] ];
@@ -354,6 +357,43 @@ public:
 
          if (!loop && mCaps==SPG_END_ROUND)
             SpanCircle(x0,y0,thickness);
+
+         // Convert hypotnuse into edge length
+         if (mJoints==SPG_CORNER_MITER)
+         {
+            mMiterLimit = inLines->mMiterLimit;
+            if (mMiterLimit<=1)
+               mJoints = SPG_CORNER_BEVEL;
+            else
+               mMiterLimit = sqrt( mMiterLimit*mMiterLimit - 1.0 );
+         }
+
+         if (loop && mJoints!=SPG_CORNER_ROUND)
+         {
+            int dx = inX[pids[0]]-inX[pids[n-2]];
+            int dy = inY[pids[0]]-inY[pids[n-2]];
+            double dub_x = dx;
+            double dub_y = dy;
+            double len = sqrt(dub_x*dub_x + dub_y*dub_y);
+            if (len==0)
+            {
+               mPrevADX = mPrevADY = 0;
+               mPrevDX = 0;
+               mPrevDY = 0;
+            }
+            else
+            {
+               double norm = (thickness/len);
+               // Perpendicular line, dx=dy, dy=-dx
+               mPrevADY = ((int)(-dx*norm))>>ToAA;
+               mPrevADX = ((int)(dy*norm))>>ToAA;
+               if (mJoints==SPG_CORNER_MITER)
+               {
+                  mPrevDX = dx * norm / (1<<ToAA);
+                  mPrevDY = dy * norm / (1<<ToAA);
+               }
+            }
+         }
          
          for(size_t i=1;i<pids.size();i++)
          {
@@ -603,6 +643,74 @@ public:
          SpanLine(y0 + y, inX-ptr[y], inX+ptr[y] );
    }
 
+
+   /*
+
+
+       |     +0      |
+     dy0    / \  xb  |      top triangle
+       |   /   \     dy1
+         1+.....\    |
+     |      \    \   |      bottom triangle
+     |         \  \  |     
+    dy2  xa      \+2
+     |        
+
+   */
+
+
+   // In this case, numbers have already been converted to aa coordinates
+   void SpanTriangle(int inX0,int inY0,
+                     int inX1,int inY1,
+                     int inX2,int inY2 )
+   {
+       // Sort
+       if (inY2<inY1)
+          { std::swap(inY1,inY2); std::swap(inX1,inX2); }
+       if (inY1<inY0)
+          { std::swap(inY0,inY1); std::swap(inX0,inX1); }
+       if (inY2<inY1)
+          { std::swap(inY1,inY2); std::swap(inX1,inX2); }
+
+       int dy1 =  inY2-inY0;
+       if (!dy1) return;
+       int dxb_dy1 = ((inX2-inX0)<<ToAA)/dy1;
+       int xa = (inX0<<ToAA);
+       int xb = xa;
+       int dy0 = inY1-inY0;
+       if (dy0)
+       {
+          int dxa_dy0 = ( (inX1-inX0) << ToAA ) / dy0;
+          for(int y=inY0;y<inY1;y++)
+          {
+             if (xa<xb)
+                SpanLine(y,xa,xb);
+             else
+                SpanLine(y,xb,xa);
+             xa += dxa_dy0;
+             xb += dxb_dy1;
+          }
+       }
+       int dy2 = inY2-inY1;
+       if (dy2)
+       {
+          xa = inX1<<ToAA;
+          int dxa_dy2 = ( (inX2-inX1) << ToAA ) / dy2;
+          for(int y=inY1;y<inY2;y++)
+          {
+             if (xa<xb)
+                SpanLine(y,xa,xb);
+             else
+                SpanLine(y,xb,xa);
+             xa += dxa_dy2;
+             xb += dxb_dy1;
+          }
+       }
+
+
+   }
+
+
    /*
        |     +0      |
      dy0    / \  xb  |      top triangle
@@ -614,7 +722,7 @@ public:
      |        \ /  dy3
      |        3+   |
 
-*/
+   */
 
 
    void SpanQuad(int inX0,int inY0,
@@ -713,35 +821,101 @@ public:
    void SpanLine(int inX0,int inY0,int inX1,int inY1,int inT,
            bool inEnd0,bool inEnd1)
    {
-      if (!inEnd0 && mJoints==SPG_CORNER_ROUND)
-         SpanCircle(inX0,inY0,inT);
-
-      if ((inY1>>ToAA) == (inY0>>ToAA))
-      {
-         int e0 = (mCaps==SPG_END_SQUARE && inEnd0) ? inT : 0;
-         int e1 = (mCaps==SPG_END_SQUARE && inEnd1) ? inT : 0;
-
-         if (inX0<inX1)
-            SpanAlignRectRectangle(inX0-e0,inY0-inT,inX1+e1,inY0+inT);
-         else
-            SpanAlignRectRectangle(inX1-e1,inY0-inT,inX0+e1,inY0+inT);
-         return;
-      }
-
-      int dy = inY1-inY0;
-      if (dy<0)
-      {
-         std::swap(inX0,inX1);
-         std::swap(inY0,inY1);
-         std::swap(inEnd0,inEnd1);
-         dy = -dy;
-      }
-
       int dx  = inX1-inX0;
+      int dy = inY1-inY0;
       double dub_x = dx;
       double dub_y = dy;
       double len = sqrt(dub_x*dub_x + dub_y*dub_y);
       double norm = (inT/len);
+      // Perpendicular line, dx=dy, dy=-dx
+      int ady = (int)(-dx*norm);
+      int adx = (int)(dy*norm);
+      int adx_aa = adx>>ToAA;
+      int ady_aa = ady>>ToAA;
+
+      double norm_dx;
+      double norm_dy;
+      if (mJoints==SPG_CORNER_MITER)
+      {
+         norm_dx = dx * norm / (1<<ToAA);
+         norm_dy = dy * norm / (1<<ToAA);
+      }
+
+      if (!inEnd0)
+      {
+         if (mJoints==SPG_CORNER_ROUND)
+            SpanCircle(inX0,inY0,inT);
+         else if (mJoints==SPG_CORNER_BEVEL || mJoints==SPG_CORNER_MITER)
+         {
+            int dot = (dx>>ToAA)*mPrevADX + (dy>>ToAA)*mPrevADY;
+            if (dot!=0 || (mJoints==SPG_CORNER_MITER &&
+                 (norm_dx*mPrevDX + norm_dy*mPrevDY) < 0 ) )
+            {
+               int sign = dot>0 ? - 1 : 1;
+               int x0 = inX0 >> ToAA;
+               int y0 = inY0 >> ToAA;
+               int x1 = x0+sign*adx_aa;
+               int y1 = y0+sign*ady_aa;
+               int x2 = x0+sign*mPrevADX;
+               int y2 = y0+sign*mPrevADY;
+               if (mJoints==SPG_CORNER_BEVEL)
+                  SpanTriangle( x0, y0, x1, y1, x2, y2 );
+               else
+               {
+                  // Solve:
+                  //  (x1,y1) - a*(norm_dx,norm_dy) =
+                  //        (x2,y2) + a*(mPrevDX,mPrevDY)
+                  // x1 - a *norm_dx = x2 + a*mPrevDX
+                  // a ( mPrevDX + norm_dx) = x1+x2
+
+                  double a;
+                  double ddx = mPrevDX + norm_dx;
+                  double ddy = mPrevDY + norm_dy;
+
+                  if (dot==0)
+                     a = mMiterLimit;
+                  else if (fabs(ddx)>fabs(ddy))
+                  {
+                     a = (double)(x1-x2)/ddx;
+                     if (a>mMiterLimit) a = mMiterLimit;
+                  }
+                  else if (ddy != 0)
+                  {
+                     a = (double)(y1-y2)/ddy;
+                     if (a>mMiterLimit) a = mMiterLimit;
+                  }
+                  else 
+                     a = mMiterLimit;
+
+                  if (a<mMiterLimit)
+                  {
+                     int cx = int(x1 - a*norm_dx);
+                     int cy = int(y1 - a*norm_dy);
+                     SpanTriangle( x0, y0, x1, y1, cx, cy );
+                     SpanTriangle( x0, y0, cx, cy, x2, y2 );
+                  }
+                  else
+                  {
+                     int cx1 = int(x1 - a*norm_dx);
+                     int cy1 = int(y1 - a*norm_dy);
+                     int cx2 = int(x2 + a*mPrevDX);
+                     int cy2 = int(y2 + a*mPrevDY);
+                     SpanTriangle( x0, y0, x1, y1, cx1, cy1 );
+                     SpanTriangle( x0, y0, cx2, cy2, cx1, cy1 );
+                     SpanTriangle( x0, y0, cx2, cy2, x2, y2 );
+                  }
+               }
+            }
+         }
+      }
+
+      if (mJoints==SPG_CORNER_MITER)
+      {
+         mPrevDX = norm_dx;
+         mPrevDY = norm_dy;
+      }
+      mPrevADX = adx_aa;
+      mPrevADY = ady_aa;
 
       if (mCaps==SPG_END_SQUARE)
       {
@@ -755,21 +929,25 @@ public:
             inX1 += (int)(dx*norm);
             inY1 += (int)(dy*norm);
          }
-
       }
 
-      // Perpendicular line, dx=dy, dy=-dx
-      int ady = (int)(-dx*norm);
 
-      /*
-      if ( abs(ady)<0x8000 )
+      // Draw aligned quad, is possible
+      if ((inY1>>ToAA) == (inY0>>ToAA))
       {
-         SpanAlignRectRectangle(inX0-inT,inY0,inX0+inT,inY1);
+         if (inX0<inX1)
+            SpanAlignRectRectangle(inX0,inY0-inT,inX1,inY0+inT);
+         else
+            SpanAlignRectRectangle(inX1,inY0-inT,inX0,inY0+inT);
          return;
       }
-      */
 
-      int adx = (int)(dy*norm);
+      // Sort and draw non-aligned quad ...
+      if (dy<0)
+      {
+         std::swap(inX0,inX1);
+         std::swap(inY0,inY1);
+      }
       if (ady<0)
       {
          ady=-ady;
@@ -805,6 +983,10 @@ public:
 
    Uint32   mCaps;
    Uint32   mJoints;
+
+   int      mPrevADX,mPrevADY;
+   double   mPrevDX, mPrevDY;
+   double   mMiterLimit;
 
    LineInfo *mLines;
    SpanInfo *mSpans;

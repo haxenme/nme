@@ -372,7 +372,10 @@ class Graphics
          {
             var l = mPoints.length;
             if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
+            {
                mCurrentLine.point_idx.push(0);
+               mPoints.push( { x:mPoints[0].x, y:mPoints[0].y } );
+            }
          }
 
          mLineJobs.push(
@@ -394,21 +397,23 @@ class Graphics
    private function CloseList(inCancelFill)
    {
       var l =  mPoints.length;
-      if (l<1) return;
-
-      CloseLines(mFilling && l>2);
-      if (l!=0)
+      if (l>0)
       {
+         CloseLines(mFilling && l>2);
          AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
-                       mFillColour, mFillAlpha, mSolidGradient,
-                       untyped mLineJobs.__neko() ) );
+                      mFillColour, mFillAlpha, mSolidGradient,
+                      untyped mLineJobs.__neko() ) );
+
+         mLineJobs = [];
+         mPoints = [];
       }
 
-      mLineJobs = [];
-      mPoints = [];
-
       if (inCancelFill)
+      {
+         mFillAlpha = 0;
+         mSolidGradient = null;
          mFilling = false;
+      }
    }
 
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);

@@ -62,7 +62,6 @@ struct LineJob : public PolyLine
 {
    int             mColour;
    double          mAlpha;
-   double          mMiterLimit;
    unsigned int    mFlags;
    Gradient        *mGradient;
    PolygonRenderer *mRenderer;

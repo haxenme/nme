@@ -73,6 +73,10 @@ class GraphicsTest extends nme.GameBase
       grad_circle.drawCircle(200,150,75);
 
       lines = new nme.Shape();
+      lines.lineStyle(1,0x0000ff);
+      lines.moveTo(50,100);
+      lines.lineTo(50,400);
+
       lines.lineStyle(20,0x000000,0.5,false,"normal",
                nme.CapsStyle.ROUND, nme.JointStyle.ROUND );
 
@@ -94,7 +98,6 @@ class GraphicsTest extends nme.GameBase
       lines.lineTo(240,360);
       lines.lineTo(290,260);
 
-
       run();
    }
 
@@ -115,6 +118,10 @@ class GraphicsTest extends nme.GameBase
       // Call flush now to ensure lines drawn before circle etc...
       gfx.flush();
 
+      // This has already been setup.
+      grad_circle.draw();
+      square.draw();
+      lines.draw();
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
@@ -122,16 +129,20 @@ class GraphicsTest extends nme.GameBase
       gfx.beginFill(0xff3030);
       gfx.drawCircle(x,100,60);
       gfx.moveTo(x,100);
+
       gfx.lineStyle(1,0x00ff80);
       gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
+      gfx.endFill();
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
       gfx.lineTo(x,100);
 
-      // This has already been setup.
-      grad_circle.draw();
-      square.draw();
-      lines.draw();
+      gfx.lineStyle(20,0x000000,1,false,"normal",
+               nme.CapsStyle.ROUND, nme.JointStyle.MITER, 5.0 );
+      gfx.moveTo(wndWidth*0.6,95);
+      gfx.lineTo(wndWidth*0.6,100);
+      gfx.lineTo(wndWidth*0.6 + 50*Math.cos(phase),
+                 100 + 50*Math.sin(phase));
    }
 
    public function onUpdate()
