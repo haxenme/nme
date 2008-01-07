@@ -65,7 +65,7 @@ TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
 
 
 
-TextureRect *CreateTextTexture(const std::string &inFont,
+TextureBuffer *CreateTextTexture(const std::string &inFont,
                                int inPointSize,SDL_Color inColour,
                                const char *inText)
 {
@@ -78,10 +78,7 @@ TextureRect *CreateTextTexture(const std::string &inFont,
    /* Use SDL_TTF to render our text */
    SDL_Surface *initial = TTF_RenderText_Blended(font, inText, inColour);
 
-   TextureRect *result = new TextureRect(initial);
-
-   SDL_FreeSurface(initial);
-   return result;
+   return new TextureBuffer(initial);
 }
 
 
@@ -99,15 +96,16 @@ value nme_create_text_texture( value font, value point_size,
    col.g = (icol>>8) & 0xff;
    col.b = (icol) & 0xff;
 
-   TextureRect *result = CreateTextTexture( val_string(font), val_int(point_size),
-                                            col, val_string(text) );
+   TextureBuffer *result =
+         CreateTextTexture( val_string(font), val_int(point_size),
+                            col, val_string(text) );
    if (!result)
    {
       return val_null;
    }
    return result->ToValue();
 }
-    
 
 DEFINE_PRIM(nme_create_text_texture, 4);
+
 

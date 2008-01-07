@@ -111,6 +111,7 @@ class Graphics
    }
 
 
+
    public function render(?inMatrix:Matrix,?inSurface:Void)
    {
       var dest:Void = inSurface == null ? Manager.getScreen() : inSurface;
@@ -120,6 +121,11 @@ class Graphics
    }
 
 
+   public function blit(inTexture:nme.BitmapData)
+   {
+      CloseLines(false);
+      AddDrawable( nme_create_blit_drawable(inTexture.handle(),mPenX,mPenY) );
+   }
 
 
    public function lineStyle(thickness:Float,
@@ -417,6 +423,7 @@ class Graphics
    }
 
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
+   static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
 

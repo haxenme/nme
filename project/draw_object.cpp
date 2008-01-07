@@ -428,48 +428,53 @@ public:
    SurfaceDrawer(SDL_Surface *inSurface,double inOX, double inOY,
          double inAlpha, bool inHasAlpha=true)
    {
-      mSurface = inSurface;
-      mTexture = 0;
+      mOwnsTexture = true;
+      mTexture = new TextureBuffer(inSurface);
+      mAlpha = inAlpha;
+      mHasAlpha = inHasAlpha;
+      Init(inOX,inOY);
+   }
+
+   SurfaceDrawer(TextureBuffer *inTexture,double inOX, double inOY)
+   {
+      mOwnsTexture = false;
+      mTexture = inTexture;
+      mAlpha = 1;
+      mHasAlpha = inTexture->GetSourceSurface()->format->BitsPerPixel==32;
+      Init(inOX,inOY);
+   }
+
+
+   void Init(double inOX,double inOY)
+   {
+      int w = mTexture->Width();
+      int h = mTexture->Height();
+
       mOX = inOX;
       mOY = inOY;
       mRect.x = (Sint16)inOX;
       mRect.y = (Sint16)inOY;
-      mRect.w = mSurface->w;
-      mRect.h = mSurface->h;
-      mAlpha = inAlpha;
-      mHasAlpha = inHasAlpha;
+      mRect.w = w;
+      mRect.h = h;
       mRenderer = 0;
+
 
       for(int i=0;i<4;i++)
       {
-         mSX[i] = (Sint16)( mOX + (i==1||i==2) * mSurface->w + 0.5 );
-         mSY[i] = (Sint16)( mOY + (i==2||i==3) * mSurface->h + 0.5 );
+         mSX[i] = (Sint16)( mOX + (i==1||i==2) * w + 0.5 );
+         mSY[i] = (Sint16)( mOY + (i==2||i==3) * h + 0.5 );
       }
    }
    ~SurfaceDrawer()
    {
-       SDL_FreeSurface(mSurface);
-       delete mTexture;
+       if (mOwnsTexture)
+          delete mTexture;
+       else
+       {
+          // TODO: reference counting ?
+       }
+
        delete mRenderer;
-   }
-
-   void CreateOGLTextureIfRequired()
-   {
-      if (IsOpenGLMode() && !mTexture)
-         mTexture = new TextureRect(mSurface);
-   }
-
-   virtual void Render()
-   {
-      if (IsOpenGLMode())
-      {
-         CreateOGLTextureIfRequired();
-         mTexture->Quad();
-      }
-      else
-      {
-         //  ?? SDL_BlitSurface(mSurface, 0, data, &mRect);
-      }
    }
 
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)
@@ -478,15 +483,14 @@ public:
 
       if (IsOpenGLScreen(inSurface))
       {
-         CreateOGLTextureIfRequired();
          if (inMatrix.IsIdentity() && mOX==0 && mOY==0)
-            mTexture->Quad();
+            mTexture->DrawOpenGL();
          else
          {
             glPushMatrix();
             inMatrix.GLMult();
             glTranslated(mOX,mOY,0);
-            mTexture->Quad();
+            mTexture->DrawOpenGL();
             glPopMatrix();
          }
       }
@@ -494,7 +498,7 @@ public:
       {
          if (inMatrix.IsIdentity() )
          {
-            SDL_BlitSurface(mSurface, 0, inSurface, &mRect);
+            SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
          }
          else
          {
@@ -530,15 +534,15 @@ public:
                             mHQTX, mHQTY,
                             SPG_clip_ymin(inSurface),
                             SPG_clip_ymax(inSurface),
-                            flags, mapping, mSurface );
+                            flags, mapping, mTexture->GetSourceSurface() );
             }
             mRenderer->Render(inSurface);
          }
       }
    }
 
-   SDL_Surface *mSurface;
-   TextureRect *mTexture;
+   TextureBuffer *mTexture;
+
    bool        mHasAlpha;
    SDL_Rect    mRect;
    Sint16      mSX[4];
@@ -552,7 +556,29 @@ public:
    Matrix           mLastMatrix;
    Matrix           mMappingMatrix;
    PolygonRenderer *mRenderer;
+   bool             mOwnsTexture;
 };
+
+//  --- Simple blitting --------------------------------------------------
+
+
+value nme_create_blit_drawable(value inTexture, value inX, value inY )
+{
+   val_check( inX, number );
+   val_check( inY, number );
+   val_check_kind( inTexture, k_texture_buffer );
+
+   TextureBuffer * t = TEXTURE_BUFFER(inTexture);
+   Drawable *obj = new SurfaceDrawer( t,
+                                      val_number(inX),
+                                      val_number(inY) );
+   value v = alloc_abstract( k_drawable, obj );
+   val_gc( v, delete_drawable );
+
+   return v;
+}
+
+
 
 
 
@@ -673,6 +699,7 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
 
 
 DEFINE_PRIM(nme_create_draw_obj, 5);
+DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_draw_object_to, 3);
 DEFINE_PRIM_MULT(nme_create_text_drawable);
 

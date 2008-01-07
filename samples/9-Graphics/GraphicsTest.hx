@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Lee McColl Sylvester - www.designrealm.co.uk
+ * Copyright (c) 2008, Hugh Sanderson, http://gamehaxe.com/
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@ class GraphicsTest extends nme.GameBase
    public function new()
    {
       // Try it both ways !
+      // (actually, opengl disabled for a while)
       var opengl = false;
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );

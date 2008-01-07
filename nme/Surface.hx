@@ -54,7 +54,8 @@ class Surface
 	
 	public function free()
 	{
-		nme_surface_free( __srf );
+                __srf = null;
+		//nme_surface_free( __srf );
 	}
 
         public function getWidth() : Int { return nme_surface_width(__srf); }
