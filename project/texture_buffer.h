@@ -20,7 +20,6 @@ public:
    inline int Width() { return mPixelWidth; }
    inline int Height() { return mPixelHeight; }
 
-   ~TextureBuffer();
 
    // SDL ...
    SDL_Surface *GetSourceSurface() { return mSurface; }
@@ -29,10 +28,17 @@ public:
    // OpenGL ...
    void DrawOpenGL(float inAlpha=1.0);
    bool PrepareOpenGL();
+   void BindOpenGL();
+   void UnBindOpenGL();
+   void ScaleTexture(int inX,int inY,float &outX,float &outY);
 
    void TexCoord(float inX,float inY);
+   TextureBuffer *IncRef();
+   void DecRef();
 
 protected:
+   // Call "DecRef" instead;
+   ~TextureBuffer();
    
    SDL_Surface   *mSurface;
    unsigned int mTextureID;  
@@ -42,6 +48,8 @@ protected:
 
    SDL_Rect     mRect;
    SDL_Rect     mDirtyRect;
+
+   int          mRefCount;
 
 private: // hide
    TextureBuffer(const TextureBuffer &inRHS);

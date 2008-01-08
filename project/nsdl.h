@@ -32,11 +32,11 @@
 
 #include <neko.h>
 
-#define SURFACE( o )		(SDL_Surface*)val_data( o );
-#define SOUND( o )			(Mix_Chunk*)val_data( o );
-#define MUSIC( o )			(Mix_Music*)val_data( o );
-#define INT_FIELD( o, f )	val_int( val_field( o, val_id( f ) ) );
-#define OBJ_FIELD( o, f )	val_field( o, val_id( f ) );
+#define SURFACE( o )		(SDL_Surface*)val_data( o )
+#define SOUND( o )			(Mix_Chunk*)val_data( o )
+#define MUSIC( o )			(Mix_Music*)val_data( o )
+#define INT_FIELD( o, f )	val_int( val_field( o, val_id( f ) ) )
+#define OBJ_FIELD( o, f )	val_field( o, val_id( f ) )
 
 DECLARE_KIND( k_surf );
 DECLARE_KIND( k_bf );

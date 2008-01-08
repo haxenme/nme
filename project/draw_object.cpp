@@ -428,7 +428,6 @@ public:
    SurfaceDrawer(SDL_Surface *inSurface,double inOX, double inOY,
          double inAlpha, bool inHasAlpha=true)
    {
-      mOwnsTexture = true;
       mTexture = new TextureBuffer(inSurface);
       mAlpha = inAlpha;
       mHasAlpha = inHasAlpha;
@@ -437,8 +436,8 @@ public:
 
    SurfaceDrawer(TextureBuffer *inTexture,double inOX, double inOY)
    {
-      mOwnsTexture = false;
       mTexture = inTexture;
+      mTexture->IncRef();
       mAlpha = 1;
       mHasAlpha = inTexture->GetSourceSurface()->format->BitsPerPixel==32;
       Init(inOX,inOY);
@@ -467,13 +466,7 @@ public:
    }
    ~SurfaceDrawer()
    {
-       if (mOwnsTexture)
-          delete mTexture;
-       else
-       {
-          // TODO: reference counting ?
-       }
-
+       mTexture->DecRef();
        delete mRenderer;
    }
 
@@ -556,7 +549,6 @@ public:
    Matrix           mLastMatrix;
    Matrix           mMappingMatrix;
    PolygonRenderer *mRenderer;
-   bool             mOwnsTexture;
 };
 
 //  --- Simple blitting --------------------------------------------------

@@ -100,9 +100,7 @@ value nme_create_text_texture( value font, value point_size,
          CreateTextTexture( val_string(font), val_int(point_size),
                             col, val_string(text) );
    if (!result)
-   {
       return val_null;
-   }
    return result->ToValue();
 }
 

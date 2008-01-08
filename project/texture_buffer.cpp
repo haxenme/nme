@@ -4,6 +4,7 @@
 #endif
 #include <gl/GL.H>
 #include "nme.h"
+#include "nsdl.h"
 
 
 DEFINE_KIND( k_texture_buffer );
@@ -41,6 +42,8 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
    mRect.w = mPixelWidth;
    mRect.h = mPixelHeight;
 
+   mRefCount = 1;
+
    mDirtyRect = mRect;
 }
 
@@ -51,6 +54,19 @@ TextureBuffer::~TextureBuffer()
       glDeleteTextures(1,&mTextureID);
    if (mSurface)
       SDL_FreeSurface(mSurface);
+}
+
+void TextureBuffer::DecRef()
+{
+   mRefCount--;
+   if (mRefCount<=0)
+      delete this;
+}
+
+TextureBuffer *TextureBuffer::IncRef()
+{
+   mRefCount++;
+   return this;
 }
 
 
@@ -120,6 +136,28 @@ bool TextureBuffer::PrepareOpenGL()
    return true;
 }
 
+void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
+{
+   outX = (float)(inX * mX1);
+   outY = (float)(inY * mY1);
+}
+
+
+void TextureBuffer::BindOpenGL()
+{
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, mTextureID);
+
+}
+
+void TextureBuffer::UnBindOpenGL()
+{
+   glDisable(GL_TEXTURE_2D);
+   // glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+
 
 void TextureBuffer::DrawOpenGL(float inAlpha)
 {
@@ -156,7 +194,7 @@ void delete_texture_buffer( value texture_buffer )
       val_gc( texture_buffer, NULL );
 
       TextureBuffer* t = TEXTURE_BUFFER(texture_buffer);
-      delete t;
+      t->DecRef();
    }
 }
 
@@ -245,6 +283,143 @@ value nme_load_texture(value inName)
 
 }
 
+
+// --- Simple renderer -----------------------
+
+DECLARE_KIND( k_tile_renderer );
+DEFINE_KIND( k_tile_renderer );
+#define TILE_RENDERER(v) ( (TileRenderer *)(val_data(v)) )
+
+
+class TileRenderer
+{
+public:
+   TileRenderer(TextureBuffer *inTexture,
+                SDL_Surface *inDestSurface,
+                int inX0,int inY0,
+                int inWidth,int inHeight)
+   {
+      mTexture = inTexture->IncRef();
+      mDestSurface = inDestSurface;
+      mOpenGL =  IsOpenGLScreen(mDestSurface);
+
+      mSrcRect.x = inX0;
+      mSrcRect.y = inY0;
+      mSrcRect.w = inWidth;
+      mSrcRect.h = inHeight;
+
+      if (mOpenGL)
+      {
+         mTexture->PrepareOpenGL();
+         mTexture->UnBindOpenGL();
+         mTexture->ScaleTexture(inX0,inY0,mT00[0],mT00[1]);
+         mTexture->ScaleTexture(inX0+inWidth,inY0,mT10[0],mT10[1]);
+         mTexture->ScaleTexture(inX0+inWidth,inY0+inHeight,mT11[0],mT11[1]);
+         mTexture->ScaleTexture(inX0,inY0+inHeight,mT01[0],mT01[1]);
+      }
+      else
+      {
+         // TODO: convert to hardware surface?
+      }
+   }
+
+   ~TileRenderer()
+   {
+      mTexture->DecRef();
+   }
+
+   void Blit(int inX0,int inY0)
+   {
+      if (mOpenGL)
+      {
+         mTexture->BindOpenGL();
+         glBegin(GL_QUADS);
+         glTexCoord2fv(mT00);
+         glVertex2i(inX0,inY0);
+         glTexCoord2fv(mT01);
+         glVertex2i(inX0,inY0+mSrcRect.h);
+         glTexCoord2fv(mT11);
+         glVertex2i(inX0+mSrcRect.w,inY0+mSrcRect.h);
+         glTexCoord2fv(mT10);
+         glVertex2i(inX0+mSrcRect.w,inY0);
+         glEnd();
+      }
+      else
+      {
+         SDL_Rect    dest;
+         dest.x = inX0;
+         dest.y = inY0;
+         dest.w = mSrcRect.w;
+         dest.h = mSrcRect.h;
+         SDL_BlitSurface(mTexture->GetSourceSurface(), &mSrcRect,
+                         mDestSurface, &dest);
+      }
+   }
+
+   bool mOpenGL;
+   TextureBuffer *mTexture;
+   // SDL
+   SDL_Surface *mDestSurface;
+   SDL_Rect    mSrcRect;
+   // Opengl
+   float mT00[2];
+   float mT10[2];
+   float mT01[2];
+   float mT11[2];
+};
+
+void delete_tile_renderer( value tile_renderer )
+{
+   if ( val_is_kind( tile_renderer, k_tile_renderer ) )
+   {
+      val_gc( tile_renderer, NULL );
+
+      delete TILE_RENDERER(tile_renderer);
+   }
+}
+
+
+
+value nme_create_tile_renderer(value* arg, int nargs )
+{
+   enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aSIZE };
+   if (nargs!=aSIZE)
+      failure( "nme_create_tile_renderer - wrong number of args.\n" );
+
+   val_check_kind( arg[aTex], k_texture_buffer );
+   val_check_kind( arg[aSurface], k_surf );
+   val_check( arg[aX0], int );
+   val_check( arg[aY0], int );
+   val_check( arg[aWidth], int );
+   val_check( arg[aHeight], int );
+
+   TileRenderer *result = new TileRenderer( TEXTURE_BUFFER(arg[aTex]),
+                                            SURFACE(arg[aSurface]),
+                                            val_int(arg[aX0]),
+                                            val_int(arg[aY0]),
+                                            val_int(arg[aWidth]),
+                                            val_int(arg[aHeight]) );
+   value v = alloc_abstract( k_tile_renderer, result );
+   val_gc( v, delete_tile_renderer );
+   return v;
+}
+
+value nme_blit_tile( value tile_renderer, value x, value y )
+{
+   if ( val_is_kind( tile_renderer, k_tile_renderer ) )
+   {
+      TileRenderer* t = TILE_RENDERER(tile_renderer);
+      t->Blit( val_int(x), val_int(y) );
+   }
+
+   return alloc_int(0);
+}
+
+
+
+
+DEFINE_PRIM_MULT(nme_create_tile_renderer);
+DEFINE_PRIM(nme_blit_tile, 3);
     
 
 DEFINE_PRIM(nme_create_texture_buffer, 5);
