@@ -1,0 +1,8 @@
+-main Main
+-lib nme
+-neko SVG2Gfx.n
+
+--next
+-main Display
+-lib nme
+-neko Display.n

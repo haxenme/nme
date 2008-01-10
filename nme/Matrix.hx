@@ -57,5 +57,29 @@ class Matrix
       c = -b;
       d = a;
    }
+
+   public function translate(inDX:Float, inDY:Float)
+   {
+      tx += inDX;
+      ty += inDY;
+   }
+
+   public function concat(inLHS:Matrix)
+   {
+      var a1 = inLHS.a*a + inLHS.b*c;
+      var b1 = inLHS.a*b + inLHS.b*d;
+      var tx1 = inLHS.a*tx + inLHS.b*ty + inLHS.tx;
+
+      var c1 = inLHS.c*a + inLHS.d*c;
+      var d1 = inLHS.c*b + inLHS.d*d;
+      var ty1 = inLHS.c*tx + inLHS.d*ty + inLHS.ty;
+
+      a = a1;
+      b = b1;
+      c = c1;
+      d = d1;
+      tx = tx1;
+      ty = ty1;
+   }
 }
 
