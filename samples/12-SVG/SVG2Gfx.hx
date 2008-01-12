@@ -72,17 +72,19 @@ class SVG2Gfx
 
     var mScaleX:Float;
     var mScaleY:Float;
+    public var width(default,null):Float;
+    public var height(default,null):Float;
 
     var mGrads : GradHash;
     var mPathParser: PathParser;
 
-    var mRoot:Group;
+    var mRoot:Array<Group>;
 
     var mGfx : Dynamic;
     var mMatrix : Matrix;
 
     static var mStyleSplit = ~/;/g;
-    static var mStyleValue = ~/:/;
+    static var mStyleValue = ~/\s*(.*)\s*:\s*(.*)\s*/;
 
     static var mTranslateMatch = ~/translate\((.*),(.*)\)/;
     static var mMatrixMatch = ~/matrix\((.*),(.*),(.*),(.*),(.*),(.*)\)/;
@@ -99,13 +101,26 @@ class SVG2Gfx
 
        mPathParser = new PathParser();
 
+       mRoot = new Array();
+
+       width = GetFloatStyle("width",svg,null,0.0);
+       height = GetFloatStyle("height",svg,null,0.0);
+       if (width==0 && height==0)
+          width = height = 400;
+       else if (width==0)
+          width = height;
+       else if (height==0)
+          height = width;
+
        for(element in svg.elements())
        {
           var name = element.nodeName;
           if (name=="defs")
              LoadDefs(element);
           else if (name=="g")
-             mRoot = LoadGroup(element,new Matrix());
+          {
+             mRoot.push( LoadGroup(element,new Matrix(), null)  );
+          }
        }
     }
 
@@ -145,7 +160,7 @@ class SVG2Gfx
 
        for(stop in inGrad.elements())
        {
-          var styles = GetStyles(stop);
+          var styles = GetStyles(stop,null);
 
           grad.cols.push( GetColourStyle("stop-color",stop,styles,0x000000) );
           grad.alphas.push( GetFloatStyle("stop-opacity",stop,styles,1.0) );
@@ -194,19 +209,22 @@ class SVG2Gfx
     }
 
 
-   function GetStyles(inNode:Xml) : Styles
+   function GetStyles(inNode:Xml,inPrevStyles:Styles) : Styles
    {
       if (!inNode.exists("style"))
-         return null;
+         return inPrevStyles;
 
       var styles = new Styles();
+      if (inPrevStyles!=null)
+         for(s in inPrevStyles.keys())
+            styles.set(s,inPrevStyles.get(s));
 
       var style = inNode.get("style");
       var strings = mStyleSplit.split(style);
       for(s in strings)
       {
          if (mStyleValue.match(s))
-            styles.set(mStyleValue.matchedLeft(),mStyleValue.matchedRight());
+            styles.set(mStyleValue.matched(1),mStyleValue.matched(2));
       }
 
       return styles;
@@ -215,7 +233,9 @@ class SVG2Gfx
    function GetStyle(inKey:String,inNode:Xml,inStyles:Styles,inDefault:String)
    {
       if (inNode!=null && inNode.exists(inKey))
+      {
          return inNode.get(inKey);
+      }
 
       if (inStyles!=null && inStyles.exists(inKey))
          return inStyles.get(inKey);
@@ -292,9 +312,9 @@ class SVG2Gfx
 
 
 
-    public function LoadPath(inPath:Xml, inMatrix:Matrix) : Path
+    public function LoadPath(inPath:Xml, inMatrix:Matrix,inStyles:Styles) : Path
     {
-       var styles = GetStyles(inPath);
+       var styles = GetStyles(inPath,inStyles);
 
        var path =
        {
@@ -317,7 +337,7 @@ class SVG2Gfx
        return path;
     }
 
-    public function LoadGroup(inG:Xml, matrix:Matrix) : Group
+    public function LoadGroup(inG:Xml, matrix:Matrix,inStyles:Styles) : Group
     {
        var g:Group = { children: [], name:"" };
        if (inG.exists("transform"))
@@ -328,15 +348,17 @@ class SVG2Gfx
        if (inG.exists("id"))
           g.name = inG.get("id");
 
+       var styles = GetStyles(inG,inStyles);
+
        for(el in inG.elements())
        {
           if (el.nodeName=="g")
           {
-             g.children.push( DisplayGroup(LoadGroup(el,matrix)) );
+             g.children.push( DisplayGroup(LoadGroup(el,matrix, styles)) );
           }
           else if (el.nodeName=="path")
           {
-             g.children.push( DisplayPath( LoadPath(el,matrix) ) );
+             g.children.push( DisplayPath( LoadPath(el,matrix, styles) ) );
           }
           else
           {
@@ -495,7 +517,7 @@ class SVG2Gfx
 
     public function RenderGroup(inGroup:Group)
     {
-       neko.Lib.println( inGroup.name);
+       // trace( inGroup.name);
 
        for(child in inGroup.children)
        {
@@ -509,14 +531,16 @@ class SVG2Gfx
        }
     }
 
-    public function Render(inGfx:Dynamic,inMatrix:Matrix,inScaleX:Float,inScaleY:Float)
+    public function Render(inGfx:Dynamic,inMatrix:Matrix,
+        ?inScaleX:Float,?inScaleY:Float)
     {
-       mScaleX = inScaleX;
-       mScaleY = inScaleY;
+       mScaleX = inScaleX==null ? 1.0 : mScaleX;
+       mScaleY = inScaleY==null ? 1.0 : mScaleY;
        mGfx = inGfx;
        mMatrix = inMatrix;
 
-       RenderGroup(mRoot);
+       for(g in mRoot)
+          RenderGroup(g);
     }
 
 }

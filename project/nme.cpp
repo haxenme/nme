@@ -354,7 +354,8 @@ value nme_event()
 		}
 		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
 		{
-			alloc_field( evt, val_id( "type" ), alloc_int( et_button ) );
+			alloc_field( evt, val_id( "type" ), alloc_int( event.type == SDL_MOUSEBUTTONUP ?
+                                                             et_button_up : et_button_down ) );
 			alloc_field( evt, val_id( "state" ), alloc_int( event.button.state ) );
 			alloc_field( evt, val_id( "x" ), alloc_int( event.button.x ) );
 			alloc_field( evt, val_id( "y" ), alloc_int( event.button.y ) );

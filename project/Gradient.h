@@ -95,7 +95,7 @@ struct GradientSource1D
       SetPtr();
    }
 
-
+   // TODO: interp ?
    Uint8 GetR() const { return mPtr->r; }
    Uint8 GetG() const { return mPtr->g; }
    Uint8 GetB() const { return mPtr->b; }

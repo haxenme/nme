@@ -290,6 +290,7 @@ public:
 
       int min_y = inY[0]>>16;
       int max_y = min_y;
+      mLines = 0;
 
       if (inLines)
       {
@@ -320,6 +321,12 @@ public:
 
       // exclusive of last point
       max_y++;
+
+      if (min_y >= inMaxY || max_y<inMinY)
+      {
+         mMinY = mMaxY = 0;
+         return;
+      }
    
       if (min_y > mMinY)
          mMinY = min_y;

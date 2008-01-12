@@ -27,6 +27,8 @@
  
 import nme.Manager;
 import nme.Graphics;
+import nme.KeyCode;
+
 
 
 
@@ -39,6 +41,13 @@ class Display extends nme.GameBase
    static function main() { new Display(); }
 
    var mShape:nme.Shape;
+   var mSVG : SVG2Gfx;
+   var mOX:Float;
+   var mOY:Float;
+   var mZoom:Float;
+   var mMiddleDrag:Bool;
+   var mDownX:Int;
+   var mDownY:Int;
 
    public function new()
    {
@@ -63,19 +72,92 @@ class Display extends nme.GameBase
 
       var xml = Xml.parse(xml_data);
 
-      var svg2gfx = new SVG2Gfx(xml);
+      mSVG = new SVG2Gfx(xml);
 
       mShape = new nme.Shape();
 
-      svg2gfx.Render(mShape,new nme.Matrix(),1.0,1.0);
+      ResetZoom();
 
       run();
+   }
+
+   function ResetZoom()
+   {
+      var w_scale = wndWidth/mSVG.width * 0.9;
+      var h_scale = wndHeight/mSVG.height * 0.9;
+      if (w_scale < h_scale)
+         mZoom = w_scale;
+      else
+         mZoom = h_scale;
+
+      mOY = (wndHeight - mSVG.height*mZoom) * 0.5;
+      mOX = (wndWidth - mSVG.width*mZoom) * 0.5;
+
+      UpdateGfx();
+   }
+
+   function ZoomAbout(inX:Int, inY:Int, inZoom:Float)
+   {
+      var under_mouse_x = (inX-mOX)/mZoom;
+      var under_mouse_y = (inY-mOY)/mZoom;
+      mZoom = inZoom;
+      mOX = inX - under_mouse_x*mZoom;
+      mOY = inY - under_mouse_y*mZoom;
+      UpdateGfx();
+   }
+
+   public function onMouse(inEvent:MouseEvent) : Void
+   {
+      if (inEvent.type == met_MouseWheelUp)
+         ZoomAbout(inEvent.x,inEvent.y,mZoom*1.2);
+      else if (inEvent.type == met_MouseWheelDown)
+         ZoomAbout(inEvent.x,inEvent.y,mZoom/1.2);
+      else if (inEvent.type == met_MiddleDown)
+      {
+         mDownX = inEvent.x;
+         mDownY = inEvent.y;
+         mMiddleDrag = true;
+      }
+      else if (inEvent.type == met_MiddleUp)
+      {
+         mMiddleDrag = false;
+      }
+
+      if (mMiddleDrag)
+      {
+         var dx = (inEvent.x-mDownX);
+         var dy = (inEvent.y-mDownY);
+         if (dx!=0 || dy!=0)
+         {
+            mOX += dx;
+            mOY += dy;
+            UpdateGfx();
+         }
+         mDownX = inEvent.x;
+         mDownY = inEvent.y;
+      }
+   }
+
+   public function onKey(inEvent:KeyEvent)
+   {
+      if (inEvent.code==KeyCode.HOME)
+         ResetZoom();
+   }
+
+
+   function UpdateGfx()
+   {
+      var m = new nme.Matrix(mZoom, 0, 0, mZoom, mOX, mOY);
+      mShape.clear();
+      mSVG.Render(mShape,m);
    }
 
 
    public function onRender()
    {
-      manager.clear( 0xffffff );
+      manager.clear( 0x000033 );
+      Manager.graphics.beginFill(0xffffff);
+      Manager.graphics.drawRect( mOX,mOY, mSVG.width*mZoom, mSVG.height*mZoom );
 
       mShape.draw();
    }
