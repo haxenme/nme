@@ -375,7 +375,8 @@
        sodipodi:rx="7.2785249"
        sodipodi:ry="7.6828876"
        d="M 285.47991 455.11877 A 7.2785249 7.6828876 0 1 1  270.92286,455.11877 A 7.2785249 7.6828876 0 1 1  285.47991 455.11877 z"
-       transform="matrix(0.4047679,0,0,0.430863,360.48778,166.74786)" />
+       transform="matrix(0.4047679,0,0,0.430863,360.48778,166.74786)"
+       />
     <path
        sodipodi:type="arc"
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.72190849;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"

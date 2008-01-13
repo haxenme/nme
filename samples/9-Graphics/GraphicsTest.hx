@@ -126,6 +126,12 @@ class GraphicsTest extends nme.GameBase
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
+      gfx.lineStyle(20,0x007733,1,false,"normal",
+               nme.CapsStyle.ROUND, nme.JointStyle.ROUND, 5.0 );
+      gfx.moveTo(0,0);
+      gfx.curveTo(wndWidth/2,wndHeight,wndWidth,0);
+      gfx.flush();
+
       gfx.lineStyle(3,0x0000ff);
       gfx.beginFill(0xff3030);
       gfx.drawCircle(x,100,60);
@@ -144,6 +150,7 @@ class GraphicsTest extends nme.GameBase
       gfx.lineTo(wndWidth*0.6,100);
       gfx.lineTo(wndWidth*0.6 + 50*Math.cos(phase),
                  100 + 50*Math.sin(phase));
+
    }
 
    public function onUpdate()

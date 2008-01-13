@@ -20,6 +20,10 @@ typedef Grad =
    var spread: SpreadMethod;
    var interp:InterpolationMethod;
    var focal:Float;
+   var x1:Float;
+   var y1:Float;
+   var x2:Float;
+   var y2:Float;
 }
 
 typedef GradHash = Hash<Grad>;
@@ -134,7 +138,12 @@ class SVG2Gfx
                     matrix : new Matrix(),
                     spread : SpreadMethod.PAD,
                     interp : InterpolationMethod.RGB,
-                    focal : 0.0 };
+                    focal : 0.0,
+                    x1 : 0.0,
+                    y1 : 0.0,
+                    x2 : 2.0,
+                    y2 : 0.0,
+                    };
 
        if (inGrad.exists("xlink:href"))
        {
@@ -153,8 +162,17 @@ class SVG2Gfx
           grad.focal = base.focal;
        }
 
+       if (inGrad.exists("x1"))
+       {
+          grad.x1 = Std.parseFloat(inGrad.get("x1"));
+          grad.y1 = Std.parseFloat(inGrad.get("y1"));
+          grad.x2 = Std.parseFloat(inGrad.get("x2"));
+          grad.y2 = Std.parseFloat(inGrad.get("y2"));
+       }
+
        if (inGrad.exists("gradientTransform"))
           ApplyTransform(grad.matrix,inGrad.get("gradientTransform"));
+
 
        // todo - grad.spread = base.spread;
 
@@ -312,8 +330,14 @@ class SVG2Gfx
 
 
 
-    public function LoadPath(inPath:Xml, inMatrix:Matrix,inStyles:Styles) : Path
+    public function LoadPath(inPath:Xml, matrix:Matrix,inStyles:Styles,inIsRect:Bool) : Path
     {
+       if (inPath.exists("transform"))
+       {
+          matrix = matrix.clone();
+          ApplyTransform(matrix,inPath.get("transform"));
+       }
+
        var styles = GetStyles(inPath,inStyles);
 
        var path =
@@ -327,12 +351,27 @@ class SVG2Gfx
           joint_style:JointStyle.ROUND,
           miter_limit: GetFloatStyle("stroke-miterlimit",inPath,styles,3.0),
           segments:[],
-          matrix:inMatrix,
+          matrix:matrix,
        }
 
-       var d = inPath.get("d");
-       for(segment in mPathParser.parse(d) )
-          path.segments.push(segment);
+       if (inIsRect)
+       {
+          var x = Std.parseFloat(inPath.get("x"));
+          var y = Std.parseFloat(inPath.get("y"));
+          var w = Std.parseFloat(inPath.get("width"));
+          var h = Std.parseFloat(inPath.get("height"));
+          path.segments.push( MoveTo(x,y) );
+          path.segments.push( LineTo(x+w,y) );
+          path.segments.push( LineTo(x+w,y+h) );
+          path.segments.push( LineTo(x,y+h) );
+          path.segments.push( LineTo(x,y) );
+       }
+       else
+       {
+          var d = inPath.get("d");
+          for(segment in mPathParser.parse(d) )
+             path.segments.push(segment);
+       }
 
        return path;
     }
@@ -358,7 +397,11 @@ class SVG2Gfx
           }
           else if (el.nodeName=="path")
           {
-             g.children.push( DisplayPath( LoadPath(el,matrix, styles) ) );
+             g.children.push( DisplayPath( LoadPath(el,matrix, styles, false) ) );
+          }
+          else if (el.nodeName=="rect")
+          {
+             g.children.push( DisplayPath( LoadPath(el,matrix, styles, true) ) );
           }
           else
           {
@@ -373,6 +416,8 @@ class SVG2Gfx
     var mPenY:Float;
     var mLastMoveX:Float;
     var mLastMoveY:Float;
+    var mPrevP2X:Float;
+    var mPrevP2Y:Float;
 
     function DoMoveTo(m:Matrix,x:Float,y:Float)
     {
@@ -390,12 +435,179 @@ class SVG2Gfx
        mGfx.lineTo(mPenX,mPenY);
     }
 
+    function DoQuadraticTo(xc:Float,yc:Float,x:Float,y:Float)
+    {
+       mPrevP2X = xc;
+       mPrevP2Y = yc;
+       mPenX = x;
+       mPenY = y;
+       mGfx.curveTo(xc,yc,x,y);
+    }
+
+
+    function DoCubicTo( x1:Float,y1:Float, x2:Float,y2:Float, x3:Float,y3:Float)
+    {
+       var dx1 = x1-mPenX;
+       var dy1 = y1-mPenY;
+       var dx2 = x2-x1;
+       var dy2 = y2-y1;
+       var dx3 = x3-x2;
+       var dy3 = y3-y2;
+       var len = Math.sqrt(dx1*dx1+dy1*dy1 + dx2*dx2+dy2*dy2 + dx3*dx3+dy3*dy3);
+       var steps = Math.round(len*0.4);
+
+       if (steps>1)
+       {
+          var du = 1.0/steps;
+          var u = du;
+          for(i in 1...steps)
+          {
+             var u1 = 1.0-u;
+             var c0 = u1*u1*u1;
+             var c1 = 3*u1*u1*u;
+             var c2 = 3*u1*u*u;
+             var c3 = u*u*u;
+             u+=du;
+             mGfx.lineTo(c0*mPenX + c1*x1 + c2*x2 + c3*x3,
+                         c0*mPenY + c1*y1 + c2*y2 + c3*y3 );
+          }
+       }
+
+       mPrevP2X = x2;
+       mPrevP2Y = y2;
+       mPenX = x3;
+       mPenY = y3;
+       mGfx.lineTo(mPenX,mPenY);
+    }
+
+    function MDoCubicTo(m:Matrix,
+                       inX1:Float,inY1:Float,
+                       inX2:Float,inY2:Float,
+                       inX3:Float,inY3:Float)
+    {
+       DoCubicTo(m.a*inX1 + m.b*inY1 + m.tx, m.c*inX1 + m.d*inY1 + m.ty,
+                 m.a*inX2 + m.b*inY2 + m.tx, m.c*inX2 + m.d*inY2 + m.ty,
+                 m.a*inX3 + m.b*inY3 + m.tx, m.c*inX3 + m.d*inY3 + m.ty );
+    }
+
+    function SMDoCubicTo(m:Matrix,
+                       inX2:Float,inY2:Float,
+                       inX3:Float,inY3:Float)
+    {
+       DoCubicTo(mPenX*2-mPrevP2X, mPenY*2-mPrevP2Y,
+                 m.a*inX2 + m.b*inY2 + m.tx, m.c*inX2 + m.d*inY2 + m.ty,
+                 m.a*inX3 + m.b*inY3 + m.tx, m.c*inX3 + m.d*inY3 + m.ty );
+    }
+
+    function MDoQuadraticTo(m:Matrix,
+                       inX1:Float,inY1:Float,
+                       inX2:Float,inY2:Float )
+    {
+       DoQuadraticTo(m.a*inX1 + m.b*inY1 + m.tx, m.c*inX1 + m.d*inY1 + m.ty,
+                 m.a*inX2 + m.b*inY2 + m.tx, m.c*inX2 + m.d*inY2 + m.ty );
+    }
+
+    function SMDoQuadraticTo(m:Matrix, inX1:Float,inY1:Float )
+    {
+       DoQuadraticTo(mPenX*2-mPrevP2X, mPenY*2-mPrevP2Y,
+                     m.a*inX1 + m.b*inY1 + m.tx, m.c*inX1 + m.d*inY1 + m.ty );
+    }
+
+
+
+    function DoArcTo(m:Matrix,x1:Float,y1:Float,x2:Float,y2:Float,
+                rx:Float, ry:Float,
+                phi:Float, fA:Bool, fS:Bool)
+    {
+       if (rx==0 || ry==0)
+       {
+          DoLineTo(m,x2,y2);
+          return;
+       }
+       if (rx<0) rx = -rx;
+       if (ry<0) ry = -ry;
+
+       var p = phi*Math.PI/180.0;
+       var cos = Math.cos(p);
+       var sin = Math.sin(p);
+       var dx = (x1-x2)*0.5;
+       var dy = (y1-y2)*0.5;
+       var x1_ = cos*dx + sin*dy;
+       var y1_ = -sin*dx + cos*dy;
+
+       var rx2 = rx*rx;
+       var ry2 = ry*ry;
+       var x1_2 = x1_*x1_;
+       var y1_2 = y1_*y1_;
+       var s = (rx2*ry2 - rx2*y1_2 - ry2*x1_2) /
+                 (rx2*y1_2 + ry2*x1_2 );
+       if (s<0)
+          s=0;
+       else if (fA==fS)
+          s = -Math.sqrt(s);
+       else
+          s = Math.sqrt(s);
+
+       var cx_ = s*rx*y1_/ry;
+       var cy_ = -s*ry*x1_/rx;
+
+       var xm = (x1+x2)*0.5;
+       var ym = (y1+y2)*0.5;
+
+       var cx = cos*cx_ + sin*cy_ + xm;
+       var cy = -sin*cx_ + cos*cy_ + ym;
+
+       var theta = Math.atan2( (y1_-cy_)/ry, (x1_-cx_)/rx );
+       var dtheta = Math.atan2( (-y1_-cy_)/ry, (-x1_-cx_)/rx ) - theta;
+
+       if (fS && dtheta<0)
+          dtheta+=2.0*Math.PI;
+       else if (!fS && dtheta>0)
+          dtheta-=2.0*Math.PI;
+
+
+       // axis, at theta = 0;
+       //
+       // p =  [ M ] [ + centre ] [ rotate phi ] [ rx 0 ] [ cos(theta),sin(theta) ]t
+       //                                        [ 0 ry ]
+       //   = [ a b tx ] [ cos*rx  sin*ry cx ]  [ cos(theta), sin(theta) 1 ]t;
+       //     [ c d ty ] [-sin*rx  cos*ry cy ]
+       //     [ 0 0 1  ] [ 0       0       1 ]
+       //
+       var ta = m.a*cos*rx - m.b*sin*rx;
+       var tb = m.a*sin*ry + m.b*cos*ry;
+       var tx = m.a*cx     + m.b*cy + m.tx;
+
+       var tc = m.c*cos*rx - m.d*sin*rx;
+       var td = m.c*sin*ry + m.d*cos*ry;
+       var ty = m.c*cx     + m.d*cy + m.ty;
+
+       var len = Math.abs(dtheta)*Math.sqrt(ta*ta + tb*tb + tc*tc + td*td);
+       var steps = Math.round(len);
+
+       if (steps>1)
+       {
+          dtheta /= steps;
+          for(i in 1...steps-1)
+          {
+             var c = Math.cos(theta);
+             var s = Math.sin(theta);
+             theta+=dtheta;
+             mGfx.lineTo( ta*c + tb*s + tx, tc*c + td*s + ty );
+          }
+       }
+       DoLineTo(m,x2,y2);
+    }             
+
 
     function DoClose()
     {
-       mPenY = mLastMoveX;
-       mPenY = mLastMoveY;
-       mGfx.lineTo(mPenX,mPenY);
+       if (mPenX!=mLastMoveX || mPenY!=mLastMoveY)
+       {
+          mPenY = mLastMoveX;
+          mPenY = mLastMoveY;
+          mGfx.lineTo(mPenX,mPenY);
+       }
     }
 
 
@@ -410,11 +622,29 @@ class SVG2Gfx
        switch(inPath.fill)
        {
           case FillGrad(grad):
-             // TODO: work this out ...
              var gm:Matrix  = grad.matrix.clone();
              gm.concat(m);
+             // Transform the points - otherwise we will need to inverse transform
+             //  tre gradient matrix ...
+             var tx1 = grad.x1 * gm.a + grad.y1*gm.b + gm.tx;
+             var ty1 = grad.x1 * gm.c + grad.y1*gm.d + gm.ty;
+             var tx2 = grad.x2 * gm.a + grad.y2*gm.b + gm.tx;
+             var ty2 = grad.x2 * gm.c + grad.y2*gm.d + gm.ty;
+             // G(x,y) = A x + B y + C
+             
+             var mtx = new Matrix();
+             var dx = tx2-tx1;
+             var dy = ty2-ty1;
+             if (dx!=0 || dy!=0)
+             {
+                var scale = 1.0/(dx*dx+dy*dy);
+                mtx.a = scale*dx;
+                mtx.b = scale*dy;
+                mtx.tx =  - tx1*mtx.a - ty1*mtx.b;
+             }
+
              mGfx.beginGradientFill(grad.type, grad.cols, grad.alphas,
-                      grad.ratios, gm, grad.spread, grad.interp, grad.focal );
+                      grad.ratios, mtx, grad.spread, grad.interp, grad.focal );
 
           case FillSolid(colour):
              mGfx.beginFill(colour,inPath.fill_alpha);
@@ -425,10 +655,13 @@ class SVG2Gfx
        if (inPath.stroke_colour==null)
           mGfx.lineStyle(0,0,0,false,"normal",null,null,3);
        else
-          mGfx.lineStyle( inPath.stroke_width, inPath.stroke_colour,
+       {
+          var scale = Math.sqrt(m.a*m.a + m.b*m.b);
+          mGfx.lineStyle( inPath.stroke_width*scale, inPath.stroke_colour,
                           inPath.stroke_alpha, false,"normal",
                           inPath.stroke_caps,inPath.joint_style,
                           inPath.miter_limit);
+       }
 
        for(segment in inPath.segments)
        {
@@ -471,46 +704,45 @@ class SVG2Gfx
     
              case CubicTo(x1, y1, x2, y2, x, y):
                 px = x; py = y;
-                DoLineTo(m,px,py);
+                MDoCubicTo(m,x1,y1,x2,y2,px,py);
 
              case CubicToR(x1, y1, x2, y2, x, y):
                 x1 += px; y1 += py;
                 x2 += px; y2 += py;
                 px += x; py += y;
-                DoLineTo(m,px,py);
+                MDoCubicTo(m,x1,y1,x2,y2,px,py);
 
              case SmoothCubicTo( x2, y2, x, y):
                 px = x; py = y;
-                DoLineTo(m,px,py);
+                SMDoCubicTo(m,x2,y2,px,py);
 
 
              case SmoothCubicToR( x2, y2, x, y):
                 x2 += px; y2 += py;
                 px += x; py += y;
-                DoLineTo(m,px,py);
+                SMDoCubicTo(m,x2,y2,px,py);
     
              case QuadraticTo( x1, y1, x, y):
                 px = x; py = y;
-                DoLineTo(m,px,py);
+                MDoQuadraticTo(m,x1,y1,px,py);
 
 
              case QuadraticToR( x1, y1, x, y):
                 x1 += px; y1+=py;
                 px += x; py += y;
-                DoLineTo(m,px,py);
+                MDoQuadraticTo(m,x1,y1,px,py);
 
              case SmoothQuadraticTo( x, y):
                 px = x; py = y;
-                DoLineTo(m,px,py);
+                SMDoQuadraticTo(m,px,py);
 
              case SmoothQuadraticToR( x, y):
                 px += x; py += y;
-                DoLineTo(m,px,py);
+                SMDoQuadraticTo(m,px,py);
     
              case ArcTo( rx, ry, rotation, largeArc, sweep, x, y):
+                DoArcTo(m,px,py,x,y,rx,ry,rotation,largeArc,sweep);
                 px = x; py = y;
-                //ArcTo(rx,ry,rotation,largeArc,sweep,
-                                   //px*m.a+py*m.b+m.tx,px*m.c+py*m.d+m.ty);
           }
       }
     }

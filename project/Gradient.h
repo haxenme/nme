@@ -73,7 +73,7 @@ struct GradientSource1D
          else if (mG >= (SIZE_<<8))
            mPtr = mColour + SIZE_-1;
          else
-           mPtr = mColour + ( (mG >> 8) & (SIZE_-1) );
+           mPtr = mColour + ( (mG >> 8)  );
        }
    }
 

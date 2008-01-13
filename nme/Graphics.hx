@@ -338,8 +338,52 @@ class Graphics
 
    public function curveTo(inX:Float,inY:Float,inX1:Float,inY1:Float)
    {
-      // TODO:
-      lineTo(inX,inY);
+      var dx1 = inX-mPenX;
+      var dy1 = inY-mPenY;
+      var dx2 = inX-inX1;
+      var dy2 = inY-inY1;
+      var len = Math.sqrt(dx1*dx1 + dy1*dy1 + dx2*dx2 + dy2*dy2 );
+      var steps = Math.round(len*0.2);
+
+      // make sure we hace point on stack
+      var pid = mPoints.length;
+      if (pid==0)
+      {
+         mPoints.push( { x:mPenX, y:mPenY } );
+         pid++;
+      }
+      var do_line = mCurrentLine.grad!=null || mCurrentLine.alpha>0;
+
+      // First point - make sure we get last move-to on "mCurrentLine"
+      if (do_line && mCurrentLine.point_idx.length==0)
+            mCurrentLine.point_idx.push(pid-1);
+
+      if (steps>1)
+      {
+          var du = 1.0/steps;
+          var u = du;
+          for(i in 1...steps)
+          {
+             var u1 = 1.0-u;
+             var c0 = u1*u1;
+             var c1 = 2.0*u*u1;
+             var c2 = u*u;
+
+             u+=du;
+
+             if (do_line)
+               mCurrentLine.point_idx.push(mPoints.length);
+             mPoints.push( { x:c0*mPenX + c1*inX + c2*inX1,
+                             y:c0*mPenY + c1*inY + c2*inY1 } );
+          }
+      }
+
+      // past point
+      mPenX = inX1;
+      mPenY = inY1;
+      if (do_line)
+         mCurrentLine.point_idx.push(mPoints.length);
+      mPoints.push( { x:mPenX, y:mPenY } );
    }
 
    // Uses line style

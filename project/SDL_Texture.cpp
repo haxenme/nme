@@ -24,12 +24,16 @@ struct AA0x
 
    Uint8   mVal;
 
+   void Debug() {}
+   static inline int GetDVal(State &inState) { return 0; }
+
    static inline Uint8 SGetAlpha(State &inState)
       { return inState; }
 
    static inline Uint8 GetAlpha(State &inState)
       { return inState; }
 
+   int Value() const { return mVal; }
 
    inline void Transition(Uint8 &ioDrawing) const
    {
@@ -69,6 +73,7 @@ struct AA4x
    static void InitState(State &outState)
       { outState[0] = outState[1] = outState[2] = outState[3] = 0; }
 
+   // This gets the value for alpha at at transition point
    inline Uint8 GetAlpha(Uint8 *inState) const // 5-bits fixed, [0,32] inclusive
    {
       return mAlpha[inState[0] | mPoints[0]] + 
@@ -76,10 +81,30 @@ struct AA4x
              mAlpha[inState[2] | mPoints[2]] + 
              mAlpha[inState[3] | mPoints[3]];
    }
+   inline int Value() const
+   {
+      return (mPoints[0]<< 12 ) |
+             (mPoints[1]<< 8 ) |
+             (mPoints[2]<< 4 ) |
+             (mPoints[3]<< 0 );
+   }
+
+   static inline int GetDVal(State &inState)
+   {
+      return ( (inState[0]>>4) << 12) +
+             ( (inState[1]>>4) << 8) +
+             ( (inState[2]>>4) << 4) +
+             ( (inState[3]>>4) << 0);
+   }
+
+   // This gets the value for alpha, which is constant for a given state
+   //  (ie, no transotions going on at these points)
+
    static inline Uint8 SGetAlpha(Uint8 *inState)
    {
       return (inState[0] + inState[1] + inState[2] + inState[3]) >> 1;
    }
+   void Debug() { printf("<%x%x%x%x>", mPoints[0], mPoints[1], mPoints[2], mPoints[3]); }
 
    inline void Transition(Uint8 *ioDrawing) const
    {
@@ -271,6 +296,10 @@ void ProcessLines(SDL_Surface *outDest,int inYMin,int inYMax,LINE_ *inLines,
       SDL_UnlockSurface(outDest);
 }
 
+struct XY
+{
+   int x,y;
+};
 
 
 template<typename AA_>
@@ -281,6 +310,9 @@ public:
 
    typedef std::map<int,AA_>  LineInfo;
    typedef std::map<int,bool> SpanInfo;
+   typedef typename AA_ Point;
+   typedef typename Point::State State;
+
 
    BasePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
             int inMinY,int inMaxY,const PolyLine *inLines)
@@ -337,12 +369,13 @@ public:
          max_y = mMaxY;
       
    
-      mLines = new LineInfo [ mMaxY - mMinY ];
+      mLineCount = mMaxY - mMinY;
+      mLines = new LineInfo [ mLineCount ];
    
       min_y = mMinY << 16;
       // After offset ...
       max_y = (mMaxY-mMinY) << (AA_::AABits);
-   
+
       if (inLines)
       {
          mMaxSpan = max_y;
@@ -432,18 +465,13 @@ public:
       }
       else
       {
-         // X is fixed-16
          int x0 = inX[inN-1];
-         // Convert to AA grid ...
-         int y0 = (inY[inN-1] - min_y) >> ToAA;
-      
-         int yprev = (inY[inN-2] - min_y) >> ToAA;
-         bool prev_horiz = yprev == y0;
+         int y0 = (inY[inN-1]-min_y)>>ToAA;
       
          for(int i=0;i<inN;i++)
          {
             int x1 = inX[i];
-            int y1 = (inY[i] - min_y) >> ToAA;
+            int y1 = (inY[i]-min_y)>>ToAA;
       
             // clip whole line ?
             if (!(y0<0 && y1<0) && !(y0>=max_y && y1>=max_y) )
@@ -452,60 +480,104 @@ public:
                int dy = y1-y0;
                if (dy==0)
                {
-                  // only put on first point of horizontal series ...
-                  if (!prev_horiz)
-                  {
-                     // X is fixed-16, y is fixed-aa
-                     mLines[y0>>AA_::AABits][x0>>16].Add(x0,y1);
-                  }
-                  prev_horiz = true;
+                  // No need to do anything..
                }
-               else if (dy<0) // going up ...
+               // going up - include last point, but not first...
+               else if (dy<0)
                {
                   int x = x0;
                   int dx_dy = (x1-x0)/dy;
                   int y = y0;
-                  if (y0>=max_y)
+
+                  // skip lower point on a line
+                  y--;
+                  x-=dx_dy;
+
+                  if (y>=max_y)
                   {
+                     x -= (y-max_y) * dx_dy;
                      y  = max_y - 1;
-                     x-= (y0-y) * dx_dy;
                   }
-                  int last =  (y1<0) ?  -1 : y1;
-      
-                  for(; y>last; y--)
+                  int last =  (y1<0) ? 0 : y1;
+
+                  for(; y>=last; y--)
                   {
                      // X is fixed-16, y is fixed-aa
                      mLines[y>>AA_::AABits][x>>16].Add(x,y);
-                     // printf("%d %d\n", y>>AA_::AABits, x>>16);
                      x-=dx_dy;
                   }
-      
-                  prev_horiz = false;
                }
-               else // going down ...
+               else // going down - include first point, but not last
                {
                   int x = x0;
                   int dx_dy = (x1-x0)/dy;
                   int y = y0;
-                  if (y0<0)
+
+                  if (y<0)
                   {
-                     y  = 0;
-                     x+= y0 * dx_dy;
+                     x-= y * dx_dy;
+                     y = 0;
                   }
                   int last = y1>max_y ? max_y : y1;
-      
+
                   for(; y<last; y++)
                   {
                      // X is fixed-16, y is fixed-aa
                      mLines[y>>AA_::AABits][x>>16].Add(x,y);
                      x+=dx_dy;
                   }
-                  prev_horiz = false;
                }
             }
       
             x0 = x1;
             y0 = y1;
+         }
+
+         // VerifyLines();
+      }
+   }
+
+   void DumpLine(int inLine)
+   {
+         LineInfo &line = mLines[inLine];
+         Point::State drawing;
+
+            Point::InitState(drawing);
+            for(LineInfo::iterator j=line.begin();j!=line.end();++j)
+            {
+               j->second.Transition(drawing);
+               printf("  %d(%04x)", j->first,j->second.Value());
+               printf("[%04x]", Point::GetDVal(drawing));
+            }
+            printf("\n");
+   }
+
+   void VerifyLines()
+   {
+      if (!mLines)
+         return;
+
+      typedef typename LineInfo::mapped_type Point;
+      typedef typename Point::State State;
+
+      
+      for(int y=0; y<mLineCount; y++)
+      {
+         LineInfo &line = mLines[y];
+         if(line.size()==0)
+            continue;
+
+         State  drawing;
+         Point::InitState(drawing);
+
+         LineInfo::iterator i;
+         for(i=line.begin();i!=line.end();++i)
+            i->second.Transition(drawing);
+
+         if (Point::SGetAlpha(drawing)>0)
+         {
+            printf("Unmatched scan line : %d\n  ",y+mMinY);
+            DumpLine(y);
          }
       }
    }
@@ -996,6 +1068,7 @@ public:
    double   mMiterLimit;
 
    LineInfo *mLines;
+   int      mLineCount;
    SpanInfo *mSpans;
    int      mMaxSpan;
    int      mMinY;
