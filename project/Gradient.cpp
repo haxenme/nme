@@ -45,10 +45,11 @@ Gradient *CreateGradient(value inVal)
 
    return new Gradient( val_field(inVal,val_id("flags")),
                         val_field(inVal,val_id("points")),
-                        val_field(inVal,val_id("matrix")) );
+                        val_field(inVal,val_id("matrix")),
+                        val_field(inVal,val_id("focal")) );
 }
 
-Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix)
+Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
   : mMatrix(inMatrix)
 {
    mFlags = (unsigned int)val_int(inFlags);
@@ -62,6 +63,8 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix)
    GradPoints points(n);
 
    mRepeat = (mFlags & gfRepeat) != 0;
+
+   mFX = val_number(inFocal);
 
    mUsesAlpha = false;
    for(int i=0;i<n;i++)
@@ -118,6 +121,12 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix)
          glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    }
 }
+
+bool Gradient::Is2D()
+{
+   return (mFlags & gfRadial) != 0;
+}
+
 
 int Gradient::MapHQ(int inX,int inY)
 {

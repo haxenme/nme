@@ -45,6 +45,7 @@ class GraphicsTest extends nme.GameBase
    var square : nme.Shape;
    var grad_circle : nme.Shape;
    var lines : nme.Shape;
+   var rad_grad : nme.Shape;
 
    public function new()
    {
@@ -99,6 +100,15 @@ class GraphicsTest extends nme.GameBase
       lines.lineTo(240,360);
       lines.lineTo(290,260);
 
+      rad_grad = new nme.Shape();
+      var mtx = new nme.Matrix();
+      // Define positive quadrant ...
+      mtx.createGradientBox(50,50, 0, 50,50);
+      grad_circle.beginGradientFill(nme.GradientType.RADIAL,
+                       colours, alphas, ratios, mtx, nme.SpreadMethod.REPEAT,
+                       0.0 /* TODO: Focal!=0 not quite working */);
+      grad_circle.drawRect(0,0,100,100);
+
       run();
    }
 
@@ -123,6 +133,7 @@ class GraphicsTest extends nme.GameBase
       grad_circle.draw();
       square.draw();
       lines.draw();
+      rad_grad.draw();
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.

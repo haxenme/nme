@@ -24,6 +24,7 @@ typedef Grad =
    var points:GradPoints;
    var matrix:nme.Matrix;
    var flags:Int;
+   var focal:Float;
 }
 
 typedef LineJob =
@@ -259,7 +260,8 @@ class Graphics
       else
          matrix = matrix.clone();
 
-      return  { points : points, matrix : matrix, flags : flags };
+      var focal : Float = focalPointRatio ==null ? 0 : focalPointRatio;
+      return  { points : points, matrix : matrix, flags : flags, focal:focal };
    }
 
 
@@ -277,7 +279,8 @@ class Graphics
       mFilling = true;
       mSolidGradient = CreateGradient(type,colors,alphas,ratios,
                         matrix,spreadMethod,
-                        interpolationMethod, focalPointRatio );
+                        interpolationMethod,
+                        focalPointRatio);
    }
 
 

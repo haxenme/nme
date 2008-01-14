@@ -1116,11 +1116,20 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
                         Gradient *inGradient,
                         const PolyLine *inLines)
 {
-   typedef GradientSource1D<SIZE_,FLAGS_> Source;
+   if (inGradient->Is2D())
+   {
+      typedef GradientSource2D<SIZE_,FLAGS_> Source;
 
+      return new SourcePolygonRenderer<AA_,Source>(
+          inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+   }
+   else
+   {
+      typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
-   return new SourcePolygonRenderer<AA_,Source>(
-       inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+      return new SourcePolygonRenderer<AA_,Source>(
+          inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+   }
 }
 
 
