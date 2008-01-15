@@ -19,7 +19,7 @@ typedef Grad =
    var matrix: Matrix;
    var spread: SpreadMethod;
    var interp:InterpolationMethod;
-   var focal:Float;
+   var radius:Float;
    var x1:Float;
    var y1:Float;
    var x2:Float;
@@ -91,6 +91,7 @@ class SVG2Gfx
     static var mStyleValue = ~/\s*(.*)\s*:\s*(.*)\s*/;
 
     static var mTranslateMatch = ~/translate\((.*),(.*)\)/;
+    static var mScaleMatch = ~/scale\((.*)\)/;
     static var mMatrixMatch = ~/matrix\((.*),(.*),(.*),(.*),(.*),(.*)\)/;
     static var mURLMatch = ~/url\(#(.*)\)/;
 
@@ -138,10 +139,10 @@ class SVG2Gfx
                     matrix : new Matrix(),
                     spread : SpreadMethod.PAD,
                     interp : InterpolationMethod.RGB,
-                    focal : 0.0,
+                    radius : 1.0,
                     x1 : 0.0,
                     y1 : 0.0,
-                    x2 : 2.0,
+                    x2 : 0.0,
                     y2 : 0.0,
                     };
 
@@ -159,7 +160,7 @@ class SVG2Gfx
           grad.matrix = base.matrix.clone();
           grad.spread = base.spread;
           grad.interp = base.interp;
-          grad.focal = base.focal;
+          grad.radius = base.radius;
        }
 
        if (inGrad.exists("x1"))
@@ -169,6 +170,16 @@ class SVG2Gfx
           grad.x2 = Std.parseFloat(inGrad.get("x2"));
           grad.y2 = Std.parseFloat(inGrad.get("y2"));
        }
+       if (inGrad.exists("cx"))
+       {
+          grad.x1 = Std.parseFloat(inGrad.get("cx"));
+          grad.y1 = Std.parseFloat(inGrad.get("cy"));
+          grad.x2 = Std.parseFloat(inGrad.get("fx"));
+          grad.y2 = Std.parseFloat(inGrad.get("fy"));
+       }
+       if (inGrad.exists("r"))
+          grad.radius = Std.parseFloat(inGrad.get("r"));
+
 
        if (inGrad.exists("gradientTransform"))
           ApplyTransform(grad.matrix,inGrad.get("gradientTransform"));
@@ -198,7 +209,7 @@ class SVG2Gfx
           if (name=="linearGradient")
              LoadGradient(def,GradientType.LINEAR);
           else if (name=="radialGradient")
-             LoadGradient(def,GradientType.LINEAR);
+             LoadGradient(def,GradientType.RADIAL);
        }
 
     }
@@ -210,6 +221,11 @@ class SVG2Gfx
           ioMatrix.translate(
                   Std.parseFloat( mTranslateMatch.matched(1) ),
                   Std.parseFloat( mTranslateMatch.matched(2) ));
+       }
+       else if (mScaleMatch.match(inTrans))
+       {
+          var s = Std.parseFloat( mScaleMatch.matched(1) );
+          ioMatrix.scale(s,s);
        }
        else if (mMatrixMatch.match(inTrans))
        {
@@ -405,7 +421,7 @@ class SVG2Gfx
           }
           else
           {
-             throw("Unknown child : " + el.nodeName );
+             // throw("Unknown child : " + el.nodeName );
           }
        }
 
@@ -551,6 +567,8 @@ class SVG2Gfx
        var cx_ = s*rx*y1_/ry;
        var cy_ = -s*ry*x1_/rx;
 
+       // Something not quite right here.
+       // See:  http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
        var xm = (x1+x2)*0.5;
        var ym = (y1+y2)*0.5;
 
@@ -624,27 +642,65 @@ class SVG2Gfx
           case FillGrad(grad):
              var gm:Matrix  = grad.matrix.clone();
              gm.concat(m);
-             // Transform the points - otherwise we will need to inverse transform
-             //  tre gradient matrix ...
-             var tx1 = grad.x1 * gm.a + grad.y1*gm.b + gm.tx;
-             var ty1 = grad.x1 * gm.c + grad.y1*gm.d + gm.ty;
-             var tx2 = grad.x2 * gm.a + grad.y2*gm.b + gm.tx;
-             var ty2 = grad.x2 * gm.c + grad.y2*gm.d + gm.ty;
-             // G(x,y) = A x + B y + C
-             
+
              var mtx = new Matrix();
-             var dx = tx2-tx1;
-             var dy = ty2-ty1;
-             if (dx!=0 || dy!=0)
+             var focal = 0.0;
+
+             if (grad.type == GradientType.LINEAR)
              {
-                var scale = 1.0/(dx*dx+dy*dy);
-                mtx.a = scale*dx;
-                mtx.b = scale*dy;
-                mtx.tx =  - tx1*mtx.a - ty1*mtx.b;
+                // Transform the points - otherwise we will need to inverse transform
+                //  tre gradient matrix ...
+                var tx1 = grad.x1 * gm.a + grad.y1*gm.b + gm.tx;
+                var ty1 = grad.x1 * gm.c + grad.y1*gm.d + gm.ty;
+                var tx2 = grad.x2 * gm.a + grad.y2*gm.b + gm.tx;
+                var ty2 = grad.x2 * gm.c + grad.y2*gm.d + gm.ty;
+                // G(x,y) = A x + B y + C
+             
+                var dx = tx2-tx1;
+                var dy = ty2-ty1;
+
+                // For linear case, dx,dy is the gradient vector
+                if (dx!=0 || dy!=0)
+                {
+                   var scale = 1.0/(dx*dx+dy*dy);
+                   mtx.a = scale*dx;
+                   mtx.b = scale*dy;
+                   mtx.tx =  - tx1*mtx.a - ty1*mtx.b;
+                }
+             }
+             else
+             {
+
+                // Invert matrix...
+                var denom = gm.a*gm.d - gm.b*gm.c;
+                if (denom!=0)
+                {
+                   denom = 1.0/denom;
+                   var a = gm.d*denom;
+                   var b = -gm.b*denom;
+                   var c = -gm.c*denom;
+                   var d = gm.a*denom;
+                   mtx = new Matrix( a, b, c, d, 
+                       -a*gm.tx-b*gm.ty, -c*gm.tx-d*gm.ty );
+                }
+
+                mtx.translate(-grad.x1,-grad.y1);
+
+                var s = 1/grad.radius;
+                mtx.scale(s,s);
+
+                var dx = grad.x2-grad.x1;
+                var dy = grad.y2-grad.y1;
+                if (dx!=0 || dy!=0)
+                {
+                   var theta = Math.atan2(dy,dx);
+                   mtx.rotate(-theta);
+                   focal = Math.sqrt(dx*dy+dy*dy)/grad.radius;
+                }
              }
 
              mGfx.beginGradientFill(grad.type, grad.cols, grad.alphas,
-                      grad.ratios, mtx, grad.spread, grad.interp, grad.focal );
+                      grad.ratios, mtx, grad.spread, grad.interp, focal );
 
           case FillSolid(colour):
              mGfx.beginFill(colour,inPath.fill_alpha);
@@ -743,6 +799,12 @@ class SVG2Gfx
              case ArcTo( rx, ry, rotation, largeArc, sweep, x, y):
                 DoArcTo(m,px,py,x,y,rx,ry,rotation,largeArc,sweep);
                 px = x; py = y;
+
+             case ArcToR( rx, ry, rotation, largeArc, sweep, x, y):
+                x+=px; y+=py;
+                DoArcTo(m,px,py,x,y,rx,ry,rotation,largeArc,sweep);
+                px = x; py = y;
+
           }
       }
     }

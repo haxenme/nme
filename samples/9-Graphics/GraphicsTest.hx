@@ -106,7 +106,7 @@ class GraphicsTest extends nme.GameBase
       mtx.createGradientBox(50,50, 0, 50,50);
       grad_circle.beginGradientFill(nme.GradientType.RADIAL,
                        colours, alphas, ratios, mtx, nme.SpreadMethod.REPEAT,
-                       0.0 /* TODO: Focal!=0 not quite working */);
+                       -0.9 );
       grad_circle.drawRect(0,0,100,100);
 
       run();

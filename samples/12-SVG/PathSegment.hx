@@ -26,6 +26,7 @@ enum PathSegment {
     SmoothQuadraticToR( x:Float, y:Float );
     
     ArcTo( rx:Float, ry:Float, rotation:Float, largeArc:Bool, sweep:Bool, x:Float, y:Float );
+    ArcToR( rx:Float, ry:Float, rotation:Float, largeArc:Bool, sweep:Bool, x:Float, y:Float );
 
 }
 

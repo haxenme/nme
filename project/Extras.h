@@ -27,6 +27,8 @@
 
 #define SPG_PIXEL_HINTING    0x4000
 
+#define SPG_GRADIENT_FOCAL0  0x8000
+
 
 
 typedef std::vector<int> IntVec;

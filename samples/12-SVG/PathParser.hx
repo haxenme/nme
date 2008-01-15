@@ -159,6 +159,8 @@ class PathParser {
                     SmoothQuadraticToR( a[0], a[1] );
                 case "A":
                     ArcTo( a[0], a[1], a[2], a[3]==0., a[4]==0., a[5], a[6] );
+                case "a":
+                    ArcToR( a[0], a[1], a[2], a[3]==0., a[4]==0., a[5], a[6] );
                 case "Z":
                     Close;
                 case "z":

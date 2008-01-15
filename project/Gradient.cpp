@@ -127,6 +127,13 @@ bool Gradient::Is2D()
    return (mFlags & gfRadial) != 0;
 }
 
+bool Gradient::IsFocal0()
+{
+   return mFX == 0.0;
+}
+
+
+
 
 int Gradient::MapHQ(int inX,int inY)
 {

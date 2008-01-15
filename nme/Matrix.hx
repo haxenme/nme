@@ -64,6 +64,36 @@ class Matrix
       ty += inDY;
    }
 
+   public function rotate(inTheta:Float)
+   {
+      var cos = Math.cos(inTheta);
+      var sin = Math.sin(inTheta);
+      var a_ = cos*a + sin*c;
+      var b_ = cos*b + sin*d;
+      var tx_ = cos*tx + sin*ty;
+      c = -sin*a + cos*c;
+      d = -sin*b + cos*d;
+      ty = -sin*tx + cos*ty;
+      a = a_;
+      b = b_;
+      tx = tx_;
+   }
+
+
+
+   public function scale(inSX:Float, inSY:Float)
+   {
+      a*=inSX;
+      b*=inSX;
+      tx*=inSX;
+
+      c*=inSY;
+      d*=inSY;
+      ty*=inSY;
+
+   }
+
+
    public function concat(inLHS:Matrix)
    {
       var a1 = inLHS.a*a + inLHS.b*c;

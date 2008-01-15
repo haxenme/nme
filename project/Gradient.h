@@ -23,6 +23,7 @@ public:
    ~Gradient();
 
    bool Is2D();
+   bool IsFocal0();
 
    void BeginOpenGL();
    void OpenGLTexture(double inX,double inY);
@@ -174,22 +175,22 @@ struct GradientSource2D
       //    P(a) = F + a * (mG-F),
       //  This intersects circle at || P(a) - Centre || = unit
       //  
-      //  Since everything is in fixed 16, unit = 0x10000
+      //  Since everything is in converted to normalised doubles, unit = 1
       //
       //  So,
-      //    [ Fx + a*(mGx-Fx) -Cx ] ^2 + [ Fy + a*(mGy-Fy) -Cy ] ^2 = 0x1000^2
+      //    [ Fx + a*(mGx-Fx) -Cx ] ^2 + [ Fy + a*(mGy-Fy) -Cy ] ^2 = 1^2
       //
       //    dx = mGx-Fx
-      //    dy = mGy-Fy
+      //    dy = mGy
       //    fx = Fx-Cx
       //    fy = Fy-Cy
       //
-      //   a^2 (dx^2 + dy^2) + 2a(dx*fx+dy*fy) + (fx*fx + fy*fy - 0x10000^2) =0
+      //   a^2 (dx^2 + dy^2) + 2a(dx*fx+dy*fy) + (fx*fx - 1) =0
       //
       //  Solve using quadratic equation.
       //   A =dx^2 + dy^2
       //   B = 2*(dx*fx + dy*fy)
-      //   C = fx*fx + fy*fy - unit^2
+      //   C = fx*fx - 1
       //  However, we are after 1/a, not a - so swap values of A and C
       //  
       // Implementations:
@@ -200,18 +201,26 @@ struct GradientSource2D
       //    of 4.0 for the quadratic equation
 
 
-      double B = 2.0*(mGX*mFX);
+      double alpha;
       double C = mGX*mGX + mGY*mGY;
 
-      double det = B*B - mA*C;
-      double alpha;
-      if (det<=0)
-         alpha = -B * mOn2A;
-      // TODO: what exactly is this condition ?
-      else if (mA<0)
-         alpha = (-B-sqrt(det))*mOn2A;
+      if (FLAGS_ & SPG_GRADIENT_FOCAL0)
+      {
+         alpha = sqrt(C);
+      }
       else
-         alpha = (-B+sqrt(det))*mOn2A;
+      {
+         double B = 2.0*(mGX*mFX);
+
+         double det = B*B - mA*C;
+         if (det<=0)
+            alpha = -B * mOn2A;
+            // TODO: what exactly is this condition ?
+         else if (1)
+            alpha = (-B-sqrt(det))*mOn2A;
+         else
+            alpha = (-B+sqrt(det))*mOn2A;
+      }
 
       if ( (FLAGS_ & SPG_EDGE_REPEAT) )
       {
@@ -230,7 +239,11 @@ struct GradientSource2D
 
    inline void SetPos(int inX,int inY)
    {
-      mGX = mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx;
+      if (FLAGS_ & SPG_GRADIENT_FOCAL0)
+         mGX = mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx;
+      else
+         mGX = mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx - mFX;
+
       mGY = mMapper.m10 * inX + mMapper.m11*inY + mMapper.mty;
       SetPtr();
    }

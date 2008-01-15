@@ -1118,10 +1118,21 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
 {
    if (inGradient->Is2D())
    {
-      typedef GradientSource2D<SIZE_,FLAGS_> Source;
+      if (inGradient->IsFocal0())
+      {
+         typedef GradientSource2D<SIZE_,FLAGS_ + SPG_GRADIENT_FOCAL0> Source;
 
-      return new SourcePolygonRenderer<AA_,Source>(
-          inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+         return new SourcePolygonRenderer<AA_,Source>(
+             inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+      }
+      else
+      {
+         typedef GradientSource2D<SIZE_,FLAGS_> Source;
+
+         return new SourcePolygonRenderer<AA_,Source>(
+             inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+      }
+
    }
    else
    {
