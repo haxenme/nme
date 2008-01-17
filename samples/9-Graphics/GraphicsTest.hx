@@ -50,8 +50,11 @@ class GraphicsTest extends nme.GameBase
    public function new()
    {
       // Try it both ways !
-      // (actually, opengl disabled for a while)
       var opengl = false;
+      var args = neko.Sys.args();
+      if (args.length>0 && args[0].substr(0,2)=="-o")
+         opengl = true;
+
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 

@@ -127,7 +127,6 @@ bool TextureBuffer::PrepareOpenGL()
 
       mX1 = w>0 ? (float)mPixelWidth/w : 0.0f;
       mY1 = h>0 ? (float)mPixelHeight/h : 0.0f;
-      return true;
    }
 
 

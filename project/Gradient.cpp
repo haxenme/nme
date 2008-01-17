@@ -106,20 +106,25 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
       }
       for(;i<256;i++)
          mColours[i] = points[n-1].mColour;
-
-      glGenTextures(1, &mTextureID);
-      glBindTexture(GL_TEXTURE_1D, mTextureID);
-      glTexImage1D(GL_TEXTURE_1D, 0, 4,  256, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE, &mColours[0] );
-      glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
-      glTexEnvi(GL_TEXTURE_1D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
-      // TODO: reflect = double up?
-      if (mFlags & gfRepeat)
-         glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_REPEAT);
-      else
-         glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    }
+}
+
+bool Gradient::InitOpenGL()
+{
+   glGenTextures(1, &mTextureID);
+   glBindTexture(GL_TEXTURE_1D, mTextureID);
+   glTexImage1D(GL_TEXTURE_1D, 0, 4,  256, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, &mColours[0] );
+   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
+   glTexEnvi(GL_TEXTURE_1D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
+   // TODO: reflect = double up?
+   if (mFlags & gfRepeat)
+      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_REPEAT);
+   else
+      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+
+   return true;
 }
 
 bool Gradient::Is2D()
@@ -153,14 +158,18 @@ int Gradient::DGDY()
 
 Gradient::~Gradient()
 {
-   glDeleteTextures(1,&mTextureID);
+   if (mTextureID)
+      glDeleteTextures(1,&mTextureID);
 }
 
 
 void Gradient::BeginOpenGL()
 {
-   glBindTexture(GL_TEXTURE_1D, mTextureID);
-   glEnable(GL_TEXTURE_1D);
+   if (mTextureID>0 || InitOpenGL())
+   {
+      glBindTexture(GL_TEXTURE_1D, mTextureID);
+      glEnable(GL_TEXTURE_1D);
+   }
 }
 
 void Gradient::OpenGLTexture(double inX,double inY)

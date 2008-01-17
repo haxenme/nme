@@ -53,10 +53,15 @@ class Display extends nme.GameBase
    {
       // Try it both ways !
       var opengl = false;
+      var args = neko.Sys.args();
+      if (args.length>0 && args[0].substr(0,2)=="-o")
+      {
+         args.shift();
+         opengl = true;
+      }
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      var args = neko.Sys.args();
       if (args.length!=1)
       {
          neko.Lib.println("Usage : Display file.svg");

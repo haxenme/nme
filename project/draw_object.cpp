@@ -105,9 +105,16 @@ public:
       mDisplayList = 0;
       mPolygon = 0;
       mSolidGradient = inFillGradient;
-
-      mFillColour = inFillColour;
-      mFillAlpha = inFillAlpha;
+      if (inFillGradient)
+      {
+         mFillColour = 0xffffff;
+         mFillAlpha = 1.0;
+      }
+      else
+      {
+         mFillColour = inFillColour;
+         mFillAlpha = inFillAlpha;
+      }
 
       mPoints.swap(inPoints);
       mLineJobs.swap(inLines);
@@ -119,16 +126,6 @@ public:
       mHQY = new Sint32[n];
       TransformPoints(mTransform);
    }
-
-   /*
-         if (IsOpenGLMode())
-         {
-            mDisplayList = glGenLists(1);
-            glNewList(mDisplayList,GL_COMPILE);
-            DrawOpenGL();
-            glEndList();
-         }
-         */
 
    void ClearRenderers()
    {
@@ -184,8 +181,8 @@ public:
          for(size_t i=0;i<n;i++)
          {
             if (mSolidGradient)
-               mSolidGradient->OpenGLTexture(mX[i],mY[i]);
-            glVertex2i( mX[i], mY[i] );
+               mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
+            glVertex2f( mPoints[i].mX, mPoints[i].mY );
             p++;
          }
          glEnd();
@@ -193,58 +190,50 @@ public:
 
       if (mSolidGradient)
          mSolidGradient->EndOpenGL();
+
    
-
-      /*
-
-      if (!mGradient)
+      for(size_t j=0;j<mLineJobs.size();j++)
       {
-         const LinePoint *p = &mLines[0];
-   
-         int col = p->mColour;
-         double alpha = p->mAlpha;
-         double lw = p->mThickness;
-   
-   
-         glLineWidth( (GLfloat)(lw==0 ? 1 : lw) );
-   
-   
-         glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-            (unsigned char)(alpha*255.0));
-   
+         LineJob &line = mLineJobs[j];
+
+         if (line.mGradient)
+            line.mGradient->BeginOpenGL();
+         else
+         {
+            int col = line.mColour;
+            glColor4ub(col >>16,col >> 8,col,
+                 (unsigned char)(line.mAlpha*255.0));
+         }
+
+         glLineWidth( (float)line.mThickness );
+
+         size_t n = line.mPointIndex.size();
          glBegin(GL_LINE_STRIP);
          for(size_t i=0;i<n;i++)
          {
-            if (i!=0 && (p->mColour!=col || p->mAlpha || p->mThickness!=lw))
-            {
-               glEnd();
-               if (p->mColour!=col || p->mAlpha!=alpha)
-               {
-                   col = p->mColour;
-                   alpha = p->mAlpha;
-   
-                   glColor4ub((col>>16)&0xff,(col>>8)&0xff,(col)&0xff,
-                      (unsigned char)(alpha*255.0));
-               }
-               if (p->mThickness!=lw)
-               {
-                  lw = p->mThickness;
-                  glLineWidth((GLfloat)lw);
-               }
-               glBegin(GL_LINE_STRIP);
-               glVertex2f( p[-1].mX, p[-1].mY );
-            }
-            glVertex2f( p->mX, p->mY );
-            p++;
+            int pid = line.mPointIndex[i];
+            if (line.mGradient)
+               line.mGradient->OpenGLTexture( mPoints[pid].mX,mPoints[pid].mY );
+            glVertex2f( mPoints[pid].mX, mPoints[pid].mY );
          }
          glEnd();
       
-         if (lw!=0)
-            glLineWidth(1);
+         if (line.mGradient)
+            line.mGradient->EndOpenGL();
       }
-      */
+      glLineWidth(1);
 
       glDisable(GL_BLEND);
+   }
+
+   bool CreateDisplayList()
+   {
+      mDisplayList = glGenLists(1);
+      glNewList(mDisplayList,GL_COMPILE);
+      DrawOpenGL();
+      glEndList();
+
+      return true;
    }
 
 
@@ -276,7 +265,7 @@ public:
 
       if (IsOpenGLScreen(inSurface))
       {
-         if (mDisplayList)
+         if (mDisplayList || CreateDisplayList() )
          {
             if (inMatrix.IsIdentity())
                glCallList(mDisplayList);

@@ -43,6 +43,9 @@ public:
 
    double          mFX;
 
+protected:
+   bool InitOpenGL();
+
 private:
    Gradient(const Gradient &inRHS);
    void operator=(const Gradient &inRHS);
