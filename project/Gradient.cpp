@@ -1,6 +1,9 @@
 #include "Gradient.h"
+#ifdef WIN32
 #include <windows.h>
-#include <gl/GL.h>
+#endif
+
+#include <GL/gl.h>
 #include <vector>
 
 #ifndef GL_CLAMP_TO_EDGE

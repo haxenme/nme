@@ -1,5 +1,7 @@
+#ifdef WIN32
 #include <windows.h>
-#include <gl/GL.h>
+#endif
+#include <GL/gl.h>
 #include "Matrix.h"
 #include <neko.h>
 

@@ -1,5 +1,8 @@
+#ifdef WIN32
 #include <windows.h>
-#include <gl/gl.h>
+#endif
+
+#include <GL/gl.h>
 #include <neko.h>
 #include <stdio.h>
 

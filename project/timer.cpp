@@ -31,3 +31,4 @@ value nme_gettime()
 }
 
 DEFINE_PRIM(nme_gettime, 0);
+

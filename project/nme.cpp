@@ -29,8 +29,10 @@
 #include <string.h>
 #include <SDL_ttf.h>
 
+#ifdef WIN32
 #include <windows.h>
-#include <gl/GL.h>
+#endif
+#include <GL/gl.h>
 
 using namespace std;
 

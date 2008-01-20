@@ -1,8 +1,8 @@
 #include "texture_buffer.h"
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
 #endif
-#include <gl/GL.H>
+#include <GL/gl.h>
 #include "nme.h"
 #include "nsdl.h"
 

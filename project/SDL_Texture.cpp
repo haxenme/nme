@@ -177,7 +177,7 @@ void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
       LINE_ &line = inLines[y-inYMin];
       if(line.size()>1)
       {
-         LINE_::iterator i = line.begin();
+         typename LINE_::iterator i = line.begin();
 
          State  drawing;
          Point::InitState(drawing);
@@ -200,13 +200,17 @@ void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
                if (alpha==(1<<Point::AlphaBits))
                   outDest.SetInc(inSource);
                else if (alpha)
+               #ifdef WIN32
                   outDest.SetIncBlend<Point::AlphaBits>(inSource,alpha);
+               #else
+                  outDest.SetIncBlend(inSource,alpha,(int)Point::AlphaBits);
+               #endif
                inSource.Inc();
                x++;
             }
 
             i->second.Transition(drawing);
-            LINE_::iterator next = i;
+            typename LINE_::iterator next = i;
             ++next;
             if (next==line.end())
                break;
@@ -246,8 +250,12 @@ void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
                      {
                          for(;x<x1;x++)
                          {
-                            outDest.SetIncBlend<Point::AlphaBits>
-                               (inSource,alpha);
+                            #ifdef WIN32
+                               outDest.SetIncBlend<Point::AlphaBits>(inSource,alpha);
+                            #else
+                               outDest.SetIncBlend(inSource,alpha,(int)Point::AlphaBits);
+                            #endif
+
                             inSource.Inc();
                          }
                      }
@@ -281,15 +289,24 @@ void ProcessLines(SDL_Surface *outDest,int inYMin,int inYMax,LINE_ *inLines,
    switch(outDest->format->BytesPerPixel)
    {
       case 1:
-         TProcessLines( DestSurface8(outDest),inYMin,inYMax,inLines,inSource );
+         {
+         DestSurface8 dest(outDest);
+         TProcessLines( dest,inYMin,inYMax,inLines,inSource );
          break;
+         }
          // TODO : 2
       case 3:
-         TProcessLines( DestSurface24(outDest),inYMin,inYMax,inLines,inSource );
+         {
+         DestSurface24 dest(outDest);
+         TProcessLines( dest,inYMin,inYMax,inLines,inSource );
          break;
+         }
       case 4:
-         TProcessLines( DestSurface32(outDest),inYMin,inYMax,inLines,inSource );
+         {
+         DestSurface32 dest(outDest);
+         TProcessLines( dest,inYMin,inYMax,inLines,inSource );
          break;
+         }
    }
    
    if ( SDL_MUSTLOCK(outDest) && _SPG_lock )
@@ -310,7 +327,7 @@ public:
 
    typedef std::map<int,AA_>  LineInfo;
    typedef std::map<int,bool> SpanInfo;
-   typedef typename AA_ Point;
+   typedef AA_ Point;
    typedef typename Point::State State;
 
 
@@ -540,10 +557,10 @@ public:
    void DumpLine(int inLine)
    {
          LineInfo &line = mLines[inLine];
-         Point::State drawing;
+         typename Point::State drawing;
 
             Point::InitState(drawing);
-            for(LineInfo::iterator j=line.begin();j!=line.end();++j)
+            for(typename LineInfo::iterator j=line.begin();j!=line.end();++j)
             {
                j->second.Transition(drawing);
                printf("  %d(%04x)", j->first,j->second.Value());
@@ -570,7 +587,7 @@ public:
          State  drawing;
          Point::InitState(drawing);
 
-         LineInfo::iterator i;
+         typename LineInfo::iterator i;
          for(i=line.begin();i!=line.end();++i)
             i->second.Transition(drawing);
 
@@ -616,7 +633,7 @@ public:
                {
                   SpanInfo::iterator p = i;
                   --p;
-                  i = span.erase(i);
+                  span.erase(i);
                   i = p;
                }
                // Previous range starts here too - do nothing
@@ -1085,10 +1102,11 @@ private: // Disable
 template<typename AA_,typename SOURCE_>
 class SourcePolygonRenderer : public BasePolygonRenderer<AA_>
 {
+   typedef BasePolygonRenderer<AA_> Base;
 public:
    SourcePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
-            int inMinY,int inMaxY, const PolyLine *inLines, SOURCE_ &inSource)
-      : BasePolygonRenderer(inN,inX,inY,inMinY,inMaxY,inLines),
+            int inMinY,int inMaxY, const PolyLine *inLines,const SOURCE_ &inSource)
+      : BasePolygonRenderer<AA_>(inN,inX,inY,inMinY,inMaxY,inLines),
          mSource(inSource)
    {
       // mSource is copy-constructed, so yo ubetter be sure this will
@@ -1098,7 +1116,7 @@ public:
    void Render(SDL_Surface *outDest, Sint16 inOffsetX,Sint16 inOffsetY)
    {
       // TODO: Offset (change dest pointers ?)
-      ProcessLines(outDest,mMinY,mMaxY,mLines,mSource);
+      ProcessLines(outDest,Base::mMinY,Base::mMaxY,Base::mLines,mSource);
    }
 
 
@@ -1262,7 +1280,7 @@ PolygonRenderer *CreateBitmapRenderer(int inN,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
                               const PolyLine *inLines,
-                              SOURCE_ &inSource )
+                              const SOURCE_ &inSource )
 {
    return new SourcePolygonRenderer<AA_,SOURCE_>(inN,inX,inY,inYMin,inYMax,
                                            inLines,inSource );

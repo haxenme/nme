@@ -1,0 +1,43 @@
+
+ifeq ("x$(NEKO_INSTALL_PATH)","x")
+   NEKO_INSTALL_PATH := /usr/lib/neko/
+endif
+
+SOURCE_FILES := $(wildcard *.cpp) $(wildcard spg/*cpp)
+OBJS := $(SOURCE_FILES:%.cpp=objs/%.o)
+
+
+INCLUDE += -I/usr/include/SDL -I$(NEKO_INSTALL_PATH)/include
+
+CFLAGS += -O2 $(INCLUDE)
+
+NDLL_DIR := ../ndll/Linux/
+
+NDLL := $(NDLL_DIR)/nme.ndll
+
+all:objs objs/spg $(NDLL_DIR) $(NDLL)
+
+clean:
+	rm $(OBJS)
+
+LIB_PATH = -Wl,-L/usr/lib
+
+$(NDLL_DIR):
+	mkdir -p $(NDLL_DIR)
+
+objs:
+	mkdir objs
+objs/spg:
+	mkdir objs/spg
+
+objs/%.o:%.cpp
+	g++ $(CFLAGS) -c $< -o $@
+objs/spg/%.o:spg/%.cpp
+	g++ $(CFLAGS) -c $< -o $@
+
+LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL GL
+
+FULL_LIBS:= $(LIBS:%=-l%)
+
+$(NDLL) : $(OBJS)
+	gcc -shared -Wl-Bsymbolic $(OBJS) -o $(NDLL) $(LIB_PATH) $(FULL_LIBS) -lm

@@ -1,7 +1,7 @@
 #ifndef EXTRAS_H
 #define EXTRAS_H
 
-#include "SDL.h"
+#include <SDL.h>
 #include <vector>
 
 #define SPG_ALPHA_BLEND      0x0001

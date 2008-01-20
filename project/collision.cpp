@@ -235,3 +235,4 @@ value nme_collision_boundingcircle( value rp1, value rp2, value poffset )
 DEFINE_PRIM(nme_collision_pixel, 5);
 DEFINE_PRIM(nme_collision_boundingbox, 3);
 DEFINE_PRIM(nme_collision_boundingcircle, 3);
+

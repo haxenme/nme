@@ -1,9 +1,11 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
+#include "Extras.h"
 #include <neko.h>
 #include <vector>
 #include "SDL.h"
+#include <math.h>
 
 #include "Matrix.h"
 

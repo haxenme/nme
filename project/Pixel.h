@@ -338,14 +338,18 @@ struct SurfaceSource24 : public SurfaceSourceBase
 template<int FLAGS_,int EDGE_>
 struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
 {
+   typedef SurfaceSource24<FLAGS_,EDGE_,true> Base;
+
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & SPG_HIGH_QUALITY };
 
    SurfaceSource32(SDL_Surface *inSurface,const Matrix &inMapper):
-      SurfaceSource24( inSurface, inMapper )
+      Base( inSurface, inMapper )
    {
    }
 
-   inline Uint8 GetA() const { return (FLAGS_&SPG_HIGH_QUALITY)?mA:mPtr[mAOff]; }
+   inline Uint8 GetA() const
+      { return HighQuality ?Base::mA : Base::mPtr[Base::mAOff]; }
 };
 
 
@@ -430,8 +434,13 @@ struct DestSurface8 : public DestBase
    }
    inline void Advance(int inX) { mPtr += inX; }
 
+   #ifdef WIN32
    template<int ALPHA_BITS_,typename SOURCE_>
    void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   #else
+   template<typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int inDummy)
+   #endif
    {
       *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
    }
@@ -472,8 +481,15 @@ struct DestSurface24 : public DestBase
       mPtr += 3;
    }
 
+   #ifdef WIN32
    template<int ALPHA_BITS_,typename SOURCE_>
    void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   #else
+   // Could not work out how to explicitly specify ALPHA_BITS_ in call
+   //   (problem with operator<)
+   template<typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
+   #endif
    {
       if (SOURCE_::AlphaBlend)
       {
@@ -520,8 +536,14 @@ struct DestSurface32 : public DestSurface24
       mPtr += 4;
    }
 
+
+   #ifdef WIN32
    template<int ALPHA_BITS_,typename SOURCE_>
    void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   #else
+   template<typename SOURCE_>
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
+   #endif
    {
       mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
       mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
