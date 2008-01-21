@@ -40,6 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				MinimalRebuild="false"
@@ -48,7 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

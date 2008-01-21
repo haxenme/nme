@@ -416,6 +416,7 @@ class Graphics
       }
    }
 
+
    private function CloseLines(inTryClose:Bool)
    {
       if (mCurrentLine.point_idx.length>1)

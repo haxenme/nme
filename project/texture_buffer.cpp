@@ -34,8 +34,11 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
    mTextureID = 0;
    mPixelWidth = inSurface->w;
    mPixelHeight = inSurface->h;
+   SDL_SetAlpha(inSurface,SDL_SRCALPHA,255);
    mX1 = 0;
    mY1 = 0;
+
+   mSW = mSH = 0;
 
    mRect.x = 0;
    mRect.y = 0;
@@ -44,7 +47,11 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
 
    mRefCount = 1;
 
-   mDirtyRect = mRect;
+   mHardwareDirty = true;
+   mDirtyX0 = 0;
+   mDirtyY0 = 0;
+   mDirtyX1 = mPixelWidth;
+   mDirtyY1 = mPixelHeight;
 }
 
 
@@ -82,11 +89,16 @@ bool TextureBuffer::PrepareOpenGL()
 
       if (mSurface->format->BitsPerPixel==32 )
       {
+         if (mSurface->format->Rmask == 0x0000ff)
+            src_format = GL_RGBA;
          // Ok !
       }
       else if (mSurface->format->BitsPerPixel==24 )
       {
-         src_format = GL_BGR;
+         if (mSurface->format->Rmask == 0x0000ff)
+            src_format = GL_RGB;
+         else
+            src_format = GL_BGR;
          store_format = 3;
       }
       else // convert!
@@ -110,11 +122,11 @@ bool TextureBuffer::PrepareOpenGL()
          glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_BGRA, 
             GL_UNSIGNED_BYTE, 0 );
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
-            GL_BGRA, GL_UNSIGNED_BYTE, data->pixels );
+            src_format, GL_UNSIGNED_BYTE, data->pixels );
       }
       else
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_BGRA, 
+         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, src_format, 
             GL_UNSIGNED_BYTE, data->pixels );
       }
 
@@ -127,18 +139,74 @@ bool TextureBuffer::PrepareOpenGL()
 
       mX1 = w>0 ? (float)mPixelWidth/w : 0.0f;
       mY1 = h>0 ? (float)mPixelHeight/h : 0.0f;
+      mSW = (float)(w >0 ? 1.0/w : 0);
+      mSH = (float)(h >0 ? 1.0/h : 0);
+      mHardwareDirty = false;
+   }
+   else if (mHardwareDirty)
+   {
+      glBindTexture(GL_TEXTURE_2D, mTextureID);
+      UpdateHardware();
+   }
+   else
+   {
+      glBindTexture(GL_TEXTURE_2D, mTextureID);
    }
 
-
    glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D, mTextureID);
+
    return true;
 }
 
+void TextureBuffer::UpdateHardware()
+{
+   glBindTexture(GL_TEXTURE_2D, mTextureID);
+
+   if (mDirtyX0<0) mDirtyX0 = 0;
+   if (mDirtyY0<0) mDirtyY0 = 0;
+   if (mDirtyX1>mPixelWidth)  mDirtyX1 = mPixelWidth;
+   if (mDirtyY1>mPixelHeight) mDirtyY1 = mPixelHeight;
+
+   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+   glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->w);
+   glPixelStorei(GL_UNPACK_SKIP_PIXELS, mDirtyX0);
+   glPixelStorei(GL_UNPACK_SKIP_ROWS,   mDirtyY0);
+
+   glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyX0,mDirtyY0,
+         mDirtyX1-mDirtyX0, mDirtyY1 - mDirtyY0,
+         GL_BGRA, GL_UNSIGNED_BYTE, mSurface->pixels );
+
+   glPopClientAttrib();
+
+   mHardwareDirty = false;
+}
+
+
+void TextureBuffer::SetExtentDirty(int inX0,int inY0,int inX1,int inY1)
+{
+   if (!mHardwareDirty)
+   {
+      mHardwareDirty = true;
+      mDirtyX0 = inX0;
+      mDirtyY0 = inY0;
+      mDirtyX1 = inX1;
+      mDirtyY1 = inY1;
+   }
+   else
+   {
+      mHardwareDirty = true;
+      if (inX0<mDirtyX0) mDirtyX0 = inX0;
+      if (inY0<mDirtyY0) mDirtyY0 = inY0;
+      if (inX1>mDirtyX1) mDirtyX1 = inX1;
+      if (inY1>mDirtyY1) mDirtyY1 = inY1;
+   }
+}
+
+
 void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 {
-   outX = (float)(inX * mX1);
-   outY = (float)(inY * mY1);
+   outX = (float)(inX * mSW);
+   outY = (float)(inY * mSH);
 }
 
 
@@ -254,15 +322,23 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
                             val_int(width),
                             val_int(height),
                             (f & HX_TRANSPARENT) ? 32 : 24,
-                            0,0,0,0);
+                            0xff0000,0x00ff00,0x0000ff, 0xff000000);
 
  
    int icol = val_int(colour);
    int r = (icol>>16) & 0xff;
    int g = (icol>>8) & 0xff;
    int b = (icol) & 0xff;
+   int a = val_int(alpha);
 
-   SDL_FillRect( surface, NULL, SDL_MapRGBA( surface->format, r, g, b, val_int(alpha) ) );
+   //memset(surface->pixels,0,val_int(width)*val_int(height)*4);
+
+   //SDL_SetAlpha( surface, 0, 255 );
+   //Uint32 c1 = icol | (a<<24);
+   Uint32 c2 = SDL_MapRGBA( surface->format, r, g, b, a );
+   // printf("C2 : %x\n",c2);
+   SDL_FillRect( surface, NULL, c2 );
+   SDL_SetAlpha( surface, SDL_SRCALPHA, 255 );
 
    TextureBuffer *buffer = new TextureBuffer(surface);
 
@@ -322,6 +398,9 @@ public:
       }
    }
 
+   int Width() { return mSrcRect.w; }
+   int Height() { return mSrcRect.h; }
+
    ~TileRenderer()
    {
       mTexture->DecRef();
@@ -332,6 +411,7 @@ public:
       if (mOpenGL)
       {
          mTexture->BindOpenGL();
+         glEnable(GL_BLEND);
          glBegin(GL_QUADS);
          glTexCoord2fv(mT00);
          glVertex2i(inX0,inY0);
@@ -377,7 +457,27 @@ void delete_tile_renderer( value tile_renderer )
    }
 }
 
+value nme_tile_renderer_width( value tile_renderer )
+{
+   if ( val_is_kind( tile_renderer, k_tile_renderer ) )
+   {
+      TileRenderer* t = TILE_RENDERER(tile_renderer);
+      return alloc_int(t->Width());
+   }
 
+   return alloc_int(0);
+}
+
+value nme_tile_renderer_height( value tile_renderer )
+{
+   if ( val_is_kind( tile_renderer, k_tile_renderer ) )
+   {
+      TileRenderer* t = TILE_RENDERER(tile_renderer);
+      return alloc_int(t->Height());
+   }
+
+   return alloc_int(0);
+}
 
 value nme_create_tile_renderer(value* arg, int nargs )
 {
@@ -425,6 +525,8 @@ DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_load_texture, 1);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
+DEFINE_PRIM(nme_tile_renderer_width, 1);
+DEFINE_PRIM(nme_tile_renderer_height, 1);
 
 
 

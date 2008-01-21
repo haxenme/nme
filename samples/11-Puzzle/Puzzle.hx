@@ -58,6 +58,9 @@ class Puzzle extends nme.GameBase
    {
       // Try it both ways !
       var opengl = false;
+      var args = neko.Sys.args();
+      if (args.length>0 && args[0].substr(0,2)=="-o")
+         opengl = true;
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
@@ -73,8 +76,7 @@ class Puzzle extends nme.GameBase
       {
          var x = i % SEGMENTS;
          var y = Std.int(i/SEGMENTS);
-         mTiles.push( new TileRenderer(mImage,Manager.getScreen(),
-                            x*SIZE, y*SIZE, SIZE, SIZE )  );
+         mTiles.push( new TileRenderer(mImage, x*SIZE, y*SIZE, SIZE, SIZE )  );
          if (x==0) mGrid.push( new IntArray() );
          mGrid[y].push(i);
       }
@@ -165,7 +167,7 @@ class Puzzle extends nme.GameBase
 
 
 
-   public function onUpdate()
+   public function onUpdate(inDT:Float)
    {
       mWon = false;
 

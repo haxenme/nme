@@ -5,40 +5,44 @@ class BitmapData
    private var mTextureBuffer:Void;
    public var width(getWidth,null):Int;
    public var height(getHeight,null):Int;
+   public var graphics(getGraphics,null):nme.Graphics;
 
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE    = 0x0002;
 
 
+   // Have to break with flash api because we do not have real int32s ...
    public function new(inWidth:Int, inHeight:Int,
-                       ?inTransparent:Bool, ?inFillColour:neko.Int32)
+                       ?inTransparent:Bool,
+                       ?inFillColour:Int,
+                       ?inAlpha:Int)
    {
       if (inWidth<1 || inHeight<1)
          mTextureBuffer = null;
       else
       {
-         var flags = 0;
+         var flags = HARDWARE;
          if (inTransparent==null || inTransparent)
             flags |= TRANSPARENT;
 
-         var alpha:Int;
-         var colour:Int;
-
-         if (inFillColour==null)
-         {
-            alpha = 255;
-            colour = 0xffffff;
-         }
-         else
-         {
-            colour = neko.Int32.toInt(inFillColour) & 0xffffff;
-            alpha =  neko.Int32.toInt( neko.Int32.ushr(inFillColour,24) ) &0xff;
-         }
-
+         var alpha:Int = inAlpha==null ? 255 : inAlpha;
+         var colour:Int = inFillColour==null ? 255 : inFillColour;
 
          mTextureBuffer =
             nme_create_texture_buffer(inWidth,inHeight,flags,colour,alpha);
       }
+   }
+
+   public function getGraphics() : nme.Graphics
+   {
+      if (graphics==null)
+         graphics = new nme.Graphics(mTextureBuffer);
+      return graphics;
+   }
+   public function flushGraphics()
+   {
+      if (graphics!=null)
+         graphics.flush();
    }
 
    public function handle() { return mTextureBuffer; }

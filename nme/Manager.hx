@@ -87,7 +87,7 @@ typedef MouseEventCallbackList = Array<MouseEventCallback>;
 typedef KeyEventCallback = KeyEvent -> Void;
 typedef KeyEventCallbackList = Array<KeyEventCallback>;
 
-typedef UpdateCallback = Void -> Void;
+typedef UpdateCallback = Float -> Void;
 typedef UpdateCallbackList = Array<UpdateCallback>;
 
 typedef RenderCallback = Void -> Void;
@@ -144,6 +144,7 @@ class Manager
    {
       mainLoopRunning = true;
       var left = false;
+      var last_update = 0.0;
 
       while(mainLoopRunning)
       {
@@ -189,8 +190,13 @@ class Manager
             }
          } while(type!=et_noevent && mainLoopRunning);
 
+         var t = haxe.Timer.stamp();
+         var dt = t - last_update;
+         if (last_update==0)
+            dt = 0;
+         last_update = t;
          for(f in updateCallbacks)
-            f( );
+            f(dt);
 
          for(f in renderCallbacks)
             f( );

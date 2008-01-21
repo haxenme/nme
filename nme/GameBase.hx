@@ -59,12 +59,12 @@ class GameBase
       }
    }
 
-   public function UpdateFPS()
+   public function UpdateFPS(inDT:Float)
    {
       mFrameCount ++;
    }
 
-   public function onUpdate()
+   public function onUpdate(inDT:Float)
    {
    }
 

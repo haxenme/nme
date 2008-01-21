@@ -121,7 +121,7 @@ class Drums extends nme.GameBase
       run();
    }
 
-   public function onUpdate()
+   public function onUpdate(inDT:Float)
    {
       // Remove old graphics ...
       var remove = -1;

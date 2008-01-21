@@ -529,10 +529,26 @@ struct DestSurface32 : public DestSurface24
    template<typename SOURCE_>
    void SetInc(SOURCE_ &inSource)
    {
-      // todo - if (SOURCE_::AlphaBlend)
-      mPtr[mROff] = inSource.GetR();
-      mPtr[mGOff] = inSource.GetG();
-      mPtr[mBOff] = inSource.GetB();
+      if (SOURCE_::AlphaBlend)
+      {
+         int a = inSource.GetA();
+
+         // todo: do this properly
+         mPtr[mAOff] = a;
+
+         a+=a>>7;
+
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>8;
+      }
+      else
+      {
+         mPtr[mROff] = inSource.GetR();
+         mPtr[mGOff] = inSource.GetG();
+         mPtr[mBOff] = inSource.GetB();
+         mPtr[mAOff] = 255;
+      }
       mPtr += 4;
    }
 
@@ -545,6 +561,34 @@ struct DestSurface32 : public DestSurface24
    void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
    #endif
    {
+      if (SOURCE_::AlphaBlend)
+      {
+         int a = inSource.GetA();
+         a+=a>>7;
+         // todo: do this properly
+         mPtr[mAOff] = (a*inAlpha)>>ALPHA_BITS_;
+
+         a*=inAlpha;
+
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
+      }
+      else
+      {
+         // todo: do this properly
+         mPtr[mAOff] = (inAlpha-1)<<(8-ALPHA_BITS_);
+
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
+      }
+
+
+
+
+
+      // todo - if (SOURCE_::AlphaBlend)
       mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
       mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
       mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);

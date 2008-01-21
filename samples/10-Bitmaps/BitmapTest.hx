@@ -56,6 +56,10 @@ class BitmapTest extends nme.GameBase
    {
       // Try it both ways !
       var opengl = false;
+      var args = neko.Sys.args();
+      if (args.length>0 && args[0].substr(0,2)=="-o")
+         opengl = true;
+
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
@@ -71,8 +75,8 @@ class BitmapTest extends nme.GameBase
       {
          mStars.push( {x:Rand()*wndWidth,
                        y:Rand()*wndHeight,
-                       vx:Rand()*5 - 2.5,
-                       vy:Rand()*5 - 2.5} );
+                       vx:Rand()*100 - 50,
+                       vy:Rand()*100 - 50} );
       }
 
       run();
@@ -95,13 +99,13 @@ class BitmapTest extends nme.GameBase
       }
    }
 
-   public function onUpdate()
+   public function onUpdate(inDT:Float)
    {
       for(i in 0...mStars.length)
       {
          var star = mStars[i];
-         star.x+=star.vx;
-         star.y+=star.vy;
+         star.x+=(star.vx*inDT);
+         star.y+=(star.vy*inDT);
          if (star.x<-10) star.x = wndWidth;
          if (star.x>wndWidth) star.x = -9;
          if (star.y<-10) star.y = wndHeight;

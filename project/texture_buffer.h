@@ -32,6 +32,9 @@ public:
    void UnBindOpenGL();
    void ScaleTexture(int inX,int inY,float &outX,float &outY);
 
+   void SetExtentDirty(int inX0,int inY0,int inX1,int inY1);
+   void UpdateHardware();
+
    void TexCoord(float inX,float inY);
    TextureBuffer *IncRef();
    void DecRef();
@@ -45,9 +48,14 @@ protected:
 
    int          mPixelWidth,mPixelHeight;
    float        mX1,mY1;
+   float        mSW,mSH;
 
    SDL_Rect     mRect;
-   SDL_Rect     mDirtyRect;
+   bool         mHardwareDirty;
+   int          mDirtyX0;
+   int          mDirtyX1;
+   int          mDirtyY0;
+   int          mDirtyY1;
 
    int          mRefCount;
 

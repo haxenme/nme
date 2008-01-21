@@ -1177,6 +1177,7 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
 
    if (inFlags & SPG_HIGH_QUALITY)
    {
+      AA4x::Init();
       if (inGradient->mColours.size()==256)
       {
          if (inGradient->mUsesAlpha)
@@ -1297,9 +1298,6 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
                               SDL_Surface *inSource,
                               const PolyLine *inLines)
 {
-   if (inFlags & SPG_HIGH_QUALITY)
-      AA4x::Init();
-
    int edge = inFlags & SPG_EDGE_MASK;
    if (edge==SPG_EDGE_REPEAT && IsPOW2(inSource->w) && IsPOW2(inSource->h) )
       edge = SPG_EDGE_REPEAT_POW2;
@@ -1355,6 +1353,7 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
 {
    if (inFlags & SPG_HIGH_QUALITY)
    {
+      AA4x::Init();
       if (inFlags & SPG_ALPHA_BLEND)
           return CreateBitmapRendererSource
               <AA4x,SPG_HIGH_QUALITY+SPG_ALPHA_BLEND>(

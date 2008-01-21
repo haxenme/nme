@@ -167,7 +167,7 @@ class GraphicsTest extends nme.GameBase
 
    }
 
-   public function onUpdate()
+   public function onUpdate(inDT:Float)
    {
       // You can set the matrix to move the display object around.
       square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*10.0));

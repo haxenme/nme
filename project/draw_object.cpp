@@ -33,7 +33,8 @@ class Drawable
 {
 public:
    virtual ~Drawable() { }
-   virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)=0;
+   virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
+                  TextureBuffer *inMarkDirty=0)=0;
 
    virtual bool IsGrad() { return false; }
 };
@@ -260,7 +261,8 @@ public:
 
    virtual bool IsGrad() { return mPolygon!=0 || mSolidGradient!=0; }
 
-   void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)
+   void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
+                  TextureBuffer *inMarkDirty=0)
    {
 
       if (IsOpenGLScreen(inSurface))
@@ -294,6 +296,17 @@ public:
 
          if (mSolidGradient || mFillAlpha>0)
          {
+            if (inMarkDirty)
+            {
+               size_t n = mPoints.size();
+               for(size_t i=0;i<n;i++)
+               {
+                  int x = mX[i];
+                  int y = mY[i];
+                  inMarkDirty->SetExtentDirty(x,y,x+1,y+1);
+               }
+            }
+
             if (!mPolygon)
             {
                if (mSolidGradient)
@@ -459,7 +472,8 @@ public:
        delete mRenderer;
    }
 
-   virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix)
+   virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
+                  TextureBuffer *inMarkDirty=0)
    {
       bool hq = true;
 
@@ -667,13 +681,27 @@ void delete_drawable( value drawable )
 
 value nme_draw_object_to(value drawable,value surface,value matrix )
 {
-   if ( val_is_kind( drawable, k_drawable ) && 
-        val_is_kind( surface, k_surf )  )
+   if ( val_is_kind( drawable, k_drawable ) )
    {
-      Matrix mtx(matrix);
-      Drawable *d = DRAWABLE(drawable);
-      SDL_Surface *s = SURFACE(surface);
-      d->RenderTo(s,mtx);
+      SDL_Surface *s = 0;
+      TextureBuffer *tex = 0;
+
+      if ( val_is_kind( surface, k_surf )  )
+      {
+         s = SURFACE(surface);
+      }
+      else if ( val_is_kind( surface, k_texture_buffer )  )
+      {
+         tex = TEXTURE_BUFFER(surface);
+         s = tex->GetSourceSurface();
+      }
+
+      if (s)
+      {
+         Matrix mtx(matrix);
+         Drawable *d = DRAWABLE(drawable);
+         d->RenderTo(s,mtx,tex);
+      }
    }
    return alloc_int(0);
 }
