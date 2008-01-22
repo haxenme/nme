@@ -27,7 +27,12 @@
  
 import nme.Manager;
 import nme.Surface;
-import nme.Graphics;
+import nme.geom.Matrix;
+import nme.display.Graphics;
+import nme.display.BitmapData;
+import nme.display.GradientType;
+import nme.display.SpreadMethod;
+import nme.TileRenderer;
 import neko.Int32;
 
 typedef Ball =
@@ -49,7 +54,7 @@ class Balls extends nme.GameBase
    
    static function main() { new Balls(); }
 
-   var mBallTile : nme.TileRenderer;
+   var mBallTile : TileRenderer;
    var mBalls : BallList;
    var mRand : neko.Random;
 
@@ -65,25 +70,25 @@ class Balls extends nme.GameBase
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      var bitmap = new nme.BitmapData(64,64,true,0x000000,0x00);
+      var bitmap = new BitmapData(64,64,true,0x000000,0x00);
       var gfx = bitmap.graphics;
 
       var colours = [ 0xffffff, 0xff0000, 0x000000 ];
       var alphas = [ 1.0, 1.0, 1.0 ];
       var ratios = [ 0, 10, 255 ];
-      var mtx = new nme.Matrix();
+      var mtx = new Matrix();
 
       // Define positive quadrant ...
       mtx.createGradientBox(40,40, 0, 32,32);
       mtx.rotate(0.5);
-      gfx.beginGradientFill(nme.GradientType.RADIAL,
-                       colours, alphas, ratios, mtx, nme.SpreadMethod.REPEAT,
+      gfx.beginGradientFill(GradientType.RADIAL,
+                       colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
                        -0.6 );
 
       gfx.drawCircle(32,32,30);
       gfx.flush();
 
-      mBallTile = new nme.TileRenderer(bitmap,0,0,64,64);
+      mBallTile = new TileRenderer(bitmap,0,0,64,64);
 
       mBalls = new BallList();
       mRand = new neko.Random();

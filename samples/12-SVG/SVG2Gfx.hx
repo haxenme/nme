@@ -1,13 +1,14 @@
 import Xml;
 import PathParser;
 import PathSegment;
+import nme.geom.Matrix;
+import nme.display.Graphics;
 
-typedef Matrix = nme.Matrix;
-typedef GradientType = nme.GradientType;
-typedef SpreadMethod = nme.SpreadMethod;
-typedef InterpolationMethod = nme.InterpolationMethod;
-typedef CapsStyle = nme.CapsStyle;
-typedef JointStyle = nme.JointStyle;
+import nme.display.GradientType;
+import nme.display.SpreadMethod;
+import nme.display.InterpolationMethod;
+import nme.display.CapsStyle;
+import nme.display.JointStyle;
 
 
 typedef Grad =

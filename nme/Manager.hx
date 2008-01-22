@@ -25,6 +25,8 @@
  
 package nme;
 
+import nme.display.Graphics;
+
 enum EventType
 {
 	et_noevent;

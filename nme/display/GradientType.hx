@@ -1,4 +1,4 @@
-package nme;
+package nme.display;
 
 enum GradientType { RADIAL; LINEAR; }
 

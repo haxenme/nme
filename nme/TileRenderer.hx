@@ -7,7 +7,7 @@ class TileRenderer
    public var height(getHeight,null):Int;
 
 
-   public function new(inTexture:nme.BitmapData,
+   public function new(inTexture:nme.display.BitmapData,
                        inX0:Int,
                        inY0:Int,
                        inWidth:Int,

@@ -27,8 +27,8 @@
  
 import nme.Manager;
 import nme.Surface;
-import nme.Graphics;
-import nme.BitmapData;
+import nme.display.Graphics;
+import nme.display.BitmapData;
 
 typedef Star =
 {

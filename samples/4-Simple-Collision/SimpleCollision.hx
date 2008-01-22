@@ -44,19 +44,14 @@ class SimpleCollision
       mng.events();
       switch mng.getEventType()
       {
-        case et_mousebutton:
-          if ( mng.mouseButton() == 1 )
-          if ( mng.mouseButtonState() == 1 )
-          {
+        case et_mousebutton_down:
             if ( mng.clickRect( mng.mouseX(), mng.mouseY(), new Rect( bat.x, bat.y, batR.w - bat.x, batR.h - bat.y ) ) )
               click = 1;
             else
               click = 0;
-          }
-          else
-          {
+        case et_mousebutton_up:
             click = 0;
-          }
+
         case et_mousemove:
           if ( click == 1 )
           {

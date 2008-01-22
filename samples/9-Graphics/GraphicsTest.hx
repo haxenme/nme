@@ -27,7 +27,14 @@
  
 import nme.Manager;
 import nme.Surface;
-import nme.Graphics;
+import nme.geom.Matrix;
+import nme.display.Graphics;
+import nme.display.Shape;
+
+import nme.display.CapsStyle;
+import nme.display.GradientType;
+import nme.display.JointStyle;
+import nme.display.SpreadMethod;
 
 class GraphicsTest extends nme.GameBase
 {
@@ -42,10 +49,10 @@ class GraphicsTest extends nme.GameBase
    static var rot = 0.0;
    static var phase = 0.0;
 
-   var square : nme.Shape;
-   var grad_circle : nme.Shape;
-   var lines : nme.Shape;
-   var rad_grad : nme.Shape;
+   var square : Shape;
+   var grad_circle : Shape;
+   var lines : Shape;
+   var rad_grad : Shape;
 
    public function new()
    {
@@ -58,7 +65,7 @@ class GraphicsTest extends nme.GameBase
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      square = new nme.Shape();
+      square = new Shape();
       square.beginFill(0x0000ff);
       square.drawRect(-10,-10,20,20);
       square.moveTo(0,0);
@@ -66,49 +73,49 @@ class GraphicsTest extends nme.GameBase
       square.matrix.tx = 400;
       square.matrix.ty = 300;
 
-      grad_circle = new nme.Shape();
+      grad_circle = new Shape();
 
       var colours = [ 0xff0000, 0x000000 ];
       var alphas = [ 1.0, 1.0 ];
       var ratios = [ 0, 255 ];
-      var mtx = new nme.Matrix();
+      var mtx = new Matrix();
       mtx.createGradientBox(100,100,Math.PI/6,150,100);
-      grad_circle.beginGradientFill(nme.GradientType.LINEAR,
-                       colours, alphas, ratios, mtx, nme.SpreadMethod.PAD);
+      grad_circle.beginGradientFill(GradientType.LINEAR,
+                       colours, alphas, ratios, mtx, SpreadMethod.PAD);
       grad_circle.drawCircle(200,150,75);
 
-      lines = new nme.Shape();
+      lines = new Shape();
       lines.lineStyle(1,0x0000ff);
       lines.moveTo(50,100);
       lines.lineTo(50,400);
 
       lines.lineStyle(20,0x000000,0.5,false,"normal",
-               nme.CapsStyle.ROUND, nme.JointStyle.ROUND );
+               CapsStyle.ROUND, JointStyle.ROUND );
 
       lines.moveTo(50,300);
       lines.lineTo(200,300);
       lines.lineTo(250,200);
 
       lines.lineStyle(20,0x000000,0.5,false,"normal",
-               nme.CapsStyle.SQUARE, nme.JointStyle.BEVEL );
+               CapsStyle.SQUARE, JointStyle.BEVEL );
 
       lines.moveTo(50,330);
       lines.lineTo(220,330);
       lines.lineTo(270,230);
 
       lines.lineStyle(20,0x000000,0.5,false,"normal",
-               nme.CapsStyle.NONE, nme.JointStyle.MITER );
+               CapsStyle.NONE, JointStyle.MITER );
 
       lines.moveTo(50,360);
       lines.lineTo(240,360);
       lines.lineTo(290,260);
 
-      rad_grad = new nme.Shape();
-      var mtx = new nme.Matrix();
+      rad_grad = new Shape();
+      var mtx = new Matrix();
       // Define positive quadrant ...
       mtx.createGradientBox(50,50, 0, 50,50);
-      grad_circle.beginGradientFill(nme.GradientType.RADIAL,
-                       colours, alphas, ratios, mtx, nme.SpreadMethod.REPEAT,
+      grad_circle.beginGradientFill(GradientType.RADIAL,
+                       colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
                        -0.9 );
       grad_circle.drawRect(0,0,100,100);
 
@@ -141,7 +148,7 @@ class GraphicsTest extends nme.GameBase
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
       gfx.lineStyle(20,0x007733,1,false,"normal",
-               nme.CapsStyle.ROUND, nme.JointStyle.ROUND, 5.0 );
+               CapsStyle.ROUND, JointStyle.ROUND, 5.0 );
       gfx.moveTo(0,0);
       gfx.curveTo(wndWidth/2,wndHeight,wndWidth,0);
       gfx.flush();
@@ -159,7 +166,7 @@ class GraphicsTest extends nme.GameBase
       gfx.lineTo(x,100);
 
       gfx.lineStyle(20,0x000000,1,false,"normal",
-               nme.CapsStyle.ROUND, nme.JointStyle.MITER, 5.0 );
+               CapsStyle.ROUND, JointStyle.MITER, 5.0 );
       gfx.moveTo(wndWidth*0.6,95);
       gfx.lineTo(wndWidth*0.6,100);
       gfx.lineTo(wndWidth*0.6 + 50*Math.cos(phase),

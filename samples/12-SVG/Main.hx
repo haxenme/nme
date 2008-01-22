@@ -1,4 +1,6 @@
-
+import nme.geom.Matrix;
+import nme.display.SpreadMethod;
+import nme.display.InterpolationMethod;
 
 class DebugGfx
 {
@@ -31,13 +33,13 @@ class DebugGfx
    {
       neko.Lib.println("lineStyle...");
    }
-   public function beginGradientFill(type : nme.GradientType,
+   public function beginGradientFill(type : nme.display.GradientType,
                  colors : Array<Dynamic>,
                  alphas : Array<Dynamic>,
                  ratios : Array<Dynamic>,
-                 ?matrix : nme.Matrix,
-                 ?spreadMethod : Null<nme.SpreadMethod>,
-                 ?interpolationMethod : Null<nme.InterpolationMethod>,
+                 ?matrix : Matrix,
+                 ?spreadMethod : Null<SpreadMethod>,
+                 ?interpolationMethod : Null<InterpolationMethod>,
                  ?focalPointRatio : Null<Float>) : Void
    {
       neko.Lib.println("beginGradientFill...");
@@ -81,7 +83,7 @@ class Main
 
       var debugger = new DebugGfx();
 
-      svg2gfx.Render(debugger,new nme.Matrix(),1.0,1.0);
+      svg2gfx.Render(debugger,new Matrix(),1.0,1.0);
    }
 
 

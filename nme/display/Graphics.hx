@@ -1,4 +1,7 @@
-package nme;
+package nme.display;
+
+import nme.geom.Matrix;
+import nme.display.BitmapData;
 
 typedef DrawList = Array<Void>;
 
@@ -22,7 +25,7 @@ typedef GradPoints = Array<GradPoint>;
 typedef Grad =
 {
    var points:GradPoints;
-   var matrix:nme.Matrix;
+   var matrix:Matrix;
    var flags:Int;
    var focal:Float;
 }
@@ -115,14 +118,14 @@ class Graphics
 
    public function render(?inMatrix:Matrix,?inSurface:Void)
    {
-      var dest:Void = inSurface == null ? Manager.getScreen() : inSurface;
+      var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
       CloseList(true);
       for(obj in mDrawList)
          nme_draw_object_to(obj,dest,inMatrix);
    }
 
 
-   public function blit(inTexture:nme.BitmapData)
+   public function blit(inTexture:BitmapData)
    {
       CloseLines(false);
       AddDrawable( nme_create_blit_drawable(inTexture.handle(),mPenX,mPenY) );
@@ -152,11 +155,11 @@ class Graphics
       {
          switch(caps)
          {
-            case nme.CapsStyle.ROUND:
+            case CapsStyle.ROUND:
                mCurrentLine.caps = END_ROUND;
-            case nme.CapsStyle.SQUARE:
+            case CapsStyle.SQUARE:
                mCurrentLine.caps = END_SQUARE;
-            case nme.CapsStyle.NONE:
+            case CapsStyle.NONE:
                mCurrentLine.caps = END_NONE;
          }
       }
@@ -232,7 +235,7 @@ class Graphics
                  ratios : Array<Dynamic>,
                  matrix : Null<Matrix>,
                  spreadMethod : Null<SpreadMethod>,
-                 interpolationMethod : Null<nme.InterpolationMethod>,
+                 interpolationMethod : Null<InterpolationMethod>,
                  focalPointRatio : Null<Float>)
    {
 
@@ -243,18 +246,18 @@ class Graphics
 
       var flags = 0;
 
-      if (type==nme.GradientType.RADIAL)
+      if (type==GradientType.RADIAL)
          flags |= RADIAL;
 
-      if (spreadMethod==nme.SpreadMethod.REPEAT)
+      if (spreadMethod==SpreadMethod.REPEAT)
          flags |= REPEAT;
-      else if (spreadMethod==nme.SpreadMethod.REFLECT)
+      else if (spreadMethod==SpreadMethod.REFLECT)
          flags |= REFLECT;
 
 
       if (matrix==null)
       {
-         matrix = new nme.Matrix();
+         matrix = new Matrix();
          matrix.createGradientBox(25,25);
       }
       else
@@ -271,7 +274,7 @@ class Graphics
                  ratios : Array<Dynamic>,
                  ?matrix : Matrix,
                  ?spreadMethod : Null<SpreadMethod>,
-                 ?interpolationMethod : Null<nme.InterpolationMethod>,
+                 ?interpolationMethod : Null<InterpolationMethod>,
                  ?focalPointRatio : Null<Float>) : Void
    {
       CloseList(true);

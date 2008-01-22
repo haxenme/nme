@@ -1,14 +1,14 @@
-package nme;
+package nme.display;
 
 
-class Shape extends nme.Graphics
+class Shape extends Graphics
 {
-   public var matrix:Matrix;
+   public var matrix:nme.geom.Matrix;
 
    public function new()
    {
       super();
-      matrix = new Matrix();
+      matrix = new nme.geom.Matrix();
    }
 
    public function draw()

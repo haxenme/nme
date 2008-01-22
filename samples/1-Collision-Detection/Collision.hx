@@ -97,21 +97,16 @@ class Collision
 					processKeys( mng.lastKey(), true );
 				case et_keyup:
 					processKeys( mng.lastKey(), false );
-				case et_mousebutton:
-					if ( mng.mouseButton() == 1 )
-						if ( mng.mouseButtonState() == 1 )
-						{
-							var tmp : Rect = bat.getCurrentRect();
-							var batRect : Rect = new Rect( bat.x, bat.y, tmp.w, tmp.h );
-							if ( mng.clickRect( mng.mouseX(), mng.mouseY(), batRect ) )
-								bat.click = 1;
-							else
-								bat.click = 0;
-						}
-						else
-						{
+				case et_mousebutton_down:
+					var tmp : Rect = bat.getCurrentRect();
+					var batRect : Rect = new Rect( bat.x, bat.y, tmp.w, tmp.h );
+					if ( mng.clickRect( mng.mouseX(), mng.mouseY(), batRect ) )
+						bat.click = 1;
+					else
+						bat.click = 0;
+
+				case et_mousebutton_up:
 							bat.click = 0;
-						}
 				case et_mousemove:
 					if ( bat.click == 1 )
 					{

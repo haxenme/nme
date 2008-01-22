@@ -1,11 +1,12 @@
-package nme;
+package nme.display;
+
 
 class BitmapData
 {
    private var mTextureBuffer:Void;
    public var width(getWidth,null):Int;
    public var height(getHeight,null):Int;
-   public var graphics(getGraphics,null):nme.Graphics;
+   public var graphics(getGraphics,null):Graphics;
 
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE    = 0x0002;
@@ -33,10 +34,10 @@ class BitmapData
       }
    }
 
-   public function getGraphics() : nme.Graphics
+   public function getGraphics() : Graphics
    {
       if (graphics==null)
-         graphics = new nme.Graphics(mTextureBuffer);
+         graphics = new Graphics(mTextureBuffer);
       return graphics;
    }
    public function flushGraphics()

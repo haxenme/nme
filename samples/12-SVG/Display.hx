@@ -26,7 +26,9 @@
  */
  
 import nme.Manager;
-import nme.Graphics;
+import nme.geom.Matrix;
+import nme.display.Graphics;
+import nme.display.Shape;
 import nme.KeyCode;
 
 
@@ -40,7 +42,7 @@ class Display extends nme.GameBase
    
    static function main() { new Display(); }
 
-   var mShape:nme.Shape;
+   var mShape: Shape;
    var mSVG : SVG2Gfx;
    var mOX:Float;
    var mOY:Float;
@@ -79,7 +81,7 @@ class Display extends nme.GameBase
 
       mSVG = new SVG2Gfx(xml);
 
-      mShape = new nme.Shape();
+      mShape = new Shape();
 
       ResetZoom();
 
@@ -152,7 +154,7 @@ class Display extends nme.GameBase
 
    function UpdateGfx()
    {
-      var m = new nme.Matrix(mZoom, 0, 0, mZoom, mOX, mOY);
+      var m = new Matrix(mZoom, 0, 0, mZoom, mOX, mOY);
       mShape.clear();
       mSVG.Render(mShape,m);
    }
