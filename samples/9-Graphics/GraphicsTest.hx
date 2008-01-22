@@ -155,7 +155,7 @@ class GraphicsTest extends nme.GameBase
 
       gfx.lineStyle(3,0x0000ff);
       gfx.beginFill(0xff3030);
-      gfx.drawCircle(x,100,60);
+      gfx.drawEllipse(x,100,80,60);
       gfx.moveTo(x,100);
 
       gfx.lineStyle(1,0x00ff80);
@@ -171,6 +171,22 @@ class GraphicsTest extends nme.GameBase
       gfx.lineTo(wndWidth*0.6,100);
       gfx.lineTo(wndWidth*0.6 + 50*Math.cos(phase),
                  100 + 50*Math.sin(phase));
+
+
+
+      gfx.lineStyle(2,0x000000);
+      var colours = [ 0xd0d0d0, 0x606060, 0x000000, 0x505000 ];
+      var alphas = [ 1.0, 1.0 , 1.0, 1.0];
+      var ratios = [ 0, 128, 150, 255 ];
+      var mtx = new Matrix();
+      mtx.a = 0; mtx.d = 0.0;
+      mtx.b = 1.0/60.0;
+      mtx.tx = -400*mtx.b;
+      gfx.beginGradientFill(GradientType.LINEAR,
+                       colours, alphas, ratios, mtx, SpreadMethod.PAD);
+
+      gfx.drawRoundRect(100,400,200,60, 10, 10 );
+      gfx.flush();
 
    }
 

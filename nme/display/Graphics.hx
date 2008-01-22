@@ -195,10 +195,11 @@ class Graphics
    }
 
    // TODO: could me more efficient to leave this up to implementation
-   public function drawCircle(x:Float,y:Float,rad:Float)
+   public function drawEllipse(x:Float,y:Float,x_rad:Float,y_rad:Float)
    {
       CloseList(false);
 
+      var rad = x_rad>y_rad ? x_rad : y_rad;
       var steps = Math.round(rad*3);
       if (steps>4)
       {
@@ -208,12 +209,17 @@ class Graphics
          for(s in 1...steps)
          {
             theta += d_theta;
-            lineTo( x+rad*Math.cos(theta)+0.5, y + rad*Math.sin(theta)+0.5 );
+            lineTo( x+x_rad*Math.cos(theta)+0.5, y+y_rad*Math.sin(theta)+0.5 );
          }
          lineTo( x+rad, y );
       }
 
       CloseList(false);
+   }
+
+   public function drawCircle(x:Float,y:Float,rad:Float)
+   {
+      drawEllipse(x,y,rad,rad);
    }
 
    public function drawRect(x:Float,y:Float,width:Float,height:Float)
@@ -225,6 +231,59 @@ class Graphics
       lineTo(x+width,y+height);
       lineTo(x,y+height);
       lineTo(x,y);
+
+      CloseList(false);
+   }
+
+
+
+   public function drawRoundRect(x:Float,y:Float,width:Float,height:Float,
+                       ellipseWidth:Float, ellipseHeight:Float)
+   {
+      if (ellipseHeight<1 || ellipseHeight<1)
+      {
+         drawRect(x,y,width,height);
+         return;
+      }
+
+      var steps = Math.round(ellipseWidth+ellipseHeight);
+      var points = new GfxPoints();
+      var dtheta = Math.PI*0.5 /  (steps+1);
+      var theta = 0.0;
+      for(i in 0...steps)
+      {
+         theta += dtheta;
+         points.push( { x: (1.0 - Math.cos(theta)) * ellipseWidth,
+                        y: (1.0 - Math.sin(theta)) * ellipseHeight } );
+      }
+
+      CloseList(false);
+
+      moveTo(x,y+ellipseHeight);
+      // top-left
+      for(i in 0...steps)
+         lineTo(x+points[i].x,y+points[i].y);
+
+      lineTo(x+ellipseWidth,y);
+      lineTo(x+width-ellipseWidth,y);
+
+      // top-right
+      for(i in 0...steps)
+         lineTo(x+width-points[steps-1-i].x,y+points[steps-1-i].y);
+
+      lineTo(x+width,y+height-ellipseHeight);
+
+      // bottom-right
+      for(i in 0...steps)
+         lineTo(x+width-points[i].x,y+height-points[i].y);
+
+      lineTo(x+ellipseWidth,y+height);
+
+      // bottom-left
+      for(i in 0...steps)
+         lineTo(x+points[steps-1-i].x,y+height-points[steps-1-i].y);
+
+      lineTo(x,y+ellipseHeight);
 
       CloseList(false);
    }
