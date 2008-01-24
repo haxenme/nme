@@ -43,6 +43,13 @@ typedef LineJob =
    var miter_limit:Float;
 }
 
+typedef Texture =
+{
+   var texture_buffer:Void;
+   var matrix:Matrix;
+   var flags:Int;
+}
+
 typedef LineJobs = Array<LineJob>;
 
 class Graphics
@@ -83,6 +90,8 @@ class Graphics
 
    private static var  PIXEL_HINTING    = 0x4000;
 
+   public static var BMP_REPEAT  = 0x0010;
+   public static var BMP_SMOOTH  = 0x10000;
 
    private var mSurface:Void;
 
@@ -95,6 +104,7 @@ class Graphics
    private var mFillColour:Int;
    private var mFillAlpha:Float;
    private var mSolidGradient:Grad;
+   private var mBitmap:Texture;
 
    // Lines ...
    private var mCurrentLine:LineJob;
@@ -179,6 +189,23 @@ class Graphics
       }
    }
 
+   public function lineGradientStyle(type : GradientType,
+                 colors : Array<Dynamic>,
+                 alphas : Array<Dynamic>,
+                 ratios : Array<Dynamic>,
+                 ?matrix : Matrix,
+                 ?spreadMethod : Null<SpreadMethod>,
+                 ?interpolationMethod : Null<InterpolationMethod>,
+                 ?focalPointRatio : Null<Float>) : Void
+   {
+      mCurrentLine.grad = CreateGradient(type,colors,alphas,ratios,
+                              matrix,spreadMethod,
+                              interpolationMethod,
+                              focalPointRatio);
+   }
+
+
+
    public function beginFill(color:Null<Int>, ?alpha:Null<Float>)
    {
       CloseList(true);
@@ -187,6 +214,7 @@ class Graphics
       mFillAlpha = alpha==null ? 1.0 : alpha;
       mFilling=true;
       mSolidGradient = null;
+      mBitmap = null;
    }
 
    public function endFill()
@@ -339,10 +367,30 @@ class Graphics
       CloseList(true);
 
       mFilling = true;
+      mBitmap = null;
       mSolidGradient = CreateGradient(type,colors,alphas,ratios,
                         matrix,spreadMethod,
                         interpolationMethod,
                         focalPointRatio);
+   }
+
+   public function beginBitmapFill(bitmap:BitmapData, ?matrix:Matrix,
+                  ?in_repeat:Bool, ?in_smooth:Bool)
+   {
+      CloseList(true);
+
+      var repeat:Bool = in_repeat==null ? true : in_repeat;
+      var smooth:Bool = in_smooth==null ? false : in_smooth;
+
+      mFilling = true;
+
+      mSolidGradient = null;
+
+      mBitmap = { texture_buffer: bitmap.handle(),
+                  matrix: matrix==null ? matrix : matrix.clone(),
+                  flags : (repeat ? BMP_REPEAT : 0) |
+                          (smooth ? BMP_SMOOTH : 0) };
+
    }
 
 
@@ -356,6 +404,7 @@ class Graphics
       mPoints = [];
 
       mSolidGradient = null;
+      mBitmap = null;
       mFilling = false;
       mFillColour = 0x000000;
       mFillAlpha = 0.0;
@@ -517,7 +566,8 @@ class Graphics
       {
          CloseLines(mFilling && l>2);
          AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
-                      mFillColour, mFillAlpha, mSolidGradient,
+                      mFillColour, mFillAlpha,
+                      untyped mSolidGradient==null ? mBitmap:mSolidGradient,
                       untyped mLineJobs.__neko() ) );
 
          mLineJobs = [];
@@ -528,6 +578,7 @@ class Graphics
       {
          mFillAlpha = 0;
          mSolidGradient = null;
+         mBitmap = null;
          mFilling = false;
       }
    }

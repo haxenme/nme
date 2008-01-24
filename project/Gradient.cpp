@@ -46,6 +46,9 @@ Gradient *CreateGradient(value inVal)
    if (val_is_null(inVal))
       return 0;
 
+   if (val_is_null(val_field(inVal,val_id("points"))))
+      return 0;
+
    return new Gradient( val_field(inVal,val_id("flags")),
                         val_field(inVal,val_id("points")),
                         val_field(inVal,val_id("matrix")),

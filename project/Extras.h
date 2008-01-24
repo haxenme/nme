@@ -29,6 +29,8 @@
 
 #define SPG_GRADIENT_FOCAL0  0x8000
 
+#define SPG_BMP_LINEAR       0x10000
+
 
 
 typedef std::vector<int> IntVec;

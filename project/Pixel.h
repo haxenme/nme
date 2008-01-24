@@ -187,6 +187,7 @@ struct SurfaceSource8 : public SurfaceSourceBase
 {
    enum { PixelSize = 1 } ;
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
 
 
    SurfaceSource8(SDL_Surface *inSurface,const Matrix &inMapping)
@@ -201,7 +202,7 @@ struct SurfaceSource8 : public SurfaceSourceBase
       int x = mPos.x >> 16;
       int y = mPos.y >> 16;
 
-      if (FLAGS_ & SPG_HIGH_QUALITY)
+      if ( HighQuality )
       {
          Uint8 *p00,*p01,*p10,*p11;
 
@@ -256,6 +257,7 @@ struct SurfaceSource24 : public SurfaceSourceBase
    typedef FImagePoint2D iterator;
    enum { PixelSize = DO_ALPHA_ ? 4 : 3 };
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
 
    SurfaceSource24(SDL_Surface *inSurface,const Matrix &inMapper)
       : SurfaceSourceBase(inSurface,inMapper)
@@ -274,7 +276,7 @@ struct SurfaceSource24 : public SurfaceSourceBase
       int x = mPos.x >> 16;
       int y = mPos.y >> 16;
 
-      if (FLAGS_ & SPG_HIGH_QUALITY)
+      if ( HighQuality )
       {
          Uint8 *p00,*p01,*p10,*p11;
 
@@ -316,9 +318,9 @@ struct SurfaceSource24 : public SurfaceSourceBase
 
 
 
-   inline Uint8 GetR() const { return (FLAGS_&SPG_HIGH_QUALITY)?mR:mPtr[mROff]; }
-   inline Uint8 GetG() const { return (FLAGS_&SPG_HIGH_QUALITY)?mG:mPtr[mGOff]; }
-   inline Uint8 GetB() const { return (FLAGS_&SPG_HIGH_QUALITY)?mB:mPtr[mBOff]; }
+   inline Uint8 GetR() const { return HighQuality ? mR:mPtr[mROff]; }
+   inline Uint8 GetG() const { return HighQuality ? mG:mPtr[mGOff]; }
+   inline Uint8 GetB() const { return HighQuality ? mB:mPtr[mBOff]; }
    inline Uint8 GetA() const { return 255; }
 
    
@@ -341,7 +343,7 @@ struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
    typedef SurfaceSource24<FLAGS_,EDGE_,true> Base;
 
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
-   enum { HighQuality = FLAGS_ & SPG_HIGH_QUALITY };
+   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
 
    SurfaceSource32(SDL_Surface *inSurface,const Matrix &inMapper):
       Base( inSurface, inMapper )

@@ -29,6 +29,7 @@ import nme.Manager;
 import nme.Surface;
 import nme.geom.Matrix;
 import nme.display.Graphics;
+import nme.display.BitmapData;
 import nme.display.Shape;
 
 import nme.display.CapsStyle;
@@ -53,6 +54,7 @@ class GraphicsTest extends nme.GameBase
    var grad_circle : Shape;
    var lines : Shape;
    var rad_grad : Shape;
+   var bitmap_obj : Shape;
 
    public function new()
    {
@@ -119,6 +121,16 @@ class GraphicsTest extends nme.GameBase
                        -0.9 );
       grad_circle.drawRect(0,0,100,100);
 
+      bitmap_obj = new Shape();
+      var bmp = new BitmapData(32,32,false,0xffffff,255);
+      bmp.graphics.beginFill(0xff5050);
+      bmp.graphics.drawCircle(6,6,5);
+      bmp.graphics.drawCircle(22,22,5);
+      bmp.graphics.flush();
+      bitmap_obj.lineStyle(1,0x000000);
+      bitmap_obj.beginBitmapFill(bmp,null,true,true);
+      bitmap_obj.drawRoundRect(400,300,100,80,10,10);
+
       run();
    }
 
@@ -174,7 +186,19 @@ class GraphicsTest extends nme.GameBase
 
 
 
-      gfx.lineStyle(2,0x000000);
+      gfx.lineStyle(2);
+      var lcolours = [ 0x303030, 0xd0d0d0 ];
+      var lalphas = [ 1.0, 1.0 ];
+      var lratios = [ 0, 255 ];
+      var lmtx = new Matrix();
+      lmtx.a = 0; lmtx.d = 0.0;
+      lmtx.b = 1.0/64.0;
+      lmtx.tx = -398*lmtx.b;
+      gfx.lineGradientStyle(GradientType.LINEAR,
+                       lcolours, lalphas, lratios, lmtx, SpreadMethod.PAD);
+
+
+
       var colours = [ 0xd0d0d0, 0x606060, 0x000000, 0x505000 ];
       var alphas = [ 1.0, 1.0 , 1.0, 1.0];
       var ratios = [ 0, 128, 150, 255 ];
@@ -186,6 +210,9 @@ class GraphicsTest extends nme.GameBase
                        colours, alphas, ratios, mtx, SpreadMethod.PAD);
 
       gfx.drawRoundRect(100,400,200,60, 10, 10 );
+
+      bitmap_obj.draw();
+
       gfx.flush();
 
    }

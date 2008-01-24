@@ -3,6 +3,7 @@
 
 #include <neko.h>
 #include <SDL.h>
+#include "Matrix.h"
 
 DECLARE_KIND( k_texture_buffer );
 
@@ -19,6 +20,8 @@ public:
 
    inline int Width() { return mPixelWidth; }
    inline int Height() { return mPixelHeight; }
+
+   static TextureBuffer *Create(value inValue);
 
 
    // SDL ...
@@ -63,6 +66,20 @@ private: // hide
    TextureBuffer(const TextureBuffer &inRHS);
    void operator=(const TextureBuffer &inRHS);
 
+};
+
+struct TextureReference
+{
+    TextureReference(TextureBuffer *inTexture,Matrix &inMtx,int inFlags)
+      : mTexture(inTexture->IncRef()), mMatrix(inMtx), mFlags(inFlags) { }
+
+    ~TextureReference() { mTexture->DecRef(); }
+
+    static TextureReference *Create(value inValue);
+
+    TextureBuffer *mTexture;
+    Matrix        mMatrix;
+    int           mFlags;
 };
 
 

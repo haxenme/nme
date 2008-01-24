@@ -101,12 +101,14 @@ class DrawObject : public Drawable
 public:
    DrawObject(Points &inPoints, int inFillColour,double inFillAlpha,
               Gradient *inFillGradient,
+              TextureReference *inTexture,
               LineJobs &inLines)
    {
       mDisplayList = 0;
       mPolygon = 0;
       mSolidGradient = inFillGradient;
-      if (inFillGradient)
+      mTexture = inTexture;
+      if (mSolidGradient || mTexture)
       {
          mFillColour = 0xffffff;
          mFillAlpha = 1.0;
@@ -143,6 +145,7 @@ public:
    ~DrawObject()
    {
       ClearRenderers();
+      delete mTexture;
 
       for(size_t i=0;i<mLineJobs.size();i++)
          delete mLineJobs[i].mGradient;
@@ -317,6 +320,17 @@ public:
                                  SPG_clip_ymax(inSurface),
                                  flags, mSolidGradient );
                }
+               else if (mTexture)
+               {
+                  flags |= mTexture->mFlags;
+                  mPolygon = PolygonRenderer::CreateBitmapRenderer(n-1,
+                                 mHQX, mHQY,
+                                 SPG_clip_ymin(inSurface),
+                                 SPG_clip_ymax(inSurface),
+                                 flags,
+                                 mTexture->mMatrix,
+                                 mTexture->mTexture->GetSourceSurface() );
+               }
                else
                {
                   mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
@@ -325,6 +339,7 @@ public:
                                  SPG_clip_ymax(inSurface),
                                  flags, mFillColour, mFillAlpha );
                }
+
             }
 
             if (mPolygon)
@@ -367,6 +382,7 @@ public:
 
    Points       mPoints;
    Gradient     *mSolidGradient;
+   TextureReference *mTexture;
    int          mFillColour;
    double       mFillAlpha;
    LineJobs     mLineJobs;
@@ -390,7 +406,7 @@ private: // Hide
 
 
 value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
-                          value inSolidGradient, value inLines)
+                          value inGradientOrTexture, value inLines)
 {
    val_check( inFillColour, int );
    val_check( inFillAlpha, number );
@@ -410,11 +426,13 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    for(int j=0;j<n;j++)
       lines[j].FromValue(items[j]);
 
-   DrawObject *obj = new DrawObject( points,
-                                     val_int(inFillColour),
-                                     val_number(inFillAlpha),
-                                     CreateGradient(inSolidGradient),
-                                     lines );
+   DrawObject *obj = new DrawObject(
+                            points,
+                            val_int(inFillColour),
+                            val_number(inFillAlpha),
+                            CreateGradient(inGradientOrTexture),
+                            TextureReference::Create(inGradientOrTexture),
+                            lines );
 
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
@@ -492,6 +510,7 @@ public:
       }
       else
       {
+         // todo: allow for pure translation too...
          if (inMatrix.IsIdentity() )
          {
             SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
@@ -521,7 +540,7 @@ public:
                Matrix mapping = inMatrix.Invert2x2();
                mapping.MatchTransform(mHQTX[0]/65536.0,mHQTY[0]/65536.0,0,0);
 
-               Uint32 flags = SPG_HIGH_QUALITY | SPG_EDGE_CLAMP;
+               Uint32 flags= SPG_HIGH_QUALITY | SPG_EDGE_CLAMP | SPG_BMP_LINEAR;
                if (mHasAlpha)
                   flags |= SPG_ALPHA_BLEND;
 

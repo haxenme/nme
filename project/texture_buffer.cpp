@@ -515,7 +515,21 @@ value nme_blit_tile( value tile_renderer, value x, value y )
 }
 
 
+// --- TextureReference -----------------------------------------
 
+TextureReference *TextureReference::Create(value inVal)
+{
+   if (val_is_null(inVal))
+      return 0;
+   TextureBuffer *tex=TEXTURE_BUFFER(val_field(inVal,val_id("texture_buffer")));
+   if (!tex)
+      return 0;
+
+   int flags = val_int((val_field(inVal,val_id("flags"))));
+   Matrix matrix(val_field(inVal,val_id("matrix")));
+
+   return new TextureReference(tex,matrix,flags);
+}
 
 DEFINE_PRIM_MULT(nme_create_tile_renderer);
 DEFINE_PRIM(nme_blit_tile, 3);

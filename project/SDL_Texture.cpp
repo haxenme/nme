@@ -1342,6 +1342,38 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
 }
 
 
+template<typename AA_>
+PolygonRenderer *AACreateBitmapRendererSource(int inN,
+                              Sint32 *inX,Sint32 *inY,
+                              Sint32 inYMin, Sint32 inYMax,
+                              Uint32 inFlags,
+                              const class Matrix &inMapper,
+                              SDL_Surface *inSource,
+                              const PolyLine *inLines)
+{
+   if (inFlags & SPG_BMP_LINEAR)
+   {
+      if (inFlags & SPG_ALPHA_BLEND)
+          return CreateBitmapRendererSource
+              <AA_,SPG_BMP_LINEAR+SPG_ALPHA_BLEND>(
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+      else
+          return CreateBitmapRendererSource<AA_,SPG_BMP_LINEAR>(
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+   }
+   else
+   {
+      if (inFlags & SPG_ALPHA_BLEND)
+          return CreateBitmapRendererSource<AA_,SPG_ALPHA_BLEND>(
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+      else
+          return CreateBitmapRendererSource<AA_,0>(
+                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+
+   }
+}
+
+
 
 PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
                               Sint32 *inX,Sint32 *inY,
@@ -1354,23 +1386,13 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
    if (inFlags & SPG_HIGH_QUALITY)
    {
       AA4x::Init();
-      if (inFlags & SPG_ALPHA_BLEND)
-          return CreateBitmapRendererSource
-              <AA4x,SPG_HIGH_QUALITY+SPG_ALPHA_BLEND>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
-      else
-          return CreateBitmapRendererSource<AA4x,SPG_HIGH_QUALITY>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+      return AACreateBitmapRendererSource<AA4x>
+               (inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
    else
    {
-      if (inFlags & SPG_ALPHA_BLEND)
-          return CreateBitmapRendererSource<AA0x,SPG_ALPHA_BLEND>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
-      else
-          return CreateBitmapRendererSource<AA0x,0>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
-
+      return AACreateBitmapRendererSource<AA0x>
+               (inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
 }
 
