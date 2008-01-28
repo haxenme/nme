@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <map>
 
+#ifdef WIN32
+typedef __int64 int64;
+#else
+typedef long long int64;
+#endif
+
 
 // --- AA traits classes ----------------------------------------------------
 
@@ -31,7 +37,7 @@ struct AA0x
       { return inState; }
 
    static inline Uint8 GetAlpha(State &inState)
-      { return inState; }
+      { return inState ^ 0x01; }
 
    int Value() const { return mVal; }
 
@@ -136,7 +142,6 @@ struct AA4x
          {
             int  sum = 0;
             bool draw = (i&0x10) != 0;
-            if (draw) sum+= 1;
             if (i&0x01) draw = !draw;
             if (draw) sum+= 2;
             if (i&0x02) draw = !draw;
@@ -144,7 +149,7 @@ struct AA4x
             if (i&0x04) draw = !draw;
             if (draw) sum+= 2;
             if (i&0x08) draw = !draw;
-            if (draw) sum+= 1;
+            if (draw) sum+= 2;
 
             mDrawing[i] = draw ? 0x10 : 0;
             mAlpha[i] = sum; // 3-bit fixed, [0,8] inclusive
@@ -169,6 +174,8 @@ template<typename LINE_,typename SOURCE_,typename DEST_>
 void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
               SOURCE_ &inSource )
 {
+   if (!inLines)
+      return;
    typedef typename LINE_::mapped_type Point;
    typedef typename Point::State State;
 
@@ -313,17 +320,91 @@ void ProcessLines(SDL_Surface *outDest,int inYMin,int inYMax,LINE_ *inLines,
       SDL_UnlockSurface(outDest);
 }
 
-struct XY
+
+
+// Find y-extent of object, this is in pixels, and is the intersection
+//  with the screen y-extent.
+static bool FindObjectYExtent(int ioMinY, int ioMaxY,int inN,
+          const PointF16 *inPoints,const PolyLine *inLines)
 {
-   int x,y;
+   int min_y = 0;
+   int max_y = 0;
+
+   if (inN<2)
+      return false;
+
+   if (inLines)
+   {
+      const IntVec &pids = inLines->mPointIndex;
+      double extra = 0.5;
+      if (inLines->mJoints == SPG_CORNER_MITER)
+         extra += inLines->mMiterLimit;
+      int w = int(inLines->mThickness*extra + 0.999);
+
+      min_y = inPoints[pids[0]].Y();
+      max_y = min_y;
+
+      for(size_t i=1;i<pids.size();i++)
+      {
+         int y = inPoints[ pids[i] ].Y();
+         if (y<min_y) min_y = y;
+         else if (y>max_y) max_y = y;
+      }
+      min_y -= w;
+      max_y += w;
+   }
+   else
+   {
+      min_y = inPoints[0].Y();
+      max_y = min_y;
+      for(int i=1;i<inN;i++)
+      {
+         int y = inPoints[i].Y();
+         if (y<min_y) min_y = y;
+         else if (y>max_y) max_y = y;
+      }
+   }
+
+   // exclusive of last point
+   max_y++;
+
+   if (min_y >= ioMaxY || max_y<ioMinY)
+   {
+      ioMinY = ioMaxY = 0;
+      return false;
+   }
+
+   if (min_y > ioMinY)
+      ioMinY = min_y;
+
+   if (max_y < ioMaxY)
+      ioMaxY = max_y;
+
+   return true;
+}
+
+struct LineStart
+{
+   // This has the y_offset subtracted ...
+   PointF16 mPos;
+   // To the left, when looking down the line ..
+   PointF16 mPerp;
+   // Only applicable of mitre mode ...
+   double mParaDX;
+   double mParaDY;
 };
+
+typedef std::vector<LineStart> LineStarts;
 
 
 template<typename AA_>
 class BasePolygonRenderer : public PolygonRenderer
 {
 public:
-   enum { ToAA = (16-AA_::AABits) };
+   enum { AABits = AA_::AABits };
+   enum { ToAA = (16-AABits) };
+   enum { AAMask = ~((1<<ToAA)-1) };
+   enum { AAFact = 1<<AABits };
 
    typedef std::map<int,AA_>  LineInfo;
    typedef std::map<int,bool> SpanInfo;
@@ -331,228 +412,212 @@ public:
    typedef typename Point::State State;
 
 
-   BasePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
+   BasePolygonRenderer(int inN,const PointF16 *inPoints,
             int inMinY,int inMaxY,const PolyLine *inLines)
    {
+      mLines = 0;
       mMinY = inMinY;
       mMaxY = inMaxY;
 
-      int min_y = inY[0]>>16;
-      int max_y = min_y;
-      mLines = 0;
-
-      if (inLines)
+      if (FindObjectYExtent(mMinY,mMaxY,inN,inPoints,inLines))
       {
-         const IntVec &pids = inLines->mPointIndex;
-         double extra = 0.5;
-         if (inLines->mJoints == SPG_CORNER_MITER)
-            extra += inLines->mMiterLimit;
-         int w = int(inLines->mThickness*extra + 0.999);
+         mLineCount = mMaxY - mMinY;
+         mLines = new LineInfo [ mLineCount ];
 
-         for(size_t i=0;i<pids.size();i++)
+
+         // Draw line or solid ?
+         if (inLines)
          {
-            int y = inY[ pids[i] ]>>16;
-            if (y<min_y) min_y = y;
-            else if (y>max_y) max_y = y;
+            DrawLines(inPoints,inLines);
          }
-         min_y -= w;
-         max_y += w;
-      }
-      else
-      {
-         for(int i=1;i<inN;i++)
+         else
          {
-            int y = inY[i]>>16;
-            if (y<min_y) min_y = y;
-            else if (y>max_y) max_y = y;
-         }
-      }
+            // For removing offset ...
+            int y_offset = mMinY << 16;
+            // Bottom of lines ...
+            int y_max_aa = (mMaxY-mMinY) << AABits;
+            int y_max_val = (mMaxY-mMinY) << 16;
 
-      // exclusive of last point
-      max_y++;
-
-      if (min_y >= inMaxY || max_y<inMinY)
-      {
-         mMinY = mMaxY = 0;
-         return;
-      }
-   
-      if (min_y > mMinY)
-         mMinY = min_y;
-   
-      if (max_y < mMaxY)
-         mMaxY = max_y;
-      else
-         max_y = mMaxY;
-      
-   
-      mLineCount = mMaxY - mMinY;
-      mLines = new LineInfo [ mLineCount ];
-   
-      min_y = mMinY << 16;
-      // After offset ...
-      max_y = (mMaxY-mMinY) << (AA_::AABits);
-
-      if (inLines)
-      {
-         mMaxSpan = max_y;
-         mSpans = new SpanInfo [ mMaxSpan ];
-         int thickness = (int)(inLines->mThickness * 0.5 * 65536);
-
-         const IntVec &pids = inLines->mPointIndex;
-         int n = (int)pids.size();
-         bool loop = n>2 && (inX[pids[0]]==inX[pids[n-1]]) &&
-                            (inY[pids[0]]==inY[pids[n-1]]);
-         int x1,y1;
-
-         int x0 = inX[ pids[0] ];
-         int y0 = (inY[ pids[0] ]-min_y);
-
-         mCaps = inLines->mCaps;
-         mJoints = inLines->mJoints;
-         mCircleRad = 0;
-
-         if (!loop && mCaps==SPG_END_ROUND)
-            SpanCircle(x0,y0,thickness);
-
-         // Convert hypotnuse into edge length
-         if (mJoints==SPG_CORNER_MITER)
-         {
-            mMiterLimit = inLines->mMiterLimit;
-            if (mMiterLimit<=1)
-               mJoints = SPG_CORNER_BEVEL;
-            else
-               mMiterLimit = sqrt( mMiterLimit*mMiterLimit - 1.0 );
-         }
-
-         if (loop && mJoints!=SPG_CORNER_ROUND)
-         {
-            int dx = inX[pids[0]]-inX[pids[n-2]];
-            int dy = inY[pids[0]]-inY[pids[n-2]];
-            double dub_x = dx;
-            double dub_y = dy;
-            double len = sqrt(dub_x*dub_x + dub_y*dub_y);
-            if (len==0)
-            {
-               mPrevADX = mPrevADY = 0;
-               mPrevDX = 0;
-               mPrevDY = 0;
-            }
-            else
-            {
-               double norm = (thickness/len);
-               // Perpendicular line, dx=dy, dy=-dx
-               mPrevADY = ((int)(-dx*norm))>>ToAA;
-               mPrevADX = ((int)(dy*norm))>>ToAA;
-               if (mJoints==SPG_CORNER_MITER)
-               {
-                  mPrevDX = dx * norm / (1<<ToAA);
-                  mPrevDY = dy * norm / (1<<ToAA);
-               }
-            }
-         }
+            PointF16 p0(inPoints[inN-1]);
+            p0.y -= y_offset;
          
-         for(size_t i=1;i<pids.size();i++)
-         {
-             x1 = inX[ pids[i] ];
-             y1 = (inY[ pids[i] ]-min_y);
-             SpanLine( x0, y0, x1, y1, thickness,
-                           !loop && i==1, !loop && i==n-1 );
-             x0 = x1;
-             y0 = y1;
-         }
-
-         if (!loop && mCaps==SPG_END_ROUND)
-            SpanCircle(x1,y1,thickness);
-
-         // Convert spans to lines ....
-         for(int y=0;y<max_y;y++)
-         {
-            LineInfo &line = mLines[y>>AA_::AABits];
-            SpanInfo &span = mSpans[ y ];
-            for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
+            for(int i=0;i<inN;i++)
             {
-               int x = i->first;
-               line[x>>AA_::AABits].AddAA(x,y);
+               PointF16 p1(inPoints[i]);
+               p1.y -= y_offset;
+               PointF16 p_next = p1;
+
+               // clip whole line ?
+               if (!(p0.y<0 && p1.y<0) && !(p0.y>=y_max_val && p1.y>=y_max_val))
+               {
+                  int y0 = p0.y>>ToAA;
+                  int y1 = p1.y>>ToAA;
+                  int dy = y1-y0;
+                  if (dy==0)
+                  {
+                     // No need to do anything..
+                  }
+                  else
+                  {
+                     if (dy<0)
+                     {
+                        std::swap(p0,p1);
+                        std::swap(y0,y1);
+                     }
+
+                     int dx_dy = Grad(p1 - p0);
+                     int extra_y = ((y0+1)<<ToAA) - p0.y;
+                     int x = p0.x + (dx_dy>>(ToAA-8)) * (extra_y>>8);
+
+                     if (y0<0)
+                     {
+                        x-= y0 * dx_dy;
+                        y0 = 0;
+                     }
+                     int last = y1>y_max_aa ? y_max_aa : y1;
+   
+                     for(; y0<last; y0++)
+                     {
+                        // X is fixed-16, y is fixed-aa
+                        mLines[y0>>AA_::AABits][x>>16].Add(x,y0);
+                        x+=dx_dy;
+                     }
+                  }
+               }
+         
+               p0 = p_next;
             }
+   
+            // VerifyLines();
          }
-
-         delete [] mSpans;
-         mSpans = 0;
-      }
-      else
-      {
-         int x0 = inX[inN-1];
-         int y0 = (inY[inN-1]-min_y)>>ToAA;
-      
-         for(int i=0;i<inN;i++)
-         {
-            int x1 = inX[i];
-            int y1 = (inY[i]-min_y)>>ToAA;
-      
-            // clip whole line ?
-            if (!(y0<0 && y1<0) && !(y0>=max_y && y1>=max_y) )
-            {
-               // Draw a line from first point up to (not including) last point
-               int dy = y1-y0;
-               if (dy==0)
-               {
-                  // No need to do anything..
-               }
-               // going up - include last point, but not first...
-               else if (dy<0)
-               {
-                  int x = x0;
-                  int dx_dy = (x1-x0)/dy;
-                  int y = y0;
-
-                  // skip lower point on a line
-                  y--;
-                  x-=dx_dy;
-
-                  if (y>=max_y)
-                  {
-                     x -= (y-max_y) * dx_dy;
-                     y  = max_y - 1;
-                  }
-                  int last =  (y1<0) ? 0 : y1;
-
-                  for(; y>=last; y--)
-                  {
-                     // X is fixed-16, y is fixed-aa
-                     mLines[y>>AA_::AABits][x>>16].Add(x,y);
-                     x-=dx_dy;
-                  }
-               }
-               else // going down - include first point, but not last
-               {
-                  int x = x0;
-                  int dx_dy = (x1-x0)/dy;
-                  int y = y0;
-
-                  if (y<0)
-                  {
-                     x-= y * dx_dy;
-                     y = 0;
-                  }
-                  int last = y1>max_y ? max_y : y1;
-
-                  for(; y<last; y++)
-                  {
-                     // X is fixed-16, y is fixed-aa
-                     mLines[y>>AA_::AABits][x>>16].Add(x,y);
-                     x+=dx_dy;
-                  }
-               }
-            }
-      
-            x0 = x1;
-            y0 = y1;
-         }
-
-         // VerifyLines();
       }
    }
+
+
+   void DrawLines(const PointF16 *inPoints,const PolyLine *inLines)
+   {
+      // For removing offset ...
+      int y_offset = mMinY << 16;
+      // Bottom of lines ...
+      int y_max_aa = (mMaxY-mMinY) << AABits;
+
+      mCaps = inLines->mCaps;
+      mJoints = inLines->mJoints;
+      mMaxSpan = y_max_aa;
+
+      double t = (inLines->mThickness*0.5)* 65536.0;
+      int it = (int)t;
+
+      // Convert hypotnuse into edge length
+      if (mJoints==SPG_CORNER_MITER)
+      {
+         mMiterLimit = inLines->mMiterLimit;
+         if (mMiterLimit<=1)
+            mJoints = SPG_CORNER_BEVEL;
+         else
+            mMiterLimit = sqrt( mMiterLimit*mMiterLimit - 1.0 );
+         mMiterLimit *= inLines->mThickness * 65536.0;
+      }
+ 
+      mSpans = new SpanInfo [ mMaxSpan ];
+
+      const IntVec &pids = inLines->mPointIndex;
+      int n = (int)pids.size();
+      size_t plast = n-1;
+      bool loop = n>2 && (inPoints[pids[0]]==inPoints[pids[plast]]);
+
+
+      LineStarts points(n);
+      // Number of line segments is 1 fewer than points - so last
+      //  point does not need a dx, and may have an square end.
+      LineStart &end = points[plast];
+      end.mPos = inPoints[pids[plast]];
+      end.mPos.y -= y_offset;
+
+      for(size_t p=0;p<plast;p++)
+      {
+         LineStart &ap = points[p];
+         ap.mPos = inPoints[pids[p]];
+         ap.mPos.y -= y_offset;
+
+         double dx = inPoints[pids[p+1]].x - inPoints[pids[p]].x;
+         double dy = inPoints[pids[p+1]].y - inPoints[pids[p]].y;
+         double norm = sqrt(dx*dx + dy*dy);
+
+         if (mJoints==SPG_CORNER_MITER || mJoints==SPG_CORNER_BEVEL)
+         {
+            if (norm!=0)
+            {
+               ap.mParaDX = dx/norm;
+               ap.mParaDY = dy/norm;
+            }
+            else
+            {
+               ap.mParaDX = 0;
+               ap.mParaDY = 0;
+            }
+
+         }
+
+         if (norm!=0)
+            norm = t/norm;
+
+         ap.mPerp.x = (int)(dy*norm);
+         ap.mPerp.y = (int)(-dx*norm);
+      }
+
+      mCircleRad = 0;
+      if ( (mCaps==SPG_END_ROUND || mJoints==SPG_CORNER_ROUND) )
+         SetCircleRad(it);
+
+      if (!loop)
+      {
+         if (mCaps==SPG_END_SQUARE)
+         {
+            points[0].mPos.x += points[0].mPerp.y;
+            points[0].mPos.y -= points[0].mPerp.x;
+
+            points[plast].mPos.x -= points[plast-1].mPerp.y;
+            points[plast].mPos.y += points[plast-1].mPerp.x;
+         }
+         else if (mCaps==SPG_END_ROUND )
+         {
+            SpanCircle(points[0].mPos);
+            SpanCircle(points[plast].mPos);
+         }
+      }
+      else
+         points[plast] = points[0];
+
+      if (mJoints==SPG_CORNER_ROUND && mCircleRad>0)
+      {
+         for(size_t i=loop?0:1;i<plast;i++)
+            SpanCircle(points[i].mPos);
+      }
+
+      bool do_join = mJoints==SPG_CORNER_BEVEL || mJoints==SPG_CORNER_MITER;
+
+      for(size_t i=0;i<plast;i++)
+         DrawLineSeg( points[i], points[i+1], do_join && (loop||i+1<plast) );
+
+
+      // Convert spans to lines ....
+      for(int y=0;y<y_max_aa;y++)
+      {
+         LineInfo &line = mLines[y>>AA_::AABits];
+         SpanInfo &span = mSpans[ y ];
+         for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
+         {
+            int x = i->first;
+            line[x>>AA_::AABits].AddAA(x,y);
+         }
+      }
+
+      delete [] mSpans;
+      mSpans = 0;
+   }
+
+
 
    void DumpLine(int inLine)
    {
@@ -599,13 +664,13 @@ public:
       }
    }
 
-   inline void SpanLine(int inY,int inX0,int inX1)
+   inline void HLine(int inY,int inX0,int inX1)
    {
       if (inY>=0 && inY<mMaxSpan)
       {
 
-         inX0 = inX0 >> ToAA;
-         inX1 = (inX1>>ToAA) + 1;
+         //inX0 = inX0 >> ToAA;
+         //inX1 = (inX1>>ToAA);
          if (inX0==inX1) return;
          SpanInfo &span = mSpans[inY];
 
@@ -708,36 +773,53 @@ public:
    }
 
    IntVec mCircleArc;
-   int    mCircleOff;
    int    mCircleRad;
 
-   // X is fixed16, y is fixed16-min, inRad is fixed16
-   void SpanCircle(int inX,int inY,int inRad)
+   void SetCircleRad(int inRad)
    {
-      if (inRad < (2<<16))
-         return;
-
-      if (inRad != mCircleRad)
+      inRad >>= ToAA;
+      if (inRad<2)
       {
-         mCircleRad = inRad;
-         mCircleOff = (inRad>>ToAA);
-         int n = 2*mCircleOff+1;
-         mCircleArc.resize(n);
-         for(int y=0;y<=mCircleOff;y++)
-         {
-            double yr = ((mCircleOff-y) << ToAA);
-            double r =  inRad;
-            int dx = (int)( sqrt(r*r - yr*yr ) );
-            mCircleArc[y] = dx;
-            mCircleArc[n-1-y] = dx;
-         }
+         mCircleRad = 0;
+         return;
       }
-
-      int *ptr = &mCircleArc[mCircleOff];
-      int y0 = inY>>ToAA;
-      for(int y=1-mCircleOff;y<mCircleOff;y++)
-         SpanLine(y0 + y, inX-ptr[y], inX+ptr[y] );
+      mCircleRad = inRad;
+      int n = 2*mCircleRad+1;
+      mCircleArc.resize(n);
+      for(int y=0;y<=mCircleRad;y++)
+      {
+         double yr = mCircleRad-y;
+         double r =  inRad;
+         int dx = (int)( sqrt(r*r - yr*yr ) );
+         mCircleArc[y] = dx;
+         mCircleArc[n-1-y] = dx;
+      }
    }
+
+   void SpanCircle(PointF16 inPos)
+   {
+      if (mCircleRad>0)
+      {
+         int x = inPos.X(AABits);
+         int y = inPos.Y(AABits);
+         int *ptr = &mCircleArc[mCircleRad];
+         for(int i=-mCircleRad;i<mCircleRad;i++)
+            HLine(i + y, x-ptr[i], x+ptr[i] );
+      }
+   }
+
+
+   // finds D16-bit X/ D AA bit Y
+   inline int Grad(PointF16 inVec)
+   {
+      int denom = inVec.y;
+      if (inVec.y==0)
+         return 0;
+      int64 num = inVec.x;
+      num<<=ToAA;
+      return (int)(num/denom);
+   }
+
 
 
    /*
@@ -756,53 +838,57 @@ public:
 
 
    // In this case, numbers have already been converted to aa coordinates
-   void SpanTriangle(int inX0,int inY0,
-                     int inX1,int inY1,
-                     int inX2,int inY2 )
+   void SpanTriangle(PointF16 inP0,PointF16 inP1, PointF16 inP2)
    {
-       // Sort
-       if (inY2<inY1)
-          { std::swap(inY1,inY2); std::swap(inX1,inX2); }
-       if (inY1<inY0)
-          { std::swap(inY0,inY1); std::swap(inX0,inX1); }
-       if (inY2<inY1)
-          { std::swap(inY1,inY2); std::swap(inX1,inX2); }
+      // Sort
+      if (inP2.y<inP1.y)
+          std::swap(inP1,inP2);
+      if (inP1.y<inP0.y)
+          std::swap(inP0,inP1);
+      if (inP2.y<inP1.y)
+          std::swap(inP1,inP2);
 
-       int dy1 =  inY2-inY0;
-       if (!dy1) return;
-       int dxb_dy1 = ((inX2-inX0)<<ToAA)/dy1;
-       int xa = (inX0<<ToAA);
-       int xb = xa;
-       int dy0 = inY1-inY0;
-       if (dy0)
-       {
-          int dxa_dy0 = ( (inX1-inX0) << ToAA ) / dy0;
-          for(int y=inY0;y<inY1;y++)
-          {
-             if (xa<xb)
-                SpanLine(y,xa,xb);
-             else
-                SpanLine(y,xb,xa);
-             xa += dxa_dy0;
-             xb += dxb_dy1;
-          }
-       }
-       int dy2 = inY2-inY1;
-       if (dy2)
-       {
-          xa = inX1<<ToAA;
-          int dxa_dy2 = ( (inX2-inX1) << ToAA ) / dy2;
-          for(int y=inY1;y<inY2;y++)
-          {
-             if (xa<xb)
-                SpanLine(y,xa,xb);
-             else
-                SpanLine(y,xb,xa);
-             xa += dxa_dy2;
-             xb += dxb_dy1;
-          }
-       }
+      int y0 = inP0.Y(AABits);
+      int y1 = inP1.Y(AABits);
+      int y2 = inP2.Y(AABits);
 
+      if (y2==y0) return;
+
+      int dxa_dy0 = Grad(inP1-inP0);
+      int dxa_dy2 = Grad(inP2-inP1);
+      int dxb_dy1 = Grad(inP2-inP0);
+
+      // F16 fractional row ...
+      int y = y0;
+      int extra_y = (((y+1)<<ToAA)-inP0.y)>>8;
+      int xa = inP0.x + (dxa_dy0>>(ToAA-8)) * extra_y;
+      int xb = inP0.x + (dxb_dy1>>(ToAA-8)) * extra_y;
+
+      // Top triangle ...
+      while(y<y1)
+      {
+         if (xa<xb)
+            HLine(y,xa>>ToAA,xb>>ToAA);
+         else
+            HLine(y,xb>>ToAA,xa>>ToAA);
+         xa+=dxa_dy0;
+         xb+=dxb_dy1;
+         y++;
+      }
+
+      // middle bit
+      extra_y = (((y+1)<<ToAA)-inP1.y)>>8;
+      xa = inP1.x + (dxa_dy2>>(ToAA-8)) * extra_y;
+      while(y<y2)
+      {
+         if (xa<xb)
+            HLine(y,xa>>ToAA,xb>>ToAA);
+         else
+            HLine(y,xb>>ToAA,xa>>ToAA);
+         xa+=dxa_dy2;
+         xb+=dxb_dy1;
+         y++;
+      }
 
    }
 
@@ -812,7 +898,7 @@ public:
      dy0    / \  xb  |      top triangle
        |   /   \     dy1
          1+.....\    |
-     |     \     \   |      middle parralelogram
+     |     \     \   |      middle parallelogram
     dy2  xa \.....+2
      |       \   / |        bottom triangle
      |        \ /  dy3
@@ -820,69 +906,64 @@ public:
 
    */
 
-
-   void SpanQuad(int inX0,int inY0,
-                 int inX1,int inY1,
-                 int inX2,int inY2,
-                 int inX3,int inY3 )
+   void SpanQuad(PointF16 inP0, PointF16 inP1, PointF16 inP2, PointF16 inP3)
    {
-      int y0 = inY0 >> ToAA;
-      int y1 = inY1 >> ToAA;
-      int y2 = inY2 >> ToAA;
-      int y3 = inY3 >> ToAA;
+      int y0 = inP0.Y(AABits);
+      int y1 = inP1.Y(AABits);
+      int y2 = inP2.Y(AABits);
+      int y3 = inP3.Y(AABits);
 
       if (y3==y0) return;
 
-      int dy0 = y1-y0;
-      int dy1 = y2-y0;
-      int dy2 = y3-y1;
-      int dy3 = y3-y2;
+      int dxa_dy0 = Grad(inP1-inP0);
+      int dxa_dy2 = Grad(inP3-inP1);
+      int dxb_dy1 = Grad(inP2-inP0);
 
-      int dxa_dy2 = dy2==0 ? 0 : (inX3-inX1)/dy2;
-      int dxb_dy1 = dy1==0 ? 0 : (inX2-inX0)/dy1;
-
-      int xa = inX0;
-      int xb = inX0;
-
+      // F16 fractional row ...
       int y = y0;
+      int extra_y = (((y+1)<<ToAA)-inP0.y)>>8;
+      int xa = inP0.x + (dxa_dy0>>(ToAA-8)) * extra_y;
+      int xb = inP0.x + (dxb_dy1>>(ToAA-8)) * extra_y;
+
       // Top triangle ...
-      if (dy0>0)
+      while(y<y1)
       {
-         int dxa_dy0 = (inX1-inX0)/dy0;
-         while(y<y1)
-         {
-            if (xa<xb)
-               SpanLine(y,xa,xb);
-            else
-               SpanLine(y,xb,xa);
-            xa+=dxa_dy0;
-            xb+=dxb_dy1;
-            y++;
-         }
+         if (xa<xb)
+            HLine(y,xa>>ToAA,xb>>ToAA);
+         else
+            HLine(y,xb>>ToAA,xa>>ToAA);
+         xa+=dxa_dy0;
+         xb+=dxb_dy1;
+         y++;
       }
+
       // middle bit
-      xa = inX1;
+      extra_y = (((y+1)<<ToAA)-inP1.y)>>8;
+      xa = inP1.x + (dxa_dy2>>(ToAA-8)) * extra_y;
       while(y<y2)
       {
          if (xa<xb)
-            SpanLine(y,xa,xb);
+            HLine(y,xa>>ToAA,xb>>ToAA);
          else
-            SpanLine(y,xb,xa);
+            HLine(y,xb>>ToAA,xa>>ToAA);
          xa+=dxa_dy2;
          xb+=dxb_dy1;
          y++;
       }
+
       // last bit ...
-      if (dy3>0)
+      if (y<=y3)
       {
-         xb = inX2;
-         int dxb_dy3 = (inX3-inX2)/dy3;
+         int dxb_dy3 = Grad(inP3-inP2);
+         extra_y = ((y+1)<<ToAA) - inP2.y;
+         xb = inP2.x + (dxb_dy3>>(ToAA-8)) * (extra_y>>8);
+
          while(y<y3)
          {
             if (xa<xb)
-               SpanLine(y,xa,xb);
+               HLine(y,xa>>ToAA,xb>>ToAA);
             else
-               SpanLine(y,xb,xa);
+               HLine(y,xb>>ToAA,xa>>ToAA);
             xa+=dxa_dy2;
             xb+=dxb_dy3;
             y++;
@@ -892,10 +973,12 @@ public:
 
    void SpanAlignRectRectangle(int inX0,int inY0,int inX1,int inY1)
    {
+      int x0 = inX0>>ToAA;
       int y0 = inY0>>ToAA;
+      int x1 = inX1>>ToAA;
       int y1 = inY1>>ToAA;
       for(int y=y0;y<y1;y++)
-         SpanLine(y,inX0,inX1);
+         HLine(y,x0,x1);
    }
 
 
@@ -914,162 +997,122 @@ public:
    */
 
    // Quantities are 16-bit fixed, with y-min removed.
-   void SpanLine(int inX0,int inY0,int inX1,int inY1,int inT,
-           bool inEnd0,bool inEnd1)
+   void DrawLineSeg(LineStart &inP0,const LineStart &inP1,bool inJoin)
    {
-      int dx  = inX1-inX0;
-      int dy = inY1-inY0;
-      double dub_x = dx;
-      double dub_y = dy;
-      double len = sqrt(dub_x*dub_x + dub_y*dub_y);
-      double norm = (inT/len);
-      // Perpendicular line, dx=dy, dy=-dx
-      int ady = (int)(-dx*norm);
-      int adx = (int)(dy*norm);
-      int adx_aa = adx>>ToAA;
-      int ady_aa = ady>>ToAA;
-
-      double norm_dx;
-      double norm_dy;
-      if (mJoints==SPG_CORNER_MITER)
+      // Draw rectangle, is possible
+      if (inP0.mPos.Y(AABits) == inP1.mPos.Y(AABits))
       {
-         norm_dx = dx * norm / (1<<ToAA);
-         norm_dy = dy * norm / (1<<ToAA);
-      }
-
-      if (!inEnd0)
-      {
-         if (mJoints==SPG_CORNER_ROUND)
-            SpanCircle(inX0,inY0,inT);
-         else if (mJoints==SPG_CORNER_BEVEL || mJoints==SPG_CORNER_MITER)
-         {
-            int dot = (dx>>ToAA)*mPrevADX + (dy>>ToAA)*mPrevADY;
-            if (dot!=0 || (mJoints==SPG_CORNER_MITER &&
-                 (norm_dx*mPrevDX + norm_dy*mPrevDY) < 0 ) )
-            {
-               int sign = dot>0 ? - 1 : 1;
-               int x0 = inX0 >> ToAA;
-               int y0 = inY0 >> ToAA;
-               int x1 = x0+sign*adx_aa;
-               int y1 = y0+sign*ady_aa;
-               int x2 = x0+sign*mPrevADX;
-               int y2 = y0+sign*mPrevADY;
-               if (mJoints==SPG_CORNER_BEVEL)
-                  SpanTriangle( x0, y0, x1, y1, x2, y2 );
-               else
-               {
-                  // Solve:
-                  //  (x1,y1) - a*(norm_dx,norm_dy) =
-                  //        (x2,y2) + a*(mPrevDX,mPrevDY)
-                  // x1 - a *norm_dx = x2 + a*mPrevDX
-                  // a ( mPrevDX + norm_dx) = x1+x2
-
-                  double a;
-                  double ddx = mPrevDX + norm_dx;
-                  double ddy = mPrevDY + norm_dy;
-
-                  if (dot==0)
-                     a = mMiterLimit;
-                  else if (fabs(ddx)>fabs(ddy))
-                  {
-                     a = (double)(x1-x2)/ddx;
-                     if (a>mMiterLimit) a = mMiterLimit;
-                  }
-                  else if (ddy != 0)
-                  {
-                     a = (double)(y1-y2)/ddy;
-                     if (a>mMiterLimit) a = mMiterLimit;
-                  }
-                  else 
-                     a = mMiterLimit;
-
-                  if (a<mMiterLimit)
-                  {
-                     int cx = int(x1 - a*norm_dx);
-                     int cy = int(y1 - a*norm_dy);
-                     SpanTriangle( x0, y0, x1, y1, cx, cy );
-                     SpanTriangle( x0, y0, cx, cy, x2, y2 );
-                  }
-                  else
-                  {
-                     int cx1 = int(x1 - a*norm_dx);
-                     int cy1 = int(y1 - a*norm_dy);
-                     int cx2 = int(x2 + a*mPrevDX);
-                     int cy2 = int(y2 + a*mPrevDY);
-                     SpanTriangle( x0, y0, x1, y1, cx1, cy1 );
-                     SpanTriangle( x0, y0, cx2, cy2, cx1, cy1 );
-                     SpanTriangle( x0, y0, cx2, cy2, x2, y2 );
-                  }
-               }
-            }
-         }
-      }
-
-      if (mJoints==SPG_CORNER_MITER)
-      {
-         mPrevDX = norm_dx;
-         mPrevDY = norm_dy;
-      }
-      mPrevADX = adx_aa;
-      mPrevADY = ady_aa;
-
-      if (mCaps==SPG_END_SQUARE)
-      {
-         if (inEnd0)
-         {
-            inX0 -= (int)(dx*norm);
-            inY0 -= (int)(dy*norm);
-         }
-         if (inEnd1)
-         {
-            inX1 += (int)(dx*norm);
-            inY1 += (int)(dy*norm);
-         }
-      }
-
-
-      // Draw aligned quad, is possible
-      if ((inY1>>ToAA) == (inY0>>ToAA))
-      {
-         if (inX0<inX1)
-            SpanAlignRectRectangle(inX0,inY0-inT,inX1,inY0+inT);
+         if (inP0.mPos.x<inP1.mPos.x)
+            SpanAlignRectRectangle(inP0.mPos.x,inP0.mPos.y+inP0.mPerp.y,
+                                   inP1.mPos.x,inP0.mPos.y-inP0.mPerp.y );
          else
-            SpanAlignRectRectangle(inX1,inY0-inT,inX0,inY0+inT);
-         return;
+            SpanAlignRectRectangle(inP1.mPos.x,inP0.mPos.y-inP0.mPerp.y,
+                                   inP0.mPos.x,inP0.mPos.y+inP0.mPerp.y );
       }
-
-      // Sort and draw non-aligned quad ...
-      if (dy<0)
+      if (inP0.mPos.X(AABits) == inP1.mPos.X(AABits))
       {
-         std::swap(inX0,inX1);
-         std::swap(inY0,inY1);
+         if (inP0.mPos.y<inP1.mPos.y)
+            SpanAlignRectRectangle(inP0.mPos.x-inP0.mPerp.x,inP0.mPos.y,
+                                   inP0.mPos.x+inP0.mPerp.x,inP1.mPos.y );
+         else
+            SpanAlignRectRectangle(inP0.mPos.x+inP0.mPerp.x,inP1.mPos.y,
+                                   inP0.mPos.x-inP0.mPerp.x,inP0.mPos.y );
       }
-      if (ady<0)
+      else
       {
-         ady=-ady;
-         adx=-adx;
+         PointF16 p0;
+         PointF16 p1;
+
+         if (inP0.mPos.y<inP1.mPos.y)
+         {
+            p0 = inP0.mPos;
+            p1 = inP1.mPos;
+         }
+         else
+         {
+            p0 = inP1.mPos;
+            p1 = inP0.mPos;
+         }
+         PointF16 perp = inP0.mPerp;
+         if (perp.y>0)
+         {
+            perp.y*=-1;
+            perp.x*=-1;
+         }
+
+         PointF16 c0 = p0 + perp;
+         PointF16 c1 = p0 - perp;
+         PointF16 c2 = p1 + perp;
+         PointF16 c3 = p1 - perp;
+         if (c1.y<c2.y)
+            SpanQuad(c0,c1,c2,c3);
+         else
+            SpanQuad(c0,c2,c1,c3);
       }
 
-      // ady >0 and y0<y1
-      // So y0-ady is min and y1+ady is max. 1 and 2 may be reversed...
-      int x0 = inX0 - adx;
-      int y0 = inY0 - ady;
-
-      int x1 = inX0 + adx;
-      int y1 = inY0 + ady;
-
-      int x2 = inX1 - adx;
-      int y2 = inY1 - ady;
-
-      int x3 = inX1 + adx;
-      int y3 = inY1 + ady;
-
-      if (y1>y2)
+      if (inJoin)
       {
-         std::swap(x1,x2);
-         std::swap(y1,y2);
+         // Find out angle between lines - our (anti-clockwise)perpendicular to
+         // the next ones axis...
+         double dot = inP0.mPerp.x*inP1.mParaDX+ inP0.mPerp.y*inP1.mParaDY;
+         if (dot==0.0 && (mJoints!=SPG_CORNER_MITER || // check 180 deg case...
+                 inP0.mPerp.x*inP1.mPerp.x + inP0.mPerp.y*inP1.mPerp.y >0 ) )
+            return;
+
+         PointF16 c0 = inP1.mPos;
+         PointF16 c1,c2;
+         if (dot>0)
+         {
+            c1 = c0 - inP0.mPerp;
+            c2 = c0 - inP1.mPerp;
+         }
+         else
+         {
+            c1 = c0 + inP0.mPerp;
+            c2 = c0 + inP1.mPerp;
+         }
+
+
+         SpanTriangle(c0,c1,c2);
+
+         if (mJoints==SPG_CORNER_MITER)
+         {
+             // Intersect ray from c1 + alpha*(P0.para) ==
+             //                    c2 - alpha*(P1.para)
+             //  c1.x + a * inP0.mParaDX = c2.x - a*inP1.mParaDX
+             //    OR
+             //  c1.y + a * inP0.mParaDY = c2.y - a*inP1.mParaDY
+             // whichever is better conditioned.
+
+             double a;
+             if (dot==0)
+                a = mMiterLimit;
+             else
+             {
+                double denom_x = (inP0.mParaDX+inP1.mParaDX);
+                double denom_y = (inP0.mParaDY+inP1.mParaDY);
+                if (fabs(denom_x)>fabs(denom_y))
+                   a = (c2.x-c1.x)/denom_x;
+                else
+                   a = (c2.y-c1.y)/denom_y;
+                if (a>mMiterLimit)
+                   a = mMiterLimit;
+             }
+
+             PointF16 c1a;
+             c1a.x = c1.x + (int)(a*inP0.mParaDX);
+             c1a.y = c1.y + (int)(a*inP0.mParaDY);
+             SpanTriangle(c1,c2,c1a);
+
+             if (a==mMiterLimit)
+             {
+                PointF16 c2a;
+                c2a.x = c2.x - (int)(a*inP1.mParaDX);
+                c2a.y = c2.y - (int)(a*inP1.mParaDY);
+                SpanTriangle(c2,c1a,c2a);
+             }
+         }
       }
-      SpanQuad(x0,y0,x1,y1,x2,y2,x3,y3);
    }
 
    ~BasePolygonRenderer()
@@ -1104,9 +1147,9 @@ class SourcePolygonRenderer : public BasePolygonRenderer<AA_>
 {
    typedef BasePolygonRenderer<AA_> Base;
 public:
-   SourcePolygonRenderer(int inN,const Sint32 *inX,const Sint32 *inY,
+   SourcePolygonRenderer(int inN,const PointF16 *inPts,
             int inMinY,int inMaxY, const PolyLine *inLines,const SOURCE_ &inSource)
-      : BasePolygonRenderer<AA_>(inN,inX,inY,inMinY,inMaxY,inLines),
+      : BasePolygonRenderer<AA_>(inN,inPts,inMinY,inMaxY,inLines),
          mSource(inSource)
    {
       // mSource is copy-constructed, so yo ubetter be sure this will
@@ -1128,7 +1171,7 @@ public:
 
 template<typename AA_,int FLAGS_,int SIZE_>
 PolygonRenderer *TCreateGradientRenderer(int inN,
-                        Sint32 *inX,Sint32 *inY,
+                        const PointF16 *inPts,
                         Sint32 inYMin, Sint32 inYMax,
                         Uint32 inFlags,
                         Gradient *inGradient,
@@ -1141,14 +1184,14 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
          typedef GradientSource2D<SIZE_,FLAGS_ + SPG_GRADIENT_FOCAL0> Source;
 
          return new SourcePolygonRenderer<AA_,Source>(
-             inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+             inN, inPts, inYMin, inYMax, inLines, Source(inGradient) );
       }
       else
       {
          typedef GradientSource2D<SIZE_,FLAGS_> Source;
 
          return new SourcePolygonRenderer<AA_,Source>(
-             inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+             inN, inPts, inYMin, inYMax, inLines, Source(inGradient) );
       }
 
    }
@@ -1157,14 +1200,14 @@ PolygonRenderer *TCreateGradientRenderer(int inN,
       typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
       return new SourcePolygonRenderer<AA_,Source>(
-          inN, inX, inY, inYMin, inYMax, inLines, Source(inGradient) );
+          inN, inPts, inYMin, inYMax, inLines, Source(inGradient) );
    }
 }
 
 
 
 PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
-                        Sint32 *inX,Sint32 *inY,
+                        const PointF16 *inPts,
                         Sint32 inYMin, Sint32 inYMax,
                         Uint32 inFlags,
                         class Gradient *inGradient,
@@ -1173,7 +1216,7 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
    if (inN<3)
       return 0;
 
-#define ARGS inN,inX,inY,inYMin,inYMax,inFlags,inGradient,inLines
+#define ARGS inN,inPts,inYMin,inYMax,inFlags,inGradient,inLines
 
    if (inFlags & SPG_HIGH_QUALITY)
    {
@@ -1276,14 +1319,14 @@ bool IsPOW2(int inX)
 
 template<typename AA_,typename SOURCE_>
 PolygonRenderer *CreateBitmapRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
                               const PolyLine *inLines,
                               const SOURCE_ &inSource )
 {
-   return new SourcePolygonRenderer<AA_,SOURCE_>(inN,inX,inY,inYMin,inYMax,
+   return new SourcePolygonRenderer<AA_,SOURCE_>(inN,inPts,inYMin,inYMax,
                                            inLines,inSource );
 }
 
@@ -1291,7 +1334,7 @@ PolygonRenderer *CreateBitmapRenderer(int inN,
 
 template<typename AA_,int FLAGS_>
 PolygonRenderer *CreateBitmapRendererSource(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
@@ -1307,19 +1350,19 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
 #define SOURCE_EDGE(source) \
      if (edge == SPG_EDGE_REPEAT_POW2) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
+          inN, inPts, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_REPEAT_POW2>(inSource,inMapper));  \
      else if (edge == SPG_EDGE_REPEAT) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
+          inN, inPts, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_REPEAT>(inSource,inMapper));  \
      else if (edge == SPG_EDGE_UNCHECKED) \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
+          inN, inPts, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_UNCHECKED>(inSource,inMapper));  \
      else \
        r = CreateBitmapRenderer<AA_>( \
-          inN, inX,inY, inYMin,inYMax,inFlags,inMapper,inLines, \
+          inN, inPts, inYMin,inYMax,inFlags,inMapper,inLines, \
           source<FLAGS_,SPG_EDGE_CLAMP>(inSource,inMapper));
 
 
@@ -1344,7 +1387,7 @@ PolygonRenderer *CreateBitmapRendererSource(int inN,
 
 template<typename AA_>
 PolygonRenderer *AACreateBitmapRendererSource(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
@@ -1356,19 +1399,19 @@ PolygonRenderer *AACreateBitmapRendererSource(int inN,
       if (inFlags & SPG_ALPHA_BLEND)
           return CreateBitmapRendererSource
               <AA_,SPG_BMP_LINEAR+SPG_ALPHA_BLEND>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+                inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
       else
           return CreateBitmapRendererSource<AA_,SPG_BMP_LINEAR>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+                inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
    else
    {
       if (inFlags & SPG_ALPHA_BLEND)
           return CreateBitmapRendererSource<AA_,SPG_ALPHA_BLEND>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+                inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
       else
           return CreateBitmapRendererSource<AA_,0>(
-                inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+                inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
 
    }
 }
@@ -1376,7 +1419,7 @@ PolygonRenderer *AACreateBitmapRendererSource(int inN,
 
 
 PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,
@@ -1387,12 +1430,12 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
    {
       AA4x::Init();
       return AACreateBitmapRendererSource<AA4x>
-               (inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+               (inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
    else
    {
       return AACreateBitmapRendererSource<AA0x>
-               (inN,inX,inY,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
+               (inN,inPts,inYMin,inYMax, inFlags, inMapper,inSource,inLines);
    }
 }
 
@@ -1400,7 +1443,7 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
 
 template<typename AA_,int FLAGS_>
 PolygonRenderer *TCreateSolidRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               int inColour, double inAlpha,
@@ -1408,14 +1451,14 @@ PolygonRenderer *TCreateSolidRenderer(int inN,
 {
    typedef ConstantSource32<FLAGS_> Source;
 
-   return new SourcePolygonRenderer<AA_,Source>(inN,inX,inY,inYMin,inYMax,
+   return new SourcePolygonRenderer<AA_,Source>(inN,inPts,inYMin,inYMax,
                                inLines,Source(inColour,inAlpha) );
 }
 
 
 
 PolygonRenderer *PolygonRenderer::CreateSolidRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPts,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               int inColour, double inAlpha,
@@ -1426,18 +1469,18 @@ PolygonRenderer *PolygonRenderer::CreateSolidRenderer(int inN,
       AA4x::Init();
       if (inAlpha < 1.0 )
           return TCreateSolidRenderer<AA4x,SPG_ALPHA_BLEND>(
-                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
+                  inN,inPts,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
       else
           return TCreateSolidRenderer<AA4x,0>(
-                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
+                  inN,inPts,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
    }
    else
    {
       if (inAlpha < 1.0 )
           return TCreateSolidRenderer<AA0x,SPG_ALPHA_BLEND>(
-                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
+                  inN,inPts,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
       else
           return TCreateSolidRenderer<AA0x,0>(
-                  inN,inX,inY,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
+                  inN,inPts,inYMin,inYMax, inFlags, inColour,inAlpha,inLines);
    }
 }

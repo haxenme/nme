@@ -13,8 +13,8 @@ void Matrix::Transform(float inX,float inY,short &outX,short &outY) const
 
 void Matrix::TransformHQ(float inX,float inY,int &outX,int &outY) const
 {
-   outX = (int)( (inX*m00 + inY*m01 + mtx) * 65536.0 + 0.5);
-   outY = (int)( (inX*m10 + inY*m11 + mty) * 65536.0 + 0.5);
+   outX = (int)( (inX*m00 + inY*m01 + mtx) * 65536.0 + 0.5) + 0x8000;
+   outY = (int)( (inX*m10 + inY*m11 + mty) * 65536.0 + 0.5) + 0x8000;
 }
 
 
@@ -61,11 +61,50 @@ Matrix::Matrix(value inMatrix)
 }
 
 
+void Matrix::ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const
+{
+   double det = m00*m11 - m01*m10;
+   if (det==0)
+   {
+      outTrans = inMtx;
+      return;
+   }
+   det = 1.0/det;
+   double a = m11*det;
+   double b = -m01*det;
+   double c = -m10*det;
+   double d = m00*det;
+   double tx = -a*mtx - b*mty;
+   double ty = -c*mtx - d*mty;
+   outTrans.m00 = inMtx.m00*a + inMtx.m01*c;
+   outTrans.m01 = inMtx.m00*b + inMtx.m01*d;
+   outTrans.mtx = inMtx.m00*tx + inMtx.m01*ty+inMtx.mtx;
+
+   outTrans.m10 = inMtx.m10*a + inMtx.m11*c;
+   outTrans.m11 = inMtx.m10*b + inMtx.m11*d;
+   outTrans.mty = inMtx.m10*tx + inMtx.m11*ty+inMtx.mty;
+}
+
+Matrix Matrix::Mult(const Matrix &inLHS) const
+{
+   Matrix t;
+   t.m00 = inLHS.m00 * m00 + inLHS.m01*m10;
+   t.m01 = inLHS.m00 * m01 + inLHS.m01*m11;
+   t.mtx = inLHS.m00 * mtx + inLHS.m01*mty + inLHS.mtx;
+
+   t.m10 = inLHS.m10 * m00 + inLHS.m11*m10;
+   t.m11 = inLHS.m10 * m01 + inLHS.m11*m11;
+   t.mty = inLHS.m10 * mtx + inLHS.m11*mty + inLHS.mty;
+
+   return t;
+}
+
 Matrix Matrix::Invert2x2() const
 {
    double det = m00*m11 - m01*m10;
    if (det==0)
       return Matrix();
+
    det = 1.0/det;
    Matrix result(m11*det, m00*det);
    result.m01 = -m01*det;
@@ -74,11 +113,31 @@ Matrix Matrix::Invert2x2() const
 }
 
 
+Matrix Matrix::Inverse() const
+{
+   double det = m00*m11 - m01*m10;
+   if (det==0)
+      return Matrix();
+
+   det = 1.0/det;
+   Matrix result(m11*det, m00*det);
+   result.m01 = -m01*det;
+   result.m10 = -m10*det;
+
+   result.mtx = - result.m00*mtx - result.m01*mty;
+   result.mty = - result.m10*mtx - result.m11*mty;
+   return result;
+}
+
 void Matrix::MatchTransform(double inX,double inY,
                             double inTargetX,double inTargetY)
 {
    mtx = inTargetX-(m00*inX + m01*inY);
    mty = inTargetY-(m10*inX + m11*inY);
 }
+
+
+
+
 
 

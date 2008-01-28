@@ -35,8 +35,15 @@ public:
    int  DGDX();
    int  DGDY();
 
+   void Transform(const Matrix &inMtx)
+      { inMtx.ContravariantTrans(mOrigMatrix,mTransMatrix); }
+   void IdentityTransform()
+      { mTransMatrix = mOrigMatrix; }
+
    bool            mIsRadial;
-   Matrix          mMatrix;
+   Matrix          mOrigMatrix;
+   Matrix          mTransMatrix;
+
    unsigned int    mTextureID;
    unsigned int    mFlags;
    bool            mUsesAlpha;
@@ -66,7 +73,7 @@ struct GradientSource1D
 
    GradientSource1D(Gradient *inGradient)
    {
-      mMapper = inGradient->mMatrix;
+      mMapper = inGradient->mTransMatrix;
       mColour = &inGradient->mColours[0];
       mDGDX = int(mMapper.m00  * (SIZE_<<8) + 0.5);
    }
@@ -130,7 +137,7 @@ struct GradientSource2D
 
    GradientSource2D(Gradient *inGradient)
    {
-      mMapper = inGradient->mMatrix;
+      mMapper = inGradient->mTransMatrix;
       mColour = &inGradient->mColours[0];
       mDGXDX = mMapper.m00;
       mDGYDX = mMapper.m10;

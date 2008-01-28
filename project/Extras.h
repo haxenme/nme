@@ -31,6 +31,8 @@
 
 #define SPG_BMP_LINEAR       0x10000
 
+#include "Points.h"
+
 
 
 typedef std::vector<int> IntVec;
@@ -54,7 +56,7 @@ public:
                          Sint16 inOffsetX=0,Sint16 inOffsetY=0)=0;
 
    static PolygonRenderer *CreateSolidRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPoints,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               int inColour, double inAlpha,
@@ -62,14 +64,14 @@ public:
 
 
    static PolygonRenderer *CreateGradientRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPoints,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               class Gradient *inGradient,
                               const PolyLine *inLines = 0);
 
    static PolygonRenderer *CreateBitmapRenderer(int inN,
-                              Sint32 *inX,Sint32 *inY,
+                              const PointF16 *inPoints,
                               Sint32 inYMin, Sint32 inYMax,
                               Uint32 inFlags,
                               const class Matrix &inMapper,

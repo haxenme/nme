@@ -31,7 +31,7 @@ public:
    // OpenGL ...
    void DrawOpenGL(float inAlpha=1.0);
    bool PrepareOpenGL();
-   void BindOpenGL();
+   void BindOpenGL(bool inRepeat=false);
    void UnBindOpenGL();
    void ScaleTexture(int inX,int inY,float &outX,float &outY);
 
@@ -39,6 +39,7 @@ public:
    void UpdateHardware();
 
    void TexCoord(float inX,float inY);
+   void TexCoordScaled(float inX,float inY);
    TextureBuffer *IncRef();
    void DecRef();
 
@@ -70,16 +71,31 @@ private: // hide
 
 struct TextureReference
 {
-    TextureReference(TextureBuffer *inTexture,Matrix &inMtx,int inFlags)
-      : mTexture(inTexture->IncRef()), mMatrix(inMtx), mFlags(inFlags) { }
+   TextureReference(TextureBuffer *inTexture,Matrix &inMtx,int inFlags)
+      : mTexture(inTexture->IncRef()), mOrigMatrix(inMtx), mFlags(inFlags)
+      { IdentityTransform(); }
 
-    ~TextureReference() { mTexture->DecRef(); }
+   ~TextureReference() { mTexture->DecRef(); }
 
-    static TextureReference *Create(value inValue);
+   void Transform(const Matrix &inMtx)
+      { inMtx.ContravariantTrans(mOrigMatrix,mTransMatrix); }
+   void IdentityTransform()
+      { mTransMatrix = mOrigMatrix; }
 
-    TextureBuffer *mTexture;
-    Matrix        mMatrix;
-    int           mFlags;
+
+   void OpenGLTexture(double inX,double inY,const Matrix &inMtx)
+   {
+       mTexture->TexCoordScaled(
+                 (float)(inX*inMtx.m00 + inY*inMtx.m01 + inMtx.mtx),
+                 (float)(inX*inMtx.m10 + inY*inMtx.m11 + inMtx.mty));
+   }
+
+   static TextureReference *Create(value inValue);
+
+   TextureBuffer *mTexture;
+   Matrix        mOrigMatrix;
+   Matrix        mTransMatrix;
+   int           mFlags;
 };
 
 

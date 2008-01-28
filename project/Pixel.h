@@ -7,40 +7,6 @@
 #include "Matrix.h"
 
 
-struct ImagePoint
-{
-   Sint16 x;
-   Sint16 y;
-};
-
-struct FImagePoint2D
-{
-   inline FImagePoint2D() {}
-   inline FImagePoint2D(Sint32 inX,Sint32 inY) :x(inX), y(inY) {}
-   inline FImagePoint2D(const FImagePoint2D &inRHS) :x(inRHS.x), y(inRHS.y) {}
-   inline FImagePoint2D(const ImagePoint &inRHS) :
-                x(inRHS.x<<16), y(inRHS.y<<16) { }
-   
-   inline FImagePoint2D operator-(const FImagePoint2D inRHS) const
-      { return FImagePoint2D(x-inRHS.x,y-inRHS.y); }
-   inline FImagePoint2D operator+(const FImagePoint2D inRHS) const
-      { return FImagePoint2D(x+inRHS.x,y+inRHS.y); }
-   inline FImagePoint2D operator*(int inScalar) const
-      { return FImagePoint2D(x*inScalar,y*inScalar); }
-   inline FImagePoint2D operator/(int inDivisor) const
-      { return FImagePoint2D(x/inDivisor,y/inDivisor); }
-   inline FImagePoint2D operator>>(int inShift) const
-      { return FImagePoint2D(x>>inShift,y>>inShift); }
-   inline FImagePoint2D operator<<(int inShift) const
-      { return FImagePoint2D(x<<inShift,y<<inShift); }
-   inline void operator+=(const FImagePoint2D &inRHS)
-      { x+=inRHS.x, y+=inRHS.y; }
-
-   Sint32 x;
-   Sint32 y;
-};
-
-
 
 
 #define GET_PIXEL_POINTERS \
@@ -166,8 +132,8 @@ struct SurfaceSourceBase
    }
 
 
-   FImagePoint2D mPos;
-   FImagePoint2D mDPDX;
+   PointF16 mPos;
+   PointF16 mDPDX;
 
    Matrix      mMapper;
    SDL_Surface *mSurface;
@@ -254,7 +220,6 @@ struct SurfaceSource8 : public SurfaceSourceBase
 template<int FLAGS_,int EDGE_,bool DO_ALPHA_ = false>
 struct SurfaceSource24 : public SurfaceSourceBase
 {
-   typedef FImagePoint2D iterator;
    enum { PixelSize = DO_ALPHA_ ? 4 : 3 };
    enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
    enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };

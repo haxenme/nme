@@ -228,8 +228,10 @@ class Graphics
       CloseList(false);
 
       var rad = x_rad>y_rad ? x_rad : y_rad;
-      var steps = Math.round(rad*3);
-      if (steps>4)
+      var steps = Math.round(rad*2);
+      if (steps<4)
+         steps = 4;
+
       {
          var theta = 0.0;
          var d_theta = Math.PI * 2.0 / steps;

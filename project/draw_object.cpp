@@ -17,6 +17,7 @@
 #include "text.h"
 #include "Extras.h"
 #include "Gradient.h"
+#include "Points.h"
 
 
 DECLARE_KIND( k_drawable );
@@ -24,6 +25,8 @@ DEFINE_KIND( k_drawable );
 
 #define DRAWABLE(v) ( (Drawable *)(val_data(v)) )
 
+
+static int sQualityLevel = 1;
 
 
 // --- Base class -----------------------------------------------------
@@ -65,6 +68,7 @@ struct LineJob : public PolyLine
    double          mAlpha;
    unsigned int    mFlags;
    Gradient        *mGradient;
+   Matrix          mMappinMatrix;
    PolygonRenderer *mRenderer;
 
    void FromValue(value inVal)
@@ -108,6 +112,7 @@ public:
       mPolygon = 0;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
+      mOldFlags = sQualityLevel>0 ? SPG_HIGH_QUALITY : 0;
       if (mSolidGradient || mTexture)
       {
          mFillColour = 0xffffff;
@@ -123,10 +128,7 @@ public:
       mLineJobs.swap(inLines);
 
       int n = (int)mPoints.size();
-      mX = new Sint16[n];
-      mY = new Sint16[n];
-      mHQX = new Sint32[n];
-      mHQY = new Sint32[n];
+      mPointF16s = new PointF16[n];
       TransformPoints(mTransform);
    }
 
@@ -153,10 +155,7 @@ public:
       delete mSolidGradient;
       if (mDisplayList!=0)
          glDeleteLists(mDisplayList,1);
-      delete [] mX;
-      delete [] mY;
-      delete [] mHQX;
-      delete [] mHQY;
+      delete [] mPointF16s;
    }
 
 
@@ -175,9 +174,13 @@ public:
                       (unsigned char)(mFillAlpha*255.0));
          const Point *p = &mPoints[0];
          size_t n = mPoints.size();
+         TextureBuffer *tex = mTexture ? mTexture->mTexture : 0;
 
          if (mSolidGradient)
             mSolidGradient->BeginOpenGL();
+         else if (tex)
+            tex->BindOpenGL( (mTexture->mFlags & SPG_EDGE_MASK)
+                                   ==SPG_EDGE_REPEAT );
          else
             glDisable(GL_TEXTURE_2D);
 
@@ -186,9 +189,16 @@ public:
          {
             if (mSolidGradient)
                mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
+            else if (tex)
+               mTexture->OpenGLTexture( mPoints[i].mX, mPoints[i].mY,
+                                  mTexture->mOrigMatrix);
+
             glVertex2f( mPoints[i].mX, mPoints[i].mY );
             p++;
          }
+
+         if (tex)
+            tex->UnBindOpenGL();
          glEnd();
       }
 
@@ -247,19 +257,35 @@ public:
       mTransform = inMatrix;
 
       if (mTransform.IsIdentity())
+      {
          for(size_t i=0;i<n;i++)
-         {
-            mX[i] = (Sint16)mPoints[i].mX;
-            mY[i] = (Sint16)mPoints[i].mY;
-            mHQX[i] =  (int)(mPoints[i].mX * 65536.0);
-            mHQY[i] =  (int)(mPoints[i].mY * 65536.0);
-         }
+            mPointF16s[i] = PointF16(mPoints[i].mX+0.5,mPoints[i].mY+0.5);
+
+         if (mSolidGradient)
+            mSolidGradient->IdentityTransform();
+         else if (mTexture)
+            mTexture->IdentityTransform();
+         for(size_t i=0;i<mLineJobs.size();i++)
+            if (mLineJobs[i].mGradient)
+               mLineJobs[i].mGradient->IdentityTransform();
+     }
      else
-         for(size_t i=0;i<n;i++)
-         {
-            mTransform.Transform(mPoints[i].mX,mPoints[i].mY,mX[i],mY[i]);
-            mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,mHQX[i],mHQY[i]);
-         }
+     {
+        for(size_t i=0;i<n;i++)
+        {
+           mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,
+               mPointF16s[i].x,mPointF16s[i].y);
+        }
+
+        if (mSolidGradient)
+           mSolidGradient->Transform(mTransform);
+        else if (mTexture)
+           mTexture->Transform(mTransform);
+
+         for(size_t i=0;i<mLineJobs.size();i++)
+            if (mLineJobs[i].mGradient)
+               mLineJobs[i].mGradient->Transform(mTransform);
+     }
    }
 
    virtual bool IsGrad() { return mPolygon!=0 || mSolidGradient!=0; }
@@ -292,10 +318,15 @@ public:
             ClearRenderers();
          }
 
+         unsigned int flags = sQualityLevel>0 ? SPG_HIGH_QUALITY : 0;
+         if (flags!=mOldFlags)
+         {
+            mOldFlags = flags;
+            ClearRenderers();
+         }
 
          Uint16 n = (Uint16)mPoints.size();
 
-         unsigned int flags = SPG_HIGH_QUALITY;
 
          if (mSolidGradient || mFillAlpha>0)
          {
@@ -304,8 +335,8 @@ public:
                size_t n = mPoints.size();
                for(size_t i=0;i<n;i++)
                {
-                  int x = mX[i];
-                  int y = mY[i];
+                  int x = mPointF16s[i].x>>16;
+                  int y = mPointF16s[i].y>>16;
                   inMarkDirty->SetExtentDirty(x,y,x+1,y+1);
                }
             }
@@ -315,7 +346,7 @@ public:
                if (mSolidGradient)
                {
                   mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
-                                 mHQX, mHQY,
+                                 mPointF16s,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, mSolidGradient );
@@ -324,17 +355,17 @@ public:
                {
                   flags |= mTexture->mFlags;
                   mPolygon = PolygonRenderer::CreateBitmapRenderer(n-1,
-                                 mHQX, mHQY,
+                                 mPointF16s,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags,
-                                 mTexture->mMatrix,
+                                 mTexture->mTransMatrix,
                                  mTexture->mTexture->GetSourceSurface() );
                }
                else
                {
                   mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
-                                 mHQX, mHQY,
+                                 mPointF16s,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, mFillColour, mFillAlpha );
@@ -355,7 +386,7 @@ public:
                if (job.mGradient)
                {
                   job.mRenderer = PolygonRenderer::CreateGradientRenderer(n,
-                                 mHQX, mHQY,
+                                 mPointF16s,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, job.mGradient, &job );
@@ -364,7 +395,7 @@ public:
                else
                {
                   job.mRenderer = PolygonRenderer::CreateSolidRenderer(n,
-                                 mHQX, mHQY,
+                                 mPointF16s,
                                  SPG_clip_ymin(inSurface),
                                  SPG_clip_ymax(inSurface),
                                  flags, job.mColour, job.mAlpha, &job );
@@ -384,13 +415,11 @@ public:
    Gradient     *mSolidGradient;
    TextureReference *mTexture;
    int          mFillColour;
+   unsigned int mOldFlags;
    double       mFillAlpha;
    LineJobs     mLineJobs;
 
-   Sint16       *mX;
-   Sint16       *mY;
-   Sint32       *mHQX;
-   Sint32       *mHQY;
+   PointF16     *mPointF16s;
 
    GLuint       mDisplayList;
 
@@ -493,8 +522,6 @@ public:
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty=0)
    {
-      bool hq = true;
-
       if (IsOpenGLScreen(inSurface))
       {
          if (inMatrix.IsIdentity() && mOX==0 && mOY==0)
@@ -521,24 +548,14 @@ public:
             {
                mLastMatrix = inMatrix;
                for(int i=0;i<4;i++)
-                  inMatrix.TransformHQ( mSX[i], mSY[i], mHQTX[i], mHQTY[i] );
+                  inMatrix.TransformHQ( mSX[i], mSY[i],
+                       mPoints[i].x, mPoints[i].y );
 
-               // Calculate mapping matrix.
-               /*
-                  Texture = [ M ][ position ], where T is in pixels
-                  Initially,
-                     Tex = [ I ][position]
-                     but need in terms of p' = [inMatrix][position],
-                     ie, [position] = [inMatrix] ^ -1 [p']
-                       so
-                     Tex = [inMatrix] ^ 1 [p']
-
-                   For numerical stability, we will invert the rotation
-                    component, and add offset to get first corner exact.
-               */
-
+               // TODO  Ox,Oy
                Matrix mapping = inMatrix.Invert2x2();
-               mapping.MatchTransform(mHQTX[0]/65536.0,mHQTY[0]/65536.0,0,0);
+               mapping.MatchTransform(mPoints[0].x/65536.0,
+                                      mPoints[0].y/65536.0,0,0);
+
 
                Uint32 flags= SPG_HIGH_QUALITY | SPG_EDGE_CLAMP | SPG_BMP_LINEAR;
                if (mHasAlpha)
@@ -546,10 +563,11 @@ public:
 
                delete mRenderer;
                mRenderer = PolygonRenderer::CreateBitmapRenderer(4,
-                            mHQTX, mHQTY,
+                            mPoints,
                             SPG_clip_ymin(inSurface),
                             SPG_clip_ymax(inSurface),
-                            flags, mapping, mTexture->GetSourceSurface() );
+                            flags, mapping,
+                            mTexture->GetSourceSurface() );
             }
             mRenderer->Render(inSurface);
          }
@@ -562,14 +580,12 @@ public:
    SDL_Rect    mRect;
    Sint16      mSX[4];
    Sint16      mSY[4];
-   Sint32      mHQTX[4];
-   Sint32      mHQTY[4];
+   PointF16    mPoints[4];
    double      mOX;
    double      mOY;
    double      mAlpha;
 
    Matrix           mLastMatrix;
-   Matrix           mMappingMatrix;
    PolygonRenderer *mRenderer;
 };
 
@@ -725,10 +741,23 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
    return alloc_int(0);
 }
 
+value nme_set_draw_quality(value inValue)
+{
+   sQualityLevel = val_int(inValue);
+   return inValue;
+}
+
+value nme_get_draw_quality()
+{
+   return alloc_int(sQualityLevel);
+}
+
 
 DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_draw_object_to, 3);
+DEFINE_PRIM(nme_set_draw_quality, 1);
+DEFINE_PRIM(nme_get_draw_quality, 0);
 DEFINE_PRIM_MULT(nme_create_text_drawable);
 
 

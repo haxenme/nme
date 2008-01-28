@@ -56,8 +56,10 @@ Gradient *CreateGradient(value inVal)
 }
 
 Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
-  : mMatrix(inMatrix)
+  : mOrigMatrix(inMatrix)
 {
+   IdentityTransform();
+
    mFlags = (unsigned int)val_int(inFlags);
    mTextureID = 0;
 
@@ -148,17 +150,17 @@ bool Gradient::IsFocal0()
 
 int Gradient::MapHQ(int inX,int inY)
 {
-   return (int)(mMatrix.m00*inX + mMatrix.m01*inY + mMatrix.mtx*65536.0);
+   return (int)(mTransMatrix.m00*inX + mTransMatrix.m01*inY + mTransMatrix.mtx*65536.0);
 }
 
 int Gradient::DGDX()
 {
-   return (int)(mMatrix.m00*65536.0);
+   return (int)(mTransMatrix.m00*65536.0);
 }
 
 int Gradient::DGDY()
 {
-   return (int)(mMatrix.m01*65536.0);
+   return (int)(mTransMatrix.m01*65536.0);
 }
 
 
@@ -180,7 +182,7 @@ void Gradient::BeginOpenGL()
 
 void Gradient::OpenGLTexture(double inX,double inY)
 {
-   glTexCoord1d( mMatrix.m00*inX + mMatrix.m01*inY + mMatrix.mtx);
+   glTexCoord1d( mTransMatrix.m00*inX + mTransMatrix.m01*inY + mTransMatrix.mtx);
 }
 
 void Gradient::EndOpenGL()

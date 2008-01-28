@@ -99,13 +99,17 @@ class Manager
 {
 	static var __scr : Void;
 	static var __evt : Void;
+
    // Set this to something else if yo do not want it...
    static var closeKey = 27;
+   static var pauseUpdates = KeyCode.F11;
+   static var toggleQuality = KeyCode.F12;
 
         static var FULLSCREEN = 0x0001;
         static var OPENGL     = 0x0002;
 
         static public var graphics(default,null):Graphics;
+        static public var draw_quality(get_draw_quality,set_draw_quality):Int;
 
    public var mainLoopRunning:Bool;
    public var mouseEventCallbacks:MouseEventCallbackList;
@@ -114,7 +118,10 @@ class Manager
    public var updateCallbacks:UpdateCallbackList;
    public var renderCallbacks:RenderCallbackList;
 
+   public var mPaused:Bool;
+
    public var tryQuitFunction: Void->Bool;
+
 
 
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
@@ -136,6 +143,7 @@ class Manager
       updateCallbacks = new UpdateCallbackList();
       renderCallbacks = new RenderCallbackList();
       tryQuitFunction = null;
+      mPaused = false;
 	}
 
 
@@ -197,8 +205,11 @@ class Manager
          if (last_update==0)
             dt = 0;
          last_update = t;
-         for(f in updateCallbacks)
-            f(dt);
+         if (!mPaused)
+         {
+            for(f in updateCallbacks)
+               f(dt);
+         }
 
          for(f in renderCallbacks)
             f( );
@@ -250,6 +261,11 @@ class Manager
          ctrl : lastKeyCtrl(),
          alt : lastKeyAlt()
       };
+
+      if (inIsDown && event.code==pauseUpdates)
+         mPaused = !mPaused;
+      else if (inIsDown && event.code==toggleQuality)
+         nme_set_draw_quality( (nme_get_draw_quality()+1) & 0x01 );
 
       for(e in keyEventCallbacks)
          e(event);
@@ -419,6 +435,17 @@ class Manager
 	{
 		return Reflect.field( __evt, "yrel" );
 	}
+
+        static function set_draw_quality(inQuality:Int) : Int
+        {
+           return nme_set_draw_quality(inQuality);
+        }
+
+        static function get_draw_quality() : Int
+        {
+           return nme_get_draw_quality();
+        }
+
 	
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
@@ -426,4 +453,6 @@ class Manager
 	static var nme_flipbuffer = neko.Lib.load("nme","nme_flipbuffer",1);
 	static var nme_delay = neko.Lib.load("nme","nme_delay",1);
 	static var nme_event = neko.Lib.load("nme","nme_event",0);
+	static var nme_set_draw_quality = neko.Lib.load("nme","nme_set_draw_quality",1);
+	static var nme_get_draw_quality = neko.Lib.load("nme","nme_get_draw_quality",0);
 }

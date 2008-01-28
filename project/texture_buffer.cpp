@@ -25,6 +25,10 @@ int UpToPower2(int inX)
 #define GL_BGRA 0x80E1
 #endif
 
+#ifndef GL_CLAMP_TO_EDGE
+  #define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 
 // --- TextureBuffer ----------------------------------------------------
 
@@ -210,10 +214,16 @@ void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 }
 
 
-void TextureBuffer::BindOpenGL()
+void TextureBuffer::BindOpenGL(bool inRepeat)
 {
+   PrepareOpenGL();
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, mTextureID);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+     inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+     inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
 
 }
 
@@ -253,6 +263,12 @@ void TextureBuffer::TexCoord(float inX,float inY)
 {
    glTexCoord2f(inX*mX1,inY*mY1);
 }
+
+void TextureBuffer::TexCoordScaled(float inX,float inY)
+{
+   glTexCoord2f(inX*mSW,inY*mSH);
+}
+
 
 void delete_texture_buffer( value texture_buffer )
 {

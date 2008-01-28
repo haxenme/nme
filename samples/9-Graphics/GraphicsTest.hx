@@ -129,18 +129,21 @@ class GraphicsTest extends nme.GameBase
       bmp.graphics.flush();
       bitmap_obj.lineStyle(1,0x000000);
       bitmap_obj.beginBitmapFill(bmp,null,true,true);
-      bitmap_obj.drawRoundRect(400,300,100,80,10,10);
+      bitmap_obj.drawRoundRect(0,0,100,80,10,10);
+      bitmap_obj.matrix.tx = 400;
+      bitmap_obj.matrix.ty = 300;
 
       run();
    }
 
    public function onRender()
    {
-      manager.clear( 0xffffff );
+      manager.clear( 0x606060 );
 
       var gfx = Manager.graphics;
 
       gfx.clear();
+
       gfx.moveTo(10,10);
       gfx.lineStyle(1,0xff0000);
       gfx.lineTo(100,100);
@@ -185,7 +188,6 @@ class GraphicsTest extends nme.GameBase
                  100 + 50*Math.sin(phase));
 
 
-
       gfx.lineStyle(2);
       var lcolours = [ 0x303030, 0xd0d0d0 ];
       var lalphas = [ 1.0, 1.0 ];
@@ -221,6 +223,9 @@ class GraphicsTest extends nme.GameBase
    {
       // You can set the matrix to move the display object around.
       square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*10.0));
+
+      bitmap_obj.matrix.setRotation(rot, (2+Math.sin(phase*-4.0))*0.25);
+      bitmap_obj.matrix.tx = (0.5-0.4*Math.sin(phase*1.0))*wndWidth;
 
       x = x+1;
       if (x>wndWidth) x = -10;
