@@ -1,6 +1,7 @@
 package nme.display;
 
 import nme.geom.Matrix;
+import nme.geom.Rectangle;
 import nme.display.BitmapData;
 
 typedef DrawList = Array<Void>;
@@ -118,6 +119,8 @@ class Graphics
    private var mPenX:Float;
    private var mPenY:Float;
 
+   public var clipRect(GetClipRect,SetClipRect):Rectangle;
+
    public function new(?inSurface:Void)
    {
       mSurface = inSurface;
@@ -140,6 +143,7 @@ class Graphics
       CloseLines(false);
       AddDrawable( nme_create_blit_drawable(inTexture.handle(),mPenX,mPenY) );
    }
+
 
 
    public function lineStyle(thickness:Float,
@@ -424,6 +428,16 @@ class Graphics
       mLineJobs = [];
    }
 
+   public function GetExtent(inMatrix:Matrix) : Rectangle
+   {
+      flush();
+      var result = new Rectangle();
+
+      nme_get_extent(mDrawList,result,inMatrix);
+
+      return result;
+   }
+
    public function moveTo(inX:Float,inY:Float)
    {
       CloseList(false);
@@ -585,10 +599,28 @@ class Graphics
       }
    }
 
+   function GetClipRect() : Rectangle
+   {
+     var r:Dynamic =  nme_get_clip_rect(mSurface);
+     return new Rectangle(r.x,r.y,r.w,r.h);
+   }
+
+   function SetClipRect(inRect:Rectangle) : Rectangle
+   {
+     var r:Dynamic =  nme_set_clip_rect(mSurface,inRect);
+     return new Rectangle(r.x,r.y,r.w,r.h);
+   }
+
+
+
+
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
    static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
+   static var nme_get_clip_rect = neko.Lib.load("nme","nme_get_clip_rect",1);
+   static var nme_set_clip_rect = neko.Lib.load("nme","nme_set_clip_rect",2);
+   static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",3);
 
 }
 

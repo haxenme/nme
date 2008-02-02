@@ -39,6 +39,8 @@ public:
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty=0)=0;
 
+   virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat)=0;
+
    virtual bool IsGrad() { return false; }
 };
 
@@ -248,6 +250,36 @@ public:
       glEndList();
 
       return true;
+   }
+
+   virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
+   {
+      if (inMatrix!=mTransform)
+         TransformPoints(inMatrix);
+
+      size_t n = mPoints.size();
+      for(size_t i=0;i<n;i++)
+         ioExtent.Add(mPointF16s[i]);
+
+      for(size_t j=0;j<mLineJobs.size();j++)
+      {
+         LineJob &line = mLineJobs[j];
+
+         double extra = 0.5;
+         if (line.mJoints == SPG_CORNER_MITER)
+            extra += line.mMiterLimit;
+         int w = int((line.mThickness*extra + 0.999)*65536.0);
+
+         const IntVec &pids = line.mPointIndex;
+         for(size_t i=0;i<pids.size();i++)
+         {
+            const PointF16 &p = mPointF16s[pids[i]];
+
+            ioExtent.Add(p.x+w,p.y+w);
+            ioExtent.Add(p.x-w,p.y-w);
+         }
+      }
+
    }
 
 
@@ -574,6 +606,19 @@ public:
       }
    }
 
+   void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
+   {
+      for(int i=0;i<4;i++)
+      {
+         int x,y;
+         inMatrix.TransformHQ( mSX[i], mSY[i], x, y);
+
+         ioExtent.Add(x,y);
+      }
+
+   }
+
+
    TextureBuffer *mTexture;
 
    bool        mHasAlpha;
@@ -685,7 +730,6 @@ value nme_create_text_drawable( value* arg, int nargs )
    }
 
 
-
    SDL_SetAlpha(surface,SDL_SRCALPHA,255);
    Drawable *obj = new SurfaceDrawer(surface, x, y,
                                      val_number(arg[aAlpha]),
@@ -696,6 +740,35 @@ value nme_create_text_drawable( value* arg, int nargs )
    return v;
 }
 
+
+
+value nme_get_extent(value inDrawList,value ioRect,value inMatrix)
+{
+   Extent2DI extent;
+
+   Matrix matrix(inMatrix);
+   
+   value objs_arr =  val_field(inDrawList,val_id("__a"));
+   val_check( objs_arr, array );
+
+   int n =  val_int( val_field(inDrawList,val_id("length")));
+   value *objs =  val_array_ptr(objs_arr);
+
+
+   for(int i=0;i<n;i++)
+   {
+      Drawable *d = DRAWABLE(objs[i]);
+      d->GetExtent(extent,matrix);
+   }
+
+
+   alloc_field( ioRect, val_id("x"), alloc_float(extent.mMinX>>16) );
+   alloc_field( ioRect, val_id("y"), alloc_float(extent.mMinY>>16) );
+   alloc_field( ioRect, val_id("width"), alloc_float(extent.Width()>>16) );
+   alloc_field( ioRect, val_id("height"), alloc_float(extent.Height()>>16));
+
+   return alloc_int( extent.mValid ? 1 : 0);
+}
 
 
 // -----------------------------------------------------------------------
@@ -755,6 +828,7 @@ value nme_get_draw_quality()
 
 DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
+DEFINE_PRIM(nme_get_extent, 3);
 DEFINE_PRIM(nme_draw_object_to, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_get_draw_quality, 0);

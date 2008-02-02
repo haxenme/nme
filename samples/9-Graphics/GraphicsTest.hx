@@ -37,6 +37,7 @@ import nme.display.GradientType;
 import nme.display.JointStyle;
 import nme.display.SpreadMethod;
 
+
 class GraphicsTest extends nme.GameBase
 {
    static var wndWidth = 640;
@@ -160,6 +161,11 @@ class GraphicsTest extends nme.GameBase
       lines.draw();
       rad_grad.draw();
 
+      var rect = square.extent;
+
+      gfx.lineStyle(1,0x00ff00);
+      gfx.drawRect(rect.x,rect.y,rect.width,rect.height);
+
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
       gfx.lineStyle(20,0x007733,1,false,"normal",
@@ -168,15 +174,19 @@ class GraphicsTest extends nme.GameBase
       gfx.curveTo(wndWidth/2,wndHeight,wndWidth,0);
       gfx.flush();
 
+      gfx.clipRect = new nme.geom.Rectangle(60,0,wndWidth-120,wndHeight);
       gfx.lineStyle(3,0x0000ff);
       gfx.beginFill(0xff3030);
       gfx.drawEllipse(x,100,80,60);
+
       gfx.moveTo(x,100);
 
       gfx.lineStyle(1,0x00ff80);
       gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
 
       gfx.endFill();
+      gfx.clipRect = null;
+
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
       gfx.lineTo(x,100);
 

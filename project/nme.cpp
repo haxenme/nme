@@ -110,7 +110,10 @@ static value nme_surface_clear( value surf, value c )
            glOrtho(0,w, h,0, -1000,1000);
            glMatrixMode(GL_MODELVIEW);
            glLoadIdentity();
-           glClearColor(r/255.0, g/255.0, b/255.0, 1.0 );
+           glClearColor((GLclampf)(r/255.0),
+                        (GLclampf)(g/255.0),
+                        (GLclampf)(b/255.0),
+                        (GLclampf)1.0 );
            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
         else
@@ -172,6 +175,8 @@ value nme_surface_colourkey( value surface, value r, value g, value b )
 
 static bool sOpenGL = false;
 SDL_Surface *sOpenGLScreen = 0;
+static bool sDoScissor;
+SDL_Rect sScissorRect;
 
 bool IsOpenGLMode() { return sOpenGL; }
 bool IsOpenGLScreen(SDL_Surface *inSurface) { return sOpenGL && inSurface==sOpenGLScreen; }
@@ -214,6 +219,97 @@ value nme_screen_flip()
 	nme_flipbuffer( val_field( o, val_id( "screen" ) ) );
 	return alloc_int( 0 );
 }
+
+value AllocRect(const SDL_Rect &inRect)
+{
+   value r = alloc_object(0);
+   alloc_field( r, val_id( "x" ), alloc_float( inRect.x ) );
+   alloc_field( r, val_id( "y" ), alloc_float( inRect.y ) );
+   alloc_field( r, val_id( "w" ), alloc_float( inRect.w ) );
+   alloc_field( r, val_id( "h" ), alloc_float( inRect.h ) );
+   return r;
+}
+
+value nme_set_clip_rect(value inSurface, value inRect)
+{
+   SDL_Rect rect;
+   if (!val_is_null(inRect))
+   {
+      rect.x = (int)val_number( val_field(inRect, val_id("x")) );
+      rect.y = (int)val_number( val_field(inRect, val_id("y")) );
+      rect.w = (int)val_number( val_field(inRect, val_id("width")) );
+      rect.h = (int)val_number( val_field(inRect, val_id("height")) );
+
+   }
+   else
+      memset(&rect,0,sizeof(rect));
+
+   if (val_is_kind(inSurface,k_surf))
+   {
+      SDL_Surface *surface = SURFACE(inSurface);
+
+      if (IsOpenGLScreen(surface))
+      {
+         if (val_is_null(inRect))
+         {
+            sDoScissor = false;
+            glDisable(GL_SCISSOR_TEST);
+         }
+         else
+         {
+            sDoScissor = true;
+            glEnable(GL_SCISSOR_TEST);
+            sScissorRect = rect;
+            glScissor(sScissorRect.x,sScissorRect.y,
+                      sScissorRect.w,sScissorRect.h);
+         }
+      }
+      else
+      {
+         if (val_is_null(inRect))
+         {
+            SDL_SetClipRect(surface,0);
+            SDL_GetClipRect(surface,&rect);
+         }
+         else
+         {
+            SDL_SetClipRect(surface,&rect);
+         }
+      }
+   }
+
+   return AllocRect(rect);
+}
+
+value nme_get_clip_rect(value inSurface)
+{
+   SDL_Rect rect;
+   memset(&rect,0,sizeof(rect));
+
+   if (val_is_kind(inSurface,k_surf))
+   {
+      SDL_Surface *surface = SURFACE(inSurface);
+
+      if (IsOpenGLScreen(surface))
+      {
+         if (sDoScissor)
+            rect = sScissorRect;
+         else
+         {
+            rect.w = sOpenGLScreen->w;
+            rect.h = sOpenGLScreen->h;
+         }
+      }
+      else
+      {
+         SDL_GetClipRect(surface,&rect);
+      }
+   }
+
+   return AllocRect(rect);
+}
+
+
 
 #define NME_FULLSCREEN 0x0001
 #define NME_OPENGL     0x0002
@@ -313,6 +409,10 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 
 	return alloc_abstract( k_surf, screen );
 }
+
+
+
+
 
 value nme_event()
 {
@@ -428,3 +528,5 @@ DEFINE_PRIM(nme_surface_free, 1);
 DEFINE_PRIM(nme_surface_width, 1);
 DEFINE_PRIM(nme_surface_height, 1);
 DEFINE_PRIM(nme_surface_colourkey, 4);
+DEFINE_PRIM(nme_set_clip_rect, 2);
+DEFINE_PRIM(nme_get_clip_rect, 1);

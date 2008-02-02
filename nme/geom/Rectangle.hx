@@ -38,7 +38,7 @@ class Rectangle
    public var width : Float;
    public var height : Float;
 
-   function new(?inX : Float, ?inY : Float,
+   public function new(?inX : Float, ?inY : Float,
                 ?inWidth : Float, ?inHeight : Float) : Void
    {
       x = inX==null ? 0 : inX;

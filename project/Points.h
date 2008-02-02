@@ -99,6 +99,50 @@ struct PointAA
    int y;
 };
 
+template<typename T_>
+struct Extent2D
+{
+   Extent2D() : mValid(false)
+   {
+      mMinX = mMinY = mMaxX = mMaxY = 0;
+   }
+
+   template<typename P_>
+   inline void Add(P_ inX, P_ inY)
+   {
+      if (mValid)
+      {
+         if (inX<mMinX) mMinX = (T_)inX;
+         else if (inX>mMaxX) mMaxX = (T_)inX;
+
+         if (inY<mMinY) mMinY = (T_)inY;
+         else if (inY>mMaxY) mMaxY = (T_)inY;
+      }
+      else
+      {
+         mMinX = mMaxX = (T_)inX;
+         mMinY = mMaxY = (T_)inY;
+         mValid = true;
+      }
+   }
+
+
+   template<typename P_>
+   inline void Add(const P_ &inPoint)
+   {
+      Add(inPoint.x,inPoint.y);
+   }
+
+   T_ Width() const { return mMaxX-mMinX; }
+   T_ Height() const { return mMaxY-mMinY; }
+
+   T_ mMinX,mMaxX;
+   T_ mMinY,mMaxY;
+   bool mValid;
+};
+
+typedef Extent2D<int> Extent2DI;
+typedef Extent2D<float> Extent2DF;
 
 
 
