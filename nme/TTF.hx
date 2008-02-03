@@ -45,6 +45,7 @@ class TTF
         public var bgColor:Int;
         public var fgColor:Int;
 
+
         public function new( ?str : String, ?in_font : String, ?in_size : Int,?fcolor : Int, ?bcolor : Int, ?in_alpha : Int, ?location:Point )
         {
            text = str==null ? "" : str;

@@ -24,9 +24,20 @@
  */
 
  
+#include "text.h"
+#include <neko.h>
 #include "nsdl.h"
 #include "nme.h"
 #include <SDL_ttf.h>
+#include <ft2build.h>
+#include <freetype/freetype.h>
+#include <freetype/ftoutln.h>
+#include <math.h>
+
+#define FT_CEIL(X)	(((X + 63) & -64) / 64)
+
+
+DEFINE_KIND( k_font );
 
 
 // TTF_Init() must be called before using this function.
@@ -77,4 +88,191 @@ value nme_ttf_shaded( value* args, int nargs )
         return alloc_int(0);
 }
 
+
+void delete_font( value font )
+{
+   if ( val_is_kind( font, k_font ) )
+   {
+      val_gc( font, NULL );
+
+      TTF_Font *ttf_font = FONT(font);
+      // Since create-or-find is used, no need to do this ...
+      // TTF_CloseFont(font);
+   }
+}
+
+
+
+value nme_create_font_handle(value inFace,value inSize)
+{
+   val_check( inFace, string );
+   val_check( inSize, int );
+
+   TTF_Font *font = FindOrCreateFont(val_string(inFace),val_int(inSize));
+   if (font==0)
+      return val_null;
+
+   value v = alloc_abstract( k_font, font );
+   val_gc( v, delete_font );
+   return v;
+}
+
+value nme_get_font_metrics(value inFont)
+{
+   if (val_is_kind(inFont,k_font))
+   {
+      TTF_Font *font = FONT(inFont);
+
+      value result = alloc_object(0);
+      alloc_field( result, val_id("height"), alloc_int(TTF_FontHeight(font)));
+      alloc_field( result, val_id("ascent"), alloc_int(TTF_FontAscent(font)));
+      alloc_field( result, val_id("descent"), alloc_int(TTF_FontDescent(font)));
+
+      // Assume "face" is the first member of the ttf structure
+      FT_Face face_ptr = *(FT_Face *)font;
+      FT_FaceRec_ &face = *face_ptr;
+
+      FT_Fixed scale = face.size->metrics.y_scale;
+      int max_adv = FT_CEIL(FT_MulFix(face.max_advance_width,scale));
+
+      alloc_field( result, val_id("max_x_advance"), alloc_int(max_adv));
+      return result;
+   }
+
+   return val_null;
+}
+
+
+class DebugOutlineIterator : public OutlineIterator
+{
+public:
+    void moveTo(int x,int y) { printf("m %d,%d\n",x,y); }
+    void lineTo(int x,int y) { printf("l %d,%d\n",x,y); }
+};
+
+static int sAscent = 0;
+static int sLastX = 0;
+static int sLastY = 0;
+
+static int moveTo( const FT_Vector* to, void *user )
+{
+   OutlineIterator *oi = (OutlineIterator *)user;
+   sLastX = to->x;
+   sLastY = to->y;
+   oi->moveTo(sLastX,sAscent-sLastY);
+   return 0;
+}
+
+static int lineTo( const FT_Vector* to, void *user )
+{
+   OutlineIterator *oi = (OutlineIterator *)user;
+   sLastX = to->x;
+   sLastY = to->y;
+   oi->lineTo(to->x,sAscent-sLastY);
+   return 0;
+}
+
+static int conicTo( const FT_Vector* c, const FT_Vector *to,void *user )
+{
+   OutlineIterator *oi = (OutlineIterator *)user;
+
+   double dx1 = to->x - sLastX;
+   double dy1 = to->y - sLastY;
+   double dx2 = to->x - c->x;
+   double dy2 = to->y - c->y;
+   int steps = (int)(sqrt(dx1*dx1 + dy1*dy1 + dx2*dx2 + dy2*dy2)*0.01);
+   if (steps<2)
+   {
+      lineTo(to,user);
+   }
+   else
+   {
+      double du = 1.0/steps;
+      double u = du;
+      steps--;
+      for(int i=1;i<steps;i++)
+      {
+         double u1 = 1.0-u;
+
+         double c0=u1*u1;
+         double c1=2.0*u*u1;
+         double c2=u*u;
+         u+=du;
+         oi->lineTo( (int)(c0*sLastX + c1*c->x + c2*to->x) ,
+                     sAscent-(int)(c0*sLastY + c1*c->y + c2*to->y) );
+      }
+
+      lineTo(to,user);
+   }
+
+   return 0;
+}
+
+static int cubicTo( const FT_Vector* c0, const FT_Vector *c1,
+                    const FT_Vector *to,void *user )
+{
+   // TODO: need a test case....
+   return lineTo(to,user);
+}
+
+static FT_Outline_Funcs sOutlineFuncs =
+   { moveTo, lineTo, conicTo, cubicTo  };
+
+
+
+value nme_get_glyph_metrics(value inFont,value inChar)
+{
+   val_check( inChar, int );
+   if (val_is_kind(inFont,k_font))
+   {
+      int c = val_int(inChar);
+      TTF_Font *font = FONT(inFont);
+      int min_x,max_x,min_y,max_y,advance;
+      int err = TTF_GlyphMetrics(font,c,&min_x,&max_x,&min_y,&max_y,&advance);
+      if (err)
+         return val_null;
+
+      value result = alloc_object(0);
+      alloc_field( result, val_id("min_x"), alloc_int(min_x));
+      alloc_field( result, val_id("max_x"), alloc_int(max_x));
+      alloc_field( result, val_id("width"), alloc_int(max_x-min_x));
+      alloc_field( result, val_id("height"), alloc_int(max_y-min_y));
+      alloc_field( result, val_id("x_advance"), alloc_int(advance));
+
+
+
+      return result;
+   }
+   return val_null;
+}
+
+void IterateOutline(value inFont, int inChar, OutlineIterator *inIter)
+{
+   if (val_is_kind(inFont,k_font))
+   {
+      TTF_Font *font = FONT(inFont);
+
+      FT_Face face_ptr = *(FT_Face *)font;
+      FT_FaceRec_ &face = *face_ptr;
+
+      sAscent = 64 * TTF_FontAscent(font);
+
+      int err = FT_Load_Char( &face, inChar, FT_LOAD_DEFAULT  );
+      if (!err)
+      {
+         if (face.glyph->format==FT_GLYPH_FORMAT_OUTLINE)
+         {
+            sOutlineFuncs.shift = 0;
+            sOutlineFuncs.delta = 0;
+            FT_Outline_Decompose(&face.glyph->outline, &sOutlineFuncs, inIter);
+         }
+      }
+   }
+}
+
+
+
 DEFINE_PRIM_MULT(nme_ttf_shaded);
+DEFINE_PRIM(nme_create_font_handle,2);
+DEFINE_PRIM(nme_get_font_metrics,1);
+DEFINE_PRIM(nme_get_glyph_metrics,2);

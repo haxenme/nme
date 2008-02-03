@@ -399,6 +399,19 @@ class Graphics
 
    }
 
+   public function RenderGlyph(inFont:nme.FontHandle,inChar:Int)
+   {
+      CloseLines(false);
+
+      AddDrawable(nme_create_glyph_draw_obj(mPenX,mPenY,
+             inFont.handle,inChar,
+             mFillColour, mFillAlpha,
+             untyped mSolidGradient==null? mBitmap : mSolidGradient,
+             mCurrentLine ) );
+   }
+
+
+
 
    public function clear()
    {
@@ -621,6 +634,7 @@ class Graphics
    static var nme_get_clip_rect = neko.Lib.load("nme","nme_get_clip_rect",1);
    static var nme_set_clip_rect = neko.Lib.load("nme","nme_set_clip_rect",2);
    static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",3);
+   static var nme_create_glyph_draw_obj = neko.Lib.load("nme","nme_create_glyph_draw_obj",-1);
 
 }
 

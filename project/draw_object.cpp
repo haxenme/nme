@@ -55,6 +55,9 @@ struct Point
 {
    float mX,mY;
 
+   inline Point(){}
+   inline Point(double inX,double inY) : mX( (float)inX), mY( (float)inY) { }
+
    void FromValue(value inVal)
    {
       mX = (float)val_number(val_field(inVal,val_id("x")));
@@ -86,13 +89,16 @@ struct LineJob : public PolyLine
       mMiterLimit = val_number(val_field(inVal,val_id("miter_limit")));
 
       value idx_obj = val_field(inVal,val_id("point_idx"));
-      value idx = val_field(idx_obj,val_id("__a"));
-      //int n = val_array_size(idx);
-      int n =  val_int( val_field(idx_obj,val_id("length")));
-      value *items = val_array_ptr(idx);
-      mPointIndex.resize(n);
-      for(int i=0;i<n;i++)
-         mPointIndex[i] = val_int(items[i]);
+      if (idx_obj!=val_null)
+      {
+         value idx = val_field(idx_obj,val_id("__a"));
+         //int n = val_array_size(idx);
+         int n =  val_int( val_field(idx_obj,val_id("length")));
+         value *items = val_array_ptr(idx);
+         mPointIndex.resize(n);
+         for(int i=0;i<n;i++)
+            mPointIndex[i] = val_int(items[i]);
+      }
    }
 
 };
@@ -108,10 +114,12 @@ public:
    DrawObject(Points &inPoints, int inFillColour,double inFillAlpha,
               Gradient *inFillGradient,
               TextureReference *inTexture,
-              LineJobs &inLines)
+              LineJobs &inLines,
+              bool inLinesShareGrad = false)
    {
       mDisplayList = 0;
       mPolygon = 0;
+      mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
       mOldFlags = sQualityLevel>0 ? SPG_HIGH_QUALITY : 0;
@@ -152,7 +160,11 @@ public:
       delete mTexture;
 
       for(size_t i=0;i<mLineJobs.size();i++)
+      {
          delete mLineJobs[i].mGradient;
+         if (mLinesShareGrad)
+            break;
+      }
 
       delete mSolidGradient;
       if (mDisplayList!=0)
@@ -459,6 +471,8 @@ public:
 
    PolygonRenderer *mPolygon;
 
+   bool mLinesShareGrad;
+
 private: // Hide
    DrawObject(const DrawObject &inRHS);
    void operator=(const DrawObject &inRHS);
@@ -494,6 +508,105 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
                             CreateGradient(inGradientOrTexture),
                             TextureReference::Create(inGradientOrTexture),
                             lines );
+
+   value v = alloc_abstract( k_drawable, obj );
+   val_gc( v, delete_drawable );
+   return v;
+}
+
+
+static double sFontScale = 1.0/64.0;
+
+class OutlineBuilder : public OutlineIterator
+{
+
+public:
+   OutlineBuilder(double inX,double inY,
+                  const LineJob &inJob,bool inDoSolid) : mBase(inJob)
+   {
+      mX = inX;
+      mY = inY;
+      mDoSolid = inDoSolid;
+      mDoLines = mBase.mAlpha>0 || mBase.mGradient;
+   }
+
+   void moveTo(int x,int y)
+   {
+      if (!mPoints.empty())
+        mPoints.push_back( mPoints[0] );
+
+      size_t pid = mPoints.size();
+      mPoints.push_back( Point(mX+x*sFontScale,mY+y*sFontScale ) );
+      if (mDoLines)
+      {
+         mLines.push_back(mBase);
+         mLines[mLines.size()-1].mPointIndex.push_back((int)pid);
+      }
+   }
+   void lineTo(int x,int y)
+   {
+      size_t pid = mPoints.size();
+      mPoints.push_back( Point(mX+x*sFontScale,mY+y*sFontScale ) );
+      if (mDoLines)
+         mLines[mLines.size()-1].mPointIndex.push_back((int)pid);
+   }
+
+   void Complete()
+   {
+      if (!mPoints.empty())
+        mPoints.push_back( mPoints[0] );
+      if (mLines.empty())
+         delete mBase.mGradient;
+   }
+
+   double   mX,mY;
+ 
+   Points   mPoints;
+   LineJobs mLines;
+
+   LineJob mBase;
+   bool    mDoLines;
+   bool    mDoSolid;
+};
+
+value nme_create_glyph_draw_obj(value* arg, int nargs )
+{
+   enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha, aGradOrTex, aLineStyle, aLAST };
+   if ( nargs != aLAST )
+      failure( "nme_create_glyph_draw_obj - bad parameter count." );
+
+
+   val_check( arg[aX], number );
+   val_check( arg[aY], number );
+   val_check( arg[aFillCol], int );
+   val_check( arg[aFillAlpha], number );
+   val_check( arg[aChar], int );
+
+   int ch = val_int(arg[aChar] );
+
+   LineJob job;
+   job.FromValue(arg[aLineStyle]);
+
+   double alpha = val_number(arg[aFillAlpha]);
+   Gradient *grad = CreateGradient(arg[aGradOrTex]);
+   TextureReference *tex = TextureReference::Create(arg[aGradOrTex]);
+
+   OutlineBuilder builder(val_number(arg[aX]),val_number(arg[aY]),
+       job,alpha>0 || grad || tex);
+
+   IterateOutline(arg[aFont],ch,&builder);
+
+   builder.Complete();
+
+
+   DrawObject *obj = new DrawObject(
+                            builder.mPoints,
+                            val_int(arg[aFillCol]),
+                            alpha,
+                            grad,
+                            tex,
+                            builder.mLines,
+                            true );
 
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
@@ -827,6 +940,7 @@ value nme_get_draw_quality()
 
 
 DEFINE_PRIM(nme_create_draw_obj, 5);
+DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 3);
 DEFINE_PRIM(nme_draw_object_to, 3);

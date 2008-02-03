@@ -27,9 +27,23 @@
 #define __NME_TEXT_H__
 
 #include<string>
+#include <neko.h>
 #include <SDL_ttf.h>
+
+DECLARE_KIND( k_font );
+#define FONT(v) ( (TTF_Font *)(val_data(v)) )
+
 
 TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize);
 
+
+class OutlineIterator
+{
+   public:
+      virtual void moveTo(int x,int y) = 0;
+      virtual void lineTo(int x,int y)=0;
+};
+
+void IterateOutline(value inFont, int inChar, OutlineIterator *inIter);
 
 #endif
