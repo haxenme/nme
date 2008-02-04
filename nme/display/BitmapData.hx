@@ -1,4 +1,6 @@
 package nme.display;
+import nme.utils.ByteArray;
+import nme.geom.Rectangle;
 
 
 class BitmapData
@@ -69,11 +71,24 @@ class BitmapData
       return result;
    }
 
+   public function getPixels(rect:Rectangle):ByteArray
+   {
+      return new ByteArray(nme_texture_get_bytes(mTextureBuffer,rect));
+   }
+
+   public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
+   {
+      nme_texture_set_bytes(mTextureBuffer,rect,pixels.get_handle());
+   }
+
+
 
    static var nme_create_texture_buffer =
                  neko.Lib.load("nme","nme_create_texture_buffer",5);
    static var nme_load_texture = neko.Lib.load("nme","nme_load_texture",1);
    static var nme_texture_width = neko.Lib.load("nme","nme_texture_width",1);
    static var nme_texture_height = neko.Lib.load("nme","nme_texture_height",1);
+   static var nme_texture_get_bytes = neko.Lib.load("nme","nme_texture_get_bytes",2);
+   static var nme_texture_set_bytes = neko.Lib.load("nme","nme_texture_set_bytes",3);
 }
 

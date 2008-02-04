@@ -1,3 +1,4 @@
+#include <string>
 #include "texture_buffer.h"
 #ifdef WIN32
 #include <windows.h>
@@ -5,6 +6,7 @@
 #include <GL/gl.h>
 #include "nme.h"
 #include "nsdl.h"
+#include "ByteArray.h"
 
 
 DEFINE_KIND( k_texture_buffer );
@@ -361,6 +363,122 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
    return buffer->ToValue();
 }
 
+ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
+{
+   int x1 = inX+inW;
+   int y1 = inY+inH;
+   if (inX<0 || inY<0 || x1>mPixelWidth || y1>mPixelHeight)
+      return new ByteArray;
+
+   bool alpha = mSurface->format->BitsPerPixel==32;
+   bool bgr = mSurface->format->BitsPerPixel==24 &&
+                  mSurface->format->Rmask != 0x0000ff;
+   
+
+   ByteArray *array = new ByteArray(inW*inH*4);
+
+   unsigned char *ptr = array->mPtr;
+   for(int y=inY;y<y1;y++)
+   {
+      const unsigned char *pix =
+         (const unsigned char *)mSurface->pixels + y*mSurface->pitch + inX*4;
+
+      if (alpha) // ARGB = RGBA
+      {
+         for(int x=inX;x<x1;x++)
+         {
+            ptr[0] = pix[3];
+            ptr[1] = pix[0];
+            ptr[2] = pix[1];
+            ptr[3] = pix[2];
+            ptr+=4;
+            pix+=4;
+         }
+      }
+      else if (bgr)
+         for(int x=inX;x<x1;x++)
+         {
+            ptr[0] = 255;
+            ptr[1] = pix[2];
+            ptr[2] = pix[1];
+            ptr[3] = pix[0];
+            ptr+=4;
+            pix+=3;
+         }
+      else
+         for(int x=inX;x<x1;x++)
+         {
+            ptr[0] = 255;
+            ptr[1] = pix[0];
+            ptr[2] = pix[1];
+            ptr[3] = pix[2];
+            ptr+=4;
+            pix+=3;
+         }
+   }
+
+   return array;
+}
+
+
+void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray)
+{
+   int x1 = inX+inW;
+   int y1 = inY+inH;
+   if (inX<0 || inY<0 || x1>mPixelWidth || y1>mPixelHeight)
+      return;
+
+   if (inArray.mSize<inW*inH*4)
+      return;
+
+   bool alpha = mSurface->format->BitsPerPixel==32;
+   bool bgr = mSurface->format->BitsPerPixel==24 &&
+                  mSurface->format->Rmask != 0x0000ff;
+
+
+   const unsigned char *ptr = inArray.mPtr;
+   for(int y=inY;y<y1;y++)
+   {
+      unsigned char *pix =
+         (unsigned char *)mSurface->pixels + y*mSurface->pitch + inX*4;
+
+      if (alpha) // RGBA = ARGB
+      {
+         for(int x=inX;x<x1;x++)
+         {
+            pix[0 /* r */ ] = ptr[1];
+            pix[1 /* g */ ] = ptr[2];
+            pix[2 /* b */ ] = ptr[3];
+            pix[3 /* a */ ] = ptr[0];
+
+            ptr+=4;
+            pix+=4;
+         }
+      }
+      else if (bgr)
+         for(int x=inX;x<x1;x++)
+         {
+            pix[0] = ptr[3];
+            pix[1] = ptr[2];
+            pix[2] = ptr[1];
+            pix+=3;
+            ptr+=4;
+         }
+      else
+         for(int x=inX;x<x1;x++)
+         {
+            pix[0] = ptr[1];
+            pix[1] = ptr[2];
+            pix[2] = ptr[3];
+            pix+=3;
+            ptr+=4;
+         }
+   }
+
+   SetExtentDirty(inX,inY,x1,y1);
+}
+
+
 value nme_load_texture(value inName)
 {
    SDL_Surface *surface = nme_loadimage( inName );
@@ -373,6 +491,32 @@ value nme_load_texture(value inName)
    return buffer->ToValue();
 
 }
+
+value nme_texture_get_bytes(value inTex,value inRect)
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTex);
+   int x = (int)val_number( val_field( inRect, val_id( "x" ) ) );
+   int y = (int)val_number( val_field( inRect, val_id( "y" ) ) );
+   int w = (int)val_number( val_field( inRect, val_id( "width" ) ) );
+   int h = (int)val_number( val_field( inRect, val_id( "height" ) ) );
+
+   return tex->GetPixels(x,y,w,h)->ToValue();
+}
+
+value nme_texture_set_bytes(value inTex,value inRect,value inBytes)
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTex);
+   int x = (int)val_number( val_field( inRect, val_id( "x" ) ) );
+   int y = (int)val_number( val_field( inRect, val_id( "y" ) ) );
+   int w = (int)val_number( val_field( inRect, val_id( "width" ) ) );
+   int h = (int)val_number( val_field( inRect, val_id( "height" ) ) );
+
+   ByteArray *ba = BYTEARRAY(inBytes);
+
+   tex->SetPixels(x,y,w,h,*ba);
+   return alloc_int(0);
+}
+
 
 
 // --- Simple renderer -----------------------
@@ -557,6 +701,8 @@ DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);
 DEFINE_PRIM(nme_tile_renderer_height, 1);
+DEFINE_PRIM(nme_texture_get_bytes, 2);
+DEFINE_PRIM(nme_texture_set_bytes, 3);
 
 
 

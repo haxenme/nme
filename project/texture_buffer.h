@@ -43,6 +43,9 @@ public:
    TextureBuffer *IncRef();
    void DecRef();
 
+   class ByteArray *GetPixels(int inX,int inY,int inW,int inH);
+   void SetPixels(int inX,int inY,int inW,int inH,class ByteArray &inPixels);
+
 protected:
    // Call "DecRef" instead;
    ~TextureBuffer();

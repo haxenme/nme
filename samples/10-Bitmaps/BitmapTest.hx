@@ -29,6 +29,8 @@ import nme.Manager;
 import nme.Surface;
 import nme.display.Graphics;
 import nme.display.BitmapData;
+import nme.geom.Rectangle;
+import nme.utils.ByteArray;
 
 typedef Star =
 {
@@ -60,7 +62,6 @@ class BitmapTest extends nme.GameBase
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
 
-
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
       mBang = BitmapData.Load("bang.png");
@@ -68,6 +69,26 @@ class BitmapTest extends nme.GameBase
          neko.Lib.print("Could not load bang.png ?");
       else
          neko.Lib.print("Loaded bang " + mBang.width + "x" + mBang.height + "\n");
+
+
+      // Test get-pixel API ...
+      var w = mBang.width;
+      var h = mBang.height;
+
+      var rect = new Rectangle(0,0,w,h);
+      var pixels:ByteArray = mBang.getPixels(rect);
+      var idx = 0;
+      for(y in 0...h)
+         for(x in 0...w)
+         {
+            // ARGB ...
+            // Set white pixels (with blue > 128) to half transparent
+            if (pixels[idx+3]>128 && pixels[idx+0]==255)
+               pixels[idx+0] = 128;
+            idx+=4;
+         }
+      mBang.setPixels(rect,pixels);
+
 
       mRand = new neko.Random();
       mStars = new Stars();
