@@ -867,11 +867,11 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix)
    int n =  val_int( val_field(inDrawList,val_id("length")));
    value *objs =  val_array_ptr(objs_arr);
 
-
    for(int i=0;i<n;i++)
    {
       Drawable *d = DRAWABLE(objs[i]);
-      d->GetExtent(extent,matrix);
+      if (d)
+         d->GetExtent(extent,matrix);
    }
 
 

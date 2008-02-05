@@ -7,7 +7,8 @@ SOURCE_FILES := $(wildcard *.cpp) $(wildcard spg/*cpp)
 OBJS := $(SOURCE_FILES:%.cpp=objs/%.o)
 
 
-INCLUDE += -I/usr/include/SDL -I$(NEKO_INSTALL_PATH)/include
+INCLUDE += -I/usr/include/SDL -I/usr/include/freetype2 \
+           -I$(NEKO_INSTALL_PATH)/include
 
 CFLAGS += -O2 $(INCLUDE)
 

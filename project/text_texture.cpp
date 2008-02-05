@@ -56,6 +56,7 @@ TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
    if (font==0)
    {
       font = TTF_OpenFont(inFontName.c_str(),inPointSize);
+      // printf("Found font %s = %p\n", inFontName.c_str(),font);
    }
 
    (*sFontMap)[key] = font;

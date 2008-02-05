@@ -54,7 +54,7 @@ class GameBase
             fps = Math.round( fps*100 ) * 0.01;
             var text = Std.string(fps);
             Manager.graphics.moveTo(10,10);
-            Manager.graphics.text(text,12,"Arial",0xffffff);
+            Manager.graphics.text(text,12,null,0xffffff);
          }
       }
    }

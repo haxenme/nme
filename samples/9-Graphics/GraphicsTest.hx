@@ -59,6 +59,8 @@ class GraphicsTest extends nme.GameBase
 
    public function new()
    {
+      nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
+
       // Try it both ways !
       var opengl = false;
       var args = neko.Sys.args();
@@ -72,7 +74,7 @@ class GraphicsTest extends nme.GameBase
       square.beginFill(0x0000ff);
       square.drawRect(-10,-10,20,20);
       square.moveTo(0,0);
-      square.text("Square",12,"Arial",null,Graphics.CENTER,Graphics.CENTER);
+      square.text("Square",12,null,null,Graphics.CENTER,Graphics.CENTER);
       square.matrix.tx = 400;
       square.matrix.ty = 300;
 
@@ -182,7 +184,7 @@ class GraphicsTest extends nme.GameBase
       gfx.moveTo(x,100);
 
       gfx.lineStyle(1,0x00ff80);
-      gfx.text("Hello!",24,"Times",0xffffff,Graphics.CENTER,Graphics.CENTER);
+      gfx.text("Hello!",24,null,0xffffff,Graphics.CENTER,Graphics.CENTER);
 
       gfx.endFill();
       gfx.clipRect = null;

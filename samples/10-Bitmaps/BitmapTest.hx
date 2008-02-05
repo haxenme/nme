@@ -56,6 +56,8 @@ class BitmapTest extends nme.GameBase
 
    public function new()
    {
+      nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
+
       // Try it both ways !
       var opengl = false;
       var args = neko.Sys.args();

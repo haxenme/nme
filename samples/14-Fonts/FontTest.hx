@@ -58,6 +58,8 @@ class FontTest extends nme.GameBase
 
    public function new()
    {
+      nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
+
       // Try it both ways !
       var opengl = false;
       var args = neko.Sys.args();
@@ -67,7 +69,7 @@ class FontTest extends nme.GameBase
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      mFont = new nme.FontHandle("Times",48);
+      mFont = new nme.FontHandle("../common/ARIAL.TTF",48);
       mFM = mFont.GetFontMetrics();
 
       mBmp = new BitmapData(32,32,false,0xffffff,255);

@@ -55,7 +55,7 @@ typedef LineJobs = Array<LineJob>;
 
 class Graphics
 {
-   public static var defaultFontName = "Times";
+   public static var defaultFontName = "ARIAL.TTF";
    public static var defaultFontSize = 12;
 
    public static var TOP = 0;
@@ -547,6 +547,8 @@ class Graphics
 
    private function AddDrawable(inDrawable:Void)
    {
+      if (inDrawable==null)
+         return; // throw ?
       if (mSurface==null)
          // Store for 'ron ...
          mDrawList.push( inDrawable );

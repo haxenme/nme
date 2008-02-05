@@ -638,13 +638,13 @@ class Blox
 		var nextscore : String = "Needed Score: " + (g_Level*pointsPerLvl);
 		var level : String = "Level: " + g_Level;
 		
-		var text : TTF = new TTF( score, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
+		var text : TTF = new TTF( score, "../common/ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
 		text.drawAt( new Point( scoreRectX, scoreRectY ) );
 		
-		text = new TTF( nextscore, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
+		text = new TTF( nextscore, "../common/ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
 		text.drawAt( new Point( neededScoreRectX, neededScoreRectY ) );
 		
-		text = new TTF( level, "ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
+		text = new TTF( level, "../common/ARIAL.TTF", 8, 0x000000, 0xFFFFFF );
 		text.drawAt( new Point( lvlRectX, lvlRectY ) );
 		
 
@@ -660,10 +660,10 @@ class Blox
 
 		g_Mng.clear( 0x000000);
 		
-		var text : TTF = new TTF( "You Win!!!", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
+		var text : TTF = new TTF( "You Win!!!", "../common/ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
 		text.drawAt( new Point( 100, 120 ) );
 		
-		text = new TTF( "Quit Game (Y or N)?", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
+		text = new TTF( "Quit Game (Y or N)?", "../common/ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
 		text.drawAt( new Point( 100, 140 ) );
 		
 		g_Mng.flip();
@@ -676,10 +676,10 @@ class Blox
 		
 		g_Mng.clear( 0x000000);
 
-		var text : TTF = new TTF( "You Lose.", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
+		var text : TTF = new TTF( "You Lose.", "../common/ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
 		text.drawAt( new Point( 100, 120 ) );
 		
-		text = new TTF( "Quit Game (Y or N)?", "ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
+		text = new TTF( "Quit Game (Y or N)?", "../common/ARIAL.TTF", 12, 0xFFFFFF, 0x000000 );
 		text.drawAt( new Point( 100, 140 ) );
 		
 		g_Mng.flip();
