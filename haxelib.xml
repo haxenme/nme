@@ -1,0 +1,6 @@
+<project name="nme" url="http://www.designrealm.co.uk" license="LGPL">
+    <user name="leesylvester"/>
+    <user name="krogers"/>
+    <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
+    <version name="0.3.0">See changes.txt</version>
+</project>

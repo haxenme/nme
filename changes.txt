@@ -1,0 +1,34 @@
+NME Changes List
+
+0.3.0
+===============
+Major upgrade to add the flash drawing API.
+Renamed some classes to conform to the flash class structure.
+Statically link NME.ndll with SDL libraries for windows.
+Added initial Linux port.
+Removed SGE dependency.
+Added a bunch of examples.
+Added a GameBase class to simplify some tasks.
+
+0.2.0
+===============
+Removed SDL_Net (haXe has far superior capabilities)
+Added SGE
+Removed SDL_TTF replacing it with functions in SGE
+Added Bitmap Font support from SGE
+Added scale and rotate surface support from SGE
+
+
+0.1.1
+===============
+Added a couple of samples to get users going with the library
+
+
+0.1.0
+===============
+Initial release of the Neko Media Engine (NME)
+
+
+
+
+TODO: Add SGE's drawing functionality
