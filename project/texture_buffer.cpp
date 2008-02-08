@@ -572,6 +572,7 @@ public:
       {
          mTexture->BindOpenGL();
          glEnable(GL_BLEND);
+         glColor3f(1,1,1);
          glBegin(GL_QUADS);
          glTexCoord2fv(mT00);
          glVertex2i(inX0,inY0);
