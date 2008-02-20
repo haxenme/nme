@@ -1,5 +1,5 @@
 import nme.Manager;
-import nme.Timer;
+import nme.Time;
 import nme.Point;
 import nme.TTF;
 
@@ -36,7 +36,7 @@ class Simple
 				default:
 			}
 			
-			curTime = Timer.getCurrent();
+			curTime = Time.getCurrent();
 			fps = 1000.00 / (curTime - prevTime);
 			prevTime = curTime;
 			
