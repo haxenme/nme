@@ -100,56 +100,56 @@ class Manager
 	static var __scr : Void;
 	static var __evt : Void;
 
-   // Set this to something else if yo do not want it...
-   static var closeKey = 27;
-   static var pauseUpdates = KeyCode.F11;
-   static var toggleQuality = KeyCode.F12;
+	// Set this to something else if yo do not want it...
+	static var closeKey = 27;
+	static var pauseUpdates = KeyCode.F11;
+	static var toggleQuality = KeyCode.F12;
 
-        static var FULLSCREEN = 0x0001;
-        static var OPENGL     = 0x0002;
+	static var FULLSCREEN = 0x0001;
+	static var OPENGL     = 0x0002;
 
-        static public var graphics(default,null):Graphics;
-        static public var draw_quality(get_draw_quality,set_draw_quality):Int;
+	static public var graphics(default,null):Graphics;
+	static public var draw_quality(get_draw_quality,set_draw_quality):Int;
 
-   public var mainLoopRunning:Bool;
-   public var mouseEventCallbacks:MouseEventCallbackList;
-   public var mouseClickCallbacks:MouseEventCallbackList;
-   public var keyEventCallbacks:KeyEventCallbackList;
-   public var updateCallbacks:UpdateCallbackList;
-   public var renderCallbacks:RenderCallbackList;
+	public var mainLoopRunning:Bool;
+	public var mouseEventCallbacks:MouseEventCallbackList;
+	public var mouseClickCallbacks:MouseEventCallbackList;
+	public var keyEventCallbacks:KeyEventCallbackList;
+	public var updateCallbacks:UpdateCallbackList;
+	public var renderCallbacks:RenderCallbackList;
 
-   public var mPaused:Bool;
+	public var mPaused:Bool;
 
-   public var tryQuitFunction: Void->Bool;
+	public var tryQuitFunction: Void->Bool;
 
-
+	private var timerStack : List < Timer > ;
 
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
 	{
-                var flags = 0;
-                if ( fullscreen!=null && fullscreen)
-                   flags += FULLSCREEN;
+		var flags = 0;
+		if ( fullscreen!=null && fullscreen)
+		   flags += FULLSCREEN;
 
-                if ( opengl!=null && opengl)
-                   flags += OPENGL;
+		if ( opengl!=null && opengl)
+		   flags += OPENGL;
 
 		if ( width < 100 || height < 20 ) return;
 		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
                 graphics = new Graphics(__scr);
-      mainLoopRunning = false;
-      mouseEventCallbacks = new MouseEventCallbackList();
-      mouseClickCallbacks = new MouseEventCallbackList();
-      keyEventCallbacks = new KeyEventCallbackList();
-      updateCallbacks = new UpdateCallbackList();
-      renderCallbacks = new RenderCallbackList();
-      tryQuitFunction = null;
-      mPaused = false;
+		mainLoopRunning = false;
+		mouseEventCallbacks = new MouseEventCallbackList();
+		mouseClickCallbacks = new MouseEventCallbackList();
+		keyEventCallbacks = new KeyEventCallbackList();
+		updateCallbacks = new UpdateCallbackList();
+		renderCallbacks = new RenderCallbackList();
+		tryQuitFunction = null;
+		mPaused = false;
 	}
 
 
    // This function is optional - you can choose to do your own main loop, eg
-   //  samples/2-Blox-Game.  You can also use extend the "GameBase" class
-   //  and override the functions if you like.
+   // samples/2-Blox-Game.  You can also use extend the "GameBase" class
+   // and override the functions if you like.
    public function mainLoop()
    {
       mainLoopRunning = true;
@@ -214,120 +214,122 @@ class Manager
          for(f in renderCallbacks)
             f( );
 
+		nme.Timer.check();
+
          flip();
       }
 
 		nme_screen_close();
-   }
+	}
 
-   public function tryQuit()
-   {
-      if (tryQuitFunction==null || tryQuitFunction())
-         mainLoopRunning = false;
-   }
+	public function tryQuit()
+	{
+	  if (tryQuitFunction==null || tryQuitFunction())
+		 mainLoopRunning = false;
+	}
 
-   function fireMouseEvent(inType:MouseEventType)
-   {
-      // TODO: fill in shift etc.
-      var event: MouseEvent =
-      {
-         type : inType,
-         x : mouseX(),
-         y : mouseY(),
-         shift : false,
-         ctrl : false,
-         alt : false,
-         leftIsDown : mouseButtonState()!=0,
-         middleIsDown : false,
-         rightIsDown : false
-      };
+	function fireMouseEvent(inType:MouseEventType)
+	{
+	  // TODO: fill in shift etc.
+	  var event: MouseEvent =
+	  {
+		 type : inType,
+		 x : mouseX(),
+		 y : mouseY(),
+		 shift : false,
+		 ctrl : false,
+		 alt : false,
+		 leftIsDown : mouseButtonState()!=0,
+		 middleIsDown : false,
+		 rightIsDown : false
+	  };
 
-      for(e in mouseEventCallbacks)
-         e(event);
+	  for(e in mouseEventCallbacks)
+		 e(event);
 
-      if (inType==met_LeftDown)
-         for(e in mouseClickCallbacks)
-            e(event);
-   }
+	  if (inType==met_LeftDown)
+		 for(e in mouseClickCallbacks)
+			e(event);
+	}
 
-   function fireKeyEvent(inIsDown:Bool)
-   {
-      // TODO: fill in shift etc.
-      var event: KeyEvent =
-      {
-         isDown : inIsDown,
-         code : lastKey(),
-         shift : lastKeyShift(),
-         ctrl : lastKeyCtrl(),
-         alt : lastKeyAlt()
-      };
+	function fireKeyEvent(inIsDown:Bool)
+	{
+	  // TODO: fill in shift etc.
+	  var event: KeyEvent =
+	  {
+		 isDown : inIsDown,
+		 code : lastKey(),
+		 shift : lastKeyShift(),
+		 ctrl : lastKeyCtrl(),
+		 alt : lastKeyAlt()
+	  };
 
-      if (inIsDown && event.code==pauseUpdates)
-         mPaused = !mPaused;
-      else if (inIsDown && event.code==toggleQuality)
-         nme_set_draw_quality( (nme_get_draw_quality()+1) & 0x01 );
+	  if (inIsDown && event.code==pauseUpdates)
+		 mPaused = !mPaused;
+	  else if (inIsDown && event.code==toggleQuality)
+		 nme_set_draw_quality( (nme_get_draw_quality()+1) & 0x01 );
 
-      for(e in keyEventCallbacks)
-         e(event);
-   }
+	  for(e in keyEventCallbacks)
+		 e(event);
+	}
 
 
-   public function addMouseCallback(inCallback:MouseEventCallback)
-   {
-      mouseEventCallbacks.push(inCallback);
-   }
+	public function addMouseCallback(inCallback:MouseEventCallback)
+	{
+	  mouseEventCallbacks.push(inCallback);
+	}
 
-   public function addClickCallback(inCallback:MouseEventCallback)
-   {
-      mouseClickCallbacks.push(inCallback);
-   }
+	public function addClickCallback(inCallback:MouseEventCallback)
+	{
+	  mouseClickCallbacks.push(inCallback);
+	}
 
-   public function addKeyCallback(inCallback:KeyEventCallback)
-   {
-      keyEventCallbacks.push(inCallback);
-   }
+	public function addKeyCallback(inCallback:KeyEventCallback)
+	{
+	  keyEventCallbacks.push(inCallback);
+	}
 
-   public function addRenderCallback(inCallback:RenderCallback)
-   {
-      renderCallbacks.push(inCallback);
-   }
+	public function addRenderCallback(inCallback:RenderCallback)
+	{
+	  renderCallbacks.push(inCallback);
+	}
 
-   public function addUpdateCallback(inCallback:UpdateCallback)
-   {
-      updateCallbacks.push(inCallback);
-   }
+	public function addUpdateCallback(inCallback:UpdateCallback)
+	{
+	  updateCallbacks.push(inCallback);
+	}
 
 	public function close()
 	{
-      if (mainLoopRunning)
-         mainLoopRunning = false;
-      else
+	  if (mainLoopRunning)
+		 mainLoopRunning = false;
+	  else
 		   nme_screen_close();
 	}
-	
+
 	public function delay( period : Int )
 	{
 		if ( period < 0 ) return;
 		nme_delay( period );
 	}
-	
+
 	static public function getScreen() : Void
 	{
 		return __scr;
 	}
-	
+
 	public function clear( color : Int )
 	{
 		nme_surface_clear( __scr, color );
 	}
-	
+
 	public function flip()
 	{
-                graphics.flush();
+				graphics.flush();
 		nme_flipbuffer( __scr );
 	}
 
-	
+
 	public function events()
 	{
 		__evt = nme_event();
@@ -336,10 +338,10 @@ class Manager
 	public function nextEvent()
 	{
 		__evt = nme_event();
-                return getEventType();
+				return getEventType();
 	}
 
-	
+
 	public function getEventType() : EventType
 	{
 		var returnType : EventType;
@@ -378,14 +380,14 @@ class Manager
 		}
 		return returnType;
 	}
-	
+
 	public function clickRect( x : Int, y : Int, rect : Rect )
 	{
 		if ( ( x < rect.x ) || ( x > rect.x + rect.w ) || ( y < rect.y ) || ( y > rect.y + rect.h ) )
 			return false;
 		return true;
 	}
-	
+
 	public function lastKey() : Int
 	{
 		return Reflect.field( __evt, "key" );
@@ -403,50 +405,50 @@ class Manager
 		return Reflect.field( __evt, "alt" );
 	}
 
-	
+
 	public function mouseButton() : Int
 	{
 		return Reflect.field( __evt, "button" );
 	}
-	
+
 	public function mouseButtonState() : Int
 	{
 		return Reflect.field( __evt, "state" );
 	}
-	
+
 	public function mouseX() : Int
 	{
 		return Reflect.field( __evt, "x" );
 	}
-	
+
 	public function mouseY() : Int
 	{
 		return Reflect.field( __evt, "y" );
 	}
 
 	public function mousePoint() {return new nme.Point(mouseX(),mouseY());}
-	
+
 	public function mouseMoveX() : Int
 	{
 		return Reflect.field( __evt, "xrel" );
 	}
-	
+
 	public function mouseMoveY() : Int
 	{
 		return Reflect.field( __evt, "yrel" );
 	}
 
-        static function set_draw_quality(inQuality:Int) : Int
-        {
-           return nme_set_draw_quality(inQuality);
-        }
+	static function set_draw_quality(inQuality:Int) : Int
+	{
+	   return nme_set_draw_quality(inQuality);
+	}
 
-        static function get_draw_quality() : Int
-        {
-           return nme_get_draw_quality();
-        }
+	static function get_draw_quality() : Int
+	{
+	   return nme_get_draw_quality();
+	}
 
-	
+
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
 	static var nme_screen_close = neko.Lib.load("nme","nme_screen_close",0);
