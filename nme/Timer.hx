@@ -25,38 +25,70 @@
  
 package nme;
 
-class Timer
+import nme.Time;
+
+class Timer extends Time
 {
-	var rate : Int;
-	var previous : Int;
+	private static var arr : Array<Timer> = new Array();
 	
-	public function new( r : Int )
+	public function new( time : Int )
 	{
-		rate = r;
-		previous = 0;
+		super( time );
+		arr.push( this );
 	}
-	
-	public function getPrevious() : Int
+
+	public function stop()
 	{
-		return previous;
+		arr.remove( this );
 	}
+
+	public function run() {	}
 	
-	public static function getCurrent() : Int
+	public static function check()
 	{
-		return nme_gettime();
+		for ( timer in arr )
+			if ( timer.isTime() ) timer.run();
 	}
 	
 	public function isTime() : Bool
 	{
-		var cur = getCurrent();
-		var rte = 1000 / rate;
-		if ( cur - previous >= rte )
+		var cur = Time.getCurrent();
+		if ( cur - previous >= rate )
 		{
 			previous = cur;
 			return true;
 		}
 		return false;
 	}
-	
-	static var nme_gettime = neko.Lib.load("nme","nme_gettime",0);
+
+	public static function delayed( f : Void -> Void, time : Int ) : Void -> Void
+	{
+		return function()
+		{
+			var t = new nme.Timer( time );
+			t.run = function()
+			{
+				t.stop();
+				f();
+			};
+		};
+	}
+
+	private static var fqueue = new Array<Void -> Void>();
+	public static function queue( f : Void -> Void, ?time : Int ) : Void
+	{
+		fqueue.push( f );
+		nme.Timer.delayed( function()
+		{
+			fqueue.shift()();
+		}, if( time == null ) 0 else time)();
+	}
+
+	/**
+		Returns a timestamp, in seconds
+	**/
+	public static function stamp() : Float
+	{
+		return Time.getCurrent();
+	}
 }
