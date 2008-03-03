@@ -118,7 +118,7 @@ class GraphicsTest extends nme.GameBase
       rad_grad = new Shape();
       var mtx = new Matrix();
       // Define positive quadrant ...
-      mtx.createGradientBox(50,50, 0, 50,50);
+      mtx.createGradientBox(100,100, 0, 0,0);
       grad_circle.beginGradientFill(GradientType.RADIAL,
                        colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
                        -0.9 );
@@ -205,9 +205,7 @@ class GraphicsTest extends nme.GameBase
       var lalphas = [ 1.0, 1.0 ];
       var lratios = [ 0, 255 ];
       var lmtx = new Matrix();
-      lmtx.a = 0; lmtx.d = 0.0;
-      lmtx.b = 1.0/64.0;
-      lmtx.tx = -398*lmtx.b;
+      lmtx.createGradientBox(64,64,Math.PI*0.5,0,398);
       gfx.lineGradientStyle(GradientType.LINEAR,
                        lcolours, lalphas, lratios, lmtx, SpreadMethod.PAD);
 
@@ -217,9 +215,7 @@ class GraphicsTest extends nme.GameBase
       var alphas = [ 1.0, 1.0 , 1.0, 1.0];
       var ratios = [ 0, 128, 150, 255 ];
       var mtx = new Matrix();
-      mtx.a = 0; mtx.d = 0.0;
-      mtx.b = 1.0/60.0;
-      mtx.tx = -400*mtx.b;
+      mtx.createGradientBox(60,60,Math.PI*-0.5,0,400);
       gfx.beginGradientFill(GradientType.LINEAR,
                        colours, alphas, ratios, mtx, SpreadMethod.PAD);
 

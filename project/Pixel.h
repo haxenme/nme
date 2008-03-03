@@ -228,9 +228,10 @@ struct SurfaceSource24 : public SurfaceSourceBase
       : SurfaceSourceBase(inSurface,inMapper)
    {
       // TODO:
-      mROff = 2;
-      mGOff = 1;
-      mBOff = 0;
+      mROff = mSurface->format->Rshift/8;
+      mGOff = mSurface->format->Gshift/8;
+      mBOff = mSurface->format->Bshift/8;
+
       mAOff = 3;
 
       mA = 255;

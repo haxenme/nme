@@ -453,7 +453,15 @@ class Graphics
 
    public function moveTo(inX:Float,inY:Float)
    {
-      CloseList(false);
+      // CloseList(false);
+      if (mFilling && mPoints.length>0)
+      {
+         CloseLines(false);
+         mPoints.push( { x:inX, y:inY } );
+      }
+      else
+         CloseList(false);
+
       mPenX = inX;
       mPenY = inY;
    }

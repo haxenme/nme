@@ -26,9 +26,8 @@ class Matrix
    public function createGradientBox(in_width : Float, in_height : Float,
          ?rotation : Float, ?in_tx : Float, ?in_ty : Float) : Void
    {
-      a = in_width!=0.0 ? 1.0/in_width : 0.0;
-      d = in_height!=0.0 ? 1.0/in_height : 0.0;
-
+      a = in_width/1638.4;
+      d = in_height/1638.4;
 
       if (rotation!=null && rotation!=0.0)
       {
@@ -39,14 +38,13 @@ class Matrix
          a *= cos;
          d *= cos;
       }
+      else
+      {
+         b = c = 0;
+      }
 
-      var w2 = in_width/2;
-      var h2 = in_height/2;
-
-      var x = (in_tx==null ? 0.0 : -in_tx) - w2;
-      var y = (in_ty==null ? 0.0 : -in_ty) - h2;
-      tx = x*a + y*b + 0.5;
-      ty = y*c + y*d + 0.5;
+      tx = in_tx!=null ? in_tx+in_width/2 : in_width/2;
+      ty = in_ty!=null ? in_ty+in_height/2 : in_height/2;
    }
 
    public function setRotation(inTheta:Float,?inScale:Float)

@@ -21,6 +21,7 @@ typedef Grad =
    var spread: SpreadMethod;
    var interp:InterpolationMethod;
    var radius:Float;
+   var focus:Float;
    var x1:Float;
    var y1:Float;
    var x2:Float;
@@ -141,6 +142,7 @@ class SVG2Gfx
                     spread : SpreadMethod.PAD,
                     interp : InterpolationMethod.RGB,
                     radius : 1.0,
+                    focus  : 0.0,
                     x1 : 0.0,
                     y1 : 0.0,
                     x2 : 0.0,
@@ -170,16 +172,43 @@ class SVG2Gfx
           grad.y1 = Std.parseFloat(inGrad.get("y1"));
           grad.x2 = Std.parseFloat(inGrad.get("x2"));
           grad.y2 = Std.parseFloat(inGrad.get("y2"));
+
+          // Flash takes a linear gradient from -819.2,0 to +819.2.0
+          // Transform x1,y1  x2,y2 to these points.
+          var dy = grad.y2 - grad.y1;
+          var dx = grad.x2 - grad.x1;
+          var theta = Math.atan2(-dy,dx);
+          var len = Math.sqrt(dx*dx+dy*dy);
+
+          var mtx = new Matrix();
+          mtx.createGradientBox(len,1.0,theta,
+                (grad.x2+grad.x1)*0.5,(grad.y2+grad.y1)*0.5);
+          grad.matrix.concat(mtx);
        }
+
        if (inGrad.exists("cx"))
        {
           grad.x1 = Std.parseFloat(inGrad.get("cx"));
           grad.y1 = Std.parseFloat(inGrad.get("cy"));
           grad.x2 = Std.parseFloat(inGrad.get("fx"));
           grad.y2 = Std.parseFloat(inGrad.get("fy"));
-       }
-       if (inGrad.exists("r"))
           grad.radius = Std.parseFloat(inGrad.get("r"));
+
+          var dx = grad.x2-grad.x1;
+          var dy = grad.y2-grad.y1;
+          var theta = 0.0;
+
+          if (dx!=0 || dy!=0)
+          {
+              theta = Math.atan2(dy,dx);
+              grad.focus = Math.sqrt(dx*dy+dy*dy)/grad.radius;
+          }
+
+          var mtx = new Matrix();
+          mtx.createGradientBox(grad.radius*2.0,grad.radius*2.0,theta,
+             grad.x1-grad.radius,grad.y1-grad.radius);
+          grad.matrix.concat(mtx);
+       }
 
 
        if (inGrad.exists("gradientTransform"))
@@ -644,64 +673,8 @@ class SVG2Gfx
              var gm:Matrix  = grad.matrix.clone();
              gm.concat(m);
 
-             var mtx = new Matrix();
-             var focal = 0.0;
-
-             if (grad.type == GradientType.LINEAR)
-             {
-                // Transform the points - otherwise we will need to inverse transform
-                //  tre gradient matrix ...
-                var tx1 = grad.x1 * gm.a + grad.y1*gm.b + gm.tx;
-                var ty1 = grad.x1 * gm.c + grad.y1*gm.d + gm.ty;
-                var tx2 = grad.x2 * gm.a + grad.y2*gm.b + gm.tx;
-                var ty2 = grad.x2 * gm.c + grad.y2*gm.d + gm.ty;
-                // G(x,y) = A x + B y + C
-             
-                var dx = tx2-tx1;
-                var dy = ty2-ty1;
-
-                // For linear case, dx,dy is the gradient vector
-                if (dx!=0 || dy!=0)
-                {
-                   var scale = 1.0/(dx*dx+dy*dy);
-                   mtx.a = scale*dx;
-                   mtx.b = scale*dy;
-                   mtx.tx =  - tx1*mtx.a - ty1*mtx.b;
-                }
-             }
-             else
-             {
-
-                // Invert matrix...
-                var denom = gm.a*gm.d - gm.b*gm.c;
-                if (denom!=0)
-                {
-                   denom = 1.0/denom;
-                   var a = gm.d*denom;
-                   var b = -gm.b*denom;
-                   var c = -gm.c*denom;
-                   var d = gm.a*denom;
-                   mtx = new Matrix( a, b, c, d, 
-                       -a*gm.tx-b*gm.ty, -c*gm.tx-d*gm.ty );
-                }
-
-                mtx.translate(-grad.x1,-grad.y1);
-
-                var s = 1/grad.radius;
-                mtx.scale(s,s);
-
-                var dx = grad.x2-grad.x1;
-                var dy = grad.y2-grad.y1;
-                if (dx!=0 || dy!=0)
-                {
-                   var theta = Math.atan2(dy,dx);
-                   mtx.rotate(-theta);
-                   focal = Math.sqrt(dx*dy+dy*dy)/grad.radius;
-                }
-             }
-
              mGfx.beginGradientFill(grad.type, grad.cols, grad.alphas,
-                      grad.ratios, mtx, grad.spread, grad.interp, focal );
+                      grad.ratios, gm, grad.spread, grad.interp, grad.focus );
 
           case FillSolid(colour):
              mGfx.beginFill(colour,inPath.fill_alpha);

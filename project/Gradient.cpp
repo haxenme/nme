@@ -55,12 +55,41 @@ Gradient *CreateGradient(value inVal)
                         val_field(inVal,val_id("focal")) );
 }
 
-Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
-  : mOrigMatrix(inMatrix)
+
+/*
+  The flash matrix transforms the "nominal gradient box",
+    (-819.2,-819.2) ... (819.2,819.2).  The gradient values (0,0)...(1,1)
+    are then "drawn" in this box.  We want the inverse of this.
+    First we invert the transform, then we invert the +-819.2 -> 0..1 mapping.
+
+  It is slightly different for the radial case.
+*/
+
+static void FlashMatrix2NME(const Matrix &inFlash, Matrix &outNME,bool inRadial)
 {
+   outNME = inFlash.Inverse();
+   double fact = inRadial ? (1.0/819.2) : (1.0/1638.4);
+   outNME.m00 *= fact;
+   outNME.m01 *= fact;
+   outNME.m10 *= fact;
+   outNME.m11 *= fact;
+   outNME.mtx *= fact;
+   outNME.mty *= fact;
+   if (!inRadial)
+   {
+      outNME.mtx += 0.5;
+      outNME.mty += 0.5;
+   }
+}
+
+Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
+{
+   mFlags = (unsigned int)val_int(inFlags);
+
+   FlashMatrix2NME(inMatrix,mOrigMatrix,mFlags & gfRadial);
+
    IdentityTransform();
 
-   mFlags = (unsigned int)val_int(inFlags);
    mTextureID = 0;
 
    value inPoints = val_field(inHxPoints,val_id("__a"));
