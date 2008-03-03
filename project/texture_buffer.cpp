@@ -683,7 +683,10 @@ TextureReference *TextureReference::Create(value inVal)
 {
    if (val_is_null(inVal))
       return 0;
-   TextureBuffer *tex=TEXTURE_BUFFER(val_field(inVal,val_id("texture_buffer")));
+   value  tb= val_field(inVal,val_id("texture_buffer"));
+   if (val_is_null(tb))
+      return 0;
+   TextureBuffer  *tex=TEXTURE_BUFFER(tb);
    if (!tex)
       return 0;
 

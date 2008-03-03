@@ -81,8 +81,10 @@ class Balls extends nme.GameBase
       var mtx = new Matrix();
 
       // Define positive quadrant ...
-      mtx.createGradientBox(40,40, 0, 32,32);
-      mtx.rotate(0.5);
+      mtx.createGradientBox(64,64, 0, 0,0);
+      mtx.translate(-32,-32);
+      mtx.rotate(-0.5);
+      mtx.translate(32,32);
       gfx.beginGradientFill(GradientType.RADIAL,
                        colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
                        -0.6 );
