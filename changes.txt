@@ -1,5 +1,11 @@
 NME Changes List
 
+0.3.1
+===============
+A Few minor changes to make neash integration easier.
+Fixed bug with rendering PNG images to bitmaps.
+Added some font-path logic to make finding font files easier on non-windows.
+
 0.3.0
 ===============
 Major upgrade to add the flash drawing API.
@@ -30,5 +36,3 @@ Initial release of the Neko Media Engine (NME)
 
 
 
-
-TODO: Add SGE's drawing functionality
