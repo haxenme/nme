@@ -16,13 +16,12 @@ static FontMap *sFontMap = 0;
 #include <windows.h>
 #include <tchar.h>
 
-bool GetFontFile(const char *lpszFontName, std::string& strDisplayName, std::string& strFontFile)
+bool GetFontFile(const std::string& inName,std::string &outFile)
 {
    _TCHAR win_path[2 * MAX_PATH];
    GetWindowsDirectory(win_path, 2*MAX_PATH);
-   strFontFile = std::string(win_path) + "\\Fonts\\" + lpszFontName + ".ttf";
+   outFile = std::string(win_path) + "\\Fonts\\" + inName;
 
-   strDisplayName = lpszFontName;
    return true;
 }
 
@@ -31,33 +30,38 @@ bool GetFontFile(const char *lpszFontName, std::string& strDisplayName, std::str
 
 TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
 {
-   FontDef key(inFontName,inPointSize);
+   std::string fname = inFontName;
+   if (fname.find(".")==std::string::npos)
+      fname += ".ttf";
+
+   FontDef key(fname,inPointSize);
 
    if (!sFontMap) sFontMap = new FontMap;
    FontMap::iterator f =  sFontMap->find(key);
    if (f!=sFontMap->end())
       return f->second;
 
-   // Look for "." to indicate filename ....
-   TTF_Font *font = 0;
+   TTF_Font *font = TTF_OpenFont(fname.c_str(),inPointSize);
 
-#ifdef __WIN32__
-   if (inFontName.find(".")==std::string::npos)
+   if (font==0 &&
+       fname.find("\\")==std::string::npos &&
+       fname.find("/")==std::string::npos)
    {
-      std::string file_name,display_name;
-      if (GetFontFile(inFontName.c_str(),display_name,file_name))
+#ifdef __WIN32__
+      std::string file_name;
+      if (GetFontFile(fname,file_name))
       {
          //printf("Found font in %s\n", file_name.c_str());
          font = TTF_OpenFont(file_name.c_str(),inPointSize);
       }
-   }
 #endif
+      if (font==0)
+         font = TTF_OpenFont(("./fonts/" + fname).c_str(),inPointSize);
 
-   if (font==0)
-   {
-      font = TTF_OpenFont(inFontName.c_str(),inPointSize);
-      // printf("Found font %s = %p\n", inFontName.c_str(),font);
+      if (font==0)
+         font = TTF_OpenFont(("./data/" + fname).c_str(),inPointSize);
    }
+
 
    (*sFontMap)[key] = font;
    return font;

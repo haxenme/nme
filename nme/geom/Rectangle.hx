@@ -80,7 +80,7 @@ class Rectangle
       return p.clone();
    }
 
-   function clone() : nme.geom.Rectangle
+   public function clone() : nme.geom.Rectangle
    {
       return new Rectangle(x,y,width,height);
    }
