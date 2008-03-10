@@ -137,6 +137,18 @@ class Graphics
          nme_draw_object_to(obj,dest,inMatrix);
    }
 
+   public function hitTest(inMatrix:Matrix,inX:Int,inY:Int) : Bool
+   {
+      CloseList(true);
+      for(obj in mDrawList)
+      {
+         if (nme_hit_object(nme.Manager.getScreen(),obj,inMatrix,inX,inY))
+            return true;
+      }
+      return false;
+   }
+
+
 
    public function blit(inTexture:BitmapData)
    {
@@ -638,6 +650,7 @@ class Graphics
 
 
    static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
+   static var nme_hit_object = neko.Lib.load("nme","nme_hit_object",5);
    static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);

@@ -324,7 +324,7 @@ void ProcessLines(SDL_Surface *outDest,int inYMin,int inYMax,LINE_ *inLines,
 
 // Find y-extent of object, this is in pixels, and is the intersection
 //  with the screen y-extent.
-static bool FindObjectYExtent(int ioMinY, int ioMaxY,int inN,
+static bool FindObjectYExtent(int &ioMinY, int &ioMaxY,int inN,
           const PointF16 *inPoints,const PolyLine *inLines)
 {
    int min_y = 0;
@@ -1114,6 +1114,50 @@ public:
          }
       }
    }
+
+   bool HitTest(int inX,int inY)
+   {
+      if (mMinY<=inY && mMaxY>inY)
+      {
+         LineInfo &line = mLines[inY-mMinY];
+         if(line.size()>1)
+         {
+            typedef typename Point::State State;
+
+            LineInfo::iterator i = line.begin();
+
+            State  drawing;
+            Point::InitState(drawing);
+
+            while(1)
+            {
+               int x = i->first;
+               if (x>inX)
+                  return false;
+
+               Uint8 alpha = i->second.GetAlpha(drawing);
+               if (x==inX)
+                  return alpha>0;
+
+               x++;
+
+               i->second.Transition(drawing);
+               LineInfo::iterator next = i;
+               ++next;
+               if (next==line.end())
+                  return false;
+
+               int x1 = next->first;
+               if (x1>=inX)
+                  return Point::SGetAlpha(drawing)>0;
+
+               i = next;
+            }
+         }
+      }
+      return false;
+   }
+
 
    ~BasePolygonRenderer()
    {

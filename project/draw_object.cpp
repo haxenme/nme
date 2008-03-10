@@ -38,6 +38,7 @@ public:
    virtual ~Drawable() { }
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty=0)=0;
+   virtual bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY) = 0;
 
    virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat)=0;
 
@@ -355,6 +356,47 @@ public:
       }
       else
       {
+         CreateRenderers(inSurface,inMatrix,inMarkDirty);
+
+         if (mPolygon)
+            mPolygon->Render(inSurface);
+
+         size_t jobs = mLineJobs.size();
+         for(size_t j=0;j<jobs;j++)
+         {
+            LineJob &job = mLineJobs[ j ];
+
+            if (job.mRenderer)
+               job.mRenderer->Render(inSurface);
+         }
+      }
+   }
+
+   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
+   {
+      //TODO: opengl acceleration
+
+         CreateRenderers(inSurface,inMatrix,0);
+
+         if (mPolygon && mPolygon->HitTest(inX,inY))
+            return true;
+
+         size_t jobs = mLineJobs.size();
+         for(size_t j=0;j<jobs;j++)
+         {
+            LineJob &job = mLineJobs[ j ];
+
+            if (job.mRenderer && job.mRenderer->HitTest(inX,inY))
+               return true;
+         }
+
+       return false;
+   }
+
+
+   void CreateRenderers(SDL_Surface *inSurface,
+            const Matrix &inMatrix,TextureBuffer *inMarkDirty)
+   {
          if (inMatrix!=mTransform)
          {
             TransformPoints(inMatrix);
@@ -417,8 +459,6 @@ public:
 
             }
 
-            if (mPolygon)
-               mPolygon->Render(inSurface);
          }
 
          size_t jobs = mLineJobs.size();
@@ -446,10 +486,7 @@ public:
                }
             }
 
-            if (job.mRenderer)
-               job.mRenderer->Render(inSurface);
          }
-      }
    }
 
 
@@ -719,6 +756,13 @@ public:
       }
    }
 
+
+   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
+   {
+      // TODO:
+      return false;
+   }
+
    void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
    {
       for(int i=0;i<4;i++)
@@ -927,6 +971,19 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
    return alloc_int(0);
 }
 
+value nme_hit_object(value surface,value drawable,value matrix,value x,value y )
+{
+   if ( val_is_kind( surface, k_surf )  )
+      if ( val_is_kind( drawable, k_drawable ) )
+      {
+         Matrix mtx(matrix);
+         SDL_Surface *s = SURFACE(surface);
+         Drawable *d = DRAWABLE(drawable);
+         return alloc_bool(d->HitTest(s,mtx,val_int(x),val_int(y)));
+      }
+   return alloc_bool(false);
+}
+
 value nme_set_draw_quality(value inValue)
 {
    sQualityLevel = val_int(inValue);
@@ -944,6 +1001,7 @@ DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 3);
 DEFINE_PRIM(nme_draw_object_to, 3);
+DEFINE_PRIM(nme_hit_object, 5);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_get_draw_quality, 0);
 DEFINE_PRIM_MULT(nme_create_text_drawable);

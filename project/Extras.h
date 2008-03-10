@@ -54,6 +54,7 @@ public:
    virtual ~PolygonRenderer() {}
    virtual void Render(SDL_Surface *outDest,
                          Sint16 inOffsetX=0,Sint16 inOffsetY=0)=0;
+   virtual bool HitTest(int inX,int inY)=0;
 
    static PolygonRenderer *CreateSolidRenderer(int inN,
                               const PointF16 *inPoints,

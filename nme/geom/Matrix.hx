@@ -56,6 +56,37 @@ class Matrix
       d = a;
    }
 
+   public function invert() : Matrix
+   {
+      var norm = a*d-b*c;
+      if (norm==0)
+      {
+         a = b = c = d = 0;
+         tx=-tx;
+         ty=-ty;
+      }
+      else
+      {
+         norm = 1.0/norm;
+         var a1 = d*norm;
+         d = a*norm;
+         a = a1;
+         b*=-norm;
+         c*=-norm;
+
+         var tx1 = - a*tx - b*ty; 
+         ty = - c*tx - d*ty; 
+         tx = tx1;
+      }
+      return this;
+   }
+
+   public function transformPoint(inPos:Point)
+   {
+      return new Point( inPos.x*a + inPos.y*b + tx,
+                        inPos.x*c + inPos.y*d + ty );
+   }
+
    public function translate(inDX:Float, inDY:Float)
    {
       tx += inDX;

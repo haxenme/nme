@@ -228,11 +228,10 @@ class Manager
 		 mainLoopRunning = false;
 	}
 
-	function fireMouseEvent(inType:MouseEventType)
-	{
-	  // TODO: fill in shift etc.
-	  var event: MouseEvent =
-	  {
+	public static function mouseEvent(inType:MouseEventType)
+        {
+           return 
+	   {
 		 type : inType,
 		 x : mouseX(),
 		 y : mouseY(),
@@ -242,7 +241,13 @@ class Manager
 		 leftIsDown : mouseButtonState()!=0,
 		 middleIsDown : false,
 		 rightIsDown : false
-	  };
+	   };
+        }
+
+	function fireMouseEvent(inType:MouseEventType)
+	{
+	  // TODO: fill in shift etc.
+	  var event: MouseEvent = mouseEvent(inType);
 
 	  for(e in mouseEventCallbacks)
 		 e(event);
@@ -411,22 +416,22 @@ class Manager
 		return Reflect.field( __evt, "button" );
 	}
 
-	public function mouseButtonState() : Int
+	public static function mouseButtonState() : Int
 	{
 		return Reflect.field( __evt, "state" );
 	}
 
-	public function mouseX() : Int
+	public static function mouseX() : Int
 	{
 		return Reflect.field( __evt, "x" );
 	}
 
-	public function mouseY() : Int
+	public static function mouseY() : Int
 	{
 		return Reflect.field( __evt, "y" );
 	}
 
-	public function mousePoint() {return new nme.Point(mouseX(),mouseY());}
+	public static function mousePoint() {return new nme.geom.Point(mouseX(),mouseY());}
 
 	public function mouseMoveX() : Int
 	{
