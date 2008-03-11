@@ -374,8 +374,35 @@ public:
 
    bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
    {
-      //TODO: opengl acceleration
+      if (IsOpenGLScreen(inSurface))
+      {
+         // Line width seems to get ignored when picling?
+         if (mDisplayList || CreateDisplayList() )
+         {
+             GLuint buffer[10];
+             glSelectBuffer(10, buffer); 
 
+             glRenderMode(GL_SELECT);
+
+             glViewport(0,0,inSurface->w,inSurface->h);
+             glMatrixMode(GL_PROJECTION);
+             glLoadIdentity();
+             glTranslated(-inX,-inY,0);
+
+             glMatrixMode(GL_MODELVIEW);
+             glLoadIdentity();
+             inMatrix.GLMult();
+
+             glLoadName(1);
+
+             glCallList(mDisplayList);
+
+             GLint hits = glRenderMode(GL_RENDER);
+             return hits>0;
+         }
+      }
+      else
+      {
          CreateRenderers(inSurface,inMatrix,0);
 
          if (mPolygon && mPolygon->HitTest(inX,inY))
@@ -389,6 +416,7 @@ public:
             if (job.mRenderer && job.mRenderer->HitTest(inX,inY))
                return true;
          }
+      }
 
        return false;
    }
@@ -397,6 +425,14 @@ public:
    void CreateRenderers(SDL_Surface *inSurface,
             const Matrix &inMatrix,TextureBuffer *inMarkDirty)
    {
+         int min_y = SPG_clip_ymin(inSurface);
+         int max_y = SPG_clip_ymax(inSurface);
+         if (IsOpenGLScreen(inSurface))
+         {
+            min_y = 0;
+            max_y = inSurface->h;
+         }
+
          if (inMatrix!=mTransform)
          {
             TransformPoints(inMatrix);
@@ -433,8 +469,8 @@ public:
                {
                   mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
                                  mPointF16s,
-                                 SPG_clip_ymin(inSurface),
-                                 SPG_clip_ymax(inSurface),
+                                 min_y,
+                                 max_y,
                                  flags, mSolidGradient );
                }
                else if (mTexture)
@@ -442,8 +478,8 @@ public:
                   flags |= mTexture->mFlags;
                   mPolygon = PolygonRenderer::CreateBitmapRenderer(n-1,
                                  mPointF16s,
-                                 SPG_clip_ymin(inSurface),
-                                 SPG_clip_ymax(inSurface),
+                                 min_y,
+                                 max_y,
                                  flags,
                                  mTexture->mTransMatrix,
                                  mTexture->mTexture->GetSourceSurface() );
@@ -452,8 +488,8 @@ public:
                {
                   mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
                                  mPointF16s,
-                                 SPG_clip_ymin(inSurface),
-                                 SPG_clip_ymax(inSurface),
+                                 min_y,
+                                 max_y,
                                  flags, mFillColour, mFillAlpha );
                }
 
@@ -471,8 +507,8 @@ public:
                {
                   job.mRenderer = PolygonRenderer::CreateGradientRenderer(n,
                                  mPointF16s,
-                                 SPG_clip_ymin(inSurface),
-                                 SPG_clip_ymax(inSurface),
+                                 min_y,
+                                 max_y,
                                  flags, job.mGradient, &job );
 
                }
@@ -480,8 +516,8 @@ public:
                {
                   job.mRenderer = PolygonRenderer::CreateSolidRenderer(n,
                                  mPointF16s,
-                                 SPG_clip_ymin(inSurface),
-                                 SPG_clip_ymax(inSurface),
+                                 min_y,
+                                 max_y,
                                  flags, job.mColour, job.mAlpha, &job );
                }
             }
@@ -726,41 +762,79 @@ public:
          }
          else
          {
-            if (inMatrix!=mLastMatrix || !mRenderer)
-            {
-               mLastMatrix = inMatrix;
-               for(int i=0;i<4;i++)
-                  inMatrix.TransformHQ( mSX[i], mSY[i],
-                       mPoints[i].x, mPoints[i].y );
-
-               // TODO  Ox,Oy
-               Matrix mapping = inMatrix.Invert2x2();
-               mapping.MatchTransform(mPoints[0].x/65536.0,
-                                      mPoints[0].y/65536.0,0,0);
-
-
-               Uint32 flags= SPG_HIGH_QUALITY | SPG_EDGE_CLAMP | SPG_BMP_LINEAR;
-               if (mHasAlpha)
-                  flags |= SPG_ALPHA_BLEND;
-
-               delete mRenderer;
-               mRenderer = PolygonRenderer::CreateBitmapRenderer(4,
-                            mPoints,
-                            SPG_clip_ymin(inSurface),
-                            SPG_clip_ymax(inSurface),
-                            flags, mapping,
-                            mTexture->GetSourceSurface() );
-            }
-            mRenderer->Render(inSurface);
+            CreateRenderer(inSurface,inMatrix);
+            if (mRenderer)
+               mRenderer->Render(inSurface);
          }
       }
    }
 
+   void CreateRenderer(SDL_Surface *inSurface,const Matrix &inMatrix)
+   {
+      if (inMatrix!=mLastMatrix || !mRenderer)
+      {
+         mLastMatrix = inMatrix;
+         for(int i=0;i<4;i++)
+            inMatrix.TransformHQ( mSX[i], mSY[i],
+                 mPoints[i].x, mPoints[i].y );
+
+         // TODO  Ox,Oy
+         Matrix mapping = inMatrix.Invert2x2();
+         mapping.MatchTransform(mPoints[0].x/65536.0,
+                                mPoints[0].y/65536.0,0,0);
+
+
+         Uint32 flags= SPG_HIGH_QUALITY | SPG_EDGE_CLAMP | SPG_BMP_LINEAR;
+         if (mHasAlpha)
+            flags |= SPG_ALPHA_BLEND;
+
+         delete mRenderer;
+         mRenderer = PolygonRenderer::CreateBitmapRenderer(4,
+                      mPoints,
+                      SPG_clip_ymin(inSurface),
+                      SPG_clip_ymax(inSurface),
+                      flags, mapping,
+                      mTexture->GetSourceSurface() );
+      }
+   }
+
+
 
    bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
    {
-      // TODO:
-      return false;
+      if (IsOpenGLScreen(inSurface))
+      {
+         GLuint buffer[10];
+         glSelectBuffer(10, buffer); 
+
+         glRenderMode(GL_SELECT);
+
+         glViewport(0,0,inSurface->w,inSurface->h);
+         glMatrixMode(GL_PROJECTION);
+         glLoadIdentity();
+         glTranslated(-inX,-inY,0);
+
+         glMatrixMode(GL_MODELVIEW);
+         glLoadIdentity();
+         inMatrix.GLMult();
+
+         glLoadName(1);
+
+         mTexture->DrawOpenGL();
+
+         GLint hits = glRenderMode(GL_RENDER);
+         return hits>0;
+      }
+      else
+      {
+         CreateRenderer(inSurface,inMatrix);
+
+         if (mRenderer && mRenderer->HitTest(inX,inY))
+            return true;
+      }
+
+       return false;
+
    }
 
    void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
