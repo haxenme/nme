@@ -115,8 +115,10 @@ struct SurfaceSourceBase
 
    inline void SetPos(int inX,int inY)
    {
-      mPos.x = int((mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx)*65536);
-      mPos.y = int((mMapper.m10 * inX + mMapper.m11*inY + mMapper.mty)*65536);
+      double x = inX+0.5;
+      double y = inY+0.5;
+      mPos.x = int((mMapper.m00 * x + mMapper.m01*y + mMapper.mtx)*65536);
+      mPos.y = int((mMapper.m10 * x + mMapper.m11*y + mMapper.mty)*65536);
    }
 
    inline void Inc()
