@@ -1124,7 +1124,7 @@ public:
          {
             typedef typename Point::State State;
 
-            LineInfo::iterator i = line.begin();
+            typename LineInfo::iterator i = line.begin();
 
             State  drawing;
             Point::InitState(drawing);
@@ -1142,7 +1142,7 @@ public:
                x++;
 
                i->second.Transition(drawing);
-               LineInfo::iterator next = i;
+               typename LineInfo::iterator next = i;
                ++next;
                if (next==line.end())
                   return false;
