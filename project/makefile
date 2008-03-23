@@ -10,7 +10,7 @@ OBJS := $(SOURCE_FILES:%.cpp=objs/%.o)
 INCLUDE += -I/usr/include/SDL -I/usr/include/freetype2 \
            -I$(NEKO_INSTALL_PATH)/include
 
-CFLAGS += -O2 $(INCLUDE)
+CFLAGS += -O2 $(INCLUDE) -fPIC
 
 NDLL_DIR := ../ndll/Linux/
 
