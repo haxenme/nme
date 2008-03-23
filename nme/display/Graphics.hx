@@ -158,7 +158,7 @@ class Graphics
 
 
 
-   public function lineStyle(thickness:Float,
+   public function lineStyle(?thickness:Null<Float>,
                              ?color:Null<Int> /* = 0 */,
                              ?alpha:Null<Float> /* = 1.0 */,
                              ?pixelHinting:Null<Bool> /* = false */,
@@ -168,14 +168,22 @@ class Graphics
                              ?miterLimit:Null<Float> /*= 3*/)
    {
       CloseLines(false);
-
-      mCurrentLine.grad = null;
-      mCurrentLine.thickness = thickness;
-      mCurrentLine.colour = color==null ? 0 : color;
-      mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
-      mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
-      mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
-                                           0 : PIXEL_HINTING;
+      
+      //with no parameters it clears the current line (to draw nothing)
+      if( thickness == null )
+      {
+      	mCurrentLine.alpha = 0;
+      }
+		else
+		{
+			mCurrentLine.grad = null;
+			mCurrentLine.thickness = thickness;
+			mCurrentLine.colour = color==null ? 0 : color;
+			mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
+			mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
+			mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
+															0 : PIXEL_HINTING;
+		}
 
       if (caps!=null)
       {
@@ -491,12 +499,14 @@ class Graphics
       mPenY = inY;
       mPoints.push( { x:mPenX, y:mPenY } );
 
-      if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
-      {
+		//Not doing this causes fills to be incomplete without a line being drawn...
+		//there is likely a more appropriate fix?
+      //if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
+      //{
          if (mCurrentLine.point_idx.length==0)
             mCurrentLine.point_idx.push(pid-1);
          mCurrentLine.point_idx.push(pid);
-      }
+      //}
    }
 
    public function curveTo(inX:Float,inY:Float,inX1:Float,inY1:Float)
@@ -594,18 +604,22 @@ class Graphics
             }
          }
 
-         mLineJobs.push(
-             {
-                grad:mCurrentLine.grad,
-                point_idx:mCurrentLine.point_idx,
-                thickness:mCurrentLine.thickness,
-                alpha:mCurrentLine.alpha,
-                pixel_hinting:mCurrentLine.pixel_hinting,
-                colour:mCurrentLine.colour,
-                joints:mCurrentLine.joints,
-                caps:mCurrentLine.caps,
-                miter_limit:mCurrentLine.miter_limit,
-             } );
+			//don't draw if not visible
+			if( mCurrentLine.alpha > 0 )
+			{
+				mLineJobs.push(
+					{
+						grad:mCurrentLine.grad,
+						point_idx:mCurrentLine.point_idx,
+						thickness:mCurrentLine.thickness,
+						alpha:mCurrentLine.alpha,
+						pixel_hinting:mCurrentLine.pixel_hinting,
+						colour:mCurrentLine.colour,
+						joints:mCurrentLine.joints,
+						caps:mCurrentLine.caps,
+						miter_limit:mCurrentLine.miter_limit,
+					} );
+			}
       }
       mCurrentLine.point_idx = [];
    }
