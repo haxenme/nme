@@ -1117,7 +1117,7 @@ public:
 
    bool HitTest(int inX,int inY)
    {
-      if (mMinY<=inY && mMaxY>inY)
+      if (mMinY<=inY && mMaxY>inY && mLines)
       {
          LineInfo &line = mLines[inY-mMinY];
          if(line.size()>1)
@@ -1257,9 +1257,6 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(int inN,
                         class Gradient *inGradient,
                         const PolyLine *inLines)
 {
-   if (inN<3)
-      return 0;
-
 #define ARGS inN,inPts,inYMin,inYMax,inFlags,inGradient,inLines
 
    if (inFlags & SPG_HIGH_QUALITY)
@@ -1470,6 +1467,9 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(int inN,
                               SDL_Surface *inSource,
                               const PolyLine *inLines)
 {
+   if (inN<3)
+      return 0;
+
    if (inFlags & SPG_HIGH_QUALITY)
    {
       AA4x::Init();

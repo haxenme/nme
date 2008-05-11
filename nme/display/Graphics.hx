@@ -1,3 +1,20 @@
+/*
+
+
+  Lines, fill styles and closing polygons.
+   Flash allows the line stype to be changed withing one filled polygon.
+   A single NME "DrawObject" has a point list, an optional solid fill style
+   and a list of lines.  Each of these lines has a line style and a
+   list of "point indices", which are indices into the DrawObject's point array.
+   The solid does not need a point-index list because it uses all the
+   points in order.
+
+   When building up a filled polygon, eveytime the line style changes, the
+    current "line fragment" is stored in the "mLineJobs" list and a new line
+    is started, without affecting the solid fill bit.
+*/
+
+
 package nme.display;
 
 import nme.geom.Matrix;
@@ -132,14 +149,14 @@ class Graphics
    public function render(?inMatrix:Matrix,?inSurface:Void)
    {
       var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
-      CloseList(true);
+      ClosePolygon(true);
       for(obj in mDrawList)
          nme_draw_object_to(obj,dest,inMatrix);
    }
 
    public function hitTest(inMatrix:Matrix,inX:Int,inY:Int) : Bool
    {
-      CloseList(true);
+      ClosePolygon(true);
       for(obj in mDrawList)
       {
          if (nme_hit_object(nme.Manager.getScreen(),obj,inMatrix,inX,inY))
@@ -152,7 +169,7 @@ class Graphics
 
    public function blit(inTexture:BitmapData)
    {
-      CloseLines(false);
+      ClosePolygon(true);
       AddDrawable( nme_create_blit_drawable(inTexture.handle(),mPenX,mPenY) );
    }
 
@@ -167,23 +184,25 @@ class Graphics
                              ?joints:Null<String>,
                              ?miterLimit:Null<Float> /*= 3*/)
    {
-      CloseLines(false);
+      // Finish off old line before starting a new one
+      AddLineSegment();
       
       //with no parameters it clears the current line (to draw nothing)
       if( thickness == null )
       {
-      	mCurrentLine.alpha = 0;
+         ClearLine();
+         return;
       }
-		else
-		{
-			mCurrentLine.grad = null;
-			mCurrentLine.thickness = thickness;
-			mCurrentLine.colour = color==null ? 0 : color;
-			mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
-			mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
-			mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
-															0 : PIXEL_HINTING;
-		}
+      else
+      {
+         mCurrentLine.grad = null;
+         mCurrentLine.thickness = thickness;
+         mCurrentLine.colour = color==null ? 0 : color;
+         mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
+         mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
+         mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
+                                             0 : PIXEL_HINTING;
+      }
 
       if (caps!=null)
       {
@@ -232,7 +251,7 @@ class Graphics
 
    public function beginFill(color:Null<Int>, ?alpha:Null<Float>)
    {
-      CloseList(true);
+      ClosePolygon(true);
 
       mFillColour = color==null ? 0x000000 : color;
       mFillAlpha = alpha==null ? 1.0 : alpha;
@@ -243,13 +262,13 @@ class Graphics
 
    public function endFill()
    {
-      CloseList(true);
+      ClosePolygon(true);
    }
 
    // TODO: could me more efficient to leave this up to implementation
    public function drawEllipse(x:Float,y:Float,x_rad:Float,y_rad:Float)
    {
-      CloseList(false);
+      ClosePolygon(false);
 
       var rad = x_rad>y_rad ? x_rad : y_rad;
       var steps = Math.round(rad*2);
@@ -268,7 +287,7 @@ class Graphics
          lineTo( x+rad, y );
       }
 
-      CloseList(false);
+      ClosePolygon(false);
    }
 
    public function drawCircle(x:Float,y:Float,rad:Float)
@@ -278,7 +297,7 @@ class Graphics
 
    public function drawRect(x:Float,y:Float,width:Float,height:Float)
    {
-      CloseList(false);
+      ClosePolygon(false);
 
       moveTo(x,y);
       lineTo(x+width,y);
@@ -286,7 +305,7 @@ class Graphics
       lineTo(x,y+height);
       lineTo(x,y);
 
-      CloseList(false);
+      ClosePolygon(false);
    }
 
 
@@ -311,7 +330,7 @@ class Graphics
                         y: (1.0 - Math.sin(theta)) * ellipseHeight } );
       }
 
-      CloseList(false);
+      ClosePolygon(false);
 
       moveTo(x,y+ellipseHeight);
       // top-left
@@ -339,7 +358,7 @@ class Graphics
 
       lineTo(x,y+ellipseHeight);
 
-      CloseList(false);
+      ClosePolygon(false);
    }
 
    function CreateGradient(type : GradientType,
@@ -390,7 +409,7 @@ class Graphics
                  ?interpolationMethod : Null<InterpolationMethod>,
                  ?focalPointRatio : Null<Float>) : Void
    {
-      CloseList(true);
+      ClosePolygon(true);
 
       mFilling = true;
       mBitmap = null;
@@ -403,7 +422,7 @@ class Graphics
    public function beginBitmapFill(bitmap:BitmapData, ?matrix:Matrix,
                   ?in_repeat:Bool, ?in_smooth:Bool)
    {
-      CloseList(true);
+      ClosePolygon(true);
 
       var repeat:Bool = in_repeat==null ? true : in_repeat;
       var smooth:Bool = in_smooth==null ? false : in_smooth;
@@ -421,7 +440,7 @@ class Graphics
 
    public function RenderGlyph(inFont:nme.FontHandle,inChar:Int)
    {
-      CloseLines(false);
+      ClosePolygon(false);
 
       AddDrawable(nme_create_glyph_draw_obj(mPenX,mPenY,
              inFont.handle,inChar,
@@ -431,6 +450,19 @@ class Graphics
    }
 
 
+   public function ClearLine()
+   {
+      mCurrentLine = { grad: null,
+                     point_idx:[],
+                     thickness:0.0,
+                     alpha:0.0,
+                     colour:0x000,
+                     miter_limit: 3.0,
+                     caps:END_ROUND,
+                     joints:CORNER_ROUND,
+                     pixel_hinting : 0 };
+
+   }
 
 
    public function clear()
@@ -448,15 +480,7 @@ class Graphics
       mFillColour = 0x000000;
       mFillAlpha = 0.0;
 
-      mCurrentLine = { grad: null,
-                     point_idx:[],
-                     thickness:0.0,
-                     alpha:0.0,
-                     colour:0x000,
-                     miter_limit: 3.0,
-                     caps:END_ROUND,
-                     joints:CORNER_ROUND,
-                     pixel_hinting : 0 };
+      ClearLine();
 
       mLineJobs = [];
    }
@@ -473,14 +497,7 @@ class Graphics
 
    public function moveTo(inX:Float,inY:Float)
    {
-      // CloseList(false);
-      if (mFilling && mPoints.length>0)
-      {
-         CloseLines(false);
-         mPoints.push( { x:inX, y:inY } );
-      }
-      else
-         CloseList(false);
+      ClosePolygon(false);
 
       mPenX = inX;
       mPenY = inY;
@@ -499,14 +516,12 @@ class Graphics
       mPenY = inY;
       mPoints.push( { x:mPenX, y:mPenY } );
 
-		//Not doing this causes fills to be incomplete without a line being drawn...
-		//there is likely a more appropriate fix?
-      //if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
-      //{
+      if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
+      {
          if (mCurrentLine.point_idx.length==0)
             mCurrentLine.point_idx.push(pid-1);
          mCurrentLine.point_idx.push(pid);
-      //}
+      }
    }
 
    public function curveTo(inX:Float,inY:Float,inX1:Float,inY1:Float)
@@ -563,7 +578,7 @@ class Graphics
    public function text(text:String,?fontSize:Int,?fontName:String,?bgColor:Int,
                      ?alignX:Int, ?alignY:Int)
    {
-      CloseList(true);
+      ClosePolygon(true);
       var size:Int = fontSize==null ? defaultFontSize : fontSize;
       var font:String = fontName==null ? defaultFontName: fontName;
 
@@ -573,7 +588,7 @@ class Graphics
           mCurrentLine.colour, mCurrentLine.alpha, bgColor, alignX, alignY ) );
    }
 
-   public function flush() { CloseList(true); }
+   public function flush() { ClosePolygon(true); }
 
    private function AddDrawable(inDrawable:Void)
    {
@@ -589,47 +604,42 @@ class Graphics
    }
 
 
-   private function CloseLines(inTryClose:Bool)
+   private function AddLineSegment()
    {
+      var l = mCurrentLine.point_idx.length;
+
       if (mCurrentLine.point_idx.length>1)
       {
-         // Close line to make loop, because this in implied by the solid.
-         if (inTryClose && mCurrentLine.point_idx.length==mPoints.length)
-         {
-            var l = mPoints.length;
-            if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
-            {
-               mCurrentLine.point_idx.push(0);
-               mPoints.push( { x:mPoints[0].x, y:mPoints[0].y } );
-            }
-         }
-
-			//don't draw if not visible
-			if( mCurrentLine.alpha > 0 )
-			{
-				mLineJobs.push(
-					{
-						grad:mCurrentLine.grad,
-						point_idx:mCurrentLine.point_idx,
-						thickness:mCurrentLine.thickness,
-						alpha:mCurrentLine.alpha,
-						pixel_hinting:mCurrentLine.pixel_hinting,
-						colour:mCurrentLine.colour,
-						joints:mCurrentLine.joints,
-						caps:mCurrentLine.caps,
-						miter_limit:mCurrentLine.miter_limit,
-					} );
-			}
+            mLineJobs.push(
+               {
+                  grad:mCurrentLine.grad,
+                  point_idx:mCurrentLine.point_idx,
+                  thickness:mCurrentLine.thickness,
+                  alpha:mCurrentLine.alpha,
+                  pixel_hinting:mCurrentLine.pixel_hinting,
+                  colour:mCurrentLine.colour,
+                  joints:mCurrentLine.joints,
+                  caps:mCurrentLine.caps,
+                  miter_limit:mCurrentLine.miter_limit,
+               } );
       }
       mCurrentLine.point_idx = [];
    }
 
-   private function CloseList(inCancelFill)
+   private function ClosePolygon(inCancelFill)
    {
       var l =  mPoints.length;
       if (l>0)
       {
-         CloseLines(mFilling && l>2);
+         if (mFilling && l>2)
+         {
+            // Make implicit closing line
+            if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
+               lineTo(mPoints[0].x, mPoints[0].y);
+         }
+
+         AddLineSegment();
+
          AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
                       mFillColour, mFillAlpha,
                       untyped mSolidGradient==null ? mBitmap:mSolidGradient,
