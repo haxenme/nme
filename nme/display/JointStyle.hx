@@ -1,9 +1,9 @@
 package nme.display;
 
-class JointStyle
+enum JointStyle
 {
-   public static var MITER = "miter";
-   public static var ROUND = "round";
-   public static var BEVEL = "bevel";
+   MITER;
+   ROUND;
+   BEVEL;
 }
 

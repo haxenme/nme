@@ -179,9 +179,9 @@ class Graphics
                              ?color:Null<Int> /* = 0 */,
                              ?alpha:Null<Float> /* = 1.0 */,
                              ?pixelHinting:Null<Bool> /* = false */,
-                             ?scaleMode:Null<String> /* = "normal" */,
-                             ?caps:Null<String>,
-                             ?joints:Null<String>,
+                             ?scaleMode:Null<LineScaleMode> /* = "normal" */,
+                             ?caps:Null<CapsStyle>,
+                             ?joints:Null<JointStyle>,
                              ?miterLimit:Null<Float> /*= 3*/)
    {
       // Finish off old line before starting a new one
@@ -216,6 +216,8 @@ class Graphics
                mCurrentLine.caps = END_NONE;
          }
       }
+      else
+         mCurrentLine.caps = END_NONE;
 
 
       if (joints!=null)
@@ -230,6 +232,8 @@ class Graphics
                mCurrentLine.joints = CORNER_BEVEL;
          }
       }
+      else
+         mCurrentLine.joints = CORNER_ROUND;
    }
 
    public function lineGradientStyle(type : GradientType,
@@ -249,11 +253,11 @@ class Graphics
 
 
 
-   public function beginFill(color:Null<Int>, ?alpha:Null<Float>)
+   public function beginFill(color:Int, ?alpha:Null<Float>)
    {
       ClosePolygon(true);
 
-      mFillColour = color==null ? 0x000000 : color;
+      mFillColour =  color;
       mFillAlpha = alpha==null ? 1.0 : alpha;
       mFilling=true;
       mSolidGradient = null;
