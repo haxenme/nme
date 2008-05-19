@@ -36,6 +36,7 @@ import nme.display.CapsStyle;
 import nme.display.GradientType;
 import nme.display.JointStyle;
 import nme.display.SpreadMethod;
+import nme.display.LineScaleMode;
 
 
 class GraphicsTest extends nme.GameBase
@@ -94,21 +95,21 @@ class GraphicsTest extends nme.GameBase
       lines.moveTo(50,100);
       lines.lineTo(50,400);
 
-      lines.lineStyle(20,0x000000,0.5,false,"normal",
+      lines.lineStyle(20,0x000000,0.5,false,LineScaleMode.NORMAL,
                CapsStyle.ROUND, JointStyle.ROUND );
 
       lines.moveTo(50,300);
       lines.lineTo(200,300);
       lines.lineTo(250,200);
 
-      lines.lineStyle(20,0x000000,0.5,false,"normal",
+      lines.lineStyle(20,0x000000,0.5,false,LineScaleMode.NORMAL,
                CapsStyle.SQUARE, JointStyle.BEVEL );
 
       lines.moveTo(50,330);
       lines.lineTo(220,330);
       lines.lineTo(270,230);
 
-      lines.lineStyle(20,0x000000,0.5,false,"normal",
+      lines.lineStyle(20,0x000000,0.5,false,LineScaleMode.NORMAL,
                CapsStyle.NONE, JointStyle.MITER );
 
       lines.moveTo(50,360);
@@ -170,7 +171,7 @@ class GraphicsTest extends nme.GameBase
 
       // Drawing to the managers graphics draws immediately.
       // This is not as efficient as building a display object.
-      gfx.lineStyle(20,0x007733,1,false,"normal",
+      gfx.lineStyle(20,0x007733,1,false, LineScaleMode.NORMAL,
                CapsStyle.ROUND, JointStyle.ROUND, 5.0 );
       gfx.moveTo(0,0);
       gfx.curveTo(wndWidth/2,wndHeight,wndWidth,0);
@@ -192,7 +193,7 @@ class GraphicsTest extends nme.GameBase
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
       gfx.lineTo(x,100);
 
-      gfx.lineStyle(20,0x000000,1,false,"normal",
+      gfx.lineStyle(20,0x000000,1,false,LineScaleMode.NORMAL,
                CapsStyle.ROUND, JointStyle.MITER, 5.0 );
       gfx.moveTo(wndWidth*0.6,95);
       gfx.lineTo(wndWidth*0.6,100);

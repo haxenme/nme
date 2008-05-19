@@ -27,6 +27,9 @@ package nme;
 
 import nme.Time;
 
+// TODO: Sort out API - check samples/1-Collision-Detect
+//                    - compare to flash9
+
 class Timer extends Time
 {
 	private static var arr : Array<Timer> = new Array();
@@ -91,4 +94,13 @@ class Timer extends Time
 	{
 		return Time.getCurrent();
 	}
+
+	/**
+		Returns a timestamp, in milli-seconds
+	**/
+	public static function getCurrent() : Float
+	{
+		return Time.getCurrent() * 1000.0;
+	}
+
 }

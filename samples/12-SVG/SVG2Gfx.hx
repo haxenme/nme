@@ -47,8 +47,8 @@ typedef Path =
    var stroke_alpha:Float;
    var stroke_colour:Null<Int>;
    var stroke_width:Float;
-   var stroke_caps:String;
-   var joint_style:String;
+   var stroke_caps:CapsStyle;
+   var joint_style:JointStyle;
    var miter_limit:Float;
    var matrix:Matrix;
 

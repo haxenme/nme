@@ -233,8 +233,8 @@ class Manager
            return 
 	   {
 		 type : inType,
-		 x : mouseX(),
-		 y : mouseY(),
+		 x : SmouseX(),
+		 y : SmouseY(),
 		 shift : false,
 		 ctrl : false,
 		 alt : false,
@@ -421,17 +421,26 @@ class Manager
 		return Reflect.field( __evt, "state" );
 	}
 
-	public static function mouseX() : Int
+        // Static versions
+	public static function SmouseX() : Int
+	  { return Reflect.field( __evt, "x" ); }
+
+	public static function SmouseY() : Int
+	  { return Reflect.field( __evt, "y" ); }
+
+
+        // Non static - same function
+	public function mouseX() : Int
 	{
-		return Reflect.field( __evt, "x" );
+		return Reflect.field( Manager.__evt, "x" );
 	}
 
-	public static function mouseY() : Int
+	public function mouseY() : Int
 	{
-		return Reflect.field( __evt, "y" );
+		return Reflect.field( Manager.__evt, "y" );
 	}
 
-	public static function mousePoint() {return new nme.geom.Point(mouseX(),mouseY());}
+	public static function mousePoint() {return new nme.geom.Point(SmouseX(),SmouseY());}
 
 	public function mouseMoveX() : Int
 	{
