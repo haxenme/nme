@@ -216,7 +216,7 @@ class GraphicsTest extends nme.GameBase
       var alphas = [ 1.0, 1.0 , 1.0, 1.0];
       var ratios = [ 0, 128, 150, 255 ];
       var mtx = new Matrix();
-      mtx.createGradientBox(60,60,Math.PI*-0.5,0,400);
+      mtx.createGradientBox(60,60,Math.PI*0.5,0,400);
       gfx.beginGradientFill(GradientType.LINEAR,
                        colours, alphas, ratios, mtx, SpreadMethod.PAD);
 

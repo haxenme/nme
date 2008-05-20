@@ -52,8 +52,10 @@ Matrix::Matrix(value inMatrix)
    if (val_is_object( inMatrix ) )
    {
       Set(m00,val_field(inMatrix,a_id));
-      Set(m01,val_field(inMatrix,b_id));
-      Set(m10,val_field(inMatrix,c_id));
+      // Note: change in meaning of "c" and "b"
+      Set(m01,val_field(inMatrix,c_id));
+      Set(m10,val_field(inMatrix,b_id));
+
       Set(m11,val_field(inMatrix,d_id));
       Set(mtx,val_field(inMatrix,tx_id));
       Set(mty,val_field(inMatrix,ty_id));

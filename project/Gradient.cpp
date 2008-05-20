@@ -118,7 +118,10 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    else
    {
       int i;
-      for(i=0;i<=points[0].mPos;i++)
+      int last = points[0].mPos;
+      if (last>255) last = 255;
+
+      for(i=0;i<=last;i++)
          mColours[i] = points[0].mColour;
       for(int k=0;k<n-1;k++)
       {
@@ -128,6 +131,8 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
          int diff = p1 - p0;
          if (diff>0)
          {
+            if (p0<0) p0 = 0;
+            if (p1>256) p1 = 256;
             int dr = points[k+1].mColour.r - c0.r;
             int dg = points[k+1].mColour.g - c0.g;
             int db = points[k+1].mColour.b - c0.b;

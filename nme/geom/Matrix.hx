@@ -1,5 +1,16 @@
 package nme.geom;
 
+
+/*
+
+  Points transform with:
+
+   [ X' ]  =   [ X ]   [  a   b    tx  ]
+   [ Y' ]      [ Y ]   [  c   d    ty  ]
+               [ 1 ]
+
+*/
+
 class Matrix
 {
    public var a : Float;
@@ -29,6 +40,7 @@ class Matrix
       a = in_width/1638.4;
       d = in_height/1638.4;
 
+      // rotation is clockwise
       if (rotation!=null && rotation!=0.0)
       {
          var cos = Math.cos(rotation);
@@ -51,8 +63,8 @@ class Matrix
    {
       var scale:Float = inScale==null ? 1.0 : inScale;
       a = Math.cos(inTheta)*scale;
-      b = Math.sin(inTheta)*scale;
-      c = -b;
+      c = Math.sin(inTheta)*scale;
+      b = -c;
       d = a;
    }
 
@@ -74,8 +86,8 @@ class Matrix
          b*=-norm;
          c*=-norm;
 
-         var tx1 = - a*tx - b*ty; 
-         ty = - c*tx - d*ty; 
+         var tx1 = - a*tx - c*ty; 
+         ty = - b*tx - d*ty; 
          tx = tx1;
       }
       return this;
@@ -83,8 +95,8 @@ class Matrix
 
    public function transformPoint(inPos:Point)
    {
-      return new Point( inPos.x*a + inPos.y*b + tx,
-                        inPos.x*c + inPos.y*d + ty );
+      return new Point( inPos.x*a + inPos.y*c + tx,
+                        inPos.x*b + inPos.y*d + ty );
    }
 
    public function translate(inDX:Float, inDY:Float)
@@ -97,15 +109,13 @@ class Matrix
    {
       var cos = Math.cos(inTheta);
       var sin = Math.sin(inTheta);
-      var a_ = cos*a + sin*c;
-      var b_ = cos*b + sin*d;
-      var tx_ = cos*tx + sin*ty;
-      c = -sin*a + cos*c;
-      d = -sin*b + cos*d;
-      ty = -sin*tx + cos*ty;
+
+      var a_ = a*cos + b*sin;
+      b = a*-sin + b*cos;
       a = a_;
-      b = b_;
-      tx = tx_;
+      var c_ = c*cos + d*sin;
+      d =  c*-sin + d*cos;
+      c = c_;
    }
 
 
@@ -113,25 +123,25 @@ class Matrix
    public function scale(inSX:Float, inSY:Float)
    {
       a*=inSX;
-      b*=inSX;
+      c*=inSX;
       tx*=inSX;
 
-      c*=inSY;
+      b*=inSY;
       d*=inSY;
       ty*=inSY;
 
    }
 
 
-   public function concat(inLHS:Matrix)
+   public function concat(inRHS:Matrix)
    {
-      var a1 = inLHS.a*a + inLHS.b*c;
-      var b1 = inLHS.a*b + inLHS.b*d;
-      var tx1 = inLHS.a*tx + inLHS.b*ty + inLHS.tx;
+      var a1 = a*inRHS.a + b*inRHS.c;
+      var b1 = a*inRHS.b + b*inRHS.d;
+      var tx1 = a*inRHS.tx + b*inRHS.ty + tx;
 
-      var c1 = inLHS.c*a + inLHS.d*c;
-      var d1 = inLHS.c*b + inLHS.d*d;
-      var ty1 = inLHS.c*tx + inLHS.d*ty + inLHS.ty;
+      var c1 = c*inRHS.a + d*inRHS.c;
+      var d1 = c*inRHS.b + d*inRHS.d;
+      var ty1 = c*inRHS.tx + d*inRHS.ty + ty;
 
       a = a1;
       b = b1;
