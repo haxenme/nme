@@ -36,6 +36,7 @@ class BitmapData
       }
    }
 
+
    public function getGraphics() : Graphics
    {
       if (graphics==null)
@@ -64,6 +65,13 @@ class BitmapData
        mTextureBuffer = nme_load_texture(untyped inFilename.__s);
    }
 
+   // Type = "JPG", "BMP" etc.
+   public function LoadFromByteArray(inBytes:Array<Int>,inType:String)
+   {
+       mTextureBuffer = nme_load_texture_from_bytes(untyped inBytes.__neko(),
+                        untyped inType.__s);
+   }
+
    static public function Load(inFilename:String) : BitmapData
    {
       var result = new BitmapData(0,0);
@@ -86,6 +94,7 @@ class BitmapData
    static var nme_create_texture_buffer =
                  neko.Lib.load("nme","nme_create_texture_buffer",5);
    static var nme_load_texture = neko.Lib.load("nme","nme_load_texture",1);
+   static var nme_load_texture_from_bytes = neko.Lib.load("nme","nme_load_texture_from_bytes",2);
    static var nme_texture_width = neko.Lib.load("nme","nme_texture_width",1);
    static var nme_texture_height = neko.Lib.load("nme","nme_texture_height",1);
    static var nme_texture_get_bytes = neko.Lib.load("nme","nme_texture_get_bytes",2);

@@ -493,6 +493,20 @@ value nme_load_texture(value inName)
 
 }
 
+value nme_load_texture_from_bytes(value inBytes,value inType)
+{
+   SDL_Surface *surface = nme_loadimage_from_bytes( inBytes, inType );
+
+   if (!surface)
+      return val_null;
+
+   TextureBuffer *buffer = new TextureBuffer(surface);
+
+   return buffer->ToValue();
+
+}
+
+
 value nme_texture_get_bytes(value inTex,value inRect)
 {
    TextureBuffer *tex = TEXTURE_BUFFER(inTex);
@@ -705,6 +719,7 @@ DEFINE_PRIM(nme_blit_tile, 3);
 
 DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_load_texture, 1);
+DEFINE_PRIM(nme_load_texture_from_bytes, 2);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);

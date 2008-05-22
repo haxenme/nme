@@ -28,6 +28,7 @@
 #include <stack>
 #include <string.h>
 #include <SDL_ttf.h>
+#include <SDL_rwops.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -58,6 +59,113 @@ SDL_Surface* nme_loadimage( value file )
   	//SDL_FreeSurface( surf );
 	return surf;
 }
+
+struct MyRWOps : SDL_RWops
+{
+   MyRWOps(value *inItems,int inLen)
+   {
+      mItems = inItems;
+      mLen = inLen;
+      mPos = 0;
+
+      SDL_RWops::seek = &MyRWOps::s_seek;
+      SDL_RWops::read = &MyRWOps::s_read;
+      SDL_RWops::write = &MyRWOps::s_write;
+      SDL_RWops::close = &MyRWOps::s_close;
+   }
+
+   int seek(int offset,int whence)
+   {
+      switch(whence)
+      {
+         case SEEK_SET: mPos = offset; return mPos;
+         case SEEK_CUR: mPos += offset; return mPos;
+         case SEEK_END: mPos = mLen-offset; return mPos;
+      }
+      return 0;
+   }
+
+/* Read up to 'num' objects each of size 'objsize' from the data
+   source to the area pointed at by 'ptr'.
+   Returns the number of objects read, or -1 if the read failed.
+ */
+   int read(void *ptr, int size, int maxnum)
+   {
+      char *p = (char *)ptr;
+      int bytes = size*maxnum;
+      int i;
+      for(i=0;i<bytes;i++)
+      {
+         *p++ = val_int( mItems[mPos++] );
+      }
+      return maxnum;
+   }
+
+/* Write exactly 'num' objects each of size 'objsize' from the area
+   pointed at by 'ptr' to data source.
+   Returns 'num', or -1 if the write failed.
+ */
+   int write(const void *ptr, int size, int num)
+   {
+      return 0;
+   }
+
+   int close()
+   {
+      return 1;
+   }
+
+
+
+   static int s_seek(struct SDL_RWops *context, int offset, int whence)
+   {
+      MyRWOps *ops = (MyRWOps *)context;
+      return ops->seek(offset,whence);
+   }
+
+   static int s_read(struct SDL_RWops *context, void *ptr, int size, int maxnum)
+   {
+      MyRWOps *ops = (MyRWOps *)context;
+      return ops->read(ptr,size,maxnum);
+   }
+
+   static int s_write(struct SDL_RWops *context, const void *ptr, int size, int num)
+   {
+      MyRWOps *ops = (MyRWOps *)context;
+      return ops->write(ptr,size,num);
+   }
+
+   static int s_close(struct SDL_RWops *context)
+   {
+      MyRWOps *ops = (MyRWOps *)context;
+      return ops->close();
+   }
+
+   value *mItems;
+   int   mLen;
+   int   mPos;
+};
+
+
+SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inType )
+{
+	val_check( inBytes, array );
+	val_check( inType, string );
+
+        int len = val_array_size(inBytes);
+        value *items = val_array_ptr(inBytes);
+        char *type = val_string(inType);
+
+
+        MyRWOps rw_ops(items,len);
+
+	SDL_Surface* surf;
+	surf = IMG_LoadTyped_RW(&rw_ops,0,type);
+	if ( !surf )
+		return NULL;
+	return surf;
+}
+
 
 // creates a surface with alpha channel
 value nme_create_image_32( value flags, value width, value height )
