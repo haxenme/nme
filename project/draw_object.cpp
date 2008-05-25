@@ -474,7 +474,9 @@ public:
                                  flags, mSolidGradient );
                }
                else if (mTexture)
-               {
+               { 
+                  Matrix m(mTexture->mTransMatrix);
+
                   flags |= mTexture->mFlags;
                   mPolygon = PolygonRenderer::CreateBitmapRenderer(n-1,
                                  mPointF16s,

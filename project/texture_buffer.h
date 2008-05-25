@@ -81,7 +81,10 @@ struct TextureReference
    ~TextureReference() { mTexture->DecRef(); }
 
    void Transform(const Matrix &inMtx)
-      { inMtx.ContravariantTrans(mOrigMatrix,mTransMatrix); }
+      { mTransMatrix = inMtx.Mult(mOrigMatrix).Inverse(); }
+      //{ mTransMatrix = inMtx.Mult(mOrigMatrix); }
+      //{ inMtx.ContravariantTrans(mOrigMatrix,mTransMatrix); }
+
    void IdentityTransform()
       { mTransMatrix = mOrigMatrix; }
 

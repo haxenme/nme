@@ -3,11 +3,13 @@ package nme.geom;
 
 /*
 
-  Points transform with:
+  Contrary to any adobe documentation , points transform with:
 
-   [ X' ]  =   [ X ]   [  a   b    tx  ]
-   [ Y' ]      [ Y ]   [  c   d    ty  ]
-               [ 1 ]
+
+  [ X'  Y'  ]   =  [ X  Y  1 ] [  a   b ]
+                               [  c   d ]
+                               [  tx  ty]
+
 
 */
 
@@ -105,50 +107,92 @@ class Matrix
       ty += inDY;
    }
 
+
+   /*
+    Rotate object "after" other transforms
+
+      [  a  b   0 ][  ma mb  0 ]
+      [  c  d   0 ][  mc md  0 ]
+      [  tx ty  1 ][  mtx mty 1 ]
+
+      ma = md = cos
+      mb = -sin
+      mc = sin
+      mtx = my = 0
+ 
+   */
+
    public function rotate(inTheta:Float)
    {
       var cos = Math.cos(inTheta);
       var sin = Math.sin(inTheta);
 
-      var a_ = a*cos + b*sin;
-      b = a*-sin + b*cos;
-      a = a_;
-      var c_ = c*cos + d*sin;
-      d =  c*-sin + d*cos;
-      c = c_;
+      var a1 = a*cos - b*sin;
+      b = a*sin + b*cos;
+      a = a1;
+
+      var c1 = c*cos - d*sin;
+      d = c*sin + d*cos;
+      c = c1;
+
+      var tx1 = tx*cos - ty*sin;
+      ty = tx*sin + ty*cos;
+      tx = tx1;
    }
 
 
 
+   /*
+
+   Scale object "after" other transforms
+
+      [  a  b   0 ][  sx  0   0 ]
+      [  c  d   0 ][  0   sy  0 ]
+      [  tx ty  1 ][  0   0   1 ]
+   */
    public function scale(inSX:Float, inSY:Float)
    {
       a*=inSX;
-      c*=inSX;
-      tx*=inSX;
-
       b*=inSY;
-      d*=inSY;
-      ty*=inSY;
 
+      c*=inSX;
+      d*=inSY;
+
+      tx*=inSX;
+      ty*=inSY;
    }
 
 
-   public function concat(inRHS:Matrix)
+   /*
+
+   A "translate" . concat "rotate" rotates the translation component.
+   ie,
+
+     [X'] = [X][trans][rotate]
+
+
+   Multiply "after" other transforms ...
+  
+
+      [  a  b   0 ][  ma mb  0 ]
+      [  c  d   0 ][  mc md  0 ]
+      [  tx ty  1 ][  mtx mty 1 ]
+            
+
+   */
+   public function concat(m:Matrix)
    {
-      var a1 = a*inRHS.a + b*inRHS.c;
-      var b1 = a*inRHS.b + b*inRHS.d;
-      var tx1 = a*inRHS.tx + b*inRHS.ty + tx;
-
-      var c1 = c*inRHS.a + d*inRHS.c;
-      var d1 = c*inRHS.b + d*inRHS.d;
-      var ty1 = c*inRHS.tx + d*inRHS.ty + ty;
-
+      var a1 = a*m.a + b*m.c;
+      b = a*m.b + b*m.d;
       a = a1;
-      b = b1;
+
+      var c1 = c*m.a + d*m.c;
+      d = c*m.b + d*m.d;
       c = c1;
-      d = d1;
+
+      var tx1 = tx*m.a + ty*m.c + m.tx;
+      ty = tx*m.b + ty*m.d + m.ty;
       tx = tx1;
-      ty = ty1;
    }
 }
 

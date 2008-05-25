@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 #include "Matrix.h"
 #include <neko.h>
+#include <stdio.h>
 
 void Matrix::Transform(float inX,float inY,short &outX,short &outY) const
 {
@@ -62,41 +63,33 @@ Matrix::Matrix(value inMatrix)
    }
 }
 
+static void Dump(const char *inName,const Matrix &inMtx)
+{
+   printf("%s x: %f %f %f\n", inName, inMtx.m00, inMtx.m01,  inMtx.mtx);
+   printf("%s y: %f %f %f\n", inName, inMtx.m10, inMtx.m11,  inMtx.mty);
+}
 
 void Matrix::ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const
 {
-   double det = m00*m11 - m01*m10;
-   if (det==0)
-   {
-      outTrans = inMtx;
-      return;
-   }
-   det = 1.0/det;
-   double a = m11*det;
-   double b = -m01*det;
-   double c = -m10*det;
-   double d = m00*det;
-   double tx = -a*mtx - b*mty;
-   double ty = -c*mtx - d*mty;
-   outTrans.m00 = inMtx.m00*a + inMtx.m01*c;
-   outTrans.m01 = inMtx.m00*b + inMtx.m01*d;
-   outTrans.mtx = inMtx.m00*tx + inMtx.m01*ty+inMtx.mtx;
-
-   outTrans.m10 = inMtx.m10*a + inMtx.m11*c;
-   outTrans.m11 = inMtx.m10*b + inMtx.m11*d;
-   outTrans.mty = inMtx.m10*tx + inMtx.m11*ty+inMtx.mty;
+   //Dump("This", *this);
+   //Dump("In  ", inMtx);
+   //outTrans = inMtx.Mult(Inverse());
+   outTrans = inMtx.Mult(Inverse());
+   //outTrans = inMtx.Mult(*this);
+   //Dump("Out ", outTrans);
+   //printf("===\n");
 }
 
-Matrix Matrix::Mult(const Matrix &inLHS) const
+Matrix Matrix::Mult(const Matrix &inRHS) const
 {
    Matrix t;
-   t.m00 = inLHS.m00 * m00 + inLHS.m01*m10;
-   t.m01 = inLHS.m00 * m01 + inLHS.m01*m11;
-   t.mtx = inLHS.m00 * mtx + inLHS.m01*mty + inLHS.mtx;
+   t.m00 = m00*inRHS.m00 + m01*inRHS.m10;
+   t.m01 = m00*inRHS.m01 + m01*inRHS.m11;
+   t.mtx = m00*inRHS.mtx + m01*inRHS.mty + mtx;
 
-   t.m10 = inLHS.m10 * m00 + inLHS.m11*m10;
-   t.m11 = inLHS.m10 * m01 + inLHS.m11*m11;
-   t.mty = inLHS.m10 * mtx + inLHS.m11*mty + inLHS.mty;
+   t.m10 = m10*inRHS.m00 + m11*inRHS.m10;
+   t.m11 = m10*inRHS.m01 + m11*inRHS.m11;
+   t.mty = m10*inRHS.mtx + m11*inRHS.mty + mty;
 
    return t;
 }
