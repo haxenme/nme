@@ -241,8 +241,8 @@ class Graphics
                  alphas : Array<Dynamic>,
                  ratios : Array<Dynamic>,
                  ?matrix : Matrix,
-                 ?spreadMethod : Null<SpreadMethod>,
-                 ?interpolationMethod : Null<InterpolationMethod>,
+                 ?spreadMethod : SpreadMethod,
+                 ?interpolationMethod : InterpolationMethod,
                  ?focalPointRatio : Null<Float>) : Void
    {
       mCurrentLine.grad = CreateGradient(type,colors,alphas,ratios,
