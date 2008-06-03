@@ -89,6 +89,12 @@ class BitmapData
       nme_texture_set_bytes(mTextureBuffer,rect,pixels.get_handle());
    }
 
+   public function clear( color : Int )
+   {
+       nme_surface_clear( mTextureBuffer, color );
+   }
+
+
 
 
    static var nme_create_texture_buffer =
@@ -98,6 +104,8 @@ class BitmapData
    static var nme_texture_width = neko.Lib.load("nme","nme_texture_width",1);
    static var nme_texture_height = neko.Lib.load("nme","nme_texture_height",1);
    static var nme_texture_get_bytes = neko.Lib.load("nme","nme_texture_get_bytes",2);
+   static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
+
    static var nme_texture_set_bytes = neko.Lib.load("nme","nme_texture_set_bytes",3);
 }
 

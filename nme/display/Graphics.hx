@@ -27,6 +27,9 @@ typedef GfxPoint =
 {
    var x:Float;
    var y:Float;
+   var cx:Float;
+   var cy:Float;
+   var type:Int;
 };
 
 typedef GfxPoints = Array<GfxPoint>;
@@ -51,7 +54,8 @@ typedef Grad =
 typedef LineJob =
 {
    var grad:Grad;
-   var point_idx:Array<Int>;
+   var point_idx0:Int;
+   var point_idx1:Int;
    var thickness:Float;
    var alpha:Float;
    var colour:Int;
@@ -110,6 +114,13 @@ class Graphics
 
    public static var BMP_REPEAT  = 0x0010;
    public static var BMP_SMOOTH  = 0x10000;
+
+
+
+   static var MOVE = 0;
+   static var LINE = 1;
+   static var CURVE = 2;
+
 
    private var mSurface:Void;
 
@@ -323,42 +334,25 @@ class Graphics
          return;
       }
 
-      var steps = Math.round(ellipseWidth+ellipseHeight);
-      var points = new GfxPoints();
-      var dtheta = Math.PI*0.5 /  (steps+1);
-      var theta = 0.0;
-      for(i in 0...steps)
-      {
-         theta += dtheta;
-         points.push( { x: (1.0 - Math.cos(theta)) * ellipseWidth,
-                        y: (1.0 - Math.sin(theta)) * ellipseHeight } );
-      }
-
       ClosePolygon(false);
 
       moveTo(x,y+ellipseHeight);
       // top-left
-      for(i in 0...steps)
-         lineTo(x+points[i].x,y+points[i].y);
+      curveTo(x,y,x+ellipseWidth,y);
 
-      lineTo(x+ellipseWidth,y);
       lineTo(x+width-ellipseWidth,y);
-
       // top-right
-      for(i in 0...steps)
-         lineTo(x+width-points[steps-1-i].x,y+points[steps-1-i].y);
+      curveTo(x+width,y,x+width,y+ellipseWidth);
 
       lineTo(x+width,y+height-ellipseHeight);
 
       // bottom-right
-      for(i in 0...steps)
-         lineTo(x+width-points[i].x,y+height-points[i].y);
+      curveTo(x+width,y+height,x+width-ellipseWidth,y+height);
 
       lineTo(x+ellipseWidth,y+height);
 
       // bottom-left
-      for(i in 0...steps)
-         lineTo(x+points[steps-1-i].x,y+height-points[steps-1-i].y);
+      curveTo(x,y+height,x,y+height-ellipseHeight);
 
       lineTo(x,y+ellipseHeight);
 
@@ -423,6 +417,9 @@ class Graphics
                         focalPointRatio);
    }
 
+
+
+
    public function beginBitmapFill(bitmap:BitmapData, ?matrix:Matrix,
                   ?in_repeat:Bool, ?in_smooth:Bool)
    {
@@ -457,7 +454,8 @@ class Graphics
    public function ClearLine()
    {
       mCurrentLine = { grad: null,
-                     point_idx:[],
+                     point_idx0:-1,
+                     point_idx1:-1,
                      thickness:0.0,
                      alpha:0.0,
                      colour:0x000,
@@ -501,10 +499,16 @@ class Graphics
 
    public function moveTo(inX:Float,inY:Float)
    {
-      ClosePolygon(false);
-
       mPenX = inX;
       mPenY = inY;
+
+      if (!mFilling)
+         ClosePolygon(false);
+      else
+      {
+         AddLineSegment();
+         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
+      }
    }
 
    public function lineTo(inX:Float,inY:Float)
@@ -512,70 +516,42 @@ class Graphics
       var pid = mPoints.length;
       if (pid==0)
       {
-         mPoints.push( { x:mPenX, y:mPenY } );
+         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
          pid++;
       }
 
       mPenX = inX;
       mPenY = inY;
-      mPoints.push( { x:mPenX, y:mPenY } );
+      mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:LINE } );
 
       if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
       {
-         if (mCurrentLine.point_idx.length==0)
-            mCurrentLine.point_idx.push(pid-1);
-         mCurrentLine.point_idx.push(pid);
+         if (mCurrentLine.point_idx0<0)
+            mCurrentLine.point_idx0 = pid-1;
+         mCurrentLine.point_idx1 = pid;
       }
    }
 
-   public function curveTo(inX:Float,inY:Float,inX1:Float,inY1:Float)
+   public function curveTo(inCX:Float,inCY:Float,inX:Float,inY:Float)
    {
-      var dx1 = inX-mPenX;
-      var dy1 = inY-mPenY;
-      var dx2 = inX-inX1;
-      var dy2 = inY-inY1;
-      var len = Math.sqrt(dx1*dx1 + dy1*dy1 + dx2*dx2 + dy2*dy2 );
-      var steps = Math.round(len*0.2);
-
-      // make sure we hace point on stack
       var pid = mPoints.length;
       if (pid==0)
       {
-         mPoints.push( { x:mPenX, y:mPenY } );
+         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
          pid++;
       }
-      var do_line = mCurrentLine.grad!=null || mCurrentLine.alpha>0;
 
-      // First point - make sure we get last move-to on "mCurrentLine"
-      if (do_line && mCurrentLine.point_idx.length==0)
-            mCurrentLine.point_idx.push(pid-1);
+      mPenX = inX;
+      mPenY = inY;
+      mPoints.push( { x:inX, y:inY, cx:inCX, cy:inCY, type:CURVE } );
 
-      if (steps>1)
+      if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
       {
-          var du = 1.0/steps;
-          var u = du;
-          for(i in 1...steps)
-          {
-             var u1 = 1.0-u;
-             var c0 = u1*u1;
-             var c1 = 2.0*u*u1;
-             var c2 = u*u;
-
-             u+=du;
-
-             if (do_line)
-               mCurrentLine.point_idx.push(mPoints.length);
-             mPoints.push( { x:c0*mPenX + c1*inX + c2*inX1,
-                             y:c0*mPenY + c1*inY + c2*inY1 } );
-          }
+         if (mCurrentLine.point_idx0<0)
+            mCurrentLine.point_idx0 = pid-1;
+         mCurrentLine.point_idx1 = pid;
       }
 
-      // past point
-      mPenX = inX1;
-      mPenY = inY1;
-      if (do_line)
-         mCurrentLine.point_idx.push(mPoints.length);
-      mPoints.push( { x:mPenX, y:mPenY } );
    }
 
    // Uses line style
@@ -610,14 +586,13 @@ class Graphics
 
    private function AddLineSegment()
    {
-      var l = mCurrentLine.point_idx.length;
-
-      if (mCurrentLine.point_idx.length>1)
+      if (mCurrentLine.point_idx1>0)
       {
             mLineJobs.push(
                {
                   grad:mCurrentLine.grad,
-                  point_idx:mCurrentLine.point_idx,
+                  point_idx0:mCurrentLine.point_idx0,
+                  point_idx1:mCurrentLine.point_idx1,
                   thickness:mCurrentLine.thickness,
                   alpha:mCurrentLine.alpha,
                   pixel_hinting:mCurrentLine.pixel_hinting,
@@ -627,7 +602,7 @@ class Graphics
                   miter_limit:mCurrentLine.miter_limit,
                } );
       }
-      mCurrentLine.point_idx = [];
+      mCurrentLine.point_idx0 = mCurrentLine.point_idx1 = -1;
    }
 
    private function ClosePolygon(inCancelFill)
@@ -638,8 +613,8 @@ class Graphics
          if (mFilling && l>2)
          {
             // Make implicit closing line
-            if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
-               lineTo(mPoints[0].x, mPoints[0].y);
+            //if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
+               //lineTo(mPoints[0].x, mPoints[0].y);
          }
 
          AddLineSegment();

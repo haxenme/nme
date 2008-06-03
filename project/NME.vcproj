@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="NME"
 	ProjectGUID="{21D045BB-C87F-49A6-AAB7-828E55E01280}"
+	RootNamespace="NME"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -230,31 +231,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SDL_Texture.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\sound.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\sound.h"
-				>
-			</File>
-			<File
-				RelativePath=".\spg\SPG_blib.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\spg\SPG_primitives.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\spg\SPG_rotation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\spg\SPG_surface.cpp"
 				>
 			</File>
 			<File
@@ -285,6 +266,42 @@
 				RelativePath=".\timer.cpp"
 				>
 			</File>
+			<Filter
+				Name="Renderer"
+				>
+				<File
+					RelativePath=".\renderer\Pixel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\Points.h"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\RasterizeLines.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\RenderBitmap.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\RenderGradient.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\RenderPolygon.h"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\RenderSolid.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\renderer\Utils.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"

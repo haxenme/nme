@@ -25,7 +25,6 @@
  
 #include "nsdl.h"
 #include "nme.h"
-#include "spg/SPriG.h"
 
 
 value nme_sprite_draw( value image, value screen, value rect, value point )
@@ -66,6 +65,9 @@ value nme_sprite_draw( value image, value screen, value rect, value point )
 */
 value nme_sprite_transform( value *args, int nargs )
 {
+   failure("nme_sprite_transform - not implemented");
+   return alloc_int(0);
+   /*
 	if ( nargs < 10 ) failure( "not enough arguments supplied to function nme_sprite_transform. expected 10." );
 	SDL_Surface *src = SURFACE( args[0] );
 	SDL_Surface *dst = SURFACE( args[1] );
@@ -85,10 +87,14 @@ value nme_sprite_transform( value *args, int nargs )
 	alloc_field( o, val_id("w"), alloc_int( rect.w ) );
 	alloc_field( o, val_id("h"), alloc_int( rect.h ) );
 	return o;
+    */
 }
 
 value nme_sprite_transform_surface( value *args, int nargs )
 {
+   failure("nme_sprite_transform_surface - not implemented");
+   return alloc_int(0);
+   /*
 	if ( nargs < 6 ) failure( "not enough arguments supplied to function nme_sprite_transform_surface. expected 6." );
 	SDL_Surface *src = SURFACE( args[0] );
 	Uint32 bgcolor = val_int( args[1] );
@@ -98,6 +104,7 @@ value nme_sprite_transform_surface( value *args, int nargs )
 	Uint8 flags = val_int( args[5] );
 
 	return alloc_abstract( k_surf, SPG_Transform( src, bgcolor, angle, xscale, yscale, flags ) );
+        */
 }
 
 value nme_sprite_alpha( value sprite, value alpha )

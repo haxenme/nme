@@ -1,10 +1,9 @@
-#ifndef PIXEL_H
-#define PIXEL_H
-
-#include "SDL.h"
-#include "spg/SPriG.h"
-#include "Extras.h"
-#include "Matrix.h"
+#include "Renderer.h"
+#include "RenderPolygon.h"
+#include "AA.h"
+#include <math.h>
+#include <algorithm>
+#include <map>
 
 
 
@@ -15,7 +14,7 @@
          int frac_y = (mPos.y & 0xffff); \
          int frac_ny = 0x10000 - frac_y; \
  \
-         if (EDGE_ == SPG_EDGE_UNCHECKED) \
+         if (EDGE_ == NME_EDGE_UNCHECKED) \
          { \
             p00 = mBase + (mPos.y >> 16)*mPitch + (mPos.x>>16)*PixelSize; \
             p01 = p00 + PixelSize; \
@@ -24,7 +23,7 @@
          } \
          else \
          { \
-            if (EDGE_ == SPG_EDGE_CLAMP) \
+            if (EDGE_ == NME_EDGE_CLAMP) \
             { \
                int x_step = PixelSize; \
                int y_step = mPitch; \
@@ -40,7 +39,7 @@
                p10 = p00 + y_step; \
                p11 = p10 + x_step; \
             } \
-            else if (EDGE_==SPG_EDGE_REPEAT_POW2) \
+            else if (EDGE_==NME_EDGE_REPEAT_POW2) \
             { \
                Uint8 *p = mBase + (y&mH1)*mPitch; \
  \
@@ -71,7 +70,7 @@
 
 
 #define MODIFY_EDGE_XY \
-         if (EDGE_ == SPG_EDGE_CLAMP) \
+         if (EDGE_ == NME_EDGE_CLAMP) \
          { \
             if (x<0) x = 0; \
             else if (x>=mWidth) x = mW1; \
@@ -79,15 +78,15 @@
             if (y<0) y = 0; \
             else if (y>=mHeight) y = mH1; \
          } \
-         else if (EDGE_ == SPG_EDGE_REPEAT_POW2) \
+         else if (EDGE_ == NME_EDGE_REPEAT_POW2) \
          { \
             x &= mW1; \
             y &= mH1; \
          } \
-         else if (EDGE_ == SPG_EDGE_REPEAT) \
+         else if (EDGE_ == NME_EDGE_REPEAT) \
          { \
-            x = x % mW1; \
-            y = y % mH1; \
+            x = x % mWidth; \
+            y = y % mHeight; \
          }
 
 
@@ -154,8 +153,8 @@ template<int FLAGS_,int EDGE_>
 struct SurfaceSource8 : public SurfaceSourceBase
 {
    enum { PixelSize = 1 } ;
-   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
-   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
+   enum { AlphaBlend = FLAGS_ & NME_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & NME_BMP_LINEAR };
 
 
    SurfaceSource8(SDL_Surface *inSurface,const Matrix &inMapping)
@@ -176,9 +175,18 @@ struct SurfaceSource8 : public SurfaceSourceBase
 
          GET_PIXEL_POINTERS
 
-         int idx = ((*p00*frac_nx + *p01*frac_x)*frac_ny +
-                    (*p10*frac_nx + *p11*frac_x)*frac_y ) >> 24;
-         mColor = mPalette[ idx & 0xff ];
+         SDL_Color c00 = mPalette[*p00];
+         SDL_Color c01 = mPalette[*p01];
+         SDL_Color c10 = mPalette[*p10];
+         SDL_Color c11 = mPalette[*p11];
+
+         mColor.r = ( (c00.r*frac_nx + c01.r*frac_x)*frac_ny +
+                    (  c10.r*frac_nx + c11.r*frac_x)*frac_y ) >> 24;
+         mColor.g = ( (c00.g*frac_nx + c01.g*frac_x)*frac_ny +
+                    (  c10.g*frac_nx + c11.g*frac_x)*frac_y ) >> 24;
+         mColor.b = ( (c00.b*frac_nx + c01.b*frac_x)*frac_ny +
+                    (  c10.b*frac_nx + c11.b*frac_x)*frac_y ) >> 24;
+
       }
       else
       {
@@ -223,8 +231,8 @@ template<int FLAGS_,int EDGE_,bool DO_ALPHA_ = false>
 struct SurfaceSource24 : public SurfaceSourceBase
 {
    enum { PixelSize = DO_ALPHA_ ? 4 : 3 };
-   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
-   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
+   enum { AlphaBlend = FLAGS_ & NME_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & NME_BMP_LINEAR };
 
    SurfaceSource24(SDL_Surface *inSurface,const Matrix &inMapper)
       : SurfaceSourceBase(inSurface,inMapper)
@@ -310,8 +318,8 @@ struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
 {
    typedef SurfaceSource24<FLAGS_,EDGE_,true> Base;
 
-   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
-   enum { HighQuality = FLAGS_ & SPG_BMP_LINEAR };
+   enum { AlphaBlend = FLAGS_ & NME_ALPHA_BLEND };
+   enum { HighQuality = FLAGS_ & NME_BMP_LINEAR };
 
    SurfaceSource32(SDL_Surface *inSurface,const Matrix &inMapper):
       Base( inSurface, inMapper )
@@ -323,254 +331,127 @@ struct SurfaceSource32 : public SurfaceSource24<FLAGS_,EDGE_,true>
 };
 
 
-template<int FLAGS_>
-struct ConstantSource32
+
+
+
+
+// --- Bitmap renderer --------------------------------------------
+
+
+bool IsPOW2(int inX)
 {
-   enum { AlreadyRoundedAlpha = 1 };
-   enum { AlphaBlend = FLAGS_ & SPG_ALPHA_BLEND };
-
-   inline ConstantSource32() { }
-
-   inline ConstantSource32(int inRGB,double inA) :
-      r(inRGB>>16), g(inRGB>>8), b(inRGB)
-   {
-      int val = (int)(inA*255);
-      a =val<0 ? 0 : val>255 ? 255 : val;
-      a+= a>>7;
-   }
-
-   inline void SetPos(int inX,int inY) { }
-   inline void Inc() { }
-   inline void Advance(int inX) { }
+   return (inX & (inX-1)) == 0;
+}
 
 
-   inline Uint8 GetR() const { return r; }
-   inline Uint8 GetG() const { return g; }
-   inline Uint8 GetB() const { return b; }
-   // TODO: does this need to be an int?
-   inline Uint8 GetA() const { return a; }
 
-   Uint8 r,g,b;
-   int   a;
-};
-
-
-// --- Destinations -----------------------------------------------------
-
-
-struct DestBase
+template<typename AA_,typename SOURCE_>
+PolygonRenderer *CreateBitmapRenderer( const RenderArgs &inArgs,
+                              const SOURCE_ &inSource )
 {
-   DestBase(SDL_Surface *inSurface,int inPixelSize)
-   {
-      mSurface = inSurface;
-      mMinX = SPG_clip_xmin(mSurface);
-      mMinY = SPG_clip_ymin(mSurface);
-      mMaxX = SPG_clip_xmax(mSurface);
-      mMaxY = SPG_clip_ymax(mSurface);
-
-      mBase = (Uint8 *)inSurface->pixels;
-      mPtr = mBase;
-      mPitch = inSurface->pitch;
-      mPixelSize = inPixelSize;
-   }
-
-   inline void SetPos(Sint16 inX,Sint16 inY)
-   {
-      mPtr = mBase + inY*mPitch + inX*mPixelSize;
-   }
+   return new SourcePolygonRenderer<AA_,SOURCE_>(inArgs,inSource );
+}
 
 
-   int         mMinX;
-   int         mMinY;
-   int         mMaxX;
-   int         mMaxY;
-   int         mPitch;
-   int         mPixelSize;
-   SDL_Surface *mSurface;
-   Uint8       *mBase;
-   Uint8       *mPtr;
-};
 
-struct DestSurface8 : public DestBase
+template<typename AA_,int FLAGS_>
+PolygonRenderer *CreateBitmapRendererSource(
+                              const RenderArgs &inArgs,
+                              const class Matrix &inMapper,
+                              SDL_Surface *inSource)
 {
-   DestSurface8(SDL_Surface *inSurface) : DestBase(inSurface,1)
+   int edge = inArgs.inFlags & NME_EDGE_MASK;
+   if (edge==NME_EDGE_REPEAT && IsPOW2(inSource->w) && IsPOW2(inSource->h) )
+      edge = NME_EDGE_REPEAT_POW2;
+
+   PolygonRenderer *r = 0;
+
+#define SOURCE_EDGE(source) \
+     if (edge == NME_EDGE_REPEAT_POW2) \
+       r = CreateBitmapRenderer<AA_>( \
+          inArgs, \
+          source<FLAGS_,NME_EDGE_REPEAT_POW2>(inSource,inMapper));  \
+     else if (edge == NME_EDGE_REPEAT) \
+       r = CreateBitmapRenderer<AA_>( \
+          inArgs, \
+          source<FLAGS_,NME_EDGE_REPEAT>(inSource,inMapper));  \
+     else if (edge == NME_EDGE_UNCHECKED) \
+       r = CreateBitmapRenderer<AA_>( \
+          inArgs, \
+          source<FLAGS_,NME_EDGE_UNCHECKED>(inSource,inMapper));  \
+     else \
+       r = CreateBitmapRenderer<AA_>( \
+          inArgs, \
+          source<FLAGS_,NME_EDGE_CLAMP>(inSource,inMapper));
+
+
+   switch(inSource->format->BytesPerPixel)
    {
+      case 1:
+         SOURCE_EDGE(SurfaceSource8);
+         break;
+      case 3:
+         SOURCE_EDGE(SurfaceSource24);
+         break;
+      case 4:
+         SOURCE_EDGE(SurfaceSource32);
+         break;
    }
 
-   template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
-   {
-      *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
-   }
-   inline void Advance(int inX) { mPtr += inX; }
+#undef SOURCE_EDGE
 
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int inDummy)
-   #endif
-   {
-      *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
-   }
+   return r;
+}
 
 
-
-};
-
-struct DestSurface24 : public DestBase
+template<typename AA_>
+PolygonRenderer *AACreateBitmapRendererSource(
+                              const RenderArgs &inArgs,
+                              const class Matrix &inMapper,
+                              SDL_Surface *inSource )
 {
-   DestSurface24(SDL_Surface *inSurface,int inPS=3) : DestBase(inSurface,inPS)
+   if (inArgs.inFlags & NME_BMP_LINEAR)
    {
-      // TODO:
-      mROff = 2;
-      mGOff = 1;
-      mBOff = 0;
-   }
-
-   template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
-   {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         if (!SOURCE_::AlreadyRoundedAlpha)
-            a+=a>>7;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>8;
-      }
+      if (inArgs.inFlags & NME_ALPHA_BLEND)
+          return CreateBitmapRendererSource
+              <AA_,NME_BMP_LINEAR+NME_ALPHA_BLEND>(
+                inArgs,inMapper,inSource);
       else
-      {
-         mPtr[mROff] = inSource.GetR();
-         mPtr[mGOff] = inSource.GetG();
-         mPtr[mBOff] = inSource.GetB();
-      }
-      mPtr += 3;
+          return CreateBitmapRendererSource<AA_,NME_BMP_LINEAR>(
+                inArgs,inMapper,inSource);
    }
-
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
-   // Could not work out how to explicitly specify ALPHA_BITS_ in call
-   //   (problem with operator<)
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
-   #endif
+   else
    {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         a+=a>>7;
-         a*=inAlpha;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
-      }
+      if (inArgs.inFlags & NME_ALPHA_BLEND)
+          return CreateBitmapRendererSource<AA_,NME_ALPHA_BLEND>(
+                inArgs,inMapper,inSource);
       else
-      {
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
-      }
-      mPtr += 3;
+          return CreateBitmapRendererSource<AA_,0>(
+                inArgs,inMapper,inSource);
+
    }
-
-   inline void Advance(int inX) { mPtr += inX*3; }
-
+}
 
 
-   int mROff;
-   int mGOff;
-   int mBOff;
-};
 
-struct DestSurface32 : public DestSurface24
+PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(
+                              const RenderArgs &inArgs,
+                              const class Matrix &inMapper,
+                              SDL_Surface *inSource)
 {
-   DestSurface32(SDL_Surface *inSurface) : DestSurface24(inSurface,4)
+   if (inArgs.inN<3)
+      return 0;
+
+   if (inArgs.inFlags & NME_HIGH_QUALITY)
    {
-      mAOff = 3;
+      AA4x::Init();
+      return AACreateBitmapRendererSource<AA4x>
+               (inArgs, inMapper,inSource);
    }
-
-   template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
+   else
    {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-
-         // todo: do this properly
-         mPtr[mAOff] = a;
-
-         a+=a>>7;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>8;
-      }
-      else
-      {
-         mPtr[mROff] = inSource.GetR();
-         mPtr[mGOff] = inSource.GetG();
-         mPtr[mBOff] = inSource.GetB();
-         mPtr[mAOff] = 255;
-      }
-      mPtr += 4;
+      return AACreateBitmapRendererSource<AA0x>
+               (inArgs, inMapper,inSource);
    }
+}
 
-
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
-   #endif
-   {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         a+=a>>7;
-         // todo: do this properly
-         mPtr[mAOff] = (a*inAlpha)>>ALPHA_BITS_;
-
-         a*=inAlpha;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
-      }
-      else
-      {
-         // todo: do this properly
-         mPtr[mAOff] = (inAlpha-1)<<(8-ALPHA_BITS_);
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
-      }
-
-
-
-
-
-      // todo - if (SOURCE_::AlphaBlend)
-      mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-      mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-      mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
-      mPtr += 4;
-   }
-
-   inline void Advance(int inX) { mPtr += inX*4; }
-
-
-   int mAOff;
-};
-
-
-
-#endif

@@ -39,6 +39,8 @@ class Surface
 		if ( file != null && file != "" )
 			__srf = nme_sprite_init( untyped file.__s );
 	}
+
+        public function handle() { return __srf; }
 	
 	public function draw( screen : Void, ?rect : Rect, ?point : Point )
 	{

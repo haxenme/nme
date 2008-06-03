@@ -7,7 +7,7 @@
 #include "nme.h"
 #include "nsdl.h"
 #include "ByteArray.h"
-#include "Extras.h"
+#include "renderer/Renderer.h"
 
 
 DEFINE_KIND( k_texture_buffer );
@@ -706,7 +706,7 @@ TextureReference *TextureReference::Create(value inVal)
 
    int flags = val_int((val_field(inVal,val_id("flags"))));
    if (tex->GetSourceSurface()->format->BitsPerPixel==32)
-      flags |= SPG_ALPHA_BLEND;
+      flags |= NME_ALPHA_BLEND;
 
    Matrix matrix(val_field(inVal,val_id("matrix")));
 

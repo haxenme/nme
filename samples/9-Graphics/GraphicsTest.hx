@@ -73,7 +73,20 @@ class GraphicsTest extends nme.GameBase
 
       square = new Shape();
       square.beginFill(0x0000ff);
-      square.drawRect(-10,-10,20,20);
+      // Draw square with hole in it ...
+      square.moveTo(-10,-10);
+      square.lineTo(10,-10);
+      square.lineTo(10,10);
+      square.lineTo(-10,10);
+      square.lineTo(-10,-10);
+      // hole ...
+      square.moveTo(-5,-5);
+      square.lineTo(5,-5);
+      square.lineTo(5,5);
+      square.lineTo(-5,5);
+      square.lineTo(-5,-5);
+      square.endFill();
+
       square.moveTo(0,0);
       square.text("Square",12,null,null,Graphics.CENTER,Graphics.CENTER);
       square.matrix.tx = 400;
@@ -102,10 +115,10 @@ class GraphicsTest extends nme.GameBase
       lines.lineTo(200,300);
       lines.lineTo(250,200);
 
+      lines.moveTo(50,330);
       lines.lineStyle(20,0x000000,0.5,false,LineScaleMode.NORMAL,
                CapsStyle.SQUARE, JointStyle.BEVEL );
 
-      lines.moveTo(50,330);
       lines.lineTo(220,330);
       lines.lineTo(270,230);
 
@@ -115,7 +128,6 @@ class GraphicsTest extends nme.GameBase
       lines.moveTo(50,360);
       lines.lineTo(240,360);
       lines.lineTo(290,260);
-
       rad_grad = new Shape();
       var mtx = new Matrix();
       // Define positive quadrant ...

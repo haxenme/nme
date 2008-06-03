@@ -11,13 +11,12 @@
 
 #include "nme.h"
 #include "nsdl.h"
-#include "spg/SPriG.h"
+#include "renderer/Renderer.h"
 #include "Matrix.h"
 #include "texture_buffer.h"
 #include "text.h"
-#include "Extras.h"
 #include "Gradient.h"
-#include "Points.h"
+#include "renderer/Points.h"
 
 
 DECLARE_KIND( k_drawable );
@@ -52,21 +51,53 @@ void delete_drawable( value drawable );
 
 // --- For drawing geometry -----------------------------------------
 
+enum PointType
+{
+  ptMove = 0,
+  ptLine = 1,
+  ptCurve = 2,
+};
+
 struct Point
 {
    float mX,mY;
+   float mCX,mCY;
+   int   mType;
 
    inline Point(){}
    inline Point(double inX,double inY) : mX( (float)inX), mY( (float)inY) { }
+
+   int CurveSteps(const Point &inP0) const
+   {
+      double dx0 = (mCX-inP0.mX);
+      double dy0 = (mCY-inP0.mY);
+      double dx1 = (mCX-mX);
+      double dy1 = (mCY-mY);
+      double len = sqrt( dx0*dx0 + dy0*dy0 + dx1*dx1 + dy1*dy1 );
+      return (int)(len * 0.5);
+   }
 
    void FromValue(value inVal)
    {
       mX = (float)val_number(val_field(inVal,val_id("x")));
       mY = (float)val_number(val_field(inVal,val_id("y")));
+      mCX = (float)val_number(val_field(inVal,val_id("cx")));
+      mCY = (float)val_number(val_field(inVal,val_id("cy")));
+      mType = val_int(val_field(inVal,val_id("type")));
    }
 };
 
+struct CurvedPoint
+{
+   inline CurvedPoint() {}
+   inline CurvedPoint(const Point &inP) : mX(inP.mX), mY(inP.mY) {}
+   void operator=(const Point &inRHS) { mX =inRHS.mX; mY=inRHS.mY; }
+
+   float mX,mY;
+};
+
 typedef std::vector<Point> Points;
+typedef std::vector<CurvedPoint> CurvedPoints;
 
 struct LineJob : public PolyLine
 {
@@ -88,18 +119,8 @@ struct LineJob : public PolyLine
       mCaps = val_int(val_field(inVal,val_id("caps")));
       mPixelHinting = val_int(val_field(inVal,val_id("pixel_hinting")));
       mMiterLimit = val_number(val_field(inVal,val_id("miter_limit")));
-
-      value idx_obj = val_field(inVal,val_id("point_idx"));
-      if (idx_obj!=val_null)
-      {
-         value idx = val_field(idx_obj,val_id("__a"));
-         //int n = val_array_size(idx);
-         int n =  val_int( val_field(idx_obj,val_id("length")));
-         value *items = val_array_ptr(idx);
-         mPointIndex.resize(n);
-         for(int i=0;i<n;i++)
-            mPointIndex[i] = val_int(items[i]);
-      }
+      mPointIndex0 = val_int(val_field(inVal,val_id("point_idx0")));
+      mPointIndex1 = val_int(val_field(inVal,val_id("point_idx1")));
    }
 
 };
@@ -123,7 +144,7 @@ public:
       mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
-      mOldFlags = sQualityLevel>0 ? SPG_HIGH_QUALITY : 0;
+      mOldFlags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
       if (mSolidGradient || mTexture)
       {
          mFillColour = 0xffffff;
@@ -135,12 +156,60 @@ public:
          mFillAlpha = inFillAlpha;
       }
 
-      mPoints.swap(inPoints);
       mLineJobs.swap(inLines);
 
-      int n = (int)mPoints.size();
-      mPointF16s = new PointF16[n];
+      BuildCurved(inPoints);
+
+      mPointF16s.resize(mPoints.size());
+
       TransformPoints(mTransform);
+   }
+
+   // TODO: Rebuild when scale changes...
+   void BuildCurved(const Points &inPoints)
+   {
+      size_t n = inPoints.size();
+      IntVec remap(n);
+
+      mPoints.reserve(n);
+      mConnection.reserve(n);
+
+      for(size_t i=0;i<n;i++)
+      {
+         const Point &p1 = inPoints[i];
+         if (p1.mType == ptCurve && i>0)
+         {
+            const Point &p0 = inPoints[i-1];
+            int steps = inPoints[i].CurveSteps(p0);
+            if (steps>=2)
+            {
+               float dt = 1.0f/steps;
+               float t = dt;
+               for(int s=1;s<steps;s++)
+               {
+                  CurvedPoint p;
+                  float c0 = (1-t)*(1-t);
+                  float c1 = 2*t*(1-t);
+                  float c2 = t*t;
+                  p.mX = c0*p0.mX + c1*p1.mCX + c2*p1.mX;
+                  p.mY = c0*p0.mY + c1*p1.mCY + c2*p1.mY;
+                  mPoints.push_back(p);
+                  mConnection.push_back(1);
+                  t += dt;
+               }
+            }
+         }
+         remap[i] = (int)mPoints.size();
+         mPoints.push_back(p1);
+         mConnection.push_back(p1.mType!=ptMove);
+      }
+
+      for(size_t l=0;l<mLineJobs.size();l++)
+      {
+         LineJob &job = mLineJobs[l];
+         job.mPointIndex0 = remap[job.mPointIndex0];
+         job.mPointIndex1 = remap[job.mPointIndex1];
+      }
    }
 
    void ClearRenderers()
@@ -170,7 +239,6 @@ public:
       delete mSolidGradient;
       if (mDisplayList!=0)
          glDeleteLists(mDisplayList,1);
-      delete [] mPointF16s;
    }
 
 
@@ -187,15 +255,15 @@ public:
          // TODO: tesselate
          glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
                       (unsigned char)(mFillAlpha*255.0));
-         const Point *p = &mPoints[0];
+         const CurvedPoint *p = &mPoints[0];
          size_t n = mPoints.size();
          TextureBuffer *tex = mTexture ? mTexture->mTexture : 0;
 
          if (mSolidGradient)
             mSolidGradient->BeginOpenGL();
          else if (tex)
-            tex->BindOpenGL( (mTexture->mFlags & SPG_EDGE_MASK)
-                                   ==SPG_EDGE_REPEAT );
+            tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK)
+                                   ==NME_EDGE_REPEAT );
          else
             glDisable(GL_TEXTURE_2D);
 
@@ -236,11 +304,11 @@ public:
 
          glLineWidth( (float)line.mThickness );
 
-         size_t n = line.mPointIndex.size();
+         size_t n = line.mPointIndex1 - line.mPointIndex0 + 1;
          glBegin(GL_LINE_STRIP);
          for(size_t i=0;i<n;i++)
          {
-            int pid = line.mPointIndex[i];
+            size_t pid = line.mPointIndex0 + i;
             if (line.mGradient)
                line.mGradient->OpenGLTexture( mPoints[pid].mX,mPoints[pid].mY );
             glVertex2f( mPoints[pid].mX, mPoints[pid].mY );
@@ -270,7 +338,7 @@ public:
       if (inMatrix!=mTransform)
          TransformPoints(inMatrix);
 
-      size_t n = mPoints.size();
+      size_t n = mPointF16s.size();
       for(size_t i=0;i<n;i++)
          ioExtent.Add(mPointF16s[i]);
 
@@ -279,14 +347,15 @@ public:
          LineJob &line = mLineJobs[j];
 
          double extra = 0.5;
-         if (line.mJoints == SPG_CORNER_MITER)
+         if (line.mJoints == NME_CORNER_MITER)
             extra += line.mMiterLimit;
          int w = int((line.mThickness*extra + 0.999)*65536.0);
 
-         const IntVec &pids = line.mPointIndex;
-         for(size_t i=0;i<pids.size();i++)
+         int pid0 = line.mPointIndex0;
+         size_t n = line.mPointIndex1 = pid0 + 1;
+         for(size_t i=0;i<n;i++)
          {
-            const PointF16 &p = mPointF16s[pids[i]];
+            const PointF16 &p = mPointF16s[pid0 + i];
 
             ioExtent.Add(p.x+w,p.y+w);
             ioExtent.Add(p.x-w,p.y-w);
@@ -304,12 +373,13 @@ public:
       if (mTransform.IsIdentity())
       {
          for(size_t i=0;i<n;i++)
-            mPointF16s[i] = PointF16(mPoints[i].mX+0.5,mPoints[i].mY+0.5);
+            mPointF16s[i] = PointF16(mPoints[i].mX,mPoints[i].mY);
 
          if (mSolidGradient)
             mSolidGradient->IdentityTransform();
          else if (mTexture)
             mTexture->IdentityTransform();
+
          for(size_t i=0;i<mLineJobs.size();i++)
             if (mLineJobs[i].mGradient)
                mLineJobs[i].mGradient->IdentityTransform();
@@ -425,8 +495,8 @@ public:
    void CreateRenderers(SDL_Surface *inSurface,
             const Matrix &inMatrix,TextureBuffer *inMarkDirty)
    {
-         int min_y = SPG_clip_ymin(inSurface);
-         int max_y = SPG_clip_ymax(inSurface);
+         int min_y = NME_clip_ymin(inSurface);
+         int max_y = NME_clip_ymax(inSurface);
          if (IsOpenGLScreen(inSurface))
          {
             min_y = 0;
@@ -440,7 +510,7 @@ public:
             ClearRenderers();
          }
 
-         unsigned int flags = sQualityLevel>0 ? SPG_HIGH_QUALITY : 0;
+         unsigned int flags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
          if (flags!=mOldFlags)
          {
             mOldFlags = flags;
@@ -454,7 +524,7 @@ public:
          {
             if (inMarkDirty)
             {
-               size_t n = mPoints.size();
+               size_t n = mPointF16s.size();
                for(size_t i=0;i<n;i++)
                {
                   int x = mPointF16s[i].x>>16;
@@ -465,34 +535,33 @@ public:
 
             if (!mPolygon)
             {
+               RenderArgs args;
+               args.inN = (int)mPointF16s.size();
+               args.inPoints = &mPointF16s[0];
+               args.inLines = 0;
+               args.inConnect = &mConnection[0];
+               args.inMinY = min_y;
+               args.inMaxY = max_y;
+               args.inFlags = flags;
+
                if (mSolidGradient)
                {
-                  mPolygon = PolygonRenderer::CreateGradientRenderer(n-1,
-                                 mPointF16s,
-                                 min_y,
-                                 max_y,
-                                 flags, mSolidGradient );
+                  mPolygon = PolygonRenderer::CreateGradientRenderer(args,
+                                 mSolidGradient );
                }
                else if (mTexture)
                { 
                   Matrix m(mTexture->mTransMatrix);
 
-                  flags |= mTexture->mFlags;
-                  mPolygon = PolygonRenderer::CreateBitmapRenderer(n-1,
-                                 mPointF16s,
-                                 min_y,
-                                 max_y,
-                                 flags,
+                  args.inFlags |= mTexture->mFlags;
+                  mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
                                  mTexture->mTransMatrix,
                                  mTexture->mTexture->GetSourceSurface() );
                }
                else
                {
-                  mPolygon = PolygonRenderer::CreateSolidRenderer(n-1,
-                                 mPointF16s,
-                                 min_y,
-                                 max_y,
-                                 flags, mFillColour, mFillAlpha );
+                  mPolygon = PolygonRenderer::CreateSolidRenderer(args,
+                                 mFillColour, mFillAlpha );
                }
 
             }
@@ -505,22 +574,25 @@ public:
             LineJob &job = mLineJobs[ j ];
             if (!job.mRenderer)
             {
+               RenderArgs args;
+               args.inN = (int)mPointF16s.size();
+               args.inPoints = &mPointF16s[0];
+               args.inLines = &job;
+               args.inConnect = 0;
+               args.inMinY = min_y;
+               args.inMaxY = max_y;
+               args.inFlags = flags;
+
                if (job.mGradient)
                {
-                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(n,
-                                 mPointF16s,
-                                 min_y,
-                                 max_y,
-                                 flags, job.mGradient, &job );
+                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(args,
+                                  job.mGradient );
 
                }
                else
                {
-                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(n,
-                                 mPointF16s,
-                                 min_y,
-                                 max_y,
-                                 flags, job.mColour, job.mAlpha, &job );
+                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(args,
+                                     job.mColour, job.mAlpha );
                }
             }
 
@@ -530,7 +602,9 @@ public:
 
 
 
-   Points       mPoints;
+   CurvedPoints       mPoints;
+   std::vector<char>  mConnection;
+
    Gradient     *mSolidGradient;
    TextureReference *mTexture;
    int          mFillColour;
@@ -538,7 +612,7 @@ public:
    double       mFillAlpha;
    LineJobs     mLineJobs;
 
-   PointF16     *mPointF16s;
+   std::vector<PointF16> mPointF16s;
 
    GLuint       mDisplayList;
 
@@ -615,7 +689,7 @@ public:
       if (mDoLines)
       {
          mLines.push_back(mBase);
-         mLines[mLines.size()-1].mPointIndex.push_back((int)pid);
+         mLines[mLines.size()-1].mPointIndex0 = (int)pid;
       }
    }
    void lineTo(int x,int y)
@@ -623,7 +697,7 @@ public:
       size_t pid = mPoints.size();
       mPoints.push_back( Point(mX+x*sFontScale,mY+y*sFontScale ) );
       if (mDoLines)
-         mLines[mLines.size()-1].mPointIndex.push_back((int)pid);
+         mLines[mLines.size()-1].mPointIndex1 = (int)pid;
    }
 
    void Complete()
@@ -732,6 +806,8 @@ public:
          mSX[i] = (Sint16)( mOX + (i==1||i==2) * w + 0.5 );
          mSY[i] = (Sint16)( mOY + (i==2||i==3) * h + 0.5 );
       }
+      mSX[4] = mSX[0];
+      mSY[4] = mSY[0];
    }
    ~SurfaceDrawer()
    {
@@ -776,9 +852,8 @@ public:
       if (inMatrix!=mLastMatrix || !mRenderer)
       {
          mLastMatrix = inMatrix;
-         for(int i=0;i<4;i++)
-            inMatrix.TransformHQ( mSX[i], mSY[i],
-                 mPoints[i].x, mPoints[i].y );
+         for(int i=0;i<5;i++)
+            inMatrix.TransformHQ( mSX[i], mSY[i], mPoints[i].x, mPoints[i].y );
 
          // TODO  Ox,Oy
          Matrix mapping = inMatrix.Invert2x2();
@@ -786,17 +861,26 @@ public:
                                 mPoints[0].y/65536.0,0,0);
 
 
-         Uint32 flags= SPG_HIGH_QUALITY | SPG_EDGE_CLAMP | SPG_BMP_LINEAR;
+         Uint32 flags= NME_HIGH_QUALITY | NME_EDGE_CLAMP | NME_BMP_LINEAR;
          if (mHasAlpha)
-            flags |= SPG_ALPHA_BLEND;
+            flags |= NME_ALPHA_BLEND;
 
          delete mRenderer;
-         mRenderer = PolygonRenderer::CreateBitmapRenderer(4,
-                      mPoints,
-                      SPG_clip_ymin(inSurface),
-                      SPG_clip_ymax(inSurface),
-                      flags, mapping,
-                      mTexture->GetSourceSurface() );
+
+         char connect[] = { 1,1,1,1 };
+
+         RenderArgs args;
+         args.inN = 5;
+         args.inPoints = mPoints;
+         args.inLines = 0;
+         args.inConnect = connect;
+         args.inMinY = NME_clip_ymin(inSurface),
+         args.inMaxY = NME_clip_ymax(inSurface),
+         args.inFlags = flags;
+
+
+         mRenderer = PolygonRenderer::CreateBitmapRenderer(args,
+                      mapping, mTexture->GetSourceSurface() );
       }
    }
 
@@ -856,9 +940,9 @@ public:
 
    bool        mHasAlpha;
    SDL_Rect    mRect;
-   Sint16      mSX[4];
-   Sint16      mSY[4];
-   PointF16    mPoints[4];
+   Sint16      mSX[5];
+   Sint16      mSY[5];
+   PointF16    mPoints[5];
    double      mOX;
    double      mOY;
    double      mAlpha;

@@ -3,7 +3,7 @@ ifeq ("x$(NEKO_INSTALL_PATH)","x")
    NEKO_INSTALL_PATH := /usr/lib/neko/
 endif
 
-SOURCE_FILES := $(wildcard *.cpp) $(wildcard spg/*cpp)
+SOURCE_FILES := $(wildcard *.cpp) $(wildcard renderer/*cpp)
 OBJS := $(SOURCE_FILES:%.cpp=objs/%.o)
 
 
@@ -16,7 +16,7 @@ NDLL_DIR := ../ndll/Linux/
 
 NDLL := $(NDLL_DIR)/nme.ndll
 
-all:objs objs/spg $(NDLL_DIR) $(NDLL)
+all:objs objs/renderer $(NDLL_DIR) $(NDLL)
 
 clean:
 	rm $(OBJS)
@@ -28,12 +28,12 @@ $(NDLL_DIR):
 
 objs:
 	mkdir objs
-objs/spg:
-	mkdir objs/spg
+objs/renderer:
+	mkdir objs/renderer
 
 objs/%.o:%.cpp
 	g++ $(CFLAGS) -c $< -o $@
-objs/spg/%.o:spg/%.cpp
+objs/renderer/%.o:renderer/%.cpp
 	g++ $(CFLAGS) -c $< -o $@
 
 LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL GL

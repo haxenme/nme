@@ -59,7 +59,7 @@ struct PointF16
    int y;
 };
 
-/*
+
 template<int AA_BITS_>
 struct PointAA
 {
@@ -98,7 +98,6 @@ struct PointAA
    int x;
    int y;
 };
-*/
 
 template<typename T_>
 struct Extent2D
