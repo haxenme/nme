@@ -422,6 +422,7 @@ ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
 }
 
 
+
 void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray)
 {
    int x1 = inX+inW;
@@ -479,6 +480,65 @@ void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray
    SetExtentDirty(inX,inY,x1,y1);
 }
 
+/*
+ Format:
+
+    1 = RGBA index
+    2 = 32-bit RGB
+    3 = RGB index
+    4 = 15-bit RGB
+    5 = 24-bit RGB
+*/
+
+int TextureBuffer::SetPixels(const unsigned char *inData, int inDataLen,
+       int inFormat, int inTableLen)
+{
+   int w = mPixelWidth;
+   int h = mPixelHeight;
+
+   bool alpha = inFormat<3;
+
+   // alpha mismatch
+   if (alpha != (mSurface->format->BitsPerPixel==32) )
+      return 0;
+
+   bool bgr = mSurface->format->BitsPerPixel==24 &&
+                  mSurface->format->Rmask != 0x0000ff;
+
+   bool use_table = inFormat==1 || inFormat==3;
+
+   static int src_sizes[] = { 0, 4, 4, 3, 2, 3 };
+   int src_size = src_sizes[inFormat];
+
+   const unsigned char *table = inData;
+   const unsigned char *src_base = use_table ? inData + inTableLen*src_size : inData;
+   int src_bbr = ((use_table ? w : src_size*w ) + 3 ) & ~3;
+   for(int y=0;y<h;y++)
+   {
+      const unsigned char *src = src_base + src_bbr * y;
+      unsigned char *dest =
+         (unsigned char *)mSurface->pixels + y*mSurface->pitch;
+
+      if (inFormat==2)
+      {
+         for(int x=0;x<w;x++)
+         {
+            dest[0] = src[1];
+            dest[1] = src[2];
+            dest[2] = src[3];
+            dest[3] = src[0];
+            dest+=4;
+            src+=4;
+         }
+      }
+   }
+
+
+   SetExtentDirty(0,0,w,h);
+   return 1;
+}
+
+
 
 value nme_load_texture(value inName)
 {
@@ -493,9 +553,11 @@ value nme_load_texture(value inName)
 
 }
 
-value nme_load_texture_from_bytes(value inBytes,value inType)
+value nme_load_texture_from_bytes(value inBytes,value inLen, value inType,
+   value inAlpha, value inAlphaLen)
 {
-   SDL_Surface *surface = nme_loadimage_from_bytes( inBytes, inType );
+   SDL_Surface *surface = nme_loadimage_from_bytes( inBytes, inLen, inType,
+                              inAlpha, inAlphaLen);
 
    if (!surface)
       return val_null;
@@ -505,6 +567,21 @@ value nme_load_texture_from_bytes(value inBytes,value inType)
    return buffer->ToValue();
 
 }
+
+
+value nme_set_pixel_data(value inTexture,
+           value inBuffer, value inBufferLen,
+           value inFormat, value inTableLen )
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+   unsigned char *data = (unsigned char *)val_string(inBuffer);
+   int len = val_int(inBufferLen);
+   int format = val_int(inFormat);
+   int table_len = val_int(inTableLen);
+
+   return alloc_int(tex->SetPixels(data,len,format,table_len));
+}
+
 
 
 value nme_texture_get_bytes(value inTex,value inRect)
@@ -719,7 +796,8 @@ DEFINE_PRIM(nme_blit_tile, 3);
 
 DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_load_texture, 1);
-DEFINE_PRIM(nme_load_texture_from_bytes, 2);
+DEFINE_PRIM(nme_load_texture_from_bytes, 5);
+DEFINE_PRIM(nme_set_pixel_data, 5);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);

@@ -62,9 +62,9 @@ SDL_Surface* nme_loadimage( value file )
 
 struct MyRWOps : SDL_RWops
 {
-   MyRWOps(value *inItems,int inLen)
+   MyRWOps(char *inItems,int inLen)
    {
-      mItems = inItems;
+      mItems = (unsigned char *)inItems;
       mLen = inLen;
       mPos = 0;
 
@@ -91,12 +91,12 @@ struct MyRWOps : SDL_RWops
  */
    int read(void *ptr, int size, int maxnum)
    {
-      char *p = (char *)ptr;
+      unsigned char *p = (unsigned char *)ptr;
       int bytes = size*maxnum;
       int i;
       for(i=0;i<bytes;i++)
       {
-         *p++ = val_int( mItems[mPos++] );
+         *p++ = mItems[mPos++];
       }
       return maxnum;
    }
@@ -141,19 +141,23 @@ struct MyRWOps : SDL_RWops
       return ops->close();
    }
 
-   value *mItems;
+   unsigned char *mItems;
    int   mLen;
    int   mPos;
 };
 
 
-SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inType )
+SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
+ value inAlpha, value inAlphaLen)
 {
-	val_check( inBytes, array );
+	val_check( inBytes, string );
 	val_check( inType, string );
+	val_check( inLen, int );
+	val_check( inAlpha, string );
+	val_check( inAlphaLen, int );
 
-        int len = val_array_size(inBytes);
-        value *items = val_array_ptr(inBytes);
+        int len = val_int(inLen);
+        char *items = val_string(inBytes);
         char *type = val_string(inType);
 
 
@@ -162,7 +166,13 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inType )
 	SDL_Surface* surf;
 	surf = IMG_LoadTyped_RW(&rw_ops,0,type);
 	if ( !surf )
-		return NULL;
+	   return NULL;
+        if (inAlphaLen>0)
+        {
+           // TODO: Need a test image to test this...
+        }
+
+
 	return surf;
 }
 

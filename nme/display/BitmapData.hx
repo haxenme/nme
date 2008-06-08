@@ -66,11 +66,24 @@ class BitmapData
    }
 
    // Type = "JPG", "BMP" etc.
-   public function LoadFromByteArray(inBytes:Array<Int>,inType:String)
+   public function LoadFromByteArray(inBytes:String,inType:String,
+                        ?inAlpha:String )
    {
-       mTextureBuffer = nme_load_texture_from_bytes(untyped inBytes.__neko(),
-                        untyped inType.__s);
+       var a:String = inAlpha==null ? "" : inAlpha;
+       mTextureBuffer = nme_load_texture_from_bytes(untyped inBytes.__s,
+                        inBytes.length,
+                        untyped inType.__s,
+                        untyped a.__s,
+                        a.length);
    }
+
+   public function SetPixelData(inBuffer:String, inFormat:Int, inTableSize:Int)
+   {
+      nme_set_pixel_data(mTextureBuffer,untyped inBuffer.__s,inBuffer.length,
+                          inFormat, inTableSize);
+   }
+
+
 
    static public function Load(inFilename:String) : BitmapData
    {
@@ -100,7 +113,8 @@ class BitmapData
    static var nme_create_texture_buffer =
                  neko.Lib.load("nme","nme_create_texture_buffer",5);
    static var nme_load_texture = neko.Lib.load("nme","nme_load_texture",1);
-   static var nme_load_texture_from_bytes = neko.Lib.load("nme","nme_load_texture_from_bytes",2);
+   static var nme_load_texture_from_bytes = neko.Lib.load("nme","nme_load_texture_from_bytes",5);
+   static var nme_set_pixel_data = neko.Lib.load("nme","nme_set_pixel_data",5);
    static var nme_texture_width = neko.Lib.load("nme","nme_texture_width",1);
    static var nme_texture_height = neko.Lib.load("nme","nme_texture_height",1);
    static var nme_texture_get_bytes = neko.Lib.load("nme","nme_texture_get_bytes",2);

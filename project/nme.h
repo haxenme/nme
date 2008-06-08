@@ -58,7 +58,7 @@ typedef enum nme_spriteanimtype {
 #define MIN(a,b)	((a < b) ? a : b);
 
 SDL_Surface* nme_loadimage( value file );
-SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inType );
+SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType , value inAlpha, value inAlphaLen);
 void nme_surface_free( value surface );
 
 bool IsOpenGLMode();

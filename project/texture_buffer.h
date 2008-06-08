@@ -45,6 +45,7 @@ public:
 
    class ByteArray *GetPixels(int inX,int inY,int inW,int inH);
    void SetPixels(int inX,int inY,int inW,int inH,class ByteArray &inPixels);
+   int SetPixels(const unsigned char *inData, int inDataLen, int inFormat, int inTableLen);
 
 protected:
    // Call "DecRef" instead;
