@@ -23,7 +23,7 @@ bool FindObjectYExtent(int &ioMinY, int &ioMaxY,int inN,
       double extra = 0.5;
       if (inLines->mJoints == NME_CORNER_MITER)
          extra += inLines->mMiterLimit;
-      int w = int(inLines->mThickness*extra + 0.999);
+      int w = int(inLines->mThickness*1.41*extra + 0.999);
 
       min_y = inPoints[pid0].Y();
       max_y = min_y;

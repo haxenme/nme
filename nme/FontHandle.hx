@@ -44,22 +44,6 @@ class FontHandle
 
    public function get_handle() : Void { return mHandle; }
 
-/*
-   public function RenderGlyph(inMatrix Matrix,inChar:Int)
-   {
-      ClosePolygon(false);
-
-      inGFX.AddDrawable(nme_create_glyph_draw_obj(inX,inY,
-             mHandle,inChar,
-             mFillColour, mFillAlpha,
-             untyped mSolidGradient==null? mBitmap : mSolidGradient,
-             mCurrentLine ) );
-   }
-*/
-
-
-
-   static var nme_create_glyph_draw_obj = neko.Lib.load("nme","nme_create_glyph_draw_obj",-1);
 
    static var nme_create_font_handle = neko.Lib.load("nme","nme_create_font_handle",2);
    static var nme_get_font_metrics = neko.Lib.load("nme","nme_get_font_metrics",1);

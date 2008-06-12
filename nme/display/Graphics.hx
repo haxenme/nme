@@ -123,6 +123,7 @@ class Graphics
 
 
    private var mSurface:Void;
+   private var mChanged:Bool;
 
    // Current set of points
    private var mPoints:GfxPoints;
@@ -151,6 +152,7 @@ class Graphics
 
    public function new(?inSurface:Void)
    {
+      mChanged = false;
       mSurface = inSurface;
       clear();
    }
@@ -159,8 +161,9 @@ class Graphics
 
    public function render(?inMatrix:Matrix,?inSurface:Void)
    {
-      var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
       ClosePolygon(true);
+
+      var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
       for(obj in mDrawList)
          nme_draw_object_to(obj,dest,inMatrix);
    }
@@ -439,15 +442,22 @@ class Graphics
 
    }
 
-   public function RenderGlyph(inFont:nme.FontHandle,inChar:Int)
+   public function RenderGlyph(inFont:nme.FontHandle,inChar:Int,
+                        inMatrix:Matrix,?inUseFreeType:Bool)
    {
       ClosePolygon(false);
 
-      AddDrawable(nme_create_glyph_draw_obj(mPenX,mPenY,
+      var free_type = inUseFreeType==null ? 
+        (mSolidGradient==null && mBitmap==null &&
+            (mCurrentLine.thickness==null || mCurrentLine.thickness==0)):
+          inUseFreeType;
+
+      AddDrawable(nme_create_glyph_draw_obj(inMatrix,
              inFont.handle,inChar,
              mFillColour, mFillAlpha,
              untyped mSolidGradient==null? mBitmap : mSolidGradient,
-             mCurrentLine ) );
+             mCurrentLine,
+             free_type) );
    }
 
 
@@ -469,6 +479,7 @@ class Graphics
 
    public function clear()
    {
+      mChanged = true;
       mPenX = 0.0;
       mPenY = 0.0;
 
@@ -492,7 +503,7 @@ class Graphics
       flush();
       var result = new Rectangle();
 
-      nme_get_extent(mDrawList,result,inMatrix);
+      nme_get_extent(mDrawList,result,inMatrix,true);
 
       return result;
    }
@@ -570,10 +581,20 @@ class Graphics
 
    public function flush() { ClosePolygon(true); }
 
+   public function CheckChanged() : Bool
+   {
+      ClosePolygon(true);
+      var result = mChanged;
+      mChanged = false;
+      return result;
+   }
+
    private function AddDrawable(inDrawable:Void)
    {
       if (inDrawable==null)
          return; // throw ?
+
+      mChanged = true;
       if (mSurface==null)
          // Store for 'ron ...
          mDrawList.push( inDrawable );
@@ -659,7 +680,7 @@ class Graphics
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
    static var nme_get_clip_rect = neko.Lib.load("nme","nme_get_clip_rect",1);
    static var nme_set_clip_rect = neko.Lib.load("nme","nme_set_clip_rect",2);
-   static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",3);
+   static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",4);
    static var nme_create_glyph_draw_obj = neko.Lib.load("nme","nme_create_glyph_draw_obj",-1);
 
 }

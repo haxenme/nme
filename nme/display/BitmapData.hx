@@ -29,7 +29,11 @@ class BitmapData
             flags |= TRANSPARENT;
 
          var alpha:Int = inAlpha==null ? 255 : inAlpha;
-         var colour:Int = inFillColour==null ? 255 : inFillColour;
+         var colour:Int = inFillColour==null ? 0 : inFillColour;
+         // special code to show alpha = 0 - if only neko had the 32nd bit
+         if (inAlpha==null && (inFillColour==0x010101) )
+            alpha = 0;
+
 
          mTextureBuffer =
             nme_create_texture_buffer(inWidth,inHeight,flags,colour,alpha);

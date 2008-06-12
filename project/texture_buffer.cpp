@@ -513,6 +513,10 @@ int TextureBuffer::SetPixels(const unsigned char *inData, int inDataLen,
    const unsigned char *table = inData;
    const unsigned char *src_base = use_table ? inData + inTableLen*src_size : inData;
    int src_bbr = ((use_table ? w : src_size*w ) + 3 ) & ~3;
+
+   int src_red = bgr ? 1 : 3;
+   int src_blue = bgr ? 3 : 1;
+
    for(int y=0;y<h;y++)
    {
       const unsigned char *src = src_base + src_bbr * y;
@@ -523,9 +527,9 @@ int TextureBuffer::SetPixels(const unsigned char *inData, int inDataLen,
       {
          for(int x=0;x<w;x++)
          {
-            dest[0] = src[1];
+            dest[0] = src[src_red];
             dest[1] = src[2];
-            dest[2] = src[3];
+            dest[2] = src[src_blue];
             dest[3] = src[0];
             dest+=4;
             src+=4;

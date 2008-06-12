@@ -87,7 +87,7 @@ struct TextureReference
       //{ inMtx.ContravariantTrans(mOrigMatrix,mTransMatrix); }
 
    void IdentityTransform()
-      { mTransMatrix = mOrigMatrix; }
+      { mTransMatrix = mOrigMatrix.Inverse(); }
 
 
    void OpenGLTexture(double inX,double inY,const Matrix &inMtx)

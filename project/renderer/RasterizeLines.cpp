@@ -64,6 +64,7 @@ public:
       bool loop = n>2 && (inPoints[pid0]==inPoints[pid0 + plast]);
 
 
+
       LineStarts points(n);
       // Number of line segments is 1 fewer than points - so last
       //  point does not need a dx, and may have an square end.
@@ -239,7 +240,6 @@ public:
          printf("GOT  :");
          for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
             printf("%d%c ", i->first,i->second ? '*' : ' ');
-         printf("\n");
          */
 
 
@@ -484,7 +484,7 @@ public:
             SpanAlignRectRectangle(inP1.mPos.x,inP0.mPos.y-inP0.mPerp.y,
                                    inP0.mPos.x,inP0.mPos.y+inP0.mPerp.y );
       }
-      if (inP0.mPos.X(mAABits) == inP1.mPos.X(mAABits))
+      else if (inP0.mPos.X(mAABits) == inP1.mPos.X(mAABits))
       {
          if (inP0.mPos.y<inP1.mPos.y)
             SpanAlignRectRectangle(inP0.mPos.x-inP0.mPerp.x,inP0.mPos.y,

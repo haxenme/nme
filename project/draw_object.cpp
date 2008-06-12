@@ -39,13 +39,29 @@ public:
                   TextureBuffer *inMarkDirty=0)=0;
    virtual bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY) = 0;
 
-   virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat)=0;
+   virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
+                  bool inExtent)=0;
 
    virtual bool IsGrad() { return false; }
 };
 
 
 void delete_drawable( value drawable );
+
+
+class EmptyDrawable : public Drawable
+{
+public:
+   EmptyDrawable() {}
+   void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
+                  TextureBuffer *inMarkDirty=0) {}
+   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY) { return false; }
+
+   void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
+                  bool inExtent) { }
+
+};
+
 
 
 
@@ -66,6 +82,8 @@ struct Point
 
    inline Point(){}
    inline Point(double inX,double inY) : mX( (float)inX), mY( (float)inY) { }
+   inline Point(double inX,double inY, int inType) :
+      mX( (float)inX), mY( (float)inY), mType(inType) { }
 
    int CurveSteps(const Point &inP0) const
    {
@@ -245,12 +263,14 @@ public:
    void DrawOpenGL()
    {
       size_t n = mPoints.size();
+      if (n==0)
+         return;
 
       glDisable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    
-      if (mSolidGradient || mFillAlpha>0)
+      if (mSolidGradient || mFillAlpha>0 || mTexture)
       {
          // TODO: tesselate
          glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
@@ -274,15 +294,15 @@ public:
                mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
             else if (tex)
                mTexture->OpenGLTexture( mPoints[i].mX, mPoints[i].mY,
-                                  mTexture->mOrigMatrix);
+                                  mTexture->mTransMatrix);
 
             glVertex2f( mPoints[i].mX, mPoints[i].mY );
             p++;
          }
+         glEnd();
 
          if (tex)
             tex->UnBindOpenGL();
-         glEnd();
       }
 
       if (mSolidGradient)
@@ -333,35 +353,26 @@ public:
       return true;
    }
 
-   virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
+   virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix,
+                  bool inAccurate)
    {
-      if (inMatrix!=mTransform)
-         TransformPoints(inMatrix);
-
-      size_t n = mPointF16s.size();
-      for(size_t i=0;i<n;i++)
-         ioExtent.Add(mPointF16s[i]);
-
-      for(size_t j=0;j<mLineJobs.size();j++)
+      if (inAccurate)
       {
-         LineJob &line = mLineJobs[j];
+         CreateRenderers(0,inMatrix,0);
 
-         double extra = 0.5;
-         if (line.mJoints == NME_CORNER_MITER)
-            extra += line.mMiterLimit;
-         int w = int((line.mThickness*extra + 0.999)*65536.0);
+         if (mPolygon)
+            mPolygon->GetExtent(ioExtent);
 
-         int pid0 = line.mPointIndex0;
-         size_t n = line.mPointIndex1 = pid0 + 1;
-         for(size_t i=0;i<n;i++)
-         {
-            const PointF16 &p = mPointF16s[pid0 + i];
-
-            ioExtent.Add(p.x+w,p.y+w);
-            ioExtent.Add(p.x-w,p.y-w);
-         }
+         for(size_t j=0;j<mLineJobs.size();j++)
+            mLineJobs[j].mRenderer->GetExtent(ioExtent);
       }
-
+      else
+      {
+         TransformPoints(inMatrix);
+         size_t n = mPointF16s.size();
+         for(size_t i=0;i<n;i++)
+            ioExtent.Add(mPointF16s[i]);
+      }
    }
 
 
@@ -408,7 +419,6 @@ public:
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty=0)
    {
-
       if (IsOpenGLScreen(inSurface))
       {
          if (mDisplayList || CreateDisplayList() )
@@ -495,9 +505,12 @@ public:
    void CreateRenderers(SDL_Surface *inSurface,
             const Matrix &inMatrix,TextureBuffer *inMarkDirty)
    {
-         int min_y = NME_clip_ymin(inSurface);
-         int max_y = NME_clip_ymax(inSurface);
-         if (IsOpenGLScreen(inSurface))
+      if (mPoints.empty())
+         return;
+
+         int min_y = inSurface ? NME_clip_ymin(inSurface) : -0x7fff;
+         int max_y = inSurface ? NME_clip_ymax(inSurface) : 0x7fff;
+         if (inSurface && IsOpenGLScreen(inSurface))
          {
             min_y = 0;
             max_y = inSurface->h;
@@ -551,7 +564,7 @@ public:
                }
                else if (mTexture)
                { 
-                  Matrix m(mTexture->mTransMatrix);
+                  //Matrix m(mTexture->mTransMatrix);
 
                   args.inFlags |= mTexture->mFlags;
                   mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
@@ -670,97 +683,83 @@ class OutlineBuilder : public OutlineIterator
 {
 
 public:
-   OutlineBuilder(double inX,double inY,
-                  const LineJob &inJob,bool inDoSolid) : mBase(inJob)
+   OutlineBuilder(const Matrix &inMatrix, const LineJob &inJob,bool inDoSolid) :
+       mBase(inJob), mMatrix(inMatrix)
    {
-      mX = inX;
-      mY = inY;
+      mMatrix.m00 *= sFontScale;
+      mMatrix.m01 *= sFontScale;
+      mMatrix.m10 *= sFontScale;
+      mMatrix.m11 *= sFontScale;
       mDoSolid = inDoSolid;
       mDoLines = mBase.mAlpha>0 || mBase.mGradient;
+      mPID0 = 0;
+
+      if (mDoLines)
+      {
+      }
+
    }
 
    void moveTo(int x,int y)
    {
-      if (!mPoints.empty())
-        mPoints.push_back( mPoints[0] );
-
-      size_t pid = mPoints.size();
-      mPoints.push_back( Point(mX+x*sFontScale,mY+y*sFontScale ) );
       if (mDoLines)
       {
-         mLines.push_back(mBase);
-         mLines[mLines.size()-1].mPointIndex0 = (int)pid;
+         int pid = (int)mPoints.size() - 1;
+         if (pid > mPID0+1)
+         {
+            size_t l = mLines.size();
+            mLines.push_back(mBase);
+            mLines[l].mPointIndex0 = mPID0;
+            mLines[l].mPointIndex1 = pid;
+         }
+         mPID0 = (int)mPoints.size();
       }
+
+      mPoints.push_back(
+         Point( x*mMatrix.m00 + y*mMatrix.m01 + mMatrix.mtx ,
+                x*mMatrix.m10 + y*mMatrix.m11 + mMatrix.mty ,
+                ptMove ) );
    }
    void lineTo(int x,int y)
    {
-      size_t pid = mPoints.size();
-      mPoints.push_back( Point(mX+x*sFontScale,mY+y*sFontScale ) );
-      if (mDoLines)
-         mLines[mLines.size()-1].mPointIndex1 = (int)pid;
+      mPoints.push_back(
+         Point( x*mMatrix.m00 + y*mMatrix.m01 + mMatrix.mtx ,
+                x*mMatrix.m10 + y*mMatrix.m11 + mMatrix.mty ,
+                ptLine ) );
    }
 
    void Complete()
    {
-      if (!mPoints.empty())
-        mPoints.push_back( mPoints[0] );
+      if (mDoLines)
+      {
+         int pid = (int)mPoints.size() - 1;
+         if (pid > mPID0+1)
+         {
+            size_t l = mLines.size();
+            mLines.push_back(mBase);
+            mLines[l].mPointIndex0 = mPID0;
+            mLines[l].mPointIndex1 = pid;
+         }
+
+      }
+
+      //if (!mPoints.empty())
+        //mPoints.push_back( mPoints[0] );
+
       if (mLines.empty())
          delete mBase.mGradient;
    }
 
-   double   mX,mY;
+   Matrix mMatrix;
  
    Points   mPoints;
    LineJobs mLines;
+   int      mPID0;
 
    LineJob mBase;
    bool    mDoLines;
    bool    mDoSolid;
 };
-
-value nme_create_glyph_draw_obj(value* arg, int nargs )
-{
-   enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha, aGradOrTex, aLineStyle, aLAST };
-   if ( nargs != aLAST )
-      failure( "nme_create_glyph_draw_obj - bad parameter count." );
-
-
-   val_check( arg[aX], number );
-   val_check( arg[aY], number );
-   val_check( arg[aFillCol], int );
-   val_check( arg[aFillAlpha], number );
-   val_check( arg[aChar], int );
-
-   int ch = val_int(arg[aChar] );
-
-   LineJob job;
-   job.FromValue(arg[aLineStyle]);
-
-   double alpha = val_number(arg[aFillAlpha]);
-   Gradient *grad = CreateGradient(arg[aGradOrTex]);
-   TextureReference *tex = TextureReference::Create(arg[aGradOrTex]);
-
-   OutlineBuilder builder(val_number(arg[aX]),val_number(arg[aY]),
-       job,alpha>0 || grad || tex);
-
-   IterateOutline(arg[aFont],ch,&builder);
-
-   builder.Complete();
-
-
-   DrawObject *obj = new DrawObject(
-                            builder.mPoints,
-                            val_int(arg[aFillCol]),
-                            alpha,
-                            grad,
-                            tex,
-                            builder.mLines,
-                            true );
-
-   value v = alloc_abstract( k_drawable, obj );
-   val_gc( v, delete_drawable );
-   return v;
-}
 
 
 // ---- Surface Drawing -----------------------------------------------------
@@ -923,14 +922,14 @@ public:
 
    }
 
-   void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix)
+   void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix,bool inAccurate)
    {
       for(int i=0;i<4;i++)
       {
          int x,y;
          inMatrix.TransformHQ( mSX[i], mSY[i], x, y);
 
-         ioExtent.Add(x,y);
+         ioExtent.Add(x+0x10000,y+0x10000);
       }
 
    }
@@ -1059,11 +1058,91 @@ value nme_create_text_drawable( value* arg, int nargs )
 
 
 
-value nme_get_extent(value inDrawList,value ioRect,value inMatrix)
+value nme_create_glyph_draw_obj(value* arg, int nargs )
+{
+   enum { aMatrix, aFont, aChar, aFillCol, aFillAlpha,
+          aGradOrTex, aLineStyle, aUseFreeType, aLAST };
+   if ( nargs != aLAST )
+      failure( "nme_create_glyph_draw_obj - bad parameter count." );
+
+   Matrix matrix(arg[aMatrix]);
+
+   val_check( arg[aFillCol], int );
+   val_check( arg[aFillAlpha], number );
+   val_check( arg[aUseFreeType], bool );
+   val_check( arg[aChar], int );
+
+   int col = val_int(arg[aFillCol]);
+   int ch = val_int(arg[aChar] );
+   double alpha = val_number(arg[aFillAlpha]);
+
+   Drawable *obj;
+
+   if (val_bool(arg[aUseFreeType]))
+   {
+      // TODO: Get this working
+      if (!val_is_kind(arg[aFont],k_font))
+         return val_null;
+
+      TTF_Font *font = FONT(arg[aFont]);
+
+      SDL_Color sdl_col;
+      sdl_col.r = (col>>16) & 0xff;
+      sdl_col.g = (col>>8) & 0xff;
+      sdl_col.b = (col) & 0xff;
+
+      char str[2] = { ch, 0 };
+
+      SDL_Surface *surface = TTF_RenderText_Blended(font,str, sdl_col );
+
+      if (!surface)
+         return val_null;
+
+      double x = matrix.mtx;
+      double y = matrix.mty;
+
+      //printf("Create renderer %f %f (%s) %f\n",x,y,str,alpha);
+      //printf("Surface %dx%d\n", surface->w, surface->h );
+      //printf("col %d,%d,%d\n",  sdl_col.r, sdl_col.g, sdl_col.b );
+      SDL_SetAlpha(surface,SDL_SRCALPHA,255);
+
+      obj = new SurfaceDrawer(surface, x, y, 1.0, true );
+   }
+   else
+   {
+      LineJob job;
+      job.FromValue(arg[aLineStyle]);
+   
+      Gradient *grad = CreateGradient(arg[aGradOrTex]);
+      TextureReference *tex = TextureReference::Create(arg[aGradOrTex]);
+   
+      OutlineBuilder builder(matrix, job,alpha>0 || grad || tex);
+   
+      IterateOutline(arg[aFont],ch,&builder);
+   
+      builder.Complete();
+   
+      obj = new DrawObject( builder.mPoints, col, alpha,
+                            grad, tex, builder.mLines, true );
+   }
+   
+   value v = alloc_abstract( k_drawable, obj );
+   val_gc( v, delete_drawable );
+   return v;
+}
+
+
+
+
+
+
+value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccurate)
 {
    Extent2DI extent;
 
    Matrix matrix(inMatrix);
+
+   bool accurate = val_bool(inAccurate);
    
    value objs_arr =  val_field(inDrawList,val_id("__a"));
    val_check( objs_arr, array );
@@ -1075,7 +1154,7 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix)
    {
       Drawable *d = DRAWABLE(objs[i]);
       if (d)
-         d->GetExtent(extent,matrix);
+         d->GetExtent(extent,matrix,accurate);
    }
 
 
@@ -1084,7 +1163,7 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix)
    alloc_field( ioRect, val_id("width"), alloc_float(extent.Width()>>16) );
    alloc_field( ioRect, val_id("height"), alloc_float(extent.Height()>>16));
 
-   return alloc_int( extent.mValid ? 1 : 0);
+   return alloc_int( extent.Valid() ? 1 : 0);
 }
 
 
@@ -1159,7 +1238,7 @@ value nme_get_draw_quality()
 DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
-DEFINE_PRIM(nme_get_extent, 3);
+DEFINE_PRIM(nme_get_extent, 4);
 DEFINE_PRIM(nme_draw_object_to, 3);
 DEFINE_PRIM(nme_hit_object, 5);
 DEFINE_PRIM(nme_set_draw_quality, 1);

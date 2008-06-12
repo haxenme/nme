@@ -6,6 +6,7 @@
 #include <map>
 #include "Renderer.h"
 #include "Pixel.h"
+#include "Points.h"
 
 #ifdef WIN32
 typedef __int64 int64;
@@ -49,7 +50,7 @@ void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
          while(1)
          {
             int x = i->first;
-            if (x>=outDest.mMaxX)
+            if (x>outDest.mMaxX)
                break;
 
             // Setup iterators ...
@@ -365,6 +366,21 @@ public:
       }
       return false;
    }
+
+   void GetExtent(Extent2DI &ioExtent)
+   {
+      for(int y=mMinY; y<mMaxY; y++)
+      {
+         LineInfo &line = mLines[y-mMinY];
+         if (line.size())
+         {
+            ioExtent.AddY(y << 16);
+            ioExtent.AddX( line.begin()->first << 16 );
+            ioExtent.AddX( (line.rbegin()->first) << 16);
+         }
+      }
+   }
+
 
 
 

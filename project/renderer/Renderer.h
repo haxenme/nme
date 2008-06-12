@@ -76,6 +76,8 @@ public:
    virtual void Render(SDL_Surface *outDest,
                          Sint16 inOffsetX=0,Sint16 inOffsetY=0)=0;
    virtual bool HitTest(int inX,int inY)=0;
+   virtual void GetExtent(Extent2DI &ioExtent)=0;
+
 
    static PolygonRenderer *CreateSolidRenderer(
                               const RenderArgs &inArgs,

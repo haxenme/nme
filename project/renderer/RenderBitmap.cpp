@@ -116,8 +116,8 @@ struct SurfaceSourceBase
    {
       double x = inX+0.5;
       double y = inY+0.5;
-      mPos.x = int((mMapper.m00 * x + mMapper.m01*y + mMapper.mtx)*65536);
-      mPos.y = int((mMapper.m10 * x + mMapper.m11*y + mMapper.mty)*65536);
+      mPos.x = int((mMapper.m00 * x + mMapper.m01*y + mMapper.mtx)*65536) - 0x8000;
+      mPos.y = int((mMapper.m10 * x + mMapper.m11*y + mMapper.mty)*65536) - 0x8000;
    }
 
    inline void Inc()

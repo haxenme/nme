@@ -102,43 +102,68 @@ struct PointAA
 template<typename T_>
 struct Extent2D
 {
-   Extent2D() : mValid(false)
+   Extent2D() : mValidX(false), mValidY(false)
    {
       mMinX = mMinY = mMaxX = mMaxY = 0;
    }
 
+
    template<typename P_>
-   inline void Add(P_ inX, P_ inY)
+   inline void AddX(P_ inX)
    {
-      if (mValid)
+      if (mValidX)
       {
          if (inX<mMinX) mMinX = (T_)inX;
          else if (inX>mMaxX) mMaxX = (T_)inX;
+      }
+      else
+      {
+         mMinX = mMaxX = (T_)inX;
+         mValidX = true;
+      }
 
+   }
+
+   template<typename P_>
+   inline void AddY(P_ inY)
+   {
+      if (mValidY)
+      {
          if (inY<mMinY) mMinY = (T_)inY;
          else if (inY>mMaxY) mMaxY = (T_)inY;
       }
       else
       {
-         mMinX = mMaxX = (T_)inX;
          mMinY = mMaxY = (T_)inY;
-         mValid = true;
+         mValidY = true;
       }
    }
+
+   template<typename P_>
+   inline void Add(P_ inX, P_ inY)
+   {
+      AddX(inX);
+      AddY(inY);
+   }
+
+
 
 
    template<typename P_>
    inline void Add(const P_ &inPoint)
    {
-      Add(inPoint.x,inPoint.y);
+      AddX(inPoint.x);
+      AddY(inPoint.y);
    }
+
+   inline bool Valid() const { return mValidX && mValidY; }
 
    T_ Width() const { return mMaxX-mMinX; }
    T_ Height() const { return mMaxY-mMinY; }
 
    T_ mMinX,mMaxX;
    T_ mMinY,mMaxY;
-   bool mValid;
+   bool mValidX,mValidY;
 };
 
 typedef Extent2D<int> Extent2DI;
