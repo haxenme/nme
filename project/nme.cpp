@@ -427,6 +427,110 @@ value nme_get_clip_rect(value inSurface)
    return AllocRect(rect);
 }
 
+SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
+{
+  int i, row, col;
+  Uint8 data[4*32];
+  Uint8 mask[4*32];
+
+  i = -1;
+  for ( row=0; row<32; ++row ) {
+    for ( col=0; col<32; ++col ) {
+      if ( col % 8 ) {
+        data[i] <<= 1;
+        mask[i] <<= 1;
+      } else {
+        ++i;
+        data[i] = mask[i] = 0;
+      }
+      switch (image[row][col]) {
+        case 'X':
+          data[i] |= 0x01;
+          mask[i] |= 0x01;
+          break;
+        case '.':
+          mask[i] |= 0x01;
+          break;
+        case ' ':
+          break;
+      }
+    }
+  }
+  return SDL_CreateCursor(data, mask, 32, 32, inHotX, inHotY);
+}
+
+static const char *sTextCursorData[] = {
+  "                                ",
+  "                                ",
+  "XX XX                           ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "  X                             ",
+  "XX XX                           ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+};
+
+
+
+#define CURSOR_NONE   0
+#define CURSOR_NORMAL 1
+#define CURSOR_TEXT   2
+
+SDL_Cursor *sDefaultCursor = 0;
+SDL_Cursor *sTextCursor = 0;
+
+
+value nme_set_cursor(value inCursor)
+{
+   val_check(inCursor,int);
+
+   if (sDefaultCursor==0)
+      sDefaultCursor = SDL_GetCursor();
+
+   int c = val_int(inCursor);
+
+   if (c==CURSOR_NONE)
+      SDL_ShowCursor(false);
+   else
+   {
+      SDL_ShowCursor(true);
+
+      if (c==CURSOR_NORMAL)
+         SDL_SetCursor(sDefaultCursor);
+      else
+      {
+         if (sTextCursor==0)
+            sTextCursor = CreateCursor(sTextCursorData,1,13);
+         SDL_SetCursor(sTextCursor);
+      }
+   }
+
+   return alloc_int(0);
+}
 
 
 #define NME_FULLSCREEN 0x0001
@@ -648,3 +752,4 @@ DEFINE_PRIM(nme_surface_height, 1);
 DEFINE_PRIM(nme_surface_colourkey, 4);
 DEFINE_PRIM(nme_set_clip_rect, 2);
 DEFINE_PRIM(nme_get_clip_rect, 1);
+DEFINE_PRIM(nme_set_cursor, 1);

@@ -32,6 +32,7 @@ public:
 
    void Transform(float inX,float inY,short &outX,short &outY) const;
    void TransformHQ(float inX,float inY,int &outX,int &outY) const;
+   void TransformHQCorner(float inX,float inY,int &outX,int &outY) const;
 
    void ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const;
 

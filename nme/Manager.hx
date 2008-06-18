@@ -228,6 +228,14 @@ class Manager
 		 mainLoopRunning = false;
 	}
 
+   static var CURSOR_NONE = 0;
+   static var CURSOR_NORMAL = 1;
+   static var CURSOR_TEXT = 2;
+	public static function SetCursor(inCursor:Int)
+   {
+      nme_set_cursor(inCursor);
+   }
+
 	public static function mouseEvent(inType:MouseEventType)
         {
            return 
@@ -471,4 +479,5 @@ class Manager
 	static var nme_event = neko.Lib.load("nme","nme_event",0);
 	static var nme_set_draw_quality = neko.Lib.load("nme","nme_set_draw_quality",1);
 	static var nme_get_draw_quality = neko.Lib.load("nme","nme_get_draw_quality",0);
+	static var nme_set_cursor = neko.Lib.load("nme","nme_set_cursor",1);
 }

@@ -97,7 +97,6 @@ class FontTest extends nme.GameBase
 
 
       var c0 = ("a").charCodeAt(0);
-      var m = new Matrix();
       for(y in 0...6)
          for(x in 0...5)
          {
@@ -115,16 +114,14 @@ class FontTest extends nme.GameBase
 
             gfx.beginBitmapFill(mBmp,null,true,true);
 
-            m.tx = x0;
-            m.ty = y0;
             // gfx.text( String.fromCharCode(c), 48, "Times" );
-            gfx.RenderGlyph(mFont,c,m);
+            gfx.RenderGlyph(mFont,c,x0,y0);
             gfx.endFill();
 
             gfx.lineStyle(1,0x00ff00);
             var mtx = mFont.GetGlyphMetrics(c);
             gfx.drawRect(x0+mtx.min_x,y0,mtx.width,mFM.height);
-            gfx.drawRect(x0+mtx.min_x,y0,mtx.width,mFM.ascent);
+            gfx.drawRect(x0,y0,mtx.x_advance,mFM.ascent);
          }
 
 

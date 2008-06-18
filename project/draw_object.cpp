@@ -683,21 +683,13 @@ class OutlineBuilder : public OutlineIterator
 {
 
 public:
-   OutlineBuilder(const Matrix &inMatrix, const LineJob &inJob,bool inDoSolid) :
-       mBase(inJob), mMatrix(inMatrix)
+   OutlineBuilder(double inX, double inY, const LineJob &inJob,bool inDoSolid) : mBase(inJob)
    {
-      mMatrix.m00 *= sFontScale;
-      mMatrix.m01 *= sFontScale;
-      mMatrix.m10 *= sFontScale;
-      mMatrix.m11 *= sFontScale;
+      mX = inX;
+      mY = inY;
       mDoSolid = inDoSolid;
       mDoLines = mBase.mAlpha>0 || mBase.mGradient;
       mPID0 = 0;
-
-      if (mDoLines)
-      {
-      }
-
    }
 
    void moveTo(int x,int y)
@@ -716,16 +708,12 @@ public:
       }
 
       mPoints.push_back(
-         Point( x*mMatrix.m00 + y*mMatrix.m01 + mMatrix.mtx ,
-                x*mMatrix.m10 + y*mMatrix.m11 + mMatrix.mty ,
-                ptMove ) );
+         Point( x*sFontScale + mX , y*sFontScale + mY , ptMove ) );
    }
    void lineTo(int x,int y)
    {
       mPoints.push_back(
-         Point( x*mMatrix.m00 + y*mMatrix.m01 + mMatrix.mtx ,
-                x*mMatrix.m10 + y*mMatrix.m11 + mMatrix.mty ,
-                ptLine ) );
+         Point( x*sFontScale + mX , y*sFontScale + mY , ptLine ) );
    }
 
    void Complete()
@@ -755,6 +743,8 @@ public:
    Points   mPoints;
    LineJobs mLines;
    int      mPID0;
+   double   mX;
+   double   mY;
 
    LineJob mBase;
    bool    mDoLines;
@@ -793,8 +783,8 @@ public:
 
       mOX = inOX;
       mOY = inOY;
-      mRect.x = (Sint16)inOX;
-      mRect.y = (Sint16)inOY;
+      mRect.x = (Sint16)mOX;
+      mRect.y = (Sint16)mOY;
       mRect.w = w;
       mRect.h = h;
       mRenderer = 0;
@@ -852,7 +842,7 @@ public:
       {
          mLastMatrix = inMatrix;
          for(int i=0;i<5;i++)
-            inMatrix.TransformHQ( mSX[i], mSY[i], mPoints[i].x, mPoints[i].y );
+            inMatrix.TransformHQCorner( mSX[i], mSY[i], mPoints[i].x, mPoints[i].y );
 
          // TODO  Ox,Oy
          Matrix mapping = inMatrix.Invert2x2();
@@ -866,7 +856,7 @@ public:
 
          delete mRenderer;
 
-         char connect[] = { 1,1,1,1 };
+         char connect[] = { 0,1,1,1,1 };
 
          RenderArgs args;
          args.inN = 5;
@@ -1060,13 +1050,14 @@ value nme_create_text_drawable( value* arg, int nargs )
 
 value nme_create_glyph_draw_obj(value* arg, int nargs )
 {
-   enum { aMatrix, aFont, aChar, aFillCol, aFillAlpha,
+   enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha,
           aGradOrTex, aLineStyle, aUseFreeType, aLAST };
    if ( nargs != aLAST )
       failure( "nme_create_glyph_draw_obj - bad parameter count." );
 
-   Matrix matrix(arg[aMatrix]);
 
+   val_check( arg[aX], number );
+   val_check( arg[aY], number );
    val_check( arg[aFillCol], int );
    val_check( arg[aFillAlpha], number );
    val_check( arg[aUseFreeType], bool );
@@ -1075,6 +1066,8 @@ value nme_create_glyph_draw_obj(value* arg, int nargs )
    int col = val_int(arg[aFillCol]);
    int ch = val_int(arg[aChar] );
    double alpha = val_number(arg[aFillAlpha]);
+   double x = val_number(arg[aX]);
+   double y = val_number(arg[aY]);
 
    Drawable *obj;
 
@@ -1098,15 +1091,24 @@ value nme_create_glyph_draw_obj(value* arg, int nargs )
       if (!surface)
          return val_null;
 
-      double x = matrix.mtx;
-      double y = matrix.mty;
-
       //printf("Create renderer %f %f (%s) %f\n",x,y,str,alpha);
       //printf("Surface %dx%d\n", surface->w, surface->h );
       //printf("col %d,%d,%d\n",  sdl_col.r, sdl_col.g, sdl_col.b );
       SDL_SetAlpha(surface,SDL_SRCALPHA,255);
 
       obj = new SurfaceDrawer(surface, x, y, 1.0, true );
+      /*
+      int *p = (int *)(surface->pixels  );
+      for(int y=0;y<surface->h;y++)
+      {
+         for(int x=0;x<surface->w;x++)
+         {
+           printf( *p==0 ? "." : "X");
+           p++;
+         }
+         printf("\n");
+      }
+      */
    }
    else
    {
@@ -1116,7 +1118,7 @@ value nme_create_glyph_draw_obj(value* arg, int nargs )
       Gradient *grad = CreateGradient(arg[aGradOrTex]);
       TextureReference *tex = TextureReference::Create(arg[aGradOrTex]);
    
-      OutlineBuilder builder(matrix, job,alpha>0 || grad || tex);
+      OutlineBuilder builder(x, y, job,alpha>0 || grad || tex);
    
       IterateOutline(arg[aFont],ch,&builder);
    

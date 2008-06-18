@@ -443,7 +443,7 @@ class Graphics
    }
 
    public function RenderGlyph(inFont:nme.FontHandle,inChar:Int,
-                        inMatrix:Matrix,?inUseFreeType:Bool)
+            inX:Float,inY:Float,?inUseFreeType:Bool)
    {
       ClosePolygon(false);
 
@@ -452,7 +452,7 @@ class Graphics
             (mCurrentLine.thickness==null || mCurrentLine.thickness==0)):
           inUseFreeType;
 
-      AddDrawable(nme_create_glyph_draw_obj(inMatrix,
+      AddDrawable(nme_create_glyph_draw_obj(inX,inY,
              inFont.handle,inChar,
              mFillColour, mFillAlpha,
              untyped mSolidGradient==null? mBitmap : mSolidGradient,
