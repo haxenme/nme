@@ -9,7 +9,7 @@
 #include "SDL.h"
 #include "SDL_syswm.h"
 
-#include "scrap.h"
+#include "Scrap.h"
 
 /* Miscellaneous defines */
 #define PUBLIC
@@ -346,7 +346,7 @@ put_scrap(int type, int srclen, char *src)
       Lock_Display();
       convert_data(type, dst, src, srclen);
       XChangeProperty(SDL_Display, DefaultRootWindow(SDL_Display),
-        XA_CUT_BUFFER0, format, 8, PropModeReplace, dst, dstlen);
+        XA_CUT_BUFFER0, format, 8, PropModeReplace, (unsigned char *)dst, dstlen);
       free(dst);
       if ( lost_scrap() )
         XSetSelectionOwner(SDL_Display, XA_PRIMARY, SDL_Window, CurrentTime);
