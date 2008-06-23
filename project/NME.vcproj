@@ -231,6 +231,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Scrap.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sound.cpp"
 				>
 			</File>

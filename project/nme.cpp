@@ -25,6 +25,7 @@
  
 #include "nsdl.h"
 #include "nme.h"
+#include "Scrap.h"
 #include <stack>
 #include <string.h>
 #include <SDL_ttf.h>
@@ -550,6 +551,9 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
            init_flags |= SDL_OPENGL;
 	if ( SDL_Init( init_flags ) == -1 ) failure( SDL_GetError() );
 
+   SDL_EnableUNICODE(1);
+   SDL_EnableKeyRepeat(500,30);
+
 	val_check( width, int );
 	val_check( height, int );
 	val_check( title, string );
@@ -652,6 +656,7 @@ value nme_event()
 		{
 			alloc_field( evt, val_id( "type" ), alloc_int( et_keydown ) );
 			alloc_field( evt, val_id( "key" ), alloc_int( event.key.keysym.sym ) );
+			alloc_field( evt, val_id( "char" ), alloc_int( event.key.keysym.unicode ) );
 			alloc_field( evt, val_id( "shift" ), alloc_bool( event.key.keysym.mod & KMOD_SHIFT ) );
 			alloc_field( evt, val_id( "ctrl" ), alloc_bool( event.key.keysym.mod & KMOD_CTRL ) );
 			alloc_field( evt, val_id( "alt" ), alloc_bool( event.key.keysym.mod & KMOD_ALT ) );
@@ -661,6 +666,7 @@ value nme_event()
 		{
 			alloc_field( evt, val_id( "type" ), alloc_int( et_keyup ) );
 			alloc_field( evt, val_id( "key" ), alloc_int( event.key.keysym.sym ) );
+			alloc_field( evt, val_id( "char" ), alloc_int( event.key.keysym.unicode ) );
 			alloc_field( evt, val_id( "shift" ), alloc_bool( event.key.keysym.mod & KMOD_SHIFT ) );
 			alloc_field( evt, val_id( "ctrl" ), alloc_bool( event.key.keysym.mod & KMOD_CTRL ) );
 			alloc_field( evt, val_id( "alt" ), alloc_bool( event.key.keysym.mod & KMOD_ALT ) );
@@ -733,11 +739,52 @@ value nme_screen_close()
 	return alloc_int( 0 );
 }
 
+static void init_scrap_once()
+{
+   static bool init=false;
+   if (!init)
+   {
+      init_scrap();
+      init = true;
+   }
+}
+
+value nme_get_clipboard()
+{
+   init_scrap_once();
+
+   char *data = 0;
+   int len = 0;
+   get_scrap( TYPE('T','E','X','T'), &len, &data );
+   if (len==0 || data==0)
+      data = "";
+
+   value result = alloc_object(0);
+   alloc_field( result, val_id("__s"), alloc_string(data));
+   alloc_field( result, val_id("length"), alloc_int((int)strlen(data)));
+
+   return alloc_string(data);
+   return result;
+}
+
+value nme_set_clipboard(value inVal)
+{
+   val_check(inVal,string);
+
+   init_scrap_once();
+
+   char *str = val_string(inVal);
+   put_scrap( TYPE('T','E','X','T'), (int)strlen(str), str );
+   return alloc_int(0);
+}
+
 
 DEFINE_PRIM(nme_event, 0);
 DEFINE_PRIM(nme_delay, 1);
 DEFINE_PRIM(nme_flipbuffer, 1);
 
+DEFINE_PRIM(nme_get_clipboard,0);
+DEFINE_PRIM(nme_set_clipboard, 1);
 
 DEFINE_PRIM(nme_create_image_32,3);
 DEFINE_PRIM(nme_copy_surface,1);

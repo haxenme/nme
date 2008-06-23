@@ -405,6 +405,10 @@ class Manager
 	{
 		return Reflect.field( __evt, "key" );
 	}
+	public function lastChar() : Int
+	{
+		return Reflect.field( __evt, "char" );
+	}
 	public function lastKeyShift() : Bool
 	{
 		return Reflect.field( __evt, "shift" );
@@ -469,7 +473,14 @@ class Manager
 	{
 	   return nme_get_draw_quality();
 	}
-
+   public static function getClipboardString() : String
+   {
+      return neko.Lib.nekoToHaxe(  nme_get_clipboard() );
+   }
+   public static function setClipboardString(inString:String)
+   {
+      nme_set_clipboard(untyped inString.__s);
+   }
 
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
@@ -480,4 +491,6 @@ class Manager
 	static var nme_set_draw_quality = neko.Lib.load("nme","nme_set_draw_quality",1);
 	static var nme_get_draw_quality = neko.Lib.load("nme","nme_get_draw_quality",0);
 	static var nme_set_cursor = neko.Lib.load("nme","nme_set_cursor",1);
+	static var nme_set_clipboard = neko.Lib.load("nme","nme_set_clipboard",1);
+	static var nme_get_clipboard = neko.Lib.load("nme","nme_get_clipboard",0);
 }
