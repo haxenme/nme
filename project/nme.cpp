@@ -296,9 +296,12 @@ static bool sOpenGL = false;
 SDL_Surface *sOpenGLScreen = 0;
 static bool sDoScissor;
 SDL_Rect sScissorRect;
+static int sBPP = 32;
+static Uint32 sFlags = 0;
 
 bool IsOpenGLMode() { return sOpenGL; }
 bool IsOpenGLScreen(SDL_Surface *inSurface) { return sOpenGL && inSurface==sOpenGLScreen; }
+
 
 value nme_delay( value period )
 {
@@ -536,6 +539,7 @@ value nme_set_cursor(value inCursor)
 
 #define NME_FULLSCREEN 0x0001
 #define NME_OPENGL     0x0002
+#define NME_RESIZABLE  0x0004
 
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
@@ -543,6 +547,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 	val_check( in_flags, int );
         bool fullscreen = (val_int(in_flags) & NME_FULLSCREEN) != 0;
         bool opengl = (val_int(in_flags) & NME_OPENGL) != 0;
+        bool resizable = (val_int(in_flags) & NME_RESIZABLE) != 0;
 
         sOpenGL = opengl;
 
@@ -558,16 +563,19 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 	val_check( height, int );
 	val_check( title, string );
 
-	Uint32 flags = opengl ? SDL_HWSURFACE | SDL_OPENGL :
-	                        SDL_HWSURFACE | SDL_DOUBLEBUF;
-	int bpp = 24;
+	sFlags = opengl ? SDL_HWSURFACE | SDL_OPENGL : SDL_HWSURFACE | SDL_DOUBLEBUF;
 
+   /*
+      hmmm ...
         if ( fullscreen )
         {
-                flags |= SDL_FULLSCREEN;
-                if (!opengl)
-                    bpp = 16;
+           sFlags |= SDL_FULLSCREEN;
+           if (!opengl) sBPP = 16;
         }
+   */
+
+   if ( resizable )
+      sFlags |= SDL_RESIZABLE;
 
 	if ( val_is_string( icon ) )
 	{
@@ -578,52 +586,51 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 		}
 	}
 
+     SDL_Surface* screen = 0;
+     if (opengl)
+     {
+         int rgb_size[3];
+         /* Initialize the display */
+         switch (sBPP) 
+         {
+         case 8:
+             rgb_size[0] = 2;
+             rgb_size[1] = 3;
+             rgb_size[2] = 3;
+             break;
+         case 15:
+         case 16:
+             rgb_size[0] = 5;
+             rgb_size[1] = 5;
+             rgb_size[2] = 5;
+             break;
+         default:
+             rgb_size[0] = 8;
+             rgb_size[1] = 8;
+             rgb_size[2] = 8;
+             break;
+         }
+         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, rgb_size[0]);
+         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, rgb_size[1]);
+         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, rgb_size[2]);
+         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, sBPP);
+         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-        SDL_Surface* screen = 0;
-        if (opengl)
-        {
-            int rgb_size[3];
-            /* Initialize the display */
-            switch (bpp) 
-            {
-            case 8:
-                rgb_size[0] = 2;
-                rgb_size[1] = 3;
-                rgb_size[2] = 3;
-                break;
-            case 15:
-            case 16:
-                rgb_size[0] = 5;
-                rgb_size[1] = 5;
-                rgb_size[2] = 5;
-                break;
-            default:
-                rgb_size[0] = 8;
-                rgb_size[1] = 8;
-                rgb_size[2] = 8;
-                break;
-            }
-            SDL_GL_SetAttribute(SDL_GL_RED_SIZE, rgb_size[0]);
-            SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, rgb_size[1]);
-            SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, rgb_size[2]);
-            SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, bpp);
-            SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-            if ( (screen = SDL_SetVideoMode( val_int( width ), val_int( height ), bpp, flags )) == NULL) 
-            {
-                fprintf(stderr, "Couldn't set GL mode: %s\n", SDL_GetError());
-                SDL_Quit();
-                exit(1);
-            }
-            sOpenGLScreen = screen;
-        }
-        else
-        {
-        	screen = SDL_SetVideoMode( val_int( width ), val_int( height ), bpp, flags );
+         if ( (screen = SDL_SetVideoMode( val_int( width ), val_int( height ), sBPP, sFlags )) == NULL) 
+         {
+             fprintf(stderr, "Couldn't set GL mode: %s\n", SDL_GetError());
+             SDL_Quit();
+             exit(1);
+         }
+         sOpenGLScreen = screen;
+     }
+     else
+     {
+     	   screen = SDL_SetVideoMode( val_int( width ), val_int( height ), sBPP, sFlags );
 	        if (!screen) failure( SDL_GetError() );
 
-        }
-    
+     }
+ 
 	if ( TTF_Init() != 0 )
 		printf("unable to initialize the truetype font support\n");
 
@@ -632,6 +639,18 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 
 	if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096 ) != 0 )
 		printf("unable to initialize the sound support\n");
+
+	return alloc_abstract( k_surf, screen );
+}
+
+value nme_resize_surface(value inW, value inH)
+{
+   val_check( inW, int );
+   val_check( inH, int );
+
+   SDL_Surface *screen = SDL_SetVideoMode( val_int(inW), val_int(inH), sBPP, sFlags );
+   if (sOpenGL)
+      sOpenGLScreen = screen;
 
 	return alloc_abstract( k_surf, screen );
 }
@@ -645,7 +664,7 @@ value nme_event()
 	SDL_Event event;
 	value evt = alloc_object(NULL);
 	
-	if (SDL_PollEvent(&event))
+	while (SDL_PollEvent(&event))
 	{
 		if (event.type == SDL_QUIT)
 		{
@@ -726,6 +745,14 @@ value nme_event()
 			alloc_field( evt, val_id( "which" ), alloc_int( event.jball.which ) );
 			return alloc_object( evt );
 		}
+
+      if (event.type==SDL_VIDEORESIZE)
+      {
+			alloc_field( evt, val_id( "type" ), alloc_int( et_resize ) );
+			alloc_field( evt, val_id( "width" ), alloc_int( event.resize.w ) );
+			alloc_field( evt, val_id( "height" ), alloc_int( event.resize.h ) );
+			return alloc_object( evt );
+      }
 	}
 	alloc_field( evt, val_id( "type" ), alloc_int( et_noevent ) );
 	return evt;
@@ -790,6 +817,7 @@ DEFINE_PRIM(nme_create_image_32,3);
 DEFINE_PRIM(nme_copy_surface,1);
 
 DEFINE_PRIM(nme_screen_init, 5);
+DEFINE_PRIM(nme_resize_surface, 2);
 DEFINE_PRIM(nme_screen_close, 0);
 
 DEFINE_PRIM(nme_surface_clear, 2);

@@ -62,6 +62,7 @@ typedef LineJob =
    var pixel_hinting:Int;
    var joints:Int;
    var caps:Int;
+   var scale_mode:Int;
    var miter_limit:Float;
 }
 
@@ -116,6 +117,10 @@ class Graphics
    public static var BMP_SMOOTH  = 0x10000;
 
 
+   private static var  SCALE_NONE       = 0;
+   private static var  SCALE_VERTICAL   = 1;
+   private static var  SCALE_HORIZONTAL = 2;
+   private static var  SCALE_NORMAL     = 3;
 
    static var MOVE = 0;
    static var LINE = 1;
@@ -148,13 +153,18 @@ class Graphics
    private var mPenX:Float;
    private var mPenY:Float;
 
-   public var clipRect(GetClipRect,SetClipRect):Rectangle;
+   //public var clipRect(GetClipRect,SetClipRect):Rectangle;
 
    public function new(?inSurface:Void)
    {
       mChanged = false;
       mSurface = inSurface;
       clear();
+   }
+
+   public function SetSurface(inSurface:Void)
+   {
+      mSurface = inSurface;
    }
 
 
@@ -233,6 +243,23 @@ class Graphics
       else
          mCurrentLine.caps = END_NONE;
 
+      if (scaleMode!=null)
+      {
+         switch(scaleMode)
+         {
+            case LineScaleMode.NORMAL:
+               mCurrentLine.scale_mode = SCALE_NORMAL;
+            case LineScaleMode.VERTICAL:
+               mCurrentLine.scale_mode = SCALE_VERTICAL;
+            case LineScaleMode.HORIZONTAL:
+               mCurrentLine.scale_mode = SCALE_HORIZONTAL;
+            case LineScaleMode.NONE:
+               mCurrentLine.scale_mode = SCALE_NONE;
+         }
+      }
+      else
+         mCurrentLine.caps = SCALE_NORMAL;
+
 
       if (joints!=null)
       {
@@ -283,27 +310,29 @@ class Graphics
       ClosePolygon(true);
    }
 
-   // TODO: could me more efficient to leave this up to implementation
-   public function drawEllipse(x:Float,y:Float,x_rad:Float,y_rad:Float)
+   public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float)
    {
       ClosePolygon(false);
+      /*
+      moveTo(x+x_rad,y);
+      curveTo(x+x_rad,y+y_rad,  x,      y+y_rad);
+      curveTo(x-x_rad,y+y_rad,  x-x_rad,y);
+      curveTo(x-x_rad,y-y_rad,  x,y-y_rad);
+      curveTo(x+x_rad,y-y_rad,  x+x_rad,y);
+      */
 
-      var rad = x_rad>y_rad ? x_rad : y_rad;
-      var steps = Math.round(rad*2);
-      if (steps<4)
-         steps = 4;
+      moveTo(x+rx, y);
+      curveTo(rx+x        ,-0.4142*ry+y,0.7071*rx+x ,-0.7071*ry+y);
+      curveTo(0.4142*rx+x ,-ry+y       ,x           ,-ry+y);
+      curveTo(-0.4142*rx+x,-ry+y       ,-0.7071*rx+x,-0.7071*ry+y);
+      curveTo(-rx+x       ,-0.4142*ry+y,-rx+x       , y);
+      curveTo(-rx+x       ,0.4142*ry+y ,-0.7071*rx+x,0.7071*ry+y);
+      curveTo(-0.4142*rx+x,ry+y        ,x           ,ry+y);
+      curveTo(0.4142*rx+x ,ry+y        ,0.7071*rx+x ,0.7071*ry+y) ;
+      curveTo(rx+x        ,0.4142*ry+y ,rx+x        ,y);
 
-      {
-         var theta = 0.0;
-         var d_theta = Math.PI * 2.0 / steps;
-         moveTo( x+rad, y );
-         for(s in 1...steps)
-         {
-            theta += d_theta;
-            lineTo( x+x_rad*Math.cos(theta)+0.5, y+y_rad*Math.sin(theta)+0.5 );
-         }
-         lineTo( x+rad, y );
-      }
+
+
 
       ClosePolygon(false);
    }
@@ -471,6 +500,7 @@ class Graphics
                      colour:0x000,
                      miter_limit: 3.0,
                      caps:END_ROUND,
+                     scale_mode:SCALE_NORMAL,
                      joints:CORNER_ROUND,
                      pixel_hinting : 0 };
 
@@ -620,6 +650,7 @@ class Graphics
                   colour:mCurrentLine.colour,
                   joints:mCurrentLine.joints,
                   caps:mCurrentLine.caps,
+                  scale_mode:mCurrentLine.scale_mode,
                   miter_limit:mCurrentLine.miter_limit,
                } );
       }
@@ -658,6 +689,7 @@ class Graphics
       }
    }
 
+/*
    function GetClipRect() : Rectangle
    {
      var r:Dynamic =  nme_get_clip_rect(mSurface);
@@ -669,7 +701,7 @@ class Graphics
      var r:Dynamic =  nme_set_clip_rect(mSurface,inRect);
      return new Rectangle(r.x,r.y,r.w,r.h);
    }
-
+*/
 
 
 

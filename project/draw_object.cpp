@@ -85,14 +85,18 @@ struct Point
    inline Point(double inX,double inY, int inType) :
       mX( (float)inX), mY( (float)inY), mType(inType) { }
 
-   int CurveSteps(const Point &inP0) const
+   inline int CurveSteps(const Point &inP0,double inScale) const
    {
       double dx0 = (mCX-inP0.mX);
       double dy0 = (mCY-inP0.mY);
       double dx1 = (mCX-mX);
       double dy1 = (mCY-mY);
-      double len = sqrt( dx0*dx0 + dy0*dy0 + dx1*dx1 + dy1*dy1 );
-      return (int)(len * 0.5);
+      double len = sqrt(dx0*dx0 + dy0*dy0 + dx1*dx1 + dy1*dy1 )  * inScale;
+      if (len<8)
+      {
+         return len>1 ? 2 : 1;
+      }
+      return (int)(len * 0.25);
    }
 
    void FromValue(value inVal)
@@ -117,28 +121,40 @@ struct CurvedPoint
 typedef std::vector<Point> Points;
 typedef std::vector<CurvedPoint> CurvedPoints;
 
+#define SCALE_NONE       0
+#define SCALE_VERTICAL   1
+#define SCALE_HORIZONTAL 2
+#define SCALE_NORMAL     3
+
+
 struct LineJob : public PolyLine
 {
    int             mColour;
    double          mAlpha;
    unsigned int    mFlags;
+   double          mThick0;
+   int             mScaleMode;
    Gradient        *mGradient;
    Matrix          mMappinMatrix;
    PolygonRenderer *mRenderer;
+   int             mOrigPointIndex0;
+   int             mOrigPointIndex1;
 
    void FromValue(value inVal)
    {
       mRenderer = 0;
       mGradient = CreateGradient(val_field(inVal,val_id("grad")));
       mColour = val_int(val_field(inVal,val_id("colour")));
-      mThickness = val_number(val_field(inVal,val_id("thickness")));
+      mThick0 = val_number(val_field(inVal,val_id("thickness")));
+      mThickness = mThick0 == 0 ? 1.0 : mThick0;
       mAlpha = val_number(val_field(inVal,val_id("alpha")));
       mJoints = val_int(val_field(inVal,val_id("joints")));
       mCaps = val_int(val_field(inVal,val_id("caps")));
+      mScaleMode = val_int(val_field(inVal,val_id("scale_mode")));
       mPixelHinting = val_int(val_field(inVal,val_id("pixel_hinting")));
       mMiterLimit = val_number(val_field(inVal,val_id("miter_limit")));
-      mPointIndex0 = val_int(val_field(inVal,val_id("point_idx0")));
-      mPointIndex1 = val_int(val_field(inVal,val_id("point_idx1")));
+      mOrigPointIndex0 = val_int(val_field(inVal,val_id("point_idx0")));
+      mOrigPointIndex1 = val_int(val_field(inVal,val_id("point_idx1")));
    }
 
 };
@@ -155,7 +171,8 @@ public:
               Gradient *inFillGradient,
               TextureReference *inTexture,
               LineJobs &inLines,
-              bool inLinesShareGrad = false)
+              bool inLinesShareGrad = false) :
+                 mTransform(0,0,0,0)
    {
       mDisplayList = 0;
       mPolygon = 0;
@@ -163,6 +180,10 @@ public:
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
       mOldFlags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
+      mMinY = -1;
+      mMaxY = -1;
+      mOrigPoints.swap(inPoints);
+
       if (mSolidGradient || mTexture)
       {
          mFillColour = 0xffffff;
@@ -175,22 +196,21 @@ public:
       }
 
       mLineJobs.swap(inLines);
+      mCurveScale = 0.0;
 
-      BuildCurved(inPoints);
-
-      mPointF16s.resize(mPoints.size());
-
-      TransformPoints(mTransform);
    }
 
-   // TODO: Rebuild when scale changes...
-   void BuildCurved(const Points &inPoints)
+   void BuildCurved(const Points &inPoints,double inScale)
    {
       size_t n = inPoints.size();
       IntVec remap(n);
 
+      mPoints.resize(0);
       mPoints.reserve(n);
+      mConnection.resize(0);
       mConnection.reserve(n);
+
+      mCurveScale = inScale;
 
       for(size_t i=0;i<n;i++)
       {
@@ -198,7 +218,7 @@ public:
          if (p1.mType == ptCurve && i>0)
          {
             const Point &p0 = inPoints[i-1];
-            int steps = inPoints[i].CurveSteps(p0);
+            int steps = inPoints[i].CurveSteps(p0,inScale);
             if (steps>=2)
             {
                float dt = 1.0f/steps;
@@ -225,9 +245,13 @@ public:
       for(size_t l=0;l<mLineJobs.size();l++)
       {
          LineJob &job = mLineJobs[l];
-         job.mPointIndex0 = remap[job.mPointIndex0];
-         job.mPointIndex1 = remap[job.mPointIndex1];
+         job.mPointIndex0 = remap[job.mOrigPointIndex0];
+         job.mPointIndex1 = remap[job.mOrigPointIndex1];
       }
+
+      mPointF16s.resize(mPoints.size());
+
+      ClearRenderers();
    }
 
    void ClearRenderers()
@@ -409,8 +433,31 @@ public:
            mTexture->Transform(mTransform);
 
          for(size_t i=0;i<mLineJobs.size();i++)
-            if (mLineJobs[i].mGradient)
-               mLineJobs[i].mGradient->Transform(mTransform);
+         {
+            LineJob &job = mLineJobs[i];
+            if (job.mGradient)
+               job.mGradient->Transform(mTransform);
+            if (job.mThick0>0 && job.mScaleMode != SCALE_NONE)
+            {
+               double scale_x = 1.0;
+               double scale_y = 1.0;
+
+               // The meaning of vertical and horizontal seem to match the flash player
+               if (job.mScaleMode & SCALE_VERTICAL)
+                  scale_x = sqrt( mTransform.m00*mTransform.m00 +
+                                  mTransform.m01*mTransform.m01  );
+               if (job.mScaleMode & SCALE_HORIZONTAL)
+                  scale_y = sqrt( mTransform.m10*mTransform.m10 +
+                                  mTransform.m11*mTransform.m11  );
+
+               if (job.mScaleMode == SCALE_VERTICAL)
+                  job.mThickness = job.mThick0 * scale_x;
+               else if (job.mScaleMode == SCALE_HORIZONTAL)
+                  job.mThickness = job.mThick0 * scale_y;
+               else
+                  job.mThickness = job.mThick0 * sqrt(scale_x*scale_y);
+            }
+         }
      }
    }
 
@@ -419,6 +466,11 @@ public:
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty=0)
    {
+      double scale = pow( (inMatrix.m00*inMatrix.m00 + inMatrix.m01*inMatrix.m01) *
+                           (inMatrix.m10*inMatrix.m10 + inMatrix.m11*inMatrix.m11), 0.25 );
+      if ( (fabs(scale-mCurveScale) > 0.1) || mCurveScale==0)
+         BuildCurved(mOrigPoints,scale);
+
       if (IsOpenGLScreen(inSurface))
       {
          if (mDisplayList || CreateDisplayList() )
@@ -505,6 +557,7 @@ public:
    void CreateRenderers(SDL_Surface *inSurface,
             const Matrix &inMatrix,TextureBuffer *inMarkDirty)
    {
+
       if (mPoints.empty())
          return;
 
@@ -514,6 +567,13 @@ public:
          {
             min_y = 0;
             max_y = inSurface->h;
+         }
+
+         if (min_y!=mMinY || max_y!=mMaxY)
+         {
+            mMinY = min_y;
+            mMaxY = max_y;
+            ClearRenderers();
          }
 
          if (inMatrix!=mTransform)
@@ -615,6 +675,7 @@ public:
 
 
 
+   Points             mOrigPoints;
    CurvedPoints       mPoints;
    std::vector<char>  mConnection;
 
@@ -623,6 +684,7 @@ public:
    int          mFillColour;
    unsigned int mOldFlags;
    double       mFillAlpha;
+   double       mCurveScale;
    LineJobs     mLineJobs;
 
    std::vector<PointF16> mPointF16s;
@@ -630,6 +692,8 @@ public:
    GLuint       mDisplayList;
 
    Matrix       mTransform;
+   int          mMinY;
+   int          mMaxY;
 
    PolygonRenderer *mPolygon;
 

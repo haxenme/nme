@@ -98,7 +98,7 @@ typedef RenderCallbackList = Array<RenderCallback>;
 class Manager
 {
 	static var __scr : Void;
-	static var __evt : Void;
+	static var __evt : Dynamic;
 
 	// Set this to something else if yo do not want it...
 	static var closeKey = 27;
@@ -107,6 +107,7 @@ class Manager
 
 	static var FULLSCREEN = 0x0001;
 	static var OPENGL     = 0x0002;
+	static var RESIZABLE  = 0x0004;
 
 	static public var graphics(default,null):Graphics;
 	static public var draw_quality(get_draw_quality,set_draw_quality):Int;
@@ -124,7 +125,7 @@ class Manager
 
 	private var timerStack : List < Timer > ;
 
-	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
+	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool )
 	{
 		var flags = 0;
 		if ( fullscreen!=null && fullscreen)
@@ -132,6 +133,9 @@ class Manager
 
 		if ( opengl!=null && opengl)
 		   flags += OPENGL;
+
+      if ( resizable!=null && resizable)
+         flags += RESIZABLE;
 
 		if ( width < 100 || height < 20 ) return;
 		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
@@ -145,6 +149,13 @@ class Manager
 		tryQuitFunction = null;
 		mPaused = false;
 	}
+
+   public function OnResize(inW:Int, inH:Int)
+   {
+      __scr = nme_resize_surface(inW,inH);
+      graphics.SetSurface(__scr);
+   }
+
 
 
    // This function is optional - you can choose to do your own main loop, eg
@@ -162,6 +173,7 @@ class Manager
          do
          {
             type = nextEvent();
+            trace(type);
             switch type
             {
                case et_quit:
@@ -195,6 +207,9 @@ class Manager
 
                case et_mousemove:
                   fireMouseEvent( met_Move );
+
+               case et_resize:
+                  // trace( __evt.width, __evt.height );
 
                default:
             }
@@ -354,6 +369,12 @@ class Manager
 				return getEventType();
 	}
 
+	public function getNextEvent() : Dynamic
+	{
+		__evt = nme_event();
+		return __evt;
+	}
+
 
 	public function getEventType() : EventType
 	{
@@ -484,6 +505,7 @@ class Manager
 
 	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
 	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
+	static var nme_resize_surface = neko.Lib.load("nme","nme_resize_surface",2);
 	static var nme_screen_close = neko.Lib.load("nme","nme_screen_close",0);
 	static var nme_flipbuffer = neko.Lib.load("nme","nme_flipbuffer",1);
 	static var nme_delay = neko.Lib.load("nme","nme_delay",1);
