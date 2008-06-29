@@ -79,6 +79,9 @@ class Graphics
 {
    public static var defaultFontName = "ARIAL.TTF";
    public static var defaultFontSize = 12;
+   public static var immediateMatrix = null;
+
+
 
    public static var TOP = 0;
    public static var CENTER = 1;
@@ -313,13 +316,6 @@ class Graphics
    public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float)
    {
       ClosePolygon(false);
-      /*
-      moveTo(x+x_rad,y);
-      curveTo(x+x_rad,y+y_rad,  x,      y+y_rad);
-      curveTo(x-x_rad,y+y_rad,  x-x_rad,y);
-      curveTo(x-x_rad,y-y_rad,  x,y-y_rad);
-      curveTo(x+x_rad,y-y_rad,  x+x_rad,y);
-      */
 
       moveTo(x+rx, y);
       curveTo(rx+x        ,-0.4142*ry+y,0.7071*rx+x ,-0.7071*ry+y);
@@ -330,9 +326,6 @@ class Graphics
       curveTo(-0.4142*rx+x,ry+y        ,x           ,ry+y);
       curveTo(0.4142*rx+x ,ry+y        ,0.7071*rx+x ,0.7071*ry+y) ;
       curveTo(rx+x        ,0.4142*ry+y ,rx+x        ,y);
-
-
-
 
       ClosePolygon(false);
    }
@@ -630,7 +623,7 @@ class Graphics
          mDrawList.push( inDrawable );
       else
       {
-         nme_draw_object_to(inDrawable,mSurface,null);
+         nme_draw_object_to(inDrawable,mSurface,immediateMatrix);
       }
    }
 

@@ -382,6 +382,8 @@ public:
    {
       if (inAccurate)
       {
+         SetupCurved(inMatrix);
+
          CreateRenderers(0,inMatrix,0);
 
          if (mPolygon)
@@ -463,13 +465,18 @@ public:
 
    virtual bool IsGrad() { return mPolygon!=0 || mSolidGradient!=0; }
 
-   void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0)
+   void SetupCurved(const Matrix &inMatrix)
    {
       double scale = pow( (inMatrix.m00*inMatrix.m00 + inMatrix.m01*inMatrix.m01) *
                            (inMatrix.m10*inMatrix.m10 + inMatrix.m11*inMatrix.m11), 0.25 );
       if ( (fabs(scale-mCurveScale) > 0.1) || mCurveScale==0)
          BuildCurved(mOrigPoints,scale);
+   }
+
+   void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
+                  TextureBuffer *inMarkDirty=0)
+   {
+      SetupCurved(inMatrix);
 
       if (IsOpenGLScreen(inSurface))
       {
