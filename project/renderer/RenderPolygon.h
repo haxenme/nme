@@ -112,9 +112,9 @@ public:
       // TODO : 2
       switch(outDest->format->BytesPerPixel)
       {
-         case 1: RenderDest( DestSurface8(outDest) ); break;
-         case 3: RenderDest( DestSurface24(outDest) ); break;
-         case 4: RenderDest( DestSurface32(outDest) ); break;
+         case 1: { DestSurface8 d(outDest); RenderDest(d); } break;
+         case 3: { DestSurface24 d(outDest); RenderDest(d); } break;
+         case 4: { DestSurface32 d(outDest); RenderDest(d); } break;
       }
 
       if ( SDL_MUSTLOCK(outDest)  )
