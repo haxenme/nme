@@ -2,8 +2,7 @@
 #include "AA.h"
 
 Uint8  AA4x::mDrawing[32];
-Uint8  AA4x::mAlpha[32];
-
+int  AA4x::mAlpha[32];
 
 
 // Find y-extent of object, this is in pixels, and is the intersection

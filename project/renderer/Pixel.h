@@ -24,9 +24,14 @@ struct DestBase
       mPixelSize = inPixelSize;
    }
 
-   inline void SetPos(Sint16 inX,Sint16 inY)
+   inline void SetRow(Sint16 inY)
    {
-      mPtr = mBase + inY*mPitch + inX*mPixelSize;
+      mRowBase = mBase + inY*mPitch;
+   }
+
+   inline void SetX(Sint16 inX)
+   {
+      mPtr = mRowBase + inX*mPixelSize;
    }
 
 
@@ -38,6 +43,7 @@ struct DestBase
    int         mPixelSize;
    SDL_Surface *mSurface;
    Uint8       *mBase;
+   Uint8       *mRowBase;
    Uint8       *mPtr;
 };
 
@@ -52,15 +58,9 @@ struct DestSurface8 : public DestBase
    {
       *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
    }
-   inline void Advance(int inX) { mPtr += inX; }
 
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
    template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int inDummy)
-   #endif
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
    {
       *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
    }
@@ -86,7 +86,7 @@ struct DestSurface24 : public DestBase
       {
          int a = inSource.GetA();
          if (!SOURCE_::AlreadyRoundedAlpha)
-            a+=a>>7;
+            a += (a>>7);
 
          mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
          mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
@@ -101,37 +101,28 @@ struct DestSurface24 : public DestBase
       mPtr += 3;
    }
 
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
-   // Could not work out how to explicitly specify ALPHA_BITS_ in call
-   //   (problem with operator<)
    template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
-   #endif
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
    {
       if (SOURCE_::AlphaBlend)
       {
          int a = inSource.GetA();
-         a+=a>>7;
-         a*=inAlpha;
+         if (!SOURCE_::AlreadyRoundedAlpha)
+            a += (a>>7);
+         a*= inAlpha;
 
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>16;
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>16;
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>16;
       }
       else
       {
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>8;
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>8;
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>8;
       }
       mPtr += 3;
    }
-
-   inline void Advance(int inX) { mPtr += inX*3; }
-
 
 
    int mROff;
@@ -141,6 +132,8 @@ struct DestSurface24 : public DestBase
 
 struct DestSurface32 : public DestSurface24
 {
+   int mAOff;
+
    DestSurface32(SDL_Surface *inSurface) : DestSurface24(inSurface,4)
    {
       mAOff = 3;
@@ -152,11 +145,11 @@ struct DestSurface32 : public DestSurface24
       if (SOURCE_::AlphaBlend)
       {
          int a = inSource.GetA();
+         if (!SOURCE_::AlreadyRoundedAlpha)
+            a += (a>>7);
 
          // todo: do this properly
-         mPtr[mAOff] = a;
-
-         a+=a>>7;
+         mPtr[mAOff] = a-1;
 
          mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
          mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
@@ -173,52 +166,38 @@ struct DestSurface32 : public DestSurface24
    }
 
 
-   #ifdef WIN32
-   template<int ALPHA_BITS_,typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   #else
    template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha,int ALPHA_BITS_)
-   #endif
+   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
    {
       if (SOURCE_::AlphaBlend)
       {
          int a = inSource.GetA();
-         a+=a>>7;
+         if (!SOURCE_::AlreadyRoundedAlpha)
+            a += (a>>7);
+
          // todo: do this properly
-         mPtr[mAOff] = (a*inAlpha)>>ALPHA_BITS_;
+         mPtr[mAOff] = a-1;
 
          a*=inAlpha;
 
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>(8+ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>(8+ALPHA_BITS_);
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>16;
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>16;
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>16;
       }
       else
       {
          // todo: do this properly
-         mPtr[mAOff] = (inAlpha-1)<<(8-ALPHA_BITS_);
+         mPtr[mAOff] = inAlpha-1;
 
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
+         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>8;
+         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>8;
+         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>8;
       }
 
-
-
-
-
-      // todo - if (SOURCE_::AlphaBlend)
-      mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>(ALPHA_BITS_);
-      mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>(ALPHA_BITS_);
-      mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>(ALPHA_BITS_);
       mPtr += 4;
    }
 
-   inline void Advance(int inX) { mPtr += inX*4; }
 
-
-   int mAOff;
 };
 
 

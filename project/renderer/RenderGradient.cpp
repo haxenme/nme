@@ -1,5 +1,4 @@
 #include "RenderPolygon.h"
-#include "AA.h"
 #include "../Gradient.h"
 #include <math.h>
 #include <algorithm>
@@ -244,10 +243,8 @@ struct GradientSource2D
 
 // --- Create Renderers --------------------------------------
 
-template<typename AA_,int FLAGS_,int SIZE_>
-PolygonRenderer *TCreateGradientRenderer(
-                        const RenderArgs &inArgs,
-                        Gradient *inGradient)
+template<int FLAGS_,int SIZE_>
+PolygonRenderer *TCreateGradientRenderer( const RenderArgs &inArgs, Gradient *inGradient)
 {
    if (inGradient->Is2D())
    {
@@ -255,15 +252,13 @@ PolygonRenderer *TCreateGradientRenderer(
       {
          typedef GradientSource2D<SIZE_,FLAGS_ + NME_GRADIENT_FOCAL0> Source;
 
-         return new SourcePolygonRenderer<AA_,Source>(
-             inArgs, Source(inGradient) );
+         return new SourcePolygonRenderer<Source>(inArgs, Source(inGradient) );
       }
       else
       {
          typedef GradientSource2D<SIZE_,FLAGS_> Source;
 
-         return new SourcePolygonRenderer<AA_,Source>(
-             inArgs, Source(inGradient) );
+         return new SourcePolygonRenderer<Source>(inArgs, Source(inGradient) );
       }
 
    }
@@ -271,8 +266,7 @@ PolygonRenderer *TCreateGradientRenderer(
    {
       typedef GradientSource1D<SIZE_,FLAGS_> Source;
 
-      return new SourcePolygonRenderer<AA_,Source>(
-          inArgs, Source(inGradient) );
+      return new SourcePolygonRenderer<Source>( inArgs, Source(inGradient) );
    }
 }
 
@@ -284,26 +278,21 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(
 {
 #define ARGS inArgs,inGradient
 
-   if (inArgs.inFlags & NME_HIGH_QUALITY)
-   {
-      AA4x::Init();
       if (inGradient->mColours.size()==256)
       {
          if (inGradient->mUsesAlpha)
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA4x,NME_ALPHA_BLEND+NME_EDGE_REPEAT,256>(ARGS);
+               return TCreateGradientRenderer<NME_ALPHA_BLEND+NME_EDGE_REPEAT,256>(ARGS);
             else
-               return TCreateGradientRenderer<AA4x,NME_ALPHA_BLEND,256>(ARGS);
+               return TCreateGradientRenderer<NME_ALPHA_BLEND,256>(ARGS);
          }
          else
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA4x,NME_EDGE_REPEAT,256>(ARGS);
+               return TCreateGradientRenderer<NME_EDGE_REPEAT,256>(ARGS);
             else
-               return TCreateGradientRenderer<AA4x,0,256>(ARGS);
+               return TCreateGradientRenderer<0,256>(ARGS);
          }
       }
       else
@@ -311,62 +300,19 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(
          if (inGradient->mUsesAlpha)
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA4x,NME_ALPHA_BLEND+NME_EDGE_REPEAT,512>(ARGS);
+               return TCreateGradientRenderer<NME_ALPHA_BLEND+NME_EDGE_REPEAT,512>(ARGS);
             else
-               return TCreateGradientRenderer<AA4x,NME_ALPHA_BLEND,512>(ARGS);
+               return TCreateGradientRenderer<NME_ALPHA_BLEND,512>(ARGS);
          }
          else
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA4x,NME_EDGE_REPEAT,512>(ARGS);
+               return TCreateGradientRenderer<NME_EDGE_REPEAT,512>(ARGS);
             else
-               return TCreateGradientRenderer<AA4x,0,512>(ARGS);
+               return TCreateGradientRenderer<0,512>(ARGS);
          }
       }
-  }
-  else
-  {
-      if (inGradient->mColours.size()==256)
-      {
-         if (inGradient->mUsesAlpha)
-         {
-            if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA0x,NME_ALPHA_BLEND+NME_EDGE_REPEAT,256>(ARGS);
-            else
-               return TCreateGradientRenderer<AA0x,NME_ALPHA_BLEND,256>(ARGS);
-         }
-         else
-         {
-            if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA0x,NME_EDGE_REPEAT,256>(ARGS);
-            else
-               return TCreateGradientRenderer<AA0x,0,256>(ARGS);
-         }
-      }
-      else
-      {
-         if (inGradient->mUsesAlpha)
-         {
-            if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA0x,NME_ALPHA_BLEND+NME_EDGE_REPEAT,512>(ARGS);
-            else
-               return TCreateGradientRenderer<AA0x,NME_ALPHA_BLEND,512>(ARGS);
-         }
-         else
-         {
-            if (inGradient->mRepeat)
-               return TCreateGradientRenderer
-                          <AA0x,NME_EDGE_REPEAT,512>(ARGS);
-            else
-               return TCreateGradientRenderer<AA0x,0,512>(ARGS);
-         }
-      }
-  }
+
 #undef ARGS
 
    // should not get here ...

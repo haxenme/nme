@@ -8,391 +8,36 @@
 #include "Pixel.h"
 #include "Points.h"
 
-#ifdef WIN32
-typedef __int64 int64;
-#else
-typedef long long int64;
-#endif
 
-
-typedef std::map<int,bool> SpanInfo;
-
-void RasterizeLines(const PointF16 *inPoints,
-                    const PolyLine *inLines, 
-                    int inMinY, int inMaxY,
-                    int inAABits,
-                    SpanInfo *outSpans);
-
-
-
-// --- Polygons ---------------------------------------------
-
-
-template<typename LINE_,typename SOURCE_,typename DEST_>
-void TProcessLines(DEST_ &outDest,int inYMin,int inYMax,LINE_ *inLines,
-              SOURCE_ &inSource )
+struct AlphaRun
 {
-   if (!inLines)
-      return;
-   typedef typename LINE_::mapped_type Point;
-   typedef typename Point::State State;
+   inline AlphaRun() { }
+   inline AlphaRun(int inX0,int inX1,short inAlpha) : mX0(inX0), mX1(inX1), mAlpha(inAlpha) { }
+   inline bool Contains(int inX) const { return inX >= mX0 && inX<mX1; }
 
-   for(int y=inYMin; y<inYMax; y++)
-   {
-      LINE_ &line = inLines[y-inYMin];
-      if(line.size()>1)
-      {
-         typename LINE_::iterator i = line.begin();
-
-         State  drawing;
-         Point::InitState(drawing);
-
-         while(1)
-         {
-            int x = i->first;
-            if (x>outDest.mMaxX)
-               break;
-
-            // Setup iterators ...
-            outDest.SetPos(x,y);
-            inSource.SetPos(x,y);
-
-            Uint8 alpha = i->second.GetAlpha(drawing);
-
-            if (x>=outDest.mMinX)
-            {
-               // Plot this point ...
-               if (alpha==(1<<Point::AlphaBits))
-                  outDest.SetInc(inSource);
-               else if (alpha)
-               #ifdef WIN32
-                  outDest.SetIncBlend<Point::AlphaBits>(inSource,alpha);
-               #else
-                  outDest.SetIncBlend(inSource,alpha,(int)Point::AlphaBits);
-               #endif
-               inSource.Inc();
-               x++;
-            }
-
-            i->second.Transition(drawing);
-            typename LINE_::iterator next = i;
-            ++next;
-            if (next==line.end())
-               break;
-
-
-            int x1 = next->first;
-            if (x1>x)
-            {
-               if (x1>outDest.mMinX)
-               {
-                  Uint8 alpha = Point::SGetAlpha(drawing);
-
-                  if (x<outDest.mMinX)
-                  {
-                     inSource.Advance(outDest.mMinX-x);
-                     outDest.Advance(outDest.mMinX-x);
-                     x = outDest.mMinX;
-                  }
-      
-                  if (alpha==0)
-                  {
-                     inSource.Advance(x1-x);
-                     outDest.Advance(x1-x);
-                  }
-                  else
-                  {
-                     if (x1>outDest.mMaxX) x1 = outDest.mMaxX;
-                     if (alpha==(1<<Point::AlphaBits))
-                     {
-                         for(;x<x1;x++)
-                         {
-                            outDest.SetInc(inSource);
-                            inSource.Inc();
-                         }
-                     }
-                     else
-                     {
-                         for(;x<x1;x++)
-                         {
-                            #ifdef WIN32
-                               outDest.SetIncBlend<Point::AlphaBits>(inSource,alpha);
-                            #else
-                               outDest.SetIncBlend(inSource,alpha,(int)Point::AlphaBits);
-                            #endif
-
-                            inSource.Inc();
-                         }
-                     }
-                  }
-               }
-               else
-               {
-                  inSource.Advance(x1-x);
-                  outDest.Advance(x1-x);
-               }
-            }
-
-            i = next;
-         }
-      }
-   }
-}
+   short mX0,mX1;
+   // mAlpha is 0 ... 256 inclusive
+   short mAlpha;
+};
+typedef std::vector<AlphaRun> AlphaRuns;
+typedef std::vector<AlphaRuns> Lines;
 
 
 
-
-// Find y-extent of object, this is in pixels, and is the intersection
-//  with the screen y-extent.
-bool FindObjectYExtent(int &ioMinY, int &ioMaxY,int inN,
-          const PointF16 *inPoints,const PolyLine *inLines);
+// --- Polygon ---------------------------------------------
 
 
-template<typename AA_>
 class BasePolygonRenderer : public PolygonRenderer
 {
 public:
-   enum { AABits = AA_::AABits };
-   enum { ToAA = (16-AABits) };
-   enum { AAMask = ~((1<<ToAA)-1) };
-   enum { AAFact = 1<<AABits };
+   BasePolygonRenderer(const RenderArgs &inArgs);
+   bool HitTest(int inX,int inY);
+   void GetExtent(Extent2DI &ioExtent);
+   ~BasePolygonRenderer() { }
 
-   typedef std::map<int,AA_>  LineInfo;
-   typedef AA_ Point;
-   typedef typename Point::State State;
-
-
-   BasePolygonRenderer(const RenderArgs &inArgs)
-   {
-      mLines = 0;
-      mMinY = inArgs.inMinY;
-      mMaxY = inArgs.inMaxY;
-
-      if (FindObjectYExtent(mMinY,mMaxY,inArgs.inN,inArgs.inPoints,inArgs.inLines))
-      {
-         mLineCount = mMaxY - mMinY;
-         mLines = new LineInfo [ mLineCount ];
-
-
-         // Draw line or solid ?
-         if (inArgs.inLines)
-         {
-            // Bottom of lines ...
-            int y_max_aa = (mMaxY-mMinY) << AABits;
-            SpanInfo *spans = new SpanInfo[y_max_aa];
-
-            RasterizeLines(inArgs.inPoints,inArgs.inLines,mMinY,mMaxY,AABits,spans);
-
-            // Convert spans to lines ....
-            for(int y=0;y<y_max_aa;y++)
-            {
-               LineInfo &line = mLines[y>>AA_::AABits];
-               SpanInfo &span = spans[ y ];
-               for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
-               {
-                  int x = i->first;
-                  line[x>>AA_::AABits].AddAA(x,y);
-               }
-            }
-
-            delete [] spans;
-         }
-         else
-         {
-            // For removing offset ...
-            int y_offset = mMinY << 16;
-            // Bottom of lines ...
-            int y_max_aa = (mMaxY-mMinY) << AABits;
-            int y_max_val = (mMaxY-mMinY) << 16;
-
-            int n = inArgs.inN;
-            PointF16 p0(inArgs.inPoints[0]);
-            p0.y -= y_offset;
-         
-            for(int i=1;i<n;i++)
-            {
-               PointF16 p1(inArgs.inPoints[i]);
-               p1.y -= y_offset;
-               PointF16 p_next = p1;
-
-               // clip whole line ?
-               if ( (inArgs.inConnect[i]!=0) &&
-                 (!(p0.y<0 && p1.y<0) && !(p0.y>=y_max_val && p1.y>=y_max_val)))
-               {
-                  int y0 = p0.y>>ToAA;
-                  int y1 = p1.y>>ToAA;
-                  int dy = y1-y0;
-                  if (dy==0)
-                  {
-                     // No need to do anything..
-                  }
-                  else
-                  {
-                     if (dy<0)
-                     {
-                        std::swap(p0,p1);
-                        std::swap(y0,y1);
-                     }
-
-                     int dx_dy = Grad(p1 - p0);
-                     int extra_y = ((y0+1)<<ToAA) - p0.y;
-                     int x = p0.x + (dx_dy>>(ToAA-8)) * (extra_y>>8);
-
-                     if (y0<0)
-                     {
-                        x-= y0 * dx_dy;
-                        y0 = 0;
-                     }
-                     int last = y1>y_max_aa ? y_max_aa : y1;
-   
-                     for(; y0<last; y0++)
-                     {
-                        // X is fixed-16, y is fixed-aa
-                        mLines[y0>>AA_::AABits][x>>16].Add(x,y0);
-                        x+=dx_dy;
-                     }
-                  }
-               }
-         
-               p0 = p_next;
-            }
-   
-#ifdef VERIFY
-            VerifyLines();
-#endif
-         }
-      }
-   }
-
-   // finds D16-bit X/ D AA bit Y
-   inline int Grad(PointF16 inVec)
-   {
-      int denom = inVec.y;
-      if (inVec.y==0)
-         return 0;
-      int64 num = inVec.x;
-      num<<=ToAA;
-      return (int)(num/denom);
-   }
-
-
-
-#ifdef VERIFY
-   void DumpLine(int inLine)
-   {
-         LineInfo &line = mLines[inLine];
-         typename Point::State drawing;
-
-            Point::InitState(drawing);
-            for(typename LineInfo::iterator j=line.begin();j!=line.end();++j)
-            {
-               j->second.Transition(drawing);
-               printf("  %d(%04x)", j->first,j->second.Value());
-               printf("[%04x]", Point::GetDVal(drawing));
-            }
-            printf("\n");
-   }
-
-   void VerifyLines()
-   {
-      if (!mLines)
-         return;
-
-      typedef typename LineInfo::mapped_type Point;
-      typedef typename Point::State State;
-
-      
-      for(int y=0; y<mLineCount; y++)
-      {
-         LineInfo &line = mLines[y];
-         if(line.size()==0)
-            continue;
-
-         State  drawing;
-         Point::InitState(drawing);
-
-         typename LineInfo::iterator i;
-         for(i=line.begin();i!=line.end();++i)
-            i->second.Transition(drawing);
-
-         if (Point::SGetAlpha(drawing)>0)
-         {
-            printf("Unmatched scan line : %d\n  ",y+mMinY);
-            DumpLine(y);
-         }
-      }
-   }
-#endif
-
-   bool HitTest(int inX,int inY)
-   {
-      if (mMinY<=inY && mMaxY>inY && mLines)
-      {
-         LineInfo &line = mLines[inY-mMinY];
-         if(line.size()>1)
-         {
-            typedef typename Point::State State;
-
-            typename LineInfo::iterator i = line.begin();
-
-            State  drawing;
-            Point::InitState(drawing);
-
-            while(1)
-            {
-               int x = i->first;
-               if (x>inX)
-                  return false;
-
-               Uint8 alpha = i->second.GetAlpha(drawing);
-               if (x==inX)
-                  return alpha>0;
-
-               x++;
-
-               i->second.Transition(drawing);
-               typename LineInfo::iterator next = i;
-               ++next;
-               if (next==line.end())
-                  return false;
-
-               int x1 = next->first;
-               if (x1>=inX)
-                  return Point::SGetAlpha(drawing)>0;
-
-               i = next;
-            }
-         }
-      }
-      return false;
-   }
-
-   void GetExtent(Extent2DI &ioExtent)
-   {
-      for(int y=mMinY; y<mMaxY; y++)
-      {
-         LineInfo &line = mLines[y-mMinY];
-         if (line.size())
-         {
-            ioExtent.AddY(y << 16);
-            ioExtent.AddX( line.begin()->first << 16 );
-            ioExtent.AddX( (line.rbegin()->first) << 16);
-         }
-      }
-   }
-
-
-
-
-   ~BasePolygonRenderer()
-   {
-      delete [] mLines;
-   }
-
-   LineInfo *mLines;
-   int      mLineCount;
-   int      mMinY;
-   int      mMaxY;
+   int mMinY;
+   int mMaxY;
+   Lines mLines;
 
 private: // Disable
    BasePolygonRenderer(const BasePolygonRenderer &inRHS);
@@ -402,47 +47,74 @@ private: // Disable
 
 
 
-template<typename AA_,typename SOURCE_>
-class SourcePolygonRenderer : public BasePolygonRenderer<AA_>
+template<typename SOURCE_>
+class SourcePolygonRenderer : public BasePolygonRenderer
 {
-   typedef BasePolygonRenderer<AA_> Base;
 public:
    SourcePolygonRenderer(const RenderArgs &inArgs, const SOURCE_ &inSource)
-      : BasePolygonRenderer<AA_>(inArgs), mSource(inSource)
+      : BasePolygonRenderer(inArgs), mSource(inSource)
    {
       // mSource is copy-constructed, so yo ubetter be sure this will
       //  work (rule of three)
    }
 
-   void Render(SDL_Surface *outDest, Sint16 inOffsetX,Sint16 inOffsetY)
+   template<typename DEST_>
+   void RenderDest(DEST_ &outDest)
+   {
+      for(int y=mMinY; y<mMaxY; y++)
+      {
+         const AlphaRuns &line = mLines[y-mMinY];
+         AlphaRuns::const_iterator end = line.end();
+         AlphaRuns::const_iterator run = line.begin();
+         if (run!=end)
+         {
+            outDest.SetRow(y);
+            while(run<end)
+            {
+               int x0 = run->mX0;
+               if (x0 >= outDest.mMaxX)
+                  break;
+               int x1 = run->mX1;
+               if (x1>outDest.mMinX)
+               {
+                  if (x0<outDest.mMinX) x0 = outDest.mMinX;
+                  if (x1>outDest.mMaxX) x1 = outDest.mMaxX;
+                  outDest.SetX(x0);
+                  mSource.SetPos(x0,y);
+                  int alpha = run->mAlpha;
+                  if (alpha<256)
+                     while(x0<x1)
+                     {
+                        ++x0;
+                        outDest.SetIncBlend(mSource,alpha);
+                        mSource.Inc();
+                     }
+                  else
+                     while(x0<x1)
+                     {
+                        ++x0;
+                        outDest.SetInc(mSource);
+                        mSource.Inc();
+                     }
+               }
+               ++run;
+            }
+         }
+      }
+   }
+
+   void Render(SDL_Surface *outDest)
    {
       if ( SDL_MUSTLOCK(outDest) )
          if ( SDL_LockSurface(outDest) < 0 )
             return;
 
-      // TODO: Offset (change dest pointers ?)
-
+      // TODO : 2
       switch(outDest->format->BytesPerPixel)
       {
-         case 1:
-            {
-            DestSurface8 dest(outDest);
-            TProcessLines( dest,Base::mMinY,Base::mMaxY,Base::mLines,mSource );
-            break;
-            }
-            // TODO : 2
-         case 3:
-            {
-            DestSurface24 dest(outDest);
-            TProcessLines( dest,Base::mMinY,Base::mMaxY,Base::mLines,mSource );
-            break;
-            }
-         case 4:
-            {
-            DestSurface32 dest(outDest);
-            TProcessLines( dest,Base::mMinY,Base::mMaxY,Base::mLines,mSource );
-            break;
-            }
+         case 1: RenderDest( DestSurface8(outDest) ); break;
+         case 3: RenderDest( DestSurface24(outDest) ); break;
+         case 4: RenderDest( DestSurface32(outDest) ); break;
       }
 
       if ( SDL_MUSTLOCK(outDest)  )

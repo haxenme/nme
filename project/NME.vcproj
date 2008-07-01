@@ -282,7 +282,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\renderer\RasterizeLines.cpp"
+					RelativePath=".\renderer\Polygon.cpp"
 					>
 				</File>
 				<File

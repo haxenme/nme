@@ -24,6 +24,8 @@ struct ConstantSource32
       a+= a>>7;
    }
 
+
+
    inline void SetPos(int inX,int inY) { }
    inline void Inc() { }
    inline void Advance(int inX) { }
@@ -43,13 +45,12 @@ struct ConstantSource32
 
 
 
-template<typename AA_,int FLAGS_>
-PolygonRenderer *TCreateSolidRenderer(const RenderArgs &inArgs,
+template<int FLAGS_> PolygonRenderer *TCreateSolidRenderer(const RenderArgs &inArgs,
                               int inColour, double inAlpha)
 {
    typedef ConstantSource32<FLAGS_> Source;
 
-   return new SourcePolygonRenderer<AA_,Source>(inArgs,Source(inColour,inAlpha) );
+   return new SourcePolygonRenderer<Source>(inArgs,Source(inColour,inAlpha) );
 }
 
 
@@ -58,20 +59,8 @@ PolygonRenderer *PolygonRenderer::CreateSolidRenderer(
                               const RenderArgs &inArgs,
                               int inColour, double inAlpha)
 {
-   if (inArgs.inFlags & NME_HIGH_QUALITY)
-   {
-      AA4x::Init();
-      if (inAlpha < 1.0 )
-          return TCreateSolidRenderer<AA4x,NME_ALPHA_BLEND>(
-                  inArgs, inColour,inAlpha);
-      else
-          return TCreateSolidRenderer<AA4x,0>(inArgs, inColour,inAlpha);
-   }
+   if (inAlpha < 1.0 )
+      return TCreateSolidRenderer<NME_ALPHA_BLEND>(inArgs, inColour,inAlpha);
    else
-   {
-      if (inAlpha < 1.0 )
-          return TCreateSolidRenderer<AA0x,NME_ALPHA_BLEND>( inArgs, inColour,inAlpha);
-      else
-          return TCreateSolidRenderer<AA0x,0>( inArgs, inColour,inAlpha);
-   }
+      return TCreateSolidRenderer<0>(inArgs, inColour,inAlpha);
 }

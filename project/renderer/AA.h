@@ -5,9 +5,8 @@
 // The AA structures allow for the same code to be used for high-quality
 //  and fast rendering.
 
-struct AA0x
+struct AA1x
 {
-   enum { AlphaBits = 0 };
    enum { AABits = 0 };
    enum { AA = (1<<AABits) };
 
@@ -15,18 +14,18 @@ struct AA0x
    static void InitState(State &outState)
       { outState = 0; }
 
-   inline AA0x() : mVal(0) { }
+   inline AA1x() : mVal(0) { }
 
    Uint8   mVal;
 
    void Debug() {}
    static inline int GetDVal(State &inState) { return 0; }
 
-   static inline Uint8 SGetAlpha(State &inState)
-      { return inState; }
+   static inline short SGetAlpha(State &inState)
+      { return inState << 8; }
 
-   static inline Uint8 GetAlpha(State &inState)
-      { return inState ^ 0x01; }
+   static inline short GetAlpha(State &inState)
+      { return (inState ^ 0x01) << 8; }
 
    int Value() const { return mVal; }
 
@@ -52,7 +51,6 @@ struct AA0x
 
 struct AA4x
 {
-   enum { AlphaBits = 5 };
    enum { AABits = 2 };
    enum { AA = (1<<AABits) };
    typedef Uint8 State[4];
@@ -69,7 +67,7 @@ struct AA4x
       { outState[0] = outState[1] = outState[2] = outState[3] = 0; }
 
    // This gets the value for alpha at at transition point
-   inline Uint8 GetAlpha(Uint8 *inState) const // 5-bits fixed, [0,32] inclusive
+   inline short GetAlpha(Uint8 *inState) const // 8-bits fixed, [0,256] inclusive
    {
       return mAlpha[inState[0] | mPoints[0]] + 
              mAlpha[inState[1] | mPoints[1]] + 
@@ -93,11 +91,11 @@ struct AA4x
    }
 
    // This gets the value for alpha, which is constant for a given state
-   //  (ie, no transotions going on at these points)
-
-   static inline Uint8 SGetAlpha(Uint8 *inState)
+   //  (ie, no transtions going on at these points and depends only on state)
+   //  The state will be 0x10 if the sub-row is begin drawn, 0 otherwise.
+   static inline short SGetAlpha(Uint8 *inState)
    {
-      return (inState[0] + inState[1] + inState[2] + inState[3]) >> 1;
+      return (inState[0] + inState[1] + inState[2] + inState[3]) << 2;
    }
    void Debug() { printf("<%x%x%x%x>", mPoints[0], mPoints[1], mPoints[2], mPoints[3]); }
 
@@ -121,6 +119,7 @@ struct AA4x
    }
 
 
+
    static void Init()
    {
       static bool init = false;
@@ -141,13 +140,13 @@ struct AA4x
             if (draw) sum+= 2;
 
             mDrawing[i] = draw ? 0x10 : 0;
-            mAlpha[i] = sum; // 3-bit fixed, [0,8] inclusive
+            mAlpha[i] = (sum<<3); // 6-bit fixed, [0,64] inclusive
          }
       }
    }
    static bool   mIsInit;
    static Uint8  mDrawing[32];
-   static Uint8  mAlpha[32];
+   static int  mAlpha[32];
 };
 
 

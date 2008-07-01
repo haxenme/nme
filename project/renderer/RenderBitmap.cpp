@@ -345,16 +345,15 @@ bool IsPOW2(int inX)
 
 
 
-template<typename AA_,typename SOURCE_>
-PolygonRenderer *CreateBitmapRenderer( const RenderArgs &inArgs,
-                              const SOURCE_ &inSource )
+template<typename SOURCE_>
+PolygonRenderer *CreateBitmapRenderer( const RenderArgs &inArgs, const SOURCE_ &inSource )
 {
-   return new SourcePolygonRenderer<AA_,SOURCE_>(inArgs,inSource );
+   return new SourcePolygonRenderer<SOURCE_>(inArgs,inSource );
 }
 
 
 
-template<typename AA_,int FLAGS_>
+template<int FLAGS_>
 PolygonRenderer *CreateBitmapRendererSource(
                               const RenderArgs &inArgs,
                               const class Matrix &inMapper,
@@ -368,21 +367,13 @@ PolygonRenderer *CreateBitmapRendererSource(
 
 #define SOURCE_EDGE(source) \
      if (edge == NME_EDGE_REPEAT_POW2) \
-       r = CreateBitmapRenderer<AA_>( \
-          inArgs, \
-          source<FLAGS_,NME_EDGE_REPEAT_POW2>(inSource,inMapper));  \
+       r = CreateBitmapRenderer( inArgs, source<FLAGS_,NME_EDGE_REPEAT_POW2>(inSource,inMapper)); \
      else if (edge == NME_EDGE_REPEAT) \
-       r = CreateBitmapRenderer<AA_>( \
-          inArgs, \
-          source<FLAGS_,NME_EDGE_REPEAT>(inSource,inMapper));  \
+       r = CreateBitmapRenderer( inArgs, source<FLAGS_,NME_EDGE_REPEAT>(inSource,inMapper));  \
      else if (edge == NME_EDGE_UNCHECKED) \
-       r = CreateBitmapRenderer<AA_>( \
-          inArgs, \
-          source<FLAGS_,NME_EDGE_UNCHECKED>(inSource,inMapper));  \
+       r = CreateBitmapRenderer( inArgs, source<FLAGS_,NME_EDGE_UNCHECKED>(inSource,inMapper));  \
      else \
-       r = CreateBitmapRenderer<AA_>( \
-          inArgs, \
-          source<FLAGS_,NME_EDGE_CLAMP>(inSource,inMapper));
+       r = CreateBitmapRenderer( inArgs, source<FLAGS_,NME_EDGE_CLAMP>(inSource,inMapper));
 
 
    switch(inSource->format->BytesPerPixel)
@@ -404,34 +395,6 @@ PolygonRenderer *CreateBitmapRendererSource(
 }
 
 
-template<typename AA_>
-PolygonRenderer *AACreateBitmapRendererSource(
-                              const RenderArgs &inArgs,
-                              const class Matrix &inMapper,
-                              SDL_Surface *inSource )
-{
-   if (inArgs.inFlags & NME_BMP_LINEAR)
-   {
-      if (inArgs.inFlags & NME_ALPHA_BLEND)
-          return CreateBitmapRendererSource
-              <AA_,NME_BMP_LINEAR+NME_ALPHA_BLEND>(
-                inArgs,inMapper,inSource);
-      else
-          return CreateBitmapRendererSource<AA_,NME_BMP_LINEAR>(
-                inArgs,inMapper,inSource);
-   }
-   else
-   {
-      if (inArgs.inFlags & NME_ALPHA_BLEND)
-          return CreateBitmapRendererSource<AA_,NME_ALPHA_BLEND>(
-                inArgs,inMapper,inSource);
-      else
-          return CreateBitmapRendererSource<AA_,0>(
-                inArgs,inMapper,inSource);
-
-   }
-}
-
 
 
 PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(
@@ -442,16 +405,22 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(
    if (inArgs.inN<3)
       return 0;
 
-   if (inArgs.inFlags & NME_HIGH_QUALITY)
+
+   if (inArgs.inFlags & NME_BMP_LINEAR)
    {
-      AA4x::Init();
-      return AACreateBitmapRendererSource<AA4x>
-               (inArgs, inMapper,inSource);
+      if (inArgs.inFlags & NME_ALPHA_BLEND)
+          return CreateBitmapRendererSource <NME_BMP_LINEAR+NME_ALPHA_BLEND>(
+                inArgs,inMapper,inSource);
+      else
+          return CreateBitmapRendererSource<NME_BMP_LINEAR>( inArgs,inMapper,inSource);
    }
    else
    {
-      return AACreateBitmapRendererSource<AA0x>
-               (inArgs, inMapper,inSource);
+      if (inArgs.inFlags & NME_ALPHA_BLEND)
+          return CreateBitmapRendererSource<NME_ALPHA_BLEND>(inArgs,inMapper,inSource);
+      else
+          return CreateBitmapRendererSource<0>( inArgs,inMapper,inSource);
    }
+
 }
 

@@ -1,5 +1,28 @@
 #include "RenderPolygon.h"
+#include "AA.h"
+#include <map>
 
+
+#ifdef WIN32
+typedef __int64 int64;
+#else
+typedef long long int64;
+#endif
+
+
+
+typedef std::map<int,bool> SpanInfo;
+
+
+
+// Find y-extent of object, this is in pixels, and is the intersection
+//  with the screen y-extent.
+bool FindObjectYExtent(int &ioMinY, int &ioMaxY,int inN,
+          const PointF16 *inPoints,const PolyLine *inLines);
+
+
+
+// -------------------------- Build Fat Lines ----------------------------------
 
 
 struct LineStart
@@ -14,8 +37,6 @@ struct LineStart
 };
 
 typedef std::vector<LineStart> LineStarts;
-
-
 
 
 
@@ -604,18 +625,280 @@ public:
    int      mMaxY;
    int      mAABits;
    int      mToAA;
+};
 
+
+template<typename AA_>
+inline void ConvertInfoToRuns(const std::map<int,AA_> &inInfo,AlphaRuns &outRuns)
+{
+   enum { AABits = AA_::AABits };
+   enum { ToAA = (16-AABits) };
+   enum { AAMask = ~((1<<ToAA)-1) };
+   enum { AAFact = 1<<AABits };
+
+   typedef std::map<int,AA_>  LineInfo;
+   typedef AA_ Point;
+   typedef typename Point::State State;
+
+
+   int size = (int)inInfo.size();
+   if (size)
+   {
+      State  drawing;
+      Point::InitState(drawing);
+      outRuns.reserve( size*2 );
+
+      typename LineInfo::const_iterator i = inInfo.begin();
+      while(1)
+      {
+         int x = i->first;
+         int x1 = x+1;
+         short alpha = i->second.GetAlpha(drawing);
+
+         // transition point ...
+         if (alpha)
+            outRuns.push_back( AlphaRun(x,x1,alpha) );
+
+         i->second.Transition(drawing);
+
+         // constant run until next transition
+         typename LineInfo::const_iterator next = i;
+         ++next;
+         if (next==inInfo.end())
+            break;
+
+         int x_next = next->first;
+         if (x_next>x1)
+         {
+             short alpha = Point::SGetAlpha(drawing);
+             if (alpha>0)
+                outRuns.push_back( AlphaRun(x1,x_next,alpha) );
+         }
+         i = next;
+      }
+   }
+}
+
+
+template<typename AA_>
+class SolidRasterizer
+{
+   enum { AABits = AA_::AABits };
+   enum { ToAA = (16-AABits) };
+   typedef std::map<int,AA_>  LineInfo;
+
+
+   // finds D16-bit X/ D AA bit Y
+   inline int Grad(PointF16 inVec)
+   {
+      int denom = inVec.y;
+      if (inVec.y==0)
+         return 0;
+      int64 num = inVec.x;
+      num<<=ToAA;
+      return (int)(num/denom);
+   }
+
+
+
+public:
+   SolidRasterizer(const RenderArgs &inArgs, int inMinY, int inMaxY, Lines &outLines)
+   {
+      // For removing offset ...
+      int y_offset = inMinY << 16;
+      // Bottom of lines ...
+      int y_max_aa = (inMaxY-inMinY) << AABits;
+      int y_max_val = (inMaxY-inMinY) << 16;
+
+      int n = inArgs.inN;
+      PointF16 p0(inArgs.inPoints[0]);
+      p0.y -= y_offset;
+   
+
+      int line_count = (int)outLines.size();
+      std::vector<LineInfo> line_info( line_count );
+
+      for(int i=1;i<n;i++)
+      {
+         PointF16 p1(inArgs.inPoints[i]);
+         p1.y -= y_offset;
+         PointF16 p_next = p1;
+
+         // clip whole line ?
+         if ( (inArgs.inConnect[i]!=0) &&
+           (!(p0.y<0 && p1.y<0) && !(p0.y>=y_max_val && p1.y>=y_max_val)))
+         {
+            int y0 = p0.y>>ToAA;
+            int y1 = p1.y>>ToAA;
+            int dy = y1-y0;
+            if (dy==0)
+            {
+               // No need to do anything..
+            }
+            else
+            {
+               if (dy<0)
+               {
+                  std::swap(p0,p1);
+                  std::swap(y0,y1);
+               }
+
+               int dx_dy = Grad(p1 - p0);
+               int extra_y = ((y0+1)<<ToAA) - p0.y;
+               int x = p0.x + (dx_dy>>(ToAA-8)) * (extra_y>>8);
+
+               if (y0<0)
+               {
+                  x-= y0 * dx_dy;
+                  y0 = 0;
+               }
+               int last = y1>y_max_aa ? y_max_aa : y1;
+
+               for(; y0<last; y0++)
+               {
+                  // X is fixed-16, y is fixed-aa
+                  line_info[y0>>AABits][x>>16].Add(x,y0);
+                  x+=dx_dy;
+               }
+            }
+         }
+         p0 = p_next;
+      }
+
+      // line_info now contains information about the alpha runs - convert them...
+      for(int y=0;y<line_count;y++)
+         ConvertInfoToRuns<AA_>( line_info[y], outLines[y] );
+   }
 };
 
 
 
-void RasterizeLines(const PointF16 *inPoints,
-                    const PolyLine *inLines, 
-                    int inMinY, int inMaxY,
-                    int inAABits,
-                    SpanInfo *outSpans)
+
+
+template<typename AA_>
+void ConvertSpanToLine(SpanInfo *inSpans, AlphaRuns &outLine)
 {
-   LineRasterizer rasterer(inPoints,inLines,inMinY,inMaxY,inAABits,outSpans);
+   typedef std::map<int,AA_>  LineInfo;
+
+   LineInfo line;
+   for(int y=0;y< (1<<AA_::AABits); y++)
+   {
+      SpanInfo &span = inSpans[ y ];
+      for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
+      {
+         int x = i->first;
+         line[x>> AA_::AABits].AddAA(x,y);
+      }
+   }
+
+   ConvertInfoToRuns<AA_>(line,outLine);
 }
+
+
+
+
+// ---------   BasePolygonRenderer   -----------------------------------------
+
+
+BasePolygonRenderer::BasePolygonRenderer(const RenderArgs &inArgs)
+{
+   mMinY = inArgs.inMinY;
+   mMaxY = inArgs.inMaxY;
+   int aa_bits = 0;
+   
+   if (inArgs.inFlags & NME_HIGH_QUALITY)
+   {
+      aa_bits = 2;
+      AA4x::Init();
+   }
+
+   if (FindObjectYExtent(mMinY,mMaxY,inArgs.inN,inArgs.inPoints,inArgs.inLines))
+   {
+      int line_count = mMaxY - mMinY;
+      mLines.resize( line_count );
+
+      // Draw line or solid ?
+      if (inArgs.inLines)
+      {
+         // Bottom of lines ...
+         int y_max_aa = (mMaxY-mMinY) << aa_bits;
+         SpanInfo *spans = new SpanInfo[y_max_aa];
+
+         LineRasterizer rasterer(inArgs.inPoints,inArgs.inLines,mMinY,mMaxY,aa_bits,spans);
+
+         // Convert spans to alpha_runs ....
+         for(int y=mMinY;y<mMaxY;y++)
+         {
+            int y0 = (y-mMinY);
+            if (aa_bits==2)
+               ConvertSpanToLine<AA4x>(spans + (y0<<2), mLines[y0]);
+            else
+               ConvertSpanToLine<AA1x>(spans + y0, mLines[y0]);
+         }
+
+         delete [] spans;
+      }
+      else
+      {
+         if (aa_bits==2)
+         {
+            SolidRasterizer<AA4x> solid(inArgs,mMinY,mMaxY,mLines);
+         }
+         else
+         {
+            SolidRasterizer<AA1x> solid(inArgs,mMinY,mMaxY,mLines);
+         }
+      }
+   }
+}
+
+
+bool BasePolygonRenderer::HitTest(int inX,int inY)
+{
+   if (mMinY<=inY && mMaxY>inY)
+   {
+      AlphaRuns &line = mLines[inY-mMinY];
+      int s1 = ((int)line.size())-1;
+      if (s1<0)
+         return false;
+      if (s1==0)
+         return line[0].Contains(inX);
+      if (inX>=line[s1].mX0)
+         return inX < line[s1].mX1;
+      if (inX < line[0].mX0)
+         return false;
+
+      // Ok, somewhere between s0 and s1 ...
+      int s0 = 0;
+      while(s0+1<s1)
+      {
+         int t = (s0+s1)/2;
+         if (line[t].mX0 < inX)
+            s0 = t;
+         else
+            s1 = t;
+      }
+
+      return inX < line[s0].mX1;
+   }
+   return false;
+}
+
+void BasePolygonRenderer::GetExtent(Extent2DI &ioExtent)
+{
+   for(int y=mMinY; y<mMaxY; y++)
+   {
+      AlphaRuns &line = mLines[y-mMinY];
+      if (line.size())
+      {
+         ioExtent.AddY(y << 16);
+         ioExtent.AddX( line.begin()->mX0 );
+         ioExtent.AddX( line.rbegin()->mX1 );
+      }
+   }
+}
+
+
+
 
 
