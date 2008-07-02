@@ -14,8 +14,8 @@ struct PointF16
    inline PointF16(int inX,int inY) :x(inX), y(inY) {}
    inline PointF16(double inX,double inY)
    {
-      x =  (int)((inX+0.5) * 65536.0 );
-      y =  (int)((inY+0.5) * 65536.0 );
+      x =  (int)(inX * 65536.0 );
+      y =  (int)(inY * 65536.0 );
    }
 
    inline int X() const { return x>>16; };

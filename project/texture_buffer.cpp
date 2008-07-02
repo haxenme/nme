@@ -422,7 +422,6 @@ ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
 }
 
 
-
 void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray)
 {
    int x1 = inX+inW;
@@ -478,6 +477,38 @@ void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray
    }
 
    SetExtentDirty(inX,inY,x1,y1);
+}
+
+void TextureBuffer::SetPixel(int inX,int inY,int inCol)
+{
+   unsigned char *pix =
+         (unsigned char *)mSurface->pixels + inY*mSurface->pitch + inX*4;
+
+   int r = (inCol>>16) & 0xff;
+   int g = (inCol>>8) & 0xff;
+   int b = (inCol) & 0xff;
+   if (mSurface->format->BitsPerPixel==32)
+   {
+      *pix++ = r;
+      *pix++ = g;
+      *pix++ = b;
+      *pix++ = 255;
+   }
+   else if ( mSurface->format->BitsPerPixel==24 && mSurface->format->Rmask != 0x0000ff)
+   {
+      *pix++ = b;
+      *pix++ = g;
+      *pix++ = r;
+   }
+   else
+   {
+      *pix++ = r;
+      *pix++ = g;
+      *pix++ = b;
+   }
+
+
+   SetExtentDirty(inX,inY,inX+1,inY+1);
 }
 
 /*
@@ -584,6 +615,14 @@ value nme_set_pixel_data(value inTexture,
    int table_len = val_int(inTableLen);
 
    return alloc_int(tex->SetPixels(data,len,format,table_len));
+}
+
+value nme_set_pixel(value inTexture, value inX, value inY, value inColour)
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+
+   tex->SetPixel(val_int(inX), val_int(inY), val_int(inColour) );
+   return alloc_int(0);
 }
 
 
@@ -802,6 +841,7 @@ DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_load_texture, 1);
 DEFINE_PRIM(nme_load_texture_from_bytes, 5);
 DEFINE_PRIM(nme_set_pixel_data, 5);
+DEFINE_PRIM(nme_set_pixel, 4);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);
