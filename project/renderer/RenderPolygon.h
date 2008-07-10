@@ -26,18 +26,45 @@ typedef std::vector<AlphaRuns> Lines;
 
 // --- Polygon ---------------------------------------------
 
+class PolygonMask : public MaskObject
+{
+public:
+   PolygonMask() : mMinY(0), mMaxY(-1) { mID = sMaskID++; }
+   void Add(const PolygonMask &inMask);
+   void Mask(const PolygonMask &inMask);
+   int GetID() { return mID; }
+   void GetExtent(Extent2DI &ioExtent);
+   void ClipY(int &ioY)
+   {
+      if (ioY<mMinY) ioY = mMinY;
+      else if (ioY>mMaxY) ioY = mMaxY;
+   }
 
-class BasePolygonRenderer : public PolygonRenderer
+   PolygonMask *GetPolygonMask() { return this; }
+
+   int mID;
+   int mMinY;
+   int mMaxY;
+   Lines mLines;
+   Extent2DI mExtent;
+
+   static int sMaskID;
+};
+
+
+class BasePolygonRenderer :public PolygonMask, public PolygonRenderer
 {
 public:
    BasePolygonRenderer(const RenderArgs &inArgs);
    bool HitTest(int inX,int inY);
-   void GetExtent(Extent2DI &ioExtent);
+   void AddToMask(PolygonMask &ioMask) { ioMask.Add(*this); }
+   void Mask(const PolygonMask &inMask) { PolygonMask::Mask(inMask); }
+   void GetExtent(Extent2DI &ioExtent) { PolygonMask::GetExtent(ioExtent); }
+
+
+
    ~BasePolygonRenderer() { }
 
-   int mMinY;
-   int mMaxY;
-   Lines mLines;
 
 private: // Disable
    BasePolygonRenderer(const BasePolygonRenderer &inRHS);

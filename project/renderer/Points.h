@@ -147,14 +147,29 @@ struct Extent2D
    }
 
 
-
-
    template<typename P_>
    inline void Add(const P_ &inPoint)
    {
       AddX(inPoint.x);
       AddY(inPoint.y);
    }
+
+   template<>
+   inline void Add(const Extent2D<T_> &inExtent)
+   {
+      if (inExtent.mValidX)
+      {
+         AddX(inExtent.mMinX);
+         AddX(inExtent.mMaxX);
+      }
+      if (inExtent.mValidY)
+      {
+         AddY(inExtent.mMinY);
+         AddY(inExtent.mMaxY);
+      }
+   }
+
+
 
    inline bool Valid() const { return mValidX && mValidY; }
 

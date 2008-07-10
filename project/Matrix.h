@@ -20,6 +20,10 @@ public:
    bool IsIdentity() const
       { return m00==1.0 && m01==0.0 && mtx==0.0 &&
                m10==0.0 && m11==1.0 && mty==0.0; }
+   bool IsIntTranslation() const
+      { return m00==1.0 && m01==0.0 && mtx==(int)mtx &&
+               m10==0.0 && m11==1.0 && mty==(int)mty; }
+
 
    inline bool operator==(const Matrix &inRHS) const
       { return !memcmp(this,&inRHS,sizeof(*this)); }

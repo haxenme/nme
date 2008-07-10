@@ -536,6 +536,18 @@ value nme_set_cursor(value inCursor)
    return alloc_int(0);
 }
 
+value nme_get_mouse_position()
+{
+   int x,y;
+
+   SDL_GetMouseState(&x,&y);
+
+	value pos = alloc_object(NULL);
+   alloc_field( pos, val_id( "x" ), alloc_int( x ) );
+   alloc_field( pos, val_id( "y" ), alloc_int( y ) );
+   return alloc_object( pos );
+}
+
 
 #define NME_FULLSCREEN 0x0001
 #define NME_OPENGL     0x0002
@@ -828,3 +840,4 @@ DEFINE_PRIM(nme_surface_colourkey, 4);
 DEFINE_PRIM(nme_set_clip_rect, 2);
 DEFINE_PRIM(nme_get_clip_rect, 1);
 DEFINE_PRIM(nme_set_cursor, 1);
+DEFINE_PRIM(nme_get_mouse_position, 0);

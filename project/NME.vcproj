@@ -286,6 +286,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\renderer\PolygonMask.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\renderer\RenderBitmap.cpp"
 					>
 				</File>

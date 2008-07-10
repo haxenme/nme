@@ -45,6 +45,21 @@
 
 typedef std::vector<int> IntVec;
 
+// The rendering code will know what to do with this ...
+class PolygonMask;
+
+class MaskObject
+{
+public:
+   virtual ~MaskObject() { }
+   virtual PolygonMask *GetPolygonMask() = 0;
+   virtual int GetID() = 0;
+   virtual void ClipY(int &ioY) = 0;
+   virtual void GetExtent(Extent2DI &ioExtent)=0;
+
+   static MaskObject *Create();
+};
+
 struct PolyLine
 {
    PolyLine() : mPointIndex0(-1), mPointIndex1(-1) { }
@@ -75,6 +90,8 @@ public:
    virtual ~PolygonRenderer() {}
    virtual void Render(SDL_Surface *outDest) = 0;
    virtual bool HitTest(int inX,int inY)=0;
+   virtual void AddToMask(PolygonMask &ioMask)=0;
+   virtual void Mask(const PolygonMask &inMask)=0;
    virtual void GetExtent(Extent2DI &ioExtent)=0;
 
 

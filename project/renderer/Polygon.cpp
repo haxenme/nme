@@ -900,21 +900,3 @@ bool BasePolygonRenderer::HitTest(int inX,int inY)
    return false;
 }
 
-void BasePolygonRenderer::GetExtent(Extent2DI &ioExtent)
-{
-   for(int y=mMinY; y<mMaxY; y++)
-   {
-      AlphaRuns &line = mLines[y-mMinY];
-      if (line.size())
-      {
-         ioExtent.AddY(y << 16);
-         ioExtent.AddX( line.begin()->mX0 );
-         ioExtent.AddX( line.rbegin()->mX1 );
-      }
-   }
-}
-
-
-
-
-

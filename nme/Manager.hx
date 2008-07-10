@@ -275,6 +275,12 @@ class Manager
       nme_set_cursor(inCursor);
    }
 
+   static public function GetMouse() : nme.geom.Point
+   {
+      var m:Dynamic = nme_get_mouse_position();
+      return new nme.geom.Point( m.x, m.y );
+   }
+
 	public static function mouseEvent(inType:MouseEventType)
         {
            return 
@@ -537,6 +543,7 @@ class Manager
 	static var nme_set_draw_quality = neko.Lib.load("nme","nme_set_draw_quality",1);
 	static var nme_get_draw_quality = neko.Lib.load("nme","nme_get_draw_quality",0);
 	static var nme_set_cursor = neko.Lib.load("nme","nme_set_cursor",1);
+	static var nme_get_mouse_position = neko.Lib.load("nme","nme_get_mouse_position",0);
 	static var nme_set_clipboard = neko.Lib.load("nme","nme_set_clipboard",1);
 	static var nme_get_clipboard = neko.Lib.load("nme","nme_get_clipboard",0);
 }

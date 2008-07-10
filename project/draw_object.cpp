@@ -22,7 +22,11 @@
 DECLARE_KIND( k_drawable );
 DEFINE_KIND( k_drawable );
 
+DECLARE_KIND( k_mask );
+DEFINE_KIND( k_mask );
+
 #define DRAWABLE(v) ( (Drawable *)(val_data(v)) )
+#define MASK(v) ( (MaskObject *)(val_data(v)) )
 
 
 static int sQualityLevel = 1;
@@ -36,11 +40,13 @@ class Drawable
 public:
    virtual ~Drawable() { }
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0)=0;
-   virtual bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY) = 0;
+                  TextureBuffer *inMarkDirty=0,MaskObject *inMask=0)=0;
+   virtual bool HitTest(int inX,int inY) = 0;
 
    virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
                   bool inExtent)=0;
+
+   virtual void AddToMask(SDL_Surface *inSurf,PolygonMask &ioMask,const Matrix &inMatrix)=0;
 
    virtual bool IsGrad() { return false; }
 };
@@ -54,8 +60,8 @@ class EmptyDrawable : public Drawable
 public:
    EmptyDrawable() {}
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0) {}
-   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY) { return false; }
+                  TextureBuffer *inMarkDirty=0,MaskObject *inMask=0) {}
+   bool HitTest(int inX,int inY) { return false; }
 
    void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
                   bool inExtent) { }
@@ -183,6 +189,7 @@ public:
       mMinY = -1;
       mMaxY = -1;
       mOrigPoints.swap(inPoints);
+      mMaskID = -1;
 
       if (mSolidGradient || mTexture)
       {
@@ -377,14 +384,14 @@ public:
       return true;
    }
 
-   virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix,
-                  bool inAccurate)
+   virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix, bool inAccurate)
    {
       if (inAccurate)
       {
          SetupCurved(inMatrix);
 
          CreateRenderers(0,inMatrix,0);
+         mMaskID = -1;
 
          if (mPolygon)
             mPolygon->GetExtent(ioExtent);
@@ -473,13 +480,16 @@ public:
          BuildCurved(mOrigPoints,scale);
    }
 
+   // DrawObject
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0)
+                  TextureBuffer *inMarkDirty, MaskObject *inMaskObj)
    {
       SetupCurved(inMatrix);
 
-      if (IsOpenGLScreen(inSurface))
+      mIsOGL =  IsOpenGLScreen(inSurface);
+      if (mIsOGL)
       {
+         mOGLMatrix = inMatrix;
          if (mDisplayList || CreateDisplayList() )
          {
             if (inMatrix.IsIdentity())
@@ -495,7 +505,9 @@ public:
       }
       else
       {
-         CreateRenderers(inSurface,inMatrix,inMarkDirty);
+         PolygonMask *mask = inMaskObj ? inMaskObj->GetPolygonMask() : 0;
+         CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj);
+         // printf("RenderTo %p\n",inMaskObj);
 
          if (mPolygon)
             mPolygon->Render(inSurface);
@@ -511,26 +523,32 @@ public:
       }
    }
 
-   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
+   void AddToMask(SDL_Surface *inSurf,PolygonMask &ioMask,const Matrix &inMatrix)
    {
-      if (IsOpenGLScreen(inSurface))
+      SetupCurved(inMatrix);
+      CreateRenderers(inSurf,inMatrix,false);
+      if (mPolygon)
+         mPolygon->AddToMask(ioMask);
+   }
+
+   // DrawObject
+   bool HitTest(int inX,int inY)
+   {
+      if (mIsOGL)
       {
          // Line width seems to get ignored when picling?
-         if (mDisplayList || CreateDisplayList() )
+         if (mDisplayList)
          {
              GLuint buffer[10];
              glSelectBuffer(10, buffer); 
 
              glRenderMode(GL_SELECT);
 
-             glViewport(0,0,inSurface->w,inSurface->h);
              glMatrixMode(GL_PROJECTION);
              glLoadIdentity();
-             glTranslated(-inX,-inY,0);
-
              glMatrixMode(GL_MODELVIEW);
              glLoadIdentity();
-             inMatrix.GLMult();
+             mOGLMatrix.GLMult();
 
              glLoadName(1);
 
@@ -542,8 +560,6 @@ public:
       }
       else
       {
-         CreateRenderers(inSurface,inMatrix,0);
-
          if (mPolygon && mPolygon->HitTest(inX,inY))
             return true;
 
@@ -561,8 +577,9 @@ public:
    }
 
 
+   // DrawObject
    void CreateRenderers(SDL_Surface *inSurface,
-            const Matrix &inMatrix,TextureBuffer *inMarkDirty)
+            const Matrix &inMatrix,TextureBuffer *inMarkDirty,MaskObject *inMaskObj=0)
    {
 
       if (mPoints.empty())
@@ -578,6 +595,7 @@ public:
 
          if (min_y!=mMinY || max_y!=mMaxY)
          {
+            // printf("Different extent!\n");
             mMinY = min_y;
             mMaxY = max_y;
             ClearRenderers();
@@ -597,8 +615,24 @@ public:
             ClearRenderers();
          }
 
-         Uint16 n = (Uint16)mPoints.size();
+         int id = inMaskObj==0 ? -1 : inMaskObj->GetID();
+         if (mMaskID != id)
+         {
+            ClearRenderers();
+            mMaskID = id;
+         }
 
+
+         PolygonMask *mask = 0;
+         if (inMaskObj)
+         {
+            inMaskObj->ClipY(min_y);
+            inMaskObj->ClipY(max_y);
+            mask = inMaskObj->GetPolygonMask();
+         }
+
+
+         Uint16 n = (Uint16)mPoints.size();
 
          if (mSolidGradient || mFillAlpha>0)
          {
@@ -643,7 +677,8 @@ public:
                   mPolygon = PolygonRenderer::CreateSolidRenderer(args,
                                  mFillColour, mFillAlpha );
                }
-
+               if (mPolygon && mask)
+                  mPolygon->Mask(*mask);
             }
 
          }
@@ -674,6 +709,8 @@ public:
                   job.mRenderer = PolygonRenderer::CreateSolidRenderer(args,
                                      job.mColour, job.mAlpha );
                }
+               if (mask)
+                  job.mRenderer->Mask(*mask);
             }
 
          }
@@ -698,9 +735,13 @@ public:
 
    GLuint       mDisplayList;
 
+   bool         mIsOGL;
+   Matrix       mOGLMatrix;
+
    Matrix       mTransform;
    int          mMinY;
    int          mMaxY;
+   int          mMaskID;
 
    PolygonRenderer *mPolygon;
 
@@ -834,6 +875,7 @@ public:
       mTexture = new TextureBuffer(inSurface);
       mAlpha = inAlpha;
       mHasAlpha = inHasAlpha;
+      mMaskID = -1;
       Init(inOX,inOY);
    }
 
@@ -845,6 +887,14 @@ public:
       mHasAlpha = inTexture->GetSourceSurface()->format->BitsPerPixel==32;
       Init(inOX,inOY);
    }
+
+   void AddToMask(SDL_Surface *inSurf,PolygonMask &ioMask,const Matrix &inMatrix)
+   {
+      CreateRenderer(inSurf,inMatrix,0);
+      if (mRenderer)
+         mRenderer->AddToMask(ioMask);
+   }
+
 
 
    void Init(double inOX,double inOY)
@@ -875,17 +925,21 @@ public:
        delete mRenderer;
    }
 
+   // SurfaceDrawer
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0)
+                  TextureBuffer *inMarkDirty, MaskObject *inMask )
    {
-      if (IsOpenGLScreen(inSurface))
+      mIsOGL =  IsOpenGLScreen(inSurface);
+      if (mIsOGL)
       {
-         if (inMatrix.IsIdentity() && mOX==0 && mOY==0)
+         mOGLMatrix = inMatrix;
+
+         if (mOGLMatrix.IsIdentity() && mOX==0 && mOY==0)
             mTexture->DrawOpenGL();
          else
          {
             glPushMatrix();
-            inMatrix.GLMult();
+            mOGLMatrix.GLMult();
             glTranslated(mOX,mOY,0);
             mTexture->DrawOpenGL();
             glPopMatrix();
@@ -893,29 +947,92 @@ public:
       }
       else
       {
-         // todo: allow for pure translation too...
-         if (inMatrix.IsIdentity() )
+         if (inMatrix.IsIntTranslation())
          {
-            SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
+            if (inMask==0 && inMatrix.mtx==0 && inMatrix.mty==0)
+            {
+               SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
+               mHitRect = mRect;
+               return;
+            }
+
+            SDL_Rect dest_rect = mRect;
+            dest_rect.x += (int)inMatrix.mtx;
+            dest_rect.y += (int)inMatrix.mty;
+
+            if (inMask!=0)
+            {
+               // Just clip by extent, as per flash api
+               Extent2DI extent;
+               inMask->GetExtent(extent);
+               int x0 = dest_rect.x;
+               int y0 = dest_rect.y;
+
+               // No overlap...
+               if (dest_rect.x >= extent.mMaxX || (dest_rect.x+dest_rect.w)<extent.mMinX ||
+                   dest_rect.y >= extent.mMaxY || (dest_rect.y+dest_rect.h)<extent.mMinY )
+               {
+                  mHitRect.w = mHitRect.h = 0;
+                  return;
+               }
+               int diff = extent.mMinX - dest_rect.x;
+               if (diff>0)
+               {
+                  dest_rect.x += diff;
+                  dest_rect.w -= diff;
+               }
+
+               diff = dest_rect.x + dest_rect.w  - extent.mMaxX;
+               if (diff>0)
+                  dest_rect.w -= diff;
+
+
+               diff = extent.mMinY - dest_rect.y;
+               if (diff>0)
+               {
+                  dest_rect.y += diff;
+                  dest_rect.h -= diff;
+               }
+
+               diff = dest_rect.y + dest_rect.h  - extent.mMaxY;
+               if (diff>0)
+                  dest_rect.h -= diff;
+
+               SDL_Rect src_rect;
+               src_rect.x = dest_rect.x - x0;
+               src_rect.y = dest_rect.y - y0;
+               src_rect.h = dest_rect.h;
+               src_rect.w = dest_rect.w;
+               mHitRect = dest_rect;
+               SDL_BlitSurface(mTexture->GetSourceSurface(), &src_rect, inSurface,&dest_rect);
+               return;
+            }
+            else
+            {
+               mHitRect = dest_rect;
+               SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&dest_rect);
+               return;
+            }
          }
-         else
-         {
-            CreateRenderer(inSurface,inMatrix);
-            if (mRenderer)
-               mRenderer->Render(inSurface);
-         }
+
+         CreateRenderer(inSurface,inMatrix,inMask);
+         if (mRenderer)
+            mRenderer->Render(inSurface);
       }
    }
 
-   void CreateRenderer(SDL_Surface *inSurface,const Matrix &inMatrix)
+   // SurfaceDrawer
+   void CreateRenderer(SDL_Surface *inSurface,const Matrix &inMatrix, MaskObject *inMask)
    {
-      if (inMatrix!=mLastMatrix || !mRenderer)
+      int mid = inMask==0 ? -1 : inMask->GetID();
+      if (inMatrix!=mLastMatrix || !mRenderer || mid!=mMaskID)
       {
+         mMaskID = mid;
+
          mLastMatrix = inMatrix;
          for(int i=0;i<5;i++)
             inMatrix.TransformHQCorner( mSX[i], mSY[i], mPoints[i].x, mPoints[i].y );
 
-         // TODO  Ox,Oy
          Matrix mapping = inMatrix.Invert2x2();
          mapping.MatchTransform(mPoints[0].x/65536.0,
                                 mPoints[0].y/65536.0,0,0);
@@ -941,28 +1058,32 @@ public:
 
          mRenderer = PolygonRenderer::CreateBitmapRenderer(args,
                       mapping, mTexture->GetSourceSurface() );
+
+         if (inMask)
+            mRenderer->Mask(*inMask->GetPolygonMask());
+
       }
    }
 
 
 
-   bool HitTest(SDL_Surface *inSurface,const Matrix &inMatrix,int inX,int inY)
+   // SurfaceDrawer
+   bool HitTest(int inX,int inY)
    {
-      if (IsOpenGLScreen(inSurface))
+      if (mIsOGL)
       {
          GLuint buffer[10];
          glSelectBuffer(10, buffer); 
 
          glRenderMode(GL_SELECT);
 
-         glViewport(0,0,inSurface->w,inSurface->h);
          glMatrixMode(GL_PROJECTION);
          glLoadIdentity();
          glTranslated(-inX,-inY,0);
 
          glMatrixMode(GL_MODELVIEW);
          glLoadIdentity();
-         inMatrix.GLMult();
+         mOGLMatrix.GLMult();
 
          glLoadName(1);
 
@@ -973,10 +1094,14 @@ public:
       }
       else
       {
-         CreateRenderer(inSurface,inMatrix);
-
          if (mRenderer && mRenderer->HitTest(inX,inY))
             return true;
+         else if (!mRenderer)
+         {
+            if (inX>= mHitRect.x && inX<mHitRect.x+mHitRect.w &&
+                inY>= mHitRect.y && inY<mHitRect.y+mHitRect.h )
+               return true;
+         }
       }
 
        return false;
@@ -990,7 +1115,7 @@ public:
          int x,y;
          inMatrix.TransformHQ( mSX[i], mSY[i], x, y);
 
-         ioExtent.Add(x+0x10000,y+0x10000);
+         ioExtent.Add((x+0x10000)>>16,(y+0x10000)>>16);
       }
 
    }
@@ -1000,12 +1125,17 @@ public:
 
    bool        mHasAlpha;
    SDL_Rect    mRect;
+   SDL_Rect    mHitRect;
    Sint16      mSX[5];
    Sint16      mSY[5];
    PointF16    mPoints[5];
    double      mOX;
    double      mOY;
    double      mAlpha;
+   bool        mIsOGL;
+   int         mMaskID;
+   Matrix      mOGLMatrix;
+
 
    Matrix           mLastMatrix;
    PolygonRenderer *mRenderer;
@@ -1223,6 +1353,7 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    int n =  val_int( val_field(inDrawList,val_id("length")));
    value *objs =  val_array_ptr(objs_arr);
 
+   // printf("nme_get_extent\n");
    for(int i=0;i<n;i++)
    {
       Drawable *d = DRAWABLE(objs[i]);
@@ -1231,10 +1362,10 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    }
 
 
-   alloc_field( ioRect, val_id("x"), alloc_float(extent.mMinX>>16) );
-   alloc_field( ioRect, val_id("y"), alloc_float(extent.mMinY>>16) );
-   alloc_field( ioRect, val_id("width"), alloc_float(extent.Width()>>16) );
-   alloc_field( ioRect, val_id("height"), alloc_float(extent.Height()>>16));
+   alloc_field( ioRect, val_id("x"), alloc_float(extent.mMinX) );
+   alloc_field( ioRect, val_id("y"), alloc_float(extent.mMinY) );
+   alloc_field( ioRect, val_id("width"), alloc_float(extent.Width()) );
+   alloc_field( ioRect, val_id("height"), alloc_float(extent.Height()));
 
    return alloc_int( extent.Valid() ? 1 : 0);
 }
@@ -1255,12 +1386,25 @@ void delete_drawable( value drawable )
    }
 }
 
+void delete_mask_object( value mask )
+{
+   if ( val_is_kind( mask, k_mask ) )
+   {
+      val_gc( mask, NULL );
 
-value nme_draw_object_to(value drawable,value surface,value matrix )
+      MaskObject *m = MASK(mask);
+      delete m;
+   }
+}
+
+
+
+value nme_draw_object_to(value drawable,value surface,value matrix, value inMask )
 {
    if ( val_is_kind( drawable, k_drawable ) )
    {
       SDL_Surface *s = 0;
+      MaskObject *mask = 0;
       TextureBuffer *tex = 0;
 
       if ( val_is_kind( surface, k_surf )  )
@@ -1273,25 +1417,67 @@ value nme_draw_object_to(value drawable,value surface,value matrix )
          s = tex->GetSourceSurface();
       }
 
+      if ( val_is_kind( inMask, k_mask )  )
+      {
+         mask = MASK(inMask);
+      }
+
       if (s)
       {
          Matrix mtx(matrix);
          Drawable *d = DRAWABLE(drawable);
-         d->RenderTo(s,mtx,tex);
+         d->RenderTo(s,mtx,tex,mask);
       }
    }
    return alloc_int(0);
 }
 
-value nme_hit_object(value surface,value drawable,value matrix,value x,value y )
+value nme_add_to_mask(value inDrawList,value inSurface,value inMask, value inMatrix )
 {
-   if ( val_is_kind( surface, k_surf )  )
+   val_check_kind( inSurface, k_surf );
+   SDL_Surface *surf = SURFACE(inSurface);
+
+   val_check_kind( inMask, k_mask );
+   MaskObject *mask_object = MASK(inMask);
+   PolygonMask *mask = mask_object->GetPolygonMask();
+
+   value objs_arr =  val_field(inDrawList,val_id("__a"));
+   val_check( objs_arr, array );
+
+   Matrix matrix(inMatrix);
+
+   int n =  val_int( val_field(inDrawList,val_id("length")));
+   value *objs =  val_array_ptr(objs_arr);
+
+   for(int i=0;i<n;i++)
+   {
+      Drawable *d = DRAWABLE(objs[i]);
+      if (d)
+         d->AddToMask(surf,*mask,matrix);
+   }
+
+
+
+   return alloc_int(0);
+}
+
+value nme_create_mask()
+{
+   MaskObject *mask = MaskObject::Create();
+
+   value v = alloc_abstract( k_mask, mask );
+   val_gc( v, delete_mask_object );
+
+   return v;
+}
+
+
+value nme_hit_object(value drawable,value x,value y )
+{
       if ( val_is_kind( drawable, k_drawable ) )
       {
-         Matrix mtx(matrix);
-         SDL_Surface *s = SURFACE(surface);
          Drawable *d = DRAWABLE(drawable);
-         return alloc_bool(d->HitTest(s,mtx,val_int(x),val_int(y)));
+         return alloc_bool(d->HitTest(val_int(x),val_int(y)));
       }
    return alloc_bool(false);
 }
@@ -1312,10 +1498,12 @@ DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 4);
-DEFINE_PRIM(nme_draw_object_to, 3);
-DEFINE_PRIM(nme_hit_object, 5);
+DEFINE_PRIM(nme_draw_object_to, 4);
+DEFINE_PRIM(nme_hit_object, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_get_draw_quality, 0);
+DEFINE_PRIM(nme_create_mask, 0);
+DEFINE_PRIM(nme_add_to_mask, 4);
 DEFINE_PRIM_MULT(nme_create_text_drawable);
 
 

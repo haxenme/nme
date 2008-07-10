@@ -80,6 +80,7 @@ class Graphics
    public static var defaultFontName = "ARIAL.TTF";
    public static var defaultFontSize = 12;
    public static var immediateMatrix = null;
+   public static var immediateMask:Void = null;
 
 
 
@@ -172,21 +173,21 @@ class Graphics
 
 
 
-   public function render(?inMatrix:Matrix,?inSurface:Void)
+   public function render(?inMatrix:Matrix,?inSurface:Void,?inMaskHandle:Void)
    {
       ClosePolygon(true);
 
       var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
       for(obj in mDrawList)
-         nme_draw_object_to(obj,dest,inMatrix);
+         nme_draw_object_to(obj,dest,inMatrix,inMaskHandle);
    }
 
-   public function hitTest(inMatrix:Matrix,inX:Int,inY:Int) : Bool
+   // Only works properly after a render ...
+   public function hitTest(inX:Int,inY:Int) : Bool
    {
-      ClosePolygon(true);
       for(obj in mDrawList)
       {
-         if (nme_hit_object(nme.Manager.getScreen(),obj,inMatrix,inX,inY))
+         if (nme_hit_object(obj,inX,inY))
             return true;
       }
       return false;
@@ -623,7 +624,7 @@ class Graphics
          mDrawList.push( inDrawable );
       else
       {
-         nme_draw_object_to(inDrawable,mSurface,immediateMatrix);
+         nme_draw_object_to(inDrawable,mSurface,immediateMatrix,immediateMask);
       }
    }
 
@@ -682,6 +683,22 @@ class Graphics
       }
    }
 
+   public function AddToMask(ioMask:Void,inMatrix:Matrix,?inSurface:Void)
+   {
+      if (mDrawList.length>0)
+      {
+         var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
+         nme_add_to_mask(mDrawList,dest,ioMask,inMatrix);
+      }
+   }
+
+   public function CreateMask(inMatrix:Matrix):Void
+   {
+      var mask:Void = nme_create_mask();
+      AddToMask(mask,inMatrix);
+      return mask;
+   }
+
 /*
    function GetClipRect() : Rectangle
    {
@@ -698,8 +715,8 @@ class Graphics
 
 
 
-   static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",3);
-   static var nme_hit_object = neko.Lib.load("nme","nme_hit_object",5);
+   static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",4);
+   static var nme_hit_object = neko.Lib.load("nme","nme_hit_object",3);
    static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
    static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
@@ -707,6 +724,8 @@ class Graphics
    static var nme_set_clip_rect = neko.Lib.load("nme","nme_set_clip_rect",2);
    static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",4);
    static var nme_create_glyph_draw_obj = neko.Lib.load("nme","nme_create_glyph_draw_obj",-1);
+   static var nme_create_mask = neko.Lib.load("nme","nme_create_mask",0);
+   static var nme_add_to_mask = neko.Lib.load("nme","nme_add_to_mask",4);
 
 }
 
