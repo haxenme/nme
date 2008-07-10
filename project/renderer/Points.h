@@ -154,7 +154,6 @@ struct Extent2D
       AddY(inPoint.y);
    }
 
-   template<>
    inline void Add(const Extent2D<T_> &inExtent)
    {
       if (inExtent.mValidX)
