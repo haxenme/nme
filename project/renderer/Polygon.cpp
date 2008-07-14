@@ -82,7 +82,7 @@ public:
 
       int n = pid1 - pid0 + 1;
       size_t plast = n-1;
-      bool loop = n>2 && (inPoints[pid0]==inPoints[pid0 + plast]);
+      bool loop = n>2 && (inPoints[pid0]==inPoints[pid1]);
 
 
 
@@ -106,16 +106,20 @@ public:
          // Snap vertical line to AA grid ...
          if (dx==0)
          {
-               ap.mPos.x = ((ap.mPos.x - it + 0x8000) & 0xffff0000 ) + it;
-            LineStart &next = points[p+1];
+            ap.mPos.x = ((ap.mPos.x - it + 0x8000) & 0xffff0000 ) + it;
+            LineStart &next = points[ loop ? ( (p+1)%plast ) : p+1];
             next.mPos.x = ((next.mPos.x - it + 0x8000) & 0xffff0000 ) + it;
+            if (loop && p==0)
+              points[plast].mPos.x = ap.mPos.x;
          }
          // Snap horizontal line to AA grid ...
          if (dy==0)
          {
             ap.mPos.y = ((ap.mPos.y - it + 0x8000) & 0xffff0000 ) + it;
-            LineStart &next = points[p+1];
+            LineStart &next = points[ loop ? ( (p+1)%plast ) : p+1];
             next.mPos.y = ((next.mPos.y - it + 0x8000) & 0xffff0000 ) + it;
+            if (loop && p==0)
+               points[plast].mPos.y = ap.mPos.y;
          }
 
 
@@ -162,6 +166,10 @@ public:
             SpanCircle(points[0].mPos);
             SpanCircle(points[plast].mPos);
          }
+      }
+      else
+      {
+         points[plast] = points[0];
       }
 
       if (mJoints==NME_CORNER_ROUND && mCircleRad>0)

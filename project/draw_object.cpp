@@ -40,7 +40,7 @@ class Drawable
 public:
    virtual ~Drawable() { }
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0,MaskObject *inMask=0)=0;
+                  TextureBuffer *inMarkDirty,MaskObject *inMask,const Viewport &inVP)=0;
    virtual bool HitTest(int inX,int inY) = 0;
 
    virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
@@ -60,7 +60,7 @@ class EmptyDrawable : public Drawable
 public:
    EmptyDrawable() {}
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty=0,MaskObject *inMask=0) {}
+                  TextureBuffer *inMarkDirty,MaskObject *inMask,const Viewport &inVP) {}
    bool HitTest(int inX,int inY) { return false; }
 
    void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
@@ -190,6 +190,7 @@ public:
       mMaxY = -1;
       mOrigPoints.swap(inPoints);
       mMaskID = -1;
+      mIsOGL = false;
 
       if (mSolidGradient || mTexture)
       {
@@ -313,8 +314,7 @@ public:
          if (mSolidGradient)
             mSolidGradient->BeginOpenGL();
          else if (tex)
-            tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK)
-                                   ==NME_EDGE_REPEAT );
+            tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK) ==NME_EDGE_REPEAT );
          else
             glDisable(GL_TEXTURE_2D);
 
@@ -413,6 +413,8 @@ public:
    {
       size_t n = mPoints.size();
       mTransform = inMatrix;
+      mTX = 0;
+      mTY = 0;
 
       if (mTransform.IsIdentity())
       {
@@ -482,7 +484,8 @@ public:
 
    // DrawObject
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty, MaskObject *inMaskObj)
+                  TextureBuffer *inMarkDirty, MaskObject *inMaskObj,
+                  const Viewport &inViewport)
    {
       SetupCurved(inMatrix);
 
@@ -510,7 +513,7 @@ public:
          // printf("RenderTo %p\n",inMaskObj);
 
          if (mPolygon)
-            mPolygon->Render(inSurface);
+            mPolygon->Render(inSurface,inViewport,mTX,mTY);
 
          size_t jobs = mLineJobs.size();
          for(size_t j=0;j<jobs;j++)
@@ -518,7 +521,7 @@ public:
             LineJob &job = mLineJobs[ j ];
 
             if (job.mRenderer)
-               job.mRenderer->Render(inSurface);
+               job.mRenderer->Render(inSurface,inViewport,mTX,mTY);
          }
       }
    }
@@ -536,7 +539,7 @@ public:
    {
       if (mIsOGL)
       {
-         // Line width seems to get ignored when picling?
+         // Line width seems to get ignored when picking?
          if (mDisplayList)
          {
              GLuint buffer[10];
@@ -546,6 +549,8 @@ public:
 
              glMatrixMode(GL_PROJECTION);
              glLoadIdentity();
+             glTranslated(-inX,-inY,0);
+
              glMatrixMode(GL_MODELVIEW);
              glLoadIdentity();
              mOGLMatrix.GLMult();
@@ -560,7 +565,7 @@ public:
       }
       else
       {
-         if (mPolygon && mPolygon->HitTest(inX,inY))
+         if (mPolygon && mPolygon->HitTest(inX-mTX,inY-mTY))
             return true;
 
          size_t jobs = mLineJobs.size();
@@ -568,7 +573,7 @@ public:
          {
             LineJob &job = mLineJobs[ j ];
 
-            if (job.mRenderer && job.mRenderer->HitTest(inX,inY))
+            if (job.mRenderer && job.mRenderer->HitTest(inX-mTX,inY-mTY))
                return true;
          }
       }
@@ -585,135 +590,146 @@ public:
       if (mPoints.empty())
          return;
 
-         int min_y = inSurface ? NME_clip_ymin(inSurface) : -0x7fff;
-         int max_y = inSurface ? NME_clip_ymax(inSurface) : 0x7fff;
+      int min_y = -0x7fff;
+      int max_y =  0x7fff;
+
+      // Limit creation to visible lines ?
+      //  Pro: do not need to calculate some lines
+      //  Con: need to recalculate visible lines if transform changes.
+      /*
+      if (inSurface)
+      {
+         min_y =  NME_clip_ymin(inSurface);
+         max_y =  NME_clip_ymax(inSurface);
+
          if (inSurface && IsOpenGLScreen(inSurface))
          {
             min_y = 0;
             max_y = inSurface->h;
          }
+      }
 
-         if (min_y!=mMinY || max_y!=mMaxY)
+      if (min_y!=mMinY || max_y!=mMaxY)
+      {
+         // printf("Different extent!\n");
+         mMinY = min_y;
+         mMaxY = max_y;
+         ClearRenderers();
+      }
+      */
+
+      if (!mTransform.IsIntTranslation(inMatrix,mTX,mTY))
+      {
+         TransformPoints(inMatrix);
+         ClearRenderers();
+      }
+
+      unsigned int flags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
+      if (flags!=mOldFlags)
+      {
+         mOldFlags = flags;
+         ClearRenderers();
+      }
+
+      int id = inMaskObj==0 ? -1 : inMaskObj->GetID();
+      if (mMaskID != id)
+      {
+         ClearRenderers();
+         mMaskID = id;
+      }
+
+
+      PolygonMask *mask = 0;
+      if (inMaskObj)
+      {
+         inMaskObj->ClipY(min_y);
+         inMaskObj->ClipY(max_y);
+         mask = inMaskObj->GetPolygonMask();
+      }
+
+
+      Uint16 n = (Uint16)mPoints.size();
+
+      if (mSolidGradient || mFillAlpha>0)
+      {
+         if (inMarkDirty)
          {
-            // printf("Different extent!\n");
-            mMinY = min_y;
-            mMaxY = max_y;
-            ClearRenderers();
-         }
-
-         if (inMatrix!=mTransform)
-         {
-            TransformPoints(inMatrix);
-            // TODO: allow for the possibility of simple translation...
-            ClearRenderers();
-         }
-
-         unsigned int flags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
-         if (flags!=mOldFlags)
-         {
-            mOldFlags = flags;
-            ClearRenderers();
-         }
-
-         int id = inMaskObj==0 ? -1 : inMaskObj->GetID();
-         if (mMaskID != id)
-         {
-            ClearRenderers();
-            mMaskID = id;
-         }
-
-
-         PolygonMask *mask = 0;
-         if (inMaskObj)
-         {
-            inMaskObj->ClipY(min_y);
-            inMaskObj->ClipY(max_y);
-            mask = inMaskObj->GetPolygonMask();
-         }
-
-
-         Uint16 n = (Uint16)mPoints.size();
-
-         if (mSolidGradient || mFillAlpha>0)
-         {
-            if (inMarkDirty)
+            size_t n = mPointF16s.size();
+            for(size_t i=0;i<n;i++)
             {
-               size_t n = mPointF16s.size();
-               for(size_t i=0;i<n;i++)
-               {
-                  int x = mPointF16s[i].x>>16;
-                  int y = mPointF16s[i].y>>16;
-                  inMarkDirty->SetExtentDirty(x,y,x+1,y+1);
-               }
+               int x = mPointF16s[i].x>>16;
+               int y = mPointF16s[i].y>>16;
+               inMarkDirty->SetExtentDirty(x,y,x+1,y+1);
             }
-
-            if (!mPolygon)
-            {
-               RenderArgs args;
-               args.inN = (int)mPointF16s.size();
-               args.inPoints = &mPointF16s[0];
-               args.inLines = 0;
-               args.inConnect = &mConnection[0];
-               args.inMinY = min_y;
-               args.inMaxY = max_y;
-               args.inFlags = flags;
-
-               if (mSolidGradient)
-               {
-                  mPolygon = PolygonRenderer::CreateGradientRenderer(args,
-                                 mSolidGradient );
-               }
-               else if (mTexture)
-               { 
-                  //Matrix m(mTexture->mTransMatrix);
-
-                  args.inFlags |= mTexture->mFlags;
-                  mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
-                                 mTexture->mTransMatrix,
-                                 mTexture->mTexture->GetSourceSurface() );
-               }
-               else
-               {
-                  mPolygon = PolygonRenderer::CreateSolidRenderer(args,
-                                 mFillColour, mFillAlpha );
-               }
-               if (mPolygon && mask)
-                  mPolygon->Mask(*mask);
-            }
-
          }
 
-         size_t jobs = mLineJobs.size();
-         for(size_t j=0;j<jobs;j++)
+         if (!mPolygon)
          {
-            LineJob &job = mLineJobs[ j ];
-            if (!job.mRenderer)
+            RenderArgs args;
+            args.inN = (int)mPointF16s.size();
+            args.inPoints = &mPointF16s[0];
+            args.inLines = 0;
+            args.inConnect = &mConnection[0];
+            args.inMinY = min_y;
+            args.inMaxY = max_y;
+            args.inFlags = flags;
+
+            if (mSolidGradient)
             {
-               RenderArgs args;
-               args.inN = (int)mPointF16s.size();
-               args.inPoints = &mPointF16s[0];
-               args.inLines = &job;
-               args.inConnect = 0;
-               args.inMinY = min_y;
-               args.inMaxY = max_y;
-               args.inFlags = flags;
-
-               if (job.mGradient)
-               {
-                  job.mRenderer = PolygonRenderer::CreateGradientRenderer(args,
-                                  job.mGradient );
-
-               }
-               else
-               {
-                  job.mRenderer = PolygonRenderer::CreateSolidRenderer(args,
-                                     job.mColour, job.mAlpha );
-               }
-               if (mask)
-                  job.mRenderer->Mask(*mask);
+               mPolygon = PolygonRenderer::CreateGradientRenderer(args,
+                              mSolidGradient );
             }
+            else if (mTexture)
+            { 
+               //Matrix m(mTexture->mTransMatrix);
 
+               args.inFlags |= mTexture->mFlags;
+               mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
+                              mTexture->mTransMatrix,
+                              mTexture->mTexture->GetSourceSurface() );
+            }
+            else
+            {
+               mPolygon = PolygonRenderer::CreateSolidRenderer(args,
+                              mFillColour, mFillAlpha );
+            }
+            if (mPolygon && mask)
+               mPolygon->Mask(*mask);
          }
+
+      }
+
+      size_t jobs = mLineJobs.size();
+      for(size_t j=0;j<jobs;j++)
+      {
+         LineJob &job = mLineJobs[ j ];
+         if (!job.mRenderer)
+         {
+            RenderArgs args;
+            args.inN = (int)mPointF16s.size();
+            args.inPoints = &mPointF16s[0];
+            args.inLines = &job;
+            args.inConnect = 0;
+            args.inMinY = min_y;
+            args.inMaxY = max_y;
+            args.inFlags = flags;
+
+            if (job.mGradient)
+            {
+               job.mRenderer = PolygonRenderer::CreateGradientRenderer(args,
+                               job.mGradient );
+
+            }
+            else
+            {
+               job.mRenderer = PolygonRenderer::CreateSolidRenderer(args,
+                                  job.mColour, job.mAlpha );
+            }
+            if (mask)
+               job.mRenderer->Mask(*mask);
+         }
+
+      }
    }
 
 
@@ -739,6 +755,8 @@ public:
    Matrix       mOGLMatrix;
 
    Matrix       mTransform;
+   int          mTX;
+   int          mTY;
    int          mMinY;
    int          mMaxY;
    int          mMaskID;
@@ -927,7 +945,8 @@ public:
 
    // SurfaceDrawer
    virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty, MaskObject *inMask )
+                  TextureBuffer *inMarkDirty, MaskObject *inMask,
+                  const Viewport &inVP )
    {
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
@@ -1016,8 +1035,12 @@ public:
          }
 
          CreateRenderer(inSurface,inMatrix,inMask);
+
+         Viewport vp( NME_clip_xmin(inSurface), NME_clip_ymin(inSurface),
+                      NME_clip_xmax(inSurface), NME_clip_ymax(inSurface) );
+
          if (mRenderer)
-            mRenderer->Render(inSurface);
+            mRenderer->Render(inSurface,vp,0,0);
       }
    }
 
@@ -1399,7 +1422,8 @@ void delete_mask_object( value mask )
 
 
 
-value nme_draw_object_to(value drawable,value surface,value matrix, value inMask )
+value nme_draw_object_to(value drawable,value surface,value matrix,
+                         value inMask, value inScrollRect )
 {
    if ( val_is_kind( drawable, k_drawable ) )
    {
@@ -1425,8 +1449,21 @@ value nme_draw_object_to(value drawable,value surface,value matrix, value inMask
       if (s)
       {
          Matrix mtx(matrix);
+         Viewport vp( NME_clip_xmin(s), NME_clip_ymin(s),
+                      NME_clip_xmax(s), NME_clip_ymax(s) );
+         if (!val_is_null(inScrollRect))
+         {
+            int x0 = (int)val_number( val_field(inScrollRect,val_id("x")) );
+            int y0 = (int)val_number( val_field(inScrollRect,val_id("y")) );
+            int x1 = x0+(int)val_number( val_field(inScrollRect,val_id("width")) );
+            int y1 = y0+(int)val_number( val_field(inScrollRect,val_id("height")) );
+            if (x0>x1) std::swap(x0,x1);
+            if (y0>y1) std::swap(y0,y1);
+            vp.SetWindow(x0,y0,x1,y1);
+         }
+
          Drawable *d = DRAWABLE(drawable);
-         d->RenderTo(s,mtx,tex,mask);
+         d->RenderTo(s,mtx,tex,mask,vp);
       }
    }
    return alloc_int(0);
@@ -1498,7 +1535,7 @@ DEFINE_PRIM(nme_create_draw_obj, 5);
 DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 4);
-DEFINE_PRIM(nme_draw_object_to, 4);
+DEFINE_PRIM(nme_draw_object_to, 5);
 DEFINE_PRIM(nme_hit_object, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_get_draw_quality, 0);

@@ -42,6 +42,90 @@ void PolygonMask::Add(const PolygonMask &inMask)
    // Merge ...
    else
    {
+      int min_y = std::min(inMask.mMinY,mMinY);
+      int max_y = std::max(inMask.mMaxY,mMaxY);
+      int n = max_y - min_y;
+      Lines lines(n);
+
+      const Lines lines0 = inMask.mLines;
+      for(int i=0;i<n;i++)
+      {
+         int y = i+min_y;
+         bool in_me = y>=mMinY && y<mMaxY;
+         bool in_mask = y>=inMask.mMinY && y<inMask.mMaxY;
+         if (in_me && !in_mask)
+            lines[i].swap( mLines[y-mMinY] );
+         else if (in_mask && !in_me)
+            lines[i] = lines0[y-inMask.mMinY];
+         else if (!in_mask && !in_me)
+            ; // nothing to do
+         else
+         {
+            const AlphaRuns &l0 = lines0[y-inMask.mMinY];
+            const AlphaRuns &l1 = mLines[y-mMinY];
+            AlphaRuns::const_iterator i0 = l0.begin();
+            AlphaRuns::const_iterator i1 = l1.begin();
+            AlphaRuns &target = lines[i];
+
+            while(i0!=l0.end() || i1!=l1.end())
+            {
+               // Gobble up the end of the line ...
+               if (i0==l0.end())
+               {
+                  while(i1!=l1.end())
+                     target.push_back(*i1++);
+                  break;
+               }
+               else if (i1==l1.end())
+               {
+                  while(i0!=l0.end())
+                     target.push_back(*i0++);
+                  break;
+               }
+
+               // i0 behind i1 ...
+               if (i0->mX1 <= i1->mX0)
+                  target.push_back(*i0++);
+               // i1 behind i0 ...
+               else if (i1->mX1 <= i0->mX0)
+                  target.push_back(*i1++);
+               // Overlapping ....
+               else
+               {
+                  int alpha = 256 - (( (256-i0->mAlpha) * (256-i1->mAlpha) ) >> 8);
+                  // i1 inside i0
+                  if (i0->mX0 <= i1->mX0  && i0->mX1>=i1->mX1)
+                  {
+                     target.push_back( AlphaRun(i1->mX0, i1->mX1, alpha) );
+                     i1++;
+                  }
+                  // i1 inside i0
+                  else if (i1->mX0 <= i0->mX0  && i1->mX1>=i0->mX1)
+                  {
+                     target.push_back( AlphaRun(i0->mX0, i0->mX1, alpha) );
+                     i0++;
+                  }
+                  // Partially overlapping - i0 is left-most
+                  else if (i0->mX0 <= i1->mX0)
+                  {
+                     target.push_back( AlphaRun(i1->mX0, i0->mX1, alpha) );
+                     i0++;
+                  }
+                  // Partially overlapping - i1 is left-most
+                  else
+                  {
+                     if (alpha>0)
+                        target.push_back( AlphaRun(i0->mX0, i1->mX1, alpha) );
+                     i0++;
+                  }
+               }
+            }
+         }
+      }
+
+      mLines.swap(lines);
+      mMinY = min_y;
+      mMaxY = max_y;
    }
 }
 

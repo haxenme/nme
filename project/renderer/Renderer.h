@@ -33,9 +33,9 @@
 
 
 #define NME_clip_xmin(pnt) pnt->clip_rect.x
-#define NME_clip_xmax(pnt) pnt->clip_rect.x + pnt->clip_rect.w-1
+#define NME_clip_xmax(pnt) pnt->clip_rect.x + pnt->clip_rect.w
 #define NME_clip_ymin(pnt) pnt->clip_rect.y
-#define NME_clip_ymax(pnt) pnt->clip_rect.y + pnt->clip_rect.h-1
+#define NME_clip_ymax(pnt) pnt->clip_rect.y + pnt->clip_rect.h
 
 
 
@@ -84,11 +84,41 @@ struct RenderArgs
    Uint32 inFlags;
 };
 
+struct Viewport
+{
+   Viewport(int inX0,int inY0,int inX1,int inY1) : x0(inX0), y0(inY0), x1(inX1), y1(inY1)
+   {
+   }
+
+   void SetWindow(int inX0,int inY0,int inX1,int inY1)
+   {
+      if (x0<inX0) x0 = inX0;
+      if (x1>inX1) x1 = inX1;
+      if (y0<inY0) y0 = inY0;
+      if (y1>inY1) y1 = inY1;
+   }
+   inline void ClipX(int &ioX0,int &ioX1) const
+   {
+      if (ioX0 < x0) ioX0 = x0;
+      if (ioX1 > x1) ioX1 = x1;
+   }
+   inline void ClipY(int &ioY0,int &ioY1) const
+   {
+      if (ioY0 < y0) ioY0 = y0;
+      if (ioY1 > y1) ioY1 = y1;
+   }
+
+
+
+   int x0,y0;
+   int x1,y1;
+};
+
 class PolygonRenderer
 {
 public:
    virtual ~PolygonRenderer() {}
-   virtual void Render(SDL_Surface *outDest) = 0;
+   virtual void Render(SDL_Surface *outDest,const Viewport &inViewport,int inTX,int inTY) = 0;
    virtual bool HitTest(int inX,int inY)=0;
    virtual void AddToMask(PolygonMask &ioMask)=0;
    virtual void Mask(const PolygonMask &inMask)=0;

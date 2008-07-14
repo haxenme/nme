@@ -23,6 +23,22 @@ public:
    bool IsIntTranslation() const
       { return m00==1.0 && m01==0.0 && mtx==(int)mtx &&
                m10==0.0 && m11==1.0 && mty==(int)mty; }
+   bool IsIntTranslation(const Matrix &inRHS,int &outTX,int &outTY) const
+   {
+      if (m00!=inRHS.m00 || m01!=inRHS.m01 || m10!=inRHS.m10 || m11!=inRHS.m11)
+         return false;
+      double dx = inRHS.mtx - mtx;
+      int idx = (int)dx;
+      if (dx!=idx)
+         return false;
+      double dy = inRHS.mty - mty;
+      int idy = (int)dy;
+      if (dy!=idy)
+         return false;
+      outTX = idx;
+      outTY = idy;
+      return true;
+   }
 
 
    inline bool operator==(const Matrix &inRHS) const

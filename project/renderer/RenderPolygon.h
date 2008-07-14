@@ -86,11 +86,14 @@ public:
    }
 
    template<typename DEST_>
-   void RenderDest(DEST_ &outDest)
+   void RenderDest(DEST_ &outDest,const Viewport &inViewport,int inTX,int inTY)
    {
-      for(int y=mMinY; y<mMaxY; y++)
+      int y0 = mMinY + inTY;
+      int y1 = mMaxY + inTY;
+      inViewport.ClipY(y0,y1);
+      for(int y=y0; y<y1; y++)
       {
-         const AlphaRuns &line = mLines[y-mMinY];
+         const AlphaRuns &line = mLines[y-mMinY-inTY];
          AlphaRuns::const_iterator end = line.end();
          AlphaRuns::const_iterator run = line.begin();
          if (run!=end)
@@ -98,14 +101,13 @@ public:
             outDest.SetRow(y);
             while(run<end)
             {
-               int x0 = run->mX0;
-               if (x0 >= outDest.mMaxX)
+               int x0 = run->mX0 + inTX;
+               if (x0 >= inViewport.x1)
                   break;
-               int x1 = run->mX1;
-               if (x1>outDest.mMinX)
+               int x1 = run->mX1 + inTX;
+               if (x1>inViewport.x0)
                {
-                  if (x0<outDest.mMinX) x0 = outDest.mMinX;
-                  if (x1>outDest.mMaxX) x1 = outDest.mMaxX;
+                  inViewport.ClipX(x0,x1);
                   outDest.SetX(x0);
                   mSource.SetPos(x0,y);
                   int alpha = run->mAlpha;
@@ -130,7 +132,7 @@ public:
       }
    }
 
-   void Render(SDL_Surface *outDest)
+   void Render(SDL_Surface *outDest,const Viewport &inViewport,int inTX,int inTY)
    {
       if ( SDL_MUSTLOCK(outDest) )
          if ( SDL_LockSurface(outDest) < 0 )
@@ -139,9 +141,9 @@ public:
       // TODO : 2
       switch(outDest->format->BytesPerPixel)
       {
-         case 1: { DestSurface8 d(outDest); RenderDest(d); } break;
-         case 3: { DestSurface24 d(outDest); RenderDest(d); } break;
-         case 4: { DestSurface32 d(outDest); RenderDest(d); } break;
+         case 1: { DestSurface8 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
+         case 3: { DestSurface24 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
+         case 4: { DestSurface32 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
       }
 
       if ( SDL_MUSTLOCK(outDest)  )

@@ -173,13 +173,13 @@ class Graphics
 
 
 
-   public function render(?inMatrix:Matrix,?inSurface:Void,?inMaskHandle:Void)
+   public function render(?inMatrix:Matrix,?inSurface:Void,?inMaskHandle:Void,?inScrollRect:Rectangle)
    {
       ClosePolygon(true);
 
       var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
       for(obj in mDrawList)
-         nme_draw_object_to(obj,dest,inMatrix,inMaskHandle);
+         nme_draw_object_to(obj,dest,inMatrix,inMaskHandle,inScrollRect);
    }
 
    // Only works properly after a render ...
@@ -624,7 +624,7 @@ class Graphics
          mDrawList.push( inDrawable );
       else
       {
-         nme_draw_object_to(inDrawable,mSurface,immediateMatrix,immediateMask);
+         nme_draw_object_to(inDrawable,mSurface,immediateMatrix,immediateMask,null);
       }
    }
 
@@ -715,7 +715,7 @@ class Graphics
 
 
 
-   static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",4);
+   static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",5);
    static var nme_hit_object = neko.Lib.load("nme","nme_hit_object",3);
    static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
    static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
