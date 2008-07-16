@@ -89,6 +89,10 @@ struct Viewport
    Viewport(int inX0,int inY0,int inX1,int inY1) : x0(inX0), y0(inY0), x1(inX1), y1(inY1)
    {
    }
+   bool IsWindow(int inW,int inH) const
+   {
+      return x0==0 && y0==0 && x1==inW && y1==inH;
+   }
 
    void SetWindow(int inX0,int inY0,int inX1,int inY1)
    {

@@ -968,7 +968,9 @@ public:
       {
          if (inMatrix.IsIntTranslation())
          {
-            if (inMask==0 && inMatrix.mtx==0 && inMatrix.mty==0)
+            bool full_vp = inVP.IsWindow(inSurface->w,inSurface->h);
+
+            if (full_vp && inMask==0 && inMatrix.mtx==0 && inMatrix.mty==0)
             {
                SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
                mHitRect = mRect;
@@ -979,11 +981,18 @@ public:
             dest_rect.x += (int)inMatrix.mtx;
             dest_rect.y += (int)inMatrix.mty;
 
-            if (inMask!=0)
+            if (inMask!=0 || !full_vp)
             {
-               // Just clip by extent, as per flash api
                Extent2DI extent;
-               inMask->GetExtent(extent);
+               // Just clip by extent, as per flash api
+               if (inMask)
+                  inMask->GetExtent(extent);
+               if (!extent.Intersect(inVP.x0, inVP.y0, inVP.x1, inVP.y1))
+               {
+                  memset(&mHitRect,0,sizeof(mHitRect));
+                  return;
+               }
+
                int x0 = dest_rect.x;
                int y0 = dest_rect.y;
 
@@ -1036,11 +1045,8 @@ public:
 
          CreateRenderer(inSurface,inMatrix,inMask);
 
-         Viewport vp( NME_clip_xmin(inSurface), NME_clip_ymin(inSurface),
-                      NME_clip_xmax(inSurface), NME_clip_ymax(inSurface) );
-
          if (mRenderer)
-            mRenderer->Render(inSurface,vp,0,0);
+            mRenderer->Render(inSurface,inVP,0,0);
       }
    }
 

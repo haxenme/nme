@@ -88,6 +88,12 @@ class BitmapData
    }
 
 
+   static public function CreateFromHandle(inHandle:Void) : BitmapData
+   {
+      var result = new BitmapData(0,0);
+      result.mTextureBuffer = inHandle;
+      return result;
+   }
 
    static public function Load(inFilename:String) : BitmapData
    {

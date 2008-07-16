@@ -167,6 +167,32 @@ struct Extent2D
          AddY(inExtent.mMaxY);
       }
    }
+   bool Intersect(T_ inX0,T_ inY0, T_ inX1, T_ inY1)
+   {
+      if (!mValidX)
+      {
+         mMinX = inX0;
+         mMaxX = inX1;
+         mValidX = true;
+      }
+      else
+      {
+         if (inX0 > mMinX) mMinX = inX0;
+         if (inX1 < mMaxX) mMaxX = inX1;
+      }
+      if (!mValidY)
+      {
+         mMinY = inY0;
+         mMaxY = inY1;
+         mValidY = true;
+      }
+      else
+      {
+         if (inY0 > mMinY) mMinY = inY0;
+         if (inY1 < mMaxY) mMaxY = inY1;
+      }
+      return mMinX<mMaxX && mMinY<mMaxY;
+   }
 
 
 
