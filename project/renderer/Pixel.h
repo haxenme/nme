@@ -5,12 +5,91 @@
 #include "../Matrix.h"
 
 
+struct ARGB
+{
+   enum { HasAlpha = 1 };
+
+   inline void Set(int inVal) { ival = inVal; }
+
+   template<typename SRC_>
+   inline void Blend(const SRC_ &inVal)
+   {
+      return;
+      int A = inVal.a;
+      // Somthing to set ?
+      if (A>5)
+      {
+         // Are we practically blank ?
+         if (a<5)
+         {
+            if (A<250)
+            {
+               r += ((inVal.r-r) * A) >> 8;
+               g += ((inVal.g-g) * A) >> 8;
+               b += ((inVal.b-b) * A) >> 8;
+            }
+            else
+               ival = inVal.ival;
+         }
+         // Ok, merge alphas ...
+         else
+         {
+            int alpha16 = a + A + a*A;
+            int c1 = (255-A) * a;
+            r = ((A*inVal.r<<8) + c1 * r)/alpha16;
+            g = ((A*inVal.g<<8) + c1 * g)/alpha16;
+            b = ((A*inVal.b<<8) + c1 * b)/alpha16;
+            a = alpha16>>8;
+         }
+      }
+   }
+
+
+   union
+   {
+      struct { Uint8 b,g,r,a; };
+      int  ival;
+   };
+};
+
+struct XRGB
+{
+   enum { HasAlpha = 0 };
+   inline void Set(int inVal) { ival = inVal;  }
+
+   template<typename SRC_>
+   inline void Blend(const SRC_ &inVal)
+   {
+      int A = inVal.a;
+      if (A>5)
+      {
+         if (A<250)
+         {
+             r += ((inVal.r-r) * A) >> 8;
+             g += ((inVal.g-g) * A) >> 8;
+             b += ((inVal.b-b) * A) >> 8;
+         }
+         else
+            ival = inVal.ival;
+      }
+   }
+
+   union
+   {
+      struct { Uint8 b,g,r,a; };
+      int  ival;
+   };
+};
+
+
+
+
 // --- Destinations -----------------------------------------------------
 
 
 struct DestBase
 {
-   DestBase(SDL_Surface *inSurface,int inPixelSize)
+   DestBase(SDL_Surface *inSurface)
    {
       mSurface = inSurface;
       mMinX = NME_clip_xmin(mSurface);
@@ -19,19 +98,13 @@ struct DestBase
       mMaxY = NME_clip_ymax(mSurface);
 
       mBase = (Uint8 *)inSurface->pixels;
-      mPtr = mBase;
       mPitch = inSurface->pitch;
-      mPixelSize = inPixelSize;
+      mPixelSize = inSurface->format->BytesPerPixel;
    }
 
    inline void SetRow(Sint16 inY)
    {
       mRowBase = mBase + inY*mPitch;
-   }
-
-   inline void SetX(Sint16 inX)
-   {
-      mPtr = mRowBase + inX*mPixelSize;
    }
 
 
@@ -44,159 +117,67 @@ struct DestBase
    SDL_Surface *mSurface;
    Uint8       *mBase;
    Uint8       *mRowBase;
-   Uint8       *mPtr;
 };
 
-struct DestSurface8 : public DestBase
+
+// 8 or 24 bits ...
+struct DestSurfaceFallback : public DestBase
 {
-   DestSurface8(SDL_Surface *inSurface) : DestBase(inSurface,1)
+   DestSurfaceFallback(SDL_Surface *inSurface) : DestBase(inSurface)
    {
+      mFormat = inSurface->format;
+   }
+
+   inline void SetX(Sint16 inX)
+   {
+      mPtr = mRowBase + inX*mPixelSize;
    }
 
    template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
+   void SetIncBlend(const SOURCE_ &inRGB)
    {
-      *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
+      *(int *)0=0;
+      if (mPixelSize==1)
+        *mPtr++ = SDL_MapRGB(mSurface->format,inRGB.a,inRGB.g,inRGB.b);
+      else
+      {
+        *mPtr++ = inRGB.b;
+        *mPtr++ = inRGB.g;
+        *mPtr++ = inRGB.r;
+      }
    }
 
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   {
-      *mPtr++= SDL_MapRGB(mSurface->format,inSource.GetR(), inSource.GetG(), inSource.GetB());
-   }
 
-
-
+   SDL_PixelFormat *mFormat;
+   Uint8 *mPtr;
+   int r,g,b;
 };
 
-struct DestSurface24 : public DestBase
+// 32 bits, either ARGB or XRGB
+template<typename PIXEL_>
+struct DestSurface32 : public DestBase
 {
-   DestSurface24(SDL_Surface *inSurface,int inPS=3) : DestBase(inSurface,inPS)
+   DestSurface32(SDL_Surface *inSurface) : DestBase(inSurface)
    {
-      // TODO:
-      mROff = 2;
-      mGOff = 1;
-      mBOff = 0;
    }
 
    template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
+   void SetIncBlend(SOURCE_ &inSource)
    {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         if (!SOURCE_::AlreadyRoundedAlpha)
-            a += (a>>7);
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>8;
-      }
+      if (SOURCE_::HasAlpha)
+         mPtr->Blend(inSource);
       else
-      {
-         mPtr[mROff] = inSource.GetR();
-         mPtr[mGOff] = inSource.GetG();
-         mPtr[mBOff] = inSource.GetB();
-      }
-      mPtr += 3;
+         mPtr->Set(inSource.ival);
+      mPtr++;
    }
 
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
+   inline void SetX(Sint16 inX)
    {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         if (!SOURCE_::AlreadyRoundedAlpha)
-            a += (a>>7);
-         a*= inAlpha;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>16;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>16;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>16;
-      }
-      else
-      {
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>8;
-      }
-      mPtr += 3;
+      mPtr = (PIXEL_ *)(mRowBase + inX*mPixelSize);
    }
 
 
-   int mROff;
-   int mGOff;
-   int mBOff;
-};
-
-struct DestSurface32 : public DestSurface24
-{
-   int mAOff;
-
-   DestSurface32(SDL_Surface *inSurface) : DestSurface24(inSurface,4)
-   {
-      mAOff = 3;
-   }
-
-   template<typename SOURCE_>
-   void SetInc(SOURCE_ &inSource)
-   {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         if (!SOURCE_::AlreadyRoundedAlpha)
-            a += (a>>7);
-
-         // todo: do this properly
-         mPtr[mAOff] = a-1;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>8;
-      }
-      else
-      {
-         mPtr[mROff] = inSource.GetR();
-         mPtr[mGOff] = inSource.GetG();
-         mPtr[mBOff] = inSource.GetB();
-         mPtr[mAOff] = 255;
-      }
-      mPtr += 4;
-   }
-
-
-   template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource,int inAlpha)
-   {
-      if (SOURCE_::AlphaBlend)
-      {
-         int a = inSource.GetA();
-         if (!SOURCE_::AlreadyRoundedAlpha)
-            a += (a>>7);
-
-         // todo: do this properly
-         mPtr[mAOff] = a-1;
-
-         a*=inAlpha;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*a)>>16;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*a)>>16;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*a)>>16;
-      }
-      else
-      {
-         // todo: do this properly
-         mPtr[mAOff] = inAlpha-1;
-
-         mPtr[mROff] += ((inSource.GetR()-mPtr[mROff])*inAlpha)>>8;
-         mPtr[mGOff] += ((inSource.GetG()-mPtr[mGOff])*inAlpha)>>8;
-         mPtr[mBOff] += ((inSource.GetB()-mPtr[mBOff])*inAlpha)>>8;
-      }
-
-      mPtr += 4;
-   }
-
+   PIXEL_ *mPtr;
 
 };
 

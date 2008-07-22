@@ -7,13 +7,9 @@
 #include <math.h>
 
 #include "Matrix.h"
+#include "renderer/Pixel.h"
 
-struct GradColour
-{
-   Uint8 r,g,b,a;
-};
-
-typedef std::vector<GradColour> GradColours;
+typedef std::vector<ARGB> GradColours;
 
 
 class Gradient

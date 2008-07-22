@@ -140,8 +140,8 @@ public:
 
    static PolygonRenderer *CreateBitmapRenderer(
                               const RenderArgs &inArgs,
-                              const class Matrix &inMapper,
-                              SDL_Surface *inSource );
+                              SDL_Surface *inSource,
+                              const class Matrix &inMapper);
 };
 
 

@@ -685,8 +685,8 @@ public:
 
                args.inFlags |= mTexture->mFlags;
                mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
-                              mTexture->mTransMatrix,
-                              mTexture->mTexture->GetSourceSurface() );
+                              mTexture->mTexture->GetSourceSurface(),
+                              mTexture->mTransMatrix);
             }
             else
             {
@@ -902,7 +902,7 @@ public:
       mTexture = inTexture;
       mTexture->IncRef();
       mAlpha = 1;
-      mHasAlpha = inTexture->GetSourceSurface()->format->BitsPerPixel==32;
+      mHasAlpha = (inTexture->GetSourceSurface()->flags & SDL_SRCALPHA) != 0;
       Init(inOX,inOY);
    }
 
@@ -1086,7 +1086,7 @@ public:
 
 
          mRenderer = PolygonRenderer::CreateBitmapRenderer(args,
-                      mapping, mTexture->GetSourceSurface() );
+                       mTexture->GetSourceSurface(), mapping );
 
          if (inMask)
             mRenderer->Mask(*inMask->GetPolygonMask());

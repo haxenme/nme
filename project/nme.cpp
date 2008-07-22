@@ -46,19 +46,50 @@ DEFINE_KIND( k_snd );
 DEFINE_KIND( k_mus );
 
 
+
+SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
+{
+   unsigned int  flags = SDL_SWSURFACE;
+
+   SDL_PixelFormat fmt;
+   memset(&fmt,0,sizeof(fmt));
+   fmt.BitsPerPixel = 32;
+   fmt.BytesPerPixel = 4;
+
+   if (inSurface->flags & SDL_SRCALPHA)
+   {
+      flags |= SDL_SRCALPHA;
+      fmt.Amask = 0xff000000;
+      fmt.Ashift = 24;
+   }
+   fmt.Rmask = 0xff0000;
+   fmt.Rshift = 16;
+   fmt.Gmask = 0xff00;
+   fmt.Gshift = 8;
+   fmt.Bmask = 0xff;
+   fmt.Bshift = 0;
+
+   fmt.alpha = 255;
+   fmt.colorkey = 0xff000000;
+
+
+   return SDL_ConvertSurface(inSurface,&fmt,SDL_SWSURFACE);
+}
+
+
 SDL_Surface* nme_loadimage( value file )
 {
-	val_check( file, string );
+   val_check( file, string );
 
-	SDL_Surface* surf;
-	surf = IMG_Load( val_string( file ) );
-	if ( !surf )
-		surf = SDL_LoadBMP( val_string( file ) );
-	if ( !surf )
-		return NULL;
-	//SDL_Surface *surface = SDL_DisplayFormat( surf );
-  	//SDL_FreeSurface( surf );
-	return surf;
+   SDL_Surface* surf;
+   surf = IMG_Load( val_string( file ) );
+   if ( !surf )
+     	surf = SDL_LoadBMP( val_string( file ) );
+   if ( !surf )
+     	return NULL;
+   SDL_Surface *surface = ConvertToPreferredFormat( surf );
+  	SDL_FreeSurface( surf );
+   return surface;
 }
 
 struct MyRWOps : SDL_RWops
@@ -168,10 +199,15 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
 	surf = IMG_LoadTyped_RW(&rw_ops,0,type);
 	if ( !surf )
 	   return NULL;
-        if (inAlphaLen>0)
-        {
-           // TODO: Need a test image to test this...
-        }
+
+   SDL_Surface *surface = ConvertToPreferredFormat( surf );
+  	SDL_FreeSurface( surf );
+   return surface;
+
+   if (inAlphaLen>0)
+   {
+      // TODO: Need a test image to test this...
+   }
 
 
 	return surf;
@@ -296,7 +332,6 @@ static bool sOpenGL = false;
 SDL_Surface *sOpenGLScreen = 0;
 static bool sDoScissor;
 SDL_Rect sScissorRect;
-static int sBPP = 32;
 static Uint32 sFlags = 0;
 
 bool IsOpenGLMode() { return sOpenGL; }
@@ -556,103 +591,81 @@ value nme_get_mouse_position()
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
 {
-	val_check( in_flags, int );
-        bool fullscreen = (val_int(in_flags) & NME_FULLSCREEN) != 0;
-        bool opengl = (val_int(in_flags) & NME_OPENGL) != 0;
-        bool resizable = (val_int(in_flags) & NME_RESIZABLE) != 0;
+   val_check( in_flags, int );
 
-        sOpenGL = opengl;
+   bool fullscreen = (val_int(in_flags) & NME_FULLSCREEN) != 0;
+   bool opengl = (val_int(in_flags) & NME_OPENGL) != 0;
+   bool resizable = (val_int(in_flags) & NME_RESIZABLE) != 0;
 
-        Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
-        if (opengl)
-           init_flags |= SDL_OPENGL;
-	if ( SDL_Init( init_flags ) == -1 ) failure( SDL_GetError() );
+   Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+   if (opengl)
+      init_flags |= SDL_OPENGL;
+
+   if ( SDL_Init( init_flags ) == -1 )
+      failure( SDL_GetError() );
 
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
 
-	val_check( width, int );
-	val_check( height, int );
-	val_check( title, string );
+   val_check( width, int );
+   val_check( height, int );
+   val_check( title, string );
 
-	sFlags = opengl ? SDL_HWSURFACE | SDL_OPENGL : SDL_HWSURFACE | SDL_DOUBLEBUF;
+   int w = val_int(width);
+   int h = val_int(height);
 
-   /*
-      hmmm ...
-        if ( fullscreen )
-        {
-           sFlags |= SDL_FULLSCREEN;
-           if (!opengl) sBPP = 16;
-        }
-   */
+   sFlags = SDL_HWSURFACE;
 
    if ( resizable )
       sFlags |= SDL_RESIZABLE;
 
-	if ( val_is_string( icon ) )
-	{
-		SDL_Surface *icn = nme_loadimage( icon );
-		if ( icn != NULL )
-		{
-			SDL_WM_SetIcon( icn, NULL );
-		}
-	}
+   if ( val_is_string( icon ) )
+   {
+      SDL_Surface *icn = nme_loadimage( icon );
+      if ( icn != NULL )
+         SDL_WM_SetIcon( icn, NULL );
+   }
 
-     SDL_Surface* screen = 0;
-     if (opengl)
-     {
-         int rgb_size[3];
-         /* Initialize the display */
-         switch (sBPP) 
-         {
-         case 8:
-             rgb_size[0] = 2;
-             rgb_size[1] = 3;
-             rgb_size[2] = 3;
-             break;
-         case 15:
-         case 16:
-             rgb_size[0] = 5;
-             rgb_size[1] = 5;
-             rgb_size[2] = 5;
-             break;
-         default:
-             rgb_size[0] = 8;
-             rgb_size[1] = 8;
-             rgb_size[2] = 8;
-             break;
-         }
-         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, rgb_size[0]);
-         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, rgb_size[1]);
-         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, rgb_size[2]);
-         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, sBPP);
-         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+   SDL_Surface* screen = 0;
+   if (opengl)
+   {
+      /* Initialize the display */
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
+      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-         if ( (screen = SDL_SetVideoMode( val_int( width ), val_int( height ), sBPP, sFlags )) == NULL) 
-         {
-             fprintf(stderr, "Couldn't set GL mode: %s\n", SDL_GetError());
-             SDL_Quit();
-             exit(1);
-         }
-         sOpenGLScreen = screen;
-     }
-     else
-     {
-     	   screen = SDL_SetVideoMode( val_int( width ), val_int( height ), sBPP, sFlags );
-	        if (!screen) failure( SDL_GetError() );
+      sFlags |= SDL_OPENGL;
+      if (!(screen = SDL_SetVideoMode( w, h, 32, sFlags | SDL_OPENGL)))
+      {
+         sFlags &= ~SDL_OPENGL;
+         fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+      }
+      else
+        sOpenGL = true;
 
-     }
- 
-	if ( TTF_Init() != 0 )
-		printf("unable to initialize the truetype font support\n");
+      sOpenGLScreen = screen;
+   }
 
 
-	SDL_WM_SetCaption( val_string( title ), 0 );
+   if (!screen)
+   {
+      sFlags |= SDL_DOUBLEBUF;
+      screen = SDL_SetVideoMode( w, h, 32, sFlags );
+      if (!screen)
+         failure( SDL_GetError() );
+   }
 
-	if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096 ) != 0 )
-		printf("unable to initialize the sound support\n");
+   if ( TTF_Init() != 0 )
+      printf("unable to initialize the truetype font support\n");
 
-	return alloc_abstract( k_surf, screen );
+   SDL_WM_SetCaption( val_string( title ), 0 );
+
+   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
+      printf("unable to initialize the sound support\n");
+
+   return alloc_abstract( k_surf, screen );
 }
 
 value nme_resize_surface(value inW, value inH)
@@ -660,11 +673,11 @@ value nme_resize_surface(value inW, value inH)
    val_check( inW, int );
    val_check( inH, int );
 
-   SDL_Surface *screen = SDL_SetVideoMode( val_int(inW), val_int(inH), sBPP, sFlags );
+   SDL_Surface *screen = SDL_SetVideoMode( val_int(inW), val_int(inH), 32, sFlags );
    if (sOpenGL)
       sOpenGLScreen = screen;
 
-	return alloc_abstract( k_surf, screen );
+   return alloc_abstract( k_surf, screen );
 }
 
 

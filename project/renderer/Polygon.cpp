@@ -10,8 +10,16 @@ typedef long long int64;
 #endif
 
 
+struct Span
+{
+   inline Span() {}
+   inline Span(int inX0,int inX1) : mX0(inX0), mX1(inX1) { }
 
-typedef std::map<int,bool> SpanInfo;
+   int mX0;
+   int mX1;
+};
+
+typedef std::vector<Span> SpanInfo;
 
 
 
@@ -54,6 +62,7 @@ public:
       mMaxY = inMaxY;
       mToAA = 16-mAABits;
 
+
       // For removing offset ...
       int y_offset = mMinY << 16;
       // Bottom of lines ...
@@ -84,8 +93,6 @@ public:
       size_t plast = n-1;
       bool loop = n>2 && (inPoints[pid0]==inPoints[pid1]);
 
-
-
       LineStarts points(n);
       // Number of line segments is 1 fewer than points - so last
       //  point does not need a dx, and may have an square end.
@@ -96,18 +103,19 @@ public:
          ap.mPos.y -= y_offset;
       }
 
+      // Snap horizontal and vertical lines to be aligned with pixel grid for less blurry lines
       for(size_t p=0;p<plast;p++)
       {
          LineStart &ap = points[p];
 
-         double dx = inPoints[pid0 + p+1].x - inPoints[pid0 + p].x;
-         double dy = inPoints[pid0 + p+1].y - inPoints[pid0 + p].y;
+         int dx = points[p+1].mPos.x - ap.mPos.x;
+         int dy = points[p+1].mPos.y - ap.mPos.y;
 
          // Snap vertical line to AA grid ...
          if (dx==0)
          {
             ap.mPos.x = ((ap.mPos.x - it + 0x8000) & 0xffff0000 ) + it;
-            LineStart &next = points[ loop ? ( (p+1)%plast ) : p+1];
+            LineStart &next = points[p+1];
             next.mPos.x = ((next.mPos.x - it + 0x8000) & 0xffff0000 ) + it;
             if (loop && p==0)
               points[plast].mPos.x = ap.mPos.x;
@@ -116,13 +124,20 @@ public:
          if (dy==0)
          {
             ap.mPos.y = ((ap.mPos.y - it + 0x8000) & 0xffff0000 ) + it;
-            LineStart &next = points[ loop ? ( (p+1)%plast ) : p+1];
+            LineStart &next = points[p+1];
             next.mPos.y = ((next.mPos.y - it + 0x8000) & 0xffff0000 ) + it;
             if (loop && p==0)
                points[plast].mPos.y = ap.mPos.y;
          }
+      }
 
+      // Calculate perpendicular line for use with line widths.
+      for(size_t p=0;p<plast;p++)
+      {
+         LineStart &ap = points[p];
 
+         double dx = points[p+1].mPos.x - ap.mPos.x;
+         double dy = points[p+1].mPos.y - ap.mPos.y;
          double norm = sqrt(dx*dx + dy*dy);
 
          if (mJoints==NME_CORNER_MITER || mJoints==NME_CORNER_BEVEL)
@@ -137,7 +152,6 @@ public:
                ap.mParaDX = 0;
                ap.mParaDY = 0;
             }
-
          }
 
          if (norm!=0)
@@ -167,10 +181,6 @@ public:
             SpanCircle(points[plast].mPos);
          }
       }
-      else
-      {
-         points[plast] = points[0];
-      }
 
       if (mJoints==NME_CORNER_ROUND && mCircleRad>0)
       {
@@ -184,111 +194,101 @@ public:
          DrawLineSeg( points[i], points[i+1], do_join && (loop||i+1<plast) );
    }
 
+   /*
+   bool NotSpanned(SpanInfo &span,int x0,int x1)
+   {
+      for(int i=0;i<span.size();i++)
+      {
+         Span &s = span[i];
+         if (s.mX0<=x0 && s.mX1>=x1)
+            return false;
+      }
+      return true;
+   }
+
+   bool VerifySpan(SpanInfo &ospan, SpanInfo &span,int inX0, int inX1)
+   {
+      for(int i=0;i<span.size()-1;i++)
+         if (span[i+1].mX0 <= span[i].mX1)
+         {
+            *(int *)0=0;
+            return false;
+         }
+
+      if (NotSpanned(span,inX0,inX1))
+      {
+         *(int *)0=0;
+         return false;
+      }
+
+      for(int i=0;i<ospan.size();i++)
+      {
+         Span s = ospan[i];
+         if (NotSpanned(span,s.mX0,s.mX1))
+         {
+            *(int *)0=0;
+            return false;
+         }
+      }
+      return true;
+   }
+   */
+
 
    inline void HLine(int inY,int inX0,int inX1)
    {
       if (inY>=0 && inY<mMaxSpan)
       {
-
          //inX0 = inX0 >> mToAA;
          //inX1 = (inX1>>mToAA);
          if (inX0==inX1) return;
          SpanInfo &span = mSpans[inY];
+         int n = (int)span.size();
 
-         /*
-         printf("Inserting (%d,%d) into : ", inX0,inX1);
-         for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
-            printf("%d%c ", i->first,i->second ? '*' : ' ');
-         printf("\n");
-         */
+         // SpanInfo ospan = span;
 
-         // find element greater than, or equal to inX0 ...
-         SpanInfo::iterator i = span.lower_bound(inX0);
-         // insert span at end ...
-         if (i==span.end())
+         if (n==0 || inX0 >span[n-1].mX1)
          {
-            span[inX0] = true;
-            span[inX1] = false;
+            span.push_back(Span(inX0,inX1));
+         }
+         else if (inX1<span[0].mX0)
+         {
+            span.insert(span.begin(),Span(inX0,inX1));
          }
          else
          {
-            if (i->first == inX0)
+            for(int i=0;i<n;i++)
             {
-               // Previous range finished at this point - delete the ending
-               if (!i->second)
-               {
-                  SpanInfo::iterator p = i;
-                  --p;
-                  span.erase(i);
-                  i = p;
-               }
-               // Previous range starts here too - do nothing
-            }
-            else if (i==span.begin())
-            {
-               // insert new bit at beginning
-               span[inX0] = true;
-               i = span.begin();
-            }
-            else
-            {
-               SpanInfo::iterator prev = i;
-               --prev;
-               if (!prev->second)
-                  i = span.insert( span.end(), std::make_pair(inX0,true) );
-               else
-                  i = prev;
-            }
+               Span &s = span[i];
 
-            // find element greater than, or equal to inX1 ...
-            SpanInfo::iterator end = span.lower_bound(inX1);
-
-            if (end==span.end())
-            {
-               ++i;
-               span.erase(i,end);
-               span[inX1] = false;
-            }
-            else if (end->first == inX1)
-            {
-               // Delete the last on
-               if (end->second)
-                  end++;
-               // otherwise, already in place..
-               ++i;
-               span.erase(i,end);
-            }
-            else
-            {
-               SpanInfo::iterator prev = end;
-               --prev;
-               if (prev==i)
+               // touching ?
+               if (inX1>=s.mX0 && inX0<=s.mX1)
                {
-                  if (end->second)
-                     span[inX1] = false;
+                  if (inX0<s.mX0)
+                     s.mX0 = inX0;
+                  // Covers the span - and then some ?
+                  if (inX1>s.mX1)
+                  {
+                     int k = i+1;
+                     // eat up spans in our range ...
+                     while(k<n && span[k].mX0<=inX1)
+                        ++k;
+                     --k;
+                     s.mX1 = std::max(inX1,span[k].mX1);
+                     if (i!=k)
+                     {
+                        span.erase(span.begin()+i+1,span.begin()+k+1);
+                     }
+                  }
+                  break;
                }
-               else if (prev->second)
-               {
-                  ++i;
-                  span.erase(i,end);
-               }
-               else
-               {
-                  ++i;
-                  span.erase(i,end);
-                  span[inX1] = false;
-               }
+               // gone past, insert before
+               else if (inX0 < s.mX0)
+                 span.insert(span.begin()+i,Span(inX0,inX1));
             }
          }
 
-         /*
-         printf("GOT  :");
-         for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
-            printf("%d%c ", i->first,i->second ? '*' : ' ');
-         */
-
-
-         // if (span.size() & 1) *(int *)0=0;
+         // if (!VerifySpan(ospan,span,inX0,inX1)) span = ospan;
       }
    }
 
@@ -810,8 +810,8 @@ void ConvertSpanToLine(SpanInfo *inSpans, AlphaRuns &outLine)
       SpanInfo &span = inSpans[ y ];
       for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
       {
-         int x = i->first;
-         line[x>> AA_::AABits].AddAA(x,y);
+         line[i->mX0>> AA_::AABits].AddAA(i->mX0,y);
+         line[i->mX1>> AA_::AABits].AddAA(i->mX1,y);
       }
    }
 

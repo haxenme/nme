@@ -93,6 +93,7 @@ public:
       inViewport.ClipY(y0,y1);
       for(int y=y0; y<y1; y++)
       {
+         int sy = y - inTY;
          const AlphaRuns &line = mLines[y-mMinY-inTY];
          AlphaRuns::const_iterator end = line.end();
          AlphaRuns::const_iterator run = line.begin();
@@ -109,20 +110,20 @@ public:
                {
                   inViewport.ClipX(x0,x1);
                   outDest.SetX(x0);
-                  mSource.SetPos(x0,y);
+                  mSource.SetPos(x0-inTX,sy);
                   int alpha = run->mAlpha;
-                  if (alpha<256)
+                  if (alpha<255)
                      while(x0<x1)
                      {
                         ++x0;
-                        outDest.SetIncBlend(mSource,alpha);
+                        outDest.SetIncBlend(mSource.Value(alpha));
                         mSource.Inc();
                      }
                   else
                      while(x0<x1)
                      {
                         ++x0;
-                        outDest.SetInc(mSource);
+                        outDest.SetIncBlend(mSource.Value());
                         mSource.Inc();
                      }
                }
@@ -138,12 +139,29 @@ public:
          if ( SDL_LockSurface(outDest) < 0 )
             return;
 
-      // TODO : 2
       switch(outDest->format->BytesPerPixel)
       {
-         case 1: { DestSurface8 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
-         case 3: { DestSurface24 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
-         case 4: { DestSurface32 d(outDest); RenderDest(d,inViewport,inTX,inTY); } break;
+         // Slow methods...
+         case 1: case 3:
+         {
+            DestSurfaceFallback d(outDest); RenderDest(d,inViewport,inTX,inTY);
+            break;
+         }
+
+         case 4:
+         {
+            if (outDest->format->Amask)
+            {
+               DestSurface32<ARGB> d(outDest);
+               RenderDest(d,inViewport,inTX,inTY);
+            }
+            else
+            {
+               DestSurface32<XRGB> d(outDest);
+               RenderDest(d,inViewport,inTX,inTY);
+            }
+            break;
+         }
       }
 
       if ( SDL_MUSTLOCK(outDest)  )

@@ -4,82 +4,70 @@
 #include <algorithm>
 #include <map>
 
-template<int SIZE_,int FLAGS_>
+template<int SIZE_,typename PIXEL_,bool REPEAT>
 struct GradientSource1D
 {
-   enum { AlphaBlend = FLAGS_ & NME_ALPHA_BLEND };
-   // TODO: make this one...
-   enum { AlreadyRoundedAlpha = 0 };
-
-
    GradientSource1D(Gradient *inGradient)
    {
       mMapper = inGradient->mTransMatrix;
-      mColour = &inGradient->mColours[0];
+      mColour = (PIXEL_ *)&inGradient->mColours[0];
       mDGDX = int(mMapper.m00  * (SIZE_<<8) + 0.5);
    }
 
-   inline void SetPtr()
+   inline PIXEL_ Value() const
    {
-      if (FLAGS_ & NME_EDGE_REPEAT)
+      if (REPEAT)
       {
-          mPtr = mColour + ( (mG >> 8) & (SIZE_-1) );
+          return mColour[ (mG >> 8) & (SIZE_-1) ];
       }
       else
       {
          if (mG <=0)
-           mPtr = mColour;
+           return *mColour;
          else if (mG >= (SIZE_<<8))
-           mPtr = mColour + SIZE_-1;
+           return mColour[SIZE_-1];
          else
-           mPtr = mColour + ( (mG >> 8)  );
-       }
+           return mColour[mG >> 8];
+      }
    }
+
+
+   inline ARGB Value(Uint8 inAlpha) const
+   {
+      ARGB val;
+      val.ival = Value().ival;
+      val.a = PIXEL_::HasAlpha ? ((val.a*inAlpha) >> 8) : inAlpha;
+      return val;
+   }
+
 
    inline void SetPos(int inX,int inY)
    {
       mG = int((mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx)*(SIZE_<<8));
-      SetPtr();
    }
 
    inline void Inc()
    {
       mG += mDGDX;
-      SetPtr();
    }
 
-   inline void Advance(int inX)
-   {
-      mG += mDGDX * inX;
-      SetPtr();
-   }
 
    // TODO: interp ?
-   Uint8 GetR() const { return mPtr->r; }
-   Uint8 GetG() const { return mPtr->g; }
-   Uint8 GetB() const { return mPtr->b; }
-   Uint8 GetA() const { return mPtr->a; }
 
    int mG;
    int mDGDX;
 
-   GradColour *mPtr;
-   GradColour *mColour;
-   Matrix     mMapper;
+   PIXEL_  *mColour;
+   Matrix  mMapper;
 };
 
-template<int SIZE_,int FLAGS_>
+template<int SIZE_,typename PIXEL_,bool REPEAT,bool GRADIENT_FOCAL0>
 struct GradientSource2D
 {
-   enum { AlphaBlend = FLAGS_ & NME_ALPHA_BLEND };
-   // TODO: make this one...
-   enum { AlreadyRoundedAlpha = 0 };
-
-
    GradientSource2D(Gradient *inGradient)
    {
       mMapper = inGradient->mTransMatrix;
-      mColour = &inGradient->mColours[0];
+      mColour = (PIXEL_ *)&inGradient->mColours[0];
       mDGXDX = mMapper.m00;
       mDGYDX = mMapper.m10;
 
@@ -97,7 +85,7 @@ struct GradientSource2D
       mA *= 4.0;
    }
 
-   void SetPtr()
+   PIXEL_ Value()
    {
       //
       //  This whole calculation is compicated by the "focus"
@@ -157,7 +145,7 @@ struct GradientSource2D
       double alpha;
       double C = mGX*mGX + mGY*mGY;
 
-      if (FLAGS_ & NME_GRADIENT_FOCAL0)
+      if (GRADIENT_FOCAL0)
       {
          alpha = sqrt(C);
       }
@@ -175,51 +163,44 @@ struct GradientSource2D
             alpha = (-B+sqrt(det))*mOn2A;
       }
 
-      if ( (FLAGS_ & NME_EDGE_REPEAT) )
+      if ( REPEAT )
       {
-          mPtr = mColour + ( ((int)(alpha*(SIZE_-1))) & (SIZE_-1) );
+          return mColour[ ((int)(alpha*(SIZE_-1))) & (SIZE_-1) ];
       }
       else
       {
          if (alpha <=0)
-           mPtr = mColour;
+           return *mColour;
          else if (alpha>=1.0)
-           mPtr = mColour + SIZE_-1;
+           return mColour[SIZE_-1];
          else
-           mPtr = mColour +  ( ((int)(alpha*(SIZE_-1))) );
+           return  mColour[ ((int)(alpha*(SIZE_-1))) ];
        }
+   }
+   ARGB Value(Uint8 inAlpha)
+   {
+      ARGB val;
+      val.ival = Value().ival;
+      val.a = PIXEL_::HasAlpha ? ((val.a*inAlpha) >> 8) : inAlpha;
+      return val;
    }
 
    inline void SetPos(int inX,int inY)
    {
-      if (FLAGS_ & NME_GRADIENT_FOCAL0)
+      if (GRADIENT_FOCAL0)
          mGX = mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx;
       else
          mGX = mMapper.m00 * inX + mMapper.m01*inY + mMapper.mtx - mFX;
 
       mGY = mMapper.m10 * inX + mMapper.m11*inY + mMapper.mty;
-      SetPtr();
    }
 
    inline void Inc()
    {
       mGX += mDGXDX;
       mGY += mDGYDX;
-      SetPtr();
    }
 
-   inline void Advance(double inX)
-   {
-      mGX += mDGXDX * inX;
-      mGY += mDGYDX * inX;
-      SetPtr();
-   }
-
-   // TODO: interp ?
-   Uint8 GetR() const { return mPtr->r; }
-   Uint8 GetG() const { return mPtr->g; }
-   Uint8 GetB() const { return mPtr->b; }
-   Uint8 GetA() const { return mPtr->a; }
 
    double mFX;
 
@@ -231,8 +212,7 @@ struct GradientSource2D
    double mDGXDX;
    double mDGYDX;
 
-   GradColour *mPtr;
-   GradColour *mColour;
+   PIXEL_     *mColour;
    Matrix     mMapper;
 };
 
@@ -243,20 +223,20 @@ struct GradientSource2D
 
 // --- Create Renderers --------------------------------------
 
-template<int FLAGS_,int SIZE_>
+template<int SIZE_,typename PIXEL_,bool REPEAT>
 PolygonRenderer *TCreateGradientRenderer( const RenderArgs &inArgs, Gradient *inGradient)
 {
    if (inGradient->Is2D())
    {
       if (inGradient->IsFocal0())
       {
-         typedef GradientSource2D<SIZE_,FLAGS_ + NME_GRADIENT_FOCAL0> Source;
+         typedef GradientSource2D<SIZE_,PIXEL_,REPEAT,true> Source;
 
          return new SourcePolygonRenderer<Source>(inArgs, Source(inGradient) );
       }
       else
       {
-         typedef GradientSource2D<SIZE_,FLAGS_> Source;
+         typedef GradientSource2D<SIZE_,PIXEL_,REPEAT,false> Source;
 
          return new SourcePolygonRenderer<Source>(inArgs, Source(inGradient) );
       }
@@ -264,7 +244,7 @@ PolygonRenderer *TCreateGradientRenderer( const RenderArgs &inArgs, Gradient *in
    }
    else
    {
-      typedef GradientSource1D<SIZE_,FLAGS_> Source;
+      typedef GradientSource1D<SIZE_,PIXEL_,REPEAT> Source;
 
       return new SourcePolygonRenderer<Source>( inArgs, Source(inGradient) );
    }
@@ -283,16 +263,16 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(
          if (inGradient->mUsesAlpha)
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer<NME_ALPHA_BLEND+NME_EDGE_REPEAT,256>(ARGS);
+               return TCreateGradientRenderer<256,ARGB,true>(ARGS);
             else
-               return TCreateGradientRenderer<NME_ALPHA_BLEND,256>(ARGS);
+               return TCreateGradientRenderer<256,ARGB,false>(ARGS);
          }
          else
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer<NME_EDGE_REPEAT,256>(ARGS);
+               return TCreateGradientRenderer<256,XRGB,true>(ARGS);
             else
-               return TCreateGradientRenderer<0,256>(ARGS);
+               return TCreateGradientRenderer<256,XRGB,false>(ARGS);
          }
       }
       else
@@ -300,17 +280,18 @@ PolygonRenderer *PolygonRenderer::CreateGradientRenderer(
          if (inGradient->mUsesAlpha)
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer<NME_ALPHA_BLEND+NME_EDGE_REPEAT,512>(ARGS);
+               return TCreateGradientRenderer<512,ARGB,true>(ARGS);
             else
-               return TCreateGradientRenderer<NME_ALPHA_BLEND,512>(ARGS);
+               return TCreateGradientRenderer<512,ARGB,false>(ARGS);
          }
          else
          {
             if (inGradient->mRepeat)
-               return TCreateGradientRenderer<NME_EDGE_REPEAT,512>(ARGS);
+               return TCreateGradientRenderer<512,XRGB,true>(ARGS);
             else
-               return TCreateGradientRenderer<0,512>(ARGS);
+               return TCreateGradientRenderer<512,XRGB,false>(ARGS);
          }
+
       }
 
 #undef ARGS

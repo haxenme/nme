@@ -41,7 +41,6 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
    mTextureID = 0;
    mPixelWidth = inSurface->w;
    mPixelHeight = inSurface->h;
-   SDL_SetAlpha(inSurface,SDL_SRCALPHA,255);
    mX1 = 0;
    mY1 = 0;
 
@@ -96,9 +95,20 @@ bool TextureBuffer::PrepareOpenGL()
 
       if (mSurface->format->BitsPerPixel==32 )
       {
-         if (mSurface->format->Rmask == 0x0000ff)
-            src_format = GL_RGBA;
-         // Ok !
+         if (mSurface->flags & SDL_SRCALPHA)
+         {
+            if (mSurface->format->Rmask == 0x0000ff)
+               src_format = GL_RGBA;
+            // Ok !
+         }
+         else
+         {
+            if (mSurface->format->Rmask == 0x0000ff)
+               src_format = GL_RGB;
+            else
+               src_format = GL_BGR;
+            store_format = 3;
+         }
       }
       else if (mSurface->format->BitsPerPixel==24 )
       {
@@ -126,7 +136,7 @@ bool TextureBuffer::PrepareOpenGL()
 
       if ( mSurface->w != w || mSurface->h != h )
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_BGRA, 
+         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, src_format, 
             GL_UNSIGNED_BYTE, 0 );
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
             src_format, GL_UNSIGNED_BYTE, data->pixels );
@@ -340,7 +350,7 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
    SDL_Surface *surface = SDL_CreateRGBSurface(flags,
                             val_int(width),
                             val_int(height),
-                            (f & HX_TRANSPARENT) ? 32 : 24,
+                            32,
                             0xff0000,0x00ff00,0x0000ff, 0xff000000);
 
  
@@ -357,7 +367,7 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
    Uint32 c2 = SDL_MapRGBA( surface->format, r, g, b, a );
    // printf("C2 : %x\n",c2);
    SDL_FillRect( surface, NULL, c2 );
-   SDL_SetAlpha( surface, SDL_SRCALPHA, 255 );
+   //SDL_SetAlpha( surface, SDL_SRCALPHA, 255 );
 
    TextureBuffer *buffer = new TextureBuffer(surface);
 
@@ -371,9 +381,9 @@ ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
    if (inX<0 || inY<0 || x1>mPixelWidth || y1>mPixelHeight)
       return new ByteArray;
 
-   bool alpha = mSurface->format->BitsPerPixel==32;
+   bool alpha = mSurface->format->Amask && (mSurface->flags & SDL_SRCALPHA);
    bool bgr = mSurface->format->BitsPerPixel==24 &&
-                  mSurface->format->Rmask != 0x0000ff;
+                  mSurface->format->Rmask == 0x0000ff;
    
 
    ByteArray *array = new ByteArray(inW*inH*4);

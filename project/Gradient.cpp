@@ -6,6 +6,15 @@
 #include <GL/gl.h>
 #include <vector>
 
+#ifndef GL_BGR
+#define GL_BGR 0x80E0
+#endif
+
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+
+
 #ifndef GL_CLAMP_TO_EDGE
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
@@ -35,7 +44,7 @@ struct GradPoint
       mPos = val_int(val_field(inVal,val_id("ratio")));
    }
 
-   GradColour   mColour;
+   ARGB   mColour;
    int    mPos;
 };
 
@@ -114,7 +123,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
 
    mColours.resize(256);
    if (n==0)
-      memset(&mColours[0],0,256*sizeof(GradColour));
+      memset(&mColours[0],0,256*sizeof(ARGB));
    else
    {
       int i;
@@ -125,7 +134,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
          mColours[i] = points[0].mColour;
       for(int k=0;k<n-1;k++)
       {
-         GradColour c0 = points[k].mColour;
+         ARGB c0 = points[k].mColour;
          int p0 = points[k].mPos;
          int p1 = points[k+1].mPos;
          int diff = p1 - p0;
@@ -156,7 +165,7 @@ bool Gradient::InitOpenGL()
    glGenTextures(1, &mTextureID);
    glBindTexture(GL_TEXTURE_1D, mTextureID);
    glTexImage1D(GL_TEXTURE_1D, 0, 4,  256, 0,
-      GL_RGBA, GL_UNSIGNED_BYTE, &mColours[0] );
+      GL_BGRA, GL_UNSIGNED_BYTE, &mColours[0] );
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
    glTexEnvi(GL_TEXTURE_1D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
