@@ -14,9 +14,7 @@ struct ARGB
    template<typename SRC_>
    inline void Blend(const SRC_ &inVal)
    {
-      return;
       int A = inVal.a;
-      // Somthing to set ?
       if (A>5)
       {
          // Are we practically blank ?
@@ -27,6 +25,7 @@ struct ARGB
                r += ((inVal.r-r) * A) >> 8;
                g += ((inVal.g-g) * A) >> 8;
                b += ((inVal.b-b) * A) >> 8;
+               a = A;
             }
             else
                ival = inVal.ival;
@@ -34,11 +33,12 @@ struct ARGB
          // Ok, merge alphas ...
          else
          {
-            int alpha16 = a + A + a*A;
+            int alpha16 = ((a + A)<<8) - a*A;
             int c1 = (255-A) * a;
-            r = ((A*inVal.r<<8) + c1 * r)/alpha16;
-            g = ((A*inVal.g<<8) + c1 * g)/alpha16;
-            b = ((A*inVal.b<<8) + c1 * b)/alpha16;
+            A<<=8;
+            r = (A*inVal.r + c1*r)/alpha16;
+            g = (A*inVal.g + c1*g)/alpha16;
+            b = (A*inVal.b + c1*b)/alpha16;
             a = alpha16>>8;
          }
       }

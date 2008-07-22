@@ -11,7 +11,7 @@ class BitmapFilterSet
    public function new(inFilters:Array<BitmapFilter>)
    {
       mOffset = new Point();
-      mHandle = nme_create_filter_set(inFilters,mOffset);
+      mHandle = nme_create_filter_set(untyped inFilters.__neko(),mOffset);
    }
 
    public function FilterImage(inImage:BitmapData) : BitmapData
