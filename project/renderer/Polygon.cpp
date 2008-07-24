@@ -1,5 +1,6 @@
 #include "RenderPolygon.h"
 #include "AA.h"
+#include "QuickVec.h"
 #include <map>
 
 
@@ -10,23 +11,35 @@ typedef long long int64;
 #endif
 
 
-struct Span
-{
-   inline Span() {}
-   inline Span(int inX0,int inX1) : mX0(inX0), mX1(inX1) { }
-
-   int mX0;
-   int mX1;
-};
-
-typedef std::vector<Span> SpanInfo;
-
-
 
 // Find y-extent of object, this is in pixels, and is the intersection
 //  with the screen y-extent.
 bool FindObjectYExtent(int &ioMinY, int &ioMaxY,int inN,
           const PointF16 *inPoints,const PolyLine *inLines);
+
+
+
+
+typedef QuickVec<int> IQuickSet;
+
+
+
+
+
+struct Span
+{
+   inline Span() {}
+   inline Span(int inX0,int inX1) : mX0(inX0), mX1(inX1) { }
+   inline void Set(int inX0,int inX1) { mX0 = inX0; mX1 = inX1; }
+
+   int mX0;
+   int mX1;
+};
+
+typedef QuickVec<Span> SpanInfo;
+
+
+
 
 
 
@@ -194,7 +207,6 @@ public:
          DrawLineSeg( points[i], points[i+1], do_join && (loop||i+1<plast) );
    }
 
-   /*
    bool NotSpanned(SpanInfo &span,int x0,int x1)
    {
       for(int i=0;i<span.size();i++)
@@ -232,7 +244,6 @@ public:
       }
       return true;
    }
-   */
 
 
    inline void HLine(int inY,int inX0,int inX1)
@@ -253,7 +264,7 @@ public:
          }
          else if (inX1<span[0].mX0)
          {
-            span.insert(span.begin(),Span(inX0,inX1));
+            span.InsertAt(0,Span(inX0,inX1));
          }
          else
          {
@@ -277,14 +288,17 @@ public:
                      s.mX1 = std::max(inX1,span[k].mX1);
                      if (i!=k)
                      {
-                        span.erase(span.begin()+i+1,span.begin()+k+1);
+                        span.EraseAt(i+1,k+1);
                      }
                   }
                   break;
                }
                // gone past, insert before
                else if (inX0 < s.mX0)
-                 span.insert(span.begin()+i,Span(inX0,inX1));
+               {
+                 span.InsertAt(i,Span(inX0,inX1));
+                 break;
+               }
             }
          }
 
@@ -652,95 +666,165 @@ public:
 };
 
 
-template<typename AA_>
-inline void ConvertInfoToRuns(const std::map<int,AA_> &inInfo,AlphaRuns &outRuns)
+template<int BITS>
+struct SpanIterator
 {
-   enum { AABits = AA_::AABits };
-   enum { ToAA = (16-AABits) };
-   enum { AAMask = ~((1<<ToAA)-1) };
-   enum { AAFact = 1<<AABits };
+   enum { Size = (1<<BITS) };
+   enum { Mask = ~((1<<BITS) - 1) };
 
-   typedef std::map<int,AA_>  LineInfo;
-   typedef AA_ Point;
-   typedef typename Point::State State;
-
-
-   int size = (int)inInfo.size();
-   if (size)
+   SpanIterator(SpanInfo &inSpanInfo,int &outXMin, int &ioTotalElems)
    {
-      State  drawing;
-      Point::InitState(drawing);
-      outRuns.reserve( size*2 );
-
-      typename LineInfo::const_iterator i = inInfo.begin();
-      while(1)
+      ioTotalElems += (int)inSpanInfo.size();
+      if (!inSpanInfo.empty())
       {
-         int x = i->first;
-         int x1 = x+1;
-         short alpha = i->second.GetAlpha(drawing);
+         mPtr = &inSpanInfo[0];
+         mEnd = mPtr + inSpanInfo.size();
 
-         // transition point ...
-         if (alpha)
-            outRuns.push_back( AlphaRun(x,x1,alpha) );
-
-         i->second.Transition(drawing);
-
-         // constant run until next transition
-         typename LineInfo::const_iterator next = i;
-         ++next;
-         if (next==inInfo.end())
-            break;
-
-         int x_next = next->first;
-         if (x_next>x1)
-         {
-             short alpha = Point::SGetAlpha(drawing);
-             if (alpha>0)
-                outRuns.push_back( AlphaRun(x1,x_next,alpha) );
-         }
-         i = next;
+         int x = mPtr->mX0 & Mask;
+         if (x<outXMin) outXMin = x;
       }
+      else
+         mEnd = mPtr = 0;
+   }
+
+   // Move along until we hit x, calcualte alpha and update whn next change occurs
+   int SetX(int inX, int &outNextX)
+   {
+      // zip along until we hit x
+      do
+      {
+         if (mPtr==mEnd)
+            return 0;
+         if (mPtr->mX1 > inX)
+            break;
+         mPtr++;
+      } while(1);
+
+      int box = inX + Size;
+      if (mPtr->mX0>=box)
+      {
+         int next = mPtr->mX0 & Mask;
+         if (outNextX>next)
+            outNextX = next;
+         return 0;
+      }
+
+
+      int next;
+      if ( mPtr->mX0 > inX)
+         next = inX + Size;
+      else
+      {
+         next = mPtr->mX1 & Mask;
+         if (next==inX)
+           next += Size;
+      }
+      if (outNextX>next)
+         outNextX = next;
+
+      // Calculate number of pixels overlapping...
+      int alpha = inX - mPtr->mX0;
+      if (alpha>0) alpha = 0;
+
+
+      if (mPtr->mX1 < box)
+      {
+         alpha += mPtr->mX1  - inX;
+         // Check next span too ...
+         if (mPtr+1<mEnd)
+         {
+            Span &next = mPtr[1];
+            if (next.mX0<box)
+            {
+               if (next.mX1 < box)
+                  alpha += next.mX1 - next.mX0;
+               else
+                  alpha += box - next.mX0;
+            }
+         }
+      }
+      else
+         alpha += Size;
+
+      return alpha;
+   }
+
+   Span *mPtr;
+   Span *mEnd;
+};
+
+
+void ConvertSpansToAlpha4(SpanInfo *inSpans, AlphaRuns &outLine)
+{
+   int size = 0;
+   int xmax = 0x80000;
+   int x = xmax;
+   SpanIterator<2> s0(inSpans[0],x,size);
+   SpanIterator<2> s1(inSpans[1],x,size);
+   SpanIterator<2> s2(inSpans[2],x,size);
+   SpanIterator<2> s3(inSpans[3],x,size);
+
+   outLine.reserve(size);
+
+   while(x<xmax)
+   {
+      int next_x = xmax;
+      int alpha = s0.SetX(x,next_x) + s1.SetX(x,next_x) + s2.SetX(x,next_x) + s3.SetX(x,next_x);
+      if (next_x == xmax)
+         break;
+      outLine.push_back( AlphaRun(x>>2,next_x>>2,alpha*255/16) );
+      x = next_x;
    }
 }
 
 
-template<typename AA_>
+void ConvertSpansToAlpha1(const SpanInfo &inSpans, AlphaRuns &outLine)
+{
+   int n = (int)inSpans.size();
+   outLine.resize(inSpans.size());
+   for(int i=0;i<n;i++)
+   {
+      const Span &s = inSpans[i];
+      outLine[i].Set(s.mX0, s.mX1, 255 );
+   }
+}
+
+
+
+
+
 class SolidRasterizer
 {
-   enum { AABits = AA_::AABits };
-   enum { ToAA = (16-AABits) };
-   typedef std::map<int,AA_>  LineInfo;
-
-
    // finds D16-bit X/ D AA bit Y
-   inline int Grad(PointF16 inVec)
+   inline int Grad(PointF16 inVec,int inToAA)
    {
       int denom = inVec.y;
       if (inVec.y==0)
          return 0;
       int64 num = inVec.x;
-      num<<=ToAA;
+      num<<=inToAA;
       return (int)(num/denom);
    }
 
 
 
 public:
-   SolidRasterizer(const RenderArgs &inArgs, int inMinY, int inMaxY, Lines &outLines)
+   SolidRasterizer(int inAABits,const RenderArgs &inArgs, int inMinY, int inMaxY, Lines &outLines)
    {
       // For removing offset ...
       int y_offset = inMinY << 16;
       // Bottom of lines ...
-      int y_max_aa = (inMaxY-inMinY) << AABits;
+      int y_max_aa = (inMaxY-inMinY) << inAABits;
       int y_max_val = (inMaxY-inMinY) << 16;
 
       int n = inArgs.inN;
       PointF16 p0(inArgs.inPoints[0]);
       p0.y -= y_offset;
-   
+
+      int to_aa = 16-inAABits;
 
       int line_count = (int)outLines.size();
-      std::vector<LineInfo> line_info( line_count );
+      IQuickSet *line_info = new IQuickSet[ line_count << inAABits ];
 
       for(int i=1;i<n;i++)
       {
@@ -752,8 +836,8 @@ public:
          if ( (inArgs.inConnect[i]!=0) &&
            (!(p0.y<0 && p1.y<0) && !(p0.y>=y_max_val && p1.y>=y_max_val)))
          {
-            int y0 = p0.y>>ToAA;
-            int y1 = p1.y>>ToAA;
+            int y0 = p0.y>>to_aa;
+            int y1 = p1.y>>to_aa;
             int dy = y1-y0;
             if (dy==0)
             {
@@ -767,9 +851,9 @@ public:
                   std::swap(y0,y1);
                }
 
-               int dx_dy = Grad(p1 - p0);
-               int extra_y = ((y0+1)<<ToAA) - p0.y;
-               int x = p0.x + (dx_dy>>(ToAA-8)) * (extra_y>>8);
+               int dx_dy = Grad(p1 - p0,to_aa);
+               int extra_y = ((y0+1)<<to_aa) - p0.y;
+               int x = p0.x + (dx_dy>>(to_aa-8)) * (extra_y>>8);
 
                if (y0<0)
                {
@@ -781,7 +865,7 @@ public:
                for(; y0<last; y0++)
                {
                   // X is fixed-16, y is fixed-aa
-                  line_info[y0>>AABits][x>>16].Add(x,y0);
+                  line_info[y0].Toggle(x>>to_aa);
                   x+=dx_dy;
                }
             }
@@ -789,34 +873,44 @@ public:
          p0 = p_next;
       }
 
-      // line_info now contains information about the alpha runs - convert them...
-      for(int y=0;y<line_count;y++)
-         ConvertInfoToRuns<AA_>( line_info[y], outLines[y] );
+      if (inAABits<2)
+      {
+         for(int y=0;y<line_count;y++)
+         {
+            AlphaRuns &alphas = outLines[y];
+
+            IQuickSet &points = line_info[y];
+            int n = points.size()/2;
+            alphas.resize(n);
+
+            for(int p=0;p<n;p++)
+               alphas[p].Set( points[p*2], points[p*2+1], 255 );
+         }
+      }
+      else
+      {
+         // line_info now contains information about the alpha runs - convert them...
+         SpanInfo spans[4];
+         for(int y=0;y<line_count;y++)
+         {
+            // Convert points representing start and stop points to spans with begin/end...
+            for(int a=0;a<4;a++)
+            {
+               IQuickSet &points = line_info[y*4 + a];
+               int n = points.size()/2;
+               SpanInfo &span = spans[a];
+               span.resize(n);
+               for(int p=0;p<n;p++)
+                  span[p].Set( points[p*2], points[p*2+1] );
+            }
+
+            ConvertSpansToAlpha4(&spans[0], outLines[y]);
+         }
+      }
+
+      delete [] line_info;
    }
 };
-
-
-
-
-
-template<typename AA_>
-void ConvertSpanToLine(SpanInfo *inSpans, AlphaRuns &outLine)
-{
-   typedef std::map<int,AA_>  LineInfo;
-
-   LineInfo line;
-   for(int y=0;y< (1<<AA_::AABits); y++)
-   {
-      SpanInfo &span = inSpans[ y ];
-      for(SpanInfo::iterator i=span.begin();i!=span.end();++i)
-      {
-         line[i->mX0>> AA_::AABits].AddAA(i->mX0,y);
-         line[i->mX1>> AA_::AABits].AddAA(i->mX1,y);
-      }
-   }
-
-   ConvertInfoToRuns<AA_>(line,outLine);
-}
 
 
 
@@ -855,23 +949,16 @@ BasePolygonRenderer::BasePolygonRenderer(const RenderArgs &inArgs)
          {
             int y0 = (y-mMinY);
             if (aa_bits==2)
-               ConvertSpanToLine<AA4x>(spans + (y0<<2), mLines[y0]);
+               ConvertSpansToAlpha4(spans + (y0<<2), mLines[y0]);
             else
-               ConvertSpanToLine<AA1x>(spans + y0, mLines[y0]);
+               ConvertSpansToAlpha1(spans[y0], mLines[y0]);
          }
 
          delete [] spans;
       }
       else
       {
-         if (aa_bits==2)
-         {
-            SolidRasterizer<AA4x> solid(inArgs,mMinY,mMaxY,mLines);
-         }
-         else
-         {
-            SolidRasterizer<AA1x> solid(inArgs,mMinY,mMaxY,mLines);
-         }
+         SolidRasterizer solid(aa_bits,inArgs,mMinY,mMaxY,mLines);
       }
    }
 }

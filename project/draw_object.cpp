@@ -32,6 +32,31 @@ DEFINE_KIND( k_mask );
 static int sQualityLevel = 1;
 
 
+static int val_id_x = val_id("x");
+static int val_id_y = val_id("y");
+static int val_id_width = val_id("width");
+static int val_id_height = val_id("height");
+static int val_id_cx = val_id("cx");
+static int val_id_cy = val_id("cy");
+static int val_id_type = val_id("type");
+static int val_id_grad = val_id("grad");
+static int val_id_colour = val_id("colour");
+static int val_id_thickness = val_id("thickness");
+static int val_id_alpha = val_id("alpha");
+static int val_id_joints = val_id("joints");
+static int val_id_caps = val_id("caps");
+static int val_id_scale_mode = val_id("scale_mode");
+static int val_id_pixel_hinting = val_id("pixel_hinting");
+static int val_id_miter_limit = val_id("miter_limit");
+static int val_id_point_idx0 = val_id("point_idx0");
+static int val_id_point_idx1 = val_id("point_idx1");
+
+static int val_id___a = val_id("__a");
+static int val_id___s = val_id("__s");
+static int val_id_length = val_id("length");
+
+
+
 // --- Base class -----------------------------------------------------
 
 
@@ -107,11 +132,11 @@ struct Point
 
    void FromValue(value inVal)
    {
-      mX = (float)val_number(val_field(inVal,val_id("x")));
-      mY = (float)val_number(val_field(inVal,val_id("y")));
-      mCX = (float)val_number(val_field(inVal,val_id("cx")));
-      mCY = (float)val_number(val_field(inVal,val_id("cy")));
-      mType = val_int(val_field(inVal,val_id("type")));
+      mX = (float)val_number(val_field(inVal,val_id_x));
+      mY = (float)val_number(val_field(inVal,val_id_y));
+      mCX = (float)val_number(val_field(inVal,val_id_cx));
+      mCY = (float)val_number(val_field(inVal,val_id_cy));
+      mType = val_int(val_field(inVal,val_id_type));
    }
 };
 
@@ -149,18 +174,18 @@ struct LineJob : public PolyLine
    void FromValue(value inVal)
    {
       mRenderer = 0;
-      mGradient = CreateGradient(val_field(inVal,val_id("grad")));
-      mColour = val_int(val_field(inVal,val_id("colour")));
-      mThick0 = val_number(val_field(inVal,val_id("thickness")));
+      mGradient = CreateGradient(val_field(inVal,val_id_grad));
+      mColour = val_int(val_field(inVal,val_id_colour));
+      mThick0 = val_number(val_field(inVal,val_id_thickness));
       mThickness = mThick0 == 0 ? 1.0 : mThick0;
-      mAlpha = val_number(val_field(inVal,val_id("alpha")));
-      mJoints = val_int(val_field(inVal,val_id("joints")));
-      mCaps = val_int(val_field(inVal,val_id("caps")));
-      mScaleMode = val_int(val_field(inVal,val_id("scale_mode")));
-      mPixelHinting = val_int(val_field(inVal,val_id("pixel_hinting")));
-      mMiterLimit = val_number(val_field(inVal,val_id("miter_limit")));
-      mOrigPointIndex0 = val_int(val_field(inVal,val_id("point_idx0")));
-      mOrigPointIndex1 = val_int(val_field(inVal,val_id("point_idx1")));
+      mAlpha = val_number(val_field(inVal,val_id_alpha));
+      mJoints = val_int(val_field(inVal,val_id_joints));
+      mCaps = val_int(val_field(inVal,val_id_caps));
+      mScaleMode = val_int(val_field(inVal,val_id_scale_mode));
+      mPixelHinting = val_int(val_field(inVal,val_id_pixel_hinting));
+      mMiterLimit = val_number(val_field(inVal,val_id_miter_limit));
+      mOrigPointIndex0 = val_int(val_field(inVal,val_id_point_idx0));
+      mOrigPointIndex1 = val_int(val_field(inVal,val_id_point_idx1));
    }
 
 };
@@ -191,6 +216,7 @@ public:
       mOrigPoints.swap(inPoints);
       mMaskID = -1;
       mIsOGL = false;
+      mRendersWithoutDisplayList = 0;
 
       if (mSolidGradient || mTexture)
       {
@@ -264,6 +290,7 @@ public:
 
    void ClearRenderers()
    {
+      mRendersWithoutDisplayList = 0;
       delete mPolygon;
       mPolygon = 0;
 
@@ -493,17 +520,31 @@ public:
       if (mIsOGL)
       {
          mOGLMatrix = inMatrix;
-         if (mDisplayList || CreateDisplayList() )
+         if (!mDisplayList && mRendersWithoutDisplayList>1)
+            CreateDisplayList();
+
+         if (inMatrix.IsIdentity())
          {
-            if (inMatrix.IsIdentity())
+            if (mDisplayList)
                glCallList(mDisplayList);
             else
             {
-               glPushMatrix();
-               inMatrix.GLMult();
-               glCallList(mDisplayList);
-               glPopMatrix();
+               mRendersWithoutDisplayList++;
+               DrawOpenGL();
             }
+         }
+         else
+         {
+            glPushMatrix();
+            inMatrix.GLMult();
+            if (mDisplayList)
+               glCallList(mDisplayList);
+            else
+            {
+               mRendersWithoutDisplayList++;
+               DrawOpenGL();
+            }
+            glPopMatrix();
          }
       }
       else
@@ -750,6 +791,8 @@ public:
    std::vector<PointF16> mPointF16s;
 
    GLuint       mDisplayList;
+   // It is expensive to recreate the display list every frame.
+   int          mRendersWithoutDisplayList;
 
    bool         mIsOGL;
    Matrix       mOGLMatrix;
@@ -1376,10 +1419,10 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
 
    bool accurate = val_bool(inAccurate);
    
-   value objs_arr =  val_field(inDrawList,val_id("__a"));
+   value objs_arr =  val_field(inDrawList,val_id___a);
    val_check( objs_arr, array );
 
-   int n =  val_int( val_field(inDrawList,val_id("length")));
+   int n =  val_int( val_field(inDrawList,val_id_length));
    value *objs =  val_array_ptr(objs_arr);
 
    // printf("nme_get_extent\n");
@@ -1391,10 +1434,10 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    }
 
 
-   alloc_field( ioRect, val_id("x"), alloc_float(extent.mMinX) );
-   alloc_field( ioRect, val_id("y"), alloc_float(extent.mMinY) );
-   alloc_field( ioRect, val_id("width"), alloc_float(extent.Width()) );
-   alloc_field( ioRect, val_id("height"), alloc_float(extent.Height()));
+   alloc_field( ioRect, val_id_x, alloc_float(extent.mMinX) );
+   alloc_field( ioRect, val_id_y, alloc_float(extent.mMinY) );
+   alloc_field( ioRect, val_id_width, alloc_float(extent.Width()) );
+   alloc_field( ioRect, val_id_height, alloc_float(extent.Height()));
 
    return alloc_int( extent.Valid() ? 1 : 0);
 }
@@ -1459,10 +1502,10 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
                       NME_clip_xmax(s), NME_clip_ymax(s) );
          if (!val_is_null(inScrollRect))
          {
-            int x0 = (int)val_number( val_field(inScrollRect,val_id("x")) );
-            int y0 = (int)val_number( val_field(inScrollRect,val_id("y")) );
-            int x1 = x0+(int)val_number( val_field(inScrollRect,val_id("width")) );
-            int y1 = y0+(int)val_number( val_field(inScrollRect,val_id("height")) );
+            int x0 = (int)val_number( val_field(inScrollRect,val_id_x) );
+            int y0 = (int)val_number( val_field(inScrollRect,val_id_y) );
+            int x1 = x0+(int)val_number( val_field(inScrollRect,val_id_width) );
+            int y1 = y0+(int)val_number( val_field(inScrollRect,val_id_height) );
             if (x0>x1) std::swap(x0,x1);
             if (y0>y1) std::swap(y0,y1);
             vp.SetWindow(x0,y0,x1,y1);
@@ -1484,12 +1527,12 @@ value nme_add_to_mask(value inDrawList,value inSurface,value inMask, value inMat
    MaskObject *mask_object = MASK(inMask);
    PolygonMask *mask = mask_object->GetPolygonMask();
 
-   value objs_arr =  val_field(inDrawList,val_id("__a"));
+   value objs_arr =  val_field(inDrawList,val_id___a);
    val_check( objs_arr, array );
 
    Matrix matrix(inMatrix);
 
-   int n =  val_int( val_field(inDrawList,val_id("length")));
+   int n =  val_int( val_field(inDrawList,val_id_length));
    value *objs =  val_array_ptr(objs_arr);
 
    for(int i=0;i<n;i++)
