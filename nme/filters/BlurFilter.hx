@@ -9,7 +9,7 @@ class BlurFilter extends nme.filters.BitmapFilter
       blurY = blurY==null ? 4.0 : blurY;
       quality = quality==null ? 1 : quality;
    }
-   public function clone() : nme.filters.BitmapFilter
+   override public function clone() : nme.filters.BitmapFilter
    {
       return new BlurFilter(blurX,blurY,quality);
    }

@@ -93,6 +93,8 @@ struct Viewport
    {
       return x0==0 && y0==0 && x1==inW && y1==inH;
    }
+   int Width() const { return x1-x0; }
+   int Height() const { return y1-y0; }
 
    void SetWindow(int inX0,int inY0,int inX1,int inY1)
    {

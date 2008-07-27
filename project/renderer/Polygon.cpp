@@ -104,7 +104,7 @@ public:
 
       int n = pid1 - pid0 + 1;
       size_t plast = n-1;
-      bool loop = n>2 && (inPoints[pid0]==inPoints[pid1-1]);
+      bool loop = n>2 && (inPoints[pid0]==inPoints[pid1]);
 
       LineStarts points(n);
       // Number of line segments is 1 fewer than points - so last
@@ -194,6 +194,10 @@ public:
             SpanCircle(points[plast].mPos);
          }
       }
+      else
+      {
+         points[plast] = points[0];
+      }
 
       if (mJoints==NME_CORNER_ROUND && mCircleRad>0)
       {
@@ -204,7 +208,7 @@ public:
       bool do_join = mJoints==NME_CORNER_BEVEL || mJoints==NME_CORNER_MITER;
 
       for(size_t i=0;i<plast;i++)
-         DrawLineSeg( points[i], points[i+1], do_join && (loop||i+1<plast) );
+         DrawLineSeg( points[i], points[i+1], do_join && ( loop|| (i+1<plast)) );
    }
 
    bool NotSpanned(SpanInfo &span,int x0,int x1)

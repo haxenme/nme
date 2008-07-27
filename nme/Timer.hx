@@ -45,7 +45,7 @@ class Timer extends Time
 		arr.remove( this );
 	}
 
-	public function run() {	}
+	dynamic public function run() {	}
 	
 	public static function check()
 	{
@@ -53,7 +53,7 @@ class Timer extends Time
 			if ( timer.isTime() ) timer.run();
 	}
 	
-	public function isTime() : Bool
+	override public function isTime() : Bool
 	{
 		var cur = Time.getCurrent();
 		if ( cur - previous >= rate )

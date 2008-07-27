@@ -408,7 +408,7 @@ class Manager
 
 	public function getEventType() : EventType
 	{
-		var returnType : EventType;
+		var returnType : EventType = et_noevent;
 		switch Reflect.field( __evt, "type" )
 		{
 			case -1:

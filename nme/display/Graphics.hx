@@ -234,6 +234,7 @@ class Graphics
                                              0 : PIXEL_HINTING;
       }
 
+      mCurrentLine.caps = END_ROUND;
       if (caps!=null)
       {
          switch(caps)
@@ -246,9 +247,8 @@ class Graphics
                mCurrentLine.caps = END_NONE;
          }
       }
-      else
-         mCurrentLine.caps = END_NONE;
 
+      mCurrentLine.scale_mode = SCALE_NORMAL;
       if (scaleMode!=null)
       {
          switch(scaleMode)
@@ -263,10 +263,9 @@ class Graphics
                mCurrentLine.scale_mode = SCALE_NONE;
          }
       }
-      else
-         mCurrentLine.caps = SCALE_NORMAL;
 
 
+      mCurrentLine.joints = CORNER_ROUND;
       if (joints!=null)
       {
          switch(joints)
@@ -279,8 +278,6 @@ class Graphics
                mCurrentLine.joints = CORNER_BEVEL;
          }
       }
-      else
-         mCurrentLine.joints = CORNER_ROUND;
    }
 
    public function lineGradientStyle(type : GradientType,

@@ -513,7 +513,7 @@ public:
    // DrawObject
    void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
                   TextureBuffer *inMarkDirty, MaskObject *inMaskObj,
-                  const Viewport &inViewport)
+                  const Viewport &inVP)
    {
       SetupCurved(inMatrix);
 
@@ -523,6 +523,16 @@ public:
          mOGLMatrix = inMatrix;
          if (!mDisplayList && mRendersWithoutDisplayList>1)
             CreateDisplayList();
+
+         bool scissor = false;
+         if (IsOpenGLScreen(inSurface) &&
+             (inVP.x0>0 || inVP.y0>0 || inVP.x1< inSurface->w || inVP.y1<inSurface->h ) )
+         {
+            scissor = true;
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(inVP.x0, inSurface->h - inVP.y1, inVP.Width(), inVP.Height());
+         }
+
 
          if (inMatrix.IsIdentity())
          {
@@ -547,6 +557,9 @@ public:
             }
             glPopMatrix();
          }
+
+         if (scissor)
+            glDisable(GL_SCISSOR_TEST);
       }
       else
       {
@@ -555,7 +568,7 @@ public:
          // printf("RenderTo %p\n",inMaskObj);
 
          if (mPolygon)
-            mPolygon->Render(inSurface,inViewport,mTX,mTY);
+            mPolygon->Render(inSurface,inVP,mTX,mTY);
 
          size_t jobs = mLineJobs.size();
          for(size_t j=0;j<jobs;j++)
@@ -563,7 +576,7 @@ public:
             LineJob &job = mLineJobs[ j ];
 
             if (job.mRenderer)
-               job.mRenderer->Render(inSurface,inViewport,mTX,mTY);
+               job.mRenderer->Render(inSurface,inVP,mTX,mTY);
          }
       }
    }
@@ -997,6 +1010,15 @@ public:
       {
          mOGLMatrix = inMatrix;
 
+         bool scissor = false;
+         if (IsOpenGLScreen(inSurface) &&
+             (inVP.x0>0 || inVP.y0>0 || inVP.x1< inSurface->w || inVP.y1<inSurface->h ) )
+         {
+            scissor = true;
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(inVP.x0, inSurface->h - inVP.y1, inVP.Width(), inVP.Height());
+         }
+
          if (mOGLMatrix.IsIdentity() && mOX==0 && mOY==0)
             mTexture->DrawOpenGL();
          else
@@ -1007,6 +1029,9 @@ public:
             mTexture->DrawOpenGL();
             glPopMatrix();
          }
+
+         if (scissor)
+            glDisable(GL_SCISSOR_TEST);
       }
       else
       {
@@ -1499,8 +1524,7 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
       if (s)
       {
          Matrix mtx(matrix);
-         Viewport vp( NME_clip_xmin(s), NME_clip_ymin(s),
-                      NME_clip_xmax(s), NME_clip_ymax(s) );
+         Viewport vp( 0,0, s->w, s->h );
          if (!val_is_null(inScrollRect))
          {
             int x0 = (int)val_number( val_field(inScrollRect,val_id_x) );
