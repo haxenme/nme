@@ -156,6 +156,7 @@ class Graphics
    // Current position ...
    private var mPenX:Float;
    private var mPenY:Float;
+   private var mLastMoveID:Int;
 
    //public var clipRect(GetClipRect,SetClipRect):Rectangle;
 
@@ -163,6 +164,7 @@ class Graphics
    {
       mChanged = false;
       mSurface = inSurface;
+      mLastMoveID = 0;
       clear();
    }
 
@@ -516,6 +518,7 @@ class Graphics
       mFilling = false;
       mFillColour = 0x000000;
       mFillAlpha = 0.0;
+      mLastMoveID = 0;
 
       ClearLine();
 
@@ -542,6 +545,7 @@ class Graphics
       else
       {
          AddLineSegment();
+         mLastMoveID = mPoints.length;
          mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
       }
    }
@@ -659,8 +663,10 @@ class Graphics
          if (mFilling && l>2)
          {
             // Make implicit closing line
-            //if (mPoints[0].x!=mPoints[l-1].x || mPoints[0].y!=mPoints[l-1].y)
-               //lineTo(mPoints[0].x, mPoints[0].y);
+            if (mPoints[mLastMoveID].x!=mPoints[l-1].x || mPoints[mLastMoveID].y!=mPoints[l-1].y)
+            {
+               lineTo(mPoints[mLastMoveID].x, mPoints[mLastMoveID].y);
+            }
          }
 
          AddLineSegment();

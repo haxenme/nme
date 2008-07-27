@@ -80,9 +80,10 @@ public:
             // between 0 ... last
             int min = 0;
             int max = last;
+
             while(max>min+1)
             {
-               int middle = (max+min)/2;
+               int middle = (max+min+1)/2;
                T_ v = mPtr[middle];
                if (v==inValue)
                {
@@ -90,9 +91,9 @@ public:
                   return;
                }
                if (v<inValue)
-                  max = middle;
-               else
                   min = middle;
+               else
+                  max = middle;
             }
             // Not found, must be between min and max (=min+1)
             InsertAt(min+1,inValue);

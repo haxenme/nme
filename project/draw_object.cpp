@@ -271,6 +271,7 @@ public:
                }
             }
          }
+
          remap[i] = (int)mPoints.size();
          mPoints.push_back(p1);
          mConnection.push_back(p1.mType!=ptMove);

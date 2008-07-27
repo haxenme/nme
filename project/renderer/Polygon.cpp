@@ -104,7 +104,7 @@ public:
 
       int n = pid1 - pid0 + 1;
       size_t plast = n-1;
-      bool loop = n>2 && (inPoints[pid0]==inPoints[pid1]);
+      bool loop = n>2 && (inPoints[pid0]==inPoints[pid1-1]);
 
       LineStarts points(n);
       // Number of line segments is 1 fewer than points - so last
@@ -256,7 +256,9 @@ public:
          SpanInfo &span = mSpans[inY];
          int n = (int)span.size();
 
-         // SpanInfo ospan = span;
+         #ifdef VERIFY
+         SpanInfo ospan = span;
+         #endif
 
          if (n==0 || inX0 >span[n-1].mX1)
          {
@@ -302,7 +304,10 @@ public:
             }
          }
 
-         // if (!VerifySpan(ospan,span,inX0,inX1)) span = ospan;
+         #ifdef VERIFY
+         if (!VerifySpan(ospan,span,inX0,inX1))
+            span = ospan;
+         #endif
       }
    }
 
@@ -864,9 +869,25 @@ public:
 
                for(; y0<last; y0++)
                {
+                  #ifdef VERIFY
+                  IQuickSet oset = line_info[y0];
+                  #endif
+
                   // X is fixed-16, y is fixed-aa
                   line_info[y0].Toggle(x>>to_aa);
-                  x+=dx_dy;
+
+                  #ifdef VERIFY
+                  if (!VerifyOrder(line_info[y0]))
+                  {
+                     printf("Inset %d into ",x>>to_aa);
+                     for(int i=0;i<oset.size();i++)
+                        printf("%d ",oset[i]);
+                     printf("\n");
+                     oset.Toggle(x>>to_aa);
+                  }
+                  #endif
+
+                  x+=dx_dy; 
                }
             }
          }
@@ -909,6 +930,14 @@ public:
       }
 
       delete [] line_info;
+   }
+
+   bool VerifyOrder(IQuickSet &inSet)
+   {
+      for(int i=1;i<inSet.size();i++)
+         if (inSet[i]<=inSet[i-1])
+            return false;
+      return true;
    }
 };
 
