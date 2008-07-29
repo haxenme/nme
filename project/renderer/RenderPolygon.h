@@ -33,7 +33,8 @@ class PolygonMask : public MaskObject
 {
 public:
    PolygonMask() : mMinY(0), mMaxY(-1) { mID = sMaskID++; }
-   void Add(const PolygonMask &inMask);
+   void Add(const PolygonMask &inMask,int inTX,int inTY);
+   void Translate(int inTX,int inTY);
    void Mask(const PolygonMask &inMask);
    int GetID() { return mID; }
    void GetExtent(Extent2DI &ioExtent);
@@ -60,7 +61,7 @@ class BasePolygonRenderer :public PolygonMask, public PolygonRenderer
 public:
    BasePolygonRenderer(const RenderArgs &inArgs);
    bool HitTest(int inX,int inY);
-   void AddToMask(PolygonMask &ioMask) { ioMask.Add(*this); }
+   void AddToMask(PolygonMask &ioMask,int inTX,int inTY) { ioMask.Add(*this,inTX,inTY); }
    void Mask(const PolygonMask &inMask) { PolygonMask::Mask(inMask); }
    void GetExtent(Extent2DI &ioExtent) { PolygonMask::GetExtent(ioExtent); }
 

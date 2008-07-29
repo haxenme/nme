@@ -193,6 +193,13 @@ struct Extent2D
       }
       return mMinX<mMaxX && mMinY<mMaxY;
    }
+   void Translate(int inTX,int inTY)
+   {
+      mMinX += inTX;
+      mMaxX += inTX;
+      mMinY += inTY;
+      mMaxY += inTY;
+   }
 
 
 

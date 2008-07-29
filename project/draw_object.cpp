@@ -211,8 +211,8 @@ public:
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
       mOldFlags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
-      mMinY = -1;
-      mMaxY = -1;
+      //mMinY = -1;
+      //mMaxY = -1;
       mOrigPoints.swap(inPoints);
       mMaskID = -1;
       mIsOGL = false;
@@ -586,7 +586,9 @@ public:
       SetupCurved(inMatrix);
       CreateRenderers(inSurf,inMatrix,false);
       if (mPolygon)
-         mPolygon->AddToMask(ioMask);
+      {
+         mPolygon->AddToMask(ioMask,mTX,mTY);
+      }
    }
 
    // DrawObject
@@ -697,8 +699,8 @@ public:
       PolygonMask *mask = 0;
       if (inMaskObj)
       {
-         inMaskObj->ClipY(min_y);
-         inMaskObj->ClipY(max_y);
+         //inMaskObj->ClipY(min_y);
+         //inMaskObj->ClipY(max_y);
          mask = inMaskObj->GetPolygonMask();
       }
 
@@ -814,8 +816,8 @@ public:
    Matrix       mTransform;
    int          mTX;
    int          mTY;
-   int          mMinY;
-   int          mMaxY;
+   //int          mMinY;
+   //int          mMaxY;
    int          mMaskID;
 
    PolygonRenderer *mPolygon;
@@ -967,7 +969,7 @@ public:
    {
       CreateRenderer(inSurf,inMatrix,0);
       if (mRenderer)
-         mRenderer->AddToMask(ioMask);
+         mRenderer->AddToMask(ioMask,0,0);
    }
 
 
@@ -1035,7 +1037,9 @@ public:
       }
       else
       {
-         if (inMatrix.IsIntTranslation())
+         bool int_translation =  inMatrix.IsIntTranslation();
+         // SDL_Blit can't do alpha-over-alpha blending
+         if (int_translation && (!mHasAlpha || !(inSurface->flags & SDL_SRCALPHA) ))
          {
             bool full_vp = inVP.IsWindow(inSurface->w,inSurface->h);
 
@@ -1107,6 +1111,7 @@ public:
             else
             {
                mHitRect = dest_rect;
+               //SDL_FillRect(inSurface,&dest_rect,0xffff00ff);
                SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&dest_rect);
                return;
             }
@@ -1136,7 +1141,9 @@ public:
                                 mPoints[0].y/65536.0,0,0);
 
 
-         Uint32 flags= NME_HIGH_QUALITY | NME_EDGE_CLAMP | NME_BMP_LINEAR;
+         Uint32 flags= NME_HIGH_QUALITY | NME_EDGE_CLAMP;
+         if (!inMatrix.IsIntTranslation())
+            flags |= NME_BMP_LINEAR;
          if (mHasAlpha)
             flags |= NME_ALPHA_BLEND;
 

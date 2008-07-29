@@ -126,7 +126,7 @@ public:
    virtual ~PolygonRenderer() {}
    virtual void Render(SDL_Surface *outDest,const Viewport &inViewport,int inTX,int inTY) = 0;
    virtual bool HitTest(int inX,int inY)=0;
-   virtual void AddToMask(PolygonMask &ioMask)=0;
+   virtual void AddToMask(PolygonMask &ioMask,int inTX,int inTY)=0;
    virtual void Mask(const PolygonMask &inMask)=0;
    virtual void GetExtent(Extent2DI &ioExtent)=0;
 

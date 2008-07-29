@@ -2,12 +2,12 @@ package nme.filters;
 
 class BlurFilter extends nme.filters.BitmapFilter
 {
-   public function new(?blurX : Float, ?blurY : Float, ?quality : Int)
+   public function new(?inBlurX : Float, ?inBlurY : Float, ?inQuality : Int)
    {
       super("BlurFilter");
-      blurX = blurX==null ? 4.0 : blurX;
-      blurY = blurY==null ? 4.0 : blurY;
-      quality = quality==null ? 1 : quality;
+      blurX = inBlurX==null ? 4.0 : inBlurX;
+      blurY = inBlurY==null ? 4.0 : inBlurY;
+      quality = inQuality==null ? 1 : inQuality;
    }
    override public function clone() : nme.filters.BitmapFilter
    {

@@ -781,7 +781,8 @@ void ConvertSpansToAlpha4(SpanInfo *inSpans, AlphaRuns &outLine)
       int alpha = s0.SetX(x,next_x) + s1.SetX(x,next_x) + s2.SetX(x,next_x) + s3.SetX(x,next_x);
       if (next_x == xmax)
          break;
-      outLine.push_back( AlphaRun(x>>2,next_x>>2,alpha*255/16) );
+      if (alpha>0)
+         outLine.push_back( AlphaRun(x>>2,next_x>>2,alpha*255/16) );
       x = next_x;
    }
 }
