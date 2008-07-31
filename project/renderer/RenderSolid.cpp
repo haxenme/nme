@@ -21,7 +21,14 @@ struct ConstantSource32
    }
 
    inline PIXEL_ Value() const { return mVal; }
-   inline ARGB Value(Uint8 inAlpha) { mValA.a = inAlpha; return mValA; }
+   inline ARGB Value(Uint8 inAlpha)
+   {
+      if (PIXEL_::HasAlpha)
+         mValA.a = (mVal.a * inAlpha)>>8;
+      else
+         mValA.a = inAlpha;
+      return mValA;
+   }
 
    inline void SetPos(int inX,int inY) { }
    inline void Inc() { }

@@ -20,15 +20,7 @@ struct ARGB
          // Are we practically blank ?
          if (a<5)
          {
-            if (A<250)
-            {
-               r += ((inVal.r-r) * A) >> 8;
-               g += ((inVal.g-g) * A) >> 8;
-               b += ((inVal.b-b) * A) >> 8;
-               a = A;
-            }
-            else
-               ival = inVal.ival;
+            ival = inVal.ival;
          }
          // Ok, merge alphas ...
          else

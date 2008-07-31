@@ -64,6 +64,8 @@ void nme_surface_free( value surface );
 bool IsOpenGLMode();
 bool IsOpenGLScreen(SDL_Surface *inSurface);
 
+extern SDL_Surface *gCurrentScreen;
+
 
 
 #endif

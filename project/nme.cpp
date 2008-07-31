@@ -330,7 +330,7 @@ value nme_surface_colourkey( value surface, value r, value g, value b )
 
 static bool sOpenGL = false;
 SDL_Surface *sOpenGLScreen = 0;
-SDL_Surface *sCurrenScreen = 0;
+SDL_Surface *gCurrentScreen = 0;
 static bool sDoScissor;
 SDL_Rect sScissorRect;
 static Uint32 sFlags = 0;
@@ -666,7 +666,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
       printf("unable to initialize the sound support\n");
 
-   sCurrenScreen = screen;
+   gCurrentScreen = screen;
    return alloc_abstract( k_surf, screen );
 }
 
@@ -676,7 +676,7 @@ value nme_resize_surface(value inW, value inH)
    val_check( inH, int );
    int w = val_int(inW);
    int h = val_int(inH);
-   SDL_Surface *screen = sCurrenScreen;
+   SDL_Surface *screen = gCurrentScreen;
 
    if (sOpenGL)
    {

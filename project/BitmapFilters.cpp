@@ -13,6 +13,11 @@ DECLARE_KIND( k_filter_set );
 DEFINE_KIND( k_filter_set );
 #define FILTER_SET(v) ( (FilterSet *)(val_data(v)) )
 
+/*
+#include <windows.h>
+#undef min
+#undef max
+*/
 
 class FilterBase
 {
@@ -24,6 +29,8 @@ public:
       {
          double f = val_number(q);
          mQuality = (int)(f+0.5);
+         if (mQuality<1)
+            mQuality = 1;
       }
       else
          mQuality = 1;
@@ -33,11 +40,6 @@ public:
    virtual SDL_Surface *Process(SDL_Surface *inSurface) = 0;
    virtual void GetOffset(int &ioDX, int &ioDY) = 0;
 
-   SDL_Surface *CreateSurface(int inW,int inH)
-   {
-      return SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA, inW, inH, 32,
-                                  0xff0000, 0x00ff00, 0x0000ff, 0xff000000 );
-   }
 
 
    virtual int GetQuality() { return mQuality; }
@@ -52,10 +54,28 @@ typedef std::vector<FilterBase *> FilterSet;
 // -- Helpers ----------
 
 
+SDL_Surface *CreateSurface(int inW,int inH)
+{
+   return SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA, inW, inH, 32,
+                                  0xff0000, 0x00ff00, 0x0000ff, 0xff000000 );
+}
+
  inline ARGB *Row(SDL_Surface *inSurface, int inY)
  {
    return (ARGB *)(  (char *)inSurface->pixels + inSurface->pitch*inY );
  }
+
+
+
+
+SDL_Surface *DuplicateSurface(SDL_Surface *inSurface)
+{
+   SDL_Surface  *copy = CreateSurface(inSurface->w,inSurface->h);
+   for(int y=0;y<inSurface->h;y++)
+      memcpy(Row(copy,y),Row(inSurface,y), inSurface->w * 4);
+   return copy;
+}
+
 
 
 /*
@@ -149,6 +169,36 @@ void BlurRow(Uint8 *inSrc, Uint8 *inDest, int inDS,int inDD, int inW, int inSize
    }
 }
 
+void SetRow(ARGB *inVal, int inN, ARGB inTo)
+{
+   int *dest = &inVal->ival;
+   int src = inTo.ival;
+   for(int i=0;i<inN;i++)
+      dest[i] = src;
+}
+
+void ShadowRow(ARGB *inVal, int inN, ARGB inTo,bool inErase)
+{
+   ARGB src = inTo;
+   if (inErase)
+   {
+      for(int i=0;i<inN;i++)
+      {
+         int a = inVal[i].a;
+         inVal[i].ival = src.ival;
+         inVal[i].a = (a*src.a)>>8;
+      }
+   }
+   else
+   {
+      for(int i=0;i<inN;i++)
+      {
+         src.a = (inVal[i].a * inTo.a) >> 8;
+         inVal[i].Blend(src);
+      }
+   }
+}
+
 
 
 struct AlphaImage
@@ -157,7 +207,9 @@ struct AlphaImage
    {
       mWidth = inSurface->w;
       mHeight = inSurface->h;
-      mData.resize(mWidth*mHeight);
+      mData.resize(mWidth*mHeight+2);
+      mData[0] = 123;
+      mData[mWidth*mHeight+1] = 45;
       for(int y=0;y<mHeight;y++)
       {
          ARGB *src = ::Row(inSurface,y);
@@ -166,12 +218,26 @@ struct AlphaImage
             *dest++ = (src++)->a;
       }
    }
+   void Verify()
+   {
+      if (mData[0]!=123 || mData[mWidth*mHeight+1]!=45)
+      {
+         printf("Verify failed.\n");
+         *(int *)0=0;
+      }
+   }
+   ~AlphaImage()
+   {
+      Verify();
+   }
 
    AlphaImage(int inW,int inH)
    {
       mWidth = inW;
       mHeight = inH;
-      mData.resize(mWidth*mHeight);
+      mData.resize(mWidth*mHeight+2);
+      mData[0] = 123;
+      mData[mWidth*mHeight+1] = 45;
    }
 
    void swap(AlphaImage &inOther)
@@ -184,7 +250,7 @@ struct AlphaImage
 
    int Width() { return mWidth; }
    int Height() { return mHeight; }
-   Uint8 *Row(int inY) { return & mData[ inY * mWidth ]; }
+   Uint8 *Row(int inY) { return & mData[ inY * mWidth + 1]; }
    int Pitch() { return mWidth; }
 
 
@@ -205,8 +271,11 @@ public:
    BlurFilter(value inVal) : FilterBase(inVal)
    {
       mX  = (int)val_number( val_field(inVal,val_id("blurX")) );
-      if (mX<1) mX = 1;
+      //mX = (mX + mQuality/2) / mQuality;
+      if (mX<1)
+         mX = 1;
       mY  = (int)val_number( val_field(inVal,val_id("blurY")) );
+      //mY = (mY + mQuality/2) / mQuality;
       if (mY<1) mY = 1;
    }
 
@@ -266,14 +335,21 @@ class DropShadowFilter : public BlurFilter
 public:
    DropShadowFilter(value inVal) : BlurFilter(inVal)
    {
-      double theta  = val_number( val_field(inVal,val_id("angle")) ) * M_PI/180.0;
-      double dist = val_number( val_field(inVal,val_id("distance")) );
+      value theta_val = val_field(inVal,val_id("angle"));
+      double theta = val_is_number(theta_val) ? val_number(theta_val) * M_PI/180.0 : 0;
+      value dist_val = val_field(inVal,val_id("distance"));
+      double dist = val_is_number(dist_val) ? val_number(dist_val) : 0;
+
       mCol  = (int)val_number( val_field(inVal,val_id("color")) );
-      mStrength  = (int)val_number( val_field(inVal,val_id("strength")) );
-      if (mStrength>255) mStrength = 255;
+      mStrength  = (int)(val_number( val_field(inVal,val_id("strength")) ) * 256);
+      if (mStrength>0x10000)
+         mStrength = 0x10000;
       mAlpha  = (int)(val_number( val_field(inVal,val_id("alpha")) )*256);
       if (mAlpha > 256) mAlpha = 256;
+
       mHideObject  = val_bool( val_field(inVal,val_id("hideObject")));
+      mKnockout  = val_bool( val_field(inVal,val_id("knockout")) );
+      mInner  = val_bool( val_field(inVal,val_id("inner")) );
 
       mTX = (int)( cos(theta) * dist );
       mTY = (int)( sin(theta) * dist );
@@ -285,7 +361,9 @@ public:
 
    SDL_Surface *Process(SDL_Surface *inSurface)
    {
+
       AlphaImage alpha(inSurface);
+      SDL_Surface *result = 0;
 
       // Blur the alpha-map
       for(int q=0;q<mQuality;q++)
@@ -299,7 +377,7 @@ public:
             {
                Uint8 *src = alpha.Row(y);
                Uint8 *dest = blur_x.Row(y);
-               BlurRow(src,dest,1,1,alpha.Width(),mX);
+               BlurRow(src,dest,1,1,alpha.mWidth,mX);
             }
             blur_x.swap(alpha);
          }
@@ -322,67 +400,132 @@ public:
          }
       }
 
-      // Offset from original surface origin to 
-      int dx = mTX-(mX-1)*mQuality;
-      int dy = mTY-(mY-1)*mQuality;
+      int w = inSurface->w;
+      int h = inSurface->h;
 
-      int x0 = std::min(0,dx);
-      int y0 = std::min(0,dy);
-      int x1 = std::max(inSurface->w,alpha.Width() + dx);
-      int y1 = std::max(inSurface->h,alpha.Height() + dy);
 
-      int w = x1-x0;
-      int h = y1-y0;
+      // Offset from original surface origin to top-left of blurred image
+      int blur_shift_x = -(mX-1)*mQuality/2;
+      int blur_shift_y = -(mY-1)*mQuality/2;
+      int dx = mTX + blur_shift_x;
+      int dy = mTY + blur_shift_y;
 
-      SDL_Surface *result = CreateSurface(w,h);
-
-      // Apply alpha shadow ...
-      int col = mCol;
-      for(int y=0;y<alpha.Height();y++)
+      if (mInner)
       {
-         Uint8 *a = alpha.Row(y);
-         ARGB *dest = Row(result, y + (dy-y0)) + (dx-x0);
-         for(int x=0;x<alpha.Width();x++)
-         {
-            int val = (*a++)*mStrength;
-            if (val>255) val = 255;
-            val = (val*mAlpha) >> 8;
-            (++dest)->ival = col | ((val)<<24);
-         }
-      }
+         ARGB col;
+         col.ival = mCol;
 
-      // Now Blend original over the top ...
-      if (!mHideObject)
-      {
-         int w = inSurface->w;
-         int h = inSurface->h;
-         for(int y=0;y<inSurface->h;y++)
+         result = inSurface;
+
+         int x0 = std::max(0,dx);
+         int y0 = std::max(0,dy);
+         int x1 = std::min(w,alpha.Width() + dx);
+         int y1 = std::min(h,alpha.Height() + dy);
+
+
+         // Blank out area not overlapping
+         bool erase =  (mKnockout || mHideObject);
+         col.a = mAlpha;
+
+         for(int y=0;y<y0;y++)
+            ShadowRow( Row(result,y), w,col,erase);
+         for(int y=y1;y<h;y++)
+            ShadowRow( Row(result,y), w,col,erase);
+         if (x0>0)
+            for(int y=y0;y<y1;y++)
+               ShadowRow( Row(result,y), x0,col,erase);
+         if (x1<w)
+            for(int y=y0;y<y1;y++)
+               ShadowRow( Row(result,y) + x1, (w-x1),col,erase);
+
+         int n = x1-x0;
+         for(int y=y0;y<y1;y++)
          {
-            ARGB *src = Row(inSurface,y);
-            ARGB *dest = Row(result,y);
-            for(int x=0;x<w;x++)
+            Uint8 *a = alpha.Row(y-dy) + x0 - dx;
+            ARGB *dest = Row(result,y) + x0 ;
+            if (erase)
             {
-               int sa = src->a;
-               int da = dest->a;
-
-               if (sa>5)
+               for(int x=0;x<n;x++)
                {
-                  if (sa>250 || da<5)
-                     dest->ival = src->ival;
-                  else
-                  {
-                     int alpha16 = ((da + sa)<<8) - da*sa;
-                     int c1 = (255-sa) * da;
-                     sa<<=8;
-                     dest->r = (sa*src->r + c1*dest->r)/alpha16;
-                     dest->g = (sa*src->g + c1*dest->g)/alpha16;
-                     dest->b = (sa*src->b + c1*dest->b)/alpha16;
-                     dest->a = alpha16>>8;
-                  }
+                  int val = ((255-(*a++))*mStrength) >> 8;
+                  if (val>255) val = 255;
+                  col.a = (dest->a*val*mAlpha) >> 16;
+                  *dest = col;
+                  ++dest;
+               }
+            }
+            else
+            {
+               for(int x=0;x<n;x++)
+               {
+                  int val = ((255-(*a++))*mStrength) >> 8;
+                  if (val>255) val = 255;
+                  col.a = (dest->a*val*mAlpha) >> 16;
+                  dest->Blend(col);
+                  ++dest;
                }
 
-               src++;
-               dest++;
+            }
+         }
+      }
+      else
+      {
+         int x0 = std::min(0,dx);
+         int y0 = std::min(0,dy);
+         int x1 = std::max(w,alpha.Width() + dx);
+         int y1 = std::max(h,alpha.Height() + dy);
+
+
+         result = CreateSurface(x1-x0,y1-y0);
+         int col = mCol;
+
+         // Starting position of alpha, in destination coordinates...
+         int alpha_x = dx - x0;
+         int alpha_y = dy - y0;
+
+         for(int y=0;y<alpha.Height();y++)
+         {
+            Uint8 *a = alpha.Row(y);
+            ARGB *dest = Row(result,y + alpha_y) + alpha_x;
+
+            for(int x=0;x<alpha.Width();x++)
+            {
+               int val = ((*a++)*mStrength) >> 8;
+               if (val>255) val = 255;
+               val = (val*mAlpha) >> 8;
+               dest->ival = col | ((val)<<24);
+               ++dest;
+            }
+         }
+
+         // Now Blend original over the top, if required
+
+         if (mKnockout)
+         {
+            for(int y=0;y<inSurface->h;y++)
+            {
+               ARGB *src = Row(inSurface,y);
+               ARGB *dest = Row(result,y-y0) - x0;
+               for(int x=0;x<w;x++)
+               {
+                  dest->a = (dest->a * (255-src->a)) >> 8;
+                  src++;
+                  dest++;
+               }
+            }
+         }
+         else if (!mHideObject)
+         {
+            for(int y=0;y<inSurface->h;y++)
+            {
+               ARGB *src = Row(inSurface,y);
+               ARGB *dest = Row(result,y-y0) - x0;
+               for(int x=0;x<w;x++)
+               {
+                  dest->Blend(*src);
+                  src++;
+                  dest++;
+               }
             }
          }
       }
@@ -392,8 +535,16 @@ public:
 
    void GetOffset(int &ioDX, int &ioDY)
    {
-      ioDX += (mX/2)*mQuality - mTX;
-      ioDY += (mY/2)*mQuality - mTY;
+      if (!mInner)
+      {
+         int dx = mTX-(mX-1)*mQuality/2;
+         int dy = mTY-(mY-1)*mQuality/2;
+         int x0 = std::min(0,dx);
+         int y0 = std::min(0,dy);
+
+         ioDX += x0;
+         ioDY += y0;
+      }
    }
 
    int mTX;
@@ -402,6 +553,8 @@ public:
    int mStrength;
    int mAlpha;
    bool mHideObject;
+   bool mKnockout;
+   bool mInner;
 };
 
 
@@ -422,28 +575,25 @@ value nme_filter_image(value inFilterSet,value inTextureBuffer)
 
    SDL_Surface *surface = tex->GetSourceSurface();
 
-   if (filters.size()==0)
-   {
-      surface = SDL_ConvertSurface(surface, surface->format, surface->flags);
-   }
-   else
-   {
-      bool first = true;
-      for(size_t i=0;i<filters.size();i++)
-      {
-         FilterBase &filter = *filters[i];
-         int quality = filter.GetQuality();
+   // Create copy, and ensure correct format...
+   //surface = SDL_ConvertSurface(surface, surface->format, surface->flags);
+   surface = DuplicateSurface(surface);
 
-         for(int q=0;q<quality;q++)
-         {
-            SDL_Surface *processed = filter.Process(surface);
-            if (!first)
-               SDL_FreeSurface(surface);
-            first = false;
-            surface = processed;
-         }
+   for(size_t i=0;i<filters.size();i++)
+   {
+      FilterBase &filter = *filters[i];
+      int quality = filter.GetQuality();
+
+      for(int q=0;q<quality;q++)
+      {
+         SDL_Surface *processed = filter.Process(surface);
+         if (processed != surface)
+            SDL_FreeSurface(surface);
+
+         surface = processed;
       }
    }
+
 
    TextureBuffer *result = new TextureBuffer(surface);
    return result->ToValue();
@@ -486,7 +636,6 @@ value nme_create_filter_set(value inFilters,value outPoint)
 
       char *type =  val_string(type_val);
       FilterBase *filter = 0;
-      // printf("Creating filter %s\n",type);
       if (!strcmp(type,"BlurFilter"))
       {
          filter = new BlurFilter(val);
@@ -503,6 +652,8 @@ value nme_create_filter_set(value inFilters,value outPoint)
       }
    }
 
+   alloc_field( outPoint, val_id( "x" ), alloc_float( ox ) );
+   alloc_field( outPoint, val_id( "y" ), alloc_float( oy ) );
 
    value v = alloc_abstract( k_filter_set, result );
    val_gc( v, delete_filter_set );
