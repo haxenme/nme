@@ -154,7 +154,7 @@ struct DestSurface32 : public DestBase
    }
 
    template<typename SOURCE_>
-   void SetIncBlend(SOURCE_ &inSource)
+   void SetIncBlend(const SOURCE_ &inSource)
    {
       if (SOURCE_::HasAlpha)
          mPtr->Blend(inSource);
