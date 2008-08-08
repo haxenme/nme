@@ -115,7 +115,7 @@ class Display extends nme.GameBase
       UpdateGfx();
    }
 
-   public function onMouse(inEvent:MouseEvent) : Void
+   override public function onMouse(inEvent:MouseEvent) : Void
    {
       if (inEvent.type == met_MouseWheelUp)
          ZoomAbout(inEvent.x,inEvent.y,mZoom*1.2);
@@ -147,7 +147,7 @@ class Display extends nme.GameBase
       }
    }
 
-   public function onKey(inEvent:KeyEvent)
+   override public function onKey(inEvent:KeyEvent)
    {
       if (inEvent.code==KeyCode.HOME)
          ResetZoom();
@@ -162,7 +162,7 @@ class Display extends nme.GameBase
    }
 
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0x000033 );
       Manager.graphics.beginFill(0xffffff);

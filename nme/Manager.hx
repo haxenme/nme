@@ -177,7 +177,6 @@ class Manager
          do
          {
             type = nextEvent();
-            trace(type);
             switch type
             {
                case et_quit:

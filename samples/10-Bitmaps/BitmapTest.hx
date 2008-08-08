@@ -107,7 +107,7 @@ class BitmapTest extends nme.GameBase
 
    function Rand() : Float { return mRand.float(); }
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0xffffff );
 
@@ -122,7 +122,7 @@ class BitmapTest extends nme.GameBase
       }
    }
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       for(i in 0...mStars.length)
       {

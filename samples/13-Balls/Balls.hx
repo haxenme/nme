@@ -33,7 +33,6 @@ import nme.display.BitmapData;
 import nme.display.GradientType;
 import nme.display.SpreadMethod;
 import nme.TileRenderer;
-import neko.Int32;
 
 typedef Ball =
 {
@@ -83,7 +82,7 @@ class Balls extends nme.GameBase
       // Define positive quadrant ...
       mtx.createGradientBox(64,64, 0, 0,0);
       mtx.translate(-32,-32);
-      mtx.rotate(-0.5);
+      mtx.rotate(0.5);
       mtx.translate(32,32);
       gfx.beginGradientFill(GradientType.RADIAL,
                        colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
@@ -111,7 +110,7 @@ class Balls extends nme.GameBase
    function Rand() : Float { return mRand.float(); }
 
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0xffffff );
 
@@ -123,7 +122,7 @@ class Balls extends nme.GameBase
       }
    }
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       var max_w = wndWidth - mBallTile.width;
       var max_h = wndHeight - mBallTile.height;

@@ -114,7 +114,7 @@ class Puzzle extends nme.GameBase
       }
    }
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0xffffff );
 
@@ -137,7 +137,7 @@ class Puzzle extends nme.GameBase
 
    }
 
-   public function onClick(inEvent:MouseEvent)
+   override public function onClick(inEvent:MouseEvent)
    {
       var x = Std.int( inEvent.x / (SIZE+1) );
       var y = Std.int( inEvent.y / (SIZE+1) );
@@ -169,7 +169,7 @@ class Puzzle extends nme.GameBase
 
 
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       mWon = false;
 

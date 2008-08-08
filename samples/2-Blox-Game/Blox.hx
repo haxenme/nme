@@ -564,7 +564,7 @@ class Blox
 	// This function draws the background //
 	public function drawBackground() 
 	{
-		var source : Rect;
+		var source : Rect = null;
 
 		// Set our source rectangle to the current level's background //
 		switch ( g_Level )

@@ -657,21 +657,24 @@ class Graphics
       var l =  mPoints.length;
       if (l>0)
       {
-         if (mFilling && l>2)
+         if (l>1)
          {
-            // Make implicit closing line
-            if (mPoints[mLastMoveID].x!=mPoints[l-1].x || mPoints[mLastMoveID].y!=mPoints[l-1].y)
+            if (mFilling && l>2)
             {
-               lineTo(mPoints[mLastMoveID].x, mPoints[mLastMoveID].y);
+               // Make implicit closing line
+               if (mPoints[mLastMoveID].x!=mPoints[l-1].x || mPoints[mLastMoveID].y!=mPoints[l-1].y)
+               {
+                  lineTo(mPoints[mLastMoveID].x, mPoints[mLastMoveID].y);
+               }
             }
-         }
 
-         AddLineSegment();
+            AddLineSegment();
 
-         AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
+            AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
                       mFillColour, mFillAlpha,
                       untyped mSolidGradient==null ? mBitmap:mSolidGradient,
                       untyped mLineJobs.__neko() ) );
+         }
 
          mLineJobs = [];
          mPoints = [];

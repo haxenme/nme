@@ -121,7 +121,7 @@ class Drums extends nme.GameBase
       run();
    }
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       // Remove old graphics ...
       var remove = -1;
@@ -135,12 +135,12 @@ class Drums extends nme.GameBase
          mBangs.splice(0,remove+1);
    }
 
-   public function onClick(inEvent:MouseEvent)
+   override public function onClick(inEvent:MouseEvent)
    {
       mBangs.push( new Bang(manager) );
    }
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0xFFFFFF );
 
@@ -162,7 +162,7 @@ class Drums extends nme.GameBase
          b.draw();
    }
 
-   public function onKey(inEvent:KeyEvent)
+   override public function onKey(inEvent:KeyEvent)
    {
       // test/debug
       neko.Lib.print(inEvent);

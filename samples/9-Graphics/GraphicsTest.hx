@@ -152,7 +152,7 @@ class GraphicsTest extends nme.GameBase
       run();
    }
 
-   public function onRender()
+   override public function onRender()
    {
       manager.clear( 0x606060 );
 
@@ -189,18 +189,16 @@ class GraphicsTest extends nme.GameBase
       gfx.curveTo(wndWidth/2,wndHeight,wndWidth,0);
       gfx.flush();
 
-      gfx.clipRect = new nme.geom.Rectangle(60,0,wndWidth-120,wndHeight);
       gfx.lineStyle(3,0x0000ff);
       gfx.beginFill(0xff3030);
       gfx.drawEllipse(x,100,80,60);
-
+      gfx.endFill();
       gfx.moveTo(x,100);
 
       gfx.lineStyle(1,0x00ff80);
       gfx.text("Hello!",24,null,0xffffff,Graphics.CENTER,Graphics.CENTER);
 
       gfx.endFill();
-      gfx.clipRect = null;
 
       gfx.moveTo(wndWidth*0.5,wndHeight*0.5);
       gfx.lineTo(x,100);
@@ -237,10 +235,9 @@ class GraphicsTest extends nme.GameBase
       bitmap_obj.draw();
 
       gfx.flush();
-
    }
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       // You can set the matrix to move the display object around.
       square.matrix.setRotation(rot, Math.abs(Math.sin(phase)*10.0));
