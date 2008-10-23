@@ -18,6 +18,9 @@
 #include "Gradient.h"
 #include "renderer/Points.h"
 
+#ifndef HXCPP
+typedef value *array_ptr;
+#endif
 
 DECLARE_KIND( k_drawable );
 DEFINE_KIND( k_drawable );
@@ -840,7 +843,7 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    val_check( inLines, array );
 
    int n = val_array_size(inPoints);
-   value *items = val_array_ptr(inPoints);
+   array_ptr items = val_array_ptr(inPoints);
 
    Points points(n);
    for(int i=0;i<n;i++)
@@ -851,6 +854,7 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    items = val_array_ptr(inLines);
    for(int j=0;j<n;j++)
       lines[j].FromValue(items[j]);
+
 
    DrawObject *obj = new DrawObject(
                             points,
@@ -1272,7 +1276,7 @@ value nme_create_blit_drawable(value inTexture, value inX, value inY )
 // ---- Text Drawing -----------------------------------------------------
 
 
-value nme_create_text_drawable( value* arg, int nargs )
+value nme_create_text_drawable(array_ptr arg, int nargs )
 {
    enum { aText, aFont, aSize, aX, aY, aColour, aAlpha,
           aBGCol, aAlignX,aAlignY,   aLAST };
@@ -1354,7 +1358,7 @@ value nme_create_text_drawable( value* arg, int nargs )
 
 
 
-value nme_create_glyph_draw_obj(value* arg, int nargs )
+value nme_create_glyph_draw_obj(array_ptr arg, int nargs )
 {
    enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha,
           aGradOrTex, aLineStyle, aUseFreeType, aLAST };
@@ -1452,11 +1456,16 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
 
    bool accurate = val_bool(inAccurate);
    
+   #ifdef HXCPP
+   value objs_arr =  inDrawList;
+   int n =  objs_arr->__length();
+   #else
    value objs_arr =  val_field(inDrawList,val_id___a);
+   int n =  val_int( val_field(inDrawList,val_id_length));
+   #endif 
    val_check( objs_arr, array );
 
-   int n =  val_int( val_field(inDrawList,val_id_length));
-   value *objs =  val_array_ptr(objs_arr);
+   array_ptr objs =  val_array_ptr(objs_arr);
 
    // printf("nme_get_extent\n");
    for(int i=0;i<n;i++)
@@ -1559,13 +1568,18 @@ value nme_add_to_mask(value inDrawList,value inSurface,value inMask, value inMat
    MaskObject *mask_object = MASK(inMask);
    PolygonMask *mask = mask_object->GetPolygonMask();
 
+   #ifdef HXCPP
+   value objs_arr =  inDrawList;
+   int n =  objs_arr->__length();
+   #else
    value objs_arr =  val_field(inDrawList,val_id___a);
+   int n =  val_int( val_field(inDrawList,val_id_length));
+   #endif
    val_check( objs_arr, array );
 
    Matrix matrix(inMatrix);
 
-   int n =  val_int( val_field(inDrawList,val_id_length));
-   value *objs =  val_array_ptr(objs_arr);
+   array_ptr objs =  val_array_ptr(objs_arr);
 
    for(int i=0;i<n;i++)
    {

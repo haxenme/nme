@@ -58,5 +58,5 @@ class Time
 		return false;
 	}
 	
-	static var nme_gettime = neko.Lib.load("nme","nme_gettime",0);
+	static var nme_gettime = nme.Loader.load("nme_gettime",0);
 }

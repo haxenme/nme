@@ -32,7 +32,11 @@ class Music
 	
 	public static function init( file : String )
 	{
+   #if neko
 		__m = nme_music_init( untyped file.__s );
+   #else
+		__m = nme_music_init( file );
+   #end
 	}
 	
 	public static function free()
@@ -55,7 +59,7 @@ class Music
 		// 0  = don't play
 		// 1+ = number of loops
 		if ( loops < -1 ) loops = -1;
-		if ( position == 0 || position == null )
+		if ( position == 0 )
 			nme_music_fadeinplay( __m, loops, fadeTimeMS );
 		else
 			nme_music_fadeinplaypos( __m, loops, fadeTimeMS, position );
@@ -109,18 +113,18 @@ class Music
 		return ( nme_music_isfading() == 1 );
 	}
 	
-	static var nme_music_init = neko.Lib.load("nme","nme_music_init", 1);
-	static var nme_music_free = neko.Lib.load("nme","nme_music_free", 1);
-	static var nme_music_play = neko.Lib.load("nme","nme_music_play", 2);
-	static var nme_music_fadeinplay = neko.Lib.load("nme","nme_music_fadeinplay", 3);
-	static var nme_music_fadeinplaypos = neko.Lib.load("nme","nme_music_fadeinplaypos", 4);
-	static var nme_music_fadeout = neko.Lib.load("nme","nme_music_fadeout", 1);
-	static var nme_music_stop = neko.Lib.load("nme","nme_music_stop", 0);
-	static var nme_music_pause = neko.Lib.load("nme","nme_music_pause", 0);
-	static var nme_music_resume = neko.Lib.load("nme","nme_music_resume", 0);
-	static var nme_music_restart = neko.Lib.load("nme","nme_music_restart", 0);
-	static var nme_music_volume = neko.Lib.load("nme","nme_music_volume", 1);
-	static var nme_music_isplaying = neko.Lib.load("nme","nme_music_isplaying", 0);
-	static var nme_music_ispaused = neko.Lib.load("nme","nme_music_ispaused", 0);
-	static var nme_music_isfading = neko.Lib.load("nme","nme_music_isfading", 0);
+	static var nme_music_init = nme.Loader.load("nme_music_init", 1);
+	static var nme_music_free = nme.Loader.load("nme_music_free", 1);
+	static var nme_music_play = nme.Loader.load("nme_music_play", 2);
+	static var nme_music_fadeinplay = nme.Loader.load("nme_music_fadeinplay", 3);
+	static var nme_music_fadeinplaypos = nme.Loader.load("nme_music_fadeinplaypos", 4);
+	static var nme_music_fadeout = nme.Loader.load("nme_music_fadeout", 1);
+	static var nme_music_stop = nme.Loader.load("nme_music_stop", 0);
+	static var nme_music_pause = nme.Loader.load("nme_music_pause", 0);
+	static var nme_music_resume = nme.Loader.load("nme_music_resume", 0);
+	static var nme_music_restart = nme.Loader.load("nme_music_restart", 0);
+	static var nme_music_volume = nme.Loader.load("nme_music_volume", 1);
+	static var nme_music_isplaying = nme.Loader.load("nme_music_isplaying", 0);
+	static var nme_music_ispaused = nme.Loader.load("nme_music_ispaused", 0);
+	static var nme_music_isfading = nme.Loader.load("nme_music_isfading", 0);
 }

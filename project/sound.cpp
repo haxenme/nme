@@ -120,7 +120,7 @@ value nme_sound_fadeoutchannel( value channel, value ms )
 	val_check( channel, int );
 	val_check( ms, int );
 
-	Mix_FadeOutChannel( val_int( channel ), val_int( ms ) );
+	return alloc_int( Mix_FadeOutChannel( val_int( channel ), val_int( ms ) ) );
 }
 
 value nme_sound_pause( value channel )
@@ -129,7 +129,7 @@ value nme_sound_pause( value channel )
 
 	Mix_Pause( val_int( channel ) );
 
-	alloc_int( 0 );
+	return alloc_int( 0 );
 }
 
 value nme_sound_resume( value channel )
@@ -138,7 +138,7 @@ value nme_sound_resume( value channel )
 
 	Mix_Resume( val_int( channel ) );
 
-	alloc_int( 0 );
+	return alloc_int( 0 );
 }
 
 value nme_sound_stop( value channel )

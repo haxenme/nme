@@ -36,6 +36,12 @@
 #endif
 #include <GL/gl.h>
 
+#ifndef empty_object
+#define empty_object alloc_object(0)
+#endif
+
+
+
 using namespace std;
 
 // helper functions
@@ -94,7 +100,7 @@ SDL_Surface* nme_loadimage( value file )
 
 struct MyRWOps : SDL_RWops
 {
-   MyRWOps(char *inItems,int inLen)
+   MyRWOps(const char *inItems,int inLen)
    {
       mItems = (unsigned char *)inItems;
       mLen = inLen;
@@ -189,14 +195,14 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
 	val_check( inAlphaLen, int );
 
         int len = val_int(inLen);
-        char *items = val_string(inBytes);
-        char *type = val_string(inType);
+        const char *items = val_string(inBytes);
+        const char *type = val_string(inType);
 
 
         MyRWOps rw_ops(items,len);
 
 	SDL_Surface* surf;
-	surf = IMG_LoadTyped_RW(&rw_ops,0,type);
+	surf = IMG_LoadTyped_RW(&rw_ops,0,(char *)type);
 	if ( !surf )
 	   return NULL;
 
@@ -370,6 +376,7 @@ value nme_swapbuffer()
 }
 
 
+/*
 value nme_screen_flip()
 {
 	value o = val_this();
@@ -377,10 +384,11 @@ value nme_screen_flip()
 	nme_flipbuffer( val_field( o, val_id( "screen" ) ) );
 	return alloc_int( 0 );
 }
+*/
 
 value AllocRect(const SDL_Rect &inRect)
 {
-   value r = alloc_object(0);
+   value r = empty_object;
    alloc_field( r, val_id( "x" ), alloc_float( inRect.x ) );
    alloc_field( r, val_id( "y" ), alloc_float( inRect.y ) );
    alloc_field( r, val_id( "w" ), alloc_float( inRect.w ) );
@@ -578,7 +586,7 @@ value nme_get_mouse_position()
 
    SDL_GetMouseState(&x,&y);
 
-	value pos = alloc_object(NULL);
+	value pos = empty_object;
    alloc_field( pos, val_id( "x" ), alloc_int( x ) );
    alloc_field( pos, val_id( "y" ), alloc_int( y ) );
    return alloc_object( pos );
@@ -701,7 +709,7 @@ value nme_resize_surface(value inW, value inH)
 value nme_event()
 {
 	SDL_Event event;
-	value evt = alloc_object(NULL);
+	value evt = empty_object;
 	
 	while (SDL_PollEvent(&event))
 	{
@@ -825,7 +833,7 @@ value nme_get_clipboard()
    if (len==0 || data==0)
       data = "";
 
-   value result = alloc_object(0);
+   value result = empty_object;
    alloc_field( result, val_id("__s"), alloc_string(data));
    alloc_field( result, val_id("length"), alloc_int((int)strlen(data)));
 
@@ -839,8 +847,8 @@ value nme_set_clipboard(value inVal)
 
    init_scrap_once();
 
-   char *str = val_string(inVal);
-   put_scrap( TYPE('T','E','X','T'), (int)strlen(str), str );
+   const char *str = val_string(inVal);
+   put_scrap( TYPE('T','E','X','T'), (int)strlen(str), (char *)str );
    return alloc_int(0);
 }
 

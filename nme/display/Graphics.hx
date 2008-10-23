@@ -21,16 +21,19 @@ import nme.geom.Matrix;
 import nme.geom.Rectangle;
 import nme.display.BitmapData;
 
-typedef DrawList = Array<Void>;
+typedef DrawList = Array<Dynamic>;
 
-typedef GfxPoint =
+class GfxPoint
 {
-   var x:Float;
-   var y:Float;
-   var cx:Float;
-   var cy:Float;
-   var type:Int;
-};
+   public function new(inX:Float,inY:Float,inCX:Float,inCY:Float,inType:Int)
+      { x = inX; y=inY; cx=inCX; cy=inCY; type=inType; }
+
+   public var x:Float;
+   public var y:Float;
+   public var cx:Float;
+   public var cy:Float;
+   public var type:Int;
+}
 
 typedef GfxPoints = Array<GfxPoint>;
 
@@ -51,24 +54,41 @@ typedef Grad =
    var focal:Float;
 }
 
-typedef LineJob =
+class LineJob
 {
-   var grad:Grad;
-   var point_idx0:Int;
-   var point_idx1:Int;
-   var thickness:Float;
-   var alpha:Float;
-   var colour:Int;
-   var pixel_hinting:Int;
-   var joints:Int;
-   var caps:Int;
-   var scale_mode:Int;
-   var miter_limit:Float;
+   public function new( inGrad:Grad, inPoint_idx0:Int, inPoint_idx1:Int, inThickness:Float,
+         inAlpha:Float, inColour:Int, inPixel_hinting:Int, inJoints:Int, inCaps:Int,
+         inScale_mode:Int, inMiter_limit:Float)
+   {
+     grad = inGrad;
+     point_idx0 = inPoint_idx0;
+     point_idx1 = inPoint_idx1;
+     thickness = inThickness;
+     alpha = inAlpha;
+     colour = inColour;
+     pixel_hinting = inPixel_hinting;
+     joints = inJoints;
+     caps = inCaps;
+     scale_mode = inScale_mode;
+     miter_limit = inMiter_limit;
+   }
+
+   public var grad:Grad;
+   public var point_idx0:Int;
+   public var point_idx1:Int;
+   public var thickness:Float;
+   public var alpha:Float;
+   public var colour:Int;
+   public var pixel_hinting:Int;
+   public var joints:Int;
+   public var caps:Int;
+   public var scale_mode:Int;
+   public var miter_limit:Float;
 }
 
 typedef Texture =
 {
-   var texture_buffer:Void;
+   var texture_buffer:Dynamic;
    var matrix:Matrix;
    var flags:Int;
 }
@@ -80,7 +100,7 @@ class Graphics
    public static var defaultFontName = "ARIAL.TTF";
    public static var defaultFontSize = 12;
    public static var immediateMatrix = null;
-   public static var immediateMask:Void = null;
+   public static var immediateMask:Dynamic = null;
 
 
 
@@ -131,7 +151,7 @@ class Graphics
    static var CURVE = 2;
 
 
-   private var mSurface:Void;
+   private var mSurface:Dynamic;
    private var mChanged:Bool;
 
    // Current set of points
@@ -160,7 +180,7 @@ class Graphics
 
    //public var clipRect(GetClipRect,SetClipRect):Rectangle;
 
-   public function new(?inSurface:Void)
+   public function new(?inSurface:Dynamic)
    {
       mChanged = false;
       mSurface = inSurface;
@@ -168,18 +188,18 @@ class Graphics
       clear();
    }
 
-   public function SetSurface(inSurface:Void)
+   public function SetSurface(inSurface:Dynamic)
    {
       mSurface = inSurface;
    }
 
 
 
-   public function render(?inMatrix:Matrix,?inSurface:Void,?inMaskHandle:Void,?inScrollRect:Rectangle)
+   public function render(?inMatrix:Matrix,?inSurface:Dynamic,?inMaskHandle:Dynamic,?inScrollRect:Rectangle)
    {
       ClosePolygon(true);
 
-      var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
+      var dest:Dynamic = inSurface == null ? nme.Manager.getScreen() : inSurface;
       for(obj in mDrawList)
          nme_draw_object_to(obj,dest,inMatrix,inMaskHandle,inScrollRect);
    }
@@ -470,8 +490,7 @@ class Graphics
       ClosePolygon(false);
 
       var free_type = inUseFreeType==null ? 
-        (mSolidGradient==null && mBitmap==null &&
-            (mCurrentLine.thickness==null || mCurrentLine.thickness==0)):
+        (mSolidGradient==null && mBitmap==null && mCurrentLine.thickness==0):
           inUseFreeType;
 
       AddDrawable(nme_create_glyph_draw_obj(inX,inY,
@@ -485,18 +504,9 @@ class Graphics
 
    public function ClearLine()
    {
-      mCurrentLine = { grad: null,
-                     point_idx0:-1,
-                     point_idx1:-1,
-                     thickness:0.0,
-                     alpha:0.0,
-                     colour:0x000,
-                     miter_limit: 3.0,
-                     caps:END_ROUND,
-                     scale_mode:SCALE_NORMAL,
-                     joints:CORNER_ROUND,
-                     pixel_hinting : 0 };
-
+      mCurrentLine = new LineJob( null,-1,-1,  0.0,
+            0.0, 0x000, 1, CORNER_ROUND, END_ROUND,
+            SCALE_NORMAL, 3.0);
    }
 
 
@@ -543,7 +553,7 @@ class Graphics
       {
          AddLineSegment();
          mLastMoveID = mPoints.length;
-         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
+         mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
       }
    }
 
@@ -552,13 +562,13 @@ class Graphics
       var pid = mPoints.length;
       if (pid==0)
       {
-         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
+         mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
          pid++;
       }
 
       mPenX = inX;
       mPenY = inY;
-      mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:LINE } );
+      mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, LINE ) );
 
       if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
       {
@@ -573,13 +583,13 @@ class Graphics
       var pid = mPoints.length;
       if (pid==0)
       {
-         mPoints.push( { x:mPenX, y:mPenY, cx:0.0, cy:0.0, type:MOVE } );
+         mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
          pid++;
       }
 
       mPenX = inX;
       mPenY = inY;
-      mPoints.push( { x:inX, y:inY, cx:inCX, cy:inCY, type:CURVE } );
+      mPoints.push( new GfxPoint( inX, inY, inCX, inCY, CURVE ) );
 
       if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
       {
@@ -599,7 +609,11 @@ class Graphics
       var font:String = fontName==null ? defaultFontName: fontName;
 
       AddDrawable( nme_create_text_drawable(
+      #if neko
           untyped text.__s,untyped font.__s,size,
+      #else
+          text,font,size,
+      #end
           mPenX, mPenY,
           mCurrentLine.colour, mCurrentLine.alpha, bgColor, alignX, alignY ) );
    }
@@ -614,7 +628,7 @@ class Graphics
       return result;
    }
 
-   private function AddDrawable(inDrawable:Void)
+   private function AddDrawable(inDrawable:Dynamic)
    {
       if (inDrawable==null)
          return; // throw ?
@@ -635,19 +649,19 @@ class Graphics
       if (mCurrentLine.point_idx1>0)
       {
             mLineJobs.push(
-               {
-                  grad:mCurrentLine.grad,
-                  point_idx0:mCurrentLine.point_idx0,
-                  point_idx1:mCurrentLine.point_idx1,
-                  thickness:mCurrentLine.thickness,
-                  alpha:mCurrentLine.alpha,
-                  pixel_hinting:mCurrentLine.pixel_hinting,
-                  colour:mCurrentLine.colour,
-                  joints:mCurrentLine.joints,
-                  caps:mCurrentLine.caps,
-                  scale_mode:mCurrentLine.scale_mode,
-                  miter_limit:mCurrentLine.miter_limit,
-               } );
+               new LineJob(
+                  mCurrentLine.grad,
+                  mCurrentLine.point_idx0,
+                  mCurrentLine.point_idx1,
+                  mCurrentLine.thickness,
+                  mCurrentLine.alpha,
+                  mCurrentLine.pixel_hinting,
+                  mCurrentLine.colour,
+                  mCurrentLine.joints,
+                  mCurrentLine.caps,
+                  mCurrentLine.scale_mode,
+                  mCurrentLine.miter_limit
+               ) );
       }
       mCurrentLine.point_idx0 = mCurrentLine.point_idx1 = -1;
    }
@@ -670,10 +684,18 @@ class Graphics
 
             AddLineSegment();
 
+            #if neko
             AddDrawable( nme_create_draw_obj( untyped mPoints.__neko(),
                       mFillColour, mFillAlpha,
                       untyped mSolidGradient==null ? mBitmap:mSolidGradient,
                       untyped mLineJobs.__neko() ) );
+            #else
+            AddDrawable( nme_create_draw_obj( mPoints,
+                      mFillColour, mFillAlpha,
+                      untyped mSolidGradient==null ? mBitmap:mSolidGradient,
+                      mLineJobs ) );
+            #end
+
          }
 
          mLineJobs = [];
@@ -689,18 +711,18 @@ class Graphics
       }
    }
 
-   public function AddToMask(ioMask:Void,inMatrix:Matrix,?inSurface:Void)
+   public function AddToMask(ioMask:Dynamic,inMatrix:Matrix,?inSurface:Dynamic)
    {
       if (mDrawList.length>0)
       {
-         var dest:Void = inSurface == null ? nme.Manager.getScreen() : inSurface;
+         var dest:Dynamic = inSurface == null ? nme.Manager.getScreen() : inSurface;
          nme_add_to_mask(mDrawList,dest,ioMask,inMatrix);
       }
    }
 
-   public function CreateMask(inMatrix:Matrix):Void
+   public function CreateMask(inMatrix:Matrix):Dynamic
    {
-      var mask:Void = nme_create_mask();
+      var mask:Dynamic = nme_create_mask();
       AddToMask(mask,inMatrix);
       return mask;
    }
@@ -721,17 +743,17 @@ class Graphics
 
 
 
-   static var nme_draw_object_to = neko.Lib.load("nme","nme_draw_object_to",5);
-   static var nme_hit_object = neko.Lib.load("nme","nme_hit_object",3);
-   static var nme_create_blit_drawable = neko.Lib.load("nme","nme_create_blit_drawable",3);
-   static var nme_create_draw_obj = neko.Lib.load("nme","nme_create_draw_obj",5);
-   static var nme_create_text_drawable = neko.Lib.load("nme","nme_create_text_drawable",-1);
-   static var nme_get_clip_rect = neko.Lib.load("nme","nme_get_clip_rect",1);
-   static var nme_set_clip_rect = neko.Lib.load("nme","nme_set_clip_rect",2);
-   static var nme_get_extent = neko.Lib.load("nme","nme_get_extent",4);
-   static var nme_create_glyph_draw_obj = neko.Lib.load("nme","nme_create_glyph_draw_obj",-1);
-   static var nme_create_mask = neko.Lib.load("nme","nme_create_mask",0);
-   static var nme_add_to_mask = neko.Lib.load("nme","nme_add_to_mask",4);
+   static var nme_draw_object_to = nme.Loader.load("nme_draw_object_to",5);
+   static var nme_hit_object = nme.Loader.load("nme_hit_object",3);
+   static var nme_create_blit_drawable = nme.Loader.load("nme_create_blit_drawable",3);
+   static var nme_create_draw_obj = nme.Loader.load("nme_create_draw_obj",5);
+   static var nme_create_text_drawable = nme.Loader.load("nme_create_text_drawable",-1);
+   static var nme_get_clip_rect = nme.Loader.load("nme_get_clip_rect",1);
+   static var nme_set_clip_rect = nme.Loader.load("nme_set_clip_rect",2);
+   static var nme_get_extent = nme.Loader.load("nme_get_extent",4);
+   static var nme_create_glyph_draw_obj = nme.Loader.load("nme_create_glyph_draw_obj",-1);
+   static var nme_create_mask = nme.Loader.load("nme_create_mask",0);
+   static var nme_add_to_mask = nme.Loader.load("nme_add_to_mask",4);
 
 }
 

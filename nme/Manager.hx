@@ -97,7 +97,7 @@ typedef RenderCallbackList = Array<RenderCallback>;
 
 class Manager
 {
-	static var __scr : Void;
+	static var __scr : Dynamic;
 	static var __evt : Dynamic;
 
 	// Set this to something else if yo do not want it...
@@ -130,7 +130,7 @@ class Manager
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool )
 	{
 		var flags = 0;
-		if ( fullscreen!=null && fullscreen)
+		if ( fullscreen)
 		   flags += FULLSCREEN;
 
 		if ( opengl!=null && opengl)
@@ -140,8 +140,12 @@ class Manager
          flags += RESIZABLE;
 
 		if ( width < 100 || height < 20 ) return;
+      #if neko
 		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
-                graphics = new Graphics(__scr);
+      #else
+		__scr = nme_screen_init( width, height, title, flags, icon );
+      #end
+      graphics = new Graphics(__scr);
 		mainLoopRunning = false;
 		mouseEventCallbacks = new MouseEventCallbackList();
 		mouseClickCallbacks = new MouseEventCallbackList();
@@ -161,6 +165,14 @@ class Manager
    }
 
 
+   public static function warn(str:String)
+   {
+   #if neko
+      neko.Lib.print(str);
+   #else
+      
+   #end
+   }
 
    // This function is optional - you can choose to do your own main loop, eg
    // samples/2-Blox-Game.  You can also use extend the "GameBase" class
@@ -324,7 +336,7 @@ class Manager
 	  if (inIsDown && event.code==pauseUpdates)
 		 mPaused = !mPaused;
 	  else if (inIsDown && event.code==toggleQuality)
-		 nme_set_draw_quality( (nme_get_draw_quality()+1) & 0x01 );
+		 nme_set_draw_quality( (get_draw_quality()+1) & 0x01 );
 
 	  for(e in keyEventCallbacks)
 		 e(event);
@@ -370,7 +382,7 @@ class Manager
 		nme_delay( period );
 	}
 
-	static public function getScreen() : Void
+	static public function getScreen() : Dynamic
 	{
 		return __scr;
 	}
@@ -525,24 +537,32 @@ class Manager
 	}
    public static function getClipboardString() : String
    {
+   #if neko
       return neko.Lib.nekoToHaxe(  nme_get_clipboard() );
+   #elseif cpp
+      return "";
+   #end
    }
    public static function setClipboardString(inString:String)
    {
+   #if neko
       nme_set_clipboard(untyped inString.__s);
+   #else
+      nme_set_clipboard(inString);
+   #end
    }
 
-	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
-	static var nme_screen_init = neko.Lib.load("nme","nme_screen_init",5);
-	static var nme_resize_surface = neko.Lib.load("nme","nme_resize_surface",2);
-	static var nme_screen_close = neko.Lib.load("nme","nme_screen_close",0);
-	static var nme_flipbuffer = neko.Lib.load("nme","nme_flipbuffer",1);
-	static var nme_delay = neko.Lib.load("nme","nme_delay",1);
-	static var nme_event = neko.Lib.load("nme","nme_event",0);
-	static var nme_set_draw_quality = neko.Lib.load("nme","nme_set_draw_quality",1);
-	static var nme_get_draw_quality = neko.Lib.load("nme","nme_get_draw_quality",0);
-	static var nme_set_cursor = neko.Lib.load("nme","nme_set_cursor",1);
-	static var nme_get_mouse_position = neko.Lib.load("nme","nme_get_mouse_position",0);
-	static var nme_set_clipboard = neko.Lib.load("nme","nme_set_clipboard",1);
-	static var nme_get_clipboard = neko.Lib.load("nme","nme_get_clipboard",0);
+	static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
+	static var nme_screen_init = nme.Loader.load("nme_screen_init",5);
+	static var nme_resize_surface = nme.Loader.load("nme_resize_surface",2);
+	static var nme_screen_close = nme.Loader.load("nme_screen_close",0);
+	static var nme_flipbuffer = nme.Loader.load("nme_flipbuffer",1);
+	static var nme_delay = nme.Loader.load("nme_delay",1);
+	static var nme_event = nme.Loader.load("nme_event",0);
+	static var nme_set_draw_quality = nme.Loader.load("nme_set_draw_quality",1);
+	static var nme_get_draw_quality = nme.Loader.load("nme_get_draw_quality",0);
+	static var nme_set_cursor = nme.Loader.load("nme_set_cursor",1);
+	static var nme_get_mouse_position = nme.Loader.load("nme_get_mouse_position",0);
+	static var nme_set_clipboard = nme.Loader.load("nme_set_clipboard",1);
+	static var nme_get_clipboard = nme.Loader.load("nme_get_clipboard",0);
 }

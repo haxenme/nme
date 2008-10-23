@@ -64,10 +64,11 @@ class GraphicsTest extends nme.GameBase
 
       // Try it both ways !
       var opengl = false;
+      #if neko
       var args = neko.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
-
+      #end
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 

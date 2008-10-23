@@ -77,7 +77,7 @@ class Sprite
 		if ( groups[ loc ] == null ) groups[ loc ] = new Array();
 		if ( group >= groups.length || group < 0 )
 		{
-			neko.Lib.print( "unable to add sprite frame. specified group is out of bounds.\n" );
+			nme.Manager.warn( "unable to add sprite frame. specified group is out of bounds.\n" );
 			return;
 		}
 		groups[ group ][ loc ] = rect;
@@ -91,7 +91,7 @@ class Sprite
 			if ( groups[ loc ] == null ) groups[ loc ] = new Array();
 			if ( group >= groups.length || group < 0 )
 			{
-				neko.Lib.print( "unable to add sprite frame. specified group is out of bounds.\n" );
+				nme.Manager.warn( "unable to add sprite frame. specified group is out of bounds.\n" );
 				return;
 			}
 			groups[ group ][ loc ] = rect;

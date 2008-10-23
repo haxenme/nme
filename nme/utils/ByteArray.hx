@@ -4,11 +4,11 @@ import StdTypes;
 
 class ByteArray implements ArrayAccess<Int>
 {
-   private var mArray:Void;
+   private var mArray:Dynamic;
 
    public var length(get_length,null):Int;
 
-   public function new(?inHandle:Void)
+   public function new(?inHandle:Dynamic)
    {
       if (inHandle==null)
          mArray = nme_create_byte_array();
@@ -16,7 +16,7 @@ class ByteArray implements ArrayAccess<Int>
          mArray = inHandle;
    }
 
-   public function get_handle():Void { return mArray; }
+   public function get_handle():Dynamic { return mArray; }
 
    public function get_length():Int
    {
@@ -34,10 +34,10 @@ class ByteArray implements ArrayAccess<Int>
    }
 
 
-   static var nme_create_byte_array = neko.Lib.load("nme","nme_create_byte_array",0);
-   static var nme_byte_array_length = neko.Lib.load("nme","nme_byte_array_length",1);
-   static var nme_byte_array_get = neko.Lib.load("nme","nme_byte_array_get",2);
-   static var nme_byte_array_set = neko.Lib.load("nme","nme_byte_array_set",3);
+   static var nme_create_byte_array = nme.Loader.load("nme_create_byte_array",0);
+   static var nme_byte_array_length = nme.Loader.load("nme_byte_array_length",1);
+   static var nme_byte_array_get = nme.Loader.load("nme_byte_array_get",2);
+   static var nme_byte_array_set = nme.Loader.load("nme_byte_array_set",3);
 
 }
 

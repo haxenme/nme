@@ -5,13 +5,17 @@ import nme.display.BitmapData;
 
 class BitmapFilterSet
 {
-   var mHandle:Void;
+   var mHandle:Dynamic;
    var mOffset:Point;
 
    public function new(inFilters:Array<BitmapFilter>)
    {
       mOffset = new Point();
+      #if neko
       mHandle = nme_create_filter_set(untyped inFilters.__neko(),mOffset);
+      #else
+      mHandle = nme_create_filter_set(inFilters,mOffset);
+      #end 
    }
 
    public function FilterImage(inImage:BitmapData) : BitmapData
@@ -25,8 +29,8 @@ class BitmapFilterSet
 
 
 
-   static var nme_filter_image = neko.Lib.load("nme","nme_filter_image",2);
-   static var nme_create_filter_set = neko.Lib.load("nme","nme_create_filter_set",2);
+   static var nme_filter_image = nme.Loader.load("nme_filter_image",2);
+   static var nme_create_filter_set = nme.Loader.load("nme_create_filter_set",2);
 }
 
 

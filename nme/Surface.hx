@@ -30,19 +30,23 @@ import nme.Point;
 
 class Surface
 {
-	var __srf : Void;
+	var __srf : Dynamic;
         public var width(getWidth,null):Int;
         public var height(getHeight,null):Int;
 	
 	public function new( ?file : String )
 	{
 		if ( file != null && file != "" )
+      #if neko
 			__srf = nme_sprite_init( untyped file.__s );
+      #else
+			__srf = nme_sprite_init( file );
+      #end
 	}
 
         public function handle() { return __srf; }
 	
-	public function draw( screen : Void, ?rect : Rect, ?point : Point )
+	public function draw( screen : Dynamic, ?rect : Rect, ?point : Point )
 	{
                 if (rect==null) rect = new Rect(0,0,width,height);
                 if (point==null) point = new Point(0,0);
@@ -70,7 +74,7 @@ class Surface
 		if ( g < 0 || g > 255 ) valid = false;
 		if ( b < 0 || b > 255 ) valid = false;
 		if ( ! valid )
-			neko.Lib.print( "unable to set colour key. invalid colour value.\n" );
+			nme.Manager.warn( "unable to set colour key. invalid colour value.\n" );
 		else
 			nme_surface_colourkey( __srf, r, g, b );
 	}
@@ -89,7 +93,7 @@ class Surface
 
 		To get optimal performance PLEASE make sure that the two surfaces has the same pixel format (color depth) and doesn't use 24-bpp.
 	*/
-	public function transform( screen : Void, angle : Float, scale : Point, pivot : Point, destination : Point, flags : Int ) : Rect
+	public function transform( screen : Dynamic, angle : Float, scale : Point, pivot : Point, destination : Point, flags : Int ) : Rect
 	{
 		var r = nme_sprite_transform( __srf, screen, angle, scale.x, scale.y, pivot.x, pivot.y, destination.x, destination.y, flags );
 		return new Rect( r.x, r.y, r.w, r.h );
@@ -117,19 +121,19 @@ class Surface
 		return nme_collision_boundingbox( rect, rectb, offsetPoint );
 	}
 	
-	static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
-	static var nme_surface_width = neko.Lib.load("nme","nme_surface_width",1);
-	static var nme_surface_height = neko.Lib.load("nme","nme_surface_height",1);
-	static var nme_surface_free = neko.Lib.load("nme","nme_surface_free",1);
-	static var nme_surface_colourkey = neko.Lib.load("nme", "nme_surface_colourkey",4);
-	static var nme_sprite_alpha = neko.Lib.load("nme","nme_sprite_alpha",2);
+	static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
+	static var nme_surface_width = nme.Loader.load("nme_surface_width",1);
+	static var nme_surface_height = nme.Loader.load("nme_surface_height",1);
+	static var nme_surface_free = nme.Loader.load("nme_surface_free",1);
+	static var nme_surface_colourkey = nme.Loader.load( "nme_surface_colourkey",4);
+	static var nme_sprite_alpha = nme.Loader.load("nme_sprite_alpha",2);
 	
-	static var nme_sprite_init = neko.Lib.load("nme","nme_sprite_init",1);
-	static var nme_sprite_draw = neko.Lib.load("nme","nme_sprite_draw",4);
+	static var nme_sprite_init = nme.Loader.load("nme_sprite_init",1);
+	static var nme_sprite_draw = nme.Loader.load("nme_sprite_draw",4);
 	
-	static var nme_sprite_transform = neko.Lib.load("nme","nme_sprite_transform",-1);
-	static var nme_sprite_transform_surface = neko.Lib.load("nme","nme_sprite_transform_surface",-1);
+	static var nme_sprite_transform = nme.Loader.load("nme_sprite_transform",-1);
+	static var nme_sprite_transform_surface = nme.Loader.load("nme_sprite_transform_surface",-1);
 	
-	static var nme_collision_pixel = neko.Lib.load("nme","nme_collision_pixel",5);
-	static var nme_collision_boundingbox = neko.Lib.load("nme","nme_collision_boundingbox",3);
+	static var nme_collision_pixel = nme.Loader.load("nme_collision_pixel",5);
+	static var nme_collision_boundingbox = nme.Loader.load("nme_collision_boundingbox",3);
 }

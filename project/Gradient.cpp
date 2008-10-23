@@ -19,6 +19,9 @@
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+#ifndef HXCPP
+typedef value *array_ptr;
+#endif
 
 // These should match Graphics.hx
 enum GradFlags
@@ -101,10 +104,15 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
 
    mTextureID = 0;
 
+   #ifdef HXCPP
+   value inPoints = inHxPoints;
+   int n =  inPoints->__length();
+   #else
    value inPoints = val_field(inHxPoints,val_id("__a"));
    int n =  val_int( val_field(inHxPoints,val_id("length")));
+   #endif
 
-   value *items = val_array_ptr(inPoints);
+   array_ptr items = val_array_ptr(inPoints);
 
    GradPoints points(n);
 

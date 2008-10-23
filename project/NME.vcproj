@@ -16,9 +16,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			Name="Neko NDLL - Debug|Win32"
+			OutputDirectory="Debug-ndll"
+			IntermediateDirectory="Debug-ndll"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Motion-Twin\neko\include&quot;;..\..\thirdparty\include"
+				AdditionalIncludeDirectories="$(NEKO_INSTPATH)\include;..\..\thirdparty\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -51,6 +51,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -66,7 +67,7 @@
 				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib neko.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib"
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/NME.pdb"
 				SubSystem="2"
@@ -98,9 +99,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			Name="Neko NDLL - Release|Win32"
+			OutputDirectory="Release-ndll"
+			IntermediateDirectory="Release-ndll"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -145,6 +146,166 @@
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Motion-Twin\neko&quot;;..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86"
+				ModuleDefinitionFile=""
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="HXCPP - Debug|Win32"
+			OutputDirectory="Debug-hxcpp"
+			IntermediateDirectory="Debug-hxcpp"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(HXCPP)/include&quot;;..\..\thirdparty\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib hxcpp.lib"
+				OutputFile="..\ndll\Windows\nme.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86;$(HXCPP)/dll"
+				ModuleDefinitionFile=""
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="HXCPP - Release|Win32"
+			OutputDirectory="Release-hxcpp"
+			IntermediateDirectory="Release-hxcpp"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(HXCPP)/include&quot;;..\..\thirdparty\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib hxcpp.lib"
+				OutputFile="..\ndll\Windows\nme.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86;$(HXCPP)/dll"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"

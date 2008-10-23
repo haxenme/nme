@@ -5,7 +5,7 @@ import nme.geom.Rectangle;
 
 class BitmapData
 {
-   private var mTextureBuffer:Void;
+   private var mTextureBuffer:Dynamic;
    public var width(getWidth,null):Int;
    public var height(getHeight,null):Int;
    public var graphics(getGraphics,null):Graphics;
@@ -66,7 +66,11 @@ class BitmapData
 
    public function LoadFromFile(inFilename:String)
    {
+   #if neko
        mTextureBuffer = nme_load_texture(untyped inFilename.__s);
+   #else
+       mTextureBuffer = nme_load_texture(inFilename);
+   #end
    }
 
    // Type = "JPG", "BMP" etc.
@@ -74,21 +78,33 @@ class BitmapData
                         ?inAlpha:String )
    {
        var a:String = inAlpha==null ? "" : inAlpha;
+       #if neko
        mTextureBuffer = nme_load_texture_from_bytes(untyped inBytes.__s,
                         inBytes.length,
                         untyped inType.__s,
                         untyped a.__s,
                         a.length);
+       #else
+       mTextureBuffer = nme_load_texture_from_bytes(inBytes,
+                        inBytes.length,
+                        inType,
+                        a,
+                        a.length);
+       #end
    }
 
    public function SetPixelData(inBuffer:String, inFormat:Int, inTableSize:Int)
    {
+   #if neko
       nme_set_pixel_data(mTextureBuffer,untyped inBuffer.__s,inBuffer.length,
                           inFormat, inTableSize);
+   #else
+      nme_set_pixel_data(mTextureBuffer,inBuffer,inBuffer.length, inFormat, inTableSize);
+   #end
    }
 
 
-   static public function CreateFromHandle(inHandle:Void) : BitmapData
+   static public function CreateFromHandle(inHandle:Dynamic) : BitmapData
    {
       var result = new BitmapData(0,0);
       result.mTextureBuffer = inHandle;
@@ -117,7 +133,7 @@ class BitmapData
       nme_set_pixel(mTextureBuffer,inX,inY,inColour);
    }
 
-   public function clear( color : Int )
+   public function clear( color : Int ) : Void
    {
        nme_surface_clear( mTextureBuffer, color );
    }
@@ -126,16 +142,16 @@ class BitmapData
 
 
    static var nme_create_texture_buffer =
-                 neko.Lib.load("nme","nme_create_texture_buffer",5);
-   static var nme_load_texture = neko.Lib.load("nme","nme_load_texture",1);
-   static var nme_load_texture_from_bytes = neko.Lib.load("nme","nme_load_texture_from_bytes",5);
-   static var nme_set_pixel_data = neko.Lib.load("nme","nme_set_pixel_data",5);
-   static var nme_set_pixel = neko.Lib.load("nme","nme_set_pixel",4);
-   static var nme_texture_width = neko.Lib.load("nme","nme_texture_width",1);
-   static var nme_texture_height = neko.Lib.load("nme","nme_texture_height",1);
-   static var nme_texture_get_bytes = neko.Lib.load("nme","nme_texture_get_bytes",2);
-   static var nme_surface_clear = neko.Lib.load("nme","nme_surface_clear",2);
+                 nme.Loader.load("nme_create_texture_buffer",5);
+   static var nme_load_texture = nme.Loader.load("nme_load_texture",1);
+   static var nme_load_texture_from_bytes = nme.Loader.load("nme_load_texture_from_bytes",5);
+   static var nme_set_pixel_data = nme.Loader.load("nme_set_pixel_data",5);
+   static var nme_set_pixel = nme.Loader.load("nme_set_pixel",4);
+   static var nme_texture_width = nme.Loader.load("nme_texture_width",1);
+   static var nme_texture_height = nme.Loader.load("nme_texture_height",1);
+   static var nme_texture_get_bytes = nme.Loader.load("nme_texture_get_bytes",2);
+   static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
 
-   static var nme_texture_set_bytes = neko.Lib.load("nme","nme_texture_set_bytes",3);
+   static var nme_texture_set_bytes = nme.Loader.load("nme_texture_set_bytes",3);
 }
 

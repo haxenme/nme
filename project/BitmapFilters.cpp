@@ -13,6 +13,11 @@ DECLARE_KIND( k_filter_set );
 DEFINE_KIND( k_filter_set );
 #define FILTER_SET(v) ( (FilterSet *)(val_data(v)) )
 
+#ifndef HXCPP
+typedef value *array_ptr;
+#endif
+
+
 /*
 #include <windows.h>
 #undef min
@@ -617,7 +622,7 @@ value nme_create_filter_set(value inFilters,value outPoint)
    FilterSet *result = new FilterSet;
 
    val_check( inFilters, array );
-   value *objs =  val_array_ptr(inFilters);
+   array_ptr objs =  val_array_ptr(inFilters);
    int n =  val_array_size(inFilters);
 
    int ox = 0;
@@ -634,7 +639,7 @@ value nme_create_filter_set(value inFilters,value outPoint)
          failure( "no filter type string found" );
 
 
-      char *type =  val_string(type_val);
+      const char *type =  val_string(type_val);
       FilterBase *filter = 0;
       if (!strcmp(type,"BlurFilter"))
       {

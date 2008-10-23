@@ -22,12 +22,16 @@ typedef GlyphMetrics =
 
 class FontHandle
 {
-   public var handle(get_handle,null):Void;
-   var mHandle:Void;
+   public var handle(get_handle,null):Dynamic;
+   var mHandle:Dynamic;
 
    public function new(inName:String, inSize:Int)
    {
+   #if neko
       mHandle = nme_create_font_handle(untyped inName.__s,inSize);
+   #else
+      mHandle = nme_create_font_handle(inName,inSize);
+   #end
    }
 
    public function GetGlyphMetrics(inChar:Dynamic) : GlyphMetrics
@@ -42,11 +46,11 @@ class FontHandle
       return nme_get_font_metrics(mHandle);
    }
 
-   public function get_handle() : Void { return mHandle; }
+   public function get_handle() : Dynamic { return mHandle; }
 
 
-   static var nme_create_font_handle = neko.Lib.load("nme","nme_create_font_handle",2);
-   static var nme_get_font_metrics = neko.Lib.load("nme","nme_get_font_metrics",1);
-   static var nme_get_glyph_metrics = neko.Lib.load("nme","nme_get_glyph_metrics",2);
+   static var nme_create_font_handle = nme.Loader.load("nme_create_font_handle",2);
+   static var nme_get_font_metrics = nme.Loader.load("nme_get_font_metrics",1);
+   static var nme_get_glyph_metrics = nme.Loader.load("nme_get_glyph_metrics",2);
 
 }
