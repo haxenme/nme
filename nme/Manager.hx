@@ -125,7 +125,7 @@ class Manager
 
 	private var timerStack : List < Timer > ;
 	private var mT0 : Float;
-	private var mFrameCount : Int;
+	static var mFrameCountStack:Array<Float> = [];
 
 	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool )
 	{
@@ -155,7 +155,6 @@ class Manager
 		tryQuitFunction = null;
 		mPaused = false;
       mT0 = haxe.Timer.stamp();
-      mFrameCount = 0;
 	}
 
    public function OnResize(inW:Int, inH:Int)
@@ -255,19 +254,26 @@ class Manager
    public function ResetFPS()
    {
       mT0 = haxe.Timer.stamp();
-      mFrameCount = 0;
+      mFrameCountStack = [];
    }
    public function RenderFPS()
    {
       var t =  haxe.Timer.stamp() - mT0;
+      var n = mFrameCountStack.length;
+      mFrameCountStack[n] = t;
+      if (n>0)
       {
-         mFrameCount++;
-         graphics.lineStyle(0x000000,1);
-         var fps = mFrameCount/t;
-         fps = Math.round( fps*100 ) * 0.01;
-         var text = Std.string(fps);
-         Manager.graphics.moveTo(10,10);
-         Manager.graphics.text(text,12,null,0xffffff);
+         var t0 = mFrameCountStack[0];
+         t -= t0;
+         if (t>0)
+         {
+            graphics.lineStyle(0x000000,1);
+            var text = "FPS:" + Std.int( n/t );
+            Manager.graphics.moveTo(10,10);
+            Manager.graphics.text(text,12,null,0xffffff);
+         }
+         if (n>10)
+            mFrameCountStack.shift();
       }
    }
 
