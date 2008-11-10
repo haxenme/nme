@@ -31,6 +31,42 @@ DEFINE_KIND( k_mask );
 #define DRAWABLE(v) ( (Drawable *)(val_data(v)) )
 #define MASK(v) ( (MaskObject *)(val_data(v)) )
 
+#include <set>
+
+/*
+std::set<void *> sgTotalDrawables;
+
+void AddPointer(void *inP)
+{
+   if (sgTotalDrawables.find(inP)!=sgTotalDrawables.end())
+   {
+      printf("######### Error - double add %p\n",inP);
+   }
+   sgTotalDrawables.insert(inP);
+   printf("Objs : %d (%p)\n",sgTotalDrawables.size(),inP);
+}
+void DeletePointer(void *inP)
+{
+   std::set<void *>::iterator f = sgTotalDrawables.find(inP);
+   if (f==sgTotalDrawables.end())
+   {
+      printf("######### Error - not found %p\n",inP);
+   }
+   else
+      sgTotalDrawables.erase(f);
+
+   printf("Objs : %d (%p)\n",sgTotalDrawables.size(),inP);
+}
+void CheckDrawable(void *inP)
+{
+   std::set<void *>::iterator f = sgTotalDrawables.find(inP);
+   if (f==sgTotalDrawables.end())
+   {
+      printf("######### Error - Not drawable ? %p\n",inP);
+      //exit(0);
+   }
+}
+*/
 
 static int sQualityLevel = 1;
 
@@ -1379,7 +1415,7 @@ value nme_create_glyph_draw_obj(array_ptr arg, int nargs )
    double x = val_number(arg[aX]);
    double y = val_number(arg[aY]);
 
-   Drawable *obj;
+   Drawable *obj = 0;
 
    if (val_bool(arg[aUseFreeType]))
    {
@@ -1493,8 +1529,7 @@ void delete_drawable( value drawable )
 {
    if ( val_is_kind( drawable, k_drawable ) )
    {
-      val_gc( drawable, NULL );
-
+      //val_gc( drawable, NULL );
       Drawable *d = DRAWABLE(drawable);
       delete d;
    }
@@ -1608,6 +1643,9 @@ value nme_hit_object(value drawable,value x,value y )
 {
       if ( val_is_kind( drawable, k_drawable ) )
       {
+         hxObject *h = drawable.GetPtr();
+         Abstract_obj *obj = dynamic_cast<Abstract_obj *>(h);
+         void *p = obj->__GetHandle();
          Drawable *d = DRAWABLE(drawable);
          return alloc_bool(d->HitTest(val_int(x),val_int(y)));
       }

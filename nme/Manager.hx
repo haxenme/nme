@@ -261,20 +261,13 @@ class Manager
       var t =  haxe.Timer.stamp() - mT0;
       var n = mFrameCountStack.length;
       mFrameCountStack[n] = t;
-      if (n>0)
-      {
-         var t0 = mFrameCountStack[0];
-         t -= t0;
-         if (t>0)
-         {
-            graphics.lineStyle(0x000000,1);
-            var text = "FPS:" + Std.int( n/t );
-            Manager.graphics.moveTo(10,10);
-            Manager.graphics.text(text,12,null,0xffffff);
-         }
-         if (n>10)
-            mFrameCountStack.shift();
-      }
+      while(mFrameCountStack[0] < (t-1) )
+         mFrameCountStack.shift();
+
+      graphics.lineStyle(0x000000,1);
+      var text = "FPS:" + mFrameCountStack.length;
+      Manager.graphics.moveTo(10,10);
+      Manager.graphics.text(text,12,null,0xffffff);
    }
 
 
