@@ -58,13 +58,16 @@ class BitmapTest extends nme.GameBase
    {
       nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
 
-      // Try it both ways !
+      // Try it all ways !
       var opengl = false;
+      var hardware = false;
       var args = neko.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
+      else if (args.length>0 && args[0].substr(0,2)=="-h")
+         hardware = true;
 
-      super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
+      super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl, hardware );
 
       mBang = BitmapData.Load("bang.png");
       if (mBang==null)

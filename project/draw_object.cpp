@@ -559,6 +559,9 @@ public:
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
       {
+         if (mTexture)
+            mTexture->UpdateHardware();
+
          mOGLMatrix = inMatrix;
          if (!mDisplayList && mRendersWithoutDisplayList>1)
             CreateDisplayList();
@@ -576,7 +579,9 @@ public:
          if (inMatrix.IsIdentity())
          {
             if (mDisplayList)
+            {
                glCallList(mDisplayList);
+            }
             else
             {
                mRendersWithoutDisplayList++;
@@ -1643,9 +1648,11 @@ value nme_hit_object(value drawable,value x,value y )
 {
       if ( val_is_kind( drawable, k_drawable ) )
       {
+         /*
          hxObject *h = drawable.GetPtr();
          Abstract_obj *obj = dynamic_cast<Abstract_obj *>(h);
          void *p = obj->__GetHandle();
+         */
          Drawable *d = DRAWABLE(drawable);
          return alloc_bool(d->HitTest(val_int(x),val_int(y)));
       }

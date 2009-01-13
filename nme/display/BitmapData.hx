@@ -1,6 +1,10 @@
 package nme.display;
 import nme.utils.ByteArray;
 import nme.geom.Rectangle;
+import nme.geom.Point;
+import nme.geom.Matrix;
+import nme.geom.ColorTransform;
+import nme.display.IBitmapDrawable;
 
 
 class BitmapData
@@ -9,6 +13,7 @@ class BitmapData
    public var width(getWidth,null):Int;
    public var height(getHeight,null):Int;
    public var graphics(getGraphics,null):Graphics;
+   public var rect(GetRect,null) : nme.geom.Rectangle;
 
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE    = 0x0002;
@@ -118,6 +123,9 @@ class BitmapData
       return result;
    }
 
+   public function GetRect() : Rectangle { return new Rectangle(0,0,width,height); }
+
+
    public function getPixels(rect:Rectangle):ByteArray
    {
       return new ByteArray(nme_texture_get_bytes(mTextureBuffer,rect));
@@ -137,7 +145,34 @@ class BitmapData
    {
        nme_surface_clear( mTextureBuffer, color );
    }
+   public function fillRect( rect : nme.geom.Rectangle, inColour : Int, inAlpha:Int = 255 ) : Void
+   {
+      nme_tex_fill_rect(handle(),rect,inColour,inAlpha);
+   }
 
+   public function copyPixels(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point,
+      ?alphaBitmapData:BitmapData, ?alphaPoint:Point, mergeAlpha:Bool = false):Void
+   {
+      nme_copy_pixels(sourceBitmapData.handle(),
+         sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height,
+         handle(), destPoint.x, destPoint.y);
+   }
+
+   public function draw(source:IBitmapDrawable,
+                 matrix:Matrix = null,
+                 colorTransform:ColorTransform = null,
+                 blendMode:String = null,
+                 clipRect:Rectangle = null,
+                 smoothing:Bool= false):Void
+   {
+      var gfx = source.GetBitmapDrawable();
+      if (gfx!=null)
+         gfx.render(matrix,mTextureBuffer);
+   }
+
+   // This is handled internally...
+   public function unlock(?changeRect:nme.geom.Rectangle) { }
+   public function lock() { }
 
 
 
@@ -153,5 +188,9 @@ class BitmapData
    static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
 
    static var nme_texture_set_bytes = nme.Loader.load("nme_texture_set_bytes",3);
+   static var nme_copy_pixels = nme.Loader.load("nme_copy_pixels",-1);
+   static var nme_tex_fill_rect = nme.Loader.load("nme_tex_fill_rect",4);
+
+   static var nme_draw_object_to= nme.Loader.load("nme_draw_object_to",5);
 }
 

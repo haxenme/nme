@@ -98,6 +98,8 @@ struct TextureReference
                  (float)(inX*inMtx.m10 + inY*inMtx.m11 + inMtx.mty));
    }
 
+   void UpdateHardware() { if (mTexture) mTexture->UpdateHardware(); }
+
    static TextureReference *Create(value inValue);
 
    TextureBuffer *mTexture;

@@ -52,10 +52,12 @@ DEFINE_KIND( k_snd );
 DEFINE_KIND( k_mus );
 
 
+// As opposed to opengl hardware ..
+static bool sUseSystemHardware = false;
 
 SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
 {
-   unsigned int  flags = SDL_SWSURFACE;
+   unsigned int flags = sUseSystemHardware ?SDL_HWSURFACE:SDL_SWSURFACE;
 
    SDL_PixelFormat fmt;
    memset(&fmt,0,sizeof(fmt));
@@ -79,7 +81,7 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
    fmt.colorkey = 0xff000000;
 
 
-   return SDL_ConvertSurface(inSurface,&fmt,SDL_SWSURFACE);
+   return SDL_ConvertSurface(inSurface,&fmt,flags);
 }
 
 
@@ -596,6 +598,7 @@ value nme_get_mouse_position()
 #define NME_FULLSCREEN 0x0001
 #define NME_OPENGL     0x0002
 #define NME_RESIZABLE  0x0004
+#define NME_HWSURF     0x0008
 
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
@@ -609,6 +612,8 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
    if (opengl)
       init_flags |= SDL_OPENGL;
+
+   sUseSystemHardware = (!opengl) && (val_int(in_flags) & NME_HWSURF);
 
    if ( SDL_Init( init_flags ) == -1 )
       failure( SDL_GetError() );

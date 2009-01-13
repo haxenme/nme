@@ -9,9 +9,9 @@ class GameBase
    var mFrameCount:Int;
    var mT0:Float;
 
-   public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool> )
+   public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?hardware:Null<Bool> )
    {
-      manager = new nme.Manager(width,height,title,fullscreen,icon,opengl);
+      manager = new nme.Manager(width,height,title,fullscreen,icon,opengl,true,hardware);
       manager.tryQuitFunction = onQuit;
       manager.addClickCallback(onClick);
       manager.addMouseCallback(onMouse);

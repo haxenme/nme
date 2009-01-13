@@ -108,6 +108,7 @@ class Manager
 	static var FULLSCREEN = 0x0001;
 	static var OPENGL     = 0x0002;
 	static var RESIZABLE  = 0x0004;
+	static var HARDWARE   = 0x0008;
 
 	static public var graphics(default,null):Graphics;
 	static public var draw_quality(get_draw_quality,set_draw_quality):Int;
@@ -127,7 +128,8 @@ class Manager
 	private var mT0 : Float;
 	static var mFrameCountStack:Array<Float> = [];
 
-	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool )
+   // TODO: need to rethink the flags ...
+	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool, ?hardware:Bool = false )
 	{
 		var flags = 0;
 		if ( fullscreen)
@@ -135,6 +137,8 @@ class Manager
 
 		if ( opengl!=null && opengl)
 		   flags += OPENGL;
+		else if ( hardware!=null && hardware)
+		   flags += HARDWARE;
 
       if ( resizable!=null && resizable)
          flags += RESIZABLE;

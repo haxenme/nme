@@ -821,6 +821,60 @@ value nme_blit_tile( value tile_renderer, value x, value y )
 }
 
 
+value nme_copy_pixels(value* arg, int nargs )
+{
+   enum { aSrc, aSX0, aSY0, aWidth, aHeight, aDest, aDestX, aDestY, aSIZE };
+   if (nargs!=aSIZE)
+      failure( "nme_copy_pixels - wrong number of args.\n" );
+
+   TextureBuffer *src = TEXTURE_BUFFER(arg[aSrc]);
+   TextureBuffer *dest = TEXTURE_BUFFER(arg[aDest]);
+
+   SDL_Rect src_rect;
+   src_rect.x = (int)val_number(arg[aSX0]);
+   src_rect.y = (int)val_number(arg[aSY0]);
+   src_rect.w = (int)val_number(arg[aWidth]);
+   src_rect.h = (int)val_number(arg[aHeight]);
+
+   SDL_Rect dest_rect = src_rect;
+   dest_rect.x = (int)val_number(arg[aDestX]);
+   dest_rect.y = (int)val_number(arg[aDestY]);
+
+   SDL_BlitSurface(src->GetSourceSurface(), &src_rect,
+                         dest->GetSourceSurface(), &dest_rect);
+   dest->SetExtentDirty(dest_rect.x,dest_rect.y, dest_rect.x+dest_rect.w, dest_rect.y+dest_rect.h);
+
+   return val_null;
+}
+
+static int x_id = val_id("x");
+static int y_id = val_id("y");
+static int width_id = val_id("width");
+static int height_id = val_id("height");
+
+
+value nme_tex_fill_rect(value inTex,value inRect,value inCol,value inAlpha)
+{
+   TextureBuffer *dest = TEXTURE_BUFFER(inTex);
+   SDL_Surface *surf = dest->GetSourceSurface();
+
+   SDL_Rect rect;
+   rect.x = (int)val_number( val_field(inRect, x_id ) );
+   rect.y = (int)val_number( val_field(inRect, y_id ) );
+   rect.w = (int)val_number( val_field(inRect, width_id ) );
+   rect.h = (int)val_number( val_field(inRect, height_id ) );
+
+   int rgb = val_int(inCol);
+   int alpha = val_int(inAlpha);
+   unsigned int col = SDL_MapRGBA( surf->format, rgb>>16, (rgb>>8)&0xff, rgb&0xff, alpha );
+   SDL_FillRect( surf, &rect, col );
+
+   dest->SetExtentDirty(rect.x,rect.y, rect.x+rect.w, rect.y+rect.h);
+
+   return val_null;
+}
+
+
 // --- TextureReference -----------------------------------------
 
 TextureReference *TextureReference::Create(value inVal)
@@ -846,6 +900,8 @@ TextureReference *TextureReference::Create(value inVal)
 DEFINE_PRIM_MULT(nme_create_tile_renderer);
 DEFINE_PRIM(nme_blit_tile, 3);
     
+DEFINE_PRIM_MULT(nme_copy_pixels);
+DEFINE_PRIM(nme_tex_fill_rect,4);
 
 DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_load_texture, 1);

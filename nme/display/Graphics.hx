@@ -253,7 +253,6 @@ class Graphics
          mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
                                              0 : PIXEL_HINTING;
       }
-
       mCurrentLine.caps = END_ROUND;
       if (caps!=null)
       {
@@ -381,25 +380,28 @@ class Graphics
 
       ClosePolygon(false);
 
-      moveTo(x,y+ellipseHeight);
+      var w = ellipseWidth * 0.5;
+      var h = ellipseHeight * 0.5;
+
+      moveTo(x,y+h);
       // top-left
-      curveTo(x,y,x+ellipseWidth,y);
+      curveTo(x,y,x+w,y);
 
-      lineTo(x+width-ellipseWidth,y);
+      lineTo(x+width-w,y);
       // top-right
-      curveTo(x+width,y,x+width,y+ellipseWidth);
+      curveTo(x+width,y,x+width,y+w);
 
-      lineTo(x+width,y+height-ellipseHeight);
+      lineTo(x+width,y+height-h);
 
       // bottom-right
-      curveTo(x+width,y+height,x+width-ellipseWidth,y+height);
+      curveTo(x+width,y+height,x+width-w,y+height);
 
-      lineTo(x+ellipseWidth,y+height);
+      lineTo(x+w,y+height);
 
       // bottom-left
-      curveTo(x,y+height,x,y+height-ellipseHeight);
+      curveTo(x,y+height,x,y+height-h);
 
-      lineTo(x,y+ellipseHeight);
+      lineTo(x,y+h);
 
       ClosePolygon(false);
    }
@@ -655,8 +657,8 @@ class Graphics
                   mCurrentLine.point_idx1,
                   mCurrentLine.thickness,
                   mCurrentLine.alpha,
-                  mCurrentLine.pixel_hinting,
                   mCurrentLine.colour,
+                  mCurrentLine.pixel_hinting,
                   mCurrentLine.joints,
                   mCurrentLine.caps,
                   mCurrentLine.scale_mode,

@@ -1,4 +1,4 @@
-package flash.filters;
+package nme.filters;
 
 class BitmapFilterType
 {
