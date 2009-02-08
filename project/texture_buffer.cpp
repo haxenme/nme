@@ -32,6 +32,12 @@ int UpToPower2(int inX)
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+static int val_id_x = val_id("x");
+static int val_id_y = val_id("y");
+static int val_id_width = val_id("width");
+static int val_id_height = val_id("height");
+
+
 
 // --- TextureBuffer ----------------------------------------------------
 
@@ -703,6 +709,8 @@ public:
       }
    }
 
+   static Viewport mViewport;
+
    int Width() { return mSrcRect.w; }
    int Height() { return mSrcRect.h; }
 
@@ -711,12 +719,23 @@ public:
       mTexture->DecRef();
    }
 
+   void BlitTo(int inX0,int inY0,SDL_Surface *inDestSurface)
+   {
+      SDL_Rect    dest;
+      dest.x = inX0;
+      dest.y = inY0;
+      SDL_BlitSurface(mTexture->GetSourceSurface(), &mSrcRect,
+                      inDestSurface, &dest);
+   }
+
+
    void Blit(int inX0,int inY0)
    {
       if (mOpenGL)
       {
          mTexture->BindOpenGL();
          glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
          glColor3f(1,1,1);
          glBegin(GL_QUADS);
          glTexCoord2fv(mT00);
@@ -731,13 +750,7 @@ public:
       }
       else
       {
-         SDL_Rect    dest;
-         dest.x = inX0;
-         dest.y = inY0;
-         dest.w = mSrcRect.w;
-         dest.h = mSrcRect.h;
-         SDL_BlitSurface(mTexture->GetSourceSurface(), &mSrcRect,
-                         mDestSurface, &dest);
+         BlitTo(inX0,inY0,mDestSurface);
       }
    }
 
@@ -752,6 +765,55 @@ public:
    float mT01[2];
    float mT11[2];
 };
+
+Viewport TileRenderer::mViewport(0,0,100,100);
+static int sBlitOffsetX = 0;
+static int sBlitOffsetY = 0;
+static int sUseOffscreen = false;
+static SDL_Surface *sOffscreen = 0;
+static int sOffscreenAlpha = 0;
+static double sDestX0 = 0;
+static double sDestY0 = 0;
+static double sDestWidth = 0;
+static double sDestHeight = 0;
+
+
+static void PasteOffscreen(SDL_Surface *inDest)
+{
+   /*
+   SDL_Rect dest;
+   dest.x = (int)sDestX0;
+   dest.y = (int)sDestY0;
+   printf("PasteOffscreen %d,%d   %dx%d\n", dest.x, dest.y, sOffscreen->w, sOffscreen->h);
+   SDL_BlitSurface(sOffscreen, 0, inDest, &dest);
+   */
+
+      Matrix mapper(sOffscreen->w/sDestWidth, sOffscreen->h/sDestHeight);
+      RenderArgs args;
+
+      args.inN = 5;
+      args.inLines = 0;
+      char connect[] = { 0, 1, 1, 1, 1};
+      args.inConnect = connect;
+      PointF16 points[] = { PointF16(0.0,0.0),
+                            PointF16(sDestWidth,0.0),
+                            PointF16(sDestWidth,sDestHeight),
+                            PointF16(0.0,sDestHeight),
+                            PointF16(0.0,0.0) };
+      args.inPoints = points;
+      args.inMinY = points[0].y;
+      args.inMaxY = points[2].y;
+      args.inFlags = NME_HIGH_QUALITY | NME_ALPHA_BLEND | NME_EDGE_CLAMP;
+
+      // This could be pretty slow...
+      PolygonRenderer *renderer = PolygonRenderer::CreateBitmapRenderer(args,sOffscreen, mapper);
+      Viewport vp(0,0,inDest->w,inDest->h);
+      renderer->Render(inDest,vp,(int)sDestX0,(int)sDestY0);
+      delete renderer;
+}
+
+
+
 
 void delete_tile_renderer( value tile_renderer )
 {
@@ -785,11 +847,11 @@ value nme_tile_renderer_height( value tile_renderer )
    return alloc_int(0);
 }
 
-value nme_create_tile_renderer(value* arg, int nargs )
+value nme_create_blitter(value* arg, int nargs )
 {
    enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aSIZE };
    if (nargs!=aSIZE)
-      failure( "nme_create_tile_renderer - wrong number of args.\n" );
+      failure( "nme_create_blitter - wrong number of args.\n" );
 
    val_check_kind( arg[aTex], k_texture_buffer );
    val_check_kind( arg[aSurface], k_surf );
@@ -814,10 +876,172 @@ value nme_blit_tile( value tile_renderer, value x, value y )
    if ( val_is_kind( tile_renderer, k_tile_renderer ) )
    {
       TileRenderer* t = TILE_RENDERER(tile_renderer);
-      t->Blit( val_int(x), val_int(y) );
+      if (sOffscreen && sUseOffscreen)
+      {
+         t->BlitTo( val_int(x), val_int(y),sOffscreen );
+      }
+      else
+         t->Blit( val_int(x) + sBlitOffsetX, val_int(y) + sBlitOffsetY );
    }
 
    return alloc_int(0);
+}
+
+value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha,value matrix)
+{
+   SDL_Surface *s = 0;
+   TextureBuffer *tex=0;
+
+
+   if ( val_is_kind( surface, k_surf )  )
+   {
+      s = SURFACE(surface);
+   }
+   else if ( val_is_kind( surface, k_texture_buffer )  )
+   {
+      tex = TEXTURE_BUFFER(surface);
+      s = tex->GetSourceSurface();
+   }
+
+   sBlitOffsetX = 0;
+   sBlitOffsetY = 0;
+
+   // Unset ...
+   if (val_is_null(inRect))
+   {
+       if (s && IsOpenGLScreen(s))
+       {
+          int w = s->w;
+          int h = s->h;
+          glViewport(0,0,w,h);
+          glMatrixMode(GL_PROJECTION);
+          glLoadIdentity();
+          glOrtho(0,w, h,0, -1000,1000);
+          glMatrixMode(GL_MODELVIEW);
+          glLoadIdentity();
+          sUseOffscreen = false;
+       }
+       else if (s)
+       {
+         SDL_SetClipRect(s,0);
+         if (sUseOffscreen)
+         {
+            PasteOffscreen(s);
+            sUseOffscreen = false;
+         }
+       }
+       return val_null;
+   }
+
+   sUseOffscreen = false;
+
+   if (s)
+   {
+      Viewport vp( 0,0, s->w, s->h );
+
+      Matrix mtx(matrix);
+      int x0 = (int)mtx.mtx;
+      int y0 = (int)mtx.mty;
+      //int x1 = x0 + (int)(val_number( val_field(inRect,val_id_width) ) * mtx.m00);
+      //int y1 = y0 + (int)(val_number( val_field(inRect,val_id_height) ) * mtx.m11);
+      int x1 = x0 + (int)(val_number( val_field(inRect,val_id_width) ));
+      int y1 = y0 + (int)(val_number( val_field(inRect,val_id_height) ));
+      if (x0>x1) std::swap(x0,x1);
+      if (y0>y1) std::swap(y0,y1);
+      vp.SetWindow(x0,y0,x1,y1);
+
+      int c = val_int(inColour);
+      int r = (c>>16) & 0xff;
+      int g = (c>>8) & 0xff;
+      int b = (c) & 0xff;
+      int a = val_int(inAlpha);
+      {
+          if (IsOpenGLScreen(s))
+          {
+             int pixel_w = (int)((x1-x0)*mtx.m00);
+             int pixel_h = (int)((y1-y0)*mtx.m11);
+             glViewport(vp.x0,s->h-vp.y0-pixel_h, pixel_w, pixel_h);
+             glMatrixMode(GL_PROJECTION);
+             glLoadIdentity();
+
+             int w = (int)val_number(val_field(inRect,val_id_width));
+             int h = (int)val_number(val_field(inRect,val_id_height));
+
+             // By setting origin to 0,0 we make coords relative to blit area.
+             glOrtho(0,w, h,0, -1000,1000);
+             glMatrixMode(GL_MODELVIEW);
+             glLoadIdentity();
+
+             // Clear screen ..
+             if (a==255)
+             {
+               glClearColor(r/255.0,g/255.0,b/255.0,a/255.0);
+               glClear(GL_COLOR_BUFFER_BIT);
+             }
+             else if (a>0)
+             {
+                glDisable(GL_TEXTURE_2D);
+                glEnable(GL_BLEND);
+                glColor4ub(r,g,b,a);
+                glBegin(GL_QUADS);
+                  glVertex2i(0,0);
+                  glVertex2i(0,h);
+                  glVertex2i(w,h);
+                glVertex2i(w,0);
+                glEnd();
+             }
+          }
+          else
+          {
+             // Blit to offscren surface and then paste it ...
+             if (mtx.m00!=1.0 || mtx.m11!=1.0)
+             {
+                int ow = vp.Width();
+                int oh = vp.Height();
+                sDestX0 =  vp.x0;
+                sDestY0 =  vp.y0;
+                sDestWidth =  vp.Width() * mtx.m00;
+                sDestHeight =  vp.Height() * mtx.m11;
+                sUseOffscreen = true;
+                // Create surface if different ...
+                int flags = SDL_HWSURFACE;
+                if (sOffscreen==0 || sOffscreen->w!=ow || sOffscreen->h!=oh || a!=sOffscreenAlpha)
+                {
+                   if (sOffscreen)
+                      SDL_FreeSurface(sOffscreen);
+                   sOffscreenAlpha = a;
+                   if (a!=255)
+                   {
+                      sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
+                                  0xff0000, 0xff00, 0xff, 0xff000000 );
+                   }
+                   else
+                   {
+                      sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
+                                  0xff0000, 0xff00, 0xff, 0 );
+                   }
+                }
+             }
+             else
+             {
+                // Since coords are relative to clip area, add the offset
+                sBlitOffsetX = vp.x0;
+                sBlitOffsetY = vp.y0;
+
+                SDL_Rect rect;
+                rect.x = vp.x0;
+                rect.y = vp.y0;
+                rect.w = vp.Width();
+                rect.h = vp.Height();
+                SDL_SetClipRect(s,&rect);
+             }
+
+             SDL_FillRect( sUseOffscreen ? sOffscreen : s, NULL, SDL_MapRGBA( s->format, r, g, b,a ) );
+          }
+      }
+   }
+   
+   return val_null;
 }
 
 
@@ -897,7 +1121,7 @@ TextureReference *TextureReference::Create(value inVal)
    return new TextureReference(tex,matrix,flags);
 }
 
-DEFINE_PRIM_MULT(nme_create_tile_renderer);
+DEFINE_PRIM_MULT(nme_create_blitter);
 DEFINE_PRIM(nme_blit_tile, 3);
     
 DEFINE_PRIM_MULT(nme_copy_pixels);
@@ -914,6 +1138,7 @@ DEFINE_PRIM(nme_tile_renderer_width, 1);
 DEFINE_PRIM(nme_tile_renderer_height, 1);
 DEFINE_PRIM(nme_texture_get_bytes, 2);
 DEFINE_PRIM(nme_texture_set_bytes, 3);
+DEFINE_PRIM(nme_set_blit_area, 5);
 
 
 

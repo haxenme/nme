@@ -27,7 +27,6 @@ value nme_init_view(value inWidth,value inHeight)
 
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   // TODO: get actual window size, and apply scale mode
    glViewport(0,0,w,h);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();

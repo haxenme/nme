@@ -226,7 +226,7 @@
 				AdditionalDependencies="sdl.lib sdlmain.lib sdl_image.lib sdl_mixer.lib sdl_ttf.lib freetype.lib native_midi.lib mikmod.lib libpng.lib zlib.lib libjpeg.lib vorbisfile.lib vorbis.lib ogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib hxcpp.lib"
 				OutputFile="..\ndll\Windows\nme.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86;$(HXCPP)/dll"
+				AdditionalLibraryDirectories="..\..\thirdparty\lib\static_release;e:\VS8\DirectXSDK\Lib\x86;&quot;$(HXCPP)/bin&quot;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"

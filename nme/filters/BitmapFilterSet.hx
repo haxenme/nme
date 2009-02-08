@@ -8,7 +8,7 @@ class BitmapFilterSet
    var mHandle:Dynamic;
    var mOffset:Point;
 
-   public function new(inFilters:Array<BitmapFilter>)
+   public function new(inFilters:Array<Dynamic>)
    {
       mOffset = new Point();
       #if neko

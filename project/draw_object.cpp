@@ -11,6 +11,7 @@
 
 #include "nme.h"
 #include "nsdl.h"
+#include "DrawObject.h"
 #include "renderer/Renderer.h"
 #include "Matrix.h"
 #include "texture_buffer.h"
@@ -22,7 +23,7 @@
 typedef value *array_ptr;
 #endif
 
-DECLARE_KIND( k_drawable );
+
 DEFINE_KIND( k_drawable );
 
 DECLARE_KIND( k_mask );
@@ -96,27 +97,6 @@ static int val_id_length = val_id("length");
 
 
 
-// --- Base class -----------------------------------------------------
-
-
-class Drawable
-{
-public:
-   virtual ~Drawable() { }
-   virtual void RenderTo(SDL_Surface *inSurface,const Matrix &inMatrix,
-                  TextureBuffer *inMarkDirty,MaskObject *inMask,const Viewport &inVP)=0;
-   virtual bool HitTest(int inX,int inY) = 0;
-
-   virtual void GetExtent(Extent2DI &ioExtent, const Matrix &inMat,
-                  bool inExtent)=0;
-
-   virtual void AddToMask(SDL_Surface *inSurf,PolygonMask &ioMask,const Matrix &inMatrix)=0;
-
-   virtual bool IsGrad() { return false; }
-};
-
-
-void delete_drawable( value drawable );
 
 
 class EmptyDrawable : public Drawable
@@ -1317,7 +1297,7 @@ value nme_create_blit_drawable(value inTexture, value inX, value inY )
 // ---- Text Drawing -----------------------------------------------------
 
 
-value nme_create_text_drawable(array_ptr arg, int nargs )
+value nme_create_text_drawable(value * arg, int nargs )
 {
    enum { aText, aFont, aSize, aX, aY, aColour, aAlpha,
           aBGCol, aAlignX,aAlignY,   aLAST };
@@ -1399,7 +1379,7 @@ value nme_create_text_drawable(array_ptr arg, int nargs )
 
 
 
-value nme_create_glyph_draw_obj(array_ptr arg, int nargs )
+value nme_create_glyph_draw_obj(value * arg, int nargs )
 {
    enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha,
           aGradOrTex, aLineStyle, aUseFreeType, aLAST };

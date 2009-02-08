@@ -630,6 +630,9 @@ value nme_create_filter_set(value inFilters,value outPoint)
    for(int i=0;i<n;i++)
    {
       value val = objs[i];
+      #ifdef HXCPP
+      value type_val = val_field(val,val_id("mType"));
+      #else
       value type_val_obj = val_field(val,val_id("mType"));
       if ( !val_is_object(type_val_obj) )
          failure( "no filter type found" );
@@ -637,6 +640,7 @@ value nme_create_filter_set(value inFilters,value outPoint)
       value type_val = val_field(type_val_obj,val_id("__s"));
       if ( !val_is_string(type_val) )
          failure( "no filter type string found" );
+      #endif
 
 
       const char *type =  val_string(type_val);

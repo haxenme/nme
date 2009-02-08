@@ -605,9 +605,11 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 {
    val_check( in_flags, int );
 
-   bool fullscreen = (val_int(in_flags) & NME_FULLSCREEN) != 0;
-   bool opengl = (val_int(in_flags) & NME_OPENGL) != 0;
-   bool resizable = (val_int(in_flags) & NME_RESIZABLE) != 0;
+   int flags = val_int(in_flags);
+
+   bool fullscreen = (flags & NME_FULLSCREEN) != 0;
+   bool opengl = (flags & NME_OPENGL) != 0;
+   bool resizable = (flags & NME_RESIZABLE) != 0;
 
    Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
    if (opengl)
@@ -632,6 +634,9 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 
    if ( resizable )
       sFlags |= SDL_RESIZABLE;
+
+   if ( fullscreen )
+      sFlags |= SDL_FULLSCREEN;
 
    if ( val_is_string( icon ) )
    {

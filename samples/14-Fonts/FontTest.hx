@@ -82,7 +82,7 @@ class FontTest extends nme.GameBase
       run();
    }
 
-   public function onRender()
+   public override function onRender()
    {
       manager.clear( 0x000000 );
 
@@ -129,7 +129,7 @@ class FontTest extends nme.GameBase
 
    }
 
-   public function onUpdate(inDT:Float)
+   override public function onUpdate(inDT:Float)
    {
       // You can set the matrix to move the display object around.
    }

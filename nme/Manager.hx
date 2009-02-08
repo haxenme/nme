@@ -459,6 +459,19 @@ class Manager
 		return returnType;
 	}
 
+
+   public static function SetBlitArea(inRect:nme.geom.Rectangle,inColour:Int, inAlpha:Int,
+                    inMatrix:nme.geom.Matrix)
+   {
+      nme_set_blit_area(__scr,inRect,inColour,inAlpha,inMatrix);
+   }
+
+   public static function UnSetBlitArea()
+   {
+      nme_set_blit_area(__scr,null,0,0,null);
+   }
+
+
 	public function clickRect( x : Int, y : Int, rect : Rect )
 	{
 		if ( ( x < rect.x ) || ( x > rect.x + rect.w ) || ( y < rect.y ) || ( y > rect.y + rect.h ) )
@@ -568,4 +581,5 @@ class Manager
 	static var nme_get_mouse_position = nme.Loader.load("nme_get_mouse_position",0);
 	static var nme_set_clipboard = nme.Loader.load("nme_set_clipboard",1);
 	static var nme_get_clipboard = nme.Loader.load("nme_get_clipboard",0);
+	static var nme_set_blit_area = nme.Loader.load("nme_set_blit_area",5);
 }
