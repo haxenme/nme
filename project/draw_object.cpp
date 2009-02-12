@@ -34,42 +34,99 @@ DEFINE_KIND( k_mask );
 
 #include <set>
 
-/*
-std::set<void *> sgTotalDrawables;
 
-void AddPointer(void *inP)
-{
-   if (sgTotalDrawables.find(inP)!=sgTotalDrawables.end())
-   {
-      printf("######### Error - double add %p\n",inP);
-   }
-   sgTotalDrawables.insert(inP);
-   printf("Objs : %d (%p)\n",sgTotalDrawables.size(),inP);
-}
-void DeletePointer(void *inP)
-{
-   std::set<void *>::iterator f = sgTotalDrawables.find(inP);
-   if (f==sgTotalDrawables.end())
-   {
-      printf("######### Error - not found %p\n",inP);
-   }
-   else
-      sgTotalDrawables.erase(f);
 
-   printf("Objs : %d (%p)\n",sgTotalDrawables.size(),inP);
-}
-void CheckDrawable(void *inP)
+class Scale9
 {
-   std::set<void *>::iterator f = sgTotalDrawables.find(inP);
-   if (f==sgTotalDrawables.end())
+public:
+   bool   mActive;
+   double X0,Y0;
+   double X1,Y1;
+   double SX,SY;
+   double X1Off,Y1Off;
+   
+   Scale9() : mActive(false) { }
+   bool Active() const { return mActive; }
+   void Activate(double inX0, double inY0, double inW, double inH,
+                 double inSX, double inSY,
+                 double inExtX0, double inExtY0, double inExtW, double inExtH )
    {
-      printf("######### Error - Not drawable ? %p\n",inP);
-      //exit(0);
+      mActive = true;
+      X0 = inX0;
+      Y0 = inY0;
+      X1 = inW + X0;
+      Y1 = inH + Y0;
+      // Right of object before scaling
+      double right = inExtX0 + inExtW;
+      // Right of object after scaling
+      double extra_x = right*(inSX - 1);
+      // Size of central rect
+      double middle_x = inW + extra_x;
+      // Scaling of central rect
+      SX = middle_x/inW;
+      // For points > X1, add this on...
+      X1Off = inW*(SX-1);
+
+      // Same for Y:
+      double bottom = inExtY0 + inExtH;
+      double extra_y = bottom*(inSY - 1);
+      double middle_y = inH + extra_y;
+      SY = middle_y/inH;
+      Y1Off = inH*(SY-1);
    }
-}
-*/
+   void Deactivate() { mActive = false; }
+   bool operator==(const Scale9 &inRHS) const
+   {
+      if (mActive!=inRHS.mActive) return false;
+      if (!mActive) return true;
+      return X0==inRHS.X0 && X1==inRHS.X1 && Y0==inRHS.Y0 && Y1==inRHS.Y1 &&
+             X1Off==inRHS.X1Off && Y1Off==inRHS.Y1Off;
+   }
+   double TransX(double inX)
+   {
+      if (inX<=X0) return inX;
+      return inX>X1 ? inX + X1Off : X0 + (inX-X0)*SX;
+   }
+   double TransY(double inY)
+   {
+      if (inY<=Y0) return inY;
+      return inY>Y1 ? inY + Y1Off : Y0 + (inY-Y0)*SY;
+   }
+   Matrix GetFillMatrix(const Extent2DF &inExtent)
+   {
+      // The mapping of the edges should remain unchanged ...
+      double x0 = TransX(inExtent.mMinX);
+      double x1 = TransX(inExtent.mMaxX);
+      double y0 = TransY(inExtent.mMinY);
+      double y1 = TransY(inExtent.mMaxY);
+      double w = inExtent.Width();
+      double h = inExtent.Height();
+      Matrix result;
+      result.mtx = -inExtent.mMinX;
+      if (w!=0)
+      {
+         double s = (x1-x0)/w;
+         result.m00 = s;
+         result.mtx *= s;
+      }
+      result.mtx += x0;
+
+      result.mty = -inExtent.mMinY;
+      if (h!=0)
+      {
+         double s = (y1-y0)/h;
+         result.m11 = s;
+         result.mty *= s;
+      }
+      result.mty += y0;
+      return result;
+   }
+
+};
+
 
 static int sQualityLevel = 1;
+static Scale9 gScale9;
 
 
 static int val_id_x = val_id("x");
@@ -437,18 +494,29 @@ public:
       {
          SetupCurved(inMatrix);
 
-         CreateRenderers(0,inMatrix,0);
+         CreateRenderers(0,inMatrix,0,0,Scale9());
          mMaskID = -1;
 
+         Extent2DI extent;
          if (mPolygon)
-            mPolygon->GetExtent(ioExtent);
+            mPolygon->GetExtent(extent);
 
          for(size_t j=0;j<mLineJobs.size();j++)
-            mLineJobs[j].mRenderer->GetExtent(ioExtent);
+            mLineJobs[j].mRenderer->GetExtent(extent);
+         extent.Translate(mTX,mTY);
+         ioExtent.Add(extent);
+      }
+      else if (inMatrix.IsIdentity())
+      {
+         size_t n = mPoints.size();
+         for(size_t i=0;i<n;i++)
+         {
+            ioExtent.Add(mPoints[i].mX,mPoints[i].mY);
+         }
       }
       else
       {
-         TransformPoints(inMatrix);
+         TransformPoints(inMatrix,Scale9());
          size_t n = mPointF16s.size();
          for(size_t i=0;i<n;i++)
             ioExtent.Add(mPointF16s[i]);
@@ -456,14 +524,15 @@ public:
    }
 
 
-   void TransformPoints(const Matrix &inMatrix)
+   void TransformPoints(const Matrix &inMatrix,const Scale9 &inScale9)
    {
       size_t n = mPoints.size();
       mTransform = inMatrix;
+      mScale9 = inScale9;
       mTX = 0;
       mTY = 0;
 
-      if (mTransform.IsIdentity())
+      if (mTransform.IsIdentity() && !mScale9.Active())
       {
          for(size_t i=0;i<n;i++)
             mPointF16s[i] = PointF16(mPoints[i].mX,mPoints[i].mY);
@@ -479,22 +548,64 @@ public:
      }
      else
      {
-        for(size_t i=0;i<n;i++)
+        Extent2DF extent;
+
+        if (mScale9.Active())
         {
-           mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,
-               mPointF16s[i].x,mPointF16s[i].y);
+           for(size_t i=0;i<n;i++)
+           {
+              double x = mScale9.TransX(mPoints[i].mX);
+              double y = mScale9.TransY(mPoints[i].mY);
+              mTransform.TransformHQ((float)x,(float)y,mPointF16s[i].x,mPointF16s[i].y);
+           }
+
+           bool need_extent = mSolidGradient || mTexture;
+           for(size_t i=0; !need_extent && i<mLineJobs.size();i++)
+              need_extent = mLineJobs[i].mGradient!=0;
+           if (need_extent)
+           {
+              size_t n = mPoints.size();
+              for(size_t i=0;i<n;i++)
+                extent.Add(mPoints[i].mX,mPoints[i].mY);
+           }
+        }
+        else
+        {
+           for(size_t i=0;i<n;i++)
+           {
+              mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,
+                  mPointF16s[i].x,mPointF16s[i].y);
+           }
         }
 
-        if (mSolidGradient)
-           mSolidGradient->Transform(mTransform);
-        else if (mTexture)
-           mTexture->Transform(mTransform);
+        if (mScale9.Active() && (mSolidGradient || mTexture))
+        {
+           Matrix m = mTransform.Mult( mScale9.GetFillMatrix(extent));
+
+           if (mSolidGradient)
+              mSolidGradient->Transform(m);
+           else if (mTexture)
+              mTexture->Transform(m);
+        }
+        else
+        {
+           if (mSolidGradient)
+              mSolidGradient->Transform(mTransform);
+           else if (mTexture)
+              mTexture->Transform(mTransform);
+        }
+
 
          for(size_t i=0;i<mLineJobs.size();i++)
          {
             LineJob &job = mLineJobs[i];
             if (job.mGradient)
-               job.mGradient->Transform(mTransform);
+            {
+               if (mScale9.Active())
+                  job.mGradient->Transform(mScale9.GetFillMatrix(extent));
+               else
+                  job.mGradient->Transform(mTransform);
+            }
             if (job.mThick0>0 && job.mScaleMode != SCALE_NONE)
             {
                double scale_x = 1.0;
@@ -588,7 +699,7 @@ public:
       else
       {
          PolygonMask *mask = inMaskObj ? inMaskObj->GetPolygonMask() : 0;
-         CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj);
+         CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj,gScale9);
          // printf("RenderTo %p\n",inMaskObj);
 
          if (mPolygon)
@@ -608,7 +719,7 @@ public:
    void AddToMask(SDL_Surface *inSurf,PolygonMask &ioMask,const Matrix &inMatrix)
    {
       SetupCurved(inMatrix);
-      CreateRenderers(inSurf,inMatrix,false);
+      CreateRenderers(inSurf,inMatrix,false,0,gScale9);
       if (mPolygon)
       {
          mPolygon->AddToMask(ioMask,mTX,mTY);
@@ -665,7 +776,8 @@ public:
 
    // DrawObject
    void CreateRenderers(SDL_Surface *inSurface,
-            const Matrix &inMatrix,TextureBuffer *inMarkDirty,MaskObject *inMaskObj=0)
+            const Matrix &inMatrix,TextureBuffer *inMarkDirty,MaskObject *inMaskObj,
+            const Scale9 &inScale9)
    {
 
       if (mPoints.empty())
@@ -674,34 +786,9 @@ public:
       int min_y = -0x7fff;
       int max_y =  0x7fff;
 
-      // Limit creation to visible lines ?
-      //  Pro: do not need to calculate some lines
-      //  Con: need to recalculate visible lines if transform changes.
-      /*
-      if (inSurface)
+      if (!mTransform.IsIntTranslation(inMatrix,mTX,mTY) || !(inScale9==mScale9) )
       {
-         min_y =  NME_clip_ymin(inSurface);
-         max_y =  NME_clip_ymax(inSurface);
-
-         if (inSurface && IsOpenGLScreen(inSurface))
-         {
-            min_y = 0;
-            max_y = inSurface->h;
-         }
-      }
-
-      if (min_y!=mMinY || max_y!=mMaxY)
-      {
-         // printf("Different extent!\n");
-         mMinY = min_y;
-         mMaxY = max_y;
-         ClearRenderers();
-      }
-      */
-
-      if (!mTransform.IsIntTranslation(inMatrix,mTX,mTY))
-      {
-         TransformPoints(inMatrix);
+         TransformPoints(inMatrix,inScale9);
          ClearRenderers();
       }
 
@@ -838,6 +925,7 @@ public:
    Matrix       mOGLMatrix;
 
    Matrix       mTransform;
+   Scale9       mScale9;
    int          mTX;
    int          mTY;
    //int          mMinY;
@@ -1567,8 +1655,8 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
             int y0 = (int)val_number( val_field(inScrollRect,val_id_y) );
             int x1 = x0+(int)val_number( val_field(inScrollRect,val_id_width) );
             int y1 = y0+(int)val_number( val_field(inScrollRect,val_id_height) );
-            if (x0>x1) std::swap(x0,x1);
-            if (y0>y1) std::swap(y0,y1);
+            if (x0>=x1) return val_null;
+            if (y0>=y1) return val_null;
             vp.SetWindow(x0,y0,x1,y1);
          }
 
@@ -1639,6 +1727,28 @@ value nme_hit_object(value drawable,value x,value y )
    return alloc_bool(false);
 }
 
+value nme_set_scale9_grid(value inRect,value inSX, value inSY,value inExtent)
+{
+   if (val_is_null(inRect))
+      gScale9.Deactivate();
+   else
+   {
+      gScale9.Activate(
+       (double)val_number(val_field(inRect,val_id_x)),
+       (double)val_number(val_field(inRect,val_id_y)),
+       (double)val_number(val_field(inRect,val_id_width)),
+       (double)val_number(val_field(inRect,val_id_height)),
+       (double)val_number(inSX),
+       (double)val_number(inSY),
+       (double)val_number(val_field(inExtent,val_id_x)),
+       (double)val_number(val_field(inExtent,val_id_y)),
+       (double)val_number(val_field(inExtent,val_id_width)),
+       (double)val_number(val_field(inExtent,val_id_height))  );
+   }
+   return val_null;
+}
+
+
 value nme_set_draw_quality(value inValue)
 {
    sQualityLevel = val_int(inValue);
@@ -1658,6 +1768,7 @@ DEFINE_PRIM(nme_get_extent, 4);
 DEFINE_PRIM(nme_draw_object_to, 5);
 DEFINE_PRIM(nme_hit_object, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
+DEFINE_PRIM(nme_set_scale9_grid, 4);
 DEFINE_PRIM(nme_get_draw_quality, 0);
 DEFINE_PRIM(nme_create_mask, 0);
 DEFINE_PRIM(nme_add_to_mask, 4);

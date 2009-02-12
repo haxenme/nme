@@ -120,10 +120,14 @@ class Surface
 	{
 		return nme_collision_boundingbox( rect, rectb, offsetPoint );
 	}
+   public static function GetSurfaceRect(inS:Dynamic)
+   {
+      return new nme.geom.Rectangle(0,0, nme_surface_width(inS), nme_surface_height(inS) );
+   }
 	
 	static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
-	static var nme_surface_width = nme.Loader.load("nme_surface_width",1);
-	static var nme_surface_height = nme.Loader.load("nme_surface_height",1);
+	static var nme_surface_width:Dynamic->Int = nme.Loader.load("nme_surface_width",1);
+	static var nme_surface_height:Dynamic->Int = nme.Loader.load("nme_surface_height",1);
 	static var nme_surface_free = nme.Loader.load("nme_surface_free",1);
 	static var nme_surface_colourkey = nme.Loader.load( "nme_surface_colourkey",4);
 	static var nme_sprite_alpha = nme.Loader.load("nme_sprite_alpha",2);

@@ -193,6 +193,12 @@ class Graphics
       mSurface = inSurface;
    }
 
+   public function GetSurfaceRect()
+   {
+      var s = mSurface==null ? nme.Manager.getScreen() : mSurface;
+      return nme.Surface.GetSurfaceRect(s);
+   }
+
 
 
    public function render(?inMatrix:Matrix,?inSurface:Dynamic,?inMaskHandle:Dynamic,?inScrollRect:Rectangle)
@@ -729,6 +735,11 @@ class Graphics
       return mask;
    }
 
+   public function SetScale9Grid(inRect:Rectangle,inSX:Float,inSY:Float,inExtent:Rectangle)
+   {
+      nme_set_scale9_grid(inRect,inSX,inSY,inExtent);
+   }
+
 /*
    function GetClipRect() : Rectangle
    {
@@ -756,6 +767,7 @@ class Graphics
    static var nme_create_glyph_draw_obj = nme.Loader.load("nme_create_glyph_draw_obj",-1);
    static var nme_create_mask = nme.Loader.load("nme_create_mask",0);
    static var nme_add_to_mask = nme.Loader.load("nme_add_to_mask",4);
+   static var nme_set_scale9_grid = nme.Loader.load("nme_set_scale9_grid",4);
 
 }
 
