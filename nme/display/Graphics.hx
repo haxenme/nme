@@ -151,6 +151,23 @@ class Graphics
    static var CURVE = 2;
 
 
+   public static var BLEND_ADD = 0;
+   public static var BLEND_ALPHA = 1;
+   public static var BLEND_DARKEN = 2;
+   public static var BLEND_DIFFERENCE = 3;
+   public static var BLEND_ERASE = 4;
+   public static var BLEND_HARDLIGHT = 5;
+   public static var BLEND_INVERT = 6;
+   public static var BLEND_LAYER = 7;
+   public static var BLEND_LIGHTEN = 8;
+   public static var BLEND_MULTIPLY = 9;
+   public static var BLEND_NORMAL = 10;
+   public static var BLEND_OVERLAY = 11;
+   public static var BLEND_SCREEN = 12;
+   public static var BLEND_SUBTRACT = 13;
+   public static var BLEND_SHADER = 14;
+
+
    private var mSurface:Dynamic;
    private var mChanged:Bool;
 
@@ -200,6 +217,10 @@ class Graphics
    }
 
 
+   public static function setBlendMode(inBlendMode:Int)
+   {
+      nme_set_blend_mode(inBlendMode);
+   }
 
    public function render(?inMatrix:Matrix,?inSurface:Dynamic,?inMaskHandle:Dynamic,?inScrollRect:Rectangle)
    {
@@ -509,6 +530,23 @@ class Graphics
              free_type) );
    }
 
+   public function drawTriangles(vertices:neash.Vector<Float>,
+          ?indices:neash.Vector<Int>,
+          ?uvtData:neash.Vector<Float>,
+          ?culling:flash.display.TriangleCulling)
+   {
+      var cull = culling==null ? 0 : switch(culling) {
+         case NONE: 0;
+         case NEGATIVE: -1;
+         case POSITIVE: 1;
+      }
+      ClosePolygon(false);
+      //trace("drawTriangles " + vertices.length );
+      AddDrawable(nme_create_draw_triangles(
+             vertices,indices,uvtData,cull,
+             mFillColour, mFillAlpha, mBitmap==null ? null : mBitmap.texture_buffer));
+   }
+
 
    public function ClearLine()
    {
@@ -761,6 +799,7 @@ class Graphics
    static var nme_create_blit_drawable = nme.Loader.load("nme_create_blit_drawable",3);
    static var nme_create_draw_obj = nme.Loader.load("nme_create_draw_obj",5);
    static var nme_create_text_drawable = nme.Loader.load("nme_create_text_drawable",-1);
+   static var nme_create_draw_triangles = nme.Loader.load("nme_create_draw_triangles",-1);
    static var nme_get_clip_rect = nme.Loader.load("nme_get_clip_rect",1);
    static var nme_set_clip_rect = nme.Loader.load("nme_set_clip_rect",2);
    static var nme_get_extent = nme.Loader.load("nme_get_extent",4);
@@ -768,6 +807,7 @@ class Graphics
    static var nme_create_mask = nme.Loader.load("nme_create_mask",0);
    static var nme_add_to_mask = nme.Loader.load("nme_add_to_mask",4);
    static var nme_set_scale9_grid = nme.Loader.load("nme_set_scale9_grid",4);
+   static var nme_set_blend_mode = nme.Loader.load("nme_set_blend_mode",1);
 
 }
 

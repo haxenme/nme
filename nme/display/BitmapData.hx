@@ -63,8 +63,12 @@ class BitmapData
    public function getWidth() : Int { return nme_texture_width(mTextureBuffer); }
    public function getHeight()  : Int { return nme_texture_height(mTextureBuffer); }
 
+   public function scroll(inDX:Int, inDY:Int)
+   {
+      nme_scroll_texture(handle(),inDX,inDY);
+   }
 
-   public function destroy()
+   public function dispose()
    {
       mTextureBuffer = null;
    }
@@ -141,6 +145,20 @@ class BitmapData
       nme_set_pixel(mTextureBuffer,inX,inY,inColour);
    }
 
+   // No 32bit ints for neko...
+   #if neko
+   public function setPixel32(inX:Int, inY:Int,inAlpha:Int,inColour:Int) : Void
+   {
+      nme_set_pixel32(mTextureBuffer,inX,inY,inAlpha,inColour);
+   }
+   #else
+   public function setPixel32(inX:Int, inY:Int,inColour:Int) : Void
+   {
+      nme_set_pixel32(mTextureBuffer,inX,inY,inColour);
+   }
+   #end
+
+
    public function clear( color : Int ) : Void
    {
        nme_surface_clear( mTextureBuffer, color );
@@ -182,6 +200,11 @@ class BitmapData
    static var nme_load_texture_from_bytes = nme.Loader.load("nme_load_texture_from_bytes",5);
    static var nme_set_pixel_data = nme.Loader.load("nme_set_pixel_data",5);
    static var nme_set_pixel = nme.Loader.load("nme_set_pixel",4);
+   #if neko
+   static var nme_set_pixel32 = nme.Loader.load("nme_set_pixel32",5);
+   #else
+   static var nme_set_pixel32 = nme.Loader.load("nme_set_pixel32",4);
+   #end
    static var nme_texture_width = nme.Loader.load("nme_texture_width",1);
    static var nme_texture_height = nme.Loader.load("nme_texture_height",1);
    static var nme_texture_get_bytes = nme.Loader.load("nme_texture_get_bytes",2);
@@ -190,6 +213,7 @@ class BitmapData
    static var nme_texture_set_bytes = nme.Loader.load("nme_texture_set_bytes",3);
    static var nme_copy_pixels = nme.Loader.load("nme_copy_pixels",-1);
    static var nme_tex_fill_rect = nme.Loader.load("nme_tex_fill_rect",4);
+   static var nme_scroll_texture = nme.Loader.load("nme_scroll_texture",3);
 
    static var nme_draw_object_to= nme.Loader.load("nme_draw_object_to",5);
 }

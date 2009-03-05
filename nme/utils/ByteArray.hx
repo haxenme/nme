@@ -2,9 +2,10 @@ package nme.utils;
 import nme.geom.Rectangle;
 import StdTypes;
 
-class ByteArray implements ArrayAccess<Int>
+class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 {
    private var mArray:Dynamic;
+   public  var position:Int;
 
    public var length(get_length,null):Int;
 
@@ -14,6 +15,7 @@ class ByteArray implements ArrayAccess<Int>
          mArray = nme_create_byte_array();
       else
          mArray = inHandle;
+      position = 0;
    }
 
    public function get_handle():Dynamic { return mArray; }
@@ -33,11 +35,25 @@ class ByteArray implements ArrayAccess<Int>
       nme_byte_array_set(mArray,pos,v);
    }
 
+   static public function readFile(inString:String):ByteArray
+   {
+      var handle = nme_read_file(#if neko untyped inString.__s #else inString #end);
+      return new ByteArray(handle);
+   }
+
+   public override function readByte():Int { return nme_byte_array_get(mArray,position++); }
+
+   public function readUTFBytes(inLen:Int)
+   {
+      return readString(inLen);
+  }
+
 
    static var nme_create_byte_array = nme.Loader.load("nme_create_byte_array",0);
    static var nme_byte_array_length = nme.Loader.load("nme_byte_array_length",1);
    static var nme_byte_array_get = nme.Loader.load("nme_byte_array_get",2);
    static var nme_byte_array_set = nme.Loader.load("nme_byte_array_set",3);
+   static var nme_read_file = nme.Loader.load("nme_read_file",1);
 
 }
 
