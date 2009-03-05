@@ -95,6 +95,7 @@ struct Viewport
    }
    int Width() const { return x1-x0; }
    int Height() const { return y1-y0; }
+   inline bool ContainsY(int inY) { return inY>=y0 && inY<y1; }
 
    void SetWindow(int inX0,int inY0,int inX1,int inY1)
    {
@@ -144,6 +145,16 @@ public:
                               const RenderArgs &inArgs,
                               SDL_Surface *inSource,
                               const class Matrix &inMapper);
+
+   static PolygonRenderer *CreateSolidTriangles(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              int inColour, double inAlpha);
+
+   static PolygonRenderer *CreateBitmapTriangles(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              int inColour, double inAlpha);
 };
 
 

@@ -1,6 +1,15 @@
 #ifndef POINTS_H
 #define POINTS_H
 
+#include <vector>
+
+#ifdef WIN32
+typedef __int64 int64;
+#else
+typedef long long int64;
+#endif
+
+
 
 struct ImagePoint
 {
@@ -216,6 +225,28 @@ struct Extent2D
 typedef Extent2D<int> Extent2DI;
 typedef Extent2D<float> Extent2DF;
 
+
+struct Tri
+{
+   Tri(int i0=0, int i1=0, int i2=0) { mIndex[0] = i0; mIndex[1] = i1; mIndex[2]=i2; }
+   int mIndex[3];
+};
+
+struct TriPoint
+{
+   void SetPos(double inX,double inY) { mX = inX; mY=inY; }
+   void SetUV(double inU,double inV) { mU = inU; mV = inV; mUV16 = PointF16(inU,inV); }
+   void SetT(double inT) { mT = inT; }
+
+   double mX,mY;
+   double mU,mV;
+   PointF16 mPos16;
+   PointF16 mUV16;
+   double   mT;
+};
+
+typedef std::vector<TriPoint> TriPoints;
+typedef std::vector<Tri> Tris;
 
 
 

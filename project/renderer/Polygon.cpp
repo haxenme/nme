@@ -4,12 +4,6 @@
 #include <map>
 
 
-#ifdef WIN32
-typedef __int64 int64;
-#else
-typedef long long int64;
-#endif
-
 
 
 // Find y-extent of object, this is in pixels, and is the intersection

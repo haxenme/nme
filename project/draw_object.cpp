@@ -21,19 +21,40 @@
 
 #ifndef HXCPP
 typedef value *array_ptr;
+#define val_get_array_i(v,i) ( val_array_ptr(v)[i] )
 #endif
 
 
 DEFINE_KIND( k_drawable );
 
-DECLARE_KIND( k_mask );
-DEFINE_KIND( k_mask );
+DECLARE_KIND( k_mask )
+DEFINE_KIND( k_mask )
 
 #define DRAWABLE(v) ( (Drawable *)(val_data(v)) )
 #define MASK(v) ( (MaskObject *)(val_data(v)) )
 
 #include <set>
 
+
+#define BLEND_ADD  0
+#define BLEND_ALPHA  1
+#define BLEND_DARKEN  2
+#define BLEND_DIFFERENCE  3
+#define BLEND_ERASE  4
+#define BLEND_HARDLIGHT  5
+#define BLEND_INVERT  6
+#define BLEND_LAYER  7
+#define BLEND_LIGHTEN  8
+#define BLEND_MULTIPLY  9
+#define BLEND_NORMAL  10
+#define BLEND_OVERLAY  11
+#define BLEND_SCREEN  12
+#define BLEND_SUBTRACT  13
+#define BLEND_SHADER  14
+
+
+
+static int gBlendMode = BLEND_NORMAL;
 
 
 class Scale9
@@ -151,6 +172,32 @@ static int val_id_point_idx1 = val_id("point_idx1");
 static int val_id___a = val_id("__a");
 static int val_id___s = val_id("__s");
 static int val_id_length = val_id("length");
+
+
+
+
+inline value GetArray(value inArg)
+{
+   if (val_is_null(inArg))
+      return inArg;
+   #ifdef HXCPP
+   return inArg;
+   #else
+   return val_field(inArg,val_id___a);
+   #endif 
+}
+
+inline int GetArrayLen(value inArg)
+{
+   if (val_is_null(inArg))
+      return 0;
+   #ifdef HXCPP
+   return inArg->__length();
+   #else
+   return  val_int( val_field(inArg,val_id_length));
+   #endif 
+}
+
 
 
 
@@ -274,6 +321,23 @@ typedef std::vector<Point> Points;
 class DrawObject : public Drawable
 {
 public:
+   void Init()
+   {
+      mDisplayList = 0;
+      mSolid = 0;
+      mMaskID = -1;
+      mIsOGL = false;
+      mTexture = 0;
+      mOldFlags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
+      mSolidGradient = 0;
+      mLinesShareGrad = 0;
+      mRendersWithoutDisplayList = 0;
+      mFillColour = 0x00000000;
+      mFillAlpha = 1.0;
+      mCurveScale = 0.0;
+      mCull = 0;
+   }
+
    DrawObject(Points &inPoints, int inFillColour,double inFillAlpha,
               Gradient *inFillGradient,
               TextureReference *inTexture,
@@ -281,33 +345,39 @@ public:
               bool inLinesShareGrad = false) :
                  mTransform(0,0,0,0)
    {
-      mDisplayList = 0;
-      mPolygon = 0;
+      Init();
       mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
-      mOldFlags = sQualityLevel>0 ? NME_HIGH_QUALITY : 0;
-      //mMinY = -1;
-      //mMaxY = -1;
       mOrigPoints.swap(inPoints);
-      mMaskID = -1;
-      mIsOGL = false;
-      mRendersWithoutDisplayList = 0;
 
-      if (mSolidGradient || mTexture)
-      {
-         mFillColour = 0xffffff;
-         mFillAlpha = 1.0;
-      }
-      else
+      if (!mSolidGradient && !mTexture)
       {
          mFillColour = inFillColour;
          mFillAlpha = inFillAlpha;
       }
 
       mLineJobs.swap(inLines);
-      mCurveScale = 0.0;
 
+   }
+
+   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, int inFillColour,double inFillAlpha):
+       mTransform(0,0,0,0)
+   {
+      Init();
+      mTriPoints.swap(inPoints);
+      mTriangles.swap(inTris);
+      mFillColour = inFillColour;
+      mFillAlpha = inFillAlpha;
+   }
+
+   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, TextureReference *inTexture):
+       mTransform(0,0,0,0)
+   {
+      Init();
+      mTriPoints.swap(inPoints);
+      mTriangles.swap(inTris);
+      mTexture = inTexture;
    }
 
    void BuildCurved(const Points &inPoints,double inScale)
@@ -368,8 +438,8 @@ public:
    void ClearRenderers()
    {
       mRendersWithoutDisplayList = 0;
-      delete mPolygon;
-      mPolygon = 0;
+      delete mSolid;
+      mSolid = 0;
 
       for(size_t i=0;i<mLineJobs.size();i++)
       {
@@ -398,43 +468,72 @@ public:
 
    void DrawOpenGL()
    {
-      size_t n = mPoints.size();
+      bool is_triangles = mTriangles.size()>0;
+      size_t n = is_triangles ? mTriangles.size() : mPoints.size();
       if (n==0)
          return;
 
       glDisable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+      if (gBlendMode==BLEND_MULTIPLY)
+         glBlendFunc(GL_DST_COLOR, GL_ZERO);
+      else
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    
-      if (mSolidGradient || mFillAlpha>0 || mTexture)
+      if (mSolidGradient || mFillAlpha>0.0 || mTexture || is_triangles)
       {
-         // TODO: tesselate
-         glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour,
-                      (unsigned char)(mFillAlpha*255.0));
-         const CurvedPoint *p = &mPoints[0];
-         size_t n = mPoints.size();
          TextureBuffer *tex = mTexture ? mTexture->mTexture : 0;
+         if (tex)
+            glColor4f(1.0,1.0,1.0,1.0);
+         else
+            glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour, (int)(mFillAlpha*255.0));
 
          if (mSolidGradient)
             mSolidGradient->BeginOpenGL();
          else if (tex)
+         {
             tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK) ==NME_EDGE_REPEAT );
+         }
          else
             glDisable(GL_TEXTURE_2D);
 
-         glBegin(GL_TRIANGLE_FAN);
-         for(size_t i=0;i<n;i++)
+         if (is_triangles)
          {
-            if (mSolidGradient)
-               mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
-            else if (tex)
-               mTexture->OpenGLTexture( mPoints[i].mX, mPoints[i].mY,
-                                  mTexture->mTransMatrix);
-
-            glVertex2f( mPoints[i].mX, mPoints[i].mY );
-            p++;
+            TriPoint *point = &mTriPoints[0];
+            Tri *tri = &mTriangles[0];
+            glBegin(GL_TRIANGLES);
+            for(size_t t=0;t<n;t++)
+            {
+               for(int idx=0;idx<3;idx++)
+               {
+                  TriPoint &p = point[tri->mIndex[idx]];
+                  if (tex)
+                     glTexCoord2f( (float)p.mU, (float)p.mV );
+                  //printf(" %f %f\n", p.mU, p.mV);
+                  glVertex2f( (float)p.mX, (float)p.mY );
+               }
+               tri++;
+            }
+            glEnd();
          }
-         glEnd();
+         else
+         {
+            // TODO: tesselate
+            const CurvedPoint *p = &mPoints[0];
+            glBegin(GL_TRIANGLE_FAN);
+            for(size_t i=0;i<n;i++)
+            {
+               if (mSolidGradient)
+                  mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
+               else if (tex)
+                  mTexture->OpenGLTexture( mPoints[i].mX, mPoints[i].mY,
+                                     mTexture->mTransMatrix);
+
+               glVertex2f( mPoints[i].mX, mPoints[i].mY );
+               p++;
+            }
+            glEnd();
+         }
 
          if (tex)
             tex->UnBindOpenGL();
@@ -498,8 +597,8 @@ public:
          mMaskID = -1;
 
          Extent2DI extent;
-         if (mPolygon)
-            mPolygon->GetExtent(extent);
+         if (mSolid)
+            mSolid->GetExtent(extent);
 
          for(size_t j=0;j<mLineJobs.size();j++)
             mLineJobs[j].mRenderer->GetExtent(extent);
@@ -526,7 +625,8 @@ public:
 
    void TransformPoints(const Matrix &inMatrix,const Scale9 &inScale9)
    {
-      size_t n = mPoints.size();
+      bool is_triangles = mOrigPoints.empty();
+      size_t n = is_triangles ? mTriPoints.size() : mPoints.size();
       mTransform = inMatrix;
       mScale9 = inScale9;
       mTX = 0;
@@ -534,17 +634,28 @@ public:
 
       if (mTransform.IsIdentity() && !mScale9.Active())
       {
-         for(size_t i=0;i<n;i++)
-            mPointF16s[i] = PointF16(mPoints[i].mX,mPoints[i].mY);
+         if (is_triangles)
+         {
+            for(size_t i=0;i<n;i++)
+            {
+               TriPoint &p = mTriPoints[i];
+               p.mPos16 = PointF16(p.mX,p.mY);
+            }
+         }
+         else
+         {
+            for(size_t i=0;i<n;i++)
+               mPointF16s[i] = PointF16(mPoints[i].mX,mPoints[i].mY);
 
-         if (mSolidGradient)
-            mSolidGradient->IdentityTransform();
-         else if (mTexture)
-            mTexture->IdentityTransform();
+            if (mSolidGradient)
+               mSolidGradient->IdentityTransform();
+            else if (mTexture)
+               mTexture->IdentityTransform();
 
-         for(size_t i=0;i<mLineJobs.size();i++)
-            if (mLineJobs[i].mGradient)
-               mLineJobs[i].mGradient->IdentityTransform();
+            for(size_t i=0;i<mLineJobs.size();i++)
+               if (mLineJobs[i].mGradient)
+                  mLineJobs[i].mGradient->IdentityTransform();
+         }
      }
      else
      {
@@ -552,47 +663,75 @@ public:
 
         if (mScale9.Active())
         {
-           for(size_t i=0;i<n;i++)
+           if (is_triangles)
            {
-              double x = mScale9.TransX(mPoints[i].mX);
-              double y = mScale9.TransY(mPoints[i].mY);
-              mTransform.TransformHQ((float)x,(float)y,mPointF16s[i].x,mPointF16s[i].y);
-           }
-
-           bool need_extent = mSolidGradient || mTexture;
-           for(size_t i=0; !need_extent && i<mLineJobs.size();i++)
-              need_extent = mLineJobs[i].mGradient!=0;
-           if (need_extent)
-           {
-              size_t n = mPoints.size();
               for(size_t i=0;i<n;i++)
-                extent.Add(mPoints[i].mX,mPoints[i].mY);
+              {
+                 TriPoint &p = mTriPoints[i];
+                 double x = mScale9.TransX(p.mX);
+                 double y = mScale9.TransY(p.mY);
+                 mTransform.TransformHQ((float)x,(float)y,p.mPos16.x,p.mPos16.y);
+                 p.mPos16 = PointF16(p.mX,p.mY);
+              }
            }
-        }
-        else
-        {
-           for(size_t i=0;i<n;i++)
+           else
            {
-              mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,
-                  mPointF16s[i].x,mPointF16s[i].y);
+              for(size_t i=0;i<n;i++)
+              {
+                 double x = mScale9.TransX(mPoints[i].mX);
+                 double y = mScale9.TransY(mPoints[i].mY);
+                 mTransform.TransformHQ((float)x,(float)y,mPointF16s[i].x,mPointF16s[i].y);
+              }
+
+              bool need_extent = mSolidGradient || mTexture;
+              for(size_t i=0; !need_extent && i<mLineJobs.size();i++)
+                 need_extent = mLineJobs[i].mGradient!=0;
+              if (need_extent)
+              {
+                 size_t n = mPoints.size();
+                 for(size_t i=0;i<n;i++)
+                   extent.Add(mPoints[i].mX,mPoints[i].mY);
+              }
            }
-        }
-
-        if (mScale9.Active() && (mSolidGradient || mTexture))
-        {
-           Matrix m = mTransform.Mult( mScale9.GetFillMatrix(extent));
-
-           if (mSolidGradient)
-              mSolidGradient->Transform(m);
-           else if (mTexture)
-              mTexture->Transform(m);
         }
         else
         {
-           if (mSolidGradient)
-              mSolidGradient->Transform(mTransform);
-           else if (mTexture)
-              mTexture->Transform(mTransform);
+           if (is_triangles)
+           {
+              for(size_t i=0;i<n;i++)
+              {
+                 TriPoint &p = mTriPoints[i];
+                 mTransform.TransformHQ((float)p.mX,(float)p.mY,p.mPos16.x,p.mPos16.y);
+              }
+           }
+           else
+           {
+              for(size_t i=0;i<n;i++)
+              {
+                 mTransform.TransformHQ(mPoints[i].mX,mPoints[i].mY,
+                     mPointF16s[i].x,mPointF16s[i].y);
+              }
+           }
+        }
+
+        if (!is_triangles)
+        {
+           if (mScale9.Active() && (mSolidGradient || mTexture))
+           {
+              Matrix m = mTransform.Mult( mScale9.GetFillMatrix(extent));
+
+              if (mSolidGradient)
+                 mSolidGradient->Transform(m);
+              else if (mTexture)
+                 mTexture->Transform(m);
+           }
+           else
+           {
+              if (mSolidGradient)
+                 mSolidGradient->Transform(mTransform);
+              else if (mTexture)
+                 mTexture->Transform(mTransform);
+           }
         }
 
 
@@ -630,10 +769,13 @@ public:
      }
    }
 
-   virtual bool IsGrad() { return mPolygon!=0 || mSolidGradient!=0; }
+   virtual bool IsGrad() { return mSolid!=0 || mSolidGradient!=0; }
 
    void SetupCurved(const Matrix &inMatrix)
    {
+      if (mOrigPoints.empty())
+         return;
+
       double scale = pow( (inMatrix.m00*inMatrix.m00 + inMatrix.m01*inMatrix.m01) *
                            (inMatrix.m10*inMatrix.m10 + inMatrix.m11*inMatrix.m11), 0.25 );
       if ( (fabs(scale-mCurveScale) > 0.1) || mCurveScale==0)
@@ -700,10 +842,9 @@ public:
       {
          PolygonMask *mask = inMaskObj ? inMaskObj->GetPolygonMask() : 0;
          CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj,gScale9);
-         // printf("RenderTo %p\n",inMaskObj);
 
-         if (mPolygon)
-            mPolygon->Render(inSurface,inVP,mTX,mTY);
+         if (mSolid)
+            mSolid->Render(inSurface,inVP,mTX,mTY);
 
          size_t jobs = mLineJobs.size();
          for(size_t j=0;j<jobs;j++)
@@ -720,9 +861,9 @@ public:
    {
       SetupCurved(inMatrix);
       CreateRenderers(inSurf,inMatrix,false,0,gScale9);
-      if (mPolygon)
+      if (mSolid)
       {
-         mPolygon->AddToMask(ioMask,mTX,mTY);
+         mSolid->AddToMask(ioMask,mTX,mTY);
       }
    }
 
@@ -757,7 +898,7 @@ public:
       }
       else
       {
-         if (mPolygon && mPolygon->HitTest(inX-mTX,inY-mTY))
+         if (mSolid && mSolid->HitTest(inX-mTX,inY-mTY))
             return true;
 
          size_t jobs = mLineJobs.size();
@@ -779,8 +920,7 @@ public:
             const Matrix &inMatrix,TextureBuffer *inMarkDirty,MaskObject *inMaskObj,
             const Scale9 &inScale9)
    {
-
-      if (mPoints.empty())
+      if (mPoints.empty() && mTriPoints.empty())
          return;
 
       int min_y = -0x7fff;
@@ -831,38 +971,46 @@ public:
             }
          }
 
-         if (!mPolygon)
+         if (!mSolid)
          {
-            RenderArgs args;
-            args.inN = (int)mPointF16s.size();
-            args.inPoints = &mPointF16s[0];
-            args.inLines = 0;
-            args.inConnect = &mConnection[0];
-            args.inMinY = min_y;
-            args.inMaxY = max_y;
-            args.inFlags = flags;
-
-            if (mSolidGradient)
+            if (!mTriPoints.empty())
             {
-               mPolygon = PolygonRenderer::CreateGradientRenderer(args,
-                              mSolidGradient );
-            }
-            else if (mTexture)
-            { 
-               //Matrix m(mTexture->mTransMatrix);
-
-               args.inFlags |= mTexture->mFlags;
-               mPolygon = PolygonRenderer::CreateBitmapRenderer(args,
-                              mTexture->mTexture->GetSourceSurface(),
-                              mTexture->mTransMatrix);
+               mSolid = PolygonRenderer::CreateSolidTriangles(mTriPoints,mTriangles,
+                                 mFillColour, mFillAlpha );
             }
             else
             {
-               mPolygon = PolygonRenderer::CreateSolidRenderer(args,
-                              mFillColour, mFillAlpha );
+               RenderArgs args;
+               args.inN = (int)mPointF16s.size();
+               args.inPoints = &mPointF16s[0];
+               args.inLines = 0;
+               args.inConnect = &mConnection[0];
+               args.inMinY = min_y;
+               args.inMaxY = max_y;
+               args.inFlags = flags;
+
+               if (mSolidGradient)
+               {
+                  mSolid = PolygonRenderer::CreateGradientRenderer(args,
+                                 mSolidGradient );
+               }
+               else if (mTexture)
+               { 
+                  //Matrix m(mTexture->mTransMatrix);
+
+                  args.inFlags |= mTexture->mFlags;
+                  mSolid = PolygonRenderer::CreateBitmapRenderer(args,
+                                 mTexture->mTexture->GetSourceSurface(),
+                                 mTexture->mTransMatrix);
+               }
+               else
+               {
+                  mSolid = PolygonRenderer::CreateSolidRenderer(args,
+                                 mFillColour, mFillAlpha );
+               }
+               if (mSolid && mask)
+                  mSolid->Mask(*mask);
             }
-            if (mPolygon && mask)
-               mPolygon->Mask(*mask);
          }
 
       }
@@ -903,9 +1051,14 @@ public:
 
 
 
+   // For line/polygon objects
    Points             mOrigPoints;
    CurvedPoints       mPoints;
    std::vector<char>  mConnection;
+   // For triangle object
+   TriPoints          mTriPoints;
+   Tris               mTriangles;
+   int                mCull;
 
    Gradient     *mSolidGradient;
    TextureReference *mTexture;
@@ -932,7 +1085,7 @@ public:
    //int          mMaxY;
    int          mMaskID;
 
-   PolygonRenderer *mPolygon;
+   PolygonRenderer *mSolid;
 
    bool mLinesShareGrad;
 
@@ -964,7 +1117,6 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    for(int j=0;j<n;j++)
       lines[j].FromValue(items[j]);
 
-
    DrawObject *obj = new DrawObject(
                             points,
                             val_int(inFillColour),
@@ -978,6 +1130,107 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    return v;
 }
 
+
+value nme_create_draw_triangles(value * arg, int nargs )
+{
+   enum { aVertices, aIndices, aUVTData, aCull, aFillColour, aFillAlpha, aBitmap, aSIZE };
+   if (nargs!=aSIZE)
+      failure("nme_create_draw_triangles - wrong number of args");
+
+   TriPoints points;
+
+
+   value v =  GetArray(arg[aVertices]);
+   int n =  GetArrayLen(arg[aVertices]);
+   val_check( v, array );
+
+   if (n&1)
+      failure("nme_create_draw_triangles - odd number of points");
+
+   n/=2;
+   points.resize(n);
+   for(int i=0;i<n;i++)
+      points[i].SetPos(val_number(val_get_array_i(v,i*2)), val_number(val_get_array_i(v,i*2+1)));
+
+   int cull = val_int(arg[aCull]);
+
+   value idx = arg[aIndices];
+   Tris triangles;
+   if (!val_is_null(idx))
+   {
+      int indices = GetArrayLen(idx);
+      idx = GetArray(idx);
+      if ( (indices%3)!=0 )
+         failure("nme_create_draw_triangles - invalid index count");
+
+      indices /= 3;
+      triangles.reserve(indices);
+      for(int i=0;i<indices;i++)
+         triangles.push_back(Tri(val_int(val_get_array_i(idx,i*3)),
+                                 val_int(val_get_array_i(idx,i*3+1)),
+                                 val_int(val_get_array_i(idx,i*3+2)) ) );
+   }
+   else
+   {
+      if ( (n%3)!=0 )
+         failure("nme_create_draw_triangles - invalid vertex count");
+      int indices = n/3;
+      triangles.reserve(indices);
+      for(int i=0;i<indices;i++)
+         triangles.push_back(Tri(i*3,i*3+1,i*3+2));
+   }
+
+   value uv = arg[aUVTData];
+   value bitmap = arg[aBitmap];
+   bool has_uv = !val_is_null(uv) && val_is_kind( bitmap, k_texture_buffer );
+
+   DrawObject *obj = 0;
+   if (has_uv)
+  {
+      TextureBuffer *tex = TEXTURE_BUFFER(bitmap);
+      int flags = 0;//NME_EDGE_REPEAT;
+      if (tex->GetSourceSurface()->format->BitsPerPixel==32)
+         flags |= NME_ALPHA_BLEND;
+      TextureReference *texture = new TextureReference(tex,Matrix(),flags);
+
+
+      int entries = GetArrayLen(uv);
+      uv = GetArray(uv);
+      if (entries == 2*n)
+      {
+         for(int i=0;i<n;i++)
+         {
+            points[i].SetUV(val_number(val_get_array_i(uv,i*2)),
+                            val_number(val_get_array_i(uv,i*2+1)));
+            points[i].SetT(0);
+         }
+      }
+      else if (entries == 3*n)
+      {
+         for(int i=0;i<n;i++)
+         {
+            points[i].SetUV(val_number(val_get_array_i(uv,i*3)),
+                            val_number(val_get_array_i(uv,i*3+1)));
+            points[i].SetT(val_number(val_get_array_i(uv,i*3+2)));
+         }
+      }
+      else
+         failure("nme_create_draw_triangles - incorrect number of uv entries");
+
+
+      obj = new DrawObject( points, triangles, cull, texture );
+   }
+   else
+   {
+      obj = new DrawObject(points, triangles, cull,
+                            val_int(arg[aFillColour]),
+                            val_number(arg[aFillAlpha]) );
+   }
+
+   value result = alloc_abstract( k_drawable, obj );
+   val_gc( result, delete_drawable );
+   return result;
+}
 
 static double sFontScale = 1.0/64.0;
 
@@ -1554,9 +1807,6 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
 
 
 
-
-
-
 value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccurate)
 {
    Extent2DI extent;
@@ -1564,14 +1814,10 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    Matrix matrix(inMatrix);
 
    bool accurate = val_bool(inAccurate);
-   
-   #ifdef HXCPP
-   value objs_arr =  inDrawList;
-   int n =  objs_arr->__length();
-   #else
-   value objs_arr =  val_field(inDrawList,val_id___a);
-   int n =  val_int( val_field(inDrawList,val_id_length));
-   #endif 
+
+   value objs_arr =  GetArray(inDrawList);
+   int n =  GetArrayLen(inDrawList);
+
    val_check( objs_arr, array );
 
    array_ptr objs =  val_array_ptr(objs_arr);
@@ -1760,8 +2006,16 @@ value nme_get_draw_quality()
    return alloc_int(sQualityLevel);
 }
 
+value nme_set_blend_mode(value inVal)
+{
+   gBlendMode = val_int(inVal);
+   return val_null;
+}
+
+
 
 DEFINE_PRIM(nme_create_draw_obj, 5);
+DEFINE_PRIM_MULT(nme_create_draw_triangles);
 DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 4);
@@ -1770,6 +2024,7 @@ DEFINE_PRIM(nme_hit_object, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_set_scale9_grid, 4);
 DEFINE_PRIM(nme_get_draw_quality, 0);
+DEFINE_PRIM(nme_set_blend_mode, 1);
 DEFINE_PRIM(nme_create_mask, 0);
 DEFINE_PRIM(nme_add_to_mask, 4);
 DEFINE_PRIM_MULT(nme_create_text_drawable);

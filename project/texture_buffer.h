@@ -47,6 +47,7 @@ public:
    void SetPixels(int inX,int inY,int inW,int inH,class ByteArray &inPixels);
    void SetPixel(int inX,int inY,int inColour);
    int SetPixels(const unsigned char *inData, int inDataLen, int inFormat, int inTableLen);
+   void Scroll(int inDX, int inDY);
 
 protected:
    // Call "DecRef" instead;
@@ -76,7 +77,7 @@ private: // hide
 
 struct TextureReference
 {
-   TextureReference(TextureBuffer *inTexture,Matrix &inMtx,int inFlags)
+   TextureReference(TextureBuffer *inTexture,const Matrix &inMtx,int inFlags)
       : mTexture(inTexture->IncRef()), mOrigMatrix(inMtx), mFlags(inFlags)
       { IdentityTransform(); }
 

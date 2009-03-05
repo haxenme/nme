@@ -37,7 +37,7 @@ static int val_id_y = val_id("y");
 static int val_id_width = val_id("width");
 static int val_id_height = val_id("height");
 
-
+static int texture_count = 0;
 
 // --- TextureBuffer ----------------------------------------------------
 
@@ -64,6 +64,8 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
    mDirtyY0 = 0;
    mDirtyX1 = mPixelWidth;
    mDirtyY1 = mPixelHeight;
+   texture_count++;
+   //printf("TextureCount: %d\n", texture_count);
 }
 
 
@@ -73,6 +75,7 @@ TextureBuffer::~TextureBuffer()
       glDeleteTextures(1,&mTextureID);
    if (mSurface)
       SDL_FreeSurface(mSurface);
+   texture_count--;
 }
 
 void TextureBuffer::DecRef()
@@ -225,6 +228,62 @@ void TextureBuffer::SetExtentDirty(int inX0,int inY0,int inX1,int inY1)
    }
 }
 
+void TextureBuffer::Scroll(int inDX, int inDY)
+{
+   if (inDX==0 && inDY==0)
+      return;
+
+   int sx0 = 0;
+   int sx1 = Width();
+   if (inDX<0)
+      sx0 -= inDX;
+   else
+      sx1 -= inDX;
+
+   int sy0 = 0;
+   int sy1 = Height();
+   if (inDY<0)
+      sy0 -= inDY;
+   else
+      sy1 -= inDY;
+
+   if (sx0<sx1 && sy0<sy1)
+   {
+      SDL_Surface *tmp = SDL_CreateRGBSurface(mSurface->flags, sx1-sx0,  sy1-sy0,
+                    (mSurface->flags & SDL_SRCALPHA) ? 32 : 24,
+                     mSurface->format->Rmask, mSurface->format->Gmask,
+                     mSurface->format->Bmask, mSurface->format->Amask );
+
+      // Do dumb compies
+      SDL_SetAlpha(tmp,0,255);
+
+      bool was_alpha = mSurface->flags & SDL_SRCALPHA;
+      if (was_alpha)
+         mSurface->flags &= ~SDL_SRCALPHA;
+
+      SDL_Rect src;
+      src.x = sx0;
+      src.y = sy0;
+      src.w = sx1 - sx0;
+      src.h = sy1 - sy0;
+      SDL_BlitSurface(mSurface, &src, tmp, 0);
+
+
+      SDL_Rect dest;
+      dest.x = inDX < 0 ? 0 : inDX;
+      dest.y = inDY < 0 ? 0 : inDY;
+      SDL_BlitSurface(tmp, 0, mSurface, &dest);
+
+      SetExtentDirty(dest.x, dest.y, dest.x+dest.w, dest.y+dest.h);
+
+      if (was_alpha)
+         mSurface->flags |= SDL_SRCALPHA;
+
+      SDL_FreeSurface(tmp);
+   }
+}
+
+
 
 void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 {
@@ -315,7 +374,7 @@ value nme_texture_width( value texture_buffer )
       return alloc_int(t->Width());
    }
 
-   return alloc_int(0);
+   return val_null;
 }
 
 value nme_texture_height( value texture_buffer )
@@ -326,7 +385,21 @@ value nme_texture_height( value texture_buffer )
       return alloc_int(t->Height());
    }
 
-   return alloc_int(0);
+   return val_null;
+}
+
+value nme_scroll_texture( value texture_buffer, value inDX, value inDY)
+{
+   return val_null;
+   if ( val_is_kind( texture_buffer, k_texture_buffer ) )
+   {
+      TextureBuffer* t = TEXTURE_BUFFER(texture_buffer);
+      int dx = val_int(inDX);
+      int dy = val_int(inDY);
+      t->Scroll(dx,dy);
+   }
+
+   return val_null;
 }
 
 
@@ -497,18 +570,22 @@ void TextureBuffer::SetPixels(int inX,int inY,int inW,int inH,ByteArray &inArray
 
 void TextureBuffer::SetPixel(int inX,int inY,int inCol)
 {
+   if (inX<0 || inY<0 || inX>=Width() || inY>=Height())
+      return;
+
    unsigned char *pix =
          (unsigned char *)mSurface->pixels + inY*mSurface->pitch + inX*4;
 
+   int a = (inCol>>24) & 0xff;
    int r = (inCol>>16) & 0xff;
    int g = (inCol>>8) & 0xff;
    int b = (inCol) & 0xff;
    if (mSurface->format->BitsPerPixel==32)
    {
-      *pix++ = r;
-      *pix++ = g;
       *pix++ = b;
-      *pix++ = 255;
+      *pix++ = g;
+      *pix++ = r;
+      *pix++ = a;
    }
    else if ( mSurface->format->BitsPerPixel==24 && mSurface->format->Rmask != 0x0000ff)
    {
@@ -637,9 +714,28 @@ value nme_set_pixel(value inTexture, value inX, value inY, value inColour)
 {
    TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 
+   tex->SetPixel(val_int(inX), val_int(inY), val_int(inColour) | 0xff000000 );
+   return alloc_int(0);
+}
+
+
+#ifdef HXCPP
+value nme_set_pixel32(value inTexture, value inX, value inY, value inColour)
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+
    tex->SetPixel(val_int(inX), val_int(inY), val_int(inColour) );
    return alloc_int(0);
 }
+#else
+value nme_set_pixel32(value inTexture, value inX, value inY, value inAlpha,value inRGB)
+{
+   TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+
+   tex->SetPixel(val_int(inX), val_int(inY), (val_int(inAlpha)<<24) | val_int(inRGB) );
+   return alloc_int(0);
+}
+#endif
 
 
 
@@ -975,7 +1071,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
              // Clear screen ..
              if (a==255)
              {
-               glClearColor(r/255.0,g/255.0,b/255.0,a/255.0);
+               glClearColor((float)(r/255.0),(float)(g/255.0),(float)(b/255.0),(float)(a/255.0));
                glClear(GL_COLOR_BUFFER_BIT);
              }
              else if (a>0)
@@ -1132,8 +1228,14 @@ DEFINE_PRIM(nme_load_texture, 1);
 DEFINE_PRIM(nme_load_texture_from_bytes, 5);
 DEFINE_PRIM(nme_set_pixel_data, 5);
 DEFINE_PRIM(nme_set_pixel, 4);
+#ifdef HXCPP
+DEFINE_PRIM(nme_set_pixel32, 4);
+#else
+DEFINE_PRIM(nme_set_pixel32, 5);
+#endif
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
+DEFINE_PRIM(nme_scroll_texture, 3);
 DEFINE_PRIM(nme_tile_renderer_width, 1);
 DEFINE_PRIM(nme_tile_renderer_height, 1);
 DEFINE_PRIM(nme_texture_get_bytes, 2);
