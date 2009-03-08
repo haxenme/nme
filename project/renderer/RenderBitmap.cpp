@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "RenderPolygon.h"
+#include "TriangleRenderer.h"
 #include "AA.h"
 #include <math.h>
 #include <algorithm>
@@ -99,18 +100,31 @@ struct SurfaceSourceBase
    SurfaceSourceBase(SDL_Surface *inSurface,const Matrix &inMapper) :
      mSurface(inSurface), mMapper(inMapper)
    {
-      mWidth = inSurface->w;
-      mHeight = inSurface->h;
+      Init();
+      UpdateMapping();
+   }
+   SurfaceSourceBase(SDL_Surface *inSurface) : mSurface(inSurface)
+   {
+      Init();
+   }
+   void Init()
+   {
+      mWidth = mSurface->w;
+      mHeight = mSurface->h;
       mW1 = mWidth-1;
       mH1 = mHeight-1;
-      mBase = (Uint8 *)inSurface->pixels;
+      mBase = (Uint8 *)mSurface->pixels;
       mPtr = mBase;
-      mPitch = inSurface->pitch;
+      mPitch = mSurface->pitch;
+   }
 
-
+   inline Matrix *GetMapper() { return &mMapper; }
+   inline void UpdateMapping()
+   {
       mDPDX.x = int((mMapper.m00)*65536);
       mDPDX.y = int((mMapper.m10)*65536);
    }
+
 
    inline void SetPos(int inX,int inY)
    {
@@ -131,6 +145,7 @@ struct SurfaceSourceBase
    PointF16 mPos;
    PointF16 mDPDX;
 
+   bool        mMatrixMapping;
    Matrix      mMapper;
    SDL_Surface *mSurface;
 
@@ -152,8 +167,20 @@ struct SurfaceSource8 : public SurfaceSourceBase
    SurfaceSource8(SDL_Surface *inSurface,const Matrix &inMapping)
       : SurfaceSourceBase(inSurface,inMapping)
    {
-      int n  = inSurface->format->palette->ncolors;
-      SDL_Color *col = inSurface->format->palette->colors;
+      Init();
+   }
+
+
+   SurfaceSource8(SDL_Surface *inSurface) : SurfaceSourceBase(inSurface)
+   {
+      Init();
+   }
+
+
+   void Init()
+   {
+      int n  = mSurface->format->palette->ncolors;
+      SDL_Color *col = mSurface->format->palette->colors;
       for(int i=0;i<n;i++)
       {
          mPalette[i].r = col[i].r;
@@ -202,6 +229,11 @@ struct SurfaceSource32 : public SurfaceSourceBase
       : SurfaceSourceBase(inSurface,inMapper)
    {
    }
+
+   SurfaceSource32(SDL_Surface *inSurface) : SurfaceSourceBase(inSurface)
+   {
+   }
+
 
    inline PIXEL_ Value()
    {
@@ -339,6 +371,135 @@ PolygonRenderer *PolygonRenderer::CreateBitmapRenderer(
 }
 
 
+
+// --- Triangles ---------------------------------------------------------------
+
+
+
+void SetTextureMapping( Matrix &outMatrix, const TriPoint &inP0,
+                                           const TriPoint &inP1,
+                                           const TriPoint &inP2)
+{
+   // outMatrix provides the mapping for "SetPos", which takes destination pixels and converts
+   //  them to texture coordinates.  The destination pixels will be the mPos16 >> 16
+   //
+   double x0 = inP0.mPos16.x * (1.0/65536.0);
+   double y0 = inP0.mPos16.y * (1.0/65536.0);
+   double x1 = inP1.mPos16.x * (1.0/65536.0);
+   double y1 = inP1.mPos16.y * (1.0/65536.0);
+   double x2 = inP2.mPos16.x * (1.0/65536.0);
+   double y2 = inP2.mPos16.y * (1.0/65536.0);
+   // mMapper.m00 * Xi + mMapper.m01*Yi + mMapper.mtx = TexX.i
+   // (i=1) - (i=0),  (i-2)-(i-0)
+   double dx1 = x1-x0;
+   double dy1 = y1-y0;
+   double dx2 = x2-x0;
+   double dy2 = y2-y0;
+   // m00*dx1 + m01*dy1 = du1
+   // m00*dx2 + m01*dy2 = du2
+   double det = dx1*dy2 - dx2*dy1;
+   if (det==0.0)
+   {
+      outMatrix.m00 = outMatrix.m01 = outMatrix.m10 = outMatrix.m11 = 0.0;
+      outMatrix.mtx = inP0.mU;
+      outMatrix.mty = inP0.mV;
+   }
+   else
+   {
+      det =1.0/det;
+      double du1 = inP1.mU - inP0.mU;
+      double du2 = inP2.mU - inP0.mU;
+      outMatrix.m00 = (du1*dy2 - du2*dy1)*det;
+      outMatrix.m01 = dy1!=0 ? (du1-outMatrix.m00*dx1)/dy1 : 0;
+      //outMatrix.m01 = (du1*dx2 - du2*dx1)*det;
+      double dv1 = inP1.mV - inP0.mV;
+      double dv2 = inP2.mV - inP0.mV;
+      outMatrix.m10 = (dv1*dy2 - dv2*dy1)*det;
+      //outMatrix.m11 = (dv1*dx2 - dv2*dx1)*det;
+      outMatrix.m11 = dy1!=0 ? (dv1-outMatrix.m10*dx1)/dy1 : 0;
+
+      outMatrix.mtx = inP0.mU - outMatrix.m00*x0 - outMatrix.m01*y0;
+      outMatrix.mty = inP0.mV - outMatrix.m10*x0 - outMatrix.m11*y0;
+   }
+}
+
+
+template<typename SOURCE_>
+PolygonRenderer *TCreateBitmapTrianglesRenderer(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              const SOURCE_ &inSource )
+{
+   return new TTriangleRenderer<SOURCE_,true>(inPoints,inTriangles,inSource );
+}
+
+
+
+
+template<int FLAGS_>
+PolygonRenderer *CreateBitmapTrianglesRendererSource(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              SDL_Surface *inSource)
+{
+    if (inSource->flags & SDL_SRCALPHA)
+       return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource32<ARGB,FLAGS_>(inSource));
+
+    return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource32<XRGB,FLAGS_>(inSource));
+}
+
+
+
+
+template<int EDGES_>
+PolygonRenderer *CreateBitmapTrianglesFlags(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              SDL_Surface *inSource,
+                              int inFlags)
+{
+   if (inFlags & NME_BMP_LINEAR)
+   {
+      return CreateBitmapTrianglesRendererSource<EDGES_ + NME_BMP_LINEAR>( inPoints,inTriangles,inSource);
+   }
+   else
+   {
+      return CreateBitmapTrianglesRendererSource<EDGES_>( inPoints,inTriangles,inSource);
+   }
+
+}
+
+
+
+PolygonRenderer *PolygonRenderer::CreateBitmapTriangles(
+                              const TriPoints &inPoints,
+                              const Tris &inTriangles,
+                              SDL_Surface *inSource, unsigned int inFlags)
+{
+   if (inTriangles.empty())
+      return 0;
+
+   int edge = inFlags & NME_EDGE_MASK;
+   if (edge==NME_EDGE_REPEAT && IsPOW2(inSource->w) && IsPOW2(inSource->h) )
+      edge = NME_EDGE_REPEAT_POW2;
+
+   PolygonRenderer *r = 0;
+
+   if (edge == NME_EDGE_REPEAT_POW2) 
+       r = CreateBitmapTrianglesFlags<NME_EDGE_REPEAT_POW2>(inPoints,inTriangles,inSource,inFlags);
+   else if (edge == NME_EDGE_REPEAT) 
+       r = CreateBitmapTrianglesFlags<NME_EDGE_REPEAT>(inPoints,inTriangles,inSource,inFlags);
+   else if (edge == NME_EDGE_UNCHECKED) 
+       r = CreateBitmapTrianglesFlags<NME_EDGE_UNCHECKED>(inPoints,inTriangles,inSource,inFlags);
+   else
+       r = CreateBitmapTrianglesFlags<NME_EDGE_CLAMP>(inPoints,inTriangles,inSource,inFlags);
+
+   return r;
+
+
+
+   return 0;
+}
 
 
 

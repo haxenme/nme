@@ -233,6 +233,7 @@ void TextureBuffer::Scroll(int inDX, int inDY)
    if (inDX==0 && inDY==0)
       return;
 
+
    int sx0 = 0;
    int sx1 = Width();
    if (inDX<0)
@@ -390,7 +391,6 @@ value nme_texture_height( value texture_buffer )
 
 value nme_scroll_texture( value texture_buffer, value inDX, value inDY)
 {
-   return val_null;
    if ( val_is_kind( texture_buffer, k_texture_buffer ) )
    {
       TextureBuffer* t = TEXTURE_BUFFER(texture_buffer);
@@ -582,10 +582,20 @@ void TextureBuffer::SetPixel(int inX,int inY,int inCol)
    int b = (inCol) & 0xff;
    if (mSurface->format->BitsPerPixel==32)
    {
-      *pix++ = b;
-      *pix++ = g;
-      *pix++ = r;
-      *pix++ = a;
+      if ( mSurface->format->Rmask == 0x0000ff)
+      {
+         *pix++ = r;
+         *pix++ = g;
+         *pix++ = b;
+         *pix++ = a;
+      }
+      else
+      {
+         *pix++ = b;
+         *pix++ = g;
+         *pix++ = r;
+         *pix++ = a;
+      }
    }
    else if ( mSurface->format->BitsPerPixel==24 && mSurface->format->Rmask != 0x0000ff)
    {

@@ -530,9 +530,9 @@ class Graphics
              free_type) );
    }
 
-   public function drawTriangles(vertices:neash.Vector<Float>,
-          ?indices:neash.Vector<Int>,
-          ?uvtData:neash.Vector<Float>,
+   public function drawTriangles(vertices:Array<Float>,
+          ?indices:Array<Int>,
+          ?uvtData:Array<Float>,
           ?culling:flash.display.TriangleCulling)
    {
       var cull = culling==null ? 0 : switch(culling) {
@@ -544,7 +544,7 @@ class Graphics
       //trace("drawTriangles " + vertices.length );
       AddDrawable(nme_create_draw_triangles(
              vertices,indices,uvtData,cull,
-             mFillColour, mFillAlpha, mBitmap==null ? null : mBitmap.texture_buffer));
+             mFillColour, mFillAlpha, mBitmap, mCurrentLine ));
    }
 
 

@@ -154,7 +154,7 @@ public:
    static PolygonRenderer *CreateBitmapTriangles(
                               const TriPoints &inPoints,
                               const Tris &inTriangles,
-                              int inColour, double inAlpha);
+                              SDL_Surface *inSource, unsigned int inFlags);
 };
 
 

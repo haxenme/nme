@@ -358,26 +358,41 @@ public:
       }
 
       mLineJobs.swap(inLines);
-
    }
 
-   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, int inFillColour,double inFillAlpha):
-       mTransform(0,0,0,0)
+   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, int inFillColour,double inFillAlpha,
+                const LineJob &inLineStyle): mTransform(0,0,0,0)
    {
       Init();
       mTriPoints.swap(inPoints);
       mTriangles.swap(inTris);
       mFillColour = inFillColour;
       mFillAlpha = inFillAlpha;
+      BuildTriangleLines(inLineStyle);
    }
 
-   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, TextureReference *inTexture):
-       mTransform(0,0,0,0)
+   DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, TextureReference *inTexture,
+                const LineJob &inLineStyle): mTransform(0,0,0,0)
    {
       Init();
       mTriPoints.swap(inPoints);
       mTriangles.swap(inTris);
       mTexture = inTexture;
+      BuildTriangleLines(inLineStyle);
+   }
+
+   void BuildTriangleLines(const LineJob &inLineStyle)
+   {
+      if (inLineStyle.mAlpha>0)
+      {
+         mLineJobs.resize(mTriangles.size());
+         for(size_t i=0;i<mLineJobs.size();i++)
+         {
+            mLineJobs[i] = inLineStyle;
+            mLineJobs[i].mPointIndex0 = 0;
+            mLineJobs[i].mPointIndex1 = 3;
+         }
+      }
    }
 
    void BuildCurved(const Points &inPoints,double inScale)
@@ -477,6 +492,8 @@ public:
       glEnable(GL_BLEND);
       if (gBlendMode==BLEND_MULTIPLY)
          glBlendFunc(GL_DST_COLOR, GL_ZERO);
+      else if (gBlendMode==BLEND_ADD)
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       else
          glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    
@@ -559,16 +576,30 @@ public:
          glLineWidth( (float)line.mThickness );
 
          size_t n = line.mPointIndex1 - line.mPointIndex0 + 1;
-         glBegin(GL_LINE_STRIP);
-         for(size_t i=0;i<n;i++)
+         if (is_triangles)
          {
-            size_t pid = line.mPointIndex0 + i;
-            if (line.mGradient)
-               line.mGradient->OpenGLTexture( mPoints[pid].mX,mPoints[pid].mY );
-            glVertex2f( mPoints[pid].mX, mPoints[pid].mY );
+            Tri &tri = mTriangles[j];
+            glBegin(GL_LINE_LOOP);
+            for(size_t k=0;k<3;k++)
+            {
+               TriPoint &point = mTriPoints[tri.mIndex[k]];
+               glVertex2d( point.mX, point.mY );
+            }
+            glEnd();
          }
-         glEnd();
-      
+         else
+         {
+            glBegin(GL_LINE_STRIP);
+            for(size_t i=0;i<n;i++)
+            {
+               size_t pid = line.mPointIndex0 + i;
+               if (line.mGradient)
+                  line.mGradient->OpenGLTexture( mPoints[pid].mX,mPoints[pid].mY );
+               glVertex2f( mPoints[pid].mX, mPoints[pid].mY );
+            }
+            glEnd();
+         }
+
          if (line.mGradient)
             line.mGradient->EndOpenGL();
       }
@@ -671,7 +702,6 @@ public:
                  double x = mScale9.TransX(p.mX);
                  double y = mScale9.TransY(p.mY);
                  mTransform.TransformHQ((float)x,(float)y,p.mPos16.x,p.mPos16.y);
-                 p.mPos16 = PointF16(p.mX,p.mY);
               }
            }
            else
@@ -733,6 +763,17 @@ public:
                  mTexture->Transform(mTransform);
            }
         }
+        else if (mLineJobs.size())
+        {
+            mPointF16s.resize(mTriangles.size()*4);
+            for(size_t i=0;i<mTriangles.size();i++)
+            {
+               Tri &tri = mTriangles[i];
+               for(int j=0;j<4;j++)
+                  mPointF16s[i*4+j] = mTriPoints[ tri.mIndex[j%3] ].mPos16;
+            }
+        }
+
 
 
          for(size_t i=0;i<mLineJobs.size();i++)
@@ -923,6 +964,8 @@ public:
       if (mPoints.empty() && mTriPoints.empty())
          return;
 
+      bool is_triangles = mOrigPoints.empty();
+
       int min_y = -0x7fff;
       int max_y =  0x7fff;
 
@@ -973,9 +1016,14 @@ public:
 
          if (!mSolid)
          {
-            if (!mTriPoints.empty())
+            if (is_triangles)
             {
-               mSolid = PolygonRenderer::CreateSolidTriangles(mTriPoints,mTriangles,
+               if (mTexture)
+                  mSolid = PolygonRenderer::CreateBitmapTriangles(mTriPoints,mTriangles,
+                                 mTexture->mTexture->GetSourceSurface(),
+                                 mTexture->mFlags);
+               else
+                  mSolid = PolygonRenderer::CreateSolidTriangles(mTriPoints,mTriangles,
                                  mFillColour, mFillAlpha );
             }
             else
@@ -1022,10 +1070,20 @@ public:
          if (!job.mRenderer)
          {
             RenderArgs args;
-            args.inN = (int)mPointF16s.size();
-            args.inPoints = &mPointF16s[0];
+            if (!is_triangles)
+            {
+               args.inN = (int)mPointF16s.size();
+               args.inPoints = &mPointF16s[0];
+               args.inConnect = 0;
+            }
+            else
+            {
+               static char tri_connect[] = { 0,1,1,1 };
+               args.inN = 4;
+               args.inPoints = &mPointF16s[j*4];
+               args.inConnect = tri_connect;
+            }
             args.inLines = &job;
-            args.inConnect = 0;
             args.inMinY = min_y;
             args.inMaxY = max_y;
             args.inFlags = flags;
@@ -1133,7 +1191,7 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
 
 value nme_create_draw_triangles(value * arg, int nargs )
 {
-   enum { aVertices, aIndices, aUVTData, aCull, aFillColour, aFillAlpha, aBitmap, aSIZE };
+   enum { aVertices, aIndices, aUVTData, aCull, aFillColour, aFillAlpha, aBitmap, aLine, aSIZE };
    if (nargs!=aSIZE)
       failure("nme_create_draw_triangles - wrong number of args");
 
@@ -1181,27 +1239,26 @@ value nme_create_draw_triangles(value * arg, int nargs )
    }
 
    value uv = arg[aUVTData];
-   value bitmap = arg[aBitmap];
-   bool has_uv = !val_is_null(uv) && val_is_kind( bitmap, k_texture_buffer );
+   TextureReference *texture = TextureReference::Create(arg[aBitmap]);
+
+   bool has_uv = !val_is_null(uv) && texture!=0;
+
+   LineJob wireframe;
+   wireframe.FromValue(arg[aLine]);
 
    DrawObject *obj = 0;
    if (has_uv)
-  {
-      TextureBuffer *tex = TEXTURE_BUFFER(bitmap);
-      int flags = 0;//NME_EDGE_REPEAT;
-      if (tex->GetSourceSurface()->format->BitsPerPixel==32)
-         flags |= NME_ALPHA_BLEND;
-      TextureReference *texture = new TextureReference(tex,Matrix(),flags);
-
-
+   {
       int entries = GetArrayLen(uv);
+      double w = texture->mTexture->Width();
+      double h = texture->mTexture->Height();
       uv = GetArray(uv);
       if (entries == 2*n)
       {
          for(int i=0;i<n;i++)
          {
-            points[i].SetUV(val_number(val_get_array_i(uv,i*2)),
-                            val_number(val_get_array_i(uv,i*2+1)));
+            points[i].SetUV(val_number(val_get_array_i(uv,i*2))*w,
+                            val_number(val_get_array_i(uv,i*2+1))*h);
             points[i].SetT(0);
          }
       }
@@ -1209,8 +1266,8 @@ value nme_create_draw_triangles(value * arg, int nargs )
       {
          for(int i=0;i<n;i++)
          {
-            points[i].SetUV(val_number(val_get_array_i(uv,i*3)),
-                            val_number(val_get_array_i(uv,i*3+1)));
+            points[i].SetUV(val_number(val_get_array_i(uv,i*3))*w,
+                            val_number(val_get_array_i(uv,i*3+1))*h);
             points[i].SetT(val_number(val_get_array_i(uv,i*3+2)));
          }
       }
@@ -1218,13 +1275,15 @@ value nme_create_draw_triangles(value * arg, int nargs )
          failure("nme_create_draw_triangles - incorrect number of uv entries");
 
 
-      obj = new DrawObject( points, triangles, cull, texture );
+      obj = new DrawObject( points, triangles, cull, texture, wireframe );
    }
    else
    {
+      if (texture)
+         delete texture;
       obj = new DrawObject(points, triangles, cull,
                             val_int(arg[aFillColour]),
-                            val_number(arg[aFillAlpha]) );
+                            val_number(arg[aFillAlpha]), wireframe );
    }
 
    value result = alloc_abstract( k_drawable, obj );
