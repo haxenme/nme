@@ -15,10 +15,10 @@ class ColorTransform
                        inGreenMultiplier:Float = 1.0,
                        inBlueMultiplier:Float = 1.0,
                        inAlphaMultiplier:Float = 1.0,
-                       inRedOffset:Float = 0,
-                       inGreenOffset:Float = 0,
-                       inBlueOffset:Float = 0,
-                       inAlphaOffset:Float = 0)
+                       inRedOffset:Float = 0.0,
+                       inGreenOffset:Float = 0.0,
+                       inBlueOffset:Float = 0.0,
+                       inAlphaOffset:Float = 0.0)
    {
       redMultiplier = inRedMultiplier;
       greenMultiplier = inGreenMultiplier;

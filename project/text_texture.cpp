@@ -26,6 +26,26 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 }
 
 
+#else
+
+bool GetFontFile(const std::string& inName,std::string &outFile)
+{
+   if (!strcasecmp(inName.c_str(),"times.ttf"))
+      outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+      outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
+      outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+   else
+   {
+      //printf("Unfound font: %s\n",inName.c_str());
+      return false;
+   }
+
+   return true;
+}
+
+
 #endif
 
 TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
@@ -47,14 +67,12 @@ TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
        fname.find("\\")==std::string::npos &&
        fname.find("/")==std::string::npos)
    {
-#ifdef __WIN32__
       std::string file_name;
       if (GetFontFile(fname,file_name))
       {
          //printf("Found font in %s\n", file_name.c_str());
          font = TTF_OpenFont(file_name.c_str(),inPointSize);
       }
-#endif
       if (font==0)
          font = TTF_OpenFont(("./fonts/" + fname).c_str(),inPointSize);
 
