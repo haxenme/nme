@@ -353,6 +353,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BlendSurface.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ByteArray.cpp"
 				>
 			</File>

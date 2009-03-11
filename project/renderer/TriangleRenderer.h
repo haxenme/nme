@@ -4,7 +4,7 @@
 #include "RenderPolygon.h"
 #include <algorithm>
 
-void SetTextureMapping( Matrix &outMatrix, const TriPoint &inP0, const TriPoint &inP1, const TriPoint &inP2 );
+void SetTextureMapping( Matrix &outMatrix, const TriPoint &inP0, const TriPoint &inP1, const TriPoint &inP2, int inTX, int inTY );
 
 
 template<typename SOURCE_,bool DO_TEXTURE=false>
@@ -60,7 +60,7 @@ public:
    template<typename DEST_>
    void RenderDest(DEST_ &outDest,const Viewport &inViewport,int inTX,int inTY)
    {
-      int t16 = inTX<<16;
+      int tx16 = inTX<<16;
       for(size_t t=0;t<mTriangleCount;t++)
       {
          const Tri &tri = mTriangles[t];
@@ -104,16 +104,14 @@ public:
          int dxb_dy1 = Grad(p2-p0);
 
          if (DO_TEXTURE)
-         {
-            SetTextureMapping( *mSrc.GetMapper(), mPoints[idx0], mPoints[idx1], mPoints[idx2] );
-            mSrc.UpdateMapping();
-         }
+            mSrc.SetMapping(mPoints[idx0], mPoints[idx1], mPoints[idx2], inTX, inTY);
 
          // F16 fractional row ...
          int y = y0;
-         int extra_y = (((y+1)<<mToAA)-p0.y)>>8;
-         int xa = p0.x + t16 + (dxa_dy0>>(mToAA-8)) * extra_y;
-         int xb = p0.x + t16 + (dxb_dy1>>(mToAA-8)) * extra_y;
+         int extra_y = (((y+1-inTY)<<mToAA)-p0.y)>>8;
+         int xa = p0.x + tx16 + (dxa_dy0>>(mToAA-8)) * extra_y;
+         int xb = p0.x + tx16 + (dxb_dy1>>(mToAA-8)) * extra_y;
+
 
          // Top triangle ...
          //
@@ -142,12 +140,12 @@ public:
          }
 
          // middle bit
-         extra_y = (((y+1)<<mToAA)-p1.y)>>8;
-         xa = p1.x + t16 + (dxa_dy2>>(mToAA-8)) * extra_y;
+         extra_y = (((y+1-inTY)<<mToAA)-p1.y)>>8;
+         xa = p1.x + tx16 + (dxa_dy2>>(mToAA-8)) * extra_y;
 
          if (y2>inViewport.y1)
             y2 = inViewport.y1;
-         // skip until we to viewport?
+         // skip until we hit viewport?
          skip = inViewport.y0 - y;
          if (skip>0)
          {
@@ -211,6 +209,15 @@ public:
    void Mask(const PolygonMask &inMask) { }
    void GetExtent(Extent2DI &ioExtent)
    {
+      for(size_t t=0;t<mTriangleCount;t++)
+      {
+         const Tri &tri = mTriangles[t];
+         for(int i=0;i<3;i++)
+         {
+            const TriPoint &p = mPoints[tri.mIndex[i]];
+            ioExtent.Add(p.mPos16.x>>16, p.mPos16.y>>16);
+         }
+      }
    }
 
    SOURCE_ mSrc;

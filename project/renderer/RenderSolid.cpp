@@ -29,7 +29,8 @@ struct ConstantSource32
          mValA.a = inAlpha;
       return mValA;
    }
-   inline class Matrix *GetMapper() { return 0; }
+   inline void SetMapping(const TriPoint &inP0, const TriPoint &inP1, const TriPoint &inP2,
+                          int inTX, int inTY) { }
    void UpdateMapping() {}
 
 

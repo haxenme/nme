@@ -36,22 +36,6 @@ DEFINE_KIND( k_mask )
 #include <set>
 
 
-#define BLEND_ADD  0
-#define BLEND_ALPHA  1
-#define BLEND_DARKEN  2
-#define BLEND_DIFFERENCE  3
-#define BLEND_ERASE  4
-#define BLEND_HARDLIGHT  5
-#define BLEND_INVERT  6
-#define BLEND_LAYER  7
-#define BLEND_LIGHTEN  8
-#define BLEND_MULTIPLY  9
-#define BLEND_NORMAL  10
-#define BLEND_OVERLAY  11
-#define BLEND_SCREEN  12
-#define BLEND_SUBTRACT  13
-#define BLEND_SHADER  14
-
 
 
 static int gBlendMode = BLEND_NORMAL;
@@ -372,13 +356,17 @@ public:
    }
 
    DrawObject(TriPoints &inPoints, Tris &inTris, int inCull, TextureReference *inTexture,
-                const LineJob &inLineStyle): mTransform(0,0,0,0)
+                const LineJob &inLineStyle, double inTexW, double inTexH, bool inPersectiveCorrect):
+        mTransform(0,0,0,0)
    {
       Init();
       mTriPoints.swap(inPoints);
       mTriangles.swap(inTris);
       mTexture = inTexture;
       BuildTriangleLines(inLineStyle);
+      mTexScaleX = inTexW ? 1.0/inTexW : 1;
+      mTexScaleY = inTexH ? 1.0/inTexH : 1;
+      mPerspectiveCorrect = inPersectiveCorrect;
    }
 
    void BuildTriangleLines(const LineJob &inLineStyle)
@@ -525,9 +513,19 @@ public:
                {
                   TriPoint &p = point[tri->mIndex[idx]];
                   if (tex)
-                     glTexCoord2f( (float)p.mU, (float)p.mV );
-                  //printf(" %f %f\n", p.mU, p.mV);
-                  glVertex2f( (float)p.mX, (float)p.mY );
+                  {
+                     //printf(" %f %f\n", p.mU, p.mV);
+                     glTexCoord2d( p.mU*mTexScaleX, p.mV*mTexScaleY );
+                     if (mPerspectiveCorrect)
+                     {
+                        double w = p.mW_inv;
+                        glVertex4d( p.mX*w, p.mY*w, 0.0, w );
+                     }
+                     else
+                        glVertex2d( p.mX, p.mY );
+                  }
+                  else
+                     glVertex2d( p.mX, p.mY );
                }
                tri++;
             }
@@ -620,6 +618,7 @@ public:
 
    virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix, bool inAccurate)
    {
+      bool is_triangles = mTriangles.size()>0;
       if (inAccurate)
       {
          SetupCurved(inMatrix);
@@ -638,10 +637,17 @@ public:
       }
       else if (inMatrix.IsIdentity())
       {
-         size_t n = mPoints.size();
-         for(size_t i=0;i<n;i++)
+         if (is_triangles)
          {
-            ioExtent.Add(mPoints[i].mX,mPoints[i].mY);
+            size_t n = mTriPoints.size();
+            for(size_t i=0;i<n;i++)
+               ioExtent.Add(mTriPoints[i].mX,mTriPoints[i].mY);
+         }
+         else
+         {
+            size_t n = mPoints.size();
+            for(size_t i=0;i<n;i++)
+               ioExtent.Add(mPoints[i].mX,mPoints[i].mY);
          }
       }
       else
@@ -1019,9 +1025,14 @@ public:
             if (is_triangles)
             {
                if (mTexture)
+               {
+                  Uint32 flags = mTexture->mFlags;
+                  flags |= NME_EDGE_CLAMP;
+                  if (mPerspectiveCorrect)
+                     flags |= NME_TEX_PERSPECTIVE;
                   mSolid = PolygonRenderer::CreateBitmapTriangles(mTriPoints,mTriangles,
-                                 mTexture->mTexture->GetSourceSurface(),
-                                 mTexture->mFlags);
+                                 mTexture->mTexture->GetSourceSurface(), flags);
+               }
                else
                   mSolid = PolygonRenderer::CreateSolidTriangles(mTriPoints,mTriangles,
                                  mFillColour, mFillAlpha );
@@ -1117,6 +1128,9 @@ public:
    TriPoints          mTriPoints;
    Tris               mTriangles;
    int                mCull;
+   double             mTexScaleX;
+   double             mTexScaleY;
+   bool               mPerspectiveCorrect;
 
    Gradient     *mSolidGradient;
    TextureReference *mTexture;
@@ -1252,30 +1266,31 @@ value nme_create_draw_triangles(value * arg, int nargs )
       int entries = GetArrayLen(uv);
       double w = texture->mTexture->Width();
       double h = texture->mTexture->Height();
+      bool persp = false;
       uv = GetArray(uv);
       if (entries == 2*n)
       {
          for(int i=0;i<n;i++)
          {
-            points[i].SetUV(val_number(val_get_array_i(uv,i*2))*w,
+            points[i].SetUVW(val_number(val_get_array_i(uv,i*2))*w,
                             val_number(val_get_array_i(uv,i*2+1))*h);
-            points[i].SetT(0);
          }
       }
       else if (entries == 3*n)
       {
+         persp = true;
          for(int i=0;i<n;i++)
          {
-            points[i].SetUV(val_number(val_get_array_i(uv,i*3))*w,
-                            val_number(val_get_array_i(uv,i*3+1))*h);
-            points[i].SetT(val_number(val_get_array_i(uv,i*3+2)));
+            points[i].SetUVW(val_number(val_get_array_i(uv,i*3))*w,
+                             val_number(val_get_array_i(uv,i*3+1))*h,
+                             val_number(val_get_array_i(uv,i*3+2)));
          }
       }
       else
          failure("nme_create_draw_triangles - incorrect number of uv entries");
 
 
-      obj = new DrawObject( points, triangles, cull, texture, wireframe );
+      obj = new DrawObject( points, triangles, cull, texture, wireframe, w, h, persp );
    }
    else
    {
@@ -1462,13 +1477,14 @@ public:
       }
       else
       {
+         bool blend = gBlendMode!=BLEND_NORMAL;
          bool int_translation =  inMatrix.IsIntTranslation();
          // SDL_Blit can't do alpha-over-alpha blending
-         if (int_translation && (!mHasAlpha || !(inSurface->flags & SDL_SRCALPHA) ))
+         if (blend || (int_translation && (!mHasAlpha || !(inSurface->flags & SDL_SRCALPHA) ) ) )
          {
             bool full_vp = inVP.IsWindow(inSurface->w,inSurface->h);
 
-            if (full_vp && inMask==0 && inMatrix.mtx==0 && inMatrix.mty==0)
+            if (full_vp && inMask==0 && inMatrix.mtx==0 && inMatrix.mty==0 && !blend)
             {
                SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&mRect);
                mHitRect = mRect;
@@ -1530,14 +1546,20 @@ public:
                src_rect.h = dest_rect.h;
                src_rect.w = dest_rect.w;
                mHitRect = dest_rect;
-               SDL_BlitSurface(mTexture->GetSourceSurface(), &src_rect, inSurface,&dest_rect);
+               if (blend)
+                  BlendSurface(mTexture->GetSourceSurface(), &src_rect, inSurface,&dest_rect,gBlendMode);
+               else
+                  SDL_BlitSurface(mTexture->GetSourceSurface(), &src_rect, inSurface,&dest_rect);
                return;
             }
             else
             {
                mHitRect = dest_rect;
                //SDL_FillRect(inSurface,&dest_rect,0xffff00ff);
-               SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&dest_rect);
+               if (blend)
+                  BlendSurface(mTexture->GetSourceSurface(), 0, inSurface,&dest_rect,gBlendMode);
+               else
+                  SDL_BlitSurface(mTexture->GetSourceSurface(), 0, inSurface,&dest_rect);
                return;
             }
          }
@@ -1683,7 +1705,7 @@ value nme_create_blit_drawable(value inTexture, value inX, value inY )
    TextureBuffer * t = TEXTURE_BUFFER(inTexture);
    Drawable *obj = new SurfaceDrawer( t,
                                       val_number(inX),
-                                      val_number(inY) );
+                                      val_number(inY));
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
 

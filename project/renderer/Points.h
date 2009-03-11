@@ -8,7 +8,7 @@ typedef __int64 int64;
 #else
 typedef long long int64;
 #endif
-
+#include <math.h>
 
 
 struct ImagePoint
@@ -235,14 +235,20 @@ struct Tri
 struct TriPoint
 {
    void SetPos(double inX,double inY) { mX = inX; mY=inY; }
-   void SetUV(double inU,double inV) { mU = inU; mV = inV; mUV16 = PointF16(inU,inV); }
-   void SetT(double inT) { mT = inT; }
+   void SetUVW(double inU,double inV,double inW=0)
+   {
+      mU = inU;
+      mV = inV;
+      mW = fabs(inW);
+      mW_inv = mW==0 ? 0 :  1.0/mW;
+      mUV16 = PointF16(inU,inV);
+   }
 
    double mX,mY;
    double mU,mV;
+   double mW,mW_inv;
    PointF16 mPos16;
    PointF16 mUV16;
-   double   mT;
 };
 
 typedef std::vector<TriPoint> TriPoints;

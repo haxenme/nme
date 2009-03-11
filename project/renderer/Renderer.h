@@ -31,6 +31,8 @@
 
 #define NME_BMP_LINEAR       0x10000
 
+#define NME_TEX_PERSPECTIVE  0x20000
+
 
 #define NME_clip_xmin(pnt) pnt->clip_rect.x
 #define NME_clip_xmax(pnt) pnt->clip_rect.x + pnt->clip_rect.w

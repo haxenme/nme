@@ -14,25 +14,32 @@ struct ARGB
    template<typename SRC_>
    inline void Blend(const SRC_ &inVal)
    {
-      int A = inVal.a;
-      if (A>5)
+      if (SRC_::HasAlpha && 0)
       {
-         // Are we practically blank ?
-         if (a<5)
+         int A = inVal.a;
+         if (A>5)
          {
-            ival = inVal.ival;
+            // Are we practically blank ?
+            if (a<5)
+            {
+               ival = inVal.ival;
+            }
+            // Ok, merge alphas ...
+            else
+            {
+               int alpha16 = ((a + A)<<8) - a*A;
+               int c1 = (255-A) * a;
+               A<<=8;
+               r = (A*inVal.r + c1*r)/alpha16;
+               g = (A*inVal.g + c1*g)/alpha16;
+               b = (A*inVal.b + c1*b)/alpha16;
+               a = alpha16>>8;
+            }
          }
-         // Ok, merge alphas ...
-         else
-         {
-            int alpha16 = ((a + A)<<8) - a*A;
-            int c1 = (255-A) * a;
-            A<<=8;
-            r = (A*inVal.r + c1*r)/alpha16;
-            g = (A*inVal.g + c1*g)/alpha16;
-            b = (A*inVal.b + c1*b)/alpha16;
-            a = alpha16>>8;
-         }
+      }
+      else
+      {
+         ival = inVal.ival | 0xff000000;
       }
    }
 
@@ -158,6 +165,8 @@ struct DestSurface32 : public DestBase
    {
       if (SOURCE_::HasAlpha)
          mPtr->Blend(inSource);
+      else if (PIXEL_::HasAlpha)
+         mPtr->Set(inSource.ival | 0xff000000);
       else
          mPtr->Set(inSource.ival);
       mPtr++;
