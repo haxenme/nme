@@ -95,16 +95,20 @@
 
 // --- Sources ------------------------------------------------
 
-template<bool PERSPECTIVE>
-struct SurfaceSourceBase
+template<typename PIXEL_,int FLAGS_,bool PERSPECTIVE, int PALETTE_ENTRIES_=0>
+struct SurfaceSource
 {
-   SurfaceSourceBase(SDL_Surface *inSurface,const Matrix &inMapper) :
+   enum { HighQuality = FLAGS_ & NME_BMP_LINEAR };
+   enum { HasAlpha = PIXEL_::HasAlpha };
+   enum { EDGE = FLAGS_ & NME_EDGE_MASK };
+
+   SurfaceSource(SDL_Surface *inSurface,const Matrix &inMapper) :
      mSurface(inSurface), mMapper(inMapper)
    {
       Init();
       UpdateMapping();
    }
-   SurfaceSourceBase(SDL_Surface *inSurface) : mSurface(inSurface)
+   SurfaceSource(SDL_Surface *inSurface) : mSurface(inSurface)
    {
       Init();
    }
@@ -117,6 +121,19 @@ struct SurfaceSourceBase
       mBase = (Uint8 *)mSurface->pixels;
       mPtr = mBase;
       mPitch = mSurface->pitch;
+
+      if (PALETTE_ENTRIES_>0)
+      {
+         int n  = mSurface->format->palette->ncolors;
+         SDL_Color *col = mSurface->format->palette->colors;
+         for(int i=0;i<n;i++)
+         {
+            mPalette[i].r = col[i].r;
+            mPalette[i].g = col[i].g;
+            mPalette[i].b = col[i].b;
+            mPalette[i].a = 255;
+         }
+      }
    }
 
    void SetMapping(const TriPoint &inP0, const TriPoint &inP1, const TriPoint &inP2,
@@ -270,103 +287,6 @@ struct SurfaceSourceBase
    }
 
 
-
-   PointF16 mPos;
-   PointF16 mDPDX;
-   double   mTX,mTY,mTW;
-
-   bool        mMatrixMapping;
-   Matrix      mMapper;
-   double      m30,m31,mtw;
-
-   SDL_Surface *mSurface;
-
-   int         mWidth;
-   int         mHeight;
-   int         mPitch;
-   int         mW1;
-   int         mH1;
-   Uint8       *mBase;
-   Uint8       *mPtr;
-};
-
-
-template<int EDGE_>
-struct SurfaceSource8 : public SurfaceSourceBase<false>
-{
-   enum { EDGE = EDGE_ };
-
-   SurfaceSource8(SDL_Surface *inSurface,const Matrix &inMapping)
-      : SurfaceSourceBase(inSurface,inMapping)
-   {
-      Init();
-   }
-
-
-   SurfaceSource8(SDL_Surface *inSurface) : SurfaceSourceBase(inSurface)
-   {
-      Init();
-   }
-
-
-   void Init()
-   {
-      int n  = mSurface->format->palette->ncolors;
-      SDL_Color *col = mSurface->format->palette->colors;
-      for(int i=0;i<n;i++)
-      {
-         mPalette[i].r = col[i].r;
-         mPalette[i].g = col[i].g;
-         mPalette[i].b = col[i].b;
-         mPalette[i].a = 255;
-      }
-   }
-
-   
-   inline XRGB Value()
-   {
-      int x = mPos.x >> 16;
-      int y = mPos.y >> 16;
-
-      MODIFY_EDGE_XY;
-
-      return mPalette[ mBase[ y*mPitch + x ] ];
-   }
-
-   inline ARGB Value(int inValue)
-   {
-      int x = mPos.x >> 16;
-      int y = mPos.y >> 16;
-
-      MODIFY_EDGE_XY;
-
-      ARGB result;
-      result.ival = mPalette[ mBase[ y*mPitch + x ] ].ival;
-      result.a = inValue;
-      return result;
-   }
-
-
-   XRGB       mPalette[256];
-};
-
-template<typename PIXEL_,int FLAGS_,bool PERSPECTIVE>
-struct SurfaceSource32 : public SurfaceSourceBase<PERSPECTIVE>
-{
-   enum { HighQuality = FLAGS_ & NME_BMP_LINEAR };
-   enum { HasAlpha = PIXEL_::HasAlpha };
-   enum { EDGE = FLAGS_ & NME_EDGE_MASK };
-
-   SurfaceSource32(SDL_Surface *inSurface,const Matrix &inMapper)
-      : SurfaceSourceBase(inSurface,inMapper)
-   {
-   }
-
-   SurfaceSource32(SDL_Surface *inSurface) : SurfaceSourceBase(inSurface)
-   {
-   }
-
-
    inline PIXEL_ Value()
    {
       if (PERSPECTIVE)
@@ -378,7 +298,13 @@ struct SurfaceSource32 : public SurfaceSourceBase<PERSPECTIVE>
       int x = mPos.x >> 16;
       int y = mPos.y >> 16;
 
-      if ( HighQuality )
+      if (PALETTE_ENTRIES_>0)
+      {
+         MODIFY_EDGE_XY;
+
+         return PIXEL_(mPalette[ mBase[ y*mPitch + x ] ]);
+      }
+      else if ( HighQuality )
       {
          PIXEL_ result;
 
@@ -408,6 +334,7 @@ struct SurfaceSource32 : public SurfaceSourceBase<PERSPECTIVE>
          return *(PIXEL_ *)( mBase + y*mPitch + x*4);
       }
    }
+
    inline ARGB Value(Uint8 inAlpha)
    {
       ARGB val;
@@ -417,14 +344,31 @@ struct SurfaceSource32 : public SurfaceSourceBase<PERSPECTIVE>
    }
 
 
+
+   PointF16 mPos;
+   PointF16 mDPDX;
+   double   mTX,mTY,mTW;
+
+   bool        mMatrixMapping;
+   Matrix      mMapper;
+   double      m30,m31,mtw;
+
+   XRGB       mPalette[PALETTE_ENTRIES_ + 1];
+
+   SDL_Surface *mSurface;
+
+   int         mWidth;
+   int         mHeight;
+   int         mPitch;
+   int         mW1;
+   int         mH1;
+   Uint8       *mBase;
+   Uint8       *mPtr;
 };
 
 
-
-
-
-
 // --- Bitmap renderer --------------------------------------------
+
 
 
 bool IsPOW2(int inX)
@@ -450,11 +394,10 @@ PolygonRenderer *CreateBitmapRendererSource(
                               const class Matrix &inMapper)
 {
     if (inSource->flags & SDL_SRCALPHA)
-       return TCreateBitmapRenderer(inArgs, SurfaceSource32<ARGB,FLAGS_,false>(inSource,inMapper));
+       return TCreateBitmapRenderer(inArgs, SurfaceSource<ARGB,FLAGS_,false>(inSource,inMapper));
 
-    return TCreateBitmapRenderer(inArgs, SurfaceSource32<XRGB,FLAGS_,false>(inSource,inMapper));
+    return TCreateBitmapRenderer(inArgs, SurfaceSource<XRGB,FLAGS_,false>(inSource,inMapper));
 }
-
 
 
 
@@ -467,7 +410,7 @@ PolygonRenderer *CreateBitmapRendererFlags(
 {
    if (inSource->format->BytesPerPixel==1)
    {
-      typedef SurfaceSource8<EDGES_> source;
+      typedef SurfaceSource<XRGB,EDGES_,false,256> source;
       return new SourcePolygonRenderer<source>(inArgs,source(inSource,inMapper) );
    }
 
@@ -544,9 +487,9 @@ PolygonRenderer *CreateBitmapTrianglesRendererSource(
                               SDL_Surface *inSource)
 {
     if (inSource->flags & SDL_SRCALPHA)
-       return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource32<ARGB,FLAGS_,PERSPECTIVE>(inSource));
+       return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource<ARGB,FLAGS_,PERSPECTIVE>(inSource));
 
-    return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource32<XRGB,FLAGS_,PERSPECTIVE>(inSource));
+    return TCreateBitmapTrianglesRenderer(inPoints,inTriangles, SurfaceSource<XRGB,FLAGS_,PERSPECTIVE>(inSource));
 }
 
 

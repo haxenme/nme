@@ -4,10 +4,45 @@
 #include "Renderer.h"
 #include "../Matrix.h"
 
+struct XRGB
+{
+   enum { HasAlpha = 0 };
+   inline void Set(int inVal) { ival = inVal;  }
+
+   template<typename SRC_>
+   inline void Blend(const SRC_ &inVal)
+   {
+      int A = inVal.a;
+      if (A>5)
+      {
+         if (A<250)
+         {
+             r += ((inVal.r-r) * A) >> 8;
+             g += ((inVal.g-g) * A) >> 8;
+             b += ((inVal.b-b) * A) >> 8;
+         }
+         else
+            ival = inVal.ival;
+      }
+   }
+
+   union
+   {
+      struct { Uint8 b,g,r,a; };
+      int  ival;
+   };
+};
+
+
+
 
 struct ARGB
 {
    enum { HasAlpha = 1 };
+
+   inline ARGB(const ARGB &inRHS) { ival = inRHS.ival; }
+   inline ARGB() { }
+   inline explicit ARGB(const XRGB &inRHS) { ival = inRHS.ival; }
 
    inline void Set(int inVal) { ival = inVal; }
 
@@ -43,35 +78,6 @@ struct ARGB
       }
    }
 
-
-   union
-   {
-      struct { Uint8 b,g,r,a; };
-      int  ival;
-   };
-};
-
-struct XRGB
-{
-   enum { HasAlpha = 0 };
-   inline void Set(int inVal) { ival = inVal;  }
-
-   template<typename SRC_>
-   inline void Blend(const SRC_ &inVal)
-   {
-      int A = inVal.a;
-      if (A>5)
-      {
-         if (A<250)
-         {
-             r += ((inVal.r-r) * A) >> 8;
-             g += ((inVal.g-g) * A) >> 8;
-             b += ((inVal.b-b) * A) >> 8;
-         }
-         else
-            ival = inVal.ival;
-      }
-   }
 
    union
    {
