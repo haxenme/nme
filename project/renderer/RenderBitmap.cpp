@@ -302,7 +302,7 @@ struct SurfaceSource
       {
          MODIFY_EDGE_XY;
 
-         return PIXEL_(mPalette[ mBase[ y*mPitch + x ] ]);
+         return *(PIXEL_*)&(mPalette[ mBase[ y*mPitch + x ] ]);
       }
       else if ( HighQuality )
       {

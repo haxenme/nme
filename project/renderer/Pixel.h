@@ -40,16 +40,12 @@ struct ARGB
 {
    enum { HasAlpha = 1 };
 
-   inline ARGB(const ARGB &inRHS) { ival = inRHS.ival; }
-   inline ARGB() { }
-   inline explicit ARGB(const XRGB &inRHS) { ival = inRHS.ival; }
-
    inline void Set(int inVal) { ival = inVal; }
 
    template<typename SRC_>
    inline void Blend(const SRC_ &inVal)
    {
-      if (SRC_::HasAlpha && 0)
+      if (SRC_::HasAlpha)
       {
          int A = inVal.a;
          if (A>5)

@@ -1480,6 +1480,7 @@ public:
          bool blend = gBlendMode!=BLEND_NORMAL;
          bool int_translation =  inMatrix.IsIntTranslation();
          // SDL_Blit can't do alpha-over-alpha blending
+         // Also use this code path for different blend modes...
          if (blend || (int_translation && (!mHasAlpha || !(inSurface->flags & SDL_SRCALPHA) ) ) )
          {
             bool full_vp = inVP.IsWindow(inSurface->w,inSurface->h);
