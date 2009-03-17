@@ -35,7 +35,7 @@ enum GradFlags
 
 struct GradPoint
 {
-   void FromValue(value &inVal)
+   void FromValue(const value &inVal)
    {
       int col = val_int(val_field(inVal,val_id("col")));
       mColour.r = (col>>16) & 0xff;
