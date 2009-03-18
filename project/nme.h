@@ -26,6 +26,8 @@
 #ifndef __NME_H__
 #define __NME_H__
 
+#include <SDL.h>
+
 #define RRGB( c )	(val_int( c ) >> 16 & 0xFF);
 #define GRGB( c )	(val_int( c ) >> 8 & 0xFF);
 #define BRGB( c )	(val_int( c ) & 0xFF);

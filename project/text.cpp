@@ -29,10 +29,11 @@
 #include "nsdl.h"
 #include "nme.h"
 #include <SDL_ttf.h>
+#include <math.h>
+
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #include <freetype/ftoutln.h>
-#include <math.h>
 
 #define FT_CEIL(X)	(((X + 63) & -64) / 64)
 

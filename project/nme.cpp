@@ -34,7 +34,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include <GL/gl.h>
+#include <SDL_opengl.h>
 
 #ifndef empty_object
 #define empty_object alloc_object(0)
@@ -600,9 +600,16 @@ value nme_get_mouse_position()
 #define NME_RESIZABLE  0x0004
 #define NME_HWSURF     0x0008
 
+#ifdef __APPLE__
+
+extern "C" void MacBoot( /*void (*)()*/ );
+
+#endif
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
 {
+   MacBoot();
+
    val_check( in_flags, int );
 
    int flags = val_int(in_flags);

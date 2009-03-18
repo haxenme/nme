@@ -27,7 +27,26 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 
 #else
+#ifdef __APPLE__
+bool GetFontFile(const std::string& inName,std::string &outFile)
+{
+   if (!strcasecmp(inName.c_str(),"times.ttf"))
+      outFile = "/Library/Fonts/Times New Roman.ttf";
+   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+      outFile = "/Library/Fonts/Arial.ttf";
+   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
+      outFile = "/Library/Fonts/Courier.ttf";
+   else
+   {
+      outFile = "/Library/Fonts/" + inName;
+      return true;
+      //printf("Unfound font: %s\n",inName.c_str());
+      return false;
+   }
 
+   return true;
+}
+#else
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
    if (!strcasecmp(inName.c_str(),"times.ttf"))
@@ -44,6 +63,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
    return true;
 }
+#endif
 
 
 #endif

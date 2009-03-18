@@ -2,9 +2,11 @@
 #include <windows.h>
 #endif
 
-#include <GL/gl.h>
+#include <SDL_opengl.h>
 #include <neko.h>
 #include <stdio.h>
+
+#include "nme.h"
 
 
 value nme_set_window_color(value inColour)
@@ -20,47 +22,53 @@ value nme_set_window_color(value inColour)
 
 value nme_init_view(value inWidth,value inHeight)
 {
-   val_check(inWidth,int);
-   val_check(inHeight,int);
-   int w = val_int(inWidth);
-   int h = val_int(inHeight);
+   if (IsOpenGLMode())
+   {
+      val_check(inWidth,int);
+      val_check(inHeight,int);
+      int w = val_int(inWidth);
+      int h = val_int(inHeight);
 
-   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   glViewport(0,0,w,h);
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-   glOrtho(0,w,h,0,-1000,1000);
+      glViewport(0,0,w,h);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      glOrtho(0,w,h,0,-1000,1000);
 
-   glColor3ub(0,0,0);
+      glColor3ub(0,0,0);
+  }
 
-   return alloc_int(0);
+   return val_null;
 }
 
 value nme_transform_view(value inDX,value inDY,value inRotZ)
 {
-   val_check(inDX,number);
-   val_check(inDY,number);
-   val_check(inRotZ,number);
+   if (IsOpenGLMode())
+   {
+      val_check(inDX,number);
+      val_check(inDY,number);
+      val_check(inRotZ,number);
 
-   glTranslated(val_number(inDX),val_number(inDY),0);
-   glRotated(val_number(inRotZ),0,0,1);
+      glTranslated(val_number(inDX),val_number(inDY),0);
+      glRotated(val_number(inRotZ),0,0,1);
+   }
 
-   return alloc_int(0);
+   return val_null;
 }
 
 value nme_push_view()
 {
    glPushMatrix();
-   return alloc_int(0);
+   return val_null;
 }
 
 value nme_pop_view()
 {
    glPopMatrix();
-   return alloc_int(0);
+   return val_null;
 }
 
 

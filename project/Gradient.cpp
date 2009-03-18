@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <GL/gl.h>
+#include <SDL_opengl.h>
 #include <vector>
 
 #ifndef GL_BGR
@@ -226,6 +226,7 @@ void Gradient::BeginOpenGL()
 {
    if (mTextureID>0 || InitOpenGL())
    {
+      glColor4f(1,1,1,1);
       glBindTexture(GL_TEXTURE_1D, mTextureID);
       glEnable(GL_TEXTURE_1D);
    }

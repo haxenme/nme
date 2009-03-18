@@ -23,7 +23,8 @@
 #elif defined(__QNXNTO__)
     #define QNX_SCRAP
 #else
-    #error Unknown window manager for clipboard handling
+    //#error Unknown window manager for clipboard handling
+    #define X11_SCRAP
 #endif /* scrap type */
 
 /* System dependent data types */
