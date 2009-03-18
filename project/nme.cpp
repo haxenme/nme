@@ -608,7 +608,9 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
 {
+#ifdef __APPLE__
    MacBoot();
+#endif
 
    val_check( in_flags, int );
 
