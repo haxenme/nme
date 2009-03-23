@@ -1,3 +1,4 @@
+.PHONY: ndll dso
 
 ifeq ("x$(NEKO_INSTALL_PATH)","x")
    NEKO_INSTALL_PATH := /usr/lib/neko/
@@ -23,21 +24,22 @@ ifeq ("x$(OSTYPE)","xdarwin")
 LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL freetype X11
 FULL_LIBS:= $(LIBS:%=-l%)
 NDLL_DIR := ../ndll/Mac/
-LD_FLAGS := -fpic -fPIC -dynamiclib
+LD_FLAGS := -fpic -fPIC -dynamiclib  $(HXCPP)/bin/Mac/hxcpp.dylib
 MACBOOT := common_objs/MacBoot.o
 $(MACBOOT) : MacBoot.m
 	@mkdir -p common_objs
 	g++ $(INCLUDE) MacBoot.m -c -o $(MACBOOT)
 FULL_LIBS += $(MACBOOT) $(NEKO_INSTALL_PATH)/libneko.dylib -framework Cocoa -framework OpenGL
+DSO := $(NDLL_DIR)/nme.dylib
 else
 LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL GL
 FULL_LIBS:= $(LIBS:%=-l%)
 NDLL_DIR := ../ndll/Linux/
 LD_FLAGS := -Wl-Bsymbolic
+DSO := $(NDLL_DIR)/nme.dso
 endif
 
 NDLL := $(NDLL_DIR)/nme.ndll
-DSO := $(NDLL_DIR)/nme.dso
 
 
 ndll:ndll_objs ndll_objs/renderer $(NDLL_DIR) $(NDLL)
@@ -45,7 +47,7 @@ ndll:ndll_objs ndll_objs/renderer $(NDLL_DIR) $(NDLL)
 dso:dso_objs dso_objs/renderer $(NDLL_DIR) $(DSO)
 
 clean:
-	- rm rf ndll_objs dso_objs 
+	- rm -rf ndll_objs dso_objs 
 
 LIB_PATH = -Wl,-L/usr/lib -Wl,-L/opt/local/lib
 

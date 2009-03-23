@@ -308,6 +308,7 @@ public:
    void Init()
    {
       mDisplayList = 0;
+      mResizeID = 0;
       mSolid = 0;
       mMaskID = -1;
       mIsOGL = false;
@@ -464,7 +465,7 @@ public:
       }
 
       delete mSolidGradient;
-      if (mDisplayList!=0)
+      if (mDisplayList!=0 && nme_resize_id==mResizeID)
          glDeleteLists(mDisplayList,1);
    }
 
@@ -608,6 +609,7 @@ public:
 
    bool CreateDisplayList()
    {
+      mResizeID = nme_resize_id;
       mDisplayList = glGenLists(1);
       glNewList(mDisplayList,GL_COMPILE);
       DrawOpenGL();
@@ -843,7 +845,7 @@ public:
             mTexture->UpdateHardware();
 
          mOGLMatrix = inMatrix;
-         if (!mDisplayList && mRendersWithoutDisplayList>1)
+         if ((!mDisplayList || nme_resize_id!=mResizeID) && mRendersWithoutDisplayList>1)
             CreateDisplayList();
 
          bool scissor = false;
@@ -858,7 +860,7 @@ public:
 
          if (inMatrix.IsIdentity())
          {
-            if (mDisplayList)
+            if (mDisplayList && mResizeID==nme_resize_id)
             {
                glCallList(mDisplayList);
             }
@@ -872,7 +874,7 @@ public:
          {
             glPushMatrix();
             inMatrix.GLMult();
-            if (mDisplayList)
+            if (mDisplayList && mResizeID==nme_resize_id)
                glCallList(mDisplayList);
             else
             {
@@ -920,7 +922,7 @@ public:
       if (mIsOGL)
       {
          // Line width seems to get ignored when picking?
-         if (mDisplayList)
+         if (mDisplayList && mResizeID==nme_resize_id)
          {
              GLuint buffer[10];
              glSelectBuffer(10, buffer); 
@@ -1143,6 +1145,7 @@ public:
    std::vector<PointF16> mPointF16s;
 
    GLuint       mDisplayList;
+   int          mResizeID;
    // It is expensive to recreate the display list every frame.
    int          mRendersWithoutDisplayList;
 

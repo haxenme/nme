@@ -41,6 +41,7 @@
 #endif
 
 
+int nme_resize_id = 0;
 
 using namespace std;
 
@@ -267,6 +268,7 @@ static value nme_surface_clear( value surf, value c )
         {
            int w = scr->w;
            int h = scr->h;
+           glDisable(GL_CLIP_PLANE0);
            glViewport(0,0,w,h);
            glMatrixMode(GL_PROJECTION);
            glLoadIdentity();
@@ -705,6 +707,7 @@ value nme_resize_surface(value inW, value inH)
    int h = val_int(inH);
    SDL_Surface *screen = gCurrentScreen;
 
+   #ifndef __APPLE__
    if (sOpenGL)
    {
       // Little hack to help windows
@@ -712,10 +715,12 @@ value nme_resize_surface(value inW, value inH)
       screen->h = h;
    }
    else
+   #endif
    {
+      nme_resize_id ++;
       // Calling this recreates the gl context and we loose all our textures and
       // display lists. So Work around it.
-      screen = SDL_SetVideoMode(w, h, 32, sFlags );
+      gCurrentScreen = screen = SDL_SetVideoMode(w, h, 32, sFlags );
    }
 
    return alloc_abstract( k_surf, screen );

@@ -6,6 +6,8 @@
 #include <SDL_opengl.h>
 #include <vector>
 
+#include "nme.h"
+
 #ifndef GL_BGR
 #define GL_BGR 0x80E0
 #endif
@@ -103,6 +105,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    IdentityTransform();
 
    mTextureID = 0;
+   mResizeID = 0;
 
    #ifdef HXCPP
    value inPoints = inHxPoints;
@@ -170,6 +173,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
 
 bool Gradient::InitOpenGL()
 {
+   mResizeID = nme_resize_id;
    glGenTextures(1, &mTextureID);
    glBindTexture(GL_TEXTURE_1D, mTextureID);
    glTexImage1D(GL_TEXTURE_1D, 0, 4,  256, 0,
@@ -217,14 +221,14 @@ int Gradient::DGDY()
 
 Gradient::~Gradient()
 {
-   if (mTextureID)
+   if (mTextureID && mResizeID==nme_resize_id)
       glDeleteTextures(1,&mTextureID);
 }
 
 
 void Gradient::BeginOpenGL()
 {
-   if (mTextureID>0 || InitOpenGL())
+   if ( (mTextureID>0 && mResizeID==nme_resize_id)  || InitOpenGL())
    {
       glColor4f(1,1,1,1);
       glBindTexture(GL_TEXTURE_1D, mTextureID);

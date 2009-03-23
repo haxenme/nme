@@ -68,6 +68,9 @@ bool IsOpenGLScreen(SDL_Surface *inSurface);
 
 extern SDL_Surface *gCurrentScreen;
 
+// When the resize id changes, textures and display lists become invalid.
+extern int nme_resize_id;
+
 
 
 #endif

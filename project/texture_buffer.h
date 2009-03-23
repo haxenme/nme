@@ -55,6 +55,7 @@ protected:
    
    SDL_Surface   *mSurface;
    unsigned int mTextureID;  
+   int          mResizeID;
 
    int          mPixelWidth,mPixelHeight;
    float        mX1,mY1;

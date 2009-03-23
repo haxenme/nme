@@ -58,6 +58,7 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
    mRect.h = mPixelHeight;
 
    mRefCount = 1;
+   mResizeID = 0;
 
    mHardwareDirty = true;
    mDirtyX0 = 0;
@@ -71,7 +72,7 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
 
 TextureBuffer::~TextureBuffer()
 {
-   if (mTextureID>0)
+   if (mTextureID>0 && nme_resize_id==mResizeID)
       glDeleteTextures(1,&mTextureID);
    if (mSurface)
       SDL_FreeSurface(mSurface);
@@ -95,12 +96,13 @@ TextureBuffer *TextureBuffer::IncRef()
 
 bool TextureBuffer::PrepareOpenGL()
 {
-   if (mTextureID==0)
+   if (mTextureID==0 || mResizeID != nme_resize_id)
    {
       SDL_Surface *data = mSurface;
       SDL_Surface *cleanup = 0;
       int src_format = GL_BGRA;
       int store_format = 4;
+      mResizeID = nme_resize_id;
 
       if (mSurface->format->BitsPerPixel==32 )
       {

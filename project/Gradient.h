@@ -39,6 +39,7 @@ public:
    Matrix          mOrigMatrix;
    Matrix          mTransMatrix;
 
+   int             mResizeID;
    unsigned int    mTextureID;
    unsigned int    mFlags;
    bool            mUsesAlpha;
