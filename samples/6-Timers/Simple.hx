@@ -36,12 +36,12 @@ class Simple
 				default:
 			}
 			
-			curTime = Time.getCurrent();
-			fps = 1000.00 / (curTime - prevTime);
+			curTime = Time.getSeconds();
+			fps = 1.0 / (curTime - prevTime);
 			prevTime = curTime;
 			
 			mng.clear( 0x000000 );
-			text.text = Std.string( fps );
+			text.text = "FPS:" + Std.string( fps );
                         text.draw();
 			mng.flip();
 		}

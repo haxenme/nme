@@ -83,13 +83,12 @@ class BitmapData
    }
 
    // Type = "JPG", "BMP" etc.
-   public function LoadFromByteArray(inBytes:String,inType:String,
-                        ?inAlpha:String )
+   public function LoadFromBytes(inBytes:haxe.io.BytesData,inType:String, ?inAlpha:String )
    {
        var a:String = inAlpha==null ? "" : inAlpha;
        #if neko
-       mTextureBuffer = nme_load_texture_from_bytes(untyped inBytes.__s,
-                        inBytes.length,
+       mTextureBuffer = nme_load_texture_from_bytes(inBytes,
+                        neko.NativeString.length(inBytes),
                         untyped inType.__s,
                         untyped a.__s,
                         a.length);

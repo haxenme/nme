@@ -22,6 +22,7 @@ class EventTimer
 		mng = new Manager( 200, 200, "Simple Application", false, "ico.gif" );
 			
 		counter = 0;
+      // 1000 times a second ...
 		timer = new Timer( 1000 );
 		timer.run = function() { counter++; };
 		running = true;

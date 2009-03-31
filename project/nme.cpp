@@ -191,18 +191,28 @@ struct MyRWOps : SDL_RWops
 SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
  value inAlpha, value inAlphaLen)
 {
-	val_check( inBytes, string );
-	val_check( inType, string );
-	val_check( inLen, int );
-	val_check( inAlpha, string );
 	val_check( inAlphaLen, int );
+	val_check( inLen, int );
+   int len = val_int(inLen);
 
-        int len = val_int(inLen);
-        const char *items = val_string(inBytes);
-        const char *type = val_string(inType);
+   #ifdef HXCPP
+	Array<unsigned char> b = inBytes;
+   if (b==null() || len<1)
+      failure("LoadImage - bytes expected");
+	Array<unsigned char> a = inAlpha;
+   if (a==null() && val_int(inAlpha)>0)
+      failure("LoadImage - alpha expected");
+   const char *items = (const char *)&b[0];
+   #else
+	val_check( inBytes, string );
+	val_check( inAlpha, string );
+   const char *items = val_string(inBytes);
+   #endif
+	val_check( inType, string );
 
+   const char *type = val_string(inType);
 
-        MyRWOps rw_ops(items,len);
+   MyRWOps rw_ops(items,len);
 
 	SDL_Surface* surf;
 	surf = IMG_LoadTyped_RW(&rw_ops,0,(char *)type);
@@ -329,7 +339,8 @@ value nme_surface_colourkey( value surface, value r, value g, value b )
 	if( !surf )
 		return alloc_bool( false );
 	unsigned int key = SDL_MapRGB( surf->format, val_int( r ), val_int( g ), val_int( b ) );
-	SDL_SetColorKey( surf, SDL_RLEACCEL | SDL_SRCCOLORKEY, key );
+   // Using rle invalidates some assumptions about pixel formats.
+	SDL_SetColorKey( surf, /*SDL_RLEACCEL |*/ SDL_SRCCOLORKEY, key );
 	return alloc_bool( true );
 }
 

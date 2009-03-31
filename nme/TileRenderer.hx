@@ -12,16 +12,18 @@ class TileRenderer
                        inY0:Int,
                        inWidth:Int,
                        inHeight:Int,
+                       inHotX:Float,
+                       inHotY:Float,
                        ?inSurface:Dynamic)
    {
       var surface = inSurface==null ?  Manager.getScreen() : inSurface;
 
       mRenderer = nme_create_blitter(inTexture.handle(), surface,
-                      inX0,inY0,inWidth,inHeight);
+                      inX0,inY0,inWidth,inHeight,inHotX,inHotY);
    }
-   public function Blit(inX0:Int,inY0:Int)
+   public function Blit(inX0:Float,inY0:Float,inTheta:Float,inScale:Float)
    {
-       nme_blit_tile(mRenderer,inX0,inY0);
+       nme_blit_tile(mRenderer,inX0,inY0,inTheta,inScale);
    }
 
    public function getWidth() : Int { return nme_tile_renderer_width(mRenderer); }
@@ -30,7 +32,7 @@ class TileRenderer
 
 
    static var nme_create_blitter = neko.Lib.load("nme", "nme_create_blitter", -1 );
-   static var nme_blit_tile = neko.Lib.load("nme", "nme_blit_tile", 3 );
+   static var nme_blit_tile = neko.Lib.load("nme", "nme_blit_tile", 5 );
    static var nme_tile_renderer_width = neko.Lib.load("nme", "nme_tile_renderer_width", 1 );
    static var nme_tile_renderer_height = neko.Lib.load("nme", "nme_tile_renderer_height", 1 );
 }

@@ -533,7 +533,7 @@ class Graphics
    public function drawTriangles(vertices:Array<Float>,
           ?indices:Array<Int>,
           ?uvtData:Array<Float>,
-          ?culling:flash.display.TriangleCulling)
+          ?culling:nme.display.TriangleCulling)
    {
       var cull = culling==null ? 0 : switch(culling) {
          case NONE: 0;

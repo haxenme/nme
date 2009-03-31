@@ -256,7 +256,10 @@ value nme_music_init( value file )
 	Mix_Music *music;
 	music = Mix_LoadMUS( val_string( file ) );
 	if(!music)
+   {
 		printf("%s : %s\n", val_string( file ), Mix_GetError());
+      return val_null;
+   }
 	
 	value v = alloc_abstract( k_mus, music );
 	val_gc( v, nme_music_free );

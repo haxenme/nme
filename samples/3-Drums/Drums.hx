@@ -98,7 +98,7 @@ class Drums extends nme.GameBase
    var mRunning : Bool;
    var mDrumPicture : Surface;
    var mBangs : BangList;
-   var mScreen : Void;
+   var mScreen : Dynamic;
    static var wndWidth = 375;
    static var wndHeight = 322;
    static var wndCaption = "Drum test";

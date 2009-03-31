@@ -28,6 +28,9 @@ class DrawSurface
 		running = true;
 		while (running)
 		{
+         mng.events();
+         if (mng.getEventType()==et_quit)
+            break;
 			mng.clear( 0x00000000 );
 			
 			batSrf.draw( Manager.getScreen(), new Rect(24, 63, 65, 44), new Point( x, y ) );

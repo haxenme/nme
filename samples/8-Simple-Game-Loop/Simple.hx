@@ -39,8 +39,8 @@ class Simple
 			prevTime = curTime;
 			
 			mng.clear( 0x000000 );
-			text.text = Std.string( fps );
-                        text.draw();
+			text.text = "FPS:" + Std.string( fps );
+         text.draw();
 			mng.flip();
 		}
 		mng.close();

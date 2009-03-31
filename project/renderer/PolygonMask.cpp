@@ -226,10 +226,13 @@ void PolygonMask::Add(const PolygonMask &inMask,int inTX,int inTY)
             // Gobble up the end of the line ...
             if (i0==l0.end())
             {
-               PushRun(target, AlphaRun(x, i1->mX1, i1->mAlpha) );
-               i1++;
-               while(i1!=l1.end())
-                  PushRun(target,*i1++);
+               if (i1!=l1.end())
+               {
+                  PushRun(target, AlphaRun(x, i1->mX1, i1->mAlpha) );
+                  i1++;
+                  while(i1!=l1.end())
+                     PushRun(target,*i1++);
+               }
             }
             else if (i1==l1.end())
             {

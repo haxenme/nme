@@ -115,9 +115,9 @@ bool TextureBuffer::PrepareOpenGL()
          else
          {
             if (mSurface->format->Rmask == 0x0000ff)
-               src_format = GL_RGB;
+               src_format = GL_RGBA;
             else
-               src_format = GL_BGR;
+               src_format = GL_BGRA;
             store_format = 3;
          }
       }
@@ -143,18 +143,42 @@ bool TextureBuffer::PrepareOpenGL()
 
       int w = UpToPower2(mSurface->w);
       int h = UpToPower2(mSurface->h);
-      //printf("LoadedTexture %dx%d\n",w,h);
 
       if ( mSurface->w != w || mSurface->h != h )
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, src_format, 
+         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format, 
             GL_UNSIGNED_BYTE, 0 );
+
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
             src_format, GL_UNSIGNED_BYTE, data->pixels );
+
+         // Double the last row for linear filtering ...
+         if ( mSurface->h != h )
+         {
+             glTexSubImage2D(GL_TEXTURE_2D, 0, 0,mSurface->h, mSurface->w, 1,
+               src_format, GL_UNSIGNED_BYTE,
+              (char *)data->pixels + mSurface->pitch*(mSurface->h-1) );
+         }
+         // Double the last col for linear filtering ...
+         if ( mSurface->w != w )
+         {
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->w);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, mSurface->w,0, 1, mSurface->h,
+              src_format, GL_UNSIGNED_BYTE,
+              (char *)data->pixels + (mSurface->w-1)*mSurface->format->BitsPerPixel/8 );
+            glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
+
+            // Quadrupal the corner pixel!
+            if ( mSurface->h != h )
+             glTexSubImage2D(GL_TEXTURE_2D, 0, mSurface->w,mSurface->h, 1, 1,
+              src_format, GL_UNSIGNED_BYTE,
+              (char *)data->pixels + (mSurface->h-1)*mSurface->pitch +
+                                     (mSurface->w-1)*mSurface->format->BitsPerPixel/8 );
+         }
       }
       else
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, src_format, 
+         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format, 
             GL_UNSIGNED_BYTE, data->pixels );
       }
 
@@ -260,7 +284,7 @@ void TextureBuffer::Scroll(int inDX, int inDY)
       // Do dumb compies
       SDL_SetAlpha(tmp,0,255);
 
-      bool was_alpha = mSurface->flags & SDL_SRCALPHA;
+      int was_alpha = mSurface->flags & SDL_SRCALPHA;
       if (was_alpha)
          mSurface->flags &= ~SDL_SRCALPHA;
 
@@ -784,6 +808,7 @@ DECLARE_KIND( k_tile_renderer );
 DEFINE_KIND( k_tile_renderer );
 #define TILE_RENDERER(v) ( (TileRenderer *)(val_data(v)) )
 
+std::vector<Tri> sQuadTris;
 
 class TileRenderer
 {
@@ -791,7 +816,8 @@ public:
    TileRenderer(TextureBuffer *inTexture,
                 SDL_Surface *inDestSurface,
                 int inX0,int inY0,
-                int inWidth,int inHeight)
+                int inWidth,int inHeight,
+                double inHotX, double inHotY)
    {
       mTexture = inTexture->IncRef();
       mDestSurface = inDestSurface;
@@ -801,6 +827,15 @@ public:
       mSrcRect.y = inY0;
       mSrcRect.w = inWidth;
       mSrcRect.h = inHeight;
+      mHotX = inHotX;
+      mHotY = inHotY;
+
+      mPoints.resize(4);
+      for(int i=0;i<4;i++)
+      {
+         TriPoint &p = mPoints[i];
+         p.SetUVW( inX0 + (i==1||i==2) * inWidth, inY0 + (i==2||i==3) * inHeight);
+      }
 
       if (mOpenGL)
       {
@@ -827,17 +862,48 @@ public:
       mTexture->DecRef();
    }
 
-   void BlitTo(int inX0,int inY0,SDL_Surface *inDestSurface)
+   void BlitTo(double inX0,double inY0,SDL_Surface *inDestSurface,double inTheta,double inScale)
    {
-      SDL_Rect    dest;
-      dest.x = inX0;
-      dest.y = inY0;
-      SDL_BlitSurface(mTexture->GetSourceSurface(), &mSrcRect,
-                      inDestSurface, &dest);
+      if (inTheta ==0 && inScale==1)
+      {
+         SDL_Rect    dest;
+         dest.x = (int)(inX0-mHotX);
+         dest.y = (int)(inY0-mHotY);
+         SDL_BlitSurface(mTexture->GetSourceSurface(), &mSrcRect, inDestSurface, &dest);
+      }
+      else
+      {
+         if (sQuadTris.empty())
+         {
+            sQuadTris.push_back( Tri(0,1,2) );
+            sQuadTris.push_back( Tri(0,2,3) );
+         }
+         inTheta *= (3.14159265358979323846/180.0);
+         double c = cos(inTheta)*inScale;
+         double s = sin(inTheta)*inScale;
+         for(int i=0;i<4;i++)
+         {
+            TriPoint &p = mPoints[i];
+            double x = (i==1||i==2)*mSrcRect.w - mHotX;
+            double y = (i==2||i==3)*mSrcRect.h - mHotY;
+            p.mPos16 = PointF16( x*c + y*s + inX0, -x*s + y*c + inY0);
+         }
+
+
+         PolygonRenderer *renderer = PolygonRenderer::CreateBitmapTriangles(mPoints,sQuadTris,
+                             mTexture->GetSourceSurface(),
+                             NME_EDGE_CLAMP|NME_BMP_LINEAR );
+
+         SDL_Rect r;
+         SDL_GetClipRect(inDestSurface,&r);
+         Viewport vp(r.x,r.y,r.w,r.h);
+         renderer->Render(inDestSurface,vp,0,0);
+         delete renderer;
+      }
    }
 
 
-   void Blit(int inX0,int inY0)
+   void Blit(double inX0,double inY0,double inTheta,double inScale)
    {
       if (mOpenGL)
       {
@@ -845,20 +911,47 @@ public:
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
          glColor3f(1,1,1);
-         glBegin(GL_QUADS);
-         glTexCoord2fv(mT00);
-         glVertex2i(inX0,inY0);
-         glTexCoord2fv(mT01);
-         glVertex2i(inX0,inY0+mSrcRect.h);
-         glTexCoord2fv(mT11);
-         glVertex2i(inX0+mSrcRect.w,inY0+mSrcRect.h);
-         glTexCoord2fv(mT10);
-         glVertex2i(inX0+mSrcRect.w,inY0);
-         glEnd();
+         if (inTheta==0.0)
+         {
+            inX0 -= mHotX;
+            inY0 -= mHotY;
+            glBegin(GL_QUADS);
+            glTexCoord2fv(mT00);
+            glVertex2d(inX0,inY0);
+            glTexCoord2fv(mT01);
+            glVertex2d(inX0,inY0+mSrcRect.h);
+            glTexCoord2fv(mT11);
+            glVertex2d(inX0+mSrcRect.w,inY0+mSrcRect.h);
+            glTexCoord2fv(mT10);
+            glVertex2d(inX0+mSrcRect.w,inY0);
+            glEnd();
+         }
+         else
+         {
+            glPushMatrix();
+
+            glTranslated(inX0,inY0,0);
+            glRotated(inTheta,0.0,0.0,-1.0);
+            glScaled(inScale,inScale,1);
+            glTranslated(-mHotX,-mHotY,0);
+            glBegin(GL_QUADS);
+            glTexCoord2fv(mT00);
+            glVertex2i(0,0);
+            glTexCoord2fv(mT01);
+            glVertex2i(0,mSrcRect.h);
+            glTexCoord2fv(mT11);
+            glVertex2i(mSrcRect.w,mSrcRect.h);
+            glTexCoord2fv(mT10);
+            glVertex2i(mSrcRect.w,0);
+            glEnd();
+
+            glPopMatrix();
+
+         }
       }
       else
       {
-         BlitTo(inX0,inY0,mDestSurface);
+         BlitTo(inX0,inY0,mDestSurface,inTheta,inScale);
       }
    }
 
@@ -872,6 +965,9 @@ public:
    float mT10[2];
    float mT01[2];
    float mT11[2];
+
+   double mHotX,mHotY;
+   TriPoints mPoints;
 };
 
 Viewport TileRenderer::mViewport(0,0,100,100);
@@ -957,7 +1053,7 @@ value nme_tile_renderer_height( value tile_renderer )
 
 value nme_create_blitter(value* arg, int nargs )
 {
-   enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aSIZE };
+   enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aHotX, aHotY, aSIZE };
    if (nargs!=aSIZE)
       failure( "nme_create_blitter - wrong number of args.\n" );
 
@@ -967,29 +1063,33 @@ value nme_create_blitter(value* arg, int nargs )
    val_check( arg[aY0], int );
    val_check( arg[aWidth], int );
    val_check( arg[aHeight], int );
+   val_check( arg[aHotX], number );
+   val_check( arg[aHotY], number );
 
    TileRenderer *result = new TileRenderer( TEXTURE_BUFFER(arg[aTex]),
                                             SURFACE(arg[aSurface]),
                                             val_int(arg[aX0]),
                                             val_int(arg[aY0]),
                                             val_int(arg[aWidth]),
-                                            val_int(arg[aHeight]) );
+                                            val_int(arg[aHeight]),
+                                            val_number(arg[aHotX]),
+                                            val_number(arg[aHotY]) );
    value v = alloc_abstract( k_tile_renderer, result );
    val_gc( v, delete_tile_renderer );
    return v;
 }
 
-value nme_blit_tile( value tile_renderer, value x, value y )
+value nme_blit_tile( value tile_renderer, value x, value y, value theta, value scale )
 {
    if ( val_is_kind( tile_renderer, k_tile_renderer ) )
    {
       TileRenderer* t = TILE_RENDERER(tile_renderer);
       if (sOffscreen && sUseOffscreen)
       {
-         t->BlitTo( val_int(x), val_int(y),sOffscreen );
+         t->BlitTo( val_number(x), val_number(y),sOffscreen, val_number(theta), val_number(scale) );
       }
       else
-         t->Blit( val_int(x) + sBlitOffsetX, val_int(y) + sBlitOffsetY );
+         t->Blit( val_number(x) + sBlitOffsetX, val_number(y) + sBlitOffsetY, val_number(theta), val_number(scale) );
    }
 
    return alloc_int(0);
@@ -1230,7 +1330,7 @@ TextureReference *TextureReference::Create(value inVal)
 }
 
 DEFINE_PRIM_MULT(nme_create_blitter);
-DEFINE_PRIM(nme_blit_tile, 3);
+DEFINE_PRIM(nme_blit_tile, 5);
     
 DEFINE_PRIM_MULT(nme_copy_pixels);
 DEFINE_PRIM(nme_tex_fill_rect,4);

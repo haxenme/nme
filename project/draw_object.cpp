@@ -1333,8 +1333,8 @@ public:
          {
             size_t l = mLines.size();
             mLines.push_back(mBase);
-            mLines[l].mPointIndex0 = mPID0;
-            mLines[l].mPointIndex1 = pid;
+            mLines[l].mOrigPointIndex0 = mPID0;
+            mLines[l].mOrigPointIndex1 = pid;
          }
          mPID0 = (int)mPoints.size();
       }
@@ -1357,8 +1357,8 @@ public:
          {
             size_t l = mLines.size();
             mLines.push_back(mBase);
-            mLines[l].mPointIndex0 = mPID0;
-            mLines[l].mPointIndex1 = pid;
+            mLines[l].mOrigPointIndex0 = mPID0;
+            mLines[l].mOrigPointIndex1 = pid;
          }
 
       }
@@ -1367,7 +1367,10 @@ public:
         //mPoints.push_back( mPoints[0] );
 
       if (mLines.empty())
+      {
          delete mBase.mGradient;
+         mBase.mGradient = 0;
+      }
    }
 
    Matrix mMatrix;

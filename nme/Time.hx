@@ -27,30 +27,31 @@ package nme;
 
 class Time
 {
-	var rate : Int;
-	var previous : Int;
+	var period : Float;
+	var previous : Float;
 	
-	public function new( r : Int )
+   // period = milliseconds
+	public function new( p : Float )
 	{
-		rate = r;
+		period = p;
 		previous = 0;
 	}
 	
-	public function getPrevious() : Int
+	public function getPrevious() : Float
 	{
 		return previous;
 	}
 	
-	public static function getCurrent() : Int
+   // Time, in seconds
+	public static function getSeconds() : Float
 	{
-		return nme_gettime();
+		return nme_gettime()*0.001;
 	}
 	
 	public function isTime() : Bool
 	{
-		var cur = getCurrent();
-		var rte = 1000 / rate;
-		if ( cur - previous >= rte )
+		var cur = nme_gettime();
+		if ( cur - previous >= period )
 		{
 			previous = cur;
 			return true;

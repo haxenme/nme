@@ -34,7 +34,7 @@ class Timer extends Time
 {
 	private static var arr : Array<Timer> = new Array();
 	
-	public function new( time : Int )
+	public function new( time : Float )
 	{
 		super( time );
 		arr.push( this );
@@ -55,8 +55,8 @@ class Timer extends Time
 	
 	override public function isTime() : Bool
 	{
-		var cur = Time.getCurrent();
-		if ( cur - previous >= rate )
+		var cur = Time.getSeconds()*1000.0;
+		if ( cur - previous >= period )
 		{
 			previous = cur;
 			return true;
@@ -92,7 +92,7 @@ class Timer extends Time
 	**/
 	public static function stamp() : Float
 	{
-		return Time.getCurrent();
+		return Time.getSeconds();
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Timer extends Time
 	**/
 	public static function getCurrent() : Float
 	{
-		return Time.getCurrent() * 1000.0;
+		return Time.getSeconds() * 1000.0;
 	}
 
 }
