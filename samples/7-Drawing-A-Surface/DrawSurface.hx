@@ -19,7 +19,7 @@ class DrawSurface
 	public function new()
 	{
 		mng = new Manager( 200, 200, "Surface Draw", false, "ico.gif" );
-		batSrf = new Surface( "bat.png" );
+		batSrf = new Surface( "bat.PNG" );
 		batSrf.setKey( 0xFF, 0x00, 0xFF );
 			
 		var x = 30;

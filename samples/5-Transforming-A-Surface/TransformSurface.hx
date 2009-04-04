@@ -29,12 +29,12 @@ class TransformSurface
 	public function new()
 	{
       var opengl = false;
-      var args = neko.Sys.args();
+      var args = nme.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
 
 		mng = new Manager( 200, 200, "Surface Draw", false, "ico.gif", opengl );
-		batSrf =  BitmapData.Load( "bat.png" );
+		batSrf =  BitmapData.Load( "bat.PNG" );
       sprite = new nme.TileRenderer(batSrf,24,63,65,44,  32,22 );
 			
 		var dir = true;

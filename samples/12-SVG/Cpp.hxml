@@ -1,0 +1,4 @@
+-main Display
+-lib nme
+-cpp cpp
+-cmd make_cpp

@@ -60,7 +60,7 @@ class Main
 
    function Run()
    {
-      var args = neko.Sys.args();
+      var args = nme.Sys.args();
       if (args.length!=1)
       {
          neko.Lib.println("Usage : SVG2Gfx file.svg");

@@ -57,7 +57,7 @@ class Display extends nme.GameBase
 
       // Try it both ways !
       var opengl = false;
-      var args = neko.Sys.args();
+      var args = nme.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
       {
          args.shift();

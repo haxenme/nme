@@ -61,7 +61,7 @@ class BitmapTest extends nme.GameBase
       // Try it all ways !
       var opengl = false;
       var hardware = false;
-      var args = neko.Sys.args();
+      var args = nme.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
       else if (args.length>0 && args[0].substr(0,2)=="-h")

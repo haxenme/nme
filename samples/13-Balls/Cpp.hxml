@@ -1,0 +1,4 @@
+-main Balls
+-lib nme
+-cpp cpp
+-cmd make_cpp

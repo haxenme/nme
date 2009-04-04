@@ -64,7 +64,7 @@ class Balls extends nme.GameBase
 
       // Try it both ways !
       var opengl = false;
-      var args = neko.Sys.args();
+      var args = nme.Sys.args();
       if (args.length>0 && args[0].substr(0,2)=="-o")
          opengl = true;
 
@@ -91,7 +91,7 @@ class Balls extends nme.GameBase
       gfx.drawCircle(32,32,30);
       gfx.flush();
 
-      mBallTile = new TileRenderer(bitmap,0,0,64,64);
+      mBallTile = new TileRenderer(bitmap,0,0,64,64,0,0);
 
       mBalls = new BallList();
       mRand = new neko.Random();
@@ -118,7 +118,7 @@ class Balls extends nme.GameBase
       for(b in 1...mBalls.length)
       {
          var ball = mBalls[b];
-         mBallTile.Blit(Std.int(ball.x),Std.int(ball.y));
+         mBallTile.Blit(Std.int(ball.x),Std.int(ball.y),0,1);
       }
    }
 

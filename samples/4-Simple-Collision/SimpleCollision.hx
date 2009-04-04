@@ -29,7 +29,7 @@ class SimpleCollision
     click = 0;
     var mng = new Manager( 200, 200, "Collision Test", false, "ico.gif" );
 		
-    batSrf = new Surface( "bat.png" );
+    batSrf = new Surface( "bat.PNG" );
 		
     batR = new Rect(24, 63, 65, 44);
     bat = new Point( 0, 0 );

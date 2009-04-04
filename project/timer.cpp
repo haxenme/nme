@@ -24,10 +24,24 @@
  */
  
 #include "nsdl.h"
+#ifdef __LINUX__
+#include <sys/time.h>
+#endif
 
+double t0 = 0;
 value nme_gettime()
 {
-	return alloc_int( SDL_GetTicks() );
+
+#ifdef __LINUX__
+   struct timeval tv;
+   if( gettimeofday(&tv,NULL) )
+      return val_null;
+   double ms = tv.tv_sec*1000.0 + ((double)tv.tv_usec) / 1000.0;
+   if (t0==0) t0=ms;
+   return alloc_int( (int)(ms-t0) );
+#else
+   return alloc_int( SDL_GetTicks() );
+#endif
 }
 
 DEFINE_PRIM(nme_gettime, 0);

@@ -63,7 +63,7 @@ class TTF
            position.y = y;
         }
 
-	public function draw(?inSurface:Void)
+	public function draw(?inSurface:Dynamic)
 	{
                 if (inSurface==null)
                    inSurface=Manager.getScreen();
@@ -71,7 +71,7 @@ class TTF
 	}
 
 
-	public function drawAt( location : Point, ?inSurface:Void )
+	public function drawAt( location : Point, ?inSurface:Dynamic )
 	{
                 if (inSurface==null)
                    inSurface=Manager.getScreen();

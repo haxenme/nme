@@ -56,7 +56,7 @@ class Collision
 		prevTime = 0;
 		curTime = 0;
 		var mng : Manager = new Manager( 200, 200, "Collision Test", false, "ico.gif" );
-		var batSrf : Surface = new Surface( "bat.png" );
+		var batSrf : Surface = new Surface( "bat.PNG" );
 		
 		bat = new Sprite( batSrf );
 		bat2 = new Sprite( batSrf );
