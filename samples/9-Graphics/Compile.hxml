@@ -2,8 +2,3 @@
 -main GraphicsTest
 -lib nme
 
---next
--cpp cpp
--main GraphicsTest
--lib nme
-

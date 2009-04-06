@@ -21,6 +21,7 @@ all:ndll dso
 
 
 ifeq ("x$(OSTYPE)","xdarwin")
+
 LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL freetype X11
 FULL_LIBS:= $(LIBS:%=-l%)
 NDLL_DIR := ../ndll/Mac/
@@ -31,12 +32,28 @@ $(MACBOOT) : MacBoot.m
 	g++ $(INCLUDE) MacBoot.m -c -o $(MACBOOT)
 FULL_LIBS += $(MACBOOT) $(NEKO_INSTALL_PATH)/libneko.dylib -framework Cocoa -framework OpenGL
 DSO := $(NDLL_DIR)/nme.dylib
+
 else
-LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL GL
+
+#LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL GL
+LIBS := GL
 FULL_LIBS:= $(LIBS:%=-l%)
+FULL_LIBS += ../../thirdparty/lib/static_linux/libSDLmain.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libSDL_mixer.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libSDL_image.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libSDL_ttf.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libfreetype.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libpng.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libz.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libSDL.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libvorbisfile.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libvorbisenc.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libvorbis.a
+FULL_LIBS += ../../thirdparty/lib/static_linux/libogg.a
 NDLL_DIR := ../ndll/Linux/
 LD_FLAGS := -Wl-Bsymbolic
 DSO := $(NDLL_DIR)/nme.dso
+
 endif
 
 NDLL := $(NDLL_DIR)/nme.ndll
@@ -49,7 +66,7 @@ dso:dso_objs dso_objs/renderer $(NDLL_DIR) $(DSO)
 clean:
 	- rm -rf ndll_objs dso_objs 
 
-LIB_PATH = -Wl,-L/usr/lib -Wl,-L/opt/local/lib
+LIB_PATH = -Wl,-L../../thirdparty/lib/static_linux -Wl,-L/usr/lib -Wl,-L/opt/local/lib
 
 $(NDLL_DIR):
 	mkdir -p $(NDLL_DIR)
