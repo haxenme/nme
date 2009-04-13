@@ -209,7 +209,7 @@ class BitmapData implements IBitmapDrawable
 
 		var a = getPixels(new Rectangle(w, h));
 		a.position = idx;
-		return I32.rgbFromArgb(a.readInt32());
+		return I32.rgbFromArgb(cast a.readInt32());
 	}
 
 	public function getPixel32(x:Int, y:Int) : Int32
