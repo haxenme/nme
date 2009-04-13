@@ -109,6 +109,7 @@ class Manager
 	static var OPENGL     = 0x0002;
 	static var RESIZABLE  = 0x0004;
 	static var HARDWARE   = 0x0008;
+	static var VSYNC      = 0x0010;
 
 	static public var graphics(default,null):Graphics;
 	static public var draw_quality(get_draw_quality,set_draw_quality):Int;
@@ -129,7 +130,7 @@ class Manager
 	static var mFrameCountStack:Array<Float> = [];
 
    // TODO: need to rethink the flags ...
-	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool, ?hardware:Bool = false )
+	public function new( width : Int, height : Int, title : String, fullscreen : Bool, icon : String, ?opengl:Null<Bool>, ?resizable:Bool, ?hardware:Bool = false, ?vsync = false )
 	{
 		var flags = 0;
 		if ( fullscreen)
@@ -142,6 +143,9 @@ class Manager
 
       if ( resizable!=null && resizable)
          flags += RESIZABLE;
+
+      if (vsync)
+         flags += VSYNC;
 
 		if ( width < 100 || height < 20 ) return;
       #if neko
@@ -167,6 +171,8 @@ class Manager
       graphics.SetSurface(__scr);
    }
 
+   public static function getWindowWidth() : Int { return nme_surface_width(__scr); }
+   public static function getWindowHeight()  : Int { return nme_surface_height(__scr); }
 
    public static function warn(str:String)
    {
@@ -389,6 +395,7 @@ class Manager
 	{
 		return __scr;
 	}
+	static public function windowWidth() : Int { return __scr.width; }
 
 	public function clear( color : Int )
 	{
@@ -582,4 +589,6 @@ class Manager
 	static var nme_set_clipboard = nme.Loader.load("nme_set_clipboard",1);
 	static var nme_get_clipboard = nme.Loader.load("nme_get_clipboard",0);
 	static var nme_set_blit_area = nme.Loader.load("nme_set_blit_area",5);
+	static var nme_surface_width:Dynamic->Int = nme.Loader.load("nme_surface_width",1);
+	static var nme_surface_height:Dynamic->Int = nme.Loader.load("nme_surface_height",1);
 }

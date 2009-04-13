@@ -56,14 +56,18 @@
             else \
             { \
                int x1 = ((x+1) % mWidth) * 4; \
+               if (x1<0) x1+=mWidth; \
                x = (x % mWidth)*4; \
+               if (x<0) x+=mWidth; \
  \
-               Uint8 *p = mBase + (y%mHeight)*mPitch; \
+               int y0= (y%mHeight); if (y0<0) y0+=mHeight; \
+               Uint8 *p = mBase + y0*mPitch; \
  \
                p00 = *(PIXEL_ *)(p+ x); \
                p01 = *(PIXEL_ *)(p+ x1); \
- \
-               p = mBase + ( (y+1) % mHeight )*mPitch; \
+\
+               int y1= ((y+1)%mHeight); if (y1<0) y1+=mHeight; \
+               p = mBase + y1*mPitch; \
                p10 = *(PIXEL_ *)(p+ x); \
                p11 = *(PIXEL_ *)(p+ x1); \
             } \

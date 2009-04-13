@@ -612,6 +612,7 @@ value nme_get_mouse_position()
 #define NME_OPENGL     0x0002
 #define NME_RESIZABLE  0x0004
 #define NME_HWSURF     0x0008
+#define NME_VSYNC      0x0010
 
 #ifdef __APPLE__
 
@@ -639,6 +640,8 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
 
    sUseSystemHardware = (!opengl) && (val_int(in_flags) & NME_HWSURF);
 
+   const SDL_VideoInfo* info = SDL_GetVideoInfo();
+
    if ( SDL_Init( init_flags ) == -1 )
       failure( SDL_GetError() );
 
@@ -660,6 +663,9 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    if ( fullscreen )
       sFlags |= SDL_FULLSCREEN;
 
+   int use_w = (fullscreen && resizable) ? 0 : w;
+   int use_h = (fullscreen && resizable) ? 0 : h;
+
    if ( val_is_string( icon ) )
    {
       SDL_Surface *icn = nme_loadimage( icon );
@@ -677,8 +683,13 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
       SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+      if ( flags & NME_VSYNC )
+      {
+         SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+      }
+
       sFlags |= SDL_OPENGL;
-      if (!(screen = SDL_SetVideoMode( w, h, 32, sFlags | SDL_OPENGL)))
+      if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sFlags | SDL_OPENGL)))
       {
          sFlags &= ~SDL_OPENGL;
          fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
@@ -693,7 +704,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    if (!screen)
    {
       sFlags |= SDL_DOUBLEBUF;
-      screen = SDL_SetVideoMode( w, h, 32, sFlags );
+      screen = SDL_SetVideoMode( use_w, use_h, 32, sFlags );
       if (!screen)
          failure( SDL_GetError() );
    }
