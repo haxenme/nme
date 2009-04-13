@@ -12,7 +12,10 @@ package nme.geom;
 
 
 */
-
+/**
+* @author	Hugh Sanderson
+* @author	Russell Weir
+**/
 class Matrix
 {
    public var a : Float;
@@ -70,6 +73,10 @@ class Matrix
       d = a;
    }
 
+	public function identity() : Void {
+		a = 1; b = 0; c = 0; d = 1; tx = 0; ty = 0;
+	}
+
    public function invert() : Matrix
    {
       var norm = a*d-b*c;
@@ -88,8 +95,8 @@ class Matrix
          b*=-norm;
          c*=-norm;
 
-         var tx1 = - a*tx - c*ty; 
-         ty = - b*tx - d*ty; 
+         var tx1 = - a*tx - c*ty;
+         ty = - b*tx - d*ty;
          tx = tx1;
       }
       return this;
@@ -119,7 +126,7 @@ class Matrix
       mb = -sin
       mc = sin
       mtx = my = 0
- 
+
    */
 
    public function rotate(inTheta:Float)
@@ -172,12 +179,12 @@ class Matrix
 
 
    Multiply "after" other transforms ...
-  
+
 
       [  a  b   0 ][  ma mb  0 ]
       [  c  d   0 ][  mc md  0 ]
       [  tx ty  1 ][  mtx mty 1 ]
-            
+
 
    */
    public function concat(m:Matrix)
