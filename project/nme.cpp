@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
- 
+
 #include "nsdl.h"
 #include "nme.h"
 #include "Scrap.h"
@@ -65,7 +65,7 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
    fmt.BitsPerPixel = 32;
    fmt.BytesPerPixel = 4;
 
-   if (inSurface->flags & SDL_SRCALPHA)
+   if ((inSurface->flags & SDL_SRCALPHA) | (inSurface->flags & SDL_SRCCOLORKEY))
    {
       flags |= SDL_SRCALPHA;
       fmt.Amask = 0xff000000;
@@ -249,7 +249,7 @@ value nme_copy_surface( value surf )
 	return alloc_int(0);
 	/*
 	val_check_kind( surf, k_surf );
-	
+
 	SDL_Surface* scr = SURFACE(surf);
 
 	return alloc_abstract( k_surf, sge_copy_surface( scr ) );
@@ -266,7 +266,7 @@ value nme_copy_surface( value surf )
 static value nme_surface_clear( value surf, value c )
 {
 	val_check_kind( surf, k_surf );
-	
+
 	val_check( c, int );
 	SDL_Surface* scr = SURFACE(surf);
 
@@ -297,7 +297,7 @@ static value nme_surface_clear( value surf, value c )
         }
 
 	return alloc_int( 0 );
-	
+
 }
 
 value nme_surface_width( value surface )
@@ -756,7 +756,7 @@ value nme_event()
 {
 	SDL_Event event;
 	value evt = empty_object;
-	
+
 	while (SDL_PollEvent(&event))
 	{
 		if (event.type == SDL_QUIT)
