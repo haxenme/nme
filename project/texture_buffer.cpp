@@ -132,7 +132,7 @@ bool TextureBuffer::PrepareOpenGL()
       else // convert!
       {
          data = SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA,
-            mSurface->w, mSurface->h, 32, 
+            mSurface->w, mSurface->h, 32,
             0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
          SDL_BlitSurface(mSurface, 0, data, 0);
          cleanup = data;
@@ -146,7 +146,7 @@ bool TextureBuffer::PrepareOpenGL()
 
       if ( mSurface->w != w || mSurface->h != h )
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format, 
+         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, 0 );
 
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
@@ -178,12 +178,12 @@ bool TextureBuffer::PrepareOpenGL()
       }
       else
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format, 
+         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, data->pixels );
       }
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
       if (cleanup)
@@ -458,7 +458,7 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
                             32,
                             0xff0000,0x00ff00,0x0000ff, 0xff000000);
 
- 
+
    int icol = val_int(colour);
    int r = (icol>>16) & 0xff;
    int g = (icol>>8) & 0xff;
@@ -479,6 +479,76 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
    return buffer->ToValue();
 }
 
+/**
+* Returns 32 bit ARGB value for pixel at inX,inY
+*
+* @param inX X coordinate
+* @param inY Y coordinate
+* @return 32 bit color ARGB value
+**/
+Uint32 TextureBuffer::GetPixel(int inX, int inY)
+{
+	Uint8 r, g, b, a;
+
+	if (inX<0 || inY<0 || inX > mPixelWidth || inY > mPixelHeight)
+		return 0;
+
+	SDL_PixelFormat *fmt = mSurface->format;
+	Uint32 color = 0;
+
+	//--
+	SDL_LockSurface(mSurface);
+	//--
+	if(fmt->BitsPerPixel == 8) {
+		Uint8 index = *(Uint8 *)mSurface->pixels + inY*mSurface->w + inX;
+		SDL_Color colorEntry = fmt->palette->colors[index];
+		a = 0xFF;
+		r = colorEntry.r;
+		g = colorEntry.g;
+		b = colorEntry.b;
+	}
+	else {
+		Uint32 val, pixel = 0;
+
+		switch(fmt->BitsPerPixel) {
+		case 16:
+			pixel = (Uint32)((Uint16 *)mSurface->pixels)[inY*mSurface->w + inX];
+			break;
+		case 24:
+		case 32:
+			pixel = ((Uint32 *)mSurface->pixels)[inY*mSurface->w + inX];
+			break;
+		}
+		// Alpha
+		val = pixel & fmt->Amask;
+		val = val >> fmt->Ashift;
+		val = val << fmt->Aloss;
+		a = (Uint8)val;
+		// Red
+		val = pixel & fmt->Rmask;
+		val = val >> fmt->Rshift;
+		val = val << fmt->Rloss;
+		r = (Uint8)val;
+		// Green
+		val = pixel & fmt->Gmask;
+		val = val >> fmt->Gshift;
+		val = val << fmt->Gloss;
+		g = (Uint8)val;
+
+		// Blue
+		val = pixel & fmt->Bmask;
+		val = val >> fmt->Bshift;
+		val = val << fmt->Bloss;
+		b = (Uint8)val;
+	}
+	//--
+	SDL_UnlockSurface(mSurface);
+	//--
+	color = (a << 24) | (r << 16) | (g << 8) | b;
+	//--
+	return color;
+}
+
 ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
 {
    int x1 = inX+inW;
@@ -489,7 +559,7 @@ ByteArray *TextureBuffer::GetPixels(int inX,int inY,int inW,int inH)
    bool alpha = mSurface->format->Amask && (mSurface->flags & SDL_SRCALPHA);
    bool bgr = mSurface->format->BitsPerPixel==24 &&
                   mSurface->format->Rmask == 0x0000ff;
-   
+
 
    ByteArray *array = new ByteArray(inW*inH*4);
 
@@ -732,6 +802,19 @@ value nme_load_texture_from_bytes(value inBytes,value inLen, value inType,
 
 }
 
+value nme_get_pixel(value inTexture, value inX, value inY) {
+	TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+	Uint32 color = tex->GetPixel(val_int(inX), val_int(inY));
+	color &= 0xFFFFFF;
+	return alloc_int(color);
+}
+
+value nme_get_pixel32(value inTexture, value inX, value inY) {
+	TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+	Uint32 color = tex->GetPixel(val_int(inX), val_int(inY));
+	return alloc_best_int((int)color);
+	return alloc_int32(color);
+}
 
 value nme_set_pixel_data(value inTexture,
            value inBuffer, value inBufferLen,
@@ -754,24 +837,21 @@ value nme_set_pixel(value inTexture, value inX, value inY, value inColour)
    return alloc_int(0);
 }
 
-
-#ifdef HXCPP
 value nme_set_pixel32(value inTexture, value inX, value inY, value inColour)
 {
    TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 
-   tex->SetPixel(val_int(inX), val_int(inY), val_int(inColour) );
+   tex->SetPixel(val_int(inX), val_int(inY), val_int32(inColour) );
    return alloc_int(0);
 }
-#else
-value nme_set_pixel32(value inTexture, value inX, value inY, value inAlpha,value inRGB)
+
+value nme_set_pixel32_ex(value inTexture, value inX, value inY, value inAlpha, value inRGB)
 {
    TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 
    tex->SetPixel(val_int(inX), val_int(inY), (val_int(inAlpha)<<24) | val_int(inRGB) );
    return alloc_int(0);
 }
-#endif
 
 
 
@@ -1248,7 +1328,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
           }
       }
    }
-   
+
    return val_null;
 }
 
@@ -1331,20 +1411,19 @@ TextureReference *TextureReference::Create(value inVal)
 
 DEFINE_PRIM_MULT(nme_create_blitter);
 DEFINE_PRIM(nme_blit_tile, 5);
-    
+
 DEFINE_PRIM_MULT(nme_copy_pixels);
 DEFINE_PRIM(nme_tex_fill_rect,4);
 
 DEFINE_PRIM(nme_create_texture_buffer, 5);
+DEFINE_PRIM(nme_get_pixel, 3);
+DEFINE_PRIM(nme_get_pixel32, 3);
 DEFINE_PRIM(nme_load_texture, 1);
 DEFINE_PRIM(nme_load_texture_from_bytes, 5);
 DEFINE_PRIM(nme_set_pixel_data, 5);
 DEFINE_PRIM(nme_set_pixel, 4);
-#ifdef HXCPP
 DEFINE_PRIM(nme_set_pixel32, 4);
-#else
-DEFINE_PRIM(nme_set_pixel32, 5);
-#endif
+DEFINE_PRIM(nme_set_pixel32_ex, 5);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_texture_height, 1);
 DEFINE_PRIM(nme_scroll_texture, 3);

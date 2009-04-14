@@ -43,6 +43,7 @@ public:
    TextureBuffer *IncRef();
    void DecRef();
 
+   Uint32 GetPixel(int inX, int inY);
    class ByteArray *GetPixels(int inX,int inY,int inW,int inH);
    void SetPixels(int inX,int inY,int inW,int inH,class ByteArray &inPixels);
    void SetPixel(int inX,int inY,int inColour);
@@ -52,9 +53,9 @@ public:
 protected:
    // Call "DecRef" instead;
    ~TextureBuffer();
-   
+
    SDL_Surface   *mSurface;
-   unsigned int mTextureID;  
+   unsigned int mTextureID;
    int          mResizeID;
 
    int          mPixelWidth,mPixelHeight;

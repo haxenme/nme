@@ -203,24 +203,12 @@ class BitmapData implements IBitmapDrawable
 
 	public function getPixel(x:Int, y:Int) : Int
 	{
-		var w = width;
-		var h = height;
-		var idx = (y * w * 4)  + (x * 4);
-
-		var a = getPixels(new Rectangle(w, h));
-		a.position = idx;
-		return I32.rgbFromArgb(cast a.readInt32());
+		return untyped nme_get_pixel(mTextureBuffer, x, y);
 	}
 
 	public function getPixel32(x:Int, y:Int) : Int32
 	{
-		var w = width;
-		var h = height;
-		var idx = (y * w * 4)  + (x * 4);
-
-		var a = getPixels(new Rectangle(w, h));
-		a.position = idx;
-		return a.readInt();
+		return untyped nme_get_pixel32(mTextureBuffer, x, y);
 	}
 
 	// Handled internally...
@@ -236,21 +224,17 @@ class BitmapData implements IBitmapDrawable
 		nme_set_pixel(mTextureBuffer,inX,inY,inColour);
 	}
 
+	public function setPixel32(inX:Int, inY:Int, inColour: Int32) : Void
+	{
+		nme_set_pixel32(mTextureBuffer, inX, inY, inColour);
+	}
+
 	/**
 	* Sets colour with an alpha and RGB value
 	*/
 	public function setPixel32Ex(inX:Int, inY:Int, inAlpha:Int, inColour:Int) : Void
 	{
-		nme_set_pixel32(mTextureBuffer,inX,inY,inAlpha,inColour);
-	}
-
-	public function setPixel32(inX:Int, inY:Int, inColour: Int32) : Void
-	{
-		#if neko
-			setPixel32Ex(inX, inY, extractAlpha(inColour), extractColor(inColour));
-		#else
-			nme_set_pixel32(mTextureBuffer, inX, inY, inColour);
-		#end
+		nme_set_pixel32_ex(mTextureBuffer, inX, inY, inAlpha, inColour);
 	}
 
 	public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
@@ -286,12 +270,11 @@ class BitmapData implements IBitmapDrawable
 	static var nme_load_texture = nme.Loader.load("nme_load_texture",1);
 	static var nme_load_texture_from_bytes = nme.Loader.load("nme_load_texture_from_bytes",5);
 	static var nme_set_pixel_data = nme.Loader.load("nme_set_pixel_data",5);
+	static var nme_get_pixel = nme.Loader.load("nme_get_pixel", 3);
+	static var nme_get_pixel32 =  nme.Loader.load("nme_get_pixel32", 3);
 	static var nme_set_pixel = nme.Loader.load("nme_set_pixel",4);
-	#if neko
-	static var nme_set_pixel32 = nme.Loader.load("nme_set_pixel32",5);
-	#else
 	static var nme_set_pixel32 = nme.Loader.load("nme_set_pixel32",4);
-	#end
+	static var nme_set_pixel32_ex = nme.Loader.load("nme_set_pixel32_ex",5);
 	static var nme_texture_width = nme.Loader.load("nme_texture_width",1);
 	static var nme_texture_height = nme.Loader.load("nme_texture_height",1);
 	static var nme_texture_get_bytes = nme.Loader.load("nme_texture_get_bytes",2);
