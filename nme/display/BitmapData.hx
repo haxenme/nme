@@ -19,6 +19,7 @@ class BitmapData implements IBitmapDrawable
 	public var height(getHeight,null):Int;
 	public var graphics(getGraphics,null):Graphics;
 	public var rect(GetRect,null) : nme.geom.Rectangle;
+	public var transparent(__getTransparent,null) : Bool;
 
 	public static var TRANSPARENT = 0x0001;
 	public static var HARDWARE    = 0x0002;
@@ -30,19 +31,16 @@ class BitmapData implements IBitmapDrawable
 						inFillColour:Int=0,
 						inAlpha:Int=255)
 	{
-		if (inWidth<1 || inHeight<1)
+		if (inWidth<1 || inHeight<1) {
 			mTextureBuffer = null;
+		}
 		else
 		{
 			var flags = HARDWARE;
 			if (inTransparent)
 				flags |= TRANSPARENT;
-
-			var alpha:Int = inAlpha;
-			var colour:Int = inFillColour;
-
 			mTextureBuffer =
-				nme_create_texture_buffer(inWidth,inHeight,flags,colour,alpha);
+				nme_create_texture_buffer(inWidth,inHeight,flags,inFillColour,inAlpha);
 		}
 	}
 
@@ -50,7 +48,19 @@ class BitmapData implements IBitmapDrawable
 		return new Graphics(mTextureBuffer);
 	}
 
-	public function LoadFromFile(inFilename:String)
+	/**
+	* Return a Rectangle the size of the BitmapData
+	*/
+	public function GetRect() : Rectangle {
+		return new Rectangle(0,0,width,height);
+	}
+
+	/**
+	* Initialize from a file.
+	*
+	* @param inFilename Full or relative path to image file
+	**/
+	public function LoadFromFile(inFilename:String) : Void
 	{
 	#if neko
 		mTextureBuffer = nme_load_texture(untyped inFilename.__s);
@@ -59,8 +69,15 @@ class BitmapData implements IBitmapDrawable
 	#end
 	}
 
-	// Type = "JPG", "BMP" etc.
-	public function LoadFromBytes(inBytes:haxe.io.BytesData,inType:String, ?inAlpha:String )
+	/**
+	* Load texture data from RGB inBytes.
+	*
+	* @param inBytes
+	* @param inType "JPG", "BMP" etc. (??)
+	* @param inAlpha
+	* @todo Document!
+	**/
+	public function LoadFromBytes(inBytes:haxe.io.BytesData, inType:String, ?inAlpha:String )
 	{
 		var a:String = inAlpha==null ? "" : inAlpha;
 		#if neko
@@ -89,6 +106,12 @@ class BitmapData implements IBitmapDrawable
 	}
 
 
+	/////////////////// Statics ////////////////////////////
+	/**
+	* Create a new BitmapData instance from an existing Texture handle.
+	*
+	* @todo Does reference count in SDL have to be incremented?
+	*/
 	static public function CreateFromHandle(inHandle:Dynamic) : BitmapData
 	{
 		var result = new BitmapData(0,0);
@@ -96,6 +119,12 @@ class BitmapData implements IBitmapDrawable
 		return result;
 	}
 
+	/**
+	* Load from a file path
+	*
+	* @param inFilename Full or relative path to image file
+	* @return New BitmapData instance representing file
+	**/
 	static public function Load(inFilename:String) : BitmapData
 	{
 		var result = new BitmapData(0,0);
@@ -103,9 +132,9 @@ class BitmapData implements IBitmapDrawable
 		return result;
 	}
 
-	public function GetRect() : Rectangle { return new Rectangle(0,0,width,height); }
 
 
+	/////////////////// Flash like API ///////////////////////
 
 	public function clear( color : Int ) : Void
 	{
@@ -113,13 +142,18 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public function clone() : BitmapData {
+		/**
 		var w = width;
 		var h = height;
-		var bm = new BitmapData(w, h);
+		var bm = new BitmapData(w, h, transparent);
 		var rect = new Rectangle(w, h);
 		bm.copyPixels(this, rect, new Point(0,0));
+		**/
+		var bm = new BitmapData(0, 0);
+		bm.mTextureBuffer = nme_clone_texture_buffer(mTextureBuffer);
 		return bm;
 	}
+
 	public function copyPixels(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point,
 		?alphaBitmapData:BitmapData, ?alphaPoint:Point, mergeAlpha:Bool = false):Void
 	{
@@ -265,26 +299,30 @@ class BitmapData implements IBitmapDrawable
 			#end
 	}
 
-	static var nme_create_texture_buffer =
-					nme.Loader.load("nme_create_texture_buffer",5);
-	static var nme_load_texture = nme.Loader.load("nme_load_texture",1);
-	static var nme_load_texture_from_bytes = nme.Loader.load("nme_load_texture_from_bytes",5);
-	static var nme_set_pixel_data = nme.Loader.load("nme_set_pixel_data",5);
+	private function __getTransparent() : Bool {
+		return untyped nme_get_transparent(mTextureBuffer);
+	}
+
+	static var nme_clone_texture_buffer = nme.Loader.load("nme_clone_texture_buffer", 1);
+	static var nme_copy_pixels = nme.Loader.load("nme_copy_pixels",-1);
+	static var nme_create_texture_buffer = nme.Loader.load("nme_create_texture_buffer",5);
+	static var nme_draw_object_to= nme.Loader.load("nme_draw_object_to",5);
 	static var nme_get_pixel = nme.Loader.load("nme_get_pixel", 3);
 	static var nme_get_pixel32 =  nme.Loader.load("nme_get_pixel32", 3);
+	static var nme_get_transparent = nme.Loader.load("nme_get_transparent", 1);
+	static var nme_load_texture = nme.Loader.load("nme_load_texture",1);
+	static var nme_load_texture_from_bytes = nme.Loader.load("nme_load_texture_from_bytes",5);
+	static var nme_scroll_texture = nme.Loader.load("nme_scroll_texture",3);
 	static var nme_set_pixel = nme.Loader.load("nme_set_pixel",4);
 	static var nme_set_pixel32 = nme.Loader.load("nme_set_pixel32",4);
 	static var nme_set_pixel32_ex = nme.Loader.load("nme_set_pixel32_ex",5);
-	static var nme_texture_width = nme.Loader.load("nme_texture_width",1);
-	static var nme_texture_height = nme.Loader.load("nme_texture_height",1);
-	static var nme_texture_get_bytes = nme.Loader.load("nme_texture_get_bytes",2);
+	static var nme_set_pixel_data = nme.Loader.load("nme_set_pixel_data",5);
 	static var nme_surface_clear = nme.Loader.load("nme_surface_clear",2);
-
-	static var nme_texture_set_bytes = nme.Loader.load("nme_texture_set_bytes",3);
-	static var nme_copy_pixels = nme.Loader.load("nme_copy_pixels",-1);
 	static var nme_tex_fill_rect = nme.Loader.load("nme_tex_fill_rect",4);
-	static var nme_scroll_texture = nme.Loader.load("nme_scroll_texture",3);
+	static var nme_texture_get_bytes = nme.Loader.load("nme_texture_get_bytes",2);
+	static var nme_texture_height = nme.Loader.load("nme_texture_height",1);
+	static var nme_texture_set_bytes = nme.Loader.load("nme_texture_set_bytes",3);
+	static var nme_texture_width = nme.Loader.load("nme_texture_width",1);
 
-	static var nme_draw_object_to= nme.Loader.load("nme_draw_object_to",5);
 }
 

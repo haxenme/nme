@@ -772,7 +772,23 @@ int TextureBuffer::SetPixels(const unsigned char *inData, int inDataLen,
    return 1;
 }
 
+/**
+* Clones the srcTexture TextureBuffer and it's SDL_Surface
+* @param srcTexture Source to copy from
+* @return Handle value to TextureBuffer instance
+*/
+value nme_clone_texture_buffer(value srcTexture) {
+	TextureBuffer *src = TEXTURE_BUFFER(srcTexture);
 
+	if(!src)
+		return val_null;
+
+	SDL_Surface *surface = ConvertToPreferredFormat(src->GetSourceSurface());
+
+	//--
+	TextureBuffer *buffer = new TextureBuffer(surface);
+	return buffer->ToValue();
+}
 
 value nme_load_texture(value inName)
 {
@@ -802,6 +818,10 @@ value nme_load_texture_from_bytes(value inBytes,value inLen, value inType,
 
 }
 
+/**
+* Return a 24 bit RGB color value of the pixel at inX,inY
+* @return Int value
+**/
 value nme_get_pixel(value inTexture, value inX, value inY) {
 	TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 	Uint32 color = tex->GetPixel(val_int(inX), val_int(inY));
@@ -809,11 +829,24 @@ value nme_get_pixel(value inTexture, value inX, value inY) {
 	return alloc_int(color);
 }
 
+/**
+* Return a 32 bit ARGB color value of the pixel at inX,inY
+* @return Int32 value
+**/
 value nme_get_pixel32(value inTexture, value inX, value inY) {
 	TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 	Uint32 color = tex->GetPixel(val_int(inX), val_int(inY));
 	return alloc_best_int((int)color);
 	return alloc_int32(color);
+}
+
+/**
+* Returns whether or not the surface has it's transparency bit set
+* @return bool
+**/
+value nme_get_transparent(value inTexture) {
+	TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
+	return alloc_bool(tex->GetSourceSurface()->format->Amask | tex->GetSourceSurface()->flags & SDL_SRCCOLORKEY);
 }
 
 value nme_set_pixel_data(value inTexture,
@@ -852,8 +885,6 @@ value nme_set_pixel32_ex(value inTexture, value inX, value inY, value inAlpha, v
    tex->SetPixel(val_int(inX), val_int(inY), (val_int(inAlpha)<<24) | val_int(inRGB) );
    return alloc_int(0);
 }
-
-
 
 value nme_texture_get_bytes(value inTex,value inRect)
 {
@@ -1409,29 +1440,27 @@ TextureReference *TextureReference::Create(value inVal)
    return new TextureReference(tex,matrix,flags);
 }
 
-DEFINE_PRIM_MULT(nme_create_blitter);
+
 DEFINE_PRIM(nme_blit_tile, 5);
-
 DEFINE_PRIM_MULT(nme_copy_pixels);
-DEFINE_PRIM(nme_tex_fill_rect,4);
-
+DEFINE_PRIM_MULT(nme_create_blitter);
+DEFINE_PRIM(nme_clone_texture_buffer, 1);
 DEFINE_PRIM(nme_create_texture_buffer, 5);
 DEFINE_PRIM(nme_get_pixel, 3);
 DEFINE_PRIM(nme_get_pixel32, 3);
+DEFINE_PRIM(nme_get_transparent, 1);
 DEFINE_PRIM(nme_load_texture, 1);
 DEFINE_PRIM(nme_load_texture_from_bytes, 5);
+DEFINE_PRIM(nme_scroll_texture, 3);
+DEFINE_PRIM(nme_set_blit_area, 5);
 DEFINE_PRIM(nme_set_pixel_data, 5);
 DEFINE_PRIM(nme_set_pixel, 4);
 DEFINE_PRIM(nme_set_pixel32, 4);
 DEFINE_PRIM(nme_set_pixel32_ex, 5);
-DEFINE_PRIM(nme_texture_width, 1);
+DEFINE_PRIM(nme_tex_fill_rect,4);
+DEFINE_PRIM(nme_texture_get_bytes, 2);
 DEFINE_PRIM(nme_texture_height, 1);
-DEFINE_PRIM(nme_scroll_texture, 3);
+DEFINE_PRIM(nme_texture_set_bytes, 3);
+DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);
 DEFINE_PRIM(nme_tile_renderer_height, 1);
-DEFINE_PRIM(nme_texture_get_bytes, 2);
-DEFINE_PRIM(nme_texture_set_bytes, 3);
-DEFINE_PRIM(nme_set_blit_area, 5);
-
-
-
