@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
- 
+
 package nme;
 
 import nme.display.Graphics;
@@ -162,7 +162,8 @@ class Manager
 		renderCallbacks = new RenderCallbackList();
 		tryQuitFunction = null;
 		mPaused = false;
-      mT0 = haxe.Timer.stamp();
+		mT0 = haxe.Timer.stamp();
+		Sound.__initialize();
 	}
 
    public function OnResize(inW:Int, inH:Int)
@@ -179,7 +180,7 @@ class Manager
    #if neko
       neko.Lib.print(str);
    #else
-      
+
    #end
    }
 
@@ -303,7 +304,7 @@ class Manager
 
 	public static function mouseEvent(inType:MouseEventType)
         {
-           return 
+           return
 	   {
 		 type : inType,
 		 x : SmouseX(),

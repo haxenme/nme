@@ -22,9 +22,47 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
- 
+
 #include "nsdl.h"
 #include "nme.h"
+#include "ByteArray.h"
+#include "threadaccess.h"
+
+
+/////////////// Sound event handling ///////////////////
+
+static value *soundEventThread = NULL;
+
+void onSdlMixerChannelDone(int channel)
+{
+	if(*soundEventThread && !val_is_null(*soundEventThread)) {
+		thread_send( *soundEventThread, alloc_int(channel) );
+	}
+}
+
+static value nme_sound_seteventthread( value p_thread ) {
+	vkind k_thread;
+	kind_share(&k_thread, "thread");
+
+	if( soundEventThread == NULL )
+		soundEventThread = alloc_root(1);
+
+	if(val_is_null(p_thread) ) {
+		Mix_ChannelFinished(NULL);
+	}
+	else {
+		if(! val_is_kind(p_thread, k_thread) ) {
+			Mix_ChannelFinished(NULL);
+			return val_null;
+		}
+		Mix_ChannelFinished(onSdlMixerChannelDone);
+	}
+	*soundEventThread = p_thread;
+	return val_null;
+}
+
+
+/////////////////////////////////////////////////////////
 
 void nme_sound_free( value snd )
 {
@@ -50,6 +88,88 @@ value nme_sound_loadwav( value file )
 	return v;
 }
 
+/**
+* Loads a sound (wav/mp3/ogg etc) from an NME ByteArray
+*
+* @param p_bytes String value
+* @param p_len number of bytes to use from p_bytes
+* @return Sound instance handle (Mix_Chunk)
+**/
+value nme_sound_loadbytearray( value p_hndByteArray )
+{
+	ByteArray *ba = BYTEARRAY(p_hndByteArray);
+	if(!ba || ba->mSize == 0)
+		return val_null;
+
+	Mix_Chunk *snd = Mix_LoadWAV_RW(SDL_RWFromConstMem(ba->mPtr, ba->mSize), 0);
+	if ( snd == NULL ) {
+		printf("nme_sound_loadbytearray: unable to load sound\n");
+		return val_null;
+	}
+
+	value v = alloc_abstract( k_snd, snd );
+	val_gc( v, nme_sound_free );
+	return v;
+}
+
+/**
+* Loads a sound (wav/mp3/ogg etc) from a memory buffer.
+*
+* @param p_bytes String value
+* @param p_len number of bytes to use from p_bytes
+* @return Sound instance handle (Mix_Chunk)
+**/
+value nme_sound_loadbytes( value p_bytes, value p_len )
+{
+	val_check( p_len, int );
+
+	int len = val_int( p_len );
+	#ifdef HXCPP
+		Array<unsigned char> b = p_bytes;
+		if (b == null() || len < 1)
+			failure("nme_sound_loadbytes: bytes expected");
+		const char *bytes = (const char *)&b[0];
+	#else
+		val_check( p_bytes, string );
+		const char *bytes = val_string(p_bytes);
+	#endif
+
+	Mix_Chunk *snd = Mix_LoadWAV_RW(SDL_RWFromConstMem(bytes, len), 0);
+	if ( snd == NULL ) {
+		printf("nme_sound_loadbytes: unable to load sound\n");
+		return val_null;
+	}
+
+	value v = alloc_abstract( k_snd, snd );
+	val_gc( v, nme_sound_free );
+	return v;
+}
+
+/**
+* Sets a sound channel play head position.
+* @param p_millis Position in milliseconds. This may be longer than the clip length.
+**/
+value nme_sound_setchannelposition( value channel, value position ) {
+	val_check( channel, int );
+	val_check( position, int );
+
+	return alloc_bool( Mix_SetChannelPosition(val_int(channel), val_int(position)) );
+}
+
+/**
+* Returns the length in milliseconds of the sound clip
+*
+* @param snd Sound instance
+* @return length in milliseconds
+**/
+value nme_sound_getlength( value snd )
+{
+	val_check_kind( snd, k_snd );
+
+	Mix_Chunk *chunk = SOUND( snd );
+	return alloc_int( chunk->length_ticks );
+}
+
 value nme_sound_setchannels( value cnt )
 {
 	val_check( cnt, int );
@@ -61,7 +181,7 @@ value nme_sound_volume( value snd, value volume )
 {
 	val_check_kind( snd, k_snd );
 	val_check( volume, int );
-	
+
 	Mix_Chunk *chunk = SOUND( snd );
 
 	return alloc_int( Mix_VolumeChunk( chunk, val_int( volume ) ) );
@@ -260,7 +380,7 @@ value nme_music_init( value file )
 		printf("%s : %s\n", val_string( file ), Mix_GetError());
       return val_null;
    }
-	
+
 	value v = alloc_abstract( k_mus, music );
 	val_gc( v, nme_music_free );
 	return v;
@@ -363,8 +483,13 @@ DEFINE_PRIM(nme_sound_playchanneltimed, 4);
 DEFINE_PRIM(nme_sound_fadeinchannel, 4);
 DEFINE_PRIM(nme_sound_fadeinchanneltimed, 5);
 DEFINE_PRIM(nme_sound_fadeoutchannel, 2);
+DEFINE_PRIM(nme_sound_getlength, 1);
+DEFINE_PRIM(nme_sound_loadbytearray, 1);
+DEFINE_PRIM(nme_sound_loadbytes, 2);
 DEFINE_PRIM(nme_sound_pause, 1);
 DEFINE_PRIM(nme_sound_resume, 1);
+DEFINE_PRIM(nme_sound_setchannelposition, 2);
+DEFINE_PRIM(nme_sound_seteventthread, 1);
 DEFINE_PRIM(nme_sound_stop, 1);
 DEFINE_PRIM(nme_sound_stoptimed, 2);
 DEFINE_PRIM(nme_sound_isplaying, 1);
