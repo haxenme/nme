@@ -1,0 +1,9 @@
+SDL_mixer-1.2.8_p1
+==================
+This is a patched copy of SDL mixer which allows 'sound' type clips to have a length
+and a play position set. There's been modifications to the Mix_Chunk structure, as
+well as changes in mixer.c.
+
+
+
+
