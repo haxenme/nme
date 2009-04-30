@@ -1308,19 +1308,27 @@ int Mix_UnregisterAllEffects(int channel)
 
 int Mix_SetChannelPosition(int which, int ms)
 {
+	Mix_Chunk *chunk;
+	int loops;
+	int loopNum;
+	Uint32 ticksOff;
+	Uint32 bytesPerSample;
+	Uint32 bytepos;
+	Uint32 pos;
+
 
 	if ((which < 0) || (which >= num_channels)) {
 		Mix_SetError("Invalid which number");
 		return(0);
 	}
 
-	Mix_Chunk *chunk = mix_channel[which].chunk;
+	chunk = mix_channel[which].chunk;
 	if( chunk->length_ticks == 0 || ms < 0 )
 		return(0);
 
-	int loops = mix_channel[which].initial_loops;
+	loops = mix_channel[which].initial_loops;
 
-	int loopNum = ms / chunk->length_ticks;
+	loopNum = ms / chunk->length_ticks;
 	// Past end of loops?
 	if(loops >= 0 && loopNum > loops) {
 		mix_channel[which].looping = 0;
@@ -1329,11 +1337,11 @@ int Mix_SetChannelPosition(int which, int ms)
 		return(1);
 	}
 
-	Uint32 ticksOff = ms % chunk->length_ticks;
+	ticksOff = ms % chunk->length_ticks;
 	//printf("ms: %u chunk length: %u ticksOff: %u\n", ms, chunk->length_ticks, ticksOff);
-	Uint32 bytesPerSample = mixer.channels * ((mixer.format & 0xFF) / 8);
-	Uint32 bytepos = ticksOff * chunk->alen / chunk->length_ticks;
-	Uint32 pos = (bytepos / bytesPerSample) * bytesPerSample;
+	bytesPerSample = mixer.channels * ((mixer.format & 0xFF) / 8);
+	bytepos = ticksOff * chunk->alen / chunk->length_ticks;
+	pos = (bytepos / bytesPerSample) * bytesPerSample;
 
 	if(pos >= chunk->alen)
 		pos = chunk->alen;
