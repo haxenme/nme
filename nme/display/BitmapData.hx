@@ -25,12 +25,17 @@ class BitmapData implements IBitmapDrawable
 	public static var HARDWARE    = 0x0002;
 
 
-	// Have to break with flash api because we do not have real int32s ...
 	public function new(inWidth:Int, inHeight:Int,
 						inTransparent:Bool=true,
-						inFillColour:Int=0,
-						inAlpha:Int=255)
+						?inFillRGBA:Int32 )
 	{
+		var fill_col:Int=0xffffff;
+		var fill_alpha:Int=0xff;
+		if (inFillRGBA!=null)
+		{
+			fill_col = I32.rgbFromArgb(inFillRGBA);
+			fill_alpha = I32.alphaFromArgb(inFillRGBA);
+		}
 		if (inWidth<1 || inHeight<1) {
 			mTextureBuffer = null;
 		}
@@ -40,7 +45,7 @@ class BitmapData implements IBitmapDrawable
 			if (inTransparent)
 				flags |= TRANSPARENT;
 			mTextureBuffer =
-				nme_create_texture_buffer(inWidth,inHeight,flags,inFillColour,inAlpha);
+				nme_create_texture_buffer(inWidth,inHeight,flags,fill_col,fill_alpha);
 		}
 	}
 
@@ -110,7 +115,9 @@ class BitmapData implements IBitmapDrawable
 	/**
 	* Create a new BitmapData instance from an existing Texture handle.
 	*
-	* @todo Does reference count in SDL have to be incremented?
+	* SDL surface reference counting is handled simply - the entire "haxe" code,
+	*  via grabage collection, holds exactly 1 reference the the surface.
+	*  Other references may or may not be handled within the nme code.
 	*/
 	static public function CreateFromHandle(inHandle:Dynamic) : BitmapData
 	{
@@ -174,10 +181,25 @@ class BitmapData implements IBitmapDrawable
 					clipRect:Rectangle = null,
 					smoothing:Bool= false):Void
 	{
-		var gfx = source.GetBitmapDrawable();
-		if (gfx!=null)
-			gfx.render(matrix,mTextureBuffer);
+		source.drawToSurface(mTextureBuffer,matrix,colorTransform,blendMode,clipRect,smoothing);
 	}
+
+   // IBitmapDrawable interface...
+   public function drawToSurface(inSurface : Dynamic,
+               matrix:nme.geom.Matrix,
+               colorTransform:nme.geom.ColorTransform,
+               blendMode:String,
+               clipRect:nme.geom.Rectangle,
+               smoothing:Bool):Void
+	{
+	   // TODO: This is a bit of a placeholder for now.
+	   if (matrix==null) matrix = new Matrix();
+		nme_copy_pixels(handle(),
+			0.0,0.0,width+0.0,height+0.0,
+			inSurface(), matrix.tx, matrix.ty);
+	}
+
+
 
 	public function fillRect( rect : nme.geom.Rectangle, inColour : Int32 ) : Void
 	{

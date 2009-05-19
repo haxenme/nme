@@ -7,7 +7,7 @@ class Loader
    #if neko
       return neko.Lib.load("nme",func,args);
    #else
-      return hxcpp.Lib.load("nme",func,args);
+      return cpp.Lib.load("nme",func,args);
    #end
    }
 }
