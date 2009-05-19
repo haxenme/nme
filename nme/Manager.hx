@@ -26,6 +26,7 @@
 package nme;
 
 import nme.display.Graphics;
+import nme.Sound;
 
 enum EventType
 {
@@ -44,6 +45,7 @@ enum EventType
 	et_quit;
 	et_user;
 	et_syswm;
+	et_soundfinished;
 }
 
 enum MouseEventType
@@ -163,7 +165,6 @@ class Manager
 		tryQuitFunction = null;
 		mPaused = false;
 		mT0 = haxe.Timer.stamp();
-		Sound.__initialize();
 	}
 
    public function OnResize(inW:Int, inH:Int)
@@ -232,6 +233,10 @@ class Manager
 
                case et_mousemove:
                   fireMouseEvent( met_Move );
+
+               case et_soundfinished:
+                  if (Sound.onChannelFinished!=null)
+                     Sound.onChannelFinished( Reflect.field( __evt, "channel" ) );
 
                case et_resize:
                   // trace( __evt.width, __evt.height );
@@ -463,6 +468,8 @@ class Manager
 				returnType = et_user;
 			case 13:
 				returnType = et_syswm;
+			case 14:
+				returnType = et_soundfinished;
 		}
 		return returnType;
 	}

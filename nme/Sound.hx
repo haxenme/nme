@@ -25,7 +25,11 @@
 
 package nme;
 
+#if neko
 import neko.vm.Thread;
+#elseif cpp
+import cpp.vm.Thread;
+#end
 
 /**
 * @author	Russell Weir
@@ -152,42 +156,6 @@ class Sound
 
 
 
-	/**
-	* Thread which blocks for messages from sound.cpp handler
-	*/
-	private static function monitorThread() : Void {
-		nme_sound_seteventthread(untyped Thread.current().handle);
-
-		while(true) {
-			var msg = Thread.readMessage(true);
-			if(Std.is(msg, Int)) {
-				if(onChannelFinished != null) {
-					try {
-						onChannelFinished(cast msg);
-					} catch(e:Dynamic) {
-						trace("Error while processing sound complete event : " + Std.string(e));
-					}
-				}
-			}
-			if(Std.is(msg, String) && msg == QUIT) {
-				break;
-			}
-		}
-
-		nme_sound_seteventthread( null );
-	}
-
-	/**
-	* Called from Manager to install the channel complete handler. We
-	* can not do this in a __init__ method, since SDL may not be setup
-	*/
-	public static function __initialize() : Void
-	{
-		if(monitor == null) {
-			monitor = Thread.create( monitorThread );
-		}
-	}
-
 	static function __getNumChannels() : Int {
 		return nme_sound_setchannels( -1 );
 	}
@@ -223,7 +191,6 @@ class Sound
 	static var nme_sound_pause = nme.Loader.load("nme_sound_pause", 1);
 	static var nme_sound_resume = nme.Loader.load("nme_sound_resume", 1);
 	static var nme_sound_setchannelposition = nme.Loader.load("nme_sound_setchannelposition", 2);
-	static var nme_sound_seteventthread = nme.Loader.load("nme_sound_seteventthread", 1);
 	static var nme_sound_stop = nme.Loader.load("nme_sound_stop", 1);
 	static var nme_sound_stoptimed = nme.Loader.load("nme_sound_stoptimed", 2);
 	static var nme_sound_isplaying = nme.Loader.load("nme_sound_isplaying", 1);
