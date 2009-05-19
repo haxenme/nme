@@ -757,6 +757,14 @@ value nme_event()
 	SDL_Event event;
 	value evt = empty_object;
 
+	int id = soundGetNextDoneChannel();
+	if (id>=0)
+	{
+		alloc_field( evt, val_id( "type" ), alloc_int( et_soundfinished ) );
+		alloc_field( evt, val_id( "channel" ), alloc_int( id ) );
+		return alloc_object( evt );
+	}
+
 	while (SDL_PollEvent(&event))
 	{
 		if (event.type == SDL_QUIT)

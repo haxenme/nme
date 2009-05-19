@@ -47,7 +47,8 @@ typedef enum nme_eventtype {
 	et_resize,
 	et_quit,
 	et_user,
-	et_syswm
+	et_syswm,
+	et_soundfinished
 };
 
 typedef enum nme_spriteanimtype {
@@ -63,6 +64,9 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface);
 SDL_Surface* nme_loadimage( value file );
 SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType , value inAlpha, value inAlphaLen);
 void nme_surface_free( value surface );
+
+// Returns the id of any finished sound channel, or -1 if nothing pending
+int soundGetNextDoneChannel();
 
 bool IsOpenGLMode();
 bool IsOpenGLScreen(SDL_Surface *inSurface);

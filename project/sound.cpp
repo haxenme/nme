@@ -23,42 +23,65 @@
  * DAMAGE.
  */
 
+// On windows, seems we have to include this before neko
+#include <iostream>
+
 #include "nsdl.h"
 #include "nme.h"
 #include "ByteArray.h"
-#include "threadaccess.h"
-
+#include "renderer/QuickVec.h"
 
 /////////////// Sound event handling ///////////////////
 
-static value *soundEventThread = NULL;
+#ifdef NEKO_WINDOWS
+#include <windows.h>
+typedef CRITICAL_SECTION hxMutex;
+void MutexInit(hxMutex &ioMutex) { InitializeCriticalSection(&ioMutex); }
+void MutexLock(hxMutex &ioMutex) { EnterCriticalSection(&ioMutex); }
+void MutexUnlock(hxMutex &ioMutex) { LeaveCriticalSection(&ioMutex); }
+#else
+#include <pthreads.h>
+typedef pthread_mutex_t hxMutex;
+void MutexInit(hxMutex &ioMutex) { pthread_mutex_init(&ioMutex); }
+void MutexLock(hxMutex &ioMutex) { pthread_mutex_lock(&ioMutex); }
+void MutexUnlock(hxMutex &ioMutex) { pthread_mutex_unlock(&ioMutex); }
+#endif
+
+hxMutex sgChannelListMutex;
+
+struct BootMutex { BootMutex() { MutexInit(sgChannelListMutex); } };
+static BootMutex boot;
+
+class AutoLock
+{
+public:
+   AutoLock()
+	{
+		MutexLock(sgChannelListMutex);
+	}
+	~AutoLock()
+	{
+		MutexUnlock(sgChannelListMutex);
+	}
+};
+
+
+QuickVec<int> sgDoneChannels;
 
 void onSdlMixerChannelDone(int channel)
 {
-	if(*soundEventThread && !val_is_null(*soundEventThread)) {
-		thread_send( *soundEventThread, alloc_int(channel) );
-	}
+	AutoLock a;
+	sgDoneChannels.push_back(channel);
 }
 
-static value nme_sound_seteventthread( value p_thread ) {
-	vkind k_thread;
-	kind_share(&k_thread, "thread");
-
-	if( soundEventThread == NULL )
-		soundEventThread = alloc_root(1);
-
-	if(val_is_null(p_thread) ) {
-		Mix_ChannelFinished(NULL);
-	}
-	else {
-		if(! val_is_kind(p_thread, k_thread) ) {
-			Mix_ChannelFinished(NULL);
-			return val_null;
-		}
-		Mix_ChannelFinished(onSdlMixerChannelDone);
-	}
-	*soundEventThread = p_thread;
-	return val_null;
+int soundGetNextDoneChannel()
+{
+	AutoLock a;
+	if (sgDoneChannels.empty())
+		return -1;
+	int result = sgDoneChannels[0];
+	sgDoneChannels.EraseAt(0);
+	return result;
 }
 
 
@@ -189,6 +212,13 @@ value nme_sound_volume( value snd, value volume )
 
 value nme_sound_playchannel( value snd, value channel, value loop )
 {
+	static bool is_set = false;
+	if (!is_set)
+	{
+		is_set = true;
+		Mix_ChannelFinished(onSdlMixerChannelDone);
+	}
+
 	val_check_kind( snd, k_snd );
 	val_check( channel, int );
 	val_check( loop, int );
@@ -489,7 +519,6 @@ DEFINE_PRIM(nme_sound_loadbytes, 2);
 DEFINE_PRIM(nme_sound_pause, 1);
 DEFINE_PRIM(nme_sound_resume, 1);
 DEFINE_PRIM(nme_sound_setchannelposition, 2);
-DEFINE_PRIM(nme_sound_seteventthread, 1);
 DEFINE_PRIM(nme_sound_stop, 1);
 DEFINE_PRIM(nme_sound_stoptimed, 2);
 DEFINE_PRIM(nme_sound_isplaying, 1);
