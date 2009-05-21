@@ -1,7 +1,28 @@
+#ifndef GRAPHICS_H
+
 // Some design ramblings to see how some things may fit together.
 
-enum GraphicsAPIType { datBase, datInternal,  datQuartz, datCairo, datOpenGL, datOpenGLES };
-enum SurfaceAPIType  { datInternal, datSDL, datCairo };
+#include <QuickVec.h>
+#include <Matrix.h>
+#include <Scale9.h>
+
+typedef unsigned int uint32;
+
+
+enum GraphicsAPIType { gatBase, gatInternal,  gatQuartz, gatCairo, gatOpenGL, gatOpenGLES };
+
+enum SurfaceAPIType  { satInternal, satSDL, satCairo };
+
+enum PixelFormat
+{
+   pfUnkown,
+   pfBGR,
+   pfRGB555,
+   pfARGB,
+   pfXRGB,
+};
+
+
 
 // --- Graphics Data -------------------------------------------------------
 
@@ -30,7 +51,7 @@ public:
    virtual GraphicsEndFill      *CreateEndFill()=0;
    virtual GraphicsSolidFill    *CreateSolidFill()=0;
    virtual GraphicsGradientFill *CreateGradientFill()=0;
-   virtual GraphicsBitmapFill   *CreateBitmapFill(bitmapData, matrix, smooth, repeat)=0;
+   virtual GraphicsBitmapFill   *CreateBitmapFill(/*bitmapData, matrix, smooth, repeat*/)=0;
 
    virtual GraphicsPath         *CreatePath()=0;
    virtual GraphicsTrianglePath *CreateTrianglePath()=0;
@@ -40,7 +61,7 @@ public:
    virtual BitmapData           *CreateBimapData()=0;
 };
 
-GraphicsAPI *gGraphics;
+extern GraphicsAPI *gGraphics;
 
 
 enum GraphicsDataType
@@ -58,7 +79,7 @@ public:
    void DecRef();
 
    virtual GraphicsDataType GetType() { return gdtUnknown; }
-   virtual DrawingAPIType   GetAPI() { return gdtBase; }
+   virtual GraphicsAPIType  GetAPI() { return gatBase; }
 
    virtual IGraphicsFill   *AsIFill() { return 0; }
    virtual IGraphicsPath   *AsIPath() { return 0; }
@@ -75,18 +96,22 @@ public:
    virtual GraphicsTrianglePath   *AsTrianglePath() { return 0; }
 
 
+protected:
+   virtual ~IGraphicsData();
 private:
    IGraphicsData(const IGraphicsData &inRHS);
    void operator=(const IGraphicsData &inRHS);
 
-   virtual ~IGraphicsData();
    int     mRefCount;
 };
 
 
 class IGraphicsFill : public IGraphicsData
 {
-   virtual GraphicsFill   *AsFill() { return this; }
+   virtual IGraphicsFill *AsFill() { return this; }
+
+protected:
+   virtual ~IGraphicsFill() { };
 };
 
 
@@ -114,6 +139,9 @@ struct GradStop
    int     mRGB;
 };
 
+enum InterpolationMethod {  imLinearRGB, imRGB };
+enum SpreadMethod {  smPad, smReflect, smRepeat };
+
 class GraphicsGradientFill : public IGraphicsFill
 {
 public:
@@ -136,7 +164,7 @@ public:
    ~GraphicsBitmapFill();
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
-   GraphicsGradientFill   *AsBitmapFill() { return this; }
+   GraphicsBitmapFill   *AsBitmapFill() { return this; }
 
    BitmapData          *bitmapData;
    Matrix              matrix;
@@ -152,6 +180,7 @@ public:
 
 enum StrokeCaps { scNone, scRound, scSquare };
 enum StrokeJoints { sjMiter, sjRound, sjBevel };
+enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal };
 
 class GraphicsStroke : public IGraphicsStroke
 {
@@ -178,12 +207,12 @@ public:
 
 enum PathCommand
 {
-   NO_OP  = 0,
-   MOVE_TO  = 1,
-   LINE_TO = 2,
-   CURVE_TO =  3,
-   WIDE_MOVE_TO  4,
-   WIDE_LINE_TO = 5,
+   pcNoOp  = 0,
+   pcMoveTo  = 1,
+   pcLineTo = 2,
+   pcCurveTo =  3,
+   pcWideMoveTo = 4,
+   pcWideLineTo = 5,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -216,6 +245,29 @@ public:
 
 // Blender = blend mode + (colour transform + alpha)
 
+enum BlendMode { bmNormal, nmAdd };
+
+struct Rect
+{
+   Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
+   Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
+   int x,y;
+   int w,h;
+};
+
+class ColorTransform
+{
+   double redScale, redOffset;
+   double greenScale, greenOffset;
+   double blueScale, blueOffset;
+   double alphaScale, alphaOffset;
+};
+
+struct Mask
+{
+   // ??
+};
+
 struct Transform
 {
    Matrix3D       mMatrix3D;
@@ -242,50 +294,77 @@ private:
    // Rule of 3 - we must manually delete the mItems...
    DisplayList(const DisplayList &inRHS);
    void operator=(const DisplayList &inRHS);
-}
+};
 
 struct BlitData
 {
-   BitmapData mData;
+   BitmapData *mData;
    Rect       mRect;
 };
 
-class Font;
+typedef char *String;
+
+class NativeFont;
+
+class TextData
+{
+   String     mText;
+   NativeFont *mFont;
+   uint32     mColour;
+   double     mSize;
+   double     mX;
+   double     mY;
+};
+
+
+typedef QuickVec<TextData> TextList;
 
 class IRenderTarget
 {
-   virtual bool ViewPort(int inOX,int inOY, int inW,int inH);
-   virtual void BeginRender();
+public:
+   virtual int  Width()=0;
+   virtual int  Height()=0;
+
+   virtual void ViewPort(int inOX,int inOY, int inW,int inH)=0;
+   virtual void BeginRender()=0;
    virtual void Render(DisplayList &inDisplayList, const Transform &inTransform)=0;
    virtual void Render(TextList &inTextList, const Transform &inTransform)=0;
-   virtual void Blit(BlitData inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
-   virtual void EndRender();
+   virtual void Blit(BlitData &inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
+   virtual void EndRender() = 0;
 };
 
 
 class Frame : public IRenderTarget
 {
-   virtual void Flip();
-   virtual void SetEventHadler();
-   virtual void SetTitle();
-   virtual void SetIcon();
-   virtual void GetMouse();
+public:
+   virtual void Flip() = 0;
+   virtual void SetEventHadler() = 0;
+   virtual void SetTitle() = 0;
+   virtual void SetIcon() = 0;
+   virtual void GetMouse() = 0;
 };
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, icon, title );
+enum WindowFlags
+{
+   wfFullScreen = 0x00000001,
+   wfBorderless = 0x00000002,
+   wfResizable  = 0x00000004,
+   wfOpenGL     = 0x00000008,
+};
+
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, String inTitle );
+void MainLoop();
+void TerminateMainLoop();
 
 #ifdef _WIN32
-Frame *CreateNativeFrame(HWND inParent);
+//Frame *CreateNativeFrame(HWND inParent);
 #endif
-
-Stage *CreateNativeState(Frame *inFrame, value inEventHandler);
-
-
 
 
 // ---- Surface API --------------
 
-struct *NativeSurface;
+struct NativeSurface;
+
 
 class Surface
 {
@@ -303,6 +382,7 @@ public:
    char *Base();
    int  Width();
    int  Height();
+   void SetRect(const Rect &inRect, uint32 inRGBA );
 
    NativeSurface *mNativeSurface;
 };
@@ -310,18 +390,17 @@ public:
 
 class BitmapData : public IRenderTarget
 {
-   virtual int getWidth();
-   virtual int getHeight();
+public:
+   virtual int Width();
+   virtual int Height();
    virtual PixelFormat GetPixelFormat();
 
    virtual int GetBytesPerRow();
    virtual char *GetBase();
    virtual void SetPixel();
 
-   virtual NativeSurface *GetSurface() { return 0; }
-
    NativeSurface *mSurface;
 };
 
 
-
+#endif
