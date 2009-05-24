@@ -674,3 +674,4 @@ value nme_create_filter_set(value inFilters,value outPoint)
 DEFINE_PRIM(nme_filter_image, 2);
 DEFINE_PRIM(nme_create_filter_set, 2);
 
+int __force_BitmapFilters = 0;

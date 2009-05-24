@@ -171,6 +171,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    }
 }
 
+#ifdef NME_OPENGL
 bool Gradient::InitOpenGL()
 {
    mResizeID = nme_resize_id;
@@ -189,6 +190,7 @@ bool Gradient::InitOpenGL()
 
    return true;
 }
+#endif
 
 bool Gradient::Is2D()
 {
@@ -221,11 +223,14 @@ int Gradient::DGDY()
 
 Gradient::~Gradient()
 {
+#ifdef NME_OPENGL
    if (mTextureID && mResizeID==nme_resize_id)
       glDeleteTextures(1,&mTextureID);
+#endif
 }
 
 
+#ifdef NME_OPENGL
 void Gradient::BeginOpenGL()
 {
    if ( (mTextureID>0 && mResizeID==nme_resize_id)  || InitOpenGL())
@@ -246,5 +251,6 @@ void Gradient::EndOpenGL()
    glDisable(GL_TEXTURE_1D);
 }
 
+#endif
 
 

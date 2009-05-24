@@ -4,6 +4,7 @@
 #include <neko.h>
 #include <SDL.h>
 #include "Matrix.h"
+#include "config.h"
 
 DECLARE_KIND( k_texture_buffer );
 
@@ -29,10 +30,13 @@ public:
    SDL_Rect    *GetRect() { return &mRect; }
 
    // OpenGL ...
+   #ifdef NME_OPENGL
    void DrawOpenGL(float inAlpha=1.0);
    bool PrepareOpenGL();
    void BindOpenGL(bool inRepeat=false);
    void UnBindOpenGL();
+   #endif
+
    void ScaleTexture(int inX,int inY,float &outX,float &outY);
 
    void SetExtentDirty(int inX0,int inY0,int inX1,int inY1);

@@ -3,8 +3,10 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include <GL/gl.h>
 #include "nme.h"
+#ifdef NME_OPENGL
+#include <GL/gl.h>
+#endif
 #include "nsdl.h"
 #include "ByteArray.h"
 #include "renderer/Renderer.h"
@@ -72,8 +74,10 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
 
 TextureBuffer::~TextureBuffer()
 {
+   #ifdef NME_OPENGL
    if (mTextureID>0 && nme_resize_id==mResizeID)
       glDeleteTextures(1,&mTextureID);
+   #endif
    if (mSurface)
       SDL_FreeSurface(mSurface);
    texture_count--;
@@ -93,7 +97,7 @@ TextureBuffer *TextureBuffer::IncRef()
 }
 
 
-
+#ifdef NME_OPENGL
 bool TextureBuffer::PrepareOpenGL()
 {
    if (mTextureID==0 || mResizeID != nme_resize_id)
@@ -232,6 +236,7 @@ void TextureBuffer::UpdateHardware()
 
    mHardwareDirty = false;
 }
+#endif
 
 
 void TextureBuffer::SetExtentDirty(int inX0,int inY0,int inX1,int inY1)
@@ -319,6 +324,7 @@ void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 }
 
 
+#ifdef NME_OPENGL
 void TextureBuffer::BindOpenGL(bool inRepeat)
 {
    PrepareOpenGL();
@@ -373,6 +379,7 @@ void TextureBuffer::TexCoordScaled(float inX,float inY)
 {
    glTexCoord2f(inX*mSW,inY*mSH);
 }
+#endif
 
 
 void delete_texture_buffer( value texture_buffer )
@@ -948,6 +955,7 @@ public:
          p.SetUVW( inX0 + (i==1||i==2) * inWidth, inY0 + (i==2||i==3) * inHeight);
       }
 
+      #ifdef NME_OPENGL
       if (mOpenGL)
       {
          mTexture->PrepareOpenGL();
@@ -958,6 +966,7 @@ public:
          mTexture->ScaleTexture(inX0,inY0+inHeight,mT01[0],mT01[1]);
       }
       else
+      #endif
       {
          // TODO: convert to hardware surface?
       }
@@ -1016,6 +1025,7 @@ public:
 
    void Blit(double inX0,double inY0,double inTheta,double inScale)
    {
+      #ifdef NME_OPENGL
       if (mOpenGL)
       {
          mTexture->BindOpenGL();
@@ -1061,6 +1071,7 @@ public:
          }
       }
       else
+      #endif
       {
          BlitTo(inX0,inY0,mDestSurface,inTheta,inScale);
       }
@@ -1228,6 +1239,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
    // Unset ...
    if (val_is_null(inRect))
    {
+       #ifdef NME_OPENGL
        if (s && IsOpenGLScreen(s))
        {
           int w = s->w;
@@ -1240,7 +1252,9 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
           glLoadIdentity();
           sUseOffscreen = false;
        }
-       else if (s)
+       else
+       #endif
+       if (s)
        {
          SDL_SetClipRect(s,0);
          if (sUseOffscreen)
@@ -1275,6 +1289,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
       int b = (c) & 0xff;
       int a = val_int(inAlpha);
       {
+          #ifdef NME_OPENGL
           if (IsOpenGLScreen(s))
           {
              int pixel_w = (int)((x1-x0)*mtx.m00);
@@ -1311,6 +1326,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
              }
           }
           else
+          #endif
           {
              // Blit to offscren surface and then paste it ...
              if (mtx.m00!=1.0 || mtx.m11!=1.0)
@@ -1464,3 +1480,6 @@ DEFINE_PRIM(nme_texture_set_bytes, 3);
 DEFINE_PRIM(nme_texture_width, 1);
 DEFINE_PRIM(nme_tile_renderer_width, 1);
 DEFINE_PRIM(nme_tile_renderer_height, 1);
+
+
+int __force_texture_buffer = 0;

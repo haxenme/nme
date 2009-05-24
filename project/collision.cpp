@@ -236,3 +236,4 @@ DEFINE_PRIM(nme_collision_pixel, 5);
 DEFINE_PRIM(nme_collision_boundingbox, 3);
 DEFINE_PRIM(nme_collision_boundingcircle, 3);
 
+int __force_collision = 0;

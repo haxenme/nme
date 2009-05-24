@@ -301,6 +301,12 @@ typedef std::vector<LineJob> LineJobs;
 
 typedef std::vector<Point> Points;
 
+void RGBSWAP(int &ioRGB)
+{
+   int r = ioRGB & 0xff0000;
+   int b = ioRGB & 0x0000ff;
+   ioRGB = (ioRGB & 0xff00ff00) | (r>>16) | (b<<16);
+}
 
 class DrawObject : public Drawable
 {
@@ -331,6 +337,7 @@ public:
                  mTransform(0,0,0,0)
    {
       Init();
+      RGBSWAP(inFillColour);
       mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
@@ -465,11 +472,14 @@ public:
       }
 
       delete mSolidGradient;
+      #ifdef NME_OPENGL
       if (mDisplayList!=0 && nme_resize_id==mResizeID)
          glDeleteLists(mDisplayList,1);
+      #endif
    }
 
 
+   #ifdef NME_OPENGL
    void DrawOpenGL()
    {
       bool is_triangles = mTriangles.size()>0;
@@ -617,6 +627,7 @@ public:
 
       return true;
    }
+   #endif
 
    virtual void GetExtent(Extent2DI &ioExtent,const Matrix &inMatrix, bool inAccurate)
    {
@@ -838,6 +849,7 @@ public:
    {
       SetupCurved(inMatrix);
 
+      #ifdef NME_OPENGL
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
       {
@@ -888,6 +900,7 @@ public:
             glDisable(GL_SCISSOR_TEST);
       }
       else
+      #endif // NME_OPENGL
       {
          PolygonMask *mask = inMaskObj ? inMaskObj->GetPolygonMask() : 0;
          CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj,gScale9);
@@ -919,6 +932,7 @@ public:
    // DrawObject
    bool HitTest(int inX,int inY)
    {
+      #ifdef NME_OPENGL
       if (mIsOGL)
       {
          // Line width seems to get ignored when picking?
@@ -946,6 +960,7 @@ public:
          }
       }
       else
+      #endif // NME_OPENGL
       {
          if (mSolid && mSolid->HitTest(inX-mTX,inY-mTY))
             return true;
@@ -1453,6 +1468,7 @@ public:
                   TextureBuffer *inMarkDirty, MaskObject *inMask,
                   const Viewport &inVP )
    {
+      #ifdef NME_OPENGL
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
       {
@@ -1482,6 +1498,7 @@ public:
             glDisable(GL_SCISSOR_TEST);
       }
       else
+      #endif // NME_OPENGL
       {
          bool blend = gBlendMode!=BLEND_NORMAL;
          bool int_translation =  inMatrix.IsIntTranslation();
@@ -1629,6 +1646,7 @@ public:
    // SurfaceDrawer
    bool HitTest(int inX,int inY)
    {
+      #ifdef NME_OPENGL
       if (mIsOGL)
       {
          GLuint buffer[10];
@@ -1652,6 +1670,7 @@ public:
          return hits>0;
       }
       else
+      #endif // NME_OPENGL
       {
          if (mRenderer && mRenderer->HitTest(inX,inY))
             return true;
@@ -1733,6 +1752,9 @@ value nme_create_text_drawable(value * arg, int nargs )
    if ( nargs != aLAST )
       failure( "nme_create_text_drawable - bad parameter count." );
 
+   #ifndef NME_TTF
+   return val_null;
+   #else
    val_check( arg[aText], string );
    val_check( arg[aFont], string );
    val_check( arg[aSize], int );
@@ -1804,6 +1826,7 @@ value nme_create_text_drawable(value * arg, int nargs )
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
    return v;
+   #endif
 }
 
 
@@ -1815,6 +1838,9 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
    if ( nargs != aLAST )
       failure( "nme_create_glyph_draw_obj - bad parameter count." );
 
+   #ifndef NME_TTF
+   return val_null;
+   #else
 
    val_check( arg[aX], number );
    val_check( arg[aY], number );
@@ -1891,6 +1917,7 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
    value v = alloc_abstract( k_drawable, obj );
    val_gc( v, delete_drawable );
    return v;
+   #endif
 }
 
 
@@ -2117,4 +2144,4 @@ DEFINE_PRIM(nme_create_mask, 0);
 DEFINE_PRIM(nme_add_to_mask, 4);
 DEFINE_PRIM_MULT(nme_create_text_drawable);
 
-
+int __force_draw_object = 0;

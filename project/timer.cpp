@@ -46,3 +46,4 @@ value nme_gettime()
 
 DEFINE_PRIM(nme_gettime, 0);
 
+int __force_timer = 0;

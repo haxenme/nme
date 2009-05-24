@@ -28,6 +28,8 @@
 
 #include <SDL.h>
 
+#include "config.h"
+
 #define RRGB( c )	(val_int( c ) >> 16 & 0xFF);
 #define GRGB( c )	(val_int( c ) >> 8 & 0xFF);
 #define BRGB( c )	(val_int( c ) & 0xFF);

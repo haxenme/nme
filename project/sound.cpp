@@ -26,6 +26,7 @@
 // On windows, seems we have to include this before neko
 #include <iostream>
 
+#include "config.h"
 #include "nsdl.h"
 #include "nme.h"
 #include "ByteArray.h"
@@ -40,9 +41,9 @@ void MutexInit(hxMutex &ioMutex) { InitializeCriticalSection(&ioMutex); }
 void MutexLock(hxMutex &ioMutex) { EnterCriticalSection(&ioMutex); }
 void MutexUnlock(hxMutex &ioMutex) { LeaveCriticalSection(&ioMutex); }
 #else
-#include <pthreads.h>
+#include <pthread.h>
 typedef pthread_mutex_t hxMutex;
-void MutexInit(hxMutex &ioMutex) { pthread_mutex_init(&ioMutex); }
+void MutexInit(hxMutex &ioMutex) { pthread_mutex_init(&ioMutex,0); }
 void MutexLock(hxMutex &ioMutex) { pthread_mutex_lock(&ioMutex); }
 void MutexUnlock(hxMutex &ioMutex) { pthread_mutex_unlock(&ioMutex); }
 #endif
@@ -546,3 +547,5 @@ DEFINE_PRIM(nme_music_volume, 1);
 DEFINE_PRIM(nme_music_isplaying, 0);
 DEFINE_PRIM(nme_music_ispaused, 0);
 DEFINE_PRIM(nme_music_isfading, 0);
+
+int __force_sound = 0;

@@ -9,29 +9,39 @@ NDLL_OBJS := $(SOURCE_FILES:%.cpp=ndll_objs/%.o)
 DSO_OBJS := $(SOURCE_FILES:%.cpp=dso_objs/%.o)
 
 
-INCLUDE += -I/usr/include/SDL -I/opt/local/include/SDL -I/usr/include/freetype2 -I/opt/local/include/freetype2 -I/usr/X11R6/include/
+INCLUDE += -I../contrib/SDL_mixer-1.2.8_p1  -I/usr/include/SDL -I/opt/local/include/SDL -I/usr/include/freetype2 -I/opt/local/include/freetype2 -I/usr/X11R6/include/
 NDLL_INCLUDE = $(INCLUDE) -I$(NEKO_INSTALL_PATH)/include
 DSO_INCLUDE  = $(INCLUDE) -I$(HXCPP)/include
 
-NDLL_CFLAGS += -O2 $(NDLL_INCLUDE) -fPIC
-DSO_CFLAGS += -O2 $(DSO_INCLUDE) -fPIC
+NDLL_CFLAGS += $(NDLL_INCLUDE) -fPIC
+DSO_CFLAGS += $(DSO_INCLUDE) -fPIC
 
+ifdef HXCPP_DEBUG
+NDLL_CFLAGS += -g
+DSO_CFLAGS += -g
+else
+NDLL_CFLAGS += -O2
+DSO_CFLAGS += -O2
+endif
 
 all:ndll dso
 
+OS := $(OSTYPE:darwin%=darwin)
 
-ifeq ("x$(OSTYPE)","xdarwin")
+ifeq ("x$(OS)","xdarwin")
 
-LIBS := SDL_mixer SDL_image SDL_ttf SDLmain SDL freetype X11
+LIBS := SDL_image SDL_ttf SDLmain SDL freetype X11
 FULL_LIBS:= $(LIBS:%=-l%)
+FULL_LIBS += ../contrib/SDL_mixer-1.2.8_p1/build/.libs/libSDL_mixer.a 
 NDLL_DIR := ../ndll/Mac/
 LD_FLAGS := -fpic -fPIC -dynamiclib  $(HXCPP)/bin/Mac/hxcpp.dylib
 MACBOOT := common_objs/MacBoot.o
 $(MACBOOT) : MacBoot.m
 	@mkdir -p common_objs
 	g++ $(INCLUDE) MacBoot.m -c -o $(MACBOOT)
-FULL_LIBS += $(MACBOOT) $(NEKO_INSTALL_PATH)/libneko.dylib -framework Cocoa -framework OpenGL
+FULL_LIBS += $(MACBOOT) $(NEKO_INSTALL_PATH)/libneko.dylib -framework Cocoa -framework OpenGL -framework Quicktime
 DSO := $(NDLL_DIR)/nme.dylib
+STATIC_LIB := $(NDLL_DIR)/libstatic_nme.a
 
 else
 
@@ -53,8 +63,11 @@ FULL_LIBS += ../../thirdparty/lib/static_linux/libogg.a
 NDLL_DIR := ../ndll/Linux/
 LD_FLAGS := -Wl-Bsymbolic
 DSO := $(NDLL_DIR)/nme.dso
+STATIC_LIB := $(NDLL_DIR)/libstatic_nme.a
 
 endif
+
+lib : $(STATIC_LIB)
 
 NDLL := $(NDLL_DIR)/nme.ndll
 
@@ -96,3 +109,7 @@ $(NDLL) : $(NDLL_OBJS) $(MACBOOT)
 	g++ -shared $(LD_FLAGS) $(NDLL_OBJS) -o $(NDLL) $(LIB_PATH) $(FULL_LIBS) -lm
 $(DSO) : $(DSO_OBJS) $(MACBOOT)
 	g++ -shared $(LD_FLAGS) $(DSO_OBJS) -o $(DSO) $(LIB_PATH) $(FULL_LIBS) -lm
+$(STATIC_LIB) : $(DSO_OBJS)
+	ar -cr $(STATIC_LIB) $(DSO_OBJS)
+
+

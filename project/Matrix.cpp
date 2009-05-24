@@ -1,3 +1,4 @@
+#include "config.h"
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -26,6 +27,7 @@ void Matrix::TransformHQCorner(float inX,float inY,int &outX,int &outY) const
 
 
 
+#ifdef NME_OPENGL
 void Matrix::GLMult() const
 {
    double matrix[] =
@@ -37,6 +39,7 @@ void Matrix::GLMult() const
    };
    glMultMatrixd(matrix);
 }
+#endif
 
 inline static void Set(double &outVal, value inValue)
 {

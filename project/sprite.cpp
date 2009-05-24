@@ -136,3 +136,5 @@ DEFINE_PRIM(nme_sprite_draw, 4);
 DEFINE_PRIM_MULT(nme_sprite_transform);
 DEFINE_PRIM_MULT(nme_sprite_transform_surface);
 DEFINE_PRIM(nme_sprite_alpha, 2);
+
+int __force_sprite = 0;

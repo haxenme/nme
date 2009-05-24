@@ -52,6 +52,41 @@ DEFINE_KIND( k_surf );
 DEFINE_KIND( k_snd );
 DEFINE_KIND( k_mus );
 
+extern int __force_BitmapFilters;
+extern int __force_ByteArray;
+extern int __force_collision;
+extern int __force_draw_object;
+extern int __force_gl_helpers;
+extern int __force_sound;
+extern int __force_sprite;
+extern int __force_text;
+extern int __force_text_texture;
+extern int __force_texture_buffer;
+extern int __force_timer;
+
+// Reference this to bring in all the symbols for the static library
+extern "C" {
+
+int nme_register_prims()
+{
+return
+      __force_BitmapFilters +
+      __force_ByteArray +
+      __force_collision +
+      __force_draw_object +
+      __force_gl_helpers +
+      #ifdef NME_MIXER
+      __force_sound +
+      #endif
+      __force_sprite +
+      __force_text +
+      __force_text_texture +
+      __force_texture_buffer +
+      __force_timer;
+}
+
+}
+
 
 // As opposed to opengl hardware ..
 static bool sUseSystemHardware = false;
@@ -88,6 +123,7 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
 
 SDL_Surface* nme_loadimage( value file )
 {
+#ifdef NME_IMAGE_IO
    val_check( file, string );
 
    SDL_Surface* surf;
@@ -99,6 +135,9 @@ SDL_Surface* nme_loadimage( value file )
    SDL_Surface *surface = ConvertToPreferredFormat( surf );
   	SDL_FreeSurface( surf );
    return surface;
+#else
+   return NULL;
+#endif
 }
 
 struct MyRWOps : SDL_RWops
@@ -191,6 +230,9 @@ struct MyRWOps : SDL_RWops
 SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
  value inAlpha, value inAlphaLen)
 {
+#ifndef NME_IMAGE_IO
+   return 0;
+#else
 	val_check( inAlphaLen, int );
 	val_check( inLen, int );
    int len = val_int(inLen);
@@ -230,7 +272,9 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
 
 
 	return surf;
+#endif // NME_IMAGE_IO
 }
+
 
 
 // creates a surface with alpha channel
@@ -274,6 +318,7 @@ static value nme_surface_clear( value surf, value c )
 	Uint8 g = GRGB( c );
 	Uint8 b = BRGB( c );
 
+        #ifdef NME_OPENGL
         if (IsOpenGLScreen(scr))
         {
            int w = scr->w;
@@ -292,6 +337,7 @@ static value nme_surface_clear( value surf, value c )
            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
         else
+        #endif
         {
 	   SDL_FillRect( scr, NULL, SDL_MapRGB( scr->format, r, g, b ) );
         }
@@ -609,7 +655,7 @@ value nme_get_mouse_position()
 
 
 #define NME_FULLSCREEN 0x0001
-#define NME_OPENGL     0x0002
+#define NME_OPENGL_FLAG  0x0002
 #define NME_RESIZABLE  0x0004
 #define NME_HWSURF     0x0008
 #define NME_VSYNC      0x0010
@@ -622,7 +668,7 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 value nme_screen_init( value width, value height, value title, value in_flags, value icon )
 {
-#ifdef __APPLE__
+#ifdef NME_MACBOOT
    MacBoot();
 #endif
 
@@ -631,7 +677,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    int flags = val_int(in_flags);
 
    bool fullscreen = (flags & NME_FULLSCREEN) != 0;
-   bool opengl = (flags & NME_OPENGL) != 0;
+   bool opengl = (flags & NME_OPENGL_FLAG) != 0;
    bool resizable = (flags & NME_RESIZABLE) != 0;
 
    Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
@@ -709,13 +755,17 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
          failure( SDL_GetError() );
    }
 
+   #ifdef NME_TTF
    if ( TTF_Init() != 0 )
       printf("unable to initialize the truetype font support\n");
+   #endif
 
    SDL_WM_SetCaption( val_string( title ), 0 );
 
+   #ifdef NME_MIXER
    if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
       printf("unable to initialize the sound support\n");
+   #endif
 
    gCurrentScreen = screen;
    return alloc_abstract( k_surf, screen );
@@ -861,12 +911,15 @@ value nme_event()
 
 value nme_screen_close()
 {
+        #ifdef NME_MIXER
 	Mix_CloseAudio();
-	//sge_TTF_Quit();
+        #endif
 	SDL_Quit();
 	return alloc_int( 0 );
 }
 
+
+#ifdef NME_CLIPBOARD
 static void init_scrap_once()
 {
    static bool init=false;
@@ -906,13 +959,15 @@ value nme_set_clipboard(value inVal)
    return alloc_int(0);
 }
 
+DEFINE_PRIM(nme_get_clipboard,0);
+DEFINE_PRIM(nme_set_clipboard, 1);
+
+#endif
+
 
 DEFINE_PRIM(nme_event, 0);
 DEFINE_PRIM(nme_delay, 1);
 DEFINE_PRIM(nme_flipbuffer, 1);
-
-DEFINE_PRIM(nme_get_clipboard,0);
-DEFINE_PRIM(nme_set_clipboard, 1);
 
 DEFINE_PRIM(nme_create_image_32,3);
 DEFINE_PRIM(nme_copy_surface,1);
@@ -930,3 +985,4 @@ DEFINE_PRIM(nme_set_clip_rect, 2);
 DEFINE_PRIM(nme_get_clip_rect, 1);
 DEFINE_PRIM(nme_set_cursor, 1);
 DEFINE_PRIM(nme_get_mouse_position, 0);
+

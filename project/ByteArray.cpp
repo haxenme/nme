@@ -78,3 +78,4 @@ DEFINE_PRIM(nme_byte_array_get,2);
 DEFINE_PRIM(nme_byte_array_set,3);
 DEFINE_PRIM(nme_read_file,1);
 
+int __force_ByteArray = 0;

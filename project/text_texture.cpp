@@ -1,9 +1,11 @@
-#include <SDL_ttf.h>
 #include <map>
 #include <string>
 #include "texture_buffer.h"
 #include <neko.h>
 
+#ifdef NME_TTF
+
+#include <SDL_ttf.h>
 
 typedef std::pair<std::string,int> FontDef;
 
@@ -105,13 +107,16 @@ TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
    return font;
 }
 
-
+#endif // NME_TTF
 
 
 TextureBuffer *CreateTextTexture(const std::string &inFont,
                                int inPointSize,SDL_Color inColour,
                                const char *inText)
 {
+   #ifndef NME_TTF
+   return 0;
+   #else
    //printf("CreateTextTexture %s/%s\n",inFont.c_str(),inText);
    TTF_Font *font = FindOrCreateFont(inFont,inPointSize);
    //printf("Font = %p\n",font);
@@ -122,6 +127,7 @@ TextureBuffer *CreateTextTexture(const std::string &inFont,
    SDL_Surface *initial = TTF_RenderText_Blended(font, inText, inColour);
 
    return new TextureBuffer(initial);
+   #endif
 }
 
 
@@ -149,4 +155,4 @@ value nme_create_text_texture( value font, value point_size,
 
 DEFINE_PRIM(nme_create_text_texture, 4);
 
-
+int __force_text_texture = 0;

@@ -48,6 +48,7 @@ DEFINE_KIND( k_font );
 // Remember to call TTF_Quit() when done.
 value nme_ttf_shaded( value* args, int nargs )
 {
+#ifdef NME_TTF
 	if ( nargs < 9 ) failure( "not enough parameters passed to function nme_ttf_shaded. expected 9" );
 	val_check_kind( args[0], k_surf ); // screen
 	val_check( args[1], string ); // string
@@ -89,6 +90,7 @@ value nme_ttf_shaded( value* args, int nargs )
         SDL_FreeSurface(text_surf);
 
 	TTF_CloseFont(font);
+#endif
         return alloc_int(0);
 }
 
@@ -99,9 +101,11 @@ void delete_font( value font )
    {
       val_gc( font, NULL );
 
+      #ifdef NME_TTF
       TTF_Font *ttf_font = FONT(font);
       // Since create-or-find is used, no need to do this ...
       // TTF_CloseFont(font);
+      #endif
    }
 }
 
@@ -109,6 +113,7 @@ void delete_font( value font )
 
 value nme_create_font_handle(value inFace,value inSize)
 {
+   #ifdef NME_TTF
    val_check( inFace, string );
    val_check( inSize, int );
 
@@ -119,10 +124,14 @@ value nme_create_font_handle(value inFace,value inSize)
    value v = alloc_abstract( k_font, font );
    val_gc( v, delete_font );
    return v;
+   #else
+   return val_null;
+   #endif
 }
 
 value nme_get_font_metrics(value inFont)
 {
+   #ifdef NME_TTF
    if (val_is_kind(inFont,k_font))
    {
       TTF_Font *font = FONT(inFont);
@@ -142,6 +151,7 @@ value nme_get_font_metrics(value inFont)
       alloc_field( result, val_id("max_x_advance"), alloc_int(max_adv));
       return result;
    }
+   #endif
 
    return val_null;
 }
@@ -227,6 +237,7 @@ static FT_Outline_Funcs sOutlineFuncs =
 value nme_get_glyph_metrics(value inFont,value inChar)
 {
    val_check( inChar, int );
+   #ifdef NME_TTF
    if (val_is_kind(inFont,k_font))
    {
       int c = val_int(inChar);
@@ -247,11 +258,13 @@ value nme_get_glyph_metrics(value inFont,value inChar)
 
       return result;
    }
+   #endif
    return val_null;
 }
 
 void IterateOutline(value inFont, int inChar, OutlineIterator *inIter)
 {
+   #ifdef NME_TTF
    if (val_is_kind(inFont,k_font))
    {
       TTF_Font *font = FONT(inFont);
@@ -272,6 +285,7 @@ void IterateOutline(value inFont, int inChar, OutlineIterator *inIter)
          }
       }
    }
+   #endif
 }
 
 
@@ -280,3 +294,5 @@ DEFINE_PRIM_MULT(nme_ttf_shaded);
 DEFINE_PRIM(nme_create_font_handle,2);
 DEFINE_PRIM(nme_get_font_metrics,1);
 DEFINE_PRIM(nme_get_glyph_metrics,2);
+
+int __force_text = 0;
