@@ -72,11 +72,12 @@ class Bang
       mPos = new Point( manager.mouseX()+mOffX, manager.mouseY()+mOffY );
       mTimeStart = haxe.Timer.stamp();
       if (manager.mouseY()<100)
-         mSound2.playChannel(-1,0);
-      else if (manager.mouseY()>200)
-         mSound3.playChannel(-1,0);
+         mSound2.play(0,-1);
       else
-         mSound1.playChannel(-1,0);
+		if (manager.mouseY()>200)
+         mSound3.play(0,-1);
+      else
+         mSound1.play(0,-1);
    }
 
    public function alive()
@@ -109,7 +110,7 @@ class Drums extends nme.GameBase
    {
       super( wndWidth, wndHeight, wndCaption, false, "Data/ico.gif" );
 
-      Sound.setChannels( 8 );
+      Sound.numChannels = 8;
       Music.init( "Data/Party_Gu-Jeremy_S-8250_hifi.mp3" );
       // -1 = loop
       Music.play( -1 );

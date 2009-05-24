@@ -1,3 +1,4 @@
 -neko drums.n
 -main Drums
+-lib I32
 -lib nme
