@@ -73,6 +73,9 @@ int soundGetNextDoneChannel();
 bool IsOpenGLMode();
 bool IsOpenGLScreen(SDL_Surface *inSurface);
 
+void nmeOrtho(int inWidth,int inHeight);
+void nmeOrtho(int inX0, int inY0,int inWidth,int inHeight);
+
 extern SDL_Surface *gCurrentScreen;
 
 // When the resize id changes, textures and display lists become invalid.

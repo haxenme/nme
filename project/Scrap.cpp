@@ -1,9 +1,11 @@
 
 /* Handle clipboard text and data in arbitrary formats */
 
+#include "config.h"
+#ifdef NME_CLIPBOARD
+
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "config.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -639,3 +641,5 @@ PRIVATE int clipboard_filter(const SDL_Event *event)
   return(1);
 }
 #endif /* X11_SCRAP */
+
+#endif // NME_CLIPBOARD

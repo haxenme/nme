@@ -23,10 +23,13 @@
  * DAMAGE.
  */
 
-// On windows, seems we have to include this before neko
-#include <iostream>
+
 
 #include "config.h"
+
+#ifdef NME_MIXER
+// On windows, seems we have to include this before neko
+#include <iostream>
 #include "nsdl.h"
 #include "nme.h"
 #include "ByteArray.h"
@@ -549,3 +552,5 @@ DEFINE_PRIM(nme_music_ispaused, 0);
 DEFINE_PRIM(nme_music_isfading, 0);
 
 int __force_sound = 0;
+
+#endif // NME_MIXER

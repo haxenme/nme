@@ -65,7 +65,12 @@ bool nme_collision_transparentpixel(SDL_Surface *surface , int u , int v)
 	}
 
 	/*test whether pixels color == color of transparent pixels for that surface*/
+	#ifdef SDL13
+        // no support for colour key yet?
+	return pixelcolor & 0xff000000;
+	#else
 	return (pixelcolor == surface->format->colorkey);
+	#endif
 }
 
 value nme_collision_pixel( value asurf, value arect,

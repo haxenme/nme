@@ -171,22 +171,23 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    }
 }
 
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
 bool Gradient::InitOpenGL()
 {
    mResizeID = nme_resize_id;
    glGenTextures(1, &mTextureID);
-   glBindTexture(GL_TEXTURE_1D, mTextureID);
-   glTexImage1D(GL_TEXTURE_1D, 0, 4,  256, 0,
+   glBindTexture(GL_TEXTURE_2D, mTextureID);
+   glTexImage2D(GL_TEXTURE_2D, 0, 4,  256, 1, 0,
       GL_BGRA, GL_UNSIGNED_BYTE, &mColours[0] );
-   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
-   glTexEnvi(GL_TEXTURE_1D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
+   glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
    // TODO: reflect = double up?
    if (mFlags & gfRepeat)
-      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_REPEAT);
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
    else
-      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
 
    return true;
 }
@@ -223,32 +224,32 @@ int Gradient::DGDY()
 
 Gradient::~Gradient()
 {
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
    if (mTextureID && mResizeID==nme_resize_id)
       glDeleteTextures(1,&mTextureID);
 #endif
 }
 
 
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
 void Gradient::BeginOpenGL()
 {
    if ( (mTextureID>0 && mResizeID==nme_resize_id)  || InitOpenGL())
    {
       glColor4f(1,1,1,1);
-      glBindTexture(GL_TEXTURE_1D, mTextureID);
-      glEnable(GL_TEXTURE_1D);
+      glBindTexture(GL_TEXTURE_2D, mTextureID);
+      glEnable(GL_TEXTURE_2D);
    }
 }
 
-void Gradient::OpenGLTexture(double inX,double inY)
+void Gradient::OpenGLTexture(float *outTex,float inX,float inY)
 {
-   glTexCoord1d( mTransMatrix.m00*inX + mTransMatrix.m01*inY + mTransMatrix.mtx);
+   *outTex = (float)( mTransMatrix.m00*inX + mTransMatrix.m01*inY + mTransMatrix.mtx);
 }
 
 void Gradient::EndOpenGL()
 {
-   glDisable(GL_TEXTURE_1D);
+   glDisable(GL_TEXTURE_2D);
 }
 
 #endif

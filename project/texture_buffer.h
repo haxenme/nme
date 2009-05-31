@@ -1,10 +1,10 @@
 #ifndef TEXTURE_BUFFER_H
 #define TEXTURE_BUFFER_H
 
+#include "config.h"
 #include <neko.h>
 #include <SDL.h>
 #include "Matrix.h"
-#include "config.h"
 
 DECLARE_KIND( k_texture_buffer );
 
@@ -30,7 +30,7 @@ public:
    SDL_Rect    *GetRect() { return &mRect; }
 
    // OpenGL ...
-   #ifdef NME_OPENGL
+   #ifdef NME_ANY_GL
    void DrawOpenGL(float inAlpha=1.0);
    bool PrepareOpenGL();
    void BindOpenGL(bool inRepeat=false);
@@ -42,8 +42,8 @@ public:
    void SetExtentDirty(int inX0,int inY0,int inX1,int inY1);
    void UpdateHardware();
 
-   void TexCoord(float inX,float inY);
-   void TexCoordScaled(float inX,float inY);
+   void TexCoord(float *outCoord,float inX,float inY);
+   void TexCoordScaled(float *outCoord,float inX,float inY);
    TextureBuffer *IncRef();
    void DecRef();
 
@@ -98,9 +98,9 @@ struct TextureReference
       { mTransMatrix = mOrigMatrix.Inverse(); }
 
 
-   void OpenGLTexture(double inX,double inY,const Matrix &inMtx)
+   void OpenGLTexture(float *outTex,float inX,float inY,const Matrix &inMtx)
    {
-       mTexture->TexCoordScaled(
+       mTexture->TexCoordScaled( outTex,
                  (float)(inX*inMtx.m00 + inY*inMtx.m01 + inMtx.mtx),
                  (float)(inX*inMtx.m10 + inY*inMtx.m11 + inMtx.mty));
    }

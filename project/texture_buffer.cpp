@@ -4,8 +4,8 @@
 #include <windows.h>
 #endif
 #include "nme.h"
-#ifdef NME_OPENGL
-#include <GL/gl.h>
+#ifdef NME_ANY_GL
+#include <SDL_opengl.h>
 #endif
 #include "nsdl.h"
 #include "ByteArray.h"
@@ -74,7 +74,7 @@ TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
 
 TextureBuffer::~TextureBuffer()
 {
-   #ifdef NME_OPENGL
+   #ifdef NME_ANY_GL
    if (mTextureID>0 && nme_resize_id==mResizeID)
       glDeleteTextures(1,&mTextureID);
    #endif
@@ -97,7 +97,7 @@ TextureBuffer *TextureBuffer::IncRef()
 }
 
 
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
 bool TextureBuffer::PrepareOpenGL()
 {
    if (mTextureID==0 || mResizeID != nme_resize_id)
@@ -223,7 +223,6 @@ void TextureBuffer::UpdateHardware()
    if (mDirtyX1>mPixelWidth)  mDirtyX1 = mPixelWidth;
    if (mDirtyY1>mPixelHeight) mDirtyY1 = mPixelHeight;
 
-   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
    glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->w);
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, mDirtyX0);
    glPixelStorei(GL_UNPACK_SKIP_ROWS,   mDirtyY0);
@@ -232,10 +231,28 @@ void TextureBuffer::UpdateHardware()
          mDirtyX1-mDirtyX0, mDirtyY1 - mDirtyY0,
          GL_BGRA, GL_UNSIGNED_BYTE, mSurface->pixels );
 
-   glPopClientAttrib();
+   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+   glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+   glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
 
    mHardwareDirty = false;
 }
+
+
+
+void TextureBuffer::TexCoord(float *outCoord,float inX,float inY)
+{
+   outCoord[0] = inX*mX1;
+   outCoord[1] = inY*mY1;
+}
+
+void TextureBuffer::TexCoordScaled(float *outCoord,float inX,float inY)
+{
+   outCoord[0] = inX*mSW;
+   outCoord[1] = inY*mSH;
+}
+
+
 #endif
 
 
@@ -324,7 +341,7 @@ void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 }
 
 
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
 void TextureBuffer::BindOpenGL(bool inRepeat)
 {
    PrepareOpenGL();
@@ -355,30 +372,21 @@ void TextureBuffer::DrawOpenGL(float inAlpha)
    glColor4f(1,1,1,inAlpha);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-   glBegin(GL_QUADS);
-   glTexCoord2d(0,0);
-   glVertex2i(0,0);
-   glTexCoord2f(0,mY1);
-   glVertex2i(0,mPixelHeight);
-   glTexCoord2f(mX1,mY1);
-   glVertex2i(mPixelWidth,mPixelHeight);
-   glTexCoord2f(mX1,0);
-   glVertex2i(mPixelWidth,0);
-   glEnd();
+
+   float verts[][2] = { {0,0}, {0,mPixelHeight}, {mPixelWidth,mPixelHeight}, {mPixelWidth,0} };
+   float tex[][2] = { {0,0}, {0,mY1}, {mX1,mY1}, {mX1,0} };
+   glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
+   glTexCoordPointer(2, GL_FLOAT, 0, &tex[0][0] );
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   glDrawArrays(GL_QUADS,0,4);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
    glDisable(GL_TEXTURE_2D);
    glDisable(GL_BLEND);
 }
 
-void TextureBuffer::TexCoord(float inX,float inY)
-{
-   glTexCoord2f(inX*mX1,inY*mY1);
-}
-
-void TextureBuffer::TexCoordScaled(float inX,float inY)
-{
-   glTexCoord2f(inX*mSW,inY*mSH);
-}
 #endif
 
 
@@ -955,15 +963,15 @@ public:
          p.SetUVW( inX0 + (i==1||i==2) * inWidth, inY0 + (i==2||i==3) * inHeight);
       }
 
-      #ifdef NME_OPENGL
+      #ifdef NME_ANY_GL
       if (mOpenGL)
       {
          mTexture->PrepareOpenGL();
          mTexture->UnBindOpenGL();
-         mTexture->ScaleTexture(inX0,inY0,mT00[0],mT00[1]);
-         mTexture->ScaleTexture(inX0+inWidth,inY0,mT10[0],mT10[1]);
-         mTexture->ScaleTexture(inX0+inWidth,inY0+inHeight,mT11[0],mT11[1]);
-         mTexture->ScaleTexture(inX0,inY0+inHeight,mT01[0],mT01[1]);
+         mTexture->ScaleTexture(inX0,inY0,mTex[0][0],mTex[0][1]);
+         mTexture->ScaleTexture(inX0+inWidth,inY0,mTex[1][0],mTex[1][1]);
+         mTexture->ScaleTexture(inX0+inWidth,inY0+inHeight,mTex[2][0],mTex[2][1]);
+         mTexture->ScaleTexture(inX0,inY0+inHeight,mTex[3][0],mTex[3][1]);
       }
       else
       #endif
@@ -1025,49 +1033,57 @@ public:
 
    void Blit(double inX0,double inY0,double inTheta,double inScale)
    {
-      #ifdef NME_OPENGL
+      #ifdef NME_ANY_GL
       if (mOpenGL)
       {
          mTexture->BindOpenGL();
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor3f(1,1,1);
+         glColor4f(1,1,1,1);
+
          if (inTheta==0.0)
          {
             inX0 -= mHotX;
             inY0 -= mHotY;
-            glBegin(GL_QUADS);
-            glTexCoord2fv(mT00);
-            glVertex2d(inX0,inY0);
-            glTexCoord2fv(mT01);
-            glVertex2d(inX0,inY0+mSrcRect.h);
-            glTexCoord2fv(mT11);
-            glVertex2d(inX0+mSrcRect.w,inY0+mSrcRect.h);
-            glTexCoord2fv(mT10);
-            glVertex2d(inX0+mSrcRect.w,inY0);
-            glEnd();
+
+            float verts[][2] = {
+                     {inX0,inY0},
+                     {inX0,inY0+mSrcRect.h},
+                     {inX0+mSrcRect.w,inY0+mSrcRect.h},
+                     {inX0+mSrcRect.w,inY0} };
+            glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
+            glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
+            glEnableClientState(GL_VERTEX_ARRAY);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            glDrawArrays(GL_QUADS,0,4);
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
          else
          {
             glPushMatrix();
 
-            glTranslated(inX0,inY0,0);
-            glRotated(inTheta,0.0,0.0,-1.0);
-            glScaled(inScale,inScale,1);
-            glTranslated(-mHotX,-mHotY,0);
-            glBegin(GL_QUADS);
-            glTexCoord2fv(mT00);
-            glVertex2i(0,0);
-            glTexCoord2fv(mT01);
-            glVertex2i(0,mSrcRect.h);
-            glTexCoord2fv(mT11);
-            glVertex2i(mSrcRect.w,mSrcRect.h);
-            glTexCoord2fv(mT10);
-            glVertex2i(mSrcRect.w,0);
-            glEnd();
+            glTranslatef(inX0,inY0,0);
+            glRotatef(inTheta,0.0,0.0,-1.0);
+            glScalef(inScale,inScale,1);
+            glTranslatef(-mHotX,-mHotY,0);
+
+            float verts[][2] = {
+                   { 0, 0 },
+                   { 0, mSrcRect.h },
+                   { mSrcRect.w , mSrcRect.h },
+                   { mSrcRect.w , 0}
+            };
+
+            glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
+            glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
+            glEnableClientState(GL_VERTEX_ARRAY);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            glDrawArrays(GL_QUADS,0,4);
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
             glPopMatrix();
-
          }
       }
       else
@@ -1083,10 +1099,7 @@ public:
    SDL_Surface *mDestSurface;
    SDL_Rect    mSrcRect;
    // Opengl
-   float mT00[2];
-   float mT10[2];
-   float mT01[2];
-   float mT11[2];
+   float mTex[4][2];
 
    double mHotX,mHotY;
    TriPoints mPoints;
@@ -1239,15 +1252,14 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
    // Unset ...
    if (val_is_null(inRect))
    {
-       #ifdef NME_OPENGL
+       #ifdef NME_ANY_GL
        if (s && IsOpenGLScreen(s))
        {
           int w = s->w;
           int h = s->h;
           glViewport(0,0,w,h);
           glMatrixMode(GL_PROJECTION);
-          glLoadIdentity();
-          glOrtho(0,w, h,0, -1000,1000);
+          nmeOrtho(w,h);
           glMatrixMode(GL_MODELVIEW);
           glLoadIdentity();
           sUseOffscreen = false;
@@ -1289,7 +1301,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
       int b = (c) & 0xff;
       int a = val_int(inAlpha);
       {
-          #ifdef NME_OPENGL
+          #ifdef NME_ANY_GL
           if (IsOpenGLScreen(s))
           {
              int pixel_w = (int)((x1-x0)*mtx.m00);
@@ -1302,7 +1314,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
              int h = (int)val_number(val_field(inRect,val_id_height));
 
              // By setting origin to 0,0 we make coords relative to blit area.
-             glOrtho(0,w, h,0, -1000,1000);
+             nmeOrtho(w,h);
              glMatrixMode(GL_MODELVIEW);
              glLoadIdentity();
 
@@ -1317,12 +1329,12 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
                 glDisable(GL_TEXTURE_2D);
                 glEnable(GL_BLEND);
                 glColor4ub(r,g,b,a);
-                glBegin(GL_QUADS);
-                  glVertex2i(0,0);
-                  glVertex2i(0,h);
-                  glVertex2i(w,h);
-                glVertex2i(w,0);
-                glEnd();
+
+                float verts[][2] = { {0,0}, {0,h}, {w,h}, {w,0} };
+                glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glDrawArrays(GL_QUADS,0,4);
+                glDisableClientState(GL_VERTEX_ARRAY);
              }
           }
           else

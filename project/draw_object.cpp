@@ -1,3 +1,4 @@
+#include "config.h"
 #include <SDL.h>
 #include <string>
 #include <neko.h>
@@ -5,7 +6,12 @@
 #ifdef __WIN32__
 #include <windows.h>
 #endif
+
+#ifdef NME_ANY_GL
 #include <SDL_opengl.h>
+#endif
+
+
 
 #include <vector>
 
@@ -337,7 +343,10 @@ public:
                  mTransform(0,0,0,0)
    {
       Init();
+      // TODO:
+      #ifdef IPHONE
       RGBSWAP(inFillColour);
+      #endif
       mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
@@ -396,6 +405,8 @@ public:
       size_t n = inPoints.size();
       IntVec remap(n);
 
+      mTex.resize(0);
+      mLineTex.resize(0);
       mPoints.resize(0);
       mPoints.reserve(n);
       mConnection.resize(0);
@@ -449,6 +460,8 @@ public:
    void ClearRenderers()
    {
       mRendersWithoutDisplayList = 0;
+      mTex.resize(0);
+      mLineTex.resize(0);
       delete mSolid;
       mSolid = 0;
 
@@ -479,7 +492,7 @@ public:
    }
 
 
-   #ifdef NME_OPENGL
+   #ifdef NME_ANY_GL
    void DrawOpenGL()
    {
       bool is_triangles = mTriangles.size()>0;
@@ -517,6 +530,7 @@ public:
          {
             TriPoint *point = &mTriPoints[0];
             Tri *tri = &mTriangles[0];
+#if 0
             glBegin(GL_TRIANGLES);
             for(size_t t=0;t<n;t++)
             {
@@ -541,24 +555,54 @@ public:
                tri++;
             }
             glEnd();
+#endif
          }
          else
          {
             // TODO: tesselate
             const CurvedPoint *p = &mPoints[0];
-            glBegin(GL_TRIANGLE_FAN);
-            for(size_t i=0;i<n;i++)
-            {
-               if (mSolidGradient)
-                  mSolidGradient->OpenGLTexture( mPoints[i].mX, mPoints[i].mY );
-               else if (tex)
-                  mTexture->OpenGLTexture( mPoints[i].mX, mPoints[i].mY,
-                                     mTexture->mTransMatrix);
 
-               glVertex2f( mPoints[i].mX, mPoints[i].mY );
-               p++;
+            //glTexCoordPointer(2, GL_FLOAT, 0, &tex[0][0] );
+            //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+            if (mSolidGradient)
+            {
+               if (mTex.size()!=n)
+               {
+                  mTex.resize(n);
+                  float *t = &mTex[0];
+                  for(size_t i=0;i<n;i++)
+                      mSolidGradient->OpenGLTexture(t++, p[i].mX, p[i].mY );
+                }
+                glTexCoordPointer(1, GL_FLOAT, 0, &mTex[0] );
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             }
-            glEnd();
+            else if (tex)
+            {
+               if (mTex.size()!=n*2)
+               {
+                  mTex.resize(n*2);
+                  float *t = &mTex[0];
+                  for(size_t i=0;i<n;i++)
+                  {
+                      // TODO: texture matix transform ?
+                      mTexture->OpenGLTexture(t, p[i].mX, p[i].mY, mTexture->mTransMatrix);
+                      t+=2;
+                  }
+                }
+                glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            }
+       
+
+            glVertexPointer(2, GL_FLOAT, 0, p);
+            glEnableClientState(GL_VERTEX_ARRAY);
+
+            glDrawArrays(GL_TRIANGLE_FAN,0,n);
+
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
 
          if (tex)
@@ -567,7 +611,6 @@ public:
 
       if (mSolidGradient)
          mSolidGradient->EndOpenGL();
-
    
       for(size_t j=0;j<mLineJobs.size();j++)
       {
@@ -578,8 +621,7 @@ public:
          else
          {
             int col = line.mColour;
-            glColor4ub(col >>16,col >> 8,col,
-                 (unsigned char)(line.mAlpha*255.0));
+            glColor4ub(col >>16,col >> 8,col, (unsigned char)(line.mAlpha*255.0));
          }
 
          glLineWidth( (float)line.mThickness );
@@ -588,6 +630,7 @@ public:
          if (is_triangles)
          {
             Tri &tri = mTriangles[j];
+#if 0
             glBegin(GL_LINE_LOOP);
             for(size_t k=0;k<3;k++)
             {
@@ -595,9 +638,47 @@ public:
                glVertex2d( point.mX, point.mY );
             }
             glEnd();
+#endif
          }
          else
          {
+            const CurvedPoint *p = &mPoints[0];
+            if (line.mGradient)
+            {
+               if (mLineTex.size()!=n)
+               {
+                  mLineTex.resize(n);
+                  float *t = &mLineTex[0];
+                  for(size_t i=0;i<n;i++)
+                  {
+                     size_t pid = line.mPointIndex0 + i;
+                     line.mGradient->OpenGLTexture(t++, p[pid].mX, p[pid].mY );
+                  }
+                }
+                glTexCoordPointer(1, GL_FLOAT, 0, &mTex[0] );
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            }
+
+            // todo: cache
+            std::vector<float> point_array(n*2);
+            float *f = &point_array[0];
+            for(size_t i=0;i<n;i++)
+            {
+               size_t pid = line.mPointIndex0 + i;
+               *f++ = mPoints[pid].mX;
+               *f++ = mPoints[pid].mY;
+            }
+   
+
+            glVertexPointer(2, GL_FLOAT, 0, &point_array[0]);
+            glEnableClientState(GL_VERTEX_ARRAY);
+
+            glDrawArrays(GL_LINE_STRIP,0,n);
+
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+#if 0
             glBegin(GL_LINE_STRIP);
             for(size_t i=0;i<n;i++)
             {
@@ -607,6 +688,7 @@ public:
                glVertex2f( mPoints[pid].mX, mPoints[pid].mY );
             }
             glEnd();
+#endif
          }
 
          if (line.mGradient)
@@ -616,7 +698,9 @@ public:
 
       glDisable(GL_BLEND);
    }
+   #endif // NME_ANY_GL
 
+   #ifdef NME_OPENGL
    bool CreateDisplayList()
    {
       mResizeID = nme_resize_id;
@@ -849,7 +933,7 @@ public:
    {
       SetupCurved(inMatrix);
 
-      #ifdef NME_OPENGL
+      #ifdef NME_ANY_GL
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
       {
@@ -857,8 +941,10 @@ public:
             mTexture->UpdateHardware();
 
          mOGLMatrix = inMatrix;
+         #ifdef NME_OPENGL
          if ((!mDisplayList || nme_resize_id!=mResizeID) && mRendersWithoutDisplayList>1)
             CreateDisplayList();
+         #endif
 
          bool scissor = false;
          if (IsOpenGLScreen(inSurface) &&
@@ -872,11 +958,13 @@ public:
 
          if (inMatrix.IsIdentity())
          {
+            #ifdef NME_OPENGL
             if (mDisplayList && mResizeID==nme_resize_id)
             {
                glCallList(mDisplayList);
             }
             else
+            #endif
             {
                mRendersWithoutDisplayList++;
                DrawOpenGL();
@@ -886,9 +974,11 @@ public:
          {
             glPushMatrix();
             inMatrix.GLMult();
+            #ifdef NME_OPENGL
             if (mDisplayList && mResizeID==nme_resize_id)
                glCallList(mDisplayList);
             else
+            #endif
             {
                mRendersWithoutDisplayList++;
                DrawOpenGL();
@@ -900,7 +990,7 @@ public:
             glDisable(GL_SCISSOR_TEST);
       }
       else
-      #endif // NME_OPENGL
+      #endif // NME_ANY_GL
       {
          PolygonMask *mask = inMaskObj ? inMaskObj->GetPolygonMask() : 0;
          CreateRenderers(inSurface,inMatrix,inMarkDirty,inMaskObj,gScale9);
@@ -1140,6 +1230,8 @@ public:
    // For line/polygon objects
    Points             mOrigPoints;
    CurvedPoints       mPoints;
+   std::vector<float> mTex;
+   std::vector<float> mLineTex;
    std::vector<char>  mConnection;
    // For triangle object
    TriPoints          mTriPoints;

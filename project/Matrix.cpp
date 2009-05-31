@@ -27,17 +27,17 @@ void Matrix::TransformHQCorner(float inX,float inY,int &outX,int &outY) const
 
 
 
-#ifdef NME_OPENGL
+#ifdef NME_ANY_GL
 void Matrix::GLMult() const
 {
-   double matrix[] =
+   float matrix[] =
    {
       m00, m10, 0, 0,
       m01, m11, 0, 0,
       0,   0,   1, 0,
       mtx, mty, 0, 1
    };
-   glMultMatrixd(matrix);
+   glMultMatrixf(matrix);
 }
 #endif
 

@@ -34,7 +34,10 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
+
+#ifdef NME_ANY_GL
 #include <SDL_opengl.h>
+#endif
 
 #ifndef empty_object
 #define empty_object alloc_object(0)
@@ -113,8 +116,10 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
    fmt.Bmask = 0xff;
    fmt.Bshift = 0;
 
+   #ifndef SDL13
    fmt.alpha = 255;
    fmt.colorkey = 0xff000000;
+   #endif
 
 
    return SDL_ConvertSurface(inSurface,&fmt,flags);
@@ -140,6 +145,8 @@ SDL_Surface* nme_loadimage( value file )
 #endif
 }
 
+
+#ifdef NME_IMAGE_IO
 struct MyRWOps : SDL_RWops
 {
    MyRWOps(const char *inItems,int inLen)
@@ -225,6 +232,7 @@ struct MyRWOps : SDL_RWops
    int   mLen;
    int   mPos;
 };
+#endif // NME_IMAGE_IO
 
 
 SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
@@ -301,6 +309,35 @@ value nme_copy_surface( value surf )
 }
 
 
+#ifdef NME_ANY_GL
+
+
+void nmeOrtho(int inWidth,int inHeight)
+{
+   float sx = 1.0/inWidth;
+   float sy = -1.0/inHeight;
+   float m[4][4] =
+   {
+      {   2.0*sx, 0,      0,     0   },
+      {   0,      2.0*sy, 0,     0  },
+      {   0,      0,      0.001, 0   },
+      {   -1,   1,      0.5,     1   },
+   };
+
+   glLoadMatrixf(&m[0][0]);
+}
+
+/*
+void nmeOrtho(int inX0, int inY0,int inWidth,int inHeight)
+{
+
+}
+*/
+
+
+
+
+#endif
 
 // surface relative functions
 
@@ -318,7 +355,7 @@ static value nme_surface_clear( value surf, value c )
 	Uint8 g = GRGB( c );
 	Uint8 b = BRGB( c );
 
-        #ifdef NME_OPENGL
+        #ifdef NME_ANY_GL
         if (IsOpenGLScreen(scr))
         {
            int w = scr->w;
@@ -327,7 +364,7 @@ static value nme_surface_clear( value surf, value c )
            glViewport(0,0,w,h);
            glMatrixMode(GL_PROJECTION);
            glLoadIdentity();
-           glOrtho(0,w, h,0, -1000,1000);
+           nmeOrtho(w,h);
            glMatrixMode(GL_MODELVIEW);
            glLoadIdentity();
            glClearColor((GLclampf)(r/255.0),
@@ -409,7 +446,7 @@ bool IsOpenGLScreen(SDL_Surface *inSurface) { return sOpenGL && inSurface==sOpen
 value nme_delay( value period )
 {
 	val_check( period, int );
-	SDL_Delay( val_int( period ) );
+	//SDL_Delay( val_int( period ) );
 	return alloc_int( 0 );
 }
 
@@ -645,7 +682,11 @@ value nme_get_mouse_position()
 {
    int x,y;
 
+   #ifdef SDL13
+   SDL_GetMouseState(0,&x,&y);
+   #else
    SDL_GetMouseState(&x,&y);
+   #endif
 
 	value pos = empty_object;
    alloc_field( pos, val_id( "x" ), alloc_int( x ) );
@@ -729,10 +770,12 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
       SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+      #ifdef NME_OPENGL
       if ( flags & NME_VSYNC )
       {
          SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
       }
+      #endif
 
       sFlags |= SDL_OPENGL;
       if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sFlags | SDL_OPENGL)))
@@ -807,6 +850,7 @@ value nme_event()
 	SDL_Event event;
 	value evt = empty_object;
 
+        #ifdef NME_MIXER
 	int id = soundGetNextDoneChannel();
 	if (id>=0)
 	{
@@ -814,6 +858,7 @@ value nme_event()
 		alloc_field( evt, val_id( "channel" ), alloc_int( id ) );
 		return alloc_object( evt );
 	}
+        #endif
 
 	while (SDL_PollEvent(&event))
 	{

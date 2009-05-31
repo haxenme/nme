@@ -1,6 +1,8 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
+#include "config.h"
+
 #include <neko.h>
 #include <vector>
 #include "SDL.h"
@@ -23,7 +25,7 @@ public:
    bool IsFocal0();
 
    void BeginOpenGL();
-   void OpenGLTexture(double inX,double inY);
+   void OpenGLTexture(float *outTex, float inX,float inY);
    void EndOpenGL();
 
    int  MapHQ(int inX,int inY);
