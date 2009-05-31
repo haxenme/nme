@@ -25,12 +25,6 @@
 
 package nme;
 
-#if neko
-import neko.vm.Thread;
-#elseif cpp
-import cpp.vm.Thread;
-#end
-
 /**
 * @author	Russell Weir
 */
@@ -130,7 +124,6 @@ class Sound
 
 	//////////////////////////// Statics /////////////////////////////////
 	static inline var QUIT : String = "quit";
-	static var monitor : Thread = null;
 
 	/**
 	* This is a dynamic method that may be overridden to receive sound complete
