@@ -31,6 +31,10 @@
 #include <SDL_ttf.h>
 #include <SDL_rwops.h>
 
+
+#define val_check_ret0(v,t) if( !val_is_##t(v) ) return 0;
+
+
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -129,14 +133,14 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
 SDL_Surface* nme_loadimage( value file )
 {
 #ifdef NME_IMAGE_IO
-   val_check( file, string );
+   val_check_ret0( file, string );
 
-   SDL_Surface* surf;
+   SDL_Surface* surf = 0;
    surf = IMG_Load( val_string( file ) );
    if ( !surf )
      	surf = SDL_LoadBMP( val_string( file ) );
    if ( !surf )
-     	return NULL;
+     	return 0;
    SDL_Surface *surface = ConvertToPreferredFormat( surf );
   	SDL_FreeSurface( surf );
    return surface;
@@ -241,8 +245,8 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
 #ifndef NME_IMAGE_IO
    return 0;
 #else
-	val_check( inAlphaLen, int );
-	val_check( inLen, int );
+	val_check_ret0( inAlphaLen, int );
+	val_check_ret0( inLen, int );
    int len = val_int(inLen);
 
    #ifdef HXCPP
@@ -254,11 +258,11 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
       failure("LoadImage - alpha expected");
    const char *items = (const char *)&b[0];
    #else
-	val_check( inBytes, string );
-	val_check( inAlpha, string );
+	val_check_ret0( inBytes, string );
+	val_check_ret0( inAlpha, string );
    const char *items = val_string(inBytes);
    #endif
-	val_check( inType, string );
+	val_check_ret0( inType, string );
 
    const char *type = val_string(inType);
 
