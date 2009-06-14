@@ -4,12 +4,14 @@ ifeq ("x$(NEKO_INSTALL_PATH)","x")
    NEKO_INSTALL_PATH := /usr/lib/neko/
 endif
 
+SDL_BASE := ../../sdl-static
+
 SOURCE_FILES := $(wildcard *.cpp) $(wildcard renderer/*cpp)
 NDLL_OBJS := $(SOURCE_FILES:%.cpp=ndll_objs/%.o)
 DSO_OBJS := $(SOURCE_FILES:%.cpp=dso_objs/%.o)
 
 
-INCLUDE += -I../contrib/SDL_mixer-1.2.8_p1  -I/usr/include/SDL -I/opt/local/include/SDL -I/usr/include/freetype2 -I/opt/local/include/freetype2 -I/usr/X11R6/include/
+INCLUDE += -I$(SDL_BASE)/include
 NDLL_INCLUDE = $(INCLUDE) -I$(NEKO_INSTALL_PATH)/include
 DSO_INCLUDE  = $(INCLUDE) -I$(HXCPP)/include
 
@@ -30,16 +32,47 @@ OS := $(OSTYPE:darwin%=darwin)
 
 ifeq ("x$(OS)","xdarwin")
 
-LIBS := SDL_image SDL_ttf SDLmain SDL freetype X11
+LIBS := X11
+
 FULL_LIBS:= $(LIBS:%=-l%)
-FULL_LIBS += ../contrib/SDL_mixer-1.2.8_p1/build/.libs/libSDL_mixer.a 
+DSO_CFLAGS += -DSDL13
+NDLL_CFLAGS += -DSDL13
+FULL_LIBS += \
+   $(SDL_BASE)/lib/mac/libSDL.a \
+   $(SDL_BASE)/lib/mac/libSDL_mixer.a \
+   $(SDL_BASE)/lib/mac/libSDL_ttf.a \
+   $(SDL_BASE)/lib/mac/libSDL_image.a \
+   $(SDL_BASE)/lib/mac/libogg.a \
+   $(SDL_BASE)/lib/mac/libvorbis.a \
+   $(SDL_BASE)/lib/mac/libfreetype.a \
+   $(SDL_BASE)/lib/mac/libpng.a \
+   $(SDL_BASE)/lib/mac/libjpeg.a \
+   $(SDL_BASE)/lib/mac/libz.a \
+
+FRAMEWORKS := \
+   -framework IOKit \
+   -framework CoreAudio \
+   -framework Carbon \
+   -framework AudioToolbox \
+   -framework AudioUnit \
+   -framework ForceFeedback \
+   -framework Cocoa \
+   -framework OpenGL \
+   -framework QuickTime
+
+
 NDLL_DIR := ../ndll/Mac/
-LD_FLAGS := -fpic -fPIC -dynamiclib  $(HXCPP)/bin/Mac/hxcpp.dylib
+
+LD_FLAGS := -fpic -fPIC -dynamiclib
+HXCPP_LINK += $(HXCPP)/bin/Mac/hxcpp.dylib
+NDLL_LINK +=   $(NEKO_INSTALL_PATH)/libneko.dylib 
+
 MACBOOT := common_objs/MacBoot.o
 $(MACBOOT) : MacBoot.m
 	@mkdir -p common_objs
 	g++ $(INCLUDE) MacBoot.m -c -o $(MACBOOT)
-FULL_LIBS += $(MACBOOT) $(NEKO_INSTALL_PATH)/libneko.dylib -framework Cocoa -framework OpenGL -framework Quicktime
+FULL_LIBS += $(MACBOOT) $(FRAMEWORKS)
+
 DSO := $(NDLL_DIR)/nme.dylib
 STATIC_LIB := $(NDLL_DIR)/libstatic_nme.a
 IPHONE_SIM_OBJS := $(SOURCE_FILES:%.cpp=iphone_sim_objs/%.o)
@@ -145,9 +178,9 @@ clean:
 	- rm -rf ndll_objs dso_objs iphone_arm_objs iphone_sim_objs
 
 $(NDLL) : $(NDLL_OBJS) $(MACBOOT)
-	g++ -shared $(LD_FLAGS) $(NDLL_OBJS) -o $(NDLL) $(LIB_PATH) $(FULL_LIBS) -lm
+	g++ -shared $(LD_FLAGS) $(NDLL_OBJS) -o $(NDLL) $(LIB_PATH) $(FULL_LIBS) $(NDLL_LINK) -lm
 $(DSO) : $(DSO_OBJS) $(MACBOOT)
-	g++ -shared $(LD_FLAGS) $(DSO_OBJS) -o $(DSO) $(LIB_PATH) $(FULL_LIBS) -lm
+	g++ -shared $(LD_FLAGS) $(DSO_OBJS) -o $(DSO) $(LIB_PATH) $(FULL_LIBS) $(HXCPP_LINK) -lm
 $(STATIC_LIB) : $(DSO_OBJS)
 	ar -cr $(STATIC_LIB) $(DSO_OBJS)
 

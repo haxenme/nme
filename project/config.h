@@ -4,6 +4,7 @@
 #ifdef IPHONE
 
 #define NME_OPENGLES
+#define NME_TTF
 
 #else
 

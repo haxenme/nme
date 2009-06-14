@@ -257,7 +257,7 @@ convert_scrap(int type, char *dst, char *src, int srclen)
 
 #if defined(X11_SCRAP)
 /* The system message filter function -- handle clipboard messages */
-PRIVATE int clipboard_filter(const SDL_Event *event);
+PRIVATE int clipboard_filter(void *,SDL_Event *event);
 #endif
 
 PUBLIC int
@@ -285,7 +285,7 @@ init_scrap(void)
 
           /* Enable the special window hook events */
           SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
-          SDL_SetEventFilter(clipboard_filter);
+          SDL_SetEventFilter(clipboard_filter,0);
 
           retval = 0;
         }
@@ -586,7 +586,7 @@ get_scrap(int type, int *dstlen, char **dst)
 }
 
 #if defined(X11_SCRAP)
-PRIVATE int clipboard_filter(const SDL_Event *event)
+PRIVATE int clipboard_filter(void *,SDL_Event *event)
 {
   /* Post all non-window manager specific events */
   if ( event->type != SDL_SYSWMEVENT ) {

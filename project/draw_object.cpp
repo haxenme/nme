@@ -1949,7 +1949,7 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
 
    Drawable *obj = 0;
 
-   if (val_bool(arg[aUseFreeType]))
+   if (1||val_bool(arg[aUseFreeType]))
    {
       // TODO: Get this working
       if (!val_is_kind(arg[aFont],k_font))

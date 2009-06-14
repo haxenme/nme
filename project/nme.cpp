@@ -151,6 +151,16 @@ SDL_Surface* nme_loadimage( value file )
 
 
 #ifdef NME_IMAGE_IO
+
+#ifdef SDL13
+typedef long int SeekPos;
+typedef size_t ReadSize;
+#else
+typedef int SeekPos;
+typedef int ReadSize;
+#endif
+
+
 struct MyRWOps : SDL_RWops
 {
    MyRWOps(const char *inItems,int inLen)
@@ -165,7 +175,7 @@ struct MyRWOps : SDL_RWops
       SDL_RWops::close = &MyRWOps::s_close;
    }
 
-   int seek(int offset,int whence)
+   SeekPos seek(SeekPos offset,int whence)
    {
       switch(whence)
       {
@@ -180,7 +190,7 @@ struct MyRWOps : SDL_RWops
    source to the area pointed at by 'ptr'.
    Returns the number of objects read, or -1 if the read failed.
  */
-   int read(void *ptr, int size, int maxnum)
+   ReadSize read(void *ptr, ReadSize size, ReadSize maxnum)
    {
       unsigned char *p = (unsigned char *)ptr;
       int bytes = size*maxnum;
@@ -196,7 +206,7 @@ struct MyRWOps : SDL_RWops
    pointed at by 'ptr' to data source.
    Returns 'num', or -1 if the write failed.
  */
-   int write(const void *ptr, int size, int num)
+   ReadSize write(const void *ptr,ReadSize size, ReadSize num)
    {
       return 0;
    }
@@ -208,19 +218,19 @@ struct MyRWOps : SDL_RWops
 
 
 
-   static int s_seek(struct SDL_RWops *context, int offset, int whence)
+   static SeekPos s_seek(struct SDL_RWops *context, SeekPos offset, int whence)
    {
       MyRWOps *ops = (MyRWOps *)context;
       return ops->seek(offset,whence);
    }
 
-   static int s_read(struct SDL_RWops *context, void *ptr, int size, int maxnum)
+   static ReadSize s_read(struct SDL_RWops *context, void *ptr, ReadSize size, ReadSize maxnum)
    {
       MyRWOps *ops = (MyRWOps *)context;
       return ops->read(ptr,size,maxnum);
    }
 
-   static int s_write(struct SDL_RWops *context, const void *ptr, int size, int num)
+   static ReadSize s_write(struct SDL_RWops *context, const void *ptr, ReadSize size, ReadSize num)
    {
       MyRWOps *ops = (MyRWOps *)context;
       return ops->write(ptr,size,num);
@@ -233,8 +243,8 @@ struct MyRWOps : SDL_RWops
    }
 
    unsigned char *mItems;
-   int   mLen;
-   int   mPos;
+   ReadSize   mLen;
+   SeekPos   mPos;
 };
 #endif // NME_IMAGE_IO
 
@@ -777,7 +787,9 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       #ifdef NME_OPENGL
       if ( flags & NME_VSYNC )
       {
+         #ifndef SDL13
          SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+         #endif
       }
       #endif
 
