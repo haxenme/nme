@@ -282,6 +282,9 @@ class Manager
 
       graphics.lineStyle(0x000000,1);
       var text = "FPS:" + mFrameCountStack.length;
+      #if iphone
+      cpp.Lib.println(text);
+      #end
       Manager.graphics.moveTo(10,10);
       Manager.graphics.text(text,12,null,0xffffff);
    }
