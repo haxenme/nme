@@ -6,7 +6,7 @@
 #ifdef NME_OPENGL
 #include <SDL_opengl.h>
 #endif
-#include <neko.h>
+#include <hxCFFI.h>
 #include <stdio.h>
 
 #include "nme.h"

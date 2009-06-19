@@ -4,7 +4,6 @@
 #endif
 #include <SDL_opengl.h>
 #include "Matrix.h"
-#include <neko.h>
 #include <stdio.h>
 
 void Matrix::Transform(float inX,float inY,short &outX,short &outY) const

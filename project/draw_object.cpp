@@ -1,7 +1,8 @@
 #include "config.h"
 #include <SDL.h>
 #include <string>
-#include <neko.h>
+
+#include <hxCFFI.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -24,11 +25,6 @@
 #include "text.h"
 #include "Gradient.h"
 #include "renderer/Points.h"
-
-#ifndef HXCPP
-typedef value *array_ptr;
-#define val_get_array_i(v,i) ( val_array_ptr(v)[i] )
-#endif
 
 
 DEFINE_KIND( k_drawable );
@@ -162,33 +158,6 @@ static int val_id_point_idx1 = val_id("point_idx1");
 static int val_id___a = val_id("__a");
 static int val_id___s = val_id("__s");
 static int val_id_length = val_id("length");
-
-
-
-
-inline value GetArray(value inArg)
-{
-   if (val_is_null(inArg))
-      return inArg;
-   #ifdef HXCPP
-   return inArg;
-   #else
-   return val_field(inArg,val_id___a);
-   #endif 
-}
-
-inline int GetArrayLen(value inArg)
-{
-   if (val_is_null(inArg))
-      return 0;
-   #ifdef HXCPP
-   return inArg->__length();
-   #else
-   return  val_int( val_field(inArg,val_id_length));
-   #endif 
-}
-
-
 
 
 
@@ -1287,17 +1256,15 @@ value nme_create_draw_obj(value inPoints, value inFillColour, value inFillAlpha,
    val_check( inLines, array );
 
    int n = val_array_size(inPoints);
-   array_ptr items = val_array_ptr(inPoints);
 
    Points points(n);
    for(int i=0;i<n;i++)
-      points[i].FromValue(items[i]);
+      points[i].FromValue(val_array_i(inPoints,i));
 
    n = val_array_size(inLines);
    LineJobs lines(n);
-   items = val_array_ptr(inLines);
    for(int j=0;j<n;j++)
-      lines[j].FromValue(items[j]);
+      lines[j].FromValue(val_array_i(inLines,j));
 
    DrawObject *obj = new DrawObject(
                             points,
@@ -1322,9 +1289,9 @@ value nme_create_draw_triangles(value * arg, int nargs )
    TriPoints points;
 
 
-   value v =  GetArray(arg[aVertices]);
-   int n =  GetArrayLen(arg[aVertices]);
+   value v =  arg[aVertices];
    val_check( v, array );
+   int n =  val_array_size(v);
 
    if (n&1)
       failure("nme_create_draw_triangles - odd number of points");
@@ -1332,7 +1299,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
    n/=2;
    points.resize(n);
    for(int i=0;i<n;i++)
-      points[i].SetPos(val_number(val_get_array_i(v,i*2)), val_number(val_get_array_i(v,i*2+1)));
+      points[i].SetPos(val_number(val_array_i(v,i*2)), val_number(val_array_i(v,i*2+1)));
 
    int cull = val_int(arg[aCull]);
 
@@ -1340,17 +1307,16 @@ value nme_create_draw_triangles(value * arg, int nargs )
    Tris triangles;
    if (!val_is_null(idx))
    {
-      int indices = GetArrayLen(idx);
-      idx = GetArray(idx);
+      int indices = val_array_size(idx);
       if ( (indices%3)!=0 )
          failure("nme_create_draw_triangles - invalid index count");
 
       indices /= 3;
       triangles.reserve(indices);
       for(int i=0;i<indices;i++)
-         triangles.push_back(Tri(val_int(val_get_array_i(idx,i*3)),
-                                 val_int(val_get_array_i(idx,i*3+1)),
-                                 val_int(val_get_array_i(idx,i*3+2)) ) );
+         triangles.push_back(Tri(val_int(val_array_i(idx,i*3)),
+                                 val_int(val_array_i(idx,i*3+1)),
+                                 val_int(val_array_i(idx,i*3+2)) ) );
    }
    else
    {
@@ -1373,17 +1339,16 @@ value nme_create_draw_triangles(value * arg, int nargs )
    DrawObject *obj = 0;
    if (has_uv)
    {
-      int entries = GetArrayLen(uv);
+      int entries = val_array_size(uv);
       double w = texture->mTexture->Width();
       double h = texture->mTexture->Height();
       bool persp = false;
-      uv = GetArray(uv);
       if (entries == 2*n)
       {
          for(int i=0;i<n;i++)
          {
-            points[i].SetUVW(val_number(val_get_array_i(uv,i*2))*w,
-                            val_number(val_get_array_i(uv,i*2+1))*h);
+            points[i].SetUVW(val_number(val_array_i(uv,i*2))*w,
+                            val_number(val_array_i(uv,i*2+1))*h);
          }
       }
       else if (entries == 3*n)
@@ -1391,9 +1356,9 @@ value nme_create_draw_triangles(value * arg, int nargs )
          persp = true;
          for(int i=0;i<n;i++)
          {
-            points[i].SetUVW(val_number(val_get_array_i(uv,i*3))*w,
-                             val_number(val_get_array_i(uv,i*3+1))*h,
-                             val_number(val_get_array_i(uv,i*3+2)));
+            points[i].SetUVW(val_number(val_array_i(uv,i*3))*w,
+                             val_number(val_array_i(uv,i*3+1))*h,
+                             val_number(val_array_i(uv,i*3+2)));
          }
       }
       else
@@ -2022,17 +1987,13 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
 
    bool accurate = val_bool(inAccurate);
 
-   value objs_arr =  GetArray(inDrawList);
-   int n =  GetArrayLen(inDrawList);
-
-   val_check( objs_arr, array );
-
-   array_ptr objs =  val_array_ptr(objs_arr);
+   val_check(inDrawList,array);
+   int n =  val_array_size(inDrawList);
 
    // printf("nme_get_extent\n");
    for(int i=0;i<n;i++)
    {
-      Drawable *d = DRAWABLE(objs[i]);
+      Drawable *d = DRAWABLE(val_array_i(inDrawList,i));
       if (d)
          d->GetExtent(extent,matrix,accurate);
    }
@@ -2123,28 +2084,19 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
 value nme_add_to_mask(value inDrawList,value inSurface,value inMask, value inMatrix )
 {
    val_check_kind( inSurface, k_surf );
+   val_check( inDrawList, array );
    SDL_Surface *surf = SURFACE(inSurface);
 
    val_check_kind( inMask, k_mask );
    MaskObject *mask_object = MASK(inMask);
    PolygonMask *mask = mask_object->GetPolygonMask();
 
-   #ifdef HXCPP
-   value objs_arr =  inDrawList;
-   int n =  objs_arr->__length();
-   #else
-   value objs_arr =  val_field(inDrawList,val_id___a);
-   int n =  val_int( val_field(inDrawList,val_id_length));
-   #endif
-   val_check( objs_arr, array );
-
+   int n = val_array_size(inDrawList);
    Matrix matrix(inMatrix);
-
-   array_ptr objs =  val_array_ptr(objs_arr);
 
    for(int i=0;i<n;i++)
    {
-      Drawable *d = DRAWABLE(objs[i]);
+      Drawable *d = DRAWABLE(val_array_i(inDrawList,i));
       if (d)
          d->AddToMask(surf,*mask,matrix);
    }

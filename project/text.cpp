@@ -25,7 +25,6 @@
 
  
 #include "text.h"
-#include <neko.h>
 #include "nsdl.h"
 #include "nme.h"
 #include <SDL_ttf.h>
@@ -36,10 +35,6 @@
 #include <freetype/ftoutln.h>
 
 #define FT_CEIL(X)	(((X + 63) & -64) / 64)
-
-#ifndef empty_object
-#define empty_object alloc_object(0)
-#endif
 
 DEFINE_KIND( k_font );
 
@@ -136,7 +131,7 @@ value nme_get_font_metrics(value inFont)
    {
       TTF_Font *font = FONT(inFont);
 
-      value result = empty_object;
+      value result = alloc_empty_object();
       alloc_field( result, val_id("height"), alloc_int(TTF_FontHeight(font)));
       alloc_field( result, val_id("ascent"), alloc_int(TTF_FontAscent(font)));
       alloc_field( result, val_id("descent"), alloc_int(TTF_FontDescent(font)));
@@ -247,7 +242,7 @@ value nme_get_glyph_metrics(value inFont,value inChar)
       if (err)
          return val_null;
 
-      value result = empty_object;
+      value result = alloc_empty_object();
       alloc_field( result, val_id("min_x"), alloc_int(min_x));
       alloc_field( result, val_id("max_x"), alloc_int(max_x));
       alloc_field( result, val_id("width"), alloc_int(max_x-min_x));

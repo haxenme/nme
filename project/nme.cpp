@@ -23,6 +23,8 @@
  * DAMAGE.
  */
 
+#define IMPLEMENT_API
+
 #include "nsdl.h"
 #include "nme.h"
 #include "Scrap.h"
@@ -43,9 +45,6 @@
 #include <SDL_opengl.h>
 #endif
 
-#ifndef empty_object
-#define empty_object alloc_object(0)
-#endif
 
 
 int nme_resize_id = 0;
@@ -500,7 +499,7 @@ value nme_screen_flip()
 
 value AllocRect(const SDL_Rect &inRect)
 {
-   value r = empty_object;
+   value r = alloc_empty_object();
    alloc_field( r, val_id( "x" ), alloc_float( inRect.x ) );
    alloc_field( r, val_id( "y" ), alloc_float( inRect.y ) );
    alloc_field( r, val_id( "w" ), alloc_float( inRect.w ) );
@@ -702,10 +701,10 @@ value nme_get_mouse_position()
    SDL_GetMouseState(&x,&y);
    #endif
 
-	value pos = empty_object;
+	value pos = alloc_empty_object();
    alloc_field( pos, val_id( "x" ), alloc_int( x ) );
    alloc_field( pos, val_id( "y" ), alloc_int( y ) );
-   return alloc_object( pos );
+   return pos;
 }
 
 
@@ -864,7 +863,7 @@ value nme_resize_surface(value inW, value inH)
 value nme_event()
 {
 	SDL_Event event;
-	value evt = empty_object;
+	value evt = alloc_empty_object();
 
         #ifdef NME_MIXER
 	int id = soundGetNextDoneChannel();
@@ -872,7 +871,7 @@ value nme_event()
 	{
 		alloc_field( evt, val_id( "type" ), alloc_int( et_soundfinished ) );
 		alloc_field( evt, val_id( "channel" ), alloc_int( id ) );
-		return alloc_object( evt );
+		return evt;
 	}
         #endif
 
@@ -881,7 +880,7 @@ value nme_event()
 		if (event.type == SDL_QUIT)
 		{
 			alloc_field( evt, val_id( "type" ), alloc_int( et_quit ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_KEYDOWN)
 		{
@@ -891,7 +890,7 @@ value nme_event()
 			alloc_field( evt, val_id( "shift" ), alloc_bool( event.key.keysym.mod & KMOD_SHIFT ) );
 			alloc_field( evt, val_id( "ctrl" ), alloc_bool( event.key.keysym.mod & KMOD_CTRL ) );
 			alloc_field( evt, val_id( "alt" ), alloc_bool( event.key.keysym.mod & KMOD_ALT ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_KEYUP)
 		{
@@ -901,7 +900,7 @@ value nme_event()
 			alloc_field( evt, val_id( "shift" ), alloc_bool( event.key.keysym.mod & KMOD_SHIFT ) );
 			alloc_field( evt, val_id( "ctrl" ), alloc_bool( event.key.keysym.mod & KMOD_CTRL ) );
 			alloc_field( evt, val_id( "alt" ), alloc_bool( event.key.keysym.mod & KMOD_ALT ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_MOUSEMOTION)
 		{
@@ -911,7 +910,7 @@ value nme_event()
 			alloc_field( evt, val_id( "y" ), alloc_int( event.motion.y ) );
 			alloc_field( evt, val_id( "xrel" ), alloc_int( event.motion.xrel ) );
 			alloc_field( evt, val_id( "yrel" ), alloc_int( event.motion.yrel ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
 		{
@@ -922,7 +921,7 @@ value nme_event()
 			alloc_field( evt, val_id( "y" ), alloc_int( event.button.y ) );
 			alloc_field( evt, val_id( "which" ), alloc_int( event.button.which ) );
 			alloc_field( evt, val_id( "button" ), alloc_int( event.button.button ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_JOYAXISMOTION)
 		{
@@ -930,7 +929,7 @@ value nme_event()
 			alloc_field( evt, val_id( "axis" ), alloc_int( event.jaxis.axis ) );
 			alloc_field( evt, val_id( "value" ), alloc_int( event.jaxis.value ) );
 			alloc_field( evt, val_id( "which" ), alloc_int( event.jaxis.which ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_JOYBUTTONUP)
 		{
@@ -938,7 +937,7 @@ value nme_event()
 			alloc_field( evt, val_id( "button" ), alloc_int( event.jbutton.button ) );
 			alloc_field( evt, val_id( "state" ), alloc_int( event.jbutton.state ) );
 			alloc_field( evt, val_id( "which" ), alloc_int( event.jbutton.which ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_JOYHATMOTION)
 		{
@@ -946,7 +945,7 @@ value nme_event()
 			alloc_field( evt, val_id( "button" ), alloc_int( event.jhat.hat ) );
 			alloc_field( evt, val_id( "value" ), alloc_int( event.jhat.value ) );
 			alloc_field( evt, val_id( "which" ), alloc_int( event.jhat.which ) );
-			return alloc_object( evt );
+			return evt;
 		}
 		if (event.type == SDL_JOYBALLMOTION)
 		{
@@ -955,7 +954,7 @@ value nme_event()
 			alloc_field( evt, val_id( "xrel" ), alloc_int( event.jball.xrel ) );
 			alloc_field( evt, val_id( "yrel" ), alloc_int( event.jball.yrel ) );
 			alloc_field( evt, val_id( "which" ), alloc_int( event.jball.which ) );
-			return alloc_object( evt );
+			return evt;
 		}
 
       if (event.type==SDL_VIDEORESIZE)
@@ -963,7 +962,7 @@ value nme_event()
 			alloc_field( evt, val_id( "type" ), alloc_int( et_resize ) );
 			alloc_field( evt, val_id( "width" ), alloc_int( event.resize.w ) );
 			alloc_field( evt, val_id( "height" ), alloc_int( event.resize.h ) );
-			return alloc_object( evt );
+			return evt;
       }
 	}
 	alloc_field( evt, val_id( "type" ), alloc_int( et_noevent ) );
@@ -1001,12 +1000,7 @@ value nme_get_clipboard()
    if (len==0 || data==0)
       data = "";
 
-   value result = empty_object;
-   alloc_field( result, val_id("__s"), alloc_string(data));
-   alloc_field( result, val_id("length"), alloc_int((int)strlen(data)));
-
    return alloc_string(data);
-   return result;
 }
 
 value nme_set_clipboard(value inVal)

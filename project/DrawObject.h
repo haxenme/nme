@@ -2,7 +2,7 @@
 #define DRAW_OBJECT_H
 
 #include <SDL.h>
-#include <neko.h>
+#include <hxCFFI.h>
 #include "Matrix.h"
 #include "renderer/Renderer.h"
 #include "texture_buffer.h"

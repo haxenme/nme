@@ -2,6 +2,15 @@
 #define RENDERER_RENDERER_H
 
 #include <SDL.h>
+
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
+
 #include <vector>
 
 #define NME_ALPHA_BLEND      0x0001

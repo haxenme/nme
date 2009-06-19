@@ -2,7 +2,7 @@
 #define TEXTURE_BUFFER_H
 
 #include "config.h"
-#include <neko.h>
+#include <hxCFFI.h>
 #include <SDL.h>
 #include "Matrix.h"
 

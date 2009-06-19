@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <neko.h>
+#include <hxCFFI.h>
 #include <string.h>
 
 class Matrix

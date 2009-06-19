@@ -1,5 +1,5 @@
 #include "texture_buffer.h"
-#include <neko.h>
+#include <hxCFFI.h>
 #include <vector>
 #include <algorithm>
 #include "renderer/Pixel.h"
@@ -622,14 +622,13 @@ value nme_create_filter_set(value inFilters,value outPoint)
    FilterSet *result = new FilterSet;
 
    val_check( inFilters, array );
-   array_ptr objs =  val_array_ptr(inFilters);
    int n =  val_array_size(inFilters);
 
    int ox = 0;
    int oy = 0;
    for(int i=0;i<n;i++)
    {
-      value val = objs[i];
+      value val = val_array_i(inFilters,i);
       #ifdef HXCPP
       value type_val = val_field(val,val_id("mType"));
       #else

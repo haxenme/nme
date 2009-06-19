@@ -96,7 +96,7 @@ static void FlashMatrix2NME(const Matrix &inFlash, Matrix &outNME,bool inRadial)
    }
 }
 
-Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
+Gradient::Gradient(value inFlags,value inPoints,value inMatrix,value inFocal)
 {
    mFlags = (unsigned int)val_int(inFlags);
 
@@ -107,15 +107,8 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    mTextureID = 0;
    mResizeID = 0;
 
-   #ifdef HXCPP
-   value inPoints = inHxPoints;
-   int n =  inPoints->__length();
-   #else
-   value inPoints = val_field(inHxPoints,val_id("__a"));
-   int n =  val_int( val_field(inHxPoints,val_id("length")));
-   #endif
-
-   array_ptr items = val_array_ptr(inPoints);
+	val_check(inPoints,array);
+	int n = val_array_size(inPoints);
 
    GradPoints points(n);
 
@@ -126,7 +119,7 @@ Gradient::Gradient(value inFlags,value inHxPoints,value inMatrix,value inFocal)
    mUsesAlpha = false;
    for(int i=0;i<n;i++)
    {
-      points[i].FromValue(items[i]);
+      points[i].FromValue(val_array_i(inPoints,i));
       if (points[i].mColour.a<255)
          mUsesAlpha = true;
    }

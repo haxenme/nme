@@ -889,7 +889,7 @@ value nme_set_pixel32(value inTexture, value inX, value inY, value inColour)
 {
    TextureBuffer *tex = TEXTURE_BUFFER(inTexture);
 
-   tex->SetPixel(val_int(inX), val_int(inY), val_int32(inColour) );
+   tex->SetPixel(val_int(inX), val_int(inY), val_int(inColour) );
    return alloc_int(0);
 }
 

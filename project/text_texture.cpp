@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
 #include "texture_buffer.h"
-#include <neko.h>
+#include <hxCFFI.h>
 
 #ifdef NME_TTF
 

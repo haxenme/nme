@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-#include <neko.h>
+#include <hxCFFI.h>
 #include <vector>
 #include "SDL.h"
 #include <math.h>
