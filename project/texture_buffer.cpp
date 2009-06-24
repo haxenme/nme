@@ -1190,7 +1190,7 @@ value nme_create_blitter(value* arg, int nargs )
 {
    enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aHotX, aHotY, aSIZE };
    if (nargs!=aSIZE)
-      failure( "nme_create_blitter - wrong number of args.\n" );
+      hx_failure( "nme_create_blitter - wrong number of args.\n" );
 
    val_check_kind( arg[aTex], k_texture_buffer );
    val_check_kind( arg[aSurface], k_surf );
@@ -1396,7 +1396,7 @@ value nme_copy_pixels(value* arg, int nargs )
 {
    enum { aSrc, aSX0, aSY0, aWidth, aHeight, aDest, aDestX, aDestY, aSIZE };
    if (nargs!=aSIZE)
-      failure( "nme_copy_pixels - wrong number of args.\n" );
+      hx_failure( "nme_copy_pixels - wrong number of args.\n" );
 
    TextureBuffer *src = TEXTURE_BUFFER(arg[aSrc]);
    TextureBuffer *dest = TEXTURE_BUFFER(arg[aDest]);

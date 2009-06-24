@@ -65,10 +65,10 @@ value nme_sprite_draw( value image, value screen, value rect, value point )
 */
 value nme_sprite_transform( value *args, int nargs )
 {
-   failure("nme_sprite_transform - not implemented");
+   hx_failure("nme_sprite_transform - not implemented");
    return alloc_int(0);
    /*
-	if ( nargs < 10 ) failure( "not enough arguments supplied to function nme_sprite_transform. expected 10." );
+	if ( nargs < 10 ) hx_failure( "not enough arguments supplied to function nme_sprite_transform. expected 10." );
 	SDL_Surface *src = SURFACE( args[0] );
 	SDL_Surface *dst = SURFACE( args[1] );
 	float angle = (float)val_number( args[2] );
@@ -92,10 +92,10 @@ value nme_sprite_transform( value *args, int nargs )
 
 value nme_sprite_transform_surface( value *args, int nargs )
 {
-   failure("nme_sprite_transform_surface - not implemented");
+   hx_failure("nme_sprite_transform_surface - not implemented");
    return alloc_int(0);
    /*
-	if ( nargs < 6 ) failure( "not enough arguments supplied to function nme_sprite_transform_surface. expected 6." );
+	if ( nargs < 6 ) hx_failure( "not enough arguments supplied to function nme_sprite_transform_surface. expected 6." );
 	SDL_Surface *src = SURFACE( args[0] );
 	Uint32 bgcolor = val_int( args[1] );
 	float angle = val_number( args[2] );
@@ -124,7 +124,7 @@ value nme_sprite_init( value file )
 
 	SDL_Surface* bitmap;
 	bitmap = nme_loadimage( file );
-	if ( !bitmap ) failure( SDL_GetError() );
+	if ( !bitmap ) hx_failure( SDL_GetError() );
 
 	value v = alloc_abstract( k_surf, bitmap );
 	val_gc( v, nme_surface_free );

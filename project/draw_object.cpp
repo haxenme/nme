@@ -1284,7 +1284,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
 {
    enum { aVertices, aIndices, aUVTData, aCull, aFillColour, aFillAlpha, aBitmap, aLine, aSIZE };
    if (nargs!=aSIZE)
-      failure("nme_create_draw_triangles - wrong number of args");
+      hx_failure("nme_create_draw_triangles - wrong number of args");
 
    TriPoints points;
 
@@ -1294,7 +1294,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
    int n =  val_array_size(v);
 
    if (n&1)
-      failure("nme_create_draw_triangles - odd number of points");
+      hx_failure("nme_create_draw_triangles - odd number of points");
 
    n/=2;
    points.resize(n);
@@ -1309,7 +1309,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
    {
       int indices = val_array_size(idx);
       if ( (indices%3)!=0 )
-         failure("nme_create_draw_triangles - invalid index count");
+         hx_failure("nme_create_draw_triangles - invalid index count");
 
       indices /= 3;
       triangles.reserve(indices);
@@ -1321,7 +1321,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
    else
    {
       if ( (n%3)!=0 )
-         failure("nme_create_draw_triangles - invalid vertex count");
+         hx_failure("nme_create_draw_triangles - invalid vertex count");
       int indices = n/3;
       triangles.reserve(indices);
       for(int i=0;i<indices;i++)
@@ -1362,7 +1362,7 @@ value nme_create_draw_triangles(value * arg, int nargs )
          }
       }
       else
-         failure("nme_create_draw_triangles - incorrect number of uv entries");
+         hx_failure("nme_create_draw_triangles - incorrect number of uv entries");
 
 
       obj = new DrawObject( points, triangles, cull, texture, wireframe, w, h, persp );
@@ -1807,7 +1807,7 @@ value nme_create_text_drawable(value * arg, int nargs )
    enum { aText, aFont, aSize, aX, aY, aColour, aAlpha,
           aBGCol, aAlignX,aAlignY,   aLAST };
    if ( nargs != aLAST )
-      failure( "nme_create_text_drawable - bad parameter count." );
+      hx_failure( "nme_create_text_drawable - bad parameter count." );
 
    #ifndef NME_TTF
    return val_null;
@@ -1893,7 +1893,7 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
    enum { aX, aY, aFont, aChar, aFillCol, aFillAlpha,
           aGradOrTex, aLineStyle, aUseFreeType, aLAST };
    if ( nargs != aLAST )
-      failure( "nme_create_glyph_draw_obj - bad parameter count." );
+      hx_failure( "nme_create_glyph_draw_obj - bad parameter count." );
 
    #ifndef NME_TTF
    return val_null;
@@ -1988,12 +1988,13 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    bool accurate = val_bool(inAccurate);
 
    val_check(inDrawList,array);
+	value *ptr = val_array_value(inDrawList);
    int n =  val_array_size(inDrawList);
 
    // printf("nme_get_extent\n");
    for(int i=0;i<n;i++)
    {
-      Drawable *d = DRAWABLE(val_array_i(inDrawList,i));
+      Drawable *d = DRAWABLE(ptr ? ptr[i] : val_array_i(inDrawList,i));
       if (d)
          d->GetExtent(extent,matrix,accurate);
    }

@@ -634,11 +634,11 @@ value nme_create_filter_set(value inFilters,value outPoint)
       #else
       value type_val_obj = val_field(val,val_id("mType"));
       if ( !val_is_object(type_val_obj) )
-         failure( "no filter type found" );
+         hx_failure( "no filter type found" );
 
       value type_val = val_field(type_val_obj,val_id("__s"));
       if ( !val_is_string(type_val) )
-         failure( "no filter type string found" );
+         hx_failure( "no filter type string found" );
       #endif
 
 

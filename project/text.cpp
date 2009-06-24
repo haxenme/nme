@@ -44,7 +44,7 @@ DEFINE_KIND( k_font );
 value nme_ttf_shaded( value* args, int nargs )
 {
 #ifdef NME_TTF
-	if ( nargs < 9 ) failure( "not enough parameters passed to function nme_ttf_shaded. expected 9" );
+	if ( nargs < 9 ) hx_failure( "not enough parameters passed to function nme_ttf_shaded. expected 9" );
 	val_check_kind( args[0], k_surf ); // screen
 	val_check( args[1], string ); // string
 	val_check( args[2], string ); // font

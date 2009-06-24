@@ -261,10 +261,10 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
    #ifdef HXCPP
 	Array<unsigned char> b = inBytes;
    if (b==null() || len<1)
-      failure("LoadImage - bytes expected");
+      hx_failure("LoadImage - bytes expected");
 	Array<unsigned char> a = inAlpha;
    if (a==null() && val_int(inAlpha)>0)
-      failure("LoadImage - alpha expected");
+      hx_failure("LoadImage - alpha expected");
    const char *items = (const char *)&b[0];
    #else
 	val_check_ret0( inBytes, string );
@@ -743,7 +743,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    const SDL_VideoInfo* info = SDL_GetVideoInfo();
 
    if ( SDL_Init( init_flags ) == -1 )
-      failure( SDL_GetError() );
+      hx_failure( SDL_GetError() );
 
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
@@ -810,7 +810,7 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       sFlags |= SDL_DOUBLEBUF;
       screen = SDL_SetVideoMode( use_w, use_h, 32, sFlags );
       if (!screen)
-         failure( SDL_GetError() );
+				hx_failure( SDL_GetError() );
    }
 
    #ifdef NME_TTF
