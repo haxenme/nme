@@ -1,3 +1,5 @@
 -neko FontTest.n
 -main FontTest
 -lib nme
+-lib I32
+

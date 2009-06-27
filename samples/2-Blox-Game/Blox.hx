@@ -133,7 +133,6 @@ class Blox
 
 		g_Mng = new Manager( wndWidth, wndHeight, wndCaption, false, "ico.gif" );
 
-		Sound.setChannels( 2 );
 		Music.init( "Data/bubbleb.mid" );
 		Music.setVolume( 64 );
 		g_Bang = new Sound( "Data/bang.wav" );

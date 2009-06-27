@@ -1,3 +1,5 @@
 -neko Puzzle.n
 -main Puzzle
 -lib nme
+-lib I32
+

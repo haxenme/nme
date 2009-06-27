@@ -111,9 +111,15 @@ class Drums extends nme.GameBase
       super( wndWidth, wndHeight, wndCaption, false, "Data/ico.gif" );
 
       Sound.numChannels = 8;
+		try
+		{
       Music.init( "Data/Party_Gu-Jeremy_S-8250_hifi.mp3" );
       // -1 = loop
       Music.play( -1 );
+		} catch (e:Dynamic)
+		{
+		   trace("MP3 disabled");
+		}
 
       mBangs = new BangList();
       

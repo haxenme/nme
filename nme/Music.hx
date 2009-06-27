@@ -32,11 +32,9 @@ class Music
 	
 	public static function init( file : String )
 	{
-   #if neko
-		__m = nme_music_init( untyped file.__s );
-   #else
 		__m = nme_music_init( file );
-   #end
+	   if (__m==null)
+		   throw("invalid music:" + file);
 	}
 	
 	public static function free()
@@ -46,10 +44,13 @@ class Music
 	
 	public static function play( loops : Int )
 	{
-		// loops:
-		// -1 = infinite
-		if ( loops < -1 ) loops = -1;
-		nme_music_play( __m, loops );
+		if (__m!=null)
+		{
+			// loops:
+			// -1 = infinite
+			if ( loops < -1 ) loops = -1;
+			nme_music_play( __m, loops );
+		}
 	}
 	
 	public static function fadeIn( loops : Int, fadeTimeMS : Int, position : Float )

@@ -225,8 +225,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libsdl.lib libsdlmain.lib libsdl_image.lib libsdl_mixer.lib libsdl_ttf.lib libfreetype.lib libpng.lib zlib.lib libjpeg.lib libvorbis.lib libogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib ole32.lib msimg32.lib"
-				OutputFile="..\ndll\Windows\nme.ndll"
+				AdditionalDependencies="libsdl.lib libsdlmain.lib libsdl_image.lib libsdl_mixer.lib libsdl_ttf.lib libfreetype.lib libpng.lib zlib.lib libjpeg.lib libvorbis.lib libogg.lib libsmpeg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib ole32.lib msimg32.lib"
+				OutputFile="..\ndll\Windows\nme-debug.ndll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../sdl-static/lib/win32;e:\VS8\DirectXSDK\Lib\x86;"
 				IgnoreAllDefaultLibraries="false"
@@ -308,7 +308,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libsdl.lib libsdlmain.lib libsdl_image.lib libsdl_mixer.lib libsdl_ttf.lib libfreetype.lib libpng.lib zlib.lib libjpeg.lib libvorbis.lib libogg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib ole32.lib msimg32.lib"
+				AdditionalDependencies="libsdl.lib libsdlmain.lib libsdl_image.lib libsdl_mixer.lib libsdl_ttf.lib libfreetype.lib libpng.lib zlib.lib libjpeg.lib libvorbis.lib libogg.lib libsmpeg.lib opengl32.lib user32.lib gdi32.lib advapi32.lib ddraw.lib dxguid.lib winmm.lib ole32.lib msimg32.lib"
 				OutputFile="..\ndll\Windows\nme.ndll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../sdl-static/lib/win32;e:\VS8\DirectXSDK\Lib\x86;"

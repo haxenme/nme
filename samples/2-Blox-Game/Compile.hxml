@@ -1,3 +1,5 @@
 -neko blox.n
 -main Blox
 -lib nme
+-lib I32
+

@@ -1,3 +1,4 @@
 -neko collision.n
 -main Collision
 -lib nme
+-lib I32

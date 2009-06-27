@@ -1,4 +1,6 @@
 -neko GraphicsTest.n
 -main GraphicsTest
 -lib nme
+-lib I32
+
 
