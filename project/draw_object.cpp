@@ -312,10 +312,6 @@ public:
                  mTransform(0,0,0,0)
    {
       Init();
-      // TODO:
-      #ifdef IPHONE
-      RGBSWAP(inFillColour);
-      #endif
       mLinesShareGrad = inLinesShareGrad;
       mSolidGradient = inFillGradient;
       mTexture = inTexture;
@@ -555,7 +551,7 @@ public:
                   float *t = &mTex[0];
                   for(size_t i=0;i<n;i++)
                   {
-                      // TODO: texture matix transform ?
+                      // TODO: texture matix transform  invalidates texture transform ?
                       mTexture->OpenGLTexture(t, p[i].mX, p[i].mY, mTexture->mTransMatrix);
                       t+=2;
                   }
@@ -1525,7 +1521,7 @@ public:
                   TextureBuffer *inMarkDirty, MaskObject *inMask,
                   const Viewport &inVP )
    {
-      #ifdef NME_OPENGL
+      #ifdef NME_ANY_GL
       mIsOGL =  IsOpenGLScreen(inSurface);
       if (mIsOGL)
       {
@@ -1546,7 +1542,7 @@ public:
          {
             glPushMatrix();
             mOGLMatrix.GLMult();
-            glTranslated(mOX,mOY,0);
+            glTranslatef(mOX,mOY,0);
             mTexture->DrawOpenGL();
             glPopMatrix();
          }
@@ -1843,9 +1839,6 @@ value nme_create_text_drawable(value * arg, int nargs )
    bgc.r = (bg>>16) & 0xff;
    bgc.g = (bg>>8) & 0xff;
    bgc.b = (bg) & 0xff;
-   bgc.g = 0xff;
-
-
 
    SDL_Surface *surface = transparent_bg ?
        TTF_RenderText_Blended(font, val_string(arg[aText]), col ) :
@@ -1875,7 +1868,10 @@ value nme_create_text_drawable(value * arg, int nargs )
    }
 
 
-   SDL_SetAlpha(surface,SDL_SRCALPHA,255);
+   #ifdef NME_OPENGLES
+   if (transparent_bg)
+   #endif
+      SDL_SetAlpha(surface,SDL_SRCALPHA,255);
    Drawable *obj = new SurfaceDrawer(surface, x, y,
                                      val_number(arg[aAlpha]),
                                      transparent_bg);
@@ -1914,11 +1910,14 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
 
    Drawable *obj = 0;
 
-   if (1||val_bool(arg[aUseFreeType]))
+   if (val_bool(arg[aUseFreeType]))
    {
       // TODO: Get this working
       if (!val_is_kind(arg[aFont],k_font))
+      {
+         printf("Not kind %p %d?\n",arg[aFont], val_type(arg[aFont]));
          return val_null;
+       }
 
       TTF_Font *font = FONT(arg[aFont]);
 

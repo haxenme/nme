@@ -73,6 +73,7 @@ extern int __force_timer;
 // Reference this to bring in all the symbols for the static library
 extern "C" {
 
+
 int nme_register_prims()
 {
 return
@@ -355,6 +356,12 @@ void nmeOrtho(int inX0, int inY0,int inWidth,int inHeight)
 // surface relative functions
 
 
+#ifdef IPHONE
+// Not too sure about this ...
+int sgTitleHeight = 20;
+#else
+int sgTitleHeight = 0;
+#endif
 
 
 static value nme_surface_clear( value surf, value c )
@@ -372,7 +379,7 @@ static value nme_surface_clear( value surf, value c )
         if (IsOpenGLScreen(scr))
         {
            int w = scr->w;
-           int h = scr->h;
+           int h = scr->h-sgTitleHeight;
            glDisable(GL_CLIP_PLANE0);
            glViewport(0,0,w,h);
            glMatrixMode(GL_PROJECTION);
@@ -409,6 +416,8 @@ value nme_surface_height( value surface )
 	val_check_kind( surface, k_surf );
 
 	SDL_Surface* surf = SURFACE(surface);
+        if (IsOpenGLScreen(surf))
+           return alloc_int(surf->h - sgTitleHeight);
         return alloc_int(surf->h);
 }
 

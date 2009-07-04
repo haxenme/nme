@@ -12,21 +12,17 @@ DSO_OBJS := $(SOURCE_FILES:%.cpp=dso_objs/%.o)
 
 
 INCLUDE += -I$(SDL_BASE)/include
-NDLL_INCLUDE = $(INCLUDE) -I$(NEKO_INSTALL_PATH)/include
 DSO_INCLUDE  = $(INCLUDE) -I$(HXCPP)/include
 
-NDLL_CFLAGS += $(NDLL_INCLUDE) -fPIC
 DSO_CFLAGS += $(DSO_INCLUDE) -fPIC
 
 ifdef HXCPP_DEBUG
-NDLL_CFLAGS += -g
 DSO_CFLAGS += -g
 else
-NDLL_CFLAGS += -O2
 DSO_CFLAGS += -O2
 endif
 
-all:ndll dso
+all:dso
 
 OS := $(OSTYPE:darwin%=darwin)
 
@@ -43,6 +39,7 @@ FULL_LIBS += \
    $(SDL_BASE)/lib/mac/libSDL_ttf.a \
    $(SDL_BASE)/lib/mac/libSDL_image.a \
    $(SDL_BASE)/lib/mac/libogg.a \
+   $(SDL_BASE)/lib/mac/libsmpeg.a \
    $(SDL_BASE)/lib/mac/libvorbis.a \
    $(SDL_BASE)/lib/mac/libfreetype.a \
    $(SDL_BASE)/lib/mac/libpng.a \
@@ -64,7 +61,6 @@ FRAMEWORKS := \
 NDLL_DIR := ../ndll/Mac/
 
 LD_FLAGS := -fpic -fPIC -dynamiclib
-HXCPP_LINK += $(HXCPP)/bin/Mac/hxcpp.dylib
 NDLL_LINK +=   $(NEKO_INSTALL_PATH)/libneko.dylib 
 
 MACBOOT := common_objs/MacBoot.o

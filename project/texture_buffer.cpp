@@ -97,6 +97,60 @@ TextureBuffer *TextureBuffer::IncRef()
 }
 
 
+// SDL seems to not work for palettes - mybe a 1.3 problem?
+void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
+     SDL_Surface *inDest, SDL_Rect *inDestRect)
+{
+   if (inSrc->format->BitsPerPixel==8 && !(inSrc->flags & SDL_SRCALPHA) )
+   {
+      int x0 = inSrcRect ? inSrcRect->x : 0;
+      int y0 = inSrcRect ? inSrcRect->y : 0;
+      int w = inSrcRect ? inSrcRect->w : inSrc->w;
+      int h = inSrcRect ? inSrcRect->h : inSrc->h;
+      int dx = inDestRect ? inDestRect->x : 0;
+      int dy = inDestRect ? inDestRect->y : 0;
+
+      if (inSrc->format->BitsPerPixel==8)
+      {
+         SDL_Palette *pal = inSrc->format->palette;
+         SDL_Color *col = pal->colors;
+
+         for(int y=0;y<h;y++)
+         {
+            unsigned char *dest = (unsigned char *)inDest->pixels +
+                                          inDest->pitch*(y+dy) + 4*dx;
+            unsigned char *src =  (unsigned char *)inSrc->pixels +
+                       inSrc->pitch*(y+y0) + 4*x0;
+            if (inDest->format->BitsPerPixel==32)
+               for(int x=0;x<w;x++)
+               {
+                  SDL_Color *c = col + (*src++);
+                  *dest++ = c->r;
+                  *dest++ = c->g;
+                  *dest++ = c->b;
+                  *dest++ = 0xff;
+               }
+            else
+               for(int x=0;x<w;x++)
+               {
+                  SDL_Color *c = col + (*src++);
+                  *dest++ = c->r;
+                  *dest++ = c->g;
+                  *dest++ = c->b;
+               }
+         }
+      }
+      else
+         for(int y=0;y<h;y++)
+            memcpy( (char *)inDest->pixels + inDest->pitch*(y+dy) + 4*dx,
+                    (char *)inSrc->pixels +  inSrc->pitch*(y+y0) + 4*x0, 4*w );
+   }
+   else
+   {
+      SDL_BlitSurface(inSrc,inSrcRect,inDest,inDestRect);
+   }
+}
+
 #ifdef NME_ANY_GL
 bool TextureBuffer::PrepareOpenGL()
 {
@@ -107,6 +161,12 @@ bool TextureBuffer::PrepareOpenGL()
       int src_format = GL_BGRA;
       int store_format = 4;
       mResizeID = nme_resize_id;
+      bool convert = false;
+
+      int w = UpToPower2(mSurface->w);
+      int h = UpToPower2(mSurface->h);
+      bool is_pow2 = w==mSurface->w && h==mSurface->h;
+
 
       if (mSurface->format->BitsPerPixel==32 )
       {
@@ -133,24 +193,79 @@ bool TextureBuffer::PrepareOpenGL()
             src_format = GL_BGR;
          store_format = 3;
       }
-      else // convert!
+      else
+         convert = true;
+
+      #ifdef NME_OPENGLES
+      if (!is_pow2 || (src_format!=GL_RGB && src_format!=GL_RGBA) )
+         convert = true;
+      else
+         store_format = src_format;
+      #endif
+
+      if (convert)
       {
-         data = SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA,
-            mSurface->w, mSurface->h, 32,
-            0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-         SDL_BlitSurface(mSurface, 0, data, 0);
+         #ifdef NME_OPENGLES
+         int target_w = w;
+         int target_h = h;
+         is_pow2 = true;
+         #else
+         int target_w = mSurface->w;
+         int target_h = mSurface->h;
+         #endif
+
+         bool alpha =  (mSurface->flags & SDL_SRCALPHA);
+         data = SDL_CreateRGBSurface(SDL_SWSURFACE|(alpha ? SDL_SRCALPHA : 0),
+            target_w, target_h, alpha ? 32 : 24,
+            0x00ff0000, 0x0000ff00, 0x000000ff, alpha ? 0xff000000 : 0);
+
+         MY_SDL_BlitSurface(mSurface, 0, data, 0);
+
+         if (mSurface->h < target_h)
+         {
+             // Double last row...
+             SDL_Rect src;
+             src.x = 0;
+             src.y = mSurface->h-1;
+             src.w = mSurface->w;
+             src.h = 1;
+             SDL_Rect dest;
+             dest.x = 0;
+             dest.y = mSurface->h;
+             MY_SDL_BlitSurface(mSurface, &src, data, &dest);
+             if (mSurface->w < w)
+             {
+                 src.x = src.w-1;
+                 src.w = 1;
+                 dest.x = mSurface->w;
+                 dest.y = mSurface->h;
+                 MY_SDL_BlitSurface(mSurface, &src, data, &dest);
+             }
+         }
+         if (mSurface->h < target_h)
+         {
+             // Double last col...
+             SDL_Rect src;
+             src.x = mSurface->w-1;
+             src.y = 0;
+             src.w = 1;
+             src.h = mSurface->h;
+             SDL_Rect dest;
+             dest.x = mSurface->w;
+             dest.y = 0;
+             MY_SDL_BlitSurface(mSurface, &src, data, &dest);
+         }
          cleanup = data;
+         src_format = store_format = alpha ? GL_RGBA : GL_RGB;
       }
 
       glGenTextures(1, &mTextureID);
       glBindTexture(GL_TEXTURE_2D, mTextureID);
 
-      int w = UpToPower2(mSurface->w);
-      int h = UpToPower2(mSurface->h);
 
-      if ( mSurface->w != w || mSurface->h != h )
+      if ( !is_pow2 )
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
+         glTexImage2D(GL_TEXTURE_2D, 0, src_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, 0 );
 
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
@@ -188,7 +303,7 @@ bool TextureBuffer::PrepareOpenGL()
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
       if (cleanup)
          SDL_FreeSurface(cleanup);
@@ -216,6 +331,7 @@ bool TextureBuffer::PrepareOpenGL()
 
 void TextureBuffer::UpdateHardware()
 {
+   if (!mTextureID) return;
    glBindTexture(GL_TEXTURE_2D, mTextureID);
 
    if (mDirtyX0<0) mDirtyX0 = 0;
@@ -379,7 +495,7 @@ void TextureBuffer::DrawOpenGL(float inAlpha)
    glTexCoordPointer(2, GL_FLOAT, 0, &tex[0][0] );
    glEnableClientState(GL_VERTEX_ARRAY);
    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-   glDrawArrays(GL_QUADS,0,4);
+   glDrawArrays(GL_TRIANGLE_FAN,0,4);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -1055,7 +1171,7 @@ public:
             glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
             glEnableClientState(GL_VERTEX_ARRAY);
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glDrawArrays(GL_QUADS,0,4);
+            glDrawArrays(GL_TRIANGLE_FAN,0,4);
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
@@ -1079,7 +1195,7 @@ public:
             glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
             glEnableClientState(GL_VERTEX_ARRAY);
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glDrawArrays(GL_QUADS,0,4);
+            glDrawArrays(GL_TRIANGLE_FAN,0,4);
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -1333,7 +1449,7 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
                 float verts[][2] = { {0,0}, {0,h}, {w,h}, {w,0} };
                 glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
                 glEnableClientState(GL_VERTEX_ARRAY);
-                glDrawArrays(GL_QUADS,0,4);
+                glDrawArrays(GL_TRIANGLE_FAN,0,4);
                 glDisableClientState(GL_VERTEX_ARRAY);
              }
           }

@@ -32,19 +32,45 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #ifdef __APPLE__
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
+
+#ifdef IPHONE
+#define FONT_BASE "/System/Library/Fonts/Cache/"
+#else
+#define FONT_BASE "/Library/Fonts/"
+#endif
+
    if (!strcasecmp(inName.c_str(),"times.ttf"))
-      outFile = "/Library/Fonts/Times New Roman.ttf";
+      outFile = "TimesNewRoman.ttf";
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
-      outFile = "/Library/Fonts/Arial.ttf";
+      outFile = FONT_BASE "Arial.ttf";
    else if (!strcasecmp(inName.c_str(),"courier.ttf"))
-      outFile = "/Library/Fonts/Courier.ttf";
+      outFile = FONT_BASE "Courier.ttf";
+   else if (!strcasecmp(inName.c_str(),"helvetica.ttf"))
+      outFile = FONT_BASE "Helvetica.ttf";
    else
    {
-      outFile = "/Library/Fonts/" + inName;
+      outFile = FONT_BASE + inName;
       return true;
       //printf("Unfound font: %s\n",inName.c_str());
       return false;
    }
+
+   /*
+   char *guess[] = { 
+                     "/System/Library/Fonts/Cache/Helvetica.ttf",
+                     "/System/Library/Fonts/Cache/Arial.ttf",
+                     "/System/Library/Fonts/Cache/Courier.ttf",
+                     "/System/Library/Fonts/Cache/TimesNewRoman.ttf",
+                     0 };
+  for(char **g=guess; *g; g++)
+  {
+     FILE *f = fopen(*g,"rb");
+     
+     printf("Looking for font %s %p\n", *g, f);
+     if (f)
+      fclose(f);
+  }
+  */
 
    return true;
 }

@@ -10,7 +10,11 @@
 #import <unistd.h>
 
 //#import <SDLMain.h>
+#ifdef IPHONE
+#import <UIKit/UIKit.h>
+#else
 #import <Cocoa/Cocoa.h>
+#endif
 
 
 typedef void (*ContinueFunc)();

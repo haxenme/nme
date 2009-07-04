@@ -3,7 +3,9 @@
 #include <windows.h>
 #endif
 
-#include <SDL_opengl.h>
+
+#include <SDL_Opengl.h>
+
 #include <vector>
 
 #include "nme.h"
