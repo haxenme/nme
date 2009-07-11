@@ -62,7 +62,7 @@ typedef std::vector<FilterBase *> FilterSet;
 SDL_Surface *CreateSurface(int inW,int inH)
 {
    return SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA, inW, inH, 32,
-                                  0xff0000, 0x00ff00, 0x0000ff, 0xff000000 );
+                                  0x0000ff, 0x00ff00, 0xff0000, 0xff000000 );
 }
 
  inline ARGB *Row(SDL_Surface *inSurface, int inY)
@@ -629,18 +629,9 @@ value nme_create_filter_set(value inFilters,value outPoint)
    for(int i=0;i<n;i++)
    {
       value val = val_array_i(inFilters,i);
-      #ifdef HXCPP
       value type_val = val_field(val,val_id("mType"));
-      #else
-      value type_val_obj = val_field(val,val_id("mType"));
-      if ( !val_is_object(type_val_obj) )
-         hx_failure( "no filter type found" );
-
-      value type_val = val_field(type_val_obj,val_id("__s"));
       if ( !val_is_string(type_val) )
-         hx_failure( "no filter type string found" );
-      #endif
-
+         hx_failure( "no filter type found" );
 
       const char *type =  val_string(type_val);
       FilterBase *filter = 0;

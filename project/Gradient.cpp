@@ -172,8 +172,8 @@ bool Gradient::InitOpenGL()
    mResizeID = nme_resize_id;
    glGenTextures(1, &mTextureID);
    glBindTexture(GL_TEXTURE_2D, mTextureID);
-   glTexImage2D(GL_TEXTURE_2D, 0, 4,  256, 1, 0,
-      GL_BGRA, GL_UNSIGNED_BYTE, &mColours[0] );
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  256, 1, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, &mColours[0] );
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
    glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   

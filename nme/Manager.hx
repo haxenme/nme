@@ -282,7 +282,7 @@ class Manager
 
       graphics.lineStyle(1,0x000000);
       var text = "FPS:" + mFrameCountStack.length;
-      Manager.graphics.moveTo(10,10);
+      Manager.graphics.moveTo(10,30);
       Manager.graphics.text(text,12,null,0xffffff);
    }
 

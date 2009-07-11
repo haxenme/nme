@@ -40,15 +40,15 @@
 #ifdef NEKO_WINDOWS
 #include <windows.h>
 typedef CRITICAL_SECTION hxMutex;
-void MutexInit(hxMutex &ioMutex) { InitializeCriticalSection(&ioMutex); }
-void MutexLock(hxMutex &ioMutex) { EnterCriticalSection(&ioMutex); }
-void MutexUnlock(hxMutex &ioMutex) { LeaveCriticalSection(&ioMutex); }
+static void MutexInit(hxMutex &ioMutex) { InitializeCriticalSection(&ioMutex); }
+static void MutexLock(hxMutex &ioMutex) { EnterCriticalSection(&ioMutex); }
+static void MutexUnlock(hxMutex &ioMutex) { LeaveCriticalSection(&ioMutex); }
 #else
 #include <pthread.h>
 typedef pthread_mutex_t hxMutex;
-void MutexInit(hxMutex &ioMutex) { pthread_mutex_init(&ioMutex,0); }
-void MutexLock(hxMutex &ioMutex) { pthread_mutex_lock(&ioMutex); }
-void MutexUnlock(hxMutex &ioMutex) { pthread_mutex_unlock(&ioMutex); }
+static void MutexInit(hxMutex &ioMutex) { pthread_mutex_init(&ioMutex,0); }
+static void MutexLock(hxMutex &ioMutex) { pthread_mutex_lock(&ioMutex); }
+static void MutexUnlock(hxMutex &ioMutex) { pthread_mutex_unlock(&ioMutex); }
 #endif
 
 hxMutex sgChannelListMutex;

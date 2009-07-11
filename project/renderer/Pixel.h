@@ -28,13 +28,13 @@ struct XRGB
 
    union
    {
-      struct { Uint8 b,g,r,a; };
+      struct { Uint8 r,g,b,a; };
       int  ival;
    };
 };
 
 
-
+// This matches the GL_RGBA format.
 
 struct ARGB
 {
@@ -77,7 +77,7 @@ struct ARGB
 
    union
    {
-      struct { Uint8 b,g,r,a; };
+      struct { Uint8 r,g,b,a; };
       int  ival;
    };
 };
@@ -137,9 +137,10 @@ struct DestSurfaceFallback : public DestBase
    template<typename SOURCE_>
    void SetIncBlend(const SOURCE_ &inRGB)
    {
+      // Work out if the code gets run ...
       *(int *)0=0;
       if (mPixelSize==1)
-        *mPtr++ = SDL_MapRGB(mSurface->format,inRGB.a,inRGB.g,inRGB.b);
+        *mPtr++ = SDL_MapRGB(mSurface->format,inRGB.r,inRGB.g,inRGB.b);
       else
       {
         *mPtr++ = inRGB.b;

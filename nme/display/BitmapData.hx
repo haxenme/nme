@@ -248,7 +248,10 @@ class BitmapData implements IBitmapDrawable
 	/**
 	* @todo move to property
 	*/
-	public function handle() { return mTextureBuffer; }
+	public function handle() : Dynamic
+        {
+           return mTextureBuffer;
+        }
 
 
 

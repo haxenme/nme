@@ -33,14 +33,16 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
 
-#ifdef IPHONE
+#ifdef IPHONEOS
 #define FONT_BASE "/System/Library/Fonts/Cache/"
+#define TIMES_ROMAN "TimesNewRoman.ttf"
 #else
 #define FONT_BASE "/Library/Fonts/"
+#define TIMES_ROMAN "Times New Roman.ttf"
 #endif
 
    if (!strcasecmp(inName.c_str(),"times.ttf"))
-      outFile = "TimesNewRoman.ttf";
+      outFile = FONT_BASE TIMES_ROMAN;
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
       outFile = FONT_BASE "Arial.ttf";
    else if (!strcasecmp(inName.c_str(),"courier.ttf"))

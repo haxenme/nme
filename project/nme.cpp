@@ -23,7 +23,9 @@
  * DAMAGE.
  */
 
+#ifndef IPHONE
 #define IMPLEMENT_API
+#endif
 
 #include "nsdl.h"
 #include "nme.h"
@@ -1023,11 +1025,15 @@ value nme_set_clipboard(value inVal)
    return alloc_int(0);
 }
 
-DEFINE_PRIM(nme_get_clipboard,0);
-DEFINE_PRIM(nme_set_clipboard, 1);
+#else
+
+value nme_get_clipboard() { return alloc_null(); }
+value nme_set_clipboard(value inVal) { return alloc_null(); }
 
 #endif
 
+DEFINE_PRIM(nme_get_clipboard,0);
+DEFINE_PRIM(nme_set_clipboard, 1);
 
 DEFINE_PRIM(nme_event, 0);
 DEFINE_PRIM(nme_delay, 1);

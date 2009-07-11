@@ -239,6 +239,9 @@ typedef std::vector<CurvedPoint> CurvedPoints;
 #define SCALE_HORIZONTAL 2
 #define SCALE_NORMAL     3
 
+void dbg_break()
+{
+}
 
 struct LineJob : public PolyLine
 {
@@ -276,12 +279,6 @@ typedef std::vector<LineJob> LineJobs;
 
 typedef std::vector<Point> Points;
 
-void RGBSWAP(int &ioRGB)
-{
-   int r = ioRGB & 0xff0000;
-   int b = ioRGB & 0x0000ff;
-   ioRGB = (ioRGB & 0xff00ff00) | (r>>16) | (b<<16);
-}
 
 class DrawObject : public Drawable
 {
@@ -527,20 +524,20 @@ public:
             // TODO: tesselate
             const CurvedPoint *p = &mPoints[0];
 
-            //glTexCoordPointer(2, GL_FLOAT, 0, &tex[0][0] );
-            //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
             if (mSolidGradient)
             {
-               if (mTex.size()!=n)
+               if (mTex.size()!=n*2)
                {
-                  mTex.resize(n);
+                  mTex.resize(n*2);
                   float *t = &mTex[0];
                   for(size_t i=0;i<n;i++)
+                  {
                       mSolidGradient->OpenGLTexture(t++, p[i].mX, p[i].mY );
+                      *t++ = 0;
+                  }
                 }
-                glTexCoordPointer(1, GL_FLOAT, 0, &mTex[0] );
+                glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             }
             else if (tex)
@@ -559,6 +556,8 @@ public:
                 glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             }
+            else
+               glDisableClientState(GL_TEXTURE_COORD_ARRAY);
        
 
             glVertexPointer(2, GL_FLOAT, 0, p);
@@ -963,6 +962,9 @@ public:
          if (mSolid)
             mSolid->Render(inSurface,inVP,mTX,mTY);
 
+         if (inSurface->w==641)
+            dbg_break();
+
          size_t jobs = mLineJobs.size();
          for(size_t j=0;j<jobs;j++)
          {
@@ -1008,7 +1010,10 @@ public:
 
              glLoadName(1);
 
-             glCallList(mDisplayList);
+             if (mDisplayList)
+                glCallList(mDisplayList);
+             else
+                DrawOpenGL();
 
              GLint hits = glRenderMode(GL_RENDER);
              return hits>0;
@@ -1017,6 +1022,11 @@ public:
       else
       #endif // NME_OPENGL
       {
+         #ifdef NME_OPENGLES
+         if (mIsOGL)
+            CreateRenderers(0,mOGLMatrix, 0, 0, gScale9 );
+         #endif
+
          if (mSolid && mSolid->HitTest(inX-mTX,inY-mTY))
             return true;
 
@@ -1912,10 +1922,9 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
 
    if (val_bool(arg[aUseFreeType]))
    {
-      // TODO: Get this working
       if (!val_is_kind(arg[aFont],k_font))
       {
-         printf("Not kind %p %d?\n",arg[aFont], val_type(arg[aFont]));
+         printf("Null font %p %d?\n",arg[aFont], val_type(arg[aFont]));
          return val_null;
        }
 

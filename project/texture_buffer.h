@@ -54,6 +54,8 @@ public:
    int SetPixels(const unsigned char *inData, int inDataLen, int inFormat, int inTableLen);
    void Scroll(int inDX, int inDY);
 
+   int GetID() { return mTextureID; }
+
 protected:
    // Call "DecRef" instead;
    ~TextureBuffer();

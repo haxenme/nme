@@ -3,5 +3,5 @@ package nme;
 #if neko
 typedef Sys = neko.Sys;
 #else
-typedef Sys = hxcpp.Sys;
+typedef Sys = cpp.Sys;
 #end

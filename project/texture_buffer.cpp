@@ -156,6 +156,8 @@ bool TextureBuffer::PrepareOpenGL()
 {
    if (mTextureID==0 || mResizeID != nme_resize_id)
    {
+      glGetError();
+
       SDL_Surface *data = mSurface;
       SDL_Surface *cleanup = 0;
       int src_format = GL_BGRA;
@@ -217,7 +219,7 @@ bool TextureBuffer::PrepareOpenGL()
          bool alpha =  (mSurface->flags & SDL_SRCALPHA);
          data = SDL_CreateRGBSurface(SDL_SWSURFACE|(alpha ? SDL_SRCALPHA : 0),
             target_w, target_h, alpha ? 32 : 24,
-            0x00ff0000, 0x0000ff00, 0x000000ff, alpha ? 0xff000000 : 0);
+            0x000000ff, 0x0000ff00, 0x00ff0000, alpha ? 0xff000000 : 0);
 
          MY_SDL_BlitSurface(mSurface, 0, data, 0);
 
@@ -261,11 +263,17 @@ bool TextureBuffer::PrepareOpenGL()
 
       glGenTextures(1, &mTextureID);
       glBindTexture(GL_TEXTURE_2D, mTextureID);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
+      //printf("Creating texture %d %dx%d\n",mTextureID, mPixelWidth, mPixelHeight);
 
       if ( !is_pow2 )
       {
-         glTexImage2D(GL_TEXTURE_2D, 0, src_format, w, h, 0, src_format,
+         #ifdef NME_OPENGLES
+         store_format = src_format;
+         #endif
+         glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, 0 );
 
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, mSurface->w, mSurface->h,
@@ -313,6 +321,12 @@ bool TextureBuffer::PrepareOpenGL()
       mSW = (float)(w >0 ? 1.0/w : 0);
       mSH = (float)(h >0 ? 1.0/h : 0);
       mHardwareDirty = false;
+
+      int err = glGetError();
+      if (err)
+      {
+         printf("Error loading texture : %d\n",err);
+      }
    }
    else if (mHardwareDirty)
    {
@@ -331,7 +345,14 @@ bool TextureBuffer::PrepareOpenGL()
 
 void TextureBuffer::UpdateHardware()
 {
-   if (!mTextureID) return;
+   if (!mTextureID)
+   {
+      printf("No textureID?\n");
+      return;
+   }
+
+   glGetError();
+
    glBindTexture(GL_TEXTURE_2D, mTextureID);
 
    if (mDirtyX0<0) mDirtyX0 = 0;
@@ -339,17 +360,24 @@ void TextureBuffer::UpdateHardware()
    if (mDirtyX1>mPixelWidth)  mDirtyX1 = mPixelWidth;
    if (mDirtyY1>mPixelHeight) mDirtyY1 = mPixelHeight;
 
+   printf("Update %d,%d %dx%d\n",mDirtyX0, mDirtyY0, mDirtyX1, mDirtyY1);
+
    glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->w);
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, mDirtyX0);
    glPixelStorei(GL_UNPACK_SKIP_ROWS,   mDirtyY0);
 
    glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyX0,mDirtyY0,
          mDirtyX1-mDirtyX0, mDirtyY1 - mDirtyY0,
-         GL_BGRA, GL_UNSIGNED_BYTE, mSurface->pixels );
+         GL_RGBA, GL_UNSIGNED_BYTE, mSurface->pixels );
 
+   /// TODO: duplicate pixel rows?
    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
    glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
+
+   int err = glGetError();
+   if (err)
+      printf("UpdateHardware : error %d\n", err);
 
    mHardwareDirty = false;
 }
@@ -376,6 +404,7 @@ void TextureBuffer::SetExtentDirty(int inX0,int inY0,int inX1,int inY1)
 {
    if (!mHardwareDirty)
    {
+printf("Set Hardwaredirty  %d %dx%d\n", mTextureID, mPixelWidth,mPixelHeight);
       mHardwareDirty = true;
       mDirtyX0 = inX0;
       mDirtyY0 = inY0;
@@ -384,7 +413,6 @@ void TextureBuffer::SetExtentDirty(int inX0,int inY0,int inX1,int inY1)
    }
    else
    {
-      mHardwareDirty = true;
       if (inX0<mDirtyX0) mDirtyX0 = inX0;
       if (inY0<mDirtyY0) mDirtyY0 = inY0;
       if (inX1>mDirtyX1) mDirtyX1 = inX1;
@@ -482,6 +510,7 @@ void TextureBuffer::UnBindOpenGL()
 
 void TextureBuffer::DrawOpenGL(float inAlpha)
 {
+//printf("DrawOpenGL %d %d %dx%d\n", mTextureID, mHardwareDirty, mSurface->w, mSurface->h);
    if (!PrepareOpenGL())
       return;
 
@@ -587,7 +616,7 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
                             val_int(width),
                             val_int(height),
                             32,
-                            0xff0000,0x00ff00,0x0000ff, 0xff000000);
+                            0x000000ff,0x00ff00,0x00ff0000, 0xff000000);
 
 
    int icol = val_int(colour);
@@ -1085,9 +1114,9 @@ public:
          mTexture->PrepareOpenGL();
          mTexture->UnBindOpenGL();
          mTexture->ScaleTexture(inX0,inY0,mTex[0][0],mTex[0][1]);
-         mTexture->ScaleTexture(inX0+inWidth,inY0,mTex[1][0],mTex[1][1]);
+         mTexture->ScaleTexture(inX0,inY0+inHeight,mTex[1][0],mTex[1][1]);
          mTexture->ScaleTexture(inX0+inWidth,inY0+inHeight,mTex[2][0],mTex[2][1]);
-         mTexture->ScaleTexture(inX0,inY0+inHeight,mTex[3][0],mTex[3][1]);
+         mTexture->ScaleTexture(inX0+inWidth,inY0,mTex[3][0],mTex[3][1]);
       }
       else
       #endif
@@ -1306,7 +1335,15 @@ value nme_create_blitter(value* arg, int nargs )
 {
    enum { aTex, aSurface, aX0, aY0, aWidth, aHeight, aHotX, aHotY, aSIZE };
    if (nargs!=aSIZE)
+   {
       hx_failure( "nme_create_blitter - wrong number of args.\n" );
+   }
+
+   if( val_is_null(arg[aTex]))
+   {
+      printf("Null texture?\n");
+      return alloc_null();
+   }
 
    val_check_kind( arg[aTex], k_texture_buffer );
    val_check_kind( arg[aSurface], k_surf );
@@ -1476,12 +1513,12 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
                    if (a!=255)
                    {
                       sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
-                                  0xff0000, 0xff00, 0xff, 0xff000000 );
+                                  0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 );
                    }
                    else
                    {
                       sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
-                                  0xff0000, 0xff00, 0xff, 0 );
+                                  0x000000ff, 0x0000ff00, 0x00ff0000, 0 );
                    }
                 }
              }

@@ -1,4 +1,5 @@
 -main GraphicsTest
 -lib nme
 -cpp cpp
--cmd make_cpp
+-lib I32
+--remap neko:cpp
