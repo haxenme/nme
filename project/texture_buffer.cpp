@@ -41,11 +41,46 @@ static int val_id_height = val_id("height");
 
 static int texture_count = 0;
 
+
+/*
+#include "renderer/Pixel.h"
+static GLuint sDummyTexture = 0;
+void InitDummyTexture()
+{
+   if (!sDummyTexture)
+   {
+      glGenTextures(1,&sDummyTexture);
+      glBindTexture(GL_TEXTURE_2D,sDummyTexture);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+ 
+      ARGB *rgb = new ARGB[32*32];
+      for(int y=0;y<32;y++)
+         for(int x=0;x<32;x++)
+            rgb[ y*32 + x ].ival = ( ((x/4) & 1) == ((y/4) & 1) ) ? 
+                0xff000000 : 0xffffffff;
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
+      delete [] rgb;
+   }
+}
+*/
+
 // --- TextureBuffer ----------------------------------------------------
 
 TextureBuffer::TextureBuffer(SDL_Surface *inSurface)
 {
    mSurface = inSurface;
+/*
+   SDL_Rect rect;
+   rect.x = 0;
+   rect.y = 0;
+   rect.w = inSurface->w;
+   rect.h = inSurface->h;
+   SDL_FillRect(inSurface,&rect,0x00ff);
+*/
    mTextureID = 0;
    mPixelWidth = inSurface->w;
    mPixelHeight = inSurface->h;
@@ -101,15 +136,15 @@ TextureBuffer *TextureBuffer::IncRef()
 void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
      SDL_Surface *inDest, SDL_Rect *inDestRect)
 {
+   int x0 = inSrcRect ? inSrcRect->x : 0;
+   int y0 = inSrcRect ? inSrcRect->y : 0;
+   int w = inSrcRect ? inSrcRect->w : inSrc->w;
+   int h = inSrcRect ? inSrcRect->h : inSrc->h;
+   int dx = inDestRect ? inDestRect->x : 0;
+   int dy = inDestRect ? inDestRect->y : 0;
+
    if (inSrc->format->BitsPerPixel==8 && !(inSrc->flags & SDL_SRCALPHA) )
    {
-      int x0 = inSrcRect ? inSrcRect->x : 0;
-      int y0 = inSrcRect ? inSrcRect->y : 0;
-      int w = inSrcRect ? inSrcRect->w : inSrc->w;
-      int h = inSrcRect ? inSrcRect->h : inSrc->h;
-      int dx = inDestRect ? inDestRect->x : 0;
-      int dy = inDestRect ? inDestRect->y : 0;
-
       if (inSrc->format->BitsPerPixel==8)
       {
          SDL_Palette *pal = inSrc->format->palette;
@@ -147,7 +182,18 @@ void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
    }
    else
    {
+#if 0
       SDL_BlitSurface(inSrc,inSrcRect,inDest,inDestRect);
+#endif
+
+      for(int y=0;y<h;y++)
+      {
+         int *dest = (int *)((unsigned char *)inDest->pixels +
+                                          inDest->pitch*(y+dy) + 4*dx);
+         unsigned char *src =  (unsigned char *)inSrc->pixels +
+                       inSrc->pitch*(y+y0) + 4*x0;
+         memcpy(dest,src,w*sizeof(int));
+      }
    }
 }
 
@@ -156,7 +202,7 @@ bool TextureBuffer::PrepareOpenGL()
 {
    if (mTextureID==0 || mResizeID != nme_resize_id)
    {
-      glGetError();
+      //glGetError();
 
       SDL_Surface *data = mSurface;
       SDL_Surface *cleanup = 0;
@@ -351,7 +397,7 @@ void TextureBuffer::UpdateHardware()
       return;
    }
 
-   glGetError();
+   //glGetError();
 
    glBindTexture(GL_TEXTURE_2D, mTextureID);
 
@@ -360,7 +406,7 @@ void TextureBuffer::UpdateHardware()
    if (mDirtyX1>mPixelWidth)  mDirtyX1 = mPixelWidth;
    if (mDirtyY1>mPixelHeight) mDirtyY1 = mPixelHeight;
 
-   printf("Update %d,%d %dx%d\n",mDirtyX0, mDirtyY0, mDirtyX1, mDirtyY1);
+   //printf("Update %d,%d %dx%d\n",mDirtyX0, mDirtyY0, mDirtyX1, mDirtyY1);
 
    glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->w);
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, mDirtyX0);
@@ -375,9 +421,9 @@ void TextureBuffer::UpdateHardware()
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
    glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
 
-   int err = glGetError();
-   if (err)
-      printf("UpdateHardware : error %d\n", err);
+   //int err = glGetError();
+   //if (err)
+      //printf("UpdateHardware : error %d\n", err);
 
    mHardwareDirty = false;
 }

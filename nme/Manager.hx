@@ -150,11 +150,7 @@ class Manager
          flags += VSYNC;
 
 		if ( width < 100 || height < 20 ) return;
-      #if neko
-		__scr = nme_screen_init( width, height, untyped title.__s, flags, untyped icon.__s );
-      #else
 		__scr = nme_screen_init( width, height, title, flags, icon );
-      #end
       graphics = new Graphics(__scr);
 		mainLoopRunning = false;
 		mouseEventCallbacks = new MouseEventCallbackList();

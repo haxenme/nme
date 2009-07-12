@@ -35,7 +35,6 @@
   <compilerflag value="-I../../sdl-static/include/${SDLVER}"/>
 
   <compilerflag value="-DIPHONE" if="iphone"/>
-  <compilerflag value="-mthumb" if="iphoneos"/>
   <compilerflag value="-D${SDLVER}" if="iphone"/>
   <compilerflag value="-I/usr/X11R6/include" if="apple"/>
 
