@@ -67,6 +67,7 @@ extern int __force_draw_object;
 extern int __force_gl_helpers;
 extern int __force_sound;
 extern int __force_sprite;
+extern int __force_joystick;
 extern int __force_text;
 extern int __force_text_texture;
 extern int __force_texture_buffer;
@@ -88,6 +89,7 @@ return
       __force_sound +
       #endif
       __force_sprite +
+      __force_joystick +
       __force_text +
       __force_text_texture +
       __force_texture_buffer +
@@ -748,6 +750,8 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
    if (opengl)
       init_flags |= SDL_OPENGL;
+
+   init_flags |= SDL_INIT_JOYSTICK;
 
    sUseSystemHardware = (!opengl) && (val_int(in_flags) & NME_HWSURF);
 

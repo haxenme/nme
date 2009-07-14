@@ -152,7 +152,11 @@ TextureBuffer *CreateTextTexture(const std::string &inFont,
       return 0;
 
    /* Use SDL_TTF to render our text */
-   SDL_Surface *initial = TTF_RenderText_Blended(font, inText, inColour);
+   SDL_Color bg;
+   bg.r = bg.g = bg.b = 0;
+   SDL_Surface *initial = TTF_RenderText_Shaded(font, inText, inColour, bg);
+   if (initial)
+       SDL_SetAlpha(initial,SDL_SRCALPHA,255);
 
    return new TextureBuffer(initial);
    #endif

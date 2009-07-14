@@ -53,6 +53,7 @@
   <file name="nme.cpp"/>
   <file name="sound.cpp"/>
   <file name="sprite.cpp"/>
+  <file name="Joystick.cpp"/>
   <file name="text.cpp"/>
   <file name="text_texture.cpp"/>
   <file name="texture_buffer.cpp"/>

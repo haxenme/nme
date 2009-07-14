@@ -143,12 +143,12 @@ void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
    int dx = inDestRect ? inDestRect->x : 0;
    int dy = inDestRect ? inDestRect->y : 0;
 
-   if (inSrc->format->BitsPerPixel==8 && !(inSrc->flags & SDL_SRCALPHA) )
+   if (inSrc->format->BitsPerPixel==8)
    {
-      if (inSrc->format->BitsPerPixel==8)
       {
          SDL_Palette *pal = inSrc->format->palette;
          SDL_Color *col = pal->colors;
+         SDL_Color col0 = *col;
 
          for(int y=0;y<h;y++)
          {
@@ -157,14 +157,25 @@ void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
             unsigned char *src =  (unsigned char *)inSrc->pixels +
                        inSrc->pitch*(y+y0) + 4*x0;
             if (inDest->format->BitsPerPixel==32)
-               for(int x=0;x<w;x++)
-               {
-                  SDL_Color *c = col + (*src++);
-                  *dest++ = c->r;
-                  *dest++ = c->g;
-                  *dest++ = c->b;
-                  *dest++ = 0xff;
-               }
+            {
+               if (0) //inSrc->flags & SDL_SRCALPHA)
+                  for(int x=0;x<w;x++)
+                  {
+                     *dest++ = col0.r;
+                     *dest++ = col0.g;
+                     *dest++ = col0.b;
+                     *dest++ = *src++;
+                  }
+               else
+                  for(int x=0;x<w;x++)
+                  {
+                     SDL_Color *c = col + (*src++);
+                     *dest++ = c->r;
+                     *dest++ = c->g;
+                     *dest++ = c->b;
+                     *dest++ = 0xff;
+                  }
+            }
             else
                for(int x=0;x<w;x++)
                {
@@ -175,10 +186,12 @@ void MY_SDL_BlitSurface(SDL_Surface *inSrc, SDL_Rect *inSrcRect,
                }
          }
       }
+      /*
       else
          for(int y=0;y<h;y++)
             memcpy( (char *)inDest->pixels + inDest->pitch*(y+dy) + 4*dx,
                     (char *)inSrc->pixels +  inSrc->pitch*(y+y0) + 4*x0, 4*w );
+       */
    }
    else
    {
@@ -202,7 +215,7 @@ bool TextureBuffer::PrepareOpenGL()
 {
    if (mTextureID==0 || mResizeID != nme_resize_id)
    {
-      //glGetError();
+      int err = glGetError(); if (err) printf("Error before PrepareOpenGL\n");
 
       SDL_Surface *data = mSurface;
       SDL_Surface *cleanup = 0;
@@ -243,6 +256,8 @@ bool TextureBuffer::PrepareOpenGL()
       }
       else
          convert = true;
+
+      err = glGetError(); if (err) printf("Error loading texture 0 : %d\n",err);
 
       #ifdef NME_OPENGLES
       if (!is_pow2 || (src_format!=GL_RGB && src_format!=GL_RGBA) )
@@ -307,12 +322,15 @@ bool TextureBuffer::PrepareOpenGL()
          src_format = store_format = alpha ? GL_RGBA : GL_RGB;
       }
 
+      err = glGetError(); if (err) printf("Error loading texture 0a : %d\n",err);
+
       glGenTextures(1, &mTextureID);
       glBindTexture(GL_TEXTURE_2D, mTextureID);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
       //printf("Creating texture %d %dx%d\n",mTextureID, mPixelWidth, mPixelHeight);
+      err = glGetError(); if (err) printf("Error loading texture 1 : %d\n",err);
 
       if ( !is_pow2 )
       {
@@ -355,9 +373,11 @@ bool TextureBuffer::PrepareOpenGL()
             GL_UNSIGNED_BYTE, data->pixels );
       }
 
+      err = glGetError(); if (err) printf("Error loading texture 2 : %d\n",err);
+
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
       if (cleanup)
          SDL_FreeSurface(cleanup);
@@ -368,11 +388,7 @@ bool TextureBuffer::PrepareOpenGL()
       mSH = (float)(h >0 ? 1.0/h : 0);
       mHardwareDirty = false;
 
-      int err = glGetError();
-      if (err)
-      {
-         printf("Error loading texture : %d\n",err);
-      }
+      err = glGetError(); if (err) printf("Error loading texture 3 : %d\n",err);
    }
    else if (mHardwareDirty)
    {
@@ -391,15 +407,19 @@ bool TextureBuffer::PrepareOpenGL()
 
 void TextureBuffer::UpdateHardware()
 {
+   if (!mHardwareDirty)
+      return;
+
    if (!mTextureID)
    {
-      printf("No textureID?\n");
+      //printf("No textureID?\n");
       return;
    }
 
    //glGetError();
 
    glBindTexture(GL_TEXTURE_2D, mTextureID);
+
 
    if (mDirtyX0<0) mDirtyX0 = 0;
    if (mDirtyY0<0) mDirtyY0 = 0;
