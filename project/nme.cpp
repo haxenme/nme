@@ -48,7 +48,6 @@
 #endif
 
 
-
 int nme_resize_id = 0;
 
 using namespace std;

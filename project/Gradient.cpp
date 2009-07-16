@@ -4,7 +4,7 @@
 #endif
 
 
-#include <SDL_Opengl.h>
+#include <SDL_opengl.h>
 
 #include <vector>
 

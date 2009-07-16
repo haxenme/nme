@@ -72,25 +72,31 @@
 
 <set name="SDLLIB" value="../../sdl-static/lib/mac/" if="macos"/>
 <set name="SDLLIB" value="../../sdl-static/lib/iphoneos/" if="iphoneos"/>
-<set name="SDLLIB" value="../../sdl-static/lib/win32/" if="windows"/>
-<set name="SDLLIB" value="../../sdl-static/lib/linux32/" if="linux"/>
+<set name="SDLLIB" value="../../sdl-static/lib/Windows/" if="windows"/>
+<set name="SDLLIB" value="../../sdl-static/lib/Linux/" if="linux"/>
+
+<set name="SLIBEXT" value=".lib" if="windows"/>
+<set name="SLIBEXT" value=".a" unless="windows"/>
+
 
 <target id="nme" output="nme${DBG}" tool="linker" toolid="dll">
   <files id="nme"/>
   <ext value=".ndll"/>
   <outdir name="../ndll/${BINDIR}"/>
-  <lib name="${SDLLIB}libSDL${SLIBEXT}"/>
+  <lib name="-lpthread" if="linux"/>
+  <lib name="-lGL" if="linux"/>
   <lib name="${SDLLIB}libSDL_image${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_mixer${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_ttf${SLIBEXT}"/>
-  <lib name="${SDLLIB}libSDLmain${SLIBEXT}"/>
+  <lib name="${SDLLIB}libSDLmain${SLIBEXT}" unless="linux"/>
   <lib name="${SDLLIB}libfreetype${SLIBEXT}"/>
   <lib name="${SDLLIB}libjpeg${SLIBEXT}"/>
-  <lib name="${SDLLIB}libogg${SLIBEXT}"/>
   <lib name="${SDLLIB}libpng${SLIBEXT}"/>
   <lib name="${SDLLIB}libsmpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${SDLLIB}libvorbis${SLIBEXT}"/>
+  <lib name="${SDLLIB}libogg${SLIBEXT}"/>
   <lib name="${SDLLIB}libz${SLIBEXT}"/>
+  <lib name="${SDLLIB}libSDL${SLIBEXT}"/>
   <vflag name="-framework" value="IOKit" if="apple"/>
   <vflag name="-framework" value="CoreAudio" if="apple"/>
   <vflag name="-framework" value="Carbon" if="apple"/>
@@ -105,7 +111,7 @@
   <depend name="${SDLLIB}libSDL_image${SLIBEXT}"/>
   <depend name="${SDLLIB}libSDL_mixer${SLIBEXT}"/>
   <depend name="${SDLLIB}libSDL_ttf${SLIBEXT}"/>
-  <depend name="${SDLLIB}libSDLmain${SLIBEXT}"/>
+  <depend name="${SDLLIB}libSDLmain${SLIBEXT}" unless="linux"/>
   <depend name="${SDLLIB}libfreetype${SLIBEXT}"/>
   <depend name="${SDLLIB}libjpeg${SLIBEXT}"/>
   <depend name="${SDLLIB}libogg${SLIBEXT}"/>
@@ -114,7 +120,6 @@
   <depend name="${SDLLIB}libvorbis${SLIBEXT}"/>
   <depend name="${SDLLIB}libz${SLIBEXT}"/>
  
-
 </target>
 
 <target id="nme-static" output="libNME${DBG}${LIBEXTRA}" tool="linker" toolid="static">

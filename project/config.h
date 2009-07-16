@@ -11,7 +11,7 @@
 
 #ifdef __APPLE__
   #define NME_MACBOOT
-#else
+#elif defined(HX_WINDOWS)
   #define NME_CLIPBOARD
 #endif
 
