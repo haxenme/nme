@@ -11,18 +11,18 @@ struct BlendAdd
    {
       if (!SRC::HasAlpha || inSrc.a>250)
       {
-         ioDest.r = Clamp255( inSrc.r + ioDest.r );
-         ioDest.g = Clamp255( inSrc.g + ioDest.g );
-         ioDest.b = Clamp255( inSrc.b + ioDest.b );
+         ioDest.c0 = Clamp255( inSrc.c0 + ioDest.c0 );
+         ioDest.c1 = Clamp255( inSrc.c1 + ioDest.c1 );
+         ioDest.c2 = Clamp255( inSrc.c2 + ioDest.c2 );
          //if (DEST::HasAlpha)
             //ioDest.a = 255;
       }
       else
       {
          int a = inSrc.a;
-         ioDest.r = Clamp255( inSrc.r + ((ioDest.r*a)>>8) );
-         ioDest.g = Clamp255( inSrc.g + ((ioDest.g*a)>>8) );
-         ioDest.b = Clamp255( inSrc.b + ((ioDest.b*a)>>8) );
+         ioDest.c0 = Clamp255( inSrc.c0 + ((ioDest.c0*a)>>8) );
+         ioDest.c1 = Clamp255( inSrc.c1 + ((ioDest.c1*a)>>8) );
+         ioDest.c2 = Clamp255( inSrc.c2 + ((ioDest.c2*a)>>8) );
          //if (DEST::HasAlpha)
             //ioDest.a = Clamp255( ioDest.a + a );
       }
@@ -38,16 +38,16 @@ struct BlendMultiply
    {
       if (!SRC::HasAlpha || inSrc.a>250)
       {
-         ioDest.r = ( inSrc.r * (ioDest.r+1) )>>8;
-         ioDest.g = ( inSrc.g * (ioDest.g+1) )>>8;
-         ioDest.b = ( inSrc.b * (ioDest.b+1) )>>8;
+         ioDest.c0 = ( inSrc.c0 * (ioDest.c0+1) )>>8;
+         ioDest.c1 = ( inSrc.c1 * (ioDest.c1+1) )>>8;
+         ioDest.c2 = ( inSrc.c2 * (ioDest.c2+1) )>>8;
       }
       else
       {
          int a = inSrc.a;
-         ioDest.r = ( inSrc.r * MBLEND(ioDest.r) ) >> 8;
-         ioDest.g = ( inSrc.g * MBLEND(ioDest.g) ) >> 8;
-         ioDest.b = ( inSrc.b * MBLEND(ioDest.b) ) >> 8;
+         ioDest.c0 = ( inSrc.c0 * MBLEND(ioDest.c0) ) >> 8;
+         ioDest.c1 = ( inSrc.c1 * MBLEND(ioDest.c1) ) >> 8;
+         ioDest.c2 = ( inSrc.c2 * MBLEND(ioDest.c2) ) >> 8;
       }
    }
 };

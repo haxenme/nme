@@ -4,10 +4,24 @@
 #include "Renderer.h"
 #include "../Matrix.h"
 
+extern int sgC0Shift;
+extern int sgC1Shift;
+extern int sgC2Shift;
+extern bool sgC0IsRed;
+ 
 struct XRGB
 {
    enum { HasAlpha = 0 };
    inline void Set(int inVal) { ival = inVal;  }
+   inline void SetRGB(int inVal)
+   {
+      c0 = (inVal>>sgC0Shift) & 0xff;
+      c1 = (inVal>>sgC1Shift) & 0xff;
+      c2 = (inVal>>sgC2Shift) & 0xff;
+   }
+   inline int red() const { return sgC0IsRed ? c0 : c2; }
+   inline int green() const { return c0; }
+   inline int blue() const { return sgC0IsRed ? c2 : c0; }
 
    template<typename SRC_>
    inline void Blend(const SRC_ &inVal)
@@ -17,9 +31,9 @@ struct XRGB
       {
          if (A<250)
          {
-             r += ((inVal.r-r) * A) >> 8;
-             g += ((inVal.g-g) * A) >> 8;
-             b += ((inVal.b-b) * A) >> 8;
+             c0 += ((inVal.c0-c0) * A) >> 8;
+             c1 += ((inVal.c1-c1) * A) >> 8;
+             c2 += ((inVal.c2-c2) * A) >> 8;
          }
          else
             ival = inVal.ival;
@@ -28,7 +42,7 @@ struct XRGB
 
    union
    {
-      struct { Uint8 r,g,b,a; };
+      struct { Uint8 c0,c1,c2,a; };
       int  ival;
    };
 };
@@ -41,6 +55,13 @@ struct ARGB
    enum { HasAlpha = 1 };
 
    inline void Set(int inVal) { ival = inVal; }
+
+   inline void SetRGB(int inVal)
+   {
+      c0 = (inVal>>sgC0Shift) & 0xff;
+      c1 = (inVal>>sgC1Shift) & 0xff;
+      c2 = (inVal>>sgC2Shift) & 0xff;
+   }
 
    template<typename SRC_>
    inline void Blend(const SRC_ &inVal)
@@ -61,9 +82,9 @@ struct ARGB
                int alpha16 = ((a + A)<<8) - a*A;
                int c1 = (255-A) * a;
                A<<=8;
-               r = (A*inVal.r + c1*r)/alpha16;
-               g = (A*inVal.g + c1*g)/alpha16;
-               b = (A*inVal.b + c1*b)/alpha16;
+               c0 = (A*inVal.c0 + c1*c0)/alpha16;
+               c1 = (A*inVal.c1 + c1*c1)/alpha16;
+               c2 = (A*inVal.c2 + c1*c2)/alpha16;
                a = alpha16>>8;
             }
          }
@@ -77,7 +98,7 @@ struct ARGB
 
    union
    {
-      struct { Uint8 r,g,b,a; };
+      struct { Uint8 c0,c1,c2,a; };
       int  ival;
    };
 };
@@ -140,19 +161,19 @@ struct DestSurfaceFallback : public DestBase
       // Work out if the code gets run ...
       *(int *)0=0;
       if (mPixelSize==1)
-        *mPtr++ = SDL_MapRGB(mSurface->format,inRGB.r,inRGB.g,inRGB.b);
+        *mPtr++ = SDL_MapRGB(mSurface->format,inRGB.c0,inRGB.c1,inRGB.c2);
       else
       {
-        *mPtr++ = inRGB.b;
-        *mPtr++ = inRGB.g;
-        *mPtr++ = inRGB.r;
+        *mPtr++ = inRGB.c2;
+        *mPtr++ = inRGB.c1;
+        *mPtr++ = inRGB.c0;
       }
    }
 
 
    SDL_PixelFormat *mFormat;
    Uint8 *mPtr;
-   int r,g,b;
+   int c0,c1,c2;
 };
 
 // 32 bits, either ARGB or XRGB

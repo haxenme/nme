@@ -58,7 +58,7 @@ class FontTest extends nme.GameBase
 
    public function new()
    {
-      nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
+      nme.display.Graphics.defaultFontName = "Arial.ttf";
 
       // Try it both ways !
       var opengl = false;
@@ -69,7 +69,7 @@ class FontTest extends nme.GameBase
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      mFont = new nme.FontHandle("../common/ARIAL.TTF",48);
+      mFont = new nme.FontHandle("Arial.ttf",48);
       mFM = mFont.GetFontMetrics();
 
       mBmp = new BitmapData(32,32,false,I32.make(0xffff,0xffff));

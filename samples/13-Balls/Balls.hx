@@ -60,7 +60,7 @@ class Balls extends nme.GameBase
 
    public function new()
    {
-      nme.display.Graphics.defaultFontName = "../common/ARIAL.TTF";
+      nme.display.Graphics.defaultFontName = "Arial.ttf";
 
       // Try it both ways !
       var opengl = false;

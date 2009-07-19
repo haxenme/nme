@@ -98,6 +98,13 @@ return
 }
 
 
+// Preferred RGB order - match primary surface...
+int sgC0Shift = 16;
+int sgC1Shift = 8;
+int sgC2Shift = 0;
+bool sgC0IsRed = false;
+ 
+
 // As opposed to opengl hardware ..
 static bool sUseSystemHardware = false;
 
@@ -116,12 +123,24 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
       fmt.Amask = 0xff000000;
       fmt.Ashift = 24;
    }
-   fmt.Rmask = 0xff0000;
-   fmt.Rshift = 16;
-   fmt.Gmask = 0xff00;
-   fmt.Gshift = 8;
-   fmt.Bmask = 0xff;
-   fmt.Bshift = 0;
+   if (sgC0IsRed)
+   {
+      fmt.Rmask = 0xff;
+      fmt.Rshift = 0;
+      fmt.Gmask = 0xff00;
+      fmt.Gshift = 8;
+      fmt.Bmask = 0xff0000;
+      fmt.Bshift = 16;
+   }
+   else
+   {
+      fmt.Rmask = 0xff0000;
+      fmt.Rshift = 16;
+      fmt.Gmask = 0xff00;
+      fmt.Gshift = 8;
+      fmt.Bmask = 0xff;
+      fmt.Bshift = 0;
+   }
 
    #ifndef SDL13
    fmt.alpha = 255;
@@ -131,6 +150,19 @@ SDL_Surface *ConvertToPreferredFormat(SDL_Surface *inSurface)
 
    return SDL_ConvertSurface(inSurface,&fmt,flags);
 }
+
+SDL_Surface *CreateRGB(int inWidth,int inHeight,bool inAlpha,bool inHardware)
+{
+   if (sgC0IsRed)
+      return SDL_CreateRGBSurface((inHardware?SDL_HWSURFACE:SDL_SWSURFACE)|(inAlpha ? SDL_SRCALPHA : 0),
+            inWidth, inHeight, (inHardware||inAlpha) ? 32 : 24,
+            0x000000ff, 0x0000ff00, 0x00ff0000, inAlpha ? 0xff000000 : 0);
+   else
+      return SDL_CreateRGBSurface((inHardware?SDL_HWSURFACE:SDL_SWSURFACE)|(inAlpha ? SDL_SRCALPHA : 0),
+            inWidth, inHeight, (inHardware||inAlpha) ? 32 : 24,
+            0x00ff0000, 0x0000ff00, 0x000000ff, inAlpha ? 0xff000000 : 0);
+}
+
 
 
 SDL_Surface* nme_loadimage( value file )
@@ -813,7 +845,12 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
          fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
       }
       else
+      {
         sOpenGL = true;
+        //Not great either way
+        //glEnable( GL_LINE_SMOOTH );  
+        //glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  
+      }
 
       sOpenGLScreen = screen;
    }
@@ -825,6 +862,21 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       screen = SDL_SetVideoMode( use_w, use_h, 32, sFlags );
       if (!screen)
 				hx_failure( SDL_GetError() );
+   }
+
+   if (sOpenGL || screen->format->Rmask==0xff)
+   {
+      sgC0Shift = 16;
+      sgC1Shift = 8;
+      sgC2Shift = 0;
+      sgC0IsRed = true;
+   }
+   else
+   {
+      sgC0Shift = 0;
+      sgC1Shift = 8;
+      sgC2Shift = 16;
+      sgC0IsRed = false;
    }
 
    #ifdef NME_TTF

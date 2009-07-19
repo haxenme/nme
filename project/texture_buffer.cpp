@@ -235,6 +235,8 @@ bool TextureBuffer::PrepareOpenGL()
          {
             if (mSurface->format->Rmask == 0x0000ff)
                src_format = GL_RGBA;
+            else
+               src_format = GL_BGRA;
             // Ok !
          }
          else
@@ -278,9 +280,7 @@ bool TextureBuffer::PrepareOpenGL()
          #endif
 
          bool alpha =  (mSurface->flags & SDL_SRCALPHA);
-         data = SDL_CreateRGBSurface(SDL_SWSURFACE|(alpha ? SDL_SRCALPHA : 0),
-            target_w, target_h, alpha ? 32 : 24,
-            0x000000ff, 0x0000ff00, 0x00ff0000, alpha ? 0xff000000 : 0);
+         data = CreateRGB(target_w, target_h, alpha);
 
          MY_SDL_BlitSurface(mSurface, 0, data, 0);
 
@@ -416,7 +416,7 @@ void TextureBuffer::UpdateHardware()
       return;
    }
 
-   //glGetError();
+   glGetError();
 
    glBindTexture(GL_TEXTURE_2D, mTextureID);
 
@@ -441,9 +441,9 @@ void TextureBuffer::UpdateHardware()
    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
    glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
 
-   //int err = glGetError();
-   //if (err)
-      //printf("UpdateHardware : error %d\n", err);
+   int err = glGetError();
+   if (err)
+      printf("UpdateHardware : error %d\n", err);
 
    mHardwareDirty = false;
 }
@@ -508,10 +508,8 @@ void TextureBuffer::Scroll(int inDX, int inDY)
 
    if (sx0<sx1 && sy0<sy1)
    {
-      SDL_Surface *tmp = SDL_CreateRGBSurface(mSurface->flags, sx1-sx0,  sy1-sy0,
-                    (mSurface->flags & SDL_SRCALPHA) ? 32 : 24,
-                     mSurface->format->Rmask, mSurface->format->Gmask,
-                     mSurface->format->Bmask, mSurface->format->Amask );
+      SDL_Surface *tmp = CreateRGB(sx1-sx0,  sy1-sy0,
+                    (mSurface->flags & SDL_SRCALPHA), false);
 
       // Do dumb compies
       SDL_SetAlpha(tmp,0,255);
@@ -678,12 +676,7 @@ value nme_create_texture_buffer(value width, value height,value in_flags,
    else
       flags |= SDL_SWSURFACE;
 
-   SDL_Surface *surface = SDL_CreateRGBSurface(flags,
-                            val_int(width),
-                            val_int(height),
-                            32,
-                            0x000000ff,0x00ff00,0x00ff0000, 0xff000000);
-
+   SDL_Surface *surface = CreateRGB( val_int(width), val_int(height), true );
 
    int icol = val_int(colour);
    int r = (icol>>16) & 0xff;
@@ -1570,7 +1563,6 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
                 sDestHeight =  vp.Height() * mtx.m11;
                 sUseOffscreen = true;
                 // Create surface if different ...
-                int flags = SDL_HWSURFACE;
                 if (sOffscreen==0 || sOffscreen->w!=ow || sOffscreen->h!=oh || a!=sOffscreenAlpha)
                 {
                    if (sOffscreen)
@@ -1578,13 +1570,11 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
                    sOffscreenAlpha = a;
                    if (a!=255)
                    {
-                      sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
-                                  0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 );
+                      sOffscreen = CreateRGB(ow, oh, true, true );
                    }
                    else
                    {
-                      sOffscreen = SDL_CreateRGBSurface(flags, ow, oh, 32,
-                                  0x000000ff, 0x0000ff00, 0x00ff0000, 0 );
+                      sOffscreen = CreateRGB(ow, oh, false, true );
                    }
                 }
              }

@@ -42,9 +42,7 @@ struct GradPoint
    void FromValue(const value &inVal)
    {
       int col = val_int(val_field(inVal,val_id("col")));
-      mColour.r = (col>>16) & 0xff;
-      mColour.g = (col>>8) & 0xff;
-      mColour.b = (col) & 0xff;
+      mColour.SetRGB(col);
       double a = val_number(val_field(inVal,val_id("alpha")));
       mColour.a = (a<0 ? 0 : a>=1.0 ? 255 : (int)(a*255) );
 
@@ -148,15 +146,15 @@ Gradient::Gradient(value inFlags,value inPoints,value inMatrix,value inFocal)
          {
             if (p0<0) p0 = 0;
             if (p1>256) p1 = 256;
-            int dr = points[k+1].mColour.r - c0.r;
-            int dg = points[k+1].mColour.g - c0.g;
-            int db = points[k+1].mColour.b - c0.b;
+            int dc0 = points[k+1].mColour.c0 - c0.c0;
+            int dc1 = points[k+1].mColour.c1 - c0.c1;
+            int dc2 = points[k+1].mColour.c2 - c0.c2;
             int da = points[k+1].mColour.a - c0.a;
             for(i=p0;i<p1;i++)
             {
-               mColours[i].r = c0.r + dr*(i-p0)/diff;
-               mColours[i].g = c0.g + dg*(i-p0)/diff;
-               mColours[i].b = c0.b + db*(i-p0)/diff;
+               mColours[i].c0 = c0.c0 + dc0*(i-p0)/diff;
+               mColours[i].c1 = c0.c1 + dc1*(i-p0)/diff;
+               mColours[i].c2 = c0.c2 + dc2*(i-p0)/diff;
                mColours[i].a = c0.a + da*(i-p0)/diff;
             }
          }
@@ -172,11 +170,16 @@ bool Gradient::InitOpenGL()
    mResizeID = nme_resize_id;
    glGenTextures(1, &mTextureID);
    glBindTexture(GL_TEXTURE_2D, mTextureID);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  256, 1, 0,
+#ifdef NME_OPENGL
+   int src = 4;
+#else
+   int src = GL_RGBA;
+#endif
+   glTexImage2D(GL_TEXTURE_2D, 0, src,  256, 1, 0,
       GL_RGBA, GL_UNSIGNED_BYTE, &mColours[0] );
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
-   glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
+   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);   
    // TODO: reflect = double up?
    if (mFlags & gfRepeat)
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);

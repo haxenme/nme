@@ -132,9 +132,7 @@ struct SurfaceSource
          SDL_Color *col = mSurface->format->palette->colors;
          for(int i=0;i<n;i++)
          {
-            mPalette[i].r = col[i].r;
-            mPalette[i].g = col[i].g;
-            mPalette[i].b = col[i].b;
+            mPalette[i].SetRGB( (col[i].r<<16) | (col[i].g<<8) | (col[i].b) );
             mPalette[i].a = 255;
          }
       }
@@ -316,12 +314,12 @@ struct SurfaceSource
 
          GET_PIXEL_POINTERS
 
-         result.r = ( (p00.r*frac_nx + p01.r*frac_x)*frac_ny +
-                    (  p10.r*frac_nx + p11.r*frac_x)*frac_y ) >> 24;
-         result.g = ( (p00.g*frac_nx + p01.g*frac_x)*frac_ny +
-                    (  p10.g*frac_nx + p11.g*frac_x)*frac_y ) >> 24;
-         result.b = ( (p00.b*frac_nx + p01.b*frac_x)*frac_ny +
-                    (  p10.b*frac_nx + p11.b*frac_x)*frac_y ) >> 24;
+         result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
+                    (  p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
+         result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
+                    (  p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
+         result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
+                    (  p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
 
          if (PIXEL_::HasAlpha)
          {

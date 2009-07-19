@@ -70,8 +70,7 @@
 
 </files>
 
-<set name="SDLLIB" value="../../sdl-static/lib/mac/" if="macos"/>
-<set name="SDLLIB" value="../../sdl-static/lib/iphoneos/" if="iphoneos"/>
+<set name="SDLLIB" value="../../sdl-static/lib/Mac/" if="macos"/>
 <set name="SDLLIB" value="../../sdl-static/lib/Windows/" if="windows"/>
 <set name="SDLLIB" value="../../sdl-static/lib/Linux/" if="linux"/>
 
@@ -88,7 +87,7 @@
   <lib name="${SDLLIB}libSDL_image${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_mixer${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_ttf${SLIBEXT}"/>
-  <lib name="${SDLLIB}libSDLmain${SLIBEXT}" unless="linux"/>
+  <lib name="${SDLLIB}libSDLmain${SLIBEXT}" if="windows"/>
   <lib name="${SDLLIB}libfreetype${SLIBEXT}"/>
   <lib name="${SDLLIB}libjpeg${SLIBEXT}"/>
   <lib name="${SDLLIB}libpng${SLIBEXT}"/>

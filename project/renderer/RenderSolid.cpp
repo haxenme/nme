@@ -16,15 +16,11 @@ struct ConstantSource32
    {
       int val = PIXEL_::HasAlpha ? (int)(inA*255) : 255;
       int a =val<0 ? 0 : val>255 ? 255 : val;
+      mVal.SetRGB(inRGB);
       mVal.a = a;
-      mVal.r = (inRGB>>16) & 0xff;
-      mVal.g = (inRGB>>8) & 0xff;
-      mVal.b = (inRGB) & 0xff;
 
+      mValA.SetRGB(inRGB);
       mValA.a = a;
-      mValA.r = (inRGB>>16) & 0xff;
-      mValA.g = (inRGB>>8) & 0xff;
-      mValA.b = (inRGB) & 0xff;
    }
 
    inline PIXEL_ Value() const { return mVal; }

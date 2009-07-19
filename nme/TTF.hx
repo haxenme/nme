@@ -32,7 +32,7 @@ import nme.Manager;
 
 class TTF
 {
-        public static var defaultFont = "Times";
+        public static var defaultFont = "Times.ttf";
         public static var defaultSize = 12;
         public static var defaultFGColor = 0xffffff;
         public static var defaultBGColor = 0x000000;

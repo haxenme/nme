@@ -91,9 +91,9 @@ SDL_Surface *DuplicateSurface(SDL_Surface *inSurface)
 void BlurRow(ARGB *inSrc, ARGB *inDest, int inDS,int inDD, int inW, int inSize)
 {
    int dest_size = inW + inSize - 1;
-   int sr = 0;
-   int sg = 0;
-   int sb = 0;
+   int sc0 = 0;
+   int sc1 = 0;
+   int sc2 = 0;
    int sa = 0;
 
    // loop over destination pixels with kernel    -xxx+
@@ -107,26 +107,26 @@ void BlurRow(ARGB *inSrc, ARGB *inDest, int inDS,int inDD, int inW, int inSize)
       {
          int a = src->a;
          sa+=a;
-         sr+= src->r * a;
-         sg+= src->g * a;
-         sb+= src->b * a;
+         sc0+= src->c0 * a;
+         sc1+= src->c1 * a;
+         sc2+= src->c2 * a;
       }
       if (x>=inSize)
       {
          int a = prev->a;
          sa-=a;
-         sr-= prev->r * a;
-         sg-= prev->g * a;
-         sb-= prev->b * a;
+         sc0-= prev->c0 * a;
+         sc1-= prev->c1 * a;
+         sc2-= prev->c2 * a;
       }
 
       if (sa==0)
          dest->ival = 0;
       else
       {
-         dest->r = sr/sa;
-         dest->g = sg/sa;
-         dest->b = sb/sa;
+         dest->c0 = sc0/sa;
+         dest->c1 = sc1/sa;
+         dest->c2 = sc2/sa;
          dest->a = sa/inSize;
       }
 
@@ -140,10 +140,10 @@ void BlurRow(ARGB *inSrc, ARGB *inDest, int inDS,int inDD, int inW, int inSize)
    /*
    int a = prev->a;
    sa-=a;
-   sr-= prev->r * a;
-   sg-= prev->g * a;
-   sb-= prev->b * a;
-   if (sa || sr || sg || sb)
+   sc0-= prev->c0 * a;
+   sc1-= prev->c1 * a;
+   sc2-= prev->c2 * a;
+   if (sa || sc0 || sc1 || sc2)
       *(int *)0=0;
    */
 }

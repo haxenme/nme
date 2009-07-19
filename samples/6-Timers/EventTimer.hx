@@ -26,7 +26,7 @@ class EventTimer
 		timer = new Timer( 1000 );
 		timer.run = function() { counter++; };
 		running = true;
-                text = new TTF("Counter: ", "../common/ARIAL.TTF",12, 0xffffff,0x000000);
+                text = new TTF("Counter: ", "Arial.ttf",12, 0xffffff,0x000000);
                 text.moveTo(15, 15);
 		mng.addKeyCallback( processKeys );
 		mng.addRenderCallback( processRender );

@@ -55,7 +55,10 @@ value nme_ttf_shaded( value* args, int nargs )
 	val_check( args[7], int ); // backcolor
 	val_check( args[8], int ); // alpha
 
-	TTF_Font* font = TTF_OpenFont(val_string(args[2]), val_int(args[3]) );
+	TTF_Font* font = FindOrCreateFont(val_string(args[2]), val_int(args[3]) );
+
+        if (!font)
+           return alloc_null();
 
         SDL_Color fg,bg;
 
@@ -65,7 +68,6 @@ value nme_ttf_shaded( value* args, int nargs )
         bg.r = RRGB( args[7] );
         bg.g = GRGB( args[7] );
         bg.b = BRGB( args[7] );
-
 
 	SDL_Surface* scr = SURFACE( args[0] );
 
@@ -83,8 +85,6 @@ value nme_ttf_shaded( value* args, int nargs )
         SDL_BlitSurface(text_surf,0,scr,&dest);
 
         SDL_FreeSurface(text_surf);
-
-	TTF_CloseFont(font);
 #endif
         return alloc_int(0);
 }

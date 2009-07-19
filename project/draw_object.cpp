@@ -480,7 +480,9 @@ public:
             glColor4ub(mFillColour >> 16, mFillColour >> 8, mFillColour, (int)(mFillAlpha*255.0));
 
          if (mSolidGradient)
+         {
             mSolidGradient->BeginOpenGL();
+         }
          else if (tex)
          {
             tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK) ==NME_EDGE_REPEAT );
@@ -523,7 +525,6 @@ public:
          {
             // TODO: tesselate
             const CurvedPoint *p = &mPoints[0];
-
 
             if (mSolidGradient)
             {

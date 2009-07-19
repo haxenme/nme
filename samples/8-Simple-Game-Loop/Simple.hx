@@ -21,7 +21,7 @@ class Simple
 		var prevTime : Float = 0.0;
 		var curTime : Float;
 		running = true;
-                var text = new TTF("FPS","../common/ARIAL.TTF", 12, 0xffffff, 0x000000, 100, new Point(15,15));
+                var text = new TTF("FPS","Arial.ttf", 12, 0xffffff, 0x000000, 100, new Point(15,15));
 		while (running)
 		{
 			mng.events();
