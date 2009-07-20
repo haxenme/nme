@@ -391,14 +391,6 @@ void nmeOrtho(int inX0, int inY0,int inWidth,int inHeight)
 // surface relative functions
 
 
-#ifdef IPHONE
-// Not too sure about this ...
-int sgTitleHeight = 20;
-#else
-int sgTitleHeight = 0;
-#endif
-
-
 static value nme_surface_clear( value surf, value c )
 {
 	val_check_kind( surf, k_surf );
@@ -414,7 +406,7 @@ static value nme_surface_clear( value surf, value c )
         if (IsOpenGLScreen(scr))
         {
            int w = scr->w;
-           int h = scr->h-sgTitleHeight;
+           int h = scr->h;
            glDisable(GL_CLIP_PLANE0);
            glViewport(0,0,w,h);
            glMatrixMode(GL_PROJECTION);
@@ -451,8 +443,6 @@ value nme_surface_height( value surface )
 	val_check_kind( surface, k_surf );
 
 	SDL_Surface* surf = SURFACE(surface);
-        if (IsOpenGLScreen(surf))
-           return alloc_int(surf->h - sgTitleHeight);
         return alloc_int(surf->h);
 }
 
@@ -782,11 +772,11 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    if (opengl)
       init_flags |= SDL_OPENGL;
 
+   //  SDL_GL_DEPTH_SIZE = 0;
+
    init_flags |= SDL_INIT_JOYSTICK;
 
    sUseSystemHardware = (!opengl) && (val_int(in_flags) & NME_HWSURF);
-
-   const SDL_VideoInfo* info = SDL_GetVideoInfo();
 
    if ( SDL_Init( init_flags ) == -1 )
       hx_failure( SDL_GetError() );
@@ -809,15 +799,20 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
    if ( fullscreen )
       sFlags |= SDL_FULLSCREEN;
 
+
    int use_w = (fullscreen && resizable) ? 0 : w;
    int use_h = (fullscreen && resizable) ? 0 : h;
 
+#ifdef IPHONE
+   sFlags |= SDL_NOFRAME;
+#else
    if ( val_is_string( icon ) )
    {
       SDL_Surface *icn = nme_loadimage( icon );
       if ( icn != NULL )
          SDL_WM_SetIcon( icn, NULL );
    }
+#endif
 
    SDL_Surface* screen = 0;
    if (opengl)
@@ -884,7 +879,9 @@ value nme_screen_init( value width, value height, value title, value in_flags, v
       printf("unable to initialize the truetype font support\n");
    #endif
 
+   #ifndef IPHONE
    SDL_WM_SetCaption( val_string( title ), 0 );
+   #endif
 
    #ifdef NME_MIXER
    if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )

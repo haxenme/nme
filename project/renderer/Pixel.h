@@ -80,11 +80,11 @@ struct ARGB
             else
             {
                int alpha16 = ((a + A)<<8) - a*A;
-               int c1 = (255-A) * a;
+               int f = (255-A) * a;
                A<<=8;
-               c0 = (A*inVal.c0 + c1*c0)/alpha16;
-               c1 = (A*inVal.c1 + c1*c1)/alpha16;
-               c2 = (A*inVal.c2 + c1*c2)/alpha16;
+               c0 = (A*inVal.c0 + f*c0)/alpha16;
+               c1 = (A*inVal.c1 + f*c1)/alpha16;
+               c2 = (A*inVal.c2 + f*c2)/alpha16;
                a = alpha16>>8;
             }
          }
