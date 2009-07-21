@@ -96,6 +96,15 @@
   <lib name="${SDLLIB}libogg${SLIBEXT}"/>
   <lib name="${SDLLIB}libz${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL${SLIBEXT}"/>
+
+  <lib name="opengl32.lib" if="windows"/>
+  <lib name="user32.lib" if="windows"/>
+  <lib name="gdi32.lib" if="windows"/>
+  <lib name="advapi32.lib" if="windows"/>
+  <lib name="ddraw.lib" if="windows"/>
+  <lib name="dxguid.lib" if="windows"/>
+  <lib name="winmm.lib" if="windows"/>
+
   <vflag name="-framework" value="IOKit" if="apple"/>
   <vflag name="-framework" value="CoreAudio" if="apple"/>
   <vflag name="-framework" value="Carbon" if="apple"/>
