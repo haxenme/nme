@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "renderer/Pixel.h"
 #include "math.h"
+#include "nme.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -12,10 +13,6 @@
 DECLARE_KIND( k_filter_set );
 DEFINE_KIND( k_filter_set );
 #define FILTER_SET(v) ( (FilterSet *)(val_data(v)) )
-
-#ifndef HXCPP
-typedef value *array_ptr;
-#endif
 
 
 /*
@@ -59,11 +56,8 @@ typedef std::vector<FilterBase *> FilterSet;
 // -- Helpers ----------
 
 
-SDL_Surface *CreateSurface(int inW,int inH)
-{
-   return SDL_CreateRGBSurface(SDL_SWSURFACE|SDL_SRCALPHA, inW, inH, 32,
-                                  0x0000ff, 0x00ff00, 0xff0000, 0xff000000 );
-}
+SDL_Surface *CreateSurface(int inW,int inH) { return CreateRGB(inW,inH,true); }
+
 
  inline ARGB *Row(SDL_Surface *inSurface, int inY)
  {
@@ -415,10 +409,11 @@ public:
       int dx = mTX + blur_shift_x;
       int dy = mTY + blur_shift_y;
 
+      ARGB col;
+      col.SetRGB(mCol);
+      col.a = 0;
       if (mInner)
       {
-         ARGB col;
-         col.ival = mCol;
 
          result = inSurface;
 
@@ -482,7 +477,6 @@ public:
 
 
          result = CreateSurface(x1-x0,y1-y0);
-         int col = mCol;
 
          // Starting position of alpha, in destination coordinates...
          int alpha_x = dx - x0;
@@ -498,7 +492,7 @@ public:
                int val = ((*a++)*mStrength) >> 8;
                if (val>255) val = 255;
                val = (val*mAlpha) >> 8;
-               dest->ival = col | ((val)<<24);
+               dest->ival = col.ival | ((val)<<24);
                ++dest;
             }
          }

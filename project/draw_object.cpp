@@ -494,32 +494,61 @@ public:
          {
             TriPoint *point = &mTriPoints[0];
             Tri *tri = &mTriangles[0];
-#if 0
-            glBegin(GL_TRIANGLES);
-            for(size_t t=0;t<n;t++)
+
+            int vert_parts = (tex && mPerspectiveCorrect) ? 2 : 1;
+            if ( (tex && mTex.size()!=n*3*2) ||  mPoints.size()!=vert_parts*n*3 )
             {
-               for(int idx=0;idx<3;idx++)
+               mTex.resize(n*3*2);
+               mPoints.resize(n*3*vert_parts);
+               float *tex = &mTex[0];
+               float *v = &mPoints[0].mX;
+ 
+               for(size_t t=0;t<n;t++)
                {
-                  TriPoint &p = point[tri->mIndex[idx]];
-                  if (tex)
+                  for(int idx=0;idx<3;idx++)
                   {
-                     //printf(" %f %f\n", p.mU, p.mV);
-                     glTexCoord2d( p.mU*mTexScaleX, p.mV*mTexScaleY );
-                     if (mPerspectiveCorrect)
+                     TriPoint &p = point[tri->mIndex[idx]];
+                     if (tex)
                      {
-                        double w = p.mW_inv;
-                        glVertex4d( p.mX*w, p.mY*w, 0.0, w );
+                        *tex++ = p.mU*mTexScaleX;
+                        *tex++ = p.mV*mTexScaleY;
+                        if (mPerspectiveCorrect)
+                        {
+                           double w = p.mW_inv;
+                           *v++ = p.mX*w;
+                           *v++ = p.mY*w;
+                           *v++ = 0.0;
+                           *v++ = w;
+                        }
+                        else
+                        {
+                           *v++ = p.mX;
+                           *v++ = p.mY;
+                        }
                      }
                      else
-                        glVertex2d( p.mX, p.mY );
+                     {
+                        *v++ = p.mX;
+                        *v++ = p.mY;
+                     }
                   }
-                  else
-                     glVertex2d( p.mX, p.mY );
+                  tri++;
                }
-               tri++;
             }
-            glEnd();
-#endif
+
+            if (tex)
+            {
+               glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
+               glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            }
+
+            glVertexPointer(2*vert_parts, GL_FLOAT, 0, &mPoints[0].mX);
+            glEnableClientState(GL_VERTEX_ARRAY);
+
+            glDrawArrays(GL_TRIANGLES,0,n*3);
+
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
          else
          {
@@ -1511,6 +1540,7 @@ public:
       mRect.w = w;
       mRect.h = h;
       mRenderer = 0;
+      mIsOGL = false;
 
 
       for(int i=0;i<4;i++)

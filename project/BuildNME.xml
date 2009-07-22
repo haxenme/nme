@@ -119,7 +119,7 @@
   <depend name="${SDLLIB}libSDL_image${SLIBEXT}"/>
   <depend name="${SDLLIB}libSDL_mixer${SLIBEXT}"/>
   <depend name="${SDLLIB}libSDL_ttf${SLIBEXT}"/>
-  <depend name="${SDLLIB}libSDLmain${SLIBEXT}" unless="linux"/>
+  <depend name="${SDLLIB}libSDLmain${SLIBEXT}" if="windows"/>
   <depend name="${SDLLIB}libfreetype${SLIBEXT}"/>
   <depend name="${SDLLIB}libjpeg${SLIBEXT}"/>
   <depend name="${SDLLIB}libogg${SLIBEXT}"/>

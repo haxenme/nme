@@ -2,5 +2,4 @@
 -lib nme
 -cpp cpp
 -lib I32
--cp e:/hugh/dev/code.google/haxe-cvs/haxe/std
 --remap neko:cpp

@@ -1,4 +1,5 @@
 -main Simple
 -lib nme
+-lib I32
 -cpp cpp
--cmd make_cpp
+--remap neko:cpp

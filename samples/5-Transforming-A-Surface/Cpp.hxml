@@ -1,4 +1,5 @@
 -main TransformSurface
 -lib nme
+-lib I32
+--remap neko:cpp
 -cpp cpp
--cmd make_cpp
