@@ -6,6 +6,7 @@
 #define NME_OPENGLES
 #define NME_TTF
 #define NME_MIXER
+#define NME_IMAGE_IO
 
 #else
 

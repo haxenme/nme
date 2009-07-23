@@ -151,15 +151,10 @@ value nme_sound_loadbytes( value p_bytes, value p_len )
 	val_check( p_len, int );
 
 	int len = val_int( p_len );
-	#ifdef HXCPP
-		Array<unsigned char> b = p_bytes;
-		if (b == null() || len < 1)
-			failure("nme_sound_loadbytes: bytes expected");
-		const char *bytes = (const char *)&b[0];
-	#else
-		val_check( p_bytes, string );
-		const char *bytes = val_string(p_bytes);
-	#endif
+	buffer b = val_to_buffer(p_bytes);
+	if (b == 0 || len < 1)
+		hx_failure("nme_sound_loadbytes: bytes expected");
+	const char *bytes = (const char *)buffer_data(b);
 
 	Mix_Chunk *snd = Mix_LoadWAV_RW(SDL_RWFromConstMem(bytes, len), 0);
 	if ( snd == NULL ) {
