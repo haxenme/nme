@@ -1,5 +1,4 @@
 -main Balls
 -lib nme
--lib I32
 --remap neko:cpp
 -cpp cpp

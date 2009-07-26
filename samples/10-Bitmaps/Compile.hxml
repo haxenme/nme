@@ -1,4 +1,3 @@
 -neko BitmapTest.n
 -main BitmapTest
 -lib nme
--lib I32

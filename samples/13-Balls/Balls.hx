@@ -71,7 +71,7 @@ class Balls extends nme.GameBase
 
       super( wndWidth, wndHeight, wndCaption, false, "ico.gif", opengl );
 
-      var bitmap = new BitmapData(64,64,true,I32.ZERO);
+      var bitmap = new BitmapData(64,64,true,BitmapData.CLEAR);
       var gfx = bitmap.graphics;
 
       var colours = [ 0xffffff, 0xff0000, 0x000000 ];

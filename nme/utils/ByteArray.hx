@@ -1,7 +1,6 @@
 package nme.utils;
 
 import nme.geom.Rectangle;
-import I32;
 
 /**
 * @author	Hugh Sanderson
@@ -49,7 +48,11 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 
 	public override function readByte():Int { return nme_byte_array_get(mArray,position++); }
 
-	public function readInt() : Int32
+#if neko
+	public function readInt() : haxe.Int32
+#else
+	public function readInt() : Int
+#end
 	{
 		return cast readInt32();
 	}

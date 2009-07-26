@@ -1,10 +1,8 @@
 -main Main
--lib I32
 -lib nme
 -neko SVG2Gfx.n
 
 --next
 -main Display
 -lib nme
--lib I32
 -neko Display.n

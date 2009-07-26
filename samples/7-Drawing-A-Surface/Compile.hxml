@@ -1,5 +1,4 @@
 -neko drawsurface.n
 -main DrawSurface
 -lib nme
--lib I32
 

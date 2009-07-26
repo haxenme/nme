@@ -1,12 +1,10 @@
 -neko simple.n
 -main Simple
 -lib nme
--lib I32
 
 
 --next
 -neko eventtimer.n
 -main EventTimer
 -lib nme
--lib I32
 

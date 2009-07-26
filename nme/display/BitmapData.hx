@@ -1,11 +1,16 @@
 package nme.display;
 
-import I32;
 import nme.utils.ByteArray;
 import nme.geom.Rectangle;
 import nme.geom.Point;
 import nme.geom.Matrix;
 import nme.geom.ColorTransform;
+
+#if neko
+typedef BitmapInt32 = haxe.Int32;
+#else
+typedef BitmapInt32 = Int;
+#end
 
 /**
 * @author	Hugh Sanderson
@@ -14,6 +19,24 @@ import nme.geom.ColorTransform;
 */
 class BitmapData implements IBitmapDrawable
 {
+#if neko
+   public static var CLEAR =  haxe.Int32.make(0x0000,0x0000);
+   public static var BLACK =  haxe.Int32.make(0xff00,0x0000);
+   public static var WHITE =  haxe.Int32.make(0xffff,0xffff);
+   public static var RED =  haxe.Int32.make(0xffff,0x0000);
+   public static var GREEN =  haxe.Int32.make(0xff00,0xff00);
+   public static var BLUE = haxe.Int32.make(0xff00,0x00ff);
+
+   public static var COL_MASK = haxe.Int32.make(0xff,0xffff);
+#else
+   public static var CLEAR = 0x00000000;
+   public static var BLACK = 0xff000000;
+   public static var WHITE = 0xffffffff;
+   public static var RED = 0xffff0000;
+   public static var GREEN = 0xff00ff00;
+   public static var BLUE = 0xff0000ff;
+#end
+
 	private var mTextureBuffer:Dynamic;
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
@@ -27,14 +50,14 @@ class BitmapData implements IBitmapDrawable
 
 	public function new(inWidth:Int, inHeight:Int,
 						inTransparent:Bool=true,
-						?inFillRGBA:Int32 )
+						?inFillRGBA:BitmapInt32 )
 	{
 		var fill_col:Int=0xffffff;
 		var fill_alpha:Int=0xff;
 		if (inFillRGBA!=null)
 		{
-			fill_col = I32.rgbFromArgb(inFillRGBA);
-			fill_alpha = I32.alphaFromArgb(inFillRGBA);
+			fill_col = BitmapData.extractColor(inFillRGBA);
+			fill_alpha = BitmapData.extractAlpha(inFillRGBA);
 		}
 		if (inWidth<1 || inHeight<1) {
 			mTextureBuffer = null;
@@ -201,17 +224,11 @@ class BitmapData implements IBitmapDrawable
 
 
 
-	public function fillRect( rect : nme.geom.Rectangle, inColour : Int32 ) : Void
+	public function fillRect( rect : nme.geom.Rectangle, inColour : BitmapInt32 ) : Void
 	{
-		#if neko
-		var a = I32.B4(inColour);
-		var c = I32.toInt(I32.and(inColour, I32.ofInt(0xFFFFFF)));
+		var a = extractAlpha(inColour);
+		var c = extractColor(inColour);
 		nme_tex_fill_rect(handle(), rect, c, a);
-		#else
-		var inAlpha = inColour >>> 24;
-		inColour = inColour & 0x00FFFFFF;
-		nme_tex_fill_rect(handle(),rect,inColour,inAlpha);
-		#end
 	}
 
 	public function fillRectEx( rect : nme.geom.Rectangle, inColour : Int, inAlpha:Int = 255 ) : Void
@@ -228,7 +245,7 @@ class BitmapData implements IBitmapDrawable
 	/**
 	* @todo Implement
 	*/
-	public function getColorBoundsRect(mask:Int32, color: Int32, findColor:Bool = true):Rectangle
+	public function getColorBoundsRect(mask:BitmapInt32, color: BitmapInt32, findColor:Bool = true):Rectangle
 	{
 		return new Rectangle(width, height);
 	}
@@ -265,7 +282,7 @@ class BitmapData implements IBitmapDrawable
 		return untyped nme_get_pixel(mTextureBuffer, x, y);
 	}
 
-	public function getPixel32(x:Int, y:Int) : Int32
+	public function getPixel32(x:Int, y:Int) : BitmapInt32
 	{
 		return untyped nme_get_pixel32(mTextureBuffer, x, y);
 	}
@@ -283,7 +300,7 @@ class BitmapData implements IBitmapDrawable
 		nme_set_pixel(mTextureBuffer,inX,inY,inColour);
 	}
 
-	public function setPixel32(inX:Int, inY:Int, inColour: Int32) : Void
+	public function setPixel32(inX:Int, inY:Int, inColour: BitmapInt32) : Void
 	{
 		nme_set_pixel32(mTextureBuffer, inX, inY, inColour);
 	}
@@ -306,19 +323,19 @@ class BitmapData implements IBitmapDrawable
 
 	///////////// statics ///////////////////////////
 
-	public static inline function extractAlpha(v : Int32) : Int {
+	public static inline function extractAlpha(v : BitmapInt32) : Int {
 		return
 			#if neko
-				I32.toInt(I32.ushr(v, 24));
+				haxe.Int32.toInt(haxe.Int32.ushr(v, 24));
 			#else
 				v >>> 24;
 			#end
 	}
 
-	public static inline function extractColor(v : Int32) : Int {
+	public static inline function extractColor(v : BitmapInt32) : Int {
 		return
 			#if neko
-				I32.toInt(I32.and(v, I32.ofInt(0xFFFFFF)));
+				haxe.Int32.toInt(haxe.Int32.and(v,COL_MASK));
 			#else
 				v & 0xFFFFFF;
 			#end

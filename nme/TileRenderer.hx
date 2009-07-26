@@ -31,8 +31,8 @@ class TileRenderer
 
 
 
-   static var nme_create_blitter = neko.Lib.load("nme", "nme_create_blitter", -1 );
-   static var nme_blit_tile = neko.Lib.load("nme", "nme_blit_tile", 5 );
-   static var nme_tile_renderer_width = neko.Lib.load("nme", "nme_tile_renderer_width", 1 );
-   static var nme_tile_renderer_height = neko.Lib.load("nme", "nme_tile_renderer_height", 1 );
+   static var nme_create_blitter = nme.Loader.load("nme_create_blitter", -1 );
+   static var nme_blit_tile = nme.Loader.load("nme_blit_tile", 5 );
+   static var nme_tile_renderer_width = nme.Loader.load("nme_tile_renderer_width", 1 );
+   static var nme_tile_renderer_height = nme.Loader.load("nme_tile_renderer_height", 1 );
 }

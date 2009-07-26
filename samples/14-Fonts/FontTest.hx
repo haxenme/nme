@@ -72,7 +72,7 @@ class FontTest extends nme.GameBase
       mFont = new nme.FontHandle("Arial.ttf",48);
       mFM = mFont.GetFontMetrics();
 
-      mBmp = new BitmapData(32,32,false,I32.make(0xffff,0xffff));
+      mBmp = new BitmapData(32,32,false,BitmapData.WHITE);
       mBmp.graphics.beginFill(0xff5050);
       mBmp.graphics.drawCircle(6,6,5);
       mBmp.graphics.drawCircle(22,22,5);

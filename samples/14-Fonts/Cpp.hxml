@@ -1,5 +1,4 @@
 -main FontTest
 -lib nme
--lib I32
 -cpp cpp
 

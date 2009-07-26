@@ -1,5 +1,4 @@
 -neko transformsurface.n
 -main TransformSurface
 -lib nme
--lib I32
 

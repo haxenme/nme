@@ -1,5 +1,4 @@
 -main Blox
 -lib nme
--lib I32
 -cpp cpp
 --remap neko:cpp

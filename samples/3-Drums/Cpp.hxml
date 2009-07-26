@@ -1,5 +1,4 @@
 -main Drums
 -lib nme
 -cpp cpp
--lib I32
 --remap neko:cpp

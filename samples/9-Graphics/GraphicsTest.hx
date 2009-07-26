@@ -137,7 +137,7 @@ class GraphicsTest extends nme.GameBase
       grad_circle.drawRect(0,0,100,100);
 
       bitmap_obj = new Shape();
-      var bmp = new BitmapData(32,32,false,I32.make(0xffff,0xffff));
+      var bmp = new BitmapData(32,32,false,BitmapData.WHITE);
       bmp.graphics.beginFill(0xff5050);
       bmp.graphics.drawCircle(6,6,5);
       bmp.graphics.drawCircle(22,22,5);
