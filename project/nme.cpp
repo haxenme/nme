@@ -294,13 +294,21 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
    val_check_ret0( inLen, int );
    int len = val_int(inLen);
 
-   buffer buf = val_to_buffer(inBytes);
-   if (buf==0)
-   {
-      hx_failure("LoadImage - bytes expected");
-   }
+   const char *items = 0;
+	if (val_is_string(inBytes))
+	{
+		items = val_string(inBytes);
+	}
+	else
+	{
+      buffer buf = val_to_buffer(inBytes);
+      if (buf==0)
+      {
+         hx_failure("LoadImage - bytes expected");
+      }
 
-   const char *items = buffer_data(buf);
+      items = buffer_data(buf);
+	}
 
    val_check_ret0( inAlpha, string );
    val_check_ret0( inType, string );
