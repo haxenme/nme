@@ -290,24 +290,20 @@ SDL_Surface* nme_loadimage_from_bytes( value inBytes, value inLen, value inType,
 #ifndef NME_IMAGE_IO
    return 0;
 #else
-	val_check_ret0( inAlphaLen, int );
-	val_check_ret0( inLen, int );
+   val_check_ret0( inAlphaLen, int );
+   val_check_ret0( inLen, int );
    int len = val_int(inLen);
 
-   #ifdef HXCPP
-	Array<unsigned char> b = inBytes;
-   if (b==null() || len<1)
+   buffer buf = val_to_buffer(inBytes);
+   if (buf==0)
+   {
       hx_failure("LoadImage - bytes expected");
-	Array<unsigned char> a = inAlpha;
-   if (a==null() && val_int(inAlpha)>0)
-      hx_failure("LoadImage - alpha expected");
-   const char *items = (const char *)&b[0];
-   #else
-	val_check_ret0( inBytes, string );
-	val_check_ret0( inAlpha, string );
-   const char *items = val_string(inBytes);
-   #endif
-	val_check_ret0( inType, string );
+   }
+
+   const char *items = buffer_data(buf);
+
+   val_check_ret0( inAlpha, string );
+   val_check_ret0( inType, string );
 
    const char *type = val_string(inType);
 
