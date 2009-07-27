@@ -4,6 +4,6 @@ This is a patched copy of SDL mixer which allows 'sound' type clips to have a le
 and a play position set. There's been modifications to the Mix_Chunk structure, as
 well as changes in mixer.c.
 
-
+These changes have now been moved to the "sdl-static" project on code.google.com
 
 
