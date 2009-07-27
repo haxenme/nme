@@ -3,6 +3,6 @@
     <user name="gamehaxe"/>
     <user name="krogers"/>
     <depends name="I32"/>
-    <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
-    <version name="0.9">Mac and Linux support. Prepped version for hxcpp port. Added support for DrawTrangles - including perspective correct textures.  Added some Blend Modes.  Added some default Font paths. Added scale9Grid.  Add scale and rotate to TileRenderer.</version>
+    <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing. Currently supports Windows, Mac (intel), Linux and iPhone</description>
+    <version name="1.0">Added iPhone support. Unified hxcpp and neko ports.  Moved to hxcpp BuildTool for compaltion.  Use specially build static libraries for sdl etc.</version>
 </project>
