@@ -12,7 +12,6 @@
   <depend name="DrawObject.h"/>
   <depend name="Gradient.h"/>
   <depend name="Matrix.h"/>
-  <depend name="SDL_flic.h"/>
   <depend name="Scrap.h"/>
   <depend name="config.h"/>
   <depend name="net.h"/>

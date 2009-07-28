@@ -2,7 +2,6 @@
     <user name="leesylvester"/>
     <user name="gamehaxe"/>
     <user name="krogers"/>
-    <depends name="I32"/>
     <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing. Currently supports Windows, Mac (intel), Linux and iPhone</description>
     <version name="1.0">Added iPhone support. Unified hxcpp and neko ports.  Moved to hxcpp BuildTool for compaltion.  Use specially build static libraries for sdl etc.</version>
 </project>
