@@ -3,15 +3,42 @@
 #include <map>
 
 
+// --- DIB   ------------------------------------------------------------------------
+
 typedef std::map<HWND,class WindowsFrame *> FrameMap;
 static FrameMap sgFrameMap;
 
-class DIBSurface : public Surface
+class DIBSurface : public SimpleSurface
 {
+public:
+   DIBSurface(int inW,int inH) : SimpleSurface(inW,inH,pfXBGR,4)
+	{
+		memset(&mInfo,0,sizeof(mInfo));
+		BITMAPINFOHEADER &h = mInfo.bmiHeader;
+		h.biSize = sizeof(BITMAPINFOHEADER);
+		h.biWidth = mWidth;
+		h.biHeight = mHeight;
+		h.biPlanes = 1;
+		h.biBitCount = 32;
+		h.biCompression = BI_RGB;
+	}
 
+	void RenderTo(HDC inDC)
+	{
+      SetDIBitsToDevice(inDC,0,0,mWidth,mHeight,
+								0,0,0,mHeight, mBase, &mInfo, DIB_RGB_COLORS);
+	}
 
+   BITMAPINFO mInfo;
 };
 
+
+// --- Stage ------------------------------------------------------------------------
+
+enum
+{
+	timerFrame,
+};
 
 class WindowsStage : public Stage
 {
@@ -19,13 +46,48 @@ public:
    WindowsStage(HWND inHWND,uint32 inFlags)
    {
       mHWND = inHWND;
+		mDC = GetDC(mHWND);
       mHandler = 0;
       mHandlerData = 0;
       mFlags = inFlags;
+		mBMP = 0;
+		CreateBMP();
    }
+	~WindowsStage()
+	{
+		delete mBMP;
+		delete mSurfaceRenderTarget;
+	}
+
+	void CreateBMP()
+	{
+		if (mBMP)
+		{
+			delete mBMP;
+			mBMP = 0;
+		}
+
+		WINDOWINFO info;
+      info.cbSize = sizeof(WINDOWINFO);
+
+      if (GetWindowInfo(mHWND,&info))
+		{
+			int w =  info.rcClient.right - info.rcClient.left;
+			int h =  info.rcClient.bottom - info.rcClient.top;
+			mBMP = new DIBSurface(w,h);
+		}
+
+		if (mSurfaceRenderTarget)
+		{
+			delete mSurfaceRenderTarget;
+			mSurfaceRenderTarget = 0;
+		}
+	}
 
    void Flip()
    {
+      if (mBMP)
+			mBMP->RenderTo(mDC);
    }
    void GetMouse()
    {
@@ -36,11 +98,44 @@ public:
       mHandlerData = inUserData;
    }
 
+	IRenderTarget *GetRenderTarget()
+	{
+		if (!mSurfaceRenderTarget && mBMP)
+			mSurfaceRenderTarget = CreateSurfaceRenderTarget(mBMP);
+		return mSurfaceRenderTarget;
+	}
+
    void HandleEvent(Event &inEvent)
    {
+		switch(inEvent.mType)
+		{
+			case etRedraw:
+				Flip();
+				break;
+			case etResize:
+				CreateBMP();
+				break;
+			case etTimer:
+				if (inEvent.mValue==timerFrame)
+				{
+					FrameCheck();
+					return;
+				}
+				break;
+		}
+
       if (mHandler)
          mHandler(inEvent,mHandlerData);
    }
+
+	void FrameCheck()
+   {
+      if (mHandler)
+		{
+		   Event evt(etNextFrame);
+         mHandler(evt,mHandlerData);
+		}
+	}
 
    // --- IRenderTarget Interface ------------------------------------------
    int Width()
@@ -85,10 +180,17 @@ public:
 
 
    HWND         mHWND;
+	HDC          mDC;
    uint32       mFlags;
+	int          mFrameRate;
    EventHandler mHandler;
+	DIBSurface   *mBMP;
+	IRenderTarget *mSurfaceRenderTarget;
    void         *mHandlerData;
 };
+
+
+// --- Frame ------------------------------------------------------------------------
 
 
 class WindowsFrame : public Frame
@@ -102,6 +204,7 @@ public:
       mStage = new WindowsStage(inHandle,mFlags);
       mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
       ShowWindow(mHandle,true);
+		SetTimer(mHandle,timerFrame, 40,0);
    }
    ~WindowsFrame()
    {
@@ -115,6 +218,29 @@ public:
       {
          case WM_CLOSE:
             TerminateMainLoop();
+            break;
+         case WM_PAINT:
+				{
+				PAINTSTRUCT ps;
+				HDC dc;
+				BeginPaint(mHandle,&ps);
+				Event evt(etRedraw);
+				mStage->HandleEvent(evt);
+				EndPaint(mHandle,&ps);
+				}
+            break;
+         case WM_SIZE:
+				{
+				Event evt(etResize);
+				mStage->HandleEvent(evt);
+				}
+            break;
+         case WM_TIMER:
+				{
+				Event evt(etTimer);
+				evt.mValue = wParam;
+				mStage->HandleEvent(evt);
+				}
             break;
       }
 
@@ -161,7 +287,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, String inT
    memset(&wc,0,sizeof(wc));
    wc.cbSize = sizeof(wc);
    wc.style = CS_OWNDC | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
-   wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+   wc.hbrBackground = 0; //(HBRUSH)GetStockObject(WHITE_BRUSH);
    wc.lpfnWndProc =  DefWindowProc;
    wc.lpszClassName = "NME";
 

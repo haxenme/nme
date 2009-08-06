@@ -1,0 +1,33 @@
+<xml>
+
+<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+
+<files id="windows">
+  <compilerflag value="-Iinclude"/>
+  <file name="Test.cpp"/>
+  <file name="windows/SimpleFrame.cpp"/>
+</files>
+
+<files id="common">
+  <compilerflag value="-Iinclude"/>
+  <file name="common/Surface.cpp"/>
+  <file name="common/SurfaceRenderTarget.cpp"/>
+  <file name="common/Geom.cpp"/>
+</files>
+
+
+<target id="TestWin" output="TestWin" tool="linker" toolid="exe">
+  <files id="common"/>
+  <files id="windows" if="windows"/>
+  <flag value="gdi32.lib" if="windows"/>
+  <outdir name="."/>
+</target>
+
+
+
+<target id="default">
+   <target id="TestWin"/>
+</target>
+
+
+</xml>

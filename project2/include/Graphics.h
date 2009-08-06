@@ -15,11 +15,13 @@ enum SurfaceAPIType  { satInternal, satSDL, satCairo };
 
 enum PixelFormat
 {
-   pfUnkown,
-   pfBGR,
-   pfRGB555,
-   pfARGB,
-   pfXRGB,
+   pfXRGB = 0x00,
+   pfARGB = 0x01,
+   pfXBGR = 0x02,
+   pfABGR = 0x03,
+
+   pfHasAlpha = 0x01,
+   pfBGROrder = 0x02,
 };
 
 
@@ -37,7 +39,7 @@ class GraphicsTrianglePath;
 
 class GraphicsStroke;
 
-class BitmapData;
+class Surface;
 
 // Don't know if these belong in the c++ level?
 class IGraphicsFill;
@@ -51,14 +53,14 @@ public:
    virtual GraphicsEndFill      *CreateEndFill()=0;
    virtual GraphicsSolidFill    *CreateSolidFill()=0;
    virtual GraphicsGradientFill *CreateGradientFill()=0;
-   virtual GraphicsBitmapFill   *CreateBitmapFill(/*bitmapData, matrix, smooth, repeat*/)=0;
+   virtual GraphicsBitmapFill   *CreateBitmapFill(/*Surface, matrix, smooth, repeat*/)=0;
 
    virtual GraphicsPath         *CreatePath()=0;
    virtual GraphicsTrianglePath *CreateTrianglePath()=0;
 
    virtual GraphicsStroke       *CreateStroke()=0;
 
-   virtual BitmapData           *CreateBimapData()=0;
+   virtual Surface              *CreateBimapData()=0;
 };
 
 extern GraphicsAPI *gGraphics;
@@ -166,7 +168,7 @@ public:
    GraphicsDataType GetType() { return gdtBitmapFill; }
    GraphicsBitmapFill   *AsBitmapFill() { return this; }
 
-   BitmapData          *bitmapData;
+   Surface             *bitmapData;
    Matrix              matrix;
    bool                repeat;
    bool                smooth;
@@ -251,6 +253,11 @@ struct Rect
 {
    Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
    Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
+
+	Rect Intersect(const Rect &inOther) const;
+	int x1() const { return x+w; }
+	int y1() const { return y+h; }
+
    int x,y;
    int w,h;
 };
@@ -296,10 +303,10 @@ private:
    void operator=(const DisplayList &inRHS);
 };
 
-struct BlitData
+struct Tile
 {
-   BitmapData *mData;
-   Rect       mRect;
+   Surface *mData;
+   Rect     mRect;
 };
 
 typedef char *String;
@@ -322,14 +329,14 @@ typedef QuickVec<TextData> TextList;
 class IRenderTarget
 {
 public:
-   virtual int  Width()=0;
-   virtual int  Height()=0;
+   virtual int  Width() const =0;
+   virtual int  Height() const =0;
 
    virtual void ViewPort(int inOX,int inOY, int inW,int inH)=0;
    virtual void BeginRender()=0;
    virtual void Render(DisplayList &inDisplayList, const Transform &inTransform)=0;
    virtual void Render(TextList &inTextList, const Transform &inTransform)=0;
-   virtual void Blit(BlitData &inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
+   virtual void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
    virtual void EndRender() = 0;
 };
 
@@ -341,13 +348,20 @@ enum EventType
    etMouseMove,
    etMouseClick,
    etTimer,
+   etRedraw,
+   etNextFrame,
 };
 
 
 struct Event
 {
+	Event(EventType inType=etUnknown) :
+		  mType(inType), mWinX(0), mWinY(0), mValue(0), mModState(0)
+	{
+	}
+
    EventType mType;
-   int       inWinX,inWinY;
+   int       mWinX,mWinY;
    int       mValue;
    int       mModState;
 };
@@ -367,12 +381,13 @@ public:
 
 };
 
-class Stage : public DisplayObjectContainer, public IRenderTarget
+class Stage : public DisplayObjectContainer
 {
 public:
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
    virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
+	virtual IRenderTarget *GetRenderTarget() = 0;
 };
 
 
@@ -403,14 +418,13 @@ void TerminateMainLoop();
 
 // ---- Surface API --------------
 
-struct NativeSurface;
 
 struct SurfaceData
 {
-   char *mData;
-   int  mWidth;
-   int  mHeight;
-   int  mStride;
+   unsigned char *data;
+   int  width;
+   int  height;
+   int  stride;
 };
 
 enum
@@ -424,9 +438,9 @@ class Surface
 public:
    virtual ~Surface() { }
 
-   virtual int Width()=0;
-   virtual int Height()=0;
-   virtual PixelFormat Format() = 0;
+   virtual int Width() const =0;
+   virtual int Height() const =0;
+   virtual PixelFormat Format()  const = 0;
 
    virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
    virtual SurfaceData Lock(const Rect &inRect,uint32 inFlags)=0;
@@ -439,15 +453,15 @@ public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
    ~SimpleSurface();
 
-   int Width() { return mWidth; }
-   int Height() { return mHeight; }
-   PixelFormat Format() { return mPixelFormat; }
+   int Width() const  { return mWidth; }
+   int Height() const  { return mHeight; }
+   PixelFormat Format() const  { return mPixelFormat; }
 
    void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY);
    SurfaceData Lock(const Rect &inRect,uint32 inFlags);
    void Unlock();
 
-private:
+protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
@@ -459,20 +473,8 @@ private:
    void operator=(const SimpleSurface &inRHS);
 };
 
+IRenderTarget *CreateSurfaceRenderTarget(Surface *inSurface);
 
-class BitmapData : public IRenderTarget
-{
-public:
-   virtual int Width();
-   virtual int Height();
-   virtual PixelFormat GetPixelFormat();
-
-   virtual int GetBytesPerRow();
-   virtual char *GetBase();
-   virtual void SetPixel();
-
-   NativeSurface *mSurface;
-};
 
 
 #endif
