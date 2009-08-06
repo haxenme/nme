@@ -6,65 +6,63 @@
 typedef std::map<HWND,class WindowsFrame *> FrameMap;
 static FrameMap sgFrameMap;
 
-class WindowsFrame : public Frame
+class DIBSurface : public Surface
+{
+
+
+};
+
+
+class WindowsStage : public Stage
 {
 public:
-   WindowsFrame(HWND inHandle, uint32 inFlags)
+   WindowsStage(HWND inHWND,uint32 inFlags)
    {
+      mHWND = inHWND;
+      mHandler = 0;
+      mHandlerData = 0;
       mFlags = inFlags;
-      mHandle = inHandle;
-      sgFrameMap[mHandle] = this;
-      mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
-      ShowWindow(mHandle,true);
    }
-   ~WindowsFrame()
-   {
-      SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)mOldProc);
-      sgFrameMap.erase(mHandle);
-   }
-
-   LRESULT Callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
-   {
-      switch (uMsg)
-      {
-         case WM_CLOSE:
-            TerminateMainLoop();
-            break;
-      }
-
-
-      return mOldProc(mHandle, uMsg, wParam, lParam);
-   }
-
-   static LRESULT CALLBACK StaticCallback( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-   {
-      FrameMap::iterator i = sgFrameMap.find(hwnd);
-      if (i!=sgFrameMap.end())
-         return i->second->Callback(uMsg,wParam,lParam);
-      return DefWindowProc(hwnd, uMsg, wParam, lParam);
-   }
-
-   // --- Frame Interface ----------------------------------------------------
 
    void Flip()
-   {
-   }
-   void SetEventHadler()
-   {
-   }
-   void SetTitle()
-   {
-   }
-   void SetIcon()
    {
    }
    void GetMouse()
    {
    }
+   virtual void SetEventHandler(EventHandler inHander,void *inUserData)
+   {
+      mHandler = inHander;
+      mHandlerData = inUserData;
+   }
+
+   void HandleEvent(Event &inEvent)
+   {
+      if (mHandler)
+         mHandler(inEvent,mHandlerData);
+   }
 
    // --- IRenderTarget Interface ------------------------------------------
-   int  Width() { return 100; }
-   int  Height() { return 100; }
+   int Width()
+   {
+      WINDOWINFO info;
+      info.cbSize = sizeof(WINDOWINFO);
+
+      if (!GetWindowInfo(mHWND,&info))
+         return 0;
+      return info.rcClient.right - info.rcClient.left;
+   }
+
+   int Height()
+   {
+      WINDOWINFO info;
+      info.cbSize = sizeof(WINDOWINFO);
+
+      if (!GetWindowInfo(mHWND,&info))
+         return 0;
+
+      return info.rcClient.bottom - info.rcClient.top;
+   }
 
    void ViewPort(int inOX,int inOY, int inW,int inH)
    {
@@ -86,6 +84,66 @@ public:
    }
 
 
+   HWND         mHWND;
+   uint32       mFlags;
+   EventHandler mHandler;
+   void         *mHandlerData;
+};
+
+
+class WindowsFrame : public Frame
+{
+public:
+   WindowsFrame(HWND inHandle, uint32 inFlags)
+   {
+      mFlags = inFlags;
+      mHandle = inHandle;
+      sgFrameMap[mHandle] = this;
+      mStage = new WindowsStage(inHandle,mFlags);
+      mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
+      ShowWindow(mHandle,true);
+   }
+   ~WindowsFrame()
+   {
+      SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)mOldProc);
+      sgFrameMap.erase(mHandle);
+   }
+
+   LRESULT Callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
+   {
+      switch (uMsg)
+      {
+         case WM_CLOSE:
+            TerminateMainLoop();
+            break;
+      }
+
+      return mOldProc(mHandle, uMsg, wParam, lParam);
+   }
+
+   static LRESULT CALLBACK StaticCallback( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+   {
+      FrameMap::iterator i = sgFrameMap.find(hwnd);
+      if (i!=sgFrameMap.end())
+         return i->second->Callback(uMsg,wParam,lParam);
+      return DefWindowProc(hwnd, uMsg, wParam, lParam);
+   }
+
+   // --- Frame Interface ----------------------------------------------------
+
+   void SetTitle()
+   {
+   }
+   void SetIcon()
+   {
+   }
+   Stage *GetStage()
+   {
+      return mStage;
+   }
+
+
+   WindowsStage *mStage;
 
    uint32 mFlags;
    HWND mHandle;

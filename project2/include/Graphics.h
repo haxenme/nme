@@ -333,15 +333,55 @@ public:
    virtual void EndRender() = 0;
 };
 
+enum EventType
+{
+   etUnknown,
+   etClose,
+   etResize,
+   etMouseMove,
+   etMouseClick,
+   etTimer,
+};
 
-class Frame : public IRenderTarget
+
+struct Event
+{
+   EventType mType;
+   int       inWinX,inWinY;
+   int       mValue;
+   int       mModState;
+};
+
+typedef void (*EventHandler)(Event &ioEvent, void *inUserData);
+
+class DisplayObject
+{
+public:
+
+};
+
+
+class DisplayObjectContainer : public DisplayObject
+{
+public:
+
+};
+
+class Stage : public DisplayObjectContainer, public IRenderTarget
 {
 public:
    virtual void Flip() = 0;
-   virtual void SetEventHadler() = 0;
+   virtual void GetMouse() = 0;
+   virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
+};
+
+
+class Frame
+{
+public:
    virtual void SetTitle() = 0;
    virtual void SetIcon() = 0;
-   virtual void GetMouse() = 0;
+   virtual Stage *GetStage() = 0;
 };
 
 enum WindowFlags
@@ -365,26 +405,58 @@ void TerminateMainLoop();
 
 struct NativeSurface;
 
+struct SurfaceData
+{
+   char *mData;
+   int  mWidth;
+   int  mHeight;
+   int  mStride;
+};
+
+enum
+{
+   surfLockRead = 0x0001,
+   surfLockWrite = 0x0002,
+};
 
 class Surface
 {
 public:
-   Surface();
-   Surface(int inWidth,int inHeight,PixelFormat inFormat);
+   virtual ~Surface() { }
 
-   bool Load(char *inFilename);
+   virtual int Width()=0;
+   virtual int Height()=0;
+   virtual PixelFormat Format() = 0;
 
-   bool Load(unsigned char *inBytes,int inLen);
+   virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
+   virtual SurfaceData Lock(const Rect &inRect,uint32 inFlags)=0;
+   virtual void Unlock()=0;
+};
 
-   ~Surface();
-   void Blit(Surface *inSrc, Rect inRect1,int inDX, int inDY);
-   int  BytesPerRow();
-   char *Base();
-   int  Width();
-   int  Height();
-   void SetRect(const Rect &inRect, uint32 inRGBA );
+class SimpleSurface : public Surface
+{
+public:
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
+   ~SimpleSurface();
 
-   NativeSurface *mNativeSurface;
+   int Width() { return mWidth; }
+   int Height() { return mHeight; }
+   PixelFormat Format() { return mPixelFormat; }
+
+   void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY);
+   SurfaceData Lock(const Rect &inRect,uint32 inFlags);
+   void Unlock();
+
+private:
+   int           mWidth;
+   int           mHeight;
+   PixelFormat   mPixelFormat;
+   int           mStride;
+   unsigned char *mBase;
+
+private:
+   SimpleSurface(const SimpleSurface &inRHS);
+   void operator=(const SimpleSurface &inRHS);
 };
 
 
