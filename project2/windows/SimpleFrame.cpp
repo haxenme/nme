@@ -165,13 +165,13 @@ public:
    void BeginRender()
    {
    }
-   void Render(DisplayList &inDisplayList, const Transform &inTransform)
+   void Render(Graphics &inGraphics, const Transform &inTransform)
    {
    }
    void Render(TextList &inTextList, const Transform &inTransform)
    {
    }
-   void Blit(BlitData &inBitmap, int inOX, int inOY, double inScale, int Rotation)
+   void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)
    {
    }
    void EndRender()

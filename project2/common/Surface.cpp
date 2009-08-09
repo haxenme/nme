@@ -1,5 +1,31 @@
 #include <Graphics.h>
 
+// --- Surface -------------------------------------------------------
+
+Surface::Surface()
+{
+	mTexture = 0;
+}
+
+Surface::~Surface()
+{
+	if (mTexture)
+		mTexture->Destroy();
+}
+
+void Surface::SetTexture(IRenderCache *inTexture)
+{
+	if (inTexture!=mTexture)
+	{
+		if (mTexture)
+			mTexture->Destroy();
+      mTexture = inTexture;
+	}
+}
+
+
+// --- SimpleSurface -------------------------------------------------------
+
 SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign)
 {
 	mWidth = inWidth;

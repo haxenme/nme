@@ -3,6 +3,20 @@
 
 #include <algorithm>
 
+template<typename T>
+void DoDelete(T &item)
+{
+}
+
+template<typename T>
+void DoDelete(T *&item)
+{
+	delete item;
+	item = 0;
+}
+
+
+
 // Little vector/set class, optimised for small data and not using many malloc calls.
 // Data are allocated with "malloc", so they should not rely on constructors etc.
 template<typename T_,int QBUF_SIZE_=16>
@@ -182,6 +196,7 @@ public:
    inline int size() const { return mSize; }
    inline bool empty() const { return mSize==0; }
    inline T_& operator[](int inIndex) { return mPtr[inIndex]; }
+   inline T_& last() { return mPtr[mSize-1]; }
    inline const T_& operator[](int inIndex) const { return mPtr[inIndex]; }
    inline iterator begin() { return mPtr; }
    inline iterator rbegin() { return mPtr + mSize -1; }
@@ -254,7 +269,20 @@ public:
       memcpy(mPtr,inRHS.mPtr,mSize*sizeof(T_));
       return *this;
    }
+	void DeleteAll()
+	{
+      for(int i=0;i<mSize;i++)
+			DoDelete( mPtr[i] );
+		resize(0);
+	}
 
+	void append(const QuickVec<T_> &inOther)
+	{
+		int s = mSize;
+		resize(mSize+inOther.mSize);
+		for(int i=0;i<inOther.mSize;i++)
+			mPtr[s+i] = inOther[i];
+	}
 
    T_  *mPtr;
    T_  mQBuf[QBufSize];

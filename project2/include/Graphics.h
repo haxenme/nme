@@ -47,25 +47,6 @@ class IGraphicsPath;
 class IGraphicsStroke;
 
 
-class GraphicsAPI
-{
-public:
-   virtual GraphicsEndFill      *CreateEndFill()=0;
-   virtual GraphicsSolidFill    *CreateSolidFill()=0;
-   virtual GraphicsGradientFill *CreateGradientFill()=0;
-   virtual GraphicsBitmapFill   *CreateBitmapFill(/*Surface, matrix, smooth, repeat*/)=0;
-
-   virtual GraphicsPath         *CreatePath()=0;
-   virtual GraphicsTrianglePath *CreateTrianglePath()=0;
-
-   virtual GraphicsStroke       *CreateStroke()=0;
-
-   virtual Surface              *CreateBimapData()=0;
-};
-
-extern GraphicsAPI *gGraphics;
-
-
 enum GraphicsDataType
 {
    gdtUnknown, gdtEndFill, gdtSolidFill, gdtGradientFill, gdtBitmapFill,
@@ -76,9 +57,11 @@ enum GraphicsDataType
 class IGraphicsData
 {
 public:
-   IGraphicsData();
+   IGraphicsData() : mRefCount(0) { };
 
-   void DecRef();
+   IGraphicsData *IncRef() { mRefCount++; return this; }
+
+   void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
 
    virtual GraphicsDataType GetType() { return gdtUnknown; }
    virtual GraphicsAPIType  GetAPI() { return gatBase; }
@@ -99,7 +82,7 @@ public:
 
 
 protected:
-   virtual ~IGraphicsData();
+   virtual ~IGraphicsData() { }
 private:
    IGraphicsData(const IGraphicsData &inRHS);
    void operator=(const IGraphicsData &inRHS);
@@ -110,7 +93,7 @@ private:
 
 class IGraphicsFill : public IGraphicsData
 {
-   virtual IGraphicsFill *AsFill() { return this; }
+   virtual IGraphicsFill *AsIFill() { return this; }
 
 protected:
    virtual ~IGraphicsFill() { };
@@ -127,18 +110,19 @@ public:
 class GraphicsSolidFill : public IGraphicsFill
 {
 public:
+	GraphicsSolidFill(int inRGB, float inAlpha) : rgb(inRGB), alpha(inAlpha) { }
    GraphicsDataType GetType() { return gdtSolidFill; }
    GraphicsSolidFill   *AsSolidFill() { return this; }
 
-   double alpha;
-   int    rgb;
+   float alpha;
+   int   rgb;
 };
 
 
 struct GradStop
 {
-   double  mAlpha;
-   int     mRGB;
+   float  mAlpha;
+   int    mRGB;
 };
 
 enum InterpolationMethod {  imLinearRGB, imRGB };
@@ -191,6 +175,8 @@ public:
 
    GraphicsStroke *AsStroke() { return this; }
 
+	bool IsClear() { return false; }
+
    StrokeCaps      caps;
    IGraphicsFill   *fill;
    StrokeJoints    joints;
@@ -223,9 +209,18 @@ enum WindingRule { wrOddEven, wrNonZero };
 class GraphicsPath : public IGraphicsPath
 {
 public:
+   GraphicsPath *AsPath() { return this; }
+
+	GraphicsPath() : winding(wrOddEven) { }
    QuickVec<unsigned char> command;
-   QuickVec<double>        data;
+   QuickVec<float>         data;
    WindingRule             winding;
+
+	void curveTo(float controlX, float controlY, float anchorX, float anchorY);
+	void lineTo(float x, float y);
+	void moveTo(float x, float y);
+	void wideLineTo(float x, float y);
+	void wideMoveTo(float x, float y);
 };
 
 
@@ -240,6 +235,47 @@ public:
    QuickVec<double>  uvtVertices;
    int               mUVTDim;
 };
+
+struct IRenderData
+{
+public:
+   virtual ~IRenderData() { }
+	virtual struct SolidData *AsSolid() { return 0; }
+	virtual struct SolidData *AsLine() { return 0; }
+	virtual struct SolidData *AsTriangles() { return 0; }
+};
+
+struct SolidData : IRenderData
+{
+	SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
+	SolidData *AsSolid() { return this; }
+	void Add(GraphicsPath *inPath);
+	void Close();
+
+   IGraphicsFill           *mFill;
+   QuickVec<unsigned char> command;
+   QuickVec<float>        data;
+};
+
+struct LineData : IRenderData
+{
+	LineData(GraphicsStroke *inStroke) : mStroke(inStroke) { }
+	LineData *AsLine() { return this; }
+	void Add(GraphicsPath *inPath);
+
+   GraphicsStroke         *mStroke;
+   QuickVec<unsigned char> command;
+   QuickVec<float>        data;
+};
+
+struct TriangleData : IRenderData
+{
+	TriangleData *AsTriangles() { return this; }
+   IGraphicsFill           *mFill;
+   IGraphicsStroke         *mStroke;
+   TriangleData            *mTriangles;
+};
+
 
 
 // ----------------------------------------------------------------------
@@ -277,6 +313,8 @@ struct Mask
 
 struct Transform
 {
+	Transform();
+
    Matrix3D       mMatrix3D;
    Matrix         mMatrix;
    Scale9         mScale9;
@@ -289,24 +327,59 @@ struct Transform
    Mask           mMask;
 };
 
-
-class DisplayList
+class IRenderCache
 {
 public:
-   ~DisplayList();
+	virtual void Destroy() { delete this; }
 
-   QuickVec<IGraphicsPath *> mItems;
+protected:
+   IRenderCache() { }
+   virtual ~IRenderCache() { }
+};
+
+
+typedef QuickVec<IRenderData *> RenderData;
+
+class Graphics
+{
+public:
+   Graphics();
+   ~Graphics();
+
+
+   void drawGraphicsData(IGraphicsData **graphicsData,int inN);
+   void beginFill(unsigned int color, float alpha = 1.0);
+
+   void lineTo(float x, float y);
+   void moveTo(float x, float y);
+
+
+	const RenderData &CreateRenderData();
+   IRenderCache  *mSoftwareCache;
+   IRenderCache  *mHardwareCache;
+
+private:
+   QuickVec<IGraphicsData *> mItems;
+	RenderData                mRenderData;
+
+	void Add(IGraphicsData *inData);
+	void Add(IRenderData *inData);
+	GraphicsPath *GetLastPath();
+
+   int mLastConvertedItem;
 
 private:
    // Rule of 3 - we must manually delete the mItems...
-   DisplayList(const DisplayList &inRHS);
-   void operator=(const DisplayList &inRHS);
+   Graphics(const Graphics &inRHS);
+   void operator=(const Graphics &inRHS);
 };
 
 struct Tile
 {
    Surface *mData;
    Rect     mRect;
+	double   mX0;
+	double   mY0;
 };
 
 typedef char *String;
@@ -334,7 +407,7 @@ public:
 
    virtual void ViewPort(int inOX,int inOY, int inW,int inH)=0;
    virtual void BeginRender()=0;
-   virtual void Render(DisplayList &inDisplayList, const Transform &inTransform)=0;
+   virtual void Render(Graphics &inDisplayList, const Transform &inTransform)=0;
    virtual void Render(TextList &inTextList, const Transform &inTransform)=0;
    virtual void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
    virtual void EndRender() = 0;
@@ -436,7 +509,8 @@ enum
 class Surface
 {
 public:
-   virtual ~Surface() { }
+   Surface();
+   virtual ~Surface();
 
    virtual int Width() const =0;
    virtual int Height() const =0;
@@ -445,6 +519,12 @@ public:
    virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
    virtual SurfaceData Lock(const Rect &inRect,uint32 inFlags)=0;
    virtual void Unlock()=0;
+
+   virtual IRenderCache *GetTexture() { return mTexture; }
+   virtual void SetTexture(IRenderCache *inTexture);
+
+protected:
+   IRenderCache *mTexture;
 };
 
 class SimpleSurface : public Surface

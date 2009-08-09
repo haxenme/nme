@@ -13,6 +13,8 @@
   <file name="common/Surface.cpp"/>
   <file name="common/SurfaceRenderTarget.cpp"/>
   <file name="common/Geom.cpp"/>
+  <file name="common/Graphics.cpp"/>
+  <file name="common/GraphicsData.cpp"/>
 </files>
 
 
