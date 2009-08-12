@@ -3,6 +3,7 @@
 #include <windows.h>
 #endif
 
+#include "OGLState.h"
 
 #include <SDL_opengl.h>
 
@@ -169,7 +170,7 @@ bool Gradient::InitOpenGL()
 {
    mResizeID = nme_resize_id;
    glGenTextures(1, &mTextureID);
-   glBindTexture(GL_TEXTURE_2D, mTextureID);
+   nmeSetTexture(mTextureID,true);
 #ifdef NME_OPENGL
    int src = 4;
 #else
@@ -235,8 +236,8 @@ void Gradient::BeginOpenGL()
    if ( (mTextureID>0 && mResizeID==nme_resize_id)  || InitOpenGL())
    {
       glColor4f(1,1,1,1);
-      glBindTexture(GL_TEXTURE_2D, mTextureID);
-      glEnable(GL_TEXTURE_2D);
+      nmeSetTexture(mTextureID);
+      nmeEnableTexture(true);
    }
 }
 
@@ -247,7 +248,7 @@ void Gradient::OpenGLTexture(float *outTex,float inX,float inY)
 
 void Gradient::EndOpenGL()
 {
-   glDisable(GL_TEXTURE_2D);
+   nmeEnableTexture(false);
 }
 
 #endif

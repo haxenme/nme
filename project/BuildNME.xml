@@ -44,6 +44,7 @@
   <file name="ByteArray.cpp"/>
   <file name="Gradient.cpp"/>
   <file name="Matrix.cpp"/>
+  <file name="OGLState.cpp"/>
   <file name="Scrap.cpp" unless="apple"/>
   <file name="collision.cpp"/>
   <file name="draw_object.cpp"/>

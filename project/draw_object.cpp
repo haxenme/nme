@@ -24,6 +24,7 @@
 #include "texture_buffer.h"
 #include "text.h"
 #include "Gradient.h"
+#include "OGLState.h"
 #include "renderer/Points.h"
 
 
@@ -463,13 +464,13 @@ public:
          return;
 
       glDisable(GL_DEPTH_TEST);
-      glEnable(GL_BLEND);
+
       if (gBlendMode==BLEND_MULTIPLY)
-         glBlendFunc(GL_DST_COLOR, GL_ZERO);
+         nmeSetBlend(true,GL_DST_COLOR, GL_ZERO);
       else if (gBlendMode==BLEND_ADD)
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+         nmeSetBlend(true,GL_SRC_ALPHA, GL_ONE);
       else
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         nmeSetBlend(true,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    
       if (mSolidGradient || mFillAlpha>0.0 || mTexture || is_triangles)
       {
@@ -488,7 +489,7 @@ public:
             tex->BindOpenGL( (mTexture->mFlags & NME_EDGE_MASK) ==NME_EDGE_REPEAT );
          }
          else
-            glDisable(GL_TEXTURE_2D);
+            nmeEnableTexture(false);
 
          if (is_triangles)
          {
@@ -536,19 +537,13 @@ public:
                }
             }
 
+            nmeEnableTexture(tex);
             if (tex)
-            {
                glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
-               glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            }
 
             glVertexPointer(2*vert_parts, GL_FLOAT, 0, &mPoints[0].mX);
-            glEnableClientState(GL_VERTEX_ARRAY);
 
-            glDrawArrays(GL_TRIANGLES,0,n*3);
-
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            nmeDrawArrays(GL_TRIANGLES,n*3);
          }
          else
          {
@@ -568,7 +563,7 @@ public:
                   }
                 }
                 glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
-                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                nmeEnableTexture(true);
             }
             else if (tex)
             {
@@ -584,19 +579,15 @@ public:
                   }
                 }
                 glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0] );
-                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                nmeEnableTexture(true);
             }
             else
-               glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+               nmeEnableTexture(false);
        
 
             glVertexPointer(2, GL_FLOAT, 0, p);
-            glEnableClientState(GL_VERTEX_ARRAY);
 
-            glDrawArrays(GL_TRIANGLE_FAN,0,n);
-
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            nmeDrawArrays(GL_TRIANGLE_FAN,n);
          }
 
          if (tex)
@@ -650,7 +641,7 @@ public:
                   }
                 }
                 glTexCoordPointer(1, GL_FLOAT, 0, &mTex[0] );
-                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                nmeEnableTexture(true);
             }
 
             // todo: cache
@@ -665,12 +656,8 @@ public:
    
 
             glVertexPointer(2, GL_FLOAT, 0, &point_array[0]);
-            glEnableClientState(GL_VERTEX_ARRAY);
 
-            glDrawArrays(GL_LINE_STRIP,0,n);
-
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            nmeDrawArrays(GL_LINE_STRIP,n);
 
 #if 0
             glBegin(GL_LINE_STRIP);
@@ -689,9 +676,8 @@ public:
             line.mGradient->EndOpenGL();
       }
       glLineWidth(1);
-
-      glDisable(GL_BLEND);
    }
+
    #endif // NME_ANY_GL
 
    #ifdef NME_OPENGL

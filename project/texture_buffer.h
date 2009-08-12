@@ -11,6 +11,9 @@ DECLARE_KIND( k_texture_buffer );
 #define TEXTURE_BUFFER(v) ( (TextureBuffer *)(val_data(v)) )
 
 
+void SetTexture(int inID);
+void ClearTexture(int inID);
+
 
 class TextureBuffer
 {
@@ -63,6 +66,7 @@ protected:
    SDL_Surface   *mSurface;
    unsigned int mTextureID;
    int          mResizeID;
+   bool         mRepeat;
 
    int          mPixelWidth,mPixelHeight;
    float        mX1,mY1;

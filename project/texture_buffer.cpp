@@ -10,6 +10,7 @@
 #include "nsdl.h"
 #include "ByteArray.h"
 #include "renderer/Renderer.h"
+#include "OGLState.h"
 
 
 DEFINE_KIND( k_texture_buffer );
@@ -41,32 +42,6 @@ static int val_id_height = val_id("height");
 
 static int texture_count = 0;
 
-
-/*
-#include "renderer/Pixel.h"
-static GLuint sDummyTexture = 0;
-void InitDummyTexture()
-{
-   if (!sDummyTexture)
-   {
-      glGenTextures(1,&sDummyTexture);
-      glBindTexture(GL_TEXTURE_2D,sDummyTexture);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
- 
-      ARGB *rgb = new ARGB[32*32];
-      for(int y=0;y<32;y++)
-         for(int x=0;x<32;x++)
-            rgb[ y*32 + x ].ival = ( ((x/4) & 1) == ((y/4) & 1) ) ? 
-                0xff000000 : 0xffffffff;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
-      delete [] rgb;
-   }
-}
-*/
 
 // --- TextureBuffer ----------------------------------------------------
 
@@ -325,7 +300,8 @@ bool TextureBuffer::PrepareOpenGL()
       //err = glGetError(); if (err) printf("Error loading texture 0a : %d\n",err);
 
       glGenTextures(1, &mTextureID);
-      glBindTexture(GL_TEXTURE_2D, mTextureID);
+      nmeSetTexture(mTextureID,true);
+      mRepeat = false;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
@@ -392,15 +368,15 @@ bool TextureBuffer::PrepareOpenGL()
    }
    else if (mHardwareDirty)
    {
-      glBindTexture(GL_TEXTURE_2D, mTextureID);
+      nmeSetTexture(GL_TEXTURE_2D);
       UpdateHardware();
    }
    else
    {
-      glBindTexture(GL_TEXTURE_2D, mTextureID);
+      nmeSetTexture(GL_TEXTURE_2D);
    }
 
-   glEnable(GL_TEXTURE_2D);
+   nmeEnableTexture(true);
 
    return true;
 }
@@ -418,7 +394,7 @@ void TextureBuffer::UpdateHardware()
 
    glGetError();
 
-   glBindTexture(GL_TEXTURE_2D, mTextureID);
+   nmeSetTexture(mTextureID,true);
 
 
    if (mDirtyX0<0) mDirtyX0 = 0;
@@ -551,20 +527,21 @@ void TextureBuffer::ScaleTexture(int inX,int inY,float &outX,float &outY)
 void TextureBuffer::BindOpenGL(bool inRepeat)
 {
    PrepareOpenGL();
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D, mTextureID);
-
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-     inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-     inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-
+   nmeEnableTexture(true);
+   if (inRepeat!=mRepeat)
+   {
+      nmeSetTexture(mTextureID,true);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, inRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+      mRepeat = inRepeat;
+   }
+   else
+      nmeSetTexture(mTextureID);
 }
 
 void TextureBuffer::UnBindOpenGL()
 {
-   glDisable(GL_TEXTURE_2D);
-   // glBindTexture(GL_TEXTURE_2D, 0);
+   nmeSetTexture(0);
 }
 
 
@@ -577,21 +554,14 @@ void TextureBuffer::DrawOpenGL(float inAlpha)
       return;
 
    glColor4f(1,1,1,inAlpha);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+   nmeSetBlend(true,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
    float verts[][2] = { {0,0}, {0,mPixelHeight}, {mPixelWidth,mPixelHeight}, {mPixelWidth,0} };
    float tex[][2] = { {0,0}, {0,mY1}, {mX1,mY1}, {mX1,0} };
    glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
    glTexCoordPointer(2, GL_FLOAT, 0, &tex[0][0] );
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-   glDrawArrays(GL_TRIANGLE_FAN,0,4);
-   glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-   glDisable(GL_TEXTURE_2D);
-   glDisable(GL_BLEND);
+   nmeDrawArrays(GL_TRIANGLE_FAN, 4);
 }
 
 #endif
@@ -1240,8 +1210,7 @@ public:
       if (mOpenGL)
       {
          mTexture->BindOpenGL();
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         nmeSetBlend(true);
          glColor4f(1,1,1,1);
 
          if (inTheta==0.0)
@@ -1256,11 +1225,8 @@ public:
                      {inX0+mSrcRect.w,inY0} };
             glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
             glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glDrawArrays(GL_TRIANGLE_FAN,0,4);
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+            nmeDrawArrays(GL_TRIANGLE_FAN,4);
          }
          else
          {
@@ -1280,11 +1246,9 @@ public:
 
             glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
             glTexCoordPointer(2, GL_FLOAT, 0, &mTex[0][0] );
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glDrawArrays(GL_TRIANGLE_FAN,0,4);
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+ 
+            nmeDrawArrays(GL_TRIANGLE_FAN,4);
 
             glPopMatrix();
          }
@@ -1438,7 +1402,7 @@ value nme_blit_tile( value tile_renderer, value x, value y, value theta, value s
          t->Blit( val_number(x) + sBlitOffsetX, val_number(y) + sBlitOffsetY, val_number(theta), val_number(scale) );
    }
 
-   return alloc_int(0);
+   return alloc_null();
 }
 
 value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha,value matrix)
@@ -1537,15 +1501,14 @@ value nme_set_blit_area(value surface, value inRect,value inColour,value inAlpha
              }
              else if (a>0)
              {
-                glDisable(GL_TEXTURE_2D);
-                glEnable(GL_BLEND);
+                nmeEnableTexture(false);
+                nmeSetBlend(true);
                 glColor4ub(r,g,b,a);
 
                 float verts[][2] = { {0,0}, {0,h}, {w,h}, {w,0} };
                 glVertexPointer(2, GL_FLOAT, 0, &verts[0][0] );
-                glEnableClientState(GL_VERTEX_ARRAY);
-                glDrawArrays(GL_TRIANGLE_FAN,0,4);
-                glDisableClientState(GL_VERTEX_ARRAY);
+
+                nmeDrawArrays(GL_TRIANGLE_FAN,4);
              }
           }
           else
