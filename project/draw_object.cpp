@@ -1955,6 +1955,7 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
       char str[2] = { ch, 0 };
 
       SDL_Surface *surface = TTF_RenderText_Blended(font,str, sdl_col );
+      //SDL_Surface *surface = TTF_RenderText_Solid(font,str, sdl_col );
 
       if (!surface)
          return val_null;

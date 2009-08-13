@@ -86,7 +86,10 @@ TextureBuffer::~TextureBuffer()
 {
    #ifdef NME_ANY_GL
    if (mTextureID>0 && nme_resize_id==mResizeID)
+	{
+		nmeClearTexture(mTextureID);
       glDeleteTextures(1,&mTextureID);
+	}
    #endif
    if (mSurface)
       SDL_FreeSurface(mSurface);
@@ -368,12 +371,12 @@ bool TextureBuffer::PrepareOpenGL()
    }
    else if (mHardwareDirty)
    {
-      nmeSetTexture(GL_TEXTURE_2D);
+      nmeSetTexture(mTextureID);
       UpdateHardware();
    }
    else
    {
-      nmeSetTexture(GL_TEXTURE_2D);
+      nmeSetTexture(mTextureID);
    }
 
    nmeEnableTexture(true);
