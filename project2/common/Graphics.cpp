@@ -71,6 +71,10 @@ void Graphics::moveTo(float x, float y)
 
 
 
+// This routine converts a list of "GraphicsPaths" (mItems) into a list
+//  of LineData and SolidData.
+// The items intermix fill-styles and line-stypes with move/draw/triangle
+//  geometry data - this routine separates them out.
 
 const RenderData &Graphics::CreateRenderData()
 {

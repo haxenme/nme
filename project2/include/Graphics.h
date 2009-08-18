@@ -1,4 +1,5 @@
 #ifndef GRAPHICS_H
+#define GRAPHICS_H
 
 // Some design ramblings to see how some things may fit together.
 
@@ -201,6 +202,10 @@ enum PathCommand
    pcCurveTo =  3,
    pcWideMoveTo = 4,
    pcWideLineTo = 5,
+
+	// This one is added to the LineData to provide the direction of
+	//  the first line segment when closing a line.
+   pcCloseDirection = 6,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -241,8 +246,8 @@ struct IRenderData
 public:
    virtual ~IRenderData() { }
 	virtual struct SolidData *AsSolid() { return 0; }
-	virtual struct SolidData *AsLine() { return 0; }
-	virtual struct SolidData *AsTriangles() { return 0; }
+	virtual struct LineData *AsLine() { return 0; }
+	virtual struct TriangleData *AsTriangles() { return 0; }
 };
 
 struct SolidData : IRenderData
@@ -259,10 +264,11 @@ struct SolidData : IRenderData
 
 struct LineData : IRenderData
 {
-	LineData(GraphicsStroke *inStroke) : mStroke(inStroke) { }
+	LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke), mClosed(false) { }
 	LineData *AsLine() { return this; }
 	void Add(GraphicsPath *inPath);
 
+	bool                   closed;
    GraphicsStroke         *mStroke;
    QuickVec<unsigned char> command;
    QuickVec<float>        data;
