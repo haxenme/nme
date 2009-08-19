@@ -264,11 +264,10 @@ struct SolidData : IRenderData
 
 struct LineData : IRenderData
 {
-	LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke), mClosed(false) { }
+	LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
 	LineData *AsLine() { return this; }
 	void Add(GraphicsPath *inPath);
 
-	bool                   closed;
    GraphicsStroke         *mStroke;
    QuickVec<unsigned char> command;
    QuickVec<float>        data;
@@ -320,6 +319,9 @@ struct Mask
 struct Transform
 {
 	Transform();
+
+	bool           DifferentSpace(const Transform &inRHS) const;
+	UserPoint      Apply(float inX, float inY) const;
 
    Matrix3D       mMatrix3D;
    Matrix         mMatrix;

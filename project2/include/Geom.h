@@ -11,23 +11,35 @@ typedef long long int64;
 #include <math.h>
 
 
-struct UserPoint
+template<typename T>
+struct Point2D
 {
-	inline UserPoint() { }
-	inline UserPoint(float inX,float inY) : x(inX), y(inY) { }
-	inline UserPoint(float *inPtr) : x(inPtr[0]), y(inPtr[1]) { }
+	inline Point2D() { }
+	inline Point2D(T inX,T inY) : x(inX), y(inY) { }
+	inline Point2D(T *inPtr) : x(inPtr[0]), y(inPtr[1]) { }
 
-   float x;
-   float y;
+	inline bool operator==(const Point2D &inRHS) const
+	   { return x==inRHS.x && y==inRHS.y; }
+	inline bool operator!=(const Point2D &inRHS) const
+	   { return x!=inRHS.x || y!=inRHS.y; }
+
+	inline Point2D operator+(const Point2D &inRHS) const
+	   { return Point2D(x+inRHS.x,y+inRHS.y); }
+	inline Point2D operator-(const Point2D &inRHS) const
+	   { return Point2D(x-inRHS.x,y-inRHS.y); }
+	inline Point2D operator-() const
+	   { return Point2D(-x,-y); }
+	inline Point2D Perp() const
+	   { return Point2D(-y,x); }
+
+   T x;
+   T y;
 };
 
 
+typedef Point2D<float> UserPoint;
+typedef Point2D<int>   ImagePoint;
 
-struct ImagePoint
-{
-   int x;
-   int y;
-};
 
 struct PointF16
 {
@@ -220,6 +232,14 @@ struct Extent2D
       mMaxX += inTX;
       mMinY += inTY;
       mMaxY += inTY;
+   }
+
+	void Transform(double inSX, double inSY, double inTX, double inTY)
+   {
+      mMinX = inTX + inSX*(mMinX);
+      mMaxX = inTX + inSX*(mMaxX);
+      mMinY = inTY + inSY*(mMinY);
+      mMaxY = inTY + inSY*(mMaxY);
    }
 
 

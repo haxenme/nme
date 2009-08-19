@@ -156,6 +156,22 @@ const RenderData &Graphics::CreateRenderData()
 	return mRenderData;
 }
 
+// --- Transform -------------------------------------------------------------------
+
+bool Transform::DifferentSpace(const Transform &inRHS) const
+{
+	return mMatrix != inRHS.mMatrix ||
+			 mScale9 != inRHS.mScale9;
+}
+
+UserPoint Transform::Apply(float inX, float inY) const
+{
+	if (mScale9.Active())
+		return UserPoint( mScale9.TransX(inX), mScale9.TransY(inY) );
+   return mMatrix.Apply(inX,inY);
+}
+
+
 // --- LineData -------------------------------------------------------------------
 
 void LineData::Add(GraphicsPath *inPath)

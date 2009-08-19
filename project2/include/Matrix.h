@@ -1,6 +1,8 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <Geom.h>
+
 class Matrix
 {
 public:
@@ -45,9 +47,7 @@ public:
    void MatchTransform(double inX,double inY,double inTargetX,double inTargetY);
 
 
-   void Transform(float inX,float inY,short &outX,short &outY) const;
-   void TransformHQ(float inX,float inY,int &outX,int &outY) const;
-   void TransformHQCorner(float inX,float inY,int &outX,int &outY) const;
+   UserPoint Apply(float inX,float inY) const;
 
    void ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const;
 

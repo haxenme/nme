@@ -15,6 +15,7 @@
   <file name="common/Geom.cpp"/>
   <file name="common/Graphics.cpp"/>
   <file name="common/GraphicsData.cpp"/>
+  <file name="common/Matrix.cpp"/>
 </files>
 
 

@@ -2,7 +2,7 @@
 #define SCALE9_H
 
 #include <Matrix.h>
-#include <Points.h>
+#include <Geom.h>
 
 class Scale9
 {
@@ -50,12 +50,13 @@ public:
       return X0==inRHS.X0 && X1==inRHS.X1 && Y0==inRHS.Y0 && Y1==inRHS.Y1 &&
              X1Off==inRHS.X1Off && Y1Off==inRHS.Y1Off;
    }
-   double TransX(double inX)
+   bool operator!=(const Scale9 &inRHS) const { return ! operator==(inRHS); }
+   double TransX(double inX) const
    {
       if (inX<=X0) return inX;
       return inX>X1 ? inX + X1Off : X0 + (inX-X0)*SX;
    }
-   double TransY(double inY)
+   double TransY(double inY) const
    {
       if (inY<=Y0) return inY;
       return inY>Y1 ? inY + Y1Off : Y0 + (inY-Y0)*SY;
