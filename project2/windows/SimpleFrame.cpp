@@ -56,7 +56,6 @@ public:
 	~WindowsStage()
 	{
 		delete mBMP;
-		delete mSurfaceRenderTarget;
 	}
 
 	void CreateBMP()
@@ -76,12 +75,6 @@ public:
 			int h =  info.rcClient.bottom - info.rcClient.top;
 			mBMP = new DIBSurface(w,h);
 		}
-
-		if (mSurfaceRenderTarget)
-		{
-			delete mSurfaceRenderTarget;
-			mSurfaceRenderTarget = 0;
-		}
 	}
 
    void Flip()
@@ -98,11 +91,9 @@ public:
       mHandlerData = inUserData;
    }
 
-	IRenderTarget *GetRenderTarget()
+	Surface *GetPrimarySurface()
 	{
-		if (!mSurfaceRenderTarget && mBMP)
-			mSurfaceRenderTarget = CreateSurfaceRenderTarget(mBMP);
-		return mSurfaceRenderTarget;
+		return mBMP;
 	}
 
    void HandleEvent(Event &inEvent)
@@ -185,7 +176,6 @@ public:
 	int          mFrameRate;
    EventHandler mHandler;
 	DIBSurface   *mBMP;
-	IRenderTarget *mSurfaceRenderTarget;
    void         *mHandlerData;
 };
 

@@ -2,6 +2,7 @@
 
 // --- Surface -------------------------------------------------------
 
+
 Surface::Surface()
 {
 	mTexture = 0;
@@ -10,15 +11,15 @@ Surface::Surface()
 Surface::~Surface()
 {
 	if (mTexture)
-		mTexture->Destroy();
+		DestroyNativeTexture(mTexture);
 }
 
-void Surface::SetTexture(IRenderCache *inTexture)
+void Surface::SetTexture(NativeTexture *inTexture)
 {
 	if (inTexture!=mTexture)
 	{
 		if (mTexture)
-			mTexture->Destroy();
+			DestroyNativeTexture(mTexture);
       mTexture = inTexture;
 	}
 }

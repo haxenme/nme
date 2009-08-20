@@ -248,12 +248,14 @@ public:
 	virtual struct SolidData *AsSolid() { return 0; }
 	virtual struct LineData *AsLine() { return 0; }
 	virtual struct TriangleData *AsTriangles() { return 0; }
+	virtual class Renderer *CreateSoftwareRenderer() = 0;
 };
 
 struct SolidData : IRenderData
 {
 	SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
 	SolidData *AsSolid() { return this; }
+	class Renderer *CreateSoftwareRenderer();
 	void Add(GraphicsPath *inPath);
 	void Close();
 
@@ -266,6 +268,7 @@ struct LineData : IRenderData
 {
 	LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
 	LineData *AsLine() { return this; }
+	class Renderer *CreateSoftwareRenderer();
 	void Add(GraphicsPath *inPath);
 
    GraphicsStroke         *mStroke;
@@ -276,6 +279,7 @@ struct LineData : IRenderData
 struct TriangleData : IRenderData
 {
 	TriangleData *AsTriangles() { return this; }
+	class Renderer *CreateSoftwareRenderer();
    IGraphicsFill           *mFill;
    IGraphicsStroke         *mStroke;
    TriangleData            *mTriangles;
@@ -289,19 +293,6 @@ struct TriangleData : IRenderData
 // Blender = blend mode + (colour transform + alpha)
 
 enum BlendMode { bmNormal, nmAdd };
-
-struct Rect
-{
-   Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
-   Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
-
-	Rect Intersect(const Rect &inOther) const;
-	int x1() const { return x+w; }
-	int y1() const { return y+h; }
-
-   int x,y;
-   int w,h;
-};
 
 class ColorTransform
 {
@@ -335,24 +326,60 @@ struct Transform
    Mask           mMask;
 };
 
-class IRenderCache
-{
-public:
-	virtual void Destroy() { delete this; }
+typedef QuickVec<IRenderData *> RenderData;
 
-protected:
-   IRenderCache() { }
-   virtual ~IRenderCache() { }
+
+struct Tile
+{
+   Surface *mData;
+   Rect     mRect;
+	double   mX0;
+	double   mY0;
 };
 
 
-typedef QuickVec<IRenderData *> RenderData;
+class Renderer
+{
+public:
+   virtual void Destroy()=0;
+
+   virtual bool Render(Surface *inSurface, const Rect &inRect, const Transform &inTransform)
+	   { return false; }
+
+   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+	   { return false; }
+
+
+   static Renderer *CreateHardware(LineData *inLineData);
+   static Renderer *CreateHardware(SolidData *inSolidData);
+   static Renderer *CreateHardware(TriangleData *inTriangleData);
+
+	static Renderer *CreateSoftware(LineData *inLineData);
+   static Renderer *CreateSoftware(SolidData *inSolidData);
+   static Renderer *CreateSoftware(TriangleData *inTriangleData);
+
+protected:
+   virtual ~Renderer() { }
+};
+
+
+struct RendererCache
+{
+	Renderer *mSoftware;
+	Renderer *mHardware;
+};
+
+
 
 class Graphics
 {
 public:
    Graphics();
    ~Graphics();
+
+	Extent2DF GetExtent(const Transform &inTransform);
+
+	bool Render( struct SurfaceData *inData, const Transform &inTransform );
 
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
@@ -362,19 +389,18 @@ public:
    void moveTo(float x, float y);
 
 
-	const RenderData &CreateRenderData();
-   IRenderCache  *mSoftwareCache;
-   IRenderCache  *mHardwareCache;
 
 private:
+	QuickVec<RendererCache>     mCache;
    QuickVec<IGraphicsData *> mItems;
+   int                       mLastConvertedItem;
 	RenderData                mRenderData;
 
+	void CreateRenderData();
 	void Add(IGraphicsData *inData);
 	void Add(IRenderData *inData);
 	GraphicsPath *GetLastPath();
 
-   int mLastConvertedItem;
 
 private:
    // Rule of 3 - we must manually delete the mItems...
@@ -382,13 +408,6 @@ private:
    void operator=(const Graphics &inRHS);
 };
 
-struct Tile
-{
-   Surface *mData;
-   Rect     mRect;
-	double   mX0;
-	double   mY0;
-};
 
 typedef char *String;
 
@@ -407,19 +426,6 @@ class TextData
 
 typedef QuickVec<TextData> TextList;
 
-class IRenderTarget
-{
-public:
-   virtual int  Width() const =0;
-   virtual int  Height() const =0;
-
-   virtual void ViewPort(int inOX,int inOY, int inW,int inH)=0;
-   virtual void BeginRender()=0;
-   virtual void Render(Graphics &inDisplayList, const Transform &inTransform)=0;
-   virtual void Render(TextList &inTextList, const Transform &inTransform)=0;
-   virtual void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)=0;
-   virtual void EndRender() = 0;
-};
 
 enum EventType
 {
@@ -468,7 +474,7 @@ public:
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
    virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
-	virtual IRenderTarget *GetRenderTarget() = 0;
+	virtual Surface *GetPrimarySurface() = 0;
 };
 
 
@@ -500,12 +506,14 @@ void TerminateMainLoop();
 // ---- Surface API --------------
 
 
+// SurfaceData = RenderTarget
 struct SurfaceData
 {
-   unsigned char *data;
    int  width;
    int  height;
+   unsigned char *data;
    int  stride;
+	PixelFormat format;
 };
 
 enum
@@ -513,6 +521,13 @@ enum
    surfLockRead = 0x0001,
    surfLockWrite = 0x0002,
 };
+
+// Need a context ?
+struct NativeTexture;
+NativeTexture *CreateNativeTexture(Surface *inSoftwareSurface);
+void DestroyNativeTexture(NativeTexture *inTexture);
+
+
 
 class Surface
 {
@@ -528,11 +543,15 @@ public:
    virtual SurfaceData Lock(const Rect &inRect,uint32 inFlags)=0;
    virtual void Unlock()=0;
 
-   virtual IRenderCache *GetTexture() { return mTexture; }
-   virtual void SetTexture(IRenderCache *inTexture);
+   virtual bool BeginHardwareRender(const Rect *inRect=0) { return false; }
+   virtual void EndHardwareRender() { }
+
+   virtual NativeTexture *GetTexture() { return mTexture; }
+   virtual void SetTexture(NativeTexture *inTexture);
+
 
 protected:
-   IRenderCache *mTexture;
+   NativeTexture *mTexture;
 };
 
 class SimpleSurface : public Surface
@@ -561,7 +580,6 @@ private:
    void operator=(const SimpleSurface &inRHS);
 };
 
-IRenderTarget *CreateSurfaceRenderTarget(Surface *inSurface);
 
 
 

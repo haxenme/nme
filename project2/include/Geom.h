@@ -11,6 +11,21 @@ typedef long long int64;
 #include <math.h>
 
 
+struct Rect
+{
+   Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
+   Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
+
+	Rect Intersect(const Rect &inOther) const;
+	int x1() const { return x+w; }
+	int y1() const { return y+h; }
+
+   int x,y;
+   int w,h;
+};
+
+
+
 template<typename T>
 struct Point2D
 {

@@ -3,18 +3,22 @@
 
 Graphics::Graphics()
 {
-	mSoftwareCache = 0;
-	mHardwareCache = 0;
 	mLastConvertedItem = 0;
 }
 
 
 Graphics::~Graphics()
 {
-	if (mSoftwareCache)
-		mSoftwareCache->Destroy();
-	if (mHardwareCache)
-		mHardwareCache->Destroy();
+	for(int i=0;i<mCache.size();i++)
+	{
+		// See if we can get the extent from somewhere!
+		RendererCache &cache = mCache[i];
+		if (cache.mSoftware)
+			cache.mSoftware->Destroy();
+		if (cache.mHardware)
+			cache.mHardware->Destroy();
+	}
+
 	for(int i=0;i<mItems.size();i++)
 		mItems[i]->DecRef();
 	mRenderData.DeleteAll();
@@ -53,6 +57,7 @@ GraphicsPath *Graphics::GetLastPath()
 }
 
 
+
 void Graphics::beginFill(unsigned int color, float alpha)
 {
 	Add(new GraphicsSolidFill(color,alpha));
@@ -76,7 +81,7 @@ void Graphics::moveTo(float x, float y)
 // The items intermix fill-styles and line-stypes with move/draw/triangle
 //  geometry data - this routine separates them out.
 
-const RenderData &Graphics::CreateRenderData()
+void Graphics::CreateRenderData()
 {
 	int n = mItems.size();
    if (mLastConvertedItem<n)
@@ -151,10 +156,35 @@ const RenderData &Graphics::CreateRenderData()
 			Add(line);
 
 		mLastConvertedItem = n;
+		mCache.resize(n);
 	}
 
-	return mRenderData;
 }
+
+
+Extent2DF Graphics::GetExtent(const Transform &inTransform)
+{
+	// TODO: cache this?
+	Extent2DF result;
+	CreateRenderData();
+	for(int i=0;i<mCache.size();i++)
+	{
+		// See if we can get the extent from somewhere!
+		RendererCache &cache = mCache[i];
+		if (cache.mSoftware && cache.mSoftware->GetExtent(inTransform,result))
+			continue;
+		if (cache.mHardware && cache.mHardware->GetExtent(inTransform,result))
+			continue;
+
+		// No - ok, create a software renderer...
+		cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
+		cache.mSoftware->GetExtent(inTransform,result);
+	}
+
+	return result;
+}
+
+
 
 // --- Transform -------------------------------------------------------------------
 
@@ -180,6 +210,12 @@ void LineData::Add(GraphicsPath *inPath)
 	data.append(inPath->data);
 }
 
+Renderer *LineData::CreateSoftwareRenderer()
+{
+	return Renderer::CreateSoftware(this);
+}
+
+
 
 // --- SolidData -------------------------------------------------------------------
 void SolidData::Add(GraphicsPath *inPath)
@@ -187,6 +223,13 @@ void SolidData::Add(GraphicsPath *inPath)
 	command.append(inPath->command);
 	data.append(inPath->data);
 }
+
+Renderer *SolidData::CreateSoftwareRenderer()
+{
+	return Renderer::CreateSoftware(this);
+}
+
+
 
 void SolidData::Close()
 {

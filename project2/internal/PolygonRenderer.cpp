@@ -1,84 +1,9 @@
 #include <Graphics.h>
-#include "Geom.h"
-
-static int sgCachedExtentID = 1;
-
-struct CachedExtent
-{
-	CachedExtent() : mID(0) {}
-	Extent2DF Get(const Matrix &inMatrix)
-	{
-		mID = sgCachedExtentID++;
-		if (!mExtent.Valid())
-			return Extent2DF();
-		double ratio = mMatrix.m00!=0.0 ? inMatrix.m00/mMatrix.m00 :
-		               mMatrix.m01!=0.0 ? inMatrix.m01/mMatrix.m01 : 1.0;
-		Extent2DF result = mExtent;
-		result.Transform(ratio, ratio, inMatrix.mtx, inMatrix.mty);
-		return result;
-	}
-
-   Matrix    mMatrix;
-	Scale9    mScale9;
-	Extent2DF mExtent;
-	int       mID;
-};
+#include <CachedExtent.h>
+#include <Geom.h>
 
 
-
-
-class SoftwareRenderer
-{
-public:
-   virtual ~SoftwareRenderer() { }
-
-   virtual void Render(Surface *inSurface, const Rect &inRect, const Transform &inTransform)=0;
-
-   virtual void GetExtent(CachedExtent &ioCache) = 0;
-
-   virtual Extent2DF GetExtent(const Transform &inTransform)
-	{
-		Matrix test = inTransform.mMatrix;
-		double norm = test.m00*test.m00 + test.m01*test.m01 +
-		              test.m10*test.m10 + test.m11*test.m11;
-		if (norm<=0)
-			return Extent2DF();
-		test = 1.0/sqrt(norm);
-		test.m00 *= norm;
-		test.m01 *= norm;
-		test.m10 *= norm;
-		test.m11 *= norm;
-		test.mtx = 0;
-		test.mty = 0;
-
-		int smallest = mExtentCache[0].mID;
-		int slot = 0;
-		for(int i=0;i<3;i++)
-		{
-			CachedExtent &cache = mExtentCache[i];
-			if (test==cache.mMatrix && inTransform.mScale9==cache.mScale9)
-				return cache.Get(inTransform.mMatrix);
-			if (cache.mID<smallest)
-			{
-				smallest = cache.mID;
-				slot = i;
-			}
-		}
-
-		// Not in cache - fill slot
-		CachedExtent &cache = mExtentCache[slot];
-		cache.mMatrix = inTransform.mMatrix;
-		cache.mScale9 = inTransform.mScale9;
-		GetExtent(cache);
-		return cache.Get(inTransform.mMatrix);
-	}
-
-	CachedExtent mExtentCache[3];
-};
-
-
-
-class PolygonRender : public SoftwareRenderer
+class PolygonRender : public CachedExtentRenderer
 {
 public:
    enum IterateMode { itGetExtent, itCreateRenderer };
@@ -118,10 +43,12 @@ public:
 		}
 	}
 
-   void Render(Surface *inSurface, const Rect &inRect, const Transform &inTransform)
+   bool Render(Surface *inSurface, const Rect &inRect, const Transform &inTransform)
    {
       SetTransform(inTransform.mMatrix, inTransform.mScale9);
       Iterate(itCreateRenderer);
+
+		return true;
    }
 
    virtual void Iterate(IterateMode inMode) = 0;
@@ -144,6 +71,8 @@ class LineRender : public PolygonRender
 
 public:
    LineRender(LineData *inLine) : mLineData(inLine) { }
+
+	void Destroy() { delete this; }
 
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
@@ -226,7 +155,7 @@ public:
                points++;
                // Implicit loop closing...
                if (points>2 && *point==first)
-               {
+						{
                   AddJoint(first,prev_perp,first_perp);
                   points = 1;
                   first_perp = prev_perp;
@@ -250,106 +179,22 @@ public:
 
 
 
-
-
-
-class SoftwareRenderCache : public IRenderCache
+Renderer *Renderer::CreateSoftware(LineData *inLineData)
 {
-public:
-   SoftwareRenderCache() { }
-   ~SoftwareRenderCache()
-   {
-      mObjs.DeleteAll();
-   }
-   void Render(const RenderData &inData,Surface *inSurface,
-               const Rect &inRect, const Transform &inTransform)
-   {
-      int n = inData.size();
-      for(int i=0;i<n;i++)
-      {
-         IRenderData *data = inData[i];
-         if (mObjs.size()<=i)
-         {
-            if (data->AsLine())
-               mObjs.push_back( new LineRender(data->AsLine()) );
-            else
-               mObjs.push_back( 0 );
-         }
-      }
-
-      for(int i=0;i<n;i++)
-      {
-         SoftwareRenderer *obj = mObjs[i];
-         if (obj)
-            obj->Render(inSurface,inRect,inTransform);
-      }
-   }
-
-
-   QuickVec<SoftwareRenderer *> mObjs;
-};
-
-
-class SurfaceRenderTarget : public IRenderTarget
-{
-public:
-   SurfaceRenderTarget(Surface *inSurface) : mSurface(inSurface)
-   {
-   }
-
-   ~SurfaceRenderTarget()
-   {
-   }
-
-   // IRenderTarget interface ...
-   int  Width() const { return mSurface->Width(); }
-   int  Height() const { return mSurface->Width(); }
-
-   void ViewPort(int inOX,int inOY, int inW,int inH)
-   {
-      mClipRect = Rect(inOX,inOY,inW,inH).Intersect( Rect(mSurface->Width(),mSurface->Height()) );
-   }
-
-   void BeginRender()
-   {
-      mClipRect = Rect(Width(),Height());
-   }
-
-   void Render(Graphics &inGraphics, const Transform &inTransform)
-   {
-      SoftwareRenderCache *cache = 0;
-      if (inGraphics.mSoftwareCache)
-      {
-         cache = dynamic_cast<SoftwareRenderCache *>(inGraphics.mSoftwareCache);
-         if (!cache)
-            *(int *)0=0;
-      }
-      else
-         inGraphics.mSoftwareCache = cache = new SoftwareRenderCache();
-
-      cache->Render( inGraphics.CreateRenderData(), mSurface, mClipRect, inTransform);
-   }
-
-   void Render(TextList &inTextList, const Transform &inTransform)
-   {
-   }
-
-   void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)
-   {
-   }
-
-   void EndRender()
-   {
-   }
-
-
-   Surface *mSurface;
-   Rect    mClipRect;
-};
-
-
-
-IRenderTarget *CreateSurfaceRenderTarget(Surface *inSurface)
-{
-   return new SurfaceRenderTarget(inSurface);
+	return new LineRender(inLineData);
 }
+
+Renderer *Renderer::CreateSoftware(SolidData *inSolidData)
+{
+	return 0;
+}
+
+Renderer *Renderer::CreateSoftware(TriangleData *inTriangleData)
+{
+	return 0;
+}
+
+
+
+
+

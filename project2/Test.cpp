@@ -1,6 +1,7 @@
 #include <Graphics.h>
 
 Graphics gGraphics;
+Transform gTransform;
 
 void Handler(Event &ioEvent,void *inStage)
 {
@@ -10,10 +11,16 @@ void Handler(Event &ioEvent,void *inStage)
 	if (ioEvent.mType==etNextFrame)
 	{
 		Transform t;
-		IRenderTarget *target = stage->GetRenderTarget();
-		target->BeginRender();
-		target->Render(gGraphics,t);
-		target->EndRender();
+		Surface *surface = stage->GetPrimarySurface();
+
+		if (surface->BeginHardwareRender(0))
+		{
+         surface->EndHardwareRender();
+		}
+		else
+		{
+			// gGraphics.Render(surface,gTransform);
+		}
 		stage->Flip();
 	}
 }
@@ -31,6 +38,8 @@ int main(int inargc,char **arvg)
 	gGraphics.lineTo(100,300);
 	gGraphics.lineTo(300,300);
 	gGraphics.lineTo(10,10);
+
+	// Extent2DF ext = gGraphics.GetExtent(gTransform);
 
    MainLoop();
    delete frame;

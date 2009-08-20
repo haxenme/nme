@@ -11,11 +11,15 @@
 <files id="common">
   <compilerflag value="-Iinclude"/>
   <file name="common/Surface.cpp"/>
-  <file name="common/SurfaceRenderTarget.cpp"/>
   <file name="common/Geom.cpp"/>
   <file name="common/Graphics.cpp"/>
   <file name="common/GraphicsData.cpp"/>
   <file name="common/Matrix.cpp"/>
+  <file name="common/CachedExtent.cpp"/>
+
+  <file name="internal/PolygonRenderer.cpp"/>
+
+  <file name="hardware-none/Stubs.cpp"/>
 </files>
 
 
