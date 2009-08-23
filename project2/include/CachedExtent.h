@@ -6,10 +6,9 @@
 struct CachedExtent
 {
 	CachedExtent() : mID(0) {}
-	Extent2DF Get(const Matrix &inMatrix);
+	Extent2DF Get(const Transform &inTransform);
 
-   Matrix    mMatrix;
-	Scale9    mScale9;
+	Transform mTransform;
 	Extent2DF mExtent;
 	int       mID;
 };

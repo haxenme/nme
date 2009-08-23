@@ -44,8 +44,22 @@ struct Point2D
 	   { return Point2D(x-inRHS.x,y-inRHS.y); }
 	inline Point2D operator-() const
 	   { return Point2D(-x,-y); }
+	inline T Norm2() const
+	   { return x*x + y*y; }
+	inline double Norm() const
+	   { return sqrt((double)(x*x + y*y)); }
 	inline Point2D Perp() const
 	   { return Point2D(-y,x); }
+	inline Point2D Perp(double inLen) const
+	{
+		double norm = Norm();
+		if (norm>0)
+		{
+			norm = inLen/norm;
+			return Point2D(-y*norm,x*norm);
+		}
+		return Point2D(0,0);
+	}
 
    T x;
    T y;

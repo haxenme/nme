@@ -1,27 +1,22 @@
 #include <Graphics.h>
 
 Graphics gGraphics;
-Transform gTransform;
+RenderState gState;
 
 void Handler(Event &ioEvent,void *inStage)
 {
 	Stage *stage = (Stage *)inStage;
 
+	static int tx = 0;
+	tx = (tx+1) % 100;
 
 	if (ioEvent.mType==etNextFrame)
 	{
-		Transform t;
 		Surface *surface = stage->GetPrimarySurface();
-
-		if (surface->BeginHardwareRender(0))
-		{
-         surface->EndHardwareRender();
-		}
-		else
-		{
-			// gGraphics.Render(surface,gTransform);
-		}
-		stage->Flip();
+		AutoSurfaceRender render(surface,0,stage);
+		surface->Clear(0);
+		gState.mTransform.mMatrix.mtx = tx;
+		gGraphics.Render(render.Target(),gState);
 	}
 }
 
@@ -32,14 +27,15 @@ int main(int inargc,char **arvg)
 
 	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
 
-	gGraphics.beginFill(0xff0000);
-	gGraphics.moveTo(10,10);
-	gGraphics.lineTo(100,100);
+	gGraphics.lineStyle(5,0xff0000);
+	gGraphics.moveTo(100,100);
 	gGraphics.lineTo(100,300);
 	gGraphics.lineTo(300,300);
-	gGraphics.lineTo(10,10);
+	gGraphics.lineTo(300,100);
+	gGraphics.lineTo(100,100);
 
-	// Extent2DF ext = gGraphics.GetExtent(gTransform);
+	Extent2DF ext = gGraphics.GetExtent(gState.mTransform);
+	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
 
    MainLoop();
    delete frame;

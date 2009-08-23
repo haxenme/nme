@@ -172,6 +172,11 @@ enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal };
 class GraphicsStroke : public IGraphicsStroke
 {
 public:
+   GraphicsStroke(IGraphicsFill *fill=0, double thickness=0,
+                  bool pixelHinting = false, StrokeScaleMode saleMode = ssmNormal,
+                  StrokeCaps caps = scRound,
+                  StrokeJoints joints = sjBevel, double miterLimit= 3.0);
+
    ~GraphicsStroke();
 
    GraphicsStroke *AsStroke() { return this; }
@@ -241,7 +246,7 @@ public:
    int               mUVTDim;
 };
 
-struct IRenderData
+struct IRenderData : public IGraphicsData
 {
 public:
    virtual ~IRenderData() { }
@@ -302,29 +307,45 @@ class ColorTransform
    double alphaScale, alphaOffset;
 };
 
-struct Mask
-{
-   // ??
-};
+struct SoftwareMask;
 
 struct Transform
 {
 	Transform();
+	bool operator==(const Transform &inRHS) const;
+	bool operator!=(const Transform &inRHS) const
+	   { return !(operator==(inRHS)); }
 
-	bool           DifferentSpace(const Transform &inRHS) const;
 	UserPoint      Apply(float inX, float inY) const;
 
    Matrix3D       mMatrix3D;
    Matrix         mMatrix;
    Scale9         mScale9;
-
-   double         mAlpha;
-   BlendMode      mBlendMode;
-   ColorTransform mTransform;
-
-   Rect           mClipRect;
-   Mask           mMask;
+	double         mStageScaleX;
+	double         mStageScaleY;
+	double         mStageOX;
+	double         mStageOY;
 };
+
+
+struct RenderState
+{
+	// Spatial Transform
+	Transform      mTransform;
+
+	// Viewport
+   Rect           mClipRect;
+
+	// Colour transform
+   double         mAlpha;
+   ColorTransform mColourTrans;
+   BlendMode      mBlendMode;
+
+	// Masking...
+	Surface        *mHardwareMask;
+	SoftwareMask   *mSoftwareMask;
+};
+
 
 typedef QuickVec<IRenderData *> RenderData;
 
@@ -337,18 +358,18 @@ struct Tile
 	double   mY0;
 };
 
+struct RenderTarget;
 
 class Renderer
 {
 public:
    virtual void Destroy()=0;
 
-   virtual bool Render(Surface *inSurface, const Rect &inRect, const Transform &inTransform)
-	   { return false; }
+	virtual bool Render( const RenderTarget &inTarget, const RenderState &inState ) = 0;
 
-   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
-	   { return false; }
+   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
 
+	// HitTest
 
    static Renderer *CreateHardware(LineData *inLineData);
    static Renderer *CreateHardware(SolidData *inSolidData);
@@ -379,11 +400,15 @@ public:
 
 	Extent2DF GetExtent(const Transform &inTransform);
 
-	bool Render( struct SurfaceData *inData, const Transform &inTransform );
+	bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
+   void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
+                  bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
+                  StrokeCaps caps = scRound,
+                  StrokeJoints joints = sjBevel, double miterLimit= 3.0);
 
    void lineTo(float x, float y);
    void moveTo(float x, float y);
@@ -506,20 +531,24 @@ void TerminateMainLoop();
 // ---- Surface API --------------
 
 
-// SurfaceData = RenderTarget
-struct SurfaceData
+struct HardwareContext;
+
+struct RenderTarget
 {
    int  width;
    int  height;
-   unsigned char *data;
-   int  stride;
 	PixelFormat format;
-};
+	bool is_hardware;
 
-enum
-{
-   surfLockRead = 0x0001,
-   surfLockWrite = 0x0002,
+	union
+	{
+	  struct
+	  {
+        unsigned char *data;
+        int  stride;
+	  };
+	  HardwareContext *context;
+	};
 };
 
 // Need a context ?
@@ -539,12 +568,13 @@ public:
    virtual int Height() const =0;
    virtual PixelFormat Format()  const = 0;
 
-   virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
-   virtual SurfaceData Lock(const Rect &inRect,uint32 inFlags)=0;
-   virtual void Unlock()=0;
+	virtual void Clear(uint32 inColour) = 0;
 
-   virtual bool BeginHardwareRender(const Rect *inRect=0) { return false; }
-   virtual void EndHardwareRender() { }
+   virtual RenderTarget BeginRender(const Rect &inRect)=0;
+
+   virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
+
+   virtual void EndRender()=0;
 
    virtual NativeTexture *GetTexture() { return mTexture; }
    virtual void SetTexture(NativeTexture *inTexture);
@@ -552,6 +582,30 @@ public:
 
 protected:
    NativeTexture *mTexture;
+};
+
+// Helper class....
+class AutoSurfaceRender
+{
+	Surface *mSurface;
+	Stage   *mToFlip;
+	RenderTarget mTarget;
+public:
+	AutoSurfaceRender(Surface *inSurface, const Rect *inRect=0, Stage *inToFlip=0)
+	{
+		mSurface = inSurface;
+		mToFlip = inToFlip;
+		mTarget = inRect ? inSurface->BeginRender( *inRect ) :
+		                 inSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
+	}
+	~AutoSurfaceRender()
+	{
+		mSurface->EndRender();
+		if (mToFlip)
+			mToFlip->Flip();
+	}
+	const RenderTarget &Target() { return mTarget; }
+
 };
 
 class SimpleSurface : public Surface
@@ -563,10 +617,12 @@ public:
    int Width() const  { return mWidth; }
    int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
+	void Clear(uint32 inColour);
 
+   RenderTarget BeginRender(const Rect &inRect);
    void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY);
-   SurfaceData Lock(const Rect &inRect,uint32 inFlags);
-   void Unlock();
+   void EndRender();
+
 
 protected:
    int           mWidth;

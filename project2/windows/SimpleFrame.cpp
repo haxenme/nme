@@ -11,23 +11,25 @@ static FrameMap sgFrameMap;
 class DIBSurface : public SimpleSurface
 {
 public:
-   DIBSurface(int inW,int inH) : SimpleSurface(inW,inH,pfXBGR,4)
-	{
-		memset(&mInfo,0,sizeof(mInfo));
-		BITMAPINFOHEADER &h = mInfo.bmiHeader;
-		h.biSize = sizeof(BITMAPINFOHEADER);
-		h.biWidth = mWidth;
-		h.biHeight = mHeight;
-		h.biPlanes = 1;
-		h.biBitCount = 32;
-		h.biCompression = BI_RGB;
-	}
+   DIBSurface(int inW,int inH) : SimpleSurface( (inW+3) & ~3 ,inH,pfXBGR,4)
+   {
+      memset(&mInfo,0,sizeof(mInfo));
+      BITMAPINFOHEADER &h = mInfo.bmiHeader;
+      h.biSize = sizeof(BITMAPINFOHEADER);
+      h.biWidth = mWidth;
+      h.biHeight = -mHeight;
+      h.biPlanes = 1;
+      h.biBitCount = 32;
+      h.biCompression = BI_RGB;
 
-	void RenderTo(HDC inDC)
-	{
-      SetDIBitsToDevice(inDC,0,0,mWidth,mHeight,
-								0,0,0,mHeight, mBase, &mInfo, DIB_RGB_COLORS);
-	}
+		memset(mBase, 0, mWidth*mHeight*4);
+   }
+
+   void RenderTo(HDC inDC)
+   {
+       SetDIBitsToDevice(inDC,0,0,mWidth,mHeight,
+                        0,0, 0,mHeight, mBase, &mInfo, DIB_RGB_COLORS);
+   }
 
    BITMAPINFO mInfo;
 };
@@ -37,7 +39,7 @@ public:
 
 enum
 {
-	timerFrame,
+   timerFrame,
 };
 
 class WindowsStage : public Stage
@@ -46,41 +48,42 @@ public:
    WindowsStage(HWND inHWND,uint32 inFlags)
    {
       mHWND = inHWND;
-		mDC = GetDC(mHWND);
+      mDC = GetDC(mHWND);
+		SetICMMode(mDC,ICM_OFF);
       mHandler = 0;
       mHandlerData = 0;
       mFlags = inFlags;
-		mBMP = 0;
-		CreateBMP();
+      mBMP = 0;
+      CreateBMP();
    }
-	~WindowsStage()
-	{
-		delete mBMP;
-	}
+   ~WindowsStage()
+   {
+      delete mBMP;
+   }
 
-	void CreateBMP()
-	{
-		if (mBMP)
-		{
-			delete mBMP;
-			mBMP = 0;
-		}
+   void CreateBMP()
+   {
+      if (mBMP)
+      {
+         delete mBMP;
+         mBMP = 0;
+      }
 
-		WINDOWINFO info;
+      WINDOWINFO info;
       info.cbSize = sizeof(WINDOWINFO);
 
       if (GetWindowInfo(mHWND,&info))
-		{
-			int w =  info.rcClient.right - info.rcClient.left;
-			int h =  info.rcClient.bottom - info.rcClient.top;
-			mBMP = new DIBSurface(w,h);
-		}
-	}
+      {
+         int w =  info.rcClient.right - info.rcClient.left;
+         int h =  info.rcClient.bottom - info.rcClient.top;
+         mBMP = new DIBSurface(w,h);
+      }
+   }
 
    void Flip()
    {
       if (mBMP)
-			mBMP->RenderTo(mDC);
+         mBMP->RenderTo(mDC);
    }
    void GetMouse()
    {
@@ -91,42 +94,42 @@ public:
       mHandlerData = inUserData;
    }
 
-	Surface *GetPrimarySurface()
-	{
-		return mBMP;
-	}
+   Surface *GetPrimarySurface()
+   {
+      return mBMP;
+   }
 
    void HandleEvent(Event &inEvent)
    {
-		switch(inEvent.mType)
-		{
-			case etRedraw:
-				Flip();
-				break;
-			case etResize:
-				CreateBMP();
-				break;
-			case etTimer:
-				if (inEvent.mValue==timerFrame)
-				{
-					FrameCheck();
-					return;
-				}
-				break;
-		}
+      switch(inEvent.mType)
+      {
+         case etRedraw:
+            Flip();
+            break;
+         case etResize:
+            CreateBMP();
+            break;
+         case etTimer:
+            if (inEvent.mValue==timerFrame)
+            {
+               FrameCheck();
+               return;
+            }
+            break;
+      }
 
       if (mHandler)
          mHandler(inEvent,mHandlerData);
    }
 
-	void FrameCheck()
+   void FrameCheck()
    {
       if (mHandler)
-		{
-		   Event evt(etNextFrame);
+      {
+         Event evt(etNextFrame);
          mHandler(evt,mHandlerData);
-		}
-	}
+      }
+   }
 
    // --- IRenderTarget Interface ------------------------------------------
    int Width()
@@ -150,32 +153,13 @@ public:
       return info.rcClient.bottom - info.rcClient.top;
    }
 
-   void ViewPort(int inOX,int inOY, int inW,int inH)
-   {
-   }
-   void BeginRender()
-   {
-   }
-   void Render(Graphics &inGraphics, const Transform &inTransform)
-   {
-   }
-   void Render(TextList &inTextList, const Transform &inTransform)
-   {
-   }
-   void Blit(Tile &inBitmap, int inOX, int inOY, double inScale, int Rotation)
-   {
-   }
-   void EndRender()
-   {
-   }
-
 
    HWND         mHWND;
-	HDC          mDC;
+   HDC          mDC;
    uint32       mFlags;
-	int          mFrameRate;
+   int          mFrameRate;
    EventHandler mHandler;
-	DIBSurface   *mBMP;
+   DIBSurface   *mBMP;
    void         *mHandlerData;
 };
 
@@ -194,7 +178,7 @@ public:
       mStage = new WindowsStage(inHandle,mFlags);
       mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
       ShowWindow(mHandle,true);
-		SetTimer(mHandle,timerFrame, 40,0);
+      SetTimer(mHandle,timerFrame, 40,0);
    }
    ~WindowsFrame()
    {
@@ -210,27 +194,27 @@ public:
             TerminateMainLoop();
             break;
          case WM_PAINT:
-				{
-				PAINTSTRUCT ps;
-				HDC dc;
-				BeginPaint(mHandle,&ps);
-				Event evt(etRedraw);
-				mStage->HandleEvent(evt);
-				EndPaint(mHandle,&ps);
-				}
+            {
+            PAINTSTRUCT ps;
+            HDC dc;
+            BeginPaint(mHandle,&ps);
+            Event evt(etRedraw);
+            mStage->HandleEvent(evt);
+            EndPaint(mHandle,&ps);
+            }
             break;
          case WM_SIZE:
-				{
-				Event evt(etResize);
-				mStage->HandleEvent(evt);
-				}
+            {
+            Event evt(etResize);
+            mStage->HandleEvent(evt);
+            }
             break;
          case WM_TIMER:
-				{
-				Event evt(etTimer);
-				evt.mValue = wParam;
-				mStage->HandleEvent(evt);
-				}
+            {
+            Event evt(etTimer);
+            evt.mValue = wParam;
+            mStage->HandleEvent(evt);
+            }
             break;
       }
 

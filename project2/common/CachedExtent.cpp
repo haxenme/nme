@@ -4,15 +4,15 @@ static int sgCachedExtentID = 1;
 
 // --- CachedExtent --------------------------------------
 
-Extent2DF CachedExtent::Get(const Matrix &inMatrix)
+Extent2DF CachedExtent::Get(const Transform &inTransform)
 {
 	mID = sgCachedExtentID++;
 	if (!mExtent.Valid())
 		return Extent2DF();
-	double ratio = mMatrix.m00!=0.0 ? inMatrix.m00/mMatrix.m00 :
-						mMatrix.m01!=0.0 ? inMatrix.m01/mMatrix.m01 : 1.0;
+	double ratio = mTransform.mMatrix.m00!=0.0 ? inTransform.mMatrix.m00/mTransform.mMatrix.m00 :
+						mTransform.mMatrix.m01!=0.0 ? inTransform.mMatrix.m01/mTransform.mMatrix.m01 : 1.0;
 	Extent2DF result = mExtent;
-	result.Transform(ratio, ratio, inMatrix.mtx, inMatrix.mty);
+	result.Transform(ratio, ratio, inTransform.mMatrix.mtx, inTransform.mMatrix.mty);
 	return result;
 }
 
@@ -38,9 +38,9 @@ bool CachedExtentRenderer::GetExtent(const Transform &inTransform,Extent2DF &ioE
 	for(int i=0;i<3;i++)
 	{
 		CachedExtent &cache = mExtentCache[i];
-		if (test==cache.mMatrix && inTransform.mScale9==cache.mScale9)
+		if (test==cache.mTransform.mMatrix && inTransform.mScale9==cache.mTransform.mScale9)
 		{
-			ioExtent.Add(cache.Get(inTransform.mMatrix));
+			ioExtent.Add(cache.Get(inTransform));
 			return true;
 		}
 		if (cache.mID<smallest)
@@ -52,11 +52,10 @@ bool CachedExtentRenderer::GetExtent(const Transform &inTransform,Extent2DF &ioE
 
 	// Not in cache - fill slot
 	CachedExtent &cache = mExtentCache[slot];
-	cache.mMatrix = inTransform.mMatrix;
-	cache.mScale9 = inTransform.mScale9;
+	cache.mTransform = inTransform;
 	GetExtent(cache);
 
-	cache.Get(inTransform.mMatrix);
+	cache.Get(inTransform);
 
 	ioExtent.Add(cache.mExtent);
 

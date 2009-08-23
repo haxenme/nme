@@ -68,13 +68,25 @@ void SimpleSurface::Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inD
 	}
 }
 
-SurfaceData SimpleSurface::Lock(const Rect &inRect,uint32 inFlags)
+void SimpleSurface::Clear(uint32 inColour)
 {
-	SurfaceData result;
+	for(int y=0;y<mHeight;y++)
+	{
+		uint32 *ptr = (uint32 *)(mBase + y*mStride);
+		for(int x=0;x<mWidth;x++)
+			*ptr++ = inColour;
+	}
+}
+
+
+RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
+{
+	RenderTarget result;
 	memset(&result,0,sizeof(result));
 
 	Rect r = inRect.Intersect( Rect(0,0,mWidth,mHeight) );
-	if (r.w>1 && r.h>1)
+	result.is_hardware = false;
+	if (r.w>0 && r.h>0)
 	{
        result.width = r.w;
        result.height = r.h;
@@ -85,7 +97,7 @@ SurfaceData SimpleSurface::Lock(const Rect &inRect,uint32 inFlags)
 	return result;
 }
 
-void SimpleSurface::Unlock()
+void SimpleSurface::EndRender()
 {
 }
 
