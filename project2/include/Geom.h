@@ -19,6 +19,7 @@ struct Rect
       x(inX0), y(inY0), w(inX1-inX0), h(inY1-inY0) { } 
 
 	Rect Intersect(const Rect &inOther) const;
+	Rect operator *(int inScale) const { return Rect(x*inScale,y*inScale,w*inScale,h*inScale); }
 	int x1() const { return x+w; }
 	int y1() const { return y+h; }
 
@@ -72,96 +73,62 @@ typedef Point2D<float> UserPoint;
 typedef Point2D<int>   ImagePoint;
 
 
-struct PointF16
+template<int FIXED>
+struct FixedPoint
 {
-   inline PointF16() {}
-   inline PointF16(int inX,int inY) :x(inX), y(inY) {}
-   inline PointF16(double inX,double inY)
+	enum { Bits = FIXED };
+
+   inline FixedPoint() {}
+   inline FixedPoint(int inX,int inY) :x(inX), y(inY) {}
+   inline FixedPoint(double inX,double inY)
    {
-      x =  (int)(inX * 65536.0 );
-      y =  (int)(inY * 65536.0 );
+      x =  (int)(inX * (double)(1<<Bits) );
+      y =  (int)(inY * (double)(1<<Bits));
    }
 
-   inline int X() const { return x>>16; };
-   inline int Y() const { return y>>16; };
-   inline int X(int inAABits) const { return x>>(16-inAABits); };
-   inline int Y(int inAABits) const { return y>>(16-inAABits); };
+   inline int X() const { return x>>Bits; };
+   inline int Y() const { return y>>Bits; };
+   inline int X(int inAABits) const { return x>>(Bits-inAABits); };
+   inline int Y(int inAABits) const { return y>>(Bits-inAABits); };
 
-   inline PointF16(const PointF16 &inRHS) :x(inRHS.x), y(inRHS.y) {}
-   inline PointF16(const ImagePoint &inRHS) :
-                x(inRHS.x<<16), y(inRHS.y<<16) { }
+   inline FixedPoint(const FixedPoint &inRHS) :x(inRHS.x), y(inRHS.y) {}
+   inline FixedPoint(const ImagePoint &inRHS) :
+                x(inRHS.x<<Fixed), y(inRHS.y<<Fixed) { }
    
-   inline bool operator==(const PointF16 inRHS) const
+   inline bool operator==(const FixedPoint inRHS) const
       { return x==inRHS.x && y==inRHS.y; }
 
-   inline bool operator!=(const PointF16 inRHS) const
+   inline bool operator!=(const FixedPoint inRHS) const
       { return x!=inRHS.x && y!=inRHS.y; }
 
 
-   inline PointF16 operator-(const PointF16 inRHS) const
-      { return PointF16(x-inRHS.x,y-inRHS.y); }
+   inline FixedPoint operator-(const FixedPoint inRHS) const
+      { return FixedPoint(x-inRHS.x,y-inRHS.y); }
 
-   inline PointF16 operator+(const PointF16 inRHS) const
-      { return PointF16(x+inRHS.x,y+inRHS.y); }
+   inline FixedPoint operator+(const FixedPoint inRHS) const
+      { return FixedPoint(x+inRHS.x,y+inRHS.y); }
 
-   inline PointF16 operator*(int inScalar) const
-      { return PointF16(x*inScalar,y*inScalar); }
+   inline FixedPoint operator*(int inScalar) const
+      { return FixedPoint(x*inScalar,y*inScalar); }
 
-   inline PointF16 operator/(int inDivisor) const
-      { return PointF16(x/inDivisor,y/inDivisor); }
+   inline FixedPoint operator/(int inDivisor) const
+      { return FixedPoint(x/inDivisor,y/inDivisor); }
 
-   inline PointF16 operator>>(int inShift) const
-      { return PointF16(x>>inShift,y>>inShift); }
+   inline FixedPoint operator>>(int inShift) const
+      { return FixedPoint(x>>inShift,y>>inShift); }
 
-   inline PointF16 operator<<(int inShift) const
-      { return PointF16(x<<inShift,y<<inShift); }
+   inline FixedPoint operator<<(int inShift) const
+      { return FixedPoint(x<<inShift,y<<inShift); }
 
-   inline void operator+=(const PointF16 &inRHS)
+   inline void operator+=(const FixedPoint &inRHS)
       { x+=inRHS.x, y+=inRHS.y; }
 
    int x;
    int y;
 };
 
+typedef FixedPoint<10> Fixed10;
 
-template<int AA_BITS_>
-struct PointAA
-{
-   enum { AABits = AA_BITS_ };
-   enum { ToAA = 16-AA_BITS_ };
-
-   inline PointAA() {}
-   inline PointAA(int inX,int inY) :x(inX), y(inY) {}
-
-   inline PointAA(const PointAA &inRHS) :x(inRHS.x), y(inRHS.y) {}
-
-   inline PointAA(const PointF16 &inRHS) :
-                x(inRHS.x>>ToAA), y(inRHS.y>>ToAA) { }
-   
-   inline PointAA operator-(const PointAA inRHS) const
-      { return PointAA(x-inRHS.x,y-inRHS.y); }
-
-   inline PointAA operator+(const PointAA inRHS) const
-      { return PointAA(x+inRHS.x,y+inRHS.y); }
-
-   inline PointAA operator*(int inScalar) const
-      { return PointAA(x*inScalar,y*inScalar); }
-
-   inline PointAA operator/(int inDivisor) const
-      { return PointAA(x/inDivisor,y/inDivisor); }
-
-   inline PointAA operator>>(int inShift) const
-      { return PointAA(x>>inShift,y>>inShift); }
-
-   inline PointAA operator<<(int inShift) const
-      { return PointAA(x<<inShift,y<<inShift); }
-
-   inline void operator+=(const PointAA &inRHS)
-      { x+=inRHS.x, y+=inRHS.y; }
-
-   int x;
-   int y;
-};
 
 template<typename T_>
 struct Extent2D

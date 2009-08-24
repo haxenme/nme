@@ -56,6 +56,66 @@ public:
    }
 
    // This assumes the values in the array are sorted.
+	template<typename X_, typename D_>
+   void Change(X_ inValue,D_ inDiff)
+   {
+      if (mSize==0)
+      {
+         mPtr[mSize++] = T_(inValue,inDiff);
+         return;
+      }
+
+      // Before/at start
+      if (mPtr[0]==inValue)
+      {
+			mPtr[0] += inDiff;
+		}
+		else if (mPtr[0]>inValue)
+		{
+         InsertAt(0, T_(inValue,inDiff) );
+      }
+      else
+      {
+         int last = mSize-1;
+         // After/on end
+         if (mPtr[last]==inValue)
+         {
+            mPtr[last] += inDiff;
+			}
+			else if (mPtr[last]<inValue)
+			{
+            Grow();
+            mPtr[mSize] = T_(inValue,inDiff);
+            ++mSize;
+         }
+         else
+         {
+            // between 0 ... last
+            int min = 0;
+            int max = last;
+
+            while(max>min+1)
+            {
+               int middle = (max+min+1)/2;
+               T_ &v = mPtr[middle];
+               if (v==inValue)
+               {
+                  v += inDiff;
+                  return;
+               }
+               if (v<inValue)
+                  min = middle;
+               else
+                  max = middle;
+            }
+            // Not found, must be between min and max (=min+1)
+            InsertAt(min+1,T_(inValue,inDiff) );
+         }
+      }
+   }
+
+
+   // This assumes the values in the array are sorted.
    void Toggle(T_ inValue)
    {
       if (mSize==0)

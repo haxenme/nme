@@ -18,6 +18,7 @@
   <file name="common/CachedExtent.cpp"/>
 
   <file name="internal/PolygonRenderer.cpp"/>
+  <file name="internal/AlphaMask.cpp"/>
 
   <file name="hardware-none/Stubs.cpp"/>
 </files>

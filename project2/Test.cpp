@@ -16,6 +16,10 @@ void Handler(Event &ioEvent,void *inStage)
 		AutoSurfaceRender render(surface,0,stage);
 		surface->Clear(0);
 		gState.mTransform.mMatrix.mtx = tx;
+		gState.mClipRect = Rect( surface->Width(), surface->Height() );
+		gState.mTransform.mAAFactor = 4;
+		gState.mAAClipRect = gState.mClipRect * gState.mTransform.mAAFactor;
+
 		gGraphics.Render(render.Target(),gState);
 	}
 }

@@ -317,12 +317,15 @@ struct Transform
 	   { return !(operator==(inRHS)); }
 
 	UserPoint      Apply(float inX, float inY) const;
+	Fixed10        ToImageAA(const UserPoint &inPoint) const;
 
    Rect           GetTargetRect(const Extent2DF &inExtent) const;
 
    Matrix3D       mMatrix3D;
    Matrix         mMatrix;
    Scale9         mScale9;
+
+	int            mAAFactor;
 
 	double         mStageScaleX;
 	double         mStageScaleY;
@@ -338,6 +341,8 @@ struct RenderState
 
 	// Viewport
    Rect           mClipRect;
+	// Scaled for speed....
+   Rect           mAAClipRect;
 
 	// Colour transform
    double         mAlpha;

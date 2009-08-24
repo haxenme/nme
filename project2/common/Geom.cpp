@@ -21,6 +21,7 @@ Transform::Transform()
 	mStageScaleY = 1.0;
 	mStageOX = 0.0;
 	mStageOY = 0.0;
+	mAAFactor = 1;
 }
 
 UserPoint Transform::Apply(float inX, float inY) const
@@ -39,16 +40,23 @@ UserPoint Transform::Apply(float inX, float inY) const
 bool Transform::operator==(const Transform &inRHS) const
 {
 	return mMatrix==inRHS.mMatrix && mScale9==inRHS.mScale9 &&
+          mAAFactor == inRHS.mAAFactor &&
           mStageScaleX==inRHS.mStageScaleX && mStageScaleY==inRHS.mStageScaleY;
+}
+
+Fixed10 Transform::ToImageAA(const UserPoint &inPoint) const
+{
+   return Fixed10( (inPoint.x * mStageScaleX + mStageOX)*(mAAFactor<<10),
+                   (inPoint.y * mStageScaleY + mStageOY)*(mAAFactor<<10) );
 }
 
 
 Rect Transform::GetTargetRect(const Extent2DF &inExtent) const
 {
-   return Rect( floor(inExtent.mMinX * mStageScaleX + mStageOX),
-                floor(inExtent.mMinY * mStageScaleY + mStageOY),
-                 ceil(inExtent.mMaxX * mStageScaleX + mStageOX),
-                 ceil(inExtent.mMaxY * mStageScaleY + mStageOY), true );
+   return Rect( floor((inExtent.mMinX * mStageScaleX + mStageOX)*mAAFactor),
+                floor((inExtent.mMinY * mStageScaleY + mStageOY)*mAAFactor),
+                 ceil((inExtent.mMaxX * mStageScaleX + mStageOX)*mAAFactor),
+                 ceil((inExtent.mMaxY * mStageScaleY + mStageOY)*mAAFactor), true );
 }
 
 
