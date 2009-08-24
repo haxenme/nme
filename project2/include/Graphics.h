@@ -318,9 +318,12 @@ struct Transform
 
 	UserPoint      Apply(float inX, float inY) const;
 
+   Rect           GetTargetRect(const Extent2DF &inExtent) const;
+
    Matrix3D       mMatrix3D;
    Matrix         mMatrix;
    Scale9         mScale9;
+
 	double         mStageScaleX;
 	double         mStageScaleY;
 	double         mStageOX;

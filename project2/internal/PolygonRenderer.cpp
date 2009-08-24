@@ -40,6 +40,15 @@ public:
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
+      Extent2DF extent;
+      CachedExtentRenderer::GetExtent(inState.mTransform,extent);
+
+      if (!extent.Valid())
+         return true;
+
+      // Transform to pixels ...
+      Rect rect = inState.mTransform.GetTargetRect(extent);
+
       SetTransform(inState.mTransform);
 
 		mTarget = &inTarget;
@@ -98,7 +107,7 @@ public:
       (*this.*ItLine)(p2,p3);
    }
 
-   inline void AddJoint(UserPoint p0, UserPoint perp1, UserPoint perp2)
+   inline void AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
    {
       (*this.*ItLine)(p0+perp1,p0+perp2);
       (*this.*ItLine)(p0-perp1,p0-perp2);
@@ -174,10 +183,13 @@ public:
                   UserPoint perp = (*point - prev).Perp(perp_len);
                   if (points>1)
                      AddJoint(prev,prev_perp,perp);
+                  else
+                     first_perp = perp;
 
                   // Add edges ...
                   AddLinePart(prev+perp,*point+perp,*point-perp,prev-perp);
                   prev = *point;
+                  prev_perp = perp;
                }
 
                points++;
@@ -186,8 +198,6 @@ public:
                {
                   AddJoint(first,prev_perp,first_perp);
                   points = 1;
-                  first_perp = prev_perp;
-                  first_perp = prev_perp;
                }
                point++;
                }

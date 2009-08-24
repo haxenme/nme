@@ -15,6 +15,8 @@ struct Rect
 {
    Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
    Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
+   Rect(int inX0,int inY0,int inX1,int inY1, bool inDummy) :
+      x(inX0), y(inY0), w(inX1-inX0), h(inY1-inY0) { } 
 
 	Rect Intersect(const Rect &inOther) const;
 	int x1() const { return x+w; }

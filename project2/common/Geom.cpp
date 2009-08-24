@@ -41,3 +41,15 @@ bool Transform::operator==(const Transform &inRHS) const
 	return mMatrix==inRHS.mMatrix && mScale9==inRHS.mScale9 &&
           mStageScaleX==inRHS.mStageScaleX && mStageScaleY==inRHS.mStageScaleY;
 }
+
+
+Rect Transform::GetTargetRect(const Extent2DF &inExtent) const
+{
+   return Rect( floor(inExtent.mMinX * mStageScaleX + mStageOX),
+                floor(inExtent.mMinY * mStageScaleY + mStageOY),
+                 ceil(inExtent.mMaxX * mStageScaleX + mStageOX),
+                 ceil(inExtent.mMaxY * mStageScaleY + mStageOY), true );
+}
+
+
+
