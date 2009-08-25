@@ -27,8 +27,16 @@ typedef QuickVec<Transition> Transitions;
 
 struct SpanRect
 {
-   SpanRect(const Rect &inRect) : mRect(inRect)
+   SpanRect(const Rect &inRect,int inAA)
    {
+      // Round rect to non aa-boundary ...
+      mAA =  inAA;
+      int mask = inAA-1;
+      mRect.x = inRect.x & ~mask;
+      mRect.y = inRect.y & ~mask;
+      mRect.w = (( inRect.x1() + mask - 1) & ~mask) - mRect.x;
+      mRect.h = (( inRect.y1() + mask - 1) & ~mask) - mRect.y;
+
       mTransitions = new Transitions[mRect.h];
       mMinX = (inRect.x - 1)<<10;
       mMaxX = (inRect.x1())<<10;
@@ -58,7 +66,7 @@ struct SpanRect
       // Make p1.y numerically greater than inP0.y
       int y0 = inP0.Y() - mRect.y;
       int y1 = inP1.Y() - mRect.y;
-      int dy = y0-y1;
+      int dy = y1-y0;
 
       if (dy==0)
          return;
@@ -109,20 +117,88 @@ struct SpanRect
       }
    }
 
+   void BuildAlphaRuns4(Transitions *inTrans, AlphaRuns &outRuns)
+   {
+   }
+
+
+   void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns)
+   {
+      int alpha = 0;
+      int last_x = 0;
+      Transition *end = inTrans.end();
+      int total = 0;
+      for(Transition *t = inTrans.begin();t!=end;++t)
+      {
+         if (t->val)
+         {
+            if (t->x>=mRect.x1())
+            {
+               if (alpha>0 && last_x < t->x)
+                  outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
+               return;
+            }
+
+            if (alpha>0 && last_x < t->x)
+               outRuns.push_back( AlphaRun(last_x,t->x,alpha) );
+
+            last_x = std::max(t->x,mRect.x);
+
+            // Winding rule ..
+            total+=t->val;
+            alpha = (total) ? 256 : 0;
+         }
+      }
+      if (alpha>0)
+        outRuns.push_back( AlphaRun(last_x,mRect.y1(),alpha) );
+   }
+
 	AlphaMask *CreateMask()
 	{
-		AlphaMask *mask = new AlphaMask();
+      Rect rect = mRect/mAA;
+		AlphaMask *mask = new AlphaMask(rect);
+      Transitions *t = mTransitions;
+      for(int y=0;y<rect.h;y++)
+      {
+         switch(mAA)
+         {
+            case 1:
+               BuildAlphaRuns(*t,mask->mLines[y]);
+               break;
+            case 4:
+               BuildAlphaRuns4(t,mask->mLines[y]);
+               break;
+         }
+         t+=mAA;
+      }
 		return mask;
 	}
 
  
    Transitions *mTransitions;
+   int         mAA;
    int         mMinX;
    int         mMaxX;
    Rect        mRect;
 };
 
 
+void TestRender(const RenderTarget &inTarget, const AlphaMask *inMask)
+{
+   uint32 col = 0xff00ff00;
+   for(int y=0;y<inMask->mRect.h;y++)
+   {
+      uint32 *row = (uint32 *)(inTarget.data + (y+inMask->mRect.y)*inTarget.stride);
+      const AlphaRuns &runs = inMask->mLines[y];
+      for(int r=0;r<runs.size();r++)
+      {
+         const AlphaRun &run = runs[r];
+         for(int x=run.mX0; x<run.mX1; x++)
+            row[x] = col;
+      }
+   }
+
+}
 
 
 
@@ -194,15 +270,17 @@ public:
          SetTransform(inState.mTransform);
 
          // TODO: make visible_pixels a bit bigger ?
-         mSpanRect = new SpanRect(visible_pixels);
+         mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
 
          mTarget = &inTarget;
          Iterate(itCreateRenderer,inState.mTransform.mMatrix);
          mTarget = 0;
 
          mAlphaMask = mSpanRect->CreateMask();
-
+         mAlphaMask->SetValidArea( ImagePoint(rect.x,rect.y), visible_pixels, mTransform);
          delete mSpanRect;
+
+         TestRender(inTarget,mAlphaMask);
       }
 
       return true;
@@ -253,7 +331,7 @@ public:
    inline void AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
    {
       (*this.*ItLine)(p0+perp1,p0+perp2);
-      (*this.*ItLine)(p0-perp1,p0-perp2);
+      (*this.*ItLine)(p0-perp2,p0-perp1);
    }
 
    inline void EndCap(UserPoint p0, UserPoint perp)

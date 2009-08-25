@@ -20,6 +20,7 @@ struct Rect
 
 	Rect Intersect(const Rect &inOther) const;
 	Rect operator *(int inScale) const { return Rect(x*inScale,y*inScale,w*inScale,h*inScale); }
+	Rect operator /(int inScale) const { return Rect(x/inScale,y/inScale,w/inScale,h/inScale); }
 	int x1() const { return x+w; }
 	int y1() const { return y+h; }
 

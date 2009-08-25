@@ -46,8 +46,8 @@ bool Transform::operator==(const Transform &inRHS) const
 
 Fixed10 Transform::ToImageAA(const UserPoint &inPoint) const
 {
-   return Fixed10( (inPoint.x * mStageScaleX + mStageOX)*(mAAFactor<<10),
-                   (inPoint.y * mStageScaleY + mStageOY)*(mAAFactor<<10) );
+   return Fixed10( (inPoint.x * mStageScaleX + mStageOX)*mAAFactor,
+                   (inPoint.y * mStageScaleY + mStageOY)*mAAFactor );
 }
 
 

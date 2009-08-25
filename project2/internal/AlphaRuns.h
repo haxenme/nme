@@ -27,12 +27,10 @@ typedef std::vector<AlphaRuns> Lines;
 
 struct AlphaMask
 {
-   AlphaMask()
-	{
-	}
+   AlphaMask(const Rect &inRect) : mRect(inRect), mLines(inRect.h) { }
 
+   Rect      mRect;
 	Lines     mLines;
-	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels );
 
 	/*
 	                Screen
@@ -46,7 +44,8 @@ struct AlphaMask
 		       |                 |
 	          +-----------------
 
-	  All values are integerized to the AA grid (by multiplying the the AA factor)
+	  All values below are integerized to the AA grid (by multiplying the the AA factor)
+      and are used to determine if the mask can be reused.
 
      Pos (mOx,mOy) is the position of the (unclipped) extent when these alpha run
 	   were calculated.  The valid rect coordinates are with respect to the position;
@@ -62,10 +61,18 @@ struct AlphaMask
 	   by the difference in positions of the extents.
 
 	*/
-	int       mOx;
-	int       mOy;
-	Rect      mValidRect;
-	Transform mTransform;
+
+   void SetValidArea(const ImagePoint &inPos, const Rect &inRect, const Transform &inTrans)
+   {
+      mAAPos = inPos;
+      mAAValidRect = inRect;
+      mTransform = inTrans;
+   }
+	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels );
+
+	ImagePoint mAAPos;
+	Rect       mAAValidRect;
+	Transform  mTransform;
 
 };
 
