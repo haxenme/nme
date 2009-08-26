@@ -183,6 +183,7 @@ struct SpanRect
 };
 
 
+/*
 void TestRender(const RenderTarget &inTarget, const AlphaMask *inMask)
 {
    uint32 col = 0xff00ff00;
@@ -199,7 +200,7 @@ void TestRender(const RenderTarget &inTarget, const AlphaMask *inMask)
    }
 
 }
-
+*/
 
 
 
@@ -208,16 +209,25 @@ class PolygonRender : public CachedExtentRenderer
 public:
    enum IterateMode { itGetExtent, itCreateRenderer };
 
-   PolygonRender()
+   PolygonRender(IGraphicsFill *inFill)
    {
       mBuildExtent = 0;
-      mTarget = 0;
       mAlphaMask = 0;
+		switch(inFill->GetType())
+		{
+			case gdtSolidFill:
+				mFiller = Filler::Create(inFill->AsSolidFill());
+				break;
+			default:
+				printf("Fill type not implemented\n");
+				mFiller = 0;
+		}
    }
 
    ~PolygonRender()
    {
       delete mAlphaMask;
+		delete mFiller;
    }
 
    void GetExtent(CachedExtent &ioCache)
@@ -272,16 +282,14 @@ public:
          // TODO: make visible_pixels a bit bigger ?
          mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
 
-         mTarget = &inTarget;
          Iterate(itCreateRenderer,inState.mTransform.mMatrix);
-         mTarget = 0;
 
          mAlphaMask = mSpanRect->CreateMask();
          mAlphaMask->SetValidArea( ImagePoint(rect.x,rect.y), visible_pixels, mTransform);
          delete mSpanRect;
-
-         TestRender(inTarget,mAlphaMask);
       }
+
+      mFiller->Fill(*mAlphaMask,0,0,inTarget,inState);
 
       return true;
    }
@@ -292,8 +300,8 @@ public:
 
    Transform           mTransform;
    QuickVec<UserPoint> mTransformed;
+	Filler              *mFiller;
    Extent2DF           *mBuildExtent;
-   const RenderTarget  *mTarget;
    SpanRect            *mSpanRect;
    AlphaMask           *mAlphaMask;
 };
@@ -307,7 +315,7 @@ class LineRender : public PolygonRender
    ItFunc ItLine;
 
 public:
-   LineRender(LineData *inLine) : mLineData(inLine) { }
+   LineRender(LineData *inLine) : PolygonRender(inLine->mStroke->fill ), mLineData(inLine) { }
 
    void Destroy() { delete this; }
 
@@ -343,7 +351,6 @@ public:
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
                                      &LineRender::BuildSolid;
-                                     //&LineRender::TestRender;
 
       // Convert line data to solid data
       GraphicsStroke &stroke = *mLineData->mStroke;
