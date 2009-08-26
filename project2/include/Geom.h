@@ -24,6 +24,26 @@ struct Rect
 	int x1() const { return x+w; }
 	int y1() const { return y+h; }
 
+   void ClipY(int &ioY0, int &ioY1) const
+	{
+		if (ioY0 < y) ioY0 = y;
+		else if (ioY0>y+h) ioY0 = y+h;
+
+		if (ioY1 < y) ioY1 = y;
+		else if (ioY1>y+h) ioY1 = y+h;
+	}
+
+   void ClipX(int &ioX0, int &ioX1) const
+	{
+		if (ioX0 < x) ioX0 = x;
+		else if (ioX0>x+w) ioX0 = x+w;
+
+		if (ioX1 < x) ioX1 = x;
+		else if (ioX1>x+w) ioX1 = x+w;
+	}
+
+
+
    int x,y;
    int w,h;
 };

@@ -1,21 +1,22 @@
 #ifndef INTERNAL_RENDER_H
 #define INTERNAL_RENDER_H
 
+#include "AlphaMask.h"
+#include <Pixel.h>
+
 /*
 Dest:
-  MainRGBOrder
+  HasAlpha
+
   SetRow(int)
   SetX(int)
-  HasAlpha
   Get()
   SetInc( XRGB )
 
 Src:
-   MainRGBOrder(bool inDestOrder)
-   PreTransformed
    SetRow(int)
    SetX(int)
-   GetInc( XRGB )
+   GetInc( )
 
 
 RenderState:
@@ -34,13 +35,13 @@ Blender
 
 
 template<typename SOURCE_, typename DEST_, typename BLEND_>
-void Render(AlphaMask *inMask, SOURCE_ &inSource, DEST_ &outDest, BLEND_ &blend,
+void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, BLEND_ &inBlend,
             const Rect &inClip, int inTX, int inTY)
 {
-   int y = inMask->mRect.y + inTY;
-   const AlphaRuns *lines = &mLines[0] - y;
+   int y = inMask.mRect.y + inTY;
+   const AlphaRuns *lines = &inMask.mLines[0] - y;
 
-   int y1 = inMask->mRect.y1() + inTY;
+   int y1 = inMask.mRect.y1() + inTY;
    inClip.ClipY(y,y1);
 
    for(; y<y1; y++)
@@ -64,38 +65,80 @@ void Render(AlphaMask *inMask, SOURCE_ &inSource, DEST_ &outDest, BLEND_ &blend,
             inClip.ClipX(x0,x1);
 
             outDest.SetX(x0);
-            mSource.SetPos(x0-inTX,sy);
+            inSource.SetPos(x0-inTX,sy);
             int alpha = run->mAlpha;
 
             while(x0++<x1)
-               blender.Blend(dest,source,alpha);
+               inBlend.Blend<DEST_::HasAlpha>(outDest,inSource,alpha);
             ++run;
          }
       }
    }
 };
 
+template<bool HAS_ALPHA>
+struct DestSurface32
+{
+	enum { HasAlpha = HAS_ALPHA };
+
+	DestSurface32(const RenderTarget &inTarget) : mTarget(inTarget) { }
+
+   void SetRow(int inY) { mRow = (ARGB *)( mTarget.data + mTarget.stride*inY ); }
+   void SetX(int inX) { mPtr = mRow + inX; }
+   const ARGB Get() { return *mPtr; }
+   void SetInc( ARGB inCol ) { *mPtr++ = inCol; }
+
+	ARGB *mRow;
+	ARGB *mPtr;
+	const RenderTarget &mTarget;
+};
+
 
 // 1, 2 ro 3 of these
 template<typename SOURCE_, typename BLEND_>
-void Render(AlphaMask *inMask, SOURCE_ &inSource, RenderTarget &outDest, BLEND_ &blend,
-            const Rect &inClip, int inTX, int inTY)
+void Render(const AlphaMask &inMask, SOURCE_ &inSource, const RenderTarget &inDest, BLEND_ &inBlend,
+            const Rect &inClipRect, int inTX, int inTY)
 {
-   switch(outDest)
-   {
-      case ARGB:
-      case XRGB:
-         Render( );
-      case RGB565:
-         Render( );
-      case Alpha:
-         Render( );
-   }
+	if (inDest.format & pfHasAlpha)
+      DestRender(inMask, inSource, DestSurface32<true>(inDest), inBlend, inClipRect, inTX, inTY);
+	else
+      DestRender(inMask, inSource, DestSurface32<false>(inDest), inBlend, inClipRect, inTX, inTY);
 }
 
 
+template<bool SWAP_RB>
+struct NormalBlender
+{
+	template<bool DEST_ALPHA,typename DEST, typename SRC>
+   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
+   {
+		ARGB src = inSrc.GetInc();
+		src.a = inAlpha;
+		ARGB dest = inDest.Get();
+		dest.Blend<SWAP_RGB,DEST_ALPHA>(src);
+		inDest.SetInc(dest);
+	}
+};
+
+template<bool SWAP_RB>
+struct NormalBlenderAlphaLut
+{
+	NormalBlenderAlphaLut(const Uint8 *inLUT) : mAlphaLut(inLUT) { }
+	const Uint8 *mAlphaLut;
+
+	template<bool DEST_ALPHA,typename DEST, typename SRC>
+   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
+   {
+		ARGB src = inSrc.GetInc();
+		src.a = mAlphaLut[inAlpha];
+		ARGB dest = inDest.Get();
+		dest.Blend<SWAP_RGB,DEST_ALPHA>(src);
+		inDest.SetInc(dest);
+	}
+};
 
 
+# if 0
 // 4 of these
 template<bool ALPHA_LUT, bool DEST_HAS_ALPHA>
 struct NormalBlender
@@ -121,6 +164,7 @@ struct NormalBlender
       }
    }
 };
+
 
 // 2 of these
 template<bool AlphaLUT>
@@ -240,7 +284,10 @@ class BitmapFillRenderer
 };
 
 
+#endif
 
+
+#endif
 
 
 

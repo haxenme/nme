@@ -1,5 +1,5 @@
-#ifndef ALPHA_RUNS_H
-#define ALPHA_RUNS_H
+#ifndef ALPHA_MASK_H
+#define ALPHA_MASK_H
 
 #include <Geom.h>
 #include <Graphics.h>
@@ -68,7 +68,8 @@ struct AlphaMask
       mAAValidRect = inRect;
       mTransform = inTrans;
    }
-	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels );
+	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels,
+					    int &outTX, int &outTY);
 
 	ImagePoint mAAPos;
 	Rect       mAAValidRect;

@@ -19,6 +19,7 @@
 
   <file name="internal/PolygonRenderer.cpp"/>
   <file name="internal/AlphaMask.cpp"/>
+  <file name="internal/SolidFill.cpp"/>
 
   <file name="hardware-none/Stubs.cpp"/>
 </files>

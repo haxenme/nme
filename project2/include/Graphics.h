@@ -16,13 +16,13 @@ enum SurfaceAPIType  { satInternal, satSDL, satCairo };
 
 enum PixelFormat
 {
-   pfXRGB = 0x00,
-   pfARGB = 0x01,
-   pfXBGR = 0x02,
-   pfABGR = 0x03,
+   pfXRGB     = 0x00,
+   pfARGB     = 0x01,
+   pfXRGBSwap = 0x02,
+   pfARGBSwap = 0x03,
 
    pfHasAlpha = 0x01,
-   pfBGROrder = 0x02,
+   pfSwapRB   = 0x02,
 };
 
 

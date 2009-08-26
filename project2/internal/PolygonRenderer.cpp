@@ -1,7 +1,7 @@
 #include <Graphics.h>
 #include <CachedExtent.h>
 #include <Geom.h>
-#include "AlphaRuns.h"
+#include "AlphaMask.h"
 
 typedef QuickVec<int> IQuickSet;
 
@@ -269,7 +269,9 @@ public:
       Rect visible_pixels = rect.Intersect(inState.mAAClipRect);
 
       // Check to see if AlphaMask is invalid...
-      if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels))
+		int tx=0;
+		int ty=0;
+      if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
       {
          delete mAlphaMask;
          mAlphaMask = 0;
@@ -289,7 +291,7 @@ public:
          delete mSpanRect;
       }
 
-      mFiller->Fill(*mAlphaMask,0,0,inTarget,inState);
+      mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
 
       return true;
    }
