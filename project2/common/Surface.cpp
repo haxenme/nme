@@ -1,5 +1,32 @@
 #include <Graphics.h>
 
+bool sgColourOrderSet = false;
+
+int sgC0Shift = 0;
+int sgC1Shift = 8;
+int sgC2Shift = 16;
+bool sgC0IsRed = true;
+
+void HintColourOrder(bool inRedFirst)
+{
+   if (!sgColourOrderSet)
+   {
+      sgColourOrderSet = true;
+      sgC0IsRed = inRedFirst;
+      if (inRedFirst)
+      {
+         sgC0Shift = 0;
+         sgC2Shift = 16;
+      }
+      else
+      {
+         sgC0Shift = 16;
+         sgC2Shift = 0;
+      }
+   }
+}
+
+
 // --- Surface -------------------------------------------------------
 
 

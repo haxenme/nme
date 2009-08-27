@@ -113,9 +113,9 @@ struct NormalBlender
    void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
    {
 		ARGB src = inSrc.GetInc();
-		src.a = inAlpha;
+		src.a = (src.a * inAlpha)>>8;
 		ARGB dest = inDest.Get();
-		dest.Blend<SWAP_RGB,DEST_ALPHA>(src);
+		dest.Blend<SWAP_RB,DEST_ALPHA>(src);
 		inDest.SetInc(dest);
 	}
 };

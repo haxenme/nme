@@ -230,6 +230,8 @@ public:
 		delete mFiller;
    }
 
+   void Destroy() { delete this; }
+
    void GetExtent(CachedExtent &ioCache)
    {
       mBuildExtent = &ioCache.mExtent;
@@ -295,6 +297,10 @@ public:
 
       return true;
    }
+   void BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
+   {
+		mSpanRect->Line( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
+   }
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual QuickVec<float> &GetData() = 0;
@@ -319,17 +325,12 @@ class LineRender : public PolygonRender
 public:
    LineRender(LineData *inLine) : PolygonRender(inLine->mStroke->fill ), mLineData(inLine) { }
 
-   void Destroy() { delete this; }
-
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
       mBuildExtent->Add(inP0);
    }
 
-   void BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
-   {
-		mSpanRect->Line( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
-   }
+
 
 
    inline void AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3)
@@ -434,6 +435,7 @@ public:
                break;
 
             case pcCurveTo:
+               point += 2;
                break;
          }
       }
@@ -446,6 +448,82 @@ public:
 };
 
 
+class SolidRender :public PolygonRender
+{
+   SolidData *mSolidData;
+
+public:
+   SolidRender(SolidData *inSolid) : PolygonRender(inSolid->mFill ), mSolidData(inSolid) { }
+
+
+   void Iterate(IterateMode inMode,const Matrix &)
+   {
+      int n = mSolidData->command.size();
+      UserPoint *point = &mTransformed[0];
+
+      if (inMode==itGetExtent)
+      {
+         for(int i=0;i<n;i++)
+         {
+            switch(mSolidData->command[i])
+            {
+               case pcWideLineTo:
+               case pcWideMoveTo:
+                  point++;
+               case pcLineTo:
+               case pcMoveTo:
+                  mBuildExtent->Add(*point);
+                  point++;
+                  break;
+               case pcCurveTo:
+                  point += 2;
+                  break;
+            }
+         }
+      }
+      else
+      {
+         UserPoint last_move;
+         UserPoint last_point;
+         int points = 0;
+
+         for(int i=0;i<n;i++)
+         {
+            switch(mSolidData->command[i])
+            {
+               case pcWideMoveTo:
+                  point++;
+               case pcMoveTo:
+                  if (points>1)
+                     BuildSolid(last_point,last_move);
+                  points = 1;
+                  last_point = *point++;
+                  last_move = last_point;
+                  break;
+
+               case pcWideLineTo:
+                  point++;
+               case pcLineTo:
+                  if (points>0)
+                     BuildSolid(last_point,*point);
+                  last_point = *point++;
+                  points++;
+                  break;
+
+               case pcCurveTo:
+                  break;
+            }
+         }
+      }
+   }
+
+   QuickVec<float> &GetData()
+   {
+      return mSolidData->data;
+   }
+};
+
+
 
 Renderer *Renderer::CreateSoftware(LineData *inLineData)
 {
@@ -454,7 +532,7 @@ Renderer *Renderer::CreateSoftware(LineData *inLineData)
 
 Renderer *Renderer::CreateSoftware(SolidData *inSolidData)
 {
-   return 0;
+   return new SolidRender(inSolidData);
 }
 
 Renderer *Renderer::CreateSoftware(TriangleData *inTriangleData)

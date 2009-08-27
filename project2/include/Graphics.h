@@ -297,7 +297,7 @@ struct TriangleData : IRenderData
 
 // Blender = blend mode + (colour transform + alpha)
 
-enum BlendMode { bmNormal, nmAdd };
+enum BlendMode { bmNormal, bmCopy, bmAdd };
 
 class ColorTransform
 {

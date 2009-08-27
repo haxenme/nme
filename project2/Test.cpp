@@ -32,6 +32,7 @@ int main(int inargc,char **arvg)
 	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
 
 	gGraphics.lineStyle(5,0xff0000);
+	gGraphics.beginFill(0xffffff);
 	gGraphics.moveTo(100,100);
 	gGraphics.lineTo(100,300);
 	gGraphics.lineTo(300,300);

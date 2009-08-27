@@ -19,18 +19,34 @@ struct ARGB
 
    inline void SetRGB(int inVal)
    {
+      c0 = (inVal>>16) & 0xff;
+      c1 = (inVal>>8) & 0xff;
+      c2 = (inVal) & 0xff;
+		a = 255;
+   }
+   inline void SetRGBA(int inVal)
+   {
+      c0 = (inVal>>16) & 0xff;
+      c1 = (inVal>>8) & 0xff;
+      c2 = (inVal) & 0xff;
+		a = (inVal>>24);
+   }
+
+   inline void SetRGBNative(int inVal)
+   {
       c0 = (inVal>>sgC0Shift) & 0xff;
       c1 = (inVal>>sgC1Shift) & 0xff;
       c2 = (inVal>>sgC2Shift) & 0xff;
 		a = 255;
    }
-   inline void SetRGBA(int inVal)
+   inline void SetRGBANative(int inVal)
    {
       c0 = (inVal>>sgC0Shift) & 0xff;
       c1 = (inVal>>sgC1Shift) & 0xff;
       c2 = (inVal>>sgC2Shift) & 0xff;
 		a = (inVal>>24);
    }
+
 
 	inline void SetSwapRGB(const ARGB &inRGB)
 	{
@@ -72,15 +88,15 @@ struct ARGB
 				int f = 256-A;
 				if (SWAP_RB)
 				{
-				   c0 = (A*inVal.c0 + f*c0)/alpha16;
-				   c1 = (A*inVal.c1 + f*c1)/alpha16;
-				   c2 = (A*inVal.c2 + f*c2)/alpha16;
+				   c0 = (A*inVal.c0 + f*c0)>>8;
+				   c1 = (A*inVal.c1 + f*c1)>>8;
+				   c2 = (A*inVal.c2 + f*c2)>>8;
 				}
 				else
 				{
-				   c0 = (A*inVal.c2 + f*c0)/alpha16;
-				   c1 = (A*inVal.c1 + f*c1)/alpha16;
-				   c2 = (A*inVal.c0 + f*c2)/alpha16;
+				   c0 = (A*inVal.c2 + f*c0)>>8;
+				   c1 = (A*inVal.c1 + f*c1)>>8;
+				   c2 = (A*inVal.c0 + f*c2)>>8;
 				}
 			}
 			else
