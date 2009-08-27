@@ -1,4 +1,9 @@
+#include <math.h>
 #include <Matrix.h>
+
+#ifndef M_PI
+#define M_PI 3.141592653589793238462643
+#endif
 
 
 UserPoint Matrix::Apply(float inX,float inY) const
@@ -114,6 +119,33 @@ void Matrix::MatchTransform(double inX,double inY,
 }
 
 
+Matrix &Matrix::Translate(double inX,double inY)
+{
+	mtx += inX;
+	mty += inY;
+	return *this;
+}
+
+Matrix &Matrix::Rotate(double inDeg)
+{
+	double c = cos(inDeg * (M_PI/180.0));
+	double s = sin(inDeg * (M_PI/180.0));
+	double m00_  = m00 * c + m10 * s;
+	double m01_  = m01 * c + m11 * s;
+	double m10_  = m00 * -s + m10 * c;
+	double m11_  = m01 * -s + m11 * c;
+	double tx_ = c*mtx + s*mty;
+	double ty_ = -s*mtx + c*mty;
+
+	m00 = m00_;
+	m01 = m01_;
+	m10 = m10_;
+	m11 = m11_;
+	mtx = tx_;
+	mty = ty_;
+
+	return *this;
+}
 
 
 

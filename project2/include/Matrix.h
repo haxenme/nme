@@ -37,6 +37,9 @@ public:
       return true;
    }
 
+	Matrix &Rotate(double inDeg);
+	Matrix &Translate(double inTX, double inTY);
+
 
    inline bool operator==(const Matrix &inRHS) const
       { return !memcmp(this,&inRHS,sizeof(*this)); }
