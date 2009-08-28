@@ -34,8 +34,8 @@ struct SpanRect
       int mask = inAA-1;
       mRect.x = inRect.x & ~mask;
       mRect.y = inRect.y & ~mask;
-      mRect.w = (( inRect.x1() + mask - 1) & ~mask) - mRect.x;
-      mRect.h = (( inRect.y1() + mask - 1) & ~mask) - mRect.y;
+      mRect.w = (( inRect.x1() + mask) & ~mask) - mRect.x;
+      mRect.h = (( inRect.y1() + mask) & ~mask) - mRect.y;
 
       mTransitions = new Transitions[mRect.h];
       mMinX = (inRect.x - 1)<<10;
@@ -53,15 +53,16 @@ struct SpanRect
       if (denom==0)
          return 0;
       int64 ratio = (inVec.x<<inBits)/denom;
-		if (ratio< -(1<<11)) return -(1<<11);
-		if (ratio>  (1<<11)) return  (1<<11);
+		if (ratio< -(1<<21)) return -(1<<21);
+		if (ratio>  (1<<21)) return  (1<<21);
       return ratio;
    }
 
    void Line(Fixed10 inP0, Fixed10 inP1)
    {
-		if (inP0.x>mMaxX && inP0.y>mMaxX)
-			return;
+      // All right ...
+		if (inP0.x>mMaxX && inP1.x>mMaxX)
+         return;
 
       // Make p1.y numerically greater than inP0.y
       int y0 = inP0.Y() - mRect.y;
@@ -83,12 +84,12 @@ struct SpanRect
          return;
 
 		// Just draw a vertical line down the left...
-		if (inP0.x<mMinX && inP0.y>mMinX)
+		if (inP0.x<=mMinX && inP1.x<=mMinX)
 		{
-			y0 = std::min(y0,0);
-			y1 = std::max(y1,mRect.h);
-			for(int y=y0;y<y1;y++)
-				mTransitions[y].Change(mRect.x-1,diff);
+			y0 = std::max(y0,0);
+			y1 = std::min(y1,mRect.h);
+			for(;y0<y1;y0++)
+				mTransitions[y0].Change(mMinX,diff);
 			return;
 		}
 
@@ -106,7 +107,7 @@ struct SpanRect
          x-= y0 * dx_dy;
          y0 = 0;
       }
-      int last = y1>mRect.h ? mRect.h : y1;
+      int last = std::min(y1,mRect.h);
 
       for(; y0<last; y0++)
       {
@@ -125,7 +126,7 @@ struct SpanRect
    void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns)
    {
       int alpha = 0;
-      int last_x = 0;
+      int last_x = mRect.x;
       Transition *end = inTrans.end();
       int total = 0;
       for(Transition *t = inTrans.begin();t!=end;++t)
@@ -144,13 +145,13 @@ struct SpanRect
 
             last_x = std::max(t->x,mRect.x);
 
-            // Winding rule ..
             total+=t->val;
+            // Winding rule ..
             alpha = (total) ? 256 : 0;
          }
       }
       if (alpha>0)
-        outRuns.push_back( AlphaRun(last_x,mRect.y1(),alpha) );
+        outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
    }
 
 	AlphaMask *CreateMask()

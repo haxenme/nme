@@ -38,6 +38,8 @@ template<typename SOURCE_, typename DEST_, typename BLEND_>
 void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, BLEND_ &inBlend,
             const Rect &inClip, int inTX, int inTY)
 {
+   if (inMask.mLines.empty())
+      return;
    int y = inMask.mRect.y + inTY;
    const AlphaRuns *lines = &inMask.mLines[0] - y;
 
