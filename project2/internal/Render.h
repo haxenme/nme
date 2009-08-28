@@ -209,35 +209,6 @@ struct SpecialTransformBlender
 // 10 different blenders - too many?
 
 
-class SolidFillRenderer
-{
-   void Render(AlphaMask *inMask, RenderTarget *inTarget, RenderState &inState)
-   {
-      if (inTarget->IsMainRGBORder())
-         mMatchingColour = mColour;
-
-      mColour.a = inState.GetAlphaRamp()[mColour.a];
-      switch(inState.mBlendMode)
-      {
-         case bmCopy : Render(inMask, *this, inTarget, CopyBlender() ); break;
-         case bmNormal :
-               if (dest_has_alpha)
-                  Render(inMask, *this, inTarget, NormalBlender<false,true>() ); break;
-               else
-                  Render(inMask, *this, inTarget, NormalBlender<false,false>() ); break;
-         default:
-             Render(inMask, *this, inTarget, SpecialBlender(inState.mBlendMode,outDest.HasAlpha(),false) );
-      }
-   }
-
-   ARGB mColour;
-   ARGB mMatchingColour;
-};
-
-
-
-
-
 
 class BitmapFillRenderer
 {

@@ -24,6 +24,98 @@ struct Transition
 
 typedef QuickVec<Transition> Transitions;
 
+template<int BITS>
+struct AlphaIterator
+{
+   enum { Size = (1<<BITS) };
+   enum { Mask = ~((1<<BITS) - 1) };
+
+   AlphaIterator()
+   {
+      mEnd = mPtr = 0;
+   }
+
+   void Init(int &outXMin)
+   {
+      if (!mRuns.empty())
+      {
+         mPtr = &mRuns[0];
+         mEnd = mPtr + mRuns.size();
+
+         int x = mPtr->mX0 & Mask;
+         if (x<outXMin) outXMin = x;
+      }
+   }
+
+   // Move along until we hit x, calcualte alpha and update whn next change occurs
+   int SetX(int inX, int &outNextX)
+   {
+      // zip along until we hit x
+      do
+      {
+         if (mPtr==mEnd)
+            return 0;
+         if (mPtr->mX1 > inX)
+            break;
+         mPtr++;
+      } while(1);
+
+      int box = inX + Size;
+      if (mPtr->mX0>=box)
+      {
+         int next = mPtr->mX0 & Mask;
+         if (outNextX>next)
+            outNextX = next;
+         return 0;
+      }
+
+
+      int next;
+      if ( mPtr->mX0 > inX)
+         next = inX + Size;
+      else
+      {
+         next = mPtr->mX1 & Mask;
+         if (next==inX)
+           next += Size;
+      }
+      if (outNextX>next)
+         outNextX = next;
+
+      // Calculate number of pixels overlapping...
+      int alpha = inX - mPtr->mX0;
+      if (alpha>0) alpha = 0;
+
+
+      if (mPtr->mX1 < box)
+      {
+         alpha += mPtr->mX1  - inX;
+         // Check next span too ...
+         if (mPtr+1<mEnd)
+         {
+            AlphaRun &next = mPtr[1];
+            if (next.mX0<box)
+            {
+               if (next.mX1 < box)
+                  alpha += next.mX1 - next.mX0;
+               else
+                  alpha += box - next.mX0;
+            }
+         }
+      }
+      else
+         alpha += Size;
+
+      return alpha;
+   }
+
+   AlphaRuns mRuns;
+   AlphaRun  *mPtr;
+   AlphaRun  *mEnd;
+};
+
+
+
 
 struct SpanRect
 {
@@ -120,6 +212,32 @@ struct SpanRect
 
    void BuildAlphaRuns4(Transitions *inTrans, AlphaRuns &outRuns)
    {
+      AlphaIterator<2> a0,a1,a2,a3;
+
+      BuildAlphaRuns(inTrans[0],a0.mRuns);
+      BuildAlphaRuns(inTrans[1],a1.mRuns);
+      BuildAlphaRuns(inTrans[2],a2.mRuns);
+      BuildAlphaRuns(inTrans[3],a3.mRuns);
+
+      enum { MAX_X = 0x7fffffff };
+
+      int x = mRect.x;
+
+      a0.Init(x);
+      a1.Init(x);
+      a2.Init(x);
+      a3.Init(x);
+
+      while(x<MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x,next_x) + a1.SetX(x,next_x) + a2.SetX(x,next_x) + a3.SetX(x,next_x);
+         if (next_x == MAX_X)
+            break;
+         if (alpha>0)
+            outRuns.push_back( AlphaRun(x>>2,next_x>>2,alpha<<4) );
+         x = next_x;
+      }
    }
 
 
@@ -183,25 +301,6 @@ struct SpanRect
    Rect        mRect;
 };
 
-
-/*
-void TestRender(const RenderTarget &inTarget, const AlphaMask *inMask)
-{
-   uint32 col = 0xff00ff00;
-   for(int y=0;y<inMask->mRect.h;y++)
-   {
-      uint32 *row = (uint32 *)(inTarget.data + (y+inMask->mRect.y)*inTarget.stride);
-      const AlphaRuns &runs = inMask->mLines[y];
-      for(int r=0;r<runs.size();r++)
-      {
-         const AlphaRun &run = runs[r];
-         for(int x=run.mX0; x<run.mX1; x++)
-            row[x] = col;
-      }
-   }
-
-}
-*/
 
 
 
