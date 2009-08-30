@@ -39,7 +39,11 @@ public:
 
 	Matrix &Rotate(double inDeg);
 	Matrix &Translate(double inTX, double inTY);
+	Matrix &operator *= (double inScale);
 
+
+   Matrix &createGradientBox(double inWidth, double inHeight=0,
+                             double inRot=0, double inTX=0, double inTY=0 );
 
    inline bool operator==(const Matrix &inRHS) const
       { return !memcmp(this,&inRHS,sizeof(*this)); }
@@ -61,6 +65,9 @@ public:
    double m00, m01, mtx;
    double m10, m11, mty;
 };
+
+
+
 
 typedef Matrix Matrix3D;
 

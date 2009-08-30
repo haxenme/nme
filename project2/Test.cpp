@@ -35,7 +35,15 @@ int main(int inargc,char **arvg)
 	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
 
 	gGraphics.lineStyle(5,0xff0000,0.75);
-	gGraphics.beginFill(0xffffff);
+
+	GraphicsGradientFill *fill = new GraphicsGradientFill(true,
+											Matrix().createGradientBox(200,200,45,-100,-100), smPad );
+	fill->AddStop( 0xffffff, 1, 0 );
+	fill->AddStop( 0xff0000, 1, 0.25 );
+	fill->AddStop( 0x00ff00, 1, 0.5 );
+	fill->AddStop( 0x0000ff, 1, 0.75 );
+	fill->AddStop( 0xff00ff, 1, 1 );
+	gGraphics.addData(fill);
 	gGraphics.moveTo(-100,-100);
 	gGraphics.lineTo(-100,100);
 	gGraphics.lineTo(100,100);

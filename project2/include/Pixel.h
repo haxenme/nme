@@ -15,6 +15,14 @@ typedef unsigned char Uint8;
 
 struct ARGB
 {
+   inline ARGB() { }
+   inline ARGB(int inRGB,int inA=255)
+	{
+      c0 = (inRGB>>16) & 0xff;
+      c1 = (inRGB>>8) & 0xff;
+      c2 = (inRGB) & 0xff;
+		a = inA;
+	}
    inline void Set(int inVal) { ival = inVal; }
 
    inline void SetRGB(int inVal)

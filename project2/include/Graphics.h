@@ -6,6 +6,7 @@
 #include <QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
+#include "Pixel.h"
 
 typedef unsigned int uint32;
 
@@ -111,7 +112,7 @@ public:
 class GraphicsSolidFill : public IGraphicsFill
 {
 public:
-	GraphicsSolidFill(int inRGB, float inAlpha) : rgb(inRGB), alpha(inAlpha) { }
+	GraphicsSolidFill(int inRGB=0, float inAlpha=1) : rgb(inRGB), alpha(inAlpha) { }
    GraphicsDataType GetType() { return gdtSolidFill; }
    GraphicsSolidFill   *AsSolidFill() { return this; }
 
@@ -122,9 +123,14 @@ public:
 
 struct GradStop
 {
-   float  mAlpha;
-   int    mRGB;
+	GradStop(int inRGB=0, float inAlpha=0, float inRatio=0) :
+		mARGB(inRGB, inAlpha<0 ? 0 : inAlpha>=1 ? 255 : 255.0*inAlpha ),
+		mPos(inRatio<=0 ? 0 : inRatio>=1.0 ? 255 : inRatio*255.0 ) { }
+
+   ARGB   mARGB;
+   int    mPos;
 };
+typedef QuickVec<GradStop>  Stops;
 
 enum InterpolationMethod {  imLinearRGB, imRGB };
 enum SpreadMethod {  smPad, smReflect, smRepeat };
@@ -132,10 +138,21 @@ enum SpreadMethod {  smPad, smReflect, smRepeat };
 class GraphicsGradientFill : public IGraphicsFill
 {
 public:
+	GraphicsGradientFill(bool inIsLinear=true, const Matrix &inMatrix=Matrix(),
+		SpreadMethod inSpread=smPad,
+		InterpolationMethod inInterp=imLinearRGB, double inFocal = 0.0 ) :
+		   isLinear(inIsLinear), matrix(inMatrix), spreadMethod(inSpread),
+			interpolationMethod(inInterp), focalPointRatio(inFocal) { } 
+
+	void AddStop(int inRGB, float inAlpha=1, float inRatio=0)
+	{
+		mStops.push_back( GradStop(inRGB, inAlpha, inRatio) );
+	}
+
    GraphicsDataType GetType() { return gdtGradientFill; }
    GraphicsGradientFill   *AsGradientFill() { return this; }
 
-   QuickVec<GradStop>  mStops;
+   Stops               mStops;
 
    double              focalPointRatio;
    Matrix              matrix;
@@ -411,6 +428,8 @@ public:
 	bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
 
+	void addData(IGraphicsData *inData) { inData->IncRef(); Add(inData); }
+
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
@@ -430,8 +449,8 @@ private:
 	RenderData                mRenderData;
 
 	void CreateRenderData();
-	void Add(IGraphicsData *inData);
 	void Add(IRenderData *inData);
+	void Add(IGraphicsData *inData);
 	GraphicsPath *GetLastPath();
 
 

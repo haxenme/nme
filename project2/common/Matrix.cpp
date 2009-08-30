@@ -147,6 +147,43 @@ Matrix &Matrix::Rotate(double inDeg)
 	return *this;
 }
 
+Matrix &Matrix::operator *= (double inScale)
+{
+	m00 *= inScale;
+	m01 *= inScale;
+	m10 *= inScale;
+	m11 *= inScale;
+	mtx *= inScale;
+	mty *= inScale;
+	return *this;
+}
+
+
+Matrix &Matrix::createGradientBox(double inWidth, double inHeight,
+                          double inRot, double inTX, double inTY )
+{
+	m00 = inWidth/1638.4;
+   m11 = inHeight/1638.4;
+
+   // rotation is clockwise
+   if (inRot!=0.0)
+   {
+		double c = cos(inRot * (M_PI/180.0));
+		double s = sin(inRot * (M_PI/180.0));
+		m01 = -s*m00;
+		m10 = s*m11;
+		m00 *= c;
+		m11 *= c;
+	}
+	else
+	{
+		m01 = m10 = 0;
+	}
+
+	mtx = inTX+inWidth*0.5;
+	mty = inTY+inHeight*0.5;
+	return *this;
+}
 
 
 

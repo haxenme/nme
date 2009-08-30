@@ -318,6 +318,9 @@ public:
 			case gdtSolidFill:
 				mFiller = Filler::Create(inFill->AsSolidFill());
 				break;
+			case gdtGradientFill:
+				mFiller = Filler::Create(inFill->AsGradientFill());
+				break;
 			default:
 				printf("Fill type not implemented\n");
 				mFiller = 0;
