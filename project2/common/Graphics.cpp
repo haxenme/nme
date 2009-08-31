@@ -64,6 +64,13 @@ void Graphics::beginFill(unsigned int color, float alpha)
    Add(new GraphicsSolidFill(color,alpha));
 }
 
+void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
+	bool inRepeat, bool inSmooth)
+{
+   Add(new GraphicsBitmapFill(bitmapData,inMatrix,inRepeat,inSmooth) );
+}
+
+
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   bool pixelHinting, StrokeScaleMode scaleMode,
                   StrokeCaps caps,
@@ -72,6 +79,8 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
    IGraphicsFill *solid = new GraphicsSolidFill(color,alpha);
    Add(new GraphicsStroke(solid,thickness,pixelHinting,scaleMode,caps,joints,miterLimit));
 }
+
+
 
 
 void Graphics::lineTo(float x, float y)
@@ -167,7 +176,8 @@ void Graphics::CreateRenderData()
          Add(line);
 
       mLastConvertedItem = n;
-      mCache.resize(mRenderData.size());
+		for(int i=mCache.size();i<mRenderData.size();i++)
+         mCache.push_back( RendererCache() );
    }
 
 }
@@ -216,6 +226,40 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    return true;
 }
 
+// --- RenderState -------------------------------------------------------------------
+
+RenderState::RenderState(Surface *inSurface,int inAA)
+{
+	mAlpha = 1.0;
+	mTransform.mAAFactor = inAA;
+	mBlendMode = bmNormal;
+	mHardwareMask = 0;
+	mSoftwareMask = 0;
+	if (inSurface)
+	{
+		mClipRect = Rect(inSurface->Width(),inSurface->Height());
+	}
+	else
+		mClipRect = Rect(0,0);
+	mAAClipRect =Rect( mClipRect.w*inAA, mClipRect.h*inAA );
+}
+
+
+// --- GraphicsBitmapFill -------------------------------------------------------------------
+
+GraphicsBitmapFill::GraphicsBitmapFill(Surface *inBitmapData,
+		const Matrix &inMatrix, bool inRepeat, bool inSmooth) : bitmapData(inBitmapData),
+	      matrix(inMatrix),  repeat(inRepeat), smooth(inSmooth)
+{
+	if (bitmapData)
+		bitmapData->IncRef();
+}
+
+GraphicsBitmapFill::~GraphicsBitmapFill()
+{
+	if (bitmapData)
+		bitmapData->DecRef();
+}
 
 
 // --- LineData -------------------------------------------------------------------

@@ -30,11 +30,6 @@ void HintColourOrder(bool inRedFirst)
 // --- Surface -------------------------------------------------------
 
 
-Surface::Surface()
-{
-	mTexture = 0;
-}
-
 Surface::~Surface()
 {
 	if (mTexture)
@@ -58,6 +53,7 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 {
 	mWidth = inWidth;
 	mHeight = inHeight;
+	mPixelFormat = inPixelFormat;
 	if (inByteAlign>1)
 	{
 	   mStride = inWidth * 4 + inByteAlign -1;

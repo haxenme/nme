@@ -158,6 +158,18 @@ Matrix &Matrix::operator *= (double inScale)
 	return *this;
 }
 
+Matrix &Matrix::Scale(double inSx, double inSy)
+{
+	m00 *= inSx;
+	m01 *= inSx;
+	mtx *= inSx;
+	m10 *= inSy;
+	m11 *= inSy;
+	mty *= inSy;
+	return *this;
+}
+
+
 
 Matrix &Matrix::createGradientBox(double inWidth, double inHeight,
                           double inRot, double inTX, double inTY )

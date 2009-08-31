@@ -21,6 +21,7 @@
   <file name="internal/AlphaMask.cpp"/>
   <file name="internal/SolidFill.cpp"/>
   <file name="internal/GradientFill.cpp"/>
+  <file name="internal/BitmapFill.cpp"/>
 
   <file name="hardware-none/Stubs.cpp"/>
 </files>

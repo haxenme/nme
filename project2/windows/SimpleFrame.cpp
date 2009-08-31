@@ -32,6 +32,9 @@ public:
    }
 
    BITMAPINFO mInfo;
+
+private:
+	~DIBSurface() { }
 };
 
 
@@ -58,14 +61,15 @@ public:
    }
    ~WindowsStage()
    {
-      delete mBMP;
+		if (mBMP)
+			mBMP->DecRef();
    }
 
    void CreateBMP()
    {
       if (mBMP)
       {
-         delete mBMP;
+         mBMP->DecRef();
          mBMP = 0;
       }
 
@@ -77,6 +81,7 @@ public:
          int w =  info.rcClient.right - info.rcClient.left;
          int h =  info.rcClient.bottom - info.rcClient.top;
          mBMP = new DIBSurface(w,h);
+			mBMP->IncRef();
       }
    }
 

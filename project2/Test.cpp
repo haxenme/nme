@@ -32,10 +32,26 @@ int main(int inargc,char **arvg)
 {
    Frame *frame = CreateMainFrame(640,400,wfResizable,"Hello");
 
+
+	// Render to bitmap ...
+	Surface *bg = new SimpleSurface(32,32, pfXRGB);
+	{
+	   Graphics gfx;
+	   gfx.lineStyle(1,0x0000ff);
+	   gfx.moveTo(0,0);
+	   gfx.lineTo(32,32);
+	   gfx.moveTo(0,32);
+	   gfx.lineTo(32,0);
+		bg->Clear(0x002020);
+		AutoSurfaceRender render(bg);
+		gfx.Render(render.Target(),RenderState(bg,4));
+	}
+
+
+
 	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
 
-	gGraphics.lineStyle(5,0xff0000,0.75);
-
+	/*
 	GraphicsGradientFill *fill = new GraphicsGradientFill(true,
 											Matrix().createGradientBox(200,200,45,-100,-100), smPad );
 	fill->AddStop( 0xffffff, 1, 0 );
@@ -44,6 +60,11 @@ int main(int inargc,char **arvg)
 	fill->AddStop( 0x0000ff, 1, 0.75 );
 	fill->AddStop( 0xff00ff, 1, 1 );
 	gGraphics.addData(fill);
+	*/
+
+	gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
+
+	gGraphics.lineStyle(5,0xff0000,0.75);
 	gGraphics.moveTo(-100,-100);
 	gGraphics.lineTo(-100,100);
 	gGraphics.lineTo(100,100);

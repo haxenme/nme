@@ -9,6 +9,7 @@
 #include "Pixel.h"
 
 typedef unsigned int uint32;
+typedef unsigned char uint8;
 
 
 enum GraphicsAPIType { gatBase, gatInternal,  gatQuartz, gatCairo, gatOpenGL, gatOpenGLES };
@@ -165,6 +166,7 @@ public:
 class GraphicsBitmapFill : public IGraphicsFill
 {
 public:
+	GraphicsBitmapFill(Surface *inBitmapData, const Matrix &inMatrix, bool inRepeat, bool inSmooth);
    ~GraphicsBitmapFill();
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
@@ -239,7 +241,7 @@ public:
    GraphicsPath *AsPath() { return this; }
 
 	GraphicsPath() : winding(wrOddEven) { }
-   QuickVec<unsigned char> command;
+   QuickVec<uint8> command;
    QuickVec<float>         data;
    WindingRule             winding;
 
@@ -282,7 +284,7 @@ struct SolidData : IRenderData
 	void Close();
 
    IGraphicsFill           *mFill;
-   QuickVec<unsigned char> command;
+   QuickVec<uint8> command;
    QuickVec<float>        data;
 };
 
@@ -294,7 +296,7 @@ struct LineData : IRenderData
 	void Add(GraphicsPath *inPath);
 
    GraphicsStroke         *mStroke;
-   QuickVec<unsigned char> command;
+   QuickVec<uint8> command;
    QuickVec<float>        data;
 };
 
@@ -353,6 +355,8 @@ struct Transform
 
 struct RenderState
 {
+	RenderState(Surface *inSurface=0,int inAA=1);
+
 	// Spatial Transform
 	Transform      mTransform;
 
@@ -411,6 +415,8 @@ protected:
 
 struct RendererCache
 {
+	RendererCache() : mSoftware(0), mHardware(0) { }
+
 	Renderer *mSoftware;
 	Renderer *mHardware;
 };
@@ -432,6 +438,8 @@ public:
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
+   void beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix = Matrix(),
+								bool inRepeat = true, bool inSmooth = false);
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
                   bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
                   StrokeCaps caps = scRound,
@@ -571,7 +579,7 @@ struct RenderTarget
 	{
 	  struct
 	  {
-        unsigned char *data;
+        uint8 *data;
         int  stride;
 	  };
 	  HardwareContext *context;
@@ -588,12 +596,16 @@ void DestroyNativeTexture(NativeTexture *inTexture);
 class Surface
 {
 public:
-   Surface();
-   virtual ~Surface();
+   Surface() : mTexture(0), mRefCount(0) { };
+
+   Surface *IncRef() { mRefCount++; return this; }
+   void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
 
    virtual int Width() const =0;
    virtual int Height() const =0;
    virtual PixelFormat Format()  const = 0;
+	virtual const uint8 *GetBase() const = 0;
+	virtual int GetStride() const = 0;
 
 	virtual void Clear(uint32 inColour) = 0;
 
@@ -609,6 +621,8 @@ public:
 
 protected:
    NativeTexture *mTexture;
+	int           mRefCount;
+	virtual       ~Surface();
 };
 
 // Helper class....
@@ -639,7 +653,6 @@ class SimpleSurface : public Surface
 {
 public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
-   ~SimpleSurface();
 
    int Width() const  { return mWidth; }
    int Height() const  { return mHeight; }
@@ -650,13 +663,17 @@ public:
    void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY);
    void EndRender();
 
+	const uint8 *GetBase() const { return mBase; }
+	int GetStride() const { return mStride; }
+
 
 protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
    int           mStride;
-   unsigned char *mBase;
+   uint8         *mBase;
+   ~SimpleSurface();
 
 private:
    SimpleSurface(const SimpleSurface &inRHS);

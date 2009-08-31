@@ -321,6 +321,9 @@ public:
 			case gdtGradientFill:
 				mFiller = Filler::Create(inFill->AsGradientFill());
 				break;
+			case gdtBitmapFill:
+				mFiller = Filler::Create(inFill->AsBitmapFill());
+				break;
 			default:
 				printf("Fill type not implemented\n");
 				mFiller = 0;
@@ -541,6 +544,12 @@ public:
                point += 2;
                break;
          }
+      }
+
+      if (points>1)
+      {
+         EndCap(first,-first_perp);
+         EndCap(prev,prev_perp);
       }
    }
 

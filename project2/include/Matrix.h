@@ -39,6 +39,7 @@ public:
 
 	Matrix &Rotate(double inDeg);
 	Matrix &Translate(double inTX, double inTY);
+	Matrix &Scale(double inSX, double inSY);
 	Matrix &operator *= (double inScale);
 
 
