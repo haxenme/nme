@@ -66,6 +66,8 @@ struct Point2D
 	   { return Point2D(x+inRHS.x,y+inRHS.y); }
 	inline Point2D operator-(const Point2D &inRHS) const
 	   { return Point2D(x-inRHS.x,y-inRHS.y); }
+	inline Point2D operator*(double inScale) const
+	   { return Point2D(x*inScale,y*inScale); }
 	inline Point2D operator-() const
 	   { return Point2D(-x,-y); }
 	inline T Norm2() const
@@ -83,6 +85,17 @@ struct Point2D
 			return Point2D(-y*norm,x*norm);
 		}
 		return Point2D(0,0);
+	}
+	Point2D &SetLength(double inLen)
+	{
+		double norm = Norm();
+		if (norm>0)
+		{
+			norm = inLen/norm;
+			x*=norm;
+			y*=norm;
+		}
+		return *this;
 	}
 
    T x;

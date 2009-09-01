@@ -8,15 +8,15 @@ typedef QuickVec<int> IQuickSet;
 
 struct Transition
 {
-	Transition(int inX=0,int inVal=0) : x(inX), val(inVal) { }
-	bool operator==(int inRHS) const { return x==inRHS; }
-	bool operator<(int inRHS) const { return x<inRHS; }
-	bool operator>(int inRHS) const { return x>inRHS; }
+   Transition(int inX=0,int inVal=0) : x(inX), val(inVal) { }
+   bool operator==(int inRHS) const { return x==inRHS; }
+   bool operator<(int inRHS) const { return x<inRHS; }
+   bool operator>(int inRHS) const { return x>inRHS; }
 
-	void operator+=(int inDiff)
-	{
-		val += inDiff;
-	}
+   void operator+=(int inDiff)
+   {
+      val += inDiff;
+   }
 
    int x;
    int val;
@@ -138,22 +138,22 @@ struct SpanRect
       delete [] mTransitions;
    }
 
-	// dX/dY int fixed bits ...
+   // dX/dY int fixed bits ...
    inline int FixedGrad(Fixed10 inVec,int inBits)
    {
       int denom = inVec.y;
       if (denom==0)
          return 0;
       int64 ratio = (inVec.x<<inBits)/denom;
-		if (ratio< -(1<<21)) return -(1<<21);
-		if (ratio>  (1<<21)) return  (1<<21);
+      if (ratio< -(1<<21)) return -(1<<21);
+      if (ratio>  (1<<21)) return  (1<<21);
       return ratio;
    }
 
    void Line(Fixed10 inP0, Fixed10 inP1)
    {
       // All right ...
-		if (inP0.x>mMaxX && inP1.x>mMaxX)
+      if (inP0.x>mMaxX && inP1.x>mMaxX)
          return;
 
       // Make p1.y numerically greater than inP0.y
@@ -175,23 +175,23 @@ struct SpanRect
       if (y0 >= mRect.h || y1 <= 0)
          return;
 
-		// Just draw a vertical line down the left...
-		if (inP0.x<=mMinX && inP1.x<=mMinX)
-		{
-			y0 = std::max(y0,0);
-			y1 = std::min(y1,mRect.h);
-			for(;y0<y1;y0++)
-				mTransitions[y0].Change(mMinX,diff);
-			return;
-		}
+      // Just draw a vertical line down the left...
+      if (inP0.x<=mMinX && inP1.x<=mMinX)
+      {
+         y0 = std::max(y0,0);
+         y1 = std::min(y1,mRect.h);
+         for(;y0<y1;y0++)
+            mTransitions[y0].Change(mMinX,diff);
+         return;
+      }
 
-		// dx_dy in 10 bit precision ...
+      // dx_dy in 10 bit precision ...
       int dx_dy = FixedGrad(inP1 - inP0,10);
 
-		// (10 bit) fractional bit true position pokes up above the first line...
+      // (10 bit) fractional bit true position pokes up above the first line...
       int extra_y = ((y0+1 + mRect.y)<<10) - inP0.y;
-		// We have already started down the gradient bt a bit, so adjust x.
-		// x is 10 bits, dx_dy is 10 bits and extra_y is 10 bits ...
+      // We have already started down the gradient bt a bit, so adjust x.
+      // x is 10 bits, dx_dy is 10 bits and extra_y is 10 bits ...
       int x = inP0.x + ((dx_dy * extra_y)>>10);
 
       if (y0<0)
@@ -272,10 +272,10 @@ struct SpanRect
         outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
    }
 
-	AlphaMask *CreateMask()
-	{
+   AlphaMask *CreateMask()
+   {
       Rect rect = mRect/mAA;
-		AlphaMask *mask = new AlphaMask(rect);
+      AlphaMask *mask = new AlphaMask(rect);
       Transitions *t = mTransitions;
       for(int y=0;y<rect.h;y++)
       {
@@ -290,8 +290,8 @@ struct SpanRect
          }
          t+=mAA;
       }
-		return mask;
-	}
+      return mask;
+   }
 
  
    Transitions *mTransitions;
@@ -313,27 +313,27 @@ public:
    {
       mBuildExtent = 0;
       mAlphaMask = 0;
-		switch(inFill->GetType())
-		{
-			case gdtSolidFill:
-				mFiller = Filler::Create(inFill->AsSolidFill());
-				break;
-			case gdtGradientFill:
-				mFiller = Filler::Create(inFill->AsGradientFill());
-				break;
-			case gdtBitmapFill:
-				mFiller = Filler::Create(inFill->AsBitmapFill());
-				break;
-			default:
-				printf("Fill type not implemented\n");
-				mFiller = 0;
-		}
+      switch(inFill->GetType())
+      {
+         case gdtSolidFill:
+            mFiller = Filler::Create(inFill->AsSolidFill());
+            break;
+         case gdtGradientFill:
+            mFiller = Filler::Create(inFill->AsGradientFill());
+            break;
+         case gdtBitmapFill:
+            mFiller = Filler::Create(inFill->AsBitmapFill());
+            break;
+         default:
+            printf("Fill type not implemented\n");
+            mFiller = 0;
+      }
    }
 
    ~PolygonRender()
    {
       delete mAlphaMask;
-		delete mFiller;
+      delete mFiller;
    }
 
    void Destroy() { delete this; }
@@ -377,8 +377,8 @@ public:
       Rect visible_pixels = rect.Intersect(inState.mAAClipRect);
 
       // Check to see if AlphaMask is invalid...
-		int tx=0;
-		int ty=0;
+      int tx=0;
+      int ty=0;
       if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
       {
          delete mAlphaMask;
@@ -405,8 +405,59 @@ public:
    }
    void BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
    {
-		mSpanRect->Line( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
+      mSpanRect->Line( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
    }
+
+   void BuildCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2)
+   {
+      // todo: calculate steps
+		double len = (inP0-inP1).Norm() + (inP2-inP1).Norm();
+      int steps = (int)len;
+		if (steps<1) steps = 1;
+		if (steps>100) steps = 100;
+      double step = 1.0/(steps+1);
+      Fixed10 last = mTransform.ToImageAA(inP0);
+      double t = 0;
+
+      for(int s=0;s<steps;s++)
+      {
+         t+=step;
+         double t_ = 1.0-t;
+         UserPoint p = inP0 * (t_*t_) + inP1 * (2.0*t*t_) + inP2 * (t*t);
+         Fixed10 fixed = mTransform.ToImageAA(p);
+         mSpanRect->Line(last,fixed);
+         last = fixed;
+      }
+      mSpanRect->Line( last, mTransform.ToImageAA(inP2) );
+   }
+
+
+   void CurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2)
+   {
+      // B(t) = (1-t)^2p0 + 2(1-t)t p1 + t^2p2
+      // Find maxima/minima : d/dt B(t) = 0
+      //  d/dt x(t) = -2(1-t) p0.x + (2 -4t)p1.x + 2t p2.x = 0
+      //
+      //  -> t 2[  p2.x+p0.x - 2 p1.x ] = 2 p0.x - 2p1.x
+      double denom = p2.x + p0.x - 2*p1.x;
+      if (denom!=0)
+      {
+         double t = (p0.x-p1.x)/denom;
+         if (t>0 && t<1)
+            mBuildExtent->AddX( (1-t)*(1-t)*p0.x + 2*t*(1-t)*p1.x + t*t*p2.x );
+      }
+      denom = p2.y + p0.y - 2*p1.y;
+      if (denom!=0)
+      {
+         double t = (p0.y-p1.y)/denom;
+         if (t>0 && t<1)
+            mBuildExtent->AddY( (1-t)*(1-t)*p0.y + 2*t*(1-t)*p1.y + t*t*p2.y );
+      }
+      mBuildExtent->Add( p0 );
+      mBuildExtent->Add( p2 );
+   }
+
+
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual QuickVec<float> &GetData() = 0;
@@ -414,7 +465,7 @@ public:
 
    Transform           mTransform;
    QuickVec<UserPoint> mTransformed;
-	Filler              *mFiller;
+   Filler              *mFiller;
    Extent2DF           *mBuildExtent;
    SpanRect            *mSpanRect;
    AlphaMask           *mAlphaMask;
@@ -541,7 +592,46 @@ public:
                break;
 
             case pcCurveTo:
-               point += 2;
+               {
+                  // direction = d/dt B(t) |t=0
+                  // d/dt x(t) = -2(1-t) p0.x + (2 -4t)p1.x + 2t p2.x  | t=0
+                  UserPoint perp = (point[0]-prev).Perp(perp_len);
+                  UserPoint perp_mid = (point[1]-prev).Perp(perp_len);
+                  UserPoint perp_end = (point[1]-point[0]).Perp(perp_len); // | t=1
+
+                  if (points>0)
+                  {
+                     if (points>1)
+                        AddJoint(prev,prev_perp,perp);
+                     else
+                        first_perp = perp;
+                  }
+
+                  // Add curvy bits
+
+                  if (inMode==itGetExtent)
+                  {
+                     CurveExtent(prev+perp,point[0]+perp_mid,point[1]+perp_end);
+                     CurveExtent(point[1]-perp_end,point[0]-perp_mid, prev-perp );
+                  }
+                  else
+                  {
+                     BuildCurve(prev+perp,point[0]+perp_mid,point[1]+perp_end);
+                     BuildCurve(point[1]-perp_end,point[0]-perp_mid, prev-perp );
+                  }
+
+
+                  prev = point[1];
+                  prev_perp = perp_end;
+                  point +=2;
+                  points++;
+                  // Implicit loop closing...
+                  if (points>2 && prev==first)
+                  {
+                     AddJoint(first,perp_end,first_perp);
+                     points = 1;
+                  }
+               }
                break;
          }
       }
@@ -557,6 +647,7 @@ public:
    {
       return mLineData->data;
    }
+
 };
 
 
@@ -575,6 +666,7 @@ public:
 
       if (inMode==itGetExtent)
       {
+         UserPoint last;
          for(int i=0;i<n;i++)
          {
             switch(mSolidData->command[i])
@@ -584,10 +676,14 @@ public:
                   point++;
                case pcLineTo:
                case pcMoveTo:
-                  mBuildExtent->Add(*point);
+                  last = *point;
+                  mBuildExtent->Add(last);
                   point++;
                   break;
                case pcCurveTo:
+                  CurveExtent(last, point[0], point[1]);
+                  last = point[1];
+                  mBuildExtent->Add(last);
                   point += 2;
                   break;
             }
@@ -623,6 +719,10 @@ public:
                   break;
 
                case pcCurveTo:
+                  BuildCurve(last_point, point[0], point[1]);
+                  last_point = point[1];
+                  point += 2;
+                  points++;
                   break;
             }
          }

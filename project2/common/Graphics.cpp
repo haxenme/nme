@@ -93,6 +93,12 @@ void Graphics::moveTo(float x, float y)
    GetLastPath()->moveTo(x,y);
 }
 
+void Graphics::curveTo(float cx, float cy, float x, float y)
+{
+   GetLastPath()->curveTo(cx,cy,x,y);
+}
+
+
 
 
 

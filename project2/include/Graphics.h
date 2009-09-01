@@ -447,6 +447,7 @@ public:
 
    void lineTo(float x, float y);
    void moveTo(float x, float y);
+   void curveTo(float cx,float cy,float x, float y);
 
 
 

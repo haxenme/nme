@@ -30,11 +30,15 @@ void GraphicsPath::wideLineTo(float x, float y)
 	command.push_back(pcWideLineTo);
 	data.push_back(x);
 	data.push_back(y);
+	data.push_back(x);
+	data.push_back(y);
 }
 
 void GraphicsPath::wideMoveTo(float x, float y)
 {
 	command.push_back(pcWideMoveTo);
+	data.push_back(x);
+	data.push_back(y);
 	data.push_back(x);
 	data.push_back(y);
 }

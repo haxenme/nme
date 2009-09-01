@@ -51,7 +51,6 @@ int main(int inargc,char **arvg)
 
 	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
 
-	/*
 	GraphicsGradientFill *fill = new GraphicsGradientFill(true,
 											Matrix().createGradientBox(200,200,45,-100,-100), smPad );
 	fill->AddStop( 0xffffff, 1, 0 );
@@ -60,14 +59,13 @@ int main(int inargc,char **arvg)
 	fill->AddStop( 0x0000ff, 1, 0.75 );
 	fill->AddStop( 0xff00ff, 1, 1 );
 	gGraphics.addData(fill);
-	*/
 
-	gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
+	//gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
 
-	gGraphics.lineStyle(5,0xff0000,0.75);
+	gGraphics.lineStyle(50,0xff0000,0.75);
 	gGraphics.moveTo(-100,-100);
 	gGraphics.lineTo(-100,100);
-	gGraphics.lineTo(100,100);
+	gGraphics.curveTo(0,180,100,100);
 	gGraphics.lineTo(100,-100);
 	gGraphics.lineTo(-100,-100);
 
