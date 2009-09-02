@@ -62,7 +62,7 @@ int main(int inargc,char **arvg)
 
 	//gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
 
-	gGraphics.lineStyle(50,0xff0000,0.75);
+	gGraphics.lineStyle(5,0xffffff,0.75,true,ssmNormal,scRound,sjMiter);
 	gGraphics.moveTo(-100,-100);
 	gGraphics.lineTo(-100,100);
 	gGraphics.curveTo(0,180,100,100);

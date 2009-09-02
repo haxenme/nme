@@ -76,6 +76,8 @@ struct Point2D
 	   { return sqrt((double)(x*x + y*y)); }
 	inline Point2D Perp() const
 	   { return Point2D(-y,x); }
+	inline Point2D CWPerp() const
+	   { return Point2D(y,-x); }
 	inline Point2D Perp(double inLen) const
 	{
 		double norm = Norm();
@@ -86,6 +88,10 @@ struct Point2D
 		}
 		return Point2D(0,0);
 	}
+	inline double Cross(const Point2D &inRHS) const
+	   { return x*inRHS.y - y*inRHS.x; }
+	inline double Dot(const Point2D &inRHS) const
+	   { return x*inRHS.x + y*inRHS.y; }
 	Point2D &SetLength(double inLen)
 	{
 		double norm = Norm();
