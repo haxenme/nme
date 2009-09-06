@@ -255,14 +255,36 @@ public:
 
 enum TriangleCulling { tcNegative = -1, tcNone = 0, tcPositive = 1};
 
+struct Vertex
+{
+	float  x;
+	float  y;
+	float  z;
+	bool   edge;
+};
+
+struct VertexUV : public Vertex
+{
+	UserPoint uv;
+};
+
+struct VertexUVT : public VertexUV
+{
+	float t;
+};
+
+enum VertexType { vtVertex, vtVertexUV, vtVertexUVT };
+
 class GraphicsTrianglePath : public IGraphicsPath
 {
 public:
+	GraphicsTrianglePath();
+	~GraphicsTrianglePath();
+
    TriangleCulling   culling;
-   QuickVec<int>     indices;
-   QuickVec<double>  uvtData;
-   QuickVec<double>  uvtVertices;
-   int               mUVTDim;
+	VertexType mType;
+	Vertex     *mVertex;
+	int        mTriangleCount;
 };
 
 struct IRenderData : public IGraphicsData

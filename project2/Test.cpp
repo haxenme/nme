@@ -1,7 +1,10 @@
 #include <Graphics.h>
+#include <TextField.h>
 
-Graphics gGraphics;
 RenderState gState;
+
+Graphics  gGraphics;
+TextField gText;
 
 void Handler(Event &ioEvent,void *inStage)
 {

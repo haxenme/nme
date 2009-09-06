@@ -183,7 +183,7 @@ public:
       mStage = new WindowsStage(inHandle,mFlags);
       mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
       ShowWindow(mHandle,true);
-      SetTimer(mHandle,timerFrame, 40,0);
+      SetTimer(mHandle,timerFrame, 10,0);
    }
    ~WindowsFrame()
    {

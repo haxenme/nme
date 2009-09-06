@@ -16,6 +16,8 @@
   <file name="common/GraphicsData.cpp"/>
   <file name="common/Matrix.cpp"/>
   <file name="common/CachedExtent.cpp"/>
+  <file name="common/TextField.cpp"/>
+  <file name="common/Font.cpp"/>
 
   <file name="internal/PolygonRenderer.cpp"/>
   <file name="internal/AlphaMask.cpp"/>
