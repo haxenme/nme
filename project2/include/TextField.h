@@ -26,6 +26,7 @@ struct CharGroup
 
 	int             mChar0;
 	int             mChars;
+	int             mFontHeight;
 	const wchar_t   *mString;
 	TextFormat      *mFormat;
 	Font            *mFont;

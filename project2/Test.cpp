@@ -27,6 +27,7 @@ void Handler(Event &ioEvent,void *inStage)
 		gState.mAAClipRect = gState.mClipRect * gState.mTransform.mAAFactor;
 
 		gGraphics.Render(render.Target(),gState);
+		gText.Render(render.Target(),gState);
 	}
 }
 
@@ -74,6 +75,8 @@ int main(int inargc,char **arvg)
 
 	Extent2DF ext = gGraphics.GetExtent(gState.mTransform);
 	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
+
+	gText.setText(L"Hello");
 
    MainLoop();
    delete frame;

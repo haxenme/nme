@@ -169,6 +169,17 @@ Matrix &Matrix::Scale(double inSx, double inSy)
 	return *this;
 }
 
+double Matrix::GetScaleX() const
+{
+	return sqrt( m00*m00 + m01*m01 ); 
+}
+
+double Matrix::GetScaleY() const
+{
+	return sqrt( m10*m10 + m11*m11 ); 
+}
+
+
 
 
 Matrix &Matrix::createGradientBox(double inWidth, double inHeight,

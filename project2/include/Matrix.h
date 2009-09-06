@@ -37,6 +37,9 @@ public:
       return true;
    }
 
+	double GetScaleX() const;
+	double GetScaleY() const;
+
 	Matrix &Rotate(double inDeg);
 	Matrix &Translate(double inTX, double inTY);
 	Matrix &Scale(double inSX, double inSY);

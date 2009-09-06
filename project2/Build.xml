@@ -8,9 +8,21 @@
   <file name="windows/SimpleFrame.cpp"/>
 </files>
 
+
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux/" if="linux"/>
+
+<set name="SLIBEXT" value=".lib" if="windows"/>
+<set name="SLIBEXT" value=".a" unless="windows"/>
+
+
 <files id="common">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include"/>
+
   <file name="common/Surface.cpp"/>
+  <file name="common/Utils.cpp"/>
   <file name="common/Geom.cpp"/>
   <file name="common/Graphics.cpp"/>
   <file name="common/GraphicsData.cpp"/>
@@ -18,6 +30,7 @@
   <file name="common/CachedExtent.cpp"/>
   <file name="common/TextField.cpp"/>
   <file name="common/Font.cpp"/>
+  <file name="common/TileSheet.cpp"/>
 
   <file name="internal/PolygonRenderer.cpp"/>
   <file name="internal/AlphaMask.cpp"/>
@@ -32,6 +45,7 @@
 <target id="TestWin" output="TestWin" tool="linker" toolid="exe">
   <files id="common"/>
   <files id="windows" if="windows"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}"/>
   <flag value="gdi32.lib" if="windows"/>
   <outdir name="."/>
 </target>

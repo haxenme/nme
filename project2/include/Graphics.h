@@ -401,6 +401,7 @@ struct RenderState
 typedef QuickVec<IRenderData *> RenderData;
 
 
+/*
 struct Tile
 {
    Surface *mData;
@@ -408,6 +409,7 @@ struct Tile
 	double   mX0;
 	double   mY0;
 };
+*/
 
 struct RenderTarget;
 

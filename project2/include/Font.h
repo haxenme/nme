@@ -1,7 +1,10 @@
 #ifndef FONT_H
 #define FONT_H
 
+#include <Object.h>
 #include <Graphics.h>
+#include <TileSheet.h>
+#include <map>
 
 enum AntiAliasType { aaAdvanced, aaNormal };
 enum AutoSizeMode  { asCenter, asLeft, asNone, asRight };
@@ -16,20 +19,19 @@ public:
 	Optional(const T&inVal) : mVal(inVal), mSet(false) { }
    T& operator >>(T &outRHS) { if (mSet) outRHS = mVal; return mVal; }
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
-   operator T() { return mVal; }
+   operator T() const { return mVal; }
 
 private:
 	bool mSet;
 	T mVal;
 };
 
-class TextFormat 
+class TextFormat : public Object
 {
 public:
 	static TextFormat *Create(bool inInitRef = true);
 	static TextFormat *Default();
-	TextFormat *IncRef();
-	void DecRef();
+	TextFormat *IncRef() { Object::IncRef(); return this; }
 
 	TextFormat &COW();
 
@@ -53,29 +55,42 @@ public:
 	Optional<bool>          underline;
 	Optional<std::wstring>  url;
 
-protected:
-	int mRefCount;
 	TextFormat();
 	~TextFormat();
 };
 
 
+struct FT_FaceRec_;
 
-class Font
+class Font : public Object
 {
+   struct Glyph
+   {
+		Glyph() : sheet(-1), tile(-1) { }
+
+	   int sheet;
+	   int tile;
+	};
+
 public:
-   static Font *Create(TextFormat &inFormat);
-   void DecRef();
-	Font *IncRef();
+   static Font *Create(TextFormat &inFormat,double inScale,bool inInitRef=true);
 
+	Font *IncRef() { Object::IncRef(); return this; }
 
-   double      mPixelHeight;
-	std::string mFace;
+   Tile GetGlyph(int inCharacter);
 
 private:
-	Font();
+   Font(FT_FaceRec_ *inFace,int inH, bool inInitRef);
 	~Font();
-	int mRefCount;
+
+
+	Glyph mGlyph[128];
+	std::map<int,Glyph>   mExtendedGlyph;
+   QuickVec<TileSheet *> mSheets;
+	FT_FaceRec_           *mFace;
+
+	int  mPixelHeight;
+	int  mCurrentSheet;
 };
 
 class FontCache
