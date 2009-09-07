@@ -73,16 +73,18 @@ SimpleSurface::~SimpleSurface()
 }
 
 void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,int inDX, int inDY,
-                           uint32 inTint)
+                           uint32 inTint,bool inUseSrcAlphaOnly)
 {
-	int sx0 = std::max( std::max(inSrcRect.x,-inDX) , 0);
-	int sy0 = std::max( std::max(inSrcRect.y,-inDY) , 0);
+	int dx = inDX - inSrcRect.x;
+	int dy = inDY - inSrcRect.y;
+	int sx0 = std::max( std::max(inSrcRect.x,-dx) , 0);
+	int sy0 = std::max( std::max(inSrcRect.y,-dy) , 0);
 	int sx1 = std::min(inSrcRect.x1(),Width());
-	if (sx1+inDX > outDest.width)
-		sx1 = outDest.width - inDX;
+	if (sx1+dx > outDest.width)
+		sx1 = outDest.width - dx;
 	int sy1 = std::min(inSrcRect.y1(),Height());
-	if (sy1+inDY > outDest.height)
-		sy1 = outDest.height - inDY;
+	if (sy1+dy > outDest.height)
+		sy1 = outDest.height - dy;
 
    bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
    bool do_memcpy = !(mPixelFormat & pfHasAlpha) && !swap;
@@ -91,9 +93,28 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,in
 	{
 		for(int y=sy0;y<sy1;y++)
       {
-         ARGB *dest = (ARGB *)outDest.Row(y+inDY) + (sx0+inDX);
+         ARGB *dest = (ARGB *)outDest.Row(y+dy) + (sx0+dx);
          const ARGB *src = (const ARGB *)(mBase + y*mStride) + sx0;
-         if (do_memcpy)
+			if (inUseSrcAlphaOnly)
+			{
+				ARGB col(inTint);
+            if (outDest.format & pfSwapRB)
+					std::swap(col.c0,col.c2);
+
+            if (dest_alpha)
+               for(int x=sx0;x<sx1;x++)
+					{
+						col.a = src++ -> a;
+                  (dest++)->Blend<false,true>(col);
+					}
+            else
+               for(int x=sx0;x<sx1;x++)
+					{
+						col.a = src++ -> a;
+                  (dest++)->Blend<false,false>(col);
+					}
+			}
+			else if (do_memcpy)
 			   memcpy(dest,src, (sx1-sx0)*4 );
          else if (swap)
          {

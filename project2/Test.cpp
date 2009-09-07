@@ -20,7 +20,7 @@ void Handler(Event &ioEvent,void *inStage)
 	{
 		Surface *surface = stage->GetPrimarySurface();
 		AutoSurfaceRender render(surface,0,stage);
-		surface->Clear(0x202020);
+		surface->Clear(0xffffff);
 		gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
 		gState.mClipRect = Rect( surface->Width(), surface->Height() );
 		gState.mTransform.mAAFactor = 4;
@@ -66,7 +66,7 @@ int main(int inargc,char **arvg)
 
 	//gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
 
-	gGraphics.lineStyle(5,0xffffff,0.75,true,ssmNormal,scRound,sjMiter);
+	gGraphics.lineStyle(5,0x202040,0.75,true,ssmNormal,scRound,sjMiter);
 	gGraphics.moveTo(-100,-100);
 	gGraphics.lineTo(-100,100);
 	gGraphics.curveTo(0,180,100,100);
@@ -76,7 +76,8 @@ int main(int inargc,char **arvg)
 	Extent2DF ext = gGraphics.GetExtent(gState.mTransform);
 	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
 
-	gText.setText(L"Hello");
+	//gText.setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
+	gText.setHTMLText(L"Hello <b>good-bye</b>");
 
    MainLoop();
    delete frame;

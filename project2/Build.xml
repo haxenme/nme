@@ -32,6 +32,11 @@
   <file name="common/Font.cpp"/>
   <file name="common/TileSheet.cpp"/>
 
+  <file name="common/XML/tinystr.cpp"/>
+  <file name="common/XML/tinyxml.cpp"/>
+  <file name="common/XML/tinyxmlerror.cpp"/>
+  <file name="common/XML/tinyxmlparser.cpp"/>
+
   <file name="internal/PolygonRenderer.cpp"/>
   <file name="internal/AlphaMask.cpp"/>
   <file name="internal/SolidFill.cpp"/>

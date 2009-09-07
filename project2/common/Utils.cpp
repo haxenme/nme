@@ -18,3 +18,20 @@ std::string WideToUTF8(const std::wstring &inWideString)
   return result;
 }
 
+wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen)
+{
+   outLen =  MultiByteToWideChar( CP_UTF8, 0, inStr, -1, 0, 0 );
+	if (outLen<1)
+		return 0;
+
+	// No null character ...
+	outLen--;
+
+	wchar_t *buf = new wchar_t[outLen];
+
+   MultiByteToWideChar( CP_UTF8, 0, inStr, -1, buf, outLen );
+
+	return buf;
+}
+
+

@@ -1,5 +1,7 @@
 #include <TextField.h>
 #include <Tilesheet.h>
+#include <Utils.h>
+#include "XML/tinyxml.h"
 
 
 TextField::TextField() :
@@ -62,23 +64,72 @@ void TextField::setText(const std::wstring &inString)
 	mLinesDirty = true;
 }
 
+void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount)
+{
+	for(const TiXmlNode *child = inNode->FirstChild(); child; child = child->NextSibling() )
+	{
+		const TiXmlText *text = child->ToText();
+		if (text)
+		{
+	      CharGroup chars;
+	      chars.mFormat = inFormat->IncRef();
+	      chars.mFont = 0;
+	      chars.mFontHeight = 0;
+			int len = 0;
+	      wchar_t *str = UTF8ToWideCStr(text->Value(),len);
+	      chars.mString = str;
+	      chars.mChar0 = ioCharCount;
+	      chars.mChars = len;
+			ioCharCount += len;
+
+	      mCharGroups.push_back(chars);
+	      mLinesDirty = true;
+		   printf(" %s\n", text->Value() );
+		}
+		else
+			AddNode(child,inFormat,ioCharCount);
+	}
+}
+
+
+void TextField::setHTMLText(const std::wstring &inString)
+{
+   Clear();
+	std::string str = "<top>" + WideToUTF8(inString) + "</top>";
+
+	TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
+   TiXmlDocument doc;
+	const char *err = doc.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
+	const TiXmlNode *top =  doc.FirstChild();
+	if (top)
+	{
+		int chars = 0;
+		AddNode(top,defaultTextFormat,chars);
+	}
+}
+
+
 bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
 	// Update fonts ...
+	int x = 100;
+	int y = 100;
 	for(int i=0;i<mCharGroups.size();i++)
 	{
 		CharGroup &g = mCharGroups[i];
+		if (!g.mString)
+			continue;
 		g.UpdateFont(inState);
 		if (!g.mFont)
 			continue;
 		// Now render the chars ...
-		int x = 100;
-		int y = 100;
       for(int c=0;c<g.mChars;c++)
 		{
-			Tile tile = g.mFont->GetGlyph( g.mString[c] );
-         tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y+(int)tile.mOy);
-         x+= tile.mRect.w;
+			int advance = 10;
+			Tile tile = g.mFont->GetGlyph( g.mString[c], advance );
+         tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y+(int)tile.mOy,
+              (uint32)g.mFormat->color | 0xff000000, true);
+         x+= advance;
 		}
 	}
 
@@ -115,6 +166,15 @@ TextFormat::~TextFormat()
 {
 }
 
+TextFormat *TextFormat::COW()
+{
+	if (mRefCount<2)
+		return this;
+	TextFormat *result = new TextFormat(*this);
+	result->mRefCount = 1;
+	mRefCount --;
+	return result;
+}
 
 TextFormat *TextFormat::Create(bool inInitRef)
 {

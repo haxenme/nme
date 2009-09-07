@@ -22,7 +22,7 @@ Font::~Font()
 }
 
 
-Tile Font::GetGlyph(int inCharacter)
+Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 {
    Glyph &glyph = inCharacter < 128 ? mGlyph[inCharacter] : mExtendedGlyph[inCharacter];
 	if (glyph.sheet<0)
@@ -57,11 +57,12 @@ Tile Font::GetGlyph(int inCharacter)
 				mSheets.push_back(sheet);
 			}
 
-			int tid = mSheets[mCurrentSheet]->AllocRect(rect_w,rect_h,-l,-t);
+			int tid = mSheets[mCurrentSheet]->AllocRect(rect_w,rect_h,l,-t);
 			if (tid>=0)
 			{
 		      glyph.sheet = mCurrentSheet;
 				glyph.tile = tid;
+				glyph.advance = (mFace->glyph->advance.x >> 6);
 				break;
 			}
 
@@ -98,9 +99,11 @@ Tile Font::GetGlyph(int inCharacter)
          }
       }
       tile.mSurface->EndRender();
+		outAdvance = glyph.advance;
       return tile;
 	}
 
+	outAdvance = glyph.advance;
    return mSheets[glyph.sheet]->GetTile(glyph.tile);
 }
 

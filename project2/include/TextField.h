@@ -125,6 +125,7 @@ private:
 	void operator=(const TextField &);
 
 	void Clear();
+	void AddNode(const class TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount);
 
 	enum StringState { ssNone, ssText, ssHTML };
 	StringState mStringState;

@@ -33,14 +33,14 @@ public:
 	static TextFormat *Default();
 	TextFormat *IncRef() { Object::IncRef(); return this; }
 
-	TextFormat &COW();
+	TextFormat *COW();
 
 
    Optional<TextFormatAlign>  align;
 	Optional<int>           blockIndent;
 	Optional<bool>          bold;
 	Optional<bool>          bullet;
-	Optional<ARGB>          color;
+	Optional<uint32>        color;
 	Optional<std::wstring>  font;
 	Optional<int>           indent;
 	Optional<bool>          italic;
@@ -70,6 +70,7 @@ class Font : public Object
 
 	   int sheet;
 	   int tile;
+		int advance;
 	};
 
 public:
@@ -77,7 +78,7 @@ public:
 
 	Font *IncRef() { Object::IncRef(); return this; }
 
-   Tile GetGlyph(int inCharacter);
+   Tile GetGlyph(int inCharacter,int &outAdvance);
 
 private:
    Font(FT_FaceRec_ *inFace,int inH, bool inInitRef);
