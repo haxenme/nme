@@ -72,22 +72,48 @@ SimpleSurface::~SimpleSurface()
 	delete [] mBase;
 }
 
-void SimpleSurface::Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)
+void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,int inDX, int inDY,
+                           uint32 inTint)
 {
 	int sx0 = std::max( std::max(inSrcRect.x,-inDX) , 0);
 	int sy0 = std::max( std::max(inSrcRect.y,-inDY) , 0);
-	int sx1 = std::min(inSrcRect.x1(),inSrc->Width());
-	if (sx1+inDX > mWidth)
-		sx1 = mWidth - inDX;
-	int sy1 = std::min(inSrcRect.y1(),inSrc->Height());
-	if (sy1+inDY > mHeight)
-		sx1 = mWidth - inDX;
+	int sx1 = std::min(inSrcRect.x1(),Width());
+	if (sx1+inDX > outDest.width)
+		sx1 = outDest.width - inDX;
+	int sy1 = std::min(inSrcRect.y1(),Height());
+	if (sy1+inDY > outDest.height)
+		sy1 = outDest.height - inDY;
+
+   bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
+   bool do_memcpy = !(mPixelFormat & pfHasAlpha) && !swap;
+   bool dest_alpha = (outDest.format & pfHasAlpha);
 	if (sx1>sx0 && sy1>sy0)
 	{
 		for(int y=sy0;y<sy1;y++)
-			memcpy(mBase + (y+inDY)*mStride + (sx0+inDX)*4,
-			       mBase + y*mStride + sx0*4,
-					 (sx1-sx0)*4 );
+      {
+         ARGB *dest = (ARGB *)outDest.Row(y+inDY) + (sx0+inDX);
+         const ARGB *src = (const ARGB *)(mBase + y*mStride) + sx0;
+         if (do_memcpy)
+			   memcpy(dest,src, (sx1-sx0)*4 );
+         else if (swap)
+         {
+            if (dest_alpha)
+               for(int x=sx0;x<sx1;x++)
+                  (dest++)->Blend<true,true>(*src++);
+            else
+               for(int x=sx0;x<sx1;x++)
+                  (dest++)->Blend<true,false>(*src++);
+         }
+         else
+         {
+            if (dest_alpha)
+               for(int x=sx0;x<sx1;x++)
+                  (dest++)->Blend<false,true>(*src++);
+            else
+               for(int x=sx0;x<sx1;x++)
+                  (dest++)->Blend<false,false>(*src++);
+         }
+      }
 	}
 }
 

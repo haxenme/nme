@@ -29,13 +29,14 @@ Tile Font::GetGlyph(int inCharacter)
 	{
 		int idx = FT_Get_Char_Index( mFace, inCharacter );
 		int err = FT_Load_Glyph( mFace, idx, FT_LOAD_DEFAULT  );
-		FT_Render_Mode mode = FT_RENDER_MODE_NORMAL; // FT_RENDER_MODE_MONO
+		FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
+		// mode = FT_RENDER_MODE_MONO;
 		if (err==0 && mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
 			err = FT_Render_Glyph( mFace->glyph, mode );
 
       int l = mFace->glyph->bitmap_left;
       int t = mFace->glyph->bitmap_top;
-      FT_Bitmap bitmap = mFace->glyph->bitmap;
+      FT_Bitmap &bitmap = mFace->glyph->bitmap;
 		int rect_w = bitmap.width;
 		int rect_h = bitmap.rows;
 
@@ -67,15 +68,40 @@ Tile Font::GetGlyph(int inCharacter)
 			// Need new sheet...
 			mCurrentSheet = -1;
 		}
+      // Now fill rect...
+      Tile tile = mSheets[glyph.sheet]->GetTile(glyph.tile);
+      RenderTarget target = tile.mSurface->BeginRender(tile.mRect);
+      for(int r=0;r<tile.mRect.h;r++)
+      {
+         unsigned char *row = bitmap.buffer + r*bitmap.pitch;
+         uint32  *dest = (uint32 *)target.Row(r);
 
-		printf("Got char %dx%d  +%d,%d\n", bitmap.rows, bitmap.width, l,t);
-
-
-		// Find bounding rect ...
+         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+         {
+            int bit = 0;
+            int data = 0;
+            for(int x=0;x<tile.mRect.w;x++)
+            {
+               if (!bit)
+               {
+                  bit = 128;
+                  data = *row++;
+               }
+               *dest++ =  (data & bit) ? 0xffffffff : 0x00000000;
+               bit >>= 1;
+            }
+         }
+         else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+         {
+            for(int x=0;x<tile.mRect.w;x++)
+               *dest ++ = 0xffffff | ( (*row++) << 24 );
+         }
+      }
+      tile.mSurface->EndRender();
+      return tile;
 	}
 
-	Tile result;
-	return result;
+   return mSheets[glyph.sheet]->GetTile(glyph.tile);
 }
 
 

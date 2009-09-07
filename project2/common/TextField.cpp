@@ -72,11 +72,13 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		if (!g.mFont)
 			continue;
 		// Now render the chars ...
-		int x = 0;
-		int y = 0;
+		int x = 100;
+		int y = 100;
       for(int c=0;c<g.mChars;c++)
 		{
 			Tile tile = g.mFont->GetGlyph( g.mString[c] );
+         tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y+(int)tile.mOy);
+         x+= tile.mRect.w;
 		}
 	}
 

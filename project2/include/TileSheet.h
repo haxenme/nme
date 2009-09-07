@@ -19,7 +19,7 @@ public:
 	TileSheet *IncRef() { Object::IncRef(); return this; }
 
 	int AllocRect(int inW,int inH,float inOx = 0, float inOY = 0);
-	const Tile &GetTile(int inID);
+	const Tile &GetTile(int inID) { return mTiles[inID]; }
 	Surface &GetSurface() { return *mSheet; }
 
 private:

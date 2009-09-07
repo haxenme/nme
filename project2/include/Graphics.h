@@ -600,6 +600,8 @@ struct RenderTarget
 	PixelFormat format;
 	bool is_hardware;
 
+   uint8 *Row(int inRow) const { return data+stride*inRow; }
+
 	union
 	{
 	  struct
@@ -635,10 +637,10 @@ public:
 	virtual void Clear(uint32 inColour) = 0;
 
    virtual RenderTarget BeginRender(const Rect &inRect)=0;
-
-   virtual void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY)=0;
-
    virtual void EndRender()=0;
+
+   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inDX, int inDY,
+                       uint32 inTint=0xffffff)=0;
 
    virtual NativeTexture *GetTexture() { return mTexture; }
    virtual void SetTexture(NativeTexture *inTexture);
@@ -685,8 +687,10 @@ public:
 	void Clear(uint32 inColour);
 
    RenderTarget BeginRender(const Rect &inRect);
-   void Blit(Surface *inSrc, const Rect &inSrcRect,int inDX, int inDY);
    void EndRender();
+
+   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inDX, int inDY,
+                       uint32 inTint=0xffffff);
 
 	const uint8 *GetBase() const { return mBase; }
 	int GetStride() const { return mStride; }
