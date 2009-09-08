@@ -21,6 +21,161 @@ Font::~Font()
 		mSheets[i]->DecRef();
 }
 
+#define Z(x,y) zone[(y)*w+(x)]
+#define Zp(p) zone[(p.y)*w+(p.x)]
+#define A(x,y) (*(bitmap.buffer + (y)*bitmap.pitch+(x)))
+#define Ap(p) (*(bitmap.buffer + (p.y)*bitmap.pitch+(p.x)))
+
+void SharpenText(FT_Bitmap &bitmap)
+{
+   enum { BG_THRESH = 25 };
+   enum { FG_THRESH = 192 };
+   enum { END_THRESH = 64 };
+
+   int w = bitmap.width;
+   int h = bitmap.rows;
+   if (w<2 || h<2) return;
+
+   std::vector<int> zone( w*h, -1 );
+
+   static int DX[] = { -1, 0, 1, 0 };
+   static int DY[] = { 0, 1, 0, -1 };
+
+   // Allocate "hole zones" so we do not join holes...
+   int zone_id = 1;
+   for(int y=0;y<h;y++)
+   {
+      unsigned char *row = bitmap.buffer + y*bitmap.pitch;
+      for(int x=0;x<w;x++)
+      {
+         int z;
+         QuickVec<ImagePoint> stack;
+         if (x==0 && y==0)
+         {
+            ImagePoint p;
+            z = 0;
+            for(p.x=0;p.x<w;p.x++)
+            {
+               p.y = 0;
+               if (Ap(p)<BG_THRESH) { stack.push_back(p); Ap(p) = 0; Zp(p) = z; }
+               p.y = h-1;
+               if (Ap(p)<BG_THRESH) { stack.push_back(p); Ap(p) = 0; Zp(p) = z; }
+            }
+            for(p.y=0;p.y<h;p.y++)
+            {
+               p.x = 0;
+               if (Ap(p)<BG_THRESH) { stack.push_back(p); Ap(p) = 0; Zp(p) = z; }
+               p.x = w-1;
+               if (Ap(p)<BG_THRESH) { stack.push_back(p); Ap(p) = 0; Zp(p) = z; }
+            }
+         }
+         else if (*row<BG_THRESH && Z(x,y)<0 )
+         {
+            *row = 0;
+            z = zone_id++;
+            Z(x,y) = z;
+            stack.push_back(ImagePoint(x,y));
+         }
+
+         while(!stack.empty())
+         {
+            ImagePoint s = stack.qpop();
+
+            for(int d=0;d<4;d++)
+            {
+               ImagePoint p(s.x+DX[d], s.y+DY[d]);
+               if (p.x>=0 && p.x<w && p.y>=0 && p.y<h && Ap(p)<BG_THRESH && Zp(p)<0)
+               {
+                  stack.push_back(p);
+                  Ap(p) = 0;
+                  Zp(p) = z;
+               }
+            }
+         }
+         row++;
+      }
+
+   }
+   for(int thresh = BG_THRESH; thresh< FG_THRESH; )
+   {
+      int next = FG_THRESH;
+      for(int y=0;y<h;y++)
+      {
+         unsigned char *row = bitmap.buffer + y*bitmap.pitch;
+         for(int x=0;x<w;x++)
+         {
+            unsigned char &r = *row++;
+            if (r==thresh)
+            {
+               int join_neighbour = -1;
+               int neighbours = 0;
+               int nx = 0;
+               int ny = 0;
+               int mult_zone = false;
+
+               for(int d=0;d<4;d++)
+               {
+                  ImagePoint p(x+DX[d], y+DY[d]);
+                  int z = (p.x>=0 && p.x<w && p.y>=0 && p.y<h) ? Zp(p) : 0;
+
+                  if (z>=0)
+                  {
+                     if (join_neighbour>=0)
+                        mult_zone = mult_zone || join_neighbour!=z;
+                     else
+                        join_neighbour = z;
+                  }
+                  else
+                  {
+                     if (DX[d]) ny++;
+                     else nx++;
+                     neighbours++;
+                  }
+               }
+               if (mult_zone)
+               {
+                  A(x,y) = 255;
+                  continue;
+               }
+
+               if (join_neighbour>=0 )
+               {
+                  if ( (nx==2 && ny==0) || (nx==0 && ny==2) ||
+                       (neighbours==1 && A(x,y)>END_THRESH )  )
+                     A(x,y) = 255;
+                  else
+                  {
+                     A(x,y) = 0;
+                     Z(x,y) = join_neighbour;
+                  }
+               }
+               else
+                  A(x,y) = 255;
+               //else if (neighbours>1) A(x,y) = 255;
+
+            }
+            else if (r>thresh && r<next)
+               next = r;
+         }
+      }
+      thresh = next;
+   }
+
+   if (0)
+      for(int y=0;y<h;y++)
+      {
+         unsigned char *row = bitmap.buffer + y*bitmap.pitch;
+         for(int x=0;x<w;x++)
+         {
+            if (Z(x,y) > 0)
+               *row = 128;
+            else if (Z(x,y) == 0)
+               *row = 64;
+            row++;
+         }
+      }
+};
+
 
 Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 {
@@ -71,6 +226,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 		}
       // Now fill rect...
       Tile tile = mSheets[glyph.sheet]->GetTile(glyph.tile);
+      SharpenText(bitmap);
       RenderTarget target = tile.mSurface->BeginRender(tile.mRect);
       for(int r=0;r<tile.mRect.h;r++)
       {

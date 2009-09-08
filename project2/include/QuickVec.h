@@ -234,6 +234,10 @@ public:
       Grow();
       mPtr[mSize++] = inVal;
    }
+   inline T_ qpop()
+   {
+      return mPtr[--mSize];
+   }
    inline void EraseAt(int inPos)
    {
       memmove(mPtr + inPos, mPtr + inPos + 1, (mSize-inPos-1) * sizeof(T_) );
