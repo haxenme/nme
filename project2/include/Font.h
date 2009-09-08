@@ -81,7 +81,7 @@ public:
    Tile GetGlyph(int inCharacter,int &outAdvance);
 
 private:
-   Font(FT_FaceRec_ *inFace,int inH, bool inInitRef);
+   Font(FT_FaceRec_ *inFace,int inH, bool inInitRef,int inTrans);
 	~Font();
 
 
@@ -90,8 +90,9 @@ private:
    QuickVec<TileSheet *> mSheets;
 	FT_FaceRec_           *mFace;
 
-	int  mPixelHeight;
-	int  mCurrentSheet;
+	uint32 mTransform;
+	int    mPixelHeight;
+	int    mCurrentSheet;
 };
 
 class FontCache

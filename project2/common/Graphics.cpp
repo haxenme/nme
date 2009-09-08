@@ -9,19 +9,27 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	clear();
+}
+
+void Graphics::clear()
+{
    for(int i=0;i<mCache.size();i++)
    {
-      // See if we can get the extent from somewhere!
       RendererCache &cache = mCache[i];
       if (cache.mSoftware)
          cache.mSoftware->Destroy();
       if (cache.mHardware)
          cache.mHardware->Destroy();
    }
+	mCache.resize(0);
 
    for(int i=0;i<mItems.size();i++)
       mItems[i]->DecRef();
+	mItems.resize(0);
+
    mRenderData.DeleteAll();
+
 }
 
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)

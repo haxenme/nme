@@ -453,6 +453,8 @@ public:
    Graphics();
    ~Graphics();
 
+	void clear();
+
 	Extent2DF GetExtent(const Transform &inTransform);
 
 	bool Render( const RenderTarget &inTarget, const RenderState &inState );
@@ -473,6 +475,7 @@ public:
    void moveTo(float x, float y);
    void curveTo(float cx,float cy,float x, float y);
 
+	bool empty() const { return mItems.empty(); }
 
 
 private:

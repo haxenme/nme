@@ -33,6 +33,11 @@ TextField::TextField() :
 {
 	mStringState = ssText;
 	mLinesDirty = false;
+	mGfxDirty = true;
+	x = 0;
+	y = 0;
+	width = 100;
+	height = 100;
 }
 
 TextField::~TextField()
@@ -57,14 +62,17 @@ void TextField::setText(const std::wstring &inString)
 	chars.mFormat = defaultTextFormat->IncRef();
 	chars.mFont = 0;
 	chars.mFontHeight = 0;
+	chars.mNewLines = 0;
 	wchar_t *str = new wchar_t[chars.mChars];
 	chars.mString = str;
 	memcpy(str,inString.c_str(), chars.mChars*sizeof(wchar_t));
 	mCharGroups.push_back(chars);
 	mLinesDirty = true;
+	mGfxDirty = true;
 }
 
-void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount)
+void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount,
+								int inLineSkips)
 {
 	for(const TiXmlNode *child = inNode->FirstChild(); child; child = child->NextSibling() )
 	{
@@ -80,14 +88,90 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 	      chars.mString = str;
 	      chars.mChar0 = ioCharCount;
 	      chars.mChars = len;
+	      chars.mNewLines = inLineSkips;
 			ioCharCount += len;
 
 	      mCharGroups.push_back(chars);
-	      mLinesDirty = true;
-		   printf(" %s\n", text->Value() );
+		   printf(" %s %d\n", text->Value(), inLineSkips );
+			inLineSkips = 0;
 		}
 		else
-			AddNode(child,inFormat,ioCharCount);
+		{
+			const TiXmlElement *el = child->ToElement();
+			if (el)
+			{
+				inFormat->IncRef();
+				TextFormat *fmt = inFormat;
+
+				if (el->ValueTStr()=="font")
+				{
+					for (const TiXmlAttribute *att = el->FirstAttribute(); att;
+			                 att = att->Next())
+					{
+					   const char *val = att->Value();
+					   if (att->NameTStr()=="color" && val[0]=='#')
+					   {
+							int col;
+							if (sscanf(val+1,"%x",&col))
+							{
+								fmt = fmt->COW();
+								fmt->color = col;
+							}
+					   }
+					   else if (att->NameTStr()=="face")
+					   {
+							fmt = fmt->COW();
+							fmt->font = UTF8ToWide(val);
+					   }
+					   else if (att->NameTStr()=="size")
+					   {
+							int size;
+							if (sscanf(att->Value(),"%d",&size))
+							{
+							   fmt = fmt->COW();
+								if (val[0]=='-' || val[0]=='+')
+							      fmt->size = std::max( (int)fmt->size + size, 0 );
+								else
+							      fmt->size = size;
+							}
+					   }
+					}
+				}
+				else if (el->ValueTStr()=="b")
+				{
+					if (!fmt->bold)
+					{
+						fmt = fmt->COW();
+						fmt->bold = true;
+					}
+				}
+				else if (el->ValueTStr()=="i")
+				{
+					if (!fmt->italic)
+					{
+						fmt = fmt->COW();
+						fmt->italic = true;
+					}
+				}
+				else if (el->ValueTStr()=="u")
+				{
+					if (!fmt->underline)
+					{
+						fmt = fmt->COW();
+						fmt->underline = true;
+					}
+				}
+				else if (el->ValueTStr()=="br")
+					inLineSkips++;
+				else if (el->ValueTStr()=="p")
+					inLineSkips++;
+
+
+				AddNode(child,fmt,ioCharCount,inLineSkips);
+
+            inFormat->DecRef();
+			}
+		}
 	}
 }
 
@@ -95,6 +179,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 void TextField::setHTMLText(const std::wstring &inString)
 {
    Clear();
+	mLinesDirty = true;
 	std::string str = "<top>" + WideToUTF8(inString) + "</top>";
 
 	TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
@@ -104,16 +189,38 @@ void TextField::setHTMLText(const std::wstring &inString)
 	if (top)
 	{
 		int chars = 0;
-		AddNode(top,defaultTextFormat,chars);
+		AddNode(top,defaultTextFormat,chars,0);
 	}
 }
 
 
 bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+	Layout();
+
+	if (mGfxDirty)
+	{
+		mGfx.clear();
+		if (background)
+		{
+			mGfx.beginFill( backgroundColor.ival, 1.0 );
+			mGfx.moveTo(x,y);
+			mGfx.lineTo(x+width,y);
+			mGfx.lineTo(x+width,y+height);
+			mGfx.lineTo(x,y+height);
+			mGfx.lineTo(x,y);
+		}
+		mGfxDirty = false;
+	}
+
+		if (!mGfx.empty())
+	{
+	   mGfx.Render(inTarget,inState);
+	}
+
 	// Update fonts ...
-	int x = 100;
-	int y = 100;
+	int x = this->x;
+	int y = this->y;
 	for(int i=0;i<mCharGroups.size();i++)
 	{
 		CharGroup &g = mCharGroups[i];
@@ -136,6 +243,15 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 	return true;
 }
 
+
+void TextField::Layout()
+{
+	if (!mLinesDirty)
+		return;
+
+
+	mLinesDirty = false;
+}
 
 
 // --- TextFormat -----------------------------------

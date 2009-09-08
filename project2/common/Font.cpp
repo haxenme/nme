@@ -4,12 +4,19 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_BITMAP_H
 
 FT_Library sgLibrary = 0;
 
+enum
+{
+	ffItalic  = 0x01,
+	ffBold    = 0x02,
+};
 
-Font::Font(FT_Face inFace, int inPixelHeight, bool inInitRef) :
-	  Object(inInitRef), mFace(inFace), mPixelHeight(inPixelHeight)
+
+Font::Font(FT_Face inFace, int inPixelHeight, bool inInitRef,int inTransform) :
+	  Object(inInitRef), mFace(inFace), mPixelHeight(inPixelHeight),mTransform(inTransform)
 {
 	mCurrentSheet = -1;
 }
@@ -28,8 +35,9 @@ Font::~Font()
 
 void SharpenText(FT_Bitmap &bitmap)
 {
-   enum { BG_THRESH = 25 };
-   enum { FG_THRESH = 192 };
+   enum { BG_THRESH = 32 };
+   enum { T_THRESH = 80 };
+   enum { FG_THRESH = 160 };
    enum { END_THRESH = 64 };
 
    int w = bitmap.width;
@@ -138,20 +146,34 @@ void SharpenText(FT_Bitmap &bitmap)
                   continue;
                }
 
-               if (join_neighbour>=0 )
+               if (join_neighbour>=0 || A(x,y)<FG_THRESH )
                {
-                  if ( (nx==2 && ny==0) || (nx==0 && ny==2) ||
+                  if ( (nx==2 && ny==0) || (nx==0 && ny==2) || neighbours==0 ||
+                       (neighbours==3 && A(x,y)>T_THRESH )  ||
                        (neighbours==1 && A(x,y)>END_THRESH )  )
-                     A(x,y) = 255;
+						{
+                     if ( (nx==2 && ny==0) || (nx==0 && ny==2) || neighbours==0)
+								A(x,y)=255;
+							else
+							{
+                        A(x,y) += 10;
+							   if (next>thresh+10) next = thresh+10;
+							}
+						}
                   else
                   {
+							// Erase point
+                     int oval = A(x,y);
                      A(x,y) = 0;
                      Z(x,y) = join_neighbour;
                   }
                }
                else
-                  A(x,y) = 255;
-               //else if (neighbours>1) A(x,y) = 255;
+					{
+                  A(x,y) += 10;
+						if (next>thresh+10) next = thresh+10;
+                  //A(x,y) = 255;
+					}
 
             }
             else if (r>thresh && r<next)
@@ -188,6 +210,12 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 		// mode = FT_RENDER_MODE_MONO;
 		if (err==0 && mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
 			err = FT_Render_Glyph( mFace->glyph, mode );
+
+		if (mTransform & ffBold)
+		{
+			FT_GlyphSlot_Own_Bitmap(mFace->glyph);
+         FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
+		}
 
       int l = mFace->glyph->bitmap_left;
       int t = mFace->glyph->bitmap_top;
@@ -226,7 +254,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 		}
       // Now fill rect...
       Tile tile = mSheets[glyph.sheet]->GetTile(glyph.tile);
-      SharpenText(bitmap);
+      // SharpenText(bitmap);
       RenderTarget target = tile.mSurface->BeginRender(tile.mRect);
       for(int r=0;r<tile.mRect.h;r++)
       {
@@ -367,11 +395,6 @@ static FT_Face OpenFont(const std::string &inFace, unsigned char inFlags)
 	return face;
 }
 
-enum
-{
-	ffItalic  = 0x01,
-	ffBold    = 0x02,
-};
 
 
 FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
@@ -396,6 +419,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
       if (font==0)
          font = OpenFont(("./data/" + fname).c_str(),inFlags);
    }
+
 
    return font;
 }
@@ -454,7 +478,13 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inInitRef)
 	else
 		face = fit->second;
 
-	return new Font(face,info.height,inInitRef);
+
+	uint32 transform = 0;
+	if ( !(face->style_flags & ffBold) && inFormat.bold )
+		transform |= ffBold;
+	if ( !(face->style_flags & ffItalic) && inFormat.italic )
+		transform |= ffItalic;
+	return new Font(face,info.height,inInitRef,transform);
 }
 
 

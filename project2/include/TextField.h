@@ -27,6 +27,7 @@ struct CharGroup
 	int             mChar0;
 	int             mChars;
 	int             mFontHeight;
+	int             mNewLines;
 	const wchar_t   *mString;
 	TextFormat      *mFormat;
 	Font            *mFont;
@@ -119,19 +120,30 @@ public:
 
 	bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
+	// Display-object like properties
+	int x;
+	int y;
+	int width;
+	int height;
+
+	// For drawing background...
+	Graphics mGfx;
+	
 
 private:
 	TextField(const TextField &);
 	void operator=(const TextField &);
+	void Layout();
 
 	void Clear();
-	void AddNode(const class TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount);
+	void AddNode(const class TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,int inLineSkips);
 
 	enum StringState { ssNone, ssText, ssHTML };
 	StringState mStringState;
 	std::wstring mUserString;
 
 	bool mLinesDirty;
+	bool mGfxDirty;
 
 	CharGroups mCharGroups;
 	Lines mLines;

@@ -29,9 +29,24 @@ wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen)
 
 	wchar_t *buf = new wchar_t[outLen];
 
-   MultiByteToWideChar( CP_UTF8, 0, inStr, -1, buf, outLen );
+   MultiByteToWideChar( CP_UTF8, 0, inStr, outLen, buf, outLen );
 
 	return buf;
 }
+
+std::wstring UTF8ToWide(const char *inStr)
+{
+   int len =  MultiByteToWideChar( CP_UTF8, 0, inStr, -1, 0, 0 );
+	if (len<1)
+		return std::wstring();
+
+	std::wstring result;
+	result.resize(len-1);
+
+   MultiByteToWideChar( CP_UTF8, 0, inStr, len-1, &result[0], len-1 );
+
+	return result;
+}
+
 
 
