@@ -57,7 +57,6 @@ void TextField::setText(const std::wstring &inString)
 {
    Clear();
 	CharGroup chars;
-	chars.mChar0 = 0;
 	chars.mChars = inString.length();
 	chars.mFormat = defaultTextFormat->IncRef();
 	chars.mFont = 0;
@@ -86,7 +85,6 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 			int len = 0;
 	      wchar_t *str = UTF8ToWideCStr(text->Value(),len);
 	      chars.mString = str;
-	      chars.mChar0 = ioCharCount;
 	      chars.mChars = len;
 	      chars.mNewLines = inLineSkips;
 			ioCharCount += len;
@@ -196,6 +194,10 @@ void TextField::setHTMLText(const std::wstring &inString)
 
 bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+	for(int i=0;i<mCharGroups.size();i++)
+	   if (mCharGroups[i].UpdateFont(inState))
+			mLinesDirty = true;
+
 	Layout();
 
 	if (mGfxDirty)
@@ -219,25 +221,44 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 	}
 
 	// Update fonts ...
-	int x = this->x;
 	int y = this->y;
-	for(int i=0;i<mCharGroups.size();i++)
+	for(int l=0;l<mLines.size();l++)
 	{
-		CharGroup &g = mCharGroups[i];
-		if (!g.mString)
-			continue;
-		g.UpdateFont(inState);
-		if (!g.mFont)
-			continue;
-		// Now render the chars ...
-      for(int c=0;c<g.mChars;c++)
+		Line &line = mLines[l];
+		int chars = line.mChars;
+		int done  = 0;
+		int gid = line.mChar0;
+		CharGroup *group = &mCharGroups[gid++];
+		int y0 = y + line.mMetrics.ascent;
+		int c0 = line.mCharInGroup0;
+	   int x = this->x;
+		while(done<chars)
 		{
-			int advance = 10;
-			Tile tile = g.mFont->GetGlyph( g.mString[c], advance );
-         tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y+(int)tile.mOy,
-              (uint32)g.mFormat->color | 0xff000000, true);
-         x+= advance;
+			int left = std::min(group->mChars - c0,chars-done);
+			while(left==0)
+			{
+		      group = &mCharGroups[gid++];
+				c0 = 0;
+				left = std::min(group->mChars,chars-done);
+			}
+			done += left;
+			if (group->mString && group->mFont)
+			{
+				// Now render the chars ...
+				for(int c=0;c<left;c++)
+				{
+					int advance = 10;
+					Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
+					tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
+						  (uint32)group->mFormat->color | 0xff000000, true);
+					x+= advance;
+					if (x>this->x+width)
+						break;
+				}
+			}
+			c0 += left;
 		}
+		y+=line.mMetrics.height;
 	}
 
 	return true;
@@ -249,6 +270,25 @@ void TextField::Layout()
 	if (!mLinesDirty)
 		return;
 
+	mLines.resize(0);
+	int y0 = 0;
+	Line line;
+	line.mY0 = y0;
+	int char_count = 0;
+	for(int i=0;i<mCharGroups.size();i++)
+	{
+		CharGroup &g = mCharGroups[i];
+		if (line.mChars==0)
+		{
+			line.mChar0 = char_count;
+			line.mCharGroup0 = i;
+		}
+		line.mChars += g.mChars;
+		char_count += g.mChars;
+		g.UpdateMetrics(line.mMetrics);
+	}
+	if (line.mChars)
+		mLines.push_back(line);
 
 	mLinesDirty = false;
 }
@@ -320,7 +360,7 @@ void CharGroup::Clear()
 	   mFont->DecRef();
 }
 
-void CharGroup::UpdateFont(const RenderState &inState)
+bool CharGroup::UpdateFont(const RenderState &inState)
 {
 	double scale = inState.mTransform.mMatrix.GetScaleY() *
 					   inState.mTransform.mStageScaleY;
@@ -331,7 +371,9 @@ void CharGroup::UpdateFont(const RenderState &inState)
 			mFont->DecRef();
 		mFont = Font::Create(*mFormat,scale,true);
 	   mFontHeight = h;
+		return true;
 	}
+	return false;
 }
 
 

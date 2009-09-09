@@ -82,7 +82,7 @@ int main(int inargc,char **arvg)
 	gText.x = 200;
 	gText.y = 200;
 	gText.background = true;
-	gText.backgroundColor.SetRGB(0x404060);
+	gText.backgroundColor.SetRGBNative(0x404060);
 
    MainLoop();
    delete frame;

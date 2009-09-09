@@ -292,8 +292,26 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 }
 
 
+void  Font::UpdateMetrics(TextLineMetrics &ioMetrics)
+{
+   if (mFace)
+	{
+		FT_Size_Metrics &metrics = mFace->size->metrics;
+		ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender/(1<<6) );
+		ioMetrics.descent = std::max( ioMetrics.descent, (float)metrics.descender/(1<<6) );
+		ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height/(1<<6) );
+	}
+}
 
 
+
+// --- CharGroup ---------------------------------------------
+
+void  CharGroup::UpdateMetrics(TextLineMetrics &ioMetrics)
+{
+   if (mFont)
+		mFont->UpdateMetrics(ioMetrics);
+}
 
 
 // --- Create font from TextFormat ----------------------------------------------------

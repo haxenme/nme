@@ -8,47 +8,6 @@
 enum TextFieldType { tftDynamic, tftInput };
 
 
-
-struct TextLineMetrics
-{
-	float ascent;
-	float descent;
-	float height;
-	float leading;
-	float width;
-	float x;
-};
-
-struct CharGroup
-{
-	void  Clear();
-	void  UpdateFont(const RenderState &inState);
-
-	int             mChar0;
-	int             mChars;
-	int             mFontHeight;
-	int             mNewLines;
-	const wchar_t   *mString;
-	TextFormat      *mFormat;
-	Font            *mFont;
-};
-
-
-typedef QuickVec<CharGroup> CharGroups;
-
-struct Line
-{
-	TextLineMetrics mMetrics;
-	int mY0;
-	int mHeight;
-   int mChar0;
-	int mChars;
-	int mCharGroup0;
-};
-
-typedef QuickVec<Line> Lines;
-
-
 class TextField
 {
 public:

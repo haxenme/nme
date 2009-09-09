@@ -603,6 +603,8 @@ struct RenderTarget
 	PixelFormat format;
 	bool is_hardware;
 
+	RenderTarget ClipRect(const Rect &inRect);
+
    uint8 *Row(int inRow) const { return data+stride*inRow; }
 
 	union
