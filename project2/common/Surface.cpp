@@ -72,29 +72,30 @@ SimpleSurface::~SimpleSurface()
 	delete [] mBase;
 }
 
-void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,int inDX, int inDY,
-                           uint32 inTint,bool inUseSrcAlphaOnly)
+void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
+                           int inPosX, int inPosY, uint32 inTint,bool inUseSrcAlphaOnly)
 {
-	int dx = inDX - inSrcRect.x;
-	int dy = inDY - inSrcRect.y;
-	int sx0 = std::max( std::max(inSrcRect.x,-dx) , 0);
-	int sy0 = std::max( std::max(inSrcRect.y,-dy) , 0);
-	int sx1 = std::min(inSrcRect.x1(),Width());
-	if (sx1+dx > outDest.width)
-		sx1 = outDest.width - dx;
-	int sy1 = std::min(inSrcRect.y1(),Height());
-	if (sy1+dy > outDest.height)
-		sy1 = outDest.height - dy;
+   // Translate inSrcRect src_rect to dest ...
+   Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
+   // clip ...
+   src_rect = src_rect.Intersect(outDest.mRect);
 
-   bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
-   bool do_memcpy = !(mPixelFormat & pfHasAlpha) && !swap;
-   bool dest_alpha = (outDest.format & pfHasAlpha);
-	if (sx1>sx0 && sy1>sy0)
+   // translate back to source-coordinates ...
+   src_rect.Translate(inSrcRect.x-inPosX, inSrcRect.y-inPosY);
+   // clip to origial rect...
+   src_rect = src_rect.Intersect( inSrcRect );
+
+	if (src_rect.HasPixels())
 	{
-		for(int y=sy0;y<sy1;y++)
+      bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
+      bool do_memcpy = !(mPixelFormat & pfHasAlpha) && !swap;
+      bool dest_alpha = (outDest.format & pfHasAlpha);
+      int dx = inPosX + src_rect.x - inSrcRect.x;
+      int dy = inPosY + src_rect.y - inSrcRect.y;
+		for(int y=0;y<src_rect.h;y++)
       {
-         ARGB *dest = (ARGB *)outDest.Row(y+dy) + (sx0+dx);
-         const ARGB *src = (const ARGB *)(mBase + y*mStride) + sx0;
+         ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
+         const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
 			if (inUseSrcAlphaOnly)
 			{
 				ARGB col(inTint);
@@ -102,36 +103,36 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,in
 					std::swap(col.c0,col.c2);
 
             if (dest_alpha)
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
 					{
 						col.a = src++ -> a;
                   (dest++)->Blend<false,true>(col);
 					}
             else
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
 					{
 						col.a = src++ -> a;
                   (dest++)->Blend<false,false>(col);
 					}
 			}
 			else if (do_memcpy)
-			   memcpy(dest,src, (sx1-sx0)*4 );
+			   memcpy(dest,src, (src_rect.w)*4 );
          else if (swap)
          {
             if (dest_alpha)
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
                   (dest++)->Blend<true,true>(*src++);
             else
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
                   (dest++)->Blend<true,false>(*src++);
          }
          else
          {
             if (dest_alpha)
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
                   (dest++)->Blend<false,true>(*src++);
             else
-               for(int x=sx0;x<sx1;x++)
+               for(int x=0;x<src_rect.w;x++)
                   (dest++)->Blend<false,false>(*src++);
          }
       }
@@ -154,15 +155,10 @@ RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
 	RenderTarget result;
 	memset(&result,0,sizeof(result));
 
-	Rect r = inRect.Intersect( Rect(0,0,mWidth,mHeight) );
+	result.mRect = inRect.Intersect( Rect(0,0,mWidth,mHeight) );
 	result.is_hardware = false;
-	if (r.w>0 && r.h>0)
-	{
-       result.width = r.w;
-       result.height = r.h;
-       result.stride = mStride;
-       result.data = mBase + mStride*r.y +r.x*4;
-	}
+   result.stride = mStride;
+   result.data = mBase;
 
 	return result;
 }

@@ -23,6 +23,8 @@ struct Rect
 	Rect operator /(int inScale) const { return Rect(x/inScale,y/inScale,w/inScale,h/inScale); }
 	int x1() const { return x+w; }
 	int y1() const { return y+h; }
+   void Translate(int inTx,int inTy) { x+=inTx; y+= inTy; }
+   bool HasPixels() const { return w>0 && h>0; }
 
    void ClipY(int &ioY0, int &ioY1) const
 	{

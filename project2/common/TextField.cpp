@@ -34,10 +34,7 @@ TextField::TextField() :
 	mStringState = ssText;
 	mLinesDirty = false;
 	mGfxDirty = true;
-	x = 0;
-	y = 0;
-	width = 100;
-	height = 100;
+   mRect = Rect(100,100);
 }
 
 TextField::~TextField()
@@ -206,22 +203,23 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		if (background)
 		{
 			mGfx.beginFill( backgroundColor.ival, 1.0 );
-			mGfx.moveTo(x,y);
-			mGfx.lineTo(x+width,y);
-			mGfx.lineTo(x+width,y+height);
-			mGfx.lineTo(x,y+height);
-			mGfx.lineTo(x,y);
+			mGfx.moveTo(mRect.x,mRect.y);
+			mGfx.lineTo(mRect.x+mRect.w,mRect.y);
+			mGfx.lineTo(mRect.x+mRect.w,mRect.y+mRect.h);
+			mGfx.lineTo(mRect.x,mRect.y+mRect.h);
+			mGfx.lineTo(mRect.x,mRect.y);
 		}
 		mGfxDirty = false;
 	}
 
-		if (!mGfx.empty())
+	if (!mGfx.empty())
 	{
 	   mGfx.Render(inTarget,inState);
 	}
 
-	// Update fonts ...
-	int y = this->y;
+   RenderTarget target = inTarget.ClipRect(mRect);
+
+	int y = mRect.y;
 	for(int l=0;l<mLines.size();l++)
 	{
 		Line &line = mLines[l];
@@ -231,7 +229,7 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		CharGroup *group = &mCharGroups[gid++];
 		int y0 = y + line.mMetrics.ascent;
 		int c0 = line.mCharInGroup0;
-	   int x = this->x;
+	   int x = mRect.x;
 		while(done<chars)
 		{
 			int left = std::min(group->mChars - c0,chars-done);
@@ -249,10 +247,10 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 				{
 					int advance = 10;
 					Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
-					tile.mSurface->BlitTo(inTarget, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
+					tile.mSurface->BlitTo(target, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
 						  (uint32)group->mFormat->color | 0xff000000, true);
 					x+= advance;
-					if (x>this->x+width)
+					if (x>target.mRect.x1())
 						break;
 				}
 			}

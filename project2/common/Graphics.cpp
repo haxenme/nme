@@ -258,6 +258,15 @@ RenderState::RenderState(Surface *inSurface,int inAA)
 	mAAClipRect =Rect( mClipRect.w*inAA, mClipRect.h*inAA );
 }
 
+// --- RenderTarget -------------------------------------------------------------------
+
+RenderTarget RenderTarget::ClipRect(const Rect &inRect) const
+{
+   RenderTarget result = *this;
+   result.mRect = result.mRect.Intersect(inRect);
+   return result;
+}
+
 
 // --- GraphicsBitmapFill -------------------------------------------------------------------
 

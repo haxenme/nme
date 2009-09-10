@@ -80,10 +80,7 @@ public:
 	bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
 	// Display-object like properties
-	int x;
-	int y;
-	int width;
-	int height;
+   Rect mRect;
 
 	// For drawing background...
 	Graphics mGfx;

@@ -259,7 +259,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
       for(int r=0;r<tile.mRect.h;r++)
       {
          unsigned char *row = bitmap.buffer + r*bitmap.pitch;
-         uint32  *dest = (uint32 *)target.Row(r);
+         uint32  *dest = (uint32 *)target.Row(r + tile.mRect.y) + tile.mRect.x;
 
          if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
          {

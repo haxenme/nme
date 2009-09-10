@@ -598,12 +598,11 @@ struct HardwareContext;
 
 struct RenderTarget
 {
-   int  width;
-   int  height;
+   Rect mRect;
 	PixelFormat format;
 	bool is_hardware;
 
-	RenderTarget ClipRect(const Rect &inRect);
+	RenderTarget ClipRect(const Rect &inRect) const;
 
    uint8 *Row(int inRow) const { return data+stride*inRow; }
 
@@ -644,7 +643,7 @@ public:
    virtual RenderTarget BeginRender(const Rect &inRect)=0;
    virtual void EndRender()=0;
 
-   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inDX, int inDY,
+   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        uint32 inTint=0xffffff,bool inUseSrcAlphaOnly=false)=0;
 
    virtual NativeTexture *GetTexture() { return mTexture; }
