@@ -303,6 +303,11 @@ void  Font::UpdateMetrics(TextLineMetrics &ioMetrics)
 	}
 }
 
+int Font::Height()
+{
+	if (!mFace) return 12;
+	return mFace->size->metrics.height/(1<<6);
+}
 
 
 // --- CharGroup ---------------------------------------------
@@ -312,6 +317,9 @@ void  CharGroup::UpdateMetrics(TextLineMetrics &ioMetrics)
    if (mFont)
 		mFont->UpdateMetrics(ioMetrics);
 }
+
+int CharGroup::Height()
+{ return mFont ? mFont->Height() : 12; }
 
 
 // --- Create font from TextFormat ----------------------------------------------------

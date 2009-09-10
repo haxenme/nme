@@ -2,7 +2,7 @@
 #include <Tilesheet.h>
 #include <Utils.h>
 #include "XML/tinyxml.h"
-
+#include <ctype.h>
 
 TextField::TextField() :
 	alwaysShowSelection(false),
@@ -87,7 +87,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 			ioCharCount += len;
 
 	      mCharGroups.push_back(chars);
-		   printf(" %s %d\n", text->Value(), inLineSkips );
+		   //printf(" %s %d\n", text->Value(), inLineSkips );
 			inLineSkips = 0;
 		}
 		else
@@ -200,14 +200,15 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 	if (mGfxDirty)
 	{
 		mGfx.clear();
+		int b=2;
 		if (background)
 		{
 			mGfx.beginFill( backgroundColor.ival, 1.0 );
-			mGfx.moveTo(mRect.x,mRect.y);
-			mGfx.lineTo(mRect.x+mRect.w,mRect.y);
-			mGfx.lineTo(mRect.x+mRect.w,mRect.y+mRect.h);
-			mGfx.lineTo(mRect.x,mRect.y+mRect.h);
-			mGfx.lineTo(mRect.x,mRect.y);
+			mGfx.moveTo(mRect.x-b,mRect.y-b);
+			mGfx.lineTo(mRect.x+b+mRect.w,mRect.y-b);
+			mGfx.lineTo(mRect.x+b+mRect.w,mRect.y+b+mRect.h);
+			mGfx.lineTo(mRect.x-b,mRect.y+b+mRect.h);
+			mGfx.lineTo(mRect.x-b,mRect.y-b);
 		}
 		mGfxDirty = false;
 	}
@@ -225,7 +226,7 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		Line &line = mLines[l];
 		int chars = line.mChars;
 		int done  = 0;
-		int gid = line.mChar0;
+		int gid = line.mCharGroup0;
 		CharGroup *group = &mCharGroups[gid++];
 		int y0 = y + line.mMetrics.ascent;
 		int c0 = line.mCharInGroup0;
@@ -246,12 +247,16 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 				for(int c=0;c<left;c++)
 				{
 					int advance = 10;
-					Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
-					tile.mSurface->BlitTo(target, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
-						  (uint32)group->mFormat->color | 0xff000000, true);
-					x+= advance;
-					if (x>target.mRect.x1())
-						break;
+					int ch = group->mString[c+c0];
+					if (ch!='\n')
+					{
+					   Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
+					   tile.mSurface->BlitTo(target, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
+						     (uint32)group->mFormat->color | 0xff000000, true);
+					   x+= advance;
+					   if (x>target.mRect.x1())
+						   break;
+					}
 				}
 			}
 			c0 += left;
@@ -273,20 +278,119 @@ void TextField::Layout()
 	Line line;
 	line.mY0 = y0;
 	int char_count = 0;
+	int height = 0;
+	int width = 0;
+	int x = 0;
+	int y = 0;
+
 	for(int i=0;i<mCharGroups.size();i++)
 	{
 		CharGroup &g = mCharGroups[i];
-		if (line.mChars==0)
+	   int cid = 0;
+		int last_word_cid = 0;
+		int last_word_x = x;
+		int last_word_line_chars = line.mChars;
+		if (g.mNewLines>0 && multiline)
 		{
+	      if (line.mChars)
+			{
+				mLines.push_back(line);
+				line.Clear();
+			}
+			y += (g.mNewLines) * g.Height();
+			x = 0;
+			line.mY0 = y;
 			line.mChar0 = char_count;
 			line.mCharGroup0 = i;
+			line.mCharInGroup0 = cid;
 		}
-		line.mChars += g.mChars;
-		char_count += g.mChars;
+
+
 		g.UpdateMetrics(line.mMetrics);
+		while(cid<g.mChars)
+		{
+			if (line.mChars==0)
+			{
+				x = 0;
+				line.mY0 = y;
+				line.mChar0 = char_count;
+				line.mCharGroup0 = i;
+				line.mCharInGroup0 = cid;
+				last_word_line_chars = 0;
+				last_word_cid = cid;
+				last_word_x = 0;
+			}
+
+			int advance = 0;
+			int ch = g.mString[cid];
+			line.mChars++;
+			char_count++;
+			cid++;
+			if ( !isalpha(ch) && !isdigit(ch) && ch!='_' )
+			{
+				last_word_cid = cid;
+				last_word_x = x;
+				last_word_line_chars = line.mChars;
+			}
+
+			if (ch=='\n')
+			{
+				// New line ...
+				mLines.push_back(line);
+				line.Clear();
+		      g.UpdateMetrics(line.mMetrics);
+				y += g.Height();
+				continue;
+			}
+
+			int ox = x;
+			g.mFont->GetGlyph( ch, advance );
+			x+= advance;
+			if (wordWrap && (x > mRect.w) && line.mChars>1)
+			{
+				// No break on line so far - just back up 1 character....
+				if (last_word_line_chars==0)
+				{
+					cid--;
+					line.mChars--;
+					char_count--;
+		         line.mMetrics.width = ox;
+				}
+				else
+				{
+				   // backtrack to last break ...
+					cid = last_word_cid;
+					char_count-= line.mChars - last_word_line_chars;
+				   line.mChars = last_word_line_chars;
+		         line.mMetrics.width = last_word_x;
+				}
+				mLines.push_back(line);
+				y += g.Height();
+				x = 0;
+				line.Clear();
+		      g.UpdateMetrics(line.mMetrics);
+				continue;
+			}
+
+		   line.mMetrics.width = x;
+		   if (x>width)
+			   width = x;
+		}
 	}
 	if (line.mChars)
+	{
+		y += line.mMetrics.height;
 		mLines.push_back(line);
+	}
+
+	height = y;
+
+	if (autoSize != asNone)
+	{
+		if (!wordWrap)
+         mRect.w = width;
+      mRect.h = height;
+	}
 
 	mLinesDirty = false;
 }

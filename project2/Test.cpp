@@ -78,12 +78,16 @@ int main(int inargc,char **arvg)
 	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
 
 	//gText.setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
-	gText.setHTMLText(L"Hello <font color='#202020' face='times' size='12'>good-<br>bye <b>gone for good!</b></font>");
 	//gText.setHTMLText(L"HHHH");
 	gText.mRect.x = 200;
-	gText.mRect.y = 200;
+	gText.mRect.y = 2;
 	gText.background = true;
 	gText.backgroundColor.SetRGBNative(0xb0b0f0);
+	gText.autoSize = asLeft;
+	gText.multiline = true;
+	gText.wordWrap = true;
+	gText.mRect.w = 50;
+	gText.setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 
    MainLoop();
    delete frame;

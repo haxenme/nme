@@ -81,6 +81,7 @@ struct CharGroup
 	void  Clear();
 	bool  UpdateFont(const RenderState &inState);
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
+	int   Height();
 
 	int             mChars;
 	int             mFontHeight;
@@ -95,7 +96,9 @@ typedef QuickVec<CharGroup> CharGroups;
 
 struct Line
 {
-	Line() { memset(this,0,sizeof(*this)); }
+	Line() { Clear(); }
+
+	void Clear() { memset(this,0,sizeof(*this)); }
 	TextLineMetrics mMetrics;
 	int mY0;
    int mChar0;
@@ -130,6 +133,8 @@ public:
    Tile GetGlyph(int inCharacter,int &outAdvance);
 
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
+
+	int   Height();
 private:
    Font(FT_FaceRec_ *inFace,int inH, bool inInitRef,int inTrans);
 	~Font();
