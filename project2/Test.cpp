@@ -1,5 +1,6 @@
 #include <Graphics.h>
 #include <TextField.h>
+#include <Display.h>
 
 RenderState gState;
 
@@ -18,11 +19,9 @@ void Handler(Event &ioEvent,void *inStage)
 
 	if (ioEvent.mType==etNextFrame)
 	{
-		Surface *surface = stage->GetPrimarySurface();
-		AutoSurfaceRender render(surface,0,stage);
-		surface->Clear(0xffffff);
+		AutoStageRender render(stage,0xffffff);
 		gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
-		gState.mClipRect = Rect( surface->Width(), surface->Height() );
+		gState.mClipRect = Rect( render.Width(), render.Height() );
 		gState.mTransform.mAAFactor = 4;
 		gState.mAAClipRect = gState.mClipRect * gState.mTransform.mAAFactor;
 
@@ -35,7 +34,7 @@ void Handler(Event &ioEvent,void *inStage)
 
 int main(int inargc,char **arvg)
 {
-   Frame *frame = CreateMainFrame(640,400,wfResizable,"Hello");
+   Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
 
 
 	// Render to bitmap ...

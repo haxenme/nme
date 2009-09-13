@@ -1,4 +1,5 @@
 #include <Graphics.h>
+#include <Display.h>
 #include <windows.h>
 #include <map>
 
@@ -258,19 +259,19 @@ public:
 
 // --- When using the simple window class -----------------------------------------------
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, String inTitle)
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle)
 {
    Rect r(100,100,inWidth,inHeight);
 
-   WNDCLASSEX wc;
+   WNDCLASSEXW wc;
    memset(&wc,0,sizeof(wc));
    wc.cbSize = sizeof(wc);
    wc.style = CS_OWNDC | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
    wc.hbrBackground = 0; //(HBRUSH)GetStockObject(WHITE_BRUSH);
    wc.lpfnWndProc =  DefWindowProc;
-   wc.lpszClassName = "NME";
+   wc.lpszClassName = L"NME";
 
-   RegisterClassEx(&wc);
+   RegisterClassExW(&wc);
 
    DWORD ex_style = WS_EX_ACCEPTFILES;
    DWORD style = 0;
@@ -281,7 +282,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, String inT
    else
       style |= WS_OVERLAPPEDWINDOW;
 
-   HWND win = CreateWindowEx(ex_style, "NME", inTitle,
+   HWND win = CreateWindowExW(ex_style, L"NME", inTitle,
                               style,
                               r.x, r.y, r.w, r.h,
                               0,

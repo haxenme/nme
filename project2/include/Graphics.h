@@ -497,98 +497,6 @@ private:
 };
 
 
-typedef char *String;
-
-class NativeFont;
-
-class TextData
-{
-   String     mText;
-   NativeFont *mFont;
-   uint32     mColour;
-   double     mSize;
-   double     mX;
-   double     mY;
-};
-
-
-typedef QuickVec<TextData> TextList;
-
-
-enum EventType
-{
-   etUnknown,
-   etClose,
-   etResize,
-   etMouseMove,
-   etMouseClick,
-   etTimer,
-   etRedraw,
-   etNextFrame,
-};
-
-
-struct Event
-{
-	Event(EventType inType=etUnknown) :
-		  mType(inType), mWinX(0), mWinY(0), mValue(0), mModState(0)
-	{
-	}
-
-   EventType mType;
-   int       mWinX,mWinY;
-   int       mValue;
-   int       mModState;
-};
-
-typedef void (*EventHandler)(Event &ioEvent, void *inUserData);
-
-class DisplayObject
-{
-public:
-
-};
-
-
-class DisplayObjectContainer : public DisplayObject
-{
-public:
-
-};
-
-class Stage : public DisplayObjectContainer
-{
-public:
-   virtual void Flip() = 0;
-   virtual void GetMouse() = 0;
-   virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
-	virtual Surface *GetPrimarySurface() = 0;
-};
-
-
-class Frame
-{
-public:
-   virtual void SetTitle() = 0;
-   virtual void SetIcon() = 0;
-   virtual Stage *GetStage() = 0;
-};
-
-enum WindowFlags
-{
-   wfFullScreen = 0x00000001,
-   wfBorderless = 0x00000002,
-   wfResizable  = 0x00000004,
-   wfOpenGL     = 0x00000008,
-};
-
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, String inTitle );
-void MainLoop();
-void TerminateMainLoop();
-
-#ifdef _WIN32
-//Frame *CreateNativeFrame(HWND inParent);
-#endif
 
 
 // ---- Surface API --------------
@@ -660,22 +568,15 @@ protected:
 class AutoSurfaceRender
 {
 	Surface *mSurface;
-	Stage   *mToFlip;
 	RenderTarget mTarget;
 public:
-	AutoSurfaceRender(Surface *inSurface, const Rect *inRect=0, Stage *inToFlip=0)
+	AutoSurfaceRender(Surface *inSurface, const Rect *inRect=0)
 	{
 		mSurface = inSurface;
-		mToFlip = inToFlip;
 		mTarget = inRect ? inSurface->BeginRender( *inRect ) :
 		                 inSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
 	}
-	~AutoSurfaceRender()
-	{
-		mSurface->EndRender();
-		if (mToFlip)
-			mToFlip->Flip();
-	}
+	~AutoSurfaceRender() { mSurface->EndRender(); }
 	const RenderTarget &Target() { return mTarget; }
 
 };
