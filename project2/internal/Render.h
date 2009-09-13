@@ -4,38 +4,10 @@
 #include "AlphaMask.h"
 #include <Pixel.h>
 
-/*
-Dest:
-  HasAlpha
-
-  SetRow(int)
-  SetX(int)
-  Get()
-  SetInc( XRGB )
-
-Src:
-   SetRow(int)
-   SetX(int)
-   GetInc( )
-
-
-RenderState:
-   mClip
-   ColourTransform
-   Alpha?
-   BlendFunc
-
-Blender
-   Blend(dest,src,alpha)
-
-
-*/
-
-
 
 
 template<typename SOURCE_, typename DEST_, typename BLEND_>
-void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, BLEND_ &inBlend,
+void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, const BLEND_ &inBlend,
             const Rect &inClip, int inTX, int inTY)
 {
    if (inMask.mLines.empty())
@@ -71,7 +43,10 @@ void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, BLEN
             int alpha = run->mAlpha;
 
             while(x0++<x1)
-               inBlend.Blend<DEST_::HasAlpha>(outDest,inSource,alpha);
+               if (DEST_::HasAlpha)
+                   inBlend.BlendAlpha( outDest,inSource,alpha );
+               else
+                   inBlend.BlendNoAlpha( outDest,inSource,alpha );
             ++run;
          }
       }
@@ -98,13 +73,19 @@ struct DestSurface32
 
 // 1, 2 ro 3 of these
 template<typename SOURCE_, typename BLEND_>
-void Render(const AlphaMask &inMask, SOURCE_ &inSource, const RenderTarget &inDest, BLEND_ &inBlend,
+void Render(const AlphaMask &inMask, SOURCE_ &inSource, const RenderTarget &inDest, const BLEND_ &inBlend,
             const Rect &inClipRect, int inTX, int inTY)
 {
 	if (inDest.format & pfHasAlpha)
-      DestRender(inMask, inSource, DestSurface32<true>(inDest), inBlend, inClipRect, inTX, inTY);
+	{
+		DestSurface32<true> dest(inDest);
+      DestRender(inMask, inSource, dest, inBlend, inClipRect, inTX, inTY);
+	}
 	else
-      DestRender(inMask, inSource, DestSurface32<false>(inDest), inBlend, inClipRect, inTX, inTY);
+	{
+		DestSurface32<false> dest(inDest);
+      DestRender(inMask, inSource, dest, inBlend, inClipRect, inTX, inTY);
+	}
 }
 
 
@@ -112,7 +93,7 @@ template<bool SWAP_RB>
 struct NormalBlender
 {
 	template<bool DEST_ALPHA,typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
+   void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
 		ARGB src = inSrc.GetInc();
 		src.a = (src.a * inAlpha)>>8;
@@ -120,6 +101,16 @@ struct NormalBlender
 		dest.Blend<SWAP_RB,DEST_ALPHA>(src);
 		inDest.SetInc(dest);
 	}
+	template<typename DEST, typename SRC>
+   void BlendNoAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+       Blend<false>(inDest,inSrc,inAlpha);
+   }
+	template<typename DEST, typename SRC>
+   void BlendAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+       Blend<true>(inDest,inSrc,inAlpha);
+   }
 };
 
 template<bool SWAP_RB>
@@ -129,14 +120,24 @@ struct NormalBlenderAlphaLut
 	const Uint8 *mAlphaLut;
 
 	template<bool DEST_ALPHA,typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
+   void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
 		ARGB src = inSrc.GetInc();
 		src.a = mAlphaLut[inAlpha];
 		ARGB dest = inDest.Get();
-		dest.Blend<SWAP_RGB,DEST_ALPHA>(src);
+		dest.Blend<SWAP_RB,DEST_ALPHA>(src);
 		inDest.SetInc(dest);
 	}
+	template<typename DEST, typename SRC>
+   void BlendNoAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+      Blend<false>(inDest,inSrc);
+   }
+	template<typename DEST, typename SRC>
+   void BlendAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+      Blend<true>(inDest,inSrc);
+   }
 };
 
 

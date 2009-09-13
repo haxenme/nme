@@ -135,7 +135,7 @@ struct FixedPoint
 
    inline FixedPoint(const FixedPoint &inRHS) :x(inRHS.x), y(inRHS.y) {}
    inline FixedPoint(const ImagePoint &inRHS) :
-                x(inRHS.x<<Fixed), y(inRHS.y<<Fixed) { }
+                x(inRHS.x<<Bits), y(inRHS.y<<Bits) { }
    
    inline bool operator==(const FixedPoint inRHS) const
       { return x==inRHS.x && y==inRHS.y; }

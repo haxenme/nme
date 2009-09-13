@@ -1,4 +1,18 @@
 #include <Utils.h>
+#ifndef HX_WINDOWS
+std::string WideToUTF8(const std::wstring &inWideString)
+{
+   return std::string();
+}
+wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen)
+{
+   return 0;
+}
+std::wstring UTF8ToWide(const char *inStr)
+{
+   return std::wstring();
+}
+#else
 #include <windows.h>
 
 std::string WideToUTF8(const std::wstring &inWideString)
@@ -47,6 +61,7 @@ std::wstring UTF8ToWide(const char *inStr)
 
 	return result;
 }
+#endif
 
 
 

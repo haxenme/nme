@@ -5,6 +5,7 @@
 #include <Graphics.h>
 #include <TileSheet.h>
 #include <map>
+#include <string>
 
 
 struct TextLineMetrics
@@ -70,7 +71,7 @@ public:
 	Optional<int>           letterSpacing;
 	Optional<int>           rightMargin;
 	Optional<int>           size;
-	Optional<QuickVec<int>> tabStops;
+	Optional<QuickVec<int> >tabStops;
 	Optional<std::wstring>  target;
 	Optional<bool>          underline;
 	Optional<std::wstring>  url;
