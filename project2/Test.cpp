@@ -87,6 +87,7 @@ int main(int inargc,char **arvg)
 	gText.multiline = true;
 	gText.wordWrap = true;
 	gText.mRect.w = 50;
+	gText.embedFonts = true;
 	gText.setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 	//gText.setHTMLText(L"H");
 

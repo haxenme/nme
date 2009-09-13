@@ -133,7 +133,7 @@ int CharGroup::Height()
 
 struct FontInfo
 {
-	FontInfo(const TextFormat &inFormat,double inScale)
+	FontInfo(const TextFormat &inFormat,double inScale,bool inNative)
 	{
 		name = inFormat.font;
 		height = (int )(inFormat.size*inScale + 0.5);
@@ -150,9 +150,12 @@ struct FontInfo
 		if (name > inRHS.name) return false;
 		if (height < inRHS.height) return true;
 		if (height > inRHS.height) return false;
+		if (native < inRHS.native) return true;
+		if (native > inRHS.native) return false;
 		return flags < inRHS.flags;
 	}
    std::wstring name;
+	bool         native;
 	int          height;
 	unsigned int flags;
 };
@@ -161,17 +164,20 @@ struct FontInfo
 typedef std::map<FontInfo, FontFace *> FaceMap;
 FaceMap sgFaceMap;
 
-Font *Font::Create(TextFormat &inFormat,double inScale,bool inInitRef)
+Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
 {
-	FontInfo info(inFormat,inScale);
+	FontInfo info(inFormat,inScale,inNative);
 
 	FontFace *face = 0;
 	FaceMap::iterator fit = sgFaceMap.find(info);
 	if (fit==sgFaceMap.end())
 	{
-		face = FontFace::CreateNative(inFormat,inScale);
+		if (inNative)
+		   face = FontFace::CreateNative(inFormat,inScale);
 		if (!face)
 		   face = FontFace::CreateFreeType(inFormat,inScale);
+		if (!face && !inNative)
+		   face = FontFace::CreateNative(inFormat,inScale);
 		if (!face)
 			return 0;
 		sgFaceMap[info] = face;

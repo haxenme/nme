@@ -85,7 +85,7 @@ public:
 struct CharGroup
 {
 	void  Clear();
-	bool  UpdateFont(const RenderState &inState);
+	bool  UpdateFont(const RenderState &inState,bool inNative);
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
 
@@ -131,6 +131,7 @@ public:
 	virtual void RenderGlyph(int inChar,RenderTarget &outTarget)=0;
 	virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
 	virtual int  Height()=0;
+	virtual bool IsNative() { return false; }
 
 };
 
@@ -147,13 +148,15 @@ class Font : public Object
 	};
 
 public:
-   static Font *Create(TextFormat &inFormat,double inScale,bool inInitRef=true);
+   static Font *Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef=true);
 
 	Font *IncRef() { Object::IncRef(); return this; }
 
    Tile GetGlyph(int inCharacter,int &outAdvance);
 
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
+
+	bool  IsNative() { return mFace && mFace->IsNative(); }
 
 	int   Height();
 private:

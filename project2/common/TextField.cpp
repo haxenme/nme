@@ -15,6 +15,7 @@ TextField::TextField() :
 	condenseWhite(false),
 	defaultTextFormat( TextFormat::Default() ),
 	displayAsPassword(false),
+	embedFonts(false),
 	gridFitType(gftPixel),
 	maxChars(0),
 	mouseWheelEnabled(true),
@@ -192,7 +193,7 @@ void TextField::setHTMLText(const std::wstring &inString)
 bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
 	for(int i=0;i<mCharGroups.size();i++)
-	   if (mCharGroups[i].UpdateFont(inState))
+	   if (mCharGroups[i].UpdateFont(inState,!embedFonts))
 			mLinesDirty = true;
 
 	Layout();
@@ -220,7 +221,6 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    RenderTarget target = inTarget.ClipRect(mRect);
 
-	int y = mRect.y;
 	for(int l=0;l<mLines.size();l++)
 	{
 		Line &line = mLines[l];
@@ -228,7 +228,7 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		int done  = 0;
 		int gid = line.mCharGroup0;
 		CharGroup *group = &mCharGroups[gid++];
-		int y0 = y + line.mMetrics.ascent;
+		int y0 = mRect.y + line.mY0 + line.mMetrics.ascent;
 		int c0 = line.mCharInGroup0;
 	   int x = mRect.x;
 		while(done<chars)
@@ -261,7 +261,6 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 			}
 			c0 += left;
 		}
-		y+=line.mMetrics.height;
 	}
 
 	return true;
@@ -294,10 +293,14 @@ void TextField::Layout()
 		{
 	      if (line.mChars)
 			{
+		      g.UpdateMetrics(line.mMetrics);
 				mLines.push_back(line);
+			   y += line.mMetrics.height + (g.mNewLines-1) * g.Height();
 				line.Clear();
 			}
-			y += (g.mNewLines) * g.Height();
+			else
+			   y += (g.mNewLines) * g.Height();
+
 			x = 0;
 			line.mY0 = y;
 			line.mChar0 = char_count;
@@ -328,9 +331,17 @@ void TextField::Layout()
 			cid++;
 			if ( !isalpha(ch) && !isdigit(ch) && ch!='_' )
 			{
-				last_word_cid = cid;
+				if (isspace(ch) || line.mChars==1)
+				{
+				   last_word_cid = cid;
+				   last_word_line_chars = line.mChars;
+				}
+				else
+				{
+				   last_word_cid = cid-1;
+				   last_word_line_chars = line.mChars-1;
+				}
 				last_word_x = x;
-				last_word_line_chars = line.mChars;
 			}
 
 			if (ch=='\n')
@@ -346,6 +357,7 @@ void TextField::Layout()
 			int ox = x;
 			g.mFont->GetGlyph( ch, advance );
 			x+= advance;
+			//printf(" Char %c (%d..%d,%d)\n", ch, ox, x, y);
 			if (wordWrap && (x > mRect.w) && line.mChars>1)
 			{
 				// No break on line so far - just back up 1 character....
@@ -379,6 +391,7 @@ void TextField::Layout()
 	}
 	if (line.mChars)
 	{
+		mCharGroups[mCharGroups.size()-1].UpdateMetrics(line.mMetrics);
 		y += line.mMetrics.height;
 		mLines.push_back(line);
 	}
@@ -462,16 +475,16 @@ void CharGroup::Clear()
 	   mFont->DecRef();
 }
 
-bool CharGroup::UpdateFont(const RenderState &inState)
+bool CharGroup::UpdateFont(const RenderState &inState,bool inNative)
 {
 	double scale = inState.mTransform.mMatrix.GetScaleY() *
 					   inState.mTransform.mStageScaleY;
 	int h = 0.5 + scale*mFormat->size;
-	if (!mFont || h!=mFontHeight)
+	if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative)
 	{
 		if (mFont)
 			mFont->DecRef();
-		mFont = Font::Create(*mFormat,scale,true);
+		mFont = Font::Create(*mFormat,scale,inNative,true);
 	   mFontHeight = h;
 		return true;
 	}

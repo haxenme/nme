@@ -38,7 +38,7 @@ public:
 		outH = size.cy;
 		outAdvance = outW;
 		outOx = 0;
-		outOy = 0;
+		outOy = -mMetrics.tmAscent;
 		return true;
 	}
 
@@ -84,16 +84,20 @@ public:
 
 	void UpdateMetrics(TextLineMetrics &ioMetrics)
 	{
-		//ioMetrics.ascent = std::max( ioMetrics.ascent, (float)mMetrics.tmAscent);
+		ioMetrics.ascent = std::max( ioMetrics.ascent, (float)mMetrics.tmAscent);
 		ioMetrics.descent = std::max( ioMetrics.descent, (float)mMetrics.tmDescent);
-		//ioMetrics.height = std::max( ioMetrics.height, (float)mMetrics.tmHeight);
-		ioMetrics.height = std::max( ioMetrics.height, (float)mPixelHeight);
+		ioMetrics.height = std::max( ioMetrics.height, (float)mMetrics.tmHeight);
+		//ioMetrics.height = std::max( ioMetrics.height, (float)mPixelHeight);
 	}
 
 	int Height()
 	{
-		return mPixelHeight;
+		return mMetrics.tmHeight;
 	}
+
+	virtual bool IsNative() { return true; }
+
+
 
 	HFONT mFont;
 	TEXTMETRIC mMetrics;
@@ -131,6 +135,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 		sgFontDC = CreateCompatibleDC(0);
 		SetBkColor(sgFontDC, RGB(0,0,0));
 		SetTextColor(sgFontDC, RGB(255,255,255));
+		SetTextAlign( sgFontDC, TA_TOP );
 	}
    return new GDIFont(hfont,height);
 }

@@ -124,6 +124,7 @@ public:
 		}
 	}
 
+
 	FT_Face  mFace;
 	uint32 mTransform;
 	int    mPixelHeight;

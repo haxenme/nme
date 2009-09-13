@@ -61,6 +61,7 @@ public:
 
 	TextFormat *defaultTextFormat;
 	bool  displayAsPassword;
+	bool  embedFonts;
 	GridFitType gridFitType;
 	int  maxChars;
 	bool mouseWheelEnabled;
