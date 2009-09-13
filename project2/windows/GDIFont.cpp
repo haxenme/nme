@@ -1,0 +1,137 @@
+#include <Font.h>
+#include <windows.h>
+#include <algorithm>
+#ifdef max
+#undef max
+#undef min
+#endif
+
+static HDC sgFontDC = 0;
+static HBITMAP sgDIB = 0;
+static HBITMAP sgOldDIB = 0;
+static ARGB *sgDIBBits = 0;
+static int sgDIB_W = 0;
+static int sgDIB_H = 0;
+
+class GDIFont : public FontFace
+{
+public:
+	GDIFont(HFONT inFont, int inHeight) : mFont(inFont), mPixelHeight(inHeight)
+	{
+		SelectObject(sgFontDC,mFont);
+		GetTextMetrics(sgFontDC,&mMetrics);
+	}
+
+	~GDIFont()
+	{
+		DeleteObject(mFont);
+	}
+
+	virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
+									int &outOx, int &outOy)
+	{
+		wchar_t ch = inChar;
+		SelectObject(sgFontDC,mFont);
+		SIZE size;
+		GetTextExtentPointW(sgFontDC,  &ch, 1, &size );
+		outW = size.cx;
+		outH = size.cy;
+		outAdvance = outW;
+		outOx = 0;
+		outOy = 0;
+		return true;
+	}
+
+	void RenderGlyph(int inChar, RenderTarget &outTarget)
+	{
+		int w = outTarget.mRect.w;
+		w = (w+3) & ~3;
+		int h = outTarget.mRect.h;
+		if (w>sgDIB_W || h>sgDIB_H)
+		{
+			if (sgDIB)
+			{
+				SelectObject(sgFontDC,sgOldDIB);
+				DeleteObject(sgDIB);
+			}
+			BITMAPINFO bmi;
+			memset(&bmi,0,sizeof(bmi));
+			bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+			bmi.bmiHeader.biWidth = w;
+			bmi.bmiHeader.biHeight = h;
+			bmi.bmiHeader.biPlanes = 1;
+			bmi.bmiHeader.biBitCount = 32;
+			bmi.bmiHeader.biCompression = BI_RGB;
+			sgDIB_W = w;
+			sgDIB_H = h;
+
+         sgDIB = CreateDIBSection(sgFontDC,&bmi,DIB_RGB_COLORS, (void **)&sgDIBBits, 0, 0 );
+			sgOldDIB = (HBITMAP)SelectObject(sgFontDC,sgDIB);
+		}
+		memset(sgDIBBits,0,sgDIB_W*sgDIB_H*4);
+		wchar_t ch = inChar;
+		TextOutW(sgFontDC,0,0,&ch,1);
+
+		for(int y=0;y<outTarget.mRect.h;y++)
+		{
+         ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
+         uint32  *dest = (uint32 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
+		   for(int x=0;x<outTarget.mRect.w;x++)
+				*dest++= (src++)->c1 ? 0xffffffff : 0x00;
+		}
+
+	}
+
+	void UpdateMetrics(TextLineMetrics &ioMetrics)
+	{
+		//ioMetrics.ascent = std::max( ioMetrics.ascent, (float)mMetrics.tmAscent);
+		ioMetrics.descent = std::max( ioMetrics.descent, (float)mMetrics.tmDescent);
+		//ioMetrics.height = std::max( ioMetrics.height, (float)mMetrics.tmHeight);
+		ioMetrics.height = std::max( ioMetrics.height, (float)mPixelHeight);
+	}
+
+	int Height()
+	{
+		return mPixelHeight;
+	}
+
+	HFONT mFont;
+	TEXTMETRIC mMetrics;
+	int mPixelHeight;
+};
+
+
+FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
+{
+   int height = (int)( 0.5 + inFormat.size*inScale );
+	LOGFONTW desc;
+	memset(&desc,0,sizeof(desc));
+
+   desc.lfHeight = -height;
+   //desc.lfWidth; 
+   //desc.lfEscapement; 
+   //desc.lfOrientation; 
+   desc.lfWeight = inFormat.bold ? FW_BOLD : FW_NORMAL;
+   desc.lfItalic = inFormat.italic;
+   desc.lfUnderline = inFormat.underline;
+   //desc.lfStrikeOut; 
+   desc.lfCharSet = DEFAULT_CHARSET; 
+   desc.lfOutPrecision = OUT_RASTER_PRECIS; 
+   desc.lfClipPrecision = CLIP_DEFAULT_PRECIS; 
+   desc.lfQuality = NONANTIALIASED_QUALITY; 
+   desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
+	wcsncpy(desc.lfFaceName,((std::wstring &)inFormat.font).c_str(),LF_FACESIZE);
+
+   HFONT hfont = CreateFontIndirectW( &desc );
+   if (!hfont)
+     return 0;
+
+	if (!sgFontDC)
+	{
+		sgFontDC = CreateCompatibleDC(0);
+		SetBkColor(sgFontDC, RGB(0,0,0));
+		SetTextColor(sgFontDC, RGB(255,255,255));
+	}
+   return new GDIFont(hfont,height);
+}
+

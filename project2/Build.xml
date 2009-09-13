@@ -6,6 +6,7 @@
   <compilerflag value="-Iinclude"/>
   <file name="Test.cpp"/>
   <file name="windows/SimpleFrame.cpp"/>
+  <file name="windows/GDIFont.cpp"/>
 </files>
 
 
@@ -30,6 +31,7 @@
   <file name="common/CachedExtent.cpp"/>
   <file name="common/TextField.cpp"/>
   <file name="common/Font.cpp"/>
+  <file name="common/FreeType.cpp"/>
   <file name="common/TileSheet.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>

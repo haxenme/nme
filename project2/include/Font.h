@@ -19,6 +19,11 @@ struct TextLineMetrics
 
 
 
+enum
+{
+	ffItalic  = 0x01,
+	ffBold    = 0x02,
+};
 
 
 enum AntiAliasType { aaAdvanced, aaNormal };
@@ -112,7 +117,22 @@ typedef QuickVec<Line> Lines;
 
 
 
-struct FT_FaceRec_;
+class FontFace
+{
+public:
+	virtual ~FontFace() { };
+
+	static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
+	static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale);
+
+	virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
+									int &outOx, int &outOy) = 0;
+	virtual void RenderGlyph(int inChar,RenderTarget &outTarget)=0;
+	virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
+	virtual int  Height()=0;
+
+};
+
 
 class Font : public Object
 {
@@ -136,16 +156,15 @@ public:
 
 	int   Height();
 private:
-   Font(FT_FaceRec_ *inFace,int inH, bool inInitRef,int inTrans);
+   Font(FontFace *inFace, int inPixelHeight, bool inInitRef);
 	~Font();
 
 
 	Glyph mGlyph[128];
 	std::map<int,Glyph>   mExtendedGlyph;
    QuickVec<TileSheet *> mSheets;
-	FT_FaceRec_           *mFace;
+	FontFace              *mFace;
 
-	uint32 mTransform;
 	int    mPixelHeight;
 	int    mCurrentSheet;
 };
