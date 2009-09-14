@@ -4,10 +4,29 @@
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
-  <file name="Test.cpp"/>
   <file name="windows/SimpleFrame.cpp"/>
   <file name="windows/GDIFont.cpp"/>
 </files>
+
+<files id="mac">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <file name="mac/NSFont.cpp"/>
+  <file name="mac/MacBoot.m"/>
+</files>
+
+<files id="main">
+  <compilerflag value="-Iinclude"/>
+  <file name="Test.cpp"/>
+</files>
+
+<files id="sdl">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <file name="sdl/SDLStage.cpp"/>
+</files>
+
+
 
 
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
@@ -51,9 +70,26 @@
 
 
 <target id="TestWin" output="TestWin" tool="linker" toolid="exe">
+  <files id="main"/>
   <files id="common"/>
   <files id="windows" if="windows"/>
+  <files id="mac" if="macos"/>
+  <files id="sdl" if="macos"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
+
+  <vflag name="-framework" value="IOKit" if="apple"/>
+  <vflag name="-framework" value="CoreAudio" if="apple"/>
+  <vflag name="-framework" value="Carbon" if="apple"/>
+  <vflag name="-framework" value="AudioToolbox" if="apple"/>
+  <vflag name="-framework" value="AudioUnit" if="apple"/>
+  <vflag name="-framework" value="ForceFeedback" if="apple"/>
+  <vflag name="-framework" value="Cocoa" if="apple"/>
+  <vflag name="-framework" value="OpenGL" if="apple"/>
+  <vflag name="-framework" value="QuickTime" if="apple"/>
+
+
+  <flag value="" if="windows"/>
   <flag value="gdi32.lib" if="windows"/>
   <outdir name="."/>
 </target>

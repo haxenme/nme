@@ -531,6 +531,7 @@ NativeTexture *CreateNativeTexture(Surface *inSoftwareSurface);
 void DestroyNativeTexture(NativeTexture *inTexture);
 
 
+void HintColourOrder(bool inRedFirst);
 
 class Surface
 {

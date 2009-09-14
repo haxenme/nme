@@ -163,7 +163,7 @@ public:
    HWND         mHWND;
    HDC          mDC;
    uint32       mFlags;
-   int          mFrameRate;
+   double       mFrameRate;
    EventHandler mHandler;
    DIBSurface   *mBMP;
    void         *mHandlerData;

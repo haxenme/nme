@@ -4,6 +4,7 @@
 #include <Object.h>
 #include <Geom.h>
 #include <Graphics.h>
+#include <string>
 
 
 enum
@@ -165,6 +166,7 @@ enum WindowFlags
    wfBorderless = 0x00000002,
    wfResizable  = 0x00000004,
    wfOpenGL     = 0x00000008,
+   wfVSync      = 0x00000010,
 };
 
 Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle );
