@@ -1,7 +1,7 @@
 #include <Graphics.h>
 
 
-Graphics::Graphics()
+Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
    mLastConvertedItem = 0;
 }

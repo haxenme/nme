@@ -88,12 +88,17 @@ public:
 	Rect   scrollRect;
 	bool   visible;
 
+	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
+
    void SetParent(DisplayObjectContainer *inParent);
+
+	Graphics &GetGraphics();
 
 protected:
 	~DisplayObject();
    Transform mTransform;
    DisplayObjectContainer *mParent;
+	Graphics               *mGfx;
 };
 
 
@@ -108,6 +113,7 @@ public:
 
 
    void RemoveChildFromList(DisplayObject *inChild);
+	void Render( const RenderTarget &inTarget, const RenderState &inState );
 
 protected:
    ~DisplayObjectContainer();
@@ -117,37 +123,22 @@ protected:
 class Stage : public DisplayObjectContainer
 {
 public:
+	Stage(bool inInitRef=false);
+
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
    virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
 	virtual Surface *GetPrimarySurface() = 0;
+
+	virtual void RenderStage();
+
+	uint32 mBackgroundColour;
+	int    mQuality;
+
+protected:
+	~Stage();
 };
 
-
-// Helper class....
-class AutoStageRender
-{
-	Surface *mSurface;
-	Stage   *mToFlip;
-	RenderTarget mTarget;
-public:
-	AutoStageRender(Stage *inStage,int inRGB)
-	{
-		mSurface = inStage->GetPrimarySurface();
-		mToFlip = inStage;
-		mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
-		mSurface->Clear(inRGB);
-	}
-	int Width() const { return mSurface->Width(); }
-	int Height() const { return mSurface->Height(); }
-	~AutoStageRender()
-	{
-		mSurface->EndRender();
-		mToFlip->Flip();
-	}
-	const RenderTarget &Target() { return mTarget; }
-
-};
 
 
 

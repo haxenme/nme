@@ -78,14 +78,11 @@ public:
 	bool useRichTextClipboard;
 	bool  wordWrap;
 
-	bool Render( const RenderTarget &inTarget, const RenderState &inState );
+	void Render( const RenderTarget &inTarget, const RenderState &inState );
 
 	// Display-object like properties
    Rect mRect;
 
-	// For drawing background...
-	Graphics mGfx;
-	
 
 protected:
 	~TextField();

@@ -3,6 +3,7 @@
 
 // Some design ramblings to see how some things may fit together.
 
+#include <Object.h>
 #include <QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
@@ -447,10 +448,10 @@ struct RendererCache
 
 
 
-class Graphics
+class Graphics : public Object
 {
 public:
-   Graphics();
+   Graphics(bool inInitRef = false);
    ~Graphics();
 
 	void clear();

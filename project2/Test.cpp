@@ -2,10 +2,6 @@
 #include <TextField.h>
 #include <Display.h>
 
-RenderState gState;
-
-Graphics  gGraphics;
-TextField *gText;
 
 void Handler(Event &ioEvent,void *inStage)
 {
@@ -18,17 +14,7 @@ void Handler(Event &ioEvent,void *inStage)
 	if (rot>360) rot-=360;
 
 	if (ioEvent.mType==etNextFrame)
-	{
-		AutoStageRender render(stage,0xffffff);
-		gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
-		gState.mClipRect = Rect( render.Width(), render.Height() );
-		gState.mTransform.mAAFactor = 4;
-		gState.mAAClipRect = gState.mClipRect * gState.mTransform.mAAFactor;
-
-		gGraphics.Render(render.Target(),gState);
-		gState.mTransform.mMatrix = Matrix();
-		gText->Render(render.Target(),gState);
-	}
+		stage->RenderStage();
 }
 
 
@@ -64,36 +50,41 @@ int main(int inargc,char **arvg)
 	fill->AddStop( 0x00ff00, 1, 0.5 );
 	fill->AddStop( 0x0000ff, 1, 0.75 );
 	fill->AddStop( 0xff00ff, 1, 1 );
-	gGraphics.addData(fill);
 
-	//gGraphics.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
+	DisplayObject *shape = new DisplayObject();
+	Graphics &gfx = shape->GetGraphics();
+	gfx.addData(fill);
 
-	gGraphics.lineStyle(5,0x202040,0.75,true,ssmNormal,scRound,sjMiter);
-	gGraphics.moveTo(-100,-100);
-	gGraphics.lineTo(-100,100);
-	gGraphics.curveTo(0,180,100,100);
-	gGraphics.lineTo(100,-100);
-	gGraphics.lineTo(-100,-100);
+	//gfx.beginBitmapFill(bg, Matrix().createGradientBox(32,32), true,true );
 
-	Extent2DF ext = gGraphics.GetExtent(gState.mTransform);
+	gfx.lineStyle(5,0x202040,0.75,true,ssmNormal,scRound,sjMiter);
+	gfx.moveTo(-100,-100);
+	gfx.lineTo(-100,100);
+	gfx.curveTo(0,180,100,100);
+	gfx.lineTo(100,-100);
+	gfx.lineTo(-100,-100);
+
+   RenderState state;
+	Extent2DF ext = gfx.GetExtent(state.mTransform);
 	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
 
-   gText = new TextField(false);
-	//gText->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
-	//gText->setHTMLText(L"HHHH");
-	gText->mRect.x = 200;
-	gText->mRect.y = 2;
-	gText->background = true;
-	gText->backgroundColor.SetRGBNative(0xb0b0f0);
-	gText->autoSize = asLeft;
-	gText->multiline = true;
-	gText->wordWrap = true;
-	gText->mRect.w = 50;
-	gText->embedFonts = true;
-	gText->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
-	//gText->setHTMLText(L"H");
+   TextField *text = new TextField(false);
+	//text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
+	//text->setHTMLText(L"HHHH");
+	text->mRect.x = 200;
+	text->mRect.y = 2;
+	text->background = true;
+	text->backgroundColor.SetRGBNative(0xb0b0f0);
+	text->autoSize = asLeft;
+	text->multiline = true;
+	text->wordWrap = true;
+	text->mRect.w = 50;
+	text->embedFonts = true;
+	text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
+	//text->setHTMLText(L"H");
 
-   stage->addChild(gText);
+   stage->addChild(shape);
+   stage->addChild(text);
 
    MainLoop();
    delete frame;

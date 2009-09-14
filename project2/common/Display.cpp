@@ -7,12 +7,25 @@ unsigned int gDisplayRefCounting = drDisplayChildRefs;
 DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
 {
    mParent = 0;
+	mGfx = 0;
 }
 
 DisplayObject::~DisplayObject()
 {
+	if (mGfx)
+		mGfx->DecRef();
    // assert mParent==0
 }
+
+Graphics &DisplayObject::GetGraphics()
+{
+	if (!mGfx)
+	{
+		mGfx = new Graphics(true);
+	}
+	return *mGfx;
+}
+
 
 void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 {
@@ -32,6 +45,12 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
    mParent = inParent;
 
    DecRef();
+}
+
+void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
+{
+	if (mGfx)
+		mGfx->Render(inTarget,inState);
 }
 
 
@@ -73,4 +92,65 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
       IncRef();
 
    DecRef();
+}
+
+void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
+{
+	DisplayObject::Render(inTarget,inState);
+	for(int i=0;i<mChildren.size();i++)
+		mChildren[i]->Render(inTarget,inState);
+}
+
+
+// --- Stage ---------------------------------------------------------------
+
+
+// Helper class....
+class AutoStageRender
+{
+	Surface *mSurface;
+	Stage   *mToFlip;
+	RenderTarget mTarget;
+public:
+	AutoStageRender(Stage *inStage,int inRGB)
+	{
+		mSurface = inStage->GetPrimarySurface();
+		mToFlip = inStage;
+		mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
+		mSurface->Clear(inRGB);
+	}
+	int Width() const { return mSurface->Width(); }
+	int Height() const { return mSurface->Height(); }
+	~AutoStageRender()
+	{
+		mSurface->EndRender();
+		mToFlip->Flip();
+	}
+	const RenderTarget &Target() { return mTarget; }
+};
+
+Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
+{
+	mBackgroundColour = 0xffffff;
+	mQuality = 4;
+}
+
+Stage::~Stage()
+{
+}
+
+
+void Stage::RenderStage()
+{
+	AutoStageRender render(this,mBackgroundColour);
+
+   RenderState state;
+
+	//gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
+	state.mClipRect = Rect( render.Width(), render.Height() );
+	state.mTransform.mAAFactor = mQuality;
+	state.mAAClipRect = state.mClipRect * mQuality;
+
+
+	Render(render.Target(),state);
 }

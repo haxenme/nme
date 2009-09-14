@@ -190,7 +190,7 @@ void TextField::setHTMLText(const std::wstring &inString)
 }
 
 
-bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
+void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
 	for(int i=0;i<mCharGroups.size();i++)
 	   if (mCharGroups[i].UpdateFont(inState,!embedFonts))
@@ -198,25 +198,26 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 	Layout();
 
+	Graphics &gfx = GetGraphics();
 	if (mGfxDirty)
 	{
-		mGfx.clear();
+		gfx.clear();
 		int b=2;
 		if (background)
 		{
-			mGfx.beginFill( backgroundColor.ival, 1.0 );
-			mGfx.moveTo(mRect.x-b,mRect.y-b);
-			mGfx.lineTo(mRect.x+b+mRect.w,mRect.y-b);
-			mGfx.lineTo(mRect.x+b+mRect.w,mRect.y+b+mRect.h);
-			mGfx.lineTo(mRect.x-b,mRect.y+b+mRect.h);
-			mGfx.lineTo(mRect.x-b,mRect.y-b);
+			gfx.beginFill( backgroundColor.ival, 1.0 );
+			gfx.moveTo(mRect.x-b,mRect.y-b);
+			gfx.lineTo(mRect.x+b+mRect.w,mRect.y-b);
+			gfx.lineTo(mRect.x+b+mRect.w,mRect.y+b+mRect.h);
+			gfx.lineTo(mRect.x-b,mRect.y+b+mRect.h);
+			gfx.lineTo(mRect.x-b,mRect.y-b);
 		}
 		mGfxDirty = false;
 	}
 
-	if (!mGfx.empty())
+	if (!gfx.empty())
 	{
-	   mGfx.Render(inTarget,inState);
+	   gfx.Render(inTarget,inState);
 	}
 
    RenderTarget target = inTarget.ClipRect(mRect);
@@ -263,7 +264,6 @@ bool TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		}
 	}
 
-	return true;
 }
 
 
