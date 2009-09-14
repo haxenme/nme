@@ -4,7 +4,7 @@
 #include "XML/tinyxml.h"
 #include <ctype.h>
 
-TextField::TextField() :
+TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
 	alwaysShowSelection(false),
 	antiAliasType(aaNormal),
 	autoSize(asNone),

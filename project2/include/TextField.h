@@ -4,15 +4,15 @@
 #include "Graphics.h"
 #include "QuickVec.h"
 #include "Font.h"
+#include "Display.h"
 
 enum TextFieldType { tftDynamic, tftInput };
 
 
-class TextField
+class TextField : public DisplayObject
 {
 public:
-	TextField();
-	~TextField();
+	TextField(bool inInitRef=false);
 
 	void appendText(std::wstring inString);
 	Rect getCharBoundaries(int inCharIndex);
@@ -87,6 +87,8 @@ public:
 	Graphics mGfx;
 	
 
+protected:
+	~TextField();
 private:
 	TextField(const TextField &);
 	void operator=(const TextField &);

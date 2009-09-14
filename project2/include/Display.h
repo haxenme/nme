@@ -2,6 +2,17 @@
 #define DISPLAY_H
 
 #include <Object.h>
+#include <Geom.h>
+#include <Graphics.h>
+
+
+enum
+{
+   drDisplayChildRefs  = 0x01,
+   drDisplayParentRefs = 0x02,
+};
+
+extern unsigned int gDisplayRefCounting;
 
 enum EventType
 {
@@ -37,7 +48,7 @@ class DisplayObjectContainer;
 class DisplayObject : public Object
 {
 public:
-	DisplayObject(bool inInitRef = false) : Object(inInitRef) { }
+	DisplayObject(bool inInitRef = false);
 
 	double getX();
 	void   setX(double inValue);
@@ -76,10 +87,14 @@ public:
 	Rect   scrollRect;
 	bool   visible;
 
-private:
+   void SetParent(DisplayObjectContainer *inParent);
+
+protected:
+	~DisplayObject();
    Transform mTransform;
-	DisplayObjectContainer *mParent;
+   DisplayObjectContainer *mParent;
 };
+
 
 
 class DisplayObjectContainer : public DisplayObject
@@ -87,6 +102,15 @@ class DisplayObjectContainer : public DisplayObject
 public:
 	DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
 
+   void addChild(DisplayObject *inChild);
+   void removeChild(DisplayObject *inChild);
+
+
+   void RemoveChildFromList(DisplayObject *inChild);
+
+protected:
+   ~DisplayObjectContainer();
+   QuickVec<DisplayObject *> mChildren;
 };
 
 class Stage : public DisplayObjectContainer

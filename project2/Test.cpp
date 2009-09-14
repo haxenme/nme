@@ -5,7 +5,7 @@
 RenderState gState;
 
 Graphics  gGraphics;
-TextField gText;
+TextField *gText;
 
 void Handler(Event &ioEvent,void *inStage)
 {
@@ -27,7 +27,7 @@ void Handler(Event &ioEvent,void *inStage)
 
 		gGraphics.Render(render.Target(),gState);
 		gState.mTransform.mMatrix = Matrix();
-		gText.Render(render.Target(),gState);
+		gText->Render(render.Target(),gState);
 	}
 }
 
@@ -53,7 +53,9 @@ int main(int inargc,char **arvg)
 
 
 
-	frame->GetStage()->SetEventHandler(Handler,frame->GetStage());
+	Stage *stage = frame->GetStage();
+   stage->IncRef();
+	stage->SetEventHandler(Handler,stage);
 
 	GraphicsGradientFill *fill = new GraphicsGradientFill(true,
 											Matrix().createGradientBox(200,200,45,-100,-100), smPad );
@@ -76,19 +78,22 @@ int main(int inargc,char **arvg)
 	Extent2DF ext = gGraphics.GetExtent(gState.mTransform);
 	printf("Extent %f,%f ... %f,%f\n", ext.mMinX, ext.mMinY, ext.mMaxX, ext.mMaxY);
 
-	//gText.setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
-	//gText.setHTMLText(L"HHHH");
-	gText.mRect.x = 200;
-	gText.mRect.y = 2;
-	gText.background = true;
-	gText.backgroundColor.SetRGBNative(0xb0b0f0);
-	gText.autoSize = asLeft;
-	gText.multiline = true;
-	gText.wordWrap = true;
-	gText.mRect.w = 50;
-	gText.embedFonts = true;
-	gText.setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
-	//gText.setHTMLText(L"H");
+   gText = new TextField(false);
+	//gText->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
+	//gText->setHTMLText(L"HHHH");
+	gText->mRect.x = 200;
+	gText->mRect.y = 2;
+	gText->background = true;
+	gText->backgroundColor.SetRGBNative(0xb0b0f0);
+	gText->autoSize = asLeft;
+	gText->multiline = true;
+	gText->wordWrap = true;
+	gText->mRect.w = 50;
+	gText->embedFonts = true;
+	gText->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
+	//gText->setHTMLText(L"H");
+
+   stage->addChild(gText);
 
    MainLoop();
    delete frame;
