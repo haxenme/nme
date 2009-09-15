@@ -476,6 +476,12 @@ public:
    void moveTo(float x, float y);
    void curveTo(float cx,float cy,float x, float y);
 
+   void drawCircle(float x,float y, float radius);
+   void drawEllipse(float x,float  y,float  width,float  height);
+   void drawRect(float x,float  y,float  width,float  height);
+   void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
+
+
 	bool empty() const { return mItems.empty(); }
 
 

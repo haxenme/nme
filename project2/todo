@@ -1,0 +1,14 @@
+TODO:
+- graphics methods
+- Scale9
+- ScrollRect
+- Mask
+- cacheAsBitmap
+- blendMode
+- colourTransform
+- triangles
+- filters
+- hitTest
+- Opengl
+- Events - mouse
+- Text - selection/keys

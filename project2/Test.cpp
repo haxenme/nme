@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <TextField.h>
 #include <Display.h>
+#include <Utils.h>
 
 
 void Handler(Event &ioEvent,void *inStage)
@@ -83,15 +84,33 @@ int main(int inargc,char **arvg)
 	//text->setHTMLText(L"HHHH");
 	text->mRect.x = 200;
 	text->mRect.y = 2;
-	text->background = true;
+	//text->background = true;
 	text->backgroundColor.SetRGBNative(0xb0b0f0);
 	text->autoSize = asLeft;
 	text->multiline = true;
 	text->wordWrap = true;
-	text->mRect.w = 50;
+	text->mRect.w = 600;
 	text->embedFonts = true;
-	text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
+	//text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 	//text->setHTMLText(L"H");
+
+        std::string contents = "Hello !";
+        /*
+        std::string contents;
+        FILE *f = fopen("Test.cpp","rb");
+        if (f)
+        {
+           int ch;
+           while( (ch=fgetc(f))!=EOF )
+           {
+               if (ch==10 || (ch>26 && ch<127) )
+                  contents += (char)ch;
+           }
+           fclose(f);
+        }
+        */
+	text->setText( UTF8ToWide(contents.c_str()) );
+
 
    stage->addChild(shape);
    stage->addChild(text);

@@ -16,7 +16,7 @@ public:
    }
 
    int Width() const  { return mSurf->w; }
-   int Height() const  { return mSurf->w; }
+   int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
       if (mSurf->flags & SDL_SRCALPHA)
