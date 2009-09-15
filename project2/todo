@@ -1,5 +1,6 @@
 TODO:
 - graphics methods
+- vertical/horizontal sub-pixel align
 - Scale9
 - ScrollRect
 - Mask

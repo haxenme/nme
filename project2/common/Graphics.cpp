@@ -32,6 +32,36 @@ void Graphics::clear()
 
 }
 
+#define SIN45 0.70710678118654752440084436210485
+#define TAN22 0.4142135623730950488016887242097
+
+void Graphics::drawEllipse(float x,float  y,float  width,float  height)
+{
+	float w = width*0.5;
+	float w_ = w*SIN45;
+	float cw_ = w*TAN22;
+	float h = height*0.5;
+	float h_ = h*SIN45;
+	float ch_ = h*TAN22;
+
+	moveTo(x+w,y);
+	curveTo(x+w,  y+ch_, x+w_, y+h_);
+	curveTo(x+cw_,y+h,   x,    y+h);
+	curveTo(x-cw_,y+h,   x-w_, y+h_);
+	curveTo(x-w,  y+ch_, x-w,  y);
+	curveTo(x-w,  y-ch_, x-w_, y-h_);
+	curveTo(x-cw_,y-h,   x,    y-h);
+	curveTo(x+cw_,y-h,   x+w_, y-h_);
+	curveTo(x+w,  y-ch_, x+w,  y);
+}
+
+void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight)
+{
+
+
+}
+
+
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 {
    mItems.reserve(mItems.size()+inN);
@@ -104,6 +134,11 @@ void Graphics::moveTo(float x, float y)
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
    GetLastPath()->curveTo(cx,cy,x,y);
+}
+
+void Graphics::arcTo(float cx, float cy, float x, float y)
+{
+   GetLastPath()->arcTo(cx,cy,x,y);
 }
 
 

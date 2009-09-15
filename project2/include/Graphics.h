@@ -227,10 +227,7 @@ enum PathCommand
    pcCurveTo =  3,
    pcWideMoveTo = 4,
    pcWideLineTo = 5,
-
-	// This one is added to the LineData to provide the direction of
-	//  the first line segment when closing a line.
-   pcCloseDirection = 6,
+   pcArcTo =  6,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -247,6 +244,7 @@ public:
    WindingRule             winding;
 
 	void curveTo(float controlX, float controlY, float anchorX, float anchorY);
+	void arcTo(float controlX, float controlY, float anchorX, float anchorY);
 	void lineTo(float x, float y);
 	void moveTo(float x, float y);
 	void wideLineTo(float x, float y);
@@ -475,10 +473,18 @@ public:
    void lineTo(float x, float y);
    void moveTo(float x, float y);
    void curveTo(float cx,float cy,float x, float y);
+   void arcTo(float cx,float cy,float x, float y);
 
-   void drawCircle(float x,float y, float radius);
    void drawEllipse(float x,float  y,float  width,float  height);
-   void drawRect(float x,float  y,float  width,float  height);
+   void drawCircle(float x,float y, float radius) { drawEllipse(x,y,radius,radius); }
+   void drawRect(float x,float  y,float  width,float  height)
+	{
+		moveTo(x,y);
+		lineTo(x+width,y);
+		lineTo(x+width,y+height);
+		lineTo(x,y+height);
+		lineTo(x,y);
+	}
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
 

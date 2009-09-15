@@ -11,6 +11,16 @@ void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float 
 	data.push_back(anchorY);
 }
 
+void GraphicsPath::arcTo(float controlX, float controlY, float anchorX, float anchorY)
+{
+	command.push_back(pcArcTo);
+	data.push_back(controlX);
+	data.push_back(controlY);
+	data.push_back(anchorX);
+	data.push_back(anchorY);
+}
+
+
 void GraphicsPath::lineTo(float x, float y)
 {
 	command.push_back(pcLineTo);
