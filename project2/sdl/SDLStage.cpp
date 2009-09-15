@@ -247,6 +247,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
    {
       sdl_flags |= SDL_DOUBLEBUF;
       screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags );
+      printf("Flags %p\n",sdl_flags);
       if (!screen)
       {
          // SDL_GetError()
@@ -277,7 +278,6 @@ void TerminateMainLoop()
    Mix_CloseAudio();
    #endif
    sgDead = true;
-   SDL_Quit();
 }
 
 void MainLoop()
@@ -309,6 +309,7 @@ void MainLoop()
       Event frame(etNextFrame);
       sgSDLFrame->ProcessEvent(frame);
    }
+   SDL_Quit();
 }
 
 

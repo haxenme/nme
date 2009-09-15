@@ -5,6 +5,10 @@
 
 void Handler(Event &ioEvent,void *inStage)
 {
+   if (ioEvent.mType==etClose)
+      TerminateMainLoop();
+   else
+   {
 	Stage *stage = (Stage *)inStage;
 
 	static int tx = 0;
@@ -19,6 +23,7 @@ void Handler(Event &ioEvent,void *inStage)
 
 	if (ioEvent.mType==etNextFrame)
 		stage->RenderStage();
+   }
 }
 
 
