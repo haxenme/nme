@@ -13,6 +13,10 @@ void Handler(Event &ioEvent,void *inStage)
 	rot += 1;
 	if (rot>360) rot-=360;
 
+   DisplayObject *shape = stage->getChildAt(0);
+   shape->setX(tx);
+   shape->setRotation(rot);
+
 	if (ioEvent.mType==etNextFrame)
 		stage->RenderStage();
 }
@@ -63,6 +67,7 @@ int main(int inargc,char **arvg)
 	gfx.curveTo(0,180,100,100);
 	gfx.lineTo(100,-100);
 	gfx.lineTo(-100,-100);
+   shape->setY(200);
 
    RenderState state;
 	Extent2DF ext = gfx.GetExtent(state.mTransform);

@@ -46,6 +46,14 @@ typedef void (*EventHandler)(Event &ioEvent, void *inUserData);
 class Stage;
 class DisplayObjectContainer;
 
+enum
+{
+   dirtDecomp      = 0x0001,
+   dirtLocalMatrix = 0x0002,
+   dirtFullMatrix  = 0x0004,
+   dirtCache       = 0x0004,
+};
+
 class DisplayObject : public Object
 {
 public:
@@ -88,17 +96,36 @@ public:
 	Rect   scrollRect;
 	bool   visible;
 
+
 	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
+
+	virtual void DirtyUp(uint32 inFlags);
+	virtual void DirtyDown(uint32 inFlags);
 
    void SetParent(DisplayObjectContainer *inParent);
 
 	Graphics &GetGraphics();
+   Matrix   &GetFullMatrix();
+   Matrix   &GetLocalMatrix();
 
 protected:
+   void UpdateDecomp();
+   void UpdateLocalMatrix();
 	~DisplayObject();
-   Transform mTransform;
    DisplayObjectContainer *mParent;
 	Graphics               *mGfx;
+
+   // Matrix stuff
+   uint32 mDirtyFlags;
+   Matrix mLocalMatrix;
+   Matrix mFullMatrix;
+   // Decomp
+   double x;
+   double y;
+   double scaleX;
+   double scaleY;
+   double rotation;
+
 };
 
 
@@ -110,10 +137,12 @@ public:
 
    void addChild(DisplayObject *inChild);
    void removeChild(DisplayObject *inChild);
+      DisplayObject *getChildAt(int index);
 
 
    void RemoveChildFromList(DisplayObject *inChild);
 	void Render( const RenderTarget &inTarget, const RenderState &inState );
+	void DirtyUp(uint32 inFlags);
 
 protected:
    ~DisplayObjectContainer();
