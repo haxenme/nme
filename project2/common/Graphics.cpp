@@ -1,5 +1,5 @@
 #include <Graphics.h>
-
+#include <Surface.h>
 
 Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
@@ -58,11 +58,13 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
 {
    float w = width*0.5;
+	x+=w;
    if (rx>w) rx = w;
    int   lw = w - rx;
 	float w_ = lw + rx*SIN45;
 	float cw_ = lw + rx*TAN22;
 	float h = height*0.5;
+	y+=h;
    if (ry>h) ry = h;
    int   lh = h - ry;
 	float h_ = lh + ry*SIN45;

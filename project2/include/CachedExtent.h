@@ -2,6 +2,7 @@
 #define CACHED_EXTENT_H
 
 #include <Graphics.h>
+#include <Scale9.h>
 
 struct CachedExtent
 {
@@ -9,6 +10,8 @@ struct CachedExtent
 	Extent2DF Get(const Transform &inTransform);
 
 	Transform mTransform;
+	Matrix    mMatrix;
+	Scale9    mScale9;
 	Extent2DF mExtent;
 	int       mID;
 };

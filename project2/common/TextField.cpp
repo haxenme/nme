@@ -1,6 +1,7 @@
 #include <TextField.h>
 #include <Tilesheet.h>
 #include <Utils.h>
+#include <Surface.h>
 #include "XML/tinyxml.h"
 #include <ctype.h>
 
@@ -193,7 +194,7 @@ void TextField::setHTMLText(const std::wstring &inString)
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    RenderState state(inState);
-   state.mTransform.mMatrix = GetFullMatrix();
+   state.mTransform.mMatrix = &GetFullMatrix();
 
 	for(int i=0;i<mCharGroups.size();i++)
 	   if (mCharGroups[i].UpdateFont(state,!embedFonts))
@@ -223,8 +224,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 	   gfx.Render(inTarget,state);
 	}
 
-   int tx = (int)state.mTransform.mMatrix.mtx;
-   int ty = (int)state.mTransform.mMatrix.mty;
+   int tx = (int)state.mTransform.mMatrix->mtx;
+   int ty = (int)state.mTransform.mMatrix->mty;
    RenderTarget target = inTarget.ClipRect( mRect.Translated(tx,ty) );
 
 	for(int l=0;l<mLines.size();l++)
@@ -484,7 +485,7 @@ void CharGroup::Clear()
 
 bool CharGroup::UpdateFont(const RenderState &inState,bool inNative)
 {
-	double scale = inState.mTransform.mMatrix.GetScaleY() *
+	double scale = inState.mTransform.mMatrix->GetScaleY() *
 					   inState.mTransform.mStageScaleY;
 	int h = 0.5 + scale*mFormat->size;
 	if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative)

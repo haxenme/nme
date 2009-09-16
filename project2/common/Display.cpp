@@ -1,4 +1,5 @@
 #include <Display.h>
+#include <Surface.h>
 #include <math.h>
 
 #ifndef M_PI
@@ -65,7 +66,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 	if (mGfx)
    {
       RenderState state(inState);
-      state.mTransform.mMatrix = GetFullMatrix();
+      state.mTransform.mMatrix = &GetFullMatrix();
 		mGfx->Render(inTarget,state);
    }
 }
@@ -241,7 +242,7 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    RenderState state(inState);
-   state.mTransform.mMatrix = GetFullMatrix();
+   state.mTransform.mMatrix = &GetFullMatrix();
    if (mGfx)
    {
 		mGfx->Render(inTarget,state);

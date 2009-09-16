@@ -1,5 +1,6 @@
 #include <Graphics.h>
 #include <Display.h>
+#include <Surface.h>
 #include <windows.h>
 #include <map>
 

@@ -2,7 +2,7 @@
 #include <TextField.h>
 #include <Display.h>
 #include <Utils.h>
-
+#include <Surface.h>
 
 void Handler(Event &ioEvent,void *inStage)
 {

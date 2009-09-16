@@ -1,4 +1,5 @@
 #include <Graphics.h>
+#include <Surface.h>
 
 bool sgColourOrderSet = false;
 

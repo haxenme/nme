@@ -7,7 +7,7 @@
 #include <QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
-#include "Pixel.h"
+#include <Pixel.h>
 
 typedef unsigned int uint32;
 typedef unsigned char uint8;
@@ -15,19 +15,7 @@ typedef unsigned char uint8;
 
 enum GraphicsAPIType { gatBase, gatInternal,  gatQuartz, gatCairo, gatOpenGL, gatOpenGLES };
 
-enum SurfaceAPIType  { satInternal, satSDL, satCairo };
-
-enum PixelFormat
-{
-   pfXRGB     = 0x00,
-   pfARGB     = 0x01,
-   pfXRGBSwap = 0x02,
-   pfARGBSwap = 0x03,
-
-   pfHasAlpha = 0x01,
-   pfSwapRB   = 0x02,
-};
-
+// enum SurfaceAPIType  { satInternal, satSDL, satCairo };
 
 
 // --- Graphics Data -------------------------------------------------------
@@ -361,9 +349,9 @@ struct Transform
 
    Rect           GetTargetRect(const Extent2DF &inExtent) const;
 
-   Matrix3D       mMatrix3D;
-   Matrix         mMatrix;
-   Scale9         mScale9;
+   const Matrix3D *mMatrix3D;
+   const Matrix   *mMatrix;
+   const Scale9   *mScale9;
 
 	int            mAAFactor;
 
@@ -410,7 +398,29 @@ struct Tile
 };
 */
 
-struct RenderTarget;
+
+struct HardwareContext;
+
+struct RenderTarget
+{
+   Rect mRect;
+	PixelFormat format;
+	bool is_hardware;
+
+	RenderTarget ClipRect(const Rect &inRect) const;
+
+   uint8 *Row(int inRow) const { return data+stride*inRow; }
+
+	union
+	{
+	  struct
+	  {
+        uint8 *data;
+        int  stride;
+	  };
+	  HardwareContext *context;
+	};
+};
 
 class Renderer
 {
@@ -511,122 +521,6 @@ private:
 
 
 
-
-// ---- Surface API --------------
-
-
-struct HardwareContext;
-
-struct RenderTarget
-{
-   Rect mRect;
-	PixelFormat format;
-	bool is_hardware;
-
-	RenderTarget ClipRect(const Rect &inRect) const;
-
-   uint8 *Row(int inRow) const { return data+stride*inRow; }
-
-	union
-	{
-	  struct
-	  {
-        uint8 *data;
-        int  stride;
-	  };
-	  HardwareContext *context;
-	};
-};
-
-// Need a context ?
-struct NativeTexture;
-NativeTexture *CreateNativeTexture(Surface *inSoftwareSurface);
-void DestroyNativeTexture(NativeTexture *inTexture);
-
-
-void HintColourOrder(bool inRedFirst);
-
-class Surface
-{
-public:
-   Surface() : mTexture(0), mRefCount(0) { };
-
-   Surface *IncRef() { mRefCount++; return this; }
-   void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
-
-   virtual int Width() const =0;
-   virtual int Height() const =0;
-   virtual PixelFormat Format()  const = 0;
-	virtual const uint8 *GetBase() const = 0;
-	virtual int GetStride() const = 0;
-
-	virtual void Clear(uint32 inColour) = 0;
-
-   virtual RenderTarget BeginRender(const Rect &inRect)=0;
-   virtual void EndRender()=0;
-
-   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly=false)=0;
-
-   virtual NativeTexture *GetTexture() { return mTexture; }
-   virtual void SetTexture(NativeTexture *inTexture);
-
-
-protected:
-   NativeTexture *mTexture;
-	int           mRefCount;
-	virtual       ~Surface();
-};
-
-// Helper class....
-class AutoSurfaceRender
-{
-	Surface *mSurface;
-	RenderTarget mTarget;
-public:
-	AutoSurfaceRender(Surface *inSurface, const Rect *inRect=0)
-	{
-		mSurface = inSurface;
-		mTarget = inRect ? inSurface->BeginRender( *inRect ) :
-		                 inSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
-	}
-	~AutoSurfaceRender() { mSurface->EndRender(); }
-	const RenderTarget &Target() { return mTarget; }
-
-};
-
-class SimpleSurface : public Surface
-{
-public:
-   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
-
-   int Width() const  { return mWidth; }
-   int Height() const  { return mHeight; }
-   PixelFormat Format() const  { return mPixelFormat; }
-	void Clear(uint32 inColour);
-
-   RenderTarget BeginRender(const Rect &inRect);
-   void EndRender();
-
-   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inDX, int inDY,
-                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly = false);
-
-	const uint8 *GetBase() const { return mBase; }
-	int GetStride() const { return mStride; }
-
-
-protected:
-   int           mWidth;
-   int           mHeight;
-   PixelFormat   mPixelFormat;
-   int           mStride;
-   uint8         *mBase;
-   ~SimpleSurface();
-
-private:
-   SimpleSurface(const SimpleSurface &inRHS);
-   void operator=(const SimpleSurface &inRHS);
-};
 
 
 

@@ -52,7 +52,7 @@ public:
        const RenderTarget &inTarget,const RenderState &inState)
 	{
 		// Get combined mapping matrix...
-		Matrix mapper = inState.mTransform.mMatrix;
+		Matrix mapper = *inState.mTransform.mMatrix;
 		mapper = mapper.Translate(inTX,inTY).Mult(mGrad->matrix);
 		mMapper = mapper.Inverse();
 		mMapper *= (1.0/1638.4);

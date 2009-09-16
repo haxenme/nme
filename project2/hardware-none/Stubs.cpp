@@ -1,4 +1,4 @@
-#include <Graphics.h>
+#include <Surface.h>
 
 NativeTexture *CreateNativeTexture(Surface *inSoftwareSurface)
 {

@@ -6,6 +6,20 @@
 // When rendering from a source to a dest, the source is swapped to match in
 //  the blending code.
 
+
+enum PixelFormat
+{
+   pfXRGB     = 0x00,
+   pfARGB     = 0x01,
+   pfXRGBSwap = 0x02,
+   pfARGBSwap = 0x03,
+
+   pfHasAlpha = 0x01,
+   pfSwapRB   = 0x02,
+};
+
+
+
 extern int sgC0Shift;
 extern int sgC1Shift;
 extern int sgC2Shift;

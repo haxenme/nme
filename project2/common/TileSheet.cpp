@@ -1,4 +1,5 @@
 #include <TileSheet.h>
+#include <Surface.h>
 #include <algorithm>
 
 

@@ -348,7 +348,7 @@ public:
 
       SetTransform(ioCache.mTransform);
 
-      Iterate(itGetExtent,ioCache.mTransform.mMatrix);
+      Iterate(itGetExtent,*ioCache.mTransform.mMatrix);
       mBuildExtent = 0;
    }
 
@@ -395,7 +395,7 @@ public:
          // TODO: make visible_pixels a bit bigger ?
          mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
 
-         Iterate(itCreateRenderer,inState.mTransform.mMatrix);
+         Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
 
          mAlphaMask = mSpanRect->CreateMask();
          mAlphaMask->SetValidArea( ImagePoint(rect.x,rect.y), visible_pixels, mTransform);

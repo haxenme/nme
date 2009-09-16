@@ -1,4 +1,5 @@
 #include <Graphics.h>
+#include <Surface.h>
 #include "Render.h"
 
 
@@ -186,7 +187,7 @@ public:
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
 	{
-		SetupMatrix(inTX,inTY, inState.mTransform.mMatrix);
+		SetupMatrix(inTX,inTY, *inState.mTransform.mMatrix);
 
 		bool swap =  (inTarget.format & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
 		if (swap)
