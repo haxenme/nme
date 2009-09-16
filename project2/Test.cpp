@@ -125,6 +125,16 @@ int main(int inargc,char **arvg)
 
    stage->addChild(text);
 
+   DisplayObject *circ = new DisplayObject(false);
+   circ->GetGraphics().beginFill(0x00);
+   circ->GetGraphics().drawCircle(0,0,50);
+   //circ->setScale9( Rect(-40,-20,80,40) );
+   //circ->setWidth( 200 );
+   circ->setScaleY(2);
+   circ->setX( 200 );
+   circ->setY( 300 );
+   stage->addChild(circ);
+
    MainLoop();
    delete frame;
    return 0;

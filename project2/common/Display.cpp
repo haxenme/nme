@@ -153,6 +153,19 @@ void DisplayObject::setX(double inValue)
    }
 }
 
+void DisplayObject::setScaleX(double inValue)
+{
+   UpdateDecomp();
+   if (scaleX!=inValue)
+   {
+      mDirtyFlags |= dirtLocalMatrix;
+      scaleX = inValue;
+      if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyUp(dirtFullMatrix|dirtCache);
+   }
+}
+
+
 double DisplayObject::getY()
 {
    UpdateDecomp();
@@ -170,6 +183,19 @@ void DisplayObject::setY(double inValue)
       DirtyUp(dirtFullMatrix|dirtCache);
    }
 }
+
+void DisplayObject::setScaleY(double inValue)
+{
+   UpdateDecomp();
+   if (scaleY!=inValue)
+   {
+      mDirtyFlags |= dirtLocalMatrix;
+      scaleY = inValue;
+      if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyUp(dirtFullMatrix|dirtCache);
+   }
+}
+
 
 double DisplayObject::getRotation()
 {

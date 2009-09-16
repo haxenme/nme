@@ -37,10 +37,10 @@ void Graphics::clear()
 
 void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 {
-	float w = width*0.5;
+	float w = width;
 	float w_ = w*SIN45;
 	float cw_ = w*TAN22;
-	float h = height*0.5;
+	float h = height;
 	float h_ = h*SIN45;
 	float ch_ = h*TAN22;
 
