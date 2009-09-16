@@ -192,8 +192,11 @@ void TextField::setHTMLText(const std::wstring &inString)
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+   RenderState state(inState);
+   state.mTransform.mMatrix = GetFullMatrix();
+
 	for(int i=0;i<mCharGroups.size();i++)
-	   if (mCharGroups[i].UpdateFont(inState,!embedFonts))
+	   if (mCharGroups[i].UpdateFont(state,!embedFonts))
 			mLinesDirty = true;
 
 	Layout();
@@ -217,10 +220,12 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 	if (!gfx.empty())
 	{
-	   gfx.Render(inTarget,inState);
+	   gfx.Render(inTarget,state);
 	}
 
-   RenderTarget target = inTarget.ClipRect(mRect);
+   int tx = (int)state.mTransform.mMatrix.mtx;
+   int ty = (int)state.mTransform.mMatrix.mty;
+   RenderTarget target = inTarget.ClipRect( mRect.Translated(tx,ty) );
 
 	for(int l=0;l<mLines.size();l++)
 	{
@@ -229,9 +234,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 		int done  = 0;
 		int gid = line.mCharGroup0;
 		CharGroup *group = &mCharGroups[gid++];
-		int y0 = mRect.y + line.mY0 + line.mMetrics.ascent;
+		int y0 = ty + mRect.y + line.mY0 + line.mMetrics.ascent;
+		if (y0>target.mRect.y1())
+         break;
 		int c0 = line.mCharInGroup0;
-	   int x = mRect.x;
+	   int x = tx + mRect.x;
 		while(done<chars)
 		{
 			int left = std::min(group->mChars - c0,chars-done);

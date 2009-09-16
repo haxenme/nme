@@ -240,10 +240,13 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-	DisplayObject::Render(inTarget,inState);
-
    RenderState state(inState);
    state.mTransform.mMatrix = GetFullMatrix();
+   if (mGfx)
+   {
+		mGfx->Render(inTarget,state);
+   }
+
 	for(int i=0;i<mChildren.size();i++)
 		mChildren[i]->Render(inTarget,state);
 }

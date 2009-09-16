@@ -44,6 +44,11 @@ struct Rect
 		else if (ioX1>x+w) ioX1 = x+w;
 	}
 
+   Rect Translated(int inTX,int inTY) const
+   {
+      return Rect(x+inTX,y+inTY,w,h);
+   }
+
 
 
    int x,y;

@@ -55,10 +55,32 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 	curveTo(x+w,  y-ch_, x+w,  y);
 }
 
-void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight)
+void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
 {
+   float w = width*0.5;
+   if (rx>w) rx = w;
+   int   lw = w - rx;
+	float w_ = lw + rx*SIN45;
+	float cw_ = lw + rx*TAN22;
+	float h = height*0.5;
+   if (ry>h) ry = h;
+   int   lh = h - ry;
+	float h_ = lh + ry*SIN45;
+	float ch_ = lh + ry*TAN22;
 
-
+	moveTo(x+w,y+lh);
+	curveTo(x+w,  y+ch_, x+w_, y+h_);
+	curveTo(x+cw_,y+h,   x+lw,    y+h);
+	lineTo(x-lw,    y+h);
+	curveTo(x-cw_,y+h,   x-w_, y+h_);
+	curveTo(x-w,  y+ch_, x-w,  y+lh);
+	lineTo( x-w, y-lh);
+	curveTo(x-w,  y-ch_, x-w_, y-h_);
+	curveTo(x-cw_,y-h,   x-lw,    y-h);
+	lineTo(x+lw,    y-h);
+	curveTo(x+cw_,y-h,   x+w_, y-h_);
+	curveTo(x+w,  y-ch_, x+w,  y-lh);
+	lineTo(x+w,  y+lh);
 }
 
 

@@ -12,15 +12,14 @@ void Handler(Event &ioEvent,void *inStage)
    {
    Stage *stage = (Stage *)inStage;
 
-   static int tx = 0;
-   static float rot = 0;
-   tx = (tx+1) % 500;
-   rot += 1;
-   if (rot>360) rot-=360;
-
-   DisplayObject *shape = stage->getChildAt(0);
-   shape->setX(tx);
-   shape->setRotation(rot);
+      DisplayObject *shape = stage->getChildAt(0);
+	   double x = shape->getX();
+	   double rot = shape->getRotation();
+      rot += 1;
+	   x += 1;
+      if (x>800) x = 0;
+      shape->setX(x);
+      shape->setRotation(rot);
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -74,23 +73,29 @@ int main(int inargc,char **arvg)
    shape->setY(200);
    stage->addChild(shape);
 
-   shape = new DisplayObject();
-   Graphics &g = shape->GetGraphics();
+   DisplayObjectContainer *win = new DisplayObjectContainer(true);
+   Graphics &g = win->GetGraphics();
    g.lineStyle(5,0x404080);
    g.beginFill(0x8080f0);
    //g.drawRect(0,0,200,100);
    //g.drawEllipse(0,0,200,100);
-   //g.drawRoundRect(0,0,200,100,10,10);
-   g.drawCircle(0,0,200);
-   shape->setX(100);
-   shape->setY(100);
-   stage->addChild(shape);
+   g.drawRoundRect(0,0,200,100,10,10);
+   TextField *tf = new TextField(false);
+   tf->setHTMLText(L"<font color='#ffffff' size=14>Window 1</font>");
+   tf->setX( 10 );
+   tf->setY( 10 );
+   win->addChild(tf);
+   //g.drawCircle(0,0,200);
+   stage->addChild(win);
+   win->setX(100);
+   win->setY(100);
+   win->DecRef();
 
    TextField *text = new TextField(false);
    //text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
    //text->setHTMLText(L"HHHH");
-   text->mRect.x = 200;
-   text->mRect.y = 2;
+   text->setX( 200 );
+   text->setY( 2 );
    //text->background = true;
    text->backgroundColor.SetRGBNative(0xb0b0f0);
    text->autoSize = asLeft;
@@ -117,7 +122,6 @@ int main(int inargc,char **arvg)
    }
    */
    text->setText( UTF8ToWide(contents.c_str()) );
-
 
    stage->addChild(text);
 
