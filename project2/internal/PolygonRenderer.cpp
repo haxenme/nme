@@ -359,6 +359,11 @@ public:
       if (points!=mTransformed.size() || inTransform!=mTransform)
       {
          mTransform = inTransform;
+			mTransMat = *inTransform.mMatrix;
+			mTransform.mMatrix = &mTransMat;
+			mTransform.mMatrix3D = &mTransMat;
+			mTransScale9 = *inTransform.mScale9;
+			mTransform.mScale9 = &mTransScale9;
          mTransformed.resize(points);
          for(int i=0;i<points;i++)
             mTransformed[i] = mTransform.Apply(data[i*2],data[i*2+1]);
@@ -467,6 +472,8 @@ public:
    virtual void AlignOrthogonal()  { }
 
    Transform           mTransform;
+	Matrix              mTransMat;
+	Scale9              mTransScale9;
    QuickVec<UserPoint> mTransformed;
    Filler              *mFiller;
    Extent2DF           *mBuildExtent;

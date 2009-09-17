@@ -18,8 +18,8 @@ void Handler(Event &ioEvent,void *inStage)
       rot += 1;
 	   x += 1;
       if (x>800) x = 0;
-      shape->setX(x);
-      shape->setRotation(rot);
+      //shape->setX(x);
+      //shape->setRotation(rot);
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -52,6 +52,7 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
+	#if 0
    GraphicsGradientFill *fill = new GraphicsGradientFill(true,
                                  Matrix().createGradientBox(200,200,45,-100,-100), smPad );
    fill->AddStop( 0xffffff, 1, 0 );
@@ -124,16 +125,35 @@ int main(int inargc,char **arvg)
    text->setText( UTF8ToWide(contents.c_str()) );
 
    stage->addChild(text);
+	#endif
 
-   DisplayObject *circ = new DisplayObject(false);
-   circ->GetGraphics().beginFill(0x00);
-   circ->GetGraphics().drawCircle(0,0,50);
-   //circ->setScale9( Rect(-40,-20,80,40) );
-   circ->setWidth( 200 );
-   circ->setScaleY(2);
-   circ->setX( 200 );
-   circ->setY( 300 );
-   stage->addChild(circ);
+   DisplayObject *shape = new DisplayObject(false);
+   shape->GetGraphics().beginFill(0xe0e0e0);
+   shape->GetGraphics().drawRect(-100,-20,200,100);
+   //shape->setScale9( Rect(-40,-20,80,40) );
+   shape->setRotation( 45 );
+   //shape->setWidth( 200 );
+   shape->setScaleX( 1.5 );
+	printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+	Matrix m = shape->GetLocalMatrix();
+	printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+	printf(" -- set -- \n");
+   shape->setWidth( 300 );
+	printf("New scaleX %f\n", shape->getScaleX());
+
+   //shape->setScaleX( 2.0 );
+	//printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+	//m = shape->GetLocalMatrix();
+	//printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+   //shape->setWidth( 250 );
+	//printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+
+
+	//m = shape->GetLocalMatrix();
+	//printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+   shape->setX( 200 );
+   shape->setY( 200 );
+   stage->addChild(shape);
 
    MainLoop();
    delete frame;

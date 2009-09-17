@@ -102,12 +102,12 @@ Matrix &DisplayObject::GetLocalMatrix()
    if (mDirtyFlags & dirtLocalMatrix)
    {
       mDirtyFlags ^= dirtLocalMatrix;
-      double r = rotation*M_PI/180.0;
+      double r = rotation*M_PI/-180.0;
       double c = cos(r);
       double s = sin(r);
       mLocalMatrix.m00 = c*scaleX;
-      mLocalMatrix.m01 = s*scaleX;
-      mLocalMatrix.m10 = -s*scaleY;
+      mLocalMatrix.m01 = s*scaleY;
+      mLocalMatrix.m10 = -s*scaleX;
       mLocalMatrix.m11 = c*scaleY;
       mLocalMatrix.mtx = x;
       mLocalMatrix.mty = y;
@@ -126,12 +126,20 @@ void DisplayObject::UpdateDecomp()
       x = mLocalMatrix.mtx;
       y = mLocalMatrix.mty;
       scaleX = sqrt( mLocalMatrix.m00*mLocalMatrix.m00 +
-                     mLocalMatrix.m01*mLocalMatrix.m01 );
-      scaleY = sqrt( mLocalMatrix.m10*mLocalMatrix.m10 +
+                     mLocalMatrix.m10*mLocalMatrix.m10 );
+      scaleY = sqrt( mLocalMatrix.m01*mLocalMatrix.m01 +
                      mLocalMatrix.m11*mLocalMatrix.m11 );
       rotation = scaleX>0 ? atan2( mLocalMatrix.m01, mLocalMatrix.m00 ) :
                  scaleY>0 ? atan2( mLocalMatrix.m11, mLocalMatrix.m10 ) : 0.0;
-      rotation *= 180.0/M_PI;
+		printf("Rotation = %f\n",rotation);
+		/*
+		scaleX = cos(rotation) * mLocalMatrix.m00 +
+		         -sin(rotation) * mLocalMatrix.m10;
+		scaleY = sin(rotation) * mLocalMatrix.m01 + 
+		         cos(rotation) * mLocalMatrix.m11;
+					*/
+		printf("scale = %f,%f\n", scaleX, scaleY );
+      rotation *= 180.0/-M_PI;
    }
 }
 
@@ -160,28 +168,52 @@ void DisplayObject::setScaleX(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       scaleX = inValue;
-      if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtFullMatrix|dirtCache);
+      //if (mParent) mParent->DirtyDown(dirtCache);
+      //DirtyUp(dirtFullMatrix|dirtCache);
    }
 }
 
-void DisplayObject::setWidth(double inValue)
+double DisplayObject::getScaleX()
 {
    UpdateDecomp();
+	return scaleX;
+}
+
+
+void DisplayObject::setWidth(double inValue)
+{
    if (!mGfx)
       return;
 
-   const Extent2DF &ext0 = mGfx->GetExtent0();
-   if (!ext0.Valid())
-      return;
+   mDirtyFlags |= dirtLocalMatrix;
+	GetLocalMatrix();
+   mDirtyFlags |= dirtDecomp;
+   UpdateDecomp();
 
-   double w0 = ext0.Width();
+   double w0 = getWidth();
    if (w0==0)
       return;
 
-   setScaleX(inValue/w0);
+	double scale = sqrt(scaleX*scaleX + scaleY*scaleY);
+   setScaleX(scaleX * inValue/w0);
 }
 
+double DisplayObject::getWidth()
+{
+   if (!mGfx)
+      return 0;
+
+	Transform trans;
+	trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext = mGfx->GetExtent(trans);
+   if (!ext.Valid())
+      return 0;
+
+   return ext.Width();
+}
+
+
+/*
 void DisplayObject::setHeight(double inValue)
 {
    UpdateDecomp();
@@ -197,6 +229,28 @@ void DisplayObject::setHeight(double inValue)
       return;
 
    setScaleY(inValue/h0);
+}
+*/
+
+double DisplayObject::getHeight()
+{
+   if (!mGfx)
+      return 0;
+
+	Transform trans;
+	trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext = mGfx->GetExtent(trans);
+   if (!ext.Valid())
+      return 0;
+
+   return ext.Height();
+}
+
+
+double DisplayObject::getScaleY()
+{
+   UpdateDecomp();
+	return scaleY;
 }
 
 
