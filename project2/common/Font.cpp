@@ -14,7 +14,6 @@ Font::Font(FontFace *inFace, int inPixelHeight, bool inInitRef) :
 
 Font::~Font()
 {
-	delete mFace;
 	for(int i=0;i<mSheets.size();i++)
 		mSheets[i]->DecRef();
 }
@@ -162,31 +161,40 @@ struct FontInfo
 };
 
 
-typedef std::map<FontInfo, FontFace *> FaceMap;
-FaceMap sgFaceMap;
+typedef std::map<FontInfo, Font *> FontMap;
+FontMap sgFontMap;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
 {
 	FontInfo info(inFormat,inScale,inNative);
 
-	FontFace *face = 0;
-	FaceMap::iterator fit = sgFaceMap.find(info);
-	if (fit==sgFaceMap.end())
+	Font *font = 0;
+	FontMap::iterator fit = sgFontMap.find(info);
+	if (fit!=sgFontMap.end())
 	{
-		if (inNative)
-		   face = FontFace::CreateNative(inFormat,inScale);
-		if (!face)
-		   face = FontFace::CreateFreeType(inFormat,inScale);
-		if (!face && !inNative)
-		   face = FontFace::CreateNative(inFormat,inScale);
-		if (!face)
-			return 0;
-		sgFaceMap[info] = face;
+		font = fit->second;
+		if (inInitRef)
+			font->IncRef();
+		return font;
 	}
-	else
-		face = fit->second;
 
-	return new Font(face,info.height,inInitRef);
+
+	FontFace *face = 0;
+
+	if (inNative)
+	   face = FontFace::CreateNative(inFormat,inScale);
+	if (!face)
+	   face = FontFace::CreateFreeType(inFormat,inScale);
+	if (!face && !inNative)
+	   face = FontFace::CreateNative(inFormat,inScale);
+	if (!face)
+  	   return 0;
+
+	font =  new Font(face,info.height,inInitRef);
+	// Store for Ron ...
+	font->IncRef();
+	sgFontMap[info] = font;
+	return font;
 }
 
 

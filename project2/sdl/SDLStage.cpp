@@ -1,6 +1,7 @@
 #include <Display.h>
 #include <Utils.h>
 #include <SDL.h>
+#include <Surface.h>
 
 class SDLSurf : public Surface
 {
