@@ -290,6 +290,7 @@ struct Extent2D
 
 
    inline bool Valid() const { return mValidX && mValidY; }
+   void Invalidate() { mValidX = mValidY = false; }
 
    T_ Width() const { return mMaxX-mMinX; }
    T_ Height() const { return mMaxY-mMinY; }

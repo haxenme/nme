@@ -497,16 +497,22 @@ public:
 	}
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
+   const Extent2DF &GetExtent0();
 
 	bool empty() const { return mItems.empty(); }
 
 
 private:
-	QuickVec<RendererCache>     mCache;
+	QuickVec<RendererCache>   mCache;
    QuickVec<IGraphicsData *> mItems;
    int                       mLastConvertedItem;
 	RenderData                mRenderData;
 
+   bool                      mRenderDirty;
+   Extent2DF                 mExtent0;
+
+   inline void MakeDirty();
+   void BuiltExtent0();
 	void CreateRenderData();
 	void Add(IRenderData *inData);
 	void Add(IGraphicsData *inData);

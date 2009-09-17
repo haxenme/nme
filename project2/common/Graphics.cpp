@@ -4,12 +4,19 @@
 Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
    mLastConvertedItem = 0;
+   mRenderDirty = false;
 }
 
 
 Graphics::~Graphics()
 {
 	clear();
+}
+
+void Graphics::MakeDirty()
+{
+   mExtent0.Invalidate();
+   mRenderDirty = true;
 }
 
 void Graphics::clear()
@@ -27,6 +34,9 @@ void Graphics::clear()
    for(int i=0;i<mItems.size();i++)
       mItems[i]->DecRef();
 	mItems.resize(0);
+
+   mExtent0 = Extent2DF();
+   mRenderDirty = true;
 
    mRenderData.DeleteAll();
 
@@ -53,6 +63,8 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 	curveTo(x-cw_,y-h,   x,    y-h);
 	curveTo(x+cw_,y-h,   x+w_, y-h_);
 	curveTo(x+w,  y-ch_, x+w,  y);
+
+   MakeDirty();
 }
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
@@ -83,6 +95,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
 	curveTo(x+cw_,y-h,   x+w_, y-h_);
 	curveTo(x+w,  y-ch_, x+w,  y-lh);
 	lineTo(x+w,  y+lh);
+   MakeDirty();
 }
 
 
@@ -91,22 +104,27 @@ void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
    mItems.reserve(mItems.size()+inN);
    for(int i=0;i<inN;i++)
       mItems.push_back( graphicsData[i]->IncRef() );
+   MakeDirty();
 }
 
 void Graphics::Add(IGraphicsData *inData)
 {
    mItems.push_back(inData->IncRef());
+   MakeDirty();
 }
 
 void Graphics::Add(IRenderData *inData)
 {
    inData->IncRef();
    mRenderData.push_back(inData);
+   MakeDirty();
 }
 
 
 GraphicsPath *Graphics::GetLastPath()
 {
+   MakeDirty();
+
    if (mLastConvertedItem<mItems.size())
    {
       IGraphicsData *last = mItems.last();
@@ -277,6 +295,14 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
 
    return result;
 }
+
+const Extent2DF &Graphics::GetExtent0()
+{
+   if (!mExtent0.Valid())
+      mExtent0 = GetExtent( Transform() );
+   return mExtent0;
+}
+
 
 bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState )
 {

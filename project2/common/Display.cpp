@@ -165,6 +165,41 @@ void DisplayObject::setScaleX(double inValue)
    }
 }
 
+void DisplayObject::setWidth(double inValue)
+{
+   UpdateDecomp();
+   if (!mGfx)
+      return;
+
+   const Extent2DF &ext0 = mGfx->GetExtent0();
+   if (!ext0.Valid())
+      return;
+
+   double w0 = ext0.Width();
+   if (w0==0)
+      return;
+
+   setScaleX(inValue/w0);
+}
+
+void DisplayObject::setHeight(double inValue)
+{
+   UpdateDecomp();
+   if (!mGfx)
+      return;
+
+   const Extent2DF &ext0 = mGfx->GetExtent0();
+   if (!ext0.Valid())
+      return;
+
+   double h0 = ext0.Width();
+   if (h0==0)
+      return;
+
+   setScaleY(inValue/h0);
+}
+
+
 
 double DisplayObject::getY()
 {
