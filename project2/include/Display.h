@@ -73,6 +73,9 @@ public:
 	void   setScaleX(double inValue);
 	double getScaleY();
 	void   setScaleY(double inValue);
+	void   setScale9Grid(const DRect &inRect);
+
+
 	const Transform &getTransform();
 
 	DisplayObject *getParent();
@@ -92,7 +95,7 @@ public:
  	DisplayObject *mask;
 	std::wstring  name;
 	uint32 opaqueBackground;
-	Rect   scale9Grid;
+	DRect   scale9Grid;
 	Rect   scrollRect;
 	bool   visible;
 
@@ -135,7 +138,7 @@ class DisplayObjectContainer : public DisplayObject
 public:
 	DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
 
-   void addChild(DisplayObject *inChild);
+   void addChild(DisplayObject *inChild,bool inTakeRef=false);
    void removeChild(DisplayObject *inChild);
       DisplayObject *getChildAt(int index);
 

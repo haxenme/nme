@@ -71,6 +71,8 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
 {
+   rx *= 0.5;
+   ry *= 0.5;
    float w = width*0.5;
 	x+=w;
    if (rx>w) rx = w;

@@ -1,17 +1,6 @@
 #include <Graphics.h>
 #include <algorithm>
 
-// --- Rect -------------------------------------------------------------------
-
-Rect Rect::Intersect(const Rect &inOther) const
-{
-   int x0 = std::max(x,inOther.x);
-   int y0 = std::max(y,inOther.y);
-   int x1 = std::min(this->x1(),inOther.x1());
-   int y1 = std::min(this->y1(),inOther.y1());
-
-	return Rect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
-}
 
 // --- Transform -------------------------------------------------------------------
 

@@ -1,6 +1,4 @@
 TODO:
-- Set Width/Height (dirty extent when graphics change)
-- Scale9
 - vertical/horizontal sub-pixel align
 - ScrollRect
 - Mask

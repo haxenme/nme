@@ -66,7 +66,27 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 	if (mGfx)
    {
       RenderState state(inState);
+      if (scale9Grid.HasPixels())
+      {
+         UpdateDecomp();
+         if (rotation==0)
+         {
+            Scale9 s9;
+            const Extent2DF &ext0 = mGfx->GetExtent0(0);
+            s9.Activate(scale9Grid,ext0,scaleX,scaleY);
+            state.mTransform.mScale9 = &s9;
+            Matrix mat;
+            if (mParent)
+               mat = mParent->GetFullMatrix();
+            mat.Translate(x,y);
+            state.mTransform.mMatrix = &mat;
+		      mGfx->Render(inTarget,state);
+            return;
+         }
+      }
+
       state.mTransform.mMatrix = &GetFullMatrix();
+
 		mGfx->Render(inTarget,state);
    }
 }
@@ -280,6 +300,13 @@ void DisplayObject::setScaleY(double inValue)
    }
 }
 
+void DisplayObject::setScale9Grid(const DRect &inRect)
+{
+   scale9Grid = inRect;
+   if (mParent) mParent->DirtyDown(dirtCache);
+}
+
+
 
 double DisplayObject::getRotation()
 {
@@ -329,7 +356,7 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
    DecRef();
 }
 
-void DisplayObjectContainer::addChild(DisplayObject *inChild)
+void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
 {
    IncRef();
    inChild->SetParent(this);
@@ -338,7 +365,8 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
    if (gDisplayRefCounting & drDisplayParentRefs)
       IncRef();
 
-   DecRef();
+   if (!inTakeRef)
+      DecRef();
 }
 
 void DisplayObjectContainer::DirtyUp(uint32 inFlags)
@@ -355,7 +383,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    state.mTransform.mMatrix = &GetFullMatrix();
    if (mGfx)
    {
-		mGfx->Render(inTarget,state);
+      if (scale9Grid.HasPixels())
+      {
+         DisplayObject::Render(inTarget,inState);
+      }
+      else
+		   mGfx->Render(inTarget,state);
    }
 
 	for(int i=0;i<mChildren.size();i++)

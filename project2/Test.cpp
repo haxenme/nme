@@ -18,8 +18,8 @@ void Handler(Event &ioEvent,void *inStage)
       rot += 1;
 	   x += 1;
       if (x>800) x = 0;
-      //shape->setX(x);
-      //shape->setRotation(rot);
+      shape->setX(x);
+      shape->setRotation(rot);
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -52,7 +52,6 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-	#if 0
    GraphicsGradientFill *fill = new GraphicsGradientFill(true,
                                  Matrix().createGradientBox(200,200,45,-100,-100), smPad );
    fill->AddStop( 0xffffff, 1, 0 );
@@ -87,10 +86,12 @@ int main(int inargc,char **arvg)
    tf->setY( 10 );
    win->addChild(tf);
    //g.drawCircle(0,0,200);
-   stage->addChild(win);
+   stage->addChild(win,true);
    win->setX(100);
    win->setY(100);
-   win->DecRef();
+   win->setScaleX(2);
+   win->setScaleY(2);
+   win->setScale9Grid( DRect(10,10,180,80) );
 
    TextField *text = new TextField(false);
    //text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
@@ -125,8 +126,8 @@ int main(int inargc,char **arvg)
    text->setText( UTF8ToWide(contents.c_str()) );
 
    stage->addChild(text);
-	#endif
 
+   #if 0
    DisplayObject *shape = new DisplayObject(false);
    shape->GetGraphics().beginFill(0xe0e0e0);
    shape->GetGraphics().drawRect(-100,-20,200,100);
@@ -154,6 +155,7 @@ int main(int inargc,char **arvg)
    shape->setX( 200 );
    shape->setY( 200 );
    stage->addChild(shape);
+   #endif
 
    MainLoop();
    delete frame;

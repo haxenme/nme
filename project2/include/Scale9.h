@@ -15,32 +15,30 @@ public:
    
    Scale9() : mActive(false) { }
    bool Active() const { return mActive; }
-   void Activate(double inX0, double inY0, double inW, double inH,
-                 double inSX, double inSY,
-                 double inExtX0, double inExtY0, double inExtW, double inExtH )
+   void Activate(const DRect &inGrid, const Extent2DF &inExt, double inSX, double inSY)
    {
       mActive = true;
-      X0 = inX0;
-      Y0 = inY0;
-      X1 = inW + X0;
-      Y1 = inH + Y0;
+      X0 = inGrid.x;
+      Y0 = inGrid.y;
+      X1 = inGrid.x1();
+      Y1 = inGrid.y1();
       // Right of object before scaling
-      double right = inExtX0 + inExtW;
+      double right = inExt.mMaxX;
       // Right of object after scaling
       double extra_x = right*(inSX - 1);
       // Size of central rect
-      double middle_x = inW + extra_x;
+      double middle_x = inGrid.w + extra_x;
       // Scaling of central rect
-      SX = middle_x/inW;
+      SX = middle_x/inGrid.w;
       // For points > X1, add this on...
-      X1Off = inW*(SX-1);
+      X1Off = inGrid.w*(SX-1);
 
       // Same for Y:
-      double bottom = inExtY0 + inExtH;
+      double bottom = inExt.mMaxY;
       double extra_y = bottom*(inSY - 1);
-      double middle_y = inH + extra_y;
-      SY = middle_y/inH;
-      Y1Off = inH*(SY-1);
+      double middle_y = inGrid.h + extra_y;
+      SY = middle_y/inGrid.h;
+      Y1Off = inGrid.h*(SY-1);
    }
    void Deactivate() { mActive = false; }
    bool operator==(const Scale9 &inRHS) const

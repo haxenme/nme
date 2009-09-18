@@ -11,22 +11,30 @@ typedef long long int64;
 #include <math.h>
 
 
-struct Rect
+template<typename T>
+struct TRect
 {
-   Rect(int inW=0,int inH=0) : x(0), y(0), w(inW), h(inH) { } 
-   Rect(int inX,int inY,int inW,int inH) : x(inX), y(inY), w(inW), h(inH) { } 
-   Rect(int inX0,int inY0,int inX1,int inY1, bool inDummy) :
+   TRect(T inW=0,T inH=0) : x(0), y(0), w(inW), h(inH) { } 
+   TRect(T inX,T inY,T inW,T inH) : x(inX), y(inY), w(inW), h(inH) { } 
+   TRect(T inX0,T inY0,T inX1,T inY1, bool inDummy) :
       x(inX0), y(inY0), w(inX1-inX0), h(inY1-inY0) { } 
 
-	Rect Intersect(const Rect &inOther) const;
-	Rect operator *(int inScale) const { return Rect(x*inScale,y*inScale,w*inScale,h*inScale); }
-	Rect operator /(int inScale) const { return Rect(x/inScale,y/inScale,w/inScale,h/inScale); }
-	int x1() const { return x+w; }
-	int y1() const { return y+h; }
-   void Translate(int inTx,int inTy) { x+=inTx; y+= inTy; }
+	TRect Intersect(const TRect &inOther) const
+   {
+      T x0 = std::max(x,inOther.x);
+      T y0 = std::max(y,inOther.y);
+      T x1 = std::min(this->x1(),inOther.x1());
+      T y1 = std::min(this->y1(),inOther.y1());
+	   return TRect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
+   }
+	TRect operator *(T inScale) const { return TRect(x*inScale,y*inScale,w*inScale,h*inScale); }
+	TRect operator /(T inScale) const { return TRect(x/inScale,y/inScale,w/inScale,h/inScale); }
+	T x1() const { return x+w; }
+	T y1() const { return y+h; }
+   void Translate(T inTx,T inTy) { x+=inTx; y+= inTy; }
    bool HasPixels() const { return w>0 && h>0; }
 
-   void ClipY(int &ioY0, int &ioY1) const
+   void ClipY(T &ioY0, T &ioY1) const
 	{
 		if (ioY0 < y) ioY0 = y;
 		else if (ioY0>y+h) ioY0 = y+h;
@@ -35,7 +43,7 @@ struct Rect
 		else if (ioY1>y+h) ioY1 = y+h;
 	}
 
-   void ClipX(int &ioX0, int &ioX1) const
+   void ClipX(T &ioX0, T &ioX1) const
 	{
 		if (ioX0 < x) ioX0 = x;
 		else if (ioX0>x+w) ioX0 = x+w;
@@ -44,16 +52,19 @@ struct Rect
 		else if (ioX1>x+w) ioX1 = x+w;
 	}
 
-   Rect Translated(int inTX,int inTY) const
+   TRect Translated(T inTX,T inTY) const
    {
-      return Rect(x+inTX,y+inTY,w,h);
+      return TRect(x+inTX,y+inTY,w,h);
    }
 
 
 
-   int x,y;
-   int w,h;
+   T x,y;
+   T w,h;
 };
+
+typedef TRect<int>    Rect;
+typedef TRect<double> DRect;
 
 
 
