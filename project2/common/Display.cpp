@@ -185,17 +185,15 @@ void DisplayObject::setWidth(double inValue)
    if (!mGfx)
       return;
 
-   mDirtyFlags |= dirtLocalMatrix;
-	GetLocalMatrix();
-   mDirtyFlags |= dirtDecomp;
-   UpdateDecomp();
-
-   double w0 = getWidth();
-   if (w0==0)
+   const Extent2DF &ext0 = mGfx->GetExtent0(rotation);
+   if (!ext0.Valid())
+      return;
+   if (ext0.Width()==0)
       return;
 
-	double scale = sqrt(scaleX*scaleX + scaleY*scaleY);
-   setScaleX(scaleX * inValue/w0);
+   scaleX = inValue/ext0.Width();
+   scaleY = ext0.Height()==0.0 ? 1.0 : getHeight() / ext0.Height();
+   mDirtyFlags |= dirtLocalMatrix;
 }
 
 double DisplayObject::getWidth()
@@ -213,24 +211,21 @@ double DisplayObject::getWidth()
 }
 
 
-/*
 void DisplayObject::setHeight(double inValue)
 {
-   UpdateDecomp();
    if (!mGfx)
       return;
 
-   const Extent2DF &ext0 = mGfx->GetExtent0();
+   const Extent2DF &ext0 = mGfx->GetExtent0(rotation);
    if (!ext0.Valid())
       return;
-
-   double h0 = ext0.Width();
-   if (h0==0)
+   if (ext0.Height()==0)
       return;
 
-   setScaleY(inValue/h0);
+   scaleX = ext0.Width()==0.0 ? 1.0 : getWidth() / ext0.Width();
+   scaleY = inValue/ext0.Height();
+   mDirtyFlags |= dirtLocalMatrix;
 }
-*/
 
 double DisplayObject::getHeight()
 {

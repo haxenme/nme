@@ -497,7 +497,7 @@ public:
 	}
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
-   const Extent2DF &GetExtent0();
+   const Extent2DF &GetExtent0(double inRotation);
 
 	bool empty() const { return mItems.empty(); }
 
@@ -509,10 +509,11 @@ private:
 	RenderData                mRenderData;
 
    bool                      mRenderDirty;
+   double                    mRotation0;
    Extent2DF                 mExtent0;
 
    inline void MakeDirty();
-   void BuiltExtent0();
+   void BuiltExtent0(double inRotation);
 	void CreateRenderData();
 	void Add(IRenderData *inData);
 	void Add(IGraphicsData *inData);

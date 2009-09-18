@@ -131,7 +131,7 @@ int main(int inargc,char **arvg)
    shape->GetGraphics().beginFill(0xe0e0e0);
    shape->GetGraphics().drawRect(-100,-20,200,100);
    //shape->setScale9( Rect(-40,-20,80,40) );
-   shape->setRotation( 45 );
+   shape->setRotation( 20 );
    //shape->setWidth( 200 );
    shape->setScaleX( 1.5 );
 	printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
@@ -139,12 +139,12 @@ int main(int inargc,char **arvg)
 	printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
 	printf(" -- set -- \n");
    shape->setWidth( 300 );
-	printf("New scaleX %f\n", shape->getScaleX());
 
-   //shape->setScaleX( 2.0 );
-	//printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
-	//m = shape->GetLocalMatrix();
-	//printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+	printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+	printf("Scale  : %fx%f\n", shape->getScaleX(), shape->getScaleY() );
+	m = shape->GetLocalMatrix();
+	printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+
    //shape->setWidth( 250 );
 	//printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
 

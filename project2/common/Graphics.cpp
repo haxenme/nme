@@ -4,6 +4,7 @@
 Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
    mLastConvertedItem = 0;
+   mRotation0 = 0;
    mRenderDirty = false;
 }
 
@@ -37,6 +38,7 @@ void Graphics::clear()
 
    mExtent0 = Extent2DF();
    mRenderDirty = true;
+   mRotation0 = 0;
 
    mRenderData.DeleteAll();
 
@@ -296,10 +298,18 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
    return result;
 }
 
-const Extent2DF &Graphics::GetExtent0()
+const Extent2DF &Graphics::GetExtent0(double inRotation)
 {
-   if (!mExtent0.Valid())
-      mExtent0 = GetExtent( Transform() );
+   if (!mExtent0.Valid() || inRotation!=mRotation0)
+   {
+      Transform trans;
+      Matrix  m;
+      trans.mMatrix = &m;
+      if (inRotation)
+         m.Rotate(inRotation);
+      mExtent0 = GetExtent(trans);
+      mRotation0 = inRotation;
+   }
    return mExtent0;
 }
 
