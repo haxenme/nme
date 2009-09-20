@@ -1,7 +1,7 @@
 TODO:
 - vertical/horizontal sub-pixel align
-- ScrollRect
 - Mask
+- AlpahMask caching
 - cacheAsBitmap
 - blendMode
 - colourTransform
