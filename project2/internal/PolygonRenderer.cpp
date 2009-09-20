@@ -369,8 +369,25 @@ public:
          mTransformed.resize(points);
          for(int i=0;i<points;i++)
             mTransformed[i] = mTransform.Apply(data[i*2],data[i*2+1]);
+			AlignOrthogonal();
       }
    }
+
+	void Align(UserPoint &ioP0, UserPoint &ioP1)
+	{
+		if (ioP0!=ioP1)
+		{
+			if (ioP0.x == ioP1.x)
+			{
+				ioP0.x = ioP1.x = floor(ioP0.x) + 0.5;
+			}
+			else if (ioP0.y == ioP1.y)
+			{
+				ioP0.y = ioP1.y = floor(ioP0.y) + 0.5;
+			}
+		}
+	}
+
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
@@ -797,6 +814,54 @@ public:
          EndCap(prev,prev_perp);
       }
    }
+
+   void AlignOrthogonal()
+	{
+      int n = mLineData->command.size();
+      UserPoint *point = &mTransformed[0];
+
+		if (mLineData->mStroke->pixelHinting)
+		{
+			n = mTransformed.size();
+			for(int i=0;i<n;i++)
+			{
+				UserPoint &p = mTransformed[i];
+				p.x = floor(p.x) + 0.5;
+				p.y = floor(p.y) + 0.5;
+			}
+			return;
+		}
+
+      UserPoint *first = 0;
+      UserPoint *prev = 0;
+      for(int i=0;i<n;i++)
+      {
+         switch(mLineData->command[i])
+         {
+            case pcWideMoveTo:
+               point++;
+            case pcMoveTo:
+					if (first)
+						Align(*first,*point);
+               first = point;
+               break;
+
+            case pcWideLineTo:
+               point++;
+            case pcLineTo:
+					if (prev)
+						Align(*prev,*point);
+               break;
+
+            case pcCurveTo:
+					point++;
+               break;
+         }
+			prev = point++;
+      }
+	}
+
+
 
    QuickVec<float> &GetData()
    {
