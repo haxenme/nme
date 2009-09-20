@@ -50,7 +50,6 @@ enum
 {
    dirtDecomp      = 0x0001,
    dirtLocalMatrix = 0x0002,
-   dirtFullMatrix  = 0x0004,
    dirtCache       = 0x0004,
 };
 
@@ -109,7 +108,7 @@ public:
    void SetParent(DisplayObjectContainer *inParent);
 
 	Graphics &GetGraphics();
-   Matrix   &GetFullMatrix();
+   Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
 
 protected:
@@ -122,7 +121,6 @@ protected:
    // Matrix stuff
    uint32 mDirtyFlags;
    Matrix mLocalMatrix;
-   Matrix mFullMatrix;
    // Decomp
    double x;
    double y;

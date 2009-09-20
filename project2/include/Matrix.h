@@ -66,6 +66,8 @@ public:
 
    void GLMult() const;
 
+   Matrix &TranslateData(double inTX, double inTY);
+
    double m00, m01, mtx;
    double m10, m11, mty;
 };

@@ -180,6 +180,14 @@ double Matrix::GetScaleY() const
 }
 
 
+Matrix &Matrix::TranslateData(double inTX, double inTY)
+{
+   mtx += m00*inTX + m01*inTY;
+   mty += m10*inTX + m11*inTY;
+   return *this;
+}
+
+
 
 
 Matrix &Matrix::createGradientBox(double inWidth, double inHeight,

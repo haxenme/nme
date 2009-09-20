@@ -370,9 +370,8 @@ struct RenderState
 	Transform      mTransform;
 
 	// Viewport
-	Rect           GetAARect() const { return mClipRect * mAA; }
+   Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
-	int            mAA;
 
 	// Colour transform
    double         mAlpha;

@@ -13,7 +13,7 @@ unsigned int gDisplayRefCounting = drDisplayChildRefs;
 DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
 {
    mParent = 0;
-	mGfx = 0;
+   mGfx = 0;
    mDirtyFlags = 0;
    x = y = 0;
    scaleX = scaleY = 1.0;
@@ -22,18 +22,18 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
 
 DisplayObject::~DisplayObject()
 {
-	if (mGfx)
-		mGfx->DecRef();
+   if (mGfx)
+      mGfx->DecRef();
    // assert mParent==0
 }
 
 Graphics &DisplayObject::GetGraphics()
 {
-	if (!mGfx)
-	{
-		mGfx = new Graphics(true);
-	}
-	return *mGfx;
+   if (!mGfx)
+   {
+      mGfx = new Graphics(true);
+   }
+   return *mGfx;
 }
 
 
@@ -54,7 +54,7 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
       mParent->RemoveChildFromList(this);
       mParent->DirtyDown(dirtCache);
    }
-   DirtyUp(dirtFullMatrix|dirtCache);
+   DirtyUp(dirtCache);
 
    mParent = inParent;
 
@@ -63,7 +63,7 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-	if (mGfx)
+   if (mGfx)
    {
       RenderState state(inState);
       if (scale9Grid.HasPixels())
@@ -75,19 +75,24 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
             const Extent2DF &ext0 = mGfx->GetExtent0(0);
             s9.Activate(scale9Grid,ext0,scaleX,scaleY);
             state.mTransform.mScale9 = &s9;
-            Matrix mat;
-            if (mParent)
-               mat = mParent->GetFullMatrix();
-            mat.Translate(x,y);
-            state.mTransform.mMatrix = &mat;
-		      mGfx->Render(inTarget,state);
+
+            Matrix full = *inState.mTransform.mMatrix;
+            if (scrollRect.HasPixels())
+               full.TranslateData(-scrollRect.x*scaleX,-scrollRect.y*scaleX);
+            full.TranslateData(x,y);
+
+            state.mTransform.mMatrix = &full;
+            mGfx->Render(inTarget,state);
             return;
          }
       }
 
-      state.mTransform.mMatrix = &GetFullMatrix();
+      Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
+      if (scrollRect.HasPixels())
+         full.TranslateData(-scrollRect.x,-scrollRect.y);
+      state.mTransform.mMatrix = &full;
 
-		mGfx->Render(inTarget,state);
+      mGfx->Render(inTarget,state);
    }
 }
 
@@ -104,17 +109,11 @@ void DisplayObject::DirtyDown(uint32 inFlags)
       mParent->DirtyDown(inFlags);
 }
 
-Matrix &DisplayObject::GetFullMatrix()
+Matrix DisplayObject::GetFullMatrix()
 {
-   if (mDirtyFlags & dirtFullMatrix)
-   {
-      mDirtyFlags ^= dirtFullMatrix;
-      if (mParent)
-         mFullMatrix = mParent->GetFullMatrix().Mult(GetLocalMatrix());
-      else
-         mFullMatrix = GetLocalMatrix();
-   }
-   return mFullMatrix;
+  if (mParent)
+     return mParent->GetFullMatrix().Mult(GetLocalMatrix());
+  return GetLocalMatrix();
 }
 
 Matrix &DisplayObject::GetLocalMatrix()
@@ -151,14 +150,14 @@ void DisplayObject::UpdateDecomp()
                      mLocalMatrix.m11*mLocalMatrix.m11 );
       rotation = scaleX>0 ? atan2( mLocalMatrix.m01, mLocalMatrix.m00 ) :
                  scaleY>0 ? atan2( mLocalMatrix.m11, mLocalMatrix.m10 ) : 0.0;
-		printf("Rotation = %f\n",rotation);
-		/*
-		scaleX = cos(rotation) * mLocalMatrix.m00 +
-		         -sin(rotation) * mLocalMatrix.m10;
-		scaleY = sin(rotation) * mLocalMatrix.m01 + 
-		         cos(rotation) * mLocalMatrix.m11;
-					*/
-		printf("scale = %f,%f\n", scaleX, scaleY );
+      printf("Rotation = %f\n",rotation);
+      /*
+      scaleX = cos(rotation) * mLocalMatrix.m00 +
+               -sin(rotation) * mLocalMatrix.m10;
+      scaleY = sin(rotation) * mLocalMatrix.m01 + 
+               cos(rotation) * mLocalMatrix.m11;
+               */
+      printf("scale = %f,%f\n", scaleX, scaleY );
       rotation *= 180.0/-M_PI;
    }
 }
@@ -177,7 +176,7 @@ void DisplayObject::setX(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       x = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtFullMatrix|dirtCache);
+      DirtyUp(dirtCache);
    }
 }
 
@@ -189,14 +188,14 @@ void DisplayObject::setScaleX(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       scaleX = inValue;
       //if (mParent) mParent->DirtyDown(dirtCache);
-      //DirtyUp(dirtFullMatrix|dirtCache);
+      //DirtyUp(dirtCache);
    }
 }
 
 double DisplayObject::getScaleX()
 {
    UpdateDecomp();
-	return scaleX;
+   return scaleX;
 }
 
 
@@ -221,8 +220,8 @@ double DisplayObject::getWidth()
    if (!mGfx)
       return 0;
 
-	Transform trans;
-	trans.mMatrix = &GetLocalMatrix();
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext = mGfx->GetExtent(trans);
    if (!ext.Valid())
       return 0;
@@ -252,8 +251,8 @@ double DisplayObject::getHeight()
    if (!mGfx)
       return 0;
 
-	Transform trans;
-	trans.mMatrix = &GetLocalMatrix();
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext = mGfx->GetExtent(trans);
    if (!ext.Valid())
       return 0;
@@ -265,7 +264,7 @@ double DisplayObject::getHeight()
 double DisplayObject::getScaleY()
 {
    UpdateDecomp();
-	return scaleY;
+   return scaleY;
 }
 
 
@@ -284,7 +283,7 @@ void DisplayObject::setY(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       y = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtFullMatrix|dirtCache);
+      DirtyUp(dirtCache);
    }
 }
 
@@ -296,7 +295,7 @@ void DisplayObject::setScaleY(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       scaleY = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtFullMatrix|dirtCache);
+      DirtyUp(dirtCache);
    }
 }
 
@@ -309,7 +308,10 @@ void DisplayObject::setScale9Grid(const DRect &inRect)
 void DisplayObject::setScrollRect(const DRect &inRect)
 {
    scrollRect = inRect;
+   UpdateDecomp();
+   mDirtyFlags |= dirtLocalMatrix;
    if (mParent) mParent->DirtyDown(dirtCache);
+   DirtyUp(dirtCache);
 }
 
 
@@ -328,7 +330,7 @@ void DisplayObject::setRotation(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       rotation = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtFullMatrix|dirtCache);
+      DirtyUp(dirtCache);
    }
 }
 
@@ -386,7 +388,10 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    RenderState state(inState);
-   state.mTransform.mMatrix = &GetFullMatrix();
+   Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
+   if (scrollRect.HasPixels())
+      full.TranslateData(-scrollRect.x,-scrollRect.y);
+   state.mTransform.mMatrix = &full;
    if (mGfx)
    {
       if (scale9Grid.HasPixels())
@@ -394,28 +399,29 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          DisplayObject::Render(inTarget,inState);
       }
       else
-		   mGfx->Render(inTarget,state);
+         mGfx->Render(inTarget,state);
    }
 
-	for(int i=0;i<mChildren.size();i++)
-	{
-		DisplayObject *obj = mChildren[i];
-		if (obj->scrollRect.HasPixels())
-		{
-			const Matrix &mtx = obj->GetLocalMatrix();
-			int ox = mtx.mtx;
-			int oy = mtx.mty;
-			UserPoint bottom_right = mtx.Apply(scrollRect.w,scrollRect.h);
-			Rect screen_rect(ox,oy,bottom_right.x,bottom_right.y,true);
-			screen_rect.MakePositive();
+   for(int i=0;i<mChildren.size();i++)
+   {
+      DisplayObject *obj = mChildren[i];
+      if (obj->scrollRect.HasPixels())
+      {
+         Matrix mtx = full.Mult(obj->GetLocalMatrix());
+         int ox = mtx.mtx;
+         int oy = mtx.mty;
+         UserPoint bottom_right = mtx.Apply(obj->scrollRect.w,obj->scrollRect.h);
+         Rect screen_rect(ox,oy,bottom_right.x,bottom_right.y,true);
+         screen_rect.MakePositive();
 
          RenderState clip_state(state);
-			clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
-		   obj->Render(inTarget,state);
-		}
-		else
-		   obj->Render(inTarget,state);
-	}
+         clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
+      
+         obj->Render(inTarget,clip_state);
+      }
+      else
+         obj->Render(inTarget,state);
+   }
 }
 
 
@@ -433,31 +439,31 @@ DisplayObject *DisplayObjectContainer::getChildAt(int index)
 // Helper class....
 class AutoStageRender
 {
-	Surface *mSurface;
-	Stage   *mToFlip;
-	RenderTarget mTarget;
+   Surface *mSurface;
+   Stage   *mToFlip;
+   RenderTarget mTarget;
 public:
-	AutoStageRender(Stage *inStage,int inRGB)
-	{
-		mSurface = inStage->GetPrimarySurface();
-		mToFlip = inStage;
-		mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
-		mSurface->Clear(inRGB);
-	}
-	int Width() const { return mSurface->Width(); }
-	int Height() const { return mSurface->Height(); }
-	~AutoStageRender()
-	{
-		mSurface->EndRender();
-		mToFlip->Flip();
-	}
-	const RenderTarget &Target() { return mTarget; }
+   AutoStageRender(Stage *inStage,int inRGB)
+   {
+      mSurface = inStage->GetPrimarySurface();
+      mToFlip = inStage;
+      mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
+      mSurface->Clear(inRGB);
+   }
+   int Width() const { return mSurface->Width(); }
+   int Height() const { return mSurface->Height(); }
+   ~AutoStageRender()
+   {
+      mSurface->EndRender();
+      mToFlip->Flip();
+   }
+   const RenderTarget &Target() { return mTarget; }
 };
 
 Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 {
-	mBackgroundColour = 0xffffff;
-	mQuality = 4;
+   mBackgroundColour = 0xffffff;
+   mQuality = 4;
 }
 
 Stage::~Stage()
@@ -467,13 +473,12 @@ Stage::~Stage()
 
 void Stage::RenderStage()
 {
-	AutoStageRender render(this,mBackgroundColour);
+   AutoStageRender render(this,mBackgroundColour);
 
-   RenderState state;
+   RenderState state(0,mQuality);
 
-	//gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
-	state.mClipRect = Rect( render.Width(), render.Height() );
-	state.mTransform.mAAFactor = mQuality;
+   //gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
+   state.mClipRect = Rect( render.Width(), render.Height() );
 
-	Render(render.Target(),state);
+   Render(render.Target(),state);
 }

@@ -194,7 +194,10 @@ void TextField::setHTMLText(const std::wstring &inString)
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    RenderState state(inState);
-   state.mTransform.mMatrix = &GetFullMatrix();
+   Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
+   if (scrollRect.HasPixels())
+      full.TranslateData(-scrollRect.x,-scrollRect.y);
+   state.mTransform.mMatrix = &full;
 
 	for(int i=0;i<mCharGroups.size();i++)
 	   if (mCharGroups[i].UpdateFont(state,!embedFonts))

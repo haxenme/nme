@@ -4,6 +4,8 @@
 #include <Utils.h>
 #include <Surface.h>
 
+DisplayObject *gWin = 0;
+
 void Handler(Event &ioEvent,void *inStage)
 {
    if (ioEvent.mType==etClose)
@@ -20,6 +22,7 @@ void Handler(Event &ioEvent,void *inStage)
       if (x>800) x = 0;
       shape->setX(x);
       shape->setRotation(rot);
+      gWin->setScrollRect( DRect(0,x/2,200,200) );
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -92,7 +95,8 @@ int main(int inargc,char **arvg)
    win->setScaleX(2);
    win->setScaleY(2);
    win->setScale9Grid( DRect(10,10,180,80) );
-   win->setScrollRect( DRect(0,0,100,100) );
+   win->setScrollRect( DRect(-15,-15,200,200) );
+   gWin = win;
 
    TextField *text = new TextField(false);
    //text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");

@@ -352,7 +352,6 @@ RenderState::RenderState(Surface *inSurface,int inAA)
 	}
 	else
 		mClipRect = Rect(0,0);
-	mAA = inAA;
 }
 
 // --- RenderTarget -------------------------------------------------------------------

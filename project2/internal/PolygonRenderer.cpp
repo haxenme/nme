@@ -135,6 +135,7 @@ struct SpanRect
       mTransitions = new Transitions[mRect.h];
       mMinX = (inRect.x - 1)<<10;
       mMaxX = (inRect.x1())<<10;
+      mLeftPos = inRect.x;
    }
    ~SpanRect()
    {
@@ -184,7 +185,7 @@ struct SpanRect
          y0 = std::max(y0,0);
          y1 = std::min(y1,mRect.h);
          for(;y0<y1;y0++)
-            mTransitions[y0].Change(mMinX,diff);
+            mTransitions[y0].Change(mLeftPos,diff);
          return;
       }
 
@@ -301,6 +302,7 @@ struct SpanRect
    int         mAA;
    int         mMinX;
    int         mMaxX;
+   int         mLeftPos;
    Rect        mRect;
 };
 
