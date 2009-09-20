@@ -55,8 +55,9 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-   GraphicsGradientFill *fill = new GraphicsGradientFill(true,
-                                 Matrix().createGradientBox(200,200,45,-100,-100), smPad );
+   GraphicsGradientFill *fill = new GraphicsGradientFill(false,
+                                 Matrix().createGradientBox(200,200,45,-100,-100), smReflect,
+											imRGB, 0.5);
    fill->AddStop( 0xffffff, 1, 0 );
    fill->AddStop( 0xff0000, 1, 0.25 );
    fill->AddStop( 0x00ff00, 1, 0.5 );
