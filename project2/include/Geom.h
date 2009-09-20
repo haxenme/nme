@@ -56,6 +56,19 @@ struct TRect
    {
       return TRect(x+inTX,y+inTY,w,h);
    }
+	void MakePositive()
+	{
+		if (w<0)
+		{
+			x-=w;
+			w=-w;
+		}
+		if (h<0)
+		{
+			y-=h;
+			h=-h;
+		}
+	}
 
 
 

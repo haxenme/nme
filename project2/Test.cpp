@@ -92,6 +92,7 @@ int main(int inargc,char **arvg)
    win->setScaleX(2);
    win->setScaleY(2);
    win->setScale9Grid( DRect(10,10,180,80) );
+   win->setScrollRect( DRect(0,0,100,100) );
 
    TextField *text = new TextField(false);
    //text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");

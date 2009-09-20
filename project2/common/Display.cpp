@@ -306,6 +306,12 @@ void DisplayObject::setScale9Grid(const DRect &inRect)
    if (mParent) mParent->DirtyDown(dirtCache);
 }
 
+void DisplayObject::setScrollRect(const DRect &inRect)
+{
+   scrollRect = inRect;
+   if (mParent) mParent->DirtyDown(dirtCache);
+}
+
 
 
 double DisplayObject::getRotation()
@@ -392,7 +398,24 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    }
 
 	for(int i=0;i<mChildren.size();i++)
-		mChildren[i]->Render(inTarget,state);
+	{
+		DisplayObject *obj = mChildren[i];
+		if (obj->scrollRect.HasPixels())
+		{
+			const Matrix &mtx = obj->GetLocalMatrix();
+			int ox = mtx.mtx;
+			int oy = mtx.mty;
+			UserPoint bottom_right = mtx.Apply(scrollRect.w,scrollRect.h);
+			Rect screen_rect(ox,oy,bottom_right.x,bottom_right.y,true);
+			screen_rect.MakePositive();
+
+         RenderState clip_state(state);
+			clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
+		   obj->Render(inTarget,state);
+		}
+		else
+		   obj->Render(inTarget,state);
+	}
 }
 
 
@@ -451,8 +474,6 @@ void Stage::RenderStage()
 	//gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
 	state.mClipRect = Rect( render.Width(), render.Height() );
 	state.mTransform.mAAFactor = mQuality;
-	state.mAAClipRect = state.mClipRect * mQuality;
-
 
 	Render(render.Target(),state);
 }

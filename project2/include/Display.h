@@ -74,6 +74,7 @@ public:
 	double getScaleY();
 	void   setScaleY(double inValue);
 	void   setScale9Grid(const DRect &inRect);
+	void   setScrollRect(const DRect &inRect);
 
 
 	const Transform &getTransform();
@@ -96,7 +97,7 @@ public:
 	std::wstring  name;
 	uint32 opaqueBackground;
 	DRect   scale9Grid;
-	Rect   scrollRect;
+	DRect   scrollRect;
 	bool   visible;
 
 

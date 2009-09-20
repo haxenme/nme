@@ -382,7 +382,7 @@ public:
       Rect rect = inState.mTransform.GetTargetRect(extent);
 
       // Intersect with clip rect ...
-      Rect visible_pixels = rect.Intersect(inState.mAAClipRect);
+      Rect visible_pixels = rect.Intersect(inState.GetAARect());
 
       // Check to see if AlphaMask is invalid...
       int tx=0;
