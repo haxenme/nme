@@ -48,10 +48,10 @@ Fixed10 Transform::ToImageAA(const UserPoint &inPoint) const
 
 Rect Transform::GetTargetRect(const Extent2DF &inExtent) const
 {
-   return Rect( floor((inExtent.mMinX * mStageScaleX + mStageOX)*mAAFactor),
-                floor((inExtent.mMinY * mStageScaleY + mStageOY)*mAAFactor),
-                 ceil((inExtent.mMaxX * mStageScaleX + mStageOX)*mAAFactor),
-                 ceil((inExtent.mMaxY * mStageScaleY + mStageOY)*mAAFactor), true );
+   return Rect( floor((inExtent.mMinX * mStageScaleX + mStageOX)),
+                floor((inExtent.mMinY * mStageScaleY + mStageOY)),
+                 ceil((inExtent.mMaxX * mStageScaleX + mStageOX)),
+                 ceil((inExtent.mMaxY * mStageScaleY + mStageOY)), true );
 }
 
 

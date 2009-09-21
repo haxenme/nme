@@ -27,19 +27,19 @@ void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, cons
       if (run!=end)
       {
          outDest.SetRow(y);
+         while(run<end && run->mX1 + inTX<=inClip.x)
+            run++;
+
          while(run<end)
          {
             int x0 = run->mX0 + inTX;
             if (x0 >= inClip.x1())
                break;
             int x1 = run->mX1 + inTX;
-            if (x1 <= inClip.x)
-               continue;
-
             inClip.ClipX(x0,x1);
 
             outDest.SetX(x0);
-            inSource.SetPos(x0-inTX,sy);
+            inSource.SetPos(run->mX0,sy);
             int alpha = run->mAlpha;
 
             while(x0++<x1)

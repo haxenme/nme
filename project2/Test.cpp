@@ -17,7 +17,7 @@ void Handler(Event &ioEvent,void *inStage)
       DisplayObject *shape = stage->getChildAt(0);
 	   double x = shape->getX();
 	   double rot = shape->getRotation();
-      rot += 1;
+      //rot += 1;
 	   x += 1;
       if (x>800) x = 0;
       shape->setX(x);
@@ -79,8 +79,8 @@ int main(int inargc,char **arvg)
 
    DisplayObjectContainer *win = new DisplayObjectContainer(true);
    Graphics &g = win->GetGraphics();
-   g.lineStyle(1,0xff0000,1,false);
-   //g.beginFill(0x8080f0);
+   g.lineStyle(5,0xff0000,1,false);
+   g.beginFill(0x8080f0);
    //g.drawRect(0,0,200,100);
    //g.drawEllipse(0,0,200,100);
    g.drawRoundRect(10,10,200,100,5,5);

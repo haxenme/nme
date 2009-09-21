@@ -27,53 +27,22 @@ typedef std::vector<AlphaRuns> Lines;
 
 struct AlphaMask
 {
-   AlphaMask(const Rect &inRect) : mRect(inRect), mLines(inRect.h) { }
-
-   Rect      mRect;
-	Lines     mLines;
-
-	/*
-	                Screen
-	          +-----------------
-		 Pos   |                 |
-        +....|@@@@             |
-		  .    |@@@@=valid rect  |
-		  .    |@@@@             |
-		  .....|@@@@             |
-		       |                 |
-		       |                 |
-	          +-----------------
-
-	  All values below are integerized to the AA grid (by multiplying the the AA factor)
-      and are used to determine if the mask can be reused.
-
-     Pos (mOx,mOy) is the position of the (unclipped) extent when these alpha run
-	   were calculated.  The valid rect coordinates are with respect to the position;
-
-     The valid rect is something like the intersection of the extent and the screen rect.
-	  (although a bigger valid rect may be calculated to allow for some scrolling)
-
-	  The alpha-run can be reused if the required screen rect is contained in the valid rect,
-	   and the Pos and required position are anti-alias-sub-pixel aligned, and the
-		transform has the same (except for translation).
-
-	  To reuse the alpha-run at a different position, the destination can be adjusted
-	   by the difference in positions of the extents.
-
-	*/
-
-   void SetValidArea(const ImagePoint &inPos, const Rect &inRect, const Transform &inTrans)
+   AlphaMask(const Rect &inRect,const Transform &inTrans) : mRect(inRect), mLines(inRect.h)
    {
-      mAAPos = inPos;
-      mAAValidRect = inRect;
-      mTransform = inTrans;
+      mMatrix = *inTrans.mMatrix;
+      mScale9 = *inTrans.mScale9;
    }
+
+   // Given we were created with a certain transform and valid data rect, can we
+   // cover the requested area for the requested transform?
 	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels,
 					    int &outTX, int &outTY);
 
-	ImagePoint mAAPos;
-	Rect       mAAValidRect;
-	Transform  mTransform;
+   Rect      mRect;
+	Lines     mLines;
+   Matrix    mMatrix;
+	Scale9    mScale9;
+
 };
 
 class Filler

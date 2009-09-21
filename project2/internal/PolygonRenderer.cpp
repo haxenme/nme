@@ -124,18 +124,13 @@ struct SpanRect
 {
    SpanRect(const Rect &inRect,int inAA)
    {
-      // Round rect to non aa-boundary ...
       mAA =  inAA;
-      int mask = inAA-1;
-      mRect.x = inRect.x & ~mask;
-      mRect.y = inRect.y & ~mask;
-      mRect.w = (( inRect.x1() + mask) & ~mask) - mRect.x;
-      mRect.h = (( inRect.y1() + mask) & ~mask) - mRect.y;
+      mRect = inRect * inAA;
 
       mTransitions = new Transitions[mRect.h];
-      mMinX = (inRect.x - 1)<<10;
-      mMaxX = (inRect.x1())<<10;
-      mLeftPos = inRect.x;
+      mMinX = (mRect.x - 1)<<10;
+      mMaxX = (mRect.x1())<<10;
+      mLeftPos = mRect.x;
    }
    ~SpanRect()
    {
@@ -276,10 +271,10 @@ struct SpanRect
         outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
    }
 
-   AlphaMask *CreateMask()
+   AlphaMask *CreateMask(const Transform &inTransform)
    {
       Rect rect = mRect/mAA;
-      AlphaMask *mask = new AlphaMask(rect);
+      AlphaMask *mask = new AlphaMask(rect,inTransform);
       Transitions *t = mTransitions;
       for(int y=0;y<rect.h;y++)
       {
@@ -397,11 +392,11 @@ public:
       if (!extent.Valid())
          return true;
 
-      // Transform to AA-Pixels ...
+      // Get bounding pixel rect
       Rect rect = inState.mTransform.GetTargetRect(extent);
 
       // Intersect with clip rect ...
-      Rect visible_pixels = rect.Intersect(inState.GetAARect());
+      Rect visible_pixels = rect.Intersect(inState.mClipRect);
 
       // Check to see if AlphaMask is invalid...
       int tx=0;
@@ -421,8 +416,7 @@ public:
 
          Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
 
-         mAlphaMask = mSpanRect->CreateMask();
-         mAlphaMask->SetValidArea( ImagePoint(rect.x,rect.y), visible_pixels, mTransform);
+         mAlphaMask = mSpanRect->CreateMask(mTransform);
          delete mSpanRect;
       }
 
