@@ -193,14 +193,8 @@ void TextField::setHTMLText(const std::wstring &inString)
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   RenderState state(inState);
-   Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
-   if (scrollRect.HasPixels())
-      full.TranslateData(-scrollRect.x,-scrollRect.y);
-   state.mTransform.mMatrix = &full;
-
 	for(int i=0;i<mCharGroups.size();i++)
-	   if (mCharGroups[i].UpdateFont(state,!embedFonts))
+	   if (mCharGroups[i].UpdateFont(inState,!embedFonts))
 			mLinesDirty = true;
 
 	Layout();
@@ -224,12 +218,12 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 	if (!gfx.empty())
 	{
-	   gfx.Render(inTarget,state);
+	   gfx.Render(inTarget,inState);
 	}
 
-   int tx = (int)state.mTransform.mMatrix->mtx;
-   int ty = (int)state.mTransform.mMatrix->mty;
-   RenderTarget target = inTarget.ClipRect( mRect.Translated(tx,ty) );
+   int tx = (int)inState.mTransform.mMatrix->mtx;
+   int ty = (int)inState.mTransform.mMatrix->mty;
+   RenderTarget target = inTarget.ClipRect( mRect.Translated(tx,ty).Intersect(inState.mClipRect) );
 
 	for(int l=0;l<mLines.size();l++)
 	{

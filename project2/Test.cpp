@@ -17,12 +17,12 @@ void Handler(Event &ioEvent,void *inStage)
       DisplayObject *shape = stage->getChildAt(0);
 	   double x = shape->getX();
 	   double rot = shape->getRotation();
-      //rot += 1;
+      rot += 1;
 	   x += 1;
       if (x>800) x = 0;
       shape->setX(x);
       shape->setRotation(rot);
-      // gWin->setScrollRect( DRect(0,x/2,200,200) );
+      gWin->setScrollRect( DRect(20,x/8,100,100) );
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -79,11 +79,11 @@ int main(int inargc,char **arvg)
 
    DisplayObjectContainer *win = new DisplayObjectContainer(true);
    Graphics &g = win->GetGraphics();
-   g.lineStyle(5,0xff0000,1,false);
+   g.lineStyle(2,0x202040,1,false);
    g.beginFill(0x8080f0);
    //g.drawRect(0,0,200,100);
    //g.drawEllipse(0,0,200,100);
-   g.drawRoundRect(10,10,200,100,5,5);
+   g.drawRoundRect(10,10,200,100,10,10);
    TextField *tf = new TextField(false);
    tf->setHTMLText(L"<font color='#ffffff' size=14>Window 1</font>");
    tf->setX( 10 );
@@ -93,10 +93,10 @@ int main(int inargc,char **arvg)
    stage->addChild(win,true);
    win->setX(100);
    win->setY(100);
-   //win->setScaleX(2);
-   //win->setScaleY(2);
-   //win->setScale9Grid( DRect(10,10,180,80) );
-   //win->setScrollRect( DRect(-15,-15,200,200) );
+   win->setScaleX(2);
+   win->setScaleY(2);
+   win->setScale9Grid( DRect(20,20,180,80) );
+   win->setScrollRect( DRect(-15,-15,100,100) );
    gWin = win;
 
    TextField *text = new TextField(false);

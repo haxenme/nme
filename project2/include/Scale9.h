@@ -18,27 +18,20 @@ public:
    void Activate(const DRect &inGrid, const Extent2DF &inExt, double inSX, double inSY)
    {
       mActive = true;
-      X0 = inGrid.x;
-      Y0 = inGrid.y;
-      X1 = inGrid.x1();
-      Y1 = inGrid.y1();
-      // Right of object before scaling
-      double right = inExt.mMaxX;
-      // Right of object after scaling
-      double extra_x = right*(inSX - 1);
-      // Size of central rect
-      double middle_x = inGrid.w + extra_x;
-      // Scaling of central rect
-      SX = middle_x/inGrid.w;
-      // For points > X1, add this on...
-      X1Off = inGrid.w*(SX-1);
 
-      // Same for Y:
-      double bottom = inExt.mMaxY;
-      double extra_y = bottom*(inSY - 1);
-      double middle_y = inGrid.h + extra_y;
-      SY = middle_y/inGrid.h;
-      Y1Off = inGrid.h*(SY-1);
+		double fixed_x0 = inGrid.x - inExt.mMinX;
+		double fixed_x1 = inExt.mMaxX - inGrid.x1();
+      X0 = inGrid.x;
+      X1 = inGrid.x1();
+      X1Off = inExt.mMaxX*inSX - fixed_x1 - X1;
+		SX = inGrid.w ? (inExt.Width()*inSX - fixed_x0 - fixed_x1)/inGrid.w : 0;
+
+		double fixed_y0 = inGrid.y - inExt.mMinY;
+		double fixed_y1 = inExt.mMaxY - inGrid.y1();
+      Y0 = inGrid.y;
+      Y1 = inGrid.y1();
+      Y1Off = inExt.mMaxY*inSY - fixed_y1 - Y1;
+		SY = inGrid.h ? (inExt.Height()*inSY - fixed_y0 - fixed_y1)/inGrid.h : 0;
    }
    void Deactivate() { mActive = false; }
    bool operator==(const Scale9 &inRHS) const

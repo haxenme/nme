@@ -109,11 +109,11 @@ public:
 		mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
 	}
 
-   void SetupMatrix(int inTX,int inTY, const Matrix &inMatrix)
+   void SetupMatrix(const Matrix &inMatrix)
 	{
 		// Get combined mapping matrix...
 		Matrix mapper = inMatrix;
-		mapper = mapper.Translate(inTX,inTY).Mult(mBitmap->matrix);
+		mapper = mapper.Mult(mBitmap->matrix);
 		mMapper = mapper.Inverse();
 		mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
 		mMapper.Translate(0.5,0.5);
@@ -187,7 +187,7 @@ public:
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
 	{
-		SetupMatrix(inTX,inTY, *inState.mTransform.mMatrix);
+		SetupMatrix(*inState.mTransform.mMatrix);
 
 		bool swap =  (inTarget.format & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
 		if (swap)

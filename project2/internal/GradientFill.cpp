@@ -28,7 +28,7 @@ public:
 	{
 		// Get combined mapping matrix...
 		Matrix mapper = *inState.mTransform.mMatrix;
-		mapper = mapper.Translate(inTX,inTY).Mult(mGrad->matrix);
+		mapper = mapper.Mult(mGrad->matrix);
 		/*
         The flash matrix transforms the "nominal gradient box",
           (-819.2,-819.2) ... (819.2,819.2).  The gradient values (0,0)...(1,1)

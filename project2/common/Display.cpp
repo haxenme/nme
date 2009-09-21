@@ -64,35 +64,23 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (mGfx)
-   {
-      RenderState state(inState);
-      if (scale9Grid.HasPixels())
-      {
-         UpdateDecomp();
-         if (rotation==0)
-         {
-            Scale9 s9;
-            const Extent2DF &ext0 = mGfx->GetExtent0(0);
-            s9.Activate(scale9Grid,ext0,scaleX,scaleY);
-            state.mTransform.mScale9 = &s9;
+	{
+		if (scale9Grid.HasPixels())
+		{
+			RenderState state(inState);
 
-            Matrix full = *inState.mTransform.mMatrix;
-            if (scrollRect.HasPixels())
-               full.TranslateData(-scrollRect.x*scaleX,-scrollRect.y*scaleX);
-            full.TranslateData(x,y);
+         const Extent2DF &ext0 = mGfx->GetExtent0(0);
+			Scale9 s9;
+         s9.Activate(scale9Grid,ext0,scaleX,scaleY);
+         state.mTransform.mScale9 = &s9;
 
-            state.mTransform.mMatrix = &full;
-            mGfx->Render(inTarget,state);
-            return;
-         }
-      }
+			Matrix unscaled = state.mTransform.mMatrix->Mult( Matrix(1.0/scaleX,1.0/scaleY) );
+			state.mTransform.mMatrix = &unscaled;
 
-      Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
-      if (scrollRect.HasPixels())
-         full.TranslateData(-scrollRect.x,-scrollRect.y);
-      state.mTransform.mMatrix = &full;
-
-      mGfx->Render(inTarget,state);
+         mGfx->Render(inTarget,state);
+		}
+		else
+         mGfx->Render(inTarget,inState);
    }
 }
 
@@ -387,32 +375,25 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+	DisplayObject::Render(inTarget,inState);
+
+   Matrix full;
    RenderState state(inState);
-   Matrix full = inState.mTransform.mMatrix->Mult( GetLocalMatrix() );
-   if (scrollRect.HasPixels())
-      full.TranslateData(-scrollRect.x,-scrollRect.y);
    state.mTransform.mMatrix = &full;
-   if (mGfx)
-   {
-      if (scale9Grid.HasPixels())
-      {
-         DisplayObject::Render(inTarget,inState);
-      }
-      else
-         mGfx->Render(inTarget,state);
-   }
 
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
+
+      full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
       if (obj->scrollRect.HasPixels())
       {
-         Matrix mtx = full.Mult(obj->GetLocalMatrix());
-         int ox = mtx.mtx;
-         int oy = mtx.mty;
-         UserPoint bottom_right = mtx.Apply(obj->scrollRect.w,obj->scrollRect.h);
-         Rect screen_rect(ox,oy,bottom_right.x,bottom_right.y,true);
+         UserPoint bottom_right = full.Apply(obj->scrollRect.w,obj->scrollRect.h);
+         Rect screen_rect(full.mtx,full.mty,bottom_right.x,bottom_right.y,true);
+
          screen_rect.MakePositive();
+
+			full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 
          RenderState clip_state(state);
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
@@ -420,7 +401,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          obj->Render(inTarget,clip_state);
       }
       else
+		{
          obj->Render(inTarget,state);
+		}
    }
 }
 

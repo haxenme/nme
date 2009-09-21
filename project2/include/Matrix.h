@@ -42,6 +42,11 @@ public:
 
 	Matrix &Rotate(double inDeg);
 	Matrix &Translate(double inTX, double inTY);
+	Matrix Translated(double inTX, double inTY)
+	{
+		Matrix mat(*this);
+		return mat.Translate(inTX,inTY);
+	}
 	Matrix &Scale(double inSX, double inSY);
 	Matrix &operator *= (double inScale);
 

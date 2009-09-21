@@ -39,7 +39,7 @@ void DestRender(const AlphaMask &inMask, SOURCE_ &inSource, DEST_ &outDest, cons
             inClip.ClipX(x0,x1);
 
             outDest.SetX(x0);
-            inSource.SetPos(run->mX0,sy);
+            inSource.SetPos(x0,sy);
             int alpha = run->mAlpha;
 
             while(x0++<x1)
