@@ -53,6 +53,24 @@ enum
    dirtCache       = 0x0004,
 };
 
+
+class BitmapCache
+{
+public:
+	BitmapCache(const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
+	~BitmapCache();
+
+	bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
+
+
+private:
+	ImagePos  mRenderOffset;
+	Rect      mRect;
+   Matrix    mMatrix;
+	Scale9    mScale9;
+	Surface   *mBitmap;
+};
+
 class DisplayObject : public Object
 {
 public:
@@ -99,7 +117,9 @@ public:
 	DRect   scrollRect;
 	bool   visible;
 
-	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt);
+	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+
+	bool    NeedsBitmap();
 
 
 	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
@@ -119,6 +139,8 @@ protected:
 	~DisplayObject();
    DisplayObjectContainer *mParent;
 	Graphics               *mGfx;
+
+	BitmapCache            *mBitmapCache;
 
    // Matrix stuff
    uint32 mDirtyFlags;
@@ -148,6 +170,7 @@ public:
 	void Render( const RenderTarget &inTarget, const RenderState &inState );
 	void DirtyUp(uint32 inFlags);
 	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt);
+	virtual void GetScreenExtent(const RenderState &inState, Extent2DF &outExt);
 
 
 protected:

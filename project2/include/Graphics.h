@@ -378,9 +378,11 @@ struct RenderState
    ColorTransform mColourTrans;
    BlendMode      mBlendMode;
 
+	bool           mBitmapPhase;
+
 	// Masking...
-	Surface        *mHardwareMask;
-	SoftwareMask   *mSoftwareMask;
+	ImagePoint     mMaskPos;
+	Surface        *mMask;
 };
 
 

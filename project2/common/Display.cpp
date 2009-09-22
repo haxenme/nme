@@ -18,13 +18,14 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    x = y = 0;
    scaleX = scaleY = 1.0;
    rotation = 0;
+	mBitmapCache = 0;
 }
 
 DisplayObject::~DisplayObject()
 {
    if (mGfx)
       mGfx->DecRef();
-   // assert mParent==0
+	delete mBitmapCache;
 }
 
 Graphics &DisplayObject::GetGraphics()
@@ -63,7 +64,7 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (mGfx)
+   if (mGfx && !inState.mBitmapPhase)
 	{
 		if (scale9Grid.HasPixels())
 		{
@@ -122,7 +123,7 @@ Matrix &DisplayObject::GetLocalMatrix()
    return mLocalMatrix;
 }
 
-void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt)
+void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
 {
 	if (mGfx)
 		outExt.Add(mGfx->GetExtent(inTrans));
@@ -204,7 +205,7 @@ void DisplayObject::setWidth(double inValue)
 	   rot.Rotate(rotation);
 	trans0.mMatrix = &rot;
    Extent2DF ext0;
-	GetExtent(trans0,ext0);
+	GetExtent(trans0,ext0,false);
 
    if (!ext0.Valid())
       return;
@@ -224,7 +225,7 @@ double DisplayObject::getWidth()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-	GetExtent(trans,ext);
+	GetExtent(trans,ext,false);
    if (!ext.Valid())
       return 0;
 
@@ -243,7 +244,7 @@ void DisplayObject::setHeight(double inValue)
 	   rot.Rotate(rotation);
 	trans0.mMatrix = &rot;
    Extent2DF ext0;
-	GetExtent(trans0,ext0);
+	GetExtent(trans0,ext0,false);
 
    if (!ext0.Valid())
       return;
@@ -263,7 +264,7 @@ double DisplayObject::getHeight()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-	GetExtent(trans,ext);
+	GetExtent(trans,ext,false);
    if (!ext.Valid())
       return 0;
 
@@ -397,17 +398,29 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+	Rect visible_bitmap;
+
+
 	DisplayObject::Render(inTarget,inState);
 
+
+	// Render children/build child bitmaps ...
    Matrix full;
    RenderState state(inState);
    state.mTransform.mMatrix = &full;
+   RenderState clip_state(state);
 
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
 
+
+
+
+
+	   State *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
+
       if (obj->scrollRect.HasPixels())
       {
          UserPoint bottom_right = full.Apply(obj->scrollRect.w,obj->scrollRect.h);
@@ -417,21 +430,61 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
 			full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 
-         RenderState clip_state(state);
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
       
-         obj->Render(inTarget,clip_state);
+	      obj_state = &clip_state;
       }
-      else
+
+
+
+		// TODO : all thes ebelong to "obj"
+	if (inState.mBitmapPhase)
+	{
+		if ( mDirtyFlags & dirtCache)
 		{
-         obj->Render(inTarget,state);
+		  if (mBitmapCache)
+		  {
+			  delete mBitmapCache;
+			  mBitmapCache = 0;
+		  }
+		  mDirtyFlags ^= dirtCache;
 		}
+
+		Extent2DF screen_extent;
+      GetExtent(inState.mTransform,screen_extent,true);
+		// Get bounding pixel rect
+      Rect rect = inState.mTransform.GetTargetRect(screen_extent);
+
+      // Intersect with clip rect ...
+      visible_bitmap = rect.Intersect(inState.mClipRect);
+
+		if (mBitmapCache)
+		{
+			// Done - our bitmap is good!
+			if (mBitmapCache->StillGood(inState.mTransform, rect, visible_bitmap))
+				continue;
+			else
+			{
+				delete mBitmapCache;
+				mBitmapCache = 0;
+			}
+		}
+	}
+
+
+
+      obj->Render(inTarget,*obj_state);
+
    }
+
+	if (inState.mBitmapPhase && cacheAsBitmap)
+	{
+	}
 }
 
-void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt)
+void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
 {
-	DisplayObject::GetExtent(inTrans,outExt);
+	DisplayObject::GetExtent(inTrans,outExt,inForScreen);
 
    Matrix full;
 	Transform trans(inTrans);
@@ -442,10 +495,14 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
       DisplayObject *obj = mChildren[i];
 
       full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
-		// Seems scroll rects are ignored when calculating extent...
-		obj->GetExtent(trans,outExt);
+		if (inForScreen && obj->scrollRect.HasPixels())
+		{
+			// TODO: Add scroll-rect
+		}
+		else
+		   // Seems scroll rects are ignored when calculating extent...
+		   obj->GetExtent(trans,outExt,inForScreen);
    }
-
 }
 
 
@@ -504,5 +561,9 @@ void Stage::RenderStage()
    //gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
    state.mClipRect = Rect( render.Width(), render.Height() );
 
+	state.mBitmapPhase = true;
+   Render(render.Target(),state);
+
+	state.mBitmapPhase = false;
    Render(render.Target(),state);
 }

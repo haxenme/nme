@@ -344,8 +344,8 @@ RenderState::RenderState(Surface *inSurface,int inAA)
 	mAlpha = 1.0;
 	mTransform.mAAFactor = inAA;
 	mBlendMode = bmNormal;
-	mHardwareMask = 0;
-	mSoftwareMask = 0;
+	mMask = 0;
+	mBitmapPhase = false;
 	if (inSurface)
 	{
 		mClipRect = Rect(inSurface->Width(),inSurface->Height());
