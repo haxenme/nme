@@ -274,6 +274,7 @@ struct Extent2D
          AddY(inExtent.mMaxY);
       }
    }
+
    bool Intersect(T_ inX0,T_ inY0, T_ inX1, T_ inY1)
    {
       if (!mValidX)

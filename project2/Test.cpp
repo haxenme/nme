@@ -4,7 +4,8 @@
 #include <Utils.h>
 #include <Surface.h>
 
-DisplayObject *gWin = 0;
+DisplayObject *gScrollWin = 0;
+bool gDoSpin = false;
 
 void Handler(Event &ioEvent,void *inStage)
 {
@@ -14,6 +15,8 @@ void Handler(Event &ioEvent,void *inStage)
    {
    Stage *stage = (Stage *)inStage;
 
+	if (gDoSpin)
+	{
       DisplayObject *shape = stage->getChildAt(0);
 	   double x = shape->getX();
 	   double rot = shape->getRotation();
@@ -22,19 +25,17 @@ void Handler(Event &ioEvent,void *inStage)
       if (x>800) x = 0;
       shape->setX(x);
       shape->setRotation(rot);
-      gWin->setScrollRect( DRect(20,x/8,100,100) );
+		if (gScrollWin)
+         gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
+	}
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
    }
 }
 
-
-int main(int inargc,char **arvg)
+void TestBitmapRender()
 {
-   Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
-
-
    // Render to bitmap ...
    Surface *bg = new SimpleSurface(32,32, pfXRGB);
    {
@@ -48,13 +49,10 @@ int main(int inargc,char **arvg)
       AutoSurfaceRender render(bg);
       gfx.Render(render.Target(),RenderState(bg,4));
    }
+}
 
-
-
-   Stage *stage = frame->GetStage();
-   stage->IncRef();
-   stage->SetEventHandler(Handler,stage);
-
+void AddGradFill(Stage *inStage)
+{
    GraphicsGradientFill *fill = new GraphicsGradientFill(false,
                                  Matrix().createGradientBox(200,200,45,-100,-100), smReflect,
 											imRGB, 0.5);
@@ -75,8 +73,12 @@ int main(int inargc,char **arvg)
    gfx.lineTo(100,-100);
    gfx.lineTo(-100,-100);
    shape->setY(200);
-   stage->addChild(shape);
+   inStage->addChild(shape);
+}
 
+void TestScrollRect(Stage *inStage)
+{
+	gDoSpin = true;
    DisplayObjectContainer *win = new DisplayObjectContainer(true);
    Graphics &g = win->GetGraphics();
    g.lineStyle(2,0x202040,1,false);
@@ -90,15 +92,18 @@ int main(int inargc,char **arvg)
    tf->setY( 10 );
    win->addChild(tf);
    //g.drawCircle(0,0,200);
-   stage->addChild(win,true);
+   inStage->addChild(win,true);
    win->setX(100);
    win->setY(100);
    win->setScaleX(2);
    win->setScaleY(2);
    win->setScale9Grid( DRect(20,20,180,80) );
    win->setScrollRect( DRect(-15,-15,100,100) );
-   gWin = win;
+   gScrollWin = win;
+}
 
+void TestText(Stage *inStage,bool inFromFile)
+{
    TextField *text = new TextField(false);
    //text->setText(L"Hello, abcdefghijklmnopqrstuvwxyz 1234567890 ABCDEFGHIGKLMNOPQRSTUVWXYZjjj");
    //text->setHTMLText(L"HHHH");
@@ -111,29 +116,33 @@ int main(int inargc,char **arvg)
    text->wordWrap = true;
    text->mRect.w = 600;
    text->embedFonts = false;
-   //text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
-   //text->setHTMLText(L"H");
 
-   std::string contents = "Hello !";
-   /*
-   std::string contents;
-   FILE *f = fopen("Test.cpp","rb");
-   if (f)
-   {
-      int ch;
-      while( (ch=fgetc(f))!=EOF )
-      {
-         if (ch==10 || (ch>26 && ch<127) )
-            contents += (char)ch;
-      }
-      fclose(f);
-   }
-   */
-   text->setText( UTF8ToWide(contents.c_str()) );
+	if (inFromFile)
+	{
+		std::string contents;
+		FILE *f = fopen("Test.cpp","rb");
+		if (f)
+		{
+			int ch;
+			while( (ch=fgetc(f))!=EOF )
+			{
+				if (ch==10 || (ch>26 && ch<127) )
+					contents += (char)ch;
+			}
+			fclose(f);
+		}
+		text->setText( UTF8ToWide(contents.c_str()) );
+	}
+	else
+      text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 
-   stage->addChild(text);
+   inStage->addChild(text);
+}
 
-   #if 0
+
+
+void TestWidth1(Stage *inStage)
+{
    DisplayObject *shape = new DisplayObject(false);
    shape->GetGraphics().beginFill(0xe0e0e0);
    shape->GetGraphics().drawRect(-100,-20,200,100);
@@ -160,8 +169,56 @@ int main(int inargc,char **arvg)
 	//printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
    shape->setX( 200 );
    shape->setY( 200 );
-   stage->addChild(shape);
-   #endif
+   inStage->addChild(shape);
+}
+
+
+void TestWidth2(Stage *inStage)
+{
+		DisplayObjectContainer *base = new DisplayObjectContainer;
+		base->GetGraphics().beginFill(0xff0000);
+		base->GetGraphics().drawRect(0,0,60,40);
+		inStage->addChild(base);
+
+      DisplayObjectContainer *obj = new DisplayObjectContainer;
+		Graphics &gfx = obj->GetGraphics();
+      gfx.beginFill(0xe0e0e0,0.6);
+      gfx.lineStyle(2,0xff0000,1,false,ssmHorizontal, scNone, sjMiter);
+      gfx.drawRoundRect( 20,20, 199.5,200, 5, 5 );
+
+		base->addChild(obj);
+
+		DisplayObjectContainer *lobe = new DisplayObjectContainer;
+		lobe->GetGraphics().beginFill(0xff0000);
+		lobe->GetGraphics().drawRect(40,40,400,40);
+		lobe->setScrollRect(DRect( 100,0, 100, 100));
+		obj->addChild(lobe);
+		printf("Obj width %f\n",obj->getWidth());
+}
+
+
+
+
+int main(int inargc,char **arvg)
+{
+   Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
+
+
+
+   Stage *stage = frame->GetStage();
+   stage->IncRef();
+   stage->SetEventHandler(Handler,stage);
+
+	// AddGradFill(stage);
+
+	// TestScrollRect(stage);
+
+	// TestText(stage,false);
+
+	// TestWidth1(stage);
+
+	TestWidth2(stage);
+
 
    MainLoop();
    delete frame;

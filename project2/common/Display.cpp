@@ -122,6 +122,12 @@ Matrix &DisplayObject::GetLocalMatrix()
    return mLocalMatrix;
 }
 
+void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt)
+{
+	if (mGfx)
+		outExt.Add(mGfx->GetExtent(inTrans));
+}
+
 
 
 
@@ -192,7 +198,14 @@ void DisplayObject::setWidth(double inValue)
    if (!mGfx)
       return;
 
-   const Extent2DF &ext0 = mGfx->GetExtent0(rotation);
+	Transform trans0;
+	Matrix rot;
+	if (rotation)
+	   rot.Rotate(rotation);
+	trans0.mMatrix = &rot;
+   Extent2DF ext0;
+	GetExtent(trans0,ext0);
+
    if (!ext0.Valid())
       return;
    if (ext0.Width()==0)
@@ -210,7 +223,8 @@ double DisplayObject::getWidth()
 
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
-   Extent2DF ext = mGfx->GetExtent(trans);
+   Extent2DF ext;
+	GetExtent(trans,ext);
    if (!ext.Valid())
       return 0;
 
@@ -223,7 +237,14 @@ void DisplayObject::setHeight(double inValue)
    if (!mGfx)
       return;
 
-   const Extent2DF &ext0 = mGfx->GetExtent0(rotation);
+	Transform trans0;
+	Matrix rot;
+	if (rotation)
+	   rot.Rotate(rotation);
+	trans0.mMatrix = &rot;
+   Extent2DF ext0;
+	GetExtent(trans0,ext0);
+
    if (!ext0.Valid())
       return;
    if (ext0.Height()==0)
@@ -241,7 +262,8 @@ double DisplayObject::getHeight()
 
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
-   Extent2DF ext = mGfx->GetExtent(trans);
+   Extent2DF ext;
+	GetExtent(trans,ext);
    if (!ext.Valid())
       return 0;
 
@@ -405,6 +427,25 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          obj->Render(inTarget,state);
 		}
    }
+}
+
+void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt)
+{
+	DisplayObject::GetExtent(inTrans,outExt);
+
+   Matrix full;
+	Transform trans(inTrans);
+	trans.mMatrix = &full;
+
+	for(int i=0;i<mChildren.size();i++)
+   {
+      DisplayObject *obj = mChildren[i];
+
+      full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
+		// Seems scroll rects are ignored when calculating extent...
+		obj->GetExtent(trans,outExt);
+   }
+
 }
 
 

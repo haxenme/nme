@@ -99,6 +99,8 @@ public:
 	DRect   scrollRect;
 	bool   visible;
 
+	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt);
+
 
 	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -145,6 +147,8 @@ public:
    void RemoveChildFromList(DisplayObject *inChild);
 	void Render( const RenderTarget &inTarget, const RenderState &inState );
 	void DirtyUp(uint32 inFlags);
+	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt);
+
 
 protected:
    ~DisplayObjectContainer();
