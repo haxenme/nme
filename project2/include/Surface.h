@@ -30,6 +30,7 @@ public:
 	virtual int GetStride() const = 0;
 
 	virtual void Clear(uint32 inColour) = 0;
+	virtual void Zero() { Clear(0); }
 
    virtual RenderTarget BeginRender(const Rect &inRect)=0;
    virtual void EndRender()=0;
@@ -73,6 +74,8 @@ public:
    int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
 	void Clear(uint32 inColour);
+	void Zero();
+
 
    RenderTarget BeginRender(const Rect &inRect);
    void EndRender();

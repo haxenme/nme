@@ -62,6 +62,7 @@ public:
 
 	bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
 
+	void Render(const RenderTarget &inTarget);
 
 private:
 	int        mTX,mTY;
@@ -123,6 +124,8 @@ public:
 
 	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
+	void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
+
 	virtual void DirtyUp(uint32 inFlags);
 	virtual void DirtyDown(uint32 inFlags);
 
@@ -133,7 +136,7 @@ public:
    Matrix   &GetLocalMatrix();
 
    void CheckCacheDirty();
-	bool NeedsBitmap();
+	bool IsBitmapRender();
 	void SetBitmapCache(BitmapCache *inCache);
    BitmapCache *GetBitmapCache() { return mBitmapCache; }
 

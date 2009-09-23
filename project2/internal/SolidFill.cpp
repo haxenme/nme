@@ -6,11 +6,7 @@ class SolidFiller : public Filler
 public:
 	SolidFiller(GraphicsSolidFill *inFill)
 	{
-		mRGB.SetRGB(inFill->rgb);
-		int alpha = inFill->alpha*255.9;
-		if (alpha<0) alpha = 0;
-		if (alpha>255) alpha = 255;
-		mRGB.a = alpha;
+		mRGB = inFill->mRGB;
 	}
 
    inline void SetPos(int,int) {}

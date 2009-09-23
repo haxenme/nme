@@ -19,6 +19,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    scaleX = scaleY = 1.0;
    rotation = 0;
 	mBitmapCache = 0;
+	cacheAsBitmap = false;
 }
 
 DisplayObject::~DisplayObject()
@@ -74,14 +75,14 @@ void DisplayObject::CheckCacheDirty()
       mDirtyFlags ^= dirtCache;
    }
 
-   if (!NeedsBitmap() && mBitmapCache)
+   if (!IsBitmapRender() && mBitmapCache)
    {
       delete mBitmapCache;
       mBitmapCache = 0;
    }
 }
 
-bool DisplayObject::NeedsBitmap()
+bool DisplayObject::IsBitmapRender()
 {
    return cacheAsBitmap;
 }
@@ -117,6 +118,17 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          mGfx->Render(inTarget,inState);
    }
 }
+
+
+void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
+{
+	if (!mBitmapCache)
+		return;
+
+	RenderTarget t = inTarget.ClipRect( inState.mClipRect );
+	mBitmapCache->Render(inTarget);
+}
+
 
 void DisplayObject::DirtyUp(uint32 inFlags)
 {
@@ -204,7 +216,6 @@ void DisplayObject::setX(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       x = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtCache);
    }
 }
 
@@ -327,7 +338,6 @@ void DisplayObject::setY(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       y = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtCache);
    }
 }
 
@@ -339,7 +349,7 @@ void DisplayObject::setScaleY(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       scaleY = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtCache);
+      //DirtyUp(dirtCache);
    }
 }
 
@@ -355,7 +365,7 @@ void DisplayObject::setScrollRect(const DRect &inRect)
    UpdateDecomp();
    mDirtyFlags |= dirtLocalMatrix;
    if (mParent) mParent->DirtyDown(dirtCache);
-   DirtyUp(dirtCache);
+   //DirtyUp(dirtCache);
 }
 
 
@@ -374,7 +384,7 @@ void DisplayObject::setRotation(double inValue)
       mDirtyFlags |= dirtLocalMatrix;
       rotation = inValue;
       if (mParent) mParent->DirtyDown(dirtCache);
-      DirtyUp(dirtCache);
+      //DirtyUp(dirtCache);
    }
 }
 
@@ -467,7 +477,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       {
          obj->CheckCacheDirty();
 
-         if (obj->NeedsBitmap())
+         if (obj->IsBitmapRender())
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
@@ -489,19 +499,34 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Ok, build bitmap cache...
             if (visible_bitmap.HasPixels())
             {
-               Surface *bitmap = new SimpleSurface(visible_bitmap.w, visible_bitmap.h, pfARGB);
+					printf("Build bitmap cache\n");
+               SimpleSurface *bitmap =
+						new SimpleSurface(visible_bitmap.w, visible_bitmap.h, pfARGB);
+					bitmap->Zero();
+					// debug ...
+					//bitmap->Clear(0xff000000);
                AutoSurfaceRender render(bitmap);
+					Matrix orig = full;
 			      full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
 
                obj_state->mBitmapPhase = false;
                obj->Render(render.Target(), *obj_state);
+
+					full = orig;
                obj->SetBitmapCache(
                       new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
             }
          }
       }
       else
-         obj->Render(inTarget,*obj_state);
+		{
+         if (obj->IsBitmapRender())
+			{
+				obj->RenderBitmap(inTarget,*obj_state);
+			}
+			else
+            obj->Render(inTarget,*obj_state);
+		}
    }
 }
 
@@ -573,6 +598,14 @@ bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, c
 }
 
 
+void BitmapCache::Render(const RenderTarget &inTarget)
+{
+	if (mBitmap)
+	{
+		// TX,TX is se in StillGood function
+		mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
+	}
+}
 
 
 // --- Stage ---------------------------------------------------------------

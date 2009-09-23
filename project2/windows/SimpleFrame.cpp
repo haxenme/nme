@@ -13,7 +13,7 @@ static FrameMap sgFrameMap;
 class DIBSurface : public SimpleSurface
 {
 public:
-   DIBSurface(int inW,int inH) : SimpleSurface( (inW+3) & ~3 ,inH,pfXRGBSwap,4)
+   DIBSurface(int inW,int inH) : SimpleSurface( (inW+3) & ~3 ,inH,pfXRGB,4)
    {
       memset(&mInfo,0,sizeof(mInfo));
       BITMAPINFOHEADER &h = mInfo.bmiHeader;
@@ -59,6 +59,7 @@ public:
       mHandlerData = 0;
       mFlags = inFlags;
       mBMP = 0;
+		HintColourOrder(false);
       CreateBMP();
    }
    ~WindowsStage()

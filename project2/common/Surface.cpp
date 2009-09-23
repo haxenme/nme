@@ -142,14 +142,22 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 
 void SimpleSurface::Clear(uint32 inColour)
 {
+	ARGB rgb(inColour);
+	if (mPixelFormat & pfSwapRB)
+		rgb.SwapRB();
+
 	for(int y=0;y<mHeight;y++)
 	{
 		uint32 *ptr = (uint32 *)(mBase + y*mStride);
 		for(int x=0;x<mWidth;x++)
-			*ptr++ = inColour;
+			*ptr++ = rgb.ival;
 	}
 }
 
+void SimpleSurface::Zero()
+{
+	memset(mBase,0,mStride * mHeight);
+}
 
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
 {
@@ -160,6 +168,7 @@ RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
 	result.is_hardware = false;
    result.stride = mStride;
    result.data = mBase;
+   result.format = mPixelFormat;
 
 	return result;
 }

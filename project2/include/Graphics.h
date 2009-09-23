@@ -102,19 +102,18 @@ public:
 class GraphicsSolidFill : public IGraphicsFill
 {
 public:
-	GraphicsSolidFill(int inRGB=0, float inAlpha=1) : rgb(inRGB), alpha(inAlpha) { }
+	GraphicsSolidFill(int inRGB=0, float inAlpha=1) : mRGB(inRGB,inAlpha) { }
    GraphicsDataType GetType() { return gdtSolidFill; }
    GraphicsSolidFill   *AsSolidFill() { return this; }
 
-   float alpha;
-   int   rgb;
+	ARGB  mRGB;
 };
 
 
 struct GradStop
 {
 	GradStop(int inRGB=0, float inAlpha=0, float inRatio=0) :
-		mARGB(inRGB, inAlpha<0 ? 0 : inAlpha>=1 ? 255 : 255.0*inAlpha ),
+		mARGB(inRGB, inAlpha ),
 		mPos(inRatio<=0 ? 0 : inRatio>=1.0 ? 255 : inRatio*255.0 ) { }
 
    ARGB   mARGB;

@@ -5,6 +5,7 @@
 #include <Surface.h>
 
 DisplayObject *gScrollWin = 0;
+DisplayObject *gCachObj = 0;
 bool gDoSpin = false;
 
 void Handler(Event &ioEvent,void *inStage)
@@ -15,19 +16,21 @@ void Handler(Event &ioEvent,void *inStage)
    {
    Stage *stage = (Stage *)inStage;
 
+
+	static int x = 0;
+	x = (x+1) % 800;
 	if (gDoSpin)
 	{
       DisplayObject *shape = stage->getChildAt(0);
-	   double x = shape->getX();
 	   double rot = shape->getRotation();
       rot += 1;
-	   x += 1;
-      if (x>800) x = 0;
       shape->setX(x);
       shape->setRotation(rot);
 		if (gScrollWin)
          gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
 	}
+	if (gCachObj)
+		gCachObj->setX(x);
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -110,7 +113,7 @@ void TestText(Stage *inStage,bool inFromFile)
    text->setX( 200 );
    text->setY( 2 );
    //text->background = true;
-   text->backgroundColor.SetRGBNative(0xb0b0f0);
+   text->backgroundColor = ARGB(0xffb0b0f0);
    text->autoSize = asLeft;
    text->multiline = true;
    text->wordWrap = true;
@@ -194,9 +197,18 @@ void TestWidth2(Stage *inStage)
 		lobe->setScrollRect(DRect( 100,0, 100, 100));
 		obj->addChild(lobe);
 		printf("Obj width %f\n",obj->getWidth());
+		base->cacheAsBitmap = true;
+		gCachObj = base;
 }
 
 
+void TestRed(Stage *inStage)
+{
+	DisplayObject *red = new DisplayObject;
+	red->GetGraphics().beginFill(0xff0000);
+	red->GetGraphics().drawRect(0,0,100,100);
+	inStage->addChild(red);
+}
 
 
 int main(int inargc,char **arvg)
@@ -218,6 +230,8 @@ int main(int inargc,char **arvg)
 	// TestWidth1(stage);
 
 	TestWidth2(stage);
+
+	//TestRed(stage);
 
 
    MainLoop();

@@ -30,45 +30,85 @@ typedef unsigned char Uint8;
 struct ARGB
 {
    inline ARGB() { }
-   inline ARGB(int inRGB,int inA=255)
+   inline ARGB(int inRGBA)
 	{
-      c0 = (inRGB>>16) & 0xff;
+      c1 = (inRGBA>>8) & 0xff;
+		if (sgC0IsRed)
+		{
+         c0 = (inRGBA>>16) & 0xff;
+         c2 = (inRGBA) & 0xff;
+		}
+		else
+		{
+         c2 = (inRGBA>>16) & 0xff;
+         c0 = (inRGBA) & 0xff;
+		}
+		a = (inRGBA>>24);
+	}
+	inline ARGB(int inRGB,int inA)
+	{
       c1 = (inRGB>>8) & 0xff;
-      c2 = (inRGB) & 0xff;
+		if (sgC0IsRed)
+		{
+         c0 = (inRGB>>16) & 0xff;
+         c2 = (inRGB) & 0xff;
+		}
+		else
+		{
+         c2 = (inRGB>>16) & 0xff;
+         c0 = (inRGB) & 0xff;
+		}
 		a = inA;
 	}
+	inline ARGB(int inRGB,float inA)
+	{
+      c1 = (inRGB>>8) & 0xff;
+		if (sgC0IsRed)
+		{
+         c0 = (inRGB>>16) & 0xff;
+         c2 = (inRGB) & 0xff;
+		}
+		else
+		{
+         c2 = (inRGB>>16) & 0xff;
+         c0 = (inRGB) & 0xff;
+		}
+		int alpha = 255.9 * inA;
+		a = alpha<0 ? 0 : alpha >255 ? 255 : alpha;
+	}
+
    inline void Set(int inVal) { ival = inVal; }
 
    inline void SetRGB(int inVal)
    {
-      c0 = (inVal>>16) & 0xff;
       c1 = (inVal>>8) & 0xff;
-      c2 = (inVal) & 0xff;
+		if (sgC0IsRed)
+		{
+         c0 = (inVal>>16) & 0xff;
+         c2 = (inVal) & 0xff;
+		}
+		else
+		{
+         c0 = (inVal) & 0xff;
+         c2 = (inVal>>16) & 0xff;
+		}
 		a = 255;
    }
    inline void SetRGBA(int inVal)
    {
-      c0 = (inVal>>16) & 0xff;
       c1 = (inVal>>8) & 0xff;
-      c2 = (inVal) & 0xff;
+		if (sgC0IsRed)
+		{
+         c0 = (inVal>>16) & 0xff;
+         c2 = (inVal) & 0xff;
+		}
+		else
+		{
+         c0 = (inVal>>16) & 0xff;
+         c2 = (inVal) & 0xff;
+		}
 		a = (inVal>>24);
    }
-
-   inline void SetRGBNative(int inVal)
-   {
-      c0 = (inVal>>sgC0Shift) & 0xff;
-      c1 = (inVal>>sgC1Shift) & 0xff;
-      c2 = (inVal>>sgC2Shift) & 0xff;
-		a = 255;
-   }
-   inline void SetRGBANative(int inVal)
-   {
-      c0 = (inVal>>sgC0Shift) & 0xff;
-      c1 = (inVal>>sgC1Shift) & 0xff;
-      c2 = (inVal>>sgC2Shift) & 0xff;
-		a = (inVal>>24);
-   }
-
 
 	inline void SetSwapRGB(const ARGB &inRGB)
 	{
@@ -83,6 +123,8 @@ struct ARGB
 		c2 = inRGB.c0;
 		a = inRGB.a;
 	}
+
+	void SwapRB() { Uint8 tmp = c2; c2 = c0; c0 = tmp; }
 
 
 	template<bool SWAP_RB,bool DEST_ALPHA>
@@ -105,20 +147,20 @@ struct ARGB
 				   ival = inVal.ival;
 			}
 			// Our alpha is implicitly 256 ...
-			if (!DEST_ALPHA)
+			else if (!DEST_ALPHA)
 			{
 				int f = 256-A;
 				if (SWAP_RB)
 				{
-				   c0 = (A*inVal.c0 + f*c0)>>8;
-				   c1 = (A*inVal.c1 + f*c1)>>8;
-				   c2 = (A*inVal.c2 + f*c2)>>8;
-				}
-				else
-				{
 				   c0 = (A*inVal.c2 + f*c0)>>8;
 				   c1 = (A*inVal.c1 + f*c1)>>8;
 				   c2 = (A*inVal.c0 + f*c2)>>8;
+				}
+				else
+				{
+				   c0 = (A*inVal.c0 + f*c0)>>8;
+				   c1 = (A*inVal.c1 + f*c1)>>8;
+				   c2 = (A*inVal.c2 + f*c2)>>8;
 				}
 			}
 			else
@@ -128,15 +170,15 @@ struct ARGB
 				A<<=8;
 				if (SWAP_RB)
 				{
-				   c0 = (A*inVal.c0 + f*c0)/alpha16;
-				   c1 = (A*inVal.c1 + f*c1)/alpha16;
-				   c2 = (A*inVal.c2 + f*c2)/alpha16;
-				}
-				else
-				{
 				   c0 = (A*inVal.c2 + f*c0)/alpha16;
 				   c1 = (A*inVal.c1 + f*c1)/alpha16;
 				   c2 = (A*inVal.c0 + f*c2)/alpha16;
+				}
+				else
+				{
+				   c0 = (A*inVal.c0 + f*c0)/alpha16;
+				   c1 = (A*inVal.c1 + f*c1)/alpha16;
+				   c2 = (A*inVal.c2 + f*c2)/alpha16;
 				}
 				a = alpha16>>8;
 			}
@@ -147,7 +189,7 @@ struct ARGB
    union
    {
       struct { Uint8 c0,c1,c2,a; };
-      int  ival;
+      unsigned int  ival;
    };
 };
 
