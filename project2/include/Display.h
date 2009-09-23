@@ -57,18 +57,18 @@ enum
 class BitmapCache
 {
 public:
-	BitmapCache(const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
+	BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
 	~BitmapCache();
 
 	bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
 
 
 private:
-	ImagePos  mRenderOffset;
-	Rect      mRect;
-   Matrix    mMatrix;
-	Scale9    mScale9;
-	Surface   *mBitmap;
+	int        mTX,mTY;
+	Rect       mRect;
+   Matrix     mMatrix;
+	Scale9     mScale9;
+	Surface    *mBitmap;
 };
 
 class DisplayObject : public Object
@@ -119,7 +119,6 @@ public:
 
 	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
-	bool    NeedsBitmap();
 
 
 	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
@@ -133,13 +132,17 @@ public:
    Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
 
+   void CheckCacheDirty();
+	bool NeedsBitmap();
+	void SetBitmapCache(BitmapCache *inCache);
+   BitmapCache *GetBitmapCache() { return mBitmapCache; }
+
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
 	~DisplayObject();
    DisplayObjectContainer *mParent;
 	Graphics               *mGfx;
-
 	BitmapCache            *mBitmapCache;
 
    // Matrix stuff
@@ -169,8 +172,7 @@ public:
    void RemoveChildFromList(DisplayObject *inChild);
 	void Render( const RenderTarget &inTarget, const RenderState &inState );
 	void DirtyUp(uint32 inFlags);
-	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt);
-	virtual void GetScreenExtent(const RenderState &inState, Extent2DF &outExt);
+	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
 
 protected:

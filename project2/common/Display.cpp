@@ -62,6 +62,39 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
    DecRef();
 }
 
+void DisplayObject::CheckCacheDirty()
+{
+   if ( mDirtyFlags & dirtCache)
+   {
+      if (mBitmapCache)
+      {
+         delete mBitmapCache;
+         mBitmapCache = 0;
+      }
+      mDirtyFlags ^= dirtCache;
+   }
+
+   if (!NeedsBitmap() && mBitmapCache)
+   {
+      delete mBitmapCache;
+      mBitmapCache = 0;
+   }
+}
+
+bool DisplayObject::NeedsBitmap()
+{
+   return cacheAsBitmap;
+}
+
+void DisplayObject::SetBitmapCache(BitmapCache *inCache)
+{
+   delete mBitmapCache;
+   mBitmapCache = inCache;
+}
+
+
+
+
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (mGfx && !inState.mBitmapPhase)
@@ -400,9 +433,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
 	Rect visible_bitmap;
 
-
 	DisplayObject::Render(inTarget,inState);
-
 
 	// Render children/build child bitmaps ...
    Matrix full;
@@ -414,11 +445,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    {
       DisplayObject *obj = mChildren[i];
 
-
-
-
-
-	   State *obj_state = &state;
+	   RenderState *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
 
       if (obj->scrollRect.HasPixels())
@@ -436,50 +463,46 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       }
 
 
+      if (inState.mBitmapPhase)
+      {
+         obj->CheckCacheDirty();
 
-		// TODO : all thes ebelong to "obj"
-	if (inState.mBitmapPhase)
-	{
-		if ( mDirtyFlags & dirtCache)
-		{
-		  if (mBitmapCache)
-		  {
-			  delete mBitmapCache;
-			  mBitmapCache = 0;
-		  }
-		  mDirtyFlags ^= dirtCache;
-		}
+         if (obj->NeedsBitmap())
+         {
+            Extent2DF screen_extent;
+            obj->GetExtent(obj_state->mTransform,screen_extent,true);
+            // Get bounding pixel rect
+            Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
-		Extent2DF screen_extent;
-      GetExtent(inState.mTransform,screen_extent,true);
-		// Get bounding pixel rect
-      Rect rect = inState.mTransform.GetTargetRect(screen_extent);
+            // Intersect with clip rect ...
+            visible_bitmap = rect.Intersect(obj_state->mClipRect);
 
-      // Intersect with clip rect ...
-      visible_bitmap = rect.Intersect(inState.mClipRect);
+            if (obj->GetBitmapCache())
+            {
+               // Done - our bitmap is good!
+               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, rect, visible_bitmap))
+                  continue;
+               else
+                  obj->SetBitmapCache(0);
+            }
 
-		if (mBitmapCache)
-		{
-			// Done - our bitmap is good!
-			if (mBitmapCache->StillGood(inState.mTransform, rect, visible_bitmap))
-				continue;
-			else
-			{
-				delete mBitmapCache;
-				mBitmapCache = 0;
-			}
-		}
-	}
+            // Ok, build bitmap cache...
+            if (visible_bitmap.HasPixels())
+            {
+               Surface *bitmap = new SimpleSurface(visible_bitmap.w, visible_bitmap.h, pfARGB);
+               AutoSurfaceRender render(bitmap);
+			      full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
 
-
-
-      obj->Render(inTarget,*obj_state);
-
+               obj_state->mBitmapPhase = false;
+               obj->Render(render.Target(), *obj_state);
+               obj->SetBitmapCache(
+                      new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
+            }
+         }
+      }
+      else
+         obj->Render(inTarget,*obj_state);
    }
-
-	if (inState.mBitmapPhase && cacheAsBitmap)
-	{
-	}
 }
 
 void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
@@ -497,7 +520,12 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
       full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
 		if (inForScreen && obj->scrollRect.HasPixels())
 		{
-			// TODO: Add scroll-rect
+			for(int corner=0;corner<4;corner++)
+         {
+            double x = (corner & 1) ? obj->scrollRect.w : 0;
+            double y = (corner & 2) ? obj->scrollRect.h : 0;
+            outExt.Add( full.Apply(x,y) );
+         }
 		}
 		else
 		   // Seems scroll rects are ignored when calculating extent...
@@ -512,6 +540,39 @@ DisplayObject *DisplayObjectContainer::getChildAt(int index)
       return 0;
    return mChildren[index];
 }
+
+
+// --- BitmapCache ---------------------------------------------------------
+
+BitmapCache::BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly)
+{
+   mBitmap = inSurface->IncRef();
+   mMatrix = *inTrans.mMatrix;
+   mScale9 = *inTrans.mScale9;
+   mRect = inRect;
+   mTX = mTY = 0;
+}
+
+BitmapCache::~BitmapCache()
+{
+   mBitmap->DecRef();
+}
+
+
+bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels)
+{
+   if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) && mScale9!=*inTransform.mScale9)
+      return false;
+
+   // Translate our cached pixels to this new position ...
+   Rect translated = mRect.Translated(mTX,mTY);
+   if (translated.Contains(inVisiblePixels))
+      return true;
+
+   return false;
+}
+
+
 
 
 // --- Stage ---------------------------------------------------------------
