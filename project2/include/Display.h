@@ -30,10 +30,10 @@ enum EventType
 
 struct Event
 {
-	Event(EventType inType=etUnknown) :
-		  mType(inType), mWinX(0), mWinY(0), mValue(0), mModState(0)
-	{
-	}
+   Event(EventType inType=etUnknown) :
+        mType(inType), mWinX(0), mWinY(0), mValue(0), mModState(0)
+   {
+   }
 
    EventType mType;
    float     mWinX,mWinY;
@@ -57,96 +57,96 @@ enum
 class BitmapCache
 {
 public:
-	BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
-	~BitmapCache();
+   BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
+   ~BitmapCache();
 
-	bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
+   bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
 
-	void Render(const RenderTarget &inTarget);
+   void Render(const RenderTarget &inTarget);
 
 private:
-	int        mTX,mTY;
-	Rect       mRect;
+   int        mTX,mTY;
+   Rect       mRect;
    Matrix     mMatrix;
-	Scale9     mScale9;
-	Surface    *mBitmap;
+   Scale9     mScale9;
+   Surface    *mBitmap;
 };
 
 class DisplayObject : public Object
 {
 public:
-	DisplayObject(bool inInitRef = false);
+   DisplayObject(bool inInitRef = false);
 
-	double getX();
-	void   setX(double inValue);
-	double getY();
-	void   setY(double inValue);
-	double getHeight();
-	void   setHeight(double inValue);
-	double getWidth();
-	void   setWidth(double inValue);
-	double getRotation();
-	void   setRotation(double inValue);
-	double getScaleX();
-	void   setScaleX(double inValue);
-	double getScaleY();
-	void   setScaleY(double inValue);
-	void   setScale9Grid(const DRect &inRect);
-	void   setScrollRect(const DRect &inRect);
+   double getX();
+   void   setX(double inValue);
+   double getY();
+   void   setY(double inValue);
+   double getHeight();
+   void   setHeight(double inValue);
+   double getWidth();
+   void   setWidth(double inValue);
+   double getRotation();
+   void   setRotation(double inValue);
+   double getScaleX();
+   void   setScaleX(double inValue);
+   double getScaleY();
+   void   setScaleY(double inValue);
+   void   setScale9Grid(const DRect &inRect);
+   void   setScrollRect(const DRect &inRect);
 
 
-	const Transform &getTransform();
+   const Transform &getTransform();
 
-	DisplayObject *getParent();
+   DisplayObject *getParent();
 
-	double getMouseX();
-	double getMouseY();
-	DisplayObject *getRoot();
-	Stage  *getStage();
+   double getMouseX();
+   double getMouseY();
+   DisplayObject *getRoot();
+   Stage  *getStage();
 
-	struct LoaderInfo &GetLoaderInfo();
+   struct LoaderInfo &GetLoaderInfo();
 
    double alpha;
-	BlendMode blendMode;
-	bool cacheAsBitmap;
-	QuickVec<class Filter *> filters;
+   BlendMode blendMode;
+   bool cacheAsBitmap;
+   QuickVec<class Filter *> filters;
 
- 	DisplayObject *mask;
-	std::wstring  name;
-	uint32 opaqueBackground;
-	DRect   scale9Grid;
-	DRect   scrollRect;
-	bool   visible;
+    DisplayObject *mask;
+   std::wstring  name;
+   uint32 opaqueBackground;
+   DRect   scale9Grid;
+   DRect   scrollRect;
+   bool   visible;
 
-	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
 
 
-	virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
+   virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
-	void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
+   void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
 
-	virtual void DirtyUp(uint32 inFlags);
-	virtual void DirtyDown(uint32 inFlags);
+   virtual void DirtyUp(uint32 inFlags);
+   virtual void DirtyDown(uint32 inFlags);
 
    void SetParent(DisplayObjectContainer *inParent);
 
-	Graphics &GetGraphics();
+   Graphics &GetGraphics();
    Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
 
    void CheckCacheDirty();
-	bool IsBitmapRender();
-	void SetBitmapCache(BitmapCache *inCache);
+   bool IsBitmapRender();
+   void SetBitmapCache(BitmapCache *inCache);
    BitmapCache *GetBitmapCache() { return mBitmapCache; }
 
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
-	~DisplayObject();
+   ~DisplayObject();
    DisplayObjectContainer *mParent;
-	Graphics               *mGfx;
-	BitmapCache            *mBitmapCache;
+   Graphics               *mGfx;
+   BitmapCache            *mBitmapCache;
 
    // Matrix stuff
    uint32 mDirtyFlags;
@@ -165,7 +165,7 @@ protected:
 class DisplayObjectContainer : public DisplayObject
 {
 public:
-	DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
+   DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
 
    void addChild(DisplayObject *inChild,bool inTakeRef=false);
    void removeChild(DisplayObject *inChild);
@@ -173,9 +173,9 @@ public:
 
 
    void RemoveChildFromList(DisplayObject *inChild);
-	void Render( const RenderTarget &inTarget, const RenderState &inState );
-	void DirtyUp(uint32 inFlags);
-	virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   void Render( const RenderTarget &inTarget, const RenderState &inState );
+   void DirtyUp(uint32 inFlags);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
 
 protected:
@@ -186,20 +186,20 @@ protected:
 class Stage : public DisplayObjectContainer
 {
 public:
-	Stage(bool inInitRef=false);
+   Stage(bool inInitRef=false);
 
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
    virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
-	virtual Surface *GetPrimarySurface() = 0;
+   virtual Surface *GetPrimarySurface() = 0;
 
-	virtual void RenderStage();
+   virtual void RenderStage();
 
-	uint32 mBackgroundColour;
-	int    mQuality;
+   uint32 mBackgroundColour;
+   int    mQuality;
 
 protected:
-	~Stage();
+   ~Stage();
 };
 
 

@@ -139,6 +139,7 @@ void TestText(Stage *inStage,bool inFromFile)
 	else
       text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 
+   text->cacheAsBitmap = true;
    inStage->addChild(text);
 }
 
@@ -225,7 +226,7 @@ int main(int inargc,char **arvg)
 
 	// TestScrollRect(stage);
 
-	// TestText(stage,false);
+	TestText(stage,false);
 
 	// TestWidth1(stage);
 

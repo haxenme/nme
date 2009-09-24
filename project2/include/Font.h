@@ -85,7 +85,7 @@ public:
 struct CharGroup
 {
 	void  Clear();
-	bool  UpdateFont(const RenderState &inState,bool inNative);
+	bool  UpdateFont(double inScale,bool inNative);
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
 

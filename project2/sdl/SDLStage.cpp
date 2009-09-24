@@ -256,7 +256,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
       }
    }
 
-   HintColourOrder( !(is_opengl || screen->format->Rmask==0xff) );
+   HintColourOrder( !is_opengl && screen->format->Rmask==0xff );
 
    #ifndef IPHONE
    SDL_WM_SetCaption( WideToUTF8(inTitle).c_str(), 0 );

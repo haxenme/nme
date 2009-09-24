@@ -1,6 +1,5 @@
 TODO:
-- Mask
-- cacheAsBitmap
+- mask
 - blendMode
 - colourTransform
 - triangles
@@ -9,3 +8,5 @@ TODO:
 - Opengl
 - Events - mouse
 - Text - selection/keys
+
+ - bitmap text extent, borders

@@ -18,15 +18,15 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    x = y = 0;
    scaleX = scaleY = 1.0;
    rotation = 0;
-	mBitmapCache = 0;
-	cacheAsBitmap = false;
+   mBitmapCache = 0;
+   cacheAsBitmap = false;
 }
 
 DisplayObject::~DisplayObject()
 {
    if (mGfx)
       mGfx->DecRef();
-	delete mBitmapCache;
+   delete mBitmapCache;
 }
 
 Graphics &DisplayObject::GetGraphics()
@@ -99,22 +99,22 @@ void DisplayObject::SetBitmapCache(BitmapCache *inCache)
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (mGfx && !inState.mBitmapPhase)
-	{
-		if (scale9Grid.HasPixels())
-		{
-			RenderState state(inState);
+   {
+      if (scale9Grid.HasPixels())
+      {
+         RenderState state(inState);
 
          const Extent2DF &ext0 = mGfx->GetExtent0(0);
-			Scale9 s9;
+         Scale9 s9;
          s9.Activate(scale9Grid,ext0,scaleX,scaleY);
          state.mTransform.mScale9 = &s9;
 
-			Matrix unscaled = state.mTransform.mMatrix->Mult( Matrix(1.0/scaleX,1.0/scaleY) );
-			state.mTransform.mMatrix = &unscaled;
+         Matrix unscaled = state.mTransform.mMatrix->Mult( Matrix(1.0/scaleX,1.0/scaleY) );
+         state.mTransform.mMatrix = &unscaled;
 
          mGfx->Render(inTarget,state);
-		}
-		else
+      }
+      else
          mGfx->Render(inTarget,inState);
    }
 }
@@ -122,11 +122,11 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 
 void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
 {
-	if (!mBitmapCache)
-		return;
+   if (!mBitmapCache)
+      return;
 
-	RenderTarget t = inTarget.ClipRect( inState.mClipRect );
-	mBitmapCache->Render(inTarget);
+   RenderTarget t = inTarget.ClipRect( inState.mClipRect );
+   mBitmapCache->Render(inTarget);
 }
 
 
@@ -170,8 +170,8 @@ Matrix &DisplayObject::GetLocalMatrix()
 
 void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
 {
-	if (mGfx)
-		outExt.Add(mGfx->GetExtent(inTrans));
+   if (mGfx)
+      outExt.Add(mGfx->GetExtent(inTrans));
 }
 
 
@@ -243,13 +243,13 @@ void DisplayObject::setWidth(double inValue)
    if (!mGfx)
       return;
 
-	Transform trans0;
-	Matrix rot;
-	if (rotation)
-	   rot.Rotate(rotation);
-	trans0.mMatrix = &rot;
+   Transform trans0;
+   Matrix rot;
+   if (rotation)
+      rot.Rotate(rotation);
+   trans0.mMatrix = &rot;
    Extent2DF ext0;
-	GetExtent(trans0,ext0,false);
+   GetExtent(trans0,ext0,false);
 
    if (!ext0.Valid())
       return;
@@ -269,7 +269,7 @@ double DisplayObject::getWidth()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-	GetExtent(trans,ext,false);
+   GetExtent(trans,ext,false);
    if (!ext.Valid())
       return 0;
 
@@ -282,13 +282,13 @@ void DisplayObject::setHeight(double inValue)
    if (!mGfx)
       return;
 
-	Transform trans0;
-	Matrix rot;
-	if (rotation)
-	   rot.Rotate(rotation);
-	trans0.mMatrix = &rot;
+   Transform trans0;
+   Matrix rot;
+   if (rotation)
+      rot.Rotate(rotation);
+   trans0.mMatrix = &rot;
    Extent2DF ext0;
-	GetExtent(trans0,ext0,false);
+   GetExtent(trans0,ext0,false);
 
    if (!ext0.Valid())
       return;
@@ -308,7 +308,7 @@ double DisplayObject::getHeight()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-	GetExtent(trans,ext,false);
+   GetExtent(trans,ext,false);
    if (!ext.Valid())
       return 0;
 
@@ -441,11 +441,11 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-	Rect visible_bitmap;
+   Rect visible_bitmap;
 
-	DisplayObject::Render(inTarget,inState);
+   DisplayObject::Render(inTarget,inState);
 
-	// Render children/build child bitmaps ...
+   // Render children/build child bitmaps ...
    Matrix full;
    RenderState state(inState);
    state.mTransform.mMatrix = &full;
@@ -455,7 +455,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    {
       DisplayObject *obj = mChildren[i];
 
-	   RenderState *obj_state = &state;
+      RenderState *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
 
       if (obj->scrollRect.HasPixels())
@@ -465,11 +465,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          screen_rect.MakePositive();
 
-			full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
+         full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
       
-	      obj_state = &clip_state;
+         obj_state = &clip_state;
       }
 
 
@@ -499,62 +499,62 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Ok, build bitmap cache...
             if (visible_bitmap.HasPixels())
             {
-					printf("Build bitmap cache\n");
+               printf("Build bitmap cache\n");
                SimpleSurface *bitmap =
-						new SimpleSurface(visible_bitmap.w, visible_bitmap.h, pfARGB);
-					bitmap->Zero();
-					// debug ...
-					//bitmap->Clear(0xff000000);
+                  new SimpleSurface(visible_bitmap.w, visible_bitmap.h, pfARGB);
+               bitmap->Zero();
+               // debug ...
+               //bitmap->Clear(0xff333333);
                AutoSurfaceRender render(bitmap);
-					Matrix orig = full;
-			      full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
+               Matrix orig = full;
+               full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
 
                obj_state->mBitmapPhase = false;
                obj->Render(render.Target(), *obj_state);
 
-					full = orig;
+               full = orig;
                obj->SetBitmapCache(
                       new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
             }
          }
       }
       else
-		{
+      {
          if (obj->IsBitmapRender())
-			{
-				obj->RenderBitmap(inTarget,*obj_state);
-			}
-			else
+         {
+            obj->RenderBitmap(inTarget,*obj_state);
+         }
+         else
             obj->Render(inTarget,*obj_state);
-		}
+      }
    }
 }
 
 void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
 {
-	DisplayObject::GetExtent(inTrans,outExt,inForScreen);
+   DisplayObject::GetExtent(inTrans,outExt,inForScreen);
 
    Matrix full;
-	Transform trans(inTrans);
-	trans.mMatrix = &full;
+   Transform trans(inTrans);
+   trans.mMatrix = &full;
 
-	for(int i=0;i<mChildren.size();i++)
+   for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
 
       full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
-		if (inForScreen && obj->scrollRect.HasPixels())
-		{
-			for(int corner=0;corner<4;corner++)
+      if (inForScreen && obj->scrollRect.HasPixels())
+      {
+         for(int corner=0;corner<4;corner++)
          {
             double x = (corner & 1) ? obj->scrollRect.w : 0;
             double y = (corner & 2) ? obj->scrollRect.h : 0;
             outExt.Add( full.Apply(x,y) );
          }
-		}
-		else
-		   // Seems scroll rects are ignored when calculating extent...
-		   obj->GetExtent(trans,outExt,inForScreen);
+      }
+      else
+         // Seems scroll rects are ignored when calculating extent...
+         obj->GetExtent(trans,outExt,inForScreen);
    }
 }
 
@@ -600,11 +600,11 @@ bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, c
 
 void BitmapCache::Render(const RenderTarget &inTarget)
 {
-	if (mBitmap)
-	{
-		// TX,TX is se in StillGood function
-		mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
-	}
+   if (mBitmap)
+   {
+      // TX,TX is se in StillGood function
+      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
+   }
 }
 
 
@@ -655,9 +655,9 @@ void Stage::RenderStage()
    //gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
    state.mClipRect = Rect( render.Width(), render.Height() );
 
-	state.mBitmapPhase = true;
+   state.mBitmapPhase = true;
    Render(render.Target(),state);
 
-	state.mBitmapPhase = false;
+   state.mBitmapPhase = false;
    Render(render.Target(),state);
 }
