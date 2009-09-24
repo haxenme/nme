@@ -139,7 +139,7 @@ void TestText(Stage *inStage,bool inFromFile)
 	else
       text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 
-   text->cacheAsBitmap = true;
+   //text->cacheAsBitmap = true;
    inStage->addChild(text);
 }
 
@@ -211,6 +211,54 @@ void TestRed(Stage *inStage)
 	inStage->addChild(red);
 }
 
+void TestMask(Stage *inStage)
+{
+		DisplayObjectContainer *masked = new DisplayObjectContainer;
+		Graphics *gfx = &masked->GetGraphics();
+		gfx->beginFill(0x308030);
+		gfx->drawRect( 100,100, 400,400 );
+		inStage->addChild(masked);
+
+		DisplayObjectContainer *masked_child = new DisplayObjectContainer;
+		gfx = &masked_child->GetGraphics();
+		gfx->lineStyle(2,0xff0000);
+		gfx->moveTo( 0,0);
+		gfx->lineTo( 500,500);
+		masked->addChild(masked_child);
+
+		TextField *tf = new TextField;
+		tf->setText(L"MASKEDMASKEDMASKEDMASKEDMASKED");
+		tf->autoSize = asLeft;
+		tf->setX(200);
+		tf->setY(150);
+		masked->addChild(tf);
+
+		DisplayObjectContainer *m = new DisplayObjectContainer;
+		gfx = &m->GetGraphics();
+		gfx->beginFill(0xa0a0a0);
+		gfx->drawCircle( 100,100, 50 );
+		inStage->addChild(m);
+		m->setX(100);
+		m->setY(100);
+
+		DisplayObject *m_child = new DisplayObject;
+		gfx = &m_child->GetGraphics();
+		gfx->beginFill(0xa0a0a0);
+		gfx->drawCircle( 100,100, 50 );
+      m->addChild(m_child);
+		m_child->setX(20);
+		m_child->setY(20);
+
+		tf = new TextField;
+		tf->setText(L"MASK MASK MASK");
+		tf->autoSize = asLeft;
+		tf->setX(150);
+		tf->setY(120);
+		m->addChild(tf);
+
+		masked->setMask(m);
+}
+
 
 int main(int inargc,char **arvg)
 {
@@ -226,14 +274,15 @@ int main(int inargc,char **arvg)
 
 	// TestScrollRect(stage);
 
-	TestText(stage,false);
+	// TestText(stage,false);
 
 	// TestWidth1(stage);
 
-	TestWidth2(stage);
+	// TestWidth2(stage);
 
 	//TestRed(stage);
 
+	TestMask(stage);
 
    MainLoop();
    delete frame;

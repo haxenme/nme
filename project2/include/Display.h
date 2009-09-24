@@ -93,6 +93,8 @@ public:
    void   setScaleY(double inValue);
    void   setScale9Grid(const DRect &inRect);
    void   setScrollRect(const DRect &inRect);
+	void   setMask(DisplayObject *inMask);
+	DisplayObject   *getMask() { return mMask; }
 
 
    const Transform &getTransform();
@@ -111,7 +113,6 @@ public:
    bool cacheAsBitmap;
    QuickVec<class Filter *> filters;
 
-    DisplayObject *mask;
    std::wstring  name;
    uint32 opaqueBackground;
    DRect   scale9Grid;
@@ -125,6 +126,7 @@ public:
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
    void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
+   void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
    virtual void DirtyUp(uint32 inFlags);
    virtual void DirtyDown(uint32 inFlags);
@@ -140,6 +142,10 @@ public:
    void SetBitmapCache(BitmapCache *inCache);
    BitmapCache *GetBitmapCache() { return mBitmapCache; }
 
+	void ChangeIsMaskCount(int inDelta);
+
+	bool IsMask() const { return mIsMaskCount; }
+
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
@@ -147,6 +153,10 @@ protected:
    DisplayObjectContainer *mParent;
    Graphics               *mGfx;
    BitmapCache            *mBitmapCache;
+
+	// Masking...
+   DisplayObject          *mMask;
+	int                    mIsMaskCount;
 
    // Matrix stuff
    uint32 mDirtyFlags;
@@ -157,7 +167,6 @@ protected:
    double scaleX;
    double scaleY;
    double rotation;
-
 };
 
 

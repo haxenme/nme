@@ -33,6 +33,9 @@ struct AlphaMask
       mScale9 = *inTrans.mScale9;
    }
 
+   void RenderBitmap(int inTX,int inTY,
+							const RenderTarget &inTarget,const RenderState &inState);
+
    // Given we were created with a certain transform and valid data rect, can we
    // cover the requested area for the requested transform?
 	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels,

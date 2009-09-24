@@ -1,5 +1,6 @@
 #include <Graphics.h>
 #include <Surface.h>
+#include <Pixel.h>
 
 bool sgColourOrderSet = false;
 
@@ -55,14 +56,15 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 	mWidth = inWidth;
 	mHeight = inHeight;
 	mPixelFormat = inPixelFormat;
+	int pix_size = inPixelFormat == pfAlpha ? 1 : 4;
 	if (inByteAlign>1)
 	{
-	   mStride = inWidth * 4 + inByteAlign -1;
+	   mStride = inWidth * pix_size + inByteAlign -1;
 	   mStride -= mStride % inByteAlign;
 	}
 	else
 	{
-		mStride = inWidth*4;
+		mStride = inWidth*pix_size;
 	}
 
    mBase = new unsigned char[mStride * mHeight];
@@ -72,6 +74,7 @@ SimpleSurface::~SimpleSurface()
 {
 	delete [] mBase;
 }
+
 
 void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
                            int inPosX, int inPosY, uint32 inTint,bool inUseSrcAlphaOnly)
@@ -88,61 +91,107 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 
 	if (src_rect.HasPixels())
 	{
-      bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
-      bool do_memcpy = !(mPixelFormat & pfHasAlpha) && !swap;
       bool dest_alpha = (outDest.format & pfHasAlpha);
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;
-		for(int y=0;y<src_rect.h;y++)
-      {
-         ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
-         const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-			if (inUseSrcAlphaOnly)
-			{
-				ARGB col(inTint);
-            if (outDest.format & pfSwapRB)
-					std::swap(col.c0,col.c2);
+		bool is_alpha = mPixelFormat==pfAlpha;
+      bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
+      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap;
 
-            if (dest_alpha)
-               for(int x=0;x<src_rect.w;x++)
-					{
-						col.a = src++ -> a;
-                  (dest++)->Blend<false,true>(col);
-					}
-            else
-               for(int x=0;x<src_rect.w;x++)
-					{
-						col.a = src++ -> a;
-                  (dest++)->Blend<false,false>(col);
-					}
+		ARGB col(inTint);
+		if (swap)
+			std::swap(col.c0,col.c2);
+
+		if (outDest.format!=pfAlpha)
+		{
+			for(int y=0;y<src_rect.h;y++)
+			{
+				ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
+				const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+				if (is_alpha)
+				{
+				   const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+					if (dest_alpha)
+						for(int x=0;x<src_rect.w;x++)
+						{
+							col.a = *src++;
+							(dest++)->Blend<false,true>(col);
+						}
+					else
+						for(int x=0;x<src_rect.w;x++)
+						{
+							col.a = *src++;
+							(dest++)->Blend<false,false>(col);
+						}
+				}
+				else if (inUseSrcAlphaOnly)
+				{
+					if (dest_alpha)
+						for(int x=0;x<src_rect.w;x++)
+						{
+							col.a = src++ -> a;
+							(dest++)->Blend<false,true>(col);
+						}
+					else
+						for(int x=0;x<src_rect.w;x++)
+						{
+							col.a = src++ -> a;
+							(dest++)->Blend<false,false>(col);
+						}
+				}
+				else if (do_memcpy)
+					memcpy(dest,src, (src_rect.w)*4 );
+				else if (swap)
+				{
+					if (dest_alpha)
+						for(int x=0;x<src_rect.w;x++)
+							(dest++)->Blend<true,true>(*src++);
+					else
+						for(int x=0;x<src_rect.w;x++)
+							(dest++)->Blend<true,false>(*src++);
+				}
+				else
+				{
+					if (dest_alpha)
+						for(int x=0;x<src_rect.w;x++)
+							(dest++)->Blend<false,true>(*src++);
+					else
+						for(int x=0;x<src_rect.w;x++)
+							(dest++)->Blend<false,false>(*src++);
+				}
 			}
-			else if (do_memcpy)
-			   memcpy(dest,src, (src_rect.w)*4 );
-         else if (swap)
-         {
-            if (dest_alpha)
-               for(int x=0;x<src_rect.w;x++)
-                  (dest++)->Blend<true,true>(*src++);
-            else
-               for(int x=0;x<src_rect.w;x++)
-                  (dest++)->Blend<true,false>(*src++);
-         }
-         else
-         {
-            if (dest_alpha)
-               for(int x=0;x<src_rect.w;x++)
-                  (dest++)->Blend<false,true>(*src++);
-            else
-               for(int x=0;x<src_rect.w;x++)
-                  (dest++)->Blend<false,false>(*src++);
-         }
-      }
+		}
+		else
+		{
+			for(int y=0;y<src_rect.h;y++)
+			{
+				Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
+				if (is_alpha)
+				{
+					const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+					for(int x=0;x<src_rect.w;x++)
+					   BlendAlpha(*dest++,*src++);
+				}
+				else
+				{
+					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+					for(int x=0;x<src_rect.w;x++)
+					   BlendAlpha(*dest++,(src++)->a);
+				}
+			}
+		}
 	}
 }
 
 void SimpleSurface::Clear(uint32 inColour)
 {
 	ARGB rgb(inColour);
+	if (mPixelFormat==pfAlpha)
+	{
+		memset(mBase, rgb.a,mStride*mHeight);
+		return;
+	}
+
 	if (mPixelFormat & pfSwapRB)
 		rgb.SwapRB();
 

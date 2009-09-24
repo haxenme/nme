@@ -2,6 +2,7 @@ TODO:
 - mask
 - blendMode
 - colourTransform
+- solid backgrounds (bitmap optimisations)
 - triangles
 - filters
 - hitTest

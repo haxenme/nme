@@ -420,7 +420,12 @@ public:
          delete mSpanRect;
       }
 
-      mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
+		if (inTarget.format==pfAlpha)
+		{
+			mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
+		}
+		else
+         mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
 
       return true;
    }

@@ -212,6 +212,9 @@ void TextField::UpdateFonts(const Transform &inTransform)
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+	if (inTarget.format==pfAlpha)
+		return;
+
    UpdateFonts(inState.mTransform);
    Layout();
 

@@ -13,19 +13,33 @@ enum PixelFormat
    pfARGB     = 0x01,
    pfXRGBSwap = 0x02,
    pfARGBSwap = 0x03,
+   pfAlpha    = 0x04,
 
    pfHasAlpha = 0x01,
    pfSwapRB   = 0x02,
 };
 
-
-
-extern int sgC0Shift;
-extern int sgC1Shift;
-extern int sgC2Shift;
 extern bool sgC0IsRed;
- 
+
 typedef unsigned char Uint8;
+
+inline void BlendAlpha(Uint8 &ioDest, Uint8 inSrc)
+{
+	if (inSrc)
+	{
+		if (inSrc==255)
+			ioDest = 255;
+		else
+			ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
+	}
+}
+
+inline void QBlendAlpha(Uint8 &ioDest, Uint8 inSrc)
+{
+	ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
+}
+
+
 
 struct ARGB
 {
