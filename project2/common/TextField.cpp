@@ -245,7 +245,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    Rect rect = mRect.Translated(tx,ty).Intersect(inState.mClipRect);
    if (inState.mMask)
       rect = rect.Intersect(inState.mMask->GetRect());
-   rect = inState.mMask->GetRect();
    RenderTarget target = inTarget.ClipRect(rect);
 
    for(int l=0;l<mLines.size();l++)

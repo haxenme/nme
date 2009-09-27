@@ -370,7 +370,9 @@ public:
 
    bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
 
-   void Render(const struct RenderTarget &inTarget);
+   void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask);
+
+	PixelFormat Format() const;
 
    Rect GetRect() const { return mRect.Translated(mTX,mTY); }
 

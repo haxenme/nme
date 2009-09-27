@@ -225,6 +225,7 @@ void TestMask(Stage *inStage)
       gfx->moveTo( 0,0);
       gfx->lineTo( 500,500);
       masked->addChild(masked_child);
+		masked->cacheAsBitmap = true;
 
       TextField *tf = new TextField;
       tf->setText(L"MASKEDMASKEDMASKEDMASKEDMASKED");
@@ -240,6 +241,7 @@ void TestMask(Stage *inStage)
       inStage->addChild(m);
       m->setX(100);
       m->setY(100);
+		m->cacheAsBitmap = true;
 
       DisplayObject *m_child = new DisplayObject;
       gfx = &m_child->GetGraphics();
@@ -254,7 +256,7 @@ void TestMask(Stage *inStage)
       tf->autoSize = asLeft;
       tf->setX(150);
       tf->setY(120);
-   //   m->addChild(tf);
+      //m->addChild(tf);
 
       masked->setMask(m);
 }

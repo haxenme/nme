@@ -76,13 +76,18 @@ SimpleSurface::~SimpleSurface()
 }
 
 
+// TODO: Refactor.....
 void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
-                           int inPosX, int inPosY, uint32 inTint,bool inUseSrcAlphaOnly)
+                           int inPosX, int inPosY, uint32 inTint,bool inUseSrcAlphaOnly,
+									const BitmapCache *inMask)
 {
    // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
    // clip ...
    src_rect = src_rect.Intersect(outDest.mRect);
+
+	if (inMask)
+		src_rect = src_rect.Intersect(inMask->GetRect());
 
    // translate back to source-coordinates ...
    src_rect.Translate(inSrcRect.x-inPosX, inSrcRect.y-inPosY);
@@ -96,92 +101,295 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
       int dy = inPosY + src_rect.y - inSrcRect.y;
 		bool is_alpha = mPixelFormat==pfAlpha;
       bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
-      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap;
+      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap && !inUseSrcAlphaOnly
+							  && !inMask;
 
 		ARGB col(inTint);
 		if (swap)
 			std::swap(col.c0,col.c2);
 
-		if (outDest.format!=pfAlpha)
-		{
-			for(int y=0;y<src_rect.h;y++)
+		if (!inMask)
+      {
+			if (outDest.format!=pfAlpha)
 			{
-				ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
-				const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-				if (is_alpha)
+				for(int y=0;y<src_rect.h;y++)
 				{
-				   const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					if (dest_alpha)
-						for(int x=0;x<src_rect.w;x++)
-						{
-							col.a = *src++;
-							(dest++)->Blend<false,true>(col);
-						}
-					else
-						for(int x=0;x<src_rect.w;x++)
-						{
-							col.a = *src++;
-							(dest++)->Blend<false,false>(col);
-						}
-				}
-				else if (inUseSrcAlphaOnly)
-				{
-					if (dest_alpha)
-						for(int x=0;x<src_rect.w;x++)
-						{
-							col.a = src++ -> a;
-							(dest++)->Blend<false,true>(col);
-						}
-					else
-						for(int x=0;x<src_rect.w;x++)
-						{
-							col.a = src++ -> a;
-							(dest++)->Blend<false,false>(col);
-						}
-				}
-				else if (do_memcpy)
-					memcpy(dest,src, (src_rect.w)*4 );
-				else if (swap)
-				{
-					if (dest_alpha)
-						for(int x=0;x<src_rect.w;x++)
-							(dest++)->Blend<true,true>(*src++);
-					else
-						for(int x=0;x<src_rect.w;x++)
-							(dest++)->Blend<true,false>(*src++);
-				}
-				else
-				{
-					if (dest_alpha)
-						for(int x=0;x<src_rect.w;x++)
-							(dest++)->Blend<false,true>(*src++);
-					else
-						for(int x=0;x<src_rect.w;x++)
-							(dest++)->Blend<false,false>(*src++);
-				}
-			}
-		}
-		else
-		{
-			for(int y=0;y<src_rect.h;y++)
-			{
-				Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
-				if (is_alpha)
-				{
-					const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					for(int x=0;x<src_rect.w;x++)
-					   BlendAlpha(*dest++,*src++);
-				}
-				else
-				{
+					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
 					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					for(int x=0;x<src_rect.w;x++)
-					   BlendAlpha(*dest++,(src++)->a);
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = *src++;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = *src++;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (inUseSrcAlphaOnly)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = src++ -> a;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = src++ -> a;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (do_memcpy)
+						memcpy(dest,src, (src_rect.w)*4 );
+					else if (swap)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+								(dest++)->Blend<true,true>(*src++);
+						else
+							for(int x=0;x<src_rect.w;x++)
+								(dest++)->Blend<true,false>(*src++);
+					}
+					else
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+								(dest++)->Blend<false,true>(*src++);
+						else
+							for(int x=0;x<src_rect.w;x++)
+								(dest++)->Blend<false,false>(*src++);
+					}
+				}
+			}
+			else
+			{
+				for(int y=0;y<src_rect.h;y++)
+				{
+					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,*src++);
+					}
+					else
+					{
+						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,(src++)->a);
+					}
 				}
 			}
 		}
+		else if (inMask && inMask->Format()==pfAlpha)
+		{
+			if (outDest.format!=pfAlpha)
+			{
+				for(int y=0;y<src_rect.h;y++)
+				{
+			      const uint8 *mask = inMask->Row(y+dy)+dx;
+					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
+					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = (*src++ * *mask++)>>8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = (*src++ * *mask++)>>8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (inUseSrcAlphaOnly)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = ((src++ -> a) * *mask++)>>8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = ((src++ -> a) * *mask++)>>8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (swap)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* *mask++) >> 8;
+								(dest++)->Blend<true,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* *mask++) >> 8;
+								(dest++)->Blend<true,false>(col);
+							}
+					}
+					else
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* *mask++) >> 8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* *mask++) >> 8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+				}
+			}
+			else
+			{
+				for(int y=0;y<src_rect.h;y++)
+				{
+			      const uint8 *mask = inMask->Row(y+dy)+dx;
+					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,(*src++ * *mask++)>>8);
+					}
+					else
+					{
+						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,( ((src++)->a) * *mask++) >> 8);
+					}
+				}
+			}
+		}
+		else if (inMask)
+		{
+			if (outDest.format!=pfAlpha)
+			{
+				for(int y=0;y<src_rect.h;y++)
+				{
+			      ARGB *mask = (ARGB *)inMask->Row(y+dy) + dx;
+					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
+					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = (*src++ * (mask++ -> a))>>8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = (*src++ * (mask++ -> a))>>8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (inUseSrcAlphaOnly)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = ((src++ -> a) * (mask++ -> a))>>8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								col.a = ((src++ -> a) * (mask++ -> a))>>8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+					else if (swap)
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* (mask++ ->a)) >> 8;
+								(dest++)->Blend<true,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* (mask++ ->a)) >> 8;
+								(dest++)->Blend<true,false>(col);
+							}
+					}
+					else
+					{
+						if (dest_alpha)
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* (mask++ -> a)) >> 8;
+								(dest++)->Blend<false,true>(col);
+							}
+						else
+							for(int x=0;x<src_rect.w;x++)
+							{
+								ARGB col = *src++;
+								col.a = (col.a* (mask++ -> a)) >> 8;
+								(dest++)->Blend<false,false>(col);
+							}
+					}
+				}
+			}
+			else
+			{
+				for(int y=0;y<src_rect.h;y++)
+				{
+			      ARGB *mask = (ARGB *)inMask->Row(y+dy) + dx;
+					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
+					if (is_alpha)
+					{
+						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,(*src++ * (mask++ ->a))>>8);
+					}
+					else
+					{
+						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
+						for(int x=0;x<src_rect.w;x++)
+							BlendAlpha(*dest++,( ((src++)->a) * (mask++ ->a)) >> 8);
+					}
+				}
+			}
+		}
+
 	}
 }
+
+
+
+
 
 void SimpleSurface::Clear(uint32 inColour)
 {
@@ -234,4 +442,8 @@ const uint8 *BitmapCache::Row(int inRow) const
 }
 
 
+PixelFormat BitmapCache::Format() const
+{
+	return mBitmap->Format();
+}
 

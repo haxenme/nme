@@ -39,7 +39,8 @@ public:
    virtual void EndRender()=0;
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly=false)=0;
+                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly=false,
+							  const BitmapCache *inMask=0)=0;
 
    virtual NativeTexture *GetTexture() { return mTexture; }
    virtual void SetTexture(NativeTexture *inTexture);
@@ -84,7 +85,8 @@ public:
    void EndRender();
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inDX, int inDY,
-                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly = false);
+                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly = false,
+							  const BitmapCache *inMask=0);
 
 	const uint8 *GetBase() const { return mBase; }
 	int GetStride() const { return mStride; }

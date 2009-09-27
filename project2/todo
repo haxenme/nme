@@ -1,13 +1,12 @@
 TODO:
-- mask
 - blendMode
 - colourTransform
 - solid backgrounds (bitmap optimisations)
-- triangles
 - filters
 - hitTest
 - Opengl
 - Events - mouse
 - Text - selection/keys
+- triangles
 
  - bitmap text extent, borders

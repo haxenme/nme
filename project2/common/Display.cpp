@@ -131,7 +131,7 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
       return;
 
    RenderTarget t = inTarget.ClipRect( inState.mClipRect );
-   mBitmapCache->Render(inTarget);
+   mBitmapCache->Render(inTarget,inState.mMask);
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -569,6 +569,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             // todo: combine masks ?
             //obj->DebugRenderMask(inTarget,*obj_state);
+
+				// Mask not made yet?
+				// TODO: Create mask on demand in this case - or make known limitation of system
+				// This could be the case if the mask is higher in the Z-order, or not parented.
+            if (!obj->getMask()->GetBitmapCache())
+					continue;
             obj_state->mMask = obj->getMask()->GetBitmapCache();
          }
 
@@ -652,15 +658,16 @@ bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, c
 }
 
 
-void BitmapCache::Render(const RenderTarget &inTarget)
+void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask)
 {
    if (mBitmap)
    {
       int tint = 0xffffffff;
       if (inTarget.format!=pfAlpha && mBitmap->Format()==pfAlpha)
          tint = 0;
+
       // TX,TX is se in StillGood function
-      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,tint);
+      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,tint,0,inMask);
    }
 }
 
