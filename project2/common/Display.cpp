@@ -563,16 +563,23 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       }
       else
       {
+			BitmapCache *old_mask = obj_state->mMask;
+
+			if (obj->getMask())
+			{
+				// todo: combine masks ?
+            //obj->DebugRenderMask(inTarget,*obj_state);
+				obj_state->mMask = obj->getMask()->GetBitmapCache();
+			}
+
          if (obj->IsBitmapRender() || obj->IsMask())
          {
             obj->RenderBitmap(inTarget,*obj_state);
          }
-			else if (obj->getMask())
-         {
-            obj->DebugRenderMask(inTarget,*obj_state);
-         }
          else
             obj->Render(inTarget,*obj_state);
+
+			obj_state->mMask = old_mask;
       }
    }
 }

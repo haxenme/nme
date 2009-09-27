@@ -380,8 +380,7 @@ struct RenderState
 	bool           mBitmapPhase;
 
 	// Masking...
-	ImagePoint     mMaskPos;
-	Surface        *mMask;
+	class BitmapCache    *mMask;
 };
 
 
