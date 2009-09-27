@@ -18,11 +18,11 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    x = y = 0;
    scaleX = scaleY = 1.0;
    rotation = 0;
-	visible = true;
+   visible = true;
    mBitmapCache = 0;
    cacheAsBitmap = false;
-	mMask = 0;
-	mIsMaskCount = 0;
+   mMask = 0;
+   mIsMaskCount = 0;
 }
 
 DisplayObject::~DisplayObject()
@@ -30,8 +30,8 @@ DisplayObject::~DisplayObject()
    if (mGfx)
       mGfx->DecRef();
    delete mBitmapCache;
-	if (mMask)
-		setMask(0);
+   if (mMask)
+      setMask(0);
 }
 
 Graphics &DisplayObject::GetGraphics()
@@ -137,7 +137,7 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (mMask)
-		mMask->RenderBitmap(inTarget,inState);
+      mMask->RenderBitmap(inTarget,inState);
 }
 
 
@@ -403,29 +403,29 @@ void DisplayObject::setRotation(double inValue)
 
 void DisplayObject::ChangeIsMaskCount(int inDelta)
 {
-	if (inDelta>0)
-	{
-		IncRef();
-		mIsMaskCount++;
-	}
-	else
-	{
-		mIsMaskCount--;
-		if (!mIsMaskCount)
-			SetBitmapCache(0);
-		DecRef();
-	}
+   if (inDelta>0)
+   {
+      IncRef();
+      mIsMaskCount++;
+   }
+   else
+   {
+      mIsMaskCount--;
+      if (!mIsMaskCount)
+         SetBitmapCache(0);
+      DecRef();
+   }
 }
 
 
 void DisplayObject::setMask(DisplayObject *inMask)
 {
-	if (inMask)
-		inMask->ChangeIsMaskCount(1);
-	if (mMask)
-		mMask->ChangeIsMaskCount(-1);
+   if (inMask)
+      inMask->ChangeIsMaskCount(1);
+   if (mMask)
+      mMask->ChangeIsMaskCount(-1);
 
-	mMask = inMask;
+   mMask = inMask;
 }
 
 // --- DisplayObjectContainer ------------------------------------------------
@@ -492,8 +492,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
-		if (!obj->visible || (!inState.mBitmapPhase && obj->IsMask()) )
-			continue;
+      if (!obj->visible || (!inState.mBitmapPhase && obj->IsMask()) )
+         continue;
 
       RenderState *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
@@ -533,9 +533,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, rect, visible_bitmap))
                   continue;
                else
-					{
+               {
                   obj->SetBitmapCache(0);
-					}
+               }
             }
 
             // Ok, build bitmap cache...
@@ -544,7 +544,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                printf("Build bitmap cache\n");
                SimpleSurface *bitmap =
                   new SimpleSurface(visible_bitmap.w, visible_bitmap.h,
-								obj->IsBitmapRender() ? pfARGB : pfAlpha );
+                        obj->IsBitmapRender() ? pfARGB : pfAlpha );
                bitmap->Zero();
                // debug ...
                //bitmap->Clear(0xff333333);
@@ -563,14 +563,14 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       }
       else
       {
-			BitmapCache *old_mask = obj_state->mMask;
+         BitmapCache *old_mask = obj_state->mMask;
 
-			if (obj->getMask())
-			{
-				// todo: combine masks ?
+         if (obj->getMask())
+         {
+            // todo: combine masks ?
             //obj->DebugRenderMask(inTarget,*obj_state);
-				obj_state->mMask = obj->getMask()->GetBitmapCache();
-			}
+            obj_state->mMask = obj->getMask()->GetBitmapCache();
+         }
 
          if (obj->IsBitmapRender() || obj->IsMask())
          {
@@ -579,7 +579,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          else
             obj->Render(inTarget,*obj_state);
 
-			obj_state->mMask = old_mask;
+         obj_state->mMask = old_mask;
       }
    }
 }
@@ -656,9 +656,9 @@ void BitmapCache::Render(const RenderTarget &inTarget)
 {
    if (mBitmap)
    {
-		int tint = 0xffffffff;
-		if (inTarget.format!=pfAlpha && mBitmap->Format()==pfAlpha)
-			tint = 0;
+      int tint = 0xffffffff;
+      if (inTarget.format!=pfAlpha && mBitmap->Format()==pfAlpha)
+         tint = 0;
       // TX,TX is se in StillGood function
       mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,tint);
    }

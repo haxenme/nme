@@ -226,4 +226,12 @@ void SimpleSurface::EndRender()
 {
 }
 
+// --- BitmapCache -----------------------------------------------------------------
+
+const uint8 *BitmapCache::Row(int inRow) const
+{
+   return mBitmap->Row(inRow-(mRect.y+mTY)) - mBitmap->BytesPP()*(mRect.x+mTX);
+}
+
+
 

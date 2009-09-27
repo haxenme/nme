@@ -191,9 +191,9 @@ public:
 
 		bool swap =  (inTarget.format & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
 		if (swap)
-		   Render( mAlphaMask, *this, inTarget, NormalBlender<true>(), inState.mClipRect, inTX,inTY );
+		   Render( mAlphaMask, *this, inTarget, NormalBlender<true>(), inState, inTX,inTY );
 		else
-		   Render( mAlphaMask, *this, inTarget, NormalBlender<false>(), inState.mClipRect, inTX,inTY );
+		   Render( mAlphaMask, *this, inTarget, NormalBlender<false>(), inState, inTX,inTY );
 	}
 
 };

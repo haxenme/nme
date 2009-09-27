@@ -17,20 +17,20 @@ void Handler(Event &ioEvent,void *inStage)
    Stage *stage = (Stage *)inStage;
 
 
-	static int x = 0;
-	x = (x+1) % 800;
-	if (gDoSpin)
-	{
+   static int x = 0;
+   x = (x+1) % 800;
+   if (gDoSpin)
+   {
       DisplayObject *shape = stage->getChildAt(0);
-	   double rot = shape->getRotation();
+      double rot = shape->getRotation();
       rot += 1;
       shape->setX(x);
       shape->setRotation(rot);
-		if (gScrollWin)
+      if (gScrollWin)
          gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
-	}
-	if (gCachObj)
-		gCachObj->setX(x);
+   }
+   if (gCachObj)
+      gCachObj->setX(x);
 
    if (ioEvent.mType==etNextFrame)
       stage->RenderStage();
@@ -58,7 +58,7 @@ void AddGradFill(Stage *inStage)
 {
    GraphicsGradientFill *fill = new GraphicsGradientFill(false,
                                  Matrix().createGradientBox(200,200,45,-100,-100), smReflect,
-											imRGB, 0.5);
+                                 imRGB, 0.5);
    fill->AddStop( 0xffffff, 1, 0 );
    fill->AddStop( 0xff0000, 1, 0.25 );
    fill->AddStop( 0x00ff00, 1, 0.5 );
@@ -81,7 +81,7 @@ void AddGradFill(Stage *inStage)
 
 void TestScrollRect(Stage *inStage)
 {
-	gDoSpin = true;
+   gDoSpin = true;
    DisplayObjectContainer *win = new DisplayObjectContainer(true);
    Graphics &g = win->GetGraphics();
    g.lineStyle(2,0x202040,1,false);
@@ -120,23 +120,23 @@ void TestText(Stage *inStage,bool inFromFile)
    text->mRect.w = 600;
    text->embedFonts = false;
 
-	if (inFromFile)
-	{
-		std::string contents;
-		FILE *f = fopen("Test.cpp","rb");
-		if (f)
-		{
-			int ch;
-			while( (ch=fgetc(f))!=EOF )
-			{
-				if (ch==10 || (ch>26 && ch<127) )
-					contents += (char)ch;
-			}
-			fclose(f);
-		}
-		text->setText( UTF8ToWide(contents.c_str()) );
-	}
-	else
+   if (inFromFile)
+   {
+      std::string contents;
+      FILE *f = fopen("Test.cpp","rb");
+      if (f)
+      {
+         int ch;
+         while( (ch=fgetc(f))!=EOF )
+         {
+            if (ch==10 || (ch>26 && ch<127) )
+               contents += (char)ch;
+         }
+         fclose(f);
+      }
+      text->setText( UTF8ToWide(contents.c_str()) );
+   }
+   else
       text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
 
    //text->cacheAsBitmap = true;
@@ -154,23 +154,23 @@ void TestWidth1(Stage *inStage)
    shape->setRotation( 20 );
    //shape->setWidth( 200 );
    shape->setScaleX( 1.5 );
-	printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
-	Matrix m = shape->GetLocalMatrix();
-	printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
-	printf(" -- set -- \n");
+   printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+   Matrix m = shape->GetLocalMatrix();
+   printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+   printf(" -- set -- \n");
    shape->setWidth( 300 );
 
-	printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
-	printf("Scale  : %fx%f\n", shape->getScaleX(), shape->getScaleY() );
-	m = shape->GetLocalMatrix();
-	printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+   printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+   printf("Scale  : %fx%f\n", shape->getScaleX(), shape->getScaleY() );
+   m = shape->GetLocalMatrix();
+   printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
 
    //shape->setWidth( 250 );
-	//printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
+   //printf("Size  : %fx%f\n", shape->getWidth(), shape->getHeight() );
 
 
-	//m = shape->GetLocalMatrix();
-	//printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
+   //m = shape->GetLocalMatrix();
+   //printf("a=%f b=%f c=%f d=%f\n", m.m00, m.m10, m.m01, m.m11 );
    shape->setX( 200 );
    shape->setY( 200 );
    inStage->addChild(shape);
@@ -179,84 +179,84 @@ void TestWidth1(Stage *inStage)
 
 void TestWidth2(Stage *inStage)
 {
-		DisplayObjectContainer *base = new DisplayObjectContainer;
-		base->GetGraphics().beginFill(0xff0000);
-		base->GetGraphics().drawRect(0,0,60,40);
-		inStage->addChild(base);
+      DisplayObjectContainer *base = new DisplayObjectContainer;
+      base->GetGraphics().beginFill(0xff0000);
+      base->GetGraphics().drawRect(0,0,60,40);
+      inStage->addChild(base);
 
       DisplayObjectContainer *obj = new DisplayObjectContainer;
-		Graphics &gfx = obj->GetGraphics();
+      Graphics &gfx = obj->GetGraphics();
       gfx.beginFill(0xe0e0e0,0.6);
       gfx.lineStyle(2,0xff0000,1,false,ssmHorizontal, scNone, sjMiter);
       gfx.drawRoundRect( 20,20, 199.5,200, 5, 5 );
 
-		base->addChild(obj);
+      base->addChild(obj);
 
-		DisplayObjectContainer *lobe = new DisplayObjectContainer;
-		lobe->GetGraphics().beginFill(0xff0000);
-		lobe->GetGraphics().drawRect(40,40,400,40);
-		lobe->setScrollRect(DRect( 100,0, 100, 100));
-		obj->addChild(lobe);
-		printf("Obj width %f\n",obj->getWidth());
-		base->cacheAsBitmap = true;
-		gCachObj = base;
+      DisplayObjectContainer *lobe = new DisplayObjectContainer;
+      lobe->GetGraphics().beginFill(0xff0000);
+      lobe->GetGraphics().drawRect(40,40,400,40);
+      lobe->setScrollRect(DRect( 100,0, 100, 100));
+      obj->addChild(lobe);
+      printf("Obj width %f\n",obj->getWidth());
+      base->cacheAsBitmap = true;
+      gCachObj = base;
 }
 
 
 void TestRed(Stage *inStage)
 {
-	DisplayObject *red = new DisplayObject;
-	red->GetGraphics().beginFill(0xff0000);
-	red->GetGraphics().drawRect(0,0,100,100);
-	inStage->addChild(red);
+   DisplayObject *red = new DisplayObject;
+   red->GetGraphics().beginFill(0xff0000);
+   red->GetGraphics().drawRect(0,0,100,100);
+   inStage->addChild(red);
 }
 
 void TestMask(Stage *inStage)
 {
-		DisplayObjectContainer *masked = new DisplayObjectContainer;
-		Graphics *gfx = &masked->GetGraphics();
-		gfx->beginFill(0x308030);
-		gfx->drawRect( 100,100, 400,400 );
-		inStage->addChild(masked);
+      DisplayObjectContainer *masked = new DisplayObjectContainer;
+      Graphics *gfx = &masked->GetGraphics();
+      gfx->beginFill(0x308030);
+      gfx->drawRect( 100,100, 400,400 );
+      inStage->addChild(masked);
 
-		DisplayObjectContainer *masked_child = new DisplayObjectContainer;
-		gfx = &masked_child->GetGraphics();
-		gfx->lineStyle(2,0xff0000);
-		gfx->moveTo( 0,0);
-		gfx->lineTo( 500,500);
-		masked->addChild(masked_child);
+      DisplayObjectContainer *masked_child = new DisplayObjectContainer;
+      gfx = &masked_child->GetGraphics();
+      gfx->lineStyle(2,0xff0000);
+      gfx->moveTo( 0,0);
+      gfx->lineTo( 500,500);
+      masked->addChild(masked_child);
 
-		TextField *tf = new TextField;
-		tf->setText(L"MASKEDMASKEDMASKEDMASKEDMASKED");
-		tf->autoSize = asLeft;
-		tf->setX(200);
-		tf->setY(150);
-		masked->addChild(tf);
+      TextField *tf = new TextField;
+      tf->setText(L"MASKEDMASKEDMASKEDMASKEDMASKED");
+      tf->autoSize = asLeft;
+      tf->setX(200);
+      tf->setY(150);
+      masked->addChild(tf);
 
-		DisplayObjectContainer *m = new DisplayObjectContainer;
-		gfx = &m->GetGraphics();
-		gfx->beginFill(0xa0a0a0);
-		gfx->drawCircle( 100,100, 50 );
-		inStage->addChild(m);
-		m->setX(100);
-		m->setY(100);
+      DisplayObjectContainer *m = new DisplayObjectContainer;
+      gfx = &m->GetGraphics();
+      gfx->beginFill(0xa0a0a0);
+      gfx->drawCircle( 100,100, 50 );
+      inStage->addChild(m);
+      m->setX(100);
+      m->setY(100);
 
-		DisplayObject *m_child = new DisplayObject;
-		gfx = &m_child->GetGraphics();
-		gfx->beginFill(0xa0a0a0);
-		gfx->drawCircle( 100,100, 50 );
+      DisplayObject *m_child = new DisplayObject;
+      gfx = &m_child->GetGraphics();
+      gfx->beginFill(0xa0a0a0);
+      gfx->drawCircle( 100,100, 50 );
       m->addChild(m_child);
-		m_child->setX(20);
-		m_child->setY(20);
+      m_child->setX(20);
+      m_child->setY(20);
 
-		tf = new TextField;
-		tf->setText(L"MASK MASK MASK");
-		tf->autoSize = asLeft;
-		tf->setX(150);
-		tf->setY(120);
-		m->addChild(tf);
+      tf = new TextField;
+      tf->setText(L"MASK MASK MASK");
+      tf->autoSize = asLeft;
+      tf->setX(150);
+      tf->setY(120);
+   //   m->addChild(tf);
 
-		masked->setMask(m);
+      masked->setMask(m);
 }
 
 
@@ -270,19 +270,19 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-	// AddGradFill(stage);
+   // AddGradFill(stage);
 
-	// TestScrollRect(stage);
+   // TestScrollRect(stage);
 
-	// TestText(stage,false);
+   // TestText(stage,false);
 
-	// TestWidth1(stage);
+   // TestWidth1(stage);
 
-	// TestWidth2(stage);
+   // TestWidth2(stage);
 
-	//TestRed(stage);
+   //TestRed(stage);
 
-	TestMask(stage);
+   TestMask(stage);
 
    MainLoop();
    delete frame;

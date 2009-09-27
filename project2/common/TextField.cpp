@@ -242,7 +242,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    int tx = (int)inState.mTransform.mMatrix->mtx;
    int ty = (int)inState.mTransform.mMatrix->mty;
-   RenderTarget target = inTarget.ClipRect( mRect.Translated(tx,ty).Intersect(inState.mClipRect) );
+   Rect rect = mRect.Translated(tx,ty).Intersect(inState.mClipRect);
+   if (inState.mMask)
+      rect = rect.Intersect(inState.mMask->GetRect());
+   rect = inState.mMask->GetRect();
+   RenderTarget target = inTarget.ClipRect(rect);
 
    for(int l=0;l<mLines.size();l++)
    {

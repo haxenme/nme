@@ -54,24 +54,6 @@ enum
 };
 
 
-class BitmapCache
-{
-public:
-   BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
-   ~BitmapCache();
-
-   bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
-
-   void Render(const RenderTarget &inTarget);
-
-private:
-   int        mTX,mTY;
-   Rect       mRect;
-   Matrix     mMatrix;
-   Scale9     mScale9;
-   Surface    *mBitmap;
-};
-
 class DisplayObject : public Object
 {
 public:

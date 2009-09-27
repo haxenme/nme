@@ -361,6 +361,32 @@ struct Transform
 };
 
 
+
+class BitmapCache
+{
+public:
+   BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
+   ~BitmapCache();
+
+   bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
+
+   void Render(const struct RenderTarget &inTarget);
+
+   Rect GetRect() const { return mRect.Translated(mTX,mTY); }
+
+   const uint8 *Row(int inRow) const;
+
+private:
+   int        mTX,mTY;
+   Rect       mRect;
+   Matrix     mMatrix;
+   Scale9     mScale9;
+   Surface    *mBitmap;
+};
+
+
+
+
 struct RenderState
 {
 	RenderState(Surface *inSurface=0,int inAA=1);

@@ -32,6 +32,9 @@ public:
 	virtual void Clear(uint32 inColour) = 0;
 	virtual void Zero() { Clear(0); }
 
+   int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
+   const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
+
    virtual RenderTarget BeginRender(const Rect &inRect)=0;
    virtual void EndRender()=0;
 
