@@ -77,9 +77,10 @@ SimpleSurface::~SimpleSurface()
 
 
 // TODO: Refactor.....
-void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
-                           int inPosX, int inPosY, uint32 inTint,bool inUseSrcAlphaOnly,
-									const BitmapCache *inMask)
+void SimpleSurface::BlitTo(const RenderTarget &outDest,
+							const Rect &inSrcRect,int inPosX, int inPosY,
+							BlendMode inBlend, const BitmapCache *inMask,
+                     uint32 inTint )
 {
    // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
@@ -101,8 +102,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
       int dy = inPosY + src_rect.y - inSrcRect.y;
 		bool is_alpha = mPixelFormat==pfAlpha;
       bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
-      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap && !inUseSrcAlphaOnly
-							  && !inMask;
+      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap && !inMask;
 
 		ARGB col(inTint);
 		if (swap)
@@ -132,6 +132,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					/*
 					else if (inUseSrcAlphaOnly)
 					{
 						if (dest_alpha)
@@ -147,6 +148,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					*/
 					else if (do_memcpy)
 						memcpy(dest,src, (src_rect.w)*4 );
 					else if (swap)
@@ -214,6 +216,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					/*
 					else if (inUseSrcAlphaOnly)
 					{
 						if (dest_alpha)
@@ -229,6 +232,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					*/
 					else if (swap)
 					{
 						if (dest_alpha)
@@ -311,6 +315,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					/*
 					else if (inUseSrcAlphaOnly)
 					{
 						if (dest_alpha)
@@ -326,6 +331,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest, const Rect &inSrcRect,
 								(dest++)->Blend<false,false>(col);
 							}
 					}
+					*/
 					else if (swap)
 					{
 						if (dest_alpha)

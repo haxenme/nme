@@ -17,12 +17,10 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
 
    int y1 = inAlpha.mRect.y1() + inTY;
 
-   Rect clip;
+   Rect clip = inState.mClipRect.Intersect(outDest.GetRect());
 
    if (inState.mMask)
-      clip = inState.mClipRect.Intersect(inState.mMask->GetRect());
-   else
-      clip = inState.mClipRect;
+      clip = clip.Intersect(inState.mMask->GetRect());
 
    clip.ClipY(y,y1);
 
@@ -101,6 +99,7 @@ struct DestSurface32
    void SetX(int inX) { mPtr = mRow + inX; }
    const ARGB Get() { return *mPtr; }
    void SetInc( ARGB inCol ) { *mPtr++ = inCol; }
+   const Rect &GetRect() const { return mTarget.mRect; }
 
    ARGB *mRow;
    ARGB *mPtr;

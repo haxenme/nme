@@ -21,6 +21,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    visible = true;
    mBitmapCache = 0;
    cacheAsBitmap = false;
+	blendMode = bmNormal;
    mMask = 0;
    mIsMaskCount = 0;
 }
@@ -89,7 +90,7 @@ void DisplayObject::CheckCacheDirty()
 
 bool DisplayObject::IsBitmapRender()
 {
-   return cacheAsBitmap;
+   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild();
 }
 
 void DisplayObject::SetBitmapCache(BitmapCache *inCache)
@@ -626,6 +627,14 @@ DisplayObject *DisplayObjectContainer::getChildAt(int index)
    return mChildren[index];
 }
 
+bool DisplayObjectContainer::NonNormalBlendChild()
+{
+	for(int i=0;i<mChildren.size();i++)
+		if (mChildren[i]->blendMode!=bmNormal)
+			return true;
+	return false;
+}
+
 
 // --- BitmapCache ---------------------------------------------------------
 
@@ -667,7 +676,7 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask)
          tint = 0;
 
       // TX,TX is se in StillGood function
-      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,tint,0,inMask);
+      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,bmNormal,inMask,tint);
    }
 }
 

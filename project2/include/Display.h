@@ -112,6 +112,7 @@ public:
 
    virtual void DirtyUp(uint32 inFlags);
    virtual void DirtyDown(uint32 inFlags);
+   virtual bool NonNormalBlendChild() { return false; }
 
    void SetParent(DisplayObjectContainer *inParent);
 
@@ -166,6 +167,7 @@ public:
    void RemoveChildFromList(DisplayObject *inChild);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void DirtyUp(uint32 inFlags);
+   bool NonNormalBlendChild();
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
 

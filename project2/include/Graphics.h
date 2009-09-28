@@ -340,6 +340,9 @@ enum BlendMode
    bmErase,
    bmOverlay,
    bmHardLight,
+
+	// Used for rendering text
+   bmTinted,
 };
 
 class ColorTransform

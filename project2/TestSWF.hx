@@ -8,7 +8,7 @@ static function CreateOne()
 
 
    var fillType = flash.display.GradientType.LINEAR;
-   var colors =[0xFF0000, 0x0000FF];
+   var colors =[0x404040, 0xa0a0a0];
    var alphas= [1, 1];
    var ratios= [0x00, 0xFF];
    var matr= new flash.geom.Matrix();
@@ -18,7 +18,7 @@ static function CreateOne()
    gfx.drawRect(0,0,100,100);
 
 
-   var colors =[0xFF0000, 0x0000FF];
+   var colors =[0x00ff00, 0xffff00];
    gfx.beginGradientFill(fillType, colors, alphas, ratios, matr, spreadMethod);  
    gfx.drawRect(6,6,88,88);
 
@@ -33,7 +33,7 @@ static function CreateTwo()
 
 
    var fillType = flash.display.GradientType.LINEAR;
-   var colors =[0xFF0000, 0x0000FF];
+   var colors =[0x404040, 0xa0a0a0];
    var alphas= [1, 1];
    var ratios= [0x00, 0xFF];
    var matr= new flash.geom.Matrix();

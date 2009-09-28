@@ -280,7 +280,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                {
                   Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
                   tile.mSurface->BlitTo(target, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
-                       (uint32)group->mFormat->color | 0xff000000, true);
+								bmTinted, 0,
+                       (uint32)group->mFormat->color | 0xff000000);
                   x+= advance;
                   if (x>target.mRect.x1())
                      break;
