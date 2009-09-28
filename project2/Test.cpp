@@ -261,12 +261,77 @@ void TestMask(Stage *inStage)
       masked->setMask(m);
 }
 
+DisplayObject *CreateOne()
+{
+   DisplayObject *obj = new DisplayObject();
+   Graphics &gfx = obj->GetGraphics();
+   GraphicsGradientFill *g1 = new GraphicsGradientFill(true,
+                                 Matrix().createGradientBox(100,100), smReflect, imRGB);
+   g1->AddStop( 0x404040, 1, 0 );
+   g1->AddStop( 0xa0a0a0, 1, 1 );
+   gfx.addData(g1);
+   gfx.drawRect(0,0,100,100);
+
+
+   GraphicsGradientFill *g2 = new GraphicsGradientFill(true,
+                                 Matrix().createGradientBox(100,100), smReflect, imRGB);
+   g2->AddStop( 0x20a200, 1, 0 );
+   g2->AddStop( 0xffff20, 1, 1 );
+   gfx.addData(g2);
+   gfx.drawRect(6,6,88,88);
+
+   return obj;
+}
+
+
+DisplayObject *CreateTwo()
+{
+   DisplayObject *obj = new DisplayObject();
+   Graphics &gfx = obj->GetGraphics();
+
+   GraphicsGradientFill *g1 = new GraphicsGradientFill(true,
+                                 Matrix().createGradientBox(100,100), smReflect, imRGB);
+   g1->AddStop( 0x404040, 1, 0 );
+   g1->AddStop( 0xa0a0a0, 1, 1 );
+   gfx.addData(g1);
+   gfx.drawCircle(50,50,50);
+
+
+   GraphicsGradientFill *g2 = new GraphicsGradientFill(true,
+                                 Matrix().createGradientBox(100,100), smReflect, imRGB);
+   g2->AddStop( 0xff0000, 1, 0 );
+   g2->AddStop( 0x0000ff, 1, 1 );
+   gfx.addData(g2);
+   gfx.drawCircle(50,50,44);
+
+   return obj;
+}
+
+
+
+void TestBlend(Stage *inStage)
+{
+   for(int mode=bmNormal; mode<=bmHardLight;mode++)
+   {
+      DisplayObjectContainer *container = new DisplayObjectContainer;
+      inStage->addChild(container);
+      int x = mode%4;
+      int y = mode/4;
+      container->setX(x*150);
+      container->setY(y*150);
+      DisplayObject *obj1 =  CreateOne();
+      container->addChild(obj1);
+      DisplayObject *obj2 =  CreateTwo();
+      obj2->setX(50);
+      obj2->setY(50);
+      obj2->blendMode = (BlendMode)mode;
+      container->addChild(obj2);
+   }
+}
 
 int main(int inargc,char **arvg)
 {
    Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
-
-
 
    Stage *stage = frame->GetStage();
    stage->IncRef();
@@ -284,7 +349,9 @@ int main(int inargc,char **arvg)
 
    //TestRed(stage);
 
-   TestMask(stage);
+   // TestMask(stage);
+
+   TestBlend(stage);
 
    MainLoop();
    delete frame;

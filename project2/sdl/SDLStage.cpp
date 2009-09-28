@@ -54,7 +54,7 @@ public:
    }
 
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-                       uint32 inTint=0xffffff,bool inUseSrcAlphaOnly=false)
+                       uint32 inTint,bool inUseSrcAlphaOnly,const BitmapCache *inMask)
    {
    }
 
