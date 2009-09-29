@@ -203,14 +203,14 @@ void DisplayObject::UpdateDecomp()
                      mLocalMatrix.m11*mLocalMatrix.m11 );
       rotation = scaleX>0 ? atan2( mLocalMatrix.m01, mLocalMatrix.m00 ) :
                  scaleY>0 ? atan2( mLocalMatrix.m11, mLocalMatrix.m10 ) : 0.0;
-      printf("Rotation = %f\n",rotation);
+      //printf("Rotation = %f\n",rotation);
       /*
       scaleX = cos(rotation) * mLocalMatrix.m00 +
                -sin(rotation) * mLocalMatrix.m10;
       scaleY = sin(rotation) * mLocalMatrix.m01 + 
                cos(rotation) * mLocalMatrix.m11;
                */
-      printf("scale = %f,%f\n", scaleX, scaleY );
+      //printf("scale = %f,%f\n", scaleX, scaleY );
       rotation *= 180.0/-M_PI;
    }
 }
@@ -482,7 +482,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
    Rect visible_bitmap;
 
-   DisplayObject::Render(inTarget,inState);
+	// Otherwise do it at end...
+   if (!inState.mBitmapPhase)
+      DisplayObject::Render(inTarget,inState);
 
    // Render children/build child bitmaps ...
    Matrix full;
@@ -490,7 +492,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    state.mTransform.mMatrix = &full;
    RenderState clip_state(state);
 
-   for(int i=0;i<mChildren.size();i++)
+	int first = 0;
+	int last = mChildren.size();
+	int dir = 1;
+	// Build top first when making bitmaps and masks....
+	if (inState.mBitmapPhase)
+	{
+		first = last - 1;
+		last = -1;
+		dir = -1;
+	}
+   for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
       if (!obj->visible || (!inState.mBitmapPhase && obj->IsMask()) )
@@ -542,7 +554,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Ok, build bitmap cache...
             if (visible_bitmap.HasPixels())
             {
-               printf("Build bitmap cache\n");
+               //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
+							 //visible_bitmap.w, visible_bitmap.h );
                SimpleSurface *bitmap =
                   new SimpleSurface(visible_bitmap.w, visible_bitmap.h,
                         obj->IsBitmapRender() ? pfARGB : pfAlpha );
@@ -552,6 +565,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                AutoSurfaceRender render(bitmap);
                Matrix orig = full;
                full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
+
+               obj_state->mBitmapPhase = true;
+               obj->Render(render.Target(), *obj_state);
 
                obj_state->mBitmapPhase = false;
                obj->Render(render.Target(), *obj_state);
@@ -573,7 +589,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
 				// Mask not made yet?
 				// TODO: Create mask on demand in this case - or make known limitation of system
-				// This could be the case if the mask is higher in the Z-order, or not parented.
+				// This could be the case if the mask is lower in the Z-order, or not parented.
             if (!obj->getMask()->GetBitmapCache())
 					continue;
             obj_state->mMask = obj->getMask()->GetBitmapCache();
@@ -589,6 +605,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          obj_state->mMask = old_mask;
       }
    }
+
+   if (inState.mBitmapPhase)
+      DisplayObject::Render(inTarget,inState);
 }
 
 void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)

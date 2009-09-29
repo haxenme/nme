@@ -23,22 +23,6 @@ extern bool sgC0IsRed;
 
 typedef unsigned char Uint8;
 
-inline void BlendAlpha(Uint8 &ioDest, Uint8 inSrc)
-{
-	if (inSrc)
-	{
-		if (inSrc==255)
-			ioDest = 255;
-		else
-			ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
-	}
-}
-
-inline void QBlendAlpha(Uint8 &ioDest, Uint8 inSrc)
-{
-	ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
-}
-
 
 
 struct ARGB
@@ -206,6 +190,37 @@ struct ARGB
       unsigned int  ival;
    };
 };
+
+
+inline void BlendAlpha(Uint8 &ioDest, Uint8 inSrc)
+{
+	if (inSrc)
+	{
+		if (inSrc==255)
+			ioDest = 255;
+		else
+			ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
+	}
+}
+
+inline void BlendAlpha(Uint8 &ioDest, const ARGB &inSrc)
+{
+	if (inSrc.a)
+	{
+		if (inSrc.a==255)
+			ioDest = 255;
+		else
+			ioDest = 255 - ((255 - inSrc.a) * (255-ioDest) >> 8);
+	}
+}
+
+
+inline void QBlendAlpha(Uint8 &ioDest, Uint8 inSrc)
+{
+	ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
+}
+
+
 
 
 

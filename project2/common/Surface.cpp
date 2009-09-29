@@ -75,8 +75,202 @@ SimpleSurface::~SimpleSurface()
 	delete [] mBase;
 }
 
+// --- Surface Blitting ------------------------------------------------------------------
 
-// TODO: Refactor.....
+struct NullMask
+{
+	inline void SetPos(int inX,int inY) const { }
+	inline const uint8 &Mask(const uint8 &inAlpha) const { return inAlpha; }
+	inline const ARGB &Mask(const ARGB &inRGB) const { return inRGB; }
+};
+
+
+struct ImageMask
+{
+	ImageMask(const BitmapCache &inMask) :
+		mMask(inMask), mOx(-inMask.GetTX()), mOy(-inMask.GetTY())
+	{
+		if (mMask.Format()==pfAlpha)
+		{
+			mComponentOffset = 0;
+			mPixelStride = 1;
+		}
+		else
+		{
+			ARGB tmp;
+			mComponentOffset = (uint8 *)&tmp.a - (uint8 *)&tmp;
+			mPixelStride = 4;
+		}
+	}
+
+	inline void SetPos(int inX,int inY) const
+	{
+		mRow = (mMask.Row(inY+mOy) + mComponentOffset) + mPixelStride*inX;
+	}
+	inline uint8 Mask(uint8 inAlpha) const
+	{
+		inAlpha = (inAlpha * (*mRow) ) >> 8;
+		mRow += mPixelStride;
+		return inAlpha;
+	}
+	inline ARGB Mask(ARGB inRGB) const
+	{
+		inRGB.a = (inRGB.a * (*mRow) ) >> 8;
+		mRow += mPixelStride;
+		return inRGB;
+	}
+
+	const BitmapCache &mMask;
+	mutable const uint8 *mRow;
+	int mOx,mOy;
+	int mComponentOffset;
+	int mPixelStride;
+};
+
+template<typename PIXEL>
+struct ImageSource
+{
+	typedef PIXEL Pixel;
+
+	ImageSource(const uint8 *inBase, int inStride, PixelFormat inFmt)
+	{
+		mBase = inBase;
+		mStride = inStride;
+		mFormat = inFmt;
+	}
+
+	inline void SetPos(int inX,int inY) const
+	{
+		mPos = ((const PIXEL *)( mBase + mStride*inY)) + inX;
+	}
+	inline const Pixel &Next() const { return *mPos++; }
+
+	bool ShouldSwap(PixelFormat inFormat) const
+	{
+		return (inFormat & pfSwapRB) != (mFormat & pfSwapRB);
+	}
+
+
+	mutable const PIXEL *mPos;
+	int   mStride;
+	const uint8 *mBase;
+	PixelFormat mFormat;
+};
+
+
+
+struct TintSource
+{
+	typedef ARGB Pixel;
+
+	TintSource(const uint8 *inBase, int inStride, int inCol)
+	{
+		mBase = inBase;
+		mStride = inStride;
+		mCol = ARGB(inCol);
+	}
+
+	inline void SetPos(int inX,int inY) const
+	{
+		mPos = ((const uint8 *)( mBase + mStride*inY)) + inX;
+	}
+	inline const ARGB &Next() const
+	{
+		mCol.a =  *mPos++;
+		return mCol;
+	}
+	bool ShouldSwap(PixelFormat inFormat) const
+	{
+		if (inFormat & pfSwapRB)
+			mCol.SwapRB();
+		return false;
+	}
+
+	mutable ARGB mCol;
+	mutable const uint8 *mPos;
+	int   mStride;
+	const uint8 *mBase;
+};
+
+
+template<typename PIXEL>
+struct ImageDest
+{
+	typedef PIXEL Pixel;
+
+	ImageDest(const RenderTarget &inTarget) : mTarget(inTarget) { }
+
+	inline void SetPos(int inX,int inY) const
+	{
+		mPos = ((PIXEL *)mTarget.Row(inY)) + inX;
+	}
+	inline Pixel &Next() const { return *mPos++; }
+
+	PixelFormat Format() const { return mTarget.format; }
+
+	const RenderTarget &mTarget;
+	mutable PIXEL *mPos;
+};
+
+
+template<bool SWAP_RB, bool DEST_ALPHA, typename DEST, typename SRC, typename MASK>
+void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
+			   int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
+{
+	for(int y=0;y<inSrcRect.h;y++)
+	{
+		outDest.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
+		inMask.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
+		inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
+	   for(int x=0;x<inSrcRect.w;x++)
+			outDest.Next().Blend<SWAP_RB,DEST_ALPHA>(inMask.Mask(inSrc.Next()));
+	}
+}
+
+template<typename DEST, typename SRC, typename MASK>
+void TBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
+			   int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
+{
+   bool swap = inSrc.ShouldSwap(outDest.Format());
+   bool dest_alpha = outDest.Format() & pfHasAlpha;
+
+	if (inMode==bmNormal)
+	{
+		if (swap)
+		{
+			if (dest_alpha)
+				TTBlit<true,true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect,inMode);
+			else
+				TTBlit<true,false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect,inMode);
+		}
+		else
+		{
+			if (dest_alpha)
+				TTBlit<false,true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect,inMode);
+			else
+				TTBlit<false,false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect,inMode);
+		}
+	}
+}
+
+
+
+template<typename DEST, typename SRC, typename MASK>
+void TBlitAlpha( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
+			   int inX, int inY, const Rect &inSrcRect)
+{
+	for(int y=0;y<inSrcRect.h;y++)
+	{
+		outDest.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
+		inMask.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
+		inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
+	   for(int x=0;x<inSrcRect.w;x++)
+			BlendAlpha(outDest.Next(),inMask.Mask(inSrc.Next()));
+	}
+
+}
+
+
 void SimpleSurface::BlitTo(const RenderTarget &outDest,
 							const Rect &inSrcRect,int inPosX, int inPosY,
 							BlendMode inBlend, const BitmapCache *inMask,
@@ -97,299 +291,76 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
 	if (src_rect.HasPixels())
 	{
-      bool dest_alpha = (outDest.format & pfHasAlpha);
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;
-		bool is_alpha = mPixelFormat==pfAlpha;
-      bool swap   = (mPixelFormat & pfSwapRB) != (outDest.format & pfSwapRB);
-      bool do_memcpy = !is_alpha && !(mPixelFormat & pfHasAlpha) && !swap && !inMask;
 
-		ARGB col(inTint);
-		if (swap)
-			std::swap(col.c0,col.c2);
+		bool src_alpha = mPixelFormat==pfAlpha;
+		bool dest_alpha = outDest.format==pfAlpha;
 
-		if (!inMask)
-      {
-			if (outDest.format!=pfAlpha)
-			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
-					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = *src++;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = *src++;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					/*
-					else if (inUseSrcAlphaOnly)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = src++ -> a;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = src++ -> a;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					*/
-					else if (do_memcpy)
-						memcpy(dest,src, (src_rect.w)*4 );
-					else if (swap)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-								(dest++)->Blend<true,true>(*src++);
-						else
-							for(int x=0;x<src_rect.w;x++)
-								(dest++)->Blend<true,false>(*src++);
-					}
-					else
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-								(dest++)->Blend<false,true>(*src++);
-						else
-							for(int x=0;x<src_rect.w;x++)
-								(dest++)->Blend<false,false>(*src++);
-					}
-				}
-			}
-			else
-			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,*src++);
-					}
-					else
-					{
-						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,(src++)->a);
-					}
-				}
-			}
-		}
-		else if (inMask && inMask->Format()==pfAlpha)
+		// Blitting to alpha image - can ignore blend mode
+		if (dest_alpha)
 		{
-			if (outDest.format!=pfAlpha)
+			if (inMask)
 			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-			      const uint8 *mask = inMask->Row(y+dy)+dx;
-					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
-					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = (*src++ * *mask++)>>8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = (*src++ * *mask++)>>8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					/*
-					else if (inUseSrcAlphaOnly)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = ((src++ -> a) * *mask++)>>8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = ((src++ -> a) * *mask++)>>8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					*/
-					else if (swap)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* *mask++) >> 8;
-								(dest++)->Blend<true,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* *mask++) >> 8;
-								(dest++)->Blend<true,false>(col);
-							}
-					}
-					else
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* *mask++) >> 8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* *mask++) >> 8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-				}
+			   if (src_alpha)
+				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						   ImageMask(*inMask), dx, dy, src_rect );
+				else
+				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+						   ImageMask(*inMask), dx, dy, src_rect );
 			}
 			else
 			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-			      const uint8 *mask = inMask->Row(y+dy)+dx;
-					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,(*src++ * *mask++)>>8);
-					}
-					else
-					{
-						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,( ((src++)->a) * *mask++) >> 8);
-					}
-				}
+			   if (src_alpha)
+				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						   NullMask(), dx, dy, src_rect );
+				else
+				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+						   NullMask(), dx, dy, src_rect );
 			}
-		}
-		else if (inMask)
-		{
-			if (outDest.format!=pfAlpha)
-			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-			      ARGB *mask = (ARGB *)inMask->Row(y+dy) + dx;
-					ARGB *dest = (ARGB *)outDest.Row(y+dy) + dx;
-					const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = (*src++ * (mask++ -> a))>>8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = (*src++ * (mask++ -> a))>>8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					/*
-					else if (inUseSrcAlphaOnly)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = ((src++ -> a) * (mask++ -> a))>>8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								col.a = ((src++ -> a) * (mask++ -> a))>>8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-					*/
-					else if (swap)
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* (mask++ ->a)) >> 8;
-								(dest++)->Blend<true,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* (mask++ ->a)) >> 8;
-								(dest++)->Blend<true,false>(col);
-							}
-					}
-					else
-					{
-						if (dest_alpha)
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* (mask++ -> a)) >> 8;
-								(dest++)->Blend<false,true>(col);
-							}
-						else
-							for(int x=0;x<src_rect.w;x++)
-							{
-								ARGB col = *src++;
-								col.a = (col.a* (mask++ -> a)) >> 8;
-								(dest++)->Blend<false,false>(col);
-							}
-					}
-				}
-			}
-			else
-			{
-				for(int y=0;y<src_rect.h;y++)
-				{
-			      ARGB *mask = (ARGB *)inMask->Row(y+dy) + dx;
-					Uint8 *dest = (Uint8 *)outDest.Row(y+dy) + dx;
-					if (is_alpha)
-					{
-						const Uint8 *src = (const Uint8 *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,(*src++ * (mask++ ->a))>>8);
-					}
-					else
-					{
-						const ARGB *src = (const ARGB *)(mBase + (y+src_rect.y)*mStride) + src_rect.x;
-						for(int x=0;x<src_rect.w;x++)
-							BlendAlpha(*dest++,( ((src++)->a) * (mask++ ->a)) >> 8);
-					}
-				}
-			}
+			return;
 		}
 
+		bool tint = inBlend==bmTinted;
+		if (tint)
+			inBlend = bmNormal;
+
+		if (inMask)
+		{
+			if (tint)
+			{
+				TBlit( ImageDest<ARGB>(outDest), TintSource(mBase,mStride,inTint),
+						ImageMask(*inMask), dx, dy, src_rect, inBlend );
+			}
+			else if (src_alpha)
+			{
+				TBlit( ImageDest<ARGB>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						ImageMask(*inMask), dx, dy, src_rect, inBlend );
+			}
+			else
+			{
+				TBlit( ImageDest<ARGB>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+							ImageMask(*inMask), dx, dy, src_rect, inBlend );
+			}
+		}
+		else
+		{
+			if (tint)
+			{
+				TBlit( ImageDest<ARGB>(outDest), TintSource(mBase,mStride,inTint),
+						NullMask(), dx, dy, src_rect, inBlend );
+			}
+			else if (src_alpha)
+			{
+				TBlit( ImageDest<ARGB>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						NullMask(), dx, dy, src_rect, inBlend );
+			}
+			else
+			{
+				TBlit( ImageDest<ARGB>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+						NullMask(), dx, dy, src_rect, inBlend );
+			}
+		}
 	}
 }
 

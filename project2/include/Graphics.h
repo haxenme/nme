@@ -396,6 +396,8 @@ public:
    Rect GetRect() const { return mRect.Translated(mTX,mTY); }
 
    const uint8 *Row(int inRow) const;
+	int GetTX() const { return mTX; }
+	int GetTY() const { return mTX; }
 
 private:
    int        mTX,mTY;
