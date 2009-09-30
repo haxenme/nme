@@ -88,7 +88,7 @@ struct NullMask
 struct ImageMask
 {
 	ImageMask(const BitmapCache &inMask) :
-		mMask(inMask), mOx(-inMask.GetTX()), mOy(-inMask.GetTY())
+		mMask(inMask), mOx(-inMask.GetTX()-mMask.GetRect().x), mOy(-inMask.GetTY()-mMask.GetRect().y)
 	{
 		if (mMask.Format()==pfAlpha)
 		{
@@ -105,7 +105,7 @@ struct ImageMask
 
 	inline void SetPos(int inX,int inY) const
 	{
-		mRow = (mMask.Row(inY+mOy) + mComponentOffset) + mPixelStride*inX;
+		mRow = (mMask.Row(inY) + mComponentOffset) + mPixelStride*(inX);
 	}
 	inline uint8 Mask(uint8 inAlpha) const
 	{
@@ -163,20 +163,32 @@ struct TintSource
 {
 	typedef ARGB Pixel;
 
-	TintSource(const uint8 *inBase, int inStride, int inCol)
+	TintSource(const uint8 *inBase, int inStride, int inCol,PixelFormat inFormat)
 	{
 		mBase = inBase;
 		mStride = inStride;
 		mCol = ARGB(inCol);
+      if (inFormat==pfAlpha)
+		{
+			mComponentOffset = 0;
+			mPixelStride = 1;
+		}
+		else
+		{
+			ARGB tmp;
+			mComponentOffset = (uint8 *)&tmp.a - (uint8 *)&tmp;
+			mPixelStride = 4;
+		}
 	}
 
 	inline void SetPos(int inX,int inY) const
 	{
-		mPos = ((const uint8 *)( mBase + mStride*inY)) + inX;
+		mPos = ((const uint8 *)( mBase + mStride*inY)) + inX*mPixelStride + mComponentOffset;
 	}
 	inline const ARGB &Next() const
 	{
-		mCol.a =  *mPos++;
+		mCol.a =  *mPos;
+		mPos+=mPixelStride;
 		return mCol;
 	}
 	bool ShouldSwap(PixelFormat inFormat) const
@@ -188,6 +200,8 @@ struct TintSource
 
 	mutable ARGB mCol;
 	mutable const uint8 *mPos;
+   int   mComponentOffset;
+   int   mPixelStride;
 	int   mStride;
 	const uint8 *mBase;
 };
@@ -219,8 +233,8 @@ void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
 {
 	for(int y=0;y<inSrcRect.h;y++)
 	{
-		outDest.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
-		inMask.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
+		outDest.SetPos(inX , inY + y );
+		inMask.SetPos(inX , inX + y );
 		inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
 	   for(int x=0;x<inSrcRect.w;x++)
 			outDest.Next().Blend<SWAP_RB,DEST_ALPHA>(inMask.Mask(inSrc.Next()));
@@ -300,65 +314,73 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 		// Blitting to alpha image - can ignore blend mode
 		if (dest_alpha)
 		{
+         ImageDest<uint8> dest(outDest);
 			if (inMask)
 			{
 			   if (src_alpha)
-				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+				   TBlitAlpha(dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
 						   ImageMask(*inMask), dx, dy, src_rect );
 				else
-				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+				   TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
 						   ImageMask(*inMask), dx, dy, src_rect );
 			}
 			else
 			{
 			   if (src_alpha)
-				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
+				   TBlitAlpha(dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
 						   NullMask(), dx, dy, src_rect );
 				else
-				   TBlitAlpha(ImageDest<uint8>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+				   TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
 						   NullMask(), dx, dy, src_rect );
 			}
 			return;
 		}
 
+      ImageDest<ARGB> dest(outDest);
 		bool tint = inBlend==bmTinted;
+
+      // Blitting tint, we can ignore blend mode too (this is used for rendering text)
 		if (tint)
-			inBlend = bmNormal;
+      {
+         TintSource src(mBase,mStride,inTint,mPixelFormat);
+         if (inMask)
+		   {
+				TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmNormal );
+			}
+         else
+		   {
+				TBlit( dest, src, NullMask(), dx, dy, src_rect, bmNormal );
+			}
+         return;
+      }
+
 
 		if (inMask)
 		{
-			if (tint)
+         ImageMask mask(*inMask);
+			if (src_alpha)
 			{
-				TBlit( ImageDest<ARGB>(outDest), TintSource(mBase,mStride,inTint),
-						ImageMask(*inMask), dx, dy, src_rect, inBlend );
-			}
-			else if (src_alpha)
-			{
-				TBlit( ImageDest<ARGB>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
-						ImageMask(*inMask), dx, dy, src_rect, inBlend );
+				TBlit( dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						mask, dx, dy, src_rect, inBlend );
 			}
 			else
 			{
-				TBlit( ImageDest<ARGB>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
-							ImageMask(*inMask), dx, dy, src_rect, inBlend );
+				TBlit( dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+							mask, dx, dy, src_rect, inBlend );
 			}
 		}
 		else
 		{
-			if (tint)
+         NullMask mask;
+			if (src_alpha)
 			{
-				TBlit( ImageDest<ARGB>(outDest), TintSource(mBase,mStride,inTint),
-						NullMask(), dx, dy, src_rect, inBlend );
-			}
-			else if (src_alpha)
-			{
-				TBlit( ImageDest<ARGB>(outDest), ImageSource<uint8>(mBase,mStride,mPixelFormat),
-						NullMask(), dx, dy, src_rect, inBlend );
+				TBlit( dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
+						mask, dx, dy, src_rect, inBlend );
 			}
 			else
 			{
-				TBlit( ImageDest<ARGB>(outDest), ImageSource<ARGB>(mBase,mStride,mPixelFormat),
-						NullMask(), dx, dy, src_rect, inBlend );
+				TBlit( dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
+						mask, dx, dy, src_rect, inBlend );
 			}
 		}
 	}

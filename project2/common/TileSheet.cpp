@@ -3,12 +3,12 @@
 #include <algorithm>
 
 
-TileSheet::TileSheet(int inWidth,int inHeight, bool inInitRef) : Object(inInitRef)
+TileSheet::TileSheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitRef) : Object(inInitRef)
 {
 	mCurrentX = 0;
 	mCurrentY = 0;
 	mMaxHeight = 0;
-	mSheet = new SimpleSurface(inWidth,inHeight,pfARGB);
+	mSheet = new SimpleSurface(inWidth,inHeight,inFormat);
 
 }
 

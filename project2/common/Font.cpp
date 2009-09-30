@@ -58,7 +58,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 				int w = h;
 				while(w<gw)
 					w*=2;
-            TileSheet *sheet = new TileSheet(w,h,true);
+            TileSheet *sheet = new TileSheet(w,h,pfAlpha,true);
 				mCurrentSheet = mSheets.size();
 				mSheets.push_back(sheet);
 			}
@@ -83,9 +83,9 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 		{
 			for(int y=0; y<target.mRect.h; y++)
 			{
-            uint32  *dest = (uint32 *)target.Row(y + target.mRect.y) + target.mRect.x;
+            uint8  *dest = (uint8 *)target.Row(y + target.mRect.y) + target.mRect.x;
 			   for(int x=0; x<target.mRect.w; x++)
-					*dest++ = 0xffffffff;
+					*dest++ = 0xff;
 			}
 		}
 		else

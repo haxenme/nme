@@ -15,7 +15,7 @@ struct Tile
 class TileSheet : public Object
 {
 public:
-   TileSheet(int inWidth,int inHeight, bool inInitRef=false);
+   TileSheet(int inWidth,int inHeight,PixelFormat inFormat,bool inInitRef=false);
 	TileSheet *IncRef() { Object::IncRef(); return this; }
 
 	int AllocRect(int inW,int inH,float inOx = 0, float inOY = 0);

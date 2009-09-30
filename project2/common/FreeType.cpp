@@ -81,7 +81,7 @@ public:
 		for(int r=0;r<h;r++)
       {
          unsigned char *row = bitmap.buffer + r*bitmap.pitch;
-         uint32  *dest = (uint32 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x;
+         uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x;
 
          if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
          {
@@ -94,14 +94,14 @@ public:
                   bit = 128;
                   data = *row++;
                }
-               *dest++ =  (data & bit) ? 0xffffffff : 0x00000000;
+               *dest++ =  (data & bit) ? 0xff: 0x00;
                bit >>= 1;
             }
          }
          else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
          {
             for(int x=0;x<w;x++)
-               *dest ++ = 0xffffff | ( (*row++) << 24 );
+               *dest ++ = *row++;
          }
       }
 	}

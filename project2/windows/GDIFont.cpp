@@ -75,9 +75,9 @@ public:
 		for(int y=0;y<outTarget.mRect.h;y++)
 		{
          ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
-         uint32  *dest = (uint32 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
+         uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
 		   for(int x=0;x<outTarget.mRect.w;x++)
-				*dest++= (src++)->c1 ? 0xffffffff : 0x00;
+				*dest++= (src++)->c1 ? 0xff: 0x00;
 		}
 
 	}
