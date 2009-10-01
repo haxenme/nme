@@ -53,10 +53,13 @@ public:
          SDL_UnlockSurface(mSurf);
    }
 
-   void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-                       uint32 inTint,bool inUseSrcAlphaOnly,const BitmapCache *inMask)
+   void BlitTo(const RenderTarget &outTarget,
+               const Rect &inSrcRect,int inPosX, int inPosY,
+               BlendMode inBlend, const BitmapCache *inMask,
+               uint32 inTint=0xffffff )
    {
    }
+
 
    SDL_Surface *mSurf;
    bool  mDelete;

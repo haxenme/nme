@@ -132,7 +132,7 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
       return;
 
    RenderTarget t = inTarget.ClipRect( inState.mClipRect );
-   mBitmapCache->Render(inTarget,inState.mMask);
+   mBitmapCache->Render(inTarget,inState.mMask,blendMode);
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -686,7 +686,7 @@ bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, c
 }
 
 
-void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask)
+void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend)
 {
    if (mBitmap)
    {
@@ -695,7 +695,7 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask)
          tint = 0;
 
       // TX,TX is se in StillGood function
-      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,bmNormal,inMask,tint);
+      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
    }
 }
 

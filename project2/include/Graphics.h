@@ -389,7 +389,7 @@ public:
 
    bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
 
-   void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask);
+   void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend);
 
 	PixelFormat Format() const;
 

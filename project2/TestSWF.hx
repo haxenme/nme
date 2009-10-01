@@ -45,6 +45,7 @@ static function CreateTwo()
    var colors =[0xFF0000, 0x0000FF];
    gfx.beginGradientFill(fillType, colors, alphas, ratios, matr, spreadMethod);  
    gfx.drawCircle(50,50,44);
+   obj.alpha = 0.5;
 
    return obj;
 }
