@@ -292,6 +292,17 @@ void TBlitAlpha( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
 
 }
 
+static uint8 sgClamp0255Values[256*3];
+static uint8 *sgClamp0255;
+int InitClamp()
+{
+	sgClamp0255 = sgClamp0255Values + 256;
+	for(int i=-255; i<255+255;i++)
+		sgClamp0255[i] = i<0 ? 0 : i>255 ? 255 : i;
+	return 0;
+}
+static int init_clamp = InitClamp();
+
 typedef void (*BlendFunc)(ARGB &ioDest, ARGB inSrc);
 
 template<bool SWAP, bool DEST_ALPHA,typename FUNC>
@@ -303,15 +314,17 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
    ARGB val = inSrc;
    if (!DEST_ALPHA || ioDest.a>0)
    {
-      F(val,ioDest);
+      F(val.c0,ioDest.c0);
+      F(val.c1,ioDest.c1);
+      F(val.c2,ioDest.c2);
    }
    if (DEST_ALPHA || ioDest.a<255)
    {
       int A = ioDest.a + (ioDest.a>>7);
       int A_ = 256-A;
-      val.c0 = (val.c0 *A + inSrc.c2*A_)>>8;
+      val.c0 = (val.c0 *A + inSrc.c0*A_)>>8;
       val.c1 = (val.c1 *A + inSrc.c1*A_)>>8;
-      val.c2 = (val.c2 *A + inSrc.c0*A_)>>8;
+      val.c2 = (val.c2 *A + inSrc.c2*A_)>>8;
    }
    if (inSrc.a==255)
    {
@@ -326,63 +339,95 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
 }
 
 
+// --- Multiply -----
 
 struct DoMult
 {
-   inline void operator()(ARGB &ioVal,ARGB inDest) const
-   {
-    ioVal.c0 = (inDest.c0 * ( ioVal.c0 + (ioVal.c0>>7)))>>8;
-    ioVal.c1 = (inDest.c1 * ( ioVal.c1 + (ioVal.c1>>7)))>>8;
-    ioVal.c2 = (inDest.c2 * ( ioVal.c2 + (ioVal.c2>>7)))>>8;
-   }
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+     { ioVal = (inDest * ( ioVal + (ioVal>>7)))>>8; }
 };
 
 template<bool SWAP, bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoMult()); }
 
+// --- Screen -----
+
 struct DoScreen
 {
-   inline void operator()(ARGB &ioVal,ARGB inDest) const
-   {
-    ioVal.c0 = 255 - ((255 - inDest.c0) * ( 256 - ioVal.c0 - (ioVal.c0>>7)))>>8;
-    ioVal.c1 = 255 - ((255 - inDest.c1) * ( 256 - ioVal.c1 - (ioVal.c1>>7)))>>8;
-    ioVal.c2 = 255 - ((255 - inDest.c2) * ( 256 - ioVal.c2 - (ioVal.c2>>7)))>>8;
-   }
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+     { ioVal = 255 - ((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8; }
 };
-
 
 template<bool SWAP, bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
 
-template<bool SWAP, bool DEST_ALPHA> void LightenFunc(ARGB &ioDest, ARGB inSrc)
+// --- Lighten -----
+
+struct DoLighten
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { if (inDest > ioVal ) ioVal = inDest; }
+};
+
+template<bool SWAP, bool DEST_ALPHA> void LightenFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoLighten()); }
+
+// --- Darken -----
+
+struct DoDarken
+{
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { if (inDest < ioVal ) ioVal = inDest; }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void DarkenFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoDarken()); }
+
+// --- Difference -----
+
+struct DoDifference
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { if (inDest < ioVal ) ioVal -= inDest; else ioVal = inDest-ioVal; }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void DifferenceFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoDifference()); }
+
+// --- Add -----
+
+struct DoAdd
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { ioVal = sgClamp0255[ioVal+inDest]; }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void AddFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoAdd()); }
+
+// --- Subtract -----
+
+struct DoSubtract
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { ioVal = sgClamp0255[inDest-ioVal]; }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void SubtractFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoSubtract()); }
+
+// --- Invert -----
+
+struct DoInvert
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { ioVal = 255 - inDest; }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void InvertFunc(ARGB &ioDest, ARGB inSrc)
-{
-   ioDest = inSrc;
-}
+   { BlendFuncWithAlpha<false,DEST_ALPHA>(ioDest,inSrc,DoInvert()); }
+
+// --- Alpha -----
 
 template<bool SWAP, bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
 {
@@ -390,21 +435,35 @@ template<bool SWAP, bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
       ioDest.a = (ioDest.a * ( inSrc.a + (inSrc.a>>7))) >> 8;
 }
 
+// --- Erase -----
+
 template<bool SWAP, bool DEST_ALPHA> void EraseFunc(ARGB &ioDest, ARGB inSrc)
 {
    if (DEST_ALPHA)
       ioDest.a = (ioDest.a * ( 256-inSrc.a - (inSrc.a>>7))) >> 8;
 }
 
-template<bool SWAP, bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
+// --- Overlay -----
+
+struct DoOverlay
 {
-   ioDest = inSrc;
-}
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { if (inDest>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
+};
+
+template<bool SWAP, bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoOverlay()); }
+
+// --- HardLight -----
+
+struct DoHardLight
+{
+   inline void operator()(uint8 &ioVal,uint8 inDest) const
+   { if (ioVal>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
+};
 
 template<bool SWAP, bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
-{
-   ioDest = inSrc;
-}
+   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
 
 
 #define BLEND_METHOD(blend) blend<false,false>, blend<false,true>, blend<true,false>, blend<true,true>,
