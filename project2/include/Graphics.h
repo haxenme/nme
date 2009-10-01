@@ -322,8 +322,6 @@ struct TriangleData : IRenderData
 // ----------------------------------------------------------------------
 
 
-// Blender = blend mode + (colour transform + alpha)
-
 enum BlendMode
 {
    bmNormal,
@@ -347,6 +345,32 @@ enum BlendMode
 
 class ColorTransform
 {
+public:
+	ColorTransform() :
+		redScale(1), redOffset(0),
+		greenScale(1), greenOffset(0),
+		blueScale(1), blueOffset(0) { }
+
+	uint32 Transform(uint32 inValue);
+
+	ColorTransform &Concat(const ColorTransform &inRHS);
+
+	inline bool IsIdentityColour()
+	{
+		return redScale==1 && greenScale==1 && blueScale==1 &&
+		       redOffset==0 && greenOffset==0 && blueOffset==0;
+	}
+	inline bool IsIdentityAlpha()
+	{
+		return alphaScale==1 && alphaOffset == 0;
+	}
+	inline bool IsIdentity() { return IsIdentityAlpha() && IsIdentityColour(); }
+
+
+	const uint8 *GetRedLUT() const;
+	const uint8 *GetGreenLUT() const;
+	const uint8 *GetBlueLUT() const;
+
    double redScale, redOffset;
    double greenScale, greenOffset;
    double blueScale, blueOffset;
@@ -416,18 +440,18 @@ struct RenderState
 
 	// Spatial Transform
 	Transform      mTransform;
+	// Colour transform
+   ColorTransform mColourTrans;
+	const uint8 *mC0_LUT;
+	const uint8 *mC1_LUT;
+	const uint8 *mC2_LUT;
+	const uint8 *mAlpha_LUT;
 
 	// Viewport
    Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
 
-	// Colour transform
-   double         mAlpha;
-   ColorTransform mColourTrans;
-   BlendMode      mBlendMode;
-
 	bool           mBitmapPhase;
-
 	// Masking...
 	class BitmapCache    *mMask;
 };
@@ -435,16 +459,6 @@ struct RenderState
 
 typedef QuickVec<IRenderData *> RenderData;
 
-
-/*
-struct Tile
-{
-   Surface *mData;
-   Rect     mRect;
-	double   mX0;
-	double   mY0;
-};
-*/
 
 
 struct HardwareContext;

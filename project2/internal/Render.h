@@ -125,9 +125,25 @@ void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inD
 }
 
 
-template<bool SWAP_RB>
+template<bool SWAP_RB,bool ALPHA_LUT=false,bool COLOUR_LUT=false>
 struct NormalBlender
 {
+	const uint8 *mAlpha_LUT;
+	const uint8 *mC0_LUT;
+	const uint8 *mC1_LUT;
+	const uint8 *mC2_LUT;
+
+	NormalBlender(const RenderState &inState,bool inSwapRB=false)
+	{
+		if (ALPHA_LUT)
+         mAlpha_LUT = inState.mAlpha_LUT;
+		if (COLOUR_LUT)
+		{
+			mC0_LUT = inSwapRB ? inState.mC2_LUT : inState.mC0_LUT;
+			mC1_LUT = inState.mC1_LUT;
+			mC2_LUT = inSwapRB ? inState.mC0_LUT : inState.mC2_LUT;
+		}
+	}
    template<bool DEST_ALPHA,typename DEST, typename SRC>
    void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
@@ -149,152 +165,6 @@ struct NormalBlender
    }
 };
 
-template<bool SWAP_RB>
-struct NormalBlenderAlphaLut
-{
-   NormalBlenderAlphaLut(const Uint8 *inLUT) : mAlphaLut(inLUT) { }
-   const Uint8 *mAlphaLut;
-
-   template<bool DEST_ALPHA,typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
-   {
-      ARGB src = inSrc.GetInc();
-      src.a = mAlphaLut[inAlpha];
-      ARGB dest = inDest.Get();
-      dest.Blend<SWAP_RB,DEST_ALPHA>(src);
-      inDest.SetInc(dest);
-   }
-   template<typename DEST, typename SRC>
-   void BlendNoAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
-   {
-      Blend<false>(inDest,inSrc);
-   }
-   template<typename DEST, typename SRC>
-   void BlendAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
-   {
-      Blend<true>(inDest,inSrc);
-   }
-};
-
-
-# if 0
-// 4 of these
-template<bool ALPHA_LUT, bool DEST_HAS_ALPHA>
-struct NormalBlender
-{
-   int *mAlphaLut;
-   template<typename DEST, typename SRC>
-
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
-   {
-      ARGB col = ALPHA_LUT ? inSrc.GetInc(mAlphaLut[inAlpha]) : inSrc.GetInc(inAlpha);
-      if (col.a>250)
-         inDest.SetInc(col);
-      else
-      {
-         ARGB dest = inDest.Get();
-         if (dest.a<5)
-            inDest.SetInc(col);
-         else
-         {
-            // Alpha blend...
-            inDest.SetInc(col);
-         }
-      }
-   }
-};
-
-
-// 2 of these
-template<bool AlphaLUT>
-struct CopyBlender
-{
-   template<typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
-   {
-      inDest.SetInc( inSrc.GetInc(inAlpha) );
-   }
-};
-
-
-// 1 of these
-struct SpecialBlender
-{
-   SpecialBlender(inBlendMode, inDestHasAlpha, bool inReverseRGB );
-   BlendFunc *mFunc;
-   template<typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
-   {
-      inDest.SetInc( mFunc(inSrc.GetInc(inAlpha), inDest.Get(in)) );
-   }
-};
-
-// 3 types of these ...
-template<bool ALPHA_LUT, bool COLOUR_TRANS>
-struct SpecialTransformBlender
-{
-   BlendFunc *mFunc;
-   AlphaLUT  *mAlphaLUT;
-   ColourTransform mTransform;
-
-   template<typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha)
-   {
-   }
-};
-
-// 10 different blenders - too many?
-
-
-
-class BitmapFillRenderer
-{
-   void Render(AlphaMask *inAlpha, RenderTarget *inTarget, RenderState &inState)
-   {
-      // 4 * renderes
-      if (!inTarget->IsMainRGBORder() || inState.HasColourTransform())
-      {
-         if (inState.HasAlphaTransform())
-            if (inState.HasColourTransform())
-            else (inState.HasColourTransform())
-        else (inState.HasAlphaTransform())
-            if (inState.HasColourTransform())
-            else (inState.HasColourTransform())
-      }
-
-      if (alpha)
-      {
-         switch(inState.mBlendMode)
-         {
-            case bmCopy : Render(inAlpha, *this, inTarget, CopyBlender() ); break;
-            case bmNormal : Render(inAlpha, *this, inTarget, NormalBlender<false>() ); break;
-            default:
-                Render(inAlpha, *this, inTarget, SpecialBlender(inState.mBlendMode,outDest.HasAlpha(),false) );
-         }
-      }
-      else
-      {
-         switch(inState.mBlendMode)
-         {
-            case bmCopy : Render(inAlpha, *this, inTarget, CopyBlender() ); break;
-            case bmNormal : Render(inAlpha, *this, inTarget, NormalBlender<false>() ); break;
-            default:
-                Render(inAlpha, *this, inTarget, SpecialBlender(inState.mBlendMode,outDest.HasAlpha(),false) );
-         }
-      }
-   }
-
-   ARGB GetPixel()
-   {
-      DoGetPixel();
-   }
-
-   ARGB mColour;
-   ARGB mMatchingColour;
-};
-
-
-#endif
 
 
 #endif

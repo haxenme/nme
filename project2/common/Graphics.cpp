@@ -341,9 +341,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 
 RenderState::RenderState(Surface *inSurface,int inAA)
 {
-	mAlpha = 1.0;
 	mTransform.mAAFactor = inAA;
-	mBlendMode = bmNormal;
 	mMask = 0;
 	mBitmapPhase = false;
 	if (inSurface)

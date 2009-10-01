@@ -178,7 +178,7 @@ public:
 	void DoRender(const AlphaMask &inMask,
 					const RenderTarget &inTarget, const RenderState &inState, int inTX,int inTY)
 	{
-		Render( inMask, *this, inTarget, NormalBlender<false>(), inState, inTX,inTY );
+		Render( inMask, *this, inTarget, NormalBlender<false>(inState), inState, inTX,inTY );
 	}
 };
 
@@ -313,7 +313,7 @@ public:
 	void DoRender(const AlphaMask &inMask,
 					const RenderTarget &inTarget, const RenderState &inState, int inTX,int inTY)
 	{
-		Render( inMask, *this, inTarget, NormalBlender<false>(), inState, inTX,inTY );
+		Render( inMask, *this, inTarget, NormalBlender<false>(inState), inState, inTX,inTY );
 	}
 
 
