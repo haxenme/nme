@@ -21,7 +21,7 @@ public:
 		else
 			mFillRGB = mRGB;
 
-		Render( mAlphaMask, *this, inTarget, NormalBlender<false>(inState), inState, inTX,inTY );
+		RenderBlend( mAlphaMask, *this, inTarget, NormalBlender<false>(inState), inState, inTX,inTY );
 	}
 
 	ARGB mRGB;

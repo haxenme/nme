@@ -107,22 +107,6 @@ struct DestSurface32
 };
 
 
-// 1, 2 ro 3 of these
-template<typename SOURCE_, typename BLEND_>
-void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest, const BLEND_ &inBlend,
-            const RenderState &inState, int inTX, int inTY)
-{
-   if (inDest.format & pfHasAlpha)
-   {
-      DestSurface32<true> dest(inDest);
-      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
-   }
-   else
-   {
-      DestSurface32<false> dest(inDest);
-      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
-   }
-}
 
 
 template<bool SWAP_RB,bool ALPHA_LUT=false,bool COLOUR_LUT=false>
@@ -148,7 +132,16 @@ struct NormalBlender
    void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
       ARGB src = inSrc.GetInc();
-      src.a = (src.a * inAlpha)>>8;
+		if (ALPHA_LUT)
+         src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
+		else
+         src.a = (src.a * inAlpha)>>8;
+		if (COLOUR_LUT)
+		{
+			src.c0 = mC0_LUT[src.c0];
+			src.c1 = mC0_LUT[src.c1];
+			src.c2 = mC0_LUT[src.c2];
+		}
       ARGB dest = inDest.Get();
       dest.Blend<SWAP_RB,DEST_ALPHA>(src);
       inDest.SetInc(dest);
@@ -165,6 +158,57 @@ struct NormalBlender
    }
 };
 
+
+
+
+template<typename SOURCE_,typename BLEND_>
+void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
+				const BLEND_ &inBlend, const RenderState &inState, int inTX, int inTY)
+{
+   if (inDest.format & pfHasAlpha)
+   {
+      DestSurface32<true> dest(inDest);
+      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+   }
+   else
+   {
+      DestSurface32<false> dest(inDest);
+      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+   }
+}
+
+
+#define RENDER(SWAP_RB,ALPHA_TRANS,COL_TRANS) \
+   RenderBlend(inAlpha,inSource, inDest, NormalBlender<SWAP_RB,ALPHA_TRANS,COL_TRANS>(inState), inState, inTX, inTY)
+
+template<bool SWAP_RB_,typename SOURCE_>
+void RenderSwap(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
+				const RenderState &inState, int inTX, int inTY)
+{
+	if (inState.HasAlphaLUT() && inState.HasColourLUT())
+		RENDER(SWAP_RB_,true,true);
+	else if (inState.HasAlphaLUT() && !inState.HasColourLUT())
+		RENDER(SWAP_RB_,true,false);
+	else if (!inState.HasAlphaLUT() && inState.HasColourLUT())
+		RENDER(SWAP_RB_,false,true);
+	else
+		RENDER(SWAP_RB_,false,false);
+}
+
+
+template<typename SOURCE_>
+void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
+				bool inSwapRB, const RenderState &inState, int inTX, int inTY)
+{
+   if (inSwapRB)
+   {
+		RenderSwap<true>(inAlpha,inSource,inDest,inState,inTX,inTY);
+   }
+   else
+   {
+		RenderSwap<false>(inAlpha,inSource,inDest,inState,inTX,inTY);
+   }
+}
 
 
 #endif

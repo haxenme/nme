@@ -349,27 +349,31 @@ public:
 	ColorTransform() :
 		redScale(1), redOffset(0),
 		greenScale(1), greenOffset(0),
-		blueScale(1), blueOffset(0) { }
+		blueScale(1), blueOffset(0),
+		alphaScale(1), alphaOffset(0) { }
 
 	uint32 Transform(uint32 inValue);
 
-	ColorTransform &Concat(const ColorTransform &inRHS);
+	void Combine(const ColorTransform &inParent, const ColorTransform &inChild);
 
-	inline bool IsIdentityColour()
+	inline bool IsIdentityColour() const
 	{
 		return redScale==1 && greenScale==1 && blueScale==1 &&
 		       redOffset==0 && greenOffset==0 && blueOffset==0;
 	}
-	inline bool IsIdentityAlpha()
+	inline bool IsIdentityAlpha() const
 	{
 		return alphaScale==1 && alphaOffset == 0;
 	}
-	inline bool IsIdentity() { return IsIdentityAlpha() && IsIdentityColour(); }
+	inline bool IsIdentity() const { return IsIdentityAlpha() && IsIdentityColour(); }
+
+	static void TidyCache();
 
 
-	const uint8 *GetRedLUT() const;
-	const uint8 *GetGreenLUT() const;
-	const uint8 *GetBlueLUT() const;
+	const uint8 *GetAlphaLUT() const;
+	const uint8 *GetC0LUT() const;
+	const uint8 *GetC1LUT() const;
+	const uint8 *GetC2LUT() const;
 
    double redScale, redOffset;
    double greenScale, greenOffset;
@@ -438,10 +442,18 @@ struct RenderState
 {
 	RenderState(Surface *inSurface=0,int inAA=1);
 
+   void CombineColourTransform(const RenderState &inState,
+									const ColorTransform *inObjTrans,
+									ColorTransform *inBuf);
+
 	// Spatial Transform
 	Transform      mTransform;
+
 	// Colour transform
-   ColorTransform mColourTrans;
+	bool HasAlphaLUT() const { return mAlpha_LUT; }
+	bool HasColourLUT() const { return mC0_LUT; }
+
+   const ColorTransform *mColourTransform;
 	const uint8 *mC0_LUT;
 	const uint8 *mC1_LUT;
 	const uint8 *mC2_LUT;

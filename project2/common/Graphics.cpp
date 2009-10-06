@@ -339,11 +339,18 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 
 // --- RenderState -------------------------------------------------------------------
 
+ColorTransform sgIdentityColourTransform;
+
 RenderState::RenderState(Surface *inSurface,int inAA)
 {
 	mTransform.mAAFactor = inAA;
 	mMask = 0;
 	mBitmapPhase = false;
+	mAlpha_LUT = 0;
+	mC0_LUT = 0;
+	mC1_LUT = 0;
+	mC2_LUT = 0;
+	mColourTransform = &sgIdentityColourTransform;
 	if (inSurface)
 	{
 		mClipRect = Rect(inSurface->Width(),inSurface->Height());
@@ -351,6 +358,49 @@ RenderState::RenderState(Surface *inSurface,int inAA)
 	else
 		mClipRect = Rect(0,0);
 }
+
+
+
+void RenderState::CombineColourTransform(const RenderState &inState,
+													  const ColorTransform *inObjTrans,
+													  ColorTransform *inBuf)
+{
+	mAlpha_LUT = mColourTransform->IsIdentityAlpha() ? 0 : mColourTransform->GetAlphaLUT();
+	if (inObjTrans->IsIdentity())
+	{
+		mColourTransform = inState.mColourTransform;
+		mAlpha_LUT = inState.mAlpha_LUT;
+		mC0_LUT = inState.mC0_LUT;
+		mC1_LUT = inState.mC1_LUT;
+		mC2_LUT = inState.mC2_LUT;
+		return;
+	}
+
+	if (inObjTrans->IsIdentity())
+	{
+		mColourTransform = inState.mColourTransform;
+	}
+	else
+	{
+		mColourTransform = inBuf;
+		inBuf->Combine(*(inState.mColourTransform),*inObjTrans);
+	}
+
+	if (mColourTransform->IsIdentityColour())
+	{
+		mC0_LUT = 0;
+		mC1_LUT = 0;
+		mC2_LUT = 0;
+	}
+	else
+	{
+		mC0_LUT = mColourTransform->GetC0LUT();
+		mC1_LUT = mColourTransform->GetC1LUT();
+		mC2_LUT = mColourTransform->GetC2LUT();
+	}
+}
+
+
 
 // --- RenderTarget -------------------------------------------------------------------
 

@@ -7,6 +7,9 @@
 //  the blending code.
 
 
+extern bool gC0IsRed;
+
+
 enum PixelFormat
 {
    pfXRGB     = 0x00,
@@ -19,7 +22,6 @@ enum PixelFormat
    pfSwapRB   = 0x02,
 };
 
-extern bool sgC0IsRed;
 
 typedef unsigned char Uint8;
 
@@ -31,7 +33,7 @@ struct ARGB
    inline ARGB(int inRGBA)
    {
       c1 = (inRGBA>>8) & 0xff;
-      if (sgC0IsRed)
+      if (gC0IsRed)
       {
          c0 = (inRGBA>>16) & 0xff;
          c2 = (inRGBA) & 0xff;
@@ -46,7 +48,7 @@ struct ARGB
    inline ARGB(int inRGB,int inA)
    {
       c1 = (inRGB>>8) & 0xff;
-      if (sgC0IsRed)
+      if (gC0IsRed)
       {
          c0 = (inRGB>>16) & 0xff;
          c2 = (inRGB) & 0xff;
@@ -61,7 +63,7 @@ struct ARGB
    inline ARGB(int inRGB,float inA)
    {
       c1 = (inRGB>>8) & 0xff;
-      if (sgC0IsRed)
+      if (gC0IsRed)
       {
          c0 = (inRGB>>16) & 0xff;
          c2 = (inRGB) & 0xff;
@@ -80,7 +82,7 @@ struct ARGB
    inline void SetRGB(int inVal)
    {
       c1 = (inVal>>8) & 0xff;
-      if (sgC0IsRed)
+      if (gC0IsRed)
       {
          c0 = (inVal>>16) & 0xff;
          c2 = (inVal) & 0xff;
@@ -95,7 +97,7 @@ struct ARGB
    inline void SetRGBA(int inVal)
    {
       c1 = (inVal>>8) & 0xff;
-      if (sgC0IsRed)
+      if (gC0IsRed)
       {
          c0 = (inVal>>16) & 0xff;
          c2 = (inVal) & 0xff;

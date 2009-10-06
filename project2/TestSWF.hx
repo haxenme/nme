@@ -45,7 +45,6 @@ static function CreateTwo()
    var colors =[0xFF0000, 0x0000FF];
    gfx.beginGradientFill(fillType, colors, alphas, ratios, matr, spreadMethod);  
    gfx.drawCircle(50,50,44);
-   obj.alpha = 0.5;
 
    return obj;
 }
@@ -91,11 +90,43 @@ static function TestBlend(inStage:flash.display.DisplayObjectContainer)
    }
 }
 
+static function TestColourTrans(inStage:flash.display.DisplayObjectContainer)
+{
+   for(a in 0...3)
+	   for(b in 0...3)
+		{
+			var container = new flash.display.Sprite();
+			inStage.addChild(container);
+			container.x = (a*150);
+			container.y = (b*150);
+			var obj1 =  CreateOne();
+			container.addChild(obj1);
+			var obj2 =  CreateTwo();
+			obj2.x = (50);
+			obj2.y = (50);
+			container.addChild(obj2);
+			if (b==2)
+			{
+			   var t = new flash.geom.ColorTransform();
+				t.greenMultiplier = 0.2;
+				t.greenOffset = 128;
+				container.transform.colorTransform = t;
+			}
+			else if (b==1)
+			{
+			   var t = new flash.geom.ColorTransform();
+				t.redMultiplier = 2;
+				container.transform.colorTransform = t;
+			}
+			container.alpha = (a==0) ? 1 : (a==1) ? 0.6 : 0.3;
+		}
+}
 
 public static function main()
 {
    flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
-   TestBlend(flash.Lib.current);
+   //TestBlend(flash.Lib.current);
+   TestColourTrans(flash.Lib.current);
 }
 
 }

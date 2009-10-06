@@ -7,14 +7,14 @@ bool sgColourOrderSet = false;
 int sgC0Shift = 0;
 int sgC1Shift = 8;
 int sgC2Shift = 16;
-bool sgC0IsRed = true;
+bool gC0IsRed = true;
 
 void HintColourOrder(bool inRedFirst)
 {
    if (!sgColourOrderSet)
    {
       sgColourOrderSet = true;
-      sgC0IsRed = inRedFirst;
+      gC0IsRed = inRedFirst;
       if (inRedFirst)
       {
          sgC0Shift = 0;

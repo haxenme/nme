@@ -78,6 +78,8 @@ public:
 	void   setMask(DisplayObject *inMask);
 	DisplayObject   *getMask() { return mMask; }
 
+	void   setAlpha(double inAlpha);
+
 
    const Transform &getTransform();
 
@@ -90,9 +92,9 @@ public:
 
    struct LoaderInfo &GetLoaderInfo();
 
-   double alpha;
    BlendMode blendMode;
    bool cacheAsBitmap;
+   ColorTransform  colorTransform;
    QuickVec<class Filter *> filters;
 
    std::wstring  name;
@@ -129,6 +131,10 @@ public:
 
 	bool IsMask() const { return mIsMaskCount; }
 
+	void CombineColourTransform(const RenderState *inState,
+									    const ColorTransform *inObjTrans,
+										 ColorTransform *inBuf);
+
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
@@ -136,6 +142,7 @@ protected:
    DisplayObjectContainer *mParent;
    Graphics               *mGfx;
    BitmapCache            *mBitmapCache;
+
 
 	// Masking...
    DisplayObject          *mMask;

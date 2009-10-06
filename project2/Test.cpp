@@ -329,6 +329,28 @@ void TestBlend(Stage *inStage)
    }
 }
 
+
+void TestColourTrans(Stage *inStage)
+{
+	for(int a=0;a<3;a++)
+		for(int b=0;b<3;b++)
+		{
+			DisplayObjectContainer *container = new DisplayObjectContainer;
+			inStage->addChild(container);
+			container->setX(a*150);
+			container->setY(b*150);
+			DisplayObject *obj1 =  CreateOne();
+			container->addChild(obj1);
+			DisplayObject *obj2 =  CreateTwo();
+			obj2->setX(50);
+			obj2->setY(50);
+			container->addChild(obj2);
+
+			container->setAlpha(a==0?1 : a==1?0.6 : 0.3);
+		}
+}
+
+
 int main(int inargc,char **arvg)
 {
    Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
@@ -351,7 +373,9 @@ int main(int inargc,char **arvg)
 
    // TestMask(stage);
 
-   TestBlend(stage);
+   // TestBlend(stage);
+
+   TestColourTrans(stage);
 
    MainLoop();
    delete frame;

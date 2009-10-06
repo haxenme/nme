@@ -53,6 +53,7 @@
   <file name="common/FreeType.cpp"/>
   <file name="common/TileSheet.cpp"/>
   <file name="common/Display.cpp"/>
+  <file name="common/ColorTransform.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>

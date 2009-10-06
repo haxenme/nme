@@ -429,6 +429,14 @@ void DisplayObject::setMask(DisplayObject *inMask)
    mMask = inMask;
 }
 
+void DisplayObject::setAlpha(double inAlpha)
+{
+	// todo : dirty cache
+	colorTransform.alphaScale = inAlpha;
+	colorTransform.alphaOffset = 0;
+}
+
+
 // --- DisplayObjectContainer ------------------------------------------------
 
 DisplayObjectContainer::~DisplayObjectContainer()
@@ -488,6 +496,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
    // Render children/build child bitmaps ...
    Matrix full;
+   ColorTransform col_trans;
    RenderState state(inState);
    state.mTransform.mMatrix = &full;
    RenderState clip_state(state);
@@ -566,6 +575,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                Matrix orig = full;
                full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
 
+               obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
+
                obj_state->mBitmapPhase = true;
                obj->Render(render.Target(), *obj_state);
 
@@ -600,7 +611,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->RenderBitmap(inTarget,*obj_state);
          }
          else
+			{
+            obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
+			}
 
          obj_state->mMask = old_mask;
       }
@@ -740,6 +754,7 @@ Stage::~Stage()
 
 void Stage::RenderStage()
 {
+	ColorTransform::TidyCache();
    AutoStageRender render(this,mBackgroundColour);
 
    RenderState state(0,mQuality);
