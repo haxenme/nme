@@ -92,6 +92,7 @@
 
   <flag value="" if="windows"/>
   <flag value="gdi32.lib" if="windows"/>
+  <flag value="opengl32.lib" if="windows"/>
   <outdir name="."/>
 </target>
 

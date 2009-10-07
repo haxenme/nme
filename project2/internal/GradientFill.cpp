@@ -313,6 +313,8 @@ public:
 	void DoRender(const AlphaMask &inMask,
 					const RenderTarget &inTarget, const RenderState &inState, int inTX,int inTY)
 	{
+		// TODO: This is not quite correct for gradients - need to transform & SATURATE the
+		//  stop colours - not the resulting ramp.
 		RenderSwap<false>( inMask, *this, inTarget, inState, inTX,inTY );
 	}
 

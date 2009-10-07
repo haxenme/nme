@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <map>
 
+#include <gl/GL.h>
 
 // --- DIB   ------------------------------------------------------------------------
 
@@ -39,6 +40,72 @@ private:
 	~DIBSurface() { }
 };
 
+// --- OGLSurface Interface ---------------------------------------------------------
+
+class OGLSurface : public HardwareSurface
+{
+public:
+   OGLSurface(HDC inDC, HGLRC inOGLCtx)
+	{
+		mDC = inDC;
+		mOGLCtx = inOGLCtx;
+		mWidth = 0;
+		mHeight = 0;
+	}
+
+	void SetSize(int inWidth,int inHeight)
+	{
+		mWidth = inWidth;
+		mHeight = inHeight;
+	}
+
+   int Width() const { return mWidth; }
+   int Height() const { return mHeight; }
+   PixelFormat Format()  const { return pfHardware; }
+	const uint8 *GetBase() const { return 0; }
+	int GetStride() const { return 0; }
+
+	void Clear(uint32 inColour)
+	{
+		glViewport(0,0,mWidth,mHeight);
+		glClearColor((GLclampf)( ((inColour >>16) & 0xff) /255.0),
+                   (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
+                   (GLclampf)( ((inColour     ) & 0xff) /255.0),
+                   (GLclampf)1.0 );
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+   RenderTarget BeginRender(const Rect &inRect)
+	{
+		wglMakeCurrent(mDC,mOGLCtx);
+		glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+		glViewport(inRect.x, mHeight-inRect.y1(), inRect.w, inRect.h);
+		glOrtho(inRect.x,inRect.x1(), inRect.y,inRect.y1(), -1, 1);
+
+		RenderTarget ogl_target;
+		ogl_target.mRect = inRect;
+		ogl_target.format = pfHardware;
+		ogl_target.hardware = this;
+		return ogl_target;
+	}
+   void EndRender()
+	{
+	}
+
+   void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
+							  BlendMode inBlend, const BitmapCache *inMask,
+                       uint32 inTint )
+	{
+		// Should not get here...
+	}
+
+	HDC mDC;
+	HGLRC mOGLCtx;
+	int mWidth,mHeight;
+};
 
 // --- Stage ------------------------------------------------------------------------
 
@@ -59,14 +126,72 @@ public:
       mHandlerData = 0;
       mFlags = inFlags;
       mBMP = 0;
+		mOGLSurface = 0;
+		mOGLCtx = 0;
 		HintColourOrder(false);
-      CreateBMP();
+
+		mIsHardware = inFlags & wfHardware;
+
+		if (mIsHardware)
+		{
+			if (!CreateHardware())
+				mIsHardware = false;
+		}
+		if (!mIsHardware)
+         CreateBMP();
    }
+
    ~WindowsStage()
    {
 		if (mBMP)
 			mBMP->DecRef();
+		if (mOGLSurface)
+			mOGLSurface->DecRef();
+		if (mOGLCtx)
+			wglDeleteContext( mOGLCtx );
    }
+
+	bool CreateHardware()
+	{
+		PIXELFORMATDESCRIPTOR pfd;
+		ZeroMemory( &pfd, sizeof( pfd ) );
+		pfd.nSize = sizeof( pfd );
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+						  PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
+		int fmt = ChoosePixelFormat( mDC, &pfd );
+		if (!fmt)
+			return false;
+		if (!SetPixelFormat( mDC, fmt, &pfd ))
+			return false;
+
+      mOGLCtx = wglCreateContext( mDC );
+		if (!mOGLCtx)
+			return false;
+
+		mOGLSurface = new OGLSurface(mDC, mOGLCtx);
+		mOGLSurface->IncRef();
+		UpdateOGL();
+		return true;
+	}
+
+
+   void UpdateOGL()
+	{
+		WINDOWINFO info;
+      info.cbSize = sizeof(WINDOWINFO);
+
+      if (GetWindowInfo(mHWND,&info))
+      {
+         int w =  info.rcClient.right - info.rcClient.left;
+         int h =  info.rcClient.bottom - info.rcClient.top;
+			mOGLSurface->SetSize(w,h);
+      }
+	}
 
    void CreateBMP()
    {
@@ -90,7 +215,9 @@ public:
 
    void Flip()
    {
-      if (mBMP)
+		if (mOGLCtx)
+			SwapBuffers(mDC);
+		else if (mBMP)
          mBMP->RenderTo(mDC);
    }
    void GetMouse()
@@ -104,6 +231,8 @@ public:
 
    Surface *GetPrimarySurface()
    {
+		if (mOGLSurface)
+			return mOGLSurface;
       return mBMP;
    }
 
@@ -115,7 +244,10 @@ public:
             Flip();
             break;
          case etResize:
-            CreateBMP();
+				if (mOGLSurface)
+					UpdateOGL();
+				else
+               CreateBMP();
             break;
          case etTimer:
             if (inEvent.mValue==timerFrame)
@@ -164,11 +296,14 @@ public:
 
    HWND         mHWND;
    HDC          mDC;
+	HGLRC        mOGLCtx;
    uint32       mFlags;
    double       mFrameRate;
    EventHandler mHandler;
    DIBSurface   *mBMP;
+	OGLSurface   *mOGLSurface;
    void         *mHandlerData;
+	bool         mIsHardware;
 };
 
 

@@ -473,13 +473,13 @@ typedef QuickVec<IRenderData *> RenderData;
 
 
 
-struct HardwareContext;
+class HardwareSurface;
+
 
 struct RenderTarget
 {
    Rect mRect;
 	PixelFormat format;
-	bool is_hardware;
 
 	RenderTarget ClipRect(const Rect &inRect) const;
 
@@ -492,7 +492,7 @@ struct RenderTarget
         uint8 *data;
         int  stride;
 	  };
-	  HardwareContext *context;
+	  HardwareSurface *hardware;
 	};
 };
 

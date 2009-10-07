@@ -219,7 +219,7 @@ enum WindowFlags
    wfFullScreen = 0x00000001,
    wfBorderless = 0x00000002,
    wfResizable  = 0x00000004,
-   wfOpenGL     = 0x00000008,
+   wfHardware   = 0x00000008,
    wfVSync      = 0x00000010,
 };
 

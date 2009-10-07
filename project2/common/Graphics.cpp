@@ -322,7 +322,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    for(int i=0;i<mCache.size();i++)
    {
       RendererCache &cache = mCache[i];
-      if (inTarget.is_hardware)
+      if (inTarget.format == pfHardware)
       {
       }
       else

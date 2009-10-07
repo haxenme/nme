@@ -105,19 +105,9 @@ static function TestColourTrans(inStage:flash.display.DisplayObjectContainer)
 			obj2.x = (50);
 			obj2.y = (50);
 			container.addChild(obj2);
-			if (b==2)
-			{
-			   var t = new flash.geom.ColorTransform();
-				t.greenMultiplier = 0.2;
-				t.greenOffset = 128;
-				container.transform.colorTransform = t;
-			}
-			else if (b==1)
-			{
-			   var t = new flash.geom.ColorTransform();
-				t.redMultiplier = 2;
-				container.transform.colorTransform = t;
-			}
+			var t = new flash.geom.ColorTransform();
+			t.redMultiplier = b;
+			container.transform.colorTransform = t;
 			container.alpha = (a==0) ? 1 : (a==1) ? 0.6 : 0.3;
 		}
 }

@@ -635,7 +635,6 @@ RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
    memset(&result,0,sizeof(result));
 
    result.mRect = inRect.Intersect( Rect(0,0,mWidth,mHeight) );
-   result.is_hardware = false;
    result.stride = mStride;
    result.data = mBase;
    result.format = mPixelFormat;

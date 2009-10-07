@@ -105,6 +105,11 @@ private:
    void operator=(const SimpleSurface &inRHS);
 };
 
+class HardwareSurface : public Surface
+{
+
+
+};
 
 
 #endif
