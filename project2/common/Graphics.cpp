@@ -376,15 +376,8 @@ void RenderState::CombineColourTransform(const RenderState &inState,
 		return;
 	}
 
-	if (inObjTrans->IsIdentity())
-	{
-		mColourTransform = inState.mColourTransform;
-	}
-	else
-	{
-		mColourTransform = inBuf;
-		inBuf->Combine(*(inState.mColourTransform),*inObjTrans);
-	}
+	mColourTransform = inBuf;
+	inBuf->Combine(*(inState.mColourTransform),*inObjTrans);
 
 	if (mColourTransform->IsIdentityColour())
 	{
@@ -398,6 +391,11 @@ void RenderState::CombineColourTransform(const RenderState &inState,
 		mC1_LUT = mColourTransform->GetC1LUT();
 		mC2_LUT = mColourTransform->GetC2LUT();
 	}
+
+	if (mColourTransform->IsIdentityAlpha())
+		mAlpha_LUT = 0;
+   else
+		mAlpha_LUT = mColourTransform->GetAlphaLUT();
 }
 
 

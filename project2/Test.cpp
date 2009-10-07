@@ -346,7 +346,8 @@ void TestColourTrans(Stage *inStage)
 			obj2->setY(50);
 			container->addChild(obj2);
 
-			container->setAlpha(a==0?1 : a==1?0.6 : 0.3);
+			container->setAlpha(a==0?1 : a==1?0.4 : 0.3);
+			container->colorTransform.redScale = b;
 		}
 }
 

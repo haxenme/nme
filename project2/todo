@@ -1,9 +1,8 @@
 TODO:
-- colourTransform
+- Opengl
 - solid backgrounds (bitmap optimisations)
 - filters
 - hitTest
-- Opengl
 - Events - mouse
 - Text - selection/keys
 - triangles

@@ -139,8 +139,8 @@ struct NormalBlender
 		if (COLOUR_LUT)
 		{
 			src.c0 = mC0_LUT[src.c0];
-			src.c1 = mC0_LUT[src.c1];
-			src.c2 = mC0_LUT[src.c2];
+			src.c1 = mC1_LUT[src.c1];
+			src.c2 = mC2_LUT[src.c2];
 		}
       ARGB dest = inDest.Get();
       dest.Blend<SWAP_RB,DEST_ALPHA>(src);
