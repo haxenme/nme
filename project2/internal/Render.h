@@ -95,7 +95,7 @@ struct DestSurface32
 
    DestSurface32(const RenderTarget &inTarget) : mTarget(inTarget) { }
 
-   void SetRow(int inY) { mRow = (ARGB *)( mTarget.data + mTarget.stride*inY ); }
+   void SetRow(int inY) { mRow = (ARGB *) mTarget.Row(inY); }
    void SetX(int inX) { mPtr = mRow + inX; }
    const ARGB Get() { return *mPtr; }
    void SetInc( ARGB inCol ) { *mPtr++ = inCol; }
@@ -165,7 +165,7 @@ template<typename SOURCE_,typename BLEND_>
 void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
 				const BLEND_ &inBlend, const RenderState &inState, int inTX, int inTY)
 {
-   if (inDest.format & pfHasAlpha)
+   if (inDest.mPixelFormat & pfHasAlpha)
    {
       DestSurface32<true> dest(inDest);
       DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);

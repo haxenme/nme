@@ -47,7 +47,7 @@ public:
 		else
 		   mDGXDX = (int)(mMapper.m00 * (1<<23)+ 0.5);
 
-		bool want_swapped =  inTarget.format & pfSwapRB;
+		bool want_swapped =  inTarget.mPixelFormat & pfSwapRB;
 		if (!mIsInit)
 			InitArray(want_swapped);
 		else if (want_swapped!=mIsSwapped)

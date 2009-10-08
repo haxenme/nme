@@ -40,72 +40,6 @@ private:
 	~DIBSurface() { }
 };
 
-// --- OGLSurface Interface ---------------------------------------------------------
-
-class OGLSurface : public HardwareSurface
-{
-public:
-   OGLSurface(HDC inDC, HGLRC inOGLCtx)
-	{
-		mDC = inDC;
-		mOGLCtx = inOGLCtx;
-		mWidth = 0;
-		mHeight = 0;
-	}
-
-	void SetSize(int inWidth,int inHeight)
-	{
-		mWidth = inWidth;
-		mHeight = inHeight;
-	}
-
-   int Width() const { return mWidth; }
-   int Height() const { return mHeight; }
-   PixelFormat Format()  const { return pfHardware; }
-	const uint8 *GetBase() const { return 0; }
-	int GetStride() const { return 0; }
-
-	void Clear(uint32 inColour)
-	{
-		glViewport(0,0,mWidth,mHeight);
-		glClearColor((GLclampf)( ((inColour >>16) & 0xff) /255.0),
-                   (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
-                   (GLclampf)( ((inColour     ) & 0xff) /255.0),
-                   (GLclampf)1.0 );
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-
-   RenderTarget BeginRender(const Rect &inRect)
-	{
-		wglMakeCurrent(mDC,mOGLCtx);
-		glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-		glViewport(inRect.x, mHeight-inRect.y1(), inRect.w, inRect.h);
-		glOrtho(inRect.x,inRect.x1(), inRect.y,inRect.y1(), -1, 1);
-
-		RenderTarget ogl_target;
-		ogl_target.mRect = inRect;
-		ogl_target.format = pfHardware;
-		ogl_target.hardware = this;
-		return ogl_target;
-	}
-   void EndRender()
-	{
-	}
-
-   void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-							  BlendMode inBlend, const BitmapCache *inMask,
-                       uint32 inTint )
-	{
-		// Should not get here...
-	}
-
-	HDC mDC;
-	HGLRC mOGLCtx;
-	int mWidth,mHeight;
-};
 
 // --- Stage ------------------------------------------------------------------------
 
@@ -126,7 +60,8 @@ public:
       mHandlerData = 0;
       mFlags = inFlags;
       mBMP = 0;
-		mOGLSurface = 0;
+		mHardwareContext = 0;
+		mHardwareSurface = 0;
 		mOGLCtx = 0;
 		HintColourOrder(false);
 
@@ -145,8 +80,10 @@ public:
    {
 		if (mBMP)
 			mBMP->DecRef();
-		if (mOGLSurface)
-			mOGLSurface->DecRef();
+		if (mHardwareContext)
+			mHardwareContext->DecRef();
+		if (mHardwareSurface)
+			mHardwareSurface->DecRef();
 		if (mOGLCtx)
 			wglDeleteContext( mOGLCtx );
    }
@@ -173,14 +110,16 @@ public:
 		if (!mOGLCtx)
 			return false;
 
-		mOGLSurface = new OGLSurface(mDC, mOGLCtx);
-		mOGLSurface->IncRef();
-		UpdateOGL();
+		mHardwareContext = HardwareContext::CreateOpenGL(mDC,mOGLCtx);
+		mHardwareContext->IncRef();
+		mHardwareSurface = new HardwareSurface(mHardwareContext);
+		mHardwareSurface->IncRef();
+		UpdateHardware();
 		return true;
 	}
 
 
-   void UpdateOGL()
+   void UpdateHardware()
 	{
 		WINDOWINFO info;
       info.cbSize = sizeof(WINDOWINFO);
@@ -189,7 +128,7 @@ public:
       {
          int w =  info.rcClient.right - info.rcClient.left;
          int h =  info.rcClient.bottom - info.rcClient.top;
-			mOGLSurface->SetSize(w,h);
+			mHardwareContext->SetWindowSize(w,h);
       }
 	}
 
@@ -215,8 +154,8 @@ public:
 
    void Flip()
    {
-		if (mOGLCtx)
-			SwapBuffers(mDC);
+		if (mHardwareContext)
+			mHardwareContext->Flip();
 		else if (mBMP)
          mBMP->RenderTo(mDC);
    }
@@ -231,8 +170,8 @@ public:
 
    Surface *GetPrimarySurface()
    {
-		if (mOGLSurface)
-			return mOGLSurface;
+		if (mHardwareSurface)
+			return mHardwareSurface;
       return mBMP;
    }
 
@@ -244,8 +183,8 @@ public:
             Flip();
             break;
          case etResize:
-				if (mOGLSurface)
-					UpdateOGL();
+				if (mHardwareContext)
+					UpdateHardware();
 				else
                CreateBMP();
             break;
@@ -301,7 +240,8 @@ public:
    double       mFrameRate;
    EventHandler mHandler;
    DIBSurface   *mBMP;
-	OGLSurface   *mOGLSurface;
+	HardwareSurface *mHardwareSurface;
+	HardwareContext *mHardwareContext;
    void         *mHandlerData;
 	bool         mIsHardware;
 };
@@ -318,8 +258,8 @@ public:
       mFlags = inFlags;
       mHandle = inHandle;
       sgFrameMap[mHandle] = this;
-      mStage = new WindowsStage(inHandle,mFlags);
       mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
+      mStage = new WindowsStage(inHandle,mFlags);
       ShowWindow(mHandle,true);
       SetTimer(mHandle,timerFrame, 10,0);
    }

@@ -354,7 +354,7 @@ void TestColourTrans(Stage *inStage)
 
 int main(int inargc,char **arvg)
 {
-   Frame *frame = CreateMainFrame(640,400,wfResizable,L"Hello");
+   Frame *frame = CreateMainFrame(640,400,wfResizable/*|wfHardware*/,L"Hello");
 
    Stage *stage = frame->GetStage();
    stage->IncRef();

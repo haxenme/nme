@@ -27,6 +27,10 @@ struct TRect
       T y1 = std::min(this->y1(),inOther.y1());
 	   return TRect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
    }
+	bool operator==(const TRect &inRHS) const
+		{ return x==inRHS.x && y==inRHS.y && w==inRHS.w && h==inRHS.h; }
+	bool operator!=(const TRect &inRHS) const
+		{ return x!=inRHS.x || y!=inRHS.y || w!=inRHS.w || h!=inRHS.h; }
 	TRect operator *(T inScale) const { return TRect(x*inScale,y*inScale,w*inScale,h*inScale); }
 	TRect operator /(T inScale) const { return TRect(x/inScale,y/inScale,w/inScale,h/inScale); }
 	T x1() const { return x+w; }

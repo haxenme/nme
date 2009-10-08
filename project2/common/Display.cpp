@@ -705,7 +705,7 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
    if (mBitmap)
    {
       int tint = 0xffffffff;
-      if (inTarget.format!=pfAlpha && mBitmap->Format()==pfAlpha)
+      if (inTarget.mPixelFormat!=pfAlpha && mBitmap->Format()==pfAlpha)
          tint = 0;
 
       // TX,TX is se in StillGood function

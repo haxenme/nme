@@ -420,7 +420,7 @@ public:
          delete mSpanRect;
       }
 
-		if (inTarget.format==pfAlpha)
+		if (inTarget.mPixelFormat==pfAlpha)
 		{
 			mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
 		}

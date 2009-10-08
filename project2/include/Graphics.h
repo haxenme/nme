@@ -473,27 +473,42 @@ typedef QuickVec<IRenderData *> RenderData;
 
 
 
-class HardwareSurface;
+class HardwareContext : public Object
+{
+public:
+   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
+
+	virtual void SetWindowSize(int inWidth,int inHeight)=0;
+	virtual void BeginRender(const Rect &inRect)=0;
+	virtual void SetViewport(const Rect &inRect)=0;
+	virtual void Clear(uint32 inColour) = 0;
+	virtual void Flip() = 0;
+
+	virtual int Width() const = 0;
+	virtual int Height() const = 0;
+};
 
 
 struct RenderTarget
 {
-   Rect mRect;
-	PixelFormat format;
+	RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride);
+	RenderTarget(const Rect &inRect,HardwareContext *inContext);
+	RenderTarget();
+
+	bool IsHardware() const { return mHardware; }
 
 	RenderTarget ClipRect(const Rect &inRect) const;
 
-   uint8 *Row(int inRow) const { return data+stride*inRow; }
+   Rect        mRect;
+	PixelFormat mPixelFormat;
 
-	union
-	{
-	  struct
-	  {
-        uint8 *data;
-        int  stride;
-	  };
-	  HardwareSurface *hardware;
-	};
+	// Software target
+   uint8 *mSoftPtr;
+   int   mSoftStride;
+   uint8 *Row(int inRow) const { return mSoftPtr+mSoftStride*inRow; }
+
+	// Hardware target - RenderTarget does not hold reference on HardwareContext
+	HardwareContext *mHardware;
 };
 
 class Renderer

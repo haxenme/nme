@@ -34,16 +34,16 @@ void HintColourOrder(bool inRedFirst)
 
 Surface::~Surface()
 {
-   if (mTexture)
-      DestroyNativeTexture(mTexture);
+   //if (mTexture)
+      //DestroyNativeTexture(mTexture);
 }
 
 void Surface::SetTexture(NativeTexture *inTexture)
 {
    if (inTexture!=mTexture)
    {
-      if (mTexture)
-         DestroyNativeTexture(mTexture);
+      //if (mTexture)
+         //DestroyNativeTexture(mTexture);
       mTexture = inTexture;
    }
 }
@@ -220,7 +220,7 @@ struct ImageDest
    }
    inline Pixel &Next() const { return *mPos++; }
 
-   PixelFormat Format() const { return mTarget.format; }
+   PixelFormat Format() const { return mTarget.mPixelFormat; }
 
    const RenderTarget &mTarget;
    mutable PIXEL *mPos;
@@ -532,7 +532,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       int dy = inPosY + src_rect.y - inSrcRect.y;
 
       bool src_alpha = mPixelFormat==pfAlpha;
-      bool dest_alpha = outDest.format==pfAlpha;
+      bool dest_alpha = outDest.mPixelFormat==pfAlpha;
 
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
@@ -631,20 +631,26 @@ void SimpleSurface::Zero()
 
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
 {
-   RenderTarget result;
-   memset(&result,0,sizeof(result));
-
-   result.mRect = inRect.Intersect( Rect(0,0,mWidth,mHeight) );
-   result.stride = mStride;
-   result.data = mBase;
-   result.format = mPixelFormat;
-
-   return result;
+   return RenderTarget(inRect.Intersect( Rect(0,0,mWidth,mHeight) ), mPixelFormat,mBase,mStride);
 }
 
 void SimpleSurface::EndRender()
 {
 }
+
+// --- HardwareSurface -------------------------------------------------------------
+
+HardwareSurface::HardwareSurface(HardwareContext *inContext)
+{
+	mHardware = inContext;
+	mHardware->IncRef();
+}
+
+HardwareSurface::~HardwareSurface()
+{
+	mHardware->DecRef();
+}
+
 
 // --- BitmapCache -----------------------------------------------------------------
 

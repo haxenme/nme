@@ -16,7 +16,7 @@ public:
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
 	{
-		if (inTarget.format & pfSwapRB)
+		if (inTarget.mPixelFormat & pfSwapRB)
 			mFillRGB.SetSwapRGBA(mRGB);
 		else
 			mFillRGB = mRGB;

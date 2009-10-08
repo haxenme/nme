@@ -58,12 +58,10 @@ class AutoSurfaceRender
 	Surface *mSurface;
 	RenderTarget mTarget;
 public:
-	AutoSurfaceRender(Surface *inSurface, const Rect *inRect=0)
-	{
-		mSurface = inSurface;
-		mTarget = inRect ? inSurface->BeginRender( *inRect ) :
-		                 inSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
-	}
+	AutoSurfaceRender(Surface *inSurface) : mSurface(inSurface),
+		 mTarget(inSurface->BeginRender( Rect(inSurface->Width(),inSurface->Height()) ) ) { }
+	AutoSurfaceRender(Surface *inSurface,const Rect &inRect) : mSurface(inSurface),
+		 mTarget(inSurface->BeginRender(inRect)) { }
 	~AutoSurfaceRender() { mSurface->EndRender(); }
 	const RenderTarget &Target() { return mTarget; }
 
@@ -107,9 +105,31 @@ private:
 
 class HardwareSurface : public Surface
 {
+public:
+	HardwareSurface(HardwareContext *inContext);
 
+	int Width() const { return mHardware->Width(); }
+   int Height() const { return mHardware->Height(); }
+   PixelFormat Format()  const { return pfHardware; }
+	const uint8 *GetBase() const { return 0; }
+	int GetStride() const { return 0; }
+	void Clear(uint32 inColour) { mHardware->Clear(inColour); }
+   RenderTarget BeginRender(const Rect &inRect)
+	{
+		return RenderTarget(inRect,mHardware);
+	}
+   void EndRender() { }
 
+   void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
+							  BlendMode inBlend, const BitmapCache *inMask,
+                       uint32 inTint ) { }
+
+	protected:
+	   ~HardwareSurface();
+   private:
+	   HardwareContext *mHardware;
 };
+
 
 
 #endif

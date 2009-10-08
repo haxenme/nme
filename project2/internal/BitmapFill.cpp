@@ -189,7 +189,7 @@ public:
 	{
 		SetupMatrix(*inState.mTransform.mMatrix);
 
-		bool swap =  (inTarget.format & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
+		bool swap =  (inTarget.mPixelFormat & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
 		Render( mAlphaMask, *this, inTarget, swap, inState, inTX,inTY );
 	}
 

@@ -322,7 +322,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    for(int i=0;i<mCache.size();i++)
    {
       RendererCache &cache = mCache[i];
-      if (inTarget.format == pfHardware)
+      if (inTarget.IsHardware())
       {
       }
       else
@@ -401,6 +401,33 @@ void RenderState::CombineColourTransform(const RenderState &inState,
 
 
 // --- RenderTarget -------------------------------------------------------------------
+
+RenderTarget::RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride)
+{
+	mRect = inRect;
+	mPixelFormat = inFormat;
+	mSoftPtr = inPtr;
+	mSoftStride = inStride;
+	mHardware = 0;
+}
+
+RenderTarget::RenderTarget(const Rect &inRect,HardwareContext *inContext)
+{
+	mRect = inRect;
+	mPixelFormat = pfHardware;
+	mSoftPtr = 0;
+	mSoftStride = 0;
+	mHardware = inContext;
+}
+
+RenderTarget::RenderTarget() : mRect(0,0)
+{
+	mPixelFormat = pfAlpha;
+	mSoftPtr = 0;
+	mSoftStride = 0;
+	mHardware = 0;
+}
+
 
 RenderTarget RenderTarget::ClipRect(const Rect &inRect) const
 {
