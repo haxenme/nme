@@ -19,22 +19,30 @@ struct TRect
    TRect(T inX0,T inY0,T inX1,T inY1, bool inDummy) :
       x(inX0), y(inY0), w(inX1-inX0), h(inY1-inY0) { } 
 
-	TRect Intersect(const TRect &inOther) const
+   TRect Intersect(const TRect &inOther) const
    {
       T x0 = std::max(x,inOther.x);
       T y0 = std::max(y,inOther.y);
       T x1 = std::min(this->x1(),inOther.x1());
       T y1 = std::min(this->y1(),inOther.y1());
-	   return TRect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
+      return TRect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
    }
-	bool operator==(const TRect &inRHS) const
-		{ return x==inRHS.x && y==inRHS.y && w==inRHS.w && h==inRHS.h; }
-	bool operator!=(const TRect &inRHS) const
-		{ return x!=inRHS.x || y!=inRHS.y || w!=inRHS.w || h!=inRHS.h; }
-	TRect operator *(T inScale) const { return TRect(x*inScale,y*inScale,w*inScale,h*inScale); }
-	TRect operator /(T inScale) const { return TRect(x/inScale,y/inScale,w/inScale,h/inScale); }
-	T x1() const { return x+w; }
-	T y1() const { return y+h; }
+   TRect Union(const TRect &inOther) const
+   {
+      T x0 = std::min(x,inOther.x);
+      T y0 = std::min(y,inOther.y);
+      T x1 = std::max(this->x1(),inOther.x1());
+      T y1 = std::max(this->y1(),inOther.y1());
+      return TRect(x0,y0,x1>x0 ? x1-x0 : 0, y1>y0 ? y1-y0 : 0);
+   }
+   bool operator==(const TRect &inRHS) const
+      { return x==inRHS.x && y==inRHS.y && w==inRHS.w && h==inRHS.h; }
+   bool operator!=(const TRect &inRHS) const
+      { return x!=inRHS.x || y!=inRHS.y || w!=inRHS.w || h!=inRHS.h; }
+   TRect operator *(T inScale) const { return TRect(x*inScale,y*inScale,w*inScale,h*inScale); }
+   TRect operator /(T inScale) const { return TRect(x/inScale,y/inScale,w/inScale,h/inScale); }
+   T x1() const { return x+w; }
+   T y1() const { return y+h; }
    void Translate(T inTx,T inTy) { x+=inTx; y+= inTy; }
    bool HasPixels() const { return w>0 && h>0; }
    bool Contains(const TRect &inOther) const
@@ -44,40 +52,40 @@ struct TRect
    }
 
    void ClipY(T &ioY0, T &ioY1) const
-	{
-		if (ioY0 < y) ioY0 = y;
-		else if (ioY0>y+h) ioY0 = y+h;
+   {
+      if (ioY0 < y) ioY0 = y;
+      else if (ioY0>y+h) ioY0 = y+h;
 
-		if (ioY1 < y) ioY1 = y;
-		else if (ioY1>y+h) ioY1 = y+h;
-	}
+      if (ioY1 < y) ioY1 = y;
+      else if (ioY1>y+h) ioY1 = y+h;
+   }
 
    void ClipX(T &ioX0, T &ioX1) const
-	{
-		if (ioX0 < x) ioX0 = x;
-		else if (ioX0>x+w) ioX0 = x+w;
+   {
+      if (ioX0 < x) ioX0 = x;
+      else if (ioX0>x+w) ioX0 = x+w;
 
-		if (ioX1 < x) ioX1 = x;
-		else if (ioX1>x+w) ioX1 = x+w;
-	}
+      if (ioX1 < x) ioX1 = x;
+      else if (ioX1>x+w) ioX1 = x+w;
+   }
 
    TRect Translated(T inTX,T inTY) const
    {
       return TRect(x+inTX,y+inTY,w,h);
    }
-	void MakePositive()
-	{
-		if (w<0)
-		{
-			x-=w;
-			w=-w;
-		}
-		if (h<0)
-		{
-			y-=h;
-			h=-h;
-		}
-	}
+   void MakePositive()
+   {
+      if (w<0)
+      {
+         x-=w;
+         w=-w;
+      }
+      if (h<0)
+      {
+         y-=h;
+         h=-h;
+      }
+   }
 
 
 
@@ -93,56 +101,56 @@ typedef TRect<double> DRect;
 template<typename T>
 struct Point2D
 {
-	inline Point2D() { }
-	inline Point2D(T inX,T inY) : x(inX), y(inY) { }
-	inline Point2D(T *inPtr) : x(inPtr[0]), y(inPtr[1]) { }
+   inline Point2D() { }
+   inline Point2D(T inX,T inY) : x(inX), y(inY) { }
+   inline Point2D(T *inPtr) : x(inPtr[0]), y(inPtr[1]) { }
 
-	inline bool operator==(const Point2D &inRHS) const
-	   { return x==inRHS.x && y==inRHS.y; }
-	inline bool operator!=(const Point2D &inRHS) const
-	   { return x!=inRHS.x || y!=inRHS.y; }
+   inline bool operator==(const Point2D &inRHS) const
+      { return x==inRHS.x && y==inRHS.y; }
+   inline bool operator!=(const Point2D &inRHS) const
+      { return x!=inRHS.x || y!=inRHS.y; }
 
-	inline Point2D operator+(const Point2D &inRHS) const
-	   { return Point2D(x+inRHS.x,y+inRHS.y); }
-	inline Point2D operator-(const Point2D &inRHS) const
-	   { return Point2D(x-inRHS.x,y-inRHS.y); }
-	inline Point2D operator*(double inScale) const
-	   { return Point2D(x*inScale,y*inScale); }
-	inline Point2D operator-() const
-	   { return Point2D(-x,-y); }
-	inline T Norm2() const
-	   { return x*x + y*y; }
-	inline double Norm() const
-	   { return sqrt((double)(x*x + y*y)); }
-	inline Point2D Perp() const
-	   { return Point2D(-y,x); }
-	inline Point2D CWPerp() const
-	   { return Point2D(y,-x); }
-	inline Point2D Perp(double inLen) const
-	{
-		double norm = Norm();
-		if (norm>0)
-		{
-			norm = inLen/norm;
-			return Point2D(-y*norm,x*norm);
-		}
-		return Point2D(0,0);
-	}
-	inline double Cross(const Point2D &inRHS) const
-	   { return x*inRHS.y - y*inRHS.x; }
-	inline double Dot(const Point2D &inRHS) const
-	   { return x*inRHS.x + y*inRHS.y; }
-	Point2D &SetLength(double inLen)
-	{
-		double norm = Norm();
-		if (norm>0)
-		{
-			norm = inLen/norm;
-			x*=norm;
-			y*=norm;
-		}
-		return *this;
-	}
+   inline Point2D operator+(const Point2D &inRHS) const
+      { return Point2D(x+inRHS.x,y+inRHS.y); }
+   inline Point2D operator-(const Point2D &inRHS) const
+      { return Point2D(x-inRHS.x,y-inRHS.y); }
+   inline Point2D operator*(double inScale) const
+      { return Point2D(x*inScale,y*inScale); }
+   inline Point2D operator-() const
+      { return Point2D(-x,-y); }
+   inline T Norm2() const
+      { return x*x + y*y; }
+   inline double Norm() const
+      { return sqrt((double)(x*x + y*y)); }
+   inline Point2D Perp() const
+      { return Point2D(-y,x); }
+   inline Point2D CWPerp() const
+      { return Point2D(y,-x); }
+   inline Point2D Perp(double inLen) const
+   {
+      double norm = Norm();
+      if (norm>0)
+      {
+         norm = inLen/norm;
+         return Point2D(-y*norm,x*norm);
+      }
+      return Point2D(0,0);
+   }
+   inline double Cross(const Point2D &inRHS) const
+      { return x*inRHS.y - y*inRHS.x; }
+   inline double Dot(const Point2D &inRHS) const
+      { return x*inRHS.x + y*inRHS.y; }
+   Point2D &SetLength(double inLen)
+   {
+      double norm = Norm();
+      if (norm>0)
+      {
+         norm = inLen/norm;
+         x*=norm;
+         y*=norm;
+      }
+      return *this;
+   }
 
    T x;
    T y;
@@ -156,7 +164,7 @@ typedef Point2D<int>   ImagePoint;
 template<int FIXED>
 struct FixedPoint
 {
-	enum { Bits = FIXED };
+   enum { Bits = FIXED };
 
    inline FixedPoint() {}
    inline FixedPoint(int inX,int inY) :x(inX), y(inY) {}
@@ -313,7 +321,7 @@ struct Extent2D
       mMaxY += inTY;
    }
 
-	void Transform(double inSX, double inSY, double inTX, double inTY)
+   void Transform(double inSX, double inSY, double inTX, double inTY)
    {
       mMinX = inTX + inSX*(mMinX);
       mMaxX = inTX + inSX*(mMaxX);

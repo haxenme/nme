@@ -21,7 +21,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    visible = true;
    mBitmapCache = 0;
    cacheAsBitmap = false;
-	blendMode = bmNormal;
+   blendMode = bmNormal;
    mMask = 0;
    mIsMaskCount = 0;
 }
@@ -431,9 +431,9 @@ void DisplayObject::setMask(DisplayObject *inMask)
 
 void DisplayObject::setAlpha(double inAlpha)
 {
-	// todo : dirty cache
-	colorTransform.alphaScale = inAlpha;
-	colorTransform.alphaOffset = 0;
+   // todo : dirty cache
+   colorTransform.alphaScale = inAlpha;
+   colorTransform.alphaOffset = 0;
 }
 
 
@@ -490,7 +490,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
    Rect visible_bitmap;
 
-	// Otherwise do it at end...
+   // Otherwise do it at end...
    if (!inState.mBitmapPhase)
       DisplayObject::Render(inTarget,inState);
 
@@ -501,16 +501,16 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    state.mTransform.mMatrix = &full;
    RenderState clip_state(state);
 
-	int first = 0;
-	int last = mChildren.size();
-	int dir = 1;
-	// Build top first when making bitmaps and masks....
-	if (inState.mBitmapPhase)
-	{
-		first = last - 1;
-		last = -1;
-		dir = -1;
-	}
+   int first = 0;
+   int last = mChildren.size();
+   int dir = 1;
+   // Build top first when making bitmaps and masks....
+   if (inState.mBitmapPhase)
+   {
+      first = last - 1;
+      last = -1;
+      dir = -1;
+   }
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
@@ -564,7 +564,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             if (visible_bitmap.HasPixels())
             {
                //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
-							 //visible_bitmap.w, visible_bitmap.h );
+                      //visible_bitmap.w, visible_bitmap.h );
                SimpleSurface *bitmap =
                   new SimpleSurface(visible_bitmap.w, visible_bitmap.h,
                         obj->IsBitmapRender() ? pfARGB : pfAlpha );
@@ -598,11 +598,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // todo: combine masks ?
             //obj->DebugRenderMask(inTarget,*obj_state);
 
-				// Mask not made yet?
-				// TODO: Create mask on demand in this case - or make known limitation of system
-				// This could be the case if the mask is lower in the Z-order, or not parented.
+            // Mask not made yet?
+            // TODO: Create mask on demand in this case - or make known limitation of system
+            // This could be the case if the mask is lower in the Z-order, or not parented.
             if (!obj->getMask()->GetBitmapCache())
-					continue;
+               continue;
             obj_state->mMask = obj->getMask()->GetBitmapCache();
          }
 
@@ -611,10 +611,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->RenderBitmap(inTarget,*obj_state);
          }
          else
-			{
+         {
             obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
-			}
+         }
 
          obj_state->mMask = old_mask;
       }
@@ -662,10 +662,10 @@ DisplayObject *DisplayObjectContainer::getChildAt(int index)
 
 bool DisplayObjectContainer::NonNormalBlendChild()
 {
-	for(int i=0;i<mChildren.size();i++)
-		if (mChildren[i]->blendMode!=bmNormal)
-			return true;
-	return false;
+   for(int i=0;i<mChildren.size();i++)
+      if (mChildren[i]->blendMode!=bmNormal)
+         return true;
+   return false;
 }
 
 
@@ -754,7 +754,7 @@ Stage::~Stage()
 
 void Stage::RenderStage()
 {
-	ColorTransform::TidyCache();
+   ColorTransform::TidyCache();
    AutoStageRender render(this,mBackgroundColour);
 
    RenderState state(0,mQuality);

@@ -37,15 +37,8 @@ public:
    {
       if (SDL_MUSTLOCK(mSurf) )
          SDL_LockSurface(mSurf);
-      RenderTarget target;
-      target.mRect = Rect(Width(),Height());
-      target.format = Format();;
-      target.is_hardware = false;
-      target.data = (uint8 *)mSurf->pixels;
-      target.stride = mSurf->pitch;
-
-
-      return target;
+      return RenderTarget(Rect(Width(),Height()), Format(),
+         (uint8 *)mSurf->pixels, mSurf->pitch);
    }
    void EndRender()
    {
@@ -74,24 +67,38 @@ class SDLStage : public Stage
 public:
    SDLStage(SDL_Surface *inSurface,uint32 inFlags,bool inIsOpenGL)
    {
-      mSDLSurface = new SDLSurf(inSurface,inFlags,inIsOpenGL);
-      mSDLSurface->IncRef();
+      mIsOpenGL = inIsOpenGL;
+      mSDLSurface = inSurface;
+      if (mIsOpenGL)
+      {
+         mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+         mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
+         mPrimarySurface = new HardwareSurface(mOpenGLContext);
+      }
+      else
+      {
+         mOpenGLContext = 0;
+         mPrimarySurface = new SDLSurf(inSurface,inFlags,inIsOpenGL);
+      }
+      mPrimarySurface->IncRef();
    }
    ~SDLStage()
    {
-      mSDLSurface->DecRef();
+      if (!mIsOpenGL)
+         SDL_FreeSurface(mSDLSurface);
+      mPrimarySurface->DecRef();
    }
 
 
    void Flip()
    {
-      if (false)
+      if (mIsOpenGL)
       {
          SDL_GL_SwapBuffers();
       }
       else
       {
-         SDL_Flip( mSDLSurface->mSurf );
+         SDL_Flip( mSDLSurface );
       }
    }
    void GetMouse()
@@ -111,13 +118,16 @@ public:
 
    Surface *GetPrimarySurface()
    {
-      return mSDLSurface;
+      return mPrimarySurface;
    }
 
-   SDLSurf     *mSDLSurface;
+   HardwareContext *mOpenGLContext;
+   SDL_Surface *mSDLSurface;
+   Surface     *mPrimarySurface;
    double       mFrameRate;
    EventHandler mHandler;
    void         *mHandlerData;
+   bool         mIsOpenGL;
 };
 
 
@@ -173,10 +183,8 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
 #endif
 
    unsigned int sdl_flags = 0;
-   bool is_opengl = false;
-
    bool fullscreen = (inFlags & wfFullScreen) != 0;
-   bool opengl = (inFlags & wfOpenGL) != 0;
+   bool opengl = (inFlags & wfHardware) != 0;
    bool resizable = (inFlags & wfResizable) != 0;
 
    Rect r(100,100,inWidth,inHeight);
@@ -217,6 +225,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
 #endif
 
    SDL_Surface* screen = 0;
+   bool is_opengl = false;
    if (opengl)
    {
       /* Initialize the display */

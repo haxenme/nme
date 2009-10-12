@@ -2,6 +2,11 @@
 
 <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
+<set name="sdl" value="1" if="macos"/>
+<set name="ogl" value="1" if="windows"/>
+<set name="ogl" value="1" if="sdl"/>
+
+
 <files id="windows">
   <compilerflag value="-Iinclude"/>
   <file name="windows/SimpleFrame.cpp"/>
@@ -37,9 +42,12 @@
 <set name="SLIBEXT" value=".a" unless="windows"/>
 
 
+
 <files id="common">
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl"/>
+  <compilerflag value="-DSDL_OGL" if="sdl"/>
 
   <file name="common/Surface.cpp"/>
   <file name="common/Utils.cpp"/>
@@ -54,6 +62,7 @@
   <file name="common/TileSheet.cpp"/>
   <file name="common/Display.cpp"/>
   <file name="common/ColorTransform.cpp"/>
+  <file name="common/Hardware.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>
@@ -66,7 +75,7 @@
   <file name="internal/GradientFill.cpp"/>
   <file name="internal/BitmapFill.cpp"/>
 
-  <file name="opengl/OpenGLContext.cpp" if="windows"/>
+  <file name="opengl/OpenGLContext.cpp" if="ogl"/>
 
 </files>
 
@@ -76,7 +85,7 @@
   <files id="common"/>
   <files id="windows" if="windows"/>
   <files id="mac" if="macos"/>
-  <files id="sdl" if="macos"/>
+  <files id="sdl" if="sdl"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 

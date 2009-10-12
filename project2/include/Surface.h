@@ -7,13 +7,18 @@
 
 
 
-// Need a context ?
-struct NativeTexture;
-NativeTexture *CreateNativeTexture(Surface *inSoftwareSurface);
-void DestroyNativeTexture(NativeTexture *inTexture);
-
-
 void HintColourOrder(bool inRedFirst);
+
+class Texture
+{
+public:
+   virtual ~Texture() {};
+   virtual void Bind(class Surface *inSurface,int inSlot)=0;
+
+   void Dirty(const Rect &inRect);
+
+   Rect mDirtyRect;
+};
 
 class Surface
 {
@@ -26,11 +31,11 @@ public:
    virtual int Width() const =0;
    virtual int Height() const =0;
    virtual PixelFormat Format()  const = 0;
-	virtual const uint8 *GetBase() const = 0;
-	virtual int GetStride() const = 0;
+   virtual const uint8 *GetBase() const = 0;
+   virtual int GetStride() const = 0;
 
-	virtual void Clear(uint32 inColour) = 0;
-	virtual void Zero() { Clear(0); }
+   virtual void Clear(uint32 inColour) = 0;
+   virtual void Zero() { Clear(0); }
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
    const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
@@ -39,31 +44,31 @@ public:
    virtual void EndRender()=0;
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-							  BlendMode inBlend, const BitmapCache *inMask,
+                       BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff ) = 0;
 
-   virtual NativeTexture *GetTexture() { return mTexture; }
-   virtual void SetTexture(NativeTexture *inTexture);
+   Texture *GetTexture() { return mTexture; }
+   void Bind(HardwareContext &inHardware,int inSlot=0);
 
 
 protected:
-   NativeTexture *mTexture;
-	int           mRefCount;
-	virtual       ~Surface();
+   Texture       *mTexture;
+   int           mRefCount;
+   virtual       ~Surface();
 };
 
 // Helper class....
 class AutoSurfaceRender
 {
-	Surface *mSurface;
-	RenderTarget mTarget;
+   Surface *mSurface;
+   RenderTarget mTarget;
 public:
-	AutoSurfaceRender(Surface *inSurface) : mSurface(inSurface),
-		 mTarget(inSurface->BeginRender( Rect(inSurface->Width(),inSurface->Height()) ) ) { }
-	AutoSurfaceRender(Surface *inSurface,const Rect &inRect) : mSurface(inSurface),
-		 mTarget(inSurface->BeginRender(inRect)) { }
-	~AutoSurfaceRender() { mSurface->EndRender(); }
-	const RenderTarget &Target() { return mTarget; }
+   AutoSurfaceRender(Surface *inSurface) : mSurface(inSurface),
+       mTarget(inSurface->BeginRender( Rect(inSurface->Width(),inSurface->Height()) ) ) { }
+   AutoSurfaceRender(Surface *inSurface,const Rect &inRect) : mSurface(inSurface),
+       mTarget(inSurface->BeginRender(inRect)) { }
+   ~AutoSurfaceRender() { mSurface->EndRender(); }
+   const RenderTarget &Target() { return mTarget; }
 
 };
 
@@ -75,19 +80,19 @@ public:
    int Width() const  { return mWidth; }
    int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
-	void Clear(uint32 inColour);
-	void Zero();
+   void Clear(uint32 inColour);
+   void Zero();
 
 
    RenderTarget BeginRender(const Rect &inRect);
    void EndRender();
 
-	virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-							  BlendMode inBlend, const BitmapCache *inMask,
+   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
+                       BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff );
 
-	const uint8 *GetBase() const { return mBase; }
-	int GetStride() const { return mStride; }
+   const uint8 *GetBase() const { return mBase; }
+   int GetStride() const { return mStride; }
 
 
 protected:
@@ -106,28 +111,29 @@ private:
 class HardwareSurface : public Surface
 {
 public:
-	HardwareSurface(HardwareContext *inContext);
+   HardwareSurface(HardwareContext *inContext);
 
-	int Width() const { return mHardware->Width(); }
+   int Width() const { return mHardware->Width(); }
    int Height() const { return mHardware->Height(); }
    PixelFormat Format()  const { return pfHardware; }
-	const uint8 *GetBase() const { return 0; }
-	int GetStride() const { return 0; }
-	void Clear(uint32 inColour) { mHardware->Clear(inColour); }
+   const uint8 *GetBase() const { return 0; }
+   int GetStride() const { return 0; }
+   void Clear(uint32 inColour) { mHardware->Clear(inColour); }
    RenderTarget BeginRender(const Rect &inRect)
-	{
-		return RenderTarget(inRect,mHardware);
-	}
+   {
+      mHardware->BeginRender(inRect);
+      return RenderTarget(inRect,mHardware);
+   }
    void EndRender() { }
 
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-							  BlendMode inBlend, const BitmapCache *inMask,
+                       BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint ) { }
 
-	protected:
-	   ~HardwareSurface();
+   protected:
+      ~HardwareSurface();
    private:
-	   HardwareContext *mHardware;
+      HardwareContext *mHardware;
 };
 
 

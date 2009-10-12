@@ -102,19 +102,19 @@ public:
 class GraphicsSolidFill : public IGraphicsFill
 {
 public:
-	GraphicsSolidFill(int inRGB=0, float inAlpha=1) : mRGB(inRGB,inAlpha) { }
+   GraphicsSolidFill(int inRGB=0, float inAlpha=1) : mRGB(inRGB,inAlpha) { }
    GraphicsDataType GetType() { return gdtSolidFill; }
    GraphicsSolidFill   *AsSolidFill() { return this; }
 
-	ARGB  mRGB;
+   ARGB  mRGB;
 };
 
 
 struct GradStop
 {
-	GradStop(int inRGB=0, float inAlpha=0, float inRatio=0) :
-		mARGB(inRGB, inAlpha ),
-		mPos(inRatio<=0 ? 0 : inRatio>=1.0 ? 255 : inRatio*255.0 ) { }
+   GradStop(int inRGB=0, float inAlpha=0, float inRatio=0) :
+      mARGB(inRGB, inAlpha ),
+      mPos(inRatio<=0 ? 0 : inRatio>=1.0 ? 255 : inRatio*255.0 ) { }
 
    ARGB   mARGB;
    int    mPos;
@@ -127,16 +127,18 @@ enum SpreadMethod {  smPad, smReflect, smRepeat };
 class GraphicsGradientFill : public IGraphicsFill
 {
 public:
-	GraphicsGradientFill(bool inIsLinear=true, const Matrix &inMatrix=Matrix(),
-		SpreadMethod inSpread=smPad,
-		InterpolationMethod inInterp=imLinearRGB, double inFocal = 0.0 ) :
-		   isLinear(inIsLinear), matrix(inMatrix), spreadMethod(inSpread),
-			interpolationMethod(inInterp), focalPointRatio(inFocal) { } 
+   GraphicsGradientFill(bool inIsLinear=true, const Matrix &inMatrix=Matrix(),
+      SpreadMethod inSpread=smPad,
+      InterpolationMethod inInterp=imLinearRGB, double inFocal = 0.0 ) :
+         isLinear(inIsLinear), matrix(inMatrix), spreadMethod(inSpread),
+         interpolationMethod(inInterp), focalPointRatio(inFocal) { } 
 
-	void AddStop(int inRGB, float inAlpha=1, float inRatio=0)
-	{
-		mStops.push_back( GradStop(inRGB, inAlpha, inRatio) );
-	}
+   void AddStop(int inRGB, float inAlpha=1, float inRatio=0)
+   {
+      mStops.push_back( GradStop(inRGB, inAlpha, inRatio) );
+   }
+   void FillArray(ARGB *outColours, bool inSwap);
+
 
    GraphicsDataType GetType() { return gdtGradientFill; }
    GraphicsGradientFill   *AsGradientFill() { return this; }
@@ -154,7 +156,7 @@ public:
 class GraphicsBitmapFill : public IGraphicsFill
 {
 public:
-	GraphicsBitmapFill(Surface *inBitmapData, const Matrix &inMatrix, bool inRepeat, bool inSmooth);
+   GraphicsBitmapFill(Surface *inBitmapData, const Matrix &inMatrix, bool inRepeat, bool inSmooth);
    ~GraphicsBitmapFill();
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
@@ -188,7 +190,7 @@ public:
 
    GraphicsStroke *AsStroke() { return this; }
 
-	bool IsClear() { return false; }
+   bool IsClear() { return false; }
 
    StrokeCaps      caps;
    IGraphicsFill   *fill;
@@ -225,17 +227,17 @@ class GraphicsPath : public IGraphicsPath
 public:
    GraphicsPath *AsPath() { return this; }
 
-	GraphicsPath() : winding(wrOddEven) { }
+   GraphicsPath() : winding(wrOddEven) { }
    QuickVec<uint8> command;
    QuickVec<float>         data;
    WindingRule             winding;
 
-	void curveTo(float controlX, float controlY, float anchorX, float anchorY);
-	void arcTo(float controlX, float controlY, float anchorX, float anchorY);
-	void lineTo(float x, float y);
-	void moveTo(float x, float y);
-	void wideLineTo(float x, float y);
-	void wideMoveTo(float x, float y);
+   void curveTo(float controlX, float controlY, float anchorX, float anchorY);
+   void arcTo(float controlX, float controlY, float anchorX, float anchorY);
+   void lineTo(float x, float y);
+   void moveTo(float x, float y);
+   void wideLineTo(float x, float y);
+   void wideMoveTo(float x, float y);
 };
 
 
@@ -243,20 +245,20 @@ enum TriangleCulling { tcNegative = -1, tcNone = 0, tcPositive = 1};
 
 struct Vertex
 {
-	float  x;
-	float  y;
-	float  z;
-	bool   edge;
+   float  x;
+   float  y;
+   float  z;
+   bool   edge;
 };
 
 struct VertexUV : public Vertex
 {
-	UserPoint uv;
+   UserPoint uv;
 };
 
 struct VertexUVT : public VertexUV
 {
-	float t;
+   float t;
 };
 
 enum VertexType { vtVertex, vtVertexUV, vtVertexUVT };
@@ -264,32 +266,34 @@ enum VertexType { vtVertex, vtVertexUV, vtVertexUVT };
 class GraphicsTrianglePath : public IGraphicsPath
 {
 public:
-	GraphicsTrianglePath();
-	~GraphicsTrianglePath();
+   GraphicsTrianglePath();
+   ~GraphicsTrianglePath();
 
    TriangleCulling   culling;
-	VertexType mType;
-	Vertex     *mVertex;
-	int        mTriangleCount;
+   VertexType mType;
+   Vertex     *mVertex;
+   int        mTriangleCount;
 };
 
 struct IRenderData : public IGraphicsData
 {
 public:
    virtual ~IRenderData() { }
-	virtual struct SolidData *AsSolid() { return 0; }
-	virtual struct LineData *AsLine() { return 0; }
-	virtual struct TriangleData *AsTriangles() { return 0; }
-	virtual class Renderer *CreateSoftwareRenderer() = 0;
+   virtual struct SolidData *AsSolid() { return 0; }
+   virtual struct LineData *AsLine() { return 0; }
+   virtual struct TriangleData *AsTriangles() { return 0; }
+   virtual class Renderer *CreateSoftwareRenderer() = 0;
+   virtual class Renderer *CreateHardwareRenderer() = 0;
 };
 
 struct SolidData : IRenderData
 {
-	SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
-	SolidData *AsSolid() { return this; }
-	class Renderer *CreateSoftwareRenderer();
-	void Add(GraphicsPath *inPath);
-	void Close();
+   SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
+   SolidData *AsSolid() { return this; }
+   class Renderer *CreateSoftwareRenderer();
+   class Renderer *CreateHardwareRenderer();
+   void Add(GraphicsPath *inPath);
+   void Close();
 
    IGraphicsFill           *mFill;
    QuickVec<uint8> command;
@@ -298,10 +302,11 @@ struct SolidData : IRenderData
 
 struct LineData : IRenderData
 {
-	LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
-	LineData *AsLine() { return this; }
-	class Renderer *CreateSoftwareRenderer();
-	void Add(GraphicsPath *inPath);
+   LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
+   LineData *AsLine() { return this; }
+   class Renderer *CreateSoftwareRenderer();
+   class Renderer *CreateHardwareRenderer();
+   void Add(GraphicsPath *inPath);
 
    GraphicsStroke         *mStroke;
    QuickVec<uint8> command;
@@ -310,8 +315,9 @@ struct LineData : IRenderData
 
 struct TriangleData : IRenderData
 {
-	TriangleData *AsTriangles() { return this; }
-	class Renderer *CreateSoftwareRenderer();
+   TriangleData *AsTriangles() { return this; }
+   class Renderer *CreateSoftwareRenderer();
+   class Renderer *CreateHardwareRenderer();
    IGraphicsFill           *mFill;
    IGraphicsStroke         *mStroke;
    TriangleData            *mTriangles;
@@ -339,41 +345,41 @@ enum BlendMode
    bmOverlay,
    bmHardLight,
 
-	// Used for rendering text
+   // Used for rendering text
    bmTinted,
 };
 
 class ColorTransform
 {
 public:
-	ColorTransform() :
-		redScale(1), redOffset(0),
-		greenScale(1), greenOffset(0),
-		blueScale(1), blueOffset(0),
-		alphaScale(1), alphaOffset(0) { }
+   ColorTransform() :
+      redScale(1), redOffset(0),
+      greenScale(1), greenOffset(0),
+      blueScale(1), blueOffset(0),
+      alphaScale(1), alphaOffset(0) { }
 
-	uint32 Transform(uint32 inValue);
+   uint32 Transform(uint32 inValue);
 
-	void Combine(const ColorTransform &inParent, const ColorTransform &inChild);
+   void Combine(const ColorTransform &inParent, const ColorTransform &inChild);
 
-	inline bool IsIdentityColour() const
-	{
-		return redScale==1 && greenScale==1 && blueScale==1 &&
-		       redOffset==0 && greenOffset==0 && blueOffset==0;
-	}
-	inline bool IsIdentityAlpha() const
-	{
-		return alphaScale==1 && alphaOffset == 0;
-	}
-	inline bool IsIdentity() const { return IsIdentityAlpha() && IsIdentityColour(); }
+   inline bool IsIdentityColour() const
+   {
+      return redScale==1 && greenScale==1 && blueScale==1 &&
+             redOffset==0 && greenOffset==0 && blueOffset==0;
+   }
+   inline bool IsIdentityAlpha() const
+   {
+      return alphaScale==1 && alphaOffset == 0;
+   }
+   inline bool IsIdentity() const { return IsIdentityAlpha() && IsIdentityColour(); }
 
-	static void TidyCache();
+   static void TidyCache();
 
 
-	const uint8 *GetAlphaLUT() const;
-	const uint8 *GetC0LUT() const;
-	const uint8 *GetC1LUT() const;
-	const uint8 *GetC2LUT() const;
+   const uint8 *GetAlphaLUT() const;
+   const uint8 *GetC0LUT() const;
+   const uint8 *GetC1LUT() const;
+   const uint8 *GetC2LUT() const;
 
    double redScale, redOffset;
    double greenScale, greenOffset;
@@ -385,13 +391,13 @@ struct SoftwareMask;
 
 struct Transform
 {
-	Transform();
-	bool operator==(const Transform &inRHS) const;
-	bool operator!=(const Transform &inRHS) const
-	   { return !(operator==(inRHS)); }
+   Transform();
+   bool operator==(const Transform &inRHS) const;
+   bool operator!=(const Transform &inRHS) const
+      { return !(operator==(inRHS)); }
 
-	UserPoint      Apply(float inX, float inY) const;
-	Fixed10        ToImageAA(const UserPoint &inPoint) const;
+   UserPoint      Apply(float inX, float inY) const;
+   Fixed10        ToImageAA(const UserPoint &inPoint) const;
 
    Rect           GetTargetRect(const Extent2DF &inExtent) const;
 
@@ -399,12 +405,12 @@ struct Transform
    const Matrix   *mMatrix;
    const Scale9   *mScale9;
 
-	int            mAAFactor;
+   int            mAAFactor;
 
-	double         mStageScaleX;
-	double         mStageScaleY;
-	double         mStageOX;
-	double         mStageOY;
+   double         mStageScaleX;
+   double         mStageScaleY;
+   double         mStageOX;
+   double         mStageOY;
 };
 
 
@@ -419,13 +425,13 @@ public:
 
    void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend);
 
-	PixelFormat Format() const;
+   PixelFormat Format() const;
 
    Rect GetRect() const { return mRect.Translated(mTX,mTY); }
 
    const uint8 *Row(int inRow) const;
-	int GetTX() const { return mTX; }
-	int GetTY() const { return mTX; }
+   int GetTX() const { return mTX; }
+   int GetTY() const { return mTX; }
 
 private:
    int        mTX,mTY;
@@ -440,37 +446,49 @@ private:
 
 struct RenderState
 {
-	RenderState(Surface *inSurface=0,int inAA=1);
+   RenderState(Surface *inSurface=0,int inAA=1);
 
    void CombineColourTransform(const RenderState &inState,
-									const ColorTransform *inObjTrans,
-									ColorTransform *inBuf);
+                           const ColorTransform *inObjTrans,
+                           ColorTransform *inBuf);
 
-	// Spatial Transform
-	Transform      mTransform;
+   // Spatial Transform
+   Transform      mTransform;
 
-	// Colour transform
-	bool HasAlphaLUT() const { return mAlpha_LUT; }
-	bool HasColourLUT() const { return mC0_LUT; }
+   // Colour transform
+   bool HasAlphaLUT() const { return mAlpha_LUT; }
+   bool HasColourLUT() const { return mC0_LUT; }
 
    const ColorTransform *mColourTransform;
-	const uint8 *mC0_LUT;
-	const uint8 *mC1_LUT;
-	const uint8 *mC2_LUT;
-	const uint8 *mAlpha_LUT;
+   const uint8 *mC0_LUT;
+   const uint8 *mC1_LUT;
+   const uint8 *mC2_LUT;
+   const uint8 *mAlpha_LUT;
 
-	// Viewport
+   // Viewport
    Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
 
-	bool           mBitmapPhase;
-	// Masking...
-	class BitmapCache    *mMask;
+   bool           mBitmapPhase;
+   // Masking...
+   class BitmapCache    *mMask;
 };
 
 
 typedef QuickVec<IRenderData *> RenderData;
 
+
+enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles };
+
+struct DrawElement
+{
+   PrimType mType;
+   int      mFirst;
+   int      mCount;
+};
+
+typedef QuickVec<DrawElement> DrawElements;
+typedef QuickVec<UserPoint>   Vertices;
 
 
 class HardwareContext : public Object
@@ -478,37 +496,46 @@ class HardwareContext : public Object
 public:
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
 
-	virtual void SetWindowSize(int inWidth,int inHeight)=0;
-	virtual void BeginRender(const Rect &inRect)=0;
-	virtual void SetViewport(const Rect &inRect)=0;
-	virtual void Clear(uint32 inColour) = 0;
-	virtual void Flip() = 0;
+   virtual void SetWindowSize(int inWidth,int inHeight)=0;
+   virtual void BeginRender(const Rect &inRect)=0;
+   virtual void SetViewport(const Rect &inRect)=0;
+   virtual void Clear(uint32 inColour) = 0;
+   virtual void Flip() = 0;
 
-	virtual int Width() const = 0;
-	virtual int Height() const = 0;
+   virtual int Width() const = 0;
+   virtual int Height() const = 0;
+
+
+   virtual class Texture *CreateTexture(class Surface *inSurface)=0;
+   virtual void Render(const RenderState &inState,
+                       const DrawElements &inElements,
+                       const Vertices     &inVertices,
+                       const Vertices     &inTexCoords,
+                       Surface *inSurface,
+                       uint32 inColour) = 0;
 };
 
 
 struct RenderTarget
 {
-	RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride);
-	RenderTarget(const Rect &inRect,HardwareContext *inContext);
-	RenderTarget();
+   RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride);
+   RenderTarget(const Rect &inRect,HardwareContext *inContext);
+   RenderTarget();
 
-	bool IsHardware() const { return mHardware; }
+   bool IsHardware() const { return mHardware; }
 
-	RenderTarget ClipRect(const Rect &inRect) const;
+   RenderTarget ClipRect(const Rect &inRect) const;
 
    Rect        mRect;
-	PixelFormat mPixelFormat;
+   PixelFormat mPixelFormat;
 
-	// Software target
+   // Software target
    uint8 *mSoftPtr;
    int   mSoftStride;
    uint8 *Row(int inRow) const { return mSoftPtr+mSoftStride*inRow; }
 
-	// Hardware target - RenderTarget does not hold reference on HardwareContext
-	HardwareContext *mHardware;
+   // Hardware target - RenderTarget does not hold reference on HardwareContext
+   HardwareContext *mHardware;
 };
 
 class Renderer
@@ -516,17 +543,17 @@ class Renderer
 public:
    virtual void Destroy()=0;
 
-	virtual bool Render( const RenderTarget &inTarget, const RenderState &inState ) = 0;
+   virtual bool Render( const RenderTarget &inTarget, const RenderState &inState ) = 0;
 
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
 
-	// HitTest
+   // HitTest
 
    static Renderer *CreateHardware(LineData *inLineData);
    static Renderer *CreateHardware(SolidData *inSolidData);
    static Renderer *CreateHardware(TriangleData *inTriangleData);
 
-	static Renderer *CreateSoftware(LineData *inLineData);
+   static Renderer *CreateSoftware(LineData *inLineData);
    static Renderer *CreateSoftware(SolidData *inSolidData);
    static Renderer *CreateSoftware(TriangleData *inTriangleData);
 
@@ -537,10 +564,10 @@ protected:
 
 struct RendererCache
 {
-	RendererCache() : mSoftware(0), mHardware(0) { }
+   RendererCache() : mSoftware(0), mHardware(0) { }
 
-	Renderer *mSoftware;
-	Renderer *mHardware;
+   Renderer *mSoftware;
+   Renderer *mHardware;
 };
 
 
@@ -551,19 +578,19 @@ public:
    Graphics(bool inInitRef = false);
    ~Graphics();
 
-	void clear();
+   void clear();
 
-	Extent2DF GetExtent(const Transform &inTransform);
+   Extent2DF GetExtent(const Transform &inTransform);
 
-	bool Render( const RenderTarget &inTarget, const RenderState &inState );
+   bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
 
-	void addData(IGraphicsData *inData) { inData->IncRef(); Add(inData); }
+   void addData(IGraphicsData *inData) { inData->IncRef(); Add(inData); }
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
    void beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix = Matrix(),
-								bool inRepeat = true, bool inSmooth = false);
+                        bool inRepeat = true, bool inSmooth = false);
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
                   bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
                   StrokeCaps caps = scRound,
@@ -577,25 +604,25 @@ public:
    void drawEllipse(float x,float  y,float  width,float  height);
    void drawCircle(float x,float y, float radius) { drawEllipse(x,y,radius,radius); }
    void drawRect(float x,float  y,float  width,float  height)
-	{
-		moveTo(x,y);
-		lineTo(x+width,y);
-		lineTo(x+width,y+height);
-		lineTo(x,y+height);
-		lineTo(x,y);
-	}
+   {
+      moveTo(x,y);
+      lineTo(x+width,y);
+      lineTo(x+width,y+height);
+      lineTo(x,y+height);
+      lineTo(x,y);
+   }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
    const Extent2DF &GetExtent0(double inRotation);
 
-	bool empty() const { return mItems.empty(); }
+   bool empty() const { return mItems.empty(); }
 
 
 private:
-	QuickVec<RendererCache>   mCache;
+   QuickVec<RendererCache>   mCache;
    QuickVec<IGraphicsData *> mItems;
    int                       mLastConvertedItem;
-	RenderData                mRenderData;
+   RenderData                mRenderData;
 
    bool                      mRenderDirty;
    double                    mRotation0;
@@ -603,10 +630,10 @@ private:
 
    inline void MakeDirty();
    void BuiltExtent0(double inRotation);
-	void CreateRenderData();
-	void Add(IRenderData *inData);
-	void Add(IGraphicsData *inData);
-	GraphicsPath *GetLastPath();
+   void CreateRenderData();
+   void Add(IRenderData *inData);
+   void Add(IGraphicsData *inData);
+   GraphicsPath *GetLastPath();
 
 
 private:

@@ -11,7 +11,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 
 Graphics::~Graphics()
 {
-	clear();
+   clear();
 }
 
 void Graphics::MakeDirty()
@@ -30,11 +30,11 @@ void Graphics::clear()
       if (cache.mHardware)
          cache.mHardware->Destroy();
    }
-	mCache.resize(0);
+   mCache.resize(0);
 
    for(int i=0;i<mItems.size();i++)
       mItems[i]->DecRef();
-	mItems.resize(0);
+   mItems.resize(0);
 
    mExtent0 = Extent2DF();
    mRenderDirty = true;
@@ -49,22 +49,22 @@ void Graphics::clear()
 
 void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 {
-	float w = width;
-	float w_ = w*SIN45;
-	float cw_ = w*TAN22;
-	float h = height;
-	float h_ = h*SIN45;
-	float ch_ = h*TAN22;
+   float w = width;
+   float w_ = w*SIN45;
+   float cw_ = w*TAN22;
+   float h = height;
+   float h_ = h*SIN45;
+   float ch_ = h*TAN22;
 
-	moveTo(x+w,y);
-	curveTo(x+w,  y+ch_, x+w_, y+h_);
-	curveTo(x+cw_,y+h,   x,    y+h);
-	curveTo(x-cw_,y+h,   x-w_, y+h_);
-	curveTo(x-w,  y+ch_, x-w,  y);
-	curveTo(x-w,  y-ch_, x-w_, y-h_);
-	curveTo(x-cw_,y-h,   x,    y-h);
-	curveTo(x+cw_,y-h,   x+w_, y-h_);
-	curveTo(x+w,  y-ch_, x+w,  y);
+   moveTo(x+w,y);
+   curveTo(x+w,  y+ch_, x+w_, y+h_);
+   curveTo(x+cw_,y+h,   x,    y+h);
+   curveTo(x-cw_,y+h,   x-w_, y+h_);
+   curveTo(x-w,  y+ch_, x-w,  y);
+   curveTo(x-w,  y-ch_, x-w_, y-h_);
+   curveTo(x-cw_,y-h,   x,    y-h);
+   curveTo(x+cw_,y-h,   x+w_, y-h_);
+   curveTo(x+w,  y-ch_, x+w,  y);
 
    MakeDirty();
 }
@@ -74,31 +74,31 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    rx *= 0.5;
    ry *= 0.5;
    float w = width*0.5;
-	x+=w;
+   x+=w;
    if (rx>w) rx = w;
    int   lw = w - rx;
-	float w_ = lw + rx*SIN45;
-	float cw_ = lw + rx*TAN22;
-	float h = height*0.5;
-	y+=h;
+   float w_ = lw + rx*SIN45;
+   float cw_ = lw + rx*TAN22;
+   float h = height*0.5;
+   y+=h;
    if (ry>h) ry = h;
    int   lh = h - ry;
-	float h_ = lh + ry*SIN45;
-	float ch_ = lh + ry*TAN22;
+   float h_ = lh + ry*SIN45;
+   float ch_ = lh + ry*TAN22;
 
-	moveTo(x+w,y+lh);
-	curveTo(x+w,  y+ch_, x+w_, y+h_);
-	curveTo(x+cw_,y+h,   x+lw,    y+h);
-	lineTo(x-lw,    y+h);
-	curveTo(x-cw_,y+h,   x-w_, y+h_);
-	curveTo(x-w,  y+ch_, x-w,  y+lh);
-	lineTo( x-w, y-lh);
-	curveTo(x-w,  y-ch_, x-w_, y-h_);
-	curveTo(x-cw_,y-h,   x-lw,    y-h);
-	lineTo(x+lw,    y-h);
-	curveTo(x+cw_,y-h,   x+w_, y-h_);
-	curveTo(x+w,  y-ch_, x+w,  y-lh);
-	lineTo(x+w,  y+lh);
+   moveTo(x+w,y+lh);
+   curveTo(x+w,  y+ch_, x+w_, y+h_);
+   curveTo(x+cw_,y+h,   x+lw,    y+h);
+   lineTo(x-lw,    y+h);
+   curveTo(x-cw_,y+h,   x-w_, y+h_);
+   curveTo(x-w,  y+ch_, x-w,  y+lh);
+   lineTo( x-w, y-lh);
+   curveTo(x-w,  y-ch_, x-w_, y-h_);
+   curveTo(x-cw_,y-h,   x-lw,    y-h);
+   lineTo(x+lw,    y-h);
+   curveTo(x+cw_,y-h,   x+w_, y-h_);
+   curveTo(x+w,  y-ch_, x+w,  y-lh);
+   lineTo(x+w,  y+lh);
    MakeDirty();
 }
 
@@ -149,7 +149,7 @@ void Graphics::beginFill(unsigned int color, float alpha)
 }
 
 void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
-	bool inRepeat, bool inSmooth)
+   bool inRepeat, bool inSmooth)
 {
    Add(new GraphicsBitmapFill(bitmapData,inMatrix,inRepeat,inSmooth) );
 }
@@ -271,7 +271,7 @@ void Graphics::CreateRenderData()
          Add(line);
 
       mLastConvertedItem = n;
-		for(int i=mCache.size();i<mRenderData.size();i++)
+      for(int i=mCache.size();i<mRenderData.size();i++)
          mCache.push_back( RendererCache() );
    }
 
@@ -324,10 +324,14 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       RendererCache &cache = mCache[i];
       if (inTarget.IsHardware())
       {
+         if (!cache.mHardware)
+            cache.mHardware = mRenderData[i]->CreateHardwareRenderer();
+
+         cache.mHardware->Render(inTarget,inState);
       }
       else
       {
-			if (!cache.mSoftware)
+         if (!cache.mSoftware)
             cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
 
          cache.mSoftware->Render(inTarget,inState);
@@ -343,59 +347,59 @@ ColorTransform sgIdentityColourTransform;
 
 RenderState::RenderState(Surface *inSurface,int inAA)
 {
-	mTransform.mAAFactor = inAA;
-	mMask = 0;
-	mBitmapPhase = false;
-	mAlpha_LUT = 0;
-	mC0_LUT = 0;
-	mC1_LUT = 0;
-	mC2_LUT = 0;
-	mColourTransform = &sgIdentityColourTransform;
-	if (inSurface)
-	{
-		mClipRect = Rect(inSurface->Width(),inSurface->Height());
-	}
-	else
-		mClipRect = Rect(0,0);
+   mTransform.mAAFactor = inAA;
+   mMask = 0;
+   mBitmapPhase = false;
+   mAlpha_LUT = 0;
+   mC0_LUT = 0;
+   mC1_LUT = 0;
+   mC2_LUT = 0;
+   mColourTransform = &sgIdentityColourTransform;
+   if (inSurface)
+   {
+      mClipRect = Rect(inSurface->Width(),inSurface->Height());
+   }
+   else
+      mClipRect = Rect(0,0);
 }
 
 
 
 void RenderState::CombineColourTransform(const RenderState &inState,
-													  const ColorTransform *inObjTrans,
-													  ColorTransform *inBuf)
+                                         const ColorTransform *inObjTrans,
+                                         ColorTransform *inBuf)
 {
-	mAlpha_LUT = mColourTransform->IsIdentityAlpha() ? 0 : mColourTransform->GetAlphaLUT();
-	if (inObjTrans->IsIdentity())
-	{
-		mColourTransform = inState.mColourTransform;
-		mAlpha_LUT = inState.mAlpha_LUT;
-		mC0_LUT = inState.mC0_LUT;
-		mC1_LUT = inState.mC1_LUT;
-		mC2_LUT = inState.mC2_LUT;
-		return;
-	}
+   mAlpha_LUT = mColourTransform->IsIdentityAlpha() ? 0 : mColourTransform->GetAlphaLUT();
+   if (inObjTrans->IsIdentity())
+   {
+      mColourTransform = inState.mColourTransform;
+      mAlpha_LUT = inState.mAlpha_LUT;
+      mC0_LUT = inState.mC0_LUT;
+      mC1_LUT = inState.mC1_LUT;
+      mC2_LUT = inState.mC2_LUT;
+      return;
+   }
 
-	mColourTransform = inBuf;
-	inBuf->Combine(*(inState.mColourTransform),*inObjTrans);
+   mColourTransform = inBuf;
+   inBuf->Combine(*(inState.mColourTransform),*inObjTrans);
 
-	if (mColourTransform->IsIdentityColour())
-	{
-		mC0_LUT = 0;
-		mC1_LUT = 0;
-		mC2_LUT = 0;
-	}
-	else
-	{
-		mC0_LUT = mColourTransform->GetC0LUT();
-		mC1_LUT = mColourTransform->GetC1LUT();
-		mC2_LUT = mColourTransform->GetC2LUT();
-	}
-
-	if (mColourTransform->IsIdentityAlpha())
-		mAlpha_LUT = 0;
+   if (mColourTransform->IsIdentityColour())
+   {
+      mC0_LUT = 0;
+      mC1_LUT = 0;
+      mC2_LUT = 0;
+   }
    else
-		mAlpha_LUT = mColourTransform->GetAlphaLUT();
+   {
+      mC0_LUT = mColourTransform->GetC0LUT();
+      mC1_LUT = mColourTransform->GetC1LUT();
+      mC2_LUT = mColourTransform->GetC2LUT();
+   }
+
+   if (mColourTransform->IsIdentityAlpha())
+      mAlpha_LUT = 0;
+   else
+      mAlpha_LUT = mColourTransform->GetAlphaLUT();
 }
 
 
@@ -404,28 +408,28 @@ void RenderState::CombineColourTransform(const RenderState &inState,
 
 RenderTarget::RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride)
 {
-	mRect = inRect;
-	mPixelFormat = inFormat;
-	mSoftPtr = inPtr;
-	mSoftStride = inStride;
-	mHardware = 0;
+   mRect = inRect;
+   mPixelFormat = inFormat;
+   mSoftPtr = inPtr;
+   mSoftStride = inStride;
+   mHardware = 0;
 }
 
 RenderTarget::RenderTarget(const Rect &inRect,HardwareContext *inContext)
 {
-	mRect = inRect;
-	mPixelFormat = pfHardware;
-	mSoftPtr = 0;
-	mSoftStride = 0;
-	mHardware = inContext;
+   mRect = inRect;
+   mPixelFormat = pfHardware;
+   mSoftPtr = 0;
+   mSoftStride = 0;
+   mHardware = inContext;
 }
 
 RenderTarget::RenderTarget() : mRect(0,0)
 {
-	mPixelFormat = pfAlpha;
-	mSoftPtr = 0;
-	mSoftStride = 0;
-	mHardware = 0;
+   mPixelFormat = pfAlpha;
+   mSoftPtr = 0;
+   mSoftStride = 0;
+   mHardware = 0;
 }
 
 
@@ -440,17 +444,17 @@ RenderTarget RenderTarget::ClipRect(const Rect &inRect) const
 // --- GraphicsBitmapFill -------------------------------------------------------------------
 
 GraphicsBitmapFill::GraphicsBitmapFill(Surface *inBitmapData,
-		const Matrix &inMatrix, bool inRepeat, bool inSmooth) : bitmapData(inBitmapData),
-	      matrix(inMatrix),  repeat(inRepeat), smooth(inSmooth)
+      const Matrix &inMatrix, bool inRepeat, bool inSmooth) : bitmapData(inBitmapData),
+         matrix(inMatrix),  repeat(inRepeat), smooth(inSmooth)
 {
-	if (bitmapData)
-		bitmapData->IncRef();
+   if (bitmapData)
+      bitmapData->IncRef();
 }
 
 GraphicsBitmapFill::~GraphicsBitmapFill()
 {
-	if (bitmapData)
-		bitmapData->DecRef();
+   if (bitmapData)
+      bitmapData->DecRef();
 }
 
 
@@ -467,6 +471,12 @@ Renderer *LineData::CreateSoftwareRenderer()
    return Renderer::CreateSoftware(this);
 }
 
+Renderer *LineData::CreateHardwareRenderer()
+{
+   return Renderer::CreateHardware(this);
+}
+
+
 
 
 // --- SolidData -------------------------------------------------------------------
@@ -481,7 +491,10 @@ Renderer *SolidData::CreateSoftwareRenderer()
    return Renderer::CreateSoftware(this);
 }
 
-
+Renderer *SolidData::CreateHardwareRenderer()
+{
+   return Renderer::CreateHardware(this);
+}
 
 void SolidData::Close()
 {
@@ -507,3 +520,62 @@ GraphicsStroke::~GraphicsStroke()
    if (fill)
       fill->DecRef();
 }
+
+// --- Gradient ---------------------------------------------------------------------
+
+void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
+{
+   bool reflect = spreadMethod==smReflect;
+   int n = mStops.size();
+   if (n==0)
+      memset(outColours,0,sizeof(ARGB)*(reflect?512:256));
+   else
+   {
+      int i;
+      int last = mStops[0].mPos;
+      if (last>255) last = 255;
+
+      for(i=0;i<=last;i++)
+         outColours[i] = mStops[0].mARGB;
+      for(int k=0;k<n-1;k++)
+      {
+         ARGB c0 = mStops[k].mARGB;
+         int p0 = mStops[k].mPos;
+         int p1 = mStops[k+1].mPos;
+         int diff = p1 - p0;
+         if (diff>0)
+         {
+            if (p0<0) p0 = 0;
+            if (p1>256) p1 = 256;
+            int dc0 = mStops[k+1].mARGB.c0 - c0.c0;
+            int dc1 = mStops[k+1].mARGB.c1 - c0.c1;
+            int dc2 = mStops[k+1].mARGB.c2 - c0.c2;
+            int da = mStops[k+1].mARGB.a - c0.a;
+            for(i=p0;i<p1;i++)
+            {
+               outColours[i].c1 = c0.c1 + dc1*(i-p0)/diff;
+               if (inSwap)
+               {
+                  outColours[i].c2 = c0.c0 + dc0*(i-p0)/diff;
+                  outColours[i].c0 = c0.c2 + dc2*(i-p0)/diff;
+               }
+               else
+               {
+                  outColours[i].c0 = c0.c0 + dc0*(i-p0)/diff;
+                  outColours[i].c2 = c0.c2 + dc2*(i-p0)/diff;
+               }
+               outColours[i].a = c0.a + da*(i-p0)/diff;
+            }
+         }
+      }
+      for(;i<256;i++)
+         outColours[i] = mStops[n-1].mARGB;
+
+      if (reflect)
+      {
+         for(;i<512;i++)
+            outColours[i] = outColours[511-i];
+      }
+   }
+}
+

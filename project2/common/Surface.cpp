@@ -34,18 +34,14 @@ void HintColourOrder(bool inRedFirst)
 
 Surface::~Surface()
 {
-   //if (mTexture)
-      //DestroyNativeTexture(mTexture);
+   delete mTexture;
 }
 
-void Surface::SetTexture(NativeTexture *inTexture)
+void Surface::Bind(HardwareContext &inHardware,int inSlot)
 {
-   if (inTexture!=mTexture)
-   {
-      //if (mTexture)
-         //DestroyNativeTexture(mTexture);
-      mTexture = inTexture;
-   }
+   if (!mTexture)
+      mTexture = inHardware.CreateTexture(this);
+   mTexture->Bind(this,inSlot);
 }
 
 
