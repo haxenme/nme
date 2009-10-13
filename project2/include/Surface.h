@@ -14,6 +14,7 @@ class Texture
 public:
    virtual ~Texture() {};
    virtual void Bind(class Surface *inSurface,int inSlot)=0;
+   virtual UserPoint PixelToTex(const UserPoint &inPixels)=0;
 
    void Dirty(const Rect &inRect);
 

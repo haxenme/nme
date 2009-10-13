@@ -565,13 +565,21 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             {
                //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
                       //visible_bitmap.w, visible_bitmap.h );
+				   int w = visible_bitmap.w;
+				   int h = visible_bitmap.h;
+
+					if (inState.mRoundSizeToPOW2)
+					{
+						w = UpToPower2(w);
+						h = UpToPower2(h);
+					}
+
                SimpleSurface *bitmap =
-                  new SimpleSurface(visible_bitmap.w, visible_bitmap.h,
-                        obj->IsBitmapRender() ? pfARGB : pfAlpha );
+                  new SimpleSurface(w, h, obj->IsBitmapRender() ? pfARGB : pfAlpha );
                bitmap->Zero();
                // debug ...
                //bitmap->Clear(0xff333333);
-               AutoSurfaceRender render(bitmap);
+               AutoSurfaceRender render(bitmap,Rect(visible_bitmap.w,visible_bitmap.h));
                Matrix orig = full;
                full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
 
@@ -583,9 +591,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mBitmapPhase = false;
                obj->Render(render.Target(), *obj_state);
 
+					bool old_pow2 = obj_state->mRoundSizeToPOW2;
+					obj_state->mRoundSizeToPOW2 = false;
                full = orig;
                obj->SetBitmapCache(
                       new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
+					obj_state->mRoundSizeToPOW2 = old_pow2;
             }
          }
       }
@@ -706,10 +717,20 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
    {
       int tint = 0xffffffff;
       if (inTarget.mPixelFormat!=pfAlpha && mBitmap->Format()==pfAlpha)
-         tint = 0;
+         tint = 0xff000000;
 
-      // TX,TX is se in StillGood function
-      mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
+		if (inTarget.IsHardware())
+		{
+			inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
+			inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
+			inTarget.mHardware->EndBitmapRender();
+		}
+		else
+		{
+ 
+         // TX,TX is se in StillGood function
+         mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
+		}
    }
 }
 
@@ -763,6 +784,7 @@ void Stage::RenderStage()
    state.mClipRect = Rect( render.Width(), render.Height() );
 
    state.mBitmapPhase = true;
+   state.mRoundSizeToPOW2 = render.Target().IsHardware();
    Render(render.Target(),state);
 
    state.mBitmapPhase = false;

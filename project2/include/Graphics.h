@@ -470,6 +470,7 @@ struct RenderState
    Rect           mClipRect;
 
    bool           mBitmapPhase;
+	bool           mRoundSizeToPOW2;
    // Masking...
    class BitmapCache    *mMask;
 };
@@ -513,7 +514,12 @@ public:
                        const Vertices     &inTexCoords,
                        Surface *inSurface,
                        uint32 inColour) = 0;
+   virtual void BeginBitmapRender(Surface *inSurface,int inTint=0)=0;
+   virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
+   virtual void EndBitmapRender()=0;
 };
+
+int UpToPower2(int inX);
 
 
 struct RenderTarget

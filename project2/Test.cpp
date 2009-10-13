@@ -348,6 +348,7 @@ void TestColourTrans(Stage *inStage)
 
 			container->setAlpha(a==0?1 : a==1?0.4 : 0.3);
 			container->colorTransform.redScale = b;
+			container->cacheAsBitmap = true;
 		}
 }
 

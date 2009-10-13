@@ -18,12 +18,10 @@ typedef HGLRC GLCtx;
 #include <Graphics.h>
 #include <Surface.h>
 
-int UpToPower2(int inX)
-{
-   int result = 1;
-   while(result<inX) result<<=1;
-   return result;
-}
+#ifndef GL_CLAMP_TO_EDGE
+  #define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 
 
 class OGLTexture : public Texture
@@ -95,6 +93,11 @@ public:
    {
       glBindTexture(GL_TEXTURE_2D,mTextureID);
    }
+	UserPoint PixelToTex(const UserPoint &inPixels)
+	{
+		return UserPoint(inPixels.x/mPixelWidth, inPixels.y/mPixelHeight);
+	}
+
 
    GLuint mTextureID;
    bool mRepeat;
@@ -147,6 +150,7 @@ public:
          mMatrix = Matrix();
          mViewport = inRect;
          glViewport(inRect.x, mHeight-inRect.y1(), inRect.w, inRect.h);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
       }
    }
 
@@ -208,7 +212,6 @@ public:
       static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES };
 
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
       for(int e=0;e<inElements.size();e++)
       {
@@ -224,6 +227,36 @@ public:
       }
    }
 
+	void BeginBitmapRender(Surface *inSurface,int inTint)
+	{
+      glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
+		inSurface->Bind(*this,0);
+		mBitmapTexture = inSurface->GetTexture();
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+	}
+
+   void RenderBitmap(const Rect &inSrc, int inX, int inY)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+		for(int i=0;i<4;i++)
+		{
+			UserPoint t(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) ); 
+			UserPoint tex = mBitmapTexture->PixelToTex(t);
+			UserPoint p(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
+
+			glTexCoord2fv(&tex.x);
+			glVertex2fv(&p.x);
+		}
+		glEnd();
+	}
+
+   void EndBitmapRender()
+	{
+		mBitmapTexture = 0;
+	}
+
+
    Texture *CreateTexture(Surface *inSurface)
    {
       return new OGLTexture(inSurface);
@@ -235,6 +268,7 @@ public:
    WinDC mDC;
    GLCtx mOGLCtx;
    int mWidth,mHeight;
+	Texture *mBitmapTexture;
 };
 
 

@@ -355,6 +355,7 @@ RenderState::RenderState(Surface *inSurface,int inAA)
    mC1_LUT = 0;
    mC2_LUT = 0;
    mColourTransform = &sgIdentityColourTransform;
+	mRoundSizeToPOW2 = false;
    if (inSurface)
    {
       mClipRect = Rect(inSurface->Width(),inSurface->Height());
@@ -577,5 +578,14 @@ void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
             outColours[i] = outColours[511-i];
       }
    }
+}
+
+// --- Helper ----------------------------------------
+
+int UpToPower2(int inX)
+{
+   int result = 1;
+   while(result<inX) result<<=1;
+   return result;
 }
 
