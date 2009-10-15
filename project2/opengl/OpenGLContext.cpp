@@ -93,10 +93,10 @@ public:
    {
       glBindTexture(GL_TEXTURE_2D,mTextureID);
    }
-	UserPoint PixelToTex(const UserPoint &inPixels)
-	{
-		return UserPoint(inPixels.x/mPixelWidth, inPixels.y/mPixelHeight);
-	}
+   UserPoint PixelToTex(const UserPoint &inPixels)
+   {
+      return UserPoint(inPixels.x/mPixelWidth, inPixels.y/mPixelHeight);
+   }
 
 
    GLuint mTextureID;
@@ -116,6 +116,8 @@ public:
       mOGLCtx = inOGLCtx;
       mWidth = 0;
       mHeight = 0;
+      mBitmapSurface = 0;
+      mBitmapTexture = 0;
    }
 
    void SetWindowSize(int inWidth,int inHeight)
@@ -227,34 +229,40 @@ public:
       }
    }
 
-	void BeginBitmapRender(Surface *inSurface,int inTint)
-	{
+   void BeginBitmapRender(Surface *inSurface,uint32 inTint)
+   {
+      if (mBitmapSurface==inSurface && mTint==inTint)
+         return;
+
+      mTint = inTint;
+      mBitmapSurface = inSurface;
       glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
-		inSurface->Bind(*this,0);
-		mBitmapTexture = inSurface->GetTexture();
+      inSurface->Bind(*this,0);
+      mBitmapTexture = inSurface->GetTexture();
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
-	}
+   }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
-	{
-		glBegin(GL_TRIANGLE_STRIP);
-		for(int i=0;i<4;i++)
-		{
-			UserPoint t(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) ); 
-			UserPoint tex = mBitmapTexture->PixelToTex(t);
-			UserPoint p(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
+   {
+      glBegin(GL_TRIANGLE_STRIP);
+      for(int i=0;i<4;i++)
+      {
+         UserPoint t(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) ); 
+         UserPoint tex = mBitmapTexture->PixelToTex(t);
+         UserPoint p(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
 
-			glTexCoord2fv(&tex.x);
-			glVertex2fv(&p.x);
-		}
-		glEnd();
-	}
+         glTexCoord2fv(&tex.x);
+         glVertex2fv(&p.x);
+      }
+      glEnd();
+   }
 
    void EndBitmapRender()
-	{
-		mBitmapTexture = 0;
-	}
+   {
+      mBitmapTexture = 0;
+      mBitmapSurface = 0;
+   }
 
 
    Texture *CreateTexture(Surface *inSurface)
@@ -267,8 +275,10 @@ public:
    Rect mViewport;
    WinDC mDC;
    GLCtx mOGLCtx;
+   uint32 mTint;
    int mWidth,mHeight;
-	Texture *mBitmapTexture;
+   Surface *mBitmapSurface;
+   Texture *mBitmapTexture;
 };
 
 

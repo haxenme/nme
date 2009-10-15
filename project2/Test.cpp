@@ -137,7 +137,11 @@ void TestText(Stage *inStage,bool inFromFile)
       text->setText( UTF8ToWide(contents.c_str()) );
    }
    else
-      text->setHTMLText(L"<font size=20>Hello <font color='#202060' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
+   {
+      text->setHTMLText(L"<font size=20>Hello <font color='#ff0000' face='times'>go\nod-<br>bye <b>gone for good!</b></font></font>");
+      text->setX(500);
+      text->setAlpha(0.5);
+   }
 
    //text->cacheAsBitmap = true;
    inStage->addChild(text);
@@ -365,7 +369,9 @@ int main(int inargc,char **arvg)
 
    // TestScrollRect(stage);
 
-   // TestText(stage,false);
+   TestText(stage,true);
+
+   TestText(stage,false);
 
    // TestWidth1(stage);
 
@@ -377,7 +383,7 @@ int main(int inargc,char **arvg)
 
    // TestBlend(stage);
 
-   TestColourTrans(stage);
+   // TestColourTrans(stage);
 
    MainLoop();
    delete frame;

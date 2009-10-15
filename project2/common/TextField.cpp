@@ -212,8 +212,8 @@ void TextField::UpdateFonts(const Transform &inTransform)
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-	if (inTarget.mPixelFormat==pfAlpha)
-		return;
+   if (inTarget.mPixelFormat==pfAlpha)
+      return;
 
    UpdateFonts(inState.mTransform);
    Layout();
@@ -246,6 +246,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    if (inState.mMask)
       rect = rect.Intersect(inState.mMask->GetRect());
    RenderTarget target = inTarget.ClipRect(rect);
+   HardwareContext *hardware = target.IsHardware() ? target.mHardware : 0;
 
    for(int l=0;l<mLines.size();l++)
    {
@@ -271,6 +272,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          done += left;
          if (group->mString && group->mFont)
          {
+            uint32 group_tint =
+                 inState.mColourTransform->Transform(group->mFormat->color | 0xff000000);
             // Now render the chars ...
             for(int c=0;c<left;c++)
             {
@@ -279,9 +282,20 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                if (ch!='\n')
                {
                   Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
-                  tile.mSurface->BlitTo(target, tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
-								bmTinted, 0,
+                  if (hardware)
+                  {
+                     // todo - better to wizz though and do all of the same surface first?
+                     // ok to call this multiple times with same data
+                     hardware->BeginBitmapRender(tile.mSurface,group_tint);
+                     hardware->RenderBitmap(tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy);
+                  }
+                  else
+                  {
+                     tile.mSurface->BlitTo(target,
+                        tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
+                        bmTinted, 0,
                        (uint32)group->mFormat->color | 0xff000000);
+                  }
                   x+= advance;
                   if (x>target.mRect.x1())
                      break;
@@ -291,6 +305,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          c0 += left;
       }
    }
+
+   if (hardware)
+      hardware->EndBitmapRender();
 
 }
 

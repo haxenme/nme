@@ -24,6 +24,23 @@ void ColorTransform::Combine(const ColorTransform &inParent, const ColorTransfor
 				  inChild.alphaScale, inChild.alphaOffset);
 }
 
+inline uint32 ByteTrans(uint32 inVal, double inScale, double inOffset, int inShift)
+{
+   double val = ((inVal>>inShift) & 0xff) * inScale + inOffset;
+   if (val<0) return 0;
+   if (val>255) return 0xff<<inShift;
+   return ((int)val) << inShift;
+}
+
+uint32 ColorTransform::Transform(uint32 inVal) const
+{
+   return ByteTrans(inVal,alphaScale,alphaOffset,24) |
+          ByteTrans(inVal,redScale,redOffset,16) |
+          ByteTrans(inVal,greenScale,greenOffset,8) |
+          ByteTrans(inVal,blueScale,blueOffset,0);
+}
+
+
 static uint8 *sgIdentityLUT = 0;
 
 typedef std::pair<double,double> Trans;

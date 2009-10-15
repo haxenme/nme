@@ -1,8 +1,6 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-// Some design ramblings to see how some things may fit together.
-
 #include <Object.h>
 #include <QuickVec.h>
 #include <Matrix.h>
@@ -358,7 +356,7 @@ public:
       blueScale(1), blueOffset(0),
       alphaScale(1), alphaOffset(0) { }
 
-   uint32 Transform(uint32 inValue);
+   uint32 Transform(uint32 inValue) const;
 
    void Combine(const ColorTransform &inParent, const ColorTransform &inChild);
 
@@ -514,7 +512,7 @@ public:
                        const Vertices     &inTexCoords,
                        Surface *inSurface,
                        uint32 inColour) = 0;
-   virtual void BeginBitmapRender(Surface *inSurface,int inTint=0)=0;
+   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
 };
