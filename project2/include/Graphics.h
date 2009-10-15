@@ -516,7 +516,7 @@ public:
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
 
-   virtual void SetLineWidth(double inWidth)=0;
+   virtual void SetLineWidth(double inWidth,bool inAddPointsOnVertices)=0;
 };
 
 int UpToPower2(int inX);

@@ -14,26 +14,25 @@ void Handler(Event &ioEvent,void *inStage)
       TerminateMainLoop();
    else
    {
-   Stage *stage = (Stage *)inStage;
+		Stage *stage = (Stage *)inStage;
 
+		static int x = 0;
+		x = (x+1) % 800;
+		if (gDoSpin)
+		{
+			DisplayObject *shape = stage->getChildAt(0);
+			double rot = shape->getRotation();
+			rot += 1;
+			shape->setX(x);
+			shape->setRotation(rot);
+			if (gScrollWin)
+				gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
+		}
+		if (gCachObj)
+			gCachObj->setX(x);
 
-   static int x = 0;
-   x = (x+1) % 800;
-   if (gDoSpin)
-   {
-      DisplayObject *shape = stage->getChildAt(0);
-      double rot = shape->getRotation();
-      rot += 1;
-      shape->setX(x);
-      shape->setRotation(rot);
-      if (gScrollWin)
-         gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
-   }
-   if (gCachObj)
-      gCachObj->setX(x);
-
-   if (ioEvent.mType==etNextFrame)
-      stage->RenderStage();
+		if (ioEvent.mType==etNextFrame)
+			stage->RenderStage();
    }
 }
 
@@ -77,6 +76,8 @@ void AddGradFill(Stage *inStage)
    gfx.lineTo(-100,-100);
    shape->setY(200);
    inStage->addChild(shape);
+
+	gDoSpin = true;
 }
 
 void TestScrollRect(Stage *inStage)
@@ -377,7 +378,7 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-   // AddGradFill(stage);
+   AddGradFill(stage);
 
    // TestScrollRect(stage);
 
@@ -397,7 +398,7 @@ int main(int inargc,char **arvg)
 
    // TestColourTrans(stage);
 
-   TestLines(stage);
+   // TestLines(stage);
 
    MainLoop();
    delete frame;

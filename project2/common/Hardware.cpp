@@ -172,7 +172,7 @@ public:
                thick *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
                break;
          }
-         inTarget.mHardware->SetLineWidth(thick);
+         inTarget.mHardware->SetLineWidth(thick,true);
       }
 
       inTarget.mHardware->Render(inState,mElements,mVertices,mTexCoords,mSurface,mColour);
