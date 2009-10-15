@@ -229,7 +229,7 @@ void TestMask(Stage *inStage)
       gfx->moveTo( 0,0);
       gfx->lineTo( 500,500);
       masked->addChild(masked_child);
-		masked->cacheAsBitmap = true;
+      masked->cacheAsBitmap = true;
 
       TextField *tf = new TextField;
       tf->setText(L"MASKEDMASKEDMASKEDMASKEDMASKED");
@@ -245,7 +245,7 @@ void TestMask(Stage *inStage)
       inStage->addChild(m);
       m->setX(100);
       m->setY(100);
-		m->cacheAsBitmap = true;
+      m->cacheAsBitmap = true;
 
       DisplayObject *m_child = new DisplayObject;
       gfx = &m_child->GetGraphics();
@@ -336,24 +336,36 @@ void TestBlend(Stage *inStage)
 
 void TestColourTrans(Stage *inStage)
 {
-	for(int a=0;a<3;a++)
-		for(int b=0;b<3;b++)
-		{
-			DisplayObjectContainer *container = new DisplayObjectContainer;
-			inStage->addChild(container);
-			container->setX(a*150);
-			container->setY(b*150);
-			DisplayObject *obj1 =  CreateOne();
-			container->addChild(obj1);
-			DisplayObject *obj2 =  CreateTwo();
-			obj2->setX(50);
-			obj2->setY(50);
-			container->addChild(obj2);
+   for(int a=0;a<3;a++)
+      for(int b=0;b<3;b++)
+      {
+         DisplayObjectContainer *container = new DisplayObjectContainer;
+         inStage->addChild(container);
+         container->setX(a*150);
+         container->setY(b*150);
+         DisplayObject *obj1 =  CreateOne();
+         container->addChild(obj1);
+         DisplayObject *obj2 =  CreateTwo();
+         obj2->setX(50);
+         obj2->setY(50);
+         container->addChild(obj2);
 
-			container->setAlpha(a==0?1 : a==1?0.4 : 0.3);
-			container->colorTransform.redScale = b;
-			container->cacheAsBitmap = true;
-		}
+         container->setAlpha(a==0?1 : a==1?0.4 : 0.3);
+         container->colorTransform.redScale = b;
+         container->cacheAsBitmap = true;
+      }
+}
+
+void TestLines(Stage *inStage)
+{
+   DisplayObject *obj = new DisplayObject();
+   Graphics &gfx = obj->GetGraphics();
+
+   gfx.lineStyle(10,0x00ff00);
+   gfx.moveTo(40,40);
+   gfx.curveTo(240,400,440,40);
+
+   inStage->addChild(obj);
 }
 
 
@@ -369,9 +381,9 @@ int main(int inargc,char **arvg)
 
    // TestScrollRect(stage);
 
-   TestText(stage,true);
+   // TestText(stage,true);
 
-   TestText(stage,false);
+   // TestText(stage,false);
 
    // TestWidth1(stage);
 
@@ -384,6 +396,8 @@ int main(int inargc,char **arvg)
    // TestBlend(stage);
 
    // TestColourTrans(stage);
+
+   TestLines(stage);
 
    MainLoop();
    delete frame;
