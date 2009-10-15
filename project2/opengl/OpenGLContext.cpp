@@ -116,6 +116,7 @@ public:
       mOGLCtx = inOGLCtx;
       mWidth = 0;
       mHeight = 0;
+		mLineWidth = -1;
       mBitmapSurface = 0;
       mBitmapTexture = 0;
    }
@@ -211,7 +212,7 @@ public:
          glColor4ub(inColour>>16,inColour>>8,inColour,255);
       }
 
-      static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES };
+      static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
 
       glEnable(GL_BLEND);
 
@@ -264,6 +265,13 @@ public:
       mBitmapSurface = 0;
    }
 
+	virtual void SetLineWidth(double inWidth)
+	{
+		if (inWidth!=mLineWidth)
+			glLineWidth(inWidth);
+	}
+
+
 
    Texture *CreateTexture(Surface *inSurface)
    {
@@ -277,6 +285,7 @@ public:
    GLCtx mOGLCtx;
    uint32 mTint;
    int mWidth,mHeight;
+	double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;
 };

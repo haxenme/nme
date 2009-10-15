@@ -477,7 +477,7 @@ struct RenderState
 typedef QuickVec<IRenderData *> RenderData;
 
 
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles };
+enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip };
 
 struct DrawElement
 {
@@ -515,6 +515,8 @@ public:
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
+
+   virtual void SetLineWidth(double inWidth)=0;
 };
 
 int UpToPower2(int inX);

@@ -4,6 +4,23 @@
 class HardwareRenderer : public Renderer
 {
 public:
+   HardwareRenderer(SolidData *inSolidData)
+   {
+      AddObject(inSolidData->command,inSolidData->data,ptTriangleFan,true);
+      SetFill(inSolidData->mFill);
+      mLineWidth = -1;
+      mStrokeScaleMode = ssmNormal;
+   }
+
+   HardwareRenderer(LineData *inLineData)
+   {
+      AddObject(inLineData->command,inLineData->data,ptLineStrip,false);
+      SetFill(inLineData->mStroke->fill);
+      mLineWidth = inLineData->mStroke->thickness;
+      mStrokeScaleMode = inLineData->mStroke->scaleMode;
+   }
+
+
    void SetFill(IGraphicsFill *inFill)
    {
        mColour = 0;
@@ -49,34 +66,32 @@ public:
          mSurface->DecRef();
    }
 
-   HardwareRenderer(LineData *inLineData)
-   {
-      SetFill(inLineData->mStroke->fill);
-   }
 
-   HardwareRenderer(SolidData *inSolidData)
+   void AddObject(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
+                  PrimType inType, bool inClose)
    {
-      int n = inSolidData->command.size();
-      UserPoint *point = (UserPoint *)&inSolidData->data[0];
+      int n = inCommands.size();
+      UserPoint *point = (UserPoint *)&inData[0];
       UserPoint last_move;
       UserPoint last_point;
       int points = 0;
 
       DrawElement draw;
-      draw.mType = ptTriangleFan;
+      draw.mType = inType;
       draw.mFirst = 0;
       draw.mCount = 0;
 
       for(int i=0;i<n;i++)
       {
-         switch(inSolidData->command[i])
+         switch(inCommands[i])
          {
             case pcWideMoveTo:
                point++;
             case pcMoveTo:
                if (points>1)
                {
-                  mVertices.push_back(last_move);
+                  if (inClose)
+                     mVertices.push_back(last_move);
                   draw.mCount = mVertices.size() - draw.mFirst;
                   mElements.push_back(draw);
                }
@@ -100,9 +115,11 @@ public:
 
             case pcCurveTo:
                {
-               double len = (last_point-point[0]).Norm() + (point[1]-point[0]).Norm();
+               double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm()) * 0.25;
+               if (len==0)
+                  break;
                int steps = (int)len;
-               if (steps<1) steps = 1;
+               if (steps<3) steps = 3;
                if (steps>100) steps = 100;
                double step = 1.0/(steps+1);
                double t = 0;
@@ -130,15 +147,34 @@ public:
          draw.mCount = mVertices.size() - draw.mFirst;
          mElements.push_back(draw);
       }
-
-      SetFill(inSolidData->mFill);
    }
-
 
    void Destroy() { delete this; }
 
    bool Render( const RenderTarget &inTarget, const RenderState &inState )
    {
+      if (mLineWidth>=0)
+      {
+         double thick = mLineWidth;
+         const Matrix &m = *inState.mTransform.mMatrix;
+         switch(mStrokeScaleMode)
+         {
+            case ssmNone:
+               // Done!
+               break;
+            case ssmNormal:
+               thick *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
+               break;
+            case ssmVertical:
+               thick *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
+               break;
+            case ssmHorizontal:
+               thick *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
+               break;
+         }
+         inTarget.mHardware->SetLineWidth(thick);
+      }
+
       inTarget.mHardware->Render(inState,mElements,mVertices,mTexCoords,mSurface,mColour);
       return true;
    }
@@ -153,6 +189,9 @@ public:
    Vertices     mVertices;
    Vertices     mTexCoords;
    DrawElements mElements;
+
+   double       mLineWidth;
+   StrokeScaleMode mStrokeScaleMode;
 };
 
 
