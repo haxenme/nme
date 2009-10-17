@@ -116,8 +116,8 @@ public:
       mOGLCtx = inOGLCtx;
       mWidth = 0;
       mHeight = 0;
-		mLineWidth = -1;
-		mPointsToo = false;
+      mLineWidth = -1;
+      mPointsToo = false;
       mBitmapSurface = 0;
       mBitmapTexture = 0;
    }
@@ -166,8 +166,8 @@ public:
       SetViewport(inRect);
 
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_POINT_SMOOTH);
-		glEnable(GL_LINE_SMOOTH);
+      glEnable(GL_POINT_SMOOTH);
+      glEnable(GL_LINE_SMOOTH);
    }
    void EndRender()
    {
@@ -224,9 +224,9 @@ public:
       {
          DrawElement draw = inElements[e];
 
-			if (mPointsToo && draw.mType == ptLineStrip)
-			{
-				glBegin(GL_POINTS);
+         if (mPointsToo && draw.mType == ptLineStrip)
+         {
+            glBegin(GL_POINTS);
             for(int i=0;i<draw.mCount;i++)
             {
                if (tex)
@@ -234,7 +234,7 @@ public:
                glVertex2fv( &inVertices[draw.mFirst+i].x );
             }
             glEnd();
-			}
+         }
 
 
          glBegin(type[draw.mType]);
@@ -284,17 +284,17 @@ public:
       mBitmapSurface = 0;
    }
 
-	virtual void SetLineWidth(double inWidth,bool inPointsToo)
-	{
-		mPointsToo = inPointsToo;
-		if (inWidth!=mLineWidth)
-		{
-			mLineWidth = inWidth;
-			glLineWidth(inWidth);
-		   if (inPointsToo)
-			   glPointSize(mLineWidth);
-		}
-	}
+   virtual void SetLineWidth(double inWidth,bool inPointsToo)
+   {
+      mPointsToo = inPointsToo;
+      if (inWidth!=mLineWidth)
+      {
+         mLineWidth = inWidth;
+         glLineWidth(inWidth);
+         if (inPointsToo)
+            glPointSize(mLineWidth);
+      }
+   }
 
 
 
@@ -310,8 +310,8 @@ public:
    GLCtx mOGLCtx;
    uint32 mTint;
    int mWidth,mHeight;
-	bool   mPointsToo;
-	double mLineWidth;
+   bool   mPointsToo;
+   double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;
 };

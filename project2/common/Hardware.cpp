@@ -81,6 +81,7 @@ public:
       draw.mFirst = 0;
       draw.mCount = 0;
 
+
       for(int i=0;i<n;i++)
       {
          switch(inCommands[i])
@@ -98,8 +99,8 @@ public:
                points = 1;
                last_point = *point++;
                last_move = last_point;
-               mVertices.push_back(last_move);
                draw.mFirst = mVertices.size();
+               mVertices.push_back(last_move);
                break;
 
             case pcWideLineTo:
