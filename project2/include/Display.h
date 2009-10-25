@@ -53,6 +53,27 @@ enum
    dirtCache       = 0x0004,
 };
 
+class Filter : public Object
+{
+   Filter(int inQuality = 1) : mQuality(inQuality) { }
+   virtual ~Filter() {}
+
+   virtual class SimpleSurface *Process(const Surface *inSurface,bool inToPOW2) const = 0;
+   virtual void GetOffset(int &ioDX, int &ioDY) const = 0;
+   virtual int GetQuality() const { return mQuality; }
+
+protected:
+   int mQuality;
+};
+
+typedef QuickVec<Filter *> Filters;
+
+Rect GetFilteredRect(const Filters &inFilters,const Rect &inObjRect);
+Rect GetRectToCreateFiltered(const Filters &inFilters,const Rect &inTargetRect);
+
+void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &inSrcRect, const Rect &outDestRect, bool inMakePOW2);
+
+        
 
 class DisplayObject : public Object
 {
@@ -75,10 +96,10 @@ public:
    void   setScaleY(double inValue);
    void   setScale9Grid(const DRect &inRect);
    void   setScrollRect(const DRect &inRect);
-	void   setMask(DisplayObject *inMask);
-	DisplayObject   *getMask() { return mMask; }
+   void   setMask(DisplayObject *inMask);
+   DisplayObject   *getMask() { return mMask; }
 
-	void   setAlpha(double inAlpha);
+   void   setAlpha(double inAlpha);
 
 
    const Transform &getTransform();
@@ -121,32 +142,36 @@ public:
    Graphics &GetGraphics();
    Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
+   const Filters &GetFilters() { return mFilters; }
+   void     SetFilters(const Filters &inFilters);
 
    void CheckCacheDirty();
    bool IsBitmapRender();
    void SetBitmapCache(BitmapCache *inCache);
    BitmapCache *GetBitmapCache() { return mBitmapCache; }
 
-	void ChangeIsMaskCount(int inDelta);
+   void ChangeIsMaskCount(int inDelta);
 
-	bool IsMask() const { return mIsMaskCount; }
+   bool IsMask() const { return mIsMaskCount; }
 
-	void CombineColourTransform(const RenderState *inState,
-									    const ColorTransform *inObjTrans,
-										 ColorTransform *inBuf);
+   void CombineColourTransform(const RenderState *inState,
+                               const ColorTransform *inObjTrans,
+                               ColorTransform *inBuf);
 
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
+   void DecFilters();
    ~DisplayObject();
    DisplayObjectContainer *mParent;
    Graphics               *mGfx;
    BitmapCache            *mBitmapCache;
+   Filters                mFilters;
 
 
-	// Masking...
+   // Masking...
    DisplayObject          *mMask;
-	int                    mIsMaskCount;
+   int                    mIsMaskCount;
 
    // Matrix stuff
    uint32 mDirtyFlags;

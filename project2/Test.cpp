@@ -5,8 +5,8 @@
 #include <Surface.h>
 
 DisplayObject *gScrollWin = 0;
-DisplayObject *gCachObj = 0;
-bool gDoSpin = false;
+DisplayObject *gMoveObj = 0;
+DisplayObject *gSpinObj = 0;
 
 void Handler(Event &ioEvent,void *inStage)
 {
@@ -14,25 +14,23 @@ void Handler(Event &ioEvent,void *inStage)
       TerminateMainLoop();
    else
    {
-		Stage *stage = (Stage *)inStage;
+      Stage *stage = (Stage *)inStage;
 
-		static int x = 0;
-		x = (x+1) % 800;
-		if (gDoSpin)
-		{
-			DisplayObject *shape = stage->getChildAt(0);
-			double rot = shape->getRotation();
-			rot += 1;
-			shape->setX(x);
-			shape->setRotation(rot);
-			if (gScrollWin)
-				gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
-		}
-		if (gCachObj)
-			gCachObj->setX(x);
+      static int x = 0;
+      x = (x+1) % 800;
+      if (gSpinObj)
+      {
+         double rot = gSpinObj->getRotation();
+         rot += 1;
+         gSpinObj->setRotation(rot);
+      }
+      if (gScrollWin)
+         gScrollWin->setScrollRect( DRect(20,x/8,100,100) );
+      if (gMoveObj)
+         gMoveObj->setX(x);
 
-		if (ioEvent.mType==etNextFrame)
-			stage->RenderStage();
+      if (ioEvent.mType==etNextFrame)
+         stage->RenderStage();
    }
 }
 
@@ -77,12 +75,11 @@ void AddGradFill(Stage *inStage)
    shape->setY(200);
    inStage->addChild(shape);
 
-	gDoSpin = true;
+   gSpinObj = shape;
 }
 
 void TestScrollRect(Stage *inStage)
 {
-   gDoSpin = true;
    DisplayObjectContainer *win = new DisplayObjectContainer(true);
    Graphics &g = win->GetGraphics();
    g.lineStyle(2,0x202040,1,false);
@@ -104,6 +101,7 @@ void TestScrollRect(Stage *inStage)
    win->setScale9Grid( DRect(20,20,180,80) );
    win->setScrollRect( DRect(-15,-15,100,100) );
    gScrollWin = win;
+   gSpinObj = win;
 }
 
 void TestText(Stage *inStage,bool inFromFile)
@@ -204,7 +202,7 @@ void TestWidth2(Stage *inStage)
       obj->addChild(lobe);
       printf("Obj width %f\n",obj->getWidth());
       base->cacheAsBitmap = true;
-      gCachObj = base;
+      gMoveObj = base;
 }
 
 
@@ -369,6 +367,32 @@ void TestLines(Stage *inStage)
    inStage->addChild(obj);
 }
 
+void TestBackground(Stage *inStage)
+{
+   DisplayObject *obj = new DisplayObject();
+   Graphics &gfx = obj->GetGraphics();
+
+   gfx.lineStyle(10,0x000000);
+   gfx.beginFill(0xff0000);
+   gfx.drawRect(0,0,100,100);
+
+   DisplayObjectContainer *c = new DisplayObjectContainer();
+   c->IncRef();
+   c->addChild(obj);
+   inStage->addChild(c);
+   c->DecRef();
+
+   c->setX(200);
+   c->setY(200);
+   c->opaqueBackground = 0xa0a0ff;
+   c->cacheAsBitmap = true;
+
+   gSpinObj = obj;
+}
+
+
+
+
 
 int main(int inargc,char **arvg)
 {
@@ -378,7 +402,7 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-   AddGradFill(stage);
+   // AddGradFill(stage);
 
    // TestScrollRect(stage);
 
@@ -399,6 +423,8 @@ int main(int inargc,char **arvg)
    // TestColourTrans(stage);
 
    // TestLines(stage);
+
+   TestBackground(stage);
 
    MainLoop();
    delete frame;

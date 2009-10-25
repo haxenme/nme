@@ -600,7 +600,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
 
 
-void SimpleSurface::Clear(uint32 inColour)
+void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
 {
    ARGB rgb(inColour);
    if (mPixelFormat==pfAlpha)
@@ -612,10 +612,14 @@ void SimpleSurface::Clear(uint32 inColour)
    if (mPixelFormat & pfSwapRB)
       rgb.SwapRB();
 
-   for(int y=0;y<mHeight;y++)
+   int x0 = inRect ? inRect->x  : 0;
+   int x1 = inRect ? inRect->x1()  : Width();
+   int y0 = inRect ? inRect->y  : 0;
+   int y1 = inRect ? inRect->y1()  : Height();
+   for(int y=y0;y<y1;y++)
    {
-      uint32 *ptr = (uint32 *)(mBase + y*mStride);
-      for(int x=0;x<mWidth;x++)
+      uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;
+      for(int x=x0;x<x1;x++)
          *ptr++ = rgb.ival;
    }
 }
@@ -652,7 +656,7 @@ HardwareSurface::~HardwareSurface()
 
 const uint8 *BitmapCache::Row(int inRow) const
 {
-   return mBitmap->Row(inRow-(mRect.y+mTY)) - mBitmap->BytesPP()*(mRect.x+mTX);
+   return mBitmap->Row(inRow-(mBitmapRect.y+mTY)) - mBitmap->BytesPP()*(mBitmapRect.x+mTX);
 }
 
 

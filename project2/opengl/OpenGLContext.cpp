@@ -131,15 +131,48 @@ public:
    int Width() const { return mWidth; }
    int Height() const { return mHeight; }
 
-   void Clear(uint32 inColour)
+   void Clear(uint32 inColour, const Rect *inRect)
    {
-      mViewport = Rect();
-      glViewport(0,0,mWidth,mHeight);
-      glClearColor((GLclampf)( ((inColour >>16) & 0xff) /255.0),
+      Rect r = inRect ? *inRect : Rect(mWidth,mHeight);
+     
+      if (r!=mViewport)
+         glViewport(r.x,mHeight-r.y1(),r.w,r.h);
+
+      if (r==Rect(mWidth,mHeight))
+      {
+         glClearColor((GLclampf)( ((inColour >>16) & 0xff) /255.0),
+                      (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
+                      (GLclampf)( ((inColour     ) & 0xff) /255.0),
+                      (GLclampf)1.0 );
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      }
+      else
+      {
+         glColor4f((GLclampf)( ((inColour >>16) & 0xff) /255.0),
                    (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
                    (GLclampf)( ((inColour     ) & 0xff) /255.0),
                    (GLclampf)1.0 );
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+         glMatrixMode(GL_MODELVIEW);
+         glPushMatrix();
+         glLoadIdentity();
+         glMatrixMode(GL_PROJECTION);
+         glPushMatrix();
+         glLoadIdentity();
+
+         glBegin(GL_TRIANGLE_FAN);
+           glVertex2f(-2,-2);
+           glVertex2f( 2,-2);
+           glVertex2f( 2, 2);
+           glVertex2f(-2, 2);
+         glEnd();
+
+         glPopMatrix();
+         glMatrixMode(GL_MODELVIEW);
+         glPopMatrix();
+      }
+
+      if (r!=mViewport)
+         glViewport(mViewport.x, mHeight-mViewport.y1(), mViewport.w, mViewport.h);
    }
 
    void SetViewport(const Rect &inRect)

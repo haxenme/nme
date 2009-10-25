@@ -63,6 +63,7 @@
   <file name="common/Display.cpp"/>
   <file name="common/ColorTransform.cpp"/>
   <file name="common/Hardware.cpp"/>
+  <file name="common/Filters.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>

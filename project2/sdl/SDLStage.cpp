@@ -27,10 +27,21 @@ public:
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
 
-   void Clear(uint32 inColour)
+   void Clear(uint32 inColour,const Rect *inRect)
    {
-      SDL_FillRect(mSurf,0,SDL_MapRGBA(mSurf->format,
-         inColour>>16, inColour>>8, inColour, inColour>>24 )  );
+      SDL_Rect r;
+      SDL_Rect *rect_ptr = 0;
+      if (inRect)
+      {
+         rect_ptr = &r;
+         r.x = inRect->x;
+         r.y = inRect->y;
+         r.w = inRect->w;
+         r.h = inRect->h;
+      }
+
+      SDL_FillRect(mSurf,rect_ptr,SDL_MapRGBA(mSurf->format,
+            inColour>>16, inColour>>8, inColour, inColour>>24 )  );
    }
 
    RenderTarget BeginRender(const Rect &inRect)
@@ -268,7 +279,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
       }
    }
 
-   HintColourOrder( !is_opengl && screen->format->Rmask==0xff );
+   HintColourOrder( opengl || screen->format->Rmask==0xff );
 
    #ifndef IPHONE
    SDL_WM_SetCaption( WideToUTF8(inTitle).c_str(), 0 );

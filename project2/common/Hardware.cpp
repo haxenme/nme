@@ -20,7 +20,7 @@ public:
       mStrokeScaleMode = inLineData->mStroke->scaleMode;
    }
 
-
+  
    void SetFill(IGraphicsFill *inFill)
    {
        mColour = 0;

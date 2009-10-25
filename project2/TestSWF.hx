@@ -112,11 +112,29 @@ static function TestColourTrans(inStage:flash.display.DisplayObjectContainer)
 		}
 }
 
+static function TestBackground(inStage:flash.display.DisplayObjectContainer)
+{
+   var obj1 = new flash.display.Sprite();
+   var gfx = obj1.graphics;
+   gfx.beginFill(0xff0000);
+   gfx.lineStyle(10,0x000000);
+   gfx.drawRect(0,0,100,100);
+   obj1.x = 200;
+   obj1.y = 200;
+   inStage.addEventListener( flash.events.Event.ENTER_FRAME, function(_) { obj1.rotation += 1; } );
+
+   var obj2 = new flash.display.Sprite();
+   obj2.opaqueBackground = 0xa0a0ff;
+   inStage.addChild(obj2);
+   obj2.addChild(obj1);
+}
+
 public static function main()
 {
    flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
    //TestBlend(flash.Lib.current);
-   TestColourTrans(flash.Lib.current);
+   //TestColourTrans(flash.Lib.current);
+   TestBackground(flash.Lib.current);
 }
 
 }

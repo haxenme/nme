@@ -22,6 +22,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    mBitmapCache = 0;
    cacheAsBitmap = false;
    blendMode = bmNormal;
+   opaqueBackground = 0;
    mMask = 0;
    mIsMaskCount = 0;
 }
@@ -33,6 +34,7 @@ DisplayObject::~DisplayObject()
    delete mBitmapCache;
    if (mMask)
       setMask(0);
+   DecFilters();
 }
 
 Graphics &DisplayObject::GetGraphics()
@@ -90,7 +92,7 @@ void DisplayObject::CheckCacheDirty()
 
 bool DisplayObject::IsBitmapRender()
 {
-   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild();
+   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild() || mFilters.size();
 }
 
 void DisplayObject::SetBitmapCache(BitmapCache *inCache)
@@ -436,6 +438,21 @@ void DisplayObject::setAlpha(double inAlpha)
    colorTransform.alphaOffset = 0;
 }
 
+void DisplayObject::SetFilters(const Filters &inFilters)
+{
+   DecFilters();
+   mFilters.resize(inFilters.size());
+   for(int i=0;i<mFilters.size();i++)
+      (mFilters[i] = inFilters[i])->IncRef();
+   DirtyDown(dirtCache);
+}
+
+
+void DisplayObject::DecFilters()
+{
+   for(int i=0;i<mFilters.size();i++)
+      mFilters[i]->DecRef();
+}
 
 // --- DisplayObjectContainer ------------------------------------------------
 
@@ -543,16 +560,20 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
+
             // Get bounding pixel rect
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
+            const Filters &filters = obj->GetFilters();
+            Rect filtered = GetFilteredRect( filters, rect );
+
             // Intersect with clip rect ...
-            visible_bitmap = rect.Intersect(obj_state->mClipRect);
+            visible_bitmap = filtered.Intersect(obj_state->mClipRect);
 
             if (obj->GetBitmapCache())
             {
                // Done - our bitmap is good!
-               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, rect, visible_bitmap))
+               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, filtered, visible_bitmap))
                   continue;
                else
                {
@@ -565,23 +586,32 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             {
                //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
                       //visible_bitmap.w, visible_bitmap.h );
-				   int w = visible_bitmap.w;
-				   int h = visible_bitmap.h;
 
-					if (inState.mRoundSizeToPOW2)
-					{
-						w = UpToPower2(w);
-						h = UpToPower2(h);
-					}
+               Rect render_to = GetRectToCreateFiltered(filters,visible_bitmap);
+               int w = render_to.w;
+               int h = render_to.h;
 
-               SimpleSurface *bitmap =
-                  new SimpleSurface(w, h, obj->IsBitmapRender() ? pfARGB : pfAlpha );
-               bitmap->Zero();
+               if (inState.mRoundSizeToPOW2 && filters.size()==0)
+               {
+                  w = UpToPower2(w);
+                  h = UpToPower2(h);
+               }
+
+               uint32 bg = obj->opaqueBackground;
+               if (bg && filters.size())
+                   bg = 0;
+               SimpleSurface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender() ?
+                         (bg ? pfXRGB : pfARGB) : pfAlpha );
+
+               if (bg && obj->IsBitmapRender())
+                  bitmap->Clear(obj->opaqueBackground | 0xff000000,0);
+               else
+                  bitmap->Zero();
                // debug ...
                //bitmap->Clear(0xff333333);
-               AutoSurfaceRender render(bitmap,Rect(visible_bitmap.w,visible_bitmap.h));
+               AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                Matrix orig = full;
-               full.TranslateData(-visible_bitmap.x, -visible_bitmap.y );
+               full.Translate(-render_to.x, -render_to.y );
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
 
@@ -589,14 +619,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj->Render(render.Target(), *obj_state);
 
                obj_state->mBitmapPhase = false;
+               bool old_pow2 = obj_state->mRoundSizeToPOW2;
+               obj_state->mRoundSizeToPOW2 = false;
+
                obj->Render(render.Target(), *obj_state);
 
-					bool old_pow2 = obj_state->mRoundSizeToPOW2;
-					obj_state->mRoundSizeToPOW2 = false;
+               FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
+
                full = orig;
                obj->SetBitmapCache(
                       new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
-					obj_state->mRoundSizeToPOW2 = old_pow2;
+               obj_state->mRoundSizeToPOW2 = old_pow2;
             }
          }
       }
@@ -623,6 +656,21 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
          else
          {
+            if (obj->opaqueBackground)
+            {
+               // TODO: this should actually be a rectangle rotated like the object?
+               Extent2DF screen_extent;
+               obj->GetExtent(obj_state->mTransform,screen_extent,true);
+               // Get bounding pixel rect
+               Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
+
+               // Intersect with clip rect ...
+               rect = rect.Intersect(obj_state->mClipRect);
+               if (rect.HasPixels())
+               {
+                  inTarget.Clear(obj->opaqueBackground,rect);
+               }
+            }
             obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
          }
@@ -719,18 +767,18 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
       if (inTarget.mPixelFormat!=pfAlpha && mBitmap->Format()==pfAlpha)
          tint = 0xff000000;
 
-		if (inTarget.IsHardware())
-		{
-			inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
-			inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
-			inTarget.mHardware->EndBitmapRender();
-		}
-		else
-		{
+      if (inTarget.IsHardware())
+      {
+         inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
+         inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
+         inTarget.mHardware->EndBitmapRender();
+      }
+      else
+      {
  
          // TX,TX is se in StillGood function
          mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
-		}
+      }
    }
 }
 

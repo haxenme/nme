@@ -35,7 +35,7 @@ public:
    virtual const uint8 *GetBase() const = 0;
    virtual int GetStride() const = 0;
 
-   virtual void Clear(uint32 inColour) = 0;
+   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Zero() { Clear(0); }
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
@@ -81,7 +81,7 @@ public:
    int Width() const  { return mWidth; }
    int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
-   void Clear(uint32 inColour);
+   void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
 
@@ -119,7 +119,7 @@ public:
    PixelFormat Format()  const { return pfHardware; }
    const uint8 *GetBase() const { return 0; }
    int GetStride() const { return 0; }
-   void Clear(uint32 inColour) { mHardware->Clear(inColour); }
+   void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }
    RenderTarget BeginRender(const Rect &inRect)
    {
       mHardware->BeginRender(inRect);

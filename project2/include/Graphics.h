@@ -498,7 +498,7 @@ public:
    virtual void SetWindowSize(int inWidth,int inHeight)=0;
    virtual void BeginRender(const Rect &inRect)=0;
    virtual void SetViewport(const Rect &inRect)=0;
-   virtual void Clear(uint32 inColour) = 0;
+   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Flip() = 0;
 
    virtual int Width() const = 0;
@@ -529,6 +529,8 @@ struct RenderTarget
    RenderTarget();
 
    bool IsHardware() const { return mHardware; }
+
+   void Clear(uint32 inColour,const Rect &inRect ) const;
 
    RenderTarget ClipRect(const Rect &inRect) const;
 
