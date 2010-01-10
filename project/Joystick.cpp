@@ -1,4 +1,4 @@
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 #include "nme.h"
 
 int __force_joystick=0;

@@ -1,5 +1,5 @@
 #include "texture_buffer.h"
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 #include <vector>
 #include <algorithm>
 #include "renderer/Pixel.h"

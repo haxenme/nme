@@ -30,7 +30,7 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 
 #define SURFACE( o )		(SDL_Surface*)val_data( o )
 #define SOUND( o )			(Mix_Chunk*)val_data( o )

@@ -58,7 +58,10 @@ value nme_ttf_shaded( value* args, int nargs )
 	TTF_Font* font = FindOrCreateFont(val_string(args[2]), val_int(args[3]) );
 
         if (!font)
+        {
+           printf("Could not get font %s\n",val_string(args[2]) );
            return alloc_null();
+        }
 
         SDL_Color fg,bg;
 
@@ -114,7 +117,10 @@ value nme_create_font_handle(value inFace,value inSize)
 
    TTF_Font *font = FindOrCreateFont(val_string(inFace),val_int(inSize));
    if (font==0)
+   {
+      printf("Could not create font handle %s (%d)\n",val_string(inFace), val_int(inSize) );
       return val_null;
+   }
 
    value v = alloc_abstract( k_font, font );
    val_gc( v, delete_font );

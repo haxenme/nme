@@ -27,7 +27,7 @@
 #define __NME_TEXT_H__
 
 #include<string>
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 #include <SDL_ttf.h>
 
 DECLARE_KIND( k_font );

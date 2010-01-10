@@ -2,7 +2,7 @@
 #include <SDL.h>
 #include <string>
 
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -1854,7 +1854,10 @@ value nme_create_text_drawable(value * arg, int nargs )
    TTF_Font *font = FindOrCreateFont(val_string(arg[aFont]),
                                      val_int(arg[aSize]));
    if (!font)
+   {
+      printf("Bad font : %s\n",val_string(arg[aFont]) );
       return val_null;
+   }
 
    int icol = val_int(arg[aColour]);
    SDL_Color col;
@@ -1941,7 +1944,7 @@ value nme_create_glyph_draw_obj(value * arg, int nargs )
    {
       if (!val_is_kind(arg[aFont],k_font))
       {
-         printf("Null font %p %d?\n",arg[aFont], val_type(arg[aFont]));
+         printf("Null font %p %d (%c)?\n",arg[aFont], val_type(arg[aFont]),ch);
          return val_null;
        }
 
@@ -2108,6 +2111,62 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
    return alloc_int(0);
 }
 
+
+
+// Mutiple object version
+value nme_draw_objects_to(value inDrawList,value surface,value matrix,
+                         value inMask, value inScrollRect )
+{
+   {
+      SDL_Surface *s = 0;
+      MaskObject *mask = 0;
+      TextureBuffer *tex = 0;
+
+      if ( val_is_kind( surface, k_surf )  )
+      {
+         s = SURFACE(surface);
+      }
+      else if ( val_is_kind( surface, k_texture_buffer )  )
+      {
+         tex = TEXTURE_BUFFER(surface);
+         s = tex->GetSourceSurface();
+      }
+
+      if ( val_is_kind( inMask, k_mask )  )
+      {
+         mask = MASK(inMask);
+      }
+
+      if (s)
+      {
+         Matrix mtx(matrix);
+         Viewport vp( 0,0, s->w, s->h );
+         if (!val_is_null(inScrollRect))
+         {
+            int x0 = (int)val_number( val_field(inScrollRect,val_id_x) );
+            int y0 = (int)val_number( val_field(inScrollRect,val_id_y) );
+            int x1 = x0+(int)val_number( val_field(inScrollRect,val_id_width) );
+            int y1 = y0+(int)val_number( val_field(inScrollRect,val_id_height) );
+            if (x0>=x1) return val_null;
+            if (y0>=y1) return val_null;
+            vp.SetWindow(x0,y0,x1,y1);
+         }
+
+         int n = val_array_size(inDrawList);
+         for(int i=0;i<n;i++)
+         {
+            Drawable *d = DRAWABLE(val_array_i(inDrawList,i));
+            d->RenderTo(s,mtx,tex,mask,vp);
+         }
+      }
+   }
+   return alloc_int(0);
+}
+
+
+
+
+
 value nme_add_to_mask(value inDrawList,value inSurface,value inMask, value inMatrix )
 {
    val_check_kind( inSurface, k_surf );
@@ -2206,6 +2265,7 @@ DEFINE_PRIM_MULT(nme_create_glyph_draw_obj);
 DEFINE_PRIM(nme_create_blit_drawable, 3);
 DEFINE_PRIM(nme_get_extent, 4);
 DEFINE_PRIM(nme_draw_object_to, 5);
+DEFINE_PRIM(nme_draw_objects_to, 5);
 DEFINE_PRIM(nme_hit_object, 3);
 DEFINE_PRIM(nme_set_draw_quality, 1);
 DEFINE_PRIM(nme_set_scale9_grid, 4);

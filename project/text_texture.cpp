@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
 #include "texture_buffer.h"
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 
 #ifdef NME_TTF
 
@@ -120,8 +120,8 @@ TTF_Font *FindOrCreateFont(const std::string &inFontName,int inPointSize)
       std::string file_name;
       if (GetFontFile(fname,file_name))
       {
-         //printf("Found font in %s\n", file_name.c_str());
          font = TTF_OpenFont(file_name.c_str(),inPointSize);
+         //printf("Found font in %s (%p)\n", file_name.c_str(),font);
       }
       if (font==0)
          font = TTF_OpenFont(("./fonts/" + fname).c_str(),inPointSize);

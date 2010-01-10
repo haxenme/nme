@@ -227,8 +227,8 @@ class Graphics
       ClosePolygon(true);
 
       var dest:Dynamic = inSurface == null ? nme.Manager.getScreen() : inSurface;
-      for(obj in mDrawList)
-         nme_draw_object_to(obj,dest,inMatrix,inMaskHandle,inScrollRect);
+      if (mDrawList.length>0)
+         nme_draw_objects_to(mDrawList,dest,inMatrix,inMaskHandle,inScrollRect);
    }
 
    // Only works properly after a render ...
@@ -795,6 +795,7 @@ class Graphics
 
 
    static var nme_draw_object_to = nme.Loader.load("nme_draw_object_to",5);
+   static var nme_draw_objects_to = nme.Loader.load("nme_draw_objects_to",5);
    static var nme_hit_object = nme.Loader.load("nme_hit_object",3);
    static var nme_create_blit_drawable = nme.Loader.load("nme_create_blit_drawable",3);
    static var nme_create_draw_obj = nme.Loader.load("nme_create_draw_obj",5);

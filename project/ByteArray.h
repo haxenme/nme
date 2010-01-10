@@ -2,7 +2,7 @@
 #define BYTE_ARRAY_H
 
 #include<string>
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 
 DECLARE_KIND( k_byte_array );
 #define BYTEARRAY(v) ( (ByteArray *)(val_data(v)) )

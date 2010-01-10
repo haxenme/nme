@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-#include <hxCFFI.h>
+#include <hx/CFFI.h>
 #include <vector>
 #include "SDL.h"
 #include <math.h>

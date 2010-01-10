@@ -6,7 +6,7 @@
 <set name="SDLVER" value="SDL13" if="iphone"/>
 
 <files id="nme" dir="${RUNTIME}">
-  <depend name="${HXCPP}/include/hxCFFI.h"/>
+  <depend name="${HXCPP}/include/hx/CFFI.h"/>
 
   <depend name="ByteArray.h"/>
   <depend name="DrawObject.h"/>

@@ -733,13 +733,9 @@ value nme_get_mouse_position()
 {
    int x,y;
 
-   #ifdef SDL13
-   SDL_GetMouseState(0,&x,&y);
-   #else
    SDL_GetMouseState(&x,&y);
-   #endif
 
-	value pos = alloc_empty_object();
+   value pos = alloc_empty_object();
    alloc_field( pos, val_id( "x" ), alloc_int( x ) );
    alloc_field( pos, val_id( "y" ), alloc_int( y ) );
    return pos;
