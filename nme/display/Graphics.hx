@@ -23,7 +23,7 @@ import nme.display.BitmapData;
 
 typedef DrawList = Array<Dynamic>;
 
-class GfxPoint
+class GfxPoint #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
 {
    public function new(inX:Float,inY:Float,inCX:Float,inCY:Float,inType:Int)
       { x = inX; y=inY; cx=inCX; cy=inCY; type=inType; }
@@ -54,7 +54,7 @@ typedef Grad =
    var focal:Float;
 }
 
-class LineJob
+class LineJob #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
 {
    public function new( inGrad:Grad, inPoint_idx0:Int, inPoint_idx1:Int, inThickness:Float,
          inAlpha:Float, inColour:Int, inPixel_hinting:Int, inJoints:Int, inCaps:Int,

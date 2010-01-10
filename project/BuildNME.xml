@@ -84,6 +84,7 @@
   <outdir name="../ndll/${BINDIR}"/>
   <lib name="-lpthread" if="linux"/>
   <lib name="-lGL" if="linux"/>
+  <lib name="-debug" if="windows"/>
   <lib name="${SDLLIB}libSDL_image${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_mixer${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL_ttf${SLIBEXT}"/>

@@ -16,7 +16,7 @@ package nme.geom;
 * @author	Hugh Sanderson
 * @author	Russell Weir
 **/
-class Matrix
+class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
 {
    public var a : Float;
    public var b : Float;

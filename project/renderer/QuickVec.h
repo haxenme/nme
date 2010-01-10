@@ -20,6 +20,21 @@ public:
       mAlloc = QBufSize;
       mSize = 0;
    }
+   QuickVec(int inN)
+   {
+		if (inN<=QBufSize)
+		{
+         mPtr = mQBuf;
+         mAlloc = QBufSize;
+		}
+		else
+		{
+         mAlloc = inN;
+         mPtr = (T_ *)malloc( mAlloc * sizeof(T_) );
+		}
+
+      mSize = inN;
+   }
    QuickVec(const QuickVec<T_,QBUF_SIZE_> &inRHS)
    {
       if (inRHS.mSize<=QBufSize)

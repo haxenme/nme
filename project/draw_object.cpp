@@ -26,6 +26,7 @@
 #include "Gradient.h"
 #include "OGLState.h"
 #include "renderer/Points.h"
+#include "renderer/QuickVec.h"
 
 
 DEFINE_KIND( k_drawable );
@@ -215,11 +216,11 @@ struct Point
 
    void FromValue(value inVal)
    {
-      mX = (float)val_number(val_field(inVal,val_id_x));
-      mY = (float)val_number(val_field(inVal,val_id_y));
-      mCX = (float)val_number(val_field(inVal,val_id_cx));
-      mCY = (float)val_number(val_field(inVal,val_id_cy));
-      mType = val_int(val_field(inVal,val_id_type));
+      mX = (float)val_field_numeric(inVal,val_id_x);
+      mY = (float)val_field_numeric(inVal,val_id_y);
+      mCX = (float)val_field_numeric(inVal,val_id_cx);
+      mCY = (float)val_field_numeric(inVal,val_id_cy);
+      mType = (int)val_field_numeric(inVal,val_id_type);
    }
 };
 
@@ -232,8 +233,8 @@ struct CurvedPoint
    float mX,mY;
 };
 
-typedef std::vector<Point> Points;
-typedef std::vector<CurvedPoint> CurvedPoints;
+typedef QuickVec<Point> Points;
+typedef QuickVec<CurvedPoint> CurvedPoints;
 
 #define SCALE_NONE       0
 #define SCALE_VERTICAL   1
@@ -262,23 +263,21 @@ struct LineJob : public PolyLine
       mRenderer = 0;
       mGradient = CreateGradient(val_field(inVal,val_id_grad));
       mColour = val_int(val_field(inVal,val_id_colour));
-      mThick0 = val_number(val_field(inVal,val_id_thickness));
+      mThick0 = (val_field_numeric(inVal,val_id_thickness));
       mThickness = mThick0 == 0 ? 1.0 : mThick0;
-      mAlpha = val_number(val_field(inVal,val_id_alpha));
-      mJoints = val_int(val_field(inVal,val_id_joints));
-      mCaps = val_int(val_field(inVal,val_id_caps));
-      mScaleMode = val_int(val_field(inVal,val_id_scale_mode));
-      mPixelHinting = val_int(val_field(inVal,val_id_pixel_hinting));
-      mMiterLimit = val_number(val_field(inVal,val_id_miter_limit));
-      mOrigPointIndex0 = val_int(val_field(inVal,val_id_point_idx0));
-      mOrigPointIndex1 = val_int(val_field(inVal,val_id_point_idx1));
+      mAlpha = (val_field_numeric(inVal,val_id_alpha));
+      mJoints = (int)(val_field_numeric(inVal,val_id_joints));
+      mCaps = (int)(val_field_numeric(inVal,val_id_caps));
+      mScaleMode = (int)(val_field_numeric(inVal,val_id_scale_mode));
+      mPixelHinting = (int)(val_field_numeric(inVal,val_id_pixel_hinting));
+      mMiterLimit = (val_field_numeric(inVal,val_id_miter_limit));
+      mOrigPointIndex0 = (int)(val_field_numeric(inVal,val_id_point_idx0));
+      mOrigPointIndex1 = (int)(val_field_numeric(inVal,val_id_point_idx1));
    }
 
 };
 
 typedef std::vector<LineJob> LineJobs;
-
-typedef std::vector<Point> Points;
 
 
 class DrawObject : public Drawable
@@ -2095,10 +2094,10 @@ value nme_draw_object_to(value drawable,value surface,value matrix,
          Viewport vp( 0,0, s->w, s->h );
          if (!val_is_null(inScrollRect))
          {
-            int x0 = (int)val_number( val_field(inScrollRect,val_id_x) );
-            int y0 = (int)val_number( val_field(inScrollRect,val_id_y) );
-            int x1 = x0+(int)val_number( val_field(inScrollRect,val_id_width) );
-            int y1 = y0+(int)val_number( val_field(inScrollRect,val_id_height) );
+            int x0 = (int)( val_field_numeric(inScrollRect,val_id_x) );
+            int y0 = (int)( val_field_numeric(inScrollRect,val_id_y) );
+            int x1 = x0+(int)( val_field_numeric(inScrollRect,val_id_width) );
+            int y1 = y0+(int)( val_field_numeric(inScrollRect,val_id_height) );
             if (x0>=x1) return val_null;
             if (y0>=y1) return val_null;
             vp.SetWindow(x0,y0,x1,y1);
