@@ -19,9 +19,15 @@ static GLenum sgOGLBlendDest = 0;
 
 static bool sgVertexEnabled = false;
 
+#ifdef NME_OPENGL
+enum { AlwaysSetState = 1 };
+#else
+enum { AlwaysSetState = 0 };
+#endif
+
 void nmeDrawArrays(GLenum inMode, int inN)
 {
-   if (sgTexEnable!=sgOGLTexEnable)
+   if (AlwaysSetState || sgTexEnable!=sgOGLTexEnable)
    {
       if (sgTexEnable)
       {
@@ -37,13 +43,13 @@ void nmeDrawArrays(GLenum inMode, int inN)
    }
    if (sgTexEnable)
    {
-      if (sgTexture!=sgOGLTexture)
+      if (AlwaysSetState || sgTexture!=sgOGLTexture)
       {
          glBindTexture(GL_TEXTURE_2D,sgTexture);
          sgOGLTexture = sgTexture;
       }
    }
-   if (sgBlendEnable!=sgOGLBlendEnable)
+   if (AlwaysSetState || sgBlendEnable!=sgOGLBlendEnable)
    {
       if (sgBlendEnable)
          glEnable(GL_BLEND);
@@ -53,7 +59,7 @@ void nmeDrawArrays(GLenum inMode, int inN)
    }
    if (sgBlendEnable)
    {
-      if (sgBlendSrc!=sgOGLBlendSrc || sgBlendDest!=sgOGLBlendDest)
+      if (AlwaysSetState || sgBlendSrc!=sgOGLBlendSrc || sgBlendDest!=sgOGLBlendDest)
       {
          glBlendFunc(sgOGLBlendSrc=sgBlendSrc, sgOGLBlendDest=sgBlendDest);
       }
@@ -70,7 +76,7 @@ void nmeDrawArrays(GLenum inMode, int inN)
 
 void nmeClearTexture(int inID)
 {
-   if (sgTexture==inID)
+   if (AlwaysSetState || sgTexture==inID)
    {
       glBindTexture(GL_TEXTURE_2D,0);
       sgOGLTexture = sgTexture = 0;
@@ -85,9 +91,9 @@ void nmeEnableTexture(bool inEnable)
 void nmeSetTexture(int inID,bool inBindNow)
 {
    sgTexture = inID;
-   if (inBindNow)
+   if (AlwaysSetState || inBindNow)
    {
-      if (sgTexture!=sgOGLTexture)
+      if (AlwaysSetState || sgTexture!=sgOGLTexture)
       {
          glBindTexture(GL_TEXTURE_2D,sgTexture);
          sgOGLTexture = sgTexture;

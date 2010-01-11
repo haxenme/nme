@@ -494,15 +494,19 @@ public:
          {
             TriPoint *point = &mTriPoints[0];
             Tri *tri = &mTriangles[0];
-
             int vert_parts = (tex && mPerspectiveCorrect) ? 2 : 1;
+
             if ( (tex && mTex.size()!=n*3*2) ||  mPoints.size()!=vert_parts*n*3 )
             {
-               mTex.resize(n*3*2);
+               float *tex_ptr = 0;
+               if (tex)
+               {
+                  mTex.resize(n*3*2);
+                  float *tex_ptr = &mTex[0];
+               }
                mPoints.resize(n*3*vert_parts);
-               float *tex = &mTex[0];
                float *v = &mPoints[0].mX;
- 
+
                for(size_t t=0;t<n;t++)
                {
                   for(int idx=0;idx<3;idx++)
@@ -510,8 +514,8 @@ public:
                      TriPoint &p = point[tri->mIndex[idx]];
                      if (tex)
                      {
-                        *tex++ = p.mU*mTexScaleX;
-                        *tex++ = p.mV*mTexScaleY;
+                        *tex_ptr++ = p.mU*mTexScaleX;
+                        *tex_ptr++ = p.mV*mTexScaleY;
                         if (mPerspectiveCorrect)
                         {
                            double w = p.mW_inv;
@@ -2016,7 +2020,7 @@ value nme_get_extent(value inDrawList,value ioRect,value inMatrix,value inAccura
    bool accurate = val_bool(inAccurate);
 
    val_check(inDrawList,array);
-	value *ptr = val_array_value(inDrawList);
+   value *ptr = val_array_value(inDrawList);
    int n =  val_array_size(inDrawList);
 
    // printf("nme_get_extent\n");

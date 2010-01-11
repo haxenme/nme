@@ -1,4 +1,6 @@
 -main BitmapTest
 -lib nme
+-lib neash
 --remap neko:cpp
+--remap flash:neash
 -cpp cpp
