@@ -3,5 +3,5 @@
     <user name="gamehaxe"/>
     <user name="krogers"/>
  <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
-    <version name="1.0.1">Update SDL13 version.  Move to haxe 2.05 with include structure and FastNUmeric options.</version>
+    <version name="1.0.2">Do not chache states when using dsiplay lists.</version>
 </project>
