@@ -336,7 +336,7 @@ public:
 
 // --- When using the simple window class -----------------------------------------------
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle)
+Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle)
 {
    Rect r(100,100,inWidth,inHeight);
 

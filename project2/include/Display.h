@@ -248,8 +248,10 @@ enum WindowFlags
    wfVSync      = 0x00000010,
 };
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle );
 void MainLoop();
 void TerminateMainLoop();
+
+Stage *IPhoneGetStage();
+Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle );
 
 #endif

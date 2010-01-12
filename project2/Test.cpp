@@ -396,9 +396,14 @@ void TestBackground(Stage *inStage)
 
 int main(int inargc,char **arvg)
 {
-   Frame *frame = CreateMainFrame(640,400,wfResizable|wfHardware,L"Hello");
+#ifdef HX_WINDOWS
+   Frame *frame = WindowsCreateTopLevelWindow(640,400,wfResizable|wfHardware,L"Hello");
 
    Stage *stage = frame->GetStage();
+#else
+   Stage *stage = IPhoneGetStage();
+#endif
+
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 

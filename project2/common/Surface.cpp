@@ -656,7 +656,7 @@ HardwareSurface::~HardwareSurface()
 
 const uint8 *BitmapCache::Row(int inRow) const
 {
-   return mBitmap->Row(inRow-(mBitmapRect.y+mTY)) - mBitmap->BytesPP()*(mBitmapRect.x+mTX);
+   return mBitmap->Row(inRow-(mRect.y+mTY)) - mBitmap->BytesPP()*(mRect.x+mTX);
 }
 
 
