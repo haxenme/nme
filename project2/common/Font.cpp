@@ -183,6 +183,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
 	FontFace *face = 0;
 
+        // TODO: Native iPhone font
         #ifndef IPHONE
 	if (inNative)
 	   face = FontFace::CreateNative(inFormat,inScale);

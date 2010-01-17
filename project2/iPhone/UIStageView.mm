@@ -92,6 +92,16 @@ public:
           throw "OpenGL resize failed";
       }
       mHardwareContext->SetWindowSize(backingWidth,backingHeight);
+
+      Event evt(etResize);
+      HandleEvent(evt);
+
+   }
+
+   void OnUpdate()
+   {
+      Event evt(etNextFrame);
+      HandleEvent(evt);
    }
 
 
@@ -109,6 +119,14 @@ public:
       mHandler = inHander;
       mHandlerData = inUserData;
    }
+
+   void HandleEvent(Event &inEvent)
+   {
+      if (mHandler)
+         mHandler(inEvent,mHandlerData);
+   }
+
+
    
    Surface *GetPrimarySurface()
    {
@@ -207,10 +225,14 @@ UIStageView *sgMainView = nil;
       
       // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
       // class is used as fallback when it isn't available.
+      /*
       NSString *reqSysVer = @"3.1";
       NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
       if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
          displayLinkSupported = TRUE;
+      */
+
+      displayLinkSupported = FALSE;
     }
    
     return self;
@@ -218,6 +240,7 @@ UIStageView *sgMainView = nil;
 
 - (void) drawView:(id)sender
 {
+   mStage->OnUpdate();
    mStage->RenderStage();
 }
 
@@ -269,6 +292,7 @@ UIStageView *sgMainView = nil;
       }
       else
       */
+
          animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval) target:self selector:@selector(drawView:) userInfo:nil repeats:TRUE];
       
       animating = TRUE;

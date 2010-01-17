@@ -413,7 +413,7 @@ int main(int inargc,char **arvg)
    stage->IncRef();
    stage->SetEventHandler(Handler,stage);
 
-   AddGradFill(stage);
+   // AddGradFill(stage);
 
    // TestScrollRect(stage);
 
@@ -431,11 +431,11 @@ int main(int inargc,char **arvg)
 
    // TestBlend(stage);
 
-   TestColourTrans(stage);
+   //TestColourTrans(stage);
 
-   TestLines(stage);
+   //TestLines(stage);
 
-   //TestBackground(stage);
+   TestBackground(stage);
 
    MainLoop();
    stage->DecRef();
