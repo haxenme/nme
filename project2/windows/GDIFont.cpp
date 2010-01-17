@@ -6,6 +6,9 @@
 #undef min
 #endif
 
+namespace nme
+{
+
 static HDC sgFontDC = 0;
 static HBITMAP sgDIB = 0;
 static HBITMAP sgOldDIB = 0;
@@ -140,3 +143,4 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    return new GDIFont(hfont,height);
 }
 
+} // end namespace nme

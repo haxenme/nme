@@ -6,6 +6,9 @@
 
 #include <gl/GL.h>
 
+namespace nme
+{
+
 // --- DIB   ------------------------------------------------------------------------
 
 typedef std::map<HWND,class WindowsFrame *> FrameMap;
@@ -390,3 +393,4 @@ void MainLoop()
    }
 }
 
+} // end namespace nme
