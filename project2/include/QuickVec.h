@@ -1,7 +1,10 @@
-#ifndef QUICK_VEC
-#define QUICK_VEC
+#ifndef NME_QUICK_VEC
+#define NME_QUICK_VEC
 
 #include <algorithm>
+
+namespace nme
+{
 
 template<typename T>
 void DoDelete(T &item)
@@ -354,5 +357,7 @@ public:
    int mSize;
 
 };
+
+} // end namespace nme
 
 #endif

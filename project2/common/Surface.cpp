@@ -2,6 +2,9 @@
 #include <Surface.h>
 #include <Pixel.h>
 
+namespace nme
+{
+
 bool sgColourOrderSet = false;
 
 int sgC0Shift = 0;
@@ -664,4 +667,6 @@ PixelFormat BitmapCache::Format() const
 {
    return mBitmap->Format();
 }
+
+} // end namespace nme
 

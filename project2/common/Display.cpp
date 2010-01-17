@@ -6,6 +6,9 @@
 #define M_PI 3.1415926535897932385
 #endif
 
+namespace nme
+{
+
 unsigned int gDisplayRefCounting = drDisplayChildRefs;
 
 // --- DisplayObject ------------------------------------------------
@@ -838,3 +841,6 @@ void Stage::RenderStage()
    state.mBitmapPhase = false;
    Render(render.Target(),state);
 }
+
+} // end namespace nme
+

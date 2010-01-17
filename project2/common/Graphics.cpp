@@ -1,6 +1,9 @@
 #include <Graphics.h>
 #include <Surface.h>
 
+namespace nme
+{
+
 Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
    mLastConvertedItem = 0;
@@ -626,3 +629,4 @@ int UpToPower2(int inX)
    return result;
 }
 
+}

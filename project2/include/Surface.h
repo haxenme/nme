@@ -1,10 +1,12 @@
-#ifndef SURFACE_H
-#define SURFACE_H
+#ifndef NME_SURFACE_H
+#define NME_SURFACE_H
 
 #include <Graphics.h>
 
 // ---- Surface API --------------
 
+namespace nme
+{
 
 
 void HintColourOrder(bool inRedFirst);
@@ -137,6 +139,8 @@ public:
       HardwareContext *mHardware;
 };
 
+
+} // end namespace nme
 
 
 #endif

@@ -1,5 +1,8 @@
 #include <Utils.h>
 
+namespace nme
+{
+
 #ifndef HX_WINDOWS
 
 std::string WideToUTF8(const std::wstring &inWideString)
@@ -157,4 +160,4 @@ std::wstring UTF8ToWide(const char *inStr)
 #endif
 
 
-
+}

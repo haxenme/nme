@@ -1,5 +1,5 @@
-#ifndef FONT_H
-#define FONT_H
+#ifndef NME_FONT_H
+#define NME_FONT_H
 
 #include <Object.h>
 #include <Graphics.h>
@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 
+namespace nme
+{
 
 struct TextLineMetrics
 {
@@ -177,5 +179,6 @@ class FontCache
 {
 };
 
+} // end namespace nme
 
 #endif

@@ -1,5 +1,8 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef NME_OBJECT_H
+#define NME_OBJECT_H
+
+namespace nme
+{
 
 class Object
 {
@@ -13,6 +16,8 @@ protected:
 
    int mRefCount;
 };
+
+} // end namespace nme
 
 
 #endif

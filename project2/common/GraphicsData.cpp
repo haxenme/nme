@@ -1,5 +1,8 @@
 #include <Graphics.h>
 
+namespace nme
+{
+
 // --- GraphicsPath ------------------------------------------
 
 void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float anchorY)
@@ -53,4 +56,5 @@ void GraphicsPath::wideMoveTo(float x, float y)
 	data.push_back(y);
 }
 
+} // end namespace nme
 

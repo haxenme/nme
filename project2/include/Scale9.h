@@ -1,8 +1,11 @@
-#ifndef SCALE9_H
-#define SCALE9_H
+#ifndef NME_SCALE9_H
+#define NME_SCALE9_H
 
 #include <Matrix.h>
 #include <Geom.h>
+
+namespace nme
+{
 
 class Scale9
 {
@@ -83,6 +86,10 @@ public:
    }
 
 };
+
+
+} // end namespace nme
+
 
 #endif
 

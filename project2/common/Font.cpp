@@ -3,6 +3,8 @@
 #include <Surface.h>
 #include <map>
 
+namespace nme
+{
 
 
 Font::Font(FontFace *inFace, int inPixelHeight, bool inInitRef) :
@@ -181,12 +183,16 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
 	FontFace *face = 0;
 
+        #ifndef IPHONE
 	if (inNative)
 	   face = FontFace::CreateNative(inFormat,inScale);
+        #endif
 	if (!face)
 	   face = FontFace::CreateFreeType(inFormat,inScale);
+        #ifndef IPHONE
 	if (!face && !inNative)
 	   face = FontFace::CreateNative(inFormat,inScale);
+        #endif
 	if (!face)
   	   return 0;
 
@@ -197,4 +203,6 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 	return font;
 }
 
+
+} // end namespace nme
 

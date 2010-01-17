@@ -1,6 +1,7 @@
 #include "AlphaMask.h"
 
-
+namespace nme
+{
 
 bool AlphaMask::Compatible(const Transform &inTransform,
 									const Rect &inExtent, const Rect &inVisiblePixels,
@@ -72,6 +73,6 @@ void AlphaMask::RenderBitmap(int inTX,int inTY,
       }
    }
 
-
+}
 
 }

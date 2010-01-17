@@ -1,6 +1,9 @@
 #include <Graphics.h>
 #include <map>
 
+namespace nme
+{
+
 static void CombineCol(double &outScale, double &outOff,  double inPScale, double inPOff,
 							  double inCScale, double inCOff)
 {
@@ -141,4 +144,6 @@ const uint8 *ColorTransform::GetC2LUT() const
 	   return GetLUT(redScale,redOffset);
 }
 
+
+} // end namespace nme
 

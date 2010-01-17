@@ -5,6 +5,7 @@
 <set name="sdl" value="1" if="macos"/>
 <set name="ogl" value="1" if="windows"/>
 <set name="ogl" value="1" if="sdl"/>
+<set name="ogl" value="1" if="iphone"/>
 
 
 <files id="windows">
@@ -19,6 +20,13 @@
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
 </files>
+
+<files id="iphone">
+  <compilerflag value="-Iinclude"/>
+  <file name="iPhone/UIStageView.mm"/>
+  <file name="iPhone/ES1Renderer.m"/>
+</files>
+
 
 <files id="main">
   <compilerflag value="-Iinclude"/>
@@ -80,25 +88,29 @@
 
 </files>
 
+<set name="tool" value="exe" unless="iphone"/>
+<set name="tool" value="static" if="iphone"/>
 
-<target id="TestWin" output="TestWin" tool="linker" toolid="exe">
+
+<target id="TestWin" output="TestWin" tool="linker" toolid="${tool}">
   <files id="main"/>
   <files id="common"/>
   <files id="windows" if="windows"/>
+  <files id="iphone" if="iphone"/>
   <files id="mac" if="macos"/>
   <files id="sdl" if="sdl"/>
-  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 
-  <vflag name="-framework" value="IOKit" if="apple"/>
-  <vflag name="-framework" value="CoreAudio" if="apple"/>
-  <vflag name="-framework" value="Carbon" if="apple"/>
-  <vflag name="-framework" value="AudioToolbox" if="apple"/>
-  <vflag name="-framework" value="AudioUnit" if="apple"/>
-  <vflag name="-framework" value="ForceFeedback" if="apple"/>
-  <vflag name="-framework" value="Cocoa" if="apple"/>
-  <vflag name="-framework" value="OpenGL" if="apple"/>
-  <vflag name="-framework" value="QuickTime" if="apple"/>
+  <vflag name="-framework" value="IOKit" if="macos"/>
+  <vflag name="-framework" value="CoreAudio" if="macos"/>
+  <vflag name="-framework" value="Carbon" if="macos"/>
+  <vflag name="-framework" value="AudioToolbox" if="macos"/>
+  <vflag name="-framework" value="AudioUnit" if="macos"/>
+  <vflag name="-framework" value="ForceFeedback" if="macos"/>
+  <vflag name="-framework" value="Cocoa" if="macos"/>
+  <vflag name="-framework" value="OpenGL" if="macos"/>
+  <vflag name="-framework" value="QuickTime" if="macos"/>
 
 
   <flag value="" if="windows"/>

@@ -1,7 +1,8 @@
 #include <Graphics.h>
 #include "Render.h"
 
-
+namespace nme
+{
 
 class GradientFillerBase : public Filler
 {
@@ -307,3 +308,5 @@ Filler *Filler::Create(GraphicsGradientFill *inFill)
    }
 }
 
+
+} // end namespace nme

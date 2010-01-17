@@ -2,6 +2,8 @@
 #include <Surface.h>
 #include <algorithm>
 
+namespace nme
+{
 
 TileSheet::TileSheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitRef) : Object(inInitRef)
 {
@@ -49,4 +51,6 @@ int TileSheet::AllocRect(int inW,int inH,float inOx, float inOy)
 	return result;
 }
 
+
+} // end namespace nme
 

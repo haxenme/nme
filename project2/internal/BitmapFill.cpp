@@ -2,6 +2,8 @@
 #include <Surface.h>
 #include "Render.h"
 
+namespace nme
+{
 
 static bool IsPOW2(int inX)
 {
@@ -229,4 +231,7 @@ Filler *Filler::Create(GraphicsBitmapFill *inFill)
 	else
 		return CreateEdge<EDGE_CLAMP>(inFill);
 }
+
+
+} // end namespace nme
 

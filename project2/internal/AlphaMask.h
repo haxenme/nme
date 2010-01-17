@@ -6,6 +6,8 @@
 #include <QuickVec.h>
 #include <vector>
 
+namespace nme
+{
 
 struct AlphaRun
 {
@@ -60,5 +62,7 @@ public:
 	static Filler *Create(GraphicsGradientFill *inFill);
 	static Filler *Create(GraphicsBitmapFill *inFill);
 };
+
+} // end namespace nme
 
 #endif

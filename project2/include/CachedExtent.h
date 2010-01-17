@@ -1,8 +1,12 @@
-#ifndef CACHED_EXTENT_H
-#define CACHED_EXTENT_H
+#ifndef NME_CACHED_EXTENT_H
+#define NME_CACHED_EXTENT_H
 
 #include <Graphics.h>
 #include <Scale9.h>
+
+namespace nme
+{
+
 
 struct CachedExtent
 {
@@ -31,6 +35,6 @@ private:
 	CachedExtent mExtentCache[3];
 };
 
-
+} // end namespace NME
 
 #endif

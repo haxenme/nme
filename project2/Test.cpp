@@ -4,6 +4,8 @@
 #include <Utils.h>
 #include <Surface.h>
 
+using namespace nme;
+
 DisplayObject *gScrollWin = 0;
 DisplayObject *gMoveObj = 0;
 DisplayObject *gSpinObj = 0;
@@ -394,7 +396,11 @@ void TestBackground(Stage *inStage)
 
 
 
+#ifdef IPHONE
+int LibMain()
+#else
 int main(int inargc,char **arvg)
+#endif
 {
 #ifdef HX_WINDOWS
    Frame *frame = WindowsCreateTopLevelWindow(640,400,wfResizable|wfHardware,L"Hello");
@@ -432,6 +438,7 @@ int main(int inargc,char **arvg)
    TestBackground(stage);
 
    MainLoop();
-   delete frame;
+   stage->DecRef();
+   //delete frame;
    return 0;
 }

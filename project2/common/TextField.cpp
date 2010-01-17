@@ -5,6 +5,9 @@
 #include "XML/tinyxml.h"
 #include <ctype.h>
 
+namespace nme
+{
+
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
@@ -556,4 +559,5 @@ bool CharGroup::UpdateFont(double inScale,bool inNative)
 }
 
 
+} // end namespace nme
 

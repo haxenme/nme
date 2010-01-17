@@ -1,14 +1,17 @@
-#ifndef GEOM_H
-#define GEOM_H
+#ifndef NME_GEOM_H
+#define NME_GEOM_H
 
 #include <vector>
+#include <math.h>
+
+namespace nme
+{
 
 #ifdef WIN32
 typedef __int64 int64;
 #else
 typedef long long int64;
 #endif
-#include <math.h>
 
 
 template<typename T>
@@ -353,6 +356,6 @@ struct Tri
 };
 
 
-
+} // end namespace nme
 
 #endif

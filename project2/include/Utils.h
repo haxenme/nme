@@ -1,7 +1,10 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef NME_UTILS_H
+#define NME_UTILS_H
 
 #include <string>
+
+namespace nme
+{
 
 std::string WideToUTF8(const std::wstring &inWideString);
 
@@ -9,6 +12,8 @@ std::string WideToUTF8(const std::wstring &inWideString);
 wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen);
 
 std::wstring UTF8ToWide(const char *inStr);
+
+}
 
 
 #endif

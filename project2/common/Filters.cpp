@@ -2,6 +2,9 @@
 #include <Display.h>
 #include <Surface.h>
 
+namespace nme
+{
+
 // Calculate the filtered rect size, given input rect
 Rect GetFilteredRect(const Filters &inFilters,const Rect &inObjRect)
 {
@@ -21,3 +24,6 @@ void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &i
 
 
  
+} // end namespace nme
+
+

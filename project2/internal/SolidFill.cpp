@@ -1,6 +1,9 @@
 #include <Graphics.h>
 #include "Render.h"
 
+namespace nme
+{
+
 class SolidFiller : public Filler
 {
 public:
@@ -35,3 +38,5 @@ Filler *Filler::Create(GraphicsSolidFill *inFill)
 	return new SolidFiller(inFill);
 }
 
+
+} // end namespace nme

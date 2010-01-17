@@ -1,5 +1,5 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#ifndef NME_GRAPHICS_H
+#define NME_GRAPHICS_H
 
 #include <Object.h>
 #include <QuickVec.h>
@@ -10,6 +10,8 @@
 typedef unsigned int uint32;
 typedef unsigned char uint8;
 
+namespace nme
+{
 
 enum GraphicsAPIType { gatBase, gatInternal,  gatQuartz, gatCairo, gatOpenGL, gatOpenGLES };
 
@@ -654,6 +656,6 @@ private:
 
 
 
-
+} // end namespace nme
 
 #endif

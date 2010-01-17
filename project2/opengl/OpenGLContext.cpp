@@ -1,4 +1,14 @@
-#ifdef SDL_OGL
+#ifdef IPHONE
+
+#include <OpenGLES/ES1/gl.h>
+#include <OpenGLES/ES1/glext.h>
+
+//typedef CAEAGLLayer *WinDC;
+//typedef EAGLContext *GLCtx;
+typedef void *WinDC;
+typedef void *GLCtx;
+
+#elif defined(SDL_OGL)
 
 #include <SDL_opengl.h>
 typedef void *WinDC;
@@ -21,6 +31,9 @@ typedef HGLRC GLCtx;
 #ifndef GL_CLAMP_TO_EDGE
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
+
+namespace nme
+{
 
 
 
@@ -82,7 +95,7 @@ public:
       if (!is_pow2)
          load->DecRef();
 
-      int err = glGetError();
+      //int err = glGetError();
    }
    ~OGLTexture()
    {
@@ -159,12 +172,10 @@ public:
          glPushMatrix();
          glLoadIdentity();
 
-         glBegin(GL_TRIANGLE_FAN);
-           glVertex2f(-2,-2);
-           glVertex2f( 2,-2);
-           glVertex2f( 2, 2);
-           glVertex2f(-2, 2);
-         glEnd();
+         static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };
+         glEnableClientState(GL_VERTEX_ARRAY);
+         glVertexPointer(2, GL_FLOAT, 0, rect[0]);
+         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
          glPopMatrix();
          glMatrixMode(GL_MODELVIEW);
@@ -181,7 +192,11 @@ public:
       {
          glMatrixMode(GL_PROJECTION);
          glLoadIdentity();
+         #ifdef IPHONE
+         glOrthof(inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
+         #else
          glOrtho(inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
+         #endif
          glMatrixMode(GL_MODELVIEW);
          glLoadIdentity();
          mMatrix = Matrix();
@@ -193,9 +208,12 @@ public:
 
    void BeginRender(const Rect &inRect)
    {
+      #ifndef IPHONE
       #ifndef SDL_OGL
       wglMakeCurrent(mDC,mOGLCtx);
       #endif
+      #endif
+
       SetViewport(inRect);
 
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -209,8 +227,10 @@ public:
 
    void Flip()
    {
+      #ifndef IPHONE
       #ifndef SDL_OGL
       SwapBuffers(mDC);
+      #endif
       #endif
    }
 
@@ -252,34 +272,26 @@ public:
       static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
 
       glEnable(GL_BLEND);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2,GL_FLOAT,0,&inVertices[0].x);
+      if (tex)
+      {
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glTexCoordPointer(2,GL_FLOAT,0,&inTexCoords[0].x);
+      }
 
       for(int e=0;e<inElements.size();e++)
       {
          DrawElement draw = inElements[e];
 
          if (mPointsToo && draw.mType == ptLineStrip)
-         {
-            glBegin(GL_POINTS);
-            for(int i=0;i<draw.mCount;i++)
-            {
-               if (tex)
-                  glTexCoord2fv( &inTexCoords[draw.mFirst+i].x );
-               glVertex2fv( &inVertices[draw.mFirst+i].x );
-            }
-            glEnd();
-         }
+            glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
 
-
-         glBegin(type[draw.mType]);
-         for(int i=0;i<draw.mCount;i++)
-         {
-            if (tex)
-               glTexCoord2fv( &inTexCoords[draw.mFirst+i].x );
-            glVertex2fv( &inVertices[draw.mFirst+i].x );
-         }
-         glEnd();
-
+         glDrawArrays(type[draw.mType], draw.mFirst, draw.mCount );
       }
+
+      if (tex)
+         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint)
@@ -298,17 +310,24 @@ public:
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
    {
-      glBegin(GL_TRIANGLE_STRIP);
+      UserPoint vertex[4];
+      UserPoint tex[4];
+      
       for(int i=0;i<4;i++)
       {
          UserPoint t(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) ); 
-         UserPoint tex = mBitmapTexture->PixelToTex(t);
-         UserPoint p(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
-
-         glTexCoord2fv(&tex.x);
-         glVertex2fv(&p.x);
+         tex[i] = mBitmapTexture->PixelToTex(t);
+         vertex[i] =  UserPoint(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
       }
-      glEnd();
+
+      glVertexPointer(2, GL_FLOAT, 0, &vertex[0].x);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glTexCoordPointer(2, GL_FLOAT, 0, &tex[0].x);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }
 
    void EndBitmapRender()
@@ -354,4 +373,6 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
 {
    return new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
 }
+
+} // end namespace nme
 

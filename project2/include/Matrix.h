@@ -1,7 +1,9 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef NME_MATRIX_H
+#define NME_MATRIX_H
 
 #include <Geom.h>
+
+namespace nme {
 
 class Matrix
 {
@@ -82,5 +84,6 @@ public:
 
 typedef Matrix Matrix3D;
 
+} // end namespace nme
 
 #endif

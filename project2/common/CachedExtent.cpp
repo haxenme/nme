@@ -1,5 +1,8 @@
 #include <CachedExtent.h>
 
+namespace nme
+{
+
 static int sgCachedExtentID = 1;
 
 // --- CachedExtent --------------------------------------
@@ -66,3 +69,6 @@ bool CachedExtentRenderer::GetExtent(const Transform &inTransform,Extent2DF &ioE
 
 	return true;
 }
+
+} // end namespace nme
+

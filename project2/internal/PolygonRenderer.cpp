@@ -3,11 +3,15 @@
 #include <Geom.h>
 #include "AlphaMask.h"
 
-typedef QuickVec<int> IQuickSet;
 
 #ifndef M_PI
 #define M_PI 3.14159
 #endif
+
+namespace nme
+{
+
+typedef QuickVec<int> IQuickSet;
 
 struct Transition
 {
@@ -972,6 +976,6 @@ Renderer *Renderer::CreateSoftware(TriangleData *inTriangleData)
 }
 
 
-
+}
 
 

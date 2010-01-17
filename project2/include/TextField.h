@@ -1,10 +1,15 @@
-#ifndef TEXT_FIELD_H
-#define TEXT_FIELD_H
+#ifndef NME_TEXT_FIELD_H
+#define NME_TEXT_FIELD_H
 
 #include "Graphics.h"
 #include "QuickVec.h"
 #include "Font.h"
 #include "Display.h"
+
+class TiXmlNode;
+
+namespace nme
+{
 
 enum TextFieldType { tftDynamic, tftInput };
 
@@ -96,7 +101,7 @@ private:
    void Layout();
 
    void Clear();
-   void AddNode(const class TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,int inLineSkips);
+   void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,int inLineSkips);
    void UpdateFonts(const Transform &inTransform);
 
    enum StringState { ssNone, ssText, ssHTML };
@@ -111,5 +116,8 @@ private:
    CharGroups mCharGroups;
    Lines mLines;
 };
+
+} // end namespace nme
+
 
 #endif

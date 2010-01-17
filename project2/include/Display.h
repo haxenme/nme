@@ -1,11 +1,13 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef NME_DISPLAY_H
+#define NME_DISPLAY_H
 
 #include <Object.h>
 #include <Geom.h>
 #include <Graphics.h>
 #include <string>
 
+namespace nme
+{
 
 enum
 {
@@ -253,5 +255,8 @@ void TerminateMainLoop();
 
 Stage *IPhoneGetStage();
 Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle );
+
+
+} // end namespace nme
 
 #endif

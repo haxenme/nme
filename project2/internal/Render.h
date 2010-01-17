@@ -4,6 +4,8 @@
 #include "AlphaMask.h"
 #include <Pixel.h>
 
+namespace nme
+{
 
 
 template<typename SOURCE_, typename DEST_, typename BLEND_>
@@ -210,6 +212,7 @@ void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inD
    }
 }
 
+} // end namespace nme
 
 #endif
 

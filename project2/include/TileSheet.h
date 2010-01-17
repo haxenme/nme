@@ -1,8 +1,11 @@
-#ifndef TILESHEET_H
-#define TILESHEET_H
+#ifndef NME_TILESHEET_H
+#define NME_TILESHEET_H
 
 #include <Graphics.h>
 #include <Object.h>
+
+namespace nme
+{
 
 struct Tile
 {
@@ -34,5 +37,6 @@ private:
 };
 
 
+}
 
 #endif

@@ -1,6 +1,9 @@
 #include <Graphics.h>
 #include <Surface.h>
 
+namespace nme
+{
+
 class HardwareRenderer : public Renderer
 {
 public:
@@ -215,4 +218,6 @@ void Texture::Dirty(const Rect &inRect)
    else
       mDirtyRect = mDirtyRect.Union(inRect);
 }
+
+} // end namespace nme
 

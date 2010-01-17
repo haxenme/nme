@@ -2,6 +2,9 @@
 #include <algorithm>
 
 
+namespace nme
+{
+
 // --- Transform -------------------------------------------------------------------
 
 static Matrix sgIdentity;
@@ -55,4 +58,4 @@ Rect Transform::GetTargetRect(const Extent2DF &inExtent) const
 }
 
 
-
+}

@@ -18,7 +18,11 @@ class Joystick
    {
       var strings = new Array<String>();
       for(i in 0...nme_joystick_count())
+         #if neko
          strings.push( neko.Lib.nekoToHaxe(nme_joystick_name(i)) );
+         #else
+         strings.push( nme_joystick_name(i) );
+         #end
       return strings;
    }
 

@@ -6,12 +6,10 @@
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
 
+namespace nme
+{
+
 FT_Library sgLibrary = 0;
-
-
-
-
-
 
 
 class FreeTypeFont : public FontFace
@@ -471,4 +469,6 @@ void SharpenText(FT_Bitmap &bitmap)
 #endif
 
 
+
+} // end namespace nme
 
