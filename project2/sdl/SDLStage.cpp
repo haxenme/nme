@@ -2,6 +2,10 @@
 #include <Utils.h>
 #include <SDL.h>
 #include <Surface.h>
+#include <ExternalInterface.h>
+
+namespace nme
+{
 
 class SDLSurf : public Surface
 {
@@ -187,7 +191,8 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 SDLFrame *sgSDLFrame = 0;
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle)
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
+          const char *inTitle, const char *inIcon)
 {
 #ifdef HX_MACOS
    MacBoot();
@@ -282,7 +287,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, wchar_t *i
    HintColourOrder( opengl || screen->format->Rmask==0xff );
 
    #ifndef IPHONE
-   SDL_WM_SetCaption( WideToUTF8(inTitle).c_str(), 0 );
+   SDL_WM_SetCaption( inTitle, 0 );
    #endif
 
    #ifdef NME_MIXER
@@ -323,19 +328,30 @@ void MainLoop()
          {
             case SDL_QUIT:
             {
-               Event close(etClose);
+               Event close(etQuit);
                sgSDLFrame->ProcessEvent(close);
                break;
             }
          }
       }
 
-      Event frame(etNextFrame);
+      Event frame(etRender);
       sgSDLFrame->ProcessEvent(frame);
    }
+   Event kill(etDestroyHandler);
+   sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
 }
 
+
+Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle, wchar_t *inIcon )
+{
+
+}
+
+
+
+} // end namespace nme
 
 
          #if 0
@@ -719,7 +735,6 @@ value nme_resize_surface(value inW, value inH)
 
    return alloc_abstract( k_surf, screen );
 }
-
 
 
 

@@ -20,27 +20,28 @@ extern unsigned int gDisplayRefCounting;
 enum EventType
 {
    etUnknown,
-   etClose,
-   etResize,
+   etKey,
    etMouseMove,
-   etMouseClick,
-   etTimer,
-   etRedraw,
-   etNextFrame,
+   etMouseButton,
+   etResize,
+   etRender,
+   etQuit,
+   etDestroyHandler,
 };
 
 
 struct Event
 {
    Event(EventType inType=etUnknown) :
-        mType(inType), mWinX(0), mWinY(0), mValue(0), mModState(0)
+        type(inType), x(0), y(0), value(0), id(0), flags(0)
    {
    }
 
-   EventType mType;
-   float     mWinX,mWinY;
-   int       mValue;
-   int       mModState;
+   EventType type;
+   int       x,y;
+   int       value;
+   int       id;
+   int       flags;
 };
 
 typedef void (*EventHandler)(Event &ioEvent, void *inUserData);
@@ -233,7 +234,7 @@ protected:
 
 
 
-class Frame
+class Frame : public Object
 {
 public:
    virtual void SetTitle() = 0;
@@ -254,7 +255,7 @@ void MainLoop();
 void TerminateMainLoop();
 
 Stage *IPhoneGetStage();
-Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle );
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon );
 
 
 } // end namespace nme

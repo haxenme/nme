@@ -16,12 +16,13 @@ class Stage
 	{
 	   mHandle = inHandle;
 
-		var set_stage_handler = nme.Loader.load("nme_set_stage_handler",2);
+		var set_stage_handler = nme2.Loader.load("nme_set_stage_handler",2);
 		set_stage_handler(mHandle,processStageEvent);
 	}
 
 	function processStageEvent(inEvent:Dynamic) : Dynamic
 	{
+		//trace(inEvent);
 		// TODO: timer event?
 		Manager.pollTimers();
 		switch(Std.int(Reflect.field( inEvent, "type" ) ) )

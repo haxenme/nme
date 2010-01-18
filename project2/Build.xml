@@ -71,6 +71,7 @@
   <file name="common/ColorTransform.cpp"/>
   <file name="common/Hardware.cpp"/>
   <file name="common/Filters.cpp"/>
+  <file name="common/ExternalInterface.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>
@@ -123,7 +124,7 @@
 <set name="ndll-tool" value="static" if="iphone"/>
 
 <target id="NDLL" output="nme2" tool="linker" toolid="dll">
-   <outdir name="../ndll/${BINDIR}"/>
+  <outdir name="../ndll/${BINDIR}"/>
   <ext value=".ndll" unless="iphone"/>
 
   <files id="common"/>
