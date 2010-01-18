@@ -119,9 +119,46 @@
 </target>
 
 
+<set name="ndll-tool" value="dll" unless="iphone"/>
+<set name="ndll-tool" value="static" if="iphone"/>
+
+<target id="NDLL" output="nme2" tool="linker" toolid="dll">
+   <outdir name="../ndll/${BINDIR}"/>
+  <ext value=".ndll" unless="iphone"/>
+
+  <files id="common"/>
+  <files id="windows" if="windows"/>
+  <files id="iphone" if="iphone"/>
+  <files id="mac" if="macos"/>
+  <files id="sdl" if="sdl"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
+
+  <vflag name="-framework" value="IOKit" if="macos"/>
+  <vflag name="-framework" value="CoreAudio" if="macos"/>
+  <vflag name="-framework" value="Carbon" if="macos"/>
+  <vflag name="-framework" value="AudioToolbox" if="macos"/>
+  <vflag name="-framework" value="AudioUnit" if="macos"/>
+  <vflag name="-framework" value="ForceFeedback" if="macos"/>
+  <vflag name="-framework" value="Cocoa" if="macos"/>
+  <vflag name="-framework" value="OpenGL" if="macos"/>
+  <vflag name="-framework" value="QuickTime" if="macos"/>
+
+
+  <flag value="" if="windows"/>
+  <flag value="gdi32.lib" if="windows"/>
+  <flag value="opengl32.lib" if="windows"/>
+  <flag value="user32.lib" if="windows"/>
+  <flag value="kernel32.lib" if="windows"/>
+  <outdir name="."/>
+</target>
+
+
+
 
 <target id="default">
-   <target id="TestWin"/>
+   <!-- <target id="TestWin"/> -->
+   <target id="NDLL"/>
 </target>
 
 
