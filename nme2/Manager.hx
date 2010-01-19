@@ -3,13 +3,13 @@ package nme2;
 class Manager
 {
 	static public var FULLSCREEN = 0x0001;
-	static public var OPENGL     = 0x0002;
+	static public var BORDERLESS = 0x0002;
 	static public var RESIZABLE  = 0x0004;
 	static public var HARDWARE   = 0x0008;
 	static public var VSYNC      = 0x0010;
 
    static var mMainFrame: Dynamic;
-   static var stage(default,null): nme2.Stage;
+   public static var stage(default,null): nme2.display.Stage;
 
 
    public static function init(inWidth:Int, inHeight:Int, inFlags:Int = 0x0f,
@@ -18,7 +18,7 @@ class Manager
 		var create_main_frame = nme2.Loader.load("nme_create_main_frame",5);
 		mMainFrame = create_main_frame(inWidth,inHeight,inFlags,inTitle,inIcon);
 		var stage_handle = nme_get_frame_stage(mMainFrame);
-		stage = new nme2.Stage(stage_handle);
+		stage = new nme2.display.Stage(stage_handle);
 		stage.onQuit = close;
 	}
 

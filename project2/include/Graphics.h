@@ -46,14 +46,12 @@ enum GraphicsDataType
 };
 
 
-class IGraphicsData
+class IGraphicsData : public Object
 {
 public:
-   IGraphicsData() : mRefCount(0) { };
+   IGraphicsData() { };
 
    IGraphicsData *IncRef() { mRefCount++; return this; }
-
-   void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
 
    virtual GraphicsDataType GetType() { return gdtUnknown; }
    virtual GraphicsAPIType  GetAPI() { return gatBase; }
@@ -78,8 +76,6 @@ protected:
 private:
    IGraphicsData(const IGraphicsData &inRHS);
    void operator=(const IGraphicsData &inRHS);
-
-   int     mRefCount;
 };
 
 

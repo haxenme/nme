@@ -1,9 +1,7 @@
-package nme2;
+package nme2.display;
 
-class Stage
+class Stage extends nme2.display.DisplayObjectContainer
 {
-	var mHandle:Dynamic;
-
 	public var onKey: Int -> Bool -> Int -> Int ->Void; 
 	public var onMouseMove: Int -> Int ->Void; 
 	public var onMouseButton: Int -> Int -> Int -> Bool -> Int ->Void; 
@@ -14,17 +12,15 @@ class Stage
 
 	public function new(inHandle:Dynamic)
 	{
-	   mHandle = inHandle;
-
-		var set_stage_handler = nme2.Loader.load("nme_set_stage_handler",2);
-		set_stage_handler(mHandle,processStageEvent);
+		super(inHandle);
+		nme_set_stage_handler(nmeHandle,processStageEvent);
 	}
 
 	function processStageEvent(inEvent:Dynamic) : Dynamic
 	{
 		//trace(inEvent);
 		// TODO: timer event?
-		Manager.pollTimers();
+		nme2.Manager.pollTimers();
 		switch(Std.int(Reflect.field( inEvent, "type" ) ) )
 		{
 			case 1: // KEY
@@ -41,12 +37,12 @@ class Stage
 			case 4: // RESIZE
 				if (onResize!=null)
 					untyped onResize(inEvent.x, inEvent.y);
-				nme_render_stage(mHandle);
+				nme_render_stage(nmeHandle);
 
 			case 5: // RENDER
 				if (onRender!=null)
 					untyped onRender();
-				nme_render_stage(mHandle);
+				nme_render_stage(nmeHandle);
 
 			case 6: // QUIT
 				if (onQuit!=null)
@@ -58,5 +54,6 @@ class Stage
 		return null;
 	}
 
+	static var nme_set_stage_handler = nme2.Loader.load("nme_set_stage_handler",2);
 	static var nme_render_stage = nme2.Loader.load("nme_render_stage",1);
 }
