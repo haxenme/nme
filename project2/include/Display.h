@@ -26,7 +26,11 @@ enum EventType
    etResize,
    etRender,
    etQuit,
+
+   // Internal for now...
    etDestroyHandler,
+   etRedraw,
+   etTimer,
 };
 
 

@@ -102,7 +102,7 @@ value nme_set_stage_handler(value inStage,value inHandler)
    if (!AbstractToObject(inStage,stage))
       return alloc_null();
 
-   AutoGCRoot *data = AutoGCRoot::Create(inHandler);
+   AutoGCRoot *data = new AutoGCRoot(inHandler);
 
    stage->SetEventHandler(external_handler,data);
 

@@ -94,7 +94,7 @@
   <lib name="${SDLLIB}libsmpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${SDLLIB}libvorbis${SLIBEXT}"/>
   <lib name="${SDLLIB}libogg${SLIBEXT}"/>
-  <lib name="${SDLLIB}libz${SLIBEXT}"/>
+  <lib name="${SDLLIB}zlib${SLIBEXT}"/>
   <lib name="${SDLLIB}libSDL${SLIBEXT}"/>
 
   <lib name="opengl32.lib" if="windows"/>

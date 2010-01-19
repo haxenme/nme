@@ -180,7 +180,7 @@ public:
 
    void HandleEvent(Event &inEvent)
    {
-      switch(inEvent.mType)
+      switch(inEvent.type)
       {
          case etRedraw:
             Flip();
@@ -192,7 +192,7 @@ public:
                CreateBMP();
             break;
          case etTimer:
-            if (inEvent.mValue==timerFrame)
+            if (inEvent.id==timerFrame)
             {
                FrameCheck();
                return;
@@ -208,7 +208,7 @@ public:
    {
       if (mHandler)
       {
-         Event evt(etNextFrame);
+         Event evt(etRender);
          mHandler(evt,mHandlerData);
       }
    }
@@ -298,7 +298,7 @@ public:
          case WM_TIMER:
             {
             Event evt(etTimer);
-            evt.mValue = wParam;
+            evt.id = wParam;
             mStage->HandleEvent(evt);
             }
             break;
@@ -339,19 +339,20 @@ public:
 
 // --- When using the simple window class -----------------------------------------------
 
-Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle)
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
+                       const char *inTitle,const char *inIcon)
 {
    Rect r(100,100,inWidth,inHeight);
 
-   WNDCLASSEXW wc;
+   WNDCLASSEX wc;
    memset(&wc,0,sizeof(wc));
    wc.cbSize = sizeof(wc);
    wc.style = CS_OWNDC | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
    wc.hbrBackground = 0; //(HBRUSH)GetStockObject(WHITE_BRUSH);
    wc.lpfnWndProc =  DefWindowProc;
-   wc.lpszClassName = L"NME";
+   wc.lpszClassName = "NME";
 
-   RegisterClassExW(&wc);
+   RegisterClassEx(&wc);
 
    DWORD ex_style = WS_EX_ACCEPTFILES;
    DWORD style = 0;
@@ -362,7 +363,7 @@ Frame *WindowsCreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags
    else
       style |= WS_OVERLAPPEDWINDOW;
 
-   HWND win = CreateWindowExW(ex_style, L"NME", inTitle,
+   HWND win = CreateWindowEx(ex_style, "NME", inTitle,
                               style,
                               r.x, r.y, r.w, r.h,
                               0,

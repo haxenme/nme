@@ -36,7 +36,6 @@ namespace nme
 {
 
 
-
 class OGLTexture : public Texture
 {
 public:
