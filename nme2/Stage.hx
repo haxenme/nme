@@ -41,10 +41,12 @@ class Stage
 			case 4: // RESIZE
 				if (onResize!=null)
 					untyped onResize(inEvent.x, inEvent.y);
+				nme_render_stage(mHandle);
 
 			case 5: // RENDER
 				if (onRender!=null)
 					untyped onRender();
+				nme_render_stage(mHandle);
 
 			case 6: // QUIT
 				if (onQuit!=null)
@@ -56,5 +58,5 @@ class Stage
 		return null;
 	}
 
-
+	static var nme_render_stage = nme2.Loader.load("nme_render_stage",1);
 }
