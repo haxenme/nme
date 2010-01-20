@@ -171,6 +171,37 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 }
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
+
+value nme_gfx_line_style(value* arg, int nargs)
+{
+	enum { argGfx, argThickness, argColour, argAlpha, argPixelHinting, argScaleMode, argCapsStyle,
+		    argJointStyle, argMiterLimit, argSIZE };
+
+	Graphics *gfx;
+	if (AbstractToObject(arg[argGfx],gfx))
+	{
+		double thickness = -1;
+		if (!val_is_null(arg[argThickness]))
+		{
+			thickness = val_number(arg[argThickness]);
+			if (thickness<0)
+				thickness = 0;
+		}
+		gfx->lineStyle(thickness, val_int(arg[argColour]), val_number(arg[argAlpha]),
+					  val_bool(arg[argPixelHinting]),
+					  (StrokeScaleMode)val_int(arg[argScaleMode]),
+					  (StrokeCaps)val_int(arg[argCapsStyle]),
+					  (StrokeJoints)val_int(arg[argJointStyle]),
+					  val_number(arg[argMiterLimit]) );
+	}
+	return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gfx_line_style)
+
+
+
+
+
 value nme_gfx_move_to(value inGfx,value inX, value inY)
 {
 	Graphics *gfx;

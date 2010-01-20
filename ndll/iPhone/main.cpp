@@ -1,4 +1,4 @@
-#include <hxObject.h>
+#include <hxcpp.h>
 
 
 extern "C" void __hxcpp_lib_main();

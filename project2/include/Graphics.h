@@ -170,8 +170,8 @@ public:
    IGraphicsStroke *AsIStroke() { return this; }
 };
 
-enum StrokeCaps { scNone, scRound, scSquare };
-enum StrokeJoints { sjMiter, sjRound, sjBevel };
+enum StrokeCaps { scRound, scNone, scSquare };
+enum StrokeJoints { sjRound, sjMiter, sjBevel };
 enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal };
 
 class GraphicsStroke : public IGraphicsStroke

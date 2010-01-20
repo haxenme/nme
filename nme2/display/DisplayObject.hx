@@ -3,10 +3,13 @@ package nme2.display;
 class DisplayObject
 {
 	public var graphics(nmeGetGraphics,null) : nme2.display.Graphics;
+
    var nmeHandle:Dynamic;
+	var nmeParent:DisplayObject;
 
    public function new(inHandle:Dynamic)
 	{
+		nmeParent = null;
 		nmeHandle = inHandle;
 	}
 
