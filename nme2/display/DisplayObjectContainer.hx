@@ -13,6 +13,7 @@ class DisplayObjectContainer extends DisplayObject
    public function new(inHandle:Dynamic)
 	{
 		super(inHandle);
+		nmeName = "DisplayObjectContainer";
 		nmeChildren = [];
 	}
 	function nmeGetMouseChildren() { return false; }
@@ -21,7 +22,29 @@ class DisplayObjectContainer extends DisplayObject
 	function nmeSetTabChildren(inValue:Bool) { return false; }
 	function nmeGetNumChildren() : Int { return nmeChildren.length; }
 
-	/*
+	public function nmeRemoveChildFromArray( child : DisplayObject )
+	{
+		var i = getChildIndex(child);
+		if (i>=0)
+		{
+			nmeChildren.splice( i, 1 );
+		}
+	}
+
+	override function nmeOnAdded(inObj:DisplayObject)
+	{
+		super.nmeOnAdded(inObj);
+		for(child in nmeChildren)
+			child.nmeOnAdded(inObj);
+	}
+
+	override function nmeOnRemoved(inObj:DisplayObject)
+	{
+		super.nmeOnRemoved(inObj);
+		for(child in nmeChildren)
+			child.nmeOnRemoved(inObj);
+	}
+
 	public function addChild(child:DisplayObject):DisplayObject
 	{
 		if (child == this) {
@@ -30,21 +53,85 @@ class DisplayObjectContainer extends DisplayObject
 		if (child.nmeParent==this)
 		{
 			setChildIndex(child,nmeChildren.length-1);
-			return;
 		}
-		nmeChildren.push(child);
+		else
+		{
+			child.nmeSetParent(this);
+			nmeChildren.push(child);
+			nme_doc_add_child(nmeHandle,child.nmeHandle);
+		}
+		return child;
 	}
 
+	/*
 	public function addChildAt(child:DisplayObject, index:int):DisplayObject
 	public function areInaccessibleObjectsUnderPoint(point:Point):Bool
 	public function contains(child:DisplayObject):Bool
 	public function getChildAt(index:int):DisplayObject
  	public function getChildByName(name:String):DisplayObject
-	public function getChildIndex(child:DisplayObject):int
+	*/
+	public function getChildIndex(child:DisplayObject):Int
+	{
+		for ( i in 0...nmeChildren.length )
+			if ( nmeChildren[i] == child )
+				return i;
+		return -1;
+	}
+	/*
 	public function getObjectsUnderPoint(point:Point):Array
 	public function removeChild(child:DisplayObject):DisplayObject
 	public function removeChildAt(index:int):DisplayObject
-	public function setChildIndex(child:DisplayObject, index:int):Void
+	*/
+	public function setChildIndex(child:DisplayObject, index:Int):Void
+	{
+		if(index > nmeChildren.length)
+			throw "Invalid index position " + index;
+
+		var s : DisplayObject = null;
+		var orig = getChildIndex(child);
+
+		if (orig < 0) {
+			var msg = "setChildIndex : object " + child.toString() + " not found.";
+			if(child.nmeParent == this) {
+				var realindex = -1;
+				for(i in 0...nmeChildren.length) {
+					if(nmeChildren[i] == child) {
+						realindex = i;
+						break;
+					}
+				}
+				if(realindex != -1)
+					msg += "Internal error: Real child index was " + Std.string(realindex);
+				else
+					msg += "Internal error: Child was not in nmeChildren array!";
+			}
+			throw msg;
+		}
+
+		nme_doc_set_child_index(nmeHandle,child.nmeHandle,index);
+
+		// move down ...
+		if (index<orig)
+		{
+			var i = orig;
+			while(i > index) {
+				nmeChildren[i] = nmeChildren[i-1];
+				i--;
+			}
+			nmeChildren[index] = child;
+		}
+		// move up ...
+		else if (orig<index)
+		{
+			var i = orig;
+			while(i < index) {
+				nmeChildren[i] = nmeChildren[i+1];
+				i++;
+			}
+			nmeChildren[index] = child;
+		}
+	}
+	/*
 	public function swapChildren(child1:DisplayObject, child2:DisplayObject):Void
 	public function swapChildrenAt(index1:int, index2:int):Void
 	*/
@@ -52,5 +139,8 @@ class DisplayObjectContainer extends DisplayObject
 
 
 	static var nme_create_display_object_container = nme2.Loader.load("nme_create_display_object_container",0);
+	static var nme_doc_add_child = nme2.Loader.load("nme_doc_add_child",2);
+	//static var nme_doc_remove_child = nme2.Loader.load("nme_doc_remove_child",2);
+	static var nme_doc_set_child_index = nme2.Loader.load("nme_doc_set_child_index",3);
 
 }

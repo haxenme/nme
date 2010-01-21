@@ -148,6 +148,29 @@ value nme_display_object_get_graphics(value inObj)
 
 DEFINE_PRIM(nme_display_object_get_graphics,1);
 
+#define DO_PROP(prop,Prop) \
+value nme_display_object_get_##prop(value inObj) \
+{ \
+	DisplayObject *obj; \
+   if (AbstractToObject(inObj,obj)) \
+		return alloc_float( obj->get##Prop() ); \
+	return alloc_float(0); \
+} \
+\
+DEFINE_PRIM(nme_display_object_get_##prop,1) \
+value nme_display_object_set_##prop(value inObj,value inVal) \
+{ \
+	DisplayObject *obj; \
+   if (AbstractToObject(inObj,obj)) \
+		obj->set##Prop(val_number(inVal)); \
+	return alloc_null(); \
+} \
+\
+DEFINE_PRIM(nme_display_object_set_##prop,2)
+
+DO_PROP(x,X)
+DO_PROP(y,Y)
+
 
 // --- DisplayObjectContainer -----------------------------------------------------
 
@@ -157,6 +180,45 @@ value nme_create_display_object_container()
 }
 
 DEFINE_PRIM(nme_create_display_object_container,0);
+
+value nme_doc_add_child(value inParent, value inChild)
+{
+	DisplayObjectContainer *parent;
+	DisplayObject *child;
+	if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
+	{
+		parent->addChild(child);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_doc_add_child,2);
+
+/*
+value nme_doc_remove_child(value inParent, value inPos)
+{
+	DisplayObjectContainer *parent;
+	if (AbstractToObject(inParent,parent))
+	{
+		parent->removeChild(val_int(inPos));
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_doc_insert_child,3);
+*/
+
+value nme_doc_set_child_index(value inParent, value inChild, value inPos)
+{
+	DisplayObjectContainer *parent;
+	DisplayObject *child;
+	if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
+	{
+		parent->setChildIndex(child,val_int(inPos));
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_doc_set_child_index,3);
+
+
 
 // --- Graphics -----------------------------------------------------
 

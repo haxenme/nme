@@ -17,6 +17,19 @@ public static function main()
 	gfx.lineTo(100,100);
 
 	var shape = new nme2.display.Shape();
+	var gfx = shape.graphics;
+	gfx.beginFill(0xffff00);
+	gfx.lineStyle(6,0x000000);
+	gfx.moveTo(0,0);
+	gfx.lineTo(100,0);
+	gfx.lineTo(100,100);
+	gfx.lineTo(0,100);
+	gfx.lineTo(0,0);
+
+	shape.x = 50;
+	shape.y = 50;
+
+	Manager.stage.addChild(shape);
    Manager.mainLoop();
 }
 

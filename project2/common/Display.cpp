@@ -478,6 +478,38 @@ void DisplayObjectContainer::RemoveChildFromList(DisplayObject *inChild)
    return;
 }
 
+void DisplayObjectContainer::setChildIndex(DisplayObject *inChild,int inNewIndex)
+{
+   for(int i=0;i<mChildren.size();i++)
+      if (inChild==mChildren[i])
+      {
+			if (inNewIndex<i)
+			{
+				while(i > inNewIndex)
+				{
+				   mChildren[i] = mChildren[i-1];
+				   i--;
+			   }
+			}
+			// move up ...
+			else if (i<inNewIndex)
+			{
+				while(i < inNewIndex)
+				{
+					mChildren[i] = mChildren[i+1];
+					i++;
+				}
+      	}
+			mChildren[inNewIndex] = inChild;
+         DirtyDown(dirtCache);
+         return;
+		}
+   // This is an error, I think.
+   return;
+
+}
+
+
 void DisplayObjectContainer::removeChild(DisplayObject *inChild)
 {
    IncRef();
@@ -487,6 +519,7 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
 
 void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
 {
+	printf("DisplayObjectContainer::addChild\n");
    IncRef();
    inChild->SetParent(this);
 

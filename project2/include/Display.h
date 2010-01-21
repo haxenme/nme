@@ -199,11 +199,13 @@ public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
 
    void addChild(DisplayObject *inChild,bool inTakeRef=false);
+   void setChildIndex(DisplayObject *inChild,bool inTakeRef=false);
    void removeChild(DisplayObject *inChild);
-      DisplayObject *getChildAt(int index);
-
+   void setChildIndex(DisplayObject *inChild,int inNewIndex);
+   DisplayObject *getChildAt(int index);
 
    void RemoveChildFromList(DisplayObject *inChild);
+
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void DirtyUp(uint32 inFlags);
    bool NonNormalBlendChild();
