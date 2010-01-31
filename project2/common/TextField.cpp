@@ -75,6 +75,14 @@ void TextField::setText(const std::wstring &inString)
    mGfxDirty = true;
 }
 
+std::wstring TextField::getText()
+{
+	std::wstring result;
+	for(int i=0;i<mCharGroups.size();i++)
+		result += std::wstring(mCharGroups[i].mString,mCharGroups[i].mChars);
+	return result;
+}
+
 void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount,
                         int inLineSkips)
 {

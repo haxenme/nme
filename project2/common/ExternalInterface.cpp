@@ -330,6 +330,7 @@ value nme_text_field_create()
    TextField *text = new TextField();
    return ObjectToAbstract(text);
 }
+DEFINE_PRIM(nme_text_field_create,0)
 
 inline value alloc_wstring(const std::wstring &inStr)
    { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
