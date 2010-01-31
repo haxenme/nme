@@ -5,6 +5,7 @@
 
 #include <ExternalInterface.h>
 #include <Display.h>
+#include <TextField.h>
 
 namespace nme
 {
@@ -321,6 +322,37 @@ value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, valu
 	return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_draw_ellipse,5);
+
+// --- TextField --------------------------------------------------------------
+
+value nme_text_field_create()
+{
+   TextField *text = new TextField();
+   return ObjectToAbstract(text);
+}
+
+inline value alloc_wstring(const std::wstring &inStr)
+   { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
+
+#define TEXT_PROP(from_val,to_val,prop,Prop) \
+value nme_text_field_get_##prop(value inHandle) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      return to_val(t->get##Prop()); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_text_field_get_##prop,1); \
+value nme_text_field_set_##prop(value inHandle,value inValue) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      t->set##Prop(from_val(inValue)); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_text_field_set_##prop,2);
+
+TEXT_PROP(val_wstring,alloc_wstring,text,Text);
 
 
 
