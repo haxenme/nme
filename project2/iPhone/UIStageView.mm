@@ -100,7 +100,8 @@ public:
 
    void OnUpdate()
    {
-      Event evt(etNextFrame);
+      //Event evt(etNextFrame);
+      Event evt(etRedraw);
       HandleEvent(evt);
    }
 
@@ -327,11 +328,29 @@ UIStageView *sgMainView = nil;
 
 @end
 
+
+class UIViewFrame : public nme::Frame
+{
+public:
+   virtual void SetTitle()  { }
+   virtual void SetIcon() { }
+   virtual Stage *GetStage()  { return sgMainView->mStage; }
+
+};
+
 namespace nme
 {
 Stage *IPhoneGetStage() { return sgMainView->mStage; }
 void MainLoop() { }
 void TerminateMainLoop() { }
+
+Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon )
+{
+    return new UIViewFrame();
+}
+
+
+
 
 }
 

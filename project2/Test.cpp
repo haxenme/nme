@@ -12,7 +12,7 @@ DisplayObject *gSpinObj = 0;
 
 void Handler(Event &ioEvent,void *inStage)
 {
-   if (ioEvent.mType==etClose)
+   if (ioEvent.type==etQuit)
       TerminateMainLoop();
    else
    {
@@ -31,7 +31,7 @@ void Handler(Event &ioEvent,void *inStage)
       if (gMoveObj)
          gMoveObj->setX(x);
 
-      if (ioEvent.mType==etNextFrame)
+      //if (ioEvent.mType==etNextFrame)
          stage->RenderStage();
    }
 }
@@ -419,7 +419,7 @@ int main(int inargc,char **arvg)
 
    // TestText(stage,true);
 
-   // TestText(stage,false);
+   TestText(stage,false);
 
    // TestWidth1(stage);
 
@@ -431,11 +431,11 @@ int main(int inargc,char **arvg)
 
    // TestBlend(stage);
 
-   //TestColourTrans(stage);
+   // TestColourTrans(stage);
 
    //TestLines(stage);
 
-   TestBackground(stage);
+   // TestBackground(stage);
 
    MainLoop();
    stage->DecRef();

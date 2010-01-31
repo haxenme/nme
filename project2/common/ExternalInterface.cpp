@@ -1,4 +1,7 @@
+#ifndef IPHONE
 #define IMPLEMENT_API
+#endif
+
 
 #include <ExternalInterface.h>
 #include <Display.h>
@@ -320,4 +323,7 @@ value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, valu
 DEFINE_PRIM(nme_gfx_draw_ellipse,5);
 
 
+
+// Reference this to bring in all the symbols for the static library
+extern "C" int nme_register_prims() { return 0; }
 

@@ -123,7 +123,7 @@
 <set name="ndll-tool" value="dll" unless="iphone"/>
 <set name="ndll-tool" value="static" if="iphone"/>
 
-<target id="NDLL" output="nme2" tool="linker" toolid="dll">
+<target id="NDLL" output="nme2" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}"/>
   <ext value=".ndll" unless="iphone"/>
 

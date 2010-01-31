@@ -7,10 +7,17 @@ namespace nme
 
 bool sgColourOrderSet = false;
 
+#ifndef HX_WINDOWS
+int sgC0Shift = 16;
+int sgC1Shift = 8;
+int sgC2Shift = 0;
+bool gC0IsRed = false;
+#else
 int sgC0Shift = 0;
 int sgC1Shift = 8;
 int sgC2Shift = 16;
 bool gC0IsRed = true;
+#endif
 
 void HintColourOrder(bool inRedFirst)
 {
