@@ -36,8 +36,8 @@ enum EventType
 
 struct Event
 {
-   Event(EventType inType=etUnknown) :
-        type(inType), x(0), y(0), value(0), id(0), flags(0)
+   Event(EventType inType=etUnknown,int inX=0,int inY=0,int inValue=0,int inID=0,int inFlags=0):
+        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags)
    {
    }
 
@@ -224,16 +224,21 @@ public:
 
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
-   virtual void SetEventHandler(EventHandler inHander,void *inUserData) = 0;
    virtual Surface *GetPrimarySurface() = 0;
 
    virtual void RenderStage();
+
+   void SetEventHandler(EventHandler inHander,void *inUserData);
+   DisplayObject *HitTest(int inX,int inY);
 
    uint32 mBackgroundColour;
    int    mQuality;
 
 protected:
    ~Stage();
+   void HandleEvent(Event &inEvent);
+   EventHandler mHandler;
+   void         *mHandlerData;
 };
 
 

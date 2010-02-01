@@ -30,6 +30,10 @@ public static function main()
 	shape.y = 50;
 
 	Manager.stage.addChild(shape);
+
+	var text = new nme2.text.TextField();
+	text.text = "Hello";
+	Manager.stage.addChild(text);
    Manager.mainLoop();
 }
 

@@ -104,6 +104,10 @@ public:
       mPrimarySurface->DecRef();
    }
 
+   void ProcessEvent(Event &inEvent)
+   {
+      HandleEvent(inEvent);
+   }
 
    void Flip()
    {
@@ -119,17 +123,6 @@ public:
    void GetMouse()
    {
    }
-   virtual void SetEventHandler(EventHandler inHander,void *inUserData)
-   {
-      mHandler = inHander;
-      mHandlerData = inUserData;
-   }
-
-   void HandleEvent(Event &inEvt)
-   {
-      if (mHandler)
-         mHandler(inEvt,mHandlerData);
-   }
 
    Surface *GetPrimarySurface()
    {
@@ -140,8 +133,6 @@ public:
    SDL_Surface *mSDLSurface;
    Surface     *mPrimarySurface;
    double       mFrameRate;
-   EventHandler mHandler;
-   void         *mHandlerData;
    bool         mIsOpenGL;
 };
 
@@ -163,7 +154,7 @@ public:
 
    void ProcessEvent(Event &inEvent)
    {
-      mStage->HandleEvent(inEvent);
+      mStage->ProcessEvent(inEvent);
    }
    // --- Frame Interface ----------------------------------------------------
 
@@ -330,6 +321,12 @@ void MainLoop()
             {
                Event close(etQuit);
                sgSDLFrame->ProcessEvent(close);
+               break;
+            }
+            case SDL_MOUSEMOTION:
+            {
+               Event mouse(etMouseMove,event.motion.x,event.motion.y);
+               sgSDLFrame->ProcessEvent(mouse);
                break;
             }
          }

@@ -856,6 +856,23 @@ Stage::~Stage()
 {
 }
 
+void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
+{
+   mHandler = inHander;
+   mHandlerData = inUserData;
+}
+
+void Stage::HandleEvent(Event &inEvent)
+{
+   if (inEvent.type==etMouseMove)
+   {
+      DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
+   }
+
+   if (mHandler)
+      mHandler(inEvent,mHandlerData);
+}
+
 
 void Stage::RenderStage()
 {
@@ -873,6 +890,11 @@ void Stage::RenderStage()
 
    state.mBitmapPhase = false;
    Render(render.Target(),state);
+}
+
+DisplayObject *Stage::HitTest(int inX,int inY)
+{
+   return 0;
 }
 
 } // end namespace nme

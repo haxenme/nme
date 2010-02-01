@@ -7,7 +7,7 @@ namespace nme
 
 bool sgColourOrderSet = false;
 
-#ifndef HX_WINDOWS
+#ifdef IPHONE
 int sgC0Shift = 16;
 int sgC1Shift = 8;
 int sgC2Shift = 0;

@@ -28,7 +28,7 @@ public:
       h.biBitCount = 32;
       h.biCompression = BI_RGB;
 
-		memset(mBase, 0, mWidth*mHeight*4);
+      memset(mBase, 0, mWidth*mHeight*4);
    }
 
    void RenderTo(HDC inDC)
@@ -40,7 +40,7 @@ public:
    BITMAPINFO mInfo;
 
 private:
-	~DIBSurface() { }
+   ~DIBSurface() { }
 };
 
 
@@ -58,82 +58,82 @@ public:
    {
       mHWND = inHWND;
       mDC = GetDC(mHWND);
-		SetICMMode(mDC,ICM_OFF);
+      SetICMMode(mDC,ICM_OFF);
       mHandler = 0;
       mHandlerData = 0;
       mFlags = inFlags;
       mBMP = 0;
-		mHardwareContext = 0;
-		mHardwareSurface = 0;
-		mOGLCtx = 0;
-		HintColourOrder(false);
+      mHardwareContext = 0;
+      mHardwareSurface = 0;
+      mOGLCtx = 0;
+      HintColourOrder(false);
 
-		mIsHardware = inFlags & wfHardware;
+      mIsHardware = inFlags & wfHardware;
 
-		if (mIsHardware)
-		{
-			if (!CreateHardware())
-				mIsHardware = false;
-		}
-		if (!mIsHardware)
+      if (mIsHardware)
+      {
+         if (!CreateHardware())
+            mIsHardware = false;
+      }
+      if (!mIsHardware)
          CreateBMP();
    }
 
    ~WindowsStage()
    {
-		if (mBMP)
-			mBMP->DecRef();
-		if (mHardwareContext)
-			mHardwareContext->DecRef();
-		if (mHardwareSurface)
-			mHardwareSurface->DecRef();
-		if (mOGLCtx)
-			wglDeleteContext( mOGLCtx );
+      if (mBMP)
+         mBMP->DecRef();
+      if (mHardwareContext)
+         mHardwareContext->DecRef();
+      if (mHardwareSurface)
+         mHardwareSurface->DecRef();
+      if (mOGLCtx)
+         wglDeleteContext( mOGLCtx );
    }
 
-	bool CreateHardware()
-	{
-		PIXELFORMATDESCRIPTOR pfd;
-		ZeroMemory( &pfd, sizeof( pfd ) );
-		pfd.nSize = sizeof( pfd );
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
-						  PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 24;
-		pfd.cDepthBits = 16;
-		pfd.iLayerType = PFD_MAIN_PLANE;
-		int fmt = ChoosePixelFormat( mDC, &pfd );
-		if (!fmt)
-			return false;
-		if (!SetPixelFormat( mDC, fmt, &pfd ))
-			return false;
+   bool CreateHardware()
+   {
+      PIXELFORMATDESCRIPTOR pfd;
+      ZeroMemory( &pfd, sizeof( pfd ) );
+      pfd.nSize = sizeof( pfd );
+      pfd.nVersion = 1;
+      pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+                    PFD_DOUBLEBUFFER;
+      pfd.iPixelType = PFD_TYPE_RGBA;
+      pfd.cColorBits = 24;
+      pfd.cDepthBits = 16;
+      pfd.iLayerType = PFD_MAIN_PLANE;
+      int fmt = ChoosePixelFormat( mDC, &pfd );
+      if (!fmt)
+         return false;
+      if (!SetPixelFormat( mDC, fmt, &pfd ))
+         return false;
 
       mOGLCtx = wglCreateContext( mDC );
-		if (!mOGLCtx)
-			return false;
+      if (!mOGLCtx)
+         return false;
 
-		mHardwareContext = HardwareContext::CreateOpenGL(mDC,mOGLCtx);
-		mHardwareContext->IncRef();
-		mHardwareSurface = new HardwareSurface(mHardwareContext);
-		mHardwareSurface->IncRef();
-		UpdateHardware();
-		return true;
-	}
+      mHardwareContext = HardwareContext::CreateOpenGL(mDC,mOGLCtx);
+      mHardwareContext->IncRef();
+      mHardwareSurface = new HardwareSurface(mHardwareContext);
+      mHardwareSurface->IncRef();
+      UpdateHardware();
+      return true;
+   }
 
 
    void UpdateHardware()
-	{
-		WINDOWINFO info;
+   {
+      WINDOWINFO info;
       info.cbSize = sizeof(WINDOWINFO);
 
       if (GetWindowInfo(mHWND,&info))
       {
          int w =  info.rcClient.right - info.rcClient.left;
          int h =  info.rcClient.bottom - info.rcClient.top;
-			mHardwareContext->SetWindowSize(w,h);
+         mHardwareContext->SetWindowSize(w,h);
       }
-	}
+   }
 
    void CreateBMP()
    {
@@ -151,30 +151,25 @@ public:
          int w =  info.rcClient.right - info.rcClient.left;
          int h =  info.rcClient.bottom - info.rcClient.top;
          mBMP = new DIBSurface(w,h);
-			mBMP->IncRef();
+         mBMP->IncRef();
       }
    }
 
    void Flip()
    {
-		if (mHardwareContext)
-			mHardwareContext->Flip();
-		else if (mBMP)
+      if (mHardwareContext)
+         mHardwareContext->Flip();
+      else if (mBMP)
          mBMP->RenderTo(mDC);
    }
    void GetMouse()
    {
    }
-   virtual void SetEventHandler(EventHandler inHander,void *inUserData)
-   {
-      mHandler = inHander;
-      mHandlerData = inUserData;
-   }
 
    Surface *GetPrimarySurface()
    {
-		if (mHardwareSurface)
-			return mHardwareSurface;
+      if (mHardwareSurface)
+         return mHardwareSurface;
       return mBMP;
    }
 
@@ -186,9 +181,9 @@ public:
             Flip();
             break;
          case etResize:
-				if (mHardwareContext)
-					UpdateHardware();
-				else
+            if (mHardwareContext)
+               UpdateHardware();
+            else
                CreateBMP();
             break;
          case etTimer:
@@ -238,15 +233,13 @@ public:
 
    HWND         mHWND;
    HDC          mDC;
-	HGLRC        mOGLCtx;
+   HGLRC        mOGLCtx;
    uint32       mFlags;
    double       mFrameRate;
-   EventHandler mHandler;
    DIBSurface   *mBMP;
-	HardwareSurface *mHardwareSurface;
-	HardwareContext *mHardwareContext;
-   void         *mHandlerData;
-	bool         mIsHardware;
+   HardwareSurface *mHardwareSurface;
+   HardwareContext *mHardwareContext;
+   bool         mIsHardware;
 };
 
 

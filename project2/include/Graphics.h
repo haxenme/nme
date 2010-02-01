@@ -466,7 +466,7 @@ struct RenderState
    Rect           mClipRect;
 
    bool           mBitmapPhase;
-	bool           mRoundSizeToPOW2;
+   bool           mRoundSizeToPOW2;
    // Masking...
    class BitmapCache    *mMask;
 };

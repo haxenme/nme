@@ -115,18 +115,6 @@ public:
    {
       // TODO
    }
-   void SetEventHandler(EventHandler inHander,void *inUserData)
-   {
-      mHandler = inHander;
-      mHandlerData = inUserData;
-   }
-
-   void HandleEvent(Event &inEvent)
-   {
-      if (mHandler)
-         mHandler(inEvent,mHandlerData);
-   }
-
 
    
    Surface *GetPrimarySurface()
