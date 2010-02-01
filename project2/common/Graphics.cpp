@@ -344,6 +344,30 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    return true;
 }
 
+bool Graphics::HitTest(const UserPoint &inPoint)
+{
+   Extent2DF result;
+   CreateRenderData();
+   for(int i=0;i<mCache.size();i++)
+   {
+      // See if we can get the extent from somewhere!
+      RendererCache &cache = mCache[i];
+		bool result = false;
+      if (cache.mSoftware && cache.mSoftware->HitTest(inPoint,result))
+         return result;
+      if (cache.mHardware && cache.mHardware->HitTest(inPoint,result))
+         return result;
+
+      // No - ok, create a software renderer...
+      cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
+      cache.mSoftware->HitTest(inPoint,result);
+		return false;
+   }
+
+	return false;
+}
+
+
 // --- RenderState -------------------------------------------------------------------
 
 ColorTransform sgIdentityColourTransform;

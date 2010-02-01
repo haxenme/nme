@@ -113,6 +113,19 @@ Matrix Matrix::Inverse() const
    return result;
 }
 
+UserPoint Matrix::ApplyInverse(const UserPoint &inPoint) const
+{
+   double det = m00*m11 - m01*m10;
+   if (det==0)
+      return inPoint;
+
+   det = 1.0/det;
+
+	return UserPoint( (m11*inPoint.x - m01*inPoint.y)*det - mtx,
+	                  (-m10*inPoint.x + m00*inPoint.y)*det - mty );
+}
+
+
 void Matrix::MatchTransform(double inX,double inY,
                             double inTargetX,double inTargetY)
 {

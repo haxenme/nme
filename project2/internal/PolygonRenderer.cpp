@@ -311,7 +311,7 @@ struct SpanRect
 class PolygonRender : public CachedExtentRenderer
 {
 public:
-   enum IterateMode { itGetExtent, itCreateRenderer };
+   enum IterateMode { itGetExtent, itCreateRenderer, itHitTest };
 
    PolygonRender(IGraphicsFill *inFill)
    {
@@ -352,6 +352,7 @@ public:
       Iterate(itGetExtent,*ioCache.mTransform.mMatrix);
       mBuildExtent = 0;
    }
+
 
    void SetTransform(const Transform &inTransform)
    {
@@ -487,12 +488,22 @@ public:
       mBuildExtent->Add( p2 );
    }
 
+	bool HitTest(const UserPoint &inPoint,bool &outResult)
+	{
+		mHitTest = inPoint;
+		mHitsLeft = 0;
+      Iterate(itHitTest, Matrix());
+		outResult = mHitsLeft & 0x01;
+		return true;
+	}
 
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual QuickVec<float> &GetData() = 0;
    virtual void AlignOrthogonal()  { }
 
+	UserPoint           mHitTest;
+	int                 mHitsLeft;
    Transform           mTransform;
 	Matrix              mTransMat;
 	Scale9              mTransScale9;
@@ -520,7 +531,16 @@ public:
       mBuildExtent->Add(inP0);
    }
 
-
+	void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
+   {
+      if ( (inP0.y < mHitTest.y) != (inP1.y< mHitTest.y) )
+		{
+			double l1 = (mHitTest.y-inP0.y) / (inP1.y-inP0.y);
+			double x = l1 * (inP1.x - inP0.x);
+			if (x<mHitTest.x)
+				mHitsLeft++;
+		}
+   }
 
 
    inline void AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3)
@@ -645,7 +665,8 @@ public:
    void Iterate(IterateMode inMode,const Matrix &m)
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
-                                     &LineRender::BuildSolid;
+               inMode==itCreateRenderer ? &LineRender::BuildSolid :
+							  &LineRender::BuildHitTest;
 
       // Convert line data to solid data
       GraphicsStroke &stroke = *mLineData->mStroke;
@@ -671,7 +692,20 @@ public:
       mDTheta = M_PI/perp_len;
 
       int n = mLineData->command.size();
-      UserPoint *point = &mTransformed[0];
+      UserPoint *point = 0;
+
+      QuickVec<UserPoint> untransformed;
+		if (inMode==itHitTest)
+		{
+         const QuickVec<float> &data = GetData();
+			int d = data.size();
+			untransformed.resize(d);
+			for(int i=0;i<d;i++)
+				untransformed[i] = UserPoint(data[i*2],data[i*2+1]);
+			point = &untransformed[0];
+		}
+		else
+         point = &mTransformed[0];
 
       // It is a loop if the path has no breaks, it has more than 2 points
       //  and it finishes where it starts...

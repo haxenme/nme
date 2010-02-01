@@ -55,6 +55,17 @@ public:
       if (inY<=Y0) return inY;
       return inY>Y1 ? inY + Y1Off : Y0 + (inY-Y0)*SY;
    }
+	double InvTransX(double inX) const
+   {
+      if (inX<=X0) return inX;
+      return inX>X1 ? inX - X1Off : X0 + (inX-X0)/(SX<=0 ? 1e-99 : SX);
+   }
+   double InvTransY(double inY) const
+   {
+      if (inY<=Y0) return inY;
+      return inY>Y1 ? inY - Y1Off : Y0 + (inY-Y0)/(SY<=0 ? 1e-99 : SY);
+   }
+
    Matrix GetFillMatrix(const Extent2DF &inExtent)
    {
       // The mapping of the edges should remain unchanged ...

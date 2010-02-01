@@ -553,6 +553,8 @@ public:
 
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
 
+   virtual bool HitTest(const UserPoint &inPoint,bool &outResult) { return false; }
+
    // HitTest
 
    static Renderer *CreateHardware(LineData *inLineData);
@@ -620,6 +622,7 @@ public:
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
    const Extent2DF &GetExtent0(double inRotation);
+	bool  HitTest(const UserPoint &inPoint);
 
    bool empty() const { return mItems.empty(); }
 

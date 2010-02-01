@@ -70,6 +70,7 @@ public:
    void ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const;
 
    Matrix Inverse() const;
+   UserPoint ApplyInverse(const UserPoint &inPoint) const;
 
    void GLMult() const;
 

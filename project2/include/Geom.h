@@ -53,6 +53,13 @@ struct TRect
       return inOther.x>=x && inOther.x1()<=x1() &&
              inOther.y>=y && inOther.y1()<=y1();
    }
+	template<typename T_>
+   bool Contains(const T_ &inOther) const
+   {
+      return inOther.x>=x && inOther.x<x1() &&
+             inOther.y>=y && inOther.y<y1();
+   }
+
 
    void ClipY(T &ioY0, T &ioY1) const
    {
@@ -316,6 +323,17 @@ struct Extent2D
       }
       return mMinX<mMaxX && mMinY<mMaxY;
    }
+
+	template<typename T_>
+   bool Contains(const T_ &inOther) const
+   {
+		return mValidX && mValidY && inOther.x>=mMinX && inOther.x<mMaxX &&
+             inOther.y>=mMaxY && inOther.y<mMaxY;
+   }
+
+
+
+
    void Translate(int inTX,int inTY)
    {
       mMinX += inTX;

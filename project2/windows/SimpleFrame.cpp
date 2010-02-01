@@ -59,8 +59,6 @@ public:
       mHWND = inHWND;
       mDC = GetDC(mHWND);
       SetICMMode(mDC,ICM_OFF);
-      mHandler = 0;
-      mHandlerData = 0;
       mFlags = inFlags;
       mBMP = 0;
       mHardwareContext = 0;
@@ -285,6 +283,12 @@ public:
          case WM_SIZE:
             {
             Event evt(etResize);
+            mStage->HandleEvent(evt);
+            }
+            break;
+         case WM_MOUSEMOVE:
+            {
+            Event evt(etMouseMove, LOWORD(lParam), HIWORD(lParam));
             mStage->HandleEvent(evt);
             }
             break;

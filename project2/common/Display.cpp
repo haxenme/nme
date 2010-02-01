@@ -131,6 +131,30 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 }
 
 
+DisplayObject *DisplayObject::HitTest(const UserPoint &inPoint)
+{
+	if (mGfx)
+	{
+		const Extent2DF &ext0 = mGfx->GetExtent0(0);
+		if (ext0.Contains(inPoint))
+			return 0;
+
+		if (scale9Grid.HasPixels())
+		{
+			const Extent2DF &ext0 = mGfx->GetExtent0(0);
+			Scale9 s9;
+			s9.Activate(scale9Grid,ext0,scaleX,scaleY);
+			UserPoint p( s9.InvTransX(inPoint.x), s9.InvTransY(inPoint.y) );
+			if (mGfx->HitTest(p))
+				return this;
+		}
+		else if (mGfx->HitTest(inPoint))
+			return this;
+	}
+
+	return 0;
+}
+
 void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (!mBitmapCache)
@@ -747,6 +771,32 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
    }
 }
 
+DisplayObject *DisplayObjectContainer::HitTest(const UserPoint &inPoint)
+{
+	// TODO: Check mask...
+   for(int i=0;i<mChildren.size();i++)
+   {
+      DisplayObject *obj = mChildren[i];
+
+      UserPoint local = obj->GetLocalMatrix().ApplyInverse(inPoint);
+
+		if ( obj->scrollRect.HasPixels() )
+		{
+			// TODO - is this right?
+         if (obj->scrollRect.Contains(local))
+			   return this;
+		}
+		else
+		{
+         DisplayObject *result = obj->HitTest(local);
+		   if (result)
+			   return result;
+		}
+   }
+
+	return DisplayObject::HitTest(inPoint);
+}
+
 
 DisplayObject *DisplayObjectContainer::getChildAt(int index)
 {
@@ -866,6 +916,7 @@ void Stage::HandleEvent(Event &inEvent)
 {
    if (inEvent.type==etMouseMove)
    {
+		printf("Move!\n");
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
    }
 
@@ -892,9 +943,12 @@ void Stage::RenderStage()
    Render(render.Target(),state);
 }
 
+
 DisplayObject *Stage::HitTest(int inX,int inY)
 {
-   return 0;
+	DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
+	printf("Result %p\n",result);
+	return result;
 }
 
 } // end namespace nme
