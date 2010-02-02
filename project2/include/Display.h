@@ -33,6 +33,14 @@ enum EventType
    etTimer,
 };
 
+enum EventFlags
+{
+   efLeftDown  =  0x0001,
+   efShiftDown =  0x0002,
+   efCtrlDown  =  0x0004,
+   efAltDown   =  0x0008,
+   efCommandDown = 0x0010,
+};
 
 struct Event
 {
@@ -129,6 +137,7 @@ public:
    uint32 opaqueBackground;
    DRect   scale9Grid;
    DRect   scrollRect;
+   int     id;
    bool   visible;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
@@ -145,6 +154,8 @@ public:
    virtual bool NonNormalBlendChild() { return false; }
 
    void SetParent(DisplayObjectContainer *inParent);
+
+   UserPoint GlobalToLocal(const UserPoint &inPoint);
 
    Graphics &GetGraphics();
    Matrix   GetFullMatrix();

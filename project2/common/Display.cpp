@@ -10,6 +10,7 @@ namespace nme
 {
 
 unsigned int gDisplayRefCounting = drDisplayChildRefs;
+static int sgDisplayObjID = 0;
 
 // --- DisplayObject ------------------------------------------------
 
@@ -28,6 +29,9 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    opaqueBackground = 0;
    mMask = 0;
    mIsMaskCount = 0;
+   id = sgDisplayObjID++ & 0x7fffffff;
+   if (id==0)
+      id = sgDisplayObjID++;
 }
 
 DisplayObject::~DisplayObject()
@@ -73,6 +77,13 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
    DecRef();
 }
+
+UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
+{
+   // TODO:
+   return inPoint;
+}
+
 
 void DisplayObject::CheckCacheDirty()
 {
@@ -133,26 +144,26 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 
 DisplayObject *DisplayObject::HitTest(const UserPoint &inPoint)
 {
-	if (mGfx)
-	{
-		const Extent2DF &ext0 = mGfx->GetExtent0(0);
-		if (!ext0.Contains(inPoint))
-			return 0;
+   if (mGfx)
+   {
+      const Extent2DF &ext0 = mGfx->GetExtent0(0);
+      if (!ext0.Contains(inPoint))
+         return 0;
 
-		if (scale9Grid.HasPixels())
-		{
-			const Extent2DF &ext0 = mGfx->GetExtent0(0);
-			Scale9 s9;
-			s9.Activate(scale9Grid,ext0,scaleX,scaleY);
-			UserPoint p( s9.InvTransX(inPoint.x), s9.InvTransY(inPoint.y) );
-			if (mGfx->HitTest(p))
-				return this;
-		}
-		else if (mGfx->HitTest(inPoint))
-			return this;
-	}
+      if (scale9Grid.HasPixels())
+      {
+         const Extent2DF &ext0 = mGfx->GetExtent0(0);
+         Scale9 s9;
+         s9.Activate(scale9Grid,ext0,scaleX,scaleY);
+         UserPoint p( s9.InvTransX(inPoint.x), s9.InvTransY(inPoint.y) );
+         if (mGfx->HitTest(p))
+            return this;
+      }
+      else if (mGfx->HitTest(inPoint))
+         return this;
+   }
 
-	return 0;
+   return 0;
 }
 
 void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
@@ -507,27 +518,27 @@ void DisplayObjectContainer::setChildIndex(DisplayObject *inChild,int inNewIndex
    for(int i=0;i<mChildren.size();i++)
       if (inChild==mChildren[i])
       {
-			if (inNewIndex<i)
-			{
-				while(i > inNewIndex)
-				{
-				   mChildren[i] = mChildren[i-1];
-				   i--;
-			   }
-			}
-			// move up ...
-			else if (i<inNewIndex)
-			{
-				while(i < inNewIndex)
-				{
-					mChildren[i] = mChildren[i+1];
-					i++;
-				}
-      	}
-			mChildren[inNewIndex] = inChild;
+         if (inNewIndex<i)
+         {
+            while(i > inNewIndex)
+            {
+               mChildren[i] = mChildren[i-1];
+               i--;
+            }
+         }
+         // move up ...
+         else if (i<inNewIndex)
+         {
+            while(i < inNewIndex)
+            {
+               mChildren[i] = mChildren[i+1];
+               i++;
+            }
+         }
+         mChildren[inNewIndex] = inChild;
          DirtyDown(dirtCache);
          return;
-		}
+      }
    // This is an error, I think.
    return;
 
@@ -543,7 +554,7 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
 
 void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
 {
-	//printf("DisplayObjectContainer::addChild\n");
+   //printf("DisplayObjectContainer::addChild\n");
    IncRef();
    inChild->SetParent(this);
 
@@ -773,28 +784,28 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
 
 DisplayObject *DisplayObjectContainer::HitTest(const UserPoint &inPoint)
 {
-	// TODO: Check mask...
+   // TODO: Check mask...
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
 
       UserPoint local = obj->GetLocalMatrix().ApplyInverse(inPoint);
 
-		if ( obj->scrollRect.HasPixels() )
-		{
-			// TODO - is this right?
+      if ( obj->scrollRect.HasPixels() )
+      {
+         // TODO - is this right?
          if (obj->scrollRect.Contains(local))
-			   return this;
-		}
-		else
-		{
+            return this;
+      }
+      else
+      {
          DisplayObject *result = obj->HitTest(local);
-		   if (result)
-			   return result;
-		}
+         if (result)
+            return result;
+      }
    }
 
-	return DisplayObject::HitTest(inPoint);
+   return DisplayObject::HitTest(inPoint);
 }
 
 
@@ -919,6 +930,7 @@ void Stage::HandleEvent(Event &inEvent)
    if (inEvent.type==etMouseMove)
    {
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
+      inEvent.id = obj ? obj->id : id;
    }
 
    if (mHandler)
@@ -947,10 +959,10 @@ void Stage::RenderStage()
 
 DisplayObject *Stage::HitTest(int inX,int inY)
 {
-	DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
+   DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
    if (result)
-	   printf("Hit %p\n",result);
-	return result;
+      printf("Hit %p\n",result);
+   return result;
 }
 
 } // end namespace nme

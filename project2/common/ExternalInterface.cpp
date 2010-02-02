@@ -121,11 +121,11 @@ DEFINE_PRIM(nme_set_stage_handler,2);
 
 value nme_render_stage(value inStage)
 {
-	Stage *stage;
+   Stage *stage;
    if (AbstractToObject(inStage,stage))
-	{
-		stage->RenderStage();
-	}
+   {
+      stage->RenderStage();
+   }
 
    return alloc_null();
 }
@@ -136,38 +136,70 @@ DEFINE_PRIM(nme_render_stage,1);
 
 value nme_create_display_object()
 {
-	return ObjectToAbstract( new DisplayObject() );
+   return ObjectToAbstract( new DisplayObject() );
 }
 
 DEFINE_PRIM(nme_create_display_object,0);
 
 value nme_display_object_get_graphics(value inObj)
 {
-	DisplayObject *obj;
+   DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
-		return ObjectToAbstract( &obj->GetGraphics() );
+      return ObjectToAbstract( &obj->GetGraphics() );
 
-	return alloc_null();
+   return alloc_null();
 }
 
 DEFINE_PRIM(nme_display_object_get_graphics,1);
 
+value nme_display_object_get_id(value inObj)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+      return alloc_int( obj->id );
+
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_display_object_get_id,1);
+
+value nme_display_object_global_to_local(value inObj,value ioPoint)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      UserPoint point( val_field_numeric(ioPoint, val_id("x")),
+                     val_field_numeric(ioPoint, val_id("y")) );
+      UserPoint trans = obj->GlobalToLocal(point);
+      alloc_field(ioPoint, val_id("x"), alloc_float(trans.x) );
+      alloc_field(ioPoint, val_id("y"), alloc_float(trans.y) );
+   }
+
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_display_object_global_to_local,2);
+
+
+
+
+
 #define DO_PROP(prop,Prop) \
 value nme_display_object_get_##prop(value inObj) \
 { \
-	DisplayObject *obj; \
+   DisplayObject *obj; \
    if (AbstractToObject(inObj,obj)) \
-		return alloc_float( obj->get##Prop() ); \
-	return alloc_float(0); \
+      return alloc_float( obj->get##Prop() ); \
+   return alloc_float(0); \
 } \
 \
 DEFINE_PRIM(nme_display_object_get_##prop,1) \
 value nme_display_object_set_##prop(value inObj,value inVal) \
 { \
-	DisplayObject *obj; \
+   DisplayObject *obj; \
    if (AbstractToObject(inObj,obj)) \
-		obj->set##Prop(val_number(inVal)); \
-	return alloc_null(); \
+      obj->set##Prop(val_number(inVal)); \
+   return alloc_null(); \
 } \
 \
 DEFINE_PRIM(nme_display_object_set_##prop,2)
@@ -180,45 +212,45 @@ DO_PROP(y,Y)
 
 value nme_create_display_object_container()
 {
-	return ObjectToAbstract( new DisplayObjectContainer() );
+   return ObjectToAbstract( new DisplayObjectContainer() );
 }
 
 DEFINE_PRIM(nme_create_display_object_container,0);
 
 value nme_doc_add_child(value inParent, value inChild)
 {
-	DisplayObjectContainer *parent;
-	DisplayObject *child;
-	if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
-	{
-		parent->addChild(child);
-	}
-	return alloc_null();
+   DisplayObjectContainer *parent;
+   DisplayObject *child;
+   if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
+   {
+      parent->addChild(child);
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_doc_add_child,2);
 
 /*
 value nme_doc_remove_child(value inParent, value inPos)
 {
-	DisplayObjectContainer *parent;
-	if (AbstractToObject(inParent,parent))
-	{
-		parent->removeChild(val_int(inPos));
-	}
-	return alloc_null();
+   DisplayObjectContainer *parent;
+   if (AbstractToObject(inParent,parent))
+   {
+      parent->removeChild(val_int(inPos));
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_doc_insert_child,3);
 */
 
 value nme_doc_set_child_index(value inParent, value inChild, value inPos)
 {
-	DisplayObjectContainer *parent;
-	DisplayObject *child;
-	if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
-	{
-		parent->setChildIndex(child,val_int(inPos));
-	}
-	return alloc_null();
+   DisplayObjectContainer *parent;
+   DisplayObject *child;
+   if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
+   {
+      parent->setChildIndex(child,val_int(inPos));
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_doc_set_child_index,3);
 
@@ -228,39 +260,39 @@ DEFINE_PRIM(nme_doc_set_child_index,3);
 
 value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->beginFill( val_int(inColour), val_number(inAlpha) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->beginFill( val_int(inColour), val_number(inAlpha) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
 
 value nme_gfx_line_style(value* arg, int nargs)
 {
-	enum { argGfx, argThickness, argColour, argAlpha, argPixelHinting, argScaleMode, argCapsStyle,
-		    argJointStyle, argMiterLimit, argSIZE };
+   enum { argGfx, argThickness, argColour, argAlpha, argPixelHinting, argScaleMode, argCapsStyle,
+          argJointStyle, argMiterLimit, argSIZE };
 
-	Graphics *gfx;
-	if (AbstractToObject(arg[argGfx],gfx))
-	{
-		double thickness = -1;
-		if (!val_is_null(arg[argThickness]))
-		{
-			thickness = val_number(arg[argThickness]);
-			if (thickness<0)
-				thickness = 0;
-		}
-		gfx->lineStyle(thickness, val_int(arg[argColour]), val_number(arg[argAlpha]),
-					  val_bool(arg[argPixelHinting]),
-					  (StrokeScaleMode)val_int(arg[argScaleMode]),
-					  (StrokeCaps)val_int(arg[argCapsStyle]),
-					  (StrokeJoints)val_int(arg[argJointStyle]),
-					  val_number(arg[argMiterLimit]) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(arg[argGfx],gfx))
+   {
+      double thickness = -1;
+      if (!val_is_null(arg[argThickness]))
+      {
+         thickness = val_number(arg[argThickness]);
+         if (thickness<0)
+            thickness = 0;
+      }
+      gfx->lineStyle(thickness, val_int(arg[argColour]), val_number(arg[argAlpha]),
+                 val_bool(arg[argPixelHinting]),
+                 (StrokeScaleMode)val_int(arg[argScaleMode]),
+                 (StrokeCaps)val_int(arg[argCapsStyle]),
+                 (StrokeJoints)val_int(arg[argJointStyle]),
+                 val_number(arg[argMiterLimit]) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_gfx_line_style)
 
@@ -270,56 +302,56 @@ DEFINE_PRIM_MULT(nme_gfx_line_style)
 
 value nme_gfx_move_to(value inGfx,value inX, value inY)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->moveTo( val_number(inX), val_number(inY) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->moveTo( val_number(inX), val_number(inY) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_move_to,3);
 
 value nme_gfx_line_to(value inGfx,value inX, value inY)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->lineTo( val_number(inX), val_number(inY) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->lineTo( val_number(inX), val_number(inY) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_line_to,3);
 
 value nme_gfx_curve_to(value inGfx,value inCX, value inCY, value inX, value inY)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->curveTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->curveTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_curve_to,5);
 
 value nme_gfx_arc_to(value inGfx,value inCX, value inCY, value inX, value inY)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->arcTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->arcTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_arc_to,5);
 
 value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, value inHeight)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		gfx->drawEllipse( val_number(inX), val_number(inY), val_number(inWidth), val_number(inHeight) );
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->drawEllipse( val_number(inX), val_number(inY), val_number(inWidth), val_number(inHeight) );
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_draw_ellipse,5);
 

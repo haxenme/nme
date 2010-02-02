@@ -222,8 +222,8 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
       sdl_flags |= SDL_FULLSCREEN;
 
 
-   int use_w = resizable ? 0 : inWidth;
-   int use_h = resizable ? 0 : inHeight;
+   int use_w = fullscreen ? 0 : inWidth;
+   int use_h = fullscreen ? 0 : inHeight;
 
 #ifdef IPHONE
    sdl_flags |= SDL_NOFRAME;

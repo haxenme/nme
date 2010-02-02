@@ -25,7 +25,7 @@
  *
  */
 
-package nme.geom;
+package nme2.geom;
 
 class Point
 {
@@ -38,17 +38,17 @@ class Point
       y = inY;
    }
 
-   public function add(v : nme.geom.Point) : nme.geom.Point
+   public function add(v : Point) : Point
    {
       return new Point(v.x+x,v.y+y);
    }
 
-   public function clone() : nme.geom.Point
+   public function clone() : Point
    {
       return new Point(x,y);
    }
 
-   public function equals(toCompare : nme.geom.Point) : Bool
+   public function equals(toCompare : Point) : Bool
    {
       return toCompare.x==x && toCompare.y==y;
    }
@@ -75,25 +75,25 @@ class Point
       x+=dx;
       y+=dy;
    }
-   public function subtract(v : nme.geom.Point) : nme.geom.Point
+   public function subtract(v : Point) : Point
    {
       return new Point(x-v.x,y-v.y);
    }
 
-   public static function distance(pt1 : nme.geom.Point, pt2 : nme.geom.Point) : Float
+   public static function distance(pt1 : Point, pt2 : Point) : Float
    {
       var dx = pt1.x-pt2.x;
       var dy = pt1.y-pt2.y;
       return Math.sqrt(dx*dy + dy*dy);
    }
 
-   public static function interpolate(pt1 : nme.geom.Point, pt2 : nme.geom.Point, f : Float) : nme.geom.Point
+   public static function interpolate(pt1 : Point, pt2 : Point, f : Float) : Point
    {
       return new Point( pt2.x + f*(pt1.x-pt2.x),
                         pt2.y + f*(pt1.y-pt2.y) );
    }
 
-   public static function polar(len : Float, angle : Float) : nme.geom.Point
+   public static function polar(len : Float, angle : Float) : Point
    {
       return new Point( len*Math.cos(angle), len*Math.sin(angle) );
    }
