@@ -136,7 +136,7 @@ DisplayObject *DisplayObject::HitTest(const UserPoint &inPoint)
 	if (mGfx)
 	{
 		const Extent2DF &ext0 = mGfx->GetExtent0(0);
-		if (ext0.Contains(inPoint))
+		if (!ext0.Contains(inPoint))
 			return 0;
 
 		if (scale9Grid.HasPixels())
@@ -543,7 +543,7 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
 
 void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
 {
-	printf("DisplayObjectContainer::addChild\n");
+	//printf("DisplayObjectContainer::addChild\n");
    IncRef();
    inChild->SetParent(this);
 
@@ -898,6 +898,8 @@ public:
 
 Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 {
+   mHandler = 0;
+   mHandlerData = 0;
    mBackgroundColour = 0xffffff;
    mQuality = 4;
 }
@@ -916,7 +918,6 @@ void Stage::HandleEvent(Event &inEvent)
 {
    if (inEvent.type==etMouseMove)
    {
-		printf("Move!\n");
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
    }
 
@@ -947,7 +948,8 @@ void Stage::RenderStage()
 DisplayObject *Stage::HitTest(int inX,int inY)
 {
 	DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
-	printf("Result %p\n",result);
+   if (result)
+	   printf("Hit %p\n",result);
 	return result;
 }
 

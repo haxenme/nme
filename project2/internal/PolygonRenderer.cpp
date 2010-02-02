@@ -497,6 +497,17 @@ public:
 		return true;
 	}
 
+	void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
+   {
+      if ( (inP0.y < mHitTest.y) != (inP1.y< mHitTest.y) )
+		{
+			double l1 = (mHitTest.y-inP0.y) / (inP1.y-inP0.y);
+			double x = inP0.x  + l1 * (inP1.x - inP0.x);
+			if (x<mHitTest.x)
+				mHitsLeft++;
+		}
+   }
+
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual QuickVec<float> &GetData() = 0;
@@ -529,17 +540,6 @@ public:
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
       mBuildExtent->Add(inP0);
-   }
-
-	void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
-   {
-      if ( (inP0.y < mHitTest.y) != (inP1.y< mHitTest.y) )
-		{
-			double l1 = (mHitTest.y-inP0.y) / (inP1.y-inP0.y);
-			double x = l1 * (inP1.x - inP0.x);
-			if (x<mHitTest.x)
-				mHitsLeft++;
-		}
    }
 
 
@@ -698,7 +698,7 @@ public:
 		if (inMode==itHitTest)
 		{
          const QuickVec<float> &data = GetData();
-			int d = data.size();
+			int d = data.size()/2;
 			untransformed.resize(d);
 			for(int i=0;i<d;i++)
 				untransformed[i] = UserPoint(data[i*2],data[i*2+1]);
@@ -919,7 +919,21 @@ public:
    void Iterate(IterateMode inMode,const Matrix &)
    {
       int n = mSolidData->command.size();
-      UserPoint *point = &mTransformed[0];
+      UserPoint *point = 0;
+
+      QuickVec<UserPoint> untransformed;
+		if (inMode==itHitTest)
+		{
+         const QuickVec<float> &data = GetData();
+			int d = data.size()/2;
+			untransformed.resize(d);
+			for(int i=0;i<d;i++)
+				untransformed[i] = UserPoint(data[i*2],data[i*2+1]);
+			point = &untransformed[0];
+		}
+		else
+         point = &mTransformed[0];
+
 
       if (inMode==itGetExtent)
       {
@@ -952,6 +966,10 @@ public:
          UserPoint last_point;
          int points = 0;
 
+         typedef void (PolygonRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
+         ItFunc func = inMode==itCreateRenderer ? &PolygonRender::BuildSolid :
+					   &PolygonRender::BuildHitTest;
+
          for(int i=0;i<n;i++)
          {
             switch(mSolidData->command[i])
@@ -960,7 +978,7 @@ public:
                   point++;
                case pcMoveTo:
                   if (points>1)
-                     BuildSolid(last_point,last_move);
+                     (*this.*func)(last_point,last_move);
                   points = 1;
                   last_point = *point++;
                   last_move = last_point;
@@ -970,7 +988,7 @@ public:
                   point++;
                case pcLineTo:
                   if (points>0)
-                     BuildSolid(last_point,*point);
+                     (*this.*func)(last_point,*point);
                   last_point = *point++;
                   points++;
                   break;

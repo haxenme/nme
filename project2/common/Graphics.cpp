@@ -354,14 +354,14 @@ bool Graphics::HitTest(const UserPoint &inPoint)
       RendererCache &cache = mCache[i];
 		bool result = false;
       if (cache.mSoftware && cache.mSoftware->HitTest(inPoint,result))
-         return result;
+         if (result) return true;
       if (cache.mHardware && cache.mHardware->HitTest(inPoint,result))
-         return result;
+         if (result) return true;
 
       // No - ok, create a software renderer...
       cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
       cache.mSoftware->HitTest(inPoint,result);
-		return false;
+      if (result) return true;
    }
 
 	return false;

@@ -193,8 +193,7 @@ public:
             break;
       }
 
-      if (mHandler)
-         mHandler(inEvent,mHandlerData);
+      Stage::HandleEvent(inEvent);
    }
 
    void FrameCheck()

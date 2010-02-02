@@ -328,7 +328,7 @@ struct Extent2D
    bool Contains(const T_ &inOther) const
    {
 		return mValidX && mValidY && inOther.x>=mMinX && inOther.x<mMaxX &&
-             inOther.y>=mMaxY && inOther.y<mMaxY;
+             inOther.y>=mMinY && inOther.y<mMaxY;
    }
 
 
