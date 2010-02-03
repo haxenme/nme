@@ -8,4 +8,7 @@ class InteractiveObject extends DisplayObject
       super(inHandle);
    }
 
+	override function nmeAsInteractiveObject() : InteractiveObject { return this; }
+
+
 }

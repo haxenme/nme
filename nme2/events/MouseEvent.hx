@@ -53,7 +53,8 @@ class MouseEvent extends nme2.events.Event
    static var efAltDown   =  0x0008;
    static var efCommandDown = 0x0010;
 
-   public static function nmeCreate(inType:String, inEvent:Dynamic,inLocal:Point)
+   public static function nmeCreate(inType:String, inEvent:Dynamic,inLocal:Point,
+	   inTarget:InteractiveObject)
    {
       var flags : Int = inEvent.flags;
       var evt = new MouseEvent(inType, true, false, inLocal.x, inLocal.y, null,
@@ -64,8 +65,21 @@ class MouseEvent extends nme2.events.Event
            0,0 );
       evt.stageX = inEvent.x;
       evt.stageY = inEvent.y;
+		evt.target = inTarget;
       return evt;
    }
+
+   public function nmeCreateSimilar(inType:String,
+	     ?related:InteractiveObject,?targ:InteractiveObject)
+	{
+		var result = new MouseEvent(inType,bubbles,cancelable,localX,localY,
+			related==null ? relatedObject : related,
+			ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount );
+
+		if (targ!=null)
+			result.target = targ;
+		return result;
+	}
 
    public function updateAfterEvent()
    {

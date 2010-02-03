@@ -1,4 +1,5 @@
 import nme2.Manager;
+import nme2.events.MouseEvent;
 
 class Sample
 {
@@ -16,7 +17,7 @@ public static function main()
    gfx.lineTo(100,200);
    gfx.lineTo(100,100);
 
-   var shape = new nme2.display.Shape();
+   var shape = new nme2.display.Sprite();
    var gfx = shape.graphics;
    gfx.beginFill(0xffff00);
    gfx.lineStyle(6,0x000000);
@@ -28,6 +29,8 @@ public static function main()
 
    shape.x = 50;
    shape.y = 50;
+
+	shape.addEventListener(MouseEvent.MOUSE_MOVE,function(evt) trace(evt.localX+" "+evt.localY));
 
    Manager.stage.addChild(shape);
 

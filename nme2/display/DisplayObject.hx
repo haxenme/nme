@@ -1,5 +1,6 @@
 package nme2.display;
 import nme2.events.Event;
+import nme2.events.EventPhase;
 import nme2.geom.Point;
 
 class DisplayObject extends nme2.events.EventDispatcher
@@ -15,6 +16,7 @@ class DisplayObject extends nme2.events.EventDispatcher
 
    public function new(inHandle:Dynamic)
    {
+		super(this);
       nmeParent = null;
       nmeHandle = inHandle;
       nmeName = "DisplayObject";
@@ -108,13 +110,70 @@ class DisplayObject extends nme2.events.EventDispatcher
          nmeParent = inParent;
    }
 
-
    public function globalToLocal(inLocal:Point)
    {
       var result = inLocal.clone();
       nme_display_object_global_to_local(nmeHandle,result);
       return result;
    }
+
+
+	// Events
+
+	function nmeAsInteractiveObject() : InteractiveObject { return null; }
+
+	public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
+	{
+		var io = nmeAsInteractiveObject();
+		if (io!=null)
+			outStack.push(io);
+		if (nmeParent!=null)
+			nmeParent.nmeGetInteractiveObjectStack(outStack);
+	}
+
+	function nmeFireEvent(inEvt:Event)
+   {
+		var stack:Array<InteractiveObject> = [];
+		if (nmeParent!=null)
+		   nmeParent.nmeGetInteractiveObjectStack(stack);
+      var l = stack.length;
+
+      if (l>0)
+		{
+			// First, the "capture" phase ...
+			inEvt.nmeSetPhase(EventPhase.CAPTURING_PHASE);
+			stack.reverse();
+			for(obj in stack)
+			{
+				inEvt.currentTarget = obj;
+				obj.dispatchEvent(inEvt);
+				if (inEvt.nmeGetIsCancelled())
+					return;
+			}
+		}
+
+      // Next, the "target"
+      inEvt.nmeSetPhase(EventPhase.AT_TARGET);
+      inEvt.currentTarget = this;
+      dispatchEvent(inEvt);
+      if (inEvt.nmeGetIsCancelled())
+          return;
+
+      // Last, the "bubbles" phase
+      if (inEvt.bubbles)
+      {
+         inEvt.nmeSetPhase(EventPhase.BUBBLING_PHASE);
+			stack.reverse();
+			for(obj in stack)
+         {
+            inEvt.currentTarget = obj;
+            obj.dispatchEvent(inEvt);
+            if (inEvt.nmeGetIsCancelled())
+               return;
+         }
+      }
+   }
+
 
 
 

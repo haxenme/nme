@@ -960,8 +960,6 @@ void Stage::RenderStage()
 DisplayObject *Stage::HitTest(int inX,int inY)
 {
    DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
-   if (result)
-      printf("Hit %p\n",result);
    return result;
 }
 
