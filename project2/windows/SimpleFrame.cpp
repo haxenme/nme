@@ -48,8 +48,11 @@ private:
 
 enum
 {
-   timerFrame,
+   PollTimerID = 1,
 };
+
+typedef std::vector<Stage *> StageList;
+StageList sgAlwaysPollingStages;
 
 class WindowsStage : public Stage
 {
@@ -65,8 +68,11 @@ public:
       mHardwareSurface = 0;
       mOGLCtx = 0;
       HintColourOrder(false);
+		mPollingTimer = false;
 
       mIsHardware = inFlags & wfHardware;
+		mPollMethod = pollAlways;
+		sgAlwaysPollingStages.push_back(this);
 
       if (mIsHardware)
       {
@@ -77,8 +83,48 @@ public:
          CreateBMP();
    }
 
+	 void SetPollMethod(PollMethod inMethod)
+	 {
+		 if (inMethod!=mPollMethod)
+		 {
+			 if (mPollMethod==pollAlways)
+			 {
+             StageList::iterator i  = std::find(sgAlwaysPollingStages.begin(),
+																sgAlwaysPollingStages.end(), this );
+				 if (i!=sgAlwaysPollingStages.end())
+					 sgAlwaysPollingStages.erase(i);
+			 }
+
+			 if (inMethod==pollTimer)
+			 {
+				 if (!mPollingTimer)
+					 SetTimer(mHWND,PollTimerID, 1,0);
+				 mPollingTimer = true;
+			 }
+			 else
+			 {
+				 if (mPollingTimer)
+					 KillTimer(mHWND,PollTimerID);
+				 mPollingTimer = false;
+			 }
+
+			 mPollMethod = inMethod;
+
+			 if (mPollMethod==pollAlways)
+				 sgAlwaysPollingStages.push_back(this);
+		 }
+	 }
+
+	void PollNow()
+	{
+		Event evt(etPoll);
+      HandleEvent(evt);
+	}
+
+
    ~WindowsStage()
    {
+		SetPollMethod(pollNever);
       if (mBMP)
          mBMP->DecRef();
       if (mHardwareContext)
@@ -184,26 +230,11 @@ public:
             else
                CreateBMP();
             break;
-         case etTimer:
-            if (inEvent.id==timerFrame)
-            {
-               FrameCheck();
-               return;
-            }
-            break;
       }
 
       Stage::HandleEvent(inEvent);
    }
 
-   void FrameCheck()
-   {
-      if (mHandler)
-      {
-         Event evt(etRender);
-         mHandler(evt,mHandlerData);
-      }
-   }
 
    // --- IRenderTarget Interface ------------------------------------------
    int Width()
@@ -237,6 +268,8 @@ public:
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
    bool         mIsHardware;
+	bool         mPollingTimer;
+	PollMethod   mPollMethod;
 };
 
 
@@ -254,7 +287,6 @@ public:
       mOldProc = (WNDPROC)SetWindowLongPtr(mHandle,GWL_WNDPROC,(LONG)StaticCallback);
       mStage = new WindowsStage(inHandle,mFlags);
       ShowWindow(mHandle,true);
-      SetTimer(mHandle,timerFrame, 10,0);
    }
    ~WindowsFrame()
    {
@@ -293,7 +325,7 @@ public:
             break;
          case WM_TIMER:
             {
-            Event evt(etTimer);
+            Event evt(etPoll);
             evt.id = wParam;
             mStage->HandleEvent(evt);
             }
@@ -383,8 +415,18 @@ void TerminateMainLoop()
 void MainLoop()
 {
    MSG msg;
-   while( !sgDead && (GetMessage(&msg, NULL, 0, 0) > 0) )
+   while( !sgDead )
    {
+		while(!sgDead && !sgAlwaysPollingStages.empty() &&
+		    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)==0)
+		{
+			for(int i=0;i<sgAlwaysPollingStages.size();i++)
+				sgAlwaysPollingStages[i]->PollNow();
+		}
+
+		if (GetMessage(&msg, NULL, 0, 0)<=0)
+			break;
+
       TranslateMessage(&msg);
       DispatchMessage(&msg);
    }

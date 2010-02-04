@@ -8,10 +8,11 @@ class Stage extends nme2.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
 
+	public var frameRate(default,nmeSetFrameRate): Float;
+
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onMouseButton: Int -> Int -> Int -> Bool -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
-   public var onRender: Void ->Void; 
    public var onQuit: Void ->Void; 
 
 
@@ -20,12 +21,20 @@ class Stage extends nme2.display.DisplayObjectContainer
       super(inHandle);
       nmeMouseOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
+		nmeSetFrameRate(100);
    }
 
    override function nmeGetStage() : nme2.display.Stage
    {
       return this;
    }
+
+	function nmeSetFrameRate(inRate:Float) : Float
+	{
+		frameRate = inRate;
+		nme_set_stage_poll_method( nmeHandle, inRate<=0 ? 0 : (inRate<24 ? 1 : 2) );
+		return inRate;
+	}
 
 
 
@@ -116,9 +125,9 @@ class Stage extends nme2.display.DisplayObjectContainer
          case 4: // RESIZE
             if (onResize!=null)
                untyped onResize(inEvent.x, inEvent.y);
-            nme_render_stage(nmeHandle);
+            nmeRender(false);
 
-         case 5: // RENDER
+         case 5: // POLL
             nmeRender(true);
 
          case 6: // QUIT
@@ -132,5 +141,6 @@ class Stage extends nme2.display.DisplayObjectContainer
    }
 
    static var nme_set_stage_handler = nme2.Loader.load("nme_set_stage_handler",2);
+   static var nme_set_stage_poll_method = nme2.Loader.load("nme_set_stage_poll_method",2);
    static var nme_render_stage = nme2.Loader.load("nme_render_stage",1);
 }

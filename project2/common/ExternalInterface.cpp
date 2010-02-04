@@ -73,8 +73,19 @@ value nme_close()
    TerminateMainLoop();
    return alloc_null();
 }
-
 DEFINE_PRIM(nme_close,0);
+
+value nme_set_stage_poll_method(value inStage, value inMethod)
+{
+	Stage *stage;
+
+	if (AbstractToObject(inStage,stage))
+      stage->SetPollMethod((Stage::PollMethod)val_int(inMethod));
+
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_set_stage_poll_method,2);
 
 static int _id_type = val_id("type");
 static int _id_x = val_id("x");
