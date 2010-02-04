@@ -300,20 +300,52 @@ void TerminateMainLoop()
    sgDead = true;
 }
 
+static double sgLastFrameTime = 0;
+static double sgFrameRate = 50;
+Uint32 FrameCheckFunc(Uint32 interval, void *)
+{
+    double period = sgFrameRate < 0.0001 ? 10000 : 1.0/sgFrameRate;
+    double now = SDL_GetTicks()*0.001;
+
+    if (now > sgLastFrameTime + period - 9)
+    {
+       // Ping off an event - any event will force the frame check.
+       SDL_Event event;
+       SDL_UserEvent userevent;
+       /* In this example, our callback pushes an SDL_USEREVENT event
+       into the queue, and causes ourself to be called again at the
+       same interval: */
+       userevent.type = SDL_USEREVENT;
+       userevent.code = 0;
+       userevent.data1 = NULL;
+       userevent.data2 = NULL;
+       event.type = SDL_USEREVENT;
+       event.user = userevent;
+       SDL_PushEvent(&event);
+
+       // assume that event fires soon
+       double next = (sgLastFrameTime + period * 2 - now ) * 1000.0 - 9;
+       interval = next < 1 ? 1 : (Uint32)next;
+    }
+    else
+    {
+       double next = (sgLastFrameTime + period  - now ) * 1000.0 - 9;
+       interval = next < 1 ? 1 : (Uint32)next;
+    }
+
+    return(1);
+   
+}
+
 void MainLoop()
 {
    SDL_Event event;
 
+   SDL_TimerID  timer = SDL_AddTimer(30, FrameCheckFunc, 0);
+
    while(!sgDead)
    {
-      #ifdef NME_MIXER
-      int id = soundGetNextDoneChannel();
-      if (id>=0)
-      {
-      }
-      #endif
-
-      while (SDL_PollEvent(&event))
+      while (SDL_WaitEvent(&event) && !sgDead)
       {
          switch(event.type)
          {
@@ -330,11 +362,27 @@ void MainLoop()
                break;
             }
          }
-      }
 
-      Event frame(etRender);
-      sgSDLFrame->ProcessEvent(frame);
+         #ifdef NME_MIXER
+         int id = soundGetNextDoneChannel();
+         if (id>=0)
+         {
+         }
+         #endif
+
+
+
+         double now = SDL_GetTicks()*0.001;
+         // Or dirty ?
+         if (sgFrameRate > 0 && now>=sgLastFrameTime + 1.0/sgFrameRate)
+         {
+            sgLastFrameTime = now;
+            Event frame(etRender);
+            sgSDLFrame->ProcessEvent(frame);
+         }
+      }
    }
+
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();

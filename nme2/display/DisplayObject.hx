@@ -6,6 +6,7 @@ import nme2.geom.Point;
 class DisplayObject extends nme2.events.EventDispatcher
 {
    public var graphics(nmeGetGraphics,null) : nme2.display.Graphics;
+   public var stage(nmeGetStage,null) : nme2.display.Stage;
    public var x(nmeGetX,nmeSetX): Float;
    public var y(nmeGetY,nmeSetY): Float;
 
@@ -16,7 +17,7 @@ class DisplayObject extends nme2.events.EventDispatcher
 
    public function new(inHandle:Dynamic)
    {
-		super(this);
+      super(this);
       nmeParent = null;
       nmeHandle = inHandle;
       nmeName = "DisplayObject";
@@ -27,6 +28,13 @@ class DisplayObject extends nme2.events.EventDispatcher
    public function nmeGetGraphics() : nme2.display.Graphics
    {
       return new nme2.display.Graphics( nme_display_object_get_grapics(nmeHandle) );
+   }
+
+   public function nmeGetStage() : nme2.display.Stage
+   {
+      if (nmeParent!=null)
+         return nmeParent.nmeGetStage();
+      return null;
    }
 
    function nmeFindByID(inID:Int) : DisplayObject
@@ -118,39 +126,44 @@ class DisplayObject extends nme2.events.EventDispatcher
    }
 
 
-	// Events
+   // Events
 
-	function nmeAsInteractiveObject() : InteractiveObject { return null; }
+   function nmeAsInteractiveObject() : InteractiveObject { return null; }
 
-	public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
-	{
-		var io = nmeAsInteractiveObject();
-		if (io!=null)
-			outStack.push(io);
-		if (nmeParent!=null)
-			nmeParent.nmeGetInteractiveObjectStack(outStack);
-	}
-
-	function nmeFireEvent(inEvt:Event)
+   public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
    {
-		var stack:Array<InteractiveObject> = [];
-		if (nmeParent!=null)
-		   nmeParent.nmeGetInteractiveObjectStack(stack);
+      var io = nmeAsInteractiveObject();
+      if (io!=null)
+         outStack.push(io);
+      if (nmeParent!=null)
+         nmeParent.nmeGetInteractiveObjectStack(outStack);
+   }
+
+   public function nmeBroadcast(inEvt:Event)
+   {
+      dispatchEvent(inEvt);
+   }
+
+   function nmeFireEvent(inEvt:Event)
+   {
+      var stack:Array<InteractiveObject> = [];
+      if (nmeParent!=null)
+         nmeParent.nmeGetInteractiveObjectStack(stack);
       var l = stack.length;
 
       if (l>0)
-		{
-			// First, the "capture" phase ...
-			inEvt.nmeSetPhase(EventPhase.CAPTURING_PHASE);
-			stack.reverse();
-			for(obj in stack)
-			{
-				inEvt.currentTarget = obj;
-				obj.dispatchEvent(inEvt);
-				if (inEvt.nmeGetIsCancelled())
-					return;
-			}
-		}
+      {
+         // First, the "capture" phase ...
+         inEvt.nmeSetPhase(EventPhase.CAPTURING_PHASE);
+         stack.reverse();
+         for(obj in stack)
+         {
+            inEvt.currentTarget = obj;
+            obj.dispatchEvent(inEvt);
+            if (inEvt.nmeGetIsCancelled())
+               return;
+         }
+      }
 
       // Next, the "target"
       inEvt.nmeSetPhase(EventPhase.AT_TARGET);
@@ -163,8 +176,8 @@ class DisplayObject extends nme2.events.EventDispatcher
       if (inEvt.bubbles)
       {
          inEvt.nmeSetPhase(EventPhase.BUBBLING_PHASE);
-			stack.reverse();
-			for(obj in stack)
+         stack.reverse();
+         for(obj in stack)
          {
             inEvt.currentTarget = obj;
             obj.dispatchEvent(inEvt);

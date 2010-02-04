@@ -1,14 +1,17 @@
 import nme2.Manager;
 import nme2.events.MouseEvent;
+import nme2.events.Event;
+import nme2.display.DisplayObject;
 
-class Sample
+class Sample extends nme2.display.Sprite
 {
 
-public static function main()
+public function new()
 {
-   Manager.init(320,480, Manager.HARDWARE | Manager.RESIZABLE);
+   super();
+   Manager.stage.addChild(this);
 
-   var gfx = Manager.stage.graphics;
+   var gfx = graphics;
    gfx.beginFill(0xff0000);
    gfx.lineStyle(6,0x000000);
    gfx.moveTo(100,100);
@@ -30,14 +33,36 @@ public static function main()
    shape.x = 50;
    shape.y = 50;
 
-	shape.addEventListener(MouseEvent.MOUSE_MOVE,function(evt) trace(evt.localX+" "+evt.localY));
+   shape.addEventListener(MouseEvent.MOUSE_MOVE,function(evt) trace(evt.localX+" "+evt.localY));
 
-   Manager.stage.addChild(shape);
+   stage.addChild(shape);
 
    var text = new nme2.text.TextField();
    text.text = "Hello";
-   Manager.stage.addChild(text);
+   stage.addChild(text);
+
+   var fps:Array<Float> = [];
+   
+   stage.addEventListener(Event.ENTER_FRAME,function(evt) {
+      var t0 =  haxe.Timer.stamp();
+      fps.push(t0);
+      if (fps.length>50)
+          fps.pop();
+      // trace(" Fps : " + ((fps.length-1)/( fps[fps.length-1] - fps[0] )) );
+      var x = shape.x;
+      shape.x = x>300 ? 0 : x+1;
+      });
+}
+
+
+public static function main()
+{
+   Manager.init(320,480, Manager.HARDWARE | Manager.RESIZABLE);
+
+   new Sample();
+
    Manager.mainLoop();
+
 }
 
 }

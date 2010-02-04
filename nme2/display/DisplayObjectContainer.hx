@@ -1,5 +1,7 @@
 package nme2.display;
 
+import nme2.events.Event;
+
 class DisplayObjectContainer extends InteractiveObject
 {
    public var mouseChildren(nmeGetMouseChildren,nmeSetMouseChildren) : Bool;
@@ -30,6 +32,26 @@ class DisplayObjectContainer extends InteractiveObject
       return super.nmeFindByID(inID);
    }
 
+   override public function nmeBroadcast(inEvt:Event)
+   {
+      var i = 0;
+      if (nmeChildren.length>0)
+         while(true)
+         {
+            var child = nmeChildren[i];
+            child.dispatchEvent(inEvt);
+            if (i>=nmeChildren.length)
+               break;
+            if (nmeChildren[i]==child)
+            {
+               i++;
+               if (i>=nmeChildren.length)
+                  break;
+            }
+         }
+      dispatchEvent(inEvt);
+   }
+ 
 
    function nmeGetMouseChildren() { return false; }
    function nmeSetMouseChildren(inValue:Bool):Bool { return false; }

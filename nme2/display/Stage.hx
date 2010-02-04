@@ -1,6 +1,7 @@
 package nme2.display;
 
 import nme2.events.MouseEvent;
+import nme2.events.Event;
 import nme2.geom.Point;
 
 class Stage extends nme2.display.DisplayObjectContainer
@@ -17,65 +18,81 @@ class Stage extends nme2.display.DisplayObjectContainer
    public function new(inHandle:Dynamic)
    {
       super(inHandle);
-		nmeMouseOverObjects = [];
+      nmeMouseOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
    }
 
-	function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
-	{
-		// Exit ...
-		var new_n = inStack.length;
-		var new_obj:InteractiveObject = new_n>0 ? inStack[new_n-1] : null;
-		var old_n = nmeMouseOverObjects.length;
-		var old_obj:InteractiveObject = old_n>0 ? inStack[old_n-1] : null;
-		if (new_obj!=old_obj)
-		{
-			// mouseOut/MouseOver goes up the object tree...
-			if (old_obj!=null)
-				old_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OUT,new_obj,old_obj) );
+   override function nmeGetStage() : nme2.display.Stage
+   {
+      return this;
+   }
 
-			if (new_obj!=null)
-				new_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OVER,old_obj) );
 
-			// rollOver/rollOut goes only over the non-common objects in the tree...
-			var common = 0;
-			while(common<new_n && common<old_n && inStack[common] == nmeMouseOverObjects[common] )
-				common++;
 
-			var rollOut = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OUT,new_obj,old_obj);
-			var i = old_n-1;
-			while(i>common)
-			{
-				nmeMouseOverObjects[i].dispatchEvent(rollOut);
-				i--;
-			}
+   function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
+   {
+      // Exit ...
+      var new_n = inStack.length;
+      var new_obj:InteractiveObject = new_n>0 ? inStack[new_n-1] : null;
+      var old_n = nmeMouseOverObjects.length;
+      var old_obj:InteractiveObject = old_n>0 ? inStack[old_n-1] : null;
+      if (new_obj!=old_obj)
+      {
+         // mouseOut/MouseOver goes up the object tree...
+         if (old_obj!=null)
+            old_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OUT,new_obj,old_obj) );
 
-			var rollOver = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OVER,old_obj);
-			var i = new_n-1;
-			while(i>common)
-			{
-				nmeMouseOverObjects[i].dispatchEvent(rollOver);
-				i--;
-			}
+         if (new_obj!=null)
+            new_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OVER,old_obj) );
 
-			nmeMouseOverObjects = inStack;
-		}
-	}
+         // rollOver/rollOut goes only over the non-common objects in the tree...
+         var common = 0;
+         while(common<new_n && common<old_n && inStack[common] == nmeMouseOverObjects[common] )
+            common++;
+
+         var rollOut = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OUT,new_obj,old_obj);
+         var i = old_n-1;
+         while(i>common)
+         {
+            nmeMouseOverObjects[i].dispatchEvent(rollOut);
+            i--;
+         }
+
+         var rollOver = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OVER,old_obj);
+         var i = new_n-1;
+         while(i>common)
+         {
+            nmeMouseOverObjects[i].dispatchEvent(rollOver);
+            i--;
+         }
+
+         nmeMouseOverObjects = inStack;
+      }
+   }
 
    function nmeOnMouseMove(inEvent:Dynamic)
    {
       var obj:DisplayObject = nmeFindByID(inEvent.id);
-		var stack = new Array<InteractiveObject>();
-		obj.nmeGetInteractiveObjectStack(stack);
-		if (stack.length>0)
-		{
-			var obj = stack[0];
-			stack.reverse();
-      	var local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
+      var stack = new Array<InteractiveObject>();
+      obj.nmeGetInteractiveObjectStack(stack);
+      if (stack.length>0)
+      {
+         var obj = stack[0];
+         stack.reverse();
+         var local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
          var move = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE,inEvent,local,obj);
-			nmeCheckInOuts(move,stack);
-			obj.nmeFireEvent(move);
-		}
+         nmeCheckInOuts(move,stack);
+         obj.nmeFireEvent(move);
+      }
+   }
+
+   function nmeRender(inSendEnterFrame:Bool)
+   {
+      if (inSendEnterFrame)
+      {
+         nmeBroadcast(new Event(Event.ENTER_FRAME));
+      }
+      nme_render_stage(nmeHandle);
    }
 
 
@@ -102,9 +119,7 @@ class Stage extends nme2.display.DisplayObjectContainer
             nme_render_stage(nmeHandle);
 
          case 5: // RENDER
-            if (onRender!=null)
-               untyped onRender();
-            nme_render_stage(nmeHandle);
+            nmeRender(true);
 
          case 6: // QUIT
             if (onQuit!=null)
