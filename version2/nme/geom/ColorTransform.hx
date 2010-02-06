@@ -1,4 +1,4 @@
-package nme2.geom;
+package nme.geom;
 
 /**
 * @author	Hugh Sanderson

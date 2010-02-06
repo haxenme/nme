@@ -1,4 +1,4 @@
-package nme2.display;
+package nme.display;
 
 class InteractiveObject extends DisplayObject
 {

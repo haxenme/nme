@@ -1,10 +1,10 @@
-package nme2.display;
+package nme.display;
 
-import nme2.events.MouseEvent;
-import nme2.events.Event;
-import nme2.geom.Point;
+import nme.events.MouseEvent;
+import nme.events.Event;
+import nme.geom.Point;
 
-class Stage extends nme2.display.DisplayObjectContainer
+class Stage extends nme.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
 
@@ -24,7 +24,7 @@ class Stage extends nme2.display.DisplayObjectContainer
 		nmeSetFrameRate(100);
    }
 
-   override function nmeGetStage() : nme2.display.Stage
+   override function nmeGetStage() : nme.display.Stage
    {
       return this;
    }
@@ -109,7 +109,7 @@ class Stage extends nme2.display.DisplayObjectContainer
    {
       //trace(inEvent);
       // TODO: timer event?
-      nme2.Manager.pollTimers();
+      nme.Manager.pollTimers();
       switch(Std.int(Reflect.field( inEvent, "type" ) ) )
       {
          case 2: // etChar
@@ -144,7 +144,7 @@ class Stage extends nme2.display.DisplayObjectContainer
       return null;
    }
 
-   static var nme_set_stage_handler = nme2.Loader.load("nme_set_stage_handler",2);
-   static var nme_set_stage_poll_method = nme2.Loader.load("nme_set_stage_poll_method",2);
-   static var nme_render_stage = nme2.Loader.load("nme_render_stage",1);
+   static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",2);
+   static var nme_set_stage_poll_method = nme.Loader.load("nme_set_stage_poll_method",2);
+   static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
 }

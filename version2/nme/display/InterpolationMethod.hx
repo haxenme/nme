@@ -1,4 +1,4 @@
-package nme2.display;
+package nme.display;
 
 enum InterpolationMethod { RGB; LINEAR_RGB; }
 

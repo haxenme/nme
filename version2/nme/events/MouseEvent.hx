@@ -1,9 +1,9 @@
-package nme2.events;
+package nme.events;
 
-import nme2.display.InteractiveObject;
-import nme2.geom.Point;
+import nme.display.InteractiveObject;
+import nme.geom.Point;
 
-class MouseEvent extends nme2.events.Event
+class MouseEvent extends nme.events.Event
 {
    public var localX : Float;
    public var localY : Float;

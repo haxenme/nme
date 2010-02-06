@@ -23,7 +23,7 @@
  */
 
 
-package nme2.geom;
+package nme.geom;
 
 
 

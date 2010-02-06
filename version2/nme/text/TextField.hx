@@ -1,6 +1,6 @@
-package nme2.text;
+package nme.text;
 
-class TextField extends nme2.display.DisplayObject
+class TextField extends nme.display.DisplayObject
 {
    public var text(getText,setText):String;
 
@@ -17,7 +17,7 @@ class TextField extends nme2.display.DisplayObject
       return inText;
    }
 
-   static var nme_text_field_create = neko.Lib.load("nme2","nme_text_field_create",0);
-   static var nme_text_field_get_text = neko.Lib.load("nme2","nme_text_field_get_text",1);
-   static var nme_text_field_set_text = neko.Lib.load("nme2","nme_text_field_set_text",2);
+   static var nme_text_field_create = neko.Lib.load("nme","nme_text_field_create",0);
+   static var nme_text_field_get_text = neko.Lib.load("nme","nme_text_field_get_text",1);
+   static var nme_text_field_set_text = neko.Lib.load("nme","nme_text_field_set_text",2);
 }

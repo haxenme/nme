@@ -1,9 +1,9 @@
-import nme2.Manager;
-import nme2.events.MouseEvent;
-import nme2.events.Event;
-import nme2.display.DisplayObject;
+import nme.Manager;
+import nme.events.MouseEvent;
+import nme.events.Event;
+import nme.display.DisplayObject;
 
-class Sample extends nme2.display.Sprite
+class Sample extends nme.display.Sprite
 {
 
 public function new()
@@ -21,7 +21,7 @@ public function new()
    gfx.lineTo(100,200);
    gfx.lineTo(100,100);
 
-   var shape = new nme2.display.Sprite();
+   var shape = new nme.display.Sprite();
    var gfx = shape.graphics;
    gfx.beginFill(0xffff00);
    gfx.lineStyle(6,0x000000);
@@ -38,7 +38,7 @@ public function new()
 
    stage.addChild(shape);
 
-   var text = new nme2.text.TextField();
+   var text = new nme.text.TextField();
    text.text = "Hello";
    stage.addChild(text);
 

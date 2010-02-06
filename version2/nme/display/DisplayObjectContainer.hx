@@ -1,6 +1,6 @@
-package nme2.display;
+package nme.display;
 
-import nme2.events.Event;
+import nme.events.Event;
 
 class DisplayObjectContainer extends InteractiveObject
 {
@@ -175,9 +175,9 @@ class DisplayObjectContainer extends InteractiveObject
 
 
 
-   static var nme_create_display_object_container = nme2.Loader.load("nme_create_display_object_container",0);
-   static var nme_doc_add_child = nme2.Loader.load("nme_doc_add_child",2);
-   //static var nme_doc_remove_child = nme2.Loader.load("nme_doc_remove_child",2);
-   static var nme_doc_set_child_index = nme2.Loader.load("nme_doc_set_child_index",3);
+   static var nme_create_display_object_container = nme.Loader.load("nme_create_display_object_container",0);
+   static var nme_doc_add_child = nme.Loader.load("nme_doc_add_child",2);
+   //static var nme_doc_remove_child = nme.Loader.load("nme_doc_remove_child",2);
+   static var nme_doc_set_child_index = nme.Loader.load("nme_doc_set_child_index",3);
 
 }

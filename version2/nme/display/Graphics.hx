@@ -1,4 +1,4 @@
-package nme2.display;
+package nme.display;
 
 class Graphics
 {
@@ -53,12 +53,12 @@ class Graphics
 	}
 
 
-   static var nme_gfx_begin_fill = nme2.Loader.load("nme_gfx_begin_fill",3);
-   static var nme_gfx_line_style = nme2.Loader.load("nme_gfx_line_style",-1);
+   static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
+   static var nme_gfx_line_style = nme.Loader.load("nme_gfx_line_style",-1);
 
-   static var nme_gfx_move_to = nme2.Loader.load("nme_gfx_move_to",3);
-   static var nme_gfx_line_to = nme2.Loader.load("nme_gfx_line_to",3);
-   static var nme_gfx_curve_to = nme2.Loader.load("nme_gfx_curve_to",5);
-   static var nme_gfx_arc_to = nme2.Loader.load("nme_gfx_arc_to",5);
-   static var nme_gfx_draw_ellipse = nme2.Loader.load("nme_gfx_draw_ellipse",5);
+   static var nme_gfx_move_to = nme.Loader.load("nme_gfx_move_to",3);
+   static var nme_gfx_line_to = nme.Loader.load("nme_gfx_line_to",3);
+   static var nme_gfx_curve_to = nme.Loader.load("nme_gfx_curve_to",5);
+   static var nme_gfx_arc_to = nme.Loader.load("nme_gfx_arc_to",5);
+   static var nme_gfx_draw_ellipse = nme.Loader.load("nme_gfx_draw_ellipse",5);
 }

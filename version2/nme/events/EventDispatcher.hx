@@ -1,6 +1,6 @@
-package nme2.events;
-import nme2.events.IEventDispatcher;
-import nme2.events.Event;
+package nme.events;
+import nme.events.IEventDispatcher;
+import nme.events.Event;
 
 
 class Listener

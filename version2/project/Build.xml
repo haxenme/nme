@@ -16,7 +16,7 @@
 
 <files id="mac">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
 </files>
@@ -34,16 +34,16 @@
 
 <files id="sdl">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="sdl/SDLStage.cpp"/>
 </files>
 
 
 
 
-<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
-<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
-<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux/" if="linux"/>
+<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Mac/" if="macos"/>
+<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Windows/" if="windows"/>
+<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Linux/" if="linux"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
@@ -52,8 +52,8 @@
 
 <files id="common">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl"/>
+  <compilerflag value="-I../../../sdl-static/include"/>
+  <compilerflag value="-I../../../sdl-static/include/SDL12" if="sdl"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
 
   <file name="common/Surface.cpp"/>
@@ -125,7 +125,7 @@
 <set name="name_extra" value=".iphoneos" if="iphoneos"/>
 <set name="name_extra" value=".iphonesim" if="iphonesim"/>
 
-<target id="NDLL" output="nme2${name_extra}" tool="linker" toolid="${ndll-tool}">
+<target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}"/>
   <ext value=".ndll" unless="iphone"/>
 
@@ -153,7 +153,6 @@
   <flag value="opengl32.lib" if="windows"/>
   <flag value="user32.lib" if="windows"/>
   <flag value="kernel32.lib" if="windows"/>
-  <outdir name="."/>
 </target>
 
 

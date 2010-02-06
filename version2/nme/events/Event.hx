@@ -1,4 +1,4 @@
-package nme2.events;
+package nme.events;
 
 class Event
 {
