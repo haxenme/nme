@@ -71,7 +71,7 @@ class Stage extends nme2.display.DisplayObjectContainer
          var i = new_n-1;
          while(i>common)
          {
-            nmeMouseOverObjects[i].dispatchEvent(rollOver);
+            inStack[i].dispatchEvent(rollOver);
             i--;
          }
 
@@ -112,25 +112,29 @@ class Stage extends nme2.display.DisplayObjectContainer
       nme2.Manager.pollTimers();
       switch(Std.int(Reflect.field( inEvent, "type" ) ) )
       {
-         case 1: // KEY
+         case 2: // etChar
             if (onKey!=null)
                untyped onKey(inEvent.code, inEvent.down, inEvent.char, inEvent.flags );
 
-         case 2: // MOUSE_MOVE
+         case 4: // etMouseMove
             nmeOnMouseMove(inEvent);
 
-         case 3: // MOUSE_BUTTON
+         case 5: // etMouseDown
+
+         case 6: // etMouseClick
             if (onMouseButton!=null)
                onMouseButton(inEvent.button, inEvent.x, inEvent.y, inEvent.down, inEvent.flags);
-         case 4: // RESIZE
+         case 7: // etMouseUp
+
+         case 8: // etResize
             if (onResize!=null)
                untyped onResize(inEvent.x, inEvent.y);
             nmeRender(false);
 
-         case 5: // POLL
+         case 9: // etPoll
             nmeRender(true);
 
-         case 6: // QUIT
+         case 10: // etQuit
             if (onQuit!=null)
                untyped onQuit();
 

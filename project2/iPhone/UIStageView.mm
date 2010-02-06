@@ -115,6 +115,11 @@ public:
       HandleEvent(evt);
    }
 
+   void OnEvent(Event &inEvt)
+   {
+      HandleEvent(inEvt);
+   }
+
 
 
    void Flip()
@@ -183,6 +188,9 @@ public:
 - (void) stopAnimation;
 - (void) drawView:(id)sender;
 - (void) onPoll:(id)sender;
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 
 @end
 
@@ -238,6 +246,52 @@ UIStageView *sgMainView = nil;
    
     return self;
 }
+
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   CGPoint thumbPoint;
+   UITouch *thumb = [[event allTouches] anyObject];
+   thumbPoint = [thumb locationInView:thumb.view];
+
+   if(thumb.tapCount==0)
+   {
+      Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
+      mStage->OnEvent(mouse);
+   }
+   else if(thumb.tapCount==1)
+   {
+      Event mouse(etMouseClick, thumbPoint.x, thumbPoint.y);
+      mStage->OnEvent(mouse);
+   }
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   if([touches count] == 1)
+   {
+      CGPoint thumbPoint;
+      UITouch *thumb = [[event allTouches] anyObject];
+      thumbPoint = [thumb locationInView:thumb.view];
+
+      Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
+      mStage->OnEvent(mouse);
+   }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   if([touches count] == [[event touchesForView:self] count])
+   {
+      CGPoint thumbPoint;
+      UITouch *thumb = [[event allTouches] anyObject];
+      thumbPoint = [thumb locationInView:thumb.view];
+
+      Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
+      mStage->OnEvent(mouse);
+   }
+}
+
 
 - (void) drawView:(id)sender
 {

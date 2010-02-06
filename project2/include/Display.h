@@ -19,13 +19,17 @@ extern unsigned int gDisplayRefCounting;
 
 enum EventType
 {
-   etUnknown,
-   etKey,
-   etMouseMove,
-   etMouseButton,
-   etResize,
-   etPoll,
-   etQuit,
+   etUnknown,   // 0
+   etKeyDown,   // 1
+   etChar,      // 2
+   etKeyUp,     // 3
+   etMouseMove, // 4
+   etMouseDown, // 5
+   etMouseClick,// 6
+   etMouseUp,   // 7
+   etResize,    // 8
+   etPoll,      // 9
+   etQuit,      // 10
 
    // Internal for now...
    etDestroyHandler,
