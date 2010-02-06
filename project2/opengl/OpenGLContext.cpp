@@ -217,7 +217,9 @@ public:
 
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_POINT_SMOOTH);
+      #ifndef IPHONE
       glEnable(GL_LINE_SMOOTH);
+      #endif
    }
    void EndRender()
    {
@@ -340,10 +342,21 @@ public:
       mPointsToo = inPointsToo;
       if (inWidth!=mLineWidth)
       {
+         double w = inWidth;
+         #ifdef IPHONE
+         if (w>1)
+            glDisable(GL_LINE_SMOOTH);
+         else
+         {
+            w = 1;
+            glEnable(GL_LINE_SMOOTH);
+         }
+         #endif
          mLineWidth = inWidth;
-         glLineWidth(inWidth);
+         glLineWidth(w);
+
          if (inPointsToo)
-            glPointSize(mLineWidth);
+            glPointSize(inWidth);
       }
    }
 

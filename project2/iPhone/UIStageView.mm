@@ -98,12 +98,23 @@ public:
 
    }
 
-   void OnUpdate()
+    void SetPollMethod(PollMethod inMethod)
+    {
+       // Do nothing for now - use the 60Hz timer....
+    }
+
+   void OnRedraw()
    {
-      //Event evt(etNextFrame);
       Event evt(etRedraw);
       HandleEvent(evt);
    }
+
+   void OnPoll()
+   {
+      Event evt(etPoll);
+      HandleEvent(evt);
+   }
+
 
 
    void Flip()
@@ -171,6 +182,7 @@ public:
 - (void) startAnimation;
 - (void) stopAnimation;
 - (void) drawView:(id)sender;
+- (void) onPoll:(id)sender;
 
 @end
 
@@ -229,14 +241,18 @@ UIStageView *sgMainView = nil;
 
 - (void) drawView:(id)sender
 {
-   mStage->OnUpdate();
-   mStage->RenderStage();
+   mStage->OnRedraw();
 }
+
+- (void) onPoll:(id)sender
+{
+   mStage->OnPoll();
+}
+
 
 - (void) layoutSubviews
 {
    mStage->OnResizeLayer((CAEAGLLayer*)self.layer);
-   [self drawView:nil];
 }
 
 - (NSInteger) animationFrameInterval
@@ -282,7 +298,11 @@ UIStageView *sgMainView = nil;
       else
       */
 
-         animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval) target:self selector:@selector(drawView:) userInfo:nil repeats:TRUE];
+         animationTimer = [NSTimer
+             scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval)
+             target:self selector:@selector(onPoll:)
+             userInfo:nil
+             repeats:TRUE];
       
       animating = TRUE;
    }

@@ -122,8 +122,10 @@
 
 <set name="ndll-tool" value="dll" unless="iphone"/>
 <set name="ndll-tool" value="static" if="iphone"/>
+<set name="name_extra" value=".iphoneos" if="iphoneos"/>
+<set name="name_extra" value=".iphonesim" if="iphonesim"/>
 
-<target id="NDLL" output="nme2" tool="linker" toolid="${ndll-tool}">
+<target id="NDLL" output="nme2${name_extra}" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}"/>
   <ext value=".ndll" unless="iphone"/>
 
