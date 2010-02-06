@@ -7,6 +7,8 @@
 namespace nme
 {
 
+void SetGlobalPollMethod(Stage::PollMethod inMethod);
+
 class SDLSurf : public Surface
 {
 public:
@@ -123,6 +125,12 @@ public:
    void GetMouse()
    {
    }
+
+    void SetPollMethod(PollMethod inMethod)
+    {
+       SetGlobalPollMethod(inMethod);
+    }
+
 
    Surface *GetPrimarySurface()
    {
@@ -300,86 +308,98 @@ void TerminateMainLoop()
    sgDead = true;
 }
 
-static double sgLastFrameTime = 0;
-static double sgFrameRate = 50;
-Uint32 FrameCheckFunc(Uint32 interval, void *)
+static Stage::PollMethod sgPollMethod = Stage::pollAlways;
+static SDL_TimerID  sgTimerID = 0;
+
+Uint32 DoPoll(Uint32 interval, void *)
 {
-    double period = sgFrameRate < 0.0001 ? 10000 : 1.0/sgFrameRate;
-    double now = SDL_GetTicks()*0.001;
-
-    if (now > sgLastFrameTime + period - 9)
-    {
-       // Ping off an event - any event will force the frame check.
-       SDL_Event event;
-       SDL_UserEvent userevent;
-       /* In this example, our callback pushes an SDL_USEREVENT event
-       into the queue, and causes ourself to be called again at the
-       same interval: */
-       userevent.type = SDL_USEREVENT;
-       userevent.code = 0;
-       userevent.data1 = NULL;
-       userevent.data2 = NULL;
-       event.type = SDL_USEREVENT;
-       event.user = userevent;
-       SDL_PushEvent(&event);
-
-       // assume that event fires soon
-       double next = (sgLastFrameTime + period * 2 - now ) * 1000.0 - 9;
-       interval = next < 1 ? 1 : (Uint32)next;
-    }
-    else
-    {
-       double next = (sgLastFrameTime + period  - now ) * 1000.0 - 9;
-       interval = next < 1 ? 1 : (Uint32)next;
-    }
-
-    return(1);
-   
+    // Ping off an event - any event will force the frame check.
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    /* In this example, our callback pushes an SDL_USEREVENT event
+    into the queue, and causes ourself to be called again at the
+    same interval: */
+    userevent.type = SDL_USEREVENT;
+    userevent.code = 0;
+    userevent.data1 = NULL;
+    userevent.data2 = NULL;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return interval;
 }
+
+
+void SetGlobalPollMethod(Stage::PollMethod inMethod)
+{
+   if (inMethod!=sgPollMethod)
+   {
+      sgPollMethod = inMethod;
+      if (sgPollMethod==Stage::pollTimer)
+      {
+         sgTimerID = SDL_AddTimer(1, DoPoll, 0);
+      }
+      else if (sgTimerID)
+      {
+         SDL_RemoveTimer(sgTimerID);
+         sgTimerID = 0;
+      }
+   }
+}
+
+void ProcessEvent(SDL_Event &inEvent)
+{
+  switch(inEvent.type)
+   {
+      case SDL_QUIT:
+      {
+         Event close(etQuit);
+         sgSDLFrame->ProcessEvent(close);
+         break;
+      }
+      case SDL_MOUSEMOTION:
+      {
+         Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+      case SDL_VIDEORESIZE:
+      {
+         break;
+      }
+   }
+}
+
+#ifdef NME_MIXER
+int id = soundGetNextDoneChannel();
+if (id>=0)
+{
+}
+#endif
+
+
 
 void MainLoop()
 {
    SDL_Event event;
-
-   SDL_TimerID  timer = SDL_AddTimer(30, FrameCheckFunc, 0);
-
    while(!sgDead)
    {
-      while (SDL_WaitEvent(&event) && !sgDead)
+      while ( SDL_PollEvent(&event) )
       {
-         switch(event.type)
-         {
-            case SDL_QUIT:
-            {
-               Event close(etQuit);
-               sgSDLFrame->ProcessEvent(close);
-               break;
-            }
-            case SDL_MOUSEMOTION:
-            {
-               Event mouse(etMouseMove,event.motion.x,event.motion.y);
-               sgSDLFrame->ProcessEvent(mouse);
-               break;
-            }
-         }
-
-         #ifdef NME_MIXER
-         int id = soundGetNextDoneChannel();
-         if (id>=0)
-         {
-         }
-         #endif
-
-
-
-         double now = SDL_GetTicks()*0.001;
-         // Or dirty ?
-         if (sgFrameRate > 0 && now>=sgLastFrameTime + 1.0/sgFrameRate)
-         {
-            sgLastFrameTime = now;
-            Event frame(etRender);
-            sgSDLFrame->ProcessEvent(frame);
-         }
+         ProcessEvent(event);
+         if (sgDead) break;
+      }
+     
+      if (sgPollMethod!=Stage::pollNever)
+      {
+         Event poll(etPoll);
+         sgSDLFrame->ProcessEvent(poll);
+      }
+      
+      if (!sgDead && sgPollMethod!=Stage::pollAlways)
+      {
+         SDL_WaitEvent(&event);
+         ProcessEvent(event);
       }
    }
 

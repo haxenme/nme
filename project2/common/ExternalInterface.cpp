@@ -77,10 +77,12 @@ DEFINE_PRIM(nme_close,0);
 
 value nme_set_stage_poll_method(value inStage, value inMethod)
 {
-	Stage *stage;
+   Stage *stage;
 
-	if (AbstractToObject(inStage,stage))
+   if (AbstractToObject(inStage,stage))
+   {
       stage->SetPollMethod((Stage::PollMethod)val_int(inMethod));
+   }
 
    return alloc_null();
 }

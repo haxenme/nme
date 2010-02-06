@@ -10,6 +10,7 @@ public function new()
 {
    super();
    Manager.stage.addChild(this);
+   stage.frameRate = 100;
 
    var gfx = graphics;
    gfx.beginFill(0xff0000);

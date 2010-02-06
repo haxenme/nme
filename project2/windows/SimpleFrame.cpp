@@ -68,11 +68,11 @@ public:
       mHardwareSurface = 0;
       mOGLCtx = 0;
       HintColourOrder(false);
-		mPollingTimer = false;
+      mPollingTimer = false;
 
       mIsHardware = inFlags & wfHardware;
-		mPollMethod = pollAlways;
-		sgAlwaysPollingStages.push_back(this);
+      mPollMethod = pollAlways;
+      sgAlwaysPollingStages.push_back(this);
 
       if (mIsHardware)
       {
@@ -83,48 +83,48 @@ public:
          CreateBMP();
    }
 
-	 void SetPollMethod(PollMethod inMethod)
-	 {
-		 if (inMethod!=mPollMethod)
-		 {
-			 if (mPollMethod==pollAlways)
-			 {
+    void SetPollMethod(PollMethod inMethod)
+    {
+       if (inMethod!=mPollMethod)
+       {
+          if (mPollMethod==pollAlways)
+          {
              StageList::iterator i  = std::find(sgAlwaysPollingStages.begin(),
-																sgAlwaysPollingStages.end(), this );
-				 if (i!=sgAlwaysPollingStages.end())
-					 sgAlwaysPollingStages.erase(i);
-			 }
+                                                sgAlwaysPollingStages.end(), this );
+             if (i!=sgAlwaysPollingStages.end())
+                sgAlwaysPollingStages.erase(i);
+          }
 
-			 if (inMethod==pollTimer)
-			 {
-				 if (!mPollingTimer)
-					 SetTimer(mHWND,PollTimerID, 1,0);
-				 mPollingTimer = true;
-			 }
-			 else
-			 {
-				 if (mPollingTimer)
-					 KillTimer(mHWND,PollTimerID);
-				 mPollingTimer = false;
-			 }
+          if (inMethod==pollTimer)
+          {
+             if (!mPollingTimer)
+                SetTimer(mHWND,PollTimerID, 1,0);
+             mPollingTimer = true;
+          }
+          else
+          {
+             if (mPollingTimer)
+                KillTimer(mHWND,PollTimerID);
+             mPollingTimer = false;
+          }
 
-			 mPollMethod = inMethod;
+          mPollMethod = inMethod;
 
-			 if (mPollMethod==pollAlways)
-				 sgAlwaysPollingStages.push_back(this);
-		 }
-	 }
+          if (mPollMethod==pollAlways)
+             sgAlwaysPollingStages.push_back(this);
+       }
+    }
 
-	void PollNow()
-	{
-		Event evt(etPoll);
+   void PollNow()
+   {
+      Event evt(etPoll);
       HandleEvent(evt);
-	}
+   }
 
 
    ~WindowsStage()
    {
-		SetPollMethod(pollNever);
+      SetPollMethod(pollNever);
       if (mBMP)
          mBMP->DecRef();
       if (mHardwareContext)
@@ -268,8 +268,8 @@ public:
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
    bool         mIsHardware;
-	bool         mPollingTimer;
-	PollMethod   mPollMethod;
+   bool         mPollingTimer;
+   PollMethod   mPollMethod;
 };
 
 
@@ -417,15 +417,15 @@ void MainLoop()
    MSG msg;
    while( !sgDead )
    {
-		while(!sgDead && !sgAlwaysPollingStages.empty() &&
-		    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)==0)
-		{
-			for(int i=0;i<sgAlwaysPollingStages.size();i++)
-				sgAlwaysPollingStages[i]->PollNow();
-		}
+      while(!sgDead && !sgAlwaysPollingStages.empty() &&
+          PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)==0)
+      {
+         for(int i=0;i<sgAlwaysPollingStages.size();i++)
+            sgAlwaysPollingStages[i]->PollNow();
+      }
 
-		if (GetMessage(&msg, NULL, 0, 0)<=0)
-			break;
+      if (GetMessage(&msg, NULL, 0, 0)<=0)
+         break;
 
       TranslateMessage(&msg);
       DispatchMessage(&msg);
