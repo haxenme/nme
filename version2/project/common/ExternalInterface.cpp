@@ -6,6 +6,7 @@
 #include <ExternalInterface.h>
 #include <Display.h>
 #include <TextField.h>
+#include <Font.h>
 
 namespace nme
 {
@@ -181,11 +182,11 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      UserPoint point( val_field_numeric(ioPoint, val_id("x")),
-                     val_field_numeric(ioPoint, val_id("y")) );
+      UserPoint point( val_field_numeric(ioPoint, _id_x),
+                     val_field_numeric(ioPoint, _id_y) );
       UserPoint trans = obj->GlobalToLocal(point);
-      alloc_field(ioPoint, val_id("x"), alloc_float(trans.x) );
-      alloc_field(ioPoint, val_id("y"), alloc_float(trans.y) );
+      alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
+      alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
    }
 
    return alloc_null();
@@ -225,6 +226,7 @@ DO_PROP(rotation,Rotation,alloc_float,val_number)
 DO_PROP(width,Width,alloc_float,val_number)
 DO_PROP(height,Height,alloc_float,val_number)
 DO_PROP(bg,OpaqueBackground,alloc_int,val_int)
+DO_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------
@@ -405,6 +407,162 @@ DEFINE_PRIM(nme_text_field_create,0)
 
 inline value alloc_wstring(const std::wstring &inStr)
    { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
+
+static int _id_align = val_id("align");
+static int _id_blockIndent = val_id("blockIndent");
+static int _id_bold = val_id("bold");
+static int _id_bullet = val_id("bullet");
+static int _id_color = val_id("color");
+static int _id_font = val_id("font");
+static int _id_indent = val_id("indent");
+static int _id_italic = val_id("italic");
+static int _id_kerning = val_id("kerning");
+static int _id_leading = val_id("leading");
+static int _id_leftMargin = val_id("leftMargin");
+static int _id_letterSpacing = val_id("letterSpacing");
+static int _id_rightMargin = val_id("rightMargin");
+static int _id_size = val_id("size");
+static int _id_tabStops = val_id("tabStops");
+static int _id_target = val_id("target");
+static int _id_underline = val_id("underline");
+static int _id_url = val_id("url");
+
+void FromValue(Optional<int> &outVal,value inVal) { outVal = val_int(inVal); }
+void FromValue(Optional<uint32> &outVal,value inVal) { outVal = val_int(inVal); }
+void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
+void FromValue(Optional<std::wstring> &outVal,value inVal) { outVal = val_wstring(inVal); }
+void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
+{
+	QuickVec<int> &val = outVal.Set();
+	int n = val_array_size(inVal);
+	val.resize(n);
+	for(int i=0;i<n;i++)
+		val[i] = val_int( val_array_i(inVal,i) );
+}
+void FromValue(Optional<TextFormatAlign> &outVal,value inVal)
+{
+	std::wstring name = val_wstring(inVal);
+	if (name==L"center")
+		outVal = tfaCenter;
+	else if (name==L"justify")
+		outVal = tfaJustify;
+	else if (name==L"right")
+		outVal = tfaRight;
+	else
+		outVal = tfaLeft;
+}
+
+#define STF(attrib) \
+{ \
+	value tmp = val_field(inValue,_id_##attrib); \
+	if (!val_is_null(tmp)) FromValue(outFormat.attrib, tmp); \
+}
+
+void SetTextFormat(TextFormat &outFormat, value inValue)
+{
+	STF(align);
+	STF(blockIndent);
+	STF(bold);
+	STF(bullet);
+	STF(color);
+	STF(font);
+	STF(indent);
+	STF(italic);
+	STF(kerning);
+	STF(leading);
+	STF(leftMargin);
+	STF(letterSpacing);
+	STF(rightMargin);
+	STF(size);
+	STF(tabStops);
+	STF(target);
+	STF(underline);
+	STF(url);
+}
+
+
+
+value ToValue(const int &inVal) { return alloc_int(inVal); }
+value ToValue(const uint32 &inVal) { return alloc_int(inVal); }
+value ToValue(const bool &inVal) { return alloc_bool(inVal); }
+value ToValue(const std::wstring &inVal) { return alloc_wstring(inVal); }
+value ToValue(const QuickVec<int> &outVal)
+{
+	// TODO:
+	return alloc_null();
+}
+value ToValue(const TextFormatAlign &inTFA)
+{
+	switch(inTFA)
+	{
+		case tfaLeft : return alloc_wstring(L"left");
+		case tfaRight : return alloc_wstring(L"right");
+		case tfaCenter : return alloc_wstring(L"center");
+		case tfaJustify : return alloc_wstring(L"justify");
+	}
+
+	return alloc_wstring(L"left");
+}
+
+
+#define GTF(attrib) \
+{ \
+	alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
+}
+
+
+void GetTextFormat(const TextFormat &inFormat, value &outValue)
+{
+	GTF(align);
+	GTF(blockIndent);
+	GTF(bold);
+	GTF(bullet);
+	GTF(color);
+	GTF(font);
+	GTF(indent);
+	GTF(italic);
+	GTF(kerning);
+	GTF(leading);
+	GTF(leftMargin);
+	GTF(letterSpacing);
+	GTF(rightMargin);
+	GTF(size);
+	GTF(tabStops);
+	GTF(target);
+	GTF(underline);
+	GTF(url);
+}
+
+
+value nme_text_field_set_def_text_format(value inText,value inFormat)
+{
+   TextField *text;
+	if (AbstractToObject(inText,text))
+	{
+		TextFormat *fmt = TextFormat::Create(true);
+		SetTextFormat(*fmt,inFormat);
+		text->setDefaultTextFormat(fmt);
+		fmt->DecRef();
+	}
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_text_field_set_def_text_format,2)
+
+value nme_text_field_get_def_text_format(value inText,value outFormat)
+{
+   TextField *text;
+	if (AbstractToObject(inText,text))
+	{
+		const TextFormat *fmt = text->getDefaultTextFormat();
+		GetTextFormat(*fmt,outFormat);
+	}
+   return alloc_null();
+}
+DEFINE_PRIM(nme_text_field_get_def_text_format,2);
+
+
+
 
 #define TEXT_PROP(prop,Prop,to_val,from_val) \
 value nme_text_field_get_##prop(value inHandle) \

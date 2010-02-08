@@ -44,6 +44,8 @@ public:
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
    operator T() const { return mVal; }
    T operator()(T inDefault) const { return mSet ? mVal : inDefault; }
+	T &Set() { mSet=true; return mVal; }
+   const T &Get() const { return mVal; }
 
 private:
 	bool mSet;

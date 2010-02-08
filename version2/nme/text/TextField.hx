@@ -1,10 +1,11 @@
 package nme.text;
 
-class TextField extends nme.display.DisplayObject
+class TextField extends nme.display.InteractiveObject
 {
    public var text(nmeGetText,nmeSetText):String;
    public var textColor(nmeGetTextColor,nmeSetTextColor):Int;
    public var selectable(nmeGetSelectable,nmeSetSelectable):Bool;
+	public var defaultTextFormat(nmeGetDefTextFormat,nmeSetDefTextFormat):TextFormat;
 
    public function new( )
    {
@@ -32,6 +33,19 @@ class TextField extends nme.display.DisplayObject
       nme_text_field_set_selectable(nmeHandle,inSel);
       return inSel;
    }
+	
+	function nmeGetDefTextFormat() : TextFormat
+	{
+	   var result = new TextFormat();
+		nme_text_field_get_def_text_format(nmeHandle,result);
+		return result;
+	}
+	function nmeSetDefTextFormat(inFormat:TextFormat) : TextFormat
+	{
+		nme_text_field_set_def_text_format(nmeHandle,inFormat);
+		return inFormat;
+	}
+
 
 
    static var nme_text_field_create = nme.Loader.load("nme_text_field_create",0);
@@ -41,5 +55,7 @@ class TextField extends nme.display.DisplayObject
    static var nme_text_field_set_text_color = nme.Loader.load("nme_text_field_set_text_color",2);
    static var nme_text_field_get_selectable = nme.Loader.load("nme_text_field_get_selectable",1);
    static var nme_text_field_set_selectable = nme.Loader.load("nme_text_field_set_selectable",2);
+   static var nme_text_field_get_def_text_format = nme.Loader.load("nme_text_field_get_def_text_format",2);
+   static var nme_text_field_set_def_text_format = nme.Loader.load("nme_text_field_set_def_text_format",2);
 
 }

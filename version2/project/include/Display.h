@@ -118,6 +118,8 @@ public:
    DisplayObject   *getMask() { return mMask; }
    virtual void   setOpaqueBackground(uint32 inBG);
    uint32 getOpaqueBackground() { return opaqueBackground; }
+	bool getMouseEnabled() { return mouseEnabled; }
+	void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
 
    void   setAlpha(double inAlpha);
 
@@ -144,6 +146,7 @@ public:
    DRect   scrollRect;
    int     id;
    bool   visible;
+	bool   mouseEnabled;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 

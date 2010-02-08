@@ -27,6 +27,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    cacheAsBitmap = false;
    blendMode = bmNormal;
    opaqueBackground = 0;
+	mouseEnabled = true;
    mMask = 0;
    mIsMaskCount = 0;
    id = sgDisplayObjID++ & 0x7fffffff;
@@ -795,6 +796,8 @@ DisplayObject *DisplayObjectContainer::HitTest(const UserPoint &inPoint)
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
+	   if (!obj->mouseEnabled)
+		   continue;
 
       UserPoint local = obj->GetLocalMatrix().ApplyInverse(inPoint);
 

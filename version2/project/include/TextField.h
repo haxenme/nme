@@ -41,6 +41,9 @@ public:
    void setTextColor(int inColor);
    int  getTextColor() { return textColor; }
 
+   const TextFormat *getDefaultTextFormat();
+   void setDefaultTextFormat(TextFormat *inFormat);
+
    double getWidth();
    void setWidth(double inWidth);
    double getHeight();

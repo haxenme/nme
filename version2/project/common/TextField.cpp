@@ -75,6 +75,23 @@ void TextField::setHeight(double inHeight)
    mGfxDirty = true;
 }
 
+const TextFormat *TextField::getDefaultTextFormat()
+{
+		return defaultTextFormat;
+}
+
+void TextField::setDefaultTextFormat(TextFormat *inFmt)
+{
+	if (inFmt)
+		inFmt->IncRef();
+	if (defaultTextFormat)
+		defaultTextFormat->DecRef();
+	defaultTextFormat = inFmt;
+   mLinesDirty = true;
+   mGfxDirty = true;
+}
+
+
 
 void TextField::setTextColor(int inCol)
 {
@@ -576,6 +593,8 @@ TextFormat *TextFormat::Default()
    sDefaultTextFormat->IncRef();
    return sDefaultTextFormat;
 }
+
+
 
 // --- TextFormat -----------------------------------
 
