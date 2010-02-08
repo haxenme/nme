@@ -102,10 +102,10 @@ public:
    void   setX(double inValue);
    double getY();
    void   setY(double inValue);
-   double getHeight();
-   void   setHeight(double inValue);
-   double getWidth();
-   void   setWidth(double inValue);
+   virtual double getHeight();
+   virtual void   setHeight(double inValue);
+   virtual double getWidth();
+   virtual void   setWidth(double inValue);
    double getRotation();
    void   setRotation(double inValue);
    double getScaleX();
@@ -116,6 +116,8 @@ public:
    void   setScrollRect(const DRect &inRect);
    void   setMask(DisplayObject *inMask);
    DisplayObject   *getMask() { return mMask; }
+   virtual void   setOpaqueBackground(uint32 inBG);
+   uint32 getOpaqueBackground() { return opaqueBackground; }
 
    void   setAlpha(double inAlpha);
 
@@ -250,9 +252,9 @@ public:
    virtual void RenderStage();
 
    void SetEventHandler(EventHandler inHander,void *inUserData);
+   virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(int inX,int inY);
 
-   uint32 mBackgroundColour;
    int    mQuality;
 
 protected:

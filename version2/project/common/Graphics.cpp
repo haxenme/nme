@@ -42,6 +42,7 @@ void Graphics::clear()
    mExtent0 = Extent2DF();
    mRenderDirty = true;
    mRotation0 = 0;
+   mLastConvertedItem = 0;
 
    mRenderData.DeleteAll();
 
@@ -149,6 +150,11 @@ GraphicsPath *Graphics::GetLastPath()
 void Graphics::beginFill(unsigned int color, float alpha)
 {
    Add(new GraphicsSolidFill(color,alpha));
+}
+
+void Graphics::endFill()
+{
+   Add(new GraphicsEndFill());
 }
 
 void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,

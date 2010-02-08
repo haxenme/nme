@@ -1,4 +1,4 @@
-import nme.Manager;
+import nme.Lib;
 import nme.events.MouseEvent;
 import nme.events.Event;
 import nme.display.DisplayObject;
@@ -9,7 +9,7 @@ class Sample extends nme.display.Sprite
 public function new()
 {
    super();
-   Manager.stage.addChild(this);
+   Lib.stage.addChild(this);
    stage.frameRate = 100;
 
    var gfx = graphics;
@@ -58,11 +58,11 @@ public function new()
 
 public static function main()
 {
-   Manager.init(320,480, Manager.HARDWARE | Manager.RESIZABLE);
+   Lib.init(320,480,60,0xccccff,Lib.HARDWARE | Lib.RESIZABLE);
 
    new Sample();
 
-   Manager.mainLoop();
+   Lib.mainLoop();
 
 }
 

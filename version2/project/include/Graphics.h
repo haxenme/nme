@@ -597,6 +597,7 @@ public:
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
+   void endFill();
    void beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix = Matrix(),
                         bool inRepeat = true, bool inSmooth = false);
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,

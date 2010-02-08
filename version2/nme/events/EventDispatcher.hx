@@ -49,8 +49,8 @@ class EventDispatcher implements IEventDispatcher
    }
 
 	public function addEventListener(type:String, listener:Function,
-	         useCapture:Bool = false, priority:Int = 0
-				/* Can't use this on neko/cpp:, useWeakReference:Bool = false*/):Void
+	         useCapture:Bool = false, priority:Int = 0,
+		 useWeakReference:Bool=false) :Void
 	{
 		if (nmeEventMap==null)
 			nmeEventMap = new EventMap();

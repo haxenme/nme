@@ -467,13 +467,14 @@ void DisplayObject::setMask(DisplayObject *inMask)
       mMask->ChangeIsMaskCount(-1);
 
    mMask = inMask;
+   DirtyDown(dirtCache);
 }
 
 void DisplayObject::setAlpha(double inAlpha)
 {
-   // todo : dirty cache
    colorTransform.alphaScale = inAlpha;
    colorTransform.alphaOffset = 0;
+   DirtyDown(dirtCache);
 }
 
 void DisplayObject::SetFilters(const Filters &inFilters)
@@ -482,6 +483,12 @@ void DisplayObject::SetFilters(const Filters &inFilters)
    mFilters.resize(inFilters.size());
    for(int i=0;i<mFilters.size();i++)
       (mFilters[i] = inFilters[i])->IncRef();
+   DirtyDown(dirtCache);
+}
+
+void DisplayObject::setOpaqueBackground(uint32 inBG)
+{
+   opaqueBackground = inBG;
    DirtyDown(dirtCache);
 }
 
@@ -895,7 +902,7 @@ public:
       mSurface = inStage->GetPrimarySurface();
       mToFlip = inStage;
       mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
-      mSurface->Clear(inRGB);
+      mSurface->Clear(inRGB | 0xff000000 );
    }
    int Width() const { return mSurface->Width(); }
    int Height() const { return mSurface->Height(); }
@@ -911,7 +918,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 {
    mHandler = 0;
    mHandlerData = 0;
-   mBackgroundColour = 0xffffff;
+   opaqueBackground = 0xffffffff;
    mQuality = 4;
 }
 
@@ -937,11 +944,19 @@ void Stage::HandleEvent(Event &inEvent)
       mHandler(inEvent,mHandlerData);
 }
 
+void Stage::setOpaqueBackground(uint32 inBG)
+{
+   opaqueBackground = inBG | 0xff000000;
+   DirtyDown(dirtCache);
+}
+
+
+
 
 void Stage::RenderStage()
 {
    ColorTransform::TidyCache();
-   AutoStageRender render(this,mBackgroundColour);
+   AutoStageRender render(this,opaqueBackground);
 
    RenderState state(0,mQuality);
 

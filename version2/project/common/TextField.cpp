@@ -49,6 +49,41 @@ TextField::~TextField()
    defaultTextFormat->DecRef();
 }
 
+double TextField::getWidth()
+{
+   Layout();
+   return mRect.w;
+}
+
+void TextField::setWidth(double inWidth)
+{
+   mRect.w = inWidth;
+   mLinesDirty = true;
+   mGfxDirty = true;
+}
+
+double TextField::getHeight()
+{
+   Layout();
+   return mRect.h;
+}
+
+void TextField::setHeight(double inHeight)
+{
+   mRect.h = inHeight;
+   mLinesDirty = true;
+   mGfxDirty = true;
+}
+
+
+void TextField::setTextColor(int inCol)
+{
+   textColor = inCol;
+}
+
+
+
+
 void TextField::Clear()
 {
    for(int i=0;i<mCharGroups.size();i++)
@@ -284,7 +319,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          if (group->mString && group->mFont)
          {
             uint32 group_tint =
-                 inState.mColourTransform->Transform(group->mFormat->color | 0xff000000);
+                 inState.mColourTransform->Transform(group->mFormat->color(textColor) | 0xff000000);
             // Now render the chars ...
             for(int c=0;c<left;c++)
             {

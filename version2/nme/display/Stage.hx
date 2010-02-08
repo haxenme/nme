@@ -24,7 +24,7 @@ class Stage extends nme.display.DisplayObjectContainer
 		nmeSetFrameRate(100);
    }
 
-   override function nmeGetStage() : nme.display.Stage
+   public override function nmeGetStage() : nme.display.Stage
    {
       return this;
    }
@@ -109,7 +109,7 @@ class Stage extends nme.display.DisplayObjectContainer
    {
       //trace(inEvent);
       // TODO: timer event?
-      nme.Manager.pollTimers();
+      nme.Lib.pollTimers();
       switch(Std.int(Reflect.field( inEvent, "type" ) ) )
       {
          case 2: // etChar

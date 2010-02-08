@@ -39,7 +39,7 @@ class DisplayObjectContainer extends InteractiveObject
          while(true)
          {
             var child = nmeChildren[i];
-            child.dispatchEvent(inEvt);
+            child.nmeBroadcast(inEvt);
             if (i>=nmeChildren.length)
                break;
             if (nmeChildren[i]==child)

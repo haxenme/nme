@@ -197,12 +197,12 @@ DEFINE_PRIM(nme_display_object_global_to_local,2);
 
 
 
-#define DO_PROP(prop,Prop) \
+#define DO_PROP(prop,Prop,to_val,from_val) \
 value nme_display_object_get_##prop(value inObj) \
 { \
    DisplayObject *obj; \
    if (AbstractToObject(inObj,obj)) \
-      return alloc_float( obj->get##Prop() ); \
+      return to_val( obj->get##Prop() ); \
    return alloc_float(0); \
 } \
 \
@@ -211,14 +211,20 @@ value nme_display_object_set_##prop(value inObj,value inVal) \
 { \
    DisplayObject *obj; \
    if (AbstractToObject(inObj,obj)) \
-      obj->set##Prop(val_number(inVal)); \
+      obj->set##Prop(from_val(inVal)); \
    return alloc_null(); \
 } \
 \
 DEFINE_PRIM(nme_display_object_set_##prop,2)
 
-DO_PROP(x,X)
-DO_PROP(y,Y)
+DO_PROP(x,X,alloc_float,val_number)
+DO_PROP(y,Y,alloc_float,val_number)
+DO_PROP(scale_x,ScaleX,alloc_float,val_number)
+DO_PROP(scale_y,ScaleY,alloc_float,val_number)
+DO_PROP(rotation,Rotation,alloc_float,val_number)
+DO_PROP(width,Width,alloc_float,val_number)
+DO_PROP(height,Height,alloc_float,val_number)
+DO_PROP(bg,OpaqueBackground,alloc_int,val_int)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------
@@ -271,6 +277,15 @@ DEFINE_PRIM(nme_doc_set_child_index,3);
 
 // --- Graphics -----------------------------------------------------
 
+value nme_gfx_clear(value inGfx)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+      gfx->clear();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_clear,1);
+
 value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 {
    Graphics *gfx;
@@ -281,6 +296,17 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_begin_fill,3);
+
+
+
+value nme_gfx_end_fill(value inGfx)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+      gfx->endFill();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_end_fill,1);
 
 
 value nme_gfx_line_style(value* arg, int nargs)
@@ -380,7 +406,7 @@ DEFINE_PRIM(nme_text_field_create,0)
 inline value alloc_wstring(const std::wstring &inStr)
    { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
 
-#define TEXT_PROP(from_val,to_val,prop,Prop) \
+#define TEXT_PROP(prop,Prop,to_val,from_val) \
 value nme_text_field_get_##prop(value inHandle) \
 { \
    TextField *t; \
@@ -398,7 +424,9 @@ value nme_text_field_set_##prop(value inHandle,value inValue) \
 } \
 DEFINE_PRIM(nme_text_field_set_##prop,2);
 
-TEXT_PROP(val_wstring,alloc_wstring,text,Text);
+TEXT_PROP(text,Text,alloc_wstring,val_wstring);
+TEXT_PROP(text_color,TextColor,alloc_int,val_int);
+TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 
 
 

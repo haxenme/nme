@@ -43,6 +43,7 @@ public:
    T& operator >>(T &outRHS) { if (mSet) outRHS = mVal; return mVal; }
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
    operator T() const { return mVal; }
+   T operator()(T inDefault) const { return mSet ? mVal : inDefault; }
 
 private:
 	bool mSet;

@@ -36,8 +36,15 @@ public:
    void replaceText(int inBeginIndex, int inEndIndex, const std::wstring &inText);
    int  setSelection(int inFirst, int inLast);
    void setTextFormat(const TextFormat *inFormat,int inFirstChar=-1, int inLastChar = -1);
+   bool getSelectable() { return selectable; }
+   void setSelectable(bool inSelectable) { selectable = inSelectable; }
+   void setTextColor(int inColor);
+   int  getTextColor() { return textColor; }
 
-
+   double getWidth();
+   void setWidth(double inWidth);
+   double getHeight();
+   void setHeight(double inHeight);
 
    std::wstring getHTMLText();
    void setHTMLText(const std::wstring &inString);
@@ -77,7 +84,7 @@ public:
    bool selectable;
    float sharpness;
    struct StyleSheet *styleSheet;
-   ARGB textColor;
+   int textColor;
    float  thickness;
    TextFieldType type;
    bool useRichTextClipboard;

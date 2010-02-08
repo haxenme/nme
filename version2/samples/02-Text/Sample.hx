@@ -1,18 +1,18 @@
-import nme.Manager;
+import nme.Lib;
 
 class Sample
 {
 
 public static function main()
 {
-   Manager.init(320,480, Manager.HARDWARE | Manager.RESIZABLE);
+   Lib.init(320,480, Lib.HARDWARE | Lib.RESIZABLE);
 
-	var text = new nme.text.TextField();
-	text.x = 100;
-	text.y = 100;
-	text.text = "Hello !";
-	Manager.stage.addChild(text);
-   Manager.mainLoop();
+   var text = new nme.text.TextField();
+   text.x = 100;
+   text.y = 100;
+   text.text = "Hello !";
+   Lib.stage.addChild(text);
+   Lib.mainLoop();
 }
 
 }
