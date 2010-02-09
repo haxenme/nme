@@ -49,12 +49,9 @@ Surface::~Surface()
 
 void Surface::Bind(HardwareContext &inHardware,int inSlot)
 {
-   if (!mTexture || mTexture->IsDirty())
-   {
-      // TODO - update not recreate...
-      if (mTexture) delete mTexture;
+   if (!mTexture)
       mTexture = inHardware.CreateTexture(this);
-   }
+
    mTexture->Bind(this,inSlot);
 }
 

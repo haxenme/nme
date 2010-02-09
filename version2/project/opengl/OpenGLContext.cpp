@@ -35,7 +35,6 @@ typedef HGLRC GLCtx;
 namespace nme
 {
 
-
 class OGLTexture : public Texture
 {
 public:
@@ -108,10 +107,14 @@ public:
       {
          PixelFormat fmt = inSurface->Format();
          GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+			glGetError();
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
          glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y,
             mDirtyRect.w, mDirtyRect.h,
-            fmt, GL_UNSIGNED_BYTE,
+            src_format, GL_UNSIGNED_BYTE,
             inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP() );
+			glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
+			int err = glGetError();
          mDirtyRect = Rect();
       }
    }
@@ -142,6 +145,7 @@ public:
       mPointsToo = false;
       mBitmapSurface = 0;
       mBitmapTexture = 0;
+		mUsingBitmapMatrix = false;
    }
 
    void SetWindowSize(int inWidth,int inHeight)
@@ -277,7 +281,7 @@ public:
       else
       {
          glDisable(GL_TEXTURE_2D);
-         glColor4ub(inColour>>16,inColour>>8,inColour,255);
+         glColor4ub(inColour>>16,inColour>>8,inColour,inColour>>24);
       }
 
       static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
@@ -307,6 +311,13 @@ public:
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint)
    {
+		if (!mUsingBitmapMatrix)
+		{
+			mUsingBitmapMatrix = true;
+			glPushMatrix();
+			glLoadIdentity();
+		}
+
       if (mBitmapSurface==inSurface && mTint==inTint)
          return;
 
@@ -343,6 +354,12 @@ public:
 
    void EndBitmapRender()
    {
+		if (mUsingBitmapMatrix)
+		{
+			mUsingBitmapMatrix = false;
+			glPopMatrix();
+		}
+
       mBitmapTexture = 0;
       mBitmapSurface = 0;
    }
@@ -385,6 +402,7 @@ public:
    uint32 mTint;
    int mWidth,mHeight;
    bool   mPointsToo;
+	bool   mUsingBitmapMatrix;
    double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;

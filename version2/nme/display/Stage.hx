@@ -11,7 +11,6 @@ class Stage extends nme.display.DisplayObjectContainer
 	public var frameRate(default,nmeSetFrameRate): Float;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
-   public var onMouseButton: Int -> Int -> Int -> Bool -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
    public var onQuit: Void ->Void; 
 
@@ -79,7 +78,7 @@ class Stage extends nme.display.DisplayObjectContainer
       }
    }
 
-   function nmeOnMouseMove(inEvent:Dynamic)
+   function nmeOnMouse(inEvent:Dynamic,inType:String)
    {
       var obj:DisplayObject = nmeFindByID(inEvent.id);
       var stack = new Array<InteractiveObject>();
@@ -89,9 +88,9 @@ class Stage extends nme.display.DisplayObjectContainer
          var obj = stack[0];
          stack.reverse();
          var local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
-         var move = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE,inEvent,local,obj);
-         nmeCheckInOuts(move,stack);
-         obj.nmeFireEvent(move);
+         var evt = MouseEvent.nmeCreate(inType,inEvent,local,obj);
+         nmeCheckInOuts(evt,stack);
+         obj.nmeFireEvent(evt);
       }
    }
 
@@ -117,14 +116,16 @@ class Stage extends nme.display.DisplayObjectContainer
                untyped onKey(inEvent.code, inEvent.down, inEvent.char, inEvent.flags );
 
          case 4: // etMouseMove
-            nmeOnMouseMove(inEvent);
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_MOVE);
 
          case 5: // etMouseDown
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_DOWN);
 
          case 6: // etMouseClick
-            if (onMouseButton!=null)
-               onMouseButton(inEvent.button, inEvent.x, inEvent.y, inEvent.down, inEvent.flags);
+            nmeOnMouse(inEvent,MouseEvent.CLICK);
+
          case 7: // etMouseUp
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_UP);
 
          case 8: // etResize
             if (onResize!=null)

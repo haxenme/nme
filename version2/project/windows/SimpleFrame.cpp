@@ -323,6 +323,24 @@ public:
             mStage->HandleEvent(evt);
             }
             break;
+			case WM_LBUTTONDOWN:
+            {
+            Event evt(etMouseDown, LOWORD(lParam), HIWORD(lParam));
+            mStage->HandleEvent(evt);
+            }
+            break;
+			case WM_LBUTTONUP:
+            {
+            Event evt(etMouseUp, LOWORD(lParam), HIWORD(lParam));
+            mStage->HandleEvent(evt);
+				// TODO: based on timer/motion?
+            Event click(etMouseClick, LOWORD(lParam), HIWORD(lParam));
+            mStage->HandleEvent(click);
+            }
+            break;
+			// TODO : Create click event
+
+
          case WM_TIMER:
             {
             Event evt(etPoll);

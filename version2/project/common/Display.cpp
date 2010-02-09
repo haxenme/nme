@@ -937,7 +937,8 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 
 void Stage::HandleEvent(Event &inEvent)
 {
-   if (inEvent.type==etMouseMove)
+   if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
+		   inEvent.type==etMouseClick )
    {
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
       inEvent.id = obj ? obj->id : id;

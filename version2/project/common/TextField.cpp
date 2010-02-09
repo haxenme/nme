@@ -303,8 +303,14 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       gfx.Render(inTarget,inState);
    }
 
-   int tx = (int)inState.mTransform.mMatrix->mtx;
-   int ty = (int)inState.mTransform.mMatrix->mty;
+	UserPoint origin = inState.mTransform.Apply( mRect.x,mRect.y );
+   int tx = (int)origin.x;
+   int ty = (int)origin.y;
+	//int dxdx = inState.mTransform.m00 > 0.01 ? 1 : inState.mTransform.m00<-0.01 ? -1 : 0;
+	//int dxdy = inState.mTransform.m01 > 0.01 ? 1 : inState.mTransform.m01<-0.01 ? -1 : 0;
+	//int dydx = inState.mTransform.m10 > 0.01 ? 1 : inState.mTransform.m10<-0.01 ? -1 : 0;
+	//int dydy = inState.mTransform.m11 > 0.01 ? 1 : inState.mTransform.m11<-0.01 ? -1 : 0;
+
    Rect rect = mRect.Translated(tx,ty).Intersect(inState.mClipRect);
    if (inState.mMask)
       rect = rect.Intersect(inState.mMask->GetRect());
@@ -318,11 +324,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       int done  = 0;
       int gid = line.mCharGroup0;
       CharGroup *group = &mCharGroups[gid++];
-      int y0 = ty + mRect.y + line.mY0 + line.mMetrics.ascent;
+      int y0 = ty + line.mY0 + line.mMetrics.ascent;
       if (y0>target.mRect.y1())
          break;
       int c0 = line.mCharInGroup0;
-      int x = tx + mRect.x;
+      int x = tx;
       // Get alignment...
       int extra = (mRect.w - line.mMetrics.width);
       switch(group->mFormat->align(tfaLeft))
