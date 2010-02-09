@@ -462,6 +462,33 @@ public:
       mSpanRect->Line( last, mTransform.ToImageAA(inP2) );
    }
 
+   void HitTestCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2)
+   {
+      if ( (inP0.y<=mHitTest.y && inP1.y<=mHitTest.y && inP2.y<=mHitTest.y) ||
+           (inP0.y>=mHitTest.y && inP1.y>=mHitTest.y && inP2.y>=mHitTest.y) )
+         return;
+
+      // todo: calculate steps
+      double len = (inP0-inP1).Norm() + (inP2-inP1).Norm();
+      int steps = (int)(len * 0.5);
+      if (steps<1) steps = 1;
+      if (steps>100) steps = 100;
+      double step = 1.0/(steps+1);
+      double t = 0;
+      UserPoint last = inP0;
+
+      for(int s=0;s<steps;s++)
+      {
+         t+=step;
+         double t_ = 1.0-t;
+         UserPoint p = inP0 * (t_*t_) + inP1 * (2.0*t*t_) + inP2 * (t*t);
+         BuildHitTest(last,p);
+         last = p;
+      }
+      BuildHitTest(last,inP2);
+   }
+
+
 
    void CurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2)
    {
@@ -822,6 +849,12 @@ public:
 
                         CurveExtent(p2_bot,ctrl_bot,p0_bot);
                      }
+                     else if (inMode==itHitTest)
+                     {
+                        HitTestCurve(p0_top,ctrl_top,p2_top);
+
+                        HitTestCurve(p2_bot,ctrl_bot,p0_bot);
+                     }
                      else
                      {
                         BuildCurve(p0_top,ctrl_top,p2_top);
@@ -994,7 +1027,10 @@ public:
                   break;
 
                case pcCurveTo:
-                  BuildCurve(last_point, point[0], point[1]);
+                  if (inMode==itHitTest)
+                     HitTestCurve(last_point, point[0], point[1]);
+                  else
+                     BuildCurve(last_point, point[0], point[1]);
                   last_point = point[1];
                   point += 2;
                   points++;
