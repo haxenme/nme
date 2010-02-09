@@ -323,6 +323,15 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          break;
       int c0 = line.mCharInGroup0;
       int x = tx + mRect.x;
+      // Get alignment...
+      int extra = (mRect.w - line.mMetrics.width);
+      switch(group->mFormat->align(tfaLeft))
+      {
+         case tfaLeft: break;
+         case tfaCenter: x+=extra/2; break;
+         case tfaRight: x+=extra; break;
+      }
+
       while(done<chars)
       {
          int left = std::min(group->mChars - c0,chars-done);

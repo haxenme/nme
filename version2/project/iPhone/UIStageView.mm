@@ -353,7 +353,8 @@ UIStageView *sgMainView = nil;
       */
 
          animationTimer = [NSTimer
-             scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval)
+             //scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval)
+             scheduledTimerWithTimeInterval:(NSTimeInterval)(0.0001)
              target:self selector:@selector(onPoll:)
              userInfo:nil
              repeats:TRUE];

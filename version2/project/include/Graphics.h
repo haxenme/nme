@@ -228,6 +228,7 @@ public:
    QuickVec<float>         data;
    WindingRule             winding;
 
+   void initPosition(const UserPoint &inPos);
    void curveTo(float controlX, float controlY, float anchorX, float anchorY);
    void arcTo(float controlX, float controlY, float anchorX, float anchorY);
    void lineTo(float x, float y);
@@ -637,6 +638,7 @@ private:
    bool                      mRenderDirty;
    double                    mRotation0;
    Extent2DF                 mExtent0;
+   UserPoint                 mCursor;
 
    inline void MakeDirty();
    void BuiltExtent0(double inRotation);

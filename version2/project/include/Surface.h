@@ -19,6 +19,7 @@ public:
    virtual UserPoint PixelToTex(const UserPoint &inPixels)=0;
 
    void Dirty(const Rect &inRect);
+   bool IsDirty() { return mDirtyRect.HasPixels(); }
 
    Rect mDirtyRect;
 };

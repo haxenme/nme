@@ -49,8 +49,12 @@ Surface::~Surface()
 
 void Surface::Bind(HardwareContext &inHardware,int inSlot)
 {
-   if (!mTexture)
+   if (!mTexture || mTexture->IsDirty())
+   {
+      // TODO - update not recreate...
+      if (mTexture) delete mTexture;
       mTexture = inHardware.CreateTexture(this);
+   }
    mTexture->Bind(this,inSlot);
 }
 
@@ -641,7 +645,10 @@ void SimpleSurface::Zero()
 
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
 {
-   return RenderTarget(inRect.Intersect( Rect(0,0,mWidth,mHeight) ), mPixelFormat,mBase,mStride);
+   Rect r =  inRect.Intersect( Rect(0,0,mWidth,mHeight) );
+   if (mTexture)
+      mTexture->Dirty(r);
+   return RenderTarget(r, mPixelFormat,mBase,mStride);
 }
 
 void SimpleSurface::EndRender()

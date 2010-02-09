@@ -43,7 +43,7 @@ public:
    {
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
-      mDirtyRect = Rect(inSurface->Width(),inSurface->Height());
+      mDirtyRect = Rect(0,0);
 
       int w = UpToPower2(mPixelWidth);
       int h = UpToPower2(mPixelHeight);
@@ -104,6 +104,16 @@ public:
    void Bind(class Surface *inSurface,int inSlot)
    {
       glBindTexture(GL_TEXTURE_2D,mTextureID);
+      if (mDirtyRect.HasPixels())
+      {
+         PixelFormat fmt = inSurface->Format();
+         GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+         glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y,
+            mDirtyRect.w, mDirtyRect.h,
+            fmt, GL_UNSIGNED_BYTE,
+            inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP() );
+         mDirtyRect = Rect();
+      }
    }
    UserPoint PixelToTex(const UserPoint &inPixels)
    {

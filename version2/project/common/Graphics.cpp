@@ -9,6 +9,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mLastConvertedItem = 0;
    mRotation0 = 0;
    mRenderDirty = false;
+   mCursor = UserPoint(0,0);
 }
 
 
@@ -43,6 +44,7 @@ void Graphics::clear()
    mRenderDirty = true;
    mRotation0 = 0;
    mLastConvertedItem = 0;
+   mCursor = UserPoint(0,0);
 
    mRenderData.DeleteAll();
 
@@ -60,15 +62,17 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
    float h_ = h*SIN45;
    float ch_ = h*TAN22;
 
-   moveTo(x+w,y);
-   curveTo(x+w,  y+ch_, x+w_, y+h_);
-   curveTo(x+cw_,y+h,   x,    y+h);
-   curveTo(x-cw_,y+h,   x-w_, y+h_);
-   curveTo(x-w,  y+ch_, x-w,  y);
-   curveTo(x-w,  y-ch_, x-w_, y-h_);
-   curveTo(x-cw_,y-h,   x,    y-h);
-   curveTo(x+cw_,y-h,   x+w_, y-h_);
-   curveTo(x+w,  y-ch_, x+w,  y);
+   GraphicsPath *path = GetLastPath();
+
+   path->moveTo(x+w,y);
+   path->curveTo(x+w,  y+ch_, x+w_, y+h_);
+   path->curveTo(x+cw_,y+h,   x,    y+h);
+   path->curveTo(x-cw_,y+h,   x-w_, y+h_);
+   path->curveTo(x-w,  y+ch_, x-w,  y);
+   path->curveTo(x-w,  y-ch_, x-w_, y-h_);
+   path->curveTo(x-cw_,y-h,   x,    y-h);
+   path->curveTo(x+cw_,y-h,   x+w_, y-h_);
+   path->curveTo(x+w,  y-ch_, x+w,  y);
 
    MakeDirty();
 }
@@ -90,19 +94,21 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    float h_ = lh + ry*SIN45;
    float ch_ = lh + ry*TAN22;
 
-   moveTo(x+w,y+lh);
-   curveTo(x+w,  y+ch_, x+w_, y+h_);
-   curveTo(x+cw_,y+h,   x+lw,    y+h);
-   lineTo(x-lw,    y+h);
-   curveTo(x-cw_,y+h,   x-w_, y+h_);
-   curveTo(x-w,  y+ch_, x-w,  y+lh);
-   lineTo( x-w, y-lh);
-   curveTo(x-w,  y-ch_, x-w_, y-h_);
-   curveTo(x-cw_,y-h,   x-lw,    y-h);
-   lineTo(x+lw,    y-h);
-   curveTo(x+cw_,y-h,   x+w_, y-h_);
-   curveTo(x+w,  y-ch_, x+w,  y-lh);
-   lineTo(x+w,  y+lh);
+   GraphicsPath *path = GetLastPath();
+
+   path->moveTo(x+w,y+lh);
+   path->curveTo(x+w,  y+ch_, x+w_, y+h_);
+   path->curveTo(x+cw_,y+h,   x+lw,    y+h);
+   path->lineTo(x-lw,    y+h);
+   path->curveTo(x-cw_,y+h,   x-w_, y+h_);
+   path->curveTo(x-w,  y+ch_, x-w,  y+lh);
+   path->lineTo( x-w, y-lh);
+   path->curveTo(x-w,  y-ch_, x-w_, y-h_);
+   path->curveTo(x-cw_,y-h,   x-lw,    y-h);
+   path->lineTo(x+lw,    y-h);
+   path->curveTo(x+cw_,y-h,   x+w_, y-h_);
+   path->curveTo(x+w,  y-ch_, x+w,  y-lh);
+   path->lineTo(x+w,  y+lh);
    MakeDirty();
 }
 
@@ -178,22 +184,33 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
 
 void Graphics::lineTo(float x, float y)
 {
-   GetLastPath()->lineTo(x,y);
+   GraphicsPath *path = GetLastPath();
+   path->initPosition(mCursor);
+   path->lineTo(x,y);
+   mCursor = UserPoint(x,y);
 }
 
 void Graphics::moveTo(float x, float y)
 {
+   GraphicsPath *path = GetLastPath();
    GetLastPath()->moveTo(x,y);
+   mCursor = UserPoint(x,y);
 }
 
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
-   GetLastPath()->curveTo(cx,cy,x,y);
+   GraphicsPath *path = GetLastPath();
+   path->initPosition(mCursor);
+   path->curveTo(cx,cy,x,y);
+   mCursor = UserPoint(x,y);
 }
 
 void Graphics::arcTo(float cx, float cy, float x, float y)
 {
-   GetLastPath()->arcTo(cx,cy,x,y);
+   GraphicsPath *path = GetLastPath();
+   path->initPosition(mCursor);
+   path->arcTo(cx,cy,x,y);
+   mCursor = UserPoint(x,y);
 }
 
 

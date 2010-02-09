@@ -5,6 +5,17 @@ namespace nme
 
 // --- GraphicsPath ------------------------------------------
 
+void GraphicsPath::initPosition(const UserPoint &inPoint)
+{
+   if (command.empty())
+   {
+	command.push_back(pcMoveTo);
+	data.push_back(inPoint.x);
+	data.push_back(inPoint.y);
+   }
+}
+
+
 void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float anchorY)
 {
 	command.push_back(pcCurveTo);
