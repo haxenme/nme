@@ -107,14 +107,26 @@ public:
       {
          PixelFormat fmt = inSurface->Format();
          GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
-			glGetError();
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
+         glGetError();
+         const uint8 *p0 = 
+            inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP();
+         #ifdef IPHONE
+         for(int y=0;y<mDirtyRect.h;y++)
+         {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y + y,
+               mDirtyRect.w, 1,
+               src_format, GL_UNSIGNED_BYTE,
+               p0 + y*inSurface->GetStride());
+         }
+         #else
+         glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
          glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y,
             mDirtyRect.w, mDirtyRect.h,
             src_format, GL_UNSIGNED_BYTE,
-            inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP() );
-			glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
-			int err = glGetError();
+            p0);
+         glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
+         #endif
+         int err = glGetError();
          mDirtyRect = Rect();
       }
    }
@@ -145,7 +157,7 @@ public:
       mPointsToo = false;
       mBitmapSurface = 0;
       mBitmapTexture = 0;
-		mUsingBitmapMatrix = false;
+      mUsingBitmapMatrix = false;
    }
 
    void SetWindowSize(int inWidth,int inHeight)
@@ -229,6 +241,7 @@ public:
 
       SetViewport(inRect);
 
+      glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_POINT_SMOOTH);
       #ifndef IPHONE
@@ -286,7 +299,6 @@ public:
 
       static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
 
-      glEnable(GL_BLEND);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_FLOAT,0,&inVertices[0].x);
       if (tex)
@@ -311,12 +323,12 @@ public:
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint)
    {
-		if (!mUsingBitmapMatrix)
-		{
-			mUsingBitmapMatrix = true;
-			glPushMatrix();
-			glLoadIdentity();
-		}
+      if (!mUsingBitmapMatrix)
+      {
+         mUsingBitmapMatrix = true;
+         glPushMatrix();
+         glLoadIdentity();
+      }
 
       if (mBitmapSurface==inSurface && mTint==inTint)
          return;
@@ -327,7 +339,6 @@ public:
       inSurface->Bind(*this,0);
       mBitmapTexture = inSurface->GetTexture();
       glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
@@ -354,11 +365,11 @@ public:
 
    void EndBitmapRender()
    {
-		if (mUsingBitmapMatrix)
-		{
-			mUsingBitmapMatrix = false;
-			glPopMatrix();
-		}
+      if (mUsingBitmapMatrix)
+      {
+         mUsingBitmapMatrix = false;
+         glPopMatrix();
+      }
 
       mBitmapTexture = 0;
       mBitmapSurface = 0;
@@ -402,7 +413,7 @@ public:
    uint32 mTint;
    int mWidth,mHeight;
    bool   mPointsToo;
-	bool   mUsingBitmapMatrix;
+   bool   mUsingBitmapMatrix;
    double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;
