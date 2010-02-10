@@ -77,16 +77,16 @@ void TextField::setHeight(double inHeight)
 
 const TextFormat *TextField::getDefaultTextFormat()
 {
-		return defaultTextFormat;
+   return defaultTextFormat;
 }
 
 void TextField::setDefaultTextFormat(TextFormat *inFmt)
 {
-	if (inFmt)
-		inFmt->IncRef();
-	if (defaultTextFormat)
-		defaultTextFormat->DecRef();
-	defaultTextFormat = inFmt;
+   if (inFmt)
+      inFmt->IncRef();
+   if (defaultTextFormat)
+      defaultTextFormat->DecRef();
+   defaultTextFormat = inFmt;
    mLinesDirty = true;
    mGfxDirty = true;
 }
@@ -129,10 +129,10 @@ void TextField::setText(const std::wstring &inString)
 
 std::wstring TextField::getText()
 {
-	std::wstring result;
-	for(int i=0;i<mCharGroups.size();i++)
-		result += std::wstring(mCharGroups[i].mString,mCharGroups[i].mChars);
-	return result;
+   std::wstring result;
+   for(int i=0;i<mCharGroups.size();i++)
+      result += std::wstring(mCharGroups[i].mString,mCharGroups[i].mChars);
+   return result;
 }
 
 void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount,
@@ -303,18 +303,28 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       gfx.Render(inTarget,inState);
    }
 
-	UserPoint origin = inState.mTransform.Apply( mRect.x,mRect.y );
-   int tx = (int)origin.x;
-   int ty = (int)origin.y;
-	//int dxdx = inState.mTransform.m00 > 0.01 ? 1 : inState.mTransform.m00<-0.01 ? -1 : 0;
-	//int dxdy = inState.mTransform.m01 > 0.01 ? 1 : inState.mTransform.m01<-0.01 ? -1 : 0;
-	//int dydx = inState.mTransform.m10 > 0.01 ? 1 : inState.mTransform.m10<-0.01 ? -1 : 0;
-	//int dydy = inState.mTransform.m11 > 0.01 ? 1 : inState.mTransform.m11<-0.01 ? -1 : 0;
+   const Matrix &matrix = *inState.mTransform.mMatrix;
+   // The fonts have already been scaled by sy ...
+   double sy = matrix.GetScaleY();
+   if (sy!=0) sy = 1.0/sy;
+   UserPoint origin = matrix.Apply( mRect.x,mRect.y );
+   UserPoint dPdX = UserPoint( matrix.m00*sy, matrix.m10*sy );
+   UserPoint dPdY = UserPoint( matrix.m01*sy, matrix.m11*sy );
 
-   Rect rect = mRect.Translated(tx,ty).Intersect(inState.mClipRect);
-   if (inState.mMask)
-      rect = rect.Intersect(inState.mMask->GetRect());
-   RenderTarget target = inTarget.ClipRect(rect);
+   // TODO: this for teh rotated-90 cases too
+   RenderTarget target;
+   if (dPdX.y==0 && dPdY.x==0)
+   {
+      Rect rect = mRect.Translated(origin.x,origin.y).Intersect(inState.mClipRect);
+      if (inState.mMask)
+         rect = rect.Intersect(inState.mMask->GetRect());
+      target = inTarget.ClipRect(rect);
+   }
+   else
+   {
+      target = inTarget;
+   }
+
    HardwareContext *hardware = target.IsHardware() ? target.mHardware : 0;
 
    for(int l=0;l<mLines.size();l++)
@@ -324,11 +334,12 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       int done  = 0;
       int gid = line.mCharGroup0;
       CharGroup *group = &mCharGroups[gid++];
-      int y0 = ty + line.mY0 + line.mMetrics.ascent;
-      if (y0>target.mRect.y1())
-         break;
+      int y0 = line.mY0 + line.mMetrics.ascent;
+      // todo: early out
+      //if (y0>target.mRect.y1()) break;
+
       int c0 = line.mCharInGroup0;
-      int x = tx;
+      int x = 0;
       // Get alignment...
       int extra = (mRect.w - line.mMetrics.width);
       switch(group->mFormat->align(tfaLeft))
@@ -360,17 +371,18 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                if (ch!='\n')
                {
                   Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
+                  UserPoint p = origin + dPdX*(x+tile.mOx) + dPdY*(y0+tile.mOy);
                   if (hardware)
                   {
                      // todo - better to wizz though and do all of the same surface first?
                      // ok to call this multiple times with same data
                      hardware->BeginBitmapRender(tile.mSurface,group_tint);
-                     hardware->RenderBitmap(tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy);
+                     hardware->RenderBitmap(tile.mRect, (int)p.x, (int)p.y);
                   }
                   else
                   {
                      tile.mSurface->BlitTo(target,
-                        tile.mRect, x+(int)tile.mOx, y0+(int)tile.mOy,
+                        tile.mRect, (int)p.x, (int)p.y,
                         bmTinted, 0,
                        (uint32)group->mFormat->color | 0xff000000);
                   }
