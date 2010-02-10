@@ -88,7 +88,7 @@ public:
    void Zero();
 
 
-   RenderTarget BeginRender(const Rect &inRect);
+	RenderTarget BeginRender(const Rect &inRect);
    void EndRender();
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,

@@ -65,7 +65,7 @@ public:
 	}
 
 
-	void RenderGlyph(int inChar,RenderTarget &outTarget)
+	void RenderGlyph(int inChar,const RenderTarget &outTarget)
 	{
 		if (!LoadBitmap(inChar))
 			return;

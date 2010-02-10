@@ -45,7 +45,7 @@ public:
 		return true;
 	}
 
-	void RenderGlyph(int inChar, RenderTarget &outTarget)
+	void RenderGlyph(int inChar, const RenderTarget &outTarget)
 	{
 		int w = outTarget.mRect.w;
 		w = (w+3) & ~3;

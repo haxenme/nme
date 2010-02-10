@@ -122,6 +122,7 @@ private:
    bool mGfxDirty;
    bool mFontsDirty;
    double mLastUpdateScale;
+	GlyphRotation mLastUpdateRotation;
 
    CharGroups mCharGroups;
    Lines mLines;

@@ -7,9 +7,10 @@ namespace nme
 {
 
 
-Font::Font(FontFace *inFace, int inPixelHeight, bool inInitRef) :
+Font::Font(FontFace *inFace, int inPixelHeight, GlyphRotation inRotation,bool inInitRef) :
      Object(inInitRef), mFace(inFace), mPixelHeight(inPixelHeight)
 {
+	mRotation = inRotation;
    mCurrentSheet = -1;
 }
 
@@ -48,6 +49,27 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          }
       }
 
+		int orig_w = gw;
+		int orig_h = gh;
+		switch(mRotation)
+		{
+			case gr90:
+			   std::swap(gw,gh);
+			   std::swap(ox,oy);
+				oy = gh-oy;
+				break;
+			case gr180:
+				ox = gw-ox;
+				oy = gh-oy;
+				break;
+			case gr270:
+			   std::swap(gw,gh);
+			   std::swap(ox,oy);
+				ox = gw-ox;
+				break;
+		}
+
+
       while(1)
       {
          // Allocate new sheet?
@@ -58,8 +80,10 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             while(h<mPixelHeight*rows)
                h*=2;
             int w = h;
-            while(w<gw)
+            while(w<orig_w)
                w*=2;
+		      if (mRotation!=gr0 && mRotation!=gr180)
+					std::swap(w,h);
             TileSheet *sheet = new TileSheet(w,h,pfAlpha,true);
             mCurrentSheet = mSheets.size();
             mSheets.push_back(sheet);
@@ -90,8 +114,50 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
                *dest++ = 0xff;
          }
       }
-      else
+      else if (mRotation==gr0)
          mFace->RenderGlyph(inCharacter,target);
+		else
+		{
+			SimpleSurface *buf = new SimpleSurface(orig_w,orig_h,pfAlpha,true);
+			buf->IncRef();
+			{
+			AutoSurfaceRender renderer(buf);
+         mFace->RenderGlyph(inCharacter,renderer.Target());
+			}
+
+         const uint8  *src;
+			for(int y=0; y<target.mRect.h; y++)
+         {
+            uint8  *dest = (uint8 *)target.Row(y + target.mRect.y) + target.mRect.x;
+
+				switch(mRotation)
+				{
+					case gr90:
+						src = buf->Row(0) + buf->Width() -1 - y;
+            		for(int x=0; x<target.mRect.w; x++)
+						{
+							*dest++ = *src;
+							src += buf->GetStride();
+						}
+						break;
+					case gr180:
+						src = buf->Row(buf->Height()-1-y) + buf->Width() -1;
+            		for(int x=0; x<target.mRect.w; x++)
+							*dest++ = *src--;
+						break;
+					case gr270:
+						src = buf->Row(buf->Height()-1) + y;
+            		for(int x=0; x<target.mRect.w; x++)
+						{
+							*dest++ = *src;
+							src -= buf->GetStride();
+						}
+						break;
+				}
+			}
+			buf->DecRef();
+		}
+
       tile.mSurface->EndRender();
       outAdvance = glyph.advance;
       return tile;
@@ -135,7 +201,7 @@ int CharGroup::Height()
 
 struct FontInfo
 {
-   FontInfo(const TextFormat &inFormat,double inScale,bool inNative)
+   FontInfo(const TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative)
    {
       name = inFormat.font;
       height = (int )(inFormat.size*inScale + 0.5);
@@ -144,6 +210,7 @@ struct FontInfo
          flags |= ffBold;
       if (inFormat.italic)
          flags |= ffItalic;
+		rotation = inRotation;
    }
 
    bool operator<(const FontInfo &inRHS) const
@@ -154,21 +221,24 @@ struct FontInfo
       if (height > inRHS.height) return false;
       if (native < inRHS.native) return true;
       if (native > inRHS.native) return false;
+      if (rotation < inRHS.rotation) return true;
+      if (rotation > inRHS.rotation) return false;
       return flags < inRHS.flags;
    }
    std::wstring name;
    bool         native;
    int          height;
    unsigned int flags;
+	GlyphRotation rotation;
 };
 
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
 
-Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
+Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative,bool inInitRef)
 {
-   FontInfo info(inFormat,inScale,inNative);
+   FontInfo info(inFormat,inScale,inRotation,inNative);
 
    Font *font = 0;
    FontMap::iterator fit = sgFontMap.find(info);
@@ -197,7 +267,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    if (!face)
         return 0;
 
-   font =  new Font(face,info.height,inInitRef);
+   font =  new Font(face,info.height,inRotation,inInitRef);
    // Store for Ron ...
    font->IncRef();
    sgFontMap[info] = font;

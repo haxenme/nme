@@ -28,6 +28,8 @@ enum
 	ffBold    = 0x02,
 };
 
+enum GlyphRotation { gr0, gr90, gr180, gr270 };
+
 
 enum AntiAliasType { aaAdvanced, aaNormal };
 enum AutoSizeMode  { asCenter, asLeft, asNone, asRight };
@@ -90,7 +92,7 @@ public:
 struct CharGroup
 {
 	void  Clear();
-	bool  UpdateFont(double inScale,bool inNative);
+	bool  UpdateFont(double inScale,GlyphRotation inRotation,bool inNative);
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
 
@@ -133,7 +135,7 @@ public:
 
 	virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
 									int &outOx, int &outOy) = 0;
-	virtual void RenderGlyph(int inChar,RenderTarget &outTarget)=0;
+	virtual void RenderGlyph(int inChar,const RenderTarget &outTarget)=0;
 	virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
 	virtual int  Height()=0;
 	virtual bool IsNative() { return false; }
@@ -153,7 +155,7 @@ class Font : public Object
 	};
 
 public:
-   static Font *Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef=true);
+   static Font *Create(TextFormat &inFormat,double inScale,GlyphRotation inRot, bool inNative,bool inInitRef=true);
 
 	Font *IncRef() { Object::IncRef(); return this; }
 
@@ -165,7 +167,7 @@ public:
 
 	int   Height();
 private:
-   Font(FontFace *inFace, int inPixelHeight, bool inInitRef);
+   Font(FontFace *inFace, int inPixelHeight, GlyphRotation inRotation,bool inInitRef);
 	~Font();
 
 
@@ -176,6 +178,7 @@ private:
 
 	int    mPixelHeight;
 	int    mCurrentSheet;
+	GlyphRotation mRotation;
 };
 
 class FontCache

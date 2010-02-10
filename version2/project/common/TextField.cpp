@@ -261,14 +261,18 @@ void TextField::setHTMLText(const std::wstring &inString)
 void TextField::UpdateFonts(const Transform &inTransform)
 {
    double scale = inTransform.mMatrix->GetScaleY();// * inTransform->mStageScaleY;
+	GlyphRotation rot = fabs(inTransform.mMatrix->m00)<0.0001 ?
+	                         (inTransform.mMatrix->m01 > 0 ? gr90 : gr270 ) :
+	                      (inTransform.mMatrix->m00 > 0 ? gr0 : gr180 );
 
-   if (mFontsDirty || scale!=mLastUpdateScale)
+   if (mFontsDirty || scale!=mLastUpdateScale || rot!=mLastUpdateRotation)
    {
       for(int i=0;i<mCharGroups.size();i++)
-         if (mCharGroups[i].UpdateFont(scale,!embedFonts))
+         if (mCharGroups[i].UpdateFont(scale,rot,!embedFonts))
             mLinesDirty = true;
       mFontsDirty = false;
       mLastUpdateScale = scale;
+      mLastUpdateRotation = rot;
    }
 }
 
@@ -335,8 +339,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       int gid = line.mCharGroup0;
       CharGroup *group = &mCharGroups[gid++];
       int y0 = line.mY0 + line.mMetrics.ascent;
-      // todo: early out
-      //if (y0>target.mRect.y1()) break;
+      if (y0>target.mRect.h) break;
 
       int c0 = line.mCharInGroup0;
       int x = 0;
@@ -387,7 +390,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                        (uint32)group->mFormat->color | 0xff000000);
                   }
                   x+= advance;
-                  if (x>target.mRect.x1())
+                  if (x>target.mRect.w)
                      break;
                }
             }
@@ -633,14 +636,14 @@ void CharGroup::Clear()
       mFont->DecRef();
 }
 
-bool CharGroup::UpdateFont(double inScale,bool inNative)
+bool CharGroup::UpdateFont(double inScale,GlyphRotation inRotation,bool inNative)
 {
    int h = 0.5 + inScale*mFormat->size;
    if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative)
    {
       if (mFont)
          mFont->DecRef();
-      mFont = Font::Create(*mFormat,inScale,inNative,true);
+      mFont = Font::Create(*mFormat,inScale,inRotation,inNative,true);
       mFontHeight = h;
       return true;
    }
