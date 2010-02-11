@@ -315,6 +315,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UserPoint dPdX = UserPoint( matrix.m00*sy, matrix.m10*sy );
    UserPoint dPdY = UserPoint( matrix.m01*sy, matrix.m11*sy );
 
+   int last_x = mRect.w;
    // TODO: this for teh rotated-90 cases too
    RenderTarget target;
    if (dPdX.y==0 && dPdY.x==0)
@@ -374,7 +375,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                if (ch!='\n')
                {
                   Tile tile = group->mFont->GetGlyph( group->mString[c+c0], advance );
-                  UserPoint p = origin + dPdX*(x+tile.mOx) + dPdY*(y0+tile.mOy);
+                  UserPoint p = origin + dPdX*x + dPdY*y0+ UserPoint(tile.mOx,tile.mOy);
                   if (hardware)
                   {
                      // todo - better to wizz though and do all of the same surface first?
@@ -390,7 +391,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                        (uint32)group->mFormat->color | 0xff000000);
                   }
                   x+= advance;
-                  if (x>target.mRect.w)
+                  if (x>last_x)
                      break;
                }
             }

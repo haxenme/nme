@@ -388,7 +388,11 @@ public:
 Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
                        const char *inTitle,const char *inIcon)
 {
-   Rect r(100,100,inWidth,inHeight);
+   RECT r;
+   r.left = 100;
+   r.top= 100;
+   r.right= 100+inWidth;
+   r.bottom= 100+inHeight;
 
    WNDCLASSEX wc;
    memset(&wc,0,sizeof(wc));
@@ -409,9 +413,11 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
    else
       style |= WS_OVERLAPPEDWINDOW;
 
+   AdjustWindowRect (& r, style, FALSE);
+
    HWND win = CreateWindowEx(ex_style, "NME", inTitle,
                               style,
-                              r.x, r.y, r.w, r.h,
+                              r.left, r.top, r.right-r.left, r.bottom-r.top,
                               0,
                               0,
                               0,

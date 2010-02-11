@@ -56,16 +56,16 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 			case gr90:
 			   std::swap(gw,gh);
 			   std::swap(ox,oy);
-				oy = gh-oy;
+				oy = -gh-oy;
 				break;
 			case gr180:
-				ox = gw-ox;
-				oy = gh-oy;
+				ox = -gw-ox;
+				oy = -gh-oy;
 				break;
 			case gr270:
 			   std::swap(gw,gh);
 			   std::swap(ox,oy);
-				ox = gw-ox;
+				ox = -gw-ox;
 				break;
 		}
 
