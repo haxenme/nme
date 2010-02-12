@@ -18,21 +18,21 @@ public:
 
       SetFill(inSolidData->mFill);
 
-		mArrays = &ioData.GetArrays(mSurface);
+      mArrays = &ioData.GetArrays(mSurface);
 
       AddObject(inSolidData->command,inSolidData->data,true);
    }
 
    HardwareBuilder(HardwareData &ioData,LineData *inLineData)
    {
-		mElement.mType = ptLineStrip;
+      mElement.mType = ptLineStrip;
       mElement.mFirst = 0;
       mElement.mCount = 0;
       mElement.mScaleMode = inLineData->mStroke->scaleMode;
       mElement.mWidth = inLineData->mStroke->thickness;
       mElement.mColour = 0;
       bool textured = SetFill(inLineData->mStroke->fill);
-		mArrays = &ioData.GetArrays(mSurface);
+      mArrays = &ioData.GetArrays(mSurface);
 
       AddObject(inLineData->command,inLineData->data,false);
    }
@@ -60,10 +60,10 @@ public:
 
              mTextureMapper = grad->matrix.Inverse();
 
-				 return true;
+             return true;
           }
        }
-		 return false;
+       return false;
    }
 
    ~HardwareBuilder()
@@ -73,33 +73,33 @@ public:
    }
 
 
-	void CalcTexCoords()
-	{
-		Vertices &vertices = mArrays->mVertices;
-		Vertices &tex = mArrays->mTexCoords;
-		int v0 = vertices.size();
-		int t0 = tex.size();
-		tex.resize(v0);
-		for(int i=t0;i<v0;i++)
-		{
-			UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
-			// The point will be in the (-819.2 ... 819.2) range...
-			p.x = (p.x +819.2) / 1638.4;
-			if (mGradReflect)
-				p.x *= 0.5;
-			p.y = 0;
-			tex[i] = p;
-		 }
-	}
+   void CalcTexCoords()
+   {
+      Vertices &vertices = mArrays->mVertices;
+      Vertices &tex = mArrays->mTexCoords;
+      int v0 = vertices.size();
+      int t0 = tex.size();
+      tex.resize(v0);
+      for(int i=t0;i<v0;i++)
+      {
+         UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
+         // The point will be in the (-819.2 ... 819.2) range...
+         p.x = (p.x +819.2) / 1638.4;
+         if (mGradReflect)
+            p.x *= 0.5;
+         p.y = 0;
+         tex[i] = p;
+       }
+   }
 
 
 
 
    void AddObject(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData, bool inClose)
    {
-		Vertices &vertices = mArrays->mVertices;
-		DrawElements &elements = mArrays->mElements;
-		mElement.mFirst = vertices.size();
+      Vertices &vertices = mArrays->mVertices;
+      DrawElements &elements = mArrays->mElements;
+      mElement.mFirst = vertices.size();
 
       int n = inCommands.size();
       UserPoint *point = (UserPoint *)&inData[0];
@@ -119,8 +119,8 @@ public:
                   if (inClose)
                      vertices.push_back(last_move);
                   mElement.mCount = vertices.size() - mElement.mFirst;
-			        if (mSurface)
-				        CalcTexCoords();
+                 if (mSurface)
+                    CalcTexCoords();
                   elements.push_back(mElement);
                }
                points = 1;
@@ -173,13 +173,13 @@ public:
       {
          //mVertices.push_back(last_move);
          mElement.mCount = vertices.size() - mElement.mFirst;
-			if (mSurface)
-				CalcTexCoords();
+         if (mSurface)
+            CalcTexCoords();
          elements.push_back(mElement);
       }
    }
 
-	/*
+   /*
    bool Render( const RenderTarget &inTarget, const RenderState &inState )
    {
       if (mLineWidth>=0)
@@ -207,50 +207,55 @@ public:
       inTarget.mHardware->Render(inState,mElements,mVertices,mTexCoords,mSurface,mColour);
       return true;
    }
-	*/
+   */
 
-	HardwareArrays *mArrays;
+   HardwareArrays *mArrays;
    Surface      *mSurface;
    DrawElement mElement;
-	bool        mGradReflect;
-	Matrix      mTextureMapper;
+   bool        mGradReflect;
+   Matrix      mTextureMapper;
 };
 
 void LineData::BuildHardware(HardwareData &ioData)
 {
-	HardwareBuilder builder(ioData,this);
+   HardwareBuilder builder(ioData,this);
 }
 
 void SolidData::BuildHardware(HardwareData &ioData)
 {
-	HardwareBuilder builder(ioData,this);
+   HardwareBuilder builder(ioData,this);
+}
+
+// --- HardwareArrays ---------------------------------------------------------------------
+
+HardwareArrays::HardwareArrays(Surface *inSurface)
+{
+   mSurface = inSurface;
+   if (inSurface)
+      inSurface->IncRef();
+}
+
+HardwareArrays::~HardwareArrays()
+{
+   if (mSurface)
+      mSurface->DecRef();
 }
 
 // --- HardwareData ---------------------------------------------------------------------
-
-void HardwareArrays::clear()
-{
-	if (mSurface)
-		mSurface->DecRef();
-	mVertices.clear();
-	mTexCoords.clear();
-	mElements.clear();
-}
-
 HardwareData::~HardwareData()
 {
-	for(int c=0;c<mCalls.size();c++)
-		mCalls[c].clear();
+   mCalls.DeleteAll();
 }
 
 HardwareArrays &HardwareData::GetArrays(Surface *inSurface)
 {
-	if (mCalls.empty() || mCalls.last().mSurface != inSurface)
-	{
-#error - make HardwareCalls a pointer, and change clear to delete.
-	}
+   if (mCalls.empty() || mCalls.last()->mSurface != inSurface)
+   {
+       HardwareArrays *arrays = new HardwareArrays(inSurface);
+       mCalls.push_back(arrays);
+   }
 
-	return mCalls.last();
+   return *mCalls.last();
 }
 
 

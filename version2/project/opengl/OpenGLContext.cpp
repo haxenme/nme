@@ -35,6 +35,9 @@ typedef HGLRC GLCtx;
 namespace nme
 {
 
+static GLuint sgOpenglType[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
+
+
 class OGLTexture : public Texture
 {
 public:
@@ -198,7 +201,6 @@ public:
          glLoadIdentity();
 
          static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };
-         glEnableClientState(GL_VERTEX_ARRAY);
          glVertexPointer(2, GL_FLOAT, 0, rect[0]);
          glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -247,6 +249,7 @@ public:
       #ifndef IPHONE
       glEnable(GL_LINE_SMOOTH);
       #endif
+      glEnableClientState(GL_VERTEX_ARRAY);
    }
    void EndRender()
    {
@@ -263,12 +266,7 @@ public:
    }
 
 
-   void Render(const RenderState &inState,
-               const DrawElements &inElements,
-               const Vertices &inVertices,
-               const Vertices &inTexCoords,
-               Surface *inSurface,
-               uint32 inColour)
+   void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
       if (mMatrix!=*inState.mTransform.mMatrix)
       {
@@ -283,42 +281,47 @@ public:
          glLoadMatrixf(matrix);
       }
 
-      bool tex = inSurface && inTexCoords.size()==inVertices.size();
-      if (tex)
+      uint32 last_col = 0;
+      for(int c=0;c<inCalls.size();c++)
       {
-         glEnable(GL_TEXTURE_2D);
-         inSurface->Bind(*this,0);
-         const ColorTransform &t = *inState.mColourTransform;
-         glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
+         HardwareArrays &arrays = *inCalls[c];
+         Vertices &vert = arrays.mVertices;
+         Vertices &tex_coords = arrays.mTexCoords;
+
+         glVertexPointer(2,GL_FLOAT,0,&vert[0].x);
+         bool tex = arrays.mSurface && tex_coords.size()==vert.size();
+         if (tex)
+         {
+            glEnable(GL_TEXTURE_2D);
+            arrays.mSurface->Bind(*this,0);
+            const ColorTransform &t = *inState.mColourTransform;
+            glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0].x);
+         }
+         else
+         {
+            glDisable(GL_TEXTURE_2D);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+         }
+   
+         DrawElements &elements = arrays.mElements;
+         for(int e=0;e<elements.size();e++)
+         {
+            DrawElement draw = elements[e];
+
+            if (!tex && (c==0 || last_col!=draw.mColour))
+            {
+               last_col = draw.mColour;
+               glColor4ub(last_col>>16,last_col>>8,last_col,last_col>>24);
+            }
+   
+            if (mPointsToo && draw.mType == ptLineStrip && draw.mCount>1)
+               glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
+   
+            glDrawArrays(sgOpenglType[draw.mType], draw.mFirst, draw.mCount );
+         }
       }
-      else
-      {
-         glDisable(GL_TEXTURE_2D);
-         glColor4ub(inColour>>16,inColour>>8,inColour,inColour>>24);
-      }
-
-      static GLuint type[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
-
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(2,GL_FLOAT,0,&inVertices[0].x);
-      if (tex)
-      {
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(2,GL_FLOAT,0,&inTexCoords[0].x);
-      }
-
-      for(int e=0;e<inElements.size();e++)
-      {
-         DrawElement draw = inElements[e];
-
-         if (mPointsToo && draw.mType == ptLineStrip)
-            glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
-
-         glDrawArrays(type[draw.mType], draw.mFirst, draw.mCount );
-      }
-
-      if (tex)
-         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint)
@@ -354,13 +357,10 @@ public:
       }
 
       glVertexPointer(2, GL_FLOAT, 0, &vertex[0].x);
-      glEnableClientState(GL_VERTEX_ARRAY);
       glTexCoordPointer(2, GL_FLOAT, 0, &tex[0].x);
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }
 
    void EndBitmapRender()
