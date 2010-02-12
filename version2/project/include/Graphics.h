@@ -280,7 +280,7 @@ public:
    virtual struct LineData *AsLine() { return 0; }
    virtual struct TriangleData *AsTriangles() { return 0; }
    virtual class Renderer *CreateSoftwareRenderer() = 0;
-   virtual class Renderer *CreateHardwareRenderer() = 0;
+   virtual void BuildHardware(class HardwareData &ioData) = 0;
 };
 
 struct SolidData : IRenderData
@@ -288,7 +288,7 @@ struct SolidData : IRenderData
    SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
    SolidData *AsSolid() { return this; }
    class Renderer *CreateSoftwareRenderer();
-   class Renderer *CreateHardwareRenderer();
+   void BuildHardware(class HardwareData &ioData);
    void Add(GraphicsPath *inPath);
    void Close();
 
@@ -302,7 +302,7 @@ struct LineData : IRenderData
    LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
    LineData *AsLine() { return this; }
    class Renderer *CreateSoftwareRenderer();
-   class Renderer *CreateHardwareRenderer();
+   void BuildHardware(class HardwareData &ioData);
    void Add(GraphicsPath *inPath);
 
    GraphicsStroke         *mStroke;
@@ -314,7 +314,7 @@ struct TriangleData : IRenderData
 {
    TriangleData *AsTriangles() { return this; }
    class Renderer *CreateSoftwareRenderer();
-   class Renderer *CreateHardwareRenderer();
+   void BuildHardware(class HardwareData &ioData);
    IGraphicsFill           *mFill;
    IGraphicsStroke         *mStroke;
    TriangleData            *mTriangles;
@@ -483,10 +483,35 @@ struct DrawElement
    PrimType mType;
    int      mFirst;
    int      mCount;
+	uint32   mColour;
+	float    mWidth;
+	StrokeScaleMode mScaleMode;
 };
 
 typedef QuickVec<DrawElement> DrawElements;
 typedef QuickVec<UserPoint>   Vertices;
+
+struct HardwareArrays
+{
+	void clear();
+
+	Vertices mVertices;
+	Vertices mTexCoords;
+	DrawElements mElements;
+	Surface *mSurface;
+};
+
+typedef QuickVec<HardwareArrays> HardwareCalls;
+
+class HardwareData
+{
+public:
+	~HardwareData();
+
+	HardwareArrays &GetArrays(Surface *inSurface);
+
+	HardwareCalls mCalls;
+};
 
 
 class HardwareContext : public Object
@@ -506,11 +531,7 @@ public:
 
    virtual class Texture *CreateTexture(class Surface *inSurface)=0;
    virtual void Render(const RenderState &inState,
-                       const DrawElements &inElements,
-                       const Vertices     &inVertices,
-                       const Vertices     &inTexCoords,
-                       Surface *inSurface,
-                       uint32 inColour) = 0;
+							  const HardwareCalls &inCalls );
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
@@ -545,6 +566,8 @@ struct RenderTarget
    HardwareContext *mHardware;
 };
 
+
+
 class Renderer
 {
 public:
@@ -555,12 +578,6 @@ public:
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
 
    virtual bool HitTest(const UserPoint &inPoint,bool &outResult) { return false; }
-
-   // HitTest
-
-   static Renderer *CreateHardware(LineData *inLineData);
-   static Renderer *CreateHardware(SolidData *inSolidData);
-   static Renderer *CreateHardware(TriangleData *inTriangleData);
 
    static Renderer *CreateSoftware(LineData *inLineData);
    static Renderer *CreateSoftware(SolidData *inSolidData);
@@ -573,10 +590,10 @@ protected:
 
 struct RendererCache
 {
-   RendererCache() : mSoftware(0), mHardware(0) { }
+   RendererCache() : mSoftware(0), mHardwareDone(0) { }
 
    Renderer *mSoftware;
-   Renderer *mHardware;
+   bool     mHardwareDone;
 };
 
 
@@ -634,6 +651,8 @@ private:
    QuickVec<IGraphicsData *> mItems;
    int                       mLastConvertedItem;
    RenderData                mRenderData;
+
+	HardwareData              *mHardwareData;
 
    bool                      mRenderDirty;
    double                    mRotation0;

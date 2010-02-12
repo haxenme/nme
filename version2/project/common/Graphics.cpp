@@ -10,6 +10,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mRotation0 = 0;
    mRenderDirty = false;
    mCursor = UserPoint(0,0);
+	mHardwareData = 0;
 }
 
 
@@ -31,9 +32,12 @@ void Graphics::clear()
       RendererCache &cache = mCache[i];
       if (cache.mSoftware)
          cache.mSoftware->Destroy();
-      if (cache.mHardware)
-         cache.mHardware->Destroy();
    }
+	if (mHardwareData)
+	{
+		delete mHardwareData;
+		mHardwareData = 0;
+	}
    mCache.resize(0);
 
    for(int i=0;i<mItems.size();i++)
@@ -315,8 +319,11 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
       RendererCache &cache = mCache[i];
       if (cache.mSoftware && cache.mSoftware->GetExtent(inTransform,result))
          continue;
+		/*
+       TODO:
       if (cache.mHardware && cache.mHardware->GetExtent(inTransform,result))
          continue;
+		*/
 
       // No - ok, create a software renderer...
       cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
@@ -350,10 +357,11 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       RendererCache &cache = mCache[i];
       if (inTarget.IsHardware())
       {
-         if (!cache.mHardware)
-            cache.mHardware = mRenderData[i]->CreateHardwareRenderer();
+			if (!mHardwareData)
+				mHardwareData = new HardwareData();
 
-         cache.mHardware->Render(inTarget,inState);
+         if (!cache.mHardwareDone)
+				mRenderData[i]->BuildHardware(*mHardwareData);
       }
       else
       {
@@ -363,6 +371,9 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
          cache.mSoftware->Render(inTarget,inState);
       }
    }
+
+   if (inTarget.IsHardware() && mHardwareData)
+		inTarget.mHardware->Render(inState,mHardwareData->mCalls);
 
    return true;
 }
@@ -378,8 +389,11 @@ bool Graphics::HitTest(const UserPoint &inPoint)
 		bool result = false;
       if (cache.mSoftware && cache.mSoftware->HitTest(inPoint,result))
          if (result) return true;
+		/*
+       TODO:
       if (cache.mHardware && cache.mHardware->HitTest(inPoint,result))
          if (result) return true;
+		*/
 
       // No - ok, create a software renderer...
       cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
@@ -559,12 +573,6 @@ Renderer *LineData::CreateSoftwareRenderer()
    return Renderer::CreateSoftware(this);
 }
 
-Renderer *LineData::CreateHardwareRenderer()
-{
-   return Renderer::CreateHardware(this);
-}
-
-
 
 
 // --- SolidData -------------------------------------------------------------------
@@ -577,11 +585,6 @@ void SolidData::Add(GraphicsPath *inPath)
 Renderer *SolidData::CreateSoftwareRenderer()
 {
    return Renderer::CreateSoftware(this);
-}
-
-Renderer *SolidData::CreateHardwareRenderer()
-{
-   return Renderer::CreateHardware(this);
 }
 
 void SolidData::Close()
@@ -608,6 +611,9 @@ GraphicsStroke::~GraphicsStroke()
    if (fill)
       fill->DecRef();
 }
+
+
+
 
 // --- Gradient ---------------------------------------------------------------------
 

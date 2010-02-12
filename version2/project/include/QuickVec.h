@@ -57,6 +57,16 @@ public:
       if (mPtr!=mQBuf)
          free(mPtr);
    }
+	void clear()
+	{
+		if (mPtr!=mQBuf)
+		{
+			free(mPtr);
+			mPtr = mQBuf;
+			mAlloc = QBufSize;
+		}
+		mSize = 0;
+	}
 
    // This assumes the values in the array are sorted.
 	template<typename X_, typename D_>
