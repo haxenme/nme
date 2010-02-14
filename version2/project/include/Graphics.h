@@ -431,9 +431,9 @@ struct DrawElement
    PrimType mType;
    int      mFirst;
    int      mCount;
-	uint32   mColour;
-	float    mWidth;
-	StrokeScaleMode mScaleMode;
+   uint32   mColour;
+   float    mWidth;
+   StrokeScaleMode mScaleMode;
 };
 
 typedef QuickVec<DrawElement> DrawElements;
@@ -441,13 +441,13 @@ typedef QuickVec<UserPoint>   Vertices;
 
 struct HardwareArrays
 {
-	HardwareArrays(Surface *inSurface);
-	~HardwareArrays();
+   HardwareArrays(Surface *inSurface);
+   ~HardwareArrays();
 
-	Vertices mVertices;
-	Vertices mTexCoords;
-	DrawElements mElements;
-	Surface *mSurface;
+   Vertices mVertices;
+   Vertices mTexCoords;
+   DrawElements mElements;
+   Surface *mSurface;
 };
 
 typedef QuickVec<HardwareArrays *> HardwareCalls;
@@ -455,11 +455,11 @@ typedef QuickVec<HardwareArrays *> HardwareCalls;
 class HardwareData
 {
 public:
-	~HardwareData();
+   ~HardwareData();
 
-	HardwareArrays &GetArrays(Surface *inSurface);
+   HardwareArrays &GetArrays(Surface *inSurface);
 
-	HardwareCalls mCalls;
+   HardwareCalls mCalls;
 };
 
 
@@ -535,9 +535,9 @@ protected:
 
 struct GraphicsJob
 {
-	GraphicsJob() { clear(); }
+   GraphicsJob() { clear(); }
 
-	void clear()  { memset(this,0,sizeof(GraphicsJob)); }
+   void clear()  { memset(this,0,sizeof(GraphicsJob)); }
 
    IGraphicsStroke *mStroke;
    IGraphicsFill   *mFill;
@@ -594,31 +594,26 @@ public:
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
    const Extent2DF &GetExtent0(double inRotation);
-	bool  HitTest(const UserPoint &inPoint);
+   bool  HitTest(const UserPoint &inPoint);
 
    bool empty() const { return mJobs.empty(); }
 
 protected:
-	void                      Flush();
+   void                      Flush(bool inLine=true,bool inFill=true);
 
 private:
-	GraphicsJobs              mJobs;
+   GraphicsJobs              mJobs;
 
-	GraphicsPath              *mPathData;
-	HardwareData              *mHardwareData;
+   GraphicsPath              *mPathData;
+   HardwareData              *mHardwareData;
 
    bool                      mRenderDirty;
    double                    mRotation0;
    Extent2DF                 mExtent0;
 
-	IGraphicsData             *mFill;
-	IGraphicsData             *mStroke;
-	int                       mLastStrokeCommand;
-	int                       mLastStrokeVertex;
-	int                       mLastFillCommand;
-	int                       mLastFillVertex;
-	int                       mLastTriangleCommand;
-	int                       mLastTriangleVertex;
+   Job                       mFillJob;
+   Job                       mLineJob;
+   Job                       mTriJob;
 
    UserPoint                 mCursor;
 

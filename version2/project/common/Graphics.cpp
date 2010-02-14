@@ -12,15 +12,15 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mRotation0 = 0;
    mRenderDirty = false;
    mCursor = UserPoint(0,0);
-	mHardwareData = 0;
-	mPathData = new GraphicsPath(true);
+   mHardwareData = 0;
+   mPathData = new GraphicsPath(true);
 }
 
 
 Graphics::~Graphics()
 {
    clear();
-	mPathData->DecRef();
+   mPathData->DecRef();
 }
 
 void Graphics::MakeDirty()
@@ -31,20 +31,24 @@ void Graphics::MakeDirty()
 
 void Graphics::clear()
 {
-	// clear jobs
+   mFillJob.clear();
+   mLineJob.clear();
+   mTriJob.clear();
+
+   // clear jobs
    for(int i=0;i<mCache.size();i++)
    {
       RendererCache &cache = mCache[i];
       if (cache.mSoftware)
          cache.mSoftware->Destroy();
    }
-	if (mHardwareData)
-	{
-		delete mHardwareData;
-		mHardwareData = 0;
-	}
+   if (mHardwareData)
+   {
+      delete mHardwareData;
+      mHardwareData = 0;
+   }
    mCache.resize(0);
-	mPathData->clear();
+   mPathData->clear();
 
    for(int i=0;i<mItems.size();i++)
       mItems[i]->DecRef();
@@ -69,10 +73,7 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
    float h_ = h*SIN45;
    float ch_ = h*TAN22;
 
-	Flush();
-	GraphicsJob job;
-	job.mCommand0 = mPathData->command.size();
-	job.mData0 = mPathData->data.size();
+   Flush();
 
    mPathData->moveTo(x+w,y);
    mPathData->curveTo(x+w,  y+ch_, x+w_, y+h_);
@@ -84,18 +85,7 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
    mPathData->curveTo(x+cw_,y-h,   x+w_, y-h_);
    mPathData->curveTo(x+w,  y-ch_, x+w,  y);
 
-	job.mCommandCount = mPathData->command.size() - job.mCommand0;
-	if (mFill)
-	{
-		job.mFill = mFill->IncRef();
-		mJObs.
-
-	}
-	if (mStroke)
-	{
-		mStroke->IncRef();
-		
-	}
+   Flush();
 }
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
@@ -115,6 +105,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    float h_ = lh + ry*SIN45;
    float ch_ = lh + ry*TAN22;
 
+   Flush();
 
    mPathData->moveTo(x+w,y+lh);
    mPathData->curveTo(x+w,  y+ch_, x+w_, y+h_);
@@ -129,6 +120,8 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    mPathData->curveTo(x+cw_,y-h,   x+w_, y-h_);
    mPathData->curveTo(x+w,  y-ch_, x+w,  y-lh);
    mPathData->lineTo(x+w,  y+lh);
+
+   Flush();
 }
 
 
@@ -185,10 +178,20 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   StrokeCaps caps,
                   StrokeJoints joints, double miterLimit)
 {
-   IGraphicsFill *solid = new GraphicsSolidFill(color,alpha);
-   Add(new GraphicsStroke(solid,thickness,pixelHinting,scaleMode,caps,joints,miterLimit));
+   Flush(true,false);
+   if (mLineJob.mStroke)
+   {
+      mLineJob.mStroke->DecRef();
+      mLineJob.mStroke = 0;
+   }
+   if (thickness>=0)
+   {
+      IGraphicsFill *solid = new GraphicsSolidFill(color,alpha);
+      mLineJob.mStroke = new GraphicsStroke(solid,thickness,pixelHinting,
+          scaleMode,caps,joints,miterLimit);
+      mLineJob.mStroke->IncRef();
+   }
 }
-
 
 
 
@@ -228,85 +231,27 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 // The items intermix fill-styles and line-stypes with move/draw/triangle
 //  geometry data - this routine separates them out.
 
-void Graphics::Flush()
+void Graphics::Flush(bool inLine, bool inFill)
 {
-   int n = mItems.size();
-   if (mLastConvertedItem<n)
+   int n = mPathData->commands.size();
+
+   if (inFill && mFillJob.mFill && mFillJob.mCommand0 <n)
    {
-      IGraphicsFill *fill = 0;
-      GraphicsStroke *stroke = 0;
-      // Find "current" fill/stroke
-      for(int i=0;i<mLastConvertedItem;i++)
-      {
-         IGraphicsData *data = mItems[i];
-         IGraphicsFill *f= data->AsIFill();
-         if (f)
-            fill = f;
-         IGraphicsStroke *s= data->AsIStroke();
-         if (s)
-            stroke = data->AsStroke();
-      }
-
-
-      SolidData *solid = 0;
-      LineData *line = 0;
-      for(int i=mLastConvertedItem;i<n;i++)
-      {
-         IGraphicsData *data = mItems[i];
-         IGraphicsFill *f= data->AsIFill();
-         // TODO: order of lines and solids...
-         if (f)
-         {
-            if (solid)
-            {
-               solid->Close();
-               Add(solid);
-               solid = 0;
-            }
-            fill = data->AsEndFill() ? 0 : f;
-            if (line)
-            {
-               Add(line);
-               line = 0;
-            }
-            continue;
-         }
-
-         IGraphicsStroke *s= data->AsIStroke();
-         if (s)
-         {
-            if (line)
-            {
-               Add(line);
-               line = 0;
-            }
-            stroke = data->AsStroke();
-            continue;
-         }
-
-         GraphicsPath *path= data->AsPath();
-         if (path)
-         {
-            if (!line && stroke)
-               line = new LineData(stroke);
-            if (line)
-               line->Add(path);
-            if (!solid && fill)
-               solid = new SolidData(fill);
-            if (solid)
-               solid->Add(path);
-         }
-      }
-      if (solid)
-         Add(solid);
-      if (line)
-         Add(line);
-
-      mLastConvertedItem = n;
-      for(int i=mCache.size();i<mRenderData.size();i++)
-         mCache.push_back( RendererCache() );
+      mFillJob.mFill->IncRef();
+      mFillJob.mCommandCount = n-mFillJob.mCommand0;
+      mJobs.push_back(mFillJob);
+      mFillJob.mCommand0 = n;
+      mFillJob.mData0 =  mPathData->mData.size();
    }
 
+   if (inLine && mLineJob.mStroke && mLineJob.mCommand0 <n)
+   {
+      mLineJob.mLine->IncRef();
+      mLineJob.mCommandCount = n-mLineJob.mCommand0;
+      mJobs.push_back(mLineJob);
+      mLineJob.mCommand0 = n;
+      mLineJob.mData0 =  mPathData->mData.size();
+   }
 }
 
 
@@ -321,11 +266,11 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
       RendererCache &cache = mCache[i];
       if (cache.mSoftware && cache.mSoftware->GetExtent(inTransform,result))
          continue;
-		/*
+      /*
        TODO:
       if (cache.mHardware && cache.mHardware->GetExtent(inTransform,result))
          continue;
-		*/
+      */
 
       // No - ok, create a software renderer...
       cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
@@ -359,11 +304,11 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       RendererCache &cache = mCache[i];
       if (inTarget.IsHardware())
       {
-			if (!mHardwareData)
-				mHardwareData = new HardwareData();
+         if (!mHardwareData)
+            mHardwareData = new HardwareData();
 
          if (!cache.mHardwareDone)
-				mRenderData[i]->BuildHardware(*mHardwareData);
+            mRenderData[i]->BuildHardware(*mHardwareData);
       }
       else
       {
@@ -375,7 +320,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    }
 
    if (inTarget.IsHardware() && mHardwareData)
-		inTarget.mHardware->Render(inState,mHardwareData->mCalls);
+      inTarget.mHardware->Render(inState,mHardwareData->mCalls);
 
    return true;
 }
@@ -388,14 +333,14 @@ bool Graphics::HitTest(const UserPoint &inPoint)
    {
       // See if we can get the extent from somewhere!
       RendererCache &cache = mCache[i];
-		bool result = false;
+      bool result = false;
       if (cache.mSoftware && cache.mSoftware->HitTest(inPoint,result))
          if (result) return true;
-		/*
+      /*
        TODO:
       if (cache.mHardware && cache.mHardware->HitTest(inPoint,result))
          if (result) return true;
-		*/
+      */
 
       // No - ok, create a software renderer...
       cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
@@ -403,7 +348,7 @@ bool Graphics::HitTest(const UserPoint &inPoint)
       if (result) return true;
    }
 
-	return false;
+   return false;
 }
 
 
@@ -421,7 +366,7 @@ RenderState::RenderState(Surface *inSurface,int inAA)
    mC1_LUT = 0;
    mC2_LUT = 0;
    mColourTransform = &sgIdentityColourTransform;
-	mRoundSizeToPOW2 = false;
+   mRoundSizeToPOW2 = false;
    if (inSurface)
    {
       mClipRect = Rect(inSurface->Width(),inSurface->Height());
