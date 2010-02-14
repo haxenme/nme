@@ -225,8 +225,8 @@ public:
 
    GraphicsPath() : winding(wrOddEven) { }
    QuickVec<uint8> command;
-   QuickVec<float>         data;
-   WindingRule             winding;
+   QuickVec<float> data;
+   WindingRule     winding;
 
    void initPosition(const UserPoint &inPos);
    void curveTo(float controlX, float controlY, float anchorX, float anchorY);
@@ -271,56 +271,6 @@ public:
    Vertex     *mVertex;
    int        mTriangleCount;
 };
-
-struct IRenderData : public IGraphicsData
-{
-public:
-   virtual ~IRenderData() { }
-   virtual struct SolidData *AsSolid() { return 0; }
-   virtual struct LineData *AsLine() { return 0; }
-   virtual struct TriangleData *AsTriangles() { return 0; }
-   virtual class Renderer *CreateSoftwareRenderer() = 0;
-   virtual void BuildHardware(class HardwareData &ioData) = 0;
-};
-
-struct SolidData : IRenderData
-{
-   SolidData(IGraphicsFill *inFill) : mFill(inFill) { }
-   SolidData *AsSolid() { return this; }
-   class Renderer *CreateSoftwareRenderer();
-   void BuildHardware(class HardwareData &ioData);
-   void Add(GraphicsPath *inPath);
-   void Close();
-
-   IGraphicsFill           *mFill;
-   QuickVec<uint8> command;
-   QuickVec<float>        data;
-};
-
-struct LineData : IRenderData
-{
-   LineData(GraphicsStroke *inStroke=0) : mStroke(inStroke) { }
-   LineData *AsLine() { return this; }
-   class Renderer *CreateSoftwareRenderer();
-   void BuildHardware(class HardwareData &ioData);
-   void Add(GraphicsPath *inPath);
-
-   GraphicsStroke         *mStroke;
-   QuickVec<uint8> command;
-   QuickVec<float>        data;
-};
-
-struct TriangleData : IRenderData
-{
-   TriangleData *AsTriangles() { return this; }
-   class Renderer *CreateSoftwareRenderer();
-   void BuildHardware(class HardwareData &ioData);
-   IGraphicsFill           *mFill;
-   IGraphicsStroke         *mStroke;
-   TriangleData            *mTriangles;
-};
-
-
 
 // ----------------------------------------------------------------------
 
@@ -473,8 +423,6 @@ struct RenderState
 };
 
 
-typedef QuickVec<IRenderData *> RenderData;
-
 
 enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip };
 
@@ -567,7 +515,6 @@ struct RenderTarget
 };
 
 
-
 class Renderer
 {
 public:
@@ -579,23 +526,32 @@ public:
 
    virtual bool HitTest(const UserPoint &inPoint,bool &outResult) { return false; }
 
-   static Renderer *CreateSoftware(LineData *inLineData);
-   static Renderer *CreateSoftware(SolidData *inSolidData);
-   static Renderer *CreateSoftware(TriangleData *inTriangleData);
+   static Renderer *CreateSoftware(class GraphicsJob &inLineData);
 
 protected:
    virtual ~Renderer() { }
 };
 
 
-struct RendererCache
+struct GraphicsJob
 {
-   RendererCache() : mSoftware(0), mHardwareDone(0) { }
+	GraphicsJob() { clear(); }
 
-   Renderer *mSoftware;
-   bool     mHardwareDone;
+	void clear()  { memset(this,0,sizeof(GraphicsJob)); }
+
+   IGraphicsStroke *mStroke;
+   IGraphicsFill   *mFill;
+   TriangleData    *mTriagles;
+   class Renderer  *mSoftwareRenderer;
+   int             mCommand0;
+   int             mData0;
+   int             mCommandCount;
+   bool            mClose;
 };
 
+
+
+typedef QuickVec<GraphicsJob> GraphicsJobs;
 
 
 class Graphics : public Object
@@ -609,9 +565,6 @@ public:
    Extent2DF GetExtent(const Transform &inTransform);
 
    bool Render( const RenderTarget &inTarget, const RenderState &inState );
-
-
-   void addData(IGraphicsData *inData) { inData->IncRef(); Add(inData); }
 
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
@@ -643,32 +596,38 @@ public:
    const Extent2DF &GetExtent0(double inRotation);
 	bool  HitTest(const UserPoint &inPoint);
 
-   bool empty() const { return mItems.empty(); }
+   bool empty() const { return mJobs.empty(); }
 
+protected:
+	void                      Flush();
 
 private:
-   QuickVec<RendererCache>   mCache;
-   QuickVec<IGraphicsData *> mItems;
-   int                       mLastConvertedItem;
-   RenderData                mRenderData;
+	GraphicsJobs              mJobs;
 
+	GraphicsPath              *mPathData;
 	HardwareData              *mHardwareData;
 
    bool                      mRenderDirty;
    double                    mRotation0;
    Extent2DF                 mExtent0;
+
+	IGraphicsData             *mFill;
+	IGraphicsData             *mStroke;
+	int                       mLastStrokeCommand;
+	int                       mLastStrokeVertex;
+	int                       mLastFillCommand;
+	int                       mLastFillVertex;
+	int                       mLastTriangleCommand;
+	int                       mLastTriangleVertex;
+
    UserPoint                 mCursor;
 
-   inline void MakeDirty();
    void BuiltExtent0(double inRotation);
-   void CreateRenderData();
-   void Add(IRenderData *inData);
    void Add(IGraphicsData *inData);
-   GraphicsPath *GetLastPath();
 
 
 private:
-   // Rule of 3 - we must manually delete the mItems...
+   // Rule of 3 - we must manually clean up the jobs (performance optimisation)
    Graphics(const Graphics &inRHS);
    void operator=(const Graphics &inRHS);
 };

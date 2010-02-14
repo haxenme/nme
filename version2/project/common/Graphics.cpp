@@ -4,6 +4,8 @@
 namespace nme
 {
 
+// TODO: invlidate/cache extents (do for whole lot at once)
+
 Graphics::Graphics(bool inInitRef) : Object(inInitRef)
 {
    mLastConvertedItem = 0;
@@ -11,12 +13,14 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mRenderDirty = false;
    mCursor = UserPoint(0,0);
 	mHardwareData = 0;
+	mPathData = new GraphicsPath(true);
 }
 
 
 Graphics::~Graphics()
 {
    clear();
+	mPathData->DecRef();
 }
 
 void Graphics::MakeDirty()
@@ -27,6 +31,7 @@ void Graphics::MakeDirty()
 
 void Graphics::clear()
 {
+	// clear jobs
    for(int i=0;i<mCache.size();i++)
    {
       RendererCache &cache = mCache[i];
@@ -39,6 +44,7 @@ void Graphics::clear()
 		mHardwareData = 0;
 	}
    mCache.resize(0);
+	mPathData->clear();
 
    for(int i=0;i<mItems.size();i++)
       mItems[i]->DecRef();
@@ -49,9 +55,6 @@ void Graphics::clear()
    mRotation0 = 0;
    mLastConvertedItem = 0;
    mCursor = UserPoint(0,0);
-
-   mRenderData.DeleteAll();
-
 }
 
 #define SIN45 0.70710678118654752440084436210485
@@ -66,19 +69,33 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
    float h_ = h*SIN45;
    float ch_ = h*TAN22;
 
-   GraphicsPath *path = GetLastPath();
+	Flush();
+	GraphicsJob job;
+	job.mCommand0 = mPathData->command.size();
+	job.mData0 = mPathData->data.size();
 
-   path->moveTo(x+w,y);
-   path->curveTo(x+w,  y+ch_, x+w_, y+h_);
-   path->curveTo(x+cw_,y+h,   x,    y+h);
-   path->curveTo(x-cw_,y+h,   x-w_, y+h_);
-   path->curveTo(x-w,  y+ch_, x-w,  y);
-   path->curveTo(x-w,  y-ch_, x-w_, y-h_);
-   path->curveTo(x-cw_,y-h,   x,    y-h);
-   path->curveTo(x+cw_,y-h,   x+w_, y-h_);
-   path->curveTo(x+w,  y-ch_, x+w,  y);
+   mPathData->moveTo(x+w,y);
+   mPathData->curveTo(x+w,  y+ch_, x+w_, y+h_);
+   mPathData->curveTo(x+cw_,y+h,   x,    y+h);
+   mPathData->curveTo(x-cw_,y+h,   x-w_, y+h_);
+   mPathData->curveTo(x-w,  y+ch_, x-w,  y);
+   mPathData->curveTo(x-w,  y-ch_, x-w_, y-h_);
+   mPathData->curveTo(x-cw_,y-h,   x,    y-h);
+   mPathData->curveTo(x+cw_,y-h,   x+w_, y-h_);
+   mPathData->curveTo(x+w,  y-ch_, x+w,  y);
 
-   MakeDirty();
+	job.mCommandCount = mPathData->command.size() - job.mCommand0;
+	if (mFill)
+	{
+		job.mFill = mFill->IncRef();
+		mJObs.
+
+	}
+	if (mStroke)
+	{
+		mStroke->IncRef();
+		
+	}
 }
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
@@ -98,22 +115,20 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    float h_ = lh + ry*SIN45;
    float ch_ = lh + ry*TAN22;
 
-   GraphicsPath *path = GetLastPath();
 
-   path->moveTo(x+w,y+lh);
-   path->curveTo(x+w,  y+ch_, x+w_, y+h_);
-   path->curveTo(x+cw_,y+h,   x+lw,    y+h);
-   path->lineTo(x-lw,    y+h);
-   path->curveTo(x-cw_,y+h,   x-w_, y+h_);
-   path->curveTo(x-w,  y+ch_, x-w,  y+lh);
-   path->lineTo( x-w, y-lh);
-   path->curveTo(x-w,  y-ch_, x-w_, y-h_);
-   path->curveTo(x-cw_,y-h,   x-lw,    y-h);
-   path->lineTo(x+lw,    y-h);
-   path->curveTo(x+cw_,y-h,   x+w_, y-h_);
-   path->curveTo(x+w,  y-ch_, x+w,  y-lh);
-   path->lineTo(x+w,  y+lh);
-   MakeDirty();
+   mPathData->moveTo(x+w,y+lh);
+   mPathData->curveTo(x+w,  y+ch_, x+w_, y+h_);
+   mPathData->curveTo(x+cw_,y+h,   x+lw,    y+h);
+   mPathData->lineTo(x-lw,    y+h);
+   mPathData->curveTo(x-cw_,y+h,   x-w_, y+h_);
+   mPathData->curveTo(x-w,  y+ch_, x-w,  y+lh);
+   mPathData->lineTo( x-w, y-lh);
+   mPathData->curveTo(x-w,  y-ch_, x-w_, y-h_);
+   mPathData->curveTo(x-cw_,y-h,   x-lw,    y-h);
+   mPathData->lineTo(x+lw,    y-h);
+   mPathData->curveTo(x+cw_,y-h,   x+w_, y-h_);
+   mPathData->curveTo(x+w,  y-ch_, x+w,  y-lh);
+   mPathData->lineTo(x+w,  y+lh);
 }
 
 
@@ -139,21 +154,12 @@ void Graphics::Add(IRenderData *inData)
 }
 
 
-GraphicsPath *Graphics::GetLastPath()
-{
-   MakeDirty();
-
-   if (mLastConvertedItem<mItems.size())
-   {
-      IGraphicsData *last = mItems.last();
-      GraphicsPath *path = last->AsPath();
-      if (path)
-         return path;
-   }
-   GraphicsPath *path = new GraphicsPath();
-   Add(path);
-   return path;
-}
+//GraphicsPath *Graphics::GetLastPath()
+//{
+   //GraphicsPath *path = new GraphicsPath();
+   //Add(path);
+   //return path;
+//}
 
 
 
@@ -188,32 +194,28 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
 
 void Graphics::lineTo(float x, float y)
 {
-   GraphicsPath *path = GetLastPath();
-   path->initPosition(mCursor);
-   path->lineTo(x,y);
+   mPathData->initPosition(mCursor);
+   mPathData->lineTo(x,y);
    mCursor = UserPoint(x,y);
 }
 
 void Graphics::moveTo(float x, float y)
 {
-   GraphicsPath *path = GetLastPath();
-   GetLastPath()->moveTo(x,y);
+   mPathData->moveTo(x,y);
    mCursor = UserPoint(x,y);
 }
 
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
-   GraphicsPath *path = GetLastPath();
-   path->initPosition(mCursor);
-   path->curveTo(cx,cy,x,y);
+   mPathData->initPosition(mCursor);
+   mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
 }
 
 void Graphics::arcTo(float cx, float cy, float x, float y)
 {
-   GraphicsPath *path = GetLastPath();
-   path->initPosition(mCursor);
-   path->arcTo(cx,cy,x,y);
+   mPathData->initPosition(mCursor);
+   mPathData->arcTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
 }
 
@@ -226,7 +228,7 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 // The items intermix fill-styles and line-stypes with move/draw/triangle
 //  geometry data - this routine separates them out.
 
-void Graphics::CreateRenderData()
+void Graphics::Flush()
 {
    int n = mItems.size();
    if (mLastConvertedItem<n)
@@ -312,7 +314,7 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
 {
    // TODO: cache this?
    Extent2DF result;
-   CreateRenderData();
+   Flush();
    for(int i=0;i<mCache.size();i++)
    {
       // See if we can get the extent from somewhere!
@@ -351,7 +353,7 @@ const Extent2DF &Graphics::GetExtent0(double inRotation)
 
 bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   CreateRenderData();
+   Flush();
    for(int i=0;i<mCache.size();i++)
    {
       RendererCache &cache = mCache[i];
@@ -381,7 +383,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 bool Graphics::HitTest(const UserPoint &inPoint)
 {
    Extent2DF result;
-   CreateRenderData();
+   Flush();
    for(int i=0;i<mCache.size();i++)
    {
       // See if we can get the extent from somewhere!
