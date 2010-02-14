@@ -7,18 +7,22 @@ namespace nme
 
 void GraphicsPath::initPosition(const UserPoint &inPoint)
 {
-   if (command.empty())
-   {
-	command.push_back(pcMoveTo);
-	data.push_back(inPoint.x);
-	data.push_back(inPoint.y);
-   }
+   commands.push_back(pcBeginAt);
+   data.push_back(inPoint.x);
+   data.push_back(inPoint.y);
 }
+
+void GraphicsPath::clear()
+{
+   commands.resize(0);
+   data.resize(0);
+}
+
 
 
 void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float anchorY)
 {
-	command.push_back(pcCurveTo);
+	commands.push_back(pcCurveTo);
 	data.push_back(controlX);
 	data.push_back(controlY);
 	data.push_back(anchorX);
@@ -27,7 +31,7 @@ void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float 
 
 void GraphicsPath::arcTo(float controlX, float controlY, float anchorX, float anchorY)
 {
-	command.push_back(pcArcTo);
+	commands.push_back(pcArcTo);
 	data.push_back(controlX);
 	data.push_back(controlY);
 	data.push_back(anchorX);
@@ -37,32 +41,28 @@ void GraphicsPath::arcTo(float controlX, float controlY, float anchorX, float an
 
 void GraphicsPath::lineTo(float x, float y)
 {
-	command.push_back(pcLineTo);
+	commands.push_back(pcLineTo);
 	data.push_back(x);
 	data.push_back(y);
 }
 
 void GraphicsPath::moveTo(float x, float y)
 {
-	command.push_back(pcMoveTo);
+	commands.push_back(pcMoveTo);
 	data.push_back(x);
 	data.push_back(y);
 }
 
 void GraphicsPath::wideLineTo(float x, float y)
 {
-	command.push_back(pcWideLineTo);
-	data.push_back(x);
-	data.push_back(y);
+	commands.push_back(pcLineTo);
 	data.push_back(x);
 	data.push_back(y);
 }
 
 void GraphicsPath::wideMoveTo(float x, float y)
 {
-	command.push_back(pcWideMoveTo);
-	data.push_back(x);
-	data.push_back(y);
+	commands.push_back(pcMoveTo);
 	data.push_back(x);
 	data.push_back(y);
 }

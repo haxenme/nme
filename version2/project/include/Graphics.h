@@ -213,6 +213,9 @@ enum PathCommand
    pcWideMoveTo = 4,
    pcWideLineTo = 5,
    pcArcTo =  6,
+
+   // Special code so we can mix lines and fills...
+   pcBeginAt  = 7,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -224,11 +227,13 @@ public:
    GraphicsPath *AsPath() { return this; }
 
    GraphicsPath() : winding(wrOddEven) { }
-   QuickVec<uint8> command;
+   QuickVec<uint8> commands;
    QuickVec<float> data;
    WindingRule     winding;
 
+	void clear();
    void initPosition(const UserPoint &inPos);
+
    void curveTo(float controlX, float controlY, float anchorX, float anchorY);
    void arcTo(float controlX, float controlY, float anchorX, float anchorY);
    void lineTo(float x, float y);
@@ -487,6 +492,8 @@ public:
    virtual void SetLineWidth(double inWidth,bool inAddPointsOnVertices)=0;
 };
 
+void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData);
+
 int UpToPower2(int inX);
 
 
@@ -502,7 +509,7 @@ struct RenderTarget
 
    RenderTarget ClipRect(const Rect &inRect) const;
 
-   Rect        mRect;
+		Rect        mRect;
    PixelFormat mPixelFormat;
 
    // Software target
@@ -526,7 +533,7 @@ public:
 
    virtual bool HitTest(const UserPoint &inPoint,bool &outResult) { return false; }
 
-   static Renderer *CreateSoftware(class GraphicsJob &inLineData);
+   static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
    virtual ~Renderer() { }
@@ -535,18 +542,18 @@ protected:
 
 struct GraphicsJob
 {
-   GraphicsJob() { clear(); }
+   GraphicsJob() { memset(this,0,sizeof(GraphicsJob)); }
 
-   void clear()  { memset(this,0,sizeof(GraphicsJob)); }
+   void clear();
 
-   IGraphicsStroke *mStroke;
+   GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
-   TriangleData    *mTriagles;
+   //TriangleData    *mTriagles;
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
    int             mCommandCount;
-   bool            mClose;
+   int             mDataCount;
 };
 
 
@@ -585,11 +592,13 @@ public:
    void drawCircle(float x,float y, float radius) { drawEllipse(x,y,radius,radius); }
    void drawRect(float x,float  y,float  width,float  height)
    {
+		Flush();
       moveTo(x,y);
       lineTo(x+width,y);
       lineTo(x+width,y+height);
       lineTo(x,y+height);
       lineTo(x,y);
+		Flush();
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
@@ -599,21 +608,24 @@ public:
    bool empty() const { return mJobs.empty(); }
 
 protected:
+	void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true);
 
 private:
    GraphicsJobs              mJobs;
+	int                       mConvertedJobs;
+	int                       mMeasuredJobs;
+	int                       mBuiltHardware;
 
    GraphicsPath              *mPathData;
    HardwareData              *mHardwareData;
 
-   bool                      mRenderDirty;
    double                    mRotation0;
    Extent2DF                 mExtent0;
 
-   Job                       mFillJob;
-   Job                       mLineJob;
-   Job                       mTriJob;
+   GraphicsJob               mFillJob;
+   GraphicsJob               mLineJob;
+   GraphicsJob               mTriJob;
 
    UserPoint                 mCursor;
 

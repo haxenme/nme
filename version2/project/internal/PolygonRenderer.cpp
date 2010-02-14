@@ -313,7 +313,11 @@ class PolygonRender : public CachedExtentRenderer
 public:
    enum IterateMode { itGetExtent, itCreateRenderer, itHitTest };
 
-   PolygonRender(IGraphicsFill *inFill)
+
+   PolygonRender(const GraphicsJob &inJob, const GraphicsPath &inPath,IGraphicsFill *inFill) :
+		mCommands(inPath.commands), mData(inPath.data),
+		mCommand0(inJob.mCommand0), mData0(inJob.mData0),
+		mCommandCount(inJob.mCommandCount), mDataCount(inJob.mDataCount)
    {
       mBuildExtent = 0;
       mAlphaMask = 0;
@@ -356,8 +360,7 @@ public:
 
    void SetTransform(const Transform &inTransform)
    {
-      QuickVec<float> &data = GetData();
-      int points = data.size()/2;
+      int points = mDataCount;
       if (points!=mTransformed.size() || inTransform!=mTransform)
       {
          mTransform = inTransform;
@@ -367,8 +370,9 @@ public:
 			mTransScale9 = *inTransform.mScale9;
 			mTransform.mScale9 = &mTransScale9;
          mTransformed.resize(points);
+			UserPoint *src= (UserPoint *)&mData[ mData0 ];
          for(int i=0;i<points;i++)
-            mTransformed[i] = mTransform.Apply(data[i*2],data[i*2+1]);
+            mTransformed[i] = mTransform.Apply(src[i].x,src[i].y);
 			AlignOrthogonal();
       }
    }
@@ -537,7 +541,6 @@ public:
 
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
-   virtual QuickVec<float> &GetData() = 0;
    virtual void AlignOrthogonal()  { }
 
 	UserPoint           mHitTest;
@@ -550,19 +553,31 @@ public:
    Extent2DF           *mBuildExtent;
    SpanRect            *mSpanRect;
    AlphaMask           *mAlphaMask;
+
+	const QuickVec<uint8> &mCommands;
+   const QuickVec<float> &mData;
+
+	int             mCommand0;
+   int             mData0;
+   int             mCommandCount;
+   int             mDataCount;
 };
 
 
 
 class LineRender : public PolygonRender
 {
-   LineData *mLineData;
    typedef void (LineRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
    ItFunc ItLine;
    double mDTheta;
+	GraphicsStroke *mStroke;
 
 public:
-   LineRender(LineData *inLine) : PolygonRender(inLine->mStroke->fill ), mLineData(inLine) { }
+   LineRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
+		 PolygonRender(inJob, inPath, inJob.mStroke->fill)
+	{
+		mStroke = inJob.mStroke;
+	}
 
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
@@ -596,7 +611,7 @@ public:
    inline void AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
    {
       bool miter = false;
-      switch(mLineData->mStroke->joints)
+      switch(mStroke->joints)
       {
          case sjMiter:
             miter = true;
@@ -632,7 +647,7 @@ public:
                //    also (which ever is better conditioned)
                //
                //   a [ dir1.y-dir2.y] = p0.y+p2.y - p0.x - p1.y;
-               double ml = mLineData->mStroke->miterLimit;
+               double ml = mStroke->miterLimit;
                double denom_x = dir1.x-dir2.x;
                double denom_y = dir1.y-dir2.y;
                double a = (denom_x==0 && denom_y==0) ? ml :
@@ -670,7 +685,7 @@ public:
 
    inline void EndCap(UserPoint p0, UserPoint perp)
    {
-      switch(mLineData->mStroke->caps)
+      switch(mStroke->caps)
       {
          case  scSquare:
             {
@@ -696,10 +711,8 @@ public:
 							  &LineRender::BuildHitTest;
 
       // Convert line data to solid data
-      GraphicsStroke &stroke = *mLineData->mStroke;
-
-      double perp_len = stroke.thickness*0.5;
-      switch(stroke.scaleMode)
+      double perp_len = mStroke->thickness*0.5;
+      switch(mStroke->scaleMode)
       {
          case ssmNone:
             // Done!
@@ -718,18 +731,12 @@ public:
 		// This may be too fine ....
       mDTheta = M_PI/perp_len;
 
-      int n = mLineData->command.size();
+      int n = mCommandCount;
       UserPoint *point = 0;
 
-      QuickVec<UserPoint> untransformed;
 		if (inMode==itHitTest)
 		{
-         const QuickVec<float> &data = GetData();
-			int d = data.size()/2;
-			untransformed.resize(d);
-			for(int i=0;i<d;i++)
-				untransformed[i] = UserPoint(data[i*2],data[i*2+1]);
-			point = &untransformed[0];
+			point = (UserPoint *)&mData[ mData0 ];
 		}
 		else
          point = &mTransformed[0];
@@ -746,12 +753,13 @@ public:
 
       for(int i=0;i<n;i++)
       {
-         switch(mLineData->command[i])
+         switch(mCommands[mCommand0 + i])
          {
             case pcWideMoveTo:
                point++;
+            case pcBeginAt:
             case pcMoveTo:
-               if (points>0)
+               if (points>0 || prev!=*point)
                {
                   EndCap(first,-first_perp);
                   EndCap(prev,prev_perp);
@@ -887,10 +895,10 @@ public:
 
    void AlignOrthogonal()
 	{
-      int n = mLineData->command.size();
+      int n = mCommandCount;
       UserPoint *point = &mTransformed[0];
 
-		if (mLineData->mStroke->pixelHinting)
+		if (mStroke->pixelHinting)
 		{
 			n = mTransformed.size();
 			for(int i=0;i<n;i++)
@@ -906,10 +914,11 @@ public:
       UserPoint *prev = 0;
       for(int i=0;i<n;i++)
       {
-         switch(mLineData->command[i])
+         switch(mCommands[mCommand0 + i])
          {
             case pcWideMoveTo:
                point++;
+            case pcBeginAt:
             case pcMoveTo:
 					if (first)
 						Align(*first,*point);
@@ -932,38 +941,27 @@ public:
 	}
 
 
-
-   QuickVec<float> &GetData()
-   {
-      return mLineData->data;
-   }
-
 };
 
 
 class SolidRender :public PolygonRender
 {
-   SolidData *mSolidData;
 
 public:
-   SolidRender(SolidData *inSolid) : PolygonRender(inSolid->mFill ), mSolidData(inSolid) { }
+	SolidRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
+		 PolygonRender(inJob, inPath, inJob.mFill)
+	{
+	}
+
 
 
    void Iterate(IterateMode inMode,const Matrix &)
    {
-      int n = mSolidData->command.size();
-      UserPoint *point = 0;
+      int n = mCommandCount;
+      const UserPoint *point = 0;
 
-      QuickVec<UserPoint> untransformed;
 		if (inMode==itHitTest)
-		{
-         const QuickVec<float> &data = GetData();
-			int d = data.size()/2;
-			untransformed.resize(d);
-			for(int i=0;i<d;i++)
-				untransformed[i] = UserPoint(data[i*2],data[i*2+1]);
-			point = &untransformed[0];
-		}
+			point = (const UserPoint *)&mData[ mData0 ];
 		else
          point = &mTransformed[0];
 
@@ -973,13 +971,14 @@ public:
          UserPoint last;
          for(int i=0;i<n;i++)
          {
-            switch(mSolidData->command[i])
+            switch(mCommands[ mCommand0 + i])
             {
                case pcWideLineTo:
                case pcWideMoveTo:
                   point++;
                case pcLineTo:
                case pcMoveTo:
+               case pcBeginAt:
                   last = *point;
                   mBuildExtent->Add(last);
                   point++;
@@ -1005,11 +1004,12 @@ public:
 
          for(int i=0;i<n;i++)
          {
-            switch(mSolidData->command[i])
+            switch(mCommands[ mCommand0 + i])
             {
                case pcWideMoveTo:
                   point++;
                case pcMoveTo:
+               case pcBeginAt:
                   if (points>1)
                      (*this.*func)(last_point,last_move);
                   points = 1;
@@ -1039,28 +1039,16 @@ public:
          }
       }
    }
-
-   QuickVec<float> &GetData()
-   {
-      return mSolidData->data;
-   }
 };
 
 
 
-Renderer *Renderer::CreateSoftware(LineData *inLineData)
+Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
-   return new LineRender(inLineData);
-}
-
-Renderer *Renderer::CreateSoftware(SolidData *inSolidData)
-{
-   return new SolidRender(inSolidData);
-}
-
-Renderer *Renderer::CreateSoftware(TriangleData *inTriangleData)
-{
-   return 0;
+	if (inJob.mStroke)
+      return new LineRender(inJob,inPath);
+	else
+      return new SolidRender(inJob,inPath);
 }
 
 

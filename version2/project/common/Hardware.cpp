@@ -7,34 +7,32 @@ namespace nme
 class HardwareBuilder
 {
 public:
-   HardwareBuilder(HardwareData &ioData,SolidData *inSolidData)
+   HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
    {
-      mElement.mType = ptTriangleFan;
+		if (inJob.mFill)
+		{
+         mElement.mType = ptTriangleFan;
+         mElement.mScaleMode = ssmNormal;
+         mElement.mWidth = -1;
+         SetFill(inJob.mFill);
+		}
+		else
+		{
+         mElement.mType = ptLineStrip;
+			GraphicsStroke *stroke = inJob.mStroke;
+         mElement.mScaleMode = stroke->scaleMode;
+         mElement.mWidth = stroke->thickness;
+         SetFill(stroke->fill);
+		}
       mElement.mFirst = 0;
       mElement.mCount = 0;
-      mElement.mScaleMode = ssmNormal;
-      mElement.mWidth = -1;
       mElement.mColour = 0;
 
-      SetFill(inSolidData->mFill);
 
       mArrays = &ioData.GetArrays(mSurface);
 
-      AddObject(inSolidData->command,inSolidData->data,true);
-   }
-
-   HardwareBuilder(HardwareData &ioData,LineData *inLineData)
-   {
-      mElement.mType = ptLineStrip;
-      mElement.mFirst = 0;
-      mElement.mCount = 0;
-      mElement.mScaleMode = inLineData->mStroke->scaleMode;
-      mElement.mWidth = inLineData->mStroke->thickness;
-      mElement.mColour = 0;
-      bool textured = SetFill(inLineData->mStroke->fill);
-      mArrays = &ioData.GetArrays(mSurface);
-
-      AddObject(inLineData->command,inLineData->data,false);
+      AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
+					 &inPath.data[inJob.mData0], inJob.mFill);
    }
 
   
@@ -95,24 +93,25 @@ public:
 
 
 
-   void AddObject(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData, bool inClose)
+   void AddObject(const uint8* inCommands, int inCount,
+						const float *inData,  bool inClose)
    {
       Vertices &vertices = mArrays->mVertices;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
 
-      int n = inCommands.size();
-      UserPoint *point = (UserPoint *)&inData[0];
+      UserPoint *point = (UserPoint *)inData;
       UserPoint last_move;
       UserPoint last_point;
       int points = 0;
 
-      for(int i=0;i<n;i++)
+      for(int i=0;i<inCount;i++)
       {
          switch(inCommands[i])
          {
-            case pcWideMoveTo:
-               point++;
+            case pcBeginAt:
+					if (points>0)
+						continue;
             case pcMoveTo:
                if (points>1)
                {
@@ -130,8 +129,6 @@ public:
                vertices.push_back(last_move);
                break;
 
-            case pcWideLineTo:
-               point++;
             case pcLineTo:
                if (points>0)
                {
@@ -216,15 +213,11 @@ public:
    Matrix      mTextureMapper;
 };
 
-void LineData::BuildHardware(HardwareData &ioData)
+void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
 {
-   HardwareBuilder builder(ioData,this);
+   HardwareBuilder builder(inJob,inPath,ioData);
 }
 
-void SolidData::BuildHardware(HardwareData &ioData)
-{
-   HardwareBuilder builder(ioData,this);
-}
 
 // --- HardwareArrays ---------------------------------------------------------------------
 
