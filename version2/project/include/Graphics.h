@@ -573,6 +573,7 @@ public:
 
    bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
+   void drawGraphicsDatum(IGraphicsData *inData);
    void drawGraphicsData(IGraphicsData **graphicsData,int inN);
    void beginFill(unsigned int color, float alpha = 1.0);
    void endFill();
@@ -630,7 +631,6 @@ private:
    UserPoint                 mCursor;
 
    void BuiltExtent0(double inRotation);
-   void Add(IGraphicsData *inData);
 
 
 private:

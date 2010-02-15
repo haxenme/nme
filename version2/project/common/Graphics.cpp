@@ -110,32 +110,19 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    Flush();
 }
 
+void Graphics::drawGraphicsDatum(IGraphicsData *inData)
+{
+	// TODO:
+	switch(inData->GetType())
+	{
+	}
+}
 
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 {
-	/*
-   mItems.reserve(mItems.size()+inN);
-   for(int i=0;i<inN;i++)
-      mItems.push_back( graphicsData[i]->IncRef() );
-   MakeDirty();
-	*/
+	for(int i=0;i<inN;i++)
+		drawGraphicsDatum(graphicsData[i]);
 }
-
-/*
-void Graphics::Add(IGraphicsData *inData)
-{
-   mItems.push_back(inData->IncRef());
-   MakeDirty();
-}
-
-void Graphics::Add(IRenderData *inData)
-{
-   inData->IncRef();
-   mRenderData.push_back(inData);
-   MakeDirty();
-}
-*/
-
 
 void Graphics::beginFill(unsigned int color, float alpha)
 {

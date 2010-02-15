@@ -31,6 +31,109 @@ value ObjectToAbstract(Object *inObject)
    return result;
 }
 
+
+
+
+template<typename T>
+void FillArrayInt(QuickVec<T> &outArray,value inVal)
+{
+	int n = val_array_size(inVal);
+	outArray.resize(n);
+	int *c = val_array_int(inVal);
+	if (c)
+	{
+		for(int i=0;i<n;i++)
+			outArray[i] = c[i];
+	}
+	else
+	{
+		value *vals = val_array_value(inVal);
+		if (vals)
+			for(int i=0;i<n;i++)
+				outArray[i] = val_int(vals[i]);
+		else
+			for(int i=0;i<n;i++)
+				outArray[i] = val_int(val_array_i(inVal,i));
+	}
+
+}
+
+template<typename T>
+void FillArrayInt(value outVal, const QuickVec<T> &inArray)
+{
+	int n = inArray.size();
+	val_array_set_size(outVal,n);
+	int *c = val_array_int(outVal);
+	if (c)
+	{
+		for(int i=0;i<n;i++)
+			c[i] = inArray[i];
+	}
+	else
+	{
+		value *vals = val_array_value(outVal);
+		if (vals)
+			for(int i=0;i<n;i++)
+				vals[i] = alloc_int(inArray[i]);
+		else
+			for(int i=0;i<n;i++)
+				val_array_set_i(outVal,i,alloc_int(inArray[i]));
+	}
+}
+
+template<typename T>
+void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
+{
+	int n = inArray.size();
+	val_array_set_size(outVal,n);
+	double *c = val_array_double(outVal);
+	if (c)
+	{
+		for(int i=0;i<n;i++)
+			c[i] = inArray[i];
+	}
+	else
+	{
+		value *vals = val_array_value(outVal);
+		if (vals)
+			for(int i=0;i<n;i++)
+				vals[i] = alloc_float(inArray[i]);
+		else
+			for(int i=0;i<n;i++)
+				val_array_set_i(outVal,i,alloc_float(inArray[i]));
+	}
+}
+
+
+
+
+template<typename T>
+void FillArrayDouble(QuickVec<T> &outArray,value inVal)
+{
+	int n = val_array_size(inVal);
+	outArray.resize(n);
+	double *c = val_array_double(inVal);
+	if (c)
+	{
+		for(int i=0;i<n;i++)
+			outArray[i] = c[i];
+	}
+	else
+	{
+		value *vals = val_array_value(inVal);
+		if (vals)
+			for(int i=0;i<n;i++)
+				outArray[i] = val_number(vals[i]);
+		else
+			for(int i=0;i<n;i++)
+				outArray[i] = val_number(val_array_i(inVal,i));
+	}
+
+}
+
+
+
+
 }
 
 using namespace nme;
@@ -395,6 +498,182 @@ value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, valu
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_draw_ellipse,5);
+
+
+value nme_gfx_draw_data(value inGfx,value inData)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+		int n = val_array_size(inData);
+		for(int i=0;i<n;i++)
+		{
+			IGraphicsData *data;
+			if (AbstractToObject(val_array_i(inGfx,i),data))
+			   gfx->drawGraphicsDatum(data);
+		}
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_data,2);
+
+
+// --- IGraphicsData -----------------------------------------------------
+
+
+
+value nme_graphics_path_create(value inCommands,value inData,value inWinding)
+{
+	GraphicsPath *result = new GraphicsPath();
+
+	if (!val_bool(inWinding))
+		result->winding = wrNonZero;
+
+	FillArrayInt(result->commands,inCommands);
+	FillArrayDouble(result->data,inData);
+
+	return ObjectToAbstract(result);
+}
+DEFINE_PRIM(nme_graphics_path_create,3)
+
+
+value nme_graphics_path_curve_to(value inPath,value inX1, value inY1, value inX2, value inY2)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		path->curveTo(val_number(inX1), val_number(inY1), val_number(inX2), val_number(inY2) );
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_curve_to,5)
+
+
+
+value nme_graphics_path_line_to(value inPath,value inX1, value inY1)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		path->lineTo(val_number(inX1), val_number(inY1));
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_line_to,3)
+
+value nme_graphics_path_move_to(value inPath,value inX1, value inY1)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		path->moveTo(val_number(inX1), val_number(inY1));
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_move_to,3)
+
+
+	
+value nme_graphics_path_wline_to(value inPath,value inX1, value inY1)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		path->wideLineTo(val_number(inX1), val_number(inY1));
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_wline_to,3)
+
+value nme_graphics_path_wmove_to(value inPath,value inX1, value inY1)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		path->wideMoveTo(val_number(inX1), val_number(inY1));
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_wmove_to,3)
+
+
+value nme_graphics_path_get_commands(value inPath,value outCommands)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		FillArrayInt(outCommands,path->commands);
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_get_commands,2)
+
+value nme_graphics_path_set_commands(value inPath,value inCommands)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		FillArrayInt(path->commands,inCommands);
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_set_commands,2)
+
+value nme_graphics_path_get_data(value inPath,value outData)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		FillArrayDouble(outData,path->data);
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_get_data,2)
+
+value nme_graphics_path_set_data(value inPath,value inData)
+{
+	GraphicsPath *path;
+	if (AbstractToObject(inPath,path))
+		FillArrayDouble(path->data,inData);
+	return alloc_null();
+}
+DEFINE_PRIM(nme_graphics_path_set_data,2)
+
+
+
+// --- IGraphicsData - Fills ---------------------------------------------
+
+value nme_graphics_solid_fill_create(value inColour, value inAlpha)
+{
+   GraphicsSolidFill *solid = new GraphicsSolidFill( val_int(inColour), val_number(inAlpha) );
+	return ObjectToAbstract(solid);
+}
+DEFINE_PRIM(nme_graphics_solid_fill_create,2)
+
+
+value nme_graphics_end_fill_create()
+{
+   GraphicsEndFill *end = new GraphicsEndFill;
+	return ObjectToAbstract(end);
+}
+DEFINE_PRIM(nme_graphics_end_fill_create,2)
+
+
+// --- IGraphicsData - Stroke ---------------------------------------------
+
+value nme_graphics_stroke_create(value* arg, int nargs)
+{
+   enum { argThickness, argPixelHinting, argScaleMode, argCapsStyle,
+          argJointStyle, argMiterLimit, argFill, argSIZE };
+
+	double thickness = -1;
+	if (!val_is_null(arg[argThickness]))
+	{
+		thickness = val_number(arg[argThickness]);
+		if (thickness<0)
+			thickness = 0;
+	}
+
+	IGraphicsFill *fill=0;
+	AbstractToObject(arg[argFill],fill);
+
+   GraphicsStroke *stroke = new GraphicsStroke(fill, thickness,
+                 val_bool(arg[argPixelHinting]),
+                 (StrokeScaleMode)val_int(arg[argScaleMode]),
+                 (StrokeCaps)val_int(arg[argCapsStyle]),
+                 (StrokeJoints)val_int(arg[argJointStyle]),
+                 val_number(arg[argMiterLimit]) );
+
+   return ObjectToAbstract(stroke);
+}
+
+DEFINE_PRIM_MULT(nme_graphics_stroke_create)
+
+
 
 // --- TextField --------------------------------------------------------------
 

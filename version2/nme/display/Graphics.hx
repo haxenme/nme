@@ -67,6 +67,14 @@ class Graphics
       nme_gfx_draw_ellipse(nmeHandle,inX,inY,inRadius,inRadius);
    }
 
+   public function drawGraphicsData(graphicsData:Array<IGraphicsData>):Void
+	{
+		var handles = new Array<Dynamic>();
+		for(datum in graphicsData)
+			handles.push(datum.nmeHandle);
+		nme_gfx_draw_data(nmeHandle,handles);
+	}
+
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
@@ -78,4 +86,5 @@ class Graphics
    static var nme_gfx_curve_to = nme.Loader.load("nme_gfx_curve_to",5);
    static var nme_gfx_arc_to = nme.Loader.load("nme_gfx_arc_to",5);
    static var nme_gfx_draw_ellipse = nme.Loader.load("nme_gfx_draw_ellipse",5);
+   static var nme_gfx_draw_data = nme.Loader.load("nme_gfx_draw_data",2);
 }
