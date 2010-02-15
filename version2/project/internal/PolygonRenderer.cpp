@@ -754,12 +754,17 @@ public:
       for(int i=0;i<n;i++)
       {
          switch(mCommands[mCommand0 + i])
-         {
+            {
             case pcWideMoveTo:
                point++;
             case pcBeginAt:
             case pcMoveTo:
-               if (points>0 || prev!=*point)
+               if (points==1 && prev==*point)
+               {
+                  point++;
+                  continue;
+               }
+               if (points>1 && prev!=*point)
                {
                   EndCap(first,-first_perp);
                   EndCap(prev,prev_perp);

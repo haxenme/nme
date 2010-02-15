@@ -9,6 +9,7 @@ class HardwareBuilder
 public:
    HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
    {
+      mElement.mColour = 0xffffffff;
 		if (inJob.mFill)
 		{
          mElement.mType = ptTriangleFan;
@@ -26,7 +27,6 @@ public:
 		}
       mElement.mFirst = 0;
       mElement.mCount = 0;
-      mElement.mColour = 0;
 
 
       mArrays = &ioData.GetArrays(mSurface);
@@ -111,7 +111,10 @@ public:
          {
             case pcBeginAt:
 					if (points>0)
+               {
+                  point++;
 						continue;
+               }
             case pcMoveTo:
                if (points>1)
                {
@@ -122,6 +125,12 @@ public:
                     CalcTexCoords();
                   elements.push_back(mElement);
                }
+               else if (points==1 && last_move==*point)
+               {
+                  point++;
+                  continue;
+               }
+
                points = 1;
                last_point = *point++;
                last_move = last_point;
