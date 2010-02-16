@@ -168,6 +168,7 @@ class IGraphicsStroke : public IGraphicsData
 {
 public:
    IGraphicsStroke *AsIStroke() { return this; }
+   virtual GraphicsDataType GetType() { return gdtStroke; }
 };
 
 enum StrokeCaps { scRound, scNone, scSquare };
@@ -202,6 +203,7 @@ class IGraphicsPath : public IGraphicsData
 {
 public:
    IGraphicsPath *AsIPath() { return this; }
+   virtual GraphicsDataType GetType() { return gdtPath; }
 };
 
 enum PathCommand
@@ -586,6 +588,8 @@ public:
    void moveTo(float x, float y);
    void curveTo(float cx,float cy,float x, float y);
    void arcTo(float cx,float cy,float x, float y);
+   void drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
+           WindingRule inWinding );
 
    void drawEllipse(float x,float  y,float  width,float  height);
    void drawCircle(float x,float y, float radius) { drawEllipse(x,y,radius,radius); }

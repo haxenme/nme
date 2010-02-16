@@ -37,6 +37,8 @@ value ObjectToAbstract(Object *inObject)
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
 {
+	if (val_is_null(inVal))
+	   return;
 	int n = val_array_size(inVal);
 	outArray.resize(n);
 	int *c = val_array_int(inVal);
@@ -49,11 +51,15 @@ void FillArrayInt(QuickVec<T> &outArray,value inVal)
 	{
 		value *vals = val_array_value(inVal);
 		if (vals)
+		{
 			for(int i=0;i<n;i++)
 				outArray[i] = val_int(vals[i]);
+		}
 		else
+		{
 			for(int i=0;i<n;i++)
 				outArray[i] = val_int(val_array_i(inVal,i));
+		}
 	}
 
 }
@@ -110,6 +116,8 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
 template<typename T>
 void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 {
+	if (val_is_null(inVal))
+	   return;
 	int n = val_array_size(inVal);
 	outArray.resize(n);
 	double *c = val_array_double(inVal);
@@ -509,7 +517,7 @@ value nme_gfx_draw_data(value inGfx,value inData)
 		for(int i=0;i<n;i++)
 		{
 			IGraphicsData *data;
-			if (AbstractToObject(val_array_i(inGfx,i),data))
+			if (AbstractToObject(val_array_i(inData,i),data))
 			   gfx->drawGraphicsDatum(data);
 		}
    }

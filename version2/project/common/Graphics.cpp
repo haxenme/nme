@@ -111,11 +111,23 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    Flush();
 }
 
+void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
+           WindingRule inWinding )
+{
+}
+
+
+
 void Graphics::drawGraphicsDatum(IGraphicsData *inData)
 {
-	// TODO:
 	switch(inData->GetType())
 	{
+            case gdtPath:
+               {
+               GraphicsPath *path = inData->AsPath();
+               drawPath(path->commands, path->data, path->winding);
+               break;
+               }
 	}
 }
 
