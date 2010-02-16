@@ -526,6 +526,20 @@ value nme_gfx_draw_data(value inGfx,value inData)
 DEFINE_PRIM(nme_gfx_draw_data,2);
 
 
+value nme_gfx_draw_datum(value inGfx,value inDatum)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+		IGraphicsData *datum;
+		if (AbstractToObject(inDatum,datum))
+			   gfx->drawGraphicsDatum(datum);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_datum,2);
+
+
 // --- IGraphicsData -----------------------------------------------------
 
 

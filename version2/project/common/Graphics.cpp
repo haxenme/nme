@@ -31,8 +31,8 @@ void Graphics::clear()
 
    // clear jobs
    for(int i=0;i<mJobs.size();i++)
-		mJobs[i].clear();
-	mJobs.resize(0);
+      mJobs[i].clear();
+   mJobs.resize(0);
 
    if (mHardwareData)
    {
@@ -44,7 +44,7 @@ void Graphics::clear()
    mExtent0 = Extent2DF();
    mRotation0 = 0;
    mBuiltHardware = 0;
-	mMeasuredJobs = 0;
+   mMeasuredJobs = 0;
    mCursor = UserPoint(0,0);
 }
 
@@ -114,60 +114,129 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
 void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
            WindingRule inWinding )
 {
+   int n = inCommands.size();
+   if (n==0 || inData.size()<2)
+      return;
+
+   const UserPoint *point = (UserPoint *)&inData[0];
+   const UserPoint *last =  point + inData.size()/2;
+
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+     mPathData->initPosition(mCursor);
+
+   for(int i=0;i<n && point<last;i++)
+   {
+      switch(inCommands[i])
+      {
+         case pcWideMoveTo:
+            point++;
+            if (point==last) break;
+         case pcMoveTo:
+            mPathData->moveTo(point->x,point->y);
+            mCursor = *point++;
+            break;
+
+         case pcWideLineTo:
+            point++;
+            if (point==last) break;
+         case pcLineTo:
+            mPathData->lineTo(point->x,point->y);
+            mCursor = *point++;
+            break;
+
+         case pcCurveTo:
+            if (point+1==last) break;
+            mPathData->curveTo(point->x,point->y,point[1].x,point[1].y);
+            mCursor = point[1];
+            point += 2;
+      }
+   }
 }
 
 
 
 void Graphics::drawGraphicsDatum(IGraphicsData *inData)
 {
-	switch(inData->GetType())
-	{
-            case gdtPath:
-               {
-               GraphicsPath *path = inData->AsPath();
-               drawPath(path->commands, path->data, path->winding);
-               break;
-               }
-	}
+   switch(inData->GetType())
+   {
+      case gdtPath:
+         {
+         GraphicsPath *path = inData->AsPath();
+         drawPath(path->commands, path->data, path->winding);
+         break;
+         }
+      case gdtEndFill:
+         endFill();
+         break;
+      case gdtSolidFill:
+         Flush(false,true);
+         if (mFillJob.mFill)
+            mFillJob.mFill->DecRef();
+         mFillJob.mFill = inData->AsSolidFill();
+         mFillJob.mFill->IncRef();
+         if (mFillJob.mCommand0 == mPathData->commands.size())
+            mPathData->initPosition(mCursor);
+         break;
+      case gdtStroke:
+			{
+         Flush(true,false);
+			if (mLineJob.mStroke)
+			{
+				mLineJob.mStroke->DecRef();
+				mLineJob.mStroke = 0;
+			}
+			GraphicsStroke *stroke = inData->AsStroke();
+			if (stroke->thickness>=0 && stroke->fill)
+			{
+				mLineJob.mStroke = stroke;
+				mLineJob.mStroke->IncRef();
+				if (mLineJob.mCommand0 == mPathData->commands.size())
+					mPathData->initPosition(mCursor);
+			}
+			}
+         break;
+
+   }
 }
 
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 {
-	for(int i=0;i<inN;i++)
-		drawGraphicsDatum(graphicsData[i]);
+   for(int i=0;i<inN;i++)
+      drawGraphicsDatum(graphicsData[i]);
 }
 
 void Graphics::beginFill(unsigned int color, float alpha)
 {
    Flush(false,true);
-	if (mFillJob.mFill)
-		mFillJob.mFill->DecRef();
+   if (mFillJob.mFill)
+      mFillJob.mFill->DecRef();
    mFillJob.mFill = new GraphicsSolidFill(color,alpha);
    mFillJob.mFill->IncRef();
-	if (mFillJob.mCommand0 == mPathData->commands.size())
-		mPathData->initPosition(mCursor);
+   if (mFillJob.mCommand0 == mPathData->commands.size())
+      mPathData->initPosition(mCursor);
 }
 
 void Graphics::endFill()
 {
    Flush(false,true);
-	if (mFillJob.mFill)
-	{
-		mFillJob.mFill->DecRef();
-		mFillJob.mFill = 0;
-	}
+   if (mFillJob.mFill)
+   {
+      mFillJob.mFill->DecRef();
+      mFillJob.mFill = 0;
+   }
 }
 
 void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
    bool inRepeat, bool inSmooth)
 {
-	Flush(false,true);
-	if (mFillJob.mFill)
-		mFillJob.mFill->DecRef();
+   Flush(false,true);
+   if (mFillJob.mFill)
+      mFillJob.mFill->DecRef();
    mFillJob.mFill = new GraphicsBitmapFill(bitmapData,inMatrix,inRepeat,inSmooth);
    mFillJob.mFill->IncRef();
-	if (mFillJob.mCommand0 == mPathData->commands.size())
-		mPathData->initPosition(mCursor);
+   if (mFillJob.mCommand0 == mPathData->commands.size())
+      mPathData->initPosition(mCursor);
 }
 
 
@@ -188,8 +257,8 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
       mLineJob.mStroke = new GraphicsStroke(solid,thickness,pixelHinting,
           scaleMode,caps,joints,miterLimit);
       mLineJob.mStroke->IncRef();
-		if (mLineJob.mCommand0 == mPathData->commands.size())
-			mPathData->initPosition(mCursor);
+      if (mLineJob.mCommand0 == mPathData->commands.size())
+         mPathData->initPosition(mCursor);
    }
 }
 
@@ -199,7 +268,7 @@ void Graphics::lineTo(float x, float y)
 {
    if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
-	  mPathData->initPosition(mCursor);
+     mPathData->initPosition(mCursor);
 
    mPathData->lineTo(x,y);
    mCursor = UserPoint(x,y);
@@ -215,7 +284,7 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
 {
    if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
-	  mPathData->initPosition(mCursor);
+     mPathData->initPosition(mCursor);
 
    mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
@@ -225,7 +294,7 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 {
    if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
-	  mPathData->initPosition(mCursor);
+     mPathData->initPosition(mCursor);
 
    mPathData->arcTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
@@ -246,14 +315,14 @@ void Graphics::Flush(bool inLine, bool inFill)
    int d = mPathData->data.size();
 
    // Do fill first, so lines go over top - will have to add some extra code
-	//  to insert fill under appropriate lines at some stage.
+   //  to insert fill under appropriate lines at some stage.
    if (inFill)
-	{
-		if (mFillJob.mFill && mFillJob.mCommand0 <n)
-		{
-			mFillJob.mFill->IncRef();
-			mFillJob.mCommandCount = n-mFillJob.mCommand0;
-			mFillJob.mDataCount = d-mFillJob.mData0;
+   {
+      if (mFillJob.mFill && mFillJob.mCommand0 <n)
+      {
+         mFillJob.mFill->IncRef();
+         mFillJob.mCommandCount = n-mFillJob.mCommand0;
+         mFillJob.mDataCount = d-mFillJob.mData0;
 
          // Move it up the list so it is "below" lines that start at the same point
          int pos = mJobs.size()-1;
@@ -265,27 +334,27 @@ void Graphics::Flush(bool inLine, bool inFill)
          }
          pos++;
          if (pos==mJobs.size())
-			   mJobs.push_back(mFillJob);
+            mJobs.push_back(mFillJob);
          else
             mJobs.InsertAt(0,mFillJob);
-		}
-		mFillJob.mCommand0 = n;
-		mFillJob.mData0 = d;
-	}
+      }
+      mFillJob.mCommand0 = n;
+      mFillJob.mData0 = d;
+   }
 
 
-	if (inLine)
-	{
-		if (mLineJob.mStroke && mLineJob.mCommand0 <n)
-		{
-			mLineJob.mStroke->IncRef();
-			mLineJob.mCommandCount = n-mLineJob.mCommand0;
-			mLineJob.mDataCount = d-mLineJob.mData0;
-			mJobs.push_back(mLineJob);
-		}
-		mLineJob.mCommand0 = n;
-		mLineJob.mData0 = d;
-	}
+   if (inLine)
+   {
+      if (mLineJob.mStroke && mLineJob.mCommand0 <n)
+      {
+         mLineJob.mStroke->IncRef();
+         mLineJob.mCommandCount = n-mLineJob.mCommand0;
+         mLineJob.mDataCount = d-mLineJob.mData0;
+         mJobs.push_back(mLineJob);
+      }
+      mLineJob.mCommand0 = n;
+      mLineJob.mData0 = d;
+   }
 }
 
 
@@ -294,7 +363,7 @@ Extent2DF Graphics::GetExtent(const Transform &inTransform)
    Extent2DF result;
    Flush();
 
-	/*
+   /*
    for(int i=0;i<mCache.size();i++)
    {
       // See if we can get the extent from somewhere!
@@ -325,7 +394,7 @@ const Extent2DF &Graphics::GetExtent0(double inRotation)
          m.Rotate(inRotation);
       mExtent0 = GetExtent(trans);
       mRotation0 = inRotation;
-		mMeasuredJobs = mJobs.size();
+      mMeasuredJobs = mJobs.size();
    }
    return mExtent0;
 }
@@ -335,32 +404,32 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 {
    Flush();
    if (inTarget.IsHardware())
-	{
+   {
      if (!mHardwareData)
          mHardwareData = new HardwareData();
-	  while(mBuiltHardware<mJobs.size())
-			BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData);
+     while(mBuiltHardware<mJobs.size())
+         BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData);
 
-	  if (mHardwareData->mCalls.size())
+     if (mHardwareData->mCalls.size())
         inTarget.mHardware->Render(inState,mHardwareData->mCalls);
-	}
-	else
-	{
-		for(int i=0;i<mJobs.size();i++)
-		{
-			GraphicsJob &job = mJobs[i];
-			if (!job.mSoftwareRenderer)
-				job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
-			job.mSoftwareRenderer->Render(inTarget,inState);
-		}
-	}
+   }
+   else
+   {
+      for(int i=0;i<mJobs.size();i++)
+      {
+         GraphicsJob &job = mJobs[i];
+         if (!job.mSoftwareRenderer)
+            job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
+         job.mSoftwareRenderer->Render(inTarget,inState);
+      }
+   }
 
    return true;
 }
 
 bool Graphics::HitTest(const UserPoint &inPoint)
 {
-	/*
+   /*
    Extent2DF result;
    Flush();
    for(int i=0;i<mCache.size();i++)
@@ -375,7 +444,7 @@ bool Graphics::HitTest(const UserPoint &inPoint)
       cache.mSoftware->HitTest(inPoint,result);
       if (result) return true;
    }
-	*/
+   */
 
    return false;
 }
@@ -384,10 +453,10 @@ bool Graphics::HitTest(const UserPoint &inPoint)
 
 void GraphicsJob::clear()
 {
-	if (mStroke) mStroke->DecRef();
-	if (mFill) mFill->DecRef();
-	if (mSoftwareRenderer) mSoftwareRenderer->Destroy();
-	memset(this,0,sizeof(GraphicsJob));
+   if (mStroke) mStroke->DecRef();
+   if (mFill) mFill->DecRef();
+   if (mSoftwareRenderer) mSoftwareRenderer->Destroy();
+   memset(this,0,sizeof(GraphicsJob));
 }
 
 // --- RenderState -------------------------------------------------------------------

@@ -161,6 +161,9 @@ public:
       mBitmapSurface = 0;
       mBitmapTexture = 0;
       mUsingBitmapMatrix = false;
+      mLineScaleNormal = -1;
+      mLineScaleV = -1;
+      mLineScaleH = -1;
    }
 
    void SetWindowSize(int inWidth,int inHeight)

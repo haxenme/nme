@@ -8,7 +8,7 @@ class GraphicsStroke extends IGraphicsData
                       ?joints:JointStyle, miterLimit:Float = 3,
                       fill:IGraphicsData /* flash uses IGraphicsFill */  = null)
 	{
-	   super( nme_graphics_stroke_create(nmeHandle, thickness, pixelHinting,
+	   super( nme_graphics_stroke_create(thickness, pixelHinting,
          scaleMode==null ?  0 : Type.enumIndex(scaleMode),
          caps==null ?  0 : Type.enumIndex(caps),
          joints==null ?  0 : Type.enumIndex(joints),

@@ -75,6 +75,11 @@ class Graphics
 		nme_gfx_draw_data(nmeHandle,handles);
 	}
 
+   public function drawGraphicsDatum(graphicsDatum:IGraphicsData):Void
+	{
+		nme_gfx_draw_datum(nmeHandle,graphicsDatum.nmeHandle);
+	}
+
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
@@ -87,4 +92,5 @@ class Graphics
    static var nme_gfx_arc_to = nme.Loader.load("nme_gfx_arc_to",5);
    static var nme_gfx_draw_ellipse = nme.Loader.load("nme_gfx_draw_ellipse",5);
    static var nme_gfx_draw_data = nme.Loader.load("nme_gfx_draw_data",2);
+   static var nme_gfx_draw_datum = nme.Loader.load("nme_gfx_draw_datum",2);
 }

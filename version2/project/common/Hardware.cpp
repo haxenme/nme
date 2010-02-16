@@ -185,35 +185,6 @@ public:
       }
    }
 
-   /*
-   bool Render( const RenderTarget &inTarget, const RenderState &inState )
-   {
-      if (mLineWidth>=0)
-      {
-         double thick = mLineWidth;
-         const Matrix &m = *inState.mTransform.mMatrix;
-         switch(mStrokeScaleMode)
-         {
-            case ssmNone:
-               // Done!
-               break;
-            case ssmNormal:
-               thick *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
-               break;
-            case ssmVertical:
-               thick *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
-               break;
-            case ssmHorizontal:
-               thick *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
-               break;
-         }
-         inTarget.mHardware->SetLineWidth(thick,true);
-      }
-
-      inTarget.mHardware->Render(inState,mElements,mVertices,mTexCoords,mSurface,mColour);
-      return true;
-   }
-   */
 
    HardwareArrays *mArrays;
    Surface      *mSurface;
