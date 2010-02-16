@@ -12,6 +12,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mCursor = UserPoint(0,0);
    mHardwareData = 0;
    mPathData = new GraphicsPath;
+   mBuiltHardware = 0;
 }
 
 
@@ -184,6 +185,10 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
 
 void Graphics::lineTo(float x, float y)
 {
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+	  mPathData->initPosition(mCursor);
+
    mPathData->lineTo(x,y);
    mCursor = UserPoint(x,y);
 }
@@ -196,12 +201,20 @@ void Graphics::moveTo(float x, float y)
 
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+	  mPathData->initPosition(mCursor);
+
    mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
 }
 
 void Graphics::arcTo(float cx, float cy, float x, float y)
 {
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+	  mPathData->initPosition(mCursor);
+
    mPathData->arcTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
 }
@@ -219,7 +232,6 @@ void Graphics::Flush(bool inLine, bool inFill)
 {
    int n = mPathData->commands.size();
    int d = mPathData->data.size();
-	bool add_init = false;
 
    // Do fill first, so lines go over top - will have to add some extra code
 	//  to insert fill under appropriate lines at some stage.
@@ -230,8 +242,20 @@ void Graphics::Flush(bool inLine, bool inFill)
 			mFillJob.mFill->IncRef();
 			mFillJob.mCommandCount = n-mFillJob.mCommand0;
 			mFillJob.mDataCount = d-mFillJob.mData0;
-			mJobs.push_back(mFillJob);
-			add_init = true;
+
+         // Move it up the list so it is "below" lines that start at the same point
+         int pos = mJobs.size()-1;
+         while(pos>0)
+         {
+            if (mJobs[pos].mCommand0 < mFillJob.mCommand0)
+               break;
+            pos--;
+         }
+         pos++;
+         if (pos==mJobs.size())
+			   mJobs.push_back(mFillJob);
+         else
+            mJobs.InsertAt(0,mFillJob);
 		}
 		mFillJob.mCommand0 = n;
 		mFillJob.mData0 = d;
@@ -246,14 +270,10 @@ void Graphics::Flush(bool inLine, bool inFill)
 			mLineJob.mCommandCount = n-mLineJob.mCommand0;
 			mLineJob.mDataCount = d-mLineJob.mData0;
 			mJobs.push_back(mLineJob);
-			add_init = true;
 		}
 		mLineJob.mCommand0 = n;
 		mLineJob.mData0 = d;
 	}
-
-	if (add_init)
-		mPathData->initPosition(mCursor);
 }
 
 

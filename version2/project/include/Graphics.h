@@ -488,8 +488,6 @@ public:
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
-
-   virtual void SetLineWidth(double inWidth,bool inAddPointsOnVertices)=0;
 };
 
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData);

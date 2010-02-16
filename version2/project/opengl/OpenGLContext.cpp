@@ -157,7 +157,7 @@ public:
       mWidth = 0;
       mHeight = 0;
       mLineWidth = -1;
-      mPointsToo = false;
+      mPointsToo = true;
       mBitmapSurface = 0;
       mBitmapTexture = 0;
       mUsingBitmapMatrix = false;
@@ -279,7 +279,11 @@ public:
             mMatrix.mtx, mMatrix.mty, 0, 1
          };
          glLoadMatrixf(matrix);
+         mLineScaleV = -1;
+         mLineScaleH = -1;
+         mLineScaleNormal = -1;
       }
+
 
       uint32 last_col = 0;
       for(int c=0;c<inCalls.size();c++)
@@ -316,8 +320,39 @@ public:
                glColor4ub(last_col>>16,last_col>>8,last_col,last_col>>24);
             }
    
-            if (mPointsToo && draw.mType == ptLineStrip && draw.mCount>1)
-               glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
+            if ( (draw.mType == ptLineStrip) && draw.mCount>1)
+            {
+               if (draw.mWidth<=0)
+                  SetLineWidth(1.0);
+               else
+                  switch(draw.mScaleMode)
+                  {
+                     case ssmNone: SetLineWidth(draw.mWidth); break;
+                     case ssmNormal:
+                        if (mLineScaleNormal<0)
+                           mLineScaleNormal =
+                              sqrt( 0.5*( mMatrix.m00*mMatrix.m00 + mMatrix.m01*mMatrix.m01 +
+                                          mMatrix.m10*mMatrix.m10 + mMatrix.m11*mMatrix.m11 ) );
+                        SetLineWidth(draw.mWidth*mLineScaleNormal);
+                        break;
+                     case ssmVertical:
+                        if (mLineScaleV<0)
+                           mLineScaleV =
+                              sqrt( mMatrix.m00*mMatrix.m00 + mMatrix.m01*mMatrix.m01 );
+                        SetLineWidth(draw.mWidth*mLineScaleV);
+                        break;
+
+                     case ssmHorizontal:
+                        if (mLineScaleH<0)
+                           mLineScaleH =
+                              sqrt( mMatrix.m10*mMatrix.m10 + mMatrix.m11*mMatrix.m11 );
+                        SetLineWidth(draw.mWidth*mLineScaleH);
+                        break;
+                  }
+
+               if (mPointsToo)
+                  glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
+            }
    
             glDrawArrays(sgOpenglType[draw.mType], draw.mFirst, draw.mCount );
          }
@@ -375,9 +410,8 @@ public:
       mBitmapSurface = 0;
    }
 
-   virtual void SetLineWidth(double inWidth,bool inPointsToo)
+   void SetLineWidth(double inWidth)
    {
-      mPointsToo = inPointsToo;
       if (inWidth!=mLineWidth)
       {
          double w = inWidth;
@@ -393,7 +427,7 @@ public:
          mLineWidth = inWidth;
          glLineWidth(w);
 
-         if (inPointsToo)
+         if (mPointsToo)
             glPointSize(inWidth);
       }
    }
@@ -407,6 +441,10 @@ public:
 
 
    Matrix mMatrix;
+   double mLineScaleV;
+   double mLineScaleH;
+   double mLineScaleNormal;
+
    Rect mViewport;
    WinDC mDC;
    GLCtx mOGLCtx;
