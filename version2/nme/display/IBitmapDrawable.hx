@@ -2,7 +2,7 @@ package nme.display;
 
 interface IBitmapDrawable
 {
-   public function drawToSurface(inSurface : Dynamic,
+   public function nmeDrawToSurface(inSurface : Dynamic,
                matrix:nme.geom.Matrix,
                colorTransform:nme.geom.ColorTransform,
                blendMode:String,
