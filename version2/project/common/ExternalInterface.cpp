@@ -12,6 +12,22 @@
 namespace nme
 {
 
+static int _id_type = val_id("type");
+static int _id_x = val_id("x");
+static int _id_y = val_id("y");
+static int _id_width = val_id("width");
+static int _id_height = val_id("height");
+static int _id_value = val_id("value");
+static int _id_id = val_id("id");
+static int _id_flags = val_id("flags");
+static int _id_a = val_id("a");
+static int _id_b = val_id("b");
+static int _id_c = val_id("c");
+static int _id_d = val_id("d");
+static int _id_tx = val_id("tx");
+static int _id_ty = val_id("ty");
+
+
 vkind gObjectKind = alloc_kind();
 
 static void release_object(value inValue)
@@ -30,6 +46,19 @@ value ObjectToAbstract(Object *inObject)
    value result = alloc_abstract(gObjectKind,inObject);
    val_gc(result,release_object);
    return result;
+}
+
+void FromValue(Matrix &outMatrix, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outMatrix.m00 = val_number( val_field(inValue,_id_a) );
+      outMatrix.m01 = val_number( val_field(inValue,_id_c) );
+      outMatrix.m10 = val_number( val_field(inValue,_id_b) );
+      outMatrix.m11 = val_number( val_field(inValue,_id_d) );
+      outMatrix.mtx = val_number( val_field(inValue,_id_tx) );
+      outMatrix.mty = val_number( val_field(inValue,_id_ty) );
+   }
 }
 
 
@@ -201,15 +230,6 @@ value nme_set_stage_poll_method(value inStage, value inMethod)
 }
 
 DEFINE_PRIM(nme_set_stage_poll_method,2);
-
-static int _id_type = val_id("type");
-static int _id_x = val_id("x");
-static int _id_y = val_id("y");
-static int _id_width = val_id("width");
-static int _id_height = val_id("height");
-static int _id_value = val_id("value");
-static int _id_id = val_id("id");
-static int _id_flags = val_id("flags");
 
 void external_handler( nme::Event &ioEvent, void *inUserData )
 {
@@ -414,6 +434,22 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
 
+value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
+     value inRepeat, value inSmooth)
+{
+   Graphics *gfx;
+   Surface  *surface;
+   if (AbstractToObject(inGfx,gfx) && AbstractToObject(inBMP,surface) )
+   {
+      Matrix matrix;
+      FromValue(matrix,inMatrix);
+      gfx->beginBitmapFill( surface, matrix, val_bool(inRepeat), val_bool(inSmooth) );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_begin_bitmap_fill,5);
+
+
 
 value nme_gfx_end_fill(value inGfx)
 {
@@ -509,6 +545,31 @@ value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, valu
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_draw_ellipse,5);
+
+value nme_gfx_draw_rect(value inGfx,value inX, value inY, value inWidth, value inHeight)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      gfx->drawRect( val_number(inX), val_number(inY), val_number(inWidth), val_number(inHeight) );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_rect,5);
+
+
+value nme_gfx_draw_round_rect(value *arg, int args)
+{
+   enum { aGfx, aX, aY, aW, aH, aRx, aRy, aSIZE };
+   Graphics *gfx;
+   if (AbstractToObject(arg[aGfx],gfx))
+   {
+      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aRx]), val_number(arg[aRy]) );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
+
 
 
 value nme_gfx_draw_data(value inGfx,value inData)
@@ -965,7 +1026,7 @@ DEFINE_PRIM(nme_bitmap_data_fill,4);
 
 value nme_bitmap_data_load(value inFilename)
 {
-   Surface *surface = Surface::Load(val_wstring(inFilename));
+   Surface *surface = Surface::Load(val_os_string(inFilename));
    if (surface)
    {
       value result = ObjectToAbstract(surface);

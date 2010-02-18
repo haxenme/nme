@@ -17,6 +17,7 @@ class DisplayObject extends nme.events.EventDispatcher
    public var height(nmeGetHeight,nmeSetHeight): Float;
 
    var nmeHandle:Dynamic;
+   var nmeGraphicsCache:Graphics;
    var nmeParent:DisplayObjectContainer;
    var nmeName:String;
    var nmeID:Int;
@@ -33,7 +34,9 @@ class DisplayObject extends nme.events.EventDispatcher
 
    public function nmeGetGraphics() : nme.display.Graphics
    {
-      return new nme.display.Graphics( nme_display_object_get_grapics(nmeHandle) );
+      if (nmeGraphicsCache==null)
+         nmeGraphicsCache = new nme.display.Graphics( nme_display_object_get_grapics(nmeHandle) );
+      return nmeGraphicsCache;
    }
 
    public function nmeGetStage() : nme.display.Stage

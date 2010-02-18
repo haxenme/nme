@@ -72,7 +72,7 @@ public static function main()
 #if flash
    new Sample();
 #else
-   Lib.init(320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.init(320,480,60,0xccccff,(Lib.HARDWARE) | Lib.RESIZABLE);
 
    new Sample();
 

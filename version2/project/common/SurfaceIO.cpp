@@ -104,9 +104,9 @@ static Surface *TryJPEG(FILE *inFile)
 
 namespace nme {
 
-Surface *Surface::Load(const wchar_t *inFilename)
+Surface *Surface::Load(const OSChar *inFilename)
 {
-   FILE *file = _wfopen(inFilename,L"rb");
+   FILE *file = OpenRead(inFilename);
    if (!file)
       return 0;
 

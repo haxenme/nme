@@ -14,6 +14,8 @@ public function new()
 
    var data = nme.display.BitmapData.load("Image.jpg");
    trace(data.width + "x" + data.height);
+   var bmp = new nme.display.Bitmap(data);
+   addChild(bmp);
 }
 
 

@@ -2,6 +2,7 @@
 #define NME_SURFACE_H
 
 #include <Graphics.h>
+#include <Utils.h>
 
 // ---- Surface API --------------
 
@@ -30,7 +31,7 @@ public:
    Surface() : mTexture(0) { };
 
    // Implementation depends on platform.
-   static Surface *Load(const wchar_t *inFilename);
+   static Surface *Load(const OSChar *inFilename);
 
    Surface *IncRef() { mRefCount++; return this; }
 

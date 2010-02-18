@@ -10,21 +10,21 @@ public:
    HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
    {
       mElement.mColour = 0xffffffff;
-		if (inJob.mFill)
-		{
+      if (inJob.mFill)
+      {
          mElement.mType = ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
          SetFill(inJob.mFill);
-		}
-		else
-		{
+      }
+      else
+      {
          mElement.mType = ptLineStrip;
-			GraphicsStroke *stroke = inJob.mStroke;
+         GraphicsStroke *stroke = inJob.mStroke;
          mElement.mScaleMode = stroke->scaleMode;
          mElement.mWidth = stroke->thickness;
          SetFill(stroke->fill);
-		}
+      }
       mElement.mFirst = 0;
       mElement.mCount = 0;
 
@@ -32,7 +32,7 @@ public:
       mArrays = &ioData.GetArrays(mSurface);
 
       AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
-					 &inPath.data[inJob.mData0], inJob.mFill);
+                &inPath.data[inJob.mData0], inJob.mFill);
    }
 
   
@@ -59,6 +59,12 @@ public:
              mTextureMapper = grad->matrix.Inverse();
 
              return true;
+          }
+          else
+          {
+             GraphicsBitmapFill *bmp = inFill->AsBitmapFill();
+             mTextureMapper = bmp->matrix.Inverse();
+             mSurface = bmp->bitmapData->IncRef();
           }
        }
        return false;
@@ -94,7 +100,7 @@ public:
 
 
    void AddObject(const uint8* inCommands, int inCount,
-						const float *inData,  bool inClose)
+                  const float *inData,  bool inClose)
    {
       Vertices &vertices = mArrays->mVertices;
       DrawElements &elements = mArrays->mElements;
@@ -110,10 +116,10 @@ public:
          switch(inCommands[i])
          {
             case pcBeginAt:
-					if (points>0)
+               if (points>0)
                {
                   point++;
-						continue;
+                  continue;
                }
             case pcMoveTo:
                if (points>1)

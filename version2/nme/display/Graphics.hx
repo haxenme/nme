@@ -1,5 +1,7 @@
 package nme.display;
 
+import nme.geom.Matrix;
+
 class Graphics
 {
    var nmeHandle:Dynamic;
@@ -12,6 +14,12 @@ class Graphics
    public function beginFill(color:Int, alpha:Float = 1.0)
    {
       nme_gfx_begin_fill(nmeHandle,color,alpha);
+   }
+
+   public function beginBitmapFill(bitmap:BitmapData, ?matrix:Matrix,
+               repeat:Bool = true, smooth:Bool = false)
+   {
+      nme_gfx_begin_bitmap_fill(nmeHandle,bitmap.nmeHandle,matrix,repeat,smooth);
    }
 
    public function endFill()
@@ -67,22 +75,35 @@ class Graphics
       nme_gfx_draw_ellipse(nmeHandle,inX,inY,inRadius,inRadius);
    }
 
+   public function drawRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float)
+   {
+      nme_gfx_draw_rect(nmeHandle,inX,inY,inWidth,inHeight);
+   }
+
+   public function drawRoundRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float,
+                                 inRadX:Float, ?inRadY:Float)
+   {
+      nme_gfx_draw_round_rect(nmeHandle,
+            inX,inY,inWidth,inHeight,inRadX,inRadY==null?inRadX:inRadY);
+   }
+
    public function drawGraphicsData(graphicsData:Array<IGraphicsData>):Void
-	{
-		var handles = new Array<Dynamic>();
-		for(datum in graphicsData)
-			handles.push(datum.nmeHandle);
-		nme_gfx_draw_data(nmeHandle,handles);
-	}
+   {
+      var handles = new Array<Dynamic>();
+      for(datum in graphicsData)
+         handles.push(datum.nmeHandle);
+      nme_gfx_draw_data(nmeHandle,handles);
+   }
 
    public function drawGraphicsDatum(graphicsDatum:IGraphicsData):Void
-	{
-		nme_gfx_draw_datum(nmeHandle,graphicsDatum.nmeHandle);
-	}
+   {
+      nme_gfx_draw_datum(nmeHandle,graphicsDatum.nmeHandle);
+   }
 
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
+   static var nme_gfx_begin_bitmap_fill = nme.Loader.load("nme_gfx_begin_bitmap_fill",5);
    static var nme_gfx_end_fill = nme.Loader.load("nme_gfx_end_fill",1);
    static var nme_gfx_line_style = nme.Loader.load("nme_gfx_line_style",-1);
 
@@ -93,4 +114,6 @@ class Graphics
    static var nme_gfx_draw_ellipse = nme.Loader.load("nme_gfx_draw_ellipse",5);
    static var nme_gfx_draw_data = nme.Loader.load("nme_gfx_draw_data",2);
    static var nme_gfx_draw_datum = nme.Loader.load("nme_gfx_draw_datum",2);
+   static var nme_gfx_draw_rect = nme.Loader.load("nme_gfx_draw_rect",5);
+   static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
 }
