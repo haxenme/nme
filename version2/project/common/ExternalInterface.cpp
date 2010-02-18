@@ -6,6 +6,7 @@
 #include <ExternalInterface.h>
 #include <Display.h>
 #include <TextField.h>
+#include <Surface.h>
 #include <Font.h>
 
 namespace nme
@@ -204,6 +205,8 @@ DEFINE_PRIM(nme_set_stage_poll_method,2);
 static int _id_type = val_id("type");
 static int _id_x = val_id("x");
 static int _id_y = val_id("y");
+static int _id_width = val_id("width");
+static int _id_height = val_id("height");
 static int _id_value = val_id("value");
 static int _id_id = val_id("id");
 static int _id_flags = val_id("flags");
@@ -887,8 +890,180 @@ TEXT_PROP(text,Text,alloc_wstring,val_wstring);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 
+// --- BitmapData -----------------------------------------------------
+
+
+value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)
+{
+   uint32 flags = val_int(inFlags);
+   PixelFormat format = (flags & 0x01) ? pfARGB : pfXRGB;
+   Surface *result = new SimpleSurface( val_int(inWidth),val_int(inHeight), format );
+   if (val_is_int(inRGB))
+   {
+      int rgb = val_int(inRGB);
+      int alpha = val_is_int(inA) ? val_int(inA) : 255;
+      result->Clear( rgb + (alpha<<24) );
+   }
+   return ObjectToAbstract(result);
+}
+DEFINE_PRIM(nme_bitmap_data_create,5);
+
+value nme_bitmap_data_width(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_int(surface->Width());
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_width,1);
+
+value nme_bitmap_data_height(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_int(surface->Height());
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_height,1);
+
+value nme_bitmap_data_clear(value inHandle,value inRGB)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      surface->Clear( val_int(inRGB) | 0xff000000 );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_clear,2);
+
+value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_bool( surface->Format() & pfHasAlpha );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
+
+value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+   {
+      if (val_is_null(inRect))
+         surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
+      else
+      {
+         Rect r(val_int(val_field(inRect,_id_x)),val_int(val_field(inRect,_id_y)),
+                val_int(val_field(inRect,_id_width)),val_int(val_field(inRect,_id_height)) );
+         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &r );
+      }
+   }
+   return alloc_null();
+
+}
+DEFINE_PRIM(nme_bitmap_data_fill,4);
+
+value nme_bitmap_data_load(value inFilename)
+{
+   Surface *surface = Surface::Load(val_wstring(inFilename));
+   if (surface)
+   {
+      value result = ObjectToAbstract(surface);
+      surface->DecRef();
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_load,1);
+
+value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
+
+
+value nme_bitmap_data_clone(value inSurface)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_clone,1);
+
+
+value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_copy,4);
+
+value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_pixels,3);
+
+value nme_bitmap_data_get_pixel(value inSurface, value inX, value inY)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_pixel,3);
+
+value nme_bitmap_data_get_pixel32(value inSurface, value inX,value inY)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_pixel32,3);
+
+value nme_bitmap_data_scroll(value inSurface, value inDX, value inDY)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_scroll,3);
+
+value nme_bitmap_data_set_pixel(value inSurface, value inX, value inY, value inRGB)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_pixel,4);
+
+value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value inRGBA)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_pixel32,4);
+
+value nme_bitmap_data_set_pixel32_ex(value inSurface, value inX, value inY, value inRGB,value inA)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_pixel32_ex,5);
+
+value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_bytes,3);
+
+value nme_render_surface_to_surface(value* arg, int nargs)
+{
+   // TODO:
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }
+
 

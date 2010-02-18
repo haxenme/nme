@@ -72,6 +72,7 @@
   <file name="common/Hardware.cpp"/>
   <file name="common/Filters.cpp"/>
   <file name="common/ExternalInterface.cpp"/>
+  <file name="common/SurfaceIO.cpp" unless="iphone"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>
@@ -100,6 +101,7 @@
   <files id="mac" if="macos"/>
   <files id="sdl" if="sdl"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
@@ -135,6 +137,7 @@
   <files id="mac" if="macos"/>
   <files id="sdl" if="sdl"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>

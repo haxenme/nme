@@ -24,13 +24,15 @@ public:
    Rect mDirtyRect;
 };
 
-class Surface
+class Surface : public Object
 {
 public:
-   Surface() : mTexture(0), mRefCount(0) { };
+   Surface() : mTexture(0) { };
+
+   // Implementation depends on platform.
+   static Surface *Load(const wchar_t *inFilename);
 
    Surface *IncRef() { mRefCount++; return this; }
-   void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
 
    virtual int Width() const =0;
    virtual int Height() const =0;
@@ -57,7 +59,6 @@ public:
 
 protected:
    Texture       *mTexture;
-   int           mRefCount;
    virtual       ~Surface();
 };
 
