@@ -7,15 +7,17 @@ namespace nme
 class HardwareBuilder
 {
 public:
-   HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
+   HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
+						 HardwareContext &inHardware)
    {
+		mTexture = 0;
       mElement.mColour = 0xffffffff;
       if (inJob.mFill)
       {
          mElement.mType = ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
-         SetFill(inJob.mFill);
+         SetFill(inJob.mFill,inHardware);
       }
       else
       {
@@ -23,7 +25,7 @@ public:
          GraphicsStroke *stroke = inJob.mStroke;
          mElement.mScaleMode = stroke->scaleMode;
          mElement.mWidth = stroke->thickness;
-         SetFill(stroke->fill);
+         SetFill(stroke->fill,inHardware);
       }
       mElement.mFirst = 0;
       mElement.mCount = 0;
@@ -36,7 +38,7 @@ public:
    }
 
   
-   bool SetFill(IGraphicsFill *inFill)
+   bool SetFill(IGraphicsFill *inFill,HardwareContext &inHardware)
    {
        mSurface = 0;
 
@@ -65,6 +67,7 @@ public:
              GraphicsBitmapFill *bmp = inFill->AsBitmapFill();
              mTextureMapper = bmp->matrix.Inverse();
              mSurface = bmp->bitmapData->IncRef();
+				 mTexture = mSurface->GetOrCreateTexture(inHardware);
           }
        }
        return false;
@@ -87,11 +90,18 @@ public:
       for(int i=t0;i<v0;i++)
       {
          UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
-         // The point will be in the (-819.2 ... 819.2) range...
-         p.x = (p.x +819.2) / 1638.4;
-         if (mGradReflect)
-            p.x *= 0.5;
-         p.y = 0;
+			if (mTexture)
+			{
+				p = mTexture->PixelToTex(p);
+			}
+			else
+			{
+				// The point will be in the (-819.2 ... 819.2) range...
+				p.x = (p.x +819.2) / 1638.4;
+				if (mGradReflect)
+					p.x *= 0.5;
+				p.y = 0;
+			}
          tex[i] = p;
        }
    }
@@ -195,13 +205,15 @@ public:
    HardwareArrays *mArrays;
    Surface      *mSurface;
    DrawElement mElement;
+   Texture     *mTexture;
    bool        mGradReflect;
    Matrix      mTextureMapper;
 };
 
-void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData)
+void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
+							 HardwareContext &inHardware)
 {
-   HardwareBuilder builder(inJob,inPath,ioData);
+   HardwareBuilder builder(inJob,inPath,ioData,inHardware);
 }
 
 

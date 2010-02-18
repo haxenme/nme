@@ -3,6 +3,7 @@ import nme.events.MouseEvent;
 import nme.events.Event;
 import nme.display.DisplayObject;
 import nme.display.IGraphicsData;
+import nme.display.BitmapData;
 
 class Sample extends nme.display.Sprite
 {

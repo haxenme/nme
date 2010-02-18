@@ -55,6 +55,7 @@ public:
                        uint32 inTint=0xffffff ) = 0;
 
    Texture *GetTexture() { return mTexture; }
+   Texture *GetOrCreateTexture(HardwareContext &inHardware);
    void Bind(HardwareContext &inHardware,int inSlot=0);
 
 

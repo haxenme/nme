@@ -117,7 +117,7 @@ public:
 		Matrix mapper = inMatrix;
 		mapper = mapper.Mult(mBitmap->matrix);
 		mMapper = mapper.Inverse();
-		mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
+		//mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
 		mMapper.Translate(0.5,0.5);
 
 		mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);

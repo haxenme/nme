@@ -55,6 +55,15 @@ void Surface::Bind(HardwareContext &inHardware,int inSlot)
    mTexture->Bind(this,inSlot);
 }
 
+Texture *Surface::GetOrCreateTexture(HardwareContext &inHardware)
+{
+   if (!mTexture)
+      mTexture = inHardware.CreateTexture(this);
+	return mTexture;
+}
+
+
+
 
 // --- SimpleSurface -------------------------------------------------------
 

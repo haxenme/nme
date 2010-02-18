@@ -78,12 +78,12 @@ static Surface *TryJPEG(FILE *inFile)
 
       jpeg_read_scanlines(&cinfo, &row_buf, 1);
 
-      uint8 *end = dest + cinfo.output_width;
+      uint8 *end = dest + cinfo.output_width*4;
       while (dest<end)
       {
-         dest[0] = src[red_idx];
+         dest[0] = src[blue_idx];
          dest[1] = src[1];
-         dest[2] = src[blue_idx];
+         dest[2] = src[red_idx];
          dest[3] = 0xff;
          dest+=4;
          src+=3;

@@ -235,8 +235,8 @@ class BitmapData implements IBitmapDrawable
 	// --- Properties -------------------------------------------------
 
 	function nmeGetRect() : Rectangle { return new Rectangle(0,0,width,height); }
-	function nmeGetWidth() : Int { return nme_bitmap_data_height(nmeHandle); }
-	function nmeGetHeight()  : Int { return nme_bitmap_data_width(nmeHandle); }
+	function nmeGetWidth() : Int { return nme_bitmap_data_width(nmeHandle); }
+	function nmeGetHeight()  : Int { return nme_bitmap_data_height(nmeHandle); }
 	function nmeGetTransparent() : Bool { return nme_bitmap_data_get_transparent(nmeHandle); }
 
 

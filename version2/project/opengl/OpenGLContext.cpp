@@ -49,13 +49,15 @@ public:
 
       int w = UpToPower2(mPixelWidth);
       int h = UpToPower2(mPixelHeight);
+		mTextureWidth = w;
+		mTextureHeight = h;
       bool is_pow2 = w==mPixelWidth && h==mPixelHeight;
 
       Surface *load = inSurface;
       if (!is_pow2)
       {
          int pw = inSurface->Format()==pfAlpha ? 1 : 4;
-         Surface *load = new SimpleSurface(w,h,inSurface->Format());
+         load = new SimpleSurface(w,h,inSurface->Format());
          load->IncRef();
          for(int y=0;y<mPixelHeight;y++)
          {
@@ -135,7 +137,7 @@ public:
    }
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
-      return UserPoint(inPixels.x/mPixelWidth, inPixels.y/mPixelHeight);
+      return UserPoint(inPixels.x/mTextureWidth, inPixels.y/mTextureHeight);
    }
 
 
@@ -143,6 +145,8 @@ public:
    bool mRepeat;
    int mPixelWidth;
    int mPixelHeight;
+   int mTextureWidth;
+   int mTextureHeight;
 };
 
 // --- HardwareContext Interface ---------------------------------------------------------

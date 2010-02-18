@@ -408,7 +408,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
      if (!mHardwareData)
          mHardwareData = new HardwareData();
      while(mBuiltHardware<mJobs.size())
-         BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData);
+         BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
 
      if (mHardwareData->mCalls.size())
         inTarget.mHardware->Render(inState,mHardwareData->mCalls);

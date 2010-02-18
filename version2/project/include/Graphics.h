@@ -492,7 +492,8 @@ public:
    virtual void EndBitmapRender()=0;
 };
 
-void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData);
+void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
+							 HardwareData &ioData, HardwareContext &inHardware);
 
 int UpToPower2(int inX);
 
