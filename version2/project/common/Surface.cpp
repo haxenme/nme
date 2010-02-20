@@ -7,15 +7,18 @@ namespace nme
 
 bool sgColourOrderSet = false;
 
+// 32 bit colours will either be
+//
+// 0xAARRGGBB  (argb = format used when "int" is passes)
+// 0xAABBGGRR  (b-r "swapped" - like windows bitmaps )
+//
+// And the ARGB structure is { uint8 c0,c1,c2,alpha }
+// In little-endian land, this is 0x alpha c2 c2 c1,
+//  "gC0IsRed" then means red is the LSB, ie "abgr" format.
+
 #ifdef IPHONE
-int sgC0Shift = 16;
-int sgC1Shift = 8;
-int sgC2Shift = 0;
 bool gC0IsRed = false;
 #else
-int sgC0Shift = 0;
-int sgC1Shift = 8;
-int sgC2Shift = 16;
 bool gC0IsRed = true;
 #endif
 
@@ -25,16 +28,6 @@ void HintColourOrder(bool inRedFirst)
    {
       sgColourOrderSet = true;
       gC0IsRed = inRedFirst;
-      if (inRedFirst)
-      {
-         sgC0Shift = 0;
-         sgC2Shift = 16;
-      }
-      else
-      {
-         sgC0Shift = 16;
-         sgC2Shift = 0;
-      }
    }
 }
 

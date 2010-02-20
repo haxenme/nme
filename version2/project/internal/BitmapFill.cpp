@@ -84,8 +84,8 @@ enum { EDGE_CLAMP, EDGE_REPEAT, EDGE_POW2 };
          } \
          else if (EDGE == EDGE_REPEAT) \
          { \
-            x = x % mWidth; \
-            y = y % mHeight; \
+            x = x % mWidth; if (x<0) x+=mWidth;\
+            y = y % mHeight; if (y<0) y+=mHeight;\
          }
 
 

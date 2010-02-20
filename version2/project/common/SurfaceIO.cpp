@@ -68,8 +68,8 @@ static Surface *TryJPEG(FILE *inFile)
 
    row_buf = (uint8 *)malloc(cinfo.output_width * 3);
 
-   int red_idx = gC0IsRed ? 0 : 2;
-   int blue_idx = 2-red_idx;
+   int c0_idx = gC0IsRed ? 0 : 2;
+   int c1_idx = 2-c0_idx;
 
    while (cinfo.output_scanline < cinfo.output_height)
    {
@@ -81,9 +81,9 @@ static Surface *TryJPEG(FILE *inFile)
       uint8 *end = dest + cinfo.output_width*4;
       while (dest<end)
       {
-         dest[0] = src[blue_idx];
+         dest[0] = src[c0_idx];
          dest[1] = src[1];
-         dest[2] = src[red_idx];
+         dest[2] = src[c1_idx];
          dest[3] = 0xff;
          dest+=4;
          src+=3;

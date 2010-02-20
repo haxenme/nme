@@ -67,10 +67,10 @@ public:
       mHardwareContext = 0;
       mHardwareSurface = 0;
       mOGLCtx = 0;
-      HintColourOrder(false);
       mPollingTimer = false;
 
       mIsHardware = inFlags & wfHardware;
+      HintColourOrder(mIsHardware);
       mPollMethod = pollAlways;
       sgAlwaysPollingStages.push_back(this);
 
