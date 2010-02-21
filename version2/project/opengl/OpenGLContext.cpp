@@ -73,16 +73,8 @@ public:
       glGenTextures(1, &mTextureID);
       glBindTexture(GL_TEXTURE_2D,mTextureID);
       mRepeat = true;
-      if (mRepeat)
-      {
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-      }
-      else
-      {
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-      }
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
       PixelFormat fmt = load->Format();
       GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
@@ -90,6 +82,7 @@ public:
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, load->Row(0) );
 
+		mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -135,6 +128,41 @@ public:
          mDirtyRect = Rect();
       }
    }
+
+	void BindFlags(bool inRepeat,bool inSmooth)
+	{
+      if (mRepeat!=inRepeat)
+		{
+			mRepeat = inRepeat;
+			if (mRepeat)
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			}
+		}
+
+		if (mSmooth!=inSmooth)
+		{
+			mSmooth = inSmooth;
+			if (mSmooth)
+			{
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else
+			{
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+		}
+
+	}
+
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
       return UserPoint(inPixels.x/mTextureWidth, inPixels.y/mTextureHeight);
@@ -143,6 +171,7 @@ public:
 
    GLuint mTextureID;
    bool mRepeat;
+   bool mSmooth;
    int mPixelWidth;
    int mPixelHeight;
    int mTextureWidth;
@@ -293,6 +322,7 @@ public:
 
 
       uint32 last_col = 0;
+      Texture *bound_texture = 0;
       for(int c=0;c<inCalls.size();c++)
       {
          HardwareArrays &arrays = *inCalls[c];
@@ -305,13 +335,16 @@ public:
          {
             glEnable(GL_TEXTURE_2D);
             arrays.mSurface->Bind(*this,0);
+				bound_texture = arrays.mSurface->GetTexture();
             const ColorTransform &t = *inState.mColourTransform;
             glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
+				last_col = -1;
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0].x);
          }
          else
          {
+				bound_texture = 0;
             glDisable(GL_TEXTURE_2D);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
@@ -321,13 +354,18 @@ public:
          {
             DrawElement draw = elements[e];
 
-            if (!tex && (c==0 || last_col!=draw.mColour))
+				if (bound_texture)
+				{
+					bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
+				}
+				else if (c==0 || last_col!=draw.mColour)
             {
                last_col = draw.mColour;
                glColor4ub(last_col>>16,last_col>>8,last_col,last_col>>24);
             }
+				
    
-            if ( (draw.mType == ptLineStrip) && draw.mCount>1)
+            if ( (draw.mPrimType == ptLineStrip) && draw.mCount>1)
             {
                if (draw.mWidth<=0)
                   SetLineWidth(1.0);
@@ -361,12 +399,12 @@ public:
                   glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
             }
    
-            glDrawArrays(sgOpenglType[draw.mType], draw.mFirst, draw.mCount );
+            glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
          }
       }
    }
 
-   void BeginBitmapRender(Surface *inSurface,uint32 inTint)
+   void BeginBitmapRender(Surface *inSurface,uint32 inTint,bool inRepeat,bool inSmooth)
    {
       if (!mUsingBitmapMatrix)
       {
@@ -382,6 +420,7 @@ public:
       mBitmapSurface = inSurface;
       glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
       inSurface->Bind(*this,0);
+		mBitmapTexture->BindFlags(inRepeat,inSmooth);
       mBitmapTexture = inSurface->GetTexture();
       glEnable(GL_TEXTURE_2D);
    }

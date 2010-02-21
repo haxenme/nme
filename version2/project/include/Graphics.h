@@ -435,7 +435,9 @@ enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip };
 
 struct DrawElement
 {
-   PrimType mType;
+   uint8    mPrimType;
+	bool     mBitmapRepeat;
+	bool     mBitmapSmooth;
    int      mFirst;
    int      mCount;
    uint32   mColour;
@@ -487,7 +489,7 @@ public:
 
    virtual class Texture *CreateTexture(class Surface *inSurface)=0;
    virtual void Render(const RenderState &inState, const HardwareCalls &inCalls )=0;
-   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0)=0;
+   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
 };

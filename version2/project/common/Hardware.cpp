@@ -14,14 +14,14 @@ public:
       mElement.mColour = 0xffffffff;
       if (inJob.mFill)
       {
-         mElement.mType = ptTriangleFan;
+         mElement.mPrimType = ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
          SetFill(inJob.mFill,inHardware);
       }
       else
       {
-         mElement.mType = ptLineStrip;
+         mElement.mPrimType = ptLineStrip;
          GraphicsStroke *stroke = inJob.mStroke;
          mElement.mScaleMode = stroke->scaleMode;
          mElement.mWidth = stroke->thickness;
@@ -40,34 +40,41 @@ public:
   
    bool SetFill(IGraphicsFill *inFill,HardwareContext &inHardware)
    {
-       mSurface = 0;
+      mSurface = 0;
+		mElement.mBitmapRepeat = true;
+		mElement.mBitmapSmooth = false;
 
-       GraphicsSolidFill *solid = inFill->AsSolidFill();
-       if (solid)
-       {
-           mElement.mColour = solid->mRGB.ival;
-       }
-       else
-       {
-          GraphicsGradientFill *grad = inFill->AsGradientFill();
-          if (grad)
-          {
-             mGradReflect = grad->spreadMethod == smReflect;
-             int w = mGradReflect ? 512 : 256;
-             mSurface = new SimpleSurface(w,1,pfARGB);
-             mSurface->IncRef();
-             grad->FillArray( (ARGB *)mSurface->GetBase(), false);
+      GraphicsSolidFill *solid = inFill->AsSolidFill();
+      if (solid)
+      {
+          mElement.mColour = solid->mRGB.ival;
+      }
+      else
+      {
+         GraphicsGradientFill *grad = inFill->AsGradientFill();
+         if (grad)
+         {
+            mGradReflect = grad->spreadMethod == smReflect;
+            int w = mGradReflect ? 512 : 256;
+            mSurface = new SimpleSurface(w,1,pfARGB);
+            mSurface->IncRef();
+            grad->FillArray( (ARGB *)mSurface->GetBase(), false);
 
-             mTextureMapper = grad->matrix.Inverse();
+				mElement.mBitmapRepeat = grad->spreadMethod!=smPad;
+				mElement.mBitmapSmooth = true;
 
-             return true;
-          }
-          else
-          {
-             GraphicsBitmapFill *bmp = inFill->AsBitmapFill();
-             mTextureMapper = bmp->matrix.Inverse();
-             mSurface = bmp->bitmapData->IncRef();
-				 mTexture = mSurface->GetOrCreateTexture(inHardware);
+            mTextureMapper = grad->matrix.Inverse();
+
+            return true;
+         }
+         else
+         {
+            GraphicsBitmapFill *bmp = inFill->AsBitmapFill();
+            mTextureMapper = bmp->matrix.Inverse();
+            mSurface = bmp->bitmapData->IncRef();
+				mTexture = mSurface->GetOrCreateTexture(inHardware);
+				mElement.mBitmapRepeat = bmp->repeat;
+				mElement.mBitmapSmooth = bmp->smooth;
           }
        }
        return false;

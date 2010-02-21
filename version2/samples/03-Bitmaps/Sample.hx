@@ -17,13 +17,25 @@ public function new()
    //var bmp = new nme.display.Bitmap(data);
    //addChild(bmp);
 	var gfx = graphics;
+	gfx.lineStyle(1,0x000000);
 	var mtx = new nme.geom.Matrix();
-	mtx.rotate(0.1);
-	trace(mtx);
-	gfx.beginBitmapFill(data,mtx,true,false);
+	mtx.translate(-200,-100);
+	mtx.scale(5,5);
+	gfx.beginBitmapFill(data,mtx,true,true);
 	gfx.drawRect(0,0,200,200);
+
+	gfx.beginBitmapFill(data,mtx,false,false);
+	gfx.drawRect(100,100,200,200);
+
 	x = 100;
 	y = 100;
+
+   var me = this;
+	stage.addEventListener( nme.events.Event.ENTER_FRAME, function(_)
+	   {
+		   me.rotation = me.rotation + 0.01;
+		} );
+
 }
 
 
