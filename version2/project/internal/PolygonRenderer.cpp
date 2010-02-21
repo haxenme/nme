@@ -764,10 +764,18 @@ public:
                   point++;
                   continue;
                }
-               if (points>1 && prev!=*point)
+               if (points>1)
                {
-                  EndCap(first,-first_perp);
-                  EndCap(prev,prev_perp);
+                  if (points>2 && *point==first)
+                  {
+                     AddJoint(first,prev_perp,first_perp);
+                     points = 1;
+                  }
+                  else
+                  {
+                     EndCap(first,-first_perp);
+                     EndCap(prev,prev_perp);
+                  }
                }
                prev = *point;
                first = *point++;
@@ -780,6 +788,11 @@ public:
                {
                if (points>0)
                {
+                  if (*point==prev)
+                  {
+                     point++;
+                     continue;
+                  }
                   UserPoint perp = (*point - prev).Perp(perp_len);
                   if (points>1)
                      AddJoint(prev,prev_perp,perp);

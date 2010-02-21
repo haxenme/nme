@@ -8,6 +8,13 @@
 #include <TextField.h>
 #include <Surface.h>
 #include <Font.h>
+#include <algorithm>
+
+#ifdef min
+#undef min
+#undef max
+#endif
+
 
 namespace nme
 {
@@ -476,7 +483,9 @@ value nme_gfx_begin_gradient_fill(value *arg, int args)
       gfx->drawGraphicsDatum(grad);
       grad->DecRef();
    }
+	return alloc_null();
 }
+
 DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
 
 value nme_gfx_end_fill(value inGfx)
