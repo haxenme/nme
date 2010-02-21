@@ -47,7 +47,7 @@ public:
       GraphicsSolidFill *solid = inFill->AsSolidFill();
       if (solid)
       {
-          mElement.mColour = solid->mRGB.ival;
+          mElement.mColour = solid->mRGB.ToInt();
       }
       else
       {

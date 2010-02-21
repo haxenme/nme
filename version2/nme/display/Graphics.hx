@@ -22,6 +22,22 @@ class Graphics
       nme_gfx_begin_bitmap_fill(nmeHandle,bitmap.nmeHandle,matrix,repeat,smooth);
    }
 
+   public function beginGradientFill(type : GradientType,
+                 colors : Array<Dynamic>,
+                 alphas : Array<Dynamic>,
+                 ratios : Array<Dynamic>,
+                 ?matrix : Matrix,
+                 ?spreadMethod : Null<SpreadMethod>,
+                 ?interpolationMethod : Null<InterpolationMethod>,
+                 focalPointRatio:Float = 0.0 ) : Void
+   {
+      nme_gfx_begin_gradient_fill(nmeHandle,Type.enumIndex(type),
+                        colors,alphas,ratios, matrix,
+                        spreadMethod ==null ? 0 : Type.enumIndex(spreadMethod),
+                        interpolationMethod ==null ? 0 : Type.enumIndex(interpolationMethod),
+                        focalPointRatio);
+   }
+
    public function endFill()
    {
       nme_gfx_end_fill(nmeHandle);
@@ -42,6 +58,7 @@ class Graphics
          joints==null ?  0 : Type.enumIndex(joints),
          miterLimit );
    }
+
 
 
 
@@ -104,6 +121,7 @@ class Graphics
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
    static var nme_gfx_begin_bitmap_fill = nme.Loader.load("nme_gfx_begin_bitmap_fill",5);
+   static var nme_gfx_begin_gradient_fill = nme.Loader.load("nme_gfx_begin_gradient_fill",-1);
    static var nme_gfx_end_fill = nme.Loader.load("nme_gfx_end_fill",1);
    static var nme_gfx_line_style = nme.Loader.load("nme_gfx_line_style",-1);
 

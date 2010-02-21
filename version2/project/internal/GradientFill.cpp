@@ -71,6 +71,7 @@ public:
    {
       mIsSwapped = inSwap;
       mGrad->FillArray(mColours,inSwap);
+      mIsInit = true;
    }
 
    virtual void DoRender(const AlphaMask &inMask, const RenderTarget &inTarget, const RenderState &inState, int inTX,int inTY) = 0;

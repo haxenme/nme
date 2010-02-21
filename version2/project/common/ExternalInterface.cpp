@@ -450,6 +450,34 @@ value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
 DEFINE_PRIM(nme_gfx_begin_bitmap_fill,5);
 
 
+value nme_gfx_begin_gradient_fill(value *arg, int args)
+{
+   enum { aGfx, aType, aColors, aAlphas, aRatios, aMatrix, aSpreadMethod, aInterpMethod,
+          aFocal, aSIZE };
+
+   Graphics *gfx;
+   if (AbstractToObject(arg[aGfx],gfx))
+   {
+      Matrix matrix;
+      FromValue(matrix,arg[aMatrix]);
+      GraphicsGradientFill *grad = new GraphicsGradientFill(val_int(arg[aType]), 
+         matrix,
+         (SpreadMethod)val_int( arg[aSpreadMethod]),
+         (InterpolationMethod)val_int( arg[aInterpMethod]),
+         val_number( arg[aFocal] ) );
+      int n = std::min( val_array_size(arg[aColors]),
+           std::min(val_array_size(arg[aAlphas]), val_array_size(arg[aRatios]) ) );
+      for(int i=0;i<n;i++)
+         grad->AddStop( val_int( val_array_i( arg[aColors], i ) ),
+                        val_number( val_array_i( arg[aAlphas], i ) ),
+                        val_number( val_array_i( arg[aRatios], i ) )/255.0 );
+
+      grad->IncRef();
+      gfx->drawGraphicsDatum(grad);
+      grad->DecRef();
+   }
+}
+DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
 
 value nme_gfx_end_fill(value inGfx)
 {

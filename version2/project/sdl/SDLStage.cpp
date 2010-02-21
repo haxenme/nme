@@ -283,7 +283,6 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
       }
    }
 
-	printf("Screen red mask %06x\n", screen->format->Rmask );
    HintColourOrder( opengl || screen->format->Rmask==0xff );
 
    #ifndef IPHONE

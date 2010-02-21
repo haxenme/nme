@@ -170,31 +170,32 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
          endFill();
          break;
       case gdtSolidFill:
+      case gdtGradientFill:
          Flush(false,true);
          if (mFillJob.mFill)
             mFillJob.mFill->DecRef();
-         mFillJob.mFill = inData->AsSolidFill();
+         mFillJob.mFill = inData->AsIFill();
          mFillJob.mFill->IncRef();
          if (mFillJob.mCommand0 == mPathData->commands.size())
             mPathData->initPosition(mCursor);
          break;
       case gdtStroke:
-			{
+         {
          Flush(true,false);
-			if (mLineJob.mStroke)
-			{
-				mLineJob.mStroke->DecRef();
-				mLineJob.mStroke = 0;
-			}
-			GraphicsStroke *stroke = inData->AsStroke();
-			if (stroke->thickness>=0 && stroke->fill)
-			{
-				mLineJob.mStroke = stroke;
-				mLineJob.mStroke->IncRef();
-				if (mLineJob.mCommand0 == mPathData->commands.size())
-					mPathData->initPosition(mCursor);
-			}
-			}
+         if (mLineJob.mStroke)
+         {
+            mLineJob.mStroke->DecRef();
+            mLineJob.mStroke = 0;
+         }
+         GraphicsStroke *stroke = inData->AsStroke();
+         if (stroke->thickness>=0 && stroke->fill)
+         {
+            mLineJob.mStroke = stroke;
+            mLineJob.mStroke->IncRef();
+            if (mLineJob.mCommand0 == mPathData->commands.size())
+               mPathData->initPosition(mCursor);
+         }
+         }
          break;
 
    }
@@ -419,7 +420,9 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       {
          GraphicsJob &job = mJobs[i];
          if (!job.mSoftwareRenderer)
+         {
             job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
+         }
          job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }

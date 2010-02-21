@@ -117,8 +117,8 @@ struct GradStop
 };
 typedef QuickVec<GradStop>  Stops;
 
-enum InterpolationMethod {  imLinearRGB, imRGB };
-enum SpreadMethod {  smPad, smReflect, smRepeat };
+enum InterpolationMethod {  imRGB, imLinearRGB };
+enum SpreadMethod { smPad, smRepeat, smReflect };
 
 class GraphicsGradientFill : public IGraphicsFill
 {

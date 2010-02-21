@@ -315,9 +315,9 @@ public:
 
 
    PolygonRender(const GraphicsJob &inJob, const GraphicsPath &inPath,IGraphicsFill *inFill) :
-		mCommands(inPath.commands), mData(inPath.data),
-		mCommand0(inJob.mCommand0), mData0(inJob.mData0),
-		mCommandCount(inJob.mCommandCount), mDataCount(inJob.mDataCount)
+      mCommands(inPath.commands), mData(inPath.data),
+      mCommand0(inJob.mCommand0), mData0(inJob.mData0),
+      mCommandCount(inJob.mCommandCount), mDataCount(inJob.mDataCount)
    {
       mBuildExtent = 0;
       mAlphaMask = 0;
@@ -364,33 +364,33 @@ public:
       if (points!=mTransformed.size() || inTransform!=mTransform)
       {
          mTransform = inTransform;
-			mTransMat = *inTransform.mMatrix;
-			mTransform.mMatrix = &mTransMat;
-			mTransform.mMatrix3D = &mTransMat;
-			mTransScale9 = *inTransform.mScale9;
-			mTransform.mScale9 = &mTransScale9;
+         mTransMat = *inTransform.mMatrix;
+         mTransform.mMatrix = &mTransMat;
+         mTransform.mMatrix3D = &mTransMat;
+         mTransScale9 = *inTransform.mScale9;
+         mTransform.mScale9 = &mTransScale9;
          mTransformed.resize(points);
-			UserPoint *src= (UserPoint *)&mData[ mData0 ];
+         UserPoint *src= (UserPoint *)&mData[ mData0 ];
          for(int i=0;i<points;i++)
             mTransformed[i] = mTransform.Apply(src[i].x,src[i].y);
-			AlignOrthogonal();
+         AlignOrthogonal();
       }
    }
 
-	void Align(UserPoint &ioP0, UserPoint &ioP1)
-	{
-		if (ioP0!=ioP1)
-		{
-			if (ioP0.x == ioP1.x)
-			{
-				ioP0.x = ioP1.x = floor(ioP0.x) + 0.5;
-			}
-			else if (ioP0.y == ioP1.y)
-			{
-				ioP0.y = ioP1.y = floor(ioP0.y) + 0.5;
-			}
-		}
-	}
+   void Align(UserPoint &ioP0, UserPoint &ioP1)
+   {
+      if (ioP0!=ioP1)
+      {
+         if (ioP0.x == ioP1.x)
+         {
+            ioP0.x = ioP1.x = floor(ioP0.x) + 0.5;
+         }
+         else if (ioP0.y == ioP1.y)
+         {
+            ioP0.y = ioP1.y = floor(ioP0.y) + 0.5;
+         }
+      }
+   }
 
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
@@ -429,11 +429,11 @@ public:
          delete mSpanRect;
       }
 
-		if (inTarget.mPixelFormat==pfAlpha)
-		{
-			mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
-		}
-		else
+      if (inTarget.mPixelFormat==pfAlpha)
+      {
+         mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
+      }
+      else
          mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
 
       return true;
@@ -519,45 +519,45 @@ public:
       mBuildExtent->Add( p2 );
    }
 
-	bool HitTest(const UserPoint &inPoint,bool &outResult)
-	{
-		mHitTest = inPoint;
-		mHitsLeft = 0;
+   bool HitTest(const UserPoint &inPoint,bool &outResult)
+   {
+      mHitTest = inPoint;
+      mHitsLeft = 0;
       Iterate(itHitTest, Matrix());
-		outResult = mHitsLeft & 0x01;
-		return true;
-	}
+      outResult = mHitsLeft & 0x01;
+      return true;
+   }
 
-	void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
+   void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
    {
       if ( (inP0.y < mHitTest.y) != (inP1.y< mHitTest.y) )
-		{
-			double l1 = (mHitTest.y-inP0.y) / (inP1.y-inP0.y);
-			double x = inP0.x  + l1 * (inP1.x - inP0.x);
-			if (x<mHitTest.x)
-				mHitsLeft++;
-		}
+      {
+         double l1 = (mHitTest.y-inP0.y) / (inP1.y-inP0.y);
+         double x = inP0.x  + l1 * (inP1.x - inP0.x);
+         if (x<mHitTest.x)
+            mHitsLeft++;
+      }
    }
 
 
    virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual void AlignOrthogonal()  { }
 
-	UserPoint           mHitTest;
-	int                 mHitsLeft;
+   UserPoint           mHitTest;
+   int                 mHitsLeft;
    Transform           mTransform;
-	Matrix              mTransMat;
-	Scale9              mTransScale9;
+   Matrix              mTransMat;
+   Scale9              mTransScale9;
    QuickVec<UserPoint> mTransformed;
    Filler              *mFiller;
    Extent2DF           *mBuildExtent;
    SpanRect            *mSpanRect;
    AlphaMask           *mAlphaMask;
 
-	const QuickVec<uint8> &mCommands;
+   const QuickVec<uint8> &mCommands;
    const QuickVec<float> &mData;
 
-	int             mCommand0;
+   int             mCommand0;
    int             mData0;
    int             mCommandCount;
    int             mDataCount;
@@ -570,14 +570,14 @@ class LineRender : public PolygonRender
    typedef void (LineRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
    ItFunc ItLine;
    double mDTheta;
-	GraphicsStroke *mStroke;
+   GraphicsStroke *mStroke;
 
 public:
    LineRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
-		 PolygonRender(inJob, inPath, inJob.mStroke->fill)
-	{
-		mStroke = inJob.mStroke;
-	}
+       PolygonRender(inJob, inPath, inJob.mStroke->fill)
+   {
+      mStroke = inJob.mStroke;
+   }
 
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
@@ -708,7 +708,7 @@ public:
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
                inMode==itCreateRenderer ? &LineRender::BuildSolid :
-							  &LineRender::BuildHitTest;
+                       &LineRender::BuildHitTest;
 
       // Convert line data to solid data
       double perp_len = mStroke->thickness*0.5;
@@ -728,17 +728,17 @@ public:
             break;
       }
 
-		// This may be too fine ....
+      // This may be too fine ....
       mDTheta = M_PI/perp_len;
 
       int n = mCommandCount;
       UserPoint *point = 0;
 
-		if (inMode==itHitTest)
-		{
-			point = (UserPoint *)&mData[ mData0 ];
-		}
-		else
+      if (inMode==itHitTest)
+      {
+         point = (UserPoint *)&mData[ mData0 ];
+      }
+      else
          point = &mTransformed[0];
 
       // It is a loop if the path has no breaks, it has more than 2 points
@@ -899,21 +899,21 @@ public:
    }
 
    void AlignOrthogonal()
-	{
+   {
       int n = mCommandCount;
       UserPoint *point = &mTransformed[0];
 
-		if (mStroke->pixelHinting)
-		{
-			n = mTransformed.size();
-			for(int i=0;i<n;i++)
-			{
-				UserPoint &p = mTransformed[i];
-				p.x = floor(p.x) + 0.5;
-				p.y = floor(p.y) + 0.5;
-			}
-			return;
-		}
+      if (mStroke->pixelHinting)
+      {
+         n = mTransformed.size();
+         for(int i=0;i<n;i++)
+         {
+            UserPoint &p = mTransformed[i];
+            p.x = floor(p.x) + 0.5;
+            p.y = floor(p.y) + 0.5;
+         }
+         return;
+      }
 
       UserPoint *first = 0;
       UserPoint *prev = 0;
@@ -925,25 +925,25 @@ public:
                point++;
             case pcBeginAt:
             case pcMoveTo:
-					if (first)
-						Align(*first,*point);
+               if (first)
+                  Align(*first,*point);
                first = point;
                break;
 
             case pcWideLineTo:
                point++;
             case pcLineTo:
-					if (prev)
-						Align(*prev,*point);
+               if (prev)
+                  Align(*prev,*point);
                break;
 
             case pcCurveTo:
-					point++;
+               point++;
                break;
          }
-			prev = point++;
+         prev = point++;
       }
-	}
+   }
 
 
 };
@@ -953,10 +953,10 @@ class SolidRender :public PolygonRender
 {
 
 public:
-	SolidRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
-		 PolygonRender(inJob, inPath, inJob.mFill)
-	{
-	}
+   SolidRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
+       PolygonRender(inJob, inPath, inJob.mFill)
+   {
+   }
 
 
 
@@ -965,9 +965,9 @@ public:
       int n = mCommandCount;
       const UserPoint *point = 0;
 
-		if (inMode==itHitTest)
-			point = (const UserPoint *)&mData[ mData0 ];
-		else
+      if (inMode==itHitTest)
+         point = (const UserPoint *)&mData[ mData0 ];
+      else
          point = &mTransformed[0];
 
 
@@ -1005,7 +1005,7 @@ public:
 
          typedef void (PolygonRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
          ItFunc func = inMode==itCreateRenderer ? &PolygonRender::BuildSolid :
-					   &PolygonRender::BuildHitTest;
+                  &PolygonRender::BuildHitTest;
 
          for(int i=0;i<n;i++)
          {
@@ -1050,9 +1050,9 @@ public:
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
-	if (inJob.mStroke)
+   if (inJob.mStroke)
       return new LineRender(inJob,inPath);
-	else
+   else
       return new SolidRender(inJob,inPath);
 }
 

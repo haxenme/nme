@@ -4,6 +4,9 @@ import nme.events.Event;
 import nme.display.DisplayObject;
 import nme.display.IGraphicsData;
 import nme.display.BitmapData;
+import nme.display.GradientType;
+import nme.display.SpreadMethod;
+import nme.geom.Matrix;
 
 class Sample extends nme.display.Sprite
 {
@@ -26,22 +29,33 @@ public function new()
    var shape = new nme.display.Sprite();
    var gfx = shape.graphics;
 
-	var vec =  new nme.Vector<IGraphicsData>();
-	gfx.drawGraphicsDatum( new nme.display.GraphicsSolidFill(0xffff00) );
-	gfx.drawGraphicsDatum( new nme.display.GraphicsStroke(6,false,nme.display.LineScaleMode.NORMAL,
-	    nme.display.CapsStyle.ROUND,
-	    nme.display.JointStyle.ROUND, 0.0,
-	    new nme.display.GraphicsSolidFill(0x000000) ) );
+   gfx.drawGraphicsDatum( new nme.display.GraphicsSolidFill(0xffff00) );
+   gfx.drawGraphicsDatum( new nme.display.GraphicsStroke(6,false,nme.display.LineScaleMode.NORMAL,
+      nme.display.CapsStyle.ROUND,
+      nme.display.JointStyle.ROUND, 0.0,
+      new nme.display.GraphicsSolidFill(0x000000) ) );
 
-	var path = new nme.display.GraphicsPath();
+   var path = new nme.display.GraphicsPath();
    path.moveTo(0,0);
    path.lineTo(100,0);
    path.lineTo(100,100);
    path.lineTo(0,100);
    path.lineTo(0,0);
 
-	vec.push(path);
-	gfx.drawGraphicsData( vec );
+   var vec =  new nme.Vector<IGraphicsData>();
+   vec.push(path);
+   gfx.drawGraphicsData( vec );
+
+      var colours = [ 0xffffff, 0xff0000, 0x800000, 0x000000 ];
+      var alphas = [ 1.0, 1.0, 1.0, 1.0 ];
+      var ratios = [ 0, 10, 200, 255 ];
+      var mtx = new Matrix();
+      //mtx.createGradientBox(100,100,Math.PI/6,150,100);
+      mtx.createGradientBox(150,150,0,125,75);
+      gfx.beginGradientFill(GradientType.RADIAL,
+                       colours, alphas, ratios, mtx, SpreadMethod.REPEAT, 0.45);
+      gfx.drawCircle(200,150,75);
+
 
    shape.x = 50;
    shape.y = 50;
@@ -63,7 +77,7 @@ public function new()
           fps.pop();
       // trace(" Fps : " + ((fps.length-1)/( fps[fps.length-1] - fps[0] )) );
       var x = shape.x;
-      shape.x = x>300 ? 0 : x+1;
+      //shape.x = x>300 ? 0 : x+1;
       });
 }
 
@@ -73,7 +87,7 @@ public static function main()
 #if flash
    new Sample();
 #else
-   Lib.init(320,480,60,0xccccff,(Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.init(320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
 
    new Sample();
 

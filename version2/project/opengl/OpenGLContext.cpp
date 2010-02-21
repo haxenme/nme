@@ -420,8 +420,8 @@ public:
       mBitmapSurface = inSurface;
       glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
       inSurface->Bind(*this,0);
-		mBitmapTexture->BindFlags(inRepeat,inSmooth);
       mBitmapTexture = inSurface->GetTexture();
+      mBitmapTexture->BindFlags(inRepeat,inSmooth);
       glEnable(GL_TEXTURE_2D);
    }
 

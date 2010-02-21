@@ -80,6 +80,15 @@ struct ARGB
       a = alpha<0 ? 0 : alpha >255 ? 255 : alpha;
    }
 
+   inline int ToInt() const
+   {
+      if (gC0IsRed)
+         return (ival & 0xff00ff00) | (c0<<16) | c2;
+
+      return ival;
+   }
+
+
    inline void Set(int inVal) { ival = inVal; }
 
    inline void SetRGB(int inVal)

@@ -1,4 +1,4 @@
 package nme.display;
 
-enum SpreadMethod { REPEAT; REFLECT; PAD; }
+enum SpreadMethod { PAD; REPEAT; REFLECT; }
 
