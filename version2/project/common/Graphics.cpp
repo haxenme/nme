@@ -470,13 +470,14 @@ RenderState::RenderState(Surface *inSurface,int inAA)
 {
    mTransform.mAAFactor = inAA;
    mMask = 0;
-   mBitmapPhase = false;
+   mPhase = rpRender;
    mAlpha_LUT = 0;
    mC0_LUT = 0;
    mC1_LUT = 0;
    mC2_LUT = 0;
    mColourTransform = &sgIdentityColourTransform;
    mRoundSizeToPOW2 = false;
+   mHitResult = 0;
    if (inSurface)
    {
       mClipRect = Rect(inSurface->Width(),inSurface->Height());

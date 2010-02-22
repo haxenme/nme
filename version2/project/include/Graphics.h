@@ -396,6 +396,7 @@ private:
 };
 
 
+enum RenderPhase { rpBitmap, rpRender, rpHitTest };
 
 
 struct RenderState
@@ -423,10 +424,12 @@ struct RenderState
    Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
 
-   bool           mBitmapPhase;
+   RenderPhase    mPhase;
    bool           mRoundSizeToPOW2;
    // Masking...
    class BitmapCache    *mMask;
+   // HitTest result...
+   class DisplayObject  *mHitResult;
 };
 
 

@@ -152,8 +152,6 @@ public:
 
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
-   virtual DisplayObject *HitTest(const UserPoint &inPoint);
-
    void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -229,8 +227,6 @@ public:
    void DirtyUp(uint32 inFlags);
    bool NonNormalBlendChild();
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
-
-   virtual DisplayObject *HitTest(const UserPoint &inPoint);
 
 
 protected:

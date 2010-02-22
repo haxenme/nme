@@ -121,7 +121,7 @@ void DisplayObject::SetBitmapCache(BitmapCache *inCache)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (mGfx && !inState.mBitmapPhase)
+   if (mGfx && !(inState.mPhase!=rpBitmap))
    {
       if (scale9Grid.HasPixels())
       {
@@ -143,29 +143,6 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 }
 
 
-DisplayObject *DisplayObject::HitTest(const UserPoint &inPoint)
-{
-   if (mGfx)
-   {
-      const Extent2DF &ext0 = mGfx->GetExtent0(0);
-      if (!ext0.Contains(inPoint))
-         return 0;
-
-      if (scale9Grid.HasPixels())
-      {
-         const Extent2DF &ext0 = mGfx->GetExtent0(0);
-         Scale9 s9;
-         s9.Activate(scale9Grid,ext0,scaleX,scaleY);
-         UserPoint p( s9.InvTransX(inPoint.x), s9.InvTransY(inPoint.y) );
-         if (mGfx->HitTest(p))
-            return this;
-      }
-      else if (mGfx->HitTest(inPoint))
-         return this;
-   }
-
-   return 0;
-}
 
 void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -586,8 +563,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
    Rect visible_bitmap;
 
-   // Otherwise do it at end...
-   if (!inState.mBitmapPhase)
+   // Render parent first (or at the end) ?
+   if (inState.mPhase==rpRender)
       DisplayObject::Render(inTarget,inState);
 
    // Render children/build child bitmaps ...
@@ -600,8 +577,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    int first = 0;
    int last = mChildren.size();
    int dir = 1;
-   // Build top first when making bitmaps and masks....
-   if (inState.mBitmapPhase)
+   // Build top first when making bitmaps and masks, or doing hit test...
+   if (inState.mPhase!=rpRender)
    {
       first = last - 1;
       last = -1;
@@ -610,7 +587,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
-      if (!obj->visible || (!inState.mBitmapPhase && obj->IsMask()) )
+      if (!obj->visible || (inState.mPhase!=rpBitmap && obj->IsMask()) ||
+	   (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
          continue;
 
       RenderState *obj_state = &state;
@@ -631,7 +609,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       }
 
 
-      if (inState.mBitmapPhase)
+      if (inState.mPhase==rpBitmap)
       {
          obj->CheckCacheDirty();
 
@@ -694,10 +672,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
 
-               obj_state->mBitmapPhase = true;
+               obj_state->mPhase = rpBitmap;
                obj->Render(render.Target(), *obj_state);
 
-               obj_state->mBitmapPhase = false;
+               obj_state->mPhase = rpRender;
                bool old_pow2 = obj_state->mRoundSizeToPOW2;
                obj_state->mRoundSizeToPOW2 = false;
 
@@ -712,7 +690,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             }
          }
       }
-      else
+      else if (inState.mPhase == rpRender )
       {
          BitmapCache *old_mask = obj_state->mMask;
 
@@ -755,10 +733,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
 
          obj_state->mMask = old_mask;
+
+         if (obj_state->mHitResult)
+         {
+            inState.mHitResult = obj_state->mHitResult;
+            return;
+         }
       }
    }
 
-   if (inState.mBitmapPhase)
+   // Render parent at beginning or end...
+   if (inState.mPhase!=rpRender)
       DisplayObject::Render(inTarget,inState);
 }
 
@@ -796,8 +781,6 @@ DisplayObject *DisplayObjectContainer::HitTest(const UserPoint &inPoint)
    for(int i=0;i<mChildren.size();i++)
    {
       DisplayObject *obj = mChildren[i];
-	   if (!obj->mouseEnabled)
-		   continue;
 
       UserPoint local = obj->GetLocalMatrix().ApplyInverse(inPoint);
 
@@ -967,19 +950,30 @@ void Stage::RenderStage()
    //gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
    state.mClipRect = Rect( render.Width(), render.Height() );
 
-   state.mBitmapPhase = true;
+   state.mPhase = rpBitmap;
    state.mRoundSizeToPOW2 = render.Target().IsHardware();
    Render(render.Target(),state);
 
-   state.mBitmapPhase = false;
+   state.mPhase = rpRender;
    Render(render.Target(),state);
 }
 
 
 DisplayObject *Stage::HitTest(int inX,int inY)
 {
-   DisplayObject *result =  DisplayObjectContainer::HitTest(UserPoint(inX,inY));
-   return result;
+   Surface *surface = GetPrimarySurface();
+
+   RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()) );
+
+   RenderState state(0,mQuality);
+   state.mClipRect = Rect( inX, inY, 1, 1 );
+   state.mPhase = rpHitTest;
+   state.mRoundSizeToPOW2 = target.IsHardware();
+   state.mPhase = rpRender;
+
+   Render(target,state);
+
+   return state.mHitResult;
 }
 
 } // end namespace nme
