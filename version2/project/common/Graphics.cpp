@@ -412,7 +412,12 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
          BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
 
      if (mHardwareData->mCalls.size())
-        inTarget.mHardware->Render(inState,mHardwareData->mCalls);
+	  {
+		   if (inState.mPhase==rpHitTest)
+			   return inTarget.mHardware->Hits(inState,mHardwareData->mCalls);
+		   else
+            inTarget.mHardware->Render(inState,mHardwareData->mCalls);
+	  }
    }
    else
    {
@@ -420,37 +425,21 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       {
          GraphicsJob &job = mJobs[i];
          if (!job.mSoftwareRenderer)
-         {
             job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
-         }
-         job.mSoftwareRenderer->Render(inTarget,inState);
+
+		   if (inState.mPhase==rpHitTest)
+			{
+            if (job.mSoftwareRenderer->Hits(inState))
+					return true;
+			}
+			else
+            job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }
 
-   return true;
-}
-
-bool Graphics::HitTest(const UserPoint &inPoint)
-{
-   /*
-   Extent2DF result;
-   Flush();
-   for(int i=0;i<mCache.size();i++)
-   {
-      // See if we can get the extent from somewhere!
-      RendererCache &cache = mCache[i];
-      bool result = false;
-      if (cache.mSoftware && cache.mSoftware->HitTest(inPoint,result))
-         if (result) return true;
-      // No - ok, create a software renderer...
-      cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
-      cache.mSoftware->HitTest(inPoint,result);
-      if (result) return true;
-   }
-   */
-
    return false;
 }
+
 
 // --- RenderState -------------------------------------------------------------------
 

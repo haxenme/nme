@@ -519,13 +519,23 @@ public:
       mBuildExtent->Add( p2 );
    }
 
-   bool HitTest(const UserPoint &inPoint,bool &outResult)
+	bool Hits(const RenderState &inState)
    {
-      mHitTest = inPoint;
+		if (inState.mClipRect.w!=1 || inState.mClipRect.h!=1)
+			return false;
+
+	   UserPoint screen(inState.mClipRect.x, inState.mClipRect.y);
+
+		Extent2DF extent;
+      CachedExtentRenderer::GetExtent(inState.mTransform,extent);
+		if (!extent.Contains(screen))
+			return false;
+
+	   mHitTest = inState.mTransform.mMatrix->ApplyInverse(screen);
+
       mHitsLeft = 0;
       Iterate(itHitTest, Matrix());
-      outResult = mHitsLeft & 0x01;
-      return true;
+      return mHitsLeft & 0x01;
    }
 
    void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)

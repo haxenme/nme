@@ -121,8 +121,9 @@ void DisplayObject::SetBitmapCache(BitmapCache *inCache)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (mGfx && !(inState.mPhase!=rpBitmap))
+   if (mGfx && inState.mPhase!=rpBitmap)
    {
+		bool hit = false;
       if (scale9Grid.HasPixels())
       {
          RenderState state(inState);
@@ -135,10 +136,14 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          Matrix unscaled = state.mTransform.mMatrix->Mult( Matrix(1.0/scaleX,1.0/scaleY) );
          state.mTransform.mMatrix = &unscaled;
 
-         mGfx->Render(inTarget,state);
+         hit = mGfx->Render(inTarget,state);
+			inState.mHitResult = state.mHitResult;
       }
       else
-         mGfx->Render(inTarget,inState);
+         hit = mGfx->Render(inTarget,inState);
+
+		if (hit)
+			inState.mHitResult = this;
    }
 }
 
@@ -604,6 +609,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
+
+         if (!clip_state.mClipRect.HasPixels())
+				continue;
       
          obj_state = &clip_state;
       }
@@ -690,7 +698,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             }
          }
       }
-      else if (inState.mPhase == rpRender )
+      else
       {
          BitmapCache *old_mask = obj_state->mMask;
 
@@ -709,7 +717,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj->IsBitmapRender() || obj->IsMask())
          {
-            obj->RenderBitmap(inTarget,*obj_state);
+				if (inState.mPhase==rpRender)
+               obj->RenderBitmap(inTarget,*obj_state);
+				else
+				{
+					// TODO: bitmap hit-test
+				}
          }
          else
          {
@@ -725,10 +738,22 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                rect = rect.Intersect(obj_state->mClipRect);
                if (rect.HasPixels())
                {
+                  if (inState.mPhase == rpHitTest)
+						{
+							inState.mHitResult = this;
+                     return;
+						}
                   inTarget.Clear(obj->opaqueBackground,rect);
                }
+					else if (inState.mPhase == rpHitTest)
+					{
+         			obj_state->mMask = old_mask;
+						continue;
+					}
             }
-            obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
+
+				if (inState.mPhase==rpRender)
+               obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
          }
 
@@ -773,32 +798,6 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
          // Seems scroll rects are ignored when calculating extent...
          obj->GetExtent(trans,outExt,inForScreen);
    }
-}
-
-DisplayObject *DisplayObjectContainer::HitTest(const UserPoint &inPoint)
-{
-   // TODO: Check mask...
-   for(int i=0;i<mChildren.size();i++)
-   {
-      DisplayObject *obj = mChildren[i];
-
-      UserPoint local = obj->GetLocalMatrix().ApplyInverse(inPoint);
-
-      if ( obj->scrollRect.HasPixels() )
-      {
-         // TODO - is this right?
-         if (obj->scrollRect.Contains(local))
-            return this;
-      }
-      else
-      {
-         DisplayObject *result = obj->HitTest(local);
-         if (result)
-            return result;
-      }
-   }
-
-   return DisplayObject::HitTest(inPoint);
 }
 
 
@@ -972,6 +971,8 @@ DisplayObject *Stage::HitTest(int inX,int inY)
    state.mPhase = rpRender;
 
    Render(target,state);
+
+	printf("Stage hit %p\n", state.mHitResult );
 
    return state.mHitResult;
 }

@@ -429,7 +429,7 @@ struct RenderState
    // Masking...
    class BitmapCache    *mMask;
    // HitTest result...
-   class DisplayObject  *mHitResult;
+   mutable class DisplayObject  *mHitResult;
 };
 
 
@@ -479,6 +479,9 @@ class HardwareContext : public Object
 {
 public:
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
+
+	// Could be common to multiple implementations...
+   virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );
 
    virtual void SetWindowSize(int inWidth,int inHeight)=0;
    virtual void BeginRender(const Rect &inRect)=0;
@@ -537,7 +540,7 @@ public:
 
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
 
-   virtual bool HitTest(const UserPoint &inPoint,bool &outResult) { return false; }
+   virtual bool Hits(const RenderState &inState) { return false; }
 
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
