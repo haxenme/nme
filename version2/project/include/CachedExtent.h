@@ -14,6 +14,7 @@ struct CachedExtent
 	Extent2DF Get(const Transform &inTransform);
 
 	Transform mTransform;
+	Matrix    mTestMatrix;
 	Matrix    mMatrix;
 	Scale9    mScale9;
 	Extent2DF mExtent;

@@ -73,11 +73,11 @@ public function new()
    stage.addEventListener(Event.ENTER_FRAME,function(evt) {
       var t0 =  haxe.Timer.stamp();
       fps.push(t0);
-      if (fps.length>50)
-          fps.pop();
-      // trace(" Fps : " + ((fps.length-1)/( fps[fps.length-1] - fps[0] )) );
+      if (fps.length>1000)
+          fps.shift();
+      text.text = " Fps : " + ((fps.length-1)/( fps[fps.length-1] - fps[0] ));
       var x = shape.x;
-      //shape.x = x>300 ? 0 : x+1;
+      shape.x = x>300 ? 0 : x+1;
       });
 }
 
