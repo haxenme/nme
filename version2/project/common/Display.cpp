@@ -966,13 +966,12 @@ DisplayObject *Stage::HitTest(int inX,int inY)
 
    RenderState state(0,mQuality);
    state.mClipRect = Rect( inX, inY, 1, 1 );
-   state.mPhase = rpHitTest;
    state.mRoundSizeToPOW2 = target.IsHardware();
-   state.mPhase = rpRender;
+   state.mPhase = rpHitTest;
 
    Render(target,state);
 
-	printf("Stage hit %p\n", state.mHitResult );
+	// printf("Stage hit %p\n", state.mHitResult );
 
    return state.mHitResult;
 }

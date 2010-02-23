@@ -395,7 +395,7 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
 					{
 						// Crosses, but to the left?
 						double ratio = (pos.y-p0.y)/(p.y-p0.y);
-						double x = (p.x-p0.x) * ratio;
+						double x = p0.x + (p.x-p0.x) * ratio;
 						if (x<pos.x)
 							count_left++;
 					}
@@ -405,9 +405,7 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
 					return true;
 			}
 		}
-		return false;
 	}
-
 
 	return false;
 }
