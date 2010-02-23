@@ -27,7 +27,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    cacheAsBitmap = false;
    blendMode = bmNormal;
    opaqueBackground = 0;
-	mouseEnabled = true;
+   mouseEnabled = true;
    mMask = 0;
    mIsMaskCount = 0;
    id = sgDisplayObjID++ & 0x7fffffff;
@@ -123,7 +123,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 {
    if (mGfx && inState.mPhase!=rpBitmap)
    {
-		bool hit = false;
+      bool hit = false;
       if (scale9Grid.HasPixels())
       {
          RenderState state(inState);
@@ -137,13 +137,13 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          state.mTransform.mMatrix = &unscaled;
 
          hit = mGfx->Render(inTarget,state);
-			inState.mHitResult = state.mHitResult;
+         inState.mHitResult = state.mHitResult;
       }
       else
          hit = mGfx->Render(inTarget,inState);
 
-		if (hit)
-			inState.mHitResult = this;
+      if (hit)
+         inState.mHitResult = this;
    }
 }
 
@@ -593,7 +593,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    {
       DisplayObject *obj = mChildren[i];
       if (!obj->visible || (inState.mPhase!=rpBitmap && obj->IsMask()) ||
-	   (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
+      (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
          continue;
 
       RenderState *obj_state = &state;
@@ -611,7 +611,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
 
          if (!clip_state.mClipRect.HasPixels())
-				continue;
+            continue;
       
          obj_state = &clip_state;
       }
@@ -717,12 +717,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj->IsBitmapRender() || obj->IsMask())
          {
-				if (inState.mPhase==rpRender)
+            if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
-				else
-				{
-					// TODO: bitmap hit-test
-				}
+            else
+            {
+               // TODO: bitmap hit-test
+            }
          }
          else
          {
@@ -739,20 +739,20 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                if (rect.HasPixels())
                {
                   if (inState.mPhase == rpHitTest)
-						{
-							inState.mHitResult = this;
+                  {
+                     inState.mHitResult = this;
                      return;
-						}
+                  }
                   inTarget.Clear(obj->opaqueBackground,rect);
                }
-					else if (inState.mPhase == rpHitTest)
-					{
-         			obj_state->mMask = old_mask;
-						continue;
-					}
+               else if (inState.mPhase == rpHitTest)
+               {
+                  obj_state->mMask = old_mask;
+                  continue;
+               }
             }
 
-				if (inState.mPhase==rpRender)
+            if (inState.mPhase==rpRender)
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
          }
@@ -920,7 +920,7 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 void Stage::HandleEvent(Event &inEvent)
 {
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
-		   inEvent.type==etMouseClick )
+         inEvent.type==etMouseClick )
    {
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
       inEvent.id = obj ? obj->id : id;
@@ -962,6 +962,7 @@ DisplayObject *Stage::HitTest(int inX,int inY)
 {
    Surface *surface = GetPrimarySurface();
 
+   // TODO: special version that does not actually do rendering...
    RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()) );
 
    RenderState state(0,mQuality);
@@ -971,7 +972,9 @@ DisplayObject *Stage::HitTest(int inX,int inY)
 
    Render(target,state);
 
-	// printf("Stage hit %p\n", state.mHitResult );
+   surface->EndRender();
+
+   // printf("Stage hit %p\n", state.mHitResult );
 
    return state.mHitResult;
 }

@@ -7,8 +7,9 @@ import nme.geom.Point;
 class Stage extends nme.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
+   var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
 
-	public var frameRate(default,nmeSetFrameRate): Float;
+   public var frameRate(default,nmeSetFrameRate): Float;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
@@ -20,7 +21,7 @@ class Stage extends nme.display.DisplayObjectContainer
       super(inHandle);
       nmeMouseOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
-		nmeSetFrameRate(100);
+      nmeSetFrameRate(100);
    }
 
    public override function nmeGetStage() : nme.display.Stage
@@ -28,13 +29,28 @@ class Stage extends nme.display.DisplayObjectContainer
       return this;
    }
 
-	function nmeSetFrameRate(inRate:Float) : Float
-	{
-		frameRate = inRate;
-		nme_set_stage_poll_method( nmeHandle, inRate<=0 ? 0 : (inRate<24 ? 1 : 2) );
-		return inRate;
-	}
+   function nmeSetFrameRate(inRate:Float) : Float
+   {
+      frameRate = inRate;
+      nme_set_stage_poll_method( nmeHandle, inRate<=0 ? 0 : (inRate<24 ? 1 : 2) );
+      return inRate;
+   }
 
+   function nmeGetFocus() : InteractiveObject
+   {
+      var id = nme_stage_get_focus_id(nmeHandle);
+      var obj:DisplayObject = nmeFindByID(id);
+      return cast obj;
+   }
+
+   function nmeSetFocus(inObject:InteractiveObject) : InteractiveObject
+   {
+      if (inObject==null)
+         nme_stage_set_focus(nmeHandle,null,0);
+      else
+         nme_stage_set_focus(nmeHandle,inObject.nmeHandle,0);
+      return inObject;
+   }
 
 
    function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
@@ -148,4 +164,6 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",2);
    static var nme_set_stage_poll_method = nme.Loader.load("nme_set_stage_poll_method",2);
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
+   static var nme_stage_get_focus_id = nme.Loader.load("nme_stage_get_focus_id",1);
+   static var nme_stage_set_focus = nme.Loader.load("nme_stage_set_focus",3);
 }

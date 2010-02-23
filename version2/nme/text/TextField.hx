@@ -5,7 +5,8 @@ class TextField extends nme.display.InteractiveObject
    public var text(nmeGetText,nmeSetText):String;
    public var textColor(nmeGetTextColor,nmeSetTextColor):Int;
    public var selectable(nmeGetSelectable,nmeSetSelectable):Bool;
-	public var defaultTextFormat(nmeGetDefTextFormat,nmeSetDefTextFormat):TextFormat;
+   public var defaultTextFormat(nmeGetDefTextFormat,nmeSetDefTextFormat):TextFormat;
+   public var type(nmeGetTextType,nmeSetTextType):TextFieldType;
 
    public function new( )
    {
@@ -33,18 +34,29 @@ class TextField extends nme.display.InteractiveObject
       nme_text_field_set_selectable(nmeHandle,inSel);
       return inSel;
    }
-	
-	function nmeGetDefTextFormat() : TextFormat
-	{
-	   var result = new TextFormat();
-		nme_text_field_get_def_text_format(nmeHandle,result);
-		return result;
-	}
-	function nmeSetDefTextFormat(inFormat:TextFormat) : TextFormat
-	{
-		nme_text_field_set_def_text_format(nmeHandle,inFormat);
-		return inFormat;
-	}
+
+   function nmeGetType() : TextFieldType
+   {
+      return nme_text_field_get_type(nmeHandle) ? TextFieldType.INPUT : TextFieldType.DYNAMIC;
+   }
+   function nmeSetType(inType:TextFieldType ) : TextFieldType
+   {
+      nme_text_field_set_type(nmeHandle,inType==TextFieldType.INPUT);
+      return inType;
+   }
+ 
+   
+   function nmeGetDefTextFormat() : TextFormat
+   {
+      var result = new TextFormat();
+      nme_text_field_get_def_text_format(nmeHandle,result);
+      return result;
+   }
+   function nmeSetDefTextFormat(inFormat:TextFormat) : TextFormat
+   {
+      nme_text_field_set_def_text_format(nmeHandle,inFormat);
+      return inFormat;
+   }
 
 
 
@@ -57,5 +69,7 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_set_selectable = nme.Loader.load("nme_text_field_set_selectable",2);
    static var nme_text_field_get_def_text_format = nme.Loader.load("nme_text_field_get_def_text_format",2);
    static var nme_text_field_set_def_text_format = nme.Loader.load("nme_text_field_set_def_text_format",2);
+   static var nme_text_field_get_type = nme.Loader.load("nme_text_field_get_type",1);
+   static var nme_text_field_set_type = nme.Loader.load("nme_text_field_set_type",2);
 
 }
