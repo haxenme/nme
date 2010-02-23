@@ -123,6 +123,8 @@ public:
 
    void   setAlpha(double inAlpha);
 
+	int getID() const { return id; }
+
 
    const Transform &getTransform();
 
@@ -131,7 +133,7 @@ public:
    double getMouseX();
    double getMouseY();
    DisplayObject *getRoot();
-   Stage  *getStage();
+   virtual Stage  *getStage();
 
    struct LoaderInfo &GetLoaderInfo();
 
@@ -256,11 +258,19 @@ public:
 
    int    mQuality;
 
+	void RemovingFromStage(DisplayObject *inObject);
+	Stage  *getStage() { return this; }
+
+
+	DisplayObject *GetFocusObject() { return mFocusObject; }
+	void SetFocusObject(DisplayObject *inObj);
+
 protected:
    ~Stage();
    void HandleEvent(Event &inEvent);
    EventHandler mHandler;
    void         *mHandlerData;
+	DisplayObject *mFocusObject;
 };
 
 

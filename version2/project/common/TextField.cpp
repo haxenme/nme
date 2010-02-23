@@ -32,9 +32,9 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    styleSheet(0),
    textColor(0x000000),
    thickness(0),
-   type(tftDynamic),
    useRichTextClipboard(false),
-   wordWrap(false)
+   wordWrap(false),
+	isInput(false)
 {
    mStringState = ssText;
    mLinesDirty = false;
@@ -98,6 +98,38 @@ void TextField::setTextColor(int inCol)
    textColor = inCol;
 }
 
+void TextField::setIsInput(bool inIsInput)
+{
+	isInput = inIsInput;
+}
+
+void TextField::setBackground(bool inBackground)
+{
+	background = inBackground;
+	mGfxDirty = true;
+	DirtyDown(dirtCache);
+}
+
+void TextField::setBackgroundColor(int inBackgroundColor)
+{
+	backgroundColor = inBackgroundColor;
+	mGfxDirty = true;
+	DirtyDown(dirtCache);
+}
+
+void TextField::setBorder(bool inBorder)
+{
+	border = inBorder;
+	mGfxDirty = true;
+	DirtyDown(dirtCache);
+}
+
+void TextField::setBorderColor(int inBorderColor)
+{
+	borderColor = inBorderColor;
+	mGfxDirty = true;
+	DirtyDown(dirtCache);
+}
 
 
 
@@ -289,10 +321,13 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    if (mGfxDirty)
    {
       gfx.clear();
-      int b=2;
-      if (background)
-      {
-         gfx.beginFill( backgroundColor.ival, 1.0 );
+      if (background || border)
+		{
+         int b=2;
+         if (background)
+            gfx.beginFill( backgroundColor, 1.0 );
+         if (border)
+            gfx.lineStyle(1, borderColor );
          gfx.moveTo(mRect.x-b,mRect.y-b);
          gfx.lineTo(mRect.x+b+mRect.w,mRect.y-b);
          gfx.lineTo(mRect.x+b+mRect.w,mRect.y+b+mRect.h);

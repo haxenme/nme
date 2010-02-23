@@ -398,6 +398,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
    memset(&wc,0,sizeof(wc));
    wc.cbSize = sizeof(wc);
    wc.style = CS_OWNDC | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
+   wc.hCursor = LoadCursor(0,IDC_ARROW);
    wc.hbrBackground = 0; //(HBRUSH)GetStockObject(WHITE_BRUSH);
    wc.lpfnWndProc =  DefWindowProc;
    wc.lpszClassName = "NME";

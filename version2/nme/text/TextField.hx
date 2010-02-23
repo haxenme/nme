@@ -6,7 +6,11 @@ class TextField extends nme.display.InteractiveObject
    public var textColor(nmeGetTextColor,nmeSetTextColor):Int;
    public var selectable(nmeGetSelectable,nmeSetSelectable):Bool;
    public var defaultTextFormat(nmeGetDefTextFormat,nmeSetDefTextFormat):TextFormat;
-   public var type(nmeGetTextType,nmeSetTextType):TextFieldType;
+   public var type(nmeGetType,nmeSetType):TextFieldType;
+   public var border(nmeGetBorder,nmeSetBorder):Bool;
+   public var borderColor(nmeGetBorderColor,nmeSetBorderColor):Int;
+   public var background(nmeGetBackground,nmeSetBackground):Bool;
+   public var backgroundColor(nmeGetBackgroundColor,nmeSetBackgroundColor):Int;
 
    public function new( )
    {
@@ -45,6 +49,35 @@ class TextField extends nme.display.InteractiveObject
       return inType;
    }
  
+   function nmeGetBorder() : Bool { return nme_text_field_get_border(nmeHandle); }
+   function nmeSetBorder(inVal:Bool ) : Bool
+   {
+      nme_text_field_set_border(nmeHandle,inVal);
+      return inVal;
+   }
+
+	function nmeGetBorderColor() : Int { return nme_text_field_get_border_color(nmeHandle); }
+   function nmeSetBorderColor(inVal:Int ) : Int
+   {
+      nme_text_field_set_border_color(nmeHandle,inVal);
+      return inVal;
+   }
+
+   function nmeGetBackground() : Bool { return nme_text_field_get_background(nmeHandle); }
+   function nmeSetBackground(inVal:Bool ) : Bool
+   {
+      nme_text_field_set_background(nmeHandle,inVal);
+      return inVal;
+   }
+
+	function nmeGetBackgroundColor() : Int { return nme_text_field_get_background_color(nmeHandle); }
+   function nmeSetBackgroundColor(inVal:Int ) : Int
+   {
+      nme_text_field_set_background_color(nmeHandle,inVal);
+      return inVal;
+   }
+
+
    
    function nmeGetDefTextFormat() : TextFormat
    {
@@ -71,5 +104,13 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_set_def_text_format = nme.Loader.load("nme_text_field_set_def_text_format",2);
    static var nme_text_field_get_type = nme.Loader.load("nme_text_field_get_type",1);
    static var nme_text_field_set_type = nme.Loader.load("nme_text_field_set_type",2);
+   static var nme_text_field_get_border = nme.Loader.load("nme_text_field_get_border",1);
+   static var nme_text_field_set_border = nme.Loader.load("nme_text_field_set_border",2);
+   static var nme_text_field_get_border_color = nme.Loader.load("nme_text_field_get_border_color",1);
+   static var nme_text_field_set_border_color = nme.Loader.load("nme_text_field_set_border_color",2);
+   static var nme_text_field_get_background = nme.Loader.load("nme_text_field_get_background",1);
+   static var nme_text_field_set_background = nme.Loader.load("nme_text_field_set_background",2);
+   static var nme_text_field_get_background_color = nme.Loader.load("nme_text_field_get_background_color",1);
+   static var nme_text_field_set_background_color = nme.Loader.load("nme_text_field_set_background_color",2);
 
 }

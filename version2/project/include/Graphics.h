@@ -227,6 +227,7 @@ class GraphicsPath : public IGraphicsPath
 {
 public:
    GraphicsPath *AsPath() { return this; }
+	bool empty() const { return commands.empty(); }
 
    GraphicsPath() : winding(wrOddEven) { }
    QuickVec<uint8> commands;
@@ -617,7 +618,7 @@ public:
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);
 
-   bool empty() const { return mJobs.empty(); }
+   bool empty() const { return !mPathData || mPathData->empty(); }
 
 protected:
 	void                      BuildHardware();

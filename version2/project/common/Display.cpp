@@ -69,6 +69,9 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
    if (mParent)
    {
+		Stage *stage = getStage();
+		if (stage)
+         stage->RemovingFromStage(this);
       mParent->RemoveChildFromList(this);
       mParent->DirtyDown(dirtCache);
    }
@@ -78,6 +81,20 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
    DecRef();
 }
+
+DisplayObject *DisplayObject::getParent()
+{
+	return mParent;
+}
+
+Stage  *DisplayObject::getStage()
+{
+	if (!mParent)
+		return 0;
+	return mParent->getStage();
+}
+
+
 
 UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
 {
@@ -905,11 +922,25 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mHandlerData = 0;
    opaqueBackground = 0xffffffff;
    mQuality = 4;
+	mFocusObject = 0;
 }
 
 Stage::~Stage()
 {
 }
+
+void Stage::SetFocusObject(DisplayObject *inObj)
+{
+	if (!inObj || inObj->getStage()!=this)
+	{
+		mFocusObject = 0;
+	}
+	else
+	{
+      mFocusObject = inObj;
+	}
+}
+
 
 void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 {
@@ -936,6 +967,20 @@ void Stage::setOpaqueBackground(uint32 inBG)
    DirtyDown(dirtCache);
 }
 
+
+void Stage::RemovingFromStage(DisplayObject *inObject)
+{
+	DisplayObject *f = mFocusObject;
+	while(f)
+	{
+		if (f==inObject)
+		{
+		   mFocusObject = 0;
+			return;
+		}
+		f = f->getParent();
+	}
+}
 
 
 

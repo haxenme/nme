@@ -11,7 +11,6 @@ class TiXmlNode;
 namespace nme
 {
 
-enum TextFieldType { tftDynamic, tftInput };
 
 
 class TextField : public DisplayObject
@@ -40,9 +39,21 @@ public:
    void setSelectable(bool inSelectable) { selectable = inSelectable; }
    void setTextColor(int inColor);
    int  getTextColor() { return textColor; }
+   bool getIsInput() { return isInput; }
+   void setIsInput(bool inIsInput);
 
    const TextFormat *getDefaultTextFormat();
    void setDefaultTextFormat(TextFormat *inFormat);
+
+   bool  getBackground() const { return background; }
+	void  setBackground(bool inBackground);
+   int   getBackgroundColor() const { return backgroundColor; }
+	void  setBackgroundColor(int inBackgroundColor);
+   bool  getBorder() const { return border; }
+	void  setBorder(bool inBorder);
+   int   getBorderColor() const { return borderColor; }
+	void  setBorderColor(int inBorderColor);
+
 
    double getWidth();
    void setWidth(double inWidth);
@@ -69,9 +80,9 @@ public:
    AntiAliasType antiAliasType;
    AutoSizeMode autoSize;
    bool  background;
-   ARGB  backgroundColor;
+   int   backgroundColor;
    bool  border;
-   ARGB  borderColor;
+   int   borderColor;
    bool  condenseWhite;
 
    TextFormat *defaultTextFormat;
@@ -89,9 +100,9 @@ public:
    struct StyleSheet *styleSheet;
    int textColor;
    float  thickness;
-   TextFieldType type;
    bool useRichTextClipboard;
    bool  wordWrap;
+	bool  isInput;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 

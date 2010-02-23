@@ -194,7 +194,6 @@ value nme_get_frame_stage(value inValue)
 
    return ObjectToAbstract(frame->GetStage());
 }
-
 DEFINE_PRIM(nme_get_frame_stage,1);
 
 value nme_create_main_frame(value inWidth,value inHeight,value inFlags,value inTitle,value inIcon)
@@ -286,6 +285,36 @@ value nme_render_stage(value inStage)
 }
 
 DEFINE_PRIM(nme_render_stage,1);
+
+
+value nme_stage_get_focus_id(value inValue)
+{
+	int result = -1;
+   Stage *stage;
+   if (AbstractToObject(inValue,stage))
+	{
+		DisplayObject *obj = stage->GetFocusObject();
+		if (obj)
+			result = obj->getID();
+	}
+
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_stage_get_focus_id,1);
+
+value nme_stage_set_focus(value inStage,value inObject,value inDirection)
+{
+	Stage *stage;
+   if (AbstractToObject(inStage,stage))
+	{
+		DisplayObject *obj = 0;
+      AbstractToObject(inObject,obj);
+		stage->SetFocusObject(obj);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_focus,3);
+
 
 // --- DisplayObject --------------------------------------------------------------
 
@@ -987,6 +1016,11 @@ DEFINE_PRIM(nme_text_field_set_##prop,2);
 TEXT_PROP(text,Text,alloc_wstring,val_wstring);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
+TEXT_PROP(type,IsInput,alloc_bool,val_bool);
+TEXT_PROP(background,Background,alloc_bool,val_bool);
+TEXT_PROP(background_color,BackgroundColor,alloc_int,val_int);
+TEXT_PROP(border,Border,alloc_bool,val_bool);
+TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
 
 // --- BitmapData -----------------------------------------------------
 
