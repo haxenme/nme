@@ -12,6 +12,8 @@ namespace nme
 unsigned int gDisplayRefCounting = drDisplayChildRefs;
 static int sgDisplayObjID = 0;
 
+bool gMouseShowCursor = true;
+
 // --- DisplayObject ------------------------------------------------
 
 DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
@@ -955,6 +957,8 @@ void Stage::HandleEvent(Event &inEvent)
    {
       DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
       inEvent.id = obj ? obj->id : id;
+		Cursor cur = obj ? obj->GetCursor() : curPointer;
+		SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
    }
 
    if (mHandler)

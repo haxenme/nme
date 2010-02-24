@@ -92,6 +92,9 @@ Rect GetRectToCreateFiltered(const Filters &inFilters,const Rect &inTargetRect);
 void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &inSrcRect, const Rect &outDestRect, bool inMakePOW2);
 
         
+enum Cursor { curNone, curPointer, curHand, curTextSelect };
+
+extern bool gMouseShowCursor;
 
 class DisplayObject : public Object
 {
@@ -160,6 +163,8 @@ public:
    virtual void DirtyUp(uint32 inFlags);
    virtual void DirtyDown(uint32 inFlags);
    virtual bool NonNormalBlendChild() { return false; }
+
+	virtual Cursor GetCursor() { return curPointer; }
 
    void SetParent(DisplayObjectContainer *inParent);
 
@@ -255,6 +260,7 @@ public:
    void SetEventHandler(EventHandler inHander,void *inUserData);
    virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(int inX,int inY);
+   virtual void SetCursor(Cursor inCursor)=0;
 
    int    mQuality;
 

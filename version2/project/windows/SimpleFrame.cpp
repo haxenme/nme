@@ -68,6 +68,7 @@ public:
       mHardwareSurface = 0;
       mOGLCtx = 0;
       mPollingTimer = false;
+		mCursor = curPointer;
 
       mIsHardware = inFlags & wfHardware;
       HintColourOrder(mIsHardware);
@@ -164,6 +165,37 @@ public:
       UpdateHardware();
       return true;
    }
+
+	void ApplyCursor()
+	{
+		static HCURSOR pointer = LoadCursor(0,IDC_ARROW);
+		static HCURSOR text = LoadCursor(0,IDC_IBEAM);
+		static HCURSOR hand = LoadCursor(0,IDC_CROSS); // For now
+		static HCURSOR none = 0;
+		if (none==0)
+		{
+			unsigned char and_mask[32*32/4];
+			unsigned char xor_mask[32*32/4];
+			memset(and_mask,255,sizeof(and_mask));
+			memset(xor_mask,0,sizeof(and_mask));
+			none = CreateCursor(0, 0,0, 32, 32, and_mask, xor_mask );
+		}
+
+		switch(mCursor)
+		{
+			case curNone : ::SetCursor(none); break;
+			case curHand : ::SetCursor(hand); break;
+			case curTextSelect : ::SetCursor(text); break;
+			default:
+				::SetCursor(pointer);
+		}
+	}
+
+	void SetCursor(Cursor inCursor)
+	{
+		mCursor = inCursor;
+		ApplyCursor();
+	}
 
 
    void UpdateHardware()
@@ -268,6 +300,7 @@ public:
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
    bool         mIsHardware;
+	Cursor       mCursor;
    bool         mPollingTimer;
    PollMethod   mPollMethod;
 };
@@ -340,6 +373,9 @@ public:
             break;
 			// TODO : Create click event
 
+         case WM_SETCURSOR:
+				mStage->ApplyCursor();
+				break;
 
          case WM_TIMER:
             {

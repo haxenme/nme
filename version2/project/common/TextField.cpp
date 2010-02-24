@@ -317,6 +317,15 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UpdateFonts(inState.mTransform);
    Layout();
 
+	if (inState.mPhase==rpHitTest)
+	{
+		UserPoint pos =  inState.mTransform.mMatrix->ApplyInverse(
+				UserPoint(inState.mClipRect.x, inState.mClipRect.y) );
+		if ( mRect.Contains(pos) )
+			inState.mHitResult = this;
+		return;
+	}
+
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
    {
