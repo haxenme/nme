@@ -77,7 +77,7 @@ public function new()
           fps.shift();
       text.text = " Fps : " + ((fps.length-1)/( fps[fps.length-1] - fps[0] ));
       var x = shape.x;
-      shape.x = x>300 ? 0 : x+1;
+      //shape.x = x>300 ? 0 : x+1;
       });
 }
 
@@ -87,7 +87,7 @@ public static function main()
 #if flash
    new Sample();
 #else
-   Lib.init(320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.init(320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
 
    new Sample();
 

@@ -27,6 +27,8 @@ static int _id_height = val_id("height");
 static int _id_value = val_id("value");
 static int _id_id = val_id("id");
 static int _id_flags = val_id("flags");
+static int _id_result = val_id("result");
+static int _id_code = val_id("code");
 static int _id_a = val_id("a");
 static int _id_b = val_id("b");
 static int _id_c = val_id("c");
@@ -253,7 +255,10 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
    alloc_field(o,_id_value,alloc_int(ioEvent.value));
    alloc_field(o,_id_id,alloc_int(ioEvent.id));
    alloc_field(o,_id_flags,alloc_int(ioEvent.flags));
+   alloc_field(o,_id_code,alloc_int(ioEvent.code));
+   alloc_field(o,_id_result,alloc_int(ioEvent.result));
    val_call1(handler->get(), o);
+   ioEvent.result = (EventResult)val_int( val_field(o,_id_result) );
 }
 
 

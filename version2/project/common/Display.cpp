@@ -931,16 +931,55 @@ Stage::~Stage()
 {
 }
 
-void Stage::SetFocusObject(DisplayObject *inObj)
+void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
 {
+   if (inObj==mFocusObject)
+      return;
+
+   if (mHandler)
+   {
+      Event focus(etFocus);
+      focus.id = inObj ? inObj->id : 0;
+      focus.value = inSource;
+      focus.code = inKey;
+   
+      mHandler(focus,mHandlerData);
+
+      if (inSource!=fsProgram && focus.result==erCancel)
+         return;
+   }
+
+
 	if (!inObj || inObj->getStage()!=this)
 	{
+      if (mFocusObject)
+      {
+         mFocusObject->Unfocus();
+         mFocusObject->DecRef();
+      }
 		mFocusObject = 0;
 	}
 	else
 	{
+      inObj->IncRef();
+      if (mFocusObject)
+      {
+         mFocusObject->Unfocus();
+         mFocusObject->DecRef();
+      }
       mFocusObject = inObj;
+      inObj->Focus();
 	}
+
+   if (mHandler)
+   {
+      Event focus(etFocus);
+      focus.id = inObj ? inObj->id : 0;
+      focus.value = inSource;
+      focus.code = inKey;
+   
+      mHandler(focus,mHandlerData);
+   }
 }
 
 
@@ -952,17 +991,32 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 
 void Stage::HandleEvent(Event &inEvent)
 {
+   DisplayObject *hit_obj = 0;
+
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
          inEvent.type==etMouseClick )
    {
-      DisplayObject *obj = HitTest(inEvent.x,inEvent.y);
-      inEvent.id = obj ? obj->id : id;
-		Cursor cur = obj ? obj->GetCursor() : curPointer;
+      hit_obj = HitTest(inEvent.x,inEvent.y);
+      inEvent.id = hit_obj ? hit_obj->id : id;
+		Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
 		SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
    }
 
+   if (hit_obj)
+      hit_obj->IncRef();
+
    if (mHandler)
       mHandler(inEvent,mHandlerData);
+
+   if (hit_obj && (inEvent.type==etMouseDown ||  inEvent.type==etMouseClick) &&
+         inEvent.result!=erCancel )
+   {
+      if (hit_obj->WantsFocus())
+         SetFocusObject(hit_obj,fsMouse);
+   }
+
+   if (hit_obj)
+      hit_obj->DecRef();
 }
 
 void Stage::setOpaqueBackground(uint32 inBG)

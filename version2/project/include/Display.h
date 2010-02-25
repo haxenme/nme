@@ -30,6 +30,7 @@ enum EventType
    etResize,    // 8
    etPoll,      // 9
    etQuit,      // 10
+   etFocus,     // 11
 
    // Internal for now...
    etDestroyHandler,
@@ -45,18 +46,28 @@ enum EventFlags
    efCommandDown = 0x0010,
 };
 
+enum FocusSource { fsProgram, fsMouse, fsKey };
+
+enum EventResult
+{
+   erOk,
+   erCancel,
+};
+
 struct Event
 {
    Event(EventType inType=etUnknown,int inX=0,int inY=0,int inValue=0,int inID=0,int inFlags=0):
-        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags)
+        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags), result(erOk)
    {
    }
 
    EventType type;
    int       x,y;
    int       value;
+   int       code;
    int       id;
    int       flags;
+   EventResult result;
 };
 
 typedef void (*EventHandler)(Event &ioEvent, void *inUserData);
@@ -165,6 +176,9 @@ public:
    virtual bool NonNormalBlendChild() { return false; }
 
 	virtual Cursor GetCursor() { return curPointer; }
+   virtual bool WantsFocus() { return false; }
+   virtual void Focus() { }
+   virtual void Unfocus() { }
 
    void SetParent(DisplayObjectContainer *inParent);
 
@@ -269,7 +283,7 @@ public:
 
 
 	DisplayObject *GetFocusObject() { return mFocusObject; }
-	void SetFocusObject(DisplayObject *inObj);
+	void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
 
 protected:
    ~Stage();

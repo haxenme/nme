@@ -75,6 +75,7 @@ void TextField::setHeight(double inHeight)
    mGfxDirty = true;
 }
 
+
 const TextFormat *TextField::getDefaultTextFormat()
 {
    return defaultTextFormat;
@@ -130,6 +131,15 @@ void TextField::setBorderColor(int inBorderColor)
 	mGfxDirty = true;
 	DirtyDown(dirtCache);
 }
+
+void TextField::Focus()
+{
+}
+
+void TextField::Unfocus()
+{
+}
+
 
 
 

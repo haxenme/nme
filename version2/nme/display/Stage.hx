@@ -1,6 +1,7 @@
 package nme.display;
 
 import nme.events.MouseEvent;
+import nme.events.FocusEvent;
 import nme.events.Event;
 import nme.geom.Point;
 
@@ -110,6 +111,24 @@ class Stage extends nme.display.DisplayObjectContainer
       }
    }
 
+   function nmeOnFocus(inEvent:Dynamic)
+   {
+      trace(inEvent);
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      var stack = new Array<InteractiveObject>();
+      obj.nmeGetInteractiveObjectStack(stack);
+      if (stack.length>0)
+      {
+         var obj = stack[0];
+         stack.reverse();
+         // TODO: Focus
+         //var evt = MouseEvent.nmeCreate(inType,inEvent,local,obj);
+         //nmeCheckInOuts(evt,stack);
+         //obj.nmeFireEvent(evt);
+      }
+   }
+
+
    function nmeRender(inSendEnterFrame:Bool)
    {
       if (inSendEnterFrame)
@@ -154,6 +173,9 @@ class Stage extends nme.display.DisplayObjectContainer
          case 10: // etQuit
             if (onQuit!=null)
                untyped onQuit();
+
+         case 11: // etFocus
+            nmeOnFocus(inEvent);
 
          // TODO: user, sys_wm, sound_finished
       }
