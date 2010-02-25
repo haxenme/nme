@@ -44,6 +44,8 @@ enum EventFlags
    efCtrlDown  =  0x0004,
    efAltDown   =  0x0008,
    efCommandDown = 0x0010,
+   efMiddleDown  = 0x0020,
+   efRightDown  = 0x0040,
 };
 
 enum FocusSource { fsProgram, fsMouse, fsKey };
@@ -182,6 +184,10 @@ public:
    virtual void Focus() { }
    virtual void Unfocus() { }
 
+	virtual bool CaptureDown(Event &inEvent) { return false; }
+	virtual void Drag(Event &inEvent) {  }
+	virtual void EndDrag(Event &inEvent) { }
+
    void SetParent(DisplayObjectContainer *inParent);
 
    UserPoint GlobalToLocal(const UserPoint &inPoint);
@@ -292,7 +298,9 @@ protected:
    void HandleEvent(Event &inEvent);
    EventHandler mHandler;
    void         *mHandlerData;
+
 	DisplayObject *mFocusObject;
+	DisplayObject *mMouseDownObject;
 };
 
 

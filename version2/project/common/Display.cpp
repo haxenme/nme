@@ -925,10 +925,15 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    opaqueBackground = 0xffffffff;
    mQuality = 4;
    mFocusObject = 0;
+	mMouseDownObject = 0;
 }
 
 Stage::~Stage()
 {
+	if (mFocusObject)
+		mFocusObject->DecRef();
+	if (mMouseDownObject)
+		mMouseDownObject->DecRef();
 }
 
 void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
@@ -984,6 +989,27 @@ void Stage::HandleEvent(Event &inEvent)
 {
    DisplayObject *hit_obj = 0;
 
+	if (mMouseDownObject)
+	{
+		switch(inEvent.type)
+		{
+			case etMouseMove:
+				if (inEvent.flags & efLeftDown)
+				{
+					mMouseDownObject->Drag(inEvent);
+					break;
+				}
+				// fallthrough
+			case etMouseClick:
+			case etMouseDown:
+			case etMouseUp:
+				mMouseDownObject->EndDrag(inEvent);
+				mMouseDownObject->DecRef();
+				mMouseDownObject = 0;
+				break;
+		}
+	}
+
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
          inEvent.type==etMouseClick )
    {
@@ -999,12 +1025,24 @@ void Stage::HandleEvent(Event &inEvent)
    if (mHandler)
       mHandler(inEvent,mHandlerData);
 
-   if (hit_obj && (inEvent.type==etMouseDown) && inEvent.result!=erCancel )
-   {
-      if (hit_obj->WantsFocus())
-         SetFocusObject(hit_obj,fsMouse);
-   }
-
+	if (hit_obj)
+	{
+      if ((inEvent.type==etMouseDown) && inEvent.result!=erCancel )
+      {
+         if (hit_obj->WantsFocus())
+            SetFocusObject(hit_obj,fsMouse);
+      }
+   
+      if (inEvent.type==etMouseDown)
+   	{
+			if (hit_obj->CaptureDown(inEvent))
+			{
+				hit_obj->IncRef();
+				mMouseDownObject = hit_obj;
+			}
+   	}
+	}
+   
    if (hit_obj)
       hit_obj->DecRef();
 }
@@ -1023,11 +1061,25 @@ void Stage::RemovingFromStage(DisplayObject *inObject)
    {
       if (f==inObject)
       {
+			mFocusObject->DecRef();
          mFocusObject = 0;
          return;
       }
       f = f->getParent();
    }
+
+	DisplayObject *m = mMouseDownObject;
+   while(m)
+   {
+      if (m==inObject)
+      {
+			mMouseDownObject->DecRef();
+         mMouseDownObject = 0;
+         return;
+      }
+      m = m->getParent();
+   }
+
 }
 
 

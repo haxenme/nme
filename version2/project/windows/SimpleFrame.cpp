@@ -327,6 +327,15 @@ public:
       sgFrameMap.erase(mHandle);
    }
 
+	void WParamToFlags(WPARAM wParam, Event &ioEvent)
+	{
+		if (wParam & MK_CONTROL) ioEvent.flags |= efCtrlDown;
+		if (wParam & MK_LBUTTON) ioEvent.flags |= efLeftDown;
+		if (wParam & MK_MBUTTON) ioEvent.flags |= efMiddleDown;
+		if (wParam & MK_RBUTTON) ioEvent.flags |= efRightDown;
+		if (wParam & MK_SHIFT)   ioEvent.flags |= efShiftDown;
+	}
+
    LRESULT Callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       switch (uMsg)
@@ -353,18 +362,21 @@ public:
          case WM_MOUSEMOVE:
             {
             Event evt(etMouseMove, LOWORD(lParam), HIWORD(lParam));
+				WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
             }
             break;
 			case WM_LBUTTONDOWN:
             {
             Event evt(etMouseDown, LOWORD(lParam), HIWORD(lParam));
+				WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
             }
             break;
 			case WM_LBUTTONUP:
             {
             Event evt(etMouseUp, LOWORD(lParam), HIWORD(lParam));
+				WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
 				// TODO: based on timer/motion?
             Event click(etMouseClick, LOWORD(lParam), HIWORD(lParam));

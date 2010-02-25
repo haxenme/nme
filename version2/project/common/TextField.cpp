@@ -141,6 +141,23 @@ void TextField::Unfocus()
 }
 
 
+bool TextField::CaptureDown(Event &inEvent)
+{
+	printf("On Down %d, %d\n", inEvent.x, inEvent.y);
+	return true;
+}
+
+void TextField::Drag(Event &inEvent)
+{
+	printf(" drag %d, %d\n", inEvent.x, inEvent.y);
+}
+
+void TextField::EndDrag(Event &inEvent)
+{
+	printf("End drag %d, %d\n", inEvent.x, inEvent.y);
+}
+
+
 
 
 void TextField::Clear()

@@ -114,6 +114,9 @@ public:
    bool WantsFocus() { return isInput && mouseEnabled; }
    void Focus();
    void Unfocus();
+	bool CaptureDown(Event &inEvent);
+	void Drag(Event &inEvent);
+	void EndDrag(Event &inEvent);
 
 
 
