@@ -50,7 +50,7 @@ class Event
 
    public function toString():String
    {
-      return "Event";
+      return type;
    }
 
 

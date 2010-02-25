@@ -8,6 +8,7 @@ import nme.geom.Point;
 class Stage extends nme.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
+   var nmeFocusOverObjects:Array<InteractiveObject>;
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
 
    public var frameRate(default,nmeSetFrameRate): Float;
@@ -21,6 +22,7 @@ class Stage extends nme.display.DisplayObjectContainer
    {
       super(inHandle);
       nmeMouseOverObjects = [];
+      nmeFocusOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
       nmeSetFrameRate(100);
    }
@@ -60,7 +62,7 @@ class Stage extends nme.display.DisplayObjectContainer
       var new_n = inStack.length;
       var new_obj:InteractiveObject = new_n>0 ? inStack[new_n-1] : null;
       var old_n = nmeMouseOverObjects.length;
-      var old_obj:InteractiveObject = old_n>0 ? inStack[old_n-1] : null;
+      var old_obj:InteractiveObject = old_n>0 ? nmeMouseOverObjects[old_n-1] : null;
       if (new_obj!=old_obj)
       {
          // mouseOut/MouseOver goes up the object tree...
@@ -77,7 +79,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
          var rollOut = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OUT,new_obj,old_obj);
          var i = old_n-1;
-         while(i>common)
+         while(i>=common)
          {
             nmeMouseOverObjects[i].dispatchEvent(rollOut);
             i--;
@@ -85,7 +87,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
          var rollOver = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OVER,old_obj);
          var i = new_n-1;
-         while(i>common)
+         while(i>=common)
          {
             inStack[i].dispatchEvent(rollOver);
             i--;
@@ -97,9 +99,10 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeOnMouse(inEvent:Dynamic,inType:String)
    {
-      var obj:DisplayObject = nmeFindByID(inEvent.id);
       var stack = new Array<InteractiveObject>();
-      obj.nmeGetInteractiveObjectStack(stack);
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj!=null)
+         obj.nmeGetInteractiveObjectStack(stack);
       if (stack.length>0)
       {
          var obj = stack[0];
@@ -109,23 +112,86 @@ class Stage extends nme.display.DisplayObjectContainer
          nmeCheckInOuts(evt,stack);
          obj.nmeFireEvent(evt);
       }
+      else
+      {
+         var evt = MouseEvent.nmeCreate(inType,inEvent, new Point(inEvent.x,inEvent.y),null);
+         nmeCheckInOuts(evt,stack);
+      }
    }
+
+
+  function nmeCheckFocusInOuts(inEvent:Dynamic,inStack:Array<InteractiveObject>)
+  {
+
+      // Exit ...
+      var new_n = inStack.length;
+      var new_obj:InteractiveObject = new_n>0 ? inStack[new_n-1] : null;
+      var old_n = nmeFocusOverObjects.length;
+      var old_obj:InteractiveObject = old_n>0 ? nmeFocusOverObjects[old_n-1] : null;
+
+      if (new_obj!=old_obj)
+      {
+         // focusOver/focusOut goes only over the non-common objects in the tree...
+         var common = 0;
+         while(common<new_n && common<old_n && inStack[common] == nmeFocusOverObjects[common] )
+            common++;
+
+         var focusOut = new FocusEvent( FocusEvent.FOCUS_OUT, false, false,
+               new_obj,
+               inEvent.flags>0,
+               inEvent.code );
+
+         var i = old_n-1;
+         while(i>=common)
+         {
+            nmeFocusOverObjects[i].dispatchEvent(focusOut);
+            i--;
+         }
+
+         var focusIn = new FocusEvent( FocusEvent.FOCUS_IN, false, false,
+               old_obj,
+               inEvent.flags>0,
+               inEvent.code );
+         var i = new_n-1;
+         while(i>=common)
+         {
+            inStack[i].dispatchEvent(focusIn);
+            i--;
+         }
+
+         nmeFocusOverObjects = inStack;
+      }
+   }
+
+
 
    function nmeOnFocus(inEvent:Dynamic)
    {
-      trace(inEvent);
-      var obj:DisplayObject = nmeFindByID(inEvent.id);
       var stack = new Array<InteractiveObject>();
-      obj.nmeGetInteractiveObjectStack(stack);
-      if (stack.length>0)
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj!=null)
+         obj.nmeGetInteractiveObjectStack(stack);
+      if (stack.length>0 && (inEvent.value==1 || inEvent.value==2) )
       {
          var obj = stack[0];
-         stack.reverse();
-         // TODO: Focus
-         //var evt = MouseEvent.nmeCreate(inType,inEvent,local,obj);
-         //nmeCheckInOuts(evt,stack);
-         //obj.nmeFireEvent(evt);
+         var evt = new FocusEvent(
+               inEvent.value==1? FocusEvent.MOUSE_FOCUS_CHANGE : FocusEvent.KEY_FOCUS_CHANGE,
+               true, true,
+               nmeFocusOverObjects.length==0 ? null : nmeFocusOverObjects[0],
+               inEvent.flags>0,
+               inEvent.code );
+
+         obj.nmeFireEvent(evt);
+         if (evt.nmeGetIsCancelled())
+         {
+            inEvent.result = 1;
+            return;
+         }
       }
+
+      stack.reverse();
+
+      nmeCheckFocusInOuts(inEvent,stack);
    }
 
 

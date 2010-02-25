@@ -71,8 +71,8 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
    if (mParent)
    {
-		Stage *stage = getStage();
-		if (stage)
+      Stage *stage = getStage();
+      if (stage)
          stage->RemovingFromStage(this);
       mParent->RemoveChildFromList(this);
       mParent->DirtyDown(dirtCache);
@@ -86,14 +86,14 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 
 DisplayObject *DisplayObject::getParent()
 {
-	return mParent;
+   return mParent;
 }
 
 Stage  *DisplayObject::getStage()
 {
-	if (!mParent)
-		return 0;
-	return mParent->getStage();
+   if (!mParent)
+      return 0;
+   return mParent->getStage();
 }
 
 
@@ -924,7 +924,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mHandlerData = 0;
    opaqueBackground = 0xffffffff;
    mQuality = 4;
-	mFocusObject = 0;
+   mFocusObject = 0;
 }
 
 Stage::~Stage()
@@ -950,17 +950,17 @@ void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
    }
 
 
-	if (!inObj || inObj->getStage()!=this)
-	{
+   if (!inObj || inObj->getStage()!=this)
+   {
       if (mFocusObject)
       {
          mFocusObject->Unfocus();
          mFocusObject->DecRef();
       }
-		mFocusObject = 0;
-	}
-	else
-	{
+      mFocusObject = 0;
+   }
+   else
+   {
       inObj->IncRef();
       if (mFocusObject)
       {
@@ -969,17 +969,8 @@ void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
       }
       mFocusObject = inObj;
       inObj->Focus();
-	}
-
-   if (mHandler)
-   {
-      Event focus(etFocus);
-      focus.id = inObj ? inObj->id : 0;
-      focus.value = inSource;
-      focus.code = inKey;
-   
-      mHandler(focus,mHandlerData);
    }
+
 }
 
 
@@ -998,8 +989,8 @@ void Stage::HandleEvent(Event &inEvent)
    {
       hit_obj = HitTest(inEvent.x,inEvent.y);
       inEvent.id = hit_obj ? hit_obj->id : id;
-		Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
-		SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
+      Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
+      SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
    }
 
    if (hit_obj)
@@ -1008,8 +999,7 @@ void Stage::HandleEvent(Event &inEvent)
    if (mHandler)
       mHandler(inEvent,mHandlerData);
 
-   if (hit_obj && (inEvent.type==etMouseDown ||  inEvent.type==etMouseClick) &&
-         inEvent.result!=erCancel )
+   if (hit_obj && (inEvent.type==etMouseDown) && inEvent.result!=erCancel )
    {
       if (hit_obj->WantsFocus())
          SetFocusObject(hit_obj,fsMouse);
@@ -1028,16 +1018,16 @@ void Stage::setOpaqueBackground(uint32 inBG)
 
 void Stage::RemovingFromStage(DisplayObject *inObject)
 {
-	DisplayObject *f = mFocusObject;
-	while(f)
-	{
-		if (f==inObject)
-		{
-		   mFocusObject = 0;
-			return;
-		}
-		f = f->getParent();
-	}
+   DisplayObject *f = mFocusObject;
+   while(f)
+   {
+      if (f==inObject)
+      {
+         mFocusObject = 0;
+         return;
+      }
+      f = f->getParent();
+   }
 }
 
 

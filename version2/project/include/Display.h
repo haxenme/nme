@@ -105,6 +105,8 @@ void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &i
         
 enum Cursor { curNone, curPointer, curHand, curTextSelect };
 
+extern const char *sTextCursorData[];
+
 extern bool gMouseShowCursor;
 
 class DisplayObject : public Object

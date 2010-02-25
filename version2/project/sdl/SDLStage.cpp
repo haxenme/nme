@@ -76,6 +76,40 @@ public:
 };
 
 
+SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
+{
+  int i, row, col;
+  Uint8 data[4*32];
+  Uint8 mask[4*32];
+
+  i = -1;
+  for ( row=0; row<32; ++row ) {
+    for ( col=0; col<32; ++col ) {
+      if ( col % 8 ) {
+        data[i] <<= 1;
+        mask[i] <<= 1;
+      } else {
+        ++i;
+        data[i] = mask[i] = 0;
+      }
+      switch (image[row][col]) {
+        case 'X':
+          data[i] |= 0x01;
+          mask[i] |= 0x01;
+          break;
+        case '.':
+          mask[i] |= 0x01;
+          break;
+        case ' ':
+          break;
+      }
+    }
+  }
+  return SDL_CreateCursor(data, mask, 32, 32, inHotX, inHotY);
+}
+
+SDL_Cursor *sDefaultCursor = 0;
+SDL_Cursor *sTextCursor = 0;
 
 
 
@@ -126,10 +160,33 @@ public:
    {
    }
 
-    void SetPollMethod(PollMethod inMethod)
-    {
-       SetGlobalPollMethod(inMethod);
-    }
+   void SetCursor(Cursor inCursor)
+   {
+      if (sDefaultCursor==0)
+         sDefaultCursor = SDL_GetCursor();
+   
+      if (inCursor==curNone)
+         SDL_ShowCursor(false);
+      else
+      {
+         SDL_ShowCursor(true);
+   
+         if (inCursor==curPointer || inCursor==curHand)
+            SDL_SetCursor(sDefaultCursor);
+         else
+         {
+            if (sTextCursor==0)
+               sTextCursor = CreateCursor(sTextCursorData,1,13);
+            SDL_SetCursor(sTextCursor);
+         }
+      }
+   }
+   
+
+   void SetPollMethod(PollMethod inMethod)
+   {
+      SetGlobalPollMethod(inMethod);
+   }
 
 
    Surface *GetPrimarySurface()
@@ -363,12 +420,25 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
+      case SDL_MOUSEBUTTONDOWN:
+      {
+         Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y);
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+      case SDL_MOUSEBUTTONUP:
+      {
+         Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y);
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
       case SDL_VIDEORESIZE:
       {
          break;
       }
    }
 }
+
 
 #ifdef NME_MIXER
 int id = soundGetNextDoneChannel();
