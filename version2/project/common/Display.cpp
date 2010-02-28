@@ -1010,6 +1010,12 @@ void Stage::HandleEvent(Event &inEvent)
       }
    }
 
+   if (inEvent.type==etKeyDown || inEvent.type==etKeyUp)
+	{
+		printf("Key %s : %d %d (%c)\n", inEvent.type==etKeyDown ? "DOWN" : "UP  ",
+			inEvent.code, inEvent.value, inEvent.value );
+	}
+
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
          inEvent.type==etMouseClick )
    {

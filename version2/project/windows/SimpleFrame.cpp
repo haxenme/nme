@@ -2,6 +2,7 @@
 #include <Display.h>
 #include <Surface.h>
 #include <windows.h>
+#include <KeyCodes.h>
 #include <map>
 
 #include <gl/GL.h>
@@ -308,6 +309,76 @@ public:
 
 // --- Frame ------------------------------------------------------------------------
 
+#define VK_TRANS(x) case VK_##x: return key##x;
+
+static HKL gKeyboardLayout = 0;
+
+int WinKeyToFlash(int inKey,bool &outRight,int inChar)
+{
+   outRight = (inKey==VK_RSHIFT || inKey==VK_RCONTROL || inKey==VK_RMENU ||inKey==VK_RWIN);
+
+   if (inKey>=keyA && inKey<=keyZ)
+      return inKey;
+   if (inKey>='0' && inKey<='9')
+      return inKey;
+   if (inKey>=VK_NUMPAD0 && inKey<=VK_NUMPAD9)
+      return inKey - VK_NUMPAD0 + keyNUMPAD_0;
+
+   if (inKey>=VK_F1 && inKey<=VK_F15)
+      return inKey - VK_F1 + keyF1;
+
+
+   switch(inKey)
+   {
+      case VK_RMENU:
+      case VK_LMENU:
+         return keyALTERNATE;
+      case VK_RSHIFT:
+      case VK_LSHIFT:
+         return keySHIFT;
+      case VK_RCONTROL:
+      case VK_LCONTROL:
+         return keyCONTROL;
+      case VK_LWIN:
+      case VK_RWIN:
+         return keyCOMMAND;
+
+      case VK_CAPITAL: return keyCAPS_LOCK;
+      case VK_NEXT: return keyPAGE_DOWN;
+      case VK_PRIOR: return keyPAGE_UP;
+      case '=': return keyEQUAL;
+      case VK_RETURN:
+         return keyENTER;
+
+		case '`' : return keyBACKQUOTE;
+		//case '\\' : return keyBACKSLASH;
+		case VK_OEM_COMMA : return keyCOMMA;
+		case VK_BACK : return keyBACKSPACE;
+		case VK_OEM_MINUS : return keyMINUS;
+		case VK_OEM_PERIOD : return keyPERIOD;
+      VK_TRANS(DELETE)
+      VK_TRANS(DOWN)
+      VK_TRANS(END)
+      VK_TRANS(ESCAPE)
+      VK_TRANS(HOME)
+      VK_TRANS(INSERT)
+      VK_TRANS(LEFT)
+		// case '(' : return keyLEFTBRACKET;
+      //VK_TRANS(QUOTE)
+      VK_TRANS(RIGHT)
+      //VK_TRANS(RIGHTBRACKET)
+      //VK_TRANS(SEMICOLON)
+      //VK_TRANS(SLASH)
+      VK_TRANS(SPACE)
+      VK_TRANS(TAB)
+      VK_TRANS(UP)
+   }
+
+   return inChar;
+
+}
+
+
 
 class WindowsFrame : public Frame
 {
@@ -384,6 +455,27 @@ public:
             }
             break;
 			// TODO : Create click event
+
+			case WM_KEYUP:
+			case WM_KEYDOWN:
+            {
+            Event key(uMsg==WM_KEYDOWN ? etKeyDown: etKeyUp);
+				if (!gKeyboardLayout)
+					gKeyboardLayout = GetKeyboardLayout(0);
+				static uint8 key_buffer[256];
+				GetKeyboardState(key_buffer);
+
+				wchar_t codes[4] = {0,0,0,0};
+				int converted = ToUnicodeEx( wParam, (lParam>>16)&0xff, key_buffer, codes, 4,
+										  0, gKeyboardLayout );
+				key.value = converted==1 ?  codes[0] : 0;
+				bool right;
+				key.code = WinKeyToFlash(wParam,right,key.code);
+				if (right)
+					key.flags |= efLocationRight;
+				mStage->HandleEvent(key);
+            break;
+				}
 
          case WM_SETCURSOR:
 				mStage->ApplyCursor();
