@@ -41,6 +41,20 @@ public:
    int  getTextColor() { return textColor; }
    bool getIsInput() { return isInput; }
    void setIsInput(bool inIsInput);
+   AutoSizeMode getAutoSize() { return autoSize; }
+   void  setAutoSize(int inAutoSize);
+
+   int   getCaretIndex() { return caretIndex; }
+   int   getMaxScrollH() { return maxScrollH; }
+   int   getMaxScrollV() { return maxScrollV; }
+   int   getBottomScrollV();
+   int   getScrollH() { return scrollH; }
+   void  setScrollH(int inScrollH);
+   int   getScrollV() { return scrollV; }
+   void  setScrollV(int inScrollV);
+   int   getNumLines() { return mLines.size(); }
+   int   getSelectionBeginIndex();
+   int   getSelectionEndIndex();
 
    const TextFormat *getDefaultTextFormat();
    void setDefaultTextFormat(TextFormat *inFormat);
@@ -53,6 +67,10 @@ public:
 	void  setBorder(bool inBorder);
    int   getBorderColor() const { return borderColor; }
 	void  setBorderColor(int inBorderColor);
+   bool  getMultiline() const { return multiline; }
+	void  setMultiline(bool inMultiline);
+   bool  getWordWrap() const { return wordWrap; }
+	void  setWordWrap(bool inWordWrap);
 
 
    double getWidth();
@@ -65,14 +83,7 @@ public:
    std::wstring getText();
    void setText(const std::wstring &inString);
 
-   int   getBottomScrollV();
-   int   getCaretIndex();
    int   getLength();
-   int   getMaxScrollH();
-   int   getMaxScrollV();
-   int   getNumLines();
-   int   getSelectionBeginIndex();
-   int   getSelectionEndIndex();
    int   getTextHeight();
    int   getTextWidth();
 
@@ -93,8 +104,6 @@ public:
    bool mouseWheelEnabled;
    bool multiline;
    std::wstring restrict;
-   int  scrollH;
-   int  scrollV;
    bool selectable;
    float sharpness;
    struct StyleSheet *styleSheet;
@@ -103,6 +112,12 @@ public:
    bool useRichTextClipboard;
    bool  wordWrap;
 	bool  isInput;
+
+   int  scrollH;
+   int  scrollV;
+   int  maxScrollH;
+   int  maxScrollV;
+	int  caretIndex;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -136,6 +151,11 @@ private:
    StringState mStringState;
    std::wstring mUserString;
 
+	int  PointToChar(int inX,int inY);
+	int  LineFromChar(int inChar);
+	int  EndOfCharX(int inChar,int inLine);
+	int  EndOfLineX(int inLine);
+
    bool mLinesDirty;
    bool mGfxDirty;
    bool mFontsDirty;
@@ -144,6 +164,11 @@ private:
 
    CharGroups mCharGroups;
    Lines mLines;
+	QuickVec<ImagePoint> mCharPos;
+
+	int mSelectMin;
+	int mSelectMax;
+	int mSelectDownChar;
 };
 
 } // end namespace nme

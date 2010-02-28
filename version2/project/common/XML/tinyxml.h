@@ -819,6 +819,7 @@ public:
 
 	// Get the tinyxml string representation
 	const TIXML_STRING& NameTStr() const { return name; }
+	const TIXML_STRING& ValueTStr() const { return value; }
 
 	/** QueryIntValue examines the value string. It is an alternative to the
 		IntValue() method with richer error checking.

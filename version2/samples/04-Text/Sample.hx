@@ -26,11 +26,14 @@ class Sample
 
       var tf = new nme.text.TextField();
       tf.type = nme.text.TextFieldType.INPUT;
-      tf.text = "Hello Hello Hello, what's all this here then?";
+      tf.htmlText = "Hello Hello <b>Hello</b>, what's all this here then?";
       tf.background = true;
       tf.backgroundColor = 0xccccff;
       tf.border = true;
+		tf.multiline = true;
+		tf.wordWrap = true;
       tf.borderColor = 0x000000;
+		tf.autoSize = nme.text.TextFieldAutoSize.LEFT;
       tf.x = 100;
       tf.y = 300;
       p1.addChild(tf);

@@ -164,6 +164,18 @@ struct Point2D
       }
       return *this;
    }
+	inline bool operator < (const Point2D &inRHS) const
+	{
+		if (y<inRHS.y) return true;
+		if (y>inRHS.y) return false;
+		return x<inRHS.x;
+	}
+	inline bool operator > (const Point2D &inRHS) const
+	{
+		if (y>inRHS.y) return true;
+		if (y<inRHS.y) return false;
+		return x>inRHS.x;
+	}
 
    T x;
    T y;

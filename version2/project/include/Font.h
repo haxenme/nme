@@ -96,6 +96,7 @@ struct CharGroup
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
 
+	int             mChar0;
 	int             mChars;
 	int             mFontHeight;
 	int             mNewLines;

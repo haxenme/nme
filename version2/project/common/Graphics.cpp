@@ -315,8 +315,7 @@ void Graphics::Flush(bool inLine, bool inFill)
    int n = mPathData->commands.size();
    int d = mPathData->data.size();
 
-   // Do fill first, so lines go over top - will have to add some extra code
-   //  to insert fill under appropriate lines at some stage.
+   // Do fill first, so lines go over top.
    if (inFill)
    {
       if (mFillJob.mFill && mFillJob.mCommand0 <n)
@@ -325,19 +324,24 @@ void Graphics::Flush(bool inLine, bool inFill)
          mFillJob.mCommandCount = n-mFillJob.mCommand0;
          mFillJob.mDataCount = d-mFillJob.mData0;
 
-         // Move it up the list so it is "below" lines that start at the same point
+         // Move the fill job up the list so it is "below" lines that start at the same
+			// (or later) data point
          int pos = mJobs.size()-1;
-         while(pos>0)
+         while(pos>=0)
          {
-            if (mJobs[pos].mCommand0 < mFillJob.mCommand0)
+            if (mJobs[pos].mData0 < mFillJob.mData0)
                break;
             pos--;
          }
          pos++;
          if (pos==mJobs.size())
+			{
             mJobs.push_back(mFillJob);
+			}
          else
+			{
             mJobs.InsertAt(0,mFillJob);
+			}
       }
       mFillJob.mCommand0 = n;
       mFillJob.mData0 = d;

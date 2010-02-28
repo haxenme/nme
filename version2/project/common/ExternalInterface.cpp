@@ -1019,13 +1019,17 @@ value nme_text_field_set_##prop(value inHandle,value inValue) \
 DEFINE_PRIM(nme_text_field_set_##prop,2);
 
 TEXT_PROP(text,Text,alloc_wstring,val_wstring);
+TEXT_PROP(html_text,HTMLText,alloc_wstring,val_wstring);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 TEXT_PROP(type,IsInput,alloc_bool,val_bool);
+TEXT_PROP(multiline,Multiline,alloc_bool,val_bool);
+TEXT_PROP(word_wrap,WordWrap,alloc_bool,val_bool);
 TEXT_PROP(background,Background,alloc_bool,val_bool);
 TEXT_PROP(background_color,BackgroundColor,alloc_int,val_int);
 TEXT_PROP(border,Border,alloc_bool,val_bool);
 TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
+TEXT_PROP(auto_size,AutoSize,alloc_int,val_int);
 
 // --- BitmapData -----------------------------------------------------
 
