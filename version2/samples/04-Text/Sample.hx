@@ -21,19 +21,19 @@ class Sample
 
       var p1 = new nme.display.Sprite();
       AddHandlers(p1);
-      nme.Lib.stage.addChild(p1);
+      nme.Lib.current.stage.addChild(p1);
 
 
       var tf = new nme.text.TextField();
       tf.type = nme.text.TextFieldType.INPUT;
-      tf.htmlText = "Hello Hello <b>Hello</b>, what's all this here then?";
+      tf.htmlText = "<p align='center'>Hello Hello <b>Hello</b>, what's all this here then?</p>";
       tf.background = true;
       tf.backgroundColor = 0xccccff;
       tf.border = true;
-		tf.multiline = true;
-		tf.wordWrap = true;
+      tf.multiline = true;
+      tf.wordWrap = true;
       tf.borderColor = 0x000000;
-		tf.autoSize = nme.text.TextFieldAutoSize.LEFT;
+      tf.autoSize = nme.text.TextFieldAutoSize.LEFT;
       tf.x = 100;
       tf.y = 300;
       p1.addChild(tf);

@@ -34,7 +34,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    thickness(0),
    useRichTextClipboard(false),
    wordWrap(false),
-	isInput(false)
+   isInput(false)
 {
    mStringState = ssText;
    mLinesDirty = false;
@@ -42,9 +42,9 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mRect = Rect(100,100);
    mLastUpdateScale = -1;
    mFontsDirty = false;
-	mSelectMin = mSelectMax = 0;
-	mSelectDownChar = 0;
-	caretIndex = 0;
+   mSelectMin = mSelectMax = 0;
+   mSelectDownChar = 0;
+   caretIndex = 0;
 }
 
 TextField::~TextField()
@@ -104,59 +104,59 @@ void TextField::setTextColor(int inCol)
 
 void TextField::setIsInput(bool inIsInput)
 {
-	isInput = inIsInput;
+   isInput = inIsInput;
 }
 
 void TextField::setBackground(bool inBackground)
 {
-	background = inBackground;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   background = inBackground;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setBackgroundColor(int inBackgroundColor)
 {
-	backgroundColor = inBackgroundColor;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   backgroundColor = inBackgroundColor;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setBorder(bool inBorder)
 {
-	border = inBorder;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   border = inBorder;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setBorderColor(int inBorderColor)
 {
-	borderColor = inBorderColor;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   borderColor = inBorderColor;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setMultiline(bool inMultiline)
 {
-	multiline = inMultiline;
-	mLinesDirty = true;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   multiline = inMultiline;
+   mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setWordWrap(bool inWordWrap)
 {
-	wordWrap = inWordWrap;
-	mLinesDirty = true;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   wordWrap = inWordWrap;
+   mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 void TextField::setAutoSize(int inAutoSize)
 {
-	autoSize = (AutoSizeMode)inAutoSize;
-	mLinesDirty = true;
-	mGfxDirty = true;
-	DirtyDown(dirtCache);
+   autoSize = (AutoSizeMode)inAutoSize;
+   mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyDown(dirtCache);
 }
 
 
@@ -171,88 +171,88 @@ void TextField::Unfocus()
 
 int TextField::getLength()
 {
-	if (mLines.empty()) return 0;
-	Line & l =  mLines[ mLines.size()-1 ];
-	return l.mChar0 + l.mChars;
+   if (mLines.empty()) return 0;
+   Line & l =  mLines[ mLines.size()-1 ];
+   return l.mChar0 + l.mChars;
 }
 
 int TextField::PointToChar(int inX,int inY)
 {
-	if (mCharPos.empty() || inY<mRect.y)
-		return 0;
+   if (mCharPos.empty() || inY<mRect.y)
+      return 0;
 
-	// Find the line ...
-	for(int l=0;l<mLines.size();l++)
-	{
-		Line &line = mLines[l];
-		if ( (line.mY0+line.mMetrics.height) > inY && line.mChars)
-		{
-			// Find the char
-			for(int c=0; c<line.mChars;c++)
-				if (mCharPos[line.mChar0 + c].x>inX)
-					return c==0 ? line.mChar0 : line.mChar0+c-1;
-			return line.mChar0 + line.mChars;
-		}
-	}
+   // Find the line ...
+   for(int l=0;l<mLines.size();l++)
+   {
+      Line &line = mLines[l];
+      if ( (line.mY0+line.mMetrics.height) > inY && line.mChars)
+      {
+         // Find the char
+         for(int c=0; c<line.mChars;c++)
+            if (mCharPos[line.mChar0 + c].x>inX)
+               return c==0 ? line.mChar0 : line.mChar0+c-1;
+         return line.mChar0 + line.mChars;
+      }
+   }
 
-	return getLength();
+   return getLength();
 }
 
 
 
 int TextField::getSelectionBeginIndex()
 {
-	if (mSelectMax <= mSelectMin)
-		return caretIndex;
-	return mSelectMin;
+   if (mSelectMax <= mSelectMin)
+      return caretIndex;
+   return mSelectMin;
 }
 
 int TextField::getSelectionEndIndex()
 {
-	if (mSelectMax <= mSelectMin)
-		return caretIndex;
-	return mSelectMax;
+   if (mSelectMax <= mSelectMin)
+      return caretIndex;
+   return mSelectMax;
 }
 
 
 bool TextField::CaptureDown(Event &inEvent)
 {
-	if (selectable || isInput)
-	{
-   	UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
-		int pos = PointToChar(point.x,point.y);
-		caretIndex = pos;
-		if (selectable)
-		{
-			mSelectDownChar = pos;
-			mSelectMin = mSelectMax = pos;
-			mGfxDirty = true;
-			DirtyDown(dirtCache);
-		}
-	}
-	return true;
+   if (selectable || isInput)
+   {
+      UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
+      int pos = PointToChar(point.x,point.y);
+      caretIndex = pos;
+      if (selectable)
+      {
+         mSelectDownChar = pos;
+         mSelectMin = mSelectMax = pos;
+         mGfxDirty = true;
+         DirtyDown(dirtCache);
+      }
+   }
+   return true;
 }
 
 void TextField::Drag(Event &inEvent)
 {
-	if (selectable)
-	{
+   if (selectable)
+   {
       UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
-		int pos = PointToChar(point.x,point.y);
-		if (pos>mSelectDownChar)
-		{
-			mSelectMin = mSelectDownChar;
-			mSelectMax = pos;
-		}
-		else
-		{
-			mSelectMin = pos;
-			mSelectMax = mSelectDownChar;
-		}
-		//printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
-		mGfxDirty = true;
-		DirtyDown(dirtCache);
-	}
+      int pos = PointToChar(point.x,point.y);
+      if (pos>mSelectDownChar)
+      {
+         mSelectMin = mSelectDownChar;
+         mSelectMax = pos;
+      }
+      else
+      {
+         mSelectMin = pos;
+         mSelectMax = mSelectDownChar;
+      }
+      //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
+      mGfxDirty = true;
+      DirtyDown(dirtCache);
+   }
 }
 
 void TextField::EndDrag(Event &inEvent)
@@ -307,7 +307,7 @@ std::wstring TextField::getHTMLText()
 
 
 void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount,
-                        int inLineSkips)
+                        int inLineSkips,bool inBeginParagraph)
 {
    for(const TiXmlNode *child = inNode->FirstChild(); child; child = child->NextSibling() )
    {
@@ -323,11 +323,13 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars.mString = str;
          chars.mChars = len;
          chars.mNewLines = inLineSkips;
+         chars.mBeginParagraph = inBeginParagraph;
          ioCharCount += len;
 
          mCharGroups.push_back(chars);
          //printf(" %s %d\n", text->Value(), inLineSkips );
          inLineSkips = 0;
+         inBeginParagraph = 0;
       }
       else
       {
@@ -398,26 +400,31 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
             else if (el->ValueTStr()=="br")
                inLineSkips++;
             else if (el->ValueTStr()=="p")
-               inLineSkips++;
+            {
+               if (inBeginParagraph)
+                  inLineSkips++;
+               else
+                  inBeginParagraph = true;
+            }
 
-				for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())
+            for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())
             {
                //const char *val = att->Value();
                if (att->NameTStr()=="align")
-					{
-						if (att->ValueTStr()=="left")
-							inFormat->align = tfaLeft;
-						else if (att->ValueTStr()=="right")
-							inFormat->align = tfaRight;
-						else if (att->ValueTStr()=="center")
-							inFormat->align = tfaCenter;
-						else if (att->ValueTStr()=="justify")
-							inFormat->align = tfaJustify;
-					}
-				}
+               {
+                  if (att->ValueTStr()=="left")
+                     inFormat->align = tfaLeft;
+                  else if (att->ValueTStr()=="right")
+                     inFormat->align = tfaRight;
+                  else if (att->ValueTStr()=="center")
+                     inFormat->align = tfaCenter;
+                  else if (att->ValueTStr()=="justify")
+                     inFormat->align = tfaJustify;
+               }
+            }
 
 
-            AddNode(child,fmt,ioCharCount,inLineSkips);
+            AddNode(child,fmt,ioCharCount,inLineSkips,inBeginParagraph);
 
             inFormat->DecRef();
          }
@@ -440,7 +447,7 @@ void TextField::setHTMLText(const std::wstring &inString)
    if (top)
    {
       int chars = 0;
-      AddNode(top,defaultTextFormat,chars,0);
+      AddNode(top,defaultTextFormat,chars,0,0);
    }
 }
 
@@ -448,9 +455,9 @@ void TextField::setHTMLText(const std::wstring &inString)
 void TextField::UpdateFonts(const Transform &inTransform)
 {
    double scale = inTransform.mMatrix->GetScaleY();// * inTransform->mStageScaleY;
-	GlyphRotation rot = fabs(inTransform.mMatrix->m00)<0.0001 ?
-	                         (inTransform.mMatrix->m01 > 0 ? gr90 : gr270 ) :
-	                      (inTransform.mMatrix->m00 > 0 ? gr0 : gr180 );
+   GlyphRotation rot = fabs(inTransform.mMatrix->m00)<0.0001 ?
+                            (inTransform.mMatrix->m01 > 0 ? gr90 : gr270 ) :
+                         (inTransform.mMatrix->m00 > 0 ? gr0 : gr180 );
 
    if (mFontsDirty || scale!=mLastUpdateScale || rot!=mLastUpdateRotation)
    {
@@ -465,38 +472,38 @@ void TextField::UpdateFonts(const Transform &inTransform)
 
 int TextField::LineFromChar(int inChar)
 {
-	int min = 0;
-	int max = mLines.size();
+   int min = 0;
+   int max = mLines.size();
 
-	while(min+1<max)
-	{
-		int mid = (min+max)/2;
-		if (mLines[mid].mChar0>inChar)
-			max = mid;
-		else
-			min = mid;
-	}
-	while(min<max && mLines[min].mChars==0)
-		min++;
-	return min;
+   while(min+1<max)
+   {
+      int mid = (min+max)/2;
+      if (mLines[mid].mChar0>inChar)
+         max = mid;
+      else
+         min = mid;
+   }
+   while(min<max && mLines[min].mChars==0)
+      min++;
+   return min;
 }
 
 int TextField::EndOfLineX(int inLine)
 {
-	Line &line = mLines[inLine];
-	return mCharPos[ line.mChar0 ].x + line.mMetrics.width;
+   Line &line = mLines[inLine];
+   return mCharPos[ line.mChar0 ].x + line.mMetrics.width;
 }
 
 int TextField::EndOfCharX(int inChar,int inLine)
 {
-	if (inLine<0 || inLine>=mLines.size() || inChar<0 || inChar>=mCharPos.size())
-		return 0;
-	Line &line = mLines[inLine];
-	// Not last character on line?
-	if (inChar < line.mChar0 + line.mChars -1 )
-		return mCharPos[inChar+1].x;
+   if (inLine<0 || inLine>=mLines.size() || inChar<0 || inChar>=mCharPos.size())
+      return 0;
+   Line &line = mLines[inLine];
+   // Not last character on line?
+   if (inChar < line.mChar0 + line.mChars -1 )
+      return mCharPos[inChar+1].x;
    // Return end-of-line
-	return mCharPos[ line.mChar0 ].x + line.mMetrics.width;
+   return mCharPos[ line.mChar0 ].x + line.mMetrics.width;
 }
 
 
@@ -510,21 +517,21 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UpdateFonts(inState.mTransform);
    Layout();
 
-	if (inState.mPhase==rpHitTest)
-	{
-		UserPoint pos =  inState.mTransform.mMatrix->ApplyInverse(
-				UserPoint(inState.mClipRect.x, inState.mClipRect.y) );
-		if ( mRect.Contains(pos) )
-			inState.mHitResult = this;
-		return;
-	}
+   if (inState.mPhase==rpHitTest)
+   {
+      UserPoint pos =  inState.mTransform.mMatrix->ApplyInverse(
+            UserPoint(inState.mClipRect.x, inState.mClipRect.y) );
+      if ( mRect.Contains(pos) )
+         inState.mHitResult = this;
+      return;
+   }
 
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
    {
       gfx.clear();
       if (background || border)
-		{
+      {
          int b=2;
          if (background)
             gfx.beginFill( backgroundColor, 1 );
@@ -536,35 +543,35 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          gfx.lineTo(mRect.x-b,mRect.y+b+mRect.h);
          gfx.lineTo(mRect.x-b,mRect.y-b);
       }
-		//printf("%d,%d\n", mSelectMin , mSelectMax);
-		if (mSelectMin < mSelectMax)
-		{
-			int l0 = LineFromChar(mSelectMin);
-			int l1 = LineFromChar(mSelectMax-1);
-			ImagePoint pos = mCharPos[mSelectMin];
-			int height = mLines[l1].mMetrics.height;
-			int x1 = EndOfCharX(mSelectMax-1,l1);
-			gfx.lineStyle(-1);
-			gfx.beginFill( 0x101060, 1);
-			// Special case of begin/end on same line ...
-			if (l0==l1)
-			{
-				gfx.drawRect(pos.x,pos.y,x1-pos.x,height);
-			}
-			else
-			{
-				gfx.drawRect(pos.x,pos.y,EndOfLineX(l0)-pos.x,height);
-				for(int y=l0+1;y<l1;y++)
-				{
-					Line &line = mLines[y];
-					pos = mCharPos[line.mChar0];
-					gfx.drawRect(pos.x,pos.y,EndOfLineX(y)-pos.x,line.mMetrics.height);
-				}
-				Line &line = mLines[l1];
-				pos = mCharPos[line.mChar0];
-				gfx.drawRect(pos.x,pos.y,x1-pos.x,line.mMetrics.height);
-			}
-		}
+      //printf("%d,%d\n", mSelectMin , mSelectMax);
+      if (mSelectMin < mSelectMax)
+      {
+         int l0 = LineFromChar(mSelectMin);
+         int l1 = LineFromChar(mSelectMax-1);
+         ImagePoint pos = mCharPos[mSelectMin];
+         int height = mLines[l1].mMetrics.height;
+         int x1 = EndOfCharX(mSelectMax-1,l1);
+         gfx.lineStyle(-1);
+         gfx.beginFill( 0x101060, 1);
+         // Special case of begin/end on same line ...
+         if (l0==l1)
+         {
+            gfx.drawRect(pos.x,pos.y,x1-pos.x,height);
+         }
+         else
+         {
+            gfx.drawRect(pos.x,pos.y,EndOfLineX(l0)-pos.x,height);
+            for(int y=l0+1;y<l1;y++)
+            {
+               Line &line = mLines[y];
+               pos = mCharPos[line.mChar0];
+               gfx.drawRect(pos.x,pos.y,EndOfLineX(y)-pos.x,line.mMetrics.height);
+            }
+            Line &line = mLines[l1];
+            pos = mCharPos[line.mChar0];
+            gfx.drawRect(pos.x,pos.y,x1-pos.x,line.mMetrics.height);
+         }
+      }
       mGfxDirty = false;
    }
 
@@ -598,49 +605,49 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    HardwareContext *hardware = target.IsHardware() ? target.mHardware : 0;
 
-	int line = 0;
-	int last_line = mLines.size()-1;
-	for(int g=0;g<mCharGroups.size();g++)
-	{
-		CharGroup &group = mCharGroups[g];
+   int line = 0;
+   int last_line = mLines.size()-1;
+   for(int g=0;g<mCharGroups.size();g++)
+   {
+      CharGroup &group = mCharGroups[g];
       if (group.mString && group.mFont)
-	   {
+      {
          uint32 group_tint =
               inState.mColourTransform->Transform(group.mFormat->color(textColor) | 0xff000000);
-			for(int c=0;c<group.mChars;c++)
-			{
-				int ch = group.mString[c];
+         for(int c=0;c<group.mChars;c++)
+         {
+            int ch = group.mString[c];
             if (ch!='\n')
-				{
-					int cid = group.mChar0 + c;
-					ImagePoint pos = mCharPos[cid];
-					if (pos.y>mRect.h) break;
-					while(line<last_line && mLines[line+1].mChar0 >= cid)
-						line++;
-					pos.y += mLines[line].mMetrics.ascent;
+            {
+               int cid = group.mChar0 + c;
+               ImagePoint pos = mCharPos[cid];
+               if (pos.y>mRect.h) break;
+               while(line<last_line && mLines[line+1].mChar0 >= cid)
+                  line++;
+               pos.y += mLines[line].mMetrics.ascent;
 
-					int a;
-					Tile tile = group.mFont->GetGlyph( ch, a);
-					UserPoint p = origin + dPdX*pos.x + dPdY*pos.y+ UserPoint(tile.mOx,tile.mOy);
-					uint32 tint = cid>=mSelectMin && cid<mSelectMax ? 0xffffffff : group_tint;
-					if (hardware)
-					{
-						// todo - better to wizz though and do all of the same surface first?
-						// ok to call this multiple times with same data
-						hardware->BeginBitmapRender(tile.mSurface,tint);
-						hardware->RenderBitmap(tile.mRect, (int)p.x, (int)p.y);
-					}
-					else
-					{
-						tile.mSurface->BlitTo(target,
-							tile.mRect, (int)p.x, (int)p.y,
-							bmTinted, 0,
-						  (uint32)tint);
-					}
-				}
-			}
-		}
-	}
+               int a;
+               Tile tile = group.mFont->GetGlyph( ch, a);
+               UserPoint p = origin + dPdX*pos.x + dPdY*pos.y+ UserPoint(tile.mOx,tile.mOy);
+               uint32 tint = cid>=mSelectMin && cid<mSelectMax ? 0xffffffff : group_tint;
+               if (hardware)
+               {
+                  // todo - better to wizz though and do all of the same surface first?
+                  // ok to call this multiple times with same data
+                  hardware->BeginBitmapRender(tile.mSurface,tint);
+                  hardware->RenderBitmap(tile.mRect, (int)p.x, (int)p.y);
+               }
+               else
+               {
+                  tile.mSurface->BlitTo(target,
+                     tile.mRect, (int)p.x, (int)p.y,
+                     bmTinted, 0,
+                    (uint32)tint);
+               }
+            }
+         }
+      }
+   }
 
 
    if (hardware)
@@ -675,7 +682,7 @@ void TextField::Layout()
       return;
 
    mLines.resize(0);
-	mCharPos.resize(0);
+   mCharPos.resize(0);
 
    int y0 = 0;
    Line line;
@@ -689,18 +696,21 @@ void TextField::Layout()
    for(int i=0;i<mCharGroups.size();i++)
    {
       CharGroup &g = mCharGroups[i];
-		g.mChar0 = char_count;
+      g.mChar0 = char_count;
       int cid = 0;
       int last_word_cid = 0;
       int last_word_x = x;
       int last_word_line_chars = line.mChars;
-      if (g.mNewLines>0 && multiline)
+      int new_lines = g.mNewLines;
+      if (g.mBeginParagraph && x>0)
+         new_lines++;
+      if ( new_lines && multiline)
       {
          if (line.mChars)
          {
             g.UpdateMetrics(line.mMetrics);
             mLines.push_back(line);
-            y += line.mMetrics.height + (g.mNewLines-1) * g.Height();
+            y += line.mMetrics.height + (new_lines-1) * g.Height();
             line.Clear();
          }
          else
@@ -731,7 +741,7 @@ void TextField::Layout()
 
          int advance = 0;
          int ch = g.mString[cid];
-			mCharPos.push_back( ImagePoint(x,y) );
+         mCharPos.push_back( ImagePoint(x,y) );
          line.mChars++;
          char_count++;
          cid++;
@@ -772,7 +782,7 @@ void TextField::Layout()
                cid--;
                line.mChars--;
                char_count--;
-					mCharPos.qpop();
+               mCharPos.qpop();
                line.mMetrics.width = ox;
             }
             else
@@ -780,7 +790,7 @@ void TextField::Layout()
                // backtrack to last break ...
                cid = last_word_cid;
                char_count-= line.mChars - last_word_line_chars;
-					mCharPos.resize(char_count);
+               mCharPos.resize(char_count);
                line.mChars = last_word_line_chars;
                line.mMetrics.width = last_word_x;
             }
@@ -809,45 +819,45 @@ void TextField::Layout()
    if (autoSize != asNone)
    {
       if (!wordWrap)
-		{
-			switch(autoSize)
-			{
-				case asLeft: mRect.w = width; break;
-				case asRight: mRect.x = mRect.x1()-width; mRect.w = width; break;
-				case asCenter: mRect.x = (mRect.x+mRect.x1()-width)/2; mRect.w = width; break;
-			}
-		}
+      {
+         switch(autoSize)
+         {
+            case asLeft: mRect.w = width; break;
+            case asRight: mRect.x = mRect.x1()-width; mRect.w = width; break;
+            case asCenter: mRect.x = (mRect.x+mRect.x1()-width)/2; mRect.w = width; break;
+         }
+      }
       mRect.h = height;
    }
 
-	// Align rows ...
-	for(int l=0;l<mLines.size();l++)
+   // Align rows ...
+   for(int l=0;l<mLines.size();l++)
    {
       Line &line = mLines[l];
       int chars = line.mChars;
-		if (chars>0)
-		{
-		   CharGroup &group = mCharGroups[line.mCharGroup0];
+      if (chars>0)
+      {
+         CharGroup &group = mCharGroups[line.mCharGroup0];
 
-			// Get alignment...
-			int extra = (mRect.w - line.mMetrics.width);
-			switch(group.mFormat->align(tfaLeft))
-			{
-				case tfaLeft: extra = 0; break;
-				case tfaCenter: extra/=2; break;
-			}
-			if (extra)
-			{
-				for(int c=line.mCharInGroup0; c<line.mChars; c++)
-					mCharPos[c].x += extra;
-			}
-		}
-	}
+         // Get alignment...
+         int extra = (mRect.w - line.mMetrics.width);
+         switch(group.mFormat->align(tfaLeft))
+         {
+            case tfaLeft: extra = 0; break;
+            case tfaCenter: extra/=2; break;
+         }
+         if (extra)
+         {
+            for(int c=0; c<line.mChars; c++)
+               mCharPos[line.mChar0+c].x += extra;
+         }
+      }
+   }
 
    mLinesDirty = false;
-	int n = mCharPos.size();
-	mSelectMin = std::min(mSelectMin,n);
-	mSelectMax = std::min(mSelectMax,n);
+   int n = mCharPos.size();
+   mSelectMin = std::min(mSelectMin,n);
+   mSelectMax = std::min(mSelectMax,n);
 }
 
 

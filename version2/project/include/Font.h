@@ -99,7 +99,8 @@ struct CharGroup
 	int             mChar0;
 	int             mChars;
 	int             mFontHeight;
-	int             mNewLines;
+	short           mNewLines;
+        bool            mBeginParagraph;
 	const wchar_t   *mString;
 	TextFormat      *mFormat;
 	class Font      *mFont;

@@ -46,6 +46,8 @@ enum EventFlags
    efCommandDown = 0x0010,
    efMiddleDown  = 0x0020,
    efRightDown  = 0x0040,
+
+   efLocationRight  = 0x4000,
 };
 
 enum FocusSource { fsProgram, fsMouse, fsKey };
