@@ -2,6 +2,7 @@
 #include <Tilesheet.h>
 #include <Utils.h>
 #include <Surface.h>
+#include <KeyCodes.h>
 #include "XML/tinyxml.h"
 #include <ctype.h>
 
@@ -260,6 +261,39 @@ void TextField::EndDrag(Event &inEvent)
 }
 
 
+void TextField::OnKey(Event &inEvent)
+{
+   if (isInput)
+   {
+      printf("Key %d\n", inEvent.code);
+      switch(inEvent.value)
+      {
+         case keyBACKSPACE:
+            if (mSelectMin<mSelectMax)
+            {
+               DeleteSelection();
+            }
+            else
+            {
+               if (caretIndex>0)
+               {
+                  caretIndex--;
+               }
+            }
+            return;
+      }
+
+      if (inEvent.code>0)
+      {
+         DeleteSelection();
+         wchar_t str[2] = {inEvent.code,0};
+         InsertString(str);
+      }
+   }
+}
+
+
+
 
 
 void TextField::Clear()
@@ -488,6 +522,26 @@ int TextField::LineFromChar(int inChar)
    return min;
 }
 
+int TextField::GroupFromChar(int inChar)
+{
+   int min = 0;
+   int max = mCharGroups.size();
+
+   while(min+1<max)
+   {
+      int mid = (min+max)/2;
+      if (mCharGroups[mid].mChar0>inChar)
+         max = mid;
+      else
+         min = mid;
+   }
+   while(min<max && mCharGroups[min].mChars==0)
+      min++;
+   return min;
+}
+
+
+
 int TextField::EndOfLineX(int inLine)
 {
    Line &line = mLines[inLine];
@@ -674,6 +728,32 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
    }
 }
 
+
+void TextField::DeleteSelection()
+{
+   if (mSelectMin>=mSelectMax)
+      return;
+
+   // Find CharGroup/Pos from char-id
+   int g0 = GroupFromChar(mSelectMin);
+   int g1 = GroupFromChar(mSelectMax-1);
+   if (g0>=0 && g0<mCharGroups.size())
+   {
+      /*
+      CharGroup &group0 = mCharGroups[g0];
+      int del_g0 = mSelectMin==group0.mChar0 ? g0 : g0+1;
+      group0.mString.erase( mSelectMin - group.mChar0, mSelectMax-mSelectMin );
+
+      CharGroup &group1 = mCharGroups[g1];
+      int del_g1 = (mSelectMax ==group1.mChar0+group1.mString.length())? g1+1 : g1;
+      group1.mString.erase( 0,group1.mChar0+group1.mString.length() - mSelectMax );
+      */
+   }
+}
+
+void TextField::InsertString(const std::wstring &inString)
+{
+}
 
 
 void TextField::Layout()

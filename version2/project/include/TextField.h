@@ -60,17 +60,17 @@ public:
    void setDefaultTextFormat(TextFormat *inFormat);
 
    bool  getBackground() const { return background; }
-	void  setBackground(bool inBackground);
+   void  setBackground(bool inBackground);
    int   getBackgroundColor() const { return backgroundColor; }
-	void  setBackgroundColor(int inBackgroundColor);
+   void  setBackgroundColor(int inBackgroundColor);
    bool  getBorder() const { return border; }
-	void  setBorder(bool inBorder);
+   void  setBorder(bool inBorder);
    int   getBorderColor() const { return borderColor; }
-	void  setBorderColor(int inBorderColor);
+   void  setBorderColor(int inBorderColor);
    bool  getMultiline() const { return multiline; }
-	void  setMultiline(bool inMultiline);
+   void  setMultiline(bool inMultiline);
    bool  getWordWrap() const { return wordWrap; }
-	void  setWordWrap(bool inWordWrap);
+   void  setWordWrap(bool inWordWrap);
 
 
    double getWidth();
@@ -111,13 +111,13 @@ public:
    float  thickness;
    bool useRichTextClipboard;
    bool  wordWrap;
-	bool  isInput;
+   bool  isInput;
 
    int  scrollH;
    int  scrollV;
    int  maxScrollH;
    int  maxScrollV;
-	int  caretIndex;
+   int  caretIndex;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -125,13 +125,16 @@ public:
    Rect mRect;
 
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
-	Cursor GetCursor() { return selectable ? curTextSelect : curPointer; }
+   Cursor GetCursor() { return selectable ? curTextSelect : curPointer; }
    bool WantsFocus() { return isInput && mouseEnabled; }
    void Focus();
    void Unfocus();
-	bool CaptureDown(Event &inEvent);
-	void Drag(Event &inEvent);
-	void EndDrag(Event &inEvent);
+   bool CaptureDown(Event &inEvent);
+   void Drag(Event &inEvent);
+   void EndDrag(Event &inEvent);
+   void OnKey(Event &inEvent);
+   void DeleteSelection();
+   void InsertString(const std::wstring &inString);
 
 
 
@@ -152,24 +155,25 @@ private:
    StringState mStringState;
    std::wstring mUserString;
 
-	int  PointToChar(int inX,int inY);
-	int  LineFromChar(int inChar);
-	int  EndOfCharX(int inChar,int inLine);
-	int  EndOfLineX(int inLine);
+   int  PointToChar(int inX,int inY);
+   int  LineFromChar(int inChar);
+   int  GroupFromChar(int inChar);
+   int  EndOfCharX(int inChar,int inLine);
+   int  EndOfLineX(int inLine);
 
    bool mLinesDirty;
    bool mGfxDirty;
    bool mFontsDirty;
    double mLastUpdateScale;
-	GlyphRotation mLastUpdateRotation;
+   GlyphRotation mLastUpdateRotation;
 
    CharGroups mCharGroups;
    Lines mLines;
-	QuickVec<ImagePoint> mCharPos;
+   QuickVec<ImagePoint> mCharPos;
 
-	int mSelectMin;
-	int mSelectMax;
-	int mSelectDownChar;
+   int mSelectMin;
+   int mSelectMax;
+   int mSelectDownChar;
 };
 
 } // end namespace nme

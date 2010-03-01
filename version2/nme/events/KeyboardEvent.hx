@@ -27,8 +27,8 @@ class KeyboardEvent extends nme.events.Event
    }
 
 
-   public static var KEY_DOWN = "KEY_DOWN";
-   public static var KEY_UP = "KEY_UP";
+   public static var KEY_DOWN = "keyDown";
+   public static var KEY_UP = "keyUp";
 
 }
 

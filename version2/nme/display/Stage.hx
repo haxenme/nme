@@ -2,6 +2,7 @@ package nme.display;
 
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
+import nme.events.KeyboardEvent;
 import nme.events.Event;
 import nme.geom.Point;
 
@@ -195,6 +196,44 @@ class Stage extends nme.display.DisplayObjectContainer
    }
 
 
+
+   static var efLeftDown  =  0x0001;
+   static var efShiftDown =  0x0002;
+   static var efCtrlDown  =  0x0004;
+   static var efAltDown   =  0x0008;
+   static var efCommandDown = 0x0010;
+   static var efLocationRight = 0x4000;
+
+
+   function nmeOnKey(inEvent:Dynamic,inType:String)
+   {
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj!=null)
+         obj.nmeGetInteractiveObjectStack(stack);
+      if (stack.length>0)
+      {
+         var obj = stack[0];
+         var flags:Int = inEvent.flags;
+         var evt = new KeyboardEvent(
+               inType,
+               true, true,
+               inEvent.code,
+               inEvent.value,
+               ((flags & efLocationRight)==0) ? 1 : 0,
+               (flags & efCtrlDown)!=0,
+               (flags & efAltDown)!=0,
+               (flags & efShiftDown)!=0 );
+               
+
+         obj.nmeFireEvent(evt);
+         if (evt.nmeGetIsCancelled())
+            inEvent.result = 1;
+      }
+   }
+
+
+
    function nmeRender(inSendEnterFrame:Bool)
    {
       if (inSendEnterFrame)
@@ -215,6 +254,12 @@ class Stage extends nme.display.DisplayObjectContainer
          case 2: // etChar
             if (onKey!=null)
                untyped onKey(inEvent.code, inEvent.down, inEvent.char, inEvent.flags );
+
+         case 1: // etKeyDown
+            nmeOnKey(inEvent,KeyboardEvent.KEY_DOWN);
+
+         case 3: // etKeyUp
+            nmeOnKey(inEvent,KeyboardEvent.KEY_UP);
 
          case 4: // etMouseMove
             nmeOnMouse(inEvent,MouseEvent.MOUSE_MOVE);

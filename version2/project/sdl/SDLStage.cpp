@@ -4,6 +4,7 @@
 #include <Surface.h>
 #include <ExternalInterface.h>
 #include <KeyCodes.h>
+#include <map>
 
 namespace nme
 {
@@ -333,7 +334,7 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
    {
       sdl_flags |= SDL_DOUBLEBUF;
       screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags );
-      printf("Flags %p\n",sdl_flags);
+      //printf("Flags %p\n",sdl_flags);
       if (!screen)
       {
          // SDL_GetError()
@@ -486,6 +487,8 @@ int SDLKeyToFlash(int inKey,bool &outRight)
    return inKey;
 }
 
+std::map<int,wchar_t> sLastUnicode;
+
 void ProcessEvent(SDL_Event &inEvent)
 {
   switch(inEvent.type)
@@ -524,7 +527,16 @@ void ProcessEvent(SDL_Event &inEvent)
          Event key(inEvent.type==SDL_KEYDOWN ? etKeyDown : etKeyUp );
          bool right;
          key.value = SDLKeyToFlash(inEvent.key.keysym.sym,right);
-         key.code = inEvent.key.keysym.unicode;
+         if (inEvent.type==SDL_KEYDOWN)
+         {
+            key.code = inEvent.key.keysym.unicode;
+            sLastUnicode[inEvent.key.keysym.scancode] = key.code;
+         }
+         else
+            // SDL does not provide unicode on key up, so remember it,
+            //  keyed by scancode
+            key.code = sLastUnicode[inEvent.key.keysym.scancode];
+
          AddModStates(key.flags,inEvent.key.keysym.mod);
          if (right)
             key.flags |= efLocationRight;
@@ -590,40 +602,6 @@ Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar
 
 
          #if 0
-         if (event.type == SDL_KEYDOWN)
-         {
-       //alloc_field( evt, val_id( "type" ), alloc_int( et_keydown ) );
-       //alloc_field( evt, val_id( "key" ), alloc_int( event.key.keysym.sym ) );
-       //alloc_field( evt, val_id( "char" ), alloc_int( event.key.keysym.unicode ) );
-       //alloc_field( evt, val_id( "shift" ), alloc_bool( event.key.keysym.mod & KMOD_SHIFT ) );
-       //alloc_field( evt, val_id( "ctrl" ), alloc_bool( event.key.keysym.mod & KMOD_CTRL ) );
-       //alloc_field( evt, val_id( "alt" ), alloc_bool( event.key.keysym.mod & KMOD_ALT ) );
-       //return evt;
-         }
-         if (event.type == SDL_KEYUP)
-         {
-         }
-         if (event.type == SDL_MOUSEMOTION)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_motion ) );
-       alloc_field( evt, val_id( "state" ), alloc_int( event.motion.state ) );
-       alloc_field( evt, val_id( "x" ), alloc_int( event.motion.x ) );
-       alloc_field( evt, val_id( "y" ), alloc_int( event.motion.y ) );
-       alloc_field( evt, val_id( "xrel" ), alloc_int( event.motion.xrel ) );
-       alloc_field( evt, val_id( "yrel" ), alloc_int( event.motion.yrel ) );
-       return evt;
-         }
-         if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( event.type == SDL_MOUSEBUTTONUP ?
-                             et_button_up : et_button_down ) );
-       alloc_field( evt, val_id( "state" ), alloc_int( event.button.state ) );
-       alloc_field( evt, val_id( "x" ), alloc_int( event.button.x ) );
-       alloc_field( evt, val_id( "y" ), alloc_int( event.button.y ) );
-       alloc_field( evt, val_id( "which" ), alloc_int( event.button.which ) );
-       alloc_field( evt, val_id( "button" ), alloc_int( event.button.button ) );
-       return evt;
-         }
          if (event.type == SDL_JOYAXISMOTION)
          {
        alloc_field( evt, val_id( "type" ), alloc_int( et_jaxis ) );
@@ -671,64 +649,6 @@ Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar
 #if 0
 /*
  */
-
-
-// As opposed to opengl hardware ..
-static bool sUseSystemHardware = false;
-
-SDL_Surface *CreateRGB(int inWidth,int inHeight,bool inAlpha,bool inHardware)
-{
-   if (sgC0IsRed)
-      return SDL_CreateRGBSurface((inHardware?SDL_HWSURFACE:SDL_SWSURFACE)|(inAlpha ? SDL_SRCALPHA : 0),
-            inWidth, inHeight, (inHardware||inAlpha) ? 32 : 24,
-            0x000000ff, 0x0000ff00, 0x00ff0000, inAlpha ? 0xff000000 : 0);
-   else
-      return SDL_CreateRGBSurface((inHardware?SDL_HWSURFACE:SDL_SWSURFACE)|(inAlpha ? SDL_SRCALPHA : 0),
-            inWidth, inHeight, (inHardware||inAlpha) ? 32 : 24,
-            0x00ff0000, 0x0000ff00, 0x000000ff, inAlpha ? 0xff000000 : 0);
-}
-
-
-
-static value nme_surface_clear( value surf, value c )
-{
-   val_check_kind( surf, k_surf );
-
-   val_check( c, int );
-   SDL_Surface* scr = SURFACE(surf);
-
-   Uint8 r = RRGB( c );
-   Uint8 g = GRGB( c );
-   Uint8 b = BRGB( c );
-
-        #ifdef NME_ANY_GL
-        if (IsOpenGLScreen(scr))
-        {
-           int w = scr->w;
-           int h = scr->h;
-           glDisable(GL_CLIP_PLANE0);
-           glViewport(0,0,w,h);
-           glMatrixMode(GL_PROJECTION);
-           glLoadIdentity();
-           nmeOrtho(w,h);
-           glMatrixMode(GL_MODELVIEW);
-           glLoadIdentity();
-           glClearColor((GLclampf)(r/255.0),
-                        (GLclampf)(g/255.0),
-                        (GLclampf)(b/255.0),
-                        (GLclampf)1.0 );
-           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        }
-        else
-        #endif
-        {
-      SDL_FillRect( scr, NULL, SDL_MapRGB( scr->format, r, g, b ) );
-        }
-
-   return alloc_int( 0 );
-
-}
-
 
 
 value nme_set_clip_rect(value inSurface, value inRect)
@@ -808,111 +728,6 @@ value nme_get_clip_rect(value inSurface)
    }
 
    return AllocRect(rect);
-}
-
-SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
-{
-  int i, row, col;
-  Uint8 data[4*32];
-  Uint8 mask[4*32];
-
-  i = -1;
-  for ( row=0; row<32; ++row ) {
-    for ( col=0; col<32; ++col ) {
-      if ( col % 8 ) {
-        data[i] <<= 1;
-        mask[i] <<= 1;
-      } else {
-        ++i;
-        data[i] = mask[i] = 0;
-      }
-      switch (image[row][col]) {
-        case 'X':
-          data[i] |= 0x01;
-          mask[i] |= 0x01;
-          break;
-        case '.':
-          mask[i] |= 0x01;
-          break;
-        case ' ':
-          break;
-      }
-    }
-  }
-  return SDL_CreateCursor(data, mask, 32, 32, inHotX, inHotY);
-}
-
-static const char *sTextCursorData[] = {
-  "                                ",
-  "                                ",
-  "XX XX                           ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "  X                             ",
-  "XX XX                           ",
-  "                                ",
-  "                                ",
-  "                                ",
-  "                                ",
-  "                                ",
-  "                                ",
-};
-
-
-
-#define CURSOR_NONE   0
-#define CURSOR_NORMAL 1
-#define CURSOR_TEXT   2
-
-SDL_Cursor *sDefaultCursor = 0;
-SDL_Cursor *sTextCursor = 0;
-
-
-value nme_set_cursor(value inCursor)
-{
-   val_check(inCursor,int);
-
-   if (sDefaultCursor==0)
-      sDefaultCursor = SDL_GetCursor();
-
-   int c = val_int(inCursor);
-
-   if (c==CURSOR_NONE)
-      SDL_ShowCursor(false);
-   else
-   {
-      SDL_ShowCursor(true);
-
-      if (c==CURSOR_NORMAL)
-         SDL_SetCursor(sDefaultCursor);
-      else
-      {
-         if (sTextCursor==0)
-            sTextCursor = CreateCursor(sTextCursorData,1,13);
-         SDL_SetCursor(sTextCursor);
-      }
-   }
-
-   return alloc_int(0);
 }
 
 value nme_get_mouse_position()

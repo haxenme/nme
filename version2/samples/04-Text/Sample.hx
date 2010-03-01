@@ -1,13 +1,17 @@
 import nme.Lib;
 import nme.events.FocusEvent;
+import nme.events.KeyboardEvent;
 import nme.display.InteractiveObject;
+import nme.ui.Keyboard;
 
 
 class Sample
 {
+   var tf:nme.text.TextField;
+
    public function new()
    {
-      var tf = new nme.text.TextField();
+      tf = new nme.text.TextField();
       tf.type = nme.text.TextFieldType.INPUT;
       tf.text = "Hello Hello Hello, what's all this here then?";
       tf.background = true;
@@ -19,12 +23,13 @@ class Sample
       nme.Lib.current.addChild(tf);
       AddHandlers(tf);
 
+
       var p1 = new nme.display.Sprite();
       AddHandlers(p1);
       nme.Lib.current.stage.addChild(p1);
 
 
-      var tf = new nme.text.TextField();
+      tf = new nme.text.TextField();
       tf.type = nme.text.TextFieldType.INPUT;
       tf.htmlText = "<p align='center'>Hello Hello <b>Hello</b>, what's all this here then?</p>";
       tf.background = true;
@@ -38,7 +43,29 @@ class Sample
       tf.y = 300;
       p1.addChild(tf);
       AddHandlers(tf);
+      tf.addEventListener(KeyboardEvent.KEY_DOWN,reportKeyDown);
+      tf.addEventListener(KeyboardEvent.KEY_UP,reportKeyUp);
    }
+
+
+	function reportKeyDown(event:KeyboardEvent)
+	{
+	    trace("Key Pressed: " + String.fromCharCode(event.charCode) + 
+		" (key code: " + event.keyCode + " character code: " 
+		+ event.charCode + ")");
+	    if (event.keyCode == Keyboard.SHIFT) tf.borderColor = 0xFF0000;
+	}
+
+	function reportKeyUp(event:KeyboardEvent)
+	{
+	    trace("Key Released: " + String.fromCharCode(event.charCode) + 
+		" (key code: " + event.keyCode + " character code: " + 
+		event.charCode + ")");
+	    if (event.keyCode == Keyboard.SHIFT)
+	    {
+		tf.borderColor = 0x000000;
+	    }
+	}
 
    function traceEvent(e:nme.events.Event)
    {

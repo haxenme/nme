@@ -138,12 +138,12 @@ public:
    DisplayObject   *getMask() { return mMask; }
    virtual void   setOpaqueBackground(uint32 inBG);
    uint32 getOpaqueBackground() { return opaqueBackground; }
-	bool getMouseEnabled() { return mouseEnabled; }
-	void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
+   bool getMouseEnabled() { return mouseEnabled; }
+   void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
 
    void   setAlpha(double inAlpha);
 
-	int getID() const { return id; }
+   int getID() const { return id; }
 
 
    const Transform &getTransform();
@@ -168,7 +168,7 @@ public:
    DRect   scrollRect;
    int     id;
    bool   visible;
-	bool   mouseEnabled;
+   bool   mouseEnabled;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
@@ -181,14 +181,15 @@ public:
    virtual void DirtyDown(uint32 inFlags);
    virtual bool NonNormalBlendChild() { return false; }
 
-	virtual Cursor GetCursor() { return curPointer; }
+   virtual Cursor GetCursor() { return curPointer; }
    virtual bool WantsFocus() { return false; }
    virtual void Focus() { }
    virtual void Unfocus() { }
 
-	virtual bool CaptureDown(Event &inEvent) { return false; }
-	virtual void Drag(Event &inEvent) {  }
-	virtual void EndDrag(Event &inEvent) { }
+   virtual bool CaptureDown(Event &inEvent) { return false; }
+   virtual void Drag(Event &inEvent) {  }
+   virtual void EndDrag(Event &inEvent) { }
+   virtual void OnKey(Event &inEvent) { }
 
    void SetParent(DisplayObjectContainer *inParent);
 
@@ -268,7 +269,7 @@ protected:
 class Stage : public DisplayObjectContainer
 {
 public:
-	enum PollMethod { pollNever, pollTimer, pollAlways };
+   enum PollMethod { pollNever, pollTimer, pollAlways };
 
 
    Stage(bool inInitRef=false);
@@ -288,12 +289,12 @@ public:
 
    int    mQuality;
 
-	void RemovingFromStage(DisplayObject *inObject);
-	Stage  *getStage() { return this; }
+   void RemovingFromStage(DisplayObject *inObject);
+   Stage  *getStage() { return this; }
 
 
-	DisplayObject *GetFocusObject() { return mFocusObject; }
-	void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
+   DisplayObject *GetFocusObject() { return mFocusObject; }
+   void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
 
 protected:
    ~Stage();
@@ -301,8 +302,8 @@ protected:
    EventHandler mHandler;
    void         *mHandlerData;
 
-	DisplayObject *mFocusObject;
-	DisplayObject *mMouseDownObject;
+   DisplayObject *mFocusObject;
+   DisplayObject *mMouseDownObject;
 };
 
 
