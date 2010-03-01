@@ -99,6 +99,54 @@ wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen)
    return result;
 }
 
+void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr)
+{
+   int l = 0;
+
+   unsigned char *b = (unsigned char *)inStr;
+   for(int i=0;1;)
+   {
+      int c = b[i];
+      if (c==0) break;
+      l++;
+      if (c==0) break;
+      else if( c < 0x80 ) i++;
+      else if( c < 0xE0 ) i+=2;
+      else if( c < 0xF0 ) i+=3;
+      else i=4;
+   }
+
+	outString.resize(l);
+	wchar_t *result = outString.mPtr;
+ 
+   l = 0;
+   for(int i=0;1;)
+   {
+      int c = b[i++];
+      if (c==0) break;
+      else if( c < 0x80 )
+      {
+        result[l++] = c;
+      }
+      else if( c < 0xE0 )
+        result[l++] = ( ((c & 0x3F) << 6) | (b[i++] & 0x7F) );
+      else if( c < 0xF0 )
+      {
+        int c2 = b[i++];
+        result[l++] += ( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | ( b[i++] & 0x7F) );
+      }
+      else
+      {
+        int c2 = b[i++];
+        int c3 = b[i++];
+        result[l++] += ( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (b[i++] & 0x7F) );
+      }
+   }
+}
+
+
+
+
 std::wstring UTF8ToWide(const char *inStr)
 {
    int len=0;
@@ -142,6 +190,22 @@ wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen)
    MultiByteToWideChar( CP_UTF8, 0, inStr, outLen, buf, outLen );
 
 	return buf;
+}
+
+void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr)
+{
+   int len =  MultiByteToWideChar( CP_UTF8, 0, inStr, -1, 0, 0 );
+	if (len<1)
+	{
+		outString.clear();
+		return;
+	}
+
+	// No null character ...
+	len--;
+	outString.resize(len);
+
+   MultiByteToWideChar( CP_UTF8, 0, inStr, len, outString.mPtr, len );
 }
 
 std::wstring UTF8ToWide(const char *inStr)

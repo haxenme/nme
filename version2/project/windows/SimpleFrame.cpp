@@ -468,9 +468,9 @@ public:
 				wchar_t codes[4] = {0,0,0,0};
 				int converted = ToUnicodeEx( wParam, (lParam>>16)&0xff, key_buffer, codes, 4,
 										  0, gKeyboardLayout );
-				key.value = converted==1 ?  codes[0] : 0;
+				key.code = converted==1 ?  codes[0] : 0;
 				bool right;
-				key.code = WinKeyToFlash(wParam,right,key.code);
+				key.value = WinKeyToFlash(wParam,right,key.code);
 				if (right)
 					key.flags |= efLocationRight;
 				mStage->HandleEvent(key);

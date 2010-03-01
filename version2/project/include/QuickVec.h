@@ -33,13 +33,13 @@ public:
 public:
    QuickVec()
    {
-      mPtr = mQBuf;
+      mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
       mAlloc = QBufSize;
       mSize = 0;
    }
    QuickVec(const QuickVec<T_,QBUF_SIZE_> &inRHS)
    {
-      if (inRHS.mSize<=QBufSize)
+      if (QBUF_SIZE_!=0 && inRHS.mSize<=QBufSize)
       {
          mAlloc = QBufSize;
          mPtr = mQBuf;
@@ -54,18 +54,33 @@ public:
    }
    ~QuickVec()
    {
-      if (mPtr!=mQBuf)
-         free(mPtr);
+      if (QBUF_SIZE_==0 || mPtr!=mQBuf)
+			if (mPtr)
+            free(mPtr);
    }
 	void clear()
 	{
-		if (mPtr!=mQBuf)
+		if (QBUF_SIZE_==0)
+		{
+			if (mPtr)
+				free(mPtr);
+			mPtr = 0;
+			mAlloc = 0;
+		}
+		else if (mPtr!=mQBuf)
 		{
 			free(mPtr);
 			mPtr = mQBuf;
 			mAlloc = QBufSize;
 		}
 		mSize = 0;
+	}
+
+	void Set(const T_ *inData,int inN)
+	{
+		resize(inN);
+		if (inN)
+			memcpy(mPtr,inData,inN*sizeof(T_));
 	}
 
    // This assumes the values in the array are sorted.
@@ -192,7 +207,7 @@ public:
    {
       if (mSize>=mAlloc)
       {
-         if (mPtr==mQBuf)
+         if (QBUF_SIZE_!=0 && mPtr==mQBuf)
          {
             mPtr = (T_ *)malloc(sizeof(T_)*(QBufSize*2));
             memcpy(mPtr, mQBuf, sizeof(mQBuf));
@@ -200,18 +215,21 @@ public:
          }
          else
          {
-            mAlloc *= 2;
+				if (mAlloc)
+               mAlloc *= 2;
+				else
+					mAlloc = 16;
             mPtr = (T_*)realloc(mPtr, sizeof(T_)*mAlloc);
          }
       }
    }
    void reserve(int inSize)
    {
-      if (mAlloc<inSize && inSize>QBufSize)
+      if (mAlloc<inSize && (QBUF_SIZE_==0 || inSize>QBufSize) )
       {
          mAlloc = inSize;
 
-         if (mPtr!=mQBuf)
+         if (QBUF_SIZE_==0 || mPtr!=mQBuf)
          {
             mPtr = (T_ *)realloc(mPtr,sizeof(T_)*mAlloc);
          }
@@ -227,7 +245,7 @@ public:
    {
       if (mAlloc<inSize)
       {
-         if (mPtr==mQBuf)
+         if (QBUF_SIZE_!=0 && mPtr==mQBuf)
          {
             mAlloc = inSize;
             mPtr = (T_ *)malloc(sizeof(T_)*(mAlloc));
@@ -261,6 +279,18 @@ public:
       memmove(mPtr + inFirst, mPtr + inLast, (mSize-inLast) * sizeof(T_) );
       mSize -= inLast-inFirst;
    }
+   void erase(int inFirst,int inLen)
+	{
+		if (inFirst>mSize || inFirst<0)
+			return;
+		if (inFirst+inLen>=mSize || inLen<0)
+			resize(inFirst);
+		else
+		{
+         memmove(mPtr + inFirst, mPtr + inFirst + inLen, (mSize-inFirst-inLen) * sizeof(T_) );
+         mSize -= inLen;
+		}
+	}
 
    inline void InsertAt(int inPos,const T_ &inValue)
    {
@@ -269,6 +299,14 @@ public:
       mPtr[inPos] = inValue;
       ++mSize;
    }
+
+	inline void InsertAt(int inPos,const T_ *inValues,int inN)
+   {
+		resize(mSize+inN);
+      memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos) * sizeof(T_) );
+		memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
+   }
+
 
    inline int size() const { return mSize; }
    inline bool empty() const { return mSize==0; }
@@ -283,7 +321,11 @@ public:
    inline const_iterator end() const { return mPtr + mSize; }
    void swap( QuickVec<T_,QBUF_SIZE_> &inRHS )
    {
-      if (mPtr!=mQBuf)
+		if (QBUF_SIZE_==0)
+		{
+         std::swap(mPtr,inRHS.mPtr);
+		}
+		else if (mPtr!=mQBuf)
       {
          // Both "real" pointers - just swap them
          if (inRHS.mPtr!=inRHS.mQBuf)
@@ -330,9 +372,10 @@ public:
 
    QuickVec<T_,QBUF_SIZE_> &operator=(const QuickVec<T_,QBUF_SIZE_> &inRHS)
    {
-      if (mPtr!=mQBuf)
+      if ( (QBUF_SIZE_==0 || mPtr!=mQBuf) && mPtr )
          free(mPtr);
-      if (inRHS.mSize<=QBufSize)
+
+      if (QBUF_SIZE_!=0 && inRHS.mSize<=QBufSize)
       {
          mPtr = mQBuf;
          mAlloc = QBufSize;
@@ -340,10 +383,11 @@ public:
       else
       {
          mAlloc = inRHS.mAlloc;
-         mPtr = (T_ *)malloc( mAlloc * sizeof(T_) );
+         mPtr = (T_ *)(mAlloc ? malloc( mAlloc * sizeof(T_)) : 0);
       }
       mSize = inRHS.mSize;
-      memcpy(mPtr,inRHS.mPtr,mSize*sizeof(T_));
+		if (mSize)
+         memcpy(mPtr,inRHS.mPtr,mSize*sizeof(T_));
       return *this;
    }
 	void DeleteAll()
@@ -362,7 +406,7 @@ public:
 	}
 
    T_  *mPtr;
-   T_  mQBuf[QBufSize];
+   T_  mQBuf[QBufSize==0?1:QBufSize];
    int mAlloc;
    int mSize;
 

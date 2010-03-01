@@ -134,6 +134,7 @@ public:
    void EndDrag(Event &inEvent);
    void OnKey(Event &inEvent);
    void DeleteSelection();
+   void DeleteChars(int inFirst,int inEnd);
    void InsertString(const std::wstring &inString);
 
 

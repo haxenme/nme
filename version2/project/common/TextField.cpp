@@ -263,9 +263,11 @@ void TextField::EndDrag(Event &inEvent)
 
 void TextField::OnKey(Event &inEvent)
 {
-   if (isInput)
+   if (isInput && inEvent.type==etKeyDown && inEvent.code<0xffff )
    {
+		int code = inEvent.code;
       printf("Key %d\n", inEvent.code);
+
       switch(inEvent.value)
       {
          case keyBACKSPACE:
@@ -273,20 +275,24 @@ void TextField::OnKey(Event &inEvent)
             {
                DeleteSelection();
             }
-            else
+            else if (caretIndex>0)
             {
-               if (caretIndex>0)
-               {
-                  caretIndex--;
-               }
+					DeleteChars(caretIndex-1,caretIndex);
+               caretIndex--;
             }
+				else if (mCharGroups.size())
+					DeleteChars(0,1);
+
             return;
+         case keyENTER:
+				code = '\n';
+				break;
       }
 
-      if (inEvent.code>0)
+      if (code>0)
       {
          DeleteSelection();
-         wchar_t str[2] = {inEvent.code,0};
+         wchar_t str[2] = {code,0};
          InsertString(str);
       }
    }
@@ -308,14 +314,10 @@ void TextField::setText(const std::wstring &inString)
 {
    Clear();
    CharGroup chars;
-   chars.mChars = inString.length();
+   chars.mString.Set(inString.c_str(),inString.length());
    chars.mFormat = defaultTextFormat->IncRef();
    chars.mFont = 0;
    chars.mFontHeight = 0;
-   chars.mNewLines = 0;
-   wchar_t *str = new wchar_t[chars.mChars];
-   chars.mString = str;
-   memcpy(str,inString.c_str(), chars.mChars*sizeof(wchar_t));
    mCharGroups.push_back(chars);
    mLinesDirty = true;
    mFontsDirty = true;
@@ -326,7 +328,7 @@ std::wstring TextField::getText()
 {
    std::wstring result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += std::wstring(mCharGroups[i].mString,mCharGroups[i].mChars);
+      result += std::wstring(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
    return result;
 }
 
@@ -335,7 +337,7 @@ std::wstring TextField::getHTMLText()
 {
    std::wstring result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += std::wstring(mCharGroups[i].mString,mCharGroups[i].mChars);
+      result += std::wstring(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
    return result;
 }
 
@@ -352,13 +354,11 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars.mFormat = inFormat->IncRef();
          chars.mFont = 0;
          chars.mFontHeight = 0;
-         int len = 0;
-         wchar_t *str = UTF8ToWideCStr(text->Value(),len);
-         chars.mString = str;
-         chars.mChars = len;
-         chars.mNewLines = inLineSkips;
+         UTF8ToWideVec(chars.mString,text->Value());
+         for(int i=0;i<inLineSkips;i++)
+				chars.mString.push_back('\n');
          chars.mBeginParagraph = inBeginParagraph;
-         ioCharCount += len;
+         ioCharCount += chars.Chars();
 
          mCharGroups.push_back(chars);
          //printf(" %s %d\n", text->Value(), inLineSkips );
@@ -535,7 +535,7 @@ int TextField::GroupFromChar(int inChar)
       else
          min = mid;
    }
-   while(min<max && mCharGroups[min].mChars==0)
+   while(min<max && mCharGroups[min].Chars()==0)
       min++;
    return min;
 }
@@ -664,11 +664,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    for(int g=0;g<mCharGroups.size();g++)
    {
       CharGroup &group = mCharGroups[g];
-      if (group.mString && group.mFont)
+      if (group.Chars() && group.mFont)
       {
          uint32 group_tint =
               inState.mColourTransform->Transform(group.mFormat->color(textColor) | 0xff000000);
-         for(int c=0;c<group.mChars;c++)
+         for(int c=0;c<group.Chars();c++)
          {
             int ch = group.mString[c];
             if (ch!='\n')
@@ -729,30 +729,72 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
 }
 
 
+void TextField::DeleteChars(int inFirst,int inEnd)
+{
+	inEnd = std::min(inEnd,getLength());
+	if (inFirst>=inEnd)
+		return;
+
+	//*(int *)0=0;
+   // Find CharGroup/Pos from char-id
+   int g0 = GroupFromChar(inFirst);
+   if (g0>=0 && g0<mCharGroups.size())
+   {
+      int g1 = GroupFromChar(inEnd-1);
+      CharGroup &group0 = mCharGroups[g0];
+      int del_g0 = inFirst==group0.mChar0 ? g0 : g0+1;
+      group0.mString.erase( inFirst - group0.mChar0, inEnd-inFirst );
+      CharGroup &group1 = mCharGroups[g1];
+      int del_g1 = (inEnd ==group1.mChar0+group1.Chars())? g1+1 : g1;
+		if (g0!=g1)
+         group1.mString.erase( 0,inEnd - group1.mChar0);
+
+		if (del_g0 < del_g1)
+		{
+		   for(int g=del_g0; g<del_g1;g++)
+			   mCharGroups[g].Clear();
+			mCharGroups.erase(del_g0, del_g1 - del_g0);
+		}
+		mLinesDirty = true;
+		mGfxDirty = true;
+		Layout();
+   }
+}
+
 void TextField::DeleteSelection()
 {
    if (mSelectMin>=mSelectMax)
       return;
-
-   // Find CharGroup/Pos from char-id
-   int g0 = GroupFromChar(mSelectMin);
-   int g1 = GroupFromChar(mSelectMax-1);
-   if (g0>=0 && g0<mCharGroups.size())
-   {
-      /*
-      CharGroup &group0 = mCharGroups[g0];
-      int del_g0 = mSelectMin==group0.mChar0 ? g0 : g0+1;
-      group0.mString.erase( mSelectMin - group.mChar0, mSelectMax-mSelectMin );
-
-      CharGroup &group1 = mCharGroups[g1];
-      int del_g1 = (mSelectMax ==group1.mChar0+group1.mString.length())? g1+1 : g1;
-      group1.mString.erase( 0,group1.mChar0+group1.mString.length() - mSelectMax );
-      */
-   }
+	caretIndex = mSelectMin;
+	mSelectMin = mSelectMax = 0;
 }
 
 void TextField::InsertString(const std::wstring &inString)
 {
+	if (caretIndex<0) caretIndex = 0;
+	caretIndex = std::min(caretIndex,getLength());
+
+	if (caretIndex==0)
+	{
+		if (mCharGroups.empty())
+		{
+			setText(inString);
+		}
+		else
+		{
+			mCharGroups[0].mString.InsertAt(0,inString.c_str(),inString.length());
+		}
+	}
+	else
+	{
+   	int g = GroupFromChar(caretIndex-1);
+		CharGroup &group = mCharGroups[g];
+		group.mString.InsertAt( caretIndex-group.mChar0,inString.c_str(),inString.length());
+	}
+	caretIndex += inString.length();
+	mLinesDirty = true;
+	mGfxDirty = true;
+	Layout();
 }
 
 
@@ -781,20 +823,12 @@ void TextField::Layout()
       int last_word_cid = 0;
       int last_word_x = x;
       int last_word_line_chars = line.mChars;
-      int new_lines = g.mNewLines;
-      if (g.mBeginParagraph && x>0)
-         new_lines++;
-      if ( new_lines && multiline)
+      if ( g.mBeginParagraph && line.mChars && multiline)
       {
-         if (line.mChars)
-         {
-            g.UpdateMetrics(line.mMetrics);
-            mLines.push_back(line);
-            y += line.mMetrics.height + (new_lines-1) * g.Height();
-            line.Clear();
-         }
-         else
-            y += (g.mNewLines) * g.Height();
+         g.UpdateMetrics(line.mMetrics);
+         mLines.push_back(line);
+         y += line.mMetrics.height;
+         line.Clear();
 
          x = 0;
          line.mY0 = y;
@@ -805,7 +839,7 @@ void TextField::Layout()
 
 
       g.UpdateMetrics(line.mMetrics);
-      while(cid<g.mChars)
+      while(cid<g.Chars())
       {
          if (line.mChars==0)
          {
@@ -1003,7 +1037,7 @@ TextFormat *TextFormat::Default()
 
 void CharGroup::Clear()
 {
-   delete [] mString;
+	mString.clear();
    mFormat->DecRef();
    if (mFont)
       mFont->DecRef();

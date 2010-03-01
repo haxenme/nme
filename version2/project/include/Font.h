@@ -95,13 +95,12 @@ struct CharGroup
 	bool  UpdateFont(double inScale,GlyphRotation inRotation,bool inNative);
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
+	int   Chars() { return mString.size(); }
 
-	int             mChar0;
-	int             mChars;
+	int               mChar0;
+	QuickVec<wchar_t,0> mString;
 	int             mFontHeight;
-	short           mNewLines;
-        bool            mBeginParagraph;
-	const wchar_t   *mString;
+	bool            mBeginParagraph;
 	TextFormat      *mFormat;
 	class Font      *mFont;
 };

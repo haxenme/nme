@@ -2,6 +2,7 @@
 #define NME_UTILS_H
 
 #include <string>
+#include <QuickVec.h>
 
 namespace nme
 {
@@ -20,6 +21,8 @@ std::string WideToUTF8(const std::wstring &inWideString);
 
 // You should delete[] the result
 wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen);
+
+void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
 
 std::wstring UTF8ToWide(const char *inStr);
 
