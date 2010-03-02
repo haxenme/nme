@@ -1,4 +1,11 @@
 #include <Utils.h>
+#ifdef HX_WINDOWS
+#include <windows.h>
+#else
+#include <sys/time.h>
+typedef uint64_t __int64;
+#endif
+
 
 namespace nme
 {
@@ -222,6 +229,42 @@ std::wstring UTF8ToWide(const char *inStr)
 	return result;
 }
 #endif
+
+
+
+static double t0 = 0;
+double  GetTimeStamp()
+{
+#ifdef _WIN32
+   static __int64 t0=0;
+   static double period=0;
+   __int64 now;
+
+   if (QueryPerformanceCounter((LARGE_INTEGER*)&now))
+   {
+      if (t0==0)
+      {
+         t0 = now;
+         __int64 freq;
+         QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+         if (freq!=0)
+            period = 1.0/freq;
+      }
+      if (period!=0)
+         return (now-t0)*period;
+   }
+
+   return (double)clock() / ( (double)CLOCKS_PER_SEC);
+#else
+   struct timeval tv;
+   if( gettimeofday(&tv,NULL) )
+      return 0;
+   double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
+   if (t0==0) t0 = t;
+   return t-t0;
+#endif
+}
+
 
 
 }

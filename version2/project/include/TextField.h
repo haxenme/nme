@@ -171,10 +171,13 @@ private:
    CharGroups mCharGroups;
    Lines mLines;
    QuickVec<ImagePoint> mCharPos;
+   Graphics *mCaretGfx;
+   int      mLastCaretHeight;
 
    int mSelectMin;
    int mSelectMax;
    int mSelectDownChar;
+   int mSelectKeyDown;
 };
 
 } // end namespace nme

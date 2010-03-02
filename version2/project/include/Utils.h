@@ -26,6 +26,8 @@ void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
 
 std::wstring UTF8ToWide(const char *inStr);
 
+double GetTimeStamp();
+
 }
 
 

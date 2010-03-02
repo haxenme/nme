@@ -5,6 +5,7 @@
 #include <KeyCodes.h>
 #include "XML/tinyxml.h"
 #include <ctype.h>
+#include <time.h>
 
 namespace nme
 {
@@ -46,11 +47,16 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mSelectMin = mSelectMax = 0;
    mSelectDownChar = 0;
    caretIndex = 0;
+   mCaretGfx = 0;
+   mLastCaretHeight = -1;
+   mSelectKeyDown = -1;
    setText(L"");
 }
 
 TextField::~TextField()
 {
+   if (mCaretGfx)
+      mCaretGfx->DecRef();
    defaultTextFormat->DecRef();
 }
 
@@ -239,6 +245,7 @@ void TextField::Drag(Event &inEvent)
 {
    if (selectable)
    {
+      mSelectKeyDown = -1;
       UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       if (pos>mSelectDownChar)
@@ -266,8 +273,9 @@ void TextField::OnKey(Event &inEvent)
 {
    if (isInput && inEvent.type==etKeyDown && inEvent.code<0xffff )
    {
-		int code = inEvent.code;
-      printf("Key %d\n", inEvent.code);
+      int code = inEvent.code;
+      bool shift = inEvent.flags & efShiftDown;
+      printf("Key %d/%d\n", inEvent.code,shift);
 
       switch(inEvent.value)
       {
@@ -278,24 +286,58 @@ void TextField::OnKey(Event &inEvent)
             }
             else if (caretIndex>0)
             {
-					DeleteChars(caretIndex-1,caretIndex);
+               DeleteChars(caretIndex-1,caretIndex);
                caretIndex--;
             }
-				else if (mCharGroups.size())
-					DeleteChars(0,1);
-
+            else if (mCharGroups.size())
+               DeleteChars(0,1);
             return;
+
+         case keySHIFT:
+            mSelectKeyDown = -1;
+            mGfxDirty = true;
+            return;
+
+         case keyLEFT:
+            if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
+            if (caretIndex>0) caretIndex--;
+            if (mSelectKeyDown>=0)
+            {
+               mSelectMin = std::min(mSelectKeyDown,caretIndex);
+               mSelectMax = std::max(mSelectKeyDown,caretIndex);
+               mGfxDirty = true;
+            }
+            return;
+
+         case keyRIGHT:
+            if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
+            if (caretIndex<mCharPos.size()) caretIndex++;
+            if (mSelectKeyDown>=0)
+            {
+               mSelectMin = std::min(mSelectKeyDown,caretIndex);
+               mSelectMax = std::max(mSelectKeyDown,caretIndex);
+               mGfxDirty = true;
+            }
+            return;
+ 
+         // TODO: top/bottom
+
          case keyENTER:
-				code = '\n';
-				break;
+            code = '\n';
+            break;
       }
 
-      if (code>27)
+      if (code=='\n' || (code>27 && code<63000))
       {
          DeleteSelection();
          wchar_t str[2] = {code,0};
          InsertString(str);
       }
+   }
+   else
+   {
+      if (inEvent.type==etKeyUp && inEvent.value==keySHIFT)
+         mSelectKeyDown = -1;
    }
 }
 
@@ -357,7 +399,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars.mFontHeight = 0;
          UTF8ToWideVec(chars.mString,text->Value());
          for(int i=0;i<inLineSkips;i++)
-				chars.mString.push_back('\n');
+            chars.mString.push_back('\n');
          chars.mBeginParagraph = inBeginParagraph;
          ioCharCount += chars.Chars();
 
@@ -565,7 +607,6 @@ int TextField::EndOfCharX(int inChar,int inLine)
 
 
 
-
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (inTarget.mPixelFormat==pfAlpha)
@@ -635,6 +676,40 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    if (!gfx.empty())
    {
       gfx.Render(inTarget,inState);
+   }
+
+   if (isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this )
+   {
+      if (!mCaretGfx)
+         mCaretGfx = new Graphics(true);
+      int line = LineFromChar(caretIndex);
+      if (line>=0)
+      {
+         int height = mLines[line].mMetrics.height;
+         if (height!=mLastCaretHeight)
+         {
+            mLastCaretHeight = height;
+            mCaretGfx->clear();
+            mCaretGfx->lineStyle(1,0x000000);
+            mCaretGfx->moveTo(0,0);
+            mCaretGfx->lineTo(0,mLastCaretHeight);
+         }
+
+         ImagePoint pos(0,0);
+         if (caretIndex < mCharPos.size())
+            pos = mCharPos[caretIndex];
+         else if (mLines.size())
+         {
+            pos.x = EndOfLineX( mLines.size()-1 );
+            pos.y = mLines[ mLines.size() -1].mY0;
+         }
+        
+         RenderState state(inState);
+         Matrix matrix(*state.mTransform.mMatrix);
+         matrix.TranslateData(pos.x,pos.y);
+         state.mTransform.mMatrix = &matrix;
+         mCaretGfx->Render(inTarget,state);
+      }
    }
 
    const Matrix &matrix = *inState.mTransform.mMatrix;
@@ -734,9 +809,9 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
 
 void TextField::DeleteChars(int inFirst,int inEnd)
 {
-	inEnd = std::min(inEnd,getLength());
-	if (inFirst>=inEnd)
-		return;
+   inEnd = std::min(inEnd,getLength());
+   if (inFirst>=inEnd)
+      return;
 
    // Find CharGroup/Pos from char-id
    int g0 = GroupFromChar(inFirst);
@@ -748,22 +823,22 @@ void TextField::DeleteChars(int inFirst,int inEnd)
       group0.mString.erase( inFirst - group0.mChar0, inEnd-inFirst );
       CharGroup &group1 = mCharGroups[g1];
       int del_g1 = (inEnd ==group1.mChar0+group1.Chars())? g1+1 : g1;
-		if (g0!=g1)
+      if (g0!=g1)
          group1.mString.erase( 0,inEnd - group1.mChar0);
 
       // Leave at least 1 group...
       if (del_g0==0 && del_g1==mCharGroups.size())
          del_g0=1;
-		if (del_g0 < del_g1)
-		{
-		   for(int g=del_g0; g<del_g1;g++)
-			   mCharGroups[g].Clear();
-			mCharGroups.erase(del_g0, del_g1 - del_g0);
-		}
+      if (del_g0 < del_g1)
+      {
+         for(int g=del_g0; g<del_g1;g++)
+            mCharGroups[g].Clear();
+         mCharGroups.erase(del_g0, del_g1 - del_g0);
+      }
 
-		mLinesDirty = true;
-		mGfxDirty = true;
-		Layout();
+      mLinesDirty = true;
+      mGfxDirty = true;
+      Layout();
    }
 }
 
@@ -772,37 +847,38 @@ void TextField::DeleteSelection()
    if (mSelectMin>=mSelectMax)
       return;
    DeleteChars(mSelectMin,mSelectMax);
-	caretIndex = mSelectMin;
-	mSelectMin = mSelectMax = 0;
-	mGfxDirty = true;
+   caretIndex = mSelectMin;
+   mSelectMin = mSelectMax = 0;
+   mSelectKeyDown = -1;
+   mGfxDirty = true;
 }
 
 void TextField::InsertString(const std::wstring &inString)
 {
-	if (caretIndex<0) caretIndex = 0;
-	caretIndex = std::min(caretIndex,getLength());
+   if (caretIndex<0) caretIndex = 0;
+   caretIndex = std::min(caretIndex,getLength());
 
-	if (caretIndex==0)
-	{
-		if (mCharGroups.empty())
-		{
-			setText(inString);
-		}
-		else
-		{
-			mCharGroups[0].mString.InsertAt(0,inString.c_str(),inString.length());
-		}
-	}
-	else
-	{
-   	int g = GroupFromChar(caretIndex-1);
-		CharGroup &group = mCharGroups[g];
-		group.mString.InsertAt( caretIndex-group.mChar0,inString.c_str(),inString.length());
-	}
-	caretIndex += inString.length();
-	mLinesDirty = true;
-	mGfxDirty = true;
-	Layout();
+   if (caretIndex==0)
+   {
+      if (mCharGroups.empty())
+      {
+         setText(inString);
+      }
+      else
+      {
+         mCharGroups[0].mString.InsertAt(0,inString.c_str(),inString.length());
+      }
+   }
+   else
+   {
+      int g = GroupFromChar(caretIndex-1);
+      CharGroup &group = mCharGroups[g];
+      group.mString.InsertAt( caretIndex-group.mChar0,inString.c_str(),inString.length());
+   }
+   caretIndex += inString.length();
+   mLinesDirty = true;
+   mGfxDirty = true;
+   Layout();
 }
 
 
@@ -1045,7 +1121,7 @@ TextFormat *TextFormat::Default()
 
 void CharGroup::Clear()
 {
-	mString.clear();
+   mString.clear();
    mFormat->DecRef();
    if (mFont)
       mFont->DecRef();
