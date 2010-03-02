@@ -303,7 +303,7 @@ public:
 	inline void InsertAt(int inPos,const T_ *inValues,int inN)
    {
 		resize(mSize+inN);
-      memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos) * sizeof(T_) );
+      memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos-inN) * sizeof(T_) );
 		memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
    }
 

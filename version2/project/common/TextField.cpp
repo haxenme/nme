@@ -46,6 +46,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mSelectMin = mSelectMax = 0;
    mSelectDownChar = 0;
    caretIndex = 0;
+   setText(L"");
 }
 
 TextField::~TextField()
@@ -289,7 +290,7 @@ void TextField::OnKey(Event &inEvent)
 				break;
       }
 
-      if (code>0)
+      if (code>27)
       {
          DeleteSelection();
          wchar_t str[2] = {code,0};
@@ -483,6 +484,8 @@ void TextField::setHTMLText(const std::wstring &inString)
       int chars = 0;
       AddNode(top,defaultTextFormat,chars,0,0);
    }
+   if (mCharGroups.empty())
+      setText(L"");
 }
 
 
@@ -735,7 +738,6 @@ void TextField::DeleteChars(int inFirst,int inEnd)
 	if (inFirst>=inEnd)
 		return;
 
-	//*(int *)0=0;
    // Find CharGroup/Pos from char-id
    int g0 = GroupFromChar(inFirst);
    if (g0>=0 && g0<mCharGroups.size())
@@ -749,12 +751,16 @@ void TextField::DeleteChars(int inFirst,int inEnd)
 		if (g0!=g1)
          group1.mString.erase( 0,inEnd - group1.mChar0);
 
+      // Leave at least 1 group...
+      if (del_g0==0 && del_g1==mCharGroups.size())
+         del_g0=1;
 		if (del_g0 < del_g1)
 		{
 		   for(int g=del_g0; g<del_g1;g++)
 			   mCharGroups[g].Clear();
 			mCharGroups.erase(del_g0, del_g1 - del_g0);
 		}
+
 		mLinesDirty = true;
 		mGfxDirty = true;
 		Layout();
@@ -765,8 +771,10 @@ void TextField::DeleteSelection()
 {
    if (mSelectMin>=mSelectMax)
       return;
+   DeleteChars(mSelectMin,mSelectMax);
 	caretIndex = mSelectMin;
 	mSelectMin = mSelectMax = 0;
+	mGfxDirty = true;
 }
 
 void TextField::InsertString(const std::wstring &inString)
@@ -921,7 +929,7 @@ void TextField::Layout()
             width = x;
       }
    }
-   if (line.mChars)
+   if (line.mChars || mLines.empty())
    {
       mCharGroups[mCharGroups.size()-1].UpdateMetrics(line.mMetrics);
       y += line.mMetrics.height;

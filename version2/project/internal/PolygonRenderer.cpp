@@ -360,7 +360,7 @@ public:
 
    void SetTransform(const Transform &inTransform)
    {
-      int points = mDataCount;
+      int points = mDataCount/2;
       if (points!=mTransformed.size() || inTransform!=mTransform)
       {
          mTransform = inTransform;
