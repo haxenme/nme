@@ -84,8 +84,8 @@ public:
    void setText(const std::wstring &inString);
 
    int   getLength();
-   int   getTextHeight();
-   int   getTextWidth();
+   int   getTextHeight() { return textHeight; }
+   int   getTextWidth() { return textWidth; }
 
    bool  alwaysShowSelection;
    AntiAliasType antiAliasType;
@@ -118,6 +118,8 @@ public:
    int  maxScrollH;
    int  maxScrollV;
    int  caretIndex;
+	int  textWidth;
+	int  textHeight;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -162,6 +164,7 @@ private:
    int  GroupFromChar(int inChar);
    int  EndOfCharX(int inChar,int inLine);
    int  EndOfLineX(int inLine);
+	ImagePoint GetScrollPos();
 
    bool mLinesDirty;
    bool mGfxDirty;

@@ -1,6 +1,7 @@
 #include <Utils.h>
 #ifdef HX_WINDOWS
 #include <windows.h>
+#include <time.h>
 #else
 #include <sys/time.h>
 typedef uint64_t __int64;

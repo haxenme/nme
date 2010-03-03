@@ -53,6 +53,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxScrollH  = 0;
    maxScrollV  = 0;
    setText(L"");
+	textWidth = textHeight = 0;
 }
 
 TextField::~TextField()
@@ -188,8 +189,12 @@ int TextField::getLength()
 
 int TextField::PointToChar(int inX,int inY)
 {
-   if (mCharPos.empty() || inY<mRect.y)
+   if (mCharPos.empty())
       return 0;
+
+	ImagePoint scroll = GetScrollPos();
+	inX +=scroll.x;
+	inY +=scroll.y;
 
    // Find the line ...
    for(int l=0;l<mLines.size();l++)
@@ -260,6 +265,8 @@ void TextField::Drag(Event &inEvent)
          mSelectMin = pos;
          mSelectMax = mSelectDownChar;
       }
+		caretIndex = pos;
+		ShowCaret();
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
       mGfxDirty = true;
       DirtyDown(dirtCache);
@@ -277,7 +284,6 @@ void TextField::OnKey(Event &inEvent)
    {
       int code = inEvent.code;
       bool shift = inEvent.flags & efShiftDown;
-      printf("Key %d/%d\n", inEvent.code,shift);
 
       switch(inEvent.value)
       {
@@ -301,9 +307,19 @@ void TextField::OnKey(Event &inEvent)
             mGfxDirty = true;
             return;
 
+         case keyRIGHT:
          case keyLEFT:
+         case keyHOME:
+         case keyEND:
             if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
-            if (caretIndex>0) caretIndex--;
+				switch(inEvent.value)
+				{
+					case keyLEFT: if (caretIndex>0) caretIndex--; break;
+         		case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
+         		case keyHOME: caretIndex = 0; break;
+         		case keyEND: caretIndex = getLength(); break;
+				}
+
             if (mSelectKeyDown>=0)
             {
                mSelectMin = std::min(mSelectKeyDown,caretIndex);
@@ -313,18 +329,6 @@ void TextField::OnKey(Event &inEvent)
             ShowCaret();
             return;
 
-         case keyRIGHT:
-            if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
-            if (caretIndex<mCharPos.size()) caretIndex++;
-            if (mSelectKeyDown>=0)
-            {
-               mSelectMin = std::min(mSelectKeyDown,caretIndex);
-               mSelectMax = std::max(mSelectKeyDown,caretIndex);
-               mGfxDirty = true;
-            }
-            ShowCaret();
-            return;
- 
          // TODO: top/bottom
 
          case keyENTER:
@@ -351,6 +355,8 @@ void TextField::OnKey(Event &inEvent)
 void TextField::ShowCaret()
 {
    ImagePoint pos(0,0);
+	bool changed = false;
+
    if (caretIndex < mCharPos.size())
       pos = mCharPos[caretIndex];
    else if (mLines.size())
@@ -359,10 +365,48 @@ void TextField::ShowCaret()
       pos.y = mLines[ mLines.size() -1].mY0;
    }
    if (pos.x-scrollH >= mRect.w)
-      scrollH = mRect.w + pos.x -1;
+	{
+		changed = true;
+      scrollH = pos.x - mRect.w + 1;
+	}
    else if (pos.x-scrollH < 0)
+	{
+		changed = true;
       scrollH = pos.x;
-      
+	}
+	if (scrollH<0)
+	{
+		changed = true;
+		scrollH = 0;
+	}
+	if (scrollV<0)
+	{
+		changed = true;
+		scrollV = 0;
+	}
+	if (scrollH>maxScrollH)
+	{
+		scrollH = maxScrollH;
+		changed = true;
+		if (scrollV<0) scrollV = 0;
+	}
+	// TODO: -ve scroll for right/aligned/centred?
+	//printf("Scroll %d/%d\n", scrollH, maxScrollH);
+	if (scrollV>maxScrollV)
+	{
+		scrollV = maxScrollV;
+		changed = true;
+	}
+
+
+	if (changed)
+	{
+		DirtyDown(dirtCache);
+		if (mSelectMax > mSelectMin)
+		{
+			mGfxDirty = true;
+		}
+	}
 }
 
 
@@ -629,6 +673,10 @@ int TextField::EndOfCharX(int inChar,int inLine)
 }
 
 
+ImagePoint TextField::GetScrollPos()
+{
+	return ImagePoint(scrollH,mLines[scrollV].mY0);
+}
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -646,6 +694,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          inState.mHitResult = this;
       return;
    }
+
+	ImagePoint scroll = GetScrollPos();
 
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
@@ -669,9 +719,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       {
          int l0 = LineFromChar(mSelectMin);
          int l1 = LineFromChar(mSelectMax-1);
-         ImagePoint pos = mCharPos[mSelectMin];
+         ImagePoint pos = mCharPos[mSelectMin] - scroll;
          int height = mLines[l1].mMetrics.height;
-         int x1 = EndOfCharX(mSelectMax-1,l1);
+         int x1 = EndOfCharX(mSelectMax-1,l1) - scroll.x;
          gfx.lineStyle(-1);
          gfx.beginFill( 0x101060, 1);
          // Special case of begin/end on same line ...
@@ -681,15 +731,15 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          }
          else
          {
-            gfx.drawRect(pos.x,pos.y,EndOfLineX(l0)-pos.x,height);
+            gfx.drawRect(pos.x,pos.y,EndOfLineX(l0)- scroll.x-pos.x,height);
             for(int y=l0+1;y<l1;y++)
             {
                Line &line = mLines[y];
-               pos = mCharPos[line.mChar0];
-               gfx.drawRect(pos.x,pos.y,EndOfLineX(y)-pos.x,line.mMetrics.height);
+               pos = mCharPos[line.mChar0]-scroll;
+               gfx.drawRect(pos.x,pos.y,EndOfLineX(y)-scroll.x-pos.x,line.mMetrics.height);
             }
             Line &line = mLines[l1];
-            pos = mCharPos[line.mChar0];
+            pos = mCharPos[line.mChar0]-scroll;
             gfx.drawRect(pos.x,pos.y,x1-pos.x,line.mMetrics.height);
          }
       }
@@ -701,7 +751,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       gfx.Render(inTarget,inState);
    }
 
-   ImagePoint scroll(scrollH,mLines[scrollV].mY0);
 
    if (isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this )
    {
@@ -920,8 +969,8 @@ void TextField::Layout()
    Line line;
    line.mY0 = y0;
    int char_count = 0;
-   int height = 0;
-   int width = 0;
+   textHeight = 0;
+   textWidth = 0;
    int x = 0;
    int y = 0;
 
@@ -1027,8 +1076,8 @@ void TextField::Layout()
          }
 
          line.mMetrics.width = x;
-         if (x>width)
-            width = x;
+         if (x>textWidth)
+            textWidth = x;
       }
    }
    if (line.mChars || mLines.empty())
@@ -1038,7 +1087,7 @@ void TextField::Layout()
       mLines.push_back(line);
    }
 
-   height = y;
+   textHeight = y;
 
    if (autoSize != asNone)
    {
@@ -1046,19 +1095,19 @@ void TextField::Layout()
       {
          switch(autoSize)
          {
-            case asLeft: mRect.w = width; break;
-            case asRight: mRect.x = mRect.x1()-width; mRect.w = width; break;
-            case asCenter: mRect.x = (mRect.x+mRect.x1()-width)/2; mRect.w = width; break;
+            case asLeft: mRect.w = textWidth; break;
+            case asRight: mRect.x = mRect.x1()-textWidth; mRect.w = textWidth; break;
+            case asCenter: mRect.x = (mRect.x+mRect.x1()-textWidth)/2; mRect.w = textWidth; break;
          }
       }
-      mRect.h = height;
+      mRect.h = textHeight;
    }
 
-   maxScrollH = std::max(0,width-mRect.w);
+   maxScrollH = std::max(0,textWidth-mRect.w);
    maxScrollV = 0;
    // Work out how many lines from the end fit in the rect, and
    //  therefore how many lines we can scroll...
-   if (height>mRect.h && mLines.size()>1)
+   if (textHeight>mRect.h && mLines.size()>1)
    {
       int left = mRect.h;
       int line = mLines.size()-1;

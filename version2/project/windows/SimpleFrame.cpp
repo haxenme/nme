@@ -332,12 +332,15 @@ int WinKeyToFlash(int inKey,bool &outRight,int inChar)
    {
       case VK_RMENU:
       case VK_LMENU:
+      case VK_MENU:
          return keyALTERNATE;
       case VK_RSHIFT:
       case VK_LSHIFT:
+      case VK_SHIFT:
          return keySHIFT;
       case VK_RCONTROL:
       case VK_LCONTROL:
+      case VK_CONTROL:
          return keyCONTROL;
       case VK_LWIN:
       case VK_RWIN:
@@ -464,6 +467,9 @@ public:
 					gKeyboardLayout = GetKeyboardLayout(0);
 				static uint8 key_buffer[256];
 				GetKeyboardState(key_buffer);
+				if (key_buffer[VK_SHIFT] & 0x80) key.flags|=efShiftDown;
+				if (key_buffer[VK_CONTROL] & 0x80) key.flags|=efCtrlDown;
+				if (key_buffer[VK_MENU] & 0x80) key.flags|=efAltDown;
 
 				wchar_t codes[4] = {0,0,0,0};
 				int converted = ToUnicodeEx( wParam, (lParam>>16)&0xff, key_buffer, codes, 4,
