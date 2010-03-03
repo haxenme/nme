@@ -50,6 +50,8 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mCaretGfx = 0;
    mLastCaretHeight = -1;
    mSelectKeyDown = -1;
+   maxScrollH  = 0;
+   maxScrollV  = 0;
    setText(L"");
 }
 
@@ -291,6 +293,7 @@ void TextField::OnKey(Event &inEvent)
             }
             else if (mCharGroups.size())
                DeleteChars(0,1);
+            ShowCaret();
             return;
 
          case keySHIFT:
@@ -307,6 +310,7 @@ void TextField::OnKey(Event &inEvent)
                mSelectMax = std::max(mSelectKeyDown,caretIndex);
                mGfxDirty = true;
             }
+            ShowCaret();
             return;
 
          case keyRIGHT:
@@ -318,6 +322,7 @@ void TextField::OnKey(Event &inEvent)
                mSelectMax = std::max(mSelectKeyDown,caretIndex);
                mGfxDirty = true;
             }
+            ShowCaret();
             return;
  
          // TODO: top/bottom
@@ -332,6 +337,7 @@ void TextField::OnKey(Event &inEvent)
          DeleteSelection();
          wchar_t str[2] = {code,0};
          InsertString(str);
+         ShowCaret();
       }
    }
    else
@@ -342,7 +348,22 @@ void TextField::OnKey(Event &inEvent)
 }
 
 
-
+void TextField::ShowCaret()
+{
+   ImagePoint pos(0,0);
+   if (caretIndex < mCharPos.size())
+      pos = mCharPos[caretIndex];
+   else if (mLines.size())
+   {
+      pos.x = EndOfLineX( mLines.size()-1 );
+      pos.y = mLines[ mLines.size() -1].mY0;
+   }
+   if (pos.x-scrollH >= mRect.w)
+      scrollH = mRect.w + pos.x -1;
+   else if (pos.x-scrollH < 0)
+      scrollH = pos.x;
+      
+}
 
 
 void TextField::Clear()
@@ -351,6 +372,8 @@ void TextField::Clear()
       mCharGroups[i].Clear();
    mCharGroups.resize(0);
    mLines.resize(0);
+   maxScrollH = maxScrollV = 0;
+   scrollV = scrollH = 0;
 }
 
 void TextField::setText(const std::wstring &inString)
@@ -678,6 +701,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       gfx.Render(inTarget,inState);
    }
 
+   ImagePoint scroll(scrollH,mLines[scrollV].mY0);
+
    if (isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this )
    {
       if (!mCaretGfx)
@@ -703,6 +728,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             pos.x = EndOfLineX( mLines.size()-1 );
             pos.y = mLines[ mLines.size() -1].mY0;
          }
+         pos = pos - scroll;
         
          RenderState state(inState);
          Matrix matrix(*state.mTransform.mMatrix);
@@ -752,7 +778,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             if (ch!='\n')
             {
                int cid = group.mChar0 + c;
-               ImagePoint pos = mCharPos[cid];
+               ImagePoint pos = mCharPos[cid]-scroll;
                if (pos.y>mRect.h) break;
                while(line<last_line && mLines[line+1].mChar0 >= cid)
                   line++;
@@ -1028,6 +1054,19 @@ void TextField::Layout()
       mRect.h = height;
    }
 
+   maxScrollH = std::max(0,width-mRect.w);
+   maxScrollV = 0;
+   // Work out how many lines from the end fit in the rect, and
+   //  therefore how many lines we can scroll...
+   if (height>mRect.h && mLines.size()>1)
+   {
+      int left = mRect.h;
+      int line = mLines.size()-1;
+      while(left>0 && line>0 )
+        left -= mLines[line--].mMetrics.height;
+      maxScrollH = line;
+   }
+
    // Align rows ...
    for(int l=0;l<mLines.size();l++)
    {
@@ -1056,7 +1095,10 @@ void TextField::Layout()
    int n = mCharPos.size();
    mSelectMin = std::min(mSelectMin,n);
    mSelectMax = std::min(mSelectMax,n);
+   ShowCaret();
 }
+
+
 
 
 // --- TextFormat -----------------------------------

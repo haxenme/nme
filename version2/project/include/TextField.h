@@ -136,6 +136,7 @@ public:
    void DeleteSelection();
    void DeleteChars(int inFirst,int inEnd);
    void InsertString(const std::wstring &inString);
+   void ShowCaret();
 
 
 
