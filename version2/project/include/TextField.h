@@ -165,6 +165,7 @@ private:
    int  EndOfCharX(int inChar,int inLine);
    int  EndOfLineX(int inLine);
 	ImagePoint GetScrollPos();
+	ImagePoint GetCursorPos();
 
    bool mLinesDirty;
    bool mGfxDirty;
@@ -177,6 +178,7 @@ private:
    QuickVec<ImagePoint> mCharPos;
    Graphics *mCaretGfx;
    int      mLastCaretHeight;
+   int      mLastUpDownX;
 
    int mSelectMin;
    int mSelectMax;

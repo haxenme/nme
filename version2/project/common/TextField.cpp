@@ -54,6 +54,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxScrollV  = 0;
    setText(L"");
 	textWidth = textHeight = 0;
+   mLastUpDownX = -1;
 }
 
 TextField::~TextField()
@@ -311,6 +312,9 @@ void TextField::OnKey(Event &inEvent)
          case keyLEFT:
          case keyHOME:
          case keyEND:
+            mLastUpDownX = -1;
+         case keyUP:
+         case keyDOWN:
             if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
 				switch(inEvent.value)
 				{
@@ -318,6 +322,24 @@ void TextField::OnKey(Event &inEvent)
          		case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
          		case keyHOME: caretIndex = 0; break;
          		case keyEND: caretIndex = getLength(); break;
+         		case keyUP:
+         		case keyDOWN:
+               {
+                  int l= LineFromChar(caretIndex);
+                  printf("caret line : %d\n",l);
+                  if (l==0 && inEvent.value==keyUP) return;
+                  if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
+                  l += (inEvent.value==keyUP) ? -1 : 1;
+                  Line &line = mLines[l];
+                  if (mLastUpDownX<0)
+                     mLastUpDownX  = GetCursorPos().x + 1;
+                  int c;
+                  for(c=0; c<line.mChars;c++)
+                     if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
+                        break;
+                  caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
+                  break;
+               }
 				}
 
             if (mSelectKeyDown>=0)
@@ -336,7 +358,7 @@ void TextField::OnKey(Event &inEvent)
             break;
       }
 
-      if (code=='\n' || (code>27 && code<63000))
+      if ( (multiline && code=='\n') || (code>27 && code<63000))
       {
          DeleteSelection();
          wchar_t str[2] = {code,0};
@@ -556,14 +578,15 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                //const char *val = att->Value();
                if (att->NameTStr()=="align")
                {
+                  fmt = fmt->COW();
                   if (att->ValueTStr()=="left")
-                     inFormat->align = tfaLeft;
+                     fmt->align = tfaLeft;
                   else if (att->ValueTStr()=="right")
-                     inFormat->align = tfaRight;
+                     fmt->align = tfaRight;
                   else if (att->ValueTStr()=="center")
-                     inFormat->align = tfaCenter;
+                     fmt->align = tfaCenter;
                   else if (att->ValueTStr()=="justify")
-                     inFormat->align = tfaJustify;
+                     fmt->align = tfaJustify;
                }
             }
 
@@ -629,8 +652,6 @@ int TextField::LineFromChar(int inChar)
       else
          min = mid;
    }
-   while(min<max && mLines[min].mChars==0)
-      min++;
    return min;
 }
 
@@ -677,6 +698,20 @@ ImagePoint TextField::GetScrollPos()
 {
 	return ImagePoint(scrollH,mLines[scrollV].mY0);
 }
+
+ImagePoint TextField::GetCursorPos()
+{
+   ImagePoint pos(0,0);
+   if (caretIndex < mCharPos.size())
+      pos = mCharPos[caretIndex];
+   else if (mLines.size())
+   {
+      pos.x = EndOfLineX( mLines.size()-1 );
+      pos.y = mLines[ mLines.size() -1].mY0;
+   }
+   return pos;
+}
+
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -769,15 +804,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             mCaretGfx->lineTo(0,mLastCaretHeight);
          }
 
-         ImagePoint pos(0,0);
-         if (caretIndex < mCharPos.size())
-            pos = mCharPos[caretIndex];
-         else if (mLines.size())
-         {
-            pos.x = EndOfLineX( mLines.size()-1 );
-            pos.y = mLines[ mLines.size() -1].mY0;
-         }
-         pos = pos - scroll;
+         ImagePoint pos = GetCursorPos() - scroll;
         
          RenderState state(inState);
          Matrix matrix(*state.mTransform.mMatrix);
@@ -973,6 +1000,7 @@ void TextField::Layout()
    textWidth = 0;
    int x = 0;
    int y = 0;
+   mLastUpDownX = -1;
 
    for(int i=0;i<mCharGroups.size();i++)
    {
@@ -1132,7 +1160,7 @@ void TextField::Layout()
             case tfaLeft: extra = 0; break;
             case tfaCenter: extra/=2; break;
          }
-         if (extra)
+         if (extra>0)
          {
             for(int c=0; c<line.mChars; c++)
                mCharPos[line.mChar0+c].x += extra;
