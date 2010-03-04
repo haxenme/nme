@@ -12,12 +12,15 @@
 
 #include <Display.h>
 #include <Surface.h>
+#include <KeyCodes.h>
 
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 
 
 using namespace nme;
+
+void EnableKeyboard(bool inEnable);
 
 class EAGLStage : public nme::Stage
 {
@@ -138,6 +141,18 @@ public:
       return mHardwareSurface;
    }
 
+   void SetCursor(nme::Cursor)
+   {
+      // No cursors on iPhone !
+   }
+
+   void EnablePopupKeyboard(bool inEnable)
+   {
+      ::EnableKeyboard(inEnable);
+   }
+
+
+
   // --- IRenderTarget Interface ------------------------------------------
    int Width() { return backingWidth; }
    int Height() { return backingHeight; }
@@ -161,11 +176,24 @@ public:
 
 };
 
+@interface UIStageViewController : UIViewController
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+@end
+
+@implementation UIStageViewController
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+   printf("shouldAutorotateToInterfaceOrientation\n");
+   return YES;
+}
+@end
+
+
 
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
 // Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
-@interface UIStageView : UIView
+@interface UIStageView : UIView<UITextFieldDelegate>
 {    
 @private
    BOOL animating;
@@ -179,7 +207,11 @@ public:
     NSTimer *animationTimer;
 @public
    EAGLStage *mStage;
+
+   UITextField *mTextField;
+   BOOL mKeyboardEnabled;
 }
+
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;
 @property (nonatomic) NSInteger animationFrameInterval;
@@ -188,6 +220,8 @@ public:
 - (void) stopAnimation;
 - (void) drawView:(id)sender;
 - (void) onPoll:(id)sender;
+- (void) enableKeyboard:(bool)withEnable;
+- (BOOL)canBecomeFirstResponder;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
@@ -231,6 +265,8 @@ UIStageView *sgMainView = nil;
       animationFrameInterval = 1;
       displayLink = nil;
       animationTimer = nil;
+      mTextField = nil;
+      mKeyboardEnabled = NO;
       
       // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
       // class is used as fallback when it isn't available.
@@ -242,10 +278,80 @@ UIStageView *sgMainView = nil;
       */
 
       displayLinkSupported = FALSE;
+
+      // Create myself a view-controller ...
+      // Need to do this on construction..
+      //UIViewController *viewController = [[UIStageViewController alloc] init];
+      //viewController.view = self;
+
     }
    
     return self;
 }
+
+- (BOOL)canBecomeFirstResponder { return YES; }
+
+
+/* UITextFieldDelegate method.  Invoked when user types something. */
+
+- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+
+   if ([string length] == 0)
+   {
+      /* SDL hack to detect delete */
+      Event key_down(etKeyDown);
+      key_down.value = keyBACKSPACE;
+      mStage->OnEvent(key_down);
+
+      Event key_up(etKeyDown);
+      key_up.value = keyBACKSPACE;
+      mStage->OnEvent(key_up);
+   }
+   else
+   {
+      /* go through all the characters in the string we've been sent
+         and convert them to key presses */
+      for(int i=0; i<[string length]; i++)
+      {
+         unichar c = [string characterAtIndex: i];
+
+         Event key_down(etKeyDown);
+         key_down.code = c;
+         mStage->OnEvent(key_down);
+         
+         Event key_up(etKeyUp);
+         key_up.code = c;
+         mStage->OnEvent(key_up);
+      }
+   }
+
+   return NO; /* don't allow the edit! (keep placeholder text there) */
+}
+
+/* Terminates the editing session */
+- (BOOL)textFieldShouldReturn:(UITextField*)_textField {
+   if (mStage->FinishEditOnEnter())
+   {
+      mStage->SetFocusObject(0);
+      [self enableKeyboard:NO];
+      return YES;
+   }
+
+   // Fake a return character...
+
+   Event key_down(etKeyDown);
+   key_down.value = keyENTER;
+   key_down.code = '\n';
+   mStage->OnEvent(key_down);
+
+   Event key_up(etKeyDown);
+   key_up.value = keyENTER;
+   key_down.code = '\n';
+   mStage->OnEvent(key_up);
+ 
+   return NO;
+}
+
 
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -253,10 +359,12 @@ UIStageView *sgMainView = nil;
    CGPoint thumbPoint;
    UITouch *thumb = [[event allTouches] anyObject];
    thumbPoint = [thumb locationInView:thumb.view];
+   //printf("touchesBegan %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
 
-   if(thumb.tapCount==0)
+   if(thumb.tapCount==1)
    {
       Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
+      mouse.flags |= efLeftDown;
       mStage->OnEvent(mouse);
    }
    else if(thumb.tapCount==1)
@@ -274,13 +382,17 @@ UIStageView *sgMainView = nil;
       UITouch *thumb = [[event allTouches] anyObject];
       thumbPoint = [thumb locationInView:thumb.view];
 
+      //printf(" MOVED %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
+
       Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
+      mouse.flags |= efLeftDown;
       mStage->OnEvent(mouse);
    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
+   //printf("END %d/%d\n", (int)[touches count],(int)[[event touchesForView:self] count]);
    if([touches count] == [[event touchesForView:self] count])
    {
       CGPoint thumbPoint;
@@ -289,6 +401,44 @@ UIStageView *sgMainView = nil;
 
       Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
       mStage->OnEvent(mouse);
+   }
+}
+
+- (void) enableKeyboard:(bool)withEnable
+{
+   if (mKeyboardEnabled!=withEnable)
+   {
+       mKeyboardEnabled = withEnable;
+       if (mKeyboardEnabled)
+       {
+          // Setup a dummy textfield to make iPhone think we have a text field - but
+          //  delegate all the events to ourselves..
+          if (mTextField==nil)
+          {
+             mTextField = [[[UITextField alloc] initWithFrame: CGRectMake(0,0,0,0)] autorelease];
+             mTextField.delegate = self;
+             /* placeholder so there is something to delete! (from SDL code) */
+             mTextField.text = @" ";   
+   
+             /* set UITextInputTrait properties, mostly to defaults */
+             mTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+             mTextField.autocorrectionType = UITextAutocorrectionTypeNo;
+             mTextField.enablesReturnKeyAutomatically = NO;
+             mTextField.keyboardAppearance = UIKeyboardAppearanceDefault;
+             mTextField.keyboardType = UIKeyboardTypeDefault;
+             mTextField.returnKeyType = UIReturnKeyDefault;
+             mTextField.secureTextEntry = NO;   
+             mTextField.hidden = YES;
+
+	     [self addSubview: mTextField];
+
+          }
+          [mTextField becomeFirstResponder];
+       }
+       else
+       {
+          [mTextField resignFirstResponder];
+       }
    }
 }
 
@@ -341,8 +491,10 @@ UIStageView *sgMainView = nil;
       /*
       if (displayLinkSupported)
       {
-         // CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions will result in a warning, but can be dismissed
-         // if the system version runtime check for CADisplayLink exists in -initWithCoder:. The runtime check ensures this code will
+         // CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions
+         // will result in a warning, but can be dismissed
+         // if the system version runtime check for CADisplayLink exists in -initWithCoder:.
+         // The runtime check ensures this code will
          // not be called in system versions earlier than 3.1.
 
          displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawView:)];
@@ -385,12 +537,18 @@ UIStageView *sgMainView = nil;
 - (void) dealloc
 {
     if (mStage) mStage->DecRef();
+    if (mTextField)
+       [mTextField release];
    
     [super dealloc];
 }
 
 @end
 
+void EnableKeyboard(bool inEnable)
+{
+   [ sgMainView enableKeyboard:inEnable];
+}
 
 class UIViewFrame : public nme::Frame
 {

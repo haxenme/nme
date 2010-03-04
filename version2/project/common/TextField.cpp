@@ -175,11 +175,30 @@ void TextField::setAutoSize(int inAutoSize)
 
 void TextField::Focus()
 {
+#ifdef IPHONE
+  Stage *stage = getStage();
+  if (stage)
+     stage->EnablePopupKeyboard(true);
+#endif
 }
 
 void TextField::Unfocus()
 {
+#ifdef IPHONE
+  Stage *stage = getStage();
+  if (stage)
+     stage->EnablePopupKeyboard(false);
+#endif
 }
+
+bool TextField::FinishEditOnEnter()
+{
+#ifdef IPHONE
+   return !multiline;
+#endif
+}
+
+
 
 int TextField::getLength()
 {
@@ -235,6 +254,9 @@ bool TextField::CaptureDown(Event &inEvent)
 {
    if (selectable || isInput)
    {
+      if (selectable)
+         getStage()->EnablePopupKeyboard(true);
+
       UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       caretIndex = pos;

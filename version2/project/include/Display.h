@@ -190,6 +190,8 @@ public:
    virtual void Drag(Event &inEvent) {  }
    virtual void EndDrag(Event &inEvent) { }
    virtual void OnKey(Event &inEvent) { }
+   virtual bool FinishEditOnEnter() { return false; }
+
 
    void SetParent(DisplayObjectContainer *inParent);
 
@@ -286,6 +288,8 @@ public:
    virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(int inX,int inY);
    virtual void SetCursor(Cursor inCursor)=0;
+   virtual void EnablePopupKeyboard(bool inEnable) { }
+   bool FinishEditOnEnter();
 
    int    mQuality;
 

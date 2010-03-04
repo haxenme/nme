@@ -69,7 +69,7 @@ public:
       mHardwareSurface = 0;
       mOGLCtx = 0;
       mPollingTimer = false;
-		mCursor = curPointer;
+      mCursor = curPointer;
 
       mIsHardware = inFlags & wfHardware;
       HintColourOrder(mIsHardware);
@@ -167,36 +167,36 @@ public:
       return true;
    }
 
-	void ApplyCursor()
-	{
-		static HCURSOR pointer = LoadCursor(0,IDC_ARROW);
-		static HCURSOR text = LoadCursor(0,IDC_IBEAM);
-		static HCURSOR hand = LoadCursor(0,IDC_CROSS); // For now
-		static HCURSOR none = 0;
-		if (none==0)
-		{
-			unsigned char and_mask[32*32/4];
-			unsigned char xor_mask[32*32/4];
-			memset(and_mask,255,sizeof(and_mask));
-			memset(xor_mask,0,sizeof(and_mask));
-			none = CreateCursor(0, 0,0, 32, 32, and_mask, xor_mask );
-		}
+   void ApplyCursor()
+   {
+      static HCURSOR pointer = LoadCursor(0,IDC_ARROW);
+      static HCURSOR text = LoadCursor(0,IDC_IBEAM);
+      static HCURSOR hand = LoadCursor(0,IDC_CROSS); // For now
+      static HCURSOR none = 0;
+      if (none==0)
+      {
+         unsigned char and_mask[32*32/4];
+         unsigned char xor_mask[32*32/4];
+         memset(and_mask,255,sizeof(and_mask));
+         memset(xor_mask,0,sizeof(and_mask));
+         none = CreateCursor(0, 0,0, 32, 32, and_mask, xor_mask );
+      }
 
-		switch(mCursor)
-		{
-			case curNone : ::SetCursor(none); break;
-			case curHand : ::SetCursor(hand); break;
-			case curTextSelect : ::SetCursor(text); break;
-			default:
-				::SetCursor(pointer);
-		}
-	}
+      switch(mCursor)
+      {
+         case curNone : ::SetCursor(none); break;
+         case curHand : ::SetCursor(hand); break;
+         case curTextSelect : ::SetCursor(text); break;
+         default:
+            ::SetCursor(pointer);
+      }
+   }
 
-	void SetCursor(Cursor inCursor)
-	{
-		mCursor = inCursor;
-		ApplyCursor();
-	}
+   void SetCursor(Cursor inCursor)
+   {
+      mCursor = inCursor;
+      ApplyCursor();
+   }
 
 
    void UpdateHardware()
@@ -301,7 +301,7 @@ public:
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
    bool         mIsHardware;
-	Cursor       mCursor;
+   Cursor       mCursor;
    bool         mPollingTimer;
    PollMethod   mPollMethod;
 };
@@ -353,12 +353,12 @@ int WinKeyToFlash(int inKey,bool &outRight,int inChar)
       case VK_RETURN:
          return keyENTER;
 
-		case '`' : return keyBACKQUOTE;
-		//case '\\' : return keyBACKSLASH;
-		case VK_OEM_COMMA : return keyCOMMA;
-		case VK_BACK : return keyBACKSPACE;
-		case VK_OEM_MINUS : return keyMINUS;
-		case VK_OEM_PERIOD : return keyPERIOD;
+      case '`' : return keyBACKQUOTE;
+      //case '\\' : return keyBACKSLASH;
+      case VK_OEM_COMMA : return keyCOMMA;
+      case VK_BACK : return keyBACKSPACE;
+      case VK_OEM_MINUS : return keyMINUS;
+      case VK_OEM_PERIOD : return keyPERIOD;
       VK_TRANS(DELETE)
       VK_TRANS(DOWN)
       VK_TRANS(END)
@@ -366,7 +366,7 @@ int WinKeyToFlash(int inKey,bool &outRight,int inChar)
       VK_TRANS(HOME)
       VK_TRANS(INSERT)
       VK_TRANS(LEFT)
-		// case '(' : return keyLEFTBRACKET;
+      // case '(' : return keyLEFTBRACKET;
       //VK_TRANS(QUOTE)
       VK_TRANS(RIGHT)
       //VK_TRANS(RIGHTBRACKET)
@@ -401,14 +401,14 @@ public:
       sgFrameMap.erase(mHandle);
    }
 
-	void WParamToFlags(WPARAM wParam, Event &ioEvent)
-	{
-		if (wParam & MK_CONTROL) ioEvent.flags |= efCtrlDown;
-		if (wParam & MK_LBUTTON) ioEvent.flags |= efLeftDown;
-		if (wParam & MK_MBUTTON) ioEvent.flags |= efMiddleDown;
-		if (wParam & MK_RBUTTON) ioEvent.flags |= efRightDown;
-		if (wParam & MK_SHIFT)   ioEvent.flags |= efShiftDown;
-	}
+   void WParamToFlags(WPARAM wParam, Event &ioEvent)
+   {
+      if (wParam & MK_CONTROL) ioEvent.flags |= efCtrlDown;
+      if (wParam & MK_LBUTTON) ioEvent.flags |= efLeftDown;
+      if (wParam & MK_MBUTTON) ioEvent.flags |= efMiddleDown;
+      if (wParam & MK_RBUTTON) ioEvent.flags |= efRightDown;
+      if (wParam & MK_SHIFT)   ioEvent.flags |= efShiftDown;
+   }
 
    LRESULT Callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
@@ -436,56 +436,56 @@ public:
          case WM_MOUSEMOVE:
             {
             Event evt(etMouseMove, LOWORD(lParam), HIWORD(lParam));
-				WParamToFlags(wParam,evt);
+            WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
             }
             break;
-			case WM_LBUTTONDOWN:
+         case WM_LBUTTONDOWN:
             {
             Event evt(etMouseDown, LOWORD(lParam), HIWORD(lParam));
-				WParamToFlags(wParam,evt);
+            WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
             }
             break;
-			case WM_LBUTTONUP:
+         case WM_LBUTTONUP:
             {
             Event evt(etMouseUp, LOWORD(lParam), HIWORD(lParam));
-				WParamToFlags(wParam,evt);
+            WParamToFlags(wParam,evt);
             mStage->HandleEvent(evt);
-				// TODO: based on timer/motion?
+            // TODO: based on timer/motion?
             Event click(etMouseClick, LOWORD(lParam), HIWORD(lParam));
             mStage->HandleEvent(click);
             }
             break;
-			// TODO : Create click event
+         // TODO : Create click event
 
-			case WM_KEYUP:
-			case WM_KEYDOWN:
+         case WM_KEYUP:
+         case WM_KEYDOWN:
             {
             Event key(uMsg==WM_KEYDOWN ? etKeyDown: etKeyUp);
-				if (!gKeyboardLayout)
-					gKeyboardLayout = GetKeyboardLayout(0);
-				static uint8 key_buffer[256];
-				GetKeyboardState(key_buffer);
-				if (key_buffer[VK_SHIFT] & 0x80) key.flags|=efShiftDown;
-				if (key_buffer[VK_CONTROL] & 0x80) key.flags|=efCtrlDown;
-				if (key_buffer[VK_MENU] & 0x80) key.flags|=efAltDown;
+            if (!gKeyboardLayout)
+               gKeyboardLayout = GetKeyboardLayout(0);
+            static uint8 key_buffer[256];
+            GetKeyboardState(key_buffer);
+            if (key_buffer[VK_SHIFT] & 0x80) key.flags|=efShiftDown;
+            if (key_buffer[VK_CONTROL] & 0x80) key.flags|=efCtrlDown;
+            if (key_buffer[VK_MENU] & 0x80) key.flags|=efAltDown;
 
-				wchar_t codes[4] = {0,0,0,0};
-				int converted = ToUnicodeEx( wParam, (lParam>>16)&0xff, key_buffer, codes, 4,
-										  0, gKeyboardLayout );
-				key.code = converted==1 ?  codes[0] : 0;
-				bool right;
-				key.value = WinKeyToFlash(wParam,right,key.code);
-				if (right)
-					key.flags |= efLocationRight;
-				mStage->HandleEvent(key);
+            wchar_t codes[4] = {0,0,0,0};
+            int converted = ToUnicodeEx( wParam, (lParam>>16)&0xff, key_buffer, codes, 4,
+                                0, gKeyboardLayout );
+            key.code = converted==1 ?  codes[0] : 0;
+            bool right;
+            key.value = WinKeyToFlash(wParam,right,key.code);
+            if (right)
+               key.flags |= efLocationRight;
+            mStage->HandleEvent(key);
             break;
-				}
+            }
 
          case WM_SETCURSOR:
-				mStage->ApplyCursor();
-				break;
+            mStage->ApplyCursor();
+            break;
 
          case WM_TIMER:
             {

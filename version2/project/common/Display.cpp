@@ -1040,6 +1040,13 @@ void Stage::HandleEvent(Event &inEvent)
       {
          if (hit_obj->WantsFocus())
             SetFocusObject(hit_obj,fsMouse);
+         #ifdef IPHONE
+         else
+         {
+            EnablePopupKeyboard(false);
+            SetFocusObject(0,fsMouse);
+         }
+         #endif
       }
    
       if (inEvent.type==etMouseDown)
@@ -1051,6 +1058,14 @@ void Stage::HandleEvent(Event &inEvent)
          }
       }
    }
+   #ifdef IPHONE
+   else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown )
+   {
+      EnablePopupKeyboard(false);
+      SetFocusObject(0);
+   }
+   #endif
+ 
    
    if (hit_obj)
       hit_obj->DecRef();
@@ -1091,6 +1106,13 @@ void Stage::RemovingFromStage(DisplayObject *inObject)
 
 }
 
+
+bool Stage::FinishEditOnEnter()
+{
+   if (mFocusObject && mFocusObject!=this)
+      return mFocusObject->FinishEditOnEnter();
+   return false;
+}
 
 
 void Stage::RenderStage()
