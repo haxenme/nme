@@ -198,25 +198,29 @@ value nme_get_frame_stage(value inValue)
 }
 DEFINE_PRIM(nme_get_frame_stage,1);
 
-value nme_create_main_frame(value inWidth,value inHeight,value inFlags,value inTitle,value inIcon)
+AutoGCRoot *sOnCreateCallback = 0;
+
+void OnMainFrameCreated(Frame *inFrame)
 {
-   Frame *frame = CreateMainFrame((int)val_number(inWidth), (int)val_number(inHeight),
-                     val_int(inFlags), val_string(inTitle), val_string(inIcon) );
-   if (frame)
-     return ObjectToAbstract(frame);
+   value frame = inFrame ? ObjectToAbstract(inFrame) : alloc_null();
+   val_call1( sOnCreateCallback->get(),frame );
+   delete sOnCreateCallback;
+}
+
+value nme_create_main_frame(value *arg, int nargs)
+{
+   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
+
+   sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
+
+   CreateMainFrame(OnMainFrameCreated,
+       (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
+       val_int(arg[aFlags]), val_string(arg[aTitle]), val_string(arg[aIcon]) );
+
    return alloc_null();
 }
 
-DEFINE_PRIM(nme_create_main_frame,5);
-
-value nme_main_loop()
-{
-   MainLoop();
-   return alloc_null();
-}
-
-DEFINE_PRIM(nme_main_loop,0);
-
+DEFINE_PRIM_MULT(nme_create_main_frame);
 
 value nme_close()
 {

@@ -31,6 +31,7 @@ enum EventType
    etPoll,      // 9
    etQuit,      // 10
    etFocus,     // 11
+   etShouldRotate, // 12
 
    // Internal for now...
    etDestroyHandler,
@@ -331,11 +332,14 @@ enum WindowFlags
    wfVSync      = 0x00000010,
 };
 
-void MainLoop();
 void TerminateMainLoop();
 
 Stage *IPhoneGetStage();
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon );
+
+typedef void (*FrameCreationCallback)(Frame *);
+
+void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
+   unsigned int inFlags, const char *inTitle, const char *inIcon );
 
 
 } // end namespace nme

@@ -21,33 +21,85 @@
 using namespace nme;
 
 void EnableKeyboard(bool inEnable);
+extern "C" void nme_app_set_active(bool inActive);
+
+
+@interface NMEAppDelegate : NSObject <UIApplicationDelegate>
+{
+    UIWindow *window;
+    UIViewController *controller;
+}
+@property (nonatomic, retain) IBOutlet UIWindow *window;
+@property (nonatomic, retain) IBOutlet UIViewController *controller;
+@end
+
+
+@interface UIStageViewController : UIViewController
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (void)loadView;
+@end
+
+
+// This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
+// The view content is basically an EAGL surface you render your OpenGL scene into.
+// Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
+@interface UIStageView : UIView<UITextFieldDelegate>
+{    
+@private
+   BOOL animating;
+   BOOL displayLinkSupported;
+   id displayLink;
+   NSInteger animationFrameInterval;
+   NSTimer *animationTimer;
+@public
+   class EAGLStage *mStage;
+
+   UITextField *mTextField;
+   BOOL mKeyboardEnabled;
+}
+
+
+@property (readonly, nonatomic, getter=isAnimating) BOOL animating;
+@property (nonatomic) NSInteger animationFrameInterval;
+
+- (void) myInit;
+- (void) startAnimation;
+- (void) stopAnimation;
+- (void) drawView:(id)sender;
+- (void) onPoll:(id)sender;
+- (void) enableKeyboard:(bool)withEnable;
+- (BOOL)canBecomeFirstResponder;
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+
+@end
+
+// Global instance ...
+UIStageView *sgMainView = nil;
+static FrameCreationCallback sOnFrame = nil;
+
+// --- Stage Implementaton ------------------------------------------------------
 
 class EAGLStage : public nme::Stage
 {
 public:
    EAGLStage(CAEAGLLayer *inLayer,bool inInitRef) : nme::Stage(inInitRef)
    {
-
       defaultFramebuffer = 0;
       colorRenderbuffer = 0;
       mHardwareContext = 0;
       mHardwareSurface = 0;
+      mLayer = inLayer;
       mContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
         
       if (!mContext || ![EAGLContext setCurrentContext:mContext])
       {
          throw "Could not initilize OpenL";
       }
+ 
+      CreateFramebuffer();
       
-      // Create default framebuffer object.
-      // The backing will be allocated for the current layer in -resizeFromLayer
-      glGenFramebuffersOES(1, &defaultFramebuffer);
-      glGenRenderbuffersOES(1, &colorRenderbuffer);
-      glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-      glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-      glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES,
-                                     GL_RENDERBUFFER_OES, colorRenderbuffer);
-
       mHardwareContext = HardwareContext::CreateOpenGL(inLayer,mContext);
       mHardwareContext->IncRef();
       mHardwareSurface = new HardwareSurface(mHardwareContext);
@@ -80,20 +132,48 @@ public:
       [mContext release];
    }
 
-   void OnResizeLayer(CAEAGLLayer *inLayer)
-   {   
-      // Allocate color buffer backing based on the current layer size
+   void CreateFramebuffer()
+   {
+      // Create default framebuffer object.
+      // The backing will be allocated for the current layer in -resizeFromLayer
+      glGenFramebuffersOES(1, &defaultFramebuffer);
+      glGenRenderbuffersOES(1, &colorRenderbuffer);
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
       glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-      [mContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:inLayer];
+      [mContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
+      glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES,
+                                  GL_RENDERBUFFER_OES, colorRenderbuffer);
+   
       glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
       glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-   
+       
       if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
       {
-          NSLog(@"Failed to make complete framebuffer object %x",
-            glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-          throw "OpenGL resize failed";
+         NSLog(@"Failed to make complete framebuffer object %x",
+              glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+         throw "OpenGL resize failed";
       }
+   }
+   
+   
+  void DestroyFramebuffer()
+   {
+      if (defaultFramebuffer)
+         glDeleteFramebuffersOES(1, &defaultFramebuffer);
+      defaultFramebuffer = 0;
+      if (colorRenderbuffer)
+         glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+      defaultFramebuffer = 0;
+   }
+   
+
+   void OnResizeLayer(CAEAGLLayer *inLayer)
+   {   
+      // Recreate frame buffers ..
+      [EAGLContext setCurrentContext:mContext];
+      DestroyFramebuffer();
+      CreateFramebuffer();
+
       mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
       Event evt(etResize);
@@ -163,6 +243,7 @@ public:
 
 
    EAGLContext *mContext;
+   CAEAGLLayer *mLayer;
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
 
@@ -176,61 +257,38 @@ public:
 
 };
 
-@interface UIStageViewController : UIViewController
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-@end
+
+// --- UIStageViewController ----------------------------------------------------------
 
 @implementation UIStageViewController
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-   printf("shouldAutorotateToInterfaceOrientation\n");
-   return YES;
+   Event evt(etShouldRotate);
+   evt.value = interfaceOrientation;
+   sgMainView->mStage->OnEvent(evt);
+
+   return evt.result == 2;
 }
+
+
+- (void)loadView
+{
+   UIStageView *view = [[UIStageView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+   self.view = view;
+   //[view release];
+}
+- (void)dealloc
+{
+    [super dealloc];
+}
+
 @end
 
 
 
-// This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
-// The view content is basically an EAGL surface you render your OpenGL scene into.
-// Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
-@interface UIStageView : UIView<UITextFieldDelegate>
-{    
-@private
-   BOOL animating;
-   BOOL displayLinkSupported;
-   NSInteger animationFrameInterval;
-   // Use of the CADisplayLink class is the preferred method for controlling your animation timing.
-   // CADisplayLink will link to the main display and fire every vsync when added to a given run-loop.
-   // The NSTimer class is used only as fallback when running on a pre 3.1 device where CADisplayLink
-   // isn't available.
-   id displayLink;
-    NSTimer *animationTimer;
-@public
-   EAGLStage *mStage;
 
-   UITextField *mTextField;
-   BOOL mKeyboardEnabled;
-}
-
-
-@property (readonly, nonatomic, getter=isAnimating) BOOL animating;
-@property (nonatomic) NSInteger animationFrameInterval;
-
-- (void) startAnimation;
-- (void) stopAnimation;
-- (void) drawView:(id)sender;
-- (void) onPoll:(id)sender;
-- (void) enableKeyboard:(bool)withEnable;
-- (BOOL)canBecomeFirstResponder;
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-
-@end
-
-
-UIStageView *sgMainView = nil;
-
+// --- UIStageView -------------------------------------------------------------------
 
 @implementation UIStageView
 
@@ -244,11 +302,35 @@ UIStageView *sgMainView = nil;
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
+
 - (id) initWithCoder:(NSCoder*)coder
 {    
-    if ((self = [super initWithCoder:coder]))
+   if ((self = [super initWithCoder:coder]))
    {
       sgMainView = self;
+      [self myInit];
+      return self;
+   }
+   return nil;
+}
+
+// For when we init programatically...
+- (id) initWithFrame:(CGRect)frame
+{    
+   if ((self = [super initWithFrame:frame]))
+   {
+      sgMainView = self;
+      self.autoresizingMask = UIViewAutoresizingFlexibleWidth |
+                              UIViewAutoresizingFlexibleHeight;
+      [self myInit];
+      return self;
+   }
+   return nil;
+}
+
+
+- (void) myInit
+{
       // Get the layer
       CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
@@ -278,15 +360,6 @@ UIStageView *sgMainView = nil;
       */
 
       displayLinkSupported = FALSE;
-
-      // Create myself a view-controller ...
-      // Need to do this on construction..
-      //UIViewController *viewController = [[UIStageViewController alloc] init];
-      //viewController.view = self;
-
-    }
-   
-    return self;
 }
 
 - (BOOL)canBecomeFirstResponder { return YES; }
@@ -545,10 +618,7 @@ UIStageView *sgMainView = nil;
 
 @end
 
-void EnableKeyboard(bool inEnable)
-{
-   [ sgMainView enableKeyboard:inEnable];
-}
+// --- NMEAppDelegate ----------------------------------------------------------
 
 class UIViewFrame : public nme::Frame
 {
@@ -559,15 +629,72 @@ public:
 
 };
 
+@implementation NMEAppDelegate
+
+@synthesize window;
+@synthesize controller;
+
+- (void) applicationDidFinishLaunching:(UIApplication *)application
+{
+   UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+   window = win;
+   [window makeKeyAndVisible];
+   UIStageViewController  *c = [[UIStageViewController alloc] init];
+   controller = c;
+   [win addSubview:c.view];
+   //[c release];
+   //[win release];
+   nme_app_set_active(true);
+   sOnFrame( new UIViewFrame() );
+}
+
+- (void) applicationWillResignActive:(UIApplication *)application {nme_app_set_active(false);} 
+- (void) applicationDidBecomeActive:(UIApplication *)application {nme_app_set_active(true); }
+- (void)applicationWillTerminate:(UIApplication *)application { nme_app_set_active(false); }
+
+
+- (void) dealloc
+{
+	[window release];
+	[controller release];
+	[super dealloc];
+}
+
+@end
+
+
+
+// --- Extenal Interface -------------------------------------------------------
+
+void EnableKeyboard(bool inEnable)
+{
+   [ sgMainView enableKeyboard:inEnable];
+}
+
+
+extern "C"
+{
+   extern int *_NSGetArgc(void);
+   extern char ***_NSGetArgv(void);
+};
+
+
 namespace nme
 {
 Stage *IPhoneGetStage() { return sgMainView->mStage; }
 void MainLoop() { }
 void TerminateMainLoop() { }
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon )
+void CreateMainFrame(FrameCreationCallback inCallback,
+   int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon )
 {
-    return new UIViewFrame();
+   sOnFrame = inCallback;
+   int argc = *_NSGetArgc();
+   char **argv = *_NSGetArgv();
+
+   NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
+   [pool release];
 }
 
 
@@ -580,7 +707,6 @@ extern "C"
 
 void nme_app_set_active(bool inActive)
 {
-   printf("nme_app_set_active %d\n",inActive);
    if (inActive)
       [ sgMainView startAnimation ];
    else
