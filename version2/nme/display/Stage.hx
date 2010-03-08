@@ -33,6 +33,18 @@ class Stage extends nme.display.DisplayObjectContainer
       return this;
    }
 
+   public static var OrientationPortrait = 1;
+   public static var OrientationPortraitUpsideDown = 2;
+   public static var OrientationLandscapeLeft = 3;
+   public static var OrientationLandscapeRight = 4;
+   public static var OrientationFaceUp = 5;
+   public static var OrientationFaceDown = 6;
+
+   public static dynamic function shouldRotateInterface(inOrientation:Int) : Bool
+   {
+      return inOrientation==OrientationPortrait;
+   }
+
    function nmeSetFrameRate(inRate:Float) : Float
    {
       frameRate = inRate;
@@ -249,7 +261,8 @@ class Stage extends nme.display.DisplayObjectContainer
       //trace(inEvent);
       // TODO: timer event?
       nme.Lib.pollTimers();
-      switch(Std.int(Reflect.field( inEvent, "type" ) ) )
+      var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
+      switch(type)
       {
          case 2: // etChar
             if (onKey!=null)
@@ -287,6 +300,10 @@ class Stage extends nme.display.DisplayObjectContainer
 
          case 11: // etFocus
             nmeOnFocus(inEvent);
+
+         case 12: // etShouldRotate
+            if (shouldRotateInterface(inEvent.value))
+               inEvent.result = 2;
 
          // TODO: user, sys_wm, sound_finished
       }

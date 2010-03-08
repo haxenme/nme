@@ -45,6 +45,8 @@ class Sample
       AddHandlers(tf);
       tf.addEventListener(KeyboardEvent.KEY_DOWN,reportKeyDown);
       tf.addEventListener(KeyboardEvent.KEY_UP,reportKeyUp);
+
+      tf.stage.frameRate = 250;
    }
 
 
@@ -85,11 +87,8 @@ class Sample
    #if flash
       new Sample();
    #else
-      Lib.init(320,480,60,0xffffff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
-
-      new Sample();
-
-      Lib.mainLoop();
+      nme.display.Stage.shouldRotateInterface = function(_) { return true; }
+      Lib.create(function(){new Sample();},320,480,60,0xffffff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
    #end
    }
 

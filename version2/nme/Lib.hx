@@ -16,18 +16,24 @@ class Lib
    public static var current(nmeGetCurrent,null): nme.display.MovieClip;
 
 
-   public static function init(inWidth:Int, inHeight:Int,
+   public static function create(inOnLoaded:Void->Void,inWidth:Int, inHeight:Int,
                       inFrameRate:Float = 60.0,  inColour:Int = 0xffffff,
                       inFlags:Int = 0x0f, inTitle:String = "NME", inIcon : String="")
    {
-      var create_main_frame = nme.Loader.load("nme_create_main_frame",5);
-      nmeMainFrame = create_main_frame(inWidth,inHeight,inFlags,inTitle,inIcon);
-      var stage_handle = nme_get_frame_stage(nmeMainFrame);
-      nmeStage = new nme.display.Stage(stage_handle);
-      nmeStage.frameRate = inFrameRate;
-      nmeStage.opaqueBackground = inColour;
-      nmeStage.onQuit = close;
+      var create_main_frame = nme.Loader.load("nme_create_main_frame",-1);
+      create_main_frame(
+        function(inFrameHandle:Dynamic) {
+            nmeMainFrame = inFrameHandle;
+            var stage_handle = nme_get_frame_stage(nmeMainFrame);
+            nme.Lib.nmeStage = new nme.display.Stage(stage_handle);
+            nme.Lib.nmeStage.frameRate = inFrameRate;
+            nme.Lib.nmeStage.opaqueBackground = inColour;
+            nme.Lib.nmeStage.onQuit = close;
+            inOnLoaded();
+        },
+        inWidth,inHeight,inFlags,inTitle,inIcon );
    }
+
 
    static function nmeGetStage()
    {
@@ -43,12 +49,6 @@ class Lib
       return Std.int((haxe.Timer.stamp()-starttime) * 1000.0);
    }
 
-
-   public static function mainLoop()
-   {
-      var main_loop = nme.Loader.load("nme_main_loop",0);
-      main_loop();
-   }
 
    public static function close()
    {
