@@ -87,11 +87,7 @@ public static function main()
 #if flash
    new Sample();
 #else
-   Lib.init(320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
-
-   new Sample();
-
-   Lib.mainLoop();
+   Lib.create(function(){new Sample();},320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
 #end
 }
 

@@ -9,6 +9,8 @@
 namespace nme
 {
 
+void MainLoop();
+
 void SetGlobalPollMethod(Stage::PollMethod inMethod);
 
 class SDLSurf : public Surface
@@ -249,8 +251,8 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 SDLFrame *sgSDLFrame = 0;
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
-          const char *inTitle, const char *inIcon)
+void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
+   unsigned int inFlags, const char *inTitle, const char *inIcon)
 {
 #ifdef HX_MACOS
    MacBoot();
@@ -273,8 +275,9 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
 
    if ( SDL_Init( init_flags ) == -1 )
    {
+      inOnFrame(0);
       // SDL_GetError()
-      return 0;
+      return;
    }
 
    SDL_EnableUNICODE(1);
@@ -338,7 +341,8 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
       if (!screen)
       {
          // SDL_GetError()
-         return 0;
+         inOnFrame(0);
+         return;
       }
    }
 
@@ -354,7 +358,10 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
    #endif
 
    sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl );
-   return sgSDLFrame;
+
+   inOnFrame(sgSDLFrame);
+
+   MainLoop();
 }
 
 bool sgDead = false;
