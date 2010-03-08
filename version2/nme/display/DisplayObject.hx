@@ -2,6 +2,7 @@ package nme.display;
 import nme.events.Event;
 import nme.events.EventPhase;
 import nme.geom.Point;
+import nme.filters.BitmapFilter;
 
 class DisplayObject extends nme.events.EventDispatcher
 {
@@ -15,11 +16,14 @@ class DisplayObject extends nme.events.EventDispatcher
    public var rotation(nmeGetRotation,nmeSetRotation): Float;
    public var width(nmeGetWidth,nmeSetWidth): Float;
    public var height(nmeGetHeight,nmeSetHeight): Float;
+   public var cacheAsBitmap(nmeGetCacheAsBitmap,nmeSetCacheAsBitmap): Bool;
+   public var filters(nmeGetFilters,nmeSetFilters): Array<BitmapFilter>;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
    var nmeParent:DisplayObjectContainer;
    var nmeName:String;
+   var nmeFilters:Array<BitmapFilter>;
    var nmeID:Int;
 
    public function new(inHandle:Dynamic)
@@ -88,6 +92,13 @@ class DisplayObject extends nme.events.EventDispatcher
       return inVal;
    }
 
+   function nmeGetCacheAsBitmap() : Bool { return nme_display_object_get_cache_as_bitmap(nmeHandle); }
+   function nmeSetCacheAsBitmap(inVal:Bool) : Bool
+   {
+      nme_display_object_set_cache_as_bitmap(nmeHandle,inVal);
+      return inVal;
+   }
+
 
 
    function nmeGetWidth() : Float { return nme_display_object_get_width(nmeHandle); }
@@ -121,6 +132,29 @@ class DisplayObject extends nme.events.EventDispatcher
          return null;
       return i & 0xffffff;
    }
+
+	function nmeSetFilters(inFilters:Array<BitmapFilter>) : Array<BitmapFilter>
+	{
+	   if (inFilters==null)
+			nmeFilters = null;
+		else
+		{
+			nmeFilters = new Array<BitmapFilter>();
+			for(filter in inFilters)
+				nmeFilters.push(filter.clone());
+		}
+		nme_display_object_set_filters(nmeHandle,nmeFilters);
+		return inFilters;
+	}
+
+	function nmeGetFilters() : Array<BitmapFilter>
+	{
+	   if (nmeFilters==null) return [];
+		var result = new Array<BitmapFilter>();
+		for(filter in nmeFilters)
+			result.push(filter.clone());
+		return result;
+	}
 
    function nmeOnAdded(inObj:DisplayObject)
    {
@@ -262,6 +296,9 @@ class DisplayObject extends nme.events.EventDispatcher
    static var nme_display_object_set_width = nme.Loader.load("nme_display_object_set_width",2);
    static var nme_display_object_get_height = nme.Loader.load("nme_display_object_get_height",1);
    static var nme_display_object_set_height = nme.Loader.load("nme_display_object_set_height",2);
+   static var nme_display_object_get_cache_as_bitmap = nme.Loader.load("nme_display_object_get_cache_as_bitmap",1);
+   static var nme_display_object_set_cache_as_bitmap = nme.Loader.load("nme_display_object_set_cache_as_bitmap",2);
+   static var nme_display_object_set_filters = nme.Loader.load("nme_display_object_set_filters",2);
 
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);
 }

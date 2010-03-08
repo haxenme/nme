@@ -373,7 +373,18 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
+value nme_display_object_set_filters(value inObj,value inFilters)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+	{
+      // TODO
+	}
 
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_display_object_set_filters,2);
 
 
 
