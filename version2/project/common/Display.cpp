@@ -104,6 +104,12 @@ UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
    return inPoint;
 }
 
+void DisplayObject::setCacheAsBitmap(bool inVal)
+{
+	cacheAsBitmap = inVal;
+}
+
+
 
 void DisplayObject::CheckCacheDirty()
 {
@@ -226,7 +232,7 @@ Matrix &DisplayObject::GetLocalMatrix()
 void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
 {
    if (mGfx)
-      outExt.Add(mGfx->GetExtent(inTrans));
+      outExt.Add(mGfx->GetSoftwareExtent(inTrans));
 }
 
 
@@ -611,8 +617,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
+		//printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
       if (!obj->visible || (inState.mPhase!=rpBitmap && obj->IsMask()) ||
-      (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
+         (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
          continue;
 
       RenderState *obj_state = &state;
@@ -638,6 +645,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
       if (inState.mPhase==rpBitmap)
       {
+			//printf("Bitmap phase %d\n", obj->id);
          obj->CheckCacheDirty();
 
          if (obj->IsBitmapRender() || obj->IsMask())
@@ -716,6 +724,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mRoundSizeToPOW2 = old_pow2;
             }
          }
+			else
+			{
+            obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
+            obj->Render(inTarget,*obj_state);
+			}
       }
       else
       {
@@ -855,7 +868,7 @@ BitmapCache::~BitmapCache()
 
 bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels)
 {
-   if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) && mScale9!=*inTransform.mScale9)
+   if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) || mScale9!=*inTransform.mScale9)
       return false;
 
    // Translate our cached pixels to this new position ...

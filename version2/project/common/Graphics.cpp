@@ -363,27 +363,19 @@ void Graphics::Flush(bool inLine, bool inFill)
 }
 
 
-Extent2DF Graphics::GetExtent(const Transform &inTransform)
+Extent2DF Graphics::GetSoftwareExtent(const Transform &inTransform)
 {
    Extent2DF result;
    Flush();
 
-   /*
-   for(int i=0;i<mCache.size();i++)
-   {
-      // See if we can get the extent from somewhere!
-      RendererCache &cache = mCache[i];
-      if (cache.mSoftware && cache.mSoftware->GetExtent(inTransform,result))
-         continue;
-       TODO:
-      if (cache.mHardware && cache.mHardware->GetExtent(inTransform,result))
-         continue;
+	for(int i=0;i<mJobs.size();i++)
+	{
+		GraphicsJob &job = mJobs[i];
+		if (!job.mSoftwareRenderer)
+			job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
 
-      // No - ok, create a software renderer...
-      cache.mSoftware = mRenderData[i]->CreateSoftwareRenderer();
-      cache.mSoftware->GetExtent(inTransform,result);
-   }
-*/
+		job.mSoftwareRenderer->GetExtent(inTransform,result);
+	}
 
    return result;
 }
@@ -397,7 +389,7 @@ const Extent2DF &Graphics::GetExtent0(double inRotation)
       trans.mMatrix = &m;
       if (inRotation)
          m.Rotate(inRotation);
-      mExtent0 = GetExtent(trans);
+      mExtent0 = GetSoftwareExtent(trans);
       mRotation0 = inRotation;
       mMeasuredJobs = mJobs.size();
    }

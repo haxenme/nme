@@ -579,7 +579,7 @@ public:
 
    void clear();
 
-   Extent2DF GetExtent(const Transform &inTransform);
+   Extent2DF GetSoftwareExtent(const Transform &inTransform);
 
    bool Render( const RenderTarget &inTarget, const RenderState &inState );
 

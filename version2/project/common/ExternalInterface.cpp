@@ -406,6 +406,7 @@ DO_PROP(width,Width,alloc_float,val_number)
 DO_PROP(height,Height,alloc_float,val_number)
 DO_PROP(bg,OpaqueBackground,alloc_int,val_int)
 DO_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
+DO_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------

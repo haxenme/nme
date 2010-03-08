@@ -141,6 +141,8 @@ public:
    uint32 getOpaqueBackground() { return opaqueBackground; }
    bool getMouseEnabled() { return mouseEnabled; }
    void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
+   bool getCacheAsBitmap() { return cacheAsBitmap; }
+   void setCacheAsBitmap(bool inVal);
 
    void   setAlpha(double inAlpha);
 
