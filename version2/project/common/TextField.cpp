@@ -193,9 +193,8 @@ void TextField::Unfocus()
 
 bool TextField::FinishEditOnEnter()
 {
-#ifdef IPHONE
+	// For iPhone really
    return !multiline;
-#endif
 }
 
 

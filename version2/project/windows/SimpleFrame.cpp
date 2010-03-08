@@ -14,6 +14,7 @@ namespace nme
 
 typedef std::map<HWND,class WindowsFrame *> FrameMap;
 static FrameMap sgFrameMap;
+void MainLoop();
 
 class DIBSurface : public SimpleSurface
 {
@@ -531,8 +532,8 @@ public:
 
 // --- When using the simple window class -----------------------------------------------
 
-Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
-                       const char *inTitle,const char *inIcon)
+void CreateMainFrame(FrameCreationCallback inOnCreate,int inWidth,int inHeight,unsigned int inFlags,
+      const char *inTitle,const char *inIcon)
 {
    RECT r;
    r.left = 100;
@@ -572,7 +573,9 @@ Frame *CreateMainFrame(int inWidth,int inHeight,unsigned int inFlags,
 
    Frame *frame = new WindowsFrame(win,inFlags);
    SetCursor(LoadCursor(0, IDC_ARROW));
-   return frame;
+   inOnCreate( frame );
+
+	MainLoop();
 }
 
 
