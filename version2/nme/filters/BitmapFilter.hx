@@ -2,9 +2,9 @@ package nme.filters;
 
 class BitmapFilter
 {
-   var nmeType:String;
+   var type:String;
 
-   function new(inType) { nmeType = inType; }
+   function new(inType) { type = inType; }
 
    public function clone() : nme.filters.BitmapFilter
    {

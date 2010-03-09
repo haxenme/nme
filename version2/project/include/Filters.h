@@ -13,12 +13,14 @@ class Filter
 {
 public:
    Filter(int inQuality) : mQuality(inQuality) { }
-   virtual ~Filter();
+   virtual ~Filter() { };
 
    ImagePoint GetOrigin() const { return mOrigin; }
    virtual int GetQuality() { return mQuality; }
 
-   virtual Surface * Apply(const Surface *inSurface,bool inToPOW2) const = 0;
+   virtual void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff) const = 0;
+   virtual void ExpandVisibleFilterDomain(Rect &ioRect) const = 0;
+   virtual void GetFilteredObjectRect(Rect &ioRect) const = 0;
 
    int        mQuality;
    ImagePoint mOrigin;
@@ -29,7 +31,9 @@ class BlurFilter : public Filter
 public:
    BlurFilter(int inQuality, int inBlurX, int inBlurY);
 
-   Surface * Apply(const Surface *inSurface,bool inToPOW2) const;
+   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff) const;
+   void ExpandVisibleFilterDomain(Rect &ioRect) const;
+   void GetFilteredObjectRect(Rect &ioRect) const;
 
    int mBlurX,mBlurY;
 };
@@ -45,7 +49,9 @@ public:
    // We will do the blur-iterations ourselves.
    int GetQuality() { return 1; }
 
-   Surface * Apply(const Surface *inSurface,bool inToPOW2) const;
+   Surface * Apply(Surface *inSurface,bool inToPOW2) const;
+   virtual void ExpandVisibleFilterDomain(Rect &ioRect) const;
+   void GetFilteredObjectRect(Rect &ioRect) const;
 
    int mTX;
    int mTY;
@@ -63,10 +69,10 @@ typedef QuickVec<Filter *> FilterList;
 
 Rect ExpandVisibleFilterDomain( const FilterList &inList, const Rect &inRect );
 
-Surface *FilterBitmap(Surface *inBitmap, const FilterList &inFilters,
-                       const Rect &inSrcRect, const Rect &outDestRect, bool inMakePOW2);
+Surface *FilterBitmap(const FilterList &inList, Surface *inBitmap,
+                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2);
 
-Rect GetFilteredObjectRect(const Rect &inRect);
+Rect GetFilteredObjectRect(const FilterList &inList,const Rect &inRect);
 
 } // end namespace nme
 

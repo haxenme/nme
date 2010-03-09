@@ -658,7 +658,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             const FilterList &filters = obj->getFilters();
 
             // Move rect to include filtered pixels...
-            Rect filtered = GetFilteredObjectRect(rect);
+            Rect filtered = GetFilteredObjectRect(filters,rect);
 
             // Expand clip rect to account for pixels that must be rendered so the
             //  filtered image remains valid in the original clip region.
@@ -700,6 +700,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                    bg = 0;
                Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender() ?
                          (bg ? pfXRGB : pfARGB) : pfAlpha );
+               bitmap->IncRef();
 
                if (bg && obj->IsBitmapRender())
                   bitmap->Clear(obj->opaqueBackground | 0xff000000,0);
@@ -722,12 +723,13 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                obj->Render(render.Target(), *obj_state);
 
-               bitmap = FilterBitmap(bitmap,filters,render_to,visible_bitmap,old_pow2);
+               bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
 
                full = orig;
                obj->SetBitmapCache(
                       new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
                obj_state->mRoundSizeToPOW2 = old_pow2;
+               bitmap->DecRef();
             }
          }
 			else

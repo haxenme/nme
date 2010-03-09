@@ -35,6 +35,15 @@ static int _id_c = val_id("c");
 static int _id_d = val_id("d");
 static int _id_tx = val_id("tx");
 static int _id_ty = val_id("ty");
+static int _id_angle = val_id("angle");
+static int _id_distance = val_id("distance");
+static int _id_alpha = val_id("alpha");
+static int _id_hideObject = val_id("hideObject");
+static int _id_knockout = val_id("knockout");
+static int _id_inner = val_id("inner");
+static int _id_blurX = val_id("blurX");
+static int _id_blurY = val_id("blurY");
+static int _id_quality = val_id("quality");
 
 
 vkind gObjectKind = alloc_kind();
@@ -76,77 +85,77 @@ void FromValue(Matrix &outMatrix, value inValue)
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
 {
-	if (val_is_null(inVal))
-	   return;
-	int n = val_array_size(inVal);
-	outArray.resize(n);
-	int *c = val_array_int(inVal);
-	if (c)
-	{
-		for(int i=0;i<n;i++)
-			outArray[i] = c[i];
-	}
-	else
-	{
-		value *vals = val_array_value(inVal);
-		if (vals)
-		{
-			for(int i=0;i<n;i++)
-				outArray[i] = val_int(vals[i]);
-		}
-		else
-		{
-			for(int i=0;i<n;i++)
-				outArray[i] = val_int(val_array_i(inVal,i));
-		}
-	}
+   if (val_is_null(inVal))
+      return;
+   int n = val_array_size(inVal);
+   outArray.resize(n);
+   int *c = val_array_int(inVal);
+   if (c)
+   {
+      for(int i=0;i<n;i++)
+         outArray[i] = c[i];
+   }
+   else
+   {
+      value *vals = val_array_value(inVal);
+      if (vals)
+      {
+         for(int i=0;i<n;i++)
+            outArray[i] = val_int(vals[i]);
+      }
+      else
+      {
+         for(int i=0;i<n;i++)
+            outArray[i] = val_int(val_array_i(inVal,i));
+      }
+   }
 
 }
 
 template<typename T>
 void FillArrayInt(value outVal, const QuickVec<T> &inArray)
 {
-	int n = inArray.size();
-	val_array_set_size(outVal,n);
-	int *c = val_array_int(outVal);
-	if (c)
-	{
-		for(int i=0;i<n;i++)
-			c[i] = inArray[i];
-	}
-	else
-	{
-		value *vals = val_array_value(outVal);
-		if (vals)
-			for(int i=0;i<n;i++)
-				vals[i] = alloc_int(inArray[i]);
-		else
-			for(int i=0;i<n;i++)
-				val_array_set_i(outVal,i,alloc_int(inArray[i]));
-	}
+   int n = inArray.size();
+   val_array_set_size(outVal,n);
+   int *c = val_array_int(outVal);
+   if (c)
+   {
+      for(int i=0;i<n;i++)
+         c[i] = inArray[i];
+   }
+   else
+   {
+      value *vals = val_array_value(outVal);
+      if (vals)
+         for(int i=0;i<n;i++)
+            vals[i] = alloc_int(inArray[i]);
+      else
+         for(int i=0;i<n;i++)
+            val_array_set_i(outVal,i,alloc_int(inArray[i]));
+   }
 }
 
 template<typename T>
 void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
 {
-	int n = inArray.size();
-	val_array_set_size(outVal,n);
-	double *c = val_array_double(outVal);
-	if (c)
-	{
-		for(int i=0;i<n;i++)
-			c[i] = inArray[i];
-	}
-	else
-	{
-		value *vals = val_array_value(outVal);
-		if (vals)
-			for(int i=0;i<n;i++)
-				vals[i] = alloc_float(inArray[i]);
-		else
-			for(int i=0;i<n;i++)
-				val_array_set_i(outVal,i,alloc_float(inArray[i]));
-	}
+   int n = inArray.size();
+   val_array_set_size(outVal,n);
+   double *c = val_array_double(outVal);
+   if (c)
+   {
+      for(int i=0;i<n;i++)
+         c[i] = inArray[i];
+   }
+   else
+   {
+      value *vals = val_array_value(outVal);
+      if (vals)
+         for(int i=0;i<n;i++)
+            vals[i] = alloc_float(inArray[i]);
+      else
+         for(int i=0;i<n;i++)
+            val_array_set_i(outVal,i,alloc_float(inArray[i]));
+   }
 }
 
 
@@ -155,26 +164,26 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
 template<typename T>
 void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 {
-	if (val_is_null(inVal))
-	   return;
-	int n = val_array_size(inVal);
-	outArray.resize(n);
-	double *c = val_array_double(inVal);
-	if (c)
-	{
-		for(int i=0;i<n;i++)
-			outArray[i] = c[i];
-	}
-	else
-	{
-		value *vals = val_array_value(inVal);
-		if (vals)
-			for(int i=0;i<n;i++)
-				outArray[i] = val_number(vals[i]);
-		else
-			for(int i=0;i<n;i++)
-				outArray[i] = val_number(val_array_i(inVal,i));
-	}
+   if (val_is_null(inVal))
+      return;
+   int n = val_array_size(inVal);
+   outArray.resize(n);
+   double *c = val_array_double(inVal);
+   if (c)
+   {
+      for(int i=0;i<n;i++)
+         outArray[i] = c[i];
+   }
+   else
+   {
+      value *vals = val_array_value(inVal);
+      if (vals)
+         for(int i=0;i<n;i++)
+            outArray[i] = val_number(vals[i]);
+      else
+         for(int i=0;i<n;i++)
+            outArray[i] = val_number(val_array_i(inVal,i));
+   }
 
 }
 
@@ -298,14 +307,14 @@ DEFINE_PRIM(nme_render_stage,1);
 
 value nme_stage_get_focus_id(value inValue)
 {
-	int result = -1;
+   int result = -1;
    Stage *stage;
    if (AbstractToObject(inValue,stage))
-	{
-		DisplayObject *obj = stage->GetFocusObject();
-		if (obj)
-			result = obj->getID();
-	}
+   {
+      DisplayObject *obj = stage->GetFocusObject();
+      if (obj)
+         result = obj->getID();
+   }
 
    return alloc_int(result);
 }
@@ -313,14 +322,14 @@ DEFINE_PRIM(nme_stage_get_focus_id,1);
 
 value nme_stage_set_focus(value inStage,value inObject,value inDirection)
 {
-	Stage *stage;
+   Stage *stage;
    if (AbstractToObject(inStage,stage))
-	{
-		DisplayObject *obj = 0;
+   {
+      DisplayObject *obj = 0;
       AbstractToObject(inObject,obj);
-		stage->SetFocusObject(obj);
-	}
-	return alloc_null();
+      stage->SetFocusObject(obj);
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_stage_set_focus,3);
 
@@ -377,9 +386,21 @@ value nme_display_object_set_filters(value inObj,value inFilters)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
-	{
-      // TODO
-	}
+   {
+      FilterList filters;
+      for(int f=0;f<val_array_size(inFilters);f++)
+      {
+         value filter = val_array_value(inFilters)[f];
+         std::wstring type = val_wstring( val_field(filter,_id_type) );
+         if (type==L"BlurFilter")
+         {
+            filters.push_back( new BlurFilter( val_int(val_field(filter,_id_quality)),
+                (int)val_field_numeric(filter,_id_blurX),
+                (int)val_field_numeric(filter,_id_blurY) ) );
+         }
+      }
+      obj->setFilters(filters);
+   }
 
    return alloc_null();
 }
@@ -533,7 +554,7 @@ value nme_gfx_begin_gradient_fill(value *arg, int args)
       gfx->drawGraphicsDatum(grad);
       grad->DecRef();
    }
-	return alloc_null();
+   return alloc_null();
 }
 
 DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
@@ -664,13 +685,13 @@ value nme_gfx_draw_data(value inGfx,value inData)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
-		int n = val_array_size(inData);
-		for(int i=0;i<n;i++)
-		{
-			IGraphicsData *data;
-			if (AbstractToObject(val_array_i(inData,i),data))
-			   gfx->drawGraphicsDatum(data);
-		}
+      int n = val_array_size(inData);
+      for(int i=0;i<n;i++)
+      {
+         IGraphicsData *data;
+         if (AbstractToObject(val_array_i(inData,i),data))
+            gfx->drawGraphicsDatum(data);
+      }
    }
    return alloc_null();
 }
@@ -682,9 +703,9 @@ value nme_gfx_draw_datum(value inGfx,value inDatum)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
-		IGraphicsData *datum;
-		if (AbstractToObject(inDatum,datum))
-			   gfx->drawGraphicsDatum(datum);
+      IGraphicsData *datum;
+      if (AbstractToObject(inDatum,datum))
+            gfx->drawGraphicsDatum(datum);
    }
    return alloc_null();
 }
@@ -697,25 +718,25 @@ DEFINE_PRIM(nme_gfx_draw_datum,2);
 
 value nme_graphics_path_create(value inCommands,value inData,value inWinding)
 {
-	GraphicsPath *result = new GraphicsPath();
+   GraphicsPath *result = new GraphicsPath();
 
-	if (!val_bool(inWinding))
-		result->winding = wrNonZero;
+   if (!val_bool(inWinding))
+      result->winding = wrNonZero;
 
-	FillArrayInt(result->commands,inCommands);
-	FillArrayDouble(result->data,inData);
+   FillArrayInt(result->commands,inCommands);
+   FillArrayDouble(result->data,inData);
 
-	return ObjectToAbstract(result);
+   return ObjectToAbstract(result);
 }
 DEFINE_PRIM(nme_graphics_path_create,3)
 
 
 value nme_graphics_path_curve_to(value inPath,value inX1, value inY1, value inX2, value inY2)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		path->curveTo(val_number(inX1), val_number(inY1), val_number(inX2), val_number(inY2) );
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->curveTo(val_number(inX1), val_number(inY1), val_number(inX2), val_number(inY2) );
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_curve_to,5)
 
@@ -723,76 +744,76 @@ DEFINE_PRIM(nme_graphics_path_curve_to,5)
 
 value nme_graphics_path_line_to(value inPath,value inX1, value inY1)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		path->lineTo(val_number(inX1), val_number(inY1));
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->lineTo(val_number(inX1), val_number(inY1));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_line_to,3)
 
 value nme_graphics_path_move_to(value inPath,value inX1, value inY1)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		path->moveTo(val_number(inX1), val_number(inY1));
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->moveTo(val_number(inX1), val_number(inY1));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_move_to,3)
 
 
-	
+   
 value nme_graphics_path_wline_to(value inPath,value inX1, value inY1)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		path->wideLineTo(val_number(inX1), val_number(inY1));
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->wideLineTo(val_number(inX1), val_number(inY1));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_wline_to,3)
 
 value nme_graphics_path_wmove_to(value inPath,value inX1, value inY1)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		path->wideMoveTo(val_number(inX1), val_number(inY1));
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->wideMoveTo(val_number(inX1), val_number(inY1));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_wmove_to,3)
 
 
 value nme_graphics_path_get_commands(value inPath,value outCommands)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		FillArrayInt(outCommands,path->commands);
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      FillArrayInt(outCommands,path->commands);
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_get_commands,2)
 
 value nme_graphics_path_set_commands(value inPath,value inCommands)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		FillArrayInt(path->commands,inCommands);
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      FillArrayInt(path->commands,inCommands);
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_set_commands,2)
 
 value nme_graphics_path_get_data(value inPath,value outData)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		FillArrayDouble(outData,path->data);
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      FillArrayDouble(outData,path->data);
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_get_data,2)
 
 value nme_graphics_path_set_data(value inPath,value inData)
 {
-	GraphicsPath *path;
-	if (AbstractToObject(inPath,path))
-		FillArrayDouble(path->data,inData);
-	return alloc_null();
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      FillArrayDouble(path->data,inData);
+   return alloc_null();
 }
 DEFINE_PRIM(nme_graphics_path_set_data,2)
 
@@ -803,7 +824,7 @@ DEFINE_PRIM(nme_graphics_path_set_data,2)
 value nme_graphics_solid_fill_create(value inColour, value inAlpha)
 {
    GraphicsSolidFill *solid = new GraphicsSolidFill( val_int(inColour), val_number(inAlpha) );
-	return ObjectToAbstract(solid);
+   return ObjectToAbstract(solid);
 }
 DEFINE_PRIM(nme_graphics_solid_fill_create,2)
 
@@ -811,7 +832,7 @@ DEFINE_PRIM(nme_graphics_solid_fill_create,2)
 value nme_graphics_end_fill_create()
 {
    GraphicsEndFill *end = new GraphicsEndFill;
-	return ObjectToAbstract(end);
+   return ObjectToAbstract(end);
 }
 DEFINE_PRIM(nme_graphics_end_fill_create,2)
 
@@ -823,16 +844,16 @@ value nme_graphics_stroke_create(value* arg, int nargs)
    enum { argThickness, argPixelHinting, argScaleMode, argCapsStyle,
           argJointStyle, argMiterLimit, argFill, argSIZE };
 
-	double thickness = -1;
-	if (!val_is_null(arg[argThickness]))
-	{
-		thickness = val_number(arg[argThickness]);
-		if (thickness<0)
-			thickness = 0;
-	}
+   double thickness = -1;
+   if (!val_is_null(arg[argThickness]))
+   {
+      thickness = val_number(arg[argThickness]);
+      if (thickness<0)
+         thickness = 0;
+   }
 
-	IGraphicsFill *fill=0;
-	AbstractToObject(arg[argFill],fill);
+   IGraphicsFill *fill=0;
+   AbstractToObject(arg[argFill],fill);
 
    GraphicsStroke *stroke = new GraphicsStroke(fill, thickness,
                  val_bool(arg[argPixelHinting]),
@@ -885,51 +906,51 @@ void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<std::wstring> &outVal,value inVal) { outVal = val_wstring(inVal); }
 void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 {
-	QuickVec<int> &val = outVal.Set();
-	int n = val_array_size(inVal);
-	val.resize(n);
-	for(int i=0;i<n;i++)
-		val[i] = val_int( val_array_i(inVal,i) );
+   QuickVec<int> &val = outVal.Set();
+   int n = val_array_size(inVal);
+   val.resize(n);
+   for(int i=0;i<n;i++)
+      val[i] = val_int( val_array_i(inVal,i) );
 }
 void FromValue(Optional<TextFormatAlign> &outVal,value inVal)
 {
-	std::wstring name = val_wstring(inVal);
-	if (name==L"center")
-		outVal = tfaCenter;
-	else if (name==L"justify")
-		outVal = tfaJustify;
-	else if (name==L"right")
-		outVal = tfaRight;
-	else
-		outVal = tfaLeft;
+   std::wstring name = val_wstring(inVal);
+   if (name==L"center")
+      outVal = tfaCenter;
+   else if (name==L"justify")
+      outVal = tfaJustify;
+   else if (name==L"right")
+      outVal = tfaRight;
+   else
+      outVal = tfaLeft;
 }
 
 #define STF(attrib) \
 { \
-	value tmp = val_field(inValue,_id_##attrib); \
-	if (!val_is_null(tmp)) FromValue(outFormat.attrib, tmp); \
+   value tmp = val_field(inValue,_id_##attrib); \
+   if (!val_is_null(tmp)) FromValue(outFormat.attrib, tmp); \
 }
 
 void SetTextFormat(TextFormat &outFormat, value inValue)
 {
-	STF(align);
-	STF(blockIndent);
-	STF(bold);
-	STF(bullet);
-	STF(color);
-	STF(font);
-	STF(indent);
-	STF(italic);
-	STF(kerning);
-	STF(leading);
-	STF(leftMargin);
-	STF(letterSpacing);
-	STF(rightMargin);
-	STF(size);
-	STF(tabStops);
-	STF(target);
-	STF(underline);
-	STF(url);
+   STF(align);
+   STF(blockIndent);
+   STF(bold);
+   STF(bullet);
+   STF(color);
+   STF(font);
+   STF(indent);
+   STF(italic);
+   STF(kerning);
+   STF(leading);
+   STF(leftMargin);
+   STF(letterSpacing);
+   STF(rightMargin);
+   STF(size);
+   STF(tabStops);
+   STF(target);
+   STF(underline);
+   STF(url);
 }
 
 
@@ -940,62 +961,62 @@ value ToValue(const bool &inVal) { return alloc_bool(inVal); }
 value ToValue(const std::wstring &inVal) { return alloc_wstring(inVal); }
 value ToValue(const QuickVec<int> &outVal)
 {
-	// TODO:
-	return alloc_null();
+   // TODO:
+   return alloc_null();
 }
 value ToValue(const TextFormatAlign &inTFA)
 {
-	switch(inTFA)
-	{
-		case tfaLeft : return alloc_wstring(L"left");
-		case tfaRight : return alloc_wstring(L"right");
-		case tfaCenter : return alloc_wstring(L"center");
-		case tfaJustify : return alloc_wstring(L"justify");
-	}
+   switch(inTFA)
+   {
+      case tfaLeft : return alloc_wstring(L"left");
+      case tfaRight : return alloc_wstring(L"right");
+      case tfaCenter : return alloc_wstring(L"center");
+      case tfaJustify : return alloc_wstring(L"justify");
+   }
 
-	return alloc_wstring(L"left");
+   return alloc_wstring(L"left");
 }
 
 
 #define GTF(attrib) \
 { \
-	alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
+   alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
 }
 
 
 void GetTextFormat(const TextFormat &inFormat, value &outValue)
 {
-	GTF(align);
-	GTF(blockIndent);
-	GTF(bold);
-	GTF(bullet);
-	GTF(color);
-	GTF(font);
-	GTF(indent);
-	GTF(italic);
-	GTF(kerning);
-	GTF(leading);
-	GTF(leftMargin);
-	GTF(letterSpacing);
-	GTF(rightMargin);
-	GTF(size);
-	GTF(tabStops);
-	GTF(target);
-	GTF(underline);
-	GTF(url);
+   GTF(align);
+   GTF(blockIndent);
+   GTF(bold);
+   GTF(bullet);
+   GTF(color);
+   GTF(font);
+   GTF(indent);
+   GTF(italic);
+   GTF(kerning);
+   GTF(leading);
+   GTF(leftMargin);
+   GTF(letterSpacing);
+   GTF(rightMargin);
+   GTF(size);
+   GTF(tabStops);
+   GTF(target);
+   GTF(underline);
+   GTF(url);
 }
 
 
 value nme_text_field_set_def_text_format(value inText,value inFormat)
 {
    TextField *text;
-	if (AbstractToObject(inText,text))
-	{
-		TextFormat *fmt = TextFormat::Create(true);
-		SetTextFormat(*fmt,inFormat);
-		text->setDefaultTextFormat(fmt);
-		fmt->DecRef();
-	}
+   if (AbstractToObject(inText,text))
+   {
+      TextFormat *fmt = TextFormat::Create(true);
+      SetTextFormat(*fmt,inFormat);
+      text->setDefaultTextFormat(fmt);
+      fmt->DecRef();
+   }
    return alloc_null();
 }
 
@@ -1004,11 +1025,11 @@ DEFINE_PRIM(nme_text_field_set_def_text_format,2)
 value nme_text_field_get_def_text_format(value inText,value outFormat)
 {
    TextField *text;
-	if (AbstractToObject(inText,text))
-	{
-		const TextFormat *fmt = text->getDefaultTextFormat();
-		GetTextFormat(*fmt,outFormat);
-	}
+   if (AbstractToObject(inText,text))
+   {
+      const TextFormat *fmt = text->getDefaultTextFormat();
+      GetTextFormat(*fmt,outFormat);
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_text_field_get_def_text_format,2);
