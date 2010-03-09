@@ -25,11 +25,125 @@ void BlurFilter::GetFilteredObjectRect(Rect &ioRect) const
    ExpandVisibleFilterDomain(ioRect);
 }
 
+/*
+   Mask of size 4 looks like:  x+xx where + is the centre
+   The blurreed image is then 2 pixel bigger in the left and one on the right
+*/
+
+void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
+				 ARGB *inDest, int inDD, int inDestW, int inFilterSize)
+{
+   int sc0 = 0;
+   int sc1 = 0;
+   int sc2 = 0;
+   int sa = 0;
+
+   // loop over destination pixels with kernel    -xxx+
+   // At each pixel, we - the trailing pixel and + the leading pixel
+   const ARGB *prev = inSrc - inOffX*inDS - inFilterSize*inDS;
+   const ARGB *src = inSrc - inOffX*inDS + inFilterSize*inDS;
+   const ARGB *src_end = inSrc + inSrcW*inDS;
+   ARGB *dest = inDest;
+	int fs = inFilterSize*2+1;
+	for(const ARGB *s=inSrc;s<src;s+=inDS)
+	{
+		int a = s->a;
+      sa+=a;
+      sc0+= s->c0 * a;
+      sc1+= s->c1 * a;
+      sc2+= s->c2 * a;
+	}
+   for(int x=0;x<inDestW; x++)
+   {
+      if (src>=inSrc && src<src_end)
+      {
+         int a = src->a;
+         sa+=a;
+         sc0+= src->c0 * a;
+         sc1+= src->c1 * a;
+         sc2+= src->c2 * a;
+      }
+      if (prev>=inSrc && prev<src_end)
+      {
+         int a = prev->a;
+         sa-=a;
+         sc0-= prev->c0 * a;
+         sc1-= prev->c1 * a;
+         sc2-= prev->c2 * a;
+      }
+
+      if (sa==0)
+         dest->ival = 0;
+      else
+      {
+         dest->c0 = sc0/sa;
+         dest->c1 = sc1/sa;
+         dest->c2 = sc2/sa;
+         dest->a = sa/fs;
+      }
+
+      src+=inDS;
+      prev+=inDS;
+      dest+=inDD;
+   }
+}
 
 
 
 void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff) const
 {
+   int w = outDest->Width();
+   int h = outDest->Height();
+	int sw = inSrc->Width();
+	int sh = inSrc->Height();
+
+	Surface *tmp = new SimpleSurface(w,h,outDest->Format());
+	tmp->IncRef();
+
+	{
+	AutoSurfaceRender tmp_render(tmp);
+	const RenderTarget &target = tmp_render.Target();
+   // Blur rows ...
+   for(int y=0;y<h;y++)
+   {
+      ARGB *dest = (ARGB *)target.Row(y);
+		int src_y = y + inDiff.y;
+		if (src_y<0 || src_y>=sh)
+			memset(dest, 0, w*sizeof(ARGB));
+		else
+		{
+         const ARGB *src = ((ARGB *)inSrc->Row(src_y));
+         BlurRow(src,1,sw,inDiff.x,dest,1,w,mBlurX);
+		}
+   }
+	}
+
+
+	{
+	AutoSurfaceRender dest_render(outDest);
+	const RenderTarget &target = dest_render.Target();
+	int s_stride = tmp->GetStride()/sizeof(ARGB);
+	int d_stride = target.mSoftStride/sizeof(ARGB);
+   // Blur cols ...
+   for(int x=0;x<w;x++)
+   {
+      ARGB *dest = (ARGB *)target.Row(0) + x;
+		int src_x = x + inDiff.x;
+		if (src_x<0 || src_x>=sw)
+			for(int y=0;y<h;y++)
+			{
+				dest->ival = 0; //0xff000000 | y*0x10101;
+				dest+=d_stride;
+			}
+		else
+		{
+      	const ARGB *src = ((ARGB *)tmp->Row(0)) + src_x;
+         BlurRow(src,s_stride,sh,inDiff.y,dest,d_stride,h,mBlurY);
+		}
+   }
+	}
+
+	tmp->DecRef();
 }
 
 

@@ -708,8 +708,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                   bitmap->Zero();
                // debug ...
                //bitmap->Clear(0xff333333);
-               AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
+
+               bool old_pow2 = obj_state->mRoundSizeToPOW2;
                Matrix orig = full;
+					{
+               AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                full.Translate(-render_to.x, -render_to.y );
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
@@ -718,10 +721,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj->Render(render.Target(), *obj_state);
 
                obj_state->mPhase = rpRender;
-               bool old_pow2 = obj_state->mRoundSizeToPOW2;
                obj_state->mRoundSizeToPOW2 = false;
 
                obj->Render(render.Target(), *obj_state);
+					}
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
 
