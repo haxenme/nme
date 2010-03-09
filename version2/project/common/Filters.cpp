@@ -5,23 +5,23 @@
 namespace nme
 {
 
-// Calculate the filtered rect size, given input rect
-Rect GetFilteredRect(const Filters &inFilters,const Rect &inObjRect)
+Rect ExpandVisibleFilterDomain( const FilterList &inList, const Rect &inRect )
 {
-   return inObjRect;
+   return inRect;
 }
 
-// Find minimal pixels we should render to create correct target rectangle
-Rect GetRectToCreateFiltered(const Filters &inFilters,const Rect &inTargetRect)
+Rect GetFilteredObjectRect(const Rect &inRect)
 {
-   return inTargetRect;
+   return inRect;
 }
 
-// Perform filter into given target rect
-void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &inSrcRect, const Rect &inVisible, bool inMakePOW2)
-{
-}
 
+
+Surface *FilterBitmap(Surface *inBitmap, const FilterList &inFilters,
+                       const Rect &inSrcRect, const Rect &outDestRect, bool inMakePOW2)
+{
+   return inBitmap;
+}
 
  
 } // end namespace nme

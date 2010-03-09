@@ -376,7 +376,7 @@ public:
    BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
    ~BitmapCache();
 
-   bool StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels);
+   bool StillGood(const Transform &inTransform, const Rect &inVisiblePixels);
 
    void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend);
 

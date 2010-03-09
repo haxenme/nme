@@ -5,6 +5,7 @@
 #include <Geom.h>
 #include <Graphics.h>
 #include <string>
+#include <Filters.h>
 
 namespace nme
 {
@@ -87,27 +88,8 @@ enum
    dirtCache       = 0x0004,
 };
 
-class Filter : public Object
-{
-   Filter(int inQuality = 1) : mQuality(inQuality) { }
-   virtual ~Filter() {}
 
-   virtual class SimpleSurface *Process(const Surface *inSurface,bool inToPOW2) const = 0;
-   virtual void GetOffset(int &ioDX, int &ioDY) const = 0;
-   virtual int GetQuality() const { return mQuality; }
 
-protected:
-   int mQuality;
-};
-
-typedef QuickVec<Filter *> Filters;
-
-Rect GetFilteredRect(const Filters &inFilters,const Rect &inObjRect);
-Rect GetRectToCreateFiltered(const Filters &inFilters,const Rect &inTargetRect);
-
-void FilterBitmap(const Filters &inFilters,SimpleSurface *&bitmap, const Rect &inSrcRect, const Rect &outDestRect, bool inMakePOW2);
-
-        
 enum Cursor { curNone, curPointer, curHand, curTextSelect };
 
 extern const char *sTextCursorData[];
@@ -163,7 +145,7 @@ public:
    BlendMode blendMode;
    bool cacheAsBitmap;
    ColorTransform  colorTransform;
-   QuickVec<class Filter *> filters;
+   FilterList filters;
 
    std::wstring  name;
    uint32 opaqueBackground;
@@ -203,8 +185,9 @@ public:
    Graphics &GetGraphics();
    Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
-   const Filters &GetFilters() { return mFilters; }
-   void     SetFilters(const Filters &inFilters);
+   const FilterList &getFilters() { return filters; }
+   // Takes ownership of filters...
+   void     setFilters(FilterList &inFilters);
 
    void CheckCacheDirty();
    bool IsBitmapRender();
@@ -222,12 +205,11 @@ public:
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
-   void DecFilters();
+   void ClearFilters();
    ~DisplayObject();
    DisplayObjectContainer *mParent;
    Graphics               *mGfx;
    BitmapCache            *mBitmapCache;
-   Filters                mFilters;
 
 
    // Masking...

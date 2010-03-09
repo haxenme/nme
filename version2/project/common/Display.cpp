@@ -44,7 +44,7 @@ DisplayObject::~DisplayObject()
    delete mBitmapCache;
    if (mMask)
       setMask(0);
-   DecFilters();
+   ClearFilters();
 }
 
 Graphics &DisplayObject::GetGraphics()
@@ -132,7 +132,7 @@ void DisplayObject::CheckCacheDirty()
 
 bool DisplayObject::IsBitmapRender()
 {
-   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild() || mFilters.size();
+   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild() || filters.size();
 }
 
 void DisplayObject::SetBitmapCache(BitmapCache *inCache)
@@ -485,12 +485,10 @@ void DisplayObject::setAlpha(double inAlpha)
    DirtyDown(dirtCache);
 }
 
-void DisplayObject::SetFilters(const Filters &inFilters)
+void DisplayObject::setFilters(FilterList &inFilters)
 {
-   DecFilters();
-   mFilters.resize(inFilters.size());
-   for(int i=0;i<mFilters.size();i++)
-      (mFilters[i] = inFilters[i])->IncRef();
+   ClearFilters();
+   filters = inFilters;
    DirtyDown(dirtCache);
 }
 
@@ -501,10 +499,11 @@ void DisplayObject::setOpaqueBackground(uint32 inBG)
 }
 
 
-void DisplayObject::DecFilters()
+void DisplayObject::ClearFilters()
 {
-   for(int i=0;i<mFilters.size();i++)
-      mFilters[i]->DecRef();
+   for(int i=0;i<filters.size();i++)
+      delete filters[i];
+   filters.resize(0);
 }
 
 // --- DisplayObjectContainer ------------------------------------------------
@@ -656,16 +655,25 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Get bounding pixel rect
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
-            const Filters &filters = obj->GetFilters();
-            Rect filtered = GetFilteredRect( filters, rect );
+            const FilterList &filters = obj->getFilters();
 
-            // Intersect with clip rect ...
-            visible_bitmap = filtered.Intersect(obj_state->mClipRect);
+            // Move rect to include filtered pixels...
+            Rect filtered = GetFilteredObjectRect(rect);
+
+            // Expand clip rect to account for pixels that must be rendered so the
+            //  filtered image remains valid in the original clip region.
+            Rect expanded = ExpandVisibleFilterDomain( filters, obj_state->mClipRect );
+
+            // Must render to this ...
+            Rect render_to  = rect.Intersect(expanded);
+            // In order to get this ...
+            visible_bitmap  = filtered.Intersect(obj_state->mClipRect);
+
 
             if (obj->GetBitmapCache())
             {
                // Done - our bitmap is good!
-               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, filtered, visible_bitmap))
+               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, visible_bitmap))
                   continue;
                else
                {
@@ -677,12 +685,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             if (visible_bitmap.HasPixels())
             {
                //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
-                      //visible_bitmap.w, visible_bitmap.h );
+               //   visible_bitmap.w, visible_bitmap.h );
 
-               Rect render_to = GetRectToCreateFiltered(filters,visible_bitmap);
                int w = render_to.w;
                int h = render_to.h;
-
                if (inState.mRoundSizeToPOW2 && filters.size()==0)
                {
                   w = UpToPower2(w);
@@ -692,7 +698,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                uint32 bg = obj->opaqueBackground;
                if (bg && filters.size())
                    bg = 0;
-               SimpleSurface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender() ?
+               Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender() ?
                          (bg ? pfXRGB : pfARGB) : pfAlpha );
 
                if (bg && obj->IsBitmapRender())
@@ -716,7 +722,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                obj->Render(render.Target(), *obj_state);
 
-               FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
+               bitmap = FilterBitmap(bitmap,filters,render_to,visible_bitmap,old_pow2);
 
                full = orig;
                obj->SetBitmapCache(
@@ -866,7 +872,7 @@ BitmapCache::~BitmapCache()
 }
 
 
-bool BitmapCache::StillGood(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels)
+bool BitmapCache::StillGood(const Transform &inTransform, const Rect &inVisiblePixels)
 {
    if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) || mScale9!=*inTransform.mScale9)
       return false;
