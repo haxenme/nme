@@ -18,9 +18,9 @@ public:
    ImagePoint GetOrigin() const { return mOrigin; }
    virtual int GetQuality() { return mQuality; }
 
-   virtual void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff) const = 0;
-   virtual void ExpandVisibleFilterDomain(Rect &ioRect) const = 0;
-   virtual void GetFilteredObjectRect(Rect &ioRect) const = 0;
+   virtual void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inDiff,int inPass) const = 0;
+   virtual void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const = 0;
+   virtual void GetFilteredObjectRect(Rect &ioRect,int inPass) const = 0;
 
    int        mQuality;
    ImagePoint mOrigin;
@@ -31,9 +31,9 @@ class BlurFilter : public Filter
 public:
    BlurFilter(int inQuality, int inBlurX, int inBlurY);
 
-   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff) const;
-   void ExpandVisibleFilterDomain(Rect &ioRect) const;
-   void GetFilteredObjectRect(Rect &ioRect) const;
+   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+   void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
+   void GetFilteredObjectRect(Rect &ioRect,int inPass) const;
 
    int mBlurX,mBlurY;
 };
@@ -43,21 +43,21 @@ class DropShadowFilter : public BlurFilter
 {
 public:
    DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
-      double inTheta, double inDistance, int inColour, int inStrength,
+      double inTheta, double inDistance, int inColour, double inStrength,
       double inAlpha, bool inHide, bool inKnockout, bool inInner );
 
    // We will do the blur-iterations ourselves.
    int GetQuality() { return 1; }
 
-   Surface * Apply(Surface *inSurface,bool inToPOW2) const;
-   virtual void ExpandVisibleFilterDomain(Rect &ioRect) const;
-   void GetFilteredObjectRect(Rect &ioRect) const;
+   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+   virtual void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
+   void GetFilteredObjectRect(Rect &ioRect,int inPass) const;
 
    int mTX;
    int mTY;
    int mCol;
-   int mStrength;
-   int mAlpha;
+   int mStrength; /* Fixed-8 */
+   int mAlpha; /* 0...256 */
    bool mHideObject;
    bool mKnockout;
    bool mInner;

@@ -37,6 +37,7 @@ static int _id_tx = val_id("tx");
 static int _id_ty = val_id("ty");
 static int _id_angle = val_id("angle");
 static int _id_distance = val_id("distance");
+static int _id_strength = val_id("strength");
 static int _id_alpha = val_id("alpha");
 static int _id_hideObject = val_id("hideObject");
 static int _id_knockout = val_id("knockout");
@@ -44,6 +45,24 @@ static int _id_inner = val_id("inner");
 static int _id_blurX = val_id("blurX");
 static int _id_blurY = val_id("blurY");
 static int _id_quality = val_id("quality");
+static int _id_align = val_id("align");
+static int _id_blockIndent = val_id("blockIndent");
+static int _id_bold = val_id("bold");
+static int _id_bullet = val_id("bullet");
+static int _id_color = val_id("color");
+static int _id_font = val_id("font");
+static int _id_indent = val_id("indent");
+static int _id_italic = val_id("italic");
+static int _id_kerning = val_id("kerning");
+static int _id_leading = val_id("leading");
+static int _id_leftMargin = val_id("leftMargin");
+static int _id_letterSpacing = val_id("letterSpacing");
+static int _id_rightMargin = val_id("rightMargin");
+static int _id_size = val_id("size");
+static int _id_tabStops = val_id("tabStops");
+static int _id_target = val_id("target");
+static int _id_underline = val_id("underline");
+static int _id_url = val_id("url");
 
 
 vkind gObjectKind = alloc_kind();
@@ -392,12 +411,29 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       {
          value filter = val_array_value(inFilters)[f];
          std::wstring type = val_wstring( val_field(filter,_id_type) );
+			int q = val_int(val_field(filter,_id_quality));
+			if (q<1) continue;
          if (type==L"BlurFilter")
          {
-            filters.push_back( new BlurFilter( val_int(val_field(filter,_id_quality)),
+            filters.push_back( new BlurFilter( q,
                 (int)val_field_numeric(filter,_id_blurX),
                 (int)val_field_numeric(filter,_id_blurY) ) );
          }
+			else if (type==L"DropShadowFilter")
+			{
+            filters.push_back( new DropShadowFilter( q,
+                (int)val_field_numeric(filter,_id_blurX),
+                (int)val_field_numeric(filter,_id_blurY),
+                val_field_numeric(filter,_id_angle),
+                val_field_numeric(filter,_id_distance),
+                val_int( val_field(filter,_id_color) ),
+                val_field_numeric(filter,_id_strength),
+                val_field_numeric(filter,_id_alpha),
+                (bool)val_field_numeric(filter,_id_hideObject),
+                (bool)val_field_numeric(filter,_id_knockout),
+                (bool)val_field_numeric(filter,_id_inner)
+					 ) );
+			}
       }
       obj->setFilters(filters);
    }
@@ -881,24 +917,6 @@ DEFINE_PRIM(nme_text_field_create,0)
 inline value alloc_wstring(const std::wstring &inStr)
    { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
 
-static int _id_align = val_id("align");
-static int _id_blockIndent = val_id("blockIndent");
-static int _id_bold = val_id("bold");
-static int _id_bullet = val_id("bullet");
-static int _id_color = val_id("color");
-static int _id_font = val_id("font");
-static int _id_indent = val_id("indent");
-static int _id_italic = val_id("italic");
-static int _id_kerning = val_id("kerning");
-static int _id_leading = val_id("leading");
-static int _id_leftMargin = val_id("leftMargin");
-static int _id_letterSpacing = val_id("letterSpacing");
-static int _id_rightMargin = val_id("rightMargin");
-static int _id_size = val_id("size");
-static int _id_tabStops = val_id("tabStops");
-static int _id_target = val_id("target");
-static int _id_underline = val_id("underline");
-static int _id_url = val_id("url");
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = val_int(inVal); }
 void FromValue(Optional<uint32> &outVal,value inVal) { outVal = val_int(inVal); }

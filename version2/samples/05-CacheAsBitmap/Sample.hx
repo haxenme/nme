@@ -39,7 +39,7 @@ public function new()
 	circle.x = 200;
 	circle.y = 200;
 	var f = new Array<nme.filters.BitmapFilter>();
-	f.push( new nme.filters.BlurFilter() );
+	f.push( new nme.filters.BlurFilter(1,1,3) );
 	circle.filters = f;
 
 	stage.addEventListener( nme.events.Event.ENTER_FRAME, function(_)
