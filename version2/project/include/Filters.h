@@ -61,6 +61,7 @@ public:
    int mCol;
    int mStrength; /* Fixed-8 */
    int mAlpha; /* 0...256 */
+   int mAlpha255; /* 0...255 */
    bool mHideObject;
    bool mKnockout;
    bool mInner;

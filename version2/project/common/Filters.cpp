@@ -306,6 +306,10 @@ DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
 
    mAlpha  = (int)(inAlpha*256);
    if ((unsigned int)mAlpha > 256) mAlpha = 256;
+
+   mAlpha255  = (int)(inAlpha*255);
+   if ((unsigned int)mAlpha255 > 255) mAlpha255 = 255;
+
 }
 
 
@@ -350,6 +354,7 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
                  bmCopy, 0, 0xffffff );
       // And overlay shadow...
       Rect rect(alpha->Width(), alpha->Height() );
+		if (a>127) a--;
       alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y, bmTintedInner, 0, mCol | (a<<24));
    }
    else

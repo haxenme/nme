@@ -167,7 +167,7 @@ struct ImageSource
 };
 
 
-
+template<bool INNER>
 struct TintSource
 {
    typedef ARGB Pixel;
@@ -177,6 +177,8 @@ struct TintSource
       mBase = inBase;
       mStride = inStride;
       mCol = ARGB(inCol);
+		a0 = mCol.a;
+		if (a0>127) a0++;
       if (inFormat==pfAlpha)
       {
          mComponentOffset = 0;
@@ -196,7 +198,10 @@ struct TintSource
    }
    inline const ARGB &Next() const
    {
-      mCol.a =  *mPos;
+		if (INNER)
+         mCol.a =  (*mPos * a0)>>8;
+		else
+         mCol.a =  *mPos;
       mPos+=mPixelStride;
       return mCol;
    }
@@ -207,6 +212,7 @@ struct TintSource
       return false;
    }
 
+	int a0;
    mutable ARGB mCol;
    mutable const uint8 *mPos;
    int   mComponentOffset;
@@ -481,6 +487,28 @@ template<bool SWAP, bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
    ioDest = inSrc;
 }
 
+// -- Inner ---------
+
+template<bool SWAP, bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
+{
+	int A = inSrc.a;
+	if (A)
+	{
+		if (SWAP)
+		{
+		   ioDest.c2 += ((inSrc.c0 - ioDest.c0)*A)>>8;
+		   ioDest.c1 += ((inSrc.c1 - ioDest.c1)*A)>>8;
+		   ioDest.c0 += ((inSrc.c2 - ioDest.c2)*A)>>8;
+		}
+		else
+		{
+		   ioDest.c0 += ((inSrc.c0 - ioDest.c0)*A)>>8;
+		   ioDest.c1 += ((inSrc.c1 - ioDest.c1)*A)>>8;
+		   ioDest.c2 += ((inSrc.c2 - ioDest.c2)*A)>>8;
+		}
+	}
+}
+
 
 #define BLEND_METHOD(blend) blend<false,false>, blend<false,true>, blend<true,false>, blend<true,true>,
 
@@ -501,10 +529,11 @@ BlendFunc sgBlendFuncs[] =
    BLEND_METHOD(OverlayFunc)
    BLEND_METHOD(HardLightFunc)
    BLEND_METHOD(CopyFunc)
+   BLEND_METHOD(InnerFunc)
 };
 
-template<typename MASK>
-void TBlitBlend( const ImageDest<ARGB> &outDest, const ImageSource<ARGB> &inSrc,const MASK &inMask,
+template<typename MASK,typename SOURCE>
+void TBlitBlend( const ImageDest<ARGB> &outDest, SOURCE &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
 {
    bool swap = inSrc.ShouldSwap(outDest.Format());
@@ -583,7 +612,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       // Blitting tint, we can ignore blend mode too (this is used for rendering text)
       if (tint)
       {
-         TintSource src(mBase,mStride,inTint,mPixelFormat);
+         TintSource<false> src(mBase,mStride,inTint,mPixelFormat);
          if (inMask)
             TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
          else
@@ -591,11 +620,12 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       }
       else if (tint_inner)
       {
-         TintSource src(mBase,mStride,inTint,mPixelFormat);
+         TintSource<true> src(mBase,mStride,inTint,mPixelFormat);
+
          if (inMask)
-            TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmInner );
          else
-            TBlit( dest, src, NullMask(), dx, dy, src_rect );
+            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmInner );
       }
       else if (src_alpha)
       {

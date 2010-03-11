@@ -300,6 +300,7 @@ enum BlendMode
    bmOverlay,
    bmHardLight,
    bmCopy,
+   bmInner,
 
    // Used for rendering text
    bmTinted,
