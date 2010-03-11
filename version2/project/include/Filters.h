@@ -31,6 +31,9 @@ class BlurFilter : public Filter
 public:
    BlurFilter(int inQuality, int inBlurX, int inBlurY);
 
+   template<typename PIXEL>
+   void DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+
    void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
    void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
    void GetFilteredObjectRect(Rect &ioRect,int inPass) const;

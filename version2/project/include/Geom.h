@@ -125,6 +125,10 @@ struct Point2D
    inline bool operator!=(const Point2D &inRHS) const
       { return x!=inRHS.x || y!=inRHS.y; }
 
+   inline Point2D &operator+=(const Point2D &inRHS)
+      { x+=inRHS.x;y+=inRHS.y; return *this; }
+   inline Point2D &operator-=(const Point2D &inRHS)
+      { x-=inRHS.x;y-=inRHS.y; return *this; }
    inline Point2D operator+(const Point2D &inRHS) const
       { return Point2D(x+inRHS.x,y+inRHS.y); }
    inline Point2D operator-(const Point2D &inRHS) const

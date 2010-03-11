@@ -5,6 +5,33 @@
 namespace nme
 {
 
+
+Surface *ExtractAlpha(const Surface *inSurface)
+{
+   if (inSurface->Format()!=pfXRGB && inSurface->Format()!=pfARGB)
+      return 0;
+
+   int w =  inSurface->Width();
+   int h = inSurface->Height();
+   Surface *result = new SimpleSurface(w,h,pfAlpha);
+   result->IncRef();
+
+   AutoSurfaceRender render(result);
+   const RenderTarget &target = render.Target();
+   for(int y=0;y<h;y++)
+   {
+      const uint8 *src = &((const ARGB *)inSurface->Row(y))->a;
+      uint8 *dest = target.Row(y);
+      for(int x=0;x<w;x++)
+      {
+         *dest = *src;
+         dest++;
+         src+=4;
+      }
+   }
+   return result;
+}
+
 /*
  
 	The BlurFilter has its size, mBlurX, mBlurY.  These are the "extra" pixels
@@ -100,6 +127,9 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
    }
    for(int x=0;x<inDestW; x++)
    {
+      if (prev>=src_end)
+         return;
+
       if (sa==0)
          dest->ival = 0;
       else
@@ -118,8 +148,6 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
          sc1+= src->c1 * a;
          sc2+= src->c2 * a;
       }
-      if (prev>=src_end)
-         return;
 
       if (prev>=inSrc)
       {
@@ -137,9 +165,44 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
    }
 }
 
+// Alpha version
+void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inOffX,
+             uint8 *inDest, int inDD, int inDestW, int inFilterSize)
+{
+   int sa = 0;
+
+   // loop over destination pixels with kernel    -xxx+
+   // At each pixel, we - the trailing pixel and + the leading pixel
+   const uint8 *prev = inSrc - inOffX*inDS;
+   const uint8 *src = prev + inFilterSize*inDS;
+   const uint8 *src_end = inSrc + inSrcW*inDS;
+   uint8 *dest = inDest;
+   for(const uint8 *s=inSrc;s<src;s+=inDS)
+      sa+=*s;
+
+   for(int x=0;x<inDestW; x++)
+   {
+      if (prev>=src_end)
+         return;
+
+      *dest = sa/inFilterSize;
+
+      if (src>=inSrc && src<src_end)
+         sa+=*src;
+
+      if (prev>=inSrc)
+         sa-= *prev;
+
+      src+=inDS;
+      prev+=inDS;
+      dest+=inDD;
+   }
+}
 
 
-void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
+
+template<typename PIXEL>
+void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
    int w = outDest->Width();
    int h = outDest->Height();
@@ -165,8 +228,8 @@ void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,
    // Blur rows ...
    for(int y=0;y<sh;y++)
    {
-      ARGB *dest = (ARGB *)target.Row(y);
-      const ARGB *src = ((ARGB *)inSrc->Row(y));
+      PIXEL *dest = (PIXEL *)target.Row(y);
+      const PIXEL *src = ((PIXEL *)inSrc->Row(y));
       BlurRow(src,1,sw,ox,dest,1,tmp->Width(),mBlurX+1);
    }
    sw = tmp->Width();
@@ -177,22 +240,22 @@ void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,
    	AutoSurfaceRender dest_render(outDest);
    	const RenderTarget &target = dest_render.Target();
 		for(int y=0;y<sh;y++)
-			memcpy(target.Row(y),tmp->Row(y),sw*sizeof(ARGB));
+			memcpy(target.Row(y),tmp->Row(y),sw*sizeof(PIXEL));
 	}
 	else
    {
    AutoSurfaceRender dest_render(outDest);
    const RenderTarget &target = dest_render.Target();
-   int s_stride = tmp->GetStride()/sizeof(ARGB);
-   int d_stride = target.mSoftStride/sizeof(ARGB);
+   int s_stride = tmp->GetStride()/sizeof(PIXEL);
+   int d_stride = target.mSoftStride/sizeof(PIXEL);
    // Blur cols ...
    for(int x=0;x<w;x++)
    {
       int src_x = x - inDiff.x - ox;
       if (src_x>=0 && src_x<sw)
       {
-         ARGB *dest = (ARGB *)target.Row(0) + x;
-         const ARGB *src = ((ARGB *)tmp->Row(0)) + src_x;
+         PIXEL *dest = (PIXEL *)target.Row(0) + x;
+         const PIXEL *src = ((PIXEL *)tmp->Row(0)) + src_x;
 
          BlurRow(src,s_stride,sh,oy-inDiff.y,dest,d_stride,h,mBlurY+1);
       }
@@ -200,6 +263,11 @@ void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,
    }
 
    tmp->DecRef();
+}
+
+void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
+{
+   DoApply<ARGB>(inSrc,outDest,inDiff,inPass);
 }
 
 // --- DropShadowFilter --------------------------------------------------------------
@@ -228,25 +296,87 @@ DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
 
 void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
+   Surface *alpha = ExtractAlpha(inSrc);
+
+   // Blur alpha..
+   ImagePoint offset(0,0);
+   for(int q=0;q<mQuality;q++)
+   {
+      Rect src_rect(alpha->Width(),alpha->Height());
+      BlurFilter::GetFilteredObjectRect(src_rect,q);
+      Surface *blur = new SimpleSurface(src_rect.w, src_rect.h, pfAlpha);
+      blur->IncRef();
+
+      ImagePoint diff(src_rect.x, src_rect.y);
+      DoApply<uint8>(alpha,blur,diff,q);
+      alpha->DecRef();
+      alpha = blur;
+      offset += diff;
+   }
+
+
+   AutoSurfaceRender render(outDest);
+   const RenderTarget &target = render.Target();
+
+   // Copy it into the destination rect...
+   ImagePoint blur_pos = offset + ImagePoint(mTX,mTY) - inDiff;
+   int dy0 = std::max(0,blur_pos.y);
+   int dy1 = std::min(outDest->Height(),blur_pos.y+alpha->Height());
+   int dx0 = std::max(0,blur_pos.x);
+   int dx1 = std::min(outDest->Width(),blur_pos.x+alpha->Width());
+   if (dx1>dx0)
+   {
+      // TODO: Swap to match dest
+      int col = mCol & 0x00ffffff;
+      for(int y=dy0;y<dy1;y++)
+      {
+         ARGB *dest = ((ARGB *)target.Row(y)) + dx0;
+         const uint8 *src = alpha->Row(y-blur_pos.y) + dx0 - blur_pos.x;
+         for(int x=dx0;x<dx1;x++)
+         {
+            dest++->ival = col | ((*src++) << 24 );
+         }
+      }
+   }
+
+   alpha->DecRef();
+
 }
 
 void DropShadowFilter::ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const
 {
+   if (!mInner)
+   {
+      Rect orig = ioRect;
+
+      // Handle the quality ourselves, so iterate here.
+      // Work out blur component...
+      for(int q=0;q<mQuality;q++)
+         BlurFilter::ExpandVisibleFilterDomain(ioRect,q);
+
+      ioRect.Translate(-mTX,-mTY);
+
+      if (!mKnockout)
+         ioRect = ioRect.Union(orig);
+   }
+
 }
 
 void DropShadowFilter::GetFilteredObjectRect(Rect &ioRect,int inPass) const
 {
    if (!mInner)
    {
-		int bx = mBlurX-1;
-		int by = mBlurY-1;
-      int dx = mTX-bx*mQuality/2;
-      int dy = mTY-by*mQuality/2;
-      int x0 = std::min(0,dx);
-      int y0 = std::min(0,dy);
+      Rect orig = ioRect;
 
-      //ioDX += x0;
-      //ioDY += y0;
+      // Handle the quality ourselves, so iterate here.
+      // Work out blur component...
+      for(int q=0;q<mQuality;q++)
+         BlurFilter::GetFilteredObjectRect(ioRect,q);
+
+      ioRect.Translate(mTX,mTY);
+
+      if (!mKnockout)
+         ioRect = ioRect.Union(orig);
    }
 }
 
