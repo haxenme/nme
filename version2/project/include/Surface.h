@@ -53,7 +53,7 @@ public:
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
-                       uint32 inTint=0xffffff ) = 0;
+                       uint32 inTint=0xffffff ) const = 0;
 
    Texture *GetTexture() { return mTexture; }
    Texture *GetOrCreateTexture(HardwareContext &inHardware);
@@ -97,7 +97,7 @@ public:
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
-                       uint32 inTint=0xffffff );
+                       uint32 inTint=0xffffff ) const;
 
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
@@ -136,7 +136,7 @@ public:
 
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
-                       uint32 inTint ) { }
+                       uint32 inTint ) const { }
 
    protected:
       ~HardwareSurface();

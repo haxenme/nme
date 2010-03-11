@@ -474,6 +474,13 @@ struct DoHardLight
 template<bool SWAP, bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
 
+// -- Set ---------
+
+template<bool SWAP, bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
+{
+   ioDest = inSrc;
+}
+
 
 #define BLEND_METHOD(blend) blend<false,false>, blend<false,true>, blend<true,false>, blend<true,true>,
 
@@ -493,6 +500,7 @@ BlendFunc sgBlendFuncs[] =
    BLEND_METHOD(EraseFunc)
    BLEND_METHOD(OverlayFunc)
    BLEND_METHOD(HardLightFunc)
+   BLEND_METHOD(CopyFunc)
 };
 
 template<typename MASK>
@@ -520,7 +528,7 @@ void TBlitBlend( const ImageDest<ARGB> &outDest, const ImageSource<ARGB> &inSrc,
 void SimpleSurface::BlitTo(const RenderTarget &outDest,
                      const Rect &inSrcRect,int inPosX, int inPosY,
                      BlendMode inBlend, const BitmapCache *inMask,
-                     uint32 inTint )
+                     uint32 inTint ) const
 {
    // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
@@ -570,9 +578,18 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
       ImageDest<ARGB> dest(outDest);
       bool tint = inBlend==bmTinted;
+      bool tint_inner = inBlend==bmTintedInner;
 
       // Blitting tint, we can ignore blend mode too (this is used for rendering text)
       if (tint)
+      {
+         TintSource src(mBase,mStride,inTint,mPixelFormat);
+         if (inMask)
+            TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+         else
+            TBlit( dest, src, NullMask(), dx, dy, src_rect );
+      }
+      else if (tint_inner)
       {
          TintSource src(mBase,mStride,inTint,mPixelFormat);
          if (inMask)

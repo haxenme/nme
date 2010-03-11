@@ -227,14 +227,14 @@ class GraphicsPath : public IGraphicsPath
 {
 public:
    GraphicsPath *AsPath() { return this; }
-	bool empty() const { return commands.empty(); }
+   bool empty() const { return commands.empty(); }
 
    GraphicsPath() : winding(wrOddEven) { }
    QuickVec<uint8> commands;
    QuickVec<float> data;
    WindingRule     winding;
 
-	void clear();
+   void clear();
    void initPosition(const UserPoint &inPos);
 
    void curveTo(float controlX, float controlY, float anchorX, float anchorY);
@@ -299,9 +299,12 @@ enum BlendMode
    bmErase,
    bmOverlay,
    bmHardLight,
+   bmCopy,
 
    // Used for rendering text
    bmTinted,
+   // Used for rendering inner filters
+   bmTintedInner,
 };
 
 class ColorTransform
@@ -440,8 +443,8 @@ enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip };
 struct DrawElement
 {
    uint8    mPrimType;
-	bool     mBitmapRepeat;
-	bool     mBitmapSmooth;
+   bool     mBitmapRepeat;
+   bool     mBitmapSmooth;
    int      mFirst;
    int      mCount;
    uint32   mColour;
@@ -481,7 +484,7 @@ class HardwareContext : public Object
 public:
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
 
-	// Could be common to multiple implementations...
+   // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );
 
    virtual void SetWindowSize(int inWidth,int inHeight)=0;
@@ -502,7 +505,7 @@ public:
 };
 
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
-							 HardwareData &ioData, HardwareContext &inHardware);
+                      HardwareData &ioData, HardwareContext &inHardware);
 
 int UpToPower2(int inX);
 
@@ -519,7 +522,10 @@ struct RenderTarget
 
    RenderTarget ClipRect(const Rect &inRect) const;
 
-		Rect        mRect;
+   inline int Width() const { return mRect.w; }
+   inline int Height() const { return mRect.h; }
+
+   Rect        mRect;
    PixelFormat mPixelFormat;
 
    // Software target
@@ -605,13 +611,13 @@ public:
    void drawCircle(float x,float y, float radius) { drawEllipse(x,y,radius,radius); }
    void drawRect(float x,float  y,float  width,float  height)
    {
-		Flush();
+      Flush();
       moveTo(x,y);
       lineTo(x+width,y);
       lineTo(x+width,y+height);
       lineTo(x,y+height);
       lineTo(x,y);
-		Flush();
+      Flush();
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
 
@@ -621,14 +627,14 @@ public:
    bool empty() const { return !mPathData || mPathData->empty(); }
 
 protected:
-	void                      BuildHardware();
+   void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true);
 
 private:
    GraphicsJobs              mJobs;
-	int                       mConvertedJobs;
-	int                       mMeasuredJobs;
-	int                       mBuiltHardware;
+   int                       mConvertedJobs;
+   int                       mMeasuredJobs;
+   int                       mBuiltHardware;
 
    GraphicsPath              *mPathData;
    HardwareData              *mHardwareData;
