@@ -4,7 +4,7 @@ import nme.events.EventPhase;
 import nme.geom.Point;
 import nme.filters.BitmapFilter;
 
-class DisplayObject extends nme.events.EventDispatcher
+class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
 {
    public var graphics(nmeGetGraphics,null) : nme.display.Graphics;
    public var stage(nmeGetStage,null) : nme.display.Stage;
@@ -17,7 +17,9 @@ class DisplayObject extends nme.events.EventDispatcher
    public var width(nmeGetWidth,nmeSetWidth): Float;
    public var height(nmeGetHeight,nmeSetHeight): Float;
    public var cacheAsBitmap(nmeGetCacheAsBitmap,nmeSetCacheAsBitmap): Bool;
+   public var visible(nmeGetVisible,nmeSetVisible): Bool;
    public var filters(nmeGetFilters,nmeSetFilters): Array<BitmapFilter>;
+   public var parent(nmeGetParent,null): DisplayObjectContainer;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -42,6 +44,8 @@ class DisplayObject extends nme.events.EventDispatcher
          nmeGraphicsCache = new nme.display.Graphics( nme_display_object_get_grapics(nmeHandle) );
       return nmeGraphicsCache;
    }
+
+   function nmeGetParent() : DisplayObjectContainer { return nmeParent; }
 
    public function nmeGetStage() : nme.display.Stage
    {
@@ -99,6 +103,12 @@ class DisplayObject extends nme.events.EventDispatcher
       return inVal;
    }
 
+   function nmeGetVisible() : Bool { return nme_display_object_get_visible(nmeHandle); }
+   function nmeSetVisible(inVal:Bool) : Bool
+   {
+      nme_display_object_set_visible(nmeHandle,inVal);
+      return inVal;
+   }
 
 
    function nmeGetWidth() : Float { return nme_display_object_get_width(nmeHandle); }
@@ -274,6 +284,17 @@ class DisplayObject extends nme.events.EventDispatcher
       }
    }
 
+   // --- IBitmapDrawable interface ---
+   public function nmeDrawToSurface(inSurface : Dynamic,
+               matrix:nme.geom.Matrix,
+               colorTransform:nme.geom.ColorTransform,
+               blendMode:String,
+               clipRect:nme.geom.Rectangle,
+               smoothing:Bool):Void
+   {
+      // TODO:
+   }
+
 
 
 
@@ -298,6 +319,8 @@ class DisplayObject extends nme.events.EventDispatcher
    static var nme_display_object_set_height = nme.Loader.load("nme_display_object_set_height",2);
    static var nme_display_object_get_cache_as_bitmap = nme.Loader.load("nme_display_object_get_cache_as_bitmap",1);
    static var nme_display_object_set_cache_as_bitmap = nme.Loader.load("nme_display_object_set_cache_as_bitmap",2);
+   static var nme_display_object_get_visible = nme.Loader.load("nme_display_object_get_visible",1);
+   static var nme_display_object_set_visible = nme.Loader.load("nme_display_object_set_visible",2);
    static var nme_display_object_set_filters = nme.Loader.load("nme_display_object_set_filters",2);
 
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);

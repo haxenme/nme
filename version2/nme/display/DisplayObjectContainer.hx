@@ -104,9 +104,18 @@ class DisplayObjectContainer extends InteractiveObject
    public function addChildAt(child:DisplayObject, index:int):DisplayObject
    public function areInaccessibleObjectsUnderPoint(point:Point):Bool
    public function contains(child:DisplayObject):Bool
-   public function getChildAt(index:int):DisplayObject
-    public function getChildByName(name:String):DisplayObject
+   public function getChildByName(name:String):DisplayObject
    */
+
+   public function getChildAt(index:Int):DisplayObject
+   {
+      if (index>=0 && index<nmeChildren.length)
+          return nmeChildren[index];
+      // TODO
+      throw new RangeError("getChildAt : index out of bounds " + index + "/" + nmeChildren.length);
+      return null;
+   }
+
    public function getChildIndex(child:DisplayObject):Int
    {
       for ( i in 0...nmeChildren.length )

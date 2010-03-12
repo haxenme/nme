@@ -125,6 +125,8 @@ public:
    void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
    bool getCacheAsBitmap() { return cacheAsBitmap; }
    void setCacheAsBitmap(bool inVal);
+   bool getVisible() { return visible; }
+   void setVisible(bool inVal);
 
    void   setAlpha(double inAlpha);
 

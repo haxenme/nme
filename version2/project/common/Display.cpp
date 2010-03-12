@@ -109,6 +109,13 @@ void DisplayObject::setCacheAsBitmap(bool inVal)
 	cacheAsBitmap = inVal;
 }
 
+void DisplayObject::setVisible(bool inVal)
+{
+	visible = inVal;
+   DirtyDown(dirtCache);
+}
+
+
 
 
 void DisplayObject::CheckCacheDirty()
