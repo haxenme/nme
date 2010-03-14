@@ -3,7 +3,7 @@ package nme.net;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.IOErrorEvent;
-import haxe.io.ByteArray;
+import haxe.io.Bytes;
 
 /**
 * @author   Hugh Sanderson
@@ -14,8 +14,8 @@ import haxe.io.ByteArray;
 **/
 class URLLoader extends nme.events.EventDispatcher
 {
-   public var bytesLoaded:Int;
-   public var bytesTotal:Int;
+   public var bytesLoaded(default,null):Int;
+   public var bytesTotal(default,null):Int;
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
@@ -58,7 +58,13 @@ class URLLoader extends nme.events.EventDispatcher
             try {
                switch(dataFormat) {
                case BINARY:
-                  this.data = ByteArray.readFile(request.url);
+					   #if neko
+                  this.data = Bytes.ofString(neko.io.File.getContent(request.url));
+                  #else
+                  this.data = cpp.io.File.getBytes(request.url);
+                  #end
+
+
                case TEXT, VARIABLES:
                   #if neko
                   this.data = neko.io.File.getContent(request.url);
@@ -70,7 +76,7 @@ class URLLoader extends nme.events.EventDispatcher
                onError(e);
                return;
             }
-            DispatchCompleteEvent();
+            dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
             return;
          }
       #end
@@ -81,22 +87,24 @@ class URLLoader extends nme.events.EventDispatcher
 
    }
 
-   dynamic function onData (data:String) :Void {
+   public dynamic function onData (data:String) :Void {
       switch(dataFormat) {
       case BINARY:
          this.data = haxe.io.Bytes.ofString( data );
+			bytesLoaded = bytesTotal= this.data.lenght;
       case TEXT:
          this.data = data;
+			bytesLoaded = bytesTotal= data.length;
       case VARIABLES:
          throw "Not complete";
       }
 
-      DispatchCompleteEvent();
+      dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
    }
 
-   dynamic function onError (msg) :Void {
-      trace(msg);
-      DispatchIOErrorEvent();
+   public dynamic function onError (msg) :Void {
+      //trace(msg);
+      dispatchEvent( new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR, true, false, msg) );
    }
 
 }
