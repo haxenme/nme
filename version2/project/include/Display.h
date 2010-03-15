@@ -18,6 +18,8 @@ enum
 
 extern unsigned int gDisplayRefCounting;
 
+extern bool gSDLIsInit;
+
 enum EventType
 {
    etUnknown,   // 0

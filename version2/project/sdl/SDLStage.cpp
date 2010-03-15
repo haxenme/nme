@@ -275,6 +275,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    if ( SDL_Init( init_flags ) == -1 )
    {
+		gSDLIsInit = true;
       inOnFrame(0);
       // SDL_GetError()
       return;

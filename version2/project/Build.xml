@@ -10,8 +10,10 @@
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="windows/SimpleFrame.cpp"/>
   <file name="windows/GDIFont.cpp"/>
+  <file name="sdl/SDLSound.cpp"/>
 </files>
 
 <files id="mac">
@@ -37,6 +39,7 @@
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="sdl/SDLStage.cpp"/>
+  <file name="sdl/SDLSound.cpp"/>
 </files>
 
 
@@ -140,7 +143,13 @@
   <files id="sdl" if="sdl"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
+
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="iphone"/>
+  <lib name="${SDLLIB}libvorbis${SLIBEXT}" unless="iphone"/>
+  <lib name="${SDLLIB}libogg${SLIBEXT}" unless="iphone"/>
+  <lib name="${SDLLIB}libsmpeg${SLIBEXT}" unless="iphone"/>
+
 
   <vflag name="-framework" value="IOKit" if="macos"/>
   <vflag name="-framework" value="CoreAudio" if="macos"/>
@@ -153,11 +162,15 @@
   <vflag name="-framework" value="QuickTime" if="macos"/>
 
 
-  <flag value="" if="windows"/>
-  <flag value="gdi32.lib" if="windows"/>
-  <flag value="opengl32.lib" if="windows"/>
-  <flag value="user32.lib" if="windows"/>
-  <flag value="kernel32.lib" if="windows"/>
+  <lib name="gdi32.lib" if="windows"/>
+  <lib name="opengl32.lib" if="windows"/>
+  <lib name="user32.lib" if="windows"/>
+  <lib name="kernel32.lib" if="windows"/>
+  <lib name="advapi32.lib" if="windows"/>
+  <lib name="ddraw.lib" if="windows"/>
+  <lib name="dxguid.lib" if="windows"/>
+  <lib name="winmm.lib" if="windows"/>
+
 </target>
 
 

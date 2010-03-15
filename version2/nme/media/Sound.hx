@@ -12,56 +12,66 @@ class Sound extends nme.events.EventDispatcher
    public var url(default,null) : String;
 
    var nmeHandle:Dynamic;
-   var nmeLoader:nme.net.URLLoader;
+	var nmeLoading:Bool;
+
 
    public function new(?stream:URLRequest, ?context:SoundLoaderContext)
    {
 		super();
 		bytesLoaded = bytesTotal = 0;
+		nmeLoading = false;
       if (stream!=null)
          load(stream,context);
    }
 
    public function close()
    {
-      if (nmeLoader!=null)
-         nmeLoader.close();
+      if (nmeHandle!=null)
+			nme_sound_close(nmeHandle);
       nmeHandle = 0;
+		nmeLoading = false;
    }
 
    public function load(stream:URLRequest, ?context:SoundLoaderContext)
    {
-		nmeHandle = null;
-		if (nmeLoader!=null)
+		bytesLoaded = bytesTotal = 0;
+      nmeHandle = nme_sound_from_file(stream.url);
+		if (nmeHandle==null)
 		{
-			nmeLoader.onData = function(_) {};
-			nmeLoader.onError = function(_) {};
+			nmeOnError("Could not load:" + stream.url );
 		}
-      nmeLoader = new nme.net.URLLoader();
-      nmeLoader.dataFormat = nme.net.URLLoaderDataFormat.BINARY;
-      nmeLoader.onData = nmeOnData;
-      nmeLoader.onError = nmeOnError;
-      url = stream.url;
-      nmeLoader.load(stream);
-   }
-
-   function nmeOnData(inDataString:String) :Void
-   {
-      var data = haxe.io.Bytes.ofString( inDataString );
-      nmeHandle = nme_sound_from_data(data);
-		this.bytesLoaded = this.bytesTotal = data.length;
-		nmeLoader = null;
-		dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
+		else
+		{
+			nmeLoading = true;
+			nmeCheckLoading();
+		}
    }
 
 	function nmeIsBuffering() : Bool
 	{
-		return (nmeLoader!=null && nmeHandle==null);
+		nmeCheckLoading();
+		return (nmeLoading && nmeHandle==null);
+	}
+
+	function nmeCheckLoading()
+	{
+		if (nmeLoading && nmeHandle!=null)
+		{
+			var status:Dynamic = nme_sound_get_status(nmeHandle);
+			bytesLoaded = status.bytesLoaded;
+			bytesTotal = status.bytesTotal;
+			nmeLoading = bytesLoaded < bytesTotal;
+			if (status.err!=null)
+			{
+				nmeOnError(status.err);
+			}
+		}
 	}
 
 	function nmeGetID3() : ID3Info
 	{
-	   if (nmeHandle==null)
+		nmeCheckLoading();
+	   if (nmeHandle==null || nmeLoading)
 			return null;
 		var id3 = new ID3Info();
 		nme_sound_get_id3(nmeHandle,id3);
@@ -69,7 +79,7 @@ class Sound extends nme.events.EventDispatcher
 	}
 	function nmeGetLength() : Float
 	{
-		if (nmeHandle==null)
+		if (nmeHandle==null || nmeLoading)
 			return 0;
 		return nme_sound_get_length(nmeHandle);
 	}
@@ -78,15 +88,21 @@ class Sound extends nme.events.EventDispatcher
    {
 	 	dispatchEvent( new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR, true, false, msg) );
 		nmeHandle = null;
+		nmeLoading = true;
    }
 
    public function play(startTime:Float = 0, loops:Int = 0, ?sndTransform:SoundTransform):SoundChannel
    {
+		nmeCheckLoading();
+		if (nmeHandle==null || nmeLoading)
+			return null;
       return new SoundChannel(nmeHandle,startTime,loops,sndTransform);
    }
 
-	static var nme_sound_from_data = nme.Loader.load("nme_sound_from_data",1);
+	static var nme_sound_from_file = nme.Loader.load("nme_sound_from_file",1);
 	static var nme_sound_get_id3 = nme.Loader.load("nme_sound_get_id3",2);
 	static var nme_sound_get_length = nme.Loader.load("nme_sound_get_length",1);
+	static var nme_sound_close = nme.Loader.load("nme_sound_close",1);
+	static var nme_sound_get_status = nme.Loader.load("nme_sound_get_status",1);
 
 }

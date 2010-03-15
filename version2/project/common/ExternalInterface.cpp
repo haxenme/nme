@@ -8,6 +8,7 @@
 #include <TextField.h>
 #include <Surface.h>
 #include <Font.h>
+#include <Sound.h>
 #include <algorithm>
 
 #ifdef min
@@ -1260,7 +1261,22 @@ value nme_render_surface_to_surface(value* arg, int nargs)
 DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 
+// --- Sound --------------------------------------------------
+
+value nme_sound_from_data(value inFilename)
+{
+	Sound *sound = Sound::Create( val_wstring(inFilename) );
+	if (sound)
+	{
+		return ObjectToAbstract(sound);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_sound_from_data,1);
+
+
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }
+
 
 
