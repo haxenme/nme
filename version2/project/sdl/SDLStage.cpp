@@ -70,7 +70,7 @@ public:
    void BlitTo(const RenderTarget &outTarget,
                const Rect &inSrcRect,int inPosX, int inPosY,
                BlendMode inBlend, const BitmapCache *inMask,
-               uint32 inTint=0xffffff )
+               uint32 inTint=0xffffff ) const
    {
    }
 
