@@ -24,11 +24,11 @@ void onSdlMixerChannelDone(int inChannel);
 
 static bool Init()
 {
-	if (!gSDLIsInit)
-	{
-		if (SDL_Init(SDL_INIT_AUDIO) != -1)
-			gSDLIsInit = true;
-	}
+   if (!gSDLIsInit)
+   {
+      if (SDL_Init(SDL_INIT_AUDIO) != -1)
+         gSDLIsInit = true;
+   }
 
    if (gSDLIsInit && !sChannelsInit)
    {
@@ -40,7 +40,7 @@ static bool Init()
       Mix_ChannelFinished(onSdlMixerChannelDone);
    }
 
-	return gSDLIsInit;
+   return gSDLIsInit;
 }
 
 class SDLSoundChannel : public SoundChannel
@@ -96,15 +96,15 @@ public:
       CheckDone();
       return mChannel < 0;
    }
-	double getLeft() { return 1; }
-	double getRight() { return 1; }
-	double getPosition() { return 1; }
-	void stop() 
+   double getLeft() { return 1; }
+   double getRight() { return 1; }
+   double getPosition() { return 1; }
+   void stop() 
    {
       if (mChannel>=0)
          Mix_HaltChannel(mChannel);
    }
-	void setTransform(const SoundTransform &inTransform) 
+   void setTransform(const SoundTransform &inTransform) 
    {
       if (mChannel>=0)
          Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
@@ -117,9 +117,9 @@ public:
 
 void onSdlMixerChannelDone(int inChannel)
 {
-	AutoLock lock(sChannelListLock);
+   AutoLock lock(sChannelListLock);
    if (sChannel[inChannel])
-	   sDoneChannel[inChannel] = true;
+      sDoneChannel[inChannel] = true;
 }
 
 
@@ -129,38 +129,44 @@ class SDLSound : public Sound
 {
 public:
    SDLSound(const std::string &inFilename)
-	{
-	   mChunk = Mix_LoadWAV(inFilename.c_str());
-	   if ( mChunk == NULL )
-		   printf("unable to load sound %s\n", inFilename.c_str());
-	}
+   {
+      mChunk = Mix_LoadWAV(inFilename.c_str());
+      if ( mChunk == NULL )
+         mError = "Unable to load sound " + inFilename;
+   }
    ~SDLSound()
    {
       if (mChunk)
          Mix_FreeChunk( mChunk );
    }
-	double getLength()
-	{
+   double getLength()
+   {
       if (mChunk==0) return 0;
       return mChunk->length_ticks;
-	}
+   }
    // Will return with one ref...
-	SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
-	{
+   SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
+   {
       if (!mChunk)
          return 0;
-		return new SDLSoundChannel(this,mChunk,startTime, loops,inTransform);
-	}
+      return new SDLSoundChannel(this,mChunk,startTime, loops,inTransform);
+   }
+   int getBytesLoaded() { return mChunk ? mChunk->alen : 0; }
+   int getBytesTotal() { return mChunk ? mChunk->alen : 0; }
+   bool ok() { return mChunk; }
+   std::string getError() { return mError; }
 
+
+   std::string mError;
    Mix_Chunk *mChunk;
 };
 
 
 Sound *Sound::Create(const std::string &inFilename)
 {
-	if (!Init())
-		return 0;
-	return new SDLSound(inFilename);
+   if (!Init())
+      return 0;
+   return new SDLSound(inFilename);
 }
 
 

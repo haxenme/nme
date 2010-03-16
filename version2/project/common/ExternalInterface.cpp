@@ -64,6 +64,11 @@ static int _id_tabStops = val_id("tabStops");
 static int _id_target = val_id("target");
 static int _id_underline = val_id("underline");
 static int _id_url = val_id("url");
+static int _id_error = val_id("error");
+static int _id_bytesTotal = val_id("bytesTotal");
+static int _id_bytesLoaded = val_id("bytesLoaded");
+static int _id_volume = val_id("volume");
+static int _id_pan = val_id("pan");
 
 
 vkind gObjectKind = alloc_kind();
@@ -100,6 +105,14 @@ void FromValue(Matrix &outMatrix, value inValue)
 }
 
 
+void FromValue(SoundTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+       outTrans.volume = val_number( val_field(inValue,_id_volume) );
+       outTrans.pan = val_number( val_field(inValue,_id_pan) );
+   }
+}
 
 
 template<typename T>
@@ -412,16 +425,16 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       {
          value filter = val_array_value(inFilters)[f];
          std::wstring type = val_wstring( val_field(filter,_id_type) );
-			int q = val_int(val_field(filter,_id_quality));
-			if (q<1) continue;
+         int q = val_int(val_field(filter,_id_quality));
+         if (q<1) continue;
          if (type==L"BlurFilter")
          {
             filters.push_back( new BlurFilter( q,
                 (int)val_field_numeric(filter,_id_blurX),
                 (int)val_field_numeric(filter,_id_blurY) ) );
          }
-			else if (type==L"DropShadowFilter")
-			{
+         else if (type==L"DropShadowFilter")
+         {
             filters.push_back( new DropShadowFilter( q,
                 (int)val_field_numeric(filter,_id_blurX),
                 (int)val_field_numeric(filter,_id_blurY),
@@ -433,8 +446,8 @@ value nme_display_object_set_filters(value inObj,value inFilters)
                 (bool)val_field_numeric(filter,_id_hideObject),
                 (bool)val_field_numeric(filter,_id_knockout),
                 (bool)val_field_numeric(filter,_id_inner)
-					 ) );
-			}
+                ) );
+         }
       }
       obj->setFilters(filters);
    }
@@ -1263,16 +1276,165 @@ DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 // --- Sound --------------------------------------------------
 
-value nme_sound_from_data(value inFilename)
+value nme_sound_from_file(value inFilename)
 {
-	Sound *sound = Sound::Create( val_string(inFilename) );
-	if (sound)
-	{
-		return ObjectToAbstract(sound);
-	}
-	return alloc_null();
+   Sound *sound = Sound::Create( val_string(inFilename) );
+   if (sound)
+   {
+      return ObjectToAbstract(sound);
+   }
+   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_from_data,1);
+DEFINE_PRIM(nme_sound_from_file,1);
+
+#define GET_ID3(name) \
+  sound->getID3Value(name,val); \
+  alloc_field(outVar, val_id(name), alloc_string(val.c_str() ) );
+
+value nme_sound_get_id3(value inSound, value outVar)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      std::string val;
+      GET_ID3("album")
+      GET_ID3("artist")
+      GET_ID3("comment")
+      GET_ID3("genre")
+      GET_ID3("songName")
+      GET_ID3("track")
+      GET_ID3("year")
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_get_id3,2);
+
+value nme_sound_get_length(value inSound)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      return alloc_float( sound->getLength() );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_get_length,1);
+ 
+value nme_sound_close(value inSound)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      sound->close();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_close,1);
+ 
+value nme_sound_get_status(value inSound)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      value result = alloc_empty_object();
+      alloc_field(result, _id_bytesLoaded, alloc_int(sound->getBytesLoaded()));
+      alloc_field(result, _id_bytesTotal, alloc_int(sound->getBytesTotal()));
+      if (!sound->ok())
+         alloc_field(result, _id_error, alloc_string(sound->getError().c_str()));
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_get_status,1);
+ 
+value nme_sound_channel_is_complete(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_bool(channel->isComplete());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_is_complete,1);
+
+value nme_sound_channel_get_left(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_float(channel->getLeft());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_get_left,1);
+
+value nme_sound_channel_get_right(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_float(channel->getRight());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_get_right,1);
+
+value nme_sound_channel_get_position(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_float(channel->getPosition());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_get_position,1);
+
+value nme_sound_channel_stop(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      channel->stop();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_stop,1);
+
+value nme_sound_channel_set_transform(value inChannel, value inTransform)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      SoundTransform trans;
+      FromValue(trans,inTransform);
+      channel->setTransform(trans);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_set_transform,2);
+
+value nme_sound_channel_create(value inSound, value inStart, value inLoops, value inTransform)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      SoundTransform trans;
+      FromValue(trans,inTransform);
+      SoundChannel *channel = sound->openChannel(val_number(inStart),val_int(inLoops),trans);
+      if (channel)
+      {
+         value result = ObjectToAbstract(channel);
+         channel->DecRef();
+         return result;
+      }
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_create,4);
+
+
 
 
 // Reference this to bring in all the symbols for the static library

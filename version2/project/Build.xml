@@ -38,6 +38,7 @@
 
 <files id="sdl">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../../sdl-static/include" />
   <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="sdl/SDLStage.cpp"/>
   <file name="sdl/SDLSound.cpp"/>
