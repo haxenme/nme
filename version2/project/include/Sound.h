@@ -30,11 +30,11 @@ public:
 class Sound : public Object
 {
 public:
-	static Sound *Create(const std::wstring &inFilename);
+	static Sound *Create(const std::string &inFilename);
 
-	virtual void getID3Value(const std::wstring &inKey, std::wstring &outValue)
+	virtual void getID3Value(const std::string &inKey, std::string &outValue)
 	{
-		outValue = L"";
+		outValue = "";
 	}
 	virtual double getLength() = 0;
 	virtual SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform) = 0;

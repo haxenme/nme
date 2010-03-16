@@ -1265,7 +1265,7 @@ DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 value nme_sound_from_data(value inFilename)
 {
-	Sound *sound = Sound::Create( val_wstring(inFilename) );
+	Sound *sound = Sound::Create( val_string(inFilename) );
 	if (sound)
 	{
 		return ObjectToAbstract(sound);

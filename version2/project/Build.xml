@@ -10,6 +10,7 @@
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../../sdl-static/include"/>
   <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="windows/SimpleFrame.cpp"/>
   <file name="windows/GDIFont.cpp"/>
@@ -146,9 +147,9 @@
 
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="iphone"/>
-  <lib name="${SDLLIB}libvorbis${SLIBEXT}" unless="iphone"/>
-  <lib name="${SDLLIB}libogg${SLIBEXT}" unless="iphone"/>
-  <lib name="${SDLLIB}libsmpeg${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="iphone"/>
 
 
   <vflag name="-framework" value="IOKit" if="macos"/>
