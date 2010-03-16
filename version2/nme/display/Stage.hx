@@ -261,6 +261,7 @@ class Stage extends nme.display.DisplayObjectContainer
       //trace(inEvent);
       // TODO: timer event?
       nme.Lib.pollTimers();
+		nme.media.SoundChannel.nmePollComplete();
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {

@@ -1,5 +1,7 @@
 package nme.media;
 
+import nme.events.Event;
+
 class SoundChannel extends nme.events.EventDispatcher
 {
    public var leftPeak(nmeGetLeft,null) : Float;
@@ -15,8 +17,10 @@ class SoundChannel extends nme.events.EventDispatcher
    public function new(inSoundHandle:Dynamic,startTime:Float, loops:Int, sndTransform:SoundTransform)
    {
       super();
-      nmeTransform = sndTransform.clone();
+      nmeTransform = sndTransform==null ? null : sndTransform.clone();
       nmeHandle = nme_sound_channel_create(inSoundHandle,startTime,loops,nmeTransform);
+		if (nmeHandle!=null)
+			nmeIncompleteList.push(this);
    }
 
    public function stop() { nme_sound_channel_stop(nmeHandle); }
@@ -40,8 +44,9 @@ class SoundChannel extends nme.events.EventDispatcher
    {
       if (nmeHandle!=null && nme_sound_channel_is_complete(nmeHandle))
       {
-         // TODO:Dispatch
          nmeHandle = null;
+			var complete = new Event( Event.SOUND_COMPLETE );
+			dispatchEvent(complete);
          return true;
       }
       return false;
@@ -49,11 +54,14 @@ class SoundChannel extends nme.events.EventDispatcher
 
    public static function nmePollComplete()
    {
-      var incomplete = new Array<SoundChannel>();
-      for(channel in nmeIncompleteList)
-         if (!channel.nmeCheckComplete())
-            incomplete.push(channel);
-      nmeIncompleteList = incomplete;
+		if (nmeIncompleteList.length>0)
+		{
+         var incomplete = new Array<SoundChannel>();
+         for(channel in nmeIncompleteList)
+            if (!channel.nmeCheckComplete())
+               incomplete.push(channel);
+         nmeIncompleteList = incomplete;
+		}
    }
 
 

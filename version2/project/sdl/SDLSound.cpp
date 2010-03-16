@@ -26,12 +26,18 @@ static bool Init()
 {
    if (!gSDLIsInit)
    {
-      if (SDL_Init(SDL_INIT_AUDIO) != -1)
+      //if (SDL_Init(SDL_INIT_AUDIO) != -1)
          gSDLIsInit = true;
+
+		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 4096) < 0)
+		{
+			printf("Could not start mixer: %s\n", SDL_GetError());
+		}
    }
 
    if (gSDLIsInit && !sChannelsInit)
    {
+		sChannelsInit = true;
       for(int i=0;i<sMaxChannels;i++)
       {
          sChannel[i] = 0;
@@ -84,10 +90,13 @@ public:
 
    void CheckDone()
    {
-      if (mChannel && sDoneChannel[mChannel])
+      if (mChannel>=0 && sDoneChannel[mChannel])
       {
          sDoneChannel[mChannel] = false;
+			int c = mChannel;
          mChannel = -1;
+         sChannel[c]->DecRef();
+         sChannel[c] = 0;
       }
    }
 
@@ -130,9 +139,13 @@ class SDLSound : public Sound
 public:
    SDLSound(const std::string &inFilename)
    {
+		IncRef();
       mChunk = Mix_LoadWAV(inFilename.c_str());
       if ( mChunk == NULL )
-         mError = "Unable to load sound " + inFilename;
+		{
+         mError = SDL_GetError();
+			//printf("Error %s\n", mError.c_str() );
+		}
    }
    ~SDLSound()
    {

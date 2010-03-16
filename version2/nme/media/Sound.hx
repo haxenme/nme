@@ -38,7 +38,7 @@ class Sound extends nme.events.EventDispatcher
       nmeHandle = nme_sound_from_file(stream.url);
       if (nmeHandle==null)
       {
-         nmeOnError("Could not load:" + stream.url );
+         throw ("Could not load:" + stream.url );
       }
       else
       {
@@ -63,7 +63,7 @@ class Sound extends nme.events.EventDispatcher
          nmeLoading = bytesLoaded < bytesTotal;
          if (status.error!=null)
          {
-            nmeOnError(status.error);
+            throw(status.error);
          }
       }
    }
@@ -95,7 +95,9 @@ class Sound extends nme.events.EventDispatcher
    {
       nmeCheckLoading();
       if (nmeHandle==null || nmeLoading)
+		{
          return null;
+		}
       return new SoundChannel(nmeHandle,startTime,loops,sndTransform);
    }
 

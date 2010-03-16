@@ -1281,7 +1281,9 @@ value nme_sound_from_file(value inFilename)
    Sound *sound = Sound::Create( val_string(inFilename) );
    if (sound)
    {
-      return ObjectToAbstract(sound);
+      value result =  ObjectToAbstract(sound);
+      sound->DecRef();
+		return result;
    }
    return alloc_null();
 }
@@ -1426,7 +1428,6 @@ value nme_sound_channel_create(value inSound, value inStart, value inLoops, valu
       if (channel)
       {
          value result = ObjectToAbstract(channel);
-         channel->DecRef();
          return result;
       }
    }
