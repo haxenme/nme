@@ -13,14 +13,26 @@ bool gSDLIsInit = false;
 
 class SDLSoundChannel;
 
-MyMutex sChannelListLock;
 bool sChannelsInit = false;
-enum { sMaxChannels = 32 };
+enum { sMaxChannels = 8 };
 
-SDLSoundChannel *sChannel[sMaxChannels];
+bool sUsedChannel[sMaxChannels];
 bool sDoneChannel[sMaxChannels];
+void *sUsedMusic = 0;
+bool sDoneMusic = false;
 
-void onSdlMixerChannelDone(int inChannel);
+void onChannelDone(int inChannel)
+{
+   if (sUsedChannel[inChannel])
+      sDoneChannel[inChannel] = true;
+}
+
+void onMusicDone()
+{
+   if (sUsedMusic)
+      sDoneMusic = true;
+}
+
 
 static bool Init()
 {
@@ -40,14 +52,17 @@ static bool Init()
 		sChannelsInit = true;
       for(int i=0;i<sMaxChannels;i++)
       {
-         sChannel[i] = 0;
+         sUsedChannel[i] = false;
          sDoneChannel[i] = false;
       }
-      Mix_ChannelFinished(onSdlMixerChannelDone);
+      Mix_ChannelFinished(onChannelDone);
+      Mix_HookMusicFinished(onMusicDone);
    }
 
    return gSDLIsInit;
 }
+
+// ---  Using "Mix_Chunk" API ----------------------------------------------------
 
 class SDLSoundChannel : public SoundChannel
 {
@@ -64,12 +79,10 @@ public:
       // Allocate myself a channel
       if (mChunk)
       {
-         AutoLock lock(sChannelListLock);
          for(int i=0;i<sMaxChannels;i++)
-            if (!sChannel[i])
+            if (!sUsedChannel[i])
             {
                IncRef();
-               sChannel[i] = this;
                sDoneChannel[i] = false;
                mChannel = i;
                break;
@@ -95,8 +108,8 @@ public:
          sDoneChannel[mChannel] = false;
 			int c = mChannel;
          mChannel = -1;
-         sChannel[c]->DecRef();
-         sChannel[c] = 0;
+         DecRef();
+         sUsedChannel[c] = 0;
       }
    }
 
@@ -123,13 +136,6 @@ public:
    Mix_Chunk *mChunk;
    int       mChannel;
 };
-
-void onSdlMixerChannelDone(int inChannel)
-{
-   AutoLock lock(sChannelListLock);
-   if (sChannel[inChannel])
-      sDoneChannel[inChannel] = true;
-}
 
 
 
@@ -174,12 +180,130 @@ public:
    Mix_Chunk *mChunk;
 };
 
+// ---  Using "Mix_Music" API ----------------------------------------------------
 
-Sound *Sound::Create(const std::string &inFilename)
+
+class SDLMusicChannel : public SoundChannel
+{
+public:
+   SDLMusicChannel(Object *inSound, Mix_Music *inMusic, double inStartTime, int inLoops,
+                  const SoundTransform &inTransform)
+   {
+      mMusic = inMusic;
+      mSound = inSound;
+      mSound->IncRef();
+
+      mPlaying = false;
+      if (mMusic)
+      {
+         mPlaying = true;
+         sUsedMusic = this;
+         sDoneMusic = false;
+         IncRef();
+         Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
+         Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
+         // Mix_SetPanning
+      }
+   }
+   ~SDLMusicChannel()
+   {
+      mSound->DecRef();
+   }
+
+   void CheckDone()
+   {
+      if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
+      {
+         mPlaying = false;
+         if (sUsedMusic == this)
+         {
+            sUsedMusic = 0;
+            sDoneMusic = false;
+         }
+         DecRef();
+      }
+   }
+
+   bool isComplete()
+   {
+      CheckDone();
+      return !mPlaying;
+   }
+   double getLeft() { return 1; }
+   double getRight() { return 1; }
+   double getPosition() { return 1; }
+   void stop() 
+   {
+      if (mMusic)
+         Mix_HaltMusic();
+   }
+   void setTransform(const SoundTransform &inTransform) 
+   {
+      if (mMusic>=0)
+         Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
+   }
+
+   bool      mPlaying;
+   Object    *mSound;
+   Mix_Music *mMusic;
+};
+
+
+class SDLMusic : public Sound
+{
+public:
+   SDLMusic(const std::string &inFilename)
+   {
+		IncRef();
+      mMusic = Mix_LoadMUS(inFilename.c_str());
+      if ( mMusic == NULL )
+		{
+         mError = SDL_GetError();
+			//printf("Error %s\n", mError.c_str() );
+		}
+   }
+   ~SDLMusic()
+   {
+      if (mMusic)
+         Mix_FreeMusic( mMusic );
+   }
+   double getLength()
+   {
+      if (mMusic==0) return 0;
+      // TODO:
+      return 60000;
+   }
+   // Will return with one ref...
+   SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
+   {
+      if (!mMusic)
+         return 0;
+      return new SDLMusicChannel(this,mMusic,startTime, loops,inTransform);
+   }
+   int getBytesLoaded() { return mMusic ? 100 : 0; }
+   int getBytesTotal() { return mMusic ? 100 : 0; }
+   bool ok() { return mMusic; }
+   std::string getError() { return mError; }
+
+
+   std::string mError;
+   Mix_Music *mMusic;
+};
+
+// --- External Interface -----------------------------------------------------------
+
+
+Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 {
    if (!Init())
       return 0;
-   return new SDLSound(inFilename);
+   Sound *sound = inForceMusic ? 0 :  new SDLSound(inFilename);
+   if (!sound || !sound->ok())
+   {
+      if (sound) sound->DecRef();
+      sound = new SDLMusic(inFilename);
+   }
+   return sound;
 }
 
 

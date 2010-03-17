@@ -15,13 +15,13 @@ class Sound extends nme.events.EventDispatcher
    var nmeLoading:Bool;
 
 
-   public function new(?stream:URLRequest, ?context:SoundLoaderContext)
+   public function new(?stream:URLRequest, ?context:SoundLoaderContext,forcePlayAsMusic:Bool=false)
    {
       super();
       bytesLoaded = bytesTotal = 0;
       nmeLoading = false;
       if (stream!=null)
-         load(stream,context);
+         load(stream,context,forcePlayAsMusic);
    }
 
    public function close()
@@ -32,10 +32,10 @@ class Sound extends nme.events.EventDispatcher
       nmeLoading = false;
    }
 
-   public function load(stream:URLRequest, ?context:SoundLoaderContext)
+   public function load(stream:URLRequest, ?context:SoundLoaderContext,forcePlayAsMusic:Bool=false)
    {
       bytesLoaded = bytesTotal = 0;
-      nmeHandle = nme_sound_from_file(stream.url);
+      nmeHandle = nme_sound_from_file(stream.url,forcePlayAsMusic);
       if (nmeHandle==null)
       {
          throw ("Could not load:" + stream.url );
@@ -101,7 +101,7 @@ class Sound extends nme.events.EventDispatcher
       return new SoundChannel(nmeHandle,startTime,loops,sndTransform);
    }
 
-   static var nme_sound_from_file = nme.Loader.load("nme_sound_from_file",1);
+   static var nme_sound_from_file = nme.Loader.load("nme_sound_from_file",2);
    static var nme_sound_get_id3 = nme.Loader.load("nme_sound_get_id3",2);
    static var nme_sound_get_length = nme.Loader.load("nme_sound_get_length",1);
    static var nme_sound_close = nme.Loader.load("nme_sound_close",1);
