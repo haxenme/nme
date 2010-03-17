@@ -2,6 +2,7 @@
 #include <Surface.h>
 extern "C" {
 #include <jpeglib.h>
+#include <png.h>
 }
 #include <setjmp.h>
 
@@ -102,6 +103,99 @@ static Surface *TryJPEG(FILE *inFile)
    return result;
 }
 
+static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) { }
+static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) { }
+
+static Surface *TryPNG(FILE *inFile)
+{
+	png_structp png_ptr;
+   png_infop info_ptr;
+   png_uint_32 width, height;
+   int bit_depth, color_type, interlace_type;
+
+   /* Create and initialize the png_struct with the desired error handler
+    * functions.  If you want to use the default stderr and longjump method,
+    * you can supply NULL for the last three parameters.  We also supply the
+    * the compiler header file version, so that we know if the application
+    * was compiled with a compatible version of the library.  REQUIRED
+    */
+   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
+      0, user_error_fn, user_warning_fn);
+
+   if (png_ptr == NULL)
+      return (0);
+
+   /* Allocate/initialize the memory for image information.  REQUIRED. */
+   info_ptr = png_create_info_struct(png_ptr);
+   if (info_ptr == NULL)
+   {
+      png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+      return (0);
+   }
+
+   /* Set error handling if you are using the setjmp/longjmp method (this is
+    * the normal method of doing things with libpng).  REQUIRED unless you
+    * set up your own error handlers in the png_create_read_struct() earlier.
+    */
+
+	Surface *result = 0;
+	RenderTarget target;
+
+   if (setjmp(png_jmpbuf(png_ptr)))
+   {
+		if (result)
+		{
+			result->EndRender();
+			result->DecRef();
+		}
+
+      /* Free all of the memory associated with the png_ptr and info_ptr */
+      png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+      /* If we get here, we had a problem reading the file */
+      return (0);
+   }
+
+   png_init_io(png_ptr, inFile);
+
+   png_read_info(png_ptr, info_ptr);
+   png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+       &interlace_type, NULL, NULL);
+
+	bool has_alpha = color_type== PNG_COLOR_TYPE_GRAY_ALPHA ||
+                    color_type==PNG_COLOR_TYPE_RGB_ALPHA;
+   /* Add filler (or alpha) byte (before/after each RGB triplet) */
+   png_set_expand(png_ptr);
+   png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+   //png_set_gray_1_2_4_to_8(png_ptr);
+   png_set_palette_to_rgb(png_ptr);
+   png_set_gray_to_rgb(png_ptr);
+
+
+	if (!gC0IsRed)
+      png_set_bgr(png_ptr);
+
+	result = new SimpleSurface(width,height,has_alpha ? pfARGB : pfXRGB);
+	result->IncRef();
+	target = result->BeginRender(Rect(width,height));
+
+   for (int i = 0; i < height; i++)
+   {
+      png_bytep anAddr = (png_bytep) target.Row(i);
+      png_read_rows(png_ptr, (png_bytepp) &anAddr, NULL, 1);
+   }
+
+	result->EndRender();
+
+   /* read rest of file, and get additional chunks in info_ptr - REQUIRED */
+   png_read_end(png_ptr, info_ptr);
+
+   /* clean up after the read, and free any memory allocated - REQUIRED */
+   png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+
+   /* that's it */
+   return result;
+}
+
 namespace nme {
 
 Surface *Surface::Load(const OSChar *inFilename)
@@ -114,7 +208,7 @@ Surface *Surface::Load(const OSChar *inFilename)
    if (!result)
    {
       rewind(file);
-      // Try others ...
+		result = TryPNG(file);
    }
 
    fclose(file);
