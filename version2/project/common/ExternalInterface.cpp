@@ -225,6 +225,34 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 
 }
 
+#define DO_PROP(Obj,obj_prefix,prop,Prop,to_val,from_val) \
+value nme_##obj_prefix##_get_##prop(value inObj) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+      return to_val( obj->get##Prop() ); \
+   return alloc_float(0); \
+} \
+\
+DEFINE_PRIM(nme_##obj_prefix##_get_##prop,1) \
+value nme_##obj_prefix##_set_##prop(value inObj,value inVal) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+      obj->set##Prop(from_val(inVal)); \
+   return alloc_null(); \
+} \
+\
+DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
+
+
+#define DO_DISPLAY_PROP(prop,Prop,to_val,from_val) \
+   DO_PROP(DisplayObject,display_object,prop,Prop,to_val,from_val) 
+
+#define DO_STAGE_PROP(prop,Prop,to_val,from_val) \
+   DO_PROP(Stage,stage,prop,Prop,to_val,from_val) 
+
+
 using namespace nme;
 
 
@@ -366,6 +394,7 @@ value nme_stage_set_focus(value inStage,value inObject,value inDirection)
 }
 DEFINE_PRIM(nme_stage_set_focus,3);
 
+DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
 
 // --- DisplayObject --------------------------------------------------------------
 
@@ -459,37 +488,18 @@ DEFINE_PRIM(nme_display_object_set_filters,2);
 
 
 
-#define DO_PROP(prop,Prop,to_val,from_val) \
-value nme_display_object_get_##prop(value inObj) \
-{ \
-   DisplayObject *obj; \
-   if (AbstractToObject(inObj,obj)) \
-      return to_val( obj->get##Prop() ); \
-   return alloc_float(0); \
-} \
-\
-DEFINE_PRIM(nme_display_object_get_##prop,1) \
-value nme_display_object_set_##prop(value inObj,value inVal) \
-{ \
-   DisplayObject *obj; \
-   if (AbstractToObject(inObj,obj)) \
-      obj->set##Prop(from_val(inVal)); \
-   return alloc_null(); \
-} \
-\
-DEFINE_PRIM(nme_display_object_set_##prop,2)
 
-DO_PROP(x,X,alloc_float,val_number)
-DO_PROP(y,Y,alloc_float,val_number)
-DO_PROP(scale_x,ScaleX,alloc_float,val_number)
-DO_PROP(scale_y,ScaleY,alloc_float,val_number)
-DO_PROP(rotation,Rotation,alloc_float,val_number)
-DO_PROP(width,Width,alloc_float,val_number)
-DO_PROP(height,Height,alloc_float,val_number)
-DO_PROP(bg,OpaqueBackground,alloc_int,val_int)
-DO_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
-DO_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
-DO_PROP(visible,Visible,alloc_bool,val_bool)
+DO_DISPLAY_PROP(x,X,alloc_float,val_number)
+DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
+DO_DISPLAY_PROP(scale_x,ScaleX,alloc_float,val_number)
+DO_DISPLAY_PROP(scale_y,ScaleY,alloc_float,val_number)
+DO_DISPLAY_PROP(rotation,Rotation,alloc_float,val_number)
+DO_DISPLAY_PROP(width,Width,alloc_float,val_number)
+DO_DISPLAY_PROP(height,Height,alloc_float,val_number)
+DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
+DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
+DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
+DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------
@@ -513,18 +523,16 @@ value nme_doc_add_child(value inParent, value inChild)
 }
 DEFINE_PRIM(nme_doc_add_child,2);
 
-/*
 value nme_doc_remove_child(value inParent, value inPos)
 {
    DisplayObjectContainer *parent;
    if (AbstractToObject(inParent,parent))
    {
-      parent->removeChild(val_int(inPos));
+      parent->removeChildAt(val_int(inPos));
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_doc_insert_child,3);
-*/
+DEFINE_PRIM(nme_doc_remove_child,2);
 
 value nme_doc_set_child_index(value inParent, value inChild, value inPos)
 {

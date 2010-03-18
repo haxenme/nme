@@ -241,6 +241,7 @@ public:
    void addChild(DisplayObject *inChild,bool inTakeRef=false);
    void setChildIndex(DisplayObject *inChild,bool inTakeRef=false);
    void removeChild(DisplayObject *inChild);
+   void removeChildAt(int inIndex);
    void setChildIndex(DisplayObject *inChild,int inNewIndex);
    DisplayObject *getChildAt(int index);
 
@@ -280,6 +281,10 @@ public:
    virtual void EnablePopupKeyboard(bool inEnable) { }
    bool FinishEditOnEnter();
 
+   void setFocusRect(bool inVal) { focusRect = inVal; }
+   bool getFocusRect() const { return focusRect; }
+  
+
    int    mQuality;
 
    void RemovingFromStage(DisplayObject *inObject);
@@ -294,6 +299,7 @@ protected:
    void HandleEvent(Event &inEvent);
    EventHandler mHandler;
    void         *mHandlerData;
+   bool         focusRect;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;

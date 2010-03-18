@@ -64,6 +64,7 @@ class DisplayObjectContainer extends InteractiveObject
       var i = getChildIndex(child);
       if (i>=0)
       {
+         nme_doc_remove_child(nmeHandle,i);
          nmeChildren.splice( i, 1 );
       }
    }
@@ -125,9 +126,29 @@ class DisplayObjectContainer extends InteractiveObject
    }
    /*
    public function getObjectsUnderPoint(point:Point):Array
-   public function removeChild(child:DisplayObject):DisplayObject
-   public function removeChildAt(index:int):DisplayObject
    */
+   public function removeChild(child:DisplayObject):DisplayObject
+   {
+      var c = getChildIndex(child);
+      if (c>=0)
+      {
+         child.parent=null;
+         return child;
+      }
+      return null;
+   }
+
+   public function removeChildAt(index:Int):DisplayObject
+   {
+      if (index>=0 && index<nmeChildren.length)
+      {
+         var result = nmeChildren[index];
+         result.parent = null;
+         return result;
+      }
+      return null;
+   }
+
    public function setChildIndex(child:DisplayObject, index:Int):Void
    {
       if(index > nmeChildren.length)
@@ -186,7 +207,7 @@ class DisplayObjectContainer extends InteractiveObject
 
    static var nme_create_display_object_container = nme.Loader.load("nme_create_display_object_container",0);
    static var nme_doc_add_child = nme.Loader.load("nme_doc_add_child",2);
-   //static var nme_doc_remove_child = nme.Loader.load("nme_doc_remove_child",2);
+   static var nme_doc_remove_child = nme.Loader.load("nme_doc_remove_child",2);
    static var nme_doc_set_child_index = nme.Loader.load("nme_doc_set_child_index",3);
 
 }

@@ -11,6 +11,7 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeMouseOverObjects:Array<InteractiveObject>;
    var nmeFocusOverObjects:Array<InteractiveObject>;
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
+   public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
 
    public var frameRate(default,nmeSetFrameRate): Float;
 
@@ -66,6 +67,12 @@ class Stage extends nme.display.DisplayObjectContainer
       else
          nme_stage_set_focus(nmeHandle,inObject.nmeHandle,0);
       return inObject;
+   }
+
+   function nmeGetStageFocusRect() : Bool { return nme_stage_get_focus_rect(nmeHandle); }
+   function nmeSetStageFocusRect(inVal:Bool) : Bool {
+      nme_stage_set_focus_rect(nmeHandle,inVal);
+      return inVal;
    }
 
 
@@ -317,4 +324,6 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
    static var nme_stage_get_focus_id = nme.Loader.load("nme_stage_get_focus_id",1);
    static var nme_stage_set_focus = nme.Loader.load("nme_stage_set_focus",3);
+   static var nme_stage_get_focus_rect = nme.Loader.load("nme_stage_get_focus_rect",1);
+   static var nme_stage_set_focus_rect = nme.Loader.load("nme_stage_set_focus_rect",2);
 }

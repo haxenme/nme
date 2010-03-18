@@ -573,6 +573,13 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
    DecRef();
 }
 
+void DisplayObjectContainer::removeChildAt(int inIndex)
+{
+   if (inIndex>=0 && inIndex<mChildren.size())
+      removeChild( mChildren[inIndex] );
+}
+
+
 void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
 {
    //printf("DisplayObjectContainer::addChild\n");
@@ -957,6 +964,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mQuality = 4;
    mFocusObject = 0;
    mMouseDownObject = 0;
+   focusRect = true;
 }
 
 Stage::~Stage()
