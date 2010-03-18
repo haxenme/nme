@@ -1286,8 +1286,13 @@ DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 value nme_sound_from_file(value inFilename,value inForceMusic)
 {
+#ifdef IPHONE
+   Sound *sound = 0;
+#else
    Sound *sound = val_is_null(inFilename) ? 0 :
                   Sound::Create( val_string(inFilename), val_bool(inForceMusic) );
+#endif
+
    if (sound)
    {
       value result =  ObjectToAbstract(sound);
@@ -1296,7 +1301,7 @@ value nme_sound_from_file(value inFilename,value inForceMusic)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_from_file,1);
+DEFINE_PRIM(nme_sound_from_file,2);
 
 #define GET_ID3(name) \
   sound->getID3Value(name,val); \

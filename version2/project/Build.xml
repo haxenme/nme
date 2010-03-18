@@ -27,7 +27,7 @@
 <files id="iphone">
   <compilerflag value="-Iinclude"/>
   <file name="iPhone/UIStageView.mm"/>
-  <file name="iPhone/SurfaceIO.cpp"/>
+  <file name="iPhone/SurfaceIO.mm"/>
 </files>
 
 
@@ -114,6 +114,8 @@
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
+  <vflag name="-framework" value="UIKit" if="macos"/>
+  <vflag name="-framework" value="ApplicationServices" if="macos"/>
   <vflag name="-framework" value="CoreAudio" if="macos"/>
   <vflag name="-framework" value="Carbon" if="macos"/>
   <vflag name="-framework" value="AudioToolbox" if="macos"/>
@@ -148,7 +150,8 @@
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
+  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos"/>
 
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="iphone"/>
