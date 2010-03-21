@@ -14,6 +14,7 @@ public function new()
 
    var data = nme.display.BitmapData.load("Image.jpg");
    trace(data.width + "x" + data.height);
+   addChild( new nme.display.Bitmap(data) );
    var shape = new nme.display.Shape();
    addChild(shape);
 
@@ -43,7 +44,6 @@ public function new()
 
 	var gfx = shape2.graphics;
    var data = nme.display.BitmapData.load("Image2.png");
-	gfx.lineStyle(1,0x000000);
 	var mtx = new nme.geom.Matrix();
 	gfx.beginBitmapFill(data,mtx,true,true);
 	gfx.drawRect(0,0,data.width,data.height);

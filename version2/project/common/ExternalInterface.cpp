@@ -1286,12 +1286,8 @@ DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 value nme_sound_from_file(value inFilename,value inForceMusic)
 {
-#ifdef IPHONE
-   Sound *sound = 0;
-#else
    Sound *sound = val_is_null(inFilename) ? 0 :
                   Sound::Create( val_string(inFilename), val_bool(inForceMusic) );
-#endif
 
    if (sound)
    {

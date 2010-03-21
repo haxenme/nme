@@ -13,6 +13,7 @@ Surface *Surface::Load(const OSChar *inFilename)
     UIImage *image = [[UIImage alloc] initWithContentsOfFile:path];
     if (image == nil)
        return 0;
+    //[path release];
 
     CGSize size = image.size;
     int width = CGImageGetWidth(image.CGImage);

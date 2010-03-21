@@ -58,6 +58,8 @@ class Sound extends nme.events.EventDispatcher
       if (nmeLoading && nmeHandle!=null)
       {
          var status:Dynamic = nme_sound_get_status(nmeHandle);
+         if (status==null)
+            throw "Could not get sound status";
          bytesLoaded = status.bytesLoaded;
          bytesTotal = status.bytesTotal;
          nmeLoading = bytesLoaded < bytesTotal;

@@ -28,6 +28,7 @@
   <compilerflag value="-Iinclude"/>
   <file name="iPhone/UIStageView.mm"/>
   <file name="iPhone/SurfaceIO.mm"/>
+  <file name="iPhone/Sound.mm"/>
 </files>
 
 
