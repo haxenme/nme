@@ -10,6 +10,8 @@ class Stage extends nme.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
    var nmeFocusOverObjects:Array<InteractiveObject>;
+   var nmeInvalid:Bool;
+
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
 
@@ -26,6 +28,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeMouseOverObjects = [];
       nmeFocusOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
+      nmeInvalid = false;
       nmeSetFrameRate(100);
    }
 
@@ -44,6 +47,11 @@ class Stage extends nme.display.DisplayObjectContainer
    public static dynamic function shouldRotateInterface(inOrientation:Int) : Bool
    {
       return inOrientation==OrientationPortrait;
+   }
+
+   public function invalidate():Void
+   {
+      nmeInvalid = true;
    }
 
    function nmeSetFrameRate(inRate:Float) : Float
@@ -259,6 +267,11 @@ class Stage extends nme.display.DisplayObjectContainer
       {
          nmeBroadcast(new Event(Event.ENTER_FRAME));
       }
+      if (nmeInvalid)
+      {
+         nmeInvalid = false;
+         nmeBroadcast(new Event(Event.RENDER));
+      }
       nme_render_stage(nmeHandle);
    }
 
@@ -268,7 +281,7 @@ class Stage extends nme.display.DisplayObjectContainer
       //trace(inEvent);
       // TODO: timer event?
       nme.Lib.pollTimers();
-		nme.media.SoundChannel.nmePollComplete();
+      nme.media.SoundChannel.nmePollComplete();
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {
