@@ -52,6 +52,15 @@ public:
       mSize = inRHS.mSize;
       memcpy(mPtr,inRHS.mPtr,sizeof(T_)*mSize);
    }
+   QuickVec(const T_ *inData,int inLen)
+	{
+      mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
+      mAlloc = QBufSize;
+      mSize = 0;
+
+		resize(inLen);
+		memcpy(mPtr,inData,sizeof(T_)*inLen);
+	}
    ~QuickVec()
    {
       if (QBUF_SIZE_==0 || mPtr!=mQBuf)

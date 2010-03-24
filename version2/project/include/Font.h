@@ -48,6 +48,7 @@ public:
    T operator()(T inDefault) const { return mSet ? mVal : inDefault; }
 	T &Set() { mSet=true; return mVal; }
    const T &Get() const { return mVal; }
+	void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
 
 private:
 	bool mSet;
@@ -96,6 +97,8 @@ struct CharGroup
 	void  UpdateMetrics(TextLineMetrics &ioMetrics);
 	int   Height();
 	int   Chars() { return mString.size(); }
+
+	void ApplyFormat(TextFormat *inFormat);
 
 	int               mChar0;
 	QuickVec<wchar_t,0> mString;

@@ -34,7 +34,7 @@ public:
    void replaceSelectedText(const std::wstring &inText);
    void replaceText(int inBeginIndex, int inEndIndex, const std::wstring &inText);
    int  setSelection(int inFirst, int inLast);
-   void setTextFormat(const TextFormat *inFormat,int inFirstChar=-1, int inLastChar = -1);
+   void setTextFormat(TextFormat *inFormat,int inFirstChar=-1, int inLastChar = -1);
    bool getSelectable() { return selectable; }
    void setSelectable(bool inSelectable) { selectable = inSelectable; }
    void setTextColor(int inColor);
@@ -161,6 +161,8 @@ private:
    enum StringState { ssNone, ssText, ssHTML };
    StringState mStringState;
    std::wstring mUserString;
+
+	void SplitGroup(int inGroup,int inPos);
 
    int  PointToChar(int inX,int inY);
    int  LineFromChar(int inChar);

@@ -107,6 +107,62 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    mGfxDirty = true;
 }
 
+void TextField::SplitGroup(int inGroup,int inPos)
+{
+	CharGroup &group = mCharGroups[inGroup];
+	CharGroup extra = group;
+	extra.mFormat->IncRef();
+	extra.mFont->IncRef();
+	group.mChar0 += inPos;
+	extra.mString.Set(&group.mString[inPos], group.mString.size()-inPos);
+	group.mString.resize(inPos);
+	mCharGroups.InsertAt(inGroup+1,extra);
+   mLinesDirty = true;
+}
+
+void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
+{
+   if (!inFmt)
+		return;
+
+	if (inStart<0) inStart = 0;
+	int max = mCharPos.size();
+	if (inEnd>max || inEnd<0) inEnd = max;
+
+	if (inEnd<=inStart)
+		return;
+
+   inFmt->IncRef();
+	int g0 = GroupFromChar(inStart);
+	int g1 = GroupFromChar(inEnd);
+	int g0_ex = inStart-mCharGroups[g0].mChar0;
+	if (g0_ex>0)
+	{
+		SplitGroup(g0,g0_ex);
+		g0++;
+		g1++;
+	}
+	if (inEnd<max)
+	{
+	   int g1_ex = inEnd-mCharGroups[g1].mChar0;
+	   if (g1_ex>0)
+	   {
+		   SplitGroup(g1,g1_ex);
+		   g1++;
+	   }
+	}
+
+	for(int g=g0;g<g1;g++)
+		mCharGroups[g].ApplyFormat(inFmt);
+
+   inFmt->DecRef();
+
+   mLinesDirty = true;
+   mGfxDirty = true;
+}
+
+
+
 
 
 void TextField::setTextColor(int inCol)
@@ -1281,6 +1337,29 @@ bool CharGroup::UpdateFont(double inScale,GlyphRotation inRotation,bool inNative
    return false;
 }
 
+void CharGroup::ApplyFormat(TextFormat *inFormat)
+{
+	mFormat = mFormat->COW();
+
+	inFormat->align.Apply(mFormat->align);
+	inFormat->blockIndent.Apply(mFormat->blockIndent);
+	inFormat->bold.Apply(mFormat->bold);
+	inFormat->bullet.Apply(mFormat->bullet);
+	inFormat->color.Apply(mFormat->color);
+	inFormat->font.Apply(mFormat->font);
+	inFormat->indent.Apply(mFormat->indent);
+	inFormat->italic.Apply(mFormat->italic);
+	inFormat->kerning.Apply(mFormat->kerning);
+	inFormat->leading.Apply(mFormat->leading);
+	inFormat->leftMargin.Apply(mFormat->leftMargin);
+	inFormat->letterSpacing.Apply(mFormat->letterSpacing);
+	inFormat->rightMargin.Apply(mFormat->rightMargin);
+	inFormat->size.Apply(mFormat->size);
+	inFormat->tabStops.Apply(mFormat->tabStops);
+	inFormat->target.Apply(mFormat->target);
+	inFormat->underline.Apply(mFormat->underline);
+	inFormat->url.Apply(mFormat->url);
+}
 
 } // end namespace nme
 

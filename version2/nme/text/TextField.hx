@@ -15,12 +15,19 @@ class TextField extends nme.display.InteractiveObject
    public var background(nmeGetBackground,nmeSetBackground):Bool;
    public var backgroundColor(nmeGetBackgroundColor,nmeSetBackgroundColor):Int;
    public var autoSize(nmeGetAutoSize,nmeSetAutoSize):TextFieldAutoSize;
+   public var textWidth(nmeGetTextWidth,null):Float;
+   public var textHeight(nmeGetTextHeight,null):Float;
 
    public function new( )
    {
       var handle = nme_text_field_create( );
       super(handle);
    }
+
+	public function setTextFormat(format:TextFormat, beginIndex:Int = -1, endIndex:Int = -1):Void
+	{
+		nme_text_field_set_text_format(nmeHandle,format,beginIndex,endIndex);
+	}
    
    function nmeGetText() : String { return nme_text_field_get_text(nmeHandle); }
    function nmeSetText(inText:String ) : String
@@ -114,6 +121,8 @@ class TextField extends nme.display.InteractiveObject
       return inVal;
    }
 
+	function nmeGetTextWidth() : Float { return nme_text_field_get_text_width(nmeHandle); }
+	function nmeGetTextHeight() : Float { return nme_text_field_get_text_height(nmeHandle); }
 
    
    function nmeGetDefTextFormat() : TextFormat
@@ -157,5 +166,8 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_set_background = nme.Loader.load("nme_text_field_set_background",2);
    static var nme_text_field_get_background_color = nme.Loader.load("nme_text_field_get_background_color",1);
    static var nme_text_field_set_background_color = nme.Loader.load("nme_text_field_set_background_color",2);
+   static var nme_text_field_get_text_width = nme.Loader.load("nme_text_field_get_text_width",1);
+   static var nme_text_field_get_text_height = nme.Loader.load("nme_text_field_get_text_height",1);
+   static var nme_text_field_set_text_format = nme.Loader.load("nme_text_field_set_text_format",4);
 
 }

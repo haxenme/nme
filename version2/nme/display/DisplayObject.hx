@@ -2,6 +2,7 @@ package nme.display;
 import nme.events.Event;
 import nme.events.EventPhase;
 import nme.geom.Point;
+import nme.geom.Rectangle;
 import nme.filters.BitmapFilter;
 
 class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
@@ -20,6 +21,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var visible(nmeGetVisible,nmeSetVisible): Bool;
    public var filters(nmeGetFilters,nmeSetFilters): Array<BitmapFilter>;
    public var parent(nmeGetParent,null): DisplayObjectContainer;
+   public var scale9Grid(nmeGetScale9Grid,nmeSetScale9Grid): Rectangle;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -27,6 +29,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    var nmeName:String;
    var nmeFilters:Array<BitmapFilter>;
    var nmeID:Int;
+   var nmeScale9Grid:Rectangle;
 
    public function new(inHandle:Dynamic)
    {
@@ -124,6 +127,18 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       nme_display_object_set_height(nmeHandle,inVal);
       return inVal;
    }
+
+   function nmeGetScale9Grid() : Rectangle
+	{
+	   return (nmeScale9Grid==null) ? null : nmeScale9Grid.clone();
+	}
+
+   function nmeSetScale9Grid(inRect:Rectangle) : Rectangle
+	{
+		nmeScale9Grid = (inRect==null) ? null : inRect.clone();
+		nme_display_object_set_scale9_grid(nmeHandle,nmeScale9Grid);
+		return inRect;
+	}
 
 
    function nmeSetBG(inBG:Null<Int>) : Null<Int>
@@ -324,4 +339,5 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_filters = nme.Loader.load("nme_display_object_set_filters",2);
 
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);
+   static var nme_display_object_set_scale9_grid = nme.Loader.load("nme_display_object_set_scale9_grid",2);
 }

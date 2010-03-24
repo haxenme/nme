@@ -114,6 +114,13 @@ void FromValue(SoundTransform &outTrans, value inValue)
    }
 }
 
+void FromValue(DRect &outRect, value inValue)
+{
+	outRect.x = val_field_numeric(inValue,_id_x);
+	outRect.y = val_field_numeric(inValue,_id_y);
+	outRect.w = val_field_numeric(inValue,_id_width);
+	outRect.h = val_field_numeric(inValue,_id_height);
+}
 
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
@@ -486,6 +493,23 @@ value nme_display_object_set_filters(value inObj,value inFilters)
 
 DEFINE_PRIM(nme_display_object_set_filters,2);
 
+value nme_display_object_set_scale9_grid(value inObj,value inRect)
+{
+	DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+		if (val_is_null(inRect))
+			obj->setScale9Grid(DRect(0,0,0,0));
+		else
+		{
+			DRect rect;
+			FromValue(rect,inRect);
+			obj->setScale9Grid(rect);
+		}
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_set_scale9_grid,2);
 
 
 
@@ -1063,6 +1087,22 @@ value nme_text_field_set_def_text_format(value inText,value inFormat)
 
 DEFINE_PRIM(nme_text_field_set_def_text_format,2)
 
+value nme_text_field_set_text_format(value inText,value inFormat,value inStart,value inEnd)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      TextFormat *fmt = TextFormat::Create(true);
+      SetTextFormat(*fmt,inFormat);
+      text->setTextFormat(fmt,val_int(inStart),val_int(inEnd));
+      fmt->DecRef();
+   }
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_text_field_set_text_format,4)
+
+
 value nme_text_field_get_def_text_format(value inText,value outFormat)
 {
    TextField *text;
@@ -1077,8 +1117,7 @@ DEFINE_PRIM(nme_text_field_get_def_text_format,2);
 
 
 
-
-#define TEXT_PROP(prop,Prop,to_val,from_val) \
+#define TEXT_PROP_GET(prop,Prop,to_val) \
 value nme_text_field_get_##prop(value inHandle) \
 { \
    TextField *t; \
@@ -1086,7 +1125,11 @@ value nme_text_field_get_##prop(value inHandle) \
       return to_val(t->get##Prop()); \
    return alloc_null(); \
 } \
-DEFINE_PRIM(nme_text_field_get_##prop,1); \
+DEFINE_PRIM(nme_text_field_get_##prop,1);
+
+
+#define TEXT_PROP(prop,Prop,to_val,from_val) \
+	TEXT_PROP_GET(prop,Prop,to_val) \
 value nme_text_field_set_##prop(value inHandle,value inValue) \
 { \
    TextField *t; \
@@ -1108,6 +1151,8 @@ TEXT_PROP(background_color,BackgroundColor,alloc_int,val_int);
 TEXT_PROP(border,Border,alloc_bool,val_bool);
 TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
 TEXT_PROP(auto_size,AutoSize,alloc_int,val_int);
+TEXT_PROP_GET(text_width,TextWidth,alloc_float);
+TEXT_PROP_GET(text_height,TextHeight,alloc_float);
 
 // --- BitmapData -----------------------------------------------------
 
