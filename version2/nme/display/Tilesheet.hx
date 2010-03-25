@@ -3,10 +3,11 @@ package nme.display;
 class Tilesheet
 {
    public var nmeHandle:Dynamic;
-   var mData:BitmapData;
+   public var nmeBitmap:BitmapData;
 
    public function new(inImage:BitmapData)
    {
+		nmeBitmap = inImage;
       nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
    }
    public function addTileRect(inRect:nme.geom.Rectangle)

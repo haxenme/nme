@@ -117,6 +117,11 @@ class Graphics
       nme_gfx_draw_datum(nmeHandle,graphicsDatum.nmeHandle);
    }
 
+   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>,inSmooth:Bool=false):Void
+	{
+		beginBitmapFill(sheet.nmeBitmap,null,false,inSmooth);
+		nme_gfx_draw_tiles(nmeHandle,sheet.nmeHandle,inXYID);
+	}
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
@@ -133,5 +138,6 @@ class Graphics
    static var nme_gfx_draw_data = nme.Loader.load("nme_gfx_draw_data",2);
    static var nme_gfx_draw_datum = nme.Loader.load("nme_gfx_draw_datum",2);
    static var nme_gfx_draw_rect = nme.Loader.load("nme_gfx_draw_rect",5);
+   static var nme_gfx_draw_tiles = nme.Loader.load("nme_gfx_draw_tiles",3);
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
 }

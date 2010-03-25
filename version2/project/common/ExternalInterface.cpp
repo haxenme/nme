@@ -825,6 +825,17 @@ value nme_gfx_draw_datum(value inGfx,value inDatum)
 }
 DEFINE_PRIM(nme_gfx_draw_datum,2);
 
+value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
+{
+   Graphics *gfx;
+   Tilesheet *sheet;
+   if (AbstractToObject(inGfx,gfx) && AbstractToObject(inGfx,gfx))
+   {
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_tiles,3);
+
 
 // --- IGraphicsData -----------------------------------------------------
 

@@ -218,6 +218,8 @@ enum PathCommand
 
    // Special code so we can mix lines and fills...
    pcBeginAt  = 7,
+	// Quad combining vertices & texture-coords
+   pcTile  = 8,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -243,6 +245,7 @@ public:
    void moveTo(float x, float y);
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
+   void tile(const Rect &inDestRect, const Rect &inTileRect);
 };
 
 
