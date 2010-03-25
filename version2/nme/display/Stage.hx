@@ -16,6 +16,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
 
    public var frameRate(default,nmeSetFrameRate): Float;
+   public var isOpenGL(nmeIsOpenGL,null):Bool;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
@@ -35,6 +36,11 @@ class Stage extends nme.display.DisplayObjectContainer
    public override function nmeGetStage() : nme.display.Stage
    {
       return this;
+   }
+
+   function nmeIsOpenGL() : Bool
+   {
+      return nme_stage_is_opengl(nmeHandle);
    }
 
    public static var OrientationPortrait = 1;
@@ -339,4 +345,5 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_focus = nme.Loader.load("nme_stage_set_focus",3);
    static var nme_stage_get_focus_rect = nme.Loader.load("nme_stage_get_focus_rect",1);
    static var nme_stage_set_focus_rect = nme.Loader.load("nme_stage_set_focus_rect",2);
+   static var nme_stage_is_opengl = nme.Loader.load("nme_stage_is_opengl",1);
 }

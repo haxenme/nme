@@ -144,6 +144,8 @@ public:
       mPrimarySurface->DecRef();
    }
 
+   bool isOpenGL() const { return mOpenGLContext; }
+
    void ProcessEvent(Event &inEvent)
    {
       HandleEvent(inEvent);

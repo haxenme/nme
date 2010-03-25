@@ -233,6 +233,8 @@ public:
       }
    }
 
+   bool isOpenGL() const { return mHardwareContext; }
+
    void Flip()
    {
       if (mHardwareContext)

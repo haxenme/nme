@@ -274,6 +274,8 @@ public:
 
    virtual void RenderStage();
 
+   virtual bool isOpenGL() const = 0;
+
    void SetEventHandler(EventHandler inHander,void *inUserData);
    virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(int inX,int inY);

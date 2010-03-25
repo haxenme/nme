@@ -132,6 +132,10 @@ public:
       [mContext release];
    }
 
+
+   bool isOpenGL() const { return true; }
+
+
    void CreateFramebuffer()
    {
       // Create default framebuffer object.

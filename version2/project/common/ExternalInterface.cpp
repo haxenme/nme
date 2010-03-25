@@ -420,6 +420,20 @@ DEFINE_PRIM(nme_stage_set_focus,3);
 
 DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
 
+
+
+value nme_stage_is_opengl(value inStage)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return alloc_bool(stage->isOpenGL());
+   }
+   return alloc_bool(false);
+}
+DEFINE_PRIM(nme_stage_is_opengl,1);
+ 
+
 // --- DisplayObject --------------------------------------------------------------
 
 value nme_create_display_object()
