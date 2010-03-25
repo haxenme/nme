@@ -15,18 +15,21 @@ struct Tile
 	Surface *mSurface;
 };
 
-class TileSheet : public Object
+class Tilesheet : public Object
 {
 public:
-   TileSheet(int inWidth,int inHeight,PixelFormat inFormat,bool inInitRef=false);
-	TileSheet *IncRef() { Object::IncRef(); return this; }
+   Tilesheet(int inWidth,int inHeight,PixelFormat inFormat,bool inInitRef=false);
+   Tilesheet(Surface *inSurface,bool inInitRef=false);
 
-	int AllocRect(int inW,int inH,float inOx = 0, float inOY = 0);
+	Tilesheet *IncRef() { Object::IncRef(); return this; }
+
+	int AllocRect(int inW,int inH,float inOx = 0, float inOy = 0);
+   int addTileRect(const Rect &inRect,float inOx=0, float inOy=0);
 	const Tile &GetTile(int inID) { return mTiles[inID]; }
 	Surface &GetSurface() { return *mSheet; }
 
 private:
-	~TileSheet();
+	~Tilesheet();
 
 	int  mCurrentX;
 	int  mCurrentY;

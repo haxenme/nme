@@ -177,7 +177,7 @@ private:
 
 	Glyph mGlyph[128];
 	std::map<int,Glyph>   mExtendedGlyph;
-   QuickVec<TileSheet *> mSheets;
+   QuickVec<Tilesheet *> mSheets;
 	FontFace              *mFace;
 
 	int    mPixelHeight;

@@ -7,6 +7,7 @@
 #include <Display.h>
 #include <TextField.h>
 #include <Surface.h>
+#include <Tilesheet.h>
 #include <Font.h>
 #include <Sound.h>
 #include <algorithm>
@@ -121,6 +122,22 @@ void FromValue(DRect &outRect, value inValue)
 	outRect.w = val_field_numeric(inValue,_id_width);
 	outRect.h = val_field_numeric(inValue,_id_height);
 }
+
+void FromValue(Rect &outRect, value inValue)
+{
+	outRect.x = val_field_numeric(inValue,_id_x);
+	outRect.y = val_field_numeric(inValue,_id_y);
+	outRect.w = val_field_numeric(inValue,_id_width);
+	outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+void FromValue(ImagePoint &outPoint,value inValue)
+{
+	outPoint.x = val_field_numeric(inValue,_id_x);
+	outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
+
 
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
@@ -1258,6 +1275,19 @@ DEFINE_PRIM(nme_bitmap_data_clone,1);
 
 value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset)
 {
+   Surface *source;
+   Surface *dest;
+   if (AbstractToObject(inSource,source) && AbstractToObject(inTarget,dest))
+   {
+      Rect rect;
+      FromValue(rect,inSourceRect);
+      ImagePoint offset;
+      FromValue(offset,inOffset);
+
+      AutoSurfaceRender render(dest);
+      source->BlitTo(render.Target(),rect,offset.x, offset.y, bmNormal, 0);
+   }
+
    // TODO:
    return alloc_null();
 }
@@ -1490,8 +1520,34 @@ value nme_sound_channel_create(value inSound, value inStart, value inLoops, valu
 }
 DEFINE_PRIM(nme_sound_channel_create,4);
 
+// --- Tilesheet -----------------------------------------------
 
+value nme_tilesheet_create(value inSurface)
+{
+   Surface *surface;
+   if (AbstractToObject(inSurface,surface))
+   {
+      surface->IncRef();
+      Tilesheet *sheet = new Tilesheet(surface);
+      surface->DecRef();
+      return ObjectToAbstract(surface);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_tilesheet_create,1);
 
+value nme_tilesheet_add_rect(value inSheet,value inRect)
+{
+   Tilesheet *sheet;
+   if (AbstractToObject(inSheet,sheet))
+   {
+      Rect rect;
+      FromValue(rect,inRect);
+      sheet->addTileRect(rect);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_tilesheet_add_rect,2);
 
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }

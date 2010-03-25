@@ -84,7 +84,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
                w*=2;
 		      if (mRotation!=gr0 && mRotation!=gr180)
 					std::swap(w,h);
-            TileSheet *sheet = new TileSheet(w,h,pfAlpha,true);
+            Tilesheet *sheet = new Tilesheet(w,h,pfAlpha,true);
             mCurrentSheet = mSheets.size();
             mSheets.push_back(sheet);
          }

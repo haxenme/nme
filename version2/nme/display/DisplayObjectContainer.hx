@@ -69,18 +69,18 @@ class DisplayObjectContainer extends InteractiveObject
       }
    }
 
-   override function nmeOnAdded(inObj:DisplayObject)
+   override function nmeOnAdded(inObj:DisplayObject,inIsOnStage:Bool)
    {
-      super.nmeOnAdded(inObj);
+      super.nmeOnAdded(inObj,inIsOnStage);
       for(child in nmeChildren)
-         child.nmeOnAdded(inObj);
+         child.nmeOnAdded(inObj,inIsOnStage);
    }
 
-   override function nmeOnRemoved(inObj:DisplayObject)
+   override function nmeOnRemoved(inObj:DisplayObject,inWasOnStage:Bool)
    {
-      super.nmeOnRemoved(inObj);
+      super.nmeOnRemoved(inObj,inWasOnStage);
       for(child in nmeChildren)
-         child.nmeOnRemoved(inObj);
+         child.nmeOnRemoved(inObj,inWasOnStage);
    }
 
    public function addChild(child:DisplayObject):DisplayObject

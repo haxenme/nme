@@ -181,7 +181,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
 		return result;
 	}
 
-   function nmeOnAdded(inObj:DisplayObject)
+   function nmeOnAdded(inObj:DisplayObject,inIsOnStage:Bool)
    {
       if (inObj==this)
       {
@@ -190,12 +190,15 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
          dispatchEvent(evt);
       }
 
-      var evt = new Event(Event.ADDED_TO_STAGE, false, false);
-      evt.target = inObj;
-      dispatchEvent(evt);
+      if (inIsOnStage)
+      {
+         var evt = new Event(Event.ADDED_TO_STAGE, false, false);
+         evt.target = inObj;
+         dispatchEvent(evt);
+      }
    }
 
-   function nmeOnRemoved(inObj:DisplayObject)
+   function nmeOnRemoved(inObj:DisplayObject,inWasOnStage:Bool)
    {
       if (inObj==this)
       {
@@ -203,9 +206,13 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
          evt.target = inObj;
          dispatchEvent(evt);
       }
-      var evt = new Event(Event.REMOVED_FROM_STAGE, false, false);
-      evt.target = inObj;
-      dispatchEvent(evt);
+
+      if (inWasOnStage)
+      {
+         var evt = new Event(Event.REMOVED_FROM_STAGE, false, false);
+         evt.target = inObj;
+         dispatchEvent(evt);
+      }
    }
 
    public function nmeSetParent(inParent:DisplayObjectContainer)
@@ -219,12 +226,13 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       if (nmeParent==null && inParent!=null)
       {
          nmeParent = inParent;
-         nmeOnAdded(this);
+         nmeOnAdded(this,stage!=null);
       }
       else if (nmeParent!=null && inParent==null)
       {
+         var was_on_stage = stage!=null;
          nmeParent = inParent;
-         nmeOnRemoved(this);
+         nmeOnRemoved(this,was_on_stage);
       }
       else
          nmeParent = inParent;

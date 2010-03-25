@@ -5,7 +5,7 @@
 namespace nme
 {
 
-TileSheet::TileSheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitRef) : Object(inInitRef)
+Tilesheet::Tilesheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitRef) : Object(inInitRef)
 {
 	mCurrentX = 0;
 	mCurrentY = 0;
@@ -14,12 +14,22 @@ TileSheet::TileSheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitR
 
 }
 
-TileSheet::~TileSheet()
+Tilesheet::Tilesheet(Surface *inSurface,bool inInitRef) : Object(inInitRef)
+{
+	mCurrentX = 0;
+	mCurrentY = 0;
+	mMaxHeight = 0;
+	mSheet = inSurface->IncRef();
+
+}
+
+
+Tilesheet::~Tilesheet()
 {
 	mSheet->DecRef();
 }
 
-int TileSheet::AllocRect(int inW,int inH,float inOx, float inOy)
+int Tilesheet::AllocRect(int inW,int inH,float inOx, float inOy)
 {
 	Tile tile;
 	tile.mOx = inOx;
@@ -50,6 +60,20 @@ int TileSheet::AllocRect(int inW,int inH,float inOx, float inOy)
 	mMaxHeight = std::max(mMaxHeight,inH);
 	return result;
 }
+
+int Tilesheet::addTileRect(const Rect &inRect,float inOx, float inOy)
+{
+   Tile tile;
+	tile.mOx = inOx;
+	tile.mOy = inOy;
+	tile.mRect = inRect;
+	tile.mSurface = mSheet;
+
+   int result = mTiles.size();
+   mTiles.push_back(tile);
+   return result;
+}
+
 
 
 } // end namespace nme
