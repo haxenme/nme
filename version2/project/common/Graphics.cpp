@@ -13,7 +13,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mHardwareData = 0;
    mPathData = new GraphicsPath;
    mBuiltHardware = 0;
-	mTileJob.mIsTileJob = true;
+   mTileJob.mIsTileJob = true;
 }
 
 
@@ -174,6 +174,7 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
       case gdtSolidFill:
       case gdtGradientFill:
          Flush(false,true);
+         endTiles();
          if (mFillJob.mFill)
             mFillJob.mFill->DecRef();
          mFillJob.mFill = inData->AsIFill();
@@ -211,7 +212,8 @@ void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 
 void Graphics::beginFill(unsigned int color, float alpha)
 {
-   Flush(false,true);
+   Flush(false,true,true);
+   endTiles();
    if (mFillJob.mFill)
       mFillJob.mFill->DecRef();
    mFillJob.mFill = new GraphicsSolidFill(color,alpha);
@@ -233,7 +235,8 @@ void Graphics::endFill()
 void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
    bool inRepeat, bool inSmooth)
 {
-   Flush(false,true);
+   Flush(false,true,true);
+   endTiles();
    if (mFillJob.mFill)
       mFillJob.mFill->DecRef();
    mFillJob.mFill = new GraphicsBitmapFill(bitmapData,inMatrix,inRepeat,inSmooth);
@@ -242,10 +245,21 @@ void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
       mPathData->initPosition(mCursor);
 }
 
+void Graphics::endTiles()
+{
+   if (mTileJob.mFill)
+   {
+      mTileJob.mFill->DecRef();
+      mTileJob.mFill = 0;
+   }
+}
+
 void Graphics::beginTiles(Surface *bitmapData,bool inSmooth)
 {
+   endFill();
+   lineStyle(-1);
    Flush();
-	if (mTileJob.mFill)
+   if (mTileJob.mFill)
       mTileJob.mFill->DecRef();
    mTileJob.mFill = new GraphicsBitmapFill(bitmapData,Matrix(),false,inSmooth);
    mTileJob.mFill->IncRef();
@@ -256,7 +270,8 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   StrokeCaps caps,
                   StrokeJoints joints, double miterLimit)
 {
-   Flush(true,false);
+   Flush(true,false,true);
+   endTiles();
    if (mLineJob.mStroke)
    {
       mLineJob.mStroke->DecRef();
@@ -313,6 +328,7 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 
 void Graphics::tile(float x, float y, const Rect &inTileRect)
 {
+   mPathData->tile(x,y,inTileRect);
 }
 
 
@@ -334,6 +350,8 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
       {
          mTileJob.mFill->IncRef();
          mTileJob.mDataCount = d-mTileJob.mData0;
+         mTileJob.mCommandCount = n-mTileJob.mCommand0;
+         mTileJob.mIsTileJob = true;
          mJobs.push_back(mTileJob);
       }
       mTileJob.mCommand0 = n;
@@ -351,7 +369,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          mFillJob.mDataCount = d-mFillJob.mData0;
 
          // Move the fill job up the list so it is "below" lines that start at the same
-			// (or later) data point
+         // (or later) data point
          int pos = mJobs.size()-1;
          while(pos>=0)
          {
@@ -361,13 +379,13 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          }
          pos++;
          if (pos==mJobs.size())
-			{
+         {
             mJobs.push_back(mFillJob);
-			}
+         }
          else
-			{
+         {
             mJobs.InsertAt(0,mFillJob);
-			}
+         }
       }
       mFillJob.mCommand0 = n;
       mFillJob.mData0 = d;
@@ -394,14 +412,14 @@ Extent2DF Graphics::GetSoftwareExtent(const Transform &inTransform)
    Extent2DF result;
    Flush();
 
-	for(int i=0;i<mJobs.size();i++)
-	{
-		GraphicsJob &job = mJobs[i];
-		if (!job.mSoftwareRenderer)
-			job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
+   for(int i=0;i<mJobs.size();i++)
+   {
+      GraphicsJob &job = mJobs[i];
+      if (!job.mSoftwareRenderer)
+         job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
 
-		job.mSoftwareRenderer->GetExtent(inTransform,result);
-	}
+      job.mSoftwareRenderer->GetExtent(inTransform,result);
+   }
 
    return result;
 }
@@ -431,15 +449,17 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
      if (!mHardwareData)
          mHardwareData = new HardwareData();
      while(mBuiltHardware<mJobs.size())
+     {
          BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
+     }
 
      if (mHardwareData->mCalls.size())
-	  {
-		   if (inState.mPhase==rpHitTest)
-			   return inTarget.mHardware->Hits(inState,mHardwareData->mCalls);
-		   else
+     {
+         if (inState.mPhase==rpHitTest)
+            return inTarget.mHardware->Hits(inState,mHardwareData->mCalls);
+         else
             inTarget.mHardware->Render(inState,mHardwareData->mCalls);
-	  }
+     }
    }
    else
    {
@@ -449,12 +469,12 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
          if (!job.mSoftwareRenderer)
             job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
 
-		   if (inState.mPhase==rpHitTest)
-			{
+         if (inState.mPhase==rpHitTest)
+         {
             if (job.mSoftwareRenderer->Hits(inState))
-					return true;
-			}
-			else
+               return true;
+         }
+         else
             job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }
@@ -470,9 +490,9 @@ void GraphicsJob::clear()
    if (mStroke) mStroke->DecRef();
    if (mFill) mFill->DecRef();
    if (mSoftwareRenderer) mSoftwareRenderer->Destroy();
-	bool was_tile = mIsTileJob;
+   bool was_tile = mIsTileJob;
    memset(this,0,sizeof(GraphicsJob));
-	mIsTileJob = was_tile;
+   mIsTileJob = was_tile;
 }
 
 // --- RenderState -------------------------------------------------------------------

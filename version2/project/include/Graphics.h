@@ -625,7 +625,8 @@ public:
       Flush();
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
-	void beginTiles(Surface *inSurface,bool inSmooth=false);
+   void beginTiles(Surface *inSurface,bool inSmooth=false);
+   void endTiles();
    void tile(float x, float y, const Rect &inTileRect);
 
 
