@@ -11,8 +11,25 @@ public:
 						 HardwareContext &inHardware)
    {
 		mTexture = 0;
+		mTileMode = false;
       mElement.mColour = 0xffffffff;
-      if (inJob.mFill)
+      if (inJob.mIsTileJob)
+		{
+			mElement.mBitmapRepeat = true;
+			mElement.mBitmapSmooth = false;
+
+			mElement.mPrimType = ptTriangles;
+         mElement.mScaleMode = ssmNormal;
+         mElement.mWidth = -1;
+
+         GraphicsBitmapFill *bmp = inJob.mFill->AsBitmapFill();
+         mSurface = bmp->bitmapData->IncRef();
+			mTexture = mSurface->GetOrCreateTexture(inHardware);
+			mElement.mBitmapRepeat = false;
+			mElement.mBitmapSmooth = bmp->smooth;
+			mTileMode = true;
+		}
+		else if (inJob.mFill)
       {
          mElement.mPrimType = ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
@@ -120,6 +137,7 @@ public:
                   const float *inData,  bool inClose)
    {
       Vertices &vertices = mArrays->mVertices;
+      Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
 
@@ -195,14 +213,40 @@ public:
                points++;
                }
                break;
+
+            case pcTile:
+					if (mTileMode)
+					{
+						UserPoint pos(point[0]);
+						UserPoint tex_pos(point[1]);
+						UserPoint size(point[2]);
+
+						vertices.push_back(pos);
+						vertices.push_back( UserPoint(pos.x+size.x,pos.y) );
+						vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
+						vertices.push_back(pos);
+						vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
+						vertices.push_back( UserPoint(pos.x,pos.y+size.y) );
+
+						pos = tex_pos;
+						tex.push_back( mTexture->PixelToTex(pos));
+						tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y)) );
+						tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
+						tex.push_back( mTexture->PixelToTex(pos));
+						tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
+						tex.push_back( mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y)) );
+					}
+					else
+						point += 3;
          }
       }
 
-      if (points>0)
+      if (points>0 || (mTileMode && vertices.size()))
       {
          //mVertices.push_back(last_move);
          mElement.mCount = vertices.size() - mElement.mFirst;
-         if (mSurface)
+			//printf("%d\n", mElement.mCount);
+         if (mSurface && !mTileMode)
             CalcTexCoords();
          elements.push_back(mElement);
       }
@@ -214,6 +258,7 @@ public:
    DrawElement mElement;
    Texture     *mTexture;
    bool        mGradReflect;
+	bool        mTileMode;
    Matrix      mTextureMapper;
 };
 

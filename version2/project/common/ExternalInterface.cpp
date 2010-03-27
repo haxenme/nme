@@ -829,8 +829,47 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
 {
    Graphics *gfx;
    Tilesheet *sheet;
-   if (AbstractToObject(inGfx,gfx) && AbstractToObject(inGfx,gfx))
+   if (AbstractToObject(inGfx,gfx) && AbstractToObject(inSheet,sheet))
    {
+		bool smooth = false;
+		gfx->beginTiles(&sheet->GetSurface(), smooth );
+
+		int n = val_array_size(inXYIDs)/3;
+		double *vals = val_array_double(inXYIDs);
+		int max = sheet->Tiles();
+
+		if (vals)
+		{
+			for(int i=0;i<n;i++)
+			{
+				int id = (int)(vals[2]+0.5);
+				if (id>=0 && id<max)
+				{
+					const Rect &r = sheet->GetTile(id).mRect;
+					gfx->tile(vals[0],vals[1],r);
+				}
+				vals+=3;
+			}
+		}
+		else
+		{
+			value *vals = val_array_value(inXYIDs);
+			if (vals)
+			{
+				for(int i=0;i<n;i++)
+				{
+					int id = (int)(val_number(vals[2])+0.5);
+					//printf("tile %d/%d %f %f\n", id,max,val_number(vals[0]),val_number(vals[1]));
+					if (id>=0 && id<max)
+					{
+						const Rect &r = sheet->GetTile(id).mRect;
+						gfx->tile(val_number(vals[0]),val_number(vals[1]),r);
+					}
+					vals+=3;
+				}
+			}
+		}
+
    }
    return alloc_null();
 }
@@ -1555,7 +1594,7 @@ value nme_tilesheet_create(value inSurface)
       surface->IncRef();
       Tilesheet *sheet = new Tilesheet(surface);
       surface->DecRef();
-      return ObjectToAbstract(surface);
+      return ObjectToAbstract(sheet);
    }
    return alloc_null();
 }

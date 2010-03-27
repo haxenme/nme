@@ -27,6 +27,7 @@ public:
    int addTileRect(const Rect &inRect,float inOx=0, float inOy=0);
 	const Tile &GetTile(int inID) { return mTiles[inID]; }
 	Surface &GetSurface() { return *mSheet; }
+	int Tiles() const { return mTiles.size(); }
 
 private:
 	~Tilesheet();

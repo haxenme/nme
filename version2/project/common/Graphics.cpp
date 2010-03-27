@@ -13,6 +13,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mHardwareData = 0;
    mPathData = new GraphicsPath;
    mBuiltHardware = 0;
+	mTileJob.mIsTileJob = true;
 }
 
 
@@ -27,6 +28,7 @@ void Graphics::clear()
 {
    mFillJob.clear();
    mLineJob.clear();
+   mTileJob.clear();
    mTriJob.clear();
 
    // clear jobs
@@ -240,6 +242,14 @@ void Graphics::beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix,
       mPathData->initPosition(mCursor);
 }
 
+void Graphics::beginTiles(Surface *bitmapData,bool inSmooth)
+{
+   Flush();
+	if (mTileJob.mFill)
+      mTileJob.mFill->DecRef();
+   mTileJob.mFill = new GraphicsBitmapFill(bitmapData,Matrix(),false,inSmooth);
+   mTileJob.mFill->IncRef();
+}
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   bool pixelHinting, StrokeScaleMode scaleMode,
@@ -301,6 +311,9 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
    mCursor = UserPoint(x,y);
 }
 
+void Graphics::tile(float x, float y, const Rect &inTileRect)
+{
+}
 
 
 
@@ -310,10 +323,23 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 // The items intermix fill-styles and line-stypes with move/draw/triangle
 //  geometry data - this routine separates them out.
 
-void Graphics::Flush(bool inLine, bool inFill)
+void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 {
    int n = mPathData->commands.size();
    int d = mPathData->data.size();
+
+   if (inTile)
+   {
+      if (mTileJob.mFill && mTileJob.mCommand0 <n)
+      {
+         mTileJob.mFill->IncRef();
+         mTileJob.mDataCount = d-mTileJob.mData0;
+         mJobs.push_back(mTileJob);
+      }
+      mTileJob.mCommand0 = n;
+      mTileJob.mData0 = d;
+   }
+
 
    // Do fill first, so lines go over top.
    if (inFill)
@@ -444,7 +470,9 @@ void GraphicsJob::clear()
    if (mStroke) mStroke->DecRef();
    if (mFill) mFill->DecRef();
    if (mSoftwareRenderer) mSoftwareRenderer->Destroy();
+	bool was_tile = mIsTileJob;
    memset(this,0,sizeof(GraphicsJob));
+	mIsTileJob = was_tile;
 }
 
 // --- RenderState -------------------------------------------------------------------

@@ -245,7 +245,7 @@ public:
    void moveTo(float x, float y);
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
-   void tile(const Rect &inDestRect, const Rect &inTileRect);
+   void tile(float x, float y, const Rect &inTileRect);
 };
 
 
@@ -574,6 +574,7 @@ struct GraphicsJob
    int             mData0;
    int             mCommandCount;
    int             mDataCount;
+	bool            mIsTileJob;
 };
 
 
@@ -624,6 +625,9 @@ public:
       Flush();
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
+	void beginTiles(Surface *inSurface,bool inSmooth=false);
+   void tile(float x, float y, const Rect &inTileRect);
+
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);
@@ -632,7 +636,7 @@ public:
 
 protected:
    void                      BuildHardware();
-   void                      Flush(bool inLine=true,bool inFill=true);
+   void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
 
 private:
    GraphicsJobs              mJobs;
@@ -648,6 +652,7 @@ private:
 
    GraphicsJob               mFillJob;
    GraphicsJob               mLineJob;
+   GraphicsJob               mTileJob;
    GraphicsJob               mTriJob;
 
    UserPoint                 mCursor;

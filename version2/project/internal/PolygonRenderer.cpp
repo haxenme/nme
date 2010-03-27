@@ -1073,7 +1073,9 @@ public:
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
-   if (inJob.mStroke)
+	if (inJob.mIsTileJob)
+		return 0;
+	else if (inJob.mStroke)
       return new LineRender(inJob,inPath);
    else
       return new SolidRender(inJob,inPath);

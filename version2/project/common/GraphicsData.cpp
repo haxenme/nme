@@ -67,5 +67,18 @@ void GraphicsPath::wideMoveTo(float x, float y)
 	data.push_back(y);
 }
 
+void GraphicsPath::tile(float x, float y, const Rect &inTileRect)
+{
+	commands.push_back(pcTile);
+	data.push_back(x);
+	data.push_back(y);
+	data.push_back(inTileRect.x);
+	data.push_back(inTileRect.y);
+	data.push_back(inTileRect.w);
+	data.push_back(inTileRect.h);
+}
+
+
+
 } // end namespace nme
 
