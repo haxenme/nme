@@ -117,24 +117,24 @@ void FromValue(SoundTransform &outTrans, value inValue)
 
 void FromValue(DRect &outRect, value inValue)
 {
-	outRect.x = val_field_numeric(inValue,_id_x);
-	outRect.y = val_field_numeric(inValue,_id_y);
-	outRect.w = val_field_numeric(inValue,_id_width);
-	outRect.h = val_field_numeric(inValue,_id_height);
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
 }
 
 void FromValue(Rect &outRect, value inValue)
 {
-	outRect.x = val_field_numeric(inValue,_id_x);
-	outRect.y = val_field_numeric(inValue,_id_y);
-	outRect.w = val_field_numeric(inValue,_id_width);
-	outRect.h = val_field_numeric(inValue,_id_height);
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
 }
 
 void FromValue(ImagePoint &outPoint,value inValue)
 {
-	outPoint.x = val_field_numeric(inValue,_id_x);
-	outPoint.y = val_field_numeric(inValue,_id_y);
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
 }
 
 
@@ -526,21 +526,41 @@ DEFINE_PRIM(nme_display_object_set_filters,2);
 
 value nme_display_object_set_scale9_grid(value inObj,value inRect)
 {
-	DisplayObject *obj;
+   DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-		if (val_is_null(inRect))
-			obj->setScale9Grid(DRect(0,0,0,0));
-		else
-		{
-			DRect rect;
-			FromValue(rect,inRect);
-			obj->setScale9Grid(rect);
-		}
-	}
-	return alloc_null();
+      if (val_is_null(inRect))
+         obj->setScale9Grid(DRect(0,0,0,0));
+      else
+      {
+         DRect rect;
+         FromValue(rect,inRect);
+         obj->setScale9Grid(rect);
+      }
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_display_object_set_scale9_grid,2);
+
+value nme_display_object_set_scroll_rect(value inObj,value inRect)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      if (val_is_null(inRect))
+         obj->setScrollRect(DRect(0,0,0,0));
+      else
+      {
+         DRect rect;
+         FromValue(rect,inRect);
+         obj->setScrollRect(rect);
+      }
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_set_scroll_rect,2);
+
+
 
 
 
@@ -831,44 +851,44 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
    Tilesheet *sheet;
    if (AbstractToObject(inGfx,gfx) && AbstractToObject(inSheet,sheet))
    {
-		bool smooth = false;
-		gfx->beginTiles(&sheet->GetSurface(), smooth );
+      bool smooth = false;
+      gfx->beginTiles(&sheet->GetSurface(), smooth );
 
-		int n = val_array_size(inXYIDs)/3;
-		double *vals = val_array_double(inXYIDs);
-		int max = sheet->Tiles();
+      int n = val_array_size(inXYIDs)/3;
+      double *vals = val_array_double(inXYIDs);
+      int max = sheet->Tiles();
 
-		if (vals)
-		{
-			for(int i=0;i<n;i++)
-			{
-				int id = (int)(vals[2]+0.5);
-				if (id>=0 && id<max)
-				{
-					const Rect &r = sheet->GetTile(id).mRect;
-					gfx->tile(vals[0],vals[1],r);
-				}
-				vals+=3;
-			}
-		}
-		else
-		{
-			value *vals = val_array_value(inXYIDs);
-			if (vals)
-			{
-				for(int i=0;i<n;i++)
-				{
-					int id = (int)(val_number(vals[2])+0.5);
-					//printf("tile %d/%d %f %f\n", id,max,val_number(vals[0]),val_number(vals[1]));
-					if (id>=0 && id<max)
-					{
-						const Rect &r = sheet->GetTile(id).mRect;
-						gfx->tile(val_number(vals[0]),val_number(vals[1]),r);
-					}
-					vals+=3;
-				}
-			}
-		}
+      if (vals)
+      {
+         for(int i=0;i<n;i++)
+         {
+            int id = (int)(vals[2]+0.5);
+            if (id>=0 && id<max)
+            {
+               const Rect &r = sheet->GetTile(id).mRect;
+               gfx->tile(vals[0],vals[1],r);
+            }
+            vals+=3;
+         }
+      }
+      else
+      {
+         value *vals = val_array_value(inXYIDs);
+         if (vals)
+         {
+            for(int i=0;i<n;i++)
+            {
+               int id = (int)(val_number(vals[2])+0.5);
+               //printf("tile %d/%d %f %f\n", id,max,val_number(vals[0]),val_number(vals[1]));
+               if (id>=0 && id<max)
+               {
+                  const Rect &r = sheet->GetTile(id).mRect;
+                  gfx->tile(val_number(vals[0]),val_number(vals[1]),r);
+               }
+               vals+=3;
+            }
+         }
+      }
 
    }
    return alloc_null();
@@ -1210,7 +1230,7 @@ DEFINE_PRIM(nme_text_field_get_##prop,1);
 
 
 #define TEXT_PROP(prop,Prop,to_val,from_val) \
-	TEXT_PROP_GET(prop,Prop,to_val) \
+   TEXT_PROP_GET(prop,Prop,to_val) \
 value nme_text_field_set_##prop(value inHandle,value inValue) \
 { \
    TextField *t; \
@@ -1432,7 +1452,7 @@ value nme_sound_from_file(value inFilename,value inForceMusic)
    {
       value result =  ObjectToAbstract(sound);
       sound->DecRef();
-		return result;
+      return result;
    }
    return alloc_null();
 }

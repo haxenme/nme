@@ -49,8 +49,8 @@ public:
 
       int w = UpToPower2(mPixelWidth);
       int h = UpToPower2(mPixelHeight);
-		mTextureWidth = w;
-		mTextureHeight = h;
+      mTextureWidth = w;
+      mTextureHeight = h;
       bool is_pow2 = w==mPixelWidth && h==mPixelHeight;
 
       Surface *load = inSurface;
@@ -82,7 +82,7 @@ public:
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, load->Row(0) );
 
-		mSmooth = true;
+      mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -129,39 +129,39 @@ public:
       }
    }
 
-	void BindFlags(bool inRepeat,bool inSmooth)
-	{
+   void BindFlags(bool inRepeat,bool inSmooth)
+   {
       if (mRepeat!=inRepeat)
-		{
-			mRepeat = inRepeat;
-			if (mRepeat)
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-			}
-			else
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-			}
-		}
+      {
+         mRepeat = inRepeat;
+         if (mRepeat)
+         {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+         }
+         else
+         {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+         }
+      }
 
-		if (mSmooth!=inSmooth)
-		{
-			mSmooth = inSmooth;
-			if (mSmooth)
-			{
+      if (mSmooth!=inSmooth)
+      {
+         mSmooth = inSmooth;
+         if (mSmooth)
+         {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			}
-			else
-			{
+         }
+         else
+         {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			}
-		}
+         }
+      }
 
-	}
+   }
 
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
@@ -304,6 +304,8 @@ public:
 
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
+      SetViewport(inState.mClipRect);
+
       if (mMatrix!=*inState.mTransform.mMatrix)
       {
          mMatrix=*inState.mTransform.mMatrix;
@@ -335,16 +337,16 @@ public:
          {
             glEnable(GL_TEXTURE_2D);
             arrays.mSurface->Bind(*this,0);
-				bound_texture = arrays.mSurface->GetTexture();
+            bound_texture = arrays.mSurface->GetTexture();
             const ColorTransform &t = *inState.mColourTransform;
             glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
-				last_col = -1;
+            last_col = -1;
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0].x);
          }
          else
          {
-				bound_texture = 0;
+            bound_texture = 0;
             glDisable(GL_TEXTURE_2D);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
@@ -354,16 +356,16 @@ public:
          {
             DrawElement draw = elements[e];
 
-				if (bound_texture)
-				{
-					bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
-				}
-				else if (c==0 || last_col!=draw.mColour)
+            if (bound_texture)
+            {
+               bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
+            }
+            else if (c==0 || last_col!=draw.mColour)
             {
                last_col = draw.mColour;
                glColor4ub(last_col>>16,last_col>>8,last_col,last_col>>24);
             }
-				
+            
    
             if ( (draw.mPrimType == ptLineStrip) && draw.mCount>1)
             {

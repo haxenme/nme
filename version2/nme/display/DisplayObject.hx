@@ -22,6 +22,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var filters(nmeGetFilters,nmeSetFilters): Array<BitmapFilter>;
    public var parent(nmeGetParent,null): DisplayObjectContainer;
    public var scale9Grid(nmeGetScale9Grid,nmeSetScale9Grid): Rectangle;
+   public var scrollRect(nmeGetScrollRect,nmeSetScrollRect): Rectangle;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -30,6 +31,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    var nmeFilters:Array<BitmapFilter>;
    var nmeID:Int;
    var nmeScale9Grid:Rectangle;
+   var nmeScrollRect:Rectangle;
 
    public function new(inHandle:Dynamic)
    {
@@ -129,16 +131,29 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    }
 
    function nmeGetScale9Grid() : Rectangle
-	{
-	   return (nmeScale9Grid==null) ? null : nmeScale9Grid.clone();
-	}
+   {
+      return (nmeScale9Grid==null) ? null : nmeScale9Grid.clone();
+   }
 
    function nmeSetScale9Grid(inRect:Rectangle) : Rectangle
-	{
-		nmeScale9Grid = (inRect==null) ? null : inRect.clone();
-		nme_display_object_set_scale9_grid(nmeHandle,nmeScale9Grid);
-		return inRect;
-	}
+   {
+      nmeScale9Grid = (inRect==null) ? null : inRect.clone();
+      nme_display_object_set_scale9_grid(nmeHandle,nmeScale9Grid);
+      return inRect;
+   }
+
+   function nmeGetScrollRect() : Rectangle
+   {
+      return (nmeScrollRect==null) ? null : nmeScrollRect.clone();
+   }
+
+   function nmeSetScrollRect(inRect:Rectangle) : Rectangle
+   {
+      nmeScrollRect = (inRect==null) ? null : inRect.clone();
+      nme_display_object_set_scroll_rect(nmeHandle,nmeScrollRect);
+      return inRect;
+   }
+
 
 
    function nmeSetBG(inBG:Null<Int>) : Null<Int>
@@ -158,28 +173,28 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return i & 0xffffff;
    }
 
-	function nmeSetFilters(inFilters:Array<BitmapFilter>) : Array<BitmapFilter>
-	{
-	   if (inFilters==null)
-			nmeFilters = null;
-		else
-		{
-			nmeFilters = new Array<BitmapFilter>();
-			for(filter in inFilters)
-				nmeFilters.push(filter.clone());
-		}
-		nme_display_object_set_filters(nmeHandle,nmeFilters);
-		return inFilters;
-	}
+   function nmeSetFilters(inFilters:Array<BitmapFilter>) : Array<BitmapFilter>
+   {
+      if (inFilters==null)
+         nmeFilters = null;
+      else
+      {
+         nmeFilters = new Array<BitmapFilter>();
+         for(filter in inFilters)
+            nmeFilters.push(filter.clone());
+      }
+      nme_display_object_set_filters(nmeHandle,nmeFilters);
+      return inFilters;
+   }
 
-	function nmeGetFilters() : Array<BitmapFilter>
-	{
-	   if (nmeFilters==null) return [];
-		var result = new Array<BitmapFilter>();
-		for(filter in nmeFilters)
-			result.push(filter.clone());
-		return result;
-	}
+   function nmeGetFilters() : Array<BitmapFilter>
+   {
+      if (nmeFilters==null) return [];
+      var result = new Array<BitmapFilter>();
+      for(filter in nmeFilters)
+         result.push(filter.clone());
+      return result;
+   }
 
    function nmeOnAdded(inObj:DisplayObject,inIsOnStage:Bool)
    {
@@ -348,4 +363,5 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
 
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);
    static var nme_display_object_set_scale9_grid = nme.Loader.load("nme_display_object_set_scale9_grid",2);
+   static var nme_display_object_set_scroll_rect = nme.Loader.load("nme_display_object_set_scroll_rect",2);
 }
