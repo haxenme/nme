@@ -640,10 +640,15 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
       if (obj->scrollRect.HasPixels())
       {
-         UserPoint bottom_right = full.Apply(obj->scrollRect.w,obj->scrollRect.h);
-         Rect screen_rect(full.mtx,full.mty,bottom_right.x,bottom_right.y,true);
+			Extent2DF extent;
+			DRect rect = obj->scrollRect;
+			for(int c=0;c<4;c++)
+				extent.Add( full.Apply( rect.x + (((c&1)>0) ? rect.w :0),
+												  rect.y + (((c&2)>0) ? rect.h :0) ) );
 
-         screen_rect.MakePositive();
+
+
+         Rect screen_rect(extent.mMinX,extent.mMinY, extent.mMaxX, extent.mMaxY, true );
 
          full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 
