@@ -1149,7 +1149,10 @@ void TextField::Layout()
          }
 
          int ox = x;
-         g.mFont->GetGlyph( ch, advance );
+			if (g.mFont)
+            g.mFont->GetGlyph( ch, advance );
+			else
+				advance = 0;
          x+= advance;
          //printf(" Char %c (%d..%d,%d)\n", ch, ox, x, y);
          if ( (wordWrap||multiline) && (x > mRect.w) && line.mChars>1)

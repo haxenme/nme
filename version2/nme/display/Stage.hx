@@ -18,6 +18,9 @@ class Stage extends nme.display.DisplayObjectContainer
    public var frameRate(default,nmeSetFrameRate): Float;
    public var isOpenGL(nmeIsOpenGL,null):Bool;
 
+	public var stageWidth(nmeGetStageWidth,null):Float;
+	public var stageHeight(nmeGetStageHeight,null):Float;
+
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
    public var onQuit: Void ->Void; 
@@ -88,6 +91,18 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_stage_set_focus_rect(nmeHandle,inVal);
       return inVal;
    }
+
+	function nmeGetStageWidth() : Float
+	{
+	// TODO: scaling
+	   return nme_stage_get_stage_width(nmeHandle);
+	}
+
+	function nmeGetStageHeight() : Float
+	{
+	// TODO: scaling
+	   return nme_stage_get_stage_height(nmeHandle);
+	}
 
 
    function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
@@ -346,4 +361,6 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_get_focus_rect = nme.Loader.load("nme_stage_get_focus_rect",1);
    static var nme_stage_set_focus_rect = nme.Loader.load("nme_stage_set_focus_rect",2);
    static var nme_stage_is_opengl = nme.Loader.load("nme_stage_is_opengl",1);
+   static var nme_stage_get_stage_width = nme.Loader.load("nme_stage_get_stage_width",1);
+   static var nme_stage_get_stage_height = nme.Loader.load("nme_stage_get_stage_height",1);
 }

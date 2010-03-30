@@ -129,6 +129,8 @@ public:
    void setCacheAsBitmap(bool inVal);
    bool getVisible() { return visible; }
    void setVisible(bool inVal);
+	const wchar_t *getName() { return name.c_str(); }
+   void setName(const std::wstring &inName) { name = inName; }
 
    void   setAlpha(double inAlpha);
 
@@ -285,6 +287,8 @@ public:
 
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
+   double getStageWidth();
+   double getStageHeight();
   
 
    int    mQuality;

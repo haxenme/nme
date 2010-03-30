@@ -23,6 +23,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var parent(nmeGetParent,null): DisplayObjectContainer;
    public var scale9Grid(nmeGetScale9Grid,nmeSetScale9Grid): Rectangle;
    public var scrollRect(nmeGetScrollRect,nmeSetScrollRect): Rectangle;
+   public var name(nmeGetName,nmeSetName): String;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -127,6 +128,13 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    function nmeSetHeight(inVal:Float) : Float
    {
       nme_display_object_set_height(nmeHandle,inVal);
+      return inVal;
+   }
+
+   function nmeGetName() : String { return nme_display_object_get_name(nmeHandle); }
+   function nmeSetName(inVal:String) : String
+   {
+      nme_display_object_set_name(nmeHandle,inVal);
       return inVal;
    }
 
@@ -351,6 +359,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_rotation = nme.Loader.load("nme_display_object_set_rotation",2);
    static var nme_display_object_get_bg = nme.Loader.load("nme_display_object_get_bg",1);
    static var nme_display_object_set_bg = nme.Loader.load("nme_display_object_set_bg",2);
+   static var nme_display_object_get_name = nme.Loader.load("nme_display_object_get_name",1);
+   static var nme_display_object_set_name = nme.Loader.load("nme_display_object_set_name",2);
    static var nme_display_object_get_width = nme.Loader.load("nme_display_object_get_width",1);
    static var nme_display_object_set_width = nme.Loader.load("nme_display_object_set_width",2);
    static var nme_display_object_get_height = nme.Loader.load("nme_display_object_get_height",1);

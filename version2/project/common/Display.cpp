@@ -1177,6 +1177,21 @@ void Stage::RenderStage()
    Render(render.Target(),state);
 }
 
+double Stage::getStageWidth()
+{
+	Surface *s = GetPrimarySurface();
+	if (!s) return 0;
+	return s->Width();
+}
+
+double Stage::getStageHeight()
+{
+	Surface *s = GetPrimarySurface();
+	if (!s) return 0;
+	return s->Height();
+}
+
+
 
 DisplayObject *Stage::HitTest(int inX,int inY)
 {

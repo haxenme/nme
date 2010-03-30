@@ -249,7 +249,7 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 
 }
 
-#define DO_PROP(Obj,obj_prefix,prop,Prop,to_val,from_val) \
+#define DO_PROP_READ(Obj,obj_prefix,prop,Prop,to_val) \
 value nme_##obj_prefix##_get_##prop(value inObj) \
 { \
    Obj *obj; \
@@ -258,7 +258,10 @@ value nme_##obj_prefix##_get_##prop(value inObj) \
    return alloc_float(0); \
 } \
 \
-DEFINE_PRIM(nme_##obj_prefix##_get_##prop,1) \
+DEFINE_PRIM(nme_##obj_prefix##_get_##prop,1)
+
+#define DO_PROP(Obj,obj_prefix,prop,Prop,to_val,from_val) \
+DO_PROP_READ(Obj,obj_prefix,prop,Prop,to_val) \
 value nme_##obj_prefix##_set_##prop(value inObj,value inVal) \
 { \
    Obj *obj; \
@@ -419,7 +422,8 @@ value nme_stage_set_focus(value inStage,value inObject,value inDirection)
 DEFINE_PRIM(nme_stage_set_focus,3);
 
 DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
-
+DO_PROP_READ(Stage,stage,stage_width,StageWidth,alloc_float);
+DO_PROP_READ(Stage,stage,stage_height,StageHeight,alloc_float);
 
 
 value nme_stage_is_opengl(value inStage)
@@ -575,6 +579,7 @@ DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
 DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
 DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
+DO_DISPLAY_PROP(name,Name,alloc_wstring,val_wstring)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------
@@ -806,7 +811,7 @@ value nme_gfx_draw_round_rect(value *arg, int args)
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
-      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aRx]), val_number(arg[aRy]) );
+      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
    }
    return alloc_null();
 }
