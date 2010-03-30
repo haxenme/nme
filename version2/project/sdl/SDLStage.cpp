@@ -16,7 +16,7 @@ void SetGlobalPollMethod(Stage::PollMethod inMethod);
 class SDLSurf : public Surface
 {
 public:
-   SDLSurf(SDL_Surface *inSurf,uint32 inFlags,bool inDelete) : mSurf(inSurf)
+   SDLSurf(SDL_Surface *inSurf,bool inDelete) : mSurf(inSurf)
    {
       mDelete = inDelete;
    }
@@ -74,7 +74,6 @@ public:
    {
    }
 
-
    SDL_Surface *mSurf;
    bool  mDelete;
 };
@@ -124,16 +123,19 @@ public:
    {
       mIsOpenGL = inIsOpenGL;
       mSDLSurface = inSurface;
+      mFlags = inFlags;
+
       if (mIsOpenGL)
       {
          mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+         mOpenGLContext->IncRef();
          mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
          mPrimarySurface = new HardwareSurface(mOpenGLContext);
       }
       else
       {
          mOpenGLContext = 0;
-         mPrimarySurface = new SDLSurf(inSurface,inFlags,inIsOpenGL);
+         mPrimarySurface = new SDLSurf(inSurface,inIsOpenGL);
       }
       mPrimarySurface->IncRef();
    }
@@ -141,8 +143,50 @@ public:
    {
       if (!mIsOpenGL)
          SDL_FreeSurface(mSDLSurface);
+      else
+         mOpenGLContext->DecRef();
       mPrimarySurface->DecRef();
    }
+
+   void Resize(int inWidth,int inHeight)
+   {
+      #ifndef __APPLE__
+      if (mIsOpenGL)
+      {
+         // Little hack to help windows
+         mSDLSurface->w = inWidth;
+         mSDLSurface->h = inHeight;
+         mOpenGLContext->SetWindowSize(inWidth,inHeight);
+      }
+      else
+      #endif
+      {
+         // Calling this recreates the gl context and we loose all our textures and
+         // display lists. So Work around it.
+         gTextureContextVersion++;
+ 
+         mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags );
+  
+         if (mIsOpenGL)
+         {
+            //nme_resize_id ++;
+            mOpenGLContext->DecRef();
+            mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+            mOpenGLContext->SetWindowSize(inWidth, inHeight);
+            mOpenGLContext->IncRef();
+            mPrimarySurface->DecRef();
+            mPrimarySurface = new HardwareSurface(mOpenGLContext);
+         }
+         else
+         {
+            mPrimarySurface->DecRef();
+            mPrimarySurface = new SDLSurf(mSDLSurface,mIsOpenGL);
+         }
+         mPrimarySurface->IncRef();
+      }
+   }
+
+
 
    bool isOpenGL() const { return mOpenGLContext; }
 
@@ -150,6 +194,7 @@ public:
    {
       HandleEvent(inEvent);
    }
+
 
    void Flip()
    {
@@ -205,6 +250,7 @@ public:
    Surface     *mPrimarySurface;
    double       mFrameRate;
    bool         mIsOpenGL;
+   unsigned int mFlags;
 };
 
 
@@ -214,6 +260,7 @@ public:
    SDLFrame(SDL_Surface *inSurface, uint32 inFlags, bool inIsOpenGL)
    {
       mFlags = inFlags;
+      mIsOpenGL = inIsOpenGL;
       mStage = new SDLStage(inSurface,mFlags,inIsOpenGL);
       mStage->IncRef();
       // SetTimer(mHandle,timerFrame, 10,0);
@@ -227,7 +274,12 @@ public:
    {
       mStage->ProcessEvent(inEvent);
    }
-   // --- Frame Interface ----------------------------------------------------
+   void Resize(int inWidth,int inHeight)
+   {
+      mStage->Resize(inWidth,inHeight);
+   }
+
+  // --- Frame Interface ----------------------------------------------------
 
    void SetTitle()
    {
@@ -242,6 +294,7 @@ public:
 
 
    SDLStage *mStage;
+   bool   mIsOpenGL;
    uint32 mFlags;
 };
 
@@ -556,6 +609,9 @@ void ProcessEvent(SDL_Event &inEvent)
 
       case SDL_VIDEORESIZE:
       {
+         Event resize(etResize);
+         sgSDLFrame->Resize(inEvent.resize.w,inEvent.resize.h);
+         sgSDLFrame->ProcessEvent(resize);
          break;
       }
    }

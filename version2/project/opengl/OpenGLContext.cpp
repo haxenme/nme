@@ -32,10 +32,17 @@ typedef HGLRC GLCtx;
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+static int sgContextVersion = 1;
+
 namespace nme
 {
 
+int gTextureContextVersion = 1;
+
 static GLuint sgOpenglType[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
+
+
+
 
 
 class OGLTexture : public Texture
@@ -46,6 +53,7 @@ public:
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
       mDirtyRect = Rect(0,0);
+      mContextVersion = sgContextVersion;
 
       int w = UpToPower2(mPixelWidth);
       int h = UpToPower2(mPixelHeight);
@@ -198,6 +206,9 @@ public:
       mLineScaleV = -1;
       mLineScaleH = -1;
    }
+   ~OGLContext()
+   {
+   }
 
    void SetWindowSize(int inWidth,int inHeight)
    {
@@ -337,7 +348,7 @@ public:
          {
             glEnable(GL_TEXTURE_2D);
             arrays.mSurface->Bind(*this,0);
-            bound_texture = arrays.mSurface->GetTexture();
+            bound_texture = arrays.mSurface->GetOrCreateTexture(*this);
             const ColorTransform &t = *inState.mColourTransform;
             glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
             last_col = -1;
@@ -422,7 +433,7 @@ public:
       mBitmapSurface = inSurface;
       glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
       inSurface->Bind(*this,0);
-      mBitmapTexture = inSurface->GetTexture();
+      mBitmapTexture = inSurface->GetOrCreateTexture(*this);
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
       glEnable(GL_TEXTURE_2D);
    }

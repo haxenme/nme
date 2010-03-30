@@ -12,9 +12,12 @@ namespace nme
 
 void HintColourOrder(bool inRedFirst);
 
+extern int gTextureContextVersion;
+
 class Texture
 {
 public:
+   Texture() : mContextVersion(gTextureContextVersion) { }
    virtual ~Texture() {};
    virtual void Bind(class Surface *inSurface,int inSlot)=0;
    virtual void BindFlags(bool inRepeat,bool inSmooth)=0;
@@ -22,8 +25,10 @@ public:
 
    void Dirty(const Rect &inRect);
    bool IsDirty() { return mDirtyRect.HasPixels(); }
+   bool IsCurrentVersion() { return mContextVersion==gTextureContextVersion; }
 
    Rect mDirtyRect;
+   int  mContextVersion;
 };
 
 class Surface : public Object
