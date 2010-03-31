@@ -381,7 +381,7 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
       }
       else if (!mHideObject)
       {
-         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), -inDiff.x, -inDiff.y,
                    bmNormal, 0, 0xffffff );
               
       }

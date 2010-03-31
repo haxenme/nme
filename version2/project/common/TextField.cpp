@@ -53,7 +53,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxScrollH  = 0;
    maxScrollV  = 0;
    setText(L"");
-	textWidth = textHeight = 0;
+   textWidth = textHeight = 0;
    mLastUpDownX = -1;
 }
 
@@ -109,51 +109,55 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
 
 void TextField::SplitGroup(int inGroup,int inPos)
 {
-	CharGroup &group = mCharGroups[inGroup];
-	CharGroup extra = group;
-	extra.mFormat->IncRef();
-	extra.mFont->IncRef();
-	group.mChar0 += inPos;
-	extra.mString.Set(&group.mString[inPos], group.mString.size()-inPos);
-	group.mString.resize(inPos);
-	mCharGroups.InsertAt(inGroup+1,extra);
+   CharGroup &group = mCharGroups[inGroup];
+   CharGroup extra = group;
+   extra.mFormat->IncRef();
+   extra.mFont->IncRef();
+   group.mChar0 += inPos;
+   extra.mString.Set(&group.mString[inPos], group.mString.size()-inPos);
+   group.mString.resize(inPos);
+   mCharGroups.InsertAt(inGroup+1,extra);
    mLinesDirty = true;
 }
 
 void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
-		return;
+      return;
 
-	if (inStart<0) inStart = 0;
-	int max = mCharPos.size();
-	if (inEnd>max || inEnd<0) inEnd = max;
+   Layout();
 
-	if (inEnd<=inStart)
-		return;
+   if (inStart<0) inStart = 0;
+   int max = mCharPos.size();
+   if (inEnd>max || inEnd<0) inEnd = max;
+
+   if (inEnd<=inStart)
+      return;
 
    inFmt->IncRef();
-	int g0 = GroupFromChar(inStart);
-	int g1 = GroupFromChar(inEnd);
-	int g0_ex = inStart-mCharGroups[g0].mChar0;
-	if (g0_ex>0)
-	{
-		SplitGroup(g0,g0_ex);
-		g0++;
-		g1++;
-	}
-	if (inEnd<max)
-	{
-	   int g1_ex = inEnd-mCharGroups[g1].mChar0;
-	   if (g1_ex>0)
-	   {
-		   SplitGroup(g1,g1_ex);
-		   g1++;
-	   }
-	}
+   int g0 = GroupFromChar(inStart);
+   int g1 = GroupFromChar(inEnd);
+   int g0_ex = inStart-mCharGroups[g0].mChar0;
+   if (g0_ex>0)
+   {
+      SplitGroup(g0,g0_ex);
+      g0++;
+      g1++;
+   }
+   if (inEnd<max)
+   {
+      int g1_ex = inEnd-mCharGroups[g1].mChar0;
+      if (g1_ex>0)
+      {
+         SplitGroup(g1,g1_ex);
+         g1++;
+      }
+   }
 
-	for(int g=g0;g<g1;g++)
-		mCharGroups[g].ApplyFormat(inFmt);
+   for(int g=g0;g<g1;g++)
+   {
+      mCharGroups[g].ApplyFormat(inFmt);
+   }
 
    inFmt->DecRef();
 
@@ -249,7 +253,7 @@ void TextField::Unfocus()
 
 bool TextField::FinishEditOnEnter()
 {
-	// For iPhone really
+   // For iPhone really
    return !multiline;
 }
 
@@ -267,9 +271,9 @@ int TextField::PointToChar(int inX,int inY)
    if (mCharPos.empty())
       return 0;
 
-	ImagePoint scroll = GetScrollPos();
-	inX +=scroll.x;
-	inY +=scroll.y;
+   ImagePoint scroll = GetScrollPos();
+   inX +=scroll.x;
+   inY +=scroll.y;
 
    // Find the line ...
    for(int l=0;l<mLines.size();l++)
@@ -343,8 +347,8 @@ void TextField::Drag(Event &inEvent)
          mSelectMin = pos;
          mSelectMax = mSelectDownChar;
       }
-		caretIndex = pos;
-		ShowCaret();
+      caretIndex = pos;
+      ShowCaret();
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
       mGfxDirty = true;
       DirtyDown(dirtCache);
@@ -393,17 +397,17 @@ void TextField::OnKey(Event &inEvent)
          case keyUP:
          case keyDOWN:
             if (mSelectKeyDown<0 && shift) mSelectKeyDown = caretIndex;
-				switch(inEvent.value)
-				{
-					case keyLEFT: if (caretIndex>0) caretIndex--; break;
-         		case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
-         		case keyHOME: caretIndex = 0; break;
-         		case keyEND: caretIndex = getLength(); break;
-         		case keyUP:
-         		case keyDOWN:
+            switch(inEvent.value)
+            {
+               case keyLEFT: if (caretIndex>0) caretIndex--; break;
+               case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
+               case keyHOME: caretIndex = 0; break;
+               case keyEND: caretIndex = getLength(); break;
+               case keyUP:
+               case keyDOWN:
                {
                   int l= LineFromChar(caretIndex);
-                  printf("caret line : %d\n",l);
+                  //printf("caret line : %d\n",l);
                   if (l==0 && inEvent.value==keyUP) return;
                   if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
                   l += (inEvent.value==keyUP) ? -1 : 1;
@@ -417,7 +421,7 @@ void TextField::OnKey(Event &inEvent)
                   caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
                   break;
                }
-				}
+            }
 
             if (mSelectKeyDown>=0)
             {
@@ -454,7 +458,7 @@ void TextField::OnKey(Event &inEvent)
 void TextField::ShowCaret()
 {
    ImagePoint pos(0,0);
-	bool changed = false;
+   bool changed = false;
 
    if (caretIndex < mCharPos.size())
       pos = mCharPos[caretIndex];
@@ -464,48 +468,48 @@ void TextField::ShowCaret()
       pos.y = mLines[ mLines.size() -1].mY0;
    }
    if (pos.x-scrollH >= mRect.w)
-	{
-		changed = true;
+   {
+      changed = true;
       scrollH = pos.x - mRect.w + 1;
-	}
+   }
    else if (pos.x-scrollH < 0)
-	{
-		changed = true;
+   {
+      changed = true;
       scrollH = pos.x;
-	}
-	if (scrollH<0)
-	{
-		changed = true;
-		scrollH = 0;
-	}
-	if (scrollV<0)
-	{
-		changed = true;
-		scrollV = 0;
-	}
-	if (scrollH>maxScrollH)
-	{
-		scrollH = maxScrollH;
-		changed = true;
-		if (scrollV<0) scrollV = 0;
-	}
-	// TODO: -ve scroll for right/aligned/centred?
-	//printf("Scroll %d/%d\n", scrollH, maxScrollH);
-	if (scrollV>maxScrollV)
-	{
-		scrollV = maxScrollV;
-		changed = true;
-	}
+   }
+   if (scrollH<0)
+   {
+      changed = true;
+      scrollH = 0;
+   }
+   if (scrollV<0)
+   {
+      changed = true;
+      scrollV = 0;
+   }
+   if (scrollH>maxScrollH)
+   {
+      scrollH = maxScrollH;
+      changed = true;
+      if (scrollV<0) scrollV = 0;
+   }
+   // TODO: -ve scroll for right/aligned/centred?
+   //printf("Scroll %d/%d\n", scrollH, maxScrollH);
+   if (scrollV>maxScrollV)
+   {
+      scrollV = maxScrollV;
+      changed = true;
+   }
 
 
-	if (changed)
-	{
-		DirtyDown(dirtCache);
-		if (mSelectMax > mSelectMin)
-		{
-			mGfxDirty = true;
-		}
-	}
+   if (changed)
+   {
+      DirtyDown(dirtCache);
+      if (mSelectMax > mSelectMin)
+      {
+         mGfxDirty = true;
+      }
+   }
 }
 
 
@@ -734,8 +738,17 @@ int TextField::LineFromChar(int inChar)
 
 int TextField::GroupFromChar(int inChar)
 {
+   if (mCharGroups.empty()) return 0;
+
    int min = 0;
    int max = mCharGroups.size();
+   CharGroup &last = mCharGroups[max-1];
+   if (inChar>=last.mChar0)
+   {
+      if (inChar>=last.mChar0 + last.Chars())
+         return max;
+      return max-1;
+   }
 
    while(min+1<max)
    {
@@ -773,7 +786,7 @@ int TextField::EndOfCharX(int inChar,int inLine)
 
 ImagePoint TextField::GetScrollPos()
 {
-	return ImagePoint(scrollH,mLines[scrollV].mY0);
+   return ImagePoint(scrollH,mLines[scrollV].mY0);
 }
 
 ImagePoint TextField::GetCursorPos()
@@ -807,7 +820,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       return;
    }
 
-	ImagePoint scroll = GetScrollPos();
+   ImagePoint scroll = GetScrollPos();
 
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
@@ -1149,10 +1162,10 @@ void TextField::Layout()
          }
 
          int ox = x;
-			if (g.mFont)
+         if (g.mFont)
             g.mFont->GetGlyph( ch, advance );
-			else
-				advance = 0;
+         else
+            advance = 0;
          x+= advance;
          //printf(" Char %c (%d..%d,%d)\n", ch, ox, x, y);
          if ( (wordWrap||multiline) && (x > mRect.w) && line.mChars>1)
@@ -1342,26 +1355,26 @@ bool CharGroup::UpdateFont(double inScale,GlyphRotation inRotation,bool inNative
 
 void CharGroup::ApplyFormat(TextFormat *inFormat)
 {
-	mFormat = mFormat->COW();
+   mFormat = mFormat->COW();
 
-	inFormat->align.Apply(mFormat->align);
-	inFormat->blockIndent.Apply(mFormat->blockIndent);
-	inFormat->bold.Apply(mFormat->bold);
-	inFormat->bullet.Apply(mFormat->bullet);
-	inFormat->color.Apply(mFormat->color);
-	inFormat->font.Apply(mFormat->font);
-	inFormat->indent.Apply(mFormat->indent);
-	inFormat->italic.Apply(mFormat->italic);
-	inFormat->kerning.Apply(mFormat->kerning);
-	inFormat->leading.Apply(mFormat->leading);
-	inFormat->leftMargin.Apply(mFormat->leftMargin);
-	inFormat->letterSpacing.Apply(mFormat->letterSpacing);
-	inFormat->rightMargin.Apply(mFormat->rightMargin);
-	inFormat->size.Apply(mFormat->size);
-	inFormat->tabStops.Apply(mFormat->tabStops);
-	inFormat->target.Apply(mFormat->target);
-	inFormat->underline.Apply(mFormat->underline);
-	inFormat->url.Apply(mFormat->url);
+   inFormat->align.Apply(mFormat->align);
+   inFormat->blockIndent.Apply(mFormat->blockIndent);
+   inFormat->bold.Apply(mFormat->bold);
+   inFormat->bullet.Apply(mFormat->bullet);
+   inFormat->color.Apply(mFormat->color);
+   inFormat->font.Apply(mFormat->font);
+   inFormat->indent.Apply(mFormat->indent);
+   inFormat->italic.Apply(mFormat->italic);
+   inFormat->kerning.Apply(mFormat->kerning);
+   inFormat->leading.Apply(mFormat->leading);
+   inFormat->leftMargin.Apply(mFormat->leftMargin);
+   inFormat->letterSpacing.Apply(mFormat->letterSpacing);
+   inFormat->rightMargin.Apply(mFormat->rightMargin);
+   inFormat->size.Apply(mFormat->size);
+   inFormat->tabStops.Apply(mFormat->tabStops);
+   inFormat->target.Apply(mFormat->target);
+   inFormat->underline.Apply(mFormat->underline);
+   inFormat->url.Apply(mFormat->url);
 }
 
 } // end namespace nme

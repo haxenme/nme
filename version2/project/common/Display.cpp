@@ -308,9 +308,6 @@ double DisplayObject::getScaleX()
 
 void DisplayObject::setWidth(double inValue)
 {
-   if (!mGfx)
-      return;
-
    Transform trans0;
    Matrix rot;
    if (rotation)
@@ -331,15 +328,15 @@ void DisplayObject::setWidth(double inValue)
 
 double DisplayObject::getWidth()
 {
-   if (!mGfx)
-      return 0;
-
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
    GetExtent(trans,ext,false);
+
    if (!ext.Valid())
+   {
       return 0;
+   }
 
    return ext.Width();
 }
@@ -347,9 +344,6 @@ double DisplayObject::getWidth()
 
 void DisplayObject::setHeight(double inValue)
 {
-   if (!mGfx)
-      return;
-
    Transform trans0;
    Matrix rot;
    if (rotation)
@@ -370,9 +364,6 @@ void DisplayObject::setHeight(double inValue)
 
 double DisplayObject::getHeight()
 {
-   if (!mGfx)
-      return 0;
-
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
