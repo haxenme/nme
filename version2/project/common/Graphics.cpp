@@ -14,6 +14,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mPathData = new GraphicsPath;
    mBuiltHardware = 0;
    mTileJob.mIsTileJob = true;
+   mVersion = 0;
 }
 
 
@@ -48,6 +49,7 @@ void Graphics::clear()
    mBuiltHardware = 0;
    mMeasuredJobs = 0;
    mCursor = UserPoint(0,0);
+   mVersion++;
 }
 
 #define SIN45 0.70710678118654752440084436210485
@@ -75,6 +77,7 @@ void Graphics::drawEllipse(float x,float  y,float  width,float  height)
    mPathData->curveTo(x+w,  y-ch_, x+w,  y);
 
    Flush();
+   mVersion++;
 }
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
@@ -111,6 +114,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    mPathData->lineTo(x+w,  y+lh);
 
    Flush();
+   mVersion++;
 }
 
 void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
@@ -154,6 +158,7 @@ void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float>
             point += 2;
       }
    }
+   mVersion++;
 }
 
 
@@ -202,12 +207,14 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
          break;
 
    }
+   mVersion++;
 }
 
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 {
    for(int i=0;i<inN;i++)
       drawGraphicsDatum(graphicsData[i]);
+   mVersion++;
 }
 
 void Graphics::beginFill(unsigned int color, float alpha)
@@ -298,12 +305,14 @@ void Graphics::lineTo(float x, float y)
 
    mPathData->lineTo(x,y);
    mCursor = UserPoint(x,y);
+   mVersion++;
 }
 
 void Graphics::moveTo(float x, float y)
 {
    mPathData->moveTo(x,y);
    mCursor = UserPoint(x,y);
+   mVersion++;
 }
 
 void Graphics::curveTo(float cx, float cy, float x, float y)
@@ -314,6 +323,7 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
 
    mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
+   mVersion++;
 }
 
 void Graphics::arcTo(float cx, float cy, float x, float y)
@@ -324,11 +334,13 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 
    mPathData->arcTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
+   mVersion++;
 }
 
 void Graphics::tile(float x, float y, const Rect &inTileRect)
 {
    mPathData->tile(x,y,inTileRect);
+   mVersion++;
 }
 
 

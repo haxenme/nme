@@ -216,6 +216,7 @@ protected:
    DisplayObjectContainer *mParent;
    Graphics               *mGfx;
    BitmapCache            *mBitmapCache;
+   int                    mBitmapGfx;
 
 
    // Masking...

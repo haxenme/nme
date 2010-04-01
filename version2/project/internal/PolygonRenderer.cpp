@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <CachedExtent.h>
 #include <Geom.h>
+#include <Surface.h>
 #include "AlphaMask.h"
 
 
@@ -911,6 +912,9 @@ public:
                   }
                }
                break;
+            case pcTile:
+               points+=3;
+               break;
          }
       }
 
@@ -1063,6 +1067,9 @@ public:
                   point += 2;
                   points++;
                   break;
+               case pcTile:
+                  points+=3;
+                  break;
             }
          }
       }
@@ -1070,11 +1077,113 @@ public:
 };
 
 
+class TileRenderer : public Renderer
+{
+   Extent2DF mUntransformed;
+
+   struct TileData
+   {
+      UserPoint mPos;
+      Rect     mRect;
+
+      TileData(){}
+
+      TileData(const UserPoint *inPoint)
+         : mPos(*inPoint), mRect(inPoint[1].x, inPoint[1].y, inPoint[2].x, inPoint[2].y)
+      {
+      }
+   };
+
+
+public:
+   TileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
+   {
+      mFill = inJob.mFill->AsBitmapFill();
+      mFill->IncRef();
+      const UserPoint *point = (const UserPoint *)&inPath.data[inJob.mData0];
+      int n = inPath.commands.size();
+      for(int j=0; j<n; j++)
+      {
+         switch(inPath.commands[j+inJob.mCommand0])
+         {
+            case pcWideMoveTo:
+            case pcWideLineTo:
+            case pcCurveTo:
+                  point++;
+            case pcMoveTo:
+            case pcBeginAt:
+            case pcLineTo:
+                  point++;
+                  break;
+            case pcTile:
+                  {
+                     TileData data(point);
+                     mTileData.push_back(data);
+                     mUntransformed.Add(point[0]);
+                     mUntransformed.Add(point[0]+point[2]);
+                     point+=3;
+                  }
+         }
+      }
+   }
+   ~TileRenderer()
+   {
+      mFill->DecRef();
+   }
+   
+   bool Render(const RenderTarget &inTarget, const RenderState &inState)
+   {
+      Surface *s = mFill->bitmapData;
+      for(int i=0;i<mTileData.size();i++)
+      {
+         TileData &data= mTileData[i];
+
+         UserPoint corner(data.mPos);
+         UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
+         s->BlitTo(inTarget, data.mRect, (int)(pos.x+0.5), (int)(pos.y+0.5), bmNormal,0);
+      }
+
+      return true;
+   }
+
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+   {
+      for(int i=0;i<mTileData.size();i++)
+      {
+         TileData &data= mTileData[i];
+         for(int c=0;c<4;c++)
+         {
+            UserPoint corner(data.mPos);
+            if (c&1) corner.x += data.mRect.w;
+            if (c&2) corner.y += data.mRect.h;
+            ioExtent.Add( inTransform.mMatrix->Apply(corner.x,corner.y) );
+         }
+      }
+      printf("Got extent %f,%f ... %f,%f\n",
+             ioExtent.mMinX, ioExtent.mMinY,
+             ioExtent.mMaxX, ioExtent.mMaxY );
+      return true;
+   }
+
+   bool Hits(const RenderState &inState)
+   {
+      return false;
+   }
+
+
+
+   void Destroy() { delete this; }
+
+   GraphicsBitmapFill *mFill;
+   QuickVec<TileData> mTileData;
+};
+
+
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
 	if (inJob.mIsTileJob)
-		return 0;
+		return new TileRenderer(inJob,inPath);
 	else if (inJob.mStroke)
       return new LineRender(inJob,inPath);
    else

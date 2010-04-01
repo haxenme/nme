@@ -32,6 +32,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    mouseEnabled = true;
    mMask = 0;
    mIsMaskCount = 0;
+   mBitmapGfx = 0;
    id = sgDisplayObjID++ & 0x7fffffff;
    if (id==0)
       id = sgDisplayObjID++;
@@ -120,7 +121,7 @@ void DisplayObject::setVisible(bool inVal)
 
 void DisplayObject::CheckCacheDirty()
 {
-   if ( mDirtyFlags & dirtCache)
+   if ( (mDirtyFlags & dirtCache) || (mGfx && mBitmapGfx!=mGfx->Version()))
    {
       if (mBitmapCache)
       {
@@ -188,6 +189,7 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
 
    RenderTarget t = inTarget.ClipRect( inState.mClipRect );
    mBitmapCache->Render(inTarget,inState.mMask,blendMode);
+   mBitmapGfx = mGfx ? mGfx->Version() : 0;
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -283,9 +285,10 @@ void DisplayObject::setX(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       x = inValue;
-      if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyDown(dirtCache);
    }
 }
+
 
 void DisplayObject::setScaleX(double inValue)
 {
@@ -294,7 +297,7 @@ void DisplayObject::setScaleX(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       scaleX = inValue;
-      //if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyDown(dirtCache);
       //DirtyUp(dirtCache);
    }
 }
@@ -396,7 +399,7 @@ void DisplayObject::setY(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       y = inValue;
-      if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyDown(dirtCache);
    }
 }
 
@@ -407,7 +410,7 @@ void DisplayObject::setScaleY(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       scaleY = inValue;
-      if (mParent) mParent->DirtyDown(dirtCache);
+      DirtyDown(dirtCache);
       //DirtyUp(dirtCache);
    }
 }

@@ -492,35 +492,36 @@ value nme_display_object_set_filters(value inObj,value inFilters)
    if (AbstractToObject(inObj,obj))
    {
       FilterList filters;
-      for(int f=0;f<val_array_size(inFilters);f++)
-      {
-         value filter = val_array_value(inFilters)[f];
-         std::wstring type = val_wstring( val_field(filter,_id_type) );
-         int q = val_int(val_field(filter,_id_quality));
-         if (q<1) continue;
-         if (type==L"BlurFilter")
+      if (!val_is_null(inFilters))
+         for(int f=0;f<val_array_size(inFilters);f++)
          {
-            filters.push_back( new BlurFilter( q,
-                (int)val_field_numeric(filter,_id_blurX),
-                (int)val_field_numeric(filter,_id_blurY) ) );
+            value filter = val_array_value(inFilters)[f];
+            std::wstring type = val_wstring( val_field(filter,_id_type) );
+            int q = val_int(val_field(filter,_id_quality));
+            if (q<1) continue;
+            if (type==L"BlurFilter")
+            {
+               filters.push_back( new BlurFilter( q,
+                   (int)val_field_numeric(filter,_id_blurX),
+                   (int)val_field_numeric(filter,_id_blurY) ) );
+            }
+            else if (type==L"DropShadowFilter")
+            {
+               filters.push_back( new DropShadowFilter( q,
+                   (int)val_field_numeric(filter,_id_blurX),
+                   (int)val_field_numeric(filter,_id_blurY),
+                   val_field_numeric(filter,_id_angle),
+                   val_field_numeric(filter,_id_distance),
+                   val_int( val_field(filter,_id_color) ),
+                   val_field_numeric(filter,_id_strength),
+                   val_field_numeric(filter,_id_alpha),
+                   (bool)val_field_numeric(filter,_id_hideObject),
+                   (bool)val_field_numeric(filter,_id_knockout),
+                   (bool)val_field_numeric(filter,_id_inner)
+                   ) );
+            }
          }
-         else if (type==L"DropShadowFilter")
-         {
-            filters.push_back( new DropShadowFilter( q,
-                (int)val_field_numeric(filter,_id_blurX),
-                (int)val_field_numeric(filter,_id_blurY),
-                val_field_numeric(filter,_id_angle),
-                val_field_numeric(filter,_id_distance),
-                val_int( val_field(filter,_id_color) ),
-                val_field_numeric(filter,_id_strength),
-                val_field_numeric(filter,_id_alpha),
-                (bool)val_field_numeric(filter,_id_hideObject),
-                (bool)val_field_numeric(filter,_id_knockout),
-                (bool)val_field_numeric(filter,_id_inner)
-                ) );
-         }
-      }
-      obj->setFilters(filters);
+         obj->setFilters(filters);
    }
 
    return alloc_null();

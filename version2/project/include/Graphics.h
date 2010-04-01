@@ -635,12 +635,16 @@ public:
 
    bool empty() const { return !mPathData || mPathData->empty(); }
 
+   int Version() const { return mVersion; }
+
 protected:
    void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
 
 private:
    GraphicsJobs              mJobs;
+   int                       mVersion;
+
    int                       mConvertedJobs;
    int                       mMeasuredJobs;
    int                       mBuiltHardware;
