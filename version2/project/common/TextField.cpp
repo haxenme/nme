@@ -162,6 +162,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    inFmt->DecRef();
 
    mLinesDirty = true;
+	mFontsDirty = true;
    mGfxDirty = true;
 }
 
@@ -702,12 +703,12 @@ void TextField::setHTMLText(const std::wstring &inString)
 }
 
 
-void TextField::UpdateFonts(const Transform &inTransform)
+void TextField::UpdateFonts(const Matrix &inMatrix)
 {
-   double scale = inTransform.mMatrix->GetScaleY();// * inTransform->mStageScaleY;
-   GlyphRotation rot = fabs(inTransform.mMatrix->m00)<0.0001 ?
-                            (inTransform.mMatrix->m01 > 0 ? gr90 : gr270 ) :
-                         (inTransform.mMatrix->m00 > 0 ? gr0 : gr180 );
+   double scale = inMatrix.GetScaleY();// * inTransform->mStageScaleY;
+   GlyphRotation rot = fabs(inMatrix.m00)<0.0001 ?
+                            (inMatrix.m01 > 0 ? gr90 : gr270 ) :
+                         (inMatrix.m00 > 0 ? gr0 : gr180 );
 
    if (mFontsDirty || scale!=mLastUpdateScale || rot!=mLastUpdateRotation)
    {
@@ -718,6 +719,10 @@ void TextField::UpdateFonts(const Transform &inTransform)
       mLastUpdateScale = scale;
       mLastUpdateRotation = rot;
    }
+}
+void TextField::UpdateFonts(const Transform &inTransform)
+{
+	UpdateFonts(*inTransform.mMatrix);
 }
 
 int TextField::LineFromChar(int inChar)
@@ -1078,6 +1083,12 @@ void TextField::Layout()
 {
    if (!mLinesDirty)
       return;
+
+	if (mFontsDirty)
+	{
+		Matrix m = GetFullMatrix();
+		UpdateFonts(m);
+	}
 
    mLines.resize(0);
    mCharPos.resize(0);

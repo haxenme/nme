@@ -156,6 +156,7 @@ private:
    void Clear();
    void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,
       int inLineSkips, bool inBeginParagraph);
+   void UpdateFonts(const Matrix &inTransform);
    void UpdateFonts(const Transform &inTransform);
 
    enum StringState { ssNone, ssText, ssHTML };
