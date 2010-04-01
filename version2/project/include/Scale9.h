@@ -22,19 +22,19 @@ public:
    {
       mActive = true;
 
-		double fixed_x0 = inGrid.x - inExt.mMinX;
-		double fixed_x1 = inExt.mMaxX - inGrid.x1();
+      double fixed_x0 = inGrid.x - inExt.mMinX;
+      double fixed_x1 = inExt.mMaxX - inGrid.x1();
       X0 = inGrid.x;
       X1 = inGrid.x1();
       X1Off = inExt.mMaxX*inSX - fixed_x1 - X1;
-		SX = inGrid.w ? (inExt.Width()*inSX - fixed_x0 - fixed_x1)/inGrid.w : 0;
+      SX = inGrid.w ? (inExt.Width()*inSX - fixed_x0 - fixed_x1)/inGrid.w : 0;
 
-		double fixed_y0 = inGrid.y - inExt.mMinY;
-		double fixed_y1 = inExt.mMaxY - inGrid.y1();
+      double fixed_y0 = inGrid.y - inExt.mMinY;
+      double fixed_y1 = inExt.mMaxY - inGrid.y1();
       Y0 = inGrid.y;
       Y1 = inGrid.y1();
       Y1Off = inExt.mMaxY*inSY - fixed_y1 - Y1;
-		SY = inGrid.h ? (inExt.Height()*inSY - fixed_y0 - fixed_y1)/inGrid.h : 0;
+      SY = inGrid.h ? (inExt.Height()*inSY - fixed_y0 - fixed_y1)/inGrid.h : 0;
    }
    void Deactivate() { mActive = false; }
    bool operator==(const Scale9 &inRHS) const
@@ -55,7 +55,7 @@ public:
       if (inY<=Y0) return inY;
       return inY>Y1 ? inY + Y1Off : Y0 + (inY-Y0)*SY;
    }
-	double InvTransX(double inX) const
+   double InvTransX(double inX) const
    {
       if (inX<=X0) return inX;
       return inX>X1 ? inX - X1Off : X0 + (inX-X0)/(SX<=0 ? 1e-99 : SX);

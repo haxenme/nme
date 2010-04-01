@@ -1167,7 +1167,7 @@ void TextField::Layout()
          else
             advance = 0;
          x+= advance;
-         //printf(" Char %c (%d..%d,%d)\n", ch, ox, x, y);
+         //printf(" Char %c (%d..%d,%d) %p\n", ch, ox, x, y, g.mFont);
          if ( (wordWrap||multiline) && (x > mRect.w) && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....

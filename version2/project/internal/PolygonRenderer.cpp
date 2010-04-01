@@ -520,19 +520,24 @@ public:
       mBuildExtent->Add( p2 );
    }
 
-	bool Hits(const RenderState &inState)
+   bool Hits(const RenderState &inState)
    {
-		if (inState.mClipRect.w!=1 || inState.mClipRect.h!=1)
-			return false;
+      if (inState.mClipRect.w!=1 || inState.mClipRect.h!=1)
+         return false;
 
-	   UserPoint screen(inState.mClipRect.x, inState.mClipRect.y);
+      UserPoint screen(inState.mClipRect.x, inState.mClipRect.y);
 
-		Extent2DF extent;
+      Extent2DF extent;
       CachedExtentRenderer::GetExtent(inState.mTransform,extent);
-		if (!extent.Contains(screen))
-			return false;
+      if (!extent.Contains(screen))
+          return false;
 
-	   mHitTest = inState.mTransform.mMatrix->ApplyInverse(screen);
+      mHitTest = inState.mTransform.mMatrix->ApplyInverse(screen);
+      if (inState.mTransform.mScale9->Active())
+      {
+         mHitTest.x = inState.mTransform.mScale9->InvTransX(mHitTest.x);
+         mHitTest.y = inState.mTransform.mScale9->InvTransY(mHitTest.y);
+      }
 
       mHitsLeft = 0;
       Iterate(itHitTest, Matrix());
@@ -1182,9 +1187,9 @@ public:
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
-	if (inJob.mIsTileJob)
-		return new TileRenderer(inJob,inPath);
-	else if (inJob.mStroke)
+   if (inJob.mIsTileJob)
+      return new TileRenderer(inJob,inPath);
+   else if (inJob.mStroke)
       return new LineRender(inJob,inPath);
    else
       return new SolidRender(inJob,inPath);

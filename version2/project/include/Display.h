@@ -166,6 +166,7 @@ public:
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
    void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
+   bool HitBitmap( const RenderTarget &inTarget, const RenderState &inState );
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
    virtual void DirtyUp(uint32 inFlags);

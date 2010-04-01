@@ -121,8 +121,9 @@ UserPoint Matrix::ApplyInverse(const UserPoint &inPoint) const
 
    det = 1.0/det;
 
-	return UserPoint( (m11*inPoint.x - m01*inPoint.y)*det - mtx,
-	                  (-m10*inPoint.x + m00*inPoint.y)*det - mty );
+   double x = inPoint.x - mtx;
+   double y = inPoint.y - mty;
+   return UserPoint( (m11*x - m01*y)*det, (-m10*x + m00*y)*det );
 }
 
 
@@ -136,62 +137,62 @@ void Matrix::MatchTransform(double inX,double inY,
 
 Matrix &Matrix::Translate(double inX,double inY)
 {
-	mtx += inX;
-	mty += inY;
-	return *this;
+   mtx += inX;
+   mty += inY;
+   return *this;
 }
 
 Matrix &Matrix::Rotate(double inDeg)
 {
-	double c = cos(inDeg * (M_PI/180.0));
-	double s = sin(inDeg * (M_PI/180.0));
-	double m00_  = m00 * c + m10 * s;
-	double m01_  = m01 * c + m11 * s;
-	double m10_  = m00 * -s + m10 * c;
-	double m11_  = m01 * -s + m11 * c;
-	double tx_ = c*mtx + s*mty;
-	double ty_ = -s*mtx + c*mty;
+   double c = cos(inDeg * (M_PI/180.0));
+   double s = sin(inDeg * (M_PI/180.0));
+   double m00_  = m00 * c + m10 * s;
+   double m01_  = m01 * c + m11 * s;
+   double m10_  = m00 * -s + m10 * c;
+   double m11_  = m01 * -s + m11 * c;
+   double tx_ = c*mtx + s*mty;
+   double ty_ = -s*mtx + c*mty;
 
-	m00 = m00_;
-	m01 = m01_;
-	m10 = m10_;
-	m11 = m11_;
-	mtx = tx_;
-	mty = ty_;
+   m00 = m00_;
+   m01 = m01_;
+   m10 = m10_;
+   m11 = m11_;
+   mtx = tx_;
+   mty = ty_;
 
-	return *this;
+   return *this;
 }
 
 Matrix &Matrix::operator *= (double inScale)
 {
-	m00 *= inScale;
-	m01 *= inScale;
-	m10 *= inScale;
-	m11 *= inScale;
-	mtx *= inScale;
-	mty *= inScale;
-	return *this;
+   m00 *= inScale;
+   m01 *= inScale;
+   m10 *= inScale;
+   m11 *= inScale;
+   mtx *= inScale;
+   mty *= inScale;
+   return *this;
 }
 
 Matrix &Matrix::Scale(double inSx, double inSy)
 {
-	m00 *= inSx;
-	m01 *= inSx;
-	mtx *= inSx;
-	m10 *= inSy;
-	m11 *= inSy;
-	mty *= inSy;
-	return *this;
+   m00 *= inSx;
+   m01 *= inSx;
+   mtx *= inSx;
+   m10 *= inSy;
+   m11 *= inSy;
+   mty *= inSy;
+   return *this;
 }
 
 double Matrix::GetScaleX() const
 {
-	return sqrt( m00*m00 + m01*m01 ); 
+   return sqrt( m00*m00 + m01*m01 ); 
 }
 
 double Matrix::GetScaleY() const
 {
-	return sqrt( m10*m10 + m11*m11 ); 
+   return sqrt( m10*m10 + m11*m11 ); 
 }
 
 
@@ -208,27 +209,27 @@ Matrix &Matrix::TranslateData(double inTX, double inTY)
 Matrix &Matrix::createGradientBox(double inWidth, double inHeight,
                           double inRot, double inTX, double inTY )
 {
-	m00 = inWidth/1638.4;
+   m00 = inWidth/1638.4;
    m11 = inHeight/1638.4;
 
    // rotation is clockwise
    if (inRot!=0.0)
    {
-		double c = cos(inRot * (M_PI/180.0));
-		double s = sin(inRot * (M_PI/180.0));
-		m01 = -s*m00;
-		m10 = s*m11;
-		m00 *= c;
-		m11 *= c;
-	}
-	else
-	{
-		m01 = m10 = 0;
-	}
+      double c = cos(inRot * (M_PI/180.0));
+      double s = sin(inRot * (M_PI/180.0));
+      m01 = -s*m00;
+      m10 = s*m11;
+      m00 *= c;
+      m11 *= c;
+   }
+   else
+   {
+      m01 = m10 = 0;
+   }
 
-	mtx = inTX+inWidth*0.5;
-	mty = inTY+inHeight*0.5;
-	return *this;
+   mtx = inTX+inWidth*0.5;
+   mty = inTY+inHeight*0.5;
+   return *this;
 }
 
 

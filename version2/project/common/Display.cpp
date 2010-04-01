@@ -107,12 +107,12 @@ UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
 
 void DisplayObject::setCacheAsBitmap(bool inVal)
 {
-	cacheAsBitmap = inVal;
+   cacheAsBitmap = inVal;
 }
 
 void DisplayObject::setVisible(bool inVal)
 {
-	visible = inVal;
+   visible = inVal;
    DirtyDown(dirtCache);
 }
 
@@ -173,7 +173,9 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          inState.mHitResult = state.mHitResult;
       }
       else
+      {
          hit = mGfx->Render(inTarget,inState);
+      }
 
       if (hit)
          inState.mHitResult = this;
@@ -181,6 +183,12 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 }
 
 
+bool DisplayObject::HitBitmap( const RenderTarget &inTarget, const RenderState &inState )
+{
+   if (!mBitmapCache)
+      return false;
+   return mBitmapCache->HitTest(inState.mClipRect.x, inState.mClipRect.y);
+}
 
 void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -624,21 +632,23 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
-		//printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
+      //printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
       if (!obj->visible || (inState.mPhase!=rpBitmap && obj->IsMask()) ||
          (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
+      {
          continue;
+      }
 
       RenderState *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
 
       if (obj->scrollRect.HasPixels())
       {
-			Extent2DF extent;
-			DRect rect = obj->scrollRect;
-			for(int c=0;c<4;c++)
-				extent.Add( full.Apply( rect.x + (((c&1)>0) ? rect.w :0),
-												  rect.y + (((c&2)>0) ? rect.h :0) ) );
+         Extent2DF extent;
+         DRect rect = obj->scrollRect;
+         for(int c=0;c<4;c++)
+            extent.Add( full.Apply( rect.x + (((c&1)>0) ? rect.w :0),
+                                      rect.y + (((c&2)>0) ? rect.h :0) ) );
 
 
 
@@ -657,7 +667,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
       if (inState.mPhase==rpBitmap)
       {
-			//printf("Bitmap phase %d\n", obj->id);
+         //printf("Bitmap phase %d\n", obj->id);
          obj->CheckCacheDirty();
 
          if (obj->IsBitmapRender() || obj->IsMask())
@@ -724,7 +734,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                bool old_pow2 = obj_state->mRoundSizeToPOW2;
                Matrix orig = full;
-					{
+               {
                AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                full.Translate(-render_to.x, -render_to.y );
 
@@ -737,7 +747,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mRoundSizeToPOW2 = false;
 
                obj->Render(render.Target(), *obj_state);
-					}
+               }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
 
@@ -748,11 +758,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                bitmap->DecRef();
             }
          }
-			else
-			{
+         else
+         {
             obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
-			}
+         }
       }
       else
       {
@@ -775,9 +785,13 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
-            else
+            else if (inState.mPhase==rpHitTest && obj->IsBitmapRender() )
             {
-               // TODO: bitmap hit-test
+                if (obj->HitBitmap(inTarget,*obj_state))
+                {
+                   inState.mHitResult = obj;
+                   return;
+                }
             }
          }
          else
@@ -926,6 +940,15 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
       }
    }
 }
+
+bool BitmapCache::HitTest(double inX, double inY)
+{
+   double x0 = mRect.x+mTX;
+   double y0 = mRect.y+mTY;
+   //printf("BMP hit %f,%f    %f,%f ... %d,%d\n", inX, inY, x0,y0, mRect.w, mRect.h );
+   return x0<=inX && y0<=inY && (inX<=x0+mRect.w) && (inY<=y0+mRect.h);
+}
+
 
 
 // --- Stage ---------------------------------------------------------------
@@ -1173,16 +1196,16 @@ void Stage::RenderStage()
 
 double Stage::getStageWidth()
 {
-	Surface *s = GetPrimarySurface();
-	if (!s) return 0;
-	return s->Width();
+   Surface *s = GetPrimarySurface();
+   if (!s) return 0;
+   return s->Width();
 }
 
 double Stage::getStageHeight()
 {
-	Surface *s = GetPrimarySurface();
-	if (!s) return 0;
-	return s->Height();
+   Surface *s = GetPrimarySurface();
+   if (!s) return 0;
+   return s->Height();
 }
 
 

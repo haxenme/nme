@@ -84,8 +84,8 @@ public:
    void setText(const std::wstring &inString);
 
    int   getLength();
-   int   getTextHeight() { return textHeight; }
-   int   getTextWidth() { return textWidth; }
+   int   getTextHeight() { Layout(); return textHeight; }
+   int   getTextWidth() { Layout(); return textWidth; }
 
    bool  alwaysShowSelection;
    AntiAliasType antiAliasType;
