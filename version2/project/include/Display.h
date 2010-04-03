@@ -117,6 +117,8 @@ public:
    void   setScaleX(double inValue);
    double getScaleY();
    void   setScaleY(double inValue);
+   double getMouseX();
+   double getMouseY();
    void   setScale9Grid(const DRect &inRect);
    void   setScrollRect(const DRect &inRect);
    void   setMask(DisplayObject *inMask);
@@ -141,8 +143,6 @@ public:
 
    DisplayObject *getParent();
 
-   double getMouseX();
-   double getMouseY();
    DisplayObject *getRoot();
    virtual Stage  *getStage();
 
@@ -289,9 +289,9 @@ public:
 
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
+	UserPoint getMousePos() const { return mLastMousePos; }
    double getStageWidth();
    double getStageHeight();
-  
 
    int    mQuality;
 
@@ -308,6 +308,7 @@ protected:
    EventHandler mHandler;
    void         *mHandlerData;
    bool         focusRect;
+	UserPoint    mLastMousePos;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;

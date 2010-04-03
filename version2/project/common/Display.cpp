@@ -280,6 +280,29 @@ void DisplayObject::UpdateDecomp()
    }
 }
 
+double DisplayObject::getMouseX()
+{
+	Stage *s = getStage();
+	if (!s)
+		return 0;
+	UserPoint p = s->getMousePos();
+	UserPoint result = GetFullMatrix().ApplyInverse(p);
+   return result.x;
+}
+
+double DisplayObject::getMouseY()
+{
+	Stage *s = getStage();
+	if (!s)
+		return 0;
+	UserPoint p = s->getMousePos();
+	UserPoint result = GetFullMatrix().ApplyInverse(p);
+   return result.y;
+}
+
+
+
+
 double DisplayObject::getX()
 {
    UpdateDecomp();
@@ -781,10 +804,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj_state->mMask = obj->getMask()->GetBitmapCache();
          }
 
-         if (obj->IsBitmapRender() || obj->IsMask())
+         if ( (obj->IsBitmapRender() && inState.mPhase!=rpHitTest) || obj->IsMask())
          {
             if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
+				/* HitTest is done on vector, not bitmap
             else if (inState.mPhase==rpHitTest && obj->IsBitmapRender() )
             {
                 if (obj->HitBitmap(inTarget,*obj_state))
@@ -793,6 +817,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                    return;
                 }
             }
+				*/
          }
          else
          {
@@ -1049,6 +1074,9 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 void Stage::HandleEvent(Event &inEvent)
 {
    DisplayObject *hit_obj = 0;
+
+   if (inEvent.type==etMouseMove || inEvent.type==etMouseDown)
+		mLastMousePos = UserPoint(inEvent.x, inEvent.y);
 
    if (mMouseDownObject)
    {

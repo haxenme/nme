@@ -581,6 +581,8 @@ DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
 DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
 DO_DISPLAY_PROP(name,Name,alloc_wstring,val_wstring)
+DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
+DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 
 
 // --- DisplayObjectContainer -----------------------------------------------------

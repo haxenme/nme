@@ -14,6 +14,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var y(nmeGetY,nmeSetY): Float;
    public var scaleX(nmeGetScaleX,nmeSetScaleX): Float;
    public var scaleY(nmeGetScaleY,nmeSetScaleY): Float;
+   public var mouseX(nmeGetMouseX,null): Float;
+   public var mouseY(nmeGetMouseY,null): Float;
    public var rotation(nmeGetRotation,nmeSetRotation): Float;
    public var width(nmeGetWidth,nmeSetWidth): Float;
    public var height(nmeGetHeight,nmeSetHeight): Float;
@@ -94,6 +96,9 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       nme_display_object_set_scale_y(nmeHandle,inVal);
       return inVal;
    }
+
+   function nmeGetMouseX() : Float { return nme_display_object_get_mouse_x(nmeHandle); }
+   function nmeGetMouseY() : Float { return nme_display_object_get_mouse_y(nmeHandle); }
 
    function nmeGetRotation() : Float { return nme_display_object_get_rotation(nmeHandle); }
    function nmeSetRotation(inVal:Float) : Float
@@ -355,6 +360,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_scale_x = nme.Loader.load("nme_display_object_set_scale_x",2);
    static var nme_display_object_get_scale_y = nme.Loader.load("nme_display_object_get_scale_y",1);
    static var nme_display_object_set_scale_y = nme.Loader.load("nme_display_object_set_scale_y",2);
+   static var nme_display_object_get_mouse_x = nme.Loader.load("nme_display_object_get_mouse_x",1);
+   static var nme_display_object_get_mouse_y = nme.Loader.load("nme_display_object_get_mouse_y",1);
    static var nme_display_object_get_rotation = nme.Loader.load("nme_display_object_get_rotation",1);
    static var nme_display_object_set_rotation = nme.Loader.load("nme_display_object_set_rotation",2);
    static var nme_display_object_get_bg = nme.Loader.load("nme_display_object_get_bg",1);
