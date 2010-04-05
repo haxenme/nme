@@ -80,6 +80,7 @@
   <file name="common/Filters.cpp"/>
   <file name="common/ExternalInterface.cpp"/>
   <file name="common/Cursors.cpp"/>
+  <file name="common/Input.cpp"/>
   <file name="common/SurfaceIO.cpp" unless="iphone"/>
 
   <file name="common/XML/tinystr.cpp"/>

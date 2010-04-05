@@ -43,7 +43,7 @@ extern "C" void nme_app_set_active(bool inActive);
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
 // Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
-@interface UIStageView : UIView<UITextFieldDelegate>
+@interface UIStageView : UIView<UITextFieldDelegate,UIAccelerometerDelegate>
 {    
 @private
    BOOL animating;
@@ -55,6 +55,10 @@ extern "C" void nme_app_set_active(bool inActive);
    class EAGLStage *mStage;
 
    UITextField *mTextField;
+   UIAccelerometer *mAccelerometer;
+   double mAccX;
+   double mAccY;
+   double mAccZ;
    BOOL mKeyboardEnabled;
 }
 
@@ -345,7 +349,14 @@ public:
                                       nil];
 
       mStage = new EAGLStage(eaglLayer,true);
-        
+  
+      mAccelerometer = [UIAccelerometer sharedAccelerometer];
+      mAccelerometer.updateInterval = 0.033;
+      mAccelerometer.delegate = self;
+     
+      mAccX = 0.0;
+      mAccY = -1.0;
+      mAccZ = 0.0;
       animating = FALSE;
       displayLinkSupported = FALSE;
       animationFrameInterval = 1;
@@ -365,6 +376,13 @@ public:
 
       displayLinkSupported = FALSE;
 }
+
+- (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration {
+   mAccX = acceleration.x;
+   mAccY = acceleration.y;
+   mAccZ = acceleration.z;
+}
+
 
 - (BOOL)canBecomeFirstResponder { return YES; }
 
@@ -701,6 +719,21 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    [pool release];
 }
 
+
+
+bool GetAcceleration(double &outX, double &outY, double &outZ)
+{
+#ifdef IPHONESIM
+   return false;
+#else
+   if (!sgMainView)
+      return false;
+   outX = sgMainView->mAccX;
+   outY = sgMainView->mAccY;
+   outZ = sgMainView->mAccZ;
+   return true;
+#endif
+}
 
 
 

@@ -10,6 +10,7 @@
 #include <Tilesheet.h>
 #include <Font.h>
 #include <Sound.h>
+#include <Input.h>
 #include <algorithm>
 
 #ifdef min
@@ -24,6 +25,7 @@ namespace nme
 static int _id_type = val_id("type");
 static int _id_x = val_id("x");
 static int _id_y = val_id("y");
+static int _id_z = val_id("z");
 static int _id_width = val_id("width");
 static int _id_height = val_id("height");
 static int _id_value = val_id("value");
@@ -437,6 +439,24 @@ value nme_stage_is_opengl(value inStage)
 }
 DEFINE_PRIM(nme_stage_is_opengl,1);
  
+
+// --- Input --------------------------------------------------------------
+
+value nme_input_get_acceleration()
+{
+   double x,y,z;
+   if (!GetAcceleration(x,y,z))
+       return alloc_null();
+
+   value obj = alloc_empty_object();
+   alloc_field(obj,_id_x, alloc_float(x));
+   alloc_field(obj,_id_y, alloc_float(y));
+   alloc_field(obj,_id_z, alloc_float(z));
+   return obj;
+}
+
+DEFINE_PRIM(nme_input_get_acceleration,0);
+
 
 // --- DisplayObject --------------------------------------------------------------
 
