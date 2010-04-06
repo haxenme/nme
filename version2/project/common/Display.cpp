@@ -57,6 +57,19 @@ Graphics &DisplayObject::GetGraphics()
    return *mGfx;
 }
 
+bool DisplayObject::IsCacheDirty()
+{
+   if (mDirtyFlags & dirtCache)
+      return true;
+   return mGfx && mGfx->Version() != mBitmapGfx;
+}
+
+void DisplayObject::ClearCacheDirty()
+{
+   mDirtyFlags &= ~dirtCache;
+}
+
+
 
 void DisplayObject::SetParent(DisplayObjectContainer *inParent)
 {
@@ -76,7 +89,7 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
       if (stage)
          stage->RemovingFromStage(this);
       mParent->RemoveChildFromList(this);
-      mParent->DirtyDown(dirtCache);
+      mParent->DirtyCache();
    }
    DirtyUp(dirtCache);
 
@@ -113,7 +126,7 @@ void DisplayObject::setCacheAsBitmap(bool inVal)
 void DisplayObject::setVisible(bool inVal)
 {
    visible = inVal;
-   DirtyDown(dirtCache);
+   DirtyCache(!visible);
 }
 
 
@@ -121,14 +134,13 @@ void DisplayObject::setVisible(bool inVal)
 
 void DisplayObject::CheckCacheDirty()
 {
-   if ( (mDirtyFlags & dirtCache) || (mGfx && mBitmapGfx!=mGfx->Version()))
+   if (IsCacheDirty())
    {
       if (mBitmapCache)
       {
          delete mBitmapCache;
          mBitmapCache = 0;
       }
-      mDirtyFlags ^= dirtCache;
    }
 
    if (!IsBitmapRender() && !IsMask() && mBitmapCache)
@@ -214,11 +226,12 @@ void DisplayObject::DirtyUp(uint32 inFlags)
 }
 
 
-void DisplayObject::DirtyDown(uint32 inFlags)
+void DisplayObject::DirtyCache(bool inParentOnly)
 {
-   mDirtyFlags |= inFlags;
-   if (mParent)
-      mParent->DirtyDown(inFlags);
+   if (!inParentOnly)
+      mDirtyFlags |= dirtCache;
+   else if (mParent)
+      mParent->DirtyCache(false);
 }
 
 Matrix DisplayObject::GetFullMatrix()
@@ -316,7 +329,7 @@ void DisplayObject::setX(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       x = inValue;
-      DirtyDown(dirtCache);
+      DirtyCache(true);
    }
 }
 
@@ -328,8 +341,7 @@ void DisplayObject::setScaleX(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       scaleX = inValue;
-      DirtyDown(dirtCache);
-      //DirtyUp(dirtCache);
+      DirtyCache();
    }
 }
 
@@ -430,7 +442,7 @@ void DisplayObject::setY(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       y = inValue;
-      DirtyDown(dirtCache);
+      DirtyCache(true);
    }
 }
 
@@ -441,15 +453,14 @@ void DisplayObject::setScaleY(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       scaleY = inValue;
-      DirtyDown(dirtCache);
-      //DirtyUp(dirtCache);
+      DirtyCache();
    }
 }
 
 void DisplayObject::setScale9Grid(const DRect &inRect)
 {
    scale9Grid = inRect;
-   if (mParent) mParent->DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void DisplayObject::setScrollRect(const DRect &inRect)
@@ -457,8 +468,7 @@ void DisplayObject::setScrollRect(const DRect &inRect)
    scrollRect = inRect;
    UpdateDecomp();
    mDirtyFlags |= dirtLocalMatrix;
-   if (mParent) mParent->DirtyDown(dirtCache);
-   //DirtyUp(dirtCache);
+   DirtyCache();
 }
 
 
@@ -476,8 +486,7 @@ void DisplayObject::setRotation(double inValue)
    {
       mDirtyFlags |= dirtLocalMatrix;
       rotation = inValue;
-      if (mParent) mParent->DirtyDown(dirtCache);
-      //DirtyUp(dirtCache);
+      DirtyCache();
    }
 }
 
@@ -507,27 +516,27 @@ void DisplayObject::setMask(DisplayObject *inMask)
       mMask->ChangeIsMaskCount(-1);
 
    mMask = inMask;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void DisplayObject::setAlpha(double inAlpha)
 {
    colorTransform.alphaScale = inAlpha;
    colorTransform.alphaOffset = 0;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void DisplayObject::setFilters(FilterList &inFilters)
 {
    ClearFilters();
    filters = inFilters;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void DisplayObject::setOpaqueBackground(uint32 inBG)
 {
    opaqueBackground = inBG;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 
@@ -582,7 +591,7 @@ void DisplayObjectContainer::setChildIndex(DisplayObject *inChild,int inNewIndex
             }
          }
          mChildren[inNewIndex] = inChild;
-         DirtyDown(dirtCache);
+         DirtyCache();
          return;
       }
    // This is an error, I think.
@@ -770,6 +779,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mRoundSizeToPOW2 = false;
 
                obj->Render(render.Target(), *obj_state);
+               obj->ClearCacheDirty();
                }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
@@ -909,6 +919,22 @@ bool DisplayObjectContainer::NonNormalBlendChild()
       if (mChildren[i]->blendMode!=bmNormal)
          return true;
    return false;
+}
+
+bool DisplayObjectContainer::IsCacheDirty()
+{
+   for(int i=0;i<mChildren.size();i++)
+      if (mChildren[i]->visible && mChildren[i]->IsCacheDirty())
+         return true;
+   return DisplayObject::IsCacheDirty();
+}
+
+void DisplayObjectContainer::ClearCacheDirty()
+{
+   for(int i=0;i<mChildren.size();i++)
+      mChildren[i]->ClearCacheDirty();
+
+   DisplayObject::ClearCacheDirty();
 }
 
 
@@ -1163,7 +1189,7 @@ void Stage::HandleEvent(Event &inEvent)
 void Stage::setOpaqueBackground(uint32 inBG)
 {
    opaqueBackground = inBG | 0xff000000;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 

@@ -170,7 +170,7 @@ public:
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
    virtual void DirtyUp(uint32 inFlags);
-   virtual void DirtyDown(uint32 inFlags);
+   virtual void DirtyCache(bool inParentOnly = false);
    virtual bool NonNormalBlendChild() { return false; }
 
    virtual Cursor GetCursor() { return curPointer; }
@@ -195,6 +195,9 @@ public:
    const FilterList &getFilters() { return filters; }
    // Takes ownership of filters...
    void     setFilters(FilterList &inFilters);
+
+   virtual bool IsCacheDirty();
+   virtual void ClearCacheDirty();
 
    void CheckCacheDirty();
    bool IsBitmapRender();
@@ -253,6 +256,8 @@ public:
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void DirtyUp(uint32 inFlags);
+   bool IsCacheDirty();
+   void ClearCacheDirty();
    bool NonNormalBlendChild();
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 

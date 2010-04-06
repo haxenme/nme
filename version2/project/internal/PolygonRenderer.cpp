@@ -995,6 +995,9 @@ public:
    void Iterate(IterateMode inMode,const Matrix &)
    {
       int n = mCommandCount;
+      if (n<3)
+         return;
+
       const UserPoint *point = 0;
 
       if (inMode==itHitTest)
@@ -1006,6 +1009,7 @@ public:
       if (inMode==itGetExtent)
       {
          UserPoint last;
+
          for(int i=0;i<n;i++)
          {
             switch(mCommands[ mCommand0 + i])
@@ -1153,6 +1157,12 @@ public:
 
    bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
    {
+      /*
+      printf("In extent %f,%f ... %f,%f\n",
+             ioExtent.mMinX, ioExtent.mMinY,
+             ioExtent.mMaxX, ioExtent.mMaxY );
+      */
+
       for(int i=0;i<mTileData.size();i++)
       {
          TileData &data= mTileData[i];
@@ -1164,9 +1174,11 @@ public:
             ioExtent.Add( inTransform.mMatrix->Apply(corner.x,corner.y) );
          }
       }
+      /*
       printf("Got extent %f,%f ... %f,%f\n",
              ioExtent.mMinX, ioExtent.mMinY,
              ioExtent.mMaxX, ioExtent.mMaxY );
+      */
       return true;
    }
 

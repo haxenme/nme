@@ -184,28 +184,28 @@ void TextField::setBackground(bool inBackground)
 {
    background = inBackground;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setBackgroundColor(int inBackgroundColor)
 {
    backgroundColor = inBackgroundColor;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setBorder(bool inBorder)
 {
    border = inBorder;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setBorderColor(int inBorderColor)
 {
    borderColor = inBorderColor;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setMultiline(bool inMultiline)
@@ -213,7 +213,7 @@ void TextField::setMultiline(bool inMultiline)
    multiline = inMultiline;
    mLinesDirty = true;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setWordWrap(bool inWordWrap)
@@ -221,7 +221,7 @@ void TextField::setWordWrap(bool inWordWrap)
    wordWrap = inWordWrap;
    mLinesDirty = true;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 void TextField::setAutoSize(int inAutoSize)
@@ -229,7 +229,7 @@ void TextField::setAutoSize(int inAutoSize)
    autoSize = (AutoSizeMode)inAutoSize;
    mLinesDirty = true;
    mGfxDirty = true;
-   DirtyDown(dirtCache);
+   DirtyCache();
 }
 
 
@@ -325,7 +325,7 @@ bool TextField::CaptureDown(Event &inEvent)
          mSelectDownChar = pos;
          mSelectMin = mSelectMax = pos;
          mGfxDirty = true;
-         DirtyDown(dirtCache);
+         DirtyCache();
       }
    }
    return true;
@@ -352,7 +352,7 @@ void TextField::Drag(Event &inEvent)
       ShowCaret();
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
       mGfxDirty = true;
-      DirtyDown(dirtCache);
+      DirtyCache();
    }
 }
 
@@ -505,7 +505,7 @@ void TextField::ShowCaret()
 
    if (changed)
    {
-      DirtyDown(dirtCache);
+      DirtyCache();
       if (mSelectMax > mSelectMin)
       {
          mGfxDirty = true;
