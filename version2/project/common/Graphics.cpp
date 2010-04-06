@@ -344,6 +344,29 @@ void Graphics::tile(float x, float y, const Rect &inTileRect)
 }
 
 
+void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs,
+           int inDefaultRGB, double inDefaultAlpha)
+{
+   endFill();
+   lineStyle(-1);
+   Flush();
+
+   GraphicsJob job;
+   job.mCommand0 = mPathData->commands.size();
+   job.mCommandCount = 1;
+   job.mData0 = mPathData->data.size();
+   job.mIsPointJob = true;
+   mPathData->drawPoints(inXYs,inRGBAs);
+   if (mPathData->commands[job.mCommand0]==pcPointsXY)
+   {
+       job.mFill = new GraphicsSolidFill(inDefaultRGB,inDefaultAlpha);
+       job.mFill->IncRef();
+   }
+
+   mJobs.push_back(job);
+}
+
+
 
 
 // This routine converts a list of "GraphicsPaths" (mItems) into a list

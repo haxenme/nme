@@ -218,8 +218,10 @@ enum PathCommand
 
    // Special code so we can mix lines and fills...
    pcBeginAt  = 7,
-	// Quad combining vertices & texture-coords
+   // Quad combining vertices & texture-coords
    pcTile  = 8,
+   pcPointsXY  = 9,
+   pcPointsXYRGBA  = 11,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -246,6 +248,7 @@ public:
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
    void tile(float x, float y, const Rect &inTileRect);
+   void drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs);
 };
 
 
@@ -575,7 +578,8 @@ struct GraphicsJob
    int             mData0;
    int             mCommandCount;
    int             mDataCount;
-	bool            mIsTileJob;
+   bool            mIsTileJob;
+   bool            mIsPointJob;
 };
 
 
@@ -629,7 +633,8 @@ public:
    void beginTiles(Surface *inSurface,bool inSmooth=false);
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect);
-
+   void drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs,
+           int inDefaultRGB=0xffffff, double inDefaultAlpha=1.0);
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);

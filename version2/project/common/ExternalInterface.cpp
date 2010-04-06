@@ -924,6 +924,31 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
 DEFINE_PRIM(nme_gfx_draw_tiles,3);
 
 
+
+value nme_gfx_draw_points(value inGfx,value inXYs, value inRGBA, value inDefaultRGB,
+      value inDefaultAlpha )
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      QuickVec<float> xys;
+      FillArrayDouble(inXYs,xys);
+
+      QuickVec<float> RGBAs;
+      FillArrayDouble(inRGBA,RGBAs);
+
+      int def_rgb = val_int(inDefaultRGB);
+      double def_alpha = val_number(inDefaultAlpha);
+
+      gfx->drawPoints(xys,RGBAs,def_rgb,def_alpha);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_points,5);
+
+
+
+
 // --- IGraphicsData -----------------------------------------------------
 
 
