@@ -123,12 +123,19 @@ class Graphics
       nme_gfx_draw_tiles(nmeHandle,sheet.nmeHandle,inXYID);
    }
 
-   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Float>=null,
-                        inDefaultRGB:Int = 0xffffff, inDefaultAlpha:Float=1.0)
+   inline static public function RGBA(inRGB:Int,inA:Int=0xff) : Int
+	{
+		#if neko
+		return inRGB | ((inA & 0xfc)<<22);
+		#else
+		return inRGB | (inA <<24);
+		#end
+	}
+   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int>=null,
+         inDefaultRGBA:Int = #if neko 0x7fffffff #else 0xffffffff #end )
    {
-      nme_gfx_draw_points(nmeHandle,inXY,inPointRGBA,inDefaultRGB,inDefaultAlpha);
+      nme_gfx_draw_points(nmeHandle,inXY,inPointRGBA,inDefaultRGBA,#if neko true #else false #end);
    }
-                     
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);

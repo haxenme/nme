@@ -261,10 +261,49 @@ public:
    Matrix      mTextureMapper;
 };
 
+void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
+                   HardwareContext &inHardware)
+{
+   DrawElement elem;
+
+
+   elem.mColour = 0xffffffff;
+	GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
+	if (fill)
+		elem.mColour = fill->mRGB.ToInt();
+
+   elem.mPrimType = ptPoints;
+   elem.mScaleMode = ssmNormal;
+   elem.mWidth = -1;
+
+   elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
+
+   HardwareArrays *arrays = &ioData.GetArrays(0,fill==0);
+   Vertices &vertices = arrays->mVertices;
+   elem.mFirst = vertices.size();
+	vertices.resize( elem.mFirst + elem.mCount );
+	memcpy( &vertices[elem.mFirst], &inPath.data[ inJob.mData0 ], elem.mCount*sizeof(UserPoint) );
+
+	if (!fill)
+	{
+	   Colours &colours = arrays->mColours;
+	   colours.resize( elem.mFirst + elem.mCount );
+	   memcpy( &colours[elem.mFirst], &inPath.data[ inJob.mData0 + elem.mCount*2],
+			         elem.mCount*sizeof(int) );
+	}
+
+   arrays->mElements.push_back(elem);
+}
+
 void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
                       HardwareContext &inHardware)
 {
-   HardwareBuilder builder(inJob,inPath,ioData,inHardware);
+	if (inJob.mIsPointJob)
+		CreatePointJob(inJob,inPath,ioData,inHardware);
+	else
+	{
+      HardwareBuilder builder(inJob,inPath,ioData,inHardware);
+	}
 }
 
 
@@ -289,9 +328,10 @@ HardwareData::~HardwareData()
    mCalls.DeleteAll();
 }
 
-HardwareArrays &HardwareData::GetArrays(Surface *inSurface)
+HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour)
 {
-   if (mCalls.empty() || mCalls.last()->mSurface != inSurface)
+   if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
+		     mCalls.last()->mColours.empty() != inWithColour )
    {
        HardwareArrays *arrays = new HardwareArrays(inSurface);
        mCalls.push_back(arrays);

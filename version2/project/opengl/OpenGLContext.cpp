@@ -39,7 +39,8 @@ namespace nme
 
 int gTextureContextVersion = 1;
 
-static GLuint sgOpenglType[] = { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP };
+static GLuint sgOpenglType[] =
+  { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS };
 
 
 
@@ -361,6 +362,15 @@ public:
             glDisable(GL_TEXTURE_2D);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
+
+			if (arrays.mColours.size() == vert.size())
+			{
+            glEnableClientState(GL_COLOR_ARRAY);
+            glColorPointer(4,GL_UNSIGNED_BYTE,0,&arrays.mColours[0]);
+			}
+			else
+            glDisableClientState(GL_COLOR_ARRAY);
+
    
          DrawElements &elements = arrays.mElements;
          for(int e=0;e<elements.size();e++)

@@ -1196,11 +1196,42 @@ public:
 };
 
 
+class PointRenderer : public Renderer
+{
+public:
+   PointRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
+   {
+		GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
+		if (fill)
+		{
+		}
+	}
+
+	virtual bool Render( const RenderTarget &inTarget, const RenderState &inState )
+	{
+		return false;
+	}
+
+   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+	{
+		return false;
+	}
+
+   virtual bool Hits(const RenderState &inState) { return false; }
+
+
+	void Destroy() { delete this; }
+
+};
+
+
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
    if (inJob.mIsTileJob)
       return new TileRenderer(inJob,inPath);
+	else if (inJob.mIsPointJob)
+      return new PointRenderer(inJob,inPath);
    else if (inJob.mStroke)
       return new LineRender(inJob,inPath);
    else

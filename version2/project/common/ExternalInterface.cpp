@@ -924,23 +924,40 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
 DEFINE_PRIM(nme_gfx_draw_tiles,3);
 
 
+static bool sNekoLutInit = false;
+static int sNekoLut[256];
 
-value nme_gfx_draw_points(value inGfx,value inXYs, value inRGBA, value inDefaultRGB,
-      value inDefaultAlpha )
+value nme_gfx_draw_points(value inGfx,value inXYs, value inRGBA, value inDefaultRGBA,
+      value inIs31Bits )
 {
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
       QuickVec<float> xys;
-      FillArrayDouble(inXYs,xys);
+      FillArrayDouble(xys,inXYs);
 
-      QuickVec<float> RGBAs;
-      FillArrayDouble(inRGBA,RGBAs);
+      QuickVec<int> RGBAs;
+      FillArrayInt(RGBAs,inRGBA);
 
-      int def_rgb = val_int(inDefaultRGB);
-      double def_alpha = val_number(inDefaultAlpha);
+		int def_rgba = val_int(inDefaultRGBA);
 
-      gfx->drawPoints(xys,RGBAs,def_rgb,def_alpha);
+		if (val_bool(inIs31Bits))
+		{
+			if (!sNekoLutInit)
+			{
+				sNekoLutInit = true;
+				for(int i=0;i<64;i++)
+					sNekoLut[i] = ((int)(i*255.0/63.0 + 0.5)) << 24;
+			}
+			for(int i=0;i<RGBAs.size();i++)
+			{
+				int &rgba = RGBAs[i];
+				rgba = (rgba & 0xffffff) | sNekoLut[(rgba>>24) & 63];
+			}
+			def_rgba = (def_rgba & 0xffffff) | sNekoLut[(def_rgba>>24) & 63];
+		}
+
+      gfx->drawPoints(xys,RGBAs,def_rgba);
    }
    return alloc_null();
 }

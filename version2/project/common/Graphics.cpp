@@ -344,8 +344,7 @@ void Graphics::tile(float x, float y, const Rect &inTileRect)
 }
 
 
-void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs,
-           int inDefaultRGB, double inDefaultAlpha)
+void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA)
 {
    endFill();
    lineStyle(-1);
@@ -357,10 +356,11 @@ void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs,
    job.mData0 = mPathData->data.size();
    job.mIsPointJob = true;
    mPathData->drawPoints(inXYs,inRGBAs);
+   job.mDataCount = mPathData->data.size() - job.mData0;
    if (mPathData->commands[job.mCommand0]==pcPointsXY)
    {
-       job.mFill = new GraphicsSolidFill(inDefaultRGB,inDefaultAlpha);
-       job.mFill->IncRef();
+      job.mFill = new GraphicsSolidFill(inDefaultRGBA&0xffffff,(inDefaultRGBA>>24)/255.0);
+      job.mFill->IncRef();
    }
 
    mJobs.push_back(job);

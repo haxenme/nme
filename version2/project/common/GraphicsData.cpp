@@ -78,18 +78,18 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect)
 	data.push_back(inTileRect.h);
 }
 
-void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs)
+void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs)
 {
    int n = inXYs.size()/2;
    int d0 = data.size();
 
-   if (inRGBAs.size()==n*4)
+   if (inRGBAs.size()==n)
    {
        commands.push_back(pcPointsXYRGBA);
-       data.resize(d0 + n*6);
+       data.resize(d0 + n*3);
        memcpy(&data[d0], &inXYs[0], n*2*sizeof(float));
        d0+=n*2;
-       memcpy(&data[d0], &inRGBAs[0], n*4*sizeof(float));
+       memcpy(&data[d0], &inRGBAs[0], n*sizeof(int));
    }
    else
    {

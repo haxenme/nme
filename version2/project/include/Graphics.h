@@ -248,7 +248,7 @@ public:
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
    void tile(float x, float y, const Rect &inTileRect);
-   void drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs);
+   void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
 };
 
 
@@ -446,7 +446,7 @@ struct RenderState
 
 
 
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip };
+enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints };
 
 struct DrawElement
 {
@@ -462,6 +462,7 @@ struct DrawElement
 
 typedef QuickVec<DrawElement> DrawElements;
 typedef QuickVec<UserPoint>   Vertices;
+typedef QuickVec<int>         Colours;
 
 struct HardwareArrays
 {
@@ -470,6 +471,7 @@ struct HardwareArrays
 
    Vertices mVertices;
    Vertices mTexCoords;
+	Colours  mColours;
    DrawElements mElements;
    Surface *mSurface;
 };
@@ -481,7 +483,7 @@ class HardwareData
 public:
    ~HardwareData();
 
-   HardwareArrays &GetArrays(Surface *inSurface);
+   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour=false);
 
    HardwareCalls mCalls;
 };
@@ -633,8 +635,7 @@ public:
    void beginTiles(Surface *inSurface,bool inSmooth=false);
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect);
-   void drawPoints(QuickVec<float> inXYs, QuickVec<float> inRGBAs,
-           int inDefaultRGB=0xffffff, double inDefaultAlpha=1.0);
+   void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff );
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);
