@@ -1038,6 +1038,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mFocusObject = 0;
    mMouseDownObject = 0;
    focusRect = true;
+	mLastMousePos = UserPoint(0,0);
 }
 
 Stage::~Stage()
