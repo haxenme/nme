@@ -363,13 +363,11 @@ public:
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
          }
 
-			if (arrays.mColours.size() == vert.size())
-			{
+         if (arrays.mColours.size() == vert.size())
+         {
             glEnableClientState(GL_COLOR_ARRAY);
             glColorPointer(4,GL_UNSIGNED_BYTE,0,&arrays.mColours[0]);
-			}
-			else
-            glDisableClientState(GL_COLOR_ARRAY);
+         }
 
    
          DrawElements &elements = arrays.mElements;
@@ -424,6 +422,9 @@ public:
    
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
          }
+
+         if (arrays.mColours.size() == vert.size())
+            glDisableClientState(GL_COLOR_ARRAY);
       }
    }
 
