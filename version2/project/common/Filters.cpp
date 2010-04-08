@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <Display.h>
 #include <Surface.h>
+#include <Pixel.h>
 
 namespace nme
 {
@@ -346,6 +347,8 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    int dx1 = std::min(outDest->Width(),blur_pos.x+alpha->Width());
    int a = mAlpha;
 
+   bool swap = gC0IsRed != (bool)(target.mPixelFormat & pfSwapRB);
+   int col = swap ? ARGB::Swap(mCol) : mCol;
 
    if (mInner)
    {
@@ -355,14 +358,14 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
       // And overlay shadow...
       Rect rect(alpha->Width(), alpha->Height() );
 		if (a>127) a--;
-      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y, bmTintedInner, 0, mCol | (a<<24));
+      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y, bmTintedInner, 0, col | (a<<24));
    }
    else
    {
       if (dx1>dx0)
       {
          // TODO: Swap to match dest
-         int col = mCol & 0x00ffffff;
+         int col = col & 0x00ffffff;
          for(int y=dy0;y<dy1;y++)
          {
             ARGB *dest = ((ARGB *)target.Row(y)) + dx0;

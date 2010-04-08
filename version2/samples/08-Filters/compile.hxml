@@ -1,0 +1,4 @@
+-main Sample
+-neko Sample.n
+--remap flash:nme
+-cp ../..
