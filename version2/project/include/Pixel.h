@@ -88,6 +88,19 @@ struct ARGB
       return ival;
    }
 
+   inline ARGB Swapped() const
+   {
+      ARGB result(*this);
+      result.ival = SwappedIVal();
+      return result;
+   }
+
+   inline int SwappedIVal() const
+         { return (ival & 0xff00ff00) |  ((ival&0xff)<<16) | ( (ival&0xff0000)>>16) ; }
+
+   static inline int Swap(int inVal)
+         { return (inVal & 0xff00ff00) |  ((inVal&0xff)<<16) | ( (inVal&0xff0000)>>16) ; }
+
 
    inline void Set(int inVal) { ival = inVal; }
 
