@@ -204,7 +204,7 @@ struct TintSource
    inline const ARGB &Next() const
    {
 		if (INNER)
-         mCol.a =  (*mPos * a0)>>8;
+         mCol.a =  a0*(255 - *mPos)>>8;
 		else
          mCol.a =  *mPos;
       mPos+=mPixelStride;

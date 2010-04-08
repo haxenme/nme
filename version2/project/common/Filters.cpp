@@ -313,6 +313,26 @@ DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
 
 }
 
+void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol)
+{
+	Rect r = inTarget.mRect.Intersect(inRect);
+	int a = (inCol >> 24 ) + (inCol>>31);
+	int c0 = inCol & 0xff;
+	int c1 = (inCol>>8) & 0xff;
+	int c2 = (inCol>>16) & 0xff;
+	for(int y=0;y<r.h;y++)
+	{
+		ARGB *argb = ( (ARGB *)inTarget.Row(y+r.y)) + r.x;
+		for(int x=0;x<r.w;x++)
+		{
+			argb->c0 += ((c0-argb->c0)*a)>>8;
+			argb->c1 += ((c1-argb->c1)*a)>>8;
+			argb->c2 += ((c2-argb->c2)*a)>>8;
+			argb++;
+		}
+	}
+}
+
 
 void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
@@ -348,24 +368,50 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    int a = mAlpha;
 
    bool swap = gC0IsRed != (bool)(target.mPixelFormat & pfSwapRB);
-   int col = swap ? ARGB::Swap(mCol) : mCol;
+   int scol = swap ? ARGB::Swap(mCol) : mCol;
 
    if (mInner)
    {
-      // Copy source ...
-      inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+		scol = (scol & 0xffffff) | (a<<24);
+		if (mKnockout || mHideObject)
+		{
+			inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+                 bmTinted, 0, scol );
+		}
+		else
+		{
+         // Copy source ...
+         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
                  bmCopy, 0, 0xffffff );
+		}
+
       // And overlay shadow...
       Rect rect(alpha->Width(), alpha->Height() );
 		if (a>127) a--;
-      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y, bmTintedInner, 0, col | (a<<24));
+
+      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y,
+						  (mKnockout||mHideObject) ? bmErase : bmTintedInner, 0, scol);
+
+		if (!(mKnockout || mHideObject))
+		{
+			if (blur_pos.x > inDiff.x)
+				ShadowRect(target,Rect(inDiff.x, blur_pos.y, blur_pos.x-inDiff.x, rect.h), scol);
+			if (blur_pos.y > inDiff.y)
+				ShadowRect(target,Rect(inDiff.x, inDiff.y, inSrc->Width(), blur_pos.y-inDiff.x), scol);
+	
+			if (blur_pos.x+rect.w < inDiff.x+inSrc->Width())
+				ShadowRect(target,Rect(blur_pos.x+rect.w, blur_pos.y,
+				  inDiff.x+inSrc->Width()-(blur_pos.x+rect.w), rect.h), scol);
+			if (blur_pos.y+rect.h < inDiff.y+inSrc->Height())
+				ShadowRect(target,Rect(inDiff.x, blur_pos.y + rect.h, inSrc->Width(),
+					       inDiff.y+inSrc->Height()-(blur_pos.y+rect.h) ), scol);
+		}
    }
    else
    {
       if (dx1>dx0)
       {
-         // TODO: Swap to match dest
-         int col = col & 0x00ffffff;
+         int col = scol & 0x00ffffff;
          for(int y=dy0;y<dy1;y++)
          {
             ARGB *dest = ((ARGB *)target.Row(y)) + dx0;
@@ -379,14 +425,13 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
       if (mKnockout)
       {
-         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), -inDiff.x, -inDiff.y,
                    bmErase, 0, 0xffffff );
       }
       else if (!mHideObject)
       {
          inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), -inDiff.x, -inDiff.y,
                    bmNormal, 0, 0xffffff );
-              
       }
    }
    
