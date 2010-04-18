@@ -336,7 +336,11 @@ void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol)
 
 void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
+	bool inner_hide = mInner && ( mKnockout || mHideObject);
    Surface *alpha = ExtractAlpha(inSrc);
+   Surface *orig_alpha = 0;
+	if (inner_hide)
+		orig_alpha = alpha->IncRef();
 
    // Blur alpha..
    ImagePoint offset(0,0);
@@ -373,9 +377,9 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    if (mInner)
    {
 		scol = (scol & 0xffffff) | (a<<24);
-		if (mKnockout || mHideObject)
+		if (inner_hide)
 		{
-			inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+			orig_alpha->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
                  bmTinted, 0, scol );
 		}
 		else
@@ -390,9 +394,9 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 		if (a>127) a--;
 
       alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y,
-						  (mKnockout||mHideObject) ? bmErase : bmTintedInner, 0, scol);
+						  inner_hide ? bmErase : bmTintedInner, 0, scol);
 
-		if (!(mKnockout || mHideObject))
+		if (!inner_hide)
 		{
 			if (blur_pos.x > inDiff.x)
 				ShadowRect(target,Rect(inDiff.x, blur_pos.y, blur_pos.x-inDiff.x, rect.h), scol);
@@ -436,6 +440,8 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    }
    
    alpha->DecRef();
+	if (orig_alpha)
+		orig_alpha->DecRef();
 
 }
 

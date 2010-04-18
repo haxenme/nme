@@ -94,7 +94,9 @@ SimpleSurface::~SimpleSurface()
 struct NullMask
 {
    inline void SetPos(int inX,int inY) const { }
-   inline const uint8 &Mask(const uint8 &inAlpha) const { return inAlpha; }
+   inline const uint8 &MaskAlpha(const uint8 &inAlpha) const { return inAlpha; }
+   inline const uint8 &MaskAlpha(const ARGB &inRGB) const { return inRGB.a; }
+   inline const ARGB Mask(const uint8 &inAlpha) const { ARGB r; r.a=inAlpha; return r; }
    inline const ARGB &Mask(const ARGB &inRGB) const { return inRGB; }
 };
 
@@ -121,11 +123,24 @@ struct ImageMask
    {
       mRow = (mMask.Row(inY) + mComponentOffset) + mPixelStride*(inX);
    }
-   inline uint8 Mask(uint8 inAlpha) const
+   inline uint8 MaskAlpha(uint8 inAlpha) const
    {
       inAlpha = (inAlpha * (*mRow) ) >> 8;
       mRow += mPixelStride;
       return inAlpha;
+   }
+	inline uint8 MaskAlpha(ARGB inARGB) const
+   {
+      int a = (inARGB.a * (*mRow) ) >> 8;
+      mRow += mPixelStride;
+      return a;
+   }
+   inline ARGB Mask(const uint8 &inA) const
+   {
+		ARGB argb;
+      argb.a = (inA * (*mRow) ) >> 8;
+      mRow += mPixelStride;
+      return argb;
    }
    inline ARGB Mask(ARGB inRGB) const
    {
@@ -206,7 +221,7 @@ struct TintSource
 		if (INNER)
          mCol.a =  a0*(255 - *mPos)>>8;
 		else
-         mCol.a =  *mPos;
+         mCol.a =  (a0 * *mPos)>>8;
       mPos+=mPixelStride;
       return mCol;
    }
@@ -307,7 +322,7 @@ void TBlitAlpha( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
       inMask.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
-         BlendAlpha(outDest.Next(),inMask.Mask(inSrc.Next()));
+         BlendAlpha(outDest.Next(),inMask.MaskAlpha(inSrc.Next()));
    }
 
 }
@@ -635,10 +650,20 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       else if (src_alpha)
       {
          ImageSource<uint8> src(mBase,mStride,mPixelFormat);
-         if (inMask)
-            TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
-         else
-            TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         if (inBlend==bmNormal || inBlend==bmLayer)
+			{
+            if (inMask)
+               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            else
+               TBlit( dest, src, NullMask(), dx, dy, src_rect );
+			}
+			else
+         {
+            if (inMask)
+               TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, inBlend );
+            else
+               TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
+         }
       }
       else
       {

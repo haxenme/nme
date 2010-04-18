@@ -4,9 +4,12 @@
 namespace nme
 {
 
+template<bool HAS_ALPHA>
 class SolidFiller : public Filler
 {
 public:
+	enum { HasAlpha = HAS_ALPHA };
+
 	SolidFiller(GraphicsSolidFill *inFill)
 	{
 		mRGB = inFill->mRGB;
@@ -35,7 +38,10 @@ public:
 
 Filler *Filler::Create(GraphicsSolidFill *inFill)
 {
-	return new SolidFiller(inFill);
+	if (inFill->mRGB.a==255)
+	   return new SolidFiller<false>(inFill);
+	else
+	   return new SolidFiller<true>(inFill);
 }
 
 

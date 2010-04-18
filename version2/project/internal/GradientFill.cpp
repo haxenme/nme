@@ -7,6 +7,8 @@ namespace nme
 class GradientFillerBase : public Filler
 {
 public:
+	enum { HasAlpha = true };
+
    GradientFillerBase(GraphicsGradientFill *inFill)
    {
       mGrad = inFill;
