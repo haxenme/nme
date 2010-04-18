@@ -343,14 +343,15 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
                clipRect:nme.geom.Rectangle,
                smoothing:Bool):Void
    {
-      // TODO:
+      nme_display_object_draw_to_surface(nmeHandle, inSurface, matrix,
+         colorTransform, blendMode, clipRect );
    }
-
 
 
 
    static var nme_create_display_object = nme.Loader.load("nme_create_display_object",0);
    static var nme_display_object_get_grapics = nme.Loader.load("nme_display_object_get_graphics",1);
+   static var nme_display_object_draw_to_surface = nme.Loader.load("nme_display_object_draw_to_surface",-1);
    static var nme_display_object_get_id = nme.Loader.load("nme_display_object_get_id",1);
    static var nme_display_object_get_x = nme.Loader.load("nme_display_object_get_x",1);
    static var nme_display_object_set_x = nme.Loader.load("nme_display_object_set_x",2);

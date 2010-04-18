@@ -144,6 +144,8 @@ template<int EDGE,bool SMOOTH,bool HAS_ALPHA>
 class BitmapFiller : public BitmapFillerBase
 {
 public:
+	enum { HasAlpha = HAS_ALPHA };
+
 	BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill) { }
 
    ARGB GetInc( )

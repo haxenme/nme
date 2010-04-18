@@ -222,8 +222,6 @@ class BitmapData implements IBitmapDrawable
                clipRect:nme.geom.Rectangle,
                smoothing:Bool):Void
 	{
-	   // TODO: This is a bit of a placeholder for now.
-	   if (matrix==null) matrix = new Matrix();
 		nme_render_surface_to_surface(inSurface, nmeHandle,
 			matrix, colorTransform, blendMode, clipRect, smoothing );
 	}

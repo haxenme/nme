@@ -478,6 +478,47 @@ value nme_display_object_get_graphics(value inObj)
 
 DEFINE_PRIM(nme_display_object_get_graphics,1);
 
+value nme_display_object_draw_to_surface(value *arg,int count)
+{
+	enum { aObject, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSIZE};
+
+	DisplayObject *obj;
+	Surface *surf;
+   if (AbstractToObject(arg[aObject],obj) && AbstractToObject(arg[aSurface],surf))
+	{
+		Rect r(surf->Width(),surf->Height());
+		if (!val_is_null(arg[aClipRect]))
+			FromValue(r,arg[aClipRect]);
+		AutoSurfaceRender render(surf,r);
+
+		Matrix matrix;
+		if (!val_is_null(arg[aMatrix]))
+			FromValue(matrix,arg[aMatrix]);
+      RenderState state(surf,4);
+      state.mTransform.mMatrix = &matrix;
+
+		ColorTransform col_trans;
+		if (!val_is_null(arg[aColourTransform]))
+		{
+		   ColorTransform t;
+			// TODO:
+			//FromValue(t,arg[aColourTransform]);
+         //state.CombineColourTransform(stage,&t,&col_trans);
+		}
+
+		// TODO: Blend mode
+      state.mRoundSizeToPOW2 = false;
+      state.mPhase = rpRender;
+
+      obj->Render(render.Target(), state);
+	}
+
+	return alloc_null();
+}
+
+DEFINE_PRIM_MULT(nme_display_object_draw_to_surface)
+
+
 value nme_display_object_get_id(value inObj)
 {
    DisplayObject *obj;
@@ -1505,7 +1546,51 @@ DEFINE_PRIM(nme_bitmap_data_set_bytes,3);
 
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
-   // TODO:
+	enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
+
+	Surface *surf;
+	Surface *src;
+   if (AbstractToObject(arg[aTarget],surf) && AbstractToObject(arg[aSurface],src))
+	{
+		Rect r(surf->Width(),surf->Height());
+		if (!val_is_null(arg[aClipRect]))
+			FromValue(r,arg[aClipRect]);
+		AutoSurfaceRender render(surf,r);
+
+		Matrix matrix;
+		if (!val_is_null(arg[aMatrix]))
+			FromValue(matrix,arg[aMatrix]);
+      RenderState state(surf,4);
+      state.mTransform.mMatrix = &matrix;
+
+		ColorTransform col_trans;
+		if (!val_is_null(arg[aColourTransform]))
+		{
+		   ColorTransform t;
+			// TODO:
+			//FromValue(t,arg[aColourTransform]);
+         //state.CombineColourTransform(stage,&t,&col_trans);
+		}
+
+		// TODO: Blend mode
+      state.mRoundSizeToPOW2 = false;
+      state.mPhase = rpRender;
+
+		Graphics *gfx = new Graphics(true);
+		gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
+		gfx->moveTo(0,0);
+		gfx->lineTo(src->Width(),0);
+		gfx->lineTo(src->Width(),src->Height());
+		gfx->lineTo(0,src->Height());
+		gfx->lineTo(0,0);
+
+		gfx->Render(render.Target(),state);
+
+		gfx->DecRef();
+
+
+	}
+
    return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_render_surface_to_surface);

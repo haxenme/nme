@@ -56,10 +56,21 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                {
                   int alpha = (run->mAlpha * (*m++))>>8;
 
-                  if (DEST_::HasAlpha)
-                      inBlend.BlendAlpha( outDest,inSource,alpha );
-                  else
-                      inBlend.BlendNoAlpha( outDest,inSource,alpha );
+                  if (SOURCE_::HasAlpha)
+						{
+							alpha -= (alpha>>7);
+						   if (DEST_::HasAlpha)
+                         inBlend.BlendAlpha( outDest,inSource,alpha );
+                     else
+                         inBlend.BlendNoAlpha( outDest,inSource,alpha );
+						}
+						else
+						{
+						   if (DEST_::HasAlpha)
+                         inBlend.BlendAlphaFull( outDest,inSource,alpha );
+                     else
+                         inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
+						}
                }
                ++run;
             }
@@ -77,12 +88,24 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                outDest.SetX(x0);
                inSource.SetPos(x0,sy);
                int alpha = run->mAlpha;
+               if (!SOURCE_::HasAlpha)
+						alpha -= (alpha>>7);
 
                while(x0++<x1)
-                  if (DEST_::HasAlpha)
-                      inBlend.BlendAlpha( outDest,inSource,alpha );
-                  else
-                      inBlend.BlendNoAlpha( outDest,inSource,alpha );
+                  if (SOURCE_::HasAlpha)
+						{
+						   if (DEST_::HasAlpha)
+                         inBlend.BlendAlpha( outDest,inSource,alpha );
+                     else
+                         inBlend.BlendNoAlpha( outDest,inSource,alpha );
+						}
+						else
+						{
+						   if (DEST_::HasAlpha)
+                         inBlend.BlendAlphaFull( outDest,inSource,alpha );
+                     else
+                         inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
+						}
                ++run;
             }
          }
@@ -130,14 +153,24 @@ struct NormalBlender
 			mC2_LUT = inSwapRB ? inState.mC0_LUT : inState.mC2_LUT;
 		}
 	}
-   template<bool DEST_ALPHA,typename DEST, typename SRC>
+   template<bool DEST_ALPHA,bool SRC_ALPHA,typename DEST, typename SRC>
    void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
       ARGB src = inSrc.GetInc();
-		if (ALPHA_LUT)
-         src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
+		if (SRC_ALPHA)
+		{
+			if (ALPHA_LUT)
+				src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
+			else
+				src.a = (src.a * inAlpha)>>8;
+		}
 		else
-         src.a = (src.a * inAlpha)>>8;
+		{
+			if (ALPHA_LUT)
+				src.a = mAlpha_LUT[ inAlpha ];
+			else
+				src.a = inAlpha;
+		}
 		if (COLOUR_LUT)
 		{
 			src.c0 = mC0_LUT[src.c0];
@@ -151,13 +184,24 @@ struct NormalBlender
    template<typename DEST, typename SRC>
    void BlendNoAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
-       Blend<false>(inDest,inSrc,inAlpha);
+       Blend<false,true>(inDest,inSrc,inAlpha);
    }
    template<typename DEST, typename SRC>
    void BlendAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
-       Blend<true>(inDest,inSrc,inAlpha);
+       Blend<true,true>(inDest,inSrc,inAlpha);
    }
+	template<typename DEST, typename SRC>
+   void BlendNoAlphaFull(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+       Blend<false,false>(inDest,inSrc,inAlpha);
+   }
+   template<typename DEST, typename SRC>
+   void BlendAlphaFull(DEST &inDest, SRC &inSrc,int inAlpha) const
+   {
+       Blend<true,false>(inDest,inSrc,inAlpha);
+   }
+
 };
 
 
