@@ -727,22 +727,26 @@ public:
                        &LineRender::BuildHitTest;
 
       // Convert line data to solid data
-      double perp_len = mStroke->thickness*0.5;
-      switch(mStroke->scaleMode)
-      {
-         case ssmNone:
-            // Done!
-            break;
-         case ssmNormal:
-            perp_len *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
-            break;
-         case ssmVertical:
-            perp_len *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
-            break;
-         case ssmHorizontal:
-            perp_len *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
-            break;
-      }
+      double perp_len = mStroke->thickness;
+		if (perp_len>=0)
+		{
+			perp_len *= 0.5;
+			switch(mStroke->scaleMode)
+			{
+				case ssmNone:
+					// Done!
+					break;
+				case ssmNormal:
+					perp_len *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
+					break;
+				case ssmVertical:
+					perp_len *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
+					break;
+				case ssmHorizontal:
+					perp_len *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
+					break;
+			}
+		}
 
       // This may be too fine ....
       mDTheta = M_PI/perp_len;

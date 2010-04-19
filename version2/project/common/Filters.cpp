@@ -397,20 +397,17 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
 
    AutoSurfaceRender render(outDest);
+	outDest->Zero();
    const RenderTarget &target = render.Target();
 
    // Copy it into the destination rect...
    ImagePoint blur_pos = offset + ImagePoint(mTX,mTY) - inDiff;
-   int dy0 = std::max(0,blur_pos.y);
-   int dy1 = std::min(outDest->Height(),blur_pos.y+alpha->Height());
-   int dx0 = std::max(0,blur_pos.x);
-   int dx1 = std::min(outDest->Width(),blur_pos.x+alpha->Width());
    int a = mAlpha;
 
    bool swap = gC0IsRed != (bool)(target.mPixelFormat & pfSwapRB);
    int scol = swap ? ARGB::Swap(mCol) : mCol;
 
-   if (mInner)
+   if (mInner )
    {
       scol = (scol & 0xffffff) | (a<<24);
       if (inner_hide)
@@ -449,6 +446,11 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    }
    else
    {
+      int dy0 = std::max(0,blur_pos.y);
+      int dy1 = std::min(outDest->Height(),blur_pos.y+alpha->Height());
+      int dx0 = std::max(0,blur_pos.x);
+      int dx1 = std::min(outDest->Width(),blur_pos.x+alpha->Width());
+
       if (dx1>dx0)
       {
          int col = scol & 0x00ffffff;
