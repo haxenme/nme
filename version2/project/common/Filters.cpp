@@ -284,6 +284,7 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
 void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
    DoApply<ARGB>(inSrc,outDest,inDiff,inPass);
+   //ApplyStrength(mStrength,outDest);
 }
 
 // --- DropShadowFilter --------------------------------------------------------------
@@ -313,34 +314,67 @@ DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
 
 }
 
-void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol)
+void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol,int inStrength)
 {
-	Rect r = inTarget.mRect.Intersect(inRect);
-	int a = (inCol >> 24 ) + (inCol>>31);
-	int c0 = inCol & 0xff;
-	int c1 = (inCol>>8) & 0xff;
-	int c2 = (inCol>>16) & 0xff;
-	for(int y=0;y<r.h;y++)
-	{
-		ARGB *argb = ( (ARGB *)inTarget.Row(y+r.y)) + r.x;
-		for(int x=0;x<r.w;x++)
-		{
-			argb->c0 += ((c0-argb->c0)*a)>>8;
-			argb->c1 += ((c1-argb->c1)*a)>>8;
-			argb->c2 += ((c2-argb->c2)*a)>>8;
-			argb++;
-		}
-	}
+   Rect r = inTarget.mRect.Intersect(inRect);
+   int a = ((inCol >> 24 ) + (inCol>>31))*inStrength>>8;
+   int c0 = inCol & 0xff;
+   int c1 = (inCol>>8) & 0xff;
+   int c2 = (inCol>>16) & 0xff;
+   for(int y=0;y<r.h;y++)
+   {
+      ARGB *argb = ( (ARGB *)inTarget.Row(y+r.y)) + r.x;
+      for(int x=0;x<r.w;x++)
+      {
+         argb->c0 += ((c0-argb->c0)*a)>>8;
+         argb->c1 += ((c1-argb->c1)*a)>>8;
+         argb->c2 += ((c2-argb->c2)*a)>>8;
+         argb++;
+      }
+   }
 }
+
+
+void ApplyStrength(Surface *inAlpha,int inStrength)
+{
+   if (inStrength!=0x100)
+   {
+      uint8 lut[256];
+      for(int a=0;a<256;a++)
+      {
+         int v= (a*inStrength) >> 8;
+         lut[a] = v<255 ? v : 255;
+      }
+      AutoSurfaceRender render(inAlpha);
+      const RenderTarget &target = render.Target();
+      int w = target.Width();
+      for(int y=0;y<target.Height();y++)
+      {
+         if (inAlpha->Format()==pfAlpha)
+         {
+            uint8 *r = target.Row(y);
+            for(int x=0;x<w;x++)
+               r[x] = lut[r[x]];
+         }
+         else
+         {
+            ARGB *r = (ARGB*)target.Row(y);
+            for(int x=0;x<w;x++)
+               r[x].a = lut[r[x].a];
+         }
+      }
+   }
+}
+
 
 
 void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
 {
-	bool inner_hide = mInner && ( mKnockout || mHideObject);
+   bool inner_hide = mInner && ( mKnockout || mHideObject);
    Surface *alpha = ExtractAlpha(inSrc);
    Surface *orig_alpha = 0;
-	if (inner_hide)
-		orig_alpha = alpha->IncRef();
+   if (inner_hide)
+      orig_alpha = alpha->IncRef();
 
    // Blur alpha..
    ImagePoint offset(0,0);
@@ -359,6 +393,8 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
       offset += diff;
    }
 
+   ApplyStrength(alpha,mStrength);
+
 
    AutoSurfaceRender render(outDest);
    const RenderTarget &target = render.Target();
@@ -376,40 +412,40 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
    if (mInner)
    {
-		scol = (scol & 0xffffff) | (a<<24);
-		if (inner_hide)
-		{
-			orig_alpha->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
+      scol = (scol & 0xffffff) | (a<<24);
+      if (inner_hide)
+      {
+         orig_alpha->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
                  bmTinted, 0, scol );
-		}
-		else
-		{
+      }
+      else
+      {
          // Copy source ...
          inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
                  bmCopy, 0, 0xffffff );
-		}
+      }
 
       // And overlay shadow...
       Rect rect(alpha->Width(), alpha->Height() );
-		if (a>127) a--;
+      if (a>127) a--;
 
       alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y,
-						  inner_hide ? bmErase : bmTintedInner, 0, scol);
+                    inner_hide ? bmErase : bmTintedInner, 0, scol);
 
-		if (!inner_hide)
-		{
-			if (blur_pos.x > inDiff.x)
-				ShadowRect(target,Rect(inDiff.x, blur_pos.y, blur_pos.x-inDiff.x, rect.h), scol);
-			if (blur_pos.y > inDiff.y)
-				ShadowRect(target,Rect(inDiff.x, inDiff.y, inSrc->Width(), blur_pos.y-inDiff.x), scol);
-	
-			if (blur_pos.x+rect.w < inDiff.x+inSrc->Width())
-				ShadowRect(target,Rect(blur_pos.x+rect.w, blur_pos.y,
-				  inDiff.x+inSrc->Width()-(blur_pos.x+rect.w), rect.h), scol);
-			if (blur_pos.y+rect.h < inDiff.y+inSrc->Height())
-				ShadowRect(target,Rect(inDiff.x, blur_pos.y + rect.h, inSrc->Width(),
-					       inDiff.y+inSrc->Height()-(blur_pos.y+rect.h) ), scol);
-		}
+      if (!inner_hide)
+      {
+         if (blur_pos.x > inDiff.x)
+            ShadowRect(target,Rect(inDiff.x, blur_pos.y, blur_pos.x-inDiff.x, rect.h), scol, mStrength);
+         if (blur_pos.y > inDiff.y)
+            ShadowRect(target,Rect(inDiff.x, inDiff.y, inSrc->Width(), blur_pos.y-inDiff.x), scol, mStrength);
+   
+         if (blur_pos.x+rect.w < inDiff.x+inSrc->Width())
+            ShadowRect(target,Rect(blur_pos.x+rect.w, blur_pos.y,
+              inDiff.x+inSrc->Width()-(blur_pos.x+rect.w), rect.h), scol, mStrength);
+         if (blur_pos.y+rect.h < inDiff.y+inSrc->Height())
+            ShadowRect(target,Rect(inDiff.x, blur_pos.y + rect.h, inSrc->Width(),
+                      inDiff.y+inSrc->Height()-(blur_pos.y+rect.h) ), scol, mStrength);
+      }
    }
    else
    {
@@ -440,8 +476,8 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    }
    
    alpha->DecRef();
-	if (orig_alpha)
-		orig_alpha->DecRef();
+   if (orig_alpha)
+      orig_alpha->DecRef();
 
 }
 
