@@ -1,7 +1,8 @@
 package nme.display;
 
-enum TriangleCulling {
-	NEGATIVE;
-	NONE;
-	POSITIVE;
+enum TriangleCulling
+{
+   NEGATIVE;
+   NONE;
+   POSITIVE;
 }

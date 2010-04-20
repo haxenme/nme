@@ -30,7 +30,6 @@ void Graphics::clear()
    mFillJob.clear();
    mLineJob.clear();
    mTileJob.clear();
-   mTriJob.clear();
 
    // clear jobs
    for(int i=0;i<mJobs.size();i++)
@@ -366,6 +365,18 @@ void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned
    mJobs.push_back(job);
 }
 
+void Graphics::drawTriangles(const QuickVec<float> &inXYs,
+            const QuickVec<int> &inIndices,
+            const QuickVec<float> &inUVT, int inCull)
+{
+   GraphicsTrianglePath *path = new GraphicsTrianglePath(inXYs,
+           inIndices, inUVT, inCull );
+   GraphicsJob job;
+   path->IncRef();
+   job.mTriangles = path;
+
+   mJobs.push_back(job);
+}
 
 
 
@@ -524,6 +535,7 @@ void GraphicsJob::clear()
 {
    if (mStroke) mStroke->DecRef();
    if (mFill) mFill->DecRef();
+   if (mTriangles) mTriangles->DecRef();
    if (mSoftwareRenderer) mSoftwareRenderer->Destroy();
    bool was_tile = mIsTileJob;
    memset(this,0,sizeof(GraphicsJob));

@@ -1,8 +1,9 @@
 TODO:
-- filters
 - triangles
 - rgb gradient interp
 - masks
 - colorTransform (check combining alphas too)
 
  - bitmap text extent, borders
+ - bitmap setting functions
+ - ByteArray

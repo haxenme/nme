@@ -99,6 +99,15 @@ void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs)
    }
 }
 
+// -- GraphicsTrianglePath ---------------------------------------------------------
+
+GraphicsTrianglePath::GraphicsTrianglePath( const QuickVec<float> &inXYs,
+            const QuickVec<int> &inIndixes,
+            const QuickVec<float> &inUVT, int inCull)
+{
+
+}
+
 
 
 } // end namespace nme

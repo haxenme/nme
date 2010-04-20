@@ -277,13 +277,14 @@ enum VertexType { vtVertex, vtVertexUV, vtVertexUVT };
 class GraphicsTrianglePath : public IGraphicsPath
 {
 public:
-   GraphicsTrianglePath();
-   ~GraphicsTrianglePath();
+   GraphicsTrianglePath( const QuickVec<float> &inXYs,
+            const QuickVec<int> &inIndixes,
+            const QuickVec<float> &inUVT, int inCull);
 
-   TriangleCulling   culling;
-   VertexType mType;
-   Vertex     *mVertex;
-   int        mTriangleCount;
+   VertexType       mType;
+   int              mTriangleCount;
+   QuickVec<float>  mVertices;
+   QuickVec<float>  mUVT;
 };
 
 // ----------------------------------------------------------------------
@@ -574,7 +575,7 @@ struct GraphicsJob
 
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
-   //TriangleData    *mTriagles;
+   GraphicsTrianglePath  *mTriangles;
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
@@ -636,6 +637,8 @@ public:
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff );
+   void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
+            const QuickVec<float> &inUVT, int inCull);
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);
@@ -665,7 +668,6 @@ private:
    GraphicsJob               mFillJob;
    GraphicsJob               mLineJob;
    GraphicsJob               mTileJob;
-   GraphicsJob               mTriJob;
 
    UserPoint                 mCursor;
 

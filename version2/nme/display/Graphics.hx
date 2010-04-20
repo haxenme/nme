@@ -104,6 +104,17 @@ class Graphics
             inX,inY,inWidth,inHeight,inRadX,inRadY==null?inRadX:inRadY);
    }
 
+   public function drawTriangles(vertices:Array<Float>,
+          ?indices:Array<Int>,
+          ?uvtData:Array<Float>,
+          ?culling:nme.display.TriangleCulling)
+   {
+      var cull:Int = culling==null ? 0 : Type.enumIndex(culling)-1;
+
+      nme_gfx_draw_triangles(nmeHandle,vertices,indices,uvtData,cull );
+   }
+
+
    public function drawGraphicsData(graphicsData:Array<IGraphicsData>):Void
    {
       var handles = new Array<Dynamic>();
@@ -155,4 +166,5 @@ class Graphics
    static var nme_gfx_draw_tiles = nme.Loader.load("nme_gfx_draw_tiles",3);
    static var nme_gfx_draw_points = nme.Loader.load("nme_gfx_draw_points",5);
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
+   static var nme_gfx_draw_triangles = nme.Loader.load("nme_gfx_draw_triangles",5);
 }
