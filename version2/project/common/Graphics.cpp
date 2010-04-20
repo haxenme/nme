@@ -369,10 +369,22 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
             const QuickVec<int> &inIndices,
             const QuickVec<float> &inUVT, int inCull)
 {
+	Flush( );
+	IGraphicsFill *fill = mFillJob.mFill;
+
    GraphicsTrianglePath *path = new GraphicsTrianglePath(inXYs,
            inIndices, inUVT, inCull );
    GraphicsJob job;
    path->IncRef();
+
+	if (path->mUVT.size() && !fill->AsBitmapFill())
+	{
+		path->DecRef();
+		return;
+	}
+
+   job.mFill = fill ? fill->IncRef() : 0;
+   job.mStroke = mLineJob.mStroke ? mLineJob.mStroke->IncRef() : 0;
    job.mTriangles = path;
 
    mJobs.push_back(job);

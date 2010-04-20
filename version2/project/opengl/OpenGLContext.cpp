@@ -177,6 +177,12 @@ public:
       return UserPoint(inPixels.x/mTextureWidth, inPixels.y/mTextureHeight);
    }
 
+	UserPoint TexToPaddedTex(const UserPoint &inTex)
+   {
+      return UserPoint(inTex.x*mPixelWidth/mTextureWidth, inTex.y*mPixelHeight/mTextureHeight);
+   }
+
+
 
    GLuint mTextureID;
    bool mRepeat;

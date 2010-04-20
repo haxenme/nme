@@ -31,7 +31,7 @@ public:
       }
       else if (inJob.mFill)
       {
-         mElement.mPrimType = ptTriangleFan;
+         mElement.mPrimType = inJob.mTriangles ? ptTriangles : ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
          SetFill(inJob.mFill,inHardware);
@@ -50,7 +50,10 @@ public:
 
       mArrays = &ioData.GetArrays(mSurface);
 
-      AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
+		if (inJob.mTriangles)
+			AddTriangles(inJob.mTriangles);
+		else
+         AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
                 &inPath.data[inJob.mData0], inJob.mFill);
    }
 
@@ -131,7 +134,25 @@ public:
    }
 
 
+	void AddTriangles(GraphicsTrianglePath *inPath)
+	{
+		Vertices &vertices = mArrays->mVertices;
+      Vertices &tex = mArrays->mTexCoords;
+      DrawElements &elements = mArrays->mElements;
+      mElement.mFirst = vertices.size();
 
+		UserPoint *t = (UserPoint *)&inPath->mUVT[0];
+		for(int v=0;v<inPath->mVertices.size();v++)
+		{
+			vertices.push_back(inPath->mVertices[v]);
+			// todo: 0 or 3 texture components...
+			tex.push_back(mTexture->TexToPaddedTex(t[v]));
+		}
+
+		mElement.mCount = vertices.size() - mElement.mFirst;
+      elements.push_back(mElement);
+
+	}
 
    void AddObject(const uint8* inCommands, int inCount,
                   const float *inData,  bool inClose)

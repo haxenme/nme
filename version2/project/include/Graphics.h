@@ -81,7 +81,9 @@ private:
 
 class IGraphicsFill : public IGraphicsData
 {
+public:
    virtual IGraphicsFill *AsIFill() { return this; }
+	IGraphicsFill *IncRef() { IGraphicsData::IncRef(); return this; }
 
 protected:
    virtual ~IGraphicsFill() { };
@@ -168,6 +170,7 @@ class IGraphicsStroke : public IGraphicsData
 {
 public:
    IGraphicsStroke *AsIStroke() { return this; }
+	IGraphicsStroke *IncRef() { IGraphicsData::IncRef(); return this; }
    virtual GraphicsDataType GetType() { return gdtStroke; }
 };
 
@@ -184,6 +187,7 @@ public:
                   StrokeJoints joints = sjBevel, double miterLimit= 3.0);
 
    ~GraphicsStroke();
+	GraphicsStroke *IncRef() { Object::IncRef(); return this; }
 
    GraphicsStroke *AsStroke() { return this; }
 
@@ -254,24 +258,6 @@ public:
 
 enum TriangleCulling { tcNegative = -1, tcNone = 0, tcPositive = 1};
 
-struct Vertex
-{
-   float  x;
-   float  y;
-   float  z;
-   bool   edge;
-};
-
-struct VertexUV : public Vertex
-{
-   UserPoint uv;
-};
-
-struct VertexUVT : public VertexUV
-{
-   float t;
-};
-
 enum VertexType { vtVertex, vtVertexUV, vtVertexUVT };
 
 class GraphicsTrianglePath : public IGraphicsPath
@@ -283,7 +269,7 @@ public:
 
    VertexType       mType;
    int              mTriangleCount;
-   QuickVec<float>  mVertices;
+   QuickVec<UserPoint>  mVertices;
    QuickVec<float>  mUVT;
 };
 
