@@ -21,8 +21,8 @@ class Sample extends Sprite
 		var sy = 1.0/data.height;
 
 		var vertices = [
-		  100.0, 100.0,
-		  100.0, 300.0,
+		  100.0, 150.0,
+		  100.0, 250.0,
 		  300.0, 300.0,
 		  300.0, 100.0 ];
 
@@ -31,10 +31,10 @@ class Sample extends Sprite
 			2, 3, 0 ];
 
 		var tex_uv = [
-		  100.0*sx, 100.0*sy,
-		  100.0*sx, 300.0*sy,
-		  300.0*sx, 300.0*sy,
-		  300.0*sx, 100.0*sy ];
+		  100.0*sx, 100.0*sy, 1.0,
+		  100.0*sx, 300.0*sy, 1.0,
+		  300.0*sx, 300.0*sy, 2.0,
+		  300.0*sx, 100.0*sy, 2.0  ];
 
       gfx.drawTriangles(vertices, indices, tex_uv);
 

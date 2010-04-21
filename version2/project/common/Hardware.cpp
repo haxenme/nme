@@ -48,13 +48,18 @@ public:
       mElement.mCount = 0;
 
 
-      mArrays = &ioData.GetArrays(mSurface);
 
 		if (inJob.mTriangles)
+      {
+         mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType==vtVertexUVT ? 3 : 2);
 			AddTriangles(inJob.mTriangles);
+      }
 		else
+      {
+         mArrays = &ioData.GetArrays(mSurface,false);
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
                 &inPath.data[inJob.mData0], inJob.mFill);
+      }
    }
 
   
@@ -110,10 +115,10 @@ public:
    void CalcTexCoords()
    {
       Vertices &vertices = mArrays->mVertices;
-      Vertices &tex = mArrays->mTexCoords;
+      QuickVec<float> &tex = mArrays->mTexCoords;
       int v0 = vertices.size();
-      int t0 = tex.size();
-      tex.resize(v0);
+      int t0 = tex.size()/2;
+      tex.resize(v0*2);
       for(int i=t0;i<v0;i++)
       {
          UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
@@ -129,7 +134,8 @@ public:
                p.x *= 0.5;
             p.y = 0;
          }
-         tex[i] = p;
+         tex[i*2] = p.x;
+         tex[i*2+1] = p.y;
        }
    }
 
@@ -137,16 +143,25 @@ public:
 	void AddTriangles(GraphicsTrianglePath *inPath)
 	{
 		Vertices &vertices = mArrays->mVertices;
-      Vertices &tex = mArrays->mTexCoords;
+      QuickVec<float> &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
 
-		UserPoint *t = (UserPoint *)&inPath->mUVT[0];
+      int tex_n = mArrays->mTexComponents;
+		const float *t = &inPath->mUVT[0];
 		for(int v=0;v<inPath->mVertices.size();v++)
 		{
 			vertices.push_back(inPath->mVertices[v]);
-			// todo: 0 or 3 texture components...
-			tex.push_back(mTexture->TexToPaddedTex(t[v]));
+
+			if (tex_n>0)
+         {
+            UserPoint p = mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) );
+            tex.push_back(p.x);
+            tex.push_back(p.y);
+            if (tex_n==3)
+              tex.push_back(t[2]);
+            t+=tex_n;
+         }
 		}
 
 		mElement.mCount = vertices.size() - mElement.mFirst;
@@ -158,7 +173,7 @@ public:
                   const float *inData,  bool inClose)
    {
       Vertices &vertices = mArrays->mVertices;
-      Vertices &tex = mArrays->mTexCoords;
+      QuickVec<float> &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
 
@@ -250,12 +265,21 @@ public:
                   vertices.push_back( UserPoint(pos.x,pos.y+size.y) );
 
                   pos = tex_pos;
-                  tex.push_back( mTexture->PixelToTex(pos));
-                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y)) );
-                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
-                  tex.push_back( mTexture->PixelToTex(pos));
-                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
-                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y)) );
+                  UserPoint t;
+                  t = mTexture->PixelToTex(pos);
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(pos);
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y));
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y));
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(pos);
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y));
+                  tex.push_back(t.x); tex.push_back(t.y);
+                  t = mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y));
+                  tex.push_back(t.x); tex.push_back(t.y);
                }
                point += 3;
          }
@@ -330,8 +354,9 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 
 // --- HardwareArrays ---------------------------------------------------------------------
 
-HardwareArrays::HardwareArrays(Surface *inSurface)
+HardwareArrays::HardwareArrays(Surface *inSurface,int inTexComponents)
 {
+   mTexComponents = inTexComponents;
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
@@ -349,12 +374,13 @@ HardwareData::~HardwareData()
    mCalls.DeleteAll();
 }
 
-HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour)
+HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,int inTexComponents)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
-		     mCalls.last()->mColours.empty() != inWithColour )
+		     mCalls.last()->mColours.empty() != inWithColour ||
+		     mCalls.last()->mTexComponents != inTexComponents )
    {
-       HardwareArrays *arrays = new HardwareArrays(inSurface);
+       HardwareArrays *arrays = new HardwareArrays(inSurface,inTexComponents);
        mCalls.push_back(arrays);
    }
 
