@@ -453,15 +453,15 @@ typedef QuickVec<int>         Colours;
 
 struct HardwareArrays
 {
-   HardwareArrays(Surface *inSurface,int inTexComponents);
+   HardwareArrays(Surface *inSurface,bool inPerspectiveCorrect);
    ~HardwareArrays();
 
    Vertices mVertices;
-   QuickVec<float> mTexCoords;
+   QuickVec<UserPoint> mTexCoords;
 	Colours  mColours;
    DrawElements mElements;
    Surface *mSurface;
-   int     mTexComponents;
+   bool    mPerspectiveCorrect;
 };
 
 typedef QuickVec<HardwareArrays *> HardwareCalls;
@@ -471,7 +471,7 @@ class HardwareData
 public:
    ~HardwareData();
 
-   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour=false,int inTexComponents=2);
+   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour=false,bool inPerspective=false);
 
    HardwareCalls mCalls;
 };

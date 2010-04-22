@@ -7,3 +7,4 @@ TODO:
  - bitmap text extent, borders
  - bitmap setting functions
  - ByteArray
+ - loader

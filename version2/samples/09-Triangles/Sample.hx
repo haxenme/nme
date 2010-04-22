@@ -63,8 +63,8 @@ class Sample extends Sprite
       var cos = Math.cos(theta);
       var sin = Math.cos(theta);
       var z = sin*100;
-      var w0 = 400.0/(400.0+z);
-      var w1 = 400.0/(400.0-z);
+      var w0 = 100.0/(200.0+z);
+      var w1 = 100.0/(200.0-z);
 
       var x0 = 200;
       var y0 = 200;
@@ -113,7 +113,7 @@ public static function main()
 {
 #if !flash
    nme.Lib.create(function(){new Sample();},550,400,60,0x202040,
-        (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
+        (0*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
 #else
    new Sample();
 #end

@@ -51,7 +51,7 @@ public:
 
 		if (inJob.mTriangles)
       {
-         mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType==vtVertexUVT ? 3 : 2);
+         mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType == vtVertexUVT);
 			AddTriangles(inJob.mTriangles);
       }
 		else
@@ -115,10 +115,10 @@ public:
    void CalcTexCoords()
    {
       Vertices &vertices = mArrays->mVertices;
-      QuickVec<float> &tex = mArrays->mTexCoords;
+      Vertices &tex = mArrays->mTexCoords;
       int v0 = vertices.size();
-      int t0 = tex.size()/2;
-      tex.resize(v0*2);
+      int t0 = tex.size();
+      tex.resize(v0);
       for(int i=t0;i<v0;i++)
       {
          UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
@@ -134,8 +134,7 @@ public:
                p.x *= 0.5;
             p.y = 0;
          }
-         tex[i*2] = p.x;
-         tex[i*2+1] = p.y;
+			tex[i] = p;
        }
    }
 
@@ -143,37 +142,40 @@ public:
 	void AddTriangles(GraphicsTrianglePath *inPath)
 	{
 		Vertices &vertices = mArrays->mVertices;
-      QuickVec<float> &tex = mArrays->mTexCoords;
+      Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
-      mElement.mFirst = vertices.size();
+		bool persp = inPath->mType == vtVertexUVT;
+      mElement.mFirst = vertices.size() / (persp?2:1);
+      mElement.mPrimType = ptTriangles;
 
-      int tex_n = mArrays->mTexComponents;
 		const float *t = &inPath->mUVT[0];
 		for(int v=0;v<inPath->mVertices.size();v++)
 		{
-			vertices.push_back(inPath->mVertices[v]);
+			if (!persp)
+			  vertices.push_back(inPath->mVertices[v]);
 
-			if (tex_n>0)
+			if (inPath->mType != vtVertex)
          {
-            UserPoint p = mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) );
-            tex.push_back(p.x);
-            tex.push_back(p.y);
-            if (tex_n==3)
-              tex.push_back(t[2]);
-            t+=tex_n;
+            tex.push_back( mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) ) );
+				t+=2;
+            if (persp)
+				{
+					float w= 1.0/ *t++;
+			      vertices.push_back(inPath->mVertices[v]*w);
+			      vertices.push_back( UserPoint(0,w) );
+				}
          }
 		}
 
-		mElement.mCount = vertices.size() - mElement.mFirst;
+		mElement.mCount = (vertices.size() - mElement.mFirst)/(persp ? 2:1);
       elements.push_back(mElement);
-
 	}
 
    void AddObject(const uint8* inCommands, int inCount,
                   const float *inData,  bool inClose)
    {
       Vertices &vertices = mArrays->mVertices;
-      QuickVec<float> &tex = mArrays->mTexCoords;
+      Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
 
@@ -265,21 +267,13 @@ public:
                   vertices.push_back( UserPoint(pos.x,pos.y+size.y) );
 
                   pos = tex_pos;
-                  UserPoint t;
-                  t = mTexture->PixelToTex(pos);
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(pos);
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y));
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y));
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(pos);
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y));
-                  tex.push_back(t.x); tex.push_back(t.y);
-                  t = mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y));
-                  tex.push_back(t.x); tex.push_back(t.y);
+                  tex.push_back( mTexture->PixelToTex(pos) );
+                  tex.push_back( mTexture->PixelToTex(pos) );
+                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y)) );
+                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
+                  tex.push_back( mTexture->PixelToTex(pos) );
+                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
+                  tex.push_back( mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y)) );
                }
                point += 3;
          }
@@ -354,9 +348,9 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 
 // --- HardwareArrays ---------------------------------------------------------------------
 
-HardwareArrays::HardwareArrays(Surface *inSurface,int inTexComponents)
+HardwareArrays::HardwareArrays(Surface *inSurface,bool inPersp)
 {
-   mTexComponents = inTexComponents;
+	mPerspectiveCorrect = inPersp;
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
@@ -374,13 +368,13 @@ HardwareData::~HardwareData()
    mCalls.DeleteAll();
 }
 
-HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,int inTexComponents)
+HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,bool inPersp)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
 		     mCalls.last()->mColours.empty() != inWithColour ||
-		     mCalls.last()->mTexComponents != inTexComponents )
+		     mCalls.last()->mPerspectiveCorrect != inPersp )
    {
-       HardwareArrays *arrays = new HardwareArrays(inSurface,inTexComponents);
+       HardwareArrays *arrays = new HardwareArrays(inSurface,inPersp);
        mCalls.push_back(arrays);
    }
 

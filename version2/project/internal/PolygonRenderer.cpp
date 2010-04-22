@@ -1370,6 +1370,8 @@ Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath 
 {
    if (inJob.mIsTileJob)
       return new TileRenderer(inJob,inPath);
+	else if (inJob.mIsTileJob)
+      return new TileRenderer(inJob,inPath);
    else if (inJob.mIsPointJob)
       return new PointRenderer(inJob,inPath);
    else if (inJob.mStroke)

@@ -347,10 +347,11 @@ public:
       {
          HardwareArrays &arrays = *inCalls[c];
          Vertices &vert = arrays.mVertices;
-         QuickVec<float> &tex_coords = arrays.mTexCoords;
+         Vertices &tex_coords = arrays.mTexCoords;
+			bool persp = arrays.mPerspectiveCorrect;
 
-         glVertexPointer(2,GL_FLOAT,0,&vert[0].x);
-         bool tex = arrays.mSurface && tex_coords.size()==vert.size()*arrays.mTexComponents;
+         glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,&vert[0].x);
+         bool tex = arrays.mSurface && tex_coords.size();
          if (tex)
          {
             glEnable(GL_TEXTURE_2D);
@@ -360,7 +361,7 @@ public:
             glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
             last_col = -1;
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glTexCoordPointer(arrays.mTexComponents,GL_FLOAT,0,&tex_coords[0]);
+            glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0]);
          }
          else
          {
