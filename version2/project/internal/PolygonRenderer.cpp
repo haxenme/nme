@@ -3,7 +3,7 @@
 #include <Geom.h>
 #include <Surface.h>
 #include "AlphaMask.h"
-
+#include <map>
 
 #ifndef M_PI
 #define M_PI 3.14159
@@ -130,6 +130,7 @@ struct SpanRect
    SpanRect(const Rect &inRect,int inAA)
    {
       mAA =  inAA;
+      mAAMask = ~(mAA-1);
       mRect = inRect * inAA;
 
       mTransitions = new Transitions[mRect.h];
@@ -154,6 +155,7 @@ struct SpanRect
       return ratio;
    }
 
+   template<bool MASK_AA_X,bool MASK_AA_Y>
    void Line(Fixed10 inP0, Fixed10 inP1)
    {
       // All right ...
@@ -163,6 +165,11 @@ struct SpanRect
       // Make p1.y numerically greater than inP0.y
       int y0 = inP0.Y() - mRect.y;
       int y1 = inP1.Y() - mRect.y;
+      if (MASK_AA_Y)
+      {
+         y0 = y0 & mAAMask;
+         y1 = y1 & mAAMask;
+      }
       int dy = y1-y0;
 
       if (dy==0)
@@ -193,7 +200,7 @@ struct SpanRect
       int dx_dy = FixedGrad(inP1 - inP0,10);
 
       // (10 bit) fractional bit true position pokes up above the first line...
-      int extra_y = ((y0+1 + mRect.y)<<10) - inP0.y;
+      int extra_y = ((y0+(MASK_AA_Y ? mAA : 1) + mRect.y)<<10) - inP0.y;
       // We have already started down the gradient bt a bit, so adjust x.
       // x is 10 bits, dx_dy is 10 bits and extra_y is 10 bits ...
       int x = inP0.x + ((dx_dy * extra_y)>>10);
@@ -205,12 +212,26 @@ struct SpanRect
       }
       int last = std::min(y1,mRect.h);
 
-      for(; y0<last; y0++)
+      if (MASK_AA_X)
       {
-         // X is fixed-10, y is fixed-aa
-         mTransitions[y0].Change(x>>10,diff);
-
-         x+=dx_dy; 
+         dx_dy *= mAA;
+         for(; y0<last; y0+=mAA)
+         {
+            // X is fixed-10, y is fixed-aa
+            int x_val = (x>>10) & mAAMask;
+            for(int a=0;a<mAA;a++)
+               mTransitions[y0+a].Change(x_val,diff);
+            x+=dx_dy; 
+         }
+      }
+      else
+      {
+         for(; y0<last; y0++)
+         {
+            // X is fixed-10, y is fixed-aa
+            mTransitions[y0].Change(x>>10,diff);
+            x+=dx_dy; 
+         }
       }
    }
 
@@ -300,6 +321,7 @@ struct SpanRect
  
    Transitions *mTransitions;
    int         mAA;
+   int         mAAMask;
    int         mMinX;
    int         mMaxX;
    int         mLeftPos;
@@ -401,7 +423,7 @@ public:
       CachedExtentRenderer::GetExtent(inState.mTransform,extent);
 
       if (!extent.Valid())
-			return true;
+         return true;
 
       // Get bounding pixel rect
       Rect rect = inState.mTransform.GetTargetRect(extent);
@@ -442,7 +464,7 @@ public:
    }
    void BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
    {
-      mSpanRect->Line( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
+      mSpanRect->Line<false,false>( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
    }
 
    void BuildCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2)
@@ -462,10 +484,10 @@ public:
          double t_ = 1.0-t;
          UserPoint p = inP0 * (t_*t_) + inP1 * (2.0*t*t_) + inP2 * (t*t);
          Fixed10 fixed = mTransform.ToImageAA(p);
-         mSpanRect->Line(last,fixed);
+         mSpanRect->Line<false,false>(last,fixed);
          last = fixed;
       }
-      mSpanRect->Line( last, mTransform.ToImageAA(inP2) );
+      mSpanRect->Line<false,false>( last, mTransform.ToImageAA(inP2) );
    }
 
    void HitTestCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2)
@@ -729,25 +751,25 @@ public:
 
       // Convert line data to solid data
       double perp_len = mStroke->thickness;
-		if (perp_len>=0)
-		{
-			perp_len *= 0.5;
-			switch(mStroke->scaleMode)
-			{
-				case ssmNone:
-					// Done!
-					break;
-				case ssmNormal:
-					perp_len *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
-					break;
-				case ssmVertical:
-					perp_len *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
-					break;
-				case ssmHorizontal:
-					perp_len *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
-					break;
-			}
-		}
+      if (perp_len>=0)
+      {
+         perp_len *= 0.5;
+         switch(mStroke->scaleMode)
+         {
+            case ssmNone:
+               // Done!
+               break;
+            case ssmNormal:
+               perp_len *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
+               break;
+            case ssmVertical:
+               perp_len *= sqrt( m.m00*m.m00 + m.m01*m.m01 );
+               break;
+            case ssmHorizontal:
+               perp_len *= sqrt( m.m10*m.m10 + m.m11*m.m11 );
+               break;
+         }
+      }
 
       // This may be too fine ....
       mDTheta = M_PI/perp_len;
@@ -1090,16 +1112,64 @@ public:
    }
 };
 
+
+
 class TriangleRender :public PolygonRender
 {
+   struct Edge
+   {
+      UserPoint p0,p1;
+      Edge(const UserPoint &inP0, const UserPoint &inP1) : p0(inP0), p1(inP1)
+      {
+         if (p1<p0) std::swap(p0,p1);
+      }
+      inline bool operator<(const Edge &e) const
+      {
+         if (p0<e.p0) return true;
+         if (e.p0<p0) return false;
+         return p1<e.p1;
+      }
+   };
+   typedef std::map<Edge,int> EdgeCount;
+
 public:
-	TriangleRender(const GraphicsJob &inJob, const GraphicsPath &inPath ):
+   TriangleRender(const GraphicsJob &inJob, const GraphicsPath &inPath ):
        PolygonRender(inJob, inPath, inJob.mFill)
    {
-		mTriangles = inJob.mTriangles;
+      mTriangles = inJob.mTriangles;
+      mAlphaMasks.resize(mTriangles->mTriangleCount);
+      mAlphaMasks.Zero();
+
+      int n  = mTriangles->mTriangleCount;
+      const UserPoint *p = &mTriangles->mVertices[0];
+   
+      EdgeCount edges;
+      for(int t=0;t<n;t++)
+      {
+          edges[ Edge(p[0],p[1]) ]++;
+          edges[ Edge(p[1],p[2]) ]++;
+          edges[ Edge(p[2],p[0]) ]++;
+          p+=3;
+      }
+
+      p = &mTriangles->mVertices[0];
+      int idx=0;
+      mEdgeAA.resize(n*3);
+      for(int t=0;t<n;t++)
+      {
+          mEdgeAA[idx++] = edges[Edge(p[0],p[1])]<2;
+          mEdgeAA[idx++] = edges[Edge(p[1],p[2])]<2;
+          mEdgeAA[idx++] = edges[Edge(p[2],p[0])]<2;
+          p+=3;
+      }
    }
 
-	void SetTransform(const Transform &inTransform)
+   ~TriangleRender()
+   {
+      mAlphaMasks.DeleteAll();
+   }
+
+   void SetTransform(const Transform &inTransform)
    {
       int points = mTriangles->mVertices.size();
       if (points!=mTransformed.size() || inTransform!=mTransform)
@@ -1117,16 +1187,16 @@ public:
       }
    }
 
-	bool Render(const RenderTarget &inTarget, const RenderState &inState)
+   bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
-		if (mTriangles->mUVT.empty())
-			return PolygonRender::Render(inTarget,inState);
+      if (mTriangles->mUVT.empty())
+         return PolygonRender::Render(inTarget,inState);
 
       Extent2DF extent;
       CachedExtentRenderer::GetExtent(inState.mTransform,extent);
 
       if (!extent.Valid())
-			return true;
+         return true;
 
       // Get bounding pixel rect
       Rect rect = inState.mTransform.GetTargetRect(extent);
@@ -1134,58 +1204,66 @@ public:
       // Intersect with clip rect ...
       Rect visible_pixels = rect.Intersect(inState.mClipRect);
 
-		/*
-
-      // For each alpha mask ...
-      // Check to see if AlphaMask is invalid...
-      int tx=0;
-      int ty=0;
-      if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
+      int tris = mTriangles->mTriangleCount;
+      UserPoint *point = &mTransformed[0];
+      bool *edge_aa = &mEdgeAA[0];
+      int  aa = inState.mTransform.mAAFactor;
+      bool aa1 = aa==1;
+      for(int i=0;i<tris;i++)
       {
-         delete mAlphaMask;
-         mAlphaMask = 0;
+         // For each alpha mask ...
+         // Check to see if AlphaMask is invalid...
+         AlphaMask *&alpha = mAlphaMasks[i];
+         int tx=0;
+         int ty=0;
+         if (alpha && !alpha->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
+         {
+            delete alpha;
+            alpha = 0;
+         }
+
+         if (!alpha)
+         {
+            SetTransform(inState.mTransform);
+   
+            SpanRect *span = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
+
+            if (aa1 || edge_aa[0])
+               span->Line<false,true>( mTransform.ToImageAA(point[0]),mTransform.ToImageAA(point[1]) );
+            else
+               span->Line<true,true>( mTransform.ToImageAA(point[0]),mTransform.ToImageAA(point[1]) );
+
+            if (aa1 || edge_aa[1])
+               span->Line<false,true>( mTransform.ToImageAA(point[1]),mTransform.ToImageAA(point[2]) );
+            else
+               span->Line<true,true>( mTransform.ToImageAA(point[1]),mTransform.ToImageAA(point[2]) );
+
+            if (aa1 || edge_aa[2])
+               span->Line<false,true>( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
+            else
+               span->Line<true,true>( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
+
+            alpha = span->CreateMask(mTransform);
+            delete span;
+         }
+
+         point += 3;
+         edge_aa += 3;
+   
+         if (inTarget.mPixelFormat==pfAlpha)
+         {
+            alpha->RenderBitmap(tx,ty,inTarget,inState);
+         }
+         else
+            mFiller->Fill(*alpha,tx,ty,inTarget,inState);
       }
-
-      if (!mAlphaMask)
-      {
-         SetTransform(inState.mTransform);
-
-         // TODO: make visible_pixels a bit bigger ?
-         mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
-
-         Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
-
-         mAlphaMask = mSpanRect->CreateMask(mTransform);
-         delete mSpanRect;
-      }
-
-      if (inTarget.mPixelFormat==pfAlpha)
-      {
-         mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
-      }
-      else
-         mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
 
       return true;
+   }
 
 
 
-
-		int tris = mTriangles->mTriangleCount;
-		for(int t=0;t<tris;t++)
-		{
-			(*this.*func)(point[0],point[1]);
-			(*this.*func)(point[1],point[2]);
-			(*this.*func)(point[2],point[0]);
-			point += 3;
-		}
-
-		*/
-	}
-
-
-
-	void Iterate(IterateMode inMode,const Matrix &m)
+   void Iterate(IterateMode inMode,const Matrix &m)
    {
       const UserPoint *point = 0;
 
@@ -1198,27 +1276,29 @@ public:
       int points = mTriangles->mVertices.size();
       if (inMode==itGetExtent)
       {
-			for(int p=0;p<points;p++)
-			   mBuildExtent->Add(point[p]);
-		}
-		else
-		{
-			typedef void (PolygonRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
+         for(int p=0;p<points;p++)
+            mBuildExtent->Add(point[p]);
+      }
+      else
+      {
+         typedef void (PolygonRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
          ItFunc func = inMode==itCreateRenderer ? &PolygonRender::BuildSolid :
                   &PolygonRender::BuildHitTest;
 
-			int tris = mTriangles->mTriangleCount;
-			for(int t=0;t<tris;t++)
-			{
-				(*this.*func)(point[0],point[1]);
-				(*this.*func)(point[1],point[2]);
-				(*this.*func)(point[2],point[0]);
-				point += 3;
-			}
-		}
+         int tris = mTriangles->mTriangleCount;
+         for(int t=0;t<tris;t++)
+         {
+            (*this.*func)(point[0],point[1]);
+            (*this.*func)(point[1],point[2]);
+            (*this.*func)(point[2],point[0]);
+            point += 3;
+         }
+      }
    }
 
-	GraphicsTrianglePath *mTriangles;
+   QuickVec<AlphaMask *> mAlphaMasks;
+   QuickVec<bool>        mEdgeAA;
+   GraphicsTrianglePath *mTriangles;
 };
 
 // --- TileRenderer --------------------------------------------------------------------
@@ -1333,6 +1413,7 @@ public:
    QuickVec<TileData> mTileData;
 };
 
+// --- PointRenderer --------------------------------------------------------------------
 
 class PointRenderer : public CachedExtentRenderer
 {
@@ -1498,13 +1579,14 @@ public:
    QuickVec<UserPoint> mTransformed;
 };
 
+// --- ExternalInterface --------------------------------------------------------------------
 
 
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
    if (inJob.mTriangles)
       return new TriangleRender(inJob,inPath);
-	else if (inJob.mIsTileJob)
+   else if (inJob.mIsTileJob)
       return new TileRenderer(inJob,inPath);
    else if (inJob.mIsPointJob)
       return new PointRenderer(inJob,inPath);

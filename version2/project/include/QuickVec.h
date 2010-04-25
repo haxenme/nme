@@ -91,6 +91,11 @@ public:
 		if (inN)
 			memcpy(mPtr,inData,inN*sizeof(T_));
 	}
+   void Zero()
+   {
+      if (mPtr && mSize)
+         memset(mPtr,0,mSize*sizeof(T_));
+   }
 
    // This assumes the values in the array are sorted.
 	template<typename X_, typename D_>
