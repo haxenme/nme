@@ -3,6 +3,7 @@ TODO:
 - rgb gradient interp
 - masks
 - colorTransform (check combining alphas too)
+- stage scaling
 
  - bitmap text extent, borders
  - bitmap setting functions
