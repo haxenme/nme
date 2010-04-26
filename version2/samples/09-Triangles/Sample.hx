@@ -55,6 +55,7 @@ class Sample extends Sprite
 		var gfx = graphics;
       gfx.clear();
 		gfx.beginBitmapFill(inData);
+		gfx.lineStyle(4,0x0000ff);
 
 		var sx = 1.0/inData.width;
 		var sy = 1.0/inData.height;
@@ -79,12 +80,18 @@ class Sample extends Sprite
 			2, 3, 0 ];
 
 		var tex_uv = [
+		  100.0*sx, 000.0*sy,
+		  100.0*sx, 200.0*sy,
+		  300.0*sx, 200.0*sy,
+		  300.0*sx, 000.0*sy  ];
+
+		var tex_uvt = [
 		  100.0*sx, 000.0*sy, w0,
 		  100.0*sx, 200.0*sy, w0,
 		  300.0*sx, 200.0*sy, w1,
 		  300.0*sx, 000.0*sy, w1  ];
 
-      drawTriangles(gfx, vertices, indices, tex_uv);
+      drawTriangles(gfx, vertices, indices, tex_uvt );
    }
 
    function drawTriangles(inGfx:Graphics, ?verts:Array<Float>, ?indices:Array<Int>,

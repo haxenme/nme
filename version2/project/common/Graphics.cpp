@@ -377,11 +377,8 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
    GraphicsJob job;
    path->IncRef();
 
-	if (path->mUVT.size() && !fill->AsBitmapFill())
-	{
-		path->DecRef();
-		return;
-	}
+	if (!fill || !fill->AsBitmapFill())
+		path->mUVT.resize(0);
 
    job.mFill = fill ? fill->IncRef() : 0;
    job.mStroke = mLineJob.mStroke ? mLineJob.mStroke->IncRef() : 0;

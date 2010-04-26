@@ -196,7 +196,7 @@ public:
          mMapper.mtx = (inUVT[0]*w*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
          a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
-			b = (dv2*dx1 - dv1*dx2)*det;
+			b = mMapper.m11 = (dv2*dx1 - dv1*dx2)*det;
          mMapper.mty = (inUVT[1]*h*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
          if (mPerspective && inComponents>2)

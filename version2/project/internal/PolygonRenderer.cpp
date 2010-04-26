@@ -609,12 +609,12 @@ public:
 
 class LineRender : public PolygonRender
 {
+public:
    typedef void (LineRender::*ItFunc)(const UserPoint &inP0, const UserPoint &inP1);
    ItFunc ItLine;
    double mDTheta;
    GraphicsStroke *mStroke;
 
-public:
    LineRender(const GraphicsJob &inJob, const GraphicsPath &inPath) :
        PolygonRender(inJob, inPath, inJob.mStroke->fill)
    {
@@ -746,12 +746,8 @@ public:
       }
    }
 
-   void Iterate(IterateMode inMode,const Matrix &m)
-   {
-      ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
-               inMode==itCreateRenderer ? &LineRender::BuildSolid :
-                       &LineRender::BuildHitTest;
-
+	double GetPerpLen(const Matrix &m)
+	{
       // Convert line data to solid data
       double perp_len = mStroke->thickness;
       if (perp_len>=0)
@@ -776,6 +772,17 @@ public:
 
       // This may be too fine ....
       mDTheta = M_PI/perp_len;
+		return perp_len;
+	}
+
+   void Iterate(IterateMode inMode,const Matrix &m)
+   {
+      ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
+               inMode==itCreateRenderer ? &LineRender::BuildSolid :
+                       &LineRender::BuildHitTest;
+
+      double perp_len = GetPerpLen(m);
+
 
       int n = mCommandCount;
       UserPoint *point = 0;
@@ -1319,6 +1326,102 @@ public:
    GraphicsTrianglePath *mTriangles;
 };
 
+class TriangleLineRender : public LineRender
+{
+public:
+	TriangleLineRender(const GraphicsJob &inJob, const GraphicsPath &inPath, Renderer *inSolid) :
+       LineRender(inJob, inPath)
+   {
+		mSolid = inSolid;
+      mTriangles = inJob.mTriangles;
+   }
+	~TriangleLineRender()
+	{
+		if (mSolid) mSolid->Destroy();
+	}
+
+	bool Render( const RenderTarget &inTarget, const RenderState &inState )
+	{
+		if (mSolid)
+			mSolid->Render(inTarget,inState);
+		return LineRender::Render(inTarget,inState);
+	}
+
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+	{
+		bool result = false;
+		if (mSolid)
+			result = mSolid->GetExtent(inTransform,ioExtent);
+		return CachedExtentRenderer::GetExtent(inTransform,ioExtent) || result;
+	}
+
+   bool Hits(const RenderState &inState)
+	{
+		if (mSolid && mSolid->Hits(inState))
+			return true;
+		return LineRender::Hits(inState);
+	}
+
+
+   void Iterate(IterateMode inMode,const Matrix &m)
+	{
+		ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
+               inMode==itCreateRenderer ? &LineRender::BuildSolid :
+                       &LineRender::BuildHitTest;
+
+      double perp_len = GetPerpLen(m);
+
+      UserPoint *point = 0;
+      if (inMode==itHitTest)
+         point = &mTriangles->mVertices[0];
+      else
+         point = &mTransformed[0];
+
+		int tris = mTriangles->mTriangleCount;
+      for(int i=0;i<tris;i++)
+		{
+			UserPoint v0 = *point++;
+			UserPoint v1 = *point++;
+			UserPoint v2 = *point++;
+
+			UserPoint perp0 = (v1-v0).Perp(perp_len);
+			UserPoint perp1 = (v2-v1).Perp(perp_len);
+			UserPoint perp2 = (v0-v2).Perp(perp_len);
+
+			AddJoint(v0,perp2,perp0);
+         AddLinePart(v0+perp0,v1+perp0,v1-perp0,v0-perp0);
+			AddJoint(v1,perp0,perp1);
+         AddLinePart(v1+perp1,v2+perp1,v2-perp1,v1-perp1);
+			AddJoint(v2,perp1,perp2);
+         AddLinePart(v2+perp2,v0+perp2,v0-perp2,v2-perp2);
+		}
+	}
+
+	void SetTransform(const Transform &inTransform)
+   {
+      int points = mTriangles->mVertices.size();
+      if (points!=mTransformed.size() || inTransform!=mTransform)
+      {
+         mTransform = inTransform;
+         mTransMat = *inTransform.mMatrix;
+         mTransform.mMatrix = &mTransMat;
+         mTransform.mMatrix3D = &mTransMat;
+         mTransScale9 = *inTransform.mScale9;
+         mTransform.mScale9 = &mTransScale9;
+         mTransformed.resize(points);
+         UserPoint *src= (UserPoint *)&mTriangles->mVertices[ 0 ];
+         for(int i=0;i<points;i++)
+            mTransformed[i] = mTransform.Apply(src[i].x,src[i].y);
+      }
+   }
+
+
+
+
+	Renderer *mSolid;
+   GraphicsTrianglePath *mTriangles;
+};
+
 // --- TileRenderer --------------------------------------------------------------------
 
 
@@ -1338,6 +1441,7 @@ class TileRenderer : public Renderer
       {
       }
    };
+
 
 
 public:
@@ -1603,7 +1707,12 @@ public:
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
    if (inJob.mTriangles)
-      return new TriangleRender(inJob,inPath);
+	{
+		Renderer *solid = 0;
+		if (inJob.mFill)
+         solid = new TriangleRender(inJob,inPath);
+		return inJob.mStroke ? new TriangleLineRender(inJob,inPath,solid) : solid;
+	}
    else if (inJob.mIsTileJob)
       return new TileRenderer(inJob,inPath);
    else if (inJob.mIsPointJob)
