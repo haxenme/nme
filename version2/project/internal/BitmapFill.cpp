@@ -95,127 +95,138 @@ enum { EDGE_CLAMP, EDGE_REPEAT, EDGE_POW2 };
 class BitmapFillerBase : public Filler
 {
 public:
-	BitmapFillerBase(GraphicsBitmapFill *inFill) : mBitmap(inFill)
-	{
-		mWidth = mBitmap->bitmapData->Width();
-		mHeight = mBitmap->bitmapData->Height();
-		mW1 = mWidth-1;
-		mH1 = mHeight-1;
-		mBase = mBitmap->bitmapData->GetBase();
-		mStride = mBitmap->bitmapData->GetStride();
-		mMapped = false;
-	}
+   BitmapFillerBase(GraphicsBitmapFill *inFill) : mBitmap(inFill)
+   {
+      mWidth = mBitmap->bitmapData->Width();
+      mHeight = mBitmap->bitmapData->Height();
+      mW1 = mWidth-1;
+      mH1 = mHeight-1;
+      mBase = mBitmap->bitmapData->GetBase();
+      mStride = mBitmap->bitmapData->GetStride();
+      mMapped = false;
+   }
 
    inline void SetPos(int inSX,int inSY)
-	{
-		mPos.x = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
-		mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
-	}
+   {
+      mPos.x = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
+      mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
+   }
 
    void SetupMatrix(const Matrix &inMatrix)
-	{
-		if (mMapped) return;
+   {
+      if (mMapped) return;
 
-		// Get combined mapping matrix...
-		Matrix mapper = inMatrix;
-		mapper = mapper.Mult(mBitmap->matrix);
-		mMapper = mapper.Inverse();
-		//mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
-		mMapper.Translate(0.5,0.5);
+      // Get combined mapping matrix...
+      Matrix mapper = inMatrix;
+      mapper = mapper.Mult(mBitmap->matrix);
+      mMapper = mapper.Inverse();
+      //mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
+      mMapper.Translate(0.5,0.5);
 
-		mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
-		mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
-	}
+      mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
+      mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
+   }
 
-	void SetMapping(const UserPoint *inVertex, const float *inUVT,int inComponents)
-	{
-		mMapped = true;
-		double w = mBitmap->bitmapData->Width();
-		double h = mBitmap->bitmapData->Height();
-		// Solve tx = f(x,y),  ty = f(x,y)
-		double dx1 = inVertex[1].x-inVertex[0].x;
-		double dy1 = inVertex[1].y-inVertex[0].y;
-		double dx2 = inVertex[2].x-inVertex[0].x;
-		double dy2 = inVertex[2].y-inVertex[0].y;
-		double du1 = (inUVT[inComponents  ] - inUVT[0])*w;
-		double du2 = (inUVT[inComponents*2] - inUVT[0])*w;
-		double dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
-		double dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
-		// u = a*x + b*y + c
-		//   u0 = a*v0.x + b*v0.y + c
-		//   u1 = a*v1.x + b*v1.y + c
-		//   u2 = a*v2.x + b*v2.y + c
-		//
-		//   (u1-u0) = a*(v1.x-v0.x) + b*(v1.y-v0.y) = du1 = a*dx1 + b*dy1
-		//   (u2-u0) = a*(v2.x-v0.x) + b*(v2.y-v0.y) = du2 = a*dx2 + b*dy2
-		//
-		//   du1*dy2 - du2*dy1= a*(dx1*dy2 - dx2*dy1)
-		double det = dx1*dy2 - dx2*dy1;
-		if (det==0)
-		{
-			// TODO: x-only or y-only
-			mMapper = Matrix(0,0,inUVT[0],inUVT[1]);
-		}
-		else
-		{
-			det = 1.0/det;
+   void SetMapping(const UserPoint *inVertex, const float *inUVT,int inComponents)
+   {
+      mMapped = true;
+      double w = mBitmap->bitmapData->Width();
+      double h = mBitmap->bitmapData->Height();
+      // Solve tx = f(x,y),  ty = f(x,y)
+      double dx1 = inVertex[1].x-inVertex[0].x;
+      double dy1 = inVertex[1].y-inVertex[0].y;
+      double dx2 = inVertex[2].x-inVertex[0].x;
+      double dy2 = inVertex[2].y-inVertex[0].y;
+      double du1 = (inUVT[inComponents  ] - inUVT[0])*w;
+      double du2 = (inUVT[inComponents*2] - inUVT[0])*w;
+      double dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
+      double dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
+      double dw1 = inComponents==3 ? inUVT[inComponents+2]-inUVT[2] : 0;
+      double dw2 = inComponents==3 ? inUVT[inComponents*2+2]-inUVT[2] : 0;
+      // u = a*x + b*y + c
+      //   u0 = a*v0.x + b*v0.y + c
+      //   u1 = a*v1.x + b*v1.y + c
+      //   u2 = a*v2.x + b*v2.y + c
+      //
+      //   (u1-u0) = a*(v1.x-v0.x) + b*(v1.y-v0.y) = du1 = a*dx1 + b*dy1
+      //   (u2-u0) = a*(v2.x-v0.x) + b*(v2.y-v0.y) = du2 = a*dx2 + b*dy2
+      //
+      //   du1*dy2 - du2*dy1= a*(dx1*dy2 - dx2*dy1)
+      double det = dx1*dy2 - dx2*dy1;
+      if (det==0)
+      {
+         // TODO: x-only or y-only
+         mMapper = Matrix(0,0,inUVT[0],inUVT[1]);
+         mWX = mWY = 0;
+         mWC = 1;
+      }
+      else
+      {
+         det = 1.0/det;
 
-			double a = mMapper.m00 = (du1*dy2 - du2*dy1)*det;
-			double b = mMapper.m01 = dy1!=0 ? (du1-a*dx1)/dy1 : dy2!=0 ? (du1-a*dx2)/dy2 : 0;
-			mMapper.mtx = inUVT[0]*w - a*inVertex[0].x - b*inVertex[0].y;
+         double a = mMapper.m00 = (du1*dy2 - du2*dy1)*det;
+         double b = mMapper.m01 = dy1!=0 ? (du1-a*dx1)/dy1 : dy2!=0 ? (du1-a*dx2)/dy2 : 0;
+         mMapper.mtx = inUVT[0]*w - a*inVertex[0].x - b*inVertex[0].y;
 
-			a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
-			b = mMapper.m11 = dy1!=0 ? (dv1-a*dx1)/dy1 : dy2!=0 ? (dv1-a*dx2)/dy2 : 0;
-			mMapper.mty = inUVT[1]*h - a*inVertex[0].x - b*inVertex[0].y;
-		}
+         a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
+         b = mMapper.m11 = dy1!=0 ? (dv1-a*dx1)/dy1 : dy2!=0 ? (dv1-a*dx2)/dy2 : 0;
+         mMapper.mty = inUVT[1]*h - a*inVertex[0].x - b*inVertex[0].y;
 
-		mMapper.Translate(0.5,0.5);
+         if (mPerspective)
+         {
+            mWX = (dv1*dy2 - dv2*dy1)*det;
+         }
+      }
 
-		mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
-		mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
+      mMapper.Translate(0.5,0.5);
 
-	}
+      mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
+      mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
+
+   }
 
 
 
-	const uint8 *mBase;
-	int  mStride;
+   const uint8 *mBase;
+   int  mStride;
 
-	ImagePoint mPos;
-	int mDPxDX;
-	int mDPyDX;
-	int mWidth;
-	int mHeight;
-	int mW1;
-	int mH1;
-	bool mMapped;
-	Matrix mMapper;
-	GraphicsBitmapFill *mBitmap;
+   ImagePoint mPos;
+   int mDPxDX;
+   int mDPyDX;
+   int mWidth;
+   int mHeight;
+   int mW1;
+   int mH1;
+   bool mMapped;
+   double mWX, mWY, mWZ;
+   double mTX, mTY, mTZ;
+   Matrix mMapper;
+   GraphicsBitmapFill *mBitmap;
 };
 
 
-template<int EDGE,bool SMOOTH,bool HAS_ALPHA>
+template<int EDGE,bool SMOOTH,bool HAS_ALPHA,bool PERSP>
 class BitmapFiller : public BitmapFillerBase
 {
 public:
-	enum { HasAlpha = HAS_ALPHA };
+   enum { HasAlpha = HAS_ALPHA };
 
-	BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill) { }
+   BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill) { }
 
    ARGB GetInc( )
-	{
-		int x = mPos.x >> 16;
+   {
+      int x = mPos.x >> 16;
       int y = mPos.y >> 16;
-		if (SMOOTH)
-		{
+      if (SMOOTH)
+      {
          ARGB result;
 
          ARGB p00,p01,p10,p11;
 
          GET_PIXEL_POINTERS
 
-		   mPos.x += mDPxDX;
-		   mPos.y += mDPyDX;
+         mPos.x += mDPxDX;
+         mPos.y += mDPyDX;
 
          result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
                     (  p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
@@ -229,63 +240,72 @@ public:
             result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
                          (p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
          }
-			else
+         else
             result.a = 255;
          return result;
       }
       else
       {
-		   mPos.x += mDPxDX;
-		   mPos.y += mDPyDX;
+         mPos.x += mDPxDX;
+         mPos.y += mDPyDX;
          MODIFY_EDGE_XY;
          return *(ARGB *)( mBase + y*mStride + x*4);
       }
-	}
+   }
 
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
-	{
-		SetupMatrix(*inState.mTransform.mMatrix);
+   {
+      SetupMatrix(*inState.mTransform.mMatrix);
 
-		bool swap =  (inTarget.mPixelFormat & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
-		Render( mAlphaMask, *this, inTarget, swap, inState, inTX,inTY );
-	}
+      bool swap =  (inTarget.mPixelFormat & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
+      Render( mAlphaMask, *this, inTarget, swap, inState, inTX,inTY );
+   }
 
 };
 
 
 // --- Pseudo constructor ---------------------------------------------------------------
 
-template<int EDGE,bool SMOOTH>
+template<int EDGE,bool SMOOTH,bool PERSP>
 static Filler *CreateAlpha(GraphicsBitmapFill *inFill)
 {
-	if (inFill->bitmapData->Format() & pfHasAlpha)
-	   return new BitmapFiller<EDGE,SMOOTH,true>(inFill);
-	else
-	   return new BitmapFiller<EDGE,SMOOTH,false>(inFill);
+   if (inFill->bitmapData->Format() & pfHasAlpha)
+      return new BitmapFiller<EDGE,SMOOTH,PERSP,true>(inFill);
+   else
+      return new BitmapFiller<EDGE,SMOOTH,PERSP,false>(inFill);
 }
 
+template<int EDGE,bool SMOOTH>
+static Filler *CreatePerspective(GraphicsBitmapFill *inFill,bool inPerspective)
+{
+   if (inPerspective)
+      return CreateAlpha<EDGE,SMOOTH,true>(inFill);
+   else
+      return CreateAlpha<EDGE,SMOOTH,false>(inFill);
+      
+}
 
 template<int EDGE>
-static Filler *CreateEdge(GraphicsBitmapFill *inFill)
+static Filler *CreateSmooth(GraphicsBitmapFill *inFill,bool inPerspective)
 {
-	if (inFill->smooth)
-	   return CreateAlpha<EDGE,true>(inFill);
-	else
-	   return CreateAlpha<EDGE,false>(inFill);
+   if (inFill->smooth)
+      return CreatePerspective<EDGE,true>(inFill,inPerspective);
+   else
+      return CreatePerspective<EDGE,false>(inFill,inPerspective);
 }
 
-Filler *Filler::Create(GraphicsBitmapFill *inFill)
+Filler *Filler::Create(GraphicsBitmapFill *inFill,bool inPerspective)
 {
-	if (inFill->repeat)
-	{
-		if ( IsPOW2(inFill->bitmapData->Width()) && IsPOW2(inFill->bitmapData->Height()) )
-		   return CreateEdge<EDGE_POW2>(inFill);
-		else
-		   return CreateEdge<EDGE_REPEAT>(inFill);
-	}
-	else
-		return CreateEdge<EDGE_CLAMP>(inFill);
+   if (inFill->repeat)
+   {
+      if ( IsPOW2(inFill->bitmapData->Width()) && IsPOW2(inFill->bitmapData->Height()) )
+         return CreateSmooth<EDGE_POW2>(inFill,inPerspective);
+      else
+         return CreateSmooth<EDGE_REPEAT>(inFill,inPerspective);
+   }
+   else
+      return CreateSmooth<EDGE_CLAMP>(inFill,inPerspective);
 }
 
 
