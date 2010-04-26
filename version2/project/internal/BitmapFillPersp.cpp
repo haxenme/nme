@@ -9,9 +9,9 @@ template<int EDGE,bool SMOOTH>
 static Filler *CreateAlpha(GraphicsBitmapFill *inFill)
 {
    if (inFill->bitmapData->Format() & pfHasAlpha)
-      return new BitmapFiller<EDGE,SMOOTH,true,false>(inFill);
+      return new BitmapFiller<EDGE,SMOOTH,true,true>(inFill);
    else
-      return new BitmapFiller<EDGE,SMOOTH,false,false>(inFill);
+      return new BitmapFiller<EDGE,SMOOTH,false,true>(inFill);
 }
 
 template<int EDGE>
@@ -23,7 +23,7 @@ static Filler *CreateSmooth(GraphicsBitmapFill *inFill)
       return CreateAlpha<EDGE,false>(inFill);
 }
 
-Filler *Filler::Create(GraphicsBitmapFill *inFill)
+Filler *Filler::CreatePerspective(GraphicsBitmapFill *inFill)
 {
    if (inFill->repeat)
    {

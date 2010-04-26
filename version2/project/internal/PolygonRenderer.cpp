@@ -354,8 +354,10 @@ public:
             mFiller = Filler::Create(inFill->AsGradientFill());
             break;
          case gdtBitmapFill:
-            mFiller = Filler::Create(inFill->AsBitmapFill(),
-                 inJob.mTriangles && inJob.mTriangles->mType==vtVertexUVT );
+            if (inJob.mTriangles && inJob.mTriangles->mType==vtVertexUVT )
+               mFiller = Filler::CreatePerspective(inFill->AsBitmapFill());
+				else
+               mFiller = Filler::Create(inFill->AsBitmapFill());
             break;
          default:
             printf("Fill type not implemented\n");

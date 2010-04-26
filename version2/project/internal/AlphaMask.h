@@ -60,7 +60,8 @@ public:
 
 	static Filler *Create(GraphicsSolidFill *inFill);
 	static Filler *Create(GraphicsGradientFill *inFill);
-	static Filler *Create(GraphicsBitmapFill *inFill,bool inPerspectiveMap);
+	static Filler *Create(GraphicsBitmapFill *inFill);
+	static Filler *CreatePerspective(GraphicsBitmapFill *inFil);
 };
 
 } // end namespace nme

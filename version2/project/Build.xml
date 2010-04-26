@@ -93,6 +93,7 @@
   <file name="internal/SolidFill.cpp"/>
   <file name="internal/GradientFill.cpp"/>
   <file name="internal/BitmapFill.cpp"/>
+  <file name="internal/BitmapFillPersp.cpp"/>
 
   <file name="opengl/OpenGLContext.cpp" if="ogl"/>
 
