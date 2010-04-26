@@ -104,13 +104,9 @@ public:
       mBase = mBitmap->bitmapData->GetBase();
       mStride = mBitmap->bitmapData->GetStride();
       mMapped = false;
+		mPerspective = false;
    }
 
-   inline void SetPos(int inSX,int inSY)
-   {
-      mPos.x = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
-      mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
-   }
 
    void SetupMatrix(const Matrix &inMatrix)
    {
@@ -133,16 +129,47 @@ public:
       double w = mBitmap->bitmapData->Width();
       double h = mBitmap->bitmapData->Height();
       // Solve tx = f(x,y),  ty = f(x,y)
-      double dx1 = inVertex[1].x-inVertex[0].x;
-      double dy1 = inVertex[1].y-inVertex[0].y;
-      double dx2 = inVertex[2].x-inVertex[0].x;
-      double dy2 = inVertex[2].y-inVertex[0].y;
-      double du1 = (inUVT[inComponents  ] - inUVT[0])*w;
-      double du2 = (inUVT[inComponents*2] - inUVT[0])*w;
-      double dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
-      double dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
-      double dw1 = inComponents==3 ? inUVT[inComponents+2]-inUVT[2] : 0;
-      double dw2 = inComponents==3 ? inUVT[inComponents*2+2]-inUVT[2] : 0;
+      double dx1;
+      double dy1;
+      double dx2;
+      double dy2;
+      double du1;
+      double du2;
+      double dv1;
+      double dv2;
+      double dw1=0;
+      double dw2=0;
+		double w0=1,w1=1,w2=1;
+		if (inComponents==3)
+		{
+			w0 = inUVT[2];
+			w1 = inUVT[3+2];
+			w2 = inUVT[6+2];
+			//w0 = w1 = w2 = 1.0;
+			dx1 = inVertex[1].x-inVertex[0].x;
+         dy1 = inVertex[1].y-inVertex[0].y;
+         dx2 = inVertex[2].x-inVertex[0].x;
+         dy2 = inVertex[2].y-inVertex[0].y;
+         du1 = (inUVT[inComponents  ]*w1 - inUVT[0]*w0)*w;
+         du2 = (inUVT[inComponents*2]*w2 - inUVT[0]*w0)*w;
+         dv1 = (inUVT[inComponents  +1]*w1 - inUVT[1]*w0)*h;
+         dv2 = (inUVT[inComponents*2+1]*w2 - inUVT[1]*w0)*h;
+
+         dw1 = w1 - w0;
+         dw2 = w2 - w0;
+		}
+		else
+		{
+		   dx1 = inVertex[1].x-inVertex[0].x;
+         dy1 = inVertex[1].y-inVertex[0].y;
+         dx2 = inVertex[2].x-inVertex[0].x;
+         dy2 = inVertex[2].y-inVertex[0].y;
+         du1 = (inUVT[inComponents  ] - inUVT[0])*w;
+         du2 = (inUVT[inComponents*2] - inUVT[0])*w;
+         dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
+         dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
+		}
+
       // u = a*x + b*y + c
       //   u0 = a*v0.x + b*v0.y + c
       //   u1 = a*v1.x + b*v1.y + c
@@ -158,31 +185,35 @@ public:
          // TODO: x-only or y-only
          mMapper = Matrix(0,0,inUVT[0],inUVT[1]);
          mWX = mWY = 0;
-         mWC = 1;
+         mW0 = 1;
       }
       else
       {
          det = 1.0/det;
 
          double a = mMapper.m00 = (du1*dy2 - du2*dy1)*det;
-         double b = mMapper.m01 = dy1!=0 ? (du1-a*dx1)/dy1 : dy2!=0 ? (du1-a*dx2)/dy2 : 0;
-         mMapper.mtx = inUVT[0]*w - a*inVertex[0].x - b*inVertex[0].y;
+         double b = mMapper.m01 = (du2*dx1 - du1*dx2)*det;
+         mMapper.mtx = (inUVT[0]*w*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
          a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
-         b = mMapper.m11 = dy1!=0 ? (dv1-a*dx1)/dy1 : dy2!=0 ? (dv1-a*dx2)/dy2 : 0;
-         mMapper.mty = inUVT[1]*h - a*inVertex[0].x - b*inVertex[0].y;
+			b = (dv2*dx1 - dv1*dx2)*det;
+         mMapper.mty = (inUVT[1]*h*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
-         if (mPerspective)
+         if (mPerspective && inComponents>2)
          {
-            mWX = (dv1*dy2 - dv2*dy1)*det;
+            a = mWX = (dw1*dy2 - dw2*dy1)*det;
+            b = mWY = (dw2*dx1 - dw1*dx2)*det;
+            mW0= w0 - a*inVertex[0].x - b*inVertex[0].y;
          }
       }
 
       mMapper.Translate(0.5,0.5);
 
-      mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
-      mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
-
+		if (!mPerspective || inComponents<3)
+		{
+         mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
+         mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
+		}
    }
 
 
@@ -198,23 +229,36 @@ public:
    int mW1;
    int mH1;
    bool mMapped;
-   double mWX, mWY, mWZ;
-   double mTX, mTY, mTZ;
+   bool mPerspective;
+   double mWX, mWY, mW0;
+   double mTX, mTY, mTW;
    Matrix mMapper;
    GraphicsBitmapFill *mBitmap;
 };
 
 
-template<int EDGE,bool SMOOTH,bool HAS_ALPHA,bool PERSP>
+template<int EDGE,bool SMOOTH,bool PERSP,bool HAS_ALPHA>
 class BitmapFiller : public BitmapFillerBase
 {
 public:
    enum { HasAlpha = HAS_ALPHA };
 
-   BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill) { }
+   BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill)
+	{
+		mPerspective = PERSP;
+	}
 
    ARGB GetInc( )
    {
+		if (PERSP)
+		{
+         double w = 65536.0/mTW;
+         mPos.x = (int)(mTX*w);
+         mPos.y = (int)(mTY*w);
+			mTX += mMapper.m00;
+			mTY += mMapper.m10;
+			mTW += mWX;
+		}
       int x = mPos.x >> 16;
       int y = mPos.y >> 16;
       if (SMOOTH)
@@ -225,8 +269,11 @@ public:
 
          GET_PIXEL_POINTERS
 
-         mPos.x += mDPxDX;
-         mPos.y += mDPyDX;
+			if (!PERSP)
+			{
+            mPos.x += mDPxDX;
+            mPos.y += mDPyDX;
+			}
 
          result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
                     (  p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
@@ -246,12 +293,33 @@ public:
       }
       else
       {
-         mPos.x += mDPxDX;
-         mPos.y += mDPyDX;
+			if (!PERSP)
+			{
+            mPos.x += mDPxDX;
+            mPos.y += mDPyDX;
+			}
          MODIFY_EDGE_XY;
          return *(ARGB *)( mBase + y*mStride + x*4);
       }
    }
+
+   inline void SetPos(int inSX,int inSY)
+   {
+		if (PERSP)
+		{
+		   double x = inSX;
+         double y = inSY;
+         mTX = mMapper.m00*x + mMapper.m01*y + mMapper.mtx;
+         mTY = mMapper.m10*x + mMapper.m11*y + mMapper.mty;
+         mTW =         mWX*x +         mWY*y +         mW0;
+		}
+		else
+		{
+         mPos.x = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
+         mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
+		}
+   }
+
 
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
