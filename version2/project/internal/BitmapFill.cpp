@@ -103,6 +103,7 @@ public:
 		mH1 = mHeight-1;
 		mBase = mBitmap->bitmapData->GetBase();
 		mStride = mBitmap->bitmapData->GetStride();
+		mMapped = false;
 	}
 
    inline void SetPos(int inSX,int inSY)
@@ -113,6 +114,8 @@ public:
 
    void SetupMatrix(const Matrix &inMatrix)
 	{
+		if (mMapped) return;
+
 		// Get combined mapping matrix...
 		Matrix mapper = inMatrix;
 		mapper = mapper.Mult(mBitmap->matrix);
@@ -123,6 +126,56 @@ public:
 		mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
 		mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
 	}
+
+	void SetMapping(const UserPoint *inVertex, const float *inUVT,int inComponents)
+	{
+		mMapped = true;
+		double w = mBitmap->bitmapData->Width();
+		double h = mBitmap->bitmapData->Height();
+		// Solve tx = f(x,y),  ty = f(x,y)
+		double dx1 = inVertex[1].x-inVertex[0].x;
+		double dy1 = inVertex[1].y-inVertex[0].y;
+		double dx2 = inVertex[2].x-inVertex[0].x;
+		double dy2 = inVertex[2].y-inVertex[0].y;
+		double du1 = (inUVT[inComponents  ] - inUVT[0])*w;
+		double du2 = (inUVT[inComponents*2] - inUVT[0])*w;
+		double dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
+		double dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
+		// u = a*x + b*y + c
+		//   u0 = a*v0.x + b*v0.y + c
+		//   u1 = a*v1.x + b*v1.y + c
+		//   u2 = a*v2.x + b*v2.y + c
+		//
+		//   (u1-u0) = a*(v1.x-v0.x) + b*(v1.y-v0.y) = du1 = a*dx1 + b*dy1
+		//   (u2-u0) = a*(v2.x-v0.x) + b*(v2.y-v0.y) = du2 = a*dx2 + b*dy2
+		//
+		//   du1*dy2 - du2*dy1= a*(dx1*dy2 - dx2*dy1)
+		double det = dx1*dy2 - dx2*dy1;
+		if (det==0)
+		{
+			// TODO: x-only or y-only
+			mMapper = Matrix(0,0,inUVT[0],inUVT[1]);
+		}
+		else
+		{
+			det = 1.0/det;
+
+			double a = mMapper.m00 = (du1*dy2 - du2*dy1)*det;
+			double b = mMapper.m01 = dy1!=0 ? (du1-a*dx1)/dy1 : dy2!=0 ? (du1-a*dx2)/dy2 : 0;
+			mMapper.mtx = inUVT[0]*w - a*inVertex[0].x - b*inVertex[0].y;
+
+			a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
+			b = mMapper.m11 = dy1!=0 ? (dv1-a*dx1)/dy1 : dy2!=0 ? (dv1-a*dx2)/dy2 : 0;
+			mMapper.mty = inUVT[1]*h - a*inVertex[0].x - b*inVertex[0].y;
+		}
+
+		mMapper.Translate(0.5,0.5);
+
+		mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
+		mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
+
+	}
+
 
 
 	const uint8 *mBase;
@@ -135,6 +188,7 @@ public:
 	int mHeight;
 	int mW1;
 	int mH1;
+	bool mMapped;
 	Matrix mMapper;
 	GraphicsBitmapFill *mBitmap;
 };

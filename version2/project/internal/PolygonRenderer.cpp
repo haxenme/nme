@@ -1140,6 +1140,7 @@ public:
       mAlphaMasks.resize(mTriangles->mTriangleCount);
       mAlphaMasks.Zero();
 
+		mMappingDirty = true;
       int n  = mTriangles->mTriangleCount;
       const UserPoint *p = &mTriangles->mVertices[0];
    
@@ -1174,6 +1175,7 @@ public:
       int points = mTriangles->mVertices.size();
       if (points!=mTransformed.size() || inTransform!=mTransform)
       {
+			mMappingDirty = true;
          mTransform = inTransform;
          mTransMat = *inTransform.mMatrix;
          mTransform.mMatrix = &mTransMat;
@@ -1207,6 +1209,8 @@ public:
       int tris = mTriangles->mTriangleCount;
       UserPoint *point = &mTransformed[0];
       bool *edge_aa = &mEdgeAA[0];
+		float *uvt = &mTriangles->mUVT[0];
+		int tex_components = mTriangles->mType == vtVertex ? 0 : mTriangles->mType==vtVertexUV ? 2 : 3;
       int  aa = inState.mTransform.mAAFactor;
       bool aa1 = aa==1;
       for(int i=0;i<tris;i++)
@@ -1247,16 +1251,26 @@ public:
             delete span;
          }
 
-         point += 3;
-         edge_aa += 3;
+
    
          if (inTarget.mPixelFormat==pfAlpha)
          {
             alpha->RenderBitmap(tx,ty,inTarget,inState);
          }
          else
+			{
+			   if (tex_components)
+					mFiller->SetMapping(point,uvt,tex_components);
+
             mFiller->Fill(*alpha,tx,ty,inTarget,inState);
+			}
+
+         point += 3;
+			uvt+=tex_components*3;
+         edge_aa += 3;
       }
+
+		mMappingDirty = false;
 
       return true;
    }
@@ -1296,6 +1310,7 @@ public:
       }
    }
 
+	bool                  mMappingDirty;
    QuickVec<AlphaMask *> mAlphaMasks;
    QuickVec<bool>        mEdgeAA;
    GraphicsTrianglePath *mTriangles;
