@@ -728,11 +728,46 @@ GraphicsStroke::~GraphicsStroke()
 
 
 
-
 // --- Gradient ---------------------------------------------------------------------
+
+
+static void GetLinearLookups(int **outToLinear, int **outFromLinear)
+{
+   static int *to = 0;
+   static int *from = 0;
+
+   if (!to)
+   {
+      double a = 0.055;
+      to = new int[256];
+      from = new int[4096];
+
+      for(int i=0;i<4096;i++)
+      {
+         double t = i / 4095.0;
+         from[i] = 255.0 * (t<=0.0031308 ? t*12.92 : (a+1)*pow(t,1/2.4)-a) + 0.5;
+      }
+
+      for(int i=0;i<256;i++)
+      {
+         double t = i / 255.0;
+         to[i] = 4095.0 * ( t<=0.04045 ? t/12.92 : pow( (t+a)/(1+a), 2.4 ) ) + 0.5;
+      }
+   }
+
+   *outToLinear = to;
+   *outFromLinear = from;
+}
+
 
 void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
 {
+   int *ToLinear = 0;
+   int *FromLinear = 0;
+
+   if (interpolationMethod==imLinearRGB)
+      GetLinearLookups(&ToLinear,&FromLinear);
+    
    bool reflect = spreadMethod==smReflect;
    int n = mStops.size();
    if (n==0)
@@ -755,24 +790,49 @@ void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
          {
             if (p0<0) p0 = 0;
             if (p1>256) p1 = 256;
-            int dc0 = mStops[k+1].mARGB.c0 - c0.c0;
-            int dc1 = mStops[k+1].mARGB.c1 - c0.c1;
-            int dc2 = mStops[k+1].mARGB.c2 - c0.c2;
+
             int da = mStops[k+1].mARGB.a - c0.a;
-            for(i=p0;i<p1;i++)
+            if (ToLinear)
             {
-               outColours[i].c1 = c0.c1 + dc1*(i-p0)/diff;
-               if (inSwap)
+               int dc0 = ToLinear[mStops[k+1].mARGB.c0] - ToLinear[c0.c0];
+               int dc1 = ToLinear[mStops[k+1].mARGB.c1] - ToLinear[c0.c1];
+               int dc2 = ToLinear[mStops[k+1].mARGB.c2] - ToLinear[c0.c2];
+               for(i=p0;i<p1;i++)
                {
-                  outColours[i].c2 = c0.c0 + dc0*(i-p0)/diff;
-                  outColours[i].c0 = c0.c2 + dc2*(i-p0)/diff;
+                  outColours[i].c1= FromLinear[ ToLinear[c0.c1] + dc1*(i-p0)/diff];
+                  if (inSwap)
+                  {
+                     outColours[i].c2= FromLinear[ ToLinear[c0.c0] + dc0*(i-p0)/diff];
+                     outColours[i].c0= FromLinear[ ToLinear[c0.c2] + dc2*(i-p0)/diff];
+                  }
+                  else
+                  {
+                     outColours[i].c0= FromLinear[ ToLinear[c0.c0] + dc0*(i-p0)/diff];
+                     outColours[i].c2= FromLinear[ ToLinear[c0.c2] + dc2*(i-p0)/diff];
+                  }
+                  outColours[i].a = FromLinear[ ToLinear[c0.a] + da*(i-p0)/diff];
                }
-               else
+            }
+            else
+            {
+               int dc0 = mStops[k+1].mARGB.c0 - c0.c0;
+               int dc1 = mStops[k+1].mARGB.c1 - c0.c1;
+               int dc2 = mStops[k+1].mARGB.c2 - c0.c2;
+               for(i=p0;i<p1;i++)
                {
-                  outColours[i].c0 = c0.c0 + dc0*(i-p0)/diff;
-                  outColours[i].c2 = c0.c2 + dc2*(i-p0)/diff;
+                  outColours[i].c1 = c0.c1 + dc1*(i-p0)/diff;
+                  if (inSwap)
+                  {
+                     outColours[i].c2 = c0.c0 + dc0*(i-p0)/diff;
+                     outColours[i].c0 = c0.c2 + dc2*(i-p0)/diff;
+                  }
+                  else
+                  {
+                     outColours[i].c0 = c0.c0 + dc0*(i-p0)/diff;
+                     outColours[i].c2 = c0.c2 + dc2*(i-p0)/diff;
+                  }
+                  outColours[i].a = c0.a + da*(i-p0)/diff;
                }
-               outColours[i].a = c0.a + da*(i-p0)/diff;
             }
          }
       }
