@@ -2,6 +2,7 @@ TODO:
 - masks
 - colorTransform (check combining alphas too)
 - stage scaling
+- scoll rects
 
  - bitmap text extent, borders
  - bitmap setting functions

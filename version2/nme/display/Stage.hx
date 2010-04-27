@@ -5,12 +5,17 @@ import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
 import nme.events.Event;
 import nme.geom.Point;
+import nme.geom.Rectangle;
 
 class Stage extends nme.display.DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
    var nmeFocusOverObjects:Array<InteractiveObject>;
    var nmeInvalid:Bool;
+	var nmeDragBounds:Rectangle;
+	var nmeDragObject:Sprite;
+	var nmeDragOffsetX:Float;
+	var nmeDragOffsetY:Float;
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
@@ -104,6 +109,56 @@ class Stage extends nme.display.DisplayObjectContainer
 	   return nme_stage_get_stage_height(nmeHandle);
 	}
 
+   public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:nme.geom.Rectangle):Void
+	{
+		nmeDragBounds = (bounds==null) ? null : bounds.clone();
+		nmeDragObject = sprite;
+
+		if (nmeDragObject!=null)
+      {
+         if (lockCenter)
+         {
+            nmeDragOffsetX = -nmeDragObject.width/2;
+            nmeDragOffsetY = -nmeDragObject.height/2;
+         }
+         else
+         {
+            var mouse = new Point(mouseX,mouseY);
+            var p = nmeDragObject.parent;
+            if (p!=null)
+               mouse = p.globalToLocal(mouse);
+
+            nmeDragOffsetX = nmeDragObject.x-mouse.x;
+            nmeDragOffsetY = nmeDragObject.y-mouse.y;
+         }
+      }
+	}
+
+	function nmeDrag(inMouse:Point)
+	{
+      var p = nmeDragObject.parent;
+      if (p!=null)
+         inMouse = p.globalToLocal(inMouse);
+
+      if (nmeDragBounds!=null)
+      {
+         if (inMouse.x < nmeDragBounds.x) inMouse.x = nmeDragBounds.x;
+         else if (inMouse.x > nmeDragBounds.right) inMouse.x = nmeDragBounds.right;
+
+         if (inMouse.y < nmeDragBounds.y) inMouse.y = nmeDragBounds.y;
+         else if (inMouse.y > nmeDragBounds.bottom) inMouse.y = nmeDragBounds.bottom;
+      }
+
+      nmeDragObject.x = inMouse.x + nmeDragOffsetX;
+      nmeDragObject.y = inMouse.y + nmeDragOffsetY;
+	}
+
+	public function nmeStopDrag(sprite:Sprite) : Void
+	{
+		nmeDragBounds = null;
+		nmeDragObject = null;
+	}
+
 
    function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
    {
@@ -148,6 +203,9 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeOnMouse(inEvent:Dynamic,inType:String)
    {
+	   if (nmeDragObject!=null)
+			nmeDrag(new Point(inEvent.x,inEvent.y) );
+
       var stack = new Array<InteractiveObject>();
       var obj:DisplayObject = nmeFindByID(inEvent.id);
       if (obj!=null)
