@@ -26,6 +26,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var scale9Grid(nmeGetScale9Grid,nmeSetScale9Grid): Rectangle;
    public var scrollRect(nmeGetScrollRect,nmeSetScrollRect): Rectangle;
    public var name(nmeGetName,nmeSetName): String;
+   public var mask(default,nmeSetMask): DisplayObject;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -167,7 +168,12 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return inRect;
    }
 
-
+   function nmeSetMask(inObject:DisplayObject)
+   {
+      mask = inObject;
+      nme_display_object_set_mask(nmeHandle, inObject==null ? null : inObject.nmeHandle );
+      return inObject;
+   }
 
    function nmeSetBG(inBG:Null<Int>) : Null<Int>
    {
@@ -382,4 +388,5 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);
    static var nme_display_object_set_scale9_grid = nme.Loader.load("nme_display_object_set_scale9_grid",2);
    static var nme_display_object_set_scroll_rect = nme.Loader.load("nme_display_object_set_scroll_rect",2);
+   static var nme_display_object_set_mask = nme.Loader.load("nme_display_object_set_mask",2);
 }

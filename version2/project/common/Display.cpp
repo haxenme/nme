@@ -67,6 +67,7 @@ bool DisplayObject::IsCacheDirty()
 void DisplayObject::ClearCacheDirty()
 {
    mDirtyFlags &= ~dirtCache;
+   mBitmapGfx = mGfx ? mGfx->Version() : 0;
 }
 
 
@@ -209,7 +210,6 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
 
    RenderTarget t = inTarget.ClipRect( inState.mClipRect );
    mBitmapCache->Render(inTarget,inState.mMask,blendMode);
-   mBitmapGfx = mGfx ? mGfx->Version() : 0;
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -810,7 +810,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // TODO: Create mask on demand in this case - or make known limitation of system
             // This could be the case if the mask is lower in the Z-order, or not parented.
             if (!obj->getMask()->GetBitmapCache())
+            {
                continue;
+            }
             obj_state->mMask = obj->getMask()->GetBitmapCache();
          }
 

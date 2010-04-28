@@ -64,7 +64,7 @@ class Sample extends Sprite
       gfx.drawRect(-60,-10,120,20);
       mask_obj.addChild(mask_child);
 
-      //mask = mask_obj;
+      mask = mask_obj;
 
       tf.addEventListener(MouseEvent.MOUSE_DOWN, drag);
       stage.addEventListener(MouseEvent.MOUSE_UP, noDrag);
@@ -85,7 +85,7 @@ class Sample extends Sprite
 	{
 	#if !flash
 		nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-			  (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
+			  (0*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
 	#else
 		new Sample();
 	#end

@@ -626,6 +626,20 @@ value nme_display_object_set_scroll_rect(value inObj,value inRect)
 }
 DEFINE_PRIM(nme_display_object_set_scroll_rect,2);
 
+value nme_display_object_set_mask(value inObj,value inMask)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      DisplayObject *mask = 0;
+      AbstractToObject(inMask,mask);
+      obj->setMask(mask);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_set_mask,2);
+
+
 
 
 
