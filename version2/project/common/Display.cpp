@@ -636,64 +636,66 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
       mChildren[i]->DirtyUp(inFlags);
 }
 
-/*
 
-void DisplayObject::RenderToBitmap( const Rect &inRect, const Rect &inVisible,
-                                   const RenderTarget &inTarget,
-                                   RenderState &inState )
+void DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 {
-   int w = inRect.w;
-   int h = inRect.h;
-   if (inState.mRoundSizeToPOW2 && filters.size()==0)
+   Transform trans;
+   trans.mAAFactor = inAA;
+   Matrix m = GetFullMatrix();
+   trans.mMatrix = &m;
+   Scale9 s9;
+   if ( scale9Grid.HasPixels() )
    {
-      w = UpToPower2(w);
-      h = UpToPower2(h);
+      const Extent2DF &ext0 = mGfx->GetExtent0(0);
+      s9.Activate(scale9Grid,ext0,scaleX,scaleY);
+      trans.mScale9 = &s9;
+
+      m = m.Mult( Matrix(1.0/scaleX,1.0/scaleY) );
    }
 
-   uint32 bg = opaqueBackground;
-   if (bg && filters.size())
-       bg = 0;
-   Surface *bitmap = new SimpleSurface(w, h,
-     IsBitmapRender(inTarget.IsHardware()) ?  (bg ? pfXRGB : pfARGB) : pfAlpha );
+   Extent2DF ext;
+   GetExtent(trans,ext,false);
+
+   Rect rect;
+   if (!ext.GetRect(rect,0.999,0.999))
+      return;
+
+   rect = rect.Intersect(inClipRect);
+   if (!rect.HasPixels())
+      return;
+  
+
+   int w = rect.w;
+   int h = rect.h;
+   //w = UpToPower2(w); h = UpToPower2(h);
+
+   Surface *bitmap = new SimpleSurface(w, h, pfAlpha);
+   m.Translate(-rect.x, -rect.y );
+   RenderState state(bitmap,inAA);
+
    bitmap->IncRef();
-
-   if (bg && IsBitmapRender(inTarget.IsHardware()))
-      bitmap->Clear(opaqueBackground | 0xff000000,0);
+   if (opaqueBackground)
+      bitmap->Clear(0xffffffff);
    else
-      bitmap->Zero();
-   // debug ...
-   //bitmap->Clear(0xff333333);
-
-   bool old_pow2 = obj_state->mRoundSizeToPOW2;
-   Matrix orig = inState.mTransform;
-
    {
-   AutoSurfaceRender render(bitmap,Rect(inRect.w,inRect.h));
-   full.Translate(-inRect.x, -inRect.y );
+      bitmap->Zero();
 
-   obj_state->CombineColourTransform(inState,&colorTransform,&col_trans);
+      AutoSurfaceRender render(bitmap,Rect(rect.w,rect.h));
 
-   obj_state->mPhase = rpBitmap;
-   Render(render.Target(), *obj_state);
-
-   obj_state->mPhase = rpRender;
-   obj_state->mRoundSizeToPOW2 = false;
-
-   Render(render.Target(), *obj_state);
-   ClearCacheDirty();
+      state.mTransform = trans;
+   
+      state.mPhase = rpBitmap;
+      Render(render.Target(), state);
+   
+      state.mPhase = rpRender;
+      Render(render.Target(), state);
+      ClearCacheDirty();
    }
-
-   inState.mTransform = orig;
-
-   bitmap = FilterBitmap(filters,bitmap,inRect,inVisible,old_pow2);
-
-   full = orig;
-   SetBitmapCache( new BitmapCache(bitmap, obj_state->mTransform, inVisible, false));
-   obj_state->mRoundSizeToPOW2 = old_pow2;
+   
+   SetBitmapCache( new BitmapCache(bitmap, trans, rect, false));
    bitmap->DecRef();
 }
 
-*/
 
 
 
@@ -761,18 +763,26 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
       obj_state->mMask = orig_mask;
 
-      if (obj->getMask() && inState.mPhase!=rpBitmap)
+      DisplayObject *mask = obj->getMask();
+      if (mask)
       {
-         // Mask not made yet?
-         if (!obj->getMask()->GetBitmapCache())
+         if (mask->GetBitmapCache())
          {
-            // TODO: render masks bitmap now
-            continue;
+            // Clear mask if invalid
+            if (!mask->GetBitmapCache()->StillGood(obj_state->mTransform, inTarget.mRect))
+               mask->SetBitmapCache(0);
          }
 
+
+         // Mask not made yet?
+         if (!mask->GetBitmapCache())
+            mask->CreateMask(inTarget.mRect,obj_state->mTransform.mAAFactor);
+
          // todo: combine masks ?
-         //obj->DebugRenderMask(inTarget,*obj_state);
-         obj_state->mMask = obj->getMask()->GetBitmapCache();
+         //obj->DebugRenderMask(inTarget,obj->getMask());
+         obj_state->mMask = mask->GetBitmapCache();
+         if (!obj_state->mMask)
+            continue;
       }
 
 

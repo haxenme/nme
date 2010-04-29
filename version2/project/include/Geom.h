@@ -373,6 +373,25 @@ struct Extent2D
       mMaxY = inTY + inSY*(mMaxY);
    }
 
+   TRect<T_> Rect() const
+   {
+      if (!Valid()) return TRect<T_>(0,0,0,0);
+      return TRect<T_>(mMinX,mMinY,mMaxX,mMaxY,true);
+   }
+
+   template<typename RECT>
+   bool GetRect(RECT &outRect,double inExtraX=0,double inExtraY=0)
+   {
+       if (!Valid())
+       {
+          outRect = RECT(0,0,0,0);
+          return false;
+       }
+
+       outRect = RECT(mMinX,mMinY,mMaxX+inExtraX,mMaxY+inExtraY,true);
+       return true;
+   }
+
 
 
    inline bool Valid() const { return mValidX && mValidY; }

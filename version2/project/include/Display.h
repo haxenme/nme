@@ -166,6 +166,7 @@ public:
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
    void RenderBitmap( const RenderTarget &inTarget, const RenderState &inState );
+   void CreateMask( const Rect &inClipRect,int inAA);
    bool HitBitmap( const RenderTarget &inTarget, const RenderState &inState );
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
