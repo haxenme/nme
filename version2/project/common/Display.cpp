@@ -133,7 +133,7 @@ void DisplayObject::setVisible(bool inVal)
 
 
 
-void DisplayObject::CheckCacheDirty()
+void DisplayObject::CheckCacheDirty(bool inForHardware)
 {
    if (IsCacheDirty())
    {
@@ -144,16 +144,17 @@ void DisplayObject::CheckCacheDirty()
       }
    }
 
-   if (!IsBitmapRender() && !IsMask() && mBitmapCache)
+   if (!IsBitmapRender(inForHardware) && !IsMask() && mBitmapCache)
    {
       delete mBitmapCache;
       mBitmapCache = 0;
    }
 }
 
-bool DisplayObject::IsBitmapRender()
+bool DisplayObject::IsBitmapRender(bool inHardware)
 {
-   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild() || filters.size();
+   return cacheAsBitmap || blendMode!=bmNormal || NonNormalBlendChild() || filters.size() ||
+                                      (inHardware && mMask);
 }
 
 void DisplayObject::SetBitmapCache(BitmapCache *inCache)
@@ -635,6 +636,66 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
       mChildren[i]->DirtyUp(inFlags);
 }
 
+/*
+
+void DisplayObject::RenderToBitmap( const Rect &inRect, const Rect &inVisible,
+                                   const RenderTarget &inTarget,
+                                   RenderState &inState )
+{
+   int w = inRect.w;
+   int h = inRect.h;
+   if (inState.mRoundSizeToPOW2 && filters.size()==0)
+   {
+      w = UpToPower2(w);
+      h = UpToPower2(h);
+   }
+
+   uint32 bg = opaqueBackground;
+   if (bg && filters.size())
+       bg = 0;
+   Surface *bitmap = new SimpleSurface(w, h,
+     IsBitmapRender(inTarget.IsHardware()) ?  (bg ? pfXRGB : pfARGB) : pfAlpha );
+   bitmap->IncRef();
+
+   if (bg && IsBitmapRender(inTarget.IsHardware()))
+      bitmap->Clear(opaqueBackground | 0xff000000,0);
+   else
+      bitmap->Zero();
+   // debug ...
+   //bitmap->Clear(0xff333333);
+
+   bool old_pow2 = obj_state->mRoundSizeToPOW2;
+   Matrix orig = inState.mTransform;
+
+   {
+   AutoSurfaceRender render(bitmap,Rect(inRect.w,inRect.h));
+   full.Translate(-inRect.x, -inRect.y );
+
+   obj_state->CombineColourTransform(inState,&colorTransform,&col_trans);
+
+   obj_state->mPhase = rpBitmap;
+   Render(render.Target(), *obj_state);
+
+   obj_state->mPhase = rpRender;
+   obj_state->mRoundSizeToPOW2 = false;
+
+   Render(render.Target(), *obj_state);
+   ClearCacheDirty();
+   }
+
+   inState.mTransform = orig;
+
+   bitmap = FilterBitmap(filters,bitmap,inRect,inVisible,old_pow2);
+
+   full = orig;
+   SetBitmapCache( new BitmapCache(bitmap, obj_state->mTransform, inVisible, false));
+   obj_state->mRoundSizeToPOW2 = old_pow2;
+   bitmap->DecRef();
+}
+
+*/
+
+
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -661,6 +722,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       last = -1;
       dir = -1;
    }
+
+   BitmapCache *orig_mask = inState.mMask;
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
@@ -696,19 +759,38 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          obj_state = &clip_state;
       }
 
+      obj_state->mMask = orig_mask;
+
+      if (obj->getMask() && inState.mPhase!=rpBitmap)
+      {
+         // Mask not made yet?
+         if (!obj->getMask()->GetBitmapCache())
+         {
+            // TODO: render masks bitmap now
+            continue;
+         }
+
+         // todo: combine masks ?
+         //obj->DebugRenderMask(inTarget,*obj_state);
+         obj_state->mMask = obj->getMask()->GetBitmapCache();
+      }
+
 
       if (inState.mPhase==rpBitmap)
       {
          //printf("Bitmap phase %d\n", obj->id);
-         obj->CheckCacheDirty();
+         obj->CheckCacheDirty(inTarget.IsHardware());
 
-         if (obj->IsBitmapRender() || obj->IsMask())
+         if (obj->IsBitmapRender(inTarget.IsHardware()) || obj->IsMask() )
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
 
             // Get bounding pixel rect
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
+
+            if (inState.mMask)
+               rect = rect.Intersect(inState.mMask->GetRect());
 
             const FilterList &filters = obj->getFilters();
 
@@ -753,11 +835,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                uint32 bg = obj->opaqueBackground;
                if (bg && filters.size())
                    bg = 0;
-               Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender() ?
+               Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender(inTarget.IsHardware()) ?
                          (bg ? pfXRGB : pfARGB) : pfAlpha );
                bitmap->IncRef();
 
-               if (bg && obj->IsBitmapRender())
+               if (bg && obj->IsBitmapRender(inTarget.IsHardware()))
                   bitmap->Clear(obj->opaqueBackground | 0xff000000,0);
                else
                   bitmap->Zero();
@@ -799,24 +881,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       }
       else
       {
-         BitmapCache *old_mask = obj_state->mMask;
 
-         if (obj->getMask())
-         {
-            // todo: combine masks ?
-            //obj->DebugRenderMask(inTarget,*obj_state);
-
-            // Mask not made yet?
-            // TODO: Create mask on demand in this case - or make known limitation of system
-            // This could be the case if the mask is lower in the Z-order, or not parented.
-            if (!obj->getMask()->GetBitmapCache())
-            {
-               continue;
-            }
-            obj_state->mMask = obj->getMask()->GetBitmapCache();
-         }
-
-         if ( (obj->IsBitmapRender() && inState.mPhase!=rpHitTest) || obj->IsMask())
+         if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) || obj->IsMask())
          {
             if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
@@ -854,7 +920,6 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                }
                else if (inState.mPhase == rpHitTest)
                {
-                  obj_state->mMask = old_mask;
                   continue;
                }
             }
@@ -863,8 +928,6 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
          }
-
-         obj_state->mMask = old_mask;
 
          if (obj_state->mHitResult)
          {

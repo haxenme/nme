@@ -810,7 +810,7 @@ ImagePoint TextField::GetCursorPos()
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (inTarget.mPixelFormat==pfAlpha)
+   if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 
    UpdateFonts(inState.mTransform);
@@ -918,19 +918,24 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UserPoint dPdY = UserPoint( matrix.m01*sy, matrix.m11*sy );
 
    int last_x = mRect.w;
-   // TODO: this for teh rotated-90 cases too
+   // TODO: this for the rotated-90 cases too
    RenderTarget target;
    if (dPdX.y==0 && dPdY.x==0)
    {
       Rect rect = mRect.Translated(origin.x,origin.y).Intersect(inState.mClipRect);
       if (inState.mMask)
+      {
          rect = rect.Intersect(inState.mMask->GetRect());
+      }
       target = inTarget.ClipRect(rect);
    }
    else
    {
       target = inTarget;
    }
+
+   if (!target.mRect.HasPixels())
+      return;
 
    HardwareContext *hardware = target.IsHardware() ? target.mHardware : 0;
 

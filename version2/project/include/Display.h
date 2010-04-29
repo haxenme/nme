@@ -199,8 +199,8 @@ public:
    virtual bool IsCacheDirty();
    virtual void ClearCacheDirty();
 
-   void CheckCacheDirty();
-   bool IsBitmapRender();
+   void CheckCacheDirty(bool inForHardware);
+   bool IsBitmapRender(bool inForHardware);
    void SetBitmapCache(BitmapCache *inCache);
    BitmapCache *GetBitmapCache() { return mBitmapCache; }
 

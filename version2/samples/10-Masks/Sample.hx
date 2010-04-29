@@ -85,7 +85,7 @@ class Sample extends Sprite
 	{
 	#if !flash
 		nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-			  (0*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
+			  (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
 	#else
 		new Sample();
 	#end
