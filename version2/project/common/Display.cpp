@@ -637,7 +637,7 @@ void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 }
 
 
-void DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
+bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 {
    Transform trans;
    trans.mAAFactor = inAA;
@@ -658,19 +658,33 @@ void DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 
    Rect rect;
    if (!ext.GetRect(rect,0.999,0.999))
-      return;
+	{
+		SetBitmapCache(0);
+      return false;
+	}
 
    rect = rect.Intersect(inClipRect);
    if (!rect.HasPixels())
-      return;
-  
+	{
+		SetBitmapCache(0);
+      return false;
+	}
+
+
+	if (GetBitmapCache())
+	{
+		// Clear mask if invalid
+		if (!GetBitmapCache()->StillGood(trans, rect))
+			SetBitmapCache(0);
+		else
+			return true;
+	}
 
    int w = rect.w;
    int h = rect.h;
    //w = UpToPower2(w); h = UpToPower2(h);
 
    Surface *bitmap = new SimpleSurface(w, h, pfAlpha);
-   m.Translate(-rect.x, -rect.y );
    RenderState state(bitmap,inAA);
 
    bitmap->IncRef();
@@ -684,16 +698,20 @@ void DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 
       state.mTransform = trans;
    
-      state.mPhase = rpBitmap;
+      state.mPhase = rpCreateMask;
+	   Matrix obj_matrix = m;
+
+      m.Translate(-rect.x, -rect.y );
       Render(render.Target(), state);
-   
-      state.mPhase = rpRender;
-      Render(render.Target(), state);
+
+		m = obj_matrix;
+
       ClearCacheDirty();
    }
    
    SetBitmapCache( new BitmapCache(bitmap, trans, rect, false));
    bitmap->DecRef();
+	return true;
 }
 
 
@@ -703,8 +721,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
    Rect visible_bitmap;
 
+	bool parent_first = inState.mPhase==rpRender || inState.mPhase==rpCreateMask;
+
    // Render parent first (or at the end) ?
-   if (inState.mPhase==rpRender)
+   if (parent_first)
       DisplayObject::Render(inTarget,inState);
 
    // Render children/build child bitmaps ...
@@ -717,8 +737,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    int first = 0;
    int last = mChildren.size();
    int dir = 1;
-   // Build top first when making bitmaps and masks, or doing hit test...
-   if (inState.mPhase!=rpRender)
+   // Build top first when making bitmaps, or doing hit test...
+   if (!parent_first)
    {
       first = last - 1;
       last = -1;
@@ -730,7 +750,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    {
       DisplayObject *obj = mChildren[i];
       //printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
-      if (!obj->visible || (inState.mPhase!=rpBitmap && obj->IsMask()) ||
+      if (!obj->visible || (inState.mPhase!=rpCreateMask && obj->IsMask()) ||
          (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
       {
          continue;
@@ -766,23 +786,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       DisplayObject *mask = obj->getMask();
       if (mask)
       {
-         if (mask->GetBitmapCache())
-         {
-            // Clear mask if invalid
-            if (!mask->GetBitmapCache()->StillGood(obj_state->mTransform, inTarget.mRect))
-               mask->SetBitmapCache(0);
-         }
+         if (!mask->CreateMask(inTarget.mRect,obj_state->mTransform.mAAFactor))
+				continue;
 
-
-         // Mask not made yet?
-         if (!mask->GetBitmapCache())
-            mask->CreateMask(inTarget.mRect,obj_state->mTransform.mAAFactor);
-
-         // todo: combine masks ?
-         //obj->DebugRenderMask(inTarget,obj->getMask());
-         obj_state->mMask = mask->GetBitmapCache();
-         if (!obj_state->mMask)
-            continue;
+			// todo: combine masks ?
+			//obj->DebugRenderMask(inTarget,obj->getMask());
+			obj_state->mMask = mask->GetBitmapCache();
       }
 
 
@@ -791,7 +800,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          //printf("Bitmap phase %d\n", obj->id);
          obj->CheckCacheDirty(inTarget.IsHardware());
 
-         if (obj->IsBitmapRender(inTarget.IsHardware()) || obj->IsMask() )
+         if (obj->IsBitmapRender(inTarget.IsHardware()) )
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
@@ -889,10 +898,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->Render(inTarget,*obj_state);
          }
       }
-      else
+		else
       {
-
-         if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) || obj->IsMask())
+         if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) )
          {
             if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
@@ -948,7 +956,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    }
 
    // Render parent at beginning or end...
-   if (inState.mPhase!=rpRender)
+   if (!parent_first)
       DisplayObject::Render(inTarget,inState);
 }
 

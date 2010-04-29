@@ -395,7 +395,7 @@ private:
 };
 
 
-enum RenderPhase { rpBitmap, rpRender, rpHitTest };
+enum RenderPhase { rpBitmap, rpRender, rpHitTest, rpCreateMask };
 
 
 struct RenderState
