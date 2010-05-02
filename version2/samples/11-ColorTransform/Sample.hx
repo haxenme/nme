@@ -51,11 +51,10 @@ class Sample extends Sprite
       var blue = 0x0000FF;
       var size = 100.0;
       var mat:Matrix = new Matrix();
-      mat.createGradientBox(100, 100, 0, 0, 0);
 
       sprite.graphics.beginGradientFill(GradientType.LINEAR, [red, blue, green], [1, 0.5, 1], [0.0, 200, 255]);
 
-      sprite.graphics.drawRect(0, 0, 400, 400);
+      sprite.graphics.drawRect(0, 0, 100, 100);
    }
 
    public function clickHandler(event:MouseEvent)

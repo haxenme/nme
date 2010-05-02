@@ -31,6 +31,11 @@ class Graphics
                  ?interpolationMethod : Null<InterpolationMethod>,
                  focalPointRatio:Float = 0.0 ) : Void
    {
+	   if (matrix==null)
+		{
+		   matrix = new Matrix();
+			matrix.createGradientBox(200,200,0,-100,-100);
+		}
       nme_gfx_begin_gradient_fill(nmeHandle,Type.enumIndex(type),
                         colors,alphas,ratios, matrix,
                         spreadMethod ==null ? 0 : Type.enumIndex(spreadMethod),
