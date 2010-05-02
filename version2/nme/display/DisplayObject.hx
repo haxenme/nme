@@ -3,6 +3,9 @@ import nme.events.Event;
 import nme.events.EventPhase;
 import nme.geom.Point;
 import nme.geom.Rectangle;
+import nme.geom.Matrix;
+import nme.geom.Transform;
+import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 
 class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
@@ -27,6 +30,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var scrollRect(nmeGetScrollRect,nmeSetScrollRect): Rectangle;
    public var name(nmeGetName,nmeSetName): String;
    public var mask(default,nmeSetMask): DisplayObject;
+   public var transform(nmeGetTransform,nmeSetTransform): Transform;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -272,6 +276,59 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
          nmeParent = inParent;
    }
 
+
+   public function nmeGetMatrix() : Matrix
+   {
+      var mtx = new Matrix();
+      nme_display_object_get_matrix(nmeHandle,mtx,false);
+      return mtx;
+   }
+   public function nmeGetConcatenatedMatrix() : Matrix
+   {
+      var mtx = new Matrix();
+      nme_display_object_get_matrix(nmeHandle,mtx,true);
+      return mtx;
+   }
+   public function nmeSetMatrix(inMatrix:Matrix)
+   {
+      nme_display_object_set_matrix(nmeHandle,inMatrix);
+   }
+
+   public function nmeGetColorTransform() : ColorTransform
+   { 
+      var trans = new ColorTransform();
+      nme_display_object_get_color_transform(nmeHandle,trans,false);
+      return trans;
+   }
+   public function nmeGetConcatenatedColorTransform() : ColorTransform
+   { 
+      var trans = new ColorTransform();
+      nme_display_object_get_color_transform(nmeHandle,trans,true);
+      return trans;
+   }
+
+   public function nmeSetColorTransform( inTrans : ColorTransform )
+   {
+      nme_display_object_set_color_transform(nmeHandle,inTrans);
+   }
+
+   public function nmeGetPixelBounds() : Rectangle
+   { 
+      var rect = new Rectangle();
+      nme_display_object_get_pixel_bounds(nmeHandle,rect);
+      return rect;
+   }
+   function nmeGetTransform() : Transform
+   {
+      return new Transform(this);
+   }
+   function nmeSetTransform(inTransform : Transform) : Transform
+   {
+      nmeSetMatrix(inTransform.matrix);
+      nmeSetColorTransform(inTransform.colorTransform);
+      return inTransform;
+   }
+
    public function globalToLocal(inLocal:Point)
    {
       var result = inLocal.clone();
@@ -389,4 +446,13 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_scale9_grid = nme.Loader.load("nme_display_object_set_scale9_grid",2);
    static var nme_display_object_set_scroll_rect = nme.Loader.load("nme_display_object_set_scroll_rect",2);
    static var nme_display_object_set_mask = nme.Loader.load("nme_display_object_set_mask",2);
+
+   static var nme_display_object_set_matrix = nme.Loader.load("nme_display_object_set_matrix",2);
+   static var nme_display_object_get_matrix = nme.Loader.load("nme_display_object_get_matrix",3);
+   static var nme_display_object_get_color_transform = nme.Loader.load("nme_display_object_get_color_transform",3);
+   static var nme_display_object_set_color_transform = nme.Loader.load("nme_display_object_set_color_transform",2);
+   static var nme_display_object_get_pixel_bounds = nme.Loader.load("nme_display_object_get_pixel_bounds",2);
+
+
 }
+

@@ -305,10 +305,10 @@ class ColorTransform
 {
 public:
    ColorTransform() :
-      redScale(1), redOffset(0),
-      greenScale(1), greenOffset(0),
-      blueScale(1), blueOffset(0),
-      alphaScale(1), alphaOffset(0) { }
+      redMultiplier(1), redOffset(0),
+      greenMultiplier(1), greenOffset(0),
+      blueMultiplier(1), blueOffset(0),
+      alphaMultiplier(1), alphaOffset(0) { }
 
    uint32 Transform(uint32 inValue) const;
 
@@ -316,12 +316,12 @@ public:
 
    inline bool IsIdentityColour() const
    {
-      return redScale==1 && greenScale==1 && blueScale==1 &&
+      return redMultiplier==1 && greenMultiplier==1 && blueMultiplier==1 &&
              redOffset==0 && greenOffset==0 && blueOffset==0;
    }
    inline bool IsIdentityAlpha() const
    {
-      return alphaScale==1 && alphaOffset == 0;
+      return alphaMultiplier==1 && alphaOffset == 0;
    }
    inline bool IsIdentity() const { return IsIdentityAlpha() && IsIdentityColour(); }
 
@@ -333,10 +333,10 @@ public:
    const uint8 *GetC1LUT() const;
    const uint8 *GetC2LUT() const;
 
-   double redScale, redOffset;
-   double greenScale, greenOffset;
-   double blueScale, blueOffset;
-   double alphaScale, alphaOffset;
+   double redMultiplier, redOffset;
+   double greenMultiplier, greenOffset;
+   double blueMultiplier, blueOffset;
+   double alphaMultiplier, alphaOffset;
 };
 
 struct SoftwareMask;

@@ -133,6 +133,8 @@ public:
    void setVisible(bool inVal);
 	const wchar_t *getName() { return name.c_str(); }
    void setName(const std::wstring &inName) { name = inName; }
+   void setMatrix(const Matrix &inMatrix);
+   void setColorTransform(const ColorTransform &inTransform);
 
    void   setAlpha(double inAlpha);
 
@@ -193,6 +195,8 @@ public:
    Graphics &GetGraphics();
    Matrix   GetFullMatrix();
    Matrix   &GetLocalMatrix();
+   ColorTransform   &GetLocalColorTransform() { return colorTransform; }
+   ColorTransform   GetFullColorTransform();
    const FilterList &getFilters() { return filters; }
    // Takes ownership of filters...
    void     setFilters(FilterList &inFilters);

@@ -9,12 +9,6 @@
 #define M_PI 3.14159
 #endif
 
-#include <windows.h>
-#ifdef max
-#undef max
-#undef min
-#endif
-
 namespace nme
 {
 
@@ -430,13 +424,6 @@ public:
    {
       Extent2DF extent;
       CachedExtentRenderer::GetExtent(inState.mTransform,extent);
-
-		static int s= 0;
-		if (s==0)
-		{
-			//Sleep(10000);
-		}
-		s++;
 
       if (!extent.Valid())
          return true;

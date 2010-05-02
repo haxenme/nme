@@ -4,32 +4,32 @@
 namespace nme
 {
 
-static void CombineCol(double &outScale, double &outOff,  double inPScale, double inPOff,
-							  double inCScale, double inCOff)
+static void CombineCol(double &outMultiplier, double &outOff,  double inPMultiplier, double inPOff,
+							  double inCMultiplier, double inCOff)
 {
-	outScale = inPScale * inCScale;
-	outOff = inPScale * inCOff + inPOff;
+	outMultiplier = inPMultiplier * inCMultiplier;
+	outOff = inPMultiplier * inCOff + inPOff;
 }
 
 void ColorTransform::Combine(const ColorTransform &inParent, const ColorTransform &inChild)
 {
-	CombineCol(redScale,redOffset,
-				  inParent.redScale,inParent.redOffset,
-				  inChild.redScale, inChild.redOffset);
-	CombineCol(greenScale,greenOffset,
-				  inParent.greenScale,inParent.greenOffset,
-				  inChild.greenScale, inChild.greenOffset);
-	CombineCol(blueScale,blueOffset,
-				  inParent.blueScale,inParent.blueOffset,
-				  inChild.blueScale, inChild.blueOffset);
-	CombineCol(alphaScale,alphaOffset,
-				  inParent.alphaScale,inParent.alphaOffset,
-				  inChild.alphaScale, inChild.alphaOffset);
+	CombineCol(redMultiplier,redOffset,
+				  inParent.redMultiplier,inParent.redOffset,
+				  inChild.redMultiplier, inChild.redOffset);
+	CombineCol(greenMultiplier,greenOffset,
+				  inParent.greenMultiplier,inParent.greenOffset,
+				  inChild.greenMultiplier, inChild.greenOffset);
+	CombineCol(blueMultiplier,blueOffset,
+				  inParent.blueMultiplier,inParent.blueOffset,
+				  inChild.blueMultiplier, inChild.blueOffset);
+	CombineCol(alphaMultiplier,alphaOffset,
+				  inParent.alphaMultiplier,inParent.alphaOffset,
+				  inChild.alphaMultiplier, inChild.alphaOffset);
 }
 
-inline uint32 ByteTrans(uint32 inVal, double inScale, double inOffset, int inShift)
+inline uint32 ByteTrans(uint32 inVal, double inMultiplier, double inOffset, int inShift)
 {
-   double val = ((inVal>>inShift) & 0xff) * inScale + inOffset;
+   double val = ((inVal>>inShift) & 0xff) * inMultiplier + inOffset;
    if (val<0) return 0;
    if (val>255) return 0xff<<inShift;
    return ((int)val) << inShift;
@@ -37,10 +37,10 @@ inline uint32 ByteTrans(uint32 inVal, double inScale, double inOffset, int inShi
 
 uint32 ColorTransform::Transform(uint32 inVal) const
 {
-   return ByteTrans(inVal,alphaScale,alphaOffset,24) |
-          ByteTrans(inVal,redScale,redOffset,16) |
-          ByteTrans(inVal,greenScale,greenOffset,8) |
-          ByteTrans(inVal,blueScale,blueOffset,0);
+   return ByteTrans(inVal,alphaMultiplier,alphaOffset,24) |
+          ByteTrans(inVal,redMultiplier,redOffset,16) |
+          ByteTrans(inVal,greenMultiplier,greenOffset,8) |
+          ByteTrans(inVal,blueMultiplier,blueOffset,0);
 }
 
 
@@ -68,9 +68,9 @@ void ColorTransform::TidyCache()
 }
 
 
-const uint8 *GetLUT(double inScale, double inOffset)
+const uint8 *GetLUT(double inMultiplier, double inOffset)
 {
-	if (inScale==1 && inOffset==0)
+	if (inMultiplier==1 && inOffset==0)
 	{
 		if (sgIdentityLUT==0)
 		{
@@ -83,7 +83,7 @@ const uint8 *GetLUT(double inScale, double inOffset)
 
 	sgLUTID++;
 
-   Trans t(inScale,inOffset);
+   Trans t(inMultiplier,inOffset);
 	LUTMap::iterator it = sgLUTs.find(t);
 	if (it!=sgLUTs.end())
 	{
@@ -110,7 +110,7 @@ const uint8 *GetLUT(double inScale, double inOffset)
 	lut.mLastUsed = sgLUTID;
 	for(int i=0;i<256;i++)
 	{
-		double ival = i*inScale + inOffset;
+		double ival = i*inMultiplier + inOffset;
 		lut.mLUT[i] = ival < 0 ? 0 : ival>255 ? 255 : (int)ival;
 	}
 	return lut.mLUT;
@@ -120,28 +120,28 @@ const uint8 *GetLUT(double inScale, double inOffset)
 
 const uint8 *ColorTransform::GetAlphaLUT() const
 {
-	return GetLUT(alphaScale,alphaOffset);
+	return GetLUT(alphaMultiplier,alphaOffset);
 }
 
 const uint8 *ColorTransform::GetC0LUT() const
 {
 	if (gC0IsRed)
-	   return GetLUT(redScale,redOffset);
+	   return GetLUT(redMultiplier,redOffset);
 	else
-	   return GetLUT(blueScale,blueOffset);
+	   return GetLUT(blueMultiplier,blueOffset);
 }
 
 const uint8 *ColorTransform::GetC1LUT() const
 {
-	return GetLUT(greenScale,greenOffset);
+	return GetLUT(greenMultiplier,greenOffset);
 }
 
 const uint8 *ColorTransform::GetC2LUT() const
 {
 	if (gC0IsRed)
-	   return GetLUT(blueScale,blueOffset);
+	   return GetLUT(blueMultiplier,blueOffset);
 	else
-	   return GetLUT(redScale,redOffset);
+	   return GetLUT(redMultiplier,redOffset);
 }
 
 

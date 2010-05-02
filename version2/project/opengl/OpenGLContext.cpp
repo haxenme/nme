@@ -358,7 +358,7 @@ public:
             arrays.mSurface->Bind(*this,0);
             bound_texture = arrays.mSurface->GetOrCreateTexture(*this);
             const ColorTransform &t = *inState.mColourTransform;
-            glColor4f(t.redScale,t.greenScale,t.blueScale,t.alphaScale);
+            glColor4f(t.redMultiplier,t.greenMultiplier,t.blueMultiplier,t.alphaMultiplier);
             last_col = -1;
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0]);
@@ -423,7 +423,7 @@ public:
                         break;
                   }
 
-               if (mPointsToo)
+               if (mPointsToo && mLineWidth>1.5)
                   glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
             }
    

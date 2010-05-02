@@ -242,6 +242,35 @@ Matrix DisplayObject::GetFullMatrix()
   return GetLocalMatrix();
 }
 
+void DisplayObject::setMatrix(const Matrix &inMatrix)
+{
+   mLocalMatrix = inMatrix;
+   DirtyCache();
+   mDirtyFlags |= dirtDecomp;
+   mDirtyFlags &= ~dirtLocalMatrix;
+}
+
+
+ColorTransform DisplayObject::GetFullColorTransform()
+{
+  if (mParent)
+  {
+     ColorTransform result;
+     result.Combine(mParent->GetFullColorTransform(),colorTransform);
+     return result;
+  }
+  return colorTransform;
+}
+
+
+void DisplayObject::setColorTransform(const ColorTransform &inTrans)
+{
+   colorTransform = inTrans;
+   DirtyCache();
+}
+
+
+
 Matrix &DisplayObject::GetLocalMatrix()
 {
    if (mDirtyFlags & dirtLocalMatrix)
@@ -522,7 +551,7 @@ void DisplayObject::setMask(DisplayObject *inMask)
 
 void DisplayObject::setAlpha(double inAlpha)
 {
-   colorTransform.alphaScale = inAlpha;
+   colorTransform.alphaMultiplier = inAlpha;
    colorTransform.alphaOffset = 0;
    DirtyCache();
 }

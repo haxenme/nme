@@ -73,6 +73,15 @@ static int _id_bytesLoaded = val_id("bytesLoaded");
 static int _id_volume = val_id("volume");
 static int _id_pan = val_id("pan");
 
+static int _id_alphaMultiplier = val_id("alphaMultiplier");
+static int _id_redMultiplier = val_id("redMultiplier");
+static int _id_greenMultiplier = val_id("greenMultiplier");
+static int _id_blueMultiplier = val_id("blueMultiplier");
+
+static int _id_alphaOffset = val_id("alphaOffset");
+static int _id_redOffset = val_id("redOffset");
+static int _id_greenOffset = val_id("greenOffset");
+static int _id_blueOffset = val_id("blueOffset");
 
 vkind gObjectKind = alloc_kind();
 
@@ -98,14 +107,32 @@ void FromValue(Matrix &outMatrix, value inValue)
 {
    if (!val_is_null(inValue))
    {
-      outMatrix.m00 = val_number( val_field(inValue,_id_a) );
-      outMatrix.m01 = val_number( val_field(inValue,_id_c) );
-      outMatrix.m10 = val_number( val_field(inValue,_id_b) );
-      outMatrix.m11 = val_number( val_field(inValue,_id_d) );
-      outMatrix.mtx = val_number( val_field(inValue,_id_tx) );
-      outMatrix.mty = val_number( val_field(inValue,_id_ty) );
+      outMatrix.m00 =  val_field_numeric(inValue,_id_a);
+      outMatrix.m01 =  val_field_numeric(inValue,_id_c);
+      outMatrix.m10 =  val_field_numeric(inValue,_id_b);
+      outMatrix.m11 =  val_field_numeric(inValue,_id_d);
+      outMatrix.mtx =  val_field_numeric(inValue,_id_tx);
+      outMatrix.mty =  val_field_numeric(inValue,_id_ty);
    }
 }
+
+void FromValue(ColorTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outTrans.alphaOffset = val_field_numeric(inValue,_id_alphaOffset);
+      outTrans.redOffset = val_field_numeric(inValue,_id_redOffset);
+      outTrans.greenOffset = val_field_numeric(inValue,_id_greenOffset);
+      outTrans.blueOffset = val_field_numeric(inValue,_id_blueOffset);
+
+      outTrans.alphaMultiplier = val_field_numeric(inValue,_id_alphaMultiplier);
+      outTrans.redMultiplier = val_field_numeric(inValue,_id_redMultiplier);
+      outTrans.greenMultiplier = val_field_numeric(inValue,_id_greenMultiplier);
+      outTrans.blueMultiplier = val_field_numeric(inValue,_id_blueMultiplier);
+   }
+}
+
+
 
 
 void FromValue(SoundTransform &outTrans, value inValue)
@@ -138,6 +165,32 @@ void FromValue(ImagePoint &outPoint,value inValue)
    outPoint.x = val_field_numeric(inValue,_id_x);
    outPoint.y = val_field_numeric(inValue,_id_y);
 }
+
+
+
+void ToValue(value &outVal,const Matrix &inMatrix)
+{
+    alloc_field(outVal,_id_a, alloc_float(inMatrix.m00) );
+    alloc_field(outVal,_id_c, alloc_float(inMatrix.m01) );
+    alloc_field(outVal,_id_b, alloc_float(inMatrix.m10) );
+    alloc_field(outVal,_id_d, alloc_float(inMatrix.m11) );
+    alloc_field(outVal,_id_tx, alloc_float(inMatrix.mtx) );
+    alloc_field(outVal,_id_ty, alloc_float(inMatrix.mty) );
+}
+
+void ToValue(value &outVal,const ColorTransform &inTrans)
+{
+    alloc_field(outVal,_id_alphaMultiplier, alloc_float(inTrans.alphaMultiplier) );
+    alloc_field(outVal,_id_redMultiplier, alloc_float(inTrans.redMultiplier) );
+    alloc_field(outVal,_id_greenMultiplier, alloc_float(inTrans.greenMultiplier) );
+    alloc_field(outVal,_id_blueMultiplier, alloc_float(inTrans.blueMultiplier) );
+
+    alloc_field(outVal,_id_alphaOffset, alloc_float(inTrans.alphaOffset) );
+    alloc_field(outVal,_id_redOffset, alloc_float(inTrans.redOffset) );
+    alloc_field(outVal,_id_greenOffset, alloc_float(inTrans.greenOffset) );
+    alloc_field(outVal,_id_blueOffset, alloc_float(inTrans.blueOffset) );
+}
+
 
 
 
@@ -480,40 +533,40 @@ DEFINE_PRIM(nme_display_object_get_graphics,1);
 
 value nme_display_object_draw_to_surface(value *arg,int count)
 {
-	enum { aObject, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSIZE};
+   enum { aObject, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSIZE};
 
-	DisplayObject *obj;
-	Surface *surf;
+   DisplayObject *obj;
+   Surface *surf;
    if (AbstractToObject(arg[aObject],obj) && AbstractToObject(arg[aSurface],surf))
-	{
-		Rect r(surf->Width(),surf->Height());
-		if (!val_is_null(arg[aClipRect]))
-			FromValue(r,arg[aClipRect]);
-		AutoSurfaceRender render(surf,r);
+   {
+      Rect r(surf->Width(),surf->Height());
+      if (!val_is_null(arg[aClipRect]))
+         FromValue(r,arg[aClipRect]);
+      AutoSurfaceRender render(surf,r);
 
-		Matrix matrix;
-		if (!val_is_null(arg[aMatrix]))
-			FromValue(matrix,arg[aMatrix]);
+      Matrix matrix;
+      if (!val_is_null(arg[aMatrix]))
+         FromValue(matrix,arg[aMatrix]);
       RenderState state(surf,4);
       state.mTransform.mMatrix = &matrix;
 
-		ColorTransform col_trans;
-		if (!val_is_null(arg[aColourTransform]))
-		{
-		   ColorTransform t;
-			// TODO:
-			//FromValue(t,arg[aColourTransform]);
+      ColorTransform col_trans;
+      if (!val_is_null(arg[aColourTransform]))
+      {
+         ColorTransform t;
+         // TODO:
+         //FromValue(t,arg[aColourTransform]);
          //state.CombineColourTransform(stage,&t,&col_trans);
-		}
+      }
 
-		// TODO: Blend mode
+      // TODO: Blend mode
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpRender;
 
       obj->Render(render.Target(), state);
-	}
+   }
 
-	return alloc_null();
+   return alloc_null();
 }
 
 DEFINE_PRIM_MULT(nme_display_object_draw_to_surface)
@@ -640,7 +693,66 @@ value nme_display_object_set_mask(value inObj,value inMask)
 DEFINE_PRIM(nme_display_object_set_mask,2);
 
 
+value nme_display_object_set_matrix(value inObj,value inMatrix)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+       Matrix m;
+       FromValue(m,inMatrix);
 
+       obj->setMatrix(m);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_set_matrix,2);
+
+value nme_display_object_get_matrix(value inObj,value outMatrix, value inFull)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      Matrix m = val_bool(inFull) ? obj->GetLocalMatrix() : obj->GetFullMatrix();
+      ToValue(outMatrix,m);
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_get_matrix,3);
+
+value nme_display_object_set_color_transform(value inObj,value inTrans)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+       ColorTransform trans;
+       FromValue(trans,inTrans);
+
+       obj->setColorTransform(trans);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_set_color_transform,2);
+
+value nme_display_object_get_color_transform(value inObj,value outTrans, value inFull)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      ColorTransform t = val_bool(inFull) ? obj->GetLocalColorTransform() :
+                                            obj->GetFullColorTransform();
+      ToValue(outTrans,t);
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_get_color_transform,3);
+
+value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
+{
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
 
 
@@ -1013,23 +1125,23 @@ value nme_gfx_draw_points(value inGfx,value inXYs, value inRGBA, value inDefault
       QuickVec<int> RGBAs;
       FillArrayInt(RGBAs,inRGBA);
 
-		int def_rgba = val_int(inDefaultRGBA);
+      int def_rgba = val_int(inDefaultRGBA);
 
-		if (val_bool(inIs31Bits))
-		{
-			if (!sNekoLutInit)
-			{
-				sNekoLutInit = true;
-				for(int i=0;i<64;i++)
-					sNekoLut[i] = ((int)(i*255.0/63.0 + 0.5)) << 24;
-			}
-			for(int i=0;i<RGBAs.size();i++)
-			{
-				int &rgba = RGBAs[i];
-				rgba = (rgba & 0xffffff) | sNekoLut[(rgba>>24) & 63];
-			}
-			def_rgba = (def_rgba & 0xffffff) | sNekoLut[(def_rgba>>24) & 63];
-		}
+      if (val_bool(inIs31Bits))
+      {
+         if (!sNekoLutInit)
+         {
+            sNekoLutInit = true;
+            for(int i=0;i<64;i++)
+               sNekoLut[i] = ((int)(i*255.0/63.0 + 0.5)) << 24;
+         }
+         for(int i=0;i<RGBAs.size();i++)
+         {
+            int &rgba = RGBAs[i];
+            rgba = (rgba & 0xffffff) | sNekoLut[(rgba>>24) & 63];
+         }
+         def_rgba = (def_rgba & 0xffffff) | sNekoLut[(def_rgba>>24) & 63];
+      }
 
       gfx->drawPoints(xys,RGBAs,def_rgba);
    }
@@ -1579,50 +1691,50 @@ DEFINE_PRIM(nme_bitmap_data_set_bytes,3);
 
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
-	enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
+   enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
 
-	Surface *surf;
-	Surface *src;
+   Surface *surf;
+   Surface *src;
    if (AbstractToObject(arg[aTarget],surf) && AbstractToObject(arg[aSurface],src))
-	{
-		Rect r(surf->Width(),surf->Height());
-		if (!val_is_null(arg[aClipRect]))
-			FromValue(r,arg[aClipRect]);
-		AutoSurfaceRender render(surf,r);
+   {
+      Rect r(surf->Width(),surf->Height());
+      if (!val_is_null(arg[aClipRect]))
+         FromValue(r,arg[aClipRect]);
+      AutoSurfaceRender render(surf,r);
 
-		Matrix matrix;
-		if (!val_is_null(arg[aMatrix]))
-			FromValue(matrix,arg[aMatrix]);
+      Matrix matrix;
+      if (!val_is_null(arg[aMatrix]))
+         FromValue(matrix,arg[aMatrix]);
       RenderState state(surf,4);
       state.mTransform.mMatrix = &matrix;
 
-		ColorTransform col_trans;
-		if (!val_is_null(arg[aColourTransform]))
-		{
-		   ColorTransform t;
-			// TODO:
-			//FromValue(t,arg[aColourTransform]);
+      ColorTransform col_trans;
+      if (!val_is_null(arg[aColourTransform]))
+      {
+         ColorTransform t;
+         // TODO:
+         //FromValue(t,arg[aColourTransform]);
          //state.CombineColourTransform(stage,&t,&col_trans);
-		}
+      }
 
-		// TODO: Blend mode
+      // TODO: Blend mode
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpRender;
 
-		Graphics *gfx = new Graphics(true);
-		gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
-		gfx->moveTo(0,0);
-		gfx->lineTo(src->Width(),0);
-		gfx->lineTo(src->Width(),src->Height());
-		gfx->lineTo(0,src->Height());
-		gfx->lineTo(0,0);
+      Graphics *gfx = new Graphics(true);
+      gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
+      gfx->moveTo(0,0);
+      gfx->lineTo(src->Width(),0);
+      gfx->lineTo(src->Width(),src->Height());
+      gfx->lineTo(0,src->Height());
+      gfx->lineTo(0,0);
 
-		gfx->Render(render.Target(),state);
+      gfx->Render(render.Target(),state);
 
-		gfx->DecRef();
+      gfx->DecRef();
 
 
-	}
+   }
 
    return alloc_null();
 }
