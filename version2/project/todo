@@ -1,5 +1,4 @@
 TODO:
-- colorTransform (check combining alphas too)
 - stage scaling
 - scoll rects
 
@@ -7,3 +6,5 @@ TODO:
  - bitmap setting functions
  - ByteArray
  - loader
+ - add/remove objects
+ - stage timer/minimal sleep

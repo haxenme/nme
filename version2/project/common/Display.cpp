@@ -1376,6 +1376,19 @@ double Stage::getStageHeight()
 }
 
 
+void Stage::setScaleMode(int inMode)
+{
+	// TODO:
+	scaleMode = (StageScaleMode)inMode;
+}
+
+void Stage::setAlign(int inAlign)
+{
+	// TODO:
+	align = (StageAlign)inAlign;
+}
+
+
 
 DisplayObject *Stage::HitTest(int inX,int inY)
 {

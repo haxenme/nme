@@ -90,6 +90,26 @@ enum
    dirtCache       = 0x0004,
 };
 
+enum StageScaleMode
+{
+	 ssmShowAll,
+	 ssmNoScale,
+	 ssmNoBorder,
+	 ssmExactFit,
+};
+
+enum StageAlign
+{
+   saTopRight,
+   saTopLeft,
+   saTop,
+   saRight,
+   saLeft,
+   saBottomRight,
+   saBottomLeft,
+   saBottom,
+};
+
 
 
 enum Cursor { curNone, curPointer, curHand, curTextSelect };
@@ -303,6 +323,10 @@ public:
 	UserPoint getMousePos() const { return mLastMousePos; }
    double getStageWidth();
    double getStageHeight();
+	int getScaleMode() const { return scaleMode; }
+	void setScaleMode(int inMode);
+	int getAlign() const { return align; }
+	void setAlign(int inAlign);
 
    int    mQuality;
 
@@ -320,6 +344,10 @@ protected:
    void         *mHandlerData;
    bool         focusRect;
 	UserPoint    mLastMousePos;
+	StageScaleMode scaleMode;
+	StageAlign     align;
+	int            mNominalWidth;
+	int            mNominalHeight;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;

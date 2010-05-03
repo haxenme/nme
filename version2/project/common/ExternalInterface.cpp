@@ -477,6 +477,8 @@ value nme_stage_set_focus(value inStage,value inObject,value inDirection)
 DEFINE_PRIM(nme_stage_set_focus,3);
 
 DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
+DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
+DO_STAGE_PROP(align,Align,alloc_int,val_int)
 DO_PROP_READ(Stage,stage,stage_width,StageWidth,alloc_float);
 DO_PROP_READ(Stage,stage,stage_height,StageHeight,alloc_float);
 

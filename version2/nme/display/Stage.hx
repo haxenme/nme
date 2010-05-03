@@ -25,6 +25,8 @@ class Stage extends nme.display.DisplayObjectContainer
 
 	public var stageWidth(nmeGetStageWidth,null):Float;
 	public var stageHeight(nmeGetStageHeight,null):Float;
+	public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
+	public var align(nmeGetAlign, nmeSetAlign):StageAlign;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
@@ -99,15 +101,36 @@ class Stage extends nme.display.DisplayObjectContainer
 
 	function nmeGetStageWidth() : Float
 	{
-	// TODO: scaling
 	   return nme_stage_get_stage_width(nmeHandle);
 	}
 
 	function nmeGetStageHeight() : Float
 	{
-	// TODO: scaling
 	   return nme_stage_get_stage_height(nmeHandle);
 	}
+
+	function nmeGetScaleMode() : StageScaleMode
+	{
+	   var i:Int = nme_stage_get_scale_mode(nmeHandle);
+		return Type.createEnumIndex( StageScaleMode, i );
+	}
+	function nmeSetScaleMode(inMode:StageScaleMode) : StageScaleMode
+	{
+	   nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode) );
+		return inMode;
+	}
+	function nmeGetAlign() : StageAlign
+	{
+	   var i:Int = nme_stage_get_align(nmeHandle);
+		return Type.createEnumIndex( StageAlign, i );
+	}
+	function nmeSetAlign(inMode:StageAlign) : StageAlign
+	{
+	   nme_stage_set_align(nmeHandle, Type.enumIndex(inMode) );
+		return inMode;
+	}
+
+
 
    public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:nme.geom.Rectangle):Void
 	{
@@ -421,4 +444,8 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_is_opengl = nme.Loader.load("nme_stage_is_opengl",1);
    static var nme_stage_get_stage_width = nme.Loader.load("nme_stage_get_stage_width",1);
    static var nme_stage_get_stage_height = nme.Loader.load("nme_stage_get_stage_height",1);
+   static var nme_stage_get_scale_mode = nme.Loader.load("nme_stage_get_scale_mode",1);
+   static var nme_stage_set_scale_mode = nme.Loader.load("nme_stage_set_scale_mode",2);
+   static var nme_stage_get_align = nme.Loader.load("nme_stage_get_align",1);
+   static var nme_stage_set_align = nme.Loader.load("nme_stage_set_align",2);
 }
