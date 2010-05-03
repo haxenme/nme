@@ -581,6 +581,10 @@ void ProcessEvent(SDL_Event &inEvent)
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y);
          AddModStates(mouse.flags);
          sgSDLFrame->ProcessEvent(mouse);
+
+         // TODO: based on timer/motion?
+         Event click(etMouseClick, inEvent.button.x,inEvent.button.y);
+         sgSDLFrame->ProcessEvent(click);
          break;
       }
 

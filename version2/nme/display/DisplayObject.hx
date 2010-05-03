@@ -31,6 +31,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var name(nmeGetName,nmeSetName): String;
    public var mask(default,nmeSetMask): DisplayObject;
    public var transform(nmeGetTransform,nmeSetTransform): Transform;
+   public var alpha(nmeGetAlpha,nmeSetAlpha): Float;
 
    var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -328,6 +329,15 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       nmeSetColorTransform(inTransform.colorTransform);
       return inTransform;
    }
+   function nmeGetAlpha() : Float
+   {
+      return nme_display_object_get_alpha(nmeHandle);
+   }
+   function nmeSetAlpha(inAlpha:Float) : Float
+   {
+      nme_display_object_set_alpha(nmeHandle,inAlpha);
+      return inAlpha;
+   }
 
    public function globalToLocal(inLocal:Point)
    {
@@ -436,6 +446,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_width = nme.Loader.load("nme_display_object_set_width",2);
    static var nme_display_object_get_height = nme.Loader.load("nme_display_object_get_height",1);
    static var nme_display_object_set_height = nme.Loader.load("nme_display_object_set_height",2);
+   static var nme_display_object_get_alpha = nme.Loader.load("nme_display_object_get_alpha",1);
+   static var nme_display_object_set_alpha = nme.Loader.load("nme_display_object_set_alpha",2);
    static var nme_display_object_get_cache_as_bitmap = nme.Loader.load("nme_display_object_get_cache_as_bitmap",1);
    static var nme_display_object_set_cache_as_bitmap = nme.Loader.load("nme_display_object_set_cache_as_bitmap",2);
    static var nme_display_object_get_visible = nme.Loader.load("nme_display_object_get_visible",1);

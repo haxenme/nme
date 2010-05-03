@@ -136,6 +136,7 @@ public:
    void setMatrix(const Matrix &inMatrix);
    void setColorTransform(const ColorTransform &inTransform);
 
+   double getAlpha() { return colorTransform.alphaMultiplier; }
    void   setAlpha(double inAlpha);
 
    int getID() const { return id; }

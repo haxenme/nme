@@ -39,6 +39,15 @@ class Sample extends Sprite
       var target:Sprite = new Sprite();
       draw(target);
       addChild(target);
+      var data = nme.display.BitmapData.load("../03-Bitmaps/Image.jpg");
+      var bmp = new nme.display.Bitmap(data);
+      bmp.alpha = 0.5;
+      bmp.x = 50;
+      bmp.y = 50;
+      target.addChild(bmp);
+      target.alpha = 0.5;
+
+
       //target.useHandCursor = true;
       //target.buttonMode = true;
       target.addEventListener(MouseEvent.CLICK, clickHandler);
@@ -59,9 +68,12 @@ class Sample extends Sprite
 
    public function clickHandler(event:MouseEvent)
    {
-      var rOffset = this.transform.colorTransform.redOffset + 25;
-      var bOffset = transform.colorTransform.redOffset - 25;
-      this.transform.colorTransform = new ColorTransform(1, 1, 1, 1, rOffset, 0, bOffset, 0);
+      var d:nme.display.DisplayObject = event.target;
+      var t:Transform = d.transform;
+      var rOffset = t.colorTransform.redOffset + 25;
+      var bOffset = t.colorTransform.redOffset - 25;
+      var a = d.alpha;
+      t.colorTransform = new ColorTransform(1, 1, 1, a*0.9, rOffset, 0, bOffset, 0);
    }
 
 
