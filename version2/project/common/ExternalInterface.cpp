@@ -418,7 +418,7 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
 }
 
 
-value nme_set_stage_handler(value inStage,value inHandler)
+value nme_set_stage_handler(value inStage,value inHandler,value inNomWidth, value inNomHeight)
 {
    Stage *stage;
    if (!AbstractToObject(inStage,stage))
@@ -426,12 +426,13 @@ value nme_set_stage_handler(value inStage,value inHandler)
 
    AutoGCRoot *data = new AutoGCRoot(inHandler);
 
+   stage->SetNominalSize(val_int(inNomWidth), val_int(inNomHeight) );
    stage->SetEventHandler(external_handler,data);
 
    return alloc_null();
 }
 
-DEFINE_PRIM(nme_set_stage_handler,2);
+DEFINE_PRIM(nme_set_stage_handler,4);
 
 
 value nme_render_stage(value inStage)
@@ -714,7 +715,7 @@ value nme_display_object_get_matrix(value inObj,value outMatrix, value inFull)
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      Matrix m = val_bool(inFull) ? obj->GetLocalMatrix() : obj->GetFullMatrix();
+      Matrix m = val_bool(inFull) ? obj->GetLocalMatrix() : obj->GetFullMatrix(false);
       ToValue(outMatrix,m);
    }
 

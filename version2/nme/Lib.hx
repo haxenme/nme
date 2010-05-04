@@ -25,7 +25,7 @@ class Lib
         function(inFrameHandle:Dynamic) {
             nmeMainFrame = inFrameHandle;
             var stage_handle = nme_get_frame_stage(nmeMainFrame);
-            nme.Lib.nmeStage = new nme.display.Stage(stage_handle);
+            nme.Lib.nmeStage = new nme.display.Stage(stage_handle,inWidth,inHeight);
             nme.Lib.nmeStage.frameRate = inFrameRate;
             nme.Lib.nmeStage.opaqueBackground = inColour;
             nme.Lib.nmeStage.onQuit = close;

@@ -317,7 +317,7 @@ bool TextField::CaptureDown(Event &inEvent)
       if (selectable)
          getStage()->EnablePopupKeyboard(true);
 
-      UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
+      UserPoint point = GetFullMatrix(true).ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       caretIndex = pos;
       if (selectable)
@@ -336,7 +336,7 @@ void TextField::Drag(Event &inEvent)
    if (selectable)
    {
       mSelectKeyDown = -1;
-      UserPoint point = GetFullMatrix().ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
+      UserPoint point = GetFullMatrix(true).ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       if (pos>mSelectDownChar)
       {
@@ -1091,7 +1091,7 @@ void TextField::Layout()
 
 	if (mFontsDirty)
 	{
-		Matrix m = GetFullMatrix();
+		Matrix m = GetFullMatrix(true);
 		UpdateFonts(m);
 	}
 

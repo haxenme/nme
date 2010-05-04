@@ -12,10 +12,6 @@ static Scale9 sgNoScale9;
 
 Transform::Transform()
 {
-	mStageScaleX = 1.0;
-	mStageScaleY = 1.0;
-	mStageOX = 0.0;
-	mStageOY = 0.0;
 	mAAFactor = 1;
 	mScale9 = &sgNoScale9;
 	mMatrix = &sgIdentity;
@@ -38,23 +34,21 @@ UserPoint Transform::Apply(float inX, float inY) const
 bool Transform::operator==(const Transform &inRHS) const
 {
 	return *mMatrix==*inRHS.mMatrix && *mScale9==*inRHS.mScale9 &&
-          mAAFactor == inRHS.mAAFactor &&
-          mStageScaleX==inRHS.mStageScaleX && mStageScaleY==inRHS.mStageScaleY;
+          mAAFactor == inRHS.mAAFactor;
 }
 
 Fixed10 Transform::ToImageAA(const UserPoint &inPoint) const
 {
-   return Fixed10( (inPoint.x * mStageScaleX + mStageOX)*mAAFactor,
-                   (inPoint.y * mStageScaleY + mStageOY)*mAAFactor );
+   return Fixed10( inPoint.x*mAAFactor, inPoint.y*mAAFactor );
 }
 
 
 Rect Transform::GetTargetRect(const Extent2DF &inExtent) const
 {
-   return Rect( floor((inExtent.mMinX * mStageScaleX + mStageOX)),
-                floor((inExtent.mMinY * mStageScaleY + mStageOY)),
-                 ceil((inExtent.mMaxX * mStageScaleX + mStageOX)),
-                 ceil((inExtent.mMaxY * mStageScaleY + mStageOY)), true );
+   return Rect( floor((inExtent.mMinX)),
+                floor((inExtent.mMinY)),
+                 ceil((inExtent.mMaxX)),
+                 ceil((inExtent.mMaxY)), true );
 }
 
 

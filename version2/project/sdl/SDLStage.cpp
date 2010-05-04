@@ -613,7 +613,7 @@ void ProcessEvent(SDL_Event &inEvent)
 
       case SDL_VIDEORESIZE:
       {
-         Event resize(etResize);
+         Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
          sgSDLFrame->Resize(inEvent.resize.w,inEvent.resize.h);
          sgSDLFrame->ProcessEvent(resize);
          break;

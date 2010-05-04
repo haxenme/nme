@@ -358,11 +358,6 @@ struct Transform
    const Scale9   *mScale9;
 
    int            mAAFactor;
-
-   double         mStageScaleX;
-   double         mStageScaleY;
-   double         mStageOX;
-   double         mStageOY;
 };
 
 

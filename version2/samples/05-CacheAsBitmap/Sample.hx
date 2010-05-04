@@ -86,6 +86,7 @@ public function new()
    var bmp = new BitmapData(32,32,true,zero);
    bmp.draw(shape);
    var bitmap = new Bitmap(bmp);
+
    bitmap.x = 50;
    bitmap.y = 50;
    addChild(bitmap);
@@ -122,7 +123,7 @@ public function new()
 
 function CreateStrip(inMethod:InterpolationMethod)
 {
-   var shape = new Shape();
+   var shape = new Sprite();
    var gfx = shape.graphics;
 
    var mtx = new Matrix();
@@ -138,6 +139,8 @@ function CreateStrip(inMethod:InterpolationMethod)
                        -0.9 );
  
    gfx.drawRect(0,0,250,50);
+
+   shape.addEventListener(MouseEvent.CLICK, function(_) { trace("click"); });
 
    return shape;
 }

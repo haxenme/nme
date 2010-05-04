@@ -92,10 +92,10 @@ enum
 
 enum StageScaleMode
 {
-	 ssmShowAll,
-	 ssmNoScale,
-	 ssmNoBorder,
-	 ssmExactFit,
+    ssmShowAll,
+    ssmNoScale,
+    ssmNoBorder,
+    ssmExactFit,
 };
 
 enum StageAlign
@@ -151,7 +151,7 @@ public:
    void setCacheAsBitmap(bool inVal);
    bool getVisible() { return visible; }
    void setVisible(bool inVal);
-	const wchar_t *getName() { return name.c_str(); }
+   const wchar_t *getName() { return name.c_str(); }
    void setName(const std::wstring &inName) { name = inName; }
    void setMatrix(const Matrix &inMatrix);
    void setColorTransform(const ColorTransform &inTransform);
@@ -162,7 +162,7 @@ public:
    int getID() const { return id; }
 
 
-   const Transform &getTransform();
+   //const Transform &getTransform();
 
    DisplayObject *getParent();
 
@@ -214,7 +214,7 @@ public:
    UserPoint GlobalToLocal(const UserPoint &inPoint);
 
    Graphics &GetGraphics();
-   Matrix   GetFullMatrix();
+   virtual Matrix   GetFullMatrix(bool inWithStageScaling);
    Matrix   &GetLocalMatrix();
    ColorTransform   &GetLocalColorTransform() { return colorTransform; }
    ColorTransform   GetFullColorTransform();
@@ -312,21 +312,23 @@ public:
    virtual bool isOpenGL() const = 0;
 
    void SetEventHandler(EventHandler inHander,void *inUserData);
+   void SetNominalSize(int inWidth,int inHeight);
    virtual void   setOpaqueBackground(uint32 inBG);
-   DisplayObject *HitTest(int inX,int inY);
+   DisplayObject *HitTest(UserPoint inPoint);
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void EnablePopupKeyboard(bool inEnable) { }
+   Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
-	UserPoint getMousePos() const { return mLastMousePos; }
+   UserPoint getMousePos() const { return mLastMousePos; }
    double getStageWidth();
    double getStageHeight();
-	int getScaleMode() const { return scaleMode; }
-	void setScaleMode(int inMode);
-	int getAlign() const { return align; }
-	void setAlign(int inAlign);
+   int getScaleMode() const { return scaleMode; }
+   void setScaleMode(int inMode);
+   int getAlign() const { return align; }
+   void setAlign(int inAlign);
 
    int    mQuality;
 
@@ -340,14 +342,18 @@ public:
 protected:
    ~Stage();
    void HandleEvent(Event &inEvent);
+   void CalcStageScaling(double inW,double inH);
    EventHandler mHandler;
    void         *mHandlerData;
    bool         focusRect;
-	UserPoint    mLastMousePos;
-	StageScaleMode scaleMode;
-	StageAlign     align;
-	int            mNominalWidth;
-	int            mNominalHeight;
+   UserPoint    mLastMousePos;
+   StageScaleMode scaleMode;
+   StageAlign     align;
+
+   Matrix         mStageScale;
+
+   int            mNominalWidth;
+   int            mNominalHeight;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;

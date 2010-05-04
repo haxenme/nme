@@ -12,10 +12,10 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeMouseOverObjects:Array<InteractiveObject>;
    var nmeFocusOverObjects:Array<InteractiveObject>;
    var nmeInvalid:Bool;
-	var nmeDragBounds:Rectangle;
-	var nmeDragObject:Sprite;
-	var nmeDragOffsetX:Float;
-	var nmeDragOffsetY:Float;
+   var nmeDragBounds:Rectangle;
+   var nmeDragObject:Sprite;
+   var nmeDragOffsetX:Float;
+   var nmeDragOffsetY:Float;
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
@@ -23,22 +23,22 @@ class Stage extends nme.display.DisplayObjectContainer
    public var frameRate(default,nmeSetFrameRate): Float;
    public var isOpenGL(nmeIsOpenGL,null):Bool;
 
-	public var stageWidth(nmeGetStageWidth,null):Float;
-	public var stageHeight(nmeGetStageHeight,null):Float;
-	public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
-	public var align(nmeGetAlign, nmeSetAlign):StageAlign;
+   public var stageWidth(nmeGetStageWidth,null):Float;
+   public var stageHeight(nmeGetStageHeight,null):Float;
+   public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
+   public var align(nmeGetAlign, nmeSetAlign):StageAlign;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
    public var onQuit: Void ->Void; 
 
 
-   public function new(inHandle:Dynamic)
+   public function new(inHandle:Dynamic,inWidth:Int,inHeight:Int)
    {
       super(inHandle);
       nmeMouseOverObjects = [];
       nmeFocusOverObjects = [];
-      nme_set_stage_handler(nmeHandle,nmeProcessStageEvent);
+      nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
       nmeSetFrameRate(100);
    }
@@ -99,45 +99,45 @@ class Stage extends nme.display.DisplayObjectContainer
       return inVal;
    }
 
-	function nmeGetStageWidth() : Float
-	{
-	   return nme_stage_get_stage_width(nmeHandle);
-	}
+   function nmeGetStageWidth() : Float
+   {
+      return nme_stage_get_stage_width(nmeHandle);
+   }
 
-	function nmeGetStageHeight() : Float
-	{
-	   return nme_stage_get_stage_height(nmeHandle);
-	}
+   function nmeGetStageHeight() : Float
+   {
+      return nme_stage_get_stage_height(nmeHandle);
+   }
 
-	function nmeGetScaleMode() : StageScaleMode
-	{
-	   var i:Int = nme_stage_get_scale_mode(nmeHandle);
-		return Type.createEnumIndex( StageScaleMode, i );
-	}
-	function nmeSetScaleMode(inMode:StageScaleMode) : StageScaleMode
-	{
-	   nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode) );
-		return inMode;
-	}
-	function nmeGetAlign() : StageAlign
-	{
-	   var i:Int = nme_stage_get_align(nmeHandle);
-		return Type.createEnumIndex( StageAlign, i );
-	}
-	function nmeSetAlign(inMode:StageAlign) : StageAlign
-	{
-	   nme_stage_set_align(nmeHandle, Type.enumIndex(inMode) );
-		return inMode;
-	}
+   function nmeGetScaleMode() : StageScaleMode
+   {
+      var i:Int = nme_stage_get_scale_mode(nmeHandle);
+      return Type.createEnumIndex( StageScaleMode, i );
+   }
+   function nmeSetScaleMode(inMode:StageScaleMode) : StageScaleMode
+   {
+      nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode) );
+      return inMode;
+   }
+   function nmeGetAlign() : StageAlign
+   {
+      var i:Int = nme_stage_get_align(nmeHandle);
+      return Type.createEnumIndex( StageAlign, i );
+   }
+   function nmeSetAlign(inMode:StageAlign) : StageAlign
+   {
+      nme_stage_set_align(nmeHandle, Type.enumIndex(inMode) );
+      return inMode;
+   }
 
 
 
    public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:nme.geom.Rectangle):Void
-	{
-		nmeDragBounds = (bounds==null) ? null : bounds.clone();
-		nmeDragObject = sprite;
+   {
+      nmeDragBounds = (bounds==null) ? null : bounds.clone();
+      nmeDragObject = sprite;
 
-		if (nmeDragObject!=null)
+      if (nmeDragObject!=null)
       {
          if (lockCenter)
          {
@@ -155,10 +155,10 @@ class Stage extends nme.display.DisplayObjectContainer
             nmeDragOffsetY = nmeDragObject.y-mouse.y;
          }
       }
-	}
+   }
 
-	function nmeDrag(inMouse:Point)
-	{
+   function nmeDrag(inMouse:Point)
+   {
       var p = nmeDragObject.parent;
       if (p!=null)
          inMouse = p.globalToLocal(inMouse);
@@ -174,13 +174,13 @@ class Stage extends nme.display.DisplayObjectContainer
 
       nmeDragObject.x = inMouse.x + nmeDragOffsetX;
       nmeDragObject.y = inMouse.y + nmeDragOffsetY;
-	}
+   }
 
-	public function nmeStopDrag(sprite:Sprite) : Void
-	{
-		nmeDragBounds = null;
-		nmeDragObject = null;
-	}
+   public function nmeStopDrag(sprite:Sprite) : Void
+   {
+      nmeDragBounds = null;
+      nmeDragObject = null;
+   }
 
 
    function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
@@ -226,8 +226,8 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeOnMouse(inEvent:Dynamic,inType:String)
    {
-	   if (nmeDragObject!=null)
-			nmeDrag(new Point(inEvent.x,inEvent.y) );
+      if (nmeDragObject!=null)
+         nmeDrag(new Point(inEvent.x,inEvent.y) );
 
       var stack = new Array<InteractiveObject>();
       var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -434,7 +434,7 @@ class Stage extends nme.display.DisplayObjectContainer
       return null;
    }
 
-   static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",2);
+   static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",4);
    static var nme_set_stage_poll_method = nme.Loader.load("nme_set_stage_poll_method",2);
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
    static var nme_stage_get_focus_id = nme.Loader.load("nme_stage_get_focus_id",1);

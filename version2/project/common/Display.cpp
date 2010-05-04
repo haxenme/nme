@@ -235,10 +235,10 @@ void DisplayObject::DirtyCache(bool inParentOnly)
       mParent->DirtyCache(false);
 }
 
-Matrix DisplayObject::GetFullMatrix()
+Matrix DisplayObject::GetFullMatrix(bool inStageScaling)
 {
   if (mParent)
-     return mParent->GetFullMatrix().Mult(GetLocalMatrix());
+     return mParent->GetFullMatrix(inStageScaling).Mult(GetLocalMatrix());
   return GetLocalMatrix();
 }
 
@@ -329,7 +329,7 @@ double DisplayObject::getMouseX()
 	if (!s)
 		return 0;
 	UserPoint p = s->getMousePos();
-	UserPoint result = GetFullMatrix().ApplyInverse(p);
+	UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.x;
 }
 
@@ -339,7 +339,7 @@ double DisplayObject::getMouseY()
 	if (!s)
 		return 0;
 	UserPoint p = s->getMousePos();
-	UserPoint result = GetFullMatrix().ApplyInverse(p);
+	UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.y;
 }
 
@@ -670,7 +670,7 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 {
    Transform trans;
    trans.mAAFactor = inAA;
-   Matrix m = GetFullMatrix();
+   Matrix m = GetFullMatrix(true);
    trans.mMatrix = &m;
    Scale9 s9;
    if ( scale9Grid.HasPixels() )
@@ -1150,7 +1150,11 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mFocusObject = 0;
    mMouseDownObject = 0;
    focusRect = true;
-	mLastMousePos = UserPoint(0,0);
+   mLastMousePos = UserPoint(0,0);
+   scaleMode = ssmShowAll;
+   mNominalWidth = 100;
+   mNominalHeight = 100;
+   align = saTopLeft;
 }
 
 Stage::~Stage()
@@ -1203,6 +1207,12 @@ void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
 
 }
 
+void Stage::SetNominalSize(int inWidth, int inHeight)
+{
+   mNominalWidth = inWidth;
+   mNominalHeight = inHeight;
+}
+
 
 void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 {
@@ -1247,14 +1257,25 @@ void Stage::HandleEvent(Event &inEvent)
          mFocusObject->OnKey(inEvent);
    }
 
+   if (inEvent.type==etResize)
+   {
+      CalcStageScaling( inEvent.x, inEvent.y);
+   }
+
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
          inEvent.type==etMouseClick )
    {
-      hit_obj = HitTest(inEvent.x,inEvent.y);
+      UserPoint pixels(inEvent.x,inEvent.y);
+      hit_obj = HitTest(pixels);
       inEvent.id = hit_obj ? hit_obj->id : id;
       Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
       SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
+
+      UserPoint stage = mStageScale.ApplyInverse(pixels);
+      inEvent.x = stage.x;
+      inEvent.y = stage.y;
    }
+
 
    if (hit_obj)
       hit_obj->IncRef();
@@ -1335,6 +1356,75 @@ void Stage::RemovingFromStage(DisplayObject *inObject)
 }
 
 
+void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
+{
+   double StageScaleX=1;
+   double StageScaleY=1;
+   double StageOX=0;
+   double StageOY=0;
+
+   if (inNewWidth<=0 || inNewHeight<=0)
+      return;
+
+   if (scaleMode!=ssmNoScale)
+   {
+      StageScaleX = inNewWidth/(double)mNominalWidth;
+      StageScaleY = inNewHeight/(double)mNominalHeight;
+
+      if (scaleMode==ssmNoBorder)
+      {
+         if (StageScaleX>StageScaleY)
+            StageScaleY = StageScaleX;
+         else
+            StageScaleX = StageScaleY;
+      }
+      else if (scaleMode==ssmShowAll)
+      {
+         if (StageScaleX<StageScaleY)
+            StageScaleY = StageScaleX;
+         else
+            StageScaleX = StageScaleY;
+      }
+   }
+
+   double extra_x = inNewWidth-StageScaleX*mNominalWidth;
+   double extra_y = inNewHeight-StageScaleY*mNominalHeight;
+
+   switch(align)
+   {
+      case saTopRight:
+      case saRight:
+      case saBottomRight:
+         StageOX = -extra_y;
+         break;
+      case saTop:
+      case saBottom:
+         StageOX = -extra_x/2;
+         break;
+   }
+
+   switch(align)
+   {
+      case saBottomRight:
+      case saBottomLeft:
+      case saBottom:
+         StageOY = -extra_y;
+         break;
+      case saLeft:
+      case saRight:
+         StageOY = -extra_y/2;
+         break;
+   }
+
+   DirtyUp(dirtCache);
+
+   mStageScale.m00 = StageScaleX;
+   mStageScale.m11 = StageScaleY;
+   mStageScale.mtx = StageOX;
+   mStageScale.mty = StageOY;
+}
+
+
 bool Stage::FinishEditOnEnter()
 {
    if (mFocusObject && mFocusObject!=this)
@@ -1350,7 +1440,8 @@ void Stage::RenderStage()
 
    RenderState state(0,mQuality);
 
-   //gState.mTransform.mMatrix = Matrix().Rotate(rot).Translate(tx+100,200);
+   state.mTransform.mMatrix = &mStageScale;
+
    state.mClipRect = Rect( render.Width(), render.Height() );
 
    state.mPhase = rpBitmap;
@@ -1378,19 +1469,28 @@ double Stage::getStageHeight()
 
 void Stage::setScaleMode(int inMode)
 {
-	// TODO:
-	scaleMode = (StageScaleMode)inMode;
+   scaleMode = (StageScaleMode)inMode;
+   CalcStageScaling( getStageWidth(), getStageHeight() );
 }
 
 void Stage::setAlign(int inAlign)
 {
-	// TODO:
-	align = (StageAlign)inAlign;
+   align = (StageAlign)inAlign;
+   CalcStageScaling( getStageWidth(), getStageHeight() );
 }
 
 
+Matrix Stage::GetFullMatrix(bool inStageScaling)
+{
+   if (!inStageScaling)
+      return DisplayObject::GetFullMatrix(false);
 
-DisplayObject *Stage::HitTest(int inX,int inY)
+   return mStageScale.Mult(GetLocalMatrix());
+}
+  
+
+
+DisplayObject *Stage::HitTest(UserPoint inStage)
 {
    Surface *surface = GetPrimarySurface();
 
@@ -1398,7 +1498,10 @@ DisplayObject *Stage::HitTest(int inX,int inY)
    RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()) );
 
    RenderState state(0,mQuality);
-   state.mClipRect = Rect( inX, inY, 1, 1 );
+   state.mClipRect = Rect( inStage.x, inStage.y, 1, 1 );
+   state.mTransform.mMatrix = &mStageScale;
+
+
    state.mRoundSizeToPOW2 = target.IsHardware();
    state.mPhase = rpHitTest;
 
