@@ -45,14 +45,14 @@ public:
    void  setAutoSize(int inAutoSize);
 
    int   getCaretIndex() { return caretIndex; }
-   int   getMaxScrollH() { return maxScrollH; }
-   int   getMaxScrollV() { return maxScrollV; }
+   int   getMaxScrollH() { Layout(); return maxScrollH; }
+   int   getMaxScrollV() { Layout(); return maxScrollV; }
    int   getBottomScrollV();
    int   getScrollH() { return scrollH; }
    void  setScrollH(int inScrollH);
    int   getScrollV() { return scrollV; }
    void  setScrollV(int inScrollV);
-   int   getNumLines() { return mLines.size(); }
+   int   getNumLines() { Layout(GetFullMatrix(true)); return mLines.size(); }
    int   getSelectionBeginIndex();
    int   getSelectionEndIndex();
 
@@ -73,9 +73,9 @@ public:
    void  setWordWrap(bool inWordWrap);
 
 
-   double getWidth();
+   double getWidth() { return boundsWidth; }
    void setWidth(double inWidth);
-   double getHeight();
+   double getHeight() { return boundsHeight; }
    void setHeight(double inHeight);
 
    std::wstring getHTMLText();
@@ -84,8 +84,8 @@ public:
    void setText(const std::wstring &inString);
 
    int   getLength();
-   int   getTextHeight() { Layout(); return textHeight; }
-   int   getTextWidth() { Layout(); return textWidth; }
+   double   getTextHeight() { Layout(); return textHeight/mLayoutScaleV; }
+   double   getTextWidth() { Layout(); return textWidth/mLayoutScaleH; }
 
    bool  alwaysShowSelection;
    AntiAliasType antiAliasType;
@@ -118,13 +118,22 @@ public:
    int  maxScrollH;
    int  maxScrollV;
    int  caretIndex;
-	int  textWidth;
-	int  textHeight;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 
    // Display-object like properties
-   Rect mRect;
+	// Glyphs are laid out in a local pixel coordinate space, which is related to the
+	//  render-target window co-ordinates by the folling members
+	double mLayoutScaleH;
+	double mLayoutScaleV;
+   GlyphRotation mLayoutRotation;
+	// Unscaled size, as specified by application
+	double boundsWidth;
+	double boundsHeight;
+   // Local pixel space
+	int  textWidth;
+	int  textHeight;
+   Rect mActiveRect;
 
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
    Cursor GetCursor() { return selectable ? curTextSelect : curPointer; }
@@ -151,19 +160,22 @@ protected:
 private:
    TextField(const TextField &);
    void operator=(const TextField &);
-   void Layout();
+   void Layout(const Matrix &inMatrix);
+   void Layout() { Layout(GetFullMatrix(true)); }
 
    void Clear();
    void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,
       int inLineSkips, bool inBeginParagraph);
-   void UpdateFonts(const Matrix &inTransform);
-   void UpdateFonts(const Transform &inTransform);
 
    enum StringState { ssNone, ssText, ssHTML };
    StringState mStringState;
    std::wstring mUserString;
 
 	void SplitGroup(int inGroup,int inPos);
+
+	void BuildBackground();
+	UserPoint TargetToRect(const Matrix &inMat,const UserPoint &inPoint);
+	UserPoint RectToTarget(const Matrix &inMat,const UserPoint &inPoint);
 
    int  PointToChar(int inX,int inY);
    int  LineFromChar(int inChar);
@@ -176,13 +188,13 @@ private:
    bool mLinesDirty;
    bool mGfxDirty;
    bool mFontsDirty;
-   double mLastUpdateScale;
-   GlyphRotation mLastUpdateRotation;
+
 
    CharGroups mCharGroups;
    Lines mLines;
    QuickVec<ImagePoint> mCharPos;
    Graphics *mCaretGfx;
+   Graphics *mHighlightGfx;
    int      mLastCaretHeight;
    int      mLastUpDownX;
 

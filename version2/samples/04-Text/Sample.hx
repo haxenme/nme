@@ -1,8 +1,38 @@
 import nme.Lib;
 import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
+import nme.text.TextField;
 import nme.display.InteractiveObject;
+import nme.display.Sprite;
 import nme.ui.Keyboard;
+
+class Scrollbar extends Sprite
+{
+   var mThumbHeight:Float;
+   var mPage:Float;
+   var mHeight:Float;
+   var mRange:Float;
+
+   public function new(inWidth:Float, inHeight:Float, inRange:Float, inPage:Float)
+	{
+	   super();
+		var gfx = graphics;
+		gfx.lineStyle(1,0x404040);
+		gfx.beginFill(0xeeeeee);
+		gfx.drawRect(0,0,inWidth,inHeight);
+
+      mThumbHeight = inHeight * inPage / inRange;
+		mRange = inRange;
+		mHeight = inHeight;
+		mPage = inPage;
+		var thumb = new Sprite();
+		var gfx = thumb.graphics;
+		gfx.lineStyle(1,0x000000);
+		gfx.beginFill(0xffffff);
+		gfx.drawRect(0,0,inWidth,mThumbHeight);
+		addChild(thumb);
+	}
+}
 
 
 class Sample
@@ -22,6 +52,10 @@ class Sample
       tf.y = 100;
       nme.Lib.current.addChild(tf);
       AddHandlers(tf);
+
+		var f1 = createBox();
+      nme.Lib.current.addChild(f1);
+
 
 
       var p1 = new nme.display.Sprite();
@@ -48,6 +82,48 @@ class Sample
 
       tf.stage.frameRate = 250;
    }
+
+	function createBox()
+	{
+	   var frame = new Sprite();
+		var gfx = frame.graphics;
+		gfx.lineStyle(1,0x000000);
+		gfx.beginFill(0xeeeeff);
+		gfx.drawRoundRect(0,0,200,300,20,20);
+
+		var title = new TextField();
+		title.x = 10;
+		title.y = 8;
+		title.htmlText = "<b>Sample.hx</b>";
+		title.selectable = false;
+		frame.addChild(title);
+
+
+		var tf = new TextField();
+		tf.x = 10;
+		tf.y = 30;
+		tf.width = 160;
+		tf.height = 260;
+		tf.border = true;
+		tf.borderColor = 0x000000;
+		tf.background = true;
+		tf.backgroundColor = 0xffffff;
+		tf.multiline = true;
+		frame.addChild(tf);
+		tf.text = neko.io.File.getContent("Sample.hx");
+
+      trace(tf.scrollV);
+      trace(tf.maxScrollV);
+      trace(tf.bottomScrollV);
+		var scroll = new Scrollbar(20,260, tf.maxScrollV,tf.bottomScrollV);
+		scroll.x = 172;
+		scroll.y = 30;
+		frame.addChild(scroll);
+
+		tf.scrollV = 10;
+
+		return frame;
+	}
 
 
 	function reportKeyDown(event:KeyboardEvent)

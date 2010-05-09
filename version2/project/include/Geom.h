@@ -11,6 +11,8 @@
 namespace nme
 {
 
+enum GlyphRotation { gr0, gr90, gr180, gr270 };
+
 #ifdef WIN32
 typedef __int64 int64;
 #else
@@ -64,6 +66,17 @@ struct TRect
       return inOther.x>=x && inOther.x<x1() &&
              inOther.y>=y && inOther.y<y1();
    }
+
+	TRect Rotated(GlyphRotation inRotation) const
+	{
+		switch(inRotation)
+		{
+			case gr90: return TRect(y-h,x,h,w);
+			case gr180: return TRect(-x-w,-y-h,w,h);
+			case gr270: return TRect(-y,-x-w,h,w);
+		}
+		return *this;
+	}
 
 
    void ClipY(T &ioY0, T &ioY1) const

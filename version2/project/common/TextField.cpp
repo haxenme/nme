@@ -41,13 +41,15 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mStringState = ssText;
    mLinesDirty = false;
    mGfxDirty = true;
-   mRect = Rect(100,100);
-   mLastUpdateScale = -1;
+   boundsWidth = 100.0;
+   boundsHeight = 100.0;
+   mActiveRect = Rect(100,100);
    mFontsDirty = false;
    mSelectMin = mSelectMax = 0;
    mSelectDownChar = 0;
    caretIndex = 0;
    mCaretGfx = 0;
+   mHighlightGfx = 0;
    mLastCaretHeight = -1;
    mSelectKeyDown = -1;
    maxScrollH  = 0;
@@ -55,37 +57,30 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    setText(L"");
    textWidth = textHeight = 0;
    mLastUpDownX = -1;
+   mLayoutScaleH = mLayoutScaleV = -1.0;
+   mLayoutRotation = gr0;
 }
 
 TextField::~TextField()
 {
    if (mCaretGfx)
       mCaretGfx->DecRef();
+   if (mHighlightGfx)
+      mHighlightGfx->DecRef();
    defaultTextFormat->DecRef();
-}
-
-double TextField::getWidth()
-{
-   Layout();
-   return mRect.w;
 }
 
 void TextField::setWidth(double inWidth)
 {
-   mRect.w = inWidth;
+   boundsWidth = inWidth;
    mLinesDirty = true;
    mGfxDirty = true;
 }
 
-double TextField::getHeight()
-{
-   Layout();
-   return mRect.h;
-}
 
 void TextField::setHeight(double inHeight)
 {
-   mRect.h = inHeight;
+   boundsHeight = inHeight;
    mLinesDirty = true;
    mGfxDirty = true;
 }
@@ -125,7 +120,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    if (!inFmt)
       return;
 
-   Layout();
+   Layout(GetFullMatrix(true));
 
    if (inStart<0) inStart = 0;
    int max = mCharPos.size();
@@ -162,7 +157,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    inFmt->DecRef();
 
    mLinesDirty = true;
-	mFontsDirty = true;
+   mFontsDirty = true;
    mGfxDirty = true;
 }
 
@@ -258,6 +253,46 @@ bool TextField::FinishEditOnEnter()
    return !multiline;
 }
 
+int TextField::getBottomScrollV()
+{
+	Layout();
+	int l = scrollV;
+	int height = boundsHeight;
+	while(height>0 && l<mLines.size())
+   {
+      Line &line = mLines[l++];
+		height -= line.mMetrics.height;
+	}
+	return l;
+}
+
+void TextField::setScrollH(int inScrollH)
+{
+	scrollH = inScrollH;
+	if (scrollH<0)
+		scrollH = 0;
+	if (scrollH>maxScrollH)
+		scrollH = scrollH;
+	// TODO: do we need to re-layout on scroll?
+	mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyCache();
+}
+
+void TextField::setScrollV(int inScrollV)
+{
+	scrollV = inScrollV;
+	if (scrollV<0)
+		scrollV = 0;
+	if (scrollV>maxScrollV)
+		scrollV = scrollV;
+	// TODO: do we need to re-layout on scroll?
+	mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyCache();
+
+}
+
 
 
 int TextField::getLength()
@@ -317,7 +352,7 @@ bool TextField::CaptureDown(Event &inEvent)
       if (selectable)
          getStage()->EnablePopupKeyboard(true);
 
-      UserPoint point = GetFullMatrix(true).ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
+      UserPoint point = TargetToRect(GetFullMatrix(true), UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       caretIndex = pos;
       if (selectable)
@@ -331,12 +366,39 @@ bool TextField::CaptureDown(Event &inEvent)
    return true;
 }
 
+UserPoint TextField::TargetToRect(const Matrix &inMatrix,const UserPoint &inPoint)
+{
+   UserPoint p = (inPoint - UserPoint(inMatrix.mtx, inMatrix.mty));
+   switch(mLayoutRotation)
+   {
+      case gr90: return UserPoint(-p.y,p.x);
+      case gr180: return UserPoint(-p.x,-p.y);
+      case gr270: return UserPoint(p.y,-p.x);
+   }
+   return p;
+}
+
+UserPoint TextField::RectToTarget(const Matrix &inMatrix,const UserPoint &inPoint)
+{
+   UserPoint trans(inMatrix.mtx, inMatrix.mty);
+   switch(mLayoutRotation)
+   {
+      case gr90: return UserPoint(inPoint.y,-inPoint.x) + trans;
+      case gr180: return UserPoint(-inPoint.x,-inPoint.y) + trans;
+      case gr270: return UserPoint(-inPoint.y,inPoint.x) + trans;
+   }
+   return inPoint + trans;
+
+}
+
+
+
 void TextField::Drag(Event &inEvent)
 {
    if (selectable)
    {
       mSelectKeyDown = -1;
-      UserPoint point = GetFullMatrix(true).ApplyInverse( UserPoint( inEvent.x, inEvent.y) );
+      UserPoint point = TargetToRect(GetFullMatrix(true),UserPoint( inEvent.x, inEvent.y) );
       int pos = PointToChar(point.x,point.y);
       if (pos>mSelectDownChar)
       {
@@ -468,10 +530,10 @@ void TextField::ShowCaret()
       pos.x = EndOfLineX( mLines.size()-1 );
       pos.y = mLines[ mLines.size() -1].mY0;
    }
-   if (pos.x-scrollH >= mRect.w)
+   if (pos.x-scrollH >= mActiveRect.w)
    {
       changed = true;
-      scrollH = pos.x - mRect.w + 1;
+      scrollH = pos.x - mActiveRect.w + 1;
    }
    else if (pos.x-scrollH < 0)
    {
@@ -703,28 +765,6 @@ void TextField::setHTMLText(const std::wstring &inString)
 }
 
 
-void TextField::UpdateFonts(const Matrix &inMatrix)
-{
-   double scale = inMatrix.GetScaleY();// * inTransform->mStageScaleY;
-   GlyphRotation rot = fabs(inMatrix.m00)<0.0001 ?
-                            (inMatrix.m01 > 0 ? gr90 : gr270 ) :
-                         (inMatrix.m00 > 0 ? gr0 : gr180 );
-
-   if (mFontsDirty || scale!=mLastUpdateScale || rot!=mLastUpdateRotation)
-   {
-      for(int i=0;i<mCharGroups.size();i++)
-         if (mCharGroups[i].UpdateFont(scale,rot,!embedFonts))
-            mLinesDirty = true;
-      mFontsDirty = false;
-      mLastUpdateScale = scale;
-      mLastUpdateRotation = rot;
-   }
-}
-void TextField::UpdateFonts(const Transform &inTransform)
-{
-	UpdateFonts(*inTransform.mMatrix);
-}
-
 int TextField::LineFromChar(int inChar)
 {
    int min = 0;
@@ -807,30 +847,14 @@ ImagePoint TextField::GetCursorPos()
    return pos;
 }
 
-
-void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
+void TextField::BuildBackground()
 {
-   if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
-      return;
-
-   UpdateFonts(inState.mTransform);
-   Layout();
-
-   if (inState.mPhase==rpHitTest)
-   {
-      UserPoint pos =  inState.mTransform.mMatrix->ApplyInverse(
-            UserPoint(inState.mClipRect.x, inState.mClipRect.y) );
-      if ( mRect.Contains(pos) )
-         inState.mHitResult = this;
-      return;
-   }
-
-   ImagePoint scroll = GetScrollPos();
-
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
    {
       gfx.clear();
+      if (mHighlightGfx)
+         mHighlightGfx->clear();
       if (background || border)
       {
          int b=2;
@@ -838,106 +862,150 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             gfx.beginFill( backgroundColor, 1 );
          if (border)
             gfx.lineStyle(1, borderColor );
-         gfx.moveTo(mRect.x-b,mRect.y-b);
-         gfx.lineTo(mRect.x+b+mRect.w,mRect.y-b);
-         gfx.lineTo(mRect.x+b+mRect.w,mRect.y+b+mRect.h);
-         gfx.lineTo(mRect.x-b,mRect.y+b+mRect.h);
-         gfx.lineTo(mRect.x-b,mRect.y-b);
+         gfx.moveTo(-b,-b);
+         gfx.lineTo(b+boundsWidth,-b);
+         gfx.lineTo(b+boundsWidth,b+boundsHeight);
+         gfx.lineTo(-b,b+boundsHeight);
+         gfx.lineTo(-b,-b);
       }
       //printf("%d,%d\n", mSelectMin , mSelectMax);
       if (mSelectMin < mSelectMax)
       {
+         ImagePoint scroll = GetScrollPos();
+         if (!mHighlightGfx)
+            mHighlightGfx = new Graphics(true);
+
          int l0 = LineFromChar(mSelectMin);
          int l1 = LineFromChar(mSelectMax-1);
          ImagePoint pos = mCharPos[mSelectMin] - scroll;
          int height = mLines[l1].mMetrics.height;
          int x1 = EndOfCharX(mSelectMax-1,l1) - scroll.x;
-         gfx.lineStyle(-1);
-         gfx.beginFill( 0x101060, 1);
+         mHighlightGfx->lineStyle(-1);
+         mHighlightGfx->beginFill( 0x101060, 1);
          // Special case of begin/end on same line ...
          if (l0==l1)
          {
-            gfx.drawRect(pos.x,pos.y,x1-pos.x,height);
+            mHighlightGfx->drawRect(pos.x,pos.y,x1-pos.x,height);
          }
          else
          {
-            gfx.drawRect(pos.x,pos.y,EndOfLineX(l0)- scroll.x-pos.x,height);
+            mHighlightGfx->drawRect(pos.x,pos.y,EndOfLineX(l0)- scroll.x-pos.x,height);
             for(int y=l0+1;y<l1;y++)
             {
                Line &line = mLines[y];
                pos = mCharPos[line.mChar0]-scroll;
-               gfx.drawRect(pos.x,pos.y,EndOfLineX(y)-scroll.x-pos.x,line.mMetrics.height);
+               mHighlightGfx->drawRect(pos.x,pos.y,EndOfLineX(y)-scroll.x-pos.x,line.mMetrics.height);
             }
             Line &line = mLines[l1];
             pos = mCharPos[line.mChar0]-scroll;
-            gfx.drawRect(pos.x,pos.y,x1-pos.x,line.mMetrics.height);
+            mHighlightGfx->drawRect(pos.x,pos.y,x1-pos.x,line.mMetrics.height);
          }
       }
       mGfxDirty = false;
    }
-
-   if (!gfx.empty())
-   {
-      gfx.Render(inTarget,inState);
-   }
+}
 
 
-   if (isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this )
-   {
-      if (!mCaretGfx)
-         mCaretGfx = new Graphics(true);
-      int line = LineFromChar(caretIndex);
-      if (line>=0)
-      {
-         int height = mLines[line].mMetrics.height;
-         if (height!=mLastCaretHeight)
-         {
-            mLastCaretHeight = height;
-            mCaretGfx->clear();
-            mCaretGfx->lineStyle(1,0x000000);
-            mCaretGfx->moveTo(0,0);
-            mCaretGfx->lineTo(0,mLastCaretHeight);
-         }
-
-         ImagePoint pos = GetCursorPos() - scroll;
-        
-         RenderState state(inState);
-         Matrix matrix(*state.mTransform.mMatrix);
-         matrix.TranslateData(pos.x,pos.y);
-         state.mTransform.mMatrix = &matrix;
-         mCaretGfx->Render(inTarget,state);
-      }
-   }
-
-   const Matrix &matrix = *inState.mTransform.mMatrix;
-   // The fonts have already been scaled by sy ...
-   double sy = matrix.GetScaleY();
-   if (sy!=0) sy = 1.0/sy;
-   UserPoint origin = matrix.Apply( mRect.x,mRect.y );
-   UserPoint dPdX = UserPoint( matrix.m00*sy, matrix.m10*sy );
-   UserPoint dPdY = UserPoint( matrix.m01*sy, matrix.m11*sy );
-
-   int last_x = mRect.w;
-   // TODO: this for the rotated-90 cases too
-   RenderTarget target;
-   if (dPdX.y==0 && dPdY.x==0)
-   {
-      Rect rect = mRect.Translated(origin.x,origin.y).Intersect(inState.mClipRect);
-      if (inState.mMask)
-      {
-         rect = rect.Intersect(inState.mMask->GetRect());
-      }
-      target = inTarget.ClipRect(rect);
-   }
-   else
-   {
-      target = inTarget;
-   }
-
-   if (!target.mRect.HasPixels())
+void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
+{
+   if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 
-   HardwareContext *hardware = target.IsHardware() ? target.mHardware : 0;
+   const Matrix &matrix = *inState.mTransform.mMatrix;
+   Layout(matrix);
+
+
+   RenderState state(inState);
+
+   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty);
+   state.mClipRect = r.Intersect(inState.mClipRect);
+   if (inState.mMask)
+      state.mClipRect = inState.mClipRect.Intersect(inState.mMask->GetRect());
+
+   if (!state.mClipRect.HasPixels())
+      return;
+
+
+   if (inState.mPhase==rpHitTest)
+   {
+      // Convert destination pixels to local pixels...
+      UserPoint pos =  TargetToRect(matrix,UserPoint(inState.mClipRect.x, inState.mClipRect.y) );
+      if ( mActiveRect.Contains(pos) )
+         inState.mHitResult = this;
+      return;
+   }
+
+   ImagePoint scroll = GetScrollPos();
+
+   BuildBackground();
+
+   Graphics &gfx = GetGraphics();
+
+   if (!gfx.empty())
+      gfx.Render(inTarget,inState);
+
+   UserPoint origin = RectToTarget( matrix, UserPoint(mActiveRect.x, mActiveRect.y) );
+   UserPoint dPdX(1,0);
+   UserPoint dPdY(0,1);
+   switch(mLayoutRotation)
+   {
+      case 90: dPdX = UserPoint(0,-1); dPdY = UserPoint(1,0); break;
+      case 180: dPdX = UserPoint(-1,0); dPdY = UserPoint(0,-1); break;
+      case 270: dPdX = UserPoint(0,1); dPdY = UserPoint(-1,0); break;
+   }
+
+	bool highlight = mHighlightGfx && !mHighlightGfx->empty();
+	bool caret = isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this;
+
+	// Setup matrix for going from Rect to Target
+	Matrix rect_to_target;
+	if (highlight || caret)
+	{
+		rect_to_target.m00 = dPdX.x;
+		rect_to_target.m01 = dPdY.x;
+		rect_to_target.mtx = origin.x;
+		rect_to_target.m10 = dPdX.y;
+		rect_to_target.m11 = dPdY.y;
+		rect_to_target.mty = origin.y;
+		state.mTransform.mMatrix = &rect_to_target;
+
+      if (highlight)
+         mHighlightGfx->Render(inTarget,state);
+
+		if (caret)
+		{
+			if (!mCaretGfx)
+				mCaretGfx = new Graphics(true);
+			int line = LineFromChar(caretIndex);
+			if (line>=0)
+			{
+				int height = mLines[line].mMetrics.height;
+				if (height!=mLastCaretHeight)
+				{
+					mLastCaretHeight = height;
+					mCaretGfx->clear();
+					mCaretGfx->lineStyle(1,0x000000);
+					mCaretGfx->moveTo(0,0);
+					mCaretGfx->lineTo(0,mLastCaretHeight);
+				}
+
+				ImagePoint pos = GetCursorPos() - scroll;
+			  
+				rect_to_target.TranslateData(pos.x,pos.y);
+				mCaretGfx->Render(inTarget,state);
+			}
+		}
+	}
+
+
+   HardwareContext *hardware = inTarget.IsHardware() ? inTarget.mHardware : 0;
+
+   RenderTarget clipped;
+   if (hardware)
+      hardware->SetViewport(state.mClipRect);
+   else
+      clipped = inTarget.ClipRect( state.mClipRect );
+
 
    int line = 0;
    int last_line = mLines.size()-1;
@@ -955,7 +1023,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             {
                int cid = group.mChar0 + c;
                ImagePoint pos = mCharPos[cid]-scroll;
-               if (pos.y>mRect.h) break;
+               if (pos.y>mActiveRect.h) break;
                while(line<last_line && mLines[line+1].mChar0 >= cid)
                   line++;
                pos.y += mLines[line].mMetrics.ascent;
@@ -973,7 +1041,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                }
                else
                {
-                  tile.mSurface->BlitTo(target,
+                  tile.mSurface->BlitTo(clipped,
                      tile.mRect, (int)p.x, (int)p.y,
                      bmTinted, 0,
                     (uint32)tint);
@@ -990,20 +1058,27 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap)
 {
-   UpdateFonts(inTrans);
-   Layout();
-   if (0 && inForBitmap)
+   Layout(*inTrans.mMatrix);
+
+   if (inForBitmap && !border && !background)
    {
-      // TODO: actual text extent (if not backgroundColor )
-      //       borders
+      Rect r = mActiveRect.Rotated(mLayoutRotation).
+            Translated(inTrans.mMatrix->mtx, inTrans.mMatrix->mty);
+      for(int corner=0;corner<4;corner++)
+          outExt.Add( UserPoint(((corner & 1) ? r.x : r.x1()),((corner & 1) ? r.y : r.y1())));
+   }
+   else if (inForBitmap && border)
+   {
+      BuildBackground();
+      return DisplayObject::GetExtent(inTrans,outExt,inForBitmap);
    }
    else
    {
       for(int corner=0;corner<4;corner++)
       {
-            double x = mRect.x + ((corner & 1) ? mRect.w : 0);
-            double y = mRect.y + ((corner & 2) ? mRect.h : 0);
-            outExt.Add( inTrans.mMatrix->Apply(x,y) );
+         UserPoint pos((corner & 1) ? boundsWidth*mLayoutScaleH : 0,
+                       (corner & 2) ? boundsHeight*mLayoutScaleV : 0);
+         outExt.Add( RectToTarget(*inTrans.mMatrix,pos) );
       }
    }
 }
@@ -1040,7 +1115,7 @@ void TextField::DeleteChars(int inFirst,int inEnd)
 
       mLinesDirty = true;
       mGfxDirty = true;
-      Layout();
+      Layout(GetFullMatrix(true));
    }
 }
 
@@ -1080,21 +1155,47 @@ void TextField::InsertString(const std::wstring &inString)
    caretIndex += inString.length();
    mLinesDirty = true;
    mGfxDirty = true;
-   Layout();
+   Layout(GetFullMatrix(true));
 }
 
-
-void TextField::Layout()
+// Combine x,y scaling with rotation to calculate pixel coordinates for
+//  each character.
+void TextField::Layout(const Matrix &inMatrix)
 {
+   GlyphRotation rot;
+   double scale_h;
+   double scale_v;
+
+   if (fabs(inMatrix.m00)> fabs(inMatrix.m01))
+   {
+      scale_h = fabs(inMatrix.m00);
+      scale_v = fabs(inMatrix.m11);
+      rot = inMatrix.m00 < 0 ? gr180 : gr0;
+   }
+   else
+   {
+      scale_h = fabs(inMatrix.m10);
+      scale_v = fabs(inMatrix.m01);
+      rot = inMatrix.m01 < 0 ? gr270 : gr90;
+   }
+
+   if (mFontsDirty || scale_h!=mLayoutScaleH || scale_v!=mLayoutScaleV ||
+           rot!=mLayoutRotation)
+   {
+      for(int i=0;i<mCharGroups.size();i++)
+         if (mCharGroups[i].UpdateFont(scale_v,rot,!embedFonts))
+            mLinesDirty = true;
+      mFontsDirty = false;
+      mLayoutScaleV = scale_v;
+      mLayoutScaleH = scale_h;
+      mLayoutRotation = rot;
+   }
+
    if (!mLinesDirty)
       return;
 
-	if (mFontsDirty)
-	{
-		Matrix m = GetFullMatrix(true);
-		UpdateFonts(m);
-	}
-
+   //printf("Re-layout\n");
+   // Now, layout into local co-ordinates...
    mLines.resize(0);
    mCharPos.resize(0);
 
@@ -1107,6 +1208,7 @@ void TextField::Layout()
    int x = 0;
    int y = 0;
    mLastUpDownX = -1;
+   int max_x = boundsWidth * mLayoutScaleH;
 
    for(int i=0;i<mCharGroups.size();i++)
    {
@@ -1184,7 +1286,7 @@ void TextField::Layout()
             advance = 0;
          x+= advance;
          //printf(" Char %c (%d..%d,%d) %p\n", ch, ox, x, y, g.mFont);
-         if ( (wordWrap||multiline) && (x > mRect.w) && line.mChars>1)
+         if ( (wordWrap||multiline) && (x > max_x) && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)
@@ -1226,31 +1328,39 @@ void TextField::Layout()
 
    textHeight = y;
 
+   mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
+   int max_y = boundsHeight * mLayoutScaleV;
    if (autoSize != asNone)
    {
       if (!wordWrap)
       {
          switch(autoSize)
          {
-            case asLeft: mRect.w = textWidth; break;
-            case asRight: mRect.x = mRect.x1()-textWidth; mRect.w = textWidth; break;
-            case asCenter: mRect.x = (mRect.x+mRect.x1()-textWidth)/2; mRect.w = textWidth; break;
+            case asLeft: mActiveRect.w = textWidth;
+                         break;
+            case asRight: mActiveRect.x = mActiveRect.x1()-textWidth;
+                         mActiveRect.w = textWidth;
+                         break;
+            case asCenter: mActiveRect.x = (mActiveRect.x+mActiveRect.x1()-textWidth)/2;
+                         mActiveRect.w = textWidth;
+                         break;
          }
       }
-      mRect.h = textHeight;
+      max_y = mActiveRect.h = textHeight;
    }
 
-   maxScrollH = std::max(0,textWidth-mRect.w);
+   maxScrollH = std::max(0,textWidth-max_x);
    maxScrollV = 0;
+
    // Work out how many lines from the end fit in the rect, and
    //  therefore how many lines we can scroll...
-   if (textHeight>mRect.h && mLines.size()>1)
+   if (textHeight>max_y && mLines.size()>1)
    {
-      int left = mRect.h;
+      int left = max_y;
       int line = mLines.size()-1;
       while(left>0 && line>0 )
         left -= mLines[line--].mMetrics.height;
-      maxScrollH = line;
+      maxScrollV = line;
    }
 
    // Align rows ...
@@ -1263,7 +1373,7 @@ void TextField::Layout()
          CharGroup &group = mCharGroups[line.mCharGroup0];
 
          // Get alignment...
-         int extra = (mRect.w - line.mMetrics.width);
+         int extra = (mActiveRect.w - line.mMetrics.width);
          switch(group.mFormat->align(tfaLeft))
          {
             case tfaLeft: extra = 0; break;

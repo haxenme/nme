@@ -17,6 +17,11 @@ class TextField extends nme.display.InteractiveObject
    public var autoSize(nmeGetAutoSize,nmeSetAutoSize):TextFieldAutoSize;
    public var textWidth(nmeGetTextWidth,null):Float;
    public var textHeight(nmeGetTextHeight,null):Float;
+   public var maxScrollV(nmeGetMaxScrollV,null):Int;
+   public var maxScrollH(nmeGetMaxScrollH,null):Int;
+   public var bottomScrollV(nmeGetBottomScrollV,null):Int;
+   public var scrollH(nmeGetScrollH,nmeSetScrollH):Int;
+   public var scrollV(nmeGetScrollV,nmeSetScrollV):Int;
 
    public function new( )
    {
@@ -137,6 +142,22 @@ class TextField extends nme.display.InteractiveObject
       return inFormat;
    }
 
+   function nmeGetMaxScrollV() : Int { return nme_text_field_get_max_scroll_v(nmeHandle); }
+   function nmeGetMaxScrollH() : Int { return nme_text_field_get_max_scroll_h(nmeHandle); }
+   function nmeGetBottomScrollV() : Int { return nme_text_field_get_bottom_scroll_v(nmeHandle); }
+   function nmeGetScrollH() : Int { return nme_text_field_get_scroll_h(nmeHandle); }
+	function nmeSetScrollH(inVal:Int) : Int
+	{
+	   nme_text_field_set_scroll_h(nmeHandle,inVal);
+		return inVal;
+	}
+   function nmeGetScrollV() : Int { return nme_text_field_get_scroll_v(nmeHandle); }
+	function nmeSetScrollV(inVal:Int) : Int
+	{
+	   nme_text_field_set_scroll_v(nmeHandle,inVal);
+		return inVal;
+   }
+
 
 
    static var nme_text_field_create = nme.Loader.load("nme_text_field_create",0);
@@ -170,4 +191,11 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_get_text_height = nme.Loader.load("nme_text_field_get_text_height",1);
    static var nme_text_field_set_text_format = nme.Loader.load("nme_text_field_set_text_format",4);
 
+   static var nme_text_field_get_max_scroll_v = nme.Loader.load("nme_text_field_get_max_scroll_v",1);
+   static var nme_text_field_get_max_scroll_h = nme.Loader.load("nme_text_field_get_max_scroll_h",1);
+   static var nme_text_field_get_bottom_scroll_v = nme.Loader.load("nme_text_field_get_bottom_scroll_v",1);
+   static var nme_text_field_get_scroll_h = nme.Loader.load("nme_text_field_get_scroll_h",1);
+   static var nme_text_field_set_scroll_h = nme.Loader.load("nme_text_field_set_scroll_h",2);
+   static var nme_text_field_get_scroll_v = nme.Loader.load("nme_text_field_get_scroll_v",1);
+   static var nme_text_field_set_scroll_v = nme.Loader.load("nme_text_field_set_scroll_v",2);
 }

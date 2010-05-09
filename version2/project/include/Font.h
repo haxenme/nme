@@ -6,6 +6,7 @@
 #include <TileSheet.h>
 #include <map>
 #include <string>
+#include <Geom.h>
 
 namespace nme
 {
@@ -27,8 +28,6 @@ enum
 	ffItalic  = 0x01,
 	ffBold    = 0x02,
 };
-
-enum GlyphRotation { gr0, gr90, gr180, gr270 };
 
 
 enum AntiAliasType { aaAdvanced, aaNormal };

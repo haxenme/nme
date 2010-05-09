@@ -1514,6 +1514,11 @@ TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
 TEXT_PROP(auto_size,AutoSize,alloc_int,val_int);
 TEXT_PROP_GET(text_width,TextWidth,alloc_float);
 TEXT_PROP_GET(text_height,TextHeight,alloc_float);
+TEXT_PROP_GET(max_scroll_h,MaxScrollH,alloc_int);
+TEXT_PROP_GET(max_scroll_v,MaxScrollV,alloc_int);
+TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
+TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
+TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
 
 // --- BitmapData -----------------------------------------------------
 
