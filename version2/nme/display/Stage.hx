@@ -163,17 +163,20 @@ class Stage extends nme.display.DisplayObjectContainer
       if (p!=null)
          inMouse = p.globalToLocal(inMouse);
 
+      var x = inMouse.x + nmeDragOffsetX;
+      var y = inMouse.y + nmeDragOffsetY;
       if (nmeDragBounds!=null)
       {
-         if (inMouse.x < nmeDragBounds.x) inMouse.x = nmeDragBounds.x;
-         else if (inMouse.x > nmeDragBounds.right) inMouse.x = nmeDragBounds.right;
 
-         if (inMouse.y < nmeDragBounds.y) inMouse.y = nmeDragBounds.y;
-         else if (inMouse.y > nmeDragBounds.bottom) inMouse.y = nmeDragBounds.bottom;
+         if (x < nmeDragBounds.x) x = nmeDragBounds.x;
+         else if (x > nmeDragBounds.right) x = nmeDragBounds.right;
+
+         if (y < nmeDragBounds.y) y = nmeDragBounds.y;
+         else if (y > nmeDragBounds.bottom) y = nmeDragBounds.bottom;
       }
 
-      nmeDragObject.x = inMouse.x + nmeDragOffsetX;
-      nmeDragObject.y = inMouse.y + nmeDragOffsetY;
+      nmeDragObject.x = x;
+      nmeDragObject.y = y;
    }
 
    public function nmeStopDrag(sprite:Sprite) : Void

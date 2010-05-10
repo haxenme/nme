@@ -115,8 +115,8 @@ Stage  *DisplayObject::getStage()
 
 UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
 {
-   // TODO:
-   return inPoint;
+	Matrix m = GetFullMatrix(false);
+	return m.ApplyInverse(inPoint);
 }
 
 void DisplayObject::setCacheAsBitmap(bool inVal)

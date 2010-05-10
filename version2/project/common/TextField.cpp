@@ -28,7 +28,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    multiline(false),
    restrict(std::wstring()),
    scrollH(0),
-   scrollV(0),
+   scrollV(1),
    selectable(true),
    sharpness(0),
    styleSheet(0),
@@ -53,7 +53,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mLastCaretHeight = -1;
    mSelectKeyDown = -1;
    maxScrollH  = 0;
-   maxScrollV  = 0;
+   maxScrollV  = 1;
    setText(L"");
    textWidth = textHeight = 0;
    mLastUpDownX = -1;
@@ -256,7 +256,7 @@ bool TextField::FinishEditOnEnter()
 int TextField::getBottomScrollV()
 {
 	Layout();
-	int l = scrollV;
+	int l = std::max(scrollV -1,0);
 	int height = boundsHeight;
 	while(height>0 && l<mLines.size())
    {
@@ -282,10 +282,10 @@ void TextField::setScrollH(int inScrollH)
 void TextField::setScrollV(int inScrollV)
 {
 	scrollV = inScrollV;
-	if (scrollV<0)
-		scrollV = 0;
+	if (scrollV<1)
+		scrollV = 1;
 	if (scrollV>maxScrollV)
-		scrollV = scrollV;
+		scrollV =maxScrollV;
 	// TODO: do we need to re-layout on scroll?
 	mLinesDirty = true;
    mGfxDirty = true;
@@ -545,16 +545,16 @@ void TextField::ShowCaret()
       changed = true;
       scrollH = 0;
    }
-   if (scrollV<0)
+   if (scrollV<1)
    {
       changed = true;
-      scrollV = 0;
+      scrollV = 1;
    }
    if (scrollH>maxScrollH)
    {
       scrollH = maxScrollH;
       changed = true;
-      if (scrollV<0) scrollV = 0;
+      if (scrollV<1) scrollV = 1;
    }
    // TODO: -ve scroll for right/aligned/centred?
    //printf("Scroll %d/%d\n", scrollH, maxScrollH);
@@ -582,8 +582,10 @@ void TextField::Clear()
       mCharGroups[i].Clear();
    mCharGroups.resize(0);
    mLines.resize(0);
-   maxScrollH = maxScrollV = 0;
-   scrollV = scrollH = 0;
+   maxScrollH = 0;
+	maxScrollV = 1;
+   scrollV = 1;
+	scrollH = 0;
 }
 
 void TextField::setText(const std::wstring &inString)
@@ -831,7 +833,7 @@ int TextField::EndOfCharX(int inChar,int inLine)
 
 ImagePoint TextField::GetScrollPos()
 {
-   return ImagePoint(scrollH,mLines[scrollV].mY0);
+   return ImagePoint(scrollH,mLines[std::max(0,scrollV-1)].mY0-2);
 }
 
 ImagePoint TextField::GetCursorPos()
@@ -857,16 +859,15 @@ void TextField::BuildBackground()
          mHighlightGfx->clear();
       if (background || border)
       {
-         int b=2;
          if (background)
             gfx.beginFill( backgroundColor, 1 );
          if (border)
             gfx.lineStyle(1, borderColor );
-         gfx.moveTo(-b,-b);
-         gfx.lineTo(b+boundsWidth,-b);
-         gfx.lineTo(b+boundsWidth,b+boundsHeight);
-         gfx.lineTo(-b,b+boundsHeight);
-         gfx.lineTo(-b,-b);
+         gfx.moveTo(0,0);
+         gfx.lineTo(boundsWidth,0);
+         gfx.lineTo(boundsWidth,boundsHeight);
+         gfx.lineTo(0,boundsHeight);
+         gfx.lineTo(0,0);
       }
       //printf("%d,%d\n", mSelectMin , mSelectMax);
       if (mSelectMin < mSelectMax)
@@ -885,6 +886,7 @@ void TextField::BuildBackground()
          // Special case of begin/end on same line ...
          if (l0==l1)
          {
+				//printf("HI %dx%d sv=%d (%d,%d) %d\n", pos.x,pos.y, scrollV, scroll.x, scroll.y, mSelectMin);
             mHighlightGfx->drawRect(pos.x,pos.y,x1-pos.x,height);
          }
          else
@@ -917,8 +919,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    RenderState state(inState);
 
-   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty);
+   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2);
    state.mClipRect = r.Intersect(inState.mClipRect);
+
    if (inState.mMask)
       state.mClipRect = inState.mClipRect.Intersect(inState.mMask->GetRect());
 
@@ -1019,7 +1022,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          for(int c=0;c<group.Chars();c++)
          {
             int ch = group.mString[c];
-            if (ch!='\n')
+            if (ch!='\n' && ch!='\r')
             {
                int cid = group.mChar0 + c;
                ImagePoint pos = mCharPos[cid]-scroll;
@@ -1199,16 +1202,17 @@ void TextField::Layout(const Matrix &inMatrix)
    mLines.resize(0);
    mCharPos.resize(0);
 
-   int y0 = 0;
+	int gap = 2;
    Line line;
-   line.mY0 = y0;
    int char_count = 0;
    textHeight = 0;
    textWidth = 0;
-   int x = 0;
-   int y = 0;
+   int x = gap;
+   int y = gap;
+   line.mY0 = y;
    mLastUpDownX = -1;
-   int max_x = boundsWidth * mLayoutScaleH;
+   int max_x = boundsWidth * mLayoutScaleH - gap;
+   if (max_x<1) max_x = 1;
 
    for(int i=0;i<mCharGroups.size();i++)
    {
@@ -1225,7 +1229,7 @@ void TextField::Layout(const Matrix &inMatrix)
          y += line.mMetrics.height;
          line.Clear();
 
-         x = 0;
+         x = gap;
          line.mY0 = y;
          line.mChar0 = char_count;
          line.mCharGroup0 = i;
@@ -1238,14 +1242,14 @@ void TextField::Layout(const Matrix &inMatrix)
       {
          if (line.mChars==0)
          {
-            x = 0;
+            x = gap;
             line.mY0 = y;
             line.mChar0 = char_count;
             line.mCharGroup0 = i;
             line.mCharInGroup0 = cid;
             last_word_line_chars = 0;
             last_word_cid = cid;
-            last_word_x = 0;
+            last_word_x = gap;
          }
 
          int advance = 0;
@@ -1269,7 +1273,7 @@ void TextField::Layout(const Matrix &inMatrix)
             last_word_x = x;
          }
 
-         if (ch=='\n')
+         if (ch=='\n' || ch=='\r')
          {
             // New line ...
             mLines.push_back(line);
@@ -1286,7 +1290,7 @@ void TextField::Layout(const Matrix &inMatrix)
             advance = 0;
          x+= advance;
          //printf(" Char %c (%d..%d,%d) %p\n", ch, ox, x, y, g.mFont);
-         if ( (wordWrap||multiline) && (x > max_x) && line.mChars>1)
+         if ( (wordWrap) && (x > max_x) && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)
@@ -1308,7 +1312,7 @@ void TextField::Layout(const Matrix &inMatrix)
             }
             mLines.push_back(line);
             y += g.Height();
-            x = 0;
+            x = gap;
             line.Clear();
             g.UpdateMetrics(line.mMetrics);
             continue;
@@ -1319,6 +1323,7 @@ void TextField::Layout(const Matrix &inMatrix)
             textWidth = x;
       }
    }
+	textWidth += gap;
    if (line.mChars || mLines.empty())
    {
       mCharGroups[mCharGroups.size()-1].UpdateMetrics(line.mMetrics);
@@ -1326,7 +1331,7 @@ void TextField::Layout(const Matrix &inMatrix)
       mLines.push_back(line);
    }
 
-   textHeight = y;
+   textHeight = y + gap;
 
    mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
    int max_y = boundsHeight * mLayoutScaleV;
@@ -1338,7 +1343,7 @@ void TextField::Layout(const Matrix &inMatrix)
          {
             case asLeft: mActiveRect.w = textWidth;
                          break;
-            case asRight: mActiveRect.x = mActiveRect.x1()-textWidth;
+            case asRight: mActiveRect.x = mActiveRect.x1()-textWidth - gap;
                          mActiveRect.w = textWidth;
                          break;
             case asCenter: mActiveRect.x = (mActiveRect.x+mActiveRect.x1()-textWidth)/2;
@@ -1350,17 +1355,21 @@ void TextField::Layout(const Matrix &inMatrix)
    }
 
    maxScrollH = std::max(0,textWidth-max_x);
-   maxScrollV = 0;
+   maxScrollV = 1;
 
    // Work out how many lines from the end fit in the rect, and
    //  therefore how many lines we can scroll...
    if (textHeight>max_y && mLines.size()>1)
    {
-      int left = max_y;
+      int left = max_y-3*gap;
       int line = mLines.size()-1;
       while(left>0 && line>0 )
-        left -= mLines[line--].mMetrics.height;
-      maxScrollV = line;
+		{
+        left -= mLines[line].mMetrics.height;
+		  if (left<=0) break;
+		  line--;
+		}
+      maxScrollV = line+1;
    }
 
    // Align rows ...

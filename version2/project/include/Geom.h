@@ -103,17 +103,19 @@ struct TRect
    }
    void MakePositive()
    {
-      if (w<0)
-      {
-         x-=w;
-         w=-w;
-      }
-      if (h<0)
-      {
-         y-=h;
-         h=-h;
-      }
+      if (w<0) { x-=w; w=-w; }
+      if (h<0) { y-=h; h=-h; }
    }
+	TRect &RemoveBorder(T inBorder)
+	{
+		if (w<inBorder*2) { x+= w/2; w = 0; }
+		else { x+=inBorder; w-=inBorder*2; }
+
+		if (h<inBorder*2) { y+= h/2; h = 0; }
+		else { y+=inBorder; h-=inBorder*2; }
+
+		return *this;
+	}
 
 
 

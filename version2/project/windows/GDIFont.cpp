@@ -127,7 +127,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    desc.lfClipPrecision = CLIP_DEFAULT_PRECIS; 
    desc.lfQuality = NONANTIALIASED_QUALITY; 
    desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
-	wcsncpy(desc.lfFaceName,((std::wstring &)inFormat.font).c_str(),LF_FACESIZE);
+	wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
 
    HFONT hfont = CreateFontIndirectW( &desc );
    if (!hfont)
