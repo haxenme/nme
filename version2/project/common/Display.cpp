@@ -1219,6 +1219,7 @@ void Stage::SetNominalSize(int inWidth, int inHeight)
 {
    mNominalWidth = inWidth;
    mNominalHeight = inHeight;
+   CalcStageScaling( getStageWidth(), getStageHeight() );
 }
 
 
@@ -1277,7 +1278,7 @@ void Stage::HandleEvent(Event &inEvent)
       hit_obj = HitTest(pixels);
       inEvent.id = hit_obj ? hit_obj->id : id;
       Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
-      SetCursor( (gMouseShowCursor || cur==curTextSelect) ? cur : curNone );
+      SetCursor( (gMouseShowCursor || cur>=curTextSelect0) ? cur : curNone );
 
       UserPoint stage = mStageScale.ApplyInverse(pixels);
       inEvent.x = stage.x;

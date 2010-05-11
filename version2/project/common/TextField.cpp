@@ -371,9 +371,9 @@ UserPoint TextField::TargetToRect(const Matrix &inMatrix,const UserPoint &inPoin
    UserPoint p = (inPoint - UserPoint(inMatrix.mtx, inMatrix.mty));
    switch(mLayoutRotation)
    {
-      case gr90: return UserPoint(-p.y,p.x);
+      case gr90: return UserPoint(p.y,-p.x);
       case gr180: return UserPoint(-p.x,-p.y);
-      case gr270: return UserPoint(p.y,-p.x);
+      case gr270: return UserPoint(-p.y,p.x);
    }
    return p;
 }
@@ -383,9 +383,9 @@ UserPoint TextField::RectToTarget(const Matrix &inMatrix,const UserPoint &inPoin
    UserPoint trans(inMatrix.mtx, inMatrix.mty);
    switch(mLayoutRotation)
    {
-      case gr90: return UserPoint(inPoint.y,-inPoint.x) + trans;
+      case gr90: return UserPoint(-inPoint.y,inPoint.x) + trans;
       case gr180: return UserPoint(-inPoint.x,-inPoint.y) + trans;
-      case gr270: return UserPoint(-inPoint.y,inPoint.x) + trans;
+      case gr270: return UserPoint(inPoint.y,-inPoint.x) + trans;
    }
    return inPoint + trans;
 
@@ -411,6 +411,7 @@ void TextField::Drag(Event &inEvent)
          mSelectMax = mSelectDownChar;
       }
       caretIndex = pos;
+		// TODO: Horizontal scrolling when dragging select box
       ShowCaret();
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
       mGfxDirty = true;
@@ -540,15 +541,32 @@ void TextField::ShowCaret()
       changed = true;
       scrollH = pos.x;
    }
-   if (scrollH<0)
-   {
-      changed = true;
-      scrollH = 0;
-   }
+
    if (scrollV<1)
    {
       changed = true;
       scrollV = 1;
+   }
+
+	if (scrollV <= mLines.size())
+	{
+		if (pos.y-mLines[scrollV-1].mY0 >= mActiveRect.h)
+		{
+			changed = true;
+			scrollV++;
+		}
+		else if (scrollV>1 && pos.y<mLines[scrollV-1].mY0)
+		{
+			scrollV--;
+			changed = true;
+		}
+	}
+
+
+   if (scrollH<0)
+   {
+      changed = true;
+      scrollH = 0;
    }
    if (scrollH>maxScrollH)
    {
@@ -557,13 +575,11 @@ void TextField::ShowCaret()
       if (scrollV<1) scrollV = 1;
    }
    // TODO: -ve scroll for right/aligned/centred?
-   //printf("Scroll %d/%d\n", scrollH, maxScrollH);
    if (scrollV>maxScrollV)
    {
       scrollV = maxScrollV;
       changed = true;
    }
-
 
    if (changed)
    {
@@ -587,6 +603,12 @@ void TextField::Clear()
    scrollV = 1;
    scrollH = 0;
 }
+
+Cursor TextField::GetCursor()
+{
+	return selectable ? (Cursor)(curTextSelect0 + mLayoutRotation) : curPointer;
+}
+
 
 void TextField::setText(const std::wstring &inString)
 {
@@ -952,9 +974,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UserPoint dPdY(0,1);
    switch(mLayoutRotation)
    {
-      case 90: dPdX = UserPoint(0,-1); dPdY = UserPoint(1,0); break;
-      case 180: dPdX = UserPoint(-1,0); dPdY = UserPoint(0,-1); break;
-      case 270: dPdX = UserPoint(0,1); dPdY = UserPoint(-1,0); break;
+      case gr90: dPdX = UserPoint(0,1); dPdY = UserPoint(-1,0); break;
+      case gr180: dPdX = UserPoint(-1,0); dPdY = UserPoint(0,-1); break;
+      case gr270: dPdX = UserPoint(0,-1); dPdY = UserPoint(1,0); break;
    }
 
    bool highlight = mHighlightGfx && !mHighlightGfx->empty();
@@ -1179,8 +1201,9 @@ void TextField::Layout(const Matrix &inMatrix)
    {
       scale_h = fabs(inMatrix.m10);
       scale_v = fabs(inMatrix.m01);
-      rot = inMatrix.m01 < 0 ? gr270 : gr90;
+      rot = inMatrix.m01 < 0 ? gr90 : gr270;
    }
+
 
    if (mFontsDirty || scale_h!=mLayoutScaleH || scale_v!=mLayoutScaleV ||
            rot!=mLayoutRotation)
@@ -1480,7 +1503,7 @@ void CharGroup::Clear()
 bool CharGroup::UpdateFont(double inScale,GlyphRotation inRotation,bool inNative)
 {
    int h = 0.5 + inScale*mFormat->size;
-   if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative)
+   if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative || mFont->Rotation()!=inRotation)
    {
       if (mFont)
          mFont->DecRef();

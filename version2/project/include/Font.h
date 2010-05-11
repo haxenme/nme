@@ -168,6 +168,8 @@ public:
 
 	bool  IsNative() { return mFace && mFace->IsNative(); }
 
+	GlyphRotation Rotation() { return mRotation; }
+
 	int   Height();
 private:
    Font(FontFace *inFace, int inPixelHeight, GlyphRotation inRotation,bool inInitRef);

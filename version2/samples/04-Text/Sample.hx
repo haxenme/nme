@@ -119,17 +119,21 @@ class Sample
 
       var f1 = createBox(inContents);
       Lib.current.addChild(f1);
+		f1.rotation = 180;
+		f1.x = 300;
+		f1.y = 300;
 
       var f2 = createBox(inContents);
       Lib.current.addChild(f2);
-      f2.x = 100;
+      f2.x = 400;
       f2.y = 100;
       f2.rotation = 90;
 
       var f3 = createBox(inContents);
       Lib.current.addChild(f3);
       f3.x = 200;
-      f3.y = 200;
+      f3.y = 400;
+      f3.rotation = 270;
 
    }
 
@@ -146,6 +150,7 @@ class Sample
       title.y = 8;
       title.htmlText = "<b>Sample.hx</b>";
       title.selectable = false;
+      title.mouseEnabled = false;
       frame.addChild(title);
 
 

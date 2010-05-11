@@ -136,7 +136,7 @@ public:
    Rect mActiveRect;
 
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
-   Cursor GetCursor() { return selectable ? curTextSelect : curPointer; }
+   Cursor GetCursor();
    bool WantsFocus() { return isInput && mouseEnabled; }
    void Focus();
    void Unfocus();

@@ -226,6 +226,7 @@ public:
             SDL_SetCursor(sDefaultCursor);
          else
          {
+				// TODO: Rotated
             if (sTextCursor==0)
                sTextCursor = CreateCursor(sTextCursorData,1,13);
             SDL_SetCursor(sTextCursor);

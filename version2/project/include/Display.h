@@ -112,7 +112,8 @@ enum StageAlign
 
 
 
-enum Cursor { curNone, curPointer, curHand, curTextSelect };
+enum Cursor { curNone, curPointer, curHand,
+	           curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
 
 extern const char *sTextCursorData[];
 

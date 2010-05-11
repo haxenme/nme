@@ -187,7 +187,12 @@ public:
       {
          case curNone : ::SetCursor(none); break;
          case curHand : ::SetCursor(hand); break;
-         case curTextSelect : ::SetCursor(text); break;
+			// TODO:
+         case curTextSelect0 :
+         case curTextSelect90:
+         case curTextSelect180:
+         case curTextSelect270:
+					::SetCursor(text); break;
          default:
             ::SetCursor(pointer);
       }
@@ -432,7 +437,8 @@ public:
             break;
          case WM_SIZE:
             {
-            Event evt(etResize);
+            Event evt(etResize, LOWORD(lParam), HIWORD(lParam));
+
             mStage->HandleEvent(evt);
             }
             break;
