@@ -198,10 +198,27 @@ class DisplayObjectContainer extends InteractiveObject
          nmeChildren[index] = child;
       }
    }
-   /*
+
    public function swapChildren(child1:DisplayObject, child2:DisplayObject):Void
-   public function swapChildrenAt(index1:int, index2:int):Void
-   */
+   {
+      var idx1 = getChildIndex(child1);
+      var idx2 = getChildIndex(child2);
+      if (idx1<0 || idx2<0)
+         throw "swapChildren:Could not find children";
+      swapChildrenAt(idx1, idx2);
+   }
+
+   public function swapChildrenAt(index1:Int, index2:Int):Void
+   {
+      if (index1 <0 || index2<0 || index1>nmeChildren.length || index2>nmeChildren.length)
+         throw new RangeError("swapChildrenAt : index out of bounds");
+      if (index1==index2)
+        return;
+      var tmp = nmeChildren[index1];
+      nmeChildren[index1] = nmeChildren[index2];
+      nmeChildren[index2] = tmp;
+      nme_doc_swap_children(nmeHandle,index1,index2);
+   }
 
 
 
@@ -209,5 +226,6 @@ class DisplayObjectContainer extends InteractiveObject
    static var nme_doc_add_child = nme.Loader.load("nme_doc_add_child",2);
    static var nme_doc_remove_child = nme.Loader.load("nme_doc_remove_child",2);
    static var nme_doc_set_child_index = nme.Loader.load("nme_doc_set_child_index",3);
+   static var nme_doc_swap_children = nme.Loader.load("nme_doc_swap_children",3);
 
 }

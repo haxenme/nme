@@ -797,6 +797,19 @@ value nme_doc_add_child(value inParent, value inChild)
 }
 DEFINE_PRIM(nme_doc_add_child,2);
 
+
+value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
+{
+   DisplayObjectContainer *parent;
+   if (AbstractToObject(inParent,parent))
+   {
+      parent->swapChildrenAt(val_int(inChild0), val_int(inChild1) );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_doc_swap_children,3);
+
+
 value nme_doc_remove_child(value inParent, value inPos)
 {
    DisplayObjectContainer *parent;

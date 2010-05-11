@@ -255,39 +255,39 @@ bool TextField::FinishEditOnEnter()
 
 int TextField::getBottomScrollV()
 {
-	Layout();
-	int l = std::max(scrollV -1,0);
-	int height = boundsHeight;
-	while(height>0 && l<mLines.size())
+   Layout();
+   int l = std::max(scrollV -1,0);
+   int height = boundsHeight;
+   while(height>0 && l<mLines.size())
    {
       Line &line = mLines[l++];
-		height -= line.mMetrics.height;
-	}
-	return l;
+      height -= line.mMetrics.height;
+   }
+   return l;
 }
 
 void TextField::setScrollH(int inScrollH)
 {
-	scrollH = inScrollH;
-	if (scrollH<0)
-		scrollH = 0;
-	if (scrollH>maxScrollH)
-		scrollH = scrollH;
-	// TODO: do we need to re-layout on scroll?
-	mLinesDirty = true;
+   scrollH = inScrollH;
+   if (scrollH<0)
+      scrollH = 0;
+   if (scrollH>maxScrollH)
+      scrollH = scrollH;
+   // TODO: do we need to re-layout on scroll?
+   mLinesDirty = true;
    mGfxDirty = true;
    DirtyCache();
 }
 
 void TextField::setScrollV(int inScrollV)
 {
-	scrollV = inScrollV;
-	if (scrollV<1)
-		scrollV = 1;
-	if (scrollV>maxScrollV)
-		scrollV =maxScrollV;
-	// TODO: do we need to re-layout on scroll?
-	mLinesDirty = true;
+   scrollV = inScrollV;
+   if (scrollV<1)
+      scrollV = 1;
+   if (scrollV>maxScrollV)
+      scrollV =maxScrollV;
+   // TODO: do we need to re-layout on scroll?
+   mLinesDirty = true;
    mGfxDirty = true;
    DirtyCache();
 
@@ -583,9 +583,9 @@ void TextField::Clear()
    mCharGroups.resize(0);
    mLines.resize(0);
    maxScrollH = 0;
-	maxScrollV = 1;
+   maxScrollV = 1;
    scrollV = 1;
-	scrollH = 0;
+   scrollH = 0;
 }
 
 void TextField::setText(const std::wstring &inString)
@@ -886,7 +886,7 @@ void TextField::BuildBackground()
          // Special case of begin/end on same line ...
          if (l0==l1)
          {
-				//printf("HI %dx%d sv=%d (%d,%d) %d\n", pos.x,pos.y, scrollV, scroll.x, scroll.y, mSelectMin);
+            //printf("HI %dx%d sv=%d (%d,%d) %d\n", pos.x,pos.y, scrollV, scroll.x, scroll.y, mSelectMin);
             mHighlightGfx->drawRect(pos.x,pos.y,x1-pos.x,height);
          }
          else
@@ -957,48 +957,48 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       case 270: dPdX = UserPoint(0,1); dPdY = UserPoint(-1,0); break;
    }
 
-	bool highlight = mHighlightGfx && !mHighlightGfx->empty();
-	bool caret = isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this;
+   bool highlight = mHighlightGfx && !mHighlightGfx->empty();
+   bool caret = isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this;
 
-	// Setup matrix for going from Rect to Target
-	Matrix rect_to_target;
-	if (highlight || caret)
-	{
-		rect_to_target.m00 = dPdX.x;
-		rect_to_target.m01 = dPdY.x;
-		rect_to_target.mtx = origin.x;
-		rect_to_target.m10 = dPdX.y;
-		rect_to_target.m11 = dPdY.y;
-		rect_to_target.mty = origin.y;
-		state.mTransform.mMatrix = &rect_to_target;
+   // Setup matrix for going from Rect to Target
+   Matrix rect_to_target;
+   if (highlight || caret)
+   {
+      rect_to_target.m00 = dPdX.x;
+      rect_to_target.m01 = dPdY.x;
+      rect_to_target.mtx = origin.x;
+      rect_to_target.m10 = dPdX.y;
+      rect_to_target.m11 = dPdY.y;
+      rect_to_target.mty = origin.y;
+      state.mTransform.mMatrix = &rect_to_target;
 
       if (highlight)
          mHighlightGfx->Render(inTarget,state);
 
-		if (caret)
-		{
-			if (!mCaretGfx)
-				mCaretGfx = new Graphics(true);
-			int line = LineFromChar(caretIndex);
-			if (line>=0)
-			{
-				int height = mLines[line].mMetrics.height;
-				if (height!=mLastCaretHeight)
-				{
-					mLastCaretHeight = height;
-					mCaretGfx->clear();
-					mCaretGfx->lineStyle(1,0x000000);
-					mCaretGfx->moveTo(0,0);
-					mCaretGfx->lineTo(0,mLastCaretHeight);
-				}
+      if (caret)
+      {
+         if (!mCaretGfx)
+            mCaretGfx = new Graphics(true);
+         int line = LineFromChar(caretIndex);
+         if (line>=0)
+         {
+            int height = mLines[line].mMetrics.height;
+            if (height!=mLastCaretHeight)
+            {
+               mLastCaretHeight = height;
+               mCaretGfx->clear();
+               mCaretGfx->lineStyle(1,0x000000);
+               mCaretGfx->moveTo(0,0);
+               mCaretGfx->lineTo(0,mLastCaretHeight);
+            }
 
-				ImagePoint pos = GetCursorPos() - scroll;
-			  
-				rect_to_target.TranslateData(pos.x,pos.y);
-				mCaretGfx->Render(inTarget,state);
-			}
-		}
-	}
+            ImagePoint pos = GetCursorPos() - scroll;
+           
+            rect_to_target.TranslateData(pos.x,pos.y);
+            mCaretGfx->Render(inTarget,state);
+         }
+      }
+   }
 
 
    HardwareContext *hardware = inTarget.IsHardware() ? inTarget.mHardware : 0;
@@ -1202,7 +1202,7 @@ void TextField::Layout(const Matrix &inMatrix)
    mLines.resize(0);
    mCharPos.resize(0);
 
-	int gap = 2;
+   int gap = 2;
    Line line;
    int char_count = 0;
    textHeight = 0;
@@ -1323,7 +1323,7 @@ void TextField::Layout(const Matrix &inMatrix)
             textWidth = x;
       }
    }
-	textWidth += gap;
+   textWidth += gap;
    if (line.mChars || mLines.empty())
    {
       mCharGroups[mCharGroups.size()-1].UpdateMetrics(line.mMetrics);
@@ -1361,14 +1361,17 @@ void TextField::Layout(const Matrix &inMatrix)
    //  therefore how many lines we can scroll...
    if (textHeight>max_y && mLines.size()>1)
    {
-      int left = max_y-3*gap;
+      int window_height = max_y-3*gap;
       int line = mLines.size()-1;
-      while(left>0 && line>0 )
-		{
-        left -= mLines[line].mMetrics.height;
-		  if (left<=0) break;
-		  line--;
-		}
+      int lines_height = mLines[line].mMetrics.height;
+      while( line < window_height && line>0 )
+      {
+         // Try next row up....
+         if (lines_height + mLines[line-1].mMetrics.height > window_height)
+            break;
+         lines_height += mLines[--line].mMetrics.height;
+      }
+
       maxScrollV = line+1;
    }
 

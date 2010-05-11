@@ -629,6 +629,14 @@ void DisplayObjectContainer::setChildIndex(DisplayObject *inChild,int inNewIndex
 
 }
 
+void DisplayObjectContainer::swapChildrenAt(int inChild1, int inChild2)
+{
+   if (inChild1>=0 && inChild2>=0 &&
+        inChild1<mChildren.size() &&  inChild2<mChildren.size() )
+      std::swap(mChildren[inChild1],mChildren[inChild2]);
+}
+ 
+
 
 void DisplayObjectContainer::removeChild(DisplayObject *inChild)
 {

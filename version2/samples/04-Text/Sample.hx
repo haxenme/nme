@@ -1,6 +1,7 @@
 #if !flash
 import nme.Lib;
 import nme.events.Event;
+import nme.events.EventPhase;
 import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
 import nme.events.MouseEvent;
@@ -15,6 +16,7 @@ import nme.ui.Keyboard;
 #else
 import flash.Lib;
 import flash.events.Event;
+import flash.events.EventPhase;
 import flash.events.FocusEvent;
 import flash.events.KeyboardEvent;
 import flash.events.MouseEvent;
@@ -35,8 +37,8 @@ class Scrollbar extends Sprite
    var mPage:Float;
    var mHeight:Float;
    var mRange:Float;
-	var mThumb:Sprite;
-	var mRemoveFrom:DisplayObject;
+   var mThumb:Sprite;
+   var mRemoveFrom:DisplayObject;
 
    public function new(inWidth:Float, inHeight:Float, inRange:Float, inPage:Float)
    {
@@ -56,40 +58,40 @@ class Scrollbar extends Sprite
       gfx.beginFill(0xffffff);
       gfx.drawRect(0,0,inWidth,mThumbHeight);
       addChild(thumb);
-		mThumb = thumb;
+      mThumb = thumb;
 
-		thumb.addEventListener( MouseEvent.MOUSE_DOWN, thumbStart );
+      thumb.addEventListener( MouseEvent.MOUSE_DOWN, thumbStart );
    }
 
-	dynamic public function scrolled(inTo:Float)
-	{
-	}
+   dynamic public function scrolled(inTo:Float)
+   {
+   }
 
-	function onScroll(e:MouseEvent)
-	{
-		var denom = mHeight-mThumbHeight;
-		if (denom>0)
-		{
-		   var ratio = mThumb.y/denom;
-			scrolled(ratio*mRange);
-		}
-	}
+   function onScroll(e:MouseEvent)
+   {
+      var denom = mHeight-mThumbHeight;
+      if (denom>0)
+      {
+         var ratio = mThumb.y/denom;
+         scrolled(ratio*mRange);
+      }
+   }
 
-	function thumbStart(e:MouseEvent)
-	{
-		mRemoveFrom = stage;
-		mThumb.addEventListener( MouseEvent.MOUSE_UP, thumbStop );
-		mRemoveFrom.addEventListener( MouseEvent.MOUSE_UP, thumbStop );
-		mRemoveFrom.addEventListener( MouseEvent.MOUSE_MOVE, onScroll );
-		mThumb.startDrag(false, new Rectangle(0,0,0,mHeight-mThumbHeight));
-	}
-	function thumbStop(e:MouseEvent)
-	{
-		mThumb.stopDrag();
-		mThumb.removeEventListener( MouseEvent.MOUSE_UP, thumbStop );
-		mRemoveFrom.removeEventListener( MouseEvent.MOUSE_UP, thumbStop );
-		mRemoveFrom.removeEventListener( MouseEvent.MOUSE_MOVE, onScroll );
-	}
+   function thumbStart(e:MouseEvent)
+   {
+      mRemoveFrom = stage;
+      mThumb.addEventListener( MouseEvent.MOUSE_UP, thumbStop );
+      mRemoveFrom.addEventListener( MouseEvent.MOUSE_UP, thumbStop );
+      mRemoveFrom.addEventListener( MouseEvent.MOUSE_MOVE, onScroll );
+      mThumb.startDrag(false, new Rectangle(0,0,0,mHeight-mThumbHeight));
+   }
+   function thumbStop(e:MouseEvent)
+   {
+      mThumb.stopDrag();
+      mThumb.removeEventListener( MouseEvent.MOUSE_UP, thumbStop );
+      mRemoveFrom.removeEventListener( MouseEvent.MOUSE_UP, thumbStop );
+      mRemoveFrom.removeEventListener( MouseEvent.MOUSE_MOVE, onScroll );
+   }
 }
 
 
@@ -99,61 +101,36 @@ class Sample
 
    public function new()
    {
-	   var file = "Sample.hx";
-	   #if flash
+      var file = "Sample.hx";
+      #if flash
       var loader = new flash.net.URLLoader();
-		var me = this;
+      var me = this;
       loader.addEventListener(Event.COMPLETE, function(event:Event) { me.Run(loader.data); } );
-		loader.load(new flash.net.URLRequest(file));
-		#else
-		Run(neko.io.File.getContent(file));
-		#end
-	}
+      loader.load(new flash.net.URLRequest(file));
+      #else
+      Run(neko.io.File.getContent(file));
+      #end
+   }
 
 
    function Run(inContents:String)
-	{
-	   inContents = StringTools.replace(inContents,"\r","");
-      tf = new TextField();
-      tf.type = TextFieldType.INPUT;
-      tf.text = "Hello Hello Hello, what's all this here then?";
-      tf.background = true;
-      tf.backgroundColor = 0xccccff;
-      tf.border = true;
-      tf.borderColor = 0x000000;
-      tf.x = 100;
-      tf.y = 100;
-      Lib.current.addChild(tf);
-      AddHandlers(tf);
+   {
+      inContents = StringTools.replace(inContents,"\r","");
 
       var f1 = createBox(inContents);
       Lib.current.addChild(f1);
 
+      var f2 = createBox(inContents);
+      Lib.current.addChild(f2);
+      f2.x = 100;
+      f2.y = 100;
+      f2.rotation = 90;
 
+      var f3 = createBox(inContents);
+      Lib.current.addChild(f3);
+      f3.x = 200;
+      f3.y = 200;
 
-      var p1 = new Sprite();
-      AddHandlers(p1);
-      Lib.current.stage.addChild(p1);
-
-
-      tf = new TextField();
-      tf.type = TextFieldType.INPUT;
-      tf.htmlText = "<p align='center'>Hello Hello <b>Hello</b>, what's all this here then?</p>";
-      tf.background = true;
-      tf.backgroundColor = 0xccccff;
-      tf.border = true;
-      tf.multiline = true;
-      tf.wordWrap = true;
-      tf.borderColor = 0x000000;
-      tf.autoSize = TextFieldAutoSize.LEFT;
-      tf.x = 100;
-      tf.y = 300;
-      p1.addChild(tf);
-      AddHandlers(tf);
-      tf.addEventListener(KeyboardEvent.KEY_DOWN,reportKeyDown);
-      tf.addEventListener(KeyboardEvent.KEY_UP,reportKeyUp);
-
-      tf.stage.frameRate = 250;
    }
 
    function createBox(inContents:String)
@@ -186,13 +163,25 @@ class Sample
       frame.addChild(tf);
 
       var scroll = new Scrollbar(20,260, tf.maxScrollV,tf.bottomScrollV);
-		//tf.text = "" + tf.scrollV + "/" + tf.maxScrollV;
+      //tf.text = "" + tf.scrollV + "/" + tf.maxScrollV;
       scroll.x = 172;
       scroll.y = 30;
-		scroll.scrolled = function(val:Float) { tf.scrollV = Std.int(val+0.5); }
+      scroll.scrolled = function(val:Float) { tf.scrollV = Std.int(val+0.5); }
       frame.addChild(scroll);
 
-      //tf.scrollV = 10;
+      frame.addEventListener( MouseEvent.MOUSE_DOWN, function(e:MouseEvent)
+         { if (e.eventPhase == EventPhase.AT_TARGET )
+           {
+               // Raise
+               var p = frame.parent;
+               var idx = p.getChildIndex(frame);
+               var last = p.numChildren - 1;
+               if (idx!=last)
+                  p.swapChildrenAt(idx,last);
+               frame.startDrag();
+           }
+         } );
+      frame.addEventListener( MouseEvent.MOUSE_UP, function(_) { frame.stopDrag(); } );
 
       return frame;
    }
@@ -236,7 +225,7 @@ class Sample
       new Sample();
    #else
       nme.display.Stage.shouldRotateInterface = function(_) { return true; }
-      Lib.create(function(){new Sample();},320,480,60,0xffffff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+      Lib.create(function(){new Sample();},640,640,30,0xffffff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
    #end
    }
 

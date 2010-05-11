@@ -273,6 +273,7 @@ public:
 
    void addChild(DisplayObject *inChild,bool inTakeRef=false);
    void setChildIndex(DisplayObject *inChild,bool inTakeRef=false);
+   void swapChildrenAt(int inChild1, int inChild2);
    void removeChild(DisplayObject *inChild);
    void removeChildAt(int inIndex);
    void setChildIndex(DisplayObject *inChild,int inNewIndex);
