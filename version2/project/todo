@@ -1,8 +1,7 @@
 TODO:
-- stage scaling
 - scoll rects
 
- - bitmap text extent, borders
+ - bitmap borders
  - bitmap setting functions
  - ByteArray
  - loader

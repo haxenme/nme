@@ -410,9 +410,12 @@ void TextField::Drag(Event &inEvent)
          mSelectMin = pos;
          mSelectMax = mSelectDownChar;
       }
+		if (point.x>mActiveRect.x1())
+			scrollH+=(point.x-mActiveRect.x1());
+		else if (point.x<mActiveRect.x)
+			scrollH-=(mActiveRect.x-point.x);
       caretIndex = pos;
-		// TODO: Horizontal scrolling when dragging select box
-      ShowCaret();
+      ShowCaret(true);
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
       mGfxDirty = true;
       DirtyCache();
@@ -519,7 +522,7 @@ void TextField::OnKey(Event &inEvent)
 }
 
 
-void TextField::ShowCaret()
+void TextField::ShowCaret(bool inFromDrag)
 {
    ImagePoint pos(0,0);
    bool changed = false;
@@ -536,17 +539,29 @@ void TextField::ShowCaret()
       changed = true;
       scrollH = pos.x - mActiveRect.w + 1;
    }
-   else if (pos.x-scrollH < 0)
+	// When dragging, allow caret to be hidden off to the left
+   else if (pos.x-scrollH < 0 && !inFromDrag)
    {
       changed = true;
       scrollH = pos.x;
    }
+	if (scrollH>maxScrollH)
+	{
+		scrollH = maxScrollH;
+		changed = true;
+	}
+	else if (scrollH<0)
+	{
+		scrollH = 0;
+		changed = true;
+	}
 
    if (scrollV<1)
    {
       changed = true;
       scrollV = 1;
    }
+
 
 	if (scrollV <= mLines.size())
 	{

@@ -13,6 +13,8 @@ import nme.display.Sprite;
 import nme.display.DisplayObject;
 import nme.geom.Rectangle;
 import nme.ui.Keyboard;
+import nme.filters.GlowFilter;
+import nme.filters.BitmapFilter;
 #else
 import flash.Lib;
 import flash.events.Event;
@@ -28,6 +30,8 @@ import flash.display.Sprite;
 import flash.display.DisplayObject;
 import flash.geom.Rectangle;
 import flash.ui.Keyboard;
+import flash.filters.GlowFilter;
+import flash.filters.BitmapFilter;
 #end
 
 
@@ -117,27 +121,35 @@ class Sample
    {
       inContents = StringTools.replace(inContents,"\r","");
 
-      var f1 = createBox(inContents);
+      var f1 = createBox(inContents,true);
       Lib.current.addChild(f1);
-		f1.rotation = 180;
-		f1.x = 300;
-		f1.y = 300;
+		f1.x = 10;
+		f1.y = 10;
 
-      var f2 = createBox(inContents);
+      var f2 = createBox(inContents,false);
       Lib.current.addChild(f2);
+		#if !flash
       f2.x = 400;
       f2.y = 100;
       f2.rotation = 90;
+		#else
+		f1.x = 40;
+		f1.y = 40;
+		#end
 
-      var f3 = createBox(inContents);
+      var f3 = createBox(inContents,true);
       Lib.current.addChild(f3);
+		#if !flash
       f3.x = 200;
       f3.y = 400;
       f3.rotation = 270;
-
+		#else
+		f1.x = 70;
+		f1.y = 70;
+		#end
    }
 
-   function createBox(inContents:String)
+   function createBox(inContents:String,inBG:Bool)
    {
       var frame = new Sprite();
       var gfx = frame.graphics;
@@ -159,13 +171,21 @@ class Sample
       tf.y = 30;
       tf.width = 160;
       tf.height = 260;
-      tf.border = true;
-      tf.borderColor = 0x000000;
-      tf.background = true;
-      tf.backgroundColor = 0xffffff;
+		if (inBG)
+		{
+         tf.border = true;
+         tf.borderColor = 0x000000;
+         tf.background = true;
+         tf.backgroundColor = 0xffffff;
+		}
       tf.multiline = true;
       tf.text = inContents;
       frame.addChild(tf);
+
+		var glow = new GlowFilter(0xff0000,0.5, 3,3, 1,1, false,false);
+      var f = new Array<BitmapFilter>();
+      f.push(glow);
+      tf.filters = f;
 
       var scroll = new Scrollbar(20,260, tf.maxScrollV,tf.bottomScrollV);
       //tf.text = "" + tf.scrollV + "/" + tf.maxScrollV;
