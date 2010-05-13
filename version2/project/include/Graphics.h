@@ -365,10 +365,11 @@ struct Transform
 class BitmapCache
 {
 public:
-   BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly);
+   BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly,
+					 BitmapCache *inMask);
    ~BitmapCache();
 
-   bool StillGood(const Transform &inTransform, const Rect &inVisiblePixels);
+   bool StillGood(const Transform &inTransform, const Rect &inVisiblePixels,BitmapCache *inMask);
 
    void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend);
    bool HitTest(double inX, double inY);
@@ -378,15 +379,22 @@ public:
    Rect GetRect() const { return mRect.Translated(mTX,mTY); }
 
    const uint8 *Row(int inRow) const;
+   const uint8 *DestRow(int inRow) const;
    int GetTX() const { return mTX; }
    int GetTY() const { return mTX; }
+   int GetDestX() const { return mTX + mRect.x; }
+   int GetDestY() const { return mTY + mRect.y; }
 
 private:
    int        mTX,mTY;
+	int        mVersion;
    Rect       mRect;
    Matrix     mMatrix;
    Scale9     mScale9;
    Surface    *mBitmap;
+
+	ImagePoint mMaskOffset;
+	int        mMaskVersion;
 };
 
 
@@ -417,6 +425,8 @@ struct RenderState
    // Viewport
    Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
+
+   ImagePoint     mStageOffset;
 
    RenderPhase    mPhase;
    bool           mRoundSizeToPOW2;

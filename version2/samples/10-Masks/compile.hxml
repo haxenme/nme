@@ -1,3 +1,4 @@
 -main Sample
 -neko Sample.n
 -cp ../..
+-cp ../

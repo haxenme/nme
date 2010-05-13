@@ -104,7 +104,7 @@ struct NullMask
 struct ImageMask
 {
    ImageMask(const BitmapCache &inMask) :
-      mMask(inMask), mOx(-inMask.GetTX()-mMask.GetRect().x), mOy(-inMask.GetTY()-mMask.GetRect().y)
+      mMask(inMask), mOx(inMask.GetDestX()), mOy(inMask.GetDestY())
    {
       if (mMask.Format()==pfAlpha)
       {
@@ -121,7 +121,7 @@ struct ImageMask
 
    inline void SetPos(int inX,int inY) const
    {
-      mRow = (mMask.Row(inY) + mComponentOffset) + mPixelStride*(inX);
+      mRow = (mMask.Row(inY-mOy) + mComponentOffset) + mPixelStride*(inX-mOx);
    }
    inline uint8 MaskAlpha(uint8 inAlpha) const
    {
@@ -269,7 +269,7 @@ void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
    for(int y=0;y<inSrcRect.h;y++)
    {
       outDest.SetPos(inX , inY + y );
-      inMask.SetPos(inX , inX + y );
+      inMask.SetPos(inX , inY + y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
       #ifdef HX_WINDOWS
@@ -564,7 +564,7 @@ void TBlitBlend( const ImageDest<ARGB> &outDest, SOURCE &inSrc,const MASK &inMas
    for(int y=0;y<inSrcRect.h;y++)
    {
       outDest.SetPos(inX , inY + y );
-      inMask.SetPos(inX , inX + y );
+      inMask.SetPos(inX , inY + y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
          blend(outDest.Next(),inMask.Mask(inSrc.Next()));
@@ -748,6 +748,12 @@ HardwareSurface::~HardwareSurface()
 // --- BitmapCache -----------------------------------------------------------------
 
 const uint8 *BitmapCache::Row(int inRow) const
+{
+   return mBitmap->Row(inRow);
+}
+
+
+const uint8 *BitmapCache::DestRow(int inRow) const
 {
    return mBitmap->Row(inRow-(mRect.y+mTY)) - mBitmap->BytesPP()*(mRect.x+mTX);
 }

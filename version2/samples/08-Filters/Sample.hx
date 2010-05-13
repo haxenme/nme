@@ -32,7 +32,7 @@ class Sample extends Sprite
              var obj = new Shape();
              var gfx = obj.graphics;
              gfx.beginFill(0xa00000);
-             gfx.lineStyle(0,2);
+             gfx.lineStyle(0,0);
              gfx.drawCircle(q*100,str*100-50,40);
              addChild(obj);
 
@@ -100,7 +100,7 @@ public static function main()
 #if flash
    new Sample();
 #else
-   Lib.create(function(){new Sample();},640,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.create(function(){new Sample();},640,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
 #end
 }
 

@@ -711,7 +711,7 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 	if (GetBitmapCache())
 	{
 		// Clear mask if invalid
-		if (!GetBitmapCache()->StillGood(trans, rect))
+		if (!GetBitmapCache()->StillGood(trans, rect,0))
 			SetBitmapCache(0);
 		else
 			return true;
@@ -746,7 +746,7 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
       ClearCacheDirty();
    }
    
-   SetBitmapCache( new BitmapCache(bitmap, trans, rect, false));
+   SetBitmapCache( new BitmapCache(bitmap, trans, rect, false, 0));
    bitmap->DecRef();
 	return true;
 }
@@ -823,7 +823,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       DisplayObject *mask = obj->getMask();
       if (mask)
       {
-         if (!mask->CreateMask(inTarget.mRect,obj_state->mTransform.mAAFactor))
+         if (!mask->CreateMask(inTarget.mRect.Translated(obj_state->mStageOffset),
+				                   obj_state->mTransform.mAAFactor))
 				continue;
 
 			// todo: combine masks ?
@@ -846,7 +847,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
             if (inState.mMask)
+				{
                rect = rect.Intersect(inState.mMask->GetRect());
+				}
 
             const FilterList &filters = obj->getFilters();
 
@@ -862,11 +865,11 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // In order to get this ...
             visible_bitmap  = filtered.Intersect(obj_state->mClipRect);
 
-
             if (obj->GetBitmapCache())
             {
                // Done - our bitmap is good!
-               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform, visible_bitmap))
+               if (obj->GetBitmapCache()->StillGood(obj_state->mTransform,
+						    visible_bitmap, inState.mMask))
                   continue;
                else
                {
@@ -902,11 +905,14 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                // debug ...
                //bitmap->Clear(0xff333333);
 
+					printf("Render %dx%d\n", w,h);
                bool old_pow2 = obj_state->mRoundSizeToPOW2;
                Matrix orig = full;
                {
                AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                full.Translate(-render_to.x, -render_to.y );
+					ImagePoint offset = obj_state->mStageOffset;
+					obj_state->mStageOffset += ImagePoint(render_to.x,render_to.y);
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
 
@@ -918,13 +924,15 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                obj->Render(render.Target(), *obj_state);
                obj->ClearCacheDirty();
+					obj_state->mStageOffset = offset;
                }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
 
                full = orig;
                obj->SetBitmapCache(
-                      new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false));
+                      new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false,
+												  inState.mMask));
                obj_state->mRoundSizeToPOW2 = old_pow2;
                bitmap->DecRef();
             }
@@ -1060,12 +1068,20 @@ void DisplayObjectContainer::ClearCacheDirty()
 
 // --- BitmapCache ---------------------------------------------------------
 
-BitmapCache::BitmapCache(Surface *inSurface,const Transform &inTrans, const Rect &inRect,bool inMaskOnly)
+static int sBitmapVersion = 1;
+
+BitmapCache::BitmapCache(Surface *inSurface,const Transform &inTrans,
+								 const Rect &inRect,bool inMaskOnly, BitmapCache *inMask)
 {
    mBitmap = inSurface->IncRef();
    mMatrix = *inTrans.mMatrix;
    mScale9 = *inTrans.mScale9;
    mRect = inRect;
+	mVersion = sBitmapVersion++;
+	if (!mVersion)
+		mVersion = sBitmapVersion++;
+	mMaskVersion = inMask ? inMask->mVersion : 0;
+	mMaskOffset = inMask ? ImagePoint(inMask->mTX,inMask->mTY) : ImagePoint(0,0);
    mTX = mTY = 0;
 }
 
@@ -1075,10 +1091,20 @@ BitmapCache::~BitmapCache()
 }
 
 
-bool BitmapCache::StillGood(const Transform &inTransform, const Rect &inVisiblePixels)
+bool BitmapCache::StillGood(const Transform &inTransform, const Rect &inVisiblePixels, BitmapCache *inMask)
 {
    if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) || mScale9!=*inTransform.mScale9)
       return false;
+
+	if (inMask)
+	{
+		if (inMask->mVersion!=mMaskVersion)
+			return false;
+		if (mMaskOffset != ImagePoint(inMask->mTX, inMask->mTY) )
+			return false;
+	}
+	else if (mMaskVersion)
+		return false;
 
    // Translate our cached pixels to this new position ...
    Rect translated = mRect.Translated(mTX,mTY);
@@ -1099,6 +1125,7 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
 
       if (inTarget.IsHardware())
       {
+         inTarget.mHardware->SetViewport(inTarget.mRect);
          inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
          inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
          inTarget.mHardware->EndBitmapRender();

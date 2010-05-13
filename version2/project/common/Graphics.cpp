@@ -567,6 +567,7 @@ RenderState::RenderState(Surface *inSurface,int inAA)
    mColourTransform = &sgIdentityColourTransform;
    mRoundSizeToPOW2 = false;
    mHitResult = 0;
+	mStageOffset = ImagePoint(0,0);
    if (inSurface)
    {
       mClipRect = Rect(inSurface->Width(),inSurface->Height());

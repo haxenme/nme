@@ -101,6 +101,12 @@ struct TRect
    {
       return TRect(x+inTX,y+inTY,w,h);
    }
+	template<typename POINT>
+	TRect Translated(const POINT &inPoint) const
+   {
+      return TRect(x+inPoint.x,y+inPoint.y,w,h);
+   }
+
    void MakePositive()
    {
       if (w<0) { x-=w; w=-w; }

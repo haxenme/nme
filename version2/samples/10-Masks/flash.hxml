@@ -1,4 +1,5 @@
 -main Sample
 -swf Sample.swf
 -swf-version 9
--swf-header 550:400:60:202040
+-swf-header 640:480:60:ffeeee
+-cp ..

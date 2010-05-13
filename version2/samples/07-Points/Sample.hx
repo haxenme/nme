@@ -24,7 +24,7 @@ class Particle
 
 class Sample extends Sprite 
 {
-   private static var MAX_PARTICLES: Int = 10000;
+   private static var MAX_PARTICLES: Int = 3000000;
    private var _targetX: Float;
    private var _targetY: Float;
 
@@ -111,8 +111,10 @@ class Sample extends Sprite
    
    private function onEnterFrame( event: Event ): Void
    {
-      _targetX += ( mouseX - 275 ) * 0.0003;
-      _targetY += ( mouseY - 150 ) * 0.0003;
+	   var mx = mouseX;
+	   var my = mouseY;
+      _targetX += ( mx - 275 ) * 0.0003;
+      _targetY += ( my - 150 ) * 0.0003;
       
       
       var x: Float;
