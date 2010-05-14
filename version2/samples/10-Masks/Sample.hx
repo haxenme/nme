@@ -41,6 +41,15 @@ class Sample extends Sprite
 		var window = new Sprite();
 		addChild(window);
 
+      var scrollbar = new Scrollbar(20, 404, 1024-400, 404*400/1024);
+      scrollbar.x = 76;
+      scrollbar.y = 38;
+      addChild(scrollbar);
+      scrollbar.scrolled = function(inTo:Float)
+      {
+		  window.scrollRect = new Rectangle(0,inTo,440,400);
+      };
+
       var gfx = graphics;
 		gfx.lineStyle(1,0x000000);
 		gfx.drawRect(98,38, 444, 404);
@@ -96,10 +105,10 @@ class Sample extends Sprite
       gfx.drawRect(-60,-10,120,20);
       mask_obj.addChild(mask_child);
 
-      //window.mask = mask_obj;
+      window.mask = mask_obj;
 
-      stage.addEventListener(MouseEvent.MOUSE_DOWN, drag);
-      stage.addEventListener(MouseEvent.MOUSE_UP, noDrag);
+      window.addEventListener(MouseEvent.MOUSE_DOWN, drag);
+      window.addEventListener(MouseEvent.MOUSE_UP, noDrag);
       tf.x = 100;
       tf.y = 100;
       mask_obj.x = 100;

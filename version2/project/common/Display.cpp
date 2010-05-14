@@ -237,9 +237,9 @@ void DisplayObject::DirtyCache(bool inParentOnly)
 
 Matrix DisplayObject::GetFullMatrix(bool inStageScaling)
 {
-  if (mParent)
-     return mParent->GetFullMatrix(inStageScaling).Mult(GetLocalMatrix());
-  return GetLocalMatrix();
+   if (mParent)
+     return mParent->GetFullMatrix(inStageScaling).Mult(GetLocalMatrix().Translated(-scrollRect.x,-scrollRect.y));
+   return GetLocalMatrix().Translated(-scrollRect.x,-scrollRect.y);
 }
 
 void DisplayObject::setMatrix(const Matrix &inMatrix)
@@ -801,14 +801,18 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          Extent2DF extent;
          DRect rect = obj->scrollRect;
          for(int c=0;c<4;c++)
-            extent.Add( full.Apply( rect.x + (((c&1)>0) ? rect.w :0),
-                                      rect.y + (((c&2)>0) ? rect.h :0) ) );
-
+            extent.Add( full.Apply( (((c&1)>0) ? rect.w :0), (((c&2)>0) ? rect.h :0) ) );
 
 
          Rect screen_rect(extent.mMinX,extent.mMinY, extent.mMaxX, extent.mMaxY, true );
 
          full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
+
+         ImagePoint scroll(obj->scrollRect.x, obj->scrollRect.y);
+
+         //clip_state.mTargetOffset += scroll;
+
+         //clip_state.mScrollOffset -= scroll;
 
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
 
@@ -823,7 +827,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       DisplayObject *mask = obj->getMask();
       if (mask)
       {
-         if (!mask->CreateMask(inTarget.mRect.Translated(obj_state->mStageOffset),
+         if (!mask->CreateMask(inTarget.mRect.Translated(obj_state->mTargetOffset),
 				                   obj_state->mTransform.mAAFactor))
 				continue;
 
@@ -863,7 +867,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Must render to this ...
             Rect render_to  = rect.Intersect(expanded);
             // In order to get this ...
-            visible_bitmap  = filtered.Intersect(obj_state->mClipRect);
+            visible_bitmap  = filtered.Intersect(obj_state->mClipRect );
 
             if (obj->GetBitmapCache())
             {
@@ -905,14 +909,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                // debug ...
                //bitmap->Clear(0xff333333);
 
-					printf("Render %dx%d\n", w,h);
+					//printf("Render %dx%d\n", w,h);
                bool old_pow2 = obj_state->mRoundSizeToPOW2;
                Matrix orig = full;
                {
                AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                full.Translate(-render_to.x, -render_to.y );
-					ImagePoint offset = obj_state->mStageOffset;
-					obj_state->mStageOffset += ImagePoint(render_to.x,render_to.y);
+					ImagePoint offset = obj_state->mTargetOffset;
+               Rect clip = obj_state->mClipRect;
+               obj_state->mClipRect.Translate(-render_to.x, -render_to.y);
+
+					obj_state->mTargetOffset += ImagePoint(render_to.x,render_to.y);
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
 
@@ -924,7 +931,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                obj->Render(render.Target(), *obj_state);
                obj->ClearCacheDirty();
-					obj_state->mStageOffset = offset;
+					obj_state->mTargetOffset = offset;
+               obj_state->mClipRect = clip;
                }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);

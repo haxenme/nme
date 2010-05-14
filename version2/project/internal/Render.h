@@ -22,7 +22,7 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
    Rect clip = inState.mClipRect.Intersect(outDest.GetRect());
 
    if (inState.mMask)
-      clip = clip.Intersect(inState.mMask->GetRect().Translated(-inState.mStageOffset));
+      clip = clip.Intersect(inState.mMask->GetRect().Translated(-inState.mTargetOffset));
 
    clip.ClipY(y,y1);
 
@@ -40,8 +40,8 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
 
          if (inState.mMask)
          {
-            const Uint8 *mask0 = inState.mMask->DestRow(y+inState.mStageOffset.y)
-											  +inState.mStageOffset.x;
+            const Uint8 *mask0 = inState.mMask->DestRow(y+inState.mTargetOffset.y) +
+                                    inState.mTargetOffset.x;
             while(run<end)
             {
                int x0 = run->mX0 + inTX;

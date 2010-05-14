@@ -426,7 +426,7 @@ struct RenderState
    Rect           GetAARect() const { return mClipRect*mTransform.mAAFactor; }
    Rect           mClipRect;
 
-   ImagePoint     mStageOffset;
+   ImagePoint     mTargetOffset;
 
    RenderPhase    mPhase;
    bool           mRoundSizeToPOW2;
