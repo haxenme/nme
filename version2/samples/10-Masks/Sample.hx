@@ -53,9 +53,10 @@ class Sample extends Sprite
       var gfx = graphics;
 		gfx.lineStyle(1,0x000000);
 		gfx.drawRect(98,38, 444, 404);
-		window.scrollRect = new Rectangle(0,0,440,400);
+		//window.scrollRect = new Rectangle(0,0,440,400);
 		window.x = 100;
 		window.y = 40;
+		//window.cacheAsBitmap = true;
 
 
       var bg = new Sprite();

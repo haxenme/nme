@@ -384,6 +384,8 @@ public:
    int GetTY() const { return mTX; }
    int GetDestX() const { return mTX + mRect.x; }
    int GetDestY() const { return mTY + mRect.y; }
+	void PushTargetOffset(const ImagePoint &inOffset, ImagePoint &outBuffer);
+	void PopTargetOffset(ImagePoint &inBuffer);
 
 private:
    int        mTX,mTY;

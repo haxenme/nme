@@ -960,7 +960,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    state.mClipRect = r.Intersect(inState.mClipRect);
 
    if (inState.mMask)
-      state.mClipRect = inState.mClipRect.Intersect(inState.mMask->GetRect());
+      state.mClipRect = inState.mClipRect.Intersect(
+               inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
 
    if (!state.mClipRect.HasPixels())
       return;

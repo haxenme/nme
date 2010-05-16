@@ -209,8 +209,19 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
    if (!mBitmapCache)
       return;
 
-   RenderTarget t = inTarget.ClipRect( inState.mClipRect );
-   mBitmapCache->Render(inTarget,inState.mMask,blendMode);
+	ImagePoint offset;
+	if (inState.mMask)
+	{
+		BitmapCache *mask = inState.mMask;
+		ImagePoint buffer;
+		mask->PushTargetOffset(inState.mTargetOffset,buffer);
+      mBitmapCache->Render(inTarget,mask,blendMode);
+		mask->PopTargetOffset(buffer);
+	}
+	else
+	{
+      mBitmapCache->Render(inTarget,0,blendMode);
+	}
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -810,10 +821,6 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          ImagePoint scroll(obj->scrollRect.x, obj->scrollRect.y);
 
-         //clip_state.mTargetOffset += scroll;
-
-         //clip_state.mScrollOffset -= scroll;
-
          clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
 
          if (!clip_state.mClipRect.HasPixels())
@@ -846,13 +853,14 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
+				BitmapCache *mask = obj_state->mMask;
 
             // Get bounding pixel rect
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
-            if (inState.mMask)
+            if (mask)
 				{
-               rect = rect.Intersect(inState.mMask->GetRect());
+               rect = rect.Intersect(mask->GetRect().Translated(-inState.mTargetOffset));
 				}
 
             const FilterList &filters = obj->getFilters();
@@ -873,7 +881,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             {
                // Done - our bitmap is good!
                if (obj->GetBitmapCache()->StillGood(obj_state->mTransform,
-						    visible_bitmap, inState.mMask))
+						    visible_bitmap, mask))
                   continue;
                else
                {
@@ -939,8 +947,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                full = orig;
                obj->SetBitmapCache(
-                      new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false,
-												  inState.mMask));
+                      new BitmapCache(bitmap, obj_state->mTransform, visible_bitmap, false, mask));
                obj_state->mRoundSizeToPOW2 = old_pow2;
                bitmap->DecRef();
             }
@@ -1140,12 +1147,25 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
       }
       else
       {
- 
-         // TX,TX is se in StillGood function
+         // TX,TX is set in StillGood function
          mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
       }
    }
 }
+
+void BitmapCache::PushTargetOffset(const ImagePoint &inOffset, ImagePoint &outBuffer)
+{
+	outBuffer = ImagePoint(mTX,mTY);
+	mTX -= inOffset.x;
+	mTY -= inOffset.y;
+}
+
+void BitmapCache::PopTargetOffset(ImagePoint &inBuffer)
+{
+	mTX = inBuffer.x;
+	mTY = inBuffer.y;
+}
+
 
 bool BitmapCache::HitTest(double inX, double inY)
 {
