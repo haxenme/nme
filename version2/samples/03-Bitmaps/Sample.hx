@@ -9,6 +9,8 @@ import flash.display.Sprite;
 import flash.display.Shape;
 import flash.display.Bitmap;
 import flash.geom.Matrix;
+import flash.geom.Rectangle;
+import flash.utils.ByteArray;
 #else
 import nme.Lib;
 import nme.events.MouseEvent;
@@ -20,6 +22,8 @@ import nme.display.BitmapData;
 import nme.display.Sprite;
 import nme.display.Shape;
 import nme.geom.Matrix;
+import nme.geom.Rectangle;
+import nme.utils.ByteArray;
 #end
 
 
@@ -34,6 +38,10 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    addChild( new Bitmap(image1) );
    var shape = new Shape();
    addChild(shape);
+
+	var copy = image1.clone();
+	var bytes:ByteArray = copy.getPixels(new Rectangle(0,0,copy.width,copy.height));
+	trace(bytes.length);
 
 
    var gfx = shape.graphics;
@@ -107,10 +115,13 @@ public static function main()
 
 
 #else
-   var image1 = BitmapData.load("Image.jpg");
-   var image2 = BitmapData.load("Image1.png");
-   var image3 = BitmapData.load("Image2.png");
-   Lib.create(function() new Sample(image1,image2,image3),320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.create(function() {
+        var image1 = BitmapData.load("Image.jpg");
+        var image2 = BitmapData.load("Image1.png");
+        var image3 = BitmapData.load("Image2.png");
+	     new Sample(image1,image2,image3);
+		  }
+	    ,320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
 #end
 }
 

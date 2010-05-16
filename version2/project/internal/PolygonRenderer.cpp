@@ -149,7 +149,7 @@ struct SpanRect
       int denom = inVec.y;
       if (denom==0)
          return 0;
-      int64 ratio = (inVec.x<<inBits)/denom;
+      int64 ratio = (((int64)inVec.x)<<inBits)/denom;
       if (ratio< -(1<<21)) return -(1<<21);
       if (ratio>  (1<<21)) return  (1<<21);
       return ratio;
