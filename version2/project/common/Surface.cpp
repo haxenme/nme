@@ -731,6 +731,89 @@ void SimpleSurface::EndRender()
 {
 }
 
+Surface *SimpleSurface::clone()
+{
+	SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat);
+	for(int y=0;y<mHeight;y++)
+		memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*(mPixelFormat==pfAlpha?1:4));
+
+	copy->IncRef();
+	return copy;
+}
+
+void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels)
+{
+	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+
+	for(int y=0;y<r.h;y++)
+	{
+		uint8 *src = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
+		if (mPixelFormat==pfAlpha)
+		{
+			for(int x=0;x<r.w;x++)
+				*outPixels++ = (*src++) << 24;
+		}
+		else
+		{
+			bool swap  = (bool)(mPixelFormat & pfSwapRB) != gC0IsRed;
+			uint8 *a = &( ((ARGB *)outPixels)->a );
+			if (!swap)
+			{
+				memcpy(outPixels,src,r.w*4);
+				outPixels+=r.w;
+			}
+			else
+			{
+				int *isrc = (int *)src;
+				for(int x=0;x<r.w;x++)
+					*outPixels++ = ARGB::Swap( *isrc++ );
+			}
+			if (!(mPixelFormat & pfHasAlpha))
+			{
+				for(int x=0;x<r.w;x++)
+				{
+					*a = 255;
+					a+=4;
+				}
+			}
+		}
+	}
+}
+
+void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels)
+{
+	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+   if (mTexture)
+      mTexture->Dirty(r);
+
+	for(int y=0;y<r.h;y++)
+	{
+		uint8 *dest = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
+		if (mPixelFormat==pfAlpha)
+		{
+			for(int x=0;x<r.w;x++)
+				*dest++ = (*inPixels++) >> 24;
+		}
+		else
+		{
+			bool swap  = (bool)(mPixelFormat & pfSwapRB) != gC0IsRed;
+			if (!swap)
+			{
+				memcpy(dest,inPixels,r.w*4);
+				inPixels+=r.w;
+			}
+			else
+			{
+				int *idest = (int *)dest;
+				for(int x=0;x<r.w;x++)
+					*idest++ = ARGB::Swap( *inPixels++ );
+			}
+		}
+	}
+}
+
+
+
 // --- HardwareSurface -------------------------------------------------------------
 
 HardwareSurface::HardwareSurface(HardwareContext *inContext)
@@ -743,6 +826,26 @@ HardwareSurface::~HardwareSurface()
 {
 	mHardware->DecRef();
 }
+
+Surface *HardwareSurface::clone()
+{
+	// This is not really a clone...
+	Surface *copy = new HardwareSurface(mHardware);
+	copy->IncRef();
+	return copy;
+
+}
+
+void HardwareSurface::getPixels(const Rect &inRect, uint32 *outPixels)
+{
+	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+	memset(outPixels,0,Width()*Height()*4);
+}
+
+void HardwareSurface::setPixels(const Rect &inRect,const uint32 *outPixels)
+{
+}
+
 
 
 // --- BitmapCache -----------------------------------------------------------------

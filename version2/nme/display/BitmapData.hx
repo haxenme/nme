@@ -160,7 +160,7 @@ class BitmapData implements IBitmapDrawable
 
 	public function getPixels(rect:Rectangle):nme.utils.ByteArray
 	{
-		var result = new nme.utils.ByteArray();
+		var result = new nme.utils.ByteArray(width*height*4);
 		nme_bitmap_data_get_pixels(nmeHandle,rect,result.nmeGetData());
 		return result;
 	}
@@ -201,9 +201,9 @@ class BitmapData implements IBitmapDrawable
 		nme_bitmap_data_set_pixel32_ex(nmeHandle, inX, inY, inAlpha, inColour);
 	}
 
-	public function setPixels(rect:Rectangle,pixels:BytesData) : Void
+	public function setPixels(rect:Rectangle,pixels:nme.utils.ByteArray) : Void
 	{
-		nme_bitmap_data_set_bytes(nmeHandle,rect,pixels);
+		nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.nmeGetData());
 	}
 
 	// Handled internally...

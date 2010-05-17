@@ -12,6 +12,7 @@
 #include <Sound.h>
 #include <Input.h>
 #include <algorithm>
+#include <ByteArray.h>
 
 #ifdef min
 #undef min
@@ -146,6 +147,8 @@ void FromValue(SoundTransform &outTrans, value inValue)
 
 void FromValue(DRect &outRect, value inValue)
 {
+	if (val_is_null(inValue))
+		return;
    outRect.x = val_field_numeric(inValue,_id_x);
    outRect.y = val_field_numeric(inValue,_id_y);
    outRect.w = val_field_numeric(inValue,_id_width);
@@ -154,6 +157,8 @@ void FromValue(DRect &outRect, value inValue)
 
 void FromValue(Rect &outRect, value inValue)
 {
+	if (val_is_null(inValue))
+		return;
    outRect.x = val_field_numeric(inValue,_id_x);
    outRect.y = val_field_numeric(inValue,_id_y);
    outRect.w = val_field_numeric(inValue,_id_width);
@@ -1629,7 +1634,14 @@ DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
 
 value nme_bitmap_data_clone(value inSurface)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+		Surface *result = surf->clone();
+      value val = ObjectToAbstract(result);
+		result->DecRef();
+		return val;
+	}
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_clone,1);
@@ -1650,14 +1662,35 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
       source->BlitTo(render.Target(),rect,offset.x, offset.y, bmNormal, 0);
    }
 
-   // TODO:
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_copy,4);
 
 value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+		Rect rect(0,0,surf->Width(),surf->Height());
+		FromValue(rect,inRect);
+		if (rect.w>0 && rect.h>0)
+		{
+		   int size = rect.w * rect.h*4;
+			ByteArray *array;
+			buffer buf;
+   		if (AbstractToObject(outBytes,array))
+			{
+				array->mBytes.resize(size);
+				surf->getPixels(rect,(unsigned int *)&array->mBytes[0]);
+			}
+			else if (buf=val_to_buffer(outBytes))
+			{
+				buffer_set_size(buf, size);
+				surf->getPixels(rect,(unsigned int *)buffer_data(buf));
+			}
+		}
+   }
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_pixels,3);
@@ -1706,7 +1739,28 @@ DEFINE_PRIM(nme_bitmap_data_set_pixel32_ex,5);
 
 value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+		Rect rect(0,0,surf->Width(),surf->Height());
+		FromValue(rect,inRect);
+		if (rect.w>0 && rect.h>0)
+		{
+			ByteArray *array;
+			buffer buf;
+   		if (AbstractToObject(inBytes,array))
+			{
+				//array->mBytes.resize(size);
+				surf->setPixels(rect,(unsigned int *)&array->mBytes[0]);
+			}
+			else if (buf=val_to_buffer(inBytes))
+			{
+				//buffer_set_size(buf, size);
+				surf->setPixels(rect,(unsigned int *)buffer_data(buf));
+			}
+		}
+   }
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_set_bytes,3);
@@ -1954,6 +2008,54 @@ value nme_tilesheet_add_rect(value inSheet,value inRect)
    return alloc_null();
 }
 DEFINE_PRIM(nme_tilesheet_add_rect,2);
+
+// --- ByteArray -----------------------------------------------------
+
+value nme_byte_array_create(value inLen)
+{
+	ByteArray *array = new ByteArray();
+	array->mBytes.resize(val_int(inLen));
+	return ObjectToAbstract(array);
+}
+DEFINE_PRIM(nme_byte_array_create,1);
+
+value nme_byte_array_get_length(value inArray)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		return alloc_int(array->mBytes.size());
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get_length,1);
+
+value nme_byte_array_get(value inArray, value inPos)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		int idx = val_int(inPos);
+		if (idx>=0 && idx<array->mBytes.size())
+			return alloc_int(array->mBytes[idx]);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get,2);
+
+value nme_byte_array_set(value inArray,value inPos, value inVal)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		int idx = val_int(inPos);
+		if (idx>=0 && idx<array->mBytes.size())
+			array->mBytes[idx] = val_int(inVal);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_set,3);
+
 
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }

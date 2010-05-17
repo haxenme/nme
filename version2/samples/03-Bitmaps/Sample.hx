@@ -40,8 +40,13 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    addChild(shape);
 
 	var copy = image1.clone();
-	var bytes:ByteArray = copy.getPixels(new Rectangle(0,0,copy.width,copy.height));
-	trace(bytes.length);
+	var bytes:ByteArray = copy.getPixels(new Rectangle(100,100,100,100));
+	bytes.position = 0;
+
+	var dest = new BitmapData(100,100);
+	dest.setPixels(new Rectangle(0,0,100,100), bytes);
+
+	addChild(new Bitmap(dest) );
 
 
    var gfx = shape.graphics;

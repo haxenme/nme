@@ -65,6 +65,9 @@ public:
    Texture *GetOrCreateTexture(HardwareContext &inHardware);
    void Bind(HardwareContext &inHardware,int inSlot=0);
 
+   virtual Surface *clone() = 0;
+	virtual void getPixels(const Rect &inRect,uint32 *outPixels) = 0;
+	virtual void setPixels(const Rect &inRect,const uint32 *intPixels) = 0;
 
 protected:
    Texture       *mTexture;
@@ -107,6 +110,9 @@ public:
 
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
+   Surface *clone();
+	void getPixels(const Rect &inRect,uint32 *outPixels);
+	void setPixels(const Rect &inRect,const uint32 *intPixels);
 
 
 protected:
@@ -143,6 +149,9 @@ public:
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint ) const { }
+   Surface *clone();
+	void getPixels(const Rect &inRect,uint32 *outPixels);
+	void setPixels(const Rect &inRect,const uint32 *intPixels);
 
    protected:
       ~HardwareSurface();
