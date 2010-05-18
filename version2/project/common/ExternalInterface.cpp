@@ -83,6 +83,7 @@ static int _id_alphaOffset = val_id("alphaOffset");
 static int _id_redOffset = val_id("redOffset");
 static int _id_greenOffset = val_id("greenOffset");
 static int _id_blueOffset = val_id("blueOffset");
+static int _id_rgb = val_id("rgb");
 
 vkind gObjectKind = alloc_kind();
 
@@ -562,9 +563,8 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       if (!val_is_null(arg[aColourTransform]))
       {
          ColorTransform t;
-         // TODO:
-         //FromValue(t,arg[aColourTransform]);
-         //state.CombineColourTransform(stage,&t,&col_trans);
+         FromValue(t,arg[aColourTransform]);
+         state.CombineColourTransform(state,&t,&col_trans);
       }
 
       // TODO: Blend mode
@@ -1697,45 +1697,85 @@ DEFINE_PRIM(nme_bitmap_data_get_pixels,3);
 
 value nme_bitmap_data_get_pixel(value inSurface, value inX, value inY)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+		return alloc_int(surf->getPixel(val_int(inX),val_int(inY)) & 0xffffff);
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_pixel,3);
 
-value nme_bitmap_data_get_pixel32(value inSurface, value inX,value inY)
+value nme_bitmap_data_get_pixel32(value inSurface, value inX, value inY)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+		return alloc_int(surf->getPixel(val_int(inX),val_int(inY)));
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_pixel32,3);
 
+
+value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
+{
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+	{
+		int rgb = surf->getPixel(val_int(inX),val_int(inY));
+		value result = alloc_empty_object();
+		alloc_field(result,_id_rgb, alloc_int( rgb & 0xffffff) );
+		alloc_field(result,_id_a, alloc_int( rgb >> 24) );
+		return result;
+	}
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_pixel_rgba,3);
+
 value nme_bitmap_data_scroll(value inSurface, value inDX, value inDY)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+		surf->scroll(val_int(inDX),val_int(inDY));
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_scroll,3);
 
 value nme_bitmap_data_set_pixel(value inSurface, value inX, value inY, value inRGB)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+		surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB));
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_set_pixel,4);
 
-value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value inRGBA)
+value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value inRGB)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+		surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_set_pixel32,4);
 
-value nme_bitmap_data_set_pixel32_ex(value inSurface, value inX, value inY, value inRGB,value inA)
+
+value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, value inRGBA)
 {
-   // TODO:
+	Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+	{
+		value a = val_field(inRGBA,_id_a);
+		value rgb = val_field(inRGBA,_id_rgb);
+		if (val_is_int(a) && val_is_int(rgb))
+		   surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
+	}
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_pixel32_ex,5);
+DEFINE_PRIM(nme_bitmap_data_set_pixel_rgba,4);
 
 value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
 {
@@ -1788,9 +1828,8 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       if (!val_is_null(arg[aColourTransform]))
       {
          ColorTransform t;
-         // TODO:
-         //FromValue(t,arg[aColourTransform]);
-         //state.CombineColourTransform(stage,&t,&col_trans);
+         FromValue(t,arg[aColourTransform]);
+         state.CombineColourTransform(state,&t,&col_trans);
       }
 
       // TODO: Blend mode

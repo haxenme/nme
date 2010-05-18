@@ -54,6 +54,7 @@ struct TRect
    T y1() const { return y+h; }
    void Translate(T inTx,T inTy) { x+=inTx; y+= inTy; }
    bool HasPixels() const { return w>0 && h>0; }
+	T Area() const { return w * h; }
    bool Contains(const TRect &inOther) const
    {
       return inOther.x>=x && inOther.x1()<=x1() &&

@@ -45,6 +45,12 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 
 	var dest = new BitmapData(100,100);
 	dest.setPixels(new Rectangle(0,0,100,100), bytes);
+	for(y in 0...100)
+		for(x in 0...50)
+			dest.setPixel32(x,y,dest.getPixel32(99-x,y));
+	var col = #if neko { rgb:0x00ff00, a:0x80 } #else 0x8000ff00 #end;
+	for(i in 0...100)
+		dest.setPixel32(i,i,col);
 
 	addChild(new Bitmap(dest) );
 
@@ -79,8 +85,29 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    shape2.y = 200;
 
 
+   var phase = 0;
    stage.addEventListener( Event.ENTER_FRAME, function(_)
       {
+			if (phase<10)
+				dest.scroll(1,0);
+			else if (phase<20)
+				dest.scroll(1,1);
+			else if (phase<30)
+				dest.scroll(0,1);
+			else if (phase<40)
+				dest.scroll(-1,1);
+			else if (phase<50)
+				dest.scroll(-1,0);
+			else if (phase<60)
+				dest.scroll(-1,-1);
+			else if (phase<70)
+				dest.scroll(0,-1);
+			else if (phase<80)
+				dest.scroll(1,-1);
+
+			phase++;
+			if (phase>=80)
+				phase = 0;
          shape.rotation = shape.rotation + 0.01;
       } );
 

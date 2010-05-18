@@ -741,7 +741,7 @@ Surface *SimpleSurface::clone()
 	return copy;
 }
 
-void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels)
+void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder)
 {
 	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
 
@@ -755,7 +755,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels)
 		}
 		else
 		{
-			bool swap  = (bool)(mPixelFormat & pfSwapRB) != gC0IsRed;
+			bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed) && inIgnoreOrder;
 			uint8 *a = &( ((ARGB *)outPixels)->a );
 			if (!swap)
 			{
@@ -780,7 +780,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels)
 	}
 }
 
-void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels)
+void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder)
 {
 	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
    if (mTexture)
@@ -796,7 +796,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels)
 		}
 		else
 		{
-			bool swap  = (bool)(mPixelFormat & pfSwapRB) != gC0IsRed;
+			bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed) && inIgnoreOrder;
 			if (!swap)
 			{
 				memcpy(dest,inPixels,r.w*4);
@@ -811,6 +811,71 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels)
 		}
 	}
 }
+
+uint32 SimpleSurface::getPixel(int inX,int inY)
+{
+	if (inX<0 || inY<0 || inX>=mWidth || inY>=mHeight)
+		return 0;
+
+	if (mPixelFormat==pfAlpha)
+		return mBase[inY*mStride + inX]<<24;
+
+	if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
+		return ((uint32 *)(mBase + inY*mStride))[inX];
+
+	return ARGB::Swap( ((int *)(mBase + inY*mStride))[inX] );
+}
+
+void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
+{
+	if (inX<0 || inY<0 || inX>=mWidth || inY>=mHeight)
+		return;
+
+	if (mTexture)
+      mTexture->Dirty(Rect(inX,inY,1,1));
+
+	if (inAlphaToo)
+	{
+		if (mPixelFormat==pfAlpha)
+			mBase[inY*mStride + inX] = inRGBA >> 24;
+		else if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
+			((uint32 *)(mBase + inY*mStride))[inX] = inRGBA;
+		else
+			((int *)(mBase + inY*mStride))[inX] = ARGB::Swap(inRGBA);
+	}
+	else
+	{
+		if (mPixelFormat!=pfAlpha)
+		{
+			int &pixel = ((int *)(mBase + inY*mStride))[inX];
+			inRGBA = (inRGBA & 0xffffff) | (pixel & 0xff000000);
+			if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
+				pixel = inRGBA;
+			else
+				pixel = ARGB::Swap(inRGBA);
+		}
+	}
+}
+
+void SimpleSurface::scroll(int inDX,int inDY)
+{
+	if (inDX==0 && inDY==0) return;
+
+	Rect src(0,0,mWidth,mHeight);
+	src = src.Intersect( src.Translated(inDX,inDY) ).Translated(-inDX,-inDY);
+	int pixels = src.Area();
+	if (!pixels)
+		return;
+
+	uint32 *buffer = (uint32 *)malloc( pixels * sizeof(int) );
+	getPixels(src,buffer,true);
+	src.Translate(inDX,inDY);
+	setPixels(src,buffer,true);
+	free(buffer);
+	if (mTexture)
+      mTexture->Dirty(src);
+}
+
 
 
 
@@ -836,13 +901,13 @@ Surface *HardwareSurface::clone()
 
 }
 
-void HardwareSurface::getPixels(const Rect &inRect, uint32 *outPixels)
+void HardwareSurface::getPixels(const Rect &inRect, uint32 *outPixels,bool inIgnoreOrder)
 {
 	Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
 	memset(outPixels,0,Width()*Height()*4);
 }
 
-void HardwareSurface::setPixels(const Rect &inRect,const uint32 *outPixels)
+void HardwareSurface::setPixels(const Rect &inRect,const uint32 *outPixels,bool inIgnoreOrder)
 {
 }
 

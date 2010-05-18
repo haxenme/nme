@@ -7,7 +7,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 
 #if neko
-typedef BitmapInt32 = haxe.Int32;
+typedef BitmapInt32 = { rgb:Int, a:Int };
 #else
 typedef BitmapInt32 = Int;
 #end
@@ -34,11 +34,8 @@ class BitmapData implements IBitmapDrawable
    public inline static var GREEN =  createColor(0x00ff00);
    public inline static var BLUE =  createColor(0x0000ff);
 
-   public inline static var COL_MASK = haxe.Int32.make(0xffffff,0);
-
    // Public, but only use if you know what you are doing
 	public var nmeHandle:Dynamic;
-
 
 
 
@@ -172,8 +169,13 @@ class BitmapData implements IBitmapDrawable
 
 	public function getPixel32(x:Int, y:Int) : BitmapInt32
 	{
+	#if neko
+		return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
+	#else
 		return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
+	#end
 	}
+
 
 	// Handled internally...
 	public function lock() { }
@@ -183,23 +185,19 @@ class BitmapData implements IBitmapDrawable
 		nme_bitmap_data_scroll(nmeHandle,inDX,inDY);
 	}
 
-	public function setPixel(inX:Int, inY:Int,inColour:Int) : Void
-	{
-		nme_bitmap_data_set_pixel(nmeHandle,inX,inY,inColour);
-	}
-
 	public function setPixel32(inX:Int, inY:Int, inColour: BitmapInt32) : Void
 	{
+	#if neko
+		nme_bitmap_data_set_pixel_rgba(nmeHandle, inX, inY, inColour);
+	#else
 		nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
+	#end
+	}
+	public function setPixel(inX:Int, inY:Int, inColour: Int) : Void
+	{
+		nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
 	}
 
-	/**
-	* Sets colour with an alpha and RGB value
-	*/
-	public function setPixel32Ex(inX:Int, inY:Int, inAlpha:Int, inColour:Int) : Void
-	{
-		nme_bitmap_data_set_pixel32_ex(nmeHandle, inX, inY, inAlpha, inColour);
-	}
 
 	public function setPixels(rect:Rectangle,pixels:nme.utils.ByteArray) : Void
 	{
@@ -239,7 +237,7 @@ class BitmapData implements IBitmapDrawable
 	public static inline function extractAlpha(v : BitmapInt32) : Int {
 		return
 			#if neko
-				haxe.Int32.toInt(haxe.Int32.ushr(v, 24));
+				return v.a;
 			#else
 				v >>> 24;
 			#end
@@ -248,7 +246,7 @@ class BitmapData implements IBitmapDrawable
 	public static inline function extractColor(v : BitmapInt32) : Int {
 		return
 			#if neko
-				haxe.Int32.toInt(haxe.Int32.and(v,COL_MASK));
+				return v.rgb;
 			#else
 				v & 0xFFFFFF;
 			#end
@@ -257,7 +255,7 @@ class BitmapData implements IBitmapDrawable
 	public static inline function createColor(inRGB:Int,inAlpha:Int=0xff) : BitmapInt32 {
 		return
 			#if neko
-				haxe.Int32.make( (inRGB>>16) | (inAlpha<<8) ,inRGB & 0xffff);
+				return { rgb:inRGB, a:inAlpha };
 			#else
 				inRGB | (inAlpha<<24);
 			#end
@@ -274,10 +272,11 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_get_pixels = nme.Loader.load("nme_bitmap_data_get_pixels",3);
    static var nme_bitmap_data_get_pixel = nme.Loader.load("nme_bitmap_data_get_pixel",3);
    static var nme_bitmap_data_get_pixel32 = nme.Loader.load("nme_bitmap_data_get_pixel32",3);
+   static var nme_bitmap_data_get_pixel_rgba = nme.Loader.load("nme_bitmap_data_get_pixel_rgba",3);
    static var nme_bitmap_data_scroll = nme.Loader.load("nme_bitmap_data_scroll",3);
    static var nme_bitmap_data_set_pixel = nme.Loader.load("nme_bitmap_data_set_pixel",4);
    static var nme_bitmap_data_set_pixel32 = nme.Loader.load("nme_bitmap_data_set_pixel32",4);
-   static var nme_bitmap_data_set_pixel32_ex = nme.Loader.load("nme_bitmap_data_set_pixel32_ex",5);
+   static var nme_bitmap_data_set_pixel_rgba = nme.Loader.load("nme_bitmap_data_set_pixel_rgba",4);
    static var nme_bitmap_data_set_bytes = nme.Loader.load("nme_bitmap_data_set_bytes",3);
    static var nme_render_surface_to_surface = nme.Loader.load("nme_render_surface_to_surface",-1);
    static var nme_bitmap_data_height = nme.Loader.load("nme_bitmap_data_height",1);
