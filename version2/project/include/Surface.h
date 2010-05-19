@@ -65,12 +65,12 @@ public:
    Texture *GetOrCreateTexture(HardwareContext &inHardware);
    void Bind(HardwareContext &inHardware,int inSlot=0);
 
-   virtual Surface *clone() = 0;
-	virtual void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false) = 0;
-	virtual void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false) = 0;
-	virtual uint32 getPixel(int inX,int inY) { return 0; }
-	virtual void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false) { }
-	virtual void scroll(int inDX,int inDY) { }
+   virtual Surface *clone() { return 0; }
+   virtual void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false) { }
+   virtual void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false) { }
+   virtual uint32 getPixel(int inX,int inY) { return 0; }
+   virtual void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false) { }
+   virtual void scroll(int inDX,int inDY) { }
 
 protected:
    Texture       *mTexture;
@@ -104,7 +104,7 @@ public:
    void Zero();
 
 
-	RenderTarget BeginRender(const Rect &inRect);
+   RenderTarget BeginRender(const Rect &inRect);
    void EndRender();
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
@@ -114,11 +114,11 @@ public:
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
    Surface *clone();
-	void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
-	void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
-	uint32 getPixel(int inX,int inY);
-	void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
-	void scroll(int inDX,int inDY);
+   void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
+   void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
+   uint32 getPixel(int inX,int inY);
+   void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
+   void scroll(int inDX,int inDY);
 
 
 protected:
@@ -156,8 +156,8 @@ public:
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint ) const { }
    Surface *clone();
-	void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
-	void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
+   void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
+   void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
 
    protected:
       ~HardwareSurface();
