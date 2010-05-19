@@ -39,6 +39,7 @@ public:
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
+   static Surface *LoadFromBytes(const uint8 *inBytes,int inLen);
 
    Surface *IncRef() { mRefCount++; return this; }
 

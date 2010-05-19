@@ -29,6 +29,7 @@ static int _id_y = val_id("y");
 static int _id_z = val_id("z");
 static int _id_width = val_id("width");
 static int _id_height = val_id("height");
+static int _id_length = val_id("length");
 static int _id_value = val_id("value");
 static int _id_id = val_id("id");
 static int _id_flags = val_id("flags");
@@ -342,6 +343,100 @@ DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 
 
 using namespace nme;
+
+
+
+// --- ByteArray -----------------------------------------------------
+
+value nme_byte_array_create(value inLen)
+{
+	ByteArray *array = new ByteArray();
+	array->mBytes.resize(val_int(inLen));
+	return ObjectToAbstract(array);
+}
+DEFINE_PRIM(nme_byte_array_create,1);
+
+value nme_byte_array_read_file(value inFilename)
+{
+	FILE *file = OpenRead(val_os_string(inFilename));
+   if (!file)
+      return alloc_null();
+
+   fseek(file,0,SEEK_END);
+   int len = ftell(file);
+   fseek(file,0,SEEK_SET);
+
+   ByteArray *result = new ByteArray;
+	result->mBytes.resize(len);
+   fread(&result->mBytes[0],len,1,file);
+   fclose(file);
+
+	return ObjectToAbstract(result);
+}
+DEFINE_PRIM(nme_byte_array_read_file,1);
+
+
+value nme_byte_array_get_length(value inArray)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		return alloc_int(array->mBytes.size());
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get_length,1);
+
+value nme_byte_array_get(value inArray, value inPos)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		int idx = val_int(inPos);
+		if (idx>=0 && idx<array->mBytes.size())
+			return alloc_int(array->mBytes[idx]);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get,2);
+
+value nme_byte_array_set(value inArray,value inPos, value inVal)
+{
+	ByteArray *array;
+	if (AbstractToObject(inArray,array))
+	{
+		int idx = val_int(inPos);
+		if (idx>=0 && idx<array->mBytes.size())
+			array->mBytes[idx] = val_int(inVal);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_set,3);
+
+struct ByteData
+{
+	uint8 *data;
+	int   length;
+};
+
+bool FromValue(ByteData &outData,value inData)
+{
+	ByteArray *array;
+	if (AbstractToObject(inData,array))
+	{
+		outData.length = array->mBytes.size();
+		outData.data = &array->mBytes[0];
+		return true;
+	}
+
+	if (!val_is_buffer(inData))
+		return false;
+
+	buffer buf = val_to_buffer(inData);
+	outData.length = buffer_size(buf);
+	outData.data = (uint8 *)buffer_data(buf);
+	return true;
+}
 
 
 // --- Stage ----------------------------------------------------------------------
@@ -1538,7 +1633,6 @@ TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
 TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
 TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
 
-// --- BitmapData -----------------------------------------------------
 
 
 value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)
@@ -1626,7 +1720,18 @@ DEFINE_PRIM(nme_bitmap_data_load,1);
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {
-   // TODO:
+	ByteData bytes;
+	if (!FromValue(bytes,inRGBBytes))
+		return alloc_null();
+
+	Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
+	if (surface)
+	{
+		value result = ObjectToAbstract(surface);
+		surface->DecRef();
+		return result;
+	}
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
@@ -2048,52 +2153,6 @@ value nme_tilesheet_add_rect(value inSheet,value inRect)
 }
 DEFINE_PRIM(nme_tilesheet_add_rect,2);
 
-// --- ByteArray -----------------------------------------------------
-
-value nme_byte_array_create(value inLen)
-{
-	ByteArray *array = new ByteArray();
-	array->mBytes.resize(val_int(inLen));
-	return ObjectToAbstract(array);
-}
-DEFINE_PRIM(nme_byte_array_create,1);
-
-value nme_byte_array_get_length(value inArray)
-{
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		return alloc_int(array->mBytes.size());
-	}
-	return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_get_length,1);
-
-value nme_byte_array_get(value inArray, value inPos)
-{
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		int idx = val_int(inPos);
-		if (idx>=0 && idx<array->mBytes.size())
-			return alloc_int(array->mBytes[idx]);
-	}
-	return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_get,2);
-
-value nme_byte_array_set(value inArray,value inPos, value inVal)
-{
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		int idx = val_int(inPos);
-		if (idx>=0 && idx<array->mBytes.size())
-			array->mBytes[idx] = val_int(inVal);
-	}
-	return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_set,3);
 
 
 // Reference this to bring in all the symbols for the static library

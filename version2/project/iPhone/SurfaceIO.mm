@@ -45,4 +45,10 @@ Surface *Surface::Load(const OSChar *inFilename)
    return result;
 }
 
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+{
+	return 0;
+}
+
+
 }

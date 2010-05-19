@@ -8,6 +8,26 @@ extern "C" {
 
 using namespace nme;
 
+struct ReadBuf
+{
+	ReadBuf(const uint8 *inData, int inLen) : mData(inData), mLen(inLen) { }
+
+	bool Read(uint8 *outBuffer, int inN)
+	{
+		if (inN>mLen)
+		{
+			memset(outBuffer,0,inN);
+			return false;
+		}
+		memcpy(outBuffer,mData,inN);
+		mData+=inN;
+		mLen -= inN;
+	}
+
+	const uint8 *mData;
+	int mLen;
+};
+
 struct ErrorData
 {
    struct jpeg_error_mgr base; // base
@@ -21,7 +41,50 @@ static void OnError(j_common_ptr cinfo)
    longjmp(err->on_error, 1);
 }
 
-static Surface *TryJPEG(FILE *inFile)
+struct MySrcManager : public jpeg_source_mgr
+{
+	MySrcManager(const JOCTET *inData, int inLen) : mData(inData), mLen(inLen)
+	{
+		init_source = my_init_source;
+		fill_input_buffer = my_fill_input_buffer;
+		skip_input_data = my_skip_input_data;
+		resync_to_restart = my_resync_to_restart;
+		term_source = my_term_source;
+	}
+
+   const JOCTET * mData;
+   size_t mLen;
+
+   const JOCTET * next_input_byte; /* => next byte to read from buffer */
+   size_t bytes_in_buffer;	/* # of bytes remaining in buffer */
+
+   static void my_init_source(j_decompress_ptr cinfo)
+   {
+      MySrcManager *man = (MySrcManager *)cinfo->src;
+ 		man->next_input_byte = man->mData;
+ 		man->bytes_in_buffer = man->mLen;
+		printf("my_init_source %d\n", man->mLen);
+   }
+   static boolean my_fill_input_buffer(j_decompress_ptr cinfo)
+   {
+		return false;
+   }
+   static void my_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+   {
+   }
+   static boolean my_resync_to_restart(j_decompress_ptr cinfo, int desired)
+   {
+      MySrcManager *man = (MySrcManager *)cinfo->src;
+ 		man->next_input_byte = man->mData;
+ 		man->bytes_in_buffer = man->mLen;
+		return true;
+   }
+   static void my_term_source(j_decompress_ptr cinfo)
+   {
+   }
+ };
+
+static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
 {
    struct jpeg_decompress_struct cinfo;
 
@@ -48,8 +111,14 @@ static Surface *TryJPEG(FILE *inFile)
    // Initialize the JPEG decompression object.
    jpeg_create_decompress(&cinfo);
 
-   // Specify data source (ie, a file)
-   jpeg_stdio_src(&cinfo, inFile);
+   // Specify data source (ie, a file, or buffer)
+	MySrcManager manager(inData,inDataLen);
+	if (inFile)
+      jpeg_stdio_src(&cinfo, inFile);
+	else
+	{
+		cinfo.src = &manager;
+	}
 
    // Read file parameters with jpeg_read_header().
    if (jpeg_read_header(&cinfo, TRUE)!=JPEG_HEADER_OK)
@@ -105,8 +174,13 @@ static Surface *TryJPEG(FILE *inFile)
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) { }
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) { }
+static void user_read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    png_voidp buffer = png_get_io_ptr(png_ptr);
+	 ((ReadBuf *)buffer)->Read(data,length);
+}
 
-static Surface *TryPNG(FILE *inFile)
+static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
 {
 	png_structp png_ptr;
    png_infop info_ptr;
@@ -155,7 +229,15 @@ static Surface *TryPNG(FILE *inFile)
       return (0);
    }
 
-   png_init_io(png_ptr, inFile);
+	ReadBuf buffer(inData,inDataLen);
+	if (inFile)
+	{
+      png_init_io(png_ptr, inFile);
+	}
+	else
+	{
+      png_set_read_fn(png_ptr,(void *)&buffer, user_read_data_fn);
+	}
 
    png_read_info(png_ptr, info_ptr);
    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
@@ -204,15 +286,25 @@ Surface *Surface::Load(const OSChar *inFilename)
    if (!file)
       return 0;
 
-   Surface *result = TryJPEG(file);
+   Surface *result = TryJPEG(file,0,0);
    if (!result)
    {
       rewind(file);
-		result = TryPNG(file);
+		result = TryPNG(file,0,0);
    }
 
    fclose(file);
    return result;
 }
+
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+{
+	Surface *result = TryJPEG(0,inBytes,inLen);
+   if (!result)
+		result = TryPNG(0,inBytes,inLen);
+
+	return result;
+}
+
 
 }

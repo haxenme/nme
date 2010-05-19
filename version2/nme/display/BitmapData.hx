@@ -1,10 +1,11 @@
 package nme.display;
 
-import haxe.io.BytesData;
+import haxe.io.Bytes;
 import nme.geom.Rectangle;
 import nme.geom.Point;
 import nme.geom.Matrix;
 import nme.geom.ColorTransform;
+import nme.utils.ByteArray;
 
 #if neko
 typedef BitmapInt32 = { rgb:Int, a:Int };
@@ -90,10 +91,11 @@ class BitmapData implements IBitmapDrawable
 	* @param inAlpha - optional alpha values to go with image RGB values - there should
 	*                   be width*height values.
 	**/
-	static public function loadFromBytes(inBytes:BytesData, ?inRawAlpha:BytesData)
+	static public function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray)
 	{
 		var result = new BitmapData(0,0);
-		result.nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha );
+		result.nmeHandle = nme_bitmap_data_from_bytes( inBytes.nmeData,
+		                         inRawAlpha==null?null:inRawAlpha.nmeData);
 		return result;
 	}
 
@@ -155,9 +157,9 @@ class BitmapData implements IBitmapDrawable
 		return new Rectangle(width, height);
 	}
 
-	public function getPixels(rect:Rectangle):nme.utils.ByteArray
+	public function getPixels(rect:Rectangle):ByteArray
 	{
-		var result = new nme.utils.ByteArray(width*height*4);
+		var result = new ByteArray(width*height*4);
 		nme_bitmap_data_get_pixels(nmeHandle,rect,result.nmeGetData());
 		return result;
 	}
@@ -199,7 +201,7 @@ class BitmapData implements IBitmapDrawable
 	}
 
 
-	public function setPixels(rect:Rectangle,pixels:nme.utils.ByteArray) : Void
+	public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
 	{
 		nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.nmeGetData());
 	}

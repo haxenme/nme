@@ -54,6 +54,12 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 
 	addChild(new Bitmap(dest) );
 
+	#if !flash
+	var data = loadFromBytes("Image.jpg");
+	trace(data);
+	addChild(new Bitmap(data) );
+	#end
+
 
    var gfx = shape.graphics;
    gfx.lineStyle(1,0x000000);
@@ -112,6 +118,14 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
       } );
 
 }
+
+#if !flash
+   public function loadFromBytes(inFilename:String)
+	{
+	   var bytes = nme.utils.ByteArray.readFile(inFilename);
+		return BitmapData.loadFromBytes(bytes);
+	}
+#end
 
 
 public static function main()

@@ -19,7 +19,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 {
 	public  var position:Int;
 	public var endian(nmeGetEndian,nmeSetEndian) : String;
-	private var nmeData:ByteBuffer;
+	public var nmeData:ByteBuffer;
 
 	public var length(nmeGetLength,null):Int;
 
@@ -64,13 +64,13 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 	#end
 	}
 
-/*
 	static public function readFile(inString:String):ByteArray
 	{
 		var handle = nme_byte_array_read_file(inString);
-		return new ByteArray(handle);
+		var result = new ByteArray(handle);
+		result.nmeData = handle;
+		return result;
 	}
-*/
 
    // does the "work" for haxe.io.Input
 	public override function readByte():Int
@@ -114,6 +114,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 	}
 
 	static var nme_byte_array_create = nme.Loader.load("nme_byte_array_create",1);
+	static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file",1);
 	static var nme_byte_array_get_length = nme.Loader.load("nme_byte_array_get_length",1);
 	static var nme_byte_array_get = nme.Loader.load("nme_byte_array_get",2);
 	static var nme_byte_array_set = nme.Loader.load("nme_byte_array_set",3);
