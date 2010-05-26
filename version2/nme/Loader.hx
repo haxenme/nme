@@ -6,8 +6,12 @@ class Loader
    {
    #if neko
       return neko.Lib.load("nme",func,args);
-   #else
+   #elseif cpp
       return cpp.Lib.load("nme",func,args);
+   #elseif js
+      return js.Lib.load("nme",func,args);
+   #else
+	   #error "unsupported platform";
    #end
    }
 }

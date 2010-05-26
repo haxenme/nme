@@ -129,7 +129,7 @@ class Rectangle
       if (x1<=x0)
          return false;
 
-      var y0 = y<toIntersect.y ? toIntersect.x : y;
+      var y0 = y<toIntersect.y ? toIntersect.y : y;
       var y1 = bottom>toIntersect.bottom ? toIntersect.bottom : bottom;
       return y1>y0;
    }

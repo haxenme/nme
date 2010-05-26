@@ -12,6 +12,8 @@ class Lib
    static var nmeCurrent: nme.display.MovieClip = null;
    static var nmeStage: nme.display.Stage = null;
 
+	static var XXX = 1;
+
    public static var stage(nmeGetStage,null): nme.display.Stage;
    public static var current(nmeGetCurrent,null): nme.display.MovieClip;
 

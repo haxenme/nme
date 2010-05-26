@@ -67,7 +67,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 	static public function readFile(inString:String):ByteArray
 	{
 		var handle = nme_byte_array_read_file(inString);
-		var result = new ByteArray(handle);
+		var result = new ByteArray(0);
 		result.nmeData = handle;
 		return result;
 	}
