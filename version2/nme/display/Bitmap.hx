@@ -21,6 +21,7 @@ class Bitmap extends DisplayObject {
    {
       var gfx = graphics;
       gfx.clear();
+		bitmapData = inBitmapData;
       if (inBitmapData!=null)
       {
          gfx.beginBitmapFill(inBitmapData,false,smoothing);

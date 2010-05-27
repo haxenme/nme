@@ -22,6 +22,7 @@ struct ReadBuf
 		memcpy(outBuffer,mData,inN);
 		mData+=inN;
 		mLen -= inN;
+		return true;
 	}
 
 	const uint8 *mData;
@@ -34,6 +35,9 @@ struct ErrorData
    jmp_buf on_error;     // return;
 };
 
+static void OnOutput(j_common_ptr cinfo)
+{
+}
 static void OnError(j_common_ptr cinfo)
 {
    ErrorData * err = (ErrorData *)cinfo->err;
@@ -41,42 +45,57 @@ static void OnError(j_common_ptr cinfo)
    longjmp(err->on_error, 1);
 }
 
-struct MySrcManager : public jpeg_source_mgr
+struct MySrcManager
 {
 	MySrcManager(const JOCTET *inData, int inLen) : mData(inData), mLen(inLen)
 	{
-		init_source = my_init_source;
-		fill_input_buffer = my_fill_input_buffer;
-		skip_input_data = my_skip_input_data;
-		resync_to_restart = my_resync_to_restart;
-		term_source = my_term_source;
+		pub.init_source = my_init_source;
+		pub.fill_input_buffer = my_fill_input_buffer;
+		pub.skip_input_data = my_skip_input_data;
+		pub.resync_to_restart = my_resync_to_restart;
+		pub.term_source = my_term_source;
+ 		pub.next_input_byte = 0;
+ 		pub.bytes_in_buffer = 0;
+		mUsed = false;
+		mEOI[0] = 0xff;
+		mEOI[1] = JPEG_EOI;
 	}
 
+	struct jpeg_source_mgr pub;	/* public fields */
    const JOCTET * mData;
    size_t mLen;
-
-   const JOCTET * next_input_byte; /* => next byte to read from buffer */
-   size_t bytes_in_buffer;	/* # of bytes remaining in buffer */
+	bool   mUsed;
+	unsigned char mEOI[2];
 
    static void my_init_source(j_decompress_ptr cinfo)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
- 		man->next_input_byte = man->mData;
- 		man->bytes_in_buffer = man->mLen;
-		printf("my_init_source %d\n", man->mLen);
+		man->mUsed = false;
    }
    static boolean my_fill_input_buffer(j_decompress_ptr cinfo)
    {
-		return false;
+      MySrcManager *man = (MySrcManager *)cinfo->src;
+		if (man->mUsed)
+		{
+ 		   man->pub.next_input_byte = man->mEOI;
+ 		   man->pub.bytes_in_buffer = 2;
+		}
+		else
+		{
+ 		   man->pub.next_input_byte = man->mData;
+ 		   man->pub.bytes_in_buffer = man->mLen;
+			man->mUsed = true;
+		}
+		return true;
    }
    static void my_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    {
+      MySrcManager *man = (MySrcManager *)cinfo->src;
    }
    static boolean my_resync_to_restart(j_decompress_ptr cinfo, int desired)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
- 		man->next_input_byte = man->mData;
- 		man->bytes_in_buffer = man->mLen;
+		man->mUsed = false;
 		return true;
    }
    static void my_term_source(j_decompress_ptr cinfo)
@@ -92,6 +111,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    struct ErrorData jpegError;
    cinfo.err = jpeg_std_error(&jpegError.base);
    jpegError.base.error_exit = OnError;
+   jpegError.base.output_message = OnOutput;
 
    Surface *result = 0;
    uint8 *row_buf = 0;
@@ -117,7 +137,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
       jpeg_stdio_src(&cinfo, inFile);
 	else
 	{
-		cinfo.src = &manager;
+		cinfo.src = &manager.pub;
 	}
 
    // Read file parameters with jpeg_read_header().
@@ -172,7 +192,10 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    return result;
 }
 
-static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) { }
+static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
+{
+	longjmp(png_ptr->jmpbuf, 1);
+}
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) { }
 static void user_read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -240,6 +263,7 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
 	}
 
    png_read_info(png_ptr, info_ptr);
+
    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
        &interlace_type, NULL, NULL);
 

@@ -54,7 +54,6 @@ class Event
    }
 
 
-
    public static var ACTIVATE = "activate";
    public static var ADDED = "added";
    public static var ADDED_TO_STAGE = "addedToStage";

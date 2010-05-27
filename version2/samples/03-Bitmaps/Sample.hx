@@ -3,27 +3,29 @@ import flash.Lib;
 import flash.events.MouseEvent;
 import flash.events.Event;
 import flash.display.DisplayObject;
-import flash.display.IGraphicsData;
 import flash.display.BitmapData;
+import flash.display.Loader;
 import flash.display.Sprite;
 import flash.display.Shape;
 import flash.display.Bitmap;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
+import flash.net.URLRequest;
 #else
 import nme.Lib;
 import nme.events.MouseEvent;
 import nme.events.Event;
 import nme.display.DisplayObject;
+import nme.display.Loader;
 import nme.display.Bitmap;
-import nme.display.IGraphicsData;
 import nme.display.BitmapData;
 import nme.display.Sprite;
 import nme.display.Shape;
 import nme.geom.Matrix;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
+import nme.net.URLRequest;
 #end
 
 
@@ -56,8 +58,12 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 
 	#if !flash
 	var data = loadFromBytes("Image.jpg");
-	trace(data);
-	addChild(new Bitmap(data) );
+	var bmp = new Bitmap(data);
+	addChild(bmp);
+	bmp.scaleX = 0.1;
+	bmp.scaleY = 0.1;
+	bmp.x = 100;
+	bmp.y = 300;
 	#end
 
 
@@ -130,45 +136,39 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 
 public static function main()
 {
-#if flash
    var image1:BitmapData;
    var image2:BitmapData;
    var image3:BitmapData;
 
-   var loader = new flash.display.Loader();
-   loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-      function(e:flash.events.Event)
+   var loader = new Loader();
+   loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+      function(e:Event)
       {
-         image1 = untyped loader.content.bitmapData;
-         var loader = new flash.display.Loader();
-          loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-          function(e:flash.events.Event)
+         var bmp:Bitmap  = cast loader.content;
+         image1 = bmp.bitmapData;
+         var loader = new Loader();
+          loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+          function(e:Event)
           {
-             image2 = untyped loader.content.bitmapData;
-             var loader = new flash.display.Loader();
-             loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-              function( e:flash.events.Event)
+             var bmp:Bitmap  = untyped loader.content;
+             image2 = bmp.bitmapData;
+             var loader = new Loader();
+             loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+              function( e:Event)
               {
-                 image3 = untyped loader.content.bitmapData;
-                 new Sample(image1,image2,image3);
+                 var bmp:Bitmap  = untyped loader.content;
+                 image3 = bmp.bitmapData;
+
+                 Lib.create(function() { new Sample(image1,image2,image3); },
+	                  320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
+
               });
-              loader.load(new flash.net.URLRequest("Image2.png"));
+              loader.load(new URLRequest("Image2.png"));
           });
-          loader.load(new flash.net.URLRequest("Image1.png"));
+          loader.load(new URLRequest("Image1.png"));
 
     });
-    loader.load(new flash.net.URLRequest("Image.jpg"));
-
-
-#else
-   Lib.create(function() {
-        var image1 = BitmapData.load("Image.jpg");
-        var image2 = BitmapData.load("Image1.png");
-        var image3 = BitmapData.load("Image2.png");
-	     new Sample(image1,image2,image3);
-		  }
-	    ,320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
-#end
+    loader.load(new URLRequest("Image.jpg"));
 }
 
 }

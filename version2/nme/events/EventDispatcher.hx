@@ -128,4 +128,22 @@ class EventDispatcher implements IEventDispatcher
 			return false;
 		return nmeEventMap.exists(type);
 	}
+
+
+	   /**
+   * Creates and dispatches a typical Event.COMPLETE
+   */
+   public function DispatchCompleteEvent() {
+      var evt = new Event(Event.COMPLETE);
+      dispatchEvent(evt);
+   }
+
+   /**
+   * Creates and dispatches a typical IOErrorEvent.IO_ERROR
+   */
+   public function DispatchIOErrorEvent() {
+      var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+      dispatchEvent(evt);
+   }
+
 }
