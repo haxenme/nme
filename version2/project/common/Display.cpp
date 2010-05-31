@@ -794,6 +794,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    }
 
    BitmapCache *orig_mask = inState.mMask;
+	if (!inState.mRecurse)
+		last = first;
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
@@ -1554,7 +1556,7 @@ Matrix Stage::GetFullMatrix(bool inStageScaling)
   
 
 
-DisplayObject *Stage::HitTest(UserPoint inStage)
+DisplayObject *Stage::HitTest(UserPoint inStage,DisplayObject *inRoot,bool inRecurse)
 {
    Surface *surface = GetPrimarySurface();
 
@@ -1563,13 +1565,17 @@ DisplayObject *Stage::HitTest(UserPoint inStage)
 
    RenderState state(0,mQuality);
    state.mClipRect = Rect( inStage.x, inStage.y, 1, 1 );
-   state.mTransform.mMatrix = &mStageScale;
+	Matrix m = mStageScale;
+	if (inRoot)
+		m = inRoot->GetFullMatrix(true);
+   state.mTransform.mMatrix = &m;
 
 
    state.mRoundSizeToPOW2 = target.IsHardware();
    state.mPhase = rpHitTest;
+	state.mRecurse = inRecurse;
 
-   Render(target,state);
+   (inRoot ? inRoot : this) -> Render(target,state);
 
    surface->EndRender();
 

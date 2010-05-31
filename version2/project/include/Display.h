@@ -316,7 +316,7 @@ public:
    void SetEventHandler(EventHandler inHander,void *inUserData);
    void SetNominalSize(int inWidth,int inHeight);
    virtual void   setOpaqueBackground(uint32 inBG);
-   DisplayObject *HitTest(UserPoint inPoint);
+   DisplayObject *HitTest(UserPoint inPoint,DisplayObject *inRoot=0,bool inRecurse=true);
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void EnablePopupKeyboard(bool inEnable) { }
    Matrix GetFullMatrix(bool inStageScaling);

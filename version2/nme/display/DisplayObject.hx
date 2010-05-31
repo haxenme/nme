@@ -6,6 +6,7 @@ import nme.geom.Rectangle;
 import nme.geom.Matrix;
 import nme.geom.Transform;
 import nme.geom.ColorTransform;
+import nme.geom.Point;
 import nme.filters.BitmapFilter;
 
 class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
@@ -346,6 +347,18 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return result;
    }
 
+	public function hitTestPoint(x:Float, y:Float, shapeFlag:Bool = false):Bool
+	{
+		return nme_display_object_hit_test_point(nmeHandle,x,y,shapeFlag,true);
+	}
+
+
+	public function nmeGetObjectsUnderPoint(point:Point,result:Array<DisplayObject>)
+	{
+		if (nme_display_object_hit_test_point(nmeHandle,point.x,point.y,true,false))
+			result.push(this);
+	}
+
 
    // Events
 
@@ -464,6 +477,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_get_color_transform = nme.Loader.load("nme_display_object_get_color_transform",3);
    static var nme_display_object_set_color_transform = nme.Loader.load("nme_display_object_set_color_transform",2);
    static var nme_display_object_get_pixel_bounds = nme.Loader.load("nme_display_object_get_pixel_bounds",2);
+   static var nme_display_object_hit_test_point = nme.Loader.load("nme_display_object_hit_test_point",5);
 
 
 }

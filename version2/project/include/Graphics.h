@@ -432,6 +432,7 @@ struct RenderState
 
    RenderPhase    mPhase;
    bool           mRoundSizeToPOW2;
+	bool           mRecurse;
    // Masking...
    class BitmapCache    *mMask;
    // HitTest result...

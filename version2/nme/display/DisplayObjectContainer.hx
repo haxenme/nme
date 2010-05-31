@@ -1,6 +1,7 @@
 package nme.display;
 
 import nme.events.Event;
+import nme.geom.Point;
 
 class DisplayObjectContainer extends InteractiveObject
 {
@@ -101,12 +102,31 @@ class DisplayObjectContainer extends InteractiveObject
       return child;
    }
 
-   /*
-   public function addChildAt(child:DisplayObject, index:int):DisplayObject
-   public function areInaccessibleObjectsUnderPoint(point:Point):Bool
+   public function addChildAt(child:DisplayObject, index:Int):DisplayObject
+	{
+		addChild(child);
+      setChildIndex(child,index);
+      return child;
+	}
+   public function areInaccessibleObjectsUnderPoint(point:Point):Bool { return false; }
    public function contains(child:DisplayObject):Bool
+	{
+		if (child==null)
+			return false;
+		if (this==child)
+			return true;
+		for(c in nmeChildren)
+			if (c==child)
+				return true;
+		return false;
+	}
    public function getChildByName(name:String):DisplayObject
-   */
+	{
+		for(c in nmeChildren)
+			if (name==c.name)
+				return c;
+		return null;
+	}
 
    public function getChildAt(index:Int):DisplayObject
    {
@@ -124,9 +144,20 @@ class DisplayObjectContainer extends InteractiveObject
             return i;
       return -1;
    }
-   /*
-   public function getObjectsUnderPoint(point:Point):Array
-   */
+
+   public override function nmeGetObjectsUnderPoint(point:Point,result:Array<DisplayObject>)
+	{
+		super.nmeGetObjectsUnderPoint(point,result);
+		for(child in nmeChildren)
+			nmeGetObjectsUnderPoint(point,result);
+	}
+
+   public function getObjectsUnderPoint(point:Point):Array<DisplayObject>
+	{
+		var result = new Array<DisplayObject>();
+		nmeGetObjectsUnderPoint(point,result);
+		return result;
+	}
    public function removeChild(child:DisplayObject):DisplayObject
    {
       var c = getChildIndex(child);

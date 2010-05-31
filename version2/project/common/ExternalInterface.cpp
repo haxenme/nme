@@ -703,6 +703,39 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
+value nme_display_object_hit_test_point(
+				value inObj,value inX, value inY, value inShape, value inRecurse)
+{
+   DisplayObject *obj;
+	UserPoint pos(val_number(inX),val_number(inY));
+
+   if (AbstractToObject(inObj,obj))
+   {
+		if (val_bool(inShape))
+		{
+			Stage *stage = obj->getStage();
+			if (stage)
+			{
+				bool recurse = val_bool(inRecurse);
+				return alloc_bool( stage->HitTest( pos, obj, recurse ) );
+			}
+		}
+		else
+		{
+			Matrix m = obj->GetFullMatrix(false);
+			Transform trans;
+			trans.mMatrix = &m;
+
+			Extent2DF ext;
+			obj->GetExtent(trans, ext, true );
+			return alloc_bool( ext.Contains(pos) );
+		}
+	}
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_hit_test_point,5);
+
 value nme_display_object_set_filters(value inObj,value inFilters)
 {
    DisplayObject *obj;

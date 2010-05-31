@@ -567,6 +567,7 @@ RenderState::RenderState(Surface *inSurface,int inAA)
    mColourTransform = &sgIdentityColourTransform;
    mRoundSizeToPOW2 = false;
    mHitResult = 0;
+	mRecurse = true;
 	mTargetOffset = ImagePoint(0,0);
    if (inSurface)
    {
