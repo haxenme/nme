@@ -274,10 +274,12 @@ public:
          glMatrixMode(GL_PROJECTION);
          glLoadIdentity();
          #ifdef IPHONE
-         glOrthof(inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
+         glOrthof
          #else
-         glOrtho(inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
+         glOrtho
          #endif
+            //(0,inRect.w, inRect.h,0, -1, 1);
+            (inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
          glMatrixMode(GL_MODELVIEW);
          glLoadIdentity();
          mMatrix = Matrix();

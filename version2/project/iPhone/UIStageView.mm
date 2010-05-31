@@ -599,12 +599,12 @@ public:
       else
       */
 
-         animationTimer = [NSTimer
+         //animationTimer = [NSTimer
              //scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval)
-             scheduledTimerWithTimeInterval:(NSTimeInterval)(0.0001)
-             target:self selector:@selector(onPoll:)
-             userInfo:nil
-             repeats:TRUE];
+             //scheduledTimerWithTimeInterval:(NSTimeInterval)(0.0001)
+             //target:self selector:@selector(onPoll:)
+             //userInfo:nil
+             //repeats:TRUE];
       
       animating = TRUE;
    }
@@ -621,7 +621,7 @@ public:
       }
       else
       {
-         [animationTimer invalidate];
+         //[animationTimer invalidate];
          animationTimer = nil;
       }
       
@@ -640,6 +640,10 @@ public:
 
 @end
 
+
+double sgWakeUp = 0.0;
+bool sgTerminated = false;
+
 // --- NMEAppDelegate ----------------------------------------------------------
 
 class UIViewFrame : public nme::Frame
@@ -656,6 +660,8 @@ public:
 @synthesize window;
 @synthesize controller;
 
+namespace nme { void MainLoop(); }
+
 - (void) applicationDidFinishLaunching:(UIApplication *)application
 {
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -667,8 +673,28 @@ public:
    //[c release];
    //[win release];
    nme_app_set_active(true);
+   application.idleTimerDisabled = YES;
    sOnFrame( new UIViewFrame() );
+
+   [self performSelectorOnMainThread:@selector(mainLoop) withObject:nil waitUntilDone:NO];
 }
+
+- (void) mainLoop {
+   double next_poll_time = GetTimeStamp();
+   while(!sgTerminated)
+   {
+       double delta = next_poll_time - GetTimeStamp();
+       if (delta<0) delta = 0;
+       if (CFRunLoopRunInMode(kCFRunLoopDefaultMode,delta,TRUE) != kCFRunLoopRunHandledSource)
+       {
+          sgMainView->mStage->OnPoll();
+       }
+   }
+}
+
+
+
+
 
 - (void) applicationWillResignActive:(UIApplication *)application {nme_app_set_active(false);} 
 - (void) applicationDidBecomeActive:(UIApplication *)application {nme_app_set_active(true); }
@@ -704,8 +730,10 @@ extern "C"
 namespace nme
 {
 Stage *IPhoneGetStage() { return sgMainView->mStage; }
-void MainLoop() { }
-void TerminateMainLoop() { }
+
+void TerminateMainLoop() { sgTerminated=true; }
+void SetNextWakeUp(double inWakeUp) { sgWakeUp = inWakeUp; }
+
 
 void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon )
@@ -718,8 +746,6 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
    [pool release];
 }
-
-
 
 bool GetAcceleration(double &outX, double &outY, double &outZ)
 {
