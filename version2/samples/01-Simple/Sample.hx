@@ -16,19 +16,33 @@ public function new()
 {
    super();
    Lib.current.addChild(this);
-   stage.frameRate = 1000;
-	var sp = new Sprite();
-		sp.graphics.beginFill(0,1);
-		sp.graphics.drawCircle(50,50,50);
-		sp.graphics.endFill();
-		
-		var bd = new BitmapData(100,100,true,nme.display.BitmapInt32.make(0xcc,0xcccccc));
-		bd.draw(sp);
-		
-		var bm = new Bitmap(bd);
-		this.addChild(bm);
-		bm.x = 100;
+   var sp = new Sprite();
+   sp.graphics.beginFill(0,1);
+   sp.graphics.drawCircle(50,50,50);
+   sp.graphics.endFill();
+      
+   var bd = new BitmapData(100,100,true,nme.display.BitmapData.createColor(0xcc,0xcccccc));
+   bd.draw(sp);
+      
+   var bm = new Bitmap(bd);
+   this.addChild(bm);
+   bm.x = 100;
 
+	var shape = new Sprite();
+	var gfx = shape.graphics;
+	gfx.lineStyle(1,0xff0000);
+	gfx.beginFill(0xffffff);
+	gfx.drawRect(0,0,20,40);
+	shape.x = 100;
+	shape.y = 100;
+	shape.rotation = 10;
+	addChild(shape);
+
+   stage.addEventListener(Event.ENTER_FRAME, function(_) { shape.rotation+=360/60/60; } );
+   stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
+		trace("Hit : " + e.stageX + "," + e.stageY + " : " +
+		    shape.hitTestPoint( e.stageX, e.stageY, false ) );
+	});
 }
 
 
