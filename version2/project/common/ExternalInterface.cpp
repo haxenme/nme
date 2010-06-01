@@ -345,6 +345,11 @@ DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 using namespace nme;
 
 
+value nme_time_stamp()
+{
+	return alloc_float( GetTimeStamp() );
+}
+DEFINE_PRIM(nme_time_stamp,0);
 
 // --- ByteArray -----------------------------------------------------
 
@@ -482,19 +487,19 @@ value nme_close()
 }
 DEFINE_PRIM(nme_close,0);
 
-value nme_set_stage_poll_method(value inStage, value inMethod)
+value nme_stage_set_next_wake(value inStage, value inNextWake)
 {
    Stage *stage;
 
    if (AbstractToObject(inStage,stage))
    {
-      stage->SetPollMethod((Stage::PollMethod)val_int(inMethod));
+      stage->SetNextWakeDelay(val_number(inNextWake));
    }
 
    return alloc_null();
 }
 
-DEFINE_PRIM(nme_set_stage_poll_method,2);
+DEFINE_PRIM(nme_stage_set_next_wake,2);
 
 void external_handler( nme::Event &ioEvent, void *inUserData )
 {

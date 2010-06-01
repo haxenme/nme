@@ -44,11 +44,10 @@ class Lib
       return nmeStage;
    }
 
-   // Be careful to to blow precision, since storing ms since 1970 can overflow...
-   static var starttime : Float = haxe.Timer.stamp();
+   // Be careful not to blow precision, since storing ms since 1970 can overflow...
    static public function getTimer() : Int
    {
-      return Std.int((haxe.Timer.stamp()-starttime) * 1000.0);
+      return Std.int(nme.Timer.stamp() * 1000.0);
    }
 
 
@@ -58,9 +57,6 @@ class Lib
       close();
    }
 
-   public static function pollTimers()
-   {
-   }
 
    static function nmeGetCurrent() : nme.display.MovieClip
    {
@@ -74,6 +70,7 @@ class Lib
 
 
    static var nme_get_frame_stage = nme.Loader.load("nme_get_frame_stage",1);
+
 }
 
 

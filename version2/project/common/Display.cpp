@@ -1219,6 +1219,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    scaleMode = ssmShowAll;
    mNominalWidth = 100;
    mNominalHeight = 100;
+	mNextWake = 0.0;
    align = saTopLeft;
 }
 

@@ -64,6 +64,11 @@ class SoundChannel extends nme.events.EventDispatcher
 		}
    }
 
+   public static function nmeCompletePending()
+	{
+		return nmeIncompleteList.length > 0;
+	}
+
 
    static var nme_sound_channel_is_complete = nme.Loader.load("nme_sound_channel_is_complete",1);
    static var nme_sound_channel_get_left = nme.Loader.load("nme_sound_channel_get_left",1);

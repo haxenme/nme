@@ -1,15 +1,11 @@
 package nme;
 
-#if flash
-typedef Timer = haxe.Timer;
-#else
 
 typedef TimerList = Array<Timer>
 
 class Timer
 {
    static var sRunningTimers:TimerList = [];
-	static var sInitTime:Float = haxe.Timer.stamp();        //traacks time since VM instantion (approximately)
 
    var mTime:Float;
    var mFireAt:Float;
@@ -35,7 +31,23 @@ class Timer
       }
    }
 
-   function Check(inTime:Float)
+   static public function nmeNextWake(limit:Float) : Float
+	{
+		var now = nme_time_stamp() * 1000.0;
+		for(timer in sRunningTimers)
+		{
+			var sleep = timer.mFireAt - now;
+			if (sleep<limit)
+			{
+				limit = sleep;
+				if (limit<0) return 0;
+			}
+		}
+
+      return limit;
+	}
+
+   function nmeCheck(inTime:Float)
    {
       if (inTime>=mFireAt)
       {
@@ -48,7 +60,7 @@ class Timer
    {
       var now = GetMS();
       for(timer in sRunningTimers)
-         timer.Check(now);
+         timer.nmeCheck(now);
    }
 
    static function GetMS() : Float
@@ -64,18 +76,16 @@ class Timer
 			t.stop();
 			f();
 		};
+		return t;
 	}
 
 
    static public function stamp() : Float
    {
-       //subtraction is needed to get a VM time offset within the 31-bit Int range
-       //since on Linux/neko the normal timestamp is since 1970 (which *1000
-       //in GetMS overflows)
-       return haxe.Timer.stamp() - sInitTime;
+       return nme_time_stamp();
    }
 
+	static var nme_time_stamp = nme.Loader.load("nme_time_stamp",0);
 }
 
 
-#end

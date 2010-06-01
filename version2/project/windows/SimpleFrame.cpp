@@ -48,13 +48,9 @@ private:
 
 // --- Stage ------------------------------------------------------------------------
 
-enum
-{
-   PollTimerID = 1,
-};
 
-typedef std::vector<Stage *> StageList;
-StageList sgAlwaysPollingStages;
+//typedef std::vector<Stage *> StageList;
+Stage *sgStage = 0;
 
 class WindowsStage : public Stage
 {
@@ -69,13 +65,12 @@ public:
       mHardwareContext = 0;
       mHardwareSurface = 0;
       mOGLCtx = 0;
-      mPollingTimer = false;
       mCursor = curPointer;
 
       mIsHardware = inFlags & wfHardware;
       HintColourOrder(mIsHardware);
-      mPollMethod = pollAlways;
-      sgAlwaysPollingStages.push_back(this);
+
+		sgStage = this;
 
       if (mIsHardware)
       {
@@ -86,48 +81,14 @@ public:
          CreateBMP();
    }
 
-    void SetPollMethod(PollMethod inMethod)
-    {
-       if (inMethod!=mPollMethod)
-       {
-          if (mPollMethod==pollAlways)
-          {
-             StageList::iterator i  = std::find(sgAlwaysPollingStages.begin(),
-                                                sgAlwaysPollingStages.end(), this );
-             if (i!=sgAlwaysPollingStages.end())
-                sgAlwaysPollingStages.erase(i);
-          }
-
-          if (inMethod==pollTimer)
-          {
-             if (!mPollingTimer)
-                SetTimer(mHWND,PollTimerID, 1,0);
-             mPollingTimer = true;
-          }
-          else
-          {
-             if (mPollingTimer)
-                KillTimer(mHWND,PollTimerID);
-             mPollingTimer = false;
-          }
-
-          mPollMethod = inMethod;
-
-          if (mPollMethod==pollAlways)
-             sgAlwaysPollingStages.push_back(this);
-       }
-    }
-
    void PollNow()
    {
       Event evt(etPoll);
       HandleEvent(evt);
    }
 
-
    ~WindowsStage()
    {
-      SetPollMethod(pollNever);
       if (mBMP)
          mBMP->DecRef();
       if (mHardwareContext)
@@ -310,8 +271,6 @@ public:
    HardwareContext *mHardwareContext;
    bool         mIsHardware;
    Cursor       mCursor;
-   bool         mPollingTimer;
-   PollMethod   mPollMethod;
 };
 
 
@@ -599,19 +558,25 @@ void MainLoop()
    MSG msg;
    while( !sgDead )
    {
-      while(!sgDead && !sgAlwaysPollingStages.empty() &&
-          PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)==0)
+		// Process pending messages first...
+      while(!sgDead && PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
       {
-         for(int i=0;i<sgAlwaysPollingStages.size();i++)
-            sgAlwaysPollingStages[i]->PollNow();
+			if (GetMessage(&msg, NULL, 0, 0)<=0)
+            break;
+      	TranslateMessage(&msg);
+      	DispatchMessage(&msg);
       }
-
-      if (GetMessage(&msg, NULL, 0, 0)<=0)
-         break;
-
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
+		sgStage->PollNow();
+		// Sleep if we have to...
+		double next = sgStage->GetNextWake() - GetTimeStamp();
+		if (next > 0.001)
+		{
+			int snooze = next*1000.0;
+			MsgWaitForMultipleObjects(0,0, false, snooze,QS_ALLEVENTS);
+		}
    }
 }
+
+
 
 } // end namespace nme

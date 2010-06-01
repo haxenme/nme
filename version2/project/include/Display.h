@@ -295,18 +295,16 @@ protected:
    QuickVec<DisplayObject *> mChildren;
 };
 
+double GetTimeStamp();
+
 class Stage : public DisplayObjectContainer
 {
 public:
-   enum PollMethod { pollNever, pollTimer, pollAlways };
-
-
    Stage(bool inInitRef=false);
 
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
    virtual Surface *GetPrimarySurface() = 0;
-   virtual void SetPollMethod(PollMethod inMethod) = 0;
    virtual void PollNow() { }
 
    virtual void RenderStage();
@@ -319,6 +317,8 @@ public:
    DisplayObject *HitTest(UserPoint inPoint,DisplayObject *inRoot=0,bool inRecurse=true);
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void EnablePopupKeyboard(bool inEnable) { }
+   double GetNextWake() { return mNextWake; }
+   virtual void SetNextWakeDelay(double inNextWake) { mNextWake = inNextWake + GetTimeStamp(); }
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 
@@ -356,6 +356,8 @@ protected:
 
    int            mNominalWidth;
    int            mNominalHeight;
+
+	double         mNextWake;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;

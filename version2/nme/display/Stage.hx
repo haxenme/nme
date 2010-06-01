@@ -16,6 +16,8 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeDragObject:Sprite;
    var nmeDragOffsetX:Float;
    var nmeDragOffsetY:Float;
+	var nmeFramePeriod:Float;
+	var nmeLastRender:Float;
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
@@ -40,6 +42,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeFocusOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
+		nmeLastRender = 0;
       nmeSetFrameRate(100);
    }
 
@@ -73,7 +76,7 @@ class Stage extends nme.display.DisplayObjectContainer
    function nmeSetFrameRate(inRate:Float) : Float
    {
       frameRate = inRate;
-      nme_set_stage_poll_method( nmeHandle, inRate<=0 ? 0 : (inRate<24 ? 1 : 2) );
+		nmeFramePeriod = frameRate<=0 ? frameRate : 1.0/frameRate;
       return inRate;
    }
 
@@ -380,13 +383,50 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_render_stage(nmeHandle);
    }
 
+   function nmeCheckRender( )
+	{
+		if (frameRate>0)
+		{
+			var now = nme.Timer.stamp();
+			if (now>=nmeLastRender + nmeFramePeriod)
+			{
+				nmeLastRender = now;
+				nmeRender(true);
+			}
+		}
+	}
+
+   function nmeNextFrameDue(inOtherTimers:Float)
+	{
+		if (frameRate>0)
+		{
+			var next = nmeLastRender + nmeFramePeriod - nme.Timer.stamp();
+			if (next<inOtherTimers)
+				return next;
+		}
+		return inOtherTimers;
+	}
+
+	function nmePollTimers()
+   {
+		nme.Timer.nmeCheckTimers();
+		nme.media.SoundChannel.nmePollComplete();
+		nmeCheckRender();
+	}
+
+   function nmeUpdateNextWake()
+   {
+		// TODO: In a multi-stage environment, may need to handle this better...
+		var next_wake = nme.Timer.nmeNextWake(315000000.0);
+		if (next_wake>0.02 && nme.media.SoundChannel.nmeCompletePending())
+			next_wake = 0.02;
+		next_wake = nmeNextFrameDue(next_wake);
+		nme_stage_set_next_wake(nmeHandle,next_wake);
+   }
+
 
    function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
    {
-      //trace(inEvent);
-      // TODO: timer event?
-      nme.Lib.pollTimers();
-      nme.media.SoundChannel.nmePollComplete();
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {
@@ -418,7 +458,7 @@ class Stage extends nme.display.DisplayObjectContainer
             nmeRender(false);
 
          case 9: // etPoll
-            nmeRender(true);
+            nmePollTimers();
 
          case 10: // etQuit
             if (onQuit!=null)
@@ -434,11 +474,11 @@ class Stage extends nme.display.DisplayObjectContainer
          // TODO: user, sys_wm, sound_finished
       }
 
+		nmeUpdateNextWake();
       return null;
    }
 
    static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",4);
-   static var nme_set_stage_poll_method = nme.Loader.load("nme_set_stage_poll_method",2);
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
    static var nme_stage_get_focus_id = nme.Loader.load("nme_stage_get_focus_id",1);
    static var nme_stage_set_focus = nme.Loader.load("nme_stage_set_focus",3);
@@ -451,4 +491,5 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_scale_mode = nme.Loader.load("nme_stage_set_scale_mode",2);
    static var nme_stage_get_align = nme.Loader.load("nme_stage_get_align",1);
    static var nme_stage_set_align = nme.Loader.load("nme_stage_set_align",2);
+   static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
 }
