@@ -11,7 +11,6 @@ namespace nme
 
 void MainLoop();
 
-void SetGlobalPollMethod(Stage::PollMethod inMethod);
 
 class SDLSurf : public Surface
 {
@@ -226,7 +225,7 @@ public:
             SDL_SetCursor(sDefaultCursor);
          else
          {
-				// TODO: Rotated
+            // TODO: Rotated
             if (sTextCursor==0)
                sTextCursor = CreateCursor(sTextCursorData,1,13);
             SDL_SetCursor(sTextCursor);
@@ -234,12 +233,6 @@ public:
       }
    }
    
-
-   void SetPollMethod(PollMethod inMethod)
-   {
-      SetGlobalPollMethod(inMethod);
-   }
-
 
    Surface *GetPrimarySurface()
    {
@@ -331,7 +324,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    if ( SDL_Init( init_flags ) == -1 )
    {
-		gSDLIsInit = true;
+      gSDLIsInit = true;
       inOnFrame(0);
       // SDL_GetError()
       return;
@@ -431,10 +424,10 @@ void TerminateMainLoop()
    sgDead = true;
 }
 
-static Stage::PollMethod sgPollMethod = Stage::pollAlways;
 static SDL_TimerID  sgTimerID = 0;
+bool sgTimerActive = false;
 
-Uint32 DoPoll(Uint32 interval, void *)
+Uint32 OnTimer(Uint32 interval, void *)
 {
     // Ping off an event - any event will force the frame check.
     SDL_Event event;
@@ -448,27 +441,12 @@ Uint32 DoPoll(Uint32 interval, void *)
     userevent.data2 = NULL;
     event.type = SDL_USEREVENT;
     event.user = userevent;
+    sgTimerActive = false;
+    sgTimerID = 0;
     SDL_PushEvent(&event);
-    return interval;
+    return 0;
 }
 
-
-void SetGlobalPollMethod(Stage::PollMethod inMethod)
-{
-   if (inMethod!=sgPollMethod)
-   {
-      sgPollMethod = inMethod;
-      if (sgPollMethod==Stage::pollTimer)
-      {
-         sgTimerID = SDL_AddTimer(1, DoPoll, 0);
-      }
-      else if (sgTimerID)
-      {
-         SDL_RemoveTimer(sgTimerID);
-         sgTimerID = 0;
-      }
-   }
-}
 
 void AddModStates(int &ioFlags,int inState = -1)
 {
@@ -623,13 +601,6 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
-#ifdef NME_MIXER
-int id = soundGetNextDoneChannel();
-if (id>=0)
-{
-}
-#endif
-
 
 
 void MainLoop()
@@ -637,21 +608,34 @@ void MainLoop()
    SDL_Event event;
    while(!sgDead)
    {
-      while ( SDL_PollEvent(&event) )
+      while (!sgDead && SDL_PollEvent(&event) )
       {
          ProcessEvent(event);
          if (sgDead) break;
       }
      
-      if (sgPollMethod!=Stage::pollNever)
+      if (sgDead)
+         break;
+
+      Event poll(etPoll);
+      sgSDLFrame->ProcessEvent(poll);
+
+      // Sleep if required...
+      double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
+      if (next > 0.001)
       {
-         Event poll(etPoll);
-         sgSDLFrame->ProcessEvent(poll);
-      }
-      
-      if (!sgDead && sgPollMethod!=Stage::pollAlways)
-      {
+         int snooze = next*1000.0;
+         sgTimerActive = true;
+         sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
+
          SDL_WaitEvent(&event);
+
+         if (sgTimerActive && sgTimerID)
+         {
+            SDL_RemoveTimer(sgTimerID);
+            sgTimerActive = false;
+            sgTimerID = 0;
+         }
          ProcessEvent(event);
       }
    }

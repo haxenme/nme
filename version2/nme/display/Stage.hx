@@ -16,8 +16,8 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeDragObject:Sprite;
    var nmeDragOffsetX:Float;
    var nmeDragOffsetY:Float;
-	var nmeFramePeriod:Float;
-	var nmeLastRender:Float;
+   var nmeFramePeriod:Float;
+   var nmeLastRender:Float;
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
@@ -42,7 +42,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeFocusOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
-		nmeLastRender = 0;
+      nmeLastRender = 0;
       nmeSetFrameRate(100);
    }
 
@@ -76,7 +76,7 @@ class Stage extends nme.display.DisplayObjectContainer
    function nmeSetFrameRate(inRate:Float) : Float
    {
       frameRate = inRate;
-		nmeFramePeriod = frameRate<=0 ? frameRate : 1.0/frameRate;
+      nmeFramePeriod = frameRate<=0 ? frameRate : 1.0/frameRate;
       return inRate;
    }
 
@@ -331,6 +331,10 @@ class Stage extends nme.display.DisplayObjectContainer
    }
 
 
+   // Time, in seconds, we wake up before the frame is due.  We then do a
+   //  "busy wait" to ensure the frame comes at the right time.  By increasing this number,
+   //  the frame rate will be more constant, but the busy wait will take more CPU.
+   public static var nmeEarlyWakeup = 0.005;
 
    static var efLeftDown  =  0x0001;
    static var efShiftDown =  0x0002;
@@ -384,44 +388,44 @@ class Stage extends nme.display.DisplayObjectContainer
    }
 
    function nmeCheckRender( )
-	{
-		if (frameRate>0)
-		{
-			var now = nme.Timer.stamp();
-			if (now>=nmeLastRender + nmeFramePeriod)
-			{
-				nmeLastRender = now;
-				nmeRender(true);
-			}
-		}
-	}
+   {
+      if (frameRate>0)
+      {
+         var now = nme.Timer.stamp();
+         if (now>=nmeLastRender + nmeFramePeriod)
+         {
+            nmeLastRender = now;
+            nmeRender(true);
+         }
+      }
+   }
 
    function nmeNextFrameDue(inOtherTimers:Float)
-	{
-		if (frameRate>0)
-		{
-			var next = nmeLastRender + nmeFramePeriod - nme.Timer.stamp();
-			if (next<inOtherTimers)
-				return next;
-		}
-		return inOtherTimers;
-	}
-
-	function nmePollTimers()
    {
-		nme.Timer.nmeCheckTimers();
-		nme.media.SoundChannel.nmePollComplete();
-		nmeCheckRender();
-	}
+      if (frameRate>0)
+      {
+         var next = nmeLastRender + nmeFramePeriod - nme.Timer.stamp() - nmeEarlyWakeup;
+         if (next<inOtherTimers)
+            return next;
+      }
+      return inOtherTimers;
+   }
+
+   function nmePollTimers()
+   {
+      nme.Timer.nmeCheckTimers();
+      nme.media.SoundChannel.nmePollComplete();
+      nmeCheckRender();
+   }
 
    function nmeUpdateNextWake()
    {
-		// TODO: In a multi-stage environment, may need to handle this better...
-		var next_wake = nme.Timer.nmeNextWake(315000000.0);
-		if (next_wake>0.02 && nme.media.SoundChannel.nmeCompletePending())
-			next_wake = 0.02;
-		next_wake = nmeNextFrameDue(next_wake);
-		nme_stage_set_next_wake(nmeHandle,next_wake);
+      // TODO: In a multi-stage environment, may need to handle this better...
+      var next_wake = nme.Timer.nmeNextWake(315000000.0);
+      if (next_wake>0.02 && nme.media.SoundChannel.nmeCompletePending())
+         next_wake = 0.02;
+      next_wake = nmeNextFrameDue(next_wake);
+      nme_stage_set_next_wake(nmeHandle,next_wake);
    }
 
 
@@ -474,7 +478,7 @@ class Stage extends nme.display.DisplayObjectContainer
          // TODO: user, sys_wm, sound_finished
       }
 
-		nmeUpdateNextWake();
+      nmeUpdateNextWake();
       return null;
    }
 
