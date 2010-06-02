@@ -189,11 +189,6 @@ public:
 
    }
 
-    void SetPollMethod(PollMethod inMethod)
-    {
-       // Do nothing for now - use the 60Hz timer....
-    }
-
    void OnRedraw()
    {
       Event evt(etRedraw);
@@ -680,10 +675,9 @@ namespace nme { void MainLoop(); }
 }
 
 - (void) mainLoop {
-   double next_poll_time = GetTimeStamp();
    while(!sgTerminated)
    {
-       double delta = next_poll_time - GetTimeStamp();
+       double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
        if (delta<0) delta = 0;
        if (CFRunLoopRunInMode(kCFRunLoopDefaultMode,delta,TRUE) != kCFRunLoopRunHandledSource)
        {
