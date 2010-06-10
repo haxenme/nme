@@ -2,6 +2,7 @@
 #define NME_MATRIX_H
 
 #include <Geom.h>
+#include <string.h>
 
 namespace nme {
 

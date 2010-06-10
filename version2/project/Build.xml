@@ -6,7 +6,10 @@
 <set name="ogl" value="1" if="windows"/>
 <set name="ogl" value="1" if="sdl"/>
 <set name="ogl" value="1" if="iphone"/>
+<set name="ogl" value="1" if="android"/>
 
+<set name="mobile" value="1" if="iphone"/>
+<set name="mobile" value="1" if="android"/>
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
@@ -31,6 +34,12 @@
   <file name="iPhone/Sound.mm"/>
 </files>
 
+<files id="android">
+  <compilerflag value="-Iinclude"/>
+  <file name="android/AndroidSound.cpp"/>
+  <file name="android/AndroidFont.cpp"/>
+  <file name="android/AndroidFrame.cpp"/>
+</files>
 
 <files id="main">
   <compilerflag value="-Iinclude"/>
@@ -51,6 +60,7 @@
 <set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Mac/" if="macos"/>
 <set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Windows/" if="windows"/>
 <set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Linux/" if="linux"/>
+<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Android/" if="android"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
@@ -110,10 +120,10 @@
   <files id="iphone" if="iphone"/>
   <files id="mac" if="macos"/>
   <files id="sdl" if="sdl"/>
-  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="modile"/>
+  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="modile"/>
+  <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="modile"/>
+  <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" unless="modile"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
@@ -141,26 +151,28 @@
 <set name="name_extra" value=".iphoneos" if="iphoneos"/>
 <set name="name_extra" value=".iphonesim" if="iphonesim"/>
 
+
 <target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}"/>
-  <ext value=".ndll" unless="iphone"/>
+  <ext value=".ndll" unless="mobile"/>
 
   <files id="common"/>
   <files id="windows" if="windows"/>
   <files id="iphone" if="iphone"/>
   <files id="mac" if="macos"/>
   <files id="sdl" if="sdl"/>
+  <files id="android" if="android"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
   <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos"/>
 
-  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="mobile"/>
 
 
   <vflag name="-framework" value="IOKit" if="macos"/>
@@ -173,6 +185,9 @@
   <vflag name="-framework" value="OpenGL" if="macos"/>
   <vflag name="-framework" value="QuickTime" if="macos"/>
 
+  <lib name="-ldl" if="android"/>
+  <lib name="-lGLESv1_CM" if="android"/>
+  <lib name="-lz" if="android"/>
 
   <lib name="gdi32.lib" if="windows"/>
   <lib name="opengl32.lib" if="windows"/>

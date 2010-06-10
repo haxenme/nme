@@ -49,7 +49,6 @@ Matrix::Matrix(value inMatrix)
    }
 }
 
-*/
 
 
 static void Dump(const char *inName,const Matrix &inMtx)
@@ -57,6 +56,7 @@ static void Dump(const char *inName,const Matrix &inMtx)
    printf("%s x: %f %f %f\n", inName, inMtx.m00, inMtx.m01,  inMtx.mtx);
    printf("%s y: %f %f %f\n", inName, inMtx.m10, inMtx.m11,  inMtx.mty);
 }
+*/
 
 void Matrix::ContravariantTrans(const Matrix &inMtx, Matrix &outTrans) const
 {

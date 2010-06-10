@@ -8,6 +8,13 @@
 typedef void *WinDC;
 typedef void *GLCtx;
 
+#elif defined(ANDROID)
+
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+typedef void *WinDC;
+typedef void *GLCtx;
+
 #elif defined(SDL_OGL)
 
 #include <SDL_opengl.h>
@@ -117,7 +124,7 @@ public:
          glGetError();
          const uint8 *p0 = 
             inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP();
-         #ifdef IPHONE
+         #if defined(IPHONE) || defined(ANDROID)
          for(int y=0;y<mDirtyRect.h;y++)
          {
             glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y + y,
@@ -273,7 +280,7 @@ public:
       {
          glMatrixMode(GL_PROJECTION);
          glLoadIdentity();
-         #ifdef IPHONE
+         #if defined(IPHONE) || defined(ANDROID)
          glOrthof
          #else
          glOrtho
@@ -293,7 +300,9 @@ public:
    {
       #ifndef IPHONE
       #ifndef SDL_OGL
+      #ifndef ANDROID
       wglMakeCurrent(mDC,mOGLCtx);
+      #endif
       #endif
       #endif
 
@@ -316,7 +325,9 @@ public:
    {
       #ifndef IPHONE
       #ifndef SDL_OGL
+      #ifndef ANDROID
       SwapBuffers(mDC);
+      #endif
       #endif
       #endif
    }
