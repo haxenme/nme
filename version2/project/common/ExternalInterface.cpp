@@ -23,70 +23,141 @@
 namespace nme
 {
 
-static int _id_type = val_id("type");
-static int _id_x = val_id("x");
-static int _id_y = val_id("y");
-static int _id_z = val_id("z");
-static int _id_width = val_id("width");
-static int _id_height = val_id("height");
-static int _id_length = val_id("length");
-static int _id_value = val_id("value");
-static int _id_id = val_id("id");
-static int _id_flags = val_id("flags");
-static int _id_result = val_id("result");
-static int _id_code = val_id("code");
-static int _id_a = val_id("a");
-static int _id_b = val_id("b");
-static int _id_c = val_id("c");
-static int _id_d = val_id("d");
-static int _id_tx = val_id("tx");
-static int _id_ty = val_id("ty");
-static int _id_angle = val_id("angle");
-static int _id_distance = val_id("distance");
-static int _id_strength = val_id("strength");
-static int _id_alpha = val_id("alpha");
-static int _id_hideObject = val_id("hideObject");
-static int _id_knockout = val_id("knockout");
-static int _id_inner = val_id("inner");
-static int _id_blurX = val_id("blurX");
-static int _id_blurY = val_id("blurY");
-static int _id_quality = val_id("quality");
-static int _id_align = val_id("align");
-static int _id_blockIndent = val_id("blockIndent");
-static int _id_bold = val_id("bold");
-static int _id_bullet = val_id("bullet");
-static int _id_color = val_id("color");
-static int _id_font = val_id("font");
-static int _id_indent = val_id("indent");
-static int _id_italic = val_id("italic");
-static int _id_kerning = val_id("kerning");
-static int _id_leading = val_id("leading");
-static int _id_leftMargin = val_id("leftMargin");
-static int _id_letterSpacing = val_id("letterSpacing");
-static int _id_rightMargin = val_id("rightMargin");
-static int _id_size = val_id("size");
-static int _id_tabStops = val_id("tabStops");
-static int _id_target = val_id("target");
-static int _id_underline = val_id("underline");
-static int _id_url = val_id("url");
-static int _id_error = val_id("error");
-static int _id_bytesTotal = val_id("bytesTotal");
-static int _id_bytesLoaded = val_id("bytesLoaded");
-static int _id_volume = val_id("volume");
-static int _id_pan = val_id("pan");
+static int _id_type;
+static int _id_x;
+static int _id_y;
+static int _id_z;
+static int _id_width;
+static int _id_height;
+static int _id_length;
+static int _id_value;
+static int _id_id;
+static int _id_flags;
+static int _id_result;
+static int _id_code;
+static int _id_a;
+static int _id_b;
+static int _id_c;
+static int _id_d;
+static int _id_tx;
+static int _id_ty;
+static int _id_angle;
+static int _id_distance;
+static int _id_strength;
+static int _id_alpha;
+static int _id_hideObject;
+static int _id_knockout;
+static int _id_inner;
+static int _id_blurX;
+static int _id_blurY;
+static int _id_quality;
+static int _id_align;
+static int _id_blockIndent;
+static int _id_bold;
+static int _id_bullet;
+static int _id_color;
+static int _id_font;
+static int _id_indent;
+static int _id_italic;
+static int _id_kerning;
+static int _id_leading;
+static int _id_leftMargin;
+static int _id_letterSpacing;
+static int _id_rightMargin;
+static int _id_size;
+static int _id_tabStops;
+static int _id_target;
+static int _id_underline;
+static int _id_url;
+static int _id_error;
+static int _id_bytesTotal;
+static int _id_bytesLoaded;
+static int _id_volume;
+static int _id_pan;
 
-static int _id_alphaMultiplier = val_id("alphaMultiplier");
-static int _id_redMultiplier = val_id("redMultiplier");
-static int _id_greenMultiplier = val_id("greenMultiplier");
-static int _id_blueMultiplier = val_id("blueMultiplier");
+static int _id_alphaMultiplier;
+static int _id_redMultiplier;
+static int _id_greenMultiplier;
+static int _id_blueMultiplier;
 
-static int _id_alphaOffset = val_id("alphaOffset");
-static int _id_redOffset = val_id("redOffset");
-static int _id_greenOffset = val_id("greenOffset");
-static int _id_blueOffset = val_id("blueOffset");
-static int _id_rgb = val_id("rgb");
+static int _id_alphaOffset;
+static int _id_redOffset;
+static int _id_greenOffset;
+static int _id_blueOffset;
+static int _id_rgb;
 
-vkind gObjectKind = alloc_kind();
+vkind gObjectKind;
+
+extern "C" void InitIDs()
+{
+   _id_type = val_id("type");
+   _id_x = val_id("x");
+   _id_y = val_id("y");
+   _id_z = val_id("z");
+   _id_width = val_id("width");
+   _id_height = val_id("height");
+   _id_length = val_id("length");
+   _id_value = val_id("value");
+   _id_id = val_id("id");
+   _id_flags = val_id("flags");
+   _id_result = val_id("result");
+   _id_code = val_id("code");
+   _id_a = val_id("a");
+   _id_b = val_id("b");
+   _id_c = val_id("c");
+   _id_d = val_id("d");
+   _id_tx = val_id("tx");
+   _id_ty = val_id("ty");
+   _id_angle = val_id("angle");
+   _id_distance = val_id("distance");
+   _id_strength = val_id("strength");
+   _id_alpha = val_id("alpha");
+   _id_hideObject = val_id("hideObject");
+   _id_knockout = val_id("knockout");
+   _id_inner = val_id("inner");
+   _id_blurX = val_id("blurX");
+   _id_blurY = val_id("blurY");
+   _id_quality = val_id("quality");
+   _id_align = val_id("align");
+   _id_blockIndent = val_id("blockIndent");
+   _id_bold = val_id("bold");
+   _id_bullet = val_id("bullet");
+   _id_color = val_id("color");
+   _id_font = val_id("font");
+   _id_indent = val_id("indent");
+   _id_italic = val_id("italic");
+   _id_kerning = val_id("kerning");
+   _id_leading = val_id("leading");
+   _id_leftMargin = val_id("leftMargin");
+   _id_letterSpacing = val_id("letterSpacing");
+   _id_rightMargin = val_id("rightMargin");
+   _id_size = val_id("size");
+   _id_tabStops = val_id("tabStops");
+   _id_target = val_id("target");
+   _id_underline = val_id("underline");
+   _id_url = val_id("url");
+   _id_error = val_id("error");
+   _id_bytesTotal = val_id("bytesTotal");
+   _id_bytesLoaded = val_id("bytesLoaded");
+   _id_volume = val_id("volume");
+   _id_pan = val_id("pan");
+
+   _id_alphaMultiplier = val_id("alphaMultiplier");
+   _id_redMultiplier = val_id("redMultiplier");
+   _id_greenMultiplier = val_id("greenMultiplier");
+   _id_blueMultiplier = val_id("blueMultiplier");
+
+   _id_alphaOffset = val_id("alphaOffset");
+   _id_redOffset = val_id("redOffset");
+   _id_greenOffset = val_id("greenOffset");
+   _id_blueOffset = val_id("blueOffset");
+   _id_rgb = val_id("rgb");
+
+   gObjectKind = alloc_kind();
+}
+
+DEFINE_ENTRY_POINT(InitIDs)
+
 
 static void release_object(value inValue)
 {
