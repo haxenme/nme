@@ -431,6 +431,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
    {
+	   //trace(inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {
@@ -474,6 +475,9 @@ class Stage extends nme.display.DisplayObjectContainer
          case 12: // etShouldRotate
             if (shouldRotateInterface(inEvent.value))
                inEvent.result = 2;
+
+         case 14: // etRedraw
+            nmeRender(false);
 
          // TODO: user, sys_wm, sound_finished
       }

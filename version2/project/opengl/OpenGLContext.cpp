@@ -14,6 +14,7 @@ typedef void *GLCtx;
 #include <GLES/glext.h>
 typedef void *WinDC;
 typedef void *GLCtx;
+#include <android/log.h>
 
 #elif defined(SDL_OGL)
 
@@ -236,6 +237,7 @@ public:
    void Clear(uint32 inColour, const Rect *inRect)
    {
       Rect r = inRect ? *inRect : Rect(mWidth,mHeight);
+		__android_log_print(ANDROID_LOG_INFO, "OpenGLRender", "Clear %dx%d", r.w, r.h );
      
       if (r!=mViewport)
          glViewport(r.x,mHeight-r.y1(),r.w,r.h);
@@ -269,6 +271,10 @@ public:
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
       }
+
+		glClearColor(1.0,1.0,0,1.0);
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
       if (r!=mViewport)
          glViewport(mViewport.x, mHeight-mViewport.y1(), mViewport.w, mViewport.h);
@@ -306,6 +312,8 @@ public:
       #endif
       #endif
 
+		__android_log_print(ANDROID_LOG_INFO, "BeginRender", " do render");
+
       SetViewport(inRect);
 
       glEnable(GL_BLEND);
@@ -335,6 +343,7 @@ public:
 
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
+		__android_log_print(ANDROID_LOG_INFO, "OpenGLRender", " do render");
       SetViewport(inState.mClipRect);
 
       if (mMatrix!=*inState.mTransform.mMatrix)

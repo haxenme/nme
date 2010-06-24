@@ -2,6 +2,7 @@
 #include <Surface.h>
 #include <KeyCodes.h>
 #include <jni.h>
+#include <android/log.h>
 
 namespace nme
 {
@@ -98,9 +99,11 @@ public:
 void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, const char *inIcon )
 {
+	__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame!", "creating...");
    sOnFrame = inOnFrame;
    sFrame = new AndroidFrame(inOnFrame, inWidth, inHeight, inFlags,
                  inTitle, inIcon);
+	__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame", "%dx%d  %p", inWidth,inHeight,sOnFrame);
 }
 
 void TerminateMainLoop()
@@ -122,6 +125,7 @@ extern "C"
 
 JAVA_EXPORT void JNICALL Java_org_haxe_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
+	__android_log_print(ANDROID_LOG_INFO, "onResize", "%p", nme::sFrame);
    if (nme::sFrame)
       nme::sFrame->onResize(width,height);
 }
@@ -130,6 +134,7 @@ JAVA_EXPORT void JNICALL Java_org_haxe_NME_onResize(JNIEnv * env, jobject obj,  
 
 JAVA_EXPORT void JNICALL Java_org_haxe_NME_onRender(JNIEnv * env, jobject obj)
 {
+	__android_log_print(ANDROID_LOG_INFO, "onRender", "%p", nme::sStage);
    if (nme::sStage)
       nme::sStage->OnRender();
 }
