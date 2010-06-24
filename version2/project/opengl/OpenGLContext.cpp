@@ -16,6 +16,8 @@ typedef void *WinDC;
 typedef void *GLCtx;
 #include <android/log.h>
 
+#include <android/log.h>
+
 #elif defined(SDL_OGL)
 
 #include <SDL_opengl.h>
@@ -59,6 +61,8 @@ class OGLTexture : public Texture
 public:
    OGLTexture(Surface *inSurface)
    {
+      __android_log_print(ANDROID_LOG_INFO, "OGLTexture", "create...");
+
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
       mDirtyRect = Rect(0,0);
@@ -108,6 +112,7 @@ public:
       if (!is_pow2)
          load->DecRef();
 
+      __android_log_print(ANDROID_LOG_INFO, "OGLTexture", "create done");
       //int err = glGetError();
    }
    ~OGLTexture()
@@ -117,6 +122,7 @@ public:
 
    void Bind(class Surface *inSurface,int inSlot)
    {
+      __android_log_print(ANDROID_LOG_INFO, "OGLTexture", "bind");
       glBindTexture(GL_TEXTURE_2D,mTextureID);
       if (mDirtyRect.HasPixels())
       {
@@ -144,6 +150,7 @@ public:
          int err = glGetError();
          mDirtyRect = Rect();
       }
+      __android_log_print(ANDROID_LOG_INFO, "OGLTexture", "bind done");
    }
 
    void BindFlags(bool inRepeat,bool inSmooth)
@@ -236,6 +243,7 @@ public:
 
    void Clear(uint32 inColour, const Rect *inRect)
    {
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "clear");
       Rect r = inRect ? *inRect : Rect(mWidth,mHeight);
 		__android_log_print(ANDROID_LOG_INFO, "OpenGLRender", "Clear %dx%d", r.w, r.h );
      
@@ -272,16 +280,15 @@ public:
          glPopMatrix();
       }
 
-		glClearColor(1.0,1.0,0,1.0);
-         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
       if (r!=mViewport)
          glViewport(mViewport.x, mHeight-mViewport.y1(), mViewport.w, mViewport.h);
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "clear done");
    }
 
    void SetViewport(const Rect &inRect)
    {
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "viewport");
       if (inRect!=mViewport)
       {
          glMatrixMode(GL_PROJECTION);
@@ -299,6 +306,7 @@ public:
          mViewport = inRect;
          glViewport(inRect.x, mHeight-inRect.y1(), inRect.w, inRect.h);
       }
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "viewport done");
    }
 
 
@@ -312,8 +320,6 @@ public:
       #endif
       #endif
 
-		__android_log_print(ANDROID_LOG_INFO, "BeginRender", " do render");
-
       SetViewport(inRect);
 
       glEnable(GL_BLEND);
@@ -323,6 +329,7 @@ public:
       glEnable(GL_LINE_SMOOTH);
       #endif
       glEnableClientState(GL_VERTEX_ARRAY);
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "BeginRender done");
    }
    void EndRender()
    {
@@ -362,6 +369,7 @@ public:
          mLineScaleNormal = -1;
       }
 
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "Render 1");
 
       uint32 last_col = 0;
       Texture *bound_texture = 0;
@@ -455,6 +463,7 @@ public:
          if (arrays.mColours.size() == vert.size())
             glDisableClientState(GL_COLOR_ARRAY);
       }
+      __android_log_print(ANDROID_LOG_INFO, "OGL", "Render Done");
    }
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint,bool inRepeat,bool inSmooth)

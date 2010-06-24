@@ -431,7 +431,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
    {
-	   //trace(inEvent);
+      //trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {
@@ -477,7 +477,7 @@ class Stage extends nme.display.DisplayObjectContainer
                inEvent.result = 2;
 
          case 14: // etRedraw
-            nmeRender(false);
+            nmeRender(true);
 
          // TODO: user, sys_wm, sound_finished
       }
