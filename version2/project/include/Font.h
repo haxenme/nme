@@ -2,6 +2,7 @@
 #define NME_FONT_H
 
 #include <Object.h>
+#include <Utils.h>
 #include <Graphics.h>
 #include <TileSheet.h>
 #include <map>
@@ -49,6 +50,8 @@ public:
    const T &Get() const { return mVal; }
 	void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
 
+  T &__Get() { return mVal; }
+
 private:
 	bool mSet;
 	T mVal;
@@ -69,7 +72,7 @@ public:
 	Optional<bool>          bold;
 	Optional<bool>          bullet;
 	Optional<uint32>        color;
-	Optional<std::wstring>  font;
+	Optional<WString>  font;
 	Optional<int>           indent;
 	Optional<bool>          italic;
 	Optional<bool>          kerning;
@@ -79,9 +82,9 @@ public:
 	Optional<int>           rightMargin;
 	Optional<int>           size;
 	Optional<QuickVec<int> >tabStops;
-	Optional<std::wstring>  target;
+	Optional<WString>  target;
 	Optional<bool>          underline;
-	Optional<std::wstring>  url;
+	Optional<WString>  url;
 
 	TextFormat();
 	~TextFormat();

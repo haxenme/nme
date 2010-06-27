@@ -2,6 +2,7 @@
 #define NME_DISPLAY_H
 
 #include <Object.h>
+#include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
 #include <string>
@@ -153,7 +154,7 @@ public:
    bool getVisible() { return visible; }
    void setVisible(bool inVal);
    const wchar_t *getName() { return name.c_str(); }
-   void setName(const std::wstring &inName) { name = inName; }
+   void setName(const WString &inName) { name = inName; }
    void setMatrix(const Matrix &inMatrix);
    void setColorTransform(const ColorTransform &inTransform);
 
@@ -177,7 +178,7 @@ public:
    ColorTransform  colorTransform;
    FilterList filters;
 
-   std::wstring  name;
+   WString  name;
    uint32 opaqueBackground;
    DRect   scale9Grid;
    DRect   scrollRect;

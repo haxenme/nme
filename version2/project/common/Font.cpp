@@ -10,7 +10,7 @@ namespace nme
 Font::Font(FontFace *inFace, int inPixelHeight, GlyphRotation inRotation,bool inInitRef) :
      Object(inInitRef), mFace(inFace), mPixelHeight(inPixelHeight)
 {
-	mRotation = inRotation;
+   mRotation = inRotation;
    mCurrentSheet = -1;
 }
 
@@ -49,25 +49,25 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          }
       }
 
-		int orig_w = gw;
-		int orig_h = gh;
-		switch(mRotation)
-		{
-			case gr270:
-			   std::swap(gw,gh);
-			   std::swap(ox,oy);
-				oy = -gh-oy;
-				break;
-			case gr180:
-				ox = -gw-ox;
-				oy = -gh-oy;
-				break;
-			case gr90:
-			   std::swap(gw,gh);
-			   std::swap(ox,oy);
-				ox = -gw-ox;
-				break;
-		}
+      int orig_w = gw;
+      int orig_h = gh;
+      switch(mRotation)
+      {
+         case gr270:
+            std::swap(gw,gh);
+            std::swap(ox,oy);
+            oy = -gh-oy;
+            break;
+         case gr180:
+            ox = -gw-ox;
+            oy = -gh-oy;
+            break;
+         case gr90:
+            std::swap(gw,gh);
+            std::swap(ox,oy);
+            ox = -gw-ox;
+            break;
+      }
 
 
       while(1)
@@ -82,8 +82,8 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             int w = h;
             while(w<orig_w)
                w*=2;
-		      if (mRotation!=gr0 && mRotation!=gr180)
-					std::swap(w,h);
+            if (mRotation!=gr0 && mRotation!=gr180)
+               std::swap(w,h);
             Tilesheet *sheet = new Tilesheet(w,h,pfAlpha,true);
             mCurrentSheet = mSheets.size();
             mSheets.push_back(sheet);
@@ -116,47 +116,47 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
       }
       else if (mRotation==gr0)
          mFace->RenderGlyph(inCharacter,target);
-		else
-		{
-			SimpleSurface *buf = new SimpleSurface(orig_w,orig_h,pfAlpha,true);
-			buf->IncRef();
-			{
-			AutoSurfaceRender renderer(buf);
+      else
+      {
+         SimpleSurface *buf = new SimpleSurface(orig_w,orig_h,pfAlpha,true);
+         buf->IncRef();
+         {
+         AutoSurfaceRender renderer(buf);
          mFace->RenderGlyph(inCharacter,renderer.Target());
-			}
+         }
 
          const uint8  *src;
-			for(int y=0; y<target.mRect.h; y++)
+         for(int y=0; y<target.mRect.h; y++)
          {
             uint8  *dest = (uint8 *)target.Row(y + target.mRect.y) + target.mRect.x;
 
-				switch(mRotation)
-				{
-					case gr270:
-						src = buf->Row(0) + buf->Width() -1 - y;
-            		for(int x=0; x<target.mRect.w; x++)
-						{
-							*dest++ = *src;
-							src += buf->GetStride();
-						}
-						break;
-					case gr180:
-						src = buf->Row(buf->Height()-1-y) + buf->Width() -1;
-            		for(int x=0; x<target.mRect.w; x++)
-							*dest++ = *src--;
-						break;
-					case gr90:
-						src = buf->Row(buf->Height()-1) + y;
-            		for(int x=0; x<target.mRect.w; x++)
-						{
-							*dest++ = *src;
-							src -= buf->GetStride();
-						}
-						break;
-				}
-			}
-			buf->DecRef();
-		}
+            switch(mRotation)
+            {
+               case gr270:
+                  src = buf->Row(0) + buf->Width() -1 - y;
+                  for(int x=0; x<target.mRect.w; x++)
+                  {
+                     *dest++ = *src;
+                     src += buf->GetStride();
+                  }
+                  break;
+               case gr180:
+                  src = buf->Row(buf->Height()-1-y) + buf->Width() -1;
+                  for(int x=0; x<target.mRect.w; x++)
+                     *dest++ = *src--;
+                  break;
+               case gr90:
+                  src = buf->Row(buf->Height()-1) + y;
+                  for(int x=0; x<target.mRect.w; x++)
+                  {
+                     *dest++ = *src;
+                     src -= buf->GetStride();
+                  }
+                  break;
+            }
+         }
+         buf->DecRef();
+      }
 
       tile.mSurface->EndRender();
       outAdvance = glyph.advance;
@@ -210,7 +210,7 @@ struct FontInfo
          flags |= ffBold;
       if (inFormat.italic)
          flags |= ffItalic;
-		rotation = inRotation;
+      rotation = inRotation;
    }
 
    bool operator<(const FontInfo &inRHS) const
@@ -225,11 +225,11 @@ struct FontInfo
       if (rotation > inRHS.rotation) return false;
       return flags < inRHS.flags;
    }
-   std::wstring name;
+   WString      name;
    bool         native;
    int          height;
    unsigned int flags;
-	GlyphRotation rotation;
+   GlyphRotation rotation;
 };
 
 

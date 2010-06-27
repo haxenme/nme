@@ -6,6 +6,10 @@
 #define M_PI 3.1415926535897932385
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 namespace nme
 {
 
@@ -1502,6 +1506,7 @@ bool Stage::FinishEditOnEnter()
 
 void Stage::RenderStage()
 {
+   // double t0 = GetTimeStamp();
    ColorTransform::TidyCache();
    AutoStageRender render(this,opaqueBackground);
 
@@ -1517,6 +1522,7 @@ void Stage::RenderStage()
 
    state.mPhase = rpRender;
    Render(render.Target(),state);
+   // __android_log_print(ANDROID_LOG_ERROR, "hxcpp", "Total Render time %f",GetTimeStamp()-t0);
 }
 
 double Stage::getStageWidth()

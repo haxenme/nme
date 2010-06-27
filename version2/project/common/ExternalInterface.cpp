@@ -3,6 +3,7 @@
 #endif
 
 
+#include <Utils.h>
 #include <ExternalInterface.h>
 #include <Display.h>
 #include <TextField.h>
@@ -13,6 +14,10 @@
 #include <Input.h>
 #include <algorithm>
 #include <ByteArray.h>
+
+#ifdef ANDROID
+#include <android/log.h>
+#endif
 
 #ifdef min
 #undef min
@@ -176,6 +181,19 @@ value ObjectToAbstract(Object *inObject)
    val_gc(result,release_object);
    return result;
 }
+
+WString val2stdwstr(value inVal)
+{
+   const wchar_t *val = val_wstring(inVal);
+   int len=0;
+   while(val[len]) len++;
+   char buf[100];
+   for(int i=0;i<100 && i<=len;i++)
+      buf[i] = val[i];
+   buf[99] = '\0';
+   return WString(val,len);
+}
+
 
 void FromValue(Matrix &outMatrix, value inValue)
 {
@@ -581,6 +599,9 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
       return;
    }
 
+   value crap = alloc_int(123);
+
+
    value o = alloc_empty_object( );
    alloc_field(o,_id_type,alloc_int(ioEvent.type));
    alloc_field(o,_id_x,alloc_int(ioEvent.x));
@@ -822,7 +843,7 @@ value nme_display_object_set_filters(value inObj,value inFilters)
          for(int f=0;f<val_array_size(inFilters);f++)
          {
             value filter = val_array_value(inFilters)[f];
-            std::wstring type = val_wstring( val_field(filter,_id_type) );
+            WString type = val2stdwstr( val_field(filter,_id_type) );
             int q = val_int(val_field(filter,_id_quality));
             if (q<1) continue;
             if (type==L"BlurFilter")
@@ -980,7 +1001,7 @@ DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
 DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
 DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
-DO_DISPLAY_PROP(name,Name,alloc_wstring,val_wstring)
+DO_DISPLAY_PROP(name,Name,alloc_wstring,val2stdwstr)
 DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
 DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 
@@ -1544,14 +1565,17 @@ value nme_text_field_create()
 }
 DEFINE_PRIM(nme_text_field_create,0)
 
-inline value alloc_wstring(const std::wstring &inStr)
+inline value alloc_wstring(const WString &inStr)
    { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
 
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = val_int(inVal); }
 void FromValue(Optional<uint32> &outVal,value inVal) { outVal = val_int(inVal); }
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
-void FromValue(Optional<std::wstring> &outVal,value inVal) { outVal = val_wstring(inVal); }
+void FromValue(Optional<WString> &outVal,value inVal)
+{
+   outVal = val2stdwstr(inVal);
+}
 void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 {
    QuickVec<int> &val = outVal.Set();
@@ -1562,7 +1586,7 @@ void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 }
 void FromValue(Optional<TextFormatAlign> &outVal,value inVal)
 {
-   std::wstring name = val_wstring(inVal);
+   WString name = val2stdwstr(inVal);
    if (name==L"center")
       outVal = tfaCenter;
    else if (name==L"justify")
@@ -1606,7 +1630,7 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
 value ToValue(const int &inVal) { return alloc_int(inVal); }
 value ToValue(const uint32 &inVal) { return alloc_int(inVal); }
 value ToValue(const bool &inVal) { return alloc_bool(inVal); }
-value ToValue(const std::wstring &inVal) { return alloc_wstring(inVal); }
+value ToValue(const WString &inVal) { return alloc_wstring(inVal); }
 value ToValue(const QuickVec<int> &outVal)
 {
    // TODO:
@@ -1722,8 +1746,8 @@ value nme_text_field_set_##prop(value inHandle,value inValue) \
 } \
 DEFINE_PRIM(nme_text_field_set_##prop,2);
 
-TEXT_PROP(text,Text,alloc_wstring,val_wstring);
-TEXT_PROP(html_text,HTMLText,alloc_wstring,val_wstring);
+TEXT_PROP(text,Text,alloc_wstring,val2stdwstr);
+TEXT_PROP(html_text,HTMLText,alloc_wstring,val2stdwstr);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 TEXT_PROP(type,IsInput,alloc_bool,val_bool);

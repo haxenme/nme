@@ -7,18 +7,20 @@
 typedef uint64_t __int64;
 #endif
 
+#include <android/log.h>
 
 namespace nme
 {
 
 #ifndef HX_WINDOWS
 
-std::string WideToUTF8(const std::wstring &inWideString)
+std::string WideToUTF8(const WString &inWideString)
 {
   int len = 0;
+  const wchar_t *chars = inWideString.c_str();
   for(int i=0;i<inWideString.length();i++)
    {
-      int c = inWideString[i];
+      int c = chars[i];
       if( c <= 0x7F ) len++;
       else if( c <= 0x7FF ) len+=2;
       else if( c <= 0xFFFF ) len+=3;
@@ -31,7 +33,7 @@ std::string WideToUTF8(const std::wstring &inWideString)
    unsigned char *data =  (unsigned char *) &result[0];
    for(int i=0;i<inWideString.length();i++)
    {
-      int c = inWideString[i];
+      int c = chars[i];
       if( c <= 0x7F )
          *data++ = c;
       else if( c <= 0x7FF )
@@ -155,11 +157,11 @@ void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr)
 
 
 
-std::wstring UTF8ToWide(const char *inStr)
+WString UTF8ToWide(const char *inStr)
 {
    int len=0;
    wchar_t *s = UTF8ToWideCStr(inStr,len);
-   std::wstring result(s,len);
+   WString result(s,len);
    delete [] s;
    return result;
 }
@@ -167,7 +169,7 @@ std::wstring UTF8ToWide(const char *inStr)
 #else
 #include <windows.h>
 
-std::string WideToUTF8(const std::wstring &inWideString)
+std::string WideToUTF8(const WString &inWideString)
 {
   int len = WideCharToMultiByte( CP_UTF8, 0, inWideString.c_str(), inWideString.length(),
 	  0, 0, 0, 0);
@@ -216,13 +218,13 @@ void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr)
    MultiByteToWideChar( CP_UTF8, 0, inStr, len, outString.mPtr, len );
 }
 
-std::wstring UTF8ToWide(const char *inStr)
+WString UTF8ToWide(const char *inStr)
 {
    int len =  MultiByteToWideChar( CP_UTF8, 0, inStr, -1, 0, 0 );
 	if (len<1)
-		return std::wstring();
+		return WString();
 
-	std::wstring result;
+	WString result;
 	result.resize(len-1);
 
    MultiByteToWideChar( CP_UTF8, 0, inStr, len-1, &result[0], len-1 );
@@ -265,6 +267,152 @@ double  GetTimeStamp()
    return t-t0;
 #endif
 }
+
+
+#ifdef ANDROID
+
+WString::WString(const WString &inRHS)
+{
+   mLength = inRHS.mLength;
+   if (mLength==0)
+      mString = 0;
+   else
+   {
+      mString = new wchar_t[mLength+1];
+      memcpy(mString,inRHS.mString,mLength*sizeof(wchar_t));
+      mString[mLength] = '\0';
+   }
+}
+
+WString::WString(const wchar_t *inStr)
+{
+   mLength = 0;
+   if (inStr==0 || *inStr=='\0')
+   {
+      mString = 0;
+   }
+   else
+   {
+      while(inStr[mLength]) mLength++;
+      mString = new wchar_t[mLength+1];
+      memcpy(mString,inStr,mLength*sizeof(wchar_t));
+      mString[mLength] = '\0';
+   }
+
+}
+
+WString::WString(const wchar_t *inStr,int inLen)
+{
+   if (inLen==0)
+   {
+      mString = 0;
+   }
+   else
+   {
+      mString = new wchar_t[inLen+1];
+      if (mString)
+         memcpy(mString,inStr,inLen*sizeof(wchar_t));
+      mString[inLen] = '\0';
+   }
+
+   mLength = inLen;
+}
+
+WString::~WString()
+{
+   delete [] mString;
+}
+
+
+WString &WString::operator=(const WString &inRHS)
+{
+   if (inRHS.mString != mString)
+   {
+      delete [] mString;
+      mLength = inRHS.mLength;
+      if (mLength==0)
+         mString = 0;
+      else
+      {
+         mString = new wchar_t[mLength+1];
+         memcpy(mString,inRHS.mString,mLength*sizeof(wchar_t));
+         mString[mLength] = '\0';
+      }
+   }
+}
+
+WString &WString::operator +=(const WString &inRHS)
+{
+   *this = *this + inRHS;
+   return *this;
+}
+
+WString WString::operator +(const WString &inRHS)
+{
+   int len = mLength + inRHS.mLength;
+   if (len==0)
+      return WString();
+
+   WString result(0,len);
+   memcpy(result.mString, mString, mLength*sizeof(wchar_t));
+   memcpy(result.mString + mLength, inRHS.mString, inRHS.mLength*sizeof(wchar_t));
+   return result;
+}
+
+bool WString::operator<(const WString &inRHS) const
+{
+   int len = mLength<inRHS.mLength ? mLength : inRHS.mLength;
+   for(int i=0;i<len;i++)
+      if (mString[i] < inRHS.mString[i])
+         return true;
+      else if (mString[i]>inRHS.mString[i])
+         return false;
+
+   return mLength<inRHS.mLength;
+}
+
+bool WString::operator>(const WString &inRHS) const
+{
+   int len = mLength<inRHS.mLength ? mLength : inRHS.mLength;
+   for(int i=0;i<len;i++)
+      if (mString[i] > inRHS.mString[i])
+         return true;
+      else if (mString[i]<inRHS.mString[i])
+         return false;
+
+   return mLength>inRHS.mLength;
+}
+
+
+bool WString::operator==(const WString &inRHS) const
+{
+   if (mLength!=inRHS.mLength)
+      return false;
+
+   for(int i=0;i<mLength;i++)
+      if (mString[i]!=inRHS.mString[i])
+         return false;
+
+   return true;
+}
+
+
+bool WString::operator!=(const WString &inRHS) const
+{
+   if (mLength!=inRHS.mLength)
+      return true;
+
+   for(int i=0;i<mLength;i++)
+      if (mString[i]!=inRHS.mString[i])
+         return true;
+
+   return false;
+}
+
+
+
+
+#endif
 
 
 

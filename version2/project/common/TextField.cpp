@@ -26,7 +26,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxChars(0),
    mouseWheelEnabled(true),
    multiline(false),
-   restrict(std::wstring()),
+   restrict(WString()),
    scrollH(0),
    scrollV(1),
    selectable(true),
@@ -625,7 +625,7 @@ Cursor TextField::GetCursor()
 }
 
 
-void TextField::setText(const std::wstring &inString)
+void TextField::setText(const WString &inString)
 {
    Clear();
    CharGroup chars;
@@ -639,20 +639,20 @@ void TextField::setText(const std::wstring &inString)
    mGfxDirty = true;
 }
 
-std::wstring TextField::getText()
+WString TextField::getText()
 {
-   std::wstring result;
+   WString result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += std::wstring(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
+      result += WString(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
    return result;
 }
 
 // TODO:
-std::wstring TextField::getHTMLText()
+WString TextField::getHTMLText()
 {
-   std::wstring result;
+   WString result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += std::wstring(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
+      result += WString(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
    return result;
 }
 
@@ -783,7 +783,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 }
 
 
-void TextField::setHTMLText(const std::wstring &inString)
+void TextField::setHTMLText(const WString &inString)
 {
    Clear();
    mLinesDirty = true;
@@ -1171,7 +1171,7 @@ void TextField::DeleteSelection()
    mGfxDirty = true;
 }
 
-void TextField::InsertString(const std::wstring &inString)
+void TextField::InsertString(const WString &inString)
 {
    if (caretIndex<0) caretIndex = 0;
    caretIndex = std::min(caretIndex,getLength());
@@ -1450,13 +1450,14 @@ void TextField::Layout(const Matrix &inMatrix)
 
 // --- TextFormat -----------------------------------
 
+#include <android/log.h>
 TextFormat::TextFormat() :
    align(tfaLeft),
    blockIndent(0),
    bold(false),
    bullet(false),
    color(0x00000000),
-   font(L"Times"),
+   font( WString(L"Times",5) ),
    indent(0),
    italic(false),
    kerning(false),

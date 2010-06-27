@@ -3,9 +3,9 @@
 #include <Surface.h>
 #include <KeyCodes.h>
 #include <jni.h>
-#include <android/log.h>
 
 #include <android/log.h>
+
 
 
 namespace nme
@@ -96,7 +96,10 @@ public:
             sOnFrame(this);
       }
       else
+      {
+         ResetHardwareContext();
          sStage->Resize(inWidth,inHeight);
+      }
    }
 
    unsigned int mFlags;
@@ -145,7 +148,6 @@ JAVA_EXPORT void JNICALL Java_org_haxe_NME_onRender(JNIEnv * env, jobject obj)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
-   __android_log_print(ANDROID_LOG_INFO, "Render", "%p", nme::sStage);
    if (nme::sStage)
       nme::sStage->OnRender();
 }

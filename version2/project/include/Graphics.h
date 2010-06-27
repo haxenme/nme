@@ -440,6 +440,9 @@ struct RenderState
 };
 
 
+void ResetHardwareContext();
+
+
 
 enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints };
 

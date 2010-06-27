@@ -6,6 +6,11 @@
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
 
+
+#include <android/log.h>
+
+
+
 namespace nme
 {
 
@@ -16,67 +21,67 @@ class FreeTypeFont : public FontFace
 {
 public:
    FreeTypeFont(FT_Face inFace, int inPixelHeight, int inTransform) :
-	  mFace(inFace), mPixelHeight(inPixelHeight),mTransform(inTransform)
-	{
-	}
+     mFace(inFace), mPixelHeight(inPixelHeight),mTransform(inTransform)
+   {
+   }
 
 
-	~FreeTypeFont()
-	{
-		FT_Done_Face(mFace);
-	}
+   ~FreeTypeFont()
+   {
+      FT_Done_Face(mFace);
+   }
 
-	bool LoadBitmap(int inChar)
-	{
-		int idx = FT_Get_Char_Index( mFace, inChar );
-		int err = FT_Load_Glyph( mFace, idx, FT_LOAD_DEFAULT  );
-		if (err)
-			return false;
+   bool LoadBitmap(int inChar)
+   {
+      int idx = FT_Get_Char_Index( mFace, inChar );
+      int err = FT_Load_Glyph( mFace, idx, FT_LOAD_DEFAULT  );
+      if (err)
+         return false;
 
-		FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
-		// mode = FT_RENDER_MODE_MONO;
-		if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
-			err = FT_Render_Glyph( mFace->glyph, mode );
-		if (err)
-			return false;
+      FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
+      // mode = FT_RENDER_MODE_MONO;
+      if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+         err = FT_Render_Glyph( mFace->glyph, mode );
+      if (err)
+         return false;
 
-		if (mTransform & ffBold)
-		{
-			FT_GlyphSlot_Own_Bitmap(mFace->glyph);
+      if (mTransform & ffBold)
+      {
+         FT_GlyphSlot_Own_Bitmap(mFace->glyph);
          FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
-		}
+      }
       return true;
-	}
+   }
 
 
-	bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
-									int &outOx, int &outOy)
-	{
-		if (!LoadBitmap(inChar))
-			return false;
+   bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
+                           int &outOx, int &outOy)
+   {
+      if (!LoadBitmap(inChar))
+         return false;
 
       outOx = mFace->glyph->bitmap_left;
       outOy = -mFace->glyph->bitmap_top;
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
-		outW = bitmap.width;
-		outH = bitmap.rows;
-		outAdvance = (mFace->glyph->advance.x >> 6);
-		return true;
-	}
+      outW = bitmap.width;
+      outH = bitmap.rows;
+      outAdvance = (mFace->glyph->advance.x >> 6);
+      return true;
+   }
 
 
-	void RenderGlyph(int inChar,const RenderTarget &outTarget)
-	{
-		if (!LoadBitmap(inChar))
-			return;
+   void RenderGlyph(int inChar,const RenderTarget &outTarget)
+   {
+      if (!LoadBitmap(inChar))
+         return;
 
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
-		int w = bitmap.width;
-		int h = bitmap.rows;
-		if (w>outTarget.mRect.w || h>outTarget.mRect.h)
-			return;
+      int w = bitmap.width;
+      int h = bitmap.rows;
+      if (w>outTarget.mRect.w || h>outTarget.mRect.h)
+         return;
 
-		for(int r=0;r<h;r++)
+      for(int r=0;r<h;r++)
       {
          unsigned char *row = bitmap.buffer + r*bitmap.pitch;
          uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x;
@@ -102,58 +107,58 @@ public:
                *dest ++ = *row++;
          }
       }
-	}
+   }
 
 
-	int Height()
-	{
-		return mFace->size->metrics.height/(1<<6);
-	}
+   int Height()
+   {
+      return mFace->size->metrics.height/(1<<6);
+   }
 
 
-	void UpdateMetrics(TextLineMetrics &ioMetrics)
-	{
+   void UpdateMetrics(TextLineMetrics &ioMetrics)
+   {
       if (mFace)
-		{
-			FT_Size_Metrics &metrics = mFace->size->metrics;
-			ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender/(1<<6) );
-			ioMetrics.descent = std::max( ioMetrics.descent, (float)metrics.descender/(1<<6) );
-			ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height/(1<<6) );
-		}
-	}
+      {
+         FT_Size_Metrics &metrics = mFace->size->metrics;
+         ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender/(1<<6) );
+         ioMetrics.descent = std::max( ioMetrics.descent, (float)metrics.descender/(1<<6) );
+         ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height/(1<<6) );
+      }
+   }
 
 
-	FT_Face  mFace;
-	uint32 mTransform;
-	int    mPixelHeight;
+   FT_Face  mFace;
+   uint32 mTransform;
+   int    mPixelHeight;
 
 };
 
 
 static FT_Face OpenFont(const std::string &inFace, unsigned char inFlags)
 {
-	FT_Face face = 0;
+   FT_Face face = 0;
    FT_New_Face(sgLibrary, inFace.c_str(), 0, &face);
-	if (face && inFlags!=0 && face->num_faces>1)
-	{
-		int n = face->num_faces;
-		// Look for other font that may match
+   if (face && inFlags!=0 && face->num_faces>1)
+   {
+      int n = face->num_faces;
+      // Look for other font that may match
       for(int f=1;f<n;f++)
-		{
-	      FT_Face test = 0;
+      {
+         FT_Face test = 0;
          FT_New_Face(sgLibrary, inFace.c_str(), f, &test);
-			if (test && test->style_flags == inFlags)
+         if (test && test->style_flags == inFlags)
          {
-				// A goodie!
-			   FT_Done_Face(face);
-				return test;
-			}
-			else if (test)
-			   FT_Done_Face(test);
-		}
-		// The original face will have to do...
-	}
-	return face;
+            // A goodie!
+            FT_Done_Face(face);
+            return test;
+         }
+         else if (test)
+            FT_Done_Face(test);
+      }
+      // The original face will have to do...
+   }
+   return face;
 }
 
 
@@ -211,14 +216,28 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #else
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
+   #ifdef ANDROID
+   if (!strcasecmp(inName.c_str(),"times.ttf"))
+      outFile = "/system/fonts/DroidSerif-Regular.ttf";
+   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+      outFile = "/system/fonts/DroidSans.ttf";
+   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
+      outFile = "/system/fonts/SansMono.ttf";
+   #else
    if (!strcasecmp(inName.c_str(),"times.ttf"))
       outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
       outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
    else if (!strcasecmp(inName.c_str(),"courier.ttf"))
       outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+   #endif
    else
    {
+       #ifdef ANDROID
+       __android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.",
+          inName.c_str() );
+       #endif
+
       //printf("Unfound font: %s\n",inName.c_str());
       return false;
    }
@@ -263,34 +282,34 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
 
 FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale)
 {
-	if (!sgLibrary)
+   if (!sgLibrary)
      FT_Init_FreeType( &sgLibrary );
-	if (!sgLibrary)
-		return 0;
+   if (!sgLibrary)
+      return 0;
 
-	FT_Face face = 0;
-	std::string str = WideToUTF8(inFormat.font);
+   FT_Face face = 0;
+   std::string str = WideToUTF8(inFormat.font);
 
-	uint32 flags = 0;
-	if (inFormat.bold)
-		flags |= ffBold;
-	if (inFormat.italic)
-		flags |= ffItalic;
+   uint32 flags = 0;
+   if (inFormat.bold)
+      flags |= ffBold;
+   if (inFormat.italic)
+      flags |= ffItalic;
 
-	face = FindFont(str,flags);
-	if (!face)
-		return 0;
+   face = FindFont(str,flags);
+   if (!face)
+      return 0;
 
-	int height = (int )(inFormat.size*inScale + 0.5);
-	FT_Set_Pixel_Sizes(face,0, height);
+   int height = (int )(inFormat.size*inScale + 0.5);
+   FT_Set_Pixel_Sizes(face,0, height);
 
 
-	uint32 transform = 0;
-	if ( !(face->style_flags & ffBold) && inFormat.bold )
-		transform |= ffBold;
-	if ( !(face->style_flags & ffItalic) && inFormat.italic )
-		transform |= ffItalic;
-	return new FreeTypeFont(face,height,transform);
+   uint32 transform = 0;
+   if ( !(face->style_flags & ffBold) && inFormat.bold )
+      transform |= ffBold;
+   if ( !(face->style_flags & ffItalic) && inFormat.italic )
+      transform |= ffItalic;
+   return new FreeTypeFont(face,height,transform);
 }
 
 
@@ -420,29 +439,29 @@ void SharpenText(FT_Bitmap &bitmap)
                   if ( (nx==2 && ny==0) || (nx==0 && ny==2) || neighbours==0 ||
                        (neighbours==3 && A(x,y)>T_THRESH )  ||
                        (neighbours==1 && A(x,y)>END_THRESH )  )
-						{
+                  {
                      if ( (nx==2 && ny==0) || (nx==0 && ny==2) || neighbours==0)
-								A(x,y)=255;
-							else
-							{
+                        A(x,y)=255;
+                     else
+                     {
                         A(x,y) += 10;
-							   if (next>thresh+10) next = thresh+10;
-							}
-						}
+                        if (next>thresh+10) next = thresh+10;
+                     }
+                  }
                   else
                   {
-							// Erase point
+                     // Erase point
                      int oval = A(x,y);
                      A(x,y) = 0;
                      Z(x,y) = join_neighbour;
                   }
                }
                else
-					{
+               {
                   A(x,y) += 10;
-						if (next>thresh+10) next = thresh+10;
+                  if (next>thresh+10) next = thresh+10;
                   //A(x,y) = 255;
-					}
+               }
 
             }
             else if (r>thresh && r<next)

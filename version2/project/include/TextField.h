@@ -1,6 +1,7 @@
 #ifndef NME_TEXT_FIELD_H
 #define NME_TEXT_FIELD_H
 
+#include "Utils.h"
 #include "Graphics.h"
 #include "QuickVec.h"
 #include "Font.h"
@@ -18,7 +19,7 @@ class TextField : public DisplayObject
 public:
    TextField(bool inInitRef=false);
 
-   void appendText(std::wstring inString);
+   void appendText(WString inString);
    Rect getCharBoundaries(int inCharIndex);
    int getCharIndexAtPoint(double x, double y);
    int getFirstCharInParagraph(int inCharIndex);
@@ -27,12 +28,12 @@ public:
    int getLineLength(int inLineIndex);
    const TextLineMetrics &getLineMetrics(int inLineIndex);
    int getLineOffset(int inLineIndex);
-   std::wstring getLineText();
+   WString getLineText();
    int getParagraphLength(int inCharIndex);
    TextFormat *getTextFormat(int inFirstChar=-1, int inEndChar=-1);
-   bool isFontCompatible(const std::wstring &inFont, const std::wstring &inStyle);
-   void replaceSelectedText(const std::wstring &inText);
-   void replaceText(int inBeginIndex, int inEndIndex, const std::wstring &inText);
+   bool isFontCompatible(const WString &inFont, const WString &inStyle);
+   void replaceSelectedText(const WString &inText);
+   void replaceText(int inBeginIndex, int inEndIndex, const WString &inText);
    int  setSelection(int inFirst, int inLast);
    void setTextFormat(TextFormat *inFormat,int inFirstChar=-1, int inLastChar = -1);
    bool getSelectable() { return selectable; }
@@ -78,10 +79,10 @@ public:
    double getHeight() { return boundsHeight; }
    void setHeight(double inHeight);
 
-   std::wstring getHTMLText();
-   void setHTMLText(const std::wstring &inString);
-   std::wstring getText();
-   void setText(const std::wstring &inString);
+   WString getHTMLText();
+   void setHTMLText(const WString &inString);
+   WString getText();
+   void setText(const WString &inString);
 
    int   getLength();
    double   getTextHeight() { Layout(); return textHeight/mLayoutScaleV; }
@@ -103,7 +104,7 @@ public:
    int  maxChars;
    bool mouseWheelEnabled;
    bool multiline;
-   std::wstring restrict;
+   WString restrict;
    bool selectable;
    float sharpness;
    struct StyleSheet *styleSheet;
@@ -146,7 +147,7 @@ public:
    void OnKey(Event &inEvent);
    void DeleteSelection();
    void DeleteChars(int inFirst,int inEnd);
-   void InsertString(const std::wstring &inString);
+   void InsertString(const WString &inString);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
 
@@ -169,7 +170,7 @@ private:
 
    enum StringState { ssNone, ssText, ssHTML };
    StringState mStringState;
-   std::wstring mUserString;
+   WString mUserString;
 
 	void SplitGroup(int inGroup,int inPos);
 
