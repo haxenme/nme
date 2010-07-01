@@ -1450,7 +1450,6 @@ void TextField::Layout(const Matrix &inMatrix)
 
 // --- TextFormat -----------------------------------
 
-#include <android/log.h>
 TextFormat::TextFormat() :
    align(tfaLeft),
    blockIndent(0),

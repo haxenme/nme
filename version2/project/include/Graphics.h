@@ -462,17 +462,21 @@ typedef QuickVec<DrawElement> DrawElements;
 typedef QuickVec<UserPoint>   Vertices;
 typedef QuickVec<int>         Colours;
 
+void ReleaseVertexBufferObject(unsigned int inVBO);
+
 struct HardwareArrays
 {
    HardwareArrays(Surface *inSurface,bool inPerspectiveCorrect);
    ~HardwareArrays();
 
-   Vertices mVertices;
+   Vertices     mVertices;
    QuickVec<UserPoint> mTexCoords;
-	Colours  mColours;
+	Colours      mColours;
    DrawElements mElements;
-   Surface *mSurface;
-   bool    mPerspectiveCorrect;
+   Surface      *mSurface;
+   bool         mPerspectiveCorrect;
+
+   unsigned int mVertexBO;
 };
 
 typedef QuickVec<HardwareArrays *> HardwareCalls;

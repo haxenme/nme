@@ -7,7 +7,9 @@
 typedef uint64_t __int64;
 #endif
 
+#ifdef ANDROID
 #include <android/log.h>
+#endif
 
 namespace nme
 {

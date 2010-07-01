@@ -6,9 +6,9 @@
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
 
-
+#ifdef ANDROID
 #include <android/log.h>
-
+#endif
 
 
 namespace nme

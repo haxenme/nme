@@ -32,6 +32,55 @@ typedef void *GLCtx;
 typedef HDC WinDC;
 typedef HGLRC GLCtx;
 
+typedef ptrdiff_t GLsizeiptrARB;
+
+#ifndef GL_BUFFER_SIZE
+
+#define GL_BUFFER_SIZE                0x8764
+#define GL_BUFFER_USAGE               0x8765
+#define GL_ARRAY_BUFFER               0x8892
+#define GL_ELEMENT_ARRAY_BUFFER       0x8893
+#define GL_ARRAY_BUFFER_BINDING       0x8894
+#define GL_ELEMENT_ARRAY_BUFFER_BINDING 0x8895
+#define GL_VERTEX_ARRAY_BUFFER_BINDING 0x8896
+#define GL_NORMAL_ARRAY_BUFFER_BINDING 0x8897
+#define GL_COLOR_ARRAY_BUFFER_BINDING 0x8898
+#define GL_INDEX_ARRAY_BUFFER_BINDING 0x8899
+#define GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING 0x889A
+#define GL_EDGE_FLAG_ARRAY_BUFFER_BINDING 0x889B
+#define GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING 0x889C
+#define GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING 0x889D
+#define GL_WEIGHT_ARRAY_BUFFER_BINDING 0x889E
+#define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
+#define GL_READ_ONLY                  0x88B8
+#define GL_WRITE_ONLY                 0x88B9
+#define GL_READ_WRITE                 0x88BA
+#define GL_BUFFER_ACCESS              0x88BB
+#define GL_BUFFER_MAPPED              0x88BC
+#define GL_BUFFER_MAP_POINTER         0x88BD
+#define GL_STREAM_DRAW                0x88E0
+#define GL_STREAM_READ                0x88E1
+#define GL_STREAM_COPY                0x88E2
+#define GL_STATIC_DRAW                0x88E4
+#define GL_STATIC_READ                0x88E5
+#define GL_STATIC_COPY                0x88E6
+#define GL_DYNAMIC_DRAW               0x88E8
+#define GL_DYNAMIC_READ               0x88E9
+#define GL_DYNAMIC_COPY               0x88EA
+
+#endif
+
+typedef void (APIENTRY * glBindBufferARB_f)(GLenum target, GLuint buffer);
+typedef void (APIENTRY * glDeleteBuffersARB_f)(GLsizei n, const GLuint *buffers);
+typedef void (APIENTRY * glGenBuffersARB_f)(GLsizei n, GLuint *buffers);
+typedef void (APIENTRY * glBufferDataARB_f)(GLenum target, GLsizeiptrARB size, const GLvoid *data, GLenum usage);
+
+glBindBufferARB_f glBindBuffer=0;
+glDeleteBuffersARB_f glDeleteBuffers=0;
+glGenBuffersARB_f glGenBuffers=0;
+glBufferDataARB_f glBufferData=0;
+
+
 #endif
 
 
@@ -41,6 +90,9 @@ typedef HGLRC GLCtx;
 #ifndef GL_CLAMP_TO_EDGE
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
+
+
+static bool sgUSEVBO = false;
 
 static int sgContextVersion = 1;
 
@@ -57,6 +109,10 @@ void ResetHardwareContext()
 {
    sgContextVersion++;
 }
+
+
+
+
 
 
 class OGLTexture : public Texture
@@ -375,7 +431,25 @@ public:
          Vertices &tex_coords = arrays.mTexCoords;
 			bool persp = arrays.mPerspectiveCorrect;
 
-         glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,&vert[0].x);
+         if (sgUSEVBO)
+         {
+            if (!arrays.mVertexBO)
+            {
+               glGenBuffers(1,&arrays.mVertexBO);
+               glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
+               glBufferData(GL_ARRAY_BUFFER,sizeof(float)*(persp ?4:2)*vert.size(),
+                              &vert[0].x, GL_STREAM_DRAW);
+            }
+            else
+               glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
+            glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+         }
+         else
+         {
+            glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,&vert[0].x);
+         }
+
          bool tex = arrays.mSurface && tex_coords.size();
          if (tex)
          {
@@ -559,10 +633,33 @@ public:
    Texture *mBitmapTexture;
 };
 
+void ReleaseVertexBufferObject(unsigned int inVBO)
+{
+   if (glDeleteBuffers)
+      glDeleteBuffers(1,&inVBO);
+}
+
 
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
 {
-   return new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+   HardwareContext *ctx =  new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+
+   static bool extentions_init = false;
+   if (!extentions_init)
+   {
+      extentions_init = true;
+      #ifdef HX_WINDOWS
+      wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
+      glBindBuffer=(glBindBufferARB_f) wglGetProcAddress("glBindBufferARB");
+      glDeleteBuffers=(glDeleteBuffersARB_f) wglGetProcAddress("glDeleteBuffersARB");
+      glGenBuffers=(glGenBuffersARB_f) wglGetProcAddress("glGenBuffersARB");
+      glBufferData=(glBufferDataARB_f) wglGetProcAddress("glBufferDataARB");
+      if (glBindBuffer)
+         sgUSEVBO = false;
+      #endif
+   }
+
+   return ctx;
 }
 
 } // end namespace nme

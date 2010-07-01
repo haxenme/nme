@@ -354,12 +354,15 @@ HardwareArrays::HardwareArrays(Surface *inSurface,bool inPersp)
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
+   mVertexBO = 0;
 }
 
 HardwareArrays::~HardwareArrays()
 {
    if (mSurface)
       mSurface->DecRef();
+   if (mVertexBO)
+      ReleaseVertexBufferObject(mVertexBO);
 }
 
 // --- HardwareData ---------------------------------------------------------------------
