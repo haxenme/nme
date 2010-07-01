@@ -33,35 +33,36 @@ struct AlphaMask
    {
       mMatrix = *inTrans.mMatrix;
       mScale9 = *inTrans.mScale9;
+      mAAFactor = inTrans.mAAFactor;
    }
 
    void RenderBitmap(int inTX,int inTY,
-							const RenderTarget &inTarget,const RenderState &inState);
+                     const RenderTarget &inTarget,const RenderState &inState);
 
    // Given we were created with a certain transform and valid data rect, can we
    // cover the requested area for the requested transform?
-	bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels,
-					    int &outTX, int &outTY);
+   bool Compatible(const Transform &inTransform,const Rect &inExtent, const Rect &inVisiblePixels,
+                   int &outTX, int &outTY);
 
    Rect      mRect;
-	Lines     mLines;
+   Lines     mLines;
    Matrix    mMatrix;
-	Scale9    mScale9;
-
+   Scale9    mScale9;
+   int       mAAFactor;
 };
 
 class Filler
 {
 public:
-	virtual ~Filler() { };
+   virtual ~Filler() { };
    virtual void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
-					const RenderTarget &inTarget,const RenderState &inState) = 0;
+               const RenderTarget &inTarget,const RenderState &inState) = 0;
    virtual void SetMapping(const UserPoint *inVertex, const float *inUVT,int inComponents) { }
 
-	static Filler *Create(GraphicsSolidFill *inFill);
-	static Filler *Create(GraphicsGradientFill *inFill);
-	static Filler *Create(GraphicsBitmapFill *inFill);
-	static Filler *CreatePerspective(GraphicsBitmapFill *inFil);
+   static Filler *Create(GraphicsSolidFill *inFill);
+   static Filler *Create(GraphicsGradientFill *inFill);
+   static Filler *Create(GraphicsBitmapFill *inFill);
+   static Filler *CreatePerspective(GraphicsBitmapFill *inFil);
 };
 
 } // end namespace nme

@@ -4,11 +4,14 @@ namespace nme
 {
 
 bool AlphaMask::Compatible(const Transform &inTransform,
-									const Rect &inExtent, const Rect &inVisiblePixels,
-									int &outTX, int &outTY )
+                           const Rect &inExtent, const Rect &inVisiblePixels,
+                           int &outTX, int &outTY )
 {
    int tx,ty;
    if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,tx,ty) && mScale9!=*inTransform.mScale9)
+      return false;
+
+   if (mAAFactor!=inTransform.mAAFactor)
       return false;
 
    // Translate our cached pixels to this new position ...
@@ -24,12 +27,12 @@ bool AlphaMask::Compatible(const Transform &inTransform,
 }
 
 void AlphaMask::RenderBitmap(int inTX,int inTY,
-			const RenderTarget &inTarget,const RenderState &inState)
+         const RenderTarget &inTarget,const RenderState &inState)
 {
-	if (mLines.empty())
+   if (mLines.empty())
       return;
 
-	Rect clip = inState.mClipRect;
+   Rect clip = inState.mClipRect;
    int y = mRect.y + inTY;
    const AlphaRuns *lines = &mLines[0] - y;
 
@@ -44,7 +47,7 @@ void AlphaMask::RenderBitmap(int inTX,int inTY,
       AlphaRuns::const_iterator run = line.begin();
       if (run!=end)
       {
-			Uint8 *dest0 = inTarget.Row(y);
+         Uint8 *dest0 = inTarget.Row(y);
          while(run<end && run->mX1 + inTX<=clip.x)
             run++;
 
@@ -56,18 +59,18 @@ void AlphaMask::RenderBitmap(int inTX,int inTY,
             int x1 = run->mX1 + inTX;
             clip.ClipX(x0,x1);
 
-			   Uint8 *dest = dest0 + x0;
+            Uint8 *dest = dest0 + x0;
             int alpha = run->mAlpha;
 
-				if (alpha>0)
-				{
-					if (alpha>=255)
+            if (alpha>0)
+            {
+               if (alpha>=255)
                   while(x0++<x1)
-					      *dest++ = 255;
-					else
+                     *dest++ = 255;
+               else
                   while(x0++<x1)
-					      QBlendAlpha( *dest++, alpha );
-				}
+                     QBlendAlpha( *dest++, alpha );
+            }
             ++run;
          }
       }

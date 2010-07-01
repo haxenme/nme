@@ -16,8 +16,6 @@ typedef void *WinDC;
 typedef void *GLCtx;
 #include <android/log.h>
 
-#include <android/log.h>
-
 #elif defined(SDL_OGL)
 
 #include <SDL_opengl.h>
@@ -92,7 +90,8 @@ glBufferDataARB_f glBufferData=0;
 #endif
 
 
-static bool sgUSEVBO = false;
+//static bool sgUSEVBO = true;
+#define sgUSEVBO 0
 
 static int sgContextVersion = 1;
 
@@ -246,6 +245,7 @@ public:
 
    }
 
+
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
       return UserPoint(inPixels.x/mTextureWidth, inPixels.y/mTextureHeight);
@@ -286,6 +286,11 @@ public:
       mLineScaleNormal = -1;
       mLineScaleV = -1;
       mLineScaleH = -1;
+      #if defined(IPHONE) || defined(ANDROID)
+      mQuality = sqLow;
+      #else
+      mQuality = sqBest;
+      #endif
    }
    ~OGLContext()
    {
@@ -378,10 +383,10 @@ public:
 
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_POINT_SMOOTH);
-      #if !defined(IPHONE) || !defined(ANDROID)
-      glEnable(GL_LINE_SMOOTH);
-      #endif
+      if (mQuality>=sqHigh)
+         glEnable(GL_POINT_SMOOTH);
+      if (mQuality>=sqBest)
+         glEnable(GL_LINE_SMOOTH);
       glEnableClientState(GL_VERTEX_ARRAY);
    }
    void EndRender()
@@ -438,7 +443,7 @@ public:
                glGenBuffers(1,&arrays.mVertexBO);
                glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
                glBufferData(GL_ARRAY_BUFFER,sizeof(float)*(persp ?4:2)*vert.size(),
-                              &vert[0].x, GL_STREAM_DRAW);
+                              &vert[0].x, GL_STATIC_DRAW);
             }
             else
                glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
@@ -591,15 +596,16 @@ public:
       if (inWidth!=mLineWidth)
       {
          double w = inWidth;
-         #if defined(IPHONE) || defined(ANDROID)
-         if (w>1)
-            glDisable(GL_LINE_SMOOTH);
-         else
+         if (mQuality>=sqBest)
          {
-            w = 1;
-            glEnable(GL_LINE_SMOOTH);
+            if (w>1)
+               glDisable(GL_LINE_SMOOTH);
+            else
+            {
+               w = 1;
+               glEnable(GL_LINE_SMOOTH);
+            }
          }
-         #endif
          mLineWidth = inWidth;
          glLineWidth(w);
 
@@ -615,11 +621,28 @@ public:
       return new OGLTexture(inSurface);
    }
 
+   void SetQuality(StageQuality inQ)
+   {
+      if (inQ!=mQuality)
+      {
+         mQuality = inQ;
+         if (mQuality>=sqHigh)
+            glEnable(GL_POINT_SMOOTH);
+         else
+            glDisable(GL_POINT_SMOOTH);
+
+         if (mQuality>=sqBest)
+            glEnable(GL_LINE_SMOOTH);
+         else
+            glDisable(GL_LINE_SMOOTH);
+      }
+   }
 
    Matrix mMatrix;
    double mLineScaleV;
    double mLineScaleH;
    double mLineScaleNormal;
+   StageQuality mQuality;
 
    Rect mViewport;
    WinDC mDC;
@@ -654,8 +677,10 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
       glDeleteBuffers=(glDeleteBuffersARB_f) wglGetProcAddress("glDeleteBuffersARB");
       glGenBuffers=(glGenBuffersARB_f) wglGetProcAddress("glGenBuffersARB");
       glBufferData=(glBufferDataARB_f) wglGetProcAddress("glBufferDataARB");
+      #ifndef sgUSEVBO
       if (glBindBuffer)
          sgUSEVBO = false;
+      #endif
       #endif
    }
 

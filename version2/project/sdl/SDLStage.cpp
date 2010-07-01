@@ -533,6 +533,7 @@ std::map<int,wchar_t> sLastUnicode;
 
 void ProcessEvent(SDL_Event &inEvent)
 {
+
   switch(inEvent.type)
    {
       case SDL_QUIT:
@@ -611,6 +612,7 @@ void MainLoop()
       while (!sgDead && SDL_PollEvent(&event) )
       {
          ProcessEvent(event);
+         event.type = -1;
          if (sgDead) break;
       }
      
@@ -628,6 +630,7 @@ void MainLoop()
          sgTimerActive = true;
          sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
 
+         event.type = -1;
          SDL_WaitEvent(&event);
 
          if (sgTimerActive && sgTimerID)

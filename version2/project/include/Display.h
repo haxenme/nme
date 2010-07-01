@@ -112,7 +112,6 @@ enum StageAlign
 };
 
 
-
 enum Cursor { curNone, curPointer, curHand,
 	           curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
 
@@ -332,8 +331,10 @@ public:
    void setScaleMode(int inMode);
    int getAlign() const { return align; }
    void setAlign(int inAlign);
+   int getQuality() const { return quality; }
+   void setQuality(int inQuality);
+   int GetAA();
 
-   int    mQuality;
 
    void RemovingFromStage(DisplayObject *inObject);
    Stage  *getStage() { return this; }
@@ -352,6 +353,7 @@ protected:
    UserPoint    mLastMousePos;
    StageScaleMode scaleMode;
    StageAlign     align;
+   StageQuality   quality;
 
    Matrix         mStageScale;
 

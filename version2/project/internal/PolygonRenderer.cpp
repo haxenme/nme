@@ -265,6 +265,33 @@ struct SpanRect
       }
    }
 
+   void BuildAlphaRuns2(Transitions *inTrans, AlphaRuns &outRuns)
+   {
+      AlphaIterator<1> a0,a1;
+
+      BuildAlphaRuns(inTrans[0],a0.mRuns);
+      BuildAlphaRuns(inTrans[1],a1.mRuns);
+
+      enum { MAX_X = 0x7fffffff };
+
+      int x = mRect.x;
+
+      a0.Init(x);
+      a1.Init(x);
+
+      while(x<MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x,next_x) + a1.SetX(x,next_x);
+         if (next_x == MAX_X)
+            break;
+         if (alpha>0)
+            outRuns.push_back( AlphaRun(x>>1,next_x>>1,alpha<<6) );
+         x = next_x;
+      }
+   }
+
+
 
    void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns)
    {
@@ -308,6 +335,9 @@ struct SpanRect
          {
             case 1:
                BuildAlphaRuns(*t,mask->mLines[y]);
+               break;
+            case 2:
+               BuildAlphaRuns2(t,mask->mLines[y]);
                break;
             case 4:
                BuildAlphaRuns4(t,mask->mLines[y]);

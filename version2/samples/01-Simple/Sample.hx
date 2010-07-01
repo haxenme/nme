@@ -41,20 +41,41 @@ public function new()
    shape.rotation = 10;
    addChild(shape);
 
+
+   stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, OnKey );
+
+   /*
    stage.addEventListener(Event.ENTER_FRAME, function(_) { shape.rotation+=360/60/60; } );
    stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
       trace("Hit : " + e.stageX + "," + e.stageY + " : " +
           shape.hitTestPoint( e.stageX, e.stageY, false ) );
    });
+   */
+}
+
+function OnKey(event)
+{
+   switch(event.charCode)
+   {
+       case "1".charCodeAt(0):
+          stage.quality = nme.display.StageQuality.LOW;
+       case "2".charCodeAt(0):
+          stage.quality = nme.display.StageQuality.MEDIUM;
+       case "3".charCodeAt(0):
+          stage.quality = nme.display.StageQuality.HIGH;
+       case "4".charCodeAt(0):
+          stage.quality = nme.display.StageQuality.BEST;
+   }
 }
 
 
 public static function main()
 {
+   trace("Off se go !\n");
 #if flash
    new Sample();
 #else
-   Lib.create(function(){new Sample();},320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+   Lib.create(function(){new Sample();},320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
 #end
 }
 

@@ -2,6 +2,7 @@
 #include <Display.h>
 #include <Surface.h>
 #include <KeyCodes.h>
+#include <Utils.h>
 #include <jni.h>
 
 #include <android/log.h>
@@ -148,8 +149,10 @@ JAVA_EXPORT void JNICALL Java_org_haxe_NME_onRender(JNIEnv * env, jobject obj)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
+   //double t0 = nme::GetTimeStamp();
    if (nme::sStage)
       nme::sStage->OnRender();
+   //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
 }
 
 

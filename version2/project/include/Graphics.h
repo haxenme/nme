@@ -17,6 +17,14 @@ enum GraphicsAPIType { gatBase, gatInternal,  gatQuartz, gatCairo, gatOpenGL, ga
 
 // enum SurfaceAPIType  { satInternal, satSDL, satCairo };
 
+enum StageQuality
+{
+   sqLow,
+   sqMedium,
+   sqHigh,
+   sqBest,
+};
+
 
 // --- Graphics Data -------------------------------------------------------
 
@@ -501,6 +509,7 @@ public:
    virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );
 
    virtual void SetWindowSize(int inWidth,int inHeight)=0;
+   virtual void SetQuality(StageQuality inQuality)=0;
    virtual void BeginRender(const Rect &inRect)=0;
    virtual void SetViewport(const Rect &inRect)=0;
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;

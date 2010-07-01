@@ -1215,7 +1215,6 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mHandler = 0;
    mHandlerData = 0;
    opaqueBackground = 0xffffffff;
-   mQuality = 4;
    mFocusObject = 0;
    mMouseDownObject = 0;
    focusRect = true;
@@ -1225,6 +1224,12 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mNominalHeight = 100;
 	mNextWake = 0.0;
    align = saTopLeft;
+
+   #if defined(IPHONE) || defined(ANDROID)
+   quality = sqLow;
+   #else
+   quality = sqBest;
+   #endif
 }
 
 Stage::~Stage()
@@ -1326,6 +1331,7 @@ void Stage::HandleEvent(Event &inEvent)
          mHandler(inEvent,mHandlerData);
       if (inEvent.result==0 && mFocusObject)
          mFocusObject->OnKey(inEvent);
+      return;
    }
 
    if (inEvent.type==etResize)
@@ -1503,14 +1509,29 @@ bool Stage::FinishEditOnEnter()
    return false;
 }
 
+int Stage::GetAA()
+{
+   switch(quality)
+   {
+      case sqLow: return 1;
+      case sqMedium: return 2;
+      case sqHigh:
+      case sqBest:
+         return 4;
+   }
+   return 1;
+}
+
 
 void Stage::RenderStage()
 {
-   // double t0 = GetTimeStamp();
+   //double t0 = GetTimeStamp();
    ColorTransform::TidyCache();
    AutoStageRender render(this,opaqueBackground);
+   if (render.Target().IsHardware())
+      render.Target().mHardware->SetQuality(quality);
 
-   RenderState state(0,mQuality);
+   RenderState state(0, GetAA() );
 
    state.mTransform.mMatrix = &mStageScale;
 
@@ -1522,7 +1543,7 @@ void Stage::RenderStage()
 
    state.mPhase = rpRender;
    Render(render.Target(),state);
-   // __android_log_print(ANDROID_LOG_ERROR, "hxcpp", "Total Render time %f",GetTimeStamp()-t0);
+    //__android_log_print(ANDROID_LOG_ERROR, "nme", "  Render time %f",GetTimeStamp()-t0);
 }
 
 double Stage::getStageWidth()
@@ -1552,6 +1573,11 @@ void Stage::setAlign(int inAlign)
    CalcStageScaling( getStageWidth(), getStageHeight() );
 }
 
+void Stage::setQuality(int inQuality)
+{
+   quality = (StageQuality)inQuality;
+   DirtyUp(dirtCache);
+}
 
 Matrix Stage::GetFullMatrix(bool inStageScaling)
 {
@@ -1570,7 +1596,7 @@ DisplayObject *Stage::HitTest(UserPoint inStage,DisplayObject *inRoot,bool inRec
    // TODO: special version that does not actually do rendering...
    RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()) );
 
-   RenderState state(0,mQuality);
+   RenderState state(0, GetAA() );
    state.mClipRect = Rect( inStage.x, inStage.y, 1, 1 );
 	Matrix m = mStageScale;
 	if (inRoot)

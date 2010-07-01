@@ -29,6 +29,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public var stageHeight(nmeGetStageHeight,null):Float;
    public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
    public var align(nmeGetAlign, nmeSetAlign):StageAlign;
+   public var quality(nmeGetQuality, nmeSetQuality):StageQuality;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
@@ -132,6 +133,17 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_stage_set_align(nmeHandle, Type.enumIndex(inMode) );
       return inMode;
    }
+   function nmeGetQuality() : StageQuality
+   {
+      var i:Int = nme_stage_get_quality(nmeHandle);
+      return Type.createEnumIndex( StageQuality, i );
+   }
+   function nmeSetQuality(inQuality:StageQuality) : StageQuality
+   {
+      nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality) );
+      return inQuality;
+   }
+
 
 
 
@@ -499,5 +511,7 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_scale_mode = nme.Loader.load("nme_stage_set_scale_mode",2);
    static var nme_stage_get_align = nme.Loader.load("nme_stage_get_align",1);
    static var nme_stage_set_align = nme.Loader.load("nme_stage_set_align",2);
+   static var nme_stage_get_quality = nme.Loader.load("nme_stage_get_quality",1);
+   static var nme_stage_set_quality = nme.Loader.load("nme_stage_set_quality",2);
    static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
 }
