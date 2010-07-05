@@ -25,6 +25,15 @@ enum StageQuality
    sqBest,
 };
 
+enum StageDisplayState
+{
+   sdsNormal,
+   sdsFullscreen,
+   sdsFullscreenInteractive,
+};
+
+
+
 
 // --- Graphics Data -------------------------------------------------------
 

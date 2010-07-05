@@ -38,8 +38,13 @@ enum EventType
    etShouldRotate, // 12
 
    // Internal for now...
-   etDestroyHandler,
-   etRedraw,
+   etDestroyHandler, // 13
+   etRedraw,   // 14
+
+   etTouchBegin, // 15
+   etTouchMove,  // 16
+   etTouchEnd,   // 17
+   etTouchTap,   // 18
 };
 
 enum EventFlags
@@ -53,6 +58,7 @@ enum EventFlags
    efRightDown  = 0x0040,
 
    efLocationRight  = 0x4000,
+   efPrimaryTouch   = 0x8000,
 };
 
 enum FocusSource { fsProgram, fsMouse, fsKey };
@@ -315,10 +321,12 @@ public:
    void SetNominalSize(int inWidth,int inHeight);
    virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(UserPoint inPoint,DisplayObject *inRoot=0,bool inRecurse=true);
+   virtual void SetFullscreen(bool inFullscreen) { }
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void EnablePopupKeyboard(bool inEnable) { }
    double GetNextWake() { return mNextWake; }
    virtual void SetNextWakeDelay(double inNextWake) { mNextWake = inNextWake + GetTimeStamp(); }
+
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 
@@ -333,6 +341,8 @@ public:
    void setAlign(int inAlign);
    int getQuality() const { return quality; }
    void setQuality(int inQuality);
+   int getDisplayState() const { return displayState; }
+   void setDisplayState(int inDisplayState);
    int GetAA();
 
 
@@ -354,6 +364,7 @@ protected:
    StageScaleMode scaleMode;
    StageAlign     align;
    StageQuality   quality;
+   StageDisplayState   displayState;
 
    Matrix         mStageScale;
 

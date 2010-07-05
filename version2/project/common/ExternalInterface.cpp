@@ -93,8 +93,11 @@ static int _id_rgb;
 
 vkind gObjectKind;
 
+static int sgIDsInit = false;
+
 extern "C" void InitIDs()
 {
+   sgIDsInit = true;
    _id_type = val_id("type");
    _id_x = val_id("x");
    _id_y = val_id("y");
@@ -556,6 +559,8 @@ void OnMainFrameCreated(Frame *inFrame)
 
 value nme_create_main_frame(value *arg, int nargs)
 {
+   if (!sgIDsInit)
+      InitIDs();
    enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
 
    sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
@@ -679,6 +684,7 @@ DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
 DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
 DO_STAGE_PROP(align,Align,alloc_int,val_int)
 DO_STAGE_PROP(quality,Quality,alloc_int,val_int)
+DO_STAGE_PROP(display_state,DisplayState,alloc_int,val_int)
 DO_PROP_READ(Stage,stage,stage_width,StageWidth,alloc_float);
 DO_PROP_READ(Stage,stage,stage_height,StageHeight,alloc_float);
 

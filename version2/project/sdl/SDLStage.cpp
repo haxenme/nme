@@ -11,6 +11,8 @@ namespace nme
 
 void MainLoop();
 
+static int sgDesktopWidth = 0;
+static int sgDesktopHeight = 0;
 
 class SDLSurf : public Surface
 {
@@ -118,11 +120,19 @@ SDL_Cursor *sTextCursor = 0;
 class SDLStage : public Stage
 {
 public:
-   SDLStage(SDL_Surface *inSurface,uint32 inFlags,bool inIsOpenGL)
+   SDLStage(SDL_Surface *inSurface,uint32 inFlags,bool inIsOpenGL,
+       int inWidth, int inHeight)
    {
+      mWidth = inWidth;
+      mHeight = inHeight;
+
       mIsOpenGL = inIsOpenGL;
       mSDLSurface = inSurface;
       mFlags = inFlags;
+
+      mIsFullscreen =  (mFlags & SDL_FULLSCREEN);
+      if (mIsFullscreen)
+         displayState = sdsFullscreenInteractive;
 
       if (mIsOpenGL)
       {
@@ -138,6 +148,7 @@ public:
       }
       mPrimarySurface->IncRef();
    }
+
    ~SDLStage()
    {
       if (!mIsOpenGL)
@@ -182,6 +193,53 @@ public:
             mPrimarySurface = new SDLSurf(mSDLSurface,mIsOpenGL);
          }
          mPrimarySurface->IncRef();
+      }
+   }
+
+   void SetFullscreen(bool inFullscreen)
+   {
+      if (inFullscreen != mIsFullscreen)
+      {
+         mIsFullscreen = inFullscreen;
+         //printf("SetFullscreen %d\n",inFullscreen);
+
+         // Calling this recreates the gl context and we loose all our textures and
+         // display lists. So Work around it.
+         gTextureContextVersion++;
+
+         int w = mIsFullscreen ? sgDesktopWidth : mWidth;
+         int h = mIsFullscreen ? sgDesktopHeight : mHeight;
+         if (mIsFullscreen)
+            mFlags |= SDL_FULLSCREEN;
+         else
+            mFlags &= ~SDL_FULLSCREEN;
+
+         //printf("Set %dx%d %d\n", w,h,mFlags & SDL_FULLSCREEN);
+         mSDLSurface = SDL_SetVideoMode(w, h, 32, mFlags);
+
+
+         w = mSDLSurface->w;
+         h = mSDLSurface->h;
+         if (mIsOpenGL)
+         {
+            //nme_resize_id ++;
+            mOpenGLContext->DecRef();
+            mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+            mOpenGLContext->SetWindowSize(w, h);
+            mOpenGLContext->IncRef();
+            mPrimarySurface->DecRef();
+            mPrimarySurface = new HardwareSurface(mOpenGLContext);
+         }
+         else
+         {
+            mPrimarySurface->DecRef();
+            mPrimarySurface = new SDLSurf(mSDLSurface,mIsOpenGL);
+         }
+         mPrimarySurface->IncRef();
+
+
+         Event resize(etResize,w,h);
+         ProcessEvent(resize);
       }
    }
 
@@ -244,18 +302,21 @@ public:
    Surface     *mPrimarySurface;
    double       mFrameRate;
    bool         mIsOpenGL;
+   bool         mIsFullscreen;
    unsigned int mFlags;
+   int          mWidth;
+   int          mHeight;
 };
 
 
 class SDLFrame : public Frame
 {
 public:
-   SDLFrame(SDL_Surface *inSurface, uint32 inFlags, bool inIsOpenGL)
+   SDLFrame(SDL_Surface *inSurface, uint32 inFlags, bool inIsOpenGL,int inW,int inH)
    {
       mFlags = inFlags;
       mIsOpenGL = inIsOpenGL;
-      mStage = new SDLStage(inSurface,mFlags,inIsOpenGL);
+      mStage = new SDLStage(inSurface,mFlags,inIsOpenGL,inW,inH);
       mStage->IncRef();
       // SetTimer(mHandle,timerFrame, 10,0);
    }
@@ -333,14 +394,19 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
 
+   const SDL_VideoInfo *info  = SDL_GetVideoInfo();
+   sgDesktopWidth = info->current_w;
+   sgDesktopHeight = info->current_h;
+
    sdl_flags = SDL_HWSURFACE;
 
    if ( resizable )
       sdl_flags |= SDL_RESIZABLE;
 
    if ( fullscreen )
+   {
       sdl_flags |= SDL_FULLSCREEN;
-
+   }
 
    int use_w = fullscreen ? 0 : inWidth;
    int use_h = fullscreen ? 0 : inHeight;
@@ -376,9 +442,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       else
       {
         is_opengl = true;
-        //Not great either way
-        //glEnable( GL_LINE_SMOOTH );  
-        //glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  
       }
    }
 
@@ -407,7 +470,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       printf("unable to initialize the sound support\n");
    #endif
 
-   sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl );
+   sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
    inOnFrame(sgSDLFrame);
 

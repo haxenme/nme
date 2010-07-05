@@ -1222,7 +1222,8 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    scaleMode = ssmShowAll;
    mNominalWidth = 100;
    mNominalHeight = 100;
-	mNextWake = 0.0;
+   mNextWake = 0.0;
+   displayState = sdsNormal;
    align = saTopLeft;
 
    #if defined(IPHONE) || defined(ANDROID)
@@ -1339,8 +1340,11 @@ void Stage::HandleEvent(Event &inEvent)
       CalcStageScaling( inEvent.x, inEvent.y);
    }
 
-   if (inEvent.type==etMouseMove || inEvent.type==etMouseDown || inEvent.type==etMouseUp ||
-         inEvent.type==etMouseClick )
+   if (inEvent.type==etMouseMove || inEvent.type==etMouseDown ||
+         inEvent.type==etMouseUp || inEvent.type==etMouseClick ||
+         inEvent.type==etTouchBegin || inEvent.type==etTouchEnd ||
+         inEvent.type==etTouchMove || inEvent.type==etTouchTap
+       )
    {
       UserPoint pixels(inEvent.x,inEvent.y);
       hit_obj = HitTest(pixels);
@@ -1362,7 +1366,9 @@ void Stage::HandleEvent(Event &inEvent)
 
    if (hit_obj)
    {
-      if ((inEvent.type==etMouseDown) && inEvent.result!=erCancel )
+      if ( (inEvent.type==etMouseDown ||
+            (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
+           && inEvent.result!=erCancel )
       {
          if (hit_obj->WantsFocus())
             SetFocusObject(hit_obj,fsMouse);
@@ -1385,7 +1391,8 @@ void Stage::HandleEvent(Event &inEvent)
       }
    }
    #ifdef IPHONE
-   else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown )
+   else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown ||
+         (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
    {
       EnablePopupKeyboard(false);
       SetFocusObject(0);
@@ -1578,6 +1585,13 @@ void Stage::setQuality(int inQuality)
    quality = (StageQuality)inQuality;
    DirtyUp(dirtCache);
 }
+
+void Stage::setDisplayState(int inDisplayState)
+{
+   displayState = (StageDisplayState)inDisplayState;
+   SetFullscreen(inDisplayState>0);
+}
+
 
 Matrix Stage::GetFullMatrix(bool inStageScaling)
 {

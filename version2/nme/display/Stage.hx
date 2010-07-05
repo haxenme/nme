@@ -3,9 +3,18 @@ package nme.display;
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
+import nme.events.TouchEvent;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
+
+class TouchInfo
+{
+   public var touchOverObjects : Array<InteractiveObject>;
+   public function new() { touchOverObjects = []; }
+}
+
+
 
 class Stage extends nme.display.DisplayObjectContainer
 {
@@ -18,6 +27,8 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeDragOffsetY:Float;
    var nmeFramePeriod:Float;
    var nmeLastRender:Float;
+   var nmeTouchInfo:IntHash<TouchInfo>;
+   
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
@@ -30,6 +41,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
    public var align(nmeGetAlign, nmeSetAlign):StageAlign;
    public var quality(nmeGetQuality, nmeSetQuality):StageQuality;
+   public var displayState(nmeGetDisplayState, nmeSetDisplayState):StageDisplayState;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onResize: Int -> Int ->Void; 
@@ -45,6 +57,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeInvalid = false;
       nmeLastRender = 0;
       nmeSetFrameRate(100);
+      nmeTouchInfo = new IntHash<TouchInfo>();
    }
 
    public override function nmeGetStage() : nme.display.Stage
@@ -143,6 +156,17 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality) );
       return inQuality;
    }
+   function nmeGetDisplayState() : StageDisplayState
+   {
+      var i:Int = nme_stage_get_display_state(nmeHandle);
+      return Type.createEnumIndex( StageDisplayState, i );
+   }
+   function nmeSetDisplayState(inState:StageDisplayState) : StageDisplayState
+   {
+      nme_stage_set_display_state(nmeHandle, Type.enumIndex(inState) );
+      return inState;
+   }
+
 
 
 
@@ -200,37 +224,44 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeDragObject = null;
    }
 
+   static var nmeMouseChanges : Array<String> = [ MouseEvent.MOUSE_OUT, MouseEvent.MOUSE_OVER,
+                                          MouseEvent.ROLL_OUT, MouseEvent.ROLL_OVER ];
+   static var nmeTouchChanges : Array<String> = [ TouchEvent.TOUCH_OUT, TouchEvent.TOUCH_OVER,
+                                          TouchEvent.TOUCH_ROLL_OUT, TouchEvent.TOUCH_ROLL_OVER ];
 
-   function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>)
+
+   function nmeCheckInOuts(inEvent:MouseEvent,inStack:Array<InteractiveObject>,?touchInfo:TouchInfo)
    {
-      // Exit ...
+      var prev = touchInfo==null ? nmeMouseOverObjects : touchInfo.touchOverObjects;
+      var events = touchInfo==null ? nmeMouseChanges : nmeTouchChanges;
+
       var new_n = inStack.length;
       var new_obj:InteractiveObject = new_n>0 ? inStack[new_n-1] : null;
-      var old_n = nmeMouseOverObjects.length;
-      var old_obj:InteractiveObject = old_n>0 ? nmeMouseOverObjects[old_n-1] : null;
+      var old_n = prev.length;
+      var old_obj:InteractiveObject = old_n>0 ? prev[old_n-1] : null;
       if (new_obj!=old_obj)
       {
          // mouseOut/MouseOver goes up the object tree...
          if (old_obj!=null)
-            old_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OUT,new_obj,old_obj) );
+            old_obj.nmeFireEvent( inEvent.nmeCreateSimilar(events[0],new_obj,old_obj) );
 
          if (new_obj!=null)
-            new_obj.nmeFireEvent( inEvent.nmeCreateSimilar(MouseEvent.MOUSE_OVER,old_obj) );
+            new_obj.nmeFireEvent( inEvent.nmeCreateSimilar(events[1],old_obj) );
 
          // rollOver/rollOut goes only over the non-common objects in the tree...
          var common = 0;
-         while(common<new_n && common<old_n && inStack[common] == nmeMouseOverObjects[common] )
+         while(common<new_n && common<old_n && inStack[common] == prev[common] )
             common++;
 
-         var rollOut = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OUT,new_obj,old_obj);
+         var rollOut = inEvent.nmeCreateSimilar(events[2],new_obj,old_obj);
          var i = old_n-1;
          while(i>=common)
          {
-            nmeMouseOverObjects[i].dispatchEvent(rollOut);
+            prev[i].dispatchEvent(rollOut);
             i--;
          }
 
-         var rollOver = inEvent.nmeCreateSimilar(MouseEvent.ROLL_OVER,old_obj);
+         var rollOver = inEvent.nmeCreateSimilar(events[3],old_obj);
          var i = new_n-1;
          while(i>=common)
          {
@@ -238,7 +269,10 @@ class Stage extends nme.display.DisplayObjectContainer
             i--;
          }
 
-         nmeMouseOverObjects = inStack;
+         if (touchInfo==null)
+            nmeMouseOverObjects = inStack;
+         else
+            touchInfo.touchOverObjects = inStack;
       }
    }
 
@@ -266,6 +300,35 @@ class Stage extends nme.display.DisplayObjectContainer
          nmeCheckInOuts(evt,stack);
       }
    }
+
+
+   function nmeOnTouch(inEvent:Dynamic,inType:String,touchInfo:TouchInfo)
+   {
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj!=null)
+         obj.nmeGetInteractiveObjectStack(stack);
+
+      if (stack.length>0)
+      {
+         var obj = stack[0];
+         stack.reverse();
+         var local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
+         var evt = TouchEvent.nmeCreate(inType,inEvent,local,obj);
+         evt.touchPointID = inEvent.value;
+         evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
+         nmeCheckInOuts(evt,stack,touchInfo);
+         obj.nmeFireEvent(evt);
+      }
+      else
+      {
+         var evt = TouchEvent.nmeCreate(inType,inEvent, new Point(inEvent.x,inEvent.y),null);
+         evt.touchPointID = inEvent.value;
+         evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
+         nmeCheckInOuts(evt,stack,touchInfo);
+      }
+   }
+
 
 
   function nmeCheckFocusInOuts(inEvent:Dynamic,inStack:Array<InteractiveObject>)
@@ -401,6 +464,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeCheckRender( )
    {
+      //trace("nmeCheckRender " + frameRate);
       if (frameRate>0)
       {
          var now = nme.Timer.stamp();
@@ -425,6 +489,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmePollTimers()
    {
+      //trace("poll");
       nme.Timer.nmeCheckTimers();
       nme.media.SoundChannel.nmePollComplete();
       nmeCheckRender();
@@ -443,7 +508,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
    {
-      //trace("Stage Event : " + inEvent);
+      //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
       {
@@ -491,6 +556,23 @@ class Stage extends nme.display.DisplayObjectContainer
          case 14: // etRedraw
             nmeRender(true);
 
+         case 15: // etTouchBegin
+            var touchInfo = new TouchInfo();
+            nmeTouchInfo.set( inEvent.value, touchInfo );
+            nmeOnTouch(inEvent,TouchEvent.TOUCH_BEGIN,touchInfo);
+
+         case 16: // etTouchMove
+            var touchInfo = nmeTouchInfo.get( inEvent.value );
+            nmeOnTouch(inEvent,TouchEvent.TOUCH_MOVE,touchInfo);
+
+         case 17: // etTouchEnd
+            var touchInfo = nmeTouchInfo.get( inEvent.value );
+            nmeOnTouch(inEvent,TouchEvent.TOUCH_END, touchInfo );
+            nmeTouchInfo.remove( inEvent.value );
+
+         case 18: // etTouchTap
+            //nmeOnTouchTap(inEvent.TouchEvent.TOUCH_TAP);
+
          // TODO: user, sys_wm, sound_finished
       }
 
@@ -513,5 +595,7 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_align = nme.Loader.load("nme_stage_set_align",2);
    static var nme_stage_get_quality = nme.Loader.load("nme_stage_get_quality",1);
    static var nme_stage_set_quality = nme.Loader.load("nme_stage_set_quality",2);
+   static var nme_stage_get_display_state = nme.Loader.load("nme_stage_get_display_state",1);
+   static var nme_stage_set_display_state = nme.Loader.load("nme_stage_set_display_state",2);
    static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
 }

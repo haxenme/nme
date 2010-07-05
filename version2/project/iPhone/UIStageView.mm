@@ -51,6 +51,7 @@ extern "C" void nme_app_set_active(bool inActive);
    id displayLink;
    NSInteger animationFrameInterval;
    NSTimer *animationTimer;
+   int    mPrimaryEvent;
 @public
    class EAGLStage *mStage;
 
@@ -60,6 +61,8 @@ extern "C" void nme_app_set_active(bool inActive);
    double mAccY;
    double mAccZ;
    BOOL mKeyboardEnabled;
+   bool   mMultiTouch;
+   int    mPrimaryTouchHash;
 }
 
 
@@ -360,6 +363,11 @@ public:
       mTextField = nil;
       mKeyboardEnabled = NO;
       
+      mMultiTouch = true;
+      if (mMultiTouch)
+         [self setMultipleTouchEnabled:YES];
+      mPrimaryTouchHash = 0;
+
       // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
       // class is used as fallback when it isn't available.
       /*
@@ -446,52 +454,109 @@ public:
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   CGPoint thumbPoint;
-   UITouch *thumb = [[event allTouches] anyObject];
-   thumbPoint = [thumb locationInView:thumb.view];
-   //printf("touchesBegan %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
+   NSArray *touchArr = [touches allObjects];
+   NSInteger touchCnt = [touchArr count];
 
-   if(thumb.tapCount==1)
+   for(int i=0;i<touchCnt;i++)
    {
-      Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
-      mouse.flags |= efLeftDown;
-      mStage->OnEvent(mouse);
-   }
-   else if(thumb.tapCount==1)
-   {
-      Event mouse(etMouseClick, thumbPoint.x, thumbPoint.y);
-      mStage->OnEvent(mouse);
+      UITouch *aTouch = [touchArr objectAtIndex:i];
+
+      CGPoint thumbPoint;
+      thumbPoint = [aTouch locationInView:aTouch.view];
+      //printf("touchesBegan %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
+
+      if (mPrimaryTouchHash==0)
+         mPrimaryTouchHash = [aTouch hash];
+
+      if(aTouch.tapCount==1)
+      {
+         Event mouse(etMouseClick, thumbPoint.x, thumbPoint.y);
+         mStage->OnEvent(mouse);
+      }
+
+      if (mMultiTouch)
+      {
+         Event mouse(etTouchBegin, thumbPoint.x, thumbPoint.y);
+         mouse.value = [aTouch hash];
+         mStage->OnEvent(mouse);
+      }
+      else
+      {
+         Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
+         mouse.flags |= efLeftDown;
+         mouse.flags |= efPrimaryTouch;
+         mStage->OnEvent(mouse);
+      }
+
    }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   if([touches count] == 1)
+   NSArray *touchArr = [touches allObjects];
+   NSInteger touchCnt = [touchArr count];
+
+   for(int i=0;i<touchCnt;i++)
    {
+      UITouch *aTouch = [touchArr objectAtIndex:i];
+
       CGPoint thumbPoint;
-      UITouch *thumb = [[event allTouches] anyObject];
-      thumbPoint = [thumb locationInView:thumb.view];
+      thumbPoint = [aTouch locationInView:aTouch.view];
 
-      //printf(" MOVED %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
-
-      Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
-      mouse.flags |= efLeftDown;
-      mStage->OnEvent(mouse);
+      if (mMultiTouch)
+      {
+         Event mouse(etTouchMove, thumbPoint.x, thumbPoint.y);
+         mouse.value = [aTouch hash];
+         if (mouse.value==mPrimaryTouchHash)
+            mouse.flags |= efPrimaryTouch;
+         mStage->OnEvent(mouse);
+      }
+      else
+      {
+         Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
+         mouse.flags |= efLeftDown;
+         mouse.flags |= efPrimaryTouch;
+         mStage->OnEvent(mouse);
+      }
    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   //printf("END %d/%d\n", (int)[touches count],(int)[[event touchesForView:self] count]);
-   if([touches count] == [[event touchesForView:self] count])
-   {
-      CGPoint thumbPoint;
-      UITouch *thumb = [[event allTouches] anyObject];
-      thumbPoint = [thumb locationInView:thumb.view];
+   NSArray *touchArr = [touches allObjects];
+   NSInteger touchCnt = [touchArr count];
 
-      Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
-      mStage->OnEvent(mouse);
+   for(int i=0;i<touchCnt;i++)
+   {
+      UITouch *aTouch = [touchArr objectAtIndex:i];
+
+      CGPoint thumbPoint;
+      thumbPoint = [aTouch locationInView:aTouch.view];
+
+
+      if (mMultiTouch)
+      {
+         Event mouse(etTouchEnd, thumbPoint.x, thumbPoint.y);
+         mouse.value = [aTouch hash];
+         if (mouse.value==mPrimaryTouchHash)
+         {
+            mouse.flags |= efPrimaryTouch;
+            mPrimaryTouchHash = 0;
+         }
+         mStage->OnEvent(mouse);
+      }
+      else
+      {
+         Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
+         mouse.flags |= efPrimaryTouch;
+         mStage->OnEvent(mouse);
+      }
    }
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   [self touchesEnded:touches withEvent:event];
 }
 
 - (void) enableKeyboard:(bool)withEnable
