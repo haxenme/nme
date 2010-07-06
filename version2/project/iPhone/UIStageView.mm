@@ -75,6 +75,7 @@ extern "C" void nme_app_set_active(bool inActive);
 - (void) drawView:(id)sender;
 - (void) onPoll:(id)sender;
 - (void) enableKeyboard:(bool)withEnable;
+- (void) enableMultitouch:(bool)withEnable;
 - (BOOL)canBecomeFirstResponder;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
@@ -138,6 +139,19 @@ public:
    
       [mContext release];
    }
+
+   bool getMultitouchSupported() { return true; }
+
+   void setMultitouchActive(bool inActive)
+   {
+      [ sgMainView enableMultitouch:inActive ];
+
+   }
+   bool getMultitouchActive()
+   {
+      return sgMainView->mMultiTouch;
+   }
+
 
 
    bool isOpenGL() const { return true; }
@@ -363,9 +377,7 @@ public:
       mTextField = nil;
       mKeyboardEnabled = NO;
       
-      mMultiTouch = true;
-      if (mMultiTouch)
-         [self setMultipleTouchEnabled:YES];
+      mMultiTouch = false;
       mPrimaryTouchHash = 0;
 
       // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
@@ -558,6 +570,16 @@ public:
 {
    [self touchesEnded:touches withEvent:event];
 }
+
+- (void) enableMultitouch:(bool)withEnable
+{
+   mMultiTouch = withEnable;
+   if (mMultiTouch)
+      [self setMultipleTouchEnabled:YES];
+   else
+      [self setMultipleTouchEnabled:NO];
+}
+
 
 - (void) enableKeyboard:(bool)withEnable
 {

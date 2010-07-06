@@ -327,6 +327,10 @@ public:
    double GetNextWake() { return mNextWake; }
    virtual void SetNextWakeDelay(double inNextWake) { mNextWake = inNextWake + GetTimeStamp(); }
 
+   virtual bool getMultitouchSupported() { return false; }
+   virtual void setMultitouchActive(bool inActive) {  }
+   virtual bool getMultitouchActive() {  return false; }
+
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 

@@ -34,7 +34,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var transform(nmeGetTransform,nmeSetTransform): Transform;
    public var alpha(nmeGetAlpha,nmeSetAlpha): Float;
 
-   var nmeHandle:Dynamic;
+   public var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
    var nmeParent:DisplayObjectContainer;
    var nmeName:String;

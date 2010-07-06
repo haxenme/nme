@@ -9,6 +9,7 @@ import nme.display.GradientType;
 import nme.display.Sprite;
 import nme.display.StageDisplayState;
 import nme.geom.Matrix;
+import nme.ui.Multitouch;
 
 class Sample extends Sprite
 {
@@ -21,7 +22,10 @@ class Sample extends Sprite
       super();
       Lib.current.addChild(this);
 
-      mMultiTouch = true;
+      mMultiTouch = nme.ui.Multitouch.supportsTouchEvents;
+      if (mMultiTouch)
+         nme.ui.Multitouch.inputMode = nme.ui.MultitouchInputMode.TOUCH_POINT;
+      trace("Using multi-touch : " + mMultiTouch);
       mBitmap = new BitmapData(320,480);
       addChild(new Bitmap(mBitmap));
       colourHash = new IntHash<Int>();
