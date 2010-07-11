@@ -268,7 +268,6 @@ public:
 
                   pos = tex_pos;
                   tex.push_back( mTexture->PixelToTex(pos) );
-                  tex.push_back( mTexture->PixelToTex(pos) );
                   tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y)) );
                   tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
                   tex.push_back( mTexture->PixelToTex(pos) );

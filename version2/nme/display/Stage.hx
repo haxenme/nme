@@ -44,7 +44,6 @@ class Stage extends nme.display.DisplayObjectContainer
    public var displayState(nmeGetDisplayState, nmeSetDisplayState):StageDisplayState;
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
-   public var onResize: Int -> Int ->Void; 
    public var onQuit: Void ->Void; 
 
 
@@ -447,6 +446,11 @@ class Stage extends nme.display.DisplayObjectContainer
    }
 
 
+   function nmeOnResize(inW:Float,inH:Float)
+   {
+      var evt = new Event(Event.RESIZE);
+      nmeBroadcast(evt);
+   }
 
    function nmeRender(inSendEnterFrame:Bool)
    {
@@ -535,8 +539,7 @@ class Stage extends nme.display.DisplayObjectContainer
             nmeOnMouse(inEvent,MouseEvent.MOUSE_UP);
 
          case 8: // etResize
-            if (onResize!=null)
-               untyped onResize(inEvent.x, inEvent.y);
+            nmeOnResize(inEvent.x, inEvent.y);
             nmeRender(false);
 
          case 9: // etPoll

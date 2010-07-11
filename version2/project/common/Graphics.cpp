@@ -14,6 +14,7 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mPathData = new GraphicsPath;
    mBuiltHardware = 0;
    mTileJob.mIsTileJob = true;
+   mMeasuredJobs = 0;
    mVersion = 0;
 }
 

@@ -103,30 +103,30 @@ class DisplayObjectContainer extends InteractiveObject
    }
 
    public function addChildAt(child:DisplayObject, index:Int):DisplayObject
-	{
-		addChild(child);
+   {
+      addChild(child);
       setChildIndex(child,index);
       return child;
-	}
+   }
    public function areInaccessibleObjectsUnderPoint(point:Point):Bool { return false; }
    public function contains(child:DisplayObject):Bool
-	{
-		if (child==null)
-			return false;
-		if (this==child)
-			return true;
-		for(c in nmeChildren)
-			if (c==child)
-				return true;
-		return false;
-	}
+   {
+      if (child==null)
+         return false;
+      if (this==child)
+         return true;
+      for(c in nmeChildren)
+         if (c==child)
+            return true;
+      return false;
+   }
    public function getChildByName(name:String):DisplayObject
-	{
-		for(c in nmeChildren)
-			if (name==c.name)
-				return c;
-		return null;
-	}
+   {
+      for(c in nmeChildren)
+         if (name==c.name)
+            return c;
+      return null;
+   }
 
    public function getChildAt(index:Int):DisplayObject
    {
@@ -146,24 +146,24 @@ class DisplayObjectContainer extends InteractiveObject
    }
 
    public override function nmeGetObjectsUnderPoint(point:Point,result:Array<DisplayObject>)
-	{
-		super.nmeGetObjectsUnderPoint(point,result);
-		for(child in nmeChildren)
-			nmeGetObjectsUnderPoint(point,result);
-	}
+   {
+      super.nmeGetObjectsUnderPoint(point,result);
+      for(child in nmeChildren)
+         nmeGetObjectsUnderPoint(point,result);
+   }
 
    public function getObjectsUnderPoint(point:Point):Array<DisplayObject>
-	{
-		var result = new Array<DisplayObject>();
-		nmeGetObjectsUnderPoint(point,result);
-		return result;
-	}
+   {
+      var result = new Array<DisplayObject>();
+      nmeGetObjectsUnderPoint(point,result);
+      return result;
+   }
    public function removeChild(child:DisplayObject):DisplayObject
    {
       var c = getChildIndex(child);
       if (c>=0)
       {
-         child.parent=null;
+         child.nmeSetParent(null);
          return child;
       }
       return null;
@@ -174,7 +174,7 @@ class DisplayObjectContainer extends InteractiveObject
       if (index>=0 && index<nmeChildren.length)
       {
          var result = nmeChildren[index];
-         result.parent = null;
+         result.nmeSetParent(null);
          return result;
       }
       return null;

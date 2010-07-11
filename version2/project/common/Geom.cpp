@@ -33,7 +33,8 @@ UserPoint Transform::Apply(float inX, float inY) const
 
 bool Transform::operator==(const Transform &inRHS) const
 {
-	return *mMatrix==*inRHS.mMatrix && *mScale9==*inRHS.mScale9 &&
+	return *mMatrix==*inRHS.mMatrix &&
+         (mScale9==inRHS.mScale9 ||*mScale9==*inRHS.mScale9) &&
           mAAFactor == inRHS.mAAFactor;
 }
 

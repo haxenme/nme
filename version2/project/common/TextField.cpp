@@ -1372,7 +1372,6 @@ void TextField::Layout(const Matrix &inMatrix)
 
    textHeight = y + gap;
 
-   mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
    int max_y = boundsHeight * mLayoutScaleV;
    if (autoSize != asNone)
    {
@@ -1389,9 +1388,15 @@ void TextField::Layout(const Matrix &inMatrix)
                          mActiveRect.w = textWidth;
                          break;
          }
+         if (autoSize!=asNone)
+         {
+             boundsHeight = textHeight/mLayoutScaleV;
+         }
       }
       max_y = mActiveRect.h = textHeight;
    }
+
+   mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
 
    maxScrollH = std::max(0,textWidth-max_x);
    maxScrollV = 1;

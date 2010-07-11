@@ -1148,6 +1148,8 @@ public:
                   break;
             }
          }
+         if (last_point!=last_move)
+            (*this.*func)(last_point,last_move);
       }
    }
 };

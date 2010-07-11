@@ -848,10 +848,13 @@ value nme_display_object_set_filters(value inObj,value inFilters)
    if (AbstractToObject(inObj,obj))
    {
       FilterList filters;
-      if (!val_is_null(inFilters))
+      if (!val_is_null(inFilters) && val_array_size(inFilters) )
+      {
+         value *filter_array = val_array_value(inFilters);
          for(int f=0;f<val_array_size(inFilters);f++)
          {
-            value filter = val_array_value(inFilters)[f];
+            value filter = filter_array ? filter_array[f] : val_array_i(inFilters,f);
+
             WString type = val2stdwstr( val_field(filter,_id_type) );
             int q = val_int(val_field(filter,_id_quality));
             if (q<1) continue;
@@ -877,7 +880,8 @@ value nme_display_object_set_filters(value inObj,value inFilters)
                    ) );
             }
          }
-         obj->setFilters(filters);
+      }
+      obj->setFilters(filters);
    }
 
    return alloc_null();

@@ -831,6 +831,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (!clip_state.mClipRect.HasPixels())
             continue;
+
+         if (obj->opaqueBackground && state.mPhase == rpRender)
+         {
+            // Clear more than once?
+            inTarget.Clear(obj->opaqueBackground,clip_state.mClipRect);
+         }
       
          obj_state = &clip_state;
       }
