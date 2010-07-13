@@ -167,9 +167,6 @@ class Stage extends nme.display.DisplayObjectContainer
    }
 
 
-
-
-
    public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:nme.geom.Rectangle):Void
    {
       nmeDragBounds = (bounds==null) ? null : bounds.clone();

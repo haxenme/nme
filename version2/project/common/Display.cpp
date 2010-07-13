@@ -834,7 +834,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj->opaqueBackground && state.mPhase == rpRender)
          {
-            // Clear more than once?
+            // Cleared too many times?
             inTarget.Clear(obj->opaqueBackground,clip_state.mClipRect);
          }
       

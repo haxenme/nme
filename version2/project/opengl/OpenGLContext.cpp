@@ -333,6 +333,7 @@ public:
          glPushMatrix();
          glLoadIdentity();
 
+         glDisable(GL_TEXTURE_2D);
          static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };
          glVertexPointer(2, GL_FLOAT, 0, rect[0]);
          glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
