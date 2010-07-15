@@ -28,7 +28,6 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
 
    for(; y<y1; y++)
    {
-      int sy = y - inTY;
       const AlphaRuns &line = lines[y];
       AlphaRuns::const_iterator end = line.end();
       AlphaRuns::const_iterator run = line.begin();
@@ -51,7 +50,7 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                clip.ClipX(x0,x1);
 
                outDest.SetX(x0);
-               inSource.SetPos(x0,sy);
+               inSource.SetPos(x0,y);
                const Uint8 *m = mask0 + x0;
                while(x0++<x1)
                {
@@ -87,7 +86,7 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                clip.ClipX(x0,x1);
 
                outDest.SetX(x0);
-               inSource.SetPos(x0,sy);
+               inSource.SetPos(x0,y);
                int alpha = run->mAlpha;
                if (!SOURCE_::HasAlpha)
 						alpha -= (alpha>>7);
