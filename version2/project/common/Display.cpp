@@ -6,10 +6,6 @@
 #define M_PI 3.1415926535897932385
 #endif
 
-#ifdef ANDROID
-#include <android/log.h>
-#endif
-
 namespace nme
 {
 
@@ -773,7 +769,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 {
    Rect visible_bitmap;
 
-	bool parent_first = inState.mPhase==rpRender || inState.mPhase==rpCreateMask;
+   bool parent_first = inState.mPhase==rpRender || inState.mPhase==rpCreateMask;
 
    // Render parent first (or at the end) ?
    if (parent_first)
@@ -1538,7 +1534,6 @@ int Stage::GetAA()
 
 void Stage::RenderStage()
 {
-   //double t0 = GetTimeStamp();
    ColorTransform::TidyCache();
    AutoStageRender render(this,opaqueBackground);
    if (render.Target().IsHardware())
@@ -1556,7 +1551,6 @@ void Stage::RenderStage()
 
    state.mPhase = rpRender;
    Render(render.Target(),state);
-    //__android_log_print(ANDROID_LOG_ERROR, "nme", "  Render time %f",GetTimeStamp()-t0);
 }
 
 double Stage::getStageWidth()

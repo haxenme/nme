@@ -5,8 +5,10 @@
 #include "AlphaMask.h"
 #include <map>
 
+//#include <android/log.h>
+
 #ifndef M_PI
-#define M_PI 3.14159
+#define M_PI 3.14159265358979323846
 #endif
 
 namespace nme
@@ -411,6 +413,7 @@ public:
       SetTransform(ioCache.mTransform);
 
       Iterate(itGetExtent,*ioCache.mTransform.mMatrix);
+
       mBuildExtent = 0;
    }
 
@@ -429,7 +432,11 @@ public:
          mTransformed.resize(points);
          UserPoint *src= (UserPoint *)&mData[ mData0 ];
          for(int i=0;i<points;i++)
+         {
             mTransformed[i] = mTransform.Apply(src[i].x,src[i].y);
+            //__android_log_print(ANDROID_LOG_ERROR, "nme", "%d/%d %f,%f -> %f,%f", i, points, src[i].x, src[i].y,
+                              //mTransformed[i].x, mTransformed[i].y );
+         }
          AlignOrthogonal();
       }
    }
@@ -464,37 +471,44 @@ public:
       // Intersect with clip rect ...
       Rect visible_pixels = rect.Intersect(inState.mClipRect);
 
-      // Check to see if AlphaMask is invalid...
-      int tx=0;
-      int ty=0;
-      if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
+      if (visible_pixels.HasPixels())
       {
-         delete mAlphaMask;
-         mAlphaMask = 0;
+         // Check to see if AlphaMask is invalid...
+         int tx=0;
+         int ty=0;
+         if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
+         {
+            delete mAlphaMask;
+            mAlphaMask = 0;
+         }
+   
+         if (!mAlphaMask)
+         {
+            SetTransform(inState.mTransform);
+   
+            Rect clip = inState.mClipRect;
+   
+            // TODO: make visible_pixels a bit bigger ?
+            mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
+   
+            Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
+   
+            mAlphaMask = mSpanRect->CreateMask(mTransform);
+   
+            delete mSpanRect;
+         }
+   
+         if (inTarget.mPixelFormat==pfAlpha)
+         {
+            mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
+         }
+         else
+            mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
       }
-
-      if (!mAlphaMask)
-      {
-         SetTransform(inState.mTransform);
-
-         // TODO: make visible_pixels a bit bigger ?
-         mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
-
-         Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
-
-         mAlphaMask = mSpanRect->CreateMask(mTransform);
-         delete mSpanRect;
-      }
-
-      if (inTarget.mPixelFormat==pfAlpha)
-      {
-         mAlphaMask->RenderBitmap(tx,ty,inTarget,inState);
-      }
-      else
-         mFiller->Fill(*mAlphaMask,tx,ty,inTarget,inState);
-
+   
       return true;
    }
+
    void BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
    {
       mSpanRect->Line<false,false>( mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1) );
@@ -743,9 +757,13 @@ public:
             else
             {
                // Find angle ...
-               double dot = perp1.Dot(perp2) / sqrt( perp1.Norm2() * perp2.Norm2() );
-               double theta = acos(dot);
-               IterateCircle(p0,p1,theta,p2);
+               double denom = perp1.Norm2() * perp2.Norm2();
+               if (denom>0)
+               {
+                  double dot = perp1.Dot(perp2) / sqrt( denom );
+                  double theta = dot >= 1.0 ? 0 : dot<= -1.0 ? M_PI : acos(dot);
+                  IterateCircle(p0,p1,theta,p2);
+               }
             }
             break;
          }
@@ -876,6 +894,7 @@ public:
                      point++;
                      continue;
                   }
+
                   UserPoint perp = (*point - prev).Perp(perp_len);
                   if (points>1)
                      AddJoint(prev,prev_perp,perp);
@@ -1717,7 +1736,9 @@ public:
          mTransformed.resize(points);
          UserPoint *src= (UserPoint *)&mData[ mData0 ];
          for(int i=0;i<points;i++)
+         {
             mTransformed[i] = mTransform.Apply(src[i].x,src[i].y);
+         }
       }
    }
 

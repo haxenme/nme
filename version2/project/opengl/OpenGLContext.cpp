@@ -309,8 +309,7 @@ public:
    {
       Rect r = inRect ? *inRect : Rect(mWidth,mHeight);
      
-      if (r!=mViewport)
-         glViewport(r.x,mHeight-r.y1(),r.w,r.h);
+      glViewport(r.x,mHeight-r.y1(),r.w,r.h);
 
       if (r==Rect(mWidth,mHeight))
       {
@@ -380,6 +379,8 @@ public:
       #endif
       #endif
 
+      // Force dirty
+      mViewport.w = -1;
       SetViewport(inRect);
 
       glEnable(GL_BLEND);

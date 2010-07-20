@@ -27,6 +27,8 @@ public:
       mHardwareContext->SetWindowSize(inWidth,inHeight);
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
+      mMultiTouch = false;
+      mSingleTouchID = 0;
    }
    ~AndroidStage()
    {
@@ -54,6 +56,54 @@ public:
       HandleEvent(evt);
    }
 
+   void OnTouch(int inType,double inX, double inY, int inID)
+   {
+      if (mMultiTouch)
+      {
+         Event mouse((EventType)inType, inX, inY );
+         mouse.value = inID;
+         HandleEvent(mouse);
+      }
+      else
+      {
+         if (mSingleTouchID==0 || inID==mSingleTouchID)
+         {
+            EventType type = etUnknown;
+            switch(inType)
+            {
+               case  etTouchBegin: type = etMouseDown; break;
+               case  etTouchEnd:   type = etMouseUp; break;
+               case  etTouchMove : type = etMouseMove; break;
+               case  etTouchTap:   type = etMouseClick; break;
+            }
+
+            if (type!=etUnknown)
+            {
+               Event mouse(type, inX, inY);
+               if (inType==etTouchBegin)
+               {
+                  mSingleTouchID = inID;
+                  mouse.flags |= efLeftDown;
+               }
+               else if (inType==etTouchEnd)
+                  mSingleTouchID = 0;
+               else if (inType==etTouchMove)
+                  mouse.flags |= efLeftDown;
+
+               mouse.flags |= efPrimaryTouch;
+               HandleEvent(mouse);
+            }
+         }
+      }
+   }
+
+   bool getMultitouchSupported() { return true; }
+   void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
+   bool getMultitouchActive() {  return mMultiTouch; }
+
+
+   bool mMultiTouch;
+   int  mSingleTouchID;
 
    HardwareContext *mHardwareContext;
    HardwareSurface *mHardwareSurface;
@@ -70,7 +120,7 @@ public:
       sOnFrame = inOnFrame;
       mFlags = inFlags;
       sFrame = this;
-      __android_log_print(ANDROID_LOG_INFO, "AndroidFrame", "Construct %p, sOnFrame=%p", sFrame,sOnFrame);
+      //__android_log_print(ANDROID_LOG_INFO, "AndroidFrame", "Construct %p, sOnFrame=%p", sFrame,sOnFrame);
    }
    ~AndroidFrame()
    {
@@ -91,8 +141,8 @@ public:
       if (!sStage)
       {
          sStage = new AndroidStage(inWidth,inHeight,mFlags);
-         __android_log_print(ANDROID_LOG_INFO, "AndroidFrame::onResize",
-            "Create stage %p, sOnFrame=%p", sStage,sOnFrame);
+         //__android_log_print(ANDROID_LOG_INFO, "AndroidFrame::onResize",
+            //"Create stage %p, sOnFrame=%p", sStage,sOnFrame);
          if (sOnFrame)
             sOnFrame(this);
       }
@@ -114,7 +164,7 @@ void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
    sOnFrame = inOnFrame;
    sFrame = new AndroidFrame(inOnFrame, inWidth, inHeight, inFlags,
                  inTitle, inIcon);
-	__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame", "%dx%d  %p", inWidth,inHeight,sOnFrame);
+	//__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame", "%dx%d  %p", inWidth,inHeight,sOnFrame);
 }
 
 void TerminateMainLoop()
@@ -123,7 +173,6 @@ void TerminateMainLoop()
 }
 
 } // end namespace nme
-
 
 extern "C"
 {
@@ -134,7 +183,7 @@ extern "C"
   #define JAVA_EXPORT JNIEXPORT
 #endif
 
-JAVA_EXPORT void JNICALL Java_org_haxe_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
+JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
@@ -145,15 +194,26 @@ JAVA_EXPORT void JNICALL Java_org_haxe_NME_onResize(JNIEnv * env, jobject obj,  
 
 
 
-JAVA_EXPORT void JNICALL Java_org_haxe_NME_onRender(JNIEnv * env, jobject obj)
+JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
-   //double t0 = nme::GetTimeStamp();
+   double t0 = nme::GetTimeStamp();
+   //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onRender: %p", nme::sStage );
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
 }
+
+JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnTouch(type,x,y,id);
+}
+
+
 
 
 } // end extern C
