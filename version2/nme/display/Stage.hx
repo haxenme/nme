@@ -509,6 +509,8 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
    {
+      #if android try { #end
+
       //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
       switch(type)
@@ -577,6 +579,9 @@ class Stage extends nme.display.DisplayObjectContainer
       }
 
       nmeUpdateNextWake();
+
+      #if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
+
       return null;
    }
 

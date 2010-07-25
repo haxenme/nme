@@ -312,7 +312,7 @@ WString::WString(const wchar_t *inStr,int inLen)
    else
    {
       mString = new wchar_t[inLen+1];
-      if (mString)
+      if (mString && inStr)
          memcpy(mString,inStr,inLen*sizeof(wchar_t));
       mString[inLen] = '\0';
    }
@@ -349,7 +349,7 @@ WString &WString::operator +=(const WString &inRHS)
    return *this;
 }
 
-WString WString::operator +(const WString &inRHS)
+WString WString::operator +(const WString &inRHS) const
 {
    int len = mLength + inRHS.mLength;
    if (len==0)

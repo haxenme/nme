@@ -25,6 +25,7 @@ class Lib
       var create_main_frame = nme.Loader.load("nme_create_main_frame",-1);
       create_main_frame(
         function(inFrameHandle:Dynamic) {
+            #if android try { #end
             nmeMainFrame = inFrameHandle;
             var stage_handle = nme_get_frame_stage(nmeMainFrame);
             nme.Lib.nmeStage = new nme.display.Stage(stage_handle,inWidth,inHeight);
@@ -32,6 +33,7 @@ class Lib
             nme.Lib.nmeStage.opaqueBackground = inColour;
             nme.Lib.nmeStage.onQuit = close;
             inOnLoaded();
+            #if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
         },
         inWidth,inHeight,inFlags,inTitle,inIcon );
    }

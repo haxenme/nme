@@ -6,6 +6,10 @@
 #define M_PI 3.1415926535897932385
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 namespace nme
 {
 
@@ -115,8 +119,8 @@ Stage  *DisplayObject::getStage()
 
 UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
 {
-	Matrix m = GetFullMatrix(false);
-	return m.ApplyInverse(inPoint);
+   Matrix m = GetFullMatrix(false);
+   return m.ApplyInverse(inPoint);
 }
 
 void DisplayObject::setCacheAsBitmap(bool inVal)
@@ -209,19 +213,19 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
    if (!mBitmapCache)
       return;
 
-	ImagePoint offset;
-	if (inState.mMask)
-	{
-		BitmapCache *mask = inState.mMask;
-		ImagePoint buffer;
-		mask->PushTargetOffset(inState.mTargetOffset,buffer);
+   ImagePoint offset;
+   if (inState.mMask)
+   {
+      BitmapCache *mask = inState.mMask;
+      ImagePoint buffer;
+      mask->PushTargetOffset(inState.mTargetOffset,buffer);
       mBitmapCache->Render(inTarget,mask,blendMode);
-		mask->PopTargetOffset(buffer);
-	}
-	else
-	{
+      mask->PopTargetOffset(buffer);
+   }
+   else
+   {
       mBitmapCache->Render(inTarget,0,blendMode);
-	}
+   }
 }
 
 void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState )
@@ -336,21 +340,21 @@ void DisplayObject::UpdateDecomp()
 
 double DisplayObject::getMouseX()
 {
-	Stage *s = getStage();
-	if (!s)
-		return 0;
-	UserPoint p = s->getMousePos();
-	UserPoint result = GetFullMatrix(true).ApplyInverse(p);
+   Stage *s = getStage();
+   if (!s)
+      return 0;
+   UserPoint p = s->getMousePos();
+   UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.x;
 }
 
 double DisplayObject::getMouseY()
 {
-	Stage *s = getStage();
-	if (!s)
-		return 0;
-	UserPoint p = s->getMousePos();
-	UserPoint result = GetFullMatrix(true).ApplyInverse(p);
+   Stage *s = getStage();
+   if (!s)
+      return 0;
+   UserPoint p = s->getMousePos();
+   UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.y;
 }
 
@@ -706,27 +710,27 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 
    Rect rect;
    if (!ext.GetRect(rect,0.999,0.999))
-	{
-		SetBitmapCache(0);
+   {
+      SetBitmapCache(0);
       return false;
-	}
+   }
 
    rect = rect.Intersect(inClipRect);
    if (!rect.HasPixels())
-	{
-		SetBitmapCache(0);
+   {
+      SetBitmapCache(0);
       return false;
-	}
+   }
 
 
-	if (GetBitmapCache())
-	{
-		// Clear mask if invalid
-		if (!GetBitmapCache()->StillGood(trans, rect,0))
-			SetBitmapCache(0);
-		else
-			return true;
-	}
+   if (GetBitmapCache())
+   {
+      // Clear mask if invalid
+      if (!GetBitmapCache()->StillGood(trans, rect,0))
+         SetBitmapCache(0);
+      else
+         return true;
+   }
 
    int w = rect.w;
    int h = rect.h;
@@ -747,19 +751,19 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
       state.mTransform = trans;
    
       state.mPhase = rpCreateMask;
-	   Matrix obj_matrix = m;
+      Matrix obj_matrix = m;
 
       m.Translate(-rect.x, -rect.y );
       Render(render.Target(), state);
 
-		m = obj_matrix;
+      m = obj_matrix;
 
       ClearCacheDirty();
    }
    
    SetBitmapCache( new BitmapCache(bitmap, trans, rect, false, 0));
    bitmap->DecRef();
-	return true;
+   return true;
 }
 
 
@@ -794,8 +798,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    }
 
    BitmapCache *orig_mask = inState.mMask;
-	if (!inState.mRecurse)
-		last = first;
+   if (!inState.mRecurse)
+      last = first;
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
@@ -843,12 +847,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       if (mask)
       {
          if (!mask->CreateMask(inTarget.mRect.Translated(obj_state->mTargetOffset),
-				                   obj_state->mTransform.mAAFactor))
-				continue;
+                               obj_state->mTransform.mAAFactor))
+            continue;
 
-			// todo: combine masks ?
-			//obj->DebugRenderMask(inTarget,obj->getMask());
-			obj_state->mMask = mask->GetBitmapCache();
+         // todo: combine masks ?
+         //obj->DebugRenderMask(inTarget,obj->getMask());
+         obj_state->mMask = mask->GetBitmapCache();
       }
 
 
@@ -861,15 +865,15 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
-				BitmapCache *mask = obj_state->mMask;
+            BitmapCache *mask = obj_state->mMask;
 
             // Get bounding pixel rect
             Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
             if (mask)
-				{
+            {
                rect = rect.Intersect(mask->GetRect().Translated(-inState.mTargetOffset));
-				}
+            }
 
             const FilterList &filters = obj->getFilters();
 
@@ -889,7 +893,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             {
                // Done - our bitmap is good!
                if (obj->GetBitmapCache()->StillGood(obj_state->mTransform,
-						    visible_bitmap, mask))
+                      visible_bitmap, mask))
                   continue;
                else
                {
@@ -925,17 +929,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                // debug ...
                //bitmap->Clear(0xff333333);
 
-					//printf("Render %dx%d\n", w,h);
+               //printf("Render %dx%d\n", w,h);
                bool old_pow2 = obj_state->mRoundSizeToPOW2;
                Matrix orig = full;
                {
                AutoSurfaceRender render(bitmap,Rect(render_to.w,render_to.h));
                full.Translate(-render_to.x, -render_to.y );
-					ImagePoint offset = obj_state->mTargetOffset;
+               ImagePoint offset = obj_state->mTargetOffset;
                Rect clip = obj_state->mClipRect;
                obj_state->mClipRect.Translate(-render_to.x, -render_to.y);
 
-					obj_state->mTargetOffset += ImagePoint(render_to.x,render_to.y);
+               obj_state->mTargetOffset += ImagePoint(render_to.x,render_to.y);
 
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
 
@@ -945,10 +949,15 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mPhase = rpRender;
                obj_state->mRoundSizeToPOW2 = false;
 
+               int old_aa = obj_state->mTransform.mAAFactor;
+               obj_state->mTransform.mAAFactor = 4;
+
                obj->Render(render.Target(), *obj_state);
                obj->ClearCacheDirty();
-					obj_state->mTargetOffset = offset;
+               obj_state->mTargetOffset = offset;
                obj_state->mClipRect = clip;
+
+               obj_state->mTransform.mAAFactor = old_aa;
                }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
@@ -966,13 +975,13 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->Render(inTarget,*obj_state);
          }
       }
-		else
+      else
       {
          if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) )
          {
             if (inState.mPhase==rpRender)
                obj->RenderBitmap(inTarget,*obj_state);
-				/* HitTest is done on vector, not bitmap
+            /* HitTest is done on vector, not bitmap
             else if (inState.mPhase==rpHitTest && obj->IsBitmapRender() )
             {
                 if (obj->HitBitmap(inTarget,*obj_state))
@@ -981,7 +990,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                    return;
                 }
             }
-				*/
+            */
          }
          else
          {
@@ -1094,17 +1103,17 @@ void DisplayObjectContainer::ClearCacheDirty()
 static int sBitmapVersion = 1;
 
 BitmapCache::BitmapCache(Surface *inSurface,const Transform &inTrans,
-								 const Rect &inRect,bool inMaskOnly, BitmapCache *inMask)
+                         const Rect &inRect,bool inMaskOnly, BitmapCache *inMask)
 {
    mBitmap = inSurface->IncRef();
    mMatrix = *inTrans.mMatrix;
    mScale9 = *inTrans.mScale9;
    mRect = inRect;
-	mVersion = sBitmapVersion++;
-	if (!mVersion)
-		mVersion = sBitmapVersion++;
-	mMaskVersion = inMask ? inMask->mVersion : 0;
-	mMaskOffset = inMask ? ImagePoint(inMask->mTX,inMask->mTY) : ImagePoint(0,0);
+   mVersion = sBitmapVersion++;
+   if (!mVersion)
+      mVersion = sBitmapVersion++;
+   mMaskVersion = inMask ? inMask->mVersion : 0;
+   mMaskOffset = inMask ? ImagePoint(inMask->mTX,inMask->mTY) : ImagePoint(0,0);
    mTX = mTY = 0;
 }
 
@@ -1119,15 +1128,15 @@ bool BitmapCache::StillGood(const Transform &inTransform, const Rect &inVisibleP
    if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,mTX,mTY) || mScale9!=*inTransform.mScale9)
       return false;
 
-	if (inMask)
-	{
-		if (inMask->mVersion!=mMaskVersion)
-			return false;
-		if (mMaskOffset != ImagePoint(inMask->mTX, inMask->mTY) )
-			return false;
-	}
-	else if (mMaskVersion)
-		return false;
+   if (inMask)
+   {
+      if (inMask->mVersion!=mMaskVersion)
+         return false;
+      if (mMaskOffset != ImagePoint(inMask->mTX, inMask->mTY) )
+         return false;
+   }
+   else if (mMaskVersion)
+      return false;
 
    // Translate our cached pixels to this new position ...
    Rect translated = mRect.Translated(mTX,mTY);
@@ -1148,6 +1157,9 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
 
       if (inTarget.IsHardware())
       {
+         //__android_log_print(ANDROID_LOG_INFO,"BitmapCache", "Render %dx%d + (%d,%d) -> %dx%d + (%d,%d)",
+              //mRect.w,mRect.h, mRect.x + mTX , mRect.y+mTY,
+              //inTarget.mRect.w, inTarget.mRect.h, inTarget.mRect.x, inTarget.mRect.y );
          inTarget.mHardware->SetViewport(inTarget.mRect);
          inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
          inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
@@ -1163,15 +1175,15 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
 
 void BitmapCache::PushTargetOffset(const ImagePoint &inOffset, ImagePoint &outBuffer)
 {
-	outBuffer = ImagePoint(mTX,mTY);
-	mTX -= inOffset.x;
-	mTY -= inOffset.y;
+   outBuffer = ImagePoint(mTX,mTY);
+   mTX -= inOffset.x;
+   mTY -= inOffset.y;
 }
 
 void BitmapCache::PopTargetOffset(ImagePoint &inBuffer)
 {
-	mTX = inBuffer.x;
-	mTY = inBuffer.y;
+   mTX = inBuffer.x;
+   mTY = inBuffer.y;
 }
 
 
@@ -1304,7 +1316,7 @@ void Stage::HandleEvent(Event &inEvent)
    DisplayObject *hit_obj = 0;
 
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown)
-		mLastMousePos = UserPoint(inEvent.x, inEvent.y);
+      mLastMousePos = UserPoint(inEvent.x, inEvent.y);
 
    if (mMouseDownObject)
    {
@@ -1612,15 +1624,15 @@ DisplayObject *Stage::HitTest(UserPoint inStage,DisplayObject *inRoot,bool inRec
 
    RenderState state(0, GetAA() );
    state.mClipRect = Rect( inStage.x, inStage.y, 1, 1 );
-	Matrix m = mStageScale;
-	if (inRoot)
-		m = inRoot->GetFullMatrix(true);
+   Matrix m = mStageScale;
+   if (inRoot)
+      m = inRoot->GetFullMatrix(true);
    state.mTransform.mMatrix = &m;
 
 
    state.mRoundSizeToPOW2 = target.IsHardware();
    state.mPhase = rpHitTest;
-	state.mRecurse = inRecurse;
+   state.mRecurse = inRecurse;
 
    (inRoot ? inRoot : this) -> Render(target,state);
 

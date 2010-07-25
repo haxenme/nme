@@ -42,6 +42,12 @@ Surface::~Surface()
 
 void Surface::Bind(HardwareContext &inHardware,int inSlot)
 {
+   if (mTexture && !mTexture->IsCurrentVersion())
+   {
+      delete mTexture;
+      mTexture = 0;
+   }
+ 
    if (!mTexture)
       mTexture = inHardware.CreateTexture(this);
 

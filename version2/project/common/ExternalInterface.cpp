@@ -2,6 +2,9 @@
 #define IMPLEMENT_API
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
 
 #include <Utils.h>
 #include <ExternalInterface.h>
@@ -15,9 +18,6 @@
 #include <algorithm>
 #include <ByteArray.h>
 
-#ifdef ANDROID
-#include <android/log.h>
-#endif
 
 #ifdef min
 #undef min
@@ -1579,7 +1579,9 @@ value nme_text_field_create()
 DEFINE_PRIM(nme_text_field_create,0)
 
 inline value alloc_wstring(const WString &inStr)
-   { return alloc_wstring_len(inStr.c_str(),inStr.length()); }
+{
+   return alloc_wstring_len(inStr.c_str(),inStr.length());
+}
 
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = val_int(inVal); }

@@ -93,7 +93,6 @@ glBufferDataARB_f glBufferData=0;
 //static bool sgUSEVBO = true;
 #define sgUSEVBO 0
 
-static int sgContextVersion = 1;
 
 namespace nme
 {
@@ -106,7 +105,8 @@ static GLuint sgOpenglType[] =
 
 void ResetHardwareContext()
 {
-   sgContextVersion++;
+   __android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
+   gTextureContextVersion++;
 }
 
 
@@ -122,10 +122,12 @@ public:
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
       mDirtyRect = Rect(0,0);
-      mContextVersion = sgContextVersion;
+      mContextVersion = gTextureContextVersion;
 
       int w = UpToPower2(mPixelWidth);
       int h = UpToPower2(mPixelHeight);
+      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
+
       mTextureWidth = w;
       mTextureHeight = h;
       bool is_pow2 = w==mPixelWidth && h==mPixelHeight;
@@ -148,6 +150,8 @@ public:
       }
 
       glGenTextures(1, &mTextureID);
+      // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
+      //  mTextureID, mPixelWidth, mPixelHeight);
       glBindTexture(GL_TEXTURE_2D,mTextureID);
       mRepeat = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -172,19 +176,27 @@ public:
    }
    ~OGLTexture()
    {
-      glDeleteTextures(1,&mTextureID);
+      if (mTextureID && mContextVersion==gTextureContextVersion)
+      {
+         //__android_log_print(ANDROID_LOG_ERROR, "NME", "DeleteTexture %d (%dx%d)",
+           //mTextureID, mPixelWidth, mPixelHeight);
+         glDeleteTextures(1,&mTextureID);
+      }
    }
 
    void Bind(class Surface *inSurface,int inSlot)
    {
       glBindTexture(GL_TEXTURE_2D,mTextureID);
-      if (sgContextVersion!=mContextVersion)
+      if (gTextureContextVersion!=mContextVersion)
       {
-         mContextVersion = sgContextVersion;
+         mContextVersion = gTextureContextVersion;
          mDirtyRect = Rect(inSurface->Width(),inSurface->Height());
       }
       if (mDirtyRect.HasPixels())
       {
+         //__android_log_print(ANDROID_LOG_INFO, "NME", "UpdateDirtyRect! %d %d",
+             //mPixelWidth, mPixelHeight);
+
          PixelFormat fmt = inSurface->Format();
          GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
          glGetError();
@@ -300,6 +312,8 @@ public:
    {
       mWidth = inWidth;
       mHeight = inHeight;
+      __android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
+
    }
 
    int Width() const { return mWidth; }
@@ -331,6 +345,7 @@ public:
          glMatrixMode(GL_PROJECTION);
          glPushMatrix();
          glLoadIdentity();
+
 
          glDisable(GL_TEXTURE_2D);
          static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };

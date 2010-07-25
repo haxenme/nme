@@ -25,7 +25,7 @@ public:
    const wchar_t *c_str() const { return mString ? mString : L""; }
 
    WString &operator +=(const WString &inRHS);
-   WString operator +(const WString &inRHS);
+   WString operator +(const WString &inRHS) const;
    bool operator<(const WString &inRHS) const;
    bool operator>(const WString &inRHS) const;
    bool operator==(const WString &inRHS) const;

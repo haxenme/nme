@@ -15,7 +15,21 @@ namespace nme
 static class AndroidStage *sStage = 0;
 static class AndroidFrame *sFrame = 0;
 static FrameCreationCallback sOnFrame = 0;
-static bool sTerminal = false;
+static bool sCloseActivity = false;
+
+static int sgNMEResult = 0;
+
+int GetResult()
+{
+   if (sCloseActivity)
+   {
+      sCloseActivity = false;
+      return -1;
+   }
+   int r = sgNMEResult;
+   sgNMEResult = 0;
+   return r;
+}
 
 class AndroidStage : public Stage
 {
@@ -29,6 +43,13 @@ public:
       mHardwareSurface->IncRef();
       mMultiTouch = false;
       mSingleTouchID = 0;
+      mDX = 0;
+      mDY = 0;
+
+      // Click detection
+      mDownX = 0;
+      mDownY = 0;
+      mMoved = false;
    }
    ~AndroidStage()
    {
@@ -51,9 +72,24 @@ public:
    }
    void Resize(int inWidth,int inHeight)
    {
+      ResetHardwareContext();
       mHardwareContext->SetWindowSize(inWidth,inHeight);
       Event evt(etResize, inWidth, inHeight);
       HandleEvent(evt);
+   }
+
+   void OnKey(int inCode, bool inDown)
+   {
+      __android_log_print(ANDROID_LOG_ERROR, "NME", "OnKey %d %d", inCode, inDown);
+      Event key( inDown ? etKeyDown : etKeyUp );
+      key.code = inCode;
+      key.value = inCode;
+      HandleEvent(key);
+   }
+
+   void OnTrackball(double inX, double inY)
+   {
+      // __android_log_print(ANDROID_LOG_INFO, "NME", "Trackball %f %f", inX, inY);
    }
 
    void OnTouch(int inType,double inX, double inY, int inID)
@@ -66,6 +102,8 @@ public:
       }
       else
       {
+         //__android_log_print(ANDROID_LOG_INFO, "AndroidFrame",
+           // "Touch %d/%d %f,%f", mSingleTouchID,inID, inX,inY);
          if (mSingleTouchID==0 || inID==mSingleTouchID)
          {
             EventType type = etUnknown;
@@ -84,11 +122,27 @@ public:
                {
                   mSingleTouchID = inID;
                   mouse.flags |= efLeftDown;
+                  mDownX = inX;
+                  mDownY = inY;
+                  mMoved = false;
                }
                else if (inType==etTouchEnd)
+               {
                   mSingleTouchID = 0;
+                  if (!mMoved)
+                  {
+                     HandleEvent(mouse);
+                     mouse = Event(etMouseClick, inX, inY);
+                  }
+               }
                else if (inType==etTouchMove)
+               {
                   mouse.flags |= efLeftDown;
+                  if (!mMoved && (fabs(mDownX-inX)>8 || fabs(mDownY-inY))>8 )
+                  {
+                      mMoved = true;
+                  }
+               }
 
                mouse.flags |= efPrimaryTouch;
                HandleEvent(mouse);
@@ -104,6 +158,13 @@ public:
 
    bool mMultiTouch;
    int  mSingleTouchID;
+  
+   double mDX;
+   double mDY;
+
+   double mDownX;
+   double mDownY;
+   bool   mMoved;
 
    HardwareContext *mHardwareContext;
    HardwareSurface *mHardwareSurface;
@@ -160,7 +221,7 @@ public:
 void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, const char *inIcon )
 {
-	__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame!", "creating...");
+   __android_log_print(ANDROID_LOG_INFO, "CreateMainFrame!", "creating...");
    sOnFrame = inOnFrame;
    sFrame = new AndroidFrame(inOnFrame, inWidth, inHeight, inFlags,
                  inTitle, inIcon);
@@ -169,7 +230,7 @@ void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
 
 void TerminateMainLoop()
 {
-   sTerminal = true;
+   sCloseActivity = true;
 }
 
 } // end namespace nme
@@ -183,18 +244,19 @@ extern "C"
   #define JAVA_EXPORT JNIEXPORT
 #endif
 
-JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
    __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
    if (nme::sFrame)
       nme::sFrame->onResize(width,height);
+   return nme::GetResult();
 }
 
 
 
-JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
@@ -203,15 +265,38 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject ob
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
+   return nme::GetResult();
 }
 
-JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnTouch(type,x,y,id);
+   return nme::GetResult();
 }
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnTrackball(dx,dy);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnKey(code,down);
+   return nme::GetResult();
+}
+
+
+
 
 
 
