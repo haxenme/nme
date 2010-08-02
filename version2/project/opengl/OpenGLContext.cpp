@@ -105,7 +105,7 @@ static GLuint sgOpenglType[] =
 
 void ResetHardwareContext()
 {
-   __android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
+   //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
    gTextureContextVersion++;
 }
 
@@ -312,7 +312,9 @@ public:
    {
       mWidth = inWidth;
       mHeight = inHeight;
+      #ifdef ANDROID
       __android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
+      #endif
 
    }
 
