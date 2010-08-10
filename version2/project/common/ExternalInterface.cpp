@@ -604,9 +604,6 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
       return;
    }
 
-   value crap = alloc_int(123);
-
-
    value o = alloc_empty_object( );
    alloc_field(o,_id_type,alloc_int(ioEvent.type));
    alloc_field(o,_id_x,alloc_int(ioEvent.x));

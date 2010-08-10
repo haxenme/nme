@@ -801,11 +801,14 @@ void EnableKeyboard(bool inEnable)
 }
 
 
+/*
+ These aren't part of the offical SDK
 extern "C"
 {
    extern int *_NSGetArgc(void);
    extern char ***_NSGetArgv(void);
 };
+*/
 
 
 namespace nme
@@ -820,8 +823,8 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inIcon )
 {
    sOnFrame = inCallback;
-   int argc = *_NSGetArgc();
-   char **argv = *_NSGetArgv();
+   int argc = 0;// *_NSGetArgc();
+   char **argv = 0;// *_NSGetArgv();
 
    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
    UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
