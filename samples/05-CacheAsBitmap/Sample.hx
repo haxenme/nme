@@ -45,7 +45,7 @@ class Sample extends Sprite
 {
 
 #if neko
-   static var zero = haxe.Int32.make(0,0);
+   static var zero = nme.display.BitmapData.CLEAR;
 #else
    static var zero = 0;
 #end

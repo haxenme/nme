@@ -44,13 +44,11 @@ public function new()
 
    stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, OnKey );
 
-   /*
    stage.addEventListener(Event.ENTER_FRAME, function(_) { shape.rotation+=360/60/60; } );
    stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
       trace("Hit : " + e.stageX + "," + e.stageY + " : " +
           shape.hitTestPoint( e.stageX, e.stageY, false ) );
    });
-   */
 }
 
 function OnKey(event)
@@ -71,7 +69,6 @@ function OnKey(event)
 
 public static function main()
 {
-   trace("Off se go !\n");
 #if flash
    new Sample();
 #else

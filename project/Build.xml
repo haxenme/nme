@@ -14,8 +14,8 @@
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../../sdl-static/include"/>
-  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I../../sdl-static/include"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
   <file name="windows/SimpleFrame.cpp"/>
   <file name="windows/GDIFont.cpp"/>
   <file name="sdl/SDLSound.cpp"/>
@@ -23,7 +23,7 @@
 
 <files id="mac">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
 </files>
@@ -54,8 +54,8 @@
 
 <files id="sdl">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../../sdl-static/include" />
-  <compilerflag value="-I../../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I../../sdl-static/include" />
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
   <file name="sdl/SDLStage.cpp"/>
   <file name="sdl/SDLSound.cpp"/>
 </files>
@@ -63,10 +63,10 @@
 
 
 
-<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Mac/" if="macos"/>
-<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Windows/" if="windows"/>
-<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Linux/" if="linux"/>
-<set name="THIRDPARTY_LIBS" value="../../../sdl-static/lib/Android/" if="android"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux/" if="linux"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
@@ -75,8 +75,8 @@
 
 <files id="common">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../../sdl-static/include"/>
-  <compilerflag value="-I../../../sdl-static/include/SDL12" if="sdl"/>
+  <compilerflag value="-I../../sdl-static/include"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
 

@@ -24,7 +24,11 @@ class Particle
 
 class Sample extends Sprite 
 {
-   private static var MAX_PARTICLES: Int = 3000000;
+#if neko
+   private static var MAX_PARTICLES: Int = 10000;
+#else
+   private static var MAX_PARTICLES: Int = 500000;
+#end
    private var _targetX: Float;
    private var _targetY: Float;
 
@@ -70,10 +74,12 @@ class Sample extends Sprite
    private function createParticles(): Void
    {
       _particles = [];
+      _particles[MAX_PARTICLES-1] = null;
+      _cols[MAX_PARTICLES-1] = 0;
       for(i in 0...MAX_PARTICLES)
       {
-         _particles.push(new Particle());
-         _cols.push( nme.display.Graphics.RGBA(Std.int(Math.random()*0xffffff),0x80) );
+         _particles[i] = new Particle();
+         _cols[i] = nme.display.Graphics.RGBA(Std.int(Math.random()*0xffffff),0x80);
       }
    }
    
