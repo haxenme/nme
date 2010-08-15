@@ -937,6 +937,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                full.Translate(-render_to.x, -render_to.y );
                ImagePoint offset = obj_state->mTargetOffset;
                Rect clip = obj_state->mClipRect;
+               RenderPhase phase = obj_state->mPhase;
+
                obj_state->mClipRect.Translate(-render_to.x, -render_to.y);
 
                obj_state->mTargetOffset += ImagePoint(render_to.x,render_to.y);
@@ -953,11 +955,12 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mTransform.mAAFactor = 4;
 
                obj->Render(render.Target(), *obj_state);
+               obj_state->mTransform.mAAFactor = old_aa;
+
                obj->ClearCacheDirty();
                obj_state->mTargetOffset = offset;
                obj_state->mClipRect = clip;
-
-               obj_state->mTransform.mAAFactor = old_aa;
+               obj_state->mPhase = phase;
                }
 
                bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
