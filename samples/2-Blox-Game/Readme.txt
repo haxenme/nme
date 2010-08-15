@@ -1,1 +1,0 @@
-This game has been adapted from an example tutorial for SDL written in C.

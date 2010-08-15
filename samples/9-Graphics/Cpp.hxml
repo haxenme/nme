@@ -1,4 +1,0 @@
--main GraphicsTest
--lib nme
--cpp cpp
---remap neko:cpp
