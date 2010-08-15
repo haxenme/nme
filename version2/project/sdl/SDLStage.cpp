@@ -421,27 +421,34 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool is_opengl = false;
    if (opengl)
    {
-      /* Initialize the display */
-      SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
-      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
-      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
-      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
-      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+      for(int pass=0;pass<3;pass++)
+      {
+         /* Initialize the display */
+         SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
+         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
+         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
+         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-      if ( inFlags & wfVSync )
-      {
-         SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-      }
+         if ( inFlags & wfVSync )
+         {
+            SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+         }
 
-      sdl_flags |= SDL_OPENGL;
-      if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags | SDL_OPENGL)))
-      {
-         sdl_flags &= ~SDL_OPENGL;
-         fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
-      }
-      else
-      {
-        is_opengl = true;
+         sdl_flags |= SDL_OPENGL;
+         if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags | SDL_OPENGL)))
+         {
+            if (pass==2)
+            {
+               sdl_flags &= ~SDL_OPENGL;
+               fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+            }
+         }
+         else
+         {
+           is_opengl = true;
+           break;
+         }
       }
    }
 

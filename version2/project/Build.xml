@@ -2,6 +2,7 @@
 
 <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
+<set name="sdl" value="1" if="linux"/>
 <set name="sdl" value="1" if="macos"/>
 <set name="ogl" value="1" if="windows"/>
 <set name="ogl" value="1" if="sdl"/>
@@ -25,6 +26,11 @@
   <compilerflag value="-I../../../sdl-static/include/SDL12"/>
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
+</files>
+
+<files id="linux">
+  <compilerflag value="-Iinclude"/>
+  <file name="linux/NativeFont.cpp"/>
 </files>
 
 <files id="iphone">
@@ -72,6 +78,7 @@
   <compilerflag value="-I../../../sdl-static/include"/>
   <compilerflag value="-I../../../sdl-static/include/SDL12" if="sdl"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
+  <compilerflag value="-Wno-conversion" if="linux"/>
 
   <file name="common/Surface.cpp"/>
   <file name="common/Utils.cpp"/>
@@ -83,7 +90,7 @@
   <file name="common/TextField.cpp"/>
   <file name="common/Font.cpp"/>
   <file name="common/FreeType.cpp"/>
-  <file name="common/TileSheet.cpp"/>
+  <file name="common/Tilesheet.cpp"/>
   <file name="common/Display.cpp"/>
   <file name="common/ColorTransform.cpp"/>
   <file name="common/Hardware.cpp"/>
@@ -160,6 +167,7 @@
   <files id="windows" if="windows"/>
   <files id="iphone" if="iphone"/>
   <files id="mac" if="macos"/>
+  <files id="linux" if="linux"/>
   <files id="sdl" if="sdl"/>
   <files id="android" if="android"/>
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
@@ -173,6 +181,7 @@
   <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" unless="mobile"/>
   <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" unless="mobile"/>
   <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
 
 
   <vflag name="-framework" value="IOKit" if="macos"/>
@@ -197,6 +206,10 @@
   <lib name="ddraw.lib" if="windows"/>
   <lib name="dxguid.lib" if="windows"/>
   <lib name="winmm.lib" if="windows"/>
+
+  <lib name="-ldl" if="linux"/>
+  <lib name="-lz" if="linux"/>
+  <lib name="-lGL" if="linux"/>
 
 </target>
 

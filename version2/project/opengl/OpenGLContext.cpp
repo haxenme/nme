@@ -90,14 +90,9 @@ glBufferDataARB_f glBufferData=0;
 #endif
 
 
-//static bool sgUSEVBO = true;
-#define sgUSEVBO 0
-
-
 namespace nme
 {
 
-int gTextureContextVersion = 1;
 
 static GLuint sgOpenglType[] =
   { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS };
@@ -455,7 +450,7 @@ public:
          Vertices &tex_coords = arrays.mTexCoords;
 			bool persp = arrays.mPerspectiveCorrect;
 
-         if (sgUSEVBO)
+         #ifdef NME_USE_VBO
          {
             if (!arrays.mVertexBO)
             {
@@ -470,6 +465,7 @@ public:
             glBindBuffer(GL_ARRAY_BUFFER, 0);
          }
          else
+         #endif
          {
             glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,&vert[0].x);
          }
@@ -675,11 +671,13 @@ public:
    Texture *mBitmapTexture;
 };
 
+#ifdef NME_USE_VBO
 void ReleaseVertexBufferObject(unsigned int inVBO)
 {
    if (glDeleteBuffers)
       glDeleteBuffers(1,&inVBO);
 }
+#endif
 
 
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
@@ -696,7 +694,7 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
       glDeleteBuffers=(glDeleteBuffersARB_f) wglGetProcAddress("glDeleteBuffersARB");
       glGenBuffers=(glGenBuffersARB_f) wglGetProcAddress("glGenBuffersARB");
       glBufferData=(glBufferDataARB_f) wglGetProcAddress("glBufferDataARB");
-      #ifndef sgUSEVBO
+      #ifdef NME_USE_VBO
       if (glBindBuffer)
          sgUSEVBO = false;
       #endif

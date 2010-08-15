@@ -325,6 +325,9 @@ Surface *Surface::Load(const OSChar *inFilename)
 
 Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
 {
+   if (!inBytes || !inLen)
+      return 0;
+
 	Surface *result = TryJPEG(0,inBytes,inLen);
    if (!result)
 		result = TryPNG(0,inBytes,inLen);

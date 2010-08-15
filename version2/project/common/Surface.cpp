@@ -5,6 +5,9 @@
 namespace nme
 {
 
+int gTextureContextVersion = 1;
+
+
 bool sgColourOrderSet = false;
 
 // 32 bit colours will either be
@@ -13,7 +16,7 @@ bool sgColourOrderSet = false;
 // 0xAABBGGRR  (b-r "swapped" - like windows bitmaps )
 //
 // And the ARGB structure is { uint8 c0,c1,c2,alpha }
-// In little-endian land, this is 0x alpha c2 c2 c1,
+// In little-endian land, this is 0x alpha c2 c1 c0,
 //  "gC0IsRed" then means red is the LSB, ie "abgr" format.
 
 #ifdef IPHONE

@@ -4,7 +4,7 @@
 #include <Object.h>
 #include <Utils.h>
 #include <Graphics.h>
-#include <TileSheet.h>
+#include <Tilesheet.h>
 #include <map>
 #include <string>
 #include <Geom.h>

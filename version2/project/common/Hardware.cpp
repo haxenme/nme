@@ -353,15 +353,19 @@ HardwareArrays::HardwareArrays(Surface *inSurface,bool inPersp)
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
+   #ifdef NME_USE_VBO
    mVertexBO = 0;
+   #endif
 }
 
 HardwareArrays::~HardwareArrays()
 {
    if (mSurface)
       mSurface->DecRef();
+   #ifdef NME_USE_VBO
    if (mVertexBO)
       ReleaseVertexBufferObject(mVertexBO);
+   #endif
 }
 
 // --- HardwareData ---------------------------------------------------------------------
