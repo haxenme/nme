@@ -41,30 +41,30 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    var shape = new Shape();
    addChild(shape);
 
-	var copy = image1.clone();
-	var bytes:ByteArray = copy.getPixels(new Rectangle(100,100,100,100));
-	bytes.position = 0;
+   var copy = image1.clone();
+   var bytes:ByteArray = copy.getPixels(new Rectangle(100,100,100,100));
+   bytes.position = 0;
 
-	var dest = new BitmapData(100,100);
-	dest.setPixels(new Rectangle(0,0,100,100), bytes);
-	for(y in 0...100)
-		for(x in 0...50)
-			dest.setPixel32(x,y,dest.getPixel32(99-x,y));
-	var col = #if neko { rgb:0x00ff00, a:0x80 } #else 0x8000ff00 #end;
-	for(i in 0...100)
-		dest.setPixel32(i,i,col);
+   var dest = new BitmapData(100,100);
+   dest.setPixels(new Rectangle(0,0,100,100), bytes);
+   for(y in 0...100)
+      for(x in 0...50)
+         dest.setPixel32(x,y,dest.getPixel32(99-x,y));
+   var col = #if neko { rgb:0x00ff00, a:0x80 } #else 0x8000ff00 #end;
+   for(i in 0...100)
+      dest.setPixel32(i,i,col);
 
-	addChild(new Bitmap(dest) );
+   addChild(new Bitmap(dest) );
 
-	#if !flash
-	var data = loadFromBytes("Image.jpg");
-	var bmp = new Bitmap(data);
-	addChild(bmp);
-	bmp.scaleX = 0.1;
-	bmp.scaleY = 0.1;
-	bmp.x = 100;
-	bmp.y = 300;
-	#end
+   #if !flash
+   var data = loadFromBytes("Image.jpg");
+   var bmp = new Bitmap(data);
+   addChild(bmp);
+   bmp.scaleX = 0.1;
+   bmp.scaleY = 0.1;
+   bmp.x = 100;
+   bmp.y = 300;
+   #end
 
 
    var gfx = shape.graphics;
@@ -100,26 +100,26 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    var phase = 0;
    stage.addEventListener( Event.ENTER_FRAME, function(_)
       {
-			if (phase<10)
-				dest.scroll(1,0);
-			else if (phase<20)
-				dest.scroll(1,1);
-			else if (phase<30)
-				dest.scroll(0,1);
-			else if (phase<40)
-				dest.scroll(-1,1);
-			else if (phase<50)
-				dest.scroll(-1,0);
-			else if (phase<60)
-				dest.scroll(-1,-1);
-			else if (phase<70)
-				dest.scroll(0,-1);
-			else if (phase<80)
-				dest.scroll(1,-1);
+         if (phase<10)
+            dest.scroll(1,0);
+         else if (phase<20)
+            dest.scroll(1,1);
+         else if (phase<30)
+            dest.scroll(0,1);
+         else if (phase<40)
+            dest.scroll(-1,1);
+         else if (phase<50)
+            dest.scroll(-1,0);
+         else if (phase<60)
+            dest.scroll(-1,-1);
+         else if (phase<70)
+            dest.scroll(0,-1);
+         else if (phase<80)
+            dest.scroll(1,-1);
 
-			phase++;
-			if (phase>=80)
-				phase = 0;
+         phase++;
+         if (phase>=80)
+            phase = 0;
          shape.rotation = shape.rotation + 0.01;
       } );
 
@@ -127,14 +127,14 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 
 #if !flash
    public function loadFromBytes(inFilename:String)
-	{
-	   var bytes = nme.utils.ByteArray.readFile(inFilename);
-		return BitmapData.loadFromBytes(bytes);
-	}
+   {
+      var bytes = nme.utils.ByteArray.readFile(inFilename);
+      return BitmapData.loadFromBytes(bytes);
+   }
 #end
 
 
-public static function main()
+static function loadAndRun()
 {
    var image1:BitmapData;
    var image2:BitmapData;
@@ -159,9 +159,7 @@ public static function main()
                  var bmp:Bitmap  = untyped loader.content;
                  image3 = bmp.bitmapData;
 
-                 Lib.create(function() { new Sample(image1,image2,image3); },
-	                  320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
-
+                 new Sample(image1,image2,image3);
               });
               loader.load(new URLRequest("Image2.png"));
           });
@@ -170,5 +168,15 @@ public static function main()
     });
     loader.load(new URLRequest("Image.jpg"));
 }
+
+public static function main()
+{
+#if flash
+   loadAndRun();
+#else
+   Lib.create(function() { loadAndRun(); }, 320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
+#end
+}
+
 
 }

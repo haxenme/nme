@@ -8,60 +8,35 @@ import nme.geom.Rectangle;
 **/
 
 
-#if cpp
-import haxe.io.BytesData;
-typedef ByteBuffer = BytesData;
-#else
-typedef ByteBuffer = Dynamic;
-#end
-
 class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 {
 	public  var position:Int;
 	public var endian(nmeGetEndian,nmeSetEndian) : String;
-	public var nmeData:ByteBuffer;
+	public var nmeData:Dynamic;
 
 	public var length(nmeGetLength,null):Int;
 
 	public function new(inLen:Int = 0)
 	{
-		#if cpp
-		nmeData = new ByteBuffer();
-		if (inLen>0) nmeData[inLen-1];
-		#else
 		nmeData = nme_byte_array_create(inLen);
-		#end
-		position = 0;
 	}
 
 	public function nmeGetData():Dynamic { return nmeData; }
 
 	inline function nmeGetLength():Int
 	{
-	#if cpp
-		return nmeData.length;
-	#else
 		return nme_byte_array_get_length(nmeData);
-	#end
 	}
 
    // Neko/cpp pseudo array accessors...
 	inline private function __get( pos:Int ) : Int
 	{
-	#if cpp
-		return untyped nmeData[pos];
-	#else
 		return nme_byte_array_get(nmeData,pos);
-	#end
 	}
 
 	inline private function __set(pos:Int,v:Int) : Void
 	{
-	#if cpp
-		untyped nmeData[pos] = pos;
-	#else
 		nme_byte_array_set(nmeData,pos,v);
-	#end
 	}
 
 	static public function readFile(inString:String):ByteArray
@@ -75,11 +50,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
    // does the "work" for haxe.io.Input
 	public override function readByte():Int
 	{
-	#if cpp
-		return untyped nmeData[position++];
-	#else
 		return nme_byte_array_get(nmeData,position++);
-	#end
 	}
 
 #if neko
