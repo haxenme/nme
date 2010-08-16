@@ -84,6 +84,7 @@ public:
             {
                IncRef();
                sDoneChannel[i] = false;
+               sUsedChannel[i] = true;
                mChannel = i;
                break;
             }
