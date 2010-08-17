@@ -4,6 +4,7 @@
 
 <set name="sdl" value="1" if="linux"/>
 <set name="sdl" value="1" if="macos"/>
+<set name="sdl" value="1" if="windows"/>
 <set name="ogl" value="1" if="windows"/>
 <set name="ogl" value="1" if="sdl"/>
 <set name="ogl" value="1" if="iphone"/>
@@ -16,9 +17,10 @@
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include"/>
   <compilerflag value="-I../../sdl-static/include/SDL12"/>
-  <file name="windows/SimpleFrame.cpp"/>
   <file name="windows/GDIFont.cpp"/>
-  <file name="sdl/SDLSound.cpp"/>
+  <!-- Use SDL on windows too ? -->
+  <file name="windows/SimpleFrame.cpp" unless="sdl"/>
+  <file name="sdl/SDLSound.cpp" unless="sdl"/>
 </files>
 
 <files id="mac">

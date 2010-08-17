@@ -1,7 +1,7 @@
-<project name="nme" url="http://www.designrealm.co.uk" license="LGPL">
+<project name="nme" url="http://www.designrealm.co.uk" license="MIT">
     <user name="leesylvester"/>
     <user name="gamehaxe"/>
     <user name="krogers"/>
- <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
-    <version name="1.0.2">Do not chache states when using dsiplay lists.</version>
+    <description>NME stands for Neko Media Engine and provides graphics and sound for several haXe output format.  It was originally an SDL wrapper, but this has changed a bit, and now it does not always use SDL.  The graphics and sound API is highly compatible with the flash9 drawing (vector and bitmaps) and sound APIs.  Hardware acceleration (via OpenGL/OpenGLES) is used where possible.</description>
+    <version name="2.0.0">Major overhaul, moving much of the implementation into the C++ code, removing the need for SDL and adding initial Android support.</version>
 </project>

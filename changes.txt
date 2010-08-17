@@ -1,5 +1,12 @@
 NME Changes List
 
+2.0.0
+===============
+Overhauled just about everything. Added initial Android support.
+
+
+
+
 0.3.1
 ===============
 A Few minor changes to make neash integration easier.

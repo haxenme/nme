@@ -7,6 +7,7 @@ import nme.display.BitmapData;
 import nme.display.Bitmap;
 import nme.display.GradientType;
 import nme.display.Sprite;
+import nme.display.StageDisplayState;
 import nme.geom.Matrix;
 
 class Sample extends Sprite
@@ -63,6 +64,11 @@ function OnKey(event)
           stage.quality = nme.display.StageQuality.HIGH;
        case "4".charCodeAt(0):
           stage.quality = nme.display.StageQuality.BEST;
+
+       case "q".charCodeAt(0): nme.Lib.close();
+       case "f".charCodeAt(0):
+          stage.displayState = (stage.displayState==StageDisplayState.NORMAL) ?
+              StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
    }
 }
 

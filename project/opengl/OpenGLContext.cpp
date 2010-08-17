@@ -16,7 +16,7 @@ typedef void *WinDC;
 typedef void *GLCtx;
 #include <android/log.h>
 
-#elif defined(SDL_OGL)
+#elif !defined(HX_WINDOWS)
 
 #include <SDL_opengl.h>
 typedef void *WinDC;
@@ -689,7 +689,9 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
    {
       extentions_init = true;
       #ifdef HX_WINDOWS
-      wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
+      #ifndef SDL_OGL
+         wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
+      #endif
       glBindBuffer=(glBindBufferARB_f) wglGetProcAddress("glBindBufferARB");
       glDeleteBuffers=(glDeleteBuffersARB_f) wglGetProcAddress("glDeleteBuffersARB");
       glGenBuffers=(glGenBuffersARB_f) wglGetProcAddress("glGenBuffersARB");

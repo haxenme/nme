@@ -417,6 +417,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    // SDL_WM_SetIcon( icn, NULL );
 #endif
 
+
+   #ifndef IPHONE
+   SDL_WM_SetCaption( inTitle, 0 );
+   #endif
+
    SDL_Surface* screen = 0;
    bool is_opengl = false;
    if (opengl)
@@ -468,9 +473,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    HintColourOrder( opengl || screen->format->Rmask==0xff );
 
-   #ifndef IPHONE
-   SDL_WM_SetCaption( inTitle, 0 );
-   #endif
 
    #ifdef NME_MIXER
    if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
@@ -719,12 +721,13 @@ void MainLoop()
 }
 
 
+/*
 Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle, wchar_t *inIcon )
 {
-
+   return 0;
 }
 
-
+*/
 
 } // end namespace nme
 
@@ -779,84 +782,6 @@ Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar
  */
 
 
-value nme_set_clip_rect(value inSurface, value inRect)
-{
-   SDL_Rect rect;
-   if (!val_is_null(inRect))
-   {
-      rect.x = (int)val_number( val_field(inRect, val_id("x")) );
-      rect.y = (int)val_number( val_field(inRect, val_id("y")) );
-      rect.w = (int)val_number( val_field(inRect, val_id("width")) );
-      rect.h = (int)val_number( val_field(inRect, val_id("height")) );
-
-   }
-   else
-      memset(&rect,0,sizeof(rect));
-
-   if (val_is_kind(inSurface,k_surf))
-   {
-      SDL_Surface *surface = SURFACE(inSurface);
-
-      if (IsOpenGLScreen(surface))
-      {
-         if (val_is_null(inRect))
-         {
-            sDoScissor = false;
-            glDisable(GL_SCISSOR_TEST);
-         }
-         else
-         {
-            sDoScissor = true;
-            glEnable(GL_SCISSOR_TEST);
-            sScissorRect = rect;
-            glScissor(sScissorRect.x,sScissorRect.y,
-                      sScissorRect.w,sScissorRect.h);
-         }
-      }
-      else
-      {
-         if (val_is_null(inRect))
-         {
-            SDL_SetClipRect(surface,0);
-            SDL_GetClipRect(surface,&rect);
-         }
-         else
-         {
-            SDL_SetClipRect(surface,&rect);
-         }
-      }
-   }
-
-   return AllocRect(rect);
-}
-
-value nme_get_clip_rect(value inSurface)
-{
-   SDL_Rect rect;
-   memset(&rect,0,sizeof(rect));
-
-   if (val_is_kind(inSurface,k_surf))
-   {
-      SDL_Surface *surface = SURFACE(inSurface);
-
-      if (IsOpenGLScreen(surface))
-      {
-         if (sDoScissor)
-            rect = sScissorRect;
-         else
-         {
-            rect.w = sOpenGLScreen->w;
-            rect.h = sOpenGLScreen->h;
-         }
-      }
-      else
-      {
-         SDL_GetClipRect(surface,&rect);
-      }
-   }
-
-   return AllocRect(rect);
-}
 
 value nme_get_mouse_position()
 {
@@ -873,49 +798,6 @@ value nme_get_mouse_position()
    alloc_field( pos, val_id( "y" ), alloc_int( y ) );
    return pos;
 }
-
-
-#define NME_FULLSCREEN 0x0001
-#define NME_OPENGL_FLAG  0x0002
-#define NME_RESIZABLE  0x0004
-#define NME_HWSURF     0x0008
-#define NME_VSYNC      0x0010
-
-#ifdef __APPLE__
-
-extern "C" void MacBoot( /*void (*)()*/ );
-
-#endif
-
-value nme_resize_surface(value inW, value inH)
-{
-   val_check( inW, int );
-   val_check( inH, int );
-   int w = val_int(inW);
-   int h = val_int(inH);
-   SDL_Surface *screen = gCurrentScreen;
-
-   #ifndef __APPLE__
-   if (is_opengl)
-   {
-      // Little hack to help windows
-      screen->w = w;
-      screen->h = h;
-   }
-   else
-   #endif
-   {
-      nme_resize_id ++;
-      // Calling this recreates the gl context and we loose all our textures and
-      // display lists. So Work around it.
-      gCurrentScreen = screen = SDL_SetVideoMode(w, h, 32, sdl_flags );
-   }
-
-   return alloc_abstract( k_surf, screen );
-}
-
-
-
 
 
 #endif
