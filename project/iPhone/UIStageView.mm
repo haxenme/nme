@@ -846,6 +846,14 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 }
 
 
+FILE *OpenRead(const char *inName)
+{
+    NSString *str = [[NSString alloc] initWithUTF8String:inName];
+    NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
+    [str release];
+    FILE * result = fopen([path cStringUsingEncoding:1],"rb");
+    return result;
+}
 
 }
 

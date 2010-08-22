@@ -49,7 +49,13 @@ typedef wchar_t OSChar;
 #else
 typedef char OSChar;
 #define val_os_string val_string
+
+#ifdef IPHONE
+FILE *OpenRead(const char *inName);
+#else
 #define OpenRead(x) fopen(x,"rb")
+#endif
+
 #endif
 
 std::string WideToUTF8(const WString &inWideString);

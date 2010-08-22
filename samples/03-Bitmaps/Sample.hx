@@ -134,7 +134,7 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
 #end
 
 
-static function loadAndRun()
+public static function loadAndRun()
 {
    var image1:BitmapData;
    var image2:BitmapData;

@@ -455,7 +455,7 @@ DEFINE_PRIM(nme_byte_array_create,1);
 
 value nme_byte_array_read_file(value inFilename)
 {
-	FILE *file = OpenRead(val_os_string(inFilename));
+   FILE *file = OpenRead(val_os_string(inFilename));
    if (!file)
       return alloc_null();
 
@@ -523,6 +523,13 @@ bool FromValue(ByteData &outData,value inData)
 	{
 		outData.length = array->mBytes.size();
 		outData.data = &array->mBytes[0];
+		return true;
+	}
+	// Neko byte array....
+	if (val_is_string(inData))
+	{
+		outData.length = val_strlen(inData);
+		outData.data = (uint8 *)val_string(inData);
 		return true;
 	}
 

@@ -91,11 +91,20 @@ class BitmapData implements IBitmapDrawable
 	* @param inAlpha - optional alpha values to go with image RGB values - there should
 	*                   be width*height values.
 	**/
-	static public function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray)
+	static public function loadFromBytes(inBytes:nme.utils.ByteArray, ?inRawAlpha:nme.utils.ByteArray)
 	{
 		var result = new BitmapData(0,0);
 		result.nmeHandle = nme_bitmap_data_from_bytes( inBytes.nmeData,
 		                         inRawAlpha==null?null:inRawAlpha.nmeData);
+		return result;
+	}
+
+	// Same as above, except uses haxe.ioBytes
+	static public function loadFromHaxeBytes(inBytes:haxe.io.Bytes, ?inRawAlpha:haxe.io.Bytes)
+	{
+		var result = new BitmapData(0,0);
+		result.nmeHandle = nme_bitmap_data_from_bytes( inBytes.getData(),
+                   inRawAlpha==null?null:inRawAlpha.getData());
 		return result;
 	}
 
