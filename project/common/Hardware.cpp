@@ -309,10 +309,20 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 	GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
 	if (fill)
 		elem.mColour = fill->mRGB.ToInt();
+	GraphicsStroke *stroke = inJob.mStroke;
+	if (stroke)
+	{
+   	elem.mScaleMode = stroke->scaleMode;
+   	elem.mWidth = stroke->thickness;
+	}
+	else
+	{
+   	elem.mScaleMode = ssmNormal;
+   	elem.mWidth = -1;
+	}
 
    elem.mPrimType = ptPoints;
-   elem.mScaleMode = ssmNormal;
-   elem.mWidth = -1;
+
 
    elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
 

@@ -656,7 +656,7 @@ public:
    void beginTiles(Surface *inSurface,bool inSmooth=false);
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect);
-   void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff );
+   void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull);
 

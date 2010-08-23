@@ -344,7 +344,8 @@ void Graphics::tile(float x, float y, const Rect &inTileRect)
 }
 
 
-void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA)
+void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA,
+								  double inSize)
 {
    endFill();
    lineStyle(-1);
@@ -362,6 +363,11 @@ void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned
       job.mFill = new GraphicsSolidFill(inDefaultRGBA&0xffffff,(inDefaultRGBA>>24)/255.0);
       job.mFill->IncRef();
    }
+	if (inSize>0)
+	{
+		job.mStroke = new GraphicsStroke(0,inSize);
+		job.mStroke->IncRef();
+	}
 
    mJobs.push_back(job);
 }

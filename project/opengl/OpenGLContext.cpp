@@ -512,7 +512,7 @@ public:
             }
             
    
-            if ( (draw.mPrimType == ptLineStrip) && draw.mCount>1)
+            if ( (draw.mPrimType == ptLineStrip || draw.mPrimType==ptPoints) && draw.mCount>1)
             {
                if (draw.mWidth<=0)
                   SetLineWidth(1.0);

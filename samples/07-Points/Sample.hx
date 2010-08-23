@@ -169,7 +169,7 @@ class Sample extends Sprite
 
       var gfx = graphics;
       gfx.clear();
-      gfx.drawPoints(xy,_cols);
+      gfx.drawPoints(xy,_cols,0,2);
 
       var now = haxe.Timer.stamp();
       _times.push(now);

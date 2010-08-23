@@ -148,9 +148,9 @@ class Graphics
 		#end
 	}
    public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int>=null,
-         inDefaultRGBA:Int = #if neko 0x7fffffff #else 0xffffffff #end )
+         inDefaultRGBA:Int = #if neko 0x7fffffff #else 0xffffffff #end, inSize:Float = -1.0 )
    {
-      nme_gfx_draw_points(nmeHandle,inXY,inPointRGBA,inDefaultRGBA,#if neko true #else false #end);
+      nme_gfx_draw_points(nmeHandle,inXY,inPointRGBA,inDefaultRGBA,#if neko true #else false #end,inSize);
    }
 
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
@@ -169,7 +169,7 @@ class Graphics
    static var nme_gfx_draw_datum = nme.Loader.load("nme_gfx_draw_datum",2);
    static var nme_gfx_draw_rect = nme.Loader.load("nme_gfx_draw_rect",5);
    static var nme_gfx_draw_tiles = nme.Loader.load("nme_gfx_draw_tiles",3);
-   static var nme_gfx_draw_points = nme.Loader.load("nme_gfx_draw_points",5);
+   static var nme_gfx_draw_points = nme.Loader.load("nme_gfx_draw_points",-1);
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
    static var nme_gfx_draw_triangles = nme.Loader.load("nme_gfx_draw_triangles",5);
 }
