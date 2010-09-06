@@ -93,8 +93,8 @@ const uint8 *GetLUT(double inMultiplier, double inOffset)
 
 	if (sgLUTs.size()>LUT_CACHE)
 	{
-		int oldest = 0;
-		LUTMap::iterator where;
+		LUTMap::iterator where = sgLUTs.begin();
+		int oldest = where->second.mLastUsed;
 		for(LUTMap::iterator i=sgLUTs.begin(); i!=sgLUTs.end();++i)
 		{
 			if (i->second.mLastUsed < oldest)
