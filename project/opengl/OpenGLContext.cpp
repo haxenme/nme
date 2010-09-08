@@ -505,10 +505,14 @@ public:
             {
                bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
             }
-            else if (c==0 || last_col!=draw.mColour)
+            else
             {
-               last_col = draw.mColour;
-               glColor4ub(last_col>>16,last_col>>8,last_col,last_col>>24);
+                int col = inState.mColourTransform->Transform(draw.mColour);
+                if (c==0 || last_col!=col)
+                {
+                    last_col = col; 
+                    glColor4ub(col>>16,col>>8,col,col>>24);
+                }
             }
             
    
