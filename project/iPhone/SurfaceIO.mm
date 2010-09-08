@@ -54,7 +54,7 @@ Surface *Surface::Load(const OSChar *inFilename)
 Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSData *data = [NSData dataWithBytesNoCopy:(uint8 *)inBytes length:inLen];
+    NSData *data = [NSData dataWithBytes:(uint8 *)inBytes length:inLen];
     UIImage *image = [UIImage imageWithData:data];
     Surface *result = FromImage(image);
     [pool drain];

@@ -1,7 +1,7 @@
 #ifndef NME_BYTE_ARRAY_H
 #define NME_BYTE_ARRAY_H
 
-#include <vector>
+#include "QuickVec.h"
 
 namespace nme
 {
@@ -9,7 +9,7 @@ namespace nme
 
 struct ByteArray : public Object
 {
-	std::vector<unsigned char> mBytes;
+	QuickVec<unsigned char> mBytes;
 };
 
 }
