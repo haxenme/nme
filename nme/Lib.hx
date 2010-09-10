@@ -71,6 +71,13 @@ class Lib
    }
 
 
+   #if neko
+   static function __init__()
+   {
+       var init = neko.Lib.load("nekoapi","neko_api_init",1);
+       init(function(s) return new String(s) );
+   }
+   #end
    static var nme_get_frame_stage = nme.Loader.load("nme_get_frame_stage",1);
 
 }
