@@ -40,6 +40,7 @@
   <file name="iPhone/UIStageView.mm"/>
   <file name="iPhone/SurfaceIO.mm"/>
   <file name="iPhone/Sound.mm"/>
+  <file name="iPhone/NativeFont.mm"/>
 </files>
 
 <files id="android">
@@ -91,7 +92,7 @@
   <file name="common/CachedExtent.cpp"/>
   <file name="common/TextField.cpp"/>
   <file name="common/Font.cpp"/>
-  <file name="common/FreeType.cpp"/>
+  <file name="common/FreeType.cpp" unless="iphone"/>
   <file name="common/Tilesheet.cpp"/>
   <file name="common/Display.cpp"/>
   <file name="common/ColorTransform.cpp"/>

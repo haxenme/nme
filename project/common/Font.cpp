@@ -253,17 +253,17 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
    FontFace *face = 0;
 
-        // TODO: Native iPhone font
-        #ifndef IPHONE
    if (inNative)
       face = FontFace::CreateNative(inFormat,inScale);
-        #endif
+   
+   #ifndef IPHONE
    if (!face)
       face = FontFace::CreateFreeType(inFormat,inScale);
-        #ifndef IPHONE
+   #endif
+  
    if (!face && !inNative)
       face = FontFace::CreateNative(inFormat,inScale);
-        #endif
+ 
    if (!face)
         return 0;
 

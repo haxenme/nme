@@ -685,8 +685,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          const TiXmlElement *el = child->ToElement();
          if (el)
          {
-            inFormat->IncRef();
-            TextFormat *fmt = inFormat;
+            TextFormat *fmt = inFormat->IncRef();
 
             if (el->ValueTStr()=="font")
             {
@@ -776,7 +775,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 
             AddNode(child,fmt,ioCharCount,inLineSkips,inBeginParagraph);
 
-            inFormat->DecRef();
+            fmt->DecRef();
          }
       }
    }
@@ -1455,6 +1454,7 @@ void TextField::Layout(const Matrix &inMatrix)
 
 // --- TextFormat -----------------------------------
 
+static int sFmtObjs = 0;
 TextFormat::TextFormat() :
    align(tfaLeft),
    blockIndent(0),
@@ -1475,10 +1475,35 @@ TextFormat::TextFormat() :
    underline(false),
    url(L"")
 {
+  //sFmtObjs++;
+}
+
+TextFormat::TextFormat(const TextFormat &inRHS,bool inInitRef) : Object(inInitRef),
+   align(inRHS.align),
+   blockIndent(inRHS.blockIndent),
+   bold(inRHS.bold),
+   bullet(inRHS.bullet),
+   color(inRHS.color),
+   font( inRHS.font ),
+   indent(inRHS.indent),
+   italic(inRHS.italic),
+   kerning(inRHS.kerning),
+   leading(inRHS.leading),
+   leftMargin(inRHS.leftMargin),
+   letterSpacing(inRHS.letterSpacing),
+   rightMargin(inRHS.rightMargin),
+   size(inRHS.size),
+   tabStops( inRHS.tabStops),
+   target(inRHS.target),
+   underline(inRHS.underline),
+   url(inRHS.url)
+{
+  //sFmtObjs++;
 }
 
 TextFormat::~TextFormat()
 {
+  //sFmtObjs--;
 }
 
 TextFormat *TextFormat::COW()
@@ -1486,7 +1511,6 @@ TextFormat *TextFormat::COW()
    if (mRefCount<2)
       return this;
    TextFormat *result = new TextFormat(*this);
-   result->mRefCount = 1;
    mRefCount --;
    return result;
 }

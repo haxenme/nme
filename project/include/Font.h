@@ -14,20 +14,20 @@ namespace nme
 
 struct TextLineMetrics
 {
-	float ascent;
-	float descent;
-	float height;
-	float leading;
-	float width;
-	float x;
+   float ascent;
+   float descent;
+   float height;
+   float leading;
+   float width;
+   float x;
 };
 
 
 
 enum
 {
-	ffItalic  = 0x01,
-	ffBold    = 0x02,
+   ffItalic  = 0x01,
+   ffBold    = 0x02,
 };
 
 
@@ -41,73 +41,80 @@ template<typename T>
 class Optional
 {
 public:
-	Optional(const T&inVal) : mVal(inVal), mSet(false) { }
+   Optional(const Optional &inRHS) : mVal(inRHS.mVal), mSet(inRHS.mSet) { }
+   void operator = (const Optional &inRHS) { mVal = inRHS.mVal; mSet = inRHS.mSet; }
+
+   Optional(const T&inVal) : mVal(inVal), mSet(false) { }
    T& operator >>(T &outRHS) { if (mSet) outRHS = mVal; return mVal; }
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
    operator T() const { return mVal; }
    T operator()(T inDefault) const { return mSet ? mVal : inDefault; }
-	T &Set() { mSet=true; return mVal; }
+   T &Set() { mSet=true; return mVal; }
    const T &Get() const { return mVal; }
-	void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
+   void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
+   bool IsSet() const { return mSet; }
 
   T &__Get() { return mVal; }
 
 private:
-	bool mSet;
-	T mVal;
+   bool mSet;
+   T mVal;
 };
 
 class TextFormat : public Object
 {
 public:
-	static TextFormat *Create(bool inInitRef = true);
-	static TextFormat *Default();
-	TextFormat *IncRef() { Object::IncRef(); return this; }
+   TextFormat(const TextFormat &,bool inInitRef=true);
+   static TextFormat *Create(bool inInitRef = true);
+   static TextFormat *Default();
+   TextFormat *IncRef() { Object::IncRef(); return this; }
 
-	TextFormat *COW();
+   TextFormat *COW();
 
 
    Optional<TextFormatAlign>  align;
-	Optional<int>           blockIndent;
-	Optional<bool>          bold;
-	Optional<bool>          bullet;
-	Optional<uint32>        color;
-	Optional<WString>  font;
-	Optional<int>           indent;
-	Optional<bool>          italic;
-	Optional<bool>          kerning;
-	Optional<int>           leading;
-	Optional<int>           leftMargin;
-	Optional<int>           letterSpacing;
-	Optional<int>           rightMargin;
-	Optional<int>           size;
-	Optional<QuickVec<int> >tabStops;
-	Optional<WString>  target;
-	Optional<bool>          underline;
-	Optional<WString>  url;
+   Optional<int>           blockIndent;
+   Optional<bool>          bold;
+   Optional<bool>          bullet;
+   Optional<uint32>        color;
+   Optional<WString>  font;
+   Optional<int>           indent;
+   Optional<bool>          italic;
+   Optional<bool>          kerning;
+   Optional<int>           leading;
+   Optional<int>           leftMargin;
+   Optional<int>           letterSpacing;
+   Optional<int>           rightMargin;
+   Optional<int>           size;
+   Optional<QuickVec<int> >tabStops;
+   Optional<WString>  target;
+   Optional<bool>          underline;
+   Optional<WString>  url;
 
-	TextFormat();
-	~TextFormat();
+   TextFormat();
+   ~TextFormat();
+private:
+   void operator = (const TextFormat &);
 };
 
 
 
 struct CharGroup
 {
-	void  Clear();
-	bool  UpdateFont(double inScale,GlyphRotation inRotation,bool inNative);
-	void  UpdateMetrics(TextLineMetrics &ioMetrics);
-	int   Height();
-	int   Chars() { return mString.size(); }
+   void  Clear();
+   bool  UpdateFont(double inScale,GlyphRotation inRotation,bool inNative);
+   void  UpdateMetrics(TextLineMetrics &ioMetrics);
+   int   Height();
+   int   Chars() { return mString.size(); }
 
-	void ApplyFormat(TextFormat *inFormat);
+   void ApplyFormat(TextFormat *inFormat);
 
-	int               mChar0;
-	QuickVec<wchar_t,0> mString;
-	int             mFontHeight;
-	bool            mBeginParagraph;
-	TextFormat      *mFormat;
-	class Font      *mFont;
+   int               mChar0;
+   QuickVec<wchar_t,0> mString;
+   int             mFontHeight;
+   bool            mBeginParagraph;
+   TextFormat      *mFormat;
+   class Font      *mFont;
 };
 
 
@@ -115,15 +122,15 @@ typedef QuickVec<CharGroup> CharGroups;
 
 struct Line
 {
-	Line() { Clear(); }
+   Line() { Clear(); }
 
-	void Clear() { memset(this,0,sizeof(*this)); }
-	TextLineMetrics mMetrics;
-	int mY0;
+   void Clear() { memset(this,0,sizeof(*this)); }
+   TextLineMetrics mMetrics;
+   int mY0;
    int mChar0;
-	int mChars;
-	int mCharGroup0;
-	int mCharInGroup0;
+   int mChars;
+   int mCharGroup0;
+   int mCharInGroup0;
 };
 
 typedef QuickVec<Line> Lines;
@@ -134,17 +141,17 @@ typedef QuickVec<Line> Lines;
 class FontFace
 {
 public:
-	virtual ~FontFace() { };
+   virtual ~FontFace() { };
 
-	static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
-	static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale);
+   static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale);
 
-	virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
-									int &outOx, int &outOy) = 0;
-	virtual void RenderGlyph(int inChar,const RenderTarget &outTarget)=0;
-	virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
-	virtual int  Height()=0;
-	virtual bool IsNative() { return false; }
+   virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
+                           int &outOx, int &outOy) = 0;
+   virtual void RenderGlyph(int inChar,const RenderTarget &outTarget)=0;
+   virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
+   virtual int  Height()=0;
+   virtual bool IsNative() { return false; }
 
 };
 
@@ -153,40 +160,40 @@ class Font : public Object
 {
    struct Glyph
    {
-		Glyph() : sheet(-1), tile(-1) { }
+      Glyph() : sheet(-1), tile(-1) { }
 
-	   int sheet;
-	   int tile;
-		int advance;
-	};
+      int sheet;
+      int tile;
+      int advance;
+   };
 
 public:
    static Font *Create(TextFormat &inFormat,double inScale,GlyphRotation inRot, bool inNative,bool inInitRef=true);
 
-	Font *IncRef() { Object::IncRef(); return this; }
+   Font *IncRef() { Object::IncRef(); return this; }
 
    Tile GetGlyph(int inCharacter,int &outAdvance);
 
-	void  UpdateMetrics(TextLineMetrics &ioMetrics);
+   void  UpdateMetrics(TextLineMetrics &ioMetrics);
 
-	bool  IsNative() { return mFace && mFace->IsNative(); }
+   bool  IsNative() { return mFace && mFace->IsNative(); }
 
-	GlyphRotation Rotation() { return mRotation; }
+   GlyphRotation Rotation() { return mRotation; }
 
-	int   Height();
+   int   Height();
 private:
    Font(FontFace *inFace, int inPixelHeight, GlyphRotation inRotation,bool inInitRef);
-	~Font();
+   ~Font();
 
 
-	Glyph mGlyph[128];
-	std::map<int,Glyph>   mExtendedGlyph;
+   Glyph mGlyph[128];
+   std::map<int,Glyph>   mExtendedGlyph;
    QuickVec<Tilesheet *> mSheets;
-	FontFace              *mFace;
+   FontFace              *mFace;
 
-	int    mPixelHeight;
-	int    mCurrentSheet;
-	GlyphRotation mRotation;
+   int    mPixelHeight;
+   int    mCurrentSheet;
+   GlyphRotation mRotation;
 };
 
 class FontCache
