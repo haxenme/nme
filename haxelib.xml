@@ -1,7 +1,7 @@
-<project name="nme" url="http://www.designrealm.co.uk" license="MIT">
+<project name="nme" url="http://www.designrealm.co.uk" license="LGPL">
     <user name="leesylvester"/>
     <user name="gamehaxe"/>
     <user name="krogers"/>
-    <description>NME stands for Neko Media Engine and provides graphics and sound for several haXe output format.  It was originally an SDL wrapper, but this has changed a bit, and now it does not always use SDL.  The graphics and sound API is highly compatible with the flash9 drawing (vector and bitmaps) and sound APIs.  Hardware acceleration (via OpenGL/OpenGLES) is used where possible.</description>
+ <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
     <version name="2.0.1">Fix image bytes on iPhone.  iPhone does not use freetype anymore.  Fix DisplayObject.alpha.  Move to nekoapi.ndll.  Fixed TextFormat references.  Added point size to draw points.</version>
 </project>
