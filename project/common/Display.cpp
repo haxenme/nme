@@ -827,7 +827,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          ImagePoint scroll(obj->scrollRect.x, obj->scrollRect.y);
 
-         clip_state.mClipRect = clip_state.mClipRect.Intersect(screen_rect);
+         clip_state.mClipRect = inState.mClipRect.Intersect(screen_rect);
 
          if (!clip_state.mClipRect.HasPixels())
             continue;
