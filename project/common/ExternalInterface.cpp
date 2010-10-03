@@ -774,9 +774,16 @@ value nme_display_object_draw_to_surface(value *arg,int count)
 
       // TODO: Blend mode
       state.mRoundSizeToPOW2 = false;
-      state.mPhase = rpRender;
+      state.mPhase = rpBitmap;
 
-      obj->Render(render.Target(), state);
+      DisplayObjectContainer *dummy = new DisplayObjectContainer(true);
+      dummy->hackAddChild(obj);
+      dummy->Render(render.Target(), state);
+
+      state.mPhase = rpRender;
+      dummy->Render(render.Target(), state);
+      dummy->hackRemoveChildren();
+      dummy->DecRef();
    }
 
    return alloc_null();

@@ -295,6 +295,9 @@ public:
    bool NonNormalBlendChild();
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
+   void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
+   void hackRemoveChildren() { mChildren.resize(0); }
+
 
 protected:
    ~DisplayObjectContainer();
