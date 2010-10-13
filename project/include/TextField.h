@@ -74,9 +74,9 @@ public:
    void  setWordWrap(bool inWordWrap);
 
 
-   double getWidth() { return boundsWidth; }
+   double getWidth();
    void setWidth(double inWidth);
-   double getHeight() { return boundsHeight; }
+   double getHeight();
    void setHeight(double inHeight);
 
    WString getHTMLText();

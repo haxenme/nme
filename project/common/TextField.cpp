@@ -77,6 +77,29 @@ void TextField::setWidth(double inWidth)
    mGfxDirty = true;
 }
 
+double TextField::getWidth()
+{
+   if (autoSize != asNone)
+   {
+      if (mLinesDirty)
+         Layout( GetFullMatrix(true) );
+      return textWidth;
+   }
+   return boundsWidth;
+}
+
+double TextField::getHeight()
+{
+   if (autoSize != asNone)
+   {
+      if (mLinesDirty)
+         Layout( GetFullMatrix(true) );
+      return textHeight;
+   }
+   return boundsHeight;
+}
+ 
+
 
 void TextField::setHeight(double inHeight)
 {
@@ -899,11 +922,17 @@ void TextField::BuildBackground()
             gfx.beginFill( backgroundColor, 1 );
          if (border)
             gfx.lineStyle(1, borderColor );
-         gfx.moveTo(0,0);
+         gfx.moveTo(mActiveRect.x,mActiveRect.y);
+         gfx.lineTo(mActiveRect.x1(),mActiveRect.y);
+         gfx.lineTo(mActiveRect.x1(),mActiveRect.y1());
+         gfx.lineTo(mActiveRect.x,mActiveRect.y1());
+         gfx.moveTo(mActiveRect.x,mActiveRect.y);
+         /*
          gfx.lineTo(boundsWidth,0);
          gfx.lineTo(boundsWidth,boundsHeight);
          gfx.lineTo(0,boundsHeight);
          gfx.lineTo(0,0);
+         */
       }
       //printf("%d,%d\n", mSelectMin , mSelectMax);
       if (mSelectMin < mSelectMax)
@@ -1100,6 +1129,7 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
 {
    Layout(*inTrans.mMatrix);
 
+
    if (inForBitmap && !border && !background)
    {
       Rect r = mActiveRect.Rotated(mLayoutRotation).
@@ -1116,8 +1146,10 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
    {
       for(int corner=0;corner<4;corner++)
       {
-         UserPoint pos((corner & 1) ? boundsWidth*mLayoutScaleH : 0,
-                       (corner & 2) ? boundsHeight*mLayoutScaleV : 0);
+         //UserPoint pos((corner & 1) ? boundsWidth*mLayoutScaleH : 0,
+         //              (corner & 2) ? boundsHeight*mLayoutScaleV : 0);
+         UserPoint pos((corner & 1) ? mActiveRect.x1() : mActiveRect.x,
+                       (corner & 2) ? mActiveRect.y1() : mActiveRect.y);
          outExt.Add( RectToTarget(*inTrans.mMatrix,pos) );
       }
    }
@@ -1394,8 +1426,8 @@ void TextField::Layout(const Matrix &inMatrix)
       }
       max_y = mActiveRect.h = textHeight;
    }
-
-   mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
+   else
+      mActiveRect = Rect(0,0,boundsWidth*mLayoutScaleH+0.99,boundsHeight*mLayoutScaleV+0.99);
 
    maxScrollH = std::max(0,textWidth-max_x);
    maxScrollV = 1;
