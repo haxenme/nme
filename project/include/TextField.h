@@ -151,6 +151,10 @@ public:
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
 
+   bool CaretOn();
+   bool IsCacheDirty();
+
+
 
 
 
@@ -189,6 +193,7 @@ private:
    bool mLinesDirty;
    bool mGfxDirty;
    bool mFontsDirty;
+   bool mHasCaret;
 
 
    CharGroups mCharGroups;

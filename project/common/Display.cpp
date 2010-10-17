@@ -123,6 +123,14 @@ UserPoint DisplayObject::GlobalToLocal(const UserPoint &inPoint)
    return m.ApplyInverse(inPoint);
 }
 
+UserPoint DisplayObject::LocalToGlobal(const UserPoint &inPoint)
+{
+   Matrix m = GetFullMatrix(false);
+   return m.Apply(inPoint.x,inPoint.y);
+}
+
+
+
 void DisplayObject::setCacheAsBitmap(bool inVal)
 {
    cacheAsBitmap = inVal;

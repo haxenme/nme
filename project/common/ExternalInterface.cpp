@@ -820,6 +820,27 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
+
+
+value nme_display_object_local_to_global(value inObj,value ioPoint)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      UserPoint point( val_field_numeric(ioPoint, _id_x),
+                     val_field_numeric(ioPoint, _id_y) );
+      UserPoint trans = obj->LocalToGlobal(point);
+      alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
+      alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
+   }
+
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_display_object_local_to_global,2);
+
+
+
 value nme_display_object_hit_test_point(
 				value inObj,value inX, value inY, value inShape, value inRecurse)
 {

@@ -59,6 +59,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mLastUpDownX = -1;
    mLayoutScaleH = mLayoutScaleV = -1.0;
    mLayoutRotation = gr0;
+   mHasCaret = false;
 }
 
 TextField::~TextField()
@@ -922,11 +923,12 @@ void TextField::BuildBackground()
             gfx.beginFill( backgroundColor, 1 );
          if (border)
             gfx.lineStyle(1, borderColor );
-         gfx.moveTo(mActiveRect.x,mActiveRect.y);
-         gfx.lineTo(mActiveRect.x1(),mActiveRect.y);
-         gfx.lineTo(mActiveRect.x1(),mActiveRect.y1());
-         gfx.lineTo(mActiveRect.x,mActiveRect.y1());
-         gfx.moveTo(mActiveRect.x,mActiveRect.y);
+         gfx.moveTo(mActiveRect.x+1,   mActiveRect.y+1);
+         gfx.lineTo(mActiveRect.x1()+1,mActiveRect.y+1);
+         gfx.lineTo(mActiveRect.x1()+1,mActiveRect.y1()+1);
+         gfx.lineTo(mActiveRect.x+1,   mActiveRect.y1()+1);
+         gfx.moveTo(mActiveRect.x+1,   mActiveRect.y+1);
+         //printf("%d,%d %dx%d\n", mActiveRect.x , mActiveRect.y , mActiveRect.w , mActiveRect.h);
          /*
          gfx.lineTo(boundsWidth,0);
          gfx.lineTo(boundsWidth,boundsHeight);
@@ -971,6 +973,18 @@ void TextField::BuildBackground()
       mGfxDirty = false;
    }
 }
+
+bool TextField::CaretOn()
+{
+   Stage *s = getStage();
+   return  s && isInput && (( (int)(GetTimeStamp()*3)) & 1) && s->GetFocusObject()==this;
+}
+
+bool TextField::IsCacheDirty()
+{
+   return DisplayObject::IsCacheDirty() || mGfxDirty || mLinesDirty || (CaretOn()!=mHasCaret);
+}
+
 
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
@@ -1024,7 +1038,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    }
 
    bool highlight = mHighlightGfx && !mHighlightGfx->empty();
-   bool caret = isInput && (( (int)(GetTimeStamp()*3)) & 1) && getStage()->GetFocusObject()==this;
+   bool caret = CaretOn();
 
    // Setup matrix for going from Rect to Target
    Matrix rect_to_target;
@@ -1065,6 +1079,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          }
       }
    }
+
+   mHasCaret = caret;
 
 
    HardwareContext *hardware = inTarget.IsHardware() ? inTarget.mHardware : 0;

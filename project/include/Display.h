@@ -219,6 +219,7 @@ public:
    void SetParent(DisplayObjectContainer *inParent);
 
    UserPoint GlobalToLocal(const UserPoint &inPoint);
+   UserPoint LocalToGlobal(const UserPoint &inPoint);
 
    Graphics &GetGraphics();
    virtual Matrix   GetFullMatrix(bool inWithStageScaling);
