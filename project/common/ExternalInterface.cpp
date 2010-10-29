@@ -1567,7 +1567,7 @@ value nme_graphics_end_fill_create()
    GraphicsEndFill *end = new GraphicsEndFill;
    return ObjectToAbstract(end);
 }
-DEFINE_PRIM(nme_graphics_end_fill_create,2)
+DEFINE_PRIM(nme_graphics_end_fill_create,0)
 
 
 // --- IGraphicsData - Stroke ---------------------------------------------
