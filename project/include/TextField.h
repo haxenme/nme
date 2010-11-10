@@ -190,6 +190,8 @@ private:
 	ImagePoint GetScrollPos();
 	ImagePoint GetCursorPos();
 
+   void OnChange();
+
    bool mLinesDirty;
    bool mGfxDirty;
    bool mFontsDirty;

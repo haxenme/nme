@@ -463,6 +463,13 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_render_stage(nmeHandle);
    }
 
+   function nmeOnChange(inEvent)
+   {
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj!=null)
+         obj.nmeFireEvent(new Event(Event.CHANGE));
+   }
+
    function nmeCheckRender( )
    {
       //trace("nmeCheckRender " + frameRate);
@@ -574,6 +581,9 @@ class Stage extends nme.display.DisplayObjectContainer
 
          case 18: // etTouchTap
             //nmeOnTouchTap(inEvent.TouchEvent.TOUCH_TAP);
+
+         case 19: // etChange
+            nmeOnChange(inEvent);
 
          // TODO: user, sys_wm, sound_finished
       }

@@ -347,6 +347,15 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return result;
    }
 
+   public function localToGlobal(inGlobal:Point)
+   {
+      var result = inGlobal.clone();
+      nme_display_object_local_to_global(nmeHandle,result);
+      return result;
+   }
+
+
+
 	public function hitTestPoint(x:Float, y:Float, shapeFlag:Bool = false):Bool
 	{
 		return nme_display_object_hit_test_point(nmeHandle,x,y,shapeFlag,true);
@@ -468,6 +477,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_filters = nme.Loader.load("nme_display_object_set_filters",2);
 
    static var nme_display_object_global_to_local = nme.Loader.load("nme_display_object_global_to_local",2);
+   static var nme_display_object_local_to_global = nme.Loader.load("nme_display_object_local_to_global",2);
    static var nme_display_object_set_scale9_grid = nme.Loader.load("nme_display_object_set_scale9_grid",2);
    static var nme_display_object_set_scroll_rect = nme.Loader.load("nme_display_object_set_scroll_rect",2);
    static var nme_display_object_set_mask = nme.Loader.load("nme_display_object_set_mask",2);

@@ -2,8 +2,8 @@ package nme.text;
 
 enum TextFieldAutoSize
 {
-   CENTRE;
-	LEFT;
-	NONE;
-	RIGHT;
+   CENTER;
+   LEFT;
+   NONE;
+   RIGHT;
 }

@@ -39,7 +39,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    isInput(false)
 {
    mStringState = ssText;
-   mLinesDirty = false;
+   mLinesDirty = true;
    mGfxDirty = true;
    boundsWidth = 100.0;
    boundsHeight = 100.0;
@@ -55,7 +55,8 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxScrollH  = 0;
    maxScrollV  = 1;
    setText(L"");
-   textWidth = textHeight = 0;
+   textWidth = 0;
+   textHeight = 0;
    mLastUpDownX = -1;
    mLayoutScaleH = mLayoutScaleV = -1.0;
    mLayoutRotation = gr0;
@@ -450,6 +451,17 @@ void TextField::EndDrag(Event &inEvent)
 {
 }
 
+void TextField::OnChange()
+{
+   Stage *stage = getStage();
+   if (stage)
+   {
+      Event change(etChange);
+      change.id = getID();
+      stage->HandleEvent(change);
+   }
+}
+
 
 void TextField::OnKey(Event &inEvent)
 {
@@ -473,6 +485,7 @@ void TextField::OnKey(Event &inEvent)
             else if (mCharGroups.size())
                DeleteChars(0,1);
             ShowCaret();
+            OnChange();
             return;
 
          case keySHIFT:
@@ -510,6 +523,7 @@ void TextField::OnKey(Event &inEvent)
                      if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
                         break;
                   caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
+                  OnChange();
                   break;
                }
             }
@@ -535,6 +549,7 @@ void TextField::OnKey(Event &inEvent)
          DeleteSelection();
          wchar_t str[2] = {code,0};
          InsertString(str);
+         OnChange();
          ShowCaret();
       }
    }

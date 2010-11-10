@@ -45,6 +45,8 @@ enum EventType
    etTouchMove,  // 16
    etTouchEnd,   // 17
    etTouchTap,   // 18
+
+   etChange,   // 19
 };
 
 enum EventFlags
@@ -360,10 +362,10 @@ public:
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
    void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
+   void HandleEvent(Event &inEvent);
 
 protected:
    ~Stage();
-   void HandleEvent(Event &inEvent);
    void CalcStageScaling(double inW,double inH);
    EventHandler mHandler;
    void         *mHandlerData;
