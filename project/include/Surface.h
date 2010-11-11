@@ -69,6 +69,10 @@ public:
    virtual Surface *clone() { return 0; }
    virtual void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false) { }
    virtual void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false) { }
+   virtual void getColorBoundsRect(int inMask, int inCol, bool inFind, Rect &outRect)
+   {
+      outRect = Rect(0,0,Width(),Height());
+   }
    virtual uint32 getPixel(int inX,int inY) { return 0; }
    virtual void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false) { }
    virtual void scroll(int inDX,int inDY) { }
@@ -117,6 +121,7 @@ public:
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
    void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
+   void getColorBoundsRect(int inMask, int inCol, bool inFind, Rect &outRect);
    uint32 getPixel(int inX,int inY);
    void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
    void scroll(int inDX,int inDY);

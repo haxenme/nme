@@ -4,7 +4,7 @@ class GlowFilter extends nme.filters.DropShadowFilter
 {
    public function new(in_color:Int = 0,
                        in_alpha:Float = 1.0, in_blurX:Float = 6.0, in_blurY:Float = 6.0,
-                       in_strength:Float = 1.0, in_quality:Int = 1, in_inner:Bool = false,
+                       in_strength:Float = 2.0, in_quality:Int = 1, in_inner:Bool = false,
                        in_knockout:Bool = false)
 
    {

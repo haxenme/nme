@@ -158,12 +158,12 @@ class BitmapData implements IBitmapDrawable
 	}
 
 
-	/**
-	* @todo Implement
-	*/
 	public function getColorBoundsRect(mask:BitmapInt32, color: BitmapInt32, findColor:Bool = true):Rectangle
 	{
-		return new Rectangle(width, height);
+		var result = new Rectangle();
+		nme_bitmap_data_get_color_bounds_rect(nmeHandle,mask,color,findColor,result);
+		return result;
+		
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
@@ -208,6 +208,13 @@ class BitmapData implements IBitmapDrawable
 	{
 		nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
 	}
+
+        public function generateFilterRect(sourceRect:Rectangle, filter:nme.filters.BitmapFilter):Rectangle
+        {
+           var result = new Rectangle();
+           nme_bitmap_data_generate_filter_rect(sourceRect,filter,result);
+           return result;
+        }
 
 
 	public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
@@ -284,11 +291,13 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_get_pixel = nme.Loader.load("nme_bitmap_data_get_pixel",3);
    static var nme_bitmap_data_get_pixel32 = nme.Loader.load("nme_bitmap_data_get_pixel32",3);
    static var nme_bitmap_data_get_pixel_rgba = nme.Loader.load("nme_bitmap_data_get_pixel_rgba",3);
+   static var nme_bitmap_data_get_color_bounds_rect = nme.Loader.load("nme_bitmap_data_get_color_bounds_rect",5);
    static var nme_bitmap_data_scroll = nme.Loader.load("nme_bitmap_data_scroll",3);
    static var nme_bitmap_data_set_pixel = nme.Loader.load("nme_bitmap_data_set_pixel",4);
    static var nme_bitmap_data_set_pixel32 = nme.Loader.load("nme_bitmap_data_set_pixel32",4);
    static var nme_bitmap_data_set_pixel_rgba = nme.Loader.load("nme_bitmap_data_set_pixel_rgba",4);
    static var nme_bitmap_data_set_bytes = nme.Loader.load("nme_bitmap_data_set_bytes",3);
+   static var nme_bitmap_data_generate_filter_rect = nme.Loader.load("nme_bitmap_data_generate_filter_rect",3);
    static var nme_render_surface_to_surface = nme.Loader.load("nme_render_surface_to_surface",-1);
    static var nme_bitmap_data_height = nme.Loader.load("nme_bitmap_data_height",1);
    static var nme_bitmap_data_width = nme.Loader.load("nme_bitmap_data_width",1);
