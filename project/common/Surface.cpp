@@ -762,21 +762,41 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          for(int x=0;x<r.w;x++)
             *outPixels++ = (*src++) << 24;
       }
+      else if (inIgnoreOrder)
+      {
+         memcpy(outPixels,src,r.w*4);
+         outPixels+=r.w;
+      }
       else
       {
-         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed) && inIgnoreOrder;
-         uint8 *a = &( ((ARGB *)outPixels)->a );
+         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
+         // Must output big-endian, while memory is stored little-endian
+         uint8 *a = src;
+         uint8 *pix = (uint8 *)outPixels;
          if (!swap)
          {
-            memcpy(outPixels,src,r.w*4);
-            outPixels+=r.w;
+            for(int x=0;x<r.w;x++)
+            {
+               *pix++ = src[3];
+               *pix++ = src[2];
+               *pix++ = src[1];
+               *pix++ = src[0];
+               src+=4;
+            }
          }
          else
          {
-            int *isrc = (int *)src;
             for(int x=0;x<r.w;x++)
-               *outPixels++ = ARGB::Swap( *isrc++ );
+            {
+               *pix++ = src[3];
+               *pix++ = src[0];
+               *pix++ = src[1];
+               *pix++ = src[2];
+               src+=4;
+            }
          }
+         outPixels += r.w;
+
          if (!(mPixelFormat & pfHasAlpha))
          {
             for(int x=0;x<r.w;x++)

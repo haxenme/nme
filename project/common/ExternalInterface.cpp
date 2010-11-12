@@ -238,6 +238,7 @@ int RGB2Int32(value inRGB)
       return (int)(val_field_numeric(inRGB,_id_rgb)) |
              ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
    }
+   return 0;
 }
 
 
@@ -268,6 +269,35 @@ void FromValue(Rect &outRect, value inValue)
    outRect.y = val_field_numeric(inValue,_id_y);
    outRect.w = val_field_numeric(inValue,_id_width);
    outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+Filter *FilterFromValue(value filter)
+{
+   WString type = val2stdwstr( val_field(filter,_id_type) );
+   int q = val_int(val_field(filter,_id_quality));
+   if (q<1) return 0;;
+   if (type==L"BlurFilter")
+   {
+      return( new BlurFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY) ) );
+   }
+   else if (type==L"DropShadowFilter")
+   {
+      return( new DropShadowFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY),
+          val_field_numeric(filter,_id_angle),
+          val_field_numeric(filter,_id_distance),
+          val_int( val_field(filter,_id_color) ),
+          val_field_numeric(filter,_id_strength),
+          val_field_numeric(filter,_id_alpha),
+          (bool)val_field_numeric(filter,_id_hideObject),
+          (bool)val_field_numeric(filter,_id_knockout),
+          (bool)val_field_numeric(filter,_id_inner)
+          ) );
+   }
+   return 0;
 }
 
 void ToValue(value &outVal,const Rect &inRect)
@@ -893,34 +923,6 @@ value nme_display_object_hit_test_point(
 }
 DEFINE_PRIM(nme_display_object_hit_test_point,5);
 
-Filter *FilterFromValue(value filter)
-{
-   WString type = val2stdwstr( val_field(filter,_id_type) );
-   int q = val_int(val_field(filter,_id_quality));
-   if (q<1) return 0;;
-   if (type==L"BlurFilter")
-   {
-      return( new BlurFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY) ) );
-   }
-   else if (type==L"DropShadowFilter")
-   {
-      return( new DropShadowFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY),
-          val_field_numeric(filter,_id_angle),
-          val_field_numeric(filter,_id_distance),
-          val_int( val_field(filter,_id_color) ),
-          val_field_numeric(filter,_id_strength),
-          val_field_numeric(filter,_id_alpha),
-          (bool)val_field_numeric(filter,_id_hideObject),
-          (bool)val_field_numeric(filter,_id_knockout),
-          (bool)val_field_numeric(filter,_id_inner)
-          ) );
-   }
-   return 0;
-}
 
 value nme_display_object_set_filters(value inObj,value inFilters)
 {
@@ -934,10 +936,9 @@ value nme_display_object_set_filters(value inObj,value inFilters)
          for(int f=0;f<val_array_size(inFilters);f++)
          {
             value filter = filter_array ? filter_array[f] : val_array_i(inFilters,f);
-            Filter *f = FilterFromValue(filter);
-            if (f)
-               filters.push_back(f);
-
+            Filter *fil = FilterFromValue(filter);
+            if (fil)
+               filters.push_back(fil);
         }
       }
       obj->setFilters(filters);

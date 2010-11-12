@@ -19,6 +19,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 	public function new(inLen:Int = 0)
 	{
 		nmeData = nme_byte_array_create(inLen);
+		position = 0;
 	}
 
 	public function nmeGetData():Dynamic { return nmeData; }
