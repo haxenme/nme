@@ -1501,7 +1501,7 @@ public:
       mFill = inJob.mFill->AsBitmapFill();
       mFill->IncRef();
       const UserPoint *point = (const UserPoint *)&inPath.data[inJob.mData0];
-      int n = inPath.commands.size();
+      int n = inJob.mCommandCount;
       for(int j=0; j<n; j++)
       {
          switch(inPath.commands[j+inJob.mCommand0])

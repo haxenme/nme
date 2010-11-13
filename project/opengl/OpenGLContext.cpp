@@ -550,6 +550,7 @@ public:
                   glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
             }
    
+            //printf("glDrawArrays %d : %d x %d\n", draw.mPrimType, draw.mFirst, draw.mCount );
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
          }
 

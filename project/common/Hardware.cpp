@@ -49,12 +49,12 @@ public:
 
 
 
-		if (inJob.mTriangles)
+      if (inJob.mTriangles)
       {
          mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType == vtVertexUVT);
-			AddTriangles(inJob.mTriangles);
+         AddTriangles(inJob.mTriangles);
       }
-		else
+      else
       {
          mArrays = &ioData.GetArrays(mSurface,false);
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
@@ -134,42 +134,42 @@ public:
                p.x *= 0.5;
             p.y = 0;
          }
-			tex[i] = p;
+         tex[i] = p;
        }
    }
 
 
-	void AddTriangles(GraphicsTrianglePath *inPath)
-	{
-		Vertices &vertices = mArrays->mVertices;
+   void AddTriangles(GraphicsTrianglePath *inPath)
+   {
+      Vertices &vertices = mArrays->mVertices;
       Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
-		bool persp = inPath->mType == vtVertexUVT;
+      bool persp = inPath->mType == vtVertexUVT;
       mElement.mFirst = vertices.size() / (persp?2:1);
       mElement.mPrimType = ptTriangles;
 
-		const float *t = &inPath->mUVT[0];
-		for(int v=0;v<inPath->mVertices.size();v++)
-		{
-			if (!persp)
-			  vertices.push_back(inPath->mVertices[v]);
+      const float *t = &inPath->mUVT[0];
+      for(int v=0;v<inPath->mVertices.size();v++)
+      {
+         if (!persp)
+           vertices.push_back(inPath->mVertices[v]);
 
-			if (inPath->mType != vtVertex)
+         if (inPath->mType != vtVertex)
          {
             tex.push_back( mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) ) );
-				t+=2;
+            t+=2;
             if (persp)
-				{
-					float w= 1.0/ *t++;
-			      vertices.push_back(inPath->mVertices[v]*w);
-			      vertices.push_back( UserPoint(0,w) );
-				}
+            {
+               float w= 1.0/ *t++;
+               vertices.push_back(inPath->mVertices[v]*w);
+               vertices.push_back( UserPoint(0,w) );
+            }
          }
-		}
+      }
 
-		mElement.mCount = (vertices.size() - mElement.mFirst)/(persp ? 2:1);
+      mElement.mCount = (vertices.size() - mElement.mFirst)/(persp ? 2:1);
       elements.push_back(mElement);
-	}
+   }
 
    void AddObject(const uint8* inCommands, int inCount,
                   const float *inData,  bool inClose)
@@ -306,20 +306,20 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 
 
    elem.mColour = 0xffffffff;
-	GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
-	if (fill)
-		elem.mColour = fill->mRGB.ToInt();
-	GraphicsStroke *stroke = inJob.mStroke;
-	if (stroke)
-	{
-   	elem.mScaleMode = stroke->scaleMode;
-   	elem.mWidth = stroke->thickness;
-	}
-	else
-	{
-   	elem.mScaleMode = ssmNormal;
-   	elem.mWidth = -1;
-	}
+   GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
+   if (fill)
+      elem.mColour = fill->mRGB.ToInt();
+   GraphicsStroke *stroke = inJob.mStroke;
+   if (stroke)
+   {
+      elem.mScaleMode = stroke->scaleMode;
+      elem.mWidth = stroke->thickness;
+   }
+   else
+   {
+      elem.mScaleMode = ssmNormal;
+      elem.mWidth = -1;
+   }
 
    elem.mPrimType = ptPoints;
 
@@ -329,16 +329,16 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
    HardwareArrays *arrays = &ioData.GetArrays(0,fill==0);
    Vertices &vertices = arrays->mVertices;
    elem.mFirst = vertices.size();
-	vertices.resize( elem.mFirst + elem.mCount );
-	memcpy( &vertices[elem.mFirst], &inPath.data[ inJob.mData0 ], elem.mCount*sizeof(UserPoint) );
+   vertices.resize( elem.mFirst + elem.mCount );
+   memcpy( &vertices[elem.mFirst], &inPath.data[ inJob.mData0 ], elem.mCount*sizeof(UserPoint) );
 
-	if (!fill)
-	{
-	   Colours &colours = arrays->mColours;
-	   colours.resize( elem.mFirst + elem.mCount );
-	   memcpy( &colours[elem.mFirst], &inPath.data[ inJob.mData0 + elem.mCount*2],
-			         elem.mCount*sizeof(int) );
-	}
+   if (!fill)
+   {
+      Colours &colours = arrays->mColours;
+      colours.resize( elem.mFirst + elem.mCount );
+      memcpy( &colours[elem.mFirst], &inPath.data[ inJob.mData0 + elem.mCount*2],
+                  elem.mCount*sizeof(int) );
+   }
 
    arrays->mElements.push_back(elem);
 }
@@ -346,12 +346,12 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
                       HardwareContext &inHardware)
 {
-	if (inJob.mIsPointJob)
-		CreatePointJob(inJob,inPath,ioData,inHardware);
-	else
-	{
+   if (inJob.mIsPointJob)
+      CreatePointJob(inJob,inPath,ioData,inHardware);
+   else
+   {
       HardwareBuilder builder(inJob,inPath,ioData,inHardware);
-	}
+   }
 }
 
 
@@ -359,7 +359,7 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 
 HardwareArrays::HardwareArrays(Surface *inSurface,bool inPersp)
 {
-	mPerspectiveCorrect = inPersp;
+   mPerspectiveCorrect = inPersp;
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
@@ -387,8 +387,8 @@ HardwareData::~HardwareData()
 HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,bool inPersp)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
-		     mCalls.last()->mColours.empty() != inWithColour ||
-		     mCalls.last()->mPerspectiveCorrect != inPersp )
+           mCalls.last()->mColours.empty() != inWithColour ||
+           mCalls.last()->mPerspectiveCorrect != inPersp )
    {
        HardwareArrays *arrays = new HardwareArrays(inSurface,inPersp);
        mCalls.push_back(arrays);
