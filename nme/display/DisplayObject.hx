@@ -33,6 +33,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var mask(default,nmeSetMask): DisplayObject;
    public var transform(nmeGetTransform,nmeSetTransform): Transform;
    public var alpha(nmeGetAlpha,nmeSetAlpha): Float;
+   public var blendMode(nmeGetBlendMode,nmeSetBlendMode): BlendMode;
 
    public var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
@@ -148,6 +149,17 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    {
       nme_display_object_set_name(nmeHandle,inVal);
       return inVal;
+   }
+
+   function nmeGetBlendMode() : BlendMode
+   {
+      var i:Int = nme_display_object_get_blend_mode(nmeHandle);
+      return Type.createEnumIndex( BlendMode, i );
+   }
+   function nmeSetBlendMode(inMode:BlendMode) : BlendMode
+   {
+      nme_display_object_set_blend_mode(nmeHandle, Type.enumIndex(inMode) );
+      return inMode;
    }
 
    function nmeGetScale9Grid() : Rectangle
@@ -470,6 +482,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    static var nme_display_object_set_height = nme.Loader.load("nme_display_object_set_height",2);
    static var nme_display_object_get_alpha = nme.Loader.load("nme_display_object_get_alpha",1);
    static var nme_display_object_set_alpha = nme.Loader.load("nme_display_object_set_alpha",2);
+   static var nme_display_object_get_blend_mode = nme.Loader.load("nme_display_object_get_blend_mode",1);
+   static var nme_display_object_set_blend_mode = nme.Loader.load("nme_display_object_set_blend_mode",2);
    static var nme_display_object_get_cache_as_bitmap = nme.Loader.load("nme_display_object_get_cache_as_bitmap",1);
    static var nme_display_object_set_cache_as_bitmap = nme.Loader.load("nme_display_object_set_cache_as_bitmap",2);
    static var nme_display_object_get_visible = nme.Loader.load("nme_display_object_get_visible",1);

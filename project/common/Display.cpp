@@ -579,6 +579,17 @@ void DisplayObject::setAlpha(double inAlpha)
    DirtyCache();
 }
 
+void DisplayObject::setBlendMode(int inMode)
+{
+   if (inMode!=blendMode)
+   {
+      blendMode = (BlendMode)inMode;
+      DirtyUp(dirtCache);
+   }
+}
+
+
+
 void DisplayObject::setFilters(FilterList &inFilters)
 {
    ClearFilters();

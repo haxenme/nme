@@ -167,6 +167,8 @@ public:
 
    double getAlpha() { return colorTransform.alphaMultiplier; }
    void   setAlpha(double inAlpha);
+   BlendMode getBlendMode() { return blendMode; }
+   void setBlendMode(int inMode);
 
    int getID() const { return id; }
 
