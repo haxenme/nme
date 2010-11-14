@@ -87,6 +87,8 @@ public:
    virtual GraphicsPath           *AsPath() { return 0; }
    virtual GraphicsTrianglePath   *AsTrianglePath() { return 0; }
 
+   virtual int Version() const { return 0; }
+
 
 protected:
    virtual ~IGraphicsData() { }
@@ -176,6 +178,7 @@ public:
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
    GraphicsBitmapFill   *AsBitmapFill() { return this; }
+   int  Version() const;
 
    Surface             *bitmapData;
    Matrix              matrix;
@@ -207,6 +210,7 @@ public:
 	GraphicsStroke *IncRef() { Object::IncRef(); return this; }
 
    GraphicsStroke *AsStroke() { return this; }
+   int  Version() const { return fill->Version(); }
 
    bool IsClear() { return false; }
 
@@ -592,6 +596,7 @@ struct GraphicsJob
    GraphicsJob() { memset(this,0,sizeof(GraphicsJob)); }
 
    void clear();
+   int  Version() const { return (mFill?mFill->Version():0) + (mStroke?mStroke->Version():0); }
 
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
@@ -665,7 +670,7 @@ public:
 
    bool empty() const { return !mPathData || mPathData->empty(); }
 
-   int Version() const { return mVersion; }
+   int Version() const;
 
 protected:
    void                      BuildHardware();

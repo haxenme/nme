@@ -52,6 +52,14 @@ void Graphics::clear()
    mVersion++;
 }
 
+int Graphics::Version() const
+{
+   int result = mVersion;
+	for(int i=0;i<mJobs.size();i++)
+		result += mJobs[i].Version();
+	return result;
+}
+
 #define SIN45 0.70710678118654752440084436210485
 #define TAN22 0.4142135623730950488016887242097
 
@@ -715,6 +723,10 @@ GraphicsBitmapFill::~GraphicsBitmapFill()
       bitmapData->DecRef();
 }
 
+int GraphicsBitmapFill::Version() const
+{
+	return bitmapData->Version();
+}
 // --- GraphicsStroke -------------------------------------------------------------------
 
 GraphicsStroke::GraphicsStroke(IGraphicsFill *inFill, double inThickness,

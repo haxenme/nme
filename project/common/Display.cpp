@@ -147,13 +147,10 @@ void DisplayObject::setVisible(bool inVal)
 
 void DisplayObject::CheckCacheDirty(bool inForHardware)
 {
-   if (IsCacheDirty())
+   if (mBitmapCache && IsCacheDirty())
    {
-      if (mBitmapCache)
-      {
-         delete mBitmapCache;
-         mBitmapCache = 0;
-      }
+      delete mBitmapCache;
+      mBitmapCache = 0;
    }
 
    if (!IsBitmapRender(inForHardware) && !IsMask() && mBitmapCache)
@@ -878,10 +875,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       if (inState.mPhase==rpBitmap)
       {
          //printf("Bitmap phase %d\n", obj->id);
-         obj->CheckCacheDirty(inTarget.IsHardware());
-
          if (obj->IsBitmapRender(inTarget.IsHardware()) )
          {
+            obj->CheckCacheDirty(inTarget.IsHardware());
+
             Extent2DF screen_extent;
             obj->GetExtent(obj_state->mTransform,screen_extent,true);
             BitmapCache *mask = obj_state->mMask;
@@ -993,6 +990,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
          else
          {
+            if (!obj->IsMask())
+               obj->SetBitmapCache(0);
             obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
             obj->Render(inTarget,*obj_state);
          }
@@ -1098,7 +1097,7 @@ DisplayObject *DisplayObjectContainer::getChildAt(int index)
 bool DisplayObjectContainer::NonNormalBlendChild()
 {
    for(int i=0;i<mChildren.size();i++)
-      if (mChildren[i]->blendMode!=bmNormal)
+      if (mChildren[i]->visible && mChildren[i]->blendMode!=bmNormal)
          return true;
    return false;
 }

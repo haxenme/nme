@@ -608,6 +608,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
       bool src_alpha = mPixelFormat==pfAlpha;
       bool dest_alpha = outDest.mPixelFormat==pfAlpha;
+      mVersion++;
 
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
@@ -733,6 +734,7 @@ RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
    Rect r =  inRect.Intersect( Rect(0,0,mWidth,mHeight) );
    if (mTexture)
       mTexture->Dirty(r);
+   mVersion++;
    return RenderTarget(r, mPixelFormat,mBase,mStride);
 }
 
@@ -857,6 +859,7 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
 void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder)
 {
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+   mVersion++;
    if (mTexture)
       mTexture->Dirty(r);
 
@@ -905,6 +908,7 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
    if (inX<0 || inY<0 || inX>=mWidth || inY>=mHeight)
       return;
 
+   mVersion++;
    if (mTexture)
       mTexture->Dirty(Rect(inX,inY,1,1));
 
@@ -946,6 +950,7 @@ void SimpleSurface::scroll(int inDX,int inDY)
    src.Translate(inDX,inDY);
    setPixels(src,buffer,true);
    free(buffer);
+   mVersion++;
    if (mTexture)
       mTexture->Dirty(src);
 }

@@ -35,7 +35,7 @@ public:
 class Surface : public Object
 {
 public:
-   Surface() : mTexture(0) { };
+   Surface() : mTexture(0), mVersion(0) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -76,8 +76,10 @@ public:
    virtual uint32 getPixel(int inX,int inY) { return 0; }
    virtual void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false) { }
    virtual void scroll(int inDX,int inDY) { }
+   int Version() const  { return mVersion; }
 
 protected:
+   mutable int   mVersion;
    Texture       *mTexture;
    virtual       ~Surface();
 };
