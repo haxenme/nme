@@ -707,12 +707,10 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
    int dsx_dx = (inSrcRect.w << 16)/inDestRect.w;
    int dsy_dy = (inSrcRect.h << 16)/inDestRect.h;
 
-   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
-   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
-   //
-   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
-   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
-   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
+   #ifndef STRETCH_BILINEAR
+   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16);
+   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16);
+
    for(int y=0;y<out.h;y++)
    {
       ARGB *dest= (ARGB *)outTarget.Row(y+out.y) + out.x;
@@ -723,7 +721,7 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
       int sx = sx0;
       for(int x=0;x<out.w;x++)
       {
-         ARGB s = src[sx>>16];
+         ARGB s(src[sx>>16]);
          sx+=dsx_dx;
          if (SWAP) s.SwapRB();
          if (!SRC_ALPHA)
@@ -745,6 +743,74 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
          }
       }
    }
+
+   #else
+   // todo - overflow testing
+   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+   //
+   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
+   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
+   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
+   int last_y = inSrcRect.y1()-1;
+   ARGB s;
+   s.a = 255;
+   for(int y=0;y<out.h;y++)
+   {
+      ARGB *dest= (ARGB *)outTarget.Row(y+out.y) + out.x;
+      int y_ = (sy0>>16);
+      int y_frac = sy0 & 0xffff;
+      const ARGB *src0 = (const ARGB *)inSrc->Row(y_);
+      const ARGB *src1 = (const ARGB *)inSrc->Row(y_<last_y ? y_+1 : y_);
+      sy0+=dsy_dy;
+
+      int sx = sx0;
+      for(int x=0;x<out.w;x++)
+      {
+         int x_ = sx>>16;
+         int x_frac = sx & 0xffff;
+
+         ARGB s00(src0[x_]);
+         ARGB s01(src0[x_+1]);
+         ARGB s10(src1[x_]);
+         ARGB s11(src1[x_+1]);
+
+         int c0_0 = s00.c0 + (((s01.c0-s00.c0)*x_frac) >> 16);
+         int c0_1 = s10.c0 + (((s11.c0-s10.c0)*x_frac) >> 16);
+         s.c0 = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
+
+         int c1_0 = s00.c1 + (((s01.c1-s00.c1)*x_frac) >> 16);
+         int c1_1 = s10.c1 + (((s11.c1-s10.c1)*x_frac) >> 16);
+         s.c1 = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
+
+         int c2_0 = s00.c2 + (((s01.c2-s00.c2)*x_frac) >> 16);
+         int c2_1 = s10.c2 + (((s11.c2-s10.c2)*x_frac) >> 16);
+         s.c2 = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
+
+         sx+=dsx_dx;
+         if (SWAP) s.SwapRB();
+         if (!SRC_ALPHA)
+         {
+            *dest++ = s;
+         }
+         else
+         {
+            int a_x0 = s00.a + (((s01.a-s00.a)*x_frac) >> 16);
+            int a_x1 = s10.a + (((s11.a-s10.a)*x_frac) >> 16);
+            s.a = a_x0 + (((a_x1-a_x0)*y_frac) >> 16);
+
+            if (!s.a)
+               dest++;
+            else if (s.a==255)
+               *dest++ = s;
+            else if (DEST_ALPHA)
+               dest++ ->QBlendA(s);
+            else
+               dest++ ->QBlend(s);
+         }
+      }
+   }
+   #endif
 }
 
 void SimpleSurface::StretchTo(const RenderTarget &outTarget,
