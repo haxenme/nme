@@ -61,6 +61,8 @@ public:
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff ) const = 0;
+   virtual void StretchTo(const RenderTarget &outTarget,
+                          const Rect &inSrcRect, const Rect &inDestRect) const = 0;
 
    Texture *GetTexture() { return mTexture; }
    Texture *GetOrCreateTexture(HardwareContext &inHardware);
@@ -118,6 +120,9 @@ public:
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff ) const;
 
+   virtual void StretchTo(const RenderTarget &outTarget,
+                          const Rect &inSrcRect, const Rect &inDestRect) const;
+
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
    Surface *clone();
@@ -163,6 +168,8 @@ public:
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint ) const { }
+   void StretchTo(const RenderTarget &outTarget,
+                          const Rect &inSrcRect, const Rect &inDestRect) const { }
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
    void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);

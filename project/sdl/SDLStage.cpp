@@ -74,6 +74,10 @@ public:
                uint32 inTint=0xffffff ) const
    {
    }
+   void StretchTo(const RenderTarget &outTarget,
+          const Rect &inSrcRect, const Rect &inDestRect) const
+   {
+   }
 
    SDL_Surface *mSurf;
    bool  mDelete;

@@ -696,7 +696,103 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    }
 }
 
+template<bool SWAP,bool SRC_ALPHA,bool DEST_ALPHA>
+void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
+                     const Rect &inSrcRect, const Rect &inDestRect)
+{
+   Rect out = inDestRect.Intersect(outTarget.mRect);
+   if (!out.Area())
+      return;
 
+   int dsx_dx = (inSrcRect.w << 16)/inDestRect.w;
+   int dsy_dy = (inSrcRect.h << 16)/inDestRect.h;
+
+   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+   //
+   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
+   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
+   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
+   for(int y=0;y<out.h;y++)
+   {
+      ARGB *dest= (ARGB *)outTarget.Row(y+out.y) + out.x;
+      int y_ = (sy0>>16);
+      const ARGB *src = (const ARGB *)inSrc->Row(y_);
+      sy0+=dsy_dy;
+
+      int sx = sx0;
+      for(int x=0;x<out.w;x++)
+      {
+         ARGB s = src[sx>>16];
+         sx+=dsx_dx;
+         if (SWAP) s.SwapRB();
+         if (!SRC_ALPHA)
+         {
+            if (DEST_ALPHA)
+               s.a = 255;
+            *dest++ = s;
+         }
+         else
+         {
+            if (!s.a)
+               dest++;
+            else if (s.a==255)
+               *dest++ = s;
+            else if (DEST_ALPHA)
+               dest++ ->QBlendA(s);
+            else
+               dest++ ->QBlend(s);
+         }
+      }
+   }
+}
+
+void SimpleSurface::StretchTo(const RenderTarget &outTarget,
+                     const Rect &inSrcRect, const Rect &inDestRect) const
+{
+   // Only RGB supported
+   if (mPixelFormat==pfAlpha || outTarget.mPixelFormat==pfAlpha)
+      return;
+
+   bool swap = (outTarget.mPixelFormat & pfSwapRB) != (mPixelFormat & pfSwapRB);
+   bool dest_has_alpha = outTarget.mPixelFormat & pfHasAlpha;
+   bool src_has_alpha = mPixelFormat &  pfHasAlpha;
+
+   if (swap)
+   {
+      if (src_has_alpha)
+      {
+         if (dest_has_alpha)
+            TStretchTo<true,true,true>(this,outTarget,inSrcRect,inDestRect);
+         else
+            TStretchTo<true,true,false>(this,outTarget,inSrcRect,inDestRect);
+      }
+      else
+      {
+         if (dest_has_alpha)
+            TStretchTo<true,false,true>(this,outTarget,inSrcRect,inDestRect);
+         else
+            TStretchTo<true,false,false>(this,outTarget,inSrcRect,inDestRect);
+      }
+   }
+   else
+   {
+      if (src_has_alpha)
+      {
+         if (dest_has_alpha)
+            TStretchTo<false,true,true>(this,outTarget,inSrcRect,inDestRect);
+         else
+            TStretchTo<false,true,false>(this,outTarget,inSrcRect,inDestRect);
+      }
+      else
+      {
+         if (dest_has_alpha)
+            TStretchTo<false,false,true>(this,outTarget,inSrcRect,inDestRect);
+         else
+            TStretchTo<false,false,false>(this,outTarget,inSrcRect,inDestRect);
+      }
+   }
+}
 
 
 
