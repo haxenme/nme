@@ -1322,7 +1322,7 @@ value nme_gfx_draw_round_rect(value *arg, int args)
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
-      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aX]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
+      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aY]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
    }
    return alloc_null();
 }

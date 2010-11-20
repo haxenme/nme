@@ -656,6 +656,7 @@ public:
       lineTo(x,y+height);
       lineTo(x,y);
       Flush();
+		mVersion++;
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
    void beginTiles(Surface *inSurface,bool inSmooth=false);
