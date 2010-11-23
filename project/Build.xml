@@ -108,12 +108,12 @@
   <file name="common/XML/tinyxmlerror.cpp"/>
   <file name="common/XML/tinyxmlparser.cpp"/>
 
-  <file name="internal/PolygonRenderer.cpp"><depend name="internal/Render.h"/></file>
-  <file name="internal/AlphaMask.cpp"><depend name="internal/Render.h"/></file>
-  <file name="internal/SolidFill.cpp"><depend name="internal/Render.h"/></file>
-  <file name="internal/GradientFill.cpp"><depend name="internal/Render.h"/></file>
-  <file name="internal/BitmapFill.cpp"><depend name="internal/Render.h"/></file>
-  <file name="internal/BitmapFillPersp.cpp"><depend name="internal/Render.h"/></file>
+  <file name="software-renderer/PolygonRenderer.cpp"><depend name="software-renderer/Render.h"/></file>
+  <file name="software-renderer/AlphaMask.cpp"><depend name="software-renderer/Render.h"/></file>
+  <file name="software-renderer/SolidFill.cpp"><depend name="software-renderer/Render.h"/></file>
+  <file name="software-renderer/GradientFill.cpp"><depend name="software-renderer/Render.h"/></file>
+  <file name="software-renderer/BitmapFill.cpp"><depend name="software-renderer/Render.h"/></file>
+  <file name="software-renderer/BitmapFillPersp.cpp"><depend name="software-renderer/Render.h"/></file>
 
   <file name="opengl/OpenGLContext.cpp" if="ogl"/>
 
