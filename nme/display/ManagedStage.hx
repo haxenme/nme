@@ -2,29 +2,43 @@ package nme.display;
 
 class ManagedStage extends Stage
 {
-   static var etUnknown = 0;
-   static var etKeyDown = 1;
-   static var etChar = 2;
-   static var etKeyUp = 3;
-   static var etMouseMove = 4;
-   static var etMouseDown = 5;
-   static var etMouseClick = 6;
-   static var etMouseUp = 7;
-   static var etResize = 8;
-   static var etPoll = 9;
-   static var etQuit = 10;
-   static var etFocus = 11;
-   static var etShouldRotate = 12;
+   static inline public var etUnknown = 0;
+   static inline public var etKeyDown = 1;
+   static inline public var etChar = 2;
+   static inline public var etKeyUp = 3;
+   static inline public var etMouseMove = 4;
+   static inline public var etMouseDown = 5;
+   static inline public var etMouseClick = 6;
+   static inline public var etMouseUp = 7;
+   static inline public var etResize = 8;
+   static inline public var etPoll = 9;
+   static inline public var etQuit = 10;
+   static inline public var etFocus = 11;
+   static inline public var etShouldRotate = 12;
 
-   static var etDestroyHandler = 13;
-   static var etRedraw = 14;
+   static inline public var etDestroyHandler = 13;
+   static inline public var etRedraw = 14;
 
-   static var etTouchBegin = 15;
-   static var etTouchMove = 16;
-   static var etTouchEnd = 17;
-   static var etTouchTap = 18;
+   static inline public var etTouchBegin = 15;
+   static inline public var etTouchMove = 16;
+   static inline public var etTouchEnd = 17;
+   static inline public var etTouchTap = 18;
 
-   static var etChange = 19;
+   static inline public var etChange = 19;
+
+
+
+
+   static inline public var efLeftDown  =  0x0001;
+   static inline public var efShiftDown =  0x0002;
+   static inline public var efCtrlDown  =  0x0004;
+   static inline public var efAltDown   =  0x0008;
+   static inline public var efCommandDown = 0x0010;
+   static inline public var efMiddleDown  = 0x0020;
+   static inline public var efRightDown  = 0x0040;
+
+   static inline public var efLocationRight  = 0x4000;
+   static inline public var efPrimaryTouch   = 0x8000;
 
 
 
