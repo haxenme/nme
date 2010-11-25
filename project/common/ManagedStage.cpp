@@ -1,11 +1,9 @@
 #include <Graphics.h>
 #include <Display.h>
 #include <Surface.h>
-#include <windows.h>
 #include <KeyCodes.h>
 #include <map>
 
-#include <gl/GL.h>
 
 namespace nme
 {
@@ -24,13 +22,13 @@ ManagedStage::ManagedStage(int inWidth,int inHeight)
    mCursor = curPointer;
    mIsHardware = true;
    HintColourOrder(mIsHardware);
-	mActiveWidth = inWidth;
-	mActiveHeight = inHeight;
-	SetNominalSize(inWidth,inHeight);
+   mActiveWidth = inWidth;
+   mActiveHeight = inHeight;
+   SetNominalSize(inWidth,inHeight);
 
    sgStage = this;
 
-	mHardwareContext = HardwareContext::CreateOpenGL(0,0);
+   mHardwareContext = HardwareContext::CreateOpenGL(0,0);
    mHardwareContext->IncRef();
    mHardwareSurface = new HardwareSurface(mHardwareContext);
    mHardwareSurface->IncRef();
@@ -53,12 +51,22 @@ void ManagedStage::SetCursor(Cursor inCursor)
 
 void ManagedStage::SetActiveSize(int inW,int inH)
 {
-	mActiveWidth = inW;
-	mActiveHeight = inH;
+   mActiveWidth = inW;
+   mActiveHeight = inH;
    mHardwareContext->SetWindowSize(inW,inH);
 
-	Event event(etResize,inW,inH);
+   Event event(etResize,inW,inH);
    Stage::HandleEvent(event);
+}
+
+void ManagedStage::PumpEvent(Event &inEvent)
+{
+   if (inEvent.type==etResize)
+   {
+      SetActiveSize(inEvent.x, inEvent.y);
+   }
+   else
+      Stage::HandleEvent(inEvent);
 }
 
 Surface *ManagedStage::GetPrimarySurface()

@@ -211,6 +211,28 @@ void FromValue(Matrix &outMatrix, value inValue)
    }
 }
 
+int ValInt(value inObject, int inID, int inDefault)
+{
+   value field = val_field(inObject,inID);
+   if (val_is_null(field))
+      return inDefault;
+   return (int)val_number(field);
+}
+
+
+void FromValue(Event &outEvent, value inValue)
+{
+   outEvent.type = (EventType)ValInt(inValue,_id_type,etUnknown);
+   outEvent.x = ValInt(inValue,_id_x,0);
+   outEvent.y = ValInt(inValue,_id_y,0);
+   outEvent.value = ValInt(inValue,_id_value,0);
+   outEvent.id = ValInt(inValue,_id_id,-1);
+   outEvent.flags = ValInt(inValue,_id_flags,0);
+   outEvent.code = ValInt(inValue,_id_code,0);
+   outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
+}
+
+
 void FromValue(ColorTransform &outTrans, value inValue)
 {
    if (!val_is_null(inValue))
@@ -253,8 +275,8 @@ void FromValue(SoundTransform &outTrans, value inValue)
 
 void FromValue(DRect &outRect, value inValue)
 {
-	if (val_is_null(inValue))
-		return;
+   if (val_is_null(inValue))
+      return;
    outRect.x = val_field_numeric(inValue,_id_x);
    outRect.y = val_field_numeric(inValue,_id_y);
    outRect.w = val_field_numeric(inValue,_id_width);
@@ -263,8 +285,8 @@ void FromValue(DRect &outRect, value inValue)
 
 void FromValue(Rect &outRect, value inValue)
 {
-	if (val_is_null(inValue))
-		return;
+   if (val_is_null(inValue))
+      return;
    outRect.x = val_field_numeric(inValue,_id_x);
    outRect.y = val_field_numeric(inValue,_id_y);
    outRect.w = val_field_numeric(inValue,_id_width);
@@ -488,7 +510,7 @@ using namespace nme;
 
 value nme_time_stamp()
 {
-	return alloc_float( GetTimeStamp() );
+   return alloc_float( GetTimeStamp() );
 }
 DEFINE_PRIM(nme_time_stamp,0);
 
@@ -496,9 +518,9 @@ DEFINE_PRIM(nme_time_stamp,0);
 
 value nme_byte_array_create(value inLen)
 {
-	ByteArray *array = new ByteArray();
-	array->mBytes.resize(val_int(inLen));
-	return ObjectToAbstract(array);
+   ByteArray *array = new ByteArray();
+   array->mBytes.resize(val_int(inLen));
+   return ObjectToAbstract(array);
 }
 DEFINE_PRIM(nme_byte_array_create,1);
 
@@ -513,82 +535,82 @@ value nme_byte_array_read_file(value inFilename)
    fseek(file,0,SEEK_SET);
 
    ByteArray *result = new ByteArray;
-	result->mBytes.resize(len);
+   result->mBytes.resize(len);
    fread(&result->mBytes[0],len,1,file);
    fclose(file);
 
-	return ObjectToAbstract(result);
+   return ObjectToAbstract(result);
 }
 DEFINE_PRIM(nme_byte_array_read_file,1);
 
 
 value nme_byte_array_get_length(value inArray)
 {
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		return alloc_int(array->mBytes.size());
-	}
-	return alloc_null();
+   ByteArray *array;
+   if (AbstractToObject(inArray,array))
+   {
+      return alloc_int(array->mBytes.size());
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_get_length,1);
 
 value nme_byte_array_get(value inArray, value inPos)
 {
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		int idx = val_int(inPos);
-		if (idx>=0 && idx<array->mBytes.size())
-			return alloc_int(array->mBytes[idx]);
-	}
-	return alloc_null();
+   ByteArray *array;
+   if (AbstractToObject(inArray,array))
+   {
+      int idx = val_int(inPos);
+      if (idx>=0 && idx<array->mBytes.size())
+         return alloc_int(array->mBytes[idx]);
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_get,2);
 
 value nme_byte_array_set(value inArray,value inPos, value inVal)
 {
-	ByteArray *array;
-	if (AbstractToObject(inArray,array))
-	{
-		int idx = val_int(inPos);
-		if (idx>=0 && idx<array->mBytes.size())
-			array->mBytes[idx] = val_int(inVal);
-	}
-	return alloc_null();
+   ByteArray *array;
+   if (AbstractToObject(inArray,array))
+   {
+      int idx = val_int(inPos);
+      if (idx>=0 && idx<array->mBytes.size())
+         array->mBytes[idx] = val_int(inVal);
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_set,3);
 
 struct ByteData
 {
-	uint8 *data;
-	int   length;
+   uint8 *data;
+   int   length;
 };
 
 bool FromValue(ByteData &outData,value inData)
 {
-	ByteArray *array;
-	if (AbstractToObject(inData,array))
-	{
-		outData.length = array->mBytes.size();
-		outData.data = &array->mBytes[0];
-		return true;
-	}
-	// Neko byte array....
-	if (val_is_string(inData))
-	{
-		outData.length = val_strlen(inData);
-		outData.data = (uint8 *)val_string(inData);
-		return true;
-	}
+   ByteArray *array;
+   if (AbstractToObject(inData,array))
+   {
+      outData.length = array->mBytes.size();
+      outData.data = &array->mBytes[0];
+      return true;
+   }
+   // Neko byte array....
+   if (val_is_string(inData))
+   {
+      outData.length = val_strlen(inData);
+      outData.data = (uint8 *)val_string(inData);
+      return true;
+   }
 
-	if (!val_is_buffer(inData))
-		return false;
+   if (!val_is_buffer(inData))
+      return false;
 
-	buffer buf = val_to_buffer(inData);
-	outData.length = buffer_size(buf);
-	outData.data = (uint8 *)buffer_data(buf);
-	return true;
+   buffer buf = val_to_buffer(inData);
+   outData.length = buffer_size(buf);
+   outData.data = (uint8 *)buffer_data(buf);
+   return true;
 }
 
 
@@ -760,21 +782,26 @@ DEFINE_PRIM(nme_stage_is_opengl,1);
 
 value nme_managed_stage_create(value inW,value inH)
 {
-	ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH));
-	return ObjectToAbstract(stage);
+   ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH));
+   return ObjectToAbstract(stage);
 }
 DEFINE_PRIM(nme_managed_stage_create,2);
 
-value nme_managed_stage_resize(value inStage,value inW,value inH)
+
+value nme_managed_stage_pump_event(value inStage,value inEvent)
 {
-	ManagedStage *stage;
-	if (AbstractToObject(inStage,stage))
-	{
-	   stage->SetActiveSize(val_int(inW),val_int(inH));
-	}
-	return alloc_null();
+   ManagedStage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      Event event;
+      FromValue(event,inEvent);
+      stage->PumpEvent(event);
+   }
+   return alloc_null();
 }
-DEFINE_PRIM(nme_managed_stage_resize,3);
+DEFINE_PRIM(nme_managed_stage_pump_event,2);
+
+
 
 
 // --- Input --------------------------------------------------------------
@@ -912,33 +939,33 @@ DEFINE_PRIM(nme_display_object_local_to_global,2);
 
 
 value nme_display_object_hit_test_point(
-				value inObj,value inX, value inY, value inShape, value inRecurse)
+            value inObj,value inX, value inY, value inShape, value inRecurse)
 {
    DisplayObject *obj;
-	UserPoint pos(val_number(inX),val_number(inY));
+   UserPoint pos(val_number(inX),val_number(inY));
 
    if (AbstractToObject(inObj,obj))
    {
-		if (val_bool(inShape))
-		{
-			Stage *stage = obj->getStage();
-			if (stage)
-			{
-				bool recurse = val_bool(inRecurse);
-				return alloc_bool( stage->HitTest( pos, obj, recurse ) );
-			}
-		}
-		else
-		{
-			Matrix m = obj->GetFullMatrix(false);
-			Transform trans;
-			trans.mMatrix = &m;
+      if (val_bool(inShape))
+      {
+         Stage *stage = obj->getStage();
+         if (stage)
+         {
+            bool recurse = val_bool(inRecurse);
+            return alloc_bool( stage->HitTest( pos, obj, recurse ) );
+         }
+      }
+      else
+      {
+         Matrix m = obj->GetFullMatrix(false);
+         Transform trans;
+         trans.mMatrix = &m;
 
-			Extent2DF ext;
-			obj->GetExtent(trans, ext, true );
-			return alloc_bool( ext.Contains(pos) );
-		}
-	}
+         Extent2DF ext;
+         obj->GetExtent(trans, ext, true );
+         return alloc_bool( ext.Contains(pos) );
+      }
+   }
 
    return alloc_null();
 }
@@ -1457,7 +1484,7 @@ static int sNekoLut[256];
 
 value nme_gfx_draw_points(value *arg, int nargs)
 {
-	enum { aGfx, aXYs, aRGBAs, aDefaultRGBA, aIs31Bits, aPointSize, aSIZE };
+   enum { aGfx, aXYs, aRGBAs, aDefaultRGBA, aIs31Bits, aPointSize, aSIZE };
 
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
@@ -1951,17 +1978,17 @@ DEFINE_PRIM(nme_bitmap_data_load,1);
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {
-	ByteData bytes;
-	if (!FromValue(bytes,inRGBBytes))
-		return alloc_null();
+   ByteData bytes;
+   if (!FromValue(bytes,inRGBBytes))
+      return alloc_null();
 
-	Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
-	if (surface)
-	{
-		value result = ObjectToAbstract(surface);
-		surface->DecRef();
-		return result;
-	}
+   Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
+   if (surface)
+   {
+      value result = ObjectToAbstract(surface);
+      surface->DecRef();
+      return result;
+   }
 
    return alloc_null();
 }
@@ -1970,14 +1997,14 @@ DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
 
 value nme_bitmap_data_clone(value inSurface)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-		Surface *result = surf->clone();
+      Surface *result = surf->clone();
       value val = ObjectToAbstract(result);
-		result->DecRef();
-		return val;
-	}
+      result->DecRef();
+      return val;
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_clone,1);
@@ -2004,27 +2031,27 @@ DEFINE_PRIM(nme_bitmap_data_copy,4);
 
 value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-		Rect rect(0,0,surf->Width(),surf->Height());
-		FromValue(rect,inRect);
-		if (rect.w>0 && rect.h>0)
-		{
-		   int size = rect.w * rect.h*4;
-			ByteArray *array;
-			buffer buf;
-   		if (AbstractToObject(outBytes,array))
-			{
-				array->mBytes.resize(size);
-				surf->getPixels(rect,(unsigned int *)&array->mBytes[0]);
-			}
-			else if (buf=val_to_buffer(outBytes))
-			{
-				buffer_set_size(buf, size);
-				surf->getPixels(rect,(unsigned int *)buffer_data(buf));
-			}
-		}
+      Rect rect(0,0,surf->Width(),surf->Height());
+      FromValue(rect,inRect);
+      if (rect.w>0 && rect.h>0)
+      {
+         int size = rect.w * rect.h*4;
+         ByteArray *array;
+         buffer buf;
+         if (AbstractToObject(outBytes,array))
+         {
+            array->mBytes.resize(size);
+            surf->getPixels(rect,(unsigned int *)&array->mBytes[0]);
+         }
+         else if (buf=val_to_buffer(outBytes))
+         {
+            buffer_set_size(buf, size);
+            surf->getPixels(rect,(unsigned int *)buffer_data(buf));
+         }
+      }
    }
 
    return alloc_null();
@@ -2053,9 +2080,9 @@ DEFINE_PRIM(nme_bitmap_data_get_color_bounds_rect,5);
 
 value nme_bitmap_data_get_pixel(value inSurface, value inX, value inY)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-		return alloc_int(surf->getPixel(val_int(inX),val_int(inY)) & 0xffffff);
+      return alloc_int(surf->getPixel(val_int(inX),val_int(inY)) & 0xffffff);
 
    return alloc_null();
 }
@@ -2063,9 +2090,9 @@ DEFINE_PRIM(nme_bitmap_data_get_pixel,3);
 
 value nme_bitmap_data_get_pixel32(value inSurface, value inX, value inY)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-		return alloc_int(surf->getPixel(val_int(inX),val_int(inY)));
+      return alloc_int(surf->getPixel(val_int(inX),val_int(inY)));
 
    return alloc_null();
 }
@@ -2074,15 +2101,15 @@ DEFINE_PRIM(nme_bitmap_data_get_pixel32,3);
 
 value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-	{
-		int rgb = surf->getPixel(val_int(inX),val_int(inY));
-		value result = alloc_empty_object();
-		alloc_field(result,_id_rgb, alloc_int( rgb & 0xffffff) );
-		alloc_field(result,_id_a, alloc_int( rgb >> 24) );
-		return result;
-	}
+   {
+      int rgb = surf->getPixel(val_int(inX),val_int(inY));
+      value result = alloc_empty_object();
+      alloc_field(result,_id_rgb, alloc_int( rgb & 0xffffff) );
+      alloc_field(result,_id_a, alloc_int( rgb >> 24) );
+      return result;
+   }
 
    return alloc_null();
 }
@@ -2090,9 +2117,9 @@ DEFINE_PRIM(nme_bitmap_data_get_pixel_rgba,3);
 
 value nme_bitmap_data_scroll(value inSurface, value inDX, value inDY)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-		surf->scroll(val_int(inDX),val_int(inDY));
+      surf->scroll(val_int(inDX),val_int(inDY));
 
    return alloc_null();
 }
@@ -2100,9 +2127,9 @@ DEFINE_PRIM(nme_bitmap_data_scroll,3);
 
 value nme_bitmap_data_set_pixel(value inSurface, value inX, value inY, value inRGB)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-		surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB));
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB));
 
    return alloc_null();
 }
@@ -2110,9 +2137,9 @@ DEFINE_PRIM(nme_bitmap_data_set_pixel,4);
 
 value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value inRGB)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-		surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
 
    return alloc_null();
 }
@@ -2121,40 +2148,40 @@ DEFINE_PRIM(nme_bitmap_data_set_pixel32,4);
 
 value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, value inRGBA)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
-	{
-		value a = val_field(inRGBA,_id_a);
-		value rgb = val_field(inRGBA,_id_rgb);
-		if (val_is_int(a) && val_is_int(rgb))
-		   surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
-	}
+   {
+      value a = val_field(inRGBA,_id_a);
+      value rgb = val_field(inRGBA,_id_rgb);
+      if (val_is_int(a) && val_is_int(rgb))
+         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_set_pixel_rgba,4);
 
 value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
 {
-	Surface *surf;
+   Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-		Rect rect(0,0,surf->Width(),surf->Height());
-		FromValue(rect,inRect);
-		if (rect.w>0 && rect.h>0)
-		{
-			ByteArray *array;
-			buffer buf;
-   		if (AbstractToObject(inBytes,array))
-			{
-				//array->mBytes.resize(size);
-				surf->setPixels(rect,(unsigned int *)&array->mBytes[0]);
-			}
-			else if (buf=val_to_buffer(inBytes))
-			{
-				//buffer_set_size(buf, size);
-				surf->setPixels(rect,(unsigned int *)buffer_data(buf));
-			}
-		}
+      Rect rect(0,0,surf->Width(),surf->Height());
+      FromValue(rect,inRect);
+      if (rect.w>0 && rect.h>0)
+      {
+         ByteArray *array;
+         buffer buf;
+         if (AbstractToObject(inBytes,array))
+         {
+            //array->mBytes.resize(size);
+            surf->setPixels(rect,(unsigned int *)&array->mBytes[0]);
+         }
+         else if (buf=val_to_buffer(inBytes))
+         {
+            //buffer_set_size(buf, size);
+            surf->setPixels(rect,(unsigned int *)buffer_data(buf));
+         }
+      }
    }
 
    return alloc_null();

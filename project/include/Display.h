@@ -121,7 +121,7 @@ enum StageAlign
 
 
 enum Cursor { curNone, curPointer, curHand,
-	           curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
+              curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
 
 extern const char *sTextCursorData[];
 
@@ -383,7 +383,7 @@ protected:
    int            mNominalWidth;
    int            mNominalHeight;
 
-	double         mNextWake;
+   double         mNextWake;
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;
@@ -395,17 +395,17 @@ class HardwareContext;
 class ManagedStage : public Stage
 {
 public:
-	ManagedStage(int inW,int inH);
-	~ManagedStage();
+   ManagedStage(int inW,int inH);
+   ~ManagedStage();
 
    void SetCursor(Cursor inCursor);
    bool isOpenGL() const { return mHardwareContext; }
    Surface *GetPrimarySurface();
 
-	int Width() { return mActiveWidth; }
+   int Width() { return mActiveWidth; }
    int Height() { return mActiveHeight; }
 
-	double getStageWidth() { return mActiveWidth; }
+   double getStageWidth() { return mActiveWidth; }
    double getStageHeight() { return mActiveHeight; }
 
 
@@ -416,8 +416,8 @@ public:
 
 protected:
    double          mFrameRate;
-	int             mActiveWidth;
-	int             mActiveHeight;
+   int             mActiveWidth;
+   int             mActiveHeight;
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
    bool            mIsHardware;
