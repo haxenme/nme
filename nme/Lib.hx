@@ -39,6 +39,13 @@ class Lib
    }
 
 
+   public static function createManagedStage(inWidth:Int, inHeight:Int)
+   {
+      nmeStage = new nme.display.ManagedStage(inWidth,inHeight);
+      return nmeStage;
+   }
+
+
    static function nmeGetStage()
    {
       if (nmeStage==null)

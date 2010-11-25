@@ -756,6 +756,27 @@ value nme_stage_is_opengl(value inStage)
 DEFINE_PRIM(nme_stage_is_opengl,1);
  
 
+// --- ManagedStage ----------------------------------------------------------------------
+
+value nme_managed_stage_create(value inW,value inH)
+{
+	ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH));
+	return ObjectToAbstract(stage);
+}
+DEFINE_PRIM(nme_managed_stage_create,2);
+
+value nme_managed_stage_resize(value inStage,value inW,value inH)
+{
+	ManagedStage *stage;
+	if (AbstractToObject(inStage,stage))
+	{
+	   stage->SetActiveSize(val_int(inW),val_int(inH));
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_managed_stage_resize,3);
+
+
 // --- Input --------------------------------------------------------------
 
 value nme_input_get_acceleration()

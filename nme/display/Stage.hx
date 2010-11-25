@@ -449,7 +449,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeBroadcast(evt);
    }
 
-   function nmeRender(inSendEnterFrame:Bool)
+   public function nmeRender(inSendEnterFrame:Bool)
    {
       if (inSendEnterFrame)
       {
@@ -495,7 +495,7 @@ class Stage extends nme.display.DisplayObjectContainer
       return inOtherTimers;
    }
 
-   function nmePollTimers()
+   public function nmePollTimers()
    {
       //trace("poll");
       nme.Timer.nmeCheckTimers();
@@ -503,7 +503,7 @@ class Stage extends nme.display.DisplayObjectContainer
       nmeCheckRender();
    }
 
-   function nmeUpdateNextWake()
+   public function nmeUpdateNextWake()
    {
       // TODO: In a multi-stage environment, may need to handle this better...
       var next_wake = nme.Timer.nmeNextWake(315000000.0);
@@ -511,12 +511,15 @@ class Stage extends nme.display.DisplayObjectContainer
          next_wake = 0.02;
       next_wake = nmeNextFrameDue(next_wake);
       nme_stage_set_next_wake(nmeHandle,next_wake);
+      return next_wake;
    }
 
 
-   function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
+   function nmeDoProcessStageEvent(inEvent:Dynamic) : Float
    {
       #if android try { #end
+
+		var result = 0.0;
 
       //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
@@ -588,12 +591,18 @@ class Stage extends nme.display.DisplayObjectContainer
          // TODO: user, sys_wm, sound_finished
       }
 
-      nmeUpdateNextWake();
+      result = nmeUpdateNextWake();
 
       #if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
 
-      return null;
+      return result;
    }
+
+   function nmeProcessStageEvent(inEvent:Dynamic) : Dynamic
+	{
+	   nmeDoProcessStageEvent(inEvent);
+		return null;
+	}
 
    static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",4);
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);

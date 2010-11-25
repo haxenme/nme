@@ -345,8 +345,8 @@ public:
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
    UserPoint getMousePos() const { return mLastMousePos; }
-   double getStageWidth();
-   double getStageHeight();
+   virtual double getStageWidth();
+   virtual double getStageHeight();
    int getScaleMode() const { return scaleMode; }
    void setScaleMode(int inMode);
    int getAlign() const { return align; }
@@ -387,6 +387,41 @@ protected:
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;
+};
+
+class HardwareSurface;
+class HardwareContext;
+
+class ManagedStage : public Stage
+{
+public:
+	ManagedStage(int inW,int inH);
+	~ManagedStage();
+
+   void SetCursor(Cursor inCursor);
+   bool isOpenGL() const { return mHardwareContext; }
+   Surface *GetPrimarySurface();
+
+	int Width() { return mActiveWidth; }
+   int Height() { return mActiveHeight; }
+
+	double getStageWidth() { return mActiveWidth; }
+   double getStageHeight() { return mActiveHeight; }
+
+
+   void SetActiveSize(int inW,int inH);
+   void PumpEvent(Event &inEvent);
+   void Flip() { }
+   void GetMouse() { }
+
+protected:
+   double          mFrameRate;
+	int             mActiveWidth;
+	int             mActiveHeight;
+   HardwareSurface *mHardwareSurface;
+   HardwareContext *mHardwareContext;
+   bool            mIsHardware;
+   Cursor          mCursor;
 };
 
 
