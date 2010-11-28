@@ -12,7 +12,7 @@ class FPS extends nme.text.TextField
       text = "FPS:";
       textColor = inCol;
       times = [];
-      nme.Lib.current.addEventListener(nme.events.Event.ENTER_FRAME, onEnter);
+      addEventListener(nme.events.Event.ENTER_FRAME, onEnter);
    }
 
    public function onEnter(_)
