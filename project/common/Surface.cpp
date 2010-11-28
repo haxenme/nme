@@ -608,7 +608,6 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
       bool src_alpha = mPixelFormat==pfAlpha;
       bool dest_alpha = outDest.mPixelFormat==pfAlpha;
-      mVersion++;
 
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
@@ -696,11 +695,92 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    }
 }
 
+enum
+{
+	CHAN_ALPHA = 0x0008,
+	CHAN_BLUE  = 0x0004,
+	CHAN_GREEN = 0x0002,
+	CHAN_RED   = 0x0001,
+};
+
+void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+                   int inPosX, int inPosY,
+                   int inSrcChannel, int inDestChannel ) const
+{
+  bool src_alpha = mPixelFormat==pfAlpha;
+  bool dest_alpha = outTarget.mPixelFormat==pfAlpha;
+
+  // Flash API does not have alpha images (might be useful somewhere else?)
+   if (src_alpha || dest_alpha)
+	  return;
+
+	if (inDestChannel==CHAN_ALPHA && !(outTarget.Format() & pfHasAlpha) )
+		return;
+
+	bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
+
+
+	// Translate inSrcRect src_rect to dest ...
+   Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
+   // clip ...
+   src_rect = src_rect.Intersect(outTarget.mRect);
+
+   // translate back to source-coordinates ...
+   src_rect.Translate(inSrcRect.x-inPosX, inSrcRect.y-inPosY);
+   // clip to origial rect...
+   src_rect = src_rect.Intersect( inSrcRect );
+
+	if (src_rect.HasPixels())
+	{
+		int dx = inPosX + src_rect.x;
+      int dy = inPosY + src_rect.y;
+
+		bool c0_red = gC0IsRed != ( (mPixelFormat & pfSwapRB) != 0);
+		int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
+		             inSrcChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
+		             inSrcChannel==CHAN_GREEN ? 1 :
+		             (c0_red ? 0 : 2);
+
+		c0_red = gC0IsRed != ( (outTarget.Format() & pfSwapRB) != 0);
+		int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
+		             inDestChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
+		             inDestChannel==CHAN_GREEN ? 1 :
+		             (c0_red ? 0 : 2);
+
+
+		for(int y=0;y<src_rect.h;y++)
+      {
+			uint8 *d = outTarget.Row(y+dy) + dx* 4 + dest_ch;
+			if (set_255)
+			{
+				for(int x=0;x<src_rect.w;x++)
+				{
+					*d = 255;
+					d+=4;
+				}
+			}
+			else
+			{
+				const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
+
+				for(int x=0;x<src_rect.w;x++)
+				{
+					*d = *s;
+					d+=4;
+					s+=4;
+				}
+			}
+		}
+	}
+}
+
+
 template<bool SWAP,bool SRC_ALPHA,bool DEST_ALPHA>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const Rect &inDestRect)
+                     const Rect &inSrcRect, const DRect &inDestRect)
 {
-   Rect out = inDestRect.Intersect(outTarget.mRect);
+	Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
+   Rect out = irect.Intersect(outTarget.mRect);
    if (!out.Area())
       return;
 
@@ -708,8 +788,15 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
    int dsy_dy = (inSrcRect.h << 16)/inDestRect.h;
 
    #ifndef STRETCH_BILINEAR
-   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16);
-   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16);
+   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+   //
+   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
+
+   //int sx0 = (int)((out.x-inDestRect.x*inSrcRect.w/inDestRect.w)*65536) +(inSrcRect.x<<16);
+   //int sy0 = (int)((out.y-inDestRect.y*inSrcRect.h/inDestRect.h)*65536) +(inSrcRect.y<<16);
+   int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) );
+   int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) );
 
    for(int y=0;y<out.h;y++)
    {
@@ -814,7 +901,7 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
 }
 
 void SimpleSurface::StretchTo(const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const Rect &inDestRect) const
+                     const Rect &inSrcRect, const DRect &inDestRect) const
 {
    // Only RGB supported
    if (mPixelFormat==pfAlpha || outTarget.mPixelFormat==pfAlpha)

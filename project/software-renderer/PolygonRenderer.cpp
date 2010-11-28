@@ -1547,15 +1547,12 @@ public:
          UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
          if (is_stretch)
          {
-            int x0 = (int)(pos.x+0.5);
-            int y0 = (int)(pos.y+0.5);
+				UserPoint p0 = pos;
             pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
-            int x1 = (int)(pos.x+0.5);
-            int y1 = (int)(pos.y+0.5);
-            s->StretchTo(inTarget, data.mRect, Rect(x0,y0,x1-x0,y1-y0));
+            s->StretchTo(inTarget, data.mRect, DRect(p0.x,p0.y,pos.x,pos.y,true));
          }
          else
-            s->BlitTo(inTarget, data.mRect, (int)(pos.x+0.5), (int)(pos.y+0.5), bmNormal,0);
+            s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), bmNormal,0);
       }
 
       return true;

@@ -2029,6 +2029,28 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
 }
 DEFINE_PRIM(nme_bitmap_data_copy,4);
 
+value nme_bitmap_data_copy_channel(value* arg, int nargs)
+{
+	enum { aSrc, aSrcRect, aDest, aDestPoint, aSrcChannel, aDestChannel, aSIZE };
+   Surface *source;
+   Surface *dest;
+   if (AbstractToObject(arg[aSrc],source) && AbstractToObject(arg[aDest],dest))
+   {
+      Rect rect;
+      FromValue(rect,arg[aSrcRect]);
+      ImagePoint offset;
+      FromValue(offset,arg[aDestPoint]);
+
+      AutoSurfaceRender render(dest);
+      source->BlitChannel(render.Target(),rect,offset.x, offset.y,
+								  val_int(arg[aSrcChannel]), val_int(arg[aSrcChannel]) );
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_bitmap_data_copy_channel);
+
+
 value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
 {
    Surface *surf;

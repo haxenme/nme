@@ -74,8 +74,14 @@ public:
                uint32 inTint=0xffffff ) const
    {
    }
+	void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+									 int inPosX, int inPosY,
+									 int inSrcChannel, int inDestChannel ) const
+	{
+	}
+
    void StretchTo(const RenderTarget &outTarget,
-          const Rect &inSrcRect, const Rect &inDestRect) const
+          const Rect &inSrcRect, const DRect &inDestRect) const
    {
    }
 

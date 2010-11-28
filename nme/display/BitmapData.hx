@@ -129,6 +129,14 @@ class BitmapData implements IBitmapDrawable
 		nme_bitmap_data_copy(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint );
 	}
 
+	public function copyChannel(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point,
+		inSourceChannel:Int, inDestChannel:Int ):Void
+	{
+		nme_bitmap_data_copy_channel(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint,
+		  inSourceChannel, inDestChannel);
+	}
+
+
 	public function dispose()
 	{
 		nmeHandle = null;
@@ -286,6 +294,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_clear = nme.Loader.load("nme_bitmap_data_clear",2);
    static var nme_bitmap_data_clone = nme.Loader.load("nme_bitmap_data_clone",1);
    static var nme_bitmap_data_copy = nme.Loader.load("nme_bitmap_data_copy",4);
+   static var nme_bitmap_data_copy_channel = nme.Loader.load("nme_bitmap_data_copy_channel", -1);
    static var nme_bitmap_data_fill = nme.Loader.load("nme_bitmap_data_fill",4);
    static var nme_bitmap_data_get_pixels = nme.Loader.load("nme_bitmap_data_get_pixels",3);
    static var nme_bitmap_data_get_pixel = nme.Loader.load("nme_bitmap_data_get_pixel",3);
