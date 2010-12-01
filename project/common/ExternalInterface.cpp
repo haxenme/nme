@@ -555,6 +555,19 @@ value nme_byte_array_get_length(value inArray)
 }
 DEFINE_PRIM(nme_byte_array_get_length,1);
 
+value nme_byte_array_as_string(value inArray)
+{
+   ByteArray *array;
+   if (AbstractToObject(inArray,array))
+   {
+      return alloc_string_len((const char *)&array->mBytes[0], array->mBytes.size());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_as_string,1);
+
+
+
 value nme_byte_array_get(value inArray, value inPos)
 {
    ByteArray *array;
