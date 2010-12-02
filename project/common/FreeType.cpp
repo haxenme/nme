@@ -406,7 +406,7 @@ int outline_conic_to(const FT_Vector *ctl, const FT_Vector *to, void *user) {
    return 0;
 }
 
-int outline_cubic_to(const FT_Vector *ctl1, const FT_Vector *ctl2, const FT_Vector *to, void *user) {
+int outline_cubic_to(const FT_Vector *, const FT_Vector *, const FT_Vector *, void *user) {
    // Cubic curves are not supported
    return 1;
 }
