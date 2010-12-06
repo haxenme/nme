@@ -3,6 +3,13 @@
 #include <Surface.h>
 #include <map>
 
+
+#ifdef GPH
+extern "C" {
+void * __dso_handle = 0;
+}
+#endif
+
 namespace nme
 {
 

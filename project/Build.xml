@@ -70,6 +70,7 @@
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux/" if="linux"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
+<set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
