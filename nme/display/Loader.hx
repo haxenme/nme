@@ -43,8 +43,8 @@ class Loader extends nme.display.Sprite
 			contentLoaderInfo.contentType = switch(extension) {
 			case "swf": "application/x-shockwave-flash";
 			case "jpg","jpeg": transparent = false; "image/jpeg";
-			case "png": "image/gif";
-			case "gif": "image/png";
+			case "png": "image/png";
+			case "gif": "image/gif";
 			default:
 				throw "Unrecognized file " + request.url;
 			}
