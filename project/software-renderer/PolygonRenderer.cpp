@@ -2,6 +2,7 @@
 #include <CachedExtent.h>
 #include <Geom.h>
 #include <Surface.h>
+#include <stdio.h>
 #include "AlphaMask.h"
 #include <map>
 

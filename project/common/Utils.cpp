@@ -1,9 +1,11 @@
 #include <Utils.h>
+
 #ifdef HX_WINDOWS
 #include <windows.h>
 #include <time.h>
 #else
 #include <sys/time.h>
+#include <stdint.h>
 typedef uint64_t __int64;
 #endif
 

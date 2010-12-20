@@ -68,7 +68,7 @@
 
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
-<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux/" if="linux"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
 <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
 
@@ -180,6 +180,7 @@
   <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
   <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos"/>
+  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux"/>
 
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
   <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="mobile"/>
@@ -213,7 +214,6 @@
   <lib name="winmm.lib" if="windows"/>
 
   <lib name="-ldl" if="linux"/>
-  <lib name="-lz" if="linux"/>
   <lib name="-lGL" if="linux"/>
 
 </target>

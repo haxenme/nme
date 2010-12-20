@@ -2,6 +2,7 @@
 #define NME_QUICK_VEC
 
 #include <algorithm>
+#include <memory.h>
 
 namespace nme
 {
