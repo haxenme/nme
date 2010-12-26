@@ -7,6 +7,7 @@
 //typedef EAGLContext *GLCtx;
 typedef void *WinDC;
 typedef void *GLCtx;
+#define NME_GLES
 
 #elif defined(ANDROID)
 
@@ -15,6 +16,15 @@ typedef void *GLCtx;
 typedef void *WinDC;
 typedef void *GLCtx;
 #include <android/log.h>
+#define NME_GLES
+
+#elif defined(GPH)
+
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+typedef void *WinDC;
+typedef void *GLCtx;
+#define NME_GLES
 
 #elif !defined(HX_WINDOWS)
 
@@ -161,7 +171,11 @@ public:
       mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		#ifdef GPH
+		glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+      #else
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		#endif
 
 
       if (!is_pow2)
@@ -197,7 +211,7 @@ public:
          glGetError();
          const uint8 *p0 = 
             inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP();
-         #if defined(IPHONE) || defined(ANDROID)
+         #if defined(NME_GLES)
          for(int y=0;y<mDirtyRect.h;y++)
          {
             glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y + y,
@@ -293,7 +307,7 @@ public:
       mLineScaleNormal = -1;
       mLineScaleV = -1;
       mLineScaleH = -1;
-      #if defined(IPHONE) || defined(ANDROID)
+      #if defined(NME_GLES)
       mQuality = sqLow;
       #else
       mQuality = sqBest;
@@ -365,7 +379,7 @@ public:
       {
          glMatrixMode(GL_PROJECTION);
          glLoadIdentity();
-         #if defined(IPHONE) || defined(ANDROID)
+         #if defined(NME_GLES)
          glOrthof
          #else
          glOrtho
@@ -383,11 +397,9 @@ public:
 
    void BeginRender(const Rect &inRect)
    {
-      #ifndef IPHONE
+      #ifndef NME_GLES
       #ifndef SDL_OGL
-      #ifndef ANDROID
       wglMakeCurrent(mDC,mOGLCtx);
-      #endif
       #endif
       #endif
 
@@ -410,11 +422,9 @@ public:
 
    void Flip()
    {
-      #ifndef IPHONE
+      #ifndef NME_GLES
       #ifndef SDL_OGL
-      #ifndef ANDROID
       SwapBuffers(mDC);
-      #endif
       #endif
       #endif
    }
@@ -504,6 +514,8 @@ public:
             if (bound_texture)
             {
                bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
+					if (!draw.mBitmapSmooth)
+                  glDisable(GL_DITHER);
             }
             else
             {
@@ -552,6 +564,9 @@ public:
    
             //printf("glDrawArrays %d : %d x %d\n", draw.mPrimType, draw.mFirst, draw.mCount );
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
+
+				if (bound_texture && !draw.mBitmapSmooth)
+               glEnable(GL_DITHER);
          }
 
          if (arrays.mColours.size() == vert.size())
@@ -578,6 +593,8 @@ public:
       mBitmapTexture = inSurface->GetOrCreateTexture(*this);
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
       glEnable(GL_TEXTURE_2D);
+		if (!inSmooth)
+		  glDisable(GL_DITHER);
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
@@ -607,6 +624,7 @@ public:
          glPopMatrix();
       }
 
+		glEnable(GL_DITHER);
       mBitmapTexture = 0;
       mBitmapSurface = 0;
    }

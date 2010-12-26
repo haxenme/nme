@@ -45,11 +45,13 @@ public:
       if (err)
          return false;
 
+		#ifndef GPH
       if (mTransform & ffBold)
       {
          FT_GlyphSlot_Own_Bitmap(mFace->glyph);
          FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
       }
+		#endif
       return true;
    }
 
@@ -182,8 +184,15 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 }
 
 
-#else
-#ifdef __APPLE__
+#elif defined(GPH)
+
+bool GetFontFile(const std::string& inName,std::string &outFile)
+{
+   outFile = "/usr/gp2x/HYUni_GPH_B.ttf";
+   return true;
+}
+
+#elif defined(__APPLE__)
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
 
@@ -214,6 +223,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    return true;
 }
 #else
+
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
    #ifdef ANDROID
@@ -247,8 +257,6 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #endif
 
 
-#endif
-
 
 FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
 {
@@ -261,16 +269,19 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
    {
       std::string file_name;
-      if (GetFontFile(fname,file_name))
-      {
-         //printf("Found font in %s\n", file_name.c_str());
-         font = OpenFont(file_name.c_str(),inFlags);
-      }
       if (font==0)
          font = OpenFont(("./fonts/" + fname).c_str(),inFlags);
 
       if (font==0)
          font = OpenFont(("./data/" + fname).c_str(),inFlags);
+
+      if (font==0 && GetFontFile(fname,file_name))
+      {
+         // printf("Found font in %s\n", file_name.c_str());
+         font = OpenFont(file_name.c_str(),inFlags);
+
+			// printf("Opened : %p\n", font);
+      }
    }
 
 
@@ -365,7 +376,13 @@ struct glyph_sort_predicate {
    }
 };
 
-int outline_move_to(const FT_Vector *to, void *user) {
+#ifdef GPH
+typedef FT_Vector *FVecPtr;
+#else
+typedef const FT_Vector *FVecPtr;
+#endif
+
+int outline_move_to(FVecPtr to, void *user) {
    glyph       *g = static_cast<glyph*>(user);
 
    g->pts.push_back(PT_MOVE);
@@ -378,7 +395,7 @@ int outline_move_to(const FT_Vector *to, void *user) {
    return 0;
 }
 
-int outline_line_to(const FT_Vector *to, void *user) {
+int outline_line_to(FVecPtr to, void *user) {
    glyph       *g = static_cast<glyph*>(user);
 
    g->pts.push_back(PT_LINE);
@@ -391,7 +408,7 @@ int outline_line_to(const FT_Vector *to, void *user) {
    return 0;
 }
 
-int outline_conic_to(const FT_Vector *ctl, const FT_Vector *to, void *user) {
+int outline_conic_to(FVecPtr ctl, FVecPtr to, void *user) {
    glyph       *g = static_cast<glyph*>(user);
 
    g->pts.push_back(PT_CURVE);
@@ -406,7 +423,7 @@ int outline_conic_to(const FT_Vector *ctl, const FT_Vector *to, void *user) {
    return 0;
 }
 
-int outline_cubic_to(const FT_Vector *, const FT_Vector *, const FT_Vector *, void *user) {
+int outline_cubic_to(FVecPtr, FVecPtr , FVecPtr , void *user) {
    // Cubic curves are not supported
    return 1;
 }

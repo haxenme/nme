@@ -7,11 +7,13 @@
 <set name="sdl" value="1" if="windows"/>
 <set name="ogl" value="1" if="windows"/>
 <set name="ogl" value="1" if="sdl"/>
+<set name="ogl" value="1" if="gph"/>
 <set name="ogl" value="1" if="iphone"/>
 <set name="ogl" value="1" if="android"/>
 
 <set name="mobile" value="1" if="iphone"/>
 <set name="mobile" value="1" if="android"/>
+<set name="mobile" value="1" if="gph"/>
 
 <files id="windows">
   <compilerflag value="-Iinclude"/>
@@ -34,6 +36,17 @@
   <compilerflag value="-Iinclude"/>
   <file name="linux/NativeFont.cpp"/>
 </files>
+
+<files id="gph">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I${GPH_ROOT}/include" if="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
+  <file name="linux/NativeFont.cpp"/>
+  <file name="dge/DGEStage.cpp"/>
+  <file name="dge/DGESound.cpp"/>
+</files>
+
 
 <files id="iphone">
   <compilerflag value="-Iinclude"/>
@@ -79,8 +92,11 @@
 
 <files id="common">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl"/>
+  <compilerflag value="-I../../sdl-static/include" unless="gph"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl" unless="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/include" if="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
 
@@ -163,21 +179,26 @@
 <set name="name_extra" value=".iphoneos" if="iphoneos"/>
 <set name="name_extra" value=".iphonesim" if="iphonesim"/>
 
+<set name="no_thirdparty_extras" value="1" if="iphone"/>
+<set name="no_thirdparty_extras" value="1" if="gph"/>
+
 
 <target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}"/>
   <ext value=".ndll" unless="mobile"/>
+  <ext value=".ndll" if="gph"/>
 
   <files id="common"/>
   <files id="windows" if="windows"/>
   <files id="iphone" if="iphone"/>
   <files id="mac" if="macos"/>
   <files id="linux" if="linux"/>
+  <files id="gph" if="gph"/>
   <files id="sdl" if="sdl"/>
   <files id="android" if="android"/>
-  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="no_thirdparty_extras"/>
+  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
+  <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
   <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos"/>
   <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux"/>
@@ -215,6 +236,19 @@
 
   <lib name="-ldl" if="linux"/>
   <lib name="-lGL" if="linux"/>
+
+  <flag value="-L${GPH_ROOT}/DGE/lib/target" if="gph"/>
+  <lib name="-ldge20" if="gph"/>
+  <lib name="-ldgx20" if="gph"/>
+  <lib name="-lopengles_lite" if="gph"/>
+  <lib name="-lfreetype" if="gph"/>
+  <lib name="-lopenal11" if="gph"/>
+  <lib name="-lopenalut11" if="gph"/>
+  <lib name="-lts" if="gph"/>
+  <lib name="-lpthread" if="gph"/>
+  <lib name="-lpng" if="gph"/>
+  <lib name="-ljpeg" if="gph"/>
+  <lib name="-lz" if="gph"/>
 
 </target>
 
