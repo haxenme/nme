@@ -7,11 +7,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.utils.ByteArray;
 
-#if neko
-typedef BitmapInt32 = { rgb:Int, a:Int };
-#else
-typedef BitmapInt32 = Int;
-#end
+
 
 /**
 * @author   Hugh Sanderson
