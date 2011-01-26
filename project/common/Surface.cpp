@@ -697,10 +697,10 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
 enum
 {
-	CHAN_ALPHA = 0x0008,
-	CHAN_BLUE  = 0x0004,
-	CHAN_GREEN = 0x0002,
-	CHAN_RED   = 0x0001,
+   CHAN_ALPHA = 0x0008,
+   CHAN_BLUE  = 0x0004,
+   CHAN_GREEN = 0x0002,
+   CHAN_RED   = 0x0001,
 };
 
 void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
@@ -712,15 +712,15 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
   // Flash API does not have alpha images (might be useful somewhere else?)
    if (src_alpha || dest_alpha)
-	  return;
+     return;
 
-	if (inDestChannel==CHAN_ALPHA && !(outTarget.Format() & pfHasAlpha) )
-		return;
+   if (inDestChannel==CHAN_ALPHA && !(outTarget.Format() & pfHasAlpha) )
+      return;
 
-	bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
+   bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
 
 
-	// Translate inSrcRect src_rect to dest ...
+   // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
    // clip ...
    src_rect = src_rect.Intersect(outTarget.mRect);
@@ -730,48 +730,48 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
    // clip to origial rect...
    src_rect = src_rect.Intersect( inSrcRect );
 
-	if (src_rect.HasPixels())
-	{
-		int dx = inPosX + src_rect.x;
+   if (src_rect.HasPixels())
+   {
+      int dx = inPosX + src_rect.x;
       int dy = inPosY + src_rect.y;
 
-		bool c0_red = gC0IsRed != ( (mPixelFormat & pfSwapRB) != 0);
-		int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
-		             inSrcChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
-		             inSrcChannel==CHAN_GREEN ? 1 :
-		             (c0_red ? 0 : 2);
+      bool c0_red = gC0IsRed != ( (mPixelFormat & pfSwapRB) != 0);
+      int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
+                   inSrcChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
+                   inSrcChannel==CHAN_GREEN ? 1 :
+                   (c0_red ? 0 : 2);
 
-		c0_red = gC0IsRed != ( (outTarget.Format() & pfSwapRB) != 0);
-		int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
-		             inDestChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
-		             inDestChannel==CHAN_GREEN ? 1 :
-		             (c0_red ? 0 : 2);
+      c0_red = gC0IsRed != ( (outTarget.Format() & pfSwapRB) != 0);
+      int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
+                   inDestChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
+                   inDestChannel==CHAN_GREEN ? 1 :
+                   (c0_red ? 0 : 2);
 
 
-		for(int y=0;y<src_rect.h;y++)
+      for(int y=0;y<src_rect.h;y++)
       {
-			uint8 *d = outTarget.Row(y+dy) + dx* 4 + dest_ch;
-			if (set_255)
-			{
-				for(int x=0;x<src_rect.w;x++)
-				{
-					*d = 255;
-					d+=4;
-				}
-			}
-			else
-			{
-				const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
+         uint8 *d = outTarget.Row(y+dy) + dx* 4 + dest_ch;
+         if (set_255)
+         {
+            for(int x=0;x<src_rect.w;x++)
+            {
+               *d = 255;
+               d+=4;
+            }
+         }
+         else
+         {
+            const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
 
-				for(int x=0;x<src_rect.w;x++)
-				{
-					*d = *s;
-					d+=4;
-					s+=4;
-				}
-			}
-		}
-	}
+            for(int x=0;x<src_rect.w;x++)
+            {
+               *d = *s;
+               d+=4;
+               s+=4;
+            }
+         }
+      }
+   }
 }
 
 
@@ -779,7 +779,7 @@ template<bool SWAP,bool SRC_ALPHA,bool DEST_ALPHA>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
                      const Rect &inSrcRect, const DRect &inDestRect)
 {
-	Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
+   Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
    Rect out = irect.Intersect(outTarget.mRect);
    if (!out.Area())
       return;
@@ -1024,6 +1024,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          // Must output big-endian, while memory is stored little-endian
          uint8 *a = src;
          uint8 *pix = (uint8 *)outPixels;
+
          if (!swap)
          {
             for(int x=0;x<r.w;x++)
@@ -1112,6 +1113,8 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
    if (mTexture)
       mTexture->Dirty(r);
 
+   const uint8 *src = (const uint8 *)inPixels;
+
    for(int y=0;y<r.h;y++)
    {
       uint8 *dest = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
@@ -1120,19 +1123,36 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
          for(int x=0;x<r.w;x++)
             *dest++ = (*inPixels++) >> 24;
       }
+      else if (inIgnoreOrder)
+      {
+         memcpy(dest,inPixels,r.w*4);
+         inPixels+=r.w;
+      }
       else
       {
-         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed) && inIgnoreOrder;
+         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
+
          if (!swap)
          {
-            memcpy(dest,inPixels,r.w*4);
-            inPixels+=r.w;
+            for(int x=0;x<r.w;x++)
+            {
+               *dest++ = src[3];
+               *dest++ = src[2];
+               *dest++ = src[1];
+               *dest++ = src[0];
+               src+=4;
+            }
          }
          else
          {
-            int *idest = (int *)dest;
             for(int x=0;x<r.w;x++)
-               *idest++ = ARGB::Swap( *inPixels++ );
+            {
+               *dest++ = src[1];
+               *dest++ = src[2];
+               *dest++ = src[3];
+               *dest++ = src[0];
+               src+=4;
+            }
          }
       }
    }
