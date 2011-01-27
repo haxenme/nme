@@ -26,6 +26,8 @@ class Sample extends Sprite
 {
 #if neko
    private static var MAX_PARTICLES: Int = 10000;
+#elseif iphone
+   private static var MAX_PARTICLES: Int = 50000;
 #else
    private static var MAX_PARTICLES: Int = 500000;
 #end
@@ -79,7 +81,7 @@ class Sample extends Sprite
       for(i in 0...MAX_PARTICLES)
       {
          _particles[i] = new Particle();
-         _cols[i] = nme.display.Graphics.RGBA(Std.int(Math.random()*0xffffff),0x80);
+         _cols[i] = nme.display.Graphics.RGBA(Std.int(Math.random()*0xffffff),0x10);
       }
    }
    

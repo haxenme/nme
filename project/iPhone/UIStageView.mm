@@ -99,6 +99,7 @@ public:
       mHardwareContext = 0;
       mHardwareSurface = 0;
       mLayer = inLayer;
+      mDPIScale = 1.0;
       mContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
         
       if (!mContext || ![EAGLContext setCurrentContext:mContext])
@@ -113,6 +114,9 @@ public:
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
    }
+
+   double getDPIScale() { return mDPIScale; }
+
 
    ~EAGLStage()
    {
@@ -171,6 +175,8 @@ public:
    
       glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
       glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+
+      //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
        
       if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
       {
@@ -201,7 +207,10 @@ public:
 
       mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
+      //printf("OnResizeLayer %dx%d\n", backingWidth, backingHeight);
       Event evt(etResize);
+      evt.x = backingWidth;
+      evt.y = backingHeight;
       HandleEvent(evt);
 
    }
@@ -271,6 +280,7 @@ public:
    // The pixel dimensions of the CAEAGLLayer
    GLint backingWidth;
    GLint backingHeight;
+   double mDPIScale;
    
    // The OpenGL names for the framebuffer and renderbuffer used to render to this view
    GLuint defaultFramebuffer, colorRenderbuffer;
@@ -361,6 +371,20 @@ public:
                                       nil];
 
       mStage = new EAGLStage(eaglLayer,true);
+
+		self.contentScaleFactor = mStage->getDPIScale();
+
+      // Set scaling to ensure 1:1 pixels ...
+      if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+      {
+	      if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
+	      {
+		      mStage->mDPIScale = [[UIScreen mainScreen] scale];
+            printf("Using DPI scale %f\n", mStage->mDPIScale);
+		      self.contentScaleFactor = mStage->mDPIScale;
+	      }
+      }
+
   
       mAccelerometer = [UIAccelerometer sharedAccelerometer];
       mAccelerometer.updateInterval = 0.033;
@@ -380,6 +404,7 @@ public:
       mMultiTouch = false;
       mPrimaryTouchHash = 0;
 
+
       // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
       // class is used as fallback when it isn't available.
       /*
@@ -390,6 +415,12 @@ public:
       */
 
       displayLinkSupported = FALSE;
+
+
+      Event evt(etResize);
+      evt.x = mStage->Width();
+      evt.y = mStage->Height();
+      mStage->HandleEvent(evt);
 }
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration {

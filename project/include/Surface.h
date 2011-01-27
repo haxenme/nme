@@ -14,6 +14,8 @@ void HintColourOrder(bool inRedFirst);
 
 extern int gTextureContextVersion;
 
+enum { SURF_FLAGS_NOT_REPEAT_IF_NON_PO2 = 0x0001 };
+
 class Texture
 {
 public:
@@ -35,7 +37,8 @@ public:
 class Surface : public Object
 {
 public:
-   Surface() : mTexture(0), mVersion(0) { };
+   // Non-PO2 will generate dodgy repeating anyhow...
+   Surface() : mTexture(0), mVersion(0), mFlags(SURF_FLAGS_NOT_REPEAT_IF_NON_PO2) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -45,6 +48,8 @@ public:
 
    virtual int Width() const =0;
    virtual int Height() const =0;
+   virtual unsigned int GetFlags() const { return mFlags; }
+   virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
    virtual PixelFormat Format()  const = 0;
    virtual const uint8 *GetBase() const = 0;
    virtual int GetStride() const = 0;
@@ -87,6 +92,7 @@ protected:
    mutable int   mVersion;
    Texture       *mTexture;
    virtual       ~Surface();
+   unsigned int  mFlags;
 };
 
 // Helper class....

@@ -532,7 +532,7 @@ public:
    virtual int Height() const = 0;
 
 
-   virtual class Texture *CreateTexture(class Surface *inSurface)=0;
+   virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
    virtual void Render(const RenderState &inState, const HardwareCalls &inCalls )=0;
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
@@ -543,6 +543,7 @@ void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
                       HardwareData &ioData, HardwareContext &inHardware);
 
 int UpToPower2(int inX);
+inline int IsPower2(unsigned int inX) { return (inX & (inX-1))==0; }
 
 
 struct RenderTarget

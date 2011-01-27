@@ -1504,6 +1504,7 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
          else
             StageScaleX = StageScaleY;
       }
+
    }
 
    double extra_x = inNewWidth-StageScaleX*mNominalWidth;

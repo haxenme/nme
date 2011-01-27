@@ -776,6 +776,7 @@ DO_STAGE_PROP(display_state,DisplayState,alloc_int,val_int)
 DO_STAGE_PROP(multitouch_active,MultitouchActive,alloc_bool,val_bool)
 DO_PROP_READ(Stage,stage,stage_width,StageWidth,alloc_float);
 DO_PROP_READ(Stage,stage,stage_height,StageHeight,alloc_float);
+DO_PROP_READ(Stage,stage,dpi_scale,DPIScale,alloc_float);
 DO_PROP_READ(Stage,stage,multitouch_supported,MultitouchSupported,alloc_bool);
 
 
@@ -930,6 +931,17 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
+void print_field(value inObj, int id, void *cookie)
+{
+   printf("Field : %d (%s)\n",id,val_string(val_field_name(id)));
+}
+
+value nme_type(value inObj)
+{
+   val_iter_fields(inObj, print_field, 0);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_type,1);
 
 
 value nme_display_object_local_to_global(value inObj,value ioPoint)
@@ -1956,6 +1968,17 @@ value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
+
+value nme_bitmap_data_set_flags(value inHandle,value inFlags)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      surface->SetFlags(val_int(inFlags));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_flags,1);
+
+
 
 value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
 {

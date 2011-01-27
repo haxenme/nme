@@ -243,6 +243,11 @@ class BitmapData implements IBitmapDrawable
    }
 
 
+   // Used for optimization
+   public function setFlags(inFlags:Int) : Void
+   {
+      nme_bitmap_data_set_flags(nmeHandle,inFlags);
+   }
 
 
 
@@ -307,6 +312,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_height = nme.Loader.load("nme_bitmap_data_height",1);
    static var nme_bitmap_data_width = nme.Loader.load("nme_bitmap_data_width",1);
    static var nme_bitmap_data_get_transparent = nme.Loader.load("nme_bitmap_data_get_transparent",1);
+   static var nme_bitmap_data_set_flags = nme.Loader.load("nme_bitmap_data_set_flags",1);
 
 }
 

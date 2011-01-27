@@ -52,7 +52,7 @@ void Surface::Bind(HardwareContext &inHardware,int inSlot)
    }
  
    if (!mTexture)
-      mTexture = inHardware.CreateTexture(this);
+      mTexture = inHardware.CreateTexture(this,mFlags);
 
    mTexture->Bind(this,inSlot);
 }
@@ -65,7 +65,7 @@ Texture *Surface::GetOrCreateTexture(HardwareContext &inHardware)
       mTexture = 0;
    }
    if (!mTexture)
-      mTexture = inHardware.CreateTexture(this);
+      mTexture = inHardware.CreateTexture(this,mFlags);
    return mTexture;
 }
 

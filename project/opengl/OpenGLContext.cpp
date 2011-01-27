@@ -115,6 +115,23 @@ void ResetHardwareContext()
 }
 
 
+bool gAppleNPO2 = false;
+bool NonPO2Supported(bool inNotRepeating)
+{
+   static bool tried = false;
+
+   if (!tried)
+   {
+      tried = true;
+      const char* extensions = (char*) glGetString(GL_EXTENSIONS); 
+
+
+      gAppleNPO2 = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
+      //printf("Apple NPO2 : %d\n", apple_npo2);
+   }
+
+   return gAppleNPO2 && inNotRepeating;
+}
 
 
 
@@ -122,45 +139,53 @@ void ResetHardwareContext()
 class OGLTexture : public Texture
 {
 public:
-   OGLTexture(Surface *inSurface)
+   OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
-      int w = UpToPower2(mPixelWidth);
-      int h = UpToPower2(mPixelHeight);
+      bool non_po2 = NonPO2Supported(true && (inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2));
+      // printf("Using non-power-of-2 texture %d\n",non_po2);
+      int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
+      int h = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
+      mCanRepeat = IsPower2(w) && IsPower2(h);
+      
       //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
 
       mTextureWidth = w;
       mTextureHeight = h;
-      bool is_pow2 = w==mPixelWidth && h==mPixelHeight;
+      bool copy_required = w!=mPixelWidth || h!=mPixelHeight;
 
       Surface *load = inSurface;
-      if (!is_pow2)
+      if (copy_required)
       {
          int pw = inSurface->Format()==pfAlpha ? 1 : 4;
          load = new SimpleSurface(w,h,inSurface->Format());
          load->IncRef();
          for(int y=0;y<mPixelHeight;y++)
          {
-             memcpy((void *)load->Row(y),inSurface->Row(y),mPixelWidth*pw);
-             if (w!=mPixelWidth)
-                memcpy((void *)(load->Row(y)+mPixelWidth*pw),inSurface->Row(y),mPixelWidth*pw);
+             const uint8 *src = inSurface->Row(y);
+             uint8 *dest= (uint8 *)load->Row(y);
+             memcpy(dest,src,mPixelWidth*pw);
+             if (w>mPixelWidth)
+                memcpy(dest+mPixelWidth*pw,dest+(mPixelWidth-1)*pw,pw);
          }
          if (h!=mPixelHeight)
+         {
             memcpy((void *)load->Row(mPixelHeight),load->Row(mPixelHeight-1),
                    (mPixelWidth + (w!=mPixelWidth))*pw);
+         }
       }
 
       glGenTextures(1, &mTextureID);
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
       //  mTextureID, mPixelWidth, mPixelHeight);
       glBindTexture(GL_TEXTURE_2D,mTextureID);
-      mRepeat = true;
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+      mRepeat = mCanRepeat;
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
 
       PixelFormat fmt = load->Format();
       GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
@@ -178,8 +203,10 @@ public:
 		#endif
 
 
-      if (!is_pow2)
+      if (copy_required)
+      {
          load->DecRef();
+      }
 
       //int err = glGetError();
    }
@@ -234,6 +261,7 @@ public:
 
    void BindFlags(bool inRepeat,bool inSmooth)
    {
+      if (!mCanRepeat) inRepeat = false;
       if (mRepeat!=inRepeat)
       {
          mRepeat = inRepeat;
@@ -280,6 +308,7 @@ public:
 
 
    GLuint mTextureID;
+   bool mCanRepeat;
    bool mRepeat;
    bool mSmooth;
    int mPixelWidth;
@@ -654,9 +683,9 @@ public:
 
 
 
-   Texture *CreateTexture(Surface *inSurface)
+   Texture *CreateTexture(Surface *inSurface,unsigned int inFlags)
    {
-      return new OGLTexture(inSurface);
+      return new OGLTexture(inSurface,inFlags);
    }
 
    void SetQuality(StageQuality inQ)

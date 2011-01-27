@@ -39,6 +39,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public var stageWidth(nmeGetStageWidth,null):Float;
    public var stageHeight(nmeGetStageHeight,null):Float;
    public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
+   public var dpiScale(nmeGetDPIScale,null):Float;
    public var align(nmeGetAlign, nmeSetAlign):StageAlign;
    public var quality(nmeGetQuality, nmeSetQuality):StageQuality;
    public var displayState(nmeGetDisplayState, nmeSetDisplayState):StageDisplayState;
@@ -123,6 +124,10 @@ class Stage extends nme.display.DisplayObjectContainer
    function nmeGetStageHeight() : Float
    {
       return nme_stage_get_stage_height(nmeHandle);
+   }
+   function nmeGetDPIScale() : Float
+   {
+      return nme_stage_get_dpi_scale(nmeHandle);
    }
 
    function nmeGetScaleMode() : StageScaleMode
@@ -613,6 +618,7 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_is_opengl = nme.Loader.load("nme_stage_is_opengl",1);
    static var nme_stage_get_stage_width = nme.Loader.load("nme_stage_get_stage_width",1);
    static var nme_stage_get_stage_height = nme.Loader.load("nme_stage_get_stage_height",1);
+   static var nme_stage_get_dpi_scale = nme.Loader.load("nme_stage_get_dpi_scale",1);
    static var nme_stage_get_scale_mode = nme.Loader.load("nme_stage_get_scale_mode",1);
    static var nme_stage_set_scale_mode = nme.Loader.load("nme_stage_set_scale_mode",2);
    static var nme_stage_get_align = nme.Loader.load("nme_stage_get_align",1);

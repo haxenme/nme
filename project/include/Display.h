@@ -347,6 +347,7 @@ public:
    UserPoint getMousePos() const { return mLastMousePos; }
    virtual double getStageWidth();
    virtual double getStageHeight();
+   virtual double getDPIScale() { return 1.0; }
    int getScaleMode() const { return scaleMode; }
    void setScaleMode(int inMode);
    int getAlign() const { return align; }

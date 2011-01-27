@@ -38,6 +38,7 @@ class Sample extends Sprite
 
       var target:Sprite = new Sprite();
       draw(target);
+
       addChild(target);
       var data = nme.display.BitmapData.load("../03-Bitmaps/Image.jpg");
       var bmp = new nme.display.Bitmap(data);
@@ -46,6 +47,13 @@ class Sample extends Sprite
       bmp.y = 50;
       target.addChild(bmp);
       target.alpha = 0.5;
+
+      var box = new Sprite();
+      box.alpha = 0.2;
+      draw(box);
+      box.x = 160;
+      box.y = 160;
+      addChild(box);
 
 
       //target.useHandCursor = true;
@@ -64,11 +72,14 @@ class Sample extends Sprite
       sprite.graphics.beginGradientFill(GradientType.LINEAR, [red, blue, green], [1, 0.5, 1], [0.0, 200, 255]);
 
       sprite.graphics.drawRect(0, 0, 100, 100);
+
+      sprite.graphics.beginFill(0x808080);
+      sprite.graphics.drawRect(80, 80, 100, 100);
    }
 
    public function clickHandler(event:MouseEvent)
    {
-      var d:nme.display.DisplayObject = event.target;
+      var d:nme.display.DisplayObject = this;
       var t:Transform = d.transform;
       var rOffset = t.colorTransform.redOffset + 25;
       var bOffset = t.colorTransform.redOffset - 25;
