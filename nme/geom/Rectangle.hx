@@ -46,7 +46,7 @@ class Rectangle
 
    public var left(get_left,set_left) : Float;
    function get_left() { return x; }
-   function set_left(l:Float) { x=l; return l;}
+   function set_left(l:Float) { width-=l-x; x=l; return l;}
 
    public var right(get_right,set_right) : Float;
    function get_right() { return x+width; }
@@ -54,7 +54,7 @@ class Rectangle
 
    public var top(get_top,set_top) : Float;
    function get_top() { return y; }
-   function set_top(t:Float) { y=t; return t;}
+   function set_top(t:Float) { height-=t-y; y=t; return t;}
 
    public var bottom(get_bottom,set_bottom) : Float;
    function get_bottom() { return y+height; }
