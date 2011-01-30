@@ -20,7 +20,7 @@ bool sgColourOrderSet = false;
 //  "gC0IsRed" then means red is the LSB, ie "abgr" format.
 
 #ifdef IPHONE
-bool gC0IsRed = false;
+bool gC0IsRed = true;
 #else
 bool gC0IsRed = true;
 #endif

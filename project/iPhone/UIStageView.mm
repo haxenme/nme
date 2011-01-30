@@ -87,6 +87,8 @@ extern "C" void nme_app_set_active(bool inActive);
 UIStageView *sgMainView = nil;
 static FrameCreationCallback sOnFrame = nil;
 
+
+
 // --- Stage Implementaton ------------------------------------------------------
 
 class EAGLStage : public nme::Stage
@@ -111,6 +113,7 @@ public:
       
       mHardwareContext = HardwareContext::CreateOpenGL(inLayer,mContext);
       mHardwareContext->IncRef();
+      mHardwareContext->SetWindowSize(backingWidth, backingHeight);
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
    }
@@ -266,6 +269,10 @@ public:
    int Width() { return backingWidth; }
    int Height() { return backingHeight; }
 
+   //double getStageWidth() { return backingWidth; }
+   //double getStageHeight() { return backingHeight; }
+
+
 
    EventHandler mHandler;
    void *mHandlerData;
@@ -416,11 +423,12 @@ public:
 
       displayLinkSupported = FALSE;
 
-
+/*
       Event evt(etResize);
       evt.x = mStage->Width();
       evt.y = mStage->Height();
       mStage->HandleEvent(evt);
+*/
 }
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration {

@@ -99,6 +99,14 @@ glBufferDataARB_f glBufferData=0;
   #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+#ifdef GPH
+#define NME_DITHER
+#endif
+
+
+int sgDrawCount = 0;
+int sgBufferCount = 0;
+int sgDrawBitmap = 0;
 
 namespace nme
 {
@@ -443,9 +451,14 @@ public:
       if (mQuality>=sqBest)
          glEnable(GL_LINE_SMOOTH);
       glEnableClientState(GL_VERTEX_ARRAY);
+      // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
+      sgDrawCount = 0;
+      sgDrawBitmap = 0;
+      sgBufferCount = 0;
    }
    void EndRender()
    {
+
    }
 
 
@@ -535,6 +548,7 @@ public:
          }
 
    
+         sgBufferCount++;
          DrawElements &elements = arrays.mElements;
          for(int e=0;e<elements.size();e++)
          {
@@ -543,8 +557,10 @@ public:
             if (bound_texture)
             {
                bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
+               #ifdef NME_DITHER
 					if (!draw.mBitmapSmooth)
                   glDisable(GL_DITHER);
+               #endif
             }
             else
             {
@@ -592,10 +608,13 @@ public:
             }
    
             //printf("glDrawArrays %d : %d x %d\n", draw.mPrimType, draw.mFirst, draw.mCount );
+            sgDrawCount++;
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
 
+            #ifdef NME_DITHER
 				if (bound_texture && !draw.mBitmapSmooth)
                glEnable(GL_DITHER);
+            #endif
          }
 
          if (arrays.mColours.size() == vert.size())
@@ -622,8 +641,10 @@ public:
       mBitmapTexture = inSurface->GetOrCreateTexture(*this);
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
       glEnable(GL_TEXTURE_2D);
+      #ifdef NME_DITHER
 		if (!inSmooth)
 		  glDisable(GL_DITHER);
+      #endif
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
@@ -643,6 +664,7 @@ public:
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+      sgDrawBitmap++;
    }
 
    void EndBitmapRender()
@@ -653,7 +675,9 @@ public:
          glPopMatrix();
       }
 
+      #ifdef NME_DITHER
 		glEnable(GL_DITHER);
+      #endif
       mBitmapTexture = 0;
       mBitmapSurface = 0;
    }

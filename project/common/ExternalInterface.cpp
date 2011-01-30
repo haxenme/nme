@@ -594,6 +594,24 @@ value nme_byte_array_set(value inArray,value inPos, value inVal)
 }
 DEFINE_PRIM(nme_byte_array_set,3);
 
+
+
+value nme_byte_array_get_bytes(value inArray,value outBytes)
+{
+   ByteArray *array;
+   if (AbstractToObject(inArray,array) && val_is_buffer(outBytes) )
+   {
+      buffer buf = val_to_buffer(outBytes);
+      if (buffer_size(buf)>=array->mBytes.size())
+      {
+         memcpy(buffer_data(buf), &array->mBytes[0], array->mBytes.size());
+      }
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get_bytes,2);
+
+
 struct ByteData
 {
    uint8 *data;

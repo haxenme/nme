@@ -45,6 +45,19 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
       nme_byte_array_set(nmeData,pos,v);
    }
 
+   public function getBytes() : haxe.io.Bytes
+   {
+		#if cpp
+      var bytes = haxe.io.Bytes.alloc(length);
+      nme_byte_array_get_bytes(nmeData,bytes.getData());
+      return bytes;
+      #else
+		var str = asString();
+      trace(str.length);
+		return haxe.io.Bytes.ofString(str);
+      #end
+   }
+
    static public function readFile(inString:String):ByteArray
    {
       var handle = nme_byte_array_read_file(inString);
@@ -92,6 +105,9 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 
    static var nme_byte_array_create = nme.Loader.load("nme_byte_array_create",1);
    static var nme_byte_array_as_string = nme.Loader.load("nme_byte_array_as_string",1);
+   #if cpp
+   static var nme_byte_array_get_bytes = nme.Loader.load("nme_byte_array_get_bytes",2);
+   #end
    static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file",1);
    static var nme_byte_array_get_length = nme.Loader.load("nme_byte_array_get_length",1);
    static var nme_byte_array_get = nme.Loader.load("nme_byte_array_get",2);

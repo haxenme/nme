@@ -832,6 +832,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       if (obj->scrollRect.HasPixels())
       {
          Extent2DF extent;
+ 
          DRect rect = obj->scrollRect;
          for(int c=0;c<4;c++)
             extent.Add( full.Apply( (((c&1)>0) ? rect.w :0), (((c&2)>0) ? rect.h :0) ) );
@@ -846,14 +847,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          clip_state.mClipRect = inState.mClipRect.Intersect(screen_rect);
 
          if (!clip_state.mClipRect.HasPixels())
-            continue;
-
-         if (obj->opaqueBackground && state.mPhase == rpRender)
          {
-            // Cleared too many times?
-            inTarget.Clear(obj->opaqueBackground,clip_state.mClipRect);
+            continue;
          }
-      
+
          obj_state = &clip_state;
       }
 
@@ -1017,14 +1014,19 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          {
             if (obj->opaqueBackground)
             {
-               // TODO: this should actually be a rectangle rotated like the object?
-               Extent2DF screen_extent;
-               obj->GetExtent(obj_state->mTransform,screen_extent,true);
-               // Get bounding pixel rect
-               Rect rect = obj_state->mTransform.GetTargetRect(screen_extent);
+               Rect rect = clip_state.mClipRect;
+               if ( !obj->scrollRect.HasPixels() )
+               {
+                  // TODO: this should actually be a rectangle rotated like the object?
+                  Extent2DF screen_extent;
+                  obj->GetExtent(obj_state->mTransform,screen_extent,true);
+                  // Get bounding pixel rect
+                  rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
-               // Intersect with clip rect ...
-               rect = rect.Intersect(obj_state->mClipRect);
+                  // Intersect with clip rect ...
+                  rect = rect.Intersect(obj_state->mClipRect);
+               }
+
                if (rect.HasPixels())
                {
                   if (inState.mPhase == rpHitTest)
@@ -1032,7 +1034,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                      inState.mHitResult = this;
                      return;
                   }
-                  inTarget.Clear(obj->opaqueBackground,rect);
+                  else if (inState.mPhase == rpRender )
+                     inTarget.Clear(obj->opaqueBackground,rect);
                }
                else if (inState.mPhase == rpHitTest)
                {
