@@ -235,6 +235,15 @@ public:
       HandleEvent(inEvt);
    }
 
+   void OnMouseEvent(Event &inEvt)
+   {
+      inEvt.x *= mDPIScale;
+      inEvt.y *= mDPIScale;
+      HandleEvent(inEvt);
+   }
+
+
+
 
 
    void Flip()
@@ -529,14 +538,14 @@ public:
       {
          Event mouse(etTouchBegin, thumbPoint.x, thumbPoint.y);
          mouse.value = [aTouch hash];
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
       else
       {
          Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
 
    }
@@ -560,14 +569,14 @@ public:
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
             mouse.flags |= efPrimaryTouch;
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
       else
       {
          Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
    }
 }
@@ -594,13 +603,13 @@ public:
             mouse.flags |= efPrimaryTouch;
             mPrimaryTouchHash = 0;
          }
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
       else
       {
          Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
          mouse.flags |= efPrimaryTouch;
-         mStage->OnEvent(mouse);
+         mStage->OnMouseEvent(mouse);
       }
    }
 }
