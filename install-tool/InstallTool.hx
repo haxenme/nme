@@ -18,14 +18,6 @@ class InstallTool
    var mTargets : Array<Target>;
    var NME:String;
 
-   var mWinWidth:Int;
-   var mWinHeight:Int;
-   var mWinOrientation:String;
-   var mWinFPS:Int;
-   var mWinBackground:Int;
-   var mWinHardware:Bool;
-   var mWinResizeable:Bool;
-
    var mAppFile:String;
    var mAppTitle:String;
    var mAppPackage:String;
@@ -46,20 +38,18 @@ class InstallTool
 
       // trace(NME);
 
-      mWinWidth = 640;
-      mWinHeight = 480;
-      mWinOrientation = "";
-      mWinFPS = 60;
-      mWinBackground = 0xffffff;
-      mWinHardware = true;
-      mWinResizeable = true;
+      setDefault("WIN_WIDTH","640");
+      setDefault("WIN_HEIGHT","480");
+      setDefault("WIN_ORIENTATION","");
+      setDefault("WIN_FPS","60");
+      setDefault("WIN_BACKGROUND","0xffffff");
+      setDefault("WIN_HARDWARE","true");
+      setDefault("WIN_RESIZEABLE","true");
 
-      mAppFile = "MyApplication";
-      mAppTitle = "My Application";
-      mAppPackage = "com.example.myapp";
-      mAppVersion = "1.0";
-      mAppCompany = "Example Inc";
-      mAppDescription = "Example Application";
+      setDefault("APP_FILE","MyAplication");
+      setDefault("APP_PACKAGE","com.example.myapp");
+      setDefault("APP_VERSION","1.0");
+      setDefault("APP_COMPANY","Example Inc.");
 
       var make_contents = neko.io.File.getContent(inMakefile);
       var xml_slow = Xml.parse(make_contents);
@@ -80,22 +70,28 @@ class InstallTool
          buildTarget(target);
       }
 
-      /*
-      var base = inPackage;
-      mDefines.pkg = inPackage;
-      mDefines.PROJ = "MyProj";
-      cp_recurse(inHXCPP + "/projects/android/template",base);
+      trace(mDefines);
 
-      var parts = inPackage.split(".");
-      var dir = base + "/src/" + parts.join("/");
-      mkdir(dir);
-      cp_file(inHXCPP + "/projects/android/MainActivity.java", dir + "/MainActivity.java");
-      */
-   }
+  }
 
    function buildTarget(inTarget:Target)
    {
-      trace(inTarget);
+      switch(inTarget.name)
+      {
+         case "android":
+           buildAndroid(inTarget.runtime);
+      }
+   }
+
+   function buildAndroid(inRuntime:String)
+   {
+      var pkg = mDefines.get("APP_PACKAGE");
+      cp_recurse(NME + "/install-tool/android/template",pkg);
+
+      var parts = pkg.split(".");
+      var dir = pkg + "/src/" + parts.join("/");
+      mkdir(dir);
+      cp_file(NME + "/project-tool/android/MainActivity.java", dir + "/MainActivity.java");
    }
 
    static var mVarMatch = new EReg("\\${(.*?)}","");
@@ -239,46 +235,32 @@ class InstallTool
       }
    }
 
+   function setDefault(inName:String, inValue:String)
+   {
+      if (!mDefines.exists(inName))
+         mDefines.set(inName, inValue);
+   }
 
    function appSettings(el:haxe.xml.Fast)
    {
-      if (el.has.file)
+      for(e in el.x.attributes())
       {
-         mAppFile = substitute(el.att.file);
-         mAppTitle = mAppFile;
-         mAppDescription = mAppTitle;
+         var att = e;
+         var name = "APP_" + att.toUpperCase();
+         mDefines.set( name, substitute(el.att.resolve(att)) );
       }
-      if (el.has.title)
-      {
-         mAppTitle = substitute(el.att.title);
-         mAppDescription = mAppTitle;
-      }
-      if (el.has.resolve("package"))
-         mAppPackage = substitute(el.att.resolve("package"));
-      if (el.has.version)
-         mAppVersion = substitute(el.att.version);
-      if (el.has.company)
-         mAppCompany = substitute(el.att.company);
-      if (el.has.description)
-         mAppDescription = substitute(el.att.description);
+      setDefault("APP_TITLE", mDefines.get("APP_FILE"));
+      setDefault("APP_DESCRIPTION", mDefines.get("APP_TITLE"));
    }
 
    function windowSettings(el:haxe.xml.Fast)
    {
-      if (el.has.width)
-         mWinWidth = substitutei(el.att.width);
-      if (el.has.height)
-         mWinHeight = substitutei(el.att.height);
-      if (el.has.orientation)
-         mWinOrientation = substitute(el.att.orientation);
-      if (el.has.fps)
-         mWinFPS = substitutei(el.att.fps);
-      if (el.has.background)
-         mWinBackground = substitutei(el.att.background);
-      if (el.has.resizeable)
-         mWinResizeable = substituteb(el.att.resizeable);
-      if (el.has.hardware)
-         mWinHardware = substituteb(el.att.hardware);
+      for(e in el.x.attributes())
+      {
+         var att = e;
+         var name = "WIN_" + att.toUpperCase();
+         mDefines.set( name, substitute(el.att.resolve(att)) );
+      }
    }
 
 
