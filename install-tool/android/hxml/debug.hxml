@@ -1,0 +1,7 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp bin/android/haxe
+-cpp bin/android/haxe/debug
+-D android
+-debug
+-cmd haxelib run nme copy-if-newer bin/android/haxe/debug/libApplicationMain.so bin/android/project/libs/armeabi/libApplicationMain.so
+
