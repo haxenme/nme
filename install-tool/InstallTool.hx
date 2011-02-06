@@ -14,19 +14,16 @@ class Target
 class InstallTool
 {
    var mDefines : Hash<String>;
+   var mContext : Dynamic;
    var mIncludePath:Array<String>;
+   var mHaxeFlags:Array<String>;
    var mTargets : Array<Target>;
    var NME:String;
 
-   var mAppFile:String;
-   var mAppTitle:String;
-   var mAppPackage:String;
-   var mAppVersion:String;
-   var mAppCompany:String;
-   var mAppDescription:String;
+   var mBuildDir:String;
 
    public function new(inNME:String,
-                       inMakefile:String,
+                       inCommand:String,
                        inDefines:Hash<String>,
                        inTargets:Array<String>,
                        inIncludePath:Array<String> )
@@ -35,6 +32,7 @@ class InstallTool
       mDefines = inDefines;
       mIncludePath = inIncludePath;
       mTargets = [];
+      mHaxeFlags = [];
 
       // trace(NME);
 
@@ -51,16 +49,25 @@ class InstallTool
       setDefault("APP_VERSION","1.0");
       setDefault("APP_COMPANY","Example Inc.");
 
-      var make_contents = neko.io.File.getContent(inMakefile);
+      setDefault("BUILD_DIR","bin");
+
+      var makefile = inTargets.pop();
+      var make_contents = neko.io.File.getContent(makefile);
       var xml_slow = Xml.parse(make_contents);
       var xml = new haxe.xml.Fast(xml_slow.firstElement());
 
       parseXML(xml,"");
 
+      mBuildDir = mDefines.get("BUILD_DIR");
+
       if (inTargets.length==0)
          for(t in mTargets)
             inTargets.push(t.name);
 
+      mContext = {};
+      for(key in mDefines.keys())
+         Reflect.setField(mContext,key, mDefines.get(key) );
+      //trace(mDefines);
 
       for(target in mTargets)
       {
@@ -70,12 +77,12 @@ class InstallTool
          buildTarget(target);
       }
 
-      trace(mDefines);
 
   }
 
    function buildTarget(inTarget:Target)
    {
+      mContext.HAXE_FLAGS = mHaxeFlags.length==0 ? "" : "\n" + mHaxeFlags.join("\n");
       switch(inTarget.name)
       {
          case "android":
@@ -85,13 +92,19 @@ class InstallTool
 
    function buildAndroid(inRuntime:String)
    {
-      var pkg = mDefines.get("APP_PACKAGE");
-      cp_recurse(NME + "/install-tool/android/template",pkg);
+      var dest = mBuildDir + "/android/project";
 
+      mkdir(dest);
+      cp_recurse(NME + "/install-tool/android/template",dest);
+
+      var pkg = mDefines.get("APP_PACKAGE");
       var parts = pkg.split(".");
-      var dir = pkg + "/src/" + parts.join("/");
+      var dir = dest + "/src/" + parts.join("/");
       mkdir(dir);
-      cp_file(NME + "/project-tool/android/MainActivity.java", dir + "/MainActivity.java");
+      cp_file(NME + "/install-tool/android/MainActivity.java", dir + "/MainActivity.java");
+
+      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/android/haxe");
+      cp_recurse(NME + "/install-tool/android/hxml",mBuildDir + "/android/haxe");
    }
 
    static var mVarMatch = new EReg("\\${(.*?)}","");
@@ -221,6 +234,12 @@ class InstallTool
                 case "app" : 
                    appSettings(el);
 
+                case "haxelib" : 
+                   mHaxeFlags.push("-lib " + substitute(el.att.name) );
+
+                case "classpath" : 
+                   mHaxeFlags.push("-cp " + substitute(el.att.name) );
+
                 case "window" : 
                    windowSettings(el);
 
@@ -268,12 +287,12 @@ class InstallTool
    public function cp_file(inSrcFile:String,inDestFile:String)
    {
       var ext = neko.io.Path.extension(inSrcFile);
-      if (ext=="xml" || ext=="java")
+      if (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml")
       {
          neko.Lib.println("process " + inSrcFile + " " + inDestFile );
          var contents = neko.io.File.getContent(inSrcFile);
          var tmpl = new haxe.Template(contents);
-         var result = tmpl.execute(mDefines);
+         var result = tmpl.execute(mContext);
          var f = neko.io.File.write(inDestFile,false);
          f.writeString(result);
          f.close();
@@ -328,6 +347,32 @@ class InstallTool
       }
    }
 
+   static function copyIfNewer(inFrom:String, inTo:String)
+   {
+      if (!neko.FileSystem.exists(inFrom))
+      {
+         neko.Lib.println("Error: " + inFrom + " does not exist");
+         return;
+      }
+
+      if (neko.FileSystem.exists(inTo))
+      {
+         if (neko.FileSystem.stat(inFrom).mtime.getTime() <
+             neko.FileSystem.stat(inTo).mtime.getTime() )
+           return;
+      }
+
+      neko.io.File.copy(inFrom, inTo);
+   }
+
+   static function usage()
+   {
+      neko.Lib.println("Usage :  haxelib run nme COMMAND ...");
+      neko.Lib.println(" COMMAND : copy-if-newer from to");
+      neko.Lib.println(" COMMAND : update build.nmml [-DFLAG -Dname=val... ]");
+      neko.Lib.println(" COMMAND : build [-debug] target1 [target2...]");
+   }
+
 
    
    public static function main()
@@ -335,6 +380,7 @@ class InstallTool
       var targets = new Array<String>();
       var defines = new Hash<String>();
       var include_path = new Array<String>();
+      var command:String="";
       var makefile:String="";
 
       include_path.push(".");
@@ -384,8 +430,8 @@ class InstallTool
             defines.set(arg.substr(2),"");
          if (arg.substr(0,2)=="-I")
             include_path.push(arg.substr(2));
-         else if (makefile.length==0)
-            makefile = arg;
+         else if (command.length==0)
+            command = arg;
          else
             targets.push(arg);
       }
@@ -400,9 +446,19 @@ class InstallTool
 
 
 
-      if (makefile=="")
+      if (command=="copy-if-newer")
       {
-         neko.Lib.println("Usage :  haxelib run nme build.nmml [-DFLAG -Dname=val... ] [target1 target2 ...]");
+         if (targets.length!=2)
+         {
+            neko.Lib.println("wrong number of arguements");
+            usage();
+            return;
+         }
+         copyIfNewer(targets[0], targets[1]);
+      }
+      else if (command=="")
+      {
+         usage();
       }
       else
       {
@@ -412,7 +468,7 @@ class InstallTool
          if ( !defines.exists("NME_CONFIG") )
             defines.set("NME_CONFIG",".hxcpp_config.xml");
 
-         new InstallTool(NME,makefile,defines,targets,include_path);
+         new InstallTool(NME,command,defines,targets,include_path);
       }
    }
 

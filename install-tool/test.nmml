@@ -8,6 +8,8 @@
      version="1.0"
      company="nme" 
 	  description="NME Application"
+	  main="Test"
+     icon="icon.svg"
   />
 
   <icons>
@@ -23,34 +25,27 @@
 		height="400"
 		orientation="landscape"
 		fps="60"
-		background="ffffff"
+		background="0xffffff"
       resizeable="true"
 		hardware="true"
 	/>
 
   
-  <build>
-    <main name="Main" />
-    <classpath name="src" />
-    <haxelib name="nme" />
-  </build>
+  <classpath name="src" />
+  <haxelib name="nme" />
 
   <assets>
      <image name="image.png" dir="images"/>
   </assets>
 
-  <targets>
-     <target name="swf9"/>
-     <target name="android"/>
-     <target name="win32" runtme="neko"/>
-  </targets>
+  <target name="swf9"/>
+  <target name="android"/>
+  <target name="win32" runtme="neko"/>
 
-  <ndlls>
-    <ndll name="std"/>
-    <ndll name="regexp"/>
-    <ndll name="regexp"/>
-    <ndll name="nme" haxelib="nme"/>
-  </ndlls>
+  <ndll name="std"/>
+  <ndll name="regexp"/>
+  <ndll name="regexp"/>
+  <ndll name="nme" haxelib="nme"/>
 
   <certificates>
      <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
