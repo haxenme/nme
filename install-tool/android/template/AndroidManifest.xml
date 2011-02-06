@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  android:versionCode="1" android:versionName="1.0" package="::pkg::">
+  android:versionCode="1" android:versionName="1.0" package="::APP_PACKAGE::">
 
   <application android:label="AppLabel" android:debuggable="true">
     <activity android:name="MainActivity" android:label="haXe App"

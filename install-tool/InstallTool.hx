@@ -19,6 +19,8 @@ class InstallTool
    var mHaxeFlags:Array<String>;
    var mTargets : Array<Target>;
    var NME:String;
+	var mVerbose:Bool;
+	var mDebug:Bool;
 
    var mBuildDir:String;
 
@@ -26,71 +28,104 @@ class InstallTool
                        inCommand:String,
                        inDefines:Hash<String>,
                        inTargets:Array<String>,
-                       inIncludePath:Array<String> )
+                       inIncludePath:Array<String>,
+							  inVerbose:Bool,
+							  inDebug:Bool
+							  )
    {
       NME = inNME;
       mDefines = inDefines;
       mIncludePath = inIncludePath;
       mTargets = [];
       mHaxeFlags = [];
+		mVerbose = inVerbose;
+		mDebug = inDebug;
 
       // trace(NME);
+		// trace(inCommand);
 
-      setDefault("WIN_WIDTH","640");
-      setDefault("WIN_HEIGHT","480");
-      setDefault("WIN_ORIENTATION","");
-      setDefault("WIN_FPS","60");
-      setDefault("WIN_BACKGROUND","0xffffff");
-      setDefault("WIN_HARDWARE","true");
-      setDefault("WIN_RESIZEABLE","true");
+      if (inCommand=="update" || inCommand=="create")
+		{
+			setDefault("WIN_WIDTH","640");
+			setDefault("WIN_HEIGHT","480");
+			setDefault("WIN_ORIENTATION","");
+			setDefault("WIN_FPS","60");
+			setDefault("WIN_BACKGROUND","0xffffff");
+			setDefault("WIN_HARDWARE","true");
+			setDefault("WIN_RESIZEABLE","true");
 
-      setDefault("APP_FILE","MyAplication");
-      setDefault("APP_PACKAGE","com.example.myapp");
-      setDefault("APP_VERSION","1.0");
-      setDefault("APP_COMPANY","Example Inc.");
+			setDefault("APP_FILE","MyAplication");
+			setDefault("APP_PACKAGE","com.example.myapp");
+			setDefault("APP_VERSION","1.0");
+			setDefault("APP_COMPANY","Example Inc.");
 
-      setDefault("BUILD_DIR","bin");
+			setDefault("BUILD_DIR","bin");
 
-      var makefile = inTargets.pop();
-      var make_contents = neko.io.File.getContent(makefile);
-      var xml_slow = Xml.parse(make_contents);
-      var xml = new haxe.xml.Fast(xml_slow.firstElement());
+			var makefile = inTargets.pop();
+			var make_contents = neko.io.File.getContent(makefile);
+			var xml_slow = Xml.parse(make_contents);
+			var xml = new haxe.xml.Fast(xml_slow.firstElement());
 
-      parseXML(xml,"");
+			parseXML(xml,"");
 
-      mBuildDir = mDefines.get("BUILD_DIR");
+			mBuildDir = mDefines.get("BUILD_DIR");
 
-      if (inTargets.length==0)
-         for(t in mTargets)
-            inTargets.push(t.name);
+			if (inTargets.length==0)
+				for(t in mTargets)
+					inTargets.push(t.name);
 
-      mContext = {};
-      for(key in mDefines.keys())
-         Reflect.setField(mContext,key, mDefines.get(key) );
-      //trace(mDefines);
+			mContext = {};
+			for(key in mDefines.keys())
+				Reflect.setField(mContext,key, mDefines.get(key) );
+			//trace(mDefines);
 
-      for(target in mTargets)
-      {
-         if (inTargets.length>0 &&
-                !Lambda.exists(inTargets,function (t) return t==target.name ))
-            continue;
-         buildTarget(target);
-      }
-
-
+			for(target in mTargets)
+			{
+				if (inTargets.length>0 &&
+						 !Lambda.exists(inTargets,function (t) return t==target.name ))
+					continue;
+				updateTarget(target);
+			}
+		}
+		if (inCommand=="run" || inCommand=="make")
+		{
+			if (inCommand=="run" && inTargets.length!=1)
+			{
+			   neko.Lib.println("'run' command should have exactly 1 target");
+			}
+			else
+			{
+				for(target in inTargets)
+				{
+					var hxml = "bin/" + target + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
+					Print("Running : haxe " + hxml);
+					var result = neko.Sys.command( "haxe", [hxml] );
+			      if (result!=0)
+			      {
+						throw("Error running: haxe " + hxml);
+					}
+				}
+			}
+		}
   }
 
-   function buildTarget(inTarget:Target)
+  function Print(inString)
+  {
+     if (mVerbose)
+	    neko.Lib.println(inString);
+  }
+
+   function updateTarget(inTarget:Target)
    {
       mContext.HAXE_FLAGS = mHaxeFlags.length==0 ? "" : "\n" + mHaxeFlags.join("\n");
       switch(inTarget.name)
       {
          case "android":
-           buildAndroid(inTarget.runtime);
+           updateAndroid(inTarget.runtime);
       }
    }
 
-   function buildAndroid(inRuntime:String)
+   function updateAndroid(inRuntime:String)
    {
       var dest = mBuildDir + "/android/project";
 
@@ -289,7 +324,7 @@ class InstallTool
       var ext = neko.io.Path.extension(inSrcFile);
       if (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml")
       {
-         neko.Lib.println("process " + inSrcFile + " " + inDestFile );
+         Print("process " + inSrcFile + " " + inDestFile );
          var contents = neko.io.File.getContent(inSrcFile);
          var tmpl = new haxe.Template(contents);
          var result = tmpl.execute(mContext);
@@ -299,7 +334,7 @@ class InstallTool
       }
       else
       {
-         neko.Lib.println("cp " + inSrcFile + " " + inDestFile );
+         Print("cp " + inSrcFile + " " + inDestFile );
          neko.io.File.copy( inSrcFile, inDestFile );
       }
    }
@@ -308,7 +343,7 @@ class InstallTool
    {
       if (!neko.FileSystem.exists(inDestDir))
       {
-         neko.Lib.println("mkdir " + inDestDir);
+         Print("mkdir " + inDestDir);
          neko.FileSystem.createDirectory(inDestDir);
       }
 
@@ -328,7 +363,7 @@ class InstallTool
    }
 
 
-   static public function mkdir(inDir:String)
+   public function mkdir(inDir:String)
    {
       var parts = inDir.split("/");
       var total = "";
@@ -340,14 +375,14 @@ class InstallTool
             total += part;
             if (!neko.FileSystem.exists(total))
             {
-               neko.Lib.println("mkdir " + total);
+               Print("mkdir " + total);
                neko.FileSystem.createDirectory(total);
             }
          }
       }
    }
 
-   static function copyIfNewer(inFrom:String, inTo:String)
+   static function copyIfNewer(inFrom:String, inTo:String, inVerbose:Bool)
    {
       if (!neko.FileSystem.exists(inFrom))
       {
@@ -362,15 +397,18 @@ class InstallTool
            return;
       }
 
+      if (inVerbose)
+		   neko.Lib.println("Copy " + inFrom + " to " + inTo );
       neko.io.File.copy(inFrom, inTo);
    }
 
    static function usage()
    {
-      neko.Lib.println("Usage :  haxelib run nme COMMAND ...");
+      neko.Lib.println("Usage :  haxelib run nme [-v] COMMAND ...");
       neko.Lib.println(" COMMAND : copy-if-newer from to");
-      neko.Lib.println(" COMMAND : update build.nmml [-DFLAG -Dname=val... ]");
-      neko.Lib.println(" COMMAND : build [-debug] target1 [target2...]");
+      neko.Lib.println(" COMMAND : update|create build.nmml [-DFLAG -Dname=val... ]");
+      neko.Lib.println(" COMMAND : make [-debug] target1 [target2...]");
+      neko.Lib.println(" COMMAND : run [-debug] target");
    }
 
 
@@ -382,6 +420,8 @@ class InstallTool
       var include_path = new Array<String>();
       var command:String="";
       var makefile:String="";
+		var verbose = false;
+		var debug = false;
 
       include_path.push(".");
 
@@ -428,8 +468,12 @@ class InstallTool
       {
          if (arg.substr(0,2)=="-D")
             defines.set(arg.substr(2),"");
-         if (arg.substr(0,2)=="-I")
+         else if (arg.substr(0,2)=="-I")
             include_path.push(arg.substr(2));
+         else if (arg=="-v")
+            verbose = true;
+         else if (arg=="-debug")
+            debug = true;
          else if (command.length==0)
             command = arg;
          else
@@ -454,7 +498,7 @@ class InstallTool
             usage();
             return;
          }
-         copyIfNewer(targets[0], targets[1]);
+         copyIfNewer(targets[0], targets[1], verbose);
       }
       else if (command=="")
       {
@@ -468,7 +512,7 @@ class InstallTool
          if ( !defines.exists("NME_CONFIG") )
             defines.set("NME_CONFIG",".hxcpp_config.xml");
 
-         new InstallTool(NME,command,defines,targets,include_path);
+         new InstallTool(NME,command,defines,targets,include_path,verbose,debug);
       }
    }
 

@@ -522,9 +522,9 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeDoProcessStageEvent(inEvent:Dynamic) : Float
    {
+		var result = 0.0;
       #if android try { #end
 
-		var result = 0.0;
 
       //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field( inEvent, "type" ) );
