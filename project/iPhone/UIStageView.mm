@@ -53,7 +53,7 @@ extern "C" void nme_app_set_active(bool inActive);
    NSTimer *animationTimer;
    int    mPrimaryEvent;
 @public
-   class EAGLStage *mStage;
+   class IOSStage *mStage;
 
    UITextField *mTextField;
    UIAccelerometer *mAccelerometer;
@@ -86,15 +86,96 @@ extern "C" void nme_app_set_active(bool inActive);
 // Global instance ...
 UIStageView *sgMainView = nil;
 static FrameCreationCallback sOnFrame = nil;
+static bool sgHardwareRendering = true;
 
+
+
+const void* imageDataProviderGetBytePointer(void* imageData)
+{
+    return imageData;
+}
+
+void deleteImageData(void*, const void* imageData)
+{
+}
+
+CGDataProviderDirectCallbacks providerCallbacks =
+    { 0, imageDataProviderGetBytePointer, deleteImageData, 0, 0 };
 
 
 // --- Stage Implementaton ------------------------------------------------------
 
-class EAGLStage : public nme::Stage
+
+class IOSSurf : public Surface
 {
 public:
-   EAGLStage(CAEAGLLayer *inLayer,bool inInitRef) : nme::Stage(inInitRef)
+   int mWidth;
+   int mHeight;
+   unsigned char *mBuffer;
+
+   IOSSurf() { }
+   ~IOSSurf() { }
+
+   int Width() const  { return mWidth; }
+   int Height() const  { return mHeight; }
+   PixelFormat Format()  const { return pfXRGB; }
+   const uint8 *GetBase() const { return (const uint8 *)mBuffer; }
+   int GetStride() const { return mWidth*4; }
+   void Clear(uint32 inColour,const nme::Rect *inRect)
+   {
+      nme::Rect r = inRect ? *inRect : nme::Rect(Width(),Height());
+      int x1 = r.x1();
+      int y1 = r.y1();
+      //printf("Clear %d,%d %dx%d   %08x\n", r.x, r.y, r.w, r.h, inColour);
+      for(int y=r.y;y<y1;y++)
+      {
+         uint32 *row = (uint32 *)(mBuffer + (y*mWidth+r.x)*4 );
+         if ( (inColour&0xffffff)==0 )
+            memset(row,0,r.w*4);
+         else if ( (inColour&0xffffff)==0xffffff )
+            memset(row,255,r.w*4);
+         else
+           for(int x=0;x<r.w;x++)
+               *row++ = inColour;
+      }
+   }
+
+   RenderTarget BeginRender(const nme::Rect &inRect)
+   {
+      return RenderTarget(nme::Rect(Width(),Height()), Format(), (uint8 *)mBuffer, mWidth*4);
+   }
+   void EndRender() { }
+
+   void BlitTo(const RenderTarget &outTarget,
+               const nme::Rect &inSrcRect,int inPosX, int inPosY,
+               BlendMode inBlend, const BitmapCache *inMask,
+               uint32 inTint=0xffffff ) const
+   {
+   }
+	void BlitChannel(const RenderTarget &outTarget, const nme::Rect &inSrcRect,
+									 int inPosX, int inPosY,
+									 int inSrcChannel, int inDestChannel ) const
+	{
+	}
+
+   void StretchTo(const RenderTarget &outTarget,
+          const nme::Rect &inSrcRect, const DRect &inDestRect) const
+   {
+   }
+};
+
+
+
+class IOSStage : public nme::Stage
+{
+public:
+
+   unsigned char *mImageData[2];
+   int mRenderBuffer;
+   IOSSurf *mSoftwareSurface;
+   CGColorSpaceRef colorSpace;
+
+   IOSStage(CALayer *inLayer,bool inInitRef) : nme::Stage(inInitRef)
    {
       defaultFramebuffer = 0;
       colorRenderbuffer = 0;
@@ -102,49 +183,72 @@ public:
       mHardwareSurface = 0;
       mLayer = inLayer;
       mDPIScale = 1.0;
-      mContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-        
-      if (!mContext || ![EAGLContext setCurrentContext:mContext])
+      mOGLContext = 0;
+      mImageData[0] = 0;
+      mImageData[1] = 0;
+      mRenderBuffer = 0;
+      mSoftwareSurface = 0;
+      colorSpace = CGColorSpaceCreateDeviceRGB();
+
+      if (sgHardwareRendering)
       {
-         throw "Could not initilize OpenL";
-      }
+         mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+        
+         if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
+         {
+            throw "Could not initilize OpenL";
+         }
  
-      CreateFramebuffer();
+         CreateOGLFramebuffer();
       
-      mHardwareContext = HardwareContext::CreateOpenGL(inLayer,mContext);
-      mHardwareContext->IncRef();
-      mHardwareContext->SetWindowSize(backingWidth, backingHeight);
-      mHardwareSurface = new HardwareSurface(mHardwareContext);
-      mHardwareSurface->IncRef();
+         mHardwareContext = HardwareContext::CreateOpenGL(inLayer,mOGLContext);
+         mHardwareContext->IncRef();
+         mHardwareContext->SetWindowSize(backingWidth, backingHeight);
+         mHardwareSurface = new HardwareSurface(mHardwareContext);
+         mHardwareSurface->IncRef();
+      }
+      else
+      {
+         mSoftwareSurface = new IOSSurf();
+         CreateImageBuffers();
+      }
    }
 
    double getDPIScale() { return mDPIScale; }
 
 
-   ~EAGLStage()
+   ~IOSStage()
    {
-      if (mHardwareSurface)
-         mHardwareSurface->DecRef();
-      if (mHardwareContext)
-         mHardwareContext->DecRef();
-      // Tear down GL
-      if (defaultFramebuffer)
+      if (mOGLContext)
       {
-         glDeleteFramebuffersOES(1, &defaultFramebuffer);
-         defaultFramebuffer = 0;
-      }
+         if (mHardwareSurface)
+            mHardwareSurface->DecRef();
+         if (mHardwareContext)
+            mHardwareContext->DecRef();
+         // Tear down GL
+         if (defaultFramebuffer)
+         {
+            glDeleteFramebuffersOES(1, &defaultFramebuffer);
+            defaultFramebuffer = 0;
+         }
 
-      if (colorRenderbuffer)
-      {
-         glDeleteRenderbuffersOES(1, &colorRenderbuffer);
-         colorRenderbuffer = 0;
+         if (colorRenderbuffer)
+         {
+            glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+            colorRenderbuffer = 0;
+         }
+   
+         // Tear down context
+         if ([EAGLContext currentContext] == mOGLContext)
+            [EAGLContext setCurrentContext:nil];
+
+         [mOGLContext release];
       }
-   
-      // Tear down context
-      if ([EAGLContext currentContext] == mContext)
-         [EAGLContext setCurrentContext:nil];
-   
-      [mContext release];
+      else
+      {
+          DestroyImageBuffers();
+          delete mSoftwareSurface;
+      }
    }
 
    bool getMultitouchSupported() { return true; }
@@ -159,12 +263,10 @@ public:
       return sgMainView->mMultiTouch;
    }
 
+   bool isOpenGL() const { return mOGLContext; }
 
 
-   bool isOpenGL() const { return true; }
-
-
-   void CreateFramebuffer()
+   void CreateOGLFramebuffer()
    {
       // Create default framebuffer object.
       // The backing will be allocated for the current layer in -resizeFromLayer
@@ -172,7 +274,7 @@ public:
       glGenRenderbuffersOES(1, &colorRenderbuffer);
       glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
       glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-      [mContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
+      [mOGLContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
       glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES,
                                   GL_RENDERBUFFER_OES, colorRenderbuffer);
    
@@ -190,7 +292,7 @@ public:
    }
    
    
-  void DestroyFramebuffer()
+  void DestroyOGLFramebuffer()
    {
       if (defaultFramebuffer)
          glDeleteFramebuffersOES(1, &defaultFramebuffer);
@@ -199,23 +301,58 @@ public:
          glDeleteRenderbuffersOES(1, &colorRenderbuffer);
       defaultFramebuffer = 0;
    }
-   
 
-   void OnResizeLayer(CAEAGLLayer *inLayer)
+   void CreateImageBuffers()
+   {
+      backingWidth = [mLayer bounds].size.width;
+      backingHeight = [mLayer bounds].size.height;
+
+      mSoftwareSurface->mWidth = backingWidth;
+      mSoftwareSurface->mHeight = backingHeight;
+
+      int size = backingWidth*backingHeight*4;
+
+      for(int b=0;b<2;b++)
+      {
+         mImageData[b] = new unsigned char[size];
+      }
+   }
+   
+   void OnSoftwareResize(CALayer *inLayer)
+   {
+      DestroyImageBuffers();
+      CreateImageBuffers();
+
+      Event evt(etResize);
+      evt.x = backingWidth;
+      evt.y = backingHeight;
+      HandleEvent(evt);
+   }
+
+   void OnOGLResize(CAEAGLLayer *inLayer)
    {   
       // Recreate frame buffers ..
-      [EAGLContext setCurrentContext:mContext];
-      DestroyFramebuffer();
-      CreateFramebuffer();
+      [EAGLContext setCurrentContext:mOGLContext];
+      DestroyOGLFramebuffer();
+      CreateOGLFramebuffer();
 
       mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
-      //printf("OnResizeLayer %dx%d\n", backingWidth, backingHeight);
+      //printf("OnOGLResize %dx%d\n", backingWidth, backingHeight);
       Event evt(etResize);
       evt.x = backingWidth;
       evt.y = backingHeight;
       HandleEvent(evt);
 
+   }
+   
+   void DestroyImageBuffers()
+   {
+      for(int i=0;i<2;i++)
+      {
+         delete [] mImageData[i];
+         mImageData[i] = 0;
+      }
    }
 
    void OnRedraw()
@@ -242,14 +379,32 @@ public:
       HandleEvent(inEvt);
    }
 
-
-
-
-
    void Flip()
    {
-       glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-       [mContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+       // printf("flip %d\n", mRenderBuffer);
+       if (sgHardwareRendering)
+       {
+         glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+         [mOGLContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+       }
+       else
+       {
+          int size = backingWidth*backingHeight*4;
+          CGDataProviderRef dataProvider = CGDataProviderCreateDirect(mImageData[mRenderBuffer], size, &providerCallbacks);
+
+          CGImageRef ref = CGImageCreate( backingWidth, backingHeight,
+                8, 32, backingWidth*4, colorSpace,
+                kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
+                dataProvider, 0, false, kCGRenderingIntentDefault);
+
+          mLayer.contents =  (objc_object*)ref;
+
+          CGDataProviderRelease(dataProvider);
+
+          CGImageRelease(ref);
+
+          mRenderBuffer = 1-mRenderBuffer;
+       }
    }
    void GetMouse()
    {
@@ -259,7 +414,10 @@ public:
    
    Surface *GetPrimarySurface()
    {
-      return mHardwareSurface;
+      if (mHardwareSurface)
+         return mHardwareSurface;
+      mSoftwareSurface->mBuffer = mImageData[ mRenderBuffer ];
+      return mSoftwareSurface;
    }
 
    void SetCursor(nme::Cursor)
@@ -287,8 +445,8 @@ public:
    void *mHandlerData;
 
 
-   EAGLContext *mContext;
-   CAEAGLLayer *mLayer;
+   EAGLContext *mOGLContext;
+   CALayer *mLayer;
    HardwareSurface *mHardwareSurface;
    HardwareContext *mHardwareContext;
 
@@ -344,7 +502,10 @@ public:
 // You must implement this method
 + (Class) layerClass
 {
-    return [CAEAGLLayer class];
+   if (sgHardwareRendering)
+      return [CAEAGLLayer class];
+   else
+      return [super layerClass];
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
@@ -378,15 +539,18 @@ public:
 - (void) myInit
 {
       // Get the layer
-      CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+      if (sgHardwareRendering)
+      {
+         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
-      eaglLayer.opaque = TRUE;
-      eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                      [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
-                                      kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
-                                      nil];
+         eaglLayer.opaque = TRUE;
+         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                         [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+                                         kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                         nil];
+      }
 
-      mStage = new EAGLStage(eaglLayer,true);
+      mStage = new IOSStage(self.layer,true);
 
 		self.contentScaleFactor = mStage->getDPIScale();
 
@@ -681,7 +845,10 @@ public:
 
 - (void) layoutSubviews
 {
-   mStage->OnResizeLayer((CAEAGLLayer*)self.layer);
+   if (sgHardwareRendering)
+      mStage->OnOGLResize((CAEAGLLayer*)self.layer);
+   else
+      mStage->OnSoftwareResize(self.layer);
 }
 
 - (NSInteger) animationFrameInterval
@@ -873,6 +1040,11 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();
    char **argv = 0;// *_NSGetArgv();
+
+   sgHardwareRendering = (inFlags & wfHardware );
+   //printf("Flags %08x %d\n", inFlags, sgHardwareRendering);
+   if (!sgHardwareRendering)
+      gC0IsRed = false;
 
    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
    UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
