@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="::APP_PACKAGE::" default="help">
+<project name="::APP_FILE::" default="help">
 
     <property environment="env"/>
 
@@ -63,7 +63,7 @@
     <path id="Android 2.1-update1.libraryclasspath">
        <pathelement location="${env.ANDROID_SDK}/platforms/android-7/android.jar"/>
     </path>
-    <path id="::APP_PACKAGE::.classpath">
+    <path id="::APP_FILE::.classpath">
         <path refid="Android 2.1-update1.libraryclasspath"/>
         <pathelement location="bin"/>
      </path>
@@ -90,12 +90,12 @@
 
         <javac destdir="bin/classes" source="${java_source}" target="${java_target}">
             <src path="gen"/>
-            <classpath refid="::APP_PACKAGE::.classpath"/>
+            <classpath refid="::APP_FILE::.classpath"/>
          </javac>
 
          <javac destdir="bin/classes" source="${java_source}" target="${java_target}">
             <src path="src"/>
-            <classpath refid="::APP_PACKAGE::.classpath"/>
+            <classpath refid="::APP_FILE::.classpath"/>
          </javac>
 
      </target>

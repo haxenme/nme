@@ -1,4 +1,4 @@
-package ::pkg::;
+package ::APP_PACKAGE::;
 
 import android.os.Bundle;
 

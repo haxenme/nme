@@ -4,7 +4,7 @@
   <app
      file="MyApplication"
      title="My Application"
-     package="com.package.myapp"
+     package="com.company.myapp"
      version="1.0"
      company="nme" 
 	  description="NME Application"

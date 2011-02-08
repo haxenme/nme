@@ -21,15 +21,14 @@ public class GameActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         
         // Pre-load these, so the c++ knows where to find them
-        System.loadLibrary("std");
-        System.loadLibrary("zlib");
-        System.loadLibrary("regexp");
-        System.loadLibrary("nme");
-        org.haxe.HXCPP.run("AndroidMain");
+        ::foreach ndlls::
+           System.loadLibrary("::name::");
+         ::end::
+        org.haxe.HXCPP.run("ApplicationMain");
         
         mView = new MainView(getApplication(),this);
 
-	setContentView(mView);
+        setContentView(mView);
     }
 
     @Override protected void onPause() {
