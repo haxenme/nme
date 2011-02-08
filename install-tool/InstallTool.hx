@@ -31,7 +31,7 @@ class NDLL
          }
       } catch (e:Dynamic) { };
       proc.close();
-      trace("Found " + haxelib + " at " + srcDir );
+      //trace("Found " + haxelib + " at " + srcDir );
       if (srcDir=="")
          throw("Could not find haxelib path  " + haxelib + " - perhaps you need to install it?");
       if (haxelib=="hxcpp")
@@ -191,12 +191,17 @@ class InstallTool
    function makeAndroid()
    {
       var ant:String = mDefines.get("ANT_HOME");
-      if (ant=="")
-         throw("ANT_HOME not defined.");
+      if (ant=="" || ant==null)
+      {
+         //throw("ANT_HOME not defined.");
+         ant = "ant";
+      }
+      else
+         ant += "/bin/ant";
 
       var dest = mBuildDir + "/android/project";
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
-      run(dest, ant + "/bin/ant", [build] );
+      run(dest, ant, [build] );
    }
 
    function run(inPath:String, inCommand:String, inArgs:Array<String>)
