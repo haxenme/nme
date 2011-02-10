@@ -18,6 +18,11 @@
 #include <algorithm>
 #include <ByteArray.h>
 
+#ifdef ANDROID
+namespace nme {
+ByteArray *AndroidGetAssetBytes(const char *);
+}
+#endif
 
 #ifdef min
 #undef min
@@ -526,9 +531,17 @@ DEFINE_PRIM(nme_byte_array_create,1);
 
 value nme_byte_array_read_file(value inFilename)
 {
+printf("nme_byte_array_read_file !!!!!!!\n");
    FILE *file = OpenRead(val_os_string(inFilename));
    if (!file)
+   {
+      #ifdef ANDROID
+      ByteArray *result = AndroidGetAssetBytes(val_string(inFilename));
+      if (result)
+         return ObjectToAbstract(result);
+      #endif
       return alloc_null();
+   }
 
    fseek(file,0,SEEK_END);
    int len = ftell(file);

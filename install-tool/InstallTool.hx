@@ -10,6 +10,32 @@ class Target
    }
 }
 
+class Asset
+{
+   public var name:String;
+   public var dest:String;
+   public var type:String;
+
+   public function new(inName:String, inDest:String, inType:String)
+   {
+      name = inName;
+      dest = inDest;
+      type = inType;
+   }
+
+   public function getSrc()
+   {
+      return name;
+   }
+
+   public function getDest(inBase:String)
+   {
+      return inBase + "/" + dest + "/" + name;
+   }
+}
+
+
+
 class NDLL
 {
    public var name:String;
@@ -60,6 +86,7 @@ class InstallTool
    var mHaxeFlags:Array<String>;
    var mTargets : Array<Target>;
    var mNDLLs : Array<NDLL>;
+   var mAssets : Array<Asset>;
    var NME:String;
 	var mVerbose:Bool;
 	var mDebug:Bool;
@@ -84,6 +111,7 @@ class InstallTool
 		mDebug = inDebug;
       mNDLLs = [];
 		var makefile = inTargets.shift();
+      mAssets = [];
 
       // trace(NME);
 		// trace(inCommand);
@@ -190,6 +218,7 @@ class InstallTool
 
    function makeAndroid()
    {
+
       var ant:String = mDefines.get("ANT_HOME");
       if (ant=="" || ant==null)
       {
@@ -200,9 +229,29 @@ class InstallTool
          ant += "/bin/ant";
 
       var dest = mBuildDir + "/android/project";
+
+      addAssets(dest + "/assets");
+
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
       run(dest, ant, [build] );
    }
+
+   function addAssets(inDest:String)
+   {
+      for(asset in mAssets)
+      {
+         var src = asset.getSrc();
+         var dest = asset.getDest(inDest);
+         var dir = neko.io.Path.directory(dest);
+         if (!neko.FileSystem.exists(dir))
+         {
+            Print("mkdir " + dir);
+            neko.FileSystem.createDirectory(dir);
+         }
+         copyIfNewer(src,dest,mVerbose);
+      }
+   }
+
 
    function run(inPath:String, inCommand:String, inArgs:Array<String>)
    {
@@ -366,6 +415,9 @@ class InstallTool
                 case "window" : 
                    windowSettings(el);
 
+                case "assets" : 
+                   readAssets(el);
+
                 case "target" : 
                    mTargets.push( new Target(substitute(el.att.name),
                                 el.has.runtime ? substitute(el.att.runtime) : "" ) );
@@ -376,6 +428,23 @@ class InstallTool
          }
       }
    }
+
+   function readAssets(inXML:haxe.xml.Fast)
+   {
+      var dest:String = inXML.has.dest ? substitute(inXML.att.dest) : "";
+      var type:String = inXML.has.type ? substitute(inXML.att.type) : "";
+      for(el in inXML.elements)
+      {
+         switch(el.name)
+         {
+            case "asset":
+               var d = el.has.dest ? substitute(el.att.dest) : dest;
+               var t = el.has.type ? substitute(el.att.type) : type;
+               mAssets.push( new Asset( substitute(el.att.name),d,t ) );
+         }
+      }
+   }
+ 
 
    function setDefault(inName:String, inValue:String)
    {

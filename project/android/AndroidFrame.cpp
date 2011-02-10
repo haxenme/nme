@@ -4,8 +4,11 @@
 #include <KeyCodes.h>
 #include <Utils.h>
 #include <jni.h>
+#include <ByteArray.h>
 
 #include <android/log.h>
+
+JNIEnv *gEnv = 0;
 
 
 
@@ -233,6 +236,38 @@ void TerminateMainLoop()
    sCloseActivity = true;
 }
 
+ByteArray *AndroidGetAssetBytes(const char *inResource)
+{
+    jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
+    jmethodID mid = gEnv->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
+    if (mid == 0)
+        return 0;
+
+    jstring str = gEnv->NewStringUTF( inResource );
+    jbyteArray bytes = (jbyteArray)gEnv->CallStaticObjectMethod(cls, mid, str);
+    if (bytes==0)
+       return 0;
+
+    jint len = gEnv->GetArrayLength(bytes);
+    __android_log_print(ANDROID_LOG_INFO,"TEST", "Byte length : %d\n", len);
+    return 0;
+/*
+jint len = gEnv->GetArrayLength(inArray);
+char* data = new char[len];
+gEnv->GetByteArrayRegion (inArray, (jint)0, (jint)len, (jbyte*)data);
+
+// do something with the data
+len = newlen;
+data = newdata;
+
+// create the result
+jbyteArray result = gEnv->NewByteArray(len );
+gEnv->SetByteArrayRegion (result, (jint)0, (jint)len , (jbyte*)data);
+*/
+}
+
+
+
 } // end namespace nme
 
 extern "C"
@@ -246,6 +281,8 @@ extern "C"
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
+   gEnv = env;
+
    int top = 0;
    gc_set_top_of_stack(&top,true);
    __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
@@ -258,6 +295,8 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
+   gEnv = env;
+
    int top = 0;
    gc_set_top_of_stack(&top,true);
    double t0 = nme::GetTimeStamp();
@@ -270,6 +309,8 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
 {
+   gEnv = env;
+
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -279,6 +320,8 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj,
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
 {
+   gEnv = env;
+
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
