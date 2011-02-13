@@ -12,7 +12,8 @@ class Lib
    static var nmeCurrent: nme.display.MovieClip = null;
    static var nmeStage: nme.display.Stage = null;
 
-	static var XXX = 1;
+	public static var initWidth(default,null):Int;
+	public static var initHeight(default,null):Int;
 
    public static var stage(nmeGetStage,null): nme.display.Stage;
    public static var current(nmeGetCurrent,null): nme.display.MovieClip;
@@ -22,6 +23,8 @@ class Lib
                       inFrameRate:Float = 60.0,  inColour:Int = 0xffffff,
                       inFlags:Int = 0x0f, inTitle:String = "NME", inIcon : String="")
    {
+	   initWidth = inWidth;
+	   initHeight = inHeight;
       var create_main_frame = nme.Loader.load("nme_create_main_frame",-1);
       create_main_frame(
         function(inFrameHandle:Dynamic) {
@@ -41,6 +44,8 @@ class Lib
 
    public static function createManagedStage(inWidth:Int, inHeight:Int)
    {
+	   initWidth = inWidth;
+	   initHeight = inHeight;
       nmeStage = new nme.display.ManagedStage(inWidth,inHeight);
       return nmeStage;
    }

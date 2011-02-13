@@ -246,24 +246,15 @@ ByteArray *AndroidGetAssetBytes(const char *inResource)
     jstring str = gEnv->NewStringUTF( inResource );
     jbyteArray bytes = (jbyteArray)gEnv->CallStaticObjectMethod(cls, mid, str);
     if (bytes==0)
+	 {
        return 0;
+	 }
 
     jint len = gEnv->GetArrayLength(bytes);
-    __android_log_print(ANDROID_LOG_INFO,"TEST", "Byte length : %d\n", len);
-    return 0;
-/*
-jint len = gEnv->GetArrayLength(inArray);
-char* data = new char[len];
-gEnv->GetByteArrayRegion (inArray, (jint)0, (jint)len, (jbyte*)data);
-
-// do something with the data
-len = newlen;
-data = newdata;
-
-// create the result
-jbyteArray result = gEnv->NewByteArray(len );
-gEnv->SetByteArrayRegion (result, (jint)0, (jint)len , (jbyte*)data);
-*/
+	 ByteArray *result = new ByteArray();
+	 result->mBytes.resize(len);
+    gEnv->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)&result->mBytes[0]);
+    return result;
 }
 
 

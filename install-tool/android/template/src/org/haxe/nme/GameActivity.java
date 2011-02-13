@@ -39,33 +39,17 @@ public class GameActivity extends Activity {
 
 
     static public byte [] getResource(String inResource) {
-        Log.e("GameActivity","getResource " + inResource);
-
            try {
-                  byte [] result = new byte[0];
-
                   java.io.InputStream inputStream = mAssets.open(inResource,AssetManager.ACCESS_BUFFER);
-                  byte [] buffer = new byte[1024];
-                  while(true)
-                  {
-                     int read = inputStream.read(buffer,0,1024);
-                     if (read<=0)
-                        break;
-                     byte [] total = java.util.Arrays.copyOf(result, result.length + read);
-                     System.arraycopy(buffer, 0, total, result.length, read);
-                     result = total;
-                     if (read<1024)
-                        break;
-                  }
+                  long length = inputStream.available();
+                  byte[] result = new byte[(int) length];
+                  inputStream.read(result);
                   inputStream.close();
-
                   return result;
            } catch (java.io.IOException e) {
                Log.e("GameActivity",e.toString());
            }
 
-               Log.e("GameActivity","No resource");
-        
            return null;
     }
 

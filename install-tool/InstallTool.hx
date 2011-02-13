@@ -127,6 +127,7 @@ class InstallTool
 			setDefault("APP_FILE","MyAplication");
 			setDefault("APP_PACKAGE","com.example.myapp");
 			setDefault("APP_VERSION","1.0");
+			setDefault("APP_ICON","");
 			setDefault("APP_COMPANY","Example Inc.");
 
 			setDefault("BUILD_DIR","bin");
@@ -214,6 +215,11 @@ class InstallTool
 
       for(ndll in mNDLLs)
          ndll.copy("Android/lib", ".so", dest + "/libs/armeabi/lib", mVerbose);
+
+		var icon = mDefines.get("APP_ICON");
+		if (icon!="")
+		   copyIfNewer(icon, dest + "/res/drawable-mdpi/icon.png",mVerbose);
+
    }
 
    function makeAndroid()
@@ -242,12 +248,7 @@ class InstallTool
       {
          var src = asset.getSrc();
          var dest = asset.getDest(inDest);
-         var dir = neko.io.Path.directory(dest);
-         if (!neko.FileSystem.exists(dir))
-         {
-            Print("mkdir " + dir);
-            neko.FileSystem.createDirectory(dir);
-         }
+         mkdir(neko.io.Path.directory(dest));
          copyIfNewer(src,dest,mVerbose);
       }
    }

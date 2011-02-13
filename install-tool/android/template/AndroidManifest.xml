@@ -2,10 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   android:versionCode="1" android:versionName="1.0" package="::APP_PACKAGE::">
 
-  <application android:label="AppLabel" android:debuggable="true">
-    <activity android:name="MainActivity" android:label="haXe App"
+  <application android:label="::APP_TITLE::" android:debuggable="true"
+      >
+    <activity android:name="MainActivity" android:label="::APP_TITLE::"
       android:configChanges="keyboard|keyboardHidden|orientation"
-      android:screenOrientation="landscape">
+		::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::" ::end::
+		::if (APP_ICON!=""):: android:icon="@drawable/icon" ::end::
+		>
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
