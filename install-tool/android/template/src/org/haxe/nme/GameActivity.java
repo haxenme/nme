@@ -52,7 +52,27 @@ public class GameActivity extends Activity {
 
            return null;
     }
+/*
+    static public int getSoundHandle(String inFilename)
+    {
+       int id = -1;
+       ::foreach asset:: ::if (type=="sound")::
+          if (inFilename==::name::)
+             id = R.raw.::id::;
+          ::end::
+       ::end::
 
+       if (id>0)
+       {
+          int index = 
+          mSoundManager.addSound(1,id);
+       }
+    }
+
+    static public void playMusic(String inFilename)
+    {
+    }
+*/
     @Override protected void onPause() {
         super.onPause();
         mView.onPause();
