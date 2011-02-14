@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="sample"
+     title="My Application"
+     package="org.haxe.nme.sample06"
+     version="1.0"
+     company="nme" 
+	  description="NME Sample 6"
+	  main="Sample"
+  />
+
+  <window
+      width="640"
+		height="480"
+		orientation="landscape"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  
+  <classpath name="." />
+  <haxelib name="nme" />
+
+  <assets>
+     <image name="Data/drum_kit.jpg" id="drum_kit.jpg"/>
+     <image name="Data/bang.png"     id="images"/>
+     <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3" id="music.mp3"/>
+     <sound name="Data/drum.ogg"     id="drum.ogg"/>
+     <sound name="Data/bass.wav"     id="bass.wav"/>
+     <sound name="Data/drums.aiff"   id="drums.aiff"/>
+  </assets>
+
+
+  <target name="swf9"/>
+  <target name="android"/>
+  <target name="win32" runtme="neko"/>
+
+  <ndll name="std" haxelib="hxcpp"/>
+  <ndll name="regexp" haxelib="hxcpp"/>
+  <ndll name="zlib" haxelib="hxcpp"/>
+  <ndll name="nme" haxelib="nme"/>
+
+  <certificates>
+     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
+  </certificates>
+
+</project>
