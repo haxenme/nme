@@ -563,6 +563,8 @@ void TextField::OnKey(Event &inEvent)
 
 void TextField::ShowCaret(bool inFromDrag)
 {
+	if (!CaretOn())
+		return;
    ImagePoint pos(0,0);
    bool changed = false;
 
@@ -573,6 +575,9 @@ void TextField::ShowCaret(bool inFromDrag)
       pos.x = EndOfLineX( mLines.size()-1 );
       pos.y = mLines[ mLines.size() -1].mY0;
    }
+
+	//printf("Pos %dx%d\n", pos.x, pos.y);
+
    if (pos.x-scrollH >= mActiveRect.w)
    {
       changed = true;

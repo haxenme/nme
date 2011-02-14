@@ -822,6 +822,17 @@ value nme_stage_is_opengl(value inStage)
 }
 DEFINE_PRIM(nme_stage_is_opengl,1);
  
+namespace nme { void AndoidRequestRender(); }
+value nme_stage_request_render()
+{
+	#ifdef ANDROID
+	AndoidRequestRender();
+	#endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_request_render,0);
+ 
+
 
 // --- ManagedStage ----------------------------------------------------------------------
 

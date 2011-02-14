@@ -13,4 +13,6 @@ public class NME {
      public static native int onTrackball(float x,float y);
      public static native int onKeyChange(int inCode, boolean inIsDown);
      public static native int onRender();
+     public static native int onPoll();
+     public static native double getNextWake();
 }

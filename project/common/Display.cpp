@@ -1279,6 +1279,11 @@ Stage::~Stage()
       mMouseDownObject->DecRef();
 }
 
+void Stage::SetNextWakeDelay(double inNextWake)
+{
+	mNextWake = inNextWake + GetTimeStamp();
+}
+
 void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
 {
    if (inObj==mFocusObject)

@@ -68,6 +68,12 @@ public:
    bool isOpenGL() const { return true; }
    virtual void SetCursor(Cursor inCursor) { }
 
+	void OnPoll()
+   {
+      Event evt(etPoll);
+      HandleEvent(evt);
+   }
+
    void OnRender()
    {
       Event evt(etRedraw);
@@ -257,9 +263,20 @@ ByteArray *AndroidGetAssetBytes(const char *inResource)
     return result;
 }
 
+void AndoidRequestRender()
+{
+	jclass cls = gEnv->FindClass("org/haxe/nme/MainView");
+   jmethodID mid = gEnv->GetStaticMethodID(cls, "renderNow", "()V");
+   if (mid == 0)
+       return;
+    gEnv->CallStaticObjectMethod(cls, mid );
+}
+
 
 
 } // end namespace nme
+
+
 
 extern "C"
 {
@@ -290,7 +307,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
 
    int top = 0;
    gc_set_top_of_stack(&top,true);
-   double t0 = nme::GetTimeStamp();
+   //double t0 = nme::GetTimeStamp();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onRender: %p", nme::sStage );
    if (nme::sStage)
       nme::sStage->OnRender();
@@ -322,6 +339,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
 {
+   gEnv = env;
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -329,6 +347,26 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
+{
+   gEnv = env;
+   int top = 0;
+   if (nme::sStage)
+      nme::sStage->OnPoll();
+   return nme::GetResult();
+}
+
+JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
+{
+   gEnv = env;
+   int top = 0;
+   if (nme::sStage)
+	{
+      double delta = nme::sStage->GetNextWake()-nme::GetTimeStamp();
+      return delta;
+	}
+   return 3600*100000;
+}
 
 
 

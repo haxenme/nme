@@ -148,6 +148,7 @@ class InstallTool
 			for(key in mDefines.keys())
 				Reflect.setField(mContext,key, mDefines.get(key) );
 			Reflect.setField(mContext,"ndlls", mNDLLs );
+			Reflect.setField(mContext,"assets", mAssets );
 			//trace(mDefines);
 
 			for(target in mTargets)
@@ -174,7 +175,10 @@ class InstallTool
                run("", "haxe", [hxml]);
                switch(target)
                {
-                  case "android": makeAndroid();
+                  case "android":
+						   makeAndroid();
+						   if (inCommand=="run")
+							  runAndroid();
                }
 				}
 			}
@@ -224,7 +228,6 @@ class InstallTool
 
    function makeAndroid()
    {
-
       var ant:String = mDefines.get("ANT_HOME");
       if (ant=="" || ant==null)
       {
@@ -241,6 +244,19 @@ class InstallTool
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
       run(dest, ant, [build] );
    }
+
+   function runAndroid()
+	{
+      var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
+      var apk = mBuildDir + "/android/project/bin/" + mDefines.get("APP_FILE")+ "-" + build+".apk";
+		var adb = mDefines.get("ANDROID_SDK") + "/tools/adb";
+		run("", adb, ["install", "-r", apk] );
+
+      var pak = mDefines.get("APP_PACKAGE");
+		run("", adb, ["shell", "am start -a android.intent.action.MAIN -n " + pak + "/" +
+		    pak +".MainActivity" ]);
+		run("", adb, ["logcat", "*"] );
+	}
 
    function addAssets(inDest:String)
    {
@@ -267,6 +283,7 @@ class InstallTool
 
       Print(inCommand + " " + inArgs.join(" "));
 		var result = neko.Sys.command(inCommand, inArgs);
+		trace("----------- RESULT: " + result);
 
       if (old!="")
          neko.Sys.setCwd(old);

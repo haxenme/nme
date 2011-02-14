@@ -263,12 +263,11 @@ double  GetTimeStamp()
 
    return (double)clock() / ( (double)CLOCKS_PER_SEC);
 #else
-   struct timeval tv;
-   if( gettimeofday(&tv,NULL) )
-      return 0;
-   double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
-   if (t0==0) t0 = t;
-   return t-t0;
+	 struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    double t =  ( ts.tv_sec + ((double)ts.tv_nsec)*1e-9  );
+    if (t0==0) t0 = t;
+    return t-t0;
 #endif
 }
 

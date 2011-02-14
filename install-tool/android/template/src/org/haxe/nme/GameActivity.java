@@ -56,7 +56,7 @@ public class GameActivity extends Activity {
     static public int getSoundHandle(String inFilename)
     {
        int id = -1;
-       ::foreach asset:: ::if (type=="sound")::
+       ::foreach assets:: ::if (type=="sound")::
           if (inFilename==::name::)
              id = R.raw.::id::;
           ::end::

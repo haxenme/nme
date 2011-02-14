@@ -30,6 +30,8 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
+import java.util.Date;
+
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
  * OpenGL ES 2.0 rendering into a GL Surface. Note the following important
@@ -50,13 +52,17 @@ import javax.microedition.khronos.opengles.GL10;
  */
 class MainView extends GLSurfaceView {
 
-    Activity mActivity;
+   Activity mActivity;
+	static MainView mRefreshView;
+
     public MainView(Context context,Activity inActivity) {
         super(context);
         mActivity = inActivity;
+		  mRefreshView = this;
         setFocusable(true);
         setFocusableInTouchMode(true);
         setRenderer(new Renderer(this));
+		  setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
    static final int etTouchBegin = 15;
@@ -65,6 +71,9 @@ class MainView extends GLSurfaceView {
    static final int etTouchTap   = 18;
 
    static final int resTerminate = -1;
+	java.util.Timer mTimer = new java.util.Timer();
+	int mTimerID = 0;
+
 
    public void HandleResult(int inCode) {
        if (inCode==resTerminate)
@@ -73,7 +82,41 @@ class MainView extends GLSurfaceView {
           mActivity.finish();
           return;
        }
+		 double wake = NME.getNextWake();
+		 final MainView me = this;
+		 if (wake<=0)
+	         queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+		 else
+		 {
+		    final int tid = ++mTimerID;
+			 Date end = new Date();
+			 end.setTime( end.getTime() + (int)(wake * 1000) );
+			 mTimer.schedule( new java.util.TimerTask(){ public void run()
+			    {
+				    if (tid==me.mTimerID)
+				       me.queuePoll();
+				 } }, end );
+		 }
+		    
    }
+
+	void queuePoll()
+	{
+		final MainView me = this;
+	   queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+	}
+
+	void onPoll()
+	{
+	   HandleResult( NME.onPoll() );
+	}
+
+   // Called diectly by NME...
+	static public void renderNow()
+	{
+     //Log.v("VIEW","renderNow!!!");
+	  mRefreshView.requestRender();
+	}
 
    @Override
    public boolean onTouchEvent(final MotionEvent ev) {

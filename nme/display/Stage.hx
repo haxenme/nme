@@ -484,7 +484,11 @@ class Stage extends nme.display.DisplayObjectContainer
          if (now>=nmeLastRender + nmeFramePeriod)
          {
             nmeLastRender = now;
+            #if android
+				nme_stage_request_render();
+				#else
             nmeRender(true);
+				#end
          }
       }
    }
@@ -554,7 +558,9 @@ class Stage extends nme.display.DisplayObjectContainer
 
          case 8: // etResize
             nmeOnResize(inEvent.x, inEvent.y);
+				#if !android
             nmeRender(false);
+				#end
 
          case 9: // etPoll
             nmePollTimers();
@@ -628,4 +634,5 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_get_display_state = nme.Loader.load("nme_stage_get_display_state",1);
    static var nme_stage_set_display_state = nme.Loader.load("nme_stage_set_display_state",2);
    static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
+   static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
 }

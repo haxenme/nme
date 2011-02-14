@@ -333,7 +333,7 @@ public:
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void EnablePopupKeyboard(bool inEnable) { }
    double GetNextWake() { return mNextWake; }
-   virtual void SetNextWakeDelay(double inNextWake) { mNextWake = inNextWake + GetTimeStamp(); }
+   virtual void SetNextWakeDelay(double inNextWake);
 
    virtual bool getMultitouchSupported() { return false; }
    virtual void setMultitouchActive(bool inActive) {  }
