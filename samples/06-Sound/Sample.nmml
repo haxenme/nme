@@ -26,12 +26,12 @@
   <haxelib name="nme" />
 
   <assets>
-     <image name="Data/drum_kit.jpg" id="drum_kit.jpg"/>
-     <image name="Data/bang.png"     id="images"/>
-     <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3" id="music.mp3"/>
-     <sound name="Data/drum.ogg"     id="drum.ogg"/>
-     <sound name="Data/bass.wav"     id="bass.wav"/>
-     <sound name="Data/drums.aiff"   id="drums.aiff"/>
+     <asset name="Data/drum_kit.jpg" />
+     <asset name="Data/bang.png"     />
+     <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3"/>
+     <sound name="Data/drum.ogg"     />
+     <sound name="Data/bass.wav"     />
+     <sound name="Data/drums.aiff"   />
   </assets>
 
 

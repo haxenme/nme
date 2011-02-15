@@ -15,12 +15,42 @@ class Asset
    public var name:String;
    public var dest:String;
    public var type:String;
+   public var id:String;
+   public var resourceIndex:Int;
+   public var flatName:String;
+   public var resourceName:String;
 
-   public function new(inName:String, inDest:String, inType:String)
+   static var usedRes = new Hash<Bool>();
+
+
+   public function new(inName:String, inDest:String, inType:String,inID:String)
    {
       name = inName;
       dest = inDest;
       type = inType;
+      id = inID=="" ? name : inID;
+      var chars = id.toLowerCase();
+      flatName ="";
+      for(i in 0...chars.length)
+      {
+         var code = chars.charCodeAt(i);
+         if ( (i>0 && code >= "0".charCodeAt(0) && code<="9".charCodeAt(0) ) ||
+              (code >= "a".charCodeAt(0) && code<="z".charCodeAt(0) ) ||
+                (code=="_".charCodeAt(0)) )
+             flatName += chars.charAt(i);
+         else
+             flatName += "_";
+      }
+      if (flatName=="")
+         flatName="_";
+      while( usedRes.exists(flatName) )
+         flatName += "_";
+      usedRes.set(flatName,true);
+   }
+
+   function getExtension()
+   {
+      return "." + neko.io.Path.extension(name);
    }
 
    public function getSrc()
@@ -28,9 +58,20 @@ class Asset
       return name;
    }
 
-   public function getDest(inBase:String)
+   public function getDest(inBase:String,inTarget:String)
    {
-      return inBase + "/" + dest + "/" + name;
+      if (inTarget=="android")
+      {
+         switch(type)
+         {
+            case "sound":
+              return inBase + "/" + dest + "/res/raw/" + flatName + getExtension();
+            default:
+              return inBase + "/" + dest + "/assets/" + id;
+         }
+      }
+
+      return inBase + "/" + dest + "/data/" + id;
    }
 }
 
@@ -239,7 +280,7 @@ class InstallTool
 
       var dest = mBuildDir + "/android/project";
 
-      addAssets(dest + "/assets");
+      addAssets(dest,"android");
 
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
       run(dest, ant, [build] );
@@ -250,6 +291,14 @@ class InstallTool
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
       var apk = mBuildDir + "/android/project/bin/" + mDefines.get("APP_FILE")+ "-" + build+".apk";
 		var adb = mDefines.get("ANDROID_SDK") + "/tools/adb";
+      if (mDefines.exists("windows_host"))
+         adb += ".exe";
+      if (!neko.FileSystem.exists(adb) )
+      {
+		   adb = mDefines.get("ANDROID_SDK") + "/platform-tools/adb";
+         if (mDefines.exists("windows_host"))
+            adb += ".exe";
+      }
 		run("", adb, ["install", "-r", apk] );
 
       var pak = mDefines.get("APP_PACKAGE");
@@ -258,12 +307,12 @@ class InstallTool
 		run("", adb, ["logcat", "*"] );
 	}
 
-   function addAssets(inDest:String)
+   function addAssets(inDest:String,inTarget:String)
    {
       for(asset in mAssets)
       {
          var src = asset.getSrc();
-         var dest = asset.getDest(inDest);
+         var dest = asset.getDest(inDest,inTarget);
          mkdir(neko.io.Path.directory(dest));
          copyIfNewer(src,dest,mVerbose);
       }
@@ -283,7 +332,8 @@ class InstallTool
 
       Print(inCommand + " " + inArgs.join(" "));
 		var result = neko.Sys.command(inCommand, inArgs);
-		trace("----------- RESULT: " + result);
+		if (result==0 && mVerbose)
+         neko.Lib.println("Ok.");
 
       if (old!="")
          neko.Sys.setCwd(old);
@@ -453,12 +503,20 @@ class InstallTool
       var type:String = inXML.has.type ? substitute(inXML.att.type) : "";
       for(el in inXML.elements)
       {
+         var d = el.has.dest ? substitute(el.att.dest) : dest;
+         var id= el.has.id ? substitute(el.att.id) : "";
          switch(el.name)
          {
             case "asset":
-               var d = el.has.dest ? substitute(el.att.dest) : dest;
                var t = el.has.type ? substitute(el.att.type) : type;
-               mAssets.push( new Asset( substitute(el.att.name),d,t ) );
+               mAssets.push( new Asset( substitute(el.att.name),d,t,id ) );
+            case "sound":
+               mAssets.push( new Asset( substitute(el.att.name),d,"sound",id ) );
+            case "music":
+               mAssets.push( new Asset( substitute(el.att.name),d,"music",id ) );
+            case "image":
+               mAssets.push( new Asset( substitute(el.att.name),d,"image",id ) );
+
          }
       }
    }
