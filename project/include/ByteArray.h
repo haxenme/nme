@@ -12,6 +12,10 @@ struct ByteArray : public Object
 	QuickVec<unsigned char> mBytes;
 };
 
+#ifdef ANDROID
+ByteArray *AndroidGetAssetBytes(const char *);
+#endif
+
 }
 
 #endif

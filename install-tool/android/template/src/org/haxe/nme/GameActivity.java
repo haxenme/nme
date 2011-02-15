@@ -9,18 +9,22 @@ import android.view.Window;
 import android.util.Log;
 import android.content.res.AssetManager;
 import android.content.res.AssetFileDescriptor;
+import android.content.Context;
+import android.media.SoundPool;
 
 public class GameActivity extends Activity {
 
     MainView mView;
     static AssetManager mAssets;
+    static SoundPool mSoundPool;
+	 static Context mContext;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+		  mContext = this;
         mAssets = getAssets();
+		  mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
        //getResources().getAssets();
-
-       //java.io.File file =  android.os.Environment.getDataDirectory();
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
@@ -39,6 +43,8 @@ public class GameActivity extends Activity {
 
 
     static public byte [] getResource(String inResource) {
+
+           //Log.e("GameActivity","Get resource------------------>" + inResource);
            try {
                   java.io.InputStream inputStream = mAssets.open(inResource,AssetManager.ACCESS_BUFFER);
                   long length = inputStream.available();
@@ -56,20 +62,27 @@ public class GameActivity extends Activity {
     {
        int id = -1;
        ::foreach assets:: ::if (type=="sound")::
-          if (inFilename=="::id::")
+          if (inFilename.equals("::id::"))
              id = ::APP_PACKAGE::.R.raw.::flatName::;
           ::end::
        ::end::
-/*
+
+       Log.e("GameActivity","Get sound handle ------------------>" + inFilename + " = " + id);
        if (id>0)
        {
-          int index = 
-          mSoundManager.addSound(1,id);
+          int index = mSoundPool.load(mContext,id,1);
+          Log.e("GameActivity","Loaded index" + index);
+			 return index;
        }
 
- */
        return -1;
     }
+
+    static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
+	 {
+       Log.e("GameActivity","PlaySound ------------------>" + inSoundID);
+	    return mSoundPool.play(inSoundID,(float)inVolLeft,(float)inVolRight, 1, inLoop, 1.0f);
+	 }
 
     static public void playMusic(String inFilename)
     {

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <Surface.h>
+#include <ByteArray.h>
 
 
 extern "C" {
@@ -310,7 +311,20 @@ Surface *Surface::Load(const OSChar *inFilename)
 {
    FILE *file = OpenRead(inFilename);
    if (!file)
+	{
+		#ifdef ANDROID
+		ByteArray *bytes = AndroidGetAssetBytes(inFilename);
+      if (bytes)
+		{
+			bytes->IncRef();
+			Surface *result = LoadFromBytes(&bytes->mBytes[0], bytes->mBytes.size());
+			bytes->DecRef();
+			return result;
+		}
+
+		#endif
       return 0;
+	}
 
    Surface *result = TryJPEG(file,0,0);
    if (!result)

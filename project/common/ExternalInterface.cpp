@@ -18,11 +18,6 @@
 #include <algorithm>
 #include <ByteArray.h>
 
-#ifdef ANDROID
-namespace nme {
-ByteArray *AndroidGetAssetBytes(const char *);
-}
-#endif
 
 #ifdef min
 #undef min
