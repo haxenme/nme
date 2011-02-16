@@ -31,7 +31,7 @@
      <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3"/>
      <sound name="Data/drum.ogg"     />
      <sound name="Data/bass.wav"     />
-     <sound name="Data/drums.aiff"   />
+     <sound name="Data/drums.ogg"   />
   </assets>
 
 

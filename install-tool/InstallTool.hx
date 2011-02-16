@@ -66,6 +66,8 @@ class Asset
          {
             case "sound":
               return inBase + "/" + dest + "/res/raw/" + flatName + getExtension();
+            case "music":
+              return inBase + "/" + dest + "/res/raw/" + flatName + getExtension();
             default:
               return inBase + "/" + dest + "/assets/" + id;
          }

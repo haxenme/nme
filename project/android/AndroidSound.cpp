@@ -2,6 +2,9 @@
 #include <Display.h>
 #include <jni.h>
 
+#include <android/log.h>
+
+
 extern JNIEnv *gEnv;
 
 namespace nme
@@ -10,13 +13,14 @@ namespace nme
 class AndroidSoundChannel : public SoundChannel
 {
 public:
-   AndroidSoundChannel(int inHandle,double startTime, int loops, const SoundTransform &inTransform)
+   AndroidSoundChannel(Object *inSound, int inHandle,
+							  double startTime, int loops, const SoundTransform &inTransform)
 	{
 		mStreamID = -1;
+		mSound = inSound;
+		inSound->IncRef();
 		if (inHandle>=0)
 		{
-		   if (loops==0) loops = 1;
-
 		   jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
          jmethodID mid = gEnv->GetStaticMethodID(cls, "playSound", "(IDDI)I");
          if (mid > 0)
@@ -24,6 +28,11 @@ public:
 			      mStreamID = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume, inTransform.volume, loops );
 		   }
 		}
+    }
+
+   ~AndroidSoundChannel()
+   {
+      mSound->DecRef();
 	}
 
    bool isComplete()
@@ -48,6 +57,7 @@ public:
 	{
 	}
 
+	Object *mSound;
 	int mStreamID;
 };
 
@@ -57,6 +67,7 @@ class AndroidSound : public Sound
 public:
 	AndroidSound(const std::string &inSound, bool inForceMusic)
 	{
+		IncRef();
 		mID = -1;
 		jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
       jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
@@ -75,7 +86,7 @@ public:
    void close()  { }
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
 	{
-		return new AndroidSoundChannel(mID,startTime,loops,inTransform);
+		return new AndroidSoundChannel(this,mID,startTime,loops,inTransform);
 	}
 
 	int mID;
