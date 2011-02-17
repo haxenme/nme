@@ -4,6 +4,13 @@
 
 #include <android/log.h>
 
+#undef LOGV
+#undef LOGE
+
+//#define LOGV(msg,args...)
+#define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
+
+#define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
 
 extern JNIEnv *gEnv;
 
@@ -64,18 +71,51 @@ public:
 
 class AndroidSound : public Sound
 {
+   enum SoundMode
+   {
+      MODE_UNKNOWN,
+      MODE_SOUND_ID,
+      MODE_MUSIC_RES_ID,
+      MODE_MUSIC_NAME,
+   };
+
 public:
 	AndroidSound(const std::string &inSound, bool inForceMusic)
 	{
 		IncRef();
+
+      mMode = MODE_UNKNOWN;
 		mID = -1;
 		jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
-      if (mid > 0)
-		{
-			jstring str = gEnv->NewStringUTF( inSound.c_str() );
-			mID = gEnv->CallStaticIntMethod(cls, mid, str);
-		}
+		jstring str = gEnv->NewStringUTF( inSound.c_str() );
+
+      if (!inForceMusic)
+      {
+         jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
+         if (mid > 0)
+		   {
+			   mID = gEnv->CallStaticIntMethod(cls, mid, str);
+            if (mID>=0)
+               mMode = MODE_SOUND_ID;
+		   }
+      }
+
+      if (mID<0)
+      {
+         jmethodID gmh = gEnv->GetStaticMethodID(cls, "getMusicHandle", "(Ljava/lang/String;)I");
+         if (gmh>0)
+         {
+			   mID = gEnv->CallStaticIntMethod(cls, gmh, str);
+            if (mID>0)
+               mMode = MODE_MUSIC_RES_ID;
+         }
+      }
+
+      if (mID<0)
+      {
+         mMusicName = inSound;
+         mMode = MODE_MUSIC_NAME;
+      }
 	}
 
    int getBytesLoaded() { return 0; }
@@ -90,6 +130,8 @@ public:
 	}
 
 	int mID;
+   std::string mMusicName;
+   SoundMode mMode;
 };
 
 

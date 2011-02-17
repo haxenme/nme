@@ -23,6 +23,7 @@ public class GameActivity extends Activity {
         super.onCreate(state);
 		  mContext = this;
         mAssets = getAssets();
+        setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);  
 		  mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
        //getResources().getAssets();
 
@@ -61,20 +62,15 @@ public class GameActivity extends Activity {
     static public int getSoundHandle(String inFilename)
     {
        int id = -1;
-		 boolean is_music=false;
 
        ::foreach assets::
 		 ::if (type=="sound")::
           if (inFilename.equals("::id::"))
              id = ::APP_PACKAGE::.R.raw.::flatName::;
           ::end::
-		 ::if (type=="music")::
-          if (inFilename.equals("::id::"))
-             { id = ::APP_PACKAGE::.R.raw.::flatName::; is_music = true; }
-          ::end::
        ::end::
 
-       Log.e("GameActivity","Get sound handle ------+ inFilename + " = " + id);
+       Log.e("GameActivity","Get sound handle ------" + inFilename + " = " + id);
        if (id>0)
        {
           int index = mSoundPool.load(mContext,id,1);
@@ -85,11 +81,36 @@ public class GameActivity extends Activity {
        return -1;
     }
 
+    static public int getMusicHandle(String inFilename)
+    {
+       int id = -1;
+       Log.e("GameActivity","Get music handle ------" + inFilename);
+
+       ::foreach assets::
+		 ::if (type=="music")::
+          if (inFilename.equals("::id::"))
+             id = ::APP_PACKAGE::.R.raw.::flatName::;
+          ::end::
+       ::end::
+
+       Log.e("GameActivity","Got music handle ------" + id);
+
+       return id;
+    }
+
+
     static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
 	 {
-       Log.e("GameActivity","PlaySound -----+ inSoundID);
+       Log.e("GameActivity","PlaySound -----" + inSoundID);
 	    return mSoundPool.play(inSoundID,(float)inVolLeft,(float)inVolRight, 1, inLoop, 1.0f);
 	 }
+
+    static public Object playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
+	 {
+       Log.e("GameActivity","playMusic -----" + inResourceID);
+	    return null;
+	 }
+
 
     static public void playMusic(String inFilename)
     {

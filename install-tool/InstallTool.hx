@@ -194,6 +194,20 @@ class InstallTool
 			Reflect.setField(mContext,"assets", mAssets );
 			//trace(mDefines);
 
+		if (inCommand=="uninstall")
+      {
+			for(target in inTargets)
+			{
+            switch(target)
+            {
+               case "android":
+						uninstallAndroid();
+            }
+         }
+      }
+      else
+      {
+
 			for(target in mTargets)
 			{
 				if (inTargets.length>0 &&
@@ -204,28 +218,29 @@ class InstallTool
 
 
 
-		if (inCommand=="run" || inCommand=="make")
-		{
-			if (inCommand=="run" && inTargets.length!=1)
-			{
-			   neko.Lib.println("'run' command should have exactly 1 target");
-			}
-			else
-			{
-				for(target in inTargets)
-				{
-					var hxml = "bin/" + target + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
-               run("", "haxe", [hxml]);
-               switch(target)
+         if (inCommand=="run" || inCommand=="make")
+         {
+            if (inCommand=="run" && inTargets.length!=1)
+            {
+               neko.Lib.println("'run' command should have exactly 1 target");
+            }
+            else
+            {
+               for(target in inTargets)
                {
-                  case "android":
-						   makeAndroid();
-						   if (inCommand=="run")
-							  runAndroid();
+                  var hxml = "bin/" + target + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
+                  run("", "haxe", [hxml]);
+                  switch(target)
+                  {
+                     case "android":
+                        makeAndroid();
+                        if (inCommand=="run")
+                          runAndroid();
+                  }
                }
-				}
-			}
-		}
+            }
+         }
+      }
   }
 
   function Print(inString)
@@ -288,11 +303,9 @@ class InstallTool
       run(dest, ant, [build] );
    }
 
-   function runAndroid()
-	{
-      var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
-      var apk = mBuildDir + "/android/project/bin/" + mDefines.get("APP_FILE")+ "-" + build+".apk";
-		var adb = mDefines.get("ANDROID_SDK") + "/tools/adb";
+   function getAdb()
+   {
+   	var adb = mDefines.get("ANDROID_SDK") + "/tools/adb";
       if (mDefines.exists("windows_host"))
          adb += ".exe";
       if (!neko.FileSystem.exists(adb) )
@@ -301,6 +314,15 @@ class InstallTool
          if (mDefines.exists("windows_host"))
             adb += ".exe";
       }
+      return adb;
+   }
+
+   function runAndroid()
+	{
+      var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
+      var apk = mBuildDir + "/android/project/bin/" + mDefines.get("APP_FILE")+ "-" + build+".apk";
+		var adb = getAdb();
+
 		run("", adb, ["install", "-r", apk] );
 
       var pak = mDefines.get("APP_PACKAGE");
@@ -308,6 +330,14 @@ class InstallTool
 		    pak +".MainActivity" ]);
 		run("", adb, ["logcat", "*"] );
 	}
+
+   function uninstallAndroid()
+   {
+		var adb = getAdb();
+      var pak = mDefines.get("APP_PACKAGE");
+
+		run("", adb, ["uninstall", pak] );
+   }
 
    function addAssets(inDest:String,inTarget:String)
    {
@@ -723,7 +753,7 @@ class InstallTool
       include_path.push(NME + "/install-tool");
 
 
-      var valid_commands = ["copy-if-newer", "run", "make","create"];
+      var valid_commands = ["copy-if-newer", "run", "make","create", "uninstall"];
       if (!Lambda.exists(valid_commands,function(c) return command==c))
       {
          if (command!="")
