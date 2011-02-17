@@ -43,6 +43,7 @@ class Sound extends nme.events.EventDispatcher
       else
       {
          nmeLoading = true;
+      nmeLoading = false;
          nmeCheckLoading();
       }
    }

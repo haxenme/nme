@@ -11,6 +11,7 @@ import android.content.res.AssetManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.Context;
 import android.media.SoundPool;
+import android.media.MediaPlayer;
 
 public class GameActivity extends Activity {
 
@@ -18,6 +19,7 @@ public class GameActivity extends Activity {
     static AssetManager mAssets;
     static SoundPool mSoundPool;
 	 static Context mContext;
+	 static MediaPlayer mMediaPlayer = null;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -70,13 +72,15 @@ public class GameActivity extends Activity {
           ::end::
        ::end::
 
-       Log.e("GameActivity","Get sound handle ------" + inFilename + " = " + id);
+       Log.v("GameActivity","Get sound handle ------" + inFilename + " = " + id);
        if (id>0)
        {
           int index = mSoundPool.load(mContext,id,1);
-          Log.e("GameActivity","Loaded index" + index);
+          Log.v("GameActivity","Loaded index" + index);
 			 return index;
        }
+       else
+          Log.v("GameActivity","Resource not found" + (-id) );
 
        return -1;
     }
@@ -84,7 +88,7 @@ public class GameActivity extends Activity {
     static public int getMusicHandle(String inFilename)
     {
        int id = -1;
-       Log.e("GameActivity","Get music handle ------" + inFilename);
+       Log.v("GameActivity","Get music handle ------" + inFilename);
 
        ::foreach assets::
 		 ::if (type=="music")::
@@ -93,7 +97,7 @@ public class GameActivity extends Activity {
           ::end::
        ::end::
 
-       Log.e("GameActivity","Got music handle ------" + id);
+       Log.v("GameActivity","Got music handle ------" + id);
 
        return id;
     }
@@ -101,14 +105,33 @@ public class GameActivity extends Activity {
 
     static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
 	 {
-       Log.e("GameActivity","PlaySound -----" + inSoundID);
+       Log.v("GameActivity","PlaySound -----" + inSoundID);
 	    return mSoundPool.play(inSoundID,(float)inVolLeft,(float)inVolRight, 1, inLoop, 1.0f);
 	 }
 
-    static public Object playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
+    static public int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
 	 {
-       Log.e("GameActivity","playMusic -----" + inResourceID);
-	    return null;
+       Log.v("GameActivity","playMusic -----" + inResourceID);
+       if (mMediaPlayer!=null)
+       {
+          Log.v("GameActivity","stop MediaPlayer");
+          mMediaPlayer.stop();
+          mMediaPlayer = null;
+       }
+    
+       mMediaPlayer = MediaPlayer.create(mContext, inResourceID);
+       if (mMediaPlayer==null)
+           return -1;
+
+       mMediaPlayer.setVolume((float)inVolLeft,(float)inVolRight);
+       if (inLoop<0)
+          mMediaPlayer.setLooping(true);
+       else if (inLoop>0)
+       {
+       }
+       mMediaPlayer.start();
+
+	    return 0;
 	 }
 
 
@@ -119,11 +142,15 @@ public class GameActivity extends Activity {
     @Override protected void onPause() {
         super.onPause();
         mView.onPause();
+        if (mMediaPlayer!=null)
+           mMediaPlayer.pause();
     }
 
     @Override protected void onResume() {
         super.onResume();
         mView.onResume();
+        if (mMediaPlayer!=null)
+           mMediaPlayer.start();
     }
 }
 

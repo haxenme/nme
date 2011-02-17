@@ -69,6 +69,65 @@ public:
 };
 
 
+
+class AndroidMusicChannel : public SoundChannel
+{
+public:
+   AndroidMusicChannel(Object *inSound, int inHandle,
+							  double startTime, int loops, const SoundTransform &inTransform)
+	{
+		mState = 0;
+		mSound = inSound;
+		inSound->IncRef();
+
+		if (inHandle>=0)
+		{
+		   jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
+         jmethodID mid = gEnv->GetStaticMethodID(cls, "playMusic", "(IDDI)I");
+         if (mid > 0)
+		   {
+			   mState = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume, inTransform.volume, loops );
+		   }
+		}
+    }
+
+   ~AndroidMusicChannel()
+   {
+      mSound->DecRef();
+	}
+
+   bool isComplete()
+	{
+		return true;
+	}
+   double getLeft()
+	{
+		return 0.5;
+	}
+   double getRight()
+	{
+		return 0.5;
+	}
+   double getPosition()
+	{
+	}
+   void stop()
+	{
+	}
+   void setTransform(const SoundTransform &inTransform)
+	{
+	}
+
+	Object *mSound;
+   int mState;
+};
+
+
+
+
+
+
+
 class AndroidSound : public Sound
 {
    enum SoundMode
@@ -124,8 +183,14 @@ public:
    std::string getError() { return ok() ? "" : "Error"; }
    double getLength() { return 0; }
    void close()  { }
+
+
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
 	{
+      if (mMode==MODE_MUSIC_RES_ID)
+		   return new AndroidMusicChannel(this,mID,startTime,loops,inTransform);
+
+
 		return new AndroidSoundChannel(this,mID,startTime,loops,inTransform);
 	}
 
