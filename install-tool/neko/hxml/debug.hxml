@@ -1,0 +1,5 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp bin/neko/haxe
+-neko ::NEKO_FILE::
+-debug
+

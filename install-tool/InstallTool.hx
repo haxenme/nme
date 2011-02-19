@@ -1,12 +1,12 @@
 class Target
 {
    public var name:String;
-   public var runtime:String;
+   public var os:String;
 
-   public function new(inName:String, inRuntime:String)
+   public function new(inName:String, inOS:String)
    {
       name = inName;
-      runtime = inRuntime;
+		os = inOS;
    }
 }
 
@@ -73,7 +73,7 @@ class Asset
          }
       }
 
-      return inBase + "/" + dest + "/data/" + id;
+      return inBase + "/" + dest + "/" + id;
    }
 }
 
@@ -84,34 +84,52 @@ class NDLL
    public var name:String;
    public var haxelib:String;
    public var srcDir:String;
+   public var needsNekoApi:Bool;
 
-   public function new(inName:String, inHaxelib:String)
+   public function new(inName:String, inHaxelib:String,inNeedsNekoApi:Bool)
    {
       name = inName;
       haxelib = inHaxelib;
       srcDir = "";
-      var proc = new neko.io.Process("haxelib", ["path", haxelib ]);
-      try{
-			while(true)
-			{
-            var line = proc.stdout.readLine();
-            if (line.substr(0,1)!="-")
-               srcDir = line;
-         }
-      } catch (e:Dynamic) { };
-      proc.close();
-      //trace("Found " + haxelib + " at " + srcDir );
-      if (srcDir=="")
-         throw("Could not find haxelib path  " + haxelib + " - perhaps you need to install it?");
-      if (haxelib=="hxcpp")
-         srcDir += "/bin/";
-      else
-         srcDir += "/ndll/";
+		needsNekoApi = inNeedsNekoApi;
+
+		if (haxelib!="")
+		   srcDir = getHaxelib(haxelib);
    }
 
-   public function copy(inPrefix:String, inSuffix:String, inDir:String, inVerbose:Bool)
+	static public function getHaxelib(inLibrary:String)
+	{
+		var proc = new neko.io.Process("haxelib", ["path", inLibrary ]);
+		var result = "";
+		try{
+			while(true)
+			{
+				var line = proc.stdout.readLine();
+				if (line.substr(0,1)!="-")
+					result = line;
+		}
+		} catch (e:Dynamic) { };
+		proc.close();
+      //trace("Found " + haxelib + " at " + srcDir );
+      if (result=="")
+         throw("Could not find haxelib path  " + inLibrary + " - perhaps you need to install it?");
+		return result;
+	}
+
+   public function copy(inPrefix:String, inSuffix:String, inDir:String, inCPP:Bool, inVerbose:Bool)
    {
-      var src = srcDir + inPrefix + name + inSuffix;
+	   var src=srcDir;
+		if (src=="")
+		{
+         if (inCPP)
+			   src = getHaxelib("hxcpp") + "/bin/" +inPrefix;
+         else
+            src = neko.Sys.getEnv("NEKO_INSTPATH") + "/";
+		}
+		else
+		  src += inPrefix;
+
+      src = src + name + inSuffix;
       if (!neko.FileSystem.exists(src))
       {
          throw ("Could not find ndll " + src + " required by project" );
@@ -128,6 +146,7 @@ class InstallTool
    var mIncludePath:Array<String>;
    var mHaxeFlags:Array<String>;
    var mTargets : Array<Target>;
+	var mCommand:String;
    var mNDLLs : Array<NDLL>;
    var mAssets : Array<Asset>;
    var NME:String;
@@ -150,6 +169,7 @@ class InstallTool
       mIncludePath = inIncludePath;
       mTargets = [];
       mHaxeFlags = [];
+		mCommand = inCommand;
 		mVerbose = inVerbose;
 		mDebug = inDebug;
       mNDLLs = [];
@@ -236,6 +256,10 @@ class InstallTool
                         makeAndroid();
                         if (inCommand=="run")
                           runAndroid();
+                     case "neko":
+                        makeNeko();
+                        if (inCommand=="run")
+                          runNeko();
                   }
                }
             }
@@ -255,11 +279,13 @@ class InstallTool
       switch(inTarget.name)
       {
          case "android":
-           updateAndroid(inTarget.runtime);
+           updateAndroid();
+         case "neko":
+           updateNeko(inTarget.os);
       }
    }
 
-   function updateAndroid(inRuntime:String)
+   function updateAndroid()
    {
       var dest = mBuildDir + "/android/project";
 
@@ -276,13 +302,54 @@ class InstallTool
       cp_recurse(NME + "/install-tool/android/hxml",mBuildDir + "/android/haxe");
 
       for(ndll in mNDLLs)
-         ndll.copy("Android/lib", ".so", dest + "/libs/armeabi/lib", mVerbose);
+         ndll.copy("Android/lib", ".so", dest + "/libs/armeabi/lib", true, mVerbose);
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
 		   copyIfNewer(icon, dest + "/res/drawable-mdpi/icon.png",mVerbose);
 
    }
+
+	function updateNeko(inOS:String)
+   {
+      var dest = mBuildDir + "/neko/" + inOS + "/";
+		var dot_n = dest+"/"+mDefines.get("APP_FILE")+".n";
+		mContext.NEKO_FILE = dot_n;
+
+      mkdir(dest);
+
+      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/neko/haxe");
+      cp_recurse(NME + "/install-tool/neko/hxml",mBuildDir + "/neko/haxe");
+
+      var needsNekoApi = false;
+      for(ndll in mNDLLs)
+		{
+         ndll.copy("ndll/" + inOS + "/", ".ndll", dest, false, mVerbose);
+			if (ndll.needsNekoApi)
+			   needsNekoApi = true;
+		}
+		if (needsNekoApi)
+		{
+			var src = NDLL.getHaxelib("hxcpp") + "/bin/" + inOS + "/nekoapi.ndll";
+         InstallTool.copyIfNewer(src,dest + "/nekoapi.ndll",mVerbose);
+		}
+
+		var icon = mDefines.get("APP_ICON");
+		if (icon!="")
+		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+
+      var neko = neko.Sys.getEnv("NEKO_INSTPATH") + "/";
+		if (inOS=="Windows")
+		{
+		   copyIfNewer(neko + "gc.dll", dest + "/gc.dll",mVerbose);
+		   copyIfNewer(neko + "neko.dll", dest + "/neko.dll",mVerbose);
+		}
+
+      run(dest,"nekotools",["boot",+mDefines.get("APP_FILE")+".n"]);
+
+      addAssets(dest,"neko");
+   }
+
 
    function makeAndroid()
    {
@@ -302,6 +369,7 @@ class InstallTool
       var build = mDefines.exists("KEY_STORE") ? "release" : "debug";
       run(dest, ant, [build] );
    }
+
 
    function getAdb()
    {
@@ -331,6 +399,7 @@ class InstallTool
 		run("", adb, ["logcat", "*"] );
 	}
 
+
    function uninstallAndroid()
    {
 		var adb = getAdb();
@@ -338,6 +407,20 @@ class InstallTool
 
 		run("", adb, ["uninstall", pak] );
    }
+
+   function makeNeko()
+	{
+	}
+
+	function runNeko()
+	{
+	   var dest = mBuildDir + "/neko/" + neko.Sys.systemName() + "/";
+		var dot_n = dest+"/"+mDefines.get("APP_FILE")+".n";
+
+		run(dest, mDefines.get("APP_FILE"), [] );
+	}
+
+
 
    function addAssets(inDest:String,inTarget:String)
    {
@@ -507,7 +590,9 @@ class InstallTool
                    mHaxeFlags.push("-lib " + substitute(el.att.name) );
 
                 case "ndll" : 
-                   mNDLLs.push(new NDLL(substitute(el.att.name), substitute(el.att.haxelib) ) );
+                   mNDLLs.push(new NDLL(substitute(el.att.name),
+						    el.has.haxelib ? substitute(el.att.haxelib) : "",
+							 el.has.nekoapi ? substitute(el.att.nekoapi)!="" : false ) );
 
                 case "classpath" : 
                    mHaxeFlags.push("-cp " + substitute(el.att.name) );
@@ -519,8 +604,10 @@ class InstallTool
                    readAssets(el);
 
                 case "target" : 
-                   mTargets.push( new Target(substitute(el.att.name),
-                                el.has.runtime ? substitute(el.att.runtime) : "" ) );
+                   var os = el.has.os ? substitute(el.att.os) : neko.Sys.systemName();
+						 if ( !(mCommand=="run" || mCommand=="install" || mCommand=="uninstall")
+						    || (os==neko.Sys.systemName()) )
+                      mTargets.push( new Target(substitute(el.att.name), os ) );
 
                 case "section" : 
                    parseXML(el,"");

@@ -2,7 +2,7 @@
 <project>
 
   <app
-     file="sample"
+     file="Sample06"
      title="My Application"
      package="org.haxe.nme.sample06"
      version="1.0"
@@ -37,12 +37,12 @@
 
   <target name="swf9"/>
   <target name="android"/>
-  <target name="win32" runtme="neko"/>
+  <target name="neko"/>
 
-  <ndll name="std" haxelib="hxcpp"/>
-  <ndll name="regexp" haxelib="hxcpp"/>
-  <ndll name="zlib" haxelib="hxcpp"/>
-  <ndll name="nme" haxelib="nme"/>
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
 
   <certificates>
      <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
