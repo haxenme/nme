@@ -124,7 +124,7 @@ class NDLL
          if (inCPP)
 			   src = getHaxelib("hxcpp") + "/bin/" +inPrefix;
          else
-            src = neko.Sys.getEnv("NEKO_INSTPATH") + "/";
+            src = InstallTool.getNeko();
 		}
 		else
 		  src += inPrefix;
@@ -267,6 +267,14 @@ class InstallTool
       }
   }
 
+  static public function getNeko()
+  {
+      var n = neko.Sys.getEnv("NEKO_INSTPATH");
+      if (n==null || n=="")
+         n = neko.Sys.getEnv("NEKO_INSTALL_PATH");
+      return n + "/";
+  }
+
   function Print(inString)
   {
      if (mVerbose)
@@ -338,14 +346,12 @@ class InstallTool
 		if (icon!="")
 		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
 
-      var neko = neko.Sys.getEnv("NEKO_INSTPATH") + "/";
+      var neko = getNeko();
 		if (inOS=="Windows")
 		{
 		   copyIfNewer(neko + "gc.dll", dest + "/gc.dll",mVerbose);
 		   copyIfNewer(neko + "neko.dll", dest + "/neko.dll",mVerbose);
 		}
-
-      run(dest,"nekotools",["boot",+mDefines.get("APP_FILE")+".n"]);
 
       addAssets(dest,"neko");
    }
@@ -410,14 +416,15 @@ class InstallTool
 
    function makeNeko()
 	{
+      var dest = mBuildDir + "/neko/" + neko.Sys.systemName()  + "/";
+      run(dest,"nekotools",["boot",mDefines.get("APP_FILE")+".n"]);
 	}
 
 	function runNeko()
 	{
 	   var dest = mBuildDir + "/neko/" + neko.Sys.systemName() + "/";
-		var dot_n = dest+"/"+mDefines.get("APP_FILE")+".n";
 
-		run(dest, mDefines.get("APP_FILE"), [] );
+		run(dest, "./" + mDefines.get("APP_FILE"), [] );
 	}
 
 

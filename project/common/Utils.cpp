@@ -9,6 +9,10 @@
 typedef uint64_t __int64;
 #endif
 
+#ifdef HX_MACOS
+#include <mach/mach_time.h>  
+#endif
+
 #ifdef ANDROID
 #include <android/log.h>
 #endif
@@ -262,6 +266,16 @@ double  GetTimeStamp()
    }
 
    return (double)clock() / ( (double)CLOCKS_PER_SEC);
+#elif defined(HX_MACOS)
+   static double time_scale = 0.0;
+   if (time_scale==0.0)
+   {
+      mach_timebase_info_data_t info;
+      mach_timebase_info(&info);  
+      time_scale = 1e-9 * (double)info.numer / info.denom;
+   }
+   double r =  mach_absolute_time() * time_scale;  
+   return mach_absolute_time() * time_scale;  
 #else
 	 struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
