@@ -1,14 +1,3 @@
-class Target
-{
-   public var name:String;
-   public var os:String;
-
-   public function new(inName:String, inOS:String)
-   {
-      name = inName;
-		os = inOS;
-   }
-}
 
 class Asset
 {
@@ -145,21 +134,23 @@ class InstallTool
    var mContext : Dynamic;
    var mIncludePath:Array<String>;
    var mHaxeFlags:Array<String>;
-   var mTargets : Array<Target>;
 	var mCommand:String;
+   var mTarget:String;
    var mNDLLs : Array<NDLL>;
    var mAssets : Array<Asset>;
    var NME:String;
 	var mVerbose:Bool;
 	var mDebug:Bool;
+   public static var mOS:String = neko.Sys.systemName();
 
    var mBuildDir:String;
 
    public function new(inNME:String,
                        inCommand:String,
                        inDefines:Hash<String>,
-                       inTargets:Array<String>,
                        inIncludePath:Array<String>,
+                       inProjectFile:String,
+                       inTarget:String,
 							  inVerbose:Bool,
 							  inDebug:Bool
 							  )
@@ -167,13 +158,12 @@ class InstallTool
       NME = inNME;
       mDefines = inDefines;
       mIncludePath = inIncludePath;
-      mTargets = [];
+      mTarget = inTarget;
       mHaxeFlags = [];
 		mCommand = inCommand;
 		mVerbose = inVerbose;
 		mDebug = inDebug;
       mNDLLs = [];
-		var makefile = inTargets.shift();
       mAssets = [];
 
       // trace(NME);
@@ -195,17 +185,13 @@ class InstallTool
 
 			setDefault("BUILD_DIR","bin");
 
-			var make_contents = neko.io.File.getContent(makefile);
+			var make_contents = neko.io.File.getContent(inProjectFile);
 			var xml_slow = Xml.parse(make_contents);
 			var xml = new haxe.xml.Fast(xml_slow.firstElement());
 
 			parseXML(xml,"");
 
 			mBuildDir = mDefines.get("BUILD_DIR");
-
-			if (inTargets.length==0)
-				for(t in mTargets)
-					inTargets.push(t.name);
 
 			mContext = {};
 			for(key in mDefines.keys())
@@ -216,52 +202,32 @@ class InstallTool
 
 		if (inCommand=="uninstall")
       {
-			for(target in inTargets)
-			{
-            switch(target)
-            {
-               case "android":
-						uninstallAndroid();
-            }
+         switch(inTarget)
+         {
+            case "android":
+					uninstallAndroid();
          }
       }
       else
       {
 
-			for(target in mTargets)
-			{
-				if (inTargets.length>0 &&
-						 !Lambda.exists(inTargets,function (t) return t==target.name ))
-					continue;
-				createTarget(target);
-			}
-
+		   createTarget(inTarget);
 
 
          if (inCommand=="run" || inCommand=="make")
          {
-            if (inCommand=="run" && inTargets.length!=1)
+            var hxml = "bin/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
+            run("", "haxe", [hxml]);
+            switch(inTarget)
             {
-               neko.Lib.println("'run' command should have exactly 1 target");
-            }
-            else
-            {
-               for(target in inTargets)
-               {
-                  var hxml = "bin/" + target + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
-                  run("", "haxe", [hxml]);
-                  switch(target)
-                  {
-                     case "android":
-                        makeAndroid();
-                        if (inCommand=="run")
-                          runAndroid();
-                     case "neko":
-                        makeNeko();
-                        if (inCommand=="run")
-                          runNeko();
-                  }
-               }
+               case "android":
+                 makeAndroid();
+                 if (inCommand=="run")
+                    runAndroid();
+               case "neko":
+                 makeNeko();
+                 if (inCommand=="run")
+                   runNeko();
             }
          }
       }
@@ -281,15 +247,15 @@ class InstallTool
 	    neko.Lib.println(inString);
   }
 
-   function createTarget(inTarget:Target)
+   function createTarget(inTarget:String)
    {
       mContext.HAXE_FLAGS = mHaxeFlags.length==0 ? "" : "\n" + mHaxeFlags.join("\n");
-      switch(inTarget.name)
+      switch(inTarget)
       {
          case "android":
            updateAndroid();
          case "neko":
-           updateNeko(inTarget.os);
+           updateNeko();
       }
    }
 
@@ -318,9 +284,9 @@ class InstallTool
 
    }
 
-	function updateNeko(inOS:String)
+	function updateNeko()
    {
-      var dest = mBuildDir + "/neko/" + inOS + "/";
+      var dest = mBuildDir + "/neko/" + mOS + "/";
 		var dot_n = dest+"/"+mDefines.get("APP_FILE")+".n";
 		mContext.NEKO_FILE = dot_n;
 
@@ -332,13 +298,13 @@ class InstallTool
       var needsNekoApi = false;
       for(ndll in mNDLLs)
 		{
-         ndll.copy("ndll/" + inOS + "/", ".ndll", dest, false, mVerbose);
+         ndll.copy("ndll/" + mOS + "/", ".ndll", dest, false, mVerbose);
 			if (ndll.needsNekoApi)
 			   needsNekoApi = true;
 		}
 		if (needsNekoApi)
 		{
-			var src = NDLL.getHaxelib("hxcpp") + "/bin/" + inOS + "/nekoapi.ndll";
+			var src = NDLL.getHaxelib("hxcpp") + "/bin/" + mOS + "/nekoapi.ndll";
          InstallTool.copyIfNewer(src,dest + "/nekoapi.ndll",mVerbose);
 		}
 
@@ -347,7 +313,7 @@ class InstallTool
 		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
 
       var neko = getNeko();
-		if (inOS=="Windows")
+		if (mOS=="Windows")
 		{
 		   copyIfNewer(neko + "gc.dll", dest + "/gc.dll",mVerbose);
 		   copyIfNewer(neko + "neko.dll", dest + "/neko.dll",mVerbose);
@@ -610,12 +576,6 @@ class InstallTool
                 case "assets" : 
                    readAssets(el);
 
-                case "target" : 
-                   var os = el.has.os ? substitute(el.att.os) : neko.Sys.systemName();
-						 if ( !(mCommand=="run" || mCommand=="install" || mCommand=="uninstall")
-						    || (os==neko.Sys.systemName()) )
-                      mTargets.push( new Target(substitute(el.att.name), os ) );
-
                 case "section" : 
                    parseXML(el,"");
             }
@@ -774,7 +734,7 @@ class InstallTool
    
    public static function main()
    {
-      var targets = new Array<String>();
+      var words = new Array<String>();
       var defines = new Hash<String>();
       var include_path = new Array<String>();
       var command:String="";
@@ -835,7 +795,7 @@ class InstallTool
          else if (command.length==0)
             command = arg;
          else
-            targets.push(arg);
+            words.push(arg);
       }
 
       include_path.push(".");
@@ -858,17 +818,24 @@ class InstallTool
 
       if (command=="copy-if-newer")
       {
-         if (targets.length!=2)
+         if (words.length!=2)
          {
             neko.Lib.println("wrong number of arguements");
             usage();
             return;
          }
-         copyIfNewer(targets[0], targets[1], verbose);
+         copyIfNewer(words[0], words[1], verbose);
       }
       else
       {
-         if (targets.length<1 || !neko.FileSystem.exists(targets[0]))
+         if (words.length!=2)
+         {
+            neko.Lib.println("wrong number of arguements");
+            usage();
+            return;
+         }
+ 
+         if (!neko.FileSystem.exists(words[0]))
          {
             neko.Lib.println("Error : " + command + ", .nmml file must be specified");
             usage();
@@ -881,7 +848,7 @@ class InstallTool
          if ( !defines.exists("NME_CONFIG") )
             defines.set("NME_CONFIG",".hxcpp_config.xml");
 
-         new InstallTool(NME,command,defines,targets,include_path,verbose,debug);
+         new InstallTool(NME,command,defines,include_path,words[0],words[1],verbose,debug);
       }
    }
 

@@ -526,7 +526,6 @@ DEFINE_PRIM(nme_byte_array_create,1);
 
 value nme_byte_array_read_file(value inFilename)
 {
-printf("nme_byte_array_read_file !!!!!!!\n");
    FILE *file = OpenRead(val_os_string(inFilename));
    if (!file)
    {
