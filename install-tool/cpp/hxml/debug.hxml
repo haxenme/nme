@@ -1,0 +1,5 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp bin/cpp/haxe
+-cpp ::CPP_DIR::
+-debug
+

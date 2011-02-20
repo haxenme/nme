@@ -1,0 +1,6 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp bin/gph/haxe
+-D gph
+-cpp ::CPP_DIR::
+
+

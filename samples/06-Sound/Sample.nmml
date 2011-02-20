@@ -3,11 +3,10 @@
 
   <app
      file="Sample06"
-     title="My Application"
+     title="NME Sample 06 - Drums"
      package="org.haxe.nme.sample06"
      version="1.0"
      company="nme" 
-	  description="NME Sample 6"
 	  main="Sample"
   />
 
@@ -34,10 +33,6 @@
      <sound name="Data/drums.ogg"   />
   </assets>
 
-
-  <target name="swf9"/>
-  <target name="android"/>
-  <target name="neko"/>
 
   <ndll name="std" />
   <ndll name="regexp" />

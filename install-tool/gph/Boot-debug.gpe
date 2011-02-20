@@ -1,0 +1,13 @@
+#!/bin/sh
+echo "-----------" > /mnt/sd/log.txt
+
+#LD_DEBUG="files"
+#export LD_DEBUG
+
+./::APP_FILE::.gpe >> /mnt/sd/log.txt 2>&1
+
+echo "------------" >> /mnt/sd/log.txt
+
+cd /usr/gp2x
+exec ./gp2xmenu
+
