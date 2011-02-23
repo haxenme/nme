@@ -200,6 +200,8 @@ public:
       mHeight = inHeight;
       mFlags = inFlags;
 		mNextAutoKey = 0;
+		mPrevDown = 0;
+		mPrevPos.x = mPrevPos.y = 0;
 
 		memset(mWasDown,0,sizeof(mWasDown));
 
@@ -218,7 +220,7 @@ public:
 		// Create Input Device
 		if(DGE_FAILED(DGX_CreateInput(NULL, &m_pInput, m_pDev, m_hWnd)))
 		{
-			printf("DGE_CreateDevice - fatal error.\n");
+			printf("DGE_CreateInput - fatal error.\n");
 			exit(1);
 		}
 
@@ -331,6 +333,23 @@ public:
 			mWasDown[i] = down;
 		}
 
+		//printf("Touch: %3.f %3.f %d\n", vcTsbPos.x, vcTsbPos.y, nTsbState);
+		if (vcTsbPos.x!=mPrevPos.x || vcTsbPos.y!=mPrevPos.y)
+		{
+			Event move(etMouseMove,vcTsbPos.x, vcTsbPos.y);
+			if (mPrevDown) move.flags = efLeftDown;
+			ProcessEvent(move);
+		   mPrevPos = vcTsbPos;
+		}
+
+		if ((mPrevDown!=0)!=(nTsbState!=0))
+		{
+			Event mouse(nTsbState ? etMouseDown : etMouseUp ,vcTsbPos.x, vcTsbPos.y);
+			if (nTsbState) mouse.flags = efLeftDown;
+			ProcessEvent(mouse);
+		   mPrevDown = nTsbState;
+		}
+
 		Event poll(etPoll);
 		HandleEvent(poll);
 		// Update Input
@@ -376,6 +395,9 @@ public:
       return mPrimarySurface;
    }
 
+
+	DGXVECTOR3   mPrevPos;
+	int          mPrevDown;
 
    HardwareContext *mOpenGLContext;
    Surface     *mPrimarySurface;

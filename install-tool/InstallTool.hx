@@ -105,15 +105,16 @@ class NDLL
 		return result;
 	}
 
-   public function copy(inPrefix:String, inSuffix:String, inDir:String, inCPP:Bool, inVerbose:Bool)
+   public function copy(inPrefix:String, inDir:String, inCPP:Bool, inVerbose:Bool,?inOS:String)
    {
 	   var src=srcDir;
+		var suffix = ".ndll";
 		if (src=="")
 		{
          if (inCPP)
 			{
 			   src = getHaxelib("hxcpp") + "/bin/" +inPrefix;
-				inSuffix = switch(InstallTool.mOS)
+				suffix = switch(inOS==null ? InstallTool.mOS : inOS)
 				   {
 					   case "Windows","Windows64" : ".dll";
 					   case "Linux","Linux64" : ".dso";
@@ -125,14 +126,14 @@ class NDLL
             src = InstallTool.getNeko();
 		}
 		else
-		  src += inPrefix;
+		  src += "/ndll/" + inPrefix;
 
-      src = src + name + inSuffix;
+      src = src + name + suffix;
       if (!neko.FileSystem.exists(src))
       {
          throw ("Could not find ndll " + src + " required by project" );
       }
-      var dest = inDir + name + inSuffix;
+      var dest = inDir + name + suffix;
       InstallTool.copyIfNewer(src,dest,inVerbose);
    }
 }
@@ -178,36 +179,36 @@ class InstallTool
       // trace(NME);
 		// trace(inCommand);
 
-			setDefault("WIN_WIDTH","640");
-			setDefault("WIN_HEIGHT","480");
-			setDefault("WIN_ORIENTATION","");
-			setDefault("WIN_FPS","60");
-			setDefault("WIN_BACKGROUND","0xffffff");
-			setDefault("WIN_HARDWARE","true");
-			setDefault("WIN_RESIZEABLE","true");
+		setDefault("WIN_WIDTH","640");
+		setDefault("WIN_HEIGHT","480");
+		setDefault("WIN_ORIENTATION","");
+		setDefault("WIN_FPS","60");
+		setDefault("WIN_BACKGROUND","0xffffff");
+		setDefault("WIN_HARDWARE","true");
+		setDefault("WIN_RESIZEABLE","true");
 
-			setDefault("APP_FILE","MyAplication");
-			setDefault("APP_PACKAGE","com.example.myapp");
-			setDefault("APP_VERSION","1.0");
-			setDefault("APP_ICON","");
-			setDefault("APP_COMPANY","Example Inc.");
+		setDefault("APP_FILE","MyAplication");
+		setDefault("APP_PACKAGE","com.example.myapp");
+		setDefault("APP_VERSION","1.0");
+		setDefault("APP_ICON","");
+		setDefault("APP_COMPANY","Example Inc.");
 
-			setDefault("BUILD_DIR","bin");
+		setDefault("BUILD_DIR","bin");
 
-			var make_contents = neko.io.File.getContent(inProjectFile);
-			var xml_slow = Xml.parse(make_contents);
-			var xml = new haxe.xml.Fast(xml_slow.firstElement());
+		var make_contents = neko.io.File.getContent(inProjectFile);
+		var xml_slow = Xml.parse(make_contents);
+		var xml = new haxe.xml.Fast(xml_slow.firstElement());
 
-			parseXML(xml,"");
+		parseXML(xml,"");
 
-			mBuildDir = mDefines.get("BUILD_DIR");
+		mBuildDir = mDefines.get("BUILD_DIR");
 
-			mContext = {};
-			for(key in mDefines.keys())
-				Reflect.setField(mContext,key, mDefines.get(key) );
-			Reflect.setField(mContext,"ndlls", mNDLLs );
-			Reflect.setField(mContext,"assets", mAssets );
-			//trace(mDefines);
+		mContext = {};
+		for(key in mDefines.keys())
+			Reflect.setField(mContext,key, mDefines.get(key) );
+		Reflect.setField(mContext,"ndlls", mNDLLs );
+		Reflect.setField(mContext,"assets", mAssets );
+		//trace(mDefines);
 
 		if (inCommand=="uninstall")
       {
@@ -291,7 +292,7 @@ class InstallTool
       cp_recurse(NME + "/install-tool/android/hxml",mBuildDir + "/android/haxe");
 
       for(ndll in mNDLLs)
-         ndll.copy("Android/lib", ".so", dest + "/libs/armeabi/lib", true, mVerbose);
+         ndll.copy("Android/lib", dest + "/libs/armeabi/lib", true, mVerbose,"android");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
@@ -372,7 +373,7 @@ class InstallTool
       var needsNekoApi = false;
       for(ndll in mNDLLs)
 		{
-         ndll.copy("ndll/" + mOS + "/", ".ndll", dest, false, mVerbose);
+         ndll.copy( mOS + "/", dest, false, mVerbose);
 			if (ndll.needsNekoApi)
 			   needsNekoApi = true;
 		}
@@ -423,7 +424,7 @@ class InstallTool
       cp_recurse(NME + "/install-tool/cpp/hxml",mBuildDir + "/cpp/haxe");
 
 		for(ndll in mNDLLs)
-         ndll.copy("ndll/" + mOS + "/", ".ndll", dest, false, mVerbose);
+         ndll.copy( mOS + "/", dest, false, mVerbose);
 
 
 		var icon = mDefines.get("APP_ICON");
@@ -464,7 +465,7 @@ class InstallTool
       cp_file(NME + "/install-tool/gph/" + boot,mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + "/Boot.gpe" );
 
 		for(ndll in mNDLLs)
-         ndll.copy("ndll/GPH/", ".ndll", dest, false, mVerbose);
+         ndll.copy("GPH/", dest, true, mVerbose, "gph");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
@@ -477,11 +478,19 @@ class InstallTool
 	{
       var file = mDefines.get("APP_FILE");
       var dest = mBuildDir + "/gph/game/" + file + "/" + file + ".gpe";
-		copyIfNewer(mBuildDir+"/gph/bin/ApplicationMain.gpe", dest, mVerbose);
+      var gpe = mDebug ? "ApplicationMain-debug.gpe" : "ApplicationMain.gpe";
+		copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mVerbose);
 	}
 
 	function runGph()
 	{
+	   if (!mDefines.exists("DRIVE"))
+		   throw "Please specify DRIVE=f:/ or similar on the command line.";
+		var drive = mDefines.get("DRIVE");
+		if (!neko.FileSystem.exists(drive + "/game"))
+		   throw "Drive " + drive + " does not appear to be a Caanoo drive.";
+		cp_recurse("bin/gph/game", drive + "/game",false);
+
 	}
 
 
@@ -730,27 +739,27 @@ class InstallTool
 
 
 
-   public function cp_file(inSrcFile:String,inDestFile:String)
+   public function cp_file(inSrcFile:String,inDestFile:String,inProcess:Bool = true)
    {
       var ext = neko.io.Path.extension(inSrcFile);
-      if (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml" || ext=="ini" || ext=="gpe")
+      if (inProcess && 
+		   (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml" || ext=="ini" || ext=="gpe") )
       {
          Print("process " + inSrcFile + " " + inDestFile );
          var contents = neko.io.File.getContent(inSrcFile);
          var tmpl = new haxe.Template(contents);
          var result = tmpl.execute(mContext);
-         var f = neko.io.File.write(inDestFile,false);
+         var f = neko.io.File.write(inDestFile,true);
          f.writeString(result);
          f.close();
       }
       else
       {
-         Print("cp " + inSrcFile + " " + inDestFile );
-         neko.io.File.copy( inSrcFile, inDestFile );
+		   copyIfNewer(inSrcFile,inDestFile,mVerbose);
       }
    }
 
-   public function cp_recurse(inSrc:String,inDestDir:String)
+   public function cp_recurse(inSrc:String,inDestDir:String,inProcess:Bool = true)
    {
       if (!neko.FileSystem.exists(inDestDir))
       {
@@ -766,9 +775,9 @@ class InstallTool
             var dest = inDestDir + "/" + file;
             var src = inSrc + "/" + file;
             if (neko.FileSystem.isDirectory(src))
-               cp_recurse(src, dest );
+               cp_recurse(src, dest, inProcess);
             else
-               cp_file(src,dest);
+               cp_file(src,dest, inProcess);
          }
       }
    }
@@ -876,7 +885,10 @@ class InstallTool
 
       for(arg in args)
       {
-         if (arg.substr(0,2)=="-D")
+			var equals = arg.indexOf("=");
+			if (equals>0)
+			   defines.set(arg.substr(0,equals),arg.substr(equals+1));
+         else if (arg.substr(0,2)=="-D")
             defines.set(arg.substr(2),"");
          else if (arg.substr(0,2)=="-I")
             include_path.push(arg.substr(2));

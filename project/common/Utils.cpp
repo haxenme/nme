@@ -276,6 +276,13 @@ double  GetTimeStamp()
    }
    double r =  mach_absolute_time() * time_scale;  
    return mach_absolute_time() * time_scale;  
+#elif defined(GPH)
+	  struct timeval tv;
+     if( gettimeofday(&tv,NULL) )
+       return 0;
+     double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
+     if (t0==0) t0 = t;
+     return t-t0;
 #else
 	 struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);

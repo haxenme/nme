@@ -39,6 +39,7 @@
 
 <files id="gph">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include"/>
   <compilerflag value="-I${GPH_ROOT}/include" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
@@ -94,7 +95,7 @@
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include" unless="gph"/>
   <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl" unless="gph"/>
-  <compilerflag value="-I${GPH_ROOT}/include" if="gph"/>
+  <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
