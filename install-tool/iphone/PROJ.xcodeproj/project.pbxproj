@@ -1,0 +1,442 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBA9A121AF1C60048A9DF /* UIKit.framework */; };
+		1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA2121AF2210048A9DF /* OpenAL.framework */; };
+		1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */; };
+		1EEEBAA7121AF2210048A9DF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */; };
+		1EEEBAB3121AF2880048A9DF /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAB2121AF2880048A9DF /* CoreAudio.framework */; };
+		1EEEBAB5121AF2880048A9DF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAB4121AF2880048A9DF /* CoreGraphics.framework */; };
+		1EEEBAFC121BE2980048A9DF /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */; };
+		1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */; };
+		1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFF121BE2B30048A9DF /* Foundation.framework */; };
+		1EF0A83A121ADB8E003F2F59 /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.cpp */; };
+
+      ::foreach ndlls::
+        11B0F0000000001::hash:: /* ::name::.iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B000000000001::hash:: ; };
+        11B0F0000000000::hash:: /* ::name::.iphonesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B000000000000::hash:: ; };
+      ::end::
+
+
+      /*
+		1EF0A843121ADCD2003F2F59  libregexp.iphoneos.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a ; };
+		1EF0A844121ADCD2003F2F59  libstd.iphoneos.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A840121ADCD2003F2F59  libstd.iphoneos.a ; };
+		1EF0A845121ADCD2003F2F59  libzlib.iphoneos.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A841121ADCD2003F2F59  libzlib.iphoneos.a ; };
+		1EF0A846121ADCD2003F2F59  nme.iphoneos.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A842121ADCD2003F2F59  nme.iphoneos.a ; };
+
+		1EF0A84E121ADD01003F2F59  libregexp.iphonesim.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A849121ADD01003F2F59 libregexp.iphonesim.a ; };
+		1EF0A84F121ADD01003F2F59  libstd.iphonesim.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A84A121ADD01003F2F59  libstd.iphonesim.a ; };
+		1EF0A850121ADD01003F2F59  libzlib.iphonesim.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A84B121ADD01003F2F59  libzlib.iphonesim.a ; };
+		1EF0A851121ADD01003F2F59  nme.iphonesim.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A84C121ADD01003F2F59  nme.iphonesim.a ; };
+      */
+
+		1EF0A888121AE2F0003F2F59 /* lib/ApplicationMain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EF0A887121AE2F0003F2F59 /* lib/ApplicationMain.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1EF0A882121AE1D2003F2F59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1EF0A87F121AE1CE003F2F59;
+			remoteInfo = "Build Haxe";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "::APP_TITLE::.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1EEEBA9A121AF1C60048A9DF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		1EEEBAA2121AF2210048A9DF /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		1EEEBAB2121AF2880048A9DF /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		1EEEBAB4121AF2880048A9DF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		1EF0A839121ADB8E003F2F59 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = Classes/Main.cpp; sourceTree = SOURCE_ROOT; };
+
+
+       ::foreach ndlls::
+           11B000000000001::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphoneos.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
+           11B000000000000::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphonesim.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
+       ::end::
+
+/*
+		1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libregexp.iphoneos.a; path = lib/libregexp.iphoneos.a; sourceTree = SOURCE_ROOT; };
+		1EF0A840121ADCD2003F2F59  libstd.iphoneos.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libstd.iphoneos.a; path = lib/libstd.iphoneos.a; sourceTree = SOURCE_ROOT; };
+		1EF0A841121ADCD2003F2F59  libzlib.iphoneos.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzlib.iphoneos.a; path = lib/libzlib.iphoneos.a; sourceTree = SOURCE_ROOT; };
+		1EF0A842121ADCD2003F2F59  nme.iphoneos.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = nme.iphoneos.a; path = lib/nme.iphoneos.a; sourceTree = SOURCE_ROOT; };
+
+		1EF0A849121ADD01003F2F59  libregexp.iphonesim.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libregexp.iphonesim.a; path = lib/libregexp.iphonesim.a; sourceTree = SOURCE_ROOT; };
+		1EF0A84A121ADD01003F2F59  libstd.iphonesim.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libstd.iphonesim.a; path = lib/libstd.iphonesim.a; sourceTree = SOURCE_ROOT; };
+		1EF0A84B121ADD01003F2F59  libzlib.iphonesim.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzlib.iphonesim.a; path = lib/libzlib.iphonesim.a; sourceTree = SOURCE_ROOT; };
+		1EF0A84C121ADD01003F2F59  nme.iphonesim.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = nme.iphonesim.a; path = lib/nme.iphonesim.a; sourceTree = SOURCE_ROOT; };
+*/
+
+		1EF0A887121AE2F0003F2F59 /* lib/ApplicationMain.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "lib/ApplicationMain.a"; path = "lib/ApplicationMain.a"; sourceTree = SOURCE_ROOT; };
+		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+           ::foreach ndlls::
+             11B0F0000000001::hash:: /* ::name::.iphoneos.a in Frameworks */,
+             11B0F0000000000::hash:: /* ::name::.iphonesim.a in Frameworks */,
+           ::end::
+
+            /*
+				1EF0A843121ADCD2003F2F59  libregexp.iphoneos.a in Frameworks ,
+				1EF0A844121ADCD2003F2F59  libstd.iphoneos.a in Frameworks ,
+				1EF0A845121ADCD2003F2F59  libzlib.iphoneos.a in Frameworks ,
+				1EF0A846121ADCD2003F2F59  nme.iphoneos.a in Frameworks ,
+				1EF0A84E121ADD01003F2F59  libregexp.iphonesim.a in Frameworks ,
+				1EF0A84F121ADD01003F2F59  libstd.iphonesim.a in Frameworks ,
+				1EF0A850121ADD01003F2F59  libzlib.iphonesim.a in Frameworks ,
+				1EF0A851121ADD01003F2F59  nme.iphonesim.a in Frameworks ,
+            */
+
+
+				1EF0A888121AE2F0003F2F59 /* lib/ApplicationMain.a in Frameworks */,
+				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
+				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
+				1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */,
+				1EEEBAA7121AF2210048A9DF /* QuartzCore.framework in Frameworks */,
+				1EEEBAB3121AF2880048A9DF /* CoreAudio.framework in Frameworks */,
+				1EEEBAB5121AF2880048A9DF /* CoreGraphics.framework in Frameworks */,
+				1EEEBAFC121BE2980048A9DF /* AudioToolbox.framework in Frameworks */,
+				1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */,
+				1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				1EF0A839121ADB8E003F2F59 /* Main.cpp */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1EEEBA99121AF18B0048A9DF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1EEEBA9A121AF1C60048A9DF /* UIKit.framework */,
+				1EEEBAA2121AF2210048A9DF /* OpenAL.framework */,
+				1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */,
+				1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */,
+				1EEEBAB2121AF2880048A9DF /* CoreAudio.framework */,
+				1EEEBAB4121AF2880048A9DF /* CoreGraphics.framework */,
+				1EEEBAFF121BE2B30048A9DF /* Foundation.framework */,
+				1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */,
+				1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1EF0A83C121ADC15003F2F59 /* Device Libraries */ = {
+			isa = PBXGroup;
+			children = (
+            ::foreach ndlls::
+              11B000000000001::hash:: /* ::name::.iphoneos.a */,
+            ::end::
+            /*
+				1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a ,
+				1EF0A840121ADCD2003F2F59  libstd.iphoneos.a ,
+				1EF0A841121ADCD2003F2F59  libzlib.iphoneos.a ,
+				1EF0A842121ADCD2003F2F59  nme.iphoneos.a ,
+            */
+			);
+			name = "Device Libraries";
+			sourceTree = SOURCE_ROOT;
+		};
+		1EF0A847121ADCE0003F2F59 /* Simulator Libraries */ = {
+			isa = PBXGroup;
+			children = (
+            ::foreach ndlls::
+              11B000000000000::hash:: /* ::name::.iphonesim.a */,
+            ::end::
+            /*
+				1EF0A849121ADD0 1003F2F59  libregexp.iphonesim.a ,
+				1EF0A84A121ADD01003F2F59  libstd.iphonesim.a ,
+				1EF0A84B121ADD01003F2F59  libzlib.iphonesim.a ,
+				1EF0A84C121ADD01003F2F59  nme.iphonesim.a ,
+            */
+			);
+			name = "Simulator Libraries";
+			sourceTree = "<group>";
+		};
+		1EF0A886121AE22D003F2F59 /* Haxe Code */ = {
+			isa = PBXGroup;
+			children = (
+				1EF0A887121AE2F0003F2F59 /* lib/ApplicationMain.a */,
+			);
+			name = "Haxe Code";
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				1EEEBA99121AF18B0048A9DF /* Frameworks */,
+				1EF0A886121AE22D003F2F59 /* Haxe Code */,
+				1EF0A847121ADCE0003F2F59 /* Simulator Libraries */,
+				1EF0A83C121ADC15003F2F59 /* Device Libraries */,
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		1EF0A87F121AE1CE003F2F59 /* Build Haxe */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "";
+			buildConfigurationList = 1EF0A885121AE21C003F2F59 /* Build configuration list for PBXLegacyTarget "Build Haxe" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = haxe;
+			dependencies = (
+			);
+			name = "Build Haxe";
+			passBuildSettingsInEnvironment = 1;
+			productName = "Build Haxe";
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* "::APP_TITLE::" */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "::APP_TITLE::" */;
+			buildPhases = (
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1EF0A883121AE1D2003F2F59 /* PBXTargetDependency */,
+			);
+			name = "::APP_TITLE::";
+			productName = "::APP_TITLE::";
+			productReference = 1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "::APP_TITLE::" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* "::APP_TITLE::" */,
+				1EF0A87F121AE1CE003F2F59 /* Build Haxe */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1EF0A83A121ADB8E003F2F59 /* Main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1EF0A883121AE1D2003F2F59 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1EF0A87F121AE1CE003F2F59 /* Build Haxe */;
+			targetProxy = 1EF0A882121AE1D2003F2F59 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+
+
+
+
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/lib\"",
+				);
+				PRODUCT_NAME = "::APP_TITLE::";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/lib\"",
+				);
+				PRODUCT_NAME = "::APP_TITLE::";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1EF0A880121AE1CE003F2F59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build Haxe";
+			};
+			name = Debug;
+		};
+		1EF0A881121AE1CE003F2F59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Build Haxe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				PREBINDING = NO;
+				SDKROOT = iphoneos4.0;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COMPRESS_PNG_FILES = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_ENABLE_SYMBOL_SEPARATION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PREBINDING = NO;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
+				SDKROOT = iphonesimulator4.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "::APP_TITLE::" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1EF0A885121AE21C003F2F59 /* Build configuration list for PBXLegacyTarget "Build Haxe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1EF0A880121AE1CE003F2F59 /* Debug */,
+				1EF0A881121AE1CE003F2F59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "::APP_TITLE::" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+
+
+	}; /* end objects */
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

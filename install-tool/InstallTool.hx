@@ -8,6 +8,7 @@ class Asset
    public var resourceIndex:Int;
    public var flatName:String;
    public var resourceName:String;
+   public var hash:String;
 
    static var usedRes = new Hash<Bool>();
 
@@ -17,6 +18,7 @@ class Asset
       name = inName;
       dest = inDest;
       type = inType;
+      hash = InstallTool.getID();
       id = inID=="" ? name : inID;
       var chars = id.toLowerCase();
       flatName ="";
@@ -61,6 +63,8 @@ class Asset
               return inBase + "/" + dest + "/assets/" + id;
          }
       }
+      else if (inTarget=="iphone")
+         return inBase + "/assets/" + dest + "/" + id;
 
       return inBase + "/" + dest + "/" + id;
    }
@@ -74,12 +78,14 @@ class NDLL
    public var haxelib:String;
    public var srcDir:String;
    public var needsNekoApi:Bool;
+   public var hash:String;
 
    public function new(inName:String, inHaxelib:String,inNeedsNekoApi:Bool)
    {
       name = inName;
       haxelib = inHaxelib;
       srcDir = "";
+      hash = InstallTool.getID();
 		needsNekoApi = inNeedsNekoApi;
 
 		if (haxelib!="")
@@ -121,19 +127,28 @@ class NDLL
 					   case "Mac","Mac64" : ".dylib";
 						default: ".so";
 					};
+            if (inOS=="iphoneos" || inOS=="iphonesim")
+               src += "lib";
 			}
          else
             src = InstallTool.getNeko();
 		}
 		else
-		  src += "/ndll/" + inPrefix;
+      {
+		   src += "/ndll/" + inPrefix;
+         if (inOS=="android") suffix = ".so";
+      }
+
+      if (inOS=="iphoneos" || inOS=="iphonesim")
+         suffix = "." + inOS + ".a";
 
       src = src + name + suffix;
       if (!neko.FileSystem.exists(src))
       {
          throw ("Could not find ndll " + src + " required by project" );
       }
-      var dest = inDir + name + suffix;
+      var slash = src.lastIndexOf("/");
+      var dest = inDir + src.substr(slash+1);
       InstallTool.copyIfNewer(src,dest,inVerbose);
    }
 }
@@ -151,6 +166,8 @@ class InstallTool
    var NME:String;
 	var mVerbose:Bool;
 	var mDebug:Bool;
+   var mFullClassPaths:Bool;
+   static var mID = 1;
    public static var mOS:String = neko.Sys.systemName();
 
    var mBuildDir:String;
@@ -198,6 +215,10 @@ class InstallTool
 		var make_contents = neko.io.File.getContent(inProjectFile);
 		var xml_slow = Xml.parse(make_contents);
 		var xml = new haxe.xml.Fast(xml_slow.firstElement());
+      mFullClassPaths = inTarget=="iphone";
+
+      if (mFullClassPaths)
+          mHaxeFlags.push("-cp " + neko.FileSystem.fullPath(".") );
 
 		parseXML(xml,"");
 
@@ -225,7 +246,7 @@ class InstallTool
          if (inCommand=="run" || inCommand=="build" || inCommand=="update")
          {
 			   var build = inCommand=="build" || inCommand=="run";
-            var hxml = "bin/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
+            var hxml = mBuildDir + "/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
             switch(inTarget)
             {
                case "android":
@@ -249,6 +270,14 @@ class InstallTool
                     buildCpp();
                  if (inCommand=="run")
                    runCpp();
+               case "iphone":
+                 updateIPhone();
+                 //run("", "haxe", [hxml]);
+					  if (build)
+                    buildIPhone();
+                 if (inCommand=="run")
+                   runIPhone();
+	
 					case "gph":
                  updateGph();
                  run("", "haxe", [hxml]);
@@ -259,6 +288,11 @@ class InstallTool
             }
          }
       }
+  }
+
+  static public function getID()
+  {
+     return StringTools.hex(mID++,8);
   }
 
   static public function getNeko()
@@ -489,9 +523,62 @@ class InstallTool
 		var drive = mDefines.get("DRIVE");
 		if (!neko.FileSystem.exists(drive + "/game"))
 		   throw "Drive " + drive + " does not appear to be a Caanoo drive.";
-		cp_recurse("bin/gph/game", drive + "/game",false);
+		cp_recurse(mBuildDir + "/gph/game", drive + "/game",false);
 
 	}
+
+	// --- iPhone ---------------------------------------------------------------
+
+	function updateIPhone()
+   {
+      var dest = mBuildDir + "/iphone/";
+
+      mkdir(dest);
+
+      cp_recurse(NME + "/install-tool/iphone/haxe", dest + "/haxe");
+
+      var proj = mDefines.get("APP_FILE");
+
+      cp_recurse(NME + "/install-tool/iphone/Classes", dest+"Classes");
+
+      cp_recurse(NME + "/install-tool/iphone/PROJ.xcodeproj", dest + proj + ".xcodeproj");
+
+      cp_file(NME + "/install-tool/iphone/PROJ-Info.plist", dest + proj + "-Info.plist");
+
+      var lib = dest + "lib/";
+      mkdir(lib);
+
+		for(ndll in mNDLLs)
+      {
+         ndll.copy("iPhone/", lib, true, mVerbose, "iphoneos");
+         ndll.copy("iPhone/", lib, true, mVerbose, "iphonesim");
+      }
+
+      addAssets(dest,"iphone");
+   }
+
+   function buildIPhone()
+	{
+/*
+      var file = mDefines.get("APP_FILE");
+      var dest = mBuildDir + "/gph/game/" + file + "/" + file + ".gpe";
+      var gpe = mDebug ? "ApplicationMain-debug.gpe" : "ApplicationMain.gpe";
+		copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mVerbose);
+*/
+	}
+
+	function runIPhone()
+	{
+/*
+	   if (!mDefines.exists("DRIVE"))
+		   throw "Please specify DRIVE=f:/ or similar on the command line.";
+		var drive = mDefines.get("DRIVE");
+		if (!neko.FileSystem.exists(drive + "/game"))
+		   throw "Drive " + drive + " does not appear to be a Caanoo drive.";
+		cp_recurse(mBuildDir + "/gph/game", drive + "/game",false);
+*/
+	}
+
 
 
    // -------------------------------------------------
@@ -669,7 +756,7 @@ class InstallTool
 							 el.has.nekoapi ? substitute(el.att.nekoapi)!="" : false ) );
 
                 case "classpath" : 
-                   mHaxeFlags.push("-cp " + substitute(el.att.name) );
+                   mHaxeFlags.push("-cp " + convertPath( substitute(el.att.name) ) );
 
                 case "window" : 
                    windowSettings(el);
@@ -682,6 +769,11 @@ class InstallTool
             }
          }
       }
+   }
+
+   function convertPath(inPath:String)
+   {
+      return mFullClassPaths ? neko.FileSystem.fullPath(inPath) : inPath;
    }
 
    function readAssets(inXML:haxe.xml.Fast)
@@ -743,7 +835,8 @@ class InstallTool
    {
       var ext = neko.io.Path.extension(inSrcFile);
       if (inProcess && 
-		   (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml" || ext=="ini" || ext=="gpe") )
+		   (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml" || ext=="ini" || ext=="gpe" ||
+             ext=="pbxproj" || ext=="plist" ) )
       {
          Print("process " + inSrcFile + " " + inDestFile );
          var contents = neko.io.File.getContent(inSrcFile);
