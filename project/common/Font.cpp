@@ -45,7 +45,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          else
          {
             Tile result = GetGlyph('?',outAdvance);
-            mGlyph[inCharacter] = mGlyph['?'];
+            glyph = mGlyph['?'];
             return result;
          }
       }
