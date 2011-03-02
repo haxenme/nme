@@ -89,39 +89,47 @@ public:
       IncRef();
       mBufferID = 0;
 
-      NSString *str = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
+      std::string asset = "assets/" + inFilename;
+      NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
       NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
       [str release];
 
-      // get some audio data from a wave file
-      CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:path] retain];
-      //[path release];
- 
-      if (!fileURL)
+      if (path==nil)
       {
-         mError = "Error int url: " + inFilename;
+         printf("Could not find sound in project:%s\n", inFilename.c_str());
       }
       else
       {
-         QuickVec<uint8> buffer;
-         ALenum  format;
-         ALsizei freq;
+         // get some audio data from a wave file
+         CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:path] retain];
+         //[path release];
  
-         LoadData(fileURL, buffer, &format, &freq);
- 
-         CFRelease(fileURL);
- 
-         if(alGetError() != AL_NO_ERROR)
+         if (!fileURL)
          {
-            mError = "Error opening sound data";
+            mError = "Error int url: " + inFilename;
          }
          else
          {
-            // grab a buffer ID from openAL
-            alGenBuffers(1, &mBufferID);
- 
-            // load the awaiting data blob into the openAL buffer.
-            alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
+            QuickVec<uint8> buffer;
+            ALenum  format;
+            ALsizei freq;
+    
+            LoadData(fileURL, buffer, &format, &freq);
+    
+            CFRelease(fileURL);
+    
+            if(alGetError() != AL_NO_ERROR)
+            {
+               mError = "Error opening sound data";
+            }
+            else
+            {
+               // grab a buffer ID from openAL
+               alGenBuffers(1, &mBufferID);
+    
+               // load the awaiting data blob into the openAL buffer.
+               alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
+            }
          }
       }
    }

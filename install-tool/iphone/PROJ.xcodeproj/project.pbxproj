@@ -23,6 +23,8 @@
         11B0F0000000000::hash:: /* ::name::.iphonesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B000000000000::hash:: ; };
       ::end::
 
+	   1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
+	
 
       /*
 		1EF0A843121ADCD2003F2F59  libregexp.iphoneos.a in Frameworks  = {isa = PBXBuildFile; fileRef = 1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a ; };
@@ -67,6 +69,8 @@
            11B000000000001::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphoneos.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
            11B000000000000::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphonesim.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
        ::end::
+
+   1E2E17A5131E8B5D0048F3C7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 
 /*
 		1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a  = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libregexp.iphoneos.a; path = lib/libregexp.iphoneos.a; sourceTree = SOURCE_ROOT; };
@@ -221,6 +225,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
+	         1E2E17A5131E8B5D0048F3C7 /* assets */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -258,7 +263,7 @@
 			dependencies = (
 				1EF0A883121AE1D2003F2F59 /* PBXTargetDependency */,
 			);
-			name = "::APP_TITLE::";
+			name = "::APP_FILE::"; /* HMMM */
 			productName = "::APP_TITLE::";
 			productReference = 1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */;
 			productType = "com.apple.product-type.application";
@@ -286,6 +291,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+            1E2E17AD131E8B5D0048F3C7 /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

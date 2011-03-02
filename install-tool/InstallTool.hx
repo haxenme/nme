@@ -5,9 +5,7 @@ class Asset
    public var dest:String;
    public var type:String;
    public var id:String;
-   public var resourceIndex:Int;
    public var flatName:String;
-   public var resourceName:String;
    public var hash:String;
 
    static var usedRes = new Hash<Bool>();
@@ -63,8 +61,9 @@ class Asset
               return inBase + "/" + dest + "/assets/" + id;
          }
       }
-      else if (inTarget=="iphone")
-         return inBase + "/assets/" + dest + "/" + id;
+
+      if (inTarget=="iphone")
+         return inBase + "/" + dest + "/assets/" + id;
 
       return inBase + "/" + dest + "/" + id;
    }

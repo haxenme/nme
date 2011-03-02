@@ -71,7 +71,7 @@ public:
    
          //printf("name : %s\n", name.c_str());
 
-         NSString *str = [[NSString alloc] initWithUTF8String:name.c_str()];
+         NSString *str = [[NSString alloc] initWithUTF8String:("assets/"+name).c_str()];
          mFont = [UIFont fontWithName:str size:inHeight];
 
          if (!mFont)

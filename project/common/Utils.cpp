@@ -276,7 +276,7 @@ double  GetTimeStamp()
    }
    double r =  mach_absolute_time() * time_scale;  
    return mach_absolute_time() * time_scale;  
-#elif defined(GPH)
+#elif defined(GPH) || defined(IPHONE)
 	  struct timeval tv;
      if( gettimeofday(&tv,NULL) )
        return 0;
