@@ -690,6 +690,12 @@ value nme_create_main_frame(value *arg, int nargs)
 
 DEFINE_PRIM_MULT(nme_create_main_frame);
 
+value nme_set_asset_base(value inBase)
+{
+   gAssetBase = val_string(inBase);
+}
+DEFINE_PRIM(nme_set_asset_base,1);
+
 value nme_close()
 {
    TerminateMainLoop();

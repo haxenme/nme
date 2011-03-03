@@ -7,6 +7,8 @@
 namespace nme
 {
 
+extern std::string gAssetBase;
+
 #ifdef ANDROID
 class WString
 {

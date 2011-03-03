@@ -2,6 +2,7 @@ class ApplicationMain
 {
    public static function main()
    {
+      nme.Lib.setAssetBase("assets/");
       nme.Lib.create(
            function(){ ::APP_MAIN::.main(); },
            ::WIN_WIDTH::, ::WIN_HEIGHT::,

@@ -1068,7 +1068,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 FILE *OpenRead(const char *inName)
 {
-    std::string asset = std::string("assets/") + inName;
+    std::string asset = gAssetBase + inName;
     NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
     NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
     [str release];

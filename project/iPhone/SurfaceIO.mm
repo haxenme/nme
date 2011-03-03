@@ -42,7 +42,7 @@ Surface *FromImage(UIImage *image)
 Surface *Surface::Load(const OSChar *inFilename)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    std::string asset = std::string("assets/") + inFilename;
+    std::string asset = gAssetBase + inFilename;
     NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
     NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
     UIImage *image = [[UIImage alloc] initWithContentsOfFile:path];

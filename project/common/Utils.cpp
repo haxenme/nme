@@ -20,6 +20,9 @@ typedef uint64_t __int64;
 namespace nme
 {
 
+std::string gAssetBase = "";
+
+
 #ifndef HX_WINDOWS
 
 std::string WideToUTF8(const WString &inWideString)

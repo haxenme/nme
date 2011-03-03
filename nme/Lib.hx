@@ -71,6 +71,11 @@ class Lib
       close();
    }
 
+   static public function setAssetBase(inBase:String)
+   {
+      nme_set_asset_base(inBase);
+   }
+
 
    static function nmeGetCurrent() : nme.display.MovieClip
    {
@@ -91,6 +96,7 @@ class Lib
    }
    #end
    static var nme_get_frame_stage = nme.Loader.load("nme_get_frame_stage",1);
+   static var nme_set_asset_base = nme.Loader.load("nme_set_asset_base",1);
 
 }
 
