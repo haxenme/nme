@@ -2,7 +2,8 @@ package nme.geom;
 
 import nme.Vector;
 
-//some of the code below is modified from sandy3d and five3dclass Matrix3D {
+//some of the code below is modified from sandy3d and five3d
+class Matrix3D {
 	public function new(?v:Vector<Float>) {
 		if (v != null && v.length == 16) {
 			rawData = v;
