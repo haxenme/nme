@@ -2,6 +2,7 @@ package nme.display;
 
 import nme.events.Event;
 import nme.geom.Point;
+import nme.errors.RangeError;
 
 class DisplayObjectContainer extends InteractiveObject
 {
