@@ -509,6 +509,7 @@ class Stage extends nme.display.DisplayObjectContainer
       //trace("poll");
       nme.Timer.nmeCheckTimers();
       nme.media.SoundChannel.nmePollComplete();
+      nme.net.URLLoader.nmePollData();
       nmeCheckRender();
    }
 
@@ -516,7 +517,8 @@ class Stage extends nme.display.DisplayObjectContainer
    {
       // TODO: In a multi-stage environment, may need to handle this better...
       var next_wake = nme.Timer.nmeNextWake(315000000.0);
-      if (next_wake>0.02 && nme.media.SoundChannel.nmeCompletePending())
+      if (next_wake>0.02 && (nme.media.SoundChannel.nmeCompletePending() ||
+		                       nme.net.URLLoader.nmeLoadPending() ) )
          next_wake = 0.02;
       next_wake = nmeNextFrameDue(next_wake);
       nme_stage_set_next_wake(nmeHandle,next_wake);

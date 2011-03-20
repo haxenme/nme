@@ -1,0 +1,19 @@
+package nme.events;
+
+
+class ProgressEvent extends Event
+{
+   public static inline var PROGRESS = "progress";
+   public static inline var SOCKET_DATA = "socketData";
+
+   public var bytesTotal(default,null):Int;
+   public var bytesLoaded(default,null):Int;
+
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, inBytesLoaded:Int = 0, inBytesTotal:Int = 0)
+	{
+	   super(type,bubbles,cancelable);
+		bytesLoaded = inBytesLoaded;
+		bytesTotal = inBytesTotal;
+	}
+
+}

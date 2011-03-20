@@ -121,6 +121,7 @@
   <file name="common/Input.cpp"/>
   <file name="common/SurfaceIO.cpp" unless="iphone"/>
   <file name="common/ManagedStage.cpp"/>
+  <file name="common/CURL.cpp"/>
 
   <file name="common/XML/tinystr.cpp"/>
   <file name="common/XML/tinyxml.cpp"/>
@@ -211,6 +212,8 @@
   <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="mobile"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
 
+  <lib name="${THIRDPARTY_LIBS}libcurl${SLIBEXT}" unless="mobile"/>
+
 
   <vflag name="-framework" value="IOKit" if="macos"/>
   <vflag name="-framework" value="CoreAudio" if="macos"/>
@@ -234,6 +237,8 @@
   <lib name="ddraw.lib" if="windows"/>
   <lib name="dxguid.lib" if="windows"/>
   <lib name="winmm.lib" if="windows"/>
+  <lib name="ws2_32.lib" if="windows"/>
+  <lib name="wldap32.lib" if="windows"/>
 
   <lib name="-ldl" if="linux"/>
   <lib name="-lGL" if="linux"/>

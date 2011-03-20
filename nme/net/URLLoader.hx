@@ -3,7 +3,8 @@ package nme.net;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.IOErrorEvent;
-import haxe.io.Bytes;
+import nme.events.ProgressEvent;
+import nme.utils.ByteArray;
 
 /**
 * @author   Hugh Sanderson
@@ -12,6 +13,17 @@ import haxe.io.Bytes;
 * @todo open and progress events
 * @todo Complete Variables type
 **/
+
+
+#if neko
+import neko.FileSystem;
+import neko.io.File;
+#else
+import cpp.FileSystem;
+import cpp.io.File;
+#end
+
+
 class URLLoader extends nme.events.EventDispatcher
 {
    public var bytesLoaded(default,null):Int;
@@ -19,11 +31,24 @@ class URLLoader extends nme.events.EventDispatcher
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
+   public var nmeHandle:Dynamic;
+	var state:Int;
+
+	static inline var urlInvalid = 0;
+	static inline var urlInit = 1;
+	static inline var urlLoading = 2;
+	static inline var urlComplete = 3;
+	static inline var urlError = 4;
+
+	static var activeLoaders = new List<URLLoader>();
+
    public function new(?request:URLRequest)
    {
       super();
+		nmeHandle = 0;
       bytesLoaded = 0;
-      bytesTotal = 0;
+      bytesTotal = -1;
+		state = urlInvalid;
       dataFormat = URLLoaderDataFormat.TEXT;
       if(request != null)
          load(request);
@@ -33,79 +58,110 @@ class URLLoader extends nme.events.EventDispatcher
 
    public function load(request:URLRequest)
    {
-      #if (neko || cpp)
-         var ereg = ~/^(http:\/\/)/;
-
-         if(!ereg.match(request.url)) { // local file
-            #if neko
-            if(!neko.FileSystem.exists(request.url)) {
-            #else
-            if(!cpp.FileSystem.exists(request.url)) {
-            #end
-               onError("File not found");
-               return;
-            }
-            #if neko
-            switch(neko.FileSystem.kind(request.url)) {
-            #else
-            switch(cpp.FileSystem.kind(request.url)) {
-            #end
-            case kdir:
-               onError("File " + request.url + " is a directory");
-            default:
-            }
-
-            try {
-               switch(dataFormat) {
-               case BINARY:
-					   #if neko
-                  this.data = Bytes.ofString(neko.io.File.getContent(request.url));
-                  #else
-                  this.data = cpp.io.File.getBytes(request.url);
-                  #end
-
-
+		state = urlInit;
+      if(request.url.substr(0,7)!="http://")
+		{ // local file
+         try {
+				var bytes = ByteArray.readFile(request.url);
+            switch(dataFormat)
+				{
                case TEXT, VARIABLES:
-                  #if neko
-                  this.data = neko.io.File.getContent(request.url);
-                  #else
-                  this.data = cpp.io.File.getContent(request.url);
-                  #end
-               }
-            } catch(e:Dynamic) {
-               onError(e);
-               return;
+                  data = bytes.asString();
+					default:
+					   data = bytes;
             }
-            dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
+         } catch(e:Dynamic) {
+            onError(e);
             return;
          }
-      #end
-      var h = new haxe.Http( request.url );
-      h.onData = onData;
-      h.onError = onError;
-      h.request( false );
-
-   }
-
-   public dynamic function onData (data:String) :Void {
-      switch(dataFormat) {
-      case BINARY:
-         this.data = haxe.io.Bytes.ofString( data );
-			bytesLoaded = bytesTotal= this.data.lenght;
-      case TEXT:
-         this.data = data;
-			bytesLoaded = bytesTotal= data.length;
-      case VARIABLES:
-         throw "Not complete";
+         dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
       }
-
-      dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
+		else
+		{
+		   nmeHandle = nme_curl_create(request.url);
+			if (nmeHandle==null)
+			{
+            onError("Could not open URL");
+			}
+			else
+			   activeLoaders.push(this);
+		}
    }
 
-   public dynamic function onError (msg) :Void {
-      //trace(msg);
+	public static function hasActive( ) { return !activeLoaders.isEmpty(); }
+
+   function update()
+	{
+	   if (nmeHandle!=null)
+		{
+		   var old_state = state;
+		   var old_loaded = bytesLoaded;
+		   var old_total = bytesTotal;
+		   nme_curl_update_loader(nmeHandle,this);
+			if (old_total < 0 && bytesTotal>0)
+			{
+            dispatchEvent( new nme.events.Event(nme.events.Event.OPEN) );
+			}
+
+			if (bytesTotal>0 && bytesLoaded!=old_loaded)
+			{
+		      //trace("Loaded : " + bytesLoaded + "/" + bytesTotal );
+            dispatchEvent(
+				   new ProgressEvent(ProgressEvent.PROGRESS,false,false,bytesLoaded,bytesTotal) );
+			}
+         if (state==urlComplete)
+			{
+				var bytes = ByteArray.fromHandle( nme_curl_get_data(nmeHandle) );
+				switch(dataFormat)
+				{
+               case TEXT, VARIABLES:
+                  data = bytes.asString();
+					default:
+					   data = bytes;
+            }
+				nmeHandle = null;
+            dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
+			}
+         else if (state==urlError)
+			{
+            var evt =  new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR,
+				        true, false, nme_curl_get_error_message(nmeHandle) );
+				nmeHandle = null;
+            dispatchEvent(evt);
+			}
+		}
+	}
+
+	public static function nmePollData( )
+	{
+	   if (!activeLoaders.isEmpty())
+		{
+			nme_curl_process_loaders();
+		   var stillActive = new List<URLLoader>();
+	      for(request in activeLoaders)
+		   {
+				request.update();
+				if (request.state == urlLoading)
+				   stillActive.push(request);
+		   }
+			activeLoaders = stillActive;
+		}
+	}
+
+   function onError(msg) :Void
+	{
       dispatchEvent( new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR, true, false, msg) );
    }
+
+	public static function nmeLoadPending() { return !activeLoaders.isEmpty(); }
+
+
+	static var nme_curl_create = nme.Loader.load("nme_curl_create",1);
+	static var nme_curl_process_loaders = nme.Loader.load("nme_curl_process_loaders",0);
+	static var nme_curl_update_loader = nme.Loader.load("nme_curl_update_loader",2);
+	static var nme_curl_get_code = nme.Loader.load("nme_curl_get_code",1);
+	static var nme_curl_get_error_message = nme.Loader.load("nme_curl_get_error_message",1);
+	static var nme_curl_get_data= nme.Loader.load("nme_curl_get_data",1);
 
 }
 

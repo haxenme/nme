@@ -16,6 +16,7 @@
 #include <Sound.h>
 #include <Input.h>
 #include <algorithm>
+#include <URL.h>
 #include <ByteArray.h>
 
 
@@ -75,6 +76,7 @@ static int _id_target;
 static int _id_underline;
 static int _id_url;
 static int _id_error;
+static int _id_state;
 static int _id_bytesTotal;
 static int _id_bytesLoaded;
 static int _id_volume;
@@ -146,6 +148,7 @@ extern "C" void InitIDs()
    _id_url = val_id("url");
    _id_error = val_id("error");
    _id_bytesTotal = val_id("bytesTotal");
+   _id_state = val_id("state");
    _id_bytesLoaded = val_id("bytesLoaded");
    _id_volume = val_id("volume");
    _id_pan = val_id("pan");
@@ -693,6 +696,7 @@ DEFINE_PRIM_MULT(nme_create_main_frame);
 value nme_set_asset_base(value inBase)
 {
    gAssetBase = val_string(inBase);
+	return val_null;
 }
 DEFINE_PRIM(nme_set_asset_base,1);
 
@@ -2550,6 +2554,68 @@ value nme_tilesheet_add_rect(value inSheet,value inRect)
    return alloc_null();
 }
 DEFINE_PRIM(nme_tilesheet_add_rect,2);
+
+// --- URL ----------------------------------------------------------
+
+value nme_curl_create(value inURL)
+{
+	URLLoader *loader = URLLoader::create(val_string(inURL));
+	return ObjectToAbstract(loader);
+}
+DEFINE_PRIM(nme_curl_create,1);
+
+value nme_curl_process_loaders()
+{
+	return alloc_bool(URLLoader::processAll());
+}
+DEFINE_PRIM(nme_curl_process_loaders,0);
+
+value nme_curl_update_loader(value inLoader,value outHaxeObj)
+{
+	URLLoader *loader;
+	if (AbstractToObject(inLoader,loader))
+	{
+		alloc_field(outHaxeObj,_id_state, alloc_int(loader->getState()) );
+		alloc_field(outHaxeObj,_id_bytesTotal, alloc_int(loader->bytesTotal()) );
+		alloc_field(outHaxeObj,_id_bytesLoaded, alloc_int(loader->bytesLoaded()) );
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_curl_update_loader,2);
+
+value nme_curl_get_error_message(value inLoader)
+{
+	URLLoader *loader;
+	if (AbstractToObject(inLoader,loader))
+	{
+		return alloc_string(loader->getErrorMessage());
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_curl_get_error_message,1);
+
+value nme_curl_get_code(value inLoader)
+{
+	URLLoader *loader;
+	if (AbstractToObject(inLoader,loader))
+	{
+		return alloc_int(loader->getHttpCode());
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_curl_get_code,1);
+
+
+value nme_curl_get_data(value inLoader)
+{
+	URLLoader *loader;
+	if (AbstractToObject(inLoader,loader))
+	{
+		return ObjectToAbstract( loader->releaseData() );
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_curl_get_data,1);
 
 
 

@@ -1,10 +1,11 @@
 package nme.errors;
 
-class RangeError extends Error
+class TypeError extends Error
 {
    public function new(inMessage:String = "")
    {
 	   super(inMessage,0);
    }
 }
+
 
