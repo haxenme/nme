@@ -1,5 +1,7 @@
 <xml>
 
+<set name="GCC_THIN_ARCHIVE" value="1" if="iphone"/>
+
 <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
 <set name="sdl" value="1" if="linux"/>
@@ -84,6 +86,7 @@
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/iPhone/" if="iphone"/>
 <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
@@ -198,6 +201,7 @@
   <files id="gph" if="gph"/>
   <files id="sdl" if="sdl"/>
   <files id="android" if="android"/>
+
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="no_thirdparty_extras"/>
@@ -212,8 +216,9 @@
   <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="mobile"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
 
-  <lib name="${THIRDPARTY_LIBS}libcurl${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" unless="iphone"/>
 
+  <flag value="${THIRDPARTY_LIBS}libcurl${name_extra}/*.o" if="iphone"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
   <vflag name="-framework" value="CoreAudio" if="macos"/>

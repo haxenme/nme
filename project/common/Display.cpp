@@ -1375,6 +1375,13 @@ void Stage::HandleEvent(Event &inEvent)
          mHandler(inEvent,mHandlerData);
       if (inEvent.result==0 && mFocusObject)
          mFocusObject->OnKey(inEvent);
+      #ifdef ANDROID
+      // Non-cancelled back key ...
+      if (inEvent.result==0 && inEvent.code==27)
+      {
+          TerminateMainLoop();
+      }
+      #endif
       return;
    }
 

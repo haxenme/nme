@@ -61,12 +61,12 @@ class Sample extends Sprite {
 
 
     private function errorHandler(e:IOErrorEvent):Void {
-        xmlTextField.text = "Had problem loading the XML File.";
+        xmlTextField.text = "Error:" + e.text;
     }
 
 	 public static function main()
 	 {
-      Lib.create(function(){new Sample();},320,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+      new Sample();
 	 }
 }
 

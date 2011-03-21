@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample13"
+     title="NME Sample 13 - URLLoader"
+     package="org.haxe.nme.sample13"
+     version="1.0"
+     company="nme" 
+	  main="Sample"
+  />
+
+  <window
+      width="320"
+		height="480"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  
+  <haxelib name="nme" />
+
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+
+  <certificates>
+     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
+  </certificates>
+
+</project>

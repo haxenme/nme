@@ -2,6 +2,7 @@
 #include <URL.h>
 #include <curl/curl.h>
 #include <map>
+#include <Utils.h>
 
 namespace nme
 {
@@ -11,6 +12,7 @@ static int sRunning = 0;
 static int sLoaders = 0;
 
 typedef std::map<CURL *,class CURLLoader *> CurlMap;
+void processMultiMessages();
 
 CurlMap *sCurlMap = 0;
 
@@ -35,6 +37,7 @@ public:
 		mBytesLoaded = 0;
 		mHttpCode = 0;
 		mByteArray = 0;
+		sLoaders++;
 		mHandle = curl_easy_init();
 		if (!sCurlMap)
 			sCurlMap = new CurlMap;
@@ -54,14 +57,14 @@ public:
       curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
 		mState = urlLoading;
-		curl_multi_add_handle(sCurlM,mHandle);
-		curl_multi_perform(sCurlM, &sRunning);
-		sLoaders++;
+		int c1 = curl_multi_add_handle(sCurlM,mHandle);
+		int result = curl_multi_perform(sCurlM, &sRunning);
+      processMultiMessages();
+
 	}
 
 	~CURLLoader()
 	{
-		//printf("Delete CURLLoader\n");
 		sCurlMap->erase(mHandle);
 		curl_multi_remove_handle(sCurlM,mHandle);
 		curl_easy_cleanup(mHandle);
@@ -93,7 +96,6 @@ public:
 				bytes.resize(s+size);
 				memcpy(&bytes[s],inBuffer,size);
 			}
-			//printf("Got %d bytes -> %d.\n",size, mByteArray->mBytes.size());
 		}
 		return inItems;
 	}
@@ -108,7 +110,6 @@ public:
 
 	void setResult(CURLcode inResult)
 	{
-		//printf("Got result %d\n", inResult);
 		mState = inResult==0 ? urlComplete : urlError;
 	}
 
@@ -162,17 +163,8 @@ public:
 
 };
 
-bool URLLoader::processAll()
+void processMultiMessages()
 {
-	bool check = sRunning;
-	for(int go=0; go<10 && sRunning; go++)
-	{
-		int code = curl_multi_perform(sCurlM,&sRunning);
-		if (code!= CURLM_CALL_MULTI_PERFORM)
-			break;
-	}
-	if (check)
-	{
 		int remaining;
 		CURLMsg *msg;
 		while( (msg=curl_multi_info_read(sCurlM,&remaining) ) )
@@ -184,8 +176,21 @@ bool URLLoader::processAll()
 					i->second->setResult( msg->data.result );
 			}
 		}
+}
+
+bool URLLoader::processAll()
+{
+	bool check = sRunning;
+	for(int go=0; go<10 && sRunning; go++)
+	{
+		int code = curl_multi_perform(sCurlM,&sRunning);
+		if (code!= CURLM_CALL_MULTI_PERFORM)
+			break;
 	}
-	return sRunning;
+	if (check)
+      processMultiMessages();
+
+   return sRunning;
 }
 
 URLLoader *URLLoader::create(const char *inURL)

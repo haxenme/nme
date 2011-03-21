@@ -147,7 +147,7 @@ class NDLL
          throw ("Could not find ndll " + src + " required by project" );
       }
       var slash = src.lastIndexOf("/");
-      var dest = inDir + src.substr(slash+1);
+      var dest = inDir + "/" + src.substr(slash+1);
       InstallTool.copyIfNewer(src,dest,inVerbose);
    }
 }
@@ -325,7 +325,7 @@ class InstallTool
       cp_recurse(NME + "/install-tool/android/hxml",mBuildDir + "/android/haxe");
 
       for(ndll in mNDLLs)
-         ndll.copy("Android/lib", dest + "/libs/armeabi/lib", true, mVerbose,"android");
+         ndll.copy("Android/lib", dest + "/libs/armeabi", true, mVerbose,"android");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
@@ -584,6 +584,10 @@ class InstallTool
 
    function addAssets(inDest:String,inTarget:String)
    {
+      // Make sure dir is there - even if empty
+      if (inTarget=="iphone")
+         mkdir(neko.io.Path.directory(dest));
+
       for(asset in mAssets)
       {
          var src = asset.getSrc();

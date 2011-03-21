@@ -125,7 +125,7 @@ class URLLoader extends nme.events.EventDispatcher
          else if (state==urlError)
 			{
             var evt =  new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR,
-				        true, false, nme_curl_get_error_message(nmeHandle) );
+				        true, false, nme_curl_get_error_message(nmeHandle),nme_curl_get_code(nmeHandle) );
 				nmeHandle = null;
             dispatchEvent(evt);
 			}

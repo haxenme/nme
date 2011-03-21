@@ -4,6 +4,34 @@
 #include <string>
 #include <QuickVec.h>
 
+
+#ifdef ANDROID
+#include <android/log.h>
+
+#ifdef VERBOSE
+#define VLOG(args...) __android_log_print(ANDROID_LOG_INFO, "NME",args)
+#else
+#define VLOG(args...)
+#endif
+
+#define ELOG(args...) __android_log_print(ANDROID_LOG_ERROR, "NME",args)
+
+#else
+
+#include <stdio.h>
+
+#ifdef VERBOSE
+#define VLOG(args...) { printf(args); printf("\n"); }
+#else
+#define VLOG(args...)
+#endif
+
+#define ELOG(args...) { printf(args); printf("\n"); }
+
+
+#endif
+
+
 namespace nme
 {
 
