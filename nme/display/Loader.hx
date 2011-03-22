@@ -28,13 +28,13 @@ class Loader extends nme.display.Sprite
    {
       super();
       contentLoaderInfo = LoaderInfo.create(this);
+      // Make sure we get in first...
+      contentLoaderInfo.addEventListener(nme.events.Event.COMPLETE,onData);
    }
 
    // No "loader context" in nme
    public function load(request:URLRequest)
    {
- 
-      contentLoaderInfo.addEventListener(nme.events.Event.COMPLETE,onData);
       contentLoaderInfo.load(request);
    }
 

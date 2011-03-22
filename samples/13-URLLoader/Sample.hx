@@ -46,7 +46,8 @@ class Sample extends Sprite {
 
         var loader = new nme.display.Loader();
         loader.contentLoaderInfo.addEventListener(nme.events.Event.COMPLETE, function(_) {
-            trace("Loaded image !");
+            var bmp:nme.display.Bitmap = cast loader.content;
+            trace("Loaded image " + bmp.bitmapData.width + "x" + bmp.bitmapData.height);
         });
 
         var request:URLRequest = new URLRequest("http://upload.wikimedia.org/wikipedia/en/7/72/Example-serious.jpg");
