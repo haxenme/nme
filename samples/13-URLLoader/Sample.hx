@@ -43,6 +43,17 @@ class Sample extends Sprite {
         xmlTextField.autoSize = TextFieldAutoSize.LEFT;
 
         addChild(xmlTextField);
+
+        var loader = new nme.display.Loader();
+        loader.contentLoaderInfo.addEventListener(nme.events.Event.COMPLETE, function(_) {
+            trace("Loaded image !");
+        });
+
+        var request:URLRequest = new URLRequest("http://upload.wikimedia.org/wikipedia/en/7/72/Example-serious.jpg");
+        loader.load(request);
+        loader.x = 180;
+        loader.y = 180;
+        addChild(loader);
     }
 
 	 function onProgress(event:ProgressEvent)
