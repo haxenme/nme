@@ -1070,9 +1070,79 @@ FILE *OpenRead(const char *inName)
 {
     std::string asset = gAssetBase + inName;
     NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
-    NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
+    
+    NSString *strWithoutInitialDash;    
+    if([str hasPrefix:@"/"]){
+     strWithoutInitialDash = [str substringFromIndex:1];
+     }
+     else {
+     strWithoutInitialDash = str;
+     }
+    
+    // [ddc] first search on the documents path, where we can write,
+    // then, failing that, search in the main bundle
+    //NSLog(@"file name I'm reading from = %@", strWithoutInitialDash);
+    NSString *pathInBundle = [[NSBundle mainBundle] pathForResource:strWithoutInitialDash ofType:nil];
+    NSString *pathInDocumentsDirectory = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingString: @"/"] stringByAppendingString: strWithoutInitialDash];
+    //NSLog(@"bundle path name I'm reading from = %@", pathInBundle);
+    //NSLog(@"document path I'm reading from = %@", pathInDocumentsDirectory);
+    
+    // since you can't write data in your bundle, we fist search if a new version of the
+    // file is in the Documents directory. If there is, then it means
+    // that someone meant to update the contents of the file in the bundle
+    // so we get the file from the Documents directory first
+    FILE * result;
+	result = fopen([pathInDocumentsDirectory cStringUsingEncoding:1],"rb");
+    if (result != NULL) {
+		 //NSLog(@"opening the file in the Documents directory");
+    }
+    else {
+	  //NSLog(@"no such file in Documents directory");
+      // OK there was no such file in the Documents directory so
+      // probably the user is OK with fetching the original file
+      // that came with the bundle.
+      if (pathInBundle != NULL) {
+		 result = fopen([pathInBundle cStringUsingEncoding:1],"rb");
+		 //NSLog(@"opening the file in the bundle");
+      }
+      else {
+	      //NSLog(@"couldn't find the file anywhere");
+      }
+    }
+
     [str release];
-    FILE * result = fopen([path cStringUsingEncoding:1],"rb");
+    return result;
+}
+
+//[ddc]
+FILE *OpenOverwrite(const char *inName)
+{
+    std::string asset = gAssetBase + inName;
+    NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
+
+    NSString *strWithoutInitialDash;    
+    if([str hasPrefix:@"/"]){
+     strWithoutInitialDash = [str substringFromIndex:1];
+     }
+     else {
+     strWithoutInitialDash = str;
+     }
+
+    //NSLog(@"file name I'm wrinting to = %@", strWithoutInitialDash);
+    
+    //NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
+    NSString  *path = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingString: @"/"] stringByAppendingString: strWithoutInitialDash];
+    //NSLog(@"path name I'm wrinting to = %@", path);
+    
+
+	if ( ! [[NSFileManager defaultManager] fileExistsAtPath: [path stringByDeletingLastPathComponent]] ) {
+        //NSLog(@"directory doesn't exist, creating it");
+		[[NSFileManager defaultManager] createDirectoryAtPath:[path stringByDeletingLastPathComponent] withIntermediateDirectories:YES  attributes:nil error:NULL];
+	}
+
+    FILE * result = fopen([path cStringUsingEncoding:1],"w");
+
+    [str release];
     return result;
 }
 
