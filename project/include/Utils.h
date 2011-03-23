@@ -76,14 +76,17 @@ typedef std::wstring WString;
 typedef wchar_t OSChar;
 #define val_os_string val_wstring
 #define OpenRead(x) _wfopen(x,L"rb")
+#define OpenOverwrite(x) _wfopen(x,L"w") // [ddc]
 #else
 typedef char OSChar;
 #define val_os_string val_string
 
 #ifdef IPHONE
 FILE *OpenRead(const char *inName);
+FILE *OpenOverwrite(const char *inName); // [ddc]
 #else
 #define OpenRead(x) fopen(x,"rb")
+#define OpenOverwrite(x) fopen(x,"w") // [ddc]
 #endif
 
 #endif
