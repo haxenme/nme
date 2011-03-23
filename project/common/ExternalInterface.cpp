@@ -553,6 +553,34 @@ value nme_byte_array_read_file(value inFilename)
 }
 DEFINE_PRIM(nme_byte_array_read_file,1);
 
+// [ddc]
+value nme_byte_array_overwrite_file(value inFilename, value inArray, value inLength)
+{
+   // file is created if it doesn't exist,
+   // if it exists, it is truncated to zero
+   FILE *file = OpenOverwrite(val_os_string(inFilename));
+   if (!file)
+   {
+      #ifdef ANDROID
+      // [todo]
+      #endif
+      return alloc_null();
+   }
+
+   ByteArray *array;
+   AbstractToObject(inArray,array);
+
+   
+   // The function fwrite() writes nitems objects, each size bytes long, to the
+   // stream pointed to by stream, obtaining them from the location given by
+   // ptr.
+   // fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
+   fwrite( (const char *)&array->mBytes[0] , 1, val_int(inLength) , file);
+
+   fclose(file);
+}
+DEFINE_PRIM(nme_byte_array_overwrite_file,3);
+
 
 value nme_byte_array_get_length(value inArray)
 {
