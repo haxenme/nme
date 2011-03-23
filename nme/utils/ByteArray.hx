@@ -73,6 +73,12 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
       return result;
    }
 
+   //[ddc]
+   public function writeFile(inString:String):Void
+   {
+      nme_byte_array_overwrite_file(inString, nmeData , nmeGetLength());
+   }
+
    // does the "work" for haxe.io.Input
    public override function readByte():Int
    {
@@ -116,6 +122,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
    static var nme_byte_array_get_bytes = nme.Loader.load("nme_byte_array_get_bytes",2);
    #end
    static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file",1);
+   static var nme_byte_array_overwrite_file = nme.Loader.load("nme_byte_array_overwrite_file",3);
    static var nme_byte_array_get_length = nme.Loader.load("nme_byte_array_get_length",1);
    static var nme_byte_array_get = nme.Loader.load("nme_byte_array_get",2);
    static var nme_byte_array_set = nme.Loader.load("nme_byte_array_set",3);
