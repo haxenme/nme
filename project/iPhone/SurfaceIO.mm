@@ -47,6 +47,8 @@ Surface *Surface::Load(const OSChar *inFilename)
     NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
     UIImage *image = [[UIImage alloc] initWithContentsOfFile:path];
     Surface *result = FromImage(image);
+    [str release];
+    [image release];
     [pool drain];
     return result;
 }
