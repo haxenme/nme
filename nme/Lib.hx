@@ -17,12 +17,19 @@ class Lib
 
    public static var stage(nmeGetStage,null): nme.display.Stage;
    public static var current(nmeGetCurrent,null): nme.display.MovieClip;
+   static var sIsInit = false;
 
 
    public static function create(inOnLoaded:Void->Void,inWidth:Int, inHeight:Int,
                       inFrameRate:Float = 60.0,  inColour:Int = 0xffffff,
                       inFlags:Int = 0x0f, inTitle:String = "NME", inIcon : String="")
    {
+      if (sIsInit)
+      {
+          throw("nme.Lib.create called multiple times.  " +
+                "This function is automatically called by the project code.");
+      }
+      sIsInit = true;
 	   initWidth = inWidth;
 	   initHeight = inHeight;
       var create_main_frame = nme.Loader.load("nme_create_main_frame",-1);

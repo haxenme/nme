@@ -32,6 +32,8 @@ class Sample extends Sprite
    
       var me = this;
       var cols = [ 0xff0000, 0x00ff00, 0x0000ff ];
+      var gfx = graphics;
+
       for(i in 0...3)
       {
          var pot = new Sprite();
@@ -46,6 +48,7 @@ class Sample extends Sprite
          else
             pot.addEventListener(nme.events.MouseEvent.MOUSE_DOWN, 
                 function(e) { me.OnDown(e,cols[i]); } );
+      gfx.drawRoundRect(10,100,40,30,10,10);
       }
 
       if (mMultiTouch)
@@ -87,11 +90,7 @@ class Sample extends Sprite
    
    public static function main()
    {
-   #if flash
       new Sample();
-   #else
-      Lib.create(function(){new Sample();},320,480,60,0xffffff,(1*Lib.HARDWARE) | Lib.RESIZABLE | (0*Lib.FULLSCREEN) );
-   #end
    }
    
 }

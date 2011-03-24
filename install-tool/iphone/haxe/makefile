@@ -1,23 +1,16 @@
-SP :=
-SP += 
-CONFIG := $(notdir $(subst $(SP),_, $(TARGET_BUILD_DIR)))
-
-ifeq ("$(CONFIG)","")
-  CONFIG := Release-iphonesim
-endif
-
-BUILD := $(word 1,$(subst -, ,$(CONFIG)))
-OS := $(word 2,$(subst -, ,$(CONFIG)))
-
-ifeq ("$(BUILD)","Debug")
+ifeq ("$(BUILD_STYLE)","Debug")
    DEBUG := -debug
+   CONFIG := Debug
+else
+   DEBUG :=
+   CONFIG := Release
 endif
 
-ifeq ("$(OS)","iphoneos")
-   HAXE_OS := iphoneos
-else
+HAXE_OS := $(PLATFORM_NAME)
+ifeq ("$(HAXE_OS)","iphonesimulator")
    HAXE_OS := iphonesim
 endif
+CONFIG := $(CONFIG)-$(HAXE_OS)
 
 
 LIB_FILE := build/$(CONFIG)/ApplicationMain$(DEBUG).$(HAXE_OS).a
@@ -32,6 +25,7 @@ endif
 export HXCPP_COMPILE_THREADS := 2
 
 build-haxe:
+	@echo "Haxe  CONFIG : $(CONFIG)"
 	mkdir -p build/$(CONFIG)
 	haxe Build.hxml -D iphone -D $(HAXE_OS) -cpp build/$(CONFIG) $(DEBUG)
 	if ( !(cmp -s $(LIB_FILE) ../lib/ApplicationMain.a) ); then echo "Copy library..."; cp $(LIB_FILE) ../lib/ApplicationMain.a; fi

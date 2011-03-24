@@ -441,7 +441,7 @@ class InstallTool
 	{
 	   var dest = mBuildDir + "/neko/" + neko.Sys.systemName() + "/";
 
-		run(dest, "./" + mDefines.get("APP_FILE"), [] );
+		run(dest, "neko" , [ mDefines.get("APP_FILE") + ".n"  ] );
 	}
 
 	// --- Cpp ---------------------------------------------------------------
@@ -586,7 +586,9 @@ class InstallTool
    {
       // Make sure dir is there - even if empty
       if (inTarget=="iphone")
-         mkdir(neko.io.Path.directory(dest));
+      {
+         mkdir(inDest + "/assets");
+      }
 
       for(asset in mAssets)
       {
