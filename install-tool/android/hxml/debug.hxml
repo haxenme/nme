@@ -3,5 +3,6 @@
 -cpp bin/android/haxe/debug
 -D android
 -debug
+--remap flash:nme
 -cmd haxelib run nme copy-if-newer bin/android/haxe/debug/libApplicationMain.so bin/android/project/libs/armeabi/libApplicationMain.so
 

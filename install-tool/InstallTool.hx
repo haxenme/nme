@@ -209,6 +209,8 @@ class InstallTool
 		setDefault("APP_ICON","");
 		setDefault("APP_COMPANY","Example Inc.");
 
+		setDefault("SWF_VERSION","9");
+
 		setDefault("BUILD_DIR","bin");
 
 		var make_contents = neko.io.File.getContent(inProjectFile);
@@ -220,6 +222,8 @@ class InstallTool
           mHaxeFlags.push("-cp " + neko.FileSystem.fullPath(".") );
 
 		parseXML(xml,"");
+
+		setDefault("WIN_FLASHBACKGROUND", mDefines.get("WIN_BACKGROUND").substr(2));
 
 		mBuildDir = mDefines.get("BUILD_DIR");
 
@@ -284,6 +288,14 @@ class InstallTool
                     buildGph();
                  if (inCommand=="run")
                    runGph();
+
+               case "flash":
+                 updateFlash();
+                 run("", "haxe", [hxml]);
+					  if (build)
+                    buildFlash();
+                 if (inCommand=="run")
+                   runFlash();
             }
          }
       }
@@ -471,15 +483,17 @@ class InstallTool
 	{
       var dest = mBuildDir + "/cpp/" + neko.Sys.systemName()  + "/";
 		var ext = mOS=="Windows" ? ".exe" : "";
-		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+ext,
-		   dest + mDefines.get("APP_FILE")+ ext,mVerbose);
+		var file = dest + mDefines.get("APP_FILE")+ ext;
+		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+ext, file,mVerbose);
+      if (mOS=="Mac" || mOS=="Mac64")
+         run("","chmod", [ "755", file ]);
 	}
 
 	function runCpp()
 	{
 	   var dest = mBuildDir + "/cpp/" + neko.Sys.systemName() + "/";
 
-		run(dest, mDefines.get("APP_FILE"), [] );
+		run(dest, "./" + mDefines.get("APP_FILE"), [] );
 	}
 
 	// --- GPH ---------------------------------------------------------------
@@ -578,7 +592,38 @@ class InstallTool
 */
 	}
 
+	// --- Flash ---------------------------------------------------------------
 
+	function updateFlash()
+   {
+      var dest = mBuildDir + "/flash/";
+
+      mkdir(dest);
+      mkdir(dest+"/bin");
+
+      cp_recurse(NME + "/install-tool/flash/hxml",dest + "haxe");
+
+		var icon = mDefines.get("APP_ICON");
+		if (icon!="")
+		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+
+      // TODO: Build into swf?
+      addAssets(dest,"flash/bin");
+   }
+
+   function buildFlash()
+	{
+      //var dest = mBuildDir + "/flash/";
+	}
+
+	function runFlash()
+	{
+	   var dest = mBuildDir + "/flash";
+
+      // nekotools server -d .
+
+		run(dest, mDefines.get("APP_FILE"), [] );
+	}
 
    // -------------------------------------------------
 
