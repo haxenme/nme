@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample01"
+     title="NME Sample 01 - Text"
+     package="org.haxe.nme.sample01"
+     version="1.0"
+     company="nme" 
+	  main="Sample"
+  />
+
+  <window
+      width="400"
+		height="300"
+		orientation="landscape"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  
+  <classpath name="." />
+  <haxelib name="nme" />
+
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+
+</project>

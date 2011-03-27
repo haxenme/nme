@@ -1,18 +1,34 @@
-import nme.Lib;
+import flash.Lib;
 
 class Sample
 {
 
 public static function main()
 {
-   Lib.create(function() {
-   var text = new nme.text.TextField();
-   text.x = 100;
-   text.y = 100;
+   var text = new flash.text.TextField();
+   text.x = 10;
+   text.y = 10;
    text.text = "Hello !";
-   Lib.stage.addChild(text);
+   Lib.current.stage.addChild(text);
+   text.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
 
-	}, 320,480, 100, 0xffffff, Lib.HARDWARE | Lib.RESIZABLE);
+   var text = new flash.text.TextField();
+   text.x = 10;
+   text.y = 30;
+   text.htmlText = "<font size='16'>Hello !</font>";
+   Lib.current.stage.addChild(text);
+ 
+   var text = new flash.text.TextField();
+   text.x = 10;
+   text.y = 50;
+   text.htmlText = "<font size='24'>Hello !</font>";
+   Lib.current.stage.addChild(text);
+
+   var text = new flash.text.TextField();
+   text.x = 10;
+   text.y = 80;
+   text.htmlText = "<font size='36'>Hello !</font>";
+   Lib.current.stage.addChild(text);
 }
 
 }
