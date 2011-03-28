@@ -15,6 +15,8 @@ static HBITMAP sgOldDIB = 0;
 static ARGB *sgDIBBits = 0;
 static int sgDIB_W = 0;
 static int sgDIB_H = 0;
+static unsigned char sGammaLUT[256];
+static bool sGammaLUTInit = false;
 
 class GDIFont : public FontFace
 {
@@ -47,6 +49,15 @@ public:
 
 	void RenderGlyph(int inChar, const RenderTarget &outTarget)
 	{
+		if (!sGammaLUTInit)
+		{
+			double pow_max = 255.0/pow(255,1.9);
+			for(int i=0;i<256;i++)
+			{
+				sGammaLUT[i] = pow(i,1.9)*pow_max + 0.5;
+			}
+			sGammaLUTInit = true;
+		}
 		int w = outTarget.mRect.w;
 		w = (w+3) & ~3;
 		int h = outTarget.mRect.h;
@@ -80,7 +91,7 @@ public:
          ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
          uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
 		   for(int x=0;x<outTarget.mRect.w;x++)
-				*dest++= (src++)->c1 ? 0xff: 0x00;
+				*dest++= sGammaLUT[(src++)->c1];
 		}
 
 	}
@@ -125,7 +136,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    desc.lfCharSet = DEFAULT_CHARSET; 
    desc.lfOutPrecision = OUT_RASTER_PRECIS; 
    desc.lfClipPrecision = CLIP_DEFAULT_PRECIS; 
-   desc.lfQuality = NONANTIALIASED_QUALITY; 
+   desc.lfQuality = ANTIALIASED_QUALITY; 
    desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
 	wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
 

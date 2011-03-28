@@ -20,6 +20,30 @@
 
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#include <stdio.h>
+#include <stdarg.h>
+
+inline void DoLog(const char *inFormat,...)
+{
+  va_list args;
+  va_start(args, inFormat);
+  vprintf (inFormat, args);
+  printf("\n");
+  va_end (args);
+}
+inline void DontLog(const char *inFormat,...) { }
+
+#ifdef VERBOSE
+
+#define VLOG DoLog
+#else
+#define VLOG DontLog
+#endif
+#define ELOG DoLog
+
+#else
+
 #ifdef VERBOSE
 #define VLOG(args...) { printf(args); printf("\n"); }
 #else
@@ -28,6 +52,7 @@
 
 #define ELOG(args...) { printf(args); printf("\n"); }
 
+#endif
 
 #endif
 
