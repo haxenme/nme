@@ -110,7 +110,7 @@ class NDLL
 		return result;
 	}
 
-   public function copy(inPrefix:String, inDir:String, inCPP:Bool, inVerbose:Bool,?inOS:String)
+   public function copy(inPrefix:String, inDir:String, inCPP:Bool, inVerbose:Bool, ioAllFiles:Array<String>,?inOS:String)
    {
 	   var src=srcDir;
 		var suffix = ".ndll";
@@ -148,7 +148,7 @@ class NDLL
       }
       var slash = src.lastIndexOf("/");
       var dest = inDir + "/" + src.substr(slash+1);
-      InstallTool.copyIfNewer(src,dest,inVerbose);
+      InstallTool.copyIfNewer(src,dest,ioAllFiles,inVerbose);
    }
 }
 
@@ -162,10 +162,13 @@ class InstallTool
    var mTarget:String;
    var mNDLLs : Array<NDLL>;
    var mAssets : Array<Asset>;
+   var mAllFiles :Array<String>;
    var NME:String;
 	var mVerbose:Bool;
 	var mDebug:Bool;
    var mFullClassPaths:Bool;
+   var mInstallBase:String;
+
    static var mID = 1;
    public static var mOS:String = neko.Sys.systemName();
 
@@ -191,6 +194,8 @@ class InstallTool
 		mDebug = inDebug;
       mNDLLs = [];
       mAssets = [];
+      mAllFiles = [];
+      mInstallBase = "";
 
       // trace(NME);
 		// trace(inCommand);
@@ -223,7 +228,9 @@ class InstallTool
 
 		parseXML(xml,"");
 
+      // Strip off 0x ....
 		setDefault("WIN_FLASHBACKGROUND", mDefines.get("WIN_BACKGROUND").substr(2));
+		setDefault("APP_VERSION_SHORT", mDefines.get("APP_VERSION").substr(2));
 
 		mBuildDir = mDefines.get("BUILD_DIR");
 
@@ -246,79 +253,73 @@ class InstallTool
       {
          mContext.HAXE_FLAGS = mHaxeFlags.length==0 ? "" : "\n" + mHaxeFlags.join("\n");
 
-         if (inCommand=="run" || inCommand=="build" || inCommand=="update")
+         if (inCommand=="test" || inCommand=="build" || inCommand=="rerun" ||inCommand=="installer")
          {
-			   var build = inCommand=="build" || inCommand=="run";
-            var hxml = mBuildDir + "/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
-            switch(inTarget)
-            {
-               case "android":
-                 updateAndroid();
-                 run("", "haxe", [hxml]);
-					  if (build)
-                    buildAndroid();
-                 if (inCommand=="run")
-                    runAndroid();
-               case "neko":
-                 updateNeko();
-                 run("", "haxe", [hxml]);
-					  if (build)
-                    buildNeko();
-                 if (inCommand=="run")
-                   runNeko();
-               case "cpp":
-                 updateCpp();
-                 run("", "haxe", [hxml]);
-					  if (build)
-                    buildCpp();
-                 if (inCommand=="run")
-                   runCpp();
-               case "iphone":
-                 updateIPhone();
-                 //run("", "haxe", [hxml]);
-					  if (build)
-                    buildIPhone();
-                 if (inCommand=="run")
-                   runIPhone();
-	
-					case "gph":
-                 updateGph();
-                 run("", "haxe", [hxml]);
-					  if (build)
-                    buildGph();
-                 if (inCommand=="run")
-                   runGph();
+			   var build = inCommand=="build" || inCommand=="test" || inCommand=="installer";
+			   var do_run = inCommand=="rerun" || inCommand=="test";
+            var update = inCommand!="rerun";
 
-               case "flash":
-                 updateFlash();
-                 run("", "haxe", [hxml]);
-					  if (build)
-                    buildFlash();
-                 if (inCommand=="run")
-                   runFlash();
+            var hxml = mBuildDir + "/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
+            var Target = inTarget.substr(0,1).toUpperCase() + inTarget.substr(1);
+            if (update)
+            {
+                var update_func = Reflect.field(this,"update" + Target);
+                Reflect.callMethod(this,update_func,[]);
+                if (build)
+                {
+                    run("", "haxe", [hxml]);
+					     if (build)
+                    {
+                       var build_func = Reflect.field(this,"build" + Target);
+                       Reflect.callMethod(this,build_func,[]);
+                    }
+                }
+            }
+            if (do_run)
+            {
+               var run_func = Reflect.field(this,"run" + Target);
+               Reflect.callMethod(this,run_func,[]);
+            }
+
+            if (inCommand=="installer")
+            {
+               var l = mInstallBase.length;
+               if (l==0)
+                  throw "Target does not support install_base for 'installer' option.";
+               var files = new Array<String>();
+
+               for(file in mAllFiles)
+                  if (file.substr(0,l)==mInstallBase)
+                     files.push(file.substr(l));
+
+               run(mInstallBase, "tar", ["cvzf", mDefines.get("APP_FILE") + ".tgz"].concat(files) );
             }
          }
       }
-  }
+   }
 
-  static public function getID()
-  {
-     return StringTools.hex(mID++,8);
-  }
-
-  static public function getNeko()
-  {
+   static public function getID()
+   {
+      return StringTools.hex(mID++,8);
+   }
+ 
+   static public function getNeko()
+   {
       var n = neko.Sys.getEnv("NEKO_INSTPATH");
       if (n==null || n=="")
          n = neko.Sys.getEnv("NEKO_INSTALL_PATH");
       return n + "/";
-  }
+   }
 
-  function Print(inString)
-  {
-     if (mVerbose)
-	    neko.Lib.println(inString);
-  }
+   function Print(inString)
+   {
+      if (mVerbose)
+	     neko.Lib.println(inString);
+   }
+
+   function isMac() { return mOS.substr(0,3)=="Mac"; }
+
+   // ----- Android ---------------------------------------------------------------------------
 
    function updateAndroid()
    {
@@ -337,11 +338,11 @@ class InstallTool
       cp_recurse(NME + "/install-tool/android/hxml",mBuildDir + "/android/haxe");
 
       for(ndll in mNDLLs)
-         ndll.copy("Android/lib", dest + "/libs/armeabi", true, mVerbose,"android");
+         ndll.copy("Android/lib", dest + "/libs/armeabi", true, mVerbose, mAllFiles, "android");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
-		   copyIfNewer(icon, dest + "/res/drawable-mdpi/icon.png",mVerbose);
+		   copyIfNewer(icon, dest + "/res/drawable-mdpi/icon.png",mAllFiles,mVerbose);
 
    }
 
@@ -418,25 +419,25 @@ class InstallTool
       var needsNekoApi = false;
       for(ndll in mNDLLs)
 		{
-         ndll.copy( mOS + "/", dest, false, mVerbose);
+         ndll.copy( mOS + "/", dest, false, mVerbose, mAllFiles );
 			if (ndll.needsNekoApi)
 			   needsNekoApi = true;
 		}
 		if (needsNekoApi)
 		{
 			var src = NDLL.getHaxelib("hxcpp") + "/bin/" + mOS + "/nekoapi.ndll";
-         InstallTool.copyIfNewer(src,dest + "/nekoapi.ndll",mVerbose);
+         InstallTool.copyIfNewer(src,dest + "/nekoapi.ndll",mAllFiles,mVerbose);
 		}
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
-		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+		   copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
 
       var neko = getNeko();
 		if (mOS=="Windows")
 		{
-		   copyIfNewer(neko + "gc.dll", dest + "/gc.dll",mVerbose);
-		   copyIfNewer(neko + "neko.dll", dest + "/neko.dll",mVerbose);
+		   copyIfNewer(neko + "gc.dll", dest + "/gc.dll",mAllFiles,mVerbose);
+		   copyIfNewer(neko + "neko.dll", dest + "/neko.dll",mAllFiles,mVerbose);
 		}
 
       addAssets(dest,"neko");
@@ -458,42 +459,82 @@ class InstallTool
 
 	// --- Cpp ---------------------------------------------------------------
 
+   function getCppContentDest()
+   {
+      return isMac() ? getCppDest() + "/Contents" : getCppDest();
+   }
+
+   function getCppDest()
+   {
+      if (isMac())
+         return mBuildDir + "/cpp/" + mOS + "/" + mDefines.get("APP_FILE") + ".app";
+
+      return mBuildDir + "/cpp/" + mOS + "/" + mDefines.get("APP_FILE");
+   }
+
 	function updateCpp()
    {
-      var dest = mBuildDir + "/cpp/" + mOS + "/";
-		mContext.CPP_DIR = mBuildDir + "/cpp/bin";
+      mInstallBase = mBuildDir + "/cpp/" + mOS + "/";
 
-      mkdir(dest);
+      var dest = getCppDest();
+		mContext.CPP_DIR = mBuildDir + "/cpp/bin";
 
       cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/cpp/haxe");
       cp_recurse(NME + "/install-tool/cpp/hxml",mBuildDir + "/cpp/haxe");
 
-		for(ndll in mNDLLs)
-         ndll.copy( mOS + "/", dest, false, mVerbose);
+      var content_dest = getCppContentDest();
+      var exe_dest = content_dest + (isMac() ? "/MacOS" : "" );
+      mkdir(exe_dest);
 
+		for(ndll in mNDLLs)
+         ndll.copy( mOS + "/", exe_dest, false, mVerbose, mAllFiles );
 
 		var icon = mDefines.get("APP_ICON");
-		if (icon!="")
-		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+      if (isMac())
+      {
+         cp_file(NME + "/install-tool/mac/Info.plist", content_dest + "/Info.plist",true);
 
-      addAssets(dest,"cpp");
+		   if (icon!="")
+         {
+            var resource_dest = dest + "/Resources";
+            mkdir(resource_dest);
+		      copyIfNewer(icon, resource_dest + "/icon.incs",mAllFiles,mVerbose);
+         }
+      }
+      else
+      {
+		   if (icon!="")
+         {
+		      mAllFiles.push(dest + "/icon.png");
+		      copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
+         }
+      }
+
+      addAssets(content_dest,"cpp");
    }
+
+   function getExt()
+   {
+		return mOS=="Windows" ? ".exe" : "";
+   }
+
 
    function buildCpp()
 	{
-      var dest = mBuildDir + "/cpp/" + neko.Sys.systemName()  + "/";
-		var ext = mOS=="Windows" ? ".exe" : "";
-		var file = dest + mDefines.get("APP_FILE")+ ext;
-		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+ext, file,mVerbose);
-      if (mOS=="Mac" || mOS=="Mac64")
+		var ext = getExt();
+      var exe_dest = isMac() ? getCppDest() + "/Contents/MacOS" : getCppDest();
+      mkdir(exe_dest);
+
+		var file = exe_dest + "/" + mDefines.get("APP_FILE")+ ext;
+		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+ext, file, mAllFiles,mVerbose);
+      if (isMac())
          run("","chmod", [ "755", file ]);
 	}
 
 	function runCpp()
 	{
-	   var dest = mBuildDir + "/cpp/" + neko.Sys.systemName() + "/";
-
-		run(dest, "./" + mDefines.get("APP_FILE"), [] );
+      var exe_dest = isMac() ? getCppDest() + "/Contents/MacOS" : getCppDest();
+		run(exe_dest, "./" + mDefines.get("APP_FILE"), [] );
 	}
 
 	// --- GPH ---------------------------------------------------------------
@@ -512,11 +553,13 @@ class InstallTool
       cp_file(NME + "/install-tool/gph/" + boot,mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + "/Boot.gpe" );
 
 		for(ndll in mNDLLs)
-         ndll.copy("GPH/", dest, true, mVerbose, "gph");
+         ndll.copy("GPH/", dest, true, mVerbose, mAllFiles, "gph");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
-		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+      {
+		   copyIfNewer(icon, dest + "/icon.png", mAllFiles,mVerbose);
+      }
 
       addAssets(dest,"cpp");
    }
@@ -526,7 +569,7 @@ class InstallTool
       var file = mDefines.get("APP_FILE");
       var dest = mBuildDir + "/gph/game/" + file + "/" + file + ".gpe";
       var gpe = mDebug ? "ApplicationMain-debug.gpe" : "ApplicationMain.gpe";
-		copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mVerbose);
+		copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mAllFiles, mVerbose);
 	}
 
 	function runGph()
@@ -563,8 +606,8 @@ class InstallTool
 
 		for(ndll in mNDLLs)
       {
-         ndll.copy("iPhone/", lib, true, mVerbose, "iphoneos");
-         ndll.copy("iPhone/", lib, true, mVerbose, "iphonesim");
+         ndll.copy("iPhone/", lib, true, mVerbose, mAllFiles, "iphoneos");
+         ndll.copy("iPhone/", lib, true, mVerbose, mAllFiles, "iphonesim");
       }
 
       addAssets(dest,"iphone");
@@ -605,7 +648,9 @@ class InstallTool
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
-		   copyIfNewer(icon, dest + "/icon.png",mVerbose);
+      {
+		   copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
+      }
 
       // TODO: Build into swf?
       addAssets(dest,"flash/bin");
@@ -640,7 +685,8 @@ class InstallTool
          var src = asset.getSrc();
          var dest = asset.getDest(inDest,inTarget);
          mkdir(neko.io.Path.directory(dest));
-         copyIfNewer(src,dest,mVerbose);
+         copyIfNewer(src,dest,mAllFiles,mVerbose);
+         mAllFiles.push(dest);
       }
    }
 
@@ -888,6 +934,7 @@ class InstallTool
 		   (ext=="xml" || ext=="java" || ext=="hx" || ext=="hxml" || ext=="ini" || ext=="gpe" ||
              ext=="pbxproj" || ext=="plist" ) )
       {
+         mAllFiles.push(inDestFile);
          Print("process " + inSrcFile + " " + inDestFile );
          var contents = neko.io.File.getContent(inSrcFile);
          var tmpl = new haxe.Template(contents);
@@ -898,17 +945,13 @@ class InstallTool
       }
       else
       {
-		   copyIfNewer(inSrcFile,inDestFile,mVerbose);
+		   copyIfNewer(inSrcFile,inDestFile,mAllFiles,mVerbose);
       }
    }
 
    public function cp_recurse(inSrc:String,inDestDir:String,inProcess:Bool = true)
    {
-      if (!neko.FileSystem.exists(inDestDir))
-      {
-         Print("mkdir " + inDestDir);
-         neko.FileSystem.createDirectory(inDestDir);
-      }
+      mkdir(inDestDir);
 
       var files = neko.FileSystem.readDirectory(inSrc);
       for(file in files)
@@ -936,6 +979,7 @@ class InstallTool
          {
             if (total!="") total+="/";
             total += part;
+            
             if (!neko.FileSystem.exists(total))
             {
                Print("mkdir " + total);
@@ -945,8 +989,9 @@ class InstallTool
       }
    }
 
-   public static function copyIfNewer(inFrom:String, inTo:String, inVerbose:Bool)
+   public static function copyIfNewer(inFrom:String, inTo:String, ioAllFiles:Array<String>,inVerbose:Bool)
    {
+      ioAllFiles.push(inTo);
       if (!neko.FileSystem.exists(inFrom))
       {
          neko.Lib.println("Error: " + inFrom + " does not exist");
@@ -1054,7 +1099,7 @@ class InstallTool
       include_path.push(NME + "/install-tool");
 
 
-      var valid_commands = ["copy-if-newer", "run", "build","update", "uninstall"];
+      var valid_commands = ["copy-if-newer", "rerun", "test", "build", "installer", "uninstall"];
       if (!Lambda.exists(valid_commands,function(c) return command==c))
       {
          if (command!="")
@@ -1071,7 +1116,7 @@ class InstallTool
             usage();
             return;
          }
-         copyIfNewer(words[0], words[1], verbose);
+         copyIfNewer(words[0], words[1],[],verbose);
       }
       else
       {

@@ -2,9 +2,9 @@
 <project>
 
   <app
-     file="Sample01"
-     title="NME Sample 01 - Text"
-     package="org.haxe.nme.sample01"
+     file="NME Sample 02"
+     title="NME Sample 02 - Text"
+     package="org.haxe.nme.sample02"
      version="1.0"
      company="nme" 
 	  main="Sample"
