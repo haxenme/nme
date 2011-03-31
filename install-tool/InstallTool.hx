@@ -318,6 +318,8 @@ class InstallTool
    }
 
    function isMac() { return mOS.substr(0,3)=="Mac"; }
+   function isWindows() { return mOS.substr(0,3)=="Win"; }
+	function dotSlash() { return isWindows() ? ".\\" : "./"; }
 
    // ----- Android ---------------------------------------------------------------------------
 
@@ -534,7 +536,7 @@ class InstallTool
 	function runCpp()
 	{
       var exe_dest = isMac() ? getCppDest() + "/Contents/MacOS" : getCppDest();
-		run(exe_dest, "./" + mDefines.get("APP_FILE"), [] );
+		run(exe_dest, dotSlash() + mDefines.get("APP_FILE"), [] );
 	}
 
 	// --- GPH ---------------------------------------------------------------
@@ -640,6 +642,7 @@ class InstallTool
 	function updateFlash()
    {
       var dest = mBuildDir + "/flash/";
+      var bin = dest + "bin";
 
       mkdir(dest);
       mkdir(dest+"/bin");
@@ -649,11 +652,10 @@ class InstallTool
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
       {
-		   copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
+		   copyIfNewer(icon, bin + "/icon.png",mAllFiles,mVerbose);
       }
 
-      // TODO: Build into swf?
-      addAssets(dest,"flash/bin");
+      addAssets(bin,"flash");
    }
 
    function buildFlash()
@@ -663,11 +665,9 @@ class InstallTool
 
 	function runFlash()
 	{
-	   var dest = mBuildDir + "/flash";
+	   var dest = mBuildDir + "/flash/bin";
 
-      // nekotools server -d .
-
-		run(dest, mDefines.get("APP_FILE"), [] );
+		run(dest, dotSlash() + mDefines.get("APP_FILE") + ".swf", [] );
 	}
 
    // -------------------------------------------------
@@ -844,7 +844,9 @@ class InstallTool
                    appSettings(el);
 
                 case "haxelib" : 
-                   mHaxeFlags.push("-lib " + substitute(el.att.name) );
+					    var lib =  substitute(el.att.name);
+						 if (lib!="nme" || mTarget!="flash")
+                      mHaxeFlags.push("-lib " + lib );
 
                 case "ndll" : 
                    mNDLLs.push(new NDLL(substitute(el.att.name),
