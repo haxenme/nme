@@ -24,7 +24,6 @@ class Loader extends nme.display.Sprite
    public var contentLoaderInfo(default,null) : LoaderInfo;
    var nmeImage:BitmapData;
    var nmeSWF:MovieClip;
-   public var url(default,null):String;
 
    public function new()
    {
