@@ -239,7 +239,7 @@
   <lib name="user32.lib" if="windows"/>
   <lib name="kernel32.lib" if="windows"/>
   <lib name="advapi32.lib" if="windows"/>
-  <lib name="ddraw.lib" if="windows"/>
+  <lib name="windows/ddraw.lib" if="windows"/>
   <lib name="dxguid.lib" if="windows"/>
   <lib name="winmm.lib" if="windows"/>
   <lib name="ws2_32.lib" if="windows"/>
