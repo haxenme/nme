@@ -25,5 +25,6 @@
   <haxelib name="nme" />
 
   <ndll name="nme" haxelib="nme" nekoapi="1"/>
+  <ndll name="std" />
 
 </project>
