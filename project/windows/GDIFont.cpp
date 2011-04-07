@@ -118,6 +118,17 @@ public:
 	int mPixelHeight;
 };
 
+int CALLBACK MyEnumFontFunc(
+    const LOGFONTW *lpelfe,
+    const TEXTMETRICW *lpntme,
+    DWORD FontType,
+    LPARAM lParam
+)
+{
+	return 0;
+}
+
+
 
 FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 {
@@ -140,10 +151,6 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
 	wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
 
-   HFONT hfont = CreateFontIndirectW( &desc );
-   if (!hfont)
-     return 0;
-
 	if (!sgFontDC)
 	{
 		sgFontDC = CreateCompatibleDC(0);
@@ -151,6 +158,18 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 		SetTextColor(sgFontDC, RGB(255,255,255));
 		SetTextAlign( sgFontDC, TA_TOP );
 	}
+
+	// Check to see if it is there....
+  int bad =  EnumFontFamiliesExW(sgFontDC, &desc, MyEnumFontFunc, 0, 0 );
+  if (bad)
+  {
+	  return 0;
+  }
+
+   HFONT hfont = CreateFontIndirectW( &desc );
+   if (!hfont)
+     return 0;
+
    return new GDIFont(hfont,height);
 }
 

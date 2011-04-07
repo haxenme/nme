@@ -220,8 +220,8 @@ struct FontInfo
       if (name > inRHS.name) return false;
       if (height < inRHS.height) return true;
       if (height > inRHS.height) return false;
-      if (native < inRHS.native) return true;
-      if (native > inRHS.native) return false;
+      if (!native && inRHS.native) return true;
+      if (native && !inRHS.native) return false;
       if (rotation < inRHS.rotation) return true;
       if (rotation > inRHS.rotation) return false;
       return flags < inRHS.flags;

@@ -562,6 +562,7 @@ value nme_byte_array_overwrite_file(value inFilename, value inArray, value inLen
    fwrite( (const char *)&array->mBytes[0] , 1, val_int(inLength) , file);
 
    fclose(file);
+	return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_overwrite_file,3);
 

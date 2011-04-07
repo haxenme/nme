@@ -142,14 +142,17 @@ public:
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace)
 {
    *outFace = 0;
-   int result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
+   int result = 0;
+   result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
    if (*outFace==0)
    {
       ByteArray *bytes = ByteArray::FromFile(inFace.c_str());
       if (bytes)
       {
          result = FT_New_Memory_Face(sgLibrary, &bytes->mBytes[0], bytes->mBytes.size(), inIndex, outFace);
-         delete bytes;
+			if (!*outFace)
+            delete bytes;
+			// The font owns the bytes here - so we just leak (fonts are not actually cleaned)
       }
    }
    return result;
@@ -174,7 +177,6 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
          if (test && test->style_flags == inFlags)
          {
             // A goodie!
-            FT_Done_Face(face);
             return test;
          }
          else if (test)
@@ -238,7 +240,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    {
       outFile = FONT_BASE + inName;
       return true;
-      //printf("Unfound font: %s\n",inName.c_str());
+      //VLOG("Unfound font: %s\n",inName.c_str());
       return false;
    }
 
@@ -248,6 +250,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
+	printf("GetFontFile\n");
+
    #ifdef ANDROID
    if (!strcasecmp(inName.c_str(),"times.ttf"))
       outFile = "/system/fonts/DroidSerif-Regular.ttf";
@@ -266,7 +270,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    else
    {
        #ifdef ANDROID
-       __android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.",
+       __android_log_print(ANDROID_LOG_INFO, "GetFontFile1", "Could not load font %s.",
           inName.c_str() );
        #endif
 

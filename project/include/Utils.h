@@ -44,7 +44,7 @@ inline void DontLog(const char *inFormat,...) { }
 
 #else
 
-#ifdef VERBOSE
+#ifndef VERBOSE
 #define VLOG(args...) { printf(args); printf("\n"); }
 #else
 #define VLOG(args...)
