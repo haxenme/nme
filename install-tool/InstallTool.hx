@@ -65,9 +65,6 @@ class Asset
       if (inTarget=="iphone")
          return inBase + "/" + dest + "/assets/" + id;
 
-      if (InstallTool.isMac())
-         return inBase + "/" + dest + "/Resources/" + id;
-
       return inBase + "/" + dest + "/" + id;
    }
 }
@@ -499,10 +496,11 @@ class InstallTool
       {
          cp_file(NME + "/install-tool/mac/Info.plist", content_dest + "/Info.plist",true);
 
-         var resource_dest = content_dest + "/Contents/Resources";
+         var resource_dest = content_dest + "/Resources";
          mkdir(resource_dest);
 		   if (icon!="")
 		      copyIfNewer(icon, resource_dest + "/icon.incs",mAllFiles,mVerbose);
+         addAssets(resource_dest,"cpp");
       }
       else
       {
@@ -511,9 +509,8 @@ class InstallTool
 		      mAllFiles.push(dest + "/icon.png");
 		      copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
          }
+         addAssets(content_dest,"cpp");
       }
-      addAssets(content_dest,"cpp");
-
    }
 
    function getExt()

@@ -10,6 +10,8 @@
 #include <android/log.h>
 #endif
 
+#include "ByteArray.h"
+
 #define NME_FREETYPE_FLAGS  (FT_LOAD_FORCE_AUTOHINT|FT_LOAD_DEFAULT)
 
 namespace nme
@@ -137,11 +139,30 @@ public:
 
 };
 
+int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace)
+{
+   *outFace = 0;
+   int result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
+   if (*outFace==0)
+   {
+      ByteArray *bytes = ByteArray::FromFile(inFace.c_str());
+      if (bytes)
+      {
+         result = FT_New_Memory_Face(sgLibrary, &bytes->mBytes[0], bytes->mBytes.size(), inIndex, outFace);
+         delete bytes;
+      }
+   }
+   return result;
+}
 
-static FT_Face OpenFont(const std::string &inFace, unsigned char inFlags)
+
+
+
+
+static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
 {
    FT_Face face = 0;
-   FT_New_Face(sgLibrary, inFace.c_str(), 0, &face);
+   MyNewFace(inFace.c_str(), 0, &face);
    if (face && inFlags!=0 && face->num_faces>1)
    {
       int n = face->num_faces;
@@ -149,7 +170,7 @@ static FT_Face OpenFont(const std::string &inFace, unsigned char inFlags)
       for(int f=1;f<n;f++)
       {
          FT_Face test = 0;
-         FT_New_Face(sgLibrary, inFace.c_str(), f, &test);
+         MyNewFace(inFace.c_str(), f, &test);
          if (test && test->style_flags == inFlags)
          {
             // A goodie!
@@ -445,7 +466,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    val_check(font_file, string);
    val_check(em_size, int);
 
-   result = FT_New_Face(nme::sgLibrary, val_string(font_file), 0, &face);
+   result = nme::MyNewFace(val_string(font_file), 0, &face);
      
    if (result == FT_Err_Unknown_File_Format) {
       val_throw(alloc_string("Unknown file format!"));

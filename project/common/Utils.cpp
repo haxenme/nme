@@ -17,10 +17,60 @@ typedef uint64_t __int64;
 #include <android/log.h>
 #endif
 
+#include "ByteArray.h"
+
 namespace nme
 {
 
 std::string gAssetBase = "";
+
+
+ByteArray *ByteArray::FromFile(const OSChar *inFilename)
+{
+   FILE *file = OpenRead(inFilename);
+   if (!file)
+   {
+      #ifdef ANDROID
+      return AndroidGetAssetBytes(inFilename);
+      #endif
+      return 0;
+   }
+
+   fseek(file,0,SEEK_END);
+   int len = ftell(file);
+   fseek(file,0,SEEK_SET);
+
+   ByteArray *result = new ByteArray;
+   result->mBytes.resize(len);
+   fread(&result->mBytes[0],len,1,file);
+   fclose(file);
+
+   return result;
+}
+
+
+#ifdef HX_WINDOWS
+ByteArray *ByteArray::FromFile(const char *inFilename)
+{
+   FILE *file = fopen(inFilename,"rb");
+   if (!file)
+      return 0;
+
+   fseek(file,0,SEEK_END);
+   int len = ftell(file);
+   fseek(file,0,SEEK_SET);
+
+   ByteArray *result = new ByteArray;
+   result->mBytes.resize(len);
+   fread(&result->mBytes[0],len,1,file);
+   fclose(file);
+
+   return result;
+}
+#endif
+
+
+
 
 
 #ifndef HX_WINDOWS

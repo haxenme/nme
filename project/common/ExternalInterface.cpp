@@ -529,25 +529,9 @@ DEFINE_PRIM(nme_byte_array_create,1);
 
 value nme_byte_array_read_file(value inFilename)
 {
-   FILE *file = OpenRead(val_os_string(inFilename));
-   if (!file)
-   {
-      #ifdef ANDROID
-      ByteArray *result = AndroidGetAssetBytes(val_string(inFilename));
-      if (result)
-         return ObjectToAbstract(result);
-      #endif
+   ByteArray *result = ByteArray::FromFile(val_os_string(inFilename));
+   if (result==0)
       return alloc_null();
-   }
-
-   fseek(file,0,SEEK_END);
-   int len = ftell(file);
-   fseek(file,0,SEEK_SET);
-
-   ByteArray *result = new ByteArray;
-   result->mBytes.resize(len);
-   fread(&result->mBytes[0],len,1,file);
-   fclose(file);
 
    return ObjectToAbstract(result);
 }
