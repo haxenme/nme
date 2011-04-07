@@ -102,13 +102,19 @@ typedef wchar_t OSChar;
 #define val_os_string val_wstring
 #define OpenRead(x) _wfopen(x,L"rb")
 #define OpenOverwrite(x) _wfopen(x,L"w") // [ddc]
+
 #else
 typedef char OSChar;
 #define val_os_string val_string
 
-#ifdef IPHONE
+#if defined(IPHONE)
 FILE *OpenRead(const char *inName);
 FILE *OpenOverwrite(const char *inName); // [ddc]
+#elif defined(HX_MACOS)
+} // close namespace nme
+extern "C" FILE *OpenRead(const char *inName);
+extern "C" FILE *OpenOverwrite(const char *inName);
+namespace nme {
 #else
 #define OpenRead(x) fopen(x,"rb")
 #define OpenOverwrite(x) fopen(x,"w") // [ddc]

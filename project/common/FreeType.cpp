@@ -10,6 +10,7 @@
 #include <android/log.h>
 #endif
 
+#define NME_FREETYPE_FLAGS  (FT_LOAD_FORCE_AUTOHINT|FT_LOAD_DEFAULT)
 
 namespace nme
 {
@@ -34,7 +35,7 @@ public:
    bool LoadBitmap(int inChar)
    {
       int idx = FT_Get_Char_Index( mFace, inChar );
-      int err = FT_Load_Glyph( mFace, idx, FT_LOAD_DEFAULT  );
+      int err = FT_Load_Glyph( mFace, idx, NME_FREETYPE_FLAGS  );
       if (err)
          return false;
 
@@ -484,7 +485,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
          FT_ULong    char_code = (FT_ULong)val_int(val_array_i(char_vector,i));
          FT_UInt     glyph_index = FT_Get_Char_Index(face, char_code);
 
-         if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT) == 0) {
+         if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0) {
             glyph             *g = new glyph;
 
             result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
@@ -505,7 +506,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
 
       char_code = FT_Get_First_Char(face, &glyph_index);
       while(glyph_index != 0) {
-         if(FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT) == 0) {
+         if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0) {
             glyph             *g = new glyph;
 
             result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);

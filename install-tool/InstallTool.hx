@@ -65,6 +65,9 @@ class Asset
       if (inTarget=="iphone")
          return inBase + "/" + dest + "/assets/" + id;
 
+      if (InstallTool.isMac())
+         return inBase + "/" + dest + "/Resources/" + id;
+
       return inBase + "/" + dest + "/" + id;
    }
 }
@@ -317,9 +320,9 @@ class InstallTool
 	     neko.Lib.println(inString);
    }
 
-   function isMac() { return mOS.substr(0,3)=="Mac"; }
-   function isWindows() { return mOS.substr(0,3)=="Win"; }
-	function dotSlash() { return isWindows() ? ".\\" : "./"; }
+   public static function isMac() { return mOS.substr(0,3)=="Mac"; }
+   public static function isWindows() { return mOS.substr(0,3)=="Win"; }
+	public static function dotSlash() { return isWindows() ? ".\\" : "./"; }
 
    // ----- Android ---------------------------------------------------------------------------
 
@@ -496,12 +499,10 @@ class InstallTool
       {
          cp_file(NME + "/install-tool/mac/Info.plist", content_dest + "/Info.plist",true);
 
+         var resource_dest = content_dest + "/Contents/Resources";
+         mkdir(resource_dest);
 		   if (icon!="")
-         {
-            var resource_dest = dest + "/Resources";
-            mkdir(resource_dest);
 		      copyIfNewer(icon, resource_dest + "/icon.incs",mAllFiles,mVerbose);
-         }
       }
       else
       {
@@ -511,8 +512,8 @@ class InstallTool
 		      copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
          }
       }
-
       addAssets(content_dest,"cpp");
+
    }
 
    function getExt()
@@ -528,7 +529,8 @@ class InstallTool
       mkdir(exe_dest);
 
 		var file = exe_dest + "/" + mDefines.get("APP_FILE")+ ext;
-		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+ext, file, mAllFiles,mVerbose);
+      var dbg = mDebug ? "-debug" : "";
+		copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+dbg+ext, file, mAllFiles,mVerbose);
       if (isMac())
          run("","chmod", [ "755", file ]);
 	}

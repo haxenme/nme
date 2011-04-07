@@ -71,6 +71,28 @@ static NSString *getApplicationName(void)
     return appName;
 }
 
+FILE *OpenRead(const char *inName)
+{
+    FILE * result;
+    NSString *str = [[NSString alloc] initWithUTF8String:inName];
+    NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
+
+    result = fopen(inName,"rb");
+    if (result)
+       return result;
+
+    result = fopen([pathInBundle cStringUsingEncoding:1],"rb");
+    return result;
+}
+
+// TODO:?
+FILE *OpenOverwrite(const char *inName)
+{
+   return fopen(inName,"w");
+}
+
+
+
 #if SDL_USE_NIB_FILE
 /* A helper category for NSString */
 @interface NSString (ReplaceSubString)
