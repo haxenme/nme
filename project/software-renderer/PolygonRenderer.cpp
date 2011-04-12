@@ -442,17 +442,19 @@ public:
       }
    }
 
-   void Align(UserPoint &ioP0, UserPoint &ioP1)
+   void Align(const UserPoint &t0, const UserPoint &t1, UserPoint &ioP0, UserPoint &ioP1)
    {
-      if (ioP0!=ioP1)
+      if (t0!=t1)
       {
-         if (ioP0.x == ioP1.x)
+         if (t0.x == t1.x)
          {
             ioP0.x = ioP1.x = floor(ioP0.x) + 0.5;
+            //printf(" align x %f -> %f\n", t0.x,ioP0.x);
          }
-         else if (ioP0.y == ioP1.y)
+         else if (t0.y == t1.y)
          {
             ioP0.y = ioP1.y = floor(ioP0.y) + 0.5;
+            //printf(" align y %f -> %f\n", t0.y,ioP0.y);
          }
       }
    }
@@ -1035,31 +1037,40 @@ public:
       }
 
       UserPoint *first = 0;
+      UserPoint unaligned_first;
       UserPoint *prev = 0;
+      UserPoint unaligned_prev;
       for(int i=0;i<n;i++)
       {
+			UserPoint p = *point;
          switch(mCommands[mCommand0 + i])
          {
             case pcWideMoveTo:
                point++;
+					p = *point;
             case pcBeginAt:
             case pcMoveTo:
-               if (first)
-                  Align(*first,*point);
+					unaligned_first = *point;
                first = point;
                break;
 
             case pcWideLineTo:
                point++;
+					p = *point;
             case pcLineTo:
+					if (first && prev && *point==unaligned_first)
+                  Align(unaligned_prev,*point,*prev,*first);
+
                if (prev)
-                  Align(*prev,*point);
+                  Align(unaligned_prev,*point,*prev,*point);
                break;
 
             case pcCurveTo:
                point++;
+					p = *point;
                break;
          }
+			unaligned_prev = p;
          prev = point++;
       }
    }
