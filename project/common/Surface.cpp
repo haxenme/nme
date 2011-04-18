@@ -951,7 +951,7 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
 
 void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
 {
-   ARGB rgb(inColour);
+   ARGB rgb(inColour | ((mPixelFormat & pfHasAlpha) ? 0 : 0xFF000000));
    if (mPixelFormat==pfAlpha)
    {
       memset(mBase, rgb.a,mStride*mHeight);
@@ -965,6 +965,10 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
    int x1 = inRect ? inRect->x1()  : Width();
    int y0 = inRect ? inRect->y  : 0;
    int y1 = inRect ? inRect->y1()  : Height();
+   if( x0 < 0 ) x0 = 0; if( x0 > Width() ) x0 = Width();
+   if( x1 < 0 ) x1 = 0; if( x1 > Width() ) x1 = Width();
+   if( y0 < 0 ) y0 = 0; if( y0 > Height() ) y0 = Height();
+   if( y1 < 0 ) y1 = 0; if( y1 > Height() ) y1 = Height();
    for(int y=y0;y<y1;y++)
    {
       uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;

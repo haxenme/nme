@@ -2014,7 +2014,7 @@ value nme_bitmap_data_clear(value inHandle,value inRGB)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      surface->Clear( val_int(inRGB) | 0xff000000 );
+      surface->Clear( val_int(inRGB) );
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_clear,2);
