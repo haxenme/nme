@@ -40,7 +40,7 @@ bool Transform::operator==(const Transform &inRHS) const
 
 Fixed10 Transform::ToImageAA(const UserPoint &inPoint) const
 {
-   return Fixed10( inPoint.x*mAAFactor, inPoint.y*mAAFactor );
+   return Fixed10( inPoint.x*mAAFactor + 0.5, inPoint.y*mAAFactor + 0.5 );
 }
 
 

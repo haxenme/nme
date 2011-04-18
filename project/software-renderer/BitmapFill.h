@@ -305,18 +305,18 @@ public:
 
    inline void SetPos(int inSX,int inSY)
    {
+		double x = inSX+0.5;
+      double y = inSY+0.5;
 		if (PERSP)
 		{
-		   double x = inSX;
-         double y = inSY;
          mTX = mMapper.m00*x + mMapper.m01*y + mMapper.mtx;
          mTY = mMapper.m10*x + mMapper.m11*y + mMapper.mty;
          mTW =         mWX*x +         mWY*y +         mW0;
 		}
 		else
 		{
-         mPos.x = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
-         mPos.y = (int)( (mMapper.m10*inSX + mMapper.m11*inSY + mMapper.mty) * (1<<16) + 0.5);
+         mPos.x = (int)( (mMapper.m00*x + mMapper.m01*y + mMapper.mtx) * (1<<16) + 0.5);
+         mPos.y = (int)( (mMapper.m10*x + mMapper.m11*y + mMapper.mty) * (1<<16) + 0.5);
 		}
    }
 

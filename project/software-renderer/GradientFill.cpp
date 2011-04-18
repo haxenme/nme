@@ -102,10 +102,12 @@ public:
 
    inline void SetPos(int inSX,int inSY)
    {
+      float cx = inSX+0.5;
+      float cy = inSY+0.5;
       if (PAD)
-         mPos = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<16) + 0.5);
+         mPos = (int)( (mMapper.m00*cx + mMapper.m01*cy + mMapper.mtx) * (1<<16) + 0.5);
       else
-         mPos = (int)( (mMapper.m00*inSX + mMapper.m01*inSY + mMapper.mtx) * (1<<23) + 0.5);
+         mPos = (int)( (mMapper.m00*cx + mMapper.m01*cy + mMapper.mtx) * (1<<23) + 0.5);
    }
    ARGB GetInc( )
    {
@@ -159,12 +161,14 @@ public:
 
    inline void SetPos(int inSX,int inSY)
    {
+      float cx = inSX+0.5;
+      float cy = inSY+0.5;
       if (GRADIENT_FOCAL0)
-         mGX = mMapper.m00 * inSX + mMapper.m01*inSY + mMapper.mtx;
+         mGX = mMapper.m00 * cx + mMapper.m01*cy + mMapper.mtx;
       else
-         mGX = mMapper.m00 * inSX + mMapper.m01*inSY + mMapper.mtx - mFX;
+         mGX = mMapper.m00 * cx + mMapper.m01*cy + mMapper.mtx - mFX;
 
-      mGY = mMapper.m10 * inSX + mMapper.m11*inSY + mMapper.mty;
+      mGY = mMapper.m10 * cx + mMapper.m11*cy + mMapper.mty;
    }
 
 
