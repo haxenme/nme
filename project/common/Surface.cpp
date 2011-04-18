@@ -588,10 +588,20 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
                      BlendMode inBlend, const BitmapCache *inMask,
                      uint32 inTint ) const
 {
+   // Make an intermediate target if source and target is the same surface
+   RenderTarget adjustedDest = outDest;
+   if( outDest.mSoftPtr >= GetBase() && outDest.mSoftPtr < GetBase() + GetStride()*Height() ) {
+      adjustedDest.mSoftPtr = (uint8*)alloca(outDest.Width()*outDest.Height()*4);
+      for(int y=0; y<outDest.Height(); ++y) {
+         memcpy(adjustedDest.Row(y), outDest.Row(y), outDest.Width()*4);
+      }
+      adjustedDest.mSoftStride = Width()*4;
+   }
+
    // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
    // clip ...
-   src_rect = src_rect.Intersect(outDest.mRect);
+   src_rect = src_rect.Intersect(adjustedDest.mRect);
 
    if (inMask)
       src_rect = src_rect.Intersect(inMask->GetRect());
@@ -607,12 +617,12 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       int dy = inPosY + src_rect.y - inSrcRect.y;
 
       bool src_alpha = mPixelFormat==pfAlpha;
-      bool dest_alpha = outDest.mPixelFormat==pfAlpha;
+      bool dest_alpha = adjustedDest.mPixelFormat==pfAlpha;
 
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
       {
-         ImageDest<uint8> dest(outDest);
+         ImageDest<uint8> dest(adjustedDest);
          if (inMask)
          {
             if (src_alpha)
@@ -634,7 +644,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
          return;
       }
 
-      ImageDest<ARGB> dest(outDest);
+      ImageDest<ARGB> dest(adjustedDest);
       bool tint = inBlend==bmTinted;
       bool tint_inner = inBlend==bmTintedInner;
 
@@ -691,6 +701,12 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
             else
                TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
          }
+      }
+   }
+
+   if(adjustedDest.mSoftPtr != outDest.mSoftPtr) {
+      for(int y=0; y<outDest.Height(); ++y) {
+         memcpy(outDest.Row(y), adjustedDest.Row(y), outDest.Width()*4);
       }
    }
 }
