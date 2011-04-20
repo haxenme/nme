@@ -238,14 +238,14 @@ struct SpanRect
       }
    }
 
-   void BuildAlphaRuns4(Transitions *inTrans, AlphaRuns &outRuns)
+   void BuildAlphaRuns4(Transitions *inTrans, AlphaRuns &outRuns,int inFactor)
    {
       AlphaIterator<2> a0,a1,a2,a3;
 
-      BuildAlphaRuns(inTrans[0],a0.mRuns);
-      BuildAlphaRuns(inTrans[1],a1.mRuns);
-      BuildAlphaRuns(inTrans[2],a2.mRuns);
-      BuildAlphaRuns(inTrans[3],a3.mRuns);
+      BuildAlphaRuns(inTrans[0],a0.mRuns,256);
+      BuildAlphaRuns(inTrans[1],a1.mRuns,256);
+      BuildAlphaRuns(inTrans[2],a2.mRuns,256);
+      BuildAlphaRuns(inTrans[3],a3.mRuns,256);
 
       enum { MAX_X = 0x7fffffff };
 
@@ -256,6 +256,8 @@ struct SpanRect
       a2.Init(x);
       a3.Init(x);
 
+      int f = inFactor>>4;
+
       while(x<MAX_X)
       {
          int next_x = MAX_X;
@@ -263,17 +265,17 @@ struct SpanRect
          if (next_x == MAX_X)
             break;
          if (alpha>0)
-            outRuns.push_back( AlphaRun(x>>2,next_x>>2,alpha<<4) );
+            outRuns.push_back( AlphaRun(x>>2,next_x>>2,alpha*f) );
          x = next_x;
       }
    }
 
-   void BuildAlphaRuns2(Transitions *inTrans, AlphaRuns &outRuns)
+   void BuildAlphaRuns2(Transitions *inTrans, AlphaRuns &outRuns,int inFactor)
    {
       AlphaIterator<1> a0,a1;
 
-      BuildAlphaRuns(inTrans[0],a0.mRuns);
-      BuildAlphaRuns(inTrans[1],a1.mRuns);
+      BuildAlphaRuns(inTrans[0],a0.mRuns,256);
+      BuildAlphaRuns(inTrans[1],a1.mRuns,256);
 
       enum { MAX_X = 0x7fffffff };
 
@@ -281,6 +283,7 @@ struct SpanRect
 
       a0.Init(x);
       a1.Init(x);
+      int f = inFactor>>2;
 
       while(x<MAX_X)
       {
@@ -289,14 +292,14 @@ struct SpanRect
          if (next_x == MAX_X)
             break;
          if (alpha>0)
-            outRuns.push_back( AlphaRun(x>>1,next_x>>1,alpha<<6) );
+            outRuns.push_back( AlphaRun(x>>1,next_x>>1,alpha*f) );
          x = next_x;
       }
    }
 
 
 
-   void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns)
+   void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns,int inFactor)
    {
       int alpha = 0;
       int last_x = mRect.x;
@@ -320,14 +323,14 @@ struct SpanRect
 
             total+=t->val;
             // Winding rule ..
-            alpha = (total) ? 256 : 0;
+            alpha = (total) ? inFactor : 0;
          }
       }
       if (alpha>0)
         outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
    }
 
-   AlphaMask *CreateMask(const Transform &inTransform)
+   AlphaMask *CreateMask(const Transform &inTransform,int inAlpha)
    {
       Rect rect = mRect/mAA;
       AlphaMask *mask = new AlphaMask(rect,inTransform);
@@ -337,13 +340,13 @@ struct SpanRect
          switch(mAA)
          {
             case 1:
-               BuildAlphaRuns(*t,mask->mLines[y]);
+               BuildAlphaRuns(*t,mask->mLines[y],inAlpha);
                break;
             case 2:
-               BuildAlphaRuns2(t,mask->mLines[y]);
+               BuildAlphaRuns2(t,mask->mLines[y],inAlpha);
                break;
             case 4:
-               BuildAlphaRuns4(t,mask->mLines[y]);
+               BuildAlphaRuns4(t,mask->mLines[y],inAlpha);
                break;
          }
          t+=mAA;
@@ -494,9 +497,9 @@ public:
             // TODO: make visible_pixels a bit bigger ?
             mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
    
-            Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
+            int alpha_factor = Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
    
-            mAlphaMask = mSpanRect->CreateMask(mTransform);
+            mAlphaMask = mSpanRect->CreateMask(mTransform, alpha_factor );
    
             delete mSpanRect;
          }
@@ -629,7 +632,7 @@ public:
    }
 
 
-   virtual void Iterate(IterateMode inMode,const Matrix &m) = 0;
+   virtual int Iterate(IterateMode inMode,const Matrix &m) = 0;
    virtual void AlignOrthogonal()  { }
 
    UserPoint           mHitTest;
@@ -801,7 +804,9 @@ public:
 	{
       // Convert line data to solid data
       double perp_len = mStroke->thickness;
-      if (perp_len>=0)
+      if (perp_len==0.0)
+         perp_len = 0.5;
+      else if (perp_len>=0)
       {
          perp_len *= 0.5;
          switch(mStroke->scaleMode)
@@ -826,13 +831,22 @@ public:
 		return perp_len;
 	}
 
-   void Iterate(IterateMode inMode,const Matrix &m)
+   int Iterate(IterateMode inMode,const Matrix &m)
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
                inMode==itCreateRenderer ? &LineRender::BuildSolid :
                        &LineRender::BuildHitTest;
 
       double perp_len = GetPerpLen(m);
+      if (perp_len<0.1)
+         return 0;
+
+      int alpha = 256;
+      if (perp_len<0.5)
+      {
+         alpha = 512 * perp_len;
+         perp_len = 0.5;
+      }
 
 
       int n = mCommandCount;
@@ -1017,6 +1031,8 @@ public:
          EndCap(first,-first_perp);
          EndCap(prev,prev_perp);
       }
+
+      return alpha;
    }
 
    void AlignOrthogonal()
@@ -1090,11 +1106,11 @@ public:
 
 
 
-   void Iterate(IterateMode inMode,const Matrix &)
+   int Iterate(IterateMode inMode,const Matrix &)
    {
       int n = mCommandCount;
       if (n<3)
-         return;
+         return 0;
 
       const UserPoint *point = 0;
 
@@ -1182,6 +1198,7 @@ public:
          if (last_point!=last_move)
             (*this.*func)(last_point,last_move);
       }
+      return 256;
    }
 };
 
@@ -1320,7 +1337,7 @@ public:
             else
                span->Line<true,true>( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
 
-            alpha = span->CreateMask(mTransform);
+            alpha = span->CreateMask(mTransform,256);
             delete span;
          }
 
@@ -1350,7 +1367,7 @@ public:
 
 
 
-   void Iterate(IterateMode inMode,const Matrix &m)
+   int Iterate(IterateMode inMode,const Matrix &m)
    {
       const UserPoint *point = 0;
 
@@ -1381,6 +1398,7 @@ public:
             point += 3;
          }
       }
+      return 256;
    }
 
 	bool                  mMappingDirty;
@@ -1426,7 +1444,7 @@ public:
 	}
 
 
-   void Iterate(IterateMode inMode,const Matrix &m)
+   int Iterate(IterateMode inMode,const Matrix &m)
 	{
 		ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
                inMode==itCreateRenderer ? &LineRender::BuildSolid :
@@ -1458,6 +1476,8 @@ public:
 			AddJoint(v2,perp1,perp2);
          AddLinePart(v2+perp2,v0+perp2,v0-perp2,v2-perp2);
 		}
+
+      return 256;
 	}
 
 	void SetTransform(const Transform &inTransform)
