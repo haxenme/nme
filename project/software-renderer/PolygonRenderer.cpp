@@ -543,6 +543,44 @@ public:
       mSpanRect->Line<false,false>( last, mTransform.ToImageAA(inP2) );
    }
 
+   void BuildFatCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2,
+         double perp_len, const UserPoint &perp0, const UserPoint perp1)
+   {
+      // todo: calculate steps
+      double len = (inP0-inP1).Norm() + (inP2-inP1).Norm();
+      int steps = (int)len;
+      if (steps<1) steps = 1;
+      if (steps>100) steps = 100;
+      double step = 1.0/(steps+1);
+      double t = 0;
+
+      Fixed10 last_p0 = mTransform.ToImageAA( inP0 + perp0 );
+      Fixed10 last_p1 = mTransform.ToImageAA( inP0 - perp0 );
+
+      for(int s=1;s<steps;s++)
+      {
+         t+=step;
+         double t_ = 1.0-t;
+         UserPoint p = inP0 * (t_*t_) + inP1 * (2.0*t*t_) + inP2 * (t*t);
+         UserPoint dir = (inP0* -t_ + inP1*(1.0-2.0*t) + inP2*t);
+         UserPoint perp = dir.Perp(perp_len);
+
+         Fixed10 p0 = mTransform.ToImageAA( p + perp );
+         Fixed10 p1 = mTransform.ToImageAA( p - perp );
+         mSpanRect->Line<false,false>(last_p0,p0);
+         mSpanRect->Line<false,false>(p1,last_p1);
+         last_p0 = p0;
+         last_p1 = p1;
+      }
+
+      Fixed10 p0 = mTransform.ToImageAA( inP2 + perp1 );
+      Fixed10 p1 = mTransform.ToImageAA( inP2 - perp1 );
+      mSpanRect->Line<false,false>(last_p0,p0);
+      mSpanRect->Line<false,false>(p1,last_p1);
+   }
+
+
+
    void HitTestCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2)
    {
       if ( (inP0.y<=mHitTest.y && inP1.y<=mHitTest.y && inP2.y<=mHitTest.y) ||
@@ -571,6 +609,51 @@ public:
 
 
 
+   void HitTestFatCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2,
+            double perp_len, const UserPoint &perp0, const UserPoint &perp1)
+   {
+      if ( (inP0.y<=mHitTest.y-perp_len && inP1.y<=mHitTest.y-perp_len && inP2.y<=mHitTest.y-perp_len) ||
+           (inP0.y>=mHitTest.y+perp_len && inP1.y>=mHitTest.y+perp_len && inP2.y>=mHitTest.y+perp_len) )
+         return;
+
+      // todo: calculate steps
+      double len = (inP0-inP1).Norm() + (inP2-inP1).Norm();
+      int steps = (int)(len * 0.5);
+      if (steps<1) steps = 1;
+      if (steps>100) steps = 100;
+      double step = 1.0/(steps+1);
+      double t = 0;
+      UserPoint last = inP0;
+
+
+
+      UserPoint last_p0 = inP0 + perp0;
+      UserPoint last_p1 = inP0 - perp0;
+
+      for(int s=1;s<steps;s++)
+      {
+         t+=step;
+         double t_ = 1.0-t;
+         UserPoint p = inP0 * (t_*t_) + inP1 * (2.0*t*t_) + inP2 * (t*t);
+         UserPoint dir = (inP0* -t_ + inP1*(1.0-2.0*t) + inP2*t);
+         UserPoint perp = dir.Perp(perp_len);
+
+         UserPoint p0 =  p + perp;
+         UserPoint p1 =  p - perp;
+         BuildHitTest(last_p0,p0);
+         BuildHitTest(p1,last_p1);
+         last_p0 = p0;
+         last_p1 = p1;
+      }
+
+      UserPoint p0 =  inP2 + perp1;
+      UserPoint p1 =  inP2 - perp1;
+      BuildHitTest(last_p0,p0);
+      BuildHitTest(p1,last_p1);
+   }
+
+
+
    void CurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2)
    {
       // B(t) = (1-t)^2p0 + 2(1-t)t p1 + t^2p2
@@ -595,6 +678,44 @@ public:
       mBuildExtent->Add( p0 );
       mBuildExtent->Add( p2 );
    }
+
+
+
+   void FatCurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2, double perp_len)
+   {
+      // B(t) = (1-t)^2p0 + 2(1-t)t p1 + t^2p2
+      // Find maxima/minima : d/dt B(t) = 0
+      //  d/dt x(t) = -2(1-t) p0.x + (2 -4t)p1.x + 2t p2.x = 0
+      //
+      //  -> t 2[  p2.x+p0.x - 2 p1.x ] = 2 p0.x - 2p1.x
+      double denom = p2.x + p0.x - 2*p1.x;
+      if (denom!=0)
+      {
+         double t = (p0.x-p1.x)/denom;
+         if (t>0 && t<1)
+         {
+            double x = (1-t)*(1-t)*p0.x + 2*t*(1-t)*p1.x + t*t*p2.x;
+            mBuildExtent->AddX(x-perp_len);
+            mBuildExtent->AddX(x+perp_len);
+         }
+      }
+      denom = p2.y + p0.y - 2*p1.y;
+      if (denom!=0)
+      {
+         double t = (p0.y-p1.y)/denom;
+         if (t>0 && t<1)
+         {
+            double y= (1-t)*(1-t)*p0.y + 2*t*(1-t)*p1.y + t*t*p2.y;
+            mBuildExtent->AddY(y-perp_len);
+            mBuildExtent->AddY(y+perp_len);
+         }
+      }
+      mBuildExtent->AddX( p0.x-perp_len );
+      mBuildExtent->AddX( p0.x+perp_len );
+      mBuildExtent->AddY( p0.y-perp_len );
+      mBuildExtent->AddY( p0.y+perp_len );
+   }
+
 
    bool Hits(const RenderState &inState)
    {
@@ -956,6 +1077,7 @@ public:
 
                   // Add curvy bits
 
+                  #if 0
                   UserPoint p0_top = prev+perp;
                   UserPoint p2_top = point[1]+perp_end;
 
@@ -1007,6 +1129,21 @@ public:
                         BuildCurve(p2_bot,ctrl_bot,p0_bot);
                      }
                   }
+                  #endif
+
+                  if (inMode==itGetExtent)
+                  {
+                     FatCurveExtent(prev, point[0], point[1],perp_len);
+                  }
+                  else if (inMode==itHitTest)
+                  {
+                     HitTestFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                  }
+                  else
+                  {
+                     BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                  }
+ 
 
                   prev = point[1];
                   prev_perp = perp_end;
