@@ -666,7 +666,18 @@ class InstallTool
 	{
 	   var dest = mBuildDir + "/flash/bin";
 
-		run(dest, dotSlash() + mDefines.get("APP_FILE") + ".swf", [] );
+      var player = neko.Sys.getEnv("FLASH_PLAYER_EXE");
+      if (player==null)
+      {
+         if (isMac())
+           player = "/Applications/Flash Player Debugger.app/Contents/MacOS/Flash Player Debugger";
+      }
+
+      if (player==null || player=="")
+         // Launch on windows
+		   run(dest, dotSlash() + mDefines.get("APP_FILE") + ".swf", [] );
+      else
+		   run(dest, player, [ mDefines.get("APP_FILE") + ".swf" ] );
 	}
 
    // -------------------------------------------------
