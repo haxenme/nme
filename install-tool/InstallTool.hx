@@ -1,3 +1,5 @@
+import format.swf.Data;
+import format.swf.Constants;
 
 class Asset
 {
@@ -19,7 +21,7 @@ class Asset
       hash = InstallTool.getID();
       id = inID=="" ? name : inID;
       var chars = id.toLowerCase();
-      flatName ="";
+      flatName ="NME";
       for(i in 0...chars.length)
       {
          var code = chars.charCodeAt(i);
@@ -66,6 +68,20 @@ class Asset
          return inBase + "/" + dest + "/assets/" + id;
 
       return inBase + "/" + dest + "/" + id;
+   }
+
+   static var swfAddetID = 1000;
+   function nextAssetID()
+   {
+      return swfAddetID++;
+   }
+   public function toSwf(outTags:Array<SWFTag>)
+   {
+      var id=nextAssetID( );
+      var bytes = neko.io.File.getBytes(name);
+
+      outTags.push( TBinaryData(id,bytes) );
+      outTags.push( TSymbolClass( [ {cid:id, className:flatName} ] ) );
    }
 }
 
@@ -168,6 +184,7 @@ class InstallTool
 	var mDebug:Bool;
    var mFullClassPaths:Bool;
    var mInstallBase:String;
+   var mPreloaderClassName:String;
 
    static var mID = 1;
    public static var mOS:String = neko.Sys.systemName();
@@ -196,6 +213,7 @@ class InstallTool
       mAssets = [];
       mAllFiles = [];
       mInstallBase = "";
+      mPreloaderClassName = "";
 
       // trace(NME);
 		// trace(inCommand);
@@ -231,6 +249,12 @@ class InstallTool
       // Strip off 0x ....
 		setDefault("WIN_FLASHBACKGROUND", mDefines.get("WIN_BACKGROUND").substr(2));
 		setDefault("APP_VERSION_SHORT", mDefines.get("APP_VERSION").substr(2));
+
+      if (mTarget=="flash" && mPreloaderClassName!="")
+      {
+         mDefines.set( "APP_REAL_MAIN", mDefines.get("APP_MAIN") );
+         mDefines.set( "APP_MAIN", mPreloaderClassName );
+      }
 
 		mBuildDir = mDefines.get("BUILD_DIR");
 
@@ -657,9 +681,44 @@ class InstallTool
       addAssets(bin,"flash");
    }
 
+
    function buildFlash()
 	{
-      //var dest = mBuildDir + "/flash/";
+	   var dest = mBuildDir + "/flash/bin";
+		var file = mDefines.get("APP_FILE") + ".swf";
+      var input = neko.io.File.read(dest+"/"+file,true);
+      var reader = new format.swf.Reader(input);
+      var swf = reader.read();
+      input.close();
+
+      var new_tags = new Array<SWFTag>();
+      var inserted = false;
+      for(tag in swf.tags)
+      {
+         var name = Type.enumConstructor(tag);
+         trace(name);
+         if (name=="TSymbolClass")
+            trace(tag);
+
+         if (name=="TShowFrame" && !inserted && mAssets.length>0 )
+         {
+            new_tags.push(TShowFrame);
+            inserted = true;
+            for(asset in mAssets)
+               asset.toSwf(new_tags);
+         }
+         new_tags.push(tag);
+      }
+
+      if (mAssets.length>0)
+      {
+         trace("re-writing...");
+         swf.tags = new_tags;
+         var output = neko.io.File.write(dest+"/"+file,true);
+         var writer = new format.swf.Writer(output);
+         writer.write(swf);
+         output.close();
+      }
 	}
 
 	function runFlash()
@@ -872,6 +931,9 @@ class InstallTool
                 case "assets" : 
                    readAssets(el);
 
+                case "preloader" : 
+                   readPreloader(el);
+
                 case "section" : 
                    parseXML(el,"");
             }
@@ -883,6 +945,13 @@ class InstallTool
    {
       return mFullClassPaths ? neko.FileSystem.fullPath(inPath) : inPath;
    }
+
+   function readPreloader(inXML:haxe.xml.Fast)
+   {
+      var name:String = substitute(inXML.att.name);
+      mPreloaderClassName = name;
+   }
+
 
    function readAssets(inXML:haxe.xml.Fast)
    {
