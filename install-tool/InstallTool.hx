@@ -10,15 +10,18 @@ class Asset
    public var flatName:String;
    public var hash:String;
    public var flashClass:String;
+   public var embed:Bool;
 
    static var usedRes = new Hash<Bool>();
 
 
-   public function new(inName:String, inDest:String, inType:String,inID:String)
+   public function new(inName:String, inDest:String, inType:String,inID:String,
+         inEmbed:String)
    {
       name = inName;
       dest = inDest;
       type = inType;
+      embed = inEmbed=="" || inEmbed=="1" || inEmbed=="true";
       hash = InstallTool.getID();
       id = inID=="" ? name : inID;
       var chars = id.toLowerCase();
@@ -38,7 +41,10 @@ class Asset
       while( usedRes.exists(flatName) )
          flatName += "_";
       usedRes.set(flatName,true);
-      flashClass = "flash.utils.ByteArray";
+      if (type=="music" || type=="sound")
+         flashClass = "flash.media.Sound";
+      else
+         flashClass = "flash.utils.ByteArray";
    }
 
    function getExtension()
@@ -77,13 +83,31 @@ class Asset
    {
       return swfAddetID++;
    }
+
    public function toSwf(outTags:Array<SWFTag>)
    {
+      if (!embed)
+         return false;
       var id=nextAssetID( );
       var bytes = neko.io.File.getBytes(name);
 
-      outTags.push( TBinaryData(id,bytes) );
+      if (type=="music" || type=="sound")
+      {
+         var src = name;
+         var ext = neko.io.Path.extension(src);
+         if (ext!="mp3" && ext!="wav")
+            src = src.substr(0, src.length - ext.length) + "mp3";
+         if (!neko.FileSystem.exists(src))
+            throw "Could not find mp3/wav source: " + src;
+         outTags.push( TBinaryData(id,bytes) );
+      }
+      else
+      {
+         outTags.push( TBinaryData(id,bytes) );
+      }
+
       outTags.push( TSymbolClass( [ {cid:id, className:"NME_" + flatName} ] ) );
+      return true;
    }
 }
 
@@ -691,23 +715,21 @@ class InstallTool
       for(tag in swf.tags)
       {
          var name = Type.enumConstructor(tag);
-         trace(name);
-         if (name=="TSymbolClass")
-            trace(tag);
+         //trace(name);
+         //if (name=="TSymbolClass") trace(tag);
 
          if (name=="TShowFrame" && !inserted && mAssets.length>0 )
          {
             new_tags.push(TShowFrame);
-            inserted = true;
             for(asset in mAssets)
-               asset.toSwf(new_tags);
+               if (asset.toSwf(new_tags) )
+                  inserted = true;
          }
          new_tags.push(tag);
       }
 
-      if (mAssets.length>0)
+      if (inserted)
       {
-         trace("re-writing...");
          swf.tags = new_tags;
          var output = neko.io.File.write(dest+"/"+file,true);
          var writer = new format.swf.Writer(output);
@@ -956,17 +978,18 @@ class InstallTool
       {
          var d = el.has.dest ? substitute(el.att.dest) : dest;
          var id= el.has.id ? substitute(el.att.id) : "";
+         var embed= el.has.embed ? substitute(el.att.embed) : "";
          switch(el.name)
          {
             case "asset":
                var t = el.has.type ? substitute(el.att.type) : type;
-               mAssets.push( new Asset( substitute(el.att.name),d,t,id ) );
+               mAssets.push( new Asset( substitute(el.att.name),d,t,id, embed ) );
             case "sound":
-               mAssets.push( new Asset( substitute(el.att.name),d,"sound",id ) );
+               mAssets.push( new Asset( substitute(el.att.name),d,"sound",id, embed ) );
             case "music":
-               mAssets.push( new Asset( substitute(el.att.name),d,"music",id ) );
+               mAssets.push( new Asset( substitute(el.att.name),d,"music",id, embed ) );
             case "image":
-               mAssets.push( new Asset( substitute(el.att.name),d,"image",id ) );
+               mAssets.push( new Asset( substitute(el.att.name),d,"image",id, embed ) );
 
          }
       }

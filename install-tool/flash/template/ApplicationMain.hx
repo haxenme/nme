@@ -50,8 +50,12 @@ class ApplicationMain
    public static function getAsset(inName:String) : Dynamic
    {
       ::foreach assets::
-      if (inName=="::name::")
+      if (inName=="::id::")
+         ::if (flashClass=="flash.utils.ByteArray")::
          return haxe.io.Bytes.ofData( new NME_::flatName::() );
+         ::else::
+         return new NME_::flatName::();
+         ::end::
       ::end::
 
       return null;
