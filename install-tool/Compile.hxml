@@ -1,2 +1,3 @@
 -main InstallTool
 -neko ../run.n
+-cp ../../hxformat

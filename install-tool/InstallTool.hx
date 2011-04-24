@@ -9,6 +9,7 @@ class Asset
    public var id:String;
    public var flatName:String;
    public var hash:String;
+   public var flashClass:String;
 
    static var usedRes = new Hash<Bool>();
 
@@ -21,7 +22,7 @@ class Asset
       hash = InstallTool.getID();
       id = inID=="" ? name : inID;
       var chars = id.toLowerCase();
-      flatName ="NME";
+      flatName ="";
       for(i in 0...chars.length)
       {
          var code = chars.charCodeAt(i);
@@ -37,6 +38,7 @@ class Asset
       while( usedRes.exists(flatName) )
          flatName += "_";
       usedRes.set(flatName,true);
+      flashClass = "flash.utils.ByteArray";
    }
 
    function getExtension()
@@ -81,7 +83,7 @@ class Asset
       var bytes = neko.io.File.getBytes(name);
 
       outTags.push( TBinaryData(id,bytes) );
-      outTags.push( TSymbolClass( [ {cid:id, className:flatName} ] ) );
+      outTags.push( TSymbolClass( [ {cid:id, className:"NME_" + flatName} ] ) );
    }
 }
 
@@ -184,7 +186,6 @@ class InstallTool
 	var mDebug:Bool;
    var mFullClassPaths:Bool;
    var mInstallBase:String;
-   var mPreloaderClassName:String;
 
    static var mID = 1;
    public static var mOS:String = neko.Sys.systemName();
@@ -205,7 +206,7 @@ class InstallTool
       mDefines = inDefines;
       mIncludePath = inIncludePath;
       mTarget = inTarget;
-      mHaxeFlags = [];
+      mHaxeFlags = [ "-D", "nme_install_tool" ];
 		mCommand = inCommand;
 		mVerbose = inVerbose;
 		mDebug = inDebug;
@@ -213,7 +214,6 @@ class InstallTool
       mAssets = [];
       mAllFiles = [];
       mInstallBase = "";
-      mPreloaderClassName = "";
 
       // trace(NME);
 		// trace(inCommand);
@@ -249,12 +249,6 @@ class InstallTool
       // Strip off 0x ....
 		setDefault("WIN_FLASHBACKGROUND", mDefines.get("WIN_BACKGROUND").substr(2));
 		setDefault("APP_VERSION_SHORT", mDefines.get("APP_VERSION").substr(2));
-
-      if (mTarget=="flash" && mPreloaderClassName!="")
-      {
-         mDefines.set( "APP_REAL_MAIN", mDefines.get("APP_MAIN") );
-         mDefines.set( "APP_MAIN", mPreloaderClassName );
-      }
 
 		mBuildDir = mDefines.get("BUILD_DIR");
 
@@ -671,6 +665,7 @@ class InstallTool
       mkdir(dest+"/bin");
 
       cp_recurse(NME + "/install-tool/flash/hxml",dest + "haxe");
+      cp_recurse(NME + "/install-tool/flash/template",dest + "haxe");
 
 		var icon = mDefines.get("APP_ICON");
 		if (icon!="")
@@ -678,7 +673,7 @@ class InstallTool
 		   copyIfNewer(icon, bin + "/icon.png",mAllFiles,mVerbose);
       }
 
-      addAssets(bin,"flash");
+      // addAssets(bin,"flash");
    }
 
 
@@ -949,7 +944,7 @@ class InstallTool
    function readPreloader(inXML:haxe.xml.Fast)
    {
       var name:String = substitute(inXML.att.name);
-      mPreloaderClassName = name;
+      mDefines.set("PRELOADER_NAME", name);
    }
 
 
