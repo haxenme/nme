@@ -9,11 +9,14 @@ class NMEPreloader extends Sprite
 
    public function onInit() {}
 
+   public function getWidth():Float { return ::WIN_WIDTH::; }
+   public function getHeight():Float { return ::WIN_HEIGHT::; }
+
    public function onUpdate(inBytes:Int,inTotal:Int)
    {
       var frac = inBytes/inTotal;
-      var w = stage.stageWidth;
-      var h = stage.stageHeight;
+      var w = getWidth();
+      var h = getHeight();
 
       var gfx = graphics;
       gfx.clear();
