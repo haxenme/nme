@@ -1,5 +1,7 @@
 import format.swf.Data;
 import format.swf.Constants;
+import format.mp3.Data;
+import format.wav.Data;
 
 class Asset
 {
@@ -96,10 +98,124 @@ class Asset
          var src = name;
          var ext = neko.io.Path.extension(src);
          if (ext!="mp3" && ext!="wav")
-            src = src.substr(0, src.length - ext.length) + "mp3";
+         {
+            for( e in ["wav", "mp3"] )
+            {
+               src = name.substr(0, name.length - ext.length) + e;
+               if (neko.FileSystem.exists(src))
+                  break;
+            }
+         }
          if (!neko.FileSystem.exists(src))
             throw "Could not find mp3/wav source: " + src;
-         outTags.push( TBinaryData(id,bytes) );
+         var ext = neko.io.Path.extension(src);
+
+         var input = neko.io.File.read(src, true);
+         if (ext=="mp3")
+         {
+            // Code lifted from "samhaxe"
+            var r = new format.mp3.Reader(input);
+            var mp3 = r.read();
+            if (mp3.frames.length == 0)
+               throw "No frames found in mp3: " + src;
+
+            // Guess about the format based on the header of the first frame found
+            var fr0 = mp3.frames[0];
+            var hdr0 = fr0.header;
+
+            // Verify Layer3-ness
+            if (hdr0.layer != Layer.Layer3)
+               throw "Only Layer-III mp3 files are supported by flash. File " +
+                    src + " is: " + format.mp3.Tools.getFrameInfo(fr0);
+
+            // Check sampling rate
+            var flashRate = switch (hdr0.samplingRate)
+            {
+               case SR_11025: SR11k;
+               case SR_22050: SR22k;
+               case SR_44100: SR44k;
+               default:
+                  throw "Only 11025, 22050 and 44100 Hz mp3 files are supported by flash. File " +
+                     src + " is: " + format.mp3.Tools.getFrameInfo(fr0);
+            }
+
+            var isStereo = switch (hdr0.channelMode)
+            {
+               case Stereo, JointStereo, DualChannel: true;
+               case Mono: false;
+            };
+
+            // Should we do this? For now, let's do.
+            var write_id3v2 = true;
+
+            var rawdata = new haxe.io.BytesOutput();
+            (new format.mp3.Writer(rawdata)).write(mp3, write_id3v2);
+            var dataBytes = rawdata.getBytes();
+
+            var snd =
+            {
+                sid : id,
+                format : SFMP3,
+                rate : flashRate,
+                is16bit : true,
+                isStereo : isStereo,
+                samples : haxe.Int32.ofInt(mp3.sampleCount),
+                data : SDMp3(0, dataBytes)
+            };
+      
+            outTags.push( TSound(snd) );
+         }
+         else
+         {
+            var r = new format.wav.Reader(input);
+            var wav = r.read();
+            var hdr = wav.header;
+
+            if (hdr.format != WF_PCM) 
+               throw "Only PCM (uncompressed) wav files can be imported.";
+
+            // Check sampling rate
+            var flashRate = switch (hdr.samplingRate)
+            {
+               case  5512: SR5k;
+               case 11025: SR11k;
+               case 22050: SR22k;
+                     case 44100: SR44k;
+               default:
+                  throw "Only 5512, 11025, 22050 and 44100 Hz wav files are supported by flash. Sampling rate of '" + src + "' is: " + hdr.samplingRate;
+            }
+
+            var isStereo = switch(hdr.channels)
+            {
+               case 1: false;
+               case 2: true;
+               default: throw "Number of channels should be 1 or 2, but for '" + src + "' it is " + hdr.channels;
+            }
+       
+            var is16bit = switch(hdr.bitsPerSample)
+            {
+               case 8: false;
+               case 16: true;
+               default: throw "Bits per sample should be 8 or 16, but for '" + src + "' it is " + hdr.bitsPerSample;
+            }
+
+            var sampleCount = Std.int(wav.data.length / (hdr.bitsPerSample / 8));
+
+
+            var snd : format.swf.Sound =
+            {
+               sid : id,
+               format : SFLittleEndianUncompressed,
+               rate : flashRate,
+               is16bit : is16bit,
+               isStereo : isStereo,
+               samples : haxe.Int32.ofInt(sampleCount),
+               data : SDRaw(wav.data)
+            }
+
+            outTags.push(TSound(snd));
+         }
+         input.close();
       }
       else
       {
@@ -230,7 +346,7 @@ class InstallTool
       mDefines = inDefines;
       mIncludePath = inIncludePath;
       mTarget = inTarget;
-      mHaxeFlags = [ "-D", "nme_install_tool" ];
+      mHaxeFlags = [ "-D nme_install_tool" ];
 		mCommand = inCommand;
 		mVerbose = inVerbose;
 		mDebug = inDebug;
@@ -258,7 +374,12 @@ class InstallTool
 
 		setDefault("SWF_VERSION","9");
 
+      setDefault("PRELOADER_NAME", "NMEPreloader");
+
 		setDefault("BUILD_DIR","bin");
+
+      mDefines.set("target_" + inTarget, "1");
+      mDefines.set("target" , inTarget);
 
 		var make_contents = neko.io.File.getContent(inProjectFile);
 		var xml_slow = Xml.parse(make_contents);

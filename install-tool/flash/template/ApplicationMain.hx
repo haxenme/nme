@@ -14,8 +14,8 @@ class ApplicationMain
    {
       var call_real = true;
       ::if (PRELOADER_NAME!="")::
-         var loaded = flash.Lib.current.loaderInfo.bytesLoaded;
-         var total = flash.Lib.current.loaderInfo.bytesTotal;
+         var loaded:Int = flash.Lib.current.loaderInfo.bytesLoaded;
+         var total:Int = flash.Lib.current.loaderInfo.bytesTotal;
          if (loaded<total)
          {
             call_real = false;
@@ -33,8 +33,8 @@ class ApplicationMain
 
    static function onEnter(_)
    {
-      var loaded = flash.Lib.current.loaderInfo.bytesLoaded;
-      var total = flash.Lib.current.loaderInfo.bytesTotal;
+      var loaded:Int = flash.Lib.current.loaderInfo.bytesLoaded;
+      var total:Int = flash.Lib.current.loaderInfo.bytesTotal;
       mPreloader.onUpdate(loaded,total);
       if (loaded>=total)
       {
@@ -52,7 +52,11 @@ class ApplicationMain
       ::foreach assets::
       if (inName=="::id::")
          ::if (flashClass=="flash.utils.ByteArray")::
-         return haxe.io.Bytes.ofData( new NME_::flatName::() );
+      {
+         var obj = new NME_::flatName::();
+         trace(obj);
+         return haxe.io.Bytes.ofData( obj );
+      }
          ::else::
          return new NME_::flatName::();
          ::end::
