@@ -54,7 +54,6 @@ class ApplicationMain
          ::if (flashClass=="flash.utils.ByteArray")::
       {
          var obj = new NME_::flatName::();
-         trace(obj);
          return haxe.io.Bytes.ofData( obj );
       }
          ::else::

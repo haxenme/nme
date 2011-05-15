@@ -695,6 +695,8 @@ public:
       if(aTouch.tapCount==1)
       {
          Event mouse(etMouseClick, thumbPoint.x, thumbPoint.y);
+         if (!mMultiTouch || mouse.value==mPrimaryTouchHash)
+            mouse.flags |= efPrimaryTouch;
          mStage->OnEvent(mouse);
       }
 
@@ -702,6 +704,8 @@ public:
       {
          Event mouse(etTouchBegin, thumbPoint.x, thumbPoint.y);
          mouse.value = [aTouch hash];
+         if (mouse.value==mPrimaryTouchHash)
+            mouse.flags |= efPrimaryTouch;
          mStage->OnMouseEvent(mouse);
       }
       else

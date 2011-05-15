@@ -342,6 +342,11 @@ class InstallTool
 							  inDebug:Bool
 							  )
    {
+      if (inTarget=="iphone" && inCommand!="update")
+      {
+         trace("Command should be 'update' for iphone target");
+         inCommand = "update";
+      }
       NME = inNME;
       mDefines = inDefines;
       mIncludePath = inIncludePath;
@@ -419,7 +424,7 @@ class InstallTool
          if (inCommand=="test" || inCommand=="build" || inCommand=="rerun" ||inCommand=="installer")
          {
 			   var build = inCommand=="build" || inCommand=="test" || inCommand=="installer";
-			   var do_run = inCommand=="rerun" || inCommand=="test";
+			   var do_run = (inCommand=="rerun" || inCommand=="test");
             var update = inCommand!="rerun";
 
             var hxml = mBuildDir + "/" + inTarget + "/haxe/" + (mDebug ? "debug" : "release") + ".hxml";
@@ -427,14 +432,21 @@ class InstallTool
             if (update)
             {
                 var update_func = Reflect.field(this,"update" + Target);
-                Reflect.callMethod(this,update_func,[]);
+                if (update_func==null)
+                   trace("Could not find update function for target " + Target );
+                else
+                   Reflect.callMethod(this,update_func,[]);
+
                 if (build)
                 {
                     run("", "haxe", [hxml]);
 					     if (build)
                     {
                        var build_func = Reflect.field(this,"build" + Target);
-                       Reflect.callMethod(this,build_func,[]);
+                       if (build_func==null)
+                          trace("Could not find build function for target " + Target );
+                       else
+                          Reflect.callMethod(this,build_func,[]);
                     }
                 }
             }
@@ -756,7 +768,7 @@ class InstallTool
 
 	// --- iPhone ---------------------------------------------------------------
 
-	function updateIPhone()
+	function updateIphone()
    {
       var dest = mBuildDir + "/iphone/";
 
@@ -784,7 +796,7 @@ class InstallTool
       addAssets(dest,"iphone");
    }
 
-   function buildIPhone()
+   function buildIphone()
 	{
 /*
       var file = mDefines.get("APP_FILE");
@@ -794,7 +806,7 @@ class InstallTool
 */
 	}
 
-	function runIPhone()
+	function runIphone()
 	{
 /*
 	   if (!mDefines.exists("DRIVE"))
@@ -1326,7 +1338,7 @@ class InstallTool
       include_path.push(NME + "/install-tool");
 
 
-      var valid_commands = ["copy-if-newer", "rerun", "test", "build", "installer", "uninstall"];
+      var valid_commands = ["copy-if-newer", "rerun", "update", "test", "build", "installer", "uninstall"];
       if (!Lambda.exists(valid_commands,function(c) return command==c))
       {
          if (command!="")
