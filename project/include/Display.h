@@ -281,7 +281,7 @@ protected:
 class DisplayObjectContainer : public DisplayObject
 {
 public:
-   DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef) { }
+   DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
 
    void addChild(DisplayObject *inChild,bool inTakeRef=false);
    void setChildIndex(DisplayObject *inChild,bool inTakeRef=false);
@@ -303,7 +303,11 @@ public:
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
 
+   bool getMouseChildren() { return mouseChildren; }
+   void setMouseChildren(bool inVal) { mouseChildren = inVal; }
 
+
+   bool mouseChildren;
 protected:
    ~DisplayObjectContainer();
    QuickVec<DisplayObject *> mChildren;

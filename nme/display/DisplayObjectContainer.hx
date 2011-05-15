@@ -55,8 +55,6 @@ class DisplayObjectContainer extends InteractiveObject
    }
  
 
-   function nmeGetMouseChildren() { return false; }
-   function nmeSetMouseChildren(inValue:Bool):Bool { return false; }
    function nmeGetTabChildren() { return false; }
    function nmeSetTabChildren(inValue:Bool) { return false; }
    function nmeGetNumChildren() : Int { return nmeChildren.length; }
@@ -252,12 +250,22 @@ class DisplayObjectContainer extends InteractiveObject
       nme_doc_swap_children(nmeHandle,index1,index2);
    }
 
+   function nmeGetMouseChildren() : Bool { return nme_doc_get_mouse_children(nmeHandle); }
+   function nmeSetMouseChildren(inVal:Bool) : Bool
+   {
+      nme_doc_set_mouse_children(nmeHandle,inVal);
+      return inVal;
+   }
+
+
 
 
    static var nme_create_display_object_container = nme.Loader.load("nme_create_display_object_container",0);
    static var nme_doc_add_child = nme.Loader.load("nme_doc_add_child",2);
    static var nme_doc_remove_child = nme.Loader.load("nme_doc_remove_child",2);
    static var nme_doc_set_child_index = nme.Loader.load("nme_doc_set_child_index",3);
+   static var nme_doc_get_mouse_children = nme.Loader.load("nme_doc_get_mouse_children",1);
+   static var nme_doc_set_mouse_children = nme.Loader.load("nme_doc_set_mouse_children",2);
    static var nme_doc_swap_children = nme.Loader.load("nme_doc_swap_children",3);
 
 }

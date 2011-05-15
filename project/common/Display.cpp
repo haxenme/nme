@@ -1050,7 +1050,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj_state->mHitResult)
          {
-            inState.mHitResult = obj_state->mHitResult;
+            inState.mHitResult = mouseChildren ? obj_state->mHitResult : this;
             return;
          }
       }

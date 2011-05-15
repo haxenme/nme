@@ -1270,6 +1270,8 @@ value nme_doc_set_child_index(value inParent, value inChild, value inPos)
 DEFINE_PRIM(nme_doc_set_child_index,3);
 
 
+DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_bool);
+
 
 // --- Graphics -----------------------------------------------------
 
