@@ -1976,7 +1976,7 @@ TEXT_PROP_GET(max_scroll_v,MaxScrollV,alloc_int);
 TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
 TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
 TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
-
+TEXT_PROP_GET(num_lines,NumLines,alloc_int);
 
 
 value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)

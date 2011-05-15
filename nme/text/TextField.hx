@@ -22,6 +22,7 @@ class TextField extends nme.display.InteractiveObject
    public var bottomScrollV(nmeGetBottomScrollV,null):Int;
    public var scrollH(nmeGetScrollH,nmeSetScrollH):Int;
    public var scrollV(nmeGetScrollV,nmeSetScrollV):Int;
+   public var numLines(nmeGetNumLines,null):Int;
 
    public function new( )
    {
@@ -158,6 +159,7 @@ class TextField extends nme.display.InteractiveObject
 		return inVal;
    }
 
+   function nmeGetNumLines() : Int { return nme_text_field_get_num_lines(nmeHandle); }
 
 
    static var nme_text_field_create = nme.Loader.load("nme_text_field_create",0);
@@ -198,4 +200,5 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_set_scroll_h = nme.Loader.load("nme_text_field_set_scroll_h",2);
    static var nme_text_field_get_scroll_v = nme.Loader.load("nme_text_field_get_scroll_v",1);
    static var nme_text_field_set_scroll_v = nme.Loader.load("nme_text_field_set_scroll_v",2);
+   static var nme_text_field_get_num_lines = nme.Loader.load("nme_text_field_get_num_lines",1);
 }
