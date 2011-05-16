@@ -421,7 +421,8 @@ class InstallTool
       {
          mContext.HAXE_FLAGS = mHaxeFlags.length==0 ? "" : "\n" + mHaxeFlags.join("\n");
 
-         if (inCommand=="test" || inCommand=="build" || inCommand=="rerun" ||inCommand=="installer")
+         if (inCommand=="test" || inCommand=="build" || inCommand=="rerun" ||inCommand=="installer" 
+              || inCommand=="update" )
          {
 			   var build = inCommand=="build" || inCommand=="test" || inCommand=="installer";
 			   var do_run = (inCommand=="rerun" || inCommand=="test");
