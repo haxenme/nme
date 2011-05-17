@@ -28,7 +28,8 @@ public:
 	ByteArray *mByteArray;
 
 
-	CURLLoader(const char *inURL)
+	CURLLoader(const char *inURL, int inAuthType, const char *inUserPasswd,
+              const char *inCookies, bool inDebug)
 	{
 		mState = urlInit;
 		if (!sCurlM)
@@ -48,9 +49,23 @@ public:
       curl_easy_setopt(mHandle, CURLOPT_WRITEFUNCTION, staticOnData);
       curl_easy_setopt(mHandle, CURLOPT_WRITEDATA, (void *)this);
 		curl_easy_setopt(mHandle, CURLOPT_NOPROGRESS, 0);
+      if (inAuthType!=0)
+      {
+         curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, inAuthType);
+         if (inUserPasswd && inUserPasswd[0])
+            curl_easy_setopt(mHandle, CURLOPT_USERPWD, inUserPasswd);
+      }
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
 		curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
+      if (inDebug)
+         curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
+      curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
+      if (inCookies && inCookies[0])
+         curl_easy_setopt( mHandle, CURLOPT_COOKIE, inCookies );
+
+
+      mErrorBuf[0] = '\0';
  
       /* some servers don't like requests that are made without a user-agent
          field, so we provide one */ 
@@ -127,6 +142,22 @@ public:
 			inBytesTotal,inBytesDownloaded,inUploadTotal,inBytesUploaded);
 	}
 
+   void getCookies( std::vector<std::string> &outCookies )
+   {
+      curl_slist *list = 0;
+		if (CURLE_OK == curl_easy_getinfo(mHandle,CURLINFO_COOKIELIST,&list) && list)
+      {
+         curl_slist *item = list;
+         while(item)
+         {
+            outCookies.push_back(item->data);
+            item = item->next;
+         }
+         curl_slist_free_all(list);
+      }
+	}
+      
+
 	URLState getState()
 	{
 		long http_code = 0;
@@ -136,8 +167,7 @@ public:
 		else if (http_code>0)
 		{
 			mHttpCode = http_code;
-			if (http_code>=400)
-				mState = urlError;
+			//if (http_code>=402) mState = urlError;
 			//if (http_code==200) mState = urlComplete;
 		}
 		return mState;
@@ -193,9 +223,10 @@ bool URLLoader::processAll()
    return sRunning;
 }
 
-URLLoader *URLLoader::create(const char *inURL)
+URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUserPasswd,
+      const char *inCookies, bool inVerbose)
 {
-	return new CURLLoader(inURL);
+	return new CURLLoader(inURL,inAuthType,inUserPasswd,inCookies,inVerbose);
 }
 
 

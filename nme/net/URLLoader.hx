@@ -78,7 +78,8 @@ class URLLoader extends nme.events.EventDispatcher
       }
 		else
 		{
-		   nmeHandle = nme_curl_create(request.url);
+		   nmeHandle = nme_curl_create(request.url, request.authType, request.userPassword,
+                                     request.cookieString, request.verbose);
 			if (nmeHandle==null)
 			{
             onError("Could not open URL");
@@ -111,6 +112,7 @@ class URLLoader extends nme.events.EventDispatcher
 			}
          if (state==urlComplete)
 			{
+            //trace(getCookies());
 				var bytes = ByteArray.fromHandle( nme_curl_get_data(nmeHandle) );
 				switch(dataFormat)
 				{
@@ -155,15 +157,21 @@ class URLLoader extends nme.events.EventDispatcher
       dispatchEvent( new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR, true, false, msg) );
    }
 
+   public function getCookies() : Array<String>
+   {
+      return nme_curl_get_cookies(nmeHandle);
+   }
+
 	public static function nmeLoadPending() { return !activeLoaders.isEmpty(); }
 
 
-	static var nme_curl_create = nme.Loader.load("nme_curl_create",1);
+	static var nme_curl_create = nme.Loader.load("nme_curl_create",5);
 	static var nme_curl_process_loaders = nme.Loader.load("nme_curl_process_loaders",0);
 	static var nme_curl_update_loader = nme.Loader.load("nme_curl_update_loader",2);
 	static var nme_curl_get_code = nme.Loader.load("nme_curl_get_code",1);
 	static var nme_curl_get_error_message = nme.Loader.load("nme_curl_get_error_message",1);
 	static var nme_curl_get_data= nme.Loader.load("nme_curl_get_data",1);
+	static var nme_curl_get_cookies= nme.Loader.load("nme_curl_get_cookies",1);
 
 }
 

@@ -2572,12 +2572,13 @@ DEFINE_PRIM(nme_tilesheet_add_rect,2);
 
 // --- URL ----------------------------------------------------------
 
-value nme_curl_create(value inURL)
+value nme_curl_create(value inURL,value inAuthType, value inUserPasswd, value inCookies, value inVerbose)
 {
-	URLLoader *loader = URLLoader::create(val_string(inURL));
+	URLLoader *loader = URLLoader::create(val_string(inURL), val_int(inAuthType), val_string(inUserPasswd),
+      val_string(inCookies), val_bool(inVerbose) );
 	return ObjectToAbstract(loader);
 }
-DEFINE_PRIM(nme_curl_create,1);
+DEFINE_PRIM(nme_curl_create,5);
 
 value nme_curl_process_loaders()
 {
@@ -2631,6 +2632,23 @@ value nme_curl_get_data(value inLoader)
 	return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_data,1);
+
+value nme_curl_get_cookies(value inLoader)
+{
+	URLLoader *loader;
+	if (AbstractToObject(inLoader,loader))
+	{
+		std::vector<std::string> cookies;
+      loader->getCookies(cookies);
+      value result = alloc_array(cookies.size());
+      for(int i=0;i<cookies.size();i++)
+         val_array_set_i(result,i,alloc_string_len(cookies[i].c_str(),cookies[i].length()));
+      return result;
+	}
+   return alloc_array(0);
+}
+DEFINE_PRIM(nme_curl_get_cookies,1);
+
 
 
 
