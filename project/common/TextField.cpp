@@ -311,6 +311,11 @@ void TextField::setScrollV(int inScrollV)
       scrollV = 1;
    if (scrollV>maxScrollV)
       scrollV =maxScrollV;
+   if (mSelectMin!=mSelectMax)
+   {
+      mSelectMin = mSelectMax = 0;
+      mSelectKeyDown = -1;
+   }
    // TODO: do we need to re-layout on scroll?
    mLinesDirty = true;
    mGfxDirty = true;
@@ -436,9 +441,17 @@ void TextField::Drag(Event &inEvent)
          mSelectMax = mSelectDownChar;
       }
 		if (point.x>mActiveRect.x1())
+      {
 			scrollH+=(point.x-mActiveRect.x1());
+         if (scrollH>maxScrollH)
+            scrollH = maxScrollH;
+      }
 		else if (point.x<mActiveRect.x)
+      {
 			scrollH-=(mActiveRect.x-point.x);
+         if (scrollH<0)
+           scrollH = 0;
+      }
       caretIndex = pos;
       ShowCaret(true);
       //printf("%d(%d) -> %d,%d\n", pos, mSelectDownChar, mSelectMin , mSelectMax);
@@ -942,20 +955,14 @@ void TextField::BuildBackground()
          if (background)
             gfx.beginFill( backgroundColor, 1 );
          if (border)
-            gfx.lineStyle(1, borderColor );
-         gfx.moveTo(mActiveRect.x+1,   mActiveRect.y+1);
-         gfx.lineTo(mActiveRect.x1()+1,mActiveRect.y+1);
-         gfx.lineTo(mActiveRect.x1()+1,mActiveRect.y1()+1);
-         gfx.lineTo(mActiveRect.x+1,   mActiveRect.y1()+1);
-         gfx.moveTo(mActiveRect.x+1,   mActiveRect.y+1);
-         //printf("%d,%d %dx%d\n", mActiveRect.x , mActiveRect.y , mActiveRect.w , mActiveRect.h);
-         /*
-         gfx.lineTo(boundsWidth,0);
-         gfx.lineTo(boundsWidth,boundsHeight);
-         gfx.lineTo(0,boundsHeight);
-         gfx.lineTo(0,0);
-         */
+            gfx.lineStyle(0, borderColor );
+         gfx.moveTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y+1)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x1()+1)/mLayoutScaleH,(mActiveRect.y+1)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x1()+1)/mLayoutScaleH,(mActiveRect.y1()+1)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y1()+1)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y+1)/mLayoutScaleV);
       }
+
       //printf("%d,%d\n", mSelectMin , mSelectMax);
       if (mSelectMin < mSelectMax)
       {

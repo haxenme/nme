@@ -450,6 +450,7 @@ public:
          glEnable(GL_POINT_SMOOTH);
       if (mQuality>=sqBest)
          glEnable(GL_LINE_SMOOTH);
+      mLineWidth = 99999;
       glEnableClientState(GL_VERTEX_ARRAY);
       // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
       sgDrawCount = 0;
@@ -575,8 +576,10 @@ public:
    
             if ( (draw.mPrimType == ptLineStrip || draw.mPrimType==ptPoints) && draw.mCount>1)
             {
-               if (draw.mWidth<=0)
+               if (draw.mWidth<0)
                   SetLineWidth(1.0);
+               else if (draw.mWidth==0)
+                  SetLineWidth(0.0);
                else
                   switch(draw.mScaleMode)
                   {
@@ -608,6 +611,7 @@ public:
             }
    
             //printf("glDrawArrays %d : %d x %d\n", draw.mPrimType, draw.mFirst, draw.mCount );
+
             sgDrawCount++;
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
 
@@ -694,9 +698,15 @@ public:
             else
             {
                w = 1;
-               glEnable(GL_LINE_SMOOTH);
+               if (inWidth==0)
+               {
+                  glDisable(GL_LINE_SMOOTH);
+               }
+               else
+                  glEnable(GL_LINE_SMOOTH);
             }
          }
+
          mLineWidth = inWidth;
          glLineWidth(w);
 
@@ -726,6 +736,7 @@ public:
             glEnable(GL_LINE_SMOOTH);
          else
             glDisable(GL_LINE_SMOOTH);
+         mLineWidth = 99999;
       }
    }
 
