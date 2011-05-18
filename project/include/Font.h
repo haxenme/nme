@@ -112,7 +112,6 @@ struct CharGroup
    int               mChar0;
    QuickVec<wchar_t,0> mString;
    int             mFontHeight;
-   bool            mBeginParagraph;
    TextFormat      *mFormat;
    class Font      *mFont;
 };

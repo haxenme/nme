@@ -714,8 +714,7 @@ WString TextField::getHTMLText()
 }
 
 
-void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount,
-                        int inLineSkips,bool inBeginParagraph)
+void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount)
 {
    for(const TiXmlNode *child = inNode->FirstChild(); child; child = child->NextSibling() )
    {
@@ -727,15 +726,10 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars.mFont = 0;
          chars.mFontHeight = 0;
          UTF8ToWideVec(chars.mString,text->Value());
-         for(int i=0;i<inLineSkips;i++)
-            chars.mString.push_back('\n');
-         chars.mBeginParagraph = inBeginParagraph;
          ioCharCount += chars.Chars();
 
          mCharGroups.push_back(chars);
          //printf(" %s %d\n", text->Value(), inLineSkips );
-         inLineSkips = 0;
-         inBeginParagraph = 0;
       }
       else
       {
@@ -803,13 +797,26 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                }
             }
             else if (el->ValueTStr()=="br")
-               inLineSkips++;
+            {
+               if (mCharGroups.size())
+               {
+                  CharGroup &last = mCharGroups[ mCharGroups.size()-1 ];
+                  last.mString.push_back('\n');
+                  ioCharCount++;
+               }
+               else
+               {
+                  CharGroup chars;
+                  chars.mFormat = inFormat->IncRef();
+                  chars.mFont = 0;
+                  chars.mFontHeight = 0;
+                  chars.mString.push_back('\n');
+                  ioCharCount++;
+                  mCharGroups.push_back(chars);
+               }
+            }
             else if (el->ValueTStr()=="p")
             {
-               if (inBeginParagraph)
-                  inLineSkips++;
-               else
-                  inBeginParagraph = true;
             }
 
             for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())
@@ -830,7 +837,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
             }
 
 
-            AddNode(child,fmt,ioCharCount,inLineSkips,inBeginParagraph);
+            AddNode(child,fmt,ioCharCount);
 
             fmt->DecRef();
          }
@@ -853,7 +860,7 @@ void TextField::setHTMLText(const WString &inString)
    if (top)
    {
       int chars = 0;
-      AddNode(top,defaultTextFormat,chars,0,0);
+         AddNode(top,defaultTextFormat,chars);
    }
    if (mCharGroups.empty())
       setText(L"");
@@ -1335,7 +1342,8 @@ void TextField::Layout(const Matrix &inMatrix)
       int last_word_cid = 0;
       int last_word_x = x;
       int last_word_line_chars = line.mChars;
-      if ( g.mBeginParagraph && line.mChars && multiline)
+      /*
+      if ( g.mBeginParagraph && line.mChars && multiline )
       {
          g.UpdateMetrics(line.mMetrics);
          mLines.push_back(line);
@@ -1348,6 +1356,7 @@ void TextField::Layout(const Matrix &inMatrix)
          line.mCharGroup0 = i;
          line.mCharInGroup0 = cid;
       }
+      */
 
 
       g.UpdateMetrics(line.mMetrics);
@@ -1503,7 +1512,7 @@ void TextField::Layout(const Matrix &inMatrix)
          CharGroup &group = mCharGroups[line.mCharGroup0];
 
          // Get alignment...
-         int extra = (mActiveRect.w - line.mMetrics.width);
+         int extra = (mActiveRect.w - line.mMetrics.width - 1);
          switch(group.mFormat->align(tfaLeft))
          {
             case tfaLeft: extra = 0; break;

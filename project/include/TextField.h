@@ -169,8 +169,7 @@ private:
    void Layout() { Layout(GetFullMatrix(true)); }
 
    void Clear();
-   void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount,
-      int inLineSkips, bool inBeginParagraph);
+   void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount);
 
    enum StringState { ssNone, ssText, ssHTML };
    StringState mStringState;
