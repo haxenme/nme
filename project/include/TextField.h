@@ -72,6 +72,8 @@ public:
    void  setMultiline(bool inMultiline);
    bool  getWordWrap() const { return wordWrap; }
    void  setWordWrap(bool inWordWrap);
+   int   getMaxChars() const { return maxChars; }
+   void  setMaxChars(int inMaxChars) { maxChars = inMaxChars; }
 
 
    double getWidth();
@@ -147,7 +149,7 @@ public:
    void OnKey(Event &inEvent);
    void DeleteSelection();
    void DeleteChars(int inFirst,int inEnd);
-   void InsertString(const WString &inString);
+   void InsertString(WString &ioString);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
 

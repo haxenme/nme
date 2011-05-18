@@ -23,6 +23,7 @@ class TextField extends nme.display.InteractiveObject
    public var scrollH(nmeGetScrollH,nmeSetScrollH):Int;
    public var scrollV(nmeGetScrollV,nmeSetScrollV):Int;
    public var numLines(nmeGetNumLines,null):Int;
+   public var maxChars(nmeGetMaxChars,nmeSetMaxChars):Int;
 
    public function new( )
    {
@@ -161,6 +162,13 @@ class TextField extends nme.display.InteractiveObject
 
    function nmeGetNumLines() : Int { return nme_text_field_get_num_lines(nmeHandle); }
 
+   function nmeGetMaxChars() : Int { return nme_text_field_get_max_chars(nmeHandle); }
+	function nmeSetMaxChars(inVal:Int) : Int
+	{
+	   nme_text_field_set_max_chars(nmeHandle,inVal);
+		return inVal;
+   }
+
 
    static var nme_text_field_create = nme.Loader.load("nme_text_field_create",0);
    static var nme_text_field_get_text = nme.Loader.load("nme_text_field_get_text",1);
@@ -201,4 +209,6 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_get_scroll_v = nme.Loader.load("nme_text_field_get_scroll_v",1);
    static var nme_text_field_set_scroll_v = nme.Loader.load("nme_text_field_set_scroll_v",2);
    static var nme_text_field_get_num_lines = nme.Loader.load("nme_text_field_get_num_lines",1);
+   static var nme_text_field_get_max_chars = nme.Loader.load("nme_text_field_get_max_chars",1);
+   static var nme_text_field_set_max_chars = nme.Loader.load("nme_text_field_set_max_chars",2);
 }

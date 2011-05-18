@@ -306,16 +306,18 @@ void TextField::setScrollH(int inScrollH)
 
 void TextField::setScrollV(int inScrollV)
 {
-   scrollV = inScrollV;
-   if (scrollV<1)
-      scrollV = 1;
-   if (scrollV>maxScrollV)
-      scrollV =maxScrollV;
-   if (mSelectMin!=mSelectMax)
+   if (inScrollV<1)
+      inScrollV = 1;
+   if (inScrollV>maxScrollV)
+      inScrollV =maxScrollV;
+
+   if (inScrollV!=scrollV && mSelectMin!=mSelectMax)
    {
       mSelectMin = mSelectMax = 0;
       mSelectKeyDown = -1;
    }
+
+   scrollV = inScrollV;
    // TODO: do we need to re-layout on scroll?
    mLinesDirty = true;
    mGfxDirty = true;
@@ -561,7 +563,8 @@ void TextField::OnKey(Event &inEvent)
       {
          DeleteSelection();
          wchar_t str[2] = {code,0};
-         InsertString(str);
+         WString ws(str);
+         InsertString(ws);
          OnChange();
          ShowCaret();
       }
@@ -1252,10 +1255,19 @@ void TextField::DeleteSelection()
    mGfxDirty = true;
 }
 
-void TextField::InsertString(const WString &inString)
+void TextField::InsertString(WString &inString)
 {
    if (caretIndex<0) caretIndex = 0;
    caretIndex = std::min(caretIndex,getLength());
+
+   if (maxChars>0)
+   {
+      int n = mCharPos.size();
+      if (inString.size()+n>maxChars)
+         inString = inString.substr(0, maxChars-n);
+      if (inString.size()<1)
+         return;
+   }
 
    if (caretIndex==0)
    {

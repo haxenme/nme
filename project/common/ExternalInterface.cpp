@@ -1977,6 +1977,7 @@ TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
 TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
 TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
 TEXT_PROP_GET(num_lines,NumLines,alloc_int);
+TEXT_PROP(max_chars,MaxChars,alloc_int,val_int);
 
 
 value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)
@@ -2649,11 +2650,6 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
-
-
-
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }
-
-
 
