@@ -193,10 +193,6 @@ WString val2stdwstr(value inVal)
    const wchar_t *val = val_wstring(inVal);
    int len=0;
    while(val[len]) len++;
-   char buf[100];
-   for(int i=0;i<100 && i<=len;i++)
-      buf[i] = val[i];
-   buf[99] = '\0';
    return WString(val,len);
 }
 

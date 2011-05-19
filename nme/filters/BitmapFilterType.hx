@@ -2,7 +2,7 @@ package nme.filters;
 
 class BitmapFilterType
 {
-   static var FULL = "full";
-   static var INNER = "inner";
-   static var OUTER = "outer";
+   public static var FULL = "full";
+   public static var INNER = "inner";
+   public static var OUTER = "outer";
 }

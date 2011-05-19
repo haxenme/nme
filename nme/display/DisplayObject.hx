@@ -270,7 +270,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public function nmeSetParent(inParent:DisplayObjectContainer)
    {
       if (inParent == nmeParent)
-         return;
+         return inParent;
 
       if (nmeParent != null)
          nmeParent.nmeRemoveChildFromArray(this);
@@ -288,6 +288,8 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       }
       else
          nmeParent = inParent;
+
+      return inParent;
    }
 
 

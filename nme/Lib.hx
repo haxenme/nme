@@ -42,6 +42,8 @@ class Lib
             nme.Lib.nmeStage.frameRate = inFrameRate;
             nme.Lib.nmeStage.opaqueBackground = inColour;
             nme.Lib.nmeStage.onQuit = close;
+            if (nmeCurrent!=null) // Already created...
+               nme.Lib.nmeStage.addChild(nmeCurrent);
             inOnLoaded();
             #if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
         },
@@ -89,7 +91,8 @@ class Lib
       if (nmeCurrent==null)
       {
          nmeCurrent = new nme.display.MovieClip();
-         stage.addChild(nmeCurrent);
+         if (nmeStage!=null)
+            nmeStage.addChild(nmeCurrent);
       }
       return nmeCurrent;
    }

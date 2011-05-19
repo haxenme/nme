@@ -333,20 +333,22 @@ double  GetTimeStamp()
    }
    double r =  mach_absolute_time() * time_scale;  
    return mach_absolute_time() * time_scale;  
-#elif  defined(IPHONE)
-   double t = CACurrentMediaTime(); 
-#elif defined(GPH)
-	  struct timeval tv;
-     if( gettimeofday(&tv,NULL) )
-       return 0;
-     double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
 #else
-	 struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    double t =  ( ts.tv_sec + ((double)ts.tv_nsec)*1e-9  );
-#endif
+   #if  defined(IPHONE)
+      double t = CACurrentMediaTime(); 
+   #elif defined(GPH)
+	     struct timeval tv;
+        if( gettimeofday(&tv,NULL) )
+          return 0;
+        double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
+   #else
+	    struct timespec ts;
+       clock_gettime(CLOCK_MONOTONIC, &ts);
+       double t =  ( ts.tv_sec + ((double)ts.tv_nsec)*1e-9  );
+   #endif
     if (t0==0) t0 = t;
     return t-t0;
+#endif
 }
 
 
