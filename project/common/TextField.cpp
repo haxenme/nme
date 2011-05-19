@@ -1423,7 +1423,7 @@ void TextField::Layout(const Matrix &inMatrix)
          else
             advance = 0;
          x+= advance;
-         //printf(" Char %c (%d..%d,%d) %p\n", ch, ox, x, y, g.mFont);
+         //printf(" Char %c (%d..%d/%d,%d) %p\n", ch, ox, x, max_x, y, g.mFont);
          if ( (wordWrap) && (x > max_x) && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
@@ -1470,7 +1470,7 @@ void TextField::Layout(const Matrix &inMatrix)
    int max_y = boundsHeight * mLayoutScaleV;
    if (autoSize != asNone)
    {
-      if (!wordWrap)
+      //if (!wordWrap) - still use this, even if wordWrap
       {
          switch(autoSize)
          {
