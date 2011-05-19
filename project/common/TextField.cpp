@@ -1292,6 +1292,11 @@ void TextField::InsertString(WString &inString)
    Layout(GetFullMatrix(true));
 }
 
+static bool IsWord(int inCh)
+{
+  return inCh<255 && (isalpha(inCh) || isdigit(inCh) || inCh=='_');
+}
+
 // Combine x,y scaling with rotation to calculate pixel coordinates for
 //  each character.
 void TextField::Layout(const Matrix &inMatrix)
@@ -1392,9 +1397,9 @@ void TextField::Layout(const Matrix &inMatrix)
          line.mChars++;
          char_count++;
          cid++;
-         if ( !isalpha(ch) && !isdigit(ch) && ch!='_' )
+         if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
          {
-            if (isspace(ch) || line.mChars==1)
+            if ( (ch<255 && isspace(ch)) || line.mChars==1)
             {
                last_word_cid = cid;
                last_word_line_chars = line.mChars;
