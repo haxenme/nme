@@ -5,9 +5,11 @@ class InteractiveObject extends DisplayObject
    public var mouseEnabled(nmeGetMouseEnabled,nmeSetMouseEnabled):Bool;
 
 	var nmeMouseEnabled:Bool;
+   public var doubleClickEnabled:Bool;
 
    function new(inHandle:Dynamic)
    {
+      doubleClickEnabled = false;
 	   nmeMouseEnabled = true;
       super(inHandle);
    }

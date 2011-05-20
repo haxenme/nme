@@ -61,6 +61,7 @@ enum EventFlags
 
    efLocationRight  = 0x4000,
    efPrimaryTouch   = 0x8000,
+   efNoNativeClick  = 0x10000,
 };
 
 enum FocusSource { fsProgram, fsMouse, fsKey };

@@ -9,6 +9,7 @@ class FPS extends nme.text.TextField
       super();
       x = inX;
       y = inY;
+      selectable = false;
       text = "FPS:";
       textColor = inCol;
       times = [];

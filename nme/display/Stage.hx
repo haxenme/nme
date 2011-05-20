@@ -28,6 +28,8 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeFramePeriod:Float;
    var nmeLastRender:Float;
    var nmeTouchInfo:IntHash<TouchInfo>;
+   var nmeLastDown:Array<InteractiveObject>;
+   var nmeLastClickTime:Float;
    
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
@@ -56,6 +58,8 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
       nmeLastRender = 0;
+      nmeLastDown = [];
+      nmeLastClickTime = 0.0;
       nmeSetFrameRate(100);
       nmeTouchInfo = new IntHash<TouchInfo>();
    }
@@ -274,11 +278,38 @@ class Stage extends nme.display.DisplayObjectContainer
             nmeMouseOverObjects = inStack;
          else
             touchInfo.touchOverObjects = inStack;
+         return false;
       }
+      return true;
    }
+
+   static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
+   static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
+   static var sClickEvents = [ "click", "middleClick", "rightClick" ];
 
    function nmeOnMouse(inEvent:Dynamic,inType:String)
    {
+      var type = inType;
+      var button:Int = inEvent.value;
+      var wheel = 0;
+      if (inType==MouseEvent.MOUSE_DOWN)
+      {
+         if (button>2)
+            return;
+         type = sDownEvents[button];
+      }
+      else if (inType==MouseEvent.MOUSE_UP)
+      {
+         if (button>2)
+         {
+            type = MouseEvent.MOUSE_WHEEL;
+            wheel = button==3 ? -1 : 1;
+            trace(wheel);
+         }
+         else
+            type = sUpEvents[button];
+      }
+
       if (nmeDragObject!=null)
          nmeDrag(new Point(inEvent.x,inEvent.y) );
 
@@ -286,19 +317,50 @@ class Stage extends nme.display.DisplayObjectContainer
       var obj:DisplayObject = nmeFindByID(inEvent.id);
       if (obj!=null)
          obj.nmeGetInteractiveObjectStack(stack);
+
+      var local:Point = null;
       if (stack.length>0)
       {
          var obj = stack[0];
          stack.reverse();
-         var local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
-         var evt = MouseEvent.nmeCreate(inType,inEvent,local,obj);
+         local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
+         var evt = MouseEvent.nmeCreate(type,inEvent,local,obj);
+         evt.delta = wheel;
          nmeCheckInOuts(evt,stack);
          obj.nmeFireEvent(evt);
       }
       else
       {
-         var evt = MouseEvent.nmeCreate(inType,inEvent, new Point(inEvent.x,inEvent.y),null);
+         local = new Point(inEvent.x,inEvent.y);
+         var evt = MouseEvent.nmeCreate(type,inEvent,local,null);
+         evt.delta = wheel;
          nmeCheckInOuts(evt,stack);
+      }
+
+      var click_obj = stack.length > 0 ? stack[ stack.length-1] : this;
+      if (inType==MouseEvent.MOUSE_DOWN && button<3 && (inEvent.flags & efNoNativeClick)>0 )
+      {
+         nmeLastDown[button] = click_obj;
+      }
+      else if (inType==MouseEvent.MOUSE_UP && button<3 && (inEvent.flags & efNoNativeClick)>0 )
+      {
+         if (click_obj==nmeLastDown[button])
+         {
+            var evt = MouseEvent.nmeCreate(sClickEvents[button],inEvent, local, click_obj);
+            click_obj.nmeFireEvent(evt);
+
+            if (button==0 && click_obj.doubleClickEnabled)
+            {
+               var now = nme.Timer.stamp();
+               if (now-nmeLastClickTime<0.25)
+               {
+                  var evt = MouseEvent.nmeCreate(MouseEvent.DOUBLE_CLICK,inEvent, local, click_obj);
+                  click_obj.nmeFireEvent(evt);
+               }
+               nmeLastClickTime = now;
+            }
+         }
+         nmeLastDown[button] = null;
       }
    }
 
@@ -418,6 +480,7 @@ class Stage extends nme.display.DisplayObjectContainer
    static var efAltDown   =  0x0008;
    static var efCommandDown = 0x0010;
    static var efLocationRight = 0x4000;
+   static var efNoNativeClick = 0x10000;
 
 
    function nmeOnKey(inEvent:Dynamic,inType:String)

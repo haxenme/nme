@@ -542,6 +542,8 @@ void AddModStates(int &ioFlags,int inState = -1)
    if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
    if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
    if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+
+   ioFlags |= efNoNativeClick;
 }
 
 #define SDL_TRANS(x) case SDLK_##x: return key##x;
@@ -633,20 +635,16 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_MOUSEBUTTONDOWN:
       {
-         Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y);
+         Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
       case SDL_MOUSEBUTTONUP:
       {
-         Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y);
+         Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
          sgSDLFrame->ProcessEvent(mouse);
-
-         // TODO: based on timer/motion?
-         Event click(etMouseClick, inEvent.button.x,inEvent.button.y);
-         sgSDLFrame->ProcessEvent(click);
          break;
       }
 

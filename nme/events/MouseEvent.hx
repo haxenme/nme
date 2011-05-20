@@ -85,15 +85,25 @@ class MouseEvent extends nme.events.Event
    {
    }
 
-   public static var CLICK : String = "click";
-   public static var DOUBLE_CLICK : String = "doubleClick";
-   public static var MOUSE_DOWN : String = "mouseDown";
    public static var MOUSE_MOVE : String = "mouseMove";
    public static var MOUSE_OUT : String = "mouseOut";
    public static var MOUSE_OVER : String = "mouseOver";
-   public static var MOUSE_UP : String = "mouseUp";
-   public static var MOUSE_WHEEL : String = "mouseWheel";
    public static var ROLL_OUT : String = "rollOut";
    public static var ROLL_OVER : String = "rollOver";
+
+   public static var CLICK : String = "click";
+   public static var MOUSE_DOWN : String = "mouseDown";
+   public static var MOUSE_UP : String = "mouseUp";
+
+   public static var MIDDLE_CLICK : String = "middleClick";
+   public static var MIDDLE_MOUSE_DOWN : String = "middleMouseDown";
+   public static var MIDDLE_MOUSE_UP : String = "middleMouseUp";
+
+   public static var RIGHT_CLICK : String = "rightClick";
+   public static var RIGHT_MOUSE_DOWN : String = "rightMouseDown";
+   public static var RIGHT_MOUSE_UP : String = "rightMouseUp";
+
+   public static var MOUSE_WHEEL : String = "mouseWheel";
+   public static var DOUBLE_CLICK : String = "doubleClick";
 }
 
