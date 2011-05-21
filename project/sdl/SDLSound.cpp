@@ -162,7 +162,12 @@ public:
    double getLength()
    {
       if (mChunk==0) return 0;
+      #ifdef DYNAMIC_SDL
+      // ?
+      return 0.0;
+      #else
       return mChunk->length_ticks;
+      #endif
    }
    // Will return with one ref...
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)

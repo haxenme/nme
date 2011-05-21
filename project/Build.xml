@@ -27,13 +27,6 @@
   <file name="sdl/SDLSound.cpp" unless="sdl"/>
 </files>
 
-<files id="mac">
-  <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
-  <file name="mac/NSFont.cpp"/>
-  <file name="mac/MacBoot.m"/>
-</files>
-
 <files id="linux">
   <compilerflag value="-Iinclude"/>
   <file name="linux/NativeFont.cpp"/>
@@ -70,15 +63,6 @@
   <compilerflag value="-Iinclude"/>
   <file name="Test.cpp"/>
 </files>
-
-<files id="sdl">
-  <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include" />
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
-  <file name="sdl/SDLStage.cpp"/>
-  <file name="sdl/SDLSound.cpp"/>
-</files>
-
 
 
 
@@ -146,39 +130,6 @@
 <set name="tool" value="static" if="iphone"/>
 
 
-<target id="TestWin" output="TestWin" tool="linker" toolid="${tool}">
-  <files id="main"/>
-  <files id="common"/>
-  <files id="windows" if="windows"/>
-  <files id="iphone" if="iphone"/>
-  <files id="mac" if="macos"/>
-  <files id="sdl" if="sdl"/>
-  <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="modile"/>
-  <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="modile"/>
-  <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="modile"/>
-  <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" unless="modile"/>
-  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="macos"/>
-
-  <vflag name="-framework" value="IOKit" if="macos"/>
-  <vflag name="-framework" value="UIKit" if="macos"/>
-  <vflag name="-framework" value="ApplicationServices" if="macos"/>
-  <vflag name="-framework" value="CoreAudio" if="macos"/>
-  <vflag name="-framework" value="Carbon" if="macos"/>
-  <vflag name="-framework" value="AudioToolbox" if="macos"/>
-  <vflag name="-framework" value="AudioUnit" if="macos"/>
-  <vflag name="-framework" value="ForceFeedback" if="macos"/>
-  <vflag name="-framework" value="Cocoa" if="macos"/>
-  <vflag name="-framework" value="OpenGL" if="macos"/>
-  <vflag name="-framework" value="QuickTime" if="macos"/>
-
-
-  <flag value="" if="windows"/>
-  <flag value="gdi32.lib" if="windows"/>
-  <flag value="opengl32.lib" if="windows"/>
-  <outdir name="."/>
-</target>
-
-
 <set name="ndll-tool" value="dll" unless="iphone"/>
 <set name="ndll-tool" value="static" if="iphone"/>
 <set name="name_extra" value=".iphoneos" if="iphoneos"/>
@@ -186,6 +137,38 @@
 
 <set name="no_thirdparty_extras" value="1" if="iphone"/>
 <set name="no_thirdparty_extras" value="1" if="gph"/>
+
+<set name="sdl_static" value="1" unless="mobile"/>
+<unset name="sdl_static" if="dynamic_sdl"/>
+<set name="no_thirdparty_extras" value="1" if="dynamic_sdl"/>
+
+<set name="sdl_dynamic_path" value="-L/opt/local/lib" if="macos" />
+<set name="sdl_dynamic_include1" value="-I/opt/local/include" if="macos" />
+<set name="sdl_dynamic_include2" value="-I/opt/local/include/SDL-hidden" if="macos" />
+
+
+
+
+<files id="sdl">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include" if="sdl_static"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl_static"/>
+  <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
+  <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
+  <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
+  <file name="sdl/SDLStage.cpp"/>
+  <file name="sdl/SDLSound.cpp"/>
+</files>
+
+
+
+<files id="mac">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl_static" />
+  <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
+  <file name="mac/NSFont.cpp"/>
+  <file name="mac/MacBoot.m"/>
+</files>
 
 
 <target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
@@ -206,19 +189,34 @@
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
-  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos"/>
-  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux"/>
+  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
+  <lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
 
-  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
-  <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" unless="mobile"/>
-  <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" unless="mobile"/>
-  <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" unless="mobile"/>
-  <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" unless="mobile"/>
-  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" unless="mobile"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
+  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
 
-  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" unless="iphone"/>
+  <lib name="-lSDL" if="dynamic_sdl"/>
+  <lib name="-lSDL_mixer" if="dynamic_sdl"/>
+  <lib name="-lvorbis" if="dynamic_sdl"/>
+  <lib name="-logg" if="dynamic_sdl"/>
+  <lib name="-lsmpeg" if="dynamic_sdl"/>
+  <lib name="-lfreetype" if="dynamic_sdl"/>
+  <lib name="-lSDL" if="dynamic_sdl"/>
+  <lib name="-lcurl" if="dynamic_sdl"/>
+  <lib name="-lpng" if="dynamic_sdl"/>
+  <lib name="-ljpeg" if="dynamic_sdl"/>
+  <lib name="-lz" if="dynamic_sdl"/>
+
+
 
   <flag value="${THIRDPARTY_LIBS}libcurl${name_extra}/*.o" if="iphone"/>
+
+  <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
   <vflag name="-framework" value="CoreAudio" if="macos"/>
@@ -266,7 +264,6 @@
 
 
 <target id="default">
-   <!-- <target id="TestWin"/> -->
    <target id="NDLL"/>
 </target>
 
