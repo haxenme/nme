@@ -336,8 +336,14 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
    {
       Colours &colours = arrays->mColours;
       colours.resize( elem.mFirst + elem.mCount );
-      memcpy( &colours[elem.mFirst], &inPath.data[ inJob.mData0 + elem.mCount*2],
-                  elem.mCount*sizeof(int) );
+      const int * src = (const int *)(&inPath.data[ inJob.mData0 + elem.mCount*2]);
+      int * dest = &colours[elem.mFirst];
+      int n = elem.mCount;
+      for(int i=0;i<n;i++)
+      {
+         int s = src[i];
+         dest[i] = (s & 0xff00ff00) | ((s>>16)&0xff) | ((s<<16) & 0xff0000);
+      }
    }
 
    arrays->mElements.push_back(elem);
