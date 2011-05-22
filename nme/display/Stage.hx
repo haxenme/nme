@@ -52,7 +52,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
    public function new(inHandle:Dynamic,inWidth:Int,inHeight:Int)
    {
-      super(inHandle);
+      super(inHandle,"Stage");
       nmeMouseOverObjects = [];
       nmeFocusOverObjects = [];
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);

@@ -11,7 +11,7 @@ class Bitmap extends DisplayObject {
    var mGraphics:Graphics;
 
    public function new(?inBitmapData : BitmapData, ?inPixelSnapping : PixelSnapping, ?inSmoothing : Bool) : Void {
-         super(DisplayObject.nme_create_display_object());
+         super(DisplayObject.nme_create_display_object(),"Bitmap");
          pixelSnapping = inPixelSnapping;
          smoothing = inSmoothing;
          nmeSetBitmapData(inBitmapData);

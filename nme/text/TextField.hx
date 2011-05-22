@@ -28,7 +28,7 @@ class TextField extends nme.display.InteractiveObject
    public function new( )
    {
       var handle = nme_text_field_create( );
-      super(handle);
+      super(handle,"TextField");
    }
 
 	public function setTextFormat(format:TextFormat, beginIndex:Int = -1, endIndex:Int = -1):Void

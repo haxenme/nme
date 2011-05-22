@@ -1021,6 +1021,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                   Extent2DF screen_extent;
                   obj->GetExtent(obj_state->mTransform,screen_extent,true);
                   // Get bounding pixel rect
+                  int x1 = obj_state->mClipRect.x;
+                  int y1 = obj_state->mClipRect.y;
                   rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
                   // Intersect with clip rect ...
@@ -1031,7 +1033,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                {
                   if (inState.mPhase == rpHitTest)
                   {
-                     inState.mHitResult = this;
+                     inState.mHitResult = obj;
                      return;
                   }
                   else if (inState.mPhase == rpRender )

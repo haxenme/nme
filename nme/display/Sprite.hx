@@ -4,7 +4,7 @@ class Sprite extends DisplayObjectContainer
 {
    public function new()
 	{
-	   super(DisplayObjectContainer.nme_create_display_object_container());
+	   super(DisplayObjectContainer.nme_create_display_object_container(),"Sprite");
 	}
 
    public function startDrag(lockCenter:Bool = false, ?bounds:nme.geom.Rectangle):Void

@@ -14,10 +14,9 @@ class DisplayObjectContainer extends InteractiveObject
 
    var nmeChildren:Array<DisplayObject>;
 
-   public function new(inHandle:Dynamic)
+   public function new(inHandle:Dynamic,inType:String)
    {
-      super(inHandle);
-      nmeName = "DisplayObjectContainer";
+      super(inHandle,inType);
       nmeChildren = [];
    }
 

@@ -38,21 +38,20 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
    var nmeParent:DisplayObjectContainer;
-   var nmeName:String;
    var nmeFilters:Array<BitmapFilter>;
    var nmeID:Int;
    var nmeScale9Grid:Rectangle;
    var nmeScrollRect:Rectangle;
 
-   public function new(inHandle:Dynamic)
+   public function new(inHandle:Dynamic,inType:String)
    {
       super(this);
       nmeParent = null;
       nmeHandle = inHandle;
-      nmeName = "DisplayObject";
       nmeID = nme_display_object_get_id(nmeHandle);
+      nmeSetName(inType + " " + nmeID);
    }
-   public function toString() : String { return nmeName + " " + nmeID; }
+   public function toString() : String { return name; }
 
    public function nmeGetGraphics() : nme.display.Graphics
    {
