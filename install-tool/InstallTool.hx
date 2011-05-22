@@ -485,6 +485,8 @@ class InstallTool
       if (n==null || n=="")
          n = neko.Sys.getEnv("NEKO_INSTALL_PATH");
       if (n==null || n=="")
+         n = neko.Sys.getEnv("NEKOPATH");
+      if (n==null || n=="")
       {
          if (isWindows())
            n = "C:/Motion-Twin/neko";
