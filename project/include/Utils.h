@@ -73,6 +73,7 @@ public:
    ~WString();
 
    inline int length() const { return mLength; }
+   inline int size() const { return mLength; }
 
    WString &operator=(const WString &inRHS);
    inline wchar_t &operator[](int inIndex) { return mString[inIndex]; }
@@ -85,6 +86,8 @@ public:
    bool operator>(const WString &inRHS) const;
    bool operator==(const WString &inRHS) const;
    bool operator!=(const WString &inRHS) const;
+
+   WString substr(int inPos,int inLen) const;
 
 
 private:

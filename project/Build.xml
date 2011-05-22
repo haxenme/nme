@@ -199,6 +199,7 @@
   <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" if="sdl_static"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
   <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="android"/>
 
   <lib name="-lSDL" if="dynamic_sdl"/>
   <lib name="-lSDL_mixer" if="dynamic_sdl"/>

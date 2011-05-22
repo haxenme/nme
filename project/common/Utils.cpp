@@ -493,6 +493,13 @@ bool WString::operator!=(const WString &inRHS) const
 }
 
 
+WString WString::substr(int inPos,int inLen) const
+{
+   return WString(mString+inPos,inLen);
+}
+
+
+
 
 
 #endif
