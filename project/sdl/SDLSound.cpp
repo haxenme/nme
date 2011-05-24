@@ -38,18 +38,13 @@ static bool Init()
 {
    if (!gSDLIsInit)
    {
-      //if (SDL_Init(SDL_INIT_AUDIO) != -1)
-         gSDLIsInit = true;
-
-		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 4096) < 0)
-		{
-			printf("Could not start mixer: %s\n", SDL_GetError());
-		}
+      fprintf(stderr,"Please init Stage before creating sound.\n");
+      return false;
    }
 
-   if (gSDLIsInit && !sChannelsInit)
+   if (!sChannelsInit)
    {
-		sChannelsInit = true;
+      sChannelsInit = true;
       for(int i=0;i<sMaxChannels;i++)
       {
          sUsedChannel[i] = false;
@@ -59,7 +54,7 @@ static bool Init()
       Mix_HookMusicFinished(onMusicDone);
    }
 
-   return gSDLIsInit;
+   return sChannelsInit;
 }
 
 // ---  Using "Mix_Chunk" API ----------------------------------------------------
@@ -107,7 +102,7 @@ public:
       if (mChannel>=0 && sDoneChannel[mChannel])
       {
          sDoneChannel[mChannel] = false;
-			int c = mChannel;
+         int c = mChannel;
          mChannel = -1;
          DecRef();
          sUsedChannel[c] = 0;
@@ -146,13 +141,13 @@ class SDLSound : public Sound
 public:
    SDLSound(const std::string &inFilename)
    {
-		IncRef();
+      IncRef();
       mChunk = Mix_LoadWAV(inFilename.c_str());
       if ( mChunk == NULL )
-		{
+      {
          mError = SDL_GetError();
-			//printf("Error %s\n", mError.c_str() );
-		}
+         //printf("Error %s\n", mError.c_str() );
+      }
    }
    ~SDLSound()
    {
@@ -260,13 +255,13 @@ class SDLMusic : public Sound
 public:
    SDLMusic(const std::string &inFilename)
    {
-		IncRef();
+      IncRef();
       mMusic = Mix_LoadMUS(inFilename.c_str());
       if ( mMusic == NULL )
-		{
+      {
          mError = SDL_GetError();
-			//printf("Error %s\n", mError.c_str() );
-		}
+         //printf("Error %s\n", mError.c_str() );
+      }
    }
    ~SDLMusic()
    {

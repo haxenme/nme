@@ -156,6 +156,7 @@
   <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
   <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
   <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
+  <compilerflag value="-DNME_MIXER" />
   <file name="sdl/SDLStage.cpp"/>
   <file name="sdl/SDLSound.cpp"/>
 </files>
@@ -245,6 +246,7 @@
 
   <lib name="-ldl" if="linux"/>
   <lib name="-lGL" if="linux"/>
+  <lib name="-lpthread" if="linux"/>
 
   <flag value="-L${GPH_ROOT}/DGE/lib/target" if="gph"/>
   <lib name="-ldge20" if="gph"/>

@@ -6,6 +6,10 @@
 #include <KeyCodes.h>
 #include <map>
 
+#ifdef NME_MIXER
+#include <SDL_mixer.h>
+#endif
+
 namespace nme
 {
 
@@ -393,9 +397,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    init_flags |= SDL_INIT_JOYSTICK;
 
-   if ( SDL_Init( init_flags ) == -1 )
+   int err =  SDL_Init( init_flags );
+   if ( err == -1 )
    {
-      gSDLIsInit = true;
+      fprintf(stderr,"Couble not initialize SDL : %s\n", SDL_GetError());
       inOnFrame(0);
       // SDL_GetError()
       return;
@@ -403,6 +408,17 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
+
+   gSDLIsInit = true;
+
+   #ifdef NME_MIXER
+   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
+   {
+      fprintf(stderr,"Couble not open sound: %s\n", Mix_GetError());
+      gSDLIsInit = false;
+   }
+   #endif
+
 
    const SDL_VideoInfo *info  = SDL_GetVideoInfo();
    sgDesktopWidth = info->current_w;
@@ -475,19 +491,15 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       //printf("Flags %p\n",sdl_flags);
       if (!screen)
       {
-         // SDL_GetError()
+         fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
          inOnFrame(0);
+         gSDLIsInit = false;
          return;
       }
    }
 
+
    HintColourOrder( opengl || screen->format->Rmask==0xff );
-
-
-   #ifdef NME_MIXER
-   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
-      printf("unable to initialize the sound support\n");
-   #endif
 
    sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
