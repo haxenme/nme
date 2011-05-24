@@ -510,6 +510,7 @@ class InstallTool
    }
 
    public static function isMac() { return mOS.substr(0,3)=="Mac"; }
+   public static function isLinux() { return mOS.substr(0,5)=="Linux"; }
    public static function isWindows() { return mOS.substr(0,3)=="Win"; }
    public static function dotSlash() { return isWindows() ? ".\\" : "./"; }
 
@@ -720,7 +721,7 @@ class InstallTool
       var file = exe_dest + "/" + mDefines.get("APP_FILE")+ ext;
       var dbg = mDebug ? "-debug" : "";
       copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+dbg+ext, file, mAllFiles,mVerbose);
-      if (isMac())
+      if (isMac() || isLinux())
          run("","chmod", [ "755", file ]);
    }
 
