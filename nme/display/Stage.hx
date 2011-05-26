@@ -287,10 +287,12 @@ class Stage extends nme.display.DisplayObjectContainer
    static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
    static var sClickEvents = [ "click", "middleClick", "rightClick" ];
 
-   function nmeOnMouse(inEvent:Dynamic,inType:String)
+   function nmeOnMouse(inEvent:Dynamic,inType:String,inFromMouse:Bool)
    {
       var type = inType;
       var button:Int = inEvent.value;
+      if (!inFromMouse)
+         button = 0;
       var wheel = 0;
       if (inType==MouseEvent.MOUSE_DOWN)
       {
@@ -304,7 +306,7 @@ class Stage extends nme.display.DisplayObjectContainer
          {
             type = MouseEvent.MOUSE_WHEEL;
             wheel = button==3 ? -1 : 1;
-            trace(wheel);
+            //trace(wheel);
          }
          else
             type = sUpEvents[button];
@@ -326,23 +328,26 @@ class Stage extends nme.display.DisplayObjectContainer
          local = obj.globalToLocal( new Point(inEvent.x, inEvent.y) );
          var evt = MouseEvent.nmeCreate(type,inEvent,local,obj);
          evt.delta = wheel;
-         nmeCheckInOuts(evt,stack);
+         if (inFromMouse)
+            nmeCheckInOuts(evt,stack);
          obj.nmeFireEvent(evt);
       }
       else
       {
+         //trace("No obj?");
          local = new Point(inEvent.x,inEvent.y);
          var evt = MouseEvent.nmeCreate(type,inEvent,local,null);
          evt.delta = wheel;
-         nmeCheckInOuts(evt,stack);
+         if (inFromMouse)
+            nmeCheckInOuts(evt,stack);
       }
 
       var click_obj = stack.length > 0 ? stack[ stack.length-1] : this;
-      if (inType==MouseEvent.MOUSE_DOWN && button<3 && (inEvent.flags & efNoNativeClick)>0 )
+      if (inType==MouseEvent.MOUSE_DOWN && button<3  )
       {
          nmeLastDown[button] = click_obj;
       }
-      else if (inType==MouseEvent.MOUSE_UP && button<3 && (inEvent.flags & efNoNativeClick)>0 )
+      else if (inType==MouseEvent.MOUSE_UP && button<3 )
       {
          if (click_obj==nmeLastDown[button])
          {
@@ -380,15 +385,23 @@ class Stage extends nme.display.DisplayObjectContainer
          var evt = TouchEvent.nmeCreate(inType,inEvent,local,obj);
          evt.touchPointID = inEvent.value;
          evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
-         nmeCheckInOuts(evt,stack,touchInfo);
+         if (evt.isPrimaryTouchPoint)
+            nmeCheckInOuts(evt,stack,touchInfo);
          obj.nmeFireEvent(evt);
+         if (evt.isPrimaryTouchPoint && inType==TouchEvent.TOUCH_MOVE)
+         {
+            var evt = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE,inEvent,local,obj);
+            obj.nmeFireEvent(evt);
+         }
       }
       else
       {
+         //trace("No object?");
          var evt = TouchEvent.nmeCreate(inType,inEvent, new Point(inEvent.x,inEvent.y),null);
          evt.touchPointID = inEvent.value;
          evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
-         nmeCheckInOuts(evt,stack,touchInfo);
+         if (evt.isPrimaryTouchPoint)
+            nmeCheckInOuts(evt,stack,touchInfo);
       }
    }
 
@@ -610,16 +623,16 @@ class Stage extends nme.display.DisplayObjectContainer
             nmeOnKey(inEvent,KeyboardEvent.KEY_UP);
 
          case 4: // etMouseMove
-            nmeOnMouse(inEvent,MouseEvent.MOUSE_MOVE);
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_MOVE,true);
 
          case 5: // etMouseDown
-            nmeOnMouse(inEvent,MouseEvent.MOUSE_DOWN);
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_DOWN,true);
 
          case 6: // etMouseClick
-            nmeOnMouse(inEvent,MouseEvent.CLICK);
+            nmeOnMouse(inEvent,MouseEvent.CLICK,true);
 
          case 7: // etMouseUp
-            nmeOnMouse(inEvent,MouseEvent.MOUSE_UP);
+            nmeOnMouse(inEvent,MouseEvent.MOUSE_UP,true);
 
          case 8: // etResize
             nmeOnResize(inEvent.x, inEvent.y);
@@ -648,6 +661,8 @@ class Stage extends nme.display.DisplayObjectContainer
             var touchInfo = new TouchInfo();
             nmeTouchInfo.set( inEvent.value, touchInfo );
             nmeOnTouch(inEvent,TouchEvent.TOUCH_BEGIN,touchInfo);
+            if ( (inEvent.flags & 0x8000) > 0 )
+               nmeOnMouse(inEvent,MouseEvent.MOUSE_DOWN, false);
 
          case 16: // etTouchMove
             var touchInfo = nmeTouchInfo.get( inEvent.value );
@@ -657,6 +672,8 @@ class Stage extends nme.display.DisplayObjectContainer
             var touchInfo = nmeTouchInfo.get( inEvent.value );
             nmeOnTouch(inEvent,TouchEvent.TOUCH_END, touchInfo );
             nmeTouchInfo.remove( inEvent.value );
+            if ( (inEvent.flags & 0x8000) > 0 )
+               nmeOnMouse(inEvent,MouseEvent.MOUSE_UP, false);
 
          case 18: // etTouchTap
             //nmeOnTouchTap(inEvent.TouchEvent.TOUCH_TAP);

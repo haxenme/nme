@@ -44,7 +44,7 @@ public:
       mHardwareContext->SetWindowSize(inWidth,inHeight);
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
-      mMultiTouch = false;
+      mMultiTouch = true;
       mSingleTouchID = 0;
       mDX = 0;
       mDY = 0;
@@ -52,7 +52,6 @@ public:
       // Click detection
       mDownX = 0;
       mDownY = 0;
-      mMoved = false;
    }
    ~AndroidStage()
    {
@@ -103,61 +102,47 @@ public:
 
    void OnTouch(int inType,double inX, double inY, int inID)
    {
-      if (mMultiTouch)
-      {
-         Event mouse((EventType)inType, inX, inY );
-         mouse.value = inID;
-         HandleEvent(mouse);
-      }
-      else
-      {
-         //__android_log_print(ANDROID_LOG_INFO, "AndroidFrame",
-           // "Touch %d/%d %f,%f", mSingleTouchID,inID, inX,inY);
-         if (mSingleTouchID==0 || inID==mSingleTouchID)
+         if (mSingleTouchID==0 || inID==mSingleTouchID || mMultiTouch)
          {
-            EventType type = etUnknown;
-            switch(inType)
+            EventType type = (EventType)inType;
+            if (!mMultiTouch)
             {
-               case  etTouchBegin: type = etMouseDown; break;
-               case  etTouchEnd:   type = etMouseUp; break;
-               case  etTouchMove : type = etMouseMove; break;
-               case  etTouchTap:   type = etMouseClick; break;
+               switch(inType)
+               {
+                  case  etTouchBegin: type = etMouseDown; break;
+                  case  etTouchEnd:   type = etMouseUp; break;
+                  case  etTouchMove : type = etMouseMove; break;
+                  case  etTouchTap:   type = etMouseClick; break;
+               }
             }
 
-            if (type!=etUnknown)
-            {
                Event mouse(type, inX, inY);
+               if (mSingleTouchID==0 || inID==mSingleTouchID || !mMultiTouch)
+                  mouse.flags |= efPrimaryTouch;
+
                if (inType==etTouchBegin)
                {
-                  mSingleTouchID = inID;
+                  if (mSingleTouchID==0)
+                     mSingleTouchID = inID;
                   mouse.flags |= efLeftDown;
                   mDownX = inX;
                   mDownY = inY;
-                  mMoved = false;
                }
                else if (inType==etTouchEnd)
                {
-                  mSingleTouchID = 0;
-                  if (!mMoved)
-                  {
-                     HandleEvent(mouse);
-                     mouse = Event(etMouseClick, inX, inY);
-                  }
+                  if (mSingleTouchID==inID)
+                     mSingleTouchID = 0;
                }
                else if (inType==etTouchMove)
                {
                   mouse.flags |= efLeftDown;
-                  if (!mMoved && (fabs(mDownX-inX)>8 || fabs(mDownY-inY))>8 )
-                  {
-                      mMoved = true;
-                  }
                }
+               mouse.value = inID;
 
-               mouse.flags |= efPrimaryTouch;
+               //ELOG("TOUCH %d %f,%f  %d(%d)", inID, inX, inY, type, mouse.flags & efPrimaryTouch );
+
                HandleEvent(mouse);
-            }
          }
-      }
    }
 
    bool getMultitouchSupported() { return true; }
@@ -173,7 +158,6 @@ public:
 
    double mDownX;
    double mDownY;
-   bool   mMoved;
 
    HardwareContext *mHardwareContext;
    HardwareSurface *mHardwareSurface;

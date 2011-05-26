@@ -121,29 +121,32 @@ class MainView extends GLSurfaceView {
    @Override
    public boolean onTouchEvent(final MotionEvent ev) {
        final MainView me = this;
-	   queueEvent(new Runnable(){
-            public void run() {
 
-               final int action = ev.getAction();
+       final int action = ev.getAction();
 
-               int type = -1;
+       int type = -1;
 
-               switch (action & MotionEvent.ACTION_MASK) {
-                  case MotionEvent.ACTION_DOWN: type = etTouchBegin; break;
-                  case MotionEvent.ACTION_MOVE: type = etTouchMove; break;
-                  case MotionEvent.ACTION_UP: type = etTouchEnd; break;
-                  case MotionEvent.ACTION_CANCEL: type = etTouchEnd; break;
-               }
+       switch (action & MotionEvent.ACTION_MASK) {
+          case MotionEvent.ACTION_DOWN: type = etTouchBegin; break;
+          case MotionEvent.ACTION_POINTER_DOWN: type = etTouchBegin; break;
+          case MotionEvent.ACTION_MOVE: type = etTouchMove; break;
+          case MotionEvent.ACTION_UP: type = etTouchEnd; break;
+          case MotionEvent.ACTION_POINTER_UP: type = etTouchEnd; break;
+          case MotionEvent.ACTION_CANCEL: type = etTouchEnd; break;
+       }
+       final int t = type;
+       //Log.e("VIEW","onTouchEvent " + type + " x " + ev.getPointerCount() );
 
-               for (int i = 0; i < ev.getPointerCount(); i++) {
-                  int id = ev.getPointerId(i);
-                  float x = ev.getX(i);
-                  float y = ev.getY(i);
-                  me.HandleResult( NME.onTouch(type,x,y,id) );
-               }
-
-      }});
-      return true;
+       for (int i = 0; i < ev.getPointerCount(); i++) {
+           final int id = ev.getPointerId(i);
+           final float x = ev.getX(i);
+           final float y = ev.getY(i);
+           //Log.e("VIEW","  queue " + id + "  " + x + ", "+ y);
+	        queueEvent(new Runnable(){
+                 public void run() { me.HandleResult( NME.onTouch(t,x,y,id) ); }
+           } );
+       }
+       return true;
     }
 
 
