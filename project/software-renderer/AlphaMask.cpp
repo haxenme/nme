@@ -8,7 +8,7 @@ bool AlphaMask::Compatible(const Transform &inTransform,
                            int &outTX, int &outTY )
 {
    int tx,ty;
-   if  (!mMatrix.IsIntTranslation(*inTransform.mMatrix,tx,ty) && mScale9!=*inTransform.mScale9)
+   if  ( (!mMatrix.IsIntTranslation(*inTransform.mMatrix,tx,ty)) || (mScale9!=*inTransform.mScale9) )
       return false;
 
    if (mAAFactor!=inTransform.mAAFactor)
