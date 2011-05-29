@@ -64,5 +64,12 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
     return result;
 }
 
+bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
+{
+   // TODO:
+   return false;
+}
+
+
 
 }

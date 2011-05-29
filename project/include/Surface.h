@@ -3,6 +3,7 @@
 
 #include <Graphics.h>
 #include <Utils.h>
+#include <ByteArray.h>
 
 // ---- Surface API --------------
 
@@ -43,6 +44,7 @@ public:
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
    static Surface *LoadFromBytes(const uint8 *inBytes,int inLen);
+   bool Encode( nme::ByteArray *outBytes,bool inPNG,double inQuality);
 
    Surface *IncRef() { mRefCount++; return this; }
 

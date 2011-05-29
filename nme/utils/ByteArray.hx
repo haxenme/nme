@@ -7,6 +7,8 @@ import nme.geom.Rectangle;
 * @author   Russell Weir
 **/
 
+// Ensure that the neko->haxe callbacks are initialized
+import nme.Lib;
 
 class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 {

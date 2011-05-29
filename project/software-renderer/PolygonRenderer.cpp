@@ -959,14 +959,14 @@ public:
                        &LineRender::BuildHitTest;
 
       double perp_len = GetPerpLen(m);
-      if (perp_len<0.1)
-         return 0;
 
       int alpha = 256;
       if (perp_len<0.5)
       {
          alpha = 512 * perp_len;
          perp_len = 0.5;
+         if (alpha<10)
+            return 0;
       }
 
 
@@ -1129,7 +1129,7 @@ public:
                         BuildCurve(p2_bot,ctrl_bot,p0_bot);
                      }
                   }
-                  #endif
+                  #else
 
                   if (inMode==itGetExtent)
                   {
@@ -1143,6 +1143,7 @@ public:
                   {
                      BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
                   }
+                  #endif
  
 
                   prev = point[1];

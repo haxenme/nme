@@ -62,6 +62,14 @@ public:
 		resize(inLen);
 		memcpy(mPtr,inData,sizeof(T_)*inLen);
 	}
+   QuickVec(int inLen)
+	{
+      mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
+      mAlloc = QBufSize;
+      mSize = 0;
+
+		resize(inLen);
+	}
    ~QuickVec()
    {
       if (QBUF_SIZE_==0 || mPtr!=mQBuf)
@@ -419,6 +427,13 @@ public:
 		for(int i=0;i<inOther.mSize;i++)
 			mPtr[s+i] = inOther[i];
 	}
+	void append(const T_ *inOther,int inLen)
+   {
+		int s = mSize;
+		resize(mSize+inLen);
+		for(int i=0;i<inLen;i++)
+			mPtr[s+i] = inOther[i];
+   }
 
    T_  *mPtr;
    T_  mQBuf[QBufSize==0?1:QBufSize];

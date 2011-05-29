@@ -34,6 +34,8 @@ class BitmapData implements IBitmapDrawable
    // Public, but only use if you know what you are doing
    public var nmeHandle:Dynamic;
 
+   public inline static var PNG = "png";
+   public inline static var JPG = "jpg";
 
 
    public function new(inWidth:Int, inHeight:Int,
@@ -104,6 +106,12 @@ class BitmapData implements IBitmapDrawable
       return result;
    }
 
+   public function encode(inFormat:String, inQuality:Float=0.9 ) : nme.utils.ByteArray
+   {
+      var result = new nme.utils.ByteArray();
+      nme_bitmap_data_encode(nmeHandle, result.nmeData, inFormat, inQuality);
+      return result;
+   }
 
 
    // --- Flash like API ----------------------------------------------------
@@ -313,6 +321,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_width = nme.Loader.load("nme_bitmap_data_width",1);
    static var nme_bitmap_data_get_transparent = nme.Loader.load("nme_bitmap_data_get_transparent",1);
    static var nme_bitmap_data_set_flags = nme.Loader.load("nme_bitmap_data_set_flags",1);
+   static var nme_bitmap_data_encode = nme.Loader.load("nme_bitmap_data_encode",4);
 
 }
 

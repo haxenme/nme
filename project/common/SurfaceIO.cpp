@@ -195,6 +195,14 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    return result;
 }
 
+
+static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
+{
+   return false;
+}
+
+
+
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
 {
 	longjmp(png_ptr->jmpbuf, 1);
@@ -205,6 +213,14 @@ static void user_read_data_fn(png_structp png_ptr, png_bytep data, png_size_t le
     png_voidp buffer = png_get_io_ptr(png_ptr);
 	 ((ReadBuf *)buffer)->Read(data,length);
 }
+
+void user_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    QuickVec<unsigned char> *buffer = (QuickVec<unsigned char> *)png_get_io_ptr(png_ptr);
+	 buffer->append((unsigned char *)data,(int)length);
+} 
+void user_flush_data(png_structp png_ptr) { }
+
 
 static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
 {
@@ -305,6 +321,55 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    return result;
 }
 
+static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
+{
+   /* initialize stuff */
+   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, user_error_fn, user_warning_fn);
+
+   if (!png_ptr)
+      return false;
+
+   png_infop info_ptr = png_create_info_struct(png_ptr);
+   if (!info_ptr)
+      return false;
+
+   if (setjmp(png_jmpbuf(png_ptr)))
+   {
+      outBytes->mBytes.clear();
+
+      /* Free all of the memory associated with the png_ptr and info_ptr */
+      png_destroy_write_struct(&png_ptr, &info_ptr );
+      /* If we get here, we had a problem reading the file */
+      return false;
+   }
+
+   png_set_write_fn(png_ptr, &outBytes->mBytes, user_write_data, user_flush_data);
+
+   int w = inSurface->Width();
+   int h = inSurface->Height();
+
+   int bit_depth = 8;
+   int color_type = (inSurface->Format()&pfHasAlpha) ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA;
+   png_set_IHDR(png_ptr, info_ptr, w, h,
+           bit_depth, color_type, PNG_INTERLACE_NONE,
+           PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	if (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) )
+      png_set_bgr(png_ptr);
+
+   png_write_info(png_ptr, info_ptr);
+
+   QuickVec<png_bytep> row_pointers(h);
+   for(int y=0;y<h;y++)
+      row_pointers[y] = (png_bytep)inSurface->Row(y);
+
+   png_write_image(png_ptr, &row_pointers[0]);
+
+   png_write_end(png_ptr, NULL);
+
+   return true;
+}
+
 namespace nme {
 
 Surface *Surface::Load(const OSChar *inFilename)
@@ -347,6 +412,15 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
 		result = TryPNG(0,inBytes,inLen);
 
 	return result;
+}
+
+bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
+{
+   if (inPNG)
+      return EncodePNG(this,outBytes);
+   
+   else
+      return EncodeJPG(this,outBytes,inQuality);
 }
 
 

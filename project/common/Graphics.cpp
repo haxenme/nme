@@ -329,7 +329,13 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
      mPathData->initPosition(mCursor);
 
-   mPathData->curveTo(cx,cy,x,y);
+   if ( (fabs(mCursor.x-cx)<0.00001 && fabs(mCursor.y-cy)<0.00001) ||
+        (fabs(x-cx)<0.00001 && fabs(y-cy)<0.00001)  )
+   {
+      mPathData->lineTo(x,y);
+   }
+   else
+      mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
    mVersion++;
 }

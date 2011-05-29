@@ -2089,6 +2089,27 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
 
 
+value nme_bitmap_data_encode(value inSurface, value inCompressed, value inFormat,value inQuality)
+{
+   Surface *surf;
+   if (!AbstractToObject(inSurface,surf))
+      return alloc_null();
+
+   ByteArray *array;
+   if (!AbstractToObject(inCompressed,array))
+      return alloc_null();
+
+   bool ok = surf->Encode(array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
+   if (!ok)
+      return alloc_null();
+  
+   return alloc_bool(true);
+}
+DEFINE_PRIM(nme_bitmap_data_encode,4);
+
+
+
+
 value nme_bitmap_data_clone(value inSurface)
 {
    Surface *surf;
