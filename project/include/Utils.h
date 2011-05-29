@@ -104,7 +104,7 @@ typedef std::wstring WString;
 typedef wchar_t OSChar;
 #define val_os_string val_wstring
 #define OpenRead(x) _wfopen(x,L"rb")
-#define OpenOverwrite(x) _wfopen(x,L"w") // [ddc]
+#define OpenOverwrite(x) _wfopen(x,L"wb") // [ddc]
 
 #else
 typedef char OSChar;
@@ -120,7 +120,7 @@ extern "C" FILE *OpenOverwrite(const char *inName);
 namespace nme {
 #else
 #define OpenRead(x) fopen(x,"rb")
-#define OpenOverwrite(x) fopen(x,"w") // [ddc]
+#define OpenOverwrite(x) fopen(x,"wb") // [ddc]
 #endif
 
 #endif

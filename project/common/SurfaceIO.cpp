@@ -13,23 +13,23 @@ using namespace nme;
 
 struct ReadBuf
 {
-	ReadBuf(const uint8 *inData, int inLen) : mData(inData), mLen(inLen) { }
+   ReadBuf(const uint8 *inData, int inLen) : mData(inData), mLen(inLen) { }
 
-	bool Read(uint8 *outBuffer, int inN)
-	{
-		if (inN>mLen)
-		{
-			memset(outBuffer,0,inN);
-			return false;
-		}
-		memcpy(outBuffer,mData,inN);
-		mData+=inN;
-		mLen -= inN;
-		return true;
-	}
+   bool Read(uint8 *outBuffer, int inN)
+   {
+      if (inN>mLen)
+      {
+         memset(outBuffer,0,inN);
+         return false;
+      }
+      memcpy(outBuffer,mData,inN);
+      mData+=inN;
+      mLen -= inN;
+      return true;
+   }
 
-	const uint8 *mData;
-	int mLen;
+   const uint8 *mData;
+   int mLen;
 };
 
 struct ErrorData
@@ -50,46 +50,46 @@ static void OnError(j_common_ptr cinfo)
 
 struct MySrcManager
 {
-	MySrcManager(const JOCTET *inData, int inLen) : mData(inData), mLen(inLen)
-	{
-		pub.init_source = my_init_source;
-		pub.fill_input_buffer = my_fill_input_buffer;
-		pub.skip_input_data = my_skip_input_data;
-		pub.resync_to_restart = my_resync_to_restart;
-		pub.term_source = my_term_source;
- 		pub.next_input_byte = 0;
- 		pub.bytes_in_buffer = 0;
-		mUsed = false;
-		mEOI[0] = 0xff;
-		mEOI[1] = JPEG_EOI;
-	}
+   MySrcManager(const JOCTET *inData, int inLen) : mData(inData), mLen(inLen)
+   {
+      pub.init_source = my_init_source;
+      pub.fill_input_buffer = my_fill_input_buffer;
+      pub.skip_input_data = my_skip_input_data;
+      pub.resync_to_restart = my_resync_to_restart;
+      pub.term_source = my_term_source;
+       pub.next_input_byte = 0;
+       pub.bytes_in_buffer = 0;
+      mUsed = false;
+      mEOI[0] = 0xff;
+      mEOI[1] = JPEG_EOI;
+   }
 
-	struct jpeg_source_mgr pub;	/* public fields */
+   struct jpeg_source_mgr pub;   /* public fields */
    const JOCTET * mData;
    size_t mLen;
-	bool   mUsed;
-	unsigned char mEOI[2];
+   bool   mUsed;
+   unsigned char mEOI[2];
 
    static void my_init_source(j_decompress_ptr cinfo)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
-		man->mUsed = false;
+      man->mUsed = false;
    }
    static boolean my_fill_input_buffer(j_decompress_ptr cinfo)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
-		if (man->mUsed)
-		{
- 		   man->pub.next_input_byte = man->mEOI;
- 		   man->pub.bytes_in_buffer = 2;
-		}
-		else
-		{
- 		   man->pub.next_input_byte = man->mData;
- 		   man->pub.bytes_in_buffer = man->mLen;
-			man->mUsed = true;
-		}
-		return true;
+      if (man->mUsed)
+      {
+          man->pub.next_input_byte = man->mEOI;
+          man->pub.bytes_in_buffer = 2;
+      }
+      else
+      {
+          man->pub.next_input_byte = man->mData;
+          man->pub.bytes_in_buffer = man->mLen;
+         man->mUsed = true;
+      }
+      return true;
    }
    static void my_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    {
@@ -98,8 +98,8 @@ struct MySrcManager
    static boolean my_resync_to_restart(j_decompress_ptr cinfo, int desired)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
-		man->mUsed = false;
-		return true;
+      man->mUsed = false;
+      return true;
    }
    static void my_term_source(j_decompress_ptr cinfo)
    {
@@ -135,13 +135,13 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    jpeg_create_decompress(&cinfo);
 
    // Specify data source (ie, a file, or buffer)
-	MySrcManager manager(inData,inDataLen);
-	if (inFile)
+   MySrcManager manager(inData,inDataLen);
+   if (inFile)
       jpeg_stdio_src(&cinfo, inFile);
-	else
-	{
-		cinfo.src = &manager.pub;
-	}
+   else
+   {
+      cinfo.src = &manager.pub;
+   }
 
    // Read file parameters with jpeg_read_header().
    if (jpeg_read_header(&cinfo, TRUE)!=JPEG_HEADER_OK)
@@ -195,36 +195,142 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    return result;
 }
 
+struct MyDestManager
+{
+   enum { BUF_SIZE = 4096 };
+   struct jpeg_destination_mgr pub;   /* public fields */
+   QuickVec<uint8> &mOutput;
+   uint8   mTmpBuf[BUF_SIZE];
+
+   MyDestManager(QuickVec<uint8> &inOutput) : mOutput(inOutput)
+   {
+      pub.init_destination    = init_buffer;
+      pub.empty_output_buffer = copy_buffer;
+      pub.term_destination    = term_buffer;
+      pub.next_output_byte    = mTmpBuf;
+      pub.free_in_buffer      = BUF_SIZE;
+   }
+
+   void CopyBuffer()
+   {
+      mOutput.append( mTmpBuf, BUF_SIZE);
+      pub.next_output_byte    = mTmpBuf;
+      pub.free_in_buffer      = BUF_SIZE;
+   }
+
+   void TermBuffer()
+   {
+      mOutput.append( mTmpBuf, BUF_SIZE - pub.free_in_buffer );
+   }
+
+
+   static void init_buffer(jpeg_compress_struct* cinfo) {}
+
+   static boolean copy_buffer(jpeg_compress_struct* cinfo)
+   {
+      MyDestManager *man = (MyDestManager *)cinfo->dest;
+      man->CopyBuffer( );
+      return TRUE;
+   }
+
+   static void term_buffer(jpeg_compress_struct* cinfo)
+   {
+      MyDestManager *man = (MyDestManager *)cinfo->dest;
+      man->TermBuffer();
+   }
+
+};
+
+
 
 static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 {
-   return false;
+     struct jpeg_compress_struct cinfo;
+
+   // Don't exit on error!
+   struct ErrorData jpegError;
+   cinfo.err = jpeg_std_error(&jpegError.base);
+   jpegError.base.error_exit = OnError;
+   jpegError.base.output_message = OnOutput;
+
+   MyDestManager dest(outBytes->mBytes);
+
+   int w = inSurface->Width();
+   int h = inSurface->Height();
+   QuickVec<uint8> row_buf(w*3);
+
+   jpeg_create_compress(&cinfo);
+ 
+
+   // Establish the setjmp return context for ErrorFunction to use
+   if (setjmp(jpegError.on_error))
+   {
+      jpeg_destroy_compress(&cinfo);
+      return false;
+   }
+
+
+   cinfo.dest = (jpeg_destination_mgr *)&dest;
+ 
+   cinfo.image_width      = w;
+   cinfo.image_height     = h;
+   cinfo.input_components = 3;
+   cinfo.in_color_space   = JCS_RGB;
+ 
+   jpeg_set_defaults(&cinfo);
+   jpeg_set_quality (&cinfo, (int)(inQuality * 100), true);
+   jpeg_start_compress(&cinfo, true);
+ 
+   JSAMPROW row_pointer = &row_buf[0];
+
+   int c0_idx = gC0IsRed ? 0 : 2;
+   int c1_idx = 2-c0_idx;
+ 
+   /* main code to write jpeg data */
+   while (cinfo.next_scanline < cinfo.image_height)
+   {
+      const uint8 *src =  (const uint8 *)inSurface->Row(cinfo.next_scanline);
+      uint8 *dest = &row_buf[0];
+
+      for(int x=0;x<w;x++)
+      {
+         dest[0] = src[c0_idx];
+         dest[1] = src[1];
+         dest[2] = src[c1_idx];
+         dest+=3;
+         src+=4;
+      }
+      jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+   }
+   jpeg_finish_compress(&cinfo);
+ 
+   return true;
 }
 
 
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
 {
-	longjmp(png_ptr->jmpbuf, 1);
+   longjmp(png_ptr->jmpbuf, 1);
 }
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) { }
 static void user_read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 {
     png_voidp buffer = png_get_io_ptr(png_ptr);
-	 ((ReadBuf *)buffer)->Read(data,length);
+    ((ReadBuf *)buffer)->Read(data,length);
 }
 
 void user_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
     QuickVec<unsigned char> *buffer = (QuickVec<unsigned char> *)png_get_io_ptr(png_ptr);
-	 buffer->append((unsigned char *)data,(int)length);
+    buffer->append((unsigned char *)data,(int)length);
 } 
 void user_flush_data(png_structp png_ptr) { }
 
 
 static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
 {
-	png_structp png_ptr;
+   png_structp png_ptr;
    png_infop info_ptr;
    png_uint_32 width, height;
    int bit_depth, color_type, interlace_type;
@@ -254,16 +360,16 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
     * set up your own error handlers in the png_create_read_struct() earlier.
     */
 
-	Surface *result = 0;
-	RenderTarget target;
+   Surface *result = 0;
+   RenderTarget target;
 
    if (setjmp(png_jmpbuf(png_ptr)))
    {
-		if (result)
-		{
-			result->EndRender();
-			result->DecRef();
-		}
+      if (result)
+      {
+         result->EndRender();
+         result->DecRef();
+      }
 
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
@@ -271,22 +377,22 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
       return (0);
    }
 
-	ReadBuf buffer(inData,inDataLen);
-	if (inFile)
-	{
+   ReadBuf buffer(inData,inDataLen);
+   if (inFile)
+   {
       png_init_io(png_ptr, inFile);
-	}
-	else
-	{
+   }
+   else
+   {
       png_set_read_fn(png_ptr,(void *)&buffer, user_read_data_fn);
-	}
+   }
 
    png_read_info(png_ptr, info_ptr);
 
    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
        &interlace_type, NULL, NULL);
 
-	bool has_alpha = color_type== PNG_COLOR_TYPE_GRAY_ALPHA ||
+   bool has_alpha = color_type== PNG_COLOR_TYPE_GRAY_ALPHA ||
                     color_type==PNG_COLOR_TYPE_RGB_ALPHA;
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
    png_set_expand(png_ptr);
@@ -296,12 +402,12 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    png_set_gray_to_rgb(png_ptr);
 
 
-	if (!gC0IsRed)
+   if (!gC0IsRed)
       png_set_bgr(png_ptr);
 
-	result = new SimpleSurface(width,height,has_alpha ? pfARGB : pfXRGB);
-	result->IncRef();
-	target = result->BeginRender(Rect(width,height));
+   result = new SimpleSurface(width,height,has_alpha ? pfARGB : pfXRGB);
+   result->IncRef();
+   target = result->BeginRender(Rect(width,height));
 
    for (int i = 0; i < height; i++)
    {
@@ -309,7 +415,7 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
       png_read_rows(png_ptr, (png_bytepp) &anAddr, NULL, 1);
    }
 
-	result->EndRender();
+   result->EndRender();
 
    /* read rest of file, and get additional chunks in info_ptr - REQUIRED */
    png_read_end(png_ptr, info_ptr);
@@ -349,15 +455,21 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
    int h = inSurface->Height();
 
    int bit_depth = 8;
-   int color_type = (inSurface->Format()&pfHasAlpha) ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA;
+   int color_type = (inSurface->Format()&pfHasAlpha) ?
+                    PNG_COLOR_TYPE_RGB_ALPHA :
+                    PNG_COLOR_TYPE_RGB;
    png_set_IHDR(png_ptr, info_ptr, w, h,
            bit_depth, color_type, PNG_INTERLACE_NONE,
            PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-	if (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) )
+   png_write_info(png_ptr, info_ptr);
+
+   if (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) )
       png_set_bgr(png_ptr);
 
-   png_write_info(png_ptr, info_ptr);
+   if (color_type==PNG_COLOR_TYPE_RGB)
+      png_set_filler(png_ptr,0, PNG_FILLER_AFTER);
+
 
    QuickVec<png_bytep> row_pointers(h);
    for(int y=0;y<h;y++)
@@ -376,26 +488,26 @@ Surface *Surface::Load(const OSChar *inFilename)
 {
    FILE *file = OpenRead(inFilename);
    if (!file)
-	{
-		#ifdef ANDROID
-		ByteArray *bytes = AndroidGetAssetBytes(inFilename);
+   {
+      #ifdef ANDROID
+      ByteArray *bytes = AndroidGetAssetBytes(inFilename);
       if (bytes)
-		{
-			bytes->IncRef();
-			Surface *result = LoadFromBytes(&bytes->mBytes[0], bytes->mBytes.size());
-			bytes->DecRef();
-			return result;
-		}
+      {
+         bytes->IncRef();
+         Surface *result = LoadFromBytes(&bytes->mBytes[0], bytes->mBytes.size());
+         bytes->DecRef();
+         return result;
+      }
 
-		#endif
+      #endif
       return 0;
-	}
+   }
 
    Surface *result = TryJPEG(file,0,0);
    if (!result)
    {
       rewind(file);
-		result = TryPNG(file,0,0);
+      result = TryPNG(file,0,0);
    }
 
    fclose(file);
@@ -407,11 +519,11 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
    if (!inBytes || !inLen)
       return 0;
 
-	Surface *result = TryJPEG(0,inBytes,inLen);
+   Surface *result = TryJPEG(0,inBytes,inLen);
    if (!result)
-		result = TryPNG(0,inBytes,inLen);
+      result = TryPNG(0,inBytes,inLen);
 
-	return result;
+   return result;
 }
 
 bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
