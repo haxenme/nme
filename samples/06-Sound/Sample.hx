@@ -1,8 +1,22 @@
+#if nme
 import nme.Lib;
-import nme.Timer;
+import nme.display.Sprite;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.media.Sound;
+import nme.net.URLRequest;
+import nme.events.MouseEvent;
+import nme.events.Event;
+#else
+import flash.Lib;
+import flash.display.Sprite;
+import flash.display.Bitmap;
+import flash.display.BitmapData;
+import flash.media.Sound;
+import flash.net.URLRequest;
+import flash.events.MouseEvent;
+import flash.events.Event;
+#end
 
 
 class Bang extends Bitmap
@@ -21,15 +35,14 @@ class Bang extends Bitmap
 
       if (mImage==null)
       {
-         mImage = BitmapData.load("Data/bang.png");
+         mImage = ApplicationMain.getAsset("Data/bang.png");
          mOffX = -Math.round(mImage.width/2);
          mOffY = -Math.round(mImage.height/2);
 
-
          // Can only play 1 mp3 at a time...
-         mSound1 = new Sound( new nme.net.URLRequest("Data/drum.ogg") );
-         mSound2 = new Sound( new nme.net.URLRequest("Data/drums.ogg") );
-         mSound3 = new Sound( new nme.net.URLRequest("Data/bass.wav") );
+         mSound1 = ApplicationMain.getAsset("Data/drum.ogg");
+         mSound2 = ApplicationMain.getAsset("Data/drums.ogg");
+         mSound3 = ApplicationMain.getAsset("Data/bass.wav");
       }
 
       bitmapData = mImage;
@@ -42,6 +55,7 @@ class Bang extends Bitmap
          mSound3.play(0,0);
       else
          mSound1.play(0,0);
+
       var me = this;
       haxe.Timer.delay( function() me.Remove(), 200 );
    }
@@ -56,28 +70,28 @@ class Bang extends Bitmap
 
 
 
-class Sample extends nme.display.Sprite
+class Sample extends Sprite
 {
    public function new()
    {
       super();
 
-      nme.Lib.current.stage.addChild(this);
+      Lib.current.stage.addChild(this);
 
       var bmp = new Bitmap();
-      bmp.bitmapData = BitmapData.load("Data/drum_kit.jpg");
+      bmp.bitmapData = ApplicationMain.getAsset("Data/drum_kit.jpg");
       addChild(bmp);
 
 
       var sound_name = "Data/Party_Gu-Jeremy_S-8250_hifi.mp3";
-      var sound = new Sound( new nme.net.URLRequest(sound_name), true );
+      var sound:Sound = ApplicationMain.getAsset(sound_name);
       var channel = sound.play(0,-1);
-      channel.addEventListener( nme.events.Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
+      channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
 
-      addEventListener( nme.events.MouseEvent.MOUSE_DOWN, onClick );
+      stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
    }
 
-   public function onClick(inEvent:nme.events.MouseEvent)
+   public function onClick(inEvent:MouseEvent)
    {
       addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
    }

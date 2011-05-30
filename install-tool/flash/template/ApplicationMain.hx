@@ -1,6 +1,9 @@
-
 ::foreach assets::
-class NME_::flatName:: extends ::flashClass:: { }
+  ::if (type=="image")::
+     class NME_::flatName:: extends flash.display.BitmapData { public function new() { super(10,10); } }
+  ::else::
+     class NME_::flatName:: extends ::flashClass:: { }
+  ::end::
 ::end::
 
 

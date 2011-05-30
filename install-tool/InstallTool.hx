@@ -3,6 +3,8 @@ import format.swf.Constants;
 import format.mp3.Data;
 import format.wav.Data;
 
+using StringTools;
+
 class Asset
 {
    public var name:String;
@@ -45,6 +47,8 @@ class Asset
       usedRes.set(flatName,true);
       if (type=="music" || type=="sound")
          flashClass = "flash.media.Sound";
+      else if (type=="image")
+         flashClass = "flash.display.BitmapData";
       else
          flashClass = "flash.utils.ByteArray";
    }
@@ -216,6 +220,23 @@ class Asset
             outTags.push(TSound(snd));
          }
          input.close();
+      }
+      else if (type=="image")
+      {
+         var src = name;
+         var ext = neko.io.Path.extension(src).toLowerCase();
+         if (ext=="jpg" || ext=="png")
+         {
+             id = nextAssetID();
+             var bytes: haxe.io.Bytes;
+             try { bytes = neko.io.File.read(src, true).readAll(); }
+             catch (e : Dynamic) { throw "Could not load image file: " + src; }
+
+             outTags.push( TBitsJPEG(id,JDJPEG2(bytes)) );
+
+         }
+         else
+            throw("Unknown image type:" + src );
       }
       else
       {
