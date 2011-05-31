@@ -2,6 +2,7 @@ import format.swf.Data;
 import format.swf.Constants;
 import format.mp3.Data;
 import format.wav.Data;
+import nme.text.Font;
 
 using StringTools;
 
@@ -94,8 +95,7 @@ class Asset
    {
       if (!embed)
          return false;
-      var id=nextAssetID( );
-      var bytes = neko.io.File.getBytes(name);
+      var cid=nextAssetID( );
 
       if (type=="music" || type=="sound")
       {
@@ -158,7 +158,7 @@ class Asset
 
             var snd =
             {
-                sid : id,
+                sid : cid,
                 format : SFMP3,
                 rate : flashRate,
                 is16bit : true,
@@ -208,7 +208,7 @@ class Asset
 
             var snd : format.swf.Sound =
             {
-               sid : id,
+               sid : cid,
                format : SFLittleEndianUncompressed,
                rate : flashRate,
                is16bit : is16bit,
@@ -227,23 +227,139 @@ class Asset
          var ext = neko.io.Path.extension(src).toLowerCase();
          if (ext=="jpg" || ext=="png")
          {
-             id = nextAssetID();
              var bytes: haxe.io.Bytes;
              try { bytes = neko.io.File.read(src, true).readAll(); }
              catch (e : Dynamic) { throw "Could not load image file: " + src; }
 
-             outTags.push( TBitsJPEG(id,JDJPEG2(bytes)) );
+             outTags.push( TBitsJPEG(cid,JDJPEG2(bytes)) );
 
          }
          else
             throw("Unknown image type:" + src );
       }
+      else if (type=="font")
+      {
+          var src = name;
+          var font_name = name;
+          var font = new nme.text.Font(src);
+
+          var glyphs = new Array<Font2GlyphData>();
+          var glyph_layout = new Array<FontLayoutGlyphData>();
+
+
+          for(native_glyph in font.glyphs)
+          {
+              if(native_glyph.char_code > 65535)
+              {
+                 neko.Lib.println("Warning: glyph with character code greater than 65535 encountered ("+
+                     native_glyph.char_code+"). Skipping...");
+                 continue;
+              }
+
+
+             var shapeRecords = new Array<ShapeRecord>();
+             var i: Int = 0;
+             var styleChanged: Bool = false;
+   
+             while(i < native_glyph.points.length)
+             {
+                var type = native_glyph.points[i++];
+                switch(type)
+                {
+                  case 1: // Move
+                     var dx = native_glyph.points[i++];
+                     var dy = native_glyph.points[i++];
+                     shapeRecords.push( SHRChange({
+                        moveTo: {dx: dx, dy: -dy},
+                        // Set fill style to 1 in first style change record
+                        // Required by DefineFontX
+                        fillStyle0: if(!styleChanged) {idx: 1} else null,
+                        fillStyle1: null,
+                        lineStyle:  null,
+                        newStyles:  null
+                     }));
+                     styleChanged = true;
+
+                  case 2: // LineTo
+                     var dx = native_glyph.points[i++];
+                     var dy = native_glyph.points[i++];
+                     shapeRecords.push( SHREdge(dx, -dy) );
+
+                  case 3: // CurveTo
+                     var cdx = native_glyph.points[i++];
+                     var cdy = native_glyph.points[i++];
+                     var adx = native_glyph.points[i++];
+                     var ady = native_glyph.points[i++];
+                     shapeRecords.push( SHRCurvedEdge(cdx, -cdy, adx, -ady) );
+
+                  default:
+                     throw "Invalid control point type encountered! ("+type+")";
+               }
+            }
+         
+            shapeRecords.push( SHREnd );
+   
+            glyphs.push({
+               charCode: native_glyph.char_code,
+               shape: {
+                  shapeRecords: shapeRecords
+               } 
+            });
+   
+            glyph_layout.push({
+               advance: native_glyph.advance,
+               bounds: {
+                  left:    native_glyph.min_x,
+                  right:   native_glyph.max_x,
+                  top:    -native_glyph.max_y,
+                  bottom: -native_glyph.min_y,
+               }
+            });
+         }
+
+
+         var kerning = new Array<FontKerningData>();
+         for(k in font.kerning)
+            kerning.push({
+               charCode1:  k.left_glyph,
+               charCode2:  k.right_glyph,
+               adjust:     k.x,
+            });
+
+ 
+         var swf_em = 1024*20;
+         var ascent = Math.ceil(font.ascend * swf_em / font.em_size);
+         var descent = -Math.ceil(font.descend * swf_em / font.em_size);
+         var leading = Math.ceil((font.height - font.ascend + font.descend) * swf_em / font.em_size);
+         var language = LangCode.LCNone;
+
+
+         outTags.push( TFont(cid, FDFont3({
+                  shiftJIS:   false,
+                  isSmall:    false,
+                  isANSI:     false,
+                  isItalic:   font.is_italic,
+                  isBold:     font.is_bold,
+                  language:   language,
+                  name:       font_name,
+                  glyphs:     glyphs,
+                  layout: {
+                     ascent:     ascent,
+                     descent:    descent,
+                     leading:    leading,
+                     glyphs:     glyph_layout,
+                     kerning:    kerning
+                  }
+            })) );
+
+      }
       else
       {
-         outTags.push( TBinaryData(id,bytes) );
+         var bytes = neko.io.File.getBytes(name);
+         outTags.push( TBinaryData(cid,bytes) );
       }
 
-      outTags.push( TSymbolClass( [ {cid:id, className:"NME_" + flatName} ] ) );
+      outTags.push( TSymbolClass( [ {cid:cid, className:"NME_" + flatName} ] ) );
       return true;
    }
 }

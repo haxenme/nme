@@ -26,7 +26,7 @@ class ApplicationMain
          ::elseif (type=="music")::
             return new nme.media.Sound(new nme.net.URLRequest(inName),null,true);
          ::else::
-            return new nme.utils.ByteArray.load(inName);
+            return nme.utils.ByteArray.readFile(inName);
          ::end::
       }
       ::end::

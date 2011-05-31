@@ -2667,6 +2667,34 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
+// --- Font access ----------------------------------------------
+
+value nme_font_create_handle(value inFilename,value outInfo)
+{
+   return alloc_null();
+}
+DEFINE_PRIM(nme_font_create_handle,2);
+
+value nme_font_get_kerning_info(value inHandle,value inIdx,value outInfo)
+{
+   return alloc_null();
+}
+DEFINE_PRIM(nme_font_get_kerning_info,3);
+
+value nme_font_get_glyph_point_count(value inHandle, value inIdx)
+{
+   return alloc_null();
+}
+DEFINE_PRIM(nme_font_get_glyph_point_count,2);
+
+value nme_font_get_glyph_info(value inHandle, value inIdx, value outInfo)
+{
+   return alloc_null();
+}
+DEFINE_PRIM(nme_font_get_glyph_info,3);
+
+
+
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }
 

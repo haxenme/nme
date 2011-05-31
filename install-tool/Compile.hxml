@@ -1,3 +1,4 @@
 -main InstallTool
 -neko ../run.n
 -cp ../../hxformat-shx
+-lib nme
