@@ -1,82 +1,53 @@
 package nme.text;
+import nme.display.Stage;
 
-class NativeKerningData
-{
-   public function new() {}
-   public var left_glyph: Int;
-   public var right_glyph: Int;
-   public var x: Int;
-   public var y: Int;
+
+typedef NativeKerningData = {
+   var left_glyph: Int;
+   var right_glyph: Int;
+   var x: Int;
+   var y: Int;
 }
 
-class NativeGlyphData
-{
-   public function new(inCount:Int)
-   {
-      points = [];
-      if (inCount>0)
-        points[inCount-1] = 0;
-   }
-   public var char_code: Int;
-   public var advance: Int;
-   public var min_x: Int;
-   public var max_x: Int;
-   public var min_y: Int;
-   public var max_y: Int;
-   public var points: Array<Int>;
+typedef NativeGlyphData = {
+   var char_code: Int;
+   var advance: Int;
+   var min_x: Int;
+   var max_x: Int;
+   var min_y: Int;
+   var max_y: Int;
+   var points: Array<Int>;
 }
+
+typedef NativeFontData = {
+   var has_kerning: Bool;
+   var is_fixed_width: Bool;
+   var has_glyph_names: Bool;
+   var is_italic: Bool;
+   var is_bold: Bool;
+   var num_glyphs: Int;
+   var family_name: String;
+   var style_name: String;
+   var em_size: Int;
+   var ascend: Int;
+   var descend: Int;
+   var height: Int;
+   var glyphs: Array<NativeGlyphData>;
+   var kerning: Array<NativeKerningData>;
+}
+
+
 
 
 class Font
 {
-   var nmeHandle:Dynamic;
-
-   public var is_fixed_width: Bool;
-   public var has_glyph_names: Bool;
-   public var is_italic: Bool;
-   public var is_bold: Bool;
-   public var num_glyphs: Int;
-   public var family_name: String;
-   public var style_name: String;
-   public var em_size: Int;
-   public var ascend: Int;
-   public var descend: Int;
-   public var height: Int;
-   public var kerning_count: Int;
-   public var glyph_count: Int;
-
-   public var glyphs: Array<NativeGlyphData>;
-   public var kerning: Array<NativeKerningData>;
-
-
-   public function new(inFilename:String)
+   public static function load(inFilename:String) : NativeFontData
    {
-      kerning = [];
-      glyphs = [];
-      kerning_count = 0;
-      glyph_count = 0;
-      nmeHandle = nme_font_create_handle(inFilename,this);
-      if (nmeHandle==null)
-         throw("Could not open font file:" + inFilename);
-
-      for(i in 0...kerning_count)
-      {
-         kerning[i] = new NativeKerningData();
-         nme_font_get_kerning_info(nmeHandle,i,kerning[i]);
-      }
-
-      for(i in 0...glyph_count)
-      {
-         var pts:Int = nme_font_get_glyph_point_count(nmeHandle,i);
-         glyphs[i] = new NativeGlyphData(pts);
-         nme_font_get_glyph_info(nmeHandle,i,glyphs[i]);
-      }
+       var result = freetype_import_font(inFilename,null,1024*20);
+       return result;
    }
 
-   static var nme_font_create_handle = nme.Loader.load("nme_font_create_handle",2);
-   static var nme_font_get_kerning_info = nme.Loader.load("nme_font_get_kerning_info",3);
-   static var nme_font_get_glyph_point_count = nme.Loader.load("nme_font_get_glyph_point_count",2);
-   static var nme_font_get_glyph_info = nme.Loader.load("nme_font_get_glyph_info",3);
+   static var freetype_import_font = nme.Loader.load("freetype_import_font",3);
 
 }
 

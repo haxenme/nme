@@ -50,6 +50,8 @@ class Asset
          flashClass = "flash.media.Sound";
       else if (type=="image")
          flashClass = "flash.display.BitmapData";
+      else if (type=="font")
+         flashClass = "flash.text.Font";
       else
          flashClass = "flash.utils.ByteArray";
    }
@@ -239,9 +241,10 @@ class Asset
       }
       else if (type=="font")
       {
+          // More code ripped off from "samhaxe"
           var src = name;
-          var font_name = name;
-          var font = new nme.text.Font(src);
+          var font_name = neko.io.Path.withoutExtension(name);
+          var font = nme.text.Font.load(src);
 
           var glyphs = new Array<Font2GlyphData>();
           var glyph_layout = new Array<FontLayoutGlyphData>();
@@ -351,7 +354,6 @@ class Asset
                      kerning:    kerning
                   }
             })) );
-
       }
       else
       {
@@ -1278,6 +1280,8 @@ class InstallTool
                mAssets.push( new Asset( substitute(el.att.name),d,"music",id, embed ) );
             case "image":
                mAssets.push( new Asset( substitute(el.att.name),d,"image",id, embed ) );
+            case "font":
+               mAssets.push( new Asset( substitute(el.att.name),d,"font",id, embed ) );
 
          }
       }

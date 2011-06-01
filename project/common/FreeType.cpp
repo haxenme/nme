@@ -464,6 +464,8 @@ value freetype_init() {
 }
 
 value freetype_import_font(value font_file, value char_vector, value em_size) {
+   freetype_init();
+
    FT_Face           face;
    int               result, i, j;
 
@@ -488,7 +490,9 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
       return alloc_null();
    }
 
+
    int        em = val_int(em_size);
+
    FT_Set_Char_Size(face, em, em, 72, 72);
 
    std::vector<glyph*>     glyphs;
