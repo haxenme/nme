@@ -143,6 +143,8 @@ public:
       mIsOpenGL = inIsOpenGL;
       mSDLSurface = inSurface;
       mFlags = inFlags;
+      mShowCursor = true;
+      mCurrentCursor = curPointer;
 
       mIsFullscreen =  (mFlags & SDL_FULLSCREEN);
       if (mIsFullscreen)
@@ -286,8 +288,10 @@ public:
    {
       if (sDefaultCursor==0)
          sDefaultCursor = SDL_GetCursor();
+
+      mCurrentCursor = inCursor;
    
-      if (inCursor==curNone)
+      if (inCursor==curNone || !mShowCursor)
          SDL_ShowCursor(false);
       else
       {
@@ -304,6 +308,15 @@ public:
          }
       }
    }
+
+   void ShowCursor(bool inShow)
+   {
+      if (inShow!=mShowCursor)
+      {
+         mShowCursor = inShow;
+         this->SetCursor(mCurrentCursor);
+      }
+   }
    
 
    Surface *GetPrimarySurface()
@@ -316,6 +329,8 @@ public:
    Surface     *mPrimarySurface;
    double       mFrameRate;
    bool         mIsOpenGL;
+   Cursor       mCurrentCursor;
+   bool         mShowCursor;
    bool         mIsFullscreen;
    unsigned int mFlags;
    int          mWidth;

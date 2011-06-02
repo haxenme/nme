@@ -846,6 +846,17 @@ value nme_stage_request_render()
 DEFINE_PRIM(nme_stage_request_render,0);
  
 
+value nme_stage_show_cursor(value inStage,value inShow)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->ShowCursor(val_bool(inShow));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_show_cursor,2);
+
 
 // --- ManagedStage ----------------------------------------------------------------------
 
