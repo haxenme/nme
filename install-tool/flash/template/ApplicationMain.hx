@@ -1,6 +1,6 @@
 ::foreach assets::
   ::if (type=="image")::
-     class NME_::flatName:: extends flash.display.BitmapData { public function new() { super(10,10); } }
+     class NME_::flatName:: extends flash.display.BitmapData { public function new() { super(0,0); } }
   ::else::
      class NME_::flatName:: extends ::flashClass:: { }
   ::end::
@@ -19,7 +19,7 @@ class ApplicationMain
       ::if (PRELOADER_NAME!="")::
          var loaded:Int = flash.Lib.current.loaderInfo.bytesLoaded;
          var total:Int = flash.Lib.current.loaderInfo.bytesTotal;
-         if (loaded<total)
+         if (loaded<total || true) /* Always wait for event */
          {
             call_real = false;
             mPreloader = new ::PRELOADER_NAME::();
