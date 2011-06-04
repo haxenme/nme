@@ -1218,6 +1218,34 @@ DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
 DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
 DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 
+// --- SimpleButton -----------------------------------------------------
+
+value nme_simple_button_create()
+{
+   return ObjectToAbstract( new SimpleButton() );
+}
+DEFINE_PRIM(nme_simple_button_create,0);
+
+value nme_simple_button_set_state(value inButton, value inState, value inObject)
+{
+   SimpleButton *button = 0;
+
+   if (AbstractToObject(inButton,button))
+   {
+      DisplayObject *object = 0;
+      AbstractToObject(inObject,object);
+      button->setState(val_int(inState), object);
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_simple_button_set_state,3);
+
+
+
+
+DO_PROP(SimpleButton,simple_button,enabled,Enabled,alloc_bool,val_bool) 
+DO_PROP(SimpleButton,simple_button,hand_cursor,UseHandCursor,alloc_bool,val_bool) 
 
 // --- DisplayObjectContainer -----------------------------------------------------
 

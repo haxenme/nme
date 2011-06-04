@@ -608,6 +608,54 @@ void DisplayObject::ClearFilters()
    filters.resize(0);
 }
 
+// --- SimpleButton ------------------------------------------------
+SimpleButton::SimpleButton(bool inInitRef) : DisplayObject(inInitRef),
+        enabled(true), useHandCursor(true), mMouseState(stateUp)
+{
+   for(int i=0;i<stateSIZE; i++)
+      mState[i] = 0;
+
+}
+
+void SimpleButton::setState(int inState, DisplayObject *inObject)
+{
+   if (inState>=0 && inState<stateSIZE)
+   {
+       mState[inState] = inObject;
+       DirtyUp(dirtCache);
+   }
+}
+
+
+void SimpleButton::Render( const RenderTarget &inTarget, const RenderState &inState )
+{
+   if (inState.mPhase==rpHitTest)
+   {
+      if (mState[stateHitTest])
+      {
+          mState[stateHitTest]->Render(inTarget,inState);
+          if (inState.mHitResult)
+             inState.mHitResult = this;
+      }
+   }
+   else
+   {
+      DisplayObject *obj = mState[mMouseState];
+      if (obj)
+         obj->Render(inTarget,inState);
+   }
+}
+
+void SimpleButton::setMouseState(int inState)
+{
+   if (mState[inState]!=mState[mMouseState])
+       DirtyUp(dirtCache);
+
+   mMouseState = inState;
+}
+
+
+
 // --- DisplayObjectContainer ------------------------------------------------
 
 DisplayObjectContainer::~DisplayObjectContainer()
@@ -1257,6 +1305,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    opaqueBackground = 0xffffffff;
    mFocusObject = 0;
    mMouseDownObject = 0;
+   mSimpleButton = 0;
    focusRect = true;
    mLastMousePos = UserPoint(0,0);
    scaleMode = ssmShowAll;
@@ -1400,8 +1449,35 @@ void Stage::HandleEvent(Event &inEvent)
    {
       UserPoint pixels(inEvent.x,inEvent.y);
       hit_obj = HitTest(pixels);
+
+      SimpleButton *but = hit_obj ? dynamic_cast<SimpleButton *>(hit_obj) : 0;
       inEvent.id = hit_obj ? hit_obj->id : id;
       Cursor cur = hit_obj ? hit_obj->GetCursor() : curPointer;
+
+      if (mSimpleButton && (inEvent.flags & efLeftDown) )
+      {
+         // Don't change simple button if dragging ...
+      }
+      else if (but!=mSimpleButton)
+      {
+         if (mSimpleButton)
+         {
+            mSimpleButton->setMouseState(SimpleButton::stateUp);
+            mSimpleButton->DecRef();
+         }
+         mSimpleButton = but;
+         if (mSimpleButton)
+            mSimpleButton->IncRef();
+      }
+
+      if (mSimpleButton)
+      {
+         mSimpleButton->setMouseState( (inEvent.flags & efLeftDown) ?
+             SimpleButton::stateDown : SimpleButton::stateOver );
+         if (mSimpleButton->getUseHandCursor())
+            cur = curHand;
+      }
+
       SetCursor( (gMouseShowCursor || cur>=curTextSelect0) ? cur : curNone );
 
       UserPoint stage = mStageScale.ApplyInverse(pixels);
@@ -1465,6 +1541,12 @@ void Stage::setOpaqueBackground(uint32 inBG)
 
 void Stage::RemovingFromStage(DisplayObject *inObject)
 {
+   if (inObject==mSimpleButton)
+   {
+      mSimpleButton->DecRef();
+      mSimpleButton = 0;
+   }
+
    DisplayObject *f = mFocusObject;
    while(f)
    {
@@ -1472,7 +1554,7 @@ void Stage::RemovingFromStage(DisplayObject *inObject)
       {
          mFocusObject->DecRef();
          mFocusObject = 0;
-         return;
+         break;
       }
       f = f->getParent();
    }
@@ -1484,7 +1566,7 @@ void Stage::RemovingFromStage(DisplayObject *inObject)
       {
          mMouseDownObject->DecRef();
          mMouseDownObject = 0;
-         return;
+         break;
       }
       m = m->getParent();
    }

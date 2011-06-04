@@ -128,6 +128,7 @@ SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
 
 SDL_Cursor *sDefaultCursor = 0;
 SDL_Cursor *sTextCursor = 0;
+SDL_Cursor *sHandCursor = 0;
 
 
 
@@ -297,13 +298,19 @@ public:
       {
          SDL_ShowCursor(true);
    
-         if (inCursor==curPointer || inCursor==curHand)
+         if (inCursor==curPointer)
             SDL_SetCursor(sDefaultCursor);
+         else if (inCursor==curHand)
+         {
+            if (!sHandCursor)
+               sHandCursor = CreateCursor(sHandCursorData,1,13);
+            SDL_SetCursor(sHandCursor);
+         }
          else
          {
             // TODO: Rotated
             if (sTextCursor==0)
-               sTextCursor = CreateCursor(sTextCursorData,1,13);
+               sTextCursor = CreateCursor(sTextCursorData,2,13);
             SDL_SetCursor(sTextCursor);
          }
       }

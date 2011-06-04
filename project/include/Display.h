@@ -125,6 +125,7 @@ enum Cursor { curNone, curPointer, curHand,
               curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
 
 extern const char *sTextCursorData[];
+extern const char *sHandCursorData[];
 
 extern bool gMouseShowCursor;
 
@@ -314,6 +315,31 @@ protected:
    QuickVec<DisplayObject *> mChildren;
 };
 
+class SimpleButton : public DisplayObject
+{
+public:
+   enum { stateUp=0, stateDown, stateOver, stateHitTest, stateSIZE };
+   void setMouseState(int inState);
+   SimpleButton(bool inInitRef = false);
+
+   DisplayObject *mState[stateSIZE];
+
+   void Render( const RenderTarget &inTarget, const RenderState &inState );
+
+   bool getEnabled() const { return enabled; }
+   void setEnabled(bool inEnabled) { enabled = inEnabled; }
+   bool getUseHandCursor() const { return useHandCursor; }
+   void setUseHandCursor(bool inUseHandCursor) { useHandCursor = inUseHandCursor; }
+
+   void setState(int inState, DisplayObject *inObject);
+
+   bool enabled;
+   bool useHandCursor;
+   int  mMouseState;
+};
+
+
+
 double GetTimeStamp();
 
 class Stage : public DisplayObjectContainer
@@ -394,6 +420,7 @@ protected:
 
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;
+   SimpleButton  *mSimpleButton;
 };
 
 class HardwareSurface;

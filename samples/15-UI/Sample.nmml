@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample15"
+     title="NME UI - Sample 15"
+     package="org.haxe.nme.sample15"
+     version="1.0"
+     company="nme" 
+	  main="Sample"
+  />
+
+  <window
+      width="640"
+		height="480"
+		orientation="landscape"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="false"
+	/>
+
+  
+  <classpath name="." />
+  <haxelib name="nme" />
+
+  <assets>
+  </assets>
+
+
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+
+  <certificates>
+     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
+  </certificates>
+
+</project>
