@@ -186,14 +186,25 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
          break;
       case gdtSolidFill:
       case gdtGradientFill:
-         Flush(false,true);
-         endTiles();
-         if (mFillJob.mFill)
-            mFillJob.mFill->DecRef();
-         mFillJob.mFill = inData->AsIFill();
-         mFillJob.mFill->IncRef();
-         if (mFillJob.mCommand0 == mPathData->commands.size())
-            mPathData->initPosition(mCursor);
+         {
+         IGraphicsFill *fill = inData->AsIFill();
+         if (fill->isSolidStyle())
+         {
+            Flush(false,true);
+            endTiles();
+            if (mFillJob.mFill)
+               mFillJob.mFill->DecRef();
+            mFillJob.mFill = fill;
+            mFillJob.mFill->IncRef();
+            if (mFillJob.mCommand0 == mPathData->commands.size())
+               mPathData->initPosition(mCursor);
+         }
+         else if (mLineJob.mStroke)
+         {
+            Flush(true,false);
+            mLineJob.mStroke = mLineJob.mStroke->CloneWithFill(fill);
+         }
+         }
          break;
       case gdtStroke:
          {
@@ -751,6 +762,22 @@ GraphicsStroke::~GraphicsStroke()
 {
    if (fill)
       fill->DecRef();
+}
+
+GraphicsStroke *GraphicsStroke::CloneWithFill(IGraphicsFill *inFill)
+{
+   if (mRefCount,2)
+   {
+      if (fill)
+         fill->DecRef();
+      fill = inFill;
+      fill->IncRef();
+      return this;
+   }
+
+   GraphicsStroke *clone = new GraphicsStroke(inFill,thickness,pixelHinting,scaleMode,caps,joints,miterLimit);
+   DecRef();
+   return clone;
 }
 
 

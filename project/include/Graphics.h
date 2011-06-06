@@ -101,11 +101,15 @@ private:
 class IGraphicsFill : public IGraphicsData
 {
 public:
+   IGraphicsFill() : mSolidStyle(true) { }
    virtual IGraphicsFill *AsIFill() { return this; }
 	IGraphicsFill *IncRef() { IGraphicsData::IncRef(); return this; }
+   bool isSolidStyle() { return mSolidStyle; }
+   void setIsSolidStyle(bool inSolid) { mSolidStyle = inSolid; }
 
 protected:
    virtual ~IGraphicsFill() { };
+   bool    mSolidStyle;
 };
 
 
@@ -213,6 +217,8 @@ public:
    int  Version() const { return fill->Version(); }
 
    bool IsClear() { return false; }
+
+   GraphicsStroke *CloneWithFill(IGraphicsFill *inFill);
 
    StrokeCaps      caps;
    IGraphicsFill   *fill;
@@ -639,6 +645,7 @@ public:
                   bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
                   StrokeCaps caps = scRound,
                   StrokeJoints joints = sjBevel, double miterLimit= 3.0);
+   void setLineFill(IGraphicsFill *inFill);
 
    void lineTo(float x, float y);
    void moveTo(float x, float y);

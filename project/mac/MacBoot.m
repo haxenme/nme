@@ -73,17 +73,15 @@ static NSString *getApplicationName(void)
 
 FILE *OpenRead(const char *inName)
 {
-    NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
-    FILE * result;
-    NSString *str = [[NSString alloc] initWithUTF8String:inName];
-    NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
-
-    result = fopen(inName,"rb");
+    FILE * result = fopen(inName,"rb");
     if (!result)
+    {
+       NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+       NSString *str = [[NSString alloc] initWithUTF8String:inName];
+       NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
        result = fopen([pathInBundle cStringUsingEncoding:1],"rb");
-
-
-    [pool release];
+       [pool release];
+    }
     return result;
 }
 

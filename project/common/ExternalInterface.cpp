@@ -1347,7 +1347,7 @@ value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
 DEFINE_PRIM(nme_gfx_begin_bitmap_fill,5);
 
 
-value nme_gfx_begin_gradient_fill(value *arg, int args)
+void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
 {
    enum { aGfx, aType, aColors, aAlphas, aRatios, aMatrix, aSpreadMethod, aInterpMethod,
           aFocal, aSIZE };
@@ -1369,14 +1369,28 @@ value nme_gfx_begin_gradient_fill(value *arg, int args)
                         val_number( val_array_i( arg[aAlphas], i ) ),
                         val_number( val_array_i( arg[aRatios], i ) )/255.0 );
 
+      grad->setIsSolidStyle(inForSolid);
       grad->IncRef();
       gfx->drawGraphicsDatum(grad);
       grad->DecRef();
    }
-   return alloc_null();
 }
 
+value nme_gfx_begin_gradient_fill(value *arg, int args)
+{
+   nme_gfx_begin_set_gradient_fill(arg,args, true);
+   return alloc_null();
+}
 DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
+
+value nme_gfx_line_gradient_fill(value *arg, int args)
+{
+   nme_gfx_begin_set_gradient_fill(arg,args, false);
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gfx_line_gradient_fill)
+
+
 
 value nme_gfx_end_fill(value inGfx)
 {
@@ -1996,6 +2010,7 @@ TEXT_PROP(text,Text,alloc_wstring,val2stdwstr);
 TEXT_PROP(html_text,HTMLText,alloc_wstring,val2stdwstr);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
+TEXT_PROP(display_as_password,DisplayAsPassword,alloc_bool,val_bool);
 TEXT_PROP(type,IsInput,alloc_bool,val_bool);
 TEXT_PROP(multiline,Multiline,alloc_bool,val_bool);
 TEXT_PROP(word_wrap,WordWrap,alloc_bool,val_bool);

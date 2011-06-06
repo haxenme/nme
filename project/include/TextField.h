@@ -74,6 +74,8 @@ public:
    void  setWordWrap(bool inWordWrap);
    int   getMaxChars() const { return maxChars; }
    void  setMaxChars(int inMaxChars) { maxChars = inMaxChars; }
+   bool  getDisplayAsPassword() const { return displayAsPassword; }
+   void  setDisplayAsPassword(bool inValue) { displayAsPassword = inValue; }
 
 
    double getWidth();

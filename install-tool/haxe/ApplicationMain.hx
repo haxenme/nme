@@ -20,13 +20,13 @@ class ApplicationMain
       if (inName=="::id::")
       {
          ::if (type=="image")::
-            return nme.display.BitmapData.load(inName);
+            return nme.display.BitmapData.load("::resoName::");
          ::elseif (type=="sound")::
-            return new nme.media.Sound(new nme.net.URLRequest(inName),null,false);
+            return new nme.media.Sound(new nme.net.URLRequest("::resoName::"),null,false);
          ::elseif (type=="music")::
-            return new nme.media.Sound(new nme.net.URLRequest(inName),null,true);
+            return new nme.media.Sound(new nme.net.URLRequest("::resoName::"),null,true);
          ::else::
-            return nme.utils.ByteArray.readFile(inName);
+            return nme.utils.ByteArray.readFile("::resoName::");
          ::end::
       }
       ::end::

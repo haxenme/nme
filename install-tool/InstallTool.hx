@@ -9,22 +9,20 @@ using StringTools;
 class Asset
 {
    public var name:String;
-   public var dest:String;
    public var type:String;
    public var id:String;
    public var flatName:String;
    public var hash:String;
    public var flashClass:String;
+   public var resoName:String;
    public var embed:Bool;
 
    static var usedRes = new Hash<Bool>();
 
 
-   public function new(inName:String, inDest:String, inType:String,inID:String,
-         inEmbed:String)
+   public function new(inName:String, inType:String,inID:String, inEmbed:String, inTarget:String)
    {
       name = inName;
-      dest = inDest;
       type = inType;
       embed = inEmbed=="" || inEmbed=="1" || inEmbed=="true";
       hash = InstallTool.getID();
@@ -46,6 +44,9 @@ class Asset
       while( usedRes.exists(flatName) )
          flatName += "_";
       usedRes.set(flatName,true);
+
+      resoName = (inTarget=="cpp" && InstallTool.isMac()) ? flatName : id;
+
       if (type=="music" || type=="sound")
          flashClass = "flash.media.Sound";
       else if (type=="image")
@@ -73,18 +74,18 @@ class Asset
          switch(type)
          {
             case "sound":
-              return inBase + "/" + dest + "/res/raw/" + flatName + getExtension();
+              return inBase + "/res/raw/" + flatName + getExtension();
             case "music":
-              return inBase + "/" + dest + "/res/raw/" + flatName + getExtension();
+              return inBase + "/res/raw/" + flatName + getExtension();
             default:
-              return inBase + "/" + dest + "/assets/" + id;
+              return inBase + "/assets/" + id;
          }
       }
 
       if (inTarget=="iphone")
-         return inBase + "/" + dest + "/assets/" + id;
+         return inBase + "/assets/" + resoName;
 
-      return inBase + "/" + dest + "/" + id;
+      return inBase + "/" + resoName;
    }
 
    static var swfAddetID = 1000;
@@ -1262,26 +1263,24 @@ class InstallTool
 
    function readAssets(inXML:haxe.xml.Fast)
    {
-      var dest:String = inXML.has.dest ? substitute(inXML.att.dest) : "";
       var type:String = inXML.has.type ? substitute(inXML.att.type) : "";
       for(el in inXML.elements)
       {
-         var d = el.has.dest ? substitute(el.att.dest) : dest;
          var id= el.has.id ? substitute(el.att.id) : "";
          var embed= el.has.embed ? substitute(el.att.embed) : "";
          switch(el.name)
          {
             case "asset":
                var t = el.has.type ? substitute(el.att.type) : type;
-               mAssets.push( new Asset( substitute(el.att.name),d,t,id, embed ) );
+               mAssets.push( new Asset( substitute(el.att.name),t,id, embed, mTarget ) );
             case "sound":
-               mAssets.push( new Asset( substitute(el.att.name),d,"sound",id, embed ) );
+               mAssets.push( new Asset( substitute(el.att.name),"sound",id, embed, mTarget ) );
             case "music":
-               mAssets.push( new Asset( substitute(el.att.name),d,"music",id, embed ) );
+               mAssets.push( new Asset( substitute(el.att.name),"music",id, embed, mTarget ) );
             case "image":
-               mAssets.push( new Asset( substitute(el.att.name),d,"image",id, embed ) );
+               mAssets.push( new Asset( substitute(el.att.name),"image",id, embed, mTarget ) );
             case "font":
-               mAssets.push( new Asset( substitute(el.att.name),d,"font",id, embed ) );
+               mAssets.push( new Asset( substitute(el.att.name),"font",id, embed, mTarget ) );
 
          }
       }

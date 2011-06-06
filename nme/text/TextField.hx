@@ -6,6 +6,7 @@ class TextField extends nme.display.InteractiveObject
    public var htmlText(nmeGetHTMLText,nmeSetHTMLText):String;
    public var textColor(nmeGetTextColor,nmeSetTextColor):Int;
    public var selectable(nmeGetSelectable,nmeSetSelectable):Bool;
+   public var displayAsPassword(nmeGetDisplayAsPassword,nmeSetDisplayAsPassword):Bool;
    public var defaultTextFormat(nmeGetDefTextFormat,nmeSetDefTextFormat):TextFormat;
    public var type(nmeGetType,nmeSetType):TextFieldType;
    public var multiline(nmeGetMultiline,nmeSetMultiline):Bool;
@@ -64,6 +65,15 @@ class TextField extends nme.display.InteractiveObject
       nme_text_field_set_selectable(nmeHandle,inSel);
       return inSel;
    }
+
+   function nmeGetDisplayAsPassword() : Bool { return nme_text_field_get_display_as_password(nmeHandle); }
+   function nmeSetDisplayAsPassword(inVal:Bool ) : Bool
+   {
+      nme_text_field_set_display_as_password(nmeHandle,inVal);
+      return inVal;
+   }
+
+
 
    function nmeGetType() : TextFieldType
    {
@@ -179,6 +189,8 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_set_text_color = nme.Loader.load("nme_text_field_set_text_color",2);
    static var nme_text_field_get_selectable = nme.Loader.load("nme_text_field_get_selectable",1);
    static var nme_text_field_set_selectable = nme.Loader.load("nme_text_field_set_selectable",2);
+   static var nme_text_field_get_display_as_password = nme.Loader.load("nme_text_field_get_display_as_password",1);
+   static var nme_text_field_set_display_as_password = nme.Loader.load("nme_text_field_set_display_as_password",2);
    static var nme_text_field_get_def_text_format = nme.Loader.load("nme_text_field_get_def_text_format",2);
    static var nme_text_field_set_def_text_format = nme.Loader.load("nme_text_field_set_def_text_format",2);
    static var nme_text_field_get_auto_size = nme.Loader.load("nme_text_field_get_auto_size",1);

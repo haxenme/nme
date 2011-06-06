@@ -10,6 +10,8 @@
 namespace nme
 {
 
+int gPasswordChar = 42; // *
+
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
@@ -1141,6 +1143,8 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          for(int c=0;c<group.Chars();c++)
          {
             int ch = group.mString[c];
+            if (displayAsPassword)
+               ch = gPasswordChar;
             if (ch!='\n' && ch!='\r')
             {
                int cid = group.mChar0 + c;
@@ -1397,39 +1401,44 @@ void TextField::Layout(const Matrix &inMatrix)
          line.mChars++;
          char_count++;
          cid++;
-         if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
+         if (!displayAsPassword)
          {
-            if ( (ch<255 && isspace(ch)) || line.mChars==1)
+            if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
             {
-               last_word_cid = cid;
-               last_word_line_chars = line.mChars;
+               if ( (ch<255 && isspace(ch)) || line.mChars==1)
+               {
+                  last_word_cid = cid;
+                  last_word_line_chars = line.mChars;
+               }
+               else
+               {
+                  last_word_cid = cid-1;
+                  last_word_line_chars = line.mChars-1;
+               }
+               last_word_x = x;
             }
-            else
+   
+            if (ch=='\n' || ch=='\r')
             {
-               last_word_cid = cid-1;
-               last_word_line_chars = line.mChars-1;
+               // New line ...
+               mLines.push_back(line);
+               line.Clear();
+               g.UpdateMetrics(line.mMetrics);
+               y += g.Height();
+               continue;
             }
-            last_word_x = x;
          }
-
-         if (ch=='\n' || ch=='\r')
-         {
-            // New line ...
-            mLines.push_back(line);
-            line.Clear();
-            g.UpdateMetrics(line.mMetrics);
-            y += g.Height();
-            continue;
-         }
-
+   
          int ox = x;
+         if (displayAsPassword)
+            ch = gPasswordChar;
          if (g.mFont)
             g.mFont->GetGlyph( ch, advance );
          else
             advance = 0;
          x+= advance;
          //printf(" Char %c (%d..%d/%d,%d) %p\n", ch, ox, x, max_x, y, g.mFont);
-         if ( (wordWrap) && (x > max_x) && line.mChars>1)
+         if ( !displayAsPassword && (wordWrap) && (x > max_x) && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)

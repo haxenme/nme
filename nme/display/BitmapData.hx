@@ -229,9 +229,12 @@ class BitmapData implements IBitmapDrawable
         }
 
 
-   public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
+   public function setPixels(rect:Rectangle,pixels:Dynamic) : Void
    {
-      nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.nmeGetData());
+      if (Std.is(pixels,ByteArray))
+         nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.nmeGetData());
+      else if (Std.is(pixels,haxe.io.Bytes))
+         nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.getBytesData());
    }
 
    // Handled internally...

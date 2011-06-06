@@ -26,6 +26,8 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
 
    public function nmeGetData():Dynamic { return nmeData; }
 
+   public function getData():ByteArray { return this; }
+
    public function asString() : String
    {
       return nme_byte_array_as_string(nmeData);
@@ -55,7 +57,7 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
       return bytes;
       #else
 		var str = asString();
-      trace(str.length);
+      //trace(str.length);
 		return haxe.io.Bytes.ofString(str);
       #end
    }
@@ -103,6 +105,9 @@ class ByteArray extends haxe.io.Input, implements ArrayAccess<Int>
    public inline function readUnsignedByte() : Int {
       return readByte();
    }
+
+   public inline function readUnsignedShort() : Int { return readUInt16(); }
+
 
    public function readUTFBytes(inLen:Int)
    {
