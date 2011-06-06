@@ -186,6 +186,7 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
          break;
       case gdtSolidFill:
       case gdtGradientFill:
+      case gdtBitmapFill:
          {
          IGraphicsFill *fill = inData->AsIFill();
          if (fill->isSolidStyle())

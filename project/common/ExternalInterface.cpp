@@ -1331,8 +1331,8 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
 
-value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
-     value inRepeat, value inSmooth)
+value nme_gfx_begin_set_bitmap_fill(value inGfx,value inBMP, value inMatrix,
+     value inRepeat, value inSmooth, bool inForSolid)
 {
    Graphics *gfx;
    Surface  *surface;
@@ -1340,11 +1340,31 @@ value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
    {
       Matrix matrix;
       FromValue(matrix,inMatrix);
-      gfx->beginBitmapFill( surface, matrix, val_bool(inRepeat), val_bool(inSmooth) );
+
+      GraphicsBitmapFill *fill = new GraphicsBitmapFill(surface,matrix,val_bool(inRepeat), val_bool(inSmooth));
+      fill->setIsSolidStyle(inForSolid);
+      fill->IncRef();
+      gfx->drawGraphicsDatum(fill);
+      fill->DecRef();
    }
+}
+
+value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
+     value inRepeat, value inSmooth)
+{
+   nme_gfx_begin_set_bitmap_fill(inGfx,inBMP,inMatrix,inRepeat,inSmooth,true);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_begin_bitmap_fill,5);
+
+value nme_gfx_line_bitmap_fill(value inGfx,value inBMP, value inMatrix,
+     value inRepeat, value inSmooth)
+{
+   nme_gfx_begin_set_bitmap_fill(inGfx,inBMP,inMatrix,inRepeat,inSmooth,false);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_line_bitmap_fill,5);
+
 
 
 void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)

@@ -22,6 +22,14 @@ class Graphics
       nme_gfx_begin_bitmap_fill(nmeHandle,bitmap.nmeHandle,matrix,repeat,smooth);
    }
 
+   public function lineBitmapStyle(bitmap:BitmapData, ?matrix:Matrix,
+               repeat:Bool = true, smooth:Bool = false)
+   {
+      nme_gfx_line_bitmap_fill(nmeHandle,bitmap.nmeHandle,matrix,repeat,smooth);
+   }
+
+
+
    public function beginGradientFill(type : GradientType,
                  colors : Array<Dynamic>,
                  alphas : Array<Dynamic>,
@@ -178,6 +186,7 @@ class Graphics
    static var nme_gfx_clear = nme.Loader.load("nme_gfx_clear",1);
    static var nme_gfx_begin_fill = nme.Loader.load("nme_gfx_begin_fill",3);
    static var nme_gfx_begin_bitmap_fill = nme.Loader.load("nme_gfx_begin_bitmap_fill",5);
+   static var nme_gfx_line_bitmap_fill = nme.Loader.load("nme_gfx_line_bitmap_fill",5);
    static var nme_gfx_begin_gradient_fill = nme.Loader.load("nme_gfx_begin_gradient_fill",-1);
    static var nme_gfx_line_gradient_fill = nme.Loader.load("nme_gfx_line_gradient_fill",-1);
    static var nme_gfx_end_fill = nme.Loader.load("nme_gfx_end_fill",1);
