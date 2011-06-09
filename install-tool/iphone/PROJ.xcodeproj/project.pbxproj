@@ -338,6 +338,7 @@
 				PRODUCT_NAME = "::APP_TITLE::";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Debug;
 		};
@@ -355,6 +356,7 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Release;
 		};
@@ -365,6 +367,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = "Build Haxe";
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Debug;
 		};
@@ -376,6 +379,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = "Build Haxe";
 				ZERO_LINK = NO;
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Release;
 		};
@@ -390,6 +394,7 @@
 				PREBINDING = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				SDKROOT = iphoneos4.3;
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Debug;
 		};
@@ -408,6 +413,7 @@
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				SDKROOT = iphonesimulator4.3;
+				VALID_ARCHS = "armv6 i386";
 			};
 			name = Release;
 		};
