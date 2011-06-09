@@ -330,7 +330,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/lib\"",
@@ -389,7 +389,7 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				PREBINDING = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.3;
 			};
 			name = Debug;
 		};
@@ -407,7 +407,7 @@
 				PREBINDING = NO;
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphonesimulator4.3;
 			};
 			name = Release;
 		};
