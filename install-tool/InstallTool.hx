@@ -702,7 +702,7 @@ class InstallTool
    }
 
 
-   function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="") : BitmapData
+   function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackground ) : BitmapData
    {
       var found:Icon = null;
 
@@ -750,7 +750,8 @@ class InstallTool
          shape.scaleY = scale;
          shape.x = (inWidth - 32*scale)/2;
 
-         var bmp = new nme.display.BitmapData(inWidth,inHeight, true, {a:0, rgb:0xffffff} );
+         var bmp = new nme.display.BitmapData(inWidth,inHeight, true,
+                           inBackground==null ? {a:0, rgb:0xffffff} : inBackground );
 
          bmp.draw(shape);
 
@@ -1129,6 +1130,26 @@ class InstallTool
       var dest = mBuildDir + "/iphone/";
 
       mkdir(dest);
+
+      var has_icon = true;
+      for(i in 0...4)
+      {
+         var iname = ["Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-Small.png" ][i];
+         var size = [57,114,72,50][i];
+         var bmp = getIconBitmap(size,size,"",{a:255,rgb:0} );
+         if (bmp!=null)
+         {
+            var name = dest + "/" + iname;
+            var bytes = bmp.encode("PNG",0.95);
+            bytes.writeFile(name);
+            mAllFiles.push(name);
+         }
+         else
+            has_icon = false;
+      }
+
+      if (has_icon)
+         mContext.HAS_ICON = true;
 
       cp_recurse(NME + "/install-tool/iphone/haxe", dest + "/haxe");
 

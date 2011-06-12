@@ -17,6 +17,12 @@
 		1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */; };
 		1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFF121BE2B30048A9DF /* Foundation.framework */; };
 		1EF0A83A121ADB8E003F2F59 /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.cpp */; };
+::if (HAS_ICON)::
+		1EF0A83A000000001C000001 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000001 /* Icon.png */; };
+		1EF0A83A000000001C000002 /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000002 /* Icon@2x.png */; };
+		1EF0A83A000000001C000003 /* Icon-72.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000003 /* Icon-72.png */; };
+		1EF0A83A000000001C000004 /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000004 /* Icon-Small.png */; };
+::end::
 
       ::foreach ndlls::
         11B0F00000000010::hash:: /* ::name::.iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B0000000000018::hash:: ; };
@@ -63,6 +69,13 @@
 		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1EF0A839121ADB8E003F2F59 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = Classes/Main.cpp; sourceTree = SOURCE_ROOT; };
+
+::if (HAS_ICON)::
+	   1EF0A83900000001C0000001 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon.png"; sourceTree = SOURCE_ROOT; };
+	   1EF0A83900000001C0000002 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = SOURCE_ROOT; };
+	   1EF0A83900000001C0000003 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-72.png"; sourceTree = SOURCE_ROOT; };
+	   1EF0A83900000001C0000004 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small.png"; sourceTree = SOURCE_ROOT; };
+::end::
 
 
        ::foreach ndlls::
@@ -226,6 +239,12 @@
 			children = (
 				8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
 	         1E2E17A5131E8B5D0048F3C7 /* assets */,
+::if (HAS_ICON)::
+	         1EF0A83900000001C0000001 /* Icon.png */,
+	         1EF0A83900000001C0000002 /* Icon@2x.png */,
+	         1EF0A83900000001C0000003 /* Icon-72.png */,
+	         1EF0A83900000001C0000004 /* Icon-Small.png */,
+::end::
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -292,6 +311,12 @@
 			buildActionMask = 2147483647;
 			files = (
             1E2E17AD131E8B5D0048F3C7 /* assets in Resources */,
+::if (HAS_ICON)::
+	         1EF0A83A000000001C000001 /* Icon.png */,
+	         1EF0A83A000000001C000002 /* Icon@2x.png */,
+	         1EF0A83A000000001C000003 /* Icon-72.png */,
+	         1EF0A83A000000001C000004 /* Icon-Small.png */,
+::end::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,7 +355,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/lib\"",
