@@ -1331,7 +1331,7 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
 
-value nme_gfx_begin_set_bitmap_fill(value inGfx,value inBMP, value inMatrix,
+void nme_gfx_begin_set_bitmap_fill(value inGfx,value inBMP, value inMatrix,
      value inRepeat, value inSmooth, bool inForSolid)
 {
    Graphics *gfx;
