@@ -69,17 +69,17 @@ public:
             }
          }
    
-         //printf("name : %s\n", name.c_str());
 
-         NSString *str = [[NSString alloc] initWithUTF8String:(gAssetBase+name).c_str()];
+         NSString *str = [[NSString alloc] initWithUTF8String:name.c_str()];
          mFont = [UIFont fontWithName:str size:inHeight];
+         //printf("Font name : %s = %p\n", name.c_str(), str);
 
          if (!mFont)
          {
              //printf("Trying font from file %s ...\n", [str UTF8String]);
              // Could not find installed font - try one in file...
+             str = [[NSString alloc] initWithUTF8String:(gAssetBase+name).c_str()];
              NSString *fontPath = [[NSBundle mainBundle] pathForResource:str ofType:@"ttf"]; 
-             //printf("in path %s...\n", [fontPath UTF8String]);
 
              if (fontPath)
              {
