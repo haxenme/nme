@@ -139,16 +139,14 @@ class URLLoader extends nme.events.EventDispatcher
 	   if (!activeLoaders.isEmpty())
 		{
 			nme_curl_process_loaders();
-		   var stillActive = new List<URLLoader>();
-	      for(loader in activeLoaders)
+		   var oldLoaders = activeLoaders;
+		   activeLoaders = new List<URLLoader>();
+	      for(loader in oldLoaders)
 		   {
 				loader.update();
 				if (loader.state == urlLoading)
-				  {
-				   stillActive.push(loader);
-				  }
+				   activeLoaders.push(loader);
 		   }
-			activeLoaders = stillActive;
 		}
 	}
 
