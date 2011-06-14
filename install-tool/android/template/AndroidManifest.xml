@@ -7,7 +7,7 @@
     <activity android:name="MainActivity" android:label="::APP_TITLE::"
       android:configChanges="keyboard|keyboardHidden|orientation"
 		::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::" ::end::
-		::if (APP_ICON!=""):: android:icon="@drawable/icon" ::end::
+		::if (HAS_ICON):: android:icon="@drawable/icon" ::end::
 		>
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

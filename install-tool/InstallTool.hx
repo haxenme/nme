@@ -683,6 +683,7 @@ class InstallTool
             var ext =  neko.io.Path.extension(icon.name).toLowerCase();
             if (ext=="png" )
             {
+               mContext.HAS_ICON = true;
                if (inAddToAllFiles)
                   mAllFiles.push(inDest);
                copyIfNewer(icon.name,inDest,inAddToAllFiles?mAllFiles:[],mVerbose);
@@ -694,10 +695,11 @@ class InstallTool
       if (bmp==null)
          return false;
 
-      var bytes = bmp.encode("PNG",0.95);
+      var bytes = bmp.encode("png",0.95);
       bytes.writeFile(inDest);
       if (inAddToAllFiles)
          mAllFiles.push(inDest);
+      mContext.HAS_ICON = true;
       return true;
    }
 
@@ -710,6 +712,7 @@ class InstallTool
       for(icon in mIcons)
          if (icon.isSize(inWidth,inHeight))
          {
+            mContext.HAS_ICON = true;
             if (inTimedFile!="" && !isNewer(icon.name,inTimedFile))
                return null;
 
@@ -725,6 +728,7 @@ class InstallTool
             if (icon.matches(inWidth,inHeight))
             {
                found = icon;
+               mContext.HAS_ICON = true;
                if (inTimedFile!="" && !isNewer(icon.name,inTimedFile))
                   return null;
                break;
@@ -777,6 +781,12 @@ class InstallTool
       var dest = mBuildDir + "/android/project";
 
       mkdir(dest);
+
+      createIcon(36,36, dest + "/res/drawable-ldpi/icon.png", true);
+      createIcon(48,48, dest + "/res/drawable-mdpi/icon.png", true);
+      createIcon(72,72, dest + "/res/drawable-hdpi/icon.png", true);
+
+
       cp_recurse(NME + "/install-tool/android/template",dest);
 
       var pkg = mDefines.get("APP_PACKAGE");
@@ -790,11 +800,6 @@ class InstallTool
 
       for(ndll in mNDLLs)
          ndll.copy("Android/lib", dest + "/libs/armeabi", true, mVerbose, mAllFiles, "android");
-
-
-      createIcon(36,36, dest + "/res/drawable-ldpi/icon.png", true);
-      createIcon(48,48, dest + "/res/drawable-mdpi/icon.png", true);
-      createIcon(72,72, dest + "/res/drawable-hdpi/icon.png", true);
    }
 
    function buildAndroid()
@@ -1148,8 +1153,7 @@ class InstallTool
             has_icon = false;
       }
 
-      if (has_icon)
-         mContext.HAS_ICON = true;
+      mContext.HAS_ICON = has_icon;
 
       cp_recurse(NME + "/install-tool/iphone/haxe", dest + "/haxe");
 
