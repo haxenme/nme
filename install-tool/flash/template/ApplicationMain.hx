@@ -54,14 +54,7 @@ class ApplicationMain
    {
       ::foreach assets::
       if (inName=="::id::")
-         ::if (flashClass=="flash.utils.ByteArray")::
-      {
-         var obj = new NME_::flatName::();
-         return haxe.io.Bytes.ofData( obj );
-      }
-         ::else::
          return new NME_::flatName::();
-         ::end::
       ::end::
 
       return null;

@@ -881,7 +881,7 @@ class InstallTool
       }
 
       var icon = mDefines.get("APP_ICON");
-      if (icon!="")
+      if (icon!="" && icon!=null)
          copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
 
       var neko = getNeko();
@@ -1458,6 +1458,9 @@ class InstallTool
                 case "classpath" : 
                    mHaxeFlags.push("-cp " + convertPath( substitute(el.att.name) ) );
 
+                case "haxedef" : 
+                   mHaxeFlags.push("-D " + substitute( substitute(el.att.name) ) );
+
                 case "window" : 
                    windowSettings(el);
 
@@ -1606,9 +1609,9 @@ class InstallTool
 
   public static function isNewer(inFrom:String, inTo:String) : Bool
   {
-      if (!neko.FileSystem.exists(inFrom))
+      if (inFrom==null || !neko.FileSystem.exists(inFrom))
       {
-         neko.Lib.println("Error: " + inFrom + " does not exist");
+         throw("Error: " + inFrom + " does not exist");
          return false;
       }
 
