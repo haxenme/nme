@@ -1327,8 +1327,8 @@ void TextField::Layout(const Matrix &inMatrix)
            rot!=mLayoutRotation)
    {
       for(int i=0;i<mCharGroups.size();i++)
-         if (mCharGroups[i].UpdateFont(scale_v,rot,!embedFonts))
-            mLinesDirty = true;
+         mCharGroups[i].UpdateFont(scale_v,rot,!embedFonts);
+      mLinesDirty = true;
       mFontsDirty = false;
       mLayoutScaleV = scale_v;
       mLayoutScaleH = scale_h;

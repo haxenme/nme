@@ -14,6 +14,7 @@ class NativeFont : public FontFace
 {
    UIFont *mFont;
    CGFont *mCGFont;
+   TextLineMetrics mMetrics;
    int    mHeight;
    bool   mOk;
 
@@ -23,11 +24,15 @@ public:
       mCGFont = 0;
       mFont = 0;
       mHeight = inHeight;
+      memset(&mMetrics,0,sizeof(mMetrics));
+
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
       // NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
 
       if (!inName.IsSet() || !inName.Get().size())
+      {
          mFont = inBold ? [UIFont boldSystemFontOfSize:inHeight] : [UIFont systemFontOfSize:inHeight] ;
+      }
       else
       {
          std::string name = WideToUTF8(inName.Get());
@@ -92,11 +97,31 @@ public:
                    mCGFont = CGFontCreateWithDataProvider(fontDataProvider);
                    //printf("Got font %p\n", mCGFont);
                    CGDataProviderRelease(fontDataProvider); 
+
                 }
              }
          }
       }
 
+      if (mFont)
+      {
+         mMetrics.ascent = (int)[ mFont ascender ];
+         mMetrics.descent = -(int)[ mFont descender ];
+         mMetrics.height = (int)[ mFont lineHeight ];
+         //printf("mFont metrics %f/%f/%f\n",  mMetrics.ascent,  mMetrics.descent ,  mMetrics.height );
+      }
+      else if (mCGFont)
+      {
+         mMetrics.ascent = CGFontGetAscent( mCGFont );
+         mMetrics.descent = CGFontGetDescent( mCGFont );
+         mMetrics.height = mHeight; //CGFontGetXHeight( mCGFont );
+         //printf("mCGFont metrics %f/%f/%f\n",  mMetrics.ascent,  mMetrics.descent ,  mMetrics.height );
+      }
+      else
+      {
+         //printf("No native font\n");
+      }
+ 
       //printf("Loaded native font : %p\n", mFont);
       if (mFont)
          [mFont retain];
@@ -147,7 +172,7 @@ public:
       outW  = stringSize.width;
       outH  = stringSize.height;
       outOx = 0;
-      outOy = 0;
+      outOy = -(int)mMetrics.ascent;
       outAdvance = stringSize.width;
       return true;
    }
@@ -230,9 +255,9 @@ public:
 
    void UpdateMetrics(TextLineMetrics &ioMetrics)
    {
-      //ioMetrics.ascent = std::max( ioMetrics.ascent, (float)mMetrics.tmAscent);
-      //ioMetrics.descent = std::max( ioMetrics.descent, (float)mMetrics.tmDescent);
-      //ioMetrics.height = std::max( ioMetrics.height, (float)mMetrics.tmHeight);
+      ioMetrics.ascent = std::max( ioMetrics.ascent, (float)mMetrics.ascent);
+      ioMetrics.descent = std::max( ioMetrics.descent, (float)mMetrics.descent);
+      ioMetrics.height = std::max( ioMetrics.height, (float)mMetrics.height);
    }
 
    int  Height()
