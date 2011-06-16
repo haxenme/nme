@@ -9,6 +9,11 @@
 namespace nme
 {
 
+// TODO: Is this really the best way of doing it? Also, not a 1:1 mapping.
+// From: http://partners.adobe.com/public/developer/en/opentype/glyphlist.txt
+static const char *gGlyphNames[] = {
+"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "space", "exclam", "quotedbl", "numbersign", "dollar", "percent", "ampersand", "quotesingle", "parenleft", "parenright", "asterisk", "plus", "comma", "hyphen", "period", "slash", "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "colon", "semicolon", "less", "equal", "greater", "question", "at", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "bracketleft", "backslash", "bracketright", "asciicircum", "underscore", "grave", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "braceleft", "verticalbar", "braceright", "asciitilde", "controlDEL", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "nonbreakingspace", "exclamdown", "cent", "sterling", "currency", "yen", "brokenbar", "section", "dieresis", "copyright", "ordfeminine", "guillemotleft", "logicalnot", "softhyphen", "registered", "overscore", "degree", "plusminus", "twosuperior", "threesuperior", "acute", "mu1", "paragraph", "periodcentered", "cedilla", "onesuperior", "ordmasculine", "guillemotright", "onequarter", "onehalf", "threequarters", "questiondown", "Agrave", "Aacute", "Acircumflex", "Atilde", "Adieresis", "Aring", "AE", "Ccedilla", "Egrave", "Eacute", "Ecircumflex", "Edieresis", "Igrave", "Iacute", "Icircumflex", "Idieresis", "Eth", "Ntilde", "Ograve", "Oacute", "Ocircumflex", "Otilde", "Odieresis", "multiply", "Oslash", "Ugrave", "Uacute", "Ucircumflex", "Udieresis", "Yacute", "Thorn", "germandbls", "agrave", "aacute", "acircumflex", "atilde", "adieresis", "aring", "ae", "ccedilla", "egrave", "eacute", "ecircumflex", "edieresis", "igrave", "iacute", "icircumflex", "idieresis", "eth", "ntilde", "ograve", "oacute", "ocircumflex", "otilde", "odieresis", "divide", "oslash", "ugrave", "uacute", "ucircumflex", "udieresis", "yacute", "thorn", "ydieresis", };
+
 
 class NativeFont : public FontFace
 {
@@ -112,10 +117,14 @@ public:
       }
       else if (mCGFont)
       {
-         mMetrics.ascent = CGFontGetAscent( mCGFont );
-         mMetrics.descent = CGFontGetDescent( mCGFont );
+         int m = CGFontGetUnitsPerEm ( mCGFont );
+
+         //CGRect CGFontGetFontBBox ( CGFontRef font );
+
+         mMetrics.ascent = (int)((double)CGFontGetAscent( mCGFont )*mHeight/m);
+         mMetrics.descent = -(int)((double)CGFontGetDescent( mCGFont )*mHeight/m);
          mMetrics.height = mHeight; //CGFontGetXHeight( mCGFont );
-         //printf("mCGFont metrics %f/%f/%f\n",  mMetrics.ascent,  mMetrics.descent ,  mMetrics.height );
+         //printf("mCGFont metrics %f/%f/%f (%d)\n",  mMetrics.ascent,  mMetrics.descent ,  mMetrics.height, m );
       }
       else
       {
@@ -145,37 +154,62 @@ public:
       NSString *str = [[NSString alloc] initWithUTF8String:WideToUTF8(buf).c_str()];
       CGSize stringSize;
       if (mFont)
-         stringSize = [str sizeWithFont:mFont];
-      else
       {
-         UniChar code = inChar;
-         CFStringRef name = CFStringCreateWithCharacters (0,&code,1);
-         CGGlyph glyph = CGFontGetGlyphWithGlyphName(mCGFont, name);
-         //printf("Got glyph %d!\n",glyph);
-
-         CGSize size = CGSizeMake(mHeight*2,mHeight);
-         // Create a context to render into.
-         UIGraphicsBeginImageContext(size);
-
-         CGContextRef context = UIGraphicsGetCurrentContext();
-         CGContextSetFont(context, mCGFont);
-         CGContextSetFontSize(context, mHeight);
-
-         CGContextSetTextDrawingMode(context,kCGTextInvisible);
-         CGContextShowGlyphsAtPoint(context,0,0,&glyph,1);
-         CGPoint pos = CGContextGetTextPosition (context);
-         stringSize.width = pos.x;
-         stringSize.height = mHeight;
-         UIGraphicsEndImageContext();
+         stringSize = [str sizeWithFont:mFont];
+         outW  = stringSize.width;
+         outH  = stringSize.height;
+         outOx = 0;
+         outOy = -(int)mMetrics.ascent;
+         outAdvance = stringSize.width;
+         //printf("%d (%c)  %d,%d %dx%d\n",inChar,inChar, outOx, outOy, outW, outH);
+         return true;
       }
-      //printf("GlyphInfoSize : %f,%f\n", stringSize.width, stringSize.height);
-      outW  = stringSize.width;
-      outH  = stringSize.height;
-      outOx = 0;
-      outOy = -(int)mMetrics.ascent;
-      outAdvance = stringSize.width;
-      return true;
-   }
+      else if (mCGFont)
+      {
+         CGGlyph glyph = 0;
+         if (inChar<256)
+         {
+            NSString *str = [[NSString alloc] initWithUTF8String:gGlyphNames[inChar]];
+            glyph = CGFontGetGlyphWithGlyphName(mCGFont, (__CFString *)str);
+         }
+         /*
+         printf("Got glyph (%c) %d!\n",inChar,glyph);
+         static bool first = true;
+         if (first)
+         {
+            for(int i=0;i<CGFontGetNumberOfGlyphs(mCGFont);i++)
+            {
+               CFStringRef name = CGFontCopyGlyphNameForGlyph(mCGFont, i );
+               printf("Contains : %d ] %s\n", i, CFStringGetCStringPtr(name,CFStringGetSystemEncoding()) );
+            }
+            first = false;
+         }
+         */
+
+
+         CGRect bbox;
+         CGFontGetGlyphBBoxes ( mCGFont, &glyph, 1, &bbox );
+         int advance = 0;
+         CGFontGetGlyphAdvances ( mCGFont, &glyph, 1, &advance );
+
+         int m = CGFontGetUnitsPerEm ( mCGFont );
+         //printf("Bounds : %f,%f  %fx%f / %d\n",
+            //bbox.origin.x, bbox.origin.y, bbox.size.width, bbox.size.height, advance );
+
+         //printf("GlyphInfoSize : %f,%f\n", stringSize.width, stringSize.height);
+         outW  = (int)(bbox.size.width*mHeight/m + 0.99);
+         outH  = (int)(bbox.size.height*mHeight/m + 0.99);
+         if (outW*outH==0)
+            outW = outH = 1;
+         outOx = (int)(bbox.origin.x*mHeight/m+0.5);
+         outOy = -(int)((bbox.size.height+bbox.origin.y)*mHeight/m + 0.99);
+         outAdvance = advance*mHeight/m;
+ 
+         return true;
+      }
+
+      return false;
+  }
 
    void RenderGlyph(int inChar,const RenderTarget &outTarget)
    {
@@ -183,6 +217,7 @@ public:
 
       CGSize size = CGSizeMake(outTarget.mRect.w, outTarget.mRect.h);
       // Create a context to render into.
+      //printf("Drawing at size %dx%d...\n", outTarget.mRect.w, outTarget.mRect.h);
       UIGraphicsBeginImageContext(size);
    
       CGPoint textOrigin = CGPointMake(0,0);
@@ -192,19 +227,32 @@ public:
       
       // Draw the string into out image!
       if (mFont)
+      {
          [str drawAtPoint:textOrigin withFont:mFont];
+      }
       else if (mCGFont)
       {
-         CGContextRef context = UIGraphicsGetCurrentContext();
-         UniChar code = inChar;
-         CFStringRef name = CFStringCreateWithCharacters (0,&code,1);
-         CGGlyph glyph = CGFontGetGlyphWithGlyphName(mCGFont, name);
+         CGGlyph glyph = 0;
+         if (inChar<256)
+         {
+            NSString *str = [[NSString alloc] initWithUTF8String:gGlyphNames[inChar]];
+            glyph = CGFontGetGlyphWithGlyphName(mCGFont, (__CFString *)str);
+         }
+         //printf("Glyph : %c (%c) name = %s\n", inChar, inChar, gGlyphNames[inChar]);
 
+         CGRect bbox;
+         CGFontGetGlyphBBoxes ( mCGFont, &glyph, 1, &bbox );
+         int advance = 0;
+         CGFontGetGlyphAdvances ( mCGFont, &glyph, 1, &advance );
+         int m = CGFontGetUnitsPerEm ( mCGFont );
+ 
+         CGContextRef context = UIGraphicsGetCurrentContext();
          CGContextSetFont(context, mCGFont);
          CGContextSetFontSize(context, mHeight);
 
          // Font rendering is otherwise upsidedown
-         CGContextTranslateCTM ( context, 0, mHeight );
+         CGContextTranslateCTM ( context, -bbox.origin.x*mHeight/m, 
+                                 (bbox.size.height+bbox.origin.y)*mHeight/m );
          CGContextScaleCTM ( context, 1.0, -1.0 );
          CGContextSetShouldSmoothFonts(context,true);
          CGContextSetShouldSubpixelPositionFonts(context,false);
@@ -240,11 +288,11 @@ public:
           uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
           for(int x=0;x<size.width;x++)
           {
-             //printf( *src ? "X" : " ");
+             // printf( *src ? "X" : ".");
              *dest++ = mCGFont ? gamma_lut[*src] : *src;
              src+=4;
           }
-          //printf("\n");
+          // printf("\n");
       }
       CFRelease(imageData); // We're done with this data now.
 
