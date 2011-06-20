@@ -59,7 +59,8 @@ class URLLoader extends nme.events.EventDispatcher
    public function load(request:URLRequest)
    {
 		state = urlInit;
-      if(request.url.substr(0,7)!="http://")
+      var pref = request.url.substr(0,7);
+      if(pref!="http://" && pref!="https:/")
 		{ // local file
          try {
 				var bytes = ByteArray.readFile(request.url);
@@ -113,7 +114,7 @@ class URLLoader extends nme.events.EventDispatcher
          if (state==urlComplete)
 			{
             //trace(getCookies());
-				var bytes = ByteArray.fromHandle( nme_curl_get_data(nmeHandle) );
+				var bytes:ByteArray = nme_curl_get_data(nmeHandle);
 				switch(dataFormat)
 				{
                case TEXT, VARIABLES:

@@ -199,10 +199,10 @@ struct MyDestManager
 {
    enum { BUF_SIZE = 4096 };
    struct jpeg_destination_mgr pub;   /* public fields */
-   QuickVec<uint8> &mOutput;
+   QuickVec<uint8> mOutput;
    uint8   mTmpBuf[BUF_SIZE];
 
-   MyDestManager(QuickVec<uint8> &inOutput) : mOutput(inOutput)
+   MyDestManager()
    {
       pub.init_destination    = init_buffer;
       pub.empty_output_buffer = copy_buffer;
@@ -253,7 +253,7 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
    jpegError.base.error_exit = OnError;
    jpegError.base.output_message = OnOutput;
 
-   MyDestManager dest(outBytes->mBytes);
+   MyDestManager dest;
 
    int w = inSurface->Width();
    int h = inSurface->Height();
@@ -303,6 +303,8 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
       jpeg_write_scanlines(&cinfo, &row_pointer, 1);
    }
    jpeg_finish_compress(&cinfo);
+
+   *outBytes = ByteArray(dest.mOutput);
  
    return true;
 }
@@ -441,15 +443,15 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    if (setjmp(png_jmpbuf(png_ptr)))
    {
-      outBytes->mBytes.clear();
-
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_write_struct(&png_ptr, &info_ptr );
       /* If we get here, we had a problem reading the file */
       return false;
    }
 
-   png_set_write_fn(png_ptr, &outBytes->mBytes, user_write_data, user_flush_data);
+   QuickVec<uint8> out_buffer;
+
+   png_set_write_fn(png_ptr, &out_buffer, user_write_data, user_flush_data);
 
    int w = inSurface->Width();
    int h = inSurface->Height();
@@ -479,6 +481,8 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    png_write_end(png_ptr, NULL);
 
+   *outBytes = ByteArray(out_buffer);
+
    return true;
 }
 
@@ -490,12 +494,10 @@ Surface *Surface::Load(const OSChar *inFilename)
    if (!file)
    {
       #ifdef ANDROID
-      ByteArray *bytes = AndroidGetAssetBytes(inFilename);
-      if (bytes)
+      ByteArray bytes = AndroidGetAssetBytes(inFilename);
+      if (bytes.Ok())
       {
-         bytes->IncRef();
-         Surface *result = LoadFromBytes(&bytes->mBytes[0], bytes->mBytes.size());
-         bytes->DecRef();
+         Surface *result = LoadFromBytes(bytes.Bytes(), bytes.Size());
          return result;
       }
 

@@ -92,24 +92,21 @@ class BitmapData implements IBitmapDrawable
    static public function loadFromBytes(inBytes:nme.utils.ByteArray, ?inRawAlpha:nme.utils.ByteArray)
    {
       var result = new BitmapData(0,0);
-      result.nmeHandle = nme_bitmap_data_from_bytes( inBytes.nmeData,
-                               inRawAlpha==null?null:inRawAlpha.nmeData);
+      result.nmeHandle = nme_bitmap_data_from_bytes( inBytes,inRawAlpha );
       return result;
    }
 
    // Same as above, except uses haxe.ioBytes
    static public function loadFromHaxeBytes(inBytes:haxe.io.Bytes, ?inRawAlpha:haxe.io.Bytes)
    {
-      var result = new BitmapData(0,0);
-      result.nmeHandle = nme_bitmap_data_from_bytes( inBytes.getData(),
-                   inRawAlpha==null?null:inRawAlpha.getData());
-      return result;
+      return loadFromHaxeBytes( ByteArray.fromBytes(inBytes),
+                                inRawAlpha==null ? ByteArray.fromBytes(inRawAlpha) : null);
    }
 
    public function encode(inFormat:String, inQuality:Float=0.9 ) : nme.utils.ByteArray
    {
       var result = new nme.utils.ByteArray();
-      nme_bitmap_data_encode(nmeHandle, result.nmeData, inFormat, inQuality);
+      nme_bitmap_data_encode(nmeHandle, result, inFormat, inQuality);
       return result;
    }
 
@@ -180,9 +177,7 @@ class BitmapData implements IBitmapDrawable
 
    public function getPixels(rect:Rectangle):ByteArray
    {
-      var result = new ByteArray(width*height*4);
-      nme_bitmap_data_get_pixels(nmeHandle,rect,result.nmeGetData());
-      return result;
+      return nme_bitmap_data_get_pixels(nmeHandle,rect);
    }
 
    public function getPixel(x:Int, y:Int) : Int
@@ -229,12 +224,9 @@ class BitmapData implements IBitmapDrawable
         }
 
 
-   public function setPixels(rect:Rectangle,pixels:Dynamic) : Void
+   public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
    {
-      if (Std.is(pixels,ByteArray))
-         nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.nmeGetData());
-      else if (Std.is(pixels,haxe.io.Bytes))
-         nme_bitmap_data_set_bytes(nmeHandle,rect,pixels.getBytesData());
+      nme_bitmap_data_set_bytes(nmeHandle,rect,pixels);
    }
 
    // Handled internally...
@@ -308,7 +300,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_copy = nme.Loader.load("nme_bitmap_data_copy",4);
    static var nme_bitmap_data_copy_channel = nme.Loader.load("nme_bitmap_data_copy_channel", -1);
    static var nme_bitmap_data_fill = nme.Loader.load("nme_bitmap_data_fill",4);
-   static var nme_bitmap_data_get_pixels = nme.Loader.load("nme_bitmap_data_get_pixels",3);
+   static var nme_bitmap_data_get_pixels = nme.Loader.load("nme_bitmap_data_get_pixels",2);
    static var nme_bitmap_data_get_pixel = nme.Loader.load("nme_bitmap_data_get_pixel",3);
    static var nme_bitmap_data_get_pixel32 = nme.Loader.load("nme_bitmap_data_get_pixel32",3);
    static var nme_bitmap_data_get_pixel_rgba = nme.Loader.load("nme_bitmap_data_get_pixel_rgba",3);

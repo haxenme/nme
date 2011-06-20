@@ -226,7 +226,7 @@ void TerminateMainLoop()
    sCloseActivity = true;
 }
 
-ByteArray *AndroidGetAssetBytes(const char *inResource)
+ByteArray AndroidGetAssetBytes(const char *inResource)
 {
     jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
     jmethodID mid = gEnv->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
@@ -241,9 +241,8 @@ ByteArray *AndroidGetAssetBytes(const char *inResource)
 	 }
 
     jint len = gEnv->GetArrayLength(bytes);
-	 ByteArray *result = new ByteArray();
-	 result->mBytes.resize(len);
-    gEnv->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)&result->mBytes[0]);
+	 ByteArray result(len);
+    gEnv->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
     return result;
 }
 

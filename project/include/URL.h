@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+
 namespace nme
 {
 
@@ -31,7 +32,7 @@ class URLLoader : public Object
 		virtual int      bytesTotal()=0;
 		virtual int      getHttpCode()=0;
 		virtual const char *getErrorMessage()=0;
-		virtual ByteArray *releaseData()=0;
+		virtual ByteArray releaseData()=0;
       virtual void     getCookies( std::vector<std::string> &outCookies )=0;
 };
 

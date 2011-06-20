@@ -515,26 +515,68 @@ DEFINE_PRIM(nme_time_stamp,0);
 
 // --- ByteArray -----------------------------------------------------
 
-value nme_byte_array_create(value inLen)
-{
-   ByteArray *array = new ByteArray();
-   array->mBytes.resize(val_int(inLen));
-   return ObjectToAbstract(array);
-}
-DEFINE_PRIM(nme_byte_array_create,1);
+value gByteArrayCreate = 0;
+value gByteArrayLen = 0;
+value gByteArrayResize = 0;
+value gByteArrayBytes = 0;
 
-value nme_byte_array_read_file(value inFilename)
+value nme_byte_array_init(value inFactory, value inLen, value inResize, value inBytes)
 {
-   ByteArray *result = ByteArray::FromFile(val_os_string(inFilename));
-   if (result==0)
-      return alloc_null();
-
-   return ObjectToAbstract(result);
+   gByteArrayCreate = inFactory;
+   gByteArrayLen = inLen;
+   gByteArrayResize = inResize;
+   gByteArrayBytes = inBytes;
+   return alloc_null();
 }
-DEFINE_PRIM(nme_byte_array_read_file,1);
+DEFINE_PRIM(nme_byte_array_init,4);
+
+ByteArray::ByteArray(int inSize)
+{
+   mValue = val_call1(gByteArrayCreate, alloc_int(inSize) );
+}
+
+ByteArray::ByteArray() : mValue(0) { }
+
+ByteArray::ByteArray(const QuickVec<uint8> &inData)
+{
+   mValue = val_call1(gByteArrayCreate, alloc_int(inData.size()) );
+   uint8 *bytes = Bytes();
+   if (bytes)
+     memcpy(bytes, &inData[0], inData.size() );
+}
+
+ByteArray::ByteArray(const ByteArray &inRHS) : mValue(inRHS.mValue) { }
+
+ByteArray::ByteArray(value inValue) : mValue(inValue) { }
+
+void ByteArray::Resize(int inSize)
+{
+   val_call2(gByteArrayResize, mValue, alloc_int(inSize) );
+}
+
+int ByteArray::Size()
+{
+   return val_int( val_call1(gByteArrayLen, mValue ));
+}
+
+unsigned char *ByteArray::Bytes()
+{
+   value bytes = val_call1(gByteArrayBytes,mValue);
+   if (val_is_string(bytes))
+      return (unsigned char *)val_string(bytes);
+   buffer buf = val_to_buffer(bytes);
+   if (buf==0)
+   {
+      val_throw(alloc_string("Bad ByteArray"));
+   }
+   return (unsigned char *)buffer_data(buf);
+}
+
+// --------------------
+
 
 // [ddc]
-value nme_byte_array_overwrite_file(value inFilename, value inArray, value inLength)
+value nme_byte_array_overwrite_file(value inFilename, value inBytes)
 {
    // file is created if it doesn't exist,
    // if it exists, it is truncated to zero
@@ -547,88 +589,25 @@ value nme_byte_array_overwrite_file(value inFilename, value inArray, value inLen
       return alloc_null();
    }
 
-   ByteArray *array;
-   AbstractToObject(inArray,array);
+   ByteArray array(inBytes);
 
-   
    // The function fwrite() writes nitems objects, each size bytes long, to the
    // stream pointed to by stream, obtaining them from the location given by
    // ptr.
    // fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
-   fwrite( (const char *)&array->mBytes[0] , 1, val_int(inLength) , file);
+   fwrite( array.Bytes() , 1, array.Size() , file);
 
    fclose(file);
 	return alloc_null();
 }
-DEFINE_PRIM(nme_byte_array_overwrite_file,3);
+DEFINE_PRIM(nme_byte_array_overwrite_file,2);
 
-
-value nme_byte_array_get_length(value inArray)
+value nme_byte_array_read_file(value inFilename)
 {
-   ByteArray *array;
-   if (AbstractToObject(inArray,array))
-   {
-      return alloc_int(array->mBytes.size());
-   }
-   return alloc_null();
+   ByteArray result = ByteArray::FromFile(val_os_string(inFilename));
+   return result.mValue;
 }
-DEFINE_PRIM(nme_byte_array_get_length,1);
-
-value nme_byte_array_as_string(value inArray)
-{
-   ByteArray *array;
-   if (AbstractToObject(inArray,array))
-   {
-      return alloc_string_len((const char *)&array->mBytes[0], array->mBytes.size());
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_as_string,1);
-
-
-
-value nme_byte_array_get(value inArray, value inPos)
-{
-   ByteArray *array;
-   if (AbstractToObject(inArray,array))
-   {
-      int idx = val_int(inPos);
-      if (idx>=0 && idx<array->mBytes.size())
-         return alloc_int(array->mBytes[idx]);
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_get,2);
-
-value nme_byte_array_set(value inArray,value inPos, value inVal)
-{
-   ByteArray *array;
-   if (AbstractToObject(inArray,array))
-   {
-      int idx = val_int(inPos);
-      if (idx>=0 && idx<array->mBytes.size())
-         array->mBytes[idx] = val_int(inVal);
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_set,3);
-
-
-
-value nme_byte_array_get_bytes(value inArray,value outBytes)
-{
-   ByteArray *array;
-   if (AbstractToObject(inArray,array) && val_is_buffer(outBytes) )
-   {
-      buffer buf = val_to_buffer(outBytes);
-      if (buffer_size(buf)>=array->mBytes.size())
-      {
-         memcpy(buffer_data(buf), &array->mBytes[0], array->mBytes.size());
-      }
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_byte_array_get_bytes,2);
+DEFINE_PRIM(nme_byte_array_read_file,1);
 
 
 struct ByteData
@@ -639,27 +618,9 @@ struct ByteData
 
 bool FromValue(ByteData &outData,value inData)
 {
-   ByteArray *array;
-   if (AbstractToObject(inData,array))
-   {
-      outData.length = array->mBytes.size();
-      outData.data = &array->mBytes[0];
-      return true;
-   }
-   // Neko byte array....
-   if (val_is_string(inData))
-   {
-      outData.length = val_strlen(inData);
-      outData.data = (uint8 *)val_string(inData);
-      return true;
-   }
-
-   if (!val_is_buffer(inData))
-      return false;
-
-   buffer buf = val_to_buffer(inData);
-   outData.length = buffer_size(buf);
-   outData.data = (uint8 *)buffer_data(buf);
+   ByteArray array(inData);
+   outData.data = array.Bytes();
+   outData.length = array.Size();
    return true;
 }
 
@@ -2169,11 +2130,9 @@ value nme_bitmap_data_encode(value inSurface, value inCompressed, value inFormat
    if (!AbstractToObject(inSurface,surf))
       return alloc_null();
 
-   ByteArray *array;
-   if (!AbstractToObject(inCompressed,array))
-      return alloc_null();
+   ByteArray array(inCompressed);
 
-   bool ok = surf->Encode(array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
+   bool ok = surf->Encode(&array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
    if (!ok)
       return alloc_null();
   
@@ -2240,7 +2199,7 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
 DEFINE_PRIM_MULT(nme_bitmap_data_copy_channel);
 
 
-value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
+value nme_bitmap_data_get_pixels(value inSurface, value inRect)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -2250,24 +2209,17 @@ value nme_bitmap_data_get_pixels(value inSurface, value inRect, value outBytes)
       if (rect.w>0 && rect.h>0)
       {
          int size = rect.w * rect.h*4;
-         ByteArray *array;
-         buffer buf;
-         if (AbstractToObject(outBytes,array))
-         {
-            array->mBytes.resize(size);
-            surf->getPixels(rect,(unsigned int *)&array->mBytes[0]);
-         }
-         else if (buf=val_to_buffer(outBytes))
-         {
-            buffer_set_size(buf, size);
-            surf->getPixels(rect,(unsigned int *)buffer_data(buf));
-         }
+         ByteArray array(size);
+
+         surf->getPixels(rect,(unsigned int *)array.Bytes());
+
+         return array.mValue;
       }
    }
 
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_get_pixels,3);
+DEFINE_PRIM(nme_bitmap_data_get_pixels,2);
 
 
 value nme_bitmap_data_get_color_bounds_rect(value inSurface, value inMask, value inCol, value inFind, value outRect)
@@ -2371,6 +2323,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
 }
 DEFINE_PRIM(nme_bitmap_data_set_pixel_rgba,4);
 
+
 value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
 {
    Surface *surf;
@@ -2380,18 +2333,9 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
       FromValue(rect,inRect);
       if (rect.w>0 && rect.h>0)
       {
-         ByteArray *array;
-         buffer buf;
-         if (AbstractToObject(inBytes,array))
-         {
-            //array->mBytes.resize(size);
-            surf->setPixels(rect,(unsigned int *)&array->mBytes[0]);
-         }
-         else if (buf=val_to_buffer(inBytes))
-         {
-            //buffer_set_size(buf, size);
-            surf->setPixels(rect,(unsigned int *)buffer_data(buf));
-         }
+         ByteArray array(inBytes);
+
+         surf->setPixels(rect,(unsigned int *)array.Bytes());
       }
    }
 
@@ -2719,7 +2663,8 @@ value nme_curl_get_data(value inLoader)
 	URLLoader *loader;
 	if (AbstractToObject(inLoader,loader))
 	{
-		return ObjectToAbstract( loader->releaseData() );
+		ByteArray b = loader->releaseData();
+      return b.mValue;
 	}
 	return alloc_null();
 }

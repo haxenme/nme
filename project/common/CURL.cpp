@@ -25,7 +25,7 @@ public:
 	URLState mState;
 	int mHttpCode;
 	char mErrorBuf[CURL_ERROR_SIZE];
-	ByteArray *mByteArray;
+	QuickVec<unsigned char> mBytes;
 
 
 	CURLLoader(const char *inURL, int inAuthType, const char *inUserPasswd,
@@ -37,7 +37,6 @@ public:
 		mBytesTotal = -1;
 		mBytesLoaded = 0;
 		mHttpCode = 0;
-		mByteArray = 0;
 		sLoaders++;
 		mHandle = curl_easy_init();
 		if (!sCurlMap)
@@ -89,8 +88,6 @@ public:
 			curl_multi_cleanup(sCurlM);
 			sCurlM = 0;
 		}
-		if (mByteArray)
-			mByteArray->DecRef();
 	}
 
 	size_t onData( void *inBuffer, size_t inItemSize, size_t inItems)
@@ -98,19 +95,9 @@ public:
 		size_t size = inItemSize*inItems;
 		if (size>0)
 		{
-			if (!mByteArray)
-			{
-				mByteArray = new ByteArray();
-				mByteArray->mBytes.resize(size);
-				memcpy(&mByteArray->mBytes[0],inBuffer,size);
-			}
-			else
-			{
-				QuickVec<unsigned char> &bytes = mByteArray->mBytes;
-				int s = bytes.size();
-				bytes.resize(s+size);
-				memcpy(&bytes[s],inBuffer,size);
-			}
+			int s = mBytes.size();
+			mBytes.resize(s+size);
+			memcpy(&mBytes[s],inBuffer,size);
 		}
 		return inItems;
 	}
@@ -179,15 +166,13 @@ public:
 	virtual int getHttpCode() { return mHttpCode; }
 
 	virtual const char *getErrorMessage() { return mErrorBuf; }
-	virtual ByteArray *releaseData()
+	virtual ByteArray releaseData()
 	{
-		if (mByteArray)
+		if (mBytes.size())
 		{
-			ByteArray *buffer = mByteArray;
-			mByteArray = 0;
-			return buffer;
+         return ByteArray(mBytes);
 		}
-		return new ByteArray();
+		return ByteArray();
 	}
 
 

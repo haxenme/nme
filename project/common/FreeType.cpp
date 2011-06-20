@@ -146,13 +146,17 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace)
    result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
    if (*outFace==0)
    {
-      ByteArray *bytes = ByteArray::FromFile(inFace.c_str());
-      if (bytes)
+      ByteArray bytes = ByteArray::FromFile(inFace.c_str());
+      if (bytes.Ok())
       {
-         result = FT_New_Memory_Face(sgLibrary, &bytes->mBytes[0], bytes->mBytes.size(), inIndex, outFace);
-			if (!*outFace)
-            delete bytes;
+         int l = bytes.Size();
+         unsigned char *buf = (unsigned char*)malloc(l);
+         memcpy(buf,bytes.Bytes(),l);
+         result = FT_New_Memory_Face(sgLibrary, buf, l, inIndex, outFace);
+
 			// The font owns the bytes here - so we just leak (fonts are not actually cleaned)
+			if (!*outFace)
+            free(buf);
       }
    }
    return result;

@@ -23,7 +23,7 @@ class Sample extends nme.display.Sprite
           // modifying contents to check we can really overwrite the file
           // This should effectively completely overwrite the
           // original ByteArray
-          ba.writeUTFBytesToBuffer("MODIFIED FILE ///////////////////////");
+          ba.writeUTFBytes("MODIFIED FILE ///////////////////////");
           
           trace("now writing as another file and re-reading");
           ba.writeFile("Data/README.txt");
