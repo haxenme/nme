@@ -466,18 +466,47 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    png_write_info(png_ptr, info_ptr);
 
-   if (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) )
-      png_set_bgr(png_ptr);
+   bool swap = (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) );
+   bool do_alpha = color_type==PNG_COLOR_TYPE_RGBA;
 
-   if (color_type==PNG_COLOR_TYPE_RGB)
-      png_set_filler(png_ptr,0, PNG_FILLER_AFTER);
-
-
-   QuickVec<png_bytep> row_pointers(h);
-   for(int y=0;y<h;y++)
-      row_pointers[y] = (png_bytep)inSurface->Row(y);
-
-   png_write_image(png_ptr, &row_pointers[0]);
+   if (!swap && do_alpha)
+   {
+      QuickVec<png_bytep> row_pointers(h);
+      for(int y=0;y<h;y++)
+         row_pointers[y] = (png_bytep)inSurface->Row(y);
+      png_write_image(png_ptr, &row_pointers[0]);
+   }
+   else
+   {
+      QuickVec<uint8> row_data(w*4);
+      png_bytep row = &row_data[0];
+      for(int y=0;y<h;y++)
+      {
+         uint8 *buf = &row_data[0];
+         const uint8 *src = (const uint8 *)inSurface->Row(y);
+         for(int x=0;x<w;x++)
+         {
+            if (swap)
+            {
+               buf[0] = src[2];
+               buf[1] = src[1];
+               buf[2] = src[0];
+            }
+            else
+            {
+               buf[0] = src[0];
+               buf[1] = src[1];
+               buf[2] = src[2];
+            }
+            src+=3;
+            buf+=3;
+            if (do_alpha)
+               *buf++ = *src;
+            src++;
+         }
+         png_write_rows(png_ptr, &row, 1);
+      }
+   }
 
    png_write_end(png_ptr, NULL);
 

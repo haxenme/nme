@@ -105,9 +105,7 @@ class BitmapData implements IBitmapDrawable
 
    public function encode(inFormat:String, inQuality:Float=0.9 ) : nme.utils.ByteArray
    {
-      var result = new nme.utils.ByteArray();
-      nme_bitmap_data_encode(nmeHandle, result, inFormat, inQuality);
-      return result;
+      return nme_bitmap_data_encode(nmeHandle, inFormat, inQuality);
    }
 
 
@@ -316,7 +314,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_width = nme.Loader.load("nme_bitmap_data_width",1);
    static var nme_bitmap_data_get_transparent = nme.Loader.load("nme_bitmap_data_get_transparent",1);
    static var nme_bitmap_data_set_flags = nme.Loader.load("nme_bitmap_data_set_flags",1);
-   static var nme_bitmap_data_encode = nme.Loader.load("nme_bitmap_data_encode",4);
+   static var nme_bitmap_data_encode = nme.Loader.load("nme_bitmap_data_encode",3);
 
 }
 

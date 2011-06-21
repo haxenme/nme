@@ -2124,21 +2124,22 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
 
 
-value nme_bitmap_data_encode(value inSurface, value inCompressed, value inFormat,value inQuality)
+value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)
 {
    Surface *surf;
    if (!AbstractToObject(inSurface,surf))
       return alloc_null();
 
-   ByteArray array(inCompressed);
+   ByteArray array;
 
    bool ok = surf->Encode(&array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
+
    if (!ok)
       return alloc_null();
   
-   return alloc_bool(true);
+   return array.mValue;
 }
-DEFINE_PRIM(nme_bitmap_data_encode,4);
+DEFINE_PRIM(nme_bitmap_data_encode,3);
 
 
 
