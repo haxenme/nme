@@ -2325,7 +2325,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
 DEFINE_PRIM(nme_bitmap_data_set_pixel_rgba,4);
 
 
-value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
+value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,value inOffset)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -2336,13 +2336,13 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes)
       {
          ByteArray array(inBytes);
 
-         surf->setPixels(rect,(unsigned int *)array.Bytes());
+         surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)) );
       }
    }
 
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_bytes,3);
+DEFINE_PRIM(nme_bitmap_data_set_bytes,4);
 
 value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value outRect)
 {

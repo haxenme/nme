@@ -23,7 +23,6 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    public var bytesAvailable(nmeGetBytesAvailable,null) : Int;
    public var bigEndian:Bool;
 
-
    #if neko
    var alloced:Int;
    #end
@@ -56,6 +55,20 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       result.alloced = result.length;
       #end
       return result;
+   }
+
+
+   public function setLength(inLength:Int):Void
+   {
+      if (inLength>0)
+        ensureElem(inLength-1);
+      length = inLength;
+   }
+
+   public function checkData(inLength:Int)
+   {
+      if (inLength+position>length)
+         ThrowEOFi();
    }
 
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample16"
+     title="NME Sample 16 - Memory"
+     package="org.haxe.nme.sample16"
+     version="1.0"
+     company="nme" 
+	  main="Sample"
+  />
+
+  <window
+      width="320"
+		height="480"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  <set name="SWF_VERSION" value="10" />
+
+  
+  <classpath name="." />
+  <haxelib name="nme" />
+
+  <assets>
+     <image name="../03-Bitmaps/Image.jpg" id="image1.jpg" />
+     <image name="Init.png" id="image2.png" />
+  </assets>
+
+
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+
+  <certificates>
+     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
+  </certificates>
+
+</project>

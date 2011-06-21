@@ -175,7 +175,10 @@ class BitmapData implements IBitmapDrawable
 
    public function getPixels(rect:Rectangle):ByteArray
    {
-      return nme_bitmap_data_get_pixels(nmeHandle,rect);
+      var result:ByteArray = nme_bitmap_data_get_pixels(nmeHandle,rect);
+      if (result!=null)
+         result.position = result.length;
+      return result;
    }
 
    public function getPixel(x:Int, y:Int) : Int
@@ -214,17 +217,20 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
    }
 
-        public function generateFilterRect(sourceRect:Rectangle, filter:nme.filters.BitmapFilter):Rectangle
-        {
-           var result = new Rectangle();
-           nme_bitmap_data_generate_filter_rect(sourceRect,filter,result);
-           return result;
-        }
+   public function generateFilterRect(sourceRect:Rectangle, filter:nme.filters.BitmapFilter):Rectangle
+   {
+      var result = new Rectangle();
+      nme_bitmap_data_generate_filter_rect(sourceRect,filter,result);
+      return result;
+   }
 
 
    public function setPixels(rect:Rectangle,pixels:ByteArray) : Void
    {
-      nme_bitmap_data_set_bytes(nmeHandle,rect,pixels);
+      var size = Std.int(rect.width*rect.height*4);
+      pixels.checkData(Std.int(size) );
+      nme_bitmap_data_set_bytes(nmeHandle,rect,pixels,pixels.position);
+      pixels.position+=size;
    }
 
    // Handled internally...
@@ -307,7 +313,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_set_pixel = nme.Loader.load("nme_bitmap_data_set_pixel",4);
    static var nme_bitmap_data_set_pixel32 = nme.Loader.load("nme_bitmap_data_set_pixel32",4);
    static var nme_bitmap_data_set_pixel_rgba = nme.Loader.load("nme_bitmap_data_set_pixel_rgba",4);
-   static var nme_bitmap_data_set_bytes = nme.Loader.load("nme_bitmap_data_set_bytes",3);
+   static var nme_bitmap_data_set_bytes = nme.Loader.load("nme_bitmap_data_set_bytes",4);
    static var nme_bitmap_data_generate_filter_rect = nme.Loader.load("nme_bitmap_data_generate_filter_rect",3);
    static var nme_render_surface_to_surface = nme.Loader.load("nme_render_surface_to_surface",-1);
    static var nme_bitmap_data_height = nme.Loader.load("nme_bitmap_data_height",1);

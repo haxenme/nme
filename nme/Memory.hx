@@ -5,39 +5,77 @@ import nme.utils.ByteArray;
 class Memory
 {
    #if neko
-   static var ptr:Void
+   static var b:haxe.io.BytesData;
    #else
    static var gcRef:ByteArray;
    #end
 
-   static public function select( b : ByteArray ) : Void
+   static public function select( inBytes : ByteArray ) : Void
    {
       #if neko
-      if (b==null)
-         ptr = null;
+      if (inBytes==null)
+         b = null;
       else
-         ptr = untyped b.getData().__s;
+         b = untyped inBytes.getData();
       #else
-      gcRef = b;
+      gcRef = inBytes;
       if (b==null)
          untyped __global__.__hxcpp_memory_clear();
       else
-         untyped __global__.__hxcpp_memory_select(b.getData());
+         untyped __global__.__hxcpp_memory_select(inBytes.getData());
       #end
    }
 
    #if neko
    // TODO
-   static inline public function getByte( addr : Int ) : Int
+   static inline public function getByte( addr : Int ) : Int { return untyped __dollar__sget(b,addr); }
    static inline public function getDouble( addr : Int ) : Float
+   {
+      return _double_of_bytes(untyped __dollar__ssub(b,addr,8),false);
+   }
    static inline public function getFloat( addr : Int ) : Float
-   static inline public function getI32( addr : Int ) : Int
+   {
+      return _float_of_bytes(untyped __dollar__ssub(b,addr,4),false);
+   }
+   static public function getI32( addr : Int ) : Int
+   {
+      return getByte(addr++) | (getByte(addr++)<<8) | (getByte(addr++)<<16) | (getByte(addr)<<24);
+   }
    static inline public function getUI16( addr : Int ) : Int
+   {
+      return getByte(addr++) | (getByte(addr++)<<8);
+   }
+
    static inline public function setByte( addr : Int, v : Int ) : Void
+   {
+      untyped __dollar__sset(b,addr,v);
+   }
    static inline public function setDouble( addr : Int, v : Float ) : Void
+   {
+      untyped __dollar__sblit(b,addr,_double_bytes(v,false),0,8);
+   }
    static inline public function setFloat( addr : Int, v : Float ) : Void
-   static inline public function setI16( addr : Int, v : Int ) : Void
-   static inline public function setI32( addr : Int, v : Int ) : Void
+   {
+      untyped __dollar__sblit(b,addr,_float_bytes(v,false),0,4);
+   }
+   static public function setI16( addr : Int, v : Int ) : Void
+   {
+       setByte(addr++,v & 0xff);
+       setByte(addr++,(v>>8) & 0xff);
+   }
+   static public function setI32( addr : Int, v : Int ) : Void
+   {
+       setByte(addr++,v & 0xff);
+       setByte(addr++,(v>>8) & 0xff);
+       setByte(addr++,(v>>16) & 0xff);
+       setByte(addr++,(v>>24));
+   }
+
+	static var _float_of_bytes = neko.Lib.load("std","float_of_bytes",2);
+	static var _double_of_bytes = neko.Lib.load("std","double_of_bytes",2);
+	static var _float_bytes = neko.Lib.load("std","float_bytes",2);
+	static var _double_bytes = neko.Lib.load("std","double_bytes",2);
+
    #else
    static inline public function getByte( addr : Int ) : Int
       { return untyped __global__.__hxcpp_memory_get_byte(addr); }
