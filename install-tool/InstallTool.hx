@@ -481,7 +481,7 @@ class InstallTool
    var mIncludePath:Array<String>;
    var mHaxeFlags:Array<String>;
    var mCommand:String;
-   var mTarget:String;
+   static var mTarget:String;
    var mNDLLs : Array<NDLL>;
    var mAssets : Array<Asset>;
    var mIcons : Array<Icon>;
@@ -772,6 +772,7 @@ class InstallTool
    public static function isMac() { return mOS.substr(0,3)=="Mac"; }
    public static function isLinux() { return mOS.substr(0,5)=="Linux"; }
    public static function isWindows() { return mOS.substr(0,3)=="Win"; }
+   public static function isIphone() { return mTarget.substr(0,6)=="iphone"; }
    public static function dotSlash() { return isWindows() ? ".\\" : "./"; }
 
    // ----- Android ---------------------------------------------------------------------------
@@ -1450,9 +1451,16 @@ class InstallTool
                       mHaxeFlags.push("-lib " + lib );
 
                 case "ndll" : 
-                   mNDLLs.push(new NDLL(substitute(el.att.name),
-                      el.has.haxelib ? substitute(el.att.haxelib) : "",
+                   var ndll =substitute(el.att.name);
+                   var haxelib = el.has.haxelib ? substitute(el.att.haxelib) : "";
+                   mNDLLs.push(new NDLL(ndll, haxelib,
                       el.has.nekoapi ? substitute(el.att.nekoapi)!="" : false ) );
+                   // Must statically link in some extra libs....
+                   if (ndll=="nme" && isIphone())
+                   {
+                      for(extra in ["libcurl", "libpng", "libjpeg", "libz"] )
+                         mNDLLs.push(new NDLL(extra, haxelib, false) );
+                   }
 
                 case "icon" : 
                    mIcons.push(new Icon(substitute(el.att.name),
