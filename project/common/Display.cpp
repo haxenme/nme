@@ -654,7 +654,34 @@ void SimpleButton::setMouseState(int inState)
    mMouseState = inState;
 }
 
+void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
+{
+   DisplayObject::GetExtent(inTrans,outExt,inForScreen);
 
+   Matrix full;
+   Transform trans(inTrans);
+   trans.mMatrix = &full;
+
+   for(int i=0;i<stateSIZE;i++)
+   {
+      if (i == stateHitTest) continue;
+      DisplayObject *obj = mState[i];
+
+      full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
+      if (inForScreen && obj->scrollRect.HasPixels())
+      {
+         for(int corner=0;corner<4;corner++)
+         {
+            double x = (corner & 1) ? obj->scrollRect.w : 0;
+            double y = (corner & 2) ? obj->scrollRect.h : 0;
+            outExt.Add( full.Apply(x,y) );
+         }
+      }
+      else
+         // Seems scroll rects are ignored when calculating extent...
+         obj->GetExtent(trans,outExt,inForScreen);
+   }
+}
 
 // --- DisplayObjectContainer ------------------------------------------------
 

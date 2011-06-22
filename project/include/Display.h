@@ -324,6 +324,7 @@ public:
 
    DisplayObject *mState[stateSIZE];
 
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
 
    bool getEnabled() const { return enabled; }
