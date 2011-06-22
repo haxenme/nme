@@ -38,6 +38,8 @@ class LoaderInfo extends URLLoader {
     frameRate = 0;
     dataFormat = URLLoaderDataFormat.BINARY;
     loaderURL = null; // XXX : Don't know how to find the URL of the SWF file that initiated the loading.
+    // Set the url attribute before any other callbacks are made.
+    addEventListener(nme.events.Event.COMPLETE, onURLLoaded);
   }
 
    override public function load(request:URLRequest)
@@ -55,13 +57,11 @@ class LoaderInfo extends URLLoader {
          default:
             throw "Unrecognized file " + pendingURL;
       }
-      addEventListener(nme.events.Event.COMPLETE, onURLLoaded);
       url = null;
       super.load(request);
    }
 
   private function onURLLoaded(event:Event){
-    removeEventListener(Event.COMPLETE, onURLLoaded);
     url = pendingURL;
   }
 
