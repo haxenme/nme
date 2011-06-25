@@ -10,13 +10,13 @@
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
 	<string>Icon.png</string>
-   <key>CFBundleIconFiles</key>
-	   <array>
-		  <string>Icon.png</string>
-		  <string>Icon@2x.png</string>
-		  <string>Icon-72.png</string>
-		  <string>Icon-Small.png</string>
-	   </array>
+	<key>CFBundleIconFiles</key>
+	<array>
+	  <string>Icon.png</string>
+	  <string>Icon@2x.png</string>
+	  <string>Icon-72.png</string>
+	  <string>Icon-Small.png</string>
+	</array>
 	<key>CFBundleIdentifier</key>
 	<string>::APP_PACKAGE::</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -33,5 +33,7 @@
 	<true/>
 	<key>UIStatusBarHidden</key>
 	<true/>
+	<key>UIInterfaceOrientation</key>
+	<string>UIInterfaceOrientationPortrait</string>
 </dict>
 </plist>
