@@ -85,6 +85,26 @@ FILE *OpenRead(const char *inName)
     return result;
 }
 
+bool GetBundleFilename(const char *inName, char *outBuffer,int inSize)
+{
+   if (inName[0] == '/')
+   {
+      strncpy(outBuffer, inName, inSize);
+      outBuffer[inSize-1] = '\0';
+      return true;
+   }
+
+   NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+   NSString *str = [[NSString alloc] initWithUTF8String:inName];
+   NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
+   strncpy(outBuffer,[pathInBundle cStringUsingEncoding:1], inSize);
+   outBuffer[inSize-1] = '\0';
+   [pool release];
+ 
+   return true;
+}
+
+
 // TODO:?
 FILE *OpenOverwrite(const char *inName)
 {

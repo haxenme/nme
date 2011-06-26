@@ -47,7 +47,7 @@
 <files id="iphone">
   <compilerflag value="-Iinclude"/>
   <file name="iPhone/UIStageView.mm"/>
-  <file name="iPhone/SurfaceIO.mm"/>
+  <!-- <file name="iPhone/SurfaceIO.mm"/> -->
   <file name="iPhone/Sound.mm"/>
   <file name="iPhone/NativeFont.mm"/>
 </files>
@@ -106,7 +106,7 @@
   <file name="common/ExternalInterface.cpp"/>
   <file name="common/Cursors.cpp"/>
   <file name="common/Input.cpp" unless="iphone"/>
-  <file name="common/SurfaceIO.cpp" unless="iphone"/>
+  <file name="common/SurfaceIO.cpp" />
   <file name="common/ManagedStage.cpp"/>
   <file name="common/CURL.cpp"/>
 
@@ -215,8 +215,6 @@
   <lib name="-lz" if="dynamic_sdl"/>
 
 
-
-  <flag value="${THIRDPARTY_LIBS}libcurl${name_extra}/*.o" if="iphone"/>
 
   <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
 

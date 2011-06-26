@@ -142,11 +142,19 @@ public:
    SDLSound(const std::string &inFilename)
    {
       IncRef();
-      mChunk = Mix_LoadWAV(inFilename.c_str());
+
+      #ifdef HX_MACOS
+      char name[1024];
+      GetBundleFilename(inFilename.c_str(),name,1024);
+      #else
+      const char *name = inFilename.c_str();
+      #endif
+
+      mChunk = Mix_LoadWAV(name);
       if ( mChunk == NULL )
       {
          mError = SDL_GetError();
-         //printf("Error %s\n", mError.c_str() );
+         // printf("Error %s (%s)\n", mError.c_str(), name );
       }
    }
    ~SDLSound()
@@ -256,11 +264,19 @@ public:
    SDLMusic(const std::string &inFilename)
    {
       IncRef();
-      mMusic = Mix_LoadMUS(inFilename.c_str());
+
+      #ifdef HX_MACOS
+      char name[1024];
+      GetBundleFilename(inFilename.c_str(),name,1024);
+      #else
+      const char *name = inFilename.c_str();
+      #endif
+
+      mMusic = Mix_LoadMUS(name);
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
-         //printf("Error %s\n", mError.c_str() );
+         // printf("Error %s (%s)\n", mError.c_str(), name );
       }
    }
    ~SDLMusic()

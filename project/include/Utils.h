@@ -116,6 +116,7 @@ FILE *OpenOverwrite(const char *inName); // [ddc]
 #elif defined(HX_MACOS)
 } // close namespace nme
 extern "C" FILE *OpenRead(const char *inName);
+extern "C" bool GetBundleFilename(const char *inName, char *outBuffer,int inBufSize);
 extern "C" FILE *OpenOverwrite(const char *inName);
 namespace nme {
 #else
