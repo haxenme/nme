@@ -623,7 +623,17 @@ bool FromValue(ByteData &outData,value inData)
    outData.length = array.Size();
    return true;
 }
+// --- getURL ----------------------------------------------------------------------
+value nme_get_url(value url)
+{
+#if defined(WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS)
+	bool result=LaunchBrowser(val_string(url));
+	return alloc_bool(result);	
+#endif
+	return alloc_bool(false);
 
+}
+DEFINE_PRIM(nme_get_url,1);
 
 // --- Stage ----------------------------------------------------------------------
 

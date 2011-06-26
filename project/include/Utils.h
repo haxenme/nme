@@ -98,7 +98,7 @@ private:
 typedef std::wstring WString;
 #endif
 
-
+bool LaunchBrowser(const char *inUtf8URL);
 
 #ifdef HX_WINDOWS
 typedef wchar_t OSChar;
@@ -136,6 +136,7 @@ void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
 WString UTF8ToWide(const char *inStr);
 
 double GetTimeStamp();
+	
 
 }
 

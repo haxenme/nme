@@ -22,6 +22,7 @@
   <compilerflag value="-I../../sdl-static/include"/>
   <compilerflag value="-I../../sdl-static/include/SDL12"/>
   <file name="windows/GDIFont.cpp"/>
+  <file name="windows/System.cpp"/>
   <!-- Use SDL on windows too ? -->
   <file name="windows/SimpleFrame.cpp" unless="sdl"/>
   <file name="sdl/SDLSound.cpp" unless="sdl"/>
@@ -50,6 +51,7 @@
   <!-- <file name="iPhone/SurfaceIO.mm"/> -->
   <file name="iPhone/Sound.mm"/>
   <file name="iPhone/NativeFont.mm"/>
+  <file name="iPhone/System.mm"/>
 </files>
 
 <files id="android">
@@ -57,6 +59,7 @@
   <file name="android/AndroidSound.cpp"/>
   <file name="android/AndroidFont.cpp"/>
   <file name="android/AndroidFrame.cpp"/>
+  <file name="android/System.cpp"/>
 </files>
 
 <files id="main">
@@ -169,6 +172,7 @@
   <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
+  <file name="mac/System.mm"/>
 </files>
 
 
@@ -227,6 +231,7 @@
   <vflag name="-framework" value="Cocoa" if="macos"/>
   <vflag name="-framework" value="OpenGL" if="macos"/>
   <vflag name="-framework" value="QuickTime" if="macos"/>
+  <vflag name="-framework" value="AppKit" if="macos"/>
 
   <lib name="-ldl" if="android"/>
   <lib name="-lGLESv1_CM" if="android"/>
@@ -241,6 +246,7 @@
   <lib name="winmm.lib" if="windows"/>
   <lib name="ws2_32.lib" if="windows"/>
   <lib name="wldap32.lib" if="windows"/>
+  <lib name="shell32.lib" if="windows"/>
 
   <lib name="-ldl" if="linux"/>
   <lib name="-lGL" if="linux"/>

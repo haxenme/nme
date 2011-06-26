@@ -2,6 +2,7 @@ package org.haxe.nme;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -12,6 +13,7 @@ import android.content.res.AssetFileDescriptor;
 import android.content.Context;
 import android.media.SoundPool;
 import android.media.MediaPlayer;
+import android.net.Uri;
 
 public class GameActivity extends Activity {
 
@@ -20,9 +22,11 @@ public class GameActivity extends Activity {
     static SoundPool mSoundPool;
 	 static Context mContext;
 	 static MediaPlayer mMediaPlayer = null;
+	 static GameActivity activity;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+		activity=this;
 		  mContext = this;
         mAssets = getAssets();
         setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);  
@@ -134,6 +138,20 @@ public class GameActivity extends Activity {
 	    return 0;
 	 }
 
+	 static public void launchBrowser(String inURL)
+	 {
+		Intent browserIntent=new Intent(Intent.ACTION_VIEW).setData(Uri.parse(inURL));
+		try
+		{
+			activity.startActivity(browserIntent);
+		}
+		catch (Exception e)
+		{
+			Log.e("GameActivity",e.toString());
+			return;
+		}
+
+	 }
 
     static public void playMusic(String inFilename)
     {
@@ -152,5 +170,9 @@ public class GameActivity extends Activity {
         if (mMediaPlayer!=null)
            mMediaPlayer.start();
     }
+	
+	@Override protected void onDestroy() {
+		activity=null;
+	}
 }
 

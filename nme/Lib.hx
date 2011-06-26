@@ -1,6 +1,5 @@
 package nme;
-
-import nme.utils.NekoAPI;
+import flash.net.URLRequest;
 
 class Lib
 {
@@ -71,6 +70,12 @@ class Lib
       return nmeStage;
    }
 
+   public static function getURL (url : URLRequest, ?target : String) : Void {
+
+           nme_get_url (url.url);
+
+   }
+
    // Be careful not to blow precision, since storing ms since 1970 can overflow...
    static public function getTimer() : Int
    {
@@ -102,8 +107,17 @@ class Lib
    }
 
 
+   #if neko
+   static function __init__()
+   {
+       var init = neko.Lib.load("nekoapi","neko_api_init2",2);
+       init(function(s) return new String(s),
+            function(len:Int) { var r=[]; if (len>0) r[len-1]=null; return r; } );
+   }
+   #end
    static var nme_get_frame_stage = nme.Loader.load("nme_get_frame_stage",1);
    static var nme_set_asset_base = nme.Loader.load("nme_set_asset_base",1);
+   static var nme_get_url = nme.Loader.load("nme_get_url",1);
 
 }
 
