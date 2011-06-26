@@ -478,6 +478,8 @@ enum WindowFlags
    wfResizable  = 0x00000004,
    wfHardware   = 0x00000008,
    wfVSync      = 0x00000010,
+   wfHW_AA      = 0x00000020,
+   wfHW_AA_HIRES= 0x00000060,
 };
 
 void TerminateMainLoop();

@@ -9,6 +9,8 @@ class Lib
    static public var RESIZABLE  = 0x0004;
    static public var HARDWARE   = 0x0008;
    static public var VSYNC      = 0x0010;
+   static public var HW_AA      = 0x0020;
+   static public var HW_AA_HIRES= 0x0060;
 
    static var nmeMainFrame: Dynamic = null;
    static var nmeCurrent: nme.display.MovieClip = null;

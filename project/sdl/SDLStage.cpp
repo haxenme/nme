@@ -472,35 +472,44 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    SDL_Surface* screen = 0;
    bool is_opengl = false;
+   int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
+
    if (opengl)
    {
       for(int pass=0;pass<3;pass++)
       {
          /* Initialize the display */
-         SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
-         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
-         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
-         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
-         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-         if ( inFlags & wfVSync )
+         for(int aa_pass = aa_tries; aa_pass>=0; --aa_pass)
          {
-            SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-         }
+            SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
+            SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
+            SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+            SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
+            SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-         sdl_flags |= SDL_OPENGL;
-         if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags | SDL_OPENGL)))
-         {
-            if (pass==2)
+            printf("Tru AA : %d / %d\n", aa_pass>0, 1<<aa_pass);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
+
+            if ( inFlags & wfVSync )
             {
-               sdl_flags &= ~SDL_OPENGL;
-               fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+               SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
             }
-         }
-         else
-         {
-           is_opengl = true;
-           break;
+
+            sdl_flags |= SDL_OPENGL;
+            if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags | SDL_OPENGL)))
+            {
+               if (pass==2 && aa_pass==0)
+               {
+                  sdl_flags &= ~SDL_OPENGL;
+                  fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+               }
+            }
+            else
+            {
+              is_opengl = true;
+              break;
+            }
          }
       }
    }
