@@ -487,7 +487,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-            printf("Tru AA : %d / %d\n", aa_pass>0, 1<<aa_pass);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
 
