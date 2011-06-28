@@ -1,4 +1,12 @@
-#ifdef IPHONE
+#ifdef WEBOS
+
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+typedef void *WinDC;
+typedef void *GLCtx;
+#define NME_GLES
+
+#elif defined(IPHONE)
 
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>
@@ -446,6 +454,11 @@ public:
 
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+      #ifdef WEBOS
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+      #endif
+
       if (mQuality>=sqHigh)
          glEnable(GL_POINT_SMOOTH);
       if (mQuality>=sqBest)

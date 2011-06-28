@@ -1401,7 +1401,7 @@ void TextField::Layout(const Matrix &inMatrix)
          line.mChars++;
          char_count++;
          cid++;
-         if (!displayAsPassword)
+         if (!displayAsPassword && !isalpha(ch) && !isdigit(ch) && ch!='_' && ch!=';' && ch!='.' && ch!=',' && ch!='"' && ch!=':' && ch!='\'' && ch!='!' && ch!='?')
          {
             if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
             {

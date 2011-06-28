@@ -38,6 +38,13 @@ static bool Init()
 {
    if (!gSDLIsInit)
    {
+		#ifdef WEBOS
+		gSDLIsInit = true;
+		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024) < 0)
+		{
+			printf("Could not start mixer: %s\n", SDL_GetError());
+		}
+		#endif
       fprintf(stderr,"Please init Stage before creating sound.\n");
       return false;
    }

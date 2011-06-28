@@ -1342,7 +1342,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    displayState = sdsNormal;
    align = saTopLeft;
 
-   #if defined(IPHONE) || defined(ANDROID)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
    quality = sqLow;
    #else
    quality = sqBest;

@@ -6,6 +6,10 @@
 #include <KeyCodes.h>
 #include <map>
 
+#ifdef WEBOS
+#include "PDL.h"
+#endif
+
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
 #endif
@@ -178,6 +182,7 @@ public:
    void Resize(int inWidth,int inHeight)
    {
       #ifndef __APPLE__
+	  #ifndef WEBOS
       if (mIsOpenGL)
       {
          // Little hack to help windows
@@ -186,6 +191,7 @@ public:
          mOpenGLContext->SetWindowSize(inWidth,inHeight);
       }
       else
+	  #endif
       #endif
       {
          // Calling this recreates the gl context and we loose all our textures and
@@ -287,6 +293,7 @@ public:
 
    void SetCursor(Cursor inCursor)
    {
+	  #ifndef WEBOS
       if (sDefaultCursor==0)
          sDefaultCursor = SDL_GetCursor();
 
@@ -314,6 +321,7 @@ public:
             SDL_SetCursor(sTextCursor);
          }
       }
+	  #endif
    }
 
    void ShowCursor(bool inShow)
@@ -387,6 +395,10 @@ public:
    SDLStage *mStage;
    bool   mIsOpenGL;
    uint32 mFlags;
+   
+   double mAccX;
+   double mAccY;
+   double mAccZ;
 };
 
 
@@ -396,6 +408,7 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 
 SDLFrame *sgSDLFrame = 0;
+SDL_Joystick *joystick = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, const char *inIcon)
@@ -403,7 +416,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 #ifdef HX_MACOS
    MacBoot();
 #endif
-
+#ifdef WEBOS
+   PDL_Init(0);
+#endif
+	
    unsigned int sdl_flags = 0;
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    bool opengl = (inFlags & wfHardware) != 0;
@@ -467,7 +483,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 
    #ifndef IPHONE
+   #ifndef WEBOS
    SDL_WM_SetCaption( inTitle, 0 );
+   #endif
    #endif
 
    SDL_Surface* screen = 0;
@@ -484,6 +502,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
             SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
             SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
             SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+			#ifdef WEBOS
+		 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+         	#endif
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -531,6 +552,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    HintColourOrder( opengl || screen->format->Rmask==0xff );
 
+   #ifdef WEBOS
+   PDL_ScreenTimeoutEnable(PDL_TRUE);
+   joystick = SDL_JoystickOpen(0);
+   #endif
+
    sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
    inOnFrame(sgSDLFrame);
@@ -539,11 +565,15 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 }
 
 bool sgDead = false;
+bool sgSleep = false;
 
 void TerminateMainLoop()
 {
    #ifdef NME_MIXER
    Mix_CloseAudio();
+   #endif
+   #ifdef WEBOS
+   PDL_Quit();
    #endif
    sgDead = true;
 }
@@ -668,6 +698,16 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(close);
          break;
       }
+	  case SDL_ACTIVEEVENT:
+      {
+		 #ifdef WEBOS
+		 if (inEvent.active.gain == 0)
+			 sgSleep = true;
+		 else
+			 sgSleep = false;
+		 #endif
+		 break;
+	  }
       case SDL_MOUSEMOTION:
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
@@ -713,6 +753,14 @@ void ProcessEvent(SDL_Event &inEvent)
          break;
       }
 
+	  case SDL_VIDEOEXPOSE:
+	  {
+		 if (sgSleep) {
+			Event poll(etPoll);
+			sgSDLFrame->ProcessEvent(poll);
+		 }
+		 break;
+	  }
       case SDL_VIDEORESIZE:
       {
          Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
@@ -724,6 +772,17 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
+#ifdef WEBOS
+
+bool GetAcceleration(double &outX, double &outY, double &outZ)
+{
+	outX = SDL_JoystickGetAxis(joystick, 0) / 32768.0;
+	outY = SDL_JoystickGetAxis(joystick, 1) / 32768.0;
+	outZ = SDL_JoystickGetAxis(joystick, 2) / 32768.0;
+	return true;
+}
+
+#endif
 
 
 void MainLoop()
@@ -731,6 +790,13 @@ void MainLoop()
    SDL_Event event;
    while(!sgDead)
    {
+
+	  while (!sgDead && sgSleep && SDL_WaitEvent(&event)) {
+		 ProcessEvent(event);
+         event.type = -1;
+         if (sgDead) break;
+	  }
+
       while (!sgDead && SDL_PollEvent(&event) )
       {
          ProcessEvent(event);

@@ -5,6 +5,7 @@
 <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
 <set name="sdl" value="1" if="linux"/>
+<set name="sdl" value="1" if="webos"/>
 <set name="sdl" value="1" if="macos"/>
 <set name="sdl" value="1" if="windows"/>
 <set name="ogl" value="1" if="windows"/>
@@ -15,6 +16,7 @@
 
 <set name="mobile" value="1" if="iphone"/>
 <set name="mobile" value="1" if="android"/>
+<set name="mobile" value="1" if="webos"/>
 <set name="mobile" value="1" if="gph"/>
 
 <files id="windows">
@@ -62,6 +64,14 @@
   <file name="android/System.cpp"/>
 </files>
 
+<files id="webos">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I../../sdl-static/include" />
+  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <file name="linux/NativeFont.cpp"/>
+  <file name="webOS/System.cpp"/>
+</files>
+
 <files id="main">
   <compilerflag value="-Iinclude"/>
   <file name="Test.cpp"/>
@@ -71,6 +81,7 @@
 
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
+<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/webOS/" if="webos" />
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/iPhone/" if="iphone"/>
@@ -78,6 +89,7 @@
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
+<set name="SLIBEXT" value=".so" if="webos"/>
 
 
 
@@ -90,6 +102,8 @@
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="webos"/>
+  <compilerflag value="-DSDL_OGL" if="webos"/>
 
   <file name="common/Surface.cpp"/>
   <file name="common/Utils.cpp"/>
@@ -108,7 +122,8 @@
   <file name="common/Filters.cpp"/>
   <file name="common/ExternalInterface.cpp"/>
   <file name="common/Cursors.cpp"/>
-  <file name="common/Input.cpp" unless="iphone"/>
+  <file name="common/Input.cpp" unless="webos" />
+  <file name="common/Input.cpp" unless="iphone" />
   <file name="common/SurfaceIO.cpp" />
   <file name="common/ManagedStage.cpp"/>
   <file name="common/CURL.cpp"/>
@@ -177,7 +192,8 @@
 
 
 <target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
-  <outdir name="../ndll/${BINDIR}"/>
+  <outdir name="../ndll/${BINDIR}" unless="webos" />
+  <outdir name="../ndll/webOS" if="webos" />
   <ext value=".ndll" unless="mobile"/>
   <ext value=".ndll" if="gph"/>
 
@@ -189,6 +205,7 @@
   <files id="gph" if="gph"/>
   <files id="sdl" if="sdl"/>
   <files id="android" if="android"/>
+  <files id="webos" if="webos"/>
 
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
