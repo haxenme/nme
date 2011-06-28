@@ -19,7 +19,7 @@ class Memory
          b = untyped inBytes.getData();
       #else
       gcRef = inBytes;
-      if (b==null)
+      if (inBytes==null)
          untyped __global__.__hxcpp_memory_clear();
       else
          untyped __global__.__hxcpp_memory_select(inBytes.getData());

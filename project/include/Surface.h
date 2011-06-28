@@ -79,8 +79,8 @@ public:
    void Bind(HardwareContext &inHardware,int inSlot=0);
 
    virtual Surface *clone() { return 0; }
-   virtual void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false) { }
-   virtual void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false) { }
+   virtual void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false,bool inLittleEndian=false) { }
+   virtual void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false,bool inLittleEndian=false) { }
    virtual void getColorBoundsRect(int inMask, int inCol, bool inFind, Rect &outRect)
    {
       outRect = Rect(0,0,Width(),Height());
@@ -142,8 +142,8 @@ public:
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
    Surface *clone();
-   void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);
-   void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false);
+   void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
+   void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
    void getColorBoundsRect(int inMask, int inCol, bool inFind, Rect &outRect);
    uint32 getPixel(int inX,int inY);
    void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);

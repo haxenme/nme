@@ -1025,9 +1025,11 @@ Surface *SimpleSurface::clone()
    return copy;
 }
 
-void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder)
+void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder,
+      bool inLittleEndian)
 {
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+   bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
 
    for(int y=0;y<r.h;y++)
    {
@@ -1044,31 +1046,54 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
       }
       else
       {
-         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
-         // Must output big-endian, while memory is stored little-endian
          uint8 *a = src;
          uint8 *pix = (uint8 *)outPixels;
 
-         if (!swap)
+         
+         // IO in little endian
+         if (inLittleEndian)
          {
-            for(int x=0;x<r.w;x++)
+            if (!swap)
             {
-               *pix++ = src[3];
-               *pix++ = src[2];
-               *pix++ = src[1];
-               *pix++ = src[0];
-               src+=4;
+               memcpy(pix,src,r.w*sizeof(int));
+               src+=r.w*sizeof(int);
+            }
+            else
+            {
+               for(int x=0;x<r.w;x++)
+               {
+                  *pix++ = src[2];
+                  *pix++ = src[1];
+                  *pix++ = src[0];
+                  *pix++ = src[3];
+                  src+=4;
+               }
             }
          }
+         // Must output big-endian, while memory is stored little-endian
          else
          {
-            for(int x=0;x<r.w;x++)
+            if (!swap)
             {
-               *pix++ = src[3];
-               *pix++ = src[0];
-               *pix++ = src[1];
-               *pix++ = src[2];
-               src+=4;
+               for(int x=0;x<r.w;x++)
+               {
+                  *pix++ = src[3];
+                  *pix++ = src[2];
+                  *pix++ = src[1];
+                  *pix++ = src[0];
+                  src+=4;
+               }
+            }
+            else
+            {
+               for(int x=0;x<r.w;x++)
+               {
+                  *pix++ = src[3];
+                  *pix++ = src[0];
+                  *pix++ = src[1];
+                  *pix++ = src[2];
+                  src+=4;
+               }
             }
          }
          outPixels += r.w;
@@ -1130,7 +1155,8 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
 }
 
 
-void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder)
+void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder,
+        bool inLittleEndian)
 {
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
    mVersion++;
@@ -1138,6 +1164,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       mTexture->Dirty(r);
 
    const uint8 *src = (const uint8 *)inPixels;
+   bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
 
    for(int y=0;y<r.h;y++)
    {
@@ -1154,28 +1181,48 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       }
       else
       {
-         bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
-
-         if (!swap)
+         if (inLittleEndian)
          {
-            for(int x=0;x<r.w;x++)
+            if (!swap)
             {
-               *dest++ = src[3];
-               *dest++ = src[2];
-               *dest++ = src[1];
-               *dest++ = src[0];
-               src+=4;
+               memcpy(dest,src,r.w*sizeof(int));
+               src += r.w*sizeof(int);
+            }
+            else
+            {
+               for(int x=0;x<r.w;x++)
+               {
+                  *dest++ = src[2];
+                  *dest++ = src[1];
+                  *dest++ = src[0];
+                  *dest++ = src[3];
+                  src+=4;
+               }
             }
          }
          else
          {
-            for(int x=0;x<r.w;x++)
+            if (!swap)
             {
-               *dest++ = src[1];
-               *dest++ = src[2];
-               *dest++ = src[3];
-               *dest++ = src[0];
-               src+=4;
+               for(int x=0;x<r.w;x++)
+               {
+                  *dest++ = src[3];
+                  *dest++ = src[2];
+                  *dest++ = src[1];
+                  *dest++ = src[0];
+                  src+=4;
+               }
+            }
+            else
+            {
+               for(int x=0;x<r.w;x++)
+               {
+                  *dest++ = src[1];
+                  *dest++ = src[2];
+                  *dest++ = src[3];
+                  *dest++ = src[0];
+                  src+=4;
+               }
             }
          }
       }

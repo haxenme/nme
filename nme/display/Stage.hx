@@ -38,8 +38,8 @@ class Stage extends nme.display.DisplayObjectContainer
    public var frameRate(default,nmeSetFrameRate): Float;
    public var isOpenGL(nmeIsOpenGL,null):Bool;
 
-   public var stageWidth(nmeGetStageWidth,null):Float;
-   public var stageHeight(nmeGetStageHeight,null):Float;
+   public var stageWidth(nmeGetStageWidth,null):Int;
+   public var stageHeight(nmeGetStageHeight,null):Int;
    public var scaleMode(nmeGetScaleMode,nmeSetScaleMode):StageScaleMode;
    public var dpiScale(nmeGetDPIScale,null):Float;
    public var align(nmeGetAlign, nmeSetAlign):StageAlign;
@@ -125,12 +125,12 @@ class Stage extends nme.display.DisplayObjectContainer
       return inVal;
    }
 
-   function nmeGetStageWidth() : Float
+   function nmeGetStageWidth() : Int
    {
       return nme_stage_get_stage_width(nmeHandle);
    }
 
-   function nmeGetStageHeight() : Float
+   function nmeGetStageHeight() : Int
    {
       return nme_stage_get_stage_height(nmeHandle);
    }

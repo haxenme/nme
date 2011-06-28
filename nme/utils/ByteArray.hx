@@ -148,7 +148,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
 
    public inline function readByte() : Int
    {
-      return (position+1<length) ? __get(position++) : ThrowEOFi();
+      return (position<length) ? __get(position++) : ThrowEOFi();
    }
    public inline function readBoolean() : Bool
    {

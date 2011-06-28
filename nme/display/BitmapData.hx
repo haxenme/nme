@@ -181,6 +181,28 @@ class BitmapData implements IBitmapDrawable
       return result;
    }
 
+   public function getVector(rect:Rectangle):Array<Int>
+   {
+      var pixels = Std.int(rect.width * rect.height);
+      if (pixels<1)
+         return [];
+      var result = new Array<Int>();
+      result[pixels-1] = 0;
+
+      #if cpp
+      nme_bitmap_data_get_array(nmeHandle,rect,result);
+      #else
+      var bytes:ByteArray = nme_bitmap_data_get_pixels(nmeHandle,rect);
+      bytes.position = 0;
+      for(i in 0...pixels)
+         result[i] = bytes.readInt();
+      #end
+
+      return result;
+   }
+
+
+
    public function getPixel(x:Int, y:Int) : Int
    {
       return nme_bitmap_data_get_pixel(nmeHandle, x, y);
@@ -232,6 +254,24 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_set_bytes(nmeHandle,rect,pixels,pixels.position);
       pixels.position+=size;
    }
+
+
+   public function setVector(rect:Rectangle,inPixels:Array<Int>) : Void
+   {
+      var count = Std.int(rect.width * rect.height);
+      if (inPixels.length<count)
+         return;
+
+      #if cpp
+      nme_bitmap_data_set_array(nmeHandle,rect,inPixels);
+      #else
+      var bytes:ByteArray = new ByteArray();
+      for(i in 0...count)
+         bytes.writeInt(inPixels[i]);
+      nme_bitmap_data_set_bytes(nmeHandle,rect,bytes,0);
+      #end
+   }
+
 
    // Handled internally...
    public function unlock(?changeRect:nme.geom.Rectangle) { }
@@ -308,12 +348,18 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_get_pixel = nme.Loader.load("nme_bitmap_data_get_pixel",3);
    static var nme_bitmap_data_get_pixel32 = nme.Loader.load("nme_bitmap_data_get_pixel32",3);
    static var nme_bitmap_data_get_pixel_rgba = nme.Loader.load("nme_bitmap_data_get_pixel_rgba",3);
+   #if cpp
+   static var nme_bitmap_data_get_array = nme.Loader.load("nme_bitmap_data_get_array",3);
+   #end
    static var nme_bitmap_data_get_color_bounds_rect = nme.Loader.load("nme_bitmap_data_get_color_bounds_rect",5);
    static var nme_bitmap_data_scroll = nme.Loader.load("nme_bitmap_data_scroll",3);
    static var nme_bitmap_data_set_pixel = nme.Loader.load("nme_bitmap_data_set_pixel",4);
    static var nme_bitmap_data_set_pixel32 = nme.Loader.load("nme_bitmap_data_set_pixel32",4);
    static var nme_bitmap_data_set_pixel_rgba = nme.Loader.load("nme_bitmap_data_set_pixel_rgba",4);
    static var nme_bitmap_data_set_bytes = nme.Loader.load("nme_bitmap_data_set_bytes",4);
+   #if cpp
+   static var nme_bitmap_data_set_array = nme.Loader.load("nme_bitmap_data_set_array",3);
+   #end
    static var nme_bitmap_data_generate_filter_rect = nme.Loader.load("nme_bitmap_data_generate_filter_rect",3);
    static var nme_render_surface_to_surface = nme.Loader.load("nme_render_surface_to_surface",-1);
    static var nme_bitmap_data_height = nme.Loader.load("nme_bitmap_data_height",1);

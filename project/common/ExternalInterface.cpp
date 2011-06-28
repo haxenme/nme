@@ -2232,6 +2232,27 @@ value nme_bitmap_data_get_pixels(value inSurface, value inRect)
 }
 DEFINE_PRIM(nme_bitmap_data_get_pixels,2);
 
+value nme_bitmap_data_get_array(value inSurface, value inRect, value outArray)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      Rect rect(0,0,surf->Width(),surf->Height());
+      FromValue(rect,inRect);
+      if (rect.w>0 && rect.h>0)
+      {
+         int *ints = val_array_int(outArray);
+         if (ints)
+            surf->getPixels(rect,(unsigned int *)ints,false,true);
+      }
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_array,3);
+
+
+
 
 value nme_bitmap_data_get_color_bounds_rect(value inSurface, value inMask, value inCol, value inFind, value outRect)
 {
@@ -2353,6 +2374,27 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_set_bytes,4);
+
+value nme_bitmap_data_set_array(value inSurface, value inRect, value inArray)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      Rect rect(0,0,surf->Width(),surf->Height());
+      FromValue(rect,inRect);
+      if (rect.w>0 && rect.h>0)
+      {
+         int *ints = val_array_int(inArray);
+         if (ints)
+            surf->setPixels(rect,(unsigned int *)ints,false,true);
+      }
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_array,3);
+
+
 
 value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value outRect)
 {

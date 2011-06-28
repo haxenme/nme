@@ -28,12 +28,18 @@ class Sample extends Sprite
    function updateBitmap(_)
    {
       if (demo==0)
-         gameOfLife();
+      {
+         gameOfLifeInts();
+      }
       else
          cycleColours();
 
       pass++;
+      #if neko
+      if (pass==40)
+      #else
       if (pass==500)
+      #end
       {
          pass = 0;
          demo = 1-demo;
@@ -69,7 +75,7 @@ class Sample extends Sprite
    }
 
 
-   function gameOfLife()
+   function gameOfLifeByteArray()
    {
       var w = mBitmap.width;
       var h = mBitmap.height;
@@ -119,6 +125,47 @@ class Sample extends Sprite
 
       combined.position = 0;
       mBitmap.setPixels(r,combined);
+   }
+ 
+
+
+   function gameOfLifeInts()
+   {
+      var w = mBitmap.width;
+      var h = mBitmap.height;
+      var r = new Rectangle(0,0,w,h);
+
+      var pixels = mBitmap.getVector(r);
+
+      // Create a combined array with destination at the bottom, and source at the
+      //  top so with can so a single "select" call.
+      var next = new Array<Int>();
+      next[pixels.length-1] = 0;
+
+
+      var idx = 0;
+      for(y in 0...h)
+         for(x in 0...w)
+         {
+             var alive = (pixels[idx] & 0xff) < 128;
+             var total = 0;
+             for(dy in -1...2)
+                for(dx in -1...2)
+                {
+                   if (dx!=0 || dy!=0)
+                   {
+                      var tx = x+dx;
+                      var ty = y+dy;
+                      if (tx>=0 && ty>=0 && tx<w && ty<h &&
+                            (pixels[ idx + (dy*w+dx) ] & 0xff) < 128 )
+                         total++;
+                   }
+                }
+
+             next[idx] = (alive && (total==2||total==3)) || ((!alive) && total==3)  ? 0xff000000 : 0xffffffff; 
+             idx++;
+         }
+      mBitmap.setVector(r,next);
    }
    
 

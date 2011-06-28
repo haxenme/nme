@@ -25,7 +25,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var height(nmeGetHeight,nmeSetHeight): Float;
    public var cacheAsBitmap(nmeGetCacheAsBitmap,nmeSetCacheAsBitmap): Bool;
    public var visible(nmeGetVisible,nmeSetVisible): Bool;
-   public var filters(nmeGetFilters,nmeSetFilters): Array<BitmapFilter>;
+   public var filters(nmeGetFilters,nmeSetFilters): Array<Dynamic>;
    public var parent(nmeGetParent,null): DisplayObjectContainer;
    public var scale9Grid(nmeGetScale9Grid,nmeSetScale9Grid): Rectangle;
    public var scrollRect(nmeGetScrollRect,nmeSetScrollRect): Rectangle;
@@ -38,7 +38,7 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
    public var nmeHandle:Dynamic;
    var nmeGraphicsCache:Graphics;
    var nmeParent:DisplayObjectContainer;
-   var nmeFilters:Array<BitmapFilter>;
+   var nmeFilters:Array<Dynamic>;
    var nmeID:Int;
    var nmeScale9Grid:Rectangle;
    var nmeScrollRect:Rectangle;
@@ -209,13 +209,13 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return i & 0xffffff;
    }
 
-   function nmeSetFilters(inFilters:Array<BitmapFilter>) : Array<BitmapFilter>
+   function nmeSetFilters(inFilters:Array<Dynamic>) : Array<Dynamic>
    {
       if (inFilters==null)
          nmeFilters = null;
       else
       {
-         nmeFilters = new Array<BitmapFilter>();
+         nmeFilters = new Array<Dynamic>();
          for(filter in inFilters)
             nmeFilters.push(filter.clone());
       }
@@ -223,10 +223,10 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
       return inFilters;
    }
 
-   function nmeGetFilters() : Array<BitmapFilter>
+   function nmeGetFilters() : Array<Dynamic>
    {
       if (nmeFilters==null) return [];
-      var result = new Array<BitmapFilter>();
+      var result = new Array<Dynamic>();
       for(filter in nmeFilters)
          result.push(filter.clone());
       return result;
