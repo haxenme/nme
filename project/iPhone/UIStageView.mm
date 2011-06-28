@@ -13,6 +13,7 @@
 #include <Display.h>
 #include <Surface.h>
 #include <KeyCodes.h>
+#include <Utils.h>
 
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
@@ -552,8 +553,6 @@ public:
 
       mStage = new IOSStage(self.layer,true);
 
-		self.contentScaleFactor = mStage->getDPIScale();
-
       // Set scaling to ensure 1:1 pixels ...
       if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
       {
@@ -1070,53 +1069,36 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 }
 
 
+// Since you can't write data in your bundle, I think you need to save user data
+// under a different file name to avoid confilcts.
+// getPathForResource does not work in sub-directories on iPod 3.1.3
+// "resourcePath" is soooo much nicer.
 FILE *OpenRead(const char *inName)
 {
-    std::string asset = gAssetBase + inName;
-    NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
-    
-    NSString *strWithoutInitialDash;    
-    if([str hasPrefix:@"/"]){
-     strWithoutInitialDash = [str substringFromIndex:1];
-     }
-     else {
-     strWithoutInitialDash = str;
-     }
-    
-    // [ddc] first search on the documents path, where we can write,
-    // then, failing that, search in the main bundle
-    //NSLog(@"file name I'm reading from = %@", strWithoutInitialDash);
-    NSString *pathInBundle = [[NSBundle mainBundle] pathForResource:strWithoutInitialDash ofType:nil];
-    NSString *pathInDocumentsDirectory = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingString: @"/"] stringByAppendingString: strWithoutInitialDash];
-    //NSLog(@"bundle path name I'm reading from = %@", pathInBundle);
-    //NSLog(@"document path I'm reading from = %@", pathInDocumentsDirectory);
-    
-    // since you can't write data in your bundle, we fist search if a new version of the
-    // file is in the Documents directory. If there is, then it means
-    // that someone meant to update the contents of the file in the bundle
-    // so we get the file from the Documents directory first
-    FILE * result;
-	result = fopen([pathInDocumentsDirectory cStringUsingEncoding:1],"rb");
-    if (result != NULL) {
-		 //NSLog(@"opening the file in the Documents directory");
-    }
-    else {
-	  //NSLog(@"no such file in Documents directory");
-      // OK there was no such file in the Documents directory so
-      // probably the user is OK with fetching the original file
-      // that came with the bundle.
-      if (pathInBundle != NULL) {
-		 result = fopen([pathInBundle cStringUsingEncoding:1],"rb");
-		 //NSLog(@"opening the file in the bundle");
-      }
-      else {
-	      //NSLog(@"couldn't find the file anywhere");
-      }
-    }
+   FILE *result = 0;
 
-    [str release];
-    return result;
+   if (inName[0]=='/')
+   {
+      result = fopen(inName,"rb");
+   }
+   else
+   {
+      std::string asset = GetResourcePath() + gAssetBase + inName;
+      //printf("Try asset %s.\n", asset.c_str());
+      result = fopen(asset.c_str(),"rb");
+
+      if (!result)
+      {
+         std::string doc = GetDocumentsPath() + gAssetBase + inName;
+         //printf("Try doc %s.\n", doc.c_str());
+         result = fopen(doc.c_str(),"rb");
+      }
+   }
+   //printf("%s -> %p\n", inName, result);
+   return result;
 }
+
+
 
 //[ddc]
 FILE *OpenOverwrite(const char *inName)

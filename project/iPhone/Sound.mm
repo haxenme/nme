@@ -100,6 +100,7 @@ class AVAudioPlayerChannel : public SoundChannel  {
 
 public:
     AVAudioPlayerChannel(Object  *inSound,const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform) {
+
        LOG_SOUND("AVAudioPlayerChannel constructor");
        mSound = inSound;
        // each channel keeps the originating Sound object alive.
@@ -107,8 +108,12 @@ public:
        
        LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
        theActualPlayer = [[AVAudioPlayer alloc] init];
-       NSString *theFileName = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
-       NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:[NSString  stringWithFormat:@"%@/%@", [[NSBundle mainBundle] resourcePath],  theFileName]];
+
+       std::string name = GetResourcePath() + gAssetBase + inFilename;
+
+       NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
+
+       NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
 
        [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
        [theFileName release];
@@ -235,7 +240,7 @@ public:
 class AVAudioPlayerSound : public Sound
 {
 public:
-   AVAudioPlayerSound(const std::string &inFilename)
+   AVAudioPlayerSound(const std::string &inFilename) : mFilename(inFilename)
    {
       LOG_SOUND("AVAudioPlayerSound constructor()");
       IncRef();
@@ -244,20 +249,23 @@ public:
       // We pass the filename to create one AVSoundPlayer
       // each time the sound is played.
       // Note that we don't need the path, the filename suffices.
-      theFileName = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
+      //theFileName = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
 
-    // to answer the getLength() method and to see whether there will be any
-    // ploblems loading the file we create an "initial" AVAudioPlayer
-    // that we'll never actually use to play anything. We just get the length and
-    // any potential error and we
-    // release it soon after. Note that
-    // no buffers are loaded until we invoke either the play or prepareToPlay
-    // methods, so very little memory is used.
+      // to answer the getLength() method and to see whether there will be any
+      // ploblems loading the file we create an "initial" AVAudioPlayer
+      // that we'll never actually use to play anything. We just get the length and
+      // any potential error and we
+      // release it soon after. Note that
+      // no buffers are loaded until we invoke either the play or prepareToPlay
+      // methods, so very little memory is used.
     
        AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] init];
-       std::string asset = gAssetBase + inFilename;
-       NSString *theFileName = [[NSString alloc] initWithUTF8String:asset.c_str()];
-       NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:[NSString  stringWithFormat:@"%@/%@", [[NSBundle mainBundle] resourcePath],  theFileName]];
+
+       std::string path = GetResourcePath() + gAssetBase + inFilename;
+       NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
+       NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
+       [ns_name release];
+
 
        NSError *err = nil;
        [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
@@ -266,7 +274,6 @@ public:
            mError = [[err description] UTF8String];
        }
 
-       [theFileName release];
 
        theDuration = [theActualPlayer duration] * 1000;
        [theActualPlayer release];    
@@ -275,7 +282,6 @@ public:
    ~AVAudioPlayerSound()
    {
       LOG_SOUND("AVAudioPlayerSound destructor() ##################################");
-      [theFileName release];
    }
 
    double getLength()
@@ -329,11 +335,11 @@ public:
       
       // this creates the channel, note that the channel is an AVAudioPlayer that plays
       // right away
-      return new AVAudioPlayerChannel(this, [theFileName UTF8String], loops, startTime, inTransform);
+      return new AVAudioPlayerChannel(this, mFilename, loops, startTime, inTransform);
    }
 
    std::string mError;
-   NSString *theFileName;
+   std::string mFilename;
    double theDuration;
 };
 
@@ -459,19 +465,13 @@ public:
       IncRef();
       mBufferID = 0;
 
-      std::string asset = gAssetBase + inFilename;
-      NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
-      NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
-      [str release];
+	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-      if (path==nil)
-      {
-         printf("Could not find sound in project:%s\n", inFilename.c_str());
-      }
-      else
-      {
+      std::string asset = GetResourcePath() + gAssetBase + inFilename;
+
+      NSString *url = [[NSString alloc] initWithUTF8String:asset.c_str()];
          // get some audio data from a wave file
-         CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:path] retain];
+         CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:url] retain];
          //[path release];
  
          if (!fileURL)
@@ -508,7 +508,8 @@ public:
                alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
             }
          }
-      }
+
+      [pool release];
    }
 
    ~OpenALSound()

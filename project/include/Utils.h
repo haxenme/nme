@@ -62,6 +62,10 @@ namespace nme
 
 extern std::string gAssetBase;
 
+const std::string &GetResourcePath();
+const std::string &GetDocumentsPath();
+
+
 #ifdef ANDROID
 class WString
 {
