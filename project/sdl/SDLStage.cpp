@@ -565,7 +565,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 }
 
 bool sgDead = false;
-bool sgSleep = false;
 
 void TerminateMainLoop()
 {
@@ -687,6 +686,7 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 
 std::map<int,wchar_t> sLastUnicode;
 
+
 void ProcessEvent(SDL_Event &inEvent)
 {
 
@@ -698,16 +698,21 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(close);
          break;
       }
-	  case SDL_ACTIVEEVENT:
+	   case SDL_ACTIVEEVENT:
       {
-		 #ifdef WEBOS
-		 if (inEvent.active.gain == 0)
-			 sgSleep = true;
-		 else
-			 sgSleep = false;
-		 #endif
-		 break;
-	  }
+         if (inEvent.active.state & SDL_APPINPUTFOCUS)
+         {
+            Event activate( inEvent.active.gain ? etGotInputFocus : etLostInputFocus );
+            sgSDLFrame->ProcessEvent(activate);
+         }
+	
+         if (inEvent.active.state & SDL_APPACTIVE)
+         {
+            Event activate( inEvent.active.gain ? etActivate : etDeactivate );
+            sgSDLFrame->ProcessEvent(activate);
+         }
+		   break;
+	   }
       case SDL_MOUSEMOTION:
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
@@ -755,11 +760,9 @@ void ProcessEvent(SDL_Event &inEvent)
 
 	  case SDL_VIDEOEXPOSE:
 	  {
-		 if (sgSleep) {
 			Event poll(etPoll);
 			sgSDLFrame->ProcessEvent(poll);
-		 }
-		 break;
+         break;
 	  }
       case SDL_VIDEORESIZE:
       {
@@ -790,19 +793,13 @@ void MainLoop()
    SDL_Event event;
    while(!sgDead)
    {
-
-	  while (!sgDead && sgSleep && SDL_WaitEvent(&event)) {
-		 ProcessEvent(event);
-         event.type = -1;
-         if (sgDead) break;
-	  }
-
       while (!sgDead && SDL_PollEvent(&event) )
       {
          ProcessEvent(event);
          event.type = -1;
          if (sgDead) break;
       }
+
      
       if (sgDead)
          break;

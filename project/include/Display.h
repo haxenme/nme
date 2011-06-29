@@ -47,6 +47,10 @@ enum EventType
    etTouchTap,   // 18
 
    etChange,   // 19
+   etActivate,   // 20
+   etDeactivate, // 21
+   etGotInputFocus,   // 22
+   etLostInputFocus, // 23
 };
 
 enum EventFlags

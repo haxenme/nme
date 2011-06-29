@@ -30,6 +30,9 @@ class Stage extends nme.display.DisplayObjectContainer
    var nmeTouchInfo:IntHash<TouchInfo>;
    var nmeLastDown:Array<InteractiveObject>;
    var nmeLastClickTime:Float;
+ 
+   public var pauseWhenDeactivated:Bool;
+   public var active(default,null):Bool;
    
 
    var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
@@ -55,6 +58,9 @@ class Stage extends nme.display.DisplayObjectContainer
       super(inHandle,"Stage");
       nmeMouseOverObjects = [];
       nmeFocusOverObjects = [];
+      active = true;
+      pauseWhenDeactivated = true;
+
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
       nmeLastRender = 0;
@@ -537,6 +543,10 @@ class Stage extends nme.display.DisplayObjectContainer
 
    public function nmeRender(inSendEnterFrame:Bool)
    {
+      if (!active)
+         return;
+
+      trace("Render");
       if (inSendEnterFrame)
       {
          nmeBroadcast(new Event(Event.ENTER_FRAME));
@@ -576,6 +586,8 @@ class Stage extends nme.display.DisplayObjectContainer
 
    function nmeNextFrameDue(inOtherTimers:Float)
    {
+      if (!active && pauseWhenDeactivated)
+         return inOtherTimers;
       if (frameRate>0)
       {
          var next = nmeLastRender + nmeFramePeriod - nme.Timer.stamp() - nmeEarlyWakeup;
@@ -600,10 +612,28 @@ class Stage extends nme.display.DisplayObjectContainer
       var next_wake = nme.Timer.nmeNextWake(315000000.0);
       if (next_wake>0.02 && (nme.media.SoundChannel.nmeCompletePending() ||
 		                       nme.net.URLLoader.nmeLoadPending() ) )
-         next_wake = 0.02;
+      {
+         next_wake = (active || !pauseWhenDeactivated) ? 0.020 : 0.500;
+      }
       next_wake = nmeNextFrameDue(next_wake);
       nme_stage_set_next_wake(nmeHandle,next_wake);
       return next_wake;
+   }
+
+   public function nmeSetActive(inActive:Bool)
+   {
+      // trace("nmeSetActive : " + inActive);
+      if (inActive!=active)
+      {
+         active = inActive;
+         if (!active)
+            nmeLastRender = nme.Timer.stamp();
+
+         var evt = new Event( inActive ? Event.ACTIVATE : Event.DEACTIVATE );
+         nmeBroadcast(evt);
+         if (inActive)
+            nmePollTimers();
+      }
    }
 
 
@@ -685,6 +715,20 @@ class Stage extends nme.display.DisplayObjectContainer
 
          case 19: // etChange
             nmeOnChange(inEvent);
+
+         case 20: // etActivate
+            nmeSetActive(true);
+
+         case 21: // etDeactivate
+            nmeSetActive(false);
+
+         case 22: // etGotInputFocus
+            var evt = new Event( Event.GOT_INPUT_FOCUS );
+            nmeBroadcast(evt);
+
+         case 23: // etLostInputFocus
+            var evt = new Event( Event.LOST_INPUT_FOCUS );
+            nmeBroadcast(evt);
 
          // TODO: user, sys_wm, sound_finished
       }

@@ -266,6 +266,13 @@ public:
 
    bool isOpenGL() const { return mOGLContext; }
 
+   void RenderState()
+   {
+      if ( [sgMainView isAnimating] )
+         nme::Stage::RenderStage();
+   }
+
+
 
    void CreateOGLFramebuffer()
    {
@@ -1139,6 +1146,12 @@ extern "C"
 
 void nme_app_set_active(bool inActive)
 {
+   if (IPhoneGetStage())
+   {
+      Event evt(inActive ? etActivate : etDeactivate);
+      IPhoneGetStage()->HandleEvent(evt);
+   }
+
    if (inActive)
       [ sgMainView startAnimation ];
    else

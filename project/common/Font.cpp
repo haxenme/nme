@@ -207,6 +207,7 @@ struct FontInfo
       name = inFormat.font;
       height = (int )(inFormat.size*inScale + 0.5);
       flags = 0;
+      native = inNative;
       if (inFormat.bold)
          flags |= ffBold;
       if (inFormat.italic)

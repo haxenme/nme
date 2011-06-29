@@ -80,5 +80,8 @@ class Event
    public static var TAB_INDEX_CHANGE = "tabIndexChange";
    public static var UNLOAD = "unload";
 
+   public static var GOT_INPUT_FOCUS = "gotInputFocus";
+   public static var LOST_INPUT_FOCUS = "lostInputFocus";
+
 }
 
