@@ -172,7 +172,7 @@ public:
    double getLength()
    {
       if (mChunk==0) return 0;
-      #ifdef DYNAMIC_SDL
+      #if defined(DYNAMIC_SDL) || defined(WEBOS)
       // ?
       return 0.0;
       #else

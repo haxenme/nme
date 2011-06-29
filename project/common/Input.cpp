@@ -4,7 +4,7 @@
 namespace nme
 {
 
-#ifndef IPHONE
+#if !defined(IPHONE) && !defined(WEBOS)
 bool GetAcceleration(double &outX, double &outY, double &outZ)
 {
    return false;

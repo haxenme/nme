@@ -122,7 +122,6 @@
   <file name="common/Filters.cpp"/>
   <file name="common/ExternalInterface.cpp"/>
   <file name="common/Cursors.cpp"/>
-  <file name="common/Input.cpp" unless="webos" />
   <file name="common/Input.cpp" unless="iphone" />
   <file name="common/SurfaceIO.cpp" />
   <file name="common/ManagedStage.cpp"/>
