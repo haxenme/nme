@@ -73,6 +73,17 @@ public:
       HandleEvent(evt);
    }
 
+   void onActivityEvent(int inVal)
+   {
+      __android_log_print(ANDROID_LOG_INFO, "NME", "Activity action %d", inVal);
+      if (inVal==1 || inVal==2)
+      {
+         Event evt( inVal==1 ? etActivate : etDeactivate );
+         HandleEvent(evt);
+      }
+   }
+ 
+
    void OnRender()
    {
       Event evt(etRedraw);
@@ -334,6 +345,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
    gEnv = env;
    int top = 0;
+   gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnPoll();
    return nme::GetResult();
@@ -343,12 +355,24 @@ JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobje
 {
    gEnv = env;
    int top = 0;
+   gc_set_top_of_stack(&top,true);
    if (nme::sStage)
 	{
       double delta = nme::sStage->GetNextWake()-nme::GetTimeStamp();
       return delta;
 	}
    return 3600*100000;
+}
+
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject obj, int inVal)
+{
+   gEnv = env;
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->onActivityEvent(inVal);
+   return nme::GetResult();
 }
 
 

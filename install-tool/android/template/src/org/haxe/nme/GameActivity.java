@@ -160,6 +160,7 @@ public class GameActivity extends Activity {
     @Override protected void onPause() {
         super.onPause();
         mView.onPause();
+        NME.onActivity(NME.DEACTIVATE);
         if (mMediaPlayer!=null)
            mMediaPlayer.pause();
     }
@@ -169,10 +170,13 @@ public class GameActivity extends Activity {
         mView.onResume();
         if (mMediaPlayer!=null)
            mMediaPlayer.start();
+        NME.onActivity(NME.ACTIVATE);
     }
 	
 	@Override protected void onDestroy() {
+      NME.onActivity(NME.DESTROY);
 		activity=null;
+      super.onDestroy();
 	}
 }
 

@@ -546,7 +546,7 @@ class Stage extends nme.display.DisplayObjectContainer
       if (!active)
          return;
 
-      trace("Render");
+      //trace("Render");
       if (inSendEnterFrame)
       {
          nmeBroadcast(new Event(Event.ENTER_FRAME));
