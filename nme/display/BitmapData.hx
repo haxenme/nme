@@ -136,6 +136,18 @@ class BitmapData implements IBitmapDrawable
    }
 
 
+   public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:nme.filters.BitmapFilter):Void
+   {
+      nme_bitmap_data_apply_filter(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint, filter);
+   }
+
+   public function colorTransform(rect:Rectangle, colorTransform:ColorTransform):Void
+   {
+      nme_bitmap_data_color_transform(nmeHandle, rect, colorTransform );
+   }
+
+
+
    public function dispose()
    {
       nmeHandle = null;
@@ -341,6 +353,8 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_from_bytes = nme.Loader.load("nme_bitmap_data_from_bytes",2);
    static var nme_bitmap_data_clear = nme.Loader.load("nme_bitmap_data_clear",2);
    static var nme_bitmap_data_clone = nme.Loader.load("nme_bitmap_data_clone",1);
+   static var nme_bitmap_data_apply_filter = nme.Loader.load("nme_bitmap_data_apply_filter",5);
+   static var nme_bitmap_data_color_transform = nme.Loader.load("nme_bitmap_data_color_transform",3);
    static var nme_bitmap_data_copy = nme.Loader.load("nme_bitmap_data_copy",5);
    static var nme_bitmap_data_copy_channel = nme.Loader.load("nme_bitmap_data_copy_channel", -1);
    static var nme_bitmap_data_fill = nme.Loader.load("nme_bitmap_data_fill",4);

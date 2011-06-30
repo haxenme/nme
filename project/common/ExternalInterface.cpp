@@ -2169,6 +2169,37 @@ value nme_bitmap_data_clone(value inSurface)
 DEFINE_PRIM(nme_bitmap_data_clone,1);
 
 
+value nme_bitmap_data_color_transform(value inSurface,value inRect, value inColorTransform)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      ColorTransform trans;
+      FromValue(trans,inColorTransform);
+      Rect rect;
+      FromValue(rect,inRect);
+
+      surf->colorTransform(rect,trans);
+
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_color_transform,3);
+
+
+value nme_bitmap_data_apply_filter(value inSrc,value inRect,value inDest, value inOffset, value inFilters)
+{
+   Surface *src;
+   Surface *dest;
+   if (AbstractToObject(inSrc,src) && AbstractToObject(inDest,dest))
+   {
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_apply_filter,5);
+
+
+
 value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset, value inMergeAlpha)
 {
    Surface *source;

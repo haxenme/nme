@@ -718,6 +718,36 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    }
 }
 
+void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransform)
+{
+   if (mPixelFormat==pfAlpha)
+      return;
+
+   const uint8 *ta = inTransform.GetAlphaLUT();
+   const uint8 *t0 = inTransform.GetC0LUT();
+   const uint8 *t1 = inTransform.GetC1LUT();
+   const uint8 *t2 = inTransform.GetC2LUT();
+
+   RenderTarget target = BeginRender(inRect);
+
+   Rect r = target.mRect;
+   for(int y=0;y<r.h;y++)
+   {
+      ARGB *rgb = ((ARGB *)target.Row(y+r.y)) + r.x;
+      for(int x=0;x<r.w;x++)
+      {
+         rgb->c0 = t0[rgb->c0];
+         rgb->c1 = t1[rgb->c1];
+         rgb->c2 = t2[rgb->c2];
+         rgb->a = ta[rgb->a];
+         rgb++;
+      }
+   }
+
+   EndRender();
+}
+
+
 enum
 {
    CHAN_ALPHA = 0x0008,
