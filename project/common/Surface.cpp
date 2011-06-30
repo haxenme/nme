@@ -588,20 +588,10 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
                      BlendMode inBlend, const BitmapCache *inMask,
                      uint32 inTint ) const
 {
-   // Make an intermediate target if source and target is the same surface
-   RenderTarget adjustedDest = outDest;
-   if( outDest.mSoftPtr >= GetBase() && outDest.mSoftPtr < GetBase() + GetStride()*Height() ) {
-      adjustedDest.mSoftPtr = (uint8*)alloca(outDest.Width()*outDest.Height()*4);
-      for(int y=0; y<outDest.Height(); ++y) {
-         memcpy(adjustedDest.Row(y), outDest.Row(y), outDest.Width()*4);
-      }
-      adjustedDest.mSoftStride = Width()*4;
-   }
-
    // Translate inSrcRect src_rect to dest ...
    Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
    // clip ...
-   src_rect = src_rect.Intersect(adjustedDest.mRect);
+   src_rect = src_rect.Intersect(outDest.mRect);
 
    if (inMask)
       src_rect = src_rect.Intersect(inMask->GetRect());
@@ -613,16 +603,39 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
    if (src_rect.HasPixels())
    {
+      bool src_alpha = mPixelFormat==pfAlpha;
+      bool dest_alpha = outDest.mPixelFormat==pfAlpha;
+
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;
 
-      bool src_alpha = mPixelFormat==pfAlpha;
-      bool dest_alpha = adjustedDest.mPixelFormat==pfAlpha;
+      // Check for overlap....
+      if (src_alpha==dest_alpha)
+      {
+          int size_shift = src_alpha ? 0 : 2;
+          int d_base = (outDest.mSoftPtr-mBase);
+          int y_off = d_base/mStride;
+          int x_off = (d_base-y_off*mStride) >> size_shift;
+          Rect dr(dx + x_off, dy + y_off, src_rect.w, src_rect.h);
+          if (src_rect.Intersect(dr).HasPixels())
+          {
+              SimpleSurface sub(src_rect.w, src_rect.h, mPixelFormat);
+              Rect sub_dest(0,0,src_rect.w, src_rect.h);
+              
+              for(int y=0;y<src_rect.h;y++)
+                 memcpy((void *)sub.Row(y), Row(src_rect.y+y) + (src_rect.x<<size_shift), src_rect.w<<size_shift );
+
+              sub.BlitTo(outDest, sub_dest, dx, dy, inBlend, 0, inTint);
+              return;
+          }
+      }
+
+
 
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
       {
-         ImageDest<uint8> dest(adjustedDest);
+         ImageDest<uint8> dest(outDest);
          if (inMask)
          {
             if (src_alpha)
@@ -644,7 +657,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
          return;
       }
 
-      ImageDest<ARGB> dest(adjustedDest);
+      ImageDest<ARGB> dest(outDest);
       bool tint = inBlend==bmTinted;
       bool tint_inner = inBlend==bmTintedInner;
 
@@ -701,12 +714,6 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
             else
                TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
          }
-      }
-   }
-
-   if(adjustedDest.mSoftPtr != outDest.mSoftPtr) {
-      for(int y=0; y<outDest.Height(); ++y) {
-         memcpy(outDest.Row(y), adjustedDest.Row(y), outDest.Width()*4);
       }
    }
 }

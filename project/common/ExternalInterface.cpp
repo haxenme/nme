@@ -2169,7 +2169,7 @@ value nme_bitmap_data_clone(value inSurface)
 DEFINE_PRIM(nme_bitmap_data_clone,1);
 
 
-value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset)
+value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset, value inMergeAlpha)
 {
    Surface *source;
    Surface *dest;
@@ -2181,12 +2181,14 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
       FromValue(offset,inOffset);
 
       AutoSurfaceRender render(dest);
-      source->BlitTo(render.Target(),rect,offset.x, offset.y, bmNormal, 0);
+      
+      BlendMode blend = val_bool(inMergeAlpha) ? bmNormal : bmCopy;
+      source->BlitTo(render.Target(),rect,offset.x, offset.y, blend, 0);
    }
 
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_copy,4);
+DEFINE_PRIM(nme_bitmap_data_copy,5);
 
 value nme_bitmap_data_copy_channel(value* arg, int nargs)
 {
