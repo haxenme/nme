@@ -227,7 +227,9 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
 
    outDest->Zero();
 
-   Surface *tmp = new SimpleSurface(sw+mBlurX,sh,outDest->Format());
+   int blurred_w = sw+mBlurX;
+   int blurred_h = sh+mBlurY;
+   SimpleSurface *tmp = new SimpleSurface(blurred_w,sh,outDest->Format());
    tmp->IncRef();
 
    int ox = mBlurX/2;
@@ -246,7 +248,7 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
    {
       PIXEL *dest = (PIXEL *)target.Row(y);
       const PIXEL *src = ((PIXEL *)inSrc->Row(y));
-      BlurRow(src,1,sw,mBlurX,dest,1,w,mBlurX+1);
+      BlurRow(src,1,sw,mBlurX,dest,1,blurred_w,mBlurX+1);
    }
    sw = tmp->Width();
    }
@@ -265,7 +267,7 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
    int s_stride = tmp->GetStride()/sizeof(PIXEL);
    int d_stride = target.mSoftStride/sizeof(PIXEL);
    // Blur cols ...
-   for(int x=0;x<w;x++)
+   for(int x=0;x<blurred_w;x++)
    {
       int src_x = x - inDiff.x - ox;
       if (src_x>=0 && src_x<sw)
@@ -273,11 +275,10 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
          PIXEL *dest = (PIXEL *)target.Row(0) + x;
          const PIXEL *src = ((PIXEL *)tmp->Row(0)) + src_x;
 
-         BlurRow(src,s_stride,sh,oy-inDiff.y,dest,d_stride,h,mBlurY+1);
+         BlurRow(src,s_stride,sh,oy-inDiff.y,dest,d_stride,blurred_h,mBlurY+1);
       }
    }
    }
-
    tmp->DecRef();
 }
 
