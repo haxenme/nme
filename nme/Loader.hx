@@ -78,11 +78,33 @@ class Loader
 
        return "";
    }
+
+   
    public static function loaderTrace(inStr:String)
    {
-      if (Sys.getEnv("NME_LOAD_DEBUG")!=null)
+      // Problems with initialization order in cpp...
+      #if cpp
+      var get_env = cpp.Lib.load("std","get_env",1);
+      var debug = (get_env("NME_LOAD_DEBUG")!=null);
+      #else
+      var debug = (Sys.getEnv("NME_LOAD_DEBUG")!=null);
+      #end
+
+       if (debug)
          Lib.println(inStr);
    }
+
+   static function sysName()
+   {
+      // Problems with initialization order in cpp...
+      #if cpp
+      var sys_string = cpp.Lib.load("std","sys_string",0);
+      return sys_string();
+      #else
+      return Sys.systemName();
+      #end
+   }
+
 
    public static function loadNekoAPI(slash:String)
    {
@@ -100,10 +122,10 @@ class Loader
          var haxelib = findHaxeLib("hxcpp");
          if (haxelib!="")
          {
-            init = tryLoad(haxelib + slash + "bin" + slash + Sys.systemName() + slash + "nekoapi",func,args);
+            init = tryLoad(haxelib + slash + "bin" + slash + sysName() + slash + "nekoapi",func,args);
             // Try 64 bit ...
             if (init==null)
-               init = tryLoad(haxelib + slash + "bin" + slash + Sys.systemName() + "64" + slash + "nekoapi",func,args);
+               init = tryLoad(haxelib + slash + "bin" + slash + sysName() + "64" + slash + "nekoapi",func,args);
          }
       }
 
@@ -126,7 +148,7 @@ class Loader
          return Lib.load(moduleName,func,args);
       }
 
-      var slash = (Sys.systemName().substr(7).toLowerCase()=="windows") ? "\\" : "/";
+      var slash = (sysName().substr(7).toLowerCase()=="windows") ? "\\" : "/";
       moduleInit = true;
 
       #if neko
@@ -146,11 +168,11 @@ class Loader
          var haxelib = findHaxeLib("nme");
          if (haxelib!="")
          {
-            result = tryLoad(haxelib + slash + "ndll" + slash + Sys.systemName() + slash + "nme",func,args);
+            result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + slash + "nme",func,args);
             // Try haxelib64 ...
 
             if (result==null)
-               result = tryLoad(haxelib + slash + "ndll" + slash + Sys.systemName() + "64" + slash + "nme",func,args);
+               result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "64" + slash + "nme",func,args);
          }
       }
 
