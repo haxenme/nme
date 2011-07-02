@@ -191,8 +191,7 @@
 
 
 <target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
-  <outdir name="../ndll/${BINDIR}" unless="webos" />
-  <outdir name="../ndll/webOS" if="webos" />
+  <outdir name="../ndll/${BINDIR}" />
   <ext value=".ndll" unless="mobile"/>
   <ext value=".ndll" if="gph"/>
 

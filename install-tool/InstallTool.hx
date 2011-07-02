@@ -434,7 +434,7 @@ class NDLL
       else
       {
          src += "/ndll/" + inPrefix;
-         if (inOS=="android") suffix = ".so";
+         if (inOS=="android" || inOS=="webos") suffix = ".so";
       }
 
       if (inOS=="iphoneos" || inOS=="iphonesim")
@@ -1199,6 +1199,30 @@ class InstallTool
       cp_recurse(mBuildDir + "/gph/game", drive + "/game",false);
 */
    }
+
+   // --- webOS ---------------------------------------------------------------
+
+	
+	function updateWebos () {
+		
+
+
+	}
+
+	
+	function buildWebos () {
+		
+
+	}
+
+
+	function runWebos () {
+		
+
+	}
+
+	
+
 
    // --- Flash ---------------------------------------------------------------
 
