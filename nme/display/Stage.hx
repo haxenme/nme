@@ -35,7 +35,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public var active(default,null):Bool;
    
 
-   var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
+   public var focus(nmeGetFocus,nmeSetFocus):InteractiveObject;
    public var stageFocusRect(nmeGetStageFocusRect,nmeSetStageFocusRect):Bool;
 
    public var frameRate(default,nmeSetFrameRate): Float;
