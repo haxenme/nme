@@ -1,7 +1,6 @@
 package nme.utils;
 
 // Ensure that the neko->haxe callbacks are initialized
-import nme.utils.NekoAPI;
 import nme.errors.EOFError;
 
 #if neko
