@@ -78,6 +78,7 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 {
    mWidth = inWidth;
    mHeight = inHeight;
+   mTexture = 0;
    mPixelFormat = inPixelFormat;
    int pix_size = inPixelFormat == pfAlpha ? 1 : 4;
    if (inByteAlign>1)
@@ -1331,6 +1332,33 @@ void SimpleSurface::scroll(int inDX,int inDY)
    if (mTexture)
       mTexture->Dirty(src);
 }
+
+void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter)
+{
+   FilterList f;
+   f.push_back(inFilter);
+
+   Rect src_rect(inRect.w,inRect.h);
+   Rect dest = GetFilteredObjectRect(f,src_rect);
+
+   inSrc->IncRef();
+   Surface *result = FilterBitmap(f, inSrc, src_rect, dest, false, ImagePoint(inRect.x,inRect.y) );
+
+   dest.Translate(inOffset.x, inOffset.y);
+
+   RenderTarget t = BeginRender(dest);
+
+   // printf("Dest (%d,%d %dx%d) targ=%dx%d res=[%d,%d] me=(%dx%d)\n", dest.x, dest.y, dest.w, dest.h, t.Width(), t.Height(), result->Width(), result->Height(), Width(), Height());
+
+   int bpp = BytesPP();
+   for(int y=0;y<t.Height();y++)
+      memcpy((void *)(t.Row(y+dest.y)+(dest.x)*bpp), result->Row(y), t.Width()*bpp);
+
+   EndRender();
+
+   result->DecRef();
+}
+
 
 
 

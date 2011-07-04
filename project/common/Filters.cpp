@@ -50,11 +50,10 @@ Surface *ExtractAlpha(const Surface *inSurface)
 
 // --- BlurFilter --------------------------------------------------------------
 
-BlurFilter::BlurFilter(int inQuality, int inBlurX, int inBlurY)
-  : Filter(inQuality), mBlurX(inBlurX), mBlurY(inBlurY)
+BlurFilter::BlurFilter(int inQuality, int inBlurX, int inBlurY) : Filter(inQuality)
 {
-   mBlurX = std::max(0, std::min(256, mBlurX) );
-   mBlurY = std::max(0, std::min(256, mBlurY) );
+   mBlurX = std::max(0, std::min(256, inBlurX-1) );
+   mBlurY = std::max(0, std::min(256, inBlurY-1) );
 }
 
 void BlurFilter::ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const
@@ -105,7 +104,7 @@ void BlurFilter::GetFilteredObjectRect(Rect &ioRect,int inPass) const
 */
 
 void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
-             ARGB *inDest, int inDD, int inDestW, int inFilterSize)
+             ARGB *inDest, int inDD, int inDestW, int inFilterSize,int inPixelsLeft)
 {
    int sc0 = 0;
    int sc1 = 0;
@@ -115,10 +114,11 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
    // loop over destination pixels with kernel    -xxx+
    // At each pixel, we - the trailing pixel and + the leading pixel
    const ARGB *prev = inSrc - inOffX*inDS;
+   const ARGB *first = std::max(prev,inSrc - inPixelsLeft*inDS);
    const ARGB *src = prev + inFilterSize*inDS;
    const ARGB *src_end = inSrc + inSrcW*inDS;
    ARGB *dest = inDest;
-   for(const ARGB *s=inSrc;s<src;s+=inDS)
+   for(const ARGB *s=first;s<src;s+=inDS)
    {
       int a = s->a;
       sa+=a;
@@ -157,7 +157,7 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
          sc2+= src->c2 * a;
       }
 
-      if (prev>=inSrc)
+      if (prev>=first)
       {
          int a = prev->a;
          sa-=a;
@@ -175,17 +175,18 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inOffX,
 
 // Alpha version
 void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inOffX,
-             uint8 *inDest, int inDD, int inDestW, int inFilterSize)
+             uint8 *inDest, int inDD, int inDestW, int inFilterSize,int inPixelsLeft)
 {
    int sa = 0;
 
    // loop over destination pixels with kernel    -xxx+
    // At each pixel, we - the trailing pixel and + the leading pixel
    const uint8 *prev = inSrc - inOffX*inDS;
+   const uint8 *first = std::max(prev,inSrc - inPixelsLeft*inDS);
    const uint8 *src = prev + inFilterSize*inDS;
    const uint8 *src_end = inSrc + inSrcW*inDS;
    uint8 *dest = inDest;
-   for(const uint8 *s=inSrc;s<src;s+=inDS)
+   for(const uint8 *s=first;s<src;s+=inDS)
       sa+=*s;
 
    int x=0;
@@ -206,7 +207,7 @@ void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inOffX,
       if (src>=inSrc && src<src_end)
          sa+=*src;
 
-      if (prev>=inSrc)
+      if (prev>=first)
          sa-= *prev;
 
       src+=inDS;
@@ -218,7 +219,8 @@ void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inOffX,
 
 
 template<typename PIXEL>
-void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
+void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass
+      ) const
 {
    int w = outDest->Width();
    int h = outDest->Height();
@@ -227,8 +229,8 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
 
    outDest->Zero();
 
-   int blurred_w = sw+mBlurX;
-   int blurred_h = sh+mBlurY;
+   int blurred_w = std::min(sw+mBlurX,w);
+   int blurred_h = std::min(sh+mBlurY,h);
    SimpleSurface *tmp = new SimpleSurface(blurred_w,sh,outDest->Format());
    tmp->IncRef();
 
@@ -247,8 +249,8 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
    for(int y=0;y<sh;y++)
    {
       PIXEL *dest = (PIXEL *)target.Row(y);
-      const PIXEL *src = ((PIXEL *)inSrc->Row(y));
-      BlurRow(src,1,sw,mBlurX,dest,1,blurred_w,mBlurX+1);
+      const PIXEL *src = ((PIXEL *)inSrc->Row(y)) + inSrc0.x;
+      BlurRow(src,1,sw,mBlurX,dest,1,blurred_w,mBlurX+1,inSrc0.x);
    }
    sw = tmp->Width();
    }
@@ -273,18 +275,18 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDif
       if (src_x>=0 && src_x<sw)
       {
          PIXEL *dest = (PIXEL *)target.Row(0) + x;
-         const PIXEL *src = ((PIXEL *)tmp->Row(0)) + src_x;
+         const PIXEL *src = ((PIXEL *)tmp->Row(inSrc0.y)) + src_x;
 
-         BlurRow(src,s_stride,sh,oy-inDiff.y,dest,d_stride,blurred_h,mBlurY+1);
+         BlurRow(src,s_stride,sh,oy-inDiff.y,dest,d_stride,blurred_h,mBlurY+1,inSrc0.y);
       }
    }
    }
    tmp->DecRef();
 }
 
-void BlurFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
+void BlurFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const
 {
-   DoApply<ARGB>(inSrc,outDest,inDiff,inPass);
+   DoApply<ARGB>(inSrc,outDest,inSrc0,inDiff,inPass);
    //ApplyStrength(mStrength,outDest);
 }
 
@@ -369,7 +371,7 @@ void ApplyStrength(Surface *inAlpha,int inStrength)
 
 
 
-void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const
+void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const
 {
    bool inner_hide = mInner && ( mKnockout || mHideObject);
    Surface *alpha = ExtractAlpha(inSrc);
@@ -379,6 +381,7 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
    // Blur alpha..
    ImagePoint offset(0,0);
+   ImagePoint a_src(inSrc0);
    for(int q=0;q<mQuality;q++)
    {
       Rect src_rect(alpha->Width(),alpha->Height());
@@ -388,7 +391,8 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
       ImagePoint diff(src_rect.x, src_rect.y);
 
-      DoApply<uint8>(alpha,blur,diff,q);
+      DoApply<uint8>(alpha,blur,a_src,diff,q);
+      a_src = ImagePoint(0,0);
       alpha->DecRef();
       alpha = blur;
       offset += diff;
@@ -408,27 +412,24 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
    bool swap = gC0IsRed != (bool)(target.mPixelFormat & pfSwapRB);
    int scol = swap ? ARGB::Swap(mCol) : mCol;
 
+   Rect src(inSrc0.x,inSrc0.y,inSrc->Width(),inSrc->Height());
    if (mInner )
    {
+      if (a>127) a--;
       scol = (scol & 0xffffff) | (a<<24);
       if (inner_hide)
       {
-         orig_alpha->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
-                 bmTinted, 0, scol );
+         orig_alpha->BlitTo(target, src, inDiff.x, inDiff.y, bmTinted, 0, scol );
       }
       else
       {
-         // Copy source ...
-         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), inDiff.x, inDiff.y,
-                 bmCopy, 0, 0xffffff );
+         inSrc->BlitTo(target, src, inDiff.x, inDiff.y, bmCopy, 0, 0xffffff );
       }
 
       // And overlay shadow...
       Rect rect(alpha->Width(), alpha->Height() );
-      if (a>127) a--;
 
-      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y,
-                    inner_hide ? bmErase : bmTintedInner, 0, scol);
+      alpha->BlitTo(target, rect, blur_pos.x, blur_pos.y, inner_hide ? bmErase : bmTintedInner, 0, scol);
 
       if (!inner_hide)
       {
@@ -468,13 +469,11 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest, ImagePoint i
 
       if (mKnockout)
       {
-         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), -inDiff.x, -inDiff.y,
-                   bmErase, 0, 0xffffff );
+         inSrc->BlitTo(target, src, -inDiff.x, -inDiff.y, bmErase, 0, 0xffffff );
       }
       else if (!mHideObject)
       {
-         inSrc->BlitTo(target, Rect(inSrc->Width(),inSrc->Height()), -inDiff.x, -inDiff.y,
-                   bmNormal, 0, 0xffffff );
+         inSrc->BlitTo(target, src, -inDiff.x, -inDiff.y, bmNormal, 0, 0xffffff );
       }
    }
    
@@ -576,7 +575,8 @@ void HighlightZeroAlpha(Surface *ioBMP)
 
 
 Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
-                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2)
+                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2,
+                       ImagePoint inSrc0)
 {
    int n = inFilters.size();
    if (n==0)
@@ -616,8 +616,8 @@ Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
          if (do_clear)
             filtered->Zero();
 
-         f->Apply(bmp,filtered, ImagePoint(dest_rect.x-src_rect.x,
-                                          dest_rect.y-src_rect.y), q );
+         f->Apply(bmp,filtered, inSrc0, ImagePoint(dest_rect.x-src_rect.x, dest_rect.y-src_rect.y), q );
+         inSrc0 = ImagePoint(0,0);
 
          bmp->DecRef();
          bmp = filtered;

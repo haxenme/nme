@@ -4,6 +4,7 @@
 #include <Graphics.h>
 #include <Utils.h>
 #include <ByteArray.h>
+#include <Filters.h>
 
 // ---- Surface API --------------
 
@@ -89,6 +90,8 @@ public:
    virtual void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false) { }
    virtual void scroll(int inDX,int inDY) { }
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform) { }
+   virtual void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter) { }
+
    int Version() const  { return mVersion; }
 
 protected:
@@ -150,6 +153,7 @@ public:
    uint32 getPixel(int inX,int inY);
    void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
    void scroll(int inDX,int inDY);
+   void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
 
 
 protected:

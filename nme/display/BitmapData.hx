@@ -138,7 +138,7 @@ class BitmapData implements IBitmapDrawable
 
    public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:nme.filters.BitmapFilter):Void
    {
-      nme_bitmap_data_apply_filter(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint, filter);
+      nme_bitmap_data_apply_filter(nmeHandle, sourceBitmapData.nmeHandle, sourceRect, destPoint, filter);
    }
 
    public function colorTransform(rect:Rectangle, colorTransform:ColorTransform):Void

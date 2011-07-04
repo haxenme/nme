@@ -18,7 +18,7 @@ public:
    ImagePoint GetOrigin() const { return mOrigin; }
    virtual int GetQuality() { return mQuality; }
 
-   virtual void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inDiff,int inPass) const = 0;
+   virtual void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0, ImagePoint inDiff,int inPass) const = 0;
    virtual void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const = 0;
    virtual void GetFilteredObjectRect(Rect &ioRect,int inPass) const = 0;
 
@@ -32,9 +32,9 @@ public:
    BlurFilter(int inQuality, int inBlurX, int inBlurY);
 
    template<typename PIXEL>
-   void DoApply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+   void DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const;
 
-   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+   void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0, ImagePoint inDiff,int inPass) const;
    void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
    void GetFilteredObjectRect(Rect &ioRect,int inPass) const;
 
@@ -52,7 +52,7 @@ public:
    // We will do the blur-iterations ourselves.
    int GetQuality() { return 1; }
 
-   void Apply(const Surface *inSrc,Surface *outDest, ImagePoint inDiff,int inPass) const;
+   void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0, ImagePoint inDiff,int inPass) const;
    virtual void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
    void GetFilteredObjectRect(Rect &ioRect,int inPass) const;
 
@@ -74,7 +74,8 @@ typedef QuickVec<Filter *> FilterList;
 Rect ExpandVisibleFilterDomain( const FilterList &inList, const Rect &inRect );
 
 Surface *FilterBitmap(const FilterList &inList, Surface *inBitmap,
-                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2);
+                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2,
+                        ImagePoint inSrc0 = ImagePoint(0,0) );
 
 Rect GetFilteredObjectRect(const FilterList &inList,const Rect &inRect);
 

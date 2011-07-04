@@ -2187,12 +2187,22 @@ value nme_bitmap_data_color_transform(value inSurface,value inRect, value inColo
 DEFINE_PRIM(nme_bitmap_data_color_transform,3);
 
 
-value nme_bitmap_data_apply_filter(value inSrc,value inRect,value inDest, value inOffset, value inFilters)
+value nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value inOffset, value inFilter)
 {
    Surface *src;
    Surface *dest;
    if (AbstractToObject(inSrc,src) && AbstractToObject(inDest,dest))
    {
+      Filter *filter = FilterFromValue(inFilter);
+      if (filter)
+      {
+         Rect rect;
+         FromValue(rect,inRect);
+         ImagePoint offset;
+         FromValue(offset,inOffset);
+         dest->applyFilter(src, rect, offset, filter);
+      }
+      //delete filter;
    }
    return alloc_null();
 }
