@@ -12,9 +12,13 @@ static int sRunning = 0;
 static int sLoaders = 0;
 
 typedef std::map<CURL *,class CURLLoader *> CurlMap;
+typedef std::vector<class CURLLoader *> CurlList;
 void processMultiMessages();
 
 CurlMap *sCurlMap = 0;
+CurlList *sCurlList = 0;
+
+enum { MAX_ACTIVE = 64 };
 
 class CURLLoader : public URLLoader
 {
@@ -41,7 +45,7 @@ public:
 		mHandle = curl_easy_init();
 		if (!sCurlMap)
 			sCurlMap = new CurlMap;
-		(*sCurlMap)[mHandle] = this;
+
 		curl_easy_setopt(mHandle, CURLOPT_URL, inURL);
 
       /* send all data to this function  */ 
@@ -71,16 +75,29 @@ public:
       curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
 		mState = urlLoading;
+
+      if (sCurlMap->size()<MAX_ACTIVE)
+      {
+         StartProcessing();
+      }
+      else
+      {
+         if (sCurlList==0)
+           sCurlList = new CurlList;
+         sCurlList->push_back(this);
+      }
+   }
+
+   void StartProcessing()
+   {
+		(*sCurlMap)[mHandle] = this;
 		int c1 = curl_multi_add_handle(sCurlM,mHandle);
 		int result = curl_multi_perform(sCurlM, &sRunning);
       processMultiMessages();
-
 	}
 
 	~CURLLoader()
 	{
-		sCurlMap->erase(mHandle);
-		curl_multi_remove_handle(sCurlM,mHandle);
 		curl_easy_cleanup(mHandle);
 		sLoaders--;
 		if (sLoaders==0)
@@ -112,6 +129,8 @@ public:
 
 	void setResult(CURLcode inResult)
 	{
+		sCurlMap->erase(mHandle);
+		curl_multi_remove_handle(sCurlM,mHandle);
 		mState = inResult==0 ? urlComplete : urlError;
 	}
 
@@ -195,17 +214,30 @@ void processMultiMessages()
 
 bool URLLoader::processAll()
 {
-	bool check = sRunning;
-	for(int go=0; go<10 && sRunning; go++)
-	{
-		int code = curl_multi_perform(sCurlM,&sRunning);
-		if (code!= CURLM_CALL_MULTI_PERFORM)
-			break;
-	}
-	if (check)
-      processMultiMessages();
+   bool added = false;
+   do {
+      added = false;
+	   bool check = sRunning;
+	   for(int go=0; go<10 && sRunning; go++)
+	   {
+		   int code = curl_multi_perform(sCurlM,&sRunning);
+		   if (code!= CURLM_CALL_MULTI_PERFORM)
+			   break;
+	   }
+	   if (check)
+         processMultiMessages();
 
-   return sRunning;
+      while(sCurlMap && sCurlList && !sCurlList->empty() && sCurlMap->size()<MAX_ACTIVE )
+      {
+         CURLLoader *curl = (*sCurlList)[0];
+         sCurlList->erase(sCurlList->begin());
+         added = true;
+         curl->StartProcessing();
+      }
+
+   } while(added);
+   
+   return sRunning || (sCurlList && sCurlList->size());
 }
 
 URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUserPasswd,
