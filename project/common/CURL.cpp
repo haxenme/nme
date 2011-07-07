@@ -1,12 +1,20 @@
 #define CURL_STATICLIB 1
 #include <URL.h>
 #include <curl/curl.h>
-#include <map>
 #include <Utils.h>
+#include <map>
+#include <string>
+
+/**
+ * TODO:
+ * HTTP redirects
+ * HTTP POST method.
+ */
 
 namespace nme
 {
 
+static std::string sCACertFile("");
 static CURLM *sCurlM = 0;
 static int sRunning = 0;
 static int sLoaders = 0;
@@ -60,14 +68,14 @@ public:
       }
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
-		curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
+      curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
       if (inDebug)
          curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
       curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
       if (inCookies && inCookies[0])
          curl_easy_setopt( mHandle, CURLOPT_COOKIE, inCookies );
-
-
+      curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
+ 
       mErrorBuf[0] = '\0';
  
       /* some servers don't like requests that are made without a user-agent
@@ -172,9 +180,8 @@ public:
 			mState = urlError;
 		else if (http_code>0)
 		{
+			// XXX : A HTTP code >= 400 should be an error. Handle this in URLLoader.hx for now.
 			mHttpCode = http_code;
-			//if (http_code>=402) mState = urlError;
-			//if (http_code==200) mState = urlComplete;
 		}
 		return mState;
 	}
@@ -246,6 +253,20 @@ URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUs
 	return new CURLLoader(inURL,inAuthType,inUserPasswd,inCookies,inVerbose);
 }
 
+void URLLoader::initialize(const char *inCACertFilePath)
+{
+  curl_global_init(CURL_GLOBAL_SSL);
+  sCACertFile = std::string(inCACertFilePath);
 
+  /* Uncomment to print version information for libcurl.
+  curl_version_info_data * info = curl_version_info(CURLVERSION_NOW);
+  printf("libcurl version: %s\n", info->version);
+  printf("Support for SSL in libcurl: %d\n", (info->features) & CURL_VERSION_SSL);
+  printf("Supported libcurl protocols: ");
+  for (int i=0; info->protocols[i] != 0; i++) {
+    printf("%s ", info->protocols[i]);
+  }
+  */
+}
 
 }

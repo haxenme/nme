@@ -5,6 +5,7 @@
 #include "ByteArray.h"
 #include <vector>
 #include <string>
+#include <hx/CFFI.h>
 
 
 namespace nme
@@ -25,6 +26,7 @@ class URLLoader : public Object
 		static URLLoader *create(const char *inURL, int inAuthType, const char *inUserPasswd,
                                const char *inCookies, bool inDebug);
 		static bool processAll();
+		static void initialize(const char *inCACertFilePath);
 
 		virtual ~URLLoader() { };
 		virtual URLState getState()=0;

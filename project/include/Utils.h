@@ -62,6 +62,7 @@ namespace nme
 
 extern std::string gAssetBase;
 
+const std::string &GetUniqueDeviceIdentifier();
 const std::string &GetResourcePath();
 const std::string &GetDocumentsPath();
 

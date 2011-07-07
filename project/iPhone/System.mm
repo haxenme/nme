@@ -15,7 +15,10 @@ bool LaunchBrowser(const char *inUtf8URL)
 	return true;
 }
 
-
+const std::string &GetUniqueDeviceIdentifier()
+{
+  return [[[UIDevice currentDevice] uniqueIdentifier] cStringUsingEncoding:1];
+}
 
 const std::string &GetResourcePath()
 {

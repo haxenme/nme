@@ -10,8 +10,10 @@ import nme.utils.ByteArray;
 * @author   Hugh Sanderson
 * @author   Niel Drummond
 * @author   Russell Weir
+* @author   Joshua Harlan Lifton
 * @todo open and progress events
 * @todo Complete Variables type
+* @todo HTTP POST method
 **/
 
 
@@ -92,48 +94,64 @@ class URLLoader extends nme.events.EventDispatcher
 
 	public static function hasActive( ) { return !activeLoaders.isEmpty(); }
 
-   function update()
-	{
-	   if (nmeHandle!=null)
-		{
-		   var old_state = state;
-		   var old_loaded = bytesLoaded;
-		   var old_total = bytesTotal;
-		   nme_curl_update_loader(nmeHandle,this);
-			if (old_total < 0 && bytesTotal>0)
-			{
+  function update()
+  {
+    if (nmeHandle!=null)
+      {
+	var old_state = state;
+	var old_loaded = bytesLoaded;
+	var old_total = bytesTotal;
+	nme_curl_update_loader(nmeHandle,this);
+	if (old_total < 0 && bytesTotal>0)
+	  {
             dispatchEvent( new nme.events.Event(nme.events.Event.OPEN) );
-			}
-
-			if (bytesTotal>0 && bytesLoaded!=old_loaded)
-			{
-		      //trace("Loaded : " + bytesLoaded + "/" + bytesTotal );
-            dispatchEvent(
-				   new ProgressEvent(ProgressEvent.PROGRESS,false,false,bytesLoaded,bytesTotal) );
-			}
-         if (state==urlComplete)
-			{
-            //trace(getCookies());
-				var bytes:ByteArray = nme_curl_get_data(nmeHandle);
-				switch(dataFormat)
-				{
-               case TEXT, VARIABLES:
-                  data = bytes.asString();
-					default:
-					   data = bytes;
-            }
-				nmeHandle = null;
-            dispatchEvent( new nme.events.Event(nme.events.Event.COMPLETE) );
-			}
-         else if (state==urlError)
-			{
-            var evt =  new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR,
-				        true, false, nme_curl_get_error_message(nmeHandle),nme_curl_get_code(nmeHandle) );
-				nmeHandle = null;
+	  }
+	
+	if (bytesTotal>0 && bytesLoaded!=old_loaded)
+	  {
+            dispatchEvent( new ProgressEvent(ProgressEvent.PROGRESS,false,false,bytesLoaded,bytesTotal) );
+	  }
+	
+	var code:Int = nme_curl_get_code(nmeHandle);
+	if (state==urlComplete)
+	  {
+	    if (code < 400) 
+	      {
+		var bytes:ByteArray = nme_curl_get_data(nmeHandle);
+		switch(dataFormat)
+		  {
+		  case TEXT, VARIABLES:
+		    data = bytes == null ? "" : bytes.asString();
+		  default:
+		    data = bytes;
+		  }
+		nmeHandle = null;
+		dispatchEvent(new nme.events.Event(nme.events.Event.COMPLETE));
+	      }
+	    else 
+	      {
+		// XXX : This should be handled in project/common/CURL.cpp
+		var evt = new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR,
+						      true, 
+						      false, 
+						      "HTTP status code " + Std.string(code), 
+						      code);
+		nmeHandle = null;
+		dispatchEvent(evt);
+	      }
+	  }
+	else if (state==urlError)
+	  {
+	    var evt = new nme.events.IOErrorEvent(nme.events.IOErrorEvent.IO_ERROR,
+						  true, 
+						  false, 
+						  nme_curl_get_error_message(nmeHandle), 
+						  code);
+	    nmeHandle = null;
             dispatchEvent(evt);
-			}
-		}
-	}
+	  }
+      }
+  }
 
 	public static function nmePollData( )
 	{
@@ -163,6 +181,12 @@ class URLLoader extends nme.events.EventDispatcher
 
 	public static function nmeLoadPending() { return !activeLoaders.isEmpty(); }
 
+  public static function initialize(inCACertFilePath:String)
+  {
+    nme_curl_initialize(inCACertFilePath);
+  }
+    
+
 
 	static var nme_curl_create = nme.Loader.load("nme_curl_create",5);
 	static var nme_curl_process_loaders = nme.Loader.load("nme_curl_process_loaders",0);
@@ -171,6 +195,7 @@ class URLLoader extends nme.events.EventDispatcher
 	static var nme_curl_get_error_message = nme.Loader.load("nme_curl_get_error_message",1);
 	static var nme_curl_get_data= nme.Loader.load("nme_curl_get_data",1);
 	static var nme_curl_get_cookies= nme.Loader.load("nme_curl_get_cookies",1);
+	static var nme_curl_initialize = nme.Loader.load("nme_curl_initialize",1);
 
 }
 

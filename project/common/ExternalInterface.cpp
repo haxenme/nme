@@ -623,6 +623,29 @@ bool FromValue(ByteData &outData,value inData)
    outData.length = array.Size();
    return true;
 }
+
+// --- getUniqueDeviceIdentifier ---------------------------------------------------
+value nme_get_unique_device_identifier()
+{
+#if defined(IPHONE)
+  return alloc_string(GetUniqueDeviceIdentifier().c_str());
+#else
+  return alloc_null();
+#endif
+}
+DEFINE_PRIM(nme_get_unique_device_identifier,0);
+
+// --- getResourcePath -------------------------------------------------------------
+value nme_get_resource_path()
+{
+#if defined(IPHONE)
+  return alloc_string(GetResourcePath().c_str());
+#else
+  return alloc_null();
+#endif
+}
+DEFINE_PRIM(nme_get_resource_path,0);
+
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
@@ -2715,6 +2738,13 @@ value nme_tilesheet_add_rect(value inSheet,value inRect)
 DEFINE_PRIM(nme_tilesheet_add_rect,2);
 
 // --- URL ----------------------------------------------------------
+
+value nme_curl_initialize(value inCACertFilePath)
+{
+  URLLoader::initialize(val_string(inCACertFilePath));
+  return alloc_null();
+}
+DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURL,value inAuthType, value inUserPasswd, value inCookies, value inVerbose)
 {

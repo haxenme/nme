@@ -3,6 +3,12 @@ package nme.system;
 class System
 {
    public static var totalMemory(nmeGetTotalMemory,null): Int;
+  public static var deviceID(nmeGetDeviceID, null):String;
+
+  private static function nmeGetDeviceID():String
+  {
+    return nme_get_unique_device_identifier();
+  }
 
 
 	static function nmeGetTotalMemory() : Int
@@ -35,4 +41,7 @@ class System
 	{
 	   nme.Lib.close();
 	}
+
+  static var nme_get_unique_device_identifier = nme.Loader.load("nme_get_unique_device_identifier",0);
+
 }
