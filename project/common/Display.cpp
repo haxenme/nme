@@ -965,12 +965,15 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
             const FilterList &filters = obj->getFilters();
 
+
             // Move rect to include filtered pixels...
             Rect filtered = GetFilteredObjectRect(filters,rect);
+
 
             // Expand clip rect to account for pixels that must be rendered so the
             //  filtered image remains valid in the original clip region.
             Rect expanded = ExpandVisibleFilterDomain( filters, obj_state->mClipRect );
+
 
             // Must render to this ...
             Rect render_to  = rect.Intersect(expanded);
@@ -992,8 +995,14 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Ok, build bitmap cache...
             if (visible_bitmap.HasPixels())
             {
-               //printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
-               //   visible_bitmap.w, visible_bitmap.h );
+               /*
+               printf("object rect %d,%d %dx%d\n", rect.x, rect.y, rect.w, rect.h);
+               printf("filtered rect %d,%d %dx%d\n", filtered.x, filtered.y, filtered.w, filtered.h);
+               printf("expanded rect %d,%d %dx%d\n", expanded.x, expanded.y, expanded.w, expanded.h);
+               printf("render to %d,%d %dx%d\n", render_to.x, render_to.y, render_to.w, render_to.h);
+               printf("Build bitmap cache (%d,%d %dx%d)\n", visible_bitmap.x, visible_bitmap.y,
+                  visible_bitmap.w, visible_bitmap.h );
+               */
 
                int w = render_to.w;
                int h = render_to.h;
@@ -1027,7 +1036,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                Rect clip = obj_state->mClipRect;
                RenderPhase phase = obj_state->mPhase;
 
-               obj_state->mClipRect.Translate(-render_to.x, -render_to.y);
+               obj_state->mClipRect = Rect(render_to.w,render_to.h);
 
                obj_state->mTargetOffset += ImagePoint(render_to.x,render_to.y);
 
