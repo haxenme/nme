@@ -351,6 +351,7 @@ class Stage : public DisplayObjectContainer
 {
 public:
    Stage(bool inInitRef=false);
+   static Stage *GetCurrent() { return gCurrentStage; }
 
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
@@ -426,6 +427,8 @@ protected:
    DisplayObject *mFocusObject;
    DisplayObject *mMouseDownObject;
    SimpleButton  *mSimpleButton;
+
+   static Stage  *gCurrentStage;
 };
 
 class HardwareSurface;

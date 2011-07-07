@@ -1334,8 +1334,11 @@ public:
    const RenderTarget &Target() { return mTarget; }
 };
 
+Stage *Stage::gCurrentStage = 0;
+
 Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 {
+   gCurrentStage = this;
    mHandler = 0;
    mHandlerData = 0;
    opaqueBackground = 0xffffffff;
@@ -1360,6 +1363,8 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 
 Stage::~Stage()
 {
+   if (gCurrentStage==this)
+      gCurrentStage = 0;
    if (mFocusObject)
       mFocusObject->DecRef();
    if (mMouseDownObject)
@@ -1429,6 +1434,7 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
 
 void Stage::HandleEvent(Event &inEvent)
 {
+   gCurrentStage = this;
    DisplayObject *hit_obj = 0;
 
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown)

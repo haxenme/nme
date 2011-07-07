@@ -909,7 +909,19 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       Matrix matrix;
       if (!val_is_null(arg[aMatrix]))
          FromValue(matrix,arg[aMatrix]);
-      RenderState state(surf,4);
+      int aa = 4;
+      Stage *stage = Stage::GetCurrent();
+      if (stage)
+      {
+         switch(stage->getQuality())
+         {
+             case sqLow:    aa=1; break;
+             case sqMedium: aa=2; break;
+             case sqHigh:   aa=4; break;
+             case sqBest:   aa=4; break;
+         }
+      }
+      RenderState state(surf,aa);
       state.mTransform.mMatrix = &matrix;
 
       ColorTransform col_trans;
