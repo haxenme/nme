@@ -713,7 +713,7 @@ class InstallTool
          if (icon.isSize(inWidth,inHeight))
          {
             mContext.HAS_ICON = true;
-            if (inTimedFile!="" && !isNewer(icon.name,inTimedFile))
+            if (inTimedFile!="" && !isNewer(icon.name,inTimedFile,mVerbose))
                return null;
 
             var bmp = nme.display.BitmapData.load(icon.name);
@@ -729,7 +729,7 @@ class InstallTool
             {
                found = icon;
                mContext.HAS_ICON = true;
-               if (inTimedFile!="" && !isNewer(icon.name,inTimedFile))
+               if (inTimedFile!="" && !isNewer(icon.name,inTimedFile,mVerbose))
                   return null;
                break;
             }
@@ -1643,7 +1643,7 @@ class InstallTool
       }
    }
 
-  public static function isNewer(inFrom:String, inTo:String) : Bool
+  public static function isNewer(inFrom:String, inTo:String, inVerbose:Bool) : Bool
   {
       if (inFrom==null || !neko.FileSystem.exists(inFrom))
       {
@@ -1655,14 +1655,22 @@ class InstallTool
       {
          if (neko.FileSystem.stat(inFrom).mtime.getTime() <
              neko.FileSystem.stat(inTo).mtime.getTime() )
+         {
+           if (inVerbose)
+           {
+                  neko.Lib.println(" no need: " + inFrom + "(" + 
+                     neko.FileSystem.stat(inFrom).mtime.getTime()  + ") < " + inTo + " (" +
+                     neko.FileSystem.stat(inTo).mtime.getTime() + ")" );
+           }
            return false;
+         }
       }
       return true;
    }
 
    public static function copyIfNewer(inFrom:String, inTo:String, ioAllFiles:Array<String>,inVerbose:Bool)
    {
-      if (!isNewer(inFrom,inTo))
+      if (!isNewer(inFrom,inTo,inVerbose))
          return;
       ioAllFiles.push(inTo);
       if (inVerbose)
