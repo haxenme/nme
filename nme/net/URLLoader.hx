@@ -125,7 +125,6 @@ class URLLoader extends nme.events.EventDispatcher
 		  default:
 		    data = bytes;
 		  }
-		nmeHandle = null;
 		dispatchEvent(new nme.events.Event(nme.events.Event.COMPLETE));
 	      }
 	    else 
