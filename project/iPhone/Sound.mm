@@ -132,6 +132,8 @@ public:
        // on a Sound, so let's play
        LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
        theActualPlayer.currentTime = inOffset/1000;
+	   [theActualPlayer setPan: inTransform.pan];
+	   [theActualPlayer setVolume: inTransform.volume];
        [theActualPlayer play];
 
        LOG_SOUND("AVAudioPlayerChannel constructor exiting");
