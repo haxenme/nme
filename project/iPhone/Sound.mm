@@ -396,6 +396,7 @@ public:
           // set some basic source prefs
           alSourcef(mSourceID, AL_PITCH, 1.0f);
           alSourcef(mSourceID, AL_GAIN, inTransform.volume);
+          alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
           // TODO: not right!
           if (inLoops>1)
             alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
@@ -443,12 +444,37 @@ public:
       }
    }
 
-   double getLeft()  { return 1.0; }
-   double getRight()   { return 1.0; }
-   double getPosition()  { return 1.0; }
+   double getLeft()  
+	{ 
+		float panX=0;
+		float panY=0;
+		float panZ=0;
+		alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
+		return (1-panX)/3;
+	}
+	
+   double getRight()   
+   {
+	    float panX=0;
+	    float panY=0;
+		float panZ=0;
+		alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
+		return (panX+1)/3;
+   }
+	
+   double getPosition()  
+   {
+	   float pos = 0;
+	   alGetSourcef(mSourceID,AL_SEC_OFFSET,&pos);
+	   return pos*1000;
+   }
+	
    void setTransform(const SoundTransform &inTransform)
    {
+	   alSourcef(mSourceID, AL_GAIN, inTransform.volume);
+	   alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
    }
+	
    void stop()
    {
    }
