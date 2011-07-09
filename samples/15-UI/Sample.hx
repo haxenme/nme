@@ -66,8 +66,22 @@ public function new()
    Lib.current.addChild(this);
 
    var but = new CustomSimpleButton();
-
+   but.addEventListener(MouseEvent.MOUSE_DOWN,onButtonDown,false,100);
+   Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN,onStageDown);
+   
    addChild(but);
+}
+
+private function onStageDown(e:MouseEvent):Void
+{
+	trace("stage received down event.");
+}
+
+private function onButtonDown(e:MouseEvent):Void
+{
+	trace("button received down event: should cancel stage.");
+	e.stopPropagation();
+	e.stopImmediatePropagation();
 }
 
 
