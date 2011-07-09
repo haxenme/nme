@@ -105,6 +105,10 @@ typedef std::wstring WString;
 
 bool LaunchBrowser(const char *inUtf8URL);
 
+bool SetUserPreference(const char *inId, const char *inPreference);
+std::string GetUserPreference(const char *inId);
+bool ClearUserPreference(const char *inId);
+
 #ifdef HX_WINDOWS
 typedef wchar_t OSChar;
 #define val_os_string val_wstring

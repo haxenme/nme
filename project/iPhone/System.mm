@@ -6,11 +6,46 @@ namespace nme {
 
 bool LaunchBrowser(const char *inUtf8URL)
 {
-	// TODO: figure out how to convert to an url string i can use 
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *str = [[NSString alloc] initWithUTF8String:inUtf8URL];	
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString: str]];
 	[str release];
+	[pool drain];
+	return true;
+}
+
+std::string GetUserPreference(const char *inId)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+	NSString *pref = [userDefaults stringForKey:strId];
+	std::string result(pref?[pref UTF8String]:"");
+	[strId release];
+	[pool drain];
+	return result;
+}
+	
+bool SetUserPreference(const char *inId, const char *inPreference)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+	NSString *strPref = [[NSString alloc] initWithUTF8String:inPreference];
+	[userDefaults setObject:strPref forKey:strId];
+	[strId release];
+	[strPref release];
+	[pool drain];
+	return true;
+}
+
+bool ClearUserPreference(const char *inId)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+	[userDefaults setObject:@"" forKey:strId];
+	[strId release];
 	[pool drain];
 	return true;
 }

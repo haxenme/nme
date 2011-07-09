@@ -14,15 +14,17 @@ import android.content.Context;
 import android.media.SoundPool;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.content.SharedPreferences;
 
 public class GameActivity extends Activity {
 
     MainView mView;
     static AssetManager mAssets;
     static SoundPool mSoundPool;
-	 static Context mContext;
-	 static MediaPlayer mMediaPlayer = null;
-	 static GameActivity activity;
+	static Context mContext;
+	static MediaPlayer mMediaPlayer = null;
+	static final String GLOBAL_PREF_FILE="nmeAppPrefs";
+	static GameActivity activity;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -152,6 +154,29 @@ public class GameActivity extends Activity {
 		}
 
 	 }
+	 
+	 static public String getUserPreference(String inId)
+	 {
+		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE,MODE_PRIVATE);
+		return prefs.getString(inId,"");
+	 }
+	 
+	 static public void setUserPreference(String inId, String inPreference)
+	 {
+		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE,MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString(inId,inPreference);
+		prefEditor.commit();
+	 }
+	 
+	 static public void clearUserPreference(String inId)
+	 {
+		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE,MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString(inId,"");
+		prefEditor.commit();
+	 }
+	 
 
     static public void playMusic(String inFilename)
     {
