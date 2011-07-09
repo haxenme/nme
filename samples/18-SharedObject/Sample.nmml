@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample18"
+     title="NME Sample 18 - SharedObject"
+     package="org.haxe.nme.sample18"
+     version="1.0"
+     company="nme" 
+	  main="Sample"
+  />
+
+  <window
+      width="400"
+		height="300"
+		orientation="landscape"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  
+  <classpath name="." />
+  <haxelib name="nme" />
+  
+    <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+  
+  <certificates>
+     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
+  </certificates>
+
+</project>
