@@ -180,7 +180,7 @@ class AndroidFrame : public Frame
 {
 public:
    AndroidFrame(FrameCreationCallback inOnFrame, int inWidth,int inHeight,
-       unsigned int inFlags, const char *inTitle, const char *inIcon )
+       unsigned int inFlags, const char *inTitle, Surface *inIcon )
    {
       sOnFrame = inOnFrame;
       mFlags = inFlags;
@@ -223,7 +223,7 @@ public:
 
 
 void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, const char *inIcon )
+   unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
    __android_log_print(ANDROID_LOG_INFO, "CreateMainFrame!", "creating...");
    sOnFrame = inOnFrame;

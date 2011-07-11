@@ -718,9 +718,12 @@ value nme_create_main_frame(value *arg, int nargs)
 
    sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
 
+   Surface *icon=0;
+   AbstractToObject(arg[aIcon],icon);
+
    CreateMainFrame(OnMainFrameCreated,
        (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), val_string(arg[aTitle]), val_string(arg[aIcon]) );
+       val_int(arg[aFlags]), val_string(arg[aTitle]), icon );
 
    return alloc_null();
 }

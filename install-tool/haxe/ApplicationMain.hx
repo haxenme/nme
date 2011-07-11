@@ -9,8 +9,10 @@ class ApplicationMain
            ::WIN_BACKGROUND::,
              ( ::WIN_HARDWARE::   ? nme.Lib.HARDWARE  : 0) |
              ( ::WIN_RESIZEABLE:: ? nme.Lib.RESIZABLE : 0),
-          "::APP_TITLE::",
-          "::APP_ICON::"
+          "::APP_TITLE::"
+          ::if (WIN_ICON!=null)::
+             , getAsset("::WIN_ICON::")
+          ::end::
           );
    }
 

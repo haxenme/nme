@@ -97,6 +97,16 @@ public:
    bool  mDelete;
 };
 
+SDL_Surface *SurfaceToSDL(Surface *inSurface)
+{
+   int swap =  (gC0IsRed!=(bool)(inSurface->Format()&pfSwapRB)) ? 0xff00ff : 0;
+   return SDL_CreateRGBSurfaceFrom((void *)inSurface->Row(0),
+             inSurface->Width(), inSurface->Height(),
+             32, inSurface->Width()*4,
+             0x00ff0000^swap, 0x0000ff00,
+             0x000000ff^swap, 0xff000000 );
+}
+
 
 SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
 {
@@ -411,7 +421,7 @@ SDLFrame *sgSDLFrame = 0;
 SDL_Joystick *joystick = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, const char *inIcon)
+   unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
 #ifdef HX_MACOS
    MacBoot();
@@ -478,7 +488,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 #ifdef IPHONE
    sdl_flags |= SDL_NOFRAME;
 #else
-   // SDL_WM_SetIcon( icn, NULL );
+   if (inIcon)
+   {
+      SDL_Surface *sdl = SurfaceToSDL(inIcon);
+      SDL_WM_SetIcon( sdl, NULL );
+   }
 #endif
 
 

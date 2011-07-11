@@ -674,7 +674,8 @@ class InstallTool
         neko.Lib.println(inString);
    }
 
-   function createIcon(inWidth:Int, inHeight:Int, inDest:String, inAddToAllFiles:Bool) : Bool
+   function createIcon(inWidth:Int, inHeight:Int, inDest:String, inAddToAllFiles:Bool,
+           inAddToAssets:String = "") : Bool
    {
       // Look for exact match ...
       for(icon in mIcons)
@@ -686,6 +687,8 @@ class InstallTool
                mContext.HAS_ICON = true;
                if (inAddToAllFiles)
                   mAllFiles.push(inDest);
+               if (inAddToAssets!="")
+                  mAssets.push( new Asset(inDest, "image", inAddToAssets, "", mTarget) );
                copyIfNewer(icon.name,inDest,inAddToAllFiles?mAllFiles:[],mVerbose);
                return true;
             }
@@ -693,12 +696,20 @@ class InstallTool
 
       var bmp = getIconBitmap(inWidth,inHeight,inDest);
       if (bmp==null)
-         return false;
+      {
+         if (!neko.FileSystem.exists(inDest))
+            return false;
+      }
+      else
+      {
+         var bytes = bmp.encode("png",0.95);
+         bytes.writeFile(inDest);
+      }
 
-      var bytes = bmp.encode("png",0.95);
-      bytes.writeFile(inDest);
       if (inAddToAllFiles)
          mAllFiles.push(inDest);
+      if (inAddToAssets!="")
+        mAssets.push( new Asset(inDest, "image", inAddToAssets, "", mTarget) );
       mContext.HAS_ICON = true;
       return true;
    }
@@ -731,6 +742,10 @@ class InstallTool
                mContext.HAS_ICON = true;
                if (inTimedFile!="" && !isNewer(icon.name,inTimedFile,mVerbose))
                   return null;
+
+
+
+
                break;
             }
       }
@@ -870,9 +885,6 @@ class InstallTool
 
       mkdir(dest);
 
-      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/neko/haxe");
-      cp_recurse(NME + "/install-tool/neko/hxml",mBuildDir + "/neko/haxe");
-
       var needsNekoApi = false;
       for(ndll in mNDLLs)
       {
@@ -886,9 +898,8 @@ class InstallTool
          InstallTool.copyIfNewer(src,dest + "/nekoapi.ndll",mAllFiles,mVerbose);
       }
 
-      var icon = mDefines.get("APP_ICON");
-      if (icon!="" && icon!=null)
-         copyIfNewer(icon, dest + "/icon.png",mAllFiles,mVerbose);
+      if (createIcon(32,32,mBuildDir + "/neko/icon.png", false, "icon.png"))
+         mContext.WIN_ICON = "icon.png";
 
       var neko = getNeko();
       if (mOS=="Windows")
@@ -898,6 +909,9 @@ class InstallTool
       }
 
       addAssets(dest,"neko");
+
+      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/neko/haxe");
+      cp_recurse(NME + "/install-tool/neko/hxml",mBuildDir + "/neko/haxe");
    }
 
 
@@ -905,6 +919,9 @@ class InstallTool
    {
       var dest = mBuildDir + "/neko/" + neko.Sys.systemName()  + "/";
       run(dest,"nekotools",["boot",mDefines.get("APP_FILE")+".n"]);
+
+      if (isWindows())
+         setWindowsIcon(dest, dest+"/" + mDefines.get("APP_FILE")+".exe");
    }
 
    function runNeko()
@@ -1021,6 +1038,96 @@ class InstallTool
  
    }
 
+   function setWindowsIcon(inTmp:String, inExeName:String)
+   {
+      var name:String="";
+      if (mDefines.exists("APP_ICO"))
+         name = mDefines.get("APP_ICO");
+      else
+      {
+         // Not quite working yet....
+         return;
+
+         var ico = new nme.utils.ByteArray();
+         ico.bigEndian = false;
+         ico.writeShort(0);
+         ico.writeShort(1);
+         ico.writeShort(1);
+
+         for(size in [ 32 ])
+         {
+            var bmp = getIconBitmap(size,size);
+            if (bmp==null)
+               break;
+            ico.writeByte(size);
+            ico.writeByte(size);
+            ico.writeByte(0); // palette
+            ico.writeByte(0); // reserved
+            ico.writeShort(1); // planes
+            ico.writeShort(32); // bits per pixel
+            ico.writeInt(108 + 4*size*size); // Data size
+            var here = ico.length;
+            ico.writeInt(here + 4); // Data offset
+
+            ico.writeInt(108); // size (bytes)
+            ico.writeInt(size);
+            ico.writeInt(size);
+            ico.writeShort(1);
+            ico.writeShort(32);
+            ico.writeInt(3); // Bit fields...
+            ico.writeInt(size*size*4); // SIze...
+            ico.writeInt(0); // res-x
+            ico.writeInt(0); // res-y
+            ico.writeInt(0); // cols
+            ico.writeInt(0); // important
+            // Red
+            ico.writeByte(0); 
+            ico.writeByte(0);
+            ico.writeByte(0xff);
+            ico.writeByte(0);
+            // Green
+            ico.writeByte(0); 
+            ico.writeByte(0xff);
+            ico.writeByte(0);
+            ico.writeByte(0);
+            // Blue
+            ico.writeByte(0xff);
+            ico.writeByte(0); 
+            ico.writeByte(0);
+            ico.writeByte(0);
+            // Alpha
+            ico.writeByte(0); 
+            ico.writeByte(0);
+            ico.writeByte(0);
+            ico.writeByte(0xff);
+
+            //LCS_WINDOWS_COLOR_SPACE
+            ico.writeByte(0x20); 
+            ico.writeByte(0x6e);
+            ico.writeByte(0x69);
+            ico.writeByte(0x57);
+
+            for(j in 0...36)
+               ico.writeByte(0);
+            ico.writeInt(0);
+            ico.writeInt(0);
+            ico.writeInt(0);
+
+            var bits = bmp.getPixels( new nme.geom.Rectangle(0,0,size,size) );
+            ico.writeBytes(bits);
+         }
+
+         name = inTmp + "/icon.ico";
+         neko.io.File.write(name,true);
+
+         var file = neko.io.File.write( name,true);
+         file.writeBytes(ico,0,ico.length);
+         file.close();
+      }
+
+      run(".", NME + "\\ndll\\Windows\\ReplaceVistaIcon.exe", [ inExeName, name] );
+   }
+
 
 
    function updateCpp()
@@ -1030,8 +1137,6 @@ class InstallTool
       var dest = getCppDest();
       mContext.CPP_DIR = mBuildDir + "/cpp/bin";
 
-      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/cpp/haxe");
-      cp_recurse(NME + "/install-tool/cpp/hxml",mBuildDir + "/cpp/haxe");
 
       var content_dest = getCppContentDest();
       var exe_dest = content_dest + (isMac() ? "/MacOS" : "" );
@@ -1053,9 +1158,14 @@ class InstallTool
       }
       else
       {
-         createIcon(32,32, content_dest + "/icon.png",true);
+         if (createIcon(32,32, mInstallBase + "/icon.png",false,"icon.png"))
+            mContext.WIN_ICON = "icon.png";
+
          addAssets(content_dest,"cpp");
       }
+
+      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/cpp/haxe");
+      cp_recurse(NME + "/install-tool/cpp/hxml",mBuildDir + "/cpp/haxe");
    }
 
    function getExt()
@@ -1075,6 +1185,8 @@ class InstallTool
       copyIfNewer(mBuildDir+"/cpp/bin/ApplicationMain"+dbg+ext, file, mAllFiles,mVerbose);
       if (isMac() || isLinux())
          run("","chmod", [ "755", file ]);
+      if (isWindows())
+         setWindowsIcon(getCppDest(), file);
    }
 
    function runCpp()
@@ -1101,11 +1213,8 @@ class InstallTool
       for(ndll in mNDLLs)
          ndll.copy("GPH/", dest, true, mVerbose, mAllFiles, "gph");
 
-      var icon = mDefines.get("APP_ICON");
-      if (icon!="")
-      {
-         copyIfNewer(icon, dest + "/icon.png", mAllFiles,mVerbose);
-      }
+
+      createIcon(32,32, dest + "/icon.png",true);
 
       addAssets(dest,"cpp");
    }

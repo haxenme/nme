@@ -491,7 +491,7 @@ public:
 
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, const char *inIcon)
+   unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
 	DWORD	dVersion=0;
 	DWORD	dDate=0;
