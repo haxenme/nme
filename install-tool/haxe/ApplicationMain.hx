@@ -22,13 +22,13 @@ class ApplicationMain
       if (inName=="::id::")
       {
          ::if (type=="image")::
-            return nme.display.BitmapData.load("::resoName::");
+            return nme.display.BitmapData.load("::resourceName::");
          ::elseif (type=="sound")::
-            return new nme.media.Sound(new nme.net.URLRequest("::resoName::"),null,false);
+            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"),null,false);
          ::elseif (type=="music")::
-            return new nme.media.Sound(new nme.net.URLRequest("::resoName::"),null,true);
+            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"),null,true);
          ::else::
-            return nme.utils.ByteArray.readFile("::resoName::");
+            return nme.utils.ByteArray.readFile("::resourceName::");
          ::end::
       }
       ::end::

@@ -1,8 +1,8 @@
 -main ApplicationMain ::HAXE_FLAGS::
--cp bin/android/haxe
--cpp bin/android/haxe/debug
+-cp ::BUILD_DIR::/android/haxe
+-cpp ::BUILD_DIR::/android/haxe/debug
 -D android
 -debug
 --remap flash:nme
--cmd haxelib run nme copy-if-newer bin/android/haxe/debug/libApplicationMain-debug.so bin/android/project/libs/armeabi/libApplicationMain.so
+-cmd haxelib run nme copy-if-newer ::BUILD_DIR::/android/haxe/debug/libApplicationMain-debug.so ::BUILD_DIR::/android/project/libs/armeabi/libApplicationMain.so
 
