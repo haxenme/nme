@@ -698,14 +698,6 @@ public:
       if (mPrimaryTouchHash==0)
          mPrimaryTouchHash = [aTouch hash];
 
-      if(aTouch.tapCount==1)
-      {
-         Event mouse(etMouseClick, thumbPoint.x, thumbPoint.y);
-         if (!mMultiTouch || mouse.value==mPrimaryTouchHash)
-            mouse.flags |= efPrimaryTouch;
-         mStage->OnEvent(mouse);
-      }
-
       if (mMultiTouch)
       {
          Event mouse(etTouchBegin, thumbPoint.x, thumbPoint.y);
@@ -766,7 +758,7 @@ public:
 
       CGPoint thumbPoint;
       thumbPoint = [aTouch locationInView:aTouch.view];
-
+//printf("touchesEnd %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
 
       if (mMultiTouch)
       {
