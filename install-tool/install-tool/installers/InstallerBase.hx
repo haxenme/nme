@@ -455,7 +455,7 @@ class InstallerBase {
 			}
 			
 			var exclude:String = ".*|cvs|thumbs.db|desktop.ini";
-			var include:String = "*";
+			var include:String = "";
 			
 			if (element.has.exclude) {
 				
@@ -467,9 +467,35 @@ class InstallerBase {
 				
 				include = element.att.include;
 				
+			} else {
+				
+				switch (type) {
+					
+					case "image":
+						
+						include = "*.jpg|*.jpeg|*.png|*.svg|*.gif";
+					
+					case "sound":
+						
+						include = "*.wav|*.ogg";
+					
+					case "music":
+						
+						include = "*.mp2|*.mp3";
+					
+					case "font":
+						
+						include = "*.otf|*.ttf";
+					
+					default:
+						
+						return;
+					
+				}
+				
 			}
 			
-			parseAssetsElementDirectory (path, rename, include, exclude, type, embed);
+			parseAssetsElementDirectory (path, rename, include, exclude, type, embed, true);
 			
 		} else {
 			
@@ -537,17 +563,17 @@ class InstallerBase {
 	}
 	
 	
-	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String):Void {
+	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
 		
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
 		for (file in files) {
 			
-			if (FileSystem.isDirectory (path + "/" + file)) {
+			if (FileSystem.isDirectory (path + "/" + file) && recursive) {
 				
 				if (filter (file, "*", exclude)) {
 					
-					parseAssetsElementDirectory (path + "/" + file, rename + "/" + file, include, exclude, type, embed);
+					parseAssetsElementDirectory (path + "/" + file, rename + "/" + file, include, exclude, type, embed, true);
 					
 				}
 				
