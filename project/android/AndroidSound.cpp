@@ -32,7 +32,7 @@ public:
          jmethodID mid = gEnv->GetStaticMethodID(cls, "playSound", "(IDDI)I");
          if (mid > 0)
 		   {
-			      mStreamID = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume, inTransform.volume, loops );
+			      mStreamID = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 		   }
 		}
     }
@@ -86,7 +86,7 @@ public:
          jmethodID mid = gEnv->GetStaticMethodID(cls, "playMusic", "(IDDI)I");
          if (mid > 0)
 		   {
-			   mState = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume, inTransform.volume, loops );
+			   mState = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 		   }
 		}
     }
