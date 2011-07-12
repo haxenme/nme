@@ -100,29 +100,24 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	private function getAdb ():String {
+	private function getADB ():Dynamic {
 		
-		var adb:String = defines.get ("ANDROID_SDK") + "/tools/adb";
+		var path:String = defines.get ("ANDROID_SDK") + "/tools/";
+		var name:String = "adb";
 		
 		if (defines.get ("HOST") == "windows") {
 			
-			adb += ".exe";
+			name += ".exe";
 			
 		}
 		
-		if (!FileSystem.exists (adb)) {
+		if (!FileSystem.exists (path + name)) {
 			
-			adb = defines.get ("ANDROID_SDK") + "/platform-tools/adb";
-			
-			if (defines.get ("HOST") == "windows") {
-				
-				adb += ".exe";
-				
-			}
+			path = defines.get ("ANDROID_SDK") + "/platform-tools/";
 			
 		}
 		
-		return adb;
+		return { path: path, name: name };
 		
 	}
 	
@@ -177,25 +172,25 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		var apk:String = buildDirectory + "/android/project/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
-		var adb:String = getAdb ();
+		var apk:String = FileSystem.fullPath (buildDirectory) + "/android/project/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
+		var adb:Dynamic = getADB ();
 		
-		runCommand ("", adb, [ "install", "-r", apk ]);
+		runCommand (adb.path, adb.name, [ "install", "-r", apk ]);
 		
 		var pack:String = defines.get ("APP_PACKAGE");
 		
-		runCommand ("", adb, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
-		runCommand ("", adb, [ "logcat", "*" ]);
+		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
+		runCommand (adb.path, adb.name, [ "logcat", "*" ]);
 		
 	}
 	
 	
 	private function uninstall ():Void {
 		
-		var adb:String = getAdb ();
+		var adb:Dynamic = getADB ();
 		var pack:String = defines.get ("APP_PACKAGE");
 		
-		runCommand ("", adb, [ "uninstall", pack ]);
+		runCommand (adb.path, adb.name, [ "uninstall", pack ]);
 		
 	}
 	

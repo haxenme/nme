@@ -1,15 +1,117 @@
-package nekonme.install-tool.install-tool.targets;
+package installers;
 
-/**
- * ...
- * @author Joshua Granick
- */
 
-class Flash {
+import neko.io.Path;
+import neko.Lib;
+import neko.Sys;
 
-	public function new() {
+
+class FlashInstaller extends InstallerBase {
+	
+	
+	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+		
+		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+		
+		if (command != "rerun") {
+			
+			update ();
+			
+		}
+		
+		if (command == "build") {
+			
+			build ();
+			
+		}
+		
+		if (command == "build" || command == "rerun" || command == "update") {
+			
+			run ();
+			
+		}
 		
 	}
+	
+	
+	private function build ():Void {
+		
+		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
+		
+		runCommand ("", "haxe", [ hxml ] );
+		
+		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE") + "/" + defines.get ("APP_FILE");
+		
+		if (debug) {
+			
+			copyIfNewer (buildDirectory + "/flash/bin/ApplicationMain-debug", destination, verbose);
+			
+		} else {
+			
+			copyIfNewer (buildDirectory + "/flash/bin/ApplicationMain", destination, verbose);
+			
+		}
+		
+		for (asset in assets) {
+			
+			asset.resourceName = generateFlatName (asset.id);
+			mkdir (Path.directory (destination + asset.targetPath));
+			copyIfNewer (asset.sourcePath, destination + asset.targetPath, verbose);
+			
+		}
+		
+		runCommand (buildDirectory + "/flash", "palm-package", [ defines.get ("APP_FILE"), "--use-v1-format" ] );
+		
+	}
+	
+	
+	private function run ():Void {
+		
+		var destination:String = buildDirectory + "/flash/bin";
+		var player:String = Sys.getEnv ("FLASH_PLAYER_EXE");
+		
+		if (player == null) {
+			
+			if (defines.exists ("macos")) {
+				
+				player = "/Applications/Flash Player Debugger.app/Contents/MacOS/Flash Player Debugger";
+				
+			}
+			
+		}
+		
+		if (player == null || player == "") {
+			
+			var dotSlash:String = "./";
+			
+			if (defines.exists ("windows")) {
+				
+				dotSlash = ".\\";
+				
+			}
+			
+			runCommand (destination, dotSlash + defines.get ("APP_FILE") + ".swf", []);
+			
+		} else {
+			
+			runCommand (destination, player, [ defines.get ("APP_FILE") + ".swf" ]);
+			
+		}
+		
+	}
+	
+	
+	private function update ():Void {
+		
+		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE") + "/";
+		mkdir (destination);
+		
+		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (nme + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
+		recursiveCopy (nme + "/install-tool/flash/template", destination + "/flash/haxe");
+		
+	}
+	
 	
 }
 

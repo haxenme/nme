@@ -82,14 +82,6 @@ class WebOSInstaller extends InstallerBase {
 			
 		}
 		
-		/*var icon:String = defines.get ("APP_ICON");
-		
-		if (icon != null && icon != "") {
-			
-			copyIfNewer (icon, destination + "icon.png", verbose);
-			
-		}*/
-		
 		for (asset in assets) {
 			
 			mkdir (Path.directory (destination + asset.targetPath));
