@@ -252,6 +252,9 @@
   <lib name="-ldl" if="android"/>
   <lib name="-lGLESv1_CM" if="android"/>
   <lib name="-lz" if="android"/>
+  
+  <lib name="-lGLES_CM" if="webos"/>
+  <lib name="-lpdl" if="webos"/>
 
   <lib name="gdi32.lib" if="windows"/>
   <lib name="opengl32.lib" if="windows"/>
