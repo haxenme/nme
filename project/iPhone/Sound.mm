@@ -462,7 +462,7 @@ public:
 		float panY=0;
 		float panZ=0;
 		alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
-		return (1-panX)/3;
+		return (1-panX)/2;
 	}
 	
    double getRight()   
@@ -471,7 +471,7 @@ public:
 	    float panY=0;
 		float panZ=0;
 		alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
-		return (panX+1)/3;
+		return (panX+1)/2;
    }
 	
    double getPosition()  
