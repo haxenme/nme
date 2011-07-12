@@ -132,7 +132,8 @@ public:
        // on a Sound, so let's play
        LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
        theActualPlayer.currentTime = inOffset/1000;
-	   [theActualPlayer setPan: inTransform.pan];
+		if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+			[theActualPlayer setPan: inTransform.pan];
 	   [theActualPlayer setVolume: inTransform.volume];
        [theActualPlayer play];
 
@@ -198,11 +199,19 @@ public:
    
    double getLeft()  {
     LOG_SOUND("AVAudioPlayerChannel getLeft()");
-    return (1-[theActualPlayer pan])/2;
+	if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])	   
+	{
+		return (1-[theActualPlayer pan])/2;
+	}
+	   return 0.5;
    }
    double getRight()   {
     LOG_SOUND("AVAudioPlayerChannel getRight()");
-    return ([theActualPlayer pan] + 1)/2;
+    if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+	{
+		return ([theActualPlayer pan] + 1)/2;
+	}
+	   return 0.5;
    }
    double getPosition()   {
     LOG_SOUND("AVAudioPlayerChannel getPosition()");
@@ -210,7 +219,10 @@ public:
    }
    void setTransform(const SoundTransform &inTransform) {
     LOG_SOUND("AVAudioPlayerChannel setTransform()");
-    [theActualPlayer setPan: inTransform.pan];
+	   if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+	   {
+		   [theActualPlayer setPan: inTransform.pan];
+	   }
     [theActualPlayer setVolume: inTransform.volume];
    }
    void stop()
