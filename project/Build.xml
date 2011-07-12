@@ -5,7 +5,6 @@
 <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
 <set name="sdl" value="1" if="linux"/>
-<set name="sdl" value="1" if="webos"/>
 <set name="sdl" value="1" if="macos"/>
 <set name="sdl" value="1" if="windows"/>
 <set name="ogl" value="1" if="windows"/>
@@ -13,6 +12,7 @@
 <set name="ogl" value="1" if="gph"/>
 <set name="ogl" value="1" if="iphone"/>
 <set name="ogl" value="1" if="android"/>
+<set name="ogl" value="1" if="webos"/>
 
 <set name="mobile" value="1" if="iphone"/>
 <set name="mobile" value="1" if="android"/>
@@ -66,8 +66,6 @@
 
 <files id="webos">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include" />
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
   <file name="linux/NativeFont.cpp"/>
   <file name="webOS/System.cpp"/>
 </files>
@@ -102,8 +100,6 @@
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="webos"/>
-  <compilerflag value="-DSDL_OGL" if="webos"/>
 
   <file name="common/Surface.cpp"/>
   <file name="common/Utils.cpp"/>
@@ -170,8 +166,6 @@
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include" if="sdl_static"/>
   <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl_static"/>
-  <compilerflag value="-I../../sdl-static/include" if="webos"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="webos"/>
   <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
   <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
   <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
