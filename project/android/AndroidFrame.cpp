@@ -123,7 +123,7 @@ public:
                   case  etTouchBegin: type = etMouseDown; break;
                   case  etTouchEnd:   type = etMouseUp; break;
                   case  etTouchMove : type = etMouseMove; break;
-                  case  etTouchTap:   type = etMouseClick; break;
+                  case  etTouchTap:   return; break;
                }
             }
 
