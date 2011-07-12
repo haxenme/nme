@@ -253,6 +253,8 @@
   <lib name="-lGLESv1_CM" if="android"/>
   <lib name="-lz" if="android"/>
   
+  <lib name="-lSDL" if="webos"/>
+  <lib name="-lSDL_mixer" if="webos" />
   <lib name="-lGLES_CM" if="webos"/>
   <lib name="-lpdl" if="webos"/>
 
