@@ -180,7 +180,7 @@ class AndroidInstaller extends InstallerBase {
 		var pack:String = defines.get ("APP_PACKAGE");
 		
 		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
-		runCommand (adb.path, adb.name, [ "logcat", "*" ]);
+		runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
 		
 	}
 	
