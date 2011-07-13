@@ -589,6 +589,7 @@ void TerminateMainLoop()
    Mix_CloseAudio();
    #endif
    #ifdef WEBOS
+   closelog();
    PDL_Quit();
    #endif
    sgDead = true;
