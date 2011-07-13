@@ -5,6 +5,7 @@ import neko.io.Process;
 class Utils {
 	
 	
+	private static var currentSeedNumber:Int = 0;
 	private static var usedFlatNames:Hash <String> = new Hash <String> ();
 	
 	
@@ -82,6 +83,13 @@ class Utils {
 		return result;
 		
 	}
+	
+	
+	public static function getUniqueID ():String {
+		
+		return StringTools.hex (currentSeedNumber++, 8);
+		
+   }
 	
 	
 }

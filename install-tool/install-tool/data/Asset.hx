@@ -14,6 +14,7 @@ class Asset {
 	public static var TYPE_SOUND:String = "sound";
 	
 	public var embed:Bool;
+	public var hash:String;
 	public var id:String;
 	public var resourceName:String;
 	public var sourcePath:String;
@@ -82,6 +83,8 @@ class Asset {
 			this.embed = false;
 			
 		}
+		
+		hash = Utils.getUniqueID ();
 		
 	}
 	

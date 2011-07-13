@@ -42,6 +42,8 @@ class IOSInstaller extends InstallerBase {
 		
 		super.generateContext ();
 		
+		context.HAS_ICON = false;
+		
 	}
 	
 	
@@ -67,8 +69,6 @@ class IOSInstaller extends InstallerBase {
             has_icon = false;
       }*/
 		
-		context.HAS_ICON = false;
-		
 		recursiveCopy (nme + "/install-tool/iphone/haxe", destination + "/haxe");
 		recursiveCopy (nme + "/install-tool/iphone/Classes", destination + "Classes");
 		recursiveCopy (nme + "/install-tool/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
@@ -80,7 +80,7 @@ class IOSInstaller extends InstallerBase {
 			
 			if (ndll.name != "nme") {
 				
-				copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + "." + target + ".a"), destination + "lib/" + ndll.name + "." + target + ".a", verbose);
+				copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + "." + target + ".a"), destination + "lib/lib" + ndll.name + "." + target + ".a", verbose);
 				
 			} else {
 				

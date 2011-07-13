@@ -8,6 +8,7 @@ import neko.Sys;
 class NDLL {
 	
 	
+	public var hash:String;
 	public var haxelib:String;
 	public var name:String;
 	public var needsNekoApi:Bool;
@@ -18,6 +19,8 @@ class NDLL {
 		this.name = name;
 		this.haxelib = haxelib;
 		this.needsNekoApi = needsNekoApi;
+		
+		hash = Utils.getUniqueID ();
 		
 	}
 	
