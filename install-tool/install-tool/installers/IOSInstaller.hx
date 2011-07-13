@@ -80,7 +80,7 @@ class IOSInstaller extends InstallerBase {
 			
 			if (ndll.name != "nme") {
 				
-				copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + "." + target + ".a"), destination + "lib/" + ndll.name + "." + target + ".a", verbose);
+				copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + "." + target + ".a"), destination + "lib/" + ndll.name + "." + target + ".a", verbose);
 				
 			} else {
 				
