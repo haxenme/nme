@@ -27,7 +27,7 @@ class NDLL {
 	
 	public function getSourcePath (directoryName:String, filename:String):String {
 		
-		if (haxelib == "") {
+		if (haxelib == "" || haxelib == "hxcpp") {
 			
 			var path:String = Utils.getHaxelib ("hxcpp") + "/bin/" + directoryName + "/" + filename;
 			

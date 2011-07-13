@@ -40,6 +40,24 @@ class IOSInstaller extends InstallerBase {
 			
 		}
 		
+		for (ndll in ndlls) {
+			
+			if (ndll.haxelib == "") {
+				
+				if (ndll.name == "nme") {
+					
+					ndll.haxelib = "nme";
+					
+				} else {
+					
+					ndll.name = "lib" + ndll.name;
+					
+				}
+				
+			}
+			
+		}
+		
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
@@ -78,17 +96,11 @@ class IOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			if (ndll.name != "nme") {
-				
-				copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + "." + target + ".a"), destination + "lib/lib" + ndll.name + "." + target + ".a", verbose);
-				
-			} else {
-				
-				copyIfNewer (ndll.getSourcePath ("iPhone", "nme." + target + ".a"), destination + "lib/nme." + target + ".a", verbose);
-				
-			}
+			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + "." + target + ".a"), destination + "lib/" + ndll.name + "." + target + ".a", verbose);
 			
 		}
+		
+		mkdir (destination + "assets");
 		
 		for (asset in assets) {
 			
