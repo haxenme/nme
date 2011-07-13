@@ -79,8 +79,8 @@
 
 
        ::foreach ndlls::
-           11B0000000000018::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphoneos.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
-           11B0000000000008::hash:: /* lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphonesim.a; path = lib/::if (haxelib=="")::lib::end::::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
+           11B0000000000018::hash:: /* lib/::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphoneos.a; path = lib/::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
+           11B0000000000008::hash:: /* lib/::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphonesim.a; path = lib/::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
        ::end::
 
    1E2E17A5131E8B5D0048F3C7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
