@@ -65,10 +65,12 @@
   <file name="android/System.cpp"/>
 </files>
 
+<set name="dynamic_sdl" value="1" if="webos"/>
+
 <files id="webos">
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12"/>
+  <compilerflag value="-I${PalmPDK}/include/SDL" />
   <file name="linux/NativeFont.cpp"/>
   <file name="webOS/System.cpp"/>
 </files>
@@ -97,7 +99,8 @@
 <files id="common">
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include" unless="gph"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl" unless="gph"/>
+  <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
+  <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl" unless="dynamic_sdl"/>
   <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
@@ -161,6 +164,7 @@
 <set name="sdl_dynamic_path" value="-L/opt/local/lib" if="macos" />
 <set name="sdl_dynamic_include1" value="-I/opt/local/include" if="macos" />
 <set name="sdl_dynamic_include2" value="-I/opt/local/include/SDL-hidden" if="macos" />
+<set name="sdl_dynamic_include1" value="-I${PalmPDK}/include/SDL" if="webos" />
 
 
 
@@ -222,12 +226,15 @@
   <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
   <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="android"/>
 
+  <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
+
   <lib name="-lSDL" if="dynamic_sdl"/>
   <lib name="-lSDL_mixer" if="dynamic_sdl"/>
-  <lib name="-lvorbis" if="dynamic_sdl"/>
-  <lib name="-logg" if="dynamic_sdl"/>
-  <lib name="-lsmpeg" if="dynamic_sdl"/>
-  <lib name="-lfreetype" if="dynamic_sdl"/>
+  <lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
+  <lib name="-logg" if="dynamic_sdl" unless="webos"/>
+  <lib name="-lsmpeg" if="dynamic_sdl" unless="webos"/>
+  <lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
+  <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>
   <lib name="-lSDL" if="dynamic_sdl"/>
   <lib name="-lcurl" if="dynamic_sdl"/>
   <lib name="-lpng" if="dynamic_sdl"/>
