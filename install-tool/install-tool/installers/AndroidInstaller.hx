@@ -63,7 +63,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			asset.resourceName = generateFlatName (asset.id);
+			asset.resourceName = Utils.generateFlatName (asset.id);
 			var targetPath:String = "";
 			
 			switch (asset.type) {

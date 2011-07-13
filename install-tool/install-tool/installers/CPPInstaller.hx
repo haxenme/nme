@@ -2,6 +2,7 @@ package installers;
 
 
 import neko.io.Path;
+import neko.io.Process;
 import neko.Lib;
 import neko.Sys;
 
@@ -15,6 +16,12 @@ class CPPInstaller extends InstallerBase {
 	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
 		
 		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+		
+		if (target == "windows") {
+			
+			importMSVC ();
+			
+		}
 		
 		if (command != "rerun") {
 			
@@ -84,7 +91,7 @@ class CPPInstaller extends InstallerBase {
 	
 	private override function generateContext ():Void {
 		
-		var targetName:String = target;
+		targetName = target;
 		
 		if (defines.exists ("NME_64")) {
 			
@@ -96,6 +103,54 @@ class CPPInstaller extends InstallerBase {
 		compilerFlags.push ("-cp " + buildDirectory + "/" + targetName + "/haxe");
 		
 		super.generateContext ();
+		
+	}
+	
+	
+	private function importMSVC ():Void {
+		
+		var importProcess:Process = new Process ("cmd.exe", [ "/C", Utils.getHaxelib ("hxcpp") + "\\build-tool\\msvc10-setup.bat" ]);
+		var foundVariables:Bool = false;
+		
+		try {
+			
+			while (true) {
+				
+				var string:String = importProcess.stdout.readLine ();
+				
+				if (string == "HXCPP_VARS") {
+					
+					foundVariables = true;
+					
+				}
+				
+				if (foundVariables) {
+					
+					if (verbose) {
+						
+						Lib.println (string);
+						
+					}
+					
+					var indexOfEquals:Int = string.indexOf ("=");
+					var name:String = string.substr (0, indexOfEquals);
+					
+					switch (name.toLowerCase ()) {
+						
+						case "path", "vcinstalldir", "windowssdkdir", "framework35version", "frameworkdir", "frameworkdir32", "frameworkversion", "frameworkversion32", "devenvdir", "include", "lib", "libpath":
+							
+							var value:String = string.substr (indexOfEquals + 1);
+							
+							defines.set (name, value);
+							Sys.putEnv (name, value);
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch (e:Dynamic) { };
 		
 	}
 	

@@ -32,7 +32,6 @@ class InstallerBase {
 	private var target:String;
 	private var verbose:Bool;
 	
-	private static var usedFlatNames:Hash <String> = new Hash <String> ();
 	private static var varMatch = new EReg("\\${(.*?)}","");
 	
 	
@@ -226,46 +225,6 @@ class InstallerBase {
 			context.HAXE_FLAGS = "\n" + compilerFlags.join ("\n");
 			
 		}
-		
-	}
-	
-	
-	private function generateFlatName (id:String):String {
-		
-		var chars:String = id.toLowerCase ();
-		var flatName:String = "";
-		
-		for (i in 0...chars.length) {
-			
-			var code = chars.charCodeAt (i);
-			
-			if ((i > 0 && code >= "0".charCodeAt (0) && code <= "9".charCodeAt (0)) || (code >= "a".charCodeAt (0) && code <= "z".charCodeAt (0)) || (code == "_".charCodeAt (0))) {
-				
-				flatName += chars.charAt (i);
-				
-			} else {
-				
-				flatName += "_";
-				
-			}
-			
-		}
-		
-		if (flatName == "") {
-			
-			flatName = "_";
-			
-		}
-		
-		while (usedFlatNames.exists (flatName)) {
-			
-			flatName += "_";
-		 
-		}
-		
-		usedFlatNames.set (flatName, "1");
-		
-		return flatName;
 		
 	}
 	
