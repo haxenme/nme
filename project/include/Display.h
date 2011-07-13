@@ -496,7 +496,7 @@ Stage *IPhoneGetStage();
 typedef void (*FrameCreationCallback)(Frame *);
 
 void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, Surface *inIcon );
+   unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon );
 
 
 } // end namespace nme

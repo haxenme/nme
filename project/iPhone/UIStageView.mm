@@ -1037,7 +1037,7 @@ void SetNextWakeUp(double inWakeUp) { sgWakeUp = inWakeUp; }
 
 
 void CreateMainFrame(FrameCreationCallback inCallback,
-   int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, Surface *inIcon )
+   int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
 {
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();

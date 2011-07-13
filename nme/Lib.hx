@@ -25,7 +25,7 @@ class Lib
 
    public static function create(inOnLoaded:Void->Void,inWidth:Int, inHeight:Int,
                       inFrameRate:Float = 60.0,  inColour:Int = 0xffffff,
-                      inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon : nme.display.BitmapData)
+                      inFlags:Int = 0x0f, inTitle:String = "NME", inPackage:String = "", ?inIcon : nme.display.BitmapData)
    {
       if (sIsInit)
       {
@@ -50,7 +50,7 @@ class Lib
             inOnLoaded();
             #if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
         },
-        inWidth,inHeight,inFlags,inTitle,inIcon==null?null:inIcon.nmeHandle );
+        inWidth,inHeight,inFlags,inTitle,inPackage,inIcon==null?null:inIcon.nmeHandle );
    }
 
 

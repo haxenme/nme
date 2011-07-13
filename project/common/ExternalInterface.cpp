@@ -714,7 +714,7 @@ value nme_create_main_frame(value *arg, int nargs)
 {
    if (!sgIDsInit)
       InitIDs();
-   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
+   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aPackage, aIcon, aSIZE };
 
    sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
 
@@ -723,7 +723,7 @@ value nme_create_main_frame(value *arg, int nargs)
 
    CreateMainFrame(OnMainFrameCreated,
        (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), val_string(arg[aTitle]), icon );
+       val_int(arg[aFlags]), val_string(arg[aTitle]), val_string(arg[aPackage]), icon );
 
    return alloc_null();
 }

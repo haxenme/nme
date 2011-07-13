@@ -223,7 +223,7 @@ public:
 
 
 void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, Surface *inIcon )
+   unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
 {
    __android_log_print(ANDROID_LOG_INFO, "CreateMainFrame!", "creating...");
    sOnFrame = inOnFrame;

@@ -8,6 +8,7 @@
 
 #ifdef WEBOS
 #include "PDL.h"
+#include <syslog.h>
 #endif
 
 #ifdef NME_MIXER
@@ -421,13 +422,15 @@ SDLFrame *sgSDLFrame = 0;
 SDL_Joystick *joystick = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, Surface *inIcon )
+   unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
 {
 #ifdef HX_MACOS
    MacBoot();
 #endif
 #ifdef WEBOS
-   PDL_Init(0);
+   openlog (inPackage, 0, LOG_USER);
+   if (PDL_GetPDKVersion () >= 100)
+	  PDL_Init(0);
 #endif
 	
    unsigned int sdl_flags = 0;
