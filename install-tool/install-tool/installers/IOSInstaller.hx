@@ -1,6 +1,7 @@
 package installers;
 
 
+import data.NDLL;
 import neko.FileSystem;
 import neko.io.Path;
 import neko.Lib;
@@ -39,6 +40,11 @@ class IOSInstaller extends InstallerBase {
 			}
 			
 		}
+		
+		ndlls.push (new NDLL ("libcurl", "nme"));
+		ndlls.push (new NDLL ("libpng", "nme"));
+		ndlls.push (new NDLL ("libjpeg", "nme"));
+		ndlls.push (new NDLL ("libz", "nme"));
 		
 		for (ndll in ndlls) {
 			
@@ -96,7 +102,8 @@ class IOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + "." + target + ".a"), destination + "lib/" + ndll.name + "." + target + ".a", verbose);
+			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphoneos.a"), destination + "lib/" + ndll.name + ".iphoneos.a", verbose);
+			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphonesim.a"), destination + "lib/" + ndll.name + ".iphonesim.a", verbose);
 			
 		}
 		
