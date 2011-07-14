@@ -111,7 +111,7 @@ class IOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
+			mkdir (Path.directory (destination + "assets/" + asset.id));
 			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.id, verbose);
 			
 		}

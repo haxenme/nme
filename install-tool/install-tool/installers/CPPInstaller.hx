@@ -234,13 +234,13 @@ class CPPInstaller extends InstallerBase {
 			
 		}
 		
-		var icon:String = defines.get ("APP_ICON");
+		/*var icon:String = defines.get ("APP_ICON");
 		
 		if (icon != null && icon != "") {
 			
 			copyIfNewer (icon, destination + "icon.png", verbose);
 			
-		}
+		}*/
 		
 		for (asset in assets) {
 			
