@@ -14,7 +14,7 @@ class NDLL {
 	public var needsNekoApi:Bool;
 	
 	
-	public function new (name:String, haxelib:String, needsNekoApi:Bool) {
+	public function new (name:String, haxelib:String, ?needsNekoApi:Bool = false) {
 		
 		this.name = name;
 		this.haxelib = haxelib;
