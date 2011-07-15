@@ -11,6 +11,11 @@ import neko.Sys;
 
 
 class InstallTool {
+   static var mOS:String = neko.Sys.systemName();
+
+   public static function isMac() { return mOS.substr(0,3)=="Mac"; }
+   public static function isLinux() { return mOS.substr(0,5)=="Linux"; }
+   public static function isWindows() { return mOS.substr(0,3)=="Win"; }
 	
 	
 	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
@@ -294,8 +299,21 @@ class InstallTool {
 				defines.set ("NME_CONFIG", ".hxcpp_config.xml");
 				
 			}
+
+         var target = words[1];
+         if (target=="cpp")
+         {
+            if (isWindows())
+               target="windows";
+            else if (isLinux())
+               target="linux";
+            else if (isMac())
+               target="mac";
+            else
+               throw "Unrecognized cpp host: " + mOS;
+         }
 			
-			new InstallTool (nme, command, defines, includePaths, words[0], words[1], verbose, debug);
+			new InstallTool (nme, command, defines, includePaths, words[0], target, verbose, debug);
 			
 		}
 		

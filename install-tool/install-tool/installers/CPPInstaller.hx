@@ -17,11 +17,11 @@ class CPPInstaller extends InstallerBase {
 		
 		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
 		
-		if (target == "windows") {
+		//if (target == "windows") {
 			
-			importMSVC ();
+		//	importMSVC ();
 			
-		}
+		//}
 		
 		if (command != "rerun") {
 			
@@ -35,7 +35,7 @@ class CPPInstaller extends InstallerBase {
 			
 		}
 		
-		if (command == "build" || command == "rerun" || command == "update") {
+         if (command == "build" || command == "rerun" || command == "update") {
 			
 			run ();
 			

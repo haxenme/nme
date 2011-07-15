@@ -472,7 +472,8 @@ class InstallerBase {
 			
 			for (childElement in element.elements) {
 				
-				var childPath:String = substitute (childElement.att.path);
+				var childPath:String = substitute(
+               childElement.has.name ? childElement.att.name : childElement.att.path);
 				var childRename:String = childPath;
 				var childEmbed:String = embed;
 				var childType:String = type;
