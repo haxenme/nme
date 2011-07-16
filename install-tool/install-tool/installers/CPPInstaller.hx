@@ -16,7 +16,7 @@ class CPPInstaller extends DesktopInstaller {
       var dbg = debug ? "-debug" : "";
       var extension = (targetName=="windows") ? ".exe" : "";
 
-      copyIfNewer ( getBuildDir() + "/ApplicationMain" + dbg + extension, inExe, verbose);
+      copyIfNewer ( getBuildDir() + "/ApplicationMain" + dbg + extension, inExe );
    }
 
 	override function generateContext ():Void {

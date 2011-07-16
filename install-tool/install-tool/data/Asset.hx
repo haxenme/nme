@@ -52,7 +52,7 @@ class Asset {
 			
 			switch (extension.toLowerCase ()) {
 				
-				case "jpg", "jpeg", "png", "svg", "gif":
+				case "jpg", "jpeg", "png", "gif":
 					
 					this.type = TYPE_IMAGE;
 				

@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import data.Icon;
+import data.Icons;
 import data.NDLL;
 import haxe.Template;
 import haxe.xml.Fast;
@@ -24,29 +25,31 @@ class InstallerBase {
 	private var context:Dynamic;
 	private var debug:Bool;
 	private var defines:Hash <String>;
-	private var icons:Array <Icon>;
+	private var icons:Icons;
 	private var includePaths:Array <String>;
 	private var ndlls:Array <NDLL>;
+   private var allFiles:Array<String>;
 	private var nme:String;
 	private var projectFile:String;
 	private var target:String;
-	private var verbose:Bool;
 
    var isMac:Bool;
    var isLinux:Bool;
    var isWindows:Bool;
 	
 	private static var varMatch = new EReg("\\${(.*?)}","");
+
 	
    public function new()
    {
 		assets = new Array <Asset> ();
 		compilerFlags = new Array <String> ();
-		icons = new Array <Icon> ();
+		icons = new Icons();
+      allFiles = [];
 		ndlls = new Array <NDLL> ();
    }
 	
-	public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+	public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool) {
 		
 		this.nme = nme;
 		this.command = command;
@@ -54,7 +57,6 @@ class InstallerBase {
 		this.includePaths = includePaths;
 		this.projectFile = projectFile;
 		this.target = target;
-		this.verbose = verbose;
 		this.debug = debug;
 		
 		
@@ -130,7 +132,9 @@ class InstallerBase {
 
 	
 	
-	private function copyIfNewer (source:String, destination:String, verbose:Bool) {
+	private function copyIfNewer (source:String, destination:String) {
+      
+      allFiles.push(destination);
 		
 		if (!isNewer (source, destination)) {
 			
@@ -138,15 +142,21 @@ class InstallerBase {
 			
 		}
 		
-		if (verbose) {
-			
-			Lib.println ("Copy " + source + " to " + destination);
-			
-		}
+		print("Copy " + source + " to " + destination);
 		
 		File.copy (source, destination);
-		
 	}
+
+   function addFile(inFile:String) : Bool
+   {
+      if (inFile!=null && inFile!="")
+      {
+         allFiles.push(inFile);
+         return true;
+         print("Add to installer: " + inFile);
+      }
+      return false;
+   }
 	
 	
 	private function copyFile (source:String, destination:String, process:Bool = true) {
@@ -166,7 +176,7 @@ class InstallerBase {
 			
 		} else {
 			
-			copyIfNewer (source, destination, verbose);
+			copyIfNewer (source, destination);
 			
 		}
 		
@@ -384,7 +394,7 @@ class InstallerBase {
 	
    function print(inMessage:String)
    {
-      if (verbose)
+      if (InstallTool.verbose)
 			Lib.println(inMessage);
    }
 	
@@ -490,7 +500,7 @@ class InstallerBase {
 					
 					case "image":
 						
-						include = "*.jpg|*.jpeg|*.png|*.svg|*.gif";
+						include = "*.jpg|*.jpeg|*.png|*.gif";
 					
 					case "sound":
 						
@@ -728,7 +738,7 @@ class InstallerBase {
 							
 						}
 						
-						icons.push (new Icon (name, width, height));
+						icons.add (new Icon (name, width, height));
 					
 					case "classpath":
 						
@@ -808,38 +818,7 @@ class InstallerBase {
 	
 	
 	function runCommand (path:String, command:String, args:Array<String>) {
-		
-		var oldPath:String = "";
-		
-		if (path != "") {
-			
-			print("cd " + path);
-			
-			oldPath = Sys.getCwd ();
-			Sys.setCwd (path);
-			
-		}
-		
-		print(command + " " + args.join (" "));
-		
-		var result:Dynamic = Sys.command (command, args);
-		
-		if (result == 0)
-			print("Ok.");
-			
-		
-		if (oldPath != "") {
-			
-			Sys.setCwd (oldPath);
-			
-		}
-		
-		if (result != 0) {
-			
-			throw ("Error running: " + command + " " + args.join (" ") + path);
-			
-		}
-		
+      InstallTool.runCommand(path,command,args);
 	}
 	
 	

@@ -13,6 +13,8 @@ class DesktopInstaller extends InstallerBase {
    var targetDir:String;
 
    function getVM() : String { throw "getVM not implemented."; return ""; }
+
+   function needsNekoApi() { return false; }
 	
 	override function onCreate()
    {
@@ -158,29 +160,28 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			copyIfNewer(ndll.getSourcePath(system_name, ndll.name + extension), exe_dir + ndll.name + extension, verbose);
+			copyIfNewer(ndll.getSourcePath(system_name, ndll.name + extension), exe_dir + ndll.name + extension);
 		}
+
+      if (needsNekoApi())
+			copyIfNewer(Utils.getHaxelib("hxcpp") + "/bin/" + system_name + "/nekoapi.ndll",  exe_dir + "/nekoapi.ndll" );
 		
-		/*var icon:String = defines.get ("APP_ICON");
-		
-		if (icon != null && icon != "") {
-			
-			copyIfNewer (icon, destination + "icon.png", verbose);
-			
-		}*/
-		
-   
       var content_dir = getContentDir();
 		for (asset in assets) {
 			
 			mkdir (Path.directory (content_dir + asset.targetPath));
-			copyIfNewer (asset.sourcePath, content_dir + asset.targetPath, verbose);
+			copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
 			
 		}
 
      if (targetName=="mac")
-        copyFile(nme + "/install-tool/mac/Info.plist", content_dir + "/Info.plist",true);
-
+     {
+        var filename =  icons.createMacIcon(content_dir);
+        if (addFile(filename))
+           context.HAS_ICON = true;
+          
+        copyFile(nme + "/install-tool/mac/Info.plist", targetDir + "/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist",true);
+     }
 		
 	}
 	

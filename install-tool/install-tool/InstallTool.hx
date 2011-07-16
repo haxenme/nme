@@ -12,6 +12,9 @@ import neko.Sys;
 
 
 class InstallTool {
+
+   public static var verbose = false;
+	public static var nme:String = "";
 	
 	
 	public static var isMac = false;
@@ -19,7 +22,7 @@ class InstallTool {
 	public static var isWindows = false;
 	
 	
-	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool) {
 		
 		var installer:InstallerBase = null;
 		
@@ -60,9 +63,15 @@ class InstallTool {
 			
 		}
 		
-		installer.create(nme, command, defines, includePaths, projectFile, target, verbose, debug);
+		installer.create(nme, command, defines, includePaths, projectFile, target, debug);
 		
 	}
+
+   public static function print(inMessage:String)
+   {
+      if (verbose)
+			Lib.println(inMessage);
+   }
 
 	
 	
@@ -78,7 +87,7 @@ class InstallTool {
 	}
 	
 	
-	public static function copyIfNewer (source:String, destination:String, verbose:Bool) {
+	public static function copyIfNewer (source:String, destination:String) {
 		
 		if (!isNewer (source, destination)) {
 			
@@ -154,6 +163,43 @@ class InstallTool {
 		return true;
 		
 	}
+
+	public static function runCommand (path:String, command:String, args:Array<String>) {
+		
+		var oldPath:String = "";
+		
+		if (path != "") {
+			
+			print("cd " + path);
+			
+			oldPath = Sys.getCwd ();
+			Sys.setCwd (path);
+			
+		}
+		
+		print(command + " " + args.join (" "));
+		
+		var result:Dynamic = Sys.command (command, args);
+		
+		if (result == 0)
+			print("Ok.");
+			
+		
+		if (oldPath != "") {
+			
+			Sys.setCwd (oldPath);
+			
+		}
+		
+		if (result != 0) {
+			
+			throw ("Error running: " + command + " " + args.join (" ") + path);
+			
+		}
+		
+	}
+	
+
 	
 	
 	public static function main () {
@@ -162,12 +208,10 @@ class InstallTool {
 		var debug:Bool = false;
 		var defines = new Hash <String> ();
 		var includePaths = new Array <String> ();
-		var verbose:Bool = false;
 		
 		includePaths.push (".");
 		
 		var args:Array <String> = Sys.args ();
-		var nme:String = "";
 		
 		if (args.length > 0) {
 			
@@ -291,7 +335,7 @@ class InstallTool {
 				
 			}
 			
-			copyIfNewer (words[0], words[1], verbose);
+			copyIfNewer (words[0], words[1]);
 			
 		} else {
 			
@@ -345,7 +389,7 @@ class InstallTool {
 				
 			}
 			
-			create(nme, command, defines, includePaths, words[0], target, verbose, debug);
+			create(nme, command, defines, includePaths, words[0], target, debug);
 		}
 		
 	}

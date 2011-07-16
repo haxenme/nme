@@ -28,7 +28,6 @@ class AndroidInstaller extends InstallerBase {
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
-		
 	}
 	
 	
@@ -107,7 +106,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so", verbose);
+			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so" );
 			
 		}
 		
@@ -133,7 +132,7 @@ class AndroidInstaller extends InstallerBase {
 			}
 			
 			mkdir (Path.directory (targetPath));
-			copyIfNewer (asset.sourcePath, targetPath, verbose);
+			copyIfNewer (asset.sourcePath, targetPath );
 			
 		}
 		

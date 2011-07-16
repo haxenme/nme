@@ -26,12 +26,12 @@ class GPH {
       cp_file(NME + "/install-tool/gph/" + boot,mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + "/Boot.gpe" );
 
       for(ndll in mNDLLs)
-         ndll.copy("GPH/", dest, true, mVerbose, mAllFiles, "gph");
+         ndll.copy("GPH/", dest, true, InstallTool.verbose, mAllFiles, "gph");
 
       var icon = mDefines.get("APP_ICON");
       if (icon!="")
       {
-         copyIfNewer(icon, dest + "/icon.png", mAllFiles,mVerbose);
+         copyIfNewer(icon, dest + "/icon.png", mAllFiles);
       }
 
       addAssets(dest,"cpp");
@@ -42,7 +42,7 @@ class GPH {
       var file = mDefines.get("APP_FILE");
       var dest = mBuildDir + "/gph/game/" + file + "/" + file + ".gpe";
       var gpe = mDebug ? "ApplicationMain-debug.gpe" : "ApplicationMain.gpe";
-      copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mAllFiles, mVerbose);
+      copyIfNewer(mBuildDir+"/gph/bin/" + gpe, dest, mAllFiles );
    }
 
    function runGph()

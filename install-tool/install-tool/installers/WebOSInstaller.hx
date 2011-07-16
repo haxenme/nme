@@ -27,11 +27,11 @@ class WebOSInstaller extends InstallerBase {
 		
 		if (debug) {
 			
-			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain-debug", destination, verbose);
+			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain-debug", destination );
 			
 		} else {
 			
-			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain", destination, verbose);
+			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain", destination );
 			
 		}
 		
@@ -54,14 +54,14 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("webOS", ndll.name + ".so"), destination + ndll.name + ".so", verbose);
+			copyIfNewer (ndll.getSourcePath ("webOS", ndll.name + ".so"), destination + ndll.name + ".so" );
 			
 		}
 		
 		for (asset in assets) {
 			
 			mkdir (Path.directory (destination + asset.targetPath));
-			copyIfNewer (asset.sourcePath, destination + asset.targetPath, verbose);
+			copyIfNewer (asset.sourcePath, destination + asset.targetPath );
 			
 		}
 		

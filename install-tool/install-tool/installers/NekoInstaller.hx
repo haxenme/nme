@@ -17,7 +17,7 @@ class NekoInstaller extends DesktopInstaller {
 
       runCommand( getBuildDir(),"nekotools",["boot","ApplicationMain.n"]);
 
-      copyIfNewer ( getBuildDir() + "/ApplicationMain" + extension, inExe, verbose);
+      copyIfNewer ( getBuildDir() + "/ApplicationMain" + extension, inExe );
    }
 
 
@@ -25,6 +25,17 @@ class NekoInstaller extends DesktopInstaller {
 	   super.generateContext ();
 		
 		context.NEKO_FILE = getBuildDir() + "/ApplicationMain.n";
+   }
+
+
+   override function needsNekoApi()
+   {
+      for(ndll in ndlls)
+      {
+         if (ndll.needsNekoApi)
+            return true;
+       }
+       return false;
    }
 
 

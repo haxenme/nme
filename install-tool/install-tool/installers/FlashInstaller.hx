@@ -28,7 +28,7 @@ class FlashInstaller extends InstallerBase {
 			if (!asset.embed)
          {
 			   mkdir (Path.directory (destination + asset.targetPath));
-			   copyIfNewer (asset.sourcePath, destination + asset.targetPath, verbose);
+			   copyIfNewer (asset.sourcePath, destination + asset.targetPath );
          }
 		}
 

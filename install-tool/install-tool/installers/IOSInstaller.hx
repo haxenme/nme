@@ -86,8 +86,8 @@ class IOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphoneos.a"), destination + "lib/" + ndll.name + ".iphoneos.a", verbose);
-			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphonesim.a"), destination + "lib/" + ndll.name + ".iphonesim.a", verbose);
+			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphoneos.a"), destination + "lib/" + ndll.name + ".iphoneos.a" );
+			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphonesim.a"), destination + "lib/" + ndll.name + ".iphonesim.a" );
 			
 		}
 		
@@ -96,7 +96,7 @@ class IOSInstaller extends InstallerBase {
 		for (asset in assets) {
 			
 			mkdir (Path.directory (destination + "assets/" + asset.id));
-			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.id, verbose);
+			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.id );
 			
 		}
 		
