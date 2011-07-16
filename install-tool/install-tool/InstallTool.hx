@@ -11,6 +11,10 @@ import neko.Sys;
 
 
 class InstallTool {
+
+   public static var isMac = false;
+   public static var isLinux = false;
+   public static var isWindows = false;
 	
 	
 	static public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
@@ -37,6 +41,10 @@ class InstallTool {
 			case "flash":
 
 				installer = new installers.FlashInstaller();
+
+			case "neko":
+
+				installer = new installers.NekoInstaller();
 
 			default:
 				
@@ -182,16 +190,19 @@ class InstallTool {
 			
 			defines.set ("windows", "1");
 			defines.set ("NME_HOST", "windows");
+         isWindows = true;
 			
 		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
 			
 			defines.set ("linux", "1");
 			defines.set ("NME_HOST", "linux");
+         isLinux = true;
 			
 		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
 			
 			defines.set ("macos", "1");
 			defines.set ("NME_HOST", "darwin-x86");
+         isMac = true;
 			
 		}
 		
@@ -307,15 +318,15 @@ class InstallTool {
 			
 			if (target == "cpp") {
 				
-				if (defines.get ("NME_HOST") == "windows") {
+				if (isWindows) {
 					
 					target = "windows";
 					
-				} else if (defines.get ("NME_HOST") == "linux") {
+				} else if (isLinux) {
 					
 					target = "linux";
 					
-				} else if (defines.get ("NME_HOST") == "darwin-x86") {
+				} else if (isMac) {
 					
 					target = "mac";
 					

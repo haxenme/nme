@@ -31,6 +31,10 @@ class InstallerBase {
 	private var projectFile:String;
 	private var target:String;
 	private var verbose:Bool;
+
+   var isMac:Bool;
+   var isLinux:Bool;
+   var isWindows:Bool;
 	
 	private static var varMatch = new EReg("\\${(.*?)}","");
 	
@@ -68,6 +72,8 @@ class InstallerBase {
 		}
 		
 		buildDirectory = defines.get ("BUILD_DIR");
+
+      onCreate();
 		
 		generateContext ();
 
@@ -85,18 +91,27 @@ class InstallerBase {
       switch(command)
       {
          case "test":
-            update();
+            print("---- BUILD -----");
             build();
+            print("---- UPDATE -----");
+            update();
+            print("---- UPDATE DEVICE -----");
             updateDevice();
+            print("---- RUN -----");
             run();
          case "run":
+            print("---- UPDATE DEVICE -----");
             updateDevice();
+            print("---- RUN -----");
             run();
          case "rerun":
+            print("---- RUN -----");
             run();
          case "build":
-            update();
+            print("---- BUILD -----");
             build();
+            print("---- UPDATE -----");
+            update();
 
          default:
             throw("Command not implemented: " + command);
@@ -137,11 +152,7 @@ class InstallerBase {
 		
 		if (process && (extension == "xml" || extension == "java" || extension == "hx" || extension == "hxml" || extension == "ini" || extension == "gpe" || extension == "pbxproj" || extension == "plist" || extension == "json" || extension == "properties")) {
 			
-			if (verbose) {
-				
-				Lib.println ("process " + source + " " + destination);
-				
-			}
+			print("process " + source + " " + destination);
 			
 			var fileContents:String = File.getContent (source);
 			var template:Template = new Template (fileContents);
@@ -244,6 +255,8 @@ class InstallerBase {
 		
 	}
 	
+	function onCreate ():Void { }
+   
 	
 	private function generateContext ():Void {
 		
@@ -366,6 +379,11 @@ class InstallerBase {
 		
 	}
 	
+   function print(inMessage:String)
+   {
+      if (verbose)
+			Lib.println(inMessage);
+   }
 	
 	private function mkdir (directory:String):Void {
 		
@@ -386,11 +404,7 @@ class InstallerBase {
 				
 				if (!FileSystem.exists (total)) {
 					
-					if (verbose) {
-						
-						Lib.println ("mkdir " + total);
-						
-					}
+					print("mkdir " + total);
 					
 					FileSystem.createDirectory (total);
 					
@@ -796,30 +810,20 @@ class InstallerBase {
 		
 		if (path != "") {
 			
-			if (verbose) {
-				
-				Lib.println ("cd " + path);
-				
-			}
+			print("cd " + path);
 			
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
 			
 		}
 		
-		if (verbose) {
-			
-			Lib.println (command + " " + args.join (" "));
-			
-		}
+		print(command + " " + args.join (" "));
 		
 		var result:Dynamic = Sys.command (command, args);
 		
-		if (result == 0 && verbose) {
+		if (result == 0)
+			print("Ok.");
 			
-			Lib.println ("Ok.");
-			
-		}
 		
 		if (oldPath != "") {
 			
