@@ -7,9 +7,6 @@ package nekonme.install-tool.install-tool.targets;
 
 class Neko {
 
-	public function new() {
-		
-	}
 	
 }
 

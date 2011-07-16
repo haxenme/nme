@@ -9,32 +9,7 @@ import neko.Sys;
 class FlashInstaller extends InstallerBase {
 	
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
-		
-		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
-		
-		if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-		if (command == "build") {
-			
-			build ();
-			
-		}
-		
-		if (command == "build" || command == "rerun" || command == "update") {
-			
-			run ();
-			
-		}
-		
-	}
-	
-	
-	private function build ():Void {
+	override function build ():Void {
 		
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -65,7 +40,7 @@ class FlashInstaller extends InstallerBase {
 	}
 	
 	
-	private function run ():Void {
+	override function run ():Void {
 		
 		var destination:String = buildDirectory + "/flash/bin";
 		var player:String = Sys.getEnv ("FLASH_PLAYER_EXE");
@@ -101,7 +76,7 @@ class FlashInstaller extends InstallerBase {
 	}
 	
 	
-	private function update ():Void {
+	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE") + "/";
 		mkdir (destination);

@@ -13,38 +13,8 @@ class CPPInstaller extends InstallerBase {
 	private var targetName:String;
 	
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
-		
-		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
-		
-		//if (target == "windows") {
-			
-		//	importMSVC ();
-			
-		//}
-		
-		if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-		if (command == "build") {
-			
-			build ();
-			
-		}
-		
-         if (command == "build" || command == "rerun" || command == "update") {
-			
-			run ();
-			
-		}
-		
-	}
 	
-	
-	private function build ():Void {
+	override function build ():Void {
 		
 		var hxml:String = buildDirectory + "/" + targetName + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -89,7 +59,7 @@ class CPPInstaller extends InstallerBase {
 	}
 	
 	
-	private override function generateContext ():Void {
+	override function generateContext ():Void {
 		
 		targetName = target;
 		
@@ -155,7 +125,7 @@ class CPPInstaller extends InstallerBase {
 	}
 	
 	
-	private function run ():Void {
+	override function run ():Void {
 		
 		var destination:String = "";
 		
@@ -184,7 +154,7 @@ class CPPInstaller extends InstallerBase {
 	}
 	
 	
-	private function update ():Void {
+	override function update ():Void {
 		
 		var destination:String = "";
 		

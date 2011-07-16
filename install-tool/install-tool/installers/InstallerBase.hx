@@ -34,8 +34,15 @@ class InstallerBase {
 	
 	private static var varMatch = new EReg("\\${(.*?)}","");
 	
+   public function new()
+   {
+		assets = new Array <Asset> ();
+		compilerFlags = new Array <String> ();
+		icons = new Array <Icon> ();
+		ndlls = new Array <NDLL> ();
+   }
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+	public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
 		
 		this.nme = nme;
 		this.command = command;
@@ -46,10 +53,6 @@ class InstallerBase {
 		this.verbose = verbose;
 		this.debug = debug;
 		
-		assets = new Array <Asset> ();
-		compilerFlags = new Array <String> ();
-		icons = new Array <Icon> ();
-		ndlls = new Array <NDLL> ();
 		
 		initializeTool ();
 		parseProjectFile ();
@@ -67,8 +70,39 @@ class InstallerBase {
 		buildDirectory = defines.get ("BUILD_DIR");
 		
 		generateContext ();
+
+      if (command != "rerun") {
+			
+			update ();
+			
+		}
+		
+		if (command == "build") {
+			
+			build ();
+			
+		}
+		
+		if (command == "build" || command == "rerun" || command == "update") {
+			
+			run ();
+			
+		}
+		
+		if (command == "uninstall") {
+			
+			uninstall ();
+			
+		}
 		
 	}
+
+   function update() { throw "Update not implemented."; }
+   function build() { throw "Build not implemented."; }
+   function run() { throw "Run not implemented."; }
+   function install() { throw "Install not implemented."; }
+   function uninstall() { throw "Uninstall not implemented."; }
+
 	
 	
 	private function copyIfNewer (source:String, destination:String, verbose:Bool) {

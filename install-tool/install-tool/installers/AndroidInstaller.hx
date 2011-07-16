@@ -10,38 +10,7 @@ import neko.Lib;
 class AndroidInstaller extends InstallerBase {
 	
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
-		
-		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
-		
-		if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-		if (command == "build") {
-			
-			build ();
-			
-		}
-		
-		if (command == "build" || command == "rerun" || command == "update") {
-			
-			run ();
-			
-		}
-		
-		if (command == "uninstall") {
-			
-			uninstall ();
-			
-		}
-		
-	}
-	
-	
-	private function build ():Void {
+	override function build ():Void {
 		
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -162,7 +131,7 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	private function run ():Void {
+	override function run ():Void {
 		
 		var build:String = "debug";
 		
@@ -185,7 +154,7 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	private function uninstall ():Void {
+	override function uninstall ():Void {
 		
 		var adb:Dynamic = getADB ();
 		var pack:String = defines.get ("APP_PACKAGE");
@@ -195,7 +164,7 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	private function update ():Void {
+	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/android/project";
 		mkdir (destination);

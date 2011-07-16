@@ -7,10 +7,6 @@ package nekonme.install-tool.install-tool.targets;
 
 class GPH {
 
-	public function new() {
-		
-	}
-	
 }
 
 

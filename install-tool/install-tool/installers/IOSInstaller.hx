@@ -9,24 +9,8 @@ import neko.Lib;
 
 class IOSInstaller extends InstallerBase {
 	
-	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
-		
-		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
-		
-		if (command == "build" || command == "rerun") {
-			
-			throw ("You must use the \"update\" command to build or run the iOS target");
-			
-		}
-		
-		if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-	}
+   override function build ():Void { throw "Build not supported on IOS target - please build from Xcode"; }
+   override function run ():Void { throw "Run not supported on IOS target - please run from Xcode"; }
 	
 	
 	private override function generateContext ():Void {
@@ -71,7 +55,7 @@ class IOSInstaller extends InstallerBase {
 	}
 	
 	
-	private function update ():Void {
+	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/iphone/";
 		mkdir (destination);

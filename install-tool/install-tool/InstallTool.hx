@@ -13,25 +13,26 @@ import neko.Sys;
 class InstallTool {
 	
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+	static public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
 		
+      var installer: installers.InstallerBase = null;
 		switch (target) {
 			
 			case "android":
 				
-				new AndroidInstaller (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+				installer = new AndroidInstaller();
 			
 			case "windows", "mac", "linux":
 				
-				new CPPInstaller (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+				installer = new CPPInstaller();
 			
 			case "iphoneos", "iphonesim":
 				
-				new IOSInstaller (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+				installer = new IOSInstaller();
 			
 			case "webos":
 				
-				new WebOSInstaller (nme, command, defines, includePaths, projectFile, target, verbose, debug);
+				installer = new WebOSInstaller();
 			
 			default:
 				
@@ -39,8 +40,11 @@ class InstallTool {
 				return;
 			
 		}
+
+		installer.create(nme, command, defines, includePaths, projectFile, target, verbose, debug);
 		
 	}
+
 	
 	
 	private static function argumentError (error:String):Void {
@@ -173,17 +177,17 @@ class InstallTool {
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
 			defines.set ("windows", "1");
-			defines.set ("HOST", "windows");
+			defines.set ("NME_HOST", "windows");
 			
 		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
 			
 			defines.set ("linux", "1");
-			defines.set ("HOST", "linux");
+			defines.set ("NME_HOST", "linux");
 			
 		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
 			
 			defines.set ("macos", "1");
-			defines.set ("HOST", "darwin-x86");
+			defines.set ("NME_HOST", "darwin-x86");
 			
 		}
 		
@@ -299,28 +303,27 @@ class InstallTool {
 			
 			if (target == "cpp") {
 				
-				if (defines.get ("HOST") == "windows") {
+				if (defines.get ("NME_HOST") == "windows") {
 					
 					target = "windows";
 					
-				} else if (defines.get ("HOST") == "linux") {
+				} else if (defines.get ("NME_HOST") == "linux") {
 					
 					target = "linux";
 					
-				} else if (defines.get ("HOST") == "darwin-x86") {
+				} else if (defines.get ("NME_HOST") == "darwin-x86") {
 					
 					target = "mac";
 					
 				} else {
 					
-					throw ("Error: " + Sys.systemName () + " is not a recognized host platform");
+					throw ("Error: " + defines.get("NME_HOST") + " is not a recognized host platform");
 					
 				}
 				
 			}
 			
-			new InstallTool (nme, command, defines, includePaths, words[0], target, verbose, debug);
-			
+			create(nme, command, defines, includePaths, words[0], target, verbose, debug);
 		}
 		
 	}

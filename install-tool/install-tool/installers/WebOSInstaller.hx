@@ -8,32 +8,7 @@ import neko.Lib;
 class WebOSInstaller extends InstallerBase {
 	
 	
-	public function new (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
-		
-		super (nme, command, defines, includePaths, projectFile, target, verbose, debug);
-		
-		if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-		if (command == "build") {
-			
-			build ();
-			
-		}
-		
-		if (command == "build" || command == "rerun" || command == "update") {
-			
-			run ();
-			
-		}
-		
-	}
-	
-	
-	private function build ():Void {
+	override function build ():Void {
 		
 		var hxml:String = buildDirectory + "/webos/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -56,7 +31,7 @@ class WebOSInstaller extends InstallerBase {
 	}
 	
 	
-	private function run ():Void {
+	override function run ():Void {
 		
 		runCommand (buildDirectory + "/webos", "palm-install", [ defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk" ] );
 		runCommand ("", "palm-launch", [ defines.get ("APP_PACKAGE") ] );
@@ -65,7 +40,7 @@ class WebOSInstaller extends InstallerBase {
 	}
 	
 	
-	private function update ():Void {
+	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/webos/" + defines.get ("APP_FILE") + "/";
 		mkdir (destination);
