@@ -131,7 +131,7 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	override function run ():Void {
+	override function updateDevice ():Void {
 		
 		var build:String = "debug";
 		
@@ -145,9 +145,14 @@ class AndroidInstaller extends InstallerBase {
 		var adb:Dynamic = getADB ();
 		
 		runCommand (adb.path, adb.name, [ "install", "-r", apk ]);
+   }
+
+
+	override function run ():Void {
 		
 		var pack:String = defines.get ("APP_PACKAGE");
 		
+		var adb:Dynamic = getADB ();
 		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
 		runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
 		

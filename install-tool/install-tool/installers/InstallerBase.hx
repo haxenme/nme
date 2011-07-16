@@ -71,35 +71,42 @@ class InstallerBase {
 		
 		generateContext ();
 
-      if (command != "rerun") {
-			
-			update ();
-			
-		}
-		
-		if (command == "build") {
-			
-			build ();
-			
-		}
-		
-		if (command == "build" || command == "rerun" || command == "update") {
-			
-			run ();
-			
-		}
-		
-		if (command == "uninstall") {
-			
-			uninstall ();
-			
-		}
-		
+
+       // Commands:
+       //
+       // update = Assets or extenal library have changed - files need updating
+       //           copy files to target directories
+       // build = Create files ready to be installed, but do not run.  eg: build server
+       // run = run, updating the device is required (eg, android installer)
+       // rerun = run, without updating the device
+       // test = change is made, needs to be tested:  update, build, run
+       //
+
+      switch(command)
+      {
+         case "test":
+            update();
+            build();
+            updateDevice();
+            run();
+         case "run":
+            updateDevice();
+            run();
+         case "rerun":
+            run();
+         case "build":
+            update();
+            build();
+
+         default:
+            throw("Command not implemented: " + command);
+      }
 	}
 
    function update() { throw "Update not implemented."; }
    function build() { throw "Build not implemented."; }
    function run() { throw "Run not implemented."; }
+   function updateDevice() { /* Not required on all platforms. */ }
    function install() { throw "Install not implemented."; }
    function uninstall() { throw "Uninstall not implemented."; }
 
