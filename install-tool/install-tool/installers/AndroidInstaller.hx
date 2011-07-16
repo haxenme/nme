@@ -32,7 +32,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			asset.resourceName = Utils.generateFlatName (asset.id);
+			asset.resourceName = asset.flatName;
 			var targetPath:String = "";
 			
 			switch (asset.type) {
@@ -89,47 +89,6 @@ class AndroidInstaller extends InstallerBase {
 		return { path: path, name: name };
 		
 	}
-	
-	
-	private function getFlatName (id:String, flatNames:Hash <String>):String {
-		
-		var chars:String = id.toLowerCase ();
-		var flatName:String = "";
-		
-		for (i in 0...chars.length) {
-			
-			var code = chars.charCodeAt (i);
-			
-			if ((i > 0 && code >= "0".charCodeAt (0) && code <= "9".charCodeAt (0)) || (code >= "a".charCodeAt (0) && code <= "z".charCodeAt (0)) || (code == "_".charCodeAt (0))) {
-				
-				flatName += chars.charAt (i);
-				
-			} else {
-				
-				flatName += "_";
-				
-			}
-			
-		}
-		
-		if (flatName == "") {
-			
-			flatName = "_";
-			
-		}
-		
-		while (flatNames.exists (flatName)) {
-			
-			flatName += "_";
-		 
-		}
-		
-		flatNames.set (flatName, "1");
-		
-		return flatName;
-		
-	}
-	
 	
 	override function updateDevice ():Void {
 		
