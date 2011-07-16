@@ -534,8 +534,7 @@ class InstallerBase {
 				switch (childElement.name) {
 					
 					case "image", "sound", "music", "font":
-						
-						childType == childElement.name;
+						childType = childElement.name;
 					
 					default:
 						
@@ -556,7 +555,6 @@ class InstallerBase {
 				}
 				
 				assets.push (new Asset (path + childPath, rename + childRename, childType, id, childEmbed));
-				
 			}
 			
 		}
