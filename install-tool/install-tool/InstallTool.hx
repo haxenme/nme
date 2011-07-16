@@ -33,7 +33,11 @@ class InstallTool {
 			case "webos":
 				
 				installer = new WebOSInstaller();
-			
+
+			case "flash":
+
+				installer = new installers.FlashInstaller();
+
 			default:
 				
 				Lib.println ("The specified target is not supported: " + target);

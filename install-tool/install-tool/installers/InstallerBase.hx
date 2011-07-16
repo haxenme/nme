@@ -671,7 +671,8 @@ class InstallerBase {
 					case "haxelib":
 						
 						var name:String = substitute (element.att.name);
-						compilerFlags.push ("-lib " + name);
+                  if (target!="flash" || name!="nme")
+						   compilerFlags.push ("-lib " + name);
 					
 					case "ndll":
 						

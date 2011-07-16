@@ -21,6 +21,7 @@ class Asset {
 	public var targetPath:String;
 	public var type:String;
 	public var flatName:String;
+	public var flashClass:String;
 	
 	
 	public function new (sourcePath:String, targetPath:String, type:String, id:String, embed:String) {
@@ -86,6 +87,16 @@ class Asset {
 		}
 		
 		hash = Utils.getUniqueID ();
+
+      switch(type)
+      {
+         case TYPE_MUSIC : flashClass = "flash.media.Sound";
+         case TYPE_SOUND : flashClass = "flash.media.Sound";
+         case TYPE_IMAGE : flashClass = "flash.display.BitmapData";
+         case TYPE_FONT : flashClass = "flash.text.Font";
+         default:
+            flashClass = "flash.utils.ByteArray";
+      }
 
       generateFlatName();
 	}

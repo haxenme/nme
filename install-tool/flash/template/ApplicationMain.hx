@@ -52,6 +52,7 @@ class ApplicationMain
 
    public static function getAsset(inName:String) : Dynamic
    {
+   trace("getAsset : " + inName);
       ::foreach assets::
       if (inName=="::id::")
          return new NME_::flatName::();
