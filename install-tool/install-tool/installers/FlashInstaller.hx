@@ -10,7 +10,11 @@ import format.swf.Data;
 import format.swf.Constants;
 import format.mp3.Data;
 import format.wav.Data;
+
+#if REQUIRE_NEKOAPI
 import nme.text.Font;
+#end
+
 
 class FlashInstaller extends InstallerBase {
 	
@@ -23,13 +27,25 @@ class FlashInstaller extends InstallerBase {
 		
 		var destination:String = buildDirectory + "/flash/bin";
 		
-		for (asset in assets)
-      {
-			if (!asset.embed)
-         {
-			   mkdir (Path.directory (destination + asset.targetPath));
-			   copyIfNewer (asset.sourcePath, destination + asset.targetPath );
-         }
+		for (asset in assets) {
+			
+			#if REQUIRE_NEKOAPI
+			
+			if (asset.type == "font") {
+				
+				asset.embed = false;
+				
+			}
+			
+			#end
+			
+			if (!asset.embed) {
+				
+				mkdir (Path.directory (destination + asset.targetPath));
+				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
 		}
 
       var file = defines.get("APP_FILE") + ".swf";
@@ -226,6 +242,9 @@ class FlashInstaller extends InstallerBase {
       }
       else if (type=="font")
       {
+		  
+		  #if REQUIRE_NEKOAPI
+		  
           // More code ripped off from "samhaxe"
           var src = name;
           var font_name = neko.io.Path.withoutExtension(name);
@@ -339,6 +358,9 @@ class FlashInstaller extends InstallerBase {
                      kerning:    kerning
                   }
             })) );
+			
+			#end
+			
       }
       else
       {

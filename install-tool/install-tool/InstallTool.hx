@@ -1,7 +1,9 @@
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
+import installers.FlashInstaller;
 import installers.InstallerBase;
 import installers.IOSInstaller;
+import installers.NekoInstaller;
 import installers.WebOSInstaller;
 
 import neko.FileSystem;
@@ -30,31 +32,27 @@ class InstallTool {
 			
 			case "android":
 				
-				installer = new AndroidInstaller();
+				installer = new AndroidInstaller ();
 			
 			case "windows", "mac", "linux":
 				
-				installer = new CPPInstaller();
+				installer = new CPPInstaller ();
 			
 			case "iphoneos", "iphonesim":
 				
-				installer = new IOSInstaller();
+				installer = new IOSInstaller ();
 			
 			case "webos":
 				
-				installer = new WebOSInstaller();
+				installer = new WebOSInstaller ();
 			
 			case "flash":
 				
-				#if REQUIRE_NEKOAPI
-					
-					installer = new installers.FlashInstaller();
-					
-				#end
+				installer = new FlashInstaller ();
 			
 			case "neko":
 				
-				installer = new installers.NekoInstaller();
+				installer = new NekoInstaller ();
 			
 			default:
 				

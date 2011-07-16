@@ -1,7 +1,8 @@
 package data;
 
+#if REQUIRE_NEKOAPI
 import nme.display.BitmapData;
-
+#end
 
 
 class Icons
@@ -50,7 +51,9 @@ class Icons
    }
 
 
-
+#if REQUIRE_NEKOAPI
+   
+   
    function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackgroundColour ) : BitmapData
    {
       var found:Icon = null;
@@ -300,7 +303,30 @@ class Icons
    }
 
 
+#else
 
+
+	public function createMacIcon(resource_dest:String) {
+		
+		return "";
+		
+	}
+	
+
+	function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackgroundColour ) : Dynamic {
+		
+		return null;
+		
+	}
+
+
+	function setWindowsIcon(inAppIcon:String, inTmp:String, inExeName:String) {
+		
+		return "";
+		
+	}
+
+#end
 
 
 }
