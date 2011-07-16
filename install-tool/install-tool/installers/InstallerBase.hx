@@ -72,12 +72,11 @@ class InstallerBase {
 		}
 		
 		buildDirectory = defines.get ("BUILD_DIR");
-
-      onCreate();
 		
+		onCreate ();
 		generateContext ();
-
-
+		
+		
        // Commands:
        //
        // update = Assets or extenal library have changed - files need updating
@@ -93,7 +92,7 @@ class InstallerBase {
          case "test":
             print("---- BUILD -----");
             build();
-            print("---- UPDATE -----");
+			print("---- UPDATE -----");
             update();
             print("---- UPDATE DEVICE -----");
             updateDevice();
@@ -110,8 +109,12 @@ class InstallerBase {
          case "build":
             print("---- BUILD -----");
             build();
-            print("---- UPDATE -----");
+			print("---- UPDATE -----");
             update();
+		case "update":
+			print("---- UPDATE -----");
+            update();
+            
 
          default:
             throw("Command not implemented: " + command);

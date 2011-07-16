@@ -1,5 +1,6 @@
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
+import installers.InstallerBase;
 import installers.IOSInstaller;
 import installers.WebOSInstaller;
 
@@ -11,15 +12,17 @@ import neko.Sys;
 
 
 class InstallTool {
-
-   public static var isMac = false;
-   public static var isLinux = false;
-   public static var isWindows = false;
 	
 	
-	static public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
+	public static var isMac = false;
+	public static var isLinux = false;
+	public static var isWindows = false;
+	
+	
+	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, verbose:Bool, debug:Bool) {
 		
-      var installer: installers.InstallerBase = null;
+		var installer:InstallerBase = null;
+		
 		switch (target) {
 			
 			case "android":
@@ -37,22 +40,26 @@ class InstallTool {
 			case "webos":
 				
 				installer = new WebOSInstaller();
-
+			
 			case "flash":
-
-				installer = new installers.FlashInstaller();
-
+				
+				#if REQUIRE_NEKOAPI
+					
+					installer = new installers.FlashInstaller();
+					
+				#end
+			
 			case "neko":
-
+				
 				installer = new installers.NekoInstaller();
-
+			
 			default:
 				
 				Lib.println ("The specified target is not supported: " + target);
 				return;
 			
 		}
-
+		
 		installer.create(nme, command, defines, includePaths, projectFile, target, verbose, debug);
 		
 	}
@@ -65,7 +72,7 @@ class InstallTool {
 		Lib.println ("Usage :  haxelib run nme [-v] COMMAND ...");
 		Lib.println (" COMMAND : copy-if-newer source destination");
 		Lib.println (" COMMAND : update build.nmml [-DFLAG -Dname=val... ]");
-		Lib.println (" COMMAND : (update|build|rerun) [-debug] build.nmml target");
+		Lib.println (" COMMAND : (build|update|run|rerun|test) [-debug] build.nmml target");
 		Lib.println (" COMMAND : uninstall build.nmml target");
 		
 	}
