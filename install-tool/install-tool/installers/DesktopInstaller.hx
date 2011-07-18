@@ -141,20 +141,12 @@ class DesktopInstaller extends InstallerBase {
 			
 			if (ndll.haxelib == "") {
 				
-				switch (targetName) {
-					
-					case "windows":
-						
-						extension = ".dll";
-					
-					case "linux":
-						extension = ".dso";
-					
-					case "mac":
-						
+				if (InstallTool.isWindows)
+					extension = ".dll";
+            else if (InstallTool.isLinux)
+					extension = ".dso";
+				else if (InstallTool.isMac)
 						extension = ".dylib";
-					
-				}
 				
 			}
 			
