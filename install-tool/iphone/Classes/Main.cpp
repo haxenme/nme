@@ -12,23 +12,33 @@
 #include <stdio.h>
 
 
-extern "C" int nme_register_prims();
 extern "C" const char *hxRunLibrary();
 extern "C" void hxcpp_set_top_of_stack();
 	
+::foreach ndlls::
+  ::if (registerStatics)::
+     extern "C" int ::name::_register_prims();
+  ::end::
+::end::
 	
 extern "C" int main(int argc, char *argv[])	
 {
-	printf("Starting ...\n" );
+	//printf("Starting ...\n" );
 	hxcpp_set_top_of_stack();
-	nme_register_prims();
+
+   ::foreach ndlls::
+     ::if (registerStatics)::
+        ::name::_register_prims();
+     ::end::
+   ::end::
+	
  
-	printf("Running\n");
+	//printf("Running\n");
  	const char *err = hxRunLibrary();
 	if (err) {
 		printf(" Error %s\n", err );
 		return -1;
 	}
-	printf("Done!\n");
+	//printf("Done!\n");
 	return 0;
 }

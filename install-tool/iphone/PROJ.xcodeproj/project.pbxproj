@@ -25,8 +25,8 @@
 ::end::
 
       ::foreach ndlls::
-        11B0F00000000010::hash:: /* ::name::.iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B0000000000018::hash:: ; };
-        11B0F00000000000::hash:: /* ::name::.iphonesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B0000000000008::hash:: ; };
+        11B0F00000000010::hash:: /* lib::name::.iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B0000000000018::hash:: ; };
+        11B0F00000000000::hash:: /* lib::name::.iphonesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B0000000000008::hash:: ; };
       ::end::
 
 	   1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
@@ -79,8 +79,8 @@
 
 
        ::foreach ndlls::
-           11B0000000000018::hash:: /* lib/::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphoneos.a; path = lib/::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
-           11B0000000000008::hash:: /* lib/::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ::name::.iphonesim.a; path = lib/::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
+           11B0000000000018::hash:: /* lib/lib::name::.iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib::name::.iphoneos.a; path = lib/lib::name::.iphoneos.a; sourceTree = SOURCE_ROOT; };
+           11B0000000000008::hash:: /* lib/lib::name::.iphonesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib::name::.iphonesim.a; path = lib/lib::name::.iphonesim.a; sourceTree = SOURCE_ROOT; };
        ::end::
 
    1E2E17A5131E8B5D0048F3C7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
@@ -108,8 +108,8 @@
 			buildActionMask = 2147483647;
 			files = (
            ::foreach ndlls::
-             11B0F00000000010::hash:: /* ::name::.iphoneos.a in Frameworks */,
-             11B0F00000000000::hash:: /* ::name::.iphonesim.a in Frameworks */,
+             11B0F00000000010::hash:: /* lib::name::.iphoneos.a in Frameworks */,
+             11B0F00000000000::hash:: /* lib::name::.iphonesim.a in Frameworks */,
            ::end::
 
             /*
@@ -176,7 +176,7 @@
 			isa = PBXGroup;
 			children = (
             ::foreach ndlls::
-              11B0000000000018::hash:: /* ::name::.iphoneos.a */,
+              11B0000000000018::hash:: /* lib::name::.iphoneos.a */,
             ::end::
             /*
 				1EF0A83F121ADCD2003F2F59  libregexp.iphoneos.a ,
@@ -192,7 +192,7 @@
 			isa = PBXGroup;
 			children = (
             ::foreach ndlls::
-              11B0000000000008::hash:: /* ::name::.iphonesim.a */,
+              11B0000000000008::hash:: /* lib::name::.iphonesim.a */,
             ::end::
             /*
 				1EF0A849121ADD0 1003F2F59  libregexp.iphonesim.a ,

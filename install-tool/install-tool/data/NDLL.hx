@@ -11,14 +11,18 @@ class NDLL {
 	public var hash:String;
 	public var haxelib:String;
 	public var name:String;
-	public var needsNekoApi:Bool;
+	public var registerStatics:Bool;
 	
 	
-	public function new (name:String, haxelib:String, ?needsNekoApi:Bool = false) {
+	public function new (inName:String, inHaxelib:String, inRegisterStatics=true) {
 		
-		this.name = name;
-		this.haxelib = haxelib;
-		this.needsNekoApi = needsNekoApi;
+		name = inName;
+      if (inName=="nme" && inHaxelib=="")
+         haxelib = "nme";
+      else
+		   haxelib = inHaxelib;
+
+      registerStatics = inRegisterStatics;
 		
 		hash = Utils.getUniqueID ();
 		

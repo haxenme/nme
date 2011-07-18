@@ -28,17 +28,6 @@ class NekoInstaller extends DesktopInstaller {
    }
 
 
-   override function needsNekoApi()
-   {
-      for(ndll in ndlls)
-      {
-         if (ndll.needsNekoApi)
-            return true;
-       }
-       return false;
-   }
-
-
 
 }
 

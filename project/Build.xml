@@ -194,8 +194,9 @@
   <file name="mac/System.mm"/>
 </files>
 
+<set name="name_prefix" value="lib" if="iphone" />
 
-<target id="NDLL" output="nme${name_extra}" tool="linker" toolid="${ndll-tool}">
+<target id="NDLL" output="${name_prefix}nme${name_extra}" tool="linker" toolid="${ndll-tool}">
   <outdir name="../ndll/${BINDIR}" />
   <ext value=".ndll" unless="mobile"/>
   <ext value=".ndll" if="gph"/>

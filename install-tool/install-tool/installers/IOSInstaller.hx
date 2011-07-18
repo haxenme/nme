@@ -13,41 +13,17 @@ class IOSInstaller extends InstallerBase {
    override function run ():Void { throw "Run not supported on IOS target - please run from Xcode"; }
 	
 	
+	override function wantFullClassPath () { return true; }
+		
+	private override function onCreate ():Void {
+		
+		ndlls.push (new NDLL ("curl", "nme", false));
+		ndlls.push (new NDLL ("png", "nme", false));
+		ndlls.push (new NDLL ("jpeg", "nme", false));
+		ndlls.push (new NDLL ("z", "nme", false));
+   }
+		
 	private override function generateContext ():Void {
-		
-		for (i in 0...compilerFlags.length) {
-			
-			if (compilerFlags[i].substr (0, 4) == "-cp ") {
-				
-				compilerFlags[i] = "-cp " + FileSystem.fullPath (compilerFlags[i].substr (4));
-				
-			}
-			
-		}
-		
-		ndlls.push (new NDLL ("libcurl", "nme"));
-		ndlls.push (new NDLL ("libpng", "nme"));
-		ndlls.push (new NDLL ("libjpeg", "nme"));
-		ndlls.push (new NDLL ("libz", "nme"));
-		
-		for (ndll in ndlls) {
-			
-			if (ndll.haxelib == "") {
-				
-				if (ndll.name == "nme") {
-					
-					ndll.haxelib = "nme";
-					
-				} else {
-					
-					ndll.name = "lib" + ndll.name;
-					
-				}
-				
-			}
-			
-		}
-		
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
@@ -86,8 +62,8 @@ class IOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphoneos.a"), destination + "lib/" + ndll.name + ".iphoneos.a" );
-			copyIfNewer (ndll.getSourcePath ("iPhone", ndll.name + ".iphonesim.a"), destination + "lib/" + ndll.name + ".iphonesim.a" );
+			copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphoneos.a"), destination + "lib/lib" + ndll.name + ".iphoneos.a" );
+			copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphonesim.a"), destination + "lib/lib" + ndll.name + ".iphonesim.a" );
 			
 		}
 		

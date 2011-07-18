@@ -38,7 +38,7 @@ class InstallTool {
 				
 				installer = new CPPInstaller ();
 			
-			case "iphoneos", "iphonesim":
+			case "iphoneos", "iphonesim", "iphone", "ios":
 				
 				installer = new IOSInstaller ();
 			

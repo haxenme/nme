@@ -123,6 +123,9 @@ class InstallerBase {
       }
 	}
 
+   function wantFullClassPath () { return false; }
+
+
    function update() { throw "Update not implemented."; }
    function build() { throw "Build not implemented."; }
    function run() { throw "Run not implemented."; }
@@ -163,7 +166,18 @@ class InstallerBase {
 		
 		var extension:String = Path.extension (source);
 		
-		if (process && (extension == "xml" || extension == "java" || extension == "hx" || extension == "hxml" || extension == "ini" || extension == "gpe" || extension == "pbxproj" || extension == "plist" || extension == "json" || extension == "properties")) {
+		if (process &&
+            (extension == "xml" ||
+             extension == "java" ||
+             extension == "hx" ||
+             extension == "hxml" ||
+             extension == "ini" ||
+             extension == "gpe" ||
+             extension == "pbxproj" ||
+             extension == "plist" ||
+             extension == "json" ||
+             extension == "cpp" ||
+             extension == "properties")) {
 			
 			print("process " + source + " " + destination);
 			
@@ -710,15 +724,7 @@ class InstallerBase {
 							
 						}
 						
-						var needsNekoAPI:Bool = false;
-						
-						if (element.has.nekoapi && (element.att.nekoapi == "1" || element.att.nekoapi == "true")) {
-							
-							needsNekoAPI = true;
-							
-						}
-						
-						ndlls.push (new NDLL (name, haxelib, needsNekoAPI));
+						ndlls.push (new NDLL (name, haxelib ));
 					
 					case "icon":
 						
@@ -742,7 +748,11 @@ class InstallerBase {
 					
 					case "classpath":
 						
-						compilerFlags.push ("-cp " + substitute (element.att.name));
+						var path = substitute (element.att.name);
+                  if (wantFullClassPath())
+                      path = FileSystem.fullPath (path);
+                      
+						compilerFlags.push ("-cp " + path);
 					
 					case "haxedef":
 						

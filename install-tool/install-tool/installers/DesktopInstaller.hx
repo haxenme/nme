@@ -14,8 +14,6 @@ class DesktopInstaller extends InstallerBase {
 
    function getVM() : String { throw "getVM not implemented."; return ""; }
 
-   function needsNekoApi() { return false; }
-	
 	override function onCreate()
    {
       if (InstallTool.isMac)
@@ -163,9 +161,6 @@ class DesktopInstaller extends InstallerBase {
 			copyIfNewer(ndll.getSourcePath(system_name, ndll.name + extension), exe_dir + ndll.name + extension);
 		}
 
-      if (needsNekoApi())
-			copyIfNewer(Utils.getHaxelib("hxcpp") + "/bin/" + system_name + "/nekoapi.ndll",  exe_dir + "/nekoapi.ndll" );
-		
       var content_dir = getContentDir();
 		for (asset in assets) {
 			
