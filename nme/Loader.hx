@@ -106,38 +106,21 @@ class Loader
    }
 
 
-   public static function loadNekoAPI(slash:String)
+   #if neko
+   public static function loadNekoAPI()
    {
-      var func = "neko_api_init2";
-      var args = 2;
-      
-      // Try local file first ...
-      var init = tryLoad("." + slash + "nekoapi",func, args);
-      // Try neko rules ...
-      if (init==null)
-         init = tryLoad("nekoapi",func, args);
-      // Try haxelib ...
-      if (init==null)
-      {
-         var haxelib = findHaxeLib("hxcpp");
-         if (haxelib!="")
-         {
-            init = tryLoad(haxelib + slash + "bin" + slash + sysName() + slash + "nekoapi",func,args);
-            // Try 64 bit ...
-            if (init==null)
-               init = tryLoad(haxelib + slash + "bin" + slash + sysName() + "64" + slash + "nekoapi",func,args);
-         }
-      }
-
+      var init =  load("neko_init",5);
       if (init!=null)
       {
          loaderTrace("Found nekoapi @ " + moduleName );
          init(function(s) return new String(s),
-           function(len:Int) { var r=[]; if (len>0) r[len-1]=null; return r; } );
+           function(len:Int) { var r=[]; if (len>0) r[len-1]=null; return r; },
+           null, true, false );
       }
       else
-         throw("Could not find NekoAPI ndll.");
+         throw("Could not find NekoAPI interface.");
    }
+   #end
 
 
    public static function load(func:String, args:Int) : Dynamic
@@ -148,23 +131,22 @@ class Loader
          return Lib.load(moduleName,func,args);
       }
 
-      var slash = (sysName().substr(7).toLowerCase()=="windows") ? "\\" : "/";
       moduleInit = true;
-
-      #if neko
-      loadNekoAPI(slash);
-      #end
 
       moduleName = "nme";
 
       // Look in current directory first (for installed apps)
-      var result:Dynamic = tryLoad("." + slash + "nme",func,args);
+      var result:Dynamic = tryLoad("./nme",func,args);
+      if (result==null)
+         result = tryLoad(".\\nme",func,args);
+
       // Try standard neko path (NEKOPATH variable, system path/library paths)
       if (result==null)
           result = tryLoad("nme",func,args);
       // Try haxelib
       if (result==null)
       {
+         var slash = (sysName().substr(7).toLowerCase()=="windows") ? "\\" : "/";
          var haxelib = findHaxeLib("nme");
          if (haxelib!="")
          {
@@ -177,6 +159,10 @@ class Loader
       }
 
       loaderTrace("Result : " + result );
+
+      #if neko
+      loadNekoAPI();
+      #end
 
       return result;
    }

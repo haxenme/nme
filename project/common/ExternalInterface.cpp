@@ -2,6 +2,13 @@
 #define IMPLEMENT_API
 #endif
 
+#if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX)
+// Include neko glue....
+#define NEKO_COMPATIBLE
+#endif
+
+
+
 #ifdef ANDROID
 #include <android/log.h>
 #endif
