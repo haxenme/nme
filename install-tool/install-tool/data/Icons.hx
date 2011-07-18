@@ -1,9 +1,6 @@
 package data;
 
-#if REQUIRE_NEKOAPI
 import nme.display.BitmapData;
-#end
-
 
 class Icons
 {
@@ -51,7 +48,6 @@ class Icons
    }
 
 
-#if REQUIRE_NEKOAPI
    
    
    function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackgroundColour ) : BitmapData
@@ -301,32 +297,6 @@ class Icons
 
       InstallTool.runCommand(".", InstallTool.nme + "\\ndll\\Windows\\ReplaceVistaIcon.exe", [ inExeName, name] );
    }
-
-
-#else
-
-
-	public function createMacIcon(resource_dest:String) {
-		
-		return "";
-		
-	}
-	
-
-	function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackgroundColour ) : Dynamic {
-		
-		return null;
-		
-	}
-
-
-	function setWindowsIcon(inAppIcon:String, inTmp:String, inExeName:String) {
-		
-		return "";
-		
-	}
-
-#end
 
 
 }

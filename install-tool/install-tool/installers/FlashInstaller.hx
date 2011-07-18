@@ -11,9 +11,7 @@ import format.swf.Constants;
 import format.mp3.Data;
 import format.wav.Data;
 
-#if REQUIRE_NEKOAPI
 import nme.text.Font;
-#end
 
 
 class FlashInstaller extends InstallerBase {
@@ -194,7 +192,6 @@ class FlashInstaller extends InstallerBase {
       else if (type=="font")
       {
 		  
-		  #if REQUIRE_NEKOAPI
 		  
           // More code ripped off from "samhaxe"
           var src = name;
@@ -310,8 +307,6 @@ class FlashInstaller extends InstallerBase {
                   }
             })) );
 			
-			#end
-			
       }
       else
       {
@@ -364,16 +359,6 @@ class FlashInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE");
 		
 		for (asset in assets) {
-			
-			#if REQUIRE_NEKOAPI
-			
-			if (asset.type == "font") {
-				
-				asset.embed = false;
-				
-			}
-			
-			#end
 			
 			if (!asset.embed) {
 				
