@@ -17,7 +17,6 @@ class WebOSInstaller extends InstallerBase {
 		
 		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/webos/haxe");
 		recursiveCopy (nme + "/install-tool/webos/hxml", buildDirectory + "/webos/haxe");
-		recursiveCopy (nme + "/install-tool/webos/template", destination);
 		
 		var hxml:String = buildDirectory + "/webos/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -51,6 +50,8 @@ class WebOSInstaller extends InstallerBase {
 		
 		var destination:String = buildDirectory + "/webos/bin/";
 		mkdir (destination);
+		
+		recursiveCopy (nme + "/install-tool/webos/template", destination);
 		
 		for (ndll in ndlls) {
 			
