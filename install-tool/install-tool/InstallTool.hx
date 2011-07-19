@@ -79,7 +79,7 @@ class InstallTool {
 		Lib.println (" COMMAND : copy-if-newer source destination");
 		Lib.println (" COMMAND : update build.nmml [-DFLAG -Dname=val... ]");
 		Lib.println (" COMMAND : (build|update|run|rerun|test) [-debug] build.nmml target");
-		Lib.println (" COMMAND : uninstall build.nmml target");
+		Lib.println (" COMMAND : (trace|uninstall) build.nmml target");
 		
 	}
 	
@@ -324,7 +324,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = ["copy-if-newer", "rerun", "update", "test", "build", "installer", "uninstall"];
+		var validCommands:Array <String> = ["copy-if-newer", "rerun", "update", "test", "build", "installer", "uninstall", "trace"];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			

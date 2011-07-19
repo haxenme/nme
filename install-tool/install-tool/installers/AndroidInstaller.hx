@@ -109,8 +109,14 @@ class AndroidInstaller extends InstallerBase {
 		
 		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
 		
+	}
+	
+	
+	override function traceMessages ():Void {
+		
 		if (InstallTool.traceEnabled) {
 			
+			var adb:Dynamic = getADB ();
 			runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
 			
 		}

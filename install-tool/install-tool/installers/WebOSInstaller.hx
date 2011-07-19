@@ -42,6 +42,11 @@ class WebOSInstaller extends InstallerBase {
 		runCommand (buildDirectory + "/webos", "palm-install", [ defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk" ] );
 		runCommand ("", "palm-launch", [ defines.get ("APP_PACKAGE") ] );
 		
+	}
+	
+	
+	override function traceMessages ():Void {
+		
 		if (InstallTool.traceEnabled) {
 			
 			runCommand ("", "palm-log", [ "-f", defines.get ("APP_PACKAGE") ]);

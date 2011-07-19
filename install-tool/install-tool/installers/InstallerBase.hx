@@ -60,6 +60,12 @@ class InstallerBase {
 		initializeTool ();
 		parseProjectFile ();
 		
+		if (command == "trace") {
+			
+			InstallTool.traceEnabled = true;
+			
+		}
+		
 		// Strip off 0x ....
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
@@ -111,7 +117,14 @@ class InstallerBase {
 			
 		}
 		
-		if (command != "update" && command != "build" && command != "test" && command != "run" && command != "rerun") {
+		if (command == "run" || command == "rerun" || command == "test" || command == "trace") {
+			
+			print ("----- TRACE -----");
+			traceMessages ();
+			
+		}
+		
+		if (command != "update" && command != "build" && command != "test" && command != "run" && command != "rerun" && command != "trace") {
 			
 			throw ("Command not implemented: " + command);
 			
@@ -128,6 +141,7 @@ class InstallerBase {
 	function run () { throw "Run not implemented."; }
 	function updateDevice () { /* Not required on all platforms. */ }
 	function install () { throw "Install not implemented."; }
+	function traceMessages () { /* Not required on all platforms. */ }
 	function uninstall () { throw "Uninstall not implemented."; }
 	
 	
