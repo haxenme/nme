@@ -5,6 +5,7 @@ import data.Asset;
 import neko.io.Path;
 import neko.FileSystem;
 import neko.Lib;
+import neko.Sys;
 
 
 class AndroidInstaller extends InstallerBase {
@@ -12,8 +13,10 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/android/project";
+		var destination:String = buildDirectory + "/android/bin";
 		mkdir (destination);
+		
+		context.CPP_DIR = buildDirectory + "/android/obj";
 		
 		recursiveCopy (nme + "/install-tool/android/template", destination);
 		
@@ -28,6 +31,31 @@ class AndroidInstaller extends InstallerBase {
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
+		
+		copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so");
+		
+		var ant:String = defines.get ("ANT_HOME");
+		
+		if (ant == null || ant == "") {
+			
+			ant = "ant";
+			
+		} else {
+			
+			ant += "/bin/ant";
+			
+		}
+		
+		var build:String = "debug";
+		
+		if (defines.exists ("KEY_STORE")) {
+			
+			build = "release";
+			
+		}
+		
+		runCommand (destination, ant, [ build ]);
+		
 	}
 	
 	
@@ -61,11 +89,11 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function onCreate ():Void {
 		
-		if (!defines.exists ("ANDROID_HOST")) {
+		if (Sys.getEnv ("ANDROID_HOST") != null && Sys.getEnv ("ANDROID_HOST") != "") {
 			
 			if (InstallTool.isLinux) {
 				
-				defines.set ("ANDROID_HOST", "linux-x86");
+				Sys.putEnv ("ANDROID_HOST", "linux-x86");
 				
 			}
 			
@@ -97,7 +125,7 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/android/project";
+		var destination:String = buildDirectory + "/android/bin";
 		mkdir (destination);
 		
 		//createIcon (36, 36, destination + "/res/drawable-ldpi/icon.png", true);
@@ -131,34 +159,9 @@ class AndroidInstaller extends InstallerBase {
 				
 			}
 			
-			mkdir (Path.directory (targetPath));
 			copyIfNewer (asset.sourcePath, targetPath );
 			
 		}
-		
-		var ant:String = defines.get ("ANT_HOME");
-		
-		if (ant == null || ant == "") {
-			
-			ant = "ant";
-			
-		} else {
-			
-			ant += "/bin/ant";
-			
-		}
-		
-		var build:String = "debug";
-		
-		if (defines.exists ("KEY_STORE")) {
-			
-			build = "release";
-			
-		}
-		
-		var destination:String = buildDirectory + "/android/project";
-		
-		runCommand (destination, ant, [ build ]);
 		
 	}
 	
@@ -173,7 +176,7 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		var apk:String = FileSystem.fullPath (buildDirectory) + "/android/project/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
+		var apk:String = FileSystem.fullPath (buildDirectory) + "/android/bin/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
 		var adb:Dynamic = getADB ();
 		
 		runCommand (adb.path, adb.name, [ "install", "-r", apk ]);

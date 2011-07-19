@@ -13,7 +13,7 @@ class IOSInstaller extends InstallerBase {
    override function run ():Void { throw "Run not supported on IOS target - please run from Xcode"; }
 	
 	
-	override function wantFullClassPath () { return true; }
+	override function useFullClassPaths () { return true; }
 		
 	private override function onCreate ():Void {
 		

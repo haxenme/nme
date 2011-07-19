@@ -14,8 +14,8 @@ class GPH {
 
    function updateGph()
    {
-      var dest = mBuildDir + "/gph/game/" + mDefines.get("APP_FILE") + "/";
-      mContext.CPP_DIR = mBuildDir + "/gph/bin";
+      var dest = mBuildDir + "/gph/game/bin/";
+      mContext.CPP_DIR = mBuildDir + "/gph/obj";
 
       mkdir(dest);
 

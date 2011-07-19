@@ -19,7 +19,7 @@ class FlashInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE") + "/";
+		var destination:String = buildDirectory + "/flash/bin/";
 		mkdir (destination);
 		
 		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/flash/haxe");
@@ -29,6 +29,39 @@ class FlashInstaller extends InstallerBase {
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
+		
+		var file = defines.get("APP_FILE") + ".swf";
+		var input = neko.io.File.read(destination+"/"+file,true);
+		var reader = new format.swf.Reader(input);
+		var swf = reader.read();
+		input.close();
+		
+		var new_tags = new Array<SWFTag>();
+		var inserted = false;
+		for(tag in swf.tags)
+		{
+			var name = Type.enumConstructor(tag);
+			//trace(name);
+			//if (name=="TSymbolClass") trace(tag);
+
+			if (name=="TShowFrame" && !inserted && assets.length>0 )
+			{
+				new_tags.push(TShowFrame);
+				for(asset in assets)
+					if (toSwf(asset,new_tags) )
+						inserted = true;
+			}
+			new_tags.push(tag);
+		}
+
+		if (inserted)
+		{
+			swf.tags = new_tags;
+			var output = neko.io.File.write(destination+"/"+file,true);
+			var writer = new format.swf.Writer(output);
+			writer.write(swf);
+			output.close();
+		}
 		
 	}
 
@@ -320,7 +353,7 @@ class FlashInstaller extends InstallerBase {
 
 	override function run ():Void {
 		
-		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE");
+		var destination:String = buildDirectory + "/flash/bin";
 		var player:String = Sys.getEnv ("FLASH_PLAYER_EXE");
 		
 		if (player == null) {
@@ -356,7 +389,7 @@ class FlashInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/flash/" + defines.get ("APP_FILE");
+		var destination:String = buildDirectory + "/flash/bin";
 		
 		for (asset in assets) {
 			
@@ -368,39 +401,6 @@ class FlashInstaller extends InstallerBase {
 			}
 			
 		}
-
-      var file = defines.get("APP_FILE") + ".swf";
-      var input = neko.io.File.read(destination+"/"+file,true);
-      var reader = new format.swf.Reader(input);
-      var swf = reader.read();
-      input.close();
-
-      var new_tags = new Array<SWFTag>();
-      var inserted = false;
-      for(tag in swf.tags)
-      {
-         var name = Type.enumConstructor(tag);
-         //trace(name);
-         //if (name=="TSymbolClass") trace(tag);
-
-         if (name=="TShowFrame" && !inserted && assets.length>0 )
-         {
-            new_tags.push(TShowFrame);
-            for(asset in assets)
-               if (toSwf(asset,new_tags) )
-                  inserted = true;
-         }
-         new_tags.push(tag);
-      }
-
-      if (inserted)
-      {
-         swf.tags = new_tags;
-         var output = neko.io.File.write(destination+"/"+file,true);
-         var writer = new format.swf.Writer(output);
-         writer.write(swf);
-         output.close();
-      }
 		
 	}
 	

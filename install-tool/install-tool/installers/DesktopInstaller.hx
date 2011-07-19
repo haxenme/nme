@@ -34,7 +34,7 @@ class DesktopInstaller extends InstallerBase {
 
    function getBuildDir()
    {
-      return targetDir + "/build";
+      return targetDir + "/obj";
    }
 
    function getExeDir()

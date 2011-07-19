@@ -14,19 +14,24 @@ import neko.Sys;
 
 
 class InstallTool {
-
-   public static var verbose = false;
-	public static var nme:String = "";
 	
 	
 	public static var isMac = false;
 	public static var isLinux = false;
 	public static var isWindows = false;
+	public static var nme:String = "";
+	public static var verbose = false;
 	
 	
 	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool) {
 		
 		var installer:InstallerBase = null;
+		
+		if (target == "windows" || target == "mac" || target == "linux") {
+			
+			target = "cpp";
+			
+		}
 		
 		switch (target) {
 			
@@ -34,7 +39,7 @@ class InstallTool {
 				
 				installer = new AndroidInstaller ();
 			
-			case "windows", "mac", "linux":
+			case "cpp":
 				
 				installer = new CPPInstaller ();
 			
@@ -61,16 +66,9 @@ class InstallTool {
 			
 		}
 		
-		installer.create(nme, command, defines, includePaths, projectFile, target, debug);
+		installer.create (nme, command, defines, includePaths, projectFile, target, debug);
 		
 	}
-
-   public static function print(inMessage:String)
-   {
-      if (verbose)
-			Lib.println(inMessage);
-   }
-
 	
 	
 	private static function argumentError (error:String):Void {
@@ -104,7 +102,7 @@ class InstallTool {
 	}
 	
 	
-	static public function getNeko ():String {
+	public static function getNeko ():String {
 		
 		var path:String = Sys.getEnv ("NEKO_INSTPATH");
 		
@@ -161,6 +159,18 @@ class InstallTool {
 		return true;
 		
 	}
+	
+	
+	public static function print (message:String):Void {
+		
+		if (verbose) {
+			
+			Lib.println(message);
+			
+		}
+		
+	}
+	
 
 	public static function runCommand (path:String, command:String, args:Array<String>) {
 		
@@ -196,8 +206,6 @@ class InstallTool {
 		}
 		
 	}
-	
-
 	
 	
 	public static function main () {
@@ -239,19 +247,19 @@ class InstallTool {
 			
 			defines.set ("windows", "1");
 			defines.set ("NME_HOST", "windows");
-         isWindows = true;
+			isWindows = true;
 			
 		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
 			
 			defines.set ("linux", "1");
 			defines.set ("NME_HOST", "linux");
-         isLinux = true;
+			isLinux = true;
 			
 		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
 			
 			defines.set ("macos", "1");
 			defines.set ("NME_HOST", "darwin-x86");
-         isMac = true;
+			isMac = true;
 			
 		}
 		
@@ -365,29 +373,7 @@ class InstallTool {
 			
 			var target:String = words[1];
 			
-			if (target == "cpp") {
-				
-				if (isWindows) {
-					
-					target = "windows";
-					
-				} else if (isLinux) {
-					
-					target = "linux";
-					
-				} else if (isMac) {
-					
-					target = "mac";
-					
-				} else {
-					
-					throw ("Error: " + defines.get("NME_HOST") + " is not a recognized host platform");
-					
-				}
-				
-			}
-			
-			create(nme, command, defines, includePaths, words[0], target, debug);
+			create (nme, command, defines, includePaths, words[0], target, debug);
 		}
 		
 	}

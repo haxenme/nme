@@ -10,10 +10,10 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/webos/" + defines.get ("APP_FILE") + "/";
+		var destination:String = buildDirectory + "/webos/bin/";
 		mkdir (destination);
 		
-		context.CPP_DIR = buildDirectory + "/webos/bin";
+		context.CPP_DIR = buildDirectory + "/webos/obj";
 		
 		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/webos/haxe");
 		recursiveCopy (nme + "/install-tool/webos/hxml", buildDirectory + "/webos/haxe");
@@ -23,17 +23,17 @@ class WebOSInstaller extends InstallerBase {
 		
 		runCommand ("", "haxe", [ hxml ] );
 		
-		var destination:String = buildDirectory + "/webos/" + defines.get ("APP_FILE") + "/" + defines.get ("APP_FILE");
-		
 		if (debug) {
 			
-			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain-debug", destination );
+			copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain-debug", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
 			
 		} else {
 			
-			copyIfNewer (buildDirectory + "/webos/bin/ApplicationMain", destination );
+			copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
 			
 		}
+		
+		runCommand (buildDirectory + "/webos", "palm-package", [ "bin", "--use-v1-format" ] );
 		
 	}
 	
@@ -49,7 +49,7 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/webos/" + defines.get ("APP_FILE") + "/";
+		var destination:String = buildDirectory + "/webos/bin/";
 		mkdir (destination);
 		
 		for (ndll in ndlls) {
@@ -64,8 +64,6 @@ class WebOSInstaller extends InstallerBase {
 			copyIfNewer (asset.sourcePath, destination + asset.targetPath );
 			
 		}
-		
-		runCommand (buildDirectory + "/webos", "palm-package", [ defines.get ("APP_FILE"), "--use-v1-format" ] );
 		
 	}
 	

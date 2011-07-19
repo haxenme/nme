@@ -28,28 +28,26 @@ class InstallerBase {
 	private var icons:Icons;
 	private var includePaths:Array <String>;
 	private var ndlls:Array <NDLL>;
-   private var allFiles:Array<String>;
+	private var allFiles:Array <String>;
 	private var nme:String;
 	private var projectFile:String;
 	private var target:String;
-
-   var isMac:Bool;
-   var isLinux:Bool;
-   var isWindows:Bool;
 	
-	private static var varMatch = new EReg("\\${(.*?)}","");
+	private static var varMatch = new EReg("\\${(.*?)}", "");
 
 	
-   public function new()
-   {
+	public function new () {
+		
 		assets = new Array <Asset> ();
 		compilerFlags = new Array <String> ();
-		icons = new Icons();
-      allFiles = [];
+		icons = new Icons ();
+		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
-   }
+		
+	}
 	
-	public function create(nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool) {
+	
+	public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool):Void {
 		
 		this.nme = nme;
 		this.command = command;
@@ -58,7 +56,6 @@ class InstallerBase {
 		this.projectFile = projectFile;
 		this.target = target;
 		this.debug = debug;
-		
 		
 		initializeTool ();
 		parseProjectFile ();
@@ -78,66 +75,81 @@ class InstallerBase {
 		onCreate ();
 		generateContext ();
 		
+		// Commands:
+		//
+		// update = Assets or extenal library have changed - files need updating copy files to target directories
+		// build = Create files ready to be installed, but do not run.  eg: build server
+		// run = run, updating the device is required (eg, android installer)
+		// rerun = run, without updating the device
+		// test = change is made, needs to be tested:  update, build, run
 		
-       // Commands:
-       //
-       // update = Assets or extenal library have changed - files need updating
-       //           copy files to target directories
-       // build = Create files ready to be installed, but do not run.  eg: build server
-       // run = run, updating the device is required (eg, android installer)
-       // rerun = run, without updating the device
-       // test = change is made, needs to be tested:  update, build, run
-       //
-
-      switch(command)
-      {
-         case "test":
-            print("---- BUILD -----");
-            build();
-			print("---- UPDATE -----");
-            update();
-            print("---- UPDATE DEVICE -----");
-            updateDevice();
-            print("---- RUN -----");
-            run();
-         case "run":
-            print("---- UPDATE DEVICE -----");
-            updateDevice();
-            print("---- RUN -----");
-            run();
-         case "rerun":
-            print("---- RUN -----");
-            run();
-         case "build":
-            print("---- BUILD -----");
-            build();
-			print("---- UPDATE -----");
-            update();
-		case "update":
-			print("---- UPDATE -----");
-            update();
-            
-
-         default:
-            throw("Command not implemented: " + command);
-      }
+		if (command == "update" || command == "build" || command == "test") {
+			
+			print ("----- UPDATE -----");
+			update ();
+			
+		}
+		
+		if (command == "build" || command == "test") {
+			
+			print ("----- BUILD -----");
+			build ();
+			
+		}
+		
+		if (command == "run" || command == "test") {
+			
+			print ("----- UPDATE DEVICE -----");
+			updateDevice ();
+			
+		}
+		
+		if (command == "run" || command == "rerun" || command == "test") {
+			
+			print ("----- RUN -----");
+			run ();
+			
+		}
+		
+		if (command != "update" && command != "build" && command != "test" && command != "run" && command != "rerun") {
+			
+			throw ("Command not implemented: " + command);
+			
+		}
+		
 	}
-
-   function wantFullClassPath () { return false; }
-
-
-   function update() { throw "Update not implemented."; }
-   function build() { throw "Build not implemented."; }
-   function run() { throw "Run not implemented."; }
-   function updateDevice() { /* Not required on all platforms. */ }
-   function install() { throw "Install not implemented."; }
-   function uninstall() { throw "Uninstall not implemented."; }
-
+	
+	
+	function onCreate ():Void { }
+	function useFullClassPaths () { return false; }
+	
+	function update () { throw "Update not implemented."; }
+	function build () { throw "Build not implemented."; }
+	function run () { throw "Run not implemented."; }
+	function updateDevice () { /* Not required on all platforms. */ }
+	function install () { throw "Install not implemented."; }
+	function uninstall () { throw "Uninstall not implemented."; }
+	
+	
+	function addFile (file:String):Bool {
+		
+		if (file != null && file != "") {
+			
+			allFiles.push (file);
+			print("Adding file to installer: " + file);
+			
+			return true;
+			
+		}
+		
+		return false;
+		
+	}
 	
 	
 	private function copyIfNewer (source:String, destination:String) {
       
-      allFiles.push(destination);
+		allFiles.push (destination);
 		
 		if (!isNewer (source, destination)) {
 			
@@ -145,21 +157,12 @@ class InstallerBase {
 			
 		}
 		
-		print("Copy " + source + " to " + destination);
+		print ("Copy " + source + " to " + destination);
 		
+		mkdir (Path.directory (destination));
 		File.copy (source, destination);
+		
 	}
-
-   function addFile(inFile:String) : Bool
-   {
-      if (inFile!=null && inFile!="")
-      {
-         allFiles.push(inFile);
-         return true;
-         print("Add to installer: " + inFile);
-      }
-      return false;
-   }
 	
 	
 	private function copyFile (source:String, destination:String, process:Bool = true) {
@@ -281,8 +284,6 @@ class InstallerBase {
 		return "";
 		
 	}
-	
-	function onCreate ():Void { }
    
 	
 	private function generateContext ():Void {
@@ -406,11 +407,6 @@ class InstallerBase {
 		
 	}
 	
-   function print(inMessage:String)
-   {
-      if (InstallTool.verbose)
-			Lib.println(inMessage);
-   }
 	
 	private function mkdir (directory:String):Void {
 		
@@ -749,8 +745,12 @@ class InstallerBase {
 					case "classpath":
 						
 						var path = substitute (element.att.name);
-                  if (wantFullClassPath())
-                      path = FileSystem.fullPath (path);
+						
+						if (useFullClassPaths ()) {
+							
+							path = FileSystem.fullPath (path);
+							
+						}
                       
 						compilerFlags.push ("-cp " + path);
 					
@@ -798,6 +798,17 @@ class InstallerBase {
 	}
 	
 	
+	private function print (message:String):Void {
+		
+		if (InstallTool.verbose) {
+			
+			Lib.println (message);
+			
+		}
+		
+	}
+	
+	
 	public function recursiveCopy (source:String, destination:String, process:Bool = true) {
 		
 		mkdir (destination);
@@ -827,12 +838,14 @@ class InstallerBase {
 	}
 	
 	
-	function runCommand (path:String, command:String, args:Array<String>) {
-      InstallTool.runCommand(path,command,args);
+	private function runCommand (path:String, command:String, args:Array <String>):Void {
+		
+		InstallTool.runCommand (path, command, args);
+	  
 	}
 	
 	
-	private function setDefault (name:String, value:String) {
+	private function setDefault (name:String, value:String):Void {
 		
 		if (!defines.exists (name)) {
 			
