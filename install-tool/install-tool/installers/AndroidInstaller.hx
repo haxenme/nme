@@ -108,7 +108,12 @@ class AndroidInstaller extends InstallerBase {
 		var adb:Dynamic = getADB ();
 		
 		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
-		runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
+		
+		if (InstallTool.traceEnabled) {
+			
+			runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
+			
+		}
 		
 	}
 	

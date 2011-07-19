@@ -20,6 +20,7 @@ class InstallTool {
 	public static var isLinux = false;
 	public static var isWindows = false;
 	public static var nme:String = "";
+	public static var traceEnabled:Bool = true;
 	public static var verbose = false;
 	
 	
@@ -285,9 +286,13 @@ class InstallTool {
 				
 				includePaths.push (arg.substr (2));
 				
-			} else if (arg == "-v") {
+			} else if (arg == "-v" || arg == "-verbose") {
 				
 				verbose = true;
+				
+			} else if (arg == "-notrace") {
+				
+				traceEnabled = false;
 				
 			} else if (arg == "-debug") {
 				
