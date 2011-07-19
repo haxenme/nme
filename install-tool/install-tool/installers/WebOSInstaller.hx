@@ -47,11 +47,7 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function traceMessages ():Void {
 		
-		if (InstallTool.traceEnabled) {
-			
-			runCommand ("", "palm-log", [ "-f", defines.get ("APP_PACKAGE") ]);
-			
-		}
+		runCommand ("", "palm-log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
 	}
 	

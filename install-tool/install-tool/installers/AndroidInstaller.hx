@@ -114,12 +114,8 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function traceMessages ():Void {
 		
-		if (InstallTool.traceEnabled) {
-			
-			var adb:Dynamic = getADB ();
-			runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
-			
-		}
+		var adb:Dynamic = getADB ();
+		runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
 		
 	}
 	

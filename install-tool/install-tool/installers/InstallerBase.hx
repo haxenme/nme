@@ -119,8 +119,12 @@ class InstallerBase {
 		
 		if (command == "run" || command == "rerun" || command == "test" || command == "trace") {
 			
-			print ("----- TRACE -----");
-			traceMessages ();
+			if (InstallTool.traceEnabled || command == "trace") {
+				
+				print ("----- TRACE -----");
+				traceMessages ();
+				
+			}
 			
 		}
 		
