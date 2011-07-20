@@ -129,10 +129,11 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       #else
       var src = this;
       #end
+
       var result = Uncompress.run(src,null);
       b = result.b;
       length = result.length;
-      position = length;
+      position = 0;
       #if neko
       alloced = length;
       #end
@@ -153,15 +154,17 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    {
       return (position+1<length) ? __get(position++)!=0 : ThrowEOFi()!=0;
    }
-   public function readBytes(outData:ByteArray,inOffset:Int,inLen:Int) : Void
+   public function readBytes(outData:ByteArray,inOffset:Int=0,inLen:Int=0) : Void
    {
+      if (inLen==0)
+         inLen = length - position;
       if (position+inLen>length)
         ThrowEOFi();
       if (outData.length < inOffset+inLen)
         outData.ensureElem(inOffset+inLen-1);
 
      #if neko
-     untyped __dollar__sblit(outData.getData(),inOffset,position,inLen);
+     outData.blit(inOffset, this, position,inLen);
      #else
      var b1 = b;
      var b2 = outData.b;
@@ -169,6 +172,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
      for( i in 0...inLen )
          b2[inOffset+i] = b1[p+i];
      #end
+     position += inLen;
    }
 
    public function readFloat() : Float
@@ -285,6 +289,8 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       #else
       untyped b.EnsureSize(inSize);
       #end
+      if (length<inSize+1)
+         length = inSize+1;
    }
 
 

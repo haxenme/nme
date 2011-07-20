@@ -11,7 +11,7 @@ interface IDataInput
 
    public function readBoolean() : Bool;
    public function readByte() : Int;
-   public function readBytes(outData:ByteArray,inOffset:Int,inLen:Int) : Void;
+   public function readBytes(outData:ByteArray,inOffset:Int=0,inLen:Int=0) : Void;
    public function readDouble() : Float;
    public function readFloat() : Float;
    public function readInt() : Int;
