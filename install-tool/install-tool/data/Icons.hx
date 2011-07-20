@@ -1,6 +1,7 @@
 package data;
 
 import nme.display.BitmapData;
+import neko.FileSystem;
 
 class Icons
 {
@@ -59,7 +60,7 @@ class Icons
          if (icon.isSize(inWidth,inHeight))
          {
             //mContext.HAS_ICON = true;
-            if (inTimedFile!="" && !InstallTool.isNewer(icon.name,inTimedFile))
+            if (inTimedFile!="" && FileSystem.exists(inTimedFile) && !InstallTool.isNewer(icon.name,inTimedFile))
                return null;
 
             var bmp = nme.display.BitmapData.load(icon.name);
@@ -75,7 +76,7 @@ class Icons
             {
                found = icon;
                //mContext.HAS_ICON = true;
-               if (inTimedFile!="" && !InstallTool.isNewer(icon.name,inTimedFile))
+               if (inTimedFile!="" && FileSystem.exists(inTimedFile) &&!InstallTool.isNewer(icon.name,inTimedFile))
                   return null;
 
                break;
