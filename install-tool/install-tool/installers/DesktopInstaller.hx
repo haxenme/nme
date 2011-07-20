@@ -5,6 +5,7 @@ import neko.io.Path;
 import neko.io.Process;
 import neko.Lib;
 import neko.Sys;
+import data.Asset;
 
 
 class DesktopInstaller extends InstallerBase {
@@ -113,6 +114,8 @@ class DesktopInstaller extends InstallerBase {
 		compilerFlags.push ("-cp " + targetDir + "/haxe");
 		
 		super.generateContext ();
+
+      updateIcon();
 	}
 
 
@@ -123,6 +126,24 @@ class DesktopInstaller extends InstallerBase {
 	}
 	
 
+   function updateIcon()
+   {
+      if (!InstallTool.isMac)
+      {
+         var icon_name = icons.findIcon(32,32);
+         if (icon_name=="")
+         {
+             var tmp_name = targetDir + "/haxe/icon.png";
+             if (icons.updateIcon(32,32,tmp_name))
+                icon_name = tmp_name;
+         }
+         if (icon_name!="")
+         {
+            assets.push( new data.Asset(icon_name, "icon.png", Asset.TYPE_IMAGE, "icon.png", "1") );
+            context.WIN_ICON = "icon.png";
+         }
+      }
+   }
 
 	
 	override function update ():Void {
@@ -153,6 +174,7 @@ class DesktopInstaller extends InstallerBase {
 			copyIfNewer(ndll.getSourcePath(system_name, ndll.name + extension), exe_dir + ndll.name + extension);
 		}
 
+
       var content_dir = getContentDir();
 		for (asset in assets) {
 			
@@ -161,7 +183,7 @@ class DesktopInstaller extends InstallerBase {
 			
 		}
 
-     if (targetName=="mac")
+     if (InstallTool.isMac)
      {
         var filename =  icons.createMacIcon(content_dir);
         if (addFile(filename))
@@ -169,7 +191,6 @@ class DesktopInstaller extends InstallerBase {
           
         copyFile(nme + "/install-tool/mac/Info.plist", targetDir + "/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist",true);
      }
-		
 	}
 	
 	
