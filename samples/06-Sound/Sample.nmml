@@ -23,21 +23,22 @@
   
   <classpath name="." />
   <haxelib name="nme" />
+  <icon name="../common/nme.svg" />
 
   <assets>
-     <image name="Data/drum_kit.jpg" />
-     <image name="Data/bang.png"     />
+     <image name="Data/trans.png" />
+     <image name="Data/bang.png" />
      <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3"/>
-     <sound name="Data/drum.ogg"     />
-     <sound name="Data/bass.wav"     />
-     <sound name="Data/drums.ogg"   />
+     <sound name="Data/drum.ogg" />
+     <sound name="Data/bass.wav" />
+     <sound name="Data/drums.ogg" />
   </assets>
 
 
   <ndll name="std" />
   <ndll name="regexp" />
   <ndll name="zlib" />
-  <ndll name="nme" haxelib="nme" nekoapi="1"/>
+  <ndll name="nme" haxelib="nme" />
 
   <certificates>
      <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
