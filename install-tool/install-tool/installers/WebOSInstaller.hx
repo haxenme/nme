@@ -3,6 +3,7 @@ package installers;
 
 import neko.io.Path;
 import neko.Lib;
+import data.Asset;
 
 
 class WebOSInstaller extends InstallerBase {
@@ -50,6 +51,33 @@ class WebOSInstaller extends InstallerBase {
 		runCommand ("", "palm-log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
 	}
+	
+
+	override function generateContext ():Void {
+		
+		super.generateContext ();
+
+      updateIcon();
+	}
+
+   function updateIcon() {
+
+      var icon_name = icons.findIcon(64,64);
+      if (icon_name=="") {
+
+          var tmpDir = buildDirectory + "/webos/haxe";
+          mkdir(tmpDir);
+          var tmp_name = tmpDir + "/icon.png";
+          if (icons.updateIcon(64,64,tmp_name))
+             icon_name = tmp_name;
+      }
+      if (icon_name!="") {
+
+         assets.push( new data.Asset(icon_name, "icon.png", Asset.TYPE_IMAGE, "icon.png", "1") );
+         context.APP_ICON = "icon.png";
+      }
+   }
+
 	
 	
 	override function update ():Void {
