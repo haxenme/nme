@@ -5,7 +5,7 @@
      file="Sample06"
      title="NME Sample 06 - Drums"
      package="org.haxe.nme.sample06"
-     version="1.0"
+     version="1.0.0"
      company="nme" 
 	  main="Sample"
   />
@@ -26,6 +26,7 @@
   <icon name="../common/nme.svg" />
 
   <assets>
+     <image name="Data/drum_kit.jpg" />
      <image name="Data/bang.png" />
      <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3"/>
      <sound name="Data/drum.ogg" />
