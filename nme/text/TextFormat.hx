@@ -2,7 +2,7 @@ package nme.text;
 
 class TextFormat
 {
-   public var align : TextFormatAlign;
+   public var align : Null<String>;
    public var blockIndent : Dynamic;
    public var bold : Dynamic;
    public var bullet : Dynamic;
@@ -30,7 +30,7 @@ class TextFormat
                       ?in_underline : Dynamic,
                       ?in_url : String,
                       ?in_target : String,
-                      ?in_align : TextFormatAlign,
+                      ?in_align : String,
                       ?in_leftMargin : Dynamic,
                       ?in_rightMargin : Dynamic,
                       ?in_indent : Dynamic,
