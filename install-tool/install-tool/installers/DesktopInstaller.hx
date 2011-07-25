@@ -96,8 +96,10 @@ class DesktopInstaller extends InstallerBase {
 			runCommand ("", "chmod", [ "755", exe ]);
 			
 		}
-
-		
+      else
+      {
+         icons.setWindowsIcon(defines.get("APP_ICO"), targetDir+"/haxe", exe);
+      }
 	}
 
 	

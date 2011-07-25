@@ -209,14 +209,13 @@ class Icons
       return "";
    }
 
-   function setWindowsIcon(inAppIcon:String, inTmp:String, inExeName:String)
+   public function setWindowsIcon(inAppIcon:String, inTmp:String, inExeName:String)
    {
       var name:String="";
       if (inAppIcon!=null && inAppIcon!="")
          name = inAppIcon;
       else
       {
-         // Not quite working yet....
          return;
 
          var ico = new nme.utils.ByteArray();
@@ -236,56 +235,26 @@ class Icons
             ico.writeByte(0); // reserved
             ico.writeShort(1); // planes
             ico.writeShort(32); // bits per pixel
-            ico.writeInt(108 + 4*size*size); // Data size
+            ico.writeInt(40 + 4*size*size + ((size*size)>>8) ); // Data size
             var here = ico.length;
             ico.writeInt(here + 4); // Data offset
 
-            ico.writeInt(108); // size (bytes)
+            ico.writeInt(40); // size (bytes)
             ico.writeInt(size);
-            ico.writeInt(size);
+            ico.writeInt(size*2);
             ico.writeShort(1);
             ico.writeShort(32);
-            ico.writeInt(3); // Bit fields...
-            ico.writeInt(size*size*4); // SIze...
+            ico.writeInt(0); // Bit fields...
+            ico.writeInt(size*size*4 + ((size*size)>>8) ); // Size...
             ico.writeInt(0); // res-x
             ico.writeInt(0); // res-y
             ico.writeInt(0); // cols
             ico.writeInt(0); // important
-            // Red
-            ico.writeByte(0); 
-            ico.writeByte(0);
-            ico.writeByte(0xff);
-            ico.writeByte(0);
-            // Green
-            ico.writeByte(0); 
-            ico.writeByte(0xff);
-            ico.writeByte(0);
-            ico.writeByte(0);
-            // Blue
-            ico.writeByte(0xff);
-            ico.writeByte(0); 
-            ico.writeByte(0);
-            ico.writeByte(0);
-            // Alpha
-            ico.writeByte(0); 
-            ico.writeByte(0);
-            ico.writeByte(0);
-            ico.writeByte(0xff);
-
-            //LCS_WINDOWS_COLOR_SPACE
-            ico.writeByte(0x20); 
-            ico.writeByte(0x6e);
-            ico.writeByte(0x69);
-            ico.writeByte(0x57);
-
-            for(j in 0...36)
-               ico.writeByte(0);
-            ico.writeInt(0);
-            ico.writeInt(0);
-            ico.writeInt(0);
 
             var bits = bmp.getPixels( new nme.geom.Rectangle(0,0,size,size) );
             ico.writeBytes(bits);
+            for(i in 0...(size*size>>8))
+               ico.writeByte(255);
          }
 
          name = inTmp + "/icon.ico";

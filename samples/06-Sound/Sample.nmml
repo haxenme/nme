@@ -26,7 +26,6 @@
   <icon name="../common/nme.svg" />
 
   <assets>
-     <image name="Data/trans.png" />
      <image name="Data/bang.png" />
      <music name="Data/Party_Gu-Jeremy_S-8250_hifi.mp3"/>
      <sound name="Data/drum.ogg" />

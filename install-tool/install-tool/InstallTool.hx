@@ -235,6 +235,9 @@ class InstallTool {
 			if (FileSystem.exists (lastArgument) && FileSystem.isDirectory (lastArgument)) {
 				
 				nme = Sys.getCwd ();
+            var last = nme.substr(-1,1);
+            if (last=="/" || last=="\\")
+               nme = nme.substr(0,-1);
 				Sys.setCwd (lastArgument);
 				
 				defines.set ("NME", nme);

@@ -60,7 +60,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    public function setLength(inLength:Int):Void
    {
       if (inLength>0)
-        ensureElem(inLength-1);
+        ensureElem(inLength-1,false);
       length = inLength;
    }
 
@@ -161,7 +161,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       if (position+inLen>length)
         ThrowEOFi();
       if (outData.length < inOffset+inLen)
-        outData.ensureElem(inOffset+inLen-1);
+        outData.ensureElem(inOffset+inLen-1,true);
 
      #if neko
      outData.blit(inOffset, this, position,inLen);
@@ -276,12 +276,13 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    }
 
    // --- IDataOutput -----------------------------------------------------------
-   function ensureElem(inSize:Int)
+   function ensureElem(inSize:Int,inUpdateLenght:Bool)
    {
+      var len = inSize+1;
       #if neko
-      if (alloced<inSize+1)
+      if (alloced<len)
       {
-         alloced = ( (inSize+1) * 3 ) >> 1;
+         alloced = ( (len+1) * 3 ) >> 1;
          var new_b = untyped __dollar__smake(alloced);
          untyped __dollar__sblit(new_b,0,b,0,length);
          b = new_b;
@@ -289,8 +290,8 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       #else
       untyped b.EnsureSize(inSize);
       #end
-      if (length<inSize+1)
-         length = inSize+1;
+      if (inUpdateLenght && length<len)
+         length = len;
    }
 
 
@@ -308,7 +309,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       #if cpp
       b[length++] = untyped inByte;
       #else
-      ensureElem(length);
+      ensureElem(length,false);
       untyped __dollar__sset(b,length++,inByte & 0xff);
       #end
    }
@@ -326,7 +327,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    {
       if (inLength==0)
         inLength = bytes.length;
-      ensureElem(length+inLength-1);
+      ensureElem(length+inLength-1,false);
       var olen = length;
       length+=inLength;
       blit(olen,bytes,inOffset,inLength);
@@ -351,7 +352,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    }
    public function writeInt(value:Int)
    {
-      ensureElem(length+3);
+      ensureElem(length+3,false);
       if (bigEndian)
       {
           push_uncheck(value>>24);
@@ -371,7 +372,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    // public function writeObject(object:*)
    public function writeShort(value:Int)
    {
-      ensureElem(length+2);
+      ensureElem(length+1,false);
       if (bigEndian)
       {
           push_uncheck(value>>8);
@@ -424,7 +425,7 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
       factory = function(inLen:Int) { return new ByteArray(inLen); };
       resize  = function(inArray:ByteArray,inLen:Int) {
          if (inLen>0)
-           inArray.ensureElem(inLen-1);
+           inArray.ensureElem(inLen-1,true);
          inArray.length = inLen;
       };
       bytes  = function(inArray:ByteArray) { return inArray.b; }
