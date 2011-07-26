@@ -98,7 +98,9 @@ class DesktopInstaller extends InstallerBase {
 		}
       else
       {
-         icons.setWindowsIcon(defines.get("APP_ICO"), targetDir+"/haxe", exe);
+         // Setting the icon overwrites this appended neko data - must reverse this...
+         if (getVM()!="neko")
+            icons.setWindowsIcon(defines.get("APP_ICO"), targetDir+"/haxe", exe);
       }
 	}
 
@@ -137,7 +139,7 @@ class DesktopInstaller extends InstallerBase {
          {
              mkdir(targetDir + "/haxe");
              var tmp_name = targetDir + "/haxe/icon.png";
-             if (icons.updateIcon(32,32,tmp_name))
+             if (icons.updateIcon(16,32,tmp_name))
                 icon_name = tmp_name;
          }
          if (icon_name!="")
@@ -163,6 +165,7 @@ class DesktopInstaller extends InstallerBase {
 			
 			var extension:String = ".ndll";
 			
+      // This messes with the exe when neko is appended to the exe
 			if (ndll.haxelib == "") {
 				
 				if (InstallTool.isWindows)

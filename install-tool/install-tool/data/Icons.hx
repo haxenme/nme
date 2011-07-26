@@ -1,6 +1,8 @@
 package data;
 
 import nme.display.BitmapData;
+import nme.utils.ByteArray;
+import nme.geom.Rectangle;
 import neko.FileSystem;
 
 class Icons
@@ -41,6 +43,25 @@ class Icons
       }
       else
       {
+         // Threshold alpha ...
+         /*
+         var rect = new Rectangle(0,0,inWidth,inHeight);
+         var src = bmp.getPixels( rect );
+         src.position = 0;
+         var dest = new ByteArray();
+         for(i in 0...inWidth*inHeight)
+         {
+            var a = src.readByte();
+            var r = src.readByte();
+            var g = src.readByte();
+            var b = src.readByte();
+            dest.writeByte(a>192 ? a : 0);
+            dest.writeByte(r);
+            dest.writeByte(g);
+            dest.writeByte(b);
+         }
+         bmp.setPixels(rect,dest);
+         */
          var bytes = bmp.encode("png",0.95);
          bytes.writeFile(inDest);
       }
@@ -90,7 +111,7 @@ class Icons
 
       if (ext=="svg")
       {
-         var bytes = nme.utils.ByteArray.readFile(found.name);
+         var bytes = ByteArray.readFile(found.name);
          var svg = new gm2d.svg.SVG2Gfx( Xml.parse(bytes.asString()) );
 
 	      var shape = svg.CreateShape();
@@ -117,7 +138,7 @@ class Icons
       return null;
    }
 
- function PackBits(data:nme.utils.ByteArray,offset:Int, len:Int) : haxe.io.Bytes
+ function PackBits(data:ByteArray,offset:Int, len:Int) : haxe.io.Bytes
    {
       var out = new haxe.io.BytesOutput();
       var idx = 0;
@@ -149,7 +170,7 @@ class Icons
       }
       return out.getBytes();
    }
-   function ExtractBits(data:nme.utils.ByteArray,offset:Int, len:Int) : haxe.io.Bytes
+   function ExtractBits(data:ByteArray,offset:Int, len:Int) : haxe.io.Bytes
    {
       var out = new haxe.io.BytesOutput();
       for(i in 0...len)
@@ -216,28 +237,48 @@ class Icons
          name = inAppIcon;
       else
       {
-         return;
+         var sizes = [ 32, 48, 64 ];
 
-         var ico = new nme.utils.ByteArray();
-         ico.bigEndian = false;
-         ico.writeShort(0);
-         ico.writeShort(1);
-         ico.writeShort(1);
 
-         for(size in [ 32 ])
+         var bmps = new Array<BitmapData>();
+
+         var data_pos = 6;
+         for(size in sizes)
          {
             var bmp = getIconBitmap(size,size);
             if (bmp==null)
                break;
+            bmps.push(bmp);
+            data_pos += 16;
+         }
+
+         var ico = new ByteArray();
+         ico.bigEndian = false;
+         ico.writeShort(0);
+         ico.writeShort(1);
+         ico.writeShort(bmps.length);
+
+         for(bmp in bmps)
+         {
+            var size = bmp.width;
+            var xor_size = size*size*4;
+            var and_size = size*size >> 3;
             ico.writeByte(size);
             ico.writeByte(size);
             ico.writeByte(0); // palette
             ico.writeByte(0); // reserved
             ico.writeShort(1); // planes
             ico.writeShort(32); // bits per pixel
-            ico.writeInt(40 + 4*size*size + ((size*size)>>8) ); // Data size
-            var here = ico.length;
-            ico.writeInt(here + 4); // Data offset
+            ico.writeInt(40 + xor_size + and_size ); // Data size
+            ico.writeInt(data_pos); // Data offset
+            data_pos += 40 + xor_size + and_size;
+         }
+
+         for(bmp in bmps)
+         {
+            var size = bmp.width;
+            var xor_size = size*size*4;
+            var and_size = size*size >> 3;
 
             ico.writeInt(40); // size (bytes)
             ico.writeInt(size);
@@ -245,21 +286,45 @@ class Icons
             ico.writeShort(1);
             ico.writeShort(32);
             ico.writeInt(0); // Bit fields...
-            ico.writeInt(size*size*4 + ((size*size)>>8) ); // Size...
+            ico.writeInt( xor_size + and_size ); // Size...
             ico.writeInt(0); // res-x
             ico.writeInt(0); // res-y
             ico.writeInt(0); // cols
             ico.writeInt(0); // important
 
             var bits = bmp.getPixels( new nme.geom.Rectangle(0,0,size,size) );
-            ico.writeBytes(bits);
-            for(i in 0...(size*size>>8))
-               ico.writeByte(255);
+            var and_mask = new ByteArray();
+            for(y in 0...size)
+            {
+               var mask = 0;
+               var bit = 128;
+               bits.position = (size-1-y)*4*size;
+               for(i in 0...size)
+               {
+                  var a = bits.readByte();
+                  var r = bits.readByte();
+                  var g = bits.readByte();
+                  var b = bits.readByte();
+                  ico.writeByte(b);
+                  ico.writeByte(g);
+                  ico.writeByte(r);
+                  ico.writeByte(a);
+                  if (a<128)
+                     mask |= bit;
+                  bit = bit>>1;
+                  if (bit==0)
+                  {
+                     and_mask.writeByte(mask);
+                     bit = 128;
+                     mask = 0;
+                  }
+               }
+            }
+
+            ico.writeBytes(and_mask,0,and_mask.length);
          }
 
          name = inTmp + "/icon.ico";
-         neko.io.File.write(name,true);
-
          var file = neko.io.File.write( name,true);
          file.writeBytes(ico,0,ico.length);
          file.close();
