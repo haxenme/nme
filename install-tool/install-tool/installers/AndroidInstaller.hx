@@ -85,6 +85,11 @@ class AndroidInstaller extends InstallerBase {
 		return { path: path, name: name };
 		
 	}
+
+	override function generateContext ():Void {
+		super.generateContext ();
+      updateIcon();
+	}
 	
 	
 	override function onCreate ():Void {
@@ -128,17 +133,33 @@ class AndroidInstaller extends InstallerBase {
 		runCommand (adb.path, adb.name, [ "uninstall", pack ]);
 		
 	}
+
+   function updateIcon()
+   {
+		var destination:String = buildDirectory + "/android/bin";
+		mkdir (destination);
+		mkdir (destination + "/res/drawable-ldpi/");
+		mkdir (destination + "/res/drawable-mdpi/");
+		mkdir (destination + "/res/drawable-hdpi/");
+		
+      var orig = allFiles.length;
+
+		if (icons.updateIcon (36, 36, destination + "/res/drawable-ldpi/icon.png") )
+         allFiles.push(destination + "/res/drawable-ldpi/icon.png");
+		if (icons.updateIcon (48, 48, destination + "/res/drawable-mdpi/icon.png") )
+         allFiles.push(destination + "/res/drawable-mdpi/icon.png");
+		if (icons.updateIcon (72, 72, destination + "/res/drawable-hdpi/icon.png") )
+         allFiles.push(destination + "/res/drawable-hdpi/icon.png");
+
+      if (orig!=allFiles.length)
+         context.HAS_ICON = true;
+   }
 	
 	
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/android/bin";
-		mkdir (destination);
-		
-		//createIcon (36, 36, destination + "/res/drawable-ldpi/icon.png", true);
-		//createIcon (48, 48, destination + "/res/drawable-mdpi/icon.png", true);
-		//createIcon (72, 72, destination + "/res/drawable-hdpi/icon.png", true);
-		
+
 		for (ndll in ndlls) {
 			
 			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so" );
@@ -147,22 +168,17 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			asset.resourceName = asset.flatName;
 			var targetPath:String = "";
 			
 			switch (asset.type) {
 				
-				case Asset.TYPE_SOUND:
-					
-					targetPath = destination + "/res/raw/" + asset.resourceName + "." + Path.extension (asset.targetPath);
-				
-				case Asset.TYPE_MUSIC:
-					
-					targetPath = destination + "/res/raw/" + asset.resourceName + "." + Path.extension (asset.targetPath);
-				
+				case Asset.TYPE_SOUND, Asset.TYPE_MUSIC:
+
+					targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension (asset.targetPath);
 				default:
 					
-					targetPath = destination + "/assets/" + asset.id;
+			      asset.resourceName = asset.flatName;
+					targetPath = destination + "/assets/" + asset.resourceName;
 				
 			}
 			
