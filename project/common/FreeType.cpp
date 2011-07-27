@@ -287,6 +287,30 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #endif
 
 
+std::string ToAssetName(const std::string &inPath)
+{
+#if HX_MACOS
+   std::string flat;
+   for(int i=0;i<inPath.size();i++)
+   {
+      int ch = inPath[i];
+      if ( (ch>='a' && ch<='z') || (ch>='0' && ch<='9') )
+         { }
+      else if (ch>='A' && ch<='Z')
+         ch += 'a' - 'A';
+      else
+         ch = '_';
+
+      flat.push_back(ch);
+   }
+
+   char name[1024];
+   GetBundleFilename(flat.c_str(),name,1024);
+   return name;
+#else
+   return gAssetBase + "/" + inPath;
+#endif
+}
 
 FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
 {
@@ -299,11 +323,10 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
    {
       std::string file_name;
-      if (font==0)
-         font = OpenFont(("./fonts/" + fname).c_str(),inFlags);
 
-      if (font==0)
-         font = OpenFont(("./data/" + fname).c_str(),inFlags);
+      #if HX_MACOS
+      font = OpenFont(ToAssetName(fname).c_str(),inFlags);
+      #endif
 
       if (font==0 && GetFontFile(fname,file_name))
       {
