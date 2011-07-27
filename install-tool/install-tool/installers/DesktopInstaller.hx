@@ -191,6 +191,7 @@ class DesktopInstaller extends InstallerBase {
 
      if (InstallTool.isMac)
      {
+        mkdir(content_dir);
         var filename =  icons.createMacIcon(content_dir);
         if (addFile(filename))
            context.HAS_ICON = true;

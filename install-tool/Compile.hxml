@@ -1,6 +1,0 @@
--main InstallTool
--neko ../run.n
--cp ../../hxformat-shx
--cp ../../gm2d
--cp src
--lib nme
