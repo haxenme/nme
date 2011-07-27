@@ -109,7 +109,16 @@ class WebOSInstaller extends InstallerBase {
 		for (asset in assets) {
 			
 			mkdir (Path.directory (destination + asset.targetPath));
-			copyIfNewer (asset.sourcePath, destination + asset.targetPath );
+			
+			if (asset.targetPath == "/appinfo.json") {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			} else {
+				
+				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				
+			}
 			
 		}
 		

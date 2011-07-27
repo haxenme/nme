@@ -105,6 +105,8 @@ typedef std::wstring WString;
 
 bool LaunchBrowser(const char *inUtf8URL);
 
+void ExternalInterface_Call (const char *functionName, const char **params, int numParams);
+
 bool SetUserPreference(const char *inId, const char *inPreference);
 std::string GetUserPreference(const char *inId);
 bool ClearUserPreference(const char *inId);

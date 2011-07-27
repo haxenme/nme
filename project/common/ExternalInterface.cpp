@@ -1355,6 +1355,41 @@ DEFINE_PRIM(nme_doc_set_child_index,3);
 DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_bool);
 
 
+// --- ExternalInterface -----------------------------------------------------
+
+void nme_external_interface_add_callback (value inFunctionName, value inClosure)
+{
+	#ifdef WEBOS
+		//ExternalInterface_AddCallback (inFunctionName, inClosure);
+	#endif
+}
+DEFINE_PRIM(nme_external_interface_add_callback,2);
+
+value nme_external_interface_available ()
+{
+	#ifdef WEBOS
+		return alloc_bool(true);
+	#else
+		return alloc_bool(false);
+	#endif
+}
+DEFINE_PRIM(nme_external_interface_available,0);
+
+value nme_external_interface_call (value inFunctionName, value args)
+{
+	#ifdef WEBOS
+		int n = val_array_size(args);
+		const char *params[n];
+		for (int i = 0; i < n; i++) {
+			params[i] = val_string (val_array_i(args, i));
+		}
+		ExternalInterface_Call (val_string (inFunctionName), params, n);
+	#endif
+	return alloc_null();
+}
+DEFINE_PRIM(nme_external_interface_call,2);
+
+
 // --- Graphics -----------------------------------------------------
 
 value nme_gfx_clear(value inGfx)
