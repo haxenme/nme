@@ -2,5 +2,4 @@
 -neko ../run.n
 -cp src
 -lib gm2d
--cp install-tool
 -lib nme
