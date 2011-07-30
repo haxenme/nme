@@ -288,7 +288,8 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
          b = new_b;
       }
       #else
-      untyped b.EnsureSize(inSize);
+      if (b.length<len)
+         untyped b.__SetSize(len);
       #end
       if (inUpdateLenght && length<len)
          length = len;
