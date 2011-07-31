@@ -3,7 +3,6 @@ package installers;
 
 import neko.io.Path;
 import neko.io.Process;
-import neko.FileSystem;
 import neko.Lib;
 import neko.Sys;
 

@@ -332,6 +332,8 @@ class InstallerBase {
 	private function initializeTool ():Void {
 		
 		compilerFlags.push ("-D nme_install_tool");
+      if (InstallTool.verbose)
+		   compilerFlags.push ("-D verbose");
 		
 		setDefault ("WIN_WIDTH", "640");
 		setDefault ("WIN_HEIGHT", "480");
