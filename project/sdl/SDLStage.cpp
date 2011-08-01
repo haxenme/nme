@@ -513,6 +513,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    {
       for(int pass=0;pass<3;pass++)
       {
+         #ifdef WEBOS
+         pass = 2;
+         #endif
          /* Initialize the display */
          for(int aa_pass = aa_tries; aa_pass>=0; --aa_pass)
          {
