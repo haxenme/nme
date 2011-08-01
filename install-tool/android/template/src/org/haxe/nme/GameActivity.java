@@ -21,6 +21,7 @@ public class GameActivity extends Activity {
     MainView mView;
     static AssetManager mAssets;
     static SoundPool mSoundPool;
+    static int       mSoundPoolID;
 	static Context mContext;
 	static MediaPlayer mMediaPlayer = null;
 	static final String GLOBAL_PREF_FILE="nmeAppPrefs";
@@ -32,6 +33,8 @@ public class GameActivity extends Activity {
 		  mContext = this;
         mAssets = getAssets();
         setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);  
+
+        mSoundPoolID = 1;
 		  mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
        //getResources().getAssets();
 
@@ -108,6 +111,7 @@ public class GameActivity extends Activity {
        return id;
     }
 
+    static public int getSoundPoolID() { return mSoundPoolID; }
 
     static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
 	 {
@@ -185,12 +189,15 @@ public class GameActivity extends Activity {
     @Override protected void onPause() {
         super.onPause();
         mView.onPause();
+        mSoundPool = null;
         NME.onActivity(NME.DEACTIVATE);
         if (mMediaPlayer!=null)
            mMediaPlayer.pause();
     }
 
     @Override protected void onResume() {
+        mSoundPoolID++;
+		  mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
         super.onResume();
         mView.onResume();
         if (mMediaPlayer!=null)
