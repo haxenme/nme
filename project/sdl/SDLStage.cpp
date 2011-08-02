@@ -344,6 +344,26 @@ public:
       }
    }
    
+   
+   bool getMultitouchSupported() { 
+	   #ifdef WEBOS
+	   return true;
+	   #else
+	   return false;
+	   #endif
+   }
+   void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
+   bool getMultitouchActive() {
+	   #ifdef WEBOS
+	   return mMultiTouch;
+	   #else
+	   return false;
+	   #endif
+   }
+   
+   bool mMultiTouch;
+   int  mSingleTouchID;
+   
 
    Surface *GetPrimarySurface()
    {
@@ -738,6 +758,9 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
          AddModStates(mouse.flags);
+		 #ifdef WEBOS
+		 mouse.value = inEvent.which;
+		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
@@ -745,6 +768,9 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
+		 #ifdef WEBOS
+		 mouse.value = inEvent.which;
+		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
@@ -752,6 +778,9 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
+		 #ifdef WEBOS
+		 mouse.value = inEvent.which;
+		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
