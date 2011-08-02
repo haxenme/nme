@@ -759,7 +759,7 @@ void ProcessEvent(SDL_Event &inEvent)
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
          AddModStates(mouse.flags);
 		 #ifdef WEBOS
-		 mouse.value = inEvent.which;
+		 mouse.value = inEvent.motion.which;
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
@@ -769,7 +769,7 @@ void ProcessEvent(SDL_Event &inEvent)
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
 		 #ifdef WEBOS
-		 mouse.value = inEvent.which;
+		 mouse.value = inEvent.button.which;
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
@@ -779,7 +779,7 @@ void ProcessEvent(SDL_Event &inEvent)
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          AddModStates(mouse.flags);
 		 #ifdef WEBOS
-		 mouse.value = inEvent.which;
+		 mouse.value = inEvent.button.which;
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;

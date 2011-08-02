@@ -69,8 +69,8 @@
 
 <files id="webos">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I../../sdl-static/include"/>
   <compilerflag value="-I${PalmPDK}/include/SDL" />
+  <compilerflag value="-I../../sdl-static/include"/>
   <file name="linux/NativeFont.cpp"/>
   <file name="webOS/System.cpp"/>
 </files>
@@ -98,6 +98,7 @@
 
 <files id="common">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
   <compilerflag value="-I../../sdl-static/include" unless="gph"/>
   <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
   <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl" unless="dynamic_sdl"/>
@@ -171,10 +172,10 @@
 
 <files id="sdl">
   <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I${PalmPDK}/include/SDL" />
   <compilerflag value="-I../../sdl-static/include" if="sdl_static"/>
   <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl_static"/>
   <compilerflag value="-I../../sdl-static/include" if="webos"/>
-  <compilerflag value="-I../../sdl-static/include/SDL12" if="webos"/>
   <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
   <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
   <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />

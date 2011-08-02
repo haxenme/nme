@@ -9,7 +9,6 @@ import data.Asset;
 class WebOSInstaller extends InstallerBase {
 
    var sdkDir:String;
-   var sdkExt:String;
 	
 	
 	override function build ():Void {
@@ -36,23 +35,38 @@ class WebOSInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (buildDirectory + "/webos", sdkDir + "palm-package" + sdkExt, [ "bin", "--use-v1-format" ] );
+		runPalmCommand (true, "package" ,[ "bin", "--use-v1-format" ] );
 		
 	}
+
+   function runPalmCommand(inBinDir:Bool, inCommand:String, args:Array<String>)
+   {
+      var dir = inBinDir ? buildDirectory + "/webos" : "";
+      if (InstallTool.isWindows)
+      {
+         var jar_file = defines.get("PalmSDK") + "\\share\\jars\\webos-tools.jar";
+         var new_args = ["-Dpalm.command=palm-" + inCommand , "-jar", jar_file].concat(args);
+		   runCommand (dir, "java" , new_args );
+      }
+      else
+      {
+		   runCommand (dir, sdkDir + "/bin/palm-" + inCommand, args );
+      }
+   }
+
 	
 	
 	override function run ():Void {
 		
-		runCommand (buildDirectory + "/webos", sdkDir + "palm-install" + sdkExt,
-         [ defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk" ] );
-		runCommand ("", "palm-launch", [ defines.get ("APP_PACKAGE") ] );
-		
+		runPalmCommand (true, "install", [ defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk" ] );
+
+		runPalmCommand (false, "launch", [ defines.get ("APP_PACKAGE") ] );
 	}
 	
 	
 	override function traceMessages ():Void {
 		
-		runCommand ("", sdkDir + "palm-log" + sdkExt, [ "-f", defines.get ("APP_PACKAGE") ]);
+		runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
 	}
 	
@@ -60,12 +74,10 @@ class WebOSInstaller extends InstallerBase {
 	override function generateContext ():Void {
 
       sdkDir = "";
-      sdkExt = "";
 
       if (InstallTool.isWindows)
       {
-         sdkDir = defines.exists("PalmSDK") ? defines.get("PalmSDK")+"\\bin\\"  : "c:\\Program Files (x86)\\HP webOS\\SDK\\bin\\";
-         sdkExt = ".bat";
+         sdkDir = defines.exists("PalmSDK") ? defines.get("PalmSDK") : "c:\\Program Files (x86)\\HP webOS\\SDK\\";
       }
 		
 		super.generateContext ();
