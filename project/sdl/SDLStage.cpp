@@ -485,7 +485,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    #ifdef NME_MIXER
    
    #ifdef WEBOS
-   int chunksize = 1024;
+   int chunksize = 256;
    #else
    int chunksize = 4096;
    #endif
