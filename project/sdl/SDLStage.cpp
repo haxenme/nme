@@ -483,7 +483,14 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    gSDLIsInit = true;
 
    #ifdef NME_MIXER
-   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,4096 )!= 0 )
+   
+   #ifdef WEBOS
+   int chunksize = 1024;
+   #else
+   int chunksize = 4096;
+   #endif
+   
+   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
    {
       fprintf(stderr,"Couble not open sound: %s\n", Mix_GetError());
       gSDLIsInit = false;
