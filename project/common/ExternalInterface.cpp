@@ -698,6 +698,15 @@ DEFINE_PRIM(nme_clear_user_preference,1);
 
 // --- Stage ----------------------------------------------------------------------
 
+value nme_stage_set_fixed_orientation(value inValue)
+{
+#if IPHONE
+   gFixedOrientation = val_int(inValue);
+#endif
+	return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
+
 value nme_get_frame_stage(value inValue)
 {
    Frame *frame;

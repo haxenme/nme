@@ -82,11 +82,16 @@ class Stage extends nme.display.DisplayObjectContainer
 
    public static var OrientationPortrait = 1;
    public static var OrientationPortraitUpsideDown = 2;
-   public static var OrientationLandscapeLeft = 3;
-   public static var OrientationLandscapeRight = 4;
+   public static var OrientationLandscapeRight = 3;
+   public static var OrientationLandscapeLeft = 4;
    public static var OrientationFaceUp = 5;
    public static var OrientationFaceDown = 6;
 
+   // If you set this, you don't need to set the 'shouldRotateInterface' function.
+   public static function setFixedOrientation(inOrientation:Int)
+   {
+      nme_stage_set_fixed_orientation(inOrientation);
+   }
    public static dynamic function shouldRotateInterface(inOrientation:Int) : Bool
    {
       return inOrientation==OrientationPortrait;
@@ -767,4 +772,5 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
    static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
+   static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
 }

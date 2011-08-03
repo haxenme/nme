@@ -33,7 +33,9 @@
 	<true/>
 	<key>UIStatusBarHidden</key>
 	<true/>
+   ::if (IPHONE_ORIENTATION!=null)::
 	<key>UIInterfaceOrientation</key>
-	<string>UIInterfaceOrientationPortrait</string>
+	<string>UIInterfaceOrientation::IPHONE_ORIENTATION::</string>
+   ::end::
 </dict>
 </plist>

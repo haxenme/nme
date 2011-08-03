@@ -24,6 +24,8 @@ using namespace nme;
 void EnableKeyboard(bool inEnable);
 extern "C" void nme_app_set_active(bool inActive);
 
+namespace nme { int gFixedOrientation = -1; }
+
 
 @interface NMEAppDelegate : NSObject <UIApplicationDelegate>
 {
@@ -472,10 +474,14 @@ public:
 
 // --- UIStageViewController ----------------------------------------------------------
 
+
+
 @implementation UIStageViewController
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
+   if (gFixedOrientation>=0)
+      return interfaceOrientation==gFixedOrientation;
    Event evt(etShouldRotate);
    evt.value = interfaceOrientation;
    sgMainView->mStage->OnEvent(evt);

@@ -3,6 +3,9 @@ class ApplicationMain
    public static function main()
    {
       nme.Lib.setAssetBase("assets/");
+      ::if (IPHONE_ORIENTATION!=null)::
+      nme.display.Stage.setFixedOrientation(nme.display.Stage.Orientation::IPHONE_ORIENTATION::);
+      ::end::
       nme.Lib.create(
            function(){ ::APP_MAIN::.main(); },
            ::WIN_WIDTH::, ::WIN_HEIGHT::,

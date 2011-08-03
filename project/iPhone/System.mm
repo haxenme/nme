@@ -50,7 +50,7 @@ bool ClearUserPreference(const char *inId)
 	return true;
 }
 
-const std::string &GetUniqueDeviceIdentifier()
+const std::string GetUniqueDeviceIdentifier()
 {
   return [[[UIDevice currentDevice] uniqueIdentifier] cStringUsingEncoding:1];
 }

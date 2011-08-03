@@ -28,6 +28,16 @@ class IOSInstaller extends InstallerBase {
 
 		context.HAS_ICON = false;
 
+      switch(defines.get("WIN_ORIENTATION"))
+      {
+          case "landscape" : context.IPHONE_ORIENTATION = "LandscapeLeft";
+          case "landscapeLeft" : context.IPHONE_ORIENTATION = "LandscapeLeft";
+          case "landscapeRight" : context.IPHONE_ORIENTATION = "LandscapeRight";
+          case "portrait" : context.IPHONE_ORIENTATION = "Portrait";
+          case "portraitUpsideDown" : context.IPHONE_ORIENTATION = "PortraitUpsideDown";
+      }
+         
+
       updateIcon();
 	}
 

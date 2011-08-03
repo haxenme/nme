@@ -62,7 +62,7 @@ namespace nme
 
 extern std::string gAssetBase;
 
-const std::string &GetUniqueDeviceIdentifier();
+const std::string GetUniqueDeviceIdentifier();
 const std::string &GetResourcePath();
 const std::string &GetDocumentsPath();
 
@@ -124,6 +124,8 @@ typedef char OSChar;
 #if defined(IPHONE)
 FILE *OpenRead(const char *inName);
 FILE *OpenOverwrite(const char *inName); // [ddc]
+extern int gFixedOrientation;
+
 #elif defined(HX_MACOS)
 } // close namespace nme
 extern "C" FILE *OpenRead(const char *inName);
