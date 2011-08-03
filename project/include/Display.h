@@ -330,6 +330,9 @@ public:
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
+   void DirtyUp(uint32 inFlags);
+   bool IsCacheDirty();
+
 
    bool getEnabled() const { return enabled; }
    void setEnabled(bool inEnabled) { enabled = inEnabled; }

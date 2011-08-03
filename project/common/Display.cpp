@@ -666,6 +666,8 @@ void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool in
    {
       if (i == stateHitTest) continue;
       DisplayObject *obj = mState[i];
+      if (!obj)
+         continue;
 
       full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
       if (inForScreen && obj->scrollRect.HasPixels())
@@ -682,6 +684,25 @@ void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool in
          obj->GetExtent(trans,outExt,inForScreen);
    }
 }
+
+void SimpleButton::DirtyUp(uint32 inFlags)
+{
+   mDirtyFlags |= inFlags;
+   for(int i=0;i<stateSIZE;i++)
+      if (mState[i])
+         mState[i]->DirtyUp(inFlags);
+}
+
+
+bool SimpleButton::IsCacheDirty()
+{
+   for(int i=0;i<stateSIZE;i++)
+      if (mState[i] && mState[i]->IsCacheDirty())
+         return true;
+   return DisplayObject::IsCacheDirty();
+}
+
+
 
 // --- DisplayObjectContainer ------------------------------------------------
 
