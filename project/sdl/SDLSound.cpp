@@ -169,7 +169,8 @@ public:
       // ?
       return 0.0;
       #else
-      return mChunk->length_ticks;
+	  return 0.0;
+      //return mChunk->length_ticks;
       #endif
    }
    // Will return with one ref...
