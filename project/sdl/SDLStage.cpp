@@ -800,7 +800,7 @@ void ProcessEvent(SDL_Event &inEvent)
          key.value = SDLKeyToFlash(inEvent.key.keysym.sym,right);
          if (inEvent.type==SDL_KEYDOWN)
          {
-            key.code = inEvent.key.keysym.unicode;
+            key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
             sLastUnicode[inEvent.key.keysym.scancode] = key.code;
          }
          else

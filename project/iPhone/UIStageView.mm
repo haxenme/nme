@@ -127,7 +127,6 @@ public:
    void Clear(uint32 inColour,const nme::Rect *inRect)
    {
       nme::Rect r = inRect ? *inRect : nme::Rect(Width(),Height());
-      int x1 = r.x1();
       int y1 = r.y1();
       //printf("Clear %d,%d %dx%d   %08x\n", r.x, r.y, r.w, r.h, inColour);
       for(int y=r.y;y<y1;y++)
@@ -634,10 +633,12 @@ public:
    {
       /* SDL hack to detect delete */
       Event key_down(etKeyDown);
+      key_down.code = keyBACKSPACE;
       key_down.value = keyBACKSPACE;
       mStage->OnEvent(key_down);
 
       Event key_up(etKeyDown);
+      key_up.code = keyBACKSPACE;
       key_up.value = keyBACKSPACE;
       mStage->OnEvent(key_up);
    }
@@ -651,10 +652,12 @@ public:
 
          Event key_down(etKeyDown);
          key_down.code = c;
+         key_down.value = c;
          mStage->OnEvent(key_down);
          
          Event key_up(etKeyUp);
          key_up.code = c;
+         key_up.value = c;
          mStage->OnEvent(key_up);
       }
    }
@@ -675,12 +678,12 @@ public:
 
    Event key_down(etKeyDown);
    key_down.value = keyENTER;
-   key_down.code = '\n';
+   key_down.code = keyENTER;
    mStage->OnEvent(key_down);
 
-   Event key_up(etKeyDown);
+   Event key_up(etKeyUp);
    key_up.value = keyENTER;
-   key_down.code = '\n';
+   key_up.code = keyENTER;
    mStage->OnEvent(key_up);
  
    return NO;
