@@ -334,6 +334,11 @@ class InstallerBase {
 		compilerFlags.push ("-D nme_install_tool");
       if (InstallTool.verbose)
 		   compilerFlags.push ("-D verbose");
+
+
+	   if (useFullClassPaths())
+			compilerFlags.push("-cp " + FileSystem.fullPath(".") );
+	
 		
 		setDefault ("WIN_WIDTH", "640");
 		setDefault ("WIN_HEIGHT", "480");
