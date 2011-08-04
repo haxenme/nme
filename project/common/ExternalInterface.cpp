@@ -901,6 +901,19 @@ value nme_stage_show_cursor(value inStage,value inShow)
 }
 DEFINE_PRIM(nme_stage_show_cursor,2);
 
+value nme_stage_show_keyboard(value inStage,value inShow)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->EnablePopupKeyboard(val_bool(inShow));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_show_keyboard,2);
+
+
+
 
 // --- ManagedStage ----------------------------------------------------------------------
 
