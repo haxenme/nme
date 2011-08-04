@@ -112,7 +112,10 @@ public:
       {
          mMetrics.ascent = (int)[ mFont ascender ];
          mMetrics.descent = -(int)[ mFont descender ];
-         mMetrics.height = (int)[ mFont lineHeight ];
+         if ([mFont respondsToSelector: NSSelectorFromString(@"lineHeight")])
+            mMetrics.height = (int)[ mFont lineHeight ];
+         else
+            mMetrics.height = (int)[ mFont leading ];
          //printf("mFont metrics %f/%f/%f\n",  mMetrics.ascent,  mMetrics.descent ,  mMetrics.height );
       }
       else if (mCGFont)
