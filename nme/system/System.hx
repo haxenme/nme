@@ -37,7 +37,7 @@ class System
 	#end
 	}
 
-	static public function exit()
+	static public function exit(?inCode:Int)
 	{
 	   nme.Lib.close();
 	}
