@@ -22,9 +22,9 @@ class FlashInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/flash/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/flash/haxe");
-		recursiveCopy (nme + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (nme + "/install-tool/flash/template", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/install-tool/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/install-tool/flash/template", buildDirectory + "/flash/haxe");
 		
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		

@@ -29,7 +29,7 @@ class InstallerBase {
 	private var includePaths:Array <String>;
 	private var ndlls:Array <NDLL>;
 	private var allFiles:Array <String>;
-	private var nme:String;
+	private var NME:String;
 	private var projectFile:String;
 	private var target:String;
 	
@@ -47,9 +47,9 @@ class InstallerBase {
 	}
 	
 	
-	public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool):Void {
+	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool):Void {
 		
-		this.nme = nme;
+		NME = inNME;
 		this.command = command;
 		this.defines = defines;
 		this.includePaths = includePaths;

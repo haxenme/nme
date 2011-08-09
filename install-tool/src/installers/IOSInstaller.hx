@@ -66,11 +66,11 @@ class IOSInstaller extends InstallerBase {
 		mkdir (destination + "/haxe" );
 		
 	
-		copyFile (nme + "/install-tool/haxe/Assets.hx", destination + "/haxe/Assets.hx");
-		recursiveCopy (nme + "/install-tool/iphone/haxe", destination + "/haxe");
-		recursiveCopy (nme + "/install-tool/iphone/Classes", destination + "Classes");
-		recursiveCopy (nme + "/install-tool/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
-		copyFile (nme + "/install-tool/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
+		copyFile (NME + "/install-tool/haxe/Assets.hx", destination + "/haxe/Assets.hx");
+		recursiveCopy (NME + "/install-tool/iphone/haxe", destination + "/haxe");
+		recursiveCopy (NME + "/install-tool/iphone/Classes", destination + "Classes");
+		recursiveCopy (NME + "/install-tool/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
+		copyFile (NME + "/install-tool/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
 		
 		mkdir (destination + "lib");
 		

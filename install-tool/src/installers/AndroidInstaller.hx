@@ -18,15 +18,15 @@ class AndroidInstaller extends InstallerBase {
 		
 		context.CPP_DIR = buildDirectory + "/android/obj";
 		
-		recursiveCopy (nme + "/install-tool/android/template", destination);
+		recursiveCopy (NME + "/install-tool/android/template", destination);
 		
 		var packageDirectory:String = defines.get ("APP_PACKAGE");
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
-		copyFile (nme + "/install-tool/android/MainActivity.java", packageDirectory + "/MainActivity.java");
-		recursiveCopy (nme + "/install-tool/haxe", buildDirectory + "/android/haxe");
-		recursiveCopy (nme + "/install-tool/android/hxml", buildDirectory + "/android/haxe");
+		copyFile (NME + "/install-tool/android/MainActivity.java", packageDirectory + "/MainActivity.java");
+		recursiveCopy (NME + "/install-tool/haxe", buildDirectory + "/android/haxe");
+		recursiveCopy (NME + "/install-tool/android/hxml", buildDirectory + "/android/haxe");
 		
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
