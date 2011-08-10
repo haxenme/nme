@@ -507,8 +507,15 @@ class InstallerBase {
 			
 		}
 		
-		if (!element.elements.hasNext ()) {
-			
+		if ( path=="" && (element.has.include || element.has.exclude || type!="" ) ) {
+			throw ("No path specified for asset filter.");
+         return;
+      }
+		else if (!element.elements.hasNext ()) {
+         // Empty element
+			if (path=="")
+            return;
+
 			if (path == "" || !FileSystem.exists (path)) {
 				
 				throw ("Could not find asset directory \"" + path + "\"");
