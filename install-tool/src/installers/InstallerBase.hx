@@ -633,6 +633,9 @@ class InstallerBase {
 	
 	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
 		
+      if (rename=="")
+         rename = path;
+
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
 		for (file in files) {
