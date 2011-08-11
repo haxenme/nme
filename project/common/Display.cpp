@@ -1535,9 +1535,16 @@ void Stage::HandleEvent(Event &inEvent)
 
       if (mSimpleButton)
       {
-         mSimpleButton->setMouseState( (inEvent.flags & efLeftDown) ?
-             SimpleButton::stateDown : SimpleButton::stateOver );
-         if (mSimpleButton->getUseHandCursor())
+         bool over = but==mSimpleButton;
+         bool down =  (inEvent.flags & efLeftDown);
+         mSimpleButton->setMouseState( over ? ( down ?
+             SimpleButton::stateDown : SimpleButton::stateOver) : SimpleButton::stateUp );
+         if (!down)
+         {
+            mSimpleButton->DecRef();
+            mSimpleButton = 0;
+         }
+         else if (mSimpleButton->getUseHandCursor())
             cur = curHand;
       }
 
