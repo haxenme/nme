@@ -1458,7 +1458,9 @@ void Stage::HandleEvent(Event &inEvent)
    gCurrentStage = this;
    DisplayObject *hit_obj = 0;
 
-   if (inEvent.type==etMouseMove || inEvent.type==etMouseDown)
+   bool primary = inEvent.flags & efPrimaryTouch;
+
+   if ( (inEvent.type==etMouseMove || inEvent.type==etMouseDown) && primary )
       mLastMousePos = UserPoint(inEvent.x, inEvent.y);
 
    if (mMouseDownObject)
@@ -1512,6 +1514,8 @@ void Stage::HandleEvent(Event &inEvent)
    {
       UserPoint pixels(inEvent.x,inEvent.y);
       hit_obj = HitTest(pixels);
+      //if (inEvent.type!=etTouchMove)
+      //  ELOG("  type=%d %d,%d obj=%p", inEvent.type, inEvent.x, inEvent.y, hit_obj);
 
       SimpleButton *but = hit_obj ? dynamic_cast<SimpleButton *>(hit_obj) : 0;
       inEvent.id = hit_obj ? hit_obj->id : id;
@@ -1829,7 +1833,7 @@ DisplayObject *Stage::HitTest(UserPoint inStage,DisplayObject *inRoot,bool inRec
 
    surface->EndRender();
 
-   // printf("Stage hit %p\n", state.mHitResult );
+   // ELOG("Stage hit %f,%f -> %p\n", inStage.x, inStage.y, state.mHitResult );
 
    return state.mHitResult;
 }

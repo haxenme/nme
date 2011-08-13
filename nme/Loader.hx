@@ -125,7 +125,6 @@ class Loader
 
    public static function load(func:String, args:Int) : Dynamic
    {
-
       if (moduleInit)
       {
          return Lib.load(moduleName,func,args);

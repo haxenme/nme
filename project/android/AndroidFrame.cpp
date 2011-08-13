@@ -150,7 +150,11 @@ public:
                }
                mouse.value = inID;
 
-               //ELOG("TOUCH %d %f,%f  %d(%d)", inID, inX, inY, type, mouse.flags & efPrimaryTouch );
+               //if (inType==etTouchBegin)
+                  //ELOG("DOWN %d %f,%f (%s)", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S" );
+
+               //if (inType==etTouchEnd)
+                  //ELOG("UP %d %f,%f (%s)", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S" );
 
                HandleEvent(mouse);
          }

@@ -408,7 +408,7 @@ class Stage extends nme.display.DisplayObjectContainer
          var evt = TouchEvent.nmeCreate(inType,inEvent,local,obj);
          evt.touchPointID = inEvent.value;
          evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
-         if (evt.isPrimaryTouchPoint)
+         //if (evt.isPrimaryTouchPoint)
             nmeCheckInOuts(evt,stack,touchInfo);
          obj.nmeFireEvent(evt);
          if (evt.isPrimaryTouchPoint && inType==TouchEvent.TOUCH_MOVE)
@@ -423,7 +423,7 @@ class Stage extends nme.display.DisplayObjectContainer
          var evt = TouchEvent.nmeCreate(inType,inEvent, new Point(inEvent.x,inEvent.y),null);
          evt.touchPointID = inEvent.value;
          evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
-         if (evt.isPrimaryTouchPoint)
+         //if (evt.isPrimaryTouchPoint)
             nmeCheckInOuts(evt,stack,touchInfo);
       }
    }
@@ -708,6 +708,7 @@ class Stage extends nme.display.DisplayObjectContainer
             var touchInfo = new TouchInfo();
             nmeTouchInfo.set( inEvent.value, touchInfo );
             nmeOnTouch(inEvent,TouchEvent.TOUCH_BEGIN,touchInfo);
+            // trace("etTouchBegin : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y+ " OBJ:" + inEvent.id  );
             if ( (inEvent.flags & 0x8000) > 0 )
                nmeOnMouse(inEvent,MouseEvent.MOUSE_DOWN, false);
 
@@ -719,6 +720,7 @@ class Stage extends nme.display.DisplayObjectContainer
             var touchInfo = nmeTouchInfo.get( inEvent.value );
             nmeOnTouch(inEvent,TouchEvent.TOUCH_END, touchInfo );
             nmeTouchInfo.remove( inEvent.value );
+            // trace("etTouchEnd : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y + " OBJ:" + inEvent.id );
             if ( (inEvent.flags & 0x8000) > 0 )
                nmeOnMouse(inEvent,MouseEvent.MOUSE_UP, false);
 

@@ -662,6 +662,7 @@ void AddModStates(int &ioFlags,int inState = -1)
    if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
    if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
 
+   ioFlags |= efPrimaryTouch;
    ioFlags |= efNoNativeClick;
 }
 
