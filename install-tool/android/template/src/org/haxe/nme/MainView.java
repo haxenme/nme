@@ -134,17 +134,28 @@ class MainView extends GLSurfaceView {
           case MotionEvent.ACTION_POINTER_UP: type = etTouchEnd; break;
           case MotionEvent.ACTION_CANCEL: type = etTouchEnd; break;
        }
+
+       //Log.e("VIEW","Actions : " + action );
+
+       int pointer = (action & MotionEvent.ACTION_POINTER_ID_MASK) >>
+                       (MotionEvent.ACTION_POINTER_ID_SHIFT);
        final int t = type;
-       //Log.e("VIEW","onTouchEvent " + type + " x " + ev.getPointerCount() );
+       //if (type!=etTouchMove)
+       //   Log.e("VIEW","onTouchEvent " + ev.toString() );
 
        for (int i = 0; i < ev.getPointerCount(); i++) {
+           // Log.e("VIEW","onTouchEvent " + type + " x " + ev.getPointerCount() );
            final int id = ev.getPointerId(i);
            final float x = ev.getX(i);
            final float y = ev.getY(i);
-           //Log.e("VIEW","  queue " + id + "  " + x + ", "+ y);
-	        queueEvent(new Runnable(){
+           //if (action!=etTouchMove)
+           //      Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + "  " + x + ", "+ y);
+           if (type==etTouchMove || id==pointer)
+           {
+	           queueEvent(new Runnable(){
                  public void run() { me.HandleResult( NME.onTouch(t,x,y,id) ); }
-           } );
+                 });
+           }
        }
        return true;
     }
