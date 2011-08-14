@@ -708,7 +708,8 @@ bool SimpleButton::IsCacheDirty()
 
 DisplayObjectContainer::~DisplayObjectContainer()
 {
-   // asset mChildren.size()==0
+   while(mChildren.size())
+      mChildren[0]->SetParent(0);
 }
 
 void DisplayObjectContainer::RemoveChildFromList(DisplayObject *inChild)
@@ -779,7 +780,7 @@ void DisplayObjectContainer::removeChildAt(int inIndex)
 }
 
 
-void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
+void DisplayObjectContainer::addChild(DisplayObject *inChild)
 {
    //printf("DisplayObjectContainer::addChild\n");
    IncRef();
@@ -789,8 +790,7 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild,bool inTakeRef)
    if (gDisplayRefCounting & drDisplayParentRefs)
       IncRef();
 
-   if (!inTakeRef)
-      DecRef();
+   DecRef();
 }
 
 void DisplayObjectContainer::DirtyUp(uint32 inFlags)

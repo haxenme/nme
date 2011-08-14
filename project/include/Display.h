@@ -289,8 +289,8 @@ class DisplayObjectContainer : public DisplayObject
 public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
 
-   void addChild(DisplayObject *inChild,bool inTakeRef=false);
-   void setChildIndex(DisplayObject *inChild,bool inTakeRef=false);
+   void addChild(DisplayObject *inChild);
+   void setChildIndex(DisplayObject *inChild);
    void swapChildrenAt(int inChild1, int inChild2);
    void removeChild(DisplayObject *inChild);
    void removeChildAt(int inIndex);
