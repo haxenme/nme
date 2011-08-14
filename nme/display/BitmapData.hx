@@ -99,7 +99,7 @@ class BitmapData implements IBitmapDrawable
    // Same as above, except uses haxe.ioBytes
    static public function loadFromHaxeBytes(inBytes:haxe.io.Bytes, ?inRawAlpha:haxe.io.Bytes)
    {
-      return loadFromHaxeBytes( ByteArray.fromBytes(inBytes),
+      return loadFromBytes( ByteArray.fromBytes(inBytes),
                                 inRawAlpha==null ? ByteArray.fromBytes(inRawAlpha) : null);
    }
 
