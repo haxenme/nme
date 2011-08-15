@@ -173,7 +173,7 @@ class MainView extends GLSurfaceView {
        return false;
     }
 
-    public int translateKey(int inCode) {
+    public int translateKey(int inCode, KeyEvent event) {
        switch(inCode)
        {
           case KeyEvent.KEYCODE_DPAD_CENTER: return 13; /* Fake ENTER */
@@ -184,14 +184,20 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
        }
 
-       return 0;
+       int result = event.getUnicodeChar( event.getMetaState() );
+       if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
+       {
+          // TODO:
+          return 0;
+       }
+       return result;
     }
 
     @Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event) {
          //Log.v("VIEW","onKeyDown " + inKeyCode);
          final MainView me = this;
-         final int keyCode = translateKey(inKeyCode);
+         final int keyCode = translateKey(inKeyCode,event);
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
@@ -208,7 +214,7 @@ class MainView extends GLSurfaceView {
     public boolean onKeyUp(final int inKeyCode, KeyEvent event) {
          //Log.v("VIEW","onKeyUp " + inKeyCode);
          final MainView me = this;
-         final int keyCode = translateKey(inKeyCode);
+         final int keyCode = translateKey(inKeyCode,event);
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:

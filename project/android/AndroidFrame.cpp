@@ -160,6 +160,16 @@ public:
          }
    }
 
+   void EnablePopupKeyboard(bool inEnable)
+   {
+      jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = gEnv->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
+      if (mid == 0)
+        return;
+
+      gEnv->CallStaticVoidMethod(cls, mid, (jboolean) inEnable);
+   }
+
    bool getMultitouchSupported() { return true; }
    void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
    bool getMultitouchActive() {  return mMultiTouch; }
