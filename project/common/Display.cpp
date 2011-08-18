@@ -1460,13 +1460,16 @@ void Stage::HandleEvent(Event &inEvent)
 
    bool primary = inEvent.flags & efPrimaryTouch;
 
-   if ( (inEvent.type==etMouseMove || inEvent.type==etMouseDown) && primary )
+   if ( (inEvent.type==etMouseMove || inEvent.type==etMouseDown ||
+         inEvent.type==etTouchBegin || inEvent.type==etTouchMove  )
+            && primary )
       mLastMousePos = UserPoint(inEvent.x, inEvent.y);
 
-   if (mMouseDownObject)
+   if (mMouseDownObject && primary)
    {
       switch(inEvent.type)
       {
+         case etTouchMove:
          case etMouseMove:
             if (inEvent.flags & efLeftDown)
             {
@@ -1477,6 +1480,9 @@ void Stage::HandleEvent(Event &inEvent)
          case etMouseClick:
          case etMouseDown:
          case etMouseUp:
+         case etTouchBegin:
+         case etTouchTap:
+         case etTouchEnd:
             mMouseDownObject->EndDrag(inEvent);
             mMouseDownObject->DecRef();
             mMouseDownObject = 0;
@@ -1583,7 +1589,7 @@ void Stage::HandleEvent(Event &inEvent)
          #endif
       }
    
-      if (inEvent.type==etMouseDown)
+      if (inEvent.type==etMouseDown || (inEvent.type==etTouchBegin && primary) )
       {
          if (hit_obj->CaptureDown(inEvent))
          {
@@ -1592,7 +1598,7 @@ void Stage::HandleEvent(Event &inEvent)
          }
       }
    }
-   #ifdef IPHONE
+   #if defined(IPHONE) || defined(ANDROID)
    else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown ||
          (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
    {

@@ -182,6 +182,8 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_UP: return 38;
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
+
+          case KeyEvent.KEYCODE_DEL: return 8;
        }
 
        int result = event.getUnicodeChar( event.getMetaState() );
@@ -195,7 +197,7 @@ class MainView extends GLSurfaceView {
 
     @Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event) {
-         //Log.v("VIEW","onKeyDown " + inKeyCode);
+         // Log.e("VIEW","onKeyDown " + inKeyCode);
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event);
          if (keyCode!=0) {

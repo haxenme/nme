@@ -413,6 +413,9 @@ class Stage extends nme.display.DisplayObjectContainer
          obj.nmeFireEvent(evt);
          if (evt.isPrimaryTouchPoint && inType==TouchEvent.TOUCH_MOVE)
          {
+            if (nmeDragObject!=null)
+               nmeDrag(new Point(inEvent.x,inEvent.y) );
+
             var evt = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE,inEvent,local,obj);
             obj.nmeFireEvent(evt);
          }
