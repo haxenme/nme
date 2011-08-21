@@ -352,6 +352,10 @@ public:
       mLineScaleNormal = -1;
       mLineScaleV = -1;
       mLineScaleH = -1;
+      mPointSmooth = true;
+      const char *str = (const char *)glGetString(GL_VENDOR);
+      if (str && !strncmp(str,"Intel",5))
+         mPointSmooth = false;
       #if defined(NME_GLES)
       mQuality = sqLow;
       #else
@@ -460,7 +464,10 @@ public:
       #endif
 
       if (mQuality>=sqHigh)
-         glEnable(GL_POINT_SMOOTH);
+      {
+         if (mPointSmooth)
+            glEnable(GL_POINT_SMOOTH);
+      }
       if (mQuality>=sqBest)
          glEnable(GL_LINE_SMOOTH);
       mLineWidth = 99999;
@@ -737,11 +744,15 @@ public:
 
    void SetQuality(StageQuality inQ)
    {
+      inQ = sqMedium;
       if (inQ!=mQuality)
       {
          mQuality = inQ;
          if (mQuality>=sqHigh)
-            glEnable(GL_POINT_SMOOTH);
+         {
+            if (mPointSmooth)
+               glEnable(GL_POINT_SMOOTH);
+         }
          else
             glDisable(GL_POINT_SMOOTH);
 
@@ -759,12 +770,14 @@ public:
    double mLineScaleNormal;
    StageQuality mQuality;
 
+
    Rect mViewport;
    WinDC mDC;
    GLCtx mOGLCtx;
    uint32 mTint;
    int mWidth,mHeight;
    bool   mPointsToo;
+   bool   mPointSmooth;
    bool   mUsingBitmapMatrix;
    double mLineWidth;
    Surface *mBitmapSurface;
