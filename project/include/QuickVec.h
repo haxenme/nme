@@ -53,6 +53,7 @@ public:
       mSize = inRHS.mSize;
       memcpy(mPtr,inRHS.mPtr,sizeof(T_)*mSize);
    }
+   int Mem() const { return mAlloc * sizeof(T_); }
    QuickVec(const T_ *inData,int inLen)
 	{
       mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
