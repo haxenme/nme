@@ -24,17 +24,27 @@ struct AlphaRun
 
 
 typedef QuickVec<AlphaRun> AlphaRuns;
+typedef QuickVec<int> LineStart;
 typedef std::vector<AlphaRuns> Lines;
 
 
-struct AlphaMask
+
+class AlphaMask
 {
-   AlphaMask(const Rect &inRect,const Transform &inTrans) : mRect(inRect), mLines(inRect.h)
+   AlphaMask(const Rect &inRect,const Transform &inTrans) : mRect(inRect), mLineStarts(inRect.h+1)
    {
       mMatrix = *inTrans.mMatrix;
       mScale9 = *inTrans.mScale9;
       mAAFactor = inTrans.mAAFactor;
    }
+   // Use Dispost
+   ~AlphaMask() { }
+
+public:
+
+   static AlphaMask *Create(const Rect &inRect,const Transform &inTrans);
+   void Dispose();
+   void ClearCache();
 
    void RenderBitmap(int inTX,int inTY,
                      const RenderTarget &inTarget,const RenderState &inState);
@@ -45,11 +55,14 @@ struct AlphaMask
                    int &outTX, int &outTY);
 
    Rect      mRect;
-   Lines     mLines;
+
+   AlphaRuns mAlphaRuns;
+   LineStart mLineStarts;
    Matrix    mMatrix;
    Scale9    mScale9;
    int       mAAFactor;
 };
+
 
 class Filler
 {

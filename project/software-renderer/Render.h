@@ -12,10 +12,10 @@ template<typename SOURCE_, typename DEST_, typename BLEND_>
 void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, const BLEND_ &inBlend,
             const RenderState &inState, int inTX, int inTY)
 {
-   if (inAlpha.mLines.empty())
+   if (inAlpha.mLineStarts.size()<2)
       return;
    int y = inAlpha.mRect.y + inTY;
-   const AlphaRuns *lines = &inAlpha.mLines[0] - y;
+   const int *lines = &inAlpha.mLineStarts[0] - y;
 
    int y1 = inAlpha.mRect.y1() + inTY;
 
@@ -28,9 +28,8 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
 
    for(; y<y1; y++)
    {
-      const AlphaRuns &line = lines[y];
-      AlphaRuns::const_iterator end = line.end();
-      AlphaRuns::const_iterator run = line.begin();
+      const AlphaRun *run = &inAlpha.mAlphaRuns[ lines[y] ];
+      const AlphaRun *end = &inAlpha.mAlphaRuns[ lines[y+1] ];
       if (run!=end)
       {
          outDest.SetRow(y);

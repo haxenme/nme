@@ -20,9 +20,7 @@ typedef QuickVec<int> IQuickSet;
 struct Transition
 {
    Transition(int inX=0,int inVal=0) : x(inX), val(inVal) { }
-   bool operator==(int inRHS) const { return x==inRHS; }
-   bool operator<(int inRHS) const { return x<inRHS; }
-   bool operator>(int inRHS) const { return x>inRHS; }
+   bool operator<(const Transition &inRHS) const { return x<inRHS.x; }
 
    void operator+=(int inDiff)
    {
@@ -30,10 +28,36 @@ struct Transition
    }
 
    int x;
-   int val;
+   short val;
 };
 
-typedef QuickVec<Transition> Transitions;
+struct Transitions
+{
+   int mLeft;
+   void Compact()
+   {
+      Transition *ptr = mX.begin();
+      Transition *end = mX.end();
+      if (ptr==end) return;
+      std::sort(ptr,end);
+      Transition *dest = ptr;
+      ptr++;
+      for(; ptr<end; ptr++)
+      {
+         if (dest->x==ptr->x)
+            dest->val += ptr->val;
+         else
+         {
+            ++dest;
+            if (dest!=ptr)
+               *dest = *ptr;
+         }
+      }
+      mX.resize(dest-mX.begin()+1);
+
+   }
+   QuickVec<Transition> mX;
+};
 
 template<int BITS>
 struct AlphaIterator
@@ -44,6 +68,10 @@ struct AlphaIterator
    AlphaIterator()
    {
       mEnd = mPtr = 0;
+   }
+   void Reset()
+   {
+      mRuns.resize(0);
    }
 
    void Init(int &outXMin)
@@ -59,7 +87,7 @@ struct AlphaIterator
    }
 
    // Move along until we hit x, calcualte alpha and update whn next change occurs
-   int SetX(int inX, int &outNextX)
+   inline int SetX(int inX, int &outNextX)
    {
       // zip along until we hit x
       do
@@ -127,6 +155,10 @@ struct AlphaIterator
 
 
 
+static Lines sLineBuffer;
+static AlphaRuns *sLines = 0;
+static std::vector<Transitions> sTransitionsBuffer;
+static Transitions *sTransitions=0;
 
 struct SpanRect
 {
@@ -136,14 +168,19 @@ struct SpanRect
       mAAMask = ~(mAA-1);
       mRect = inRect * inAA;
 
-      mTransitions = new Transitions[mRect.h];
+      if (sTransitionsBuffer.size()<mRect.h)
+      {
+         sTransitionsBuffer.resize(mRect.h);
+         sTransitions = &sTransitionsBuffer[0];
+      }
+      for(int y=0;y<mRect.h;y++)
+      {
+         sTransitions[y].mLeft = 0;
+         sTransitions[y].mX.resize(0);
+      }
       mMinX = (mRect.x - 1)<<10;
       mMaxX = (mRect.x1())<<10;
       mLeftPos = mRect.x;
-   }
-   ~SpanRect()
-   {
-      delete [] mTransitions;
    }
 
    // dX/dY int fixed bits ...
@@ -195,7 +232,7 @@ struct SpanRect
          y0 = std::max(y0,0);
          y1 = std::min(y1,mRect.h);
          for(;y0<y1;y0++)
-            mTransitions[y0].Change(mLeftPos,diff);
+            sTransitions[y0].mLeft += diff;
          return;
       }
 
@@ -222,8 +259,9 @@ struct SpanRect
          {
             // X is fixed-10, y is fixed-aa
             int x_val = (x>>10) & mAAMask;
-            for(int a=0;a<mAA;a++)
-               mTransitions[y0+a].Change(x_val,diff);
+            if (x_val<mMaxX)
+               for(int a=0;a<mAA;a++)
+                  sTransitions[y0+a].mX.push_back(Transition(x_val,diff));
             x+=dx_dy; 
          }
       }
@@ -232,7 +270,8 @@ struct SpanRect
          for(; y0<last; y0++)
          {
             // X is fixed-10, y is fixed-aa
-            mTransitions[y0].Change(x>>10,diff);
+            if (x<mMaxX)
+               sTransitions[y0].mX.push_back(Transition(x>>10,diff));
             x+=dx_dy; 
          }
       }
@@ -240,7 +279,11 @@ struct SpanRect
 
    void BuildAlphaRuns4(Transitions *inTrans, AlphaRuns &outRuns,int inFactor)
    {
-      AlphaIterator<2> a0,a1,a2,a3;
+      static AlphaIterator<2> a0,a1,a2,a3;
+      a0.Reset();
+      a1.Reset();
+      a2.Reset();
+      a3.Reset();
 
       BuildAlphaRuns(inTrans[0],a0.mRuns,256);
       BuildAlphaRuns(inTrans[1],a1.mRuns,256);
@@ -272,7 +315,9 @@ struct SpanRect
 
    void BuildAlphaRuns2(Transitions *inTrans, AlphaRuns &outRuns,int inFactor)
    {
-      AlphaIterator<1> a0,a1;
+      static AlphaIterator<1> a0,a1;
+      a0.Reset();
+      a1.Reset();
 
       BuildAlphaRuns(inTrans[0],a0.mRuns,256);
       BuildAlphaRuns(inTrans[1],a1.mRuns,256);
@@ -303,9 +348,10 @@ struct SpanRect
    {
       int alpha = 0;
       int last_x = mRect.x;
-      Transition *end = inTrans.end();
-      int total = 0;
-      for(Transition *t = inTrans.begin();t!=end;++t)
+      inTrans.Compact();
+      int total = inTrans.mLeft;
+      Transition *end = inTrans.mX.end();
+      for(Transition *t = inTrans.mX.begin();t!=end;++t)
       {
          if (t->val)
          {
@@ -333,29 +379,59 @@ struct SpanRect
    AlphaMask *CreateMask(const Transform &inTransform,int inAlpha)
    {
       Rect rect = mRect/mAA;
-      AlphaMask *mask = new AlphaMask(rect,inTransform);
-      Transitions *t = mTransitions;
+      if (sLineBuffer.size()<rect.h)
+      {
+         sLineBuffer.resize(rect.h);
+         sLines = &sLineBuffer[0];
+      }
+
+      AlphaMask *mask = AlphaMask::Create(rect,inTransform);
+      Transitions *t = &sTransitions[0];
+      int start = 0;
       for(int y=0;y<rect.h;y++)
       {
+         sLines[y].resize(0);
+         mask->mLineStarts[y] = start;
          switch(mAA)
          {
             case 1:
-               BuildAlphaRuns(*t,mask->mLines[y],inAlpha);
+               BuildAlphaRuns(*t,sLines[y],inAlpha);
                break;
             case 2:
-               BuildAlphaRuns2(t,mask->mLines[y],inAlpha);
+               BuildAlphaRuns2(t,sLines[y],inAlpha);
                break;
             case 4:
-               BuildAlphaRuns4(t,mask->mLines[y],inAlpha);
+               BuildAlphaRuns4(t,sLines[y],inAlpha);
                break;
          }
+         start+=sLines[y].size();
          t+=mAA;
       }
+      mask->mLineStarts[rect.h]=start;
+      mask->mAlphaRuns.resize(start);
+      for(int y=0;y<rect.h;y++)
+      {
+         memcpy(&mask->mAlphaRuns[ mask->mLineStarts[y] ], &sLines[y][0], 
+                  (mask->mLineStarts[y+1] - mask->mLineStarts[y])*sizeof(AlphaRun) );
+      }
+
+      /*
+      static int last_total = 0;
+      int mem = 0;
+      for(int i=0;i<sLineBuffer.size();i++)
+         mem+=sLines[i].Mem();
+      for(int i=0;i<sTransitionsBuffer.size();i++)
+         mem+=sTransitionsBuffer[i].mX.Mem();
+      if (mem>last_total)
+      {
+         last_total = mem;
+         printf("Reserved(%d,%d) = %d\n", sLineBuffer.size(), sTransitionsBuffer.size(),last_total);
+      }
+      */
       return mask;
    }
 
- 
-   Transitions *mTransitions;
+
    int         mAA;
    int         mAAMask;
    int         mMinX;
@@ -403,7 +479,8 @@ public:
 
    ~PolygonRender()
    {
-      delete mAlphaMask;
+      if (mAlphaMask)
+         mAlphaMask->Dispose();
       delete mFiller;
    }
 
@@ -484,7 +561,7 @@ public:
          int ty=0;
          if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
          {
-            delete mAlphaMask;
+            mAlphaMask->Dispose();
             mAlphaMask = 0;
          }
    
@@ -495,13 +572,14 @@ public:
             Rect clip = inState.mClipRect;
    
             // TODO: make visible_pixels a bit bigger ?
-            mSpanRect = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
+            SpanRect span(visible_pixels,inState.mTransform.mAAFactor);
+            mSpanRect = &span;
    
             int alpha_factor = Iterate(itCreateRenderer,*inState.mTransform.mMatrix);
    
             mAlphaMask = mSpanRect->CreateMask(mTransform, alpha_factor );
    
-            delete mSpanRect;
+            mSpanRect=0;
          }
    
          if (inTarget.mPixelFormat==pfAlpha)
@@ -1395,7 +1473,9 @@ public:
 
    ~TriangleRender()
    {
-      mAlphaMasks.DeleteAll();
+      for(int i=0;i<mAlphaMasks.size();i++)
+         if (mAlphaMasks[i])
+           mAlphaMasks[i]->Dispose();
    }
 
    void SetTransform(const Transform &inTransform)
@@ -1450,7 +1530,7 @@ public:
          int ty=0;
          if (alpha && !alpha->Compatible(inState.mTransform, rect,visible_pixels,tx,ty))
          {
-            delete alpha;
+            alpha->Dispose();
             alpha = 0;
          }
 
