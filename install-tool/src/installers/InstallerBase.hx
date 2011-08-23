@@ -895,9 +895,9 @@ class InstallerBase {
 		
 		var newString:String = string;
 		
-		while (varMatch.match (string)) {
+		while (varMatch.match (newString)) {
 			
-			var newString = defines.get (varMatch.matched (1));
+			newString = defines.get (varMatch.matched (1));
 			
 			if (newString == null) {
 				
