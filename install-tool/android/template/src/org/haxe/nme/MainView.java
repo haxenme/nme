@@ -100,6 +100,11 @@ class MainView extends GLSurfaceView {
 		    
    }
 
+   void sendActivity(final int inActivity)
+   {
+	   queueEvent(new Runnable(){ public void run() { NME.onActivity(inActivity); } } );
+   }
+
 	void queuePoll()
 	{
 		final MainView me = this;

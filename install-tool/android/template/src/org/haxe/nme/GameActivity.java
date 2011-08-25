@@ -202,9 +202,9 @@ public class GameActivity extends Activity {
 
     @Override protected void onPause() {
         super.onPause();
-        mView.onPause();
         mSoundPool = null;
-        NME.onActivity(NME.DEACTIVATE);
+        mView.sendActivity(NME.DEACTIVATE);
+        mView.onPause();
         if (mMediaPlayer!=null)
            mMediaPlayer.pause();
     }
@@ -216,11 +216,12 @@ public class GameActivity extends Activity {
         mView.onResume();
         if (mMediaPlayer!=null)
            mMediaPlayer.start();
-        NME.onActivity(NME.ACTIVATE);
+        mView.sendActivity(NME.ACTIVATE);
     }
    
    @Override protected void onDestroy() {
-      NME.onActivity(NME.DESTROY);
+      // TODO: Wait for result?
+      mView.sendActivity(NME.DESTROY);
       activity=null;
       super.onDestroy();
    }
