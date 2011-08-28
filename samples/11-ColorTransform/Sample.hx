@@ -1,32 +1,18 @@
-#if !flash
-import nme.display.Sprite;
-import nme.events.Event;
-import nme.geom.Rectangle;
-import nme.display.BitmapData;
-import nme.display.Graphics;
-import nme.display.GradientType;
-import nme.Lib;
-import nme.display.Shape;
-import nme.text.TextField;
-import nme.geom.Matrix;
-import nme.geom.ColorTransform;
-import nme.events.MouseEvent;
-import nme.geom.Transform;
-#else
 import flash.display.Sprite;
 import flash.events.Event;
 import flash.geom.Rectangle;
+import flash.display.Bitmap;
 import flash.display.BitmapData;
+import flash.display.DisplayObject;
 import flash.display.Graphics;
 import flash.display.GradientType;
 import flash.Lib;
 import flash.display.Shape;
 import flash.text.TextField;
 import flash.geom.Matrix;
+import flash.geom.Transform;
 import flash.geom.ColorTransform;
 import flash.events.MouseEvent;
-#end
-
 
 
 class Sample extends Sprite 
@@ -40,8 +26,8 @@ class Sample extends Sprite
       draw(target);
 
       addChild(target);
-      var data = nme.display.BitmapData.load("../03-Bitmaps/Image.jpg");
-      var bmp = new nme.display.Bitmap(data);
+      var data:BitmapData = ApplicationMain.getAsset(Assets.image_jpg);
+      var bmp = new Bitmap(data);
       bmp.alpha = 0.5;
       bmp.x = 50;
       bmp.y = 50;
@@ -55,6 +41,18 @@ class Sample extends Sprite
       box.y = 160;
       addChild(box);
 
+      var data = new BitmapData(100,100,true, 0x00);
+      var s = new Shape();
+      s.graphics.beginFill(0x00ff00,1);
+      s.graphics.drawCircle(0,0,100);
+      data.draw(s);
+
+      var data2 = new BitmapData(100,100,true, 0x00);
+      data2.draw( new Bitmap(data), null, new ColorTransform(0,0,0,-1,0,0,0,255) );
+
+      var bmp2 = new Bitmap(data2);
+      bmp2.x = 200;
+      addChild( bmp2 );
 
       //target.useHandCursor = true;
       //target.buttonMode = true;
@@ -79,7 +77,7 @@ class Sample extends Sprite
 
    public function clickHandler(event:MouseEvent)
    {
-      var d:nme.display.DisplayObject = this;
+      var d:DisplayObject = this;
       var t:Transform = d.transform;
       var rOffset = t.colorTransform.redOffset + 25;
       var bOffset = t.colorTransform.redOffset - 25;
@@ -90,12 +88,7 @@ class Sample extends Sprite
 
    public static function main()
    {
-   #if !flash
-      nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-           (0*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
-   #else
       new Sample();
-   #end
    }
 }
 
