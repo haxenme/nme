@@ -1,14 +1,14 @@
-import nme.Lib;
-import nme.events.MouseEvent;
-import nme.events.Event;
-import nme.display.DisplayObject;
-import nme.display.IGraphicsData;
-import nme.display.BitmapData;
-import nme.display.Bitmap;
-import nme.display.GradientType;
-import nme.display.Sprite;
-import nme.display.StageDisplayState;
-import nme.geom.Matrix;
+import flash.Lib;
+import flash.events.MouseEvent;
+import flash.events.Event;
+import flash.display.DisplayObject;
+import flash.display.IGraphicsData;
+import flash.display.BitmapData;
+import flash.display.Bitmap;
+import flash.display.GradientType;
+import flash.display.Sprite;
+import flash.display.StageDisplayState;
+import flash.geom.Matrix;
 
 class Sample extends Sprite
 {
@@ -17,7 +17,9 @@ public function new()
 {
    super();
    Lib.current.addChild(this);
+   #if nme
    Lib.current.addChild(new nme.display.FPS() );
+   #end
    var sp = new Sprite();
    sp.graphics.beginFill(0,1);
    sp.graphics.drawCircle(50,50,50);
@@ -25,7 +27,11 @@ public function new()
 
    stage.frameRate = 60;
       
-   var bd = new BitmapData(100,100,true,nme.display.BitmapData.createColor(0xcc,0xcccccc));
+   #if neko
+   var bd = new BitmapData(100,100,true,flash.display.BitmapData.createColor(0xcccccc,0xcc));
+   #else
+   var bd = new BitmapData(100,100,true,0xcccccccc);
+   #end
    bd.draw(sp);
       
    var bm = new Bitmap(bd);
@@ -43,7 +49,7 @@ public function new()
    addChild(shape);
 
 
-   stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, OnKey );
+   stage.addEventListener(flash.events.KeyboardEvent.KEY_DOWN, OnKey );
 
    stage.addEventListener(Event.ENTER_FRAME, function(_) { shape.rotation+=360/60/60; } );
    stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
@@ -57,15 +63,17 @@ function OnKey(event)
    switch(event.charCode)
    {
        case "1".charCodeAt(0):
-          stage.quality = nme.display.StageQuality.LOW;
+          stage.quality = flash.display.StageQuality.LOW;
        case "2".charCodeAt(0):
-          stage.quality = nme.display.StageQuality.MEDIUM;
+          stage.quality = flash.display.StageQuality.MEDIUM;
        case "3".charCodeAt(0):
-          stage.quality = nme.display.StageQuality.HIGH;
+          stage.quality = flash.display.StageQuality.HIGH;
        case "4".charCodeAt(0):
-          stage.quality = nme.display.StageQuality.BEST;
+          stage.quality = flash.display.StageQuality.BEST;
 
-       case "q".charCodeAt(0): nme.Lib.close();
+       #if nme
+       case "q".charCodeAt(0): flash.Lib.close();
+       #end
        case "f".charCodeAt(0):
           stage.displayState = (stage.displayState==StageDisplayState.NORMAL) ?
               StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
