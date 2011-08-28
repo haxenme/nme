@@ -107,13 +107,6 @@ class Stage extends nme.display.DisplayObjectContainer
       nme_stage_show_cursor(nmeHandle,inShow);
    }
 
-   public function showKeyboard(inShow:Bool)
-   {
-      nme_stage_show_keyboard(nmeHandle,inShow);
-   }
-
-
-
    function nmeSetFrameRate(inRate:Float) : Float
    {
       frameRate = inRate;
@@ -784,6 +777,5 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_set_next_wake = nme.Loader.load("nme_stage_set_next_wake",2);
    static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
-   static var nme_stage_show_keyboard = nme.Loader.load("nme_stage_show_keyboard",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
 }
