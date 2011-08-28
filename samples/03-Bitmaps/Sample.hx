@@ -50,7 +50,7 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    for(y in 0...100)
       for(x in 0...50)
          dest.setPixel32(x,y,dest.getPixel32(99-x,y));
-   var col = #if neko { rgb:0x00ff00, a:0x80 } #else 0x8000ff00 #end;
+   var col = #if neko { rgb:0xff0000, a:0x80 } #else 0x80ff0000 #end;
    for(i in 0...100)
       dest.setPixel32(i,i,col);
 
