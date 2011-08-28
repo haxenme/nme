@@ -139,7 +139,7 @@ class Sample extends Sprite
 
       // Create a combined array with destination at the bottom, and source at the
       //  top so with can so a single "select" call.
-      var next = new Array<Int>();
+      var next = new flash.Vector<Int>();
       next[pixels.length-1] = 0;
 
 
