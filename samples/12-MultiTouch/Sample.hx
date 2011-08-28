@@ -76,6 +76,7 @@ class Sample extends Sprite
          var col = colourHash.get(mMultiTouch ? event.touchPointID : 0);
          var cx = Std.int(event.localX);
          var cy = Std.int(event.localY);
+         trace("ID : " + id + " " + cx + "," + cy + " = " + col);
          for(x in cx-2 ... cx+3)
             for(y in cy-2 ... cy+3)
                if (x>=0 && y>=0 && x<mBitmap.width && y<mBitmap.height)

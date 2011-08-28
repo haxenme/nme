@@ -11,9 +11,9 @@
   />
 
   <window
-      width="400"
-		height="300"
-		orientation="landscape"
+      width="320"
+		height="480"
+		orientation="portrait"
 		fps="60"
 		background="0xffffff"
       resizeable="true"
