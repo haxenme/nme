@@ -3,5 +3,5 @@
     <user name="gamehaxe"/>
     <user name="krogers"/>
  <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
-    <version name="2.0.1">Fix image bytes on iPhone.  iPhone does not use freetype anymore.  Fix DisplayObject.alpha.  Move to nekoapi.ndll.  Fixed TextFormat references.  Added point size to draw points.</version>
+    <version name="3.0.0"> Added install-tool to make cross-platform development easier. Added webOS support.  Added CURL support. Many, many improvements to flash compatibility.</version>
 </project>

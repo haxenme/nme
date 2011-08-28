@@ -1,5 +1,13 @@
 NME Changes List
 
+3.0.0
+===============
+Highlight:
+ * Added install-tool to make cross-platform development easier.
+ * Added webOS support.
+ * Added CURL support.
+ * Many, many improvements to flash compatibility.
+
 2.0.0
 ===============
 Overhauled just about everything. Added initial Android support.
