@@ -139,7 +139,7 @@ class DesktopInstaller extends InstallerBase {
          {
              mkdir(targetDir + "/haxe");
              var tmp_name = targetDir + "/haxe/icon.png";
-             if (icons.updateIcon(16,32,tmp_name))
+             if (icons.updateIcon(32,32,tmp_name))
                 icon_name = tmp_name;
          }
          if (icon_name!="")
