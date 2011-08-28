@@ -254,8 +254,6 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-	printf("GetFontFile\n");
-
    #ifdef ANDROID
    if (!strcasecmp(inName.c_str(),"times.ttf"))
       outFile = "/system/fonts/DroidSerif-Regular.ttf";
