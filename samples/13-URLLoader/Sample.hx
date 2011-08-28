@@ -1,14 +1,14 @@
-import nme.Lib;
-import nme.display.Sprite;
-import nme.events.Event;
-import nme.net.URLLoader;
-import nme.net.URLRequest;
-import nme.text.TextField;
-import nme.text.TextFieldAutoSize;
-import nme.events.IOErrorEvent;
-import nme.events.ProgressEvent;
-import nme.errors.SecurityError;
-import nme.errors.TypeError;
+import flash.Lib;
+import flash.display.Sprite;
+import flash.events.Event;
+import flash.net.URLLoader;
+import flash.net.URLRequest;
+import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
+import flash.events.IOErrorEvent;
+import flash.events.ProgressEvent;
+import flash.errors.SecurityError;
+import flash.errors.TypeError;
 
   
 class Sample extends Sprite {
@@ -19,7 +19,7 @@ class Sample extends Sprite {
     public function new()
 	 {
 	     super();
-		  nme.Lib.current.addChild(this);
+		  flash.Lib.current.addChild(this);
         xmlTextField = new TextField();
         var request:URLRequest = new URLRequest("http://www.w3schools.com/xml/cd_catalog.xml");
 
@@ -44,17 +44,17 @@ class Sample extends Sprite {
 
         addChild(xmlTextField);
 
-        var loader = new nme.display.Loader();
-        loader.contentLoaderInfo.addEventListener(nme.events.Event.COMPLETE, function(_) {
-            var bmp:nme.display.Bitmap = cast loader.content;
+        var image_loader = new flash.display.Loader();
+        image_loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE, function(_) {
+            var bmp:flash.display.Bitmap = cast image_loader.content;
             trace("Loaded image " + bmp.bitmapData.width + "x" + bmp.bitmapData.height);
         });
 
         var request:URLRequest = new URLRequest("http://upload.wikimedia.org/wikipedia/en/7/72/Example-serious.jpg");
-        loader.load(request);
-        loader.x = 180;
-        loader.y = 180;
-        addChild(loader);
+        image_loader.load(request);
+        image_loader.x = 180;
+        image_loader.y = 180;
+        addChild(image_loader);
     }
 
 	 function onProgress(event:ProgressEvent)
