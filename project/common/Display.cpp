@@ -34,6 +34,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    blendMode = bmNormal;
    opaqueBackground = 0;
    mouseEnabled = true;
+   needsSoftKeyboard = false;
    mMask = 0;
    mIsMaskCount = 0;
    mBitmapGfx = 0;
@@ -607,6 +608,33 @@ void DisplayObject::ClearFilters()
       delete filters[i];
    filters.resize(0);
 }
+
+
+
+void DisplayObject::Focus()
+{
+#if defined(IPHONE) || defined (ANDROID)
+  if (needsSoftKeyboard)
+  {
+     Stage *stage = getStage();
+     if (stage)
+        stage->EnablePopupKeyboard(true);
+  }
+#endif
+}
+
+void DisplayObject::Unfocus()
+{
+#if defined(IPHONE) || defined (ANDROID)
+  if (needsSoftKeyboard)
+  {
+     Stage *stage = getStage();
+     if (stage)
+        stage->EnablePopupKeyboard(false);
+  }
+#endif
+}
+
 
 // --- SimpleButton ------------------------------------------------
 SimpleButton::SimpleButton(bool inInitRef) : DisplayObject(inInitRef),
@@ -1580,7 +1608,7 @@ void Stage::HandleEvent(Event &inEvent)
       {
          if (hit_obj->WantsFocus())
             SetFocusObject(hit_obj,fsMouse);
-         #ifdef IPHONE
+         #if defined(IPHONE) || defined(ANDROID)
          else
          {
             EnablePopupKeyboard(false);
@@ -1764,6 +1792,8 @@ void Stage::RenderStage()
 
    state.mPhase = rpRender;
    Render(render.Target(),state);
+
+   // Clear alpha masks
 }
 
 double Stage::getStageWidth()

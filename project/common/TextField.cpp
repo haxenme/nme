@@ -62,6 +62,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mLastUpDownX = -1;
    mLayoutScaleH = mLayoutScaleV = -1.0;
    mLayoutRotation = gr0;
+   needsSoftKeyboard = true;
    mHasCaret = false;
 }
 
@@ -255,24 +256,6 @@ void TextField::setAutoSize(int inAutoSize)
 }
 
 
-
-void TextField::Focus()
-{
-#ifdef IPHONE
-  Stage *stage = getStage();
-  if (stage)
-     stage->EnablePopupKeyboard(true);
-#endif
-}
-
-void TextField::Unfocus()
-{
-#ifdef IPHONE
-  Stage *stage = getStage();
-  if (stage)
-     stage->EnablePopupKeyboard(false);
-#endif
-}
 
 bool TextField::FinishEditOnEnter()
 {

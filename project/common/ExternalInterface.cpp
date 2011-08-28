@@ -656,7 +656,7 @@ DEFINE_PRIM(nme_get_resource_path,0);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-#if defined(WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS)
+#if defined(HX_WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS)
 	bool result=LaunchBrowser(val_string(url));
 	return alloc_bool(result);	
 #endif
@@ -900,18 +900,6 @@ value nme_stage_show_cursor(value inStage,value inShow)
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_show_cursor,2);
-
-value nme_stage_show_keyboard(value inStage,value inShow)
-{
-   Stage *stage;
-   if (AbstractToObject(inStage,stage))
-   {
-      stage->EnablePopupKeyboard(val_bool(inShow));
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_stage_show_keyboard,2);
-
 
 
 
@@ -1269,6 +1257,24 @@ value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
 DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
 
+value nme_display_object_request_soft_keyboard(value inObj)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      Stage *stage = obj->getStage();
+      if (stage)
+      {
+         // TODO: return whether it pops up
+         stage->EnablePopupKeyboard(true);
+         return alloc_bool(true);
+      }
+   }
+
+   return alloc_bool(false);
+}
+DEFINE_PRIM(nme_display_object_request_soft_keyboard,1);
+
 
 DO_DISPLAY_PROP(x,X,alloc_float,val_number)
 DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
@@ -1284,6 +1290,8 @@ DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
 DO_DISPLAY_PROP(name,Name,alloc_wstring,val2stdwstr)
 DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
+DO_DISPLAY_PROP(needs_soft_keyboard,NeedsSoftKeyboard,alloc_bool,val_bool)
+DO_DISPLAY_PROP(moves_for_soft_keyboard,MovesForSoftKeyboard,alloc_bool,val_bool)
 DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
 DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 

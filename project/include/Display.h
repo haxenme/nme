@@ -162,6 +162,10 @@ public:
    uint32 getOpaqueBackground() { return opaqueBackground; }
    bool getMouseEnabled() { return mouseEnabled; }
    void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
+   bool getNeedsSoftKeyboard() { return needsSoftKeyboard; }
+   void setNeedsSoftKeyboard(bool inVal) { needsSoftKeyboard = inVal; }
+   bool getMovesForSoftKeyboard() { return movesForSoftKeyboard; }
+   void setMovesForSoftKeyboard(bool inVal) { movesForSoftKeyboard = inVal; }
    bool getCacheAsBitmap() { return cacheAsBitmap; }
    void setCacheAsBitmap(bool inVal);
    bool getVisible() { return visible; }
@@ -200,6 +204,8 @@ public:
    int     id;
    bool   visible;
    bool   mouseEnabled;
+   bool   needsSoftKeyboard;
+   bool   movesForSoftKeyboard;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
 
@@ -216,8 +222,8 @@ public:
 
    virtual Cursor GetCursor() { return curPointer; }
    virtual bool WantsFocus() { return false; }
-   virtual void Focus() { }
-   virtual void Unfocus() { }
+   virtual void Focus();
+   virtual void Unfocus();
 
    virtual bool CaptureDown(Event &inEvent) { return false; }
    virtual void Drag(Event &inEvent) {  }
