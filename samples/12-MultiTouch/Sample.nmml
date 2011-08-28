@@ -29,8 +29,4 @@
   <ndll name="zlib" />
   <ndll name="nme" haxelib="nme" nekoapi="1"/>
 
-  <certificates>
-     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
-  </certificates>
-
 </project>

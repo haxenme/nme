@@ -42,8 +42,4 @@
 
   <haxedef name="no_console" />
 
-  <certificates>
-     <certificate file="signature.cer" name="mysign" password="ajkhsakjhf" />
-  </certificates>
-
 </project>
