@@ -330,7 +330,10 @@ class Icons
          file.close();
       }
 
-      InstallTool.runCommand(".", InstallTool.nme + "\\ndll\\Windows\\ReplaceVistaIcon.exe", [ inExeName, name] );
+      var command = InstallTool.nme.split(",").join("\",\"") + 
+                  "\\ndll\\Windows\\ReplaceVistaIcon.exe" +
+                  " \"" + inExeName + "\" \"" + name + "\"";
+      InstallTool.runCommand(".", command, null );
    }
 
 

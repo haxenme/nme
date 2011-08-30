@@ -186,7 +186,7 @@ class InstallTool {
 			
 		}
 		
-		print(command + " " + args.join (" "));
+		print(command + (args==null ? "": " " + args.join(" ")) );
 		
 		var result:Dynamic = Sys.command (command, args);
 		
