@@ -277,7 +277,7 @@ void AndoidRequestRender()
    jmethodID mid = gEnv->GetStaticMethodID(cls, "renderNow", "()V");
    if (mid == 0)
        return;
-    gEnv->CallStaticObjectMethod(cls, mid );
+    gEnv->CallStaticVoidMethod(cls, mid);
 }
 
 
