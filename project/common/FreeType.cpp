@@ -313,9 +313,12 @@ std::string ToAssetName(const std::string &inPath)
 FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
 {
    std::string fname = inFontName;
+   
+   #ifndef ANDROID
    if (fname.find(".")==std::string::npos)
       fname += ".ttf";
-
+   #endif
+	  
    FT_Face font = OpenFont(fname,inFlags);
 
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
