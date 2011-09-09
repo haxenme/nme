@@ -41,19 +41,25 @@ class Bang extends Bitmap
 
          // Can only play 1 mp3 at a time...
          mSound1 = ApplicationMain.getAsset("Data/drum.ogg");
+         if (mSound1==null)
+            trace("WARNING: Data/drumm.ogg failed to load");
          mSound2 = ApplicationMain.getAsset("Data/drums.ogg");
+         if (mSound2==null)
+            trace("WARNING: Data/drums.ogg failed to load");
          mSound3 = ApplicationMain.getAsset("Data/bass.wav");
+         if (mSound3==null)
+            trace("WARNING: Data/bass.wav failed to load");
       }
 
       bitmapData = mImage;
       x = inX + mOffX;
       y = inY + mOffY;
 
-      if (inY<100)
+      if (inY<100 && mSound2!=null)
          mSound2.play(0,0);
-      else if (inY>200)
+      else if (inY>200 && mSound3!=null)
          mSound3.play(0,0);
-      else
+      else if (mSound1!=null)
          mSound1.play(0,0);
 
       var me = this;
@@ -85,8 +91,15 @@ class Sample extends Sprite
 
       var sound_name = "Data/Party_Gu-Jeremy_S-8250_hifi.mp3";
       var sound:Sound = ApplicationMain.getAsset(sound_name);
-      var channel = sound.play(0,-1);
-      channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
+      if (sound==null)
+      {
+         trace("WARNING: " + sound_name + " failed to load");
+      }
+      else
+      {
+         var channel = sound.play(0,-1);
+         channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
+      }
 
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
    }
