@@ -5,4 +5,10 @@ package nme.display;
 @:native ("flash.display.IGraphicsStroke")
 extern interface IGraphicsStroke {
 }
+#else
+
+
+
+interface IGraphicsStroke {
+}
 #end

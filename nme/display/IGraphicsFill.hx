@@ -5,4 +5,10 @@ package nme.display;
 @:native ("flash.display.IGraphicsFill")
 extern interface IGraphicsFill {
 }
+#else
+
+
+
+interface IGraphicsFill {
+}
 #end
