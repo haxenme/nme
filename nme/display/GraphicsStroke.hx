@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.GraphicsStroke")
 @:final extern class GraphicsStroke implements IGraphicsData, implements IGraphicsStroke {
 	var caps : CapsStyle;
@@ -15,13 +13,9 @@ package nme.display;
 	var thickness : Float;
 	function new(thickness : Float = 0./*NaN*/, pixelHinting : Bool = false, ?scaleMode : String, ?caps : String, ?joints : String, miterLimit : Float = 3, ?fill : IGraphicsFill) : Void;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 class GraphicsStroke extends IGraphicsData
 {
@@ -40,6 +34,4 @@ class GraphicsStroke extends IGraphicsData
 
    static var nme_graphics_stroke_create = nme.Loader.load("nme_graphics_stroke_create",-1);
 }
-
-
 #end

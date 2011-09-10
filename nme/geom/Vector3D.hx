@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.Vector3D")
 @:require(flash10) extern class Vector3D {
 	var length(default,null) : Float;
@@ -33,13 +31,9 @@ package nme.geom;
 	static function angleBetween(a : Vector3D, b : Vector3D) : Float;
 	static function distance(pt1 : Vector3D, pt2 : Vector3D) : Float;
 }
-
-
-
 #else
 
 
-package nme.geom;
 
 class Vector3D {
 	inline public var length(getLength,null):Float;
@@ -164,6 +158,4 @@ class Vector3D {
 		return new Vector3D(0,0,1);
 	}
 }
-
-
 #end

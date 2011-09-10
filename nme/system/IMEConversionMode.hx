@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.system;
 
+
+#if flash
 @:native ("flash.system.IMEConversionMode")
 @:fakeEnum(String) extern enum IMEConversionMode {
 	ALPHANUMERIC_FULL;
@@ -14,7 +13,4 @@ package nme.system;
 	KOREAN;
 	UNKNOWN;
 }
-
-
-
 #end

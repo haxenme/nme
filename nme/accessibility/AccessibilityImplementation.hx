@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.accessibility;
 
 
+#if flash
 @:native ("flash.accessibility.AccessibilityImplementation")
 extern class AccessibilityImplementation {
 	var errno : UInt;
@@ -22,6 +20,4 @@ extern class AccessibilityImplementation {
 	function get_accValue(childID : UInt) : String;
 	function isLabeledBy(labelBounds : nme.geom.Rectangle) : Bool;
 }
-
-
 #end

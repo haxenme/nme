@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.ContextMenuItem")
 @:final extern class ContextMenuItem extends nme.display.NativeMenuItem {
 	var caption : String;
@@ -12,6 +10,4 @@ package nme.ui;
 	function new(caption : String, separatorBefore : Bool = false, enabled : Bool = true, visible : Bool = true) : Void;
 	function clone() : ContextMenuItem;
 }
-
-
 #end

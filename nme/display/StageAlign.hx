@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 /*
 @:native ("flash.display.StageAlign")
 @:fakeEnum(String) extern enum StageAlign {
@@ -18,7 +16,6 @@ package nme.display;
 }
 */
 
-
 class StageAlign {
 	
 	public static var BOTTOM:String = "B";
@@ -31,12 +28,9 @@ class StageAlign {
 	public static var TOP_RIGHT:String = "TR";
 	
 }
-
-
 #else
 
 
-package nme.display;
 
 enum StageAlign {
    TOP_RIGHT;
@@ -48,6 +42,4 @@ enum StageAlign {
    BOTTOM_LEFT;
    BOTTOM;
 }
-
-
 #end

@@ -1,8 +1,7 @@
+package nme.net;
+
+
 #if flash
-
-
-package flash.net;
-
 extern class SharedObject extends nme.events.EventDispatcher {
 	var client : Dynamic;
 	var data(default,null) : Dynamic;
@@ -23,21 +22,14 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	static function getLocal(name : String, ?localPath : String, secure : Bool = false) : SharedObject;
 	static function getRemote(name : String, ?remotePath : String, persistence : Dynamic = false, secure : Bool = false) : SharedObject;
 }
-
-
 #else
 
 
-package nme.net;
+
 import haxe.Serializer;
 import haxe.Unserializer;
 import nme.events.EventDispatcher;
 
-@:fakeEnum(String) enum SharedObjectFlushStatus 
-{
-	FLUSHED;
-	PENDING;
-}
 
 /** SharedObject */
 class SharedObject extends EventDispatcher
@@ -120,6 +112,4 @@ class SharedObject extends EventDispatcher
 	static var nme_clear_user_preference=nme.Loader.load("nme_clear_user_preference",1);
 	
 }
-
-
 #end

@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.display;
 
+
+#if flash
 @:native ("flash.display.Bitmap")
 extern class Bitmap extends DisplayObject {
 	var bitmapData : BitmapData;
@@ -10,12 +9,8 @@ extern class Bitmap extends DisplayObject {
 	var smoothing : Bool;
 	function new(?bitmapData : BitmapData, ?pixelSnapping : PixelSnapping, smoothing : Bool = false) : Void;
 }
-
-
 #else
 
-
-package nme.display;
 
 
 import nme.display.DisplayObject;
@@ -62,6 +57,4 @@ class Bitmap extends DisplayObject {
    }
 
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 /*
 @:native ("flash.display.StageScaleMode")
 @:fakeEnum(String) extern enum StageScaleMode {
@@ -13,7 +11,6 @@ package nme.display;
 	SHOW_ALL;
 }*/
 
-
 class StageScaleMode {
 	
 	public static var EXACT_FIT:String = "exactFit";
@@ -22,14 +19,9 @@ class StageScaleMode {
 	public static var SHOW_ALL:String = "showAll";
 	
 }
-
-
 #else
 
 
-package nme.display;
 
 enum StageScaleMode { SHOW_ALL; NO_SCALE; NO_BORDER; EXACT_FIT; }
-
-
 #end

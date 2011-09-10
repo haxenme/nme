@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.display;
 
+
+#if flash
 @:native ("flash.display.InteractiveObject")
 extern class InteractiveObject extends DisplayObject {
 	var accessibilityImplementation : nme.accessibility.AccessibilityImplementation;
@@ -14,12 +13,9 @@ extern class InteractiveObject extends DisplayObject {
 	var tabIndex : Int;
 	function new() : Void;
 }
-
-
 #else
 
 
-package nme.display;
 
 class InteractiveObject extends DisplayObject
 {
@@ -87,6 +83,4 @@ class InteractiveObject extends DisplayObject
    static var nme_display_object_request_soft_keyboard =
       nme.Loader.load("nme_display_object_request_soft_keyboard",1);
 }
-
-
 #end

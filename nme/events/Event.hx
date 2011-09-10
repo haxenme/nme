@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.Event")
 extern class Event {
 	var bubbles(default,null) : Bool;
@@ -54,14 +52,9 @@ extern class Event {
 	static var TAB_INDEX_CHANGE : String;
 	static var UNLOAD : String;
 }
-
-
-
 #else
 
 
-
-package nme.events;
 
 class Event
 {
@@ -147,6 +140,4 @@ class Event
    public static var LOST_INPUT_FOCUS = "lostInputFocus";
 
 }
-
-
 #end

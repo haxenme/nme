@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.Rectangle")
 extern class Rectangle {
 	var bottom : Float;
@@ -34,10 +32,8 @@ extern class Rectangle {
 	function toString() : String;
 	function union(toUnion : Rectangle) : Rectangle;
 }
-
-
-
 #else
+
 
 
 /*
@@ -63,10 +59,6 @@ extern class Rectangle {
  *
  *
  */
-
-
-package nme.geom;
-
 
 
 
@@ -251,6 +243,4 @@ class Rectangle
          bottom = r.bottom;
    }
 }
-
-
 #end

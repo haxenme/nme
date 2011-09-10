@@ -89,18 +89,14 @@ class Timer
    }
    
    #if flash
-   
    private static function nme_time_stamp ():Float {
 	   
 	  return nme.Lib.getTimer () / 1000;
 	
    }
-   
    #else
 
 	static var nme_time_stamp = nme.Loader.load ("nme_time_stamp", 0);
-	
-	
 	#end
 	
 	

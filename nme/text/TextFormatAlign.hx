@@ -1,21 +1,16 @@
+package nme.text;
+
+
 #if flash
-
-
-package flash.text;
-
 @:fakeEnum(String) extern enum TextFormatAlign {
 	CENTER;
 	JUSTIFY;
 	LEFT;
 	RIGHT;
 }
-
-
-
 #else
 
 
-package nme.text;
 
 class TextFormatAlign
 {
@@ -24,6 +19,4 @@ class TextFormatAlign
    public static var CENTER = "center";
    public static var JUSTIFY = "justify";
 }
-
-
 #end

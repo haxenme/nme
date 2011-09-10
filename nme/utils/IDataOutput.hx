@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.utils;
 
+
+#if flash
 @:native ("flash.utils.IDataOutput")
 extern interface IDataOutput {
 	var endian : Endian;
@@ -20,6 +19,4 @@ extern interface IDataOutput {
 	function writeUTFBytes(value : String) : Void;
 	function writeUnsignedInt(value : UInt) : Void;
 }
-
-
 #end

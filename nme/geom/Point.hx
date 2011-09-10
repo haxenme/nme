@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.Point")
 extern class Point {
 	var length(default,null) : Float;
@@ -21,10 +19,8 @@ extern class Point {
 	static function interpolate(pt1 : Point, pt2 : Point, f : Float) : Point;
 	static function polar(len : Float, angle : Float) : Point;
 }
-
-
-
 #else
+
 
 
 /*
@@ -54,7 +50,6 @@ extern class Point {
  *
  */
 
-package nme.geom;
 
 class Point
 {
@@ -127,6 +122,4 @@ class Point
       return new Point( len*Math.cos(angle), len*Math.sin(angle) );
    }
 }
-
-
 #end

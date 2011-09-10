@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.Font")
 extern class Font {
 	var fontName(default,null) : String;
@@ -14,13 +12,10 @@ extern class Font {
 	static function enumerateFonts(enumerateDeviceFonts : Bool = false) : Array<Font>;
 	static function registerFont(font : Class<Dynamic>) : Void;
 }
-
-
-
 #else
 
 
-package nme.text;
+
 import nme.display.Stage;
 
 
@@ -72,7 +67,4 @@ class Font
    static var freetype_import_font = nme.Loader.load("freetype_import_font",3);
 
 }
-
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 /*
 @:native ("flash.display.StageDisplayState")
 @:fakeEnum(String) extern enum StageDisplayState {
@@ -20,12 +18,9 @@ class StageDisplayState {
 	public static var NORMAL:String = "normal";
 	
 }
-
-
 #else
 
 
-package nme.display;
 
 enum StageDisplayState
 {
@@ -33,6 +28,4 @@ enum StageDisplayState
    FULL_SCREEN;
    FULL_SCREEN_INTERACTIVE;
 }
-
-
 #end

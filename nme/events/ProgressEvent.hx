@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.ProgressEvent")
 extern class ProgressEvent extends Event {
 	var bytesLoaded : Float;
@@ -12,13 +10,8 @@ extern class ProgressEvent extends Event {
 	static var PROGRESS : String;
 	static var SOCKET_DATA : String;
 }
-
-
-
 #else
 
-
-package nme.events;
 
 
 class ProgressEvent extends Event
@@ -37,7 +30,4 @@ class ProgressEvent extends Event
 	}
 
 }
-
-
-
 #end

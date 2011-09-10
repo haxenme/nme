@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.TextField")
 extern class TextField extends nme.display.InteractiveObject {
 	var alwaysShowSelection : Bool;
@@ -72,13 +70,9 @@ extern class TextField extends nme.display.InteractiveObject {
 	function setTextFormat(format : TextFormat, beginIndex : Int = -1, endIndex : Int = -1) : Void;
 	@:require(flash10) static function isFontCompatible(fontName : String, fontStyle : String) : Bool;
 }
-
-
-
 #else
 
 
-package nme.text;
 
 class TextField extends nme.display.InteractiveObject
 {
@@ -304,7 +298,4 @@ class TextField extends nme.display.InteractiveObject
    static var nme_text_field_get_max_chars = nme.Loader.load("nme_text_field_get_max_chars",1);
    static var nme_text_field_set_max_chars = nme.Loader.load("nme_text_field_set_max_chars",2);
 }
-
-
-
 #end

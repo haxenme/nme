@@ -1,8 +1,7 @@
+package nme.text;
+
+
 #if flash
-
-
-package flash.text;
-
 /*
 @:native ("flash.text.GridFitType")
 @:fakeEnum(String) extern enum GridFitType {
@@ -18,7 +17,4 @@ extern class GridFitType {
 	public static var PIXEL:String = "pixel";
 	public static var SUBPIXEL:String = "subpixel";
 }
-
-
-
 #end

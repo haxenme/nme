@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.ColorTransform")
 extern class ColorTransform {
 	var alphaMultiplier : Float;
@@ -19,13 +17,9 @@ extern class ColorTransform {
 	function concat(second : ColorTransform) : Void;
 	function toString() : String;
 }
-
-
-
 #else
 
 
-package nme.geom;
 
 /**
 * @author	Hugh Sanderson
@@ -71,6 +65,4 @@ class ColorTransform
 		alphaMultiplier += second.alphaMultiplier;
 	}
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.TextEvent")
 extern class TextEvent extends Event {
 	var text : String;
@@ -11,13 +9,9 @@ extern class TextEvent extends Event {
 	static var LINK : String;
 	static var TEXT_INPUT : String;
 }
-
-
-
 #else
 
 
-package nme.events;
 
 class TextEvent extends Event
 {
@@ -30,7 +24,4 @@ class TextEvent extends Event
       text = inText;
    }
 }
-
-
-
 #end

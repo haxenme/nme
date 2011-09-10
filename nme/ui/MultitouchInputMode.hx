@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.MultitouchInputMode")
 @:fakeEnum(String) extern enum MultitouchInputMode {
 	GESTURE;
 	NONE;
 	TOUCH_POINT;
 }
-
-
-
 #else
 
 
-package nme.ui;
 
 enum MultitouchInputMode
 {
@@ -24,6 +18,4 @@ enum MultitouchInputMode
    TOUCH_POINT;
    GESTURE;
 }
-
-
 #end

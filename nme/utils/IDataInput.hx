@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.utils;
 
+
+#if flash
 @:native ("flash.utils.IDataInput")
 extern interface IDataInput {
 	var bytesAvailable(default,null) : UInt;
@@ -23,12 +22,8 @@ extern interface IDataInput {
 	function readUnsignedInt() : UInt;
 	function readUnsignedShort() : UInt;
 }
-
-
 #else
 
-
-package nme.utils;
 
 
 interface IDataInput
@@ -61,6 +56,4 @@ interface IDataInput
    public function nmeGetEndian() : String;
    public function nmeSetEndian(s:String) : String;
 }
-
-
 #end

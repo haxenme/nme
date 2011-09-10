@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.net;
 
 
+#if flash
 /*
 @:native ("flash.net.SharedObjectFlushStatus")
 @:fakeEnum(String) extern enum SharedObjectFlushStatus {
@@ -12,12 +10,18 @@ package nme.net;
 }
 */
 
-
 @:native ("flash.net.SharedObjectFlushStatus")
 extern class SharedObjectFlushStatus {
 	public static var FLUSHED:String = "flushed";
 	public static var PENDING:String = "pending";
 }
+#else
 
 
+
+@:fakeEnum(String) enum SharedObjectFlushStatus 
+{
+	FLUSHED;
+	PENDING;
+}
 #end

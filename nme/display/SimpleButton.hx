@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.display;
 
+
+#if flash
 @:native ("flash.display.SimpleButton")
 extern class SimpleButton extends InteractiveObject {
 	var downState : DisplayObject;
@@ -15,13 +14,8 @@ extern class SimpleButton extends InteractiveObject {
 	var useHandCursor : Bool;
 	function new(?upState : DisplayObject, ?overState : DisplayObject, ?downState : DisplayObject, ?hitTestState : DisplayObject) : Void;
 }
-
-
-
 #else
 
-
-package nme.display;
 
 
 class SimpleButton extends InteractiveObject
@@ -94,6 +88,4 @@ class SimpleButton extends InteractiveObject
    static var nme_simple_button_create = nme.Loader.load("nme_simple_button_create",0);
 
 }
-
-
 #end

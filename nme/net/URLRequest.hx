@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.net;
 
 
+#if flash
 @:native ("flash.net.URLRequest")
 @:final extern class URLRequest {
 	var contentType : String;
@@ -14,12 +12,9 @@ package nme.net;
 	var url : String;
 	function new(?url : String) : Void;
 }
-
-
 #else
 
 
-package nme.net;
 
 class URLRequest
 {
@@ -59,6 +54,4 @@ class URLRequest
       userPassword = inUser + ":" + inPasswd;
    }
 }
-
-
 #end

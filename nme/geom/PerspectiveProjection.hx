@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.PerspectiveProjection")
 @:require(flash10) extern class PerspectiveProjection {
 	var fieldOfView : Float;
@@ -12,7 +10,4 @@ package nme.geom;
 	function new() : Void;
 	function toMatrix3D() : Matrix3D;
 }
-
-
-
 #end

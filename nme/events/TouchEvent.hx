@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.TouchEvent")
 @:require(flash10_1) extern class TouchEvent extends Event {
 	var altKey : Bool;
@@ -31,13 +29,9 @@ package nme.events;
 	static var TOUCH_ROLL_OVER : String;
 	static var TOUCH_TAP : String;
 }
-
-
-
 #else
 
 
-package nme.events;
 
 import nme.display.InteractiveObject;
 import nme.geom.Point;
@@ -109,6 +103,4 @@ class TouchEvent extends nme.events.MouseEvent
    }
 
 }
-
-
 #end

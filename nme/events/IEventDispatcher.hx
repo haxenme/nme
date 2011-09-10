@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.IEventDispatcher")
 extern interface IEventDispatcher {
 	function addEventListener(type : String, listener : Dynamic -> Void, useCapture : Bool = false, priority : Int = 0, useWeakReference : Bool = false) : Void;
@@ -12,12 +10,9 @@ extern interface IEventDispatcher {
 	function removeEventListener(type : String, listener : Dynamic -> Void, useCapture : Bool = false) : Void;
 	function willTrigger(type : String) : Bool;
 }
-
-
 #else
 
 
-package nme.events;
 
 typedef Function = Dynamic->Void;
 
@@ -33,6 +28,4 @@ interface IEventDispatcher
 	public function willTrigger(type:String):Bool;
 
 }
-
-
 #end

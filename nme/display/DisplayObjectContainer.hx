@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.display;
 
+
+#if flash
 @:native ("flash.display.DisplayObjectContainer")
 extern class DisplayObjectContainer extends InteractiveObject {
 	var mouseChildren : Bool;
@@ -24,12 +23,9 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	function swapChildren(child1 : DisplayObject, child2 : DisplayObject) : Void;
 	function swapChildrenAt(index1 : Int, index2 : Int) : Void;
 }
-
-
 #else
 
 
-package nme.display;
 
 import nme.events.Event;
 import nme.geom.Point;
@@ -299,6 +295,4 @@ class DisplayObjectContainer extends InteractiveObject
    static var nme_doc_swap_children = nme.Loader.load("nme_doc_swap_children",3);
 
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.Multitouch")
 @:require(flash10_1) extern class Multitouch {
 	static var inputMode : MultitouchInputMode;
@@ -12,13 +10,9 @@ package nme.ui;
 	static var supportsGestureEvents(default,null) : Bool;
 	static var supportsTouchEvents(default,null) : Bool;
 }
-
-
-
 #else
 
 
-package nme.ui;
 
 import nme.ui.MultitouchInputMode;
 
@@ -68,5 +62,4 @@ class Multitouch
    static var nme_stage_set_multitouch_active = nme.Loader.load("nme_stage_set_multitouch_active",2);
  
 }
-
 #end

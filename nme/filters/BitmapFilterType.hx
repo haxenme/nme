@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.filters;
 
 
+#if flash
 @:native ("flash.filters.BitmapFilterType")
 @:fakeEnum(String) extern enum BitmapFilterType {
 	FULL;
 	INNER;
 	OUTER;
 }
-
-
-
 #else
 
 
-package nme.filters;
 
 class BitmapFilterType
 {
@@ -24,6 +18,4 @@ class BitmapFilterType
    public static var INNER = "inner";
    public static var OUTER = "outer";
 }
-
-
 #end

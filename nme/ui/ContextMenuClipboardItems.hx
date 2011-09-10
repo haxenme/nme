@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.ContextMenuClipboardItems")
 @:final extern class ContextMenuClipboardItems {
 	var clear : Bool;
@@ -14,6 +12,4 @@ package nme.ui;
 	function new() : Void;
 	function clone() : ContextMenuClipboardItems;
 }
-
-
 #end

@@ -13,7 +13,7 @@ import cpp.io.Process;
 import import js.Lib;
 import import js.Sys;
 #else
-#error "unsupported platform";
+#error "Error: Unsupported Platform";
 #end
  
 

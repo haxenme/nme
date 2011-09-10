@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.accessibility;
 
 
+#if flash
 @:native ("flash.accessibility.AccessibilityProperties")
 extern class AccessibilityProperties {
 	var description : String;
@@ -14,6 +12,4 @@ extern class AccessibilityProperties {
 	var silent : Bool;
 	function new() : Void;
 }
-
-
 #end

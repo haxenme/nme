@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.events;
 
+
+#if flash
 @:native ("flash.events.EventDispatcher")
 extern class EventDispatcher implements IEventDispatcher {
 	function new(?target : IEventDispatcher) : Void;
@@ -13,12 +12,10 @@ extern class EventDispatcher implements IEventDispatcher {
 	function toString() : String;
 	function willTrigger(type : String) : Bool;
 }
-
-
 #else
 
 
-package nme.events;
+
 import nme.events.IEventDispatcher;
 import nme.events.Event;
 
@@ -173,7 +170,4 @@ class EventDispatcher implements IEventDispatcher
    }
 
 }
-
-
-
 #end

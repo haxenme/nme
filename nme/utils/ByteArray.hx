@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.utils;
 
+
+#if flash
 @:native ("flash.utils.ByteArray")
 extern class ByteArray implements IDataOutput, implements IDataInput, implements ArrayAccess<Int> {
 	var bytesAvailable(default,null) : UInt;
@@ -45,12 +44,9 @@ extern class ByteArray implements IDataOutput, implements IDataInput, implements
 	function writeUnsignedInt(value : UInt) : Void;
 	static var defaultObjectEncoding : UInt;
 }
-
-
 #else
 
 
-package nme.utils;
 
 // Ensure that the neko->haxe callbacks are initialized
 import nme.errors.EOFError;
@@ -492,6 +488,4 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
    static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file",1);
    #end
 }
-
-
 #end

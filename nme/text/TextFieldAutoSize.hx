@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.TextFieldAutoSize")
 @:fakeEnum(String) extern enum TextFieldAutoSize {
 	CENTER;
@@ -11,13 +9,9 @@ package nme.text;
 	NONE;
 	RIGHT;
 }
-
-
-
 #else
 
 
-package nme.text;
 
 enum TextFieldAutoSize
 {
@@ -26,7 +20,4 @@ enum TextFieldAutoSize
    NONE;
    RIGHT;
 }
-
-
-
 #end

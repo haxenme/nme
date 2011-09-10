@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.Matrix")
 extern class Matrix {
 	var a : Float;
@@ -26,13 +24,8 @@ extern class Matrix {
 	function transformPoint(point : Point) : Point;
 	function translate(dx : Float, dy : Float) : Void;
 }
-
-
-
 #else
 
-
-package nme.geom;
 
 
 /*
@@ -250,6 +243,4 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
    }
 
 }
-
-
 #end

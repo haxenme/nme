@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme;
 
+
+#if flash
 /**
 	The Vector class is very similar to Array but is only supported by the Flash Player 10+
 **/
@@ -37,17 +36,9 @@ package nme;
 	}
 
 }
-
-
-
 #else
 
 
 
-package nme;
-
 typedef Vector<T> = Array<T>;
-
-
-
 #end

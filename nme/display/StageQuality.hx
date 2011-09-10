@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 /*
 @:native ("flash.display.StageQuality")
 @:fakeEnum(String) extern enum StageQuality {
@@ -14,7 +12,6 @@ package nme.display;
 }
 */
 
-
 class StageQuality {
 	
 	public static var BEST:String = "best";
@@ -23,12 +20,9 @@ class StageQuality {
 	public static var MEDIUM:String = "medium";
 	
 }
-
-
 #else
 
 
-package nme.display;
 
 enum StageQuality
 {
@@ -37,6 +31,4 @@ enum StageQuality
    HIGH;
    BEST;
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.Keyboard")
 extern class Keyboard {
 	@:require(flash10_1) static var A : UInt;
@@ -288,13 +286,9 @@ extern class Keyboard {
 	@:require(flash10_1) static var physicalKeyboardType(default,null) : KeyboardType;
 	static function isAccessible() : Bool;
 }
-
-
-
 #else
 
 
-package nme.ui;
 
 class Keyboard
 {
@@ -403,6 +397,4 @@ class Keyboard
    //public static var numLock(default,null) : Bool;
    //public static function isAccessible() : Bool;
 }
-
-
 #end

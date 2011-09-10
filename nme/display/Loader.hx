@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.Loader")
 extern class Loader extends DisplayObjectContainer {
 	var content(default,null) : DisplayObject;
@@ -16,13 +14,9 @@ extern class Loader extends DisplayObjectContainer {
 	function unload() : Void;
 	@:require(flash10) function unloadAndStop(gc : Bool = true) : Void;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 import nme.net.URLRequest;
 import nme.display.DisplayObject;
@@ -107,6 +101,4 @@ class Loader extends nme.display.Sprite
    }
 
 }
-
-
 #end

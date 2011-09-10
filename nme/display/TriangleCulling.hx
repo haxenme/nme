@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.TriangleCulling")
 @:fakeEnum(String) extern enum TriangleCulling {
 	NEGATIVE;
 	NONE;
 	POSITIVE;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 enum TriangleCulling
 {
@@ -24,6 +18,4 @@ enum TriangleCulling
    NONE;
    POSITIVE;
 }
-
-
 #end

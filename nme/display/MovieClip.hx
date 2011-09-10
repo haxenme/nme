@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.MovieClip")
 extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end {
 	var currentFrame(default,null) : Int;
@@ -27,12 +25,9 @@ extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end
 	function prevScene() : Void;
 	function stop() : Void;
 }
-
-
 #else
 
 
-package nme.display;
 
 class MovieClip extends Sprite
 {
@@ -63,6 +58,4 @@ class MovieClip extends Sprite
    public function stop():Void { }
 
 }
-
-
 #end

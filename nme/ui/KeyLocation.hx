@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.KeyLocation")
 @:fakeEnum(UInt) extern enum KeyLocation {
 	D_PAD;
@@ -12,7 +10,4 @@ package nme.ui;
 	RIGHT;
 	STANDARD;
 }
-
-
-
 #end

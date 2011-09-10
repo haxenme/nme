@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.LineScaleMode")
 @:fakeEnum(String) extern enum LineScaleMode {
 	HORIZONTAL;
@@ -11,13 +9,9 @@ package nme.display;
 	NORMAL;
 	VERTICAL;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 enum LineScaleMode
 {
@@ -26,6 +20,4 @@ enum LineScaleMode
    VERTICAL;
    HORIZONTAL;
 }
-
-
 #end

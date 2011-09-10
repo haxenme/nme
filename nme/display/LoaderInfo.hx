@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.LoaderInfo")
 extern class LoaderInfo extends nme.events.EventDispatcher {
 	var actionScriptVersion(default,null) : ActionScriptVersion;
@@ -29,13 +27,9 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	var width(default,null) : Int;
 	static function getLoaderInfoByDefinition(object : Dynamic) : LoaderInfo;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 import nme.events.Event;
 import nme.events.EventDispatcher;
@@ -65,7 +59,7 @@ class LoaderInfo extends URLLoader {
 	public var sharedEvents(default,null) : nme.events.EventDispatcher;
 	public var url(default,null) : String;
 	public var width(default,null) : Int;
-	//static function getLoaderInfoByDefinition(object : Dynamic) : flash.display.LoaderInfo;
+	//static function getLoaderInfoByDefinition(object : Dynamic) : nme.display.LoaderInfo;
 
   private var pendingURL:String;
 
@@ -110,6 +104,4 @@ class LoaderInfo extends URLLoader {
 		return li;
 	}
 }
-
-
 #end

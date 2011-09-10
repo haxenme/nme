@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.TextFormat")
 extern class TextFormat {
 	//var align : TextFormatAlign;
@@ -29,13 +27,9 @@ extern class TextFormat {
 	//function new(?font : String, ?size : Float, ?color : UInt, ?bold : Bool, ?italic : Bool, ?underline : Bool, ?url : String, ?target : String, ?align : TextFormatAlign, ?leftMargin : Float, ?rightMargin : Float, ?indent : Float, ?leading : Float) : Void;
 	function new(?font : String, ?size : Float, ?color : UInt, ?bold : Bool, ?italic : Bool, ?underline : Bool, ?url : String, ?target : String, ?align : String, ?leftMargin : Float, ?rightMargin : Float, ?indent : Float, ?leading : Float) : Void;
 }
-
-
-
 #else
 
 
-package nme.text;
 
 class TextFormat
 {
@@ -89,6 +83,4 @@ class TextFormat
    }
 
 }
-
-
 #end

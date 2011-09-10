@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.external;
 
 
+#if flash
 @:native ("flash.external.ExternalInterface")
 extern class ExternalInterface {
 	static var available(default,null) : Bool;
@@ -12,13 +10,8 @@ extern class ExternalInterface {
 	static function addCallback(functionName : String, closure : Dynamic) : Void;
 	static function call(functionName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Dynamic;
 }
-
-
-
 #else
 
-
-package nme.external;
 
 
 import nme.Loader;
@@ -91,6 +84,4 @@ class ExternalInterface {
 	
 	
 }
-
-
 #end

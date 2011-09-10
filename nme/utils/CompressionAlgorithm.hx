@@ -4,4 +4,3 @@ class CompressionAlgorithm
 {
    public static inline var ZLIB = "zlib";
 }
-

@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.net;
 
 
+#if flash
 @:native ("flash.net.URLLoaderDataFormat")
 @:fakeEnum(String) extern enum URLLoaderDataFormat {
 	BINARY;
 	TEXT;
 	VARIABLES;
 }
-
-
 #else
 
 
-
-package nme.net;
 
 enum URLLoaderDataFormat
 {
@@ -24,6 +18,4 @@ enum URLLoaderDataFormat
    TEXT;
    VARIABLES;
 }
-
-
 #end

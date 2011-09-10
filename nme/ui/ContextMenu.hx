@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
+
+#if flash
 @:native ("flash.ui.ContextMenu")
 @:final extern class ContextMenu extends nme.display.NativeMenu {
 	var builtInItems : ContextMenuBuiltInItems;
@@ -15,6 +14,4 @@ package nme.ui;
 	function hideBuiltInItems() : Void;
 	@:require(flash10_1) static var isSupported(default,null) : Bool;
 }
-
-
 #end

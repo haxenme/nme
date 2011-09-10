@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.geom;
 
 
+#if flash
 @:native ("flash.geom.Transform")
 extern class Transform {
 	var colorTransform : ColorTransform;
@@ -13,15 +11,12 @@ extern class Transform {
 	@:require(flash10) var matrix3D : Matrix3D;
 	@:require(flash10) var perspectiveProjection : PerspectiveProjection;
 	var pixelBounds(default,null) : Rectangle;
-	function new(displayObject : flash.display.DisplayObject) : Void;
-	@:require(flash10) function getRelativeMatrix3D(relativeTo : flash.display.DisplayObject) : Matrix3D;
+	function new(displayObject : nme.display.DisplayObject) : Void;
+	@:require(flash10) function getRelativeMatrix3D(relativeTo : nme.display.DisplayObject) : Matrix3D;
 }
-
-
 #else
 
 
-package nme.geom;
 
 import nme.display.DisplayObject;
 
@@ -79,6 +74,4 @@ class Transform
 
 
 }
-
-
 #end

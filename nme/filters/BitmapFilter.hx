@@ -1,21 +1,15 @@
-#if flash
-
-
 package nme.filters;
 
 
+#if flash
 @:native ("flash.filters.BitmapFilter")
 extern class BitmapFilter {
 	function new() : Void;
 	function clone() : BitmapFilter;
 }
-
-
-
 #else
 
 
-package nme.filters;
 
 class BitmapFilter
 {
@@ -29,6 +23,4 @@ class BitmapFilter
       return null;
    }
 }
-
-
 #end

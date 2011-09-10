@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.BlendMode")
 @:fakeEnum(String) extern enum BlendMode {
 	ADD;
@@ -22,12 +20,9 @@ package nme.display;
 	SHADER;
 	SUBTRACT;
 }
-
-
 #else
 
 
-package nme.display;
 
 enum BlendMode
 {
@@ -46,6 +41,4 @@ enum BlendMode
    OVERLAY;
    HARDLIGHT;
 }
-
-
 #end

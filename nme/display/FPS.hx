@@ -1,5 +1,6 @@
 package nme.display;
 
+
 class FPS extends nme.text.TextField
 {
    var times:Array<Float>;

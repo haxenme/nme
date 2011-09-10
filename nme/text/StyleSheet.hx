@@ -1,11 +1,9 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.StyleSheet")
-extern class StyleSheet extends flash.events.EventDispatcher, implements Dynamic {
+extern class StyleSheet extends nme.events.EventDispatcher, implements Dynamic {
 	var styleNames(default,null) : Array<Dynamic>;
 	function new() : Void;
 	function clear() : Void;
@@ -14,6 +12,4 @@ extern class StyleSheet extends flash.events.EventDispatcher, implements Dynamic
 	function setStyle(styleName : String, styleObject : Dynamic) : Void;
 	function transform(formatObject : Dynamic) : TextFormat;
 }
-
-
 #end

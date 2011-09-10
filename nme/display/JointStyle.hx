@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.JointStyle")
 @:fakeEnum(String) extern enum JointStyle {
 	BEVEL;
 	MITER;
 	ROUND;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 enum JointStyle
 {
@@ -24,6 +18,4 @@ enum JointStyle
    MITER;
    BEVEL;
 }
-
-
 #end

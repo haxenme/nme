@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.SWFVersion")
 @:fakeEnum(UInt) extern enum SWFVersion {
 	FLASH1;
@@ -17,6 +15,4 @@ package nme.display;
 	FLASH8;
 	FLASH9;
 }
-
-
 #end

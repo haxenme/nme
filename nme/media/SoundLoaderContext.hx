@@ -1,22 +1,16 @@
-#if flash
-
-
 package nme.media;
 
 
+#if flash
 @:native ("flash.media.SoundLoaderContext")
 extern class SoundLoaderContext {
 	var bufferTime : Float;
 	var checkPolicyFile : Bool;
 	function new(bufferTime : Float = 1000, checkPolicyFile : Bool = false) : Void;
 }
-
-
 #else
 
 
-
-package nme.media;
 
 class SoundLoaderContext
 {
@@ -24,7 +18,4 @@ class SoundLoaderContext
 	{
 	}
 }
-
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.Stage")
 extern class Stage extends DisplayObjectContainer {
 	//var align : StageAlign;
@@ -31,13 +29,9 @@ extern class Stage extends DisplayObjectContainer {
 	function invalidate() : Void;
 	function isFocusInaccessible() : Bool;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
@@ -818,6 +812,4 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.system;
 
 
+#if flash
 @:native ("flash.system.System")
 extern class System {
 	@:require(flash10_1) static var freeMemory(default,null) : Float;
@@ -13,7 +11,7 @@ extern class System {
 	@:require(flash10_1) static var totalMemoryNumber(default,null) : Float;
 	static var useCodePage : Bool;
 	static var vmVersion(default,null) : String;
-	@:require(flash10_1) static function disposeXML(node : flash.xml.XML) : Void;
+	@:require(flash10_1) static function disposeXML(node : nme.xml.XML) : Void;
 	static function exit(code : UInt) : Void;
 	static function gc() : Void;
 	@:require(flash10_1) static function nativeConstructionOnly(object : Dynamic) : Void;
@@ -21,13 +19,9 @@ extern class System {
 	static function resume() : Void;
 	static function setClipboard(string : String) : Void;
 }
-
-
-
 #else
 
 
-package nme.system;
 
 class System
 {
@@ -74,6 +68,4 @@ class System
   static var nme_get_unique_device_identifier = nme.Loader.load("nme_get_unique_device_identifier",0);
 
 }
-
-
 #end

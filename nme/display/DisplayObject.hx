@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.display;
 
+
+#if flash
 @:native ("flash.display.DisplayObject")
 extern class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable {
 	var accessibilityProperties : nme.accessibility.AccessibilityProperties;
@@ -45,12 +44,10 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	@:require(flash10) function local3DToGlobal(point3d : nme.geom.Vector3D) : nme.geom.Point;
 	function localToGlobal(point : nme.geom.Point) : nme.geom.Point;
 }
-
-
 #else
 
 
-package nme.display;
+
 import nme.events.Event;
 import nme.events.EventPhase;
 import nme.geom.Point;
@@ -60,6 +57,7 @@ import nme.geom.Transform;
 import nme.geom.ColorTransform;
 import nme.geom.Point;
 import nme.filters.BitmapFilter;
+
 
 class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
 {
@@ -558,6 +556,4 @@ class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawab
 
 
 }
-
-
 #end

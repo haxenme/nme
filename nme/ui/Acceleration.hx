@@ -6,4 +6,3 @@ typedef Acceleration =
    y : Float,
    z : Float 
 }
-

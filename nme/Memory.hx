@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme;
 
+
+#if flash
 @:native ("flash.Memory")
 extern class Memory {
 
@@ -63,12 +62,9 @@ extern class Memory {
 	}
 
 }
-
-
 #else
 
 
-package nme;
 
 import nme.utils.ByteArray;
 
@@ -176,6 +172,4 @@ class Memory
    static inline public function signExtend8( v : Int ) : Int
    */
 }
-
-
 #end

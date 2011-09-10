@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.net;
 
+
+#if flash
 @:native ("flash.net.URLLoader")
 extern class URLLoader extends nme.events.EventDispatcher {
 	var bytesLoaded : UInt;
@@ -13,12 +12,9 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	function close() : Void;
 	function load(request : URLRequest) : Void;
 }
-
-
 #else
 
 
-package nme.net;
 
 import nme.events.Event;
 import nme.events.EventDispatcher;
@@ -217,6 +213,4 @@ class URLLoader extends nme.events.EventDispatcher
 	static var nme_curl_initialize = nme.Loader.load("nme_curl_initialize",1);
 
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.media;
 
 
+#if flash
 @:native ("flash.media.ID3Info")
 @:final extern class ID3Info implements Dynamic {
 	var album : String;
@@ -15,13 +13,9 @@ package nme.media;
 	var year : String;
 	function new() : Void;
 }
-
-
-
 #else
 
 
-package nme.media;
 
 class ID3Info
 {
@@ -36,6 +30,4 @@ class ID3Info
 
    public function new() { }
 }
-
-
 #end

@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.TextLineMetrics")
 extern class TextLineMetrics {
 	var ascent : Float;
@@ -14,6 +12,4 @@ extern class TextLineMetrics {
 	var x : Float;
 	function new(x : Float, width : Float, height : Float, ascent : Float, descent : Float, leading : Float) : Void;
 }
-
-
 #end

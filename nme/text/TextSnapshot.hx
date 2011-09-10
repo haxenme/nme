@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.TextSnapshot")
 extern class TextSnapshot {
 	var charCount(default,null) : Int;
@@ -17,6 +15,4 @@ extern class TextSnapshot {
 	function setSelectColor(hexColor : UInt = 16776960) : Void;
 	function setSelected(beginIndex : Int, endIndex : Int, select : Bool) : Void;
 }
-
-
 #end

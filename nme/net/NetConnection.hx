@@ -1,8 +1,7 @@
-#if flash
-
-
 package nme.net;
 
+
+#if flash
 @:native ("flash.net.NetConnection")
 extern class NetConnection extends nme.events.EventDispatcher {
 	var client : Dynamic;
@@ -26,7 +25,4 @@ extern class NetConnection extends nme.events.EventDispatcher {
 	function connect(command : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Void;
 	static var defaultObjectEncoding : UInt;
 }
-
-
-
 #end

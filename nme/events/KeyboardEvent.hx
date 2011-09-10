@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.KeyboardEvent")
 extern class KeyboardEvent extends Event {
 	var altKey : Bool;
@@ -17,12 +15,9 @@ extern class KeyboardEvent extends Event {
 	static var KEY_DOWN : String;
 	static var KEY_UP : String;
 }
-
-
 #else
 
 
-package nme.events;
 
 class KeyboardEvent extends nme.events.Event
 {
@@ -55,6 +50,4 @@ class KeyboardEvent extends nme.events.Event
    public static var KEY_UP = "keyUp";
 
 }
-
-
 #end

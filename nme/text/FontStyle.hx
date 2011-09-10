@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.text;
 
 
+#if flash
 @:native ("flash.text.FontStyle")
 @:fakeEnum(String) extern enum FontStyle {
 	BOLD;
@@ -11,6 +9,4 @@ package nme.text;
 	ITALIC;
 	REGULAR;
 }
-
-
 #end

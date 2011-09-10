@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.events;
 
 
+#if flash
 @:native ("flash.events.FocusEvent")
 extern class FocusEvent extends Event {
 	@:require(flash10) var isRelatedObjectInaccessible : Bool;
@@ -16,12 +14,9 @@ extern class FocusEvent extends Event {
 	static var KEY_FOCUS_CHANGE : String;
 	static var MOUSE_FOCUS_CHANGE : String;
 }
-
-
 #else
 
 
-package nme.events;
 
 import nme.display.InteractiveObject;
 
@@ -46,6 +41,4 @@ class FocusEvent extends nme.events.Event
       shiftKey = inShiftKey;
    }
 }
-
-
 #end

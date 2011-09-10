@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.system;
 
 
+#if flash
 @:native ("flash.system.IME")
 extern class IME extends nme.events.EventDispatcher {
 	static var constructOK(null,default) : Bool;
@@ -15,6 +13,4 @@ extern class IME extends nme.events.EventDispatcher {
 	static function doConversion() : Void;
 	static function setCompositionString(composition : String) : Void;
 }
-
-
 #end

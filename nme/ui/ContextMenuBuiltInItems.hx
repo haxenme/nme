@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.ui;
 
 
+#if flash
 @:native ("flash.ui.ContextMenuBuiltInItems")
 @:final extern class ContextMenuBuiltInItems {
 	var forwardAndBack : Bool;
@@ -17,6 +15,4 @@ package nme.ui;
 	function new() : Void;
 	function clone() : ContextMenuBuiltInItems;
 }
-
-
 #end

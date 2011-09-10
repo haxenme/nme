@@ -1,9 +1,7 @@
-#if flash
-
-
 package nme.display;
 
 
+#if flash
 @:native ("flash.display.Graphics")
 @:final extern class Graphics {
 	function new() : Void;
@@ -30,13 +28,9 @@ package nme.display;
 	function lineTo(x : Float, y : Float) : Void;
 	function moveTo(x : Float, y : Float) : Void;
 }
-
-
-
 #else
 
 
-package nme.display;
 
 import nme.geom.Matrix;
 
@@ -243,7 +237,4 @@ class Graphics
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
    static var nme_gfx_draw_triangles = nme.Loader.load("nme_gfx_draw_triangles",5);
 }
-
-
-
 #end
