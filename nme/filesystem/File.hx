@@ -1,3 +1,6 @@
+#if !flash
+
+
 package nme.filesystem;
 
 import StringTools;
@@ -44,3 +47,6 @@ class File
   static var nme_get_resource_path = nme.Loader.load("nme_get_resource_path", 0);
 
 }
+
+
+#end

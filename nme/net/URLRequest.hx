@@ -1,3 +1,24 @@
+#if flash
+
+
+package nme.net;
+
+
+@:native ("flash.net.URLRequest")
+@:final extern class URLRequest {
+	var contentType : String;
+	var data : Dynamic;
+	var digest : String;
+	var method : String;
+	var requestHeaders : Array<URLRequestHeader>;
+	var url : String;
+	function new(?url : String) : Void;
+}
+
+
+#else
+
+
 package nme.net;
 
 class URLRequest
@@ -40,5 +61,4 @@ class URLRequest
 }
 
 
-
-
+#end

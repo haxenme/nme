@@ -326,6 +326,12 @@ class InstallerBase {
 			
 		}
 		
+		var appMain:String = defines.get ("APP_MAIN");
+		var indexOfPeriod = appMain.lastIndexOf (".");
+		
+		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
+		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
+		
 	}
 	
 	
@@ -351,7 +357,7 @@ class InstallerBase {
 		setDefault ("APP_PACKAGE", "com.example.myapp");
 		setDefault ("APP_VERSION", "1.0.0");
 		setDefault ("APP_COMPANY", "Example Inc.");
-		setDefault ("SWF_VERSION", "9");
+		setDefault ("SWF_VERSION", "10");
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
 		setDefault ("BUILD_DIR", "bin");
 		defines.set ("target_" + target, "1");
@@ -741,8 +747,7 @@ class InstallerBase {
 					case "haxelib":
 						
 						var name:String = substitute (element.att.name);
-                  if (target!="flash" || name!="nme")
-						   compilerFlags.push ("-lib " + name);
+						compilerFlags.push ("-lib " + name);
 					
 					case "ndll":
 						

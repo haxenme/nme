@@ -1,3 +1,6 @@
+#if !flash
+
+
 package nme.display;
 
 class ManagedStage extends Stage
@@ -85,3 +88,7 @@ class ManagedStage extends Stage
    static var nme_managed_stage_create = nme.Loader.load("nme_managed_stage_create",2);
    static var nme_managed_stage_pump_event = nme.Loader.load("nme_managed_stage_pump_event",2);
 }
+
+
+
+#end

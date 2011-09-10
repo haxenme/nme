@@ -1,3 +1,23 @@
+#if flash
+
+
+package nme.ui;
+
+
+@:native ("flash.ui.Multitouch")
+@:require(flash10_1) extern class Multitouch {
+	static var inputMode : MultitouchInputMode;
+	static var maxTouchPoints(default,null) : Int;
+	static var supportedGestures(default,null) : nme.Vector<String>;
+	static var supportsGestureEvents(default,null) : Bool;
+	static var supportsTouchEvents(default,null) : Bool;
+}
+
+
+
+#else
+
+
 package nme.ui;
 
 import nme.ui.MultitouchInputMode;
@@ -49,4 +69,4 @@ class Multitouch
  
 }
 
-
+#end

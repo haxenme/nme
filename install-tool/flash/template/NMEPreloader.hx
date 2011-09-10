@@ -1,4 +1,4 @@
-import flash.display.Sprite;
+import nme.display.Sprite;
 
 class NMEPreloader extends Sprite
 {

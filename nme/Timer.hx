@@ -65,7 +65,11 @@ class Timer
 
    static function GetMS() : Float
    { 
-   	return stamp()*1000.0; 
+		#if flash
+		return Lib.getTimer ();
+		#else
+		return stamp () * 1000.0;
+		#end
    }
 
 
@@ -79,13 +83,25 @@ class Timer
 		return t;
 	}
 
-
    static public function stamp() : Float
    {
        return nme_time_stamp();
    }
+   
+   #if flash
+   
+   private static function nme_time_stamp ():Float {
+	   
+	  return nme.Lib.getTimer () / 1000;
+	
+   }
+   
+   #else
 
-	static var nme_time_stamp = nme.Loader.load("nme_time_stamp",0);
+	static var nme_time_stamp = nme.Loader.load ("nme_time_stamp", 0);
+	
+	
+	#end
+	
+	
 }
-
-

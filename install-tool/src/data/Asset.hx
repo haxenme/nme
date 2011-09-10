@@ -87,17 +87,17 @@ class Asset {
 		}
 		
 		hash = Utils.getUniqueID ();
-
-      switch(type)
+		
+      switch(this.type)
       {
-         case TYPE_MUSIC : flashClass = "flash.media.Sound";
-         case TYPE_SOUND : flashClass = "flash.media.Sound";
-         case TYPE_IMAGE : flashClass = "flash.display.BitmapData";
-         case TYPE_FONT : flashClass = "flash.text.Font";
+         case TYPE_MUSIC : flashClass = "nme.media.Sound";
+         case TYPE_SOUND : flashClass = "nme.media.Sound";
+         case TYPE_IMAGE : flashClass = "nme.display.BitmapData";
+         case TYPE_FONT : flashClass = "nme.text.Font";
          default:
-            flashClass = "flash.utils.ByteArray";
+            flashClass = "nme.utils.ByteArray";
       }
-
+	  
       generateFlatName();
 	}
 	

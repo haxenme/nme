@@ -1,3 +1,23 @@
+#if flash
+
+
+package nme.events;
+
+@:native ("flash.events.EventDispatcher")
+extern class EventDispatcher implements IEventDispatcher {
+	function new(?target : IEventDispatcher) : Void;
+	function addEventListener(type : String, listener : Dynamic -> Void, useCapture : Bool = false, priority : Int = 0, useWeakReference : Bool = false) : Void;
+	function dispatchEvent(event : Event) : Bool;
+	function hasEventListener(type : String) : Bool;
+	function removeEventListener(type : String, listener : Dynamic -> Void, useCapture : Bool = false) : Void;
+	function toString() : String;
+	function willTrigger(type : String) : Bool;
+}
+
+
+#else
+
+
 package nme.events;
 import nme.events.IEventDispatcher;
 import nme.events.Event;
@@ -71,6 +91,12 @@ class EventDispatcher implements IEventDispatcher
 			return false;
 	   if(event.target == null)
          event.target = nmeTarget;
+		 
+		 
+		  if(event.currentTarget == null)
+         event.currentTarget = nmeTarget;
+		 
+		 
       var list = nmeEventMap.get(event.type);
       var capture = event.eventPhase==EventPhase.CAPTURING_PHASE;
       if (list!=null)
@@ -147,3 +173,7 @@ class EventDispatcher implements IEventDispatcher
    }
 
 }
+
+
+
+#end

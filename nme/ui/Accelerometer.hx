@@ -1,3 +1,6 @@
+#if !flash
+
+
 package nme.ui;
 
 class Accelerometer
@@ -10,3 +13,7 @@ class Accelerometer
 
    static var nme_input_get_acceleration = nme.Loader.load("nme_input_get_acceleration",0);
 }
+
+
+
+#end

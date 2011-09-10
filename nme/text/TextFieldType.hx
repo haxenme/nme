@@ -1,3 +1,20 @@
+#if flash
+
+
+package nme.text;
+
+
+@:native ("flash.text.TextFieldType")
+@:fakeEnum(String) extern enum TextFieldType {
+	DYNAMIC;
+	INPUT;
+}
+
+
+
+#else
+
+
 package nme.text;
 
 enum TextFieldType
@@ -5,3 +22,6 @@ enum TextFieldType
    DYNAMIC;
    INPUT;
 }
+
+
+#end

@@ -1,3 +1,29 @@
+#if flash
+
+
+package nme.display;
+
+class Tilesheet
+{
+	
+   public var nmeBitmap:BitmapData;
+
+   public function new(inImage:BitmapData)
+   {
+		nmeBitmap = inImage;
+		
+   }
+   public function addTileRect(inRect:nme.geom.Rectangle)
+   {
+     
+   }
+
+}
+
+
+#else
+
+
 package nme.display;
 
 class Tilesheet
@@ -18,3 +44,6 @@ class Tilesheet
    static var nme_tilesheet_create = nme.Loader.load("nme_tilesheet_create",1);
    static var nme_tilesheet_add_rect = nme.Loader.load("nme_tilesheet_add_rect",2);
 }
+
+
+#end

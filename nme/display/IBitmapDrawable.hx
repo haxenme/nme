@@ -1,3 +1,18 @@
+#if flash
+
+
+package nme.display;
+
+
+@:native ("flash.display.IBitmapDrawable")
+extern interface IBitmapDrawable {
+}
+
+
+
+#else
+
+
 package nme.display;
 
 interface IBitmapDrawable
@@ -9,3 +24,6 @@ interface IBitmapDrawable
                clipRect:nme.geom.Rectangle,
                smoothing:Bool):Void;
 }
+
+
+#end

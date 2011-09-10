@@ -1,3 +1,24 @@
+#if flash
+
+
+package nme.media;
+
+
+@:native ("flash.media.SoundChannel")
+@:final extern class SoundChannel extends nme.events.EventDispatcher {
+	var leftPeak(default,null) : Float;
+	var position(default,null) : Float;
+	var rightPeak(default,null) : Float;
+	var soundTransform : SoundTransform;
+	function new() : Void;
+	function stop() : Void;
+}
+
+
+
+#else
+
+
 package nme.media;
 
 import nme.events.Event;
@@ -78,3 +99,6 @@ class SoundChannel extends nme.events.EventDispatcher
    static var nme_sound_channel_create = nme.Loader.load("nme_sound_channel_create",4);
    static var nme_sound_channel_set_transform = nme.Loader.load("nme_sound_channel_set_transform",2);
 }
+
+
+#end

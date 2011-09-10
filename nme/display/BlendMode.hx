@@ -1,3 +1,32 @@
+#if flash
+
+
+package nme.display;
+
+
+@:native ("flash.display.BlendMode")
+@:fakeEnum(String) extern enum BlendMode {
+	ADD;
+	ALPHA;
+	DARKEN;
+	DIFFERENCE;
+	ERASE;
+	HARDLIGHT;
+	INVERT;
+	LAYER;
+	LIGHTEN;
+	MULTIPLY;
+	NORMAL;
+	OVERLAY;
+	SCREEN;
+	SHADER;
+	SUBTRACT;
+}
+
+
+#else
+
+
 package nme.display;
 
 enum BlendMode
@@ -18,3 +47,5 @@ enum BlendMode
    HARDLIGHT;
 }
 
+
+#end

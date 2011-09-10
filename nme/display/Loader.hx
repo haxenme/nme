@@ -1,3 +1,27 @@
+#if flash
+
+
+package nme.display;
+
+
+@:native ("flash.display.Loader")
+extern class Loader extends DisplayObjectContainer {
+	var content(default,null) : DisplayObject;
+	var contentLoaderInfo(default,null) : LoaderInfo;
+	@:require(flash10_1) var uncaughtErrorEvents(default,null) : nme.events.UncaughtErrorEvents;
+	function new() : Void;
+	function close() : Void;
+	function load(request : nme.net.URLRequest, ?context : nme.system.LoaderContext) : Void;
+	function loadBytes(bytes : nme.utils.ByteArray, ?context : nme.system.LoaderContext) : Void;
+	function unload() : Void;
+	@:require(flash10) function unloadAndStop(gc : Bool = true) : Void;
+}
+
+
+
+#else
+
+
 package nme.display;
 
 import nme.net.URLRequest;
@@ -84,3 +108,5 @@ class Loader extends nme.display.Sprite
 
 }
 
+
+#end

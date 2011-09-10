@@ -1,3 +1,55 @@
+#if flash
+
+
+package nme.utils;
+
+@:native ("flash.utils.ByteArray")
+extern class ByteArray implements IDataOutput, implements IDataInput, implements ArrayAccess<Int> {
+	var bytesAvailable(default,null) : UInt;
+	var endian : Endian;
+	var length : UInt;
+	var objectEncoding : UInt;
+	var position : UInt;
+	function new() : Void;
+	@:require(flash10) function clear() : Void;
+	function compress() : Void;
+	@:require(flash10) function deflate() : Void;
+	@:require(flash10) function inflate() : Void;
+	function readBoolean() : Bool;
+	function readByte() : Int;
+	function readBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
+	function readDouble() : Float;
+	function readFloat() : Float;
+	function readInt() : Int;
+	function readMultiByte(length : UInt, charSet : String) : String;
+	function readObject() : Dynamic;
+	function readShort() : Int;
+	function readUTF() : String;
+	function readUTFBytes(length : UInt) : String;
+	function readUnsignedByte() : UInt;
+	function readUnsignedInt() : UInt;
+	function readUnsignedShort() : UInt;
+	function toString() : String;
+	function uncompress() : Void;
+	function writeBoolean(value : Bool) : Void;
+	function writeByte(value : Int) : Void;
+	function writeBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
+	function writeDouble(value : Float) : Void;
+	function writeFloat(value : Float) : Void;
+	function writeInt(value : Int) : Void;
+	function writeMultiByte(value : String, charSet : String) : Void;
+	function writeObject(object : Dynamic) : Void;
+	function writeShort(value : Int) : Void;
+	function writeUTF(value : String) : Void;
+	function writeUTFBytes(value : String) : Void;
+	function writeUnsignedInt(value : UInt) : Void;
+	static var defaultObjectEncoding : UInt;
+}
+
+
+#else
+
+
 package nme.utils;
 
 // Ensure that the neko->haxe callbacks are initialized
@@ -442,3 +494,4 @@ class ByteArray extends haxe.io.Bytes, implements ArrayAccess<Int>, implements I
 }
 
 
+#end
