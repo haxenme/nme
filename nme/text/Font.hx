@@ -58,6 +58,19 @@ typedef NativeFontData = {
 
 class Font
 {
+	
+	var fontName(default,null) : String;
+	var fontStyle(default,null) : FontStyle;
+	var fontType(default, null) : FontType;
+	
+	public function new(inFilename:String):Void {
+		
+		fontName = inFilename;
+		fontStyle = FontStyle.REGULAR;
+		fontType = FontType.DEVICE;
+		
+	}
+	
    public static function load(inFilename:String) : NativeFontData
    {
        var result = freetype_import_font(inFilename,null,1024*20);

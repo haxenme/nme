@@ -98,7 +98,8 @@ class TextField extends nme.display.InteractiveObject
    public var scrollH(nmeGetScrollH,nmeSetScrollH):Int;
    public var scrollV(nmeGetScrollV,nmeSetScrollV):Int;
    public var numLines(nmeGetNumLines,null):Int;
-   public var maxChars(nmeGetMaxChars,nmeSetMaxChars):Int;
+   public var maxChars(nmeGetMaxChars, nmeSetMaxChars):Int;
+   public var embedFonts(nmeGetEmbedFonts, nmeSetEmbedFonts):Bool;
 
    public function new( )
    {
@@ -111,6 +112,9 @@ class TextField extends nme.display.InteractiveObject
 		nme_text_field_set_text_format(nmeHandle,format,beginIndex,endIndex);
 	}
    
+	function nmeGetEmbedFonts ():Bool { return true; }
+	function nmeSetEmbedFonts (value:Bool):Bool { return true; }
+	
    function nmeGetText() : String { return nme_text_field_get_text(nmeHandle); }
    function nmeSetText(inText:String ) : String
    {

@@ -9,4 +9,14 @@ package nme.text;
 	ITALIC;
 	REGULAR;
 }
+#else
+
+
+
+@:fakeEnum(String) extern enum FontStyle {
+	BOLD;
+	BOLD_ITALIC;
+	ITALIC;
+	REGULAR;
+}
 #end

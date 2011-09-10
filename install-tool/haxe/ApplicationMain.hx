@@ -27,7 +27,9 @@ class ApplicationMain
          ::elseif (type=="sound")::
             return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"),null,false);
          ::elseif (type=="music")::
-            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"),null,true);
+            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"), null, true);
+		 ::elseif (type== "font")::
+			 return new nme.text.Font ("::resourceName::");
          ::else::
             return nme.utils.ByteArray.readFile("::resourceName::");
          ::end::
