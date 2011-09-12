@@ -8,6 +8,7 @@ extern interface IGraphicsPath {
 #else
 
 
-extern interface IGraphicsPath {
-}
+
+//extern interface IGraphicsPath {
+//}
 #end

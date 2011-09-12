@@ -72,7 +72,7 @@ class SharedObject extends EventDispatcher
 		var encodedData:String=Serializer.run(data);
 		untyped nme_set_user_preference(id,encodedData);
 		
-		return FLUSHED;
+		return SharedObjectFlushStatus.FLUSHED;
 	}
 	
 	//

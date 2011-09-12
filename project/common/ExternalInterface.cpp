@@ -665,10 +665,22 @@ value nme_get_url(value url)
 }
 DEFINE_PRIM(nme_get_url,1);
 
+
+// --- Haptic Vibrate ---------------------------------------------------------------
+
+void nme_haptic_vibrate(value inPeriod, value inDuration)
+{
+	#if defined(WEBOS)
+	HapticVibrate (val_int(inPeriod), val_int(inDuration));
+	#endif
+}
+DEFINE_PRIM(nme_haptic_vibrate,2);
+
+
 // --- SharedObject ----------------------------------------------------------------------
 value nme_set_user_preference(value inId,value inValue)
 {
-	#if defined(IPHONE) || defined(ANDROID)
+	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
 		bool result=SetUserPreference(val_string(inId),val_string(inValue));
 		return alloc_bool(result);
 	#endif
@@ -678,7 +690,7 @@ DEFINE_PRIM(nme_set_user_preference,2);
 
 value nme_get_user_preference(value inId)
 {
-	#if defined(IPHONE) || defined(ANDROID)
+	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
 		std::string result=GetUserPreference(val_string(inId));
 		return alloc_string(result.c_str());
 	#endif
@@ -688,7 +700,7 @@ DEFINE_PRIM(nme_get_user_preference,1);
 
 value nme_clear_user_preference(value inId)
 {
-	#if defined(IPHONE) || defined(ANDROID)
+	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
 		bool result=ClearUserPreference(val_string(inId));
 		return alloc_bool(result);
 	#endif

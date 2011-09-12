@@ -9,6 +9,6 @@ extern interface IGraphicsStroke {
 
 
 
-interface IGraphicsStroke {
-}
+//interface IGraphicsStroke {
+//}
 #end

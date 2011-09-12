@@ -30,6 +30,8 @@ class Accelerometer extends EventDispatcher {
 	
 	public function new () {
 		
+		super ();
+		
 		if (nme_input_get_acceleration () == null) {
 			
 			isSupported = false;
@@ -63,7 +65,7 @@ class Accelerometer extends EventDispatcher {
 		
 		var data = nme_input_get_acceleration ();
 		
-		event.timestamp = timer.stamp ();
+		event.timestamp = Timer.stamp ();
 		event.accelerationX = data.x;
 		event.accelerationY = data.y;
 		event.accelerationZ = data.z;

@@ -12,7 +12,7 @@ package nme.display;
 
 
 
-class GraphicsSolidFill extends IGraphicsData, implements IGraphicsFill
+class GraphicsSolidFill extends IGraphicsData
 {
 
    public function new(color:Int = 0, alpha:Float = 1.0)

@@ -1,5 +1,6 @@
 #include "PDL.h"
 #include <syslog.h>
+#include <string>
 
 
 namespace nme {
@@ -27,6 +28,35 @@ namespace nme {
 		PDL_RegisterJSHandler("resume", resume);*/
 		
 	}
+	
+	
+	void HapticVibrate (int period, int duration) {
+		
+		PDL_Vibrate (period, duration);
+		
+	}
+	
+	
+	std::string GetUserPreference(const char *inId) {
+		
+		return "";
+		
+	}
+	
+	
+	bool SetUserPreference(const char *inId, const char *inPreference) {
+		
+		return false;
+		
+	}
+	
+	
+	bool ClearUserPreference(const char *inId) {
+		
+		return false;
+		
+	}
+
 	
 
 }

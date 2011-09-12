@@ -17,7 +17,7 @@ package nme.display;
 
 
 
-class GraphicsStroke extends IGraphicsData, implements IGraphicsStroke
+class GraphicsStroke extends IGraphicsData
 {
 
    public function new(thickness:Null<Float>=null, pixelHinting:Bool = false,

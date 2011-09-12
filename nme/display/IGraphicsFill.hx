@@ -9,6 +9,6 @@ extern interface IGraphicsFill {
 
 
 
-interface IGraphicsFill {
-}
+//interface IGraphicsFill {
+//}
 #end

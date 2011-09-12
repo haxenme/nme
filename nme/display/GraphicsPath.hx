@@ -18,7 +18,7 @@ package nme.display;
 
 
 
-class GraphicsPath extends IGraphicsData, implements IGraphicsPath
+class GraphicsPath extends IGraphicsData
 {
 	public var commands(nmeGetCommands,nmeSetCommands):Array<Int>;
 	public var data(nmeGetData,nmeSetData):Array<Float>;
