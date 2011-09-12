@@ -255,11 +255,14 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
    #ifdef ANDROID
-   if (!strcasecmp(inName.c_str(),"times.ttf"))
+   if (!strcasecmp(inName.c_str(),"times.ttf") ||
+       !strcasecmp(inName.c_str(),"times"))
       outFile = "/system/fonts/DroidSerif-Regular.ttf";
-   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+   else if (!strcasecmp(inName.c_str(),"arial.ttf") ||
+            !strcasecmp(inName.c_str(),"arial"))
       outFile = "/system/fonts/DroidSans.ttf";
-   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
+   else if (!strcasecmp(inName.c_str(),"courier.ttf") ||
+            !strcasecmp(inName.c_str(),"courier"))
       outFile = "/system/fonts/SansMono.ttf";
    #else
    if (!strcasecmp(inName.c_str(),"times.ttf"))
