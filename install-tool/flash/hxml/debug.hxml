@@ -1,7 +1,6 @@
 -main ApplicationMain ::HAXE_FLAGS::
 -swf-version ::SWF_VERSION::
--swf ::BUILD_DIR::/flash/bin/::APP_FILE::.swf
+-swf9 ::BUILD_DIR::/flash/bin/::APP_FILE::.swf
 -swf-header ::WIN_WIDTH:::::WIN_HEIGHT:::::WIN_FPS:::::WIN_FLASHBACKGROUND::
 -cp ::BUILD_DIR::/flash/haxe
 -debug
-

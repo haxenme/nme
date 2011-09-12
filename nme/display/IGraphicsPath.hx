@@ -5,7 +5,7 @@ package nme.display;
 @:native ("flash.display.IGraphicsPath")
 extern interface IGraphicsPath {
 }
-
+#else
 
 
 extern interface IGraphicsPath {

@@ -1,6 +1,7 @@
 package nme.xml;
 
 
+#if flash
 @:native ("nme.xml.XML")
 @:final extern class XML implements Dynamic<XMLList> {
 	function new(?value : Dynamic) : Void;
