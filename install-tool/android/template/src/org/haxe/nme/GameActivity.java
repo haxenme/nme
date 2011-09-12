@@ -127,6 +127,8 @@ public class GameActivity extends Activity {
 
     static public int getSoundPoolID() { return mSoundPoolID; }
 
+    static public Context getContext() { return mContext; }
+
     static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
     {
        Log.v("GameActivity","PlaySound -----" + inSoundID);

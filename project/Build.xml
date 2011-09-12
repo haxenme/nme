@@ -62,6 +62,7 @@
   <file name="android/AndroidSound.cpp"/>
   <file name="android/AndroidFont.cpp"/>
   <file name="android/AndroidFrame.cpp"/>
+  <file name="android/JNI.cpp"/>
   <file name="android/System.cpp"/>
 </files>
 
