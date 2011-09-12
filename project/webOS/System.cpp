@@ -32,7 +32,11 @@ namespace nme {
 	
 	void HapticVibrate (int period, int duration) {
 		
-		PDL_Vibrate (period, duration);
+		if (PDL_GetPDKVersion () >= 200) {
+			
+			PDL_Vibrate (period, duration);
+			
+		}
 		
 	}
 	

@@ -58,6 +58,7 @@ class InstallerBase {
 		this.debug = debug;
 		
 		initializeTool ();
+		parseHXCPPConfig ();
 		parseProjectFile ();
 		
 		if (command == "trace") {
@@ -663,6 +664,43 @@ class InstallerBase {
 				}
 				
 			}
+			
+		}
+		
+	}
+	
+	
+	private function parseHXCPPConfig ():Void {
+		
+		var env = neko.Sys.environment();
+		// If the user has set it themselves, they mush know what they are doing...
+		if (env.exists("HXCPP_CONFIG"))
+			return;
+		
+		var home = "";
+		if (env.exists("HOME"))
+			home = env.get("HOME");
+		else if (env.exists("USERPROFILE"))
+			home = env.get("USERPROFILE");
+		else
+		{
+			neko.Lib.println("Warning: No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+			return;
+		}
+		
+		var config = home + "/.hxcpp_config.xml";
+		
+		if (defines.get ("HOST") == "windows") {
+			
+			config = config.split ("/").join ("\\");
+			
+		}
+		
+		defines.set("HXCPP_CONFIG",config);
+		
+		if (neko.FileSystem.exists (config)) {
+			
+			parseXML (new Fast (Xml.parse (File.getContent (config)).firstElement ()), "");
 			
 		}
 		
