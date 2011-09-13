@@ -1,5 +1,5 @@
 package nme.filters;
-#if cpp || neko
+#if (cpp || neko)
 
 
 class GlowFilter extends nme.filters.DropShadowFilter

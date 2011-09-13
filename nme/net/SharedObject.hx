@@ -1,91 +1,174 @@
 package nme.net;
-#if cpp || neko
+#if (cpp || neko)
 
+
+#if cpp
+
+import cpp.FileSystem;
+import cpp.io.File;
+import cpp.io.FileInput;
+import cpp.io.FileOutput;
+import cpp.io.Path;
+import cpp.Sys;
+
+#elseif neko
+
+import neko.FileSystem;
+import neko.io.File;
+import neko.io.FileInput;
+import neko.io.FileOutput;
+import neko.io.Path;
+import neko.Sys;
+
+#end
 
 import haxe.Serializer;
 import haxe.Unserializer;
+import haxe.io.Eof;
 import nme.events.EventDispatcher;
 
 
-/** SharedObject */
-class SharedObject extends EventDispatcher
-{
-	//
-	// Definitions
-	//
-
-	//
-	// Instance Variables
-	//
+class SharedObject extends EventDispatcher {
 	
-	/** Data */
-	public var data(default,null):Dynamic;
 	
-	/** ID */
-	private var id:String;
-
-	//
-	// Public Methods
-	//
-
-	/** Create New SharedObject */
-	private function new(id:String,data:Dynamic) 
-	{
-		super();
-		this.id=id;
-		this.data=data;
+	public var data (default, null):Dynamic;
+	
+	private var name:String;
+	private var localPath:String;
+	
+	
+	private function new (name:String, localPath:String, data:Dynamic) {
+		
+		super ();
+		
+		this.name = name;
+		this.localPath = localPath;
+		this.data = data;
+		
 	}
 	
-	/** Clear */
-	public function clear():Void
-	{
-		untyped nme_clear_user_preference(id);
+	
+	public function clear ():Void {
+		
+		#if (iphone || android)
+			
+			untyped nme_clear_user_preference (id);
+			
+		#else
+			
+			var filePath = getFilePath (name, localPath);
+			
+			if (FileSystem.exists (filePath)) {
+				
+				FileSystem.deleteFile (filePath);
+				
+			}
+			
+		#end
+		
 	}
 	
-	/** Flush */
-	public function flush(?minDiskSpace:Int=0):SharedObjectFlushStatus
-	{
-		var encodedData:String=Serializer.run(data);
-		untyped nme_set_user_preference(id,encodedData);
+	
+	public function flush (minDiskSpace:Int = 0):SharedObjectFlushStatus {
+		
+		var encodedData:String = Serializer.run (data);
+		
+		#if (iphone || android)
+			
+			untyped nme_set_user_preference (id, encodedData);
+			
+		#else
+			
+			var filePath = getFilePath (name, localPath);
+			var folderPath = Path.directory (filePath);
+			
+			if (!FileSystem.exists (folderPath)) {
+				
+				FileSystem.createDirectory (folderPath);
+				
+			}
+			
+			var output:FileOutput = File.write (filePath, false);
+			output.writeString (encodedData);
+			output.close ();
+			
+		#end
 		
 		return SharedObjectFlushStatus.FLUSHED;
+		
 	}
 	
-	//
-	// Static Methods
-	//
 	
-	/** Get Local */
-	public static function getLocal(name:String,?localPath:String,secure:Bool=false):SharedObject
-	{
-		var rawData:String=untyped nme_get_user_preference(name);
-
-		var loadedData:Dynamic={};
-
-		if (rawData=="" || rawData==null)
-		{
-			loadedData={};
-		}
-		else
-		{
-			loadedData=Unserializer.run(rawData);
+	private static function getFilePath (name:String, localPath:String):String {
+		
+		return Path.directory (Sys.executablePath ()) + "/sharedobjects/" + name + ".sol";
+		
+	}
+	
+	
+	public static function getLocal (name:String, ?localPath:String, secure:Bool = false):SharedObject {
+		
+		if (localPath == null) {
+			
+			localPath = "";
+			
 		}
 		
-		var so:SharedObject=new SharedObject(name,loadedData);
+		#if (iphone || android)
+			
+			var rawData:String = untyped nme_get_user_preference (name);
+			
+		#else
+			
+			var filePath = getFilePath (name, localPath);
+			var rawData:String = "";
+			
+			if (FileSystem.exists (filePath)) {
+				
+				var input:FileInput = File.read (filePath, false);
+				
+				try {
+					
+					while (true) {
+						
+						rawData += input.readLine ();
+						
+					}
+					
+				} catch (ex:Eof) { }
+				
+				input.close ();
+				
+			}
+			
+		#end
+		
+		var loadedData:Dynamic = { };
+		
+		if (rawData == "" || rawData == null) {
+			
+			loadedData = { };
+			
+		} else {
+			
+			loadedData = Unserializer.run (rawData);
+			
+		}
+		
+		var so:SharedObject = new SharedObject (name, localPath, loadedData);
+		
 		return so;
+		
 	}
 	
-	//
-	// Implementation
-	//
 	
-	//
-	// NME Interface
-	//
+	#if (iphone || android)
 	
-	static var nme_get_user_preference=nme.Loader.load("nme_get_user_preference",1);
-	static var nme_set_user_preference=nme.Loader.load("nme_set_user_preference",2);
-	static var nme_clear_user_preference=nme.Loader.load("nme_clear_user_preference",1);
+	static var nme_get_user_preference = nme.Loader.load ("nme_get_user_preference", 1);
+	static var nme_set_user_preference = nme.Loader.load ("nme_set_user_preference", 2);
+	static var nme_clear_user_preference = nme.Loader.load ("nme_clear_user_preference", 1);
+	
+	#end
 	
 }
 

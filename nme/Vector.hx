@@ -1,5 +1,5 @@
 package nme;
-#if cpp || neko
+#if (cpp || neko)
 
 
 typedef Vector<T> = Array<T>;

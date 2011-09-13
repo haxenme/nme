@@ -1,5 +1,5 @@
 package nme.utils;
-#if cpp || neko
+#if (cpp || neko)
 
 
 // Ensure that the neko->haxe callbacks are initialized

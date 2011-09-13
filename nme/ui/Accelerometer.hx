@@ -1,5 +1,5 @@
 package nme.ui;
-#if cpp || neko
+#if (cpp || neko)
 
 
 class Accelerometer

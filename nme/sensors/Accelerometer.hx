@@ -1,5 +1,5 @@
 package nme.sensors;
-#if cpp || neko
+#if (cpp || neko)
 
 
 import nme.events.AccelerometerEvent;

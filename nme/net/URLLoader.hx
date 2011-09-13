@@ -1,5 +1,5 @@
 package nme.net;
-#if cpp || neko
+#if (cpp || neko)
 
 
 import nme.events.Event;

@@ -1,5 +1,5 @@
 package nme.display;
-#if cpp || neko
+#if (cpp || neko)
 
 
 enum SpreadMethod { PAD; REPEAT; REFLECT; }

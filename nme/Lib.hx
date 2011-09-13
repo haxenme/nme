@@ -1,5 +1,5 @@
 package nme;
-#if cpp || neko
+#if (cpp || neko)
 
 
 import nme.net.URLRequest;

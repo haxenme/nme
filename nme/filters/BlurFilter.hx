@@ -1,5 +1,5 @@
 package nme.filters;
-#if cpp || neko
+#if (cpp || neko)
 
 
 class BlurFilter extends nme.filters.BitmapFilter

@@ -1,5 +1,5 @@
 package nme.external;
-#if cpp || neko
+#if (cpp || neko)
 
 
 import nme.Loader;

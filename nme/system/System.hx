@@ -1,5 +1,5 @@
 package nme.system;
-#if cpp || neko
+#if (cpp || neko)
 
 
 class System
