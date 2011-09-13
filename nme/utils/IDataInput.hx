@@ -1,29 +1,5 @@
 package nme.utils;
-
-
-#if flash
-@:native ("flash.utils.IDataInput")
-extern interface IDataInput {
-	var bytesAvailable(default,null) : UInt;
-	var endian : Endian;
-	var objectEncoding : UInt;
-	function readBoolean() : Bool;
-	function readByte() : Int;
-	function readBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
-	function readDouble() : Float;
-	function readFloat() : Float;
-	function readInt() : Int;
-	function readMultiByte(length : UInt, charSet : String) : String;
-	function readObject() : Dynamic;
-	function readShort() : Int;
-	function readUTF() : String;
-	function readUTFBytes(length : UInt) : String;
-	function readUnsignedByte() : UInt;
-	function readUnsignedInt() : UInt;
-	function readUnsignedShort() : UInt;
-}
-#else
-
+#if cpp || neko
 
 
 interface IDataInput
@@ -56,4 +32,8 @@ interface IDataInput
    public function nmeGetEndian() : String;
    public function nmeSetEndian(s:String) : String;
 }
+
+
+#else
+typedef IDataInput = flash.utils.IDataInput;
 #end

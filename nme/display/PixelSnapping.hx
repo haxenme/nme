@@ -1,15 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.PixelSnapping")
-@:fakeEnum(String) extern enum PixelSnapping {
-	ALWAYS;
-	AUTO;
-	NEVER;
-}
-#else
-
+#if cpp || neko
 
 
 enum PixelSnapping {
@@ -17,4 +7,8 @@ enum PixelSnapping {
 		AUTO;
 		ALWAYS;
 }
+
+
+#else
+typedef PixelSnapping = flash.display.PixelSnapping;
 #end

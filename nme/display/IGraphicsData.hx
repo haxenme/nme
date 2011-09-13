@@ -1,12 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.IGraphicsData")
-extern interface IGraphicsData {
-}
-#else
-
+#if cpp || neko
 
 
 class IGraphicsData
@@ -15,4 +8,8 @@ class IGraphicsData
 
    function new(inHandle:Dynamic) { nmeHandle = inHandle; }
 }
+
+
+#else
+typedef IGraphicsData = flash.display.IGraphicsData;
 #end

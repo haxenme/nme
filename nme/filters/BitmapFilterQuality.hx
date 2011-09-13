@@ -1,15 +1,5 @@
 package nme.filters;
-
-
-#if flash
-@:native ("flash.filters.BitmapFilterQuality")
-extern class BitmapFilterQuality {
-	static inline var HIGH : Int = 3;
-	static inline var LOW : Int = 1;
-	static inline var MEDIUM : Int = 2;
-}
-#else
-
+#if cpp || neko
 
 
 class BitmapFilterQuality
@@ -18,4 +8,8 @@ class BitmapFilterQuality
    public static var MEDIUM = 2;
    public static var LOW = 1;
 }
+
+
+#else
+typedef BitmapFilterQuality = flash.filters.BitmapFilterQuality;
 #end

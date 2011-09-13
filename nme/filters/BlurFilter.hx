@@ -1,16 +1,5 @@
 package nme.filters;
-
-
-#if flash
-@:native ("flash.filters.BlurFilter")
-@:final extern class BlurFilter extends BitmapFilter {
-	var blurX : Float;
-	var blurY : Float;
-	var quality : Int;
-	function new(blurX : Float = 4, blurY : Float = 4, quality : Int = 1) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class BlurFilter extends nme.filters.BitmapFilter
@@ -32,4 +21,8 @@ class BlurFilter extends nme.filters.BitmapFilter
       return new BlurFilter(blurX,blurY,quality);
    }
 }
+
+
+#else
+typedef BlurFilter = flash.filters.BlurFilter;
 #end

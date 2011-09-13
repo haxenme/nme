@@ -1,11 +1,5 @@
 package nme.errors;
-
-
-#if flash
-@:native("TypeError") extern class TypeError extends Error {
-}
-#else
-
+#if cpp || neko
 
 
 class TypeError extends Error
@@ -15,4 +9,8 @@ class TypeError extends Error
 	   super(inMessage,0);
    }
 }
+
+
+#else
+typedef TypeError = flash.errors.TypeError;
 #end

@@ -1,38 +1,9 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.Graphics")
-@:final extern class Graphics {
-	function new() : Void;
-	function beginBitmapFill(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
-	function beginFill(color : UInt, alpha : Float = 1) : Void;
-	function beginGradientFill(type : GradientType, colors : Array<UInt>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
-	@:require(flash10) function beginShaderFill(shader : Shader, ?matrix : nme.geom.Matrix) : Void;
-	function clear() : Void;
-	@:require(flash10) function copyFrom(sourceGraphics : Graphics) : Void;
-	function curveTo(controlX : Float, controlY : Float, anchorX : Float, anchorY : Float) : Void;
-	function drawCircle(x : Float, y : Float, radius : Float) : Void;
-	function drawEllipse(x : Float, y : Float, width : Float, height : Float) : Void;
-	@:require(flash10) function drawGraphicsData(graphicsData : nme.Vector<IGraphicsData>) : Void;
-	@:require(flash10) function drawPath(commands : nme.Vector<Int>, data : nme.Vector<Float>, ?winding : GraphicsPathWinding) : Void;
-	function drawRect(x : Float, y : Float, width : Float, height : Float) : Void;
-	function drawRoundRect(x : Float, y : Float, width : Float, height : Float, ellipseWidth : Float, ?ellipseHeight : Float) : Void;
-	function drawRoundRectComplex(x : Float, y : Float, width : Float, height : Float, topLeftRadius : Float, topRightRadius : Float, bottomLeftRadius : Float, bottomRightRadius : Float) : Void;
-	@:require(flash10) function drawTriangles(vertices : nme.Vector<Float>, ?indices : nme.Vector<Int>, ?uvtData : nme.Vector<Float>, ?culling : TriangleCulling) : Void;
-	function endFill() : Void;
-	@:require(flash10) function lineBitmapStyle(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
-	function lineGradientStyle(type : GradientType, colors : Array<UInt>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
-	@:require(flash10) function lineShaderStyle(shader : Shader, ?matrix : nme.geom.Matrix) : Void;
-	function lineStyle(?thickness : Float, color : UInt = 0, alpha : Float = 1, pixelHinting : Bool = false, ?scaleMode : LineScaleMode, ?caps : CapsStyle, ?joints : JointStyle, miterLimit : Float = 3) : Void;
-	function lineTo(x : Float, y : Float) : Void;
-	function moveTo(x : Float, y : Float) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.geom.Matrix;
+
 
 class Graphics
 {
@@ -237,4 +208,8 @@ class Graphics
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
    static var nme_gfx_draw_triangles = nme.Loader.load("nme_gfx_draw_triangles",5);
 }
+
+
+#else
+typedef Graphics = flash.display.Graphics;
 #end

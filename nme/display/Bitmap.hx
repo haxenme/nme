@@ -1,20 +1,10 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.Bitmap")
-extern class Bitmap extends DisplayObject {
-	var bitmapData : BitmapData;
-	var pixelSnapping : PixelSnapping;
-	var smoothing : Bool;
-	function new(?bitmapData : BitmapData, ?pixelSnapping : PixelSnapping, smoothing : Bool = false) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.display.DisplayObject;
 import nme.display.PixelSnapping;
+
 
 class Bitmap extends DisplayObject {
    public var bitmapData(default,nmeSetBitmapData) : BitmapData;
@@ -57,4 +47,8 @@ class Bitmap extends DisplayObject {
    }
 
 }
+
+
+#else
+typedef Bitmap = flash.display.Bitmap;
 #end

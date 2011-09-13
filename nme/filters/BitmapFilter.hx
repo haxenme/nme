@@ -1,14 +1,5 @@
 package nme.filters;
-
-
-#if flash
-@:native ("flash.filters.BitmapFilter")
-extern class BitmapFilter {
-	function new() : Void;
-	function clone() : BitmapFilter;
-}
-#else
-
+#if cpp || neko
 
 
 class BitmapFilter
@@ -23,4 +14,8 @@ class BitmapFilter
       return null;
    }
 }
+
+
+#else
+typedef BitmapFilter = flash.filters.BitmapFilter;
 #end

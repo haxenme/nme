@@ -1,20 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.InteractiveObject")
-extern class InteractiveObject extends DisplayObject {
-	var accessibilityImplementation : nme.accessibility.AccessibilityImplementation;
-	var contextMenu : nme.ui.ContextMenu;
-	var doubleClickEnabled : Bool;
-	var focusRect : Dynamic;
-	var mouseEnabled : Bool;
-	var tabEnabled : Bool;
-	var tabIndex : Int;
-	function new() : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class InteractiveObject extends DisplayObject
@@ -83,4 +68,8 @@ class InteractiveObject extends DisplayObject
    static var nme_display_object_request_soft_keyboard =
       nme.Loader.load("nme_display_object_request_soft_keyboard",1);
 }
+
+
+#else
+typedef InteractiveObject = flash.display.InteractiveObject;
 #end

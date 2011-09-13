@@ -16,8 +16,6 @@ class ApplicationMain {
 
 	public static function main () {
 		
-		nme.Lib.current = cast (flash.Lib.current, nme.display.MovieClip);
-		
 		var call_real = true;
 		
 		::if (PRELOADER_NAME!="")::

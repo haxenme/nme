@@ -1,63 +1,5 @@
 package nme;
-
-
-#if flash
-class Lib {
-
-	public static var current : nme.display.MovieClip;
-
-	public inline static function getTimer() : Int {
-		return untyped __global__["flash.utils.getTimer"]();
-	}
-
-	public static function eval( path : String ) : Dynamic {
-		var p = path.split(".");
-		var fields = new Array();
-		var o : Dynamic = null;
-		while( p.length > 0 ) {
-			try {
-				o = untyped __global__["flash.utils.getDefinitionByName"](p.join("."));
-			} catch( e : Dynamic ) {
-				fields.unshift(p.pop());
-			}
-			if( o != null )
-				break;
-		}
-		for( f in fields ) {
-			if( o == null ) return null;
-			o = untyped o[f];
-		}
-		return o;
-	}
-
-	public static function getURL( url : nme.net.URLRequest, ?target : String ) {
-		var f = untyped __global__["flash.net.navigateToURL"];
-		if( target == null )
-			f(url);
-		else
-			(cast f)(url,target);
-	}
-
-	public static function fscommand( cmd : String, ?param : String ) {
-		untyped __global__["flash.system.fscommand"](cmd,if( param == null ) "" else param);
-	}
-
-	public static function trace( arg : Dynamic ) {
-		untyped __global__["trace"](arg);
-	}
-
-	public static function attach( name : String ) : nme.display.MovieClip {
-		var cl = untyped __as__(__global__["flash.utils.getDefinitionByName"](name),Class);
-		return untyped __new__(cl);
-	}
-
-	public inline static function as<T>( v : Dynamic, c : Class<T> ) : Null<T> {
-		return untyped __as__(v,c);
-	}
-
-}
-#else
-
+#if cpp || neko
 
 
 import nme.net.URLRequest;
@@ -173,4 +115,8 @@ class Lib
    static var nme_get_url = nme.Loader.load("nme_get_url",1);
 
 }
+
+
+#else
+typedef Lib = flash.Lib;
 #end

@@ -1,16 +1,5 @@
 package nme.text;
-
-
-#if flash
-@:native ("flash.text.TextFieldAutoSize")
-@:fakeEnum(String) extern enum TextFieldAutoSize {
-	CENTER;
-	LEFT;
-	NONE;
-	RIGHT;
-}
-#else
-
+#if cpp || neko
 
 
 enum TextFieldAutoSize
@@ -20,4 +9,8 @@ enum TextFieldAutoSize
    NONE;
    RIGHT;
 }
+
+
+#else
+typedef TextFieldAutoSize = flash.text.TextFieldAutoSize;
 #end

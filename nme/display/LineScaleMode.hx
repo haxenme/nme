@@ -1,16 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.LineScaleMode")
-@:fakeEnum(String) extern enum LineScaleMode {
-	HORIZONTAL;
-	NONE;
-	NORMAL;
-	VERTICAL;
-}
-#else
-
+#if cpp || neko
 
 
 enum LineScaleMode
@@ -20,4 +9,8 @@ enum LineScaleMode
    VERTICAL;
    HORIZONTAL;
 }
+
+
+#else
+typedef LineScaleMode = flash.display.LineScaleMode;
 #end

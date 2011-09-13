@@ -1,15 +1,5 @@
 package nme.filters;
-
-
-#if flash
-@:native ("flash.filters.BitmapFilterType")
-@:fakeEnum(String) extern enum BitmapFilterType {
-	FULL;
-	INNER;
-	OUTER;
-}
-#else
-
+#if cpp || neko
 
 
 class BitmapFilterType
@@ -18,4 +8,8 @@ class BitmapFilterType
    public static var INNER = "inner";
    public static var OUTER = "outer";
 }
+
+
+#else
+typedef BitmapFilterType = flash.filters.BitmapFilterType;
 #end

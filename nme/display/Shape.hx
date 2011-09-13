@@ -1,14 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.Shape")
-extern class Shape extends DisplayObject {
-	var graphics(default,null) : Graphics;
-	function new() : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class Shape extends DisplayObject
@@ -18,4 +9,8 @@ class Shape extends DisplayObject
 	   super(DisplayObject.nme_create_display_object(), "Shape");
 	}
 }
+
+
+#else
+typedef Shape = flash.display.Shape;
 #end

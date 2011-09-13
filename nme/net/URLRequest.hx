@@ -1,19 +1,5 @@
 package nme.net;
-
-
-#if flash
-@:native ("flash.net.URLRequest")
-@:final extern class URLRequest {
-	var contentType : String;
-	var data : Dynamic;
-	var digest : String;
-	var method : String;
-	var requestHeaders : Array<URLRequestHeader>;
-	var url : String;
-	function new(?url : String) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class URLRequest
@@ -54,4 +40,8 @@ class URLRequest
       userPassword = inUser + ":" + inPasswd;
    }
 }
+
+
+#else
+typedef URLRequest = flash.net.URLRequest;
 #end

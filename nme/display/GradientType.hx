@@ -1,15 +1,10 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.GradientType")
-@:fakeEnum(String) extern enum GradientType {
-	LINEAR;
-	RADIAL;
-}
-#else
-
+#if cpp || neko
 
 
 enum GradientType { RADIAL; LINEAR; }
+
+
+#else
+typedef GradientType = flash.display.GradientType;
 #end

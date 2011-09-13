@@ -1,15 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.JointStyle")
-@:fakeEnum(String) extern enum JointStyle {
-	BEVEL;
-	MITER;
-	ROUND;
-}
-#else
-
+#if cpp || neko
 
 
 enum JointStyle
@@ -18,4 +8,8 @@ enum JointStyle
    MITER;
    BEVEL;
 }
+
+
+#else
+typedef JointStyle = flash.display.JointStyle;
 #end

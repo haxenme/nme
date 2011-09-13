@@ -1,17 +1,5 @@
 package nme.events;
-
-
-#if flash
-@:native ("flash.events.IOErrorEvent")
-extern class IOErrorEvent extends ErrorEvent {
-	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
-	static var DISK_ERROR : String;
-	static var IO_ERROR : String;
-	static var NETWORK_ERROR : String;
-	static var VERIFY_ERROR : String;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.display.InteractiveObject;
@@ -26,4 +14,8 @@ class IOErrorEvent extends ErrorEvent
       super(inType,bubbles,cancelable,text,id);
    }
 }
+
+
+#else
+typedef IOErrorEvent = flash.events.IOErrorEvent;
 #end

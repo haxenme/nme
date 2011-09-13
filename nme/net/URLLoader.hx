@@ -1,19 +1,5 @@
 package nme.net;
-
-
-#if flash
-@:native ("flash.net.URLLoader")
-extern class URLLoader extends nme.events.EventDispatcher {
-	var bytesLoaded : UInt;
-	var bytesTotal : UInt;
-	var data : Dynamic;
-	var dataFormat : URLLoaderDataFormat;
-	function new(?request : URLRequest) : Void;
-	function close() : Void;
-	function load(request : URLRequest) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.events.Event;
@@ -21,6 +7,7 @@ import nme.events.EventDispatcher;
 import nme.events.IOErrorEvent;
 import nme.events.ProgressEvent;
 import nme.utils.ByteArray;
+
 
 /**
 * @author   Hugh Sanderson
@@ -213,4 +200,8 @@ class URLLoader extends nme.events.EventDispatcher
 	static var nme_curl_initialize = nme.Loader.load("nme_curl_initialize",1);
 
 }
+
+
+#else
+typedef URLLoader = flash.net.URLLoader;
 #end

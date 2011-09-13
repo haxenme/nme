@@ -1,27 +1,9 @@
 package nme.media;
-
-
-#if flash
-@:native ("flash.media.Sound")
-extern class Sound extends nme.events.EventDispatcher {
-	var bytesLoaded(default,null) : UInt;
-	var bytesTotal(default,null) : Int;
-	var id3(default,null) : ID3Info;
-	var isBuffering(default,null) : Bool;
-	@:require(flash10_1) var isURLInaccessible(default,null) : Bool;
-	var length(default,null) : Float;
-	var url(default,null) : String;
-	function new(?stream : nme.net.URLRequest, ?context : SoundLoaderContext) : Void;
-	function close() : Void;
-	@:require(flash10) function extract(target : nme.utils.ByteArray, length : Float, startPosition : Float = -1) : Float;
-	function load(stream : nme.net.URLRequest, ?context : SoundLoaderContext) : Void;
-	function play(startTime : Float = 0, loops : Int = 0, ?sndTransform : SoundTransform) : SoundChannel;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.net.URLRequest;
+
 
 class Sound extends nme.events.EventDispatcher
 {
@@ -132,4 +114,8 @@ class Sound extends nme.events.EventDispatcher
    static var nme_sound_get_status = nme.Loader.load("nme_sound_get_status",1);
 
 }
+
+
+#else
+typedef Sound = flash.media.Sound;
 #end

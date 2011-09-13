@@ -1,36 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.Stage")
-extern class Stage extends DisplayObjectContainer {
-	//var align : StageAlign;
-	var align : String;
-	@:require(flash10_2) var color : UInt;
-	@:require(flash10) var colorCorrection : ColorCorrection;
-	@:require(flash10) var colorCorrectionSupport(default,null) : ColorCorrectionSupport;
-	//var displayState : StageDisplayState;
-	var displayState : String;
-	var focus : InteractiveObject;
-	var frameRate : Float;
-	var fullScreenHeight(default,null) : UInt;
-	var fullScreenSourceRect : nme.geom.Rectangle;
-	var fullScreenWidth(default,null) : UInt;
-	//var quality : StageQuality;
-	var quality : String;
-	//var scaleMode : StageScaleMode;
-	var scaleMode : String;
-	var showDefaultContextMenu : Bool;
-	var stageFocusRect : Bool;
-	var stageHeight : Int;
-	//@:require(flash10_2) var stageVideos(default,null) : nme.Vector<nme.media.StageVideo>;
-	var stageWidth : Int;
-	@:require(flash10_1) var wmodeGPU(default,null) : Bool;
-	function invalidate() : Void;
-	function isFocusInaccessible() : Bool;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.events.MouseEvent;
@@ -41,13 +10,12 @@ import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
 
+
 class TouchInfo
 {
    public var touchOverObjects : Array<InteractiveObject>;
    public function new() { touchOverObjects = []; }
 }
-
-
 
 class Stage extends nme.display.DisplayObjectContainer
 {
@@ -812,4 +780,8 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
 }
+
+
+#else
+typedef Stage = flash.display.Stage;
 #end

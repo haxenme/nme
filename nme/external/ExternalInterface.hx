@@ -1,17 +1,5 @@
 package nme.external;
-
-
-#if flash
-@:native ("flash.external.ExternalInterface")
-extern class ExternalInterface {
-	static var available(default,null) : Bool;
-	static var marshallExceptions : Bool;
-	static var objectID(default,null) : String;
-	static function addCallback(functionName : String, closure : Dynamic) : Void;
-	static function call(functionName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Dynamic;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.Loader;
@@ -84,4 +72,8 @@ class ExternalInterface {
 	
 	
 }
+
+
+#else
+typedef ExternalInterface = flash.external.ExternalInterface;
 #end

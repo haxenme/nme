@@ -1,7 +1,7 @@
 package nme.display;
+#if cpp || neko
 
 
-#if !flash
 class ManagedStage extends Stage
 {
    static inline public var etUnknown = 0;
@@ -87,4 +87,6 @@ class ManagedStage extends Stage
    static var nme_managed_stage_create = nme.Loader.load("nme_managed_stage_create",2);
    static var nme_managed_stage_pump_event = nme.Loader.load("nme_managed_stage_pump_event",2);
 }
+
+
 #end

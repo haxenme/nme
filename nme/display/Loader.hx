@@ -1,21 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.Loader")
-extern class Loader extends DisplayObjectContainer {
-	var content(default,null) : DisplayObject;
-	var contentLoaderInfo(default,null) : LoaderInfo;
-	@:require(flash10_1) var uncaughtErrorEvents(default,null) : nme.events.UncaughtErrorEvents;
-	function new() : Void;
-	function close() : Void;
-	function load(request : nme.net.URLRequest, ?context : nme.system.LoaderContext) : Void;
-	function loadBytes(bytes : nme.utils.ByteArray, ?context : nme.system.LoaderContext) : Void;
-	function unload() : Void;
-	@:require(flash10) function unloadAndStop(gc : Bool = true) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.net.URLRequest;
@@ -26,6 +10,7 @@ import nme.display.LoaderInfo;
 import nme.display.Shape;
 import nme.events.Event;
 import nme.events.IOErrorEvent;
+
 
 /**
 * @author   Hugh Sanderson
@@ -101,4 +86,8 @@ class Loader extends nme.display.Sprite
    }
 
 }
+
+
+#else
+typedef Loader = flash.display.Loader;
 #end

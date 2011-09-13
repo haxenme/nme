@@ -1,21 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.SimpleButton")
-extern class SimpleButton extends InteractiveObject {
-	var downState : DisplayObject;
-	var enabled : Bool;
-	var hitTestState : DisplayObject;
-	var overState : DisplayObject;
-	var soundTransform : nme.media.SoundTransform;
-	var trackAsMenu : Bool;
-	var upState : DisplayObject;
-	var useHandCursor : Bool;
-	function new(?upState : DisplayObject, ?overState : DisplayObject, ?downState : DisplayObject, ?hitTestState : DisplayObject) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class SimpleButton extends InteractiveObject
@@ -88,4 +72,8 @@ class SimpleButton extends InteractiveObject
    static var nme_simple_button_create = nme.Loader.load("nme_simple_button_create",0);
 
 }
+
+
+#else
+typedef SimpleButton = flash.display.SimpleButton;
 #end

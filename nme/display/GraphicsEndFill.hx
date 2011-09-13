@@ -1,13 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.GraphicsEndFill")
-extern class GraphicsEndFill implements IGraphicsData {
-	function new() : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class GraphicsEndFill extends IGraphicsData
@@ -20,4 +12,8 @@ class GraphicsEndFill extends IGraphicsData
 
    static var nme_graphics_end_fill_create = nme.Loader.load("nme_graphics_end_fill_create",0);
 }
+
+
+#else
+//typedef GraphicsEndFill = flash.display.GraphicsEndFill;
 #end

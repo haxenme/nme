@@ -1,15 +1,5 @@
 package nme.text;
-
-
-#if flash
-@:fakeEnum(String) extern enum TextFormatAlign {
-	CENTER;
-	JUSTIFY;
-	LEFT;
-	RIGHT;
-}
-#else
-
+#if cpp || neko
 
 
 class TextFormatAlign
@@ -19,4 +9,8 @@ class TextFormatAlign
    public static var CENTER = "center";
    public static var JUSTIFY = "justify";
 }
+
+
+#else
+typedef TextFormatAlign = flash.text.TextFormatAlign;
 #end

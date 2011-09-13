@@ -1,19 +1,5 @@
 package nme.text;
-
-
-#if flash
-@:native ("flash.text.Font")
-extern class Font {
-	var fontName(default,null) : String;
-	var fontStyle(default,null) : FontStyle;
-	var fontType(default,null) : FontType;
-	function new() : Void;
-	function hasGlyphs(str : String) : Bool;
-	static function enumerateFonts(enumerateDeviceFonts : Bool = false) : Array<Font>;
-	static function registerFont(font : Class<Dynamic>) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.display.Stage;
@@ -54,8 +40,6 @@ typedef NativeFontData = {
 }
 
 
-
-
 class Font
 {
 	
@@ -80,4 +64,8 @@ class Font
    static var freetype_import_font = nme.Loader.load("freetype_import_font",3);
 
 }
+
+
+#else
+typedef Font = flash.text.Font;
 #end

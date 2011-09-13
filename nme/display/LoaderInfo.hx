@@ -1,34 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.LoaderInfo")
-extern class LoaderInfo extends nme.events.EventDispatcher {
-	var actionScriptVersion(default,null) : ActionScriptVersion;
-	var applicationDomain(default,null) : nme.system.ApplicationDomain;
-	var bytes(default,null) : nme.utils.ByteArray;
-	var bytesLoaded(default,null) : UInt;
-	var bytesTotal(default,null) : UInt;
-	var childAllowsParent(default,null) : Bool;
-	var content(default,null) : DisplayObject;
-	var contentType(default,null) : String;
-	var frameRate(default,null) : Float;
-	var height(default,null) : Int;
-	@:require(flash10_1) var isURLInaccessible(default,null) : Bool;
-	var loader(default,null) : Loader;
-	var loaderURL(default,null) : String;
-	var parameters(default,null) : Dynamic<String>;
-	var parentAllowsChild(default,null) : Bool;
-	var sameDomain(default,null) : Bool;
-	var sharedEvents(default,null) : nme.events.EventDispatcher;
-	var swfVersion(default,null) : SWFVersion;
-	@:require(flash10_1) var uncaughtErrorEvents(default,null) : nme.events.UncaughtErrorEvents;
-	var url(default,null) : String;
-	var width(default,null) : Int;
-	static function getLoaderInfoByDefinition(object : Dynamic) : LoaderInfo;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.events.Event;
@@ -36,6 +7,7 @@ import nme.events.EventDispatcher;
 import nme.net.URLLoader;
 import nme.net.URLRequest;
 import nme.net.URLLoaderDataFormat;
+
 
 /**
 * @author	Niel Drummond
@@ -104,4 +76,8 @@ class LoaderInfo extends URLLoader {
 		return li;
 	}
 }
+
+
+#else
+typedef LoaderInfo = flash.display.LoaderInfo;
 #end

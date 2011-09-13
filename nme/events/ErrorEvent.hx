@@ -1,15 +1,5 @@
 package nme.events;
-
-
-#if flash
-@:native ("flash.events.ErrorEvent")
-extern class ErrorEvent extends TextEvent {
-	@:require(flash10_1) var errorID(default,null) : Int;
-	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
-	static var ERROR : String;
-}
-#else
-
+#if cpp || neko
 
 
 class ErrorEvent extends TextEvent
@@ -25,4 +15,8 @@ class ErrorEvent extends TextEvent
 
 	public override function toString() { return text; }
 }
+
+
+#else
+typedef ErrorEvent = flash.events.ErrorEvent;
 #end

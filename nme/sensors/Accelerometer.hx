@@ -1,16 +1,5 @@
 package nme.sensors;
-
-
-#if flash
-@:native ("flash.sensors.Accelerometer")
-@:require(flash10_1) extern class Accelerometer extends nme.events.EventDispatcher {
-	var muted(default,null) : Bool;
-	function new() : Void;
-	function setRequestedUpdateInterval(interval : Float) : Void;
-	static var isSupported(default,null) : Bool;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.events.AccelerometerEvent;
@@ -79,4 +68,8 @@ class Accelerometer extends EventDispatcher {
 	
 	
 }
+
+
+#else
+typedef Accelerometer = flash.sensors.Accelerometer;
 #end

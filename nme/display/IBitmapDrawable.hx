@@ -1,12 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.IBitmapDrawable")
-extern interface IBitmapDrawable {
-}
-#else
-
+#if cpp || neko
 
 
 interface IBitmapDrawable
@@ -18,4 +11,8 @@ interface IBitmapDrawable
                clipRect:nme.geom.Rectangle,
                smoothing:Bool):Void;
 }
+
+
+#else
+typedef IBitmapDrawable = flash.display.IBitmapDrawable;
 #end

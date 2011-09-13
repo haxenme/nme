@@ -1,14 +1,5 @@
 package nme.text;
-
-
-#if flash
-@:native ("flash.text.TextFieldType")
-@:fakeEnum(String) extern enum TextFieldType {
-	DYNAMIC;
-	INPUT;
-}
-#else
-
+#if cpp || neko
 
 
 enum TextFieldType
@@ -16,4 +7,8 @@ enum TextFieldType
    DYNAMIC;
    INPUT;
 }
+
+
+#else
+typedef TextFieldType = flash.text.TextFieldType;
 #end

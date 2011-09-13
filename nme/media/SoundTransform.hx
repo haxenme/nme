@@ -1,19 +1,5 @@
 package nme.media;
-
-
-#if flash
-@:native ("flash.media.SoundTransform")
-@:final extern class SoundTransform {
-	var leftToLeft : Float;
-	var leftToRight : Float;
-	var pan : Float;
-	var rightToLeft : Float;
-	var rightToRight : Float;
-	var volume : Float;
-	function new(vol : Float = 1, panning : Float = 0) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class SoundTransform
@@ -31,4 +17,8 @@ class SoundTransform
 		return new SoundTransform(volume,pan);
 	}
 }
+
+
+#else
+typedef SoundTransform = flash.media.SoundTransform;
 #end

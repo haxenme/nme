@@ -1,21 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.GraphicsPath")
-@:final extern class GraphicsPath implements IGraphicsData, implements IGraphicsPath {
-	var commands : nme.Vector<Int>;
-	var data : nme.Vector<Float>;
-	var winding : GraphicsPathWinding;
-	function new(?commands : nme.Vector<Int>, ?data : nme.Vector<Float>, ?winding : GraphicsPathWinding) : Void;
-	function curveTo(controlX : Float, controlY : Float, anchorX : Float, anchorY : Float) : Void;
-	function lineTo(x : Float, y : Float) : Void;
-	function moveTo(x : Float, y : Float) : Void;
-	function wideLineTo(x : Float, y : Float) : Void;
-	function wideMoveTo(x : Float, y : Float) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class GraphicsPath extends IGraphicsData
@@ -89,4 +73,8 @@ class GraphicsPath extends IGraphicsData
    static var nme_graphics_path_get_data = nme.Loader.load("nme_graphics_path_get_data",2);
    static var nme_graphics_path_set_data = nme.Loader.load("nme_graphics_path_set_data",2);
 }
+
+
+#else
+typedef GraphicsPath = flash.display.GraphicsPath;
 #end

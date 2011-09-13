@@ -1,14 +1,5 @@
 package nme.utils;
-
-
-#if flash
-@:native ("flash.utils.Endian")
-@:fakeEnum(String) extern enum Endian {
-	BIG_ENDIAN;
-	LITTLE_ENDIAN;
-}
-#else
-
+#if cpp || neko
 
 
 class Endian
@@ -16,4 +7,8 @@ class Endian
 	public static inline var BIG_ENDIAN : String = "bigEndian";
 	public static inline var LITTLE_ENDIAN : String = "littleEndian";
 }
+
+
+#else
+typedef Endian = flash.utils.Endian;
 #end

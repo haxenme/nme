@@ -1,7 +1,11 @@
 package nme.display;
 
 
-class FPS extends nme.text.TextField
+import nme.text.TextField;
+import nme.events.Event;
+import nme.Timer;
+
+class FPS extends TextField
 {
    var times:Array<Float>;
 
@@ -14,12 +18,12 @@ class FPS extends nme.text.TextField
       text = "FPS:";
       textColor = inCol;
       times = [];
-      addEventListener(nme.events.Event.ENTER_FRAME, onEnter);
+      addEventListener(Event.ENTER_FRAME, onEnter);
    }
 
    public function onEnter(_)
    {
-      var now = nme.Timer.stamp();
+      var now = Timer.stamp();
       times.push(now);
       while(times[0]<now-1)
          times.shift();

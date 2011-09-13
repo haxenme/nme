@@ -1,22 +1,15 @@
 package nme.text;
+#if cpp || neko
 
 
-#if flash
-@:native ("flash.text.FontStyle")
 @:fakeEnum(String) extern enum FontStyle {
 	BOLD;
 	BOLD_ITALIC;
 	ITALIC;
 	REGULAR;
 }
+
+
 #else
-
-
-
-@:fakeEnum(String) extern enum FontStyle {
-	BOLD;
-	BOLD_ITALIC;
-	ITALIC;
-	REGULAR;
-}
+typedef FontStyle = flash.text.FontStyle;
 #end

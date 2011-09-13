@@ -1,14 +1,5 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.GraphicsPathWinding")
-@:fakeEnum(String) extern enum GraphicsPathWinding {
-	EVEN_ODD;
-	NON_ZERO;
-}
-#else
-
+#if cpp || neko
 
 
 class GraphicsPathWinding
@@ -16,4 +7,8 @@ class GraphicsPathWinding
    public static inline var EVEN_ODD = "evenOdd";
    public static inline var NON_ZERO = "nonZero";
 }
+
+
+#else
+typedef GraphicsPathWinding = flash.display.GraphicsPathWinding;
 #end

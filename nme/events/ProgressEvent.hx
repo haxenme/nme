@@ -1,17 +1,5 @@
 package nme.events;
-
-
-#if flash
-@:native ("flash.events.ProgressEvent")
-extern class ProgressEvent extends Event {
-	var bytesLoaded : Float;
-	var bytesTotal : Float;
-	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, bytesLoaded : Float = 0, bytesTotal : Float = 0) : Void;
-	static var PROGRESS : String;
-	static var SOCKET_DATA : String;
-}
-#else
-
+#if cpp || neko
 
 
 class ProgressEvent extends Event
@@ -30,4 +18,8 @@ class ProgressEvent extends Event
 	}
 
 }
+
+
+#else
+typedef ProgressEvent = flash.events.ProgressEvent;
 #end

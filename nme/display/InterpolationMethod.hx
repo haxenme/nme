@@ -1,15 +1,10 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.InterpolationMethod")
-@:fakeEnum(String) extern enum InterpolationMethod {
-	LINEAR_RGB;
-	RGB;
-}
-#else
-
+#if cpp || neko
 
 
 enum InterpolationMethod { RGB; LINEAR_RGB; }
+
+
+#else
+typedef InterpolationMethod = flash.display.InterpolationMethod;
 #end

@@ -1,17 +1,5 @@
 package nme.ui;
-
-
-#if flash
-@:native ("flash.ui.Mouse")
-extern class Mouse {
-	@:require(flash10) static var cursor : MouseCursor;
-	@:require(flash10_1) static var supportsCursor(default,null) : Bool;
-	static function hide() : Void;
-	@:require(flash10_2) static function registerCursor(cursor : nme.display.MouseCursorData) : Void;
-	static function show() : Void;
-}
-#else
-
+#if cpp || neko
 
 
 class Mouse
@@ -27,4 +15,8 @@ class Mouse
          nme.Lib.stage.showCursor(false);
    }
 }
+
+
+#else
+typedef Mouse = flash.ui.Mouse;
 #end

@@ -1,14 +1,5 @@
 package nme.events;
-
-
-#if flash
-@:native ("flash.events.SecurityErrorEvent")
-extern class SecurityErrorEvent extends ErrorEvent {
-	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
-	static var SECURITY_ERROR : String;
-}
-#else
-
+#if cpp || neko
 
 
 class SecurityErrorEvent extends ErrorEvent
@@ -21,4 +12,8 @@ class SecurityErrorEvent extends ErrorEvent
       super(type,bubbles,cancelable,text,inID);
    }
 }
+
+
+#else
+typedef SecurityErrorEvent = flash.events.SecurityErrorEvent;
 #end

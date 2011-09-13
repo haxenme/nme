@@ -1,11 +1,5 @@
 package nme.errors;
-
-
-#if flash
-@:native("SecurityError") extern class SecurityError extends Error {
-}
-#else
-
+#if cpp || neko
 
 
 class SecurityError extends Error
@@ -15,4 +9,8 @@ class SecurityError extends Error
 	   super(inMessage,0);
    }
 }
+
+
+#else
+typedef SecurityError = flash.errors.SecurityError;
 #end

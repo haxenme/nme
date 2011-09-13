@@ -1,35 +1,11 @@
 package nme.display;
-
-
-#if flash
-@:native ("flash.display.DisplayObjectContainer")
-extern class DisplayObjectContainer extends InteractiveObject {
-	var mouseChildren : Bool;
-	var numChildren(default,null) : Int;
-	var tabChildren : Bool;
-	var textSnapshot(default,null) : nme.text.TextSnapshot;
-	function new() : Void;
-	function addChild(child : DisplayObject) : DisplayObject;
-	function addChildAt(child : DisplayObject, index : Int) : DisplayObject;
-	function areInaccessibleObjectsUnderPoint(point : nme.geom.Point) : Bool;
-	function contains(child : DisplayObject) : Bool;
-	function getChildAt(index : Int) : DisplayObject;
-	function getChildByName(name : String) : DisplayObject;
-	function getChildIndex(child : DisplayObject) : Int;
-	function getObjectsUnderPoint(point : nme.geom.Point) : Array<DisplayObject>;
-	function removeChild(child : DisplayObject) : DisplayObject;
-	function removeChildAt(index : Int) : DisplayObject;
-	function setChildIndex(child : DisplayObject, index : Int) : Void;
-	function swapChildren(child1 : DisplayObject, child2 : DisplayObject) : Void;
-	function swapChildrenAt(index1 : Int, index2 : Int) : Void;
-}
-#else
-
+#if cpp || neko
 
 
 import nme.events.Event;
 import nme.geom.Point;
 import nme.errors.RangeError;
+
 
 class DisplayObjectContainer extends InteractiveObject
 {
@@ -295,4 +271,8 @@ class DisplayObjectContainer extends InteractiveObject
    static var nme_doc_swap_children = nme.Loader.load("nme_doc_swap_children",3);
 
 }
+
+
+#else
+typedef DisplayObjectContainer = flash.display.DisplayObjectContainer;
 #end

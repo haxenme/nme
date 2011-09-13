@@ -1,15 +1,5 @@
 package nme.ui;
-
-
-#if flash
-@:native ("flash.ui.MultitouchInputMode")
-@:fakeEnum(String) extern enum MultitouchInputMode {
-	GESTURE;
-	NONE;
-	TOUCH_POINT;
-}
-#else
-
+#if cpp || neko
 
 
 enum MultitouchInputMode
@@ -18,4 +8,8 @@ enum MultitouchInputMode
    TOUCH_POINT;
    GESTURE;
 }
+
+
+#else
+typedef MultitouchInputMode = flash.ui.MultitouchInputMode;
 #end
