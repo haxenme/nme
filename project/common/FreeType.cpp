@@ -10,6 +10,11 @@
 #include <android/log.h>
 #endif
 
+#ifdef WEBOS
+#include "PDL.h"
+#endif
+
+
 #include "ByteArray.h"
 
 #define NME_FREETYPE_FLAGS  (FT_LOAD_FORCE_AUTOHINT|FT_LOAD_DEFAULT)
@@ -232,14 +237,15 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #define TIMES_ROMAN "Times New Roman.ttf"
 #endif
 
-   if (!strcasecmp(inName.c_str(),"times.ttf"))
+   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf"))
       outFile = FONT_BASE TIMES_ROMAN;
+   else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
+      outFile = FONT_BASE "Helvetica.ttf";
+   else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
+      outFile = FONT_BASE "Courier.ttf";
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
       outFile = FONT_BASE "Arial.ttf";
-   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
-      outFile = FONT_BASE "Courier.ttf";
-   else if (!strcasecmp(inName.c_str(),"helvetica.ttf"))
-      outFile = FONT_BASE "Helvetica.ttf";
+   
    else
    {
       outFile = FONT_BASE + inName;
@@ -254,34 +260,51 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-   #ifdef ANDROID
-   if (!strcasecmp(inName.c_str(),"times.ttf") ||
-       !strcasecmp(inName.c_str(),"times"))
-      outFile = "/system/fonts/DroidSerif-Regular.ttf";
-   else if (!strcasecmp(inName.c_str(),"arial.ttf") ||
-            !strcasecmp(inName.c_str(),"arial"))
-      outFile = "/system/fonts/DroidSans.ttf";
-   else if (!strcasecmp(inName.c_str(),"courier.ttf") ||
-            !strcasecmp(inName.c_str(),"courier"))
-      outFile = "/system/fonts/SansMono.ttf";
-   #else
-   if (!strcasecmp(inName.c_str(),"times.ttf"))
-      outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
-   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
-      outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-   else if (!strcasecmp(inName.c_str(),"courier.ttf"))
-      outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
-   #endif
-   else
-   {
-       #ifdef ANDROID
+	if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times")) {
+		
+		#if defined (ANDROID)
+			outFile = "/system/fonts/DroidSerif-Regular.ttf";
+		#elif defined (WEBOS)
+			if (PDL_GetPDKVersion () >= 300) {
+				outFile = "/usr/share/fonts/georgia.ttf";
+			} else {
+				outFile = "/usr/share/fonts/times.ttf";
+			}
+		#else
+			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+		#endif
+		
+	} else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") || !strcasecmp(inName.c_str(),"arial")) {
+		
+		#if defined (ANDROID)
+			outFile = "/system/fonts/DroidSans.ttf";
+		#elif defined (WEBOS)
+			outFile = "/usr/share/fonts/Prelude-Medium.ttf";
+		#else
+			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+		#endif
+		
+	} else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
+		
+		#if defined (ANDROID)
+			outFile = "/system/fonts/SansMono.ttf";
+		#elif defined (WEBOS)
+			outFile = "/usr/share/fonts/cour.ttf";
+		#else
+			outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+		#endif
+		
+	} else {
+		
+		#ifdef ANDROID
        __android_log_print(ANDROID_LOG_INFO, "GetFontFile1", "Could not load font %s.",
           inName.c_str() );
        #endif
-
+		
       //printf("Unfound font: %s\n",inName.c_str());
       return false;
-   }
+		
+	}
 
    return true;
 }
