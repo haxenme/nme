@@ -341,7 +341,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
    std::string fname = inFontName;
    
    #ifndef ANDROID
-   if (fname.find(".")==std::string::npos)
+   if (fname.find(".") == std::string::npos && fname.find("_") == std::string::npos)
       fname += ".ttf";
    #endif
 	  
