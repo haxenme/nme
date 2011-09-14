@@ -112,7 +112,6 @@ class Lib
    {
       #if android
       nme_post_ui_callback(inCallback);
-      #end
       #else
       // May still be worth posting event to come back with the next UI event loop...
       //  (or use timer?)

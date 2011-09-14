@@ -11,6 +11,7 @@ class Memory
    #else
    static var gcRef:ByteArray;
    #end
+   static var len:Int;
 
    static public function select( inBytes : ByteArray ) : Void
    {
@@ -26,6 +27,10 @@ class Memory
       else
          untyped __global__.__hxcpp_memory_select(inBytes.getData());
       #end
+      if (inBytes==null)
+         len = 0;
+      else
+         len = inBytes.length;
    }
 
    #if neko
@@ -80,26 +85,56 @@ class Memory
 
    #else
    static inline public function getByte( addr : Int ) : Int
-      { return untyped __global__.__hxcpp_memory_get_byte(addr); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      return untyped __global__.__hxcpp_memory_get_byte(addr);
+   }
    static inline public function getDouble( addr : Int ) : Float
-      { return untyped __global__.__hxcpp_memory_get_double(addr); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      return untyped __global__.__hxcpp_memory_get_double(addr);
+   }
    static inline public function getFloat( addr : Int ) : Float
-      { return untyped __global__.__hxcpp_memory_get_float(addr); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      return untyped __global__.__hxcpp_memory_get_float(addr);
+   }
    static inline public function getI32( addr : Int ) : Int
-      { return untyped __global__.__hxcpp_memory_get_i32(addr); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      return untyped __global__.__hxcpp_memory_get_i32(addr);
+   }
    static inline public function getUI16( addr : Int ) : Int
-      { return untyped __global__.__hxcpp_memory_get_ui16(addr); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      return untyped __global__.__hxcpp_memory_get_ui16(addr);
+   }
 
    static inline public function setByte( addr : Int, v : Int ) : Void
-      { untyped __global__.__hxcpp_memory_set_byte(addr,v); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      untyped __global__.__hxcpp_memory_set_byte(addr,v);
+   }
    static inline public function setDouble( addr : Int, v : Float ) : Void
-      { untyped __global__.__hxcpp_memory_set_double(addr,v); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      untyped __global__.__hxcpp_memory_set_double(addr,v);
+   }
    static inline public function setFloat( addr : Int, v : Float ) : Void
-      { untyped __global__.__hxcpp_memory_set_float(addr,v); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      untyped __global__.__hxcpp_memory_set_float(addr,v);
+   }
    static inline public function setI16( addr : Int, v : Int ) : Void
-      { untyped __global__.__hxcpp_memory_set_i16(addr,v); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      untyped __global__.__hxcpp_memory_set_i16(addr,v);
+   }
    static inline public function setI32( addr : Int, v : Int ) : Void
-      { untyped __global__.__hxcpp_memory_set_i32(addr,v); }
+   {
+      #if debug if (addr<0 || addr>=len) throw("Bad address"); #end
+      untyped __global__.__hxcpp_memory_set_i32(addr,v);
+   }
    #end
 
    /*
