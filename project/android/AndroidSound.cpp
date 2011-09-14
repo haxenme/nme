@@ -12,7 +12,7 @@
 
 #define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
 
-extern JNIEnv *gEnv;
+extern JNIEnv *GetEnv();
 
 namespace nme
 {
@@ -23,16 +23,17 @@ public:
    AndroidSoundChannel(Object *inSound, int inHandle,
 							  double startTime, int loops, const SoundTransform &inTransform)
 	{
+      JNIEnv *env = GetEnv();
 		mStreamID = -1;
 		mSound = inSound;
 		inSound->IncRef();
 		if (inHandle>=0)
 		{
-		   jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-         jmethodID mid = gEnv->GetStaticMethodID(cls, "playSound", "(IDDI)I");
+		   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+         jmethodID mid = env->GetStaticMethodID(cls, "playSound", "(IDDI)I");
          if (mid > 0)
 		   {
-			      mStreamID = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
+			      mStreamID = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 		   }
 		}
     }
@@ -76,17 +77,18 @@ public:
    AndroidMusicChannel(Object *inSound, int inHandle,
 							  double startTime, int loops, const SoundTransform &inTransform)
 	{
+      JNIEnv *env = GetEnv();
 		mState = 0;
 		mSound = inSound;
 		inSound->IncRef();
 
 		if (inHandle>=0)
 		{
-		   jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-         jmethodID mid = gEnv->GetStaticMethodID(cls, "playMusic", "(IDDI)I");
+		   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+         jmethodID mid = env->GetStaticMethodID(cls, "playMusic", "(IDDI)I");
          if (mid > 0)
 		   {
-			   mState = gEnv->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
+			   mState = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 		   }
 		}
     }
@@ -141,6 +143,7 @@ class AndroidSound : public Sound
 public:
 	AndroidSound(const std::string &inSound, bool inForceMusic)
 	{
+      JNIEnv *env = GetEnv();
 		IncRef();
 
       mMode = MODE_UNKNOWN;
@@ -148,15 +151,15 @@ public:
       mManagerID = getSoundPoolID();
       mSoundName = inSound;
 
-		jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-		jstring str = gEnv->NewStringUTF( inSound.c_str() );
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jstring str = env->NewStringUTF( inSound.c_str() );
 
       if (!inForceMusic)
       {
-         jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
+         jmethodID mid = env->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
          if (mid > 0)
 		   {
-			   mID = gEnv->CallStaticIntMethod(cls, mid, str);
+			   mID = env->CallStaticIntMethod(cls, mid, str);
             if (mID>=0)
                mMode = MODE_SOUND_ID;
 		   }
@@ -164,15 +167,15 @@ public:
 
       if (mID<0)
       {
-         jmethodID gmh = gEnv->GetStaticMethodID(cls, "getMusicHandle", "(Ljava/lang/String;)I");
+         jmethodID gmh = env->GetStaticMethodID(cls, "getMusicHandle", "(Ljava/lang/String;)I");
          if (gmh>0)
          {
-			   mID = gEnv->CallStaticIntMethod(cls, gmh, str);
+			   mID = env->CallStaticIntMethod(cls, gmh, str);
             if (mID>0)
                mMode = MODE_MUSIC_RES_ID;
          }
       }
-      //gEnv->ReleaseStringUTFChars(str, inSound.c_str() );
+      //env->ReleaseStringUTFChars(str, inSound.c_str() );
 
       if (mID<0)
          mMode = MODE_MUSIC_NAME;
@@ -180,13 +183,14 @@ public:
 
    void reloadSound()
    {
-		jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
+      JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "getSoundHandle", "(Ljava/lang/String;)I");
       if (mid > 0)
 		{
-		    jstring str = gEnv->NewStringUTF( mSoundName.c_str() );
-			 mID = gEnv->CallStaticIntMethod(cls, mid, str);
-          //gEnv->ReleaseStringUTFChars(str, mSoundName.c_str() );
+		    jstring str = env->NewStringUTF( mSoundName.c_str() );
+			 mID = env->CallStaticIntMethod(cls, mid, str);
+          //env->ReleaseStringUTFChars(str, mSoundName.c_str() );
 		}
    }
 
@@ -199,11 +203,12 @@ public:
 
    int getSoundPoolID()
    {
-		jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = gEnv->GetStaticMethodID(cls, "getSoundPoolID", "()I");
+      JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "getSoundPoolID", "()I");
       if (mid > 0)
 		{
-		   return gEnv->CallStaticIntMethod(cls, mid );
+		   return env->CallStaticIntMethod(cls, mid );
 		}
       return 0;
    }

@@ -8,8 +8,13 @@
 
 #include <android/log.h>
 
-JNIEnv *gEnv = 0;
-
+JavaVM *gJVM=0;
+JNIEnv *GetEnv()
+{
+   JNIEnv *env = 0;
+   gJVM->AttachCurrentThread(&env, NULL);
+   return env;
+}
 
 
 namespace nme
@@ -162,12 +167,13 @@ public:
 
    void EnablePopupKeyboard(bool inEnable)
    {
-      jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = gEnv->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
+      JNIEnv *env = GetEnv();
+      jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
       if (mid == 0)
         return;
 
-      gEnv->CallStaticVoidMethod(cls, mid, (jboolean) inEnable);
+      env->CallStaticVoidMethod(cls, mid, (jboolean) inEnable);
    }
 
    bool getMultitouchSupported() { return true; }
@@ -253,31 +259,34 @@ void TerminateMainLoop()
 
 ByteArray AndroidGetAssetBytes(const char *inResource)
 {
-    jclass cls = gEnv->FindClass("org/haxe/nme/GameActivity");
-    jmethodID mid = gEnv->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
+    JNIEnv *env = GetEnv();
+
+    jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+    jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
     if (mid == 0)
         return 0;
 
-    jstring str = gEnv->NewStringUTF( inResource );
-    jbyteArray bytes = (jbyteArray)gEnv->CallStaticObjectMethod(cls, mid, str);
+    jstring str = env->NewStringUTF( inResource );
+    jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(cls, mid, str);
     if (bytes==0)
 	 {
        return 0;
 	 }
 
-    jint len = gEnv->GetArrayLength(bytes);
+    jint len = env->GetArrayLength(bytes);
 	 ByteArray result(len);
-    gEnv->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
+    env->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
     return result;
 }
 
 void AndoidRequestRender()
 {
-	jclass cls = gEnv->FindClass("org/haxe/nme/MainView");
-   jmethodID mid = gEnv->GetStaticMethodID(cls, "renderNow", "()V");
+   JNIEnv *env = GetEnv();
+	jclass cls =env->FindClass("org/haxe/nme/MainView");
+   jmethodID mid = env->GetStaticMethodID(cls, "renderNow", "()V");
    if (mid == 0)
        return;
-    gEnv->CallStaticVoidMethod(cls, mid);
+    env->CallStaticVoidMethod(cls, mid);
 }
 
 
@@ -297,13 +306,13 @@ extern "C"
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
-   gEnv = env;
-
+   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
    if (nme::sFrame)
       nme::sFrame->onResize(width,height);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
@@ -311,7 +320,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
-   gEnv = env;
+   env->GetJavaVM(&gJVM);
 
    int top = 0;
    gc_set_top_of_stack(&top,true);
@@ -320,72 +329,77 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
 {
-   gEnv = env;
 
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnTouch(type,x,y,id);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
 {
-   gEnv = env;
 
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnTrackball(dx,dy);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
 {
-   gEnv = env;
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnKey(code,down);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
-   gEnv = env;
+   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnPoll();
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
 {
-   gEnv = env;
+   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
 	{
       double delta = nme::sStage->GetNextWake()-nme::GetTimeStamp();
+      gc_set_top_of_stack(0,true);
       return delta;
 	}
+   gc_set_top_of_stack(0,true);
    return 3600*100000;
 }
 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject obj, int inVal)
 {
-   gEnv = env;
+   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->onActivityEvent(inVal);
+   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 

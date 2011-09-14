@@ -7,7 +7,7 @@
 
 using namespace nme;
 
-extern JNIEnv *gEnv;
+extern JNIEnv *GetEnv();
 
 enum JNIType
 {
@@ -32,12 +32,12 @@ struct JNIObject : public nme::Object
    {
       mObject = inObject;
       if (mObject)
-         gEnv->NewGlobalRef(mObject);
+         GetEnv()->NewGlobalRef(mObject);
    }
    ~JNIObject()
    {
       if (mObject)
-         gEnv->DeleteGlobalRef(mObject);
+         GetEnv()->DeleteGlobalRef(mObject);
    }
    operator jobject() { return mObject; }
    jobject mObject;
@@ -54,6 +54,18 @@ bool AbstractToJObject(value inValue, JNIObject *&outObject)
    return AbstractToObject(jobj,outObject);
 }
 
+void CheckException()
+{
+   JNIEnv *env = GetEnv();
+   jthrowable exc = env->ExceptionOccurred();
+   if (exc)
+   {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      val_throw(alloc_string("JNI Exception"));
+   }
+}
+
 struct JNIMethod : public nme::Object
 {
    enum { MAX = 20 };
@@ -65,15 +77,17 @@ struct JNIMethod : public nme::Object
       mReturn = jniVoid;
       mArgCount = 0;
 
-      mClass = gEnv->FindClass(val_string(inClass));
+      JNIEnv *env = GetEnv();
+
+      mClass = env->FindClass(val_string(inClass));
       const char *signature = val_string(inSignature);
       if (mClass)
       {
          if (inStatic)
-            mMethod = gEnv->GetStaticMethodID(mClass,
+            mMethod = env->GetStaticMethodID(mClass,
                val_string(inMethod), signature);
          else
-            mMethod = gEnv->GetMethodID(mClass,
+            mMethod = env->GetMethodID(mClass,
                val_string(inMethod), signature);
       }
       if (Ok())
@@ -87,13 +101,13 @@ struct JNIMethod : public nme::Object
       }
    }
 
-   bool HaxeToJNI(value inValue, JNIType inType, jvalue &out)
+   bool HaxeToJNI(JNIEnv *inEnv,value inValue, JNIType inType, jvalue &out)
    {
       switch(inType)
       {
          case jniObjectString:
             {
-               out.l = gEnv->NewStringUTF(val_string(inValue));
+               out.l = inEnv->NewStringUTF(val_string(inValue));
                return true;
             }
          case jniObjectArray: return false; // TODO
@@ -118,7 +132,7 @@ struct JNIMethod : public nme::Object
    }
 
 
-   bool HaxeToJNIArgs(value inArray, jvalue *outValues)
+   bool HaxeToJNIArgs(JNIEnv *inEnv, value inArray, jvalue *outValues)
    {
       if (val_array_size(inArray)!=mArgCount)
       {
@@ -127,7 +141,7 @@ struct JNIMethod : public nme::Object
       }
       for(int i=0;i<mArgCount;i++)
       {
-         if (!HaxeToJNI(val_array_i(inArray,i),mArgs[i],outValues[i]))
+         if (!HaxeToJNI(inEnv,val_array_i(inArray,i),mArgs[i],outValues[i]))
          {
             ELOG("HaxeToJNI could not convert param %d",i);
             return false;
@@ -216,20 +230,21 @@ struct JNIMethod : public nme::Object
       return JObjectToHaxe(inObject);
    }
 
-   value JStringToHaxe(jobject inObject)
+   value JStringToHaxe(JNIEnv *inEnv,jobject inObject)
    {
       jboolean is_copy;
-      const char *str = gEnv->GetStringUTFChars( (jstring)inObject, &is_copy);
+      const char *str = inEnv->GetStringUTFChars( (jstring)inObject, &is_copy);
       value result = alloc_string(str);
-      gEnv->ReleaseStringUTFChars((jstring)inObject, str);
+      inEnv->ReleaseStringUTFChars((jstring)inObject, str);
       return result;
    }
 
 
    value CallStatic( value inArgs)
    {
+      JNIEnv *env = GetEnv();
       jvalue jargs[MAX];
-      if (!HaxeToJNIArgs(inArgs,jargs))
+      if (!HaxeToJNIArgs(env,inArgs,jargs))
       {
          CleanStringArgs();
          ELOG("CallStatic - bad argument list");
@@ -241,37 +256,37 @@ struct JNIMethod : public nme::Object
       {
          case jniVoid:
             result = alloc_null();
-            gEnv->CallStaticVoidMethodA(mClass, mMethod, jargs);
+            env->CallStaticVoidMethodA(mClass, mMethod, jargs);
             break;
          case jniObject:
-            result = JObjectToHaxe(gEnv->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            result = JObjectToHaxe(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectString:
-            result = JStringToHaxe(gEnv->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            result = JStringToHaxe(env,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectArray:
-            result = JArrayToHaxe(gEnv->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            result = JArrayToHaxe(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniBoolean:
-            result = alloc_bool(gEnv->CallStaticBooleanMethodA(mClass, mMethod, jargs));
+            result = alloc_bool(env->CallStaticBooleanMethodA(mClass, mMethod, jargs));
             break;
          case jniByte:
-            result = alloc_int(gEnv->CallStaticByteMethodA(mClass, mMethod, jargs));
+            result = alloc_int(env->CallStaticByteMethodA(mClass, mMethod, jargs));
             break;
          case jniChar:
-            result = alloc_int(gEnv->CallStaticCharMethodA(mClass, mMethod, jargs));
+            result = alloc_int(env->CallStaticCharMethodA(mClass, mMethod, jargs));
             break;
          case jniShort:
-            result = alloc_int(gEnv->CallStaticShortMethodA(mClass, mMethod, jargs));
+            result = alloc_int(env->CallStaticShortMethodA(mClass, mMethod, jargs));
             break;
          case jniLong:
-            result = alloc_int(gEnv->CallStaticLongMethodA(mClass, mMethod, jargs));
+            result = alloc_int(env->CallStaticLongMethodA(mClass, mMethod, jargs));
             break;
          case jniFloat:
-            result = alloc_float(gEnv->CallStaticFloatMethodA(mClass, mMethod, jargs));
+            result = alloc_float(env->CallStaticFloatMethodA(mClass, mMethod, jargs));
             break;
          case jniDouble:
-            result = alloc_float(gEnv->CallStaticDoubleMethodA(mClass, mMethod, jargs));
+            result = alloc_float(env->CallStaticDoubleMethodA(mClass, mMethod, jargs));
             break;
       }
 
@@ -280,21 +295,14 @@ struct JNIMethod : public nme::Object
       return result;
    }
 
-   void CheckException()
-   {
-      jthrowable exc = gEnv->ExceptionOccurred();
-      if (exc)
-      {
-         gEnv->ExceptionDescribe();
-         gEnv->ExceptionClear();
-         val_throw(alloc_string("JNI Exception"));
-      }
-   }
+
 
    value CallMember(jobject inObject, value inArgs)
    {
+      JNIEnv *env = GetEnv();
+
       jvalue jargs[MAX];
-      if (!HaxeToJNIArgs(inArgs,jargs))
+      if (!HaxeToJNIArgs(env,inArgs,jargs))
       {
          CleanStringArgs();
          ELOG("CallMember - bad argument list");
@@ -306,37 +314,37 @@ struct JNIMethod : public nme::Object
       {
          case jniVoid:
             result = alloc_null();
-            gEnv->CallVoidMethodA(inObject, mMethod, jargs);
+            env->CallVoidMethodA(inObject, mMethod, jargs);
             break;
          case jniObject:
-            result = JObjectToHaxe(gEnv->CallObjectMethodA(inObject,mMethod, jargs));
+            result = JObjectToHaxe(env->CallObjectMethodA(inObject,mMethod, jargs));
             break;
          case jniObjectString:
-            result = JStringToHaxe(gEnv->CallObjectMethodA(inObject, mMethod, jargs));
+            result = JStringToHaxe(env,env->CallObjectMethodA(inObject, mMethod, jargs));
             break;
          case jniObjectArray:
-            result = JArrayToHaxe(gEnv->CallObjectMethodA(inObject, mMethod, jargs));
+            result = JArrayToHaxe(env->CallObjectMethodA(inObject, mMethod, jargs));
             break;
          case jniBoolean:
-            result = alloc_bool(gEnv->CallBooleanMethodA(inObject, mMethod, jargs));
+            result = alloc_bool(env->CallBooleanMethodA(inObject, mMethod, jargs));
             break;
          case jniByte:
-            result = alloc_int(gEnv->CallByteMethodA(inObject, mMethod, jargs));
+            result = alloc_int(env->CallByteMethodA(inObject, mMethod, jargs));
             break;
          case jniChar:
-            result = alloc_int(gEnv->CallCharMethodA(inObject, mMethod, jargs));
+            result = alloc_int(env->CallCharMethodA(inObject, mMethod, jargs));
             break;
          case jniShort:
-            result = alloc_int(gEnv->CallShortMethodA(inObject, mMethod, jargs));
+            result = alloc_int(env->CallShortMethodA(inObject, mMethod, jargs));
             break;
          case jniLong:
-            result = alloc_int(gEnv->CallLongMethodA(inObject, mMethod, jargs));
+            result = alloc_int(env->CallLongMethodA(inObject, mMethod, jargs));
             break;
          case jniFloat:
-            result = alloc_float(gEnv->CallFloatMethodA(inObject, mMethod, jargs));
+            result = alloc_float(env->CallFloatMethodA(inObject, mMethod, jargs));
             break;
          case jniDouble:
-            result = alloc_float(gEnv->CallDoubleMethodA(inObject, mMethod, jargs));
+            result = alloc_float(env->CallDoubleMethodA(inObject, mMethod, jargs));
             break;
       }
 
@@ -373,16 +381,77 @@ value nme_jni_call_static(value inMethod, value inArgs)
 DEFINE_PRIM(nme_jni_call_static,2);
 
 
-value nme_jni_call_member(value inObject, value inMethod, value inArgs)
+value nme_jni_call_member(value inMethod, value inObject, value inArgs)
 {
    JNIMethod *method;
    JNIObject *object;
    if (!AbstractToObject(inMethod,method))
+   {
+      ELOG("nme_jni_call_member - not a method");
       return alloc_null();
+   }
    if (!AbstractToJObject(inObject,object))
+   {
+      ELOG("nme_jni_call_member - invalid this");
       return alloc_null();
+   }
    return method->CallMember(object->mObject,inArgs);
 }
 DEFINE_PRIM(nme_jni_call_member,3);
+
+
+
+
+value nme_post_ui_callback(value inCallback)
+{
+   JNIEnv *env = GetEnv();
+   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+   if (cls)
+   {
+      jmethodID mid = env->GetStaticMethodID(cls, "postUICallback", "(J)V");
+      if (mid != 0)
+      {
+         AutoGCRoot *root = new AutoGCRoot(inCallback);
+         ELOG("NME set onCallback %p",root);
+         env->CallStaticVoidMethod(cls, mid, (jlong) root);
+         jthrowable exc = env->ExceptionOccurred();
+         if (exc)
+         {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            delete root;
+            val_throw(alloc_string("JNI Exception"));
+         }
+         return alloc_null();
+      }
+   }
+   ELOG("nme_post_ui_callback - failed");
+   return alloc_null();
+}
+DEFINE_PRIM(nme_post_ui_callback,1);
+
+extern "C"
+{
+
+#ifdef __GNUC__
+  #define JAVA_EXPORT __attribute__ ((visibility("default"))) JNIEXPORT
+#else
+  #define JAVA_EXPORT JNIEXPORT
+#endif
+
+
+JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject obj, jlong handle)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+
+   ELOG("NME onCallback %p",(void *)handle);
+   AutoGCRoot *root = (AutoGCRoot *)handle;
+   val_call0( root->get() );
+   delete root;
+   gc_set_top_of_stack(0,true);
+}
+
+}
 
 
