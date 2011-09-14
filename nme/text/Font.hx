@@ -43,9 +43,9 @@ typedef NativeFontData = {
 class Font
 {
 	
-	var fontName(default,null) : String;
-	var fontStyle(default,null) : FontStyle;
-	var fontType(default, null) : FontType;
+	public var fontName(default,null) : String;
+	public var fontStyle(default,null) : FontStyle;
+	public var fontType(default, null) : FontType;
 	
 	public function new(inFilename:String):Void {
 		
