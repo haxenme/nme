@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="Sample19"
+     title="NME Sample 19 - JNI"
+     package="org.haxe.nme.sample19"
+     version="1.0.0"
+     company="nme" 
+	  main="AndroidJNI"
+  />
+
+  <window
+      width="400"
+		height="300"
+		orientation="landscape"
+		fps="60"
+		background="0xffffff"
+      resizeable="true"
+		hardware="true"
+	/>
+
+  
+  <classpath name="." />
+  <classpath name="gen" />
+  <haxelib name="nme" />
+  <icon name="../common/nme.svg" />
+
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" />
+
+</project>
