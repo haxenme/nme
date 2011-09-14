@@ -27,11 +27,13 @@ public class GameActivity extends Activity {
     static MediaPlayer mMediaPlayer = null;
     static final String GLOBAL_PREF_FILE="nmeAppPrefs";
     static GameActivity activity;
+    public android.os.Handler mHandler;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         activity=this;
         mContext = this;
+        mHandler = new android.os.Handler();
         mAssets = getAssets();
         setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);  
 
@@ -52,6 +54,7 @@ public class GameActivity extends Activity {
         mView = new MainView(getApplication(),this);
 
         setContentView(mView);
+
     }
 
     public static void showKeyboard(boolean show) 
@@ -158,6 +161,13 @@ public class GameActivity extends Activity {
        mMediaPlayer.start();
 
        return 0;
+    }
+
+    static public void postUICallback(final long inHandle)
+    {
+       activity.mHandler.post(new Runnable() {
+         @Override public void run() {
+                NME.onCallback(inHandle); } });
     }
 
     static public void launchBrowser(String inURL)

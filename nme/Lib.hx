@@ -108,8 +108,22 @@ class Lib
       }
       return nmeCurrent;
    }
+   public static function postUICallback(inCallback:Void->Void)
+   {
+      #if android
+      nme_post_ui_callback(inCallback);
+      #end
+      #else
+      // May still be worth posting event to come back with the next UI event loop...
+      //  (or use timer?)
+      inCallback();
+      #end
+   }
 
 
+   #if android
+   static var nme_post_ui_callback = nme.Loader.load("nme_post_ui_callback",1);
+   #end
    static var nme_get_frame_stage = nme.Loader.load("nme_get_frame_stage",1);
    static var nme_set_asset_base = nme.Loader.load("nme_set_asset_base",1);
    static var nme_get_url = nme.Loader.load("nme_get_url",1);
