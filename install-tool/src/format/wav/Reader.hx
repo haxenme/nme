@@ -68,11 +68,26 @@ class Reader {
 		var byteRate = Int32.toInt(i.readInt32());
 		var blockAlign = i.readUInt16();
 		var bitsPerSample = i.readUInt16();
-
+		
+		var nextChunk = i.readString (4);
+		
+		//
+		// cue
+		//
+		if (nextChunk == "cue ") {
+			
+			// ignore the cue chunk, if present before the data chunk
+			
+			var cuelen = Int32.toInt (i.readInt32 ());
+			var cues = i.read (cuelen);
+			nextChunk = i.readString (4);
+			
+		}
+		
 		//
 		// data
 		//
-		if (i.readString(4) != "data")
+		if (nextChunk != "data")
 			throw "expected data subchunk";
 		
 		var datalen = Int32.toInt(i.readInt32());
