@@ -307,13 +307,15 @@ class FlashInstaller extends InstallerBase {
 
 
          var kerning = new Array<FontKerningData>();
-         for(k in font.kerning)
-            kerning.push({
-               charCode1:  k.left_glyph,
-               charCode2:  k.right_glyph,
-               adjust:     k.x,
-            });
-
+		 
+		 if (font.kerning != null) {
+			 for(k in font.kerning)
+				kerning.push({
+				   charCode1:  k.left_glyph,
+				   charCode2:  k.right_glyph,
+				   adjust:     k.x,
+				});
+		 }
  
          var swf_em = 1024*20;
          var ascent = Math.ceil(font.ascend * swf_em / font.em_size);
