@@ -52,7 +52,7 @@ class SharedObject extends EventDispatcher {
 		
 		#if (iphone || android)
 			
-			untyped nme_clear_user_preference (id);
+			untyped nme_clear_user_preference (name);
 			
 		#else
 			
@@ -75,7 +75,7 @@ class SharedObject extends EventDispatcher {
 		
 		#if (iphone || android)
 			
-			untyped nme_set_user_preference (id, encodedData);
+			untyped nme_set_user_preference (name, encodedData);
 			
 		#else
 			
