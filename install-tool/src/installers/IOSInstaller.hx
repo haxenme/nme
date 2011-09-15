@@ -5,6 +5,7 @@ import data.NDLL;
 import neko.FileSystem;
 import neko.io.Path;
 import neko.Lib;
+import neko.Sys;
 
 
 class IOSInstaller extends InstallerBase {
@@ -24,15 +25,17 @@ class IOSInstaller extends InstallerBase {
 		
 		var configuration:String = "Release";
 		
-		if (debug) {
+		//if (debug) {
 			
-			configuration = "Debug";
+			//configuration = "Debug";
 			
-		}
+		//}
 		
 		var iphoneVersion:String = defines.get ("IPHONE_VER");
 		
-		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "-sdk " + platformName + iphoneVersion, "-configuration " + configuration ] );
+		//runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "-sdk " + platformName + iphoneVersion, "-configuration " + configuration ] );
+		
+		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ] );
 		
 	}
 	
@@ -78,16 +81,19 @@ class IOSInstaller extends InstallerBase {
 		
 		var configuration:String = "Release";
 		
-		if (debug) {
+		//if (debug) {
 			
-			configuration = "Debug";
+			//configuration = "Debug";
 			
-		}
+		//}
 		
-		var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_FILE") + ".app/";
-		var targetPath:String = "~/Library/Application Support/iPhone Simulator/4.3.2/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_FILE") + ".app/";
+		var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
+		var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
 		
-		runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iOS Simulator.app" ] );
+		mkdir (targetPath);
+		recursiveCopy (applicationPath, targetPath);
+		
+		runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 		
 	}
 	

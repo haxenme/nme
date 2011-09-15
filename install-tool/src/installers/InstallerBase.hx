@@ -445,8 +445,15 @@ class InstallerBase {
 	
 	private function mkdir (directory:String):Void {
 		
-		var parts = directory.split("/");
 		var total = "";
+		
+		if (directory.substr (0, 1) == "/") {
+			
+			total = "/";
+			
+		}
+		
+		var parts = directory.split("/");
 		
 		for (part in parts) {
 			
