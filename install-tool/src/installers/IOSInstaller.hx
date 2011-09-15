@@ -25,16 +25,16 @@ class IOSInstaller extends InstallerBase {
 		
 		var configuration:String = "Release";
 		
-		if (debug) {
+		//if (debug) {
 			
-			configuration = "Debug";
+			//configuration = "Debug";
 			
-		}
+		//}
 		
 		var iphoneVersion:String = defines.get ("IPHONE_VER");
 		
 		//runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "-sdk " + platformName + iphoneVersion, "-configuration " + configuration ] );
-		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion, "BUILD_STYLE=" + configuration ] );
+		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ] );
 		
 	}
 	
@@ -80,11 +80,11 @@ class IOSInstaller extends InstallerBase {
 		
 		var configuration:String = "Release";
 		
-		if (debug) {
+		//if (debug) {
 			
-			configuration = "Debug";
+			//configuration = "Debug";
 			
-		}
+		//}
 		
 		var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
 		//var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
