@@ -32,6 +32,7 @@ class InstallerBase {
 	private var NME:String;
 	private var projectFile:String;
 	private var target:String;
+	private var targetMode:String;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -47,7 +48,7 @@ class InstallerBase {
 	}
 	
 	
-	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool):Void {
+	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetMode:String, debug:Bool):Void {
 		
 		NME = inNME;
 		this.command = command;
@@ -55,6 +56,7 @@ class InstallerBase {
 		this.includePaths = includePaths;
 		this.projectFile = projectFile;
 		this.target = target;
+		this.targetMode = targetMode;
 		this.debug = debug;
 		
 		initializeTool ();
@@ -193,6 +195,7 @@ class InstallerBase {
              extension == "java" ||
              extension == "hx" ||
              extension == "hxml" ||
+			 extension == "html" || 
              extension == "ini" ||
              extension == "gpe" ||
              extension == "pbxproj" ||

@@ -24,7 +24,7 @@ class InstallTool {
 	public static var verbose = false;
 	
 	
-	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, debug:Bool) {
+	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetMode:String, debug:Bool) {
 		
 		var installer:InstallerBase = null;
 		
@@ -67,7 +67,7 @@ class InstallTool {
 			
 		}
 		
-		installer.create (nme, command, defines, includePaths, projectFile, target, debug);
+		installer.create (nme, command, defines, includePaths, projectFile, target, targetMode, debug);
 		
 	}
 	
@@ -353,7 +353,7 @@ class InstallTool {
 			
 		} else {
 			
-			if (words.length != 2) {
+			if (words.length < 2 || words.length > 3) {
 				
 				argumentError ("Wrong number of arguments for command: " + command);
 				return;
@@ -380,8 +380,16 @@ class InstallTool {
 			}
 			
 			var target:String = words[1];
+			var targetMode:String = "default";
 			
-			create (nme, command, defines, includePaths, words[0], target, debug);
+			if (words.length > 2) {
+				
+				targetMode = words[2];
+				
+			}
+			
+			create (nme, command, defines, includePaths, words[0], target, targetMode, debug);
+			
 		}
 		
 	}
