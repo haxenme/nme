@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  android:versionCode="1" android:versionName="1.0" package="::APP_PACKAGE::">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="::APP_PACKAGE::">
 
-  <application android:label="::APP_TITLE::" android:debuggable="true"
-      >
-    <activity android:name="MainActivity" android:label="::APP_TITLE::"
-      android:configChanges="keyboard|keyboardHidden|orientation"
-		::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::" ::end::
-		::if (HAS_ICON):: android:icon="@drawable/icon" ::end::
-		>
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-  </application>
+	<application android:label="::APP_TITLE::" android:debuggable="true"::if (HAS_ICON):: android:icon="@drawable/icon"::end::>
 
-  <uses-sdk android:minSdkVersion="7"/>
-  <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
-  <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+		<activity android:name="MainActivity" android:label="::APP_TITLE::" android:configChanges="keyboard|keyboardHidden|orientation"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::>
+			
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+			
+		</activity>
+		
+	</application>
+
+	<uses-sdk android:minSdkVersion="7"/>
+	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
+	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+	
 </manifest> 

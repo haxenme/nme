@@ -72,6 +72,13 @@ class InstallerBase {
 		// Strip off 0x ....
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
+		setDefault ("KEY_STORE_ALIAS_PASSWORD", defines.get ("KEY_STORE_PASSWORD"));
+		
+		if (defines.exists ("KEY_STORE")) {
+			
+			setDefault ("KEY_STORE_ALIAS", Path.withoutExtension (Path.withoutDirectory (defines.get ("KEY_STORE"))));
+			
+		}
 		
 		if (defines.exists ("NME_64")) {
 			
@@ -865,6 +872,29 @@ class InstallerBase {
 					case "section":
 						
 						parseXML (element, "");
+					
+					case "certificate":
+						
+						defines.set ("KEY_STORE", substitute (element.att.path));
+						
+						if (element.has.password) {
+							
+							defines.set ("KEY_STORE_PASSWORD", substitute (element.att.password));
+							
+							
+						}
+						
+						if (element.has.alias) {
+							
+							defines.set ("KEY_STORE_ALIAS", substitute (element.att.alias));
+							
+						}
+						
+						if (element.has.alias_password) {
+							
+							defines.set ("KEY_STORE_ALIAS_PASSWORD", substitute (element.att.alias_password));
+							
+						}
 					
 				}
 				

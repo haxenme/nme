@@ -301,6 +301,7 @@ class InstallTool {
 			} else if (arg == "-debug") {
 				
 				debug = true;
+				defines.set ("debug", "");
 				
 			} else if (command.length == 0) {
 				

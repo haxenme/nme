@@ -52,12 +52,13 @@
      <!-- Compile java - taken from eclipse code -->
 
      <!-- release signing -->
-     <!--
-    <property name="key.store" value="../signature/signature.keystore"/>
-    <property name="key.alias" value="key_name"/>
-    <property name="key.store.password" value="::password::"/>
-    <property name="key.alias.password" value="::password::"/>
-    -->
+    ::if (KEY_STORE)::
+    <!-- <property name="key.store" value="../signature/signature.keystore"/> -->
+	<property name="key.store" value="::KEY_STORE::"/>
+    ::if (KEY_STORE_ALIAS)::<property name="key.alias" value="::KEY_STORE_ALIAS::"/>::end::
+    ::if (KEY_STORE_PASSWORD)::<property name="key.store.password" value="::KEY_STORE_PASSWORD::"/>::end::
+    ::if (KEY_STORE_ALIAS_PASSWORD)::<property name="key.alias.password" value="::KEY_STORE_ALIAS_PASSWORD::"/>::end::
+    ::end::
 
     <property name="java_target" value="1.6"/>
     <property name="java_source" value="1.6"/>
