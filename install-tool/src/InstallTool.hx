@@ -24,7 +24,7 @@ class InstallTool {
 	public static var verbose = false;
 	
 	
-	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetMode:String, debug:Bool) {
+	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool) {
 		
 		var installer:InstallerBase = null;
 		
@@ -67,7 +67,7 @@ class InstallTool {
 			
 		}
 		
-		installer.create (nme, command, defines, includePaths, projectFile, target, targetMode, debug);
+		installer.create (nme, command, defines, includePaths, projectFile, target, targetFlags, debug);
 		
 	}
 	
@@ -215,6 +215,7 @@ class InstallTool {
 		var debug:Bool = false;
 		var defines = new Hash <String> ();
 		var includePaths = new Array <String> ();
+		var targetFlags = new Hash <String> ();
 		
 		includePaths.push (".");
 		
@@ -304,6 +305,10 @@ class InstallTool {
 			} else if (command.length == 0) {
 				
 				command = arg;
+			
+			} else if (arg.substr (0, 1) == "-") {
+				
+				targetFlags.set (arg.substr (1), "");
 				
 			} else {
 				
@@ -327,7 +332,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = ["copy-if-newer", "rerun", "update", "test", "build", "installer", "uninstall", "trace"];
+		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace"];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -353,7 +358,7 @@ class InstallTool {
 			
 		} else {
 			
-			if (words.length < 2 || words.length > 3) {
+			if (words.length != 2) {
 				
 				argumentError ("Wrong number of arguments for command: " + command);
 				return;
@@ -380,15 +385,8 @@ class InstallTool {
 			}
 			
 			var target:String = words[1];
-			var targetMode:String = "default";
 			
-			if (words.length > 2) {
-				
-				targetMode = words[2];
-				
-			}
-			
-			create (nme, command, defines, includePaths, words[0], target, targetMode, debug);
+			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug);
 			
 		}
 		

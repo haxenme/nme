@@ -17,7 +17,7 @@ class IOSInstaller extends InstallerBase {
 	   
 		var platformName:String = "iphoneos";
 		
-		if (targetMode == "simulator") {
+		if (targetFlags.exists ("simulator")) {
 			
 			platformName = "iphonesimulator";
 			
@@ -25,17 +25,16 @@ class IOSInstaller extends InstallerBase {
 		
 		var configuration:String = "Release";
 		
-		//if (debug) {
+		if (debug) {
 			
-			//configuration = "Debug";
+			configuration = "Debug";
 			
-		//}
+		}
 		
 		var iphoneVersion:String = defines.get ("IPHONE_VER");
 		
 		//runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "-sdk " + platformName + iphoneVersion, "-configuration " + configuration ] );
-		
-		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ] );
+		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion, "BUILD_STYLE=" + configuration ] );
 		
 	}
 	
@@ -73,27 +72,36 @@ class IOSInstaller extends InstallerBase {
 	
 	override function run ():Void { 
 		
-		if (targetMode != "simulator") {
+		if (!targetFlags.exists ("simulator")) {
 			
-			throw "You must use XCode to install on an iOS device. Launch XCode or use \"ios simulator\" to run your project";
+			throw "You must use XCode to install on a real device. Launch XCode or add the -simulator flag to run your project";
 			
 		}
 		
 		var configuration:String = "Release";
 		
-		//if (debug) {
+		if (debug) {
 			
-			//configuration = "Debug";
+			configuration = "Debug";
 			
-		//}
+		}
 		
 		var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
-		var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
+		//var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
 		
-		mkdir (targetPath);
-		recursiveCopy (applicationPath, targetPath);
+		//mkdir (targetPath);
+		//recursiveCopy (applicationPath, targetPath);
 		
-		runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
+		var family:String = "iphone";
+		
+		if (targetFlags.exists ("ipad")) {
+			
+			family = "ipad";
+			
+		}
+		
+		runCommand ("", NME + "/install-tool/iphone/iphonesim", [ "launch", applicationPath, defines.get ("IPHONE_VER"), family ] );
+		//runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 		
 	}
 	

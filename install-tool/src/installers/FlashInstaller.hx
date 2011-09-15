@@ -26,7 +26,7 @@ class FlashInstaller extends InstallerBase {
 		recursiveCopy (NME + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
 		recursiveCopy (NME + "/install-tool/flash/template", buildDirectory + "/flash/haxe");
 		
-		if (targetMode == "web") {
+		if (targetFlags.exists ("web")) {
 			
 			recursiveCopy (NME + "/install-tool/flash/web-template", buildDirectory + "/flash/bin");
 			

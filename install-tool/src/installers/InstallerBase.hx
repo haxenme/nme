@@ -32,7 +32,7 @@ class InstallerBase {
 	private var NME:String;
 	private var projectFile:String;
 	private var target:String;
-	private var targetMode:String;
+	private var targetFlags:Hash <String>;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -48,7 +48,7 @@ class InstallerBase {
 	}
 	
 	
-	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetMode:String, debug:Bool):Void {
+	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool):Void {
 		
 		NME = inNME;
 		this.command = command;
@@ -56,7 +56,7 @@ class InstallerBase {
 		this.includePaths = includePaths;
 		this.projectFile = projectFile;
 		this.target = target;
-		this.targetMode = targetMode;
+		this.targetFlags = targetFlags;
 		this.debug = debug;
 		
 		initializeTool ();
