@@ -1,6 +1,7 @@
 -main ApplicationMain ::HAXE_FLAGS::
 -cp ::BUILD_DIR::/cpp/haxe
 -cpp ::CPP_DIR::
+-D no_console
 --remap flash:nme
 
 

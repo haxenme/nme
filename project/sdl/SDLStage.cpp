@@ -15,6 +15,11 @@
 #include <SDL_mixer.h>
 #endif
 
+#ifdef HX_WINDOWS
+#include <windows.h>
+#endif
+
+
 namespace nme
 {
 
@@ -452,6 +457,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    if (PDL_GetPDKVersion () >= 100)
 	  PDL_Init(0);
 #endif
+#ifdef HX_WINDOWS
+	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
+#endif
 	
    unsigned int sdl_flags = 0;
    bool fullscreen = (inFlags & wfFullScreen) != 0;
@@ -535,14 +543,17 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    SDL_Surface* screen = 0;
    bool is_opengl = false;
    int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
+   
+   int startingPass = 0;
+   
+	#if defined (WEBOS) || defined (HX_WINDOWS)
+	startingPass = 2;
+	#endif
 
    if (opengl)
    {
-      for(int pass=0;pass<3;pass++)
+      for(int pass=startingPass;pass<3;pass++)
       {
-         #ifdef WEBOS
-         pass = 2;
-         #endif
          /* Initialize the display */
          for(int aa_pass = aa_tries; aa_pass>=0; --aa_pass)
          {
