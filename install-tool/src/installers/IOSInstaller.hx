@@ -67,6 +67,8 @@ class IOSInstaller extends InstallerBase {
 		ndlls.push (new NDLL ("jpeg", "nme", false));
 		ndlls.push (new NDLL ("z", "nme", false));
 		
+		setDefault ("IPHONE_VER", "4.3");
+		
 	}
 	
 	
