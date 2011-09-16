@@ -138,7 +138,13 @@ class InstallerBase {
 			
 		}
 		
-		if (command != "update" && command != "build" && command != "test" && command != "run" && command != "rerun" && command != "trace") {
+		if (command == "uninstall") {
+			
+			uninstall ();
+			
+		}
+		
+		if (command != "update" && command != "build" && command != "test" && command != "run" && command != "rerun" && command != "trace" && command != "uninstall") {
 			
 			throw ("Command not implemented: " + command);
 			
@@ -773,7 +779,17 @@ class InstallerBase {
 					
 					case "include":
 						
-						var name:String = findIncludeFile (substitute (element.att.name));
+						var name:String = "";
+						
+						if (element.has.path) {
+							
+							name = findIncludeFile (substitute (element.att.path));
+							
+						} else {
+							
+							name = findIncludeFile (substitute (element.att.name));
+							
+						}
 						
 						if (name != "") {
 							
@@ -819,7 +835,18 @@ class InstallerBase {
 					
 					case "icon":
 						
-						var name:String = substitute(element.att.name);
+						var name:String = "";
+						
+						if (element.has.path) {
+							
+							name = substitute(element.att.path);
+							
+						} else {
+							
+							name = substitute(element.att.name);
+							
+						}
+						
 						var width:String = "";
 						var height:String = "";
 						
