@@ -400,13 +400,14 @@ void Graphics::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned
 
 void Graphics::drawTriangles(const QuickVec<float> &inXYs,
             const QuickVec<int> &inIndices,
-            const QuickVec<float> &inUVT, int inCull)
+            const QuickVec<float> &inUVT, int inCull,
+            const QuickVec<int> &inColours)
 {
 	Flush( );
 	IGraphicsFill *fill = mFillJob.mFill;
 
    GraphicsTrianglePath *path = new GraphicsTrianglePath(inXYs,
-           inIndices, inUVT, inCull );
+           inIndices, inUVT, inCull, inColours );
    GraphicsJob job;
    path->IncRef();
 

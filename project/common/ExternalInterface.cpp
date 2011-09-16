@@ -1655,25 +1655,29 @@ value nme_gfx_draw_round_rect(value *arg, int args)
 }
 DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
 
-value nme_gfx_draw_triangles(value inGfx, value inVertices, value inIndices,
-         value inUVData, value inCull )
+value nme_gfx_draw_triangles(value *arg, int args )
 {
+
+	enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours };
+	
    Graphics *gfx;
-   if (AbstractToObject(inGfx,gfx))
+   if (AbstractToObject(arg[aGfx],gfx))
    {
       QuickVec<float> vertices;
       QuickVec<int> indices;
       QuickVec<float> uvt;
-      FillArrayDouble(vertices,inVertices);
-      FillArrayInt(indices,inIndices);
-      FillArrayDouble(uvt,inUVData);
+      QuickVec<int> colours;
+      FillArrayDouble(vertices,arg[aVertices]);
+      FillArrayInt(indices,arg[aIndices]);
+      FillArrayDouble(uvt,arg[aUVData]);
+      FillArrayInt(colours, arg[aColours]);
 
-      gfx->drawTriangles(vertices, indices, uvt, val_int(inCull) );
+      gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours );
    }
    
    return alloc_null();
 }
-DEFINE_PRIM(nme_gfx_draw_triangles,5);
+DEFINE_PRIM_MULT(nme_gfx_draw_triangles);
 
 
 value nme_gfx_draw_data(value inGfx,value inData)

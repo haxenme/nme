@@ -142,6 +142,7 @@ public:
    void AddTriangles(GraphicsTrianglePath *inPath)
    {
       Vertices &vertices = mArrays->mVertices;
+      Colours &colours = mArrays->mColours;
       Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       bool persp = inPath->mType == vtVertexUVT;
@@ -152,7 +153,13 @@ public:
       for(int v=0;v<inPath->mVertices.size();v++)
       {
          if (!persp)
+         {
            vertices.push_back(inPath->mVertices[v]);
+           if(inPath->mColours.size()>0)
+           {
+              colours.push_back(inPath->mColours[v]);/*mwb*/
+           }
+         }
 
          if (inPath->mType != vtVertex)
          {

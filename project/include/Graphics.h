@@ -292,12 +292,14 @@ class GraphicsTrianglePath : public IGraphicsPath
 public:
    GraphicsTrianglePath( const QuickVec<float> &inXYs,
             const QuickVec<int> &inIndixes,
-            const QuickVec<float> &inUVT, int inCull);
+            const QuickVec<float> &inUVT, int inCull,
+            const QuickVec<int> &inColours);
 
    VertexType       mType;
    int              mTriangleCount;
    QuickVec<UserPoint>  mVertices;
    QuickVec<float>  mUVT;
+   QuickVec<uint32> mColours;
 };
 
 // ----------------------------------------------------------------------
@@ -673,7 +675,7 @@ public:
    void tile(float x, float y, const Rect &inTileRect);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
-            const QuickVec<float> &inUVT, int inCull);
+            const QuickVec<float> &inUVT, int inCull, const QuickVec<int> &inColours);
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);

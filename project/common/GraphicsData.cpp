@@ -103,9 +103,13 @@ void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs)
 
 GraphicsTrianglePath::GraphicsTrianglePath( const QuickVec<float> &inXYs,
             const QuickVec<int> &inIndices,
-            const QuickVec<float> &inUVT, int inCull)
+            const QuickVec<float> &inUVT, int inCull,
+            const QuickVec<int> &inColours)
 {
 	UserPoint *v = (UserPoint *) &inXYs[0];
+    uint32 *c = (uint32 *) &inColours[0];
+    if(inColours.empty()) c=NULL;
+	
 	int v_count = inXYs.size()/2;
 	int uv_parts = inUVT.size()==v_count*2 ? 2 : inUVT.size()==v_count*3 ? 3 : 0;
 	const float *uvt = &inUVT[0];
@@ -163,6 +167,15 @@ GraphicsTrianglePath::GraphicsTrianglePath( const QuickVec<float> &inXYs,
 					mVertices.push_back(p0);
 					mVertices.push_back(p1);
 					mVertices.push_back(p2);
+                    if(c)
+                    {
+                       uint32 co0 = c[i0];
+                       uint32 co1 = c[i1];
+                       uint32 co2 = c[i2];
+                       mColours.push_back(co0);
+                       mColours.push_back(co1);
+                       mColours.push_back(co2);
+                    }
 					if (uv_parts)
 					{
 						const float *f = uvt + uv_parts*i0;
