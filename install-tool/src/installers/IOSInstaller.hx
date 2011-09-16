@@ -103,7 +103,11 @@ class IOSInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand ("", NME + "/install-tool/iphone/iphonesim", [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
+		var launcher:String = NME + "/install-tool/iphone/iphonesim";
+		
+		Sys.command ("chmod", [ "755", launcher ]);
+		
+		runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
 		//runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 		
 	}
