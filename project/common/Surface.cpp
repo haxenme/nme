@@ -91,11 +91,14 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
       mStride = inWidth*pix_size;
    }
 
-   mBase = new unsigned char[mStride * mHeight];
+   mBase = new unsigned char[mStride * mHeight+1];
+   mBase[mStride*mHeight] = 69;
 }
 
 SimpleSurface::~SimpleSurface()
 {
+   if (mBase[mStride*mHeight]!=69)
+      ELOG("Image write overflow");
    delete [] mBase;
 }
 
