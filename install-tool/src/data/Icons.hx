@@ -18,6 +18,8 @@ class Icons
       mIcons.push(inIcon);
    }
 
+   public function hasIcons() { return mIcons.length > 0; }
+
    public function findIcon(inWidth:Int, inHeight:Int)
    {
       // Look for exact match ...

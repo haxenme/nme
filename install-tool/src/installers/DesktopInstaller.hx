@@ -132,7 +132,7 @@ class DesktopInstaller extends InstallerBase {
 
    function updateIcon()
    {
-      if (!InstallTool.isMac)
+      if (!InstallTool.isMac && icons.hasIcons())
       {
          var icon_name = icons.findIcon(32,32);
          if (icon_name=="")
