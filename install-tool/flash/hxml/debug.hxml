@@ -3,4 +3,5 @@
 -swf9 ::BUILD_DIR::/flash/bin/::APP_FILE::.swf
 -swf-header ::WIN_WIDTH:::::WIN_HEIGHT:::::WIN_FPS:::::WIN_FLASHBACKGROUND::
 -cp ::BUILD_DIR::/flash/haxe
+-D fdb
 -debug
