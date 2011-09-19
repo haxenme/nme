@@ -373,7 +373,7 @@ class Stage extends nme.display.DisplayObjectContainer
 
             if (button==0 && click_obj.doubleClickEnabled)
             {
-               var now = nme.Timer.stamp();
+               var now = haxe.Timer.stamp();
                if (now-nmeLastClickTime<0.25)
                {
                   var evt = MouseEvent.nmeCreate(MouseEvent.DOUBLE_CLICK,inEvent, local, click_obj);
@@ -580,7 +580,7 @@ class Stage extends nme.display.DisplayObjectContainer
       //trace("nmeCheckRender " + frameRate);
       if (frameRate>0)
       {
-         var now = nme.Timer.stamp();
+         var now = haxe.Timer.stamp();
          if (now>=nmeLastRender + nmeFramePeriod)
          {
             nmeLastRender = now;
@@ -599,7 +599,7 @@ class Stage extends nme.display.DisplayObjectContainer
          return inOtherTimers;
       if (frameRate>0)
       {
-         var next = nmeLastRender + nmeFramePeriod - nme.Timer.stamp() - nmeEarlyWakeup;
+         var next = nmeLastRender + nmeFramePeriod - haxe.Timer.stamp() - nmeEarlyWakeup;
          if (next<inOtherTimers)
             return next;
       }
@@ -609,7 +609,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public function nmePollTimers()
    {
       //trace("poll");
-      nme.Timer.nmeCheckTimers();
+      haxe.Timer.nmeCheckTimers();
       nme.media.SoundChannel.nmePollComplete();
       nme.net.URLLoader.nmePollData();
       nmeCheckRender();
@@ -618,7 +618,7 @@ class Stage extends nme.display.DisplayObjectContainer
    public function nmeUpdateNextWake()
    {
       // TODO: In a multi-stage environment, may need to handle this better...
-      var next_wake = nme.Timer.nmeNextWake(315000000.0);
+      var next_wake = haxe.Timer.nmeNextWake(315000000.0);
       if (next_wake>0.02 && (nme.media.SoundChannel.nmeCompletePending() ||
 		                       nme.net.URLLoader.nmeLoadPending() ) )
       {
@@ -636,7 +636,7 @@ class Stage extends nme.display.DisplayObjectContainer
       {
          active = inActive;
          if (!active)
-            nmeLastRender = nme.Timer.stamp();
+            nmeLastRender = haxe.Timer.stamp();
 
          var evt = new Event( inActive ? Event.ACTIVATE : Event.DEACTIVATE );
          nmeBroadcast(evt);

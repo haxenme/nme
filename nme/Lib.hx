@@ -82,7 +82,7 @@ class Lib
    // Be careful not to blow precision, since storing ms since 1970 can overflow...
    static public function getTimer() : Int
    {
-      return Std.int(nme.Timer.stamp() * 1000.0);
+      return Std.int(haxe.Timer.stamp() * 1000.0);
    }
 
 

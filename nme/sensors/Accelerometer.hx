@@ -4,7 +4,7 @@ package nme.sensors;
 
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
-import nme.Timer;
+import haxe.Timer;
 
 
 class Accelerometer extends EventDispatcher {

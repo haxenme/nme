@@ -3,7 +3,7 @@ package nme.display;
 
 import nme.text.TextField;
 import nme.events.Event;
-import nme.Timer;
+import haxe.Timer;
 
 class FPS extends TextField
 {
