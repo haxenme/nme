@@ -452,6 +452,28 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject 
    gc_set_top_of_stack(0,true);
 }
 
+
+JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+
+   gc_set_top_of_stack(0,true);
+   return 0;
+}
+
+
+JAVA_EXPORT jdouble JNICALL Java_org_haxe_nme_NME_callNumericFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+
+   gc_set_top_of_stack(0,true);
+   return 0.0;
+}
+
+
+
 }
 
 
