@@ -21,4 +21,6 @@ public class NME {
      public static native double getNextWake();
      public static native int onActivity(int inState);
      public static native void onCallback(long inHandle);
+     public static native Object callObjectFunction(long inHandle,String function, Object[] args);
+     public static native double callNumericFunction(long inHandle,String function, Object[] args);
 }

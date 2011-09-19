@@ -1,6 +1,6 @@
 import haxe.io.Input;
 
-typedef JNIType = { name:String, arrayCount:Int };
+typedef JNIType = { name:String, java:String, arrayCount:Int };
 
 class CreateJNI
 {
@@ -17,7 +17,7 @@ class CreateJNI
    var mConstants : Array<Dynamic>;
    var mProcessed:Hash<Bool>;
    var mStack:Array<String>;
-   var mOuput:haxe.io.Output;
+   var mOutput:haxe.io.Output;
    var mCurrentType:String;
 
    function new(inClass:String)
@@ -54,14 +54,14 @@ class CreateJNI
       var source = neko.io.File.read(filename,true);
       var class_name = parts[parts.length-1].split("$").join(dollars);
 
-      var old_output = mOuput;
-      mOuput = neko.io.File.write(dir + "/" + class_name +".hx",true);
+      var old_output = mOutput;
+      mOutput = neko.io.File.write(dir + "/" + class_name +".hx",true);
       var old_constants = mConstants;
       mConstants = new Array<Dynamic>();
       parse(source,inMembers);
       source.close();
-      mOuput.close();
-      mOuput = old_output;
+      mOutput.close();
+      mOutput = old_output;
       mCurrentType = old_type;
       mConstants = old_constants;
    }
@@ -91,7 +91,7 @@ class CreateJNI
 
    function output(str:String)
    {
-      mOuput.writeString(str);
+      mOutput.writeString(str);
    }
 
    function pushClass(inName:String)
@@ -133,9 +133,9 @@ class CreateJNI
    var parsedTypes:Array<JNIType>;
    var parsedIsObj:Array<Bool>;
 
-   function addType(inName:String, inArrayCount:Int)
+   function addType(inName:String, inJavaType:String, inArrayCount:Int)
    {
-      parsedTypes.push( {name:inName, arrayCount:inArrayCount} );
+      parsedTypes.push( {name:inName, java:inJavaType, arrayCount:inArrayCount} );
    }
 
    function parseTypes(type:String,inArrayCount:Int)
@@ -145,17 +145,21 @@ class CreateJNI
       switch(type.substr(0,1))
       {
          case "[": parseTypes(type.substr(1),inArrayCount+1);
-         case "I","C","S","B" : addType("Int",inArrayCount);
-         case "V" : addType("Void",inArrayCount);
-         case "Z" : addType("Bool",inArrayCount);
-         case "J" : addType("Float",inArrayCount);
-         case "F","D" : addType("Float",inArrayCount);
+         case "I" : addType("Int","int",inArrayCount);
+         case "C" : addType("Int","char",inArrayCount);
+         case "S" : addType("Int","short",inArrayCount);
+         case "B" : addType("Int","byte",inArrayCount);
+         case "V" : addType("Void","void",inArrayCount);
+         case "Z" : addType("Bool","boolean",inArrayCount);
+         case "J" : addType("Float","long",inArrayCount);
+         case "F" : addType("Float","float",inArrayCount);
+         case "D" : addType("Float","double",inArrayCount);
          case "L":
             is_obj = true;
             var end = type.indexOf(";");
             if (end<1) throw("Bad object string: "+ type);
-               addType( processObjectArg(type.substr(1,end-1).split("/").join("."),inArrayCount),
-               inArrayCount );
+            var name = type.substr(1,end-1);
+            addType( processObjectArg(name.split("/").join("."),inArrayCount),name,inArrayCount);
             type=type.substr(end);
          default:
             throw("Unknown java type: " + type);
@@ -203,6 +207,35 @@ class CreateJNI
       }
       output(")");
    }
+
+   function javaType(inType)
+   {
+      var result = inType.java;
+      for(i in 0...inType.arrayCount)
+         result += "[]";
+      return result;
+   }
+
+   function nmeCallType(inType)
+   {
+      if (isJavaObject(inType))
+         return "callObjectFunction";
+      return "callNumericFunction";
+   }
+
+
+
+   function isJavaObject(inType)
+   {
+      if (inType.arrayCount>0)
+        return false;
+      return switch(inType.name)
+      {
+         case "Int", "Void", "Bool", "Float" : false;
+         default: true;
+      }
+   }
+
 
 
 
@@ -271,6 +304,10 @@ class CreateJNI
       var access = src.readUInt16();
       debug("Access: " + access);
 
+      var is_interface =  (access & ACC_INTERFACE)>0;
+      var java_out:haxe.io.Output = null;
+
+
       var this_ref = src.readUInt16();
       debug("This : " + mConstants[mConstants[this_ref]] );
       outputPackage(this_ref);
@@ -317,6 +354,34 @@ class CreateJNI
       output("\n{\n");
       if (super_ref==0)
          output("   var __jobject:Dynamic;\n\n");
+
+      if (is_interface)
+      {
+         var dir = "stubs";
+         var parts = mCurrentType.split(".");
+         var dir_parts = parts.slice(0,parts.length-1);
+         mkdir(dir);
+         for(d in dir_parts)
+         {
+            dir += "/" + d;
+            mkdir(dir);
+         }
+         var interface_name = parts[parts.length-1];
+         var impl_name = "Haxe" + parts[parts.length-1].split("$").join("");
+         java_out = neko.io.File.write( "stubs/" + dir_parts.join("/") + "/" + impl_name +".java",true);
+         java_out.writeString("package " + dir_parts.join(".") + ";\n");
+         java_out.writeString("import org.haxe.nme.Value;\n");
+         java_out.writeString("import org.haxe.nme.NME;\n\n");
+         java_out.writeString("class " + impl_name + " implements " +
+            interface_name.split("$").join(".") + " {\n");
+         java_out.writeString("   long __haxeHandle;\n");
+         java_out.writeString("   public " + impl_name + "(long inHandle) { __haxeHandle=inHandle; }\n");
+
+         output("   public function new() { __jobject = nme.JNI.createInterface(this,\"" +
+             dir_parts.join(".") + "." + interface_name + "\", classDef ); }\n\n" );
+      }
+ 
+
 
       var field_count = src.readUInt16();
       debug("Fields:" + field_count);
@@ -368,13 +433,13 @@ class CreateJNI
          {
             debug("  desc : " + mConstants[desc_ref]);
             splitFunctionType(mConstants[desc_ref]);
-
+   
             var func_key = func_name + " " + mConstants[desc_ref];
             if (constructor)
             {
                func_name = "_create";
             }
-
+   
             // Method overloading ...
             var uniq_name = func_name;
             var do_override = "";
@@ -401,63 +466,109 @@ class CreateJNI
             }
 
             if (constructor)
-               is_static = true;
-
-            output("   static var _" + uniq_name + "_func:Dynamic;\n");
-            output("   public ");
-            if (is_static || constructor)
-              output("static ");
-            output(do_override + "function " + uniq_name );
-            outputFunctionArgs();
-            output(" : ");
-
+                is_static = true;
             var ret_full_class = constructor ||
-               (retType.name==mCurrentType && retType.arrayCount==0 && is_static);
+                (retType.name==mCurrentType && retType.arrayCount==0 && is_static);
             if (constructor)
-               retType = { name:mCurrentType, arrayCount:0 };
-            if (ret_full_class)
-               outputType(retType);
-            else
-               output("Dynamic");
+                retType = { name:mCurrentType, java:mCurrentType, arrayCount:0 };
+            var ret_void = (retType.name=="Void" && retType.arrayCount==0);
 
-            output("\n");
-            output("   {\n");
-            func_name = "_" + uniq_name + "_func";
-            output("      if (" + func_name + "==null)\n");
-            output("         " + func_name + "=nme.JNI." +
-                  (is_static?"createStaticMethod":"createMemberMethod") );
 
-            output("(\"" + mCurrentType + "\",\"" + mConstants[name_ref] + "\",\"" +
-                  mConstants[desc_ref] + "\");\n");
-
-            var ret_void =
-               (retType.name=="Void" && retType.arrayCount==0);
-
-            if (ret_void)
-               output("      ");
-            else if (ret_full_class)
-               output("      return new " + retType.name + "(");
-            else
-               output("      return ");
-
-            if (is_static)
-               output("nme.JNI.callStatic(" + func_name + ",[");
-            else
-               output("nme.JNI.callMember(" + func_name + ",__jobject,[");
-
-            for(i in 0...parsedTypes.length)
+            if (is_interface)
             {
-               if (i>0) output(",");
-               output("arg" + i);
+               java_out.writeString("   @Override public " + javaType(retType) + " " +
+                        func_name + "(" );
+               for(i in 0...parsedTypes.length)
+               {
+                  if (i>0) output(",");
+                  java_out.writeString( javaType(parsedTypes[i]) + " arg" + i);
+               }
+               java_out.writeString(") {\n");
+               if (parsedTypes.length>0)
+                  java_out.writeString( "      Object [] args = new Object["+parsedTypes.length+"];\n");
+               else
+                  java_out.writeString( "      Object [] args = null;\n");
+
+               for(i in 0...parsedTypes.length)
+               {
+                  if (isJavaObject(parsedTypes[i]))
+                     java_out.writeString("      args["+i+"] = arg" + i + ";\n" );
+                  else
+                     java_out.writeString("      args["+i+"] = new Value(arg" + i + ");\n" );
+               }
+  
+               if (!ret_void)
+                  java_out.writeString("      return (" + javaType(retType) + ")" );
+
+               java_out.writeString("      NME." + nmeCallType(retType) + "(__haxeHandle,\"" +
+                       uniq_name + "\",args)" );
+
+               if (!ret_void)
+                  java_out.writeString(")");
+               java_out.writeString(";\n   }\n");
+
+
+               output("   public function " + uniq_name );
+               outputFunctionArgs();
+               output(" : ");
+                if (ret_full_class)
+                  outputType(retType);
+               else
+                  output("Dynamic");
+               output(" { return null; }\n");
             }
-            output("])");
-
-            if (ret_full_class)
-               output(");\n");
             else
-               output(";\n");
-
-            output("   }\n\n");
+            {
+               output("   static var _" + uniq_name + "_func:Dynamic;\n");
+               output("   public ");
+               if (is_static || constructor)
+                 output("static ");
+               output(do_override + "function " + uniq_name );
+               outputFunctionArgs();
+               output(" : ");
+   
+               if (ret_full_class)
+                  outputType(retType);
+               else
+                  output("Dynamic");
+   
+               output("\n");
+               output("   {\n");
+               func_name = "_" + uniq_name + "_func";
+               output("      if (" + func_name + "==null)\n");
+               output("         " + func_name + "=nme.JNI." +
+                     (is_static?"createStaticMethod":"createMemberMethod") );
+   
+               output("(\"" + mCurrentType + "\",\"" + mConstants[name_ref] + "\",\"" +
+                     mConstants[desc_ref] + "\");\n");
+   
+  
+               if (ret_void)
+                  output("      ");
+               else if (ret_full_class)
+                  output("      return new " + retType.name + "(");
+               else
+                  output("      return ");
+   
+               if (is_static)
+                  output("nme.JNI.callStatic(" + func_name + ",[");
+               else
+                  output("nme.JNI.callMember(" + func_name + ",__jobject,[");
+   
+               for(i in 0...parsedTypes.length)
+               {
+                  if (i>0) output(",");
+                  output("arg" + i);
+               }
+               output("])");
+   
+               if (ret_full_class)
+                  output(");\n");
+               else
+                  output(";\n");
+   
+               output("   }\n\n");
+            }
          }
 
          if (constructor && !constructed)
@@ -475,6 +586,17 @@ class CreateJNI
          for(a in 0...att_count)
              readAttribute(src,false,false);
       }
+ 
+
+      if (java_out!=null)
+      {
+         java_out.writeString("}\n");
+         java_out.close();
+         output("\n   static var classDef = \"");
+         // TODO: compile + dex + (zip?) + base64 
+         output("\";\n");
+      }
+
       output("}\n");
    }
 
