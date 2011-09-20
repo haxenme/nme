@@ -3,6 +3,7 @@ package nme.display;
 
 
 import nme.events.Event;
+import nme.events.EventDispatcher;
 import nme.events.EventPhase;
 import nme.geom.Point;
 import nme.geom.Rectangle;
@@ -13,7 +14,7 @@ import nme.geom.Point;
 import nme.filters.BitmapFilter;
 
 
-class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable
+class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
    public var graphics(nmeGetGraphics,null) : nme.display.Graphics;
    public var stage(nmeGetStage,null) : nme.display.Stage;

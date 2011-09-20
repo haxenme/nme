@@ -6,40 +6,6 @@ import nme.events.IEventDispatcher;
 import nme.events.Event;
 
 
-class Listener
-{
-   public var mListner : Function;
-   public var mUseCapture : Bool;
-   public var mPriority : Int;
-   static var sIDs = 1;
-   public var mID:Int;
-
-   public function new(inListener,inUseCapture,inPriority)
-   {
-      mListner = inListener;
-      mUseCapture = inUseCapture;
-      mPriority = inPriority;
-      mID = sIDs++;
-   }
-
-   public function Is(inListener,inCapture)
-   {
-      return Reflect.compareMethods(mListner,inListener) && mUseCapture == inCapture;
-   }
-
-   public function dispatchEvent(event : Event)
-   {
-      mListner(event);
-   }
-}
-
-typedef ListenerList = Array<Listener>;
-
-typedef EventMap = Hash<ListenerList>;
-
-
-
-
 class EventDispatcher implements IEventDispatcher
 {
    var nmeTarget:IEventDispatcher;
@@ -156,6 +122,38 @@ class EventDispatcher implements IEventDispatcher
    }
 
 }
+
+
+class Listener
+{
+   public var mListner : Function;
+   public var mUseCapture : Bool;
+   public var mPriority : Int;
+   static var sIDs = 1;
+   public var mID:Int;
+
+   public function new(inListener,inUseCapture,inPriority)
+   {
+      mListner = inListener;
+      mUseCapture = inUseCapture;
+      mPriority = inPriority;
+      mID = sIDs++;
+   }
+
+   public function Is(inListener,inCapture)
+   {
+      return Reflect.compareMethods(mListner,inListener) && mUseCapture == inCapture;
+   }
+
+   public function dispatchEvent(event : Event)
+   {
+      mListner(event);
+   }
+}
+
+
+typedef ListenerList = Array<Listener>;
+typedef EventMap = Hash<ListenerList>;
 
 
 #else
