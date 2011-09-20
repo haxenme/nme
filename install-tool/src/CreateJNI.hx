@@ -1,4 +1,5 @@
 import haxe.io.Input;
+import neko.io.Process;
 
 typedef JNIType = { name:String, java:String, arrayCount:Int };
 
@@ -13,6 +14,8 @@ class CreateJNI
    static inline var ACC_INTERFACE=0x0200;
    static inline var ACC_ABSTRACT=0x0400;
    static inline var dollars="___";
+
+   static var base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
    var mConstants : Array<Dynamic>;
    var mProcessed:Hash<Bool>;
@@ -237,6 +240,29 @@ class CreateJNI
    }
 
 
+	public static function getHaxelib(library:String):String
+   {
+		var proc = new Process("haxelib", ["path", library ]);
+		var result = "";
+		
+		try {
+			while(true)
+         {
+				var line = proc.stdout.readLine();
+				if (line.substr(0,1) != "-")
+					result = line;
+			}
+			
+		} catch (e:Dynamic) { };
+		proc.close();
+		if (result == "")
+			throw ("Could not find haxelib path  " + library + " - perhaps you need to install it?");
+		return result;
+	}
+	
+
+
+
 
 
    function parse(src:Input,inMembers:Hash<String>)
@@ -355,6 +381,8 @@ class CreateJNI
       if (super_ref==0)
          output("   var __jobject:Dynamic;\n\n");
 
+      var java_name = "";
+
       if (is_interface)
       {
          var dir = "stubs";
@@ -368,7 +396,8 @@ class CreateJNI
          }
          var interface_name = parts[parts.length-1];
          var impl_name = "Haxe" + parts[parts.length-1].split("$").join("");
-         java_out = neko.io.File.write( "stubs/" + dir_parts.join("/") + "/" + impl_name +".java",true);
+         java_name = dir_parts.join("/") + "/" + impl_name +".java";
+         java_out = neko.io.File.write("stubs/" + java_name,true);
          java_out.writeString("package " + dir_parts.join(".") + ";\n");
          java_out.writeString("import org.haxe.nme.Value;\n");
          java_out.writeString("import org.haxe.nme.NME;\n\n");
@@ -378,7 +407,7 @@ class CreateJNI
          java_out.writeString("   public " + impl_name + "(long inHandle) { __haxeHandle=inHandle; }\n");
 
          output("   public function new() { __jobject = nme.JNI.createInterface(this,\"" +
-             dir_parts.join(".") + "." + interface_name + "\", classDef ); }\n\n" );
+             dir_parts.join(".") + "." + impl_name + "\", classDef ); }\n\n" );
       }
  
 
@@ -592,9 +621,28 @@ class CreateJNI
       {
          java_out.writeString("}\n");
          java_out.close();
-         output("\n   static var classDef = \"");
-         // TODO: compile + dex + (zip?) + base64 
-         output("\";\n");
+
+         mkdir("compiled");
+         var nme_path = getHaxelib("nme") + "/install-tool/android/template/src";
+         neko.Sys.command( "javac", [ "-cp", "classes/android.jar",  "-sourcepath", 
+            nme_path, "-d", "compiled", "stubs/" + java_name ] );
+
+
+         neko.Sys.setCwd("compiled");
+
+         var class_name =  java_name.substr(0,java_name.length-4) + "class";
+
+         var dx = neko.Sys.getEnv("ANDROID_SDK") + "/platforms/android-7/tools/dx";
+
+         neko.Sys.command(dx, [ "--dex", "--output=classes.jar", class_name ] );
+
+         var class_def = neko.io.File.getBytes("classes.jar");
+
+         class_def = neko.zip.Compress.run(class_def,9);
+
+         var class_str = haxe.BaseCode.encode(class_def.toString(),base64);
+
+         output("\n   static var classDef = \"" + class_str + "\";\n");
       }
 
       output("}\n");
