@@ -2,6 +2,7 @@ package nme.display;
 #if (cpp || neko)
 
 
+import nme.display.DisplayObjectContainer;
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
@@ -11,13 +12,7 @@ import nme.geom.Point;
 import nme.geom.Rectangle;
 
 
-class TouchInfo
-{
-   public var touchOverObjects : Array<InteractiveObject>;
-   public function new() { touchOverObjects = []; }
-}
-
-class Stage extends nme.display.DisplayObjectContainer
+class Stage extends DisplayObjectContainer
 {
    var nmeMouseOverObjects:Array<InteractiveObject>;
    var nmeFocusOverObjects:Array<InteractiveObject>;
@@ -779,6 +774,13 @@ class Stage extends nme.display.DisplayObjectContainer
    static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
+}
+
+
+class TouchInfo
+{
+   public var touchOverObjects : Array<InteractiveObject>;
+   public function new() { touchOverObjects = []; }
 }
 
 
