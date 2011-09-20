@@ -209,9 +209,26 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
+	
+	std::string name = inName;
+	
+	if (!strcasecmp(inName.c_str(),"_serif")) {
+		
+		name = "georgia.ttf";
+		
+	} else if (!strcasecmp(inName.c_str(),"_sans")) {
+		
+		name = "arial.ttf";
+		
+	} else if (!strcasecmp(inName.c_str(),"_typewriter")) {
+		
+		name = "cour.ttf";
+		
+	}
+	
    _TCHAR win_path[2 * MAX_PATH];
    GetWindowsDirectory(win_path, 2*MAX_PATH);
-   outFile = std::string(win_path) + "\\Fonts\\" + inName;
+   outFile = std::string(win_path) + "\\Fonts\\" + name;
 
    return true;
 }
