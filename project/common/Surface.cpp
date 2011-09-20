@@ -1349,13 +1349,20 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
 
    dest.Translate(inOffset.x, inOffset.y);
 
-   RenderTarget t = BeginRender(dest);
-
-   // printf("Dest (%d,%d %dx%d) targ=%dx%d res=[%d,%d] me=(%dx%d)\n", dest.x, dest.y, dest.w, dest.h, t.Width(), t.Height(), result->Width(), result->Height(), Width(), Height());
+   src_rect = Rect(0,0,result->Width(),result->Height());
+   int dx = dest.x;
+   int dy = dest.y;
+   dest = dest.Intersect( Rect(0,0,mWidth,mHeight) );
+   dest.Translate(-dx,-dy);
+   dest = dest.Intersect( src_rect );
+   dest.Translate(dx,dy);
 
    int bpp = BytesPP();
+
+   RenderTarget t = BeginRender(dest);
+   //printf("Copy back @ %d,%d %dx%d  + (%d,%d)\n", dest.x, dest.y, t.Width(), t.Height(), dx, dy);
    for(int y=0;y<t.Height();y++)
-      memcpy((void *)(t.Row(y+dest.y)+(dest.x)*bpp), result->Row(y), t.Width()*bpp);
+      memcpy((void *)(t.Row(y+dest.y)+(dest.x)*bpp), result->Row(y-dy)-dx*bpp, dest.w*bpp);
 
    EndRender();
 
