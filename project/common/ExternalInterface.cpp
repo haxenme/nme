@@ -2667,6 +2667,19 @@ value nme_render_surface_to_surface(value* arg, int nargs)
 DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 
+value nme_bitmap_data_dump_bits(value inSurface)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      surf->dumpBits();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_dump_bits,1);
+
+
+
 // --- Sound --------------------------------------------------
 
 value nme_sound_from_file(value inFilename,value inForceMusic)

@@ -268,6 +268,10 @@ class BitmapData implements IBitmapDrawable
       pixels.position+=size;
    }
 
+   public function dumpBits() : Void
+   {
+      nme_bitmap_data_dump_bits(nmeHandle);
+   }
 
    public function setVector(rect:Rectangle,inPixels:Array<Int>) : Void
    {
@@ -382,7 +386,7 @@ class BitmapData implements IBitmapDrawable
    static var nme_bitmap_data_get_transparent = nme.Loader.load("nme_bitmap_data_get_transparent",1);
    static var nme_bitmap_data_set_flags = nme.Loader.load("nme_bitmap_data_set_flags",1);
    static var nme_bitmap_data_encode = nme.Loader.load("nme_bitmap_data_encode",3);
-
+   static var nme_bitmap_data_dump_bits = nme.Loader.load("nme_bitmap_data_dump_bits",1);
 }
 
 

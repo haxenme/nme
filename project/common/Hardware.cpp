@@ -311,49 +311,71 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 {
    DrawElement elem;
 
-
+   printf("1\n");
    elem.mColour = 0xffffffff;
+   printf("2\n");
    GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
+   printf("3\n");
    if (fill)
       elem.mColour = fill->mRGB.ToInt();
+   printf("4\n");
    GraphicsStroke *stroke = inJob.mStroke;
    if (stroke)
    {
+   printf("5\n");
       elem.mScaleMode = stroke->scaleMode;
       elem.mWidth = stroke->thickness;
    }
    else
    {
+   printf("6\n");
       elem.mScaleMode = ssmNormal;
       elem.mWidth = -1;
    }
+   printf("7\n");
 
    elem.mPrimType = ptPoints;
 
+   printf("8\n");
 
    elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
+   printf("9\n");
 
    HardwareArrays *arrays = &ioData.GetArrays(0,fill==0);
+   printf("01\n");
    Vertices &vertices = arrays->mVertices;
+   printf("11\n");
    elem.mFirst = vertices.size();
+   printf("12\n");
    vertices.resize( elem.mFirst + elem.mCount );
+   printf("13\n");
    memcpy( &vertices[elem.mFirst], &inPath.data[ inJob.mData0 ], elem.mCount*sizeof(UserPoint) );
+   printf("14\n");
 
    if (!fill)
    {
+   printf("15\n");
       Colours &colours = arrays->mColours;
+   printf("16\n");
       colours.resize( elem.mFirst + elem.mCount );
+   printf("17\n");
       const int * src = (const int *)(&inPath.data[ inJob.mData0 + elem.mCount*2]);
+   printf("18\n");
       int * dest = &colours[elem.mFirst];
+   printf("19\n");
       int n = elem.mCount;
+   printf("20\n");
       for(int i=0;i<n;i++)
       {
+   printf("11\n");
          int s = src[i];
          dest[i] = (s & 0xff00ff00) | ((s>>16)&0xff) | ((s<<16) & 0xff0000);
       }
    }
 
+   printf("22\n");
    arrays->mElements.push_back(elem);
+   printf("23 \n");
 }
 
 void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,

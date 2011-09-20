@@ -59,6 +59,8 @@ public:
 
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Zero() { Clear(0); }
+   virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
+
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
    const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
@@ -154,6 +156,14 @@ public:
    void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
+   void dumpBits()
+   { 
+     if(mBase)
+     {
+       delete [] mBase;
+       mBase = NULL;
+     }
+   }
 
 
 protected:
