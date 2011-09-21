@@ -127,7 +127,7 @@ class InstallerBase {
 			
 		}
 		
-		if (command == "run" || command == "rerun" || command == "test" || command == "trace") {
+		if (command == "test" || command == "trace") {
 			
 			if (InstallTool.traceEnabled || command == "trace") {
 				
