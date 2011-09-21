@@ -1,6 +1,7 @@
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
 import installers.FlashInstaller;
+import installers.HTML5Installer;
 import installers.InstallerBase;
 import installers.IOSInstaller;
 import installers.NekoInstaller;
@@ -59,6 +60,10 @@ class InstallTool {
 			case "neko":
 				
 				installer = new NekoInstaller ();
+			
+			case "html5":
+				
+				installer = new HTML5Installer ();
 			
 			default:
 				
