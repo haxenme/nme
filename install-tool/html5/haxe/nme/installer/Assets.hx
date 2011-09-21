@@ -1,6 +1,7 @@
 package nme.installer;
 
 
+import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.media.Sound;
 import nme.net.URLRequest;
@@ -20,8 +21,8 @@ class Assets {
 		
 		switch (id) {
 			
-			//::foreach assets::::if (type == "image")::case "::id::": return BitmapData.load ("::resourceName::");
-			//::end::::end::
+			::foreach assets::::if (type == "image")::case "::id::": return cast (ApplicationMain.loaders.get ("::resourceName::").contentLoaderInfo.content, Bitmap).bitmapData.clone ();
+			::end::::end::
 		}
 		
 		return null;

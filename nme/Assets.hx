@@ -1,5 +1,5 @@
 package nme;
-#if (!nme_install_tool || js)
+#if !nme_install_tool
 
 
 import nme.display.BitmapData;
