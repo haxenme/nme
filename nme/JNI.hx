@@ -3,6 +3,7 @@ package nme;
 class JNI
 {
    static var base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+   static var alreadyCreated = new Hash<Bool>();
 
 
    public static function createStaticMethod( className:String, memberName:String, signature:String )
@@ -29,11 +30,17 @@ class JNI
 
    public static function createInterface(haxeClass:Dynamic, className:String, classDef:String):Dynamic
    {
-      var bytes = haxe.io.Bytes.ofString(haxe.BaseCode.decode(classDef,base64));
+      var bytes:haxe.io.Bytes = null;
+      if (!alreadyCreated.get(className))
+      {
+         bytes = haxe.io.Bytes.ofString(haxe.BaseCode.decode(classDef,base64));
 
-      bytes = cpp.zip.Uncompress.run(bytes,9);
+         bytes = cpp.zip.Uncompress.run(bytes,9);
 
-      return null;
+         alreadyCreated.set(className,true);
+      }
+
+      return nme_jni_create_interface(haxeClass, className, bytes);
    }
 
 
@@ -41,6 +48,7 @@ class JNI
    static var nme_jni_create_method = nme.Loader.load("nme_jni_create_method",4);
    static var nme_jni_call_member = nme.Loader.load("nme_jni_call_member",3);
    static var nme_jni_call_static = nme.Loader.load("nme_jni_call_static",2);
+   static var nme_jni_create_interface = nme.Loader.load("nme_jni_create_interface",3);
 }
 
 

@@ -26,6 +26,45 @@ enum JNIType
    jniDouble,
 };
 
+
+class HaxeJavaLink : public Object
+{
+public:
+   HaxeJavaLink(value inHaxeOwner)
+   {
+      mHaxeOwner = inHaxeOwner;
+      mHaxeRoot = new AutoGCRoot((value)0);
+      mJavaObject = 0;
+   }
+   ~HaxeJavaLink()
+   {
+      delete mHaxeRoot;
+   }
+   void onJavaLinkLost()
+   {
+      mJavaObject = 0;
+      mHaxeRoot->set((value)0);
+   }
+   jobject GetJObject()
+   {
+      if (!mJavaObject)
+      {
+         // While jobject is alive, we keep the haxe object alive
+         mJavaObject = 0/*CreateInstance()*/;
+         mHaxeRoot->set(mHaxeOwner);
+      }
+      return mJavaObject;
+   }
+
+   std::string mClassName;
+   value       mHaxeOwner;
+   jobject     mJavaObject;
+   AutoGCRoot  *mHaxeRoot;
+};
+
+
+
+
 struct JNIObject : public nme::Object
 {
    JNIObject(jobject inObject)
@@ -43,15 +82,32 @@ struct JNIObject : public nme::Object
    jobject mObject;
 };
 
-bool AbstractToJObject(value inValue, JNIObject *&outObject)
+
+
+bool AbstractToJObject(value inValue, jobject &outObject)
 {
    if (AbstractToObject(inValue,outObject))
       return true;
+   HaxeJavaLink *link = 0;
+   if (AbstractToObject(inValue,link))
+   {
+      outObject = link->GetJObject();
+      return true;
+   }
+ 
    static int id__jobject = -1;
    if (id__jobject<0)
       id__jobject =  val_id("__jobject");
    value jobj = val_field(inValue,id__jobject);
-   return AbstractToObject(jobj,outObject);
+   if (AbstractToObject(jobj,outObject))
+      return true;
+   if (AbstractToObject(inValue,link))
+   {
+      outObject = link->GetJObject();
+      return true;
+   }
+ 
+   return false;
 }
 
 void CheckException()
@@ -113,10 +169,10 @@ struct JNIMethod : public nme::Object
          case jniObjectArray: return false; // TODO
          case jniObject:
             {
-               JNIObject *obj = 0;
+               jobject obj = 0;
                if (!AbstractToJObject(inValue,obj))
                   return false;
-               out.l = *obj;
+               out.l = obj;
                return true;
             }
          case jniBoolean: out.z = val_bool(inValue); return true;
@@ -384,7 +440,7 @@ DEFINE_PRIM(nme_jni_call_static,2);
 value nme_jni_call_member(value inMethod, value inObject, value inArgs)
 {
    JNIMethod *method;
-   JNIObject *object;
+   jobject object;
    if (!AbstractToObject(inMethod,method))
    {
       ELOG("nme_jni_call_member - not a method");
@@ -395,7 +451,7 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
       ELOG("nme_jni_call_member - invalid this");
       return alloc_null();
    }
-   return method->CallMember(object->mObject,inArgs);
+   return method->CallMember(object,inArgs);
 }
 DEFINE_PRIM(nme_jni_call_member,3);
 
@@ -430,6 +486,24 @@ value nme_post_ui_callback(value inCallback)
 }
 DEFINE_PRIM(nme_post_ui_callback,1);
 
+value nme_jni_create_interface(value inHaxeValue, value inClassName, value inClassDef)
+{
+   JNIEnv *env = GetEnv();
+
+   // Create class def
+   buffer buf = val_to_buffer(inClassDef);
+   if (buf!=0)
+   {
+      int len = buffer_size(buf);
+      char *data = buffer_data(buf);
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_jni_create_interface,1);
+
+
+
 extern "C"
 {
 
@@ -451,6 +525,15 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject 
    delete root;
    gc_set_top_of_stack(0,true);
 }
+
+
+JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_releaseInterface(JNIEnv * env, jobject obj, jlong handle)
+{
+   HaxeJavaLink *link = (HaxeJavaLink *)handle;
+   link->onJavaLinkLost();
+   return 0;
+}
+
 
 
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
