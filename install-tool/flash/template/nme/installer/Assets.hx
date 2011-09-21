@@ -1,4 +1,4 @@
-package nme;
+package nme.installer;
 
 
 import nme.display.BitmapData;
@@ -6,6 +6,7 @@ import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
+import ApplicationMain;
 
 
 /**
@@ -20,7 +21,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::::if (type == "image")::case "::id::": return BitmapData.load ("::resourceName::");
+			::foreach assets::::if (type == "image")::case "::id::": return cast (new NME_::flatName:: (), BitmapData);
 			::end::::end::
 		}
 		
@@ -33,7 +34,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::case "::id::": return ByteArray.readFile ("::resourceName::");
+			::foreach assets::case "::id::": return cast (new NME_::flatName:: (), ByteArray);
 			::end::
 		}
 		
@@ -46,7 +47,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::::if (type == "font")::case "::id::": return new Font ("::resourceName::"); 
+			::foreach assets::::if (type == "font")::case "::id::": return cast (new NME_::flatName:: (), Font); 
 			::end::::end::
 		}
 		
@@ -59,7 +60,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::::if (type == "sound")::case "::id::": return new Sound (new URLRequest ("::resourceName::"), null, false);::elseif (type == "music")::case "::id::": return new Sound (new URLRequest ("::resourceName::"), null, true);
+			::foreach assets::::if (type == "sound")::case "::id::": return cast (new NME_::flatName:: (), Sound);::elseif (type == "music")::case "::id::": return cast (new NME_::flatName:: (), Sound);
 			::end::::end::
 		}
 		

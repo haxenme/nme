@@ -1,4 +1,5 @@
 package nme;
+#if !nme_install_tool
 
 
 import nme.display.BitmapData;
@@ -51,3 +52,8 @@ class Assets {
 	
 	
 }
+
+
+#else
+typedef Assets = nme.installer.Assets;
+#end
