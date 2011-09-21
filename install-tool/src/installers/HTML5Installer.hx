@@ -17,7 +17,7 @@ class HTML5Installer extends InstallerBase {
 		var destination:String = buildDirectory + "/html5/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/install-tool/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/install-tool/html5/haxe", buildDirectory + "/html5/haxe");
 		recursiveCopy (NME + "/install-tool/html5/hxml", buildDirectory + "/html5/haxe");
 		
 		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
