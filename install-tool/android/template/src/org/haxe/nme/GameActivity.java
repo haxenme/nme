@@ -16,6 +16,13 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
+import dalvik.system.DexClassLoader;
+
+import java.io.File;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.lang.reflect.Constructor;
 
 public class GameActivity extends Activity {
 
@@ -28,6 +35,7 @@ public class GameActivity extends Activity {
     static final String GLOBAL_PREF_FILE="nmeAppPrefs";
     static GameActivity activity;
     public android.os.Handler mHandler;
+    static HashMap<String,Class> mLoadedClasses = new HashMap<String,Class>();
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -87,6 +95,84 @@ public class GameActivity extends Activity {
 
            return null;
     }
+
+    static public void defineClass(byte [] inData,String inClassName)
+    {
+       Log.e("GameActivity" ,"defineClass " + inData.length );
+       File dexOutputDir = mContext.getDir("dex", 0);
+       Log.e("GameActivity" ,"dex output dir " + dexOutputDir.toString() );
+       String tmp = dexOutputDir.getAbsolutePath() + "/classes.jar";
+
+       try
+       {
+           Log.e("GameActivity" ,"dex tmp " + tmp );
+           OutputStream out = null;
+           out = new FileOutputStream( new File(tmp),false);
+           out.write(inData);
+           Log.e("GameActivity" ,"wrote file");
+           if (out != null)
+              out.close();
+       }
+       catch(java.io.IOException e)
+       {
+           Log.e("GameActivity" ,"problem writing file");
+       }
+
+       Log.e("GameActivity" ,"creating loader");
+       DexClassLoader loader = new DexClassLoader(tmp, dexOutputDir.getAbsolutePath(),
+          "", mContext.getClass().getClassLoader());
+       Log.e("GameActivity" ,"Load name " + inClassName);
+       try
+       {
+          Class c = loader.loadClass(inClassName);
+          mLoadedClasses.put(inClassName,c);
+          Log.e("GameActivity" ,"loaded.");
+       }
+       catch( java.lang.ClassNotFoundException e )
+       {
+           Log.e("GameActivity" ,"Class not found.");
+       }
+    
+       Log.e("GameActivity" ,"Load name done.");
+       createInterfaceInstance(inClassName,0);
+    }
+
+    static public Object createInterfaceInstance(String inClassName,long inHandle)
+    {
+       Class c = mLoadedClasses.get(inClassName);
+       if (c!=null)
+       {
+          try {
+             Constructor construct = c.getConstructor(long.class);
+             Object result = construct.newInstance(inHandle);
+             Log.e("GameActivity" ,"Created instance:" + result);
+             return result;
+          }
+          catch( NoSuchMethodException e )
+          {
+             Log.e("GameActivity" ,"No method");
+          }
+          catch( SecurityException e )
+          {
+             Log.e("GameActivity" ,"Security Error");
+          }
+          catch( java.lang.InstantiationException e )
+          {
+             Log.e("GameActivity" ,"InstantiationException Error");
+          }
+          catch( java.lang.IllegalAccessException e )
+          {
+             Log.e("GameActivity" ,"IllegalAccessException Error");
+          }
+          catch( java.lang.reflect.InvocationTargetException e )
+          {
+             Log.e("GameActivity" ,"InvocationTargetException Error");
+          }
+       }
+       return null;
+    }
+
+
     static public int getSoundHandle(String inFilename)
     {
        int id = -1;

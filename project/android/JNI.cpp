@@ -27,10 +27,24 @@ enum JNIType
 };
 
 
+void CheckException()
+{
+   JNIEnv *env = GetEnv();
+   jthrowable exc = env->ExceptionOccurred();
+   if (exc)
+   {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      val_throw(alloc_string("JNI Exception"));
+   }
+}
+
+
+
 class HaxeJavaLink : public Object
 {
 public:
-   HaxeJavaLink(value inHaxeOwner)
+   HaxeJavaLink(const std::string &inClassName, value inHaxeOwner)
    {
       mHaxeOwner = inHaxeOwner;
       mHaxeRoot = new AutoGCRoot((value)0);
@@ -50,11 +64,32 @@ public:
       if (!mJavaObject)
       {
          // While jobject is alive, we keep the haxe object alive
-         mJavaObject = 0/*CreateInstance()*/;
+         mJavaObject = CreateInstance();
          mHaxeRoot->set(mHaxeOwner);
       }
       return mJavaObject;
    }
+
+   jobject CreateInstance()
+   {
+      JNIEnv *env = GetEnv();
+      jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      if (!cls)
+         return 0;
+
+      jmethodID def = env->GetStaticMethodID(cls, "createInterfaceInstance", "(Ljava/lang/String;J)V");
+      if (def != 0)
+      {
+         jstring name = env->NewStringUTF(mClassName.c_str());
+   
+         jobject result = env->CallStaticObjectMethod(cls, def, name, this);
+         jthrowable exc = env->ExceptionOccurred();
+         CheckException();
+         return result;
+      }
+      return 0;
+   }
+ 
 
    std::string mClassName;
    value       mHaxeOwner;
@@ -110,18 +145,6 @@ bool AbstractToJObject(value inValue, jobject &outObject)
    return false;
 }
 
-void CheckException()
-{
-   JNIEnv *env = GetEnv();
-   jthrowable exc = env->ExceptionOccurred();
-   if (exc)
-   {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-      val_throw(alloc_string("JNI Exception"));
-   }
-}
-
 struct JNIMethod : public nme::Object
 {
    enum { MAX = 20 };
@@ -140,11 +163,9 @@ struct JNIMethod : public nme::Object
       if (mClass)
       {
          if (inStatic)
-            mMethod = env->GetStaticMethodID(mClass,
-               val_string(inMethod), signature);
+            mMethod = env->GetStaticMethodID(mClass, val_string(inMethod), signature);
          else
-            mMethod = env->GetMethodID(mClass,
-               val_string(inMethod), signature);
+            mMethod = env->GetMethodID(mClass, val_string(inMethod), signature);
       }
       if (Ok())
       {
@@ -489,6 +510,12 @@ DEFINE_PRIM(nme_post_ui_callback,1);
 value nme_jni_create_interface(value inHaxeValue, value inClassName, value inClassDef)
 {
    JNIEnv *env = GetEnv();
+   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+   if (!cls)
+   {
+      ELOG("nme_jni_create_interface - bad class");
+      return alloc_null();
+   }
 
    // Create class def
    buffer buf = val_to_buffer(inClassDef);
@@ -496,11 +523,33 @@ value nme_jni_create_interface(value inHaxeValue, value inClassName, value inCla
    {
       int len = buffer_size(buf);
       char *data = buffer_data(buf);
+
+      ELOG("nme_jni_create_interface %d (%p)", len, data );
+
+      jbyteArray bArray = env->NewByteArray( len );
+      jbyte *jBytes = env->GetByteArrayElements( bArray, 0);
+      if (jBytes)
+      {
+         memcpy(jBytes, data, len);
+         env->ReleaseByteArrayElements(bArray, jBytes, 0);
+
+         jmethodID def = env->GetStaticMethodID(cls, "defineClass", "([BLjava/lang/String;)V");
+         if (def != 0)
+         {
+            jstring name = env->NewStringUTF(val_string(inClassName));
+            env->CallStaticVoidMethod(cls, def, bArray, name);
+            CheckException();
+         }
+         else
+            ELOG("nme_jni_create_interface - no method", len, data );
+      }
    }
 
-   return alloc_null();
+
+   HaxeJavaLink *link = new HaxeJavaLink( val_string(inClassName), inHaxeValue );
+   return ObjectToAbstract(link);
 }
-DEFINE_PRIM(nme_jni_create_interface,1);
+DEFINE_PRIM(nme_jni_create_interface,3);
 
 
 
