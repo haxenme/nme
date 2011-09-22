@@ -7,6 +7,7 @@ import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
+import ApplicationMain;
 
 
 /**
@@ -47,8 +48,8 @@ class Assets {
 		
 		switch (id) {
 			
-			//::foreach assets::::if (type == "font")::case "::id::": return new Font ("::resourceName::"); 
-			//::end::::end::
+			::foreach assets::::if (type == "font")::case "::id::": var font = cast (new NME_::flatName:: (), Font); font.fontName = "::flatName::"; return font; 
+			::end::::end::
 		}
 		
 		return null;

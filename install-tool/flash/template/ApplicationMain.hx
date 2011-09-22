@@ -1,13 +1,5 @@
-::foreach assets::
-	::if (type=="image")::
-		class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }
-	::else::
-		class NME_::flatName:: extends ::flashClass:: { }
-	::end::
-::end::
-
-
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
+import nme.Assets;
 
 
 class ApplicationMain {
@@ -61,7 +53,17 @@ class ApplicationMain {
 		
 		::foreach assets::
 		if (inName=="::id::")
-			return new NME_::flatName::();
+			 ::if (type=="image")::
+            return Assets.getBitmapData ("::resourceName::");
+         ::elseif (type=="sound")::
+            return Assets.getSound ("::resourceName::");
+         ::elseif (type=="music")::
+            return Assets.getSound ("::resourceName::");
+		 ::elseif (type== "font")::
+			 return Assets.getFont ("::resourceName::");
+         ::else::
+            return Assets.getBytes ("::resourceName::");
+         ::end::
 		::end::
 		
 		return null;
@@ -69,3 +71,12 @@ class ApplicationMain {
 	}
 	
 }
+
+
+::foreach assets::
+	::if (type=="image")::
+		class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }
+	::else::
+		class NME_::flatName:: extends ::flashClass:: { }
+	::end::
+::end::

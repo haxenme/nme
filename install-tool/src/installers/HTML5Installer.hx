@@ -1,6 +1,8 @@
 package installers;
 
 
+import data.Asset;
+import neko.FileSystem;
 import neko.io.Path;
 
 
@@ -23,6 +25,18 @@ class HTML5Installer extends InstallerBase {
 		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
+		
+	}
+	
+	
+	private function generateFontData (font:Asset, destination:String):Void {
+		
+		var sourcePath = font.sourcePath;
+		var targetPath = destination + font.targetPath;
+		
+		runCommand (Path.directory (targetPath), "neko", [ NME + "/install-tool/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath) ] );
+		
+		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@" + font.flatName;
 		
 	}
 	
@@ -59,7 +73,16 @@ class HTML5Installer extends InstallerBase {
 		for (asset in assets) {
 			
 			mkdir (Path.directory (destination + asset.targetPath));
-			copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+			
+			if (asset.type != "font") {
+				
+				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				
+			} else {
+				
+				generateFontData (asset, destination);
+				
+			}
 			
 		}
 		

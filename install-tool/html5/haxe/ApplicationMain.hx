@@ -4,6 +4,7 @@ import nme.display.Loader;
 import nme.events.Event;
 import nme.media.Sound;
 import nme.net.URLRequest;
+import nme.Assets;
 
 
 class ApplicationMain {
@@ -59,13 +60,15 @@ class ApplicationMain {
 		::foreach assets::
 		if (inName=="::id::") {
 			::if (type == "image")::
-			return cast (loaders.get ("::resourceName::").contentLoaderInfo.content, Bitmap).bitmapData.clone ();
+			return Assets.getBitmapData ("::resourceName::");
 			::elseif (type=="sound")::
-			return new Sound (new URLRequest ("::resourceName::"));
+			return Assets.getSound ("::resourceName::");
 			::elseif (type=="music")::
-			return new Sound (new URLRequest ("::resourceName::"));
+			return Assets.getSound ("::resourceName::");
+			::elseif (type== "font")::
+			 return Assets.getFont ("::resourceName::");
 			::else::
-			//return nme.utils.ByteArray.readFile(inName);
+			return Assets.getBytes ("::resourceName::");
 			::end::
 		}
 		::end::
@@ -95,3 +98,10 @@ class ApplicationMain {
    
    
 }
+
+
+::foreach assets::
+	::if (type=="font")::
+		class NME_::flatName:: extends ::flashClass:: { }
+	::end::
+::end::

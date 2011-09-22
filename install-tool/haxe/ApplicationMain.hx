@@ -1,3 +1,6 @@
+import nme.Assets;
+
+
 class ApplicationMain
 {
    public static function main()
@@ -23,15 +26,15 @@ class ApplicationMain
       if (inName=="::id::")
       {
          ::if (type=="image")::
-            return nme.display.BitmapData.load("::resourceName::");
+            return Assets.getBitmapData ("::resourceName::");
          ::elseif (type=="sound")::
-            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"),null,false);
+            return Assets.getSound ("::resourceName::");
          ::elseif (type=="music")::
-            return new nme.media.Sound(new nme.net.URLRequest("::resourceName::"), null, true);
+            return Assets.getSound ("::resourceName::");
 		 ::elseif (type== "font")::
-			 return new nme.text.Font ("::resourceName::");
+			 return Assets.getFont ("::resourceName::");
          ::else::
-            return nme.utils.ByteArray.readFile("::resourceName::");
+            return Assets.getBytes ("::resourceName::");
          ::end::
       }
       ::end::
