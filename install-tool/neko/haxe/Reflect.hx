@@ -30,12 +30,54 @@ class Reflect {
 	}
 
 	public inline static function field( o : Dynamic, field : String ) : Dynamic untyped {
-		return if( __dollar__typeof(o) != __dollar__tobject ) null else __dollar__objget(o,__dollar__hash(field.__s));
+		//return if( __dollar__typeof(o) != __dollar__tobject ) null else __dollar__objget(o,__dollar__hash(field.__s));
+		
+		var value = null;
+		
+		if ( __dollar__typeof(o) == __dollar__tobject) {
+			
+			var methodName = "nmeGet" + field.substr (0, 1).toUpperCase () + field.substr (1);
+			var method = __dollar__objget(o, __dollar__hash(methodName.__s));
+			
+			if (method != null) {
+				
+				value = Reflect.callMethod (o, method, []);
+				
+			}
+			
+			if (value == null) {
+				
+				value = __dollar__objget(o,__dollar__hash(field.__s));
+				
+			}
+			
+		}
+		
+		return value;
+		
 	}
 
 	public inline static function setField( o : Dynamic, field : String, value : Dynamic ) : Void untyped {
-		if( __dollar__typeof(o) == __dollar__tobject )
-			__dollar__objset(o,__dollar__hash(field.__s),value);
+		//if( __dollar__typeof(o) == __dollar__tobject )
+		//	__dollar__objset(o,__dollar__hash(field.__s),value);
+		
+		if ( __dollar__typeof(o) == __dollar__tobject ) {
+			
+			var methodName = "nmeSet" + field.substr (0, 1).toUpperCase () + field.substr (1);
+			var method = __dollar__objget(o, __dollar__hash(methodName.__s));
+			
+			if (method != null) {
+				
+				Reflect.callMethod (o, method, [ value ]);
+				
+			} else {
+				
+				__dollar__objset(o,__dollar__hash(field.__s),value);
+				
+			}
+			
+		}
+		
 	}
 
 	public inline static function callMethod( o : Dynamic, func : Dynamic, args : Array<Dynamic> ) : Dynamic untyped {
