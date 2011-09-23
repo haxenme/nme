@@ -81,6 +81,13 @@ class Reflect {
 	}
 
 	public inline static function callMethod( o : Dynamic, func : Dynamic, args : Array<Dynamic> ) : Dynamic untyped {
+		
+		if (args == null) {
+			
+			args = [];
+			
+		}
+		
 		return __dollar__call(func,o,args.__neko());
 	}
 
