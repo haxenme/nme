@@ -50,8 +50,8 @@ class Font
 	public function new(inFilename:String):Void {
 		
 		fontName = inFilename;
-		fontStyle = FontStyle.REGULAR;
-		fontType = FontType.DEVICE;
+		//fontStyle = FontStyle.REGULAR;
+		//fontType = FontType.DEVICE;
 		
 	}
 	
