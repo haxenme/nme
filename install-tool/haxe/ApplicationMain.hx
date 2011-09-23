@@ -26,15 +26,15 @@ class ApplicationMain
       if (inName=="::id::")
       {
          ::if (type=="image")::
-            return Assets.getBitmapData ("::resourceName::");
+            return Assets.getBitmapData ("::id::");
          ::elseif (type=="sound")::
-            return Assets.getSound ("::resourceName::");
+            return Assets.getSound ("::id::");
          ::elseif (type=="music")::
-            return Assets.getSound ("::resourceName::");
+            return Assets.getSound ("::id::");
 		 ::elseif (type== "font")::
-			 return Assets.getFont ("::resourceName::");
+			 return Assets.getFont ("::id::");
          ::else::
-            return Assets.getBytes ("::resourceName::");
+            return Assets.getBytes ("::id::");
          ::end::
       }
       ::end::

@@ -21,20 +21,21 @@ class ApplicationMain
    public static function getAsset(inName:String):Dynamic
    {
       ::foreach assets::
-      if (inName=="::id::")
-      {
-         ::if (type=="image")::
-            return nme.display.BitmapData.load(inName);
-         ::elseif (type=="sound")::
-            return new nme.media.Sound(new nme.net.URLRequest(inName),null,false);
-         ::elseif (type=="music")::
-            return new nme.media.Sound(new nme.net.URLRequest(inName),null,true);
-         ::else::
-            return nme.utils.ByteArray.readFile(inName);
-         ::end::
-      }
-      ::end::
-      return null;
+		if (inName=="::id::") {
+			::if (type == "image")::
+			return Assets.getBitmapData ("::id::");
+			::elseif (type=="sound")::
+			return Assets.getSound ("::id::");
+			::elseif (type=="music")::
+			return Assets.getSound ("::id::");
+			::elseif (type== "font")::
+			 return Assets.getFont ("::id::");
+			::else::
+			return Assets.getBytes ("::id::");
+			::end::
+		}
+		::end::
+		return null;
    }
 }
 
