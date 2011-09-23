@@ -5,6 +5,7 @@
 	<title>::APP_TITLE::</title>
 </head>
 <body style="padding: 0; margin: 0;">
+		<div id="haxe:trace" style="position: absolute; z-index: 2147483647;::if !debug:: display: none;::end::"></div>
         <div id="haxe:jeash" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == "0")::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == "0")::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div>
 		<script type="text/javascript" src="./::APP_FILE::.js"></script>
 </body>
