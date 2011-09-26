@@ -157,6 +157,7 @@ class OGLTexture : public Texture
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
+      
       mPixelWidth = inSurface->Width();
       mPixelHeight = inSurface->Height();
       mDirtyRect = Rect(0,0);
@@ -335,11 +336,16 @@ public:
 
 // --- HardwareContext Interface ---------------------------------------------------------
 
+
+HardwareContext* nme::HardwareContext::current = NULL;
+
+
 class OGLContext : public HardwareContext
 {
 public:
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
    {
+      HardwareContext::current = this;
       mDC = inDC;
       mOGLCtx = inOGLCtx;
       mWidth = 0;

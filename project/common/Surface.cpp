@@ -102,6 +102,20 @@ SimpleSurface::~SimpleSurface()
    delete [] mBase;
 }
 
+
+void SimpleSurface::createHardwareSurface() {
+	//ManagedStage *s = (ManagedStage *)getCurrentStage();
+
+	printf( "creating hardware surface\n" );
+	if ( nme::HardwareContext::current == NULL )
+		printf( "Null Hardware Context" );
+	else
+ 		GetOrCreateTexture( *nme::HardwareContext::current );
+	
+}
+
+
+
 // --- Surface Blitting ------------------------------------------------------------------
 
 struct NullMask

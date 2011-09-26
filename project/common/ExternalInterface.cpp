@@ -2667,6 +2667,16 @@ value nme_render_surface_to_surface(value* arg, int nargs)
 DEFINE_PRIM_MULT(nme_render_surface_to_surface);
 
 
+value nme_bitmap_data_create_hardware_surface(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      surface->createHardwareSurface();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_create_hardware_surface,1);
+
+
 value nme_bitmap_data_dump_bits(value inSurface)
 {
    Surface *surf;

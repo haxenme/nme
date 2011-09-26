@@ -524,6 +524,7 @@ public:
 class HardwareContext : public Object
 {
 public:
+   static HardwareContext *current;
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
 
    // Could be common to multiple implementations...
