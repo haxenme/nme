@@ -656,12 +656,11 @@ DEFINE_PRIM(nme_get_resource_path,0);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-#if defined(HX_WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS)
+#if defined(HX_WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS) || defined(WEBOS)
 	bool result=LaunchBrowser(val_string(url));
-	return alloc_bool(result);	
+	return alloc_bool(result);
 #endif
 	return alloc_bool(false);
-
 }
 DEFINE_PRIM(nme_get_url,1);
 
