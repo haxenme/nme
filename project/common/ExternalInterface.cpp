@@ -642,6 +642,72 @@ value nme_get_unique_device_identifier()
 }
 DEFINE_PRIM(nme_get_unique_device_identifier,0);
 
+
+
+
+// --- nme.system.Capabilities -----------------------------------------------------
+
+value nme_capabilities_get_pixel_aspect_ratio () {
+	
+	#if defined (WEBOS)
+		
+		return alloc_float (CapabilitiesGetPixelAspectRatio ());
+		
+	#else
+		
+		return alloc_float (1);
+		
+	#endif
+	
+}
+DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
+
+value nme_capabilities_get_screen_dpi () {
+	
+	#if defined (WEBOS)
+		
+		return alloc_float (CapabilitiesGetScreenDPI ());
+		
+	#else
+		
+		return alloc_float (72);
+		
+	#endif
+	
+}
+DEFINE_PRIM (nme_capabilities_get_screen_dpi, 0);
+
+value nme_capabilities_get_screen_resolution_x () {
+	
+	#if defined (WEBOS)
+		
+		return alloc_float (CapabilitiesGetScreenResolutionX ());
+		
+	#else
+		
+		return alloc_float (0);
+		
+	#endif
+	
+}
+DEFINE_PRIM (nme_capabilities_get_screen_resolution_x, 0);
+
+value nme_capabilities_get_screen_resolution_y () {
+	
+	#if defined (WEBOS)
+		
+		return alloc_float (CapabilitiesGetScreenResolutionY ());
+		
+	#else
+		
+		return alloc_float (0);
+		
+	#endif
+	
+}
+DEFINE_PRIM (nme_capabilities_get_screen_resolution_y, 0);
+
+
 // --- getResourcePath -------------------------------------------------------------
 value nme_get_resource_path()
 {

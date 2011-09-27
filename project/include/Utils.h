@@ -103,6 +103,12 @@ private:
 typedef std::wstring WString;
 #endif
 
+
+double CapabilitiesGetPixelAspectRatio ();
+double CapabilitiesGetScreenDPI ();
+double CapabilitiesGetScreenResolutionX ();
+double CapabilitiesGetScreenResolutionY ();
+
 bool LaunchBrowser(const char *inUtf8URL);
 
 void ExternalInterface_Call (const char *functionName, const char **params, int numParams);
