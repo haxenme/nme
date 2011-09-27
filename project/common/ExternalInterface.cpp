@@ -649,7 +649,7 @@ DEFINE_PRIM(nme_get_unique_device_identifier,0);
 
 value nme_capabilities_get_pixel_aspect_ratio () {
 	
-	#if defined (WEBOS)
+	#if defined (WEBOS) || defined (ANDROID)
 		
 		return alloc_float (CapabilitiesGetPixelAspectRatio ());
 		
@@ -664,7 +664,7 @@ DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
 value nme_capabilities_get_screen_dpi () {
 	
-	#if defined (WEBOS)
+	#if defined (WEBOS) || defined (ANDROID)
 		
 		return alloc_float (CapabilitiesGetScreenDPI ());
 		
@@ -679,7 +679,7 @@ DEFINE_PRIM (nme_capabilities_get_screen_dpi, 0);
 
 value nme_capabilities_get_screen_resolution_x () {
 	
-	#if defined (WEBOS)
+	#if defined (WEBOS) || defined (ANDROID)
 		
 		return alloc_float (CapabilitiesGetScreenResolutionX ());
 		
@@ -694,7 +694,7 @@ DEFINE_PRIM (nme_capabilities_get_screen_resolution_x, 0);
 
 value nme_capabilities_get_screen_resolution_y () {
 	
-	#if defined (WEBOS)
+	#if defined (WEBOS) || defined (ANDROID)
 		
 		return alloc_float (CapabilitiesGetScreenResolutionY ());
 		

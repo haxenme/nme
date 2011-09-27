@@ -14,6 +14,7 @@ import android.content.Context;
 import android.media.SoundPool;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import dalvik.system.DexClassLoader;
@@ -36,6 +37,7 @@ public class GameActivity extends Activity {
     static GameActivity activity;
     public android.os.Handler mHandler;
     static HashMap<String,Class> mLoadedClasses = new HashMap<String,Class>();
+	static DisplayMetrics metrics;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -52,7 +54,10 @@ public class GameActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+		
+		metrics = new DisplayMetrics ();
+		getWindowManager().getDefaultDisplay().getMetrics (metrics);
+		
         // Pre-load these, so the c++ knows where to find them
         ::foreach ndlls::
            System.loadLibrary("::name::");
@@ -62,6 +67,7 @@ public class GameActivity extends Activity {
         mView = new MainView(getApplication(),this);
 
         setContentView(mView);
+		
 
     }
 
@@ -270,6 +276,30 @@ public class GameActivity extends Activity {
       }
 
     }
+	
+	static public double CapabilitiesGetPixelAspectRatio () {
+		
+		return metrics.xdpi / metrics.ydpi;
+		
+	}
+	
+	static public double CapabilitiesGetScreenDPI () {
+		
+		return metrics.xdpi;
+		
+	}
+	
+	static public double CapabilitiesGetScreenResolutionX () {
+		
+		return metrics.widthPixels;
+		
+	}
+	
+	static public double CapabilitiesGetScreenResolutionY () {
+		
+		return metrics.heightPixels;
+		
+	}
     
     static public String getUserPreference(String inId)
     {

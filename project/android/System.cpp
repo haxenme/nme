@@ -12,7 +12,63 @@
 
 extern JNIEnv *GetEnv();
 
+
 namespace nme {
+
+
+	
+	double CapabilitiesGetPixelAspectRatio () {
+		
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetPixelAspectRatio", "()D");
+		if (mid == 0)
+			return 1;
+		
+		return env->CallStaticDoubleMethod (cls, mid);
+		
+	}
+	
+	
+	double CapabilitiesGetScreenDPI () {
+		
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenDPI", "()D");
+		if (mid == 0)
+			return 1;
+		
+		return env->CallStaticDoubleMethod (cls, mid);
+		
+	}
+	
+	
+	double CapabilitiesGetScreenResolutionX () {
+		
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenResolutionX", "()D");
+		if (mid == 0)
+			return 1;
+		
+		return env->CallStaticDoubleMethod (cls, mid);
+		
+	}
+	
+	
+	double CapabilitiesGetScreenResolutionY () {
+		
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenResolutionY", "()D");
+		if (mid == 0)
+			return 1;
+		
+		return env->CallStaticDoubleMethod (cls, mid);
+		
+	}
+	
+	
 
 bool LaunchBrowser(const char *inUtf8URL)
 {
