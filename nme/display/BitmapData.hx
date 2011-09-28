@@ -270,11 +270,13 @@ class BitmapData implements IBitmapDrawable
 
 
    //Creates the hardware surface
+   #if cpp
    public function createHardwareSurface() {
    
    	nme_bitmap_data_create_hardware_surface( nmeHandle );
    	
    }
+   #end
 
    public function dumpBits() : Void
    {
