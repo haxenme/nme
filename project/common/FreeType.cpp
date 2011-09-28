@@ -298,7 +298,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 		#elif defined (WEBOS)
 			outFile = "/usr/share/fonts/Prelude-Medium.ttf";
 		#else
-			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+			outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
 		#endif
 		
 	} else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
