@@ -494,9 +494,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    
    #ifdef WEBOS
    int chunksize = 256;
+   #elif HX_WINDOWS
+   int chunksize = 512;
    #else
    int chunksize = 4096;
-   #endif
    
    if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
    {
