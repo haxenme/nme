@@ -118,6 +118,8 @@ class IOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/iphone/";
 		mkdir (destination);
 		mkdir (destination + "/haxe" );
+		mkdir (destination + "/haxe" + "/nme" );
+		mkdir (destination + "/haxe" + "/nme" + "/installer" );
 		
 		copyFile (NME + "/install-tool/haxe/nme/installer/Assets.hx", destination + "/haxe/nme/installer/Assets.hx");
 		recursiveCopy (NME + "/install-tool/iphone/haxe", destination + "/haxe");

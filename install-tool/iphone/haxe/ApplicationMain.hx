@@ -1,3 +1,5 @@
+import nme.installer.Assets;
+
 class ApplicationMain
 {
    public static function main()
