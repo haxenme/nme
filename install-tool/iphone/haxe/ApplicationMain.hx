@@ -1,4 +1,4 @@
-import nme.installer.Assets;
+import nme.Assets;
 
 class ApplicationMain
 {
