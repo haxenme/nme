@@ -2324,18 +2324,22 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
 }
 DEFINE_PRIM(nme_bitmap_data_fill,4);
 
-value nme_bitmap_data_load(value inFilename)
+value nme_bitmap_data_load(value inFilename, value format)
 {
    Surface *surface = Surface::Load(val_os_string(inFilename));
    if (surface)
    {
       value result = ObjectToAbstract(surface);
       surface->DecRef();
+      
+      if ( val_int( format ) == 1 ) 
+         surface->setFormat( pfPadded4444 );
+         
       return result;
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_load,1);
+DEFINE_PRIM(nme_bitmap_data_load,2);
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {

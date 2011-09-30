@@ -196,6 +196,28 @@ public:
          }
       }
 
+     #ifdef IPHONE
+      uint8 *dest;
+      
+      if ( inSurface->Format() == pfPadded4444 ) {
+           int size = mTextureWidth * mTextureHeight;
+           dest = (uint8 *)malloc( size * 2 );
+            
+           const uint8 *src = (uint8 *)load->Row( 0 );
+        
+                
+           for ( int c = 0; c < size; c++ ) {
+                    
+               dest[ c * 2 ] = src[ c * 4 ];
+               dest[ c * 2 + 1 ] = src[ c * 4 + 1 ];
+                        
+           }
+                
+                
+      }
+      #endif
+
+
       glGenTextures(1, &mTextureID);
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
       //  mTextureID, mPixelWidth, mPixelHeight);
@@ -207,6 +229,19 @@ public:
       PixelFormat fmt = load->Format();
       GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
       GLuint store_format = src_format;
+      
+      
+      #ifdef IPHONE
+        if ( inSurface->Format() == 0x11 ) {
+                
+                glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
+                    GL_UNSIGNED_SHORT_4_4_4_4, dest  );
+                
+                free( dest );
+                
+        } else
+      #endif
+      
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
             GL_UNSIGNED_BYTE, load->Row(0) );
 

@@ -14,15 +14,16 @@ extern bool gC0IsRed;
 
 enum PixelFormat
 {
-   pfXRGB     = 0x00,
-   pfARGB     = 0x01,
-   pfXRGBSwap = 0x02,
-   pfARGBSwap = 0x03,
-   pfAlpha    = 0x04,
-   pfHardware = 0x10,
-
-   pfHasAlpha = 0x01,
-   pfSwapRB   = 0x02,
+   pfXRGB         = 0x00,
+   pfARGB         = 0x01,
+   pfXRGBSwap     = 0x02,
+   pfARGBSwap     = 0x03,
+   pfAlpha        = 0x04,
+   pfHardware     = 0x10,
+   pfPadded4444   = 0x11,
+   
+   pfHasAlpha     = 0x01,
+   pfSwapRB       = 0x02,
 };
 
 

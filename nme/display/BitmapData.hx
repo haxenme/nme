@@ -75,10 +75,15 @@ class BitmapData implements IBitmapDrawable
    * @param inFilename Full or relative path to image file
    * @return New BitmapData instance representing file
    **/
-   static public function load(inFilename:String) : BitmapData
+   
+   static var format_8888:Int = 0;
+   static var format_FF4444:Int = 1; //Due to the iOS loader premultiplying alpha - you can't 
+   static var format_4444:Int = 2; //Placeholder - will switch this on when we use libpng for all
+ 
+   static public function load(inFilename:String, format:Int = 0) : BitmapData
    {
       var result = new BitmapData(0,0);
-      result.nmeHandle = nme_bitmap_data_load(inFilename);
+      result.nmeHandle = nme_bitmap_data_load(inFilename, format);
       return result;
    }
 
@@ -364,7 +369,7 @@ class BitmapData implements IBitmapDrawable
 
 
    static var nme_bitmap_data_create = nme.Loader.load("nme_bitmap_data_create",5);
-   static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load",1);
+   static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load",2);
    static var nme_bitmap_data_from_bytes = nme.Loader.load("nme_bitmap_data_from_bytes",2);
    static var nme_bitmap_data_clear = nme.Loader.load("nme_bitmap_data_clear",2);
    static var nme_bitmap_data_clone = nme.Loader.load("nme_bitmap_data_clone",1);
