@@ -76,9 +76,9 @@ class BitmapData implements IBitmapDrawable
    * @return New BitmapData instance representing file
    **/
    
-   static var format_8888:Int = 0;
-   static var format_FF4444:Int = 1; //Due to the iOS loader premultiplying alpha - you can't 
-   static var format_4444:Int = 2; //Placeholder - will switch this on when we use libpng for all
+   public static var FORMAT_8888:Int = 0;
+   public static var FORMAT_4444_PADDED:Int = 1; //Due to the iOS loader premultiplying alpha - you can't 
+   public static var FORMAT_4444:Int = 2; //Placeholder - will switch this on when we use libpng for all
  
    static public function load(inFilename:String, format:Int = 0) : BitmapData
    {
