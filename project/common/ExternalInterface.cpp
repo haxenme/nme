@@ -2324,20 +2324,7 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
 }
 DEFINE_PRIM(nme_bitmap_data_fill,4);
 
-value nme_bitmap_data_load(value inFilename)
-{
-   Surface *surface = Surface::Load(val_os_string(inFilename));
-   if (surface)
-   {
-      value result = ObjectToAbstract(surface);
-      surface->DecRef();
-      return result;
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_bitmap_data_load,1);
-
-value nme_bitmap_data_load_format(value inFilename, value format)
+value nme_bitmap_data_load(value inFilename, value format)
 {
    Surface *surface = Surface::Load(val_os_string(inFilename));
    if (surface)
@@ -2352,7 +2339,7 @@ value nme_bitmap_data_load_format(value inFilename, value format)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_load_format,2);
+DEFINE_PRIM(nme_bitmap_data_load,2);
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {
