@@ -831,7 +831,7 @@ class InstallerBase {
 							
 						}
 						
-						ndlls.push (new NDLL (name, haxelib ));
+						ndlls.push (new NDLL (name, haxelib));
 					
 					case "icon":
 						
@@ -874,6 +874,23 @@ class InstallerBase {
 							
 						}
                       
+						compilerFlags.push ("-cp " + path);
+					
+					case "extension":
+						
+						var name:String = substitute (element.att.name);
+						var path = substitute (element.att.path);
+						
+						var ndll = new NDLL (name, "nme-extension");
+						ndll.extension = path;
+						ndlls.push (ndll);
+						
+						if (useFullClassPaths ()) {
+							
+							path = FileSystem.fullPath (path);
+							
+						}
+						
 						compilerFlags.push ("-cp " + path);
 					
 					case "haxedef":

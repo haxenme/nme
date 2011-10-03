@@ -8,21 +8,32 @@ import neko.Sys;
 class NDLL {
 	
 	
+	public var extension:String;
 	public var hash:String;
 	public var haxelib:String;
 	public var name:String;
+	public var path:String;
 	public var registerStatics:Bool;
 	
 	
 	public function new (inName:String, inHaxelib:String, inRegisterStatics=true) {
 		
 		name = inName;
-      if (inName=="nme" && inHaxelib=="")
-         haxelib = "nme";
-      else
-		   haxelib = inHaxelib;
-
-      registerStatics = inRegisterStatics;
+		
+		path = "";
+		extension = "";
+		
+		if (inName == "nme" && inHaxelib == "") {
+			
+			haxelib = "nme";
+			
+		} else {
+			
+			haxelib = inHaxelib;
+			
+		}
+		
+		registerStatics = inRegisterStatics;
 		
 		hash = Utils.getUniqueID ();
 		
@@ -31,7 +42,15 @@ class NDLL {
 	
 	public function getSourcePath (directoryName:String, filename:String):String {
 		
-		if (haxelib == "" || haxelib == "hxcpp") {
+		if (path != "") {
+			
+			return path;
+			
+		} else if (extension != "") {
+			
+			return extension + "/ndll/" + directoryName + "/" + filename;
+			
+		} else if (haxelib == "" || haxelib == "hxcpp") {
 			
 			var path:String = Utils.getHaxelib ("hxcpp") + "/bin/" + directoryName + "/" + filename;
 			
