@@ -1044,7 +1044,40 @@ Stage *IPhoneGetStage() { return sgMainView->mStage; }
 void TerminateMainLoop() { sgTerminated=true; }
 void SetNextWakeUp(double inWakeUp) { sgWakeUp = inWakeUp; }
 
+double CapabilitiesGetPixelAspectRatio() {
+	
+	CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	
+	return screenBounds.size.width / screenBounds.size.height;
+	
+}
+	
+double CapabilitiesGetScreenDPI() {
+	CGFloat screenScale = [[UIScreen mainScreen] scale];
+	return screenScale * 72.0;
+}
 
+double CapabilitiesGetScreenResolutionX() {
+
+	CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	CGFloat screenScale = [[UIScreen mainScreen] scale];
+	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
+	
+	return screenSize.width;
+
+}
+	
+double CapabilitiesGetScreenResolutionY() {
+
+	CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	CGFloat screenScale = [[UIScreen mainScreen] scale];
+	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
+	
+	return screenSize.height;
+	
+}	
+	
+	
 void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
 {
