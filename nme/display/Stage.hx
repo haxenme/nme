@@ -783,7 +783,7 @@ class Stage extends DisplayObjectContainer
    static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
-   static var nme_stage_get_orientation = nme.Loader.load("nme_get_stage_orientation",0);
+   static var nme_stage_get_orientation = nme.Loader.load("nme_stage_get_orientation",0);
    
 }
 
