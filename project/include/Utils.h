@@ -103,7 +103,7 @@ private:
 typedef std::wstring WString;
 #endif
 
-
+int GetDeviceOrientation();
 double CapabilitiesGetPixelAspectRatio ();
 double CapabilitiesGetScreenDPI ();
 double CapabilitiesGetScreenResolutionX ();

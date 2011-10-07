@@ -93,6 +93,11 @@ class Stage extends DisplayObjectContainer
       return inOrientation==OrientationPortrait;
    }
 
+   public static dynamic function getOrientation() : Int 
+   {
+      return nme_stage_get_orientation();
+   }
+
    public function invalidate():Void
    {
       nmeInvalid = true;
@@ -141,6 +146,9 @@ class Stage extends DisplayObjectContainer
    {
       return nme_stage_get_stage_height(nmeHandle);
    }
+   
+  
+   
    function nmeGetDPIScale() : Float
    {
       return nme_stage_get_dpi_scale(nmeHandle);
@@ -751,6 +759,7 @@ class Stage extends DisplayObjectContainer
 	   nmeDoProcessStageEvent(inEvent);
 		return null;
 	}
+   
 
    static var nme_set_stage_handler = nme.Loader.load("nme_set_stage_handler",4);
    static var nme_render_stage = nme.Loader.load("nme_render_stage",1);
@@ -774,6 +783,8 @@ class Stage extends DisplayObjectContainer
    static var nme_stage_request_render = nme.Loader.load("nme_stage_request_render",0);
    static var nme_stage_show_cursor = nme.Loader.load("nme_stage_show_cursor",2);
    static var nme_stage_set_fixed_orientation = nme.Loader.load("nme_stage_set_fixed_orientation",1);
+   static var nme_stage_get_orientation = nme.Loader.load("nme_get_stage_orientation",0);
+   
 }
 
 

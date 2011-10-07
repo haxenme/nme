@@ -1044,6 +1044,11 @@ Stage *IPhoneGetStage() { return sgMainView->mStage; }
 void TerminateMainLoop() { sgTerminated=true; }
 void SetNextWakeUp(double inWakeUp) { sgWakeUp = inWakeUp; }
 
+int GetDeviceOrientation() {
+
+	return ( [UIDevice currentDevice].orientation );
+}
+
 double CapabilitiesGetPixelAspectRatio() {
 	
 	CGRect screenBounds = [[UIScreen mainScreen] bounds];

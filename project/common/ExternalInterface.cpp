@@ -980,6 +980,23 @@ DEFINE_PRIM(nme_stage_show_cursor,2);
 
 
 
+value nme_stage_get_orientation() {
+
+	#if defined (IPHONE)
+	
+		return alloc_int( GetDeviceOrientation() );
+	
+	#else
+	
+		return alloc_int( 0 );
+		
+	#endif
+	
+}
+
+DEFINE_PRIM (nme_stage_get_orientation, 0);
+
+
 // --- ManagedStage ----------------------------------------------------------------------
 
 value nme_managed_stage_create(value inW,value inH)
@@ -1002,6 +1019,9 @@ value nme_managed_stage_pump_event(value inStage,value inEvent)
    return alloc_null();
 }
 DEFINE_PRIM(nme_managed_stage_pump_event,2);
+
+
+
 
 
 
