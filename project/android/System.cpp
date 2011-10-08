@@ -117,7 +117,7 @@ bool SetUserPreference(const char *inId, const char *inPreference)
 	
     jstring jInId = env->NewStringUTF( inId );
 	jstring jPref = env->NewStringUTF ( inPreference );
-    env->CallStaticObjectMethod(cls, mid, jInId, jPref );
+    env->CallStaticVoidMethod(cls, mid, jInId, jPref );
 	return true;
 }
 
