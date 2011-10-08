@@ -8,7 +8,7 @@ class Error
 	var message : Dynamic;
 	var name : Dynamic;
 
-	function new(?inMessage : Dynamic, id : Dynamic = 0)
+	public function new(?inMessage : Dynamic, id : Dynamic = 0)
 	{
 	  message = inMessage;
 	  errorID = id;

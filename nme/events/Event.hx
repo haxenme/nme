@@ -4,13 +4,19 @@ package nme.events;
 
 class Event
 {
-   public var bubbles(default,null) : Bool;
-   public var cancelable(default,null) : Bool;
-   public var eventPhase(default,null) : Int;
-   public var target : Dynamic;
-   public var currentTarget : Dynamic;
-   public var type(default,null) : String;
+   public var bubbles(get_bubbles,null) : Bool;
+   public var cancelable(get_cancelable,null) : Bool;
+   public var eventPhase(get_eventPhase,null) : Int;
+   public var target(get_target,set_target) : Dynamic;
+   public var currentTarget(get_currentTarget,set_currentTarget) : Dynamic;
+   public var type(get_type,null) : String;
 
+   var _bubbles : Bool;
+   var _cancelable : Bool;
+   var _eventPhase : Int;
+   var _target : Dynamic;
+   var _currentTarget : Dynamic;
+   var _type : String;
    var nmeIsCancelled:Bool;
    var nmeIsCancelledNow:Bool;
    // For internal use only...
@@ -22,21 +28,20 @@ class Event
 
    public function new(inType : String, inBubbles : Bool=false, inCancelable : Bool=false)
    {
-      type = inType;
-      bubbles = inBubbles;
-      cancelable = inCancelable;
+      _type = inType;
+      _bubbles = inBubbles;
+      _cancelable = inCancelable;
       nmeIsCancelled = false;
       nmeIsCancelledNow = false;
-      target = null;
-      currentTarget = null;
-      eventPhase = EventPhase.AT_TARGET;
+      _target = null;
+      _currentTarget = null;
+      _eventPhase = EventPhase.AT_TARGET;
    }
 
    public function clone() : Event
    {
       return new Event(type,bubbles,cancelable);
    }
-
 
    public function stopImmediatePropagation()
    {
@@ -53,6 +58,40 @@ class Event
    public function toString():String
    {
       return type;
+   }
+
+   function get_bubbles() : Bool {
+      return _bubbles;
+   }
+
+   function get_cancelable() : Bool {
+      return _cancelable;
+   }
+
+   function get_eventPhase() : Int {
+      return _eventPhase;
+   }
+
+   function get_currentTarget() : Dynamic {
+      return _currentTarget;
+   }
+
+   function set_currentTarget(v:Dynamic) : Dynamic {
+      _currentTarget = v;
+      return v;
+   }
+
+   function get_target() : Dynamic {
+      return _target;
+   }
+
+   function set_target(v:Dynamic) : Dynamic {
+      _target = v;
+      return v;
+   }
+
+   function get_type() : String {
+      return _type;
    }
 
 
