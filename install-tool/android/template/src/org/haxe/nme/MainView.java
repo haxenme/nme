@@ -142,8 +142,10 @@ class MainView extends GLSurfaceView {
 
        //Log.e("VIEW","Actions : " + action );
 
-       int pointer = (action & MotionEvent.ACTION_POINTER_ID_MASK) >>
+       // This is actually index, not id....
+       int idx = (action & MotionEvent.ACTION_POINTER_ID_MASK) >>
                        (MotionEvent.ACTION_POINTER_ID_SHIFT);
+
        final int t = type;
        //if (type!=etTouchMove)
        //   Log.e("VIEW","onTouchEvent " + ev.toString() );
@@ -153,9 +155,9 @@ class MainView extends GLSurfaceView {
            final int id = ev.getPointerId(i);
            final float x = ev.getX(i);
            final float y = ev.getY(i);
-           //if (action!=etTouchMove)
-           //      Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + "  " + x + ", "+ y);
-           if (type==etTouchMove || id==pointer)
+           //if (type!=etTouchMove)
+           //   Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + " idx="+ idx +" " + x + ", "+ y);
+           if (type==etTouchMove || i==idx)
            {
 	           queueEvent(new Runnable(){
                  public void run() { me.HandleResult( NME.onTouch(t,x,y,id) ); }

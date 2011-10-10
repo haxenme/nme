@@ -27,6 +27,8 @@ static bool sCloseActivity = false;
 
 static int sgNMEResult = 0;
 
+enum { NO_TOUCH = -1 };
+
 int GetResult()
 {
    if (sCloseActivity)
@@ -50,7 +52,7 @@ public:
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
       mMultiTouch = true;
-      mSingleTouchID = 0;
+      mSingleTouchID = NO_TOUCH;
       mDX = 0;
       mDY = 0;
 
@@ -118,7 +120,7 @@ public:
 
    void OnTouch(int inType,double inX, double inY, int inID)
    {
-         if (mSingleTouchID==0 || inID==mSingleTouchID || mMultiTouch)
+         if (mSingleTouchID==NO_TOUCH || inID==mSingleTouchID || mMultiTouch)
          {
             EventType type = (EventType)inType;
             if (!mMultiTouch)
@@ -133,12 +135,12 @@ public:
             }
 
                Event mouse(type, inX, inY);
-               if (mSingleTouchID==0 || inID==mSingleTouchID || !mMultiTouch)
+               if (mSingleTouchID==NO_TOUCH || inID==mSingleTouchID || !mMultiTouch)
                   mouse.flags |= efPrimaryTouch;
 
                if (inType==etTouchBegin)
                {
-                  if (mSingleTouchID==0)
+                  if (mSingleTouchID==NO_TOUCH)
                      mSingleTouchID = inID;
                   mouse.flags |= efLeftDown;
                   mDownX = inX;
@@ -147,7 +149,7 @@ public:
                else if (inType==etTouchEnd)
                {
                   if (mSingleTouchID==inID)
-                     mSingleTouchID = 0;
+                     mSingleTouchID = NO_TOUCH;
                }
                else if (inType==etTouchMove)
                {
