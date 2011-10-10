@@ -71,6 +71,8 @@ public class GameActivity extends Activity {
 
     }
 
+    public static GameActivity getInstance() { return activity; }
+
     public static void showKeyboard(boolean show) 
     {
         InputMethodManager mgr = (InputMethodManager)

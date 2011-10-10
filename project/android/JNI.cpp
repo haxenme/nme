@@ -114,6 +114,7 @@ struct JNIObject : public nme::Object
          GetEnv()->DeleteGlobalRef(mObject);
    }
    operator jobject() { return mObject; }
+   jobject GetJObject() { return mObject; }
    jobject mObject;
 };
 
@@ -121,28 +122,29 @@ struct JNIObject : public nme::Object
 
 bool AbstractToJObject(value inValue, jobject &outObject)
 {
-   if (AbstractToObject(inValue,outObject))
-      return true;
    HaxeJavaLink *link = 0;
    if (AbstractToObject(inValue,link))
    {
       outObject = link->GetJObject();
       return true;
    }
- 
+
+   JNIObject *jniobj = 0;
+   if (AbstractToObject(inValue,jniobj))
+   {
+      outObject = jniobj->GetJObject();
+      return true;
+   }
+
    static int id__jobject = -1;
    if (id__jobject<0)
       id__jobject =  val_id("__jobject");
+
    value jobj = val_field(inValue,id__jobject);
-   if (AbstractToObject(jobj,outObject))
-      return true;
-   if (AbstractToObject(inValue,link))
-   {
-      outObject = link->GetJObject();
-      return true;
-   }
- 
-   return false;
+   if (val_is_null(jobj))
+      return false;
+
+   return AbstractToJObject(jobj,outObject);
 }
 
 struct JNIMethod : public nme::Object
@@ -156,16 +158,19 @@ struct JNIMethod : public nme::Object
       mReturn = jniVoid;
       mArgCount = 0;
 
+      const char *method = val_string(inMethod);
+      mIsConstructor = !strncmp(method,"<init>",6);
+
       JNIEnv *env = GetEnv();
 
       mClass = env->FindClass(val_string(inClass));
       const char *signature = val_string(inSignature);
       if (mClass)
       {
-         if (inStatic)
-            mMethod = env->GetStaticMethodID(mClass, val_string(inMethod), signature);
+         if (inStatic && !mIsConstructor)
+            mMethod = env->GetStaticMethodID(mClass, method, signature);
          else
-            mMethod = env->GetMethodID(mClass, val_string(inMethod), signature);
+            mMethod = env->GetMethodID(mClass, method, signature);
       }
       if (Ok())
       {
@@ -187,12 +192,17 @@ struct JNIMethod : public nme::Object
                out.l = inEnv->NewStringUTF(val_string(inValue));
                return true;
             }
-         case jniObjectArray: return false; // TODO
+         case jniObjectArray:
+            ELOG("HaxeToJNI : jniObjectArray not implemented");
+            return false; // TODO
          case jniObject:
             {
                jobject obj = 0;
                if (!AbstractToJObject(inValue,obj))
+               {
+                  ELOG("HaxeToJNI : jniObject not an object %p", inValue);
                   return false;
+               }
                out.l = obj;
                return true;
             }
@@ -218,9 +228,10 @@ struct JNIMethod : public nme::Object
       }
       for(int i=0;i<mArgCount;i++)
       {
-         if (!HaxeToJNI(inEnv,val_array_i(inArray,i),mArgs[i],outValues[i]))
+         value arg_i = val_array_i(inArray,i);
+         if (!HaxeToJNI(inEnv,arg_i,mArgType[i],outValues[i]))
          {
-            ELOG("HaxeToJNI could not convert param %d",i);
+            ELOG("HaxeToJNI could not convert param %d (%p) to %d",i, arg_i, mArgType[i]);
             return false;
          }
       }
@@ -284,7 +295,7 @@ struct JNIMethod : public nme::Object
          inSig = ParseType(inSig,type);
          if (type==jniUnknown)
             return false;
-         mArgs[mArgCount++] = type;
+         mArgType[mArgCount++] = type;
       }
       inSig++;
       ParseType(inSig,mReturn);
@@ -298,7 +309,8 @@ struct JNIMethod : public nme::Object
       if (inObject==0)
          return alloc_null();
       JNIObject *obj = new JNIObject(inObject);
-      return ObjectToAbstract(obj);
+      value result =  ObjectToAbstract(obj);
+      return result;
    }
 
    value JArrayToHaxe(jobject inObject)
@@ -329,7 +341,12 @@ struct JNIMethod : public nme::Object
       }
       value result = 0;
 
-      switch(mReturn)
+      if (mIsConstructor)
+      {
+         jobject obj =  env->NewObjectA(mClass, mMethod, jargs);
+         result =  JObjectToHaxe(obj);
+      }
+      else switch(mReturn)
       {
          case jniVoid:
             result = alloc_null();
@@ -432,9 +449,11 @@ struct JNIMethod : public nme::Object
    jclass    mClass;
    jmethodID mMethod;
    JNIType   mReturn;
-   JNIType   mArgs[MAX];
+   JNIType   mArgType[MAX];
    int       mArgCount;
+   bool      mIsConstructor;
 };
+
 
 value nme_jni_create_method(value inClass, value inMethod, value inSig,value inStatic)
 {
@@ -453,7 +472,8 @@ value nme_jni_call_static(value inMethod, value inArgs)
    JNIMethod *method;
    if (!AbstractToObject(inMethod,method))
       return alloc_null();
-   return method->CallStatic(inArgs);
+   value result =  method->CallStatic(inArgs);
+   return result;
 }
 DEFINE_PRIM(nme_jni_call_static,2);
 
@@ -519,6 +539,7 @@ value nme_jni_create_interface(value inHaxeValue, value inClassName, value inCla
 
    // Create class def
    buffer buf = val_to_buffer(inClassDef);
+   ELOG("nme_jni_create_interface : %p\n", buf );
    if (buf!=0)
    {
       int len = buffer_size(buf);

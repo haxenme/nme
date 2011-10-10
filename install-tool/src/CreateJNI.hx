@@ -22,11 +22,14 @@ class CreateJNI
    var mStack:Array<String>;
    var mOutput:haxe.io.Output;
    var mCurrentType:String;
+   var mExactTypes:Hash<Bool>;
 
    function new(inClass:String)
    {
       mProcessed = new Hash<Bool>();
+      mExactTypes = new Hash<Bool>();
       mProcessed.set(inClass,true);
+      mExactTypes.set(inClass,true);
       mProcessed.set("java/lang/Object",true);
       mStack = [ inClass ];
 
@@ -44,6 +47,7 @@ class CreateJNI
       var parts = inClass.split("/");
       var old_type = mCurrentType;
       mCurrentType = parts.join(".");
+      mExactTypes.set(mCurrentType,true);
       var dir_parts = parts.slice(0,parts.length-1);
       var outputBase = "gen";
       var dir = outputBase;
@@ -110,7 +114,7 @@ class CreateJNI
    {
       if (inObj=="java.lang.CharSequence" || inObj=="java.lang.String" )
          return "String";
-      if (inObj==mCurrentType && inArrayCount==0)
+      if ( mExactTypes.exists(inObj) && inArrayCount==0)
          return inObj;
       return "Dynamic /*" + inObj + "*/";
    }
@@ -237,6 +241,15 @@ class CreateJNI
          case "Int", "Void", "Bool", "Float" : false;
          default: true;
       }
+   }
+
+   function isPOD(inName:String)
+   {
+      switch(inName)
+      {
+         case "Int", "Void", "Bool", "Float", "String" : return true;
+      }
+      return false;
    }
 
 
@@ -429,8 +442,13 @@ class CreateJNI
          if (expose)
          {
             var type = toHaxeType(mConstants[desc_ref]).name;
-            output("   static inline public var " + mConstants[name_ref] + ":" + type );
-            as_string = type=="String";
+            if (isPOD(type))
+            {
+               output("   static inline public var " + mConstants[name_ref] + ":" + type );
+               as_string = type=="String";
+            }
+            else
+               expose = false;
          }
          var att_count = src.readUInt16();
          for(a in 0...att_count)
@@ -497,7 +515,7 @@ class CreateJNI
             if (constructor)
                 is_static = true;
             var ret_full_class = constructor ||
-                (retType.name==mCurrentType && retType.arrayCount==0 && is_static);
+                ( ( mExactTypes.exists(retType.name) || isPOD(retType.name)) && retType.arrayCount==0);
             if (constructor)
                 retType = { name:mCurrentType, java:mCurrentType, arrayCount:0 };
             var ret_void = (retType.name=="Void" && retType.arrayCount==0);
@@ -571,27 +589,23 @@ class CreateJNI
                output("(\"" + mCurrentType + "\",\"" + mConstants[name_ref] + "\",\"" +
                      mConstants[desc_ref] + "\");\n");
    
+               output("      var a = new Array<Dynamic>();\n");
+               for(i in 0...parsedTypes.length)
+                  output("      a.push(arg" + i + ");\n");
   
                if (ret_void)
                   output("      ");
-               else if (ret_full_class)
+               else if (ret_full_class && !isPOD(retType.name) )
                   output("      return new " + retType.name + "(");
                else
                   output("      return ");
    
                if (is_static)
-                  output("nme.JNI.callStatic(" + func_name + ",[");
+                  output("nme.JNI.callStatic(" + func_name + ",a)");
                else
-                  output("nme.JNI.callMember(" + func_name + ",__jobject,[");
+                  output("nme.JNI.callMember(" + func_name + ",__jobject,a)");
    
-               for(i in 0...parsedTypes.length)
-               {
-                  if (i>0) output(",");
-                  output("arg" + i);
-               }
-               output("])");
-   
-               if (ret_full_class)
+               if (ret_full_class && !isPOD(retType.name) )
                   output(");\n");
                else
                   output(";\n");
