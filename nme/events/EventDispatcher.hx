@@ -77,7 +77,8 @@ class EventDispatcher implements IEventDispatcher
 	{
 		if (nmeEventMap==null)
 			return false;
-		return nmeEventMap.exists(type);
+		var h = nmeEventMap.get(type);
+		return (h == null) ? false : (h.length > 0);
 	}
 	public function removeEventListener(type:String, listener:Function, capture:Bool= false):Void
 	{
