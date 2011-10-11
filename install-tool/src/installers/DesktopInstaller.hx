@@ -59,17 +59,30 @@ class DesktopInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
-		if (defines.exists ("NME_64")) {
+		/*if (defines.exists ("NME_64")) {
 			
 			targetName += "64";
 			
-		}
+		}*/
 		
 		compilerFlags.push ("-cp " + targetDir + "/haxe");
 		
 		super.generateContext ();
 		
 		updateIcon ();
+		
+	}
+	
+	
+	private function get64 ():String {
+		
+		if (defines.exists ("NME_64")) {
+			
+			return "64";
+			
+		}
+		
+		return "";
 		
 	}
 	
@@ -193,7 +206,7 @@ class DesktopInstaller extends InstallerBase {
 			
 		}
 		
-		targetDir = buildDirectory + "/" + getVM() + "/" + targetName;
+		targetDir = buildDirectory + "/" + getVM () + "/" + targetName + get64 ();
 		
 	}
 
@@ -222,7 +235,7 @@ class DesktopInstaller extends InstallerBase {
 		recursiveCopy (NME + "/install-tool/haxe", targetDir + "/haxe");
 		recursiveCopy (NME + "/install-tool/cpp/hxml", targetDir + "/haxe");
 		
-		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1);
+		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1) + get64 ();
 		
 		for (ndll in ndlls) {
 			
