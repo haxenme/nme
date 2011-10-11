@@ -31,8 +31,9 @@ class InstallTool {
 		
 		if (target == "windows" || target == "mac" || target == "linux") {
 			
-			if (targetFlags.exists ("neko")) {
+			if (targetFlags.exists ("neko") || (!defines.exists (target) && !targetFlags.exists ("cpp"))) {
 				
+				targetFlags.set (target, "");
 				target = "neko";
 				
 			} else {
