@@ -213,16 +213,25 @@ class DesktopInstaller extends InstallerBase {
 
 
 	override function run ():Void {
+
+		runCommand (getExeDir (), getCwd () + getExeName (), []);
 		
+      /*
+         This condition is wrong on mac, for:
+
+           haxelib run nme test T.nmml cpp
+
+
 		if (defines.exists (targetName)) {
 			
 			runCommand (getExeDir (), getCwd () + getExeName (), []);
 			
 		} else {
 			
-			print ("Skipping: Cannot run an application that is cross-compiled for another platform");
+			throw ("ERROR: Cannot run an application that is cross-compiled for another platform");
 			
 		}
+      */
 		
 	}
 	
