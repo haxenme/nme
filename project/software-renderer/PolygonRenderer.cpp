@@ -913,7 +913,9 @@ public:
             //  just join up with simple line...
             UserPoint p1,p2;
             if (acw_rot==0)
-               return;
+            {
+               // Exactly doubled-back. Assume clockwise rotation...
+            }
             if (acw_rot>0)
             {
                (*this.*ItLine)(p0-perp2,p0-perp1);
