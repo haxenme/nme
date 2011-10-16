@@ -103,10 +103,19 @@ SimpleSurface::~SimpleSurface()
 }
 
 
-void SimpleSurface::createHardwareSurface() {
-	//ManagedStage *s = (ManagedStage *)getCurrentStage();
+void SimpleSurface::destroyHardwareSurface() {
 
-	printf( "creating hardware surface\n" );
+  if (mTexture )
+   {
+      delete mTexture;
+      mTexture = 0;
+   }
+	
+}
+
+
+void SimpleSurface::createHardwareSurface() {
+
 	if ( nme::HardwareContext::current == NULL )
 		printf( "Null Hardware Context" );
 	else

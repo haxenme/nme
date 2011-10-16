@@ -60,6 +60,7 @@ public:
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
+   virtual void destroyHardwareSurface() { }
    virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
    virtual void setFormat( PixelFormat pf ) {}
 
@@ -159,6 +160,7 @@ public:
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
    void createHardwareSurface();
+   void destroyHardwareSurface();
    
    void dumpBits()
    { 
