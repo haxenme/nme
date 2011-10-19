@@ -251,7 +251,7 @@ public:
 		#ifdef GPH
 		glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       #else
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		#endif
 
 
@@ -630,7 +630,10 @@ public:
                 if (c==0 || last_col!=col)
                 {
                     last_col = col; 
-                    glColor4ub(col>>16,col>>8,col,col>>24);
+                    glColor4f((float) ((col >> 16) & 0xFF) / 256,
+                      (float) ((col >> 8) & 0xFF) / 256,
+                      (float) (col & 0xFF) / 256,
+                      (float) ((col >> 24) & 0xFF) / 256);
                 }
             }
             
@@ -701,7 +704,10 @@ public:
 
       mTint = inTint;
       mBitmapSurface = inSurface;
-      glColor4ub(inTint>>16,inTint>>8,inTint,inTint>>24);
+      glColor4f((float) ((inTint >> 16) & 0xFF) / 256,
+        (float) ((inTint >> 8) & 0xFF) / 256,
+        (float) (inTint & 0xFF) / 256,
+        (float) ((inTint >> 24) & 0xFF) / 256);
       inSurface->Bind(*this,0);
       mBitmapTexture = inSurface->GetOrCreateTexture(*this);
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
