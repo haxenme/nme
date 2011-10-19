@@ -4,12 +4,12 @@ package nme.events;
 
 class Event
 {
-   public var bubbles(get_bubbles,null) : Bool;
-   public var cancelable(get_cancelable,null) : Bool;
-   public var eventPhase(get_eventPhase,null) : Int;
+   public var bubbles(get_bubbles,never) : Bool;
+   public var cancelable(get_cancelable,never) : Bool;
+   public var eventPhase(get_eventPhase,never) : Int;
    public var target(get_target,set_target) : Dynamic;
    public var currentTarget(get_currentTarget,set_currentTarget) : Dynamic;
-   public var type(get_type,null) : String;
+   public var type(get_type,never) : String;
 
    var _bubbles : Bool;
    var _cancelable : Bool;
@@ -20,7 +20,7 @@ class Event
    var nmeIsCancelled:Bool;
    var nmeIsCancelledNow:Bool;
    // For internal use only...
-   public function nmeSetPhase(inPhase:Int) { eventPhase = inPhase; }
+   public function nmeSetPhase(inPhase:Int) { _eventPhase = inPhase; }
 
 
    public function nmeGetIsCancelled() { return nmeIsCancelled; }
