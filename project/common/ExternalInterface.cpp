@@ -2491,7 +2491,7 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
 
       AutoSurfaceRender render(dest);
       source->BlitChannel(render.Target(),rect,offset.x, offset.y,
-								  val_int(arg[aSrcChannel]), val_int(arg[aSrcChannel]) );
+								  val_int(arg[aSrcChannel]), val_int(arg[aDestChannel]) );
    }
 
    return alloc_null();
