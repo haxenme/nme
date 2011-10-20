@@ -536,6 +536,8 @@ public:
 
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
+   	
+      glEnable( GL_BLEND );
       SetViewport(inState.mClipRect);
 
       if (mMatrix!=*inState.mTransform.mMatrix)
@@ -563,7 +565,17 @@ public:
          Vertices &vert = arrays.mVertices;
          Vertices &tex_coords = arrays.mTexCoords;
 			bool persp = arrays.mPerspectiveCorrect;
-
+         
+         if ( !arrays.mViewport.empty() ) {
+            SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );	
+         }
+         
+         if ( arrays.mBlendMode == 9 ) {
+           glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+         } else {
+           glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+         }
+         
          #ifdef NME_USE_VBO
          {
             if (!arrays.mVertexBO)

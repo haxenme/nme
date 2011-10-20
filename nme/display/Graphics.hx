@@ -146,11 +146,13 @@ class Graphics
           ?indices:Array<Int>,
           ?uvtData:Array<Float>,
           ?culling:nme.display.TriangleCulling,
-          ?colours:Array<Int>)
+          ?colours:Array<Int>,
+          blendMode:Int = 0,
+          viewport:Array<Float> = null )
    {
       var cull:Int = culling==null ? 0 : Type.enumIndex(culling)-1;
 
-      nme_gfx_draw_triangles(nmeHandle,vertices,indices,uvtData,cull, colours );
+      nme_gfx_draw_triangles(nmeHandle,vertices,indices,uvtData,cull, colours, blendMode, viewport );
    }
 
 

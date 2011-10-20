@@ -148,7 +148,11 @@ public:
       bool persp = inPath->mType == vtVertexUVT;
       mElement.mFirst = vertices.size() / (persp?2:1);
       mElement.mPrimType = ptTriangles;
-
+      
+      //Just overwriting blend mode and viewport
+      mArrays->mViewport = inPath->mViewport;
+      mArrays->mBlendMode = inPath->mBlendMode;
+      
       const float *t = &inPath->mUVT[0];
       for(int v=0;v<inPath->mVertices.size();v++)
       {

@@ -1743,7 +1743,7 @@ DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
 value nme_gfx_draw_triangles(value *arg, int args )
 {
 
-	enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours };
+	enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours, aBlend, aViewport };
 	
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
@@ -1752,12 +1752,15 @@ value nme_gfx_draw_triangles(value *arg, int args )
       QuickVec<int> indices;
       QuickVec<float> uvt;
       QuickVec<int> colours;
+      QuickVec<float> viewport;
+      
       FillArrayDouble(vertices,arg[aVertices]);
       FillArrayInt(indices,arg[aIndices]);
       FillArrayDouble(uvt,arg[aUVData]);
       FillArrayInt(colours, arg[aColours]);
-
-      gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours );
+      FillArrayDouble(viewport, arg[aViewport] );
+      
+      gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours, val_int( arg[ aBlend ] ), viewport );
    }
    
    return alloc_null();
