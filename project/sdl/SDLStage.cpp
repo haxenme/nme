@@ -45,9 +45,10 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-      if (mSurf->flags & SDL_SRCALPHA)
-          return pfARGB;
-      return pfXRGB;
+		uint8 swap = mSurf->format->Bshift; // is 0 on argb
+		if (mSurf->flags & SDL_SRCALPHA)
+			return swap ? pfARGBSwap : pfARGB;
+		return swap ? pfXRGBSwap : pfXRGB;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -608,8 +609,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       }
    }
 
-
-   HintColourOrder( opengl || screen->format->Rmask==0xff );
+   HintColourOrder( is_opengl || screen->format->Rmask==0xff );
 
    #ifdef WEBOS
    PDL_ScreenTimeoutEnable(PDL_TRUE);
