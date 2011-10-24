@@ -1,57 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="::APP_FILE::" default="help">
-
-    <property environment="env"/>
-
-<!-- The local.properties file is created and updated by the 'android'
-     tool.
-     It contains the path to the SDK. It should *NOT* be checked into
-     Version Control Systems. -->
-    <property file="local.properties" />
-
-    <property name="sdk.dir" value="${env.ANDROID_SDK}"/>
-
-    <!-- The build.properties file can be created by you and is never touched
-         by the 'android' tool. This is the place to change some of the
-         default property values used by the Ant rules.
-         Here are some properties you may want to change/update:
-
-         source.dir
-             The name of the source directory. Default is 'src'.
-         out.dir
-             The name of the output directory. Default is 'bin'.
-
-         Properties related to the SDK location or the project target should
-         be updated using the 'android' tool with the 'update' action.
-
-         This file is an integral part of the build system for your
-         application and should be checked into Version Control Systems.
-
-         -->
-    <property file="build.properties" />
-
-    <!-- The default.properties file is created and updated by the 'android'
-         tool, as well as ADT.
-         This file is an integral part of the build system for your
-         application and should be checked into Version Control Systems. -->
-    <property file="default.properties" />
-
-    <!-- Custom Android task to deal with the project target, and import the
-         proper rules.
-         This requires ant 1.6.0 or above. -->
-    <path id="android.antlibs">
-        <pathelement path="${sdk.dir}/tools/lib/anttasks.jar" />
-        <pathelement path="${sdk.dir}/tools/lib/sdklib.jar" />
-        <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar" />
-        <pathelement path="${sdk.dir}/tools/lib/apkbuilder.jar" />
-        <pathelement path="${sdk.dir}/tools/lib/jarutils.jar" />
-     </path>
-
-
-
-     <!-- Compile java - taken from eclipse code -->
-
-     <!-- release signing -->
+	
+	<property environment="env"/>
+	
+	<property name="sdk.dir" value="${env.ANDROID_SDK}"/>
+	<property name="target" value="android-7"/>
+	
+	<!-- The local.properties file is created and updated by the 'android' tool. It contains the path to the SDK. It should *NOT* be checked into Version Control Systems. -->
+	<property file="local.properties"/>
+	
+	<!-- The ant.properties file can be created by you. It is only edited by the 'android' tool to add properties to it. This is the place to change some Ant specific build properties. Here are some properties you may want to change/update: source.dir The name of the source directory. Default is 'src'. out.dir The name of the output directory. Default is 'bin'. For other overridable properties, look at the beginning of the rules files in the SDK, at tools/ant/build.xml Properties related to the SDK location or the project target should be updated using the 'android' tool with the 'update' action. This file is an integral part of the build system for your application and should be checked into Version Control Systems. -->
+	<property file="ant.properties"/>
+	
+	<!-- The project.properties file is created and updated by the 'android' tool, as well as ADT. This contains project specific properties such as project target, and library dependencies. Lower level build properties are stored in ant.properties (or in .classpath for Eclipse projects). This file is an integral part of the build system for your application and should be checked into Version Control Systems. -->
+	<property file="project.properties"/>
+	
+	<!-- release signing -->
     ::if (KEY_STORE)::
     <!-- <property name="key.store" value="../signature/signature.keystore"/> -->
 	<property name="key.store" value="::KEY_STORE::"/>
@@ -59,94 +23,11 @@
     ::if (KEY_STORE_PASSWORD)::<property name="key.store.password" value="::KEY_STORE_PASSWORD::"/>::end::
     ::if (KEY_STORE_ALIAS_PASSWORD)::<property name="key.alias.password" value="::KEY_STORE_ALIAS_PASSWORD::"/>::end::
     ::end::
-
-    <property name="java_target" value="1.6"/>
-    <property name="java_source" value="1.6"/>
-    <property name="includeantruntime" value="false"/>
-    <path id="Android 2.1-update1.libraryclasspath">
-       <pathelement location="${env.ANDROID_SDK}/platforms/android-7/android.jar"/>
-    </path>
-    <path id="::APP_FILE::.classpath">
-        <path refid="Android 2.1-update1.libraryclasspath"/>
-        <pathelement location="bin"/>
-     </path>
-
-         <target name="init" depends="-resource-src">
-        <mkdir dir="bin"/>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="gen">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-     </target>
-
-
-
-
-     <target name="compile" depends="init">
-        <echo message="${ant.project.name}: ${ant.file}"/>
-
-        <javac destdir="bin/classes" source="${java_source}" target="${java_target}">
-            <src path="gen"/>
-            <classpath refid="::APP_FILE::.classpath"/>
-         </javac>
-
-         <javac destdir="bin/classes" source="${java_source}" target="${java_target}">
-            <src path="src"/>
-            <classpath refid="::APP_FILE::.classpath"/>
-         </javac>
-
-     </target>
-
-
-
-   <!-- back to google code -->
-
-
-
-    <taskdef name="setup"
-        classname="com.android.ant.SetupTask"
-        classpathref="android.antlibs" />
-
-<!-- extension targets. Uncomment the ones where you want to do custom work
-     in between standard targets -->
-<!--
-    <target name="-pre-build">
-    </target>
-    <target name="-pre-compile">
-    </target>
-
-    [This is typically used for code obfuscation.
-     Compiled code location: ${out.classes.absolute.dir}
-     If this is not done in place, override ${out.dex.input.absolute.dir}]
-    <target name="-post-compile">
-    </target>
--->
-
-
-    <!-- Execute the Android Setup task that will setup some properties
-         specific to the target, and import the build rules files.
-
-         The rules file is imported from
-            <SDK>/platforms/<target_platform>/ant/ant_rules_r#.xml
-
-         To customize existing targets, there are two options:
-         - Customize only one target:
-             - copy/paste the target into this file, *before* the
-               <setup> task.
-             - customize it to your needs.
-         - Customize the whole script.
-             - copy/paste the content of the rules files (minus the top node)
-               into this file, *after* the <setup> task
-             - disable the import of the rules by changing the setup task
-               below to <setup import="false" />. 
-             - customize to your needs.
-    -->
-    <setup />
-
+	
+	<!-- extension targets. Uncomment the ones where you want to do custom work in between standard targets -->
+	<!-- <target name="-pre-build"> </target> <target name="-pre-compile"> </target> /* This is typically used for code obfuscation. Compiled code location: ${out.classes.absolute.dir} If this is not done in place, override ${out.dex.input.absolute.dir} */ <target name="-post-compile"> </target> -->
+	<!-- Import the actual build file. To customize existing targets, there are two options: - Customize only one target: - copy/paste the target into this file, *before* the <import> task. - customize it to your needs. - Customize the whole content of build.xml - copy/paste the content of the rules files (minus the top node) into this file, replacing the <import> task. - customize to your needs. *********************** ****** IMPORTANT ****** *********************** In all cases you must update the value of version-tag below to read 'custom' instead of an integer, in order to avoid having your file be overridden by tools such as "android update project" -->
+	<!-- version-tag: 1 -->
+	<import file="${sdk.dir}/tools/ant/build.xml"/>
+	
 </project>
