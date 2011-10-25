@@ -1,3 +1,4 @@
+import documentation.DocumentationGenerator;
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
 import installers.FlashInstaller;
@@ -44,40 +45,48 @@ class InstallTool {
 			
 		}
 		
-		switch (target) {
+		if (command == "document") {
 			
-			case "android":
-				
-				installer = new AndroidInstaller ();
+			installer = new DocumentationGenerator ();
 			
-			case "cpp":
-				
-				installer = new CPPInstaller ();
+		} else {
 			
-			case "iphoneos", "iphonesim", "iphone", "ios":
+			switch (target) {
 				
-				installer = new IOSInstaller ();
-			
-			case "webos":
+				case "android":
+					
+					installer = new AndroidInstaller ();
 				
-				installer = new WebOSInstaller ();
-			
-			case "flash":
+				case "cpp":
+					
+					installer = new CPPInstaller ();
 				
-				installer = new FlashInstaller ();
-			
-			case "neko":
+				case "iphoneos", "iphonesim", "iphone", "ios":
+					
+					installer = new IOSInstaller ();
 				
-				installer = new NekoInstaller ();
-			
-			case "html5":
+				case "webos":
+					
+					installer = new WebOSInstaller ();
 				
-				installer = new HTML5Installer ();
-			
-			default:
+				case "flash":
+					
+					installer = new FlashInstaller ();
 				
-				Lib.println ("The specified target is not supported: " + target);
-				return;
+				case "neko":
+					
+					installer = new NekoInstaller ();
+				
+				case "html5":
+					
+					installer = new HTML5Installer ();
+				
+				default:
+					
+					Lib.println ("The specified target is not supported: " + target);
+					return;
+				
+			}
 			
 		}
 		
@@ -347,7 +356,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace" ];
+		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -375,8 +384,12 @@ class InstallTool {
 			
 			if (words.length != 2) {
 				
-				argumentError ("Wrong number of arguments for command: " + command);
-				return;
+				if (command != "document" || (command == "document" && words.length != 1)) {
+					
+					argumentError ("Wrong number of arguments for command: " + command);
+					return;
+					
+				}
 				
 			}
 			
@@ -399,7 +412,13 @@ class InstallTool {
 				
 			}
 			
-			var target = words[1];
+			var target = "";
+			
+			if (words.length > 1) {
+				
+				target = words[1];
+				
+			}
 			
 			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug);
 			
