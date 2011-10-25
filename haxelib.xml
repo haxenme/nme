@@ -1,7 +1,7 @@
-<project name="nme" url="http://www.designrealm.co.uk" license="LGPL">
-    <user name="leesylvester"/>
+<project name="nme" url="http://www.haxenme.org" license="LGPL">
     <user name="gamehaxe"/>
-    <user name="krogers"/>
- <description>NME stands for Neko Media Engine and is an SDL wrapper for the haXe and Neko platforms.  It also supports a subset of the flash9 drawing API, for vector and bitmap drawing.</description>
-    <version name="3.0.0"> Added install-tool to make cross-platform development easier. Added webOS support.  Added CURL support. Many, many improvements to flash compatibility.</version>
+	<user name="elyon"/>
+	<user name="leesylvester"/>
+	<description>NME provides an API similar to Flash for C++ and Neko, and allows easy publishing for Windows, Mac, Linux, iOS, webOS, Android, and Flash. HTML5 is also supported, together with Jeash.</description>
+    <version name="3.0.1"> Fixed install-tool for windows.</version>
 </project>
