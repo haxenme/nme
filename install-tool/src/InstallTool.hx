@@ -91,7 +91,7 @@ class InstallTool {
 		Lib.println (error);
 		Lib.println ("Usage :  haxelib run nme [-v] COMMAND ...");
 		Lib.println (" COMMAND : copy-if-newer source destination");
-		Lib.println (" COMMAND : update build.nmml [-DFLAG -Dname=val... ]");
+		Lib.println (" COMMAND : (update|document) build.nmml [-DFLAG -Dname=val... ]");
 		Lib.println (" COMMAND : (build|update|run|rerun|test) [-debug] build.nmml target");
 		Lib.println (" COMMAND : (trace|uninstall) build.nmml target");
 		
@@ -347,7 +347,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace"];
+		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace" ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -399,7 +399,7 @@ class InstallTool {
 				
 			}
 			
-			var target:String = words[1];
+			var target = words[1];
 			
 			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug);
 			

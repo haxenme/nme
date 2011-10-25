@@ -65,6 +65,7 @@ class DesktopInstaller extends InstallerBase {
 			
 		}*/
 		
+		defines.set ("XML_DIR", defines.get ("XML_DIR") + "/" + targetName);
 		compilerFlags.push ("-cp " + targetDir + "/haxe");
 		
 		super.generateContext ();
@@ -178,7 +179,9 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-		} else {
+		} 
+		
+		if (targetName == null) {
 			
 			if (InstallTool.isMac) {
 				
