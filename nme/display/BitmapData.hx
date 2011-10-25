@@ -281,6 +281,10 @@ class BitmapData implements IBitmapDrawable
    	nme_bitmap_data_create_hardware_surface( nmeHandle );
    	
    }
+   
+    public function destroyHardwareSurface() {		
+	   	nme_bitmap_data_destroy_hardware_surface( nmeHandle );		
+   }
    #end
 
    public function dumpBits() : Void
@@ -394,6 +398,7 @@ class BitmapData implements IBitmapDrawable
    #if cpp
    static var nme_bitmap_data_set_array = nme.Loader.load("nme_bitmap_data_set_array",3);
    static var nme_bitmap_data_create_hardware_surface = nme.Loader.load( "nme_bitmap_data_create_hardware_surface", 1 );
+   static var nme_bitmap_data_destroy_hardware_surface = nme.Loader.load( "nme_bitmap_data_destroy_hardware_surface", 1 );
    #end
    static var nme_bitmap_data_generate_filter_rect = nme.Loader.load("nme_bitmap_data_generate_filter_rect",3);
    static var nme_render_surface_to_surface = nme.Loader.load("nme_render_surface_to_surface",-1);
