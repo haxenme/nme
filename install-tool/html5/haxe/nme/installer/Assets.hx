@@ -20,9 +20,11 @@ class Assets {
 	
 	public static function getBitmapData (id:String):BitmapData {
 		
+		// Should be bitmapData.clone (), but stopped working in recent Jeash builds
+		
 		switch (id) {
 			
-			::foreach assets::::if (type == "image")::case "::id::": return cast (ApplicationMain.loaders.get ("::resourceName::").contentLoaderInfo.content, Bitmap).bitmapData.clone ();
+			::foreach assets::::if (type == "image")::case "::id::": return cast (ApplicationMain.loaders.get ("::resourceName::").contentLoaderInfo.content, Bitmap).bitmapData;
 			::end::::end::
 		}
 		
