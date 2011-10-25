@@ -145,7 +145,13 @@ class InstallerBase {
 			
 		}
 		
-		var validCommands = [ "update", "build", "test", "run", "rerun", "trace", "uninstall" ];
+		if (command == "document") {
+			
+			document ();
+			
+		}
+		
+		var validCommands = [ "update", "build", "test", "run", "rerun", "trace", "uninstall", "document" ];
 		
 		if (!validCommands.remove (command)) {
 			
@@ -166,6 +172,7 @@ class InstallerBase {
 	function install () { throw "Install not implemented."; }
 	function traceMessages () { /* Not required on all platforms. */ }
 	function uninstall () { throw "Uninstall not implemented."; }
+	function document () { /* Not required on all platforms. */ }
 	
 	
 	function addFile (file:String):Bool {
@@ -386,6 +393,7 @@ class InstallerBase {
 		setDefault ("SWF_VERSION", "10");
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
 		setDefault ("BUILD_DIR", "bin");
+		setDefault ("DOCS_DIR", "docs");
 		defines.set ("target_" + target, "1");
 		defines.set ("target" , target);
 		
