@@ -1,0 +1,5 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-xml ::BUILD_DIR::/documentation/definitions.xml
+-cp ::BUILD_DIR::/documentation/haxe
+--remap flash:nme
+-debug
