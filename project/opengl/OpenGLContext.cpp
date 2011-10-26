@@ -40,10 +40,14 @@ typedef void *GLCtx;
 typedef void *WinDC;
 typedef void *GLCtx;
 
+#define FORCE_NON_PO2
+
 #else
 
 #include <windows.h>
 #include <gl/GL.h>
+
+#define FORCE_NON_PO2
 
 typedef HDC WinDC;
 typedef HGLRC GLCtx;
@@ -136,6 +140,12 @@ bool NonPO2Supported(bool inNotRepeating)
 {
    static bool tried = false;
 
+
+   //OpenGL 2.0 introduced non PO2 as standard, in 2004 - safe to assume it exists on PC
+   #ifdef FORCE_NON_PO2
+   	return true;
+   #endif
+
    if (!tried)
    {
       tried = true;
@@ -164,7 +174,8 @@ public:
       mContextVersion = gTextureContextVersion;
 
       bool non_po2 = NonPO2Supported(true && (inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2));
-      // printf("Using non-power-of-2 texture %d\n",non_po2);
+      //printf("Using non-power-of-2 texture %d\n",non_po2);
+            
       int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
       int h = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
       mCanRepeat = IsPower2(w) && IsPower2(h);
