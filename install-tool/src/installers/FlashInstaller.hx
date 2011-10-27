@@ -1,10 +1,17 @@
 package installers;
 
 
+import haxe.Int32;
+import haxe.io.Bytes;
+import haxe.SHA1;
+import neko.FileSystem;
+import neko.io.File;
 import neko.io.Path;
 import neko.Lib;
 import neko.Sys;
 import data.Asset;
+import neko.zip.Writer;
+import nme.utils.ByteArray;
 
 import format.swf.Data;
 import format.swf.Constants;
@@ -24,13 +31,7 @@ class FlashInstaller extends InstallerBase {
 		
 		recursiveCopy (NME + "/install-tool/haxe", buildDirectory + "/flash/haxe");
 		recursiveCopy (NME + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/install-tool/flash/template", buildDirectory + "/flash/haxe");
-		
-		if (targetFlags.exists ("web")) {
-			
-			recursiveCopy (NME + "/install-tool/flash/web-template", buildDirectory + "/flash/bin");
-			
-		}
+		recursiveCopy (NME + "/install-tool/flash/haxe", buildDirectory + "/flash/haxe");
 		
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -80,6 +81,77 @@ class FlashInstaller extends InstallerBase {
 			output.close ();
 			
 		}
+		
+		if (targetFlags.exists ("web")) {
+			
+			recursiveCopy (NME + "/install-tool/flash/templates/web", buildDirectory + "/flash/bin");
+			
+		} else if (targetFlags.exists ("chrome")) {
+			
+			recursiveCopy (NME + "/install-tool/flash/templates/chrome", buildDirectory + "/flash/bin");
+			
+			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
+			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");
+			
+			//compressToZip (buildDirectory + "/flash/bin/" + defines.get ("APP_FILE") + ".crx");
+			
+		} else if (targetFlags.exists ("opera")) {
+			
+			recursiveCopy (NME + "/install-tool/flash/templates/opera", buildDirectory + "/flash/bin");
+			
+		}
+		
+	}
+	
+	
+	private function compressToZip (path:String):Void {
+		
+		var files = new Array <Dynamic> ();
+		
+		var directory = Path.directory (path);
+		
+		for (file in FileSystem.readDirectory (directory)) {
+			
+			if (Path.extension (file) != "zip" && Path.extension (file) != "crx") {
+				
+				var name = file;
+				//var date = FileSystem.stat (directory + "/" + file).ctime;
+				var date = Date.now ();
+				
+				var input = File.read (directory + "/" + file);
+				var data = input.readAll ();
+				input.close ();
+				
+				files.push ( { fileName: name, fileTime: date, data: data } );
+				
+			}
+			
+		}
+		
+		var output = File.write (path);
+		
+		if (Path.extension (path) == "crx") {
+			
+			var input = File.read (defines.get ("KEY_STORE"));
+			var publicKey:Bytes = input.readAll ();
+			input.close ();
+			
+			var signature = SHA1.encode ("this isn't working");
+			
+			output.writeString ("Cr24"); // magic number
+			output.writeInt32 (Int32.ofInt (2)); // CRX file format version
+			output.writeInt32 (Int32.ofInt (publicKey.length)); // public key length
+			output.writeInt32 (Int32.ofInt (signature.length)); // signature length
+			output.writeBytes (publicKey, 0, publicKey.length);
+			output.writeString (signature);
+			
+			//output.writeBytes (); // public key contents "The contents of the author's RSA public key, formatted as an X509 SubjectPublicKeyInfo block. "
+			//output.writeBytes (); // "The signature of the ZIP content using the author's private key. The signature is created using the RSA algorithm with the SHA-1 hash function."
+			
+		}
+		
+		Writer.writeZip (output, files, 1);
+		output.close ();
 		
 	}
 	
@@ -417,6 +489,23 @@ class FlashInstaller extends InstallerBase {
 		outTags.push (TSymbolClass ( [ { cid:cid, className:"NME_" + flatName } ] ));
 		
 		return true;
+		
+	}
+	
+	
+	private function getIcon (size:Int, targetPath:String):Void {
+		
+		var icon = icons.findIcon (size, size);
+		
+		if (icon != "") {
+			
+			copyIfNewer (icon, targetPath);
+			
+		} else {
+			
+			icons.updateIcon (size, size, targetPath);
+			
+		}
 		
 	}
 	
