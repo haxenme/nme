@@ -4,4 +4,5 @@
 -swf-header ::WIN_WIDTH:::::WIN_HEIGHT:::::WIN_FPS:::::WIN_FLASHBACKGROUND::
 -cp ::BUILD_DIR::/flash/haxe
 -D fdb
+--no-inline
 -debug
