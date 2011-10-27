@@ -99,6 +99,13 @@ class FlashInstaller extends InstallerBase {
 			
 			recursiveCopy (NME + "/install-tool/flash/templates/opera", buildDirectory + "/flash/bin");
 			
+			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
+			getIcon (32, buildDirectory + "/flash/bin/icon_32.png");
+			getIcon (64, buildDirectory + "/flash/bin/icon_64.png");
+			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");
+			
+			compressToZip (buildDirectory + "/flash/bin/" + defines.get ("APP_FILE") + ".wgt");
+			
 		}
 		
 	}
@@ -112,7 +119,7 @@ class FlashInstaller extends InstallerBase {
 		
 		for (file in FileSystem.readDirectory (directory)) {
 			
-			if (Path.extension (file) != "zip" && Path.extension (file) != "crx") {
+			if (Path.extension (file) != "zip" && Path.extension (file) != "crx" && Path.extension (file) != "wgt") {
 				
 				var name = file;
 				//var date = FileSystem.stat (directory + "/" + file).ctime;
@@ -489,6 +496,52 @@ class FlashInstaller extends InstallerBase {
 		outTags.push (TSymbolClass ( [ { cid:cid, className:"NME_" + flatName } ] ));
 		
 		return true;
+		
+	}
+	
+	
+	override function generateContext ():Void {
+		
+		super.generateContext ();
+		
+		if (targetFlags.exists ("opera")) {
+			
+			var packageName = defines.get ("APP_PACKAGE");
+			
+			context.APP_PACKAGE_HOST = packageName.substr (0, packageName.lastIndexOf ("."));
+			context.APP_PACKAGE_NAME = packageName.substr (packageName.lastIndexOf (".") + 1);
+			
+			var currentDate = Date.now ();
+			
+			var revisionDate = currentDate.getFullYear () + "-";
+			
+			var month = currentDate.getMonth ();
+			
+			if (month < 10) {
+				
+				revisionDate += "0" + month;
+				
+			} else {
+				
+				revisionDate += month;
+				
+			}
+			
+			var day = currentDate.getDate ();
+			
+			if (day < 10) {
+				
+				revisionDate += "-0" + day;
+				
+			} else {
+				
+				revisionDate += "-" + day;
+				
+			}
+			
+			context.REVISION_DATE = revisionDate;
+			
+		}
 		
 	}
 	

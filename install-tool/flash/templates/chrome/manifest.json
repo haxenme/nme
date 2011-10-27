@@ -1,6 +1,6 @@
 {
   "name": "::APP_TITLE::",
-  "description": "",
+  "description": "::APP_DESCRIPTION::",
   "version": "::APP_VERSION::",
   "app": {
     "launch": {

@@ -387,6 +387,7 @@ class InstallerBase {
 		setDefault ("WIN_HARDWARE", "true");
 		setDefault ("WIN_RESIZEABLE", "true");
 		setDefault ("APP_FILE", "MyApplication");
+		setDefault ("APP_DESCRIPTION", "");
 		setDefault ("APP_PACKAGE", "com.example.myapp");
 		setDefault ("APP_VERSION", "1.0.0");
 		setDefault ("APP_COMPANY", "Example Inc.");
