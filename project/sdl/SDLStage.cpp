@@ -627,25 +627,32 @@ bool sgDead = false;
 
 double CapabilitiesGetScreenResolutionX() {
 	
-	SDL_Init(SDL_INIT_VIDEO);
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_w; 
 		
 }
 
-
 double CapabilitiesGetScreenResolutionY() {
 	
-	SDL_Init(SDL_INIT_VIDEO);
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_h; 
-
 		
 }
 
 double CapabilitiesGetScreenDPI() {
 
+	#ifdef WEBOS
+
+	PDL_ScreenMetrics screenMetrics;
+	PDL_GetScreenMetrics (&screenMetrics);
+
+	return screenMetrics.aspectRatio;
+
+	#else
+
 	return 72.0;
+
+	#endif
 		
 }
 
