@@ -625,6 +625,37 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 bool sgDead = false;
 
+double CapabilitiesGetScreenResolutionX() {
+	
+	SDL_Init(SDL_INIT_VIDEO);
+	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
+	return info->current_w; 
+		
+}
+
+
+double CapabilitiesGetScreenResolutionY() {
+	
+	SDL_Init(SDL_INIT_VIDEO);
+	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
+	return info->current_h; 
+
+		
+}
+
+double CapabilitiesGetScreenDPI() {
+
+	return 72.0;
+		
+}
+
+double CapabilitiesGetPixelAspectRatio() {
+
+	return 	CapabilitiesGetScreenResolutionX() / CapabilitiesGetScreenResolutionY();
+	
+}
+
+
 void TerminateMainLoop()
 {
    #ifdef NME_MIXER
