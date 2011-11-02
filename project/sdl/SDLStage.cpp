@@ -30,6 +30,7 @@ static int sgDesktopHeight = 0;
 
 static bool sgInitCalled = false;
 
+enum { NO_TOUCH = -1 };
 
 //To guard against multiple calls
 int initSDL () {
@@ -208,6 +209,19 @@ public:
          mPrimarySurface = new SDLSurf(inSurface,inIsOpenGL);
       }
       mPrimarySurface->IncRef();
+	  
+	  #ifdef WEBOS
+	  mMultiTouch = true;
+	  #else
+	  mMultiTouch = false;
+	  #endif
+	  mSingleTouchID = NO_TOUCH;
+      mDX = 0;
+      mDY = 0;
+
+      // Click detection
+      mDownX = 0;
+      mDownY = 0;
    }
 
    ~SDLStage()
@@ -312,6 +326,43 @@ public:
 
    void ProcessEvent(Event &inEvent)
    {
+	   
+	   #ifdef WEBOS
+	   
+	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
+		   
+		   if (mSingleTouchID == NO_TOUCH || inEvent.value == mSingleTouchID || !mMultiTouch)
+			inEvent.flags |= efPrimaryTouch;
+			
+			if (mMultiTouch) {
+				
+				switch(inEvent.type)
+               {
+                  case  etMouseDown: inEvent.type = etTouchBegin; break;
+				  case  etMouseUp: inEvent.type = etTouchEnd; break;
+				  case  etMouseMove: inEvent.type = etTouchMove; break;
+               }
+			   
+			   if (inEvent.type == etTouchBegin) {
+					
+					mDownX = inEvent.x;
+					mDownY = inEvent.y;
+					
+				}
+				
+				if (inEvent.type == etTouchEnd) {
+					
+					if (mSingleTouchID==inEvent.value)
+						mSingleTouchID = NO_TOUCH;
+					
+				}
+				
+			}
+		   
+	   }
+	   
+	   #endif
+	   
       HandleEvent(inEvent);
    }
 
@@ -392,6 +443,12 @@ public:
    
    bool mMultiTouch;
    int  mSingleTouchID;
+   
+   double mDX;
+   double mDY;
+
+   double mDownX;
+   double mDownY;
    
 
    Surface *GetPrimarySurface()
@@ -730,13 +787,15 @@ void AddModStates(int &ioFlags,int inState = -1)
    if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
    if (state & KMOD_ALT) ioFlags |= efAltDown;
    if (state & KMOD_META) ioFlags |= efCommandDown;
+	
+ 
+	int m = SDL_GetMouseState(0,0);
+	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
+	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
+	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+		
 
-   int m = SDL_GetMouseState(0,0);
-   if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
-   if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
-   if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
-
-   ioFlags |= efPrimaryTouch;
+	ioFlags |= efPrimaryTouch;
    ioFlags |= efNoNativeClick;
 }
 
@@ -839,9 +898,11 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEMOTION:
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
-         AddModStates(mouse.flags);
 		 #ifdef WEBOS
 		 mouse.value = inEvent.motion.which;
+		 mouse.flags |= efLeftDown;
+		 #else
+		 AddModStates(mouse.flags);
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
@@ -849,9 +910,11 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEBUTTONDOWN:
       {
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-         AddModStates(mouse.flags);
-		 #ifdef WEBOS
-		 mouse.value = inEvent.button.which;
+         #ifdef WEBOS
+		 mouse.value = inEvent.motion.which;
+		 mouse.flags |= efLeftDown;
+		 #else
+		 AddModStates(mouse.flags);
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
@@ -859,9 +922,10 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEBUTTONUP:
       {
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-         AddModStates(mouse.flags);
 		 #ifdef WEBOS
-		 mouse.value = inEvent.button.which;
+		 mouse.value = inEvent.motion.which;
+		 #else
+		 AddModStates(mouse.flags);
 		 #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
