@@ -28,6 +28,32 @@ void MainLoop();
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 
+static bool sgInitCalled = false;
+
+
+//To guard against multiple calls
+int initSDL( bool opengl ) {
+	
+	if ( sgInitCalled )
+		return 0;
+	
+	sgInitCalled = true;
+	
+	Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+	
+	if (opengl)
+		init_flags |= SDL_OPENGL;
+
+	init_flags |= SDL_INIT_JOYSTICK;
+
+	int err = SDL_Init( init_flags );
+
+	return err;
+	
+	
+}
+
+
 class SDLSurf : public Surface
 {
 public:
@@ -469,15 +495,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    Rect r(100,100,inWidth,inHeight);
 
-   Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
-   if (opengl)
-      init_flags |= SDL_OPENGL;
-
-   //  SDL_GL_DEPTH_SIZE = 0;
-
-   init_flags |= SDL_INIT_JOYSTICK;
-
-   int err =  SDL_Init( init_flags );
+   int err = initSDL( opengl );// SDL_Init( init_flags );
+   
    if ( err == -1 )
    {
       fprintf(stderr,"Couble not initialize SDL : %s\n", SDL_GetError());
@@ -627,12 +646,20 @@ bool sgDead = false;
 
 double CapabilitiesGetScreenResolutionX() {
 	
+	//The call will crash if called before the stage is created - so we init it manually here.
+	//Unfortunately, this assumes OpenGL - but there's no other way to do it.
+	
+	initSDL( true );
+	
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_w; 
 		
 }
 
 double CapabilitiesGetScreenResolutionY() {
+	
+	
+	initSDL( true );
 	
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_h; 
