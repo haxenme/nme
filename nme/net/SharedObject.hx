@@ -101,7 +101,47 @@ class SharedObject extends EventDispatcher {
 	
 	private static function getFilePath (name:String, localPath:String):String {
 		
-		return Path.directory (Sys.executablePath ()) + "/sharedobjects/" + name + ".sol";
+		var path:String = "";
+		
+		/*if (Sys.environment.exists ("LOCALAPPDATA")) {
+			
+			path = Sys.getEnv ("LOCALAPPDATA");
+			
+		} else {
+			
+			path = Sys.getEnv ("APPDATA");
+			
+		}
+		
+		path += "\\NME";
+		
+		if (!FileSystem.exists (path)) {
+			
+			FileSystem.createDirectory (path);
+			
+		}
+		
+		path += "\\SharedObjects";
+		
+		if (!FileSystem.exists (path)) {
+			
+			FileSystem.createDirectory (path);
+			
+		}
+		
+		path += "\\" + localPath + "\\";
+		
+		if (!FileSystem.exists (path)) {
+			
+			FileSystem.createDirectory (path);
+			
+		}*/
+		
+		path = Path.directory (Sys.executablePath ()) + "/sharedobjects/";
+		
+		path += name + ".sol";
+		
+		return path;
 		
 	}
 	

@@ -273,7 +273,7 @@
   <lib name="user32.lib" if="windows"/>
   <lib name="kernel32.lib" if="windows"/>
   <lib name="advapi32.lib" if="windows"/>
-  <lib name="dxguid.lib" if="windows"/>
+  <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="windows"/>
   <lib name="winmm.lib" if="windows"/>
   <lib name="ws2_32.lib" if="windows"/>
   <lib name="wldap32.lib" if="windows"/>

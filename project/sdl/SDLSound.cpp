@@ -277,7 +277,7 @@ public:
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
-         // printf("Error %s (%s)\n", mError.c_str(), name );
+         printf("Error %s (%s)\n", mError.c_str(), name );
       }
    }
    ~SDLMusic()

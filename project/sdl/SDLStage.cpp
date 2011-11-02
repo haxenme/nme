@@ -514,9 +514,15 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    #else
    int chunksize = 4096;
    #endif
-   if ( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
+   
+   int frequency = 44100;
+   //int frequency = MIX_DEFAULT_FREQUENCY //22050
+   
+   // The default frequency would have less latency, but is incompatible with the average MP3 file
+   
+   if ( Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
    {
-      fprintf(stderr,"Couble not open sound: %s\n", Mix_GetError());
+      fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
       gSDLIsInit = false;
    }
    #endif
