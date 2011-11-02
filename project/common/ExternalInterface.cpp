@@ -631,7 +631,81 @@ bool FromValue(ByteData &outData,value inData)
    return true;
 }
 
-// --- getUniqueDeviceIdentifier ---------------------------------------------------
+// --- WeakRef -----------------------------------------------------
+
+struct WeakRefInfo
+{
+   int64 mHolder;
+   int64 mPtr;
+};
+
+static QuickVec<WeakRefInfo> sWeakRefs;
+static QuickVec<int> sFreeRefIDs;
+
+#define PTR_MANGLE 0x1000111010101
+
+static void release_weak_ref(value inValue)
+{
+   int64 key = ((int64)(inValue)) ^ PTR_MANGLE;
+   for(int i=0;i<sWeakRefs.size();i++)
+   {
+      if (sWeakRefs[i].mPtr==key)
+         // Wait until controlling object access it again
+         sWeakRefs[i].mPtr = 0;
+   }
+}
+
+static void release_weak_ref_holder(value inValue)
+{
+   int64 key = ((int64)(inValue)) ^ PTR_MANGLE;
+   for(int i=0;i<sWeakRefs.size();i++)
+   {
+      if (sWeakRefs[i].mHolder==key)
+      {
+         sWeakRefs[i].mHolder = 0;
+         sWeakRefs[i].mPtr = 0;
+         sFreeRefIDs.push_back(i);
+         break;
+      }
+   }
+}
+
+value nme_weak_ref_create(value inHolder,value inRef)
+{
+   int id = 0;
+   if (!sFreeRefIDs.empty())
+      id = sFreeRefIDs.qpop();
+   else
+   {
+      id = sWeakRefs.size();
+      sWeakRefs.resize(id+1);
+   }
+
+   WeakRefInfo &info = sWeakRefs[id];
+   info.mHolder = ((int64)(inHolder)) ^ PTR_MANGLE;
+   info.mPtr = ((int64)(inRef)) ^ PTR_MANGLE;
+   val_gc(inHolder,release_weak_ref_holder);
+   val_gc(inRef,release_weak_ref);
+
+   return alloc_int(id);
+}
+DEFINE_PRIM(nme_weak_ref_create,2);
+
+value nme_weak_ref_get(value inValue)
+{
+   int id = val_int(inValue);
+   if (sWeakRefs[id].mPtr==0)
+   {
+      sWeakRefs[id].mHolder = 0;
+      sFreeRefIDs.push_back(id);
+      return alloc_null();
+   }
+   return (value)( sWeakRefs[id].mPtr ^ PTR_MANGLE );
+}
+DEFINE_PRIM(nme_weak_ref_get,1);
+
+
+
 value nme_get_unique_device_identifier()
 {
 #if defined(IPHONE)
