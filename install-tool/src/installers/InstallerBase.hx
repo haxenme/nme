@@ -765,7 +765,15 @@ class InstallerBase {
 					
 					case "set":
 						
-						defines.set (element.att.name, substitute (element.att.value));
+						var value:String = "";
+						
+						if (element.has.value) {
+							
+							value = substitute (element.att.value);
+							
+						}
+						
+						defines.set (element.att.name, value);
 					
 					case "unset":
 						
