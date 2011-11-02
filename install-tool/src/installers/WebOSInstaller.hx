@@ -36,7 +36,7 @@ class WebOSInstaller extends InstallerBase {
 			
 		}
 		
-		runPalmCommand (true, "package" ,[ "bin", "--use-v1-format" ] );
+		runPalmCommand (true, "package" ,[ "bin" ] );
 		
 	}
 	
