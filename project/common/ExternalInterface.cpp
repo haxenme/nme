@@ -646,6 +646,7 @@ static QuickVec<int> sFreeRefIDs;
 
 static void release_weak_ref(value inValue)
 {
+   #ifndef WEBOS //integer constant is too large for "long" type
    int64 key = ((int64)(inValue)) ^ PTR_MANGLE;
    for(int i=0;i<sWeakRefs.size();i++)
    {
@@ -653,10 +654,12 @@ static void release_weak_ref(value inValue)
          // Wait until controlling object access it again
          sWeakRefs[i].mPtr = 0;
    }
+   #endif
 }
 
 static void release_weak_ref_holder(value inValue)
 {
+   #ifndef WEBOS //integer constant is too large for "long" type
    int64 key = ((int64)(inValue)) ^ PTR_MANGLE;
    for(int i=0;i<sWeakRefs.size();i++)
    {
@@ -668,10 +671,12 @@ static void release_weak_ref_holder(value inValue)
          break;
       }
    }
+   #endif
 }
 
 value nme_weak_ref_create(value inHolder,value inRef)
 {
+   #ifndef WEBOS //integer constant is too large for "long" type
    int id = 0;
    if (!sFreeRefIDs.empty())
       id = sFreeRefIDs.qpop();
@@ -688,11 +693,15 @@ value nme_weak_ref_create(value inHolder,value inRef)
    val_gc(inRef,release_weak_ref);
 
    return alloc_int(id);
+   #else
+   return NULL;
+   #endif
 }
 DEFINE_PRIM(nme_weak_ref_create,2);
 
 value nme_weak_ref_get(value inValue)
 {
+   #ifndef WEBOS //integer constant is too large for "long" type
    int id = val_int(inValue);
    if (sWeakRefs[id].mPtr==0)
    {
@@ -701,6 +710,9 @@ value nme_weak_ref_get(value inValue)
       return alloc_null();
    }
    return (value)( sWeakRefs[id].mPtr ^ PTR_MANGLE );
+   #else
+   return NULL;
+   #endif
 }
 DEFINE_PRIM(nme_weak_ref_get,1);
 

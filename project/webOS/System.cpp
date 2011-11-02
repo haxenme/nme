@@ -6,6 +6,14 @@
 namespace nme {
 	
 	
+	bool LaunchBrowser (const char *inUtf8URL) {		
+		
+		PDL_LaunchBrowser (inUtf8URL);		
+		return true;		
+		
+	}
+	
+	
 	void ExternalInterface_Call (const char *functionName, const char **params, int numParams) {
 		
 		//syslog (LOG_INFO, "Calling JS");

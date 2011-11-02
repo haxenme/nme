@@ -39,6 +39,11 @@ int initSDL () {
 	
 	sgInitCalled = true;
 	
+	#ifdef WEBOS
+	   if (PDL_GetPDKVersion () >= 100)
+		  PDL_Init(0);
+	#endif
+	
 	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK);
 
 	return err;
@@ -473,8 +478,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 #endif
 #ifdef WEBOS
    openlog (inPackage, 0, LOG_USER);
-   if (PDL_GetPDKVersion () >= 100)
-	  PDL_Init(0);
 #endif
 #ifdef HX_WINDOWS
 	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
