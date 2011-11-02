@@ -48,11 +48,13 @@ class HTML5Installer extends InstallerBase {
 		
 		if (defines.exists ("windows")) {
 			
-			dotSlash = ".\\";
+			runCommand (destination, ".\\index.html", []);
+			
+		} else {
+			
+			runCommand (destination, "open", [ "index.html" ]);
 			
 		}
-		
-		runCommand (destination, dotSlash + "index.html", []);
 		
 	}
 	

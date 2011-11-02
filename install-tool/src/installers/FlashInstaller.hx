@@ -585,10 +585,13 @@ class FlashInstaller extends InstallerBase {
 			if (defines.exists ("windows")) {
 				
 				dotSlash = ".\\";
+				runCommand (destination, ".\\" + defines.get ("APP_FILE") + ".swf", []);
+				
+			} else {
+				
+				runCommand (destination, "open", [ defines.get ("APP_FILE") + ".swf" ]);
 				
 			}
-			
-			runCommand (destination, dotSlash + defines.get ("APP_FILE") + ".swf", []);
 			
 		} else {
 			
