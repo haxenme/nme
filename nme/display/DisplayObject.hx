@@ -358,16 +358,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
       return inAlpha;
    }
 
-   public function globalToLocal(inLocal:Point)
+   public function globalToLocal(inGlobal:Point)
    {
-      var result = inLocal.clone();
+      var result = inGlobal.clone();
       nme_display_object_global_to_local(nmeHandle,result);
       return result;
    }
 
-   public function localToGlobal(inGlobal:Point)
+   public function localToGlobal(inLocal:Point)
    {
-      var result = inGlobal.clone();
+      var result = inLocal.clone();
       nme_display_object_local_to_global(nmeHandle,result);
       return result;
    }
