@@ -16,52 +16,102 @@ import nme.utils.ByteArray;
 class Assets {
 
 	
-	public static function getBitmapData (id:String):BitmapData {
+	private static var initialized:Bool = false;
+	
+	private static var resourceNames:Hash <String> = new Hash <String> ();
+	private static var resourceTypes:Hash <String> = new Hash <String> ();
+	
+	
+	private static function initialize ():Void {
 		
-		switch (id) {
+		if (!initialized) {
 			
-			::foreach assets::::if (type == "image")::case "::id::": return BitmapData.load ("::resourceName::");
-			::end::::end::
+			::foreach assets::resourceNames.set ("::id::", "::resourceName::");
+			resourceTypes.set ("::id::", "::type::");
+			::end::
+			initialized = true;
+			
 		}
 		
-		return null;
+	}
+	
+	
+	public static function getBitmapData (id:String):BitmapData {
+		
+		initialize ();
+		
+		if (resourceTypes.exists (id) && resourceTypes.get (id) == "image") {
+			
+			return BitmapData.load (resourceNames.get (id));
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no BitmapData asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getBytes (id:String):ByteArray {
 		
-		switch (id) {
-			
-			::foreach assets::case "::id::": return ByteArray.readFile ("::resourceName::");
-			::end::
-		}
+		initialize ();
 		
-		return null;
+		if (resourceNames.exists (id)) {
+			
+			return ByteArray.readFile (resourceNames.get (id));
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getFont (id:String):Font {
 		
-		switch (id) {
-			
-			::foreach assets::::if (type == "font")::case "::id::": return new Font ("::resourceName::"); 
-			::end::::end::
-		}
+		initialize ();
 		
-		return null;
+		if (resourceTypes.exists (id) && resourceTypes.get (id) == "font") {
+			
+			return new Font (resourceNames.get (id));
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getSound (id:String):Sound {
 		
-		switch (id) {
+		initialize ();
+		
+		if (resourceTypes.exists (id)) {
 			
-			::foreach assets::::if (type == "sound")::case "::id::": return new Sound (new URLRequest ("::resourceName::"), null, false);::elseif (type == "music")::case "::id::": return new Sound (new URLRequest ("::resourceName::"), null, true);
-			::end::::end::
+			if (resourceTypes.get (id) == "sound") {
+				
+				return new Sound (new URLRequest (resourceNames.get (id)), null, false);
+				
+			} else if (resourceTypes.get (id) == "music") {
+				
+				return new Sound (new URLRequest (resourceNames.get (id)), null, true);
+				
+			}
+			
 		}
+		
+		trace ("[nme.Assets] There is no Sound asset with an ID of \"" + id + "\"");
 		
 		return null;
 		
@@ -70,7 +120,7 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		var bytes:ByteArray = getBytes (id);
+		var bytes = getBytes (id);
 		
 		if (bytes == null) {
 			
