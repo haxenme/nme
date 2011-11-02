@@ -32,24 +32,16 @@ static bool sgInitCalled = false;
 
 
 //To guard against multiple calls
-int initSDL( bool opengl ) {
+int initSDL () {
 	
-	if ( sgInitCalled )
+	if (sgInitCalled)
 		return 0;
 	
 	sgInitCalled = true;
 	
-	Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
-	
-	if (opengl)
-		init_flags |= SDL_OPENGL;
-
-	init_flags |= SDL_INIT_JOYSTICK;
-
-	int err = SDL_Init( init_flags );
+	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK);
 
 	return err;
-	
 	
 }
 
@@ -495,11 +487,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    Rect r(100,100,inWidth,inHeight);
 
-   int err = initSDL( opengl );// SDL_Init( init_flags );
+   int err = initSDL ();// SDL_Init( init_flags );
    
    if ( err == -1 )
    {
-      fprintf(stderr,"Couble not initialize SDL : %s\n", SDL_GetError());
+      fprintf(stderr,"Could not initialize SDL : %s\n", SDL_GetError());
       inOnFrame(0);
       // SDL_GetError()
       return;
@@ -646,24 +638,20 @@ bool sgDead = false;
 
 double CapabilitiesGetScreenResolutionX() {
 	
-	//The call will crash if called before the stage is created - so we init it manually here.
-	//Unfortunately, this assumes OpenGL - but there's no other way to do it.
-	
-	initSDL( true );
+	initSDL ();
 	
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_w; 
-		
+	
 }
 
 double CapabilitiesGetScreenResolutionY() {
 	
-	
-	initSDL( true );
+	initSDL ();
 	
 	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
 	return info->current_h; 
-		
+	
 }
 
 double CapabilitiesGetScreenDPI() {
@@ -680,7 +668,7 @@ double CapabilitiesGetScreenDPI() {
 	return 72.0;
 
 	#endif
-		
+	
 }
 
 double CapabilitiesGetPixelAspectRatio() {
