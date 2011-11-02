@@ -34,6 +34,13 @@ class TextField extends nme.display.InteractiveObject
       var handle = nme_text_field_create( );
       super(handle,"TextField");
    }
+   
+   
+   public function appendText (newText:String):Void {
+	   
+	   nme_text_field_set_text (nmeHandle, nme_text_field_get_text (nmeHandle) + newText);
+	   
+   }
 
 	public function setTextFormat(format:TextFormat, beginIndex:Int = -1, endIndex:Int = -1):Void
 	{
