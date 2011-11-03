@@ -6,14 +6,7 @@ import nme.events.IEventDispatcher;
 import nme.events.Event;
 import nme.utils.WeakRef;
 
-enum ListenerEnum
-{
-   LISTENER(listener:Listener);
-   WEAK_LISTENER(weak_ref:WeakRef<Listener>);
-}
-
-
-typedef ListenerList = Array<ListenerEnum>;
+typedef ListenerList = Array< WeakRef<Listener> >;
 
 typedef EventMap = Hash<ListenerList>;
 
@@ -42,12 +35,7 @@ class EventDispatcher implements IEventDispatcher
       }
 
       var l =  new Listener(listener,useCapture,priority);
-      if (useWeakReference)
-      {
-         list.push(WEAK_LISTENER(new WeakRef<Listener>(l)) );
-      }
-      else
-         list.push(LISTENER(l));
+      list.push(new WeakRef<Listener>(l,useWeakReference));
 	}
 
 	public function dispatchEvent(event:Event):Bool
@@ -69,13 +57,8 @@ class EventDispatcher implements IEventDispatcher
          var idx = 0;
          while(idx<list.length)
          {
-            var listener:Listener = null;
             var list_item = list[idx];
-            switch(list_item)
-            {
-               case LISTENER(l) : listener = l;
-               case WEAK_LISTENER(weak) : listener = weak.get();
-            }
+            var listener = list_item.get();
 
             if (listener==null)
             {
@@ -121,12 +104,7 @@ class EventDispatcher implements IEventDispatcher
       var list = nmeEventMap.get(type);
       for(i in 0...list.length)
       {
-         var li = switch(list[i])
-         {
-            case LISTENER(l) : l;
-            case WEAK_LISTENER(l) : l.get();
-         }
-
+         var li = list[i].get();
          if (li.Is(listener,capture))
          {
              list.splice(i,1);

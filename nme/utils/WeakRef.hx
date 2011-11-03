@@ -1,25 +1,46 @@
 package nme.utils;
 
+
+// This should actually be "possible WeakRef"
 class WeakRef<T>
 {
-   var ref:Int;
+   var weakRef:Int;
+   // Allowing for the reference to be hard simplfies usage
+   var hardRef:T;
 
-   public function new(inObject:T)
+
+   public function new(inObject:T,inMakeWeak:Bool=true)
    {
-      ref = nme_weak_ref_create(this,inObject);
+      if (inMakeWeak)
+      {
+         weakRef = nme_weak_ref_create(this,inObject);
+         hardRef = null;
+      }
+      else
+      {
+         weakRef = -1;
+         hardRef = inObject;
+      }
    }
    public function get() : T
    {
-      if (ref<0)
+      if (hardRef!=null)
+         return hardRef;
+
+      if (weakRef<0)
          return null;
-      var result = nme_weak_ref_get(ref);
+
+      var result = nme_weak_ref_get(weakRef);
       if (result==null)
-         ref = -1;
+         weakRef = -1;
       return result;
    }
    public function toString() : String
    {
-      return "WeakRef(" + ref+ ")";
+      if (hardRef==null)
+         return "" + hardRef;
+
+      return "WeakRef(" + weakRef + ")";
    }
 
    static var nme_weak_ref_create = nme.Loader.load("nme_weak_ref_create",2);
