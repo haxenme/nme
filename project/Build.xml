@@ -14,10 +14,12 @@
 <set name="ogl" value="1" if="iphone"/>
 <set name="ogl" value="1" if="android"/>
 <set name="ogl" value="1" if="webos"/>
+<set name="ogl" value="1" if="blackberry"/>
 
 <set name="mobile" value="1" if="iphone"/>
 <set name="mobile" value="1" if="android"/>
 <set name="mobile" value="1" if="webos"/>
+<set name="mobile" value="1" if="blackberry"/>
 <set name="mobile" value="1" if="gph"/>
 
 <files id="windows">
@@ -76,6 +78,12 @@
   <file name="webOS/System.cpp"/>
 </files>
 
+<files id="blackberry">
+  <compilerflag value="-Iinclude"/>
+  <compilerflag value="-I${QNX_TARGET}/usr/include" />
+  <compilerflag value="-I../../sdl-static/include"/>
+</files>
+
 <files id="main">
   <compilerflag value="-Iinclude"/>
   <file name="Test.cpp"/>
@@ -89,11 +97,13 @@
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
 <set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/iPhone/" if="iphone"/>
+<set name="THIRDPARTY_LIBS" value="${QNX_TARGET}/armle-v7/lib" if="blackberry"/>
 <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
 
 <set name="SLIBEXT" value=".lib" if="windows"/>
 <set name="SLIBEXT" value=".a" unless="windows"/>
 <set name="SLIBEXT" value=".so" if="webos"/>
+<set name="SLIBEXT" value=".so" if="blackberry"/>
 
 
 
@@ -106,6 +116,9 @@
   <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
   <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
+  <compilerflag value="-I${QNX_TARGET}/usr/include" if="blackberry"/>
+  <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/>
+  <compilerflag value="-I../../sdl-static/include/SDL13" if="blackberry"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
 
@@ -173,7 +186,7 @@
 
 <files id="sdl">
   <compilerflag value="-Iinclude"/>
-  <compilerflag value="-I${PalmPDK}/include/SDL" />
+  <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
   <compilerflag value="-I../../sdl-static/include" if="sdl_static"/>
   <compilerflag value="-I../../sdl-static/include/SDL12" if="sdl_static"/>
   <compilerflag value="-I../../sdl-static/include" if="webos"/>
@@ -212,6 +225,7 @@
   <files id="sdl" if="sdl"/>
   <files id="android" if="android"/>
   <files id="webos" if="webos"/>
+  <files id="blackberry" if="blackberry"/>
 
   <lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="no_thirdparty_extras"/>
   <lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
@@ -244,8 +258,6 @@
   <lib name="-ljpeg" if="dynamic_sdl"/>
   <lib name="-lz" if="dynamic_sdl"/>
 
-
-
   <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
 
   <vflag name="-framework" value="IOKit" if="macos"/>
@@ -267,6 +279,10 @@
   <lib name="-lSDL_mixer" if="webos" />
   <lib name="-lGLES_CM" if="webos"/>
   <lib name="-lpdl" if="webos"/>
+  
+   <lib name="-lSDL" if="blackberry"/>
+  <lib name="-lSDL_mixer" if="blackberry" />
+  <lib name="-lGLES_CM" if="blackberry"/>
 
   <lib name="gdi32.lib" if="windows"/>
   <lib name="opengl32.lib" if="windows"/>

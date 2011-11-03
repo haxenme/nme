@@ -6,6 +6,14 @@ typedef void *WinDC;
 typedef void *GLCtx;
 #define NME_GLES
 
+#elif defined(BLACKBERRY)
+
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+typedef void *WinDC;
+typedef void *GLCtx;
+#define NME_GLES
+
 #elif defined(IPHONE)
 
 #include <OpenGLES/ES1/gl.h>
