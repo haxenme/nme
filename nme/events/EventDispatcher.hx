@@ -80,7 +80,6 @@ class EventDispatcher implements IEventDispatcher
             if (listener==null)
             {
                 // Lost reference - so we can remove listener. No need to move idx...
-                trace("LOST REFERENCE - REMOVE !");
                 list.splice(idx,1);
             }
             else
