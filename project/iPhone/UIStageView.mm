@@ -1058,8 +1058,20 @@ double CapabilitiesGetPixelAspectRatio() {
 }
 	
 double CapabilitiesGetScreenDPI() {
-	CGFloat screenScale = [[UIScreen mainScreen] scale];
-	return screenScale * 72.0;
+	CGFloat screenScale = 1;
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
+        screenScale = [[UIScreen mainScreen] scale];
+    }
+    float dpi;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        dpi = 132 * screenScale;
+    } else if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        dpi = 163 * screenScale;
+    } else {
+        dpi = 160 * screenScale;
+    }
+    
+	return dpi;
 }
 
 double CapabilitiesGetScreenResolutionX() {
