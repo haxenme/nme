@@ -4,7 +4,18 @@ package nme.events;
 
 import nme.events.IEventDispatcher;
 import nme.events.Event;
+import nme.utils.WeakRef;
 
+enum ListenerEnum
+{
+   LISTENER(listener:Listener);
+   WEAK_LISTENER(weak_ref:WeakRef<Listener>);
+}
+
+
+typedef ListenerList = Array<ListenerEnum>;
+
+typedef EventMap = Hash<ListenerList>;
 
 class EventDispatcher implements IEventDispatcher
 {
@@ -31,7 +42,12 @@ class EventDispatcher implements IEventDispatcher
       }
 
       var l =  new Listener(listener,useCapture,priority);
-      list.push(l);
+      if (useWeakReference)
+      {
+         list.push(WEAK_LISTENER(new WeakRef<Listener>(l)) );
+      }
+      else
+         list.push(LISTENER(l));
 	}
 
 	public function dispatchEvent(event:Event):Bool
@@ -53,20 +69,36 @@ class EventDispatcher implements IEventDispatcher
          var idx = 0;
          while(idx<list.length)
          {
-            var listener = list[idx];
-            if (listener.mUseCapture==capture)
+            var listener:Listener = null;
+            var list_item = list[idx];
+            switch(list_item)
             {
-               listener.dispatchEvent(event);
-               if (event.nmeGetIsCancelledNow())
-                  return true;
+               case LISTENER(l) : listener = l;
+               case WEAK_LISTENER(weak) : listener = weak.get();
             }
-            // Detect if the just used event listener was removed...
-            if (idx<list.length && listener!=list[idx])
+
+            if (listener==null)
             {
-               // do not advance to next item because it looks like one was just removed
+                // Lost reference - so we can remove listener. No need to move idx...
+                trace("LOST REFERENCE - REMOVE !");
+                list.splice(idx,1);
             }
             else
-               idx++;
+            {
+               if (listener.mUseCapture==capture)
+               {
+                  listener.dispatchEvent(event);
+                  if (event.nmeGetIsCancelledNow())
+                     return true;
+               }
+               // Detect if the just used event listener was removed...
+               if (idx<list.length && list_item!=list[idx])
+               {
+                  // do not advance to next item because it looks like one was just removed
+               }
+               else
+                  idx++;
+            }
          }
          return true;
       }
@@ -90,7 +122,13 @@ class EventDispatcher implements IEventDispatcher
       var list = nmeEventMap.get(type);
       for(i in 0...list.length)
       {
-         if (list[i].Is(listener,capture))
+         var li = switch(list[i])
+         {
+            case LISTENER(l) : l;
+            case WEAK_LISTENER(l) : l.get();
+         }
+
+         if (li.Is(listener,capture))
          {
              list.splice(i,1);
              return;
@@ -152,9 +190,6 @@ class Listener
    }
 }
 
-
-typedef ListenerList = Array<Listener>;
-typedef EventMap = Hash<ListenerList>;
 
 
 #else
