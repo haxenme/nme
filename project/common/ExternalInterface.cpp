@@ -742,10 +742,7 @@ value nme_capabilities_get_screen_resolutions () {
 		
 		QuickVec<int>* res = CapabilitiesGetScreenResolutions();
 		
-		printf( "res size: %d", res->size() );
-		
 		value result = alloc_array( res->size());
-		
 		
       		for(int i=0;i<res->size();i++) {
       			int outres = (*res)[ i ];
