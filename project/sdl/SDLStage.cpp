@@ -739,19 +739,49 @@ QuickVec<int>*  CapabilitiesGetScreenResolutions() {
 
 double CapabilitiesGetScreenResolutionX() {
 	
+	/*
+	SDL returns 0 in multi monitor situations when getting the display mode w/h
+	Instead, if we pick the first capable screen resolution, it should be the native
+	resolution of the primary display, which is what we want in call cases.
+	*/
+	
 	initSDL ();
 	
-	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
-	return info->current_w; 
+	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+	
+	if (modes == (SDL_Rect**)0) {
+	    return 0;
+	}
+	
+	if (modes == (SDL_Rect**)-1) {
+	    return 0;
+	}
+	
+	return modes[ 0 ]->w;
 	
 }
 
 double CapabilitiesGetScreenResolutionY() {
 	
+	/*
+	SDL returns 0 in multi monitor situations when getting the display mode w/h
+	Instead, if we pick the first capable screen resolution, it should be the native
+	resolution of the primary display, which is what we want in call cases.
+	*/
+	
 	initSDL ();
 	
-	const SDL_VideoInfo* info = SDL_GetVideoInfo(); 
-	return info->current_h; 
+	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+	
+	if (modes == (SDL_Rect**)0) {
+	    return 0;
+	}
+	
+	if (modes == (SDL_Rect**)-1) {
+	    return 0;
+	}
+	
+	return modes[ 0 ]->h;
 	
 }
 
