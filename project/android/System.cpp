@@ -80,7 +80,7 @@ bool LaunchBrowser(const char *inUtf8URL)
 
     jstring str = env->NewStringUTF( inUtf8URL );
 
-    env->CallStaticObjectMethod(cls, mid, str );
+    env->CallStaticVoidMethod(cls, mid, str );
 	return true;
 
 }
@@ -98,6 +98,7 @@ std::string GetUserPreference(const char *inId)
 	jstring jInId = env->NewStringUTF(inId);
 	printf("about to call method");
 	jstring jPref = (jstring) env->CallStaticObjectMethod(cls, mid, jInId);
+	env->DeleteLocalRef(jInId);
 	printf("about to create preference");
 	const char *nativePref = env->GetStringUTFChars(jPref, 0);
 	std::string result(nativePref);
@@ -118,6 +119,8 @@ bool SetUserPreference(const char *inId, const char *inPreference)
     jstring jInId = env->NewStringUTF( inId );
 	jstring jPref = env->NewStringUTF ( inPreference );
     env->CallStaticVoidMethod(cls, mid, jInId, jPref );
+	env->DeleteLocalRef(jInId);
+	env->DeleteLocalRef(jPref);
 	return true;
 }
 
@@ -130,7 +133,7 @@ bool ClearUserPreference(const char *inId)
 		return false;
 	
     jstring jInId = env->NewStringUTF( inId );
-    env->CallStaticObjectMethod(cls, mid, jInId );
+    env->CallStaticVoidMethod(cls, mid, jInId );
 	return true;
 }
 

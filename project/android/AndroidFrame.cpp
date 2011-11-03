@@ -270,6 +270,7 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
 
     jstring str = env->NewStringUTF( inResource );
     jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(cls, mid, str);
+	env->DeleteLocalRef(str);
     if (bytes==0)
 	 {
        return 0;
