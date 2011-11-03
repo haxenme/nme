@@ -108,6 +108,7 @@ double CapabilitiesGetPixelAspectRatio ();
 double CapabilitiesGetScreenDPI ();
 double CapabilitiesGetScreenResolutionX ();
 double CapabilitiesGetScreenResolutionY ();
+QuickVec<int>* CapabilitiesGetScreenResolutions ();
 
 bool LaunchBrowser(const char *inUtf8URL);
 

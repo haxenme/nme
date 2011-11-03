@@ -733,6 +733,38 @@ DEFINE_PRIM(nme_get_unique_device_identifier,0);
 
 // --- nme.system.Capabilities -----------------------------------------------------
 
+value nme_capabilities_get_screen_resolutions () {
+	
+
+	//Only really makes sense on PC platforms
+	#if defined( HX_WINDOWS ) || defined( HX_MACOS )
+	
+		
+		QuickVec<int>* res = CapabilitiesGetScreenResolutions();
+		
+		printf( "res size: %d", res->size() );
+		
+		value result = alloc_array( res->size());
+		
+		
+      		for(int i=0;i<res->size();i++) {
+      			int outres = (*res)[ i ];
+         		val_array_set_i(result,i,alloc_int( outres ) );
+		
+		}
+	
+		return result;
+	
+	#endif
+	
+	return alloc_null();
+	
+	
+}
+
+DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
+
+
 value nme_capabilities_get_pixel_aspect_ratio () {
 	
 	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )

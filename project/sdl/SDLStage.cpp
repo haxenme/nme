@@ -702,6 +702,41 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 bool sgDead = false;
 
+QuickVec<int>*  CapabilitiesGetScreenResolutions() {
+	
+	
+	initSDL ();
+	
+	QuickVec<int> *out = new QuickVec<int>();
+	
+	// Get available fullscreen/hardware modes
+	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+	
+	// Check if there are any modes available
+	if (modes == (SDL_Rect**)0) {
+	    return out;
+	}
+	
+	// Check if our resolution is unrestricted
+	if (modes == (SDL_Rect**)-1) {
+	    return out;
+	}
+	else{
+	    // Print valid modes 
+	    
+	    for ( int i=0; modes[i]; ++i) {
+	       out->push_back( modes[ i ]->w );
+	       out->push_back( modes[ i ]->h );
+	    }
+	       
+	}
+		
+	
+	return out;
+	
+	
+}
+
 double CapabilitiesGetScreenResolutionX() {
 	
 	initSDL ();
