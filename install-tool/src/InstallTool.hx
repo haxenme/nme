@@ -325,6 +325,8 @@ class InstallTool {
 				
 				var defines = getDefines ([ "ANDROID_SDK", "ANDROID_NDK_ROOT", "ANT_HOME", "JAVA_HOME" ], [ "Path to Android SDK", "Path to Android NDK", "Path to Apache Ant", "Path to Java JDK" ]);
 				
+				defines.set ("ANDROID_SETUP", "true");
+				
 				if (defines != null) {
 					
 					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
@@ -334,6 +336,8 @@ class InstallTool {
 			case "blackberry":
 				
 				var defines = getDefines ([ "BLACKBERRY_SDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
+				
+				defines.set ("BLACKBERRY_SETUP", "true");
 				
 				if (defines != null) {
 					

@@ -106,6 +106,12 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function onCreate ():Void {
 		
+		if (!defines.exists ("ANDROID_SETUP")) {
+			
+			throw "You need to run \"nme setup android\" before you can use the Android target";
+			
+		}
+		
 		if (Sys.getEnv ("ANDROID_HOST") != null && Sys.getEnv ("ANDROID_HOST") != "") {
 			
 			if (InstallTool.isLinux) {
