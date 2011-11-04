@@ -185,6 +185,26 @@ class InstallTool {
 	}
 	
 	
+	private static function link (dir, file, dest) {
+		Sys.command("rm -rf "+dest+"/"+file);
+		Sys.command("ln -s "+ "/usr/lib" +"/"+dir+"/"+file+" "+dest+"/"+file);
+	}
+	
+	
+	private static function param (name, ?passwd) {
+		Lib.print(name+" : ");
+		if( passwd ) {
+			var s = new StringBuf();
+			var c;
+			while( (c = neko.io.File.getChar(false)) != 13 )
+				s.addChar(c);
+			print("");
+			return s.toString();
+		}
+		return neko.io.File.stdin().readLine();
+	}
+	
+	
 	public static function print (message:String):Void {
 		
 		if (verbose) {
@@ -226,6 +246,45 @@ class InstallTool {
 		if (result != 0) {
 			
 			throw ("Error running: " + command + " " + args.join (" ") + path);
+			
+		}
+		
+	}
+	
+	
+	private static function runSetup (target:String = "") {
+		
+		switch (target) {
+			
+			case "android":
+				
+				//var androidSDK = param ("Enter the path where the Android SDK is located (Current: " + Sys.getEnv ("ANDROID_SDK") + ")");
+				//var androidNDK = param ("Enter the directory where the Android NDK is located (Current: " + Sys.getEnv ("ANDROID_NDK_ROOT") + ")");
+				//var ant = param ("Enter the directory where Apache Ant is located (Current: " + Sys.getEnv ("ANT_HOME") + ")");
+				//var jdk = param ("Enter the directory where your Java JDK is installed (Current: " + Sys.getEnv ("ANT_HOME") + ")");
+			
+			case "blackberry":
+				
+				//var blackBerrySDK = param ("Enter the path where the BlackBerry Native SDK is located (Current: " + Sys.getEnv ("BLACKBERRY_SDK_ROOT") + ")");
+			
+			case "":
+				
+				if (isWindows) {
+					
+					File.copy (nme + "\\install-tool\\bin\\nme.bat", "C:\\Motion-Twin\\haxe\\nme.bat");
+					
+				} else {
+					
+					File.copy (nme + "/install-tool/bin/nme.sh", "/usr/lib/haxe/nme");
+					Sys.command ("chmod", [ "755", "/usr/lib/haxe/nme" ]);
+					link ("haxe", "nme", "/usr/bin");
+					
+				}
+			
+			default:
+				
+				Lib.println ("No setup is required for " + target + ", or it is not a valid target");
+				return;
 			
 		}
 		
@@ -356,7 +415,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = ["copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
+		var validCommands:Array <String> = [ "setup", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -379,6 +438,23 @@ class InstallTool {
 			}
 			
 			copyIfNewer (words[0], words[1]);
+			
+		} else if (command == "setup") {
+			
+			if (words.length == 0) {
+				
+				runSetup ();
+				
+			} else if (words.length == 1) {
+				
+				runSetup (words[0]);
+				
+			} else {
+				
+				argumentError ("Wrong number of arguments for command: " + command);
+				return;
+				
+			}
 			
 		} else {
 			
