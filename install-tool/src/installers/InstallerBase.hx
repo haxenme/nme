@@ -18,13 +18,14 @@ import neko.Sys;
 class InstallerBase {
 	
 	
+	public var defines:Hash <String>;
+	
 	private var assets:Array <Asset>;
 	private var buildDirectory:String;
 	private var command:String;
 	private var compilerFlags:Array <String>;
 	private var context:Dynamic;
 	private var debug:Bool;
-	private var defines:Hash <String>;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
 	private var ndlls:Array <NDLL>;
@@ -41,7 +42,9 @@ class InstallerBase {
 		
 		assets = new Array <Asset> ();
 		compilerFlags = new Array <String> ();
+		defines = new Hash <String> ();
 		icons = new Icons ();
+		includePaths = new Array <String> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
 		
@@ -711,10 +714,10 @@ class InstallerBase {
 	}
 	
 	
-	private function parseHXCPPConfig ():Void {
+	public function parseHXCPPConfig ():Void {
 		
 		var env = neko.Sys.environment();
-		// If the user has set it themselves, they mush know what they are doing...
+		// If the user has set it themselves, they must know what they are doing...
 		if (env.exists("HXCPP_CONFIG"))
 			return;
 		
@@ -737,7 +740,7 @@ class InstallerBase {
 			
 		}
 		
-		defines.set("HXCPP_CONFIG",config);
+		defines.set("HXCPP_CONFIG", config);
 		
 		if (neko.FileSystem.exists (config)) {
 			

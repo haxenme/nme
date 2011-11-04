@@ -1,4 +1,5 @@
 import documentation.DocumentationGenerator;
+import haxe.io.Eof;
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
 import installers.FlashInstaller;
@@ -126,6 +127,66 @@ class InstallTool {
 	}
 	
 	
+	private static function getDefines (names:Array <String>, descriptions:Array <String>):Hash <String> {
+		
+		var parser = new InstallerBase ();
+		parser.parseHXCPPConfig ();
+		
+		var defines:Hash <String> = parser.defines;
+		var env = Sys.environment ();
+		var path = "";
+		
+		if (!defines.exists ("HXCPP_CONFIG")) {
+			
+			var home = "";
+			
+			if (env.exists("HOME"))
+				home = env.get("HOME");
+			else if (env.exists("USERPROFILE"))
+				home = env.get("USERPROFILE");
+			else
+			{
+				Lib.println("Warning: No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+				return null;
+			}
+			
+			defines.set ("HXCPP_CONFIG", home + "/.hxcpp_config.xml");
+			
+		}
+		
+		var values = new Array <String> ();
+		
+		for (i in 0...names.length) {
+			
+			var name = names[i];
+			var description = descriptions[i];
+			var value = "";
+			
+			if (defines.exists (name)) {
+				
+				value = defines.get (name);
+				
+			} else if (env.exists (name)) {
+				
+				value = Sys.getEnv (name);
+				
+			}
+			
+			value = param (description + " [" + value + "]");
+			
+			if (value != "" && value != Sys.getEnv (name)) {
+				
+				defines.set (name, value);
+				
+			}
+			
+		}
+		
+		return defines;
+		
+	}
+	
+	
 	public static function getNeko ():String {
 		
 		var path:String = Sys.getEnv ("NEKO_INSTPATH");
@@ -201,7 +262,11 @@ class InstallTool {
 			print("");
 			return s.toString();
 		}
-		return neko.io.File.stdin().readLine();
+		try {
+			return neko.io.File.stdin().readLine();
+		} catch (e:Eof) {
+			return "";
+		}
 	}
 	
 	
@@ -258,14 +323,23 @@ class InstallTool {
 			
 			case "android":
 				
-				//var androidSDK = param ("Enter the path where the Android SDK is located (Current: " + Sys.getEnv ("ANDROID_SDK") + ")");
-				//var androidNDK = param ("Enter the directory where the Android NDK is located (Current: " + Sys.getEnv ("ANDROID_NDK_ROOT") + ")");
-				//var ant = param ("Enter the directory where Apache Ant is located (Current: " + Sys.getEnv ("ANT_HOME") + ")");
-				//var jdk = param ("Enter the directory where your Java JDK is installed (Current: " + Sys.getEnv ("ANT_HOME") + ")");
+				var defines = getDefines ([ "ANDROID_SDK", "ANDROID_NDK_ROOT", "ANT_HOME", "JAVA_HOME" ], [ "Path to Android SDK", "Path to Android NDK", "Path to Apache Ant", "Path to Java JDK" ]);
+				
+				if (defines != null) {
+					
+					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+					
+				}
 			
 			case "blackberry":
 				
-				//var blackBerrySDK = param ("Enter the path where the BlackBerry Native SDK is located (Current: " + Sys.getEnv ("BLACKBERRY_SDK_ROOT") + ")");
+				var defines = getDefines ([ "BLACKBERRY_SDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
+				
+				if (defines != null) {
+					
+					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+					
+				}
 			
 			case "":
 				
@@ -287,6 +361,51 @@ class InstallTool {
 				return;
 			
 		}
+		
+	}
+	
+	
+	private static function writeConfig (path:String, defines:Hash <String>):Void {
+		
+		var newContent = "";
+		var definesText = "";
+		
+		for (key in defines.keys ()) {
+			
+			if (key != "HXCPP_CONFIG") {
+				
+				definesText += "		<set name=\"" + key + "\" value=\"" + defines.get (key) + "\" />\n";
+				
+			}
+			
+		}
+		
+		if (FileSystem.exists (path)) {
+			
+			var input = File.read (path, false);
+			var bytes = input.readAll ();
+			input.close ();
+			var content = bytes.readString (0, bytes.length);
+			
+			var startIndex = content.indexOf ("<section id=\"vars\">");
+			var endIndex = content.indexOf ("</section>", startIndex);
+			
+			newContent += content.substr (0, startIndex) + "<section id=\"vars\">\n		\n";
+			newContent += definesText;
+			newContent += "		\n	" + content.substr (endIndex);
+			
+		} else {
+			
+			newContent += "<xml>\n\n";
+			newContent += "	<section id=\"vars\">\n\n";
+			newContent += definesText;
+			newContent += "	</section>\n\n</xml>";
+			
+		}
+		
+		var output = File.write (path, false);
+		output.writeString (newContent);
+		output.close ();
 		
 	}
 	
