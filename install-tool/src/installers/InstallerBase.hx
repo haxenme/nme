@@ -158,7 +158,7 @@ class InstallerBase {
 		
 		if (!validCommands.remove (command)) {
 			
-			throw ("Command not implemented: " + command);
+			throw ("Error : Command \"" + command + "\" not implemented");
 			
 		}
 		
@@ -168,13 +168,13 @@ class InstallerBase {
 	function onCreate ():Void { }
 	function useFullClassPaths () { return false; }
 	
-	function update () { throw "Update not implemented."; }
-	function build () { throw "Build not implemented."; }
-	function run () { throw "Run not implemented."; }
+	function update () { throw "Error : Update not implemented."; }
+	function build () { throw "Error : Build not implemented."; }
+	function run () { throw "Error : Run not implemented."; }
 	function updateDevice () { /* Not required on all platforms. */ }
-	function install () { throw "Install not implemented."; }
+	function install () { throw "Error : Install not implemented."; }
 	function traceMessages () { /* Not required on all platforms. */ }
-	function uninstall () { throw "Uninstall not implemented."; }
+	function uninstall () { throw "Error : Uninstall not implemented."; }
 	function document () { /* Not required on all platforms. */ }
 	
 	
@@ -408,7 +408,7 @@ class InstallerBase {
 		
 		if (source == null || !FileSystem.exists (source)) {
 			
-			throw ("Error: Source path \"" + source + "\" does not exist");
+			throw ("Error : Source path \"" + source + "\" does not exist");
 			return false;
 			
 		}
@@ -559,7 +559,7 @@ class InstallerBase {
 		}
 		
 		if ( path=="" && (element.has.include || element.has.exclude || type!="" ) ) {
-			throw ("No path specified for asset filter.");
+			throw ("Error : No path specified for asset filter.");
          return;
       }
 		else if (!element.elements.hasNext ()) {
@@ -569,7 +569,7 @@ class InstallerBase {
 
 			if (path == "" || !FileSystem.exists (path)) {
 				
-				throw ("Could not find asset directory \"" + path + "\"");
+				throw ("Error : Could not find asset directory \"" + path + "\"");
 				return;
 				
 			}
@@ -728,7 +728,7 @@ class InstallerBase {
 			home = env.get("USERPROFILE");
 		else
 		{
-			neko.Lib.println("Warning: No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+			neko.Lib.println("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
 			return;
 		}
 		
@@ -836,7 +836,7 @@ class InstallerBase {
 							
 						} else if (!element.has.noerror) {
 							
-							throw ("Could not find include file " + name);
+							throw ("Error : Could not find include file " + name);
 							
 						}
 					

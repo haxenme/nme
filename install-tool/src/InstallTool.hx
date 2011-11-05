@@ -84,7 +84,7 @@ class InstallTool {
 				
 				default:
 					
-					Lib.println ("The specified target is not supported: " + target);
+					Lib.println ("Error : The specified target is not supported: " + target);
 					return;
 				
 			}
@@ -99,11 +99,12 @@ class InstallTool {
 	private static function argumentError (error:String):Void {
 		
 		Lib.println (error);
+		/*Lib.println ("-------------------------------");
 		Lib.println ("Usage :  haxelib run nme [-v] COMMAND ...");
 		Lib.println (" COMMAND : copy-if-newer source destination");
 		Lib.println (" COMMAND : (update|document) build.nmml [-DFLAG -Dname=val... ]");
 		Lib.println (" COMMAND : (build|update|run|rerun|test) [-debug] build.nmml target");
-		Lib.println (" COMMAND : (trace|uninstall) build.nmml target");
+		Lib.println (" COMMAND : (trace|uninstall) build.nmml target");*/
 		
 	}
 	
@@ -146,7 +147,7 @@ class InstallTool {
 				home = env.get("USERPROFILE");
 			else
 			{
-				Lib.println("Warning: No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+				Lib.println("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
 				return null;
 			}
 			
@@ -538,7 +539,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/install-tool");
 		
-		var validCommands:Array <String> = [ "setup", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
+		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -551,7 +552,57 @@ class InstallTool {
 			
 		}
 		
-		if (command == "copy-if-newer") {
+		if (command == "") {
+			
+			Lib.println ("NME Command-Line Tools (3.1.0)");
+			Lib.println ("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
+			
+		} else if (command == "help") {
+			
+			Lib.println ("NME Command-Line Tools (3.1.0)");
+			Lib.println ("");
+			Lib.println (" Usage : nme setup (target)");
+			Lib.println (" Usage : nme help");
+			Lib.println (" Usage : nme [update|build|run|test] <project> <target> [options]");
+			Lib.println (" Usage : nme document <project> (target)");
+			Lib.println ("");
+			Lib.println (" Commands : ");
+			Lib.println ("");
+			Lib.println ("  setup : Setup NME or a specific target");
+			Lib.println ("  help : Show this information");
+			Lib.println ("  update : Copy assets for the specified project/target");
+			Lib.println ("  build : Compile and package for the specified project/target");
+			Lib.println ("  run : Install and run for the specified project/target");
+			Lib.println ("  test : Update, build and run in one command");
+			Lib.println ("  document : Generate documentation using haxedoc");
+			Lib.println ("");
+			Lib.println (" Targets : ");
+			Lib.println ("");
+			Lib.println ("  android : Create Google Android applications");
+			Lib.println ("  flash : Create SWF applications for Adobe Flash Player");
+			Lib.println ("  html5 : Create HTML5 canvas applications using Jeash");
+			Lib.println ("  ios : Create Apple iOS applications");
+			Lib.println ("  linux : Create Linux applications");
+			Lib.println ("  mac : Create Apple Mac OS X applications");
+			Lib.println ("  webos : Create HP webOS applications");
+			Lib.println ("  windows : Create Microsoft Windows applications");
+			Lib.println ("");
+			Lib.println (" Options : ");
+			Lib.println ("");
+			Lib.println ("  -verbose : Print additional information (when available)");
+			Lib.println ("  -debug : Use debug configuration instead of release");
+			Lib.println ("  -xml : Generate XML type information, for use with document");
+			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
+			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
+			Lib.println ("  [flash] -web : Generate web template files");
+			Lib.println ("  [flash] -chrome : Generate Google Chrome app template files");
+			Lib.println ("  [flash] -opera : Generate an Opera Widget");
+			Lib.println ("  [ios] -simulator : Build/test for the iPhone Simulator");
+			Lib.println ("  [ios] -simulator -ipad : Builds/test for the iPad Simulator");
+			
+			return;
+			
+		} else if (command == "copy-if-newer") {
 			
 			if (words.length != 2) {
 				
