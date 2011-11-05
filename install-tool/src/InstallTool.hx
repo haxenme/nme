@@ -366,7 +366,9 @@ class InstallTool {
 			
 			try {
 				
+				Lib.println ("Waiting for setup to complete...");
 				runCommand ("", "call", [ path ]);
+				Lib.println ("Done");
 				
 			} catch (e:Dynamic) {}
 			
