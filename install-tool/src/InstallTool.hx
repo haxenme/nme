@@ -411,7 +411,17 @@ class InstallTool {
 					
 					if (isWindows) {
 						
-						var sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+						var sdkPath = "";
+						
+						if (Sys.environment ().exists ("PROCESSOR_ARCHITEW6432") && Sys.getEnv ("PROCESSOR_ARCHITEW6432").indexOf ("64") > -1) {
+							
+							sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
+							
+						} else {
+							
+							sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+							
+						}
 						
 						downloadFile (sdkPath);
 						runInstaller (Path.withoutDirectory (sdkPath));
