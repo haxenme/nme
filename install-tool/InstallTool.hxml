@@ -3,3 +3,4 @@
 -cp src
 -lib gm2d
 -lib nme
+-lib hxssl

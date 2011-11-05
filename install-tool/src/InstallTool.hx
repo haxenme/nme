@@ -1,4 +1,5 @@
 import documentation.DocumentationGenerator;
+import haxe.Http;
 import haxe.io.Eof;
 import installers.AndroidInstaller;
 import installers.CPPInstaller;
@@ -109,6 +110,19 @@ class InstallTool {
 	}
 	
 	
+	private static function ask (question) {
+		while( true ) {
+			neko.Lib.print(question+" [y/n/a] ? ");
+			switch( neko.io.File.stdin().readLine() ) {
+			case "n": return No;
+			case "y": return Yes;
+			case "a": return Always;
+			}
+		}
+		return null;
+	}
+	
+	
 	public static function copyIfNewer (source:String, destination:String) {
 		
 		if (!isNewer (source, destination)) {
@@ -128,7 +142,29 @@ class InstallTool {
 	}
 	
 	
-	private static function getDefines (names:Array <String>, descriptions:Array <String>):Hash <String> {
+	private static function downloadFile (remotePath:String, localPath:String = ""):Void {
+		
+		if (localPath == "") {
+			
+			localPath = Path.withoutDirectory (remotePath);
+			
+		}
+		
+		var out = File.write (localPath, true);
+		var progress = new Progress (out);
+		var h = new Http (remotePath);
+		h.onError = function(e) {
+			progress.close();
+			FileSystem.deleteFile (localPath);
+			throw e;
+		};
+		Lib.println ("Downloading " + localPath + "...");
+		h.customRequest (false, progress);
+		
+	}
+	
+	
+	private static function getDefines (names:Array < String > = null, descriptions:Array <String> = null):Hash < String > {
 		
 		var parser = new InstallerBase ();
 		parser.parseHXCPPConfig ();
@@ -152,6 +188,12 @@ class InstallTool {
 			}
 			
 			defines.set ("HXCPP_CONFIG", home + "/.hxcpp_config.xml");
+			
+		}
+		
+		if (names == null) {
+			
+			return defines;
 			
 		}
 		
@@ -318,6 +360,21 @@ class InstallTool {
 	}
 	
 	
+	private static function runInstaller (path:String):Void {
+		
+		if (isWindows) {
+			
+			try {
+				
+				runCommand ("", "call", [ path ]);
+				
+			} catch (e:Dynamic) {}
+			
+		}
+		
+	}
+	
+	
 	private static function runSetup (target:String = "") {
 		
 		switch (target) {
@@ -343,6 +400,46 @@ class InstallTool {
 				if (defines != null) {
 					
 					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+					
+				}
+			
+			case "webos":
+				
+				var answer = ask ("Download and install the HP webOS SDK?");
+				
+				if (answer == Yes || answer == Always) {
+					
+					if (isWindows) {
+						
+						var sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+						
+						downloadFile (sdkPath);
+						runInstaller (Path.withoutDirectory (sdkPath));
+						
+					}
+					
+				}
+				
+				if (isWindows) {
+					
+					if (answer == Always) {
+						
+						Lib.println ("Download and install the CodeSourcery C++ toolchain? [y/n/a] a");
+						
+					} else {
+						
+						answer = ask ("Download and install the CodeSourcery C++ toolchain?");
+						
+						if (answer == Yes) {
+							
+							var toolchainPath = "https://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
+							
+							downloadFile (toolchainPath);
+							runInstaller (Path.withoutDirectory (toolchainPath));
+							
+						}
+						
+					}
 					
 				}
 			
@@ -677,4 +774,60 @@ class InstallTool {
 	}
 	
 	
+}
+
+
+class Progress extends haxe.io.Output {
+
+	var o : haxe.io.Output;
+	var cur : Int;
+	var max : Int;
+	var start : Float;
+
+	public function new(o) {
+		this.o = o;
+		cur = 0;
+		start = haxe.Timer.stamp();
+	}
+
+	function bytes(n) {
+		cur += n;
+		if( max == null )
+			neko.Lib.print(cur+" bytes\r");
+		else
+			neko.Lib.print(cur+"/"+max+" ("+Std.int((cur*100.0)/max)+"%)\r");
+	}
+
+	public override function writeByte(c) {
+		o.writeByte(c);
+		bytes(1);
+	}
+
+	public override function writeBytes(s,p,l) {
+		var r = o.writeBytes(s,p,l);
+		bytes(r);
+		return r;
+	}
+
+	public override function close() {
+		super.close();
+		o.close();
+		var time = haxe.Timer.stamp() - start;
+		var speed = (cur / time) / 1024;
+		time = Std.int(time * 10) / 10;
+		speed = Std.int(speed * 10) / 10;
+		neko.Lib.print("Download complete : "+cur+" bytes in "+time+"s ("+speed+"KB/s)\n");
+	}
+
+	public override function prepare(m) {
+		max = m;
+	}
+
+}
+
+
+enum Answer {
+	Yes;
+	No;
+	Always;
 }
