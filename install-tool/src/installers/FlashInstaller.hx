@@ -125,7 +125,7 @@ class FlashInstaller extends InstallerBase {
 				//var date = FileSystem.stat (directory + "/" + file).ctime;
 				var date = Date.now ();
 				
-				var input = File.read (directory + "/" + file);
+				var input = File.read (directory + "/" + file, true);
 				var data = input.readAll ();
 				input.close ();
 				
@@ -135,11 +135,11 @@ class FlashInstaller extends InstallerBase {
 			
 		}
 		
-		var output = File.write (path);
+		var output = File.write (path, true);
 		
 		if (Path.extension (path) == "crx") {
 			
-			var input = File.read (defines.get ("KEY_STORE"));
+			var input = File.read (defines.get ("KEY_STORE"), true);
 			var publicKey:Bytes = input.readAll ();
 			input.close ();
 			
