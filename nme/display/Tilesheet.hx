@@ -9,35 +9,21 @@ class Tilesheet
 
    public function new(inImage:BitmapData)
    {
-		nmeBitmap = inImage;
+      nmeBitmap = inImage;
       nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
    }
-   public function addTileRect(inRect:nme.geom.Rectangle)
+   public function addTileRect(inRect:nme.geom.Rectangle, ?inHotSpot:nme.geom.Point)
    {
-     nme_tilesheet_add_rect(nmeHandle,inRect);
+     nme_tilesheet_add_rect(nmeHandle,inRect,inHotSpot);
    }
 
    static var nme_tilesheet_create = nme.Loader.load("nme_tilesheet_create",1);
-   static var nme_tilesheet_add_rect = nme.Loader.load("nme_tilesheet_add_rect",2);
+   static var nme_tilesheet_add_rect = nme.Loader.load("nme_tilesheet_add_rect",3);
 }
 
 
 #else
-class Tilesheet {
-	
-	public var nmeBitmap:BitmapData;
-	
-	public function new (inImage:BitmapData) {
-		
-		nmeBitmap = inImage;
-		
-	}
-	
-	public function addTileRect(inRect:nme.geom.Rectangle) {
-		
-		
-		
-	}
-	
-}
+
+#error "Tilesheets are only for cpp or neko targets."
+
 #end

@@ -1238,9 +1238,10 @@ public:
                   }
                }
                break;
-            case pcTile:
-               points+=3;
-               break;
+            case pcTile: points+=3; break;
+            case pcTileTrans: points+=4; break;
+            case pcTileCol: points+=5; break;
+            case pcTileTransCol: points+=6; break;
          }
       }
 
@@ -1408,9 +1409,10 @@ public:
                   point += 2;
                   points++;
                   break;
-               case pcTile:
-                  points+=3;
-                  break;
+                  case pcTile: points+=3; break;
+                  case pcTileTrans: points+=4; break;
+                  case pcTileCol: points+=5; break;
+                  case pcTileTransCol: points+=6; break;
             }
          }
          if (last_point!=last_move)
@@ -1756,7 +1758,8 @@ public:
       int n = inJob.mCommandCount;
       for(int j=0; j<n; j++)
       {
-         switch(inPath.commands[j+inJob.mCommand0])
+         int c = (inPath.commands[j+inJob.mCommand0]);
+         switch(c)
          {
             case pcWideMoveTo:
             case pcWideLineTo:
@@ -1768,12 +1771,19 @@ public:
                   point++;
                   break;
             case pcTile:
+            case pcTileTrans:
+            case pcTileCol:
+            case pcTileTransCol:
                   {
                      TileData data(point);
                      mTileData.push_back(data);
                      mUntransformed.Add(point[0]);
                      mUntransformed.Add(point[0]+point[2]);
                      point+=3;
+                     if (c & pcTile_Trans_Bit)
+                        point++;
+                     if (c & pcTile_Col_Bit)
+                        point+=2;
                   }
          }
       }

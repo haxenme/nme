@@ -67,15 +67,30 @@ void GraphicsPath::wideMoveTo(float x, float y)
 	data.push_back(y);
 }
 
-void GraphicsPath::tile(float x, float y, const Rect &inTileRect)
+void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inScaleRot,float *inRGBA)
 {
-	commands.push_back(pcTile);
 	data.push_back(x);
 	data.push_back(y);
 	data.push_back(inTileRect.x);
 	data.push_back(inTileRect.y);
 	data.push_back(inTileRect.w);
 	data.push_back(inTileRect.h);
+   int command = pcTile;
+   if (inScaleRot)
+   {
+      command |= pcTile_Trans_Bit;
+	   data.push_back(inScaleRot[0]);
+	   data.push_back(inScaleRot[1]);
+   }
+   if (inRGBA)
+   {
+      command |= pcTile_Col_Bit;
+	   data.push_back(inRGBA[0]);
+	   data.push_back(inRGBA[1]);
+	   data.push_back(inRGBA[2]);
+	   data.push_back(inRGBA[3]);
+   }
+	commands.push_back((PathCommand)command);
 }
 
 void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs)

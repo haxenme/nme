@@ -169,10 +169,39 @@ class Graphics
       nme_gfx_draw_datum(nmeHandle,graphicsDatum.nmeHandle);
    }
 
-   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>,inSmooth:Bool=false):Void
+   /*
+    These flags describe extra data that may be in the inXYID array.
+    The order should be as it is here, ie:
+
+     X0
+     Y0
+     ID0
+     [Scale0]    if (flags & TILE_SCALE)
+     [Rotation0] if (flags & TILE_ROTATION)
+     [Red0]      if (flags & TILE_RGB)
+     [Green0]    if (flags & TILE_RGB)
+     [Blue0]     if (flags & TILE_RGB)
+     [Alpha0]    if (flags & TILE_ALPHA)
+     X1
+     Y1
+     ID1
+     [Scale1]    if (flags & TILE_SCALE)
+     ....
+   */
+
+   public static inline var TILE_SCALE    = 0x0001;
+   public static inline var TILE_ROTATION = 0x0002;
+   public static inline var TILE_RGB      = 0x0004;
+   public static inline var TILE_ALPHA    = 0x0008;
+
+   static inline var TILE_SMOOTH         = 0x1000;
+   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>,inSmooth:Bool=false,
+                             inFlags:Int = 0):Void
    {
       beginBitmapFill(sheet.nmeBitmap,null,false,inSmooth);
-      nme_gfx_draw_tiles(nmeHandle,sheet.nmeHandle,inXYID);
+      if (inSmooth)
+        inFlags |= TILE_SMOOTH;
+      nme_gfx_draw_tiles(nmeHandle,sheet.nmeHandle,inXYID,inFlags);
    }
 
    inline static public function RGBA(inRGB:Int,inA:Int=0xff) : Int
@@ -206,7 +235,7 @@ class Graphics
    static var nme_gfx_draw_data = nme.Loader.load("nme_gfx_draw_data",2);
    static var nme_gfx_draw_datum = nme.Loader.load("nme_gfx_draw_datum",2);
    static var nme_gfx_draw_rect = nme.Loader.load("nme_gfx_draw_rect",5);
-   static var nme_gfx_draw_tiles = nme.Loader.load("nme_gfx_draw_tiles",3);
+   static var nme_gfx_draw_tiles = nme.Loader.load("nme_gfx_draw_tiles",4);
    static var nme_gfx_draw_points = nme.Loader.load("nme_gfx_draw_points",-1);
    static var nme_gfx_draw_round_rect = nme.Loader.load("nme_gfx_draw_round_rect",-1);
    static var nme_gfx_draw_triangles = nme.Loader.load("nme_gfx_draw_triangles",-1);

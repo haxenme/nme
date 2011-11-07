@@ -250,9 +250,15 @@ enum PathCommand
    // Special code so we can mix lines and fills...
    pcBeginAt  = 7,
    // Quad combining vertices & texture-coords
-   pcTile  = 8,
    pcPointsXY  = 9,
    pcPointsXYRGBA  = 11,
+
+   pcTile           = 0x10,
+   pcTile_Trans_Bit = 0x01,
+   pcTile_Col_Bit   = 0x02,
+   pcTileTrans      = 0x11,
+   pcTileCol        = 0x12,
+   pcTileTransCol   = 0x13,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -278,7 +284,7 @@ public:
    void moveTo(float x, float y);
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
-   void tile(float x, float y, const Rect &inTileRect);
+   void tile(float x, float y, const Rect &inTileRect, float *inDxxDxy,float *inColour);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
 };
 
@@ -677,7 +683,7 @@ public:
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
    void beginTiles(Surface *inSurface,bool inSmooth=false);
    void endTiles();
-   void tile(float x, float y, const Rect &inTileRect);
+   void tile(float x, float y, const Rect &inTileRect, float *inDxxDxy,float *inColour);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull, const QuickVec<int> &inColours,

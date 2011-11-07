@@ -264,18 +264,44 @@ public:
                break;
 
             case pcTile:
+            case pcTileTrans:
+            case pcTileCol:
+            case pcTileTransCol:
+               // TODO:
                if (mTileMode)
                {
                   UserPoint pos(point[0]);
                   UserPoint tex_pos(point[1]);
                   UserPoint size(point[2]);
+                  point += 3;
 
-                  vertices.push_back(pos);
-                  vertices.push_back( UserPoint(pos.x+size.x,pos.y) );
-                  vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
-                  vertices.push_back(pos);
-                  vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
-                  vertices.push_back( UserPoint(pos.x,pos.y+size.y) );
+                  if (inCommands[i]&pcTile_Trans_Bit)
+                  {
+                     UserPoint dxx_dxy = *point++;
+                     UserPoint p1(pos.x+size.x*dxx_dxy.x,
+                                  pos.y-size.x*dxx_dxy.y);
+                     UserPoint p2(pos.x+size.x*dxx_dxy.x+size.y*dxx_dxy.y,
+                                  pos.y-size.x*dxx_dxy.y+size.y*dxx_dxy.x );
+                     UserPoint p3(pos.x+size.y*dxx_dxy.y,
+                                  pos.y+size.y*dxx_dxy.x);
+
+                     vertices.push_back( pos );
+                     vertices.push_back( p1 );
+                     vertices.push_back( p2 );
+                     vertices.push_back( pos) ;
+                     vertices.push_back( p2 );
+                     vertices.push_back( p3 );
+                  }
+                  else
+                  {
+                     vertices.push_back(pos);
+                     vertices.push_back( UserPoint(pos.x+size.x,pos.y) );
+                     vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
+                     vertices.push_back(pos);
+                     vertices.push_back( UserPoint(pos.x+size.x,pos.y+size.y) );
+                     vertices.push_back( UserPoint(pos.x,pos.y+size.y) );
+                  }
+
 
                   pos = tex_pos;
                   tex.push_back( mTexture->PixelToTex(pos) );
@@ -284,8 +310,32 @@ public:
                   tex.push_back( mTexture->PixelToTex(pos) );
                   tex.push_back( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
                   tex.push_back( mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y)) );
+
+                  if (inCommands[i]&pcTile_Col_Bit)
+                  {
+                     UserPoint rg = *point++;
+                     UserPoint ba = *point++;
+                     Colours &colours = mArrays->mColours;
+                     uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                                  ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                                  ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                                  ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+                     colours.push_back( col );
+                     colours.push_back( col );
+                     colours.push_back( col );
+                     colours.push_back( col );
+                     colours.push_back( col );
+                     colours.push_back( col );
+                  }
                }
-               point += 3;
+               else
+               {
+                  point += 3;
+                  if (inCommands[i]&pcTile_Trans_Bit)
+                     point++;
+                  if (inCommands[i]&pcTile_Col_Bit)
+                     point+=2;
+               }
          }
       }
 
@@ -315,71 +365,47 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 {
    DrawElement elem;
 
-   printf("1\n");
    elem.mColour = 0xffffffff;
-   printf("2\n");
    GraphicsSolidFill *fill = inJob.mFill ? inJob.mFill->AsSolidFill() : 0;
-   printf("3\n");
    if (fill)
       elem.mColour = fill->mRGB.ToInt();
-   printf("4\n");
    GraphicsStroke *stroke = inJob.mStroke;
    if (stroke)
    {
-   printf("5\n");
       elem.mScaleMode = stroke->scaleMode;
       elem.mWidth = stroke->thickness;
    }
    else
    {
-   printf("6\n");
       elem.mScaleMode = ssmNormal;
       elem.mWidth = -1;
    }
-   printf("7\n");
 
    elem.mPrimType = ptPoints;
 
-   printf("8\n");
-
    elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
-   printf("9\n");
 
    HardwareArrays *arrays = &ioData.GetArrays(0,fill==0);
-   printf("01\n");
    Vertices &vertices = arrays->mVertices;
-   printf("11\n");
    elem.mFirst = vertices.size();
-   printf("12\n");
    vertices.resize( elem.mFirst + elem.mCount );
-   printf("13\n");
    memcpy( &vertices[elem.mFirst], &inPath.data[ inJob.mData0 ], elem.mCount*sizeof(UserPoint) );
-   printf("14\n");
 
    if (!fill)
    {
-   printf("15\n");
       Colours &colours = arrays->mColours;
-   printf("16\n");
       colours.resize( elem.mFirst + elem.mCount );
-   printf("17\n");
       const int * src = (const int *)(&inPath.data[ inJob.mData0 + elem.mCount*2]);
-   printf("18\n");
       int * dest = &colours[elem.mFirst];
-   printf("19\n");
       int n = elem.mCount;
-   printf("20\n");
       for(int i=0;i<n;i++)
       {
-   printf("11\n");
          int s = src[i];
          dest[i] = (s & 0xff00ff00) | ((s>>16)&0xff) | ((s<<16) & 0xff0000);
       }
    }
 
-   printf("22\n");
    arrays->mElements.push_back(elem);
-   printf("23 \n");
 }
 
 void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,

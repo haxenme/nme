@@ -342,6 +342,12 @@ void FromValue(ImagePoint &outPoint,value inValue)
    outPoint.y = val_field_numeric(inValue,_id_y);
 }
 
+void FromValue(UserPoint &outPoint,value inValue)
+{
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
 
 
 void ToValue(value &outVal,const Matrix &inMatrix)
@@ -1902,55 +1908,134 @@ value nme_gfx_draw_datum(value inGfx,value inDatum)
 }
 DEFINE_PRIM(nme_gfx_draw_datum,2);
 
-value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs)
+value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
 {
    Graphics *gfx;
    Tilesheet *sheet;
    if (AbstractToObject(inGfx,gfx) && AbstractToObject(inSheet,sheet))
    {
-      bool smooth = false;
+      enum
+      {
+        TILE_SCALE    = 0x0001,
+        TILE_ROTATION = 0x0002,
+        TILE_RGB      = 0x0004,
+        TILE_ALPHA    = 0x0008,
+        TILE_SMOOTH   = 0x1000,
+      };
+
+
+      int  flags = val_int(inFlags);
+      bool smooth = flags & TILE_SMOOTH;
       gfx->beginTiles(&sheet->GetSurface(), smooth );
 
-      int n = val_array_size(inXYIDs)/3;
+      int components = 3;
+      int scale_pos = components;
+      if (flags & TILE_SCALE)
+         components++;
+      int rot_pos = components;
+      if (flags & TILE_ROTATION)
+         components++;
+      int rgb_pos = components;
+      if (flags & TILE_RGB)
+         components+=3;
+      int alpha_pos = components;
+      if (flags & TILE_ALPHA)
+         components++;
+
+      int n = val_array_size(inXYIDs)/components;
       double *vals = val_array_double(inXYIDs);
       int max = sheet->Tiles();
+      float rgba_buf[] = { 1, 1, 1, 1 };
+      float scale_rot_buf[] = { 1, 1 };
+      float *rgba = (flags & ( TILE_RGB | TILE_ALPHA)) ? rgba_buf : 0;
+      float *dxx_dxy = (flags & ( TILE_SCALE | TILE_ROTATION)) ? scale_rot_buf : 0;
 
-      if (vals)
+
+
+      int id;
+      double x;
+      double y;
+      value *val_ptr = val_array_value(inXYIDs);
+
+      for(int i=0;i<n;i++)
       {
-         for(int i=0;i<n;i++)
-         {
-            int id = (int)(vals[2]+0.5);
-            if (id>=0 && id<max)
-            {
-               const Rect &r = sheet->GetTile(id).mRect;
-               gfx->tile(vals[0],vals[1],r);
-            }
-            vals+=3;
-         }
-      }
-      else
-      {
-         value *vals = val_array_value(inXYIDs);
          if (vals)
          {
-            for(int i=0;i<n;i++)
+            x = vals[0];
+            y = vals[1];
+            id =vals[2]+0.5;
+         }
+         else
+         {
+            x = val_number(val_ptr[0]);
+            y = val_number(val_ptr[1]);
+            id =val_number(val_ptr[2])+0.5;
+         }
+         if (id>=0 && id<max)
+         {
+            const Tile &tile =  sheet->GetTile(id);
+
+            double ox = tile.mOx;
+            double oy = tile.mOy;
+            const Rect &r = tile.mRect;
+            int pos = 3;
+
+            if (dxx_dxy)
             {
-               int id = (int)(val_number(vals[2])+0.5);
-               //printf("tile %d/%d %f %f\n", id,max,val_number(vals[0]),val_number(vals[1]));
-               if (id>=0 && id<max)
+               dxx_dxy[0] = 1.0;
+               dxx_dxy[1] = 0.0;
+               if (flags & TILE_SCALE)
                {
-                  const Rect &r = sheet->GetTile(id).mRect;
-                  gfx->tile(val_number(vals[0]),val_number(vals[1]),r);
+                  double scale = vals?vals[pos++] : val_number(val_ptr[pos++]);
+                  dxx_dxy[0] *= scale;
                }
-               vals+=3;
+
+               if (flags & TILE_ROTATION)
+               {
+                  double theta = vals?vals[pos++] : val_number(val_ptr[pos++]);
+                  dxx_dxy[1] = sin(theta) * dxx_dxy[0];
+                  dxx_dxy[0] *= cos(theta);
+               }
+               double ox_ = ox*dxx_dxy[0] + oy*dxx_dxy[1];
+                      oy  =-ox*dxx_dxy[1] + oy*dxx_dxy[0];
+               ox = ox_;
             }
+
+            if (flags & TILE_RGB)
+            {
+               if (vals)
+               {
+                  rgba[0] = vals[pos++];
+                  rgba[1] = vals[pos++];
+                  rgba[2] = vals[pos++];
+               }
+               else
+               {
+                  rgba[0] = val_number(val_ptr[pos++]);
+                  rgba[1] = val_number(val_ptr[pos++]);
+                  rgba[2] = val_number(val_ptr[pos++]);
+               }
+            }
+
+            if (flags & TILE_ALPHA)
+            {
+               if (vals)
+                  rgba[3] = vals[pos++];
+               else
+                  rgba[3] = val_number(val_ptr[pos++]);
+            }
+
+            gfx->tile(x-ox,y-oy,r,dxx_dxy,rgba);
+            if (vals)
+               vals+=components;
+            else
+               val_ptr += components;
          }
       }
-
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_gfx_draw_tiles,3);
+DEFINE_PRIM(nme_gfx_draw_tiles,4);
 
 
 static bool sNekoLutInit = false;
@@ -3073,18 +3158,21 @@ value nme_tilesheet_create(value inSurface)
 }
 DEFINE_PRIM(nme_tilesheet_create,1);
 
-value nme_tilesheet_add_rect(value inSheet,value inRect)
+value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
 {
    Tilesheet *sheet;
    if (AbstractToObject(inSheet,sheet))
    {
       Rect rect;
       FromValue(rect,inRect);
-      sheet->addTileRect(rect);
+      UserPoint p(0,0);
+      if (!val_is_null(inHotSpot))
+         FromValue(p,inHotSpot);
+      sheet->addTileRect(rect,p.x,p.y);
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_tilesheet_add_rect,2);
+DEFINE_PRIM(nme_tilesheet_add_rect,3);
 
 // --- URL ----------------------------------------------------------
 
