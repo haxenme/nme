@@ -479,39 +479,7 @@ class InstallerBase {
 	
 	private function mkdir (directory:String):Void {
 		
-		var total = "";
-		
-		if (directory.substr (0, 1) == "/") {
-			
-			total = "/";
-			
-		}
-		
-		var parts = directory.split("/");
-		
-		for (part in parts) {
-			
-			if (part != "." && part != "") {
-				
-				if (total != "") {
-					
-					total += "/";
-					
-				}
-				
-				total += part;
-				
-				if (!FileSystem.exists (total)) {
-					
-					print("mkdir " + total);
-					
-					FileSystem.createDirectory (total);
-					
-				}
-				
-			}
-			
-		}
+		InstallTool.mkdir (directory);
 		
 	}
 	

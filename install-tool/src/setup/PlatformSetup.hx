@@ -6,6 +6,7 @@ import haxe.io.Eof;
 import installers.InstallerBase;
 import neko.io.File;
 import neko.io.Path;
+import neko.zip.Reader;
 import neko.FileSystem;
 import neko.Sys;
 import neko.Lib;
@@ -29,10 +30,7 @@ class PlatformSetup {
 	private static var apacheAntWindowsPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
 	private static var codeSourceryWindowsPath = "https://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
-	private static var javaJDKLinuxX64Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-linux-x64.tar.gz";
-	private static var javaJDKLinuxX86Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-linux-i586.tar.gz";
-	private static var javaJDKWindowsX64Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-windows-x64.exe";
-	private static var javaJDKWindowsX86Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-windows-i586.exe";
+	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u1-download-513651.html";
 	private static var linuxX64Packages = "ia32-libs gcc-multilib g++-multilib";
 	private static var webOSLinuxX64NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
 	private static var webOSLinuxX86NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
@@ -62,11 +60,40 @@ class PlatformSetup {
 	}
 	
 	
+	private static function createPath (path:String, defaultPath:String):String {
+		
+		if (path == "") {
+			
+			InstallTool.mkdir (defaultPath);
+			return defaultPath;
+			
+		} else {
+			
+			InstallTool.mkdir (path);
+			return path;
+			
+		}
+		
+	}
+	
+	
 	private static function downloadFile (remotePath:String, localPath:String = ""):Void {
 		
 		if (localPath == "") {
 			
 			localPath = Path.withoutDirectory (remotePath);
+			
+		}
+		
+		if (FileSystem.exists (localPath)) {
+			
+			var answer = ask ("\"" + localPath + "\"" + " already exists. Use this file?");
+			
+			if (answer != No) {
+				
+				return;
+				
+			}
 			
 		}
 		
@@ -86,7 +113,60 @@ class PlatformSetup {
 	}
 	
 	
-	private static function getDefines (names:Array < String > = null, descriptions:Array <String> = null):Hash < String > {
+	private static function extractFile (sourceZIP:String, targetPath:String, skipBaseDir:Bool = false):Void {
+		
+		var file = File.read (sourceZIP, true);
+		var entries = Reader.readZip (file);
+		file.close ();
+		
+		for (entry in entries) {
+			
+			var fileName = entry.fileName;
+			
+			if (fileName.charAt (0) != "/" && fileName.charAt (0) != "\\" && fileName.split ("..").length <= 1) {
+				
+				var dirs = ~/[\/\\]/g.split(fileName);
+				
+				if ((skipBaseDir && dirs.length > 1) || !skipBaseDir) {
+					
+					if (skipBaseDir) {
+						
+						dirs.shift ();
+						
+					}
+					
+					var path = "";
+					var file = dirs.pop();
+					for( d in dirs ) {
+						path += d;
+						InstallTool.mkdir (targetPath + "/" + path);
+						path += "/";
+					}
+					
+					if( file == "" ) {
+						if( path != "" ) Lib.println("  Created "+path);
+						continue; // was just a directory
+					}
+					path += file;
+					Lib.println ("  Install " + path);
+					
+					var data = Reader.unzip (entry);
+					var f = File.write (targetPath + "/" + path, true);
+					f.write (data);
+					f.close ();
+					
+				}
+				
+			}
+			
+		}
+		
+		Lib.println ("Done");
+		
+	}
+	
+	
+	private static function getDefines (names:Array <String> = null, descriptions:Array <String> = null):Hash <String> {
 		
 		var parser = new InstallerBase ();
 		parser.parseHXCPPConfig ();
@@ -209,13 +289,13 @@ class PlatformSetup {
 	}
 	
 	
-	private static function runInstaller (path:String):Void {
+	private static function runInstaller (path:String, message:String = "Waiting for process..."):Void {
 		
 		if (InstallTool.isWindows) {
 			
 			try {
 				
-				Lib.println ("Waiting for setup to complete...");
+				Lib.println (message);
 				InstallTool.runCommand ("", "call", [ path ]);
 				Lib.println ("Done");
 				
@@ -228,11 +308,179 @@ class PlatformSetup {
 	
 	public static function setupAndroid ():Void {
 		
-		var defines = getDefines ([ "ANDROID_SDK", "ANDROID_NDK_ROOT", "ANT_HOME", "JAVA_HOME" ], [ "Path to Android SDK", "Path to Android NDK", "Path to Apache Ant", "Path to Java JDK" ]);
+		var androidSDKPath = "";
+		var androidNDKPath = "";
+		var apacheAntPath = "";
+		var javaJDKPath = "";
 		
-		defines.set ("ANDROID_SETUP", "true");
+		var answer = ask ("Download and install the Android SDK?");
+		
+		if (answer == Yes || answer == Always) {
+			
+			if (InstallTool.isWindows) {
+				
+				downloadFile (androidWindowsSDKPath);
+				
+				var path = param ("Output directory [C:\\Development\\Android SDK]");
+				path = createPath (path, "C:\\Development\\Android SDK");
+				
+				extractFile (Path.withoutDirectory (androidWindowsSDKPath), path, true);
+				Lib.println ("Launching SDK Manager to download required packages");
+				runInstaller (path + "/SDK Manager.exe");
+				androidSDKPath = path;
+				Lib.println ("");
+				
+			}
+			
+		}
+		
+		if (answer == Always) {
+			
+			Lib.println ("Download and install the Android NDK? [y/n/a] a");
+			
+		} else {
+			
+			answer = ask ("Download and install the Android NDK?");
+			
+		}
+		
+		if (answer == Yes || answer == Always) {
+			
+			if (InstallTool.isWindows) {
+				
+				downloadFile (androidWindowsNDKPath);
+				
+				var path = param ("Output directory [C:\\Development\\Android NDK]");
+				path = createPath (path, "C:\\Development\\Android NDK");
+				
+				extractFile (Path.withoutDirectory (androidWindowsNDKPath), path, true);
+				androidNDKPath = path;
+				Lib.println ("");
+				
+			}
+			
+		}
+		
+		if (answer == Always) {
+			
+			Lib.println ("Download and install Apache Ant? [y/n/a] a");
+			
+		} else {
+			
+			answer = ask ("Download and install Apache Ant?");
+			
+		}
+		
+		if (answer == Yes || answer == Always) {
+			
+			if (InstallTool.isWindows) {
+				
+				downloadFile (apacheAntWindowsPath);
+				
+				var path = param ("Output directory [C:\\Development\\Apache Ant]");
+				path = createPath (path, "C:\\Development\\Apache Ant");
+				
+				extractFile (Path.withoutDirectory (apacheAntWindowsPath), path, true);
+				apacheAntPath = path;
+				Lib.println ("");
+				
+			}
+			
+		}
+		
+		if (answer == Always) {
+			
+			Lib.println ("Download and install the Java JDK? [y/n/a] a");
+			
+		} else {
+			
+			answer = ask ("Download and install the Java JDK?");
+			
+		}
+		
+		if (answer == Yes || answer == Always) {
+			
+			Lib.println ("You must visit the Oracle website to download the Java JDK for your platform");
+			var secondAnswer = ask ("Would you like to go there now?");
+			
+			if (secondAnswer != No) {
+				
+				if (InstallTool.isWindows) {
+					
+					Sys.command ("explorer", [ javaJDKURL ]);
+					
+				} else {
+					
+					InstallTool.runCommand ("", "open", [ javaJDKURL ]);
+					
+				}
+				
+			}
+			
+			Lib.println ("");
+			
+		}
+		
+		var requiredVariables = new Array <String> ();
+		var requiredVariableDescriptions = new Array <String> ();
+		
+		if (androidSDKPath == "") {
+			
+			requiredVariables.push ("ANDROID_SDK");
+			requiredVariableDescriptions.push ("Path to Android SDK");
+			
+		}
+		
+		if (androidNDKPath == "") {
+			
+			requiredVariables.push ("ANDROID_NDK_ROOT");
+			requiredVariableDescriptions.push ("Path to Android NDK");
+			
+		}
+		
+		if (apacheAntPath == "") {
+			
+			requiredVariables.push ("ANT_HOME");
+			requiredVariableDescriptions.push ("Path to Apache Ant");
+			
+		}
+		
+		if (javaJDKPath == "") {
+			
+			requiredVariables.push ("JAVA_HOME");
+			requiredVariableDescriptions.push ("Path to Java JDK");
+			
+		}
+		
+		var defines = getDefines (requiredVariables, requiredVariableDescriptions);
 		
 		if (defines != null) {
+			
+			defines.set ("ANDROID_SETUP", "true");
+			
+			if (androidSDKPath != "") {
+				
+				defines.set ("ANDROID_SDK", androidSDKPath);
+				
+			}
+			
+			if (androidNDKPath != "") {
+				
+				defines.set ("ANDROID_NDK_ROOT", androidNDKPath);
+				
+			}
+			
+			if (apacheAntPath != "") {
+				
+				defines.set ("ANT_HOME", apacheAntPath);
+				
+			}
+			
+			if (javaJDKPath != "") {
+				
+				defines.set ("JAVA_HOME", javaJDKPath);
+				
+			}
 			
 			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
@@ -327,6 +575,11 @@ class PlatformSetup {
 			var input = File.read (path, false);
 			var bytes = input.readAll ();
 			input.close ();
+			
+			var backup = File.write (path + ".bak", false);
+			backup.writeBytes (bytes, 0, bytes.length);
+			backup.close ();
+			
 			var content = bytes.readString (0, bytes.length);
 			
 			var startIndex = content.indexOf ("<section id=\"vars\">");
