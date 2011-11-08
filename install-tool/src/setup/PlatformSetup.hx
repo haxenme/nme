@@ -19,17 +19,46 @@ import neko.Lib;
 class PlatformSetup {
 	
 	
+	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-linux-x86.tar.bz2";
+	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r15-linux.tgz";
+	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-darwin-x86.tar.bz2";
+	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r15-macosx.zip";
+	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-windows.zip";
+	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r15-windows.zip";
+	private static var apacheAntUnixPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.tar.gz";
+	private static var apacheAntWindowsPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.zip";
+	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
+	private static var codeSourceryWindowsPath = "https://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
+	private static var javaJDKLinuxX64Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-linux-x64.tar.gz";
+	private static var javaJDKLinuxX86Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-linux-i586.tar.gz";
+	private static var javaJDKWindowsX64Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-windows-x64.exe";
+	private static var javaJDKWindowsX86Path = "http://download.oracle.com/otn-pub/java/jdk/7u1-b08/jdk-7u1-windows-i586.exe";
+	private static var linuxX64Packages = "ia32-libs gcc-multilib g++-multilib";
+	private static var webOSLinuxX64NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
+	private static var webOSLinuxX86NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
+	private static var webOSLinuxSDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-sdk_3.0.4-svn519870-pho669_i386.deb";
+	private static var webOSMacSDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/Palm_webOS_SDK.3.0.4.669.dmg";
+	private static var webOSWindowsX64SDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
+	private static var webOSWindowsX86SDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+	private static var windowsVisualStudioCPPPath = "http://download.microsoft.com/download/1/D/9/1D9A6C0E-FC89-43EE-9658-B9F0E3A76983/vc_web.exe";
 	
-	private static function ask (question) {
-		while( true ) {
-			neko.Lib.print(question+" [y/n/a] ? ");
-			switch( neko.io.File.stdin().readLine() ) {
-			case "n": return No;
-			case "y": return Yes;
-			case "a": return Always;
+	
+	private static function ask (question:String):Answer {
+		
+		while (true) {
+			
+			Lib.print (question + " [y/n/a] ? ");
+			
+			switch (File.stdin ().readLine ()) {
+				case "n": return No;
+				case "y": return Yes;
+				case "a": return Always;
 			}
+			
 		}
+		
 		return null;
+		
 	}
 	
 	
@@ -44,11 +73,13 @@ class PlatformSetup {
 		var out = File.write (localPath, true);
 		var progress = new Progress (out);
 		var h = new Http (remotePath);
-		h.onError = function(e) {
+		
+		h.onError = function (e) {
 			progress.close();
 			FileSystem.deleteFile (localPath);
 			throw e;
 		};
+		
 		Lib.println ("Downloading " + localPath + "...");
 		h.customRequest (false, progress);
 		
@@ -68,14 +99,20 @@ class PlatformSetup {
 			
 			var home = "";
 			
-			if (env.exists("HOME"))
-				home = env.get("HOME");
-			else if (env.exists("USERPROFILE"))
-				home = env.get("USERPROFILE");
-			else
-			{
-				Lib.println("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+			if (env.exists ("HOME")) {
+				
+				home = env.get ("HOME");
+				
+			} else if (env.exists ("USERPROFILE")) {
+				
+				home = env.get ("USERPROFILE");
+				
+			} else {
+				
+				Lib.println ("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+				
 				return null;
+				
 			}
 			
 			defines.set ("HXCPP_CONFIG", home + "/.hxcpp_config.xml");
@@ -138,27 +175,37 @@ class PlatformSetup {
 	}
 	
 	
-	private static function link (dir, file, dest) {
-		Sys.command("rm -rf "+dest+"/"+file);
-		Sys.command("ln -s "+ "/usr/lib" +"/"+dir+"/"+file+" "+dest+"/"+file);
+	private static function link (dir:String, file:String, dest:String):Void {
+		
+		Sys.command("rm -rf " + dest + "/" + file);
+		Sys.command("ln -s " + "/usr/lib" +"/" + dir + "/" + file + " " + dest + "/" + file);
+		
 	}
 	
 	
-	private static function param (name, ?passwd) {
-		Lib.print(name+" : ");
-		if( passwd ) {
-			var s = new StringBuf();
+	private static function param (name:String, ?passwd:Bool):String {
+		
+		Lib.print (name + " : ");
+		
+		if (passwd) {
+			var s = new StringBuf ();
 			var c;
-			while( (c = neko.io.File.getChar(false)) != 13 )
-				s.addChar(c);
-			Lib.print("");
-			return s.toString();
+			while ((c = File.getChar (false)) != 13)
+				s.addChar (c);
+			Lib.print ("");
+			return s.toString ();
 		}
+		
 		try {
-			return neko.io.File.stdin().readLine();
+			
+			return File.stdin ().readLine ();
+			
 		} catch (e:Eof) {
+			
 			return "";
+			
 		}
+		
 	}
 	
 	
@@ -221,11 +268,11 @@ class PlatformSetup {
 				
 				if (Sys.environment ().exists ("PROCESSOR_ARCHITEW6432") && Sys.getEnv ("PROCESSOR_ARCHITEW6432").indexOf ("64") > -1) {
 					
-					sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
+					sdkPath = webOSWindowsX64SDKPath;
 					
 				} else {
 					
-					sdkPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+					sdkPath = webOSWindowsX86SDKPath;
 					
 				}
 				
@@ -248,10 +295,8 @@ class PlatformSetup {
 				
 				if (answer == Yes) {
 					
-					var toolchainPath = "https://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
-					
-					downloadFile (toolchainPath);
-					runInstaller (Path.withoutDirectory (toolchainPath));
+					downloadFile (codeSourceryWindowsPath);
+					runInstaller (Path.withoutDirectory (codeSourceryWindowsPath));
 					
 				}
 				
