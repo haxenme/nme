@@ -307,6 +307,14 @@ class InstallTool {
 					
 					PlatformSetup.setupWebOS ();
 				
+				case "windows":
+					
+					if (isWindows) {
+						
+						PlatformSetup.setupWindows ();
+						
+					}
+				
 				case "":
 					
 					PlatformSetup.installNME ();

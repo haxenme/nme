@@ -526,6 +526,7 @@ class PlatformSetup {
 				
 				downloadFile (sdkPath);
 				runInstaller (Path.withoutDirectory (sdkPath));
+				Lib.println ("");
 				
 			}
 			
@@ -549,6 +550,20 @@ class PlatformSetup {
 				}
 				
 			}
+			
+		}
+		
+	}
+	
+	
+	public static function setupWindows ():Void {
+		
+		var answer = ask ("Download and install Visual Studio C++ Express?");
+		
+		if (answer == Yes || answer == Always) {
+			
+			downloadFile (windowsVisualStudioCPPPath);
+			runInstaller (Path.withoutDirectory (windowsVisualStudioCPPPath));
 			
 		}
 		
