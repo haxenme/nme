@@ -289,56 +289,6 @@ class InstallTool {
 	}
 	
 	
-	private static function runSetup (target:String = "") {
-		
-		try {
-			
-			switch (target) {
-				
-				case "android":
-					
-					PlatformSetup.setupAndroid ();
-				
-				case "blackberry":
-					
-					PlatformSetup.setupBlackBerry ();
-				
-				case "linux":
-					
-					PlatformSetup.setupLinux ();
-				
-				case "webos":
-					
-					PlatformSetup.setupWebOS ();
-				
-				case "windows":
-					
-					if (isWindows) {
-						
-						PlatformSetup.setupWindows ();
-						
-					}
-				
-				case "":
-					
-					PlatformSetup.installNME ();
-				
-				default:
-					
-					Lib.println ("No setup is required for " + target + ", or it is not a valid target");
-					return;
-				
-			}
-			
-		} catch (e:Eof) {
-			
-			
-			
-		}
-		
-	}
-	
-	
 	public static function main () {
 		
 		var command:String = "";
@@ -542,11 +492,11 @@ class InstallTool {
 			
 			if (words.length == 0) {
 				
-				runSetup ();
+				PlatformSetup.run ();
 				
 			} else if (words.length == 1) {
 				
-				runSetup (words[0]);
+				PlatformSetup.run (words[0]);
 				
 			} else {
 				

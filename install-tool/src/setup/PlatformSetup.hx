@@ -39,6 +39,8 @@ class PlatformSetup {
 	private static var webOSWindowsX64SDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
 	private static var webOSWindowsX86SDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
 	private static var windowsVisualStudioCPPPath = "http://download.microsoft.com/download/1/D/9/1D9A6C0E-FC89-43EE-9658-B9F0E3A76983/vc_web.exe";
+
+	private static var backedUpConfig:Bool = false;
 	
 	
 	private static function ask (question:String):Answer {
@@ -319,7 +321,81 @@ class PlatformSetup {
 	}
 	
 	
-	private static function runInstaller (path:String, message:String = "Waiting for process to finish..."):Void {
+	public static function run (target:String = "") {
+		
+		try {
+			
+			switch (target) {
+				
+				case "android":
+					
+					setupAndroid ();
+				
+				case "blackberry":
+					
+					setupBlackBerry ();
+				
+				case "html5":
+					
+					setupHTML5 ();
+				
+				case "ios":
+					
+					if (InstallTool.isMac) {
+						
+						setupMac ();
+						
+					}
+				
+				case "linux":
+					
+					if (InstallTool.isLinux) {
+						
+						setupLinux ();
+						
+					}
+				
+				case "mac":
+					
+					if (InstallTool.isMac) {
+						
+						setupMac ();
+						
+					}
+				
+				case "webos":
+					
+					setupWebOS ();
+				
+				case "windows":
+					
+					if (InstallTool.isWindows) {
+						
+						setupWindows ();
+						
+					}
+				
+				case "":
+					
+					installNME ();
+				
+				default:
+					
+					Lib.println ("No setup is required for " + target + ", or it is not a valid target");
+					return;
+				
+			}
+			
+		} catch (e:Eof) {
+			
+			
+			
+		}
+		
+	}
+	
+	
+	private static function runInstaller (path:String, message:String = "Waiting for process to complete..."):Void {
 		
 		if (InstallTool.isWindows) {
 			
@@ -345,6 +421,21 @@ class PlatformSetup {
 				
 			}
 			
+		} else {
+			
+			if (Path.extension (path) == "") {
+				
+				Lib.println (message);
+				Sys.command ("chmod", [ "755", path ]);
+				InstallTool.runCommand ("", path, []);
+				Lib.println ("Done");
+			
+			} else {
+				
+				InstallTool.runCommand ("", "open", [ path ]);
+				
+			}
+			
 		}
 		
 	}
@@ -352,11 +443,12 @@ class PlatformSetup {
 	
 	public static function setupAndroid ():Void {
 		
-		var androidSDKPath = "";
-		var androidNDKPath = "";
-		var apacheAntPath = "";
-		var javaJDKPath = "";
+		var setAndroidSDK = false;
+		var setAndroidNDK = false;
+		var setApacheAnt = false;
+		var setJavaJDK = false;
 		
+		var defines = getDefines ();
 		var answer = ask ("Download and install the Android SDK?");
 		
 		if (answer == Yes || answer == Always) {
@@ -376,6 +468,12 @@ class PlatformSetup {
 				defaultInstallPath = "/opt/Android SDK";
 				ignoreRootFolder = "android-sdk-linux";
 				
+			} else if (InstallTool.isMac) {
+				
+				downloadPath = androidMacSDKPath;
+				defaultInstallPath = "/opt/Android SDK";
+				ignoreRootFolder = "android-sdk-mac";
+				
 			}
 
 			downloadFile (downloadPath);
@@ -384,7 +482,7 @@ class PlatformSetup {
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
-			Lib.println ("Launching SDK Manager to download required packages");
+			Lib.println ("Launching the Android SDK Manager to install packages");
 			
 			if (InstallTool.isWindows) {
 				
@@ -396,7 +494,9 @@ class PlatformSetup {
 				
 			}
 			
-			androidSDKPath = path;
+			setAndroidSDK = true;
+			defines.set ("ANDROID_SDK", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			Lib.println ("");
 			
 		}
@@ -427,6 +527,11 @@ class PlatformSetup {
 				downloadPath = androidLinuxNDKPath;
 				defaultInstallPath = "/opt/Android NDK";
 				
+			} else {
+				
+				downloadPath = androidMacNDKPath;
+				defaultInstallPath = "/opt/Android NDK";
+				
 			}
 				
 			downloadFile (downloadPath);
@@ -435,7 +540,10 @@ class PlatformSetup {
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
-			androidNDKPath = path;
+			
+			setAndroidNDK = true;
+			defines.set ("ANDROID_NDK_ROOT", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			Lib.println ("");
 			
 		}
@@ -474,8 +582,10 @@ class PlatformSetup {
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
-			apacheAntPath = path;
-			Lib.println ("");
+			
+			setApacheAnt = true;
+			defines.set ("ANT_HOME", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
 		}
 		
@@ -519,31 +629,37 @@ class PlatformSetup {
 		var requiredVariables = new Array <String> ();
 		var requiredVariableDescriptions = new Array <String> ();
 		
-		if (androidSDKPath == "") {
+		if (!setAndroidSDK) {
 			
 			requiredVariables.push ("ANDROID_SDK");
 			requiredVariableDescriptions.push ("Path to Android SDK");
 			
 		}
 		
-		if (androidNDKPath == "") {
+		if (!setAndroidNDK) {
 			
 			requiredVariables.push ("ANDROID_NDK_ROOT");
 			requiredVariableDescriptions.push ("Path to Android NDK");
 			
 		}
 		
-		if (apacheAntPath == "") {
+		if (!setApacheAnt) {
 			
 			requiredVariables.push ("ANT_HOME");
 			requiredVariableDescriptions.push ("Path to Apache Ant");
 			
 		}
 		
-		if (javaJDKPath == "") {
+		if (!setJavaJDK) {
 			
 			requiredVariables.push ("JAVA_HOME");
 			requiredVariableDescriptions.push ("Path to Java JDK");
+			
+		}
+		
+		if (!setAndroidSDK && !setAndroidNDK && !setApacheAnt) {
+			
+			Lib.println ("");
 			
 		}
 		
@@ -552,31 +668,6 @@ class PlatformSetup {
 		if (defines != null) {
 			
 			defines.set ("ANDROID_SETUP", "true");
-			
-			if (androidSDKPath != "") {
-				
-				defines.set ("ANDROID_SDK", androidSDKPath);
-				
-			}
-			
-			if (androidNDKPath != "") {
-				
-				defines.set ("ANDROID_NDK_ROOT", androidNDKPath);
-				
-			}
-			
-			if (apacheAntPath != "") {
-				
-				defines.set ("ANT_HOME", apacheAntPath);
-				
-			}
-			
-			if (javaJDKPath != "") {
-				
-				defines.set ("JAVA_HOME", javaJDKPath);
-				
-			}
-			
 			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
 		}
@@ -597,6 +688,13 @@ class PlatformSetup {
 		}
 		
 	}
+	
+	
+	public static function setupHTML5 ():Void {
+		
+		InstallTool.runCommand ("", "haxelib", [ "install", "jeash" ]);
+		
+	}
 
 
 	public static function setupLinux ():Void {
@@ -605,6 +703,27 @@ class PlatformSetup {
 		InstallTool.runCommand ("", "sudo", parameters);
 		
 	}
+	
+	
+	public static function setupMac ():Void {
+		
+		var answer = ask ("Download and install Apple XCode?");
+		
+		if (answer == Yes || answer == Always) {
+			
+			Lib.println ("You must purchase XCode from the Mac App Store or download using a paid");
+			Lib.println ("member account with Apple.");
+			var secondAnswer = ask ("Would you like to open the download page?");
+			
+			if (secondAnswer != No) {
+				
+				InstallTool.runCommand ("", "open", [ appleXCodeURL ]);
+				
+			}
+			
+		}
+		
+	}	
 	
 	
 	public static function setupWebOS ():Void {
@@ -735,9 +854,14 @@ class PlatformSetup {
 			var bytes = input.readAll ();
 			input.close ();
 			
-			var backup = File.write (path + ".bak", false);
-			backup.writeBytes (bytes, 0, bytes.length);
-			backup.close ();
+			if (!backedUpConfig) {
+			
+				var backup = File.write (path + ".bak", false);
+				backup.writeBytes (bytes, 0, bytes.length);
+				backup.close ();
+				backedUpConfig = true;
+			
+			}
 			
 			var content = bytes.readString (0, bytes.length);
 			
