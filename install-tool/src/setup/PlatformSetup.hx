@@ -32,12 +32,12 @@ class PlatformSetup {
 	private static var codeSourceryWindowsPath = "https://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u1-download-513651.html";
 	private static var linuxX64Packages = "ia32-libs gcc-multilib g++-multilib";
-	private static var webOSLinuxX64NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
-	private static var webOSLinuxX86NovacomPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
-	private static var webOSLinuxSDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-sdk_3.0.4-svn519870-pho669_i386.deb";
-	private static var webOSMacSDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/Palm_webOS_SDK.3.0.4.669.dmg";
-	private static var webOSWindowsX64SDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
-	private static var webOSWindowsX86SDKPath = "https://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
+	private static var webOSLinuxX64NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
+	private static var webOSLinuxX86NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
+	private static var webOSLinuxSDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-sdk_3.0.4-svn519870-pho669_i386.deb";
+	private static var webOSMacSDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/Palm_webOS_SDK.3.0.4.669.dmg";
+	private static var webOSWindowsX64SDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x64.exe";
+	private static var webOSWindowsX86SDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/HP_webOS_SDK-Win-3.0.4-669-x86.exe";
 	private static var windowsVisualStudioCPPPath = "http://download.microsoft.com/download/1/D/9/1D9A6C0E-FC89-43EE-9658-B9F0E3A76983/vc_web.exe";
 	
 	
@@ -87,7 +87,7 @@ class PlatformSetup {
 		
 		if (FileSystem.exists (localPath)) {
 			
-			var answer = ask ("\"" + localPath + "\"" + " already exists. Use this file?");
+			var answer = ask ("File found. Install existing file?");
 			
 			if (answer != No) {
 				
@@ -113,50 +113,80 @@ class PlatformSetup {
 	}
 	
 	
-	private static function extractFile (sourceZIP:String, targetPath:String, skipBaseDir:Bool = false):Void {
+	private static function extractFile (sourceZIP:String, targetPath:String, ignoreRootFolder:String = ""):Void {
 		
-		var file = File.read (sourceZIP, true);
-		var entries = Reader.readZip (file);
-		file.close ();
+		var extension = Path.extension (sourceZIP);
 		
-		for (entry in entries) {
+		if (extension != "zip") {
 			
-			var fileName = entry.fileName;
+			var arguments = "xvzf";			
+						
+			if (extension == "bz2") {
+				
+				arguments = "xvjf";
+				
+			}	
 			
-			if (fileName.charAt (0) != "/" && fileName.charAt (0) != "\\" && fileName.split ("..").length <= 1) {
+			if (ignoreRootFolder != "") {
 				
-				var dirs = ~/[\/\\]/g.split(fileName);
+				InstallTool.runCommand ("", "tar", [ arguments, sourceZIP ]);
+				InstallTool.runCommand ("", "cp", [ "-R", ignoreRootFolder + "/*", targetPath ]);
+				Sys.command ("rm", [ "-r", ignoreRootFolder ]);
 				
-				if ((skipBaseDir && dirs.length > 1) || !skipBaseDir) {
-					
-					if (skipBaseDir) {
+			} else {
+				
+				//InstallTool.runCommand (targetPath, "tar", [ arguments, FileSystem.fullPath (sourceZIP) ]);
+				
+			}
+			
+			Sys.command ("chmod", [ "-R", "755", targetPath ]);
 						
-						dirs.shift ();
+		} else {
+			
+			var file = File.read (sourceZIP, true);
+			var entries = Reader.readZip (file);
+			file.close ();
+		
+			for (entry in entries) {
+			
+				var fileName = entry.fileName;
+			
+				if (fileName.charAt (0) != "/" && fileName.charAt (0) != "\\" && fileName.split ("..").length <= 1) {
+				
+					var dirs = ~/[\/\\]/g.split(fileName);
+				
+					if ((ignoreRootFolder != "" && dirs.length > 1) || ignoreRootFolder == "") {
+					
+						if (ignoreRootFolder != "") {
 						
+							dirs.shift ();
+						
+						}
+					
+						var path = "";
+						var file = dirs.pop();
+						for( d in dirs ) {
+							path += d;
+							InstallTool.mkdir (targetPath + "/" + path);
+							path += "/";
+						}
+					
+						if( file == "" ) {
+							if( path != "" ) Lib.println("  Created "+path);
+							continue; // was just a directory
+						}
+						path += file;
+						Lib.println ("  Install " + path);
+					
+						var data = Reader.unzip (entry);
+						var f = File.write (targetPath + "/" + path, true);
+						f.write (data);
+						f.close ();
+					
 					}
-					
-					var path = "";
-					var file = dirs.pop();
-					for( d in dirs ) {
-						path += d;
-						InstallTool.mkdir (targetPath + "/" + path);
-						path += "/";
-					}
-					
-					if( file == "" ) {
-						if( path != "" ) Lib.println("  Created "+path);
-						continue; // was just a directory
-					}
-					path += file;
-					Lib.println ("  Install " + path);
-					
-					var data = Reader.unzip (entry);
-					var f = File.write (targetPath + "/" + path, true);
-					f.write (data);
-					f.close ();
-					
+				
 				}
-				
+			
 			}
 			
 		}
@@ -289,7 +319,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function runInstaller (path:String, message:String = "Waiting for process..."):Void {
+	private static function runInstaller (path:String, message:String = "Waiting for process to finish..."):Void {
 		
 		if (InstallTool.isWindows) {
 			
@@ -300,6 +330,20 @@ class PlatformSetup {
 				Lib.println ("Done");
 				
 			} catch (e:Dynamic) {}
+			
+		} else if (InstallTool.isLinux) {
+			
+			if (Path.extension (path) == "deb") {
+				
+				InstallTool.runCommand ("", "sudo", [ "dpkg", "-i", "--force-architecture", path ]);
+				
+			} else {
+				
+				Lib.println (message);
+				InstallTool.runCommand ("", path, []);
+				Lib.println ("Done");
+				
+			}
 			
 		}
 		
@@ -317,20 +361,43 @@ class PlatformSetup {
 		
 		if (answer == Yes || answer == Always) {
 			
+			var downloadPath = "";
+			var defaultInstallPath = "";
+			var ignoreRootFolder = "android-sdk";
+			
 			if (InstallTool.isWindows) {
 				
-				downloadFile (androidWindowsSDKPath);
+				downloadPath = androidWindowsSDKPath;
+				defaultInstallPath = "C:\\Development\\Android SDK";
+			
+			} else if (InstallTool.isLinux) {
 				
-				var path = param ("Output directory [C:\\Development\\Android SDK]");
-				path = createPath (path, "C:\\Development\\Android SDK");
-				
-				extractFile (Path.withoutDirectory (androidWindowsSDKPath), path, true);
-				Lib.println ("Launching SDK Manager to download required packages");
-				runInstaller (path + "/SDK Manager.exe");
-				androidSDKPath = path;
-				Lib.println ("");
+				downloadPath = androidLinuxSDKPath;
+				defaultInstallPath = "/opt/Android SDK";
+				ignoreRootFolder = "android-sdk-linux";
 				
 			}
+
+			downloadFile (downloadPath);
+			
+			var path = param ("Output directory [" + defaultInstallPath + "]");
+			path = createPath (path, defaultInstallPath);
+			
+			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			Lib.println ("Launching SDK Manager to download required packages");
+			
+			if (InstallTool.isWindows) {
+				
+				runInstaller (path + "/SDK Manager.exe");
+				
+			} else {
+				
+				runInstaller (path + "/tools/android");
+				
+			}
+			
+			androidSDKPath = path;
+			Lib.println ("");
 			
 		}
 		
@@ -346,18 +413,30 @@ class PlatformSetup {
 		
 		if (answer == Yes || answer == Always) {
 			
+			var downloadPath = "";
+			var defaultInstallPath = "";
+			var ignoreRootFolder = "android-ndk-r6b";
+			
 			if (InstallTool.isWindows) {
 				
-				downloadFile (androidWindowsNDKPath);
+				downloadPath = androidWindowsNDKPath;
+				defaultInstallPath = "C:\\Development\\Android NDK";
 				
-				var path = param ("Output directory [C:\\Development\\Android NDK]");
-				path = createPath (path, "C:\\Development\\Android NDK");
+			} else if (InstallTool.isLinux) {
 				
-				extractFile (Path.withoutDirectory (androidWindowsNDKPath), path, true);
-				androidNDKPath = path;
-				Lib.println ("");
+				downloadPath = androidLinuxNDKPath;
+				defaultInstallPath = "/opt/Android NDK";
 				
 			}
+				
+			downloadFile (downloadPath);
+			
+			var path = param ("Output directory [" + defaultInstallPath + "]");
+			path = createPath (path, defaultInstallPath);
+			
+			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			androidNDKPath = path;
+			Lib.println ("");
 			
 		}
 		
@@ -373,18 +452,30 @@ class PlatformSetup {
 		
 		if (answer == Yes || answer == Always) {
 			
+			var downloadPath = "";
+			var defaultInstallPath = "";
+			var ignoreRootFolder = "apache-ant-1.8.2";
+			
 			if (InstallTool.isWindows) {
 				
-				downloadFile (apacheAntWindowsPath);
+				downloadPath = apacheAntWindowsPath;
+				defaultInstallPath = "C:\\Development\\Apache Ant";
 				
-				var path = param ("Output directory [C:\\Development\\Apache Ant]");
-				path = createPath (path, "C:\\Development\\Apache Ant");
+			} else {
 				
-				extractFile (Path.withoutDirectory (apacheAntWindowsPath), path, true);
-				apacheAntPath = path;
-				Lib.println ("");
+				downloadPath = apacheAntUnixPath;
+				defaultInstallPath = "/opt/Apache Ant";
 				
 			}
+			
+			downloadFile (downloadPath);
+			
+			var path = param ("Output directory [" + defaultInstallPath + "]");
+			path = createPath (path, defaultInstallPath);
+			
+			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			apacheAntPath = path;
+			Lib.println ("");
 			
 		}
 		
@@ -408,6 +499,10 @@ class PlatformSetup {
 				if (InstallTool.isWindows) {
 					
 					Sys.command ("explorer", [ javaJDKURL ]);
+					
+				} else if (InstallTool.isLinux) {
+					
+					InstallTool.runCommand ("", "firefox", [ javaJDKURL ]);
 					
 				} else {
 					
@@ -502,6 +597,14 @@ class PlatformSetup {
 		}
 		
 	}
+
+
+	public static function setupLinux ():Void {
+		
+		var parameters = [ "apt-get", "install" ].concat (linuxX64Packages.split (" "));
+		InstallTool.runCommand ("", "sudo", parameters);
+		
+	}
 	
 	
 	public static function setupWebOS ():Void {
@@ -509,10 +612,10 @@ class PlatformSetup {
 		var answer = ask ("Download and install the HP webOS SDK?");
 		
 		if (answer == Yes || answer == Always) {
+						
+			var sdkPath = "";
 			
 			if (InstallTool.isWindows) {
-				
-				var sdkPath = "";
 				
 				if (Sys.environment ().exists ("PROCESSOR_ARCHITEW6432") && Sys.getEnv ("PROCESSOR_ARCHITEW6432").indexOf ("64") > -1) {
 					
@@ -524,11 +627,19 @@ class PlatformSetup {
 					
 				}
 				
-				downloadFile (sdkPath);
-				runInstaller (Path.withoutDirectory (sdkPath));
-				Lib.println ("");
+			} else if (InstallTool.isLinux) {
+				
+				sdkPath = webOSLinuxSDKPath;
+				
+			} else {
+				
+				sdkPath = webOSMacSDKPath;
 				
 			}
+
+			downloadFile (sdkPath);
+			runInstaller (Path.withoutDirectory (sdkPath));
+			Lib.println ("");
 			
 		}
 		
@@ -542,15 +653,48 @@ class PlatformSetup {
 				
 				answer = ask ("Download and install the CodeSourcery C++ toolchain?");
 				
-				if (answer == Yes) {
-					
-					downloadFile (codeSourceryWindowsPath);
-					runInstaller (Path.withoutDirectory (codeSourceryWindowsPath));
-					
-				}
+			}
+
+			if (answer != No) {
+				
+				downloadFile (codeSourceryWindowsPath);
+				runInstaller (Path.withoutDirectory (codeSourceryWindowsPath));
 				
 			}
 			
+		} else if (InstallTool.isLinux) {
+			
+			if (answer == Always) {
+				
+				Lib.println ("Download and install Novacom? [y/n/a] a");
+				
+			} else {
+				
+				answer = ask ("Download and install Novacom?");
+				
+			}
+
+			if (answer != No) {
+
+				var process = new neko.io.Process("uname", ["-m"]);
+				var ret = process.stdout.readAll().toString();
+				var ret2 = process.stderr.readAll().toString();
+				process.exitCode(); //you need this to wait till the process is closed!
+				process.close();
+			
+				var novacomPath = webOSLinuxX86NovacomPath;
+
+				if (ret.indexOf ("64") > -1) {
+				
+					novacomPath = webOSLinuxX64NovacomPath;
+				
+				}
+				
+				downloadFile (novacomPath);
+				runInstaller (Path.withoutDirectory (novacomPath));
+			
+			}
+		
 		}
 		
 	}

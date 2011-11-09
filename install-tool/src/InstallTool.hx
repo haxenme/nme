@@ -303,6 +303,10 @@ class InstallTool {
 					
 					PlatformSetup.setupBlackBerry ();
 				
+				case "linux":
+					
+					PlatformSetup.setupLinux ();
+				
 				case "webos":
 					
 					PlatformSetup.setupWebOS ();
@@ -406,6 +410,7 @@ class InstallTool {
 				
 			} else if (arg == "-64") {
 				
+
 				defines.set ("NME_64", "1");
 				
 			} else if (arg.substr (0, 2) == "-D") {
