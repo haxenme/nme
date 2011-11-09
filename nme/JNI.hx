@@ -40,7 +40,7 @@ class JNI
          alreadyCreated.set(className,true);
       }
 
-      return nme_jni_create_interface(haxeClass, className, bytes);
+      return nme_jni_create_interface(haxeClass, className, bytes==null?null:bytes.getData());
    }
 
 

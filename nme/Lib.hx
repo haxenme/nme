@@ -61,8 +61,9 @@ class Lib
    {
 	   initWidth = inWidth;
 	   initHeight = inHeight;
-      nmeStage = new nme.display.ManagedStage(inWidth,inHeight);
-      return nmeStage;
+      var result = new nme.display.ManagedStage(inWidth,inHeight);
+      nmeStage = result;
+      return result;
    }
 
 
@@ -71,6 +72,11 @@ class Lib
       if (nmeStage==null)
          throw("Error : stage can't be accessed until init is called");
       return nmeStage;
+   }
+
+   public static function nmeSetCurrentStage(inStage:nme.display.Stage)
+   {
+      nmeStage = inStage;
    }
 
    public static function getURL (url : URLRequest, ?target : String) : Void {
