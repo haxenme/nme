@@ -941,6 +941,9 @@ DEFINE_PRIM(nme_set_asset_base,1);
 
 value nme_close()
 {
+   #if defined( HX_WINDOWS ) ||  defined( HX_MACOS ) || defined( HX_LINUX )
+      exit(0);
+   #endif
    TerminateMainLoop();
    return alloc_null();
 }
