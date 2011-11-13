@@ -98,6 +98,13 @@ class Lib
       close();
    }
 
+   public static function exit()
+   {
+      var quit = stage.onQuit;
+      if (quit!=null)
+         quit();
+   }
+
    static public function setAssetBase(inBase:String)
    {
       nme_set_asset_base(inBase);
