@@ -47,6 +47,7 @@ class Stage extends DisplayObjectContainer
 
    public var onKey: Int -> Bool -> Int -> Int ->Void; 
    public var onQuit: Void ->Void; 
+   public var renderRequest: Void ->Void; 
 
 
    public function new(inHandle:Dynamic,inWidth:Int,inHeight:Int)
@@ -56,6 +57,12 @@ class Stage extends DisplayObjectContainer
       nmeFocusOverObjects = [];
       active = true;
       pauseWhenDeactivated = true;
+
+      #if android
+		renderRequest = nme_stage_request_render;
+      #else
+		renderRequest = null;
+      #end
 
       nme_set_stage_handler(nmeHandle,nmeProcessStageEvent,inWidth,inHeight);
       nmeInvalid = false;
@@ -587,11 +594,10 @@ class Stage extends DisplayObjectContainer
          if (now>=nmeLastRender + nmeFramePeriod)
          {
             nmeLastRender = now;
-            #if android
-				nme_stage_request_render();
-				#else
-            nmeRender(true);
-				#end
+            if (renderRequest!=null)
+               renderRequest();
+            else
+               nmeRender(true);
          }
       }
    }
@@ -683,9 +689,8 @@ class Stage extends DisplayObjectContainer
 
          case 8: // etResize
             nmeOnResize(inEvent.x, inEvent.y);
-				#if !android
-            nmeRender(false);
-				#end
+            if (renderRequest==null)
+               nmeRender(false);
 
          case 9: // etPoll
             nmePollTimers();
