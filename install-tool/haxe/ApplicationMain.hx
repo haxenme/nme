@@ -1,12 +1,12 @@
-import nme.Assets;
-
 
 class ApplicationMain
 {
    #if waxe
    static public var frame : wx.Frame;
    static public var autoShowFrame : Bool = true;
+   #if nme
    static public var nmeStage : wx.NMEStage;
+   #end
    #end
 
    public static function main()
@@ -15,7 +15,10 @@ class ApplicationMain
       wx.App.boot( function()
       {
          frame = wx.Frame.create(null,null,"::APP_TITLE::",null,{width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+         #if nme
          var stage = wx.NMEStage.create(frame,null,null,{width:::WIN_WIDTH::,height:::WIN_HEIGHT::});
+         #end
+
          ::APP_MAIN::.main();
          if (autoShowFrame)
          {
@@ -46,15 +49,15 @@ class ApplicationMain
       if (inName=="::id::")
       {
          ::if (type=="image")::
-            return Assets.getBitmapData ("::id::");
+            return nme.installer.Assets.getBitmapData ("::id::");
          ::elseif (type=="sound")::
-            return Assets.getSound ("::id::");
+            return nme.installer.Assets.getSound ("::id::");
          ::elseif (type=="music")::
-            return Assets.getSound ("::id::");
+            return nme.installer.Assets.getSound ("::id::");
 		 ::elseif (type== "font")::
-			 return Assets.getFont ("::id::");
+			 return nme.installer.Assets.getFont ("::id::");
          ::else::
-            return Assets.getBytes ("::id::");
+            return nme.installer.Assets.getBytes ("::id::");
          ::end::
       }
       ::end::
