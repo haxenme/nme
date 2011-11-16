@@ -342,6 +342,7 @@ class InstallTool {
 			
 		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
 			
+			defines.set ("mac", "1");
 			defines.set ("macos", "1");
 			defines.set ("NME_HOST", "darwin-x86");
 			isMac = true;

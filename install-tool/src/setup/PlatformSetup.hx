@@ -198,7 +198,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function getDefines (names:Array <String> = null, descriptions:Array <String> = null):Hash <String> {
+	private static function getDefines (names:Array <String> = null, descriptions:Array <String> = null, ignored:Array <String> = null):Hash <String> {
 		
 		var parser = new InstallerBase ();
 		parser.parseHXCPPConfig ();
@@ -243,9 +243,18 @@ class PlatformSetup {
 			
 			var name = names[i];
 			var description = descriptions[i];
+			
+			var ignore = "";
+			
+			if (ignored != null && ignored.length > i) {
+				
+				ignore = ignored[i];
+				
+			}
+			
 			var value = "";
 			
-			if (defines.exists (name)) {
+			if (defines.exists (name) && defines.get (name) != ignore) {
 				
 				value = defines.get (name);
 				
@@ -482,7 +491,15 @@ class PlatformSetup {
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			
+			if (!InstallTool.isWindows) {
+				
+				InstallTool.runCommand (path + "/tools", "chmod", [ "755", "*" ]);
+				
+			}
+			
 			Lib.println ("Launching the Android SDK Manager to install packages");
+			Lib.println ("Please install Android API 7 and SDK Platform-tools");
 			
 			if (InstallTool.isWindows) {
 				
@@ -491,6 +508,12 @@ class PlatformSetup {
 			} else {
 				
 				runInstaller (path + "/tools/android");
+				
+			}
+			
+			if (InstallTool.isMac) {
+				
+				InstallTool.runCommand ("", "cp", [ InstallTool.nme + "/install-tool/bin/debug.keystore", "~/.android/debug.keystore" ] );
 				
 			}
 			
@@ -548,91 +571,97 @@ class PlatformSetup {
 			
 		}
 		
-		if (answer == Always) {
+		if (!InstallTool.isMac) {
 			
-			Lib.println ("Download and install Apache Ant? [y/n/a] a");
-			
-		} else {
-			
-			answer = ask ("Download and install Apache Ant?");
-			
-		}
-		
-		if (answer == Yes || answer == Always) {
-			
-			var downloadPath = "";
-			var defaultInstallPath = "";
-			var ignoreRootFolder = "apache-ant-1.8.2";
-			
-			if (InstallTool.isWindows) {
+			if (answer == Always) {
 				
-				downloadPath = apacheAntWindowsPath;
-				defaultInstallPath = "C:\\Development\\Apache Ant";
-				
+				Lib.println ("Download and install Apache Ant? [y/n/a] a");
+			
 			} else {
 				
-				downloadPath = apacheAntUnixPath;
-				defaultInstallPath = "/opt/Apache Ant";
+				answer = ask ("Download and install Apache Ant?");
+			
+			}
+			
+			if (answer == Yes || answer == Always) {
+				
+				var downloadPath = "";
+				var defaultInstallPath = "";
+				var ignoreRootFolder = "apache-ant-1.8.2";
+			
+				if (InstallTool.isWindows) {
+					
+					downloadPath = apacheAntWindowsPath;
+					defaultInstallPath = "C:\\Development\\Apache Ant";
+				
+				} else {
+					
+					downloadPath = apacheAntUnixPath;
+					defaultInstallPath = "/opt/Apache Ant";
+				
+				}
+				
+				downloadFile (downloadPath);
+				
+				var path = param ("Output directory [" + defaultInstallPath + "]");
+				path = createPath (path, defaultInstallPath);
+				
+				extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+				
+				setApacheAnt = true;
+				defines.set ("ANT_HOME", path);
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 				
 			}
 			
-			downloadFile (downloadPath);
+			if (answer == Always) {
 			
-			var path = param ("Output directory [" + defaultInstallPath + "]");
-			path = createPath (path, defaultInstallPath);
+				Lib.println ("Download and install the Java JDK? [y/n/a] a");
 			
-			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			} else {
 			
-			setApacheAnt = true;
-			defines.set ("ANT_HOME", path);
-			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				answer = ask ("Download and install the Java JDK?");
 			
-		}
+			}
 		
-		if (answer == Always) {
+			if (answer == Yes || answer == Always) {
 			
-			Lib.println ("Download and install the Java JDK? [y/n/a] a");
+				Lib.println ("You must visit the Oracle website to download the Java JDK for your platform");
+				var secondAnswer = ask ("Would you like to go there now?");
 			
-		} else {
-			
-			answer = ask ("Download and install the Java JDK?");
-			
-		}
-		
-		if (answer == Yes || answer == Always) {
-			
-			Lib.println ("You must visit the Oracle website to download the Java JDK for your platform");
-			var secondAnswer = ask ("Would you like to go there now?");
-			
-			if (secondAnswer != No) {
+				if (secondAnswer != No) {
 				
-				if (InstallTool.isWindows) {
+					if (InstallTool.isWindows) {
 					
-					Sys.command ("explorer", [ javaJDKURL ]);
+						Sys.command ("explorer", [ javaJDKURL ]);
 					
-				} else if (InstallTool.isLinux) {
+					} else if (InstallTool.isLinux) {
+						
+						InstallTool.runCommand ("", "firefox", [ javaJDKURL ]);
 					
-					InstallTool.runCommand ("", "firefox", [ javaJDKURL ]);
-					
-				} else {
-					
-					InstallTool.runCommand ("", "open", [ javaJDKURL ]);
+					} else {
+						
+						InstallTool.runCommand ("", "open", [ javaJDKURL ]);
+						
+					}
 					
 				}
 				
+				Lib.println ("");
+			
 			}
 			
-			Lib.println ("");
-			
 		}
-		
+			
 		var requiredVariables = new Array <String> ();
 		var requiredVariableDescriptions = new Array <String> ();
+		var ignoreValues = new Array <String> ();
 		
 		if (!setAndroidSDK) {
 			
 			requiredVariables.push ("ANDROID_SDK");
 			requiredVariableDescriptions.push ("Path to Android SDK");
+			ignoreValues.push ("/SDKs//android-sdk");
 			
 		}
 		
@@ -640,20 +669,23 @@ class PlatformSetup {
 			
 			requiredVariables.push ("ANDROID_NDK_ROOT");
 			requiredVariableDescriptions.push ("Path to Android NDK");
+			ignoreValues.push ("/SDKs//android-ndk-r6");
 			
 		}
 		
-		if (!setApacheAnt) {
+		if (!InstallTool.isMac && !setApacheAnt) {
 			
 			requiredVariables.push ("ANT_HOME");
 			requiredVariableDescriptions.push ("Path to Apache Ant");
+			ignoreValues.push ("/SDKs//ant");
 			
 		}
 		
-		if (!setJavaJDK) {
+		if (!InstallTool.isMac && !setJavaJDK) {
 			
 			requiredVariables.push ("JAVA_HOME");
 			requiredVariableDescriptions.push ("Path to Java JDK");
+			ignoreValues.push ("/SDKs//java_jdk");
 			
 		}
 		
@@ -663,11 +695,19 @@ class PlatformSetup {
 			
 		}
 		
-		var defines = getDefines (requiredVariables, requiredVariableDescriptions);
+		var defines = getDefines (requiredVariables, requiredVariableDescriptions, ignoreValues);
 		
 		if (defines != null) {
 			
 			defines.set ("ANDROID_SETUP", "true");
+			
+			if (InstallTool.isMac) {
+				
+				defines.remove ("ANT_HOME");
+				defines.remove ("JAVA_HOME");
+				
+			}
+			
 			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
 		}

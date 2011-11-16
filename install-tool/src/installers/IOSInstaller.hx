@@ -68,7 +68,37 @@ class IOSInstaller extends InstallerBase {
 		ndlls.push (new NDLL ("jpeg", "nme", false));
 		ndlls.push (new NDLL ("z", "nme", false));
 		
-		setDefault ("IPHONE_VER", "4.3");
+		if (!defines.exists("IPHONE_VER")) {
+         		
+			var dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
+         		
+			if (neko.FileSystem.exists (dev_path)) {
+            			
+				var best = "";
+            	var files = neko.FileSystem.readDirectory (dev_path);
+            	var extract_version = ~/^iPhoneOS(.*).sdk$/;
+				
+            	for (file in files) {
+       				
+					if (extract_version.match (file)) {
+       					
+						var ver = extract_version.matched (1);
+						
+                  		if (ver > best)
+                     		best = ver;
+						
+               		}
+
+            	}
+				
+            	if (best != "")
+               		defines.set ("IPHONE_VER", best);
+			
+			}
+		
+      	}
+
+		//setDefault ("IPHONE_VER", "4.3");
 		
 	}
 	
