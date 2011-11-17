@@ -1,0 +1,9 @@
+-neko bin/Windows/NMEInstaller.n
+-main NMEInstaller
+-lib xcross
+-resource resources/haxe-2.08-win.zip@haxe-2.08-win.zip
+-resource resources/neko-1.8.2-win.zip@neko-1.8.2-win.zip
+-resource resources/nme.zip@nme
+-resource resources/hxcpp.zip@hxcpp
+-resource resources/jeash.zip@jeash
+-cmd haxelib run xcross -win -bundle "NME Installer" bin/Windows/NMEInstaller.n

@@ -1,0 +1,9 @@
+-neko bin/Linux/NMEInstaller.n
+-main NMEInstaller
+-lib xcross
+-resource resources/haxe-2.08-linux.tar.gz@haxe-2.08-linux.tar.gz
+-resource resources/neko-1.8.2-linux.tar.gz@neko-1.8.2-linux.tar.gz
+-resource resources/nme.zip@nme
+-resource resources/hxcpp.zip@hxcpp
+-resource resources/jeash.zip@jeash
+-cmd haxelib run xcross -linux -bundle "NME Installer" bin/Linux/NMEInstaller.n

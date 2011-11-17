@@ -1,0 +1,4 @@
+-cmd haxe hxml/windows.hxml
+-cmd haxe hxml/mac.hxml
+-cmd haxe hxml/linux.hxml
+#-cmd haxe hxml/linux64.hxml
