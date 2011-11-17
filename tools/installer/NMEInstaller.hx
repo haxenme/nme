@@ -341,6 +341,9 @@ class NMEInstaller {
 			installHaxelibResource ("nme.zip");
 			installHaxelibResource ("nme2.zip");
 			installHaxelibResource ("nme3.zip");
+			
+			Sys.command ("haxelib", [ "dev", "nme" ]);
+			
 			installHaxelibResource ("hxcpp.zip");
 			installHaxelibResource ("jeash.zip");
 			
