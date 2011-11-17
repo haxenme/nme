@@ -1,5 +1,6 @@
 
 import neko.io.Process;
+import neko.Lib;
 
 
 class Utils {
@@ -23,6 +24,7 @@ class Utils {
 				if (line.substr (0,1) != "-") {
 					
 					result = line;
+					break;
 					
 				}
 				
@@ -32,6 +34,7 @@ class Utils {
 		
 		proc.close();
 		
+		//Lib.println ("Found " + library + " at " + result );
 		//trace("Found " + haxelib + " at " + srcDir );
 		
 		if (result == "") {

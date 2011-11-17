@@ -19,8 +19,8 @@ class HTML5Installer extends InstallerBase {
 		var destination:String = buildDirectory + "/html5/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/install-tool/html5/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/install-tool/html5/hxml", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
 		
 		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -34,7 +34,7 @@ class HTML5Installer extends InstallerBase {
 		var sourcePath = font.sourcePath;
 		var targetPath = destination + font.targetPath;
 		
-		runCommand (Path.directory (targetPath), "neko", [ NME + "/install-tool/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath) ] );
+		runCommand (Path.directory (targetPath), "neko", [ NME + "/tools/command-line/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath) ] );
 		
 		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@" + font.flatName;
 		
@@ -64,7 +64,7 @@ class HTML5Installer extends InstallerBase {
 		var destination:String = buildDirectory + "/html5/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/install-tool/html5/template", destination);
+		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
 		
 		/*for (ndll in ndlls) {
 			

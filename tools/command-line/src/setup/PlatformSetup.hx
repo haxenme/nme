@@ -287,7 +287,7 @@ class PlatformSetup {
 			
 		} else {
 			
-			File.copy (InstallTool.nme + "/install-tool/bin/nme.sh", "/usr/lib/haxe/nme");
+			File.copy (InstallTool.nme + "/tools/command-line/bin/nme.sh", "/usr/lib/haxe/nme");
 			Sys.command ("chmod", [ "755", "/usr/lib/haxe/nme" ]);
 			link ("haxe", "nme", "/usr/bin");
 			
@@ -513,7 +513,7 @@ class PlatformSetup {
 			
 			if (InstallTool.isMac) {
 				
-				InstallTool.runCommand ("", "cp", [ InstallTool.nme + "/install-tool/bin/debug.keystore", "~/.android/debug.keystore" ] );
+				InstallTool.runCommand ("", "cp", [ InstallTool.nme + "/tools/command-line/bin/debug.keystore", "~/.android/debug.keystore" ] );
 				
 			}
 			

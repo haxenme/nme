@@ -19,11 +19,11 @@ class GPH {
 
       mkdir(dest);
 
-      cp_recurse(NME + "/install-tool/haxe",mBuildDir + "/gph/haxe");
-      cp_recurse(NME + "/install-tool/gph/hxml",mBuildDir + "/gph/haxe");
-      cp_file(NME + "/install-tool/gph/game.ini",mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + ".ini" );
+      cp_recurse(NME + "/tools/command-line/haxe",mBuildDir + "/gph/haxe");
+      cp_recurse(NME + "/tools/command-line/gph/hxml",mBuildDir + "/gph/haxe");
+      cp_file(NME + "/tools/command-line/gph/game.ini",mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + ".ini" );
       var boot = mDebug ? "Boot-debug.gpe" : "Boot-release.gpe";
-      cp_file(NME + "/install-tool/gph/" + boot,mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + "/Boot.gpe" );
+      cp_file(NME + "/tools/command-line/gph/" + boot,mBuildDir + "/gph/game/"  + mDefines.get("APP_FILE") + "/Boot.gpe" );
 
       for(ndll in mNDLLs)
          ndll.copy("GPH/", dest, true, InstallTool.verbose, mAllFiles, "gph");

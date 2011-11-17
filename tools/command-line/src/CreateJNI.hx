@@ -637,7 +637,7 @@ class CreateJNI
          java_out.close();
 
          mkdir("compiled");
-         var nme_path = getHaxelib("nme") + "/install-tool/android/template/src";
+         var nme_path = getHaxelib("nme") + "/tools/command-line/android/template/src";
          neko.Sys.command( "javac", [ "-cp", "classes/android.jar",  "-sourcepath", 
             nme_path, "-d", "compiled", "stubs/" + java_name ] );
 

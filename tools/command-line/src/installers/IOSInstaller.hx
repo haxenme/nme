@@ -133,7 +133,7 @@ class IOSInstaller extends InstallerBase {
 			
 		}
 		
-		var launcher:String = NME + "/install-tool/iphone/iphonesim";
+		var launcher:String = NME + "/tools/command-line/iphone/iphonesim";
 		
 		Sys.command ("chmod", [ "755", launcher ]);
 		
@@ -151,11 +151,11 @@ class IOSInstaller extends InstallerBase {
 		mkdir (destination + "/haxe");
 		mkdir (destination + "/haxe/nme/installer");
 		
-		copyFile (NME + "/install-tool/haxe/nme/installer/Assets.hx", destination + "/haxe/nme/installer/Assets.hx");
-		recursiveCopy (NME + "/install-tool/iphone/haxe", destination + "/haxe");
-		recursiveCopy (NME + "/install-tool/iphone/Classes", destination + "Classes");
-		recursiveCopy (NME + "/install-tool/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
-		copyFile (NME + "/install-tool/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
+		copyFile (NME + "/tools/command-line/haxe/nme/installer/Assets.hx", destination + "/haxe/nme/installer/Assets.hx");
+		recursiveCopy (NME + "/tools/command-line/iphone/haxe", destination + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/iphone/Classes", destination + "Classes");
+		recursiveCopy (NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
+		copyFile (NME + "/tools/command-line/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
 		
 		mkdir (destination + "lib");
 		

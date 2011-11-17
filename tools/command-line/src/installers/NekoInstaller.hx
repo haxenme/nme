@@ -13,7 +13,7 @@ class NekoInstaller extends DesktopInstaller {
 	
 	override function build ():Void {
 		
-		recursiveCopy (NME + "/install-tool/neko/haxe", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/neko/haxe", targetDir + "/haxe");
 		
 		super.build ();
 		
@@ -23,7 +23,7 @@ class NekoInstaller extends DesktopInstaller {
 
 	override function copyResultTo (inExe:String) {
 		
-		var nekoExecutablePath = NME + "/install-tool/neko/bin/neko-" + targetName;
+		var nekoExecutablePath = NME + "/tools/command-line/neko/bin/neko-" + targetName;
 		var nekoExecutableContents = File.getBytes (nekoExecutablePath);
 		
 		var applicationFilePath = getBuildDir () + "/ApplicationMain.n";

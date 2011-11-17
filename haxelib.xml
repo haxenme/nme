@@ -4,5 +4,5 @@
 	<user name="leesylvester"/>
 	<description>NME provides an API similar to Flash for C++ and Neko, and allows easy publishing for Windows, Mac, Linux, iOS, webOS, Android, and Flash. HTML5 is also supported, together with Jeash.</description>
     <version name="3.1.0">Improved support for all targets, added support for HTML5 in partnership with Jeash</version>
-	<depends name="hxcpp"/>
+	<!-- <depends name="hxcpp"/> -->
 </project>

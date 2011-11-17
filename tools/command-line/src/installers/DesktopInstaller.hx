@@ -20,8 +20,8 @@ class DesktopInstaller extends InstallerBase {
 		mkdir (getBuildDir ());
 		mkdir (getExeDir ());
 		
-		recursiveCopy (NME + "/install-tool/haxe", targetDir + "/haxe");
-		recursiveCopy (NME + "/install-tool/" + getVM () + "/hxml", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
 		
 		var hxml:String = targetDir + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -244,8 +244,8 @@ class DesktopInstaller extends InstallerBase {
 		var exe_dir = getExeDir ();
 		mkdir (exe_dir);
 		
-		recursiveCopy (NME + "/install-tool/haxe", targetDir + "/haxe");
-		recursiveCopy (NME + "/install-tool/cpp/hxml", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/cpp/hxml", targetDir + "/haxe");
 		
 		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1) + get64 ();
 		
@@ -297,7 +297,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			copyFile(NME + "/install-tool/mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
+			copyFile(NME + "/tools/command-line/mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
 			
 		}
 		

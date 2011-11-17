@@ -29,9 +29,9 @@ class FlashInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/flash/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/install-tool/haxe", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/install-tool/flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/install-tool/flash/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
 		
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -84,11 +84,11 @@ class FlashInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("web")) {
 			
-			recursiveCopy (NME + "/install-tool/flash/templates/web", buildDirectory + "/flash/bin");
+			recursiveCopy (NME + "/tools/command-line/flash/templates/web", buildDirectory + "/flash/bin");
 			
 		} else if (targetFlags.exists ("chrome")) {
 			
-			recursiveCopy (NME + "/install-tool/flash/templates/chrome", buildDirectory + "/flash/bin");
+			recursiveCopy (NME + "/tools/command-line/flash/templates/chrome", buildDirectory + "/flash/bin");
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");
@@ -97,7 +97,7 @@ class FlashInstaller extends InstallerBase {
 			
 		} else if (targetFlags.exists ("opera")) {
 			
-			recursiveCopy (NME + "/install-tool/flash/templates/opera", buildDirectory + "/flash/bin");
+			recursiveCopy (NME + "/tools/command-line/flash/templates/opera", buildDirectory + "/flash/bin");
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (32, buildDirectory + "/flash/bin/icon_32.png");

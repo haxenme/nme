@@ -413,7 +413,7 @@ class InstallTool {
 			
 		}
 		
-		includePaths.push (nme + "/install-tool");
+		includePaths.push (nme + "/tools/command-line");
 		
 		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
 		

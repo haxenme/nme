@@ -5,6 +5,7 @@ import neko.io.FileOutput;
 import neko.io.Process;
 import neko.Lib;
 import neko.Sys;
+import neko.zip.Writer;
 
 class NMEInstaller {
 
@@ -337,37 +338,59 @@ class NMEInstaller {
 				
 			}
 			
-			var output = neko.io.File.write ("nme.zip", true);
-			output.write (Resource.getBytes ("nme"));
-			output.close ();
-			
-			//commandOutput ("haxelib", [ "test",  "nme.zip" ]);
-			Sys.command ("haxelib", [ "test", "nme.zip" ]);
-			
-			FileSystem.deleteFile ("nme.zip");
-			
-			var output = neko.io.File.write ("hxcpp.zip", true);
-			output.write (Resource.getBytes ("hxcpp"));
-			output.close ();
-			
-			//commandOutput ("haxelib", [ "test",  "hxcpp.zip" ]);
-			Sys.command ("haxelib", [ "test", "hxcpp.zip" ]);
-			
-			FileSystem.deleteFile ("hxcpp.zip");
-			
-			var output = neko.io.File.write ("jeash.zip", true);
-			output.write (Resource.getBytes ("jeash"));
-			output.close ();
-			
-			//commandOutput ("haxelib test jeash.zip");
-			Sys.command ("haxelib", [ "test", "jeash.zip" ]);
-			
-			FileSystem.deleteFile ("jeash.zip");
+			installHaxelibResource ("nme.zip");
+			installHaxelibResource ("nme2.zip");
+			installHaxelibResource ("nme3.zip");
+			installHaxelibResource ("hxcpp.zip");
+			installHaxelibResource ("jeash.zip");
 			
 			//commandOutput ("haxelib run nme setup");
 			Sys.command ("haxelib", [ "run", "nme", "setup" ]);
 			
 		}
+		
+	}
+	
+	function installHaxelibResource (name:String) {
+		
+		var output = neko.io.File.write (name, true);
+		output.write (Resource.getBytes (name));
+		output.close ();
+		
+		try {
+			
+			var process = new Process ("haxelib", [ "test", name ]);
+			
+			while (true) {
+				
+				if (SYS == "Windows") {
+					
+					var bytes = process.stdout.readAll ();
+					
+					if (bytes == null || bytes.length == 0) {
+						
+						break;
+						
+					}
+					
+					display (bytes.toString ());
+					
+				} else {
+					
+					display (process.stdout.readLine ());
+					
+				}
+				
+			}
+			
+		} catch (e:Dynamic) {
+			
+		}
+		
+		//commandOutput ("haxelib", [ "test",  "nme.zip" ]);
+		//Sys.command ("haxelib", [ "test", name ]);
+		
+		FileSystem.deleteFile (name);
 		
 	}
 
