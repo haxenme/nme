@@ -70,11 +70,10 @@ class Reader {
 			throw "Invalid Zip Data";
 		var version = i.readUInt16();
 		var flags = i.readUInt16();
-		var extraFields = (flags & 8) != 0;
-		if ( (flags & 0xFFF7) != 0 ) {
-			
+		//var extraFields = (flags & 8) != 0;
+		//if( (flags & 0xFFF7) != 0 )
 			//throw "Unsupported flags "+flags;
-		}
+		var extraFields = false;
 		var compression = i.readUInt16();
 		var compressed = (compression != 0);
 		if( compressed && compression != 8 )
