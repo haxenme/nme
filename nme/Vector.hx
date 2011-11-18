@@ -1,10 +1,7 @@
 package nme;
-#if (cpp || neko)
 
-
-typedef Vector<T> = Array<T>;
-
-
-#else
+#if flash
 typedef Vector<T> = flash.Vector<T>;
+#else 
+typedef Vector<T> = Array<T>;
 #end
