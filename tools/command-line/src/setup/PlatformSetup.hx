@@ -283,7 +283,15 @@ class PlatformSetup {
 		
 		if (InstallTool.isWindows) {
 			
-			File.copy (InstallTool.nme + "\\install-tool\\bin\\nme.bat", "C:\\Motion-Twin\\haxe\\nme.bat");
+			var haxePath = Sys.getEnv ("HAXEPATH");
+			
+			if (haxePath == null || haxePath == "") {
+				
+				haxePath = "C:\\Motion-Twin\\haxe\\";
+				
+			}
+			
+			File.copy (InstallTool.nme + "\\install-tool\\bin\\nme.bat", haxePath + "\\nme.bat");
 			
 		} else {
 			
