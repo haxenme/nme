@@ -291,7 +291,7 @@ class PlatformSetup {
 				
 			}
 			
-			File.copy (InstallTool.nme + "\\install-tool\\bin\\nme.bat", haxePath + "\\nme.bat");
+			File.copy (InstallTool.nme + "\\tools\\command-line\\bin\\nme.bat", haxePath + "\\nme.bat");
 			
 		} else {
 			
