@@ -702,6 +702,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 bool sgDead = false;
 
+void SetIcon( const char *path ) {
+   initSDL();
+
+   SDL_Surface *surf = SDL_LoadBMP(path);
+   
+   if ( surf != NULL )
+      SDL_WM_SetIcon( surf, NULL);
+
+}
+
 QuickVec<int>*  CapabilitiesGetScreenResolutions() {
 	
 	

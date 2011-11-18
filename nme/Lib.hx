@@ -26,6 +26,16 @@ class Lib
    static var sIsInit = false;
 
 
+   //Useful only on SDL platforms. Sets the title bar's icon, based on the path given.
+   public static function setIcon( path:String ) {
+      
+      var set_icon = nme.Loader.load( "nme_set_icon", 1 );
+      
+      set_icon( path );
+      
+   }
+   
+   
    public static function create(inOnLoaded:Void->Void,inWidth:Int, inHeight:Int,
                       inFrameRate:Float = 60.0,  inColour:Int = 0xffffff,
                       inFlags:Int = 0x0f, inTitle:String = "NME", inPackage:String = "", ?inIcon : nme.display.BitmapData)
@@ -91,8 +101,14 @@ class Lib
       return Std.int(haxe.Timer.stamp() * 1000.0);
    }
 
-
-   public static function close()
+   // Terminates the process sraight away, bypassing graceful shutdown
+   public static function forceClose( )
+   {
+      var terminate = nme.Loader.load("nme_terminate",0);
+      terminate();
+   }
+   
+   public static function close( )
    {
       var close = nme.Loader.load("nme_close",0);
       close();

@@ -103,6 +103,8 @@ private:
 typedef std::wstring WString;
 #endif
 
+void SetIcon( const char *path );
+
 int GetDeviceOrientation();
 double CapabilitiesGetPixelAspectRatio ();
 double CapabilitiesGetScreenDPI ();

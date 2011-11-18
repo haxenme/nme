@@ -724,6 +724,15 @@ DEFINE_PRIM(nme_get_unique_device_identifier,0);
 
 
 
+value nme_set_icon( value path ) {
+   printf( "setting icon\n" );
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS )
+       SetIcon( val_string( path ) );
+   #endif	
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_set_icon,1);
 
 // --- nme.system.Capabilities -----------------------------------------------------
 
@@ -939,11 +948,15 @@ value nme_set_asset_base(value inBase)
 }
 DEFINE_PRIM(nme_set_asset_base,1);
 
-value nme_close()
+value nme_terminate()
 {
-   #if defined( HX_WINDOWS ) ||  defined( HX_MACOS ) || defined( HX_LINUX )
-      exit(0);
-   #endif
+   exit(0);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_terminate,0);
+
+value nme_close( value force )
+{
    TerminateMainLoop();
    return alloc_null();
 }
