@@ -28,7 +28,7 @@ class DropShadowFilter extends nme.filters.BitmapFilter
       color = in_color;
       alpha = in_alpha;
       blurX = in_blurX;
-      blurY = in_blurX;
+      blurY = in_blurY;
       strength = in_strength;
       quality = in_quality;
       inner = in_inner;

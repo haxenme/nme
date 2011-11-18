@@ -137,6 +137,9 @@ class EventDispatcher implements IEventDispatcher
       dispatchEvent(evt);
    }
 
+	public function toString() : String {
+		return "[object " + Type.getClassName(Type.getClass(this)) + "]";
+	}
 }
 
 

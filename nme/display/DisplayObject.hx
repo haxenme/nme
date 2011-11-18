@@ -56,7 +56,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
       nmeID = nme_display_object_get_id(nmeHandle);
       nmeSetName(inType + " " + nmeID);
    }
-   public function toString() : String { return name; }
+   override public function toString() : String { return name; }
 
    public function nmeGetGraphics() : nme.display.Graphics
    {
