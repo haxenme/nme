@@ -324,6 +324,7 @@ class NMEInstaller {
 					if( !neko.FileSystem.exists(rep) ) {
 						try {
 							neko.FileSystem.createDirectory(rep);
+							Sys.command ("chmod", [ "755", rep ] );
 						} catch( e : Dynamic ) {
 							display ("Failed to create directory '"+rep+"' ("+Std.string(e)+"), maybe you need appropriate user rights");
 							return;
