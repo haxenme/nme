@@ -10,5 +10,5 @@ haxe -xml bin/nme-flash.xml -swf obj/nme-flash.swf -cp src nme.ImportAll -D nme_
 :: haxe -xml bin/nme-neko.xml obj/nme-neko.n -cp src nme.ImportAll
 :: haxe -xml bin/nme-js.xml obj/nme-js.js -cp src nme.ImportAll
 
-chxdoc -o output/cpp --tmpDir=obj bin/std-cpp.xml,std bin/nme-cpp.xml,nme
-chxdoc -o output/flash --tmpDir=obj bin/std-flash.xml,std bin/nme-flash.xml,nme
+chxdoc -o output/cpp --tmpDir=obj bin/std-cpp.xml,cpp bin/nme-cpp.xml,nme
+chxdoc -o output/flash --tmpDir=obj bin/std-flash.xml,flash bin/nme-flash.xml,nme
