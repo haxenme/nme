@@ -759,13 +759,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	private static var nme_display_object_get_visible = Loader.load ("nme_display_object_get_visible", 1);
 	private static var nme_display_object_set_visible = Loader.load ("nme_display_object_set_visible", 2);
 	private static var nme_display_object_set_filters = Loader.load ("nme_display_object_set_filters", 2);
-
 	private static var nme_display_object_global_to_local = Loader.load ("nme_display_object_global_to_local", 2);
 	private static var nme_display_object_local_to_global = Loader.load ("nme_display_object_local_to_global", 2);
 	private static var nme_display_object_set_scale9_grid = Loader.load ("nme_display_object_set_scale9_grid", 2);
 	private static var nme_display_object_set_scroll_rect = Loader.load ("nme_display_object_set_scroll_rect", 2);
 	private static var nme_display_object_set_mask = Loader.load ("nme_display_object_set_mask", 2);
-
 	private static var nme_display_object_set_matrix = Loader.load ("nme_display_object_set_matrix", 2);
 	private static var nme_display_object_get_matrix = Loader.load ("nme_display_object_get_matrix", 3);
 	private static var nme_display_object_get_color_transform = Loader.load ("nme_display_object_get_color_transform", 3);
