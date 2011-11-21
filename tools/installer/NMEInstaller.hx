@@ -1,6 +1,8 @@
 package;
+
 import haxe.Resource;
 import neko.FileSystem;
+import neko.io.File;
 import neko.io.FileOutput;
 import neko.io.Process;
 import neko.Lib;
@@ -250,7 +252,7 @@ class NMEInstaller {
 		var needHaxe = newVersion(haxeVersion,haxeFile.version);
 		var needNeko = newVersion(nekoVersion, nekoFile.version);
 		if( !needHaxe && !needNeko ) {
-			if ( !ask("Both your haXe and Neko versions are up-to-date, do you want to reinstall everything ?") ) {
+			if ( !ask("haXe and Neko are up-to-date. Would you like to reinstall?") ) {
 				needHaxe = false;
 				needHaxe = false;
 				Lib.println ("Skipping haXe/Neko installation...");
@@ -324,7 +326,7 @@ class NMEInstaller {
 					if( !neko.FileSystem.exists(rep) ) {
 						try {
 							neko.FileSystem.createDirectory(rep);
-							Sys.command ("chmod", [ "755", rep ] );
+							Sys.command ("chmod", [ "777", rep ] );
 						} catch( e : Dynamic ) {
 							display ("Failed to create directory '"+rep+"' ("+Std.string(e)+"), maybe you need appropriate user rights");
 							return;
@@ -343,13 +345,24 @@ class NMEInstaller {
 			installHaxelibResource ("nme2.zip");
 			installHaxelibResource ("nme3.zip");
 			
-			Sys.command ("haxelib", [ "dev", "nme" ]);
+			Sys.command ("haxelib", [ "dev", "nme" ] );
 			
 			installHaxelibResource ("hxcpp.zip");
 			installHaxelibResource ("jeash.zip");
 			
-			//commandOutput ("haxelib run nme setup");
-			Sys.command ("haxelib", [ "run", "nme", "setup" ]);
+			Sys.command ("haxelib", [ "run", "nme", "setup" ] ); // not working for OS X, for some reason
+			
+			if (SYS != "Windows") {
+				
+				if (FileSystem.exists ("/usr/lib/haxe/lib/nme/3,1,0")) {
+					
+					File.copy ("/usr/lib/haxe/lib/nme/3,1,0/tools/command-line/bin/nme.sh", "/usr/lib/haxe/nme");
+					Sys.command ("chmod", [ "755", "/usr/lib/haxe/nme" ]);
+					Sys.command ("chmod", [ "755", "/usr/lib/haxe/lib/nme/3,1,0/tools/command-line/iphone/iphonesim" ]);
+					
+				}
+				
+			}
 			
 		}
 		

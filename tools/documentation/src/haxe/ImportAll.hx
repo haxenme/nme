@@ -456,10 +456,10 @@ import js.XMLSocket;
 
 #if neko
 
-import tools.haxedoc.Main;
-import tools.haxelib.Main;
-import tools.haxelib.Site;
-import tools.hxinst.Main;
+//import tools.haxedoc.Main;
+//import tools.haxelib.Main;
+//import tools.haxelib.Site;
+//import tools.hxinst.Main;
 
 #end
 

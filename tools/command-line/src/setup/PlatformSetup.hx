@@ -301,6 +301,14 @@ class PlatformSetup {
 			
 		}
 		
+		if (InstallTool.isMac) {
+			
+			var defines = getDefines ();
+			defines.set ("MAC_USE_CURRENT_SDK", "1");
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+			
+		}
+		
 	}
 	
 	
