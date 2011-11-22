@@ -2,14 +2,17 @@ package nme.display;
 #if (cpp || neko)
 
 
-interface IBitmapDrawable
-{
-   public function nmeDrawToSurface(inSurface : Dynamic,
-               matrix:nme.geom.Matrix,
-               colorTransform:nme.geom.ColorTransform,
-               blendMode:String,
-               clipRect:nme.geom.Rectangle,
-               smoothing:Bool):Void;
+import nme.geom.ColorTransform;
+import nme.geom.Matrix;
+import nme.geom.Rectangle;
+
+
+interface IBitmapDrawable {
+	
+	
+	public function nmeDrawToSurface (inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void;
+	
+
 }
 
 

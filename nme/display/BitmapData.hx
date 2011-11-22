@@ -9,6 +9,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
+import nme.Loader;
 
 
 /**
@@ -519,42 +520,42 @@ class BitmapData implements IBitmapDrawable {
 	
 	
 	
-	static var nme_bitmap_data_create = Loader.load ("nme_bitmap_data_create", 5);
-	static var nme_bitmap_data_load = Loader.load ("nme_bitmap_data_load", 2);
-	static var nme_bitmap_data_from_bytes = Loader.load ("nme_bitmap_data_from_bytes", 2);
-	static var nme_bitmap_data_clear = Loader.load ("nme_bitmap_data_clear", 2);
-	static var nme_bitmap_data_clone = Loader.load ("nme_bitmap_data_clone", 1);
-	static var nme_bitmap_data_apply_filter = Loader.load ("nme_bitmap_data_apply_filter", 5);
-	static var nme_bitmap_data_color_transform = Loader.load ("nme_bitmap_data_color_transform", 3);
-	static var nme_bitmap_data_copy = Loader.load ("nme_bitmap_data_copy", 5);
-	static var nme_bitmap_data_copy_channel = Loader.load ("nme_bitmap_data_copy_channel", -1);
-	static var nme_bitmap_data_fill = Loader.load ("nme_bitmap_data_fill", 4);
-	static var nme_bitmap_data_get_pixels = Loader.load ("nme_bitmap_data_get_pixels", 2);
-	static var nme_bitmap_data_get_pixel = Loader.load ("nme_bitmap_data_get_pixel", 3);
-	static var nme_bitmap_data_get_pixel32 = Loader.load ("nme_bitmap_data_get_pixel32", 3);
-	static var nme_bitmap_data_get_pixel_rgba = Loader.load ("nme_bitmap_data_get_pixel_rgba", 3);
+	private static var nme_bitmap_data_create = Loader.load ("nme_bitmap_data_create", 5);
+	private static var nme_bitmap_data_load = Loader.load ("nme_bitmap_data_load", 2);
+	private static var nme_bitmap_data_from_bytes = Loader.load ("nme_bitmap_data_from_bytes", 2);
+	private static var nme_bitmap_data_clear = Loader.load ("nme_bitmap_data_clear", 2);
+	private static var nme_bitmap_data_clone = Loader.load ("nme_bitmap_data_clone", 1);
+	private static var nme_bitmap_data_apply_filter = Loader.load ("nme_bitmap_data_apply_filter", 5);
+	private static var nme_bitmap_data_color_transform = Loader.load ("nme_bitmap_data_color_transform", 3);
+	private static var nme_bitmap_data_copy = Loader.load ("nme_bitmap_data_copy", 5);
+	private static var nme_bitmap_data_copy_channel = Loader.load ("nme_bitmap_data_copy_channel", -1);
+	private static var nme_bitmap_data_fill = Loader.load ("nme_bitmap_data_fill", 4);
+	private static var nme_bitmap_data_get_pixels = Loader.load ("nme_bitmap_data_get_pixels", 2);
+	private static var nme_bitmap_data_get_pixel = Loader.load ("nme_bitmap_data_get_pixel", 3);
+	private static var nme_bitmap_data_get_pixel32 = Loader.load ("nme_bitmap_data_get_pixel32", 3);
+	private static var nme_bitmap_data_get_pixel_rgba = Loader.load ("nme_bitmap_data_get_pixel_rgba", 3);
 	#if cpp
-	static var nme_bitmap_data_get_array = Loader.load ("nme_bitmap_data_get_array", 3);
+	private static var nme_bitmap_data_get_array = Loader.load ("nme_bitmap_data_get_array", 3);
 	#end
-	static var nme_bitmap_data_get_color_bounds_rect = Loader.load ("nme_bitmap_data_get_color_bounds_rect", 5);
-	static var nme_bitmap_data_scroll = Loader.load ("nme_bitmap_data_scroll", 3);
-	static var nme_bitmap_data_set_pixel = Loader.load ("nme_bitmap_data_set_pixel", 4);
-	static var nme_bitmap_data_set_pixel32 = Loader.load ("nme_bitmap_data_set_pixel32", 4);
-	static var nme_bitmap_data_set_pixel_rgba = Loader.load ("nme_bitmap_data_set_pixel_rgba", 4);
-	static var nme_bitmap_data_set_bytes = Loader.load ("nme_bitmap_data_set_bytes", 4);
+	private static var nme_bitmap_data_get_color_bounds_rect = Loader.load ("nme_bitmap_data_get_color_bounds_rect", 5);
+	private static var nme_bitmap_data_scroll = Loader.load ("nme_bitmap_data_scroll", 3);
+	private static var nme_bitmap_data_set_pixel = Loader.load ("nme_bitmap_data_set_pixel", 4);
+	private static var nme_bitmap_data_set_pixel32 = Loader.load ("nme_bitmap_data_set_pixel32", 4);
+	private static var nme_bitmap_data_set_pixel_rgba = Loader.load ("nme_bitmap_data_set_pixel_rgba", 4);
+	private static var nme_bitmap_data_set_bytes = Loader.load ("nme_bitmap_data_set_bytes", 4);
 	#if cpp
-	static var nme_bitmap_data_set_array = Loader.load ("nme_bitmap_data_set_array", 3);
-	static var nme_bitmap_data_create_hardware_surface = Loader.load ("nme_bitmap_data_create_hardware_surface", 1);
-	static var nme_bitmap_data_destroy_hardware_surface = Loader.load ("nme_bitmap_data_destroy_hardware_surface", 1);
+	private static var nme_bitmap_data_set_array = Loader.load ("nme_bitmap_data_set_array", 3);
+	private static var nme_bitmap_data_create_hardware_surface = Loader.load ("nme_bitmap_data_create_hardware_surface", 1);
+	private static var nme_bitmap_data_destroy_hardware_surface = Loader.load ("nme_bitmap_data_destroy_hardware_surface", 1);
 	#end
-	static var nme_bitmap_data_generate_filter_rect = Loader.load ("nme_bitmap_data_generate_filter_rect", 3);
-	static var nme_render_surface_to_surface = Loader.load ("nme_render_surface_to_surface", -1);
-	static var nme_bitmap_data_height = Loader.load ("nme_bitmap_data_height", 1);
-	static var nme_bitmap_data_width = Loader.load ("nme_bitmap_data_width", 1);
-	static var nme_bitmap_data_get_transparent = Loader.load ("nme_bitmap_data_get_transparent", 1);
-	static var nme_bitmap_data_set_flags = Loader.load ("nme_bitmap_data_set_flags", 1);
-	static var nme_bitmap_data_encode = Loader.load ("nme_bitmap_data_encode", 3);
-	static var nme_bitmap_data_dump_bits = Loader.load ("nme_bitmap_data_dump_bits", 1);
+	private static var nme_bitmap_data_generate_filter_rect = Loader.load ("nme_bitmap_data_generate_filter_rect", 3);
+	private static var nme_render_surface_to_surface = Loader.load ("nme_render_surface_to_surface", -1);
+	private static var nme_bitmap_data_height = Loader.load ("nme_bitmap_data_height", 1);
+	private static var nme_bitmap_data_width = Loader.load ("nme_bitmap_data_width", 1);
+	private static var nme_bitmap_data_get_transparent = Loader.load ("nme_bitmap_data_get_transparent", 1);
+	private static var nme_bitmap_data_set_flags = Loader.load ("nme_bitmap_data_set_flags", 1);
+	private static var nme_bitmap_data_encode = Loader.load ("nme_bitmap_data_encode", 3);
+	private static var nme_bitmap_data_dump_bits = Loader.load ("nme_bitmap_data_dump_bits", 1);
 
    
 }

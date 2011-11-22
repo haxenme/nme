@@ -2,11 +2,12 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum JointStyle
-{
-   ROUND; // Default
-   MITER;
-   BEVEL;
+enum JointStyle {
+	
+	ROUND; // default
+	MITER;
+	BEVEL;
+	
 }
 
 

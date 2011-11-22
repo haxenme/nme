@@ -2,12 +2,13 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum LineScaleMode
-{
-   NORMAL; // Default
-   NONE;
-   VERTICAL;
-   HORIZONTAL;
+enum LineScaleMode {
+	
+	NORMAL; // default
+	NONE;
+	VERTICAL;
+	HORIZONTAL;
+	
 }
 
 

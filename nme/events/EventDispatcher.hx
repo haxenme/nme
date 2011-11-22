@@ -6,9 +6,6 @@ import nme.events.IEventDispatcher;
 import nme.events.Event;
 import nme.utils.WeakRef;
 
-typedef ListenerList = Array< WeakRef<Listener> >;
-
-typedef EventMap = Hash<ListenerList>;
 
 class EventDispatcher implements IEventDispatcher
 {
@@ -169,6 +166,10 @@ class Listener
       mListner(event);
    }
 }
+
+typedef ListenerList = Array< WeakRef<Listener> >;
+
+typedef EventMap = Hash<ListenerList>;
 
 
 
