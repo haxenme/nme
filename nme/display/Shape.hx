@@ -4,10 +4,12 @@ package nme.display;
 
 class Shape extends DisplayObject
 {
-   public function new()
+	
+	public function new()
 	{
-	   super(DisplayObject.nme_create_display_object(), "Shape");
+		super(DisplayObject.nme_create_display_object(), "Shape");
 	}
+	
 }
 
 

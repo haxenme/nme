@@ -2,7 +2,8 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum StageAlign {
+enum StageAlign
+{
    TOP_RIGHT;
    TOP_LEFT;
    TOP;

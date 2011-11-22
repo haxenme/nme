@@ -4,17 +4,29 @@ package nme.errors;
 
 class Error
 {
-	var errorID : Int;
-	var message : Dynamic;
-	var name : Dynamic;
+	
+	private var errorID:Int;
+	private var message:Dynamic;
+	private var name:Dynamic;
 
-	public function new(?inMessage : Dynamic, id : Dynamic = 0)
+	public function new(?inMessage:Dynamic, id:Dynamic = 0)
 	{
-	  message = inMessage;
-	  errorID = id;
+		message = inMessage;
+		errorID = id;
 	}
-	public function toString() : String { return message; }
-	function getStackTrace() : String { return ""; }
+	
+	
+	private function getStackTrace():String
+	{
+		return "";
+	}
+	
+	
+	public function toString():String
+	{
+		return message;
+	}
+	
 }
 
 

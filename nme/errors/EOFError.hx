@@ -4,10 +4,12 @@ package nme.errors;
 
 class EOFError extends Error
 {
+	
 	public function new()
 	{
-     super("End of file was encountered",2030);
+		super("End of file was encountered", 2030);
 	}
+	
 }
 
 

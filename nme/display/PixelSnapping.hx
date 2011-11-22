@@ -2,10 +2,11 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+enum PixelSnapping
+{
+	NEVER;
+	AUTO;
+	ALWAYS;
 }
 
 
