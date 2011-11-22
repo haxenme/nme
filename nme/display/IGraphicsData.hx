@@ -2,17 +2,16 @@ package nme.display;
 #if (cpp || neko)
 
 
-class IGraphicsData {
-	
+class IGraphicsData
+{	
 	
 	public var nmeHandle:Dynamic;
-
-	public function new (inHandle:Dynamic) {
-		
-		nmeHandle = inHandle;
-		
-	}
 	
+	
+	public function new(inHandle:Dynamic)
+	{
+		nmeHandle = inHandle;	
+	}
 	
 }
 

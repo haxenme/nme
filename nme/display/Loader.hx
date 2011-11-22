@@ -22,62 +22,54 @@ import nme.events.IOErrorEvent;
 * @todo Complete LoaderInfo initialization
 * @todo Cancel previous load request if new load request is made before completion.
 **/
-class Loader extends Sprite {
+class Loader extends Sprite
+{	
 	
-	
-	public var content (default, null):DisplayObject;
-	public var contentLoaderInfo (default, null):LoaderInfo;
+	public var content(default, null):DisplayObject;
+	public var contentLoaderInfo(default, null):LoaderInfo;
 	
 	private var nmeImage:BitmapData;
 	private var nmeSWF:MovieClip;
 	
 
-	public function new () {
-		
-		super ();
-		
-		contentLoaderInfo = LoaderInfo.create (this);
+	public function new()
+	{	
+		super();
+		contentLoaderInfo = LoaderInfo.create(this);
 		// Make sure we get in first...
-		contentLoaderInfo.addEventListener (Event.COMPLETE, onData);
-		
+		contentLoaderInfo.addEventListener(Event.COMPLETE, onData);
 	}
 
 	
-	public function load (request:URLRequest) {
-		
+	public function load(request:URLRequest)
+	{	
 		// No "loader context" in nme
-		contentLoaderInfo.load (request);
-		
+		contentLoaderInfo.load(request);	
 	}
 	
 	
-	public function unload () {
-		
-		if (numChildren > 0) {
-			
-			while (numChildren > 0) {
-				
-				removeChildAt (0);
-				
+	public function unload()
+	{	
+		if (numChildren > 0)
+		{	
+			while (numChildren > 0)
+			{	
+				removeChildAt(0);
 			}
 			
-			untyped {
-				
+			untyped
+			{	
 				contentLoaderInfo.url = null;
 				contentLoaderInfo.contentType = null;
 				contentLoaderInfo.content = null;
 				contentLoaderInfo.bytesLoaded = contentLoaderInfo.bytesTotal = 0;
 				contentLoaderInfo.width = 0;
-				contentLoaderInfo.height = 0;
-				
+				contentLoaderInfo.height = 0;	
 			}
 			
-			dispatchEvent (new Event (Event.UNLOAD));
-			
+			dispatchEvent(new Event(Event.UNLOAD));
 		}
-		
 	}
-	
 	
 	
 	
@@ -85,35 +77,31 @@ class Loader extends Sprite {
 	
 	
 	
-	
-	private function onData (_) {
-		
-		try {
+	private function onData(_)
+	{	
+		try
+		{	
+			nmeImage = BitmapData.loadFromBytes(contentLoaderInfo.bytes);
 			
-			nmeImage = BitmapData.loadFromBytes (contentLoaderInfo.bytes);
-			
-			var bmp = new Bitmap (nmeImage);
+			var bmp = new Bitmap(nmeImage);
 			content = bmp;
 			contentLoaderInfo.content = bmp;
 			
-			while (numChildren > 0) {
-				
-				removeChildAt (0);
-				
+			while (numChildren > 0)
+			{	
+				removeChildAt(0);
 			}
 			
-			addChild (bmp);
-			
-		} catch (e:Dynamic) {
-			
+			addChild(bmp);
+		}
+		catch (e:Dynamic)
+		{	
 			//trace("Error " + e);
-			contentLoaderInfo.DispatchIOErrorEvent ();
-			return;
-			
+			contentLoaderInfo.DispatchIOErrorEvent();
+			return;	
 		}
 		
 	}
-	
 	
 }
 

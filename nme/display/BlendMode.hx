@@ -2,8 +2,8 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum BlendMode {
-	
+enum BlendMode
+{
 	NORMAL;
 	LAYER;
 	MULTIPLY;
@@ -18,7 +18,6 @@ enum BlendMode {
 	ERASE;
 	OVERLAY;
 	HARDLIGHT;
-	
 }
 
 

@@ -6,15 +6,15 @@ import nme.events.Event;
 import haxe.Timer;
 
 
-class FPS extends TextField {
+class FPS extends TextField
+{
 	
-
-	private var times:Array <Float>;
+	private var times:Array<Float>;
 	
 	
-	public function new (inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000) {
-		
-		super ();
+	public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000)
+	{	
+		super();
 		
 		x = inX;
 		y = inY;
@@ -23,10 +23,8 @@ class FPS extends TextField {
 		textColor = inCol;
 		times = [];
 		
-		addEventListener (Event.ENTER_FRAME, onEnter);
-		
+		addEventListener(Event.ENTER_FRAME, onEnter);
 	}
-	
 	
 	
 	
@@ -34,22 +32,18 @@ class FPS extends TextField {
 	
 	
 	
-	
-	public function onEnter (_) {
-		
-		var now = Timer.stamp ();
-		times.push (now);
+	public function onEnter(_)
+	{	
+		var now = Timer.stamp();
+		times.push(now);
 		
 		while (times[0] < now - 1)
 			times.shift();
 		
-		if (visible) {
-			
-			text = "FPS:" + times.length;
-			
+		if (visible)
+		{	
+			text = "FPS:" + times.length;	
 		}
-		
 	}
-	
 	
 }

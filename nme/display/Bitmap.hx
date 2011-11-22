@@ -6,8 +6,8 @@ import nme.display.DisplayObject;
 import nme.display.PixelSnapping;
 
 
-class Bitmap extends DisplayObject {
-	
+class Bitmap extends DisplayObject
+{
 	
 	/**
 	 * You can set the bitmapData property to change which image
@@ -15,7 +15,7 @@ class Bitmap extends DisplayObject {
 	 * between multiple Bitmap instances to improve performance
 	 * and reduce memory usage.
 	 */
-	public var bitmapData (default, nmeSetBitmapData):BitmapData;
+	public var bitmapData(default, nmeSetBitmapData):BitmapData;
 	
 	/**
 	 * Adjust the type of pixel snapping used when rendering the image
@@ -25,38 +25,34 @@ class Bitmap extends DisplayObject {
 	/**
 	 * Adjust whether the image should be rendered with smoothing
 	 */
-	public var smoothing (default, nmeSetSmoothing):Bool;
+	public var smoothing(default, nmeSetSmoothing):Bool;
 	
 	private var mGraphics:Graphics;
 	
 	
-	public function new (?inBitmapData:BitmapData, ?inPixelSnapping:PixelSnapping, ?inSmoothing:Bool):Void {
-		
-		super (DisplayObject.nme_create_display_object (), "Bitmap");
+	public function new(?inBitmapData:BitmapData, ?inPixelSnapping:PixelSnapping, ?inSmoothing:Bool):Void
+	{
+		super(DisplayObject.nme_create_display_object(), "Bitmap");
 		
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
 		
-		nmeSetBitmapData (inBitmapData);
-		
+		nmeSetBitmapData(inBitmapData);
 	}
 	
 	
-	private function nmeRebuid () {
-		
+	private function nmeRebuid()
+	{
 		var gfx = graphics;
 		gfx.clear();
 		
-		if (bitmapData != null) {
-			
+		if (bitmapData != null)
+		{
 			gfx.beginBitmapFill(bitmapData,false,smoothing);
 			gfx.drawRect(0,0,bitmapData.width,bitmapData.height);
 			gfx.endFill();
-			
 		}
-		
 	}
-	
 	
 	
 	
@@ -64,26 +60,22 @@ class Bitmap extends DisplayObject {
 	
 	
 	
-	
-	private function nmeSetBitmapData (inBitmapData:BitmapData):BitmapData {
-		
+	private function nmeSetBitmapData(inBitmapData:BitmapData):BitmapData
+	{
 		bitmapData = inBitmapData;
-		nmeRebuid ();
+		nmeRebuid();
 		
 		return inBitmapData;
-		
-	}
-   
-   
-	private function nmeSetSmoothing (inSmooth:Bool):Bool {
-		
-		smoothing = inSmooth;
-		nmeRebuid ();
-		
-		return inSmooth;
-		
 	}
 	
+	
+	private function nmeSetSmoothing(inSmooth:Bool):Bool
+	{
+		smoothing = inSmooth;
+		nmeRebuid();
+		
+		return inSmooth;
+	}
 	
 }
 

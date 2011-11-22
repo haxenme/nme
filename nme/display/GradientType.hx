@@ -2,11 +2,10 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum GradientType {
-	
+enum GradientType
+{	
 	RADIAL; 
-	LINEAR;
-	
+	LINEAR;	
 }
 
 

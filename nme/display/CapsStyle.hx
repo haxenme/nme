@@ -2,12 +2,11 @@ package nme.display;
 #if (cpp || neko)
 
 
-enum CapsStyle {
-	
+enum CapsStyle
+{
 	ROUND; // default
 	NONE;
 	SQUARE;
-	
 }
 
 

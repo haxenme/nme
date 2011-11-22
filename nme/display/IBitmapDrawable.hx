@@ -7,12 +7,11 @@ import nme.geom.Matrix;
 import nme.geom.Rectangle;
 
 
-interface IBitmapDrawable {
+interface IBitmapDrawable
+{	
 	
+	public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void;
 	
-	public function nmeDrawToSurface (inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void;
-	
-
 }
 
 

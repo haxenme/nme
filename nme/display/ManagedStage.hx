@@ -5,8 +5,8 @@ package nme.display;
 import nme.Loader;
 
 
-class ManagedStage extends Stage {
-	
+class ManagedStage extends Stage
+{	
 	
 	static inline public var etUnknown = 0;
 	static inline public var etKeyDown = 1;
@@ -39,74 +39,65 @@ class ManagedStage extends Stage {
 	static inline public var efPrimaryTouch   = 0x8000;
 	
 	
-	public function new (inWidth:Int, inHeight:Int) {
-		
-		super (nme_managed_stage_create (inWidth, inHeight), inWidth, inHeight);
+	public function new(inWidth:Int, inHeight:Int)
+	{	
+		super(nme_managed_stage_create(inWidth, inHeight), inWidth, inHeight);	
+	}
+	
+	
+	dynamic public function beginRender()
+	{
 		
 	}
 	
 	
-	dynamic public function beginRender () {
-		
-		
-		
+	dynamic public function endRender()
+	{
+			
 	}
 	
 	
-	dynamic public function endRender () {
+	override function nmeDoProcessStageEvent(inEvent:Dynamic):Float
+	{	
+		nmePollTimers();
 		
-		
-		
-	}
-	
-	
-	override function nmeDoProcessStageEvent (inEvent:Dynamic):Float {
-		
-		nmePollTimers ();
-		
-		var wake = super.nmeDoProcessStageEvent (inEvent);
-		setNextWake (wake);
+		var wake = super.nmeDoProcessStageEvent(inEvent);
+		setNextWake(wake);
 		
 		return wake;
-		
 	}
 	
 	
-	override public function nmeRender (inSendEnterFrame:Bool) {
-		
-		beginRender ();
-		super.nmeRender (inSendEnterFrame);
-		endRender ();
-		
+	override public function nmeRender(inSendEnterFrame:Bool)
+	{	
+		beginRender();
+		super.nmeRender(inSendEnterFrame);
+		endRender();
 	}
 	
 	
-	public function pumpEvent (inEvent:Dynamic) {
-		
-		nme_managed_stage_pump_event (nmeHandle, inEvent);
-		
+	public function pumpEvent(inEvent:Dynamic)
+	{	
+		nme_managed_stage_pump_event(nmeHandle, inEvent);	
 	}
 	
 	
-	public function resize (inWidth:Int, inHeight:Int) {
-		
-		pumpEvent ( { type: etResize, x: inWidth, y: inHeight } );
-		
-	}
-	
-	public function sendQuit () {
-		
-		pumpEvent ( { type: etQuit } );
-		
+	public function resize(inWidth:Int, inHeight:Int)
+	{	
+		pumpEvent( { type: etResize, x: inWidth, y: inHeight } );	
 	}
 	
 	
-	dynamic public function setNextWake (inDelay:Float) {
-		
-		
-		
+	public function sendQuit()
+	{	
+		pumpEvent( { type: etQuit } );	
 	}
 	
+	
+	dynamic public function setNextWake(inDelay:Float)
+	{
+			
+	}
 	
 	
 	
@@ -114,10 +105,8 @@ class ManagedStage extends Stage {
 	
 	
 	
-	
-	private static var nme_managed_stage_create = Loader.load ("nme_managed_stage_create", 2);
-	private static var nme_managed_stage_pump_event = Loader.load ("nme_managed_stage_pump_event", 2);
-	
+	private static var nme_managed_stage_create = Loader.load("nme_managed_stage_create", 2);
+	private static var nme_managed_stage_pump_event = Loader.load("nme_managed_stage_pump_event", 2);
 	
 }
 
