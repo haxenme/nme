@@ -255,6 +255,20 @@ void TextField::setAutoSize(int inAutoSize)
    DirtyCache();
 }
 
+double TextField::getTextHeight()
+{
+   Layout();
+   double h =  textHeight/mLayoutScaleV;
+   return std::max(h-4,0.0);
+}
+
+double TextField::getTextWidth()
+{
+   Layout();
+   double w =  textWidth/mLayoutScaleH;
+   return std::max(w-4,0.0);
+}
+
 
 
 bool TextField::FinishEditOnEnter()
@@ -951,11 +965,11 @@ void TextField::BuildBackground()
             gfx.beginFill( backgroundColor, 1 );
          if (border)
             gfx.lineStyle(0, borderColor );
-         gfx.moveTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y+1)/mLayoutScaleV);
-         gfx.lineTo((mActiveRect.x1()+1)/mLayoutScaleH,(mActiveRect.y+1)/mLayoutScaleV);
-         gfx.lineTo((mActiveRect.x1()+1)/mLayoutScaleH,(mActiveRect.y1()+1)/mLayoutScaleV);
-         gfx.lineTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y1()+1)/mLayoutScaleV);
-         gfx.lineTo((mActiveRect.x+1)/mLayoutScaleH,   (mActiveRect.y+1)/mLayoutScaleV);
+         gfx.moveTo((mActiveRect.x)/mLayoutScaleH,   (mActiveRect.y)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x1())/mLayoutScaleH,(mActiveRect.y)/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x1())/mLayoutScaleH,(mActiveRect.y1())/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x)/mLayoutScaleH,   (mActiveRect.y1())/mLayoutScaleV);
+         gfx.lineTo((mActiveRect.x)/mLayoutScaleH,   (mActiveRect.y)/mLayoutScaleV);
       }
 
       //printf("%d,%d\n", mSelectMin , mSelectMax);
@@ -1020,7 +1034,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    RenderState state(inState);
 
-   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2);
+   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
    state.mClipRect = r.Intersect(inState.mClipRect);
 
    if (inState.mMask)
@@ -1326,7 +1340,7 @@ void TextField::Layout(const Matrix &inMatrix)
    mLines.resize(0);
    mCharPos.resize(0);
 
-   int gap = 2;
+   int gap = (int)(2.0*mLayoutScaleH+0.5);
    Line line;
    int char_count = 0;
    textHeight = 0;

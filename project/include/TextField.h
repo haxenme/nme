@@ -89,8 +89,8 @@ public:
    void setText(const WString &inString);
 
    int   getLength();
-   double   getTextHeight() { Layout(); return textHeight/mLayoutScaleV; }
-   double   getTextWidth() { Layout(); return textWidth/mLayoutScaleH; }
+   double   getTextHeight();
+   double   getTextWidth();
 
    bool  alwaysShowSelection;
    AntiAliasType antiAliasType;
