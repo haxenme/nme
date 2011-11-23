@@ -46,6 +46,16 @@ class IOSInstaller extends InstallerBase {
 		
 		context.HAS_ICON = false;
 		
+		if (defines.exists ("IPHONE_VER") && Std.parseFloat (defines.get ("IPHONE_VER")) >= 5 && !targetFlags.exists ("simulator")) {
+			
+			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT) armv6";
+			
+		} else {
+			
+			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+			
+		}
+		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			
 			case "landscape" : context.IPHONE_ORIENTATION = "LandscapeLeft";

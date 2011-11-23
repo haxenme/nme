@@ -176,6 +176,7 @@ class BitmapData implements IBitmapDrawable
 	}
 	
 	
+	#if cpp
 	public function createHardwareSurface()
 	{
 		nme_bitmap_data_create_hardware_surface(nmeHandle);
@@ -186,6 +187,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		nme_bitmap_data_destroy_hardware_surface(nmeHandle);
 	}
+	#end
 	
 	
 	public function dispose()
