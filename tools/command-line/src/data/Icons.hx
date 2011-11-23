@@ -1,5 +1,6 @@
 package data;
 
+import neko.Sys;
 import nme.display.BitmapData;
 import nme.utils.ByteArray;
 import nme.geom.Rectangle;
@@ -332,8 +333,8 @@ class Icons
          file.close();
       }
 
-      var command = InstallTool.nme + "\\ndll\\Windows\\ReplaceVistaIcon.exe";
-      InstallTool.runCommand ("", command, [ inExeName, name ]);
+      var command = "ReplaceVistaIcon.exe";
+      InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
 	  
    }
 
