@@ -243,7 +243,7 @@ class DisplayObjectContainer extends InteractiveObject
 				
 				for (i in 0...nmeChildren.length)
 				{	
-					if (nmeChildren[i] == child)\
+					if (nmeChildren[i] == child)
 					{	
 						realindex = i;
 						break;	
