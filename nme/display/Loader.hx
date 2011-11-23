@@ -46,6 +46,13 @@ class Loader extends Sprite
 		// No "loader context" in nme
 		contentLoaderInfo.load(request);	
 	}
+
+	public function loadBytes(bytes:nme.utils.ByteArray)
+	{	
+		// No "loader context" in nme
+      doLoad(bytes);
+	}
+
 	
 	
 	public function unload()
@@ -76,12 +83,16 @@ class Loader extends Sprite
 	// Event Handlers
 	
 	
-	
 	private function onData(_)
+   {
+      doLoad(contentLoaderInfo.bytes);
+   }
+	
+	private function doLoad(inBytes:nme.utils.ByteArray)
 	{	
 		try
 		{	
-			nmeImage = BitmapData.loadFromBytes(contentLoaderInfo.bytes);
+			nmeImage = BitmapData.loadFromBytes(inBytes);
 			
 			var bmp = new Bitmap(nmeImage);
 			content = bmp;
@@ -93,6 +104,7 @@ class Loader extends Sprite
 			}
 			
 			addChild(bmp);
+			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
 		}
 		catch (e:Dynamic)
 		{	
