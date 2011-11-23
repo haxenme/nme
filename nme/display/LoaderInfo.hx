@@ -39,7 +39,7 @@ class LoaderInfo extends URLLoader
 	
 
 	private function new()
-	{	
+	{
 		super();
 		
 		childAllowsParent = true;

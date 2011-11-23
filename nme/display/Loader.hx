@@ -11,6 +11,7 @@ import nme.display.Shape;
 import nme.display.Sprite;
 import nme.events.Event;
 import nme.events.IOErrorEvent;
+import nme.utils.ByteArray;
 
 
 /**
@@ -39,6 +40,33 @@ class Loader extends Sprite
 		// Make sure we get in first...
 		contentLoaderInfo.addEventListener(Event.COMPLETE, onData);
 	}
+	
+	
+	private function doLoad(inBytes:ByteArray)
+	{	
+		try
+		{	
+			nmeImage = BitmapData.loadFromBytes(inBytes);
+			
+			var bmp = new Bitmap(nmeImage);
+			content = bmp;
+			contentLoaderInfo.content = bmp;
+			
+			while (numChildren > 0)
+			{	
+				removeChildAt(0);
+			}
+			
+			addChild(bmp);
+			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+		}
+		catch (e:Dynamic)
+		{	
+			//trace("Error " + e);
+			contentLoaderInfo.DispatchIOErrorEvent();
+			return;	
+		}
+	}
 
 	
 	public function load(request:URLRequest)
@@ -46,13 +74,13 @@ class Loader extends Sprite
 		// No "loader context" in nme
 		contentLoaderInfo.load(request);	
 	}
-
-	public function loadBytes(bytes:nme.utils.ByteArray)
+	
+	
+	public function loadBytes(bytes:ByteArray)
 	{	
 		// No "loader context" in nme
       doLoad(bytes);
 	}
-
 	
 	
 	public function unload()
@@ -83,36 +111,10 @@ class Loader extends Sprite
 	// Event Handlers
 	
 	
-	private function onData(_)
-   {
-      doLoad(contentLoaderInfo.bytes);
-   }
 	
-	private function doLoad(inBytes:nme.utils.ByteArray)
-	{	
-		try
-		{	
-			nmeImage = BitmapData.loadFromBytes(inBytes);
-			
-			var bmp = new Bitmap(nmeImage);
-			content = bmp;
-			contentLoaderInfo.content = bmp;
-			
-			while (numChildren > 0)
-			{	
-				removeChildAt(0);
-			}
-			
-			addChild(bmp);
-			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
-		}
-		catch (e:Dynamic)
-		{	
-			//trace("Error " + e);
-			contentLoaderInfo.DispatchIOErrorEvent();
-			return;	
-		}
-		
+	private function onData(_)
+	{
+		doLoad(contentLoaderInfo.bytes);
 	}
 	
 }
