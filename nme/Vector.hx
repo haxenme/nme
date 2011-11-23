@@ -1,5 +1,6 @@
 package nme;
 
+
 #if flash
 typedef Vector<T> = flash.Vector<T>;
 #else 

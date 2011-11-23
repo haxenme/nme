@@ -12,8 +12,8 @@ import nme.utils.ByteArray;
  * Provides a cross-platform interface for accessing embedded assets
  * @author Joshua Granick
  */
-class Assets {
-
+class Assets
+{
 	
 	/**
 	 * Gets an instance of an embedded bitmap
@@ -21,10 +21,9 @@ class Assets {
 	 * @param	id		The ID or asset path for the bitmap
 	 * @return		A new BItmapData object
 	 */
-	public static function getBitmapData (id:String):BitmapData {
-		
-		return null;
-		
+	public static function getBitmapData(id:String):BitmapData
+	{
+		return null;	
 	}
 	
 	
@@ -34,10 +33,9 @@ class Assets {
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new ByteArray object
 	 */
-	public static function getBytes (id:String):ByteArray {
-		
+	public static function getBytes(id:String):ByteArray
+	{	
 		return null;
-		
 	}
 	
 	
@@ -47,10 +45,9 @@ class Assets {
 	 * @param	id		The ID or asset path for the font
 	 * @return		A new Font object
 	 */
-	public static function getFont (id:String):Font {
-		
-		return null;
-		
+	public static function getFont(id:String):Font
+	{
+		return null;	
 	}
 	
 	
@@ -60,10 +57,9 @@ class Assets {
 	 * @param	id		The ID or asset path for the sound
 	 * @return		A new Sound object
 	 */
-	public static function getSound (id:String):Sound {
-		
+	public static function getSound(id:String):Sound
+	{
 		return null;
-		
 	}
 	
 	
@@ -73,12 +69,10 @@ class Assets {
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new String object
 	 */
-	public static function getText (id:String):String {
-		
+	public static function getText(id:String):String
+	{
 		return null;
-		
 	}
-	
 	
 }
 
