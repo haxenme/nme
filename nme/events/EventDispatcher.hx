@@ -39,6 +39,7 @@ class EventDispatcher implements IEventDispatcher
 	
 	/**
 	* Creates and dispatches a typical Event.COMPLETE
+	* @private
 	*/
 	public function DispatchCompleteEvent()
 	{
@@ -100,6 +101,7 @@ class EventDispatcher implements IEventDispatcher
 	
 	/**
 	* Creates and dispatches a typical IOErrorEvent.IO_ERROR
+	* @private
 	*/
 	public function DispatchIOErrorEvent()
 	{

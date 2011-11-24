@@ -186,6 +186,9 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeRemoveChildFromArray(child:DisplayObject)
 	{
 		var i = getChildIndex(child);

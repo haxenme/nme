@@ -32,7 +32,7 @@ class FPS extends TextField
 	
 	
 	
-	public function onEnter(_)
+	private function onEnter(_)
 	{	
 		var now = Timer.stamp();
 		times.push(now);
