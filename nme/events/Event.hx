@@ -69,18 +69,27 @@ class Event
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetIsCancelled()
 	{
 		return nmeIsCancelled;
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetIsCancelledNow()
 	{
 		return nmeIsCancelledNow;
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetPhase(inPhase:Int)
 	{
 		// For internal use only...

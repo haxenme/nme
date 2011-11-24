@@ -54,12 +54,18 @@ class SoundChannel extends EventDispatcher
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public static function nmeCompletePending()
 	{	
 		return nmeIncompleteList.length > 0;	
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public static function nmePollComplete()
 	{	
 		if (nmeIncompleteList.length > 0)

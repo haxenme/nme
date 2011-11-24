@@ -55,6 +55,9 @@ class BitmapData implements IBitmapDrawable
 	 */
 	public var width(nmeGetWidth, null):Int;
 	
+	/**
+	 * @private
+	 */
 	public var nmeHandle:Dynamic; // Public, but only use if you know what you are doing
 	
 
@@ -364,6 +367,9 @@ class BitmapData implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
 	{
 		// IBitmapDrawable interface...

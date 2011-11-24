@@ -119,12 +119,18 @@ class URLLoader extends EventDispatcher
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public static function nmeLoadPending()
 	{
 		return !activeLoaders.isEmpty();
 	}
 	
-
+	
+	/**
+	 * @private
+	 */
 	public static function nmePollData()
 	{
 		if (!activeLoaders.isEmpty())

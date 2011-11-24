@@ -430,6 +430,9 @@ class Matrix3D
 	
 	
 	
+	/**
+	 * @private
+	 */
 	inline public function nmeGetDeterminant():Float
 	{
 		return	-1 * ((rawData[0] * rawData[5] - rawData[4] * rawData[1]) * (rawData[10] * rawData[15] - rawData[14] * rawData[11])
@@ -441,12 +444,18 @@ class Matrix3D
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	inline public function nmeGetPosition():Vector3D
 	{
 		return new Vector3D(rawData[12], rawData[13], rawData[14]);
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	inline public function nmeSetPosition(val:Vector3D):Vector3D
 	{
 		rawData[12] = val.x;

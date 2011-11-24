@@ -68,6 +68,9 @@ class ManagedStage extends Stage
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	override public function nmeRender(inSendEnterFrame:Bool)
 	{	
 		beginRender();

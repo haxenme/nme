@@ -33,6 +33,9 @@ class SimpleButton extends InteractiveObject
 	
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetDownState(inState:DisplayObject)
 	{
 		downState = inState;
@@ -41,7 +44,14 @@ class SimpleButton extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetEnabled():Bool { return nme_simple_button_get_enabled(nmeHandle); }
+	
+	/**
+	 * @private
+	 */
 	public function nmeSetEnabled(inVal):Bool
 	{
 		nme_simple_button_set_enabled(nmeHandle, inVal);
@@ -49,7 +59,14 @@ class SimpleButton extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetHandCursor():Bool { return nme_simple_button_get_hand_cursor(nmeHandle); }
+	
+	/**
+	 * @private
+	 */
 	public function nmeSetHandCursor(inVal):Bool
 	{
 		nme_simple_button_set_hand_cursor(nmeHandle, inVal);
@@ -57,6 +74,9 @@ class SimpleButton extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetHitTestState(inState:DisplayObject)
 	{
 		hitTestState = inState;
@@ -65,6 +85,9 @@ class SimpleButton extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetOverState(inState:DisplayObject)
 	{
 		overState = inState;
@@ -73,6 +96,9 @@ class SimpleButton extends InteractiveObject
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetUpState(inState:DisplayObject)
 	{
 		upState = inState;

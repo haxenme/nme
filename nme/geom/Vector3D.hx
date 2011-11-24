@@ -151,10 +151,29 @@ class Vector3D
 	
 	
 	
+	/**
+	 * @private
+	 */
 	inline public function nmeGetLength():Float { return Math.sqrt(x * x + y * y + z * z); }
+	
+	/**
+	 * @private
+	 */
 	inline public function nmeGetLengthSquared():Float { return x * x + y * y + z * z; }
+	
+	/**
+	 * @private
+	 */
 	inline public static function nmeGetX_AXIS():Vector3D { return new Vector3D(1, 0, 0);	}
+	
+	/**
+	 * @private
+	 */
 	inline public static function nmeGetY_AXIS():Vector3D { return new Vector3D(0, 1, 0);	}
+	
+	/**
+	 * @private
+	 */
 	inline public static function nmeGetZ_AXIS():Vector3D { return new Vector3D(0, 0, 1);	}
 	
 }

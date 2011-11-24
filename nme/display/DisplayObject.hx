@@ -225,12 +225,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeBroadcast(inEvt:Event)
 	{
 		dispatchEvent(inEvt);
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
 	{
 		// --- IBitmapDrawable interface ---
@@ -298,6 +304,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetColorTransform():ColorTransform
 	{ 
 		var trans = new ColorTransform();
@@ -306,6 +315,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetConcatenatedColorTransform():ColorTransform
 	{
 		var trans = new ColorTransform();
@@ -314,6 +326,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetConcatenatedMatrix():Matrix
 	{
 		var mtx = new Matrix();
@@ -322,6 +337,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
 	{
 		var io = nmeAsInteractiveObject();
@@ -334,6 +352,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetMatrix():Matrix
 	{
 		var mtx = new Matrix();
@@ -342,6 +363,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
 	{
 		if (nme_display_object_hit_test_point(nmeHandle, point.x, point.y, true, false))
@@ -349,6 +373,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetPixelBounds():Rectangle
 	{
 		var rect = new Rectangle();
@@ -393,12 +420,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetColorTransform(inTrans:ColorTransform)
 	{
 		nme_display_object_set_color_transform(nmeHandle, inTrans);
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetMatrix(inMatrix:Matrix)
 	{
 		nme_display_object_set_matrix(nmeHandle, inMatrix);
@@ -503,6 +536,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetGraphics():Graphics
 	{
 		if (nmeGraphicsCache == null)
@@ -540,6 +576,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	
 	
 	private function nmeGetParent():DisplayObjectContainer { return nmeParent;	}
+	
+	/**
+	 * @private
+	 */
 	public function nmeSetParent(inParent:DisplayObjectContainer)
 	{	
 		if (inParent == nmeParent)
@@ -610,6 +650,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetStage():Stage
 	{	
 		if (nmeParent != null)

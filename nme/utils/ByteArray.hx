@@ -170,7 +170,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#if cpp
 		b[length++] = untyped inByte;
 		#else
-		ensureElem(length, false
+		ensureElem(length, false);
 		untyped __dollar__sset(b, length++, inByte & 0xff);
 		#end
 	}
@@ -487,8 +487,19 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetBytesAvailable():Int { return length - position; }
+	
+	/**
+	 * @private
+	 */
 	public function nmeGetEndian():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
+	
+	/**
+	 * @private
+	 */
 	public function nmeSetEndian(s:String):String { bigEndian = (s == Endian.BIG_ENDIAN); return s; }
 	
 	

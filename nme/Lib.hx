@@ -2,8 +2,8 @@ package nme;
 #if (cpp || neko)
 
 
-import flash.display.BitmapData;
 import haxe.Timer;
+import nme.display.BitmapData;
 import nme.display.ManagedStage;
 import nme.display.MovieClip;
 import nme.display.Stage;
@@ -108,6 +108,9 @@ class Lib
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public static function nmeSetCurrentStage(inStage:Stage)
 	{
 		nmeStage = inStage;

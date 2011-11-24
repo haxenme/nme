@@ -555,6 +555,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmePollTimers()
 	{
 		//trace("poll");
@@ -565,6 +568,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeRender(inSendEnterFrame:Bool)
 	{
 		if (!active)
@@ -584,6 +590,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeSetActive(inActive:Bool)
 	{
 		// trace("nmeSetActive : " + inActive);
@@ -601,6 +610,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void
 	{
 		nmeDragBounds = (bounds == null) ? null : bounds.clone();
@@ -626,7 +638,10 @@ class Stage extends DisplayObjectContainer
 		}
 	}
 
-
+	
+	/**
+	 * @private
+	 */
 	public function nmeStopDrag(sprite:Sprite):Void
 	{
 		nmeDragBounds = null;
@@ -634,6 +649,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public function nmeUpdateNextWake()
 	{
 		// TODO: In a multi-stage environment, may need to handle this better...
