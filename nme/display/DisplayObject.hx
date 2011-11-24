@@ -78,6 +78,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 */
 	public var name(nmeGetName, nmeSetName):String;
 	
+	/**
+	 * @private
+	 */
 	public var nmeHandle:Dynamic;
 	
 	/**

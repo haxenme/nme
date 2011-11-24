@@ -10,7 +10,14 @@ import nme.Loader;
 class Tilesheet
 {
 	
+	/**
+	 * @private
+	 */
 	public var nmeBitmap:BitmapData;
+	
+	/**
+	 * @private
+	 */
 	public var nmeHandle:Dynamic;
 	
 	

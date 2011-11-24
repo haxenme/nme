@@ -5,6 +5,9 @@ package nme.display;
 class IGraphicsData
 {	
 	
+	/**
+	 * @private
+	 */
 	public var nmeHandle:Dynamic;
 	
 	

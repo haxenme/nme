@@ -34,6 +34,10 @@ class URLLoader extends EventDispatcher
 	public var bytesTotal(default, null):Int;
 	public var data:Dynamic;
 	public var dataFormat:URLLoaderDataFormat;
+	
+	/**
+	 * @private
+	 */
 	public var nmeHandle:Dynamic;
 	
 	private static var activeLoaders = new List<URLLoader>();
