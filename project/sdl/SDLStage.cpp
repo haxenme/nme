@@ -567,7 +567,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    #ifdef WEBOS
    int chunksize = 256;
    #elif HX_WINDOWS
-   int chunksize = 512;
+   int chunksize = 2048;
    #else
    int chunksize = 4096;
    #endif
