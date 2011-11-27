@@ -3,6 +3,10 @@ package org.haxe.nme;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -25,7 +29,7 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.lang.reflect.Constructor;
 
-public class GameActivity extends Activity {
+public class GameActivity extends Activity implements SensorEventListener {
 
     MainView mView;
     static AssetManager mAssets;
@@ -38,6 +42,7 @@ public class GameActivity extends Activity {
     public android.os.Handler mHandler;
     static HashMap<String,Class> mLoadedClasses = new HashMap<String,Class>();
 	static DisplayMetrics metrics;
+	static SensorManager sensorManager;
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -68,7 +73,13 @@ public class GameActivity extends Activity {
 
         setContentView(mView);
 		
-
+		sensorManager = (SensorManager)
+			activity.getSystemService(Context.SENSOR_SERVICE);
+		if (sensorManager != null) {
+			sensorManager.registerListener(this, 
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_GAME);
+		}
     }
 
     public static GameActivity getInstance() { return activity; }
@@ -337,6 +348,9 @@ public class GameActivity extends Activity {
         mView.onPause();
         if (mMediaPlayer!=null)
            mMediaPlayer.pause();
+           
+        if (sensorManager != null) 
+        	sensorManager.unregisterListener(this);
     }
 
     @Override protected void onResume() {
@@ -347,6 +361,12 @@ public class GameActivity extends Activity {
         if (mMediaPlayer!=null)
            mMediaPlayer.start();
         mView.sendActivity(NME.ACTIVATE);
+        
+		if (sensorManager != null) {
+			sensorManager.registerListener(this, 
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_GAME);
+		}
     }
    
    @Override protected void onDestroy() {
@@ -354,6 +374,17 @@ public class GameActivity extends Activity {
       mView.sendActivity(NME.DESTROY);
       activity=null;
       super.onDestroy();
+   }
+   
+   @Override public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        	float[] values = event.values;
+        	NME.onAccelerate(values[0], values[1], values[2]);
+        }
+   }
+   
+   @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {
+   
    }
 }
 

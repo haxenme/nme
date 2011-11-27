@@ -166,6 +166,14 @@ public:
                HandleEvent(mouse);
          }
    }
+   
+   void OnAccelerate(double inX, double inY, double inZ)
+   {
+      mAccX = - inX / 9.80665;
+      mAccY = - inY / 9.80665;
+      mAccZ = inZ / 9.80665;
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "Accelerometer %f %f %f", inX, inY, inZ);
+   }
 
    void EnablePopupKeyboard(bool inEnable)
    {
@@ -188,7 +196,11 @@ public:
   
    double mDX;
    double mDY;
-
+   
+   double mAccX;
+   double mAccY;
+   double mAccZ;
+      
    double mDownX;
    double mDownY;
 
@@ -292,7 +304,15 @@ void AndoidRequestRender()
     env->CallStaticVoidMethod(cls, mid);
 }
 
-
+bool GetAcceleration(double& outX, double& outY, double& outZ) {
+	if (sStage) {
+		outX = sStage->mAccX;
+		outY = sStage->mAccY;
+		outZ = sStage->mAccZ;
+		return true;
+	}
+	return false;
+}
 
 } // end namespace nme
 
@@ -332,6 +352,17 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+{
+
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnAccelerate(x,y,z);
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }

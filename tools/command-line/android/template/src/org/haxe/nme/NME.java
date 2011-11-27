@@ -12,6 +12,7 @@ public class NME {
      public static final int DEACTIVATE = 2;
      public static final int DESTROY    = 3;
 
+	 public static native int onAccelerate(float x, float y, float z);
      public static native int onTouch(int type, float x, float y, int id);
      public static native int onResize(int width, int height);
      public static native int onTrackball(float x,float y);
