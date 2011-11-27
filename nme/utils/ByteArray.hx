@@ -82,7 +82,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 				inArray.ensureElem(inLen - 1, true);
 			inArray.length = inLen;
 		};
-		bytes = function(inArray:ByteArray) { return inArray.b; }
+		bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
 		slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 		
 		var init = Loader.load("nme_byte_array_init", 4);

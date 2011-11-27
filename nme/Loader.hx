@@ -74,6 +74,10 @@ class Loader
 			{
 				return Lib.load(moduleName, func, args);
 			}
+
+                        #if waxe
+                        wx.Loader.load("wx_boot",1);
+                        #end
 			
 			moduleInit = true;
 			moduleName = "nme";
