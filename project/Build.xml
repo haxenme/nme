@@ -180,7 +180,7 @@
 <set name="sdl_dynamic_include1" value="-I/opt/local/include" if="macos" />
 <set name="sdl_dynamic_include2" value="-I/opt/local/include/SDL-hidden" if="macos" />
 <set name="sdl_dynamic_include1" value="-I${PalmPDK}/include/SDL" if="webos" />
-
+<set name="sdl_dynamic_include1" value="-I/usr/include/SDL" if="linux" />
 
 
 
