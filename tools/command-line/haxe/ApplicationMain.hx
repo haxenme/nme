@@ -14,7 +14,11 @@ class ApplicationMain
       #if waxe
       wx.App.boot( function()
       {
+         ::if (APP_FRAME!=null)::
+         frame = wx.::APP_FRAME::.create(null,null,"::APP_TITLE::",null,{width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+         ::else::
          frame = wx.Frame.create(null,null,"::APP_TITLE::",null,{width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+         ::end::
          #if nme
          var stage = wx.NMEStage.create(frame,null,null,{width:::WIN_WIDTH::,height:::WIN_HEIGHT::});
          #end
