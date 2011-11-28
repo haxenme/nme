@@ -406,7 +406,7 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
 {
 	if (!mTileJob.mFill)
 	{
-		beginFill (0, 1);
+		beginFill (0, 0);
 	}
 	Flush( );
 	IGraphicsFill *fill = mFillJob.mFill;
