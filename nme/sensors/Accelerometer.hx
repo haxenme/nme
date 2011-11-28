@@ -5,7 +5,6 @@ package nme.sensors;
 import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
-import nme.events.Function;
 import nme.Loader;
 import haxe.Timer;
 
@@ -82,7 +81,7 @@ class Accelerometer extends EventDispatcher
 	
 	
 	
-	private function nmeGetIsSupported():Bool { return nme_input_get_acceleration() != null; }
+	private static function nmeGetIsSupported():Bool { return nme_input_get_acceleration() != null; }
 	
 	
 	
@@ -93,6 +92,9 @@ class Accelerometer extends EventDispatcher
 	private static var nme_input_get_acceleration = Loader.load("nme_input_get_acceleration", 0);
 	
 }
+
+
+typedef Function = Dynamic -> Void;
 
 
 #else

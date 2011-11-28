@@ -2,7 +2,6 @@ package nme;
 #if (cpp || neko)
 
 
-import cpp.Sys;
 import haxe.Timer;
 import nme.display.BitmapData;
 import nme.display.ManagedStage;
@@ -11,6 +10,12 @@ import nme.display.Stage;
 import nme.net.URLRequest;
 import nme.Lib;
 import nme.Loader;
+
+#if cpp
+import cpp.Sys;
+#else
+import neko.Sys;
+#end
 
 
 class Lib
