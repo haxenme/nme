@@ -80,7 +80,9 @@ class Matrix3D
 	
 	inline public function appendTranslation(x:Float, y:Float, z:Float):Void
 	{
-		position = position.add(new Vector3D(x, y, z));
+		rawData[12] += x;
+		rawData[13] += y;
+		rawData[14] += z;
 	}
 	
 	
