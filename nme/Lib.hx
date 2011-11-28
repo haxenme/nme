@@ -2,6 +2,7 @@ package nme;
 #if (cpp || neko)
 
 
+import cpp.Sys;
 import haxe.Timer;
 import nme.display.BitmapData;
 import nme.display.ManagedStage;
@@ -83,7 +84,15 @@ class Lib
 	{
 		var quit = stage.onQuit;
 		if (quit != null)
+		{
+			#if android
+			if (quit == close)
+			{
+				Sys.exit (0);
+			}
+			#end
 			quit();
+		}
 	}
 	
 	
