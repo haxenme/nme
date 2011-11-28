@@ -2,8 +2,10 @@ package nme.sensors;
 #if (cpp || neko)
 
 
+import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
+import nme.events.Function;
 import nme.Loader;
 import haxe.Timer;
 
@@ -11,9 +13,11 @@ import haxe.Timer;
 class Accelerometer extends EventDispatcher
 {
 	
-	public static var isSupported(default, null):Bool;
+	public static var isSupported(nmeGetIsSupported, null):Bool;
 	
 	public var muted(default, null):Bool;
+	
+	private static var defaultInterval:Int = 34;
 	
 	private var timer:Timer;
 	
@@ -22,26 +26,39 @@ class Accelerometer extends EventDispatcher
 	{
 		super();
 		
-		if (nme_input_get_acceleration() == null)
-		{
-			isSupported = false;
-		}
-		else
-		{
-			isSupported = true;
-		}
+		setRequestedUpdateInterval (defaultInterval);
+	}
+	
+	
+	override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void
+	{
+		super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		
+		update ();
 	}
 	
 	
 	public function setRequestedUpdateInterval(interval:Float):Void
 	{
+		if (interval < 0)
+		{
+			throw new ArgumentError();
+		}
+		else if (interval == 0)
+		{
+			interval = defaultInterval;
+		}
+		
 		if (timer != null)
 		{
 			timer.stop();
 		}
 		
-		timer = new Timer(interval);
-		timer.run = update;
+		if (isSupported)
+		{
+			timer = new Timer(interval);
+			timer.run = update;
+		}
 	}
 	
 	
@@ -58,6 +75,14 @@ class Accelerometer extends EventDispatcher
 		
 		dispatchEvent(event);
 	}
+	
+	
+	
+	// Getters & Setters
+	
+	
+	
+	private function nmeGetIsSupported():Bool { return nme_input_get_acceleration() != null; }
 	
 	
 	
