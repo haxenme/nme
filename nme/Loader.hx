@@ -1,4 +1,5 @@
 package nme;
+#if !flash
 
 
 #if neko
@@ -180,3 +181,6 @@ class Loader
 	#end
 	
 }
+
+
+#end

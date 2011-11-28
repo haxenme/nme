@@ -388,9 +388,9 @@ class Matrix3D
 	{
 		var x:Float = v.x, y:Float = v.y, z:Float = v.z;
 		return  new Vector3D(
-			(x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3]),
-			(x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7]),
-			(x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11]),
+			(x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3] + rawData[12]),
+			(x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7] + rawData[13]),
+			(x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11] + rawData[14]),
 			1);
 	}
 	
@@ -401,9 +401,9 @@ class Matrix3D
 		while (i + 3 <= vin.length)
 		{
 			var x:Float = vin[i], y:Float = vin[i + 1], z:Float = vin[i + 2];
-			vout[i] = x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3];
-			vout[i + 1] = x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7];
-			vout[i + 2] = x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11];
+			vout[i] = x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3] + rawData[12];
+			vout[i + 1] = x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7] + rawData[13];
+			vout[i + 2] = x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11] + rawData[14];
 			i += 3;
 		}
 	}
