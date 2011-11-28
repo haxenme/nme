@@ -404,6 +404,10 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
             const QuickVec<int> &inColours,
             int blendMode, const QuickVec<float> &inViewport )
 {
+	if (!mTileJob.mFill)
+	{
+		beginFill (0, 1);
+	}
 	Flush( );
 	IGraphicsFill *fill = mFillJob.mFill;
 

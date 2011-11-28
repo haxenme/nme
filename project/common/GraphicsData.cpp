@@ -191,6 +191,9 @@ GraphicsTrianglePath::GraphicsTrianglePath( const QuickVec<float> &inXYs,
 		                       uint32 co0 = c[i0];
 		                       uint32 co1 = c[i1];
 		                       uint32 co2 = c[i2];
+							   co0 = ((co0 >> 24) & 0xFF) << 24 | (co0 & 0xFF) << 16 | ((co0 >> 8) & 0xFF) << 8 | ((co0 >> 16) & 0xFF);
+							   co1 = ((co1 >> 24) & 0xFF) << 24 | (co1 & 0xFF) << 16 | ((co1 >> 8) & 0xFF) << 8 | ((co1 >> 16) & 0xFF);
+							   co2 = ((co2 >> 24) & 0xFF) << 24 | (co2 & 0xFF) << 16 | ((co2 >> 8) & 0xFF) << 8 | ((co2 >> 16) & 0xFF);
 		                       mColours.push_back(co0);
 		                       mColours.push_back(co1);
 		                       mColours.push_back(co2);
