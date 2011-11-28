@@ -194,6 +194,8 @@ public:
       UserPoint last_move;
       UserPoint last_point;
       int points = 0;
+      
+      mArrays->mBlendMode =bmNormal;
 
       for(int i=0;i<inCount;i++)
       {
