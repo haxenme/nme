@@ -78,6 +78,12 @@ class IOSInstaller extends InstallerBase {
 		ndlls.push (new NDLL ("jpeg", "nme", false));
 		ndlls.push (new NDLL ("z", "nme", false));
 		
+		for (asset in assets) {
+			
+			asset.resourceName = asset.flatName;
+			
+		}
+		
 		if (!defines.exists("IPHONE_VER")) {
          		
 			var dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
@@ -180,8 +186,8 @@ class IOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + "assets/" + asset.id));
-			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.id );
+			mkdir (Path.directory (destination + "assets/" + asset.flatName));
+			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.flatName);
 			
 		}
 		
