@@ -332,7 +332,7 @@ public:
              //printf("Trying font from file %s ...\n", [str UTF8String]);
              // Could not find installed font - try one in file...
              str = [[NSString alloc] initWithUTF8String:(gAssetBase+name).c_str()];
-             NSString *fontPath = [[NSBundle mainBundle] pathForResource:str ofType:@"ttf"]; 
+             NSString *fontPath = [[NSBundle mainBundle] pathForResource:str ofType:nil]; 
 
              if (fontPath)
              {
