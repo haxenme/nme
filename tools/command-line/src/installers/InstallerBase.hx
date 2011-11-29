@@ -495,7 +495,7 @@ class InstallerBase {
 	}
 	
 	
-	private function parseAssetsElement (element:Fast):Void {
+	private function parseAssetsElement (element:Fast, basePath:String = ""):Void {
 		
 		var path:String = "";
 		var embed:String = "";
@@ -504,7 +504,7 @@ class InstallerBase {
 		
 		if (element.has.path) {
 			
-			path = substitute (element.att.path);
+			path = basePath + substitute (element.att.path);
 			
 		}
 		
@@ -726,7 +726,7 @@ class InstallerBase {
 	}
 	
 	
-	private function parseXML (xml:Fast, section:String):Void {
+	private function parseXML (xml:Fast, section:String, extensionPath:String = ""):Void {
 		
 		for (element in xml.elements) {
 			
@@ -780,11 +780,11 @@ class InstallerBase {
 						
 						if (element.has.path) {
 							
-							name = findIncludeFile (substitute (element.att.path));
+							name = findIncludeFile (extensionPath + substitute (element.att.path));
 							
 						} else {
 							
-							name = findIncludeFile (substitute (element.att.name));
+							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							
 						}
 						
@@ -828,7 +828,17 @@ class InstallerBase {
 							
 						}
 						
-						ndlls.push (new NDLL (name, haxelib));
+						if (extensionPath != "" && haxelib == "") {
+							
+							var ndll = new NDLL (name, "nme-extension");
+							ndll.extension = extensionPath;
+							ndlls.push (ndll);
+							
+						} else {
+							
+							ndlls.push (new NDLL (name, haxelib));
+							
+						}
 					
 					case "icon":
 						
@@ -863,7 +873,7 @@ class InstallerBase {
 					
 					case "classpath":
 						
-						var path = substitute (element.att.name);
+						var path = extensionPath + substitute (element.att.name);
 						
 						if (useFullClassPaths ()) {
 							
@@ -876,19 +886,31 @@ class InstallerBase {
 					case "extension":
 						
 						var name:String = substitute (element.att.name);
-						var path = substitute (element.att.path);
+						var path = extensionPath + substitute (element.att.path);
 						
-						var ndll = new NDLL (name, "nme-extension");
-						ndll.extension = path;
-						ndlls.push (ndll);
+						var includePath = findIncludeFile (path + "/" + name + ".xml");
 						
-						if (useFullClassPaths ()) {
+						if (includePath != "") {
 							
-							path = FileSystem.fullPath (path);
+							var xml:Fast = new Fast (Xml.parse (File.getContent (includePath)).firstElement ());
+							
+							parseXML (xml, "", path + "/");
+							
+						} else {
+							
+							var ndll = new NDLL (name, "nme-extension");
+							ndll.extension = path;
+							ndlls.push (ndll);
+							
+							if (useFullClassPaths ()) {
+								
+								path = FileSystem.fullPath (path);
+								
+							}
+							
+							compilerFlags.push ("-cp " + path);
 							
 						}
-						
-						compilerFlags.push ("-cp " + path);
 					
 					case "haxedef":
 						
@@ -904,7 +926,7 @@ class InstallerBase {
 					
 					case "assets":
 						
-						parseAssetsElement (element);
+						parseAssetsElement (element, extensionPath);
 					
 					case "preloader":
 						
