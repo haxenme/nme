@@ -28,6 +28,7 @@ class InstallerBase {
 	private var debug:Bool;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
+	private var javaPaths:Array <String>;
 	private var ndlls:Array <NDLL>;
 	private var allFiles:Array <String>;
 	private var NME:String;
@@ -45,6 +46,7 @@ class InstallerBase {
 		defines = new Hash <String> ();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
+		javaPaths = new Array <String> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
 		
@@ -812,6 +814,10 @@ class InstallerBase {
 						
 						parseAppElement (element);
 					
+					case "java":
+						
+						javaPaths.push (extensionPath + substitute (element.att.path));
+					
 					case "haxelib":
 						
 						var name:String = substitute (element.att.name);
@@ -885,30 +891,46 @@ class InstallerBase {
 					
 					case "extension":
 						
-						var name:String = substitute (element.att.name);
-						var path = extensionPath + substitute (element.att.path);
+						var name:String = null;
+						var path:String = null;
 						
-						var includePath = findIncludeFile (path + "/" + name + ".xml");
-						
-						if (includePath != "") {
+						if (element.has.haxelib) {
 							
-							var xml:Fast = new Fast (Xml.parse (File.getContent (includePath)).firstElement ());
-							
-							parseXML (xml, "", path + "/");
+							name = substitute (element.att.haxelib);
+							path = Utils.getHaxelib (name);
 							
 						} else {
 							
-							var ndll = new NDLL (name, "nme-extension");
-							ndll.extension = path;
-							ndlls.push (ndll);
+							name = substitute (element.att.name);
+							path = extensionPath + substitute (element.att.path);
 							
-							if (useFullClassPaths ()) {
+						}
+						
+						if (name != "" && path != null) {
+							
+							var includePath = findIncludeFile (path + "/" + name + ".xml");
+							
+							if (includePath != "") {
 								
-								path = FileSystem.fullPath (path);
+								var xml:Fast = new Fast (Xml.parse (File.getContent (includePath)).firstElement ());
+								
+								parseXML (xml, "", path + "/");
+								
+							} else {
+								
+								var ndll = new NDLL (name, "nme-extension");
+								ndll.extension = path;
+								ndlls.push (ndll);
+								
+								if (useFullClassPaths ()) {
+									
+									path = FileSystem.fullPath (path);
+									
+								}
+								
+								compilerFlags.push ("-cp " + path);
 								
 							}
-							
-							compilerFlags.push ("-cp " + path);
 							
 						}
 					

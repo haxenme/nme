@@ -24,6 +24,12 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
+		for (javaPath in javaPaths) {
+			
+			recursiveCopy (javaPath, destination + "/src", true);
+			
+		}
+		
 		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
 		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
