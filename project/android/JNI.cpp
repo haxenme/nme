@@ -373,6 +373,9 @@ struct JNIMethod : public nme::Object
          case jniShort:
             result = alloc_int(env->CallStaticShortMethodA(mClass, mMethod, jargs));
             break;
+         case jniInt:
+            result = alloc_int(env->CallStaticIntMethodA(mClass, mMethod, jargs));
+            break;
          case jniLong:
             result = alloc_int(env->CallStaticLongMethodA(mClass, mMethod, jargs));
             break;
@@ -430,6 +433,9 @@ struct JNIMethod : public nme::Object
             break;
          case jniShort:
             result = alloc_int(env->CallShortMethodA(inObject, mMethod, jargs));
+            break;
+         case jniInt:
+            result = alloc_int(env->CallIntMethodA(mClass, mMethod, jargs));
             break;
          case jniLong:
             result = alloc_int(env->CallLongMethodA(inObject, mMethod, jargs));
