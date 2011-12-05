@@ -566,15 +566,17 @@ class FlashInstaller extends InstallerBase {
 	override function run ():Void {
 		
 		var destination:String = buildDirectory + "/flash/bin";
-		var player:String = Sys.getEnv ("FLASH_PLAYER_EXE");
+		var player:String;
 		
-		if (player == null) {
+		if (defines.exists ("SWF_PLAYER")) {
 			
-			if (defines.exists ("macos")) {
-				
-				player = "/Applications/Flash Player Debugger.app/Contents/MacOS/Flash Player Debugger";
-				
-			}
+			Lib.println ("SLDFJSDLKFJLKDSJFLKD");
+			
+			player = defines.get ("SWF_PLAYER");
+			
+		} else {
+			
+			player = Sys.getEnv ("FLASH_PLAYER_EXE");
 			
 		}
 		
@@ -584,7 +586,6 @@ class FlashInstaller extends InstallerBase {
 			
 			if (defines.exists ("windows")) {
 				
-				dotSlash = ".\\";
 				runCommand (destination, ".\\" + defines.get ("APP_FILE") + ".swf", []);
 				
 			} else {

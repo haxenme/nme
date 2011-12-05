@@ -357,11 +357,18 @@ class InstallTool {
 			
 			if (equals > 0) {
 				
-				defines.set (arg.substr (0, equals), arg.substr (equals + 1));
+				if (arg.substr (0, 2) == "-D") {
+					
+					defines.set (arg.substr (2, equals - 2), arg.substr (equals + 1));
+					
+				} else {
+					
+					defines.set (arg.substr (0, equals), arg.substr (equals + 1));
+					
+				}
 				
 			} else if (arg == "-64") {
 				
-
 				defines.set ("NME_64", "1");
 				
 			} else if (arg.substr (0, 2) == "-D") {
