@@ -30,12 +30,10 @@ class ApplicationMain {
 		var loader:Loader = new Loader ();
 		loaders.set ("::resourceName::", loader);
 		total ++;
-		::elseif (type == "sound")::
-		::elseif (type == "music")::
-		::else::
-		//var urlLoader:URLLoader = new URLLoader ();
-		//urlLoaders.set ("::resourceName::", urlLoader);
-		//total ++;
+		::elseif (type == "asset")::
+		var urlLoader:URLLoader = new URLLoader ();
+		urlLoaders.set ("::resourceName::", urlLoader);
+		total ++;
 		::end::::end::
 		
 		if (total == 0) {
@@ -102,7 +100,13 @@ class ApplicationMain {
    
    
 	private static function loader_onComplete (event:Event):Void {
-	   
+		
+		if (event.target.data != null) {
+			
+			trace (cast (event.target.data, String));
+			
+		}
+		
 		completed ++;
 		
 		if (completed == total) {

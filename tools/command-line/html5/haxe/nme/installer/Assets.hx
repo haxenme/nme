@@ -74,17 +74,13 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		var bytes:ByteArray = getBytes (id);
-		
-		if (bytes == null) {
+		switch (id) {
 			
-			return null;
-			
-		} else {
-			
-			return bytes.readUTFBytes (bytes.length);
-			
+			::foreach assets::::if (type == "asset")::case "::id::": return ApplicationMain.urlLoaders.get ("::resourceName::").data;
+			::end::::end::
 		}
+		
+		return null;
 		
 	}
 	
