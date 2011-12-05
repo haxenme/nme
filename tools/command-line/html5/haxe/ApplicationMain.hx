@@ -101,12 +101,6 @@ class ApplicationMain {
    
 	private static function loader_onComplete (event:Event):Void {
 		
-		if (event.target.data != null) {
-			
-			trace (cast (event.target.data, String));
-			
-		}
-		
 		completed ++;
 		
 		if (completed == total) {
