@@ -1102,7 +1102,7 @@ class Writer {
 			o.writeInt16(data.layout.leading);
 
 			for(g in data.layout.glyphs)
-				o.writeInt16(g.advance);
+				o.writeUInt16(g.advance);
 
 			for(g in data.layout.glyphs)
 				writeRect(g.bounds);

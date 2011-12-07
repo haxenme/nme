@@ -51,7 +51,7 @@ class FlashInstaller extends InstallerBase {
 			var name = Type.enumConstructor(tag);
 			//trace(name);
 			//if (name=="TSymbolClass") trace(tag);
-
+			
 			if (name == "TShowFrame" && !inserted && assets.length > 0) {
 				
 				new_tags.push (TShowFrame);
@@ -569,8 +569,6 @@ class FlashInstaller extends InstallerBase {
 		var player:String;
 		
 		if (defines.exists ("SWF_PLAYER")) {
-			
-			Lib.println ("SLDFJSDLKFJLKDSJFLKD");
 			
 			player = defines.get ("SWF_PLAYER");
 			

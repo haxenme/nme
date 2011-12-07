@@ -115,56 +115,42 @@ class InstallerBase {
 			
 		}
 		
-		try {
+		if (command == "build" || command == "test") {
 			
-			if (command == "build" || command == "test") {
+			print ("----- BUILD -----");
+			build ();
+			
+		}
+		
+		if (command == "run" || command == "test") {
+			
+			print ("----- UPDATE DEVICE -----");
+			updateDevice ();
+			
+		}
+		
+		if (command == "run" || command == "rerun" || command == "test") {
+			
+			print ("----- RUN -----");
+			
+			run ();
+			
+		}
+		
+		if (command == "test" || command == "trace") {
+			
+			if (InstallTool.traceEnabled || command == "trace") {
 				
-				print ("----- BUILD -----");
-				build ();
+				print ("----- TRACE -----");
+				traceMessages ();
 				
 			}
 			
-			if (command == "run" || command == "test") {
-				
-				print ("----- UPDATE DEVICE -----");
-				updateDevice ();
-				
-			}
+		}
+		
+		if (command == "uninstall") {
 			
-			if (command == "run" || command == "rerun" || command == "test") {
-				
-				print ("----- RUN -----");
-				
-				run ();
-				
-			}
-			
-			if (command == "test" || command == "trace") {
-				
-				if (InstallTool.traceEnabled || command == "trace") {
-					
-					print ("----- TRACE -----");
-					traceMessages ();
-					
-				}
-				
-			}
-			
-			if (command == "uninstall") {
-				
-				uninstall ();
-				
-			}
-			
-		} catch (e:Dynamic) {
-			
-			if (InstallTool.verbose) {
-				
-				Lib.rethrow (e); 
-				//Lib.println (Stack.toString (Stack.exceptionStack ()));
-				//Lib.print ("Uncaught exception - " + e);
-				
-			}
+			uninstall ();
 			
 		}
 		
@@ -1071,7 +1057,21 @@ class InstallerBase {
 	
 	private function runCommand (path:String, command:String, args:Array <String>):Void {
 		
-		InstallTool.runCommand (path, command, args);
+		try {
+			
+			InstallTool.runCommand (path, command, args);
+			
+		} catch (e:Dynamic) {
+			
+			if (InstallTool.verbose) {
+				
+				Lib.rethrow (e);
+				
+			}
+			
+			Sys.exit (1);
+			
+		}
 	  
 	}
 	
