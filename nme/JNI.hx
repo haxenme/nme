@@ -33,12 +33,13 @@ class JNI
 	 * @param	className		The name of the target class in Java
 	 * @param	memberName		The name of the target method
 	 * @param	signature		The JNI string-based type signature for the method
+	 * @param	useArray		Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
 	 * @return		A method that calls Java. The first parameter is a handle for the Java object instance, the rest are passed into the method as arguments
 	 */
-	public static function createMemberMethod(className:String, memberName:String, signature:String):Dynamic
+	public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, false));
-		return method.callMember;
+		return method.getMemberMethod(useArray);
 	}
 	
 	
@@ -47,12 +48,13 @@ class JNI
 	 * @param	className		The name of the target class in Java
 	 * @param	memberName		The name of the target method
 	 * @param	signature		The JNI string-based type signature for the method
+	 * @param	useArray		Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
 	 * @return		A method that calls Java. Each argument is passed into the Java method as arguments
 	 */
-	public static function createStaticMethod(className:String, memberName:String, signature:String):Dynamic
+	public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, true));
-		return method.callStatic;
+		return method.getStaticMethod(useArray);
 	}
 	
 	
@@ -69,8 +71,8 @@ class JNI
 
 class JNIMethod
 {
-	public var callMember:Dynamic;
-	public var callStatic:Dynamic;
+	public var callMemberArgs:Dynamic;
+	public var callStaticArgs:Dynamic;
 	
 	private var method:Dynamic;
 	
@@ -78,21 +80,47 @@ class JNIMethod
 	public function new(method:Dynamic)
 	{
 		this.method = method;
-		callMember = Reflect.makeVarArgs (_callMember);
-		callStatic = Reflect.makeVarArgs (_callStatic);
 	}
 	
 	
-	private function _callMember(args:Array<Dynamic>)
+	public function callMember(args:Array<Dynamic>):Dynamic
 	{
 		var jobject = args.shift ();
 		return nme_jni_call_member(method, jobject, args);
 	}
 	
 	
-	private function _callStatic(args:Array<Dynamic>)
+	public function callStatic(args:Array<Dynamic>):Dynamic
 	{
 		return nme_jni_call_static(method, args);
+	}
+	
+	
+	public function getMemberMethod(useArray:Bool):Dynamic
+	{
+		if (useArray)
+			{
+				return callMember;
+			}
+			else
+			{
+				callMemberArgs = Reflect.makeVarArgs (callMember);
+				return callMemberArgs;
+			}
+	}
+	
+	
+	public function getStaticMethod(useArray:Bool):Dynamic
+	{
+		if (useArray)
+		{
+			return callStatic;
+		}
+		else
+		{
+			callStaticArgs = Reflect.makeVarArgs (callStatic);
+			return callStaticArgs;
+		}
 	}
 	
 	
