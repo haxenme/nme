@@ -64,15 +64,24 @@ class PlatformSetup {
 	
 	private static function createPath (path:String, defaultPath:String):String {
 		
-		if (path == "") {
+		try {
 			
-			InstallTool.mkdir (defaultPath);
-			return defaultPath;
+			if (path == "") {
+				
+				InstallTool.mkdir (defaultPath);
+				return defaultPath;
+				
+			} else {
+				
+				InstallTool.mkdir (path);
+				return path;
+				
+			}
 			
-		} else {
+		} catch (e:Dynamic) {
 			
-			InstallTool.mkdir (path);
-			return path;
+			throwPermissionsError ();
+			return "";
 			
 		}
 		
@@ -142,7 +151,7 @@ class PlatformSetup {
 			}
 			
 			Sys.command ("chmod", [ "-R", "755", targetPath ]);
-						
+			
 		} else {
 			
 			var file = File.read (sourceZIP, true);
@@ -572,7 +581,7 @@ class PlatformSetup {
 				defaultInstallPath = "/opt/Android NDK";
 				
 			}
-				
+			
 			downloadFile (downloadPath);
 			
 			var path = param ("Output directory [" + defaultInstallPath + "]");
@@ -885,6 +894,23 @@ class PlatformSetup {
 			runInstaller (Path.withoutDirectory (windowsVisualStudioCPPPath));
 			
 		}
+		
+	}
+	
+	
+	private static function throwPermissionsError () {
+		
+		if (InstallTool.isWindows) {
+			
+			Lib.println ("Unable to access directory. Perhaps you need to run \"setup\" with administrative privileges?");
+			
+		} else {
+			
+			Lib.println ("Unable to access directory. Perhaps you should run \"setup\" again using \"sudo\"");
+			
+		}
+		
+		Sys.exit (1);
 		
 	}
 	
