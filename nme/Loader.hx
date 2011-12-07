@@ -1,5 +1,5 @@
 package nme;
-#if !flash
+#if (!flash && !js)
 
 
 #if neko
@@ -10,11 +10,6 @@ import neko.io.Process;
 import cpp.Lib;
 import cpp.Sys;
 import cpp.io.Process;
-#elseif js
-import import js.Lib;
-import import js.Sys;
-#else
-#error "Error: Unsupported Platform";
 #end
  
 
