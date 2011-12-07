@@ -24,7 +24,7 @@ class CreateJNI
    var mCurrentType:String;
    var mExactTypes:Hash<Bool>;
 
-   function new(inClass:String)
+   public function new(inClass:String)
    {
       mProcessed = new Hash<Bool>();
       mExactTypes = new Hash<Bool>();

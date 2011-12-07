@@ -24,9 +24,26 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
-		for (javaPath in javaPaths) {
+		for (i in 0...javaPaths.length) {
 			
-			recursiveCopy (javaPath, destination + "/src", true);
+			var javaPath = javaPaths[i];
+			var externPath = javaExterns[i];
+			
+			if (FileSystem.isDirectory (javaPath)) {
+				
+				recursiveCopy (javaPath, destination + "/src", true);
+				
+			} else {
+				
+				copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
+				
+			}
+			
+			if (externPath != null) {
+				
+				generateJavaExterns (javaPath, externPath);
+				
+			}
 			
 		}
 		
@@ -73,6 +90,34 @@ class AndroidInstaller extends InstallerBase {
 		}
 		
 		runCommand (destination, ant, [ build ]);
+		
+	}
+	
+	
+	private function generateJavaExterns (javaPath:String, externPath:String):Void {
+		
+		if (FileSystem.isDirectory (javaPath)) {
+			
+			var files = FileSystem.readDirectory (javaPath);
+			
+			for (file in files) {
+				
+				if (file.substr (0, 1) != ".") {
+					
+					//var itemDestination:String = destination + "/" + file;
+					var itemSource:String = javaPath + "/" + file;
+					
+					generateJavaExterns (itemSource, externPath);
+					
+				}
+				
+			}
+			
+		} else {
+			
+			//new CreateJNI (FileSystem.fullPath (javaPath));
+			
+		}
 		
 	}
 	

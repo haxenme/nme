@@ -1,5 +1,5 @@
 package nme;
-#if (cpp)
+#if (android)
 
 
 import cpp.zip.Uncompress;

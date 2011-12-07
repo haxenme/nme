@@ -28,6 +28,7 @@ class InstallerBase {
 	private var debug:Bool;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
+	private var javaExterns:Array <String>;
 	private var javaPaths:Array <String>;
 	private var ndlls:Array <NDLL>;
 	private var allFiles:Array <String>;
@@ -46,6 +47,7 @@ class InstallerBase {
 		defines = new Hash <String> ();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
+		javaExterns = new Array <String> ();
 		javaPaths = new Array <String> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
@@ -112,41 +114,54 @@ class InstallerBase {
 			
 		}
 		
-		if (command == "build" || command == "test") {
+		try {
 			
-			print ("----- BUILD -----");
-			build ();
-			
-		}
-		
-		if (command == "run" || command == "test") {
-			
-			print ("----- UPDATE DEVICE -----");
-			updateDevice ();
-			
-		}
-		
-		if (command == "run" || command == "rerun" || command == "test") {
-			
-			print ("----- RUN -----");
-			run ();
-			
-		}
-		
-		if (command == "test" || command == "trace") {
-			
-			if (InstallTool.traceEnabled || command == "trace") {
+			if (command == "build" || command == "test") {
 				
-				print ("----- TRACE -----");
-				traceMessages ();
+				print ("----- BUILD -----");
+				build ();
 				
 			}
 			
-		}
-		
-		if (command == "uninstall") {
+			if (command == "run" || command == "test") {
+				
+				print ("----- UPDATE DEVICE -----");
+				updateDevice ();
+				
+			}
 			
-			uninstall ();
+			if (command == "run" || command == "rerun" || command == "test") {
+				
+				print ("----- RUN -----");
+				
+				run ();
+				
+			}
+			
+			if (command == "test" || command == "trace") {
+				
+				if (InstallTool.traceEnabled || command == "trace") {
+					
+					print ("----- TRACE -----");
+					traceMessages ();
+					
+				}
+				
+			}
+			
+			if (command == "uninstall") {
+				
+				uninstall ();
+				
+			}
+			
+		} catch (e:Dynamic) {
+			
+			if (InstallTool.verbose) {
+				
+				Lib.println ("Error: " + e);
+				
+			}
 			
 		}
 		
@@ -817,6 +832,16 @@ class InstallerBase {
 					case "java":
 						
 						javaPaths.push (extensionPath + substitute (element.att.path));
+						
+						if (element.has.externs) {
+							
+							javaExterns.push (extensionPath + substitute (element.att.externs));
+							
+						} else {
+							
+							javaExterns.push (null);
+							
+						}
 					
 					case "haxelib":
 						
