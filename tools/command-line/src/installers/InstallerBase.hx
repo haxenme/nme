@@ -5,6 +5,7 @@ import data.Asset;
 import data.Icon;
 import data.Icons;
 import data.NDLL;
+import haxe.Stack;
 import haxe.Template;
 import haxe.xml.Fast;
 import neko.io.File;
@@ -159,7 +160,9 @@ class InstallerBase {
 			
 			if (InstallTool.verbose) {
 				
-				Lib.println ("Error: " + e);
+				Lib.rethrow (e); 
+				//Lib.println (Stack.toString (Stack.exceptionStack ()));
+				//Lib.print ("Uncaught exception - " + e);
 				
 			}
 			

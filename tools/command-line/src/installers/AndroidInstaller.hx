@@ -41,7 +41,7 @@ class AndroidInstaller extends InstallerBase {
 			
 			if (externPath != null) {
 				
-				generateJavaExterns (javaPath, externPath);
+				new CreateJNI (javaPath, externPath);
 				
 			}
 			
@@ -90,34 +90,6 @@ class AndroidInstaller extends InstallerBase {
 		}
 		
 		runCommand (destination, ant, [ build ]);
-		
-	}
-	
-	
-	private function generateJavaExterns (javaPath:String, externPath:String):Void {
-		
-		if (FileSystem.isDirectory (javaPath)) {
-			
-			var files = FileSystem.readDirectory (javaPath);
-			
-			for (file in files) {
-				
-				if (file.substr (0, 1) != ".") {
-					
-					//var itemDestination:String = destination + "/" + file;
-					var itemSource:String = javaPath + "/" + file;
-					
-					generateJavaExterns (itemSource, externPath);
-					
-				}
-				
-			}
-			
-		} else {
-			
-			//new CreateJNI (FileSystem.fullPath (javaPath));
-			
-		}
 		
 	}
 	

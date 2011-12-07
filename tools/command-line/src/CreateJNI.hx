@@ -1,5 +1,8 @@
 import haxe.io.Input;
+import neko.FileSystem;
+import neko.io.Path;
 import neko.io.Process;
+import neko.Lib;
 
 typedef JNIType = { name:String, java:String, arrayCount:Int };
 
@@ -23,15 +26,42 @@ class CreateJNI
    var mOutput:haxe.io.Output;
    var mCurrentType:String;
    var mExactTypes:Hash<Bool>;
+   var javaPath:String;
+   var externPath:String;
 
-   public function new(inClass:String)
+   public function new(javaPath:String, externPath:String)
    {
+	   this.javaPath = javaPath;
+	   this.externPath = externPath;
+	   
       mProcessed = new Hash<Bool>();
       mExactTypes = new Hash<Bool>();
-      mProcessed.set(inClass,true);
-      mExactTypes.set(inClass,true);
-      mProcessed.set("java/lang/Object",true);
-      mStack = [ inClass ];
+	  mProcessed.set("java/lang/Object",true);
+	  
+	  var paths = new Array <String> ();
+	  
+	  if (FileSystem.isDirectory (javaPath)) {
+		  
+		  this.javaPath += "/";
+		  getPaths (javaPath, "", paths);
+		  
+	  } else {
+		  
+		  this.javaPath = "";
+		  paths = [ javaPath ];
+		  
+	  }
+	  
+	  for (path in paths) {
+		  
+		  var type = Path.withoutExtension (path);
+		  
+		  mProcessed.set(type,true);
+		  mExactTypes.set(type,true);
+		  
+	  }
+	  
+      mStack = paths;
 
       while(mStack.length>0)
       {
@@ -40,16 +70,53 @@ class CreateJNI
          generate(clazz,members);
       }
    }
+   
+   public function getPaths (basePath:String, source:String, paths:Array <String>) {
+		
+		var files = FileSystem.readDirectory (basePath + "/" + source);
+		
+		for (file in files) {
+			
+			if (file.substr (0, 1) != ".") {
+				
+				var itemSource:String = source + "/" + file;
+				
+				if (source == "") {
+					
+					itemSource = file;
+					
+				}
+				
+				if (FileSystem.isDirectory (basePath + "/" + itemSource)) {
+					
+					getPaths (basePath, itemSource, paths);
+					
+				} else {
+					
+					if (Path.extension (itemSource) == "java") {
+						
+						paths.push (itemSource);
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+	}
 
    function generate(inClass:String, inMembers:Hash<String>)
    {
-      trace(inClass);
-      var parts = inClass.split("/");
+      Lib.println(inClass);
+      var parts = Path.withoutExtension (inClass).split("/");
       var old_type = mCurrentType;
       mCurrentType = parts.join(".");
       mExactTypes.set(mCurrentType,true);
       var dir_parts = parts.slice(0,parts.length-1);
-      var outputBase = "gen";
+      //var outputBase = "gen";
+      var outputBase = externPath;
       var dir = outputBase;
       mkdir(dir);
       for(d in dir_parts)
@@ -57,10 +124,10 @@ class CreateJNI
          dir += "/" + d;
          mkdir(dir);
       }
-      var filename = "classes/" + parts.join("/") + ".class";
+      //var filename = "classes/" + parts.join("/") + ".class";
+      var filename = javaPath + inClass;
       var source = neko.io.File.read(filename,true);
-      var class_name = parts[parts.length-1].split("$").join(dollars);
-
+      var class_name = parts[parts.length - 1].split("$").join(dollars);
       var old_output = mOutput;
       mOutput = neko.io.File.write(dir + "/" + class_name +".hx",true);
       var old_constants = mConstants;
@@ -670,7 +737,7 @@ class CreateJNI
       debug(args.toString());
 
 
-      new CreateJNI(args[0]);
+      new CreateJNI(args[0], "gen");
 
    }
 }
