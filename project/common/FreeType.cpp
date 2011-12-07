@@ -257,7 +257,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf"))
       outFile = FONT_BASE TIMES_ROMAN;
    else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
-      outFile = FONT_BASE "Helvetica.ttf";
+      outFile = FONT_BASE "Arial.ttf"; // Helvetica.dfont does not render
    else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
       outFile = FONT_BASE "Courier.ttf";
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
