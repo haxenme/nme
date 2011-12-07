@@ -34,7 +34,11 @@ class HTML5Installer extends InstallerBase {
 		var sourcePath = font.sourcePath;
 		var targetPath = destination + font.targetPath;
 		
-		runCommand (Path.directory (targetPath), "neko", [ NME + "/tools/command-line/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath) ] );
+		if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
+			
+			runCommand (Path.directory (targetPath), "neko", [ NME + "/tools/command-line/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath), "-glyphs", "32-255" ] );
+			
+		}
 		
 		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@" + font.flatName;
 		
