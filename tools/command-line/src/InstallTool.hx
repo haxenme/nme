@@ -8,6 +8,7 @@ import installers.InstallerBase;
 import installers.IOSInstaller;
 import installers.NekoInstaller;
 import installers.WebOSInstaller;
+import generate.GenerateJavaExterns;
 import setup.PlatformSetup;
 import neko.FileSystem;
 import neko.io.File;
@@ -422,7 +423,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/tools/command-line");
 		
-		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document" ];
+		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "installer", "uninstall", "trace", "document", "generate" ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -448,6 +449,7 @@ class InstallTool {
 			Lib.println (" Usage : nme help");
 			Lib.println (" Usage : nme [update|build|run|test] <project> <target> [options]");
 			Lib.println (" Usage : nme document <project> (target)");
+			Lib.println (" Usage : nme generate <args> [options]");
 			Lib.println ("");
 			Lib.println (" Commands : ");
 			Lib.println ("");
@@ -458,6 +460,7 @@ class InstallTool {
 			Lib.println ("  run : Install and run for the specified project/target");
 			Lib.println ("  test : Update, build and run in one command");
 			Lib.println ("  document : Generate documentation using haxedoc");
+			Lib.println ("  generate : Tools to help create source code automatically");
 			Lib.println ("");
 			Lib.println (" Targets : ");
 			Lib.println ("");
@@ -472,9 +475,10 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println (" Options : ");
 			Lib.println ("");
-			Lib.println ("  -verbose : Print additional information (when available)");
 			Lib.println ("  -debug : Use debug configuration instead of release");
+			Lib.println ("  -verbose : Print additional information (when available)");
 			Lib.println ("  -xml : Generate XML type information, for use with document");
+			Lib.println ("  -java-externs : Generate Haxe source code from compiled Java classes");
 			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
 			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
 			Lib.println ("  [flash] -web : Generate web template files");
@@ -510,6 +514,21 @@ class InstallTool {
 				
 				argumentError ("Wrong number of arguments for command: " + command);
 				return;
+				
+			}
+			
+		} else if (command == "generate") {
+			
+			if (targetFlags.exists ("java-externs")) {
+				
+				if (words.length != 2) {
+					
+					argumentError ("To use 'generate -java-externs' you need to provide two arguments: an input path with compiled Java classes, and an output directory");
+					return;
+					
+				}
+				
+				new GenerateJavaExterns (words[0], words[1]);
 				
 			}
 			

@@ -24,10 +24,7 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
-		for (i in 0...javaPaths.length) {
-			
-			var javaPath = javaPaths[i];
-			var externPath = javaExterns[i];
+		for (javaPath in javaPaths) {
 			
 			if (FileSystem.isDirectory (javaPath)) {
 				
@@ -36,12 +33,6 @@ class AndroidInstaller extends InstallerBase {
 			} else {
 				
 				copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
-				
-			}
-			
-			if (externPath != null) {
-				
-				new CreateJNI (javaPath, externPath);
 				
 			}
 			

@@ -1,8 +1,11 @@
 import haxe.io.Input;
 import neko.FileSystem;
+import neko.io.File;
 import neko.io.Path;
 import neko.io.Process;
 import neko.Lib;
+import neko.zip.Reader;
+import installers.InstallerBase;
 
 typedef JNIType = { name:String, java:String, arrayCount:Int };
 
@@ -28,6 +31,7 @@ class CreateJNI
    var mExactTypes:Hash<Bool>;
    var javaPath:String;
    var externPath:String;
+   var extractedAndroidClasses:Bool;
 
    public function new(javaPath:String, externPath:String)
    {
@@ -48,7 +52,7 @@ class CreateJNI
 	  } else {
 		  
 		  this.javaPath = "";
-		  paths = [ javaPath ];
+		  paths = [ Path.withoutExtension (javaPath) ];
 		  
 	  }
 	  
@@ -69,7 +73,23 @@ class CreateJNI
          var members = new Hash<String>();
          generate(clazz,members);
       }
+	  
+	  if (FileSystem.exists ("android-7")) {
+		  
+		  removeRec ("android-7");
+		  
+	  }
    }
+   
+   function removeRec( file ) {
+		if( !neko.FileSystem.isDirectory(file) ) {
+			neko.FileSystem.deleteFile(file);
+			return;
+		}
+		for( f in neko.FileSystem.readDirectory(file) )
+			removeRec(file+"/"+f);
+		neko.FileSystem.deleteDirectory(file);
+	}
    
    public function getPaths (basePath:String, source:String, paths:Array <String>) {
 		
@@ -93,9 +113,9 @@ class CreateJNI
 					
 				} else {
 					
-					if (Path.extension (itemSource) == "java") {
+					if (Path.extension (itemSource) == "class") {
 						
-						paths.push (itemSource);
+						paths.push (Path.withoutExtension (itemSource));
 						
 					}
 					
@@ -105,6 +125,27 @@ class CreateJNI
 			
 		}
 		
+	}
+	
+	function extractAndroidClasses()
+	{
+		if (!extractedAndroidClasses) {
+		  
+		  var parser = new InstallerBase ();
+		  parser.parseHXCPPConfig ();
+		  
+		  var androidJAR = parser.defines.get ("ANDROID_SDK") + "/platforms/android-7/android.jar";
+		  
+		  if (FileSystem.exists (androidJAR)) {
+			  
+			  InstallTool.mkdir ("android-7");
+			 InstallTool.runCommand ("android-7", "jar", [ "-xf", androidJAR ] );
+			  
+		  }
+		  
+		}
+		
+		extractedAndroidClasses = true;
 	}
 
    function generate(inClass:String, inMembers:Hash<String>)
@@ -125,7 +166,15 @@ class CreateJNI
          mkdir(dir);
       }
       //var filename = "classes/" + parts.join("/") + ".class";
-      var filename = javaPath + inClass;
+      var filename = javaPath + inClass + ".class";
+	  
+	  if (!FileSystem.exists (filename)) {
+		  
+		  extractAndroidClasses ();
+		  filename = "android-7/" + inClass + ".class";
+		  
+	  }
+	  
       var source = neko.io.File.read(filename,true);
       var class_name = parts[parts.length - 1].split("$").join(dollars);
       var old_output = mOutput;

@@ -29,7 +29,6 @@ class InstallerBase {
 	private var debug:Bool;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
-	private var javaExterns:Array <String>;
 	private var javaPaths:Array <String>;
 	private var ndlls:Array <NDLL>;
 	private var allFiles:Array <String>;
@@ -48,7 +47,6 @@ class InstallerBase {
 		defines = new Hash <String> ();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
-		javaExterns = new Array <String> ();
 		javaPaths = new Array <String> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
@@ -821,16 +819,6 @@ class InstallerBase {
 					case "java":
 						
 						javaPaths.push (extensionPath + substitute (element.att.path));
-						
-						if (element.has.externs) {
-							
-							javaExterns.push (extensionPath + substitute (element.att.externs));
-							
-						} else {
-							
-							javaExterns.push (null);
-							
-						}
 					
 					case "haxelib":
 						
