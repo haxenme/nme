@@ -1,6 +1,7 @@
 -neko bin/Mac/NMEInstaller.n
 -main NMEInstaller
 -lib xcross
+-cp ../../
 
 -resource resources/haxe-2.08-osx.tar.gz@haxe-2.08-osx.tar.gz
 -resource resources/neko-1.8.2-osx.tar.gz@neko-1.8.2-osx.tar.gz
