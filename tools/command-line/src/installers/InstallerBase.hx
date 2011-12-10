@@ -69,6 +69,12 @@ class InstallerBase {
 		parseHXCPPConfig ();
 		parseProjectFile ();
 		
+		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
+			
+			throw "Error: Your application package must have at least three segments, like <app package=\"com.example.myapp\" />";
+			
+		}
+		
 		if (command == "trace") {
 			
 			InstallTool.traceEnabled = true;
