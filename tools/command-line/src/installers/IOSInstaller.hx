@@ -191,6 +191,12 @@ class IOSInstaller extends InstallerBase {
 			
 		}
 		
+		if (command == "update" && InstallTool.isMac) {
+			
+			runCommand ("", "open", [ destination + defines.get ("APP_FILE") + ".xcodeproj" ] );
+			
+		}
+		
 	}
 	
 	
