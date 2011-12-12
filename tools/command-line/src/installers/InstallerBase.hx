@@ -399,6 +399,8 @@ class InstallerBase {
 		setDefault ("WIN_BACKGROUND", "0xffffff");
 		setDefault ("WIN_HARDWARE", "true");
 		setDefault ("WIN_RESIZEABLE", "true");
+		setDefault ("WIN_BORDERLESS", "false");
+		setDefault ("WIN_FULLSCREEN", "false");
 		setDefault ("WIN_ANTIALIASING", "1");
 		setDefault ("APP_FILE", "MyApplication");
 		setDefault ("APP_DESCRIPTION", "");

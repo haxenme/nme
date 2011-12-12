@@ -544,6 +544,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    bool opengl = (inFlags & wfHardware) != 0;
    bool resizable = (inFlags & wfResizable) != 0;
+   bool borderless = (inFlags & wfBorderless) != 0;
 
    Rect r(100,100,inWidth,inHeight);
 
@@ -593,6 +594,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    if ( resizable )
       sdl_flags |= SDL_RESIZABLE;
+	
+   if ( borderless )
+      sdl_flags |= SDL_NOFRAME;
 
    if ( fullscreen )
    {
