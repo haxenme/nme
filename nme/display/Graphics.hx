@@ -235,4 +235,14 @@ class Graphics
 
 #else
 typedef Graphics = flash.display.Graphics;
+
+class GraphicsHelper {
+	
+	public static function drawTiles (graphics:Graphics, sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
+		
+		trace ("hi");
+		
+	}
+	
+}
 #end

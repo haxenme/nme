@@ -10,29 +10,7 @@ class NMEPreloader extends Sprite
 	public function new()
 	{
 		super();
-	}
-	
-	
-	public function getBackgroundColor():Int
-	{
-		return ::WIN_BACKGROUND::;
-	}
-	
-	
-	public function getHeight():Float
-	{
-		return ::WIN_HEIGHT::;
-	}
-	
-	
-	public function getWidth():Float
-	{
-		return ::WIN_WIDTH::;
-	}
-	
-	
-	public function onInit()
-	{
+		
 		var backgroundColor = getBackgroundColor ();
 		var r = backgroundColor >> 16 & 0xFF;
 		var g = backgroundColor >> 8  & 0xFF;
@@ -67,6 +45,30 @@ class NMEPreloader extends Sprite
 		progress.y = y + padding;
 		progress.scaleX = 0;
 		addChild (progress);
+	}
+	
+	
+	public function getBackgroundColor():Int
+	{
+		return ::WIN_BACKGROUND::;
+	}
+	
+	
+	public function getHeight():Float
+	{
+		return ::WIN_HEIGHT::;
+	}
+	
+	
+	public function getWidth():Float
+	{
+		return ::WIN_WIDTH::;
+	}
+	
+	
+	public function onInit()
+	{
+		
 	}
 	
 	
