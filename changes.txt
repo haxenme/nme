@@ -1,18 +1,41 @@
-NME Changes List
+NME Improvements by Version
+
+
+3.1.0
+===============
+Added HTML5 support (together with Jeash).
+Added support for Opera widgets, using Flash.
+Added support for Chrome apps, using Flash.
+Added multi-touch for webOS.
+Added code for NME installer.
+Added cross-publishing for Neko (experimental).
+Added "document" command for project documentation.
+Updated support for changes in XCode 4.3 and OS X Lion.
+Updated support for changes the Android SDK tools.
+Added "nme.Assets" for strong-typed, cross-platform embedded assets.
+Added "nme.net.SharedObject" support for Neko and C++ targets.
+Added "nme.JNI" to simplify Java access on Android.
+Added "nme.system.Capabilities" for screen DPI on Neko and C++.
+Added "build", "run" and "test" support for iOS.
+Added support for scale, alpha, RGB and smoothing in graphics.drawTiles.
+Added "setup" command to automate install of necessary toolchains.
+Added support for Android release-signing.
+Improved TTF and WAV embedding on Flash.
+Improved support for NME extensions.
+Many other compile, feature and consistency improvements.
+
 
 3.0.0
 ===============
-Highlight:
- * Added install-tool to make cross-platform development easier.
- * Added webOS support.
- * Added CURL support.
- * Many, many improvements to flash compatibility.
+Added install-tool to make cross-platform development easier.
+Added webOS support.
+Added CURL support.
+Many, many improvements to flash compatibility.
 
+ 
 2.0.0
 ===============
 Overhauled just about everything. Added initial Android support.
-
-
 
 
 0.3.1
@@ -20,6 +43,7 @@ Overhauled just about everything. Added initial Android support.
 A Few minor changes to make neash integration easier.
 Fixed bug with rendering PNG images to bitmaps.
 Added some font-path logic to make finding font files easier on non-windows.
+
 
 0.3.0
 ===============
@@ -30,6 +54,7 @@ Added initial Linux port.
 Removed SGE dependency.
 Added a bunch of examples.
 Added a GameBase class to simplify some tasks.
+
 
 0.2.0
 ===============
@@ -48,6 +73,3 @@ Added a couple of samples to get users going with the library
 0.1.0
 ===============
 Initial release of the Neko Media Engine (NME)
-
-
-

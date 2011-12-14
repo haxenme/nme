@@ -1,25 +1,33 @@
 NME License
-------------------------
 
-NME is now licensed under the MIT license!
 
-Please note that the following licenses are applicable to the NME
-code only.  Any code related to the SDL group of libraries
-are subject to their own licence terms and must be obeyed accordingly.
-These are generally LGPL, which means static linking against these could
-cause problems.  However, iPhone is the only target that uses static linking,
-and that target does not use SDL.
+This source code is distributed under the MIT license.
 
-Simply put - please use it!  (but don't blame us if it goes wrong).
+In short, please use NME, but don't sue us.
 
-To make myself clear, I waive any requirement to distribute the
-copyright notice with anything except substantial portions of the SOURCE CODE.
+Libraries required to compile the "NDLL" for each platform fall under 
+their own licenses, generally the MIT, BSD and zlib licenses. The
+notable exception to this is SDL 1.2, which uses the LGPL license.
+
+NME uses SDL for Windows, Mac and Linux support. The NDLL for these
+platforms should be considered LGPL, but since the NDLL files are
+loaded at runtime, these will not affect NME applications compiled
+for these platforms.
+
+webOS uses SDL, but dynamically-linked, so the NDLL is unaffected.
+
+Applications compiled for iOS are statically-linked, as currently
+required by Apple, but since NME does not use SDL with iOS, you 
+should still retain full rights to your application code.
+
+The NME project waives any requirement to distribute this copyright
+notice with anything other than substantial portions of the source code.
 
 --------------------------------------------------------------------
 
 The MIT License
 
-Copyright (c) 2010 NME Contributors
+Copyright (c) 2011 NME Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,5 +46,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-
