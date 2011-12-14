@@ -240,8 +240,65 @@ typedef Graphics = flash.display.Graphics;
 class GraphicsHelper
 {
 	
+	public static inline var TILE_SCALE = 0x0001;
+	public static inline var TILE_ROTATION = 0x0002;
+	public static inline var TILE_RGB = 0x0004;
+	public static inline var TILE_ALPHA = 0x0008;
+	
+	private static inline var TILE_SMOOTH = 0x1000;
+	
+	
 	public static function drawTiles (graphics:Graphics, sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void
 	{
+		var useScale = (inFlags & TILE_SCALE) > 0;
+		var useRotation = (inFlags & TILE_ROTATION) > 0;
+		var useRGB = (inFlags & TILE_RGB) > 0;
+		var useAlpha = (inFlags & TILE_ALPHA) > 0;
+		
+		var index = 0;
+		
+		graphics.beginBitmapFill (sheet.nmeBitmap, null, false, inSmooth);
+		
+		while (index < inXYID.length)
+		{
+			var alpha = 1;
+			//var matrix = new Matrix();
+			//matrix.translate(inXYID[index], inXYID[index + 1]);
+			var tileID = inXYID[index + 2];
+			index += 3;
+			
+			var tile = sheet.nmeTiles[tileID];
+			var centerPoint = sheet.nmeTilePoints[tileID];
+			
+			if (useScale)
+			{
+				//matrix.scale(inXYID[index], inXYID[index]);
+				index ++;
+			}
+			
+			if (useRotation)
+			{
+				//matrix.setRotation(inXYID[index]);
+				index ++;
+			}
+			
+			if (useRGB)
+			{
+				//ignore for now
+				index += 3;
+			}
+			
+			if (useAlpha)
+			{
+				alpha = inXYID[index];
+				index++;
+			}
+			
+			//graphics.drawTriangles(
+			
+			index += increment;
+		}
+		
 		// use sheet.nmeBitmap, sheet.nmeTiles and sheet.nmeTilePoints for rendering
 		// should it be copyPixels, or drawTriangles?
 	}
