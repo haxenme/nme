@@ -1,6 +1,7 @@
 package nme.display;
 
 
+import flash.geom.Matrix;
 import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.Loader;
@@ -87,8 +88,7 @@ class Tilesheet
 		var useAlpha = (inFlags & TILE_ALPHA) > 0;
 		
 		var index = 0;
-		
-		graphics.beginBitmapFill (nmeBitmap, null, false, inSmooth);
+		var matrix = new Matrix ();
 		
 		while (index < inXYID.length)
 		{
@@ -128,8 +128,16 @@ class Tilesheet
 				index++;
 			}
 			
-			//graphics.drawTriangles(
+			matrix.tx = x - tile.x;
+			matrix.ty = x - tile.y;
+			
+			// need to add support for rotation, alpha, scale and RGB
+			
+			graphics.beginBitmapFill (nmeBitmap, matrix, false, inSmooth);
+			graphics.drawRect (x, y, tile.width, tile.height);
 		}
+		
+		graphics.endFill ();
 		
 		#end
 	}
