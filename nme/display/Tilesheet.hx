@@ -107,176 +107,216 @@ class Tilesheet
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
 		
-		var scaleIndex = 0;
-		var rotationIndex = 0;
-		var rgbIndex = 0;
-		var alphaIndex = 0;
-		var numValues = 3;
-		
-		if (useScale)
+		if (useScale || useRotation || useRGB || useAlpha)
 		{
-			scaleIndex = numValues;
-			numValues ++;
-		}
-		
-		if (useRotation)
-		{
-			rotationIndex = numValues;
-			numValues ++;
-		}
-		
-		if (useRGB)
-		{
-			rgbIndex = numValues;
-			numValues += 3;
-		}
-		
-		if (useAlpha)
-		{
-			alphaIndex = numValues;
-			numValues ++;
-		}
-		
-		var totalCount = tileData.length;
-		var itemCount = Std.int (totalCount / numValues);
-		
-		var vertices = new Vector<Float> (itemCount * 8, true);
-		var indices = new Vector<Int> (itemCount * 6, true);
-		var uvtData = new Vector<Float> (itemCount * 8, true);
-		
-		var offset4 = 0;
-		var offset6 = 0;
-		var offset8 = 0;
-		
-		var index = 0;
-		var tileID:Int = 0;
-		var cacheID:Int = -1;
-		
-		var tile:Rectangle = null;
-		var tileUV:Rectangle = null;
-		var tilePoint:Point = null;
-		
-		while (index < totalCount)
-		{
-			var x = tileData[index];
-			var y = tileData[index + 1];
-			var tileID = Std.int(tileData[index + 2]);
-			
-			if (cacheID != tileID)
-			{
-				cacheID = tileID;
-				tile = tiles[tileID];
-				tileUV = tileUVs[tileID];
-				tilePoint = tilePoints[tileID];
-			}
-			
-			var scale = 1.0;
-			var rotation = 0.0;
-			var alpha = 1.0;
+			var scaleIndex = 0;
+			var rotationIndex = 0;
+			var rgbIndex = 0;
+			var alphaIndex = 0;
+			var numValues = 3;
 			
 			if (useScale)
 			{
-				scale = tileData[index + scaleIndex];
+				scaleIndex = numValues;
+				numValues ++;
 			}
 			
 			if (useRotation)
 			{
-				rotation = tileData[index + rotationIndex];
+				rotationIndex = numValues;
+				numValues ++;
 			}
 			
 			if (useRGB)
 			{
-				//ignore for now
+				rgbIndex = numValues;
+				numValues += 3;
 			}
 			
 			if (useAlpha)
 			{
-				alpha = tileData[index + alphaIndex];
+				alphaIndex = numValues;
+				numValues ++;
 			}
 			
-			if (tilePoint != null)
+			var totalCount = tileData.length;
+			var itemCount = Std.int (totalCount / numValues) + 1;
+			
+			var vertices = new Vector<Float> (itemCount * 8, true);
+			var indices = new Vector<Int> (itemCount * 6, true);
+			var uvtData = new Vector<Float> (itemCount * 8, true);
+			
+			var offset4 = 0;
+			var offset6 = 0;
+			var offset8 = 0;
+			
+			var index = 0;
+			var tileID:Int = 0;
+			var cacheID:Int = -1;
+			
+			var tile:Rectangle = null;
+			var tileUV:Rectangle = null;
+			var tilePoint:Point = null;
+			var tileHalfHeight:Float = 0;
+			var tileHalfWidth:Float = 0;
+			var tileHeight:Float = 0;
+			var tileWidth:Float = 0;
+			
+			while (index < totalCount)
 			{
-				x -= tilePoint.x;
-				y -= tilePoint.y;
+				var x = tileData[index];
+				var y = tileData[index + 1];
+				var tileID = Std.int(tileData[index + 2]);
+				var scale = 1.0;
+				var rotation = 0.0;
+				var alpha = 1.0;
+				
+				if (useScale)
+				{
+					scale = tileData[index + scaleIndex];
+				}
+				
+				if (useRotation)
+				{
+					rotation = tileData[index + rotationIndex];
+				}
+				
+				if (useRGB)
+				{
+					//ignore for now
+				}
+				
+				if (useAlpha)
+				{
+					alpha = tileData[index + alphaIndex];
+				}
+				
+				if (cacheID != tileID)
+				{
+					cacheID = tileID;
+					tile = tiles[tileID];
+					tileUV = tileUVs[tileID];
+					tilePoint = tilePoints[tileID];
+				}
+				
+				var tileWidth = tile.width * scale;
+				var tileHeight = tile.height * scale;
+				var tileHalfWidth = tileWidth / 2;
+				var tileHalfHeight = tileHeight / 2;
+				
+				if (rotation != 0)
+				{
+					// TODO: Honor the tile's center point when rotating
+					var ca = Math.cos(rotation);
+					var sa = Math.sin(rotation);
+					var ox1 = tileHalfWidth * ca + tileHalfHeight * sa;
+					var ox2 = tileHalfWidth * ca - tileHalfHeight * sa;
+					var oy1 = -tileHalfWidth * sa + tileHalfHeight * ca;
+					var oy2 = tileHalfWidth * sa + tileHalfHeight * ca;
+					vertices[offset8] = x - ox1;
+					vertices[offset8 + 1] = y - oy1;
+					vertices[offset8 + 2] = x + ox2;
+					vertices[offset8 + 3] = y - oy2;
+					vertices[offset8 + 4] = x - ox2;
+					vertices[offset8 + 5] = y + oy2;
+					vertices[offset8 + 6] = x + ox1;
+					vertices[offset8 + 7] = y + oy1;
+				}
+				else 
+				{
+					if (tilePoint != null)
+					{
+						x -= tilePoint.x * scale;
+						y -= tilePoint.y * scale;
+					}
+					else 
+					{
+						x -= tileHalfWidth;
+						y -= tileHalfHeight;
+					}
+					vertices[offset8] = vertices[offset8 + 4] = x;
+					vertices[offset8 + 1] = vertices[offset8 + 3] = y;
+					vertices[offset8 + 2] = vertices[offset8 + 6] = x + tileWidth;
+					vertices[offset8 + 5] = vertices[offset8 + 7] = y + tileHeight;
+				}
+				
+				indices[offset6] = 0 + offset4;
+				indices[offset6 + 1] = indices[offset6 + 3] = 1 + offset4;
+				indices[offset6 + 2] = indices[offset6 + 5] = 2 + offset4;
+				indices[offset6 + 4] = 3 + offset4;
+				
+				uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
+				uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
+				uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
+				uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
+				
+				offset4 += 4;
+				offset6 += 6;
+				offset8 += 8;
+				
+				index += numValues;
 			}
 			
-			vertices[offset8] = vertices[offset8 + 4] = x;
-			vertices[offset8 + 1] = vertices[offset8 + 3] = y;
-			vertices[offset8 + 2] = vertices[offset8 + 6] = x + (tile.width * scale);
-			vertices[offset8 + 5] = vertices[offset8 + 7] = y + (tile.height * scale);
+			graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
+			graphics.drawTriangles (vertices, indices, uvtData);
 			
-			indices[offset6] = 0 + offset4;
-			indices[offset6 + 1] = indices[offset6 + 3] = 1 + offset4;
-			indices[offset6 + 2] = indices[offset6 + 5] = 2 + offset4;
-			indices[offset6 + 4] = 3 + offset4;
-			
-			uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
-			uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
-			uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
-			uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
-			
-			offset4 += 4;
-			offset6 += 6;
-			offset8 += 8;
-			
-			index += numValues;
 		}
-		
-		graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
-		graphics.drawTriangles (vertices, indices, uvtData);
-		graphics.endFill ();
-		
-		/*var index = 0;
-		var matrix = new Matrix ();
-		
-		while (index < tileData.length)
+		else
 		{
-			var x = tileData[index];
-			var y = tileData[index + 1];
-			var tileID = Std.int (tileData[index + 2]);
-			index += 3;
 			
-			var tile = tiles[tileID];
-			//var centerPoint = tilePoints[tileID];
+			var index = 0;
+			var matrix = new Matrix ();
 			
-			var scale = 1.0;
-			var rotation = 0.0;
-			var alpha = 1.0;
-			
-			if (useScale)
+			while (index < tileData.length)
 			{
-				scale = tileData[index];
-				index ++;
-			}
-			
-			if (useRotation)
-			{
-				rotation = tileData[index];
-				index ++;
-			}
-			
-			if (useRGB)
-			{
-				//ignore for now
+				var x = tileData[index];
+				var y = tileData[index + 1];
+				var tileID = Std.int (tileData[index + 2]);
 				index += 3;
+				
+				var tile = tiles[tileID];
+				//var centerPoint = tilePoints[tileID];
+				
+				var scale = 1.0;
+				var rotation = 0.0;
+				var alpha = 1.0;
+				
+				if (useScale)
+				{
+					scale = tileData[index];
+					index ++;
+				}
+				
+				if (useRotation)
+				{
+					rotation = tileData[index];
+					index ++;
+				}
+				
+				if (useRGB)
+				{
+					//ignore for now
+					index += 3;
+				}
+				
+				if (useAlpha)
+				{
+					alpha = tileData[index];
+					index++;
+				}
+				
+				matrix.tx = x - tile.x;
+				matrix.ty = y - tile.y;
+				
+				// need to add support for rotation, alpha, scale and RGB
+				
+				graphics.beginBitmapFill (nmeBitmap, matrix, false, smooth);
+				graphics.drawRect (x, y, tile.width, tile.height);
 			}
 			
-			if (useAlpha)
-			{
-				alpha = tileData[index];
-				index++;
-			}
-			
-			matrix.tx = x - tile.x;
-			matrix.ty = y - tile.y;
-			
-			// need to add support for rotation, alpha, scale and RGB
-			
-			graphics.beginBitmapFill (nmeBitmap, matrix, false, smooth);
-			graphics.drawRect (x, y, tile.width, tile.height);
 		}
 		
-		graphics.endFill ();*/
+		graphics.endFill ();
 		
 		#end
 	}
