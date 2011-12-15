@@ -229,7 +229,7 @@ class Tilesheet
 			}
 			
 			matrix.tx = x - tile.x;
-			matrix.ty = x - tile.y;
+			matrix.ty = y - tile.y;
 			
 			// need to add support for rotation, alpha, scale and RGB
 			
