@@ -29,16 +29,12 @@ class Tilesheet
 	
 	#else
 	
-	/**
-	 * @private
-	 */
-	public var nmeTilePoints:Array<Point>;
-	
-	/**
-	 * @private
-	 */
-	public var nmeTiles:Array<Rectangle>;
-	
+	private var bitmapHeight:Int;
+	private var bitmapWidth:Int;
+	private var tilePoints:Array<Point>;
+	private var tiles:Array<Rectangle>;
+	private var tileUVs:Array<Rectangle>;
+
 	#end
 	
 	
@@ -52,23 +48,28 @@ class Tilesheet
 		
 		#else
 		
-		nmeTilePoints = new Array<Point>();
-		nmeTiles = new Array<Rectangle>();
+		bitmapWidth = nmeBitmap.width;
+		bitmapHeight = nmeBitmap.height;
+		
+		tilePoints = new Array<Point>();
+		tiles = new Array<Rectangle>();
+		tileUVs = new Array<Rectangle>();
 		
 		#end
 	}
 	
 	
-	public function addTileRect(inRect:Rectangle, ?inHotSpot:Point)
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null)
 	{
 		#if (cpp || neko)
 		
-		nme_tilesheet_add_rect(nmeHandle, inRect, inHotSpot);
+		nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
 		
 		#else
 		
-		nmeTiles.push(inRect);
-		nmeTilePoints.push(inHotSpot);
+		tiles.push(rectangle);
+		tilePoints.push(centerPoint);
+		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
 		
 		#end
 	}
@@ -106,27 +107,68 @@ class Tilesheet
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
 		
-		/*graphics.beginBitmapFill (nmeBitmap, null, false, true);
+		var scaleIndex = 0;
+		var rotationIndex = 0;
+		var rgbIndex = 0;
+		var alphaIndex = 0;
+		var numValues = 3;
 		
-		var vertices = new Vector<Float> ();
-		var indices = new Vector<Int> ();
-		var uvtData = new Vector<Float> ();
+		if (useScale)
+		{
+			scaleIndex = numValues;
+			numValues ++;
+		}
+		
+		if (useRotation)
+		{
+			rotationIndex = numValues;
+			numValues ++;
+		}
+		
+		if (useRGB)
+		{
+			rgbIndex = numValues;
+			numValues += 3;
+		}
+		
+		if (useAlpha)
+		{
+			alphaIndex = numValues;
+			numValues ++;
+		}
+		
+		var totalCount = tileData.length;
+		var itemCount = Std.int (totalCount / numValues);
+		
+		var vertices = new Vector<Float> (itemCount * 8, true);
+		var indices = new Vector<Int> (itemCount * 6, true);
+		var uvtData = new Vector<Float> (itemCount * 8, true);
+		
+		var offset4 = 0;
+		var offset6 = 0;
+		var offset8 = 0;
 		
 		var index = 0;
-		var offset = 0;
+		var tileID:Int = 0;
+		var cacheID:Int = -1;
 		
-		var bitWidth = 1 / nmeBitmap.width;
-		var bitHeight = 1 / nmeBitmap.height;
+		var tile:Rectangle = null;
+		var tileUV:Rectangle = null;
+		var tilePoint:Point = null;
 		
-		while (index < tileData.length)
+		while (index < totalCount)
 		{
 			var x = tileData[index];
 			var y = tileData[index + 1];
-			var tileID = Std.int (tileData[index + 2]);
-			index += 3;
+			var tileID = Std.int(tileData[index + 2]);
 			
-			var tile = nmeTiles[tileID];
-			//var centerPoint = nmeTilePoints[tileID];
+			if (cacheID != tileID)
+			{
+				cacheID = tileID;
+				tile = tiles[tileID];
+				tileUV = tileUVs[tileID];
+				tilePoint = tilePoints[tileID];
+			}
 			
 			var scale = 1.0;
 			var rotation = 0.0;
@@ -134,60 +176,57 @@ class Tilesheet
 			
 			if (useScale)
 			{
-				scale = tileData[index];
-				index ++;
+				scale = tileData[index + scaleIndex];
 			}
 			
 			if (useRotation)
 			{
-				rotation = tileData[index];
-				index ++;
+				rotation = tileData[index + rotationIndex];
 			}
 			
 			if (useRGB)
 			{
 				//ignore for now
-				index += 3;
 			}
 			
 			if (useAlpha)
 			{
-				alpha = tileData[index];
-				index++;
+				alpha = tileData[index + alphaIndex];
 			}
 			
-			vertices.push (x);
-			vertices.push (y);
-			vertices.push (x + tile.width);
-			vertices.push (y);
-			vertices.push (x);
-			vertices.push (y + tile.height);
-			vertices.push (x + tile.width);
-			vertices.push (y + tile.height);
+			if (tilePoint != null)
+			{
+				x -= tilePoint.x;
+				y -= tilePoint.y;
+			}
 			
-			indices.push (0 + offset);
-			indices.push (1 + offset);
-			indices.push (2 + offset);
-			indices.push (1 + offset);
-			indices.push (3 + offset);
-			indices.push (2 + offset);
-			offset + 4;
+			vertices[offset8] = vertices[offset8 + 4] = x;
+			vertices[offset8 + 1] = vertices[offset8 + 3] = y;
+			vertices[offset8 + 2] = vertices[offset8 + 6] = x + (tile.width * scale);
+			vertices[offset8 + 5] = vertices[offset8 + 7] = y + (tile.height * scale);
 			
-			uvtData.push (tile.x * bitWidth);
-			uvtData.push (tile.y * bitHeight);
-			uvtData.push ((tile.x + tile.width) * bitWidth);
-			uvtData.push (tile.y * bitHeight);
-			uvtData.push (tile.x * bitWidth);
-			uvtData.push ((tile.y + tile.height) * bitHeight);
-			uvtData.push ((tile.x + tile.width) * bitWidth);
-			uvtData.push ((tile.y + tile.height) * bitHeight);
+			indices[offset6] = 0 + offset4;
+			indices[offset6 + 1] = indices[offset6 + 3] = 1 + offset4;
+			indices[offset6 + 2] = indices[offset6 + 5] = 2 + offset4;
+			indices[offset6 + 4] = 3 + offset4;
 			
+			uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
+			uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
+			uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
+			uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
+			
+			offset4 += 4;
+			offset6 += 6;
+			offset8 += 8;
+			
+			index += numValues;
 		}
 		
+		graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
 		graphics.drawTriangles (vertices, indices, uvtData);
-		graphics.endFill ();*/
+		graphics.endFill ();
 		
-		var index = 0;
+		/*var index = 0;
 		var matrix = new Matrix ();
 		
 		while (index < tileData.length)
@@ -197,8 +236,8 @@ class Tilesheet
 			var tileID = Std.int (tileData[index + 2]);
 			index += 3;
 			
-			var tile = nmeTiles[tileID];
-			//var centerPoint = nmeTilePoints[tileID];
+			var tile = tiles[tileID];
+			//var centerPoint = tilePoints[tileID];
 			
 			var scale = 1.0;
 			var rotation = 0.0;
@@ -237,7 +276,7 @@ class Tilesheet
 			graphics.drawRect (x, y, tile.width, tile.height);
 		}
 		
-		graphics.endFill ();
+		graphics.endFill ();*/
 		
 		#end
 	}
