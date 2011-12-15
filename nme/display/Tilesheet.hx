@@ -75,7 +75,7 @@ class Tilesheet
 	
 	
 	/**
-	 * Fast method to draw a batch of tiles using a Tilesheet (C++ only)
+	 * Fast method to draw a batch of tiles using a Tilesheet
 	 * 
 	 * The input array accepts the x, y and tile ID for each tile you wish to draw.
 	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to (0, 0) and
@@ -88,36 +88,36 @@ class Tilesheet
 	 * 
 	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
 	 * 
-	 * @param	sheet		The Tilesheet to use when drawing
-	 * @param	inXYID		An array of all position, ID and optional values for use in drawing
-	 * @param	inSmooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
-	 * @param	inFlags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
+	 * @param	graphics		The nme.display.Graphics object to use for drawing
+	 * @param	tileData		An array of all position, ID and optional values for use in drawing
+	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
+	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
 	 */
-	public function drawTiles (graphics:Graphics, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void
+	public function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
 	{
 		#if (cpp || neko)
 		
-		graphics.drawTiles (this, inXYID, inSmooth, inFlags);
+		graphics.drawTiles (this, tileData, smooth, flags);
 		
 		#else
 		
-		var useScale = (inFlags & TILE_SCALE) > 0;
-		var useRotation = (inFlags & TILE_ROTATION) > 0;
-		var useRGB = (inFlags & TILE_RGB) > 0;
-		var useAlpha = (inFlags & TILE_ALPHA) > 0;
+		var useScale = (flags & TILE_SCALE) > 0;
+		var useRotation = (flags & TILE_ROTATION) > 0;
+		var useRGB = (flags & TILE_RGB) > 0;
+		var useAlpha = (flags & TILE_ALPHA) > 0;
 		
 		var index = 0;
 		var matrix = new Matrix ();
 		
-		while (index < inXYID.length)
+		while (index < tileData.length)
 		{
-			var x = inXYID[index];
-			var y = inXYID[index + 1];
-			var tileID = Std.int (inXYID[index + 2]);
+			var x = tileData[index];
+			var y = tileData[index + 1];
+			var tileID = Std.int (tileData[index + 2]);
 			index += 3;
 			
 			var tile = nmeTiles[tileID];
-			var centerPoint = nmeTilePoints[tileID];
+			//var centerPoint = nmeTilePoints[tileID];
 			
 			var scale = 1.0;
 			var rotation = 0.0;
@@ -125,13 +125,13 @@ class Tilesheet
 			
 			if (useScale)
 			{
-				scale = inXYID[index];
+				scale = tileData[index];
 				index ++;
 			}
 			
 			if (useRotation)
 			{
-				rotation = inXYID[index];
+				rotation = tileData[index];
 				index ++;
 			}
 			
@@ -143,7 +143,7 @@ class Tilesheet
 			
 			if (useAlpha)
 			{
-				alpha = inXYID[index];
+				alpha = tileData[index];
 				index++;
 			}
 			
@@ -152,8 +152,7 @@ class Tilesheet
 			
 			// need to add support for rotation, alpha, scale and RGB
 			
-			//bitmapData.copyPixels (nmeBitmap, tile, new Point (x, y));
-			graphics.beginBitmapFill (nmeBitmap, matrix, false, inSmooth);
+			graphics.beginBitmapFill (nmeBitmap, matrix, false, smooth);
 			graphics.drawRect (x, y, tile.width, tile.height);
 		}
 		
