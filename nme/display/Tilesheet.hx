@@ -1,7 +1,7 @@
 package nme.display;
 
 
-import flash.geom.Matrix;
+import nme.geom.Matrix;
 import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.Loader;
@@ -105,6 +105,87 @@ class Tilesheet
 		var useRotation = (flags & TILE_ROTATION) > 0;
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
+		
+		/*graphics.beginBitmapFill (nmeBitmap, null, false, true);
+		
+		var vertices = new Vector<Float> ();
+		var indices = new Vector<Int> ();
+		var uvtData = new Vector<Float> ();
+		
+		var index = 0;
+		var offset = 0;
+		
+		var bitWidth = 1 / nmeBitmap.width;
+		var bitHeight = 1 / nmeBitmap.height;
+		
+		while (index < tileData.length)
+		{
+			var x = tileData[index];
+			var y = tileData[index + 1];
+			var tileID = Std.int (tileData[index + 2]);
+			index += 3;
+			
+			var tile = nmeTiles[tileID];
+			//var centerPoint = nmeTilePoints[tileID];
+			
+			var scale = 1.0;
+			var rotation = 0.0;
+			var alpha = 1.0;
+			
+			if (useScale)
+			{
+				scale = tileData[index];
+				index ++;
+			}
+			
+			if (useRotation)
+			{
+				rotation = tileData[index];
+				index ++;
+			}
+			
+			if (useRGB)
+			{
+				//ignore for now
+				index += 3;
+			}
+			
+			if (useAlpha)
+			{
+				alpha = tileData[index];
+				index++;
+			}
+			
+			vertices.push (x);
+			vertices.push (y);
+			vertices.push (x + tile.width);
+			vertices.push (y);
+			vertices.push (x);
+			vertices.push (y + tile.height);
+			vertices.push (x + tile.width);
+			vertices.push (y + tile.height);
+			
+			indices.push (0 + offset);
+			indices.push (1 + offset);
+			indices.push (2 + offset);
+			indices.push (1 + offset);
+			indices.push (3 + offset);
+			indices.push (2 + offset);
+			offset + 4;
+			
+			uvtData.push (tile.x * bitWidth);
+			uvtData.push (tile.y * bitHeight);
+			uvtData.push ((tile.x + tile.width) * bitWidth);
+			uvtData.push (tile.y * bitHeight);
+			uvtData.push (tile.x * bitWidth);
+			uvtData.push ((tile.y + tile.height) * bitHeight);
+			uvtData.push ((tile.x + tile.width) * bitWidth);
+			uvtData.push ((tile.y + tile.height) * bitHeight);
+			
+		}
+		
+		graphics.drawTriangles (vertices, indices, uvtData);
+		graphics.endFill ();*/
 		
 		var index = 0;
 		var matrix = new Matrix ();
