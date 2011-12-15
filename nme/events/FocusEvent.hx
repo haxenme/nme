@@ -18,12 +18,24 @@ class FocusEvent extends Event
 	public var shiftKey(default, null):Bool;
 	
 	
-	public function new(inType:String, bubbles:Bool = true, cancelable:Bool = false, inRelatedObject:InteractiveObject = null, inShiftKey:Bool = false, inKeyCode:Int = 0, inDirection:String = "none")
+	public function new(inType:String, bubbles:Bool = true, cancelable:Bool = false, relatedObject:InteractiveObject = null, shiftKey:Bool = false, keyCode:Int = 0, direction:String = "none")
 	{
 		super(inType, bubbles, cancelable);
-		relatedObject = inRelatedObject;
-		keyCode = inKeyCode;
-		shiftKey = inShiftKey;
+		this.relatedObject = relatedObject;
+		this.keyCode = keyCode;
+		this.shiftKey = shiftKey;
+	}
+	
+	
+	public override function clone ():Event
+	{
+		return new FocusEvent (type, bubbles, cancelable, relatedObject, shiftKey, keyCode);
+	}
+	
+	
+	public override function toString ():String
+	{
+		return "[FocusEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " relatedObject=" + relatedObject + " shiftKey=" + shiftKey + " keyCode=" + keyCode + "]";
 	}
 	
 }

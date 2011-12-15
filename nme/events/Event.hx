@@ -50,11 +50,11 @@ class Event
 	private var nmeIsCancelledNow:Bool;
 	
 	
-	public function new(inType:String, inBubbles:Bool = false, inCancelable:Bool = false)
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false)
 	{
-		_type = inType;
-		_bubbles = inBubbles;
-		_cancelable = inCancelable;
+		_type = type;
+		_bubbles = bubbles;
+		_cancelable = cancelable;
 		nmeIsCancelled = false;
 		nmeIsCancelledNow = false;
 		_target = null;
@@ -113,7 +113,7 @@ class Event
 	
 	public function toString():String
 	{
-		return type;
+		return "[Event type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + "]";
 	}
 	
 	

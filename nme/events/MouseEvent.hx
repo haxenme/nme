@@ -46,19 +46,25 @@ class MouseEvent extends Event
 	private static var efCommandDown = 0x0010;
 	
 	
-	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, in_localX:Float = 0, in_localY:Float = 0, in_relatedObject:InteractiveObject = null, in_ctrlKey:Bool = false, in_altKey:Bool = false, in_shiftKey:Bool = false, in_buttonDown:Bool = false, in_delta:Int = 0, in_commandKey:Bool = false, in_clickCount:Int = 0 )
+	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, localX:Float = 0, localY:Float = 0, relatedObject:InteractiveObject = null, ctrlKey:Bool = false, altKey:Bool = false, shiftKey:Bool = false, buttonDown:Bool = false, delta:Int = 0, commandKey:Bool = false, clickCount:Int = 0)
 	{
 		super(type, bubbles, cancelable);
-		localX = in_localX;
-		localY = in_localY;
-		relatedObject = in_relatedObject;
-		ctrlKey = in_ctrlKey;
-		altKey = in_altKey;
-		shiftKey = in_shiftKey;
-		buttonDown = in_buttonDown;
-		delta = in_delta;
-		commandKey = in_commandKey;
-		clickCount = in_clickCount;
+		this.localX = localX;
+		this.localY = localY;
+		this.relatedObject = relatedObject;
+		this.ctrlKey = ctrlKey;
+		this.altKey = altKey;
+		this.shiftKey = shiftKey;
+		this.buttonDown = buttonDown;
+		this.delta = delta;
+		this.commandKey = commandKey;
+		this.clickCount = clickCount;
+	}
+	
+	
+	public override function clone ():Event
+	{
+		return new MouseEvent (type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 	}
 	
 	
@@ -86,6 +92,12 @@ class MouseEvent extends Event
 		if (targ != null)
 			result.target = targ;
 		return result;
+	}
+	
+	
+	public override function toString ():String
+	{
+		return "[MouseEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " localX=" + localX + " localY=" + localY + " relatedObject=" + relatedObject + " ctrlKey=" + ctrlKey + " altKey=" + altKey + " shiftKey=" + shiftKey + " buttonDown=" + buttonDown + " delta=" + delta + "]";
 	}
 	
 	

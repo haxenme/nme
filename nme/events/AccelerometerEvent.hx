@@ -26,6 +26,18 @@ class AccelerometerEvent extends Event
 		this.accelerationZ = accelerationZ;	
 	}
 	
+	
+	public override function clone ():Event
+	{
+		return new AccelerometerEvent (type, bubbles, cancelable, timestamp, accelerationX, accelerationY, accelerationZ);
+	}
+	
+	
+	public override function toString ():String
+	{
+		return "[AccelerometerEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " timestamp=" + timestamp + " accelerationX=" + accelerationX + " accelerationY=" + accelerationY + " accelerationZ=" + accelerationZ + "]";
+	}
+	
 }
 
 

@@ -115,23 +115,7 @@ class Graphics
 	
 	
 	/**
-	 * Fast method to draw a batch of tiles using a Tilesheet (C++ only)
-	 * 
-	 * The input array accepts the x, y and tile ID for each tile you wish to draw.
-	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to (0, 0) and
-	 * tile 1 to (10, 10)
-	 * 
-	 * You can also set flags for TILE_SCALE, TILE_ROTATION, TILE_RGB and
-	 * TILE_ALPHA.
-	 * 
-	 * Depending on which flags are active, this is the full order of the array:
-	 * 
-	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
-	 * 
-	 * @param	sheet		The Tilesheet to use when drawing
-	 * @param	inXYID		An array of all position, ID and optional values for use in drawing
-	 * @param	inSmooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
-	 * @param	inFlags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
+	 * @private
 	 */
 	public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void
 	{

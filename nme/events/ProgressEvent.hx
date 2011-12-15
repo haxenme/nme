@@ -12,11 +12,23 @@ class ProgressEvent extends Event
 	public var bytesTotal(default, null):Int;
 	
 	
-	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, inBytesLoaded:Int = 0, inBytesTotal:Int = 0)
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, bytesLoaded:Int = 0, bytesTotal:Int = 0)
 	{
 		super(type, bubbles, cancelable);
-		bytesLoaded = inBytesLoaded;
-		bytesTotal = inBytesTotal;
+		this.bytesLoaded = bytesLoaded;
+		this.bytesTotal = bytesTotal;
+	}
+	
+	
+	public override function clone ():Event
+	{
+		return new ProgressEvent (type, bubbles, cancelable, bytesLoaded, bytesTotal);
+	}
+	
+	
+	public override function toString ():String
+	{
+		return "[ProgressEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " bytesLoaded=" + bytesLoaded + " bytesTotal=" + bytesTotal + "]";
 	}
 	
 }
