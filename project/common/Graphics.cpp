@@ -404,10 +404,13 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
             const QuickVec<int> &inColours,
             int blendMode, const QuickVec<float> &inViewport )
 {
-	if (!mTileJob.mFill)
-	{
-		beginFill (0, 0);
-	}
+	//if (!mTileJob.mFill)
+	//{
+		//beginFill (0, 0);
+	//}
+	
+	// Find a different way to allow use with vertex colors, and no beginFill?
+	
 	Flush( );
 	IGraphicsFill *fill = mFillJob.mFill;
 
