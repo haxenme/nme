@@ -409,6 +409,7 @@ class InstallerBase {
 		setDefault ("APP_COMPANY", "Example Inc.");
 		setDefault ("SWF_VERSION", "10");
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
+		setDefault ("PRERENDERED_ICON", "false");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
 		defines.set ("target_" + target, "1");

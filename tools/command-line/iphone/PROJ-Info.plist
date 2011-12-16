@@ -37,5 +37,7 @@
 	<key>UIInterfaceOrientation</key>
 	<string>UIInterfaceOrientation::IPHONE_ORIENTATION::</string>
    ::end::
+    <key>UIPrerenderedIcon</key>
+	<::PRERENDERED_ICON::/>
 </dict>
 </plist>

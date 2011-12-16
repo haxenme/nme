@@ -85,6 +85,68 @@ class Tilesheet
 	}
 	
 	
+	#if flash
+	
+	private function adjustIDs(vec:Vector<Int>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			var prevLen = vec.length;
+			vec.fixed = false;
+			vec.length = len;
+			vec.fixed = true;
+			for(i in prevLen...len)
+				vec[i] = -1;
+		}
+		return vec;
+	}
+	
+	
+	private function adjustIndices(vec:Vector<Int>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			vec.fixed = false;
+			if (vec.length > len)
+			{
+				vec.length = len;
+				vec.fixed = true;
+			}
+			else 
+			{
+				var offset6 = vec.length;
+				var offset4 = cast(4 * offset6 / 6, Int);
+				vec.length = len;
+				vec.fixed = true;
+				while (offset6 < len)
+				{
+					vec[offset6] = 0 + offset4;
+					vec[offset6 + 1] = vec[offset6 + 3] = 1 + offset4;
+					vec[offset6 + 2] = vec[offset6 + 5] = 2 + offset4;
+					vec[offset6 + 4] = 3 + offset4;
+					offset4 += 4;
+					offset6 += 6;
+				}
+			}
+		}
+		return vec;
+	}
+	
+	
+	private function adjustLen(vec:Vector<Float>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			vec.fixed = false;
+			vec.length = len;
+			vec.fixed = true;
+		}
+		return vec;
+	}
+	
+	#end
+	
+	
 	/**
 	 * Fast method to draw a batch of tiles using a Tilesheet
 	 * 
@@ -319,61 +381,7 @@ class Tilesheet
 		
 		#end
 	}
-
-	private function adjustLen(vec:Vector<Float>, len:UInt)
-	{
-		if (vec.length != len)
-		{
-			vec.fixed = false;
-			vec.length = len;
-			vec.fixed = true;
-		}
-		return vec;
-	}
-
-	private function adjustIndices(vec:Vector<Int>, len:UInt)
-	{
-		if (vec.length != len)
-		{
-			vec.fixed = false;
-			if (vec.length > len)
-			{
-				vec.length = len;
-				vec.fixed = true;
-			}
-			else 
-			{
-				var offset6 = vec.length;
-				var offset4 = cast(4 * offset6 / 6, Int);
-				vec.length = len;
-				vec.fixed = true;
-				while (offset6 < len)
-				{
-					vec[offset6] = 0 + offset4;
-					vec[offset6 + 1] = vec[offset6 + 3] = 1 + offset4;
-					vec[offset6 + 2] = vec[offset6 + 5] = 2 + offset4;
-					vec[offset6 + 4] = 3 + offset4;
-					offset4 += 4;
-					offset6 += 6;
-				}
-			}
-		}
-		return vec;
-	}
-
-	private function adjustIDs(vec:Vector<Int>, len:UInt)
-	{
-		if (vec.length != len)
-		{
-			var prevLen = vec.length;
-			vec.fixed = false;
-			vec.length = len;
-			vec.fixed = true;
-			for(i in prevLen...len)
-				vec[i] = -1;
-		}
-		return vec;
-	}
+	
 	
 	
 	// Native Methods
