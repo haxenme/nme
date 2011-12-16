@@ -375,6 +375,7 @@
 				ARCHS = "::CURRENT_ARCHS::";
 				COPY_PHASE_STRIP = YES;
 				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/lib\"",

@@ -29,11 +29,16 @@ class Tilesheet
 	
 	#else
 	
+	static private var centerRatio:Point = new Point(0.5, 0.5);
 	private var bitmapHeight:Int;
 	private var bitmapWidth:Int;
 	private var tilePoints:Array<Point>;
 	private var tiles:Array<Rectangle>;
 	private var tileUVs:Array<Rectangle>;
+	private var _ids:Vector<Int>;
+	private var _vertices:Vector<Float>;
+	private var _indices:Vector<Int>;
+	private var _uvs:Vector<Float>;
 
 	#end
 	
@@ -54,6 +59,10 @@ class Tilesheet
 		tilePoints = new Array<Point>();
 		tiles = new Array<Rectangle>();
 		tileUVs = new Array<Rectangle>();
+		_ids = new Vector<Int>();
+		_vertices = new Vector<Float>();
+		_indices = new Vector<Int>();
+		_uvs = new Vector<Float>();
 		
 		#end
 	}
@@ -68,7 +77,8 @@ class Tilesheet
 		#else
 		
 		tiles.push(rectangle);
-		tilePoints.push(centerPoint);
+		if (centerPoint == null) tilePoints.push(centerRatio);
+		else tilePoints.push(new Point(centerPoint.x / bitmapWidth, centerPoint.y / bitmapHeight));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
 		
 		#end
@@ -142,15 +152,14 @@ class Tilesheet
 			var totalCount = tileData.length;
 			var itemCount = Std.int (totalCount / numValues) + 1;
 			
-			var vertices = new Vector<Float> (itemCount * 8, true);
-			var indices = new Vector<Int> (itemCount * 6, true);
-			var uvtData = new Vector<Float> (itemCount * 8, true);
-			
-			var offset4 = 0;
-			var offset6 = 0;
-			var offset8 = 0;
-			
+			var ids = adjustIDs(_ids, itemCount);
+			var vertices = adjustLen(_vertices, itemCount * 8); 
+			var indices = adjustIndices(_indices, itemCount * 6); 
+			var uvtData = adjustLen(_uvs, itemCount * 8); 
+						
 			var index = 0;
+			var offset8 = 0;
+			var tileIndex:Int = 0;
 			var tileID:Int = 0;
 			var cacheID:Int = -1;
 			
@@ -161,7 +170,7 @@ class Tilesheet
 			var tileHalfWidth:Float = 0;
 			var tileHeight:Float = 0;
 			var tileWidth:Float = 0;
-			
+
 			while (index < totalCount)
 			{
 				var x = tileData[index];
@@ -201,18 +210,19 @@ class Tilesheet
 				
 				var tileWidth = tile.width * scale;
 				var tileHeight = tile.height * scale;
-				var tileHalfWidth = tileWidth / 2;
-				var tileHalfHeight = tileHeight / 2;
 				
 				if (rotation != 0)
 				{
-					// TODO: Honor the tile's center point when rotating
+					var kx = tilePoint.x * tileWidth;
+					var ky = tilePoint.y * tileHeight;
+					var akx = (1 - tilePoint.x) * tileWidth;
+					var aky = (1 - tilePoint.y) * tileHeight;
 					var ca = Math.cos(rotation);
 					var sa = Math.sin(rotation);
-					var ox1 = tileHalfWidth * ca + tileHalfHeight * sa;
-					var ox2 = tileHalfWidth * ca - tileHalfHeight * sa;
-					var oy1 = -tileHalfWidth * sa + tileHalfHeight * ca;
-					var oy2 = tileHalfWidth * sa + tileHalfHeight * ca;
+					var ox1 = kx * ca + ky * sa;
+					var ox2 = akx * ca - aky * sa;
+					var oy1 = -kx * sa + ky * ca;
+					var oy2 = akx * sa + aky * ca;
 					vertices[offset8] = x - ox1;
 					vertices[offset8 + 1] = y - oy1;
 					vertices[offset8 + 2] = x + ox2;
@@ -224,37 +234,26 @@ class Tilesheet
 				}
 				else 
 				{
-					if (tilePoint != null)
-					{
-						x -= tilePoint.x * scale;
-						y -= tilePoint.y * scale;
-					}
-					else 
-					{
-						x -= tileHalfWidth;
-						y -= tileHalfHeight;
-					}
+					x -= tilePoint.x * tileWidth;
+					y -= tilePoint.y * tileHeight;
 					vertices[offset8] = vertices[offset8 + 4] = x;
 					vertices[offset8 + 1] = vertices[offset8 + 3] = y;
 					vertices[offset8 + 2] = vertices[offset8 + 6] = x + tileWidth;
 					vertices[offset8 + 5] = vertices[offset8 + 7] = y + tileHeight;
 				}
 				
-				indices[offset6] = 0 + offset4;
-				indices[offset6 + 1] = indices[offset6 + 3] = 1 + offset4;
-				indices[offset6 + 2] = indices[offset6 + 5] = 2 + offset4;
-				indices[offset6 + 4] = 3 + offset4;
+				if (ids[tileIndex] != tileID)
+				{
+					ids[tileIndex] = tileID;
+					uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
+					uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
+					uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
+					uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
+				}
 				
-				uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
-				uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
-				uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
-				uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
-				
-				offset4 += 4;
-				offset6 += 6;
 				offset8 += 8;
-				
 				index += numValues;
+				tileIndex++;
 			}
 			
 			graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
@@ -320,7 +319,61 @@ class Tilesheet
 		
 		#end
 	}
-	
+
+	private function adjustLen(vec:Vector<Float>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			vec.fixed = false;
+			vec.length = len;
+			vec.fixed = true;
+		}
+		return vec;
+	}
+
+	private function adjustIndices(vec:Vector<Int>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			vec.fixed = false;
+			if (vec.length > len)
+			{
+				vec.length = len;
+				vec.fixed = true;
+			}
+			else 
+			{
+				var offset6 = vec.length;
+				var offset4 = cast(4 * offset6 / 6, Int);
+				vec.length = len;
+				vec.fixed = true;
+				while (offset6 < len)
+				{
+					vec[offset6] = 0 + offset4;
+					vec[offset6 + 1] = vec[offset6 + 3] = 1 + offset4;
+					vec[offset6 + 2] = vec[offset6 + 5] = 2 + offset4;
+					vec[offset6 + 4] = 3 + offset4;
+					offset4 += 4;
+					offset6 += 6;
+				}
+			}
+		}
+		return vec;
+	}
+
+	private function adjustIDs(vec:Vector<Int>, len:UInt)
+	{
+		if (vec.length != len)
+		{
+			var prevLen = vec.length;
+			vec.fixed = false;
+			vec.length = len;
+			vec.fixed = true;
+			for(i in prevLen...len)
+				vec[i] = -1;
+		}
+		return vec;
+	}
 	
 	
 	// Native Methods
