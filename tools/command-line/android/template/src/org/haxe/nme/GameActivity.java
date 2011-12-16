@@ -267,6 +267,12 @@ public class GameActivity extends Activity implements SensorEventListener {
 
        return 0;
     }
+    
+    static public void stopMusic() {
+		Log.v("GameActivity","stop MediaPlayer");
+		if (mMediaPlayer != null)
+			mMediaPlayer.stop();
+	}
 
     static public void postUICallback(final long inHandle)
     {

@@ -100,7 +100,7 @@ public:
 
    bool isComplete()
 	{
-		return true;
+		return false;
 	}
    double getLeft()
 	{
@@ -113,9 +113,15 @@ public:
    double getPosition()
 	{
 	}
-   void stop()
-	{
-	}
+   void stop(){
+	  JNIEnv *env = GetEnv();
+
+	  jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "stopMusic", "()V");
+      if (mid > 0){
+		 env->CallStaticVoidMethod(cls, mid );
+	  }
+   }
    void setTransform(const SoundTransform &inTransform)
 	{
 	}
