@@ -3,6 +3,6 @@
     <user name="gamehaxe"/>
 	<user name="elyon"/>
 	<user name="leesylvester"/>
-	<description>NME provides an API similar to Flash for C++ and Neko, and allows easy publishing for Windows, Mac, Linux, iOS, webOS, Android, and Flash. HTML5 is also supported, together with Jeash.</description>
-    <version name="3.1.0">Improved support for all targets, added support for HTML5 in partnership with Jeash</version>
+	<description>NME provides an API that is similar to Flash, but available for C++ or Neko. Using the NME command-line tools, you can publish a single application for Windows, Mac, Linux, iOS, Android, webOS, Flash and HTML5. C++ targets require HXCPP, and HTML5 requires Jeash.</description>
+    <version name="3.1.1">Fixed drawTriangles, improved drawTiles, improved preloaders and other small fixes.</version>
 </project>

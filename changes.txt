@@ -1,6 +1,17 @@
 NME Changes
 
 
+3.1.1
+===============
+Fixed graphics.drawTriangles (sorry!).
+Moved the drawTiles API to "nme.display.Tilesheet".
+Added Flash support for tileSheet.drawTiles.
+Improved the Flash preloader.
+Added preloader support to HTML5.
+Added "nme.utils.Timer".
+Several small fixes.
+
+
 3.1.0
 ===============
 Added HTML5 support (together with Jeash).
