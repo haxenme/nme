@@ -354,11 +354,11 @@ class NMEInstaller {
 			
 			if (SYS != "Windows") {
 				
-				if (FileSystem.exists ("/usr/lib/haxe/lib/nme/3,1,0")) {
+				if (FileSystem.exists ("/usr/lib/haxe/lib/nme/3,1,1")) {
 					
-					File.copy ("/usr/lib/haxe/lib/nme/3,1,0/tools/command-line/bin/nme.sh", "/usr/lib/haxe/nme");
+					File.copy ("/usr/lib/haxe/lib/nme/3,1,1/tools/command-line/bin/nme.sh", "/usr/lib/haxe/nme");
 					Sys.command ("chmod", [ "755", "/usr/lib/haxe/nme" ]);
-					Sys.command ("chmod", [ "755", "/usr/lib/haxe/lib/nme/3,1,0/tools/command-line/iphone/iphonesim" ]);
+					Sys.command ("chmod", [ "755", "/usr/lib/haxe/lib/nme/3,1,1/tools/command-line/iphone/iphonesim" ]);
 					
 				}
 				
