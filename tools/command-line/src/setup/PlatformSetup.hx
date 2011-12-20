@@ -279,6 +279,10 @@ class PlatformSetup {
 				
 				defines.set (name, value);
 				
+			} else {
+				
+				defines.remove (name);
+				
 			}
 			
 		}

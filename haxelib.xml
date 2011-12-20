@@ -1,5 +1,4 @@
-<project name="nme" url="http://www.haxenme.org" license="BSD">
-	<!-- NME is licensed under MIT, but BSD is the closest license haxelib supports -->
+<project name="nme" url="http://www.haxenme.org" license="MIT">
     <user name="gamehaxe"/>
 	<user name="elyon"/>
 	<user name="leesylvester"/>
