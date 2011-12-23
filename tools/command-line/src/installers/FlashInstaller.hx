@@ -347,7 +347,7 @@ class FlashInstaller extends InstallerBase {
 			var src = name;
 			var ext = neko.io.Path.extension (src).toLowerCase ();
 			
-			if (ext == "jpg" || ext == "png") {
+			if (ext == "jpg" || ext == "png" || ext == "gif") {
 				
 				var bytes:haxe.io.Bytes;
 				try { bytes = neko.io.File.read (src, true).readAll (); }
