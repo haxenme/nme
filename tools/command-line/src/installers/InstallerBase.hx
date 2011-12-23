@@ -410,6 +410,7 @@ class InstallerBase {
 		setDefault ("SWF_VERSION", "10");
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
 		setDefault ("PRERENDERED_ICON", "false");
+		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
 		defines.set ("target_" + target, "1");
