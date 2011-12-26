@@ -520,6 +520,7 @@ void DisplayObject::setScrollRect(const DRect &inRect)
    UpdateDecomp();
    mDirtyFlags |= dirtLocalMatrix;
    DirtyCache();
+   DirtyUp(dirtCache);
 }
 
 
