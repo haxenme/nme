@@ -837,6 +837,18 @@ value nme_get_resource_path()
 }
 DEFINE_PRIM(nme_get_resource_path,0);
 
+value nme_filesystem_get_special_dir(value inWhich)
+{
+   static std::string dirs[DIR_SIZE];
+   int idx = val_int(inWhich);
+
+   if (dirs[idx]=="")
+      GetSpecialDir((SpecialDir)idx,dirs[idx]);
+
+   return alloc_string(dirs[idx].c_str());
+}
+DEFINE_PRIM(nme_filesystem_get_special_dir,1);
+
 value nme_filesystem_get_volumes(value outVolumes, value inFactory)
 {
    std::vector<VolumeInfo> volumes;
@@ -943,11 +955,23 @@ void OnMainFrameCreated(Frame *inFrame)
    delete sOnCreateCallback;
 }
 
+
+value nme_set_package(value inCompany,value inFile,value inPackage,value inVersion)
+{
+   gCompany = val_string(inCompany);
+   gFile = val_string(inFile);
+   gPackage = val_string(inPackage);
+   gVersion = val_string(inVersion);
+	return val_null;
+}
+DEFINE_PRIM(nme_set_package,4);
+
+
 value nme_create_main_frame(value *arg, int nargs)
 {
    if (!sgIDsInit)
       InitIDs();
-   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aPackage, aIcon, aSIZE };
+   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
 
    sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
 
@@ -956,7 +980,7 @@ value nme_create_main_frame(value *arg, int nargs)
 
    CreateMainFrame(OnMainFrameCreated,
        (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), val_string(arg[aTitle]), val_string(arg[aPackage]), icon );
+       val_int(arg[aFlags]), val_string(arg[aTitle]), icon );
 
    return alloc_null();
 }

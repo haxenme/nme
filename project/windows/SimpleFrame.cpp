@@ -500,7 +500,7 @@ public:
 // --- When using the simple window class -----------------------------------------------
 
 void CreateMainFrame(FrameCreationCallback inOnCreate,int inWidth,int inHeight,unsigned int inFlags,
-      const char *inTitle,const char *inPackge,Surface *inIcon)
+      const char *inTitle,Surface *inIcon)
 {
    RECT r;
    r.left = 100;

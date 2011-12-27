@@ -1096,7 +1096,7 @@ double CapabilitiesGetScreenResolutionY() {
 	
 	
 void CreateMainFrame(FrameCreationCallback inCallback,
-   int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
+   int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();

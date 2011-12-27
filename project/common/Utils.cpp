@@ -2,6 +2,7 @@
 
 #ifdef HX_WINDOWS
 #include <windows.h>
+#include <Shlobj.h>
 #include <time.h>
 #else
 #include <sys/time.h>
@@ -28,6 +29,10 @@ namespace nme
 {
 
 std::string gAssetBase = "";
+std::string gCompany = "nme";
+std::string gPackage = "org.haxe.nme";
+std::string gVersion = "1.0.0";
+std::string gFile = "Application";
 
 
 ByteArray ByteArray::FromFile(const OSChar *inFilename)
@@ -423,6 +428,31 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 }
 
 
+void GetSpecialDir(SpecialDir inDir,std::string &outDir)
+{
+#ifdef HX_WINDOWS
+   char result[MAX_PATH] = ""; 
+   if (inDir==DIR_APP)
+   {
+      GetModuleFileName(0,result,MAX_PATH);
+      result[MAX_PATH-1] = '\0';
+      int len = strlen(result);
+      for(int i=len;i>0;i--)
+         if (result[i]=='\\')
+         {
+            result[i] = '\0';
+            break;
+         }
+      outDir =result;
+   }
+   else
+   {
+      int id_lut[] = { 0, CSIDL_APPDATA, CSIDL_DESKTOPDIRECTORY, CSIDL_MYDOCUMENTS, CSIDL_PROFILE, 0 };
+      SHGetFolderPath(NULL, id_lut[inDir], NULL, SHGFP_TYPE_CURRENT, result);
+      outDir = result;
+   }
+#endif
+}
 
 
 #ifdef ANDROID

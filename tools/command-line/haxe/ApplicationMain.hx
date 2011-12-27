@@ -10,6 +10,7 @@ class ApplicationMain
 
    public static function main()
    {
+      nme.Lib.setPackage("::APP_COMPANY::","::APP_FILE::","::APP_PACKAGE::","::APP_VERSION::");
       #if waxe
       wx.App.boot( function()
       {
@@ -41,8 +42,7 @@ class ApplicationMain
              ( ::WIN_FULLSCREEN:: ? nme.Lib.FULLSCREEN : 0) |
 			 ( ::WIN_ANTIALIASING:: == 4 ? nme.Lib.HW_AA_HIRES : 0) |
 			 ( ::WIN_ANTIALIASING:: == 2 ? nme.Lib.HW_AA : 0),
-          "::APP_TITLE::", 
-          "::APP_PACKAGE::"
+          "::APP_TITLE::"
           ::if (WIN_ICON!=null)::
              , getAsset("::WIN_ICON::")
           ::end::

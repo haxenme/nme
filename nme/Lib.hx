@@ -39,6 +39,10 @@ class Lib
 	private static var nmeStage:Stage = null;
 	private static var sIsInit = false;
 
+	static public var company(default,null):String;
+	static public var version(default,null):String;
+	static public var packageName(default,null):String;
+	static public var file(default,null):String;
 	
 	public static function close()
 	{
@@ -47,7 +51,7 @@ class Lib
 	}
 	
 	
-	public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0,  inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", inPackage:String = "", ?inIcon:BitmapData)
+	public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0,  inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData)
 	{
 		if (sIsInit)
 		{
@@ -71,7 +75,7 @@ class Lib
 				inOnLoaded();
 				#if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
 			},
-			inWidth, inHeight, inFlags, inTitle, inPackage, inIcon == null?null:inIcon.nmeHandle);
+			inWidth, inHeight, inFlags, inTitle, inIcon == null?null:inIcon.nmeHandle);
 	}
 
 
@@ -142,11 +146,12 @@ class Lib
 		#end
 	}
 	
-	
-	static public function setAssetBase(inBase:String)
-	{
-		nme_set_asset_base(inBase);
-	}
+	// Is this still used?
+	//static public function setAssetBase(inBase:String)
+	//{
+		//nme_set_asset_base(inBase);
+	//}
+	//private static var nme_set_asset_base = Loader.load("nme_set_asset_base", 1);
 	
 	
 	public static function setIcon(path:String)
@@ -155,12 +160,18 @@ class Lib
 		var set_icon = Loader.load("nme_set_icon", 1);
 		set_icon(path);
 	}
-	
+
+	public static function setPackage(inCompany:String,inFile:String,inPack:String,inVersion:String)
+	{
+      company = inCompany;
+      file = inFile;
+      packageName = inPack;
+      version = inVersion;
+		nme_set_package(inCompany,inFile,inPack,inVersion);
+	}
 	
 	
 	// Getters & Setters
-	
-	
 	
 	static function nmeGetCurrent():MovieClip
 	{
@@ -190,8 +201,8 @@ class Lib
 	#if android
 	private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
 	#end
+	private static var nme_set_package = Loader.load("nme_set_package", 4);
 	private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
-	private static var nme_set_asset_base = Loader.load("nme_set_asset_base", 1);
 	private static var nme_get_url = Loader.load("nme_get_url", 1);
 
 }

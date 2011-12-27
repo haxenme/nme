@@ -528,13 +528,13 @@ SDLFrame *sgSDLFrame = 0;
 SDL_Joystick *joystick = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, const char *inPackage, Surface *inIcon )
+   unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
 #ifdef HX_MACOS
    MacBoot();
 #endif
 #ifdef WEBOS
-   openlog (inPackage, 0, LOG_USER);
+   openlog (gPackage, 0, LOG_USER);
 #endif
 #ifdef HX_WINDOWS
 	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);

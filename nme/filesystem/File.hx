@@ -8,8 +8,18 @@ import nme.Loader;
 
 class File 
 {
+   static inline var APP = 0;
+   static inline var STORAGE = 1;
+   static inline var DESKTOP = 2;
+   static inline var DOCS = 3;
+   static inline var USER = 4;
 	
-	public static var applicationDirectory(nmeGetApplicationDirectory, null):File;
+	public static var applicationDirectory(nmeGetAppDir, null):File;
+   public static var applicationStorageDirectory(nmeGetStorageDir,null) : File;
+   public static var desktopDirectory(nmeGetDesktopDir,null) : File;
+   public static var documentsDirectory(nmeGetDocsDir,null) : File;
+   public static var userDirectory(nmeGetUserDir,null) : File;
+
 	
 	public var nativePath(default, nmeSetNativePath):String;
 	public var url(default, nmeSetURL):String;
@@ -24,12 +34,25 @@ class File
 	
 	
 	// Getters & Setters
-	
-	
-	
-	private static function nmeGetApplicationDirectory():File
+	private static function nmeGetAppDir():File
 	{
-		return new File(nme_filesystem_get_app_dir());
+		return new File(nme_filesystem_get_special_dir(APP));
+	}
+	private static function nmeGetStorageDir():File
+	{
+		return new File(nme_filesystem_get_special_dir(STORAGE));
+	}
+	private static function nmeGetDesktopDir():File
+	{
+		return new File(nme_filesystem_get_special_dir(DESKTOP));
+	}
+	private static function nmeGetDocsDir():File
+	{
+		return new File(nme_filesystem_get_special_dir(DOCS));
+	}
+	private static function nmeGetUserDir():File
+	{
+		return new File(nme_filesystem_get_special_dir(USER));
 	}
 	
 	
@@ -69,7 +92,7 @@ class File
 	
 	
 	
-	private static var nme_filesystem_get_app_dir = Loader.load("nme_get_resource_path", 0);
+	private static var nme_filesystem_get_special_dir = Loader.load("nme_filesystem_get_special_dir", 1);
    #if iphone
 	private static var nme_get_resource_path = Loader.load("nme_get_resource_path", 0);
    #end

@@ -62,10 +62,26 @@ namespace nme
 {
 
 extern std::string gAssetBase;
+extern std::string gCompany;
+extern std::string gPackage;
+extern std::string gVersion;
+extern std::string gFile;
 
 const std::string GetUniqueDeviceIdentifier();
 const std::string &GetResourcePath();
 const std::string &GetDocumentsPath();
+
+enum SpecialDir
+{
+   DIR_APP,
+   DIR_STORAGE,
+   DIR_DESKTOP,
+   DIR_DOCS,
+   DIR_USER,
+
+   DIR_SIZE
+};
+void GetSpecialDir(SpecialDir inDir,std::string &outDir);
 
 
 #ifdef ANDROID
