@@ -826,7 +826,7 @@ value nme_capabilities_get_screen_resolution_y () {
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_y, 0);
 
 
-// --- getResourcePath -------------------------------------------------------------
+// ---  nme.filesystem -------------------------------------------------------------
 value nme_get_resource_path()
 {
 #if defined(IPHONE)
@@ -836,6 +836,28 @@ value nme_get_resource_path()
 #endif
 }
 DEFINE_PRIM(nme_get_resource_path,0);
+
+value nme_filesystem_get_volumes(value outVolumes, value inFactory)
+{
+   std::vector<VolumeInfo> volumes;
+   nme::GetVolumeInfo(volumes);
+   for(int v=0;v<volumes.size();v++)
+   {
+      VolumeInfo &info = volumes[v];
+      value args = alloc_array(6);
+      val_array_set_i(args,0,alloc_string(info.path.c_str()));
+      val_array_set_i(args,1,alloc_string(info.name.c_str()));
+      val_array_set_i(args,2,alloc_bool(info.writable));
+      val_array_set_i(args,3,alloc_bool(info.removable));
+      val_array_set_i(args,4,alloc_string(info.fileSystemType.c_str()));
+      val_array_set_i(args,5,alloc_string(info.drive.c_str()));
+      val_array_push(outVolumes, val_call1(inFactory,args) );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_filesystem_get_volumes,2);
+
+
 
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)

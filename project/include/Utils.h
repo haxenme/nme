@@ -2,6 +2,7 @@
 #define NME_UTILS_H
 
 #include <string>
+#include <vector>
 #include <QuickVec.h>
 
 
@@ -160,7 +161,19 @@ void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
 WString UTF8ToWide(const char *inStr);
 
 double GetTimeStamp();
-	
+
+struct VolumeInfo
+{
+   std::string path;
+   std::string name;
+   bool        writable;
+   bool        removable;
+   std::string fileSystemType;
+   std::string drive;
+};
+
+void GetVolumeInfo( std::vector<VolumeInfo> &outInfo );
+
 
 }
 

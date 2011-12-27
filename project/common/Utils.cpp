@@ -350,6 +350,40 @@ double  GetTimeStamp()
 }
 
 
+void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
+{
+#ifdef HX_WINDOWS
+   DWORD drives = GetLogicalDrives();
+   for(int i=0;i<26;i++)
+   {
+      if (drives & (1<<i) )
+      {
+         char buf[4] = "x:\\";
+         buf[0] = i + 'a';
+         unsigned int type =  GetDriveTypeA(buf);
+         if (type>1)
+         {
+            VolumeInfo info;
+            info.path = buf;
+            info.drive = buf;
+            info.name = "C Drive";
+            info.name[0] = i + 'A';
+            info.removable = type == DRIVE_REMOVABLE;
+            info.writable = true; // todo
+            info.fileSystemType = (type == DRIVE_CDROM) ? "CDROM" :
+                               (type == DRIVE_REMOTE) ? "Network" :
+                               (type == DRIVE_RAMDISK) ? "RAMDISK" :
+                               "Hard Drive";
+            outInfo.push_back(info);
+         }
+      }
+   }
+#endif
+}
+
+
+
+
 #ifdef ANDROID
 
 WString::WString(const WString &inRHS)

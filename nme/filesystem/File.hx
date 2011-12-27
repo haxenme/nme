@@ -29,7 +29,7 @@ class File
 	
 	private static function nmeGetApplicationDirectory():File
 	{
-		return new File(nme_get_resource_path());
+		return new File(nme_filesystem_get_app_dir());
 	}
 	
 	
@@ -49,11 +49,13 @@ class File
 		else
 		{
 			url = StringTools.replace(inPath, " ", "%20");
+         #if iphone
 			if (StringTools.startsWith(inPath, nme_get_resource_path()))
 			{
 				url = "app:" + url;
 			}
 			else
+         #end
 			{
 				url = "file:" + url;
 			}
@@ -67,7 +69,10 @@ class File
 	
 	
 	
+	private static var nme_filesystem_get_app_dir = Loader.load("nme_get_resource_path", 0);
+   #if iphone
 	private static var nme_get_resource_path = Loader.load("nme_get_resource_path", 0);
+   #end
 	
 }
 
