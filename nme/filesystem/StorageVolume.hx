@@ -6,6 +6,7 @@ class StorageVolume
                       inRemovable:Bool, inFileSysType:String, inDrive:String)
    {
       rootDirectory = inRootDirPath;
+      name = inName;
       fileSystemType = inFileSysType;
       isRemovable = inRemovable;
       isWritable = inWritable;

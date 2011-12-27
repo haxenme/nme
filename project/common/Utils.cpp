@@ -11,6 +11,7 @@ typedef uint64_t __int64;
 
 #ifdef HX_MACOS
 #include <mach/mach_time.h>  
+#include <CoreServices/CoreServices.h>
 #endif
 
 #ifdef ANDROID
@@ -349,6 +350,16 @@ double  GetTimeStamp()
 #endif
 }
 
+#ifdef HX_MACOS
+std::string ToStdString(const HFSUniStr255 &inStr)
+{
+   std::wstring buf;
+   buf.resize(inStr.length);
+   for(int i=0;i<inStr.length;i++)
+      buf[i] = inStr.unicode[i];
+   return WideToUTF8(buf);
+}
+#endif
 
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 {
@@ -377,6 +388,36 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
             outInfo.push_back(info);
          }
       }
+   }
+#elif defined(HX_MACOS)
+   for(int v=1; true; v++)
+   {
+      FSVolumeInfo vinfo;
+      HFSUniStr255 name;
+      FSRef        root;
+
+      OSErr err = FSGetVolumeInfo( kFSInvalidVolumeRefNum, v, 0,
+          kFSVolInfoFlags,
+          &vinfo,
+          &name,
+          &root);
+
+      if (err)
+         break;
+
+      FSCatalogInfo cinfo;
+      int flags = kFSCatInfoUserAccess;
+      HFSUniStr255 root_name;
+      if (FSGetCatalogInfo(&root,flags,&cinfo,&root_name,0,0) )
+         break;
+
+      VolumeInfo info;
+      info.path = "/Volumes/" + ToStdString(root_name);
+      info.name = ToStdString(name);
+      info.removable = false; // todo
+      info.writable = true; // todo
+      info.fileSystemType = "Hard Drive";
+      outInfo.push_back(info);
    }
 #endif
 }
