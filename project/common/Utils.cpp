@@ -28,7 +28,12 @@ typedef uint64_t __int64;
 namespace nme
 {
 
+#ifdef IPHONE
+std::string gAssetBase = "assets/";
+#else
 std::string gAssetBase = "";
+#endif
+
 std::string gCompany = "nme";
 std::string gPackage = "org.haxe.nme";
 std::string gVersion = "1.0.0";
@@ -428,6 +433,7 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 }
 
 
+#if !defined(HX_MACOS) && !defined(IPHONE)
 void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 {
 #ifdef HX_WINDOWS
@@ -450,9 +456,15 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
       int id_lut[] = { 0, CSIDL_APPDATA, CSIDL_DESKTOPDIRECTORY, CSIDL_MYDOCUMENTS, CSIDL_PROFILE, 0 };
       SHGetFolderPath(NULL, id_lut[inDir], NULL, SHGFP_TYPE_CURRENT, result);
       outDir = result;
+      if (inDir==DIR_STORAGE)
+      {
+         // TODO: Make directory...
+         outDir += "\\" + gCompany + "\\" + gFile;
+      }
    }
 #endif
 }
+#endif
 
 
 #ifdef ANDROID

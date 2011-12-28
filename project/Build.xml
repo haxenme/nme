@@ -57,6 +57,7 @@
   <file name="iPhone/Sound.mm"/>
   <file name="iPhone/NativeFont.mm"/>
   <file name="iPhone/System.mm"/>
+  <file name="cocoa/FileManager.mm"/>
 </files>
 
 <files id="android">
@@ -207,6 +208,7 @@
   <file name="mac/NSFont.cpp"/>
   <file name="mac/MacBoot.m"/>
   <file name="mac/System.mm"/>
+  <file name="cocoa/FileManager.mm"/>
 </files>
 
 <set name="name_prefix" value="lib" if="iphone" />

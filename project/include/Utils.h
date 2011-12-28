@@ -69,7 +69,7 @@ extern std::string gFile;
 
 const std::string GetUniqueDeviceIdentifier();
 const std::string &GetResourcePath();
-const std::string &GetDocumentsPath();
+
 
 enum SpecialDir
 {

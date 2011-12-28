@@ -4,7 +4,7 @@ class ApplicationMain
 {
    public static function main()
    {
-      nme.Lib.setAssetBase("assets/");
+      nme.Lib.setPackage("::APP_COMPANY::","::APP_FILE::","::APP_PACKAGE::","::APP_VERSION::");
       ::if (IPHONE_ORIENTATION!=null)::
       nme.display.Stage.setFixedOrientation(nme.display.Stage.Orientation::IPHONE_ORIENTATION::);
       ::end::
@@ -17,8 +17,7 @@ class ApplicationMain
              ( ::WIN_RESIZEABLE:: ? nme.Lib.RESIZABLE : 0) |
 			 ( ::WIN_ANTIALIASING:: == 4 ? nme.Lib.HW_AA_HIRES : 0) |
 			 ( ::WIN_ANTIALIASING:: == 2 ? nme.Lib.HW_AA : 0),
-          "::APP_TITLE::",
-		  "::APP_PACKAGE::"
+          "::APP_TITLE::"
           );
    }
 

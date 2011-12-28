@@ -73,24 +73,4 @@ const std::string &GetResourcePath()
 }
 
 
-const std::string &GetDocumentsPath()
-{
-   static bool tried = false;
-   static std::string path;
-   if (!tried)
-   {
-      tried = true;
-      NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-
-      NSString *docs = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
-      path = [docs cStringUsingEncoding:1];
-      [pool release];
-      path += "/";
-   }
-
-   return path;
-}
-
-
-
 }
