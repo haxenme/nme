@@ -31,6 +31,17 @@ class File
 		nmeSetNativePath(path);
 	}
 	
+   #if !android
+	private static var nme_filesystem_get_special_dir = Loader.load("nme_filesystem_get_special_dir", 1);
+   #else
+   static var jni_filesystem_get_special_dir:Dynamic = null;
+   static function nme_filesystem_get_special_dir(inWhich:Int) : String
+   {
+      if (jni_filesystem_get_special_dir==null)
+         jni_filesystem_get_special_dir = nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","getSpecialDir","(I)Ljava/lang/String;");
+      return jni_filesystem_get_special_dir(inWhich);
+   }
+   #end
 	
 	
 	// Getters & Setters
@@ -92,7 +103,7 @@ class File
 	
 	
 	
-	private static var nme_filesystem_get_special_dir = Loader.load("nme_filesystem_get_special_dir", 1);
+
    #if iphone
 	private static var nme_get_resource_path = Loader.load("nme_get_resource_path", 0);
    #end

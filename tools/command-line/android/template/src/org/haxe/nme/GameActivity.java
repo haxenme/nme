@@ -109,7 +109,7 @@ public class GameActivity extends Activity implements SensorEventListener {
                   inputStream.close();
                   return result;
            } catch (java.io.IOException e) {
-               Log.e("GameActivity",e.toString());
+               Log.e("GameActivity",  "getResource" + ":" + e.toString());
            }
 
            return null;
@@ -236,6 +236,30 @@ public class GameActivity extends Activity implements SensorEventListener {
     static public int getSoundPoolID() { return mSoundPoolID; }
 
     static public Context getContext() { return mContext; }
+
+    static public String getSpecialDir(int inWhich)
+    {
+       Log.v("GameActivity","Get special Dir " + inWhich);
+       File path = null;
+       switch(inWhich)
+       {
+          case 0: // App
+              return mContext.getPackageCodePath();
+          case 1: // Storage
+              path = mContext.getFilesDir();
+              break;
+          case 2: // Desktop
+             path = android.os.Environment.getDataDirectory();
+             break;
+          case 3: // Docs
+             path =android.os.Environment.getExternalStorageDirectory();
+             break;
+          case 4: // User
+             path = mContext.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
+              break;
+       }
+       return path==null ? "" : path.getAbsolutePath();
+    }
 
     static public int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
     {
