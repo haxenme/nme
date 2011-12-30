@@ -126,7 +126,7 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		if (Sys.getEnv ("ANDROID_HOST") != null && Sys.getEnv ("ANDROID_HOST") != "") {
+		if (Sys.getEnv ("ANDROID_HOST") == null || Sys.getEnv ("ANDROID_HOST") == "") {
 			
 			if (InstallTool.isLinux) {
 				
