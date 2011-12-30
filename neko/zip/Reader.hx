@@ -66,8 +66,12 @@ class Reader {
 		var h = i.readInt31();
 		if( h == 0x02014B50 || h == 0x06054B50 )
 			return null;
-		if( h != 0x04034B50 )
+		if ( h != 0x04034B50 )
+		{
+			//trace ("Invalid Zip Entry");
+			//return null;
 			throw "Invalid Zip Data";
+		}
 		var version = i.readUInt16();
 		var flags = i.readUInt16();
 		//var extraFields = (flags & 8) != 0;
