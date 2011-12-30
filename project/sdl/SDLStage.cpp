@@ -534,7 +534,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    MacBoot();
 #endif
 #ifdef WEBOS
-   openlog (gPackage, 0, LOG_USER);
+   openlog (gPackage.c_str(), 0, LOG_USER);
 #endif
 #ifdef HX_WINDOWS
 	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
