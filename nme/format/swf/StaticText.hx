@@ -59,7 +59,7 @@ class StaticText
          if (has_font)
          {
             var font_id = inStream.ReadID();
-            var ch = inSWF.GetCharacter(font_id);
+            var ch = inSWF.getCharacter(font_id);
             switch(ch)
             {
                case charFont(f):

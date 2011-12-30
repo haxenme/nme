@@ -425,7 +425,7 @@ class Shape
             var smooth = fill == ftBitmapRepeatSmooth||
                          fill ==ftBitmapClippedSmooth;
 
-            var bitmap = mSWF.GetBitmap(id);
+            var bitmap = mSWF.getBitmapDataID(id);
             if (bitmap!=null)
             {
                result.push( function(g:Graphics) {
@@ -439,7 +439,7 @@ class Shape
                result.push( function(g:Graphics) {
                   if (bitmap==null)
                   {
-                     bitmap = s.GetBitmap(id);
+                     bitmap = s.getBitmapDataID(id);
                      if (bitmap==null)
                      {
                         me.mWaitingLoader = true;

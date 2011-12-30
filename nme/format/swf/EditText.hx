@@ -59,7 +59,7 @@ class EditText
       if (has_font)
       {
          var font_id = inStream.ReadID();
-         switch(inSWF.GetCharacter(font_id))
+         switch(inSWF.getCharacter(font_id))
          {
             case charFont(font):
                mTextFormat.font = font.GetName();

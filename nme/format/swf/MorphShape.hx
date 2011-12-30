@@ -494,7 +494,7 @@ class MorphShape
          else if ( (fill & 0x40)!=0)
          {
             var id = inStream.ReadID();
-            var bitmap = mSWF.GetBitmap(id);
+            var bitmap = mSWF.getBitmapDataID(id);
 
 
             inStream.AlignBits();
@@ -533,7 +533,7 @@ class MorphShape
                result.push( function(g:Graphics,f:Float) {
                   if (bitmap==null)
                   {
-                     bitmap = s.GetBitmap(id);
+                     bitmap = s.getBitmapDataID(id);
                      if (bitmap==null)
                      {
                         me.mWaitingLoader = true;
