@@ -1,11 +1,14 @@
-package nme.format.swf;
+package nme.format;
 
+import nme.format.swf.Bitmap;
+import nme.format.swf.EditText;
 import nme.format.swf.SWFStream;
 import nme.format.swf.Tags;
 import nme.format.swf.Character;
 import nme.format.swf.Shape;
 import nme.format.swf.MorphShape;
 import nme.format.swf.Frame;
+import nme.format.swf.Sprite;
 import nme.format.swf.StaticText;
 import nme.format.swf.Font;
 

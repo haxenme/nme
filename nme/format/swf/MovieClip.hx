@@ -5,7 +5,7 @@ import nme.display.Shape;
 import nme.events.Event;
 import nme.text.TextField;
 
-import nme.format.swf.SWF;
+import nme.format.SWF;
 import nme.format.swf.Sprite;
 import nme.format.swf.Frame;
 

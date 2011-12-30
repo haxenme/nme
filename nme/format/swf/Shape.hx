@@ -6,7 +6,7 @@ import nme.display.JointStyle;
 
 import nme.display.Graphics;
 import nme.format.swf.SWFStream;
-import nme.format.swf.SWF;
+import nme.format.SWF;
 
 typedef RenderFunc = Graphics -> Void;
 typedef RenderFuncList = Array<RenderFunc>;

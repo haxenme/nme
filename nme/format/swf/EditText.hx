@@ -6,7 +6,7 @@ import nme.text.TextFieldType;
 import nme.text.TextFormat;
 import nme.text.TextFieldAutoSize;
 
-import nme.format.swf.SWF;
+import nme.format.SWF;
 import nme.format.swf.SWFStream;
 
 class EditText

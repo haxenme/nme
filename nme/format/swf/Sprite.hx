@@ -7,7 +7,7 @@ import nme.format.swf.SWFStream;
 import nme.format.swf.Tags;
 import nme.format.swf.Character;
 import nme.format.swf.Frame;
-import nme.format.swf.SWF;
+import nme.format.SWF;
 import nme.display.BlendMode;
 import nme.filters.BitmapFilter;
 

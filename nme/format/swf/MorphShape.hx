@@ -1,7 +1,7 @@
 package nme.format.swf;
 
 import nme.format.swf.SWFStream;
-import nme.format.swf.SWF;
+import nme.format.SWF;
 import nme.display.Graphics;
 
 import nme.geom.Rectangle;

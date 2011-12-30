@@ -1,7 +1,6 @@
-package nme.format.swf;
+package nme.format;
 
 import haxe.io.BytesInput;
-import nme.format.swf.SWF;
 import nme.utils.ByteArray;
 
 #if cpp
