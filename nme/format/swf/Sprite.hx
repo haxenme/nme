@@ -71,7 +71,7 @@ class Sprite
          var matrix = inStream.ReadMatrix();
          var col_tx:ColorTransform = inStream.BytesLeft()>0 ?
                  inStream.ReadColorTransform(false) : null;
-         mFrame.Place(id,chr,depth,matrix,col_tx,null);
+         mFrame.Place(id,chr,depth,matrix,col_tx,null,null);
       }
       else if (inVersion==2 || inVersion==3)
       {
@@ -181,7 +181,7 @@ class Sprite
             if (has_character)
             {
                mFrame.Remove(depth);
-               mFrame.Place(cid,mSWF.GetCharacter(cid),depth,matrix,col_tx,ratio);
+               mFrame.Place(cid,mSWF.GetCharacter(cid),depth,matrix,col_tx,ratio,mName);
             }
             else
             {
@@ -190,7 +190,7 @@ class Sprite
          }
          else
          {
-            mFrame.Place(cid,mSWF.GetCharacter(cid),depth,matrix,col_tx,ratio);
+            mFrame.Place(cid,mSWF.GetCharacter(cid),depth,matrix,col_tx,ratio,mName);
          }
       }
       else

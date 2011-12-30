@@ -140,6 +140,12 @@ class SWF
 
             case Tags.SymbolClass:
                SymbolClass();
+			
+			case Tags.DefineSceneAndFrameLabelData:
+				//ignored
+			
+			case Tags.MetaData:
+				//ignored
 
             default:
                trace("Unknown tag:" + Tags.string(tag));

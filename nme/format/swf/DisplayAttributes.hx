@@ -31,7 +31,10 @@ class DisplayAttributes
    {
       if (mMatrix!=null)
          inObj.transform.matrix = mMatrix.clone();
-
+		
+      //if (mName != "")
+		 inObj.name = mName;
+		 
       if (mRatio!=null && Std.is(inObj,MorphObject))
       {
          var morph:MorphObject = untyped inObj;

@@ -44,7 +44,7 @@ class Frame
 
    public function Place(inCharID:Int, inChar:Character, inDepth:Int,
                   inMatrix:Matrix, inColTx:ColorTransform,
-                  inRatio:Null<Int>)
+                  inRatio:Null<Int>,inName:Null<String>)
    {
       var old = mObjects.get(inDepth);
       if (old!=null)
@@ -54,7 +54,11 @@ class Frame
       attrib.mMatrix = inMatrix;
       attrib.mColorTransform = inColTx;
       attrib.mRatio = inRatio;
-      attrib.mName = "";
+	  if (inName == null) {
+	      attrib.mName = "";
+	  } else {
+		  attrib.mName = inName;
+	  }
       attrib.mCharacterID = inCharID;
       var obj = new DepthSlot(inChar,inCharID,attrib);
       mObjects.set(inDepth,obj);
