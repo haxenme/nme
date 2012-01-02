@@ -39,8 +39,6 @@ class MovieClip extends nme.display.Sprite
 		mObjectPool = new ObjectPool();
 		mMovieID = mIDBase++;
 		mPlaying = false;
-		
-		addEventListener(Event.ENTER_FRAME, this_onEnterFrame);
 	}
 	
 	
@@ -48,7 +46,7 @@ class MovieClip extends nme.display.Sprite
 	{
 		mCurrentFrame = frame;
 		updateActive();
-		mPlaying = true;
+		play();
 	}
 	
 	
@@ -56,7 +54,7 @@ class MovieClip extends nme.display.Sprite
 	{
 		mCurrentFrame = frame;
 		updateActive();
-		mPlaying = false;
+		stop();
 	}
 	
 	
@@ -68,7 +66,7 @@ class MovieClip extends nme.display.Sprite
 		mTotalFrames = mCurrentFrame = inSprite.GetFrameCount();
 		
 		//mSWF = inSprite.mSWF;
-		mFrames= inSprite.mFrames;
+		mFrames = inSprite.mFrames;
 		mActive = new ActiveObjects();
 		
 		gotoAndPlay(1);
@@ -83,13 +81,22 @@ class MovieClip extends nme.display.Sprite
 	
 	public function play():Void
 	{
-		mPlaying = true;
+		if (mTotalFrames > 1)
+		{
+			mPlaying = true;
+			addEventListener(Event.ENTER_FRAME, this_onEnterFrame);
+		}
+		else
+		{
+			stop ();
+		}
 	}
 	
 	
 	public function stop():Void
 	{
 		mPlaying = false;
+		removeEventListener(Event.ENTER_FRAME, this_onEnterFrame);
 	}
 	
 	
