@@ -192,6 +192,7 @@ class MovieClip extends nme.display.Sprite
 							
 							case charStaticText(text):
 								var s = new Shape();
+								s.cacheAsBitmap = true; // temp fix
 								text.Render(s.graphics);
 								disp_object = s;
 							

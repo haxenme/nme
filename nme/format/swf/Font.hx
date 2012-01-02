@@ -124,7 +124,8 @@ class Font
 
                 //trace("Move : " + pen_x + "," + pen_y);
                 commands.push( function(g:Graphics,m:Matrix)
-                   { g.moveTo(px*m.a+py*m.c+m.tx, px*m.b+py*m.d+m.ty);} );
+                   { //trace ("moveTo(" + (px * m.a + py * m.c + m.tx) + ", " + (px * m.b + py * m.d + m.ty) + ");");
+					   g.moveTo(px*m.a+py*m.c+m.tx, px*m.b+py*m.d+m.ty);} );
 
                 if (new_fill_style0)
                 {
@@ -152,7 +153,8 @@ class Font
                   var py = pen_y;
                   //trace("Line to : " + px + "," + py );
                   commands.push( function(g:Graphics,m:Matrix)
-                     { g.lineTo(px*m.a+py*m.c+m.tx, px*m.b+py*m.d+m.ty);} );
+                     { //trace ("lineTo(" + (px*m.a+py*m.c+m.tx) + ", " + (px*m.b+py*m.d+m.ty) + ");");
+						 g.lineTo(px*m.a+py*m.c+m.tx, px*m.b+py*m.d+m.ty);} );
                }
                // Curved ...
                else
@@ -168,13 +170,14 @@ class Font
                   pen_y = py;
                   //trace("Curve to : " + px + "," + py );
                   commands.push( function(g:Graphics,m:Matrix)
-                     { g.curveTo(cx*m.a+cy*m.c+m.tx, cx*m.b+cy*m.d+m.ty,
+                     { //trace ("curveTo(" + (cx*m.a+cy*m.c+m.tx) + ", " + (cx*m.b+cy*m.d+m.ty) + ", " + (px*m.a+py*m.c+m.tx) + ", " + (px*m.b+py*m.d+m.ty) + ");");
+						 g.curveTo(cx*m.a+cy*m.c+m.tx, cx*m.b+cy*m.d+m.ty,
                          px*m.a+py*m.c+m.tx, px*m.b+py*m.d+m.ty);} );
                }
             }
          }
 
-         commands.push(  function(g:Graphics,m:Matrix) { g.endFill(); } );
+         commands.push(  function(g:Graphics, m:Matrix) { g.endFill(); } );
 
          mGlyphs[i] = { mCommands:commands, mAdvance:1024.0 };
       }
