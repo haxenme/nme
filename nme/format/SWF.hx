@@ -2,13 +2,16 @@ package nme.format;
 
 
 import nme.display.BitmapData;
+import nme.display.Loader;
+import nme.display.MovieClip;
+import nme.events.Event;
+import nme.events.EventDispatcher;
 import nme.geom.Rectangle;
 import nme.format.swf.Bitmap;
 import nme.format.swf.Character;
 import nme.format.swf.EditText;
 import nme.format.swf.Font;
 import nme.format.swf.Frame;
-import nme.format.swf.MovieClip;
 import nme.format.swf.MorphShape;
 import nme.format.swf.Shape;
 import nme.format.swf.Sprite;
@@ -17,8 +20,13 @@ import nme.format.swf.SWFStream;
 import nme.format.swf.Tags;
 import nme.utils.ByteArray;
 
+#if flash
+import flash.system.ApplicationDomain;
+import flash.system.LoaderContext;
+#end
 
-class SWF
+
+class SWF extends EventDispatcher
 {
 	
 	public var backgroundColor (default, null):Int;
@@ -26,16 +34,30 @@ class SWF
 	public var height (default, null):Int;
 	public var width (default, null):Int;
 	
+	private var loaded:Bool;
 	private var mDictionary:Array<Character>;
 	private var mMain:Sprite;
 	private var mStream:SWFStream;
 	private var mSymbols:Hash<Int>;
 	private var mVersion:Int;
 	
+	#if flash
+	private var loader:Loader;
+	#end
 	
-	public function new(inStream:ByteArray)
+	
+	public function new(data:ByteArray)
 	{
-		mStream = new SWFStream(inStream);
+		super ();
+		
+		#if flash
+		loader = new Loader ();
+		var context = new LoaderContext (false, new ApplicationDomain ());
+		loader.contentLoaderInfo.addEventListener (Event.COMPLETE, loader_onComplete);
+		loader.loadBytes (data, context);
+		#else
+		
+		mStream = new SWFStream(data);
 		
 		var mRect = mStream.ReadRect();
 		width = Std.int(mRect.width);
@@ -167,15 +189,43 @@ class SWF
 		
 		mStream.close();
 		mStream = null;
+		
+		loaded = true;
+		
+		#end
+	}
+	
+	
+	override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void {
+		super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		
+		if (loaded)
+		{
+			dispatchEvent(new Event(Event.COMPLETE));
+		}
 	}
 	
 	
 	public function createInstance(name:String = ""):MovieClip
 	{
+		#if flash
+		if (loader == null)
+		{
+			return null;
+		}
+		
+		var applicationDomain = loader.contentLoaderInfo.applicationDomain;
+		
+		if (applicationDomain.hasDefinition(name))
+		{
+			return Type.createEmptyInstance(applicationDomain.getDefinition(name));
+		}
+		#else
+		
 		if (name == "")
 		{
 			var result = new MovieClip();
-			result.CreateFromSWF(mMain);
+			result.nmeCreateFromSWF(mMain);
 			return result;
 		}
 		
@@ -186,12 +236,13 @@ class SWF
 		{
 			case charSprite(sprite) :
 				var result = new MovieClip();
-				result.CreateFromSWF(sprite);
+				result.nmeCreateFromSWF(sprite);
 				return result;
 			
 			default:
 				return null;
 		}
+		#end
 		
 		return null;
 	}
@@ -199,6 +250,20 @@ class SWF
 	
 	public function getBitmapData(name:String):BitmapData
 	{
+		#if flash
+		if (loader == null)
+		{
+			return null;
+		}
+		
+		var applicationDomain = loader.contentLoaderInfo.applicationDomain;
+		
+		if (applicationDomain.hasDefinition(name))
+		{
+			return Type.createEmptyInstance(applicationDomain.getDefinition(name));
+		}
+		#else
+		
 		if (!mSymbols.exists(name))
 			return null;
 		
@@ -210,6 +275,7 @@ class SWF
 			default:
 				return null;
 		}
+		#end
 		
 		return null;
 	}
@@ -351,6 +417,24 @@ class SWF
 			mSymbols.set(str, id);
 		}
 	}
+	
+	
+	
+	
+	// Event Handlers
+	
+	
+	
+	
+	private function loader_onComplete(event:Event):Void
+	{
+		trace ("hi");
+		loaded = true;
+		dispatchEvent(new Event(Event.COMPLETE));
+	}
 
 
 }
+
+
+typedef Function = Dynamic -> Void;
