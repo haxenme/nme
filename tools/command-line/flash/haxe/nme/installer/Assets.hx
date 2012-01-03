@@ -17,52 +17,115 @@ import ApplicationMain;
 class Assets {
 
 	
-	public static function getBitmapData (id:String):BitmapData {
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	
+	private static var initialized:Bool = false;
+	private static var resourceClasses:Hash <Dynamic> = new Hash <Dynamic> ();
+	private static var resourceTypes:Hash <String> = new Hash <String> ();
+	
+	
+	private static function initialize ():Void {
 		
-		switch (id) {
+		if (!initialized) {
 			
-			::foreach assets::::if (type == "image")::case "::id::": return cast (new NME_::flatName:: (), BitmapData);
-			::end::::end::
+			::foreach assets::resourceClasses.set ("::id::", NME_::flatName::);
+			resourceTypes.set ("::id::", "::type::");
+			::end::
+			initialized = true;
+			
 		}
 		
-		return null;
+	}
+	
+	
+	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
+		
+		initialize ();
+		
+		if (resourceTypes.exists (id) && resourceTypes.get (id) == "image") {
+			
+			if (useCache && cachedBitmapData.exists (id)) {
+				
+				return cachedBitmapData.get (id);
+				
+			} else {
+				
+				var data = cast (Type.createEmptyInstance (resourceClasses.get (id)), BitmapData);
+				
+				if (useCache) {
+					
+					cachedBitmapData.set (id, data);
+					
+				}
+				
+				return data;
+				
+			}
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no BitmapData asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getBytes (id:String):ByteArray {
 		
-		switch (id) {
-			
-			::foreach assets::case "::id::": return cast (new NME_::flatName:: (), ByteArray);
-			::end::
-		}
+		initialize ();
 		
-		return null;
+		if (resourceClasses.exists (id)) {
+			
+			return cast (Type.createEmptyInstance (resourceClasses.get (id)), ByteArray);
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getFont (id:String):Font {
 		
-		switch (id) {
-			
-			::foreach assets::::if (type == "font")::case "::id::": return cast (new NME_::flatName:: (), Font); 
-			::end::::end::
-		}
+		initialize ();
 		
-		return null;
+		if (resourceTypes.exists (id) && resourceTypes.get (id) == "font") {
+			
+			return cast (Type.createEmptyInstance (resourceClasses.get (id)), Font);
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
+			
+			return null;
+			
+		}
 		
 	}
 	
 	
 	public static function getSound (id:String):Sound {
 		
-		switch (id) {
+		initialize ();
+		
+		if (resourceTypes.exists (id)) {
 			
-			::foreach assets::::if (type == "sound")::case "::id::": return cast (new NME_::flatName:: (), Sound);::elseif (type == "music")::case "::id::": return cast (new NME_::flatName:: (), Sound);
-			::end::::end::
+			if (resourceTypes.get (id) == "sound" || resourceTypes.get (id) == "music") {
+				
+				return cast (Type.createEmptyInstance (resourceClasses.get (id)), Sound);
+				
+			}
+			
 		}
+		
+		trace ("[nme.Assets] There is no Sound asset with an ID of \"" + id + "\"");
 		
 		return null;
 		
@@ -71,7 +134,7 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		var bytes:ByteArray = getBytes (id);
+		var bytes = getBytes (id);
 		
 		if (bytes == null) {
 			

@@ -16,8 +16,9 @@ import nme.utils.ByteArray;
 class Assets {
 
 	
-	private static var initialized:Bool = false;
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
 	
+	private static var initialized:Bool = false;
 	private static var resourceNames:Hash <String> = new Hash <String> ();
 	private static var resourceTypes:Hash <String> = new Hash <String> ();
 	
@@ -36,13 +37,29 @@ class Assets {
 	}
 	
 	
-	public static function getBitmapData (id:String):BitmapData {
+	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
 		
 		initialize ();
 		
 		if (resourceTypes.exists (id) && resourceTypes.get (id) == "image") {
 			
-			return BitmapData.load (resourceNames.get (id));
+			if (useCache && cachedBitmapData.exists (id)) {
+				
+				return cachedBitmapData.get (id);
+				
+			} else {
+				
+				var data = BitmapData.load (resourceNames.get (id));
+				
+				if (useCache) {
+					
+					cachedBitmapData.set (id, data);
+					
+				}
+				
+				return data;
+				
+			}
 			
 		} else {
 			

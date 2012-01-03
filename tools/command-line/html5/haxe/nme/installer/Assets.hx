@@ -16,11 +16,15 @@ import ApplicationMain;
  */
 
 class Assets {
-
 	
-	public static function getBitmapData (id:String):BitmapData {
+	
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	
+	
+	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
 		
 		// Should be bitmapData.clone (), but stopped working in recent Jeash builds
+		// Without clone, BitmapData is already cached, so ignoring the hash table for now
 		
 		switch (id) {
 			

@@ -15,13 +15,17 @@ import nme.utils.ByteArray;
 class Assets
 {
 	
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	
+	
 	/**
 	 * Gets an instance of an embedded bitmap
 	 * @usage		var bitmap = new Bitmap (Assets.getBitmapData ("image.jpg"));
 	 * @param	id		The ID or asset path for the bitmap
+	 * @param	useCache		(Optional) Whether to use BitmapData from the cache (Default: true)
 	 * @return		A new BItmapData object
 	 */
-	public static function getBitmapData(id:String):BitmapData
+	public static function getBitmapData(id:String, useCache:Bool = true):BitmapData
 	{
 		return null;	
 	}
