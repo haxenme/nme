@@ -48,6 +48,13 @@ class TextField extends InteractiveObject
 	}
 	
 	
+	public function setSelection(beginIndex:Int, endIndex:Int):Void {
+		
+		// ignored right now
+		
+	}
+	
+	
 	public function setTextFormat(format:TextFormat, beginIndex:Int = -1, endIndex:Int = -1):Void
 	{
 		nme_text_field_set_text_format(nmeHandle, format, beginIndex, endIndex);

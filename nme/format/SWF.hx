@@ -214,6 +214,13 @@ class SWF extends EventDispatcher
 			return null;
 		}
 		
+		if (name == "") {
+			
+			// If you want the whole SWF, we have to return the same instance in Flash
+			return cast (loader.content, MovieClip);
+			
+		}
+		
 		var applicationDomain = loader.contentLoaderInfo.applicationDomain;
 		
 		if (applicationDomain.hasDefinition(name))

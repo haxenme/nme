@@ -180,6 +180,7 @@ class MovieClip extends nme.display.Sprite
 							
 							case charShape(shape):
 								var s = new Shape();
+								s.cacheAsBitmap = true; // temp fix
 								//trace( s );
 								//shape.Render(new nme.display.DebugGfx());
 								waiting_loader = shape.Render(s.graphics);
