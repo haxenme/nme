@@ -1,0 +1,46 @@
+-xml bin/cpp.xml
+-cpp obj/cpp
+-cp src
+-cp src/cpp/_std
+haxe.ImportAll
+--no-output
+
+--next
+
+-xml bin/flash.xml
+-swf obj/flash.swf
+-cp src
+haxe.ImportAll
+--no-output
+
+--next
+
+-xml bin/neko.xml
+-neko obj/neko.n
+-cp src
+haxe.ImportAll
+--no-output
+
+--next
+
+-xml bin/js.xml
+-js obj/js.js
+-cp src
+haxe.ImportAll
+--no-output
+
+--next
+
+-xml bin/nme.xml
+-xml ../../haxedoc.xml
+-cpp obj/nme
+-cp src
+nme.ImportAll
+-D nme_document
+-lib nme
+--remap flash:nme
+--no-output
+
+--next
+
+-cmd chxdoc -o output --tmpDir=obj --xmlBasePath=bin cpp.xml,cpp flash.xml,flash neko.xml,neko js.xml,js nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
