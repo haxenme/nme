@@ -207,7 +207,7 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
    if (inDir==DIR_USER)
    {
       #ifdef IPHONE
-      inDir = NSDocumentDirectory;
+      inDir = (SpecialDir)NSDocumentDirectory;
       #else
 	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
       NSString *path = NSHomeDirectory();

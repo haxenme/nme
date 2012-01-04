@@ -1147,7 +1147,9 @@ FILE *OpenRead(const char *inName)
 
       if (!result)
       {
-         std::string doc = GetDocumentsPath() + gAssetBase + inName;
+         std::string doc;
+		 GetSpecialDir(DIR_USER, doc);
+		 doc += gAssetBase + inName;
          //printf("Try doc %s.\n", doc.c_str());
          result = fopen(doc.c_str(),"rb");
       }
