@@ -50,7 +50,7 @@ class Assets {
 				
 			} else {
 				
-				var data = cast (Type.createEmptyInstance (resourceClasses.get (id)), BitmapData);
+				var data = cast (Type.createInstance (resourceClasses.get (id), []), BitmapData);
 				
 				if (useCache) {
 					
