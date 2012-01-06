@@ -1077,21 +1077,25 @@ double CapabilitiesGetScreenDPI() {
 double CapabilitiesGetScreenResolutionX() {
 
 	CGRect screenBounds = [[UIScreen mainScreen] bounds];
-	CGFloat screenScale = [[UIScreen mainScreen] scale];
-	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
-	
-	return screenSize.width;
-
+   if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+   {
+   	CGFloat screenScale = [[UIScreen mainScreen] scale];
+   	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
+   	return screenSize.width;
+   }
+   return screenBounds.size.width;
 }
 	
 double CapabilitiesGetScreenResolutionY() {
 
 	CGRect screenBounds = [[UIScreen mainScreen] bounds];
-	CGFloat screenScale = [[UIScreen mainScreen] scale];
-	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
-	
-	return screenSize.height;
-	
+   if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+   {
+   	CGFloat screenScale = [[UIScreen mainScreen] scale];
+   	CGSize screenSize = CGSizeMake(screenBounds.size.width * screenScale, screenBounds.size.height * screenScale);
+   	return screenSize.height;
+   }
+   return screenBounds.size.height;	
 }	
 	
 	
