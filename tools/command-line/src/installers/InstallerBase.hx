@@ -104,6 +104,12 @@ class InstallerBase {
 		onCreate ();
 		generateContext ();
 		
+		if (defines.get ("SHOW_CONSOLE") != "true") {
+			
+			Sys.putEnv ("no_console", "");
+			
+		}
+		
 		// Commands:
 		//
 		// update = Assets or extenal library have changed - files need updating copy files to target directories
@@ -319,9 +325,19 @@ class InstallerBase {
 				
 				for (path in includePaths) {
 					
-					if (FileSystem.exists (path + "/" + base)) {
+					var includePath = path + "/" + base;
+					
+					if (FileSystem.exists (includePath)) {
 						
-						return path + "/" + base;
+						if (FileSystem.exists (includePath + "/include.nmml")) {
+							
+							return includePath + "/include.nmml";
+							
+						} else {
+							
+							return includePath;
+							
+						}
 						
 					}
 					
@@ -333,7 +349,15 @@ class InstallerBase {
 			
 			if (FileSystem.exists (base)) {
 				
-				return base;
+				if (FileSystem.exists (base + "/include.nmml")) {
+					
+					return base + "/include.nmml";
+					
+				} else {
+					
+					return base;
+					
+				}
 				
 			}
 			
@@ -413,6 +437,7 @@ class InstallerBase {
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
+		setDefault ("SHOW_CONSOLE", "false");
 		defines.set ("target_" + target, "1");
 		defines.set (target, "1");
 		defines.set ("target" , target);
@@ -698,6 +723,23 @@ class InstallerBase {
 	}
 	
 	
+	private function parseBuildElement (element:Fast):Void {
+		
+		if (element.has.name) {
+			
+			defines.set ("APP_FILE", substitute (element.att.name));
+			
+		}
+		
+		if (element.has.path) {
+			
+			defines.set ("BUILD_DIR", substitute (element.att.path));
+			
+		}
+		
+	}
+	
+	
 	public function parseHXCPPConfig ():Void {
 		
 		var env = neko.Sys.environment();
@@ -780,13 +822,25 @@ class InstallerBase {
 					
 					case "path":
 						
-						if (defines.get ("HOST") == "windows") {
+						var value = "";
+						
+						if (element.has.value) {
 							
-							Sys.putEnv ("PATH", substitute (element.att.name) + ";" + Sys.getEnv ("PATH"));
+							value = substitute (element.att.value);
 							
 						} else {
 							
-							Sys.putEnv ("PATH", substitute (element.att.name) + ":" + Sys.getEnv ("PATH"));
+							value = substitute (element.att.name);
+							
+						}
+						
+						if (defines.get ("HOST") == "windows") {
+							
+							Sys.putEnv ("PATH", value + ";" + Sys.getEnv ("PATH"));
+							
+						} else {
+							
+							Sys.putEnv ("PATH", value + ":" + Sys.getEnv ("PATH"));
 							
 						}
 					
@@ -807,14 +861,17 @@ class InstallerBase {
 						if (name != "") {
 							
 							var xml:Fast = new Fast (Xml.parse (File.getContent (name)).firstElement ());
+							var path = Path.directory (name);
 							
 							if (element.has.section) {
 								
-								parseXML (xml, element.att.section);
+								//parseXML (xml, element.att.section);
+								parseXML (xml, element.att.section, path + "/");
 								
 							} else {
 								
-								parseXML (xml, "");
+								//parseXML (xml, "");
+								parseXML (xml, "", path + "/");
 								
 							}
 							
@@ -836,6 +893,15 @@ class InstallerBase {
 						
 						var name:String = substitute (element.att.name);
 						compilerFlags.push ("-lib " + name);
+						
+						var path = Utils.getHaxelib (name) + "/include.nmml";
+						
+						if (FileSystem.exists (path)) {
+							
+							var xml:Fast = new Fast (Xml.parse (File.getContent (path)).firstElement ());
+							parseXML (xml, "", path + "/");
+							
+						}
 					
 					case "ndll":
 						
@@ -877,6 +943,12 @@ class InstallerBase {
 						var width:String = "";
 						var height:String = "";
 						
+						if (element.has.size) {
+							
+							width = height = substitute (element.att.size);
+							
+						}
+						
 						if (element.has.width) {
 							
 							width = substitute (element.att.width);
@@ -891,9 +963,19 @@ class InstallerBase {
 						
 						icons.add (new Icon (name, width, height));
 					
-					case "classpath":
+					case "source", "classpath":
 						
-						var path = extensionPath + substitute (element.att.name);
+						var path = "";
+						
+						if (element.has.path) {
+							
+							path = extensionPath + substitute (element.att.path);
+							
+						} else {
+							
+							path = extensionPath + substitute (element.att.name);
+							
+						}
 						
 						if (useFullClassPaths ()) {
 							
@@ -904,6 +986,8 @@ class InstallerBase {
 						compilerFlags.push ("-cp " + path);
 					
 					case "extension":
+						
+						// deprecated -- use <haxelib name="sqlite"/> or <include path="path/to/sqlite/include.nmml" /> instead
 						
 						var name:String = null;
 						var path:String = null;
@@ -952,7 +1036,15 @@ class InstallerBase {
 						
 						compilerFlags.push("-D " + substitute (substitute (element.att.name)));
 					
-					case "compilerflag":
+					case "haxeflag", "compilerflag":
+						
+						var flag = substitute (element.att.name);
+						
+						if (element.has.value) {
+							
+							flag += " " + substitute (element.att.value);
+							
+						}
 						
 						compilerFlags.push(substitute (substitute (element.att.name)));
 					
@@ -967,6 +1059,18 @@ class InstallerBase {
 					case "preloader":
 						
 						defines.set ("PRELOADER_NAME", substitute (element.att.name));
+					
+					case "swf":
+						
+						if (element.has.version) {
+							
+							defines.set ("SWF_VERSION", substitute (element.att.version));
+							
+						}
+					
+					case "build":
+						
+						parseBuildElement (element);
 					
 					case "section":
 						
