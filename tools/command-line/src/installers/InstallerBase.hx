@@ -290,11 +290,21 @@ class InstallerBase {
 		var nmml = '<?xml version="1.0" encoding="utf-8"?>\n<project>\n\n';
 		var environment = Sys.environment ();
 		
+		nmml += new Template ('	<app title="::APP_TITLE::" description="::APP_DESCRIPTION::" package="::APP_PACKAGE::" version="::APP_VERSION::" company="::APP_COMPANY::" />\n\n').execute (context);
+		
+		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
+		
+		nmml += '	<build name="' + defines.get ("APP_FILE") + '" path="' + buildDirectory + '" />\n\n';
+		
 		for (key in defines.keys ()) {
 			
-			if (!environment.exists (key) || environment.get (key) != defines.get (key)) {
+			if (key.indexOf ("WIN_") != 0 && key.indexOf ("APP_") != 0) {
 				
-				nmml += '	<set name="' + key + '" value="' + defines.get (key) + '" />\n';
+				if (!environment.exists (key) || environment.get (key) != defines.get (key)) {
+					
+					nmml += '	<set name="' + key + '" value="' + defines.get (key) + '" />\n';
+					
+				}
 				
 			}
 			
