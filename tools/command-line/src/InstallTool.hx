@@ -447,7 +447,7 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println (" Usage : nme setup (target)");
 			Lib.println (" Usage : nme help");
-			Lib.println (" Usage : nme [update|build|run|test] <project> <target> [options]");
+			Lib.println (" Usage : nme [update|build|run|test|display] <project> <target> [options]");
 			Lib.println (" Usage : nme document <project> (target)");
 			Lib.println (" Usage : nme generate <args> [options]");
 			Lib.println ("");
@@ -459,6 +459,7 @@ class InstallTool {
 			Lib.println ("  build : Compile and package for the specified project/target");
 			Lib.println ("  run : Install and run for the specified project/target");
 			Lib.println ("  test : Update, build and run in one command");
+			Lib.println ("  display : Display information for the specified project/target");
 			Lib.println ("  document : Generate documentation using haxedoc");
 			Lib.println ("  generate : Tools to help create source code automatically");
 			Lib.println ("");
@@ -477,6 +478,8 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println ("  -debug : Use debug configuration instead of release");
 			Lib.println ("  -verbose : Print additional information (when available)");
+			Lib.println ("  -hxml : Print HXML information (for use with display)");
+			Lib.println ("  -nmml : Print NMML information (for use with display)");
 			Lib.println ("  -xml : Generate XML type information, for use with document");
 			Lib.println ("  -java-externs : Generate Haxe source code from compiled Java classes");
 			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");

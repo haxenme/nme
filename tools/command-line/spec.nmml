@@ -256,7 +256,7 @@
 		
 	-->
 	
-	<haxeflag name="-swf-lib library.swf" if="flash" />
+	<haxeflag name="--no-traces" />
 	<haxeflag name="-swf-lib" value="library.swf" if="flash" />
 	
 	
@@ -336,7 +336,7 @@
 		
 	-->
 	
-	<prelaoder name="MyCoolPreloader" />
+	<preloader name="MyCoolPreloader" />
 	
 	
 	
