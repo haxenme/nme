@@ -68,6 +68,7 @@ class NekoInstaller extends DesktopInstaller {
 		super.generateContext ();
 		
 		context.NEKO_FILE = getBuildDir () + "/ApplicationMain.n";
+		context.HXML_PATH = NME + "/tools/command-line/neko/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}
    

@@ -17,10 +17,12 @@ class DocumentationGenerator extends InstallerBase {
 		
 		super ();
 		
+		document ();
+		
 	}
 	
 	
-	private override function document ():Void {
+	private function document ():Void {
 		
 		var paths = getTypePaths ();
 		

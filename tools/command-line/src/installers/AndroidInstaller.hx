@@ -113,8 +113,10 @@ class AndroidInstaller extends InstallerBase {
 	}
 
 	override function generateContext ():Void {
+		
 		super.generateContext ();
-      updateIcon();
+		
+		updateIcon();
 	}
 	
 	

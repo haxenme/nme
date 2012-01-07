@@ -164,13 +164,22 @@ class InstallerBase {
 			
 		}
 		
-		if (command == "document") {
+		if (command == "display") {
 			
-			document ();
+			if (targetFlags.exists ("nmml")) {
+				
+				displayNMML ();
+				
+			//} else if (targetFlags.exists ("hxml")) {
+			} else {
+				
+				displayHXML ();
+				
+			}
 			
 		}
 		
-		var validCommands = [ "update", "build", "test", "run", "rerun", "trace", "uninstall", "document" ];
+		var validCommands = [ "update", "build", "test", "run", "rerun", "trace", "uninstall", "document", "display" ];
 		
 		if (!validCommands.remove (command)) {
 			
@@ -191,7 +200,6 @@ class InstallerBase {
 	function install () { throw "Error : Install not implemented."; }
 	function traceMessages () { /* Not required on all platforms. */ }
 	function uninstall () { throw "Error : Uninstall not implemented."; }
-	function document () { /* Not required on all platforms. */ }
 	
 	
 	function addFile (file:String):Bool {
@@ -260,6 +268,115 @@ class InstallerBase {
 			copyIfNewer (source, destination);
 			
 		}
+		
+	}
+	
+	
+	private function displayHXML ():Void {
+		
+		var templateFile = context.HXML_PATH;
+		
+		var fileContents:String = File.getContent (templateFile);
+		var template:Template = new Template (fileContents);
+		var result:String = template.execute (context);
+		
+		Lib.println (result);
+		
+	}
+	
+	
+	private function displayNMML ():Void {
+		
+		var nmml = '<?xml version="1.0" encoding="utf-8"?>\n<project>\n\n';
+		var environment = Sys.environment ();
+		
+		for (key in defines.keys ()) {
+			
+			if (!environment.exists (key) || environment.get (key) != defines.get (key)) {
+				
+				nmml += '	<set name="' + key + '" value="' + defines.get (key) + '" />\n';
+				
+			}
+			
+		}
+		
+		if (defines.keys () != null) {
+			
+			nmml += "\n";
+			
+		}
+		
+		for (compilerFlag in compilerFlags) {
+			
+			nmml += '	<haxeflag name="' + compilerFlag + '" />\n';
+			
+		}
+		
+		if (compilerFlags.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
+		for (includePath in includePaths) {
+			
+			nmml += '	<source path="' + includePath + '" />\n';
+			
+		}
+		
+		if (includePaths.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
+		for (javaPath in javaPaths) {
+			
+			nmml += '	<java path="' + javaPath + '" />\n';
+			
+		}
+		
+		if (javaPaths.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
+		for (ndll in ndlls) {
+			
+			nmml += '	<ndll name="' + ndll.name + '"';
+			
+			if (ndll.haxelib != null && ndll.haxelib != "") {
+				
+				nmml += ' haxelib="' + ndll.haxelib + '"';
+				
+			}
+			
+			nmml += ' />\n';
+			
+		}
+		
+		if (ndlls.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
+		for (asset in assets) {
+			
+			nmml += '	<assets path="' + asset.sourcePath + '" rename="' + asset.targetPath + '" name="' + asset.id + '" type="' + asset.type + '" />\n';
+			
+		}
+		
+		if (assets.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
+		nmml += "</project>";
+		
+		Lib.println (nmml);
 		
 	}
 	
@@ -401,6 +518,7 @@ class InstallerBase {
 		
 		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
 		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
+		context.HXML_PATH = NME + "/tools/command-line/" + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}
 	

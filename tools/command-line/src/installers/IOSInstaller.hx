@@ -66,6 +66,8 @@ class IOSInstaller extends InstallerBase {
 			
 		}
 		
+		context.HXML_PATH = NME + "/tools/command-line/iphone/haxe/Build.hxml";
+		
 		updateIcon ();
 		
 	}

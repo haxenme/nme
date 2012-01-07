@@ -32,6 +32,7 @@ class CPPInstaller extends DesktopInstaller {
 		super.generateContext ();
 		
 		context.CPP_DIR = getBuildDir ();
+		context.HXML_PATH = NME + "/tools/command-line/cpp/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}
 	
