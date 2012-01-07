@@ -16,8 +16,6 @@ class AndroidInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/android/bin";
 		mkdir (destination);
 		
-		context.CPP_DIR = buildDirectory + "/android/obj";
-		
 		recursiveCopy (NME + "/tools/command-line/android/template", destination);
 		
 		var packageDirectory:String = defines.get ("APP_PACKAGE");
@@ -116,7 +114,10 @@ class AndroidInstaller extends InstallerBase {
 		
 		super.generateContext ();
 		
+		context.CPP_DIR = buildDirectory + "/android/obj";
+		
 		updateIcon();
+		
 	}
 	
 	

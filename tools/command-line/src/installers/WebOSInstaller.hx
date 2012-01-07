@@ -17,8 +17,6 @@ class WebOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/webos/bin/";
 		mkdir (destination);
 		
-		context.CPP_DIR = buildDirectory + "/webos/obj";
-		
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
 		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
 		
@@ -64,6 +62,8 @@ class WebOSInstaller extends InstallerBase {
 		}
 		
 		super.generateContext ();
+		
+		context.CPP_DIR = buildDirectory + "/webos/obj";
 		
 		updateIcon ();
 		
