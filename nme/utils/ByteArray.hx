@@ -366,7 +366,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function writeByte(value:Int)
+	inline public function writeByte(value:Int)
 	{
 		push(value);
 	}
