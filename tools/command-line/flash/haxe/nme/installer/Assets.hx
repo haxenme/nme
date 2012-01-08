@@ -79,7 +79,7 @@ class Assets {
 		
 		if (resourceClasses.exists (id)) {
 			
-			return cast (Type.createEmptyInstance (resourceClasses.get (id)), ByteArray);
+			return cast (Type.createInstance (resourceClasses.get (id), []), ByteArray);
 			
 		} else {
 			
@@ -98,7 +98,7 @@ class Assets {
 		
 		if (resourceTypes.exists (id) && resourceTypes.get (id) == "font") {
 			
-			return cast (Type.createEmptyInstance (resourceClasses.get (id)), Font);
+			return cast (Type.createInstance (resourceClasses.get (id), []), Font);
 			
 		} else {
 			
@@ -119,7 +119,7 @@ class Assets {
 			
 			if (resourceTypes.get (id) == "sound" || resourceTypes.get (id) == "music") {
 				
-				return cast (Type.createEmptyInstance (resourceClasses.get (id)), Sound);
+				return cast (Type.createInstance (resourceClasses.get (id), []), Sound);
 				
 			}
 			
