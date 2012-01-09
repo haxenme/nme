@@ -71,7 +71,7 @@ class InstallerBase {
 		
 		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
 			
-			error ("ERROR: Your application package must have at least three segments, like <app package=\"com.example.myapp\" />");
+			error ("Your application package must have at least three segments, like <app package=\"com.example.myapp\" />");
 			
 		}
 		
@@ -183,7 +183,7 @@ class InstallerBase {
 		
 		if (!validCommands.remove (command)) {
 			
-			error ("ERROR: Command \"" + command + "\" has not been implemented");
+			error ("Command \"" + command + "\" has not been implemented");
 			
 		}
 		
@@ -193,13 +193,13 @@ class InstallerBase {
 	function onCreate ():Void { }
 	function useFullClassPaths () { return false; }
 	
-	function update () { error ("ERROR: Update not implemented."); }
-	function build () { error ("ERROR: Build not implemented."); }
-	function run () { error ("ERROR: Run not implemented."); }
+	function update () { error ("Update not implemented."); }
+	function build () { error ("Build not implemented."); }
+	function run () { error ("Run not implemented."); }
 	function updateDevice () { /* Not required on all platforms. */ }
-	function install () { error ("ERROR: Install not implemented."); }
+	function install () { error ("Install not implemented."); }
 	function traceMessages () { /* Not required on all platforms. */ }
-	function uninstall () { error ("ERROR: Uninstall not implemented."); }
+	function uninstall () { error ("Uninstall not implemented."); }
 	
 	
 	function addFile (file:String):Bool {
@@ -399,7 +399,7 @@ class InstallerBase {
 				
 				try {
 					
-					nme_error_output (message);
+					nme_error_output ("Error: " + message);
 					
 				} catch (e:Dynamic) {}
 				
@@ -409,7 +409,7 @@ class InstallerBase {
 			
 			if (message != "") {
 				
-				Lib.println (message);
+				Lib.println ("Error: " + message);
 				
 			}
 			
@@ -608,7 +608,7 @@ class InstallerBase {
 		
 		if (source == null || !FileSystem.exists (source)) {
 			
-			error ("ERROR: Source path \"" + source + "\" does not exist");
+			error ("Source path \"" + source + "\" does not exist");
 			return false;
 			
 		}
@@ -727,7 +727,7 @@ class InstallerBase {
 		}
 		
 		if ( path=="" && (element.has.include || element.has.exclude || type!="" ) ) {
-			error ("ERROR: In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
+			error ("In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
          return;
       }
 		else if (!element.elements.hasNext ()) {
@@ -737,7 +737,7 @@ class InstallerBase {
 
 			if (path == "" || !FileSystem.exists (path)) {
 				
-				error ("ERROR: Could not find asset directory \"" + path + "\"");
+				error ("Could not find asset directory \"" + path + "\"");
 				return;
 				
 			}
@@ -920,7 +920,7 @@ class InstallerBase {
 				
 			} catch (e:Dynamic) {
 				
-				error ("ERROR: \"" + config + "\" contains invalid XML data");
+				error ("\"" + config + "\" contains invalid XML data");
 				
 			}
 			
@@ -964,7 +964,7 @@ class InstallerBase {
 			
 		} catch (e:Dynamic) {
 			
-			error ("ERROR: \"" + projectFile + "\" contains invalid XML data", e);
+			error ("\"" + projectFile + "\" contains invalid XML data", e);
 			
 		}
 		
@@ -1007,7 +1007,7 @@ class InstallerBase {
 					
 					case "error":
 						
-						error ("ERROR: " + substitute (element.att.value));
+						error (substitute (element.att.value));
 					
 					case "path":
 						
@@ -1067,7 +1067,7 @@ class InstallerBase {
 							
 						} else if (!element.has.noerror) {
 							
-							error ("ERROR: Could not find include file \"" + name + "\"");
+							error ("Could not find include file \"" + name + "\"");
 							
 						}
 					
@@ -1351,7 +1351,7 @@ class InstallerBase {
 			
 			if (path != "" && !FileSystem.exists (FileSystem.fullPath (new Path (path).dir))) {
 				
-				error ("ERROR: The specified target path \"" + path + "\" does not exist");
+				error ("The specified target path \"" + path + "\" does not exist");
 				
 			}
 			
