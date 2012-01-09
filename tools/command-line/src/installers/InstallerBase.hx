@@ -399,7 +399,7 @@ class InstallerBase {
 				
 				try {
 					
-					nme_error_output ("Error: " + message);
+					nme_error_output ("Error: " + message + "\n");
 					
 				} catch (e:Dynamic) {}
 				
