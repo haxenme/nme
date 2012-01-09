@@ -71,7 +71,7 @@ class InstallerBase {
 		
 		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
 			
-			throw "Error: Your application package must have at least three segments, like <app package=\"com.example.myapp\" />";
+			error ("ERROR: Your application package must have at least three segments, like <app package=\"com.example.myapp\" />");
 			
 		}
 		
@@ -183,7 +183,7 @@ class InstallerBase {
 		
 		if (!validCommands.remove (command)) {
 			
-			throw ("Error : Command \"" + command + "\" not implemented");
+			error ("ERROR: Command \"" + command + "\" has not been implemented");
 			
 		}
 		
@@ -193,13 +193,13 @@ class InstallerBase {
 	function onCreate ():Void { }
 	function useFullClassPaths () { return false; }
 	
-	function update () { throw "Error : Update not implemented."; }
-	function build () { throw "Error : Build not implemented."; }
-	function run () { throw "Error : Run not implemented."; }
+	function update () { error ("ERROR: Update not implemented."); }
+	function build () { error ("ERROR: Build not implemented."); }
+	function run () { error ("ERROR: Run not implemented."); }
 	function updateDevice () { /* Not required on all platforms. */ }
-	function install () { throw "Error : Install not implemented."; }
+	function install () { error ("ERROR: Install not implemented."); }
 	function traceMessages () { /* Not required on all platforms. */ }
-	function uninstall () { throw "Error : Uninstall not implemented."; }
+	function uninstall () { error ("ERROR: Uninstall not implemented."); }
 	
 	
 	function addFile (file:String):Bool {
@@ -391,6 +391,25 @@ class InstallerBase {
 	}
 	
 	
+	private static function error (message:String = "", e:Dynamic = null):Void {
+		
+		if (message != "") {
+			
+			Lib.println (message);
+			
+		}
+		
+		if (InstallTool.verbose && e != null) {
+			
+			Lib.rethrow (e);
+			
+		}
+		
+		Sys.exit (1);
+		
+	}
+	
+	
 	private function filter (text:String, include:String = "*", exclude:String = ""):Bool {
 		
 		include = StringTools.replace (include, ".", "\\.");
@@ -577,7 +596,7 @@ class InstallerBase {
 		
 		if (source == null || !FileSystem.exists (source)) {
 			
-			throw ("Error : Source path \"" + source + "\" does not exist");
+			error ("ERROR: Source path \"" + source + "\" does not exist");
 			return false;
 			
 		}
@@ -696,7 +715,7 @@ class InstallerBase {
 		}
 		
 		if ( path=="" && (element.has.include || element.has.exclude || type!="" ) ) {
-			throw ("Error : No path specified for asset filter.");
+			error ("ERROR: In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
          return;
       }
 		else if (!element.elements.hasNext ()) {
@@ -706,7 +725,7 @@ class InstallerBase {
 
 			if (path == "" || !FileSystem.exists (path)) {
 				
-				throw ("Error : Could not find asset directory \"" + path + "\"");
+				error ("ERROR: Could not find asset directory \"" + path + "\"");
 				return;
 				
 			}
@@ -881,7 +900,19 @@ class InstallerBase {
 		
 		if (neko.FileSystem.exists (config)) {
 			
-			parseXML (new Fast (Xml.parse (File.getContent (config)).firstElement ()), "");
+			var xml:Fast = null;
+			
+			try {
+				
+				xml = new Fast (Xml.parse (File.getContent (config)).firstElement ());
+				
+			} catch (e:Dynamic) {
+				
+				error ("ERROR: \"" + config + "\" contains invalid XML data");
+				
+			}
+			
+			parseXML (xml, "");
 			
 		}
 		
@@ -913,7 +944,19 @@ class InstallerBase {
 	
 	private function parseProjectFile ():Void {
 		
-		parseXML (new Fast (Xml.parse (File.getContent (projectFile)).firstElement ()), "");
+		var xml:Fast = null;
+		
+		try {
+			
+			xml = new Fast (Xml.parse (File.getContent (projectFile)).firstElement ());
+			
+		} catch (e:Dynamic) {
+			
+			error ("ERROR: \"" + projectFile + "\" contains invalid XML data", e);
+			
+		}
+		
+		parseXML (xml, "");
 		
 	}
 	
@@ -952,7 +995,7 @@ class InstallerBase {
 					
 					case "error":
 						
-						throw (substitute (element.att.value));
+						error ("ERROR: " + substitute (element.att.value));
 					
 					case "path":
 						
@@ -1012,7 +1055,7 @@ class InstallerBase {
 							
 						} else if (!element.has.noerror) {
 							
-							throw ("Error : Could not find include file " + name);
+							error ("ERROR: Could not find include file \"" + name + "\"");
 							
 						}
 					
@@ -1294,17 +1337,17 @@ class InstallerBase {
 		
 		try {
 			
+			if (path != "" && !FileSystem.exists (path)) {
+				
+				error ("ERROR: The specified target path \"" + path + "\" does not exist");
+				
+			}
+			
 			InstallTool.runCommand (path, command, args);
 			
 		} catch (e:Dynamic) {
 			
-			if (InstallTool.verbose) {
-				
-				Lib.rethrow (e);
-				
-			}
-			
-			Sys.exit (1);
+			error ("", e);
 			
 		}
 	  
