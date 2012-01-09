@@ -336,11 +336,11 @@
 		without the extension. If the alias name is different, you can use the alias attribute.
 		
 		If you have set the password attribute, the alias_password attribute will default to the same 
-		value. Otherwise you can add an alias_password attribute to specify a different value.
+		value. Otherwise you can add an alias-password attribute to specify a different value.
 		
 	-->
 	
-	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias_password="4321" />
+	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
 	
 	
 	
