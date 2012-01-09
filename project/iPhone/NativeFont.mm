@@ -288,11 +288,11 @@ public:
          {
             name = inBold ? "TimesNewRomanPS-BoldMT" : "Times New Roman";
          }
-		 else if (!strcasecmp(name.c_str(),"_sans")
+		 else if (!strcasecmp(name.c_str(),"_sans"))
 		 {
 			name = inBold ? "Helvetica-Bold" : "Helvetica";
 		 }
-		 else if (!strcasecmp(name.c_str(),"_typewriter")
+		 else if (!strcasecmp(name.c_str(),"_typewriter"))
 		 {
 			name = inBold ? "CourierNewPS-BoldMT" : "CourierNewPSMT";
 		 }
