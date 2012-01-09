@@ -24,8 +24,12 @@ class Font
 	
 	public static function load(inFilename:String):NativeFontData
 	{
+		#if !iphone
 		var result = freetype_import_font(inFilename, null, 1024 * 20);
 		return result;
+		#else
+		return null;
+		#end
 	}
 	
 	
@@ -34,7 +38,9 @@ class Font
 	
 	
 	
+	#if !iphone
 	private static var freetype_import_font = Loader.load("freetype_import_font", 3);
+	#end
 	
 }
 

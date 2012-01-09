@@ -284,10 +284,18 @@ public:
       else
       {
          std::string name = WideToUTF8(inName.Get());
-         if (!strcasecmp(name.c_str(),"times"))
+         if (!strcasecmp(name.c_str(),"times") || !strcasecmp(name.c_str(),"_serif"))
          {
             name = inBold ? "TimesNewRomanPS-BoldMT" : "Times New Roman";
          }
+		 else if (!strcasecmp(name.c_str(),"_sans")
+		 {
+			name = inBold ? "Helvetica-Bold" : "Helvetica";
+		 }
+		 else if (!strcasecmp(name.c_str(),"_typewriter")
+		 {
+			name = inBold ? "CourierNewPS-BoldMT" : "CourierNewPSMT";
+		 }
          else
          {
             if (inBold)
