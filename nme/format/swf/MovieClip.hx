@@ -69,10 +69,9 @@ class MovieClip extends MovieClipBase
       mObjectPool = new ObjectPool();
       mMovieID = mIDBase++;
       mPlaying = false;
-      addEventListener(Event.ENTER_FRAME, MyOnEnterFrame);
    }
 
-   public function MyOnEnterFrame(inEvent:Event)
+   private function this_onEnterFrame(inEvent:Event)
    {
       if (mPlaying)
       {
@@ -89,7 +88,7 @@ class MovieClip extends MovieClipBase
    {
       mCurrentFrame = frame;
       UpdateActive();
-      mPlaying = true;
+      play ();
    }
 
    #if !flash override #end
@@ -97,14 +96,27 @@ class MovieClip extends MovieClipBase
    {
       mCurrentFrame = frame;
       UpdateActive();
-      mPlaying = false;
+      stop ();
    }
 
    #if !flash override #end
-   public function play( ) : Void { mPlaying = true; }
+   public function play( ) : Void {
+	   if (mTotalFrames > 1)
+		{
+			mPlaying = true;
+			addEventListener(Event.ENTER_FRAME, this_onEnterFrame);
+		}
+		else
+		{
+			stop ();
+		}
+	}
 
    #if !flash override #end
-   public function stop( ) : Void { mPlaying = false; }
+   public function stop( ) : Void {
+	   mPlaying = false;
+	   removeEventListener(Event.ENTER_FRAME, this_onEnterFrame);
+	}
 
 
    static var count = 0;
@@ -181,11 +193,12 @@ class MovieClip extends MovieClipBase
                    {
                       case charSprite(sprite):
                          var movie = new nme.format.swf.MovieClip();
-                         movie.CreateFromSWF(sprite);
+                         movie.nmeCreateFromSWF(sprite);
                          disp_object = movie;
 
                       case charShape(shape):
                          var s = new flash.display.Shape();
+						 s.cacheAsBitmap = true; // temp fix
                           //trace( s );
                          //shape.Render(new nme.display.DebugGfx());
                          waiting_loader = shape.Render(s.graphics);
@@ -198,6 +211,7 @@ class MovieClip extends MovieClipBase
 
                       case charStaticText(text):
                          var s = new flash.display.Shape();
+						 s.cacheAsBitmap = true; // temp fix
                          text.Render(s.graphics);
                          disp_object = s;
  
@@ -268,7 +282,7 @@ class MovieClip extends MovieClipBase
       }
    }
 
-   public function CreateFromSWF(inSprite:nme.format.swf.Sprite)
+   public function nmeCreateFromSWF(inSprite:nme.format.swf.Sprite)
    {
       mTotalFrames = mCurrentFrame = inSprite.GetFrameCount();
 

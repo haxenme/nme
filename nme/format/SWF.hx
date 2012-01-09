@@ -3,7 +3,6 @@ package nme.format;
 
 import nme.display.BitmapData;
 import nme.display.Loader;
-import nme.display.MovieClip;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.geom.Rectangle;
@@ -13,6 +12,7 @@ import nme.format.swf.EditText;
 import nme.format.swf.Font;
 import nme.format.swf.Frame;
 import nme.format.swf.MorphShape;
+import nme.format.swf.MovieClip;
 import nme.format.swf.Shape;
 import nme.format.swf.Sprite;
 import nme.format.swf.StaticText;
@@ -206,7 +206,7 @@ class SWF extends EventDispatcher
 	}
 	
 	
-	public function createInstance(name:String = ""):MovieClip
+	public function createInstance(name:String = ""):nme.display.MovieClip
 	{
 		#if flash
 		if (loader == null)
