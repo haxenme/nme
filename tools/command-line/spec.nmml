@@ -195,6 +195,21 @@
 	
 	
 	
+	<!-- <output />
+		
+		Use output nodes to set optional configuration for project output.
+		
+		The name attribute will be used for the executable file name, or the name of a generated
+		project in XCode. The path attribute specifies where build files will be placed, and the
+		swf-version attribute will change the version of Flash Player the project is compiled for
+		when targeting Flash. The default swf-version is 10.
+		
+	-->
+	
+	<output name="MyProject" path="Export" swf-version="11" />
+	
+	
+	
 	<!-- <set />
 		
 		Use set nodes to specify values for use, locally, in the NME command-line tools.
@@ -337,18 +352,6 @@
 	-->
 	
 	<preloader name="MyCoolPreloader" />
-	
-	
-	
-	<!-- <swf />
-		
-		Use the swf node to specify the SWF version you want to use when publishing for Flash.
-		
-		Currently, the default target is Flash Player 10.
-		
-	-->
-	
-	<swf version="11" />
 	
 	
 	

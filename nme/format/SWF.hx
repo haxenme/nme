@@ -3,6 +3,7 @@ package nme.format;
 
 import nme.display.BitmapData;
 import nme.display.Loader;
+import nme.display.MovieClip;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.geom.Rectangle;
@@ -12,7 +13,6 @@ import nme.format.swf.EditText;
 import nme.format.swf.Font;
 import nme.format.swf.Frame;
 import nme.format.swf.MorphShape;
-import nme.format.swf.MovieClip;
 import nme.format.swf.Shape;
 import nme.format.swf.Sprite;
 import nme.format.swf.StaticText;
@@ -206,7 +206,7 @@ class SWF extends EventDispatcher
 	}
 	
 	
-	public function createInstance(name:String = ""):nme.display.MovieClip
+	public function createInstance(name:String = ""):MovieClip
 	{
 		#if flash
 		if (loader == null)
@@ -231,7 +231,7 @@ class SWF extends EventDispatcher
 		
 		if (name == "")
 		{
-			var result = new MovieClip();
+			var result = new nme.format.swf.MovieClip();
 			result.nmeCreateFromSWF(mMain);
 			return result;
 		}
@@ -242,7 +242,7 @@ class SWF extends EventDispatcher
 		switch (getCharacter(mSymbols.get(name)))
 		{
 			case charSprite(sprite) :
-				var result = new MovieClip();
+				var result = new nme.format.swf.MovieClip();
 				result.nmeCreateFromSWF(sprite);
 				return result;
 			

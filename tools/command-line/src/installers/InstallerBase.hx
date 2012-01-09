@@ -294,7 +294,7 @@ class InstallerBase {
 		
 		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
 		
-		nmml += '	<build name="' + defines.get ("APP_FILE") + '" path="' + buildDirectory + '" />\n\n';
+		nmml += '	<output name="' + defines.get ("APP_FILE") + '" path="' + buildDirectory + '" swf-version="' + defines.get ("SWF_VERSION") + '" />\n\n';
 		
 		for (key in defines.keys ()) {
 			
@@ -851,23 +851,6 @@ class InstallerBase {
 	}
 	
 	
-	private function parseBuildElement (element:Fast):Void {
-		
-		if (element.has.name) {
-			
-			defines.set ("APP_FILE", substitute (element.att.name));
-			
-		}
-		
-		if (element.has.path) {
-			
-			defines.set ("BUILD_DIR", substitute (element.att.path));
-			
-		}
-		
-	}
-	
-	
 	public function parseHXCPPConfig ():Void {
 		
 		var env = neko.Sys.environment();
@@ -899,6 +882,29 @@ class InstallerBase {
 		if (neko.FileSystem.exists (config)) {
 			
 			parseXML (new Fast (Xml.parse (File.getContent (config)).firstElement ()), "");
+			
+		}
+		
+	}
+	
+	
+	private function parseOutputElement (element:Fast):Void {
+		
+		if (element.has.name) {
+			
+			defines.set ("APP_FILE", substitute (element.att.name));
+			
+		}
+		
+		if (element.has.path) {
+			
+			defines.set ("BUILD_DIR", substitute (element.att.path));
+			
+		}
+		
+		if (element.has.resolve ("swf-version")) {
+			
+			defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
 			
 		}
 		
@@ -982,6 +988,7 @@ class InstallerBase {
 							
 						} else {
 							
+							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							
 						}
@@ -1188,17 +1195,9 @@ class InstallerBase {
 						
 						defines.set ("PRELOADER_NAME", substitute (element.att.name));
 					
-					case "swf":
+					case "output":
 						
-						if (element.has.version) {
-							
-							defines.set ("SWF_VERSION", substitute (element.att.version));
-							
-						}
-					
-					case "build":
-						
-						parseBuildElement (element);
+						parseOutputElement (element);
 					
 					case "section":
 						
@@ -1221,7 +1220,11 @@ class InstallerBase {
 							
 						}
 						
-						if (element.has.alias_password) {
+						if (element.has.resolve ("alias-password")) {
+							
+							defines.set ("KEY_STORE_ALIAS_PASSWORD", substitute (element.att.resolve ("alias-password")));
+							
+						} else if (element.has.alias_password) {
 							
 							defines.set ("KEY_STORE_ALIAS_PASSWORD", substitute (element.att.alias_password));
 							
