@@ -1337,7 +1337,7 @@ class InstallerBase {
 		
 		try {
 			
-			if (path != "" && !FileSystem.exists (path)) {
+			if (path != "" && !FileSystem.exists (FileSystem.fullPath (new Path (path).dir))) {
 				
 				error ("ERROR: The specified target path \"" + path + "\" does not exist");
 				
