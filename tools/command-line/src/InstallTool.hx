@@ -85,7 +85,7 @@ class InstallTool {
 				
 				default:
 					
-					Lib.println ("Error : The specified target is not supported: " + target);
+					error ("'" + target + "' is not a valid target");
 					return;
 				
 			}
@@ -97,9 +97,10 @@ class InstallTool {
 	}
 	
 	
-	private static function argumentError (error:String):Void {
+	private static function argumentError (message:String):Void {
 		
-		Lib.println (error);
+		error (message);
+		//Lib.println (error);
 		/*Lib.println ("-------------------------------");
 		Lib.println ("Usage :  haxelib run nme [-v] COMMAND ...");
 		Lib.println (" COMMAND : copy-if-newer source destination");
@@ -125,6 +126,37 @@ class InstallTool {
 		}
 		
 		File.copy (source, destination);
+		
+	}
+	
+	
+	public static function error (message:String = "", e:Dynamic = null):Void {
+		
+		if (!InstallTool.verbose || e == null) {
+			
+			if (message != "") {
+				
+				try {
+					
+					nme_error_output ("Error: " + message + "\n");
+					
+				} catch (e:Dynamic) {}
+				
+			}
+			
+		} else {
+			
+			if (message != "") {
+				
+				Lib.println ("Error: " + message);
+				
+			}
+			
+			Lib.rethrow (e);
+			
+		}
+		
+		Sys.exit (1);
 		
 	}
 	
@@ -168,7 +200,7 @@ class InstallTool {
 		
 		if (source == null || !FileSystem.exists (source)) {
 			
-			throw ("Error: " + source + " does not exist");
+			error ("Cannot copy \"" + source + "\" because the path does not exist");
 			return false;
 			
 		}
@@ -283,7 +315,7 @@ class InstallTool {
 		
 		if (result != 0) {
 			
-			throw ("Error running: " + command + " " + args.join (" ") + path);
+			throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
 			
 		}
 		
@@ -429,7 +461,7 @@ class InstallTool {
 			
 			if (command != "") {
 				
-				argumentError ("Unknown command: " + command);
+				argumentError ("'" + command + "' is not a valid command");
 				return;
 				
 			}
@@ -496,7 +528,7 @@ class InstallTool {
 			
 			if (words.length != 2) {
 				
-				argumentError ("Wrong number of arguments for command: " + command);
+				argumentError ("Incorrect number of arguments for command '" + command + "'");
 				return;
 				
 			}
@@ -515,7 +547,7 @@ class InstallTool {
 				
 			} else {
 				
-				argumentError ("Wrong number of arguments for command: " + command);
+				argumentError ("Incorrect number of arguments for command '" + command + "'");
 				return;
 				
 			}
@@ -541,7 +573,7 @@ class InstallTool {
 				
 				if (command != "document" || (command == "document" && words.length != 1)) {
 					
-					argumentError ("Wrong number of arguments for command: " + command);
+					argumentError ("Incorrect number of arguments for command '" + command + "'");
 					return;
 					
 				}
@@ -550,7 +582,7 @@ class InstallTool {
 			
 			if (!FileSystem.exists (words[0])) {
 				
-				argumentError ("Error using command: " + command + ", you must specify a *.nmml file");
+				argumentError ("You must specify an NMML file when using the '" + command + "' command");
 				return;
 				
 			}
@@ -580,6 +612,9 @@ class InstallTool {
 		}
 		
 	}
+	
+	
+	private static var nme_error_output = Lib.load ("nme", "nme_error_output", 1);
 	
 	
 }

@@ -393,31 +393,7 @@ class InstallerBase {
 	
 	private static function error (message:String = "", e:Dynamic = null):Void {
 		
-		if (!InstallTool.verbose || e == null) {
-			
-			if (message != "") {
-				
-				try {
-					
-					nme_error_output ("Error: " + message + "\n");
-					
-				} catch (e:Dynamic) {}
-				
-			}
-			
-		} else {
-			
-			if (message != "") {
-				
-				Lib.println ("Error: " + message);
-				
-			}
-			
-			Lib.rethrow (e);
-			
-		}
-		
-		Sys.exit (1);
+		InstallTool.error (message, e);
 		
 	}
 	
@@ -1398,9 +1374,6 @@ class InstallerBase {
 		return newString;
 		
 	}
-	
-	
-	private static var nme_error_output = Lib.load ("nme", "nme_error_output", 1);
 	
 	
 }
