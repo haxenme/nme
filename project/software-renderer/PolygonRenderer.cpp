@@ -374,6 +374,8 @@ struct SpanRect
             alpha = (total) ? inFactor : 0;
          }
       }
+	  if (alpha == 0 && inTrans.mX.begin() == inTrans.mX.end())
+		alpha = (total) ? inFactor : 0;
       if (alpha>0)
         outRuns.push_back( AlphaRun(last_x,mRect.x1(),alpha) );
    }
