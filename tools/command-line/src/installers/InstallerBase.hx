@@ -106,7 +106,7 @@ class InstallerBase {
 		
 		if (defines.get ("SHOW_CONSOLE") != "true") {
 			
-			Sys.putEnv ("no_console", "");
+			Sys.putEnv ("no_console", "1");
 			
 		}
 		
