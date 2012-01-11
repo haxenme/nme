@@ -529,7 +529,7 @@ DEFINE_PRIM(nme_time_stamp,0);
 
 void nme_error_output(value message)
 {
-	fprintf (stderr, val_string (message));
+	fprintf (stderr, "%s", val_string (message));
 }
 DEFINE_PRIM(nme_error_output,1);
 

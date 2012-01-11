@@ -217,7 +217,7 @@ class DesktopInstaller extends InstallerBase {
 
 	override function run ():Void {
 		
-		if (debug && InstallTool.isWindows && defines.exists ("VSDEBUG")) {
+		if (InstallTool.isWindows && targetFlags.exists ("vsdebug") && defines.exists ("VSDEBUG")) {
 			
 			var flag = "/debugexe";
 			
