@@ -216,8 +216,24 @@ class DesktopInstaller extends InstallerBase {
 
 
 	override function run ():Void {
-
-		runCommand (getExeDir (), getCwd () + getExeName (), []);
+		
+		if (debug && InstallTool.isWindows && defines.exists ("VSDEBUG")) {
+			
+			var flag = "/debugexe";
+			
+			if (defines.get ("VSDEBUG").indexOf ("vcexpress.exe") > -1) {
+				
+				flag = "-debugexe";
+				
+			}
+			
+			runCommand (getExeDir (), defines.get ("VSDEBUG"),  [ flag, getCwd () + getExeName () ]);
+			
+		} else {
+			
+			runCommand (getExeDir (), getCwd () + getExeName (), []);
+			
+		}
 		
       /*
          This condition is wrong on mac, for:
