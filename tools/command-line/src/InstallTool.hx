@@ -132,25 +132,17 @@ class InstallTool {
 	
 	public static function error (message:String = "", e:Dynamic = null):Void {
 		
-		if (!InstallTool.verbose || e == null) {
+		if (message != "") {
 			
-			if (message != "") {
+			try {
 				
-				try {
-					
-					nme_error_output ("Error: " + message + "\n");
-					
-				} catch (e:Dynamic) {}
+				nme_error_output ("Error: " + message + "\n");
 				
-			}
+			} catch (e:Dynamic) {}
 			
-		} else {
-			
-			if (message != "") {
-				
-				Lib.println ("Error: " + message);
-				
-			}
+		}
+		
+		if (InstallTool.verbose && e != null) {
 			
 			Lib.rethrow (e);
 			
