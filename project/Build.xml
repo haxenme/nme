@@ -22,6 +22,8 @@
 <set name="mobile" value="1" if="blackberry"/>
 <set name="mobile" value="1" if="gph"/>
 
+<set name="ssl_extra" value="_ssl" if="ssl"/>
+
 <files id="windows">
   <compilerflag value="-Iinclude"/>
   <compilerflag value="-I../../sdl-static/include"/>
@@ -242,8 +244,8 @@
   <lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" if="sdl_static"/>
   <lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" if="sdl_static"/>
   <lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
-  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
-  <lib name="${THIRDPARTY_LIBS}libcurl${name_extra}${SLIBEXT}" if="android"/>
+  <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
+  <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
 
   <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
 
