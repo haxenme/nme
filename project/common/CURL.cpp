@@ -74,7 +74,10 @@ public:
       curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
       if (inCookies && inCookies[0])
          curl_easy_setopt( mHandle, CURLOPT_COOKIE, inCookies );
-      curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
+      if (sCACertFile.empty())
+         curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, FALSE);
+      else
+         curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
  
       mErrorBuf[0] = '\0';
  
@@ -258,15 +261,18 @@ void URLLoader::initialize(const char *inCACertFilePath)
   curl_global_init(CURL_GLOBAL_SSL);
   sCACertFile = std::string(inCACertFilePath);
 
-  /* Uncomment to print version information for libcurl.
+  /* Set to 1 to print version information for libcurl. */
+  #if 0
   curl_version_info_data * info = curl_version_info(CURLVERSION_NOW);
+  printf("SSL cert: %s\n", inCACertFilePath);
   printf("libcurl version: %s\n", info->version);
   printf("Support for SSL in libcurl: %d\n", (info->features) & CURL_VERSION_SSL);
   printf("Supported libcurl protocols: ");
   for (int i=0; info->protocols[i] != 0; i++) {
     printf("%s ", info->protocols[i]);
   }
-  */
+  printf("\n");
+  #endif
 }
 
 }
