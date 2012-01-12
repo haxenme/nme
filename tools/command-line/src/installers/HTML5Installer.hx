@@ -23,6 +23,16 @@ class HTML5Installer extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
 		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
 		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
+		}
+		
 		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -79,15 +89,19 @@ class HTML5Installer extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
-			
-			if (asset.type != "font") {
+			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				mkdir (Path.directory (destination + asset.targetPath));
 				
-			} else {
-				
-				generateFontData (asset, destination);
+				if (asset.type != Asset.TYPE_FONT) {
+					
+					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					
+				} else {
+					
+					generateFontData (asset, destination);
+					
+				}
 				
 			}
 			

@@ -40,6 +40,16 @@ class AndroidInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
 		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
 		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
+		}
+		
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -109,7 +119,8 @@ class AndroidInstaller extends InstallerBase {
 		return { path: path, name: name };
 		
 	}
-
+	
+	
 	override function generateContext ():Void {
 		
 		super.generateContext ();
@@ -172,33 +183,35 @@ class AndroidInstaller extends InstallerBase {
 		runCommand (adb.path, adb.name, [ "uninstall", pack ]);
 		
 	}
+	
 
-   function updateIcon()
-   {
+	private function updateIcon () {
+		
 		var destination:String = buildDirectory + "/android/bin";
 		mkdir (destination);
 		mkdir (destination + "/res/drawable-ldpi/");
 		mkdir (destination + "/res/drawable-mdpi/");
 		mkdir (destination + "/res/drawable-hdpi/");
 		
-      var orig = allFiles.length;
-
-		if (icons.updateIcon (36, 36, destination + "/res/drawable-ldpi/icon.png") )
-         allFiles.push(destination + "/res/drawable-ldpi/icon.png");
-		if (icons.updateIcon (48, 48, destination + "/res/drawable-mdpi/icon.png") )
-         allFiles.push(destination + "/res/drawable-mdpi/icon.png");
-		if (icons.updateIcon (72, 72, destination + "/res/drawable-hdpi/icon.png") )
-         allFiles.push(destination + "/res/drawable-hdpi/icon.png");
-
-      if (orig!=allFiles.length)
-         context.HAS_ICON = true;
-   }
+		var orig = allFiles.length;
+		
+		if (icons.updateIcon (36, 36, destination + "/res/drawable-ldpi/icon.png"))
+			allFiles.push(destination + "/res/drawable-ldpi/icon.png");
+		if (icons.updateIcon (48, 48, destination + "/res/drawable-mdpi/icon.png"))
+			allFiles.push(destination + "/res/drawable-mdpi/icon.png");
+		if (icons.updateIcon (72, 72, destination + "/res/drawable-hdpi/icon.png"))
+			allFiles.push(destination + "/res/drawable-hdpi/icon.png");
+		
+		if (orig!=allFiles.length)
+			context.HAS_ICON = true;
+			
+	}
 	
 	
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/android/bin";
-
+		
 		for (ndll in ndlls) {
 			
 			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so" );
@@ -207,21 +220,26 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			var targetPath:String = "";
-			
-			switch (asset.type) {
+			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				case Asset.TYPE_SOUND, Asset.TYPE_MUSIC:
-
-					targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension (asset.targetPath);
-				default:
+				var targetPath:String = "";
+				
+				switch (asset.type) {
 					
-			      asset.resourceName = asset.flatName;
-					targetPath = destination + "/assets/" + asset.resourceName;
+					case Asset.TYPE_SOUND, Asset.TYPE_MUSIC:
+						
+						targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension (asset.targetPath);
+					
+					default:
+						
+						asset.resourceName = asset.flatName;
+						targetPath = destination + "/assets/" + asset.resourceName;
+					
+				}
+				
+				copyIfNewer (asset.sourcePath, targetPath );
 				
 			}
-			
-			copyIfNewer (asset.sourcePath, targetPath );
 			
 		}
 		

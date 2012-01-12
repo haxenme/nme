@@ -23,6 +23,16 @@ class DesktopInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
 		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
 		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, targetDir + asset.targetPath);
+				
+			}
+			
+		}
+		
 		var hxml:String = targetDir + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -296,8 +306,12 @@ class DesktopInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (content_dir + asset.targetPath));
-			copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
+			if (asset.type != Asset.TYPE_TEMPLATE) {
+				
+				mkdir (Path.directory (content_dir + asset.targetPath));
+				copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
+				
+			}
 			
 		}
 

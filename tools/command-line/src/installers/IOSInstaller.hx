@@ -1,6 +1,7 @@
 package installers;
 
 
+import data.Asset;
 import data.NDLL;
 import neko.FileSystem;
 import neko.io.File;
@@ -87,11 +88,11 @@ class IOSInstaller extends InstallerBase {
 		}
 		
 		if (!defines.exists("IPHONE_VER")) {
-         		
+         	
 			var dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
-         		
+         	
 			if (neko.FileSystem.exists (dev_path)) {
-            			
+            	
 				var best = "";
             	var files = neko.FileSystem.readDirectory (dev_path);
             	var extract_version = ~/^iPhoneOS(.*).sdk$/;
@@ -106,16 +107,16 @@ class IOSInstaller extends InstallerBase {
                      		best = ver;
 						
                		}
-
+					
             	}
 				
             	if (best != "")
                		defines.set ("IPHONE_VER", best);
-			
+				
 			}
 		
       	}
-
+		
 		//setDefault ("IPHONE_VER", "4.3");
 		
 	}
@@ -188,8 +189,16 @@ class IOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + "assets/" + asset.flatName));
-			copyIfNewer (asset.sourcePath, destination + "assets/" + asset.flatName);
+			if (asset.type != Asset.TYPE_TEMPLATE) {
+				
+				mkdir (Path.directory (destination + "assets/" + asset.flatName));
+				copyIfNewer (asset.sourcePath, destination + "assets/" + asset.flatName);
+				
+			} else {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			}
 			
 		}
 		

@@ -20,7 +20,6 @@ class NekoInstaller extends DesktopInstaller {
 	}
 	
    
-
 	override function copyResultTo (inExe:String) {
 		
 		var nekoExecutablePath = NME + "/tools/command-line/neko/bin/neko-" + targetName;
@@ -73,7 +72,7 @@ class NekoInstaller extends DesktopInstaller {
 	}
    
    
-   override function getVM () {
+	override function getVM () {
 	   
 		return "neko";
 		

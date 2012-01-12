@@ -509,10 +509,23 @@ class InstallerBase {
 		for (key in defines.keys ()) {
 			
 			Reflect.setField (context, key, defines.get (key));
-			Reflect.setField (context, "ndlls", ndlls);
-			Reflect.setField (context, "assets", assets);
 			
 		}
+		
+		var embeddedAssets = new Array <Asset> ();
+		
+		for (asset in assets) {
+			
+			if (asset.type != Asset.TYPE_TEMPLATE) {
+				
+				embeddedAssets.push (asset);
+				
+			}
+			
+		}
+		
+		Reflect.setField (context, "assets", embeddedAssets);
+		Reflect.setField (context, "ndlls", ndlls);
 		
 		if (targetFlags.exists ("xml")) {
 			
@@ -671,7 +684,7 @@ class InstallerBase {
 	}
 	
 	
-	private function parseAssetsElement (element:Fast, basePath:String = ""):Void {
+	private function parseAssetsElement (element:Fast, basePath:String = "", isTemplate:Bool = false):Void {
 		
 		var path:String = "";
 		var embed:String = "";
@@ -696,70 +709,97 @@ class InstallerBase {
 			
 		}
 		
-		if (element.has.type) {
+		if (isTemplate) {
+			
+			type = Asset.TYPE_TEMPLATE;
+			
+		} else if (element.has.type) {
 			
 			type = substitute (element.att.type);
 			
 		}
 		
-		if ( path=="" && (element.has.include || element.has.exclude || type!="" ) ) {
+		if (path == "" && (element.has.include || element.has.exclude || type != "" )) {
+			
 			error ("In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
-         return;
-      }
-		else if (!element.elements.hasNext ()) {
-         // Empty element
-			if (path=="")
-            return;
-
+			return;
+			
+		} else if (!element.elements.hasNext ()) {
+			
+			// Empty element
+			
+			if (path == "")
+				return;
+			
 			if (path == "" || !FileSystem.exists (path)) {
 				
-				error ("Could not find asset directory \"" + path + "\"");
+				error ("Could not find asset path \"" + path + "\"");
 				return;
 				
 			}
 			
-			var exclude:String = ".*|cvs|thumbs.db|desktop.ini";
-			var include:String = "";
-			
-			if (element.has.exclude) {
+			if (!FileSystem.isDirectory (path)) {
 				
-				exclude += "|" + element.att.exclude;
+				var id:String = "";
 				
-			}
-			
-			if (element.has.include) {
-				
-				include = element.att.include;
-				
-			} else {
-				
-				switch (type) {
+				if (element.has.id) {
 					
-					case "image":
-						
-						include = "*.jpg|*.jpeg|*.png|*.gif";
-					
-					case "sound":
-						
-						include = "*.wav|*.ogg";
-					
-					case "music":
-						
-						include = "*.mp2|*.mp3";
-					
-					case "font":
-						
-						include = "*.otf|*.ttf";
-					
-					default:
-						
-						return;
+					id = substitute (element.att.id);
 					
 				}
 				
+				assets.push (new Asset (path, rename, type, id, embed));
+				
+			} else {
+				
+				var exclude:String = ".*|cvs|thumbs.db|desktop.ini";
+				var include:String = "";
+				
+				if (element.has.exclude) {
+					
+					exclude += "|" + element.att.exclude;
+					
+				}
+				
+				if (element.has.include) {
+					
+					include = element.att.include;
+					
+				} else {
+					
+					switch (type) {
+						
+						case Asset.TYPE_IMAGE:
+							
+							include = "*.jpg|*.jpeg|*.png|*.gif";
+						
+						case Asset.TYPE_SOUND:
+							
+							include = "*.wav|*.ogg";
+						
+						case Asset.TYPE_MUSIC:
+							
+							include = "*.mp2|*.mp3";
+						
+						case Asset.TYPE_FONT:
+							
+							include = "*.otf|*.ttf";
+						
+						case Asset.TYPE_TEMPLATE:
+							
+							include = "*";
+						
+						default:
+							
+							return;
+						
+					}
+					
+				}
+				
+				parseAssetsElementDirectory (path, rename, include, exclude, type, embed, true);
+				
 			}
-			
-			parseAssetsElementDirectory (path, rename, include, exclude, type, embed, true);
 			
 		} else {
 			
@@ -777,8 +817,7 @@ class InstallerBase {
 			
 			for (childElement in element.elements) {
 				
-				var childPath:String = substitute(
-               childElement.has.name ? childElement.att.name : childElement.att.path);
+				var childPath:String = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
 				var childRename:String = childPath;
 				var childEmbed:String = embed;
 				var childType:String = type;
@@ -797,7 +836,8 @@ class InstallerBase {
 				
 				switch (childElement.name) {
 					
-					case "image", "sound", "music", "font":
+					case Asset.TYPE_IMAGE, Asset.TYPE_SOUND, Asset.TYPE_MUSIC, Asset.TYPE_FONT, Asset.TYPE_TEMPLATE:
+						
 						childType = childElement.name;
 					
 					default:
@@ -819,6 +859,7 @@ class InstallerBase {
 				}
 				
 				assets.push (new Asset (path + childPath, rename + childRename, childType, id, childEmbed));
+				
 			}
 			
 		}
@@ -828,9 +869,9 @@ class InstallerBase {
 	
 	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
 		
-      if (rename=="")
-         rename = path;
-
+		if (rename == "")
+			rename = path;
+		
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
 		for (file in files) {
@@ -1221,6 +1262,10 @@ class InstallerBase {
 					case "assets":
 						
 						parseAssetsElement (element, extensionPath);
+					
+					case "template":
+						
+						parseAssetsElement (element, extensionPath, true);
 					
 					case "preloader":
 						

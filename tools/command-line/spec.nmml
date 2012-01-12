@@ -160,11 +160,16 @@
 			image
 			music
 			sound
+			template
 			
 		Some targets can only support playing one music file at a time. You should use
 		"music" for files which are designed to play as background music, and "sound" for
 		all other audio. "asset" is a generic type which is available as a ByteArray or
 		String in your application.
+		
+		If an asset is specified as "template", it will not be copied/embedded as an ordinary
+		asset, but instead will be copied to the root directory of your project, so you can
+		replace any of the template HX, HXML or platform-specific files for the target.
 		
 	-->
 	
@@ -176,6 +181,28 @@
 		<sound path="sound/mySound.wav" name="MySound" />
 		<music path="sound/BackgroundMusic.mp3" />
 	</assets>
+	
+	
+	
+	<!-- <template />
+		
+		Use template nodes to include "template" type assets.
+		
+		Using a template node is shorthand for creating an assets node with the type specified
+		as "template"
+		
+		These files are copied into the destination directory before compiling your project, so
+		you can overwrite any of the classes, compile scripts or platform-specific template files
+		for your project.
+		
+		Template files are also processed, so you can use the haXe templating system to replace 
+		values. For example, if you set a variable called MY_VALUE, you could place this in your
+		files by writing ::MY_VALUE:: in the file's text.
+		
+	-->
+	
+	<template path="appinfo.json" if="webos" />
+	<template path="Assets/android/libs" rename="libs" if="android" />
 	
 	
 	
@@ -411,6 +438,10 @@
 		
 		"SHOW_CONSOLE" will show a command-prompt on Windows, if set to "true". 
 		Otherwise applications will run without any other visible windows.
+		
+		"VSDEBUG" will be used if you compile for Windows using the -vsdebug flag.
+		Instead of launching normally, the compiled application will be opened with
+		Visual Studio (using this value for devenv or VCExpress.exe) for debugging.
 		
 	-->
 	

@@ -33,6 +33,16 @@ class FlashInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
 		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
 		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
+		}
+		
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -56,9 +66,9 @@ class FlashInstaller extends InstallerBase {
 				
 				new_tags.push (TShowFrame);
 				
-				for(asset in assets) {
+				for (asset in assets) {
 					
-					if (toSwf (asset, new_tags)) {
+					if (asset.type != Asset.TYPE_TEMPLATE && toSwf (asset, new_tags)) {
 						
 						inserted = true;
 						

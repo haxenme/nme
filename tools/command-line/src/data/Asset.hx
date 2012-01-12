@@ -13,6 +13,8 @@ class Asset {
 	public static var TYPE_MUSIC:String = "music";
 	public static var TYPE_SOUND:String = "sound";
 	
+	public static var TYPE_TEMPLATE:String = "template";
+	
 	public var embed:Bool;
 	public var hash:String;
 	public var id:String;

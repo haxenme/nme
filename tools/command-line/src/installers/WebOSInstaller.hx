@@ -20,6 +20,16 @@ class WebOSInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
 		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
 		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
+		}
+		
 		var hxml:String = buildDirectory + "/webos/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -119,15 +129,19 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
-			
-			if (asset.targetPath == "/appinfo.json") {
+			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				mkdir (Path.directory (destination + asset.targetPath));
 				
-			} else {
-				
-				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				if (asset.targetPath == "/appinfo.json") {
+					
+					copyFile (asset.sourcePath, destination + asset.targetPath);
+					
+				} else {
+					
+					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					
+				}
 				
 			}
 			
