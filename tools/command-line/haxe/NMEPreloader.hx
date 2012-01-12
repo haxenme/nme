@@ -1,4 +1,5 @@
 import nme.display.Sprite;
+import nme.events.Event;
 
 
 class NMEPreloader extends Sprite
@@ -74,7 +75,7 @@ class NMEPreloader extends Sprite
 	
 	public function onLoaded()
 	{
-		
+		dispatchEvent (new Event (Event.COMPLETE));
 	}
 
 	

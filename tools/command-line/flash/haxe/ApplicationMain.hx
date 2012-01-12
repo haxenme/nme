@@ -1,5 +1,6 @@
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 import nme.Assets;
+import nme.events.Event;
 
 
 class ApplicationMain {
@@ -38,12 +39,9 @@ class ApplicationMain {
 		
 		if (loaded >= total) {
 			
-			mPreloader.onLoaded();
 			nme.Lib.current.removeEventListener(nme.events.Event.ENTER_FRAME, onEnter);
-			nme.Lib.current.removeChild(mPreloader);
-			mPreloader = null;
-			
-			::APP_MAIN_CLASS::.main ();
+			mPreloader.addEventListener (Event.COMPLETE, preloader_onComplete);
+			mPreloader.onLoaded();
 			
 		}
 		
@@ -67,6 +65,18 @@ class ApplicationMain {
 		::end::
 		
 		return null;
+		
+	}
+	
+	
+	private static function preloader_onComplete (event:Event):Void {
+		
+		mPreloader.removeEventListener (Event.COMPLETE, preloader_onComplete);
+		
+		nme.Lib.current.removeChild(mPreloader);
+		mPreloader = null;
+		
+		::APP_MAIN_CLASS::.main ();
 		
 	}
 	

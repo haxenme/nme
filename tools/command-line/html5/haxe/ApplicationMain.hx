@@ -71,11 +71,8 @@ class ApplicationMain {
 	
 	private static function begin ():Void {
 		
+		preloader.addEventListener (Event.COMPLETE, preloader_onComplete);
 		preloader.onLoaded ();
-		Lib.current.removeChild(preloader);
-		preloader = null;
-		
-		::APP_MAIN_CLASS::.main ();
 		
 	}
 	
@@ -121,6 +118,18 @@ class ApplicationMain {
 			
 		}
 	   
+	}
+	
+	
+	private static function preloader_onComplete (event:Event):Void {
+		
+		preloader.removeEventListener (Event.COMPLETE, preloader_onComplete);
+		
+		Lib.current.removeChild(preloader);
+		preloader = null;
+		
+		::APP_MAIN_CLASS::.main ();
+		
 	}
    
    
