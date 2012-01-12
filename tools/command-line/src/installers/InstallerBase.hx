@@ -35,6 +35,7 @@ class InstallerBase {
 	private var NME:String;
 	private var projectFile:String;
 	private var target:String;
+	private var sslCaCert:String;
 	private var targetFlags:Hash <String>;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
@@ -50,6 +51,7 @@ class InstallerBase {
 		javaPaths = new Array <String> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
+      sslCaCert = "";
 		
 	}
 	
@@ -526,6 +528,7 @@ class InstallerBase {
 		
 		Reflect.setField (context, "assets", embeddedAssets);
 		Reflect.setField (context, "ndlls", ndlls);
+		Reflect.setField (context, "sslCaCert", sslCaCert);
 		
 		if (targetFlags.exists ("xml")) {
 			
@@ -682,7 +685,22 @@ class InstallerBase {
 		}
 		
 	}
+
+	private function wantSslCertificate ():Bool {
+      return true;
+   }
 	
+	private function parseSsl (element:Fast):Void {
+
+		var id:String = element.has.id ? element.att.id : "cacert.pem";
+
+		var path:String = element.has.path ? element.att.path : NME + "/tools/command-line/resources/cacert.pem";
+
+
+		assets.push (new Asset (path, id, Asset.TYPE_ASSET, id, ""));
+
+      sslCaCert = id;
+   }
 	
 	private function parseAssetsElement (element:Fast, basePath:String = "", isTemplate:Bool = false):Void {
 		
@@ -1262,6 +1280,11 @@ class InstallerBase {
 					case "assets":
 						
 						parseAssetsElement (element, extensionPath);
+					
+					case "ssl":
+						
+                  if (wantSslCertificate())
+						   parseSsl (element);
 					
 					case "template":
 						

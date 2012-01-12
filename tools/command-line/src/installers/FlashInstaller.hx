@@ -627,6 +627,11 @@ class FlashInstaller extends InstallerBase {
 		}
 		
 	}
+
+   override private function wantSslCertificate ():Bool {
+      return false;
+   }
+
 	
 	
 }
