@@ -31,6 +31,7 @@ class Loader extends Sprite
 	
 	private var nmeImage:BitmapData;
 	private var nmeSWF:MovieClip;
+	private var nmeIsListening:Bool;
 	
 
 	public function new()
@@ -38,6 +39,7 @@ class Loader extends Sprite
 		super();
 		contentLoaderInfo = LoaderInfo.create(this);
 		// Make sure we get in first...
+      nmeIsListening = true;
 		contentLoaderInfo.addEventListener(Event.COMPLETE, onData);
 	}
 	
@@ -58,6 +60,11 @@ class Loader extends Sprite
 			}
 			
 			addChild(bmp);
+         if (nmeIsListening)
+         {
+            nmeIsListening = false;
+		      contentLoaderInfo.removeEventListener(Event.COMPLETE, onData);
+         }
 			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
 		}
 		catch (e:Dynamic)
