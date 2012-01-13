@@ -286,19 +286,28 @@ class InstallerBase {
 		var nmml = '<?xml version="1.0" encoding="utf-8"?>\n<project>\n\n';
 		var environment = Sys.environment ();
 		
-		nmml += new Template ('	<app title="::APP_TITLE::" description="::APP_DESCRIPTION::" package="::APP_PACKAGE::" version="::APP_VERSION::" company="::APP_COMPANY::" />\n\n').execute (context);
+		nmml += new Template ('	<meta title="::APP_TITLE::" description="::APP_DESCRIPTION::" package="::APP_PACKAGE::" version="::APP_VERSION::" company="::APP_COMPANY::" />\n\n').execute (context);
+		
+		nmml += new Template ('	<app main="::APP_MAIN::" file="::APP_FILE::" path="::BUILD_DIR::" swf-version="::SWF_VERSION::" />\n\n').execute (context);
 		
 		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
-		
-		nmml += '	<output name="' + defines.get ("APP_FILE") + '" path="' + buildDirectory + '" swf-version="' + defines.get ("SWF_VERSION") + '" />\n\n';
 		
 		for (key in defines.keys ()) {
 			
 			if (key.indexOf ("WIN_") != 0 && key.indexOf ("APP_") != 0) {
 				
-				if (!environment.exists (key) || environment.get (key) != defines.get (key)) {
+				switch (key) {
 					
-					nmml += '	<set name="' + key + '" value="' + defines.get (key) + '" />\n';
+					case "target", "ANDROID_SETUP", "SWF_VERSION", "PRELOADER_NAME":
+						
+					
+					default:
+						
+						if (!environment.exists (key) || environment.get (key) != defines.get (key)) {
+							
+							nmml += '	<set name="' + key + '" value="' + defines.get (key) + '" />\n';
+							
+						}
 					
 				}
 				
@@ -311,6 +320,8 @@ class InstallerBase {
 			nmml += "\n";
 			
 		}
+		
+		nmml += '	<preloader name="' + defines.get ("PRELOADER_NAME") + '" />\n\n';
 		
 		for (compilerFlag in compilerFlags) {
 			
