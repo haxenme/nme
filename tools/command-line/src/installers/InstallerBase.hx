@@ -106,12 +106,6 @@ class InstallerBase {
 		onCreate ();
 		generateContext ();
 		
-		if (defines.get ("SHOW_CONSOLE") != "true") {
-			
-			Sys.putEnv ("no_console", "1");
-			
-		}
-		
 		// Commands:
 		//
 		// update = Assets or extenal library have changed - files need updating copy files to target directories
@@ -588,7 +582,6 @@ class InstallerBase {
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
-		setDefault ("SHOW_CONSOLE", "false");
 		defines.set ("target_" + target, "1");
 		defines.set (target, "1");
 		defines.set ("target" , target);

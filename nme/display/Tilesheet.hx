@@ -1,4 +1,5 @@
 package nme.display;
+#if !jeash
 
 
 import nme.geom.Matrix;
@@ -85,7 +86,7 @@ class Tilesheet
 	}
 	
 	
-	#if flash
+	#if (!cpp && !neko)
 	
 	private function adjustIDs(vec:Vector<Int>, len:UInt)
 	{
@@ -218,7 +219,7 @@ class Tilesheet
 			var vertices = adjustLen(_vertices, itemCount * 8); 
 			var indices = adjustIndices(_indices, itemCount * 6); 
 			var uvtData = adjustLen(_uvs, itemCount * 8); 
-						
+			
 			var index = 0;
 			var offset8 = 0;
 			var tileIndex:Int = 0;
@@ -396,3 +397,8 @@ class Tilesheet
 	#end
 	
 }
+
+
+#else
+typedef Tilesheet = jeash.display.Tilesheet;
+#end

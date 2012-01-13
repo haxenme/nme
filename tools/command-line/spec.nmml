@@ -423,7 +423,7 @@
 			PRERENDERED_ICON
 			ANDROID_INSTALL_LOCATION
 			DOCS_DIR
-			SHOW_CONSOLE
+			VSDEBUG
 			
 		"PRERENDERED_ICON" is used with iOS. You can change this value to specify that
 		your application icons have been prerendered, so that XCode will not apply the
@@ -435,9 +435,6 @@
 		
 		"DOCS_DIR" lets you customize the output directory when using the "document"
 		command against your project.
-		
-		"SHOW_CONSOLE" will show a command-prompt on Windows, if set to "true". 
-		Otherwise applications will run without any other visible windows.
 		
 		"VSDEBUG" will be used if you compile for Windows using the -vsdebug flag.
 		Instead of launching normally, the compiled application will be opened with
