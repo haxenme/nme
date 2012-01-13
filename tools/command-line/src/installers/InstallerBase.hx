@@ -83,6 +83,20 @@ class InstallerBase {
 			
 		}
 		
+		if (defines.exists ("mobile")) {
+			
+			compilerFlags.push ("-D mobile");
+			
+		} else if (defines.exists ("desktop")) {
+			
+			compilerFlags.push ("-D desktop");
+			
+		} else if (defines.exists ("web")) {
+			
+			compilerFlags.push ("-D web");
+			
+		}
+		
 		// Strip off 0x ....
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
@@ -569,34 +583,35 @@ class InstallerBase {
 		if (useFullClassPaths())
 			compilerFlags.push("-cp " + FileSystem.fullPath(".") );
 		
-		switch (target) {
+		if (!defines.exists ("mobile") && !defines.exists ("desktop") && !defines.exists ("web")) {
 			
-			case "android", "ios", "webos":
+			switch (target) {
 				
-				defines.set ("mobile", "1");
-				compilerFlags.push ("-D mobile");
-			
-			case "flash", "html5":
+				case "android", "ios", "webos":
+					
+					defines.set ("mobile", "1");
 				
-				defines.set ("web", "1");
-				compilerFlags.push ("-D web");
-			
-			default:
+				case "flash", "html5":
+					
+					defines.set ("web", "1");
 				
-				defines.set ("desktop", "1");
-				compilerFlags.push ("-D desktop");
+				default:
+					
+					defines.set ("desktop", "1");
+				
+			}
 			
 		}
 		
-		if (!defines.exists ("mobile")) {
-			
-			setDefault ("WIN_WIDTH", "640");
-			setDefault ("WIN_HEIGHT", "480");
-			
-		} else {
+		if (defines.exists ("mobile")) {
 			
 			setDefault ("WIN_WIDTH", "0");
 			setDefault ("WIN_HEIGHT", "0");
+			
+		} else {
+			
+			setDefault ("WIN_WIDTH", "640");
+			setDefault ("WIN_HEIGHT", "480");
 			
 		}
 		
