@@ -595,7 +595,7 @@ class InstallTool {
 			
 			if (words.length > 1) {
 				
-				target = words[1];
+				target = words[1].toLowerCase ();
 				
 			}
 			
