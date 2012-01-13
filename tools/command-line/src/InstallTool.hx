@@ -47,6 +47,14 @@ class InstallTool {
 			
 		}
 		
+		switch (target) {
+			
+			case "iphoneos", "iphonesim", "iphone":
+				
+				target = "ios";
+			
+		}
+		
 		if (command == "document") {
 			
 			installer = new DocumentationGenerator ();

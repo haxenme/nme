@@ -562,16 +562,44 @@ class InstallerBase {
 	private function initializeTool ():Void {
 		
 		compilerFlags.push ("-D nme_install_tool");
-      if (InstallTool.verbose)
-		   compilerFlags.push ("-D verbose");
-
-
-	   if (useFullClassPaths())
-			compilerFlags.push("-cp " + FileSystem.fullPath(".") );
-	
 		
-		setDefault ("WIN_WIDTH", "640");
-		setDefault ("WIN_HEIGHT", "480");
+		if (InstallTool.verbose)
+			compilerFlags.push ("-D verbose");
+		
+		if (useFullClassPaths())
+			compilerFlags.push("-cp " + FileSystem.fullPath(".") );
+		
+		switch (target) {
+			
+			case "android", "ios", "webos":
+				
+				defines.set ("mobile", "1");
+				compilerFlags.push ("-D mobile");
+			
+			case "flash", "html5":
+				
+				defines.set ("web", "1");
+				compilerFlags.push ("-D web");
+			
+			default:
+				
+				defines.set ("desktop", "1");
+				compilerFlags.push ("-D desktop");
+			
+		}
+		
+		if (!defines.exists ("mobile")) {
+			
+			setDefault ("WIN_WIDTH", "640");
+			setDefault ("WIN_HEIGHT", "480");
+			
+		} else {
+			
+			setDefault ("WIN_WIDTH", "0");
+			setDefault ("WIN_HEIGHT", "0");
+			
+		}
+		
 		setDefault ("WIN_ORIENTATION", "");
 		setDefault ("WIN_FPS", "60");
 		setDefault ("WIN_BACKGROUND", "0xffffff");
@@ -591,6 +619,7 @@ class InstallerBase {
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
+		
 		defines.set ("target_" + target, "1");
 		defines.set (target, "1");
 		defines.set ("target" , target);
