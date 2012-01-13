@@ -288,7 +288,7 @@ class InstallerBase {
 		
 		nmml += new Template ('	<meta title="::APP_TITLE::" description="::APP_DESCRIPTION::" package="::APP_PACKAGE::" version="::APP_VERSION::" company="::APP_COMPANY::" />\n\n').execute (context);
 		
-		nmml += new Template ('	<app main="::APP_MAIN::" file="::APP_FILE::" path="::BUILD_DIR::" swf-version="::SWF_VERSION::" />\n\n').execute (context);
+		nmml += new Template ('	<app main="::APP_MAIN::" file="::APP_FILE::" path="::BUILD_DIR::" preloader="::PRELOADER_NAME::" swf-version="::SWF_VERSION::" />\n\n').execute (context);
 		
 		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
 		
@@ -320,8 +320,6 @@ class InstallerBase {
 			nmml += "\n";
 			
 		}
-		
-		nmml += '	<preloader name="' + defines.get ("PRELOADER_NAME") + '" />\n\n';
 		
 		for (compilerFlag in compilerFlags) {
 			
@@ -693,6 +691,10 @@ class InstallerBase {
 				case "swf-version":
 					
 					defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
+				
+				case "preloader":
+					
+					defines.set ("PRELOADER_NAME", substitute (element.att.preloader));
 				
 				default:
 					
@@ -1331,6 +1333,8 @@ class InstallerBase {
 						parseAssetsElement (element, extensionPath, true);
 					
 					case "preloader":
+						
+						// deprecated
 						
 						defines.set ("PRELOADER_NAME", substitute (element.att.name));
 					

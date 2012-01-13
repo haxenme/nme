@@ -21,9 +21,12 @@
 		Use app nodes to set the "main" class for your project, and optionally configure
 		the output file name, path and (if targeting Flash) SWF version.
 		
+		Use the preloader attribute to specify a custom class name to use as the preloader for your
+		application. This applies to Flash and HTML5, which require a preloader by default.
+		
 	-->
 	
-	<app main="com.example.myapp.MyApp" file="MyProject" path="Export" swf-version="11" />
+	<app main="com.example.myapp.MyApp" file="MyProject" path="Export" preloader="CustomPreloaderClass" swf-version="11" />
 	
 	
 	
@@ -364,17 +367,6 @@
 	-->
 	
 	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
-	
-	
-	
-	<!-- <preloader />
-		
-		Use the preloader node to specify a custom class name to use as the preloader for your
-		application. This applies to Flash and HTML5, which use a preloader by default.
-		
-	-->
-	
-	<preloader name="MyCoolPreloader" />
 	
 	
 	
