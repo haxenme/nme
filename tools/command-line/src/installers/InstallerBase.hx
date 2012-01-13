@@ -673,27 +673,28 @@ class InstallerBase {
 		
 		for (attribute in element.x.attributes ()) {
 			
-			defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
+			switch (attribute) {
+				
+				case "path":
+					
+					defines.set ("BUILD_DIR", substitute (element.att.path));
+				
+				case "swf-version":
+					
+					defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
+				
+				default:
+					
+					// if we are happy with this spec, we can tighten up this parsing a bit, later
+					
+					defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
+				
+			}
 			
 		}
 		
 	}
-
-	private function wantSslCertificate ():Bool {
-      return true;
-   }
 	
-	private function parseSsl (element:Fast):Void {
-
-		var id:String = element.has.id ? element.att.id : "cacert.pem";
-
-		var path:String = element.has.path ? element.att.path : NME + "/tools/command-line/resources/cacert.pem";
-
-
-		assets.push (new Asset (path, id, Asset.TYPE_ASSET, id, ""));
-
-      sslCaCert = id;
-   }
 	
 	private function parseAssetsElement (element:Fast, basePath:String = "", isTemplate:Bool = false):Void {
 		
@@ -959,6 +960,26 @@ class InstallerBase {
 	}
 	
 	
+	private function parseMetaElement (element:Fast):Void {
+		
+		for (attribute in element.x.attributes ()) {
+			
+			switch (attribute) {
+				
+				case "title", "description", "package", "version", "company":
+					
+					// if we're happy with this spec, we can shift to using META_TITLE, etc, in the future
+					// for now we'll keep using the same defines, for compatibility
+					
+					defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
+				
+			}
+			
+		}
+		
+	}
+	
+	
 	private function parseOutputElement (element:Fast):Void {
 		
 		if (element.has.name) {
@@ -997,6 +1018,17 @@ class InstallerBase {
 		}
 		
 		parseXML (xml, "");
+		
+	}
+	
+	
+	private function parseSsl (element:Fast):Void {
+		
+		var id:String = element.has.id ? element.att.id : "cacert.pem";
+		var path:String = element.has.path ? element.att.path : NME + "/tools/command-line/resources/cacert.pem";
+		
+		assets.push (new Asset (path, id, Asset.TYPE_ASSET, id, ""));
+		sslCaCert = id;
 		
 	}
 	
@@ -1098,6 +1130,10 @@ class InstallerBase {
 							error ("Could not find include file \"" + name + "\"");
 							
 						}
+					
+					case "meta":
+						
+						parseMetaElement (element);
 					
 					case "app":
 						
@@ -1433,6 +1469,13 @@ class InstallerBase {
 		}
 		
 		return newString;
+		
+	}
+	
+	
+	private function wantSslCertificate ():Bool {
+		
+		return true;
 		
 	}
 	

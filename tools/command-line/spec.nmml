@@ -2,9 +2,9 @@
 <project>
 	
 	
-	<!-- <app />
+	<!-- <meta />
 		
-		Use app nodes to set metadata for your application. The description is ignored
+		Use meta nodes to set metadata for your application. The description is ignored
 		on most targets, but is useful for packaging like Chrome Apps or Opera Widgets.
 		
 		For compatibility with Android and webOS, the package name must include at least
@@ -12,7 +12,34 @@
 		
 	-->
 	
-	<app title="Example Application" description="A really cool application!" package="com.example.myapp" version="1.0.0" company="My Company" />
+	<meta title="Example Application" description="A really cool application!" package="com.example.myapp" version="1.0.0" company="My Company" />
+	
+	
+	
+	<!-- <app />
+		
+		Use app nodes to set the "main" class for your project, and optionally configure
+		the output file name, path and (if targeting Flash) SWF version.
+		
+	-->
+	
+	<app main="com.example.myapp.MyApp" file="MyProject" path="Export" swf-version="11" />
+	
+	
+	
+	<!-- <window />
+		
+		Use window nodes to specify how an application should be run.
+		
+		Not all of the available options apply to each target. Most of these properties are also
+		optional.
+		
+		If you specify a width and height of 0, it will use the full screen size on most platforms.
+		
+	-->
+	
+	<window width="0" height="0" background="0xFFFFFF" fps="30" />
+	<window width="800" height="600" orientation="portrait" fps="60" background="0xFFFFFF" resizable="false" borderless="false" fullscreen="false" antialiasing="4"	/>
 	
 	
 	
@@ -203,37 +230,6 @@
 	
 	<template path="appinfo.json" if="webos" />
 	<template path="Assets/android/libs" rename="libs" if="android" />
-	
-	
-	
-	<!-- <window />
-		
-		Use window nodes to specify how an application should be run.
-		
-		Not all of the available options apply to each target. Most of these properties are also
-		optional.
-		
-		If you specify a width and height of 0, it will use the full screen size on most platforms.
-		
-	-->
-	
-	<window width="0" height="0" background="0xFFFFFF" fps="30" />
-	<window width="800" height="600" orientation="portrait" fps="60" background="0xFFFFFF" resizable="false" borderless="false" fullscreen="false" antialiasing="4"	/>
-	
-	
-	
-	<!-- <output />
-		
-		Use output nodes to set optional configuration for project output.
-		
-		The name attribute will be used for the executable file name, or the name of a generated
-		project in XCode. The path attribute specifies where build files will be placed, and the
-		swf-version attribute will change the version of Flash Player the project is compiled for
-		when targeting Flash. The default swf-version is 10.
-		
-	-->
-	
-	<output name="MyProject" path="Export" swf-version="11" />
 	
 	
 	
