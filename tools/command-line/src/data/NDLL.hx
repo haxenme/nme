@@ -56,7 +56,6 @@ class NDLL {
 			
 			if (FileSystem.exists (path)) {
 				
-				haxelib = "hxcpp";
 				return path;
 				
 			} else {

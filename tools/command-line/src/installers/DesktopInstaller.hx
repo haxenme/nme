@@ -298,13 +298,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			var sourcePath = ndll.getSourcePath (system_name, ndll.name + extension);
-			
-			if (getVM () != "neko" || ndll.haxelib != "hxcpp") {
-				
-				copyIfNewer (sourcePath, exe_dir + ndll.name + extension);
-				
-			}
+			copyIfNewer (ndll.getSourcePath (system_name, ndll.name + extension), exe_dir + ndll.name + extension);
 			
 		}
 		
