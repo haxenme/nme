@@ -281,7 +281,7 @@ class DesktopInstaller extends InstallerBase {
 			
 			// This messes with the exe when neko is appended to the exe
 			if (ndll.haxelib == "") {
-
+				
 				if (targetName == "windows") {
 					
 					extension = ".dll";
@@ -298,7 +298,13 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			copyIfNewer (ndll.getSourcePath (system_name, ndll.name + extension), exe_dir + ndll.name + extension);
+			var sourcePath = ndll.getSourcePath (system_name, ndll.name + extension);
+			
+			if (getVM () != "neko" || ndll.haxelib != "hxcpp") {
+				
+				copyIfNewer (sourcePath, exe_dir + ndll.name + extension);
+				
+			}
 			
 		}
 		

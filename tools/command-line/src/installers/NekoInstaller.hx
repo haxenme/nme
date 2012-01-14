@@ -35,6 +35,8 @@ class NekoInstaller extends DesktopInstaller {
 		output.writeUInt30 (nekoExecutableContents.length);
 		output.close ();
 		
+		recursiveCopy (NME + "/tools/command-line/neko/ndll/" + targetName + "/", getExeDir (), false);
+		
 		/*
 		
 		var exe_content = neko.io.File.getBytes("bin/xcross-"+os);
