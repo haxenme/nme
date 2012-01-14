@@ -30,7 +30,7 @@ class Tilesheet
 	
 	#else
 	
-	static private var centerRatio:Point = new Point(0.5, 0.5);
+	static private var defaultRatio:Point = new Point(0, 0);
 	private var bitmapHeight:Int;
 	private var bitmapWidth:Int;
 	private var tilePoints:Array<Point>;
@@ -78,7 +78,7 @@ class Tilesheet
 		#else
 		
 		tiles.push(rectangle);
-		if (centerPoint == null) tilePoints.push(centerRatio);
+		if (centerPoint == null) tilePoints.push(defaultRatio);
 		else tilePoints.push(new Point(centerPoint.x / bitmapWidth, centerPoint.y / bitmapHeight));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
 		
