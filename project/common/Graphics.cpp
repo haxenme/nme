@@ -65,10 +65,10 @@ int Graphics::Version() const
 
 void Graphics::drawEllipse(float x,float  y,float  width,float  height)
 {
-   float w = width;
+   float w = width*0.5;
    float w_ = w*SIN45;
    float cw_ = w*TAN22;
-   float h = height;
+   float h = height*0.5;
    float h_ = h*SIN45;
    float ch_ = h*TAN22;
 
