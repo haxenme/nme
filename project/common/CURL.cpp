@@ -75,7 +75,7 @@ public:
       if (inCookies && inCookies[0])
          curl_easy_setopt( mHandle, CURLOPT_COOKIE, inCookies );
       if (sCACertFile.empty())
-         curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, FALSE);
+         curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, false);
       else
          curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
  
