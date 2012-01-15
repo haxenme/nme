@@ -79,7 +79,7 @@ class Tilesheet
 		
 		tiles.push(rectangle);
 		if (centerPoint == null) tilePoints.push(defaultRatio);
-		else tilePoints.push(new Point(centerPoint.x / bitmapWidth, centerPoint.y / bitmapHeight));	
+		else tilePoints.push(new Point(centerPoint.x / rectangle.width, centerPoint.y / rectangle.height));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
 		
 		#end
@@ -213,7 +213,7 @@ class Tilesheet
 			}
 			
 			var totalCount = tileData.length;
-			var itemCount = Std.int (totalCount / numValues) + 1;
+			var itemCount = Std.int (totalCount / numValues);
 			
 			var ids = adjustIDs(_ids, itemCount);
 			var vertices = adjustLen(_vertices, itemCount * 8); 
@@ -310,8 +310,8 @@ class Tilesheet
 					ids[tileIndex] = tileID;
 					uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
 					uvtData[offset8 + 1] = uvtData[offset8 + 3] = tileUV.top;
-					uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.right;
-					uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.bottom;
+					uvtData[offset8 + 2] = uvtData[offset8 + 6] = tileUV.width;
+					uvtData[offset8 + 5] = uvtData[offset8 + 7] = tileUV.height;
 				}
 				
 				offset8 += 8;
