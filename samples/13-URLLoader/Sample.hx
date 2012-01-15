@@ -20,8 +20,15 @@ class Sample extends Sprite {
 	 {
 	     super();
 		  flash.Lib.current.addChild(this);
+
         xmlTextField = new TextField();
-        var request:URLRequest = new URLRequest("http://www.w3schools.com/xml/cd_catalog.xml");
+        //var request:URLRequest = new URLRequest("http://www.w3schools.com/xml/cd_catalog.xml");
+        var request:URLRequest = new URLRequest("https://twitter.com/");
+        #if !flash
+        request.basicAuth("basic","basic");
+        request.cookieString = "name=value";
+        request.verbose = true;
+        #end
 
         loader = new URLLoader();
 

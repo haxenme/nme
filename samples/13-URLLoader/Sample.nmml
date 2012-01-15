@@ -19,6 +19,7 @@
 		hardware="true"
 	/>
 
+  <ssl />
   
   <haxelib name="nme" />
 
