@@ -140,6 +140,8 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
+      /*
+         Leave this up to hxcpp....
 		if (Sys.getEnv ("ANDROID_HOST") == null || Sys.getEnv ("ANDROID_HOST") == "") {
 			
 			if (InstallTool.isLinux) {
@@ -153,6 +155,7 @@ class AndroidInstaller extends InstallerBase {
 			}
 			
 		}
+      */
 		
 	}
 	
