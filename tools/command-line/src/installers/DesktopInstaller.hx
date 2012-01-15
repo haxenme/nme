@@ -237,11 +237,11 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			runCommand (getExeDir (), defines.get ("VSDEBUG"),  [ flag, getCwd () + getExeName () ]);
+			runCommand (getExeDir (), defines.get ("VSDEBUG"),  [ flag, getCwd () + getExeName () ].concat(args));
 			
 		} else {
 			
-			runCommand (getExeDir (), getCwd () + getExeName (), []);
+			runCommand (getExeDir (), getCwd () + getExeName (), args);
 			
 		}
 		

@@ -37,6 +37,7 @@ class InstallerBase {
 	private var target:String;
 	private var sslCaCert:String;
 	private var targetFlags:Hash <String>;
+	private var args:Array <String>;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -56,7 +57,7 @@ class InstallerBase {
 	}
 	
 	
-	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool):Void {
+	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, inArgs:Array<String>):Void {
 		
 		NME = inNME;
 		this.command = command;
@@ -66,6 +67,7 @@ class InstallerBase {
 		this.target = target;
 		this.targetFlags = targetFlags;
 		this.debug = debug;
+      args = inArgs;
 		
 		initializeTool ();
 		parseHXCPPConfig ();

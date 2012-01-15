@@ -29,7 +29,7 @@ class InstallTool {
 	public static var verbose = false;
 	
 	
-	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool) {
+	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
 		
 		var installer:InstallerBase = null;
 		
@@ -101,7 +101,7 @@ class InstallTool {
 			
 		}
 		
-		installer.create (nme, command, defines, includePaths, projectFile, target, targetFlags, debug);
+		installer.create (nme, command, defines, includePaths, projectFile, target, targetFlags, debug, args);
 		
 	}
 	
@@ -384,12 +384,18 @@ class InstallTool {
 		}
 		
 		var words:Array <String> = new Array <String> ();
+		var passArgs:Array <String> = new Array <String> ();
+      var pushArgs = false;
 		
 		for (arg in args) {
 			
 			var equals:Int = arg.indexOf ("=");
 			
-			if (equals > 0) {
+         if (pushArgs) {
+
+           passArgs.push(arg);
+
+			} else if (equals > 0) {
 				
 				if (arg.substr (0, 2) == "-D") {
 					
@@ -416,6 +422,10 @@ class InstallTool {
 			} else if (arg == "-v" || arg == "-verbose") {
 				
 				verbose = true;
+				
+			} else if (arg == "-args") {
+				
+				pushArgs = true;
 				
 			} else if (arg == "-notrace") {
 				
@@ -522,6 +532,7 @@ class InstallTool {
 			Lib.println ("  [flash] -opera : Generate an Opera Widget");
 			Lib.println ("  [ios] -simulator : Build/test for the iPhone Simulator");
 			Lib.println ("  [ios] -simulator -ipad : Builds/test for the iPad Simulator");
+			Lib.println ("  [run|test] -args a0 a1 a1 ... : pass remainder of the commandline to executable");
 			
 			return;
 			
@@ -608,7 +619,7 @@ class InstallTool {
 				
 			}
 			
-			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug);
+			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug, passArgs);
 			
 		}
 		
