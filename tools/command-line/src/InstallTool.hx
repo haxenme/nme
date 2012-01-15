@@ -15,6 +15,7 @@ import neko.io.File;
 import neko.io.Path;
 import neko.Lib;
 import neko.Sys;
+import nme.Loader;
 
 
 class InstallTool {
@@ -614,7 +615,7 @@ class InstallTool {
 	}
 	
 	
-	private static var nme_error_output = Lib.load ("nme", "nme_error_output", 1);
+	private static var nme_error_output = Loader.load ("nme_error_output", 1);
 	
 	
 }
