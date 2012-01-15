@@ -5,6 +5,10 @@ class ApplicationMain
    public static function main()
    {
       nme.Lib.setPackage("::APP_COMPANY::","::APP_FILE::","::APP_PACKAGE::","::APP_VERSION::");
+      ::if (sslCaCert!="")::
+      nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
+      ::end::
+
       ::if (IPHONE_ORIENTATION!=null)::
       nme.display.Stage.setFixedOrientation(nme.display.Stage.Orientation::IPHONE_ORIENTATION::);
       ::end::

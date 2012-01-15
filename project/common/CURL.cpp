@@ -268,14 +268,23 @@ void URLLoader::initialize(const char *inCACertFilePath)
 
 
   /* Set to 1 to print version information for libcurl. */
-  #if 0
   if (!sCACertFile.empty())
   {
      FILE *f = fopen(sCACertFile.c_str(),"rb");
-     printf("Can open cert file: %s\n", f ? "Yes" : "NO!!" );
+     bool loaded = f;
      fclose(f);
+     printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
+     if (!loaded)
+     {
+        sCACertFile = GetResourcePath() + gAssetBase + inCACertFilePath;
+        FILE *f = fopen(sCACertFile.c_str(),"rb");
+        loaded = f;
+        fclose(f);
+        printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
+     }
   }
 
+  #if 1
   curl_version_info_data * info = curl_version_info(CURLVERSION_NOW);
   printf("SSL cert: %s\n", inCACertFilePath);
   printf("libcurl version: %s\n", info->version);
