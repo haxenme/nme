@@ -258,11 +258,24 @@ URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUs
 
 void URLLoader::initialize(const char *inCACertFilePath)
 {
-  curl_global_init(CURL_GLOBAL_SSL);
+  #ifdef HX_WINDOWS
+  unsigned int flags = CURL_GLOBAL_WIN32;
+  #else
+  unsigned int flags = 0;
+  #endif;
+  curl_global_init(flags | CURL_GLOBAL_SSL);
   sCACertFile = std::string(inCACertFilePath);
+
 
   /* Set to 1 to print version information for libcurl. */
   #if 0
+  if (!sCACertFile.empty())
+  {
+     FILE *f = fopen(sCACertFile.c_str(),"rb");
+     printf("Can open cert file: %s\n", f ? "Yes" : "NO!!" );
+     fclose(f);
+  }
+
   curl_version_info_data * info = curl_version_info(CURLVERSION_NOW);
   printf("SSL cert: %s\n", inCACertFilePath);
   printf("libcurl version: %s\n", info->version);

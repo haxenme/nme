@@ -31,7 +31,6 @@ class Loader extends Sprite
 	
 	private var nmeImage:BitmapData;
 	private var nmeSWF:MovieClip;
-	private var nmeIsListening:Bool;
 	
 
 	public function new()
@@ -39,13 +38,14 @@ class Loader extends Sprite
 		super();
 		contentLoaderInfo = LoaderInfo.create(this);
 		// Make sure we get in first...
-      nmeIsListening = true;
-		contentLoaderInfo.addEventListener(Event.COMPLETE, onData);
+		contentLoaderInfo.nmeOnComplete = doLoad;
 	}
 	
 	
 	private function doLoad(inBytes:ByteArray)
 	{	
+      if (inBytes==null)
+         return false;
 		try
 		{	
 			nmeImage = BitmapData.loadFromBytes(inBytes);
@@ -60,18 +60,12 @@ class Loader extends Sprite
 			}
 			
 			addChild(bmp);
-         if (nmeIsListening)
-         {
-            nmeIsListening = false;
-		      contentLoaderInfo.removeEventListener(Event.COMPLETE, onData);
-         }
-			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+         return true;
 		}
 		catch (e:Dynamic)
 		{	
 			//trace("Error " + e);
-			contentLoaderInfo.DispatchIOErrorEvent();
-			return;	
+			return false;	
 		}
 	}
 
@@ -86,7 +80,10 @@ class Loader extends Sprite
 	public function loadBytes(bytes:ByteArray)
 	{	
 		// No "loader context" in nme
-      doLoad(bytes);
+      if (doLoad(bytes))
+			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+      else
+			contentLoaderInfo.DispatchIOErrorEvent();
 	}
 	
 	
@@ -119,8 +116,9 @@ class Loader extends Sprite
 	
 	
 	
-	private function onData(_)
+	private function onData(event:Event)
 	{
+      event.stopImmediatePropagation();
 		doLoad(contentLoaderInfo.bytes);
 	}
 	

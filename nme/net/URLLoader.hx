@@ -48,6 +48,8 @@ class URLLoader extends EventDispatcher
 	private static inline var urlError = 4;
 	
 	private var state:Int;
+
+   public var nmeOnComplete : Dynamic -> Bool;
 	
 
 	public function new(?request:URLRequest)
@@ -108,7 +110,8 @@ class URLLoader extends EventDispatcher
 				onError(e);
 				return;
 			}
-			dispatchEvent(new Event(Event.COMPLETE));
+
+         nmeDataComplete();
 		}
 		else
 		{
@@ -122,6 +125,22 @@ class URLLoader extends EventDispatcher
 		}
 	}
 	
+   function nmeDataComplete()
+   {
+      if (nmeOnComplete!=null)
+      {
+         if (nmeOnComplete(data))
+            dispatchEvent(new Event(Event.COMPLETE));
+         else
+            DispatchIOErrorEvent();
+      }
+      else
+      {
+         dispatchEvent(new Event(Event.COMPLETE));
+      }
+   }
+
+
 	
 	/**
 	 * @private
@@ -189,7 +208,7 @@ class URLLoader extends EventDispatcher
 						default:
 							data = bytes;
 					}
-					dispatchEvent(new Event(Event.COMPLETE));
+               nmeDataComplete();
 				}
 				else 
 				{
