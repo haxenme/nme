@@ -276,10 +276,12 @@ void URLLoader::initialize(const char *inCACertFilePath)
      printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
      if (!loaded)
      {
+        #if !HX_LINUX
         sCACertFile = GetResourcePath() + gAssetBase + inCACertFilePath;
         FILE *f = fopen(sCACertFile.c_str(),"rb");
         loaded = f;
         fclose(f);
+        #endif
         printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
      }
   }

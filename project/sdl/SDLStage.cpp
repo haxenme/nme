@@ -443,13 +443,12 @@ public:
    
    bool mMultiTouch;
    int  mSingleTouchID;
-   
+  
    double mDX;
    double mDY;
 
    double mDownX;
    double mDownY;
-   
 
    Surface *GetPrimarySurface()
    {
