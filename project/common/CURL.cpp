@@ -256,15 +256,42 @@ URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUs
 	return new CURLLoader(inURL,inAuthType,inUserPasswd,inCookies,inVerbose);
 }
 
+typedef int (*get_file_callback_func)(const char *filename, unsigned char **buf);
+extern "C"
+{
+extern get_file_callback_func get_file_callback;
+}
+
+#ifdef ANDROID
+static int sGetFile(const char *inFilename, unsigned char **outBuf)
+{
+   ByteArray bytes = AndroidGetAssetBytes(inFilename);
+   
+   ELOG("Loaded cert %s %d bytes.", inFilename, bytes.Size());
+   if (bytes.Size()>0)
+   {
+      *outBuf = (unsigned char *)malloc(bytes.Size());
+      memcpy(*outBuf,bytes.Bytes(),bytes.Size());
+      return bytes.Size();
+   }
+
+   return -1;
+}
+#endif
+
 void URLLoader::initialize(const char *inCACertFilePath)
 {
   #ifdef HX_WINDOWS
   unsigned int flags = CURL_GLOBAL_WIN32;
   #else
   unsigned int flags = 0;
-  #endif;
+  #endif
   curl_global_init(flags | CURL_GLOBAL_SSL);
   sCACertFile = std::string(inCACertFilePath);
+
+  #if defined(ANDROID) && defined(NME_CURL_SSL)
+  get_file_callback = sGetFile;
+  #endif
 
 
   /* Set to 1 to print version information for libcurl. */
@@ -272,30 +299,31 @@ void URLLoader::initialize(const char *inCACertFilePath)
   {
      FILE *f = fopen(sCACertFile.c_str(),"rb");
      bool loaded = f;
-     fclose(f);
-     printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
+     if (f)
+        fclose(f);
+     ELOG("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
+     #ifdef IPHONE
      if (!loaded)
      {
-        #if !HX_LINUX
         sCACertFile = GetResourcePath() + gAssetBase + inCACertFilePath;
         FILE *f = fopen(sCACertFile.c_str(),"rb");
         loaded = f;
-        fclose(f);
-        #endif
-        printf("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
+        if (f)
+          fclose(f);
+        ELOG("Open cert file: %s %s\n", sCACertFile.c_str(), loaded ? "Yes" : "NO!!" );
      }
+     #endif
   }
 
-  #if 1
+  #if 0
   curl_version_info_data * info = curl_version_info(CURLVERSION_NOW);
-  printf("SSL cert: %s\n", inCACertFilePath);
-  printf("libcurl version: %s\n", info->version);
-  printf("Support for SSL in libcurl: %d\n", (info->features) & CURL_VERSION_SSL);
-  printf("Supported libcurl protocols: ");
+  ELOG("SSL cert: %s\n", inCACertFilePath);
+  ELOG("libcurl version: %s\n", info->version);
+  ELOG("Support for SSL in libcurl: %d\n", (info->features) & CURL_VERSION_SSL);
+  ELOG("Supported libcurl protocols: ");
   for (int i=0; info->protocols[i] != 0; i++) {
-    printf("%s ", info->protocols[i]);
+    ELOG(" protocol %d: %s",i,  info->protocols[i]);
   }
-  printf("\n");
   #endif
 }
 

@@ -22,6 +22,7 @@
 <set name="mobile" value="1" if="blackberry"/>
 <set name="mobile" value="1" if="gph"/>
 
+<set name="ssl" value="1" unless="nossl"/>
 <set name="ssl_extra" value="_ssl" if="ssl"/>
 
 <files id="windows">
@@ -123,6 +124,7 @@
   <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/>
   <compilerflag value="-I../../sdl-static/include/SDL13" if="blackberry"/>
   <compilerflag value="-DSDL_OGL" if="sdl"/>
+  <compilerflag value="-DNME_CURL_SSL" if="ssl"/>
   <compilerflag value="-Wno-conversion" if="linux"/>
 
   <file name="common/Surface.cpp"/>
