@@ -76,7 +76,7 @@ class IOSInstaller extends InstallerBase {
 	
 	private override function onCreate ():Void {
 		
-		ndlls.push (new NDLL ("curl", "nme", false));
+		ndlls.push (new NDLL ("curl_ssl", "nme", false));
 		ndlls.push (new NDLL ("png", "nme", false));
 		ndlls.push (new NDLL ("jpeg", "nme", false));
 		ndlls.push (new NDLL ("z", "nme", false));
