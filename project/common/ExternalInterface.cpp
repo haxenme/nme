@@ -100,6 +100,14 @@ static int _id_greenOffset;
 static int _id_blueOffset;
 static int _id_rgb;
 
+static int _id_authType;
+static int _id_userPassword;
+static int _id_cookieString;
+static int _id_verbose;
+
+
+
+
 vkind gObjectKind;
 
 static int sgIDsInit = false;
@@ -170,6 +178,11 @@ extern "C" void InitIDs()
    _id_greenOffset = val_id("greenOffset");
    _id_blueOffset = val_id("blueOffset");
    _id_rgb = val_id("rgb");
+
+   _id_authType = val_id("authType");
+   _id_userPassword = val_id("userPassword");
+   _id_cookieString = val_id("cookieString");
+   _id_verbose = val_id("verbose");
 
    gObjectKind = alloc_kind();
 }
@@ -482,6 +495,14 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 }
 
 
+void FromValue(value obj, URLRequest &request)
+{
+   request.url = val_string( val_field(obj, _id_url) );
+   request.authType = val_field_numeric(obj, _id_authType );
+   request.passwd = val_string( val_field(obj, _id_userPassword) );
+   request.cookies = val_string( val_field(obj, _id_cookieString) );
+   request.debug = val_field_numeric( obj, _id_verbose );
+}
 
 
 }
@@ -3254,13 +3275,14 @@ value nme_curl_initialize(value inCACertFilePath)
 }
 DEFINE_PRIM(nme_curl_initialize,1);
 
-value nme_curl_create(value inURL,value inAuthType, value inUserPasswd, value inCookies, value inVerbose)
+value nme_curl_create(value inURLRequest)
 {
-	URLLoader *loader = URLLoader::create(val_string(inURL), val_int(inAuthType), val_string(inUserPasswd),
-      val_string(inCookies), val_bool(inVerbose) );
+   URLRequest request;
+   FromValue(inURLRequest,request);
+	URLLoader *loader = URLLoader::create(request);
 	return ObjectToAbstract(loader);
 }
-DEFINE_PRIM(nme_curl_create,5);
+DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {

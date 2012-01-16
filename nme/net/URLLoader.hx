@@ -25,7 +25,6 @@ import cpp.io.File;
 * @author   Joshua Harlan Lifton
 * @todo open and progress events
 * @todo Complete Variables type
-* @todo HTTP POST method
 **/
 class URLLoader extends EventDispatcher
 {
@@ -99,8 +98,10 @@ class URLLoader extends EventDispatcher
 				var bytes = ByteArray.readFile(request.url);
 				switch(dataFormat)
 				{
-					case TEXT, VARIABLES:
+					case TEXT:
 						data = bytes.asString();
+					case VARIABLES:
+						data = new URLVariables(bytes.asString());
 					default:
 						data = bytes;
 				}
@@ -115,7 +116,8 @@ class URLLoader extends EventDispatcher
 		}
 		else
 		{
-			nmeHandle = nme_curl_create(request.url, request.authType, request.userPassword, request.cookieString, request.verbose);
+         request.nmePrepare();
+			nmeHandle = nme_curl_create(request);
 			if (nmeHandle == null)
 			{
 				onError("Could not open URL");
@@ -233,7 +235,7 @@ class URLLoader extends EventDispatcher
 	
 	
 	
-	private static var nme_curl_create = Loader.load("nme_curl_create", 5);
+	private static var nme_curl_create = Loader.load("nme_curl_create", 1);
 	private static var nme_curl_process_loaders = Loader.load("nme_curl_process_loaders", 0);
 	private static var nme_curl_update_loader = Loader.load("nme_curl_update_loader", 2);
 	private static var nme_curl_get_code = Loader.load("nme_curl_get_code", 1);

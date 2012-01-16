@@ -20,11 +20,20 @@ enum URLState
 	urlError,
 };
 
+struct URLRequest
+{
+   const char *url;
+   int        authType;
+   const char *passwd;
+   const char *cookies;
+   bool       debug;
+};
+
 class URLLoader : public Object
 {
 	public:
-		static URLLoader *create(const char *inURL, int inAuthType, const char *inUserPasswd,
-                               const char *inCookies, bool inDebug);
+		static URLLoader *create(const URLRequest &inRequest);
+
 		static bool processAll();
 		static void initialize(const char *inCACertFilePath);
 

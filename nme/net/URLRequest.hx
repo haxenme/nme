@@ -1,6 +1,7 @@
 package nme.net;
 #if (cpp || neko)
 
+import nme.utils.ByteArray;
 
 class URLRequest
 {
@@ -20,6 +21,7 @@ class URLRequest
 	public var method:String;
 	public var contentType:String;
 	public var data:Dynamic;
+	public var nmeBytes:ByteArray;
 	
 	
 	public function new(?inURL:String)
@@ -30,6 +32,7 @@ class URLRequest
 		userPassword = "";
 		cookieString = "";
 		authType = 0;
+      contentType = "application/x-www-form-urlencoded";
       method = URLRequestMethod.GET;
 	}
 	
@@ -46,7 +49,34 @@ class URLRequest
 		authType = AUTH_DIGEST;
 		userPassword = inUser + ":" + inPasswd;
 	}
-	
+
+   public function nmePrepare()
+   {
+      if (data==null)
+         nmeBytes = null;
+      else
+      {
+         if (Std.is(data,ByteArray))
+            nmeBytes = data;
+         else if (Std.is(data,URLVariables))
+         {
+            var vars:URLVariables = data;
+            var str = vars.toString();
+            nmeBytes = new ByteArray();
+            nmeBytes.writeUTFBytes(str);
+         }
+         else if (Std.is(data,String))
+         {
+            var str:String  = data;
+            nmeBytes = new ByteArray();
+            nmeBytes.writeUTFBytes(str);
+         }
+         else
+         {
+            throw "Unknown data type";
+         }
+      }
+   }
 }
 
 

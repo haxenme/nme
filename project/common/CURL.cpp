@@ -250,10 +250,9 @@ bool URLLoader::processAll()
    return sRunning || (sCurlList && sCurlList->size());
 }
 
-URLLoader *URLLoader::create(const char *inURL, int inAuthType, const char *inUserPasswd,
-      const char *inCookies, bool inVerbose)
+URLLoader *URLLoader::create(const URLRequest &r)
 {
-	return new CURLLoader(inURL,inAuthType,inUserPasswd,inCookies,inVerbose);
+	return new CURLLoader(r.url,r.authType,r.passwd,r.cookies,r.debug);
 }
 
 typedef int (*get_file_callback_func)(const char *filename, unsigned char **buf);
@@ -262,10 +261,18 @@ extern "C"
 extern get_file_callback_func get_file_callback;
 }
 
-#ifdef ANDROID
+#if (defined(HX_MACOS) || defined(ANDROID) ) && defined(NME_CURL_SSL)
+#define TRY_GET_FILE
+#endif
+
+#ifdef TRY_GET_FILE
 static int sGetFile(const char *inFilename, unsigned char **outBuf)
 {
+   #ifdef ANDROID
    ByteArray bytes = AndroidGetAssetBytes(inFilename);
+   #else
+   ByteArray bytes = ByteArray::FromFile(inFilename);
+   #endif
    
    ELOG("Loaded cert %s %d bytes.", inFilename, bytes.Size());
    if (bytes.Size()>0)
@@ -289,8 +296,8 @@ void URLLoader::initialize(const char *inCACertFilePath)
   curl_global_init(flags | CURL_GLOBAL_SSL);
   sCACertFile = std::string(inCACertFilePath);
 
-  #if defined(ANDROID) && defined(NME_CURL_SSL)
-  //get_file_callback = sGetFile;
+  #ifdef TRY_GET_FILE
+  get_file_callback = sGetFile;
   #endif
 
 
