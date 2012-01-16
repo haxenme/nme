@@ -69,7 +69,7 @@ class Graphics
 	
 	public function drawCircle(inX:Float, inY:Float, inRadius:Float)
 	{
-		nme_gfx_draw_ellipse(nmeHandle, inX, inY, inRadius, inRadius);
+		nme_gfx_draw_ellipse(nmeHandle, inX, inY, inRadius * 2, inRadius * 2);
 	}
 
 	

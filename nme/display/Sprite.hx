@@ -11,6 +11,7 @@ class Sprite extends DisplayObjectContainer
 	
 	// ignored right now
 	public var buttonMode:Bool;
+	public var useHandCursor:Bool;
 	
 	
 	public function new()
