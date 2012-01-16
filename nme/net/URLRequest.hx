@@ -17,6 +17,9 @@ class URLRequest
 	public var url(default, null):String;
 	public var userPassword:String;
 	public var verbose:Bool;
+	public var method:String;
+	public var contentType:String;
+	public var data:Dynamic;
 	
 	
 	public function new(?inURL:String)
@@ -27,6 +30,7 @@ class URLRequest
 		userPassword = "";
 		cookieString = "";
 		authType = 0;
+      method = URLRequestMethod.GET;
 	}
 	
 	
