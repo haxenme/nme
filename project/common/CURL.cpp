@@ -39,9 +39,12 @@ public:
 	char mErrorBuf[CURL_ERROR_SIZE];
 	QuickVec<unsigned char> mBytes;
 
+   size_t         mBufferRemaining;
+   unsigned char *mBufferPos;
+   unsigned char *mPutBuffer;
 
-	CURLLoader(const char *inURL, int inAuthType, const char *inUserPasswd,
-              const char *inCookies, bool inDebug)
+
+	CURLLoader(URLRequest &r)
 	{
 		mState = urlInit;
 		if (!sCurlM)
@@ -54,30 +57,59 @@ public:
 		if (!sCurlMap)
 			sCurlMap = new CurlMap;
 
-		curl_easy_setopt(mHandle, CURLOPT_URL, inURL);
+      mBufferRemaining = 0;
+      mPutBuffer = 0;
+      mBufferPos = 0;
+
+		curl_easy_setopt(mHandle, CURLOPT_URL, r.url);
 
       /* send all data to this function  */ 
       curl_easy_setopt(mHandle, CURLOPT_WRITEFUNCTION, staticOnData);
       curl_easy_setopt(mHandle, CURLOPT_WRITEDATA, (void *)this);
 		curl_easy_setopt(mHandle, CURLOPT_NOPROGRESS, 0);
-      if (inAuthType!=0)
+      if (r.authType!=0)
       {
-         curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, inAuthType);
-         if (inUserPasswd && inUserPasswd[0])
-            curl_easy_setopt(mHandle, CURLOPT_USERPWD, inUserPasswd);
+         curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, r.authType);
+         if (r.passwd && r.passwd[0])
+            curl_easy_setopt(mHandle, CURLOPT_USERPWD, r.passwd);
       }
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
       curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
       curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
-      if (inDebug)
+      if (r.debug)
          curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
       curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
-      if (inCookies && inCookies[0])
-         curl_easy_setopt( mHandle, CURLOPT_COOKIE, inCookies );
+      if (r.cookies && r.cookies[0])
+         curl_easy_setopt( mHandle, CURLOPT_COOKIE, r.cookies );
       if (sCACertFile.empty())
          curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, false);
       else
          curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
+
+      if (r.method && strcmp(r.method,"GET"))
+      {
+         if (!strcmp(r.method,"POST"))
+         {
+            curl_easy_setopt(mHandle, CURLOPT_POST, true);
+            if (r.postData.Ok())
+            {
+               curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, r.postData.Size());
+               curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, r.postData.Bytes());
+            }
+         }
+         else
+         {
+            if (!strcmp(r.method,"PUT"))
+            {
+               curl_easy_setopt(mHandle, CURLOPT_UPLOAD, 1);
+            }
+            else
+               curl_easy_setopt(mHandle, CURLOPT_CUSTOMREQUEST, r.method);
+
+            if (r.postData.Ok())
+               SetPutBuffer(r.postData.Bytes(),r.postData.Size());
+         }
+      }
  
       mErrorBuf[0] = '\0';
  
@@ -99,6 +131,34 @@ public:
       }
    }
 
+   size_t ReadFunc( void *ptr, size_t size, size_t nmemb)
+   {
+      size_t bytes = size * nmemb;
+      if (mBufferRemaining<=bytes)
+         bytes = mBufferRemaining;
+
+      memcpy(ptr,mBufferPos,bytes);
+      mBufferPos += bytes;
+      mBufferRemaining -= bytes;
+
+      return bytes;
+   }
+
+   static size_t SReadFunc( void *ptr, size_t size, size_t nmemb, void *userdata)
+   {
+      return ((CURLLoader *)userdata)->ReadFunc(ptr,size,nmemb);
+   }
+
+   void SetPutBuffer(const unsigned char *inBuffer, size_t inLen)
+   {
+      mPutBuffer = new unsigned char[inLen];
+      mBufferRemaining = 0;
+      mBufferPos = mPutBuffer;
+      memcpy(mPutBuffer,inBuffer,inLen);
+      curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc, this);
+      curl_easy_setopt(mHandle, CURLOPT_INFILESIZE, inLen);
+   }
+
    void StartProcessing()
    {
 		(*sCurlMap)[mHandle] = this;
@@ -109,6 +169,7 @@ public:
 
 	~CURLLoader()
 	{
+      delete [] mPutBuffer;
 		curl_easy_cleanup(mHandle);
 		sLoaders--;
 		if (sLoaders==0)
@@ -250,9 +311,9 @@ bool URLLoader::processAll()
    return sRunning || (sCurlList && sCurlList->size());
 }
 
-URLLoader *URLLoader::create(const URLRequest &r)
+URLLoader *URLLoader::create(URLRequest &r)
 {
-	return new CURLLoader(r.url,r.authType,r.passwd,r.cookies,r.debug);
+	return new CURLLoader(r);
 }
 
 typedef int (*get_file_callback_func)(const char *filename, unsigned char **buf);

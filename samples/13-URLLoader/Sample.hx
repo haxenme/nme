@@ -9,9 +9,12 @@ import flash.events.IOErrorEvent;
 import flash.events.ProgressEvent;
 import flash.errors.SecurityError;
 import flash.errors.TypeError;
+import flash.net.URLVariables;
+import flash.net.URLRequestMethod;
 
   
 class Sample extends Sprite {
+    private var postTextField:TextField;
     private var xmlTextField:TextField;
     private var externalXML:Xml;    
     private var loader:URLLoader;
@@ -21,7 +24,6 @@ class Sample extends Sprite {
 	     super();
 		  flash.Lib.current.addChild(this);
 
-        xmlTextField = new TextField();
         //var request:URLRequest = new URLRequest("http://www.w3schools.com/xml/cd_catalog.xml");
         var request:URLRequest = new URLRequest("https://twitter.com/");
         #if !flash
@@ -29,8 +31,10 @@ class Sample extends Sprite {
         request.cookieString = "name=value";
         request.verbose = true;
         #end
-
         loader = new URLLoader();
+        loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+        loader.addEventListener(Event.COMPLETE, loaderCompleteHandler);
+        loader.addEventListener(ProgressEvent.PROGRESS, onProgress);
 
         try {
             loader.load(request);
@@ -40,12 +44,18 @@ class Sample extends Sprite {
             trace("A SecurityError has occurred.");
         }
 
-        loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
-        loader.addEventListener(Event.COMPLETE, loaderCompleteHandler);
-        loader.addEventListener(ProgressEvent.PROGRESS, onProgress);
+        postTextField = new TextField();
+        postTextField.x = 10;
+        postTextField.y = 10;
+        postTextField.background = true;
+        postTextField.autoSize = TextFieldAutoSize.LEFT;
 
+        addChild(postTextField);
+
+
+        xmlTextField = new TextField();
         xmlTextField.x = 10;
-        xmlTextField.y = 10;
+        xmlTextField.y = 100;
         xmlTextField.background = true;
         xmlTextField.autoSize = TextFieldAutoSize.LEFT;
 
@@ -62,6 +72,27 @@ class Sample extends Sprite {
         image_loader.x = 180;
         image_loader.y = 180;
         addChild(image_loader);
+
+        var post = new URLRequest("http://www.snee.com/xml/crud/posttest.cgi");
+        var vars = new URLVariables();
+        vars.fname = "Milla";
+        vars.lname = "Jovovich";
+        vars.submit = "1";
+        post.method = URLRequestMethod.POST;
+        post.data = vars;
+        post.verbose = true;
+        var postLoad = new URLLoader();
+        postLoad.addEventListener(Event.COMPLETE, function(_) {
+           postTextField.htmlText = postLoad.data.toString();
+        } );
+
+        try {
+            postLoad.load(post);
+        }
+        catch (error:SecurityError)
+        {
+            trace("A SecurityError has occurred.");
+        }
     }
 
 	 function onProgress(event:ProgressEvent)

@@ -105,6 +105,9 @@ static int _id_userPassword;
 static int _id_cookieString;
 static int _id_verbose;
 
+static int _id_method;
+static int _id_nmeBytes;
+
 
 
 
@@ -183,6 +186,8 @@ extern "C" void InitIDs()
    _id_userPassword = val_id("userPassword");
    _id_cookieString = val_id("cookieString");
    _id_verbose = val_id("verbose");
+   _id_method = val_id("method");
+   _id_nmeBytes = val_id("nmeBytes");
 
    gObjectKind = alloc_kind();
 }
@@ -501,7 +506,9 @@ void FromValue(value obj, URLRequest &request)
    request.authType = val_field_numeric(obj, _id_authType );
    request.passwd = val_string( val_field(obj, _id_userPassword) );
    request.cookies = val_string( val_field(obj, _id_cookieString) );
+   request.method = val_string( val_field(obj, _id_method) );
    request.debug = val_field_numeric( obj, _id_verbose );
+   request.postData = ByteArray( val_field(obj,_id_nmeBytes) );
 }
 
 

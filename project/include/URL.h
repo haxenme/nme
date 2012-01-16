@@ -26,13 +26,15 @@ struct URLRequest
    int        authType;
    const char *passwd;
    const char *cookies;
+   const char *method;
+   ByteArray  postData;
    bool       debug;
 };
 
 class URLLoader : public Object
 {
 	public:
-		static URLLoader *create(const URLRequest &inRequest);
+		static URLLoader *create(URLRequest &inRequest);
 
 		static bool processAll();
 		static void initialize(const char *inCACertFilePath);
