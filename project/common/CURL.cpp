@@ -290,7 +290,7 @@ void URLLoader::initialize(const char *inCACertFilePath)
   sCACertFile = std::string(inCACertFilePath);
 
   #if defined(ANDROID) && defined(NME_CURL_SSL)
-  get_file_callback = sGetFile;
+  //get_file_callback = sGetFile;
   #endif
 
 
