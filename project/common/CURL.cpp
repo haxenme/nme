@@ -155,7 +155,7 @@ public:
       mBufferRemaining = 0;
       mBufferPos = mPutBuffer;
       memcpy(mPutBuffer,inBuffer,inLen);
-      curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc, this);
+      curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc);
       curl_easy_setopt(mHandle, CURLOPT_INFILESIZE, inLen);
    }
 
