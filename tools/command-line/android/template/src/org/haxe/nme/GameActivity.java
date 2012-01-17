@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.view.Window;
+import android.view.View;
 import android.util.Log;
 import android.content.res.AssetManager;
 import android.content.res.AssetFileDescriptor;
@@ -81,6 +82,20 @@ public class GameActivity extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_GAME);
 		}
     }
+
+    public static void pushView(View inView)
+    {
+       activity.doPause();
+       activity.setContentView(inView);
+    }
+
+    public static void popView()
+    {
+       activity.setContentView(activity.mView);
+       activity.doResume();
+    }
+
+    public static HaxeObject createHaxeObject(long inHandle) { return new HaxeObject(inHandle); }
 
     public static GameActivity getInstance() { return activity; }
 
@@ -373,6 +388,10 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     @Override protected void onPause() {
         super.onPause();
+        doPause();
+    }
+
+    public void doPause() {
         mSoundPool = null;
         mView.sendActivity(NME.DEACTIVATE);
         mView.onPause();
@@ -384,9 +403,13 @@ public class GameActivity extends Activity implements SensorEventListener {
     }
 
     @Override protected void onResume() {
+        super.onResume();
+        doResume();
+     }
+
+    public void doResume() {
         mSoundPoolID++;
         mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
-        super.onResume();
         mView.onResume();
         if (mMediaPlayer!=null)
            mMediaPlayer.start();
