@@ -24,6 +24,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (javaPath in javaPaths) {
 			
+         try {
 			if (FileSystem.isDirectory (javaPath)) {
 				
 				recursiveCopy (javaPath, destination + "/src", true);
@@ -33,6 +34,10 @@ class AndroidInstaller extends InstallerBase {
 				copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
 				
 			}
+         }
+         catch (e:Dynamic) {
+            throw"Could not find javaPath " + javaPath +" required by extension."; 
+         }
 			
 		}
 		
