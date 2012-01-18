@@ -24,6 +24,7 @@ enum JNIType
    jniLong,
    jniFloat,
    jniDouble,
+   jniObjectHaxe,
 };
 
 
@@ -39,7 +40,15 @@ void CheckException()
    }
 }
 
+/*
+struct JavaObjectInfo
+{
+   jobject *javaHaxeObject;
+   AutoGCRoot *root;
+};
 
+typedef std::map<value,JavaObjectInfo> JaveObjectMap;
+*/
 
 class HaxeJavaLink : public Object
 {
@@ -195,6 +204,9 @@ struct JNIMethod : public nme::Object
          case jniObjectArray:
             ELOG("HaxeToJNI : jniObjectArray not implemented");
             return false; // TODO
+         case jniObjectHaxe:
+            out.l = CreateJavaHaxeObject(inValue);
+            return true;
          case jniObject:
             {
                jobject obj = 0;
@@ -272,8 +284,8 @@ struct JNIMethod : public nme::Object
                if (!strncmp(src,"java/lang/String;",17) ||
                    !strncmp(src,"java/lang/CharSequence;",23)  )
                   outType = jniObjectString;
-               else
-                  outType = jniObject;
+               else if (!strncmp(src,"org/haxe/nme/HaxeOject;",23))
+                  outType = jniObjectHaxe;
                return inStr+1;
             }
       }
@@ -312,6 +324,28 @@ struct JNIMethod : public nme::Object
       value result =  ObjectToAbstract(obj);
       return result;
    }
+
+   value JObjectToHaxeObject(jobject inObject)
+   {
+      if (inObject)
+      {
+         JNIEnv *env = GetEnv();
+         jclass cls = env->FindClass("org/haxe/nme/HaxeOject");
+         if (cls)
+         {
+            jfieldID fid = (*env)->GetFieldID(cls, "__haxeHandle", "J");
+            if (fid)
+            {
+               jlong val = (*env)->GetLongField(inObject,fid);
+               return (value)val;
+            }
+         }
+      }
+
+      return alloc_null();
+   }
+
+
 
    value JArrayToHaxe(jobject inObject)
    {
@@ -354,6 +388,9 @@ struct JNIMethod : public nme::Object
             break;
          case jniObject:
             result = JObjectToHaxe(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            break;
+         case jniObjectHaxe:
+            result = JObjectToHaxeObject(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectString:
             result = JStringToHaxe(env,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
@@ -415,6 +452,9 @@ struct JNIMethod : public nme::Object
             break;
          case jniObject:
             result = JObjectToHaxe(env->CallObjectMethodA(inObject,mMethod, jargs));
+            break;
+         case jniObjectHaxe:
+            result = JObjectToHaxeObject(env->CallObjectMethodA(inObject,mMethod, jargs));
             break;
          case jniObjectString:
             result = JStringToHaxe(env,env->CallObjectMethodA(inObject, mMethod, jargs));
