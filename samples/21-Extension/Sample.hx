@@ -33,6 +33,17 @@ class Sample extends Sprite
       go.selectable = false;
       go.addEventListener(flash.events.MouseEvent.CLICK,function(_) { launchWeb(); });
       addChild(go);
+
+      test();
+   }
+
+   function test()
+   {
+      trace("Test create ....");
+      var t = nme.Test.create(this);
+      trace("Test call ....");
+      t.callMe(16.0);
+      trace("Test done.");
    }
 
    function launchWeb()

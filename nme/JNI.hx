@@ -10,24 +10,6 @@ import nme.Loader;
 
 class JNI
 {
-
-	private static var alreadyCreated = new Hash<Bool>();
-	private static var base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	
-	
-	public static function createInterface(haxeClass:Dynamic, className:String, classDef:String):Dynamic
-	{
-		var bytes:Bytes = null;
-		if (!alreadyCreated.get(className))
-		{
-			bytes = Bytes.ofString(BaseCode.decode(classDef, base64));
-			bytes = Uncompress.run(bytes, 9);
-			alreadyCreated.set(className, true);
-		}
-		return nme_jni_create_interface(haxeClass, className, bytes == null ? null : bytes.getData());
-	}
-	
-	
 	/**
 	 * Create bindings to an class instance method in Java
 	 * @param	className		The name of the target class in Java
@@ -64,18 +46,13 @@ class JNI
 	
 	
 	private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 4);
-	private static var nme_jni_create_interface = Loader.load("nme_jni_create_interface", 3);
 	
 }
 
 
 class JNIMethod
 {
-	public var callMemberArgs:Dynamic;
-	public var callStaticArgs:Dynamic;
-	
 	private var method:Dynamic;
-	
 	
 	public function new(method:Dynamic)
 	{
@@ -99,14 +76,13 @@ class JNIMethod
 	public function getMemberMethod(useArray:Bool):Dynamic
 	{
 		if (useArray)
-			{
-				return callMember;
-			}
-			else
-			{
-				callMemberArgs = Reflect.makeVarArgs (callMember);
-				return callMemberArgs;
-			}
+		{
+			return callMember;
+		}
+		else
+		{
+			return Reflect.makeVarArgs (callMember);
+		}
 	}
 	
 	
@@ -118,8 +94,7 @@ class JNIMethod
 		}
 		else
 		{
-			callStaticArgs = Reflect.makeVarArgs (callStatic);
-			return callStaticArgs;
+			return  Reflect.makeVarArgs (callStatic);
 		}
 	}
 	
