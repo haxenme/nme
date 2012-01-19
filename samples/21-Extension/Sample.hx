@@ -46,6 +46,12 @@ class Sample extends Sprite
       trace("Test done.");
    }
 
+   function square(inVal:Float)
+   {
+      trace("in square function");
+      return inVal*inVal;
+   }
+
    function launchWeb()
    {
       var dest = url.text;

@@ -10,6 +10,27 @@ import nme.Loader;
 
 class JNI
 {
+   static var isInit = false;
+
+   static function init()
+   {
+      if (!isInit)
+      {
+         isInit = true;
+         var func = Loader.load("nme_jni_init_callback", 1);
+         func(onCallback);
+      }
+   }
+   static function onCallback(inObj:Dynamic, inFunc:Dynamic, inArgs:Dynamic) : Dynamic
+   {
+      //trace("onCallback " + inObj + "," + inFunc + "," + inArgs );
+      var field = Reflect.field( inObj, inFunc );
+      if (field!=null)
+         return Reflect.callMethod( inObj, field, inArgs );
+      trace("onCallback - unknown field " + inFunc);
+      return null;
+   }
+
 	/**
 	 * Create bindings to an class instance method in Java
 	 * @param	className		The name of the target class in Java
@@ -20,6 +41,7 @@ class JNI
 	 */
 	public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
+		init();
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, false));
 		return method.getMemberMethod(useArray);
 	}
@@ -35,6 +57,7 @@ class JNI
 	 */
 	public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
+		init();
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, true));
 		return method.getStaticMethod(useArray);
 	}

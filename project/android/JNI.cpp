@@ -29,6 +29,38 @@ enum JNIType
    jniObjectHaxe,
 };
 
+static bool sInit = false;
+jclass GameActivity;
+jmethodID postUICallback;
+jclass HaxeObject;
+jmethodID HaxeObject_create;
+jfieldID __haxeHandle;
+
+AutoGCRoot *gCallback = 0;
+
+void JNIInit(JNIEnv *env)
+{
+   if (sInit)
+      return;
+
+   GameActivity = env->FindClass("org/haxe/nme/GameActivity");
+   postUICallback = env->GetStaticMethodID(GameActivity, "postUICallback", "(J)V");
+
+   HaxeObject   = env->FindClass("org/haxe/nme/HaxeObject");
+   HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/nme/HaxeObject;");
+   __haxeHandle = env->GetFieldID(HaxeObject, "__haxeHandle", "J");
+
+   sInit = true;
+}
+
+value nme_jni_init_callback(value inCallback)
+{
+   if (!gCallback)
+      gCallback = new AutoGCRoot(inCallback);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_jni_init_callback,1);
+
 
 void CheckException()
 {
@@ -60,6 +92,7 @@ pthread_mutex_t gJavaObjectsMutex;
 
 jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue)
 {
+   JNIInit(env);
    if (!gJavaObjectsMutexInit)
    {
       gJavaObjectsMutexInit = false;
@@ -74,25 +107,7 @@ jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue)
       gJavaObjects[inValue] = new JavaHaxeReference(inValue);
    pthread_mutex_unlock(&gJavaObjectsMutex);
 
-   static jclass cls = 0;
-   jmethodID def = 0;
-   if (!cls)
-   {
-      cls = env->FindClass("org/haxe/nme/HaxeObject");
-      if (!cls)
-      {
-         ELOG("Could not find class org/haxe/nme/HaxeObject");
-         return 0;
-      }
-      def = env->GetStaticMethodID(cls, "create", "(J)Lorg/haxe/nme/HaxeObject;");
-      if (!def)
-      {
-         ELOG("Could not find method create (J)org/haxe/nme/HaxeObject;");
-         return 0;
-      }
-   }
-
-   jobject result = env->CallStaticObjectMethod(cls, def, (jlong)inValue);
+   jobject result = env->CallStaticObjectMethod(HaxeObject, HaxeObject_create, (jlong)inValue);
    jthrowable exc = env->ExceptionOccurred();
    CheckException();
    return result;
@@ -158,6 +173,47 @@ bool AbstractToJObject(value inValue, jobject &outObject)
 
    return AbstractToJObject(jobj,outObject);
 }
+
+
+value JArrayToHaxe(JNIEnv *inEnv,jobject inObject)
+{
+   int len = inEnv->GetArrayLength((jarray)inObject);
+   value result = alloc_array(len);
+   //JObjectToHaxe(inObject);
+   return result;
+}
+
+value JStringToHaxe(JNIEnv *inEnv,jobject inObject)
+{
+   jboolean is_copy;
+   const char *str = inEnv->GetStringUTFChars( (jstring)inObject, &is_copy);
+   value result = alloc_string(str);
+   inEnv->ReleaseStringUTFChars((jstring)inObject, str);
+   return result;
+}
+
+value JObjectToHaxe(jobject inObject)
+{
+   if (inObject==0)
+      return alloc_null();
+   JNIObject *obj = new JNIObject(inObject);
+   value result =  ObjectToAbstract(obj);
+   return result;
+}
+
+value JObjectToHaxeObject(JNIEnv *env,jobject inObject)
+{
+   JNIInit(env);
+
+   if (inObject)
+   {
+      jlong val = env->GetLongField(inObject,__haxeHandle);
+      return (value)val;
+   }
+
+   return alloc_null();
+}
+
 
 
 
@@ -323,54 +379,6 @@ struct JNIMethod : public nme::Object
 
    bool Ok() const { return mMethod>0; }
 
-   value JObjectToHaxe(jobject inObject)
-   {
-      if (inObject==0)
-         return alloc_null();
-      JNIObject *obj = new JNIObject(inObject);
-      value result =  ObjectToAbstract(obj);
-      return result;
-   }
-
-   value JObjectToHaxeObject(jobject inObject)
-   {
-      JNIEnv *env = GetEnv();
-
-      static jclass cls = 0;
-      jfieldID fid = 0;
-
-      if (!cls)
-      {
-         cls = env->FindClass("org/haxe/nme/HaxeObject");
-         if (cls)
-            fid = env->GetFieldID(cls, "__haxeHandle", "J");
-      }
-
-      if (inObject && fid)
-      {
-         jlong val = env->GetLongField(inObject,fid);
-         return (value)val;
-      }
-
-      return alloc_null();
-   }
-
-
-
-   value JArrayToHaxe(jobject inObject)
-   {
-      // TODO: arrays
-      return JObjectToHaxe(inObject);
-   }
-
-   value JStringToHaxe(JNIEnv *inEnv,jobject inObject)
-   {
-      jboolean is_copy;
-      const char *str = inEnv->GetStringUTFChars( (jstring)inObject, &is_copy);
-      value result = alloc_string(str);
-      inEnv->ReleaseStringUTFChars((jstring)inObject, str);
-      return result;
-   }
 
 
    value CallStatic( value inArgs)
@@ -400,13 +408,13 @@ struct JNIMethod : public nme::Object
             result = JObjectToHaxe(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectHaxe:
-            result = JObjectToHaxeObject(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            result = JObjectToHaxeObject(env,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectString:
             result = JStringToHaxe(env,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniObjectArray:
-            result = JArrayToHaxe(env->CallStaticObjectMethodA(mClass, mMethod, jargs));
+            result = JArrayToHaxe(env,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
             break;
          case jniBoolean:
             result = alloc_bool(env->CallStaticBooleanMethodA(mClass, mMethod, jargs));
@@ -464,13 +472,13 @@ struct JNIMethod : public nme::Object
             result = JObjectToHaxe(env->CallObjectMethodA(inObject,mMethod, jargs));
             break;
          case jniObjectHaxe:
-            result = JObjectToHaxeObject(env->CallObjectMethodA(inObject,mMethod, jargs));
+            result = JObjectToHaxeObject(env,env->CallObjectMethodA(inObject,mMethod, jargs));
             break;
          case jniObjectString:
             result = JStringToHaxe(env,env->CallObjectMethodA(inObject, mMethod, jargs));
             break;
          case jniObjectArray:
-            result = JArrayToHaxe(env->CallObjectMethodA(inObject, mMethod, jargs));
+            result = JArrayToHaxe(env,env->CallObjectMethodA(inObject, mMethod, jargs));
             break;
          case jniBoolean:
             result = alloc_bool(env->CallBooleanMethodA(inObject, mMethod, jargs));
@@ -558,27 +566,20 @@ DEFINE_PRIM(nme_jni_call_member,3);
 value nme_post_ui_callback(value inCallback)
 {
    JNIEnv *env = GetEnv();
-   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
-   if (cls)
+   JNIInit(env);
+
+   AutoGCRoot *root = new AutoGCRoot(inCallback);
+   ELOG("NME set onCallback %p",root);
+   env->CallStaticVoidMethod(GameActivity, postUICallback, (jlong) root);
+   jthrowable exc = env->ExceptionOccurred();
+   if (exc)
    {
-      jmethodID mid = env->GetStaticMethodID(cls, "postUICallback", "(J)V");
-      if (mid != 0)
-      {
-         AutoGCRoot *root = new AutoGCRoot(inCallback);
-         ELOG("NME set onCallback %p",root);
-         env->CallStaticVoidMethod(cls, mid, (jlong) root);
-         jthrowable exc = env->ExceptionOccurred();
-         if (exc)
-         {
-            env->ExceptionDescribe();
-            env->ExceptionClear();
-            delete root;
-            val_throw(alloc_string("JNI Exception"));
-         }
-         return alloc_null();
-      }
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      delete root;
+      val_throw(alloc_string("JNI Exception"));
    }
-   ELOG("nme_post_ui_callback - failed");
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_post_ui_callback,1);
@@ -614,15 +615,37 @@ JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_releaseReference(JNIEnv * env,
    return 0;
 }
 
+value CallHaxe(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject inArgs)
+{
+   if (gCallback)
+   {
+      value objValue = (value)handle;
+      value funcName = JStringToHaxe(env,function);
+      value args = JArrayToHaxe(env,inArgs);
+      return val_call3(gCallback->get(),objValue,funcName,args);
+   }
+   else
+   {
+      ELOG("NME CallHaxe - init not called.");
+      return alloc_null();
+   }
+}
+
 
 
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
-   ELOG("TODO: Call obj");
+
+   value result = CallHaxe(env,obj,handle,function,args);
+
+   // TODO:
+   //jobject val = JAnonToHaxe(result);
+   jobject val = 0;
+
    gc_set_top_of_stack(0,true);
-   return 0;
+   return val;
 }
 
 
@@ -631,9 +654,12 @@ JAVA_EXPORT jdouble JNICALL Java_org_haxe_nme_NME_callNumericFunction(JNIEnv * e
    int top = 0;
    gc_set_top_of_stack(&top,true);
 
-   ELOG("TODO: Call double");
+   value result = CallHaxe(env,obj,handle,function,args);
+
+   double val = val_number(result);
+
    gc_set_top_of_stack(0,true);
-   return 0.0;
+   return val;
 }
 
 
