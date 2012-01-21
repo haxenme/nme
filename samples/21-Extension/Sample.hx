@@ -48,7 +48,7 @@ class Sample extends Sprite
 
    function square(inVal:Float)
    {
-      trace("in square function");
+      trace("in square function:" + inVal);
       return inVal*inVal;
    }
 
