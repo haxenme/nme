@@ -44,6 +44,7 @@ class AndroidInstaller extends InstallerBase {
 		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
 		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/android/haxe");
 		
 		for (asset in assets) {
 			

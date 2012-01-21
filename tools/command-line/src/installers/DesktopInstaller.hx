@@ -20,8 +20,9 @@ class DesktopInstaller extends InstallerBase {
 		mkdir (getBuildDir ());
 		mkdir (getExeDir ());
 		
-		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/haxe/", targetDir + "/haxe");
 		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
 		
 		for (asset in assets) {
 			

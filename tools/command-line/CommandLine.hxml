@@ -3,3 +3,5 @@
 -cp src
 -lib gm2d
 -lib nme
+-lib swf
+--remap flash:nme

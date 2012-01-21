@@ -42,15 +42,15 @@ class Asset {
 		
 		if (this.id == "") {
 			
-			this.id = targetPath;
+			this.id = this.targetPath;
 			
 		}
 		
-		this.resourceName = targetPath;
+		this.resourceName = this.targetPath;
 		
 		if (this.type == "") {
 			
-			var extension:String = Path.extension (targetPath);
+			var extension:String = Path.extension (this.targetPath);
 			
 			switch (extension.toLowerCase ()) {
 				

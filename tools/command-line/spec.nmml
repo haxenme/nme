@@ -172,7 +172,7 @@
 		When pointing to a directory, you can use the include or exclude attributes to
 		specify patterns for including files automatically. Wildcards are supported.
 		To include all the files under the directory, for example, use an include
-		value of "*". You can separate multiple patterns using semi-colons.
+		value of "*". You can separate multiple patterns using "|" characters.
 		
 		You can nest assets nodes inside of each other. If you specify a directory in the
 		top assets node, its path will be appended to the paths you specify in subsequent
@@ -205,7 +205,7 @@
 	
 	<assets path="assets" include="*" />
 	<assets path="../../assets" rename="assets" include="*" />
-	<assets path="assets/images" rename="images" include="*.jpg;*.png" exclude="example.jpg" />
+	<assets path="assets/images" rename="images" include="*.jpg|*.png" exclude="example.jpg" />
 	<assets path="assets">
 		<assets path="images" include="*" type="image" />
 		<sound path="sound/mySound.wav" name="MySound" />

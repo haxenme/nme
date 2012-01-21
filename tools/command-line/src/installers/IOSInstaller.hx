@@ -175,6 +175,7 @@ class IOSInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/iphone/Classes", destination + "Classes");
 		recursiveCopy (NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
 		copyFile (NME + "/tools/command-line/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", destination + "/haxe");
 		
 		mkdir (destination + "lib");
 		

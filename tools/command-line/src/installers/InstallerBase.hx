@@ -5,6 +5,7 @@ import data.Asset;
 import data.Icon;
 import data.Icons;
 import data.NDLL;
+import format.SWF;
 import haxe.Stack;
 import haxe.Template;
 import haxe.xml.Fast;
@@ -14,6 +15,7 @@ import neko.io.Path;
 import neko.FileSystem;
 import neko.Lib;
 import neko.Sys;
+import nme.utils.ByteArray;
 
 
 class InstallerBase {
@@ -34,6 +36,7 @@ class InstallerBase {
 	private var allFiles:Array <String>;
 	private var NME:String;
 	private var projectFile:String;
+	private var swfLibraries:Array <Asset>;
 	private var target:String;
 	private var sslCaCert:String;
 	private var targetFlags:Hash <String>;
@@ -57,9 +60,9 @@ class InstallerBase {
 	}
 	
 	
-	public function create (inNME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, inArgs:Array<String>):Void {
+	public function create (NME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>):Void {
 		
-		NME = inNME;
+		this.NME = NME;
 		this.command = command;
 		this.defines = defines;
 		this.includePaths = includePaths;
@@ -67,7 +70,9 @@ class InstallerBase {
 		this.target = target;
 		this.targetFlags = targetFlags;
 		this.debug = debug;
-      args = inArgs;
+		this.args = args;
+		
+		swfLibraries = new Array <Asset> ();
 		
 		initializeTool ();
 		parseHXCPPConfig ();
@@ -422,6 +427,7 @@ class InstallerBase {
 	private function filter (text:String, include:String = "*", exclude:String = ""):Bool {
 		
 		include = StringTools.replace (include, ".", "\\.");
+		exclude = StringTools.replace (exclude, ".", "\\");
 		exclude = StringTools.replace (exclude, ".", "\\.");
 		include = StringTools.replace (include, "*", ".*");
 		exclude = StringTools.replace (exclude, "*", ".*");
@@ -539,6 +545,8 @@ class InstallerBase {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
+				trace (asset);
+				
 				embeddedAssets.push (asset);
 				
 			}
@@ -571,6 +579,63 @@ class InstallerBase {
 		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
 		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
 		context.HXML_PATH = NME + "/tools/command-line/" + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
+		
+	}
+	
+	
+	private function generateSWFClasses (templatePath:String, outputDirectory:String):Void {
+		
+		var templateData = File.getContent (templatePath);
+		
+		for (asset in swfLibraries) {
+			
+			if (!FileSystem.exists (asset.sourcePath)) {
+				
+				error ("SWF library path \"" + asset.sourcePath + "\" does not exist");
+				
+			}
+			
+			var input = File.read (asset.sourcePath, true);
+			var data = new ByteArray ();
+			
+			try {
+				
+				while (true) {
+					
+					data.writeByte (input.readByte ());
+					
+				}
+				
+			} catch (e:Dynamic) {
+				
+			}
+			
+			var swf = new SWF (data);
+			
+			for (className in swf.symbols.keys ()) {
+				
+				var lastIndexOfPeriod:Int = className.lastIndexOf (".");
+				
+				var packageName = className.substr (0, lastIndexOfPeriod);
+				var name = className.substr (lastIndexOfPeriod + 1);
+				var symbolID = swf.symbols.get (className);
+				
+				var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
+				var template = new Template (templateData);
+				var result = template.execute (context);
+				
+				var directory = outputDirectory + "/" + Path.directory (className.split (".").join ("/"));
+				var fileName = name + ".hx";
+				
+				mkdir (directory);
+				
+				var fileOutput = File.write (directory + "/" + fileName, true);
+				fileOutput.writeString (result);
+				fileOutput.close ();
+				
+			}
+			
+		}
 		
 	}
 	
@@ -1369,9 +1434,25 @@ class InstallerBase {
 						
 						parseAssetsElement (element, extensionPath);
 					
+					case "swf":
+						
+						var path = extensionPath + substitute (element.att.path);
+						var rename = "";
+						
+						if (element.has.rename) {
+							
+							rename = substitute (element.att.rename);
+							
+						}
+						
+						var asset = new Asset (path, rename, Asset.TYPE_ASSET, "", "");
+						
+						assets.push (asset);
+						swfLibraries.push (asset);
+					
 					case "ssl":
 						
-                  if (wantSslCertificate())
+						if (wantSslCertificate())
 						   parseSsl (element);
 					
 					case "template":
