@@ -1,0 +1,38 @@
+package ::PACKAGE_NAME::;
+
+
+import format.swf.Character;
+import format.swf.MovieClip;
+import format.SWF;
+import nme.Assets;
+
+
+class ::CLASS_NAME:: extends MovieClip {
+	
+	
+	public function new () {
+		
+		if (!SWF.instances.exists ("::SWF_ID::")) {
+			
+			SWF.instances.set ("::SWF_ID::", new SWF (Assets.getBytes ("::SWF_ID::")));
+			
+		}
+		
+		var swf = SWF.instances.get ("::SWF_ID::");
+		
+		switch (swf.getCharacter (::SYMBOL_ID::)) {
+			
+			case charSprite (data):
+				
+				super (data);
+			
+			default:
+				
+				super ();
+			
+		}
+		
+	}
+	
+	
+}
