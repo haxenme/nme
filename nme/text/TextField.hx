@@ -9,6 +9,8 @@ import nme.Loader;
 class TextField extends InteractiveObject
 {
 	
+	public var antiAliasType:AntiAliasType;
+	
 	public var autoSize(nmeGetAutoSize, nmeSetAutoSize):TextFieldAutoSize;
 	public var background(nmeGetBackground, nmeSetBackground):Bool;
 	public var backgroundColor(nmeGetBackgroundColor, nmeSetBackgroundColor):Int;
