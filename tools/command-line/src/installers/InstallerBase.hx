@@ -427,7 +427,6 @@ class InstallerBase {
 	private function filter (text:String, include:String = "*", exclude:String = ""):Bool {
 		
 		include = StringTools.replace (include, ".", "\\.");
-		exclude = StringTools.replace (exclude, ".", "\\");
 		exclude = StringTools.replace (exclude, ".", "\\.");
 		include = StringTools.replace (include, "*", ".*");
 		exclude = StringTools.replace (exclude, "*", ".*");
@@ -544,8 +543,6 @@ class InstallerBase {
 		for (asset in assets) {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-				
-				trace (asset);
 				
 				embeddedAssets.push (asset);
 				
