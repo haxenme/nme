@@ -613,8 +613,20 @@ class InstallerBase {
 				
 				var lastIndexOfPeriod:Int = className.lastIndexOf (".");
 				
-				var packageName = className.substr (0, lastIndexOfPeriod);
-				var name = className.substr (lastIndexOfPeriod + 1);
+				var packageName = "";
+				var name = "";
+				
+				if (lastIndexOfPeriod == -1) {
+					
+					name = className;
+					
+				} else {
+					
+					packageName = className.substr (0, lastIndexOfPeriod);
+					name = className.substr (lastIndexOfPeriod + 1);
+					
+				}
+				
 				var symbolID = swf.symbols.get (className);
 				
 				var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
@@ -1002,8 +1014,8 @@ class InstallerBase {
 	
 	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
 		
-		if (rename == "")
-			rename = path;
+		//if (rename == "")
+			//rename = path;
 		
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
