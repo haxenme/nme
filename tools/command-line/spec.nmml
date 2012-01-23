@@ -236,6 +236,38 @@
 	
 	
 	
+	<!-- <library />
+		
+		Use library nodes to embed SWF assets in your application.
+		
+		Unlike including a SWF file using an assets node, embedding it as a library will cause
+		the command-line tools to generate classes for each of the symbols found in the SWF
+		file. You can use these classes to instantiate the symbols directly.
+		
+		The "path" attribute should point to the file, and optionally, you can use a "rename"
+		attribute to control where the file will be saved in your project, or if you wish
+		to access the file using nme.Assets directly.
+		
+		For example, if you have a symbol in your SWF file, with "linkage" set to 
+		"com.example.MySquare", you could create copies of this symbol using this code:
+			
+			import com.example.MySquare;
+			
+			...
+			
+			var square = new MySquare ();
+			
+		You must have "swf" installed through haxelib in order to use this feature.
+		
+		The library node may also be used in the future if there are other sensible
+		container formats
+		
+	-->
+	
+	<library path="../files/library.swf" rename="assets/library.swf" />
+	
+	
+	
 	<!-- <set />
 		
 		Use set nodes to specify values for use, locally, in the NME command-line tools.

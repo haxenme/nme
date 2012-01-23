@@ -366,6 +366,18 @@ class InstallerBase {
 			
 		}
 		
+		for (swfLibrary in swfLibraries) {
+			
+			nmml += '	<library path="' + swfLibrary.sourcePath + '" rename="' + swfLibrary.targetPath + '" />\n';
+			
+		}
+		
+		if (swfLibraries.length > 0) {
+			
+			nmml += "\n";
+			
+		}
+		
 		for (javaPath in javaPaths) {
 			
 			nmml += '	<java path="' + javaPath + '" />\n';
@@ -833,7 +845,7 @@ class InstallerBase {
 		
 		var path:String = "";
 		var embed:String = "";
-		var rename:String = "";
+		var targetPath:String = "";
 		var type:String = "";
 		
 		if (element.has.path) {
@@ -850,7 +862,11 @@ class InstallerBase {
 		
 		if (element.has.rename) {
 			
-			rename = substitute (element.att.rename);
+			targetPath = substitute (element.att.rename);
+			
+		} else {
+			
+			targetPath = path;
 			
 		}
 		
@@ -873,10 +889,13 @@ class InstallerBase {
 			
 			// Empty element
 			
-			if (path == "")
+			if (path == "") {
+				
 				return;
+				
+			}
 			
-			if (path == "" || !FileSystem.exists (path)) {
+			if (!FileSystem.exists (path)) {
 				
 				error ("Could not find asset path \"" + path + "\"");
 				return;
@@ -893,7 +912,7 @@ class InstallerBase {
 					
 				}
 				
-				assets.push (new Asset (path, rename, type, id, embed));
+				assets.push (new Asset (path, targetPath, type, id, embed));
 				
 			} else {
 				
@@ -942,7 +961,7 @@ class InstallerBase {
 					
 				}
 				
-				parseAssetsElementDirectory (path, rename, include, exclude, type, embed, true);
+				parseAssetsElementDirectory (path, targetPath, include, exclude, type, embed, true);
 				
 			}
 			
@@ -954,22 +973,22 @@ class InstallerBase {
 				
 			}
 			
-			if (rename != "") {
+			if (targetPath != "") {
 				
-				rename += "/";
+				targetPath += "/";
 				
 			}
 			
 			for (childElement in element.elements) {
 				
 				var childPath:String = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
-				var childRename:String = childPath;
+				var childTargetPath:String = childPath;
 				var childEmbed:String = embed;
 				var childType:String = type;
 				
 				if (childElement.has.rename) {
 					
-					childRename = childElement.att.rename;
+					childTargetPath = childElement.att.rename;
 					
 				}
 				
@@ -1003,7 +1022,7 @@ class InstallerBase {
 					
 				}
 				
-				assets.push (new Asset (path + childPath, rename + childRename, childType, id, childEmbed));
+				assets.push (new Asset (path + childPath, targetPath + childTargetPath, childType, id, childEmbed));
 				
 			}
 			
@@ -1012,10 +1031,7 @@ class InstallerBase {
 	}
 	
 	
-	private function parseAssetsElementDirectory (path:String, rename:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
-		
-		//if (rename == "")
-			//rename = path;
+	private function parseAssetsElementDirectory (path:String, targetPath:String, include:String, exclude:String, type:String, embed:String, recursive:Bool):Void {
 		
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
@@ -1025,7 +1041,7 @@ class InstallerBase {
 				
 				if (filter (file, "*", exclude)) {
 					
-					parseAssetsElementDirectory (path + "/" + file, rename + "/" + file, include, exclude, type, embed, true);
+					parseAssetsElementDirectory (path + "/" + file, targetPath + "/" + file, include, exclude, type, embed, true);
 					
 				}
 				
@@ -1033,7 +1049,7 @@ class InstallerBase {
 				
 				if (filter (file, include, exclude)) {
 					
-					assets.push (new Asset (path + "/" + file, rename + "/" + file, type, "", embed));
+					assets.push (new Asset (path + "/" + file, targetPath + "/" + file, type, "", embed));
 					
 				}
 				
@@ -1443,7 +1459,7 @@ class InstallerBase {
 						
 						parseAssetsElement (element, extensionPath);
 					
-					case "swf":
+					case "library", "swf":
 						
 						var path = extensionPath + substitute (element.att.path);
 						var rename = "";
@@ -1457,6 +1473,10 @@ class InstallerBase {
 						var asset = new Asset (path, rename, Asset.TYPE_ASSET, "", "");
 						
 						assets.push (asset);
+						
+						compilerFlags.remove ("-lib swf");
+						compilerFlags.push ("-lib swf");
+						
 						swfLibraries.push (asset);
 					
 					case "ssl":
