@@ -639,6 +639,9 @@ class InstallerBase {
 					
 				}
 				
+				packageName = packageName.toLowerCase ();
+				name = name.substr (0, 1).toUpperCase () + name.substr (1);
+				
 				var symbolID = swf.symbols.get (className);
 				
 				var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
