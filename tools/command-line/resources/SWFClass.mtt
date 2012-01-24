@@ -1,7 +1,7 @@
 package ::PACKAGE_NAME::;
 
 
-import format.swf.Character;
+import format.swf.symbol.Symbol;
 import format.swf.MovieClip;
 import format.SWF;
 import nme.Assets;
@@ -20,9 +20,9 @@ class ::CLASS_NAME:: extends MovieClip {
 		
 		var swf = SWF.instances.get ("::SWF_ID::");
 		
-		switch (swf.getCharacter (::SYMBOL_ID::)) {
+		switch (swf.getSymbol (::SYMBOL_ID::)) {
 			
-			case charSprite (data):
+			case spriteSymbol (data):
 				
 				super (data);
 			
