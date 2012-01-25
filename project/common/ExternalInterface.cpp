@@ -2352,8 +2352,8 @@ inline value alloc_wstring(const WString &inStr)
 }
 
 
-void FromValue(Optional<int> &outVal,value inVal) { outVal = val_int(inVal); }
-void FromValue(Optional<uint32> &outVal,value inVal) { outVal = val_int(inVal); }
+void FromValue(Optional<int> &outVal,value inVal) { outVal = (int)val_number(inVal); }
+void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_number(inVal); }
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<WString> &outVal,value inVal)
 {
