@@ -1066,24 +1066,47 @@ void ProcessEvent(SDL_Event &inEvent)
 	  
 	  case SDL_JOYAXISMOTION:
 	  {
-		  
+         Event joystick(etJoyAxisMove);
+         joystick.id = inEvent.jaxis.which;
+         joystick.code = inEvent.jaxis.axis;
+         joystick.value = inEvent.jaxis.value;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
 	  }
 	  case SDL_JOYBALLMOTION:
 	  {
-		  
+         Event joystick(etJoyBallMove, inEvent.jball.xrel, inEvent.jball.yrel);
+         joystick.id = inEvent.jball.which;
+         joystick.code = inEvent.jball.ball;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
 	  }
 	  case SDL_JOYBUTTONDOWN:
 	  {
-		  
+         Event joystick(etJoyButtonDown);
+         joystick.id = inEvent.jbutton.which;
+         joystick.code = inEvent.jbutton.button;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
 	  }
 	  case SDL_JOYBUTTONUP:
 	  {
-		  
+         Event joystick(etJoyButtonUp);
+         joystick.id = inEvent.jbutton.which;
+         joystick.code = inEvent.jbutton.button;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
 	  }
 	  case SDL_JOYHATMOTION:
 	  {
-		  
+         Event joystick(etJoyHatMove);
+         joystick.id = inEvent.jhat.which;
+         joystick.code = inEvent.jhat.hat;
+		 joystick.value = inEvent.jhat.value;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
 	  }
+	  
    }
 }
 

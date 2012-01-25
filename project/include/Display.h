@@ -51,6 +51,12 @@ enum EventType
    etDeactivate, // 21
    etGotInputFocus,   // 22
    etLostInputFocus, // 23
+   
+   etJoyAxisMove, // 24
+   etJoyBallMove, // 25
+   etJoyHatMove, // 26
+   etJoyButtonDown, // 27
+   etJoyButtonUp, // 28
 };
 
 enum EventFlags
