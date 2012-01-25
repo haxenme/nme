@@ -30,6 +30,8 @@ static int sgDesktopHeight = 0;
 
 static bool sgInitCalled = false;
 
+static bool sgJoystickEnabled = false;
+
 enum { NO_TOUCH = -1 };
 
 //To guard against multiple calls
@@ -45,7 +47,13 @@ int initSDL () {
 		  PDL_Init(0);
 	#endif
 	
-	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK);
+	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	
+	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0) {
+		
+		sgJoystickEnabled = true;
+		
+	}
 
 	return err;
 	
@@ -524,7 +532,7 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 
 SDLFrame *sgSDLFrame = 0;
-SDL_Joystick *joystick = 0;
+SDL_Joystick *sgJoystick = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, Surface *inIcon )
@@ -693,10 +701,20 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    #ifdef WEBOS
    PDL_ScreenTimeoutEnable(PDL_TRUE);
-   joystick = SDL_JoystickOpen(0);
    #endif
+   
+   if (sgJoystickEnabled && SDL_NumJoysticks() > 0) {
+      
+	   sgJoystick = SDL_JoystickOpen(0);
+	   
+	   #ifndef WEBOS
+	   SDL_JoystickEventState(SDL_TRUE);
+	   #endif
+	   
+   }
+   
 
-   sgSDLFrame =  new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
+   sgSDLFrame = new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
    inOnFrame(sgSDLFrame);
 
@@ -1045,6 +1063,27 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(resize);
          break;
       }
+	  
+	  case SDL_JOYAXISMOTION:
+	  {
+		  
+	  }
+	  case SDL_JOYBALLMOTION:
+	  {
+		  
+	  }
+	  case SDL_JOYBUTTONDOWN:
+	  {
+		  
+	  }
+	  case SDL_JOYBUTTONUP:
+	  {
+		  
+	  }
+	  case SDL_JOYHATMOTION:
+	  {
+		  
+	  }
    }
 }
 
@@ -1053,9 +1092,9 @@ void ProcessEvent(SDL_Event &inEvent)
 
 bool GetAcceleration(double &outX, double &outY, double &outZ)
 {
-	outX = SDL_JoystickGetAxis(joystick, 0) / 32768.0;
-	outY = SDL_JoystickGetAxis(joystick, 1) / 32768.0;
-	outZ = SDL_JoystickGetAxis(joystick, 2) / 32768.0;
+	outX = SDL_JoystickGetAxis(sgJoystick, 0) / 32768.0;
+	outY = SDL_JoystickGetAxis(sgJoystick, 1) / 32768.0;
+	outZ = SDL_JoystickGetAxis(sgJoystick, 2) / 32768.0;
 	return true;
 }
 
