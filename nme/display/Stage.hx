@@ -4,6 +4,7 @@ package nme.display;
 
 import haxe.Timer;
 import nme.display.DisplayObjectContainer;
+import nme.events.JoystickEvent;
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
@@ -315,6 +316,40 @@ class Stage extends DisplayObjectContainer
 				var evt = new Event(Event.LOST_INPUT_FOCUS);
 				nmeBroadcast(evt);
 			
+			case 24: // etJoyAxisMove
+				nmeOnJoystick (inEvent, JoystickEvent.AXIS_MOVE);
+			
+			case 25: // etJoyBallMove
+				nmeOnJoystick (inEvent, JoystickEvent.BALL_MOVE);
+			
+			case 26: // etJoyHatMove
+				if (inEvent.value == 0)
+				{	
+					nmeOnJoystick (inEvent, JoystickEvent.HAT_CENTER);	
+				}
+				if (inEvent.value & 0x01 != 0)
+				{	
+					nmeOnJoystick (inEvent, JoystickEvent.HAT_UP);	
+				}
+				if (inEvent.value & 0x02 != 0)
+				{	
+					nmeOnJoystick (inEvent, JoystickEvent.HAT_RIGHT);	
+				}
+				if (inEvent.value & 0x04 != 0)
+				{	
+					nmeOnJoystick (inEvent, JoystickEvent.HAT_DOWN);
+				}
+				if (inEvent.value & 0x08 != 0)
+				{	
+					nmeOnJoystick (inEvent, JoystickEvent.HAT_LEFT);	
+				}
+			
+			case 27: // etJoyButtonDown
+				nmeOnJoystick (inEvent, JoystickEvent.BUTTON_DOWN);
+			
+			case 28: // etJoyButtonUp
+				nmeOnJoystick (inEvent, JoystickEvent.BUTTON_UP);
+			
 			// TODO: user, sys_wm, sound_finished
 		}
 		
@@ -408,7 +443,32 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	function nmeOnKey(inEvent:Dynamic,inType:String)
+	private function nmeOnJoystick(inEvent:Dynamic, inType:String)
+	{
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
+		if (obj != null)
+			obj.nmeGetInteractiveObjectStack(stack);
+		if (stack.length > 0)
+		{
+			var obj = stack[0];
+			var evt = new JoystickEvent (inType, inEvent.code);
+			switch (inType)
+			{
+				case JoystickEvent.AXIS_MOVE:
+					evt.position = inEvent.value / 32767; // Range: -32768 to 32767
+					if (evt.position < -1) evt.position = -1;
+				
+				case JoystickEvent.BALL_MOVE:
+					evt.relativeX = inEvent.x;
+					evt.relativeY = inEvent.y;
+			}
+			obj.nmeFireEvent(evt);
+		}
+	}
+	
+	
+	private function nmeOnKey(inEvent:Dynamic, inType:String)
 	{
 		var stack = new Array<InteractiveObject>();
 		var obj:DisplayObject = nmeFindByID(inEvent.id);
