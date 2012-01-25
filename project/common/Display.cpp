@@ -614,7 +614,7 @@ void DisplayObject::ClearFilters()
 
 void DisplayObject::Focus()
 {
-#if defined(IPHONE) || defined (ANDROID)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();
@@ -626,7 +626,7 @@ void DisplayObject::Focus()
 
 void DisplayObject::Unfocus()
 {
-#if defined(IPHONE) || defined (ANDROID)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();
@@ -1528,7 +1528,7 @@ void Stage::HandleEvent(Event &inEvent)
          mFocusObject->OnKey(inEvent);
       #ifdef ANDROID
       // Non-cancelled back key ...
-      if (inEvent.result==0 && inEvent.code==27)
+      if (inEvent.result==0 && inEvent.code==27 && inEvent.type == etKeyUp)
       {
           TerminateMainLoop();
       }
@@ -1609,7 +1609,7 @@ void Stage::HandleEvent(Event &inEvent)
       {
          if (hit_obj->WantsFocus())
             SetFocusObject(hit_obj,fsMouse);
-         #if defined(IPHONE) || defined(ANDROID)
+         #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
          else
          {
             EnablePopupKeyboard(false);
@@ -1627,7 +1627,7 @@ void Stage::HandleEvent(Event &inEvent)
          }
       }
    }
-   #if defined(IPHONE) || defined(ANDROID)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
    else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown ||
          (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
    {

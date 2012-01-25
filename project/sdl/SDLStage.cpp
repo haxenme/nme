@@ -433,6 +433,23 @@ public:
    }
    
    
+   void EnablePopupKeyboard (bool enabled) {
+		
+	   #ifdef WEBOS
+		if (enabled) {
+			
+			PDL_SetKeyboardState (PDL_TRUE);
+			
+		} else {
+			
+			PDL_SetKeyboardState (PDL_FALSE);
+			
+		}
+		#endif
+		
+   }
+   
+   
    bool getMultitouchSupported() { 
 	   #ifdef WEBOS
 	   return true;
