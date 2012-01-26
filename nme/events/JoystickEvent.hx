@@ -14,29 +14,42 @@ class JoystickEvent extends Event
 	public static var HAT_RIGHT:String = "hatRight";
 	public static var HAT_UP:String = "hatUp";
 	
-	public var index:Int;
-	public var position:Float;
+	public var id:Int;
 	public var relativeX:Float;
 	public var relativeY:Float;
+	public var value:Float;
 	
 	
-	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, index:Int = 0)
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, id:Int = 0)
 	{	
 		super (type, bubbles, cancelable);
 		
-		this.index = index;
+		this.id = id;
 	}
 	
 	
 	public override function clone():Event
 	{
-		return new JoystickEvent (type, bubbles, cancelable, index);
+		return new JoystickEvent (type, bubbles, cancelable, id);
 	}
 	
 	
 	public override function toString():String
 	{
-		return "[JoystickEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " index=" + index + "]";
+		var result = "[JoystickEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " id=" + id;
+		
+		if (type == AXIS_MOVE)
+		{
+			result += " value=" + value;
+		}
+		else if (type == BALL_MOVE)
+		{
+			result += " relativeX=" + relativeX + " relativeY=" + relativeY;
+		}
+		
+		result += "]";
+		
+		return result;
 	}
 	
 	

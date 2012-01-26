@@ -445,26 +445,18 @@ class Stage extends DisplayObjectContainer
 	
 	private function nmeOnJoystick(inEvent:Dynamic, inType:String)
 	{
-		var stack = new Array<InteractiveObject>();
-		var obj:DisplayObject = nmeFindByID(inEvent.id);
-		if (obj != null)
-			obj.nmeGetInteractiveObjectStack(stack);
-		if (stack.length > 0)
+		var evt = new JoystickEvent (inType, false, false, inEvent.code);
+		switch (inType)
 		{
-			var obj = stack[0];
-			var evt = new JoystickEvent (inType, inEvent.code);
-			switch (inType)
-			{
-				case JoystickEvent.AXIS_MOVE:
-					evt.position = inEvent.value / 32767; // Range: -32768 to 32767
-					if (evt.position < -1) evt.position = -1;
-				
-				case JoystickEvent.BALL_MOVE:
-					evt.relativeX = inEvent.x;
-					evt.relativeY = inEvent.y;
-			}
-			obj.nmeFireEvent(evt);
+			case JoystickEvent.AXIS_MOVE:
+				evt.value = inEvent.value / 32767; // Range: -32768 to 32767
+				if (evt.value < -1) evt.value = -1;
+			
+			case JoystickEvent.BALL_MOVE:
+				evt.relativeX = inEvent.x;
+				evt.relativeY = inEvent.y;
 		}
+		nmeBroadcast(evt);
 	}
 	
 	
