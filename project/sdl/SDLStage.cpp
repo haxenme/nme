@@ -720,9 +720,15 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    PDL_ScreenTimeoutEnable(PDL_TRUE);
    #endif
    
-   if (sgJoystickEnabled && SDL_NumJoysticks() > 0) {
-      
-	   sgJoystick = SDL_JoystickOpen(0);
+   int numJoysticks = SDL_NumJoysticks();
+   
+   if (sgJoystickEnabled && numJoysticks > 0) {
+	   
+	   for (int i = 0; i < numJoysticks; i++) {
+		   
+		   sgJoystick = SDL_JoystickOpen(i);
+		   
+	   }
 	   
 	   #ifndef WEBOS
 	   SDL_JoystickEventState(SDL_TRUE);
@@ -1084,7 +1090,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  case SDL_JOYAXISMOTION:
 	  {
          Event joystick(etJoyAxisMove);
-         //joystick.id = inEvent.jaxis.which;
+         joystick.id = inEvent.jaxis.which;
          joystick.code = inEvent.jaxis.axis;
          joystick.value = inEvent.jaxis.value;
          sgSDLFrame->ProcessEvent(joystick);
@@ -1093,7 +1099,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  case SDL_JOYBALLMOTION:
 	  {
          Event joystick(etJoyBallMove, inEvent.jball.xrel, inEvent.jball.yrel);
-         //joystick.id = inEvent.jball.which;
+         joystick.id = inEvent.jball.which;
          joystick.code = inEvent.jball.ball;
          sgSDLFrame->ProcessEvent(joystick);
          break;
@@ -1101,7 +1107,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  case SDL_JOYBUTTONDOWN:
 	  {
          Event joystick(etJoyButtonDown);
-         //joystick.id = inEvent.jbutton.which;
+         joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
          sgSDLFrame->ProcessEvent(joystick);
          break;
@@ -1109,7 +1115,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  case SDL_JOYBUTTONUP:
 	  {
          Event joystick(etJoyButtonUp);
-         //joystick.id = inEvent.jbutton.which;
+         joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
          sgSDLFrame->ProcessEvent(joystick);
          break;
@@ -1117,7 +1123,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  case SDL_JOYHATMOTION:
 	  {
          Event joystick(etJoyHatMove);
-         //joystick.id = inEvent.jhat.which;
+         joystick.id = inEvent.jhat.which;
          joystick.code = inEvent.jhat.hat;
 		 joystick.value = inEvent.jhat.value;
          sgSDLFrame->ProcessEvent(joystick);

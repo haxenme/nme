@@ -12,6 +12,7 @@ import nme.events.TouchEvent;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
+import nme.Lib;
 import nme.media.SoundChannel;
 import nme.net.URLLoader;
 import nme.Loader;
@@ -64,6 +65,7 @@ class Stage extends DisplayObjectContainer
 	private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
 	private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 	
+	private var nmeJoyAxisData:IntHash <JoyAxisData>;
 	private var nmeDragBounds:Rectangle;
 	private var nmeDragObject:Sprite;
 	private var nmeDragOffsetX:Float;
@@ -99,6 +101,7 @@ class Stage extends DisplayObjectContainer
 		nmeLastClickTime = 0.0;
 		nmeSetFrameRate(100);
 		nmeTouchInfo = new IntHash<TouchInfo>();
+		nmeJoyAxisData = new IntHash<JoyAxisData>();
 	}
 	
 	
@@ -323,26 +326,7 @@ class Stage extends DisplayObjectContainer
 				nmeOnJoystick (inEvent, JoystickEvent.BALL_MOVE);
 			
 			case 26: // etJoyHatMove
-				if (inEvent.value == 0)
-				{	
-					nmeOnJoystick (inEvent, JoystickEvent.HAT_CENTER);	
-				}
-				if (inEvent.value & 0x01 != 0)
-				{	
-					nmeOnJoystick (inEvent, JoystickEvent.HAT_UP);	
-				}
-				if (inEvent.value & 0x02 != 0)
-				{	
-					nmeOnJoystick (inEvent, JoystickEvent.HAT_RIGHT);	
-				}
-				if (inEvent.value & 0x04 != 0)
-				{	
-					nmeOnJoystick (inEvent, JoystickEvent.HAT_DOWN);
-				}
-				if (inEvent.value & 0x08 != 0)
-				{	
-					nmeOnJoystick (inEvent, JoystickEvent.HAT_LEFT);	
-				}
+				nmeOnJoystick (inEvent, JoystickEvent.HAT_MOVE);
 			
 			case 27: // etJoyButtonDown
 				nmeOnJoystick (inEvent, JoystickEvent.BUTTON_DOWN);
@@ -445,16 +429,59 @@ class Stage extends DisplayObjectContainer
 	
 	private function nmeOnJoystick(inEvent:Dynamic, inType:String)
 	{
-		var evt = new JoystickEvent (inType, false, false, inEvent.code);
+		var evt:JoystickEvent = null;
 		switch (inType)
 		{
 			case JoystickEvent.AXIS_MOVE:
-				evt.value = inEvent.value / 32767; // Range: -32768 to 32767
-				if (evt.value < -1) evt.value = -1;
+				var data = nmeJoyAxisData.get (inEvent.id);
+				if (data == null)
+				{
+					data = { x: 0.0, y: 0.0, z: 0.0 };
+				}
+				
+				var value:Float = inEvent.value / 32767; // Range: -32768 to 32767
+				if (value < -1) value = -1;
+				
+				switch (inEvent.code)
+				{
+					case 0: data.x = value;
+					case 1: data.y = value;
+					case 2: data.z = value;
+				}
+				
+				evt = new JoystickEvent (inType, false, false, inEvent.id, 0, data.x, data.y, data.z);
+				
+				nmeJoyAxisData.set (inEvent.id, data);
 			
 			case JoystickEvent.BALL_MOVE:
-				evt.relativeX = inEvent.x;
-				evt.relativeY = inEvent.y;
+				evt = new JoystickEvent (inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
+			
+			case JoystickEvent.HAT_MOVE:
+				var x = 0;
+				var y = 0;
+				
+				if (inEvent.value & 0x01 != 0)
+				{	
+					y = -1; // up
+				}
+				else if (inEvent.value & 0x04 != 0)
+				{	
+					y = 1; // down
+				}
+				
+				if (inEvent.value & 0x02 != 0)
+				{	
+					x = 1; // right
+				}
+				else if (inEvent.value & 0x08 != 0)
+				{	
+					x = -1; // left
+				}
+				
+				evt = new JoystickEvent (inType, false, false, inEvent.id, inEvent.code, x, y);
+			
+			default:
+				evt = new JoystickEvent (inType, false, false, inEvent.id, inEvent.code);
 		}
 		nmeBroadcast(evt);
 	}
@@ -887,6 +914,14 @@ class Stage extends DisplayObjectContainer
 
 }
 
+
+typedef JoyAxisData = {
+	
+	var x:Float;
+	var y:Float;
+	var z:Float;
+	
+}
 
 class TouchInfo
 {
