@@ -1465,15 +1465,9 @@ class InstallerBase {
 					case "library", "swf":
 						
 						var path = extensionPath + substitute (element.att.path);
-						var rename = "";
+						var targetPath = "libraries/" + Path.withoutDirectory (path);
 						
-						if (element.has.rename) {
-							
-							rename = substitute (element.att.rename);
-							
-						}
-						
-						var asset = new Asset (path, rename, Asset.TYPE_ASSET, "", "");
+						var asset = new Asset (path, targetPath, Asset.TYPE_ASSET, "", "");
 						
 						assets.push (asset);
 						

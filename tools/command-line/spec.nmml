@@ -244,9 +244,8 @@
 		the command-line tools to generate classes for each of the symbols found in the SWF
 		file. You can use these classes to instantiate the symbols directly.
 		
-		The "path" attribute should point to the file, and optionally, you can use a "rename"
-		attribute to control where the file will be saved in your project, or if you wish
-		to access the file using nme.Assets directly.
+		The "path" attribute should point to the file. The file will be saved in a
+		"libraries" folder by default, with the name of the original SWF.
 		
 		For example, if you have a symbol in your SWF file, with "linkage" set to 
 		"com.example.MySquare", you could create copies of this symbol using this code:
@@ -264,7 +263,7 @@
 		
 	-->
 	
-	<library path="../files/library.swf" rename="assets/library.swf" />
+	<library path="Source/library.swf" />
 	
 	
 	
