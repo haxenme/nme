@@ -557,6 +557,13 @@ public:
 
       // Intersect with clip rect ...
       Rect visible_pixels = rect.Intersect(inState.mClipRect);
+	  
+	  // temporary workaround to prevent SWF shapes from disappearing so quickly
+	  // need to find out what is invalidating the alpha mask
+	  visible_pixels.x -= 128;
+	  visible_pixels.w += 256;
+	  visible_pixels.y -= 128;
+	  visible_pixels.h += 256;
 
       if (visible_pixels.HasPixels())
       {
@@ -1521,6 +1528,7 @@ public:
 
       // Intersect with clip rect ...
       Rect visible_pixels = rect.Intersect(inState.mClipRect);
+	  
 
       int tris = mTriangles->mTriangleCount;
       UserPoint *point = &mTransformed[0];
@@ -1999,7 +2007,6 @@ public:
       int y0 = visible_pixels.y;
       int x1 = visible_pixels.x1();
       int y1 = visible_pixels.y1();
-
 
       bool swap = gC0IsRed != (bool)(inTarget.mPixelFormat & pfSwapRB);
       bool alpha = (inTarget.mPixelFormat & pfHasAlpha);
