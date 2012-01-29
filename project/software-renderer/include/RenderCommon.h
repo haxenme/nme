@@ -403,11 +403,12 @@ namespace nme
 		
 		void BuildAlphaRuns(Transitions &inTrans, AlphaRuns &outRuns, int inFactor)
 		{
-			int alpha = 0;
 			int last_x = mRect.x;
 			inTrans.Compact();
 			int total = inTrans.mLeft;
 			Transition *end = inTrans.mX.end();
+			// TODO:Winding rule ..
+			int alpha =  (total) ? inFactor : 0;
 			
 			for (Transition *t = inTrans.mX.begin(); t != end; ++t)
 			{
@@ -426,13 +427,11 @@ namespace nme
 					last_x = std::max(t->x, mRect.x);
 					
 					total += t->val;
-					// Winding rule ..
+					// TODO:Winding rule ..
 					alpha = (total) ? inFactor : 0;
 				}
 			}
 			
-			if (alpha == 0 && inTrans.mX.begin() == inTrans.mX.end())
-				alpha = (total) ? inFactor : 0;
 			
 			if (alpha > 0)
 			  outRuns.push_back(AlphaRun(last_x, mRect.x1(), alpha));
