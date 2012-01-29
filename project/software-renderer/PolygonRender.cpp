@@ -339,13 +339,6 @@ namespace nme
 		// Intersect with clip rect ...
 		Rect visible_pixels = rect.Intersect(inState.mClipRect);
 		
-		// temporary workaround to prevent SWF shapes from disappearing so quickly
-		// need to find out what is invalidating the alpha mask
-		visible_pixels.x -= 128;
-		visible_pixels.w += 256;
-		visible_pixels.y -= 128;
-		visible_pixels.h += 256;
-		
 		if (visible_pixels.HasPixels())
 		{
 			// Check to see if AlphaMask is invalid...
