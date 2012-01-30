@@ -11,8 +11,10 @@ public:
                    HardwareContext &inHardware)
    {
       mTexture = 0;
-      mTileMode = false;
+      bool tile_mode = false;
       mElement.mColour = 0xffffffff;
+      mSolidMode = false;
+
       if (inJob.mIsTileJob)
       {
          mElement.mBitmapRepeat = true;
@@ -27,10 +29,11 @@ public:
          mTexture = mSurface->GetOrCreateTexture(inHardware);
          mElement.mBitmapRepeat = false;
          mElement.mBitmapSmooth = bmp->smooth;
-         mTileMode = true;
+         tile_mode = true;
       }
       else if (inJob.mFill)
       {
+         mSolidMode = true;
          mElement.mPrimType = inJob.mTriangles ? ptTriangles : ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
@@ -54,11 +57,15 @@ public:
          mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType == vtVertexUVT);
          AddTriangles(inJob.mTriangles);
       }
+      else if (tile_mode)
+      {
+         mArrays = &ioData.GetArrays(mSurface,false);
+         AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
+      }
       else
       {
          mArrays = &ioData.GetArrays(mSurface,false);
-         AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount,
-                &inPath.data[inJob.mData0], inJob.mFill);
+         AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
    }
 
@@ -182,95 +189,29 @@ public:
       elements.push_back(mElement);
    }
 
-   void AddObject(const uint8* inCommands, int inCount,
-                  const float *inData,  bool inClose)
-   {
+  void AddTiles(const uint8* inCommands, int inCount, const float *inData)
+  {
       Vertices &vertices = mArrays->mVertices;
       Vertices &tex = mArrays->mTexCoords;
-      DrawElements &elements = mArrays->mElements;
-      mElement.mFirst = vertices.size();
-
       UserPoint *point = (UserPoint *)inData;
-      UserPoint last_move;
-      UserPoint last_point;
-      int points = 0;
-      
-      mArrays->mBlendMode =bmNormal;
+      mElement.mFirst = vertices.size();
+      mArrays->mBlendMode = bmNormal;
 
       for(int i=0;i<inCount;i++)
       {
          switch(inCommands[i])
          {
-            case pcBeginAt:
-               if (points>0)
-               {
-                  point++;
-                  continue;
-               }
-            case pcMoveTo:
-               if (points>1)
-               {
-                  if (inClose)
-                     vertices.push_back(last_move);
-                  mElement.mCount = vertices.size() - mElement.mFirst;
-                 if (mSurface)
-                    CalcTexCoords();
-                  elements.push_back(mElement);
-               }
-               else if (points==1 && last_move==*point)
-               {
-                  point++;
-                  continue;
-               }
-
-               points = 1;
-               last_point = *point++;
-               last_move = last_point;
-               mElement.mFirst = vertices.size();
-               vertices.push_back(last_move);
+            case pcBeginAt: case pcMoveTo: case pcLineTo:
+               point++;
                break;
-
-            case pcLineTo:
-               if (points>0)
-               {
-                  vertices.push_back(*point);
-                  last_point = *point++;
-                  points++;
-               }
-               break;
-
             case pcCurveTo:
-               {
-               double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm()) * 0.25;
-               if (len==0)
-                  break;
-               int steps = (int)len;
-               if (steps<3) steps = 3;
-               if (steps>100) steps = 100;
-               double step = 1.0/(steps+1);
-               double t = 0;
-
-               for(int s=0;s<steps;s++)
-               {
-                  t+=step;
-                  double t_ = 1.0-t;
-                  UserPoint p = last_point * (t_*t_) + point[0] * (2.0*t*t_) + point[1] * (t*t);
-                  vertices.push_back(p);
-               }
-
-               last_point = point[1];
-               vertices.push_back(last_point);
-               point += 2;
-               points++;
-               }
+               point+=2;
                break;
 
             case pcTile:
             case pcTileTrans:
             case pcTileCol:
             case pcTileTransCol:
-               // TODO:
-               if (mTileMode)
                {
                   UserPoint pos(point[0]);
                   UserPoint tex_pos(point[1]);
@@ -330,26 +271,155 @@ public:
                      colours.push_back( col );
                   }
                }
-               else
-               {
-                  point += 3;
-                  if (inCommands[i]&pcTile_Trans_Bit)
-                     point++;
-                  if (inCommands[i]&pcTile_Col_Bit)
-                     point+=2;
-               }
          }
       }
 
-      if (points>0 || (mTileMode && vertices.size()))
-      {
-         //mVertices.push_back(last_move);
-         mElement.mCount = vertices.size() - mElement.mFirst;
-         //printf("%d\n", mElement.mCount);
-         if (mSurface && !mTileMode)
-            CalcTexCoords();
-         elements.push_back(mElement);
+      mElement.mCount = vertices.size() - mElement.mFirst;
+      if (mElement.mCount>0)
+         mArrays->mElements.push_back(mElement);
+   }
+
+
+
+  void AddPolygon(Vertices &inOutline)
+  {
+     if (mSolidMode && inOutline.size()<3)
+        return;
+
+     Vertices &vertices = mArrays->mVertices;
+     mElement.mFirst = vertices.size();
+     bool isConvex = true;
+     if (mSolidMode)
+     {
+        /*
+          TODO - tessellation when not convex
+        UserPoint base = inOutline[0];
+        UserPoint v0 = inOutline[1]-base;
+        UserPoint v1 = inOutline[2]-base;
+        bool positive = v0.x*v1.y >= v0.y*v1.x;
+        int last = inOutline.size()-2;
+        for(int i=1;i<last;i++)
+        {
+           v0 = inOutline[i+1]-base;
+           v1 = inOutline[i+2]-base;
+           if (positive != (v0.x*v1.y >= v0.y*v1.x))
+           {
+              isConvex = false;
+              break;
+           }
+        }
+        */
+     }
+
+
+     if (isConvex)
+     {
+        mElement.mCount = inOutline.size();
+        vertices.resize(mElement.mFirst + mElement.mCount);
+        for(int i=0;i<inOutline.size();i++)
+           vertices[i+mElement.mFirst] = inOutline[i];
+        if (mSurface)
+           CalcTexCoords();
+        mArrays->mElements.push_back(mElement);
       }
+  }
+
+
+  void AddObject(const uint8* inCommands, int inCount, const float *inData)
+  {
+      UserPoint *point = (UserPoint *)inData;
+      UserPoint last_move;
+      UserPoint last_point;
+      int points = 0;
+      
+      mArrays->mBlendMode =bmNormal;
+
+      Vertices outline;
+
+      for(int i=0;i<inCount;i++)
+      {
+         switch(inCommands[i])
+         {
+            case pcBeginAt:
+               if (points>0)
+               {
+                  point++;
+                  continue;
+               }
+               // fallthrough
+            case pcMoveTo:
+               if (points>1)
+               {
+                  if (mSolidMode && !outline.empty() && outline.last()!=last_move)
+                     outline.push_back(last_move);
+                  AddPolygon(outline);
+                  outline.resize(0);
+               }
+               else if (points==1 && last_move==*point)
+               {
+                  point++;
+                  continue;
+               }
+
+               points = 1;
+               last_point = *point++;
+               last_move = last_point;
+               if (outline.empty()||outline.last()!=last_move)
+                  outline.push_back(last_move);
+               break;
+
+            case pcLineTo:
+               if (points>0)
+               {
+                  if (outline.empty() || outline.last()!=*point)
+                     outline.push_back(*point);
+                  last_point = *point++;
+                  points++;
+               }
+               break;
+
+            case pcCurveTo:
+               {
+               double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm()) * 0.25;
+               if (len==0)
+                  break;
+               int steps = (int)len;
+               if (steps<3) steps = 3;
+               if (steps>100) steps = 100;
+               double step = 1.0/(steps+1);
+               double t = 0;
+
+               for(int s=0;s<steps;s++)
+               {
+                  t+=step;
+                  double t_ = 1.0-t;
+                  UserPoint p = last_point * (t_*t_) + point[0] * (2.0*t*t_) + point[1] * (t*t);
+                  if (outline.last()!=p)
+                     outline.push_back(p);
+               }
+
+               last_point = point[1];
+               if (outline.last()!=last_point)
+                   outline.push_back(last_point);
+               point += 2;
+               points++;
+               }
+               break;
+
+            case pcTile:
+            case pcTileTrans:
+            case pcTileCol:
+            case pcTileTransCol:
+               point += 3;
+               if (inCommands[i]&pcTile_Trans_Bit)
+                  point++;
+               if (inCommands[i]&pcTile_Col_Bit)
+                  point+=2;
+         }
+      }
+
+      if (!outline.empty())
+         AddPolygon(outline);
    }
 
 
@@ -358,7 +428,7 @@ public:
    DrawElement mElement;
    Texture     *mTexture;
    bool        mGradReflect;
-   bool        mTileMode;
+   bool        mSolidMode;
    Matrix      mTextureMapper;
 };
 
