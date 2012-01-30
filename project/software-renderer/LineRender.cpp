@@ -92,7 +92,7 @@ namespace nme
 	}
 	
 	
-	inline void LineRender::AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3)
+	void LineRender::AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3)
 	{
 		(*this.*ItLine)(p0,p1);
 		(*this.*ItLine)(p2,p3);

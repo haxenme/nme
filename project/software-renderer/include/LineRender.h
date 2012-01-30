@@ -24,7 +24,7 @@ namespace nme
 		
 		LineRender(const GraphicsJob &inJob, const GraphicsPath &inPath);
 		void BuildExtent(const UserPoint &inP0, const UserPoint &inP1);
-		inline void AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3);
+		void AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3);
 		void IterateCircle(const UserPoint &inP0, const UserPoint &inPerp, double inTheta,const UserPoint &inPerp2 );
 		inline void AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2);
 		inline void EndCap(UserPoint p0, UserPoint perp);
