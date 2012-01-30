@@ -502,6 +502,8 @@ typedef QuickVec<int>         Colours;
 
 void ReleaseVertexBufferObject(unsigned int inVBO);
 
+void ConvertOutlineToTriangles(Vertices &ioOutline);
+
 struct HardwareArrays
 {
    HardwareArrays(Surface *inSurface,bool inPerspectiveCorrect);

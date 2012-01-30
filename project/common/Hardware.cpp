@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <Surface.h>
 
+
 namespace nme
 {
 
@@ -280,49 +281,60 @@ public:
    }
 
 
+   #define FLAT 0.000001
+   void AddPolygon(Vertices &inOutline)
+   {
+      if (mSolidMode && inOutline.size()<3)
+         return;
 
-  void AddPolygon(Vertices &inOutline)
-  {
-     if (mSolidMode && inOutline.size()<3)
-        return;
+      Vertices &vertices = mArrays->mVertices;
+      mElement.mFirst = vertices.size();
+      bool isConvex = true;
+      if (mSolidMode)
+      {
+         UserPoint base = inOutline[0];
+         int last = inOutline.size()-2;
+         int i = 0;
+         bool positive = true;
+         for( ;i<last;i++)
+         {
+            UserPoint v0 = inOutline[i+1]-base;
+            UserPoint v1 = inOutline[i+2]-base;
+            double diff = v0.Cross(v1);
+            if (fabs(diff)>FLAT)
+            {
+               positive = diff > 0;
+               break;
+            }
+         }
 
-     Vertices &vertices = mArrays->mVertices;
-     mElement.mFirst = vertices.size();
-     bool isConvex = true;
-     if (mSolidMode)
-     {
-        /*
-          TODO - tessellation when not convex
-        UserPoint base = inOutline[0];
-        UserPoint v0 = inOutline[1]-base;
-        UserPoint v1 = inOutline[2]-base;
-        bool positive = v0.x*v1.y >= v0.y*v1.x;
-        int last = inOutline.size()-2;
-        for(int i=1;i<last;i++)
-        {
-           v0 = inOutline[i+1]-base;
-           v1 = inOutline[i+2]-base;
-           if (positive != (v0.x*v1.y >= v0.y*v1.x))
-           {
-              isConvex = false;
-              break;
-           }
-        }
-        */
-     }
-
-
-     if (isConvex)
-     {
-        mElement.mCount = inOutline.size();
-        vertices.resize(mElement.mFirst + mElement.mCount);
-        for(int i=0;i<inOutline.size();i++)
-           vertices[i+mElement.mFirst] = inOutline[i];
-        if (mSurface)
-           CalcTexCoords();
-        mArrays->mElements.push_back(mElement);
+         for(++i;i<last;i++)
+         {
+            UserPoint v0 = inOutline[i+1]-base;
+            UserPoint v1 = inOutline[i+2]-base;
+            double diff = v0.Cross(v1);
+            if (fabs(diff)>FLAT && (diff>0)!=positive)
+            {
+               isConvex = false;
+               break;
+            }
+         }
+         if (!isConvex)
+            ConvertOutlineToTriangles(inOutline);
       }
-  }
+
+
+      mElement.mCount = inOutline.size();
+      vertices.resize(mElement.mFirst + mElement.mCount);
+      for(int i=0;i<inOutline.size();i++)
+         vertices[i+mElement.mFirst] = inOutline[i];
+      if (mSurface)
+         CalcTexCoords();
+      mArrays->mElements.push_back(mElement);
+
+      if (!isConvex)
+         mArrays->mElements.last().mPrimType = ptTriangles;
+   }
 
 
   void AddObject(const uint8* inCommands, int inCount, const float *inData)
@@ -350,10 +362,9 @@ public:
             case pcMoveTo:
                if (points>1)
                {
-                  if (mSolidMode && !outline.empty() && outline.last()!=last_move)
-                     outline.push_back(last_move);
+                  //if (mSolidMode && (outline.empty() || outline.last()!=last_move) )
+                     //outline.push_back(last_move);
                   AddPolygon(outline);
-                  outline.resize(0);
                }
                else if (points==1 && last_move==*point)
                {
@@ -361,6 +372,7 @@ public:
                   continue;
                }
 
+               outline.resize(0);
                points = 1;
                last_point = *point++;
                last_move = last_point;
@@ -388,7 +400,6 @@ public:
                if (steps>100) steps = 100;
                double step = 1.0/(steps+1);
                double t = 0;
-
                for(int s=0;s<steps;s++)
                {
                   t+=step;
@@ -397,7 +408,6 @@ public:
                   if (outline.last()!=p)
                      outline.push_back(p);
                }
-
                last_point = point[1];
                if (outline.last()!=last_point)
                    outline.push_back(last_point);
