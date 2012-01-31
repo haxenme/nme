@@ -276,7 +276,9 @@ class BitmapData implements IBitmapDrawable
 	public function getPixel32(x:Int, y:Int):BitmapInt32
 	{
 		#if neko
-		return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
+		var pixel:BitmapInt32 = nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
+		if (pixel.a < 0) pixel.a += 256;
+		return pixel;
 		#else
 		return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
 		#end
