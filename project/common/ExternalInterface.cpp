@@ -2881,7 +2881,7 @@ value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
       int rgb = surf->getPixel(val_int(inX),val_int(inY));
       value result = alloc_empty_object();
       alloc_field(result,_id_rgb, alloc_int( rgb & 0xffffff) );
-      alloc_field(result,_id_a, alloc_int( rgb >> 24) );
+      alloc_field(result,_id_a, alloc_int( (rgb >> 24) & 0xff) );
       return result;
    }
 

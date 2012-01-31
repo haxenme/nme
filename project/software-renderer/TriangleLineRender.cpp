@@ -39,26 +39,26 @@ namespace nme
 		ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
 				inMode==itCreateRenderer ? &LineRender::BuildSolid :
 						&LineRender::BuildHitTest;
-
+		
 	  double perp_len = GetPerpLen(m);
-
+		
 	  UserPoint *point = 0;
 	  if (inMode==itHitTest)
 		 point = &mTriangles->mVertices[0];
 	  else
 		 point = &mTransformed[0];
-
+		
 		int tris = mTriangles->mTriangleCount;
 	  for(int i=0;i<tris;i++)
 		{
 			UserPoint v0 = *point++;
 			UserPoint v1 = *point++;
 			UserPoint v2 = *point++;
-
+			
 			UserPoint perp0 = (v1-v0).Perp(perp_len);
 			UserPoint perp1 = (v2-v1).Perp(perp_len);
 			UserPoint perp2 = (v0-v2).Perp(perp_len);
-
+			
 			AddJoint(v0,perp2,perp0);
 		 AddLinePart(v0+perp0,v1+perp0,v1-perp0,v0-perp0);
 			AddJoint(v1,perp0,perp1);
@@ -66,7 +66,7 @@ namespace nme
 			AddJoint(v2,perp1,perp2);
 		 AddLinePart(v2+perp2,v0+perp2,v0-perp2,v2-perp2);
 		}
-
+		
 	  return 256;
 	}
 	

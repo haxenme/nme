@@ -10,7 +10,7 @@ namespace nme
 	}
 	
 	
-	inline void LineRender::AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
+	void LineRender::AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
 	{
 		bool miter = false;
 		switch(mStroke->joints)

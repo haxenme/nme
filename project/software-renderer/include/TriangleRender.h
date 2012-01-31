@@ -9,7 +9,7 @@
 namespace nme
 {
 	
-	class TriangleRender :public PolygonRender
+	class TriangleRender : public PolygonRender
 	{
 		struct Edge
 		{
