@@ -66,6 +66,25 @@ class SharedObject extends EventDispatcher
 			
 		#end
 	}
+
+   #if !(iphone || android)
+   static public function createDirectoryRecurse(inDir:String)
+   {
+      var parts = inDir.split("\\").join("/").split("/");
+      var total = "";
+      for(part in parts)
+      {
+         if (part!="." && part!="")
+         {
+            if (total!="") total+="/";
+            total += part;
+            // Avoid drives etc...
+            if (total.length>5 && !FileSystem.exists(total))
+               FileSystem.createDirectory(total);
+         }
+      }
+   }
+   #end
 	
 	
 	public function flush(minDiskSpace:Int = 0):SharedObjectFlushStatus
@@ -83,7 +102,7 @@ class SharedObject extends EventDispatcher
 			
 			if (!FileSystem.exists(folderPath))
 			{
-				FileSystem.createDirectory(folderPath);
+				createDirectoryRecurse(folderPath);
 			}
 			
 			var output:FileOutput = File.write(filePath, false);
@@ -98,45 +117,9 @@ class SharedObject extends EventDispatcher
 	
 	private static function getFilePath(name:String, localPath:String):String
 	{
-		var path:String = "";
+		var path:String = nme.filesystem.File.applicationStorageDirectory.nativePath;
 		
-		/*if (Sys.environment.exists ("LOCALAPPDATA")) {
-			
-			path = Sys.getEnv ("LOCALAPPDATA");
-			
-		} else {
-			
-			path = Sys.getEnv ("APPDATA");
-			
-		}
-		
-		path += "\\NME";
-		
-		if (!FileSystem.exists (path)) {
-			
-			FileSystem.createDirectory (path);
-			
-		}
-		
-		path += "\\SharedObjects";
-		
-		if (!FileSystem.exists (path)) {
-			
-			FileSystem.createDirectory (path);
-			
-		}
-		
-		path += "\\" + localPath + "\\";
-		
-		if (!FileSystem.exists (path)) {
-			
-			FileSystem.createDirectory (path);
-			
-		}*/
-		
-		path = Path.directory(Sys.executablePath()) + "/sharedobjects/";
-		
-		path += name + ".sol";
+		path +=  "/" + localPath + "/" + name + ".sol";
 		
 		return path;
 	}
