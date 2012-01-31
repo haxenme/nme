@@ -311,7 +311,7 @@ class InstallerBase {
 		
 		nmml += new Template ('	<app main="::APP_MAIN::" file="::APP_FILE::" path="::BUILD_DIR::" preloader="::PRELOADER_NAME::" swf-version="::SWF_VERSION::" />\n\n').execute (context);
 		
-		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
+		nmml += new Template ('	<window width="::WIN_WIDTH::" height="::WIN_HEIGHT::" orientation="::WIN_ORIENTATION::" fps="::WIN_FPS::" background="::WIN_BACKGROUND::" borderless="::WIN_BORDERLESS::" vsync="::WIN_VSYNC::" fullscreen="::WIN_FULLSCREEN::" antialiasing="::WIN_ANTIALIASING::" />\n\n').execute (context);
 		
 		for (key in defines.keys ()) {
 			
@@ -713,6 +713,7 @@ class InstallerBase {
 		setDefault ("WIN_RESIZEABLE", "true");
 		setDefault ("WIN_BORDERLESS", "false");
 		setDefault ("WIN_FULLSCREEN", "false");
+		setDefault ("WIN_VSYNC", "false");
 		setDefault ("WIN_ANTIALIASING", "1");
 		setDefault ("APP_FILE", "MyApplication");
 		setDefault ("APP_DESCRIPTION", "");
