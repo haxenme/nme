@@ -11,15 +11,6 @@ import neko.Sys;
 class NekoInstaller extends DesktopInstaller {
 	
 	
-	override function build ():Void {
-		
-		recursiveCopy (NME + "/tools/command-line/neko/haxe", targetDir + "/haxe");
-		
-		super.build ();
-		
-	}
-	
-   
 	override function copyResultTo (inExe:String) {
 		
 		var nekoExecutablePath = NME + "/tools/command-line/neko/bin/neko-" + targetName;
@@ -77,6 +68,15 @@ class NekoInstaller extends DesktopInstaller {
 	override function getVM () {
 	   
 		return "neko";
+		
+	}
+	
+	
+	override function update ():Void {
+		
+		recursiveCopy (NME + "/tools/command-line/neko/haxe", targetDir + "/haxe");
+		
+		super.update ();
 		
 	}
 	

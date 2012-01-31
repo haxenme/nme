@@ -14,23 +14,6 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/webos/bin/";
-		mkdir (destination);
-		
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
-		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/webos/haxe");
-		
-		for (asset in assets) {
-			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
-				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
-				
-			}
-			
-		}
-		
 		var hxml:String = buildDirectory + "/webos/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -121,6 +104,9 @@ class WebOSInstaller extends InstallerBase {
 		mkdir (destination);
 		
 		recursiveCopy (NME + "/tools/command-line/webos/template", destination);
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
+		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/webos/haxe");
 		
 		for (ndll in ndlls) {
 			
@@ -140,9 +126,15 @@ class WebOSInstaller extends InstallerBase {
 					
 				} else {
 					
+					// going to root directory now, but should it be a forced "assets" folder later?
+					
 					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 					
 				}
+				
+			} else {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
 			

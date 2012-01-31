@@ -17,23 +17,6 @@ class DesktopInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		mkdir (getBuildDir ());
-		mkdir (getExeDir ());
-		
-		recursiveCopy (NME + "/tools/command-line/haxe/", targetDir + "/haxe");
-		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
-		
-		for (asset in assets) {
-			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
-				
-				copyFile (asset.sourcePath, targetDir + asset.targetPath);
-				
-			}
-			
-		}
-		
 		var hxml:String = targetDir + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -268,11 +251,13 @@ class DesktopInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var exe_dir = getExeDir ();
-		mkdir (exe_dir);
+		mkdir (getBuildDir ());
+		mkdir (getExeDir ());
 		
 		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
 		recursiveCopy (NME + "/tools/command-line/cpp/hxml", targetDir + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
 		
 		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1) + get64 ();
 		
@@ -299,23 +284,12 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			copyIfNewer (ndll.getSourcePath (system_name, ndll.name + extension), exe_dir + ndll.name + extension);
+			copyIfNewer (ndll.getSourcePath (system_name, ndll.name + extension), getExeDir () + ndll.name + extension);
 			
 		}
 		
 		var content_dir = getContentDir ();
 		
-		for (asset in assets) {
-			
-			if (asset.type != Asset.TYPE_TEMPLATE) {
-				
-				mkdir (Path.directory (content_dir + asset.targetPath));
-				copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
-				
-			}
-			
-		}
-
 		if (InstallTool.isMac) {
 			
 			mkdir (content_dir);
@@ -329,6 +303,21 @@ class DesktopInstaller extends InstallerBase {
 			}
 			
 			copyFile(NME + "/tools/command-line/mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
+			
+		}
+		
+		for (asset in assets) {
+			
+			if (asset.type != Asset.TYPE_TEMPLATE) {
+				
+				mkdir (Path.directory (content_dir + asset.targetPath));
+				copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
+				
+			} else {
+				
+				copyFile (asset.sourcePath, targetDir + asset.targetPath);
+				
+			}
 			
 		}
 		

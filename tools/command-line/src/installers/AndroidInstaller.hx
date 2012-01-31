@@ -14,48 +14,6 @@ class AndroidInstaller extends InstallerBase {
 	override function build ():Void {
 		
 		var destination:String = buildDirectory + "/android/bin";
-		mkdir (destination);
-		
-		recursiveCopy (NME + "/tools/command-line/android/template", destination);
-		
-		var packageDirectory:String = defines.get ("APP_PACKAGE");
-		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
-		mkdir (packageDirectory);
-		
-		for (javaPath in javaPaths) {
-			
-         try {
-			if (FileSystem.isDirectory (javaPath)) {
-				
-				recursiveCopy (javaPath, destination + "/src", true);
-				
-			} else {
-				
-				copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
-				
-			}
-         }
-         catch (e:Dynamic) {
-            throw"Could not find javaPath " + javaPath +" required by extension."; 
-         }
-			
-		}
-		
-		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
-		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/android/haxe");
-		
-		for (asset in assets) {
-			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
-				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
-				
-			}
-			
-		}
-		
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -220,10 +178,43 @@ class AndroidInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/android/bin";
+		mkdir (destination);
+		
+		var packageDirectory:String = defines.get ("APP_PACKAGE");
+		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
+		mkdir (packageDirectory);
+		
+		recursiveCopy (NME + "/tools/command-line/android/template", destination);
+		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
+		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/android/haxe");
 		
 		for (ndll in ndlls) {
 			
 			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so" );
+			
+		}
+		
+		for (javaPath in javaPaths) {
+			
+			try {
+				
+				if (FileSystem.isDirectory (javaPath)) {
+					
+					recursiveCopy (javaPath, destination + "/src", true);
+					
+				} else {
+					
+					copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
+					
+				}
+				
+			} catch (e:Dynamic) {
+				
+				throw"Could not find javaPath " + javaPath +" required by extension."; 
+				
+			}
 			
 		}
 		
@@ -247,6 +238,10 @@ class AndroidInstaller extends InstallerBase {
 				}
 				
 				copyIfNewer (asset.sourcePath, targetPath );
+				
+			} else {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
 			

@@ -26,24 +26,7 @@ class FlashInstaller extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/flash/bin/";
-		mkdir (destination);
-		
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/flash/haxe");
-		
-		for (asset in assets) {
-			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
-				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
-				
-			}
-			
-		}
-		
+		var destination:String = buildDirectory + "/flash/bin";
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -615,6 +598,7 @@ class FlashInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/flash/bin";
+		mkdir (destination);
 		
 		for (asset in assets) {
 			
@@ -622,6 +606,21 @@ class FlashInstaller extends InstallerBase {
 				
 				mkdir (Path.directory (destination + asset.targetPath));
 				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				
+			}
+			
+		}
+		
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
+		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/flash/haxe");
+		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
 			

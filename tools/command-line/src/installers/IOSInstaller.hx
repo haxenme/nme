@@ -126,38 +126,40 @@ class IOSInstaller extends InstallerBase {
 		
 		if (!targetFlags.exists ("simulator")) {
 			
-			throw "You must use XCode to install on a real device. Launch XCode or add the -simulator flag to run your project";
+			runCommand ("", "open", [ buildDirectory + "/iphone/" + defines.get ("APP_FILE") + ".xcodeproj" ] );
+			
+		} else {
+			
+			var configuration:String = "Release";
+			
+			if (debug) {
+				
+				configuration = "Debug";
+				
+			}
+			
+			var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
+			//var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
+			
+			//mkdir (targetPath);
+			//recursiveCopy (applicationPath, targetPath);
+			
+			var family:String = "iphone";
+			
+			if (targetFlags.exists ("ipad")) {
+				
+				family = "ipad";
+				
+			}
+			
+			var launcher:String = NME + "/tools/command-line/iphone/iphonesim";
+			
+			Sys.command ("chmod", [ "755", launcher ]);
+			
+			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
+			//runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 			
 		}
-		
-		var configuration:String = "Release";
-		
-		if (debug) {
-			
-			configuration = "Debug";
-			
-		}
-		
-		var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
-		//var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
-		
-		//mkdir (targetPath);
-		//recursiveCopy (applicationPath, targetPath);
-		
-		var family:String = "iphone";
-		
-		if (targetFlags.exists ("ipad")) {
-			
-			family = "ipad";
-			
-		}
-		
-		var launcher:String = NME + "/tools/command-line/iphone/iphonesim";
-		
-		Sys.command ("chmod", [ "755", launcher ]);
-		
-		runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
-		//runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 		
 	}
 	
@@ -200,12 +202,6 @@ class IOSInstaller extends InstallerBase {
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
-			
-		}
-		
-		if (command == "update" && InstallTool.isMac) {
-			
-			runCommand ("", "open", [ destination + defines.get ("APP_FILE") + ".xcodeproj" ] );
 			
 		}
 		

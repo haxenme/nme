@@ -16,23 +16,6 @@ class HTML5Installer extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var destination:String = buildDirectory + "/html5/bin/";
-		mkdir (destination);
-		
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
-		
-		for (asset in assets) {
-			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
-				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
-				
-			}
-			
-		}
-		
 		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
@@ -80,6 +63,9 @@ class HTML5Installer extends InstallerBase {
 		mkdir (destination);
 		
 		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
 		
 		/*for (ndll in ndlls) {
 			
@@ -95,6 +81,8 @@ class HTML5Installer extends InstallerBase {
 				
 				if (asset.type != Asset.TYPE_FONT) {
 					
+					// going to root directory now, but should it be a forced "assets" folder later?
+					
 					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 					
 				} else {
@@ -102,6 +90,10 @@ class HTML5Installer extends InstallerBase {
 					generateFontData (asset, destination);
 					
 				}
+				
+			} else {
+				
+				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
 			
