@@ -104,6 +104,12 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
+		for (asset in assets) {
+			
+			asset.resourceName = asset.flatName;
+			
+		}
+		
       /*
          Leave this up to hxcpp....
 		if (Sys.getEnv ("ANDROID_HOST") == null || Sys.getEnv ("ANDROID_HOST") == "") {
