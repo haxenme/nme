@@ -1025,6 +1025,11 @@ class InstallerBase {
 					id = substitute (childElement.att.id);
 					
 				}
+				else if (childElement.has.name) {
+					
+					id = substitute (childElement.att.name);
+					
+				}
 				
 				assets.push (new Asset (path + childPath, targetPath + childTargetPath, childType, id, childEmbed));
 				
