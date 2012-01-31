@@ -1,5 +1,4 @@
 #include <Graphics.h>
-#include <set>
 
 namespace nme
 {
@@ -7,65 +6,96 @@ namespace nme
 struct EdgePoint
 {
    UserPoint p;
-   EdgePoint      *next;
-   EdgePoint      *prev;
+   EdgePoint *prev;
+   EdgePoint *next;
+   EdgePoint *prevConcave;
+   EdgePoint *nextConcave;
+
+   void init(const UserPoint &inPoint,EdgePoint *inPrev, EdgePoint *inNext)
+   {
+      p = inPoint;
+      next = inNext;
+      prev = inPrev;
+      prevConcave = 0;
+      nextConcave = 0;
+   }
+   inline bool isConcave() const { return nextConcave; }
+
+   void linkConcave(EdgePoint &ioHead)
+   {
+      nextConcave = ioHead.nextConcave;
+      ioHead.nextConcave = this;
+      prevConcave = nextConcave->prevConcave;
+      nextConcave->prevConcave = this;
+   }
+   void unlinkConcave()
+   {
+      prevConcave->nextConcave = nextConcave;
+      nextConcave->prevConcave = prevConcave;
+      nextConcave =0;
+      prevConcave =0;
+   }
+   void unlink()
+   {
+      prev->next = next;
+      next->prev = prev;
+   }
+
+   bool empty()
+   {
+      return nextConcave == this;
+   }
+
+   void calcConcave(EdgePoint &ioHead)
+   {
+      if (Cross()>0.0)
+      {
+         if (!nextConcave)
+            linkConcave(ioHead);
+      }
+      else
+      {
+         if (nextConcave)
+            unlinkConcave();
+      }
+   }
+
    double Cross()
    {
       return (prev->p - p).Cross(next->p - p);
    }
-   bool concave() { return(Cross()>0.0); }
-   bool convex() { return(Cross()<0.0); }
+
+   //bool convex() { return(Cross()<0.0); }
 };
 
-// TODO: Merge this into EdgePoint
-typedef std::set<EdgePoint *> EdgePointSet;
 
-void Recalc(EdgePointSet &concave_points,EdgePoint *pi)
+bool IsEar(EdgePoint *concaveHead,EdgePoint *pi)
 {
-   EdgePointSet::iterator cp;
-   if ( (cp=concave_points.find(pi))!=concave_points.end())
-   {
-      if ( !pi->concave() )
-         concave_points.erase(cp);
-   }
-   else
-   {
-      if ( pi->concave() )
-         concave_points.insert(pi);
-   }
-}
+   if (concaveHead->empty())
+      return true;
 
-bool IsEar(const EdgePointSet &concave_points,EdgePoint *pi)
-{
-   EdgePoint *prev = pi->prev;
+   if (pi->isConcave())
+      return false;
 
-   UserPoint corner(prev->p);
-   if (concave_points.find(prev)!=concave_points.end())
-      return(false);
-
-   UserPoint v1( pi->p - corner ); 
-   UserPoint v2( prev->prev->p - corner );
+   UserPoint v1( pi->next->p - pi->p ); 
+   UserPoint v2( pi->prev->p - pi->p );
    double denom = v1.Cross(v2);
 
    if (denom==0.0)  // flat triangle 
-   {
-      // Need to be consistent so we don't get opposite-sense triangles
-      //  over the top of each other.
-      // Don't worry about this here !
       return true;
-   }
 
-
-   for(EdgePointSet::const_iterator it = concave_points.begin();
-          it!=concave_points.end(); ++it)
+   for(EdgePoint *concave = concaveHead->nextConcave;
+       concave!=concaveHead; concave = concave->nextConcave)
    {
-      UserPoint v( (*it)->p-corner );
+      UserPoint v( concave->p - pi->p );
       double a = v.Cross(v2);
       double b = v1.Cross(v);
+      // Ear contains concave point?
       if (a>=0.0 && b>=0.0 && (a+b)<denom && (a+b)>0)
          return false;
    }
-   return(true);
+
+   return true;
 }
 
 bool Intersect(UserPoint dir,UserPoint p0,UserPoint p1)
@@ -116,48 +146,41 @@ bool Intersect(UserPoint dir,UserPoint p0,UserPoint p1)
    return(alpha>=0 && alpha<=1.0);
 }
 
-bool FindDiag(const EdgePointSet &concave_points,EdgePoint *p0, EdgePoint *&p1,EdgePoint *&p2)
+bool FindDiag(EdgePoint *concaveHead,EdgePoint *&p1,EdgePoint *&p2)
 {
-   EdgePoint *p = p0;
-   int point;
-   double beta;
-   do {
-      if (concave_points.find(p)==concave_points.end())
+   for(EdgePoint *p = concaveHead->nextConcave; p!=concaveHead; p = p->nextConcave)
+   {
+      UserPoint corner = p->p;
+      UserPoint v1( p->prev->p - corner ); 
+      UserPoint v2( p->next->p - corner );
+      double denom = v1.Cross(v2);
+      for(EdgePoint *other=p->next; other!= p->prev; other = other->next)
       {
-         UserPoint corner = p->p;
-         UserPoint v1( p->prev->p - corner ); 
-         UserPoint v2( p->next->p - corner );
-         double denom = v1.Cross(v2);
-         for(EdgePoint *other=p->next; other!= p->prev; other = other->next)
+         UserPoint v( other->p-corner );
+         double a = v.Cross(v2);
+         double b = v1.Cross(v);
+         if (a>=0.0 && b>=0.0)
          {
-            UserPoint v( other->p-corner );
-            double a = v.Cross(v2);
-            double b = v1.Cross(v);
-            if (a>=0.0 && b>=0.0)
-            {
-               // Found candidate, check for intersections ...
-               EdgePoint *l=p->prev;
-               for( ;l!=other->next;l=l->prev)
-                  if (Intersect(v,l->p-corner,l->prev->p-corner))
-                     break;
-               if (l!=other->next) continue;
+            // Found candidate, check for intersections ...
+            EdgePoint *l=p->prev;
+            for( ;l!=other->next;l=l->prev)
+               if (Intersect(v,l->p-corner,l->prev->p-corner))
+                  break;
+            if (l!=other->next) continue;
 
-               EdgePoint *r=p->next;
-               for(;l!=other->prev;r=r->next)
-                  if (Intersect(v,r->p-corner,r->next->p-corner))
-                     break;
-               if (r!=other->prev) continue;
+            EdgePoint *r=p->next;
+            for(;l!=other->prev;r=r->next)
+               if (Intersect(v,r->p-corner,r->next->p-corner))
+                  break;
+            if (r!=other->prev) continue;
 
-               // found !
-               p1 = p;
-               p2 = other;
-               return true;
-               }
-            }
+            // found !
+            p1 = p;
+            p2 = other;
+            return true;
          }
-         p = p->next;
-      } while(p!=p0);
-
+      }
+   }
    return(false);
 }
 
@@ -169,6 +192,10 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,bool inAllowReverse)
    int size = ioOutline.size();
    tri_points.reserve((size-2)*3);
    double area = 0.0;
+
+   EdgePoint concaveHead;
+   concaveHead.nextConcave = concaveHead.prevConcave = &concaveHead;
+
    if (inAllowReverse)
       for(int i=2;i<size;i++)
       {
@@ -181,71 +208,53 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,bool inAllowReverse)
    QuickVec<EdgePoint> edges(size);
    for(int i=0;i<size;i++)
    {
-      edges[i].p = ioOutline[i];
+      int prev = (i+size-1) % size;
+      int next = (i+1) % size;
       if (reverse)
-      {
-         edges[i].next = &edges[ (i+size-1) % size ];
-         edges[i].prev = &edges[ (i+1) % size ];
-      }
-      else
-      {
-         edges[i].next = &edges[ (i+1) % size ];
-         edges[i].prev = &edges[ (i+size-1) % size ];
-      }
+         std::swap(next,prev);
+
+      edges[i].init(ioOutline[i], &edges[prev], &edges[next]);
    }
 
-   EdgePoint *p0 = &edges[0];
-   EdgePoint *pi=0;
+   for(int i=0;i<size;i++)
+      edges[i].calcConcave(concaveHead);
 
-   bool force_ear = false;
+   EdgePoint *pi= &edges[0];
+   EdgePoint *p_end = pi->prev;
+
    while(size>2)
    {
-      EdgePointSet concave_points;
-      EdgePoint *p_con = p0;
-
-      do
+      while( pi!=p_end && size>2)
       {
-         if (p_con->concave())
-            concave_points.insert(p_con);
-         p_con = p_con->next;
-      } while(p_con!=p0);
-
-      if (!force_ear)
-         pi = p0->next->next;
-
-      while((force_ear || pi!=p0) && size>2)
-      {
-         if (concave_points.empty() || IsEar(concave_points,pi) || force_ear)
+         if ( IsEar(&concaveHead,pi) )
          {
             // Have ear triangle - yay - clip it
-            if (!force_ear || pi->prev->convex())
-            {
-               tri_points.push_back(pi->prev->prev->p);
-               tri_points.push_back(pi->prev->p);
-               tri_points.push_back(pi->p);
-            }
+            tri_points.push_back(pi->prev->p);
+            tri_points.push_back(pi->p);
+            tri_points.push_back(pi->next->p);
 
-            pi->prev->prev->next = pi;
-            pi->prev = pi->prev->prev;
+            if (pi->isConcave())
+               pi->unlinkConcave();
+            pi->unlink();
             // Have we become concave or convex ?
-            Recalc(concave_points,pi);
+            pi->next->calcConcave(concaveHead);
             // Has the previous one become convex ?
-            Recalc(concave_points,pi->prev);
+            pi->prev->calcConcave(concaveHead);
 
-            // Start at p0 again ...
-            if (pi->prev == p0)
-               pi=pi->next;
+            // Take a step back and try again...
+            pi = pi->prev;
+            p_end = pi->prev;
 
             size --;
-            force_ear = false;
          }
          else
             pi = pi->next;
       }
+
       if (size>2 )
       {
          EdgePoint *b1=0,*b2=0;
-         if ( FindDiag(concave_points,p0,b1,b2))
+         if ( FindDiag(&concaveHead,b1,b2))
          {
             // Call recursively...
             Vertices loop1;
