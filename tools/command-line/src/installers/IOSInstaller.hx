@@ -74,13 +74,17 @@ class IOSInstaller extends InstallerBase {
 		
 		for (dependencyName in dependencyNames) {
 			
-			var frameworkID = "11C0000000000018" + Utils.getUniqueID ();
-			var fileID = "11C0000000000018" + Utils.getUniqueID ();
-
-			context.ADDL_PBX_BUILD_FILE += "		" + frameworkID + " /* " + dependencyName + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + fileID + " /* " + dependencyName + " */; };\n";
-			context.ADDL_PBX_FILE_REFERENCE += "		" + fileID + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependencyName + "; path = System/Library/Frameworks/" + dependencyName + "; sourceTree = SDKROOT; };\n";
-			context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependencyName + " in Frameworks */,\n";
-			context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependencyName + " */,\n";
+			if (Path.extension (dependencyName) == "framework") {
+				
+				var frameworkID = "11C0000000000018" + Utils.getUniqueID ();
+				var fileID = "11C0000000000018" + Utils.getUniqueID ();
+				
+				context.ADDL_PBX_BUILD_FILE += "		" + frameworkID + " /* " + dependencyName + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + fileID + " /* " + dependencyName + " */; };\n";
+				context.ADDL_PBX_FILE_REFERENCE += "		" + fileID + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependencyName + "; path = System/Library/Frameworks/" + dependencyName + "; sourceTree = SDKROOT; };\n";
+				context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependencyName + " in Frameworks */,\n";
+				context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependencyName + " */,\n";
+				
+			}
 			
 		}
 		
