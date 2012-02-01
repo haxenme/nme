@@ -3,7 +3,6 @@ package installers;
 
 import data.Asset;
 import data.NDLL;
-import haxe.Md5;
 import neko.FileSystem;
 import neko.io.File;
 import neko.io.Path;
@@ -75,25 +74,19 @@ class IOSInstaller extends InstallerBase {
 		
 		for (dependencyName in dependencyNames) {
 			
-			var uuid = generateUUID (dependencyName);
-			
-			context.ADDL_PBX_BUILD_FILE += "		" + uuid + " /* " + dependencyName + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + uuid + " /* " + dependencyName + " */; };\n";
-			context.ADDL_PBX_FILE_REFERENCE += "		" + uuid + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependencyName + "; path = System/Library/Frameworks/" + dependencyName + "; sourceTree = SDKROOT; };\n";
-			context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + uuid + " /* " + dependencyName + " in Frameworks */,\n";
-			context.ADDL_PBX_FRAMEWORK_GROUP += "				" + uuid + " /* " + dependencyName + " */,\n";
+			var frameworkID = "11C0000000000018" + Utils.getUniqueID ();
+			var fileID = "11C0000000000018" + Utils.getUniqueID ();
+
+			context.ADDL_PBX_BUILD_FILE += "		" + frameworkID + " /* " + dependencyName + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + fileID + " /* " + dependencyName + " */; };\n";
+			context.ADDL_PBX_FILE_REFERENCE += "		" + fileID + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependencyName + "; path = System/Library/Frameworks/" + dependencyName + "; sourceTree = SDKROOT; };\n";
+			context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependencyName + " in Frameworks */,\n";
+			context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependencyName + " */,\n";
 			
 		}
 		
 		context.HXML_PATH = NME + "/tools/command-line/iphone/haxe/Build.hxml";
 		
 		updateIcon ();
-		
-	}
-	
-	
-	private function generateUUID (name:String):String {
-		
-		return Md5.encode (name).substr (0, 24).toUpperCase ();
 		
 	}
 	
