@@ -161,12 +161,6 @@ class DesktopInstaller extends InstallerBase {
 				
 				targetName = "mac";
 				
-				for (asset in assets) {
-					
-					asset.targetPath = asset.resourceName = asset.flatName;
-					
-				}
-				
 			} else if (targetFlags.exists ("linux")) {
 				
 				targetName = "linux";
@@ -180,12 +174,6 @@ class DesktopInstaller extends InstallerBase {
 			if (InstallTool.isMac) {
 				
 				targetName = "mac";
-				
-				for (asset in assets) {
-					
-					asset.targetPath = asset.resourceName = asset.flatName;
-					
-				}
 				
 			} else if (InstallTool.isWindows) {
 				
@@ -254,10 +242,21 @@ class DesktopInstaller extends InstallerBase {
 		mkdir (getBuildDir ());
 		mkdir (getExeDir ());
 		
+		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
+		
+		if (InstallTool.isMac) {
+			
+			for (asset in assets) {
+					
+				asset.targetPath = asset.resourceName = asset.flatName;
+					
+			}
+		
+		}
+		
 		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
 		recursiveCopy (NME + "/tools/command-line/cpp/hxml", targetDir + "/haxe");
 		recursiveCopy (NME + "/tools/command-line/" + getVM () + "/hxml", targetDir + "/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
 		
 		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1) + get64 ();
 		
