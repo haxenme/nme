@@ -29,6 +29,7 @@ class InstallerBase {
 	private var compilerFlags:Array <String>;
 	private var context:Dynamic;
 	private var debug:Bool;
+	private var dependencyNames:Array <String>;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
 	private var javaPaths:Array <String>;
@@ -50,6 +51,7 @@ class InstallerBase {
 		assets = new Array <Asset> ();
 		compilerFlags = new Array <String> ();
 		defines = new Hash <String> ();
+		dependencyNames = new Array <String> ();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
 		javaPaths = new Array <String> ();
@@ -1531,6 +1533,10 @@ class InstallerBase {
 							defines.set ("KEY_STORE_ALIAS_PASSWORD", substitute (element.att.alias_password));
 							
 						}
+					
+					case "dependency":
+						
+						dependencyNames.push (substitute (element.att.name));
 					
 				}
 				

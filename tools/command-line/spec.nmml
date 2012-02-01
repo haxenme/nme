@@ -401,6 +401,17 @@
 	
 	
 	
+	<!-- <dependency />
+		
+		Use dependency nodes to specify native frameworks or references that
+		are required to compile your project
+		
+	-->
+	
+	<dependency name="GameKit.framework" if="ios" />
+	
+	
+	
 	<!-- <path />
 		
 		Use path nodes to add directories to your system's PATH environment variable.
