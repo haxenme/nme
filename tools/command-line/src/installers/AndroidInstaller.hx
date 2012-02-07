@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import neko.io.Path;
+import neko.io.Process;
 import neko.FileSystem;
 import neko.Lib;
 import neko.Sys;
@@ -143,7 +144,27 @@ class AndroidInstaller extends InstallerBase {
 	override function traceMessages ():Void {
 		
 		var adb:Dynamic = getADB ();
-		runCommand (adb.path, adb.name, [ "logcat", "*:D" ]);
+		
+		if (debug) {
+			
+			var filter = "*:E";
+			var includeTags = [ "NME", "Main", "GLThread", "trace" ];
+			
+			for (tag in includeTags) {
+				
+				filter += " " + tag + ":D";
+				
+			}
+			
+			Lib.println (filter);
+			
+			runCommand (adb.path, adb.name, [ "logcat", filter ]);
+			
+		} else {
+			
+			runCommand (adb.path, adb.name, [ "logcat", "*:S trace:I" ]);
+			
+		}
 		
 	}
 	
