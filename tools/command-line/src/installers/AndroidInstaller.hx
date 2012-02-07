@@ -105,12 +105,6 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		for (asset in assets) {
-			
-			asset.resourceName = asset.flatName;
-			
-		}
-		
       /*
          Leave this up to hxcpp....
 		if (Sys.getEnv ("ANDROID_HOST") == null || Sys.getEnv ("ANDROID_HOST") == "") {
@@ -148,7 +142,7 @@ class AndroidInstaller extends InstallerBase {
 		if (debug) {
 			
 			var filter = "*:E";
-			var includeTags = [ "NME", "Main", "GLThread", "trace" ];
+			var includeTags = [ "NME", "Main", "GameActivity", "GLThread", "trace" ];
 			
 			for (tag in includeTags) {
 				
@@ -211,10 +205,6 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
-		recursiveCopy (NME + "/tools/command-line/android/template", destination);
-		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
-		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
 		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/android/haxe");
 		
 		for (ndll in ndlls) {
@@ -264,9 +254,20 @@ class AndroidInstaller extends InstallerBase {
 					
 				}
 				
-				copyIfNewer (asset.sourcePath, targetPath );
+				copyIfNewer (asset.sourcePath, targetPath);
 				
-			} else {
+			}
+			
+		}
+		
+		recursiveCopy (NME + "/tools/command-line/android/template", destination);
+		copyFile (NME + "/tools/command-line/android/MainActivity.java", packageDirectory + "/MainActivity.java");
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/android/haxe");
+		recursiveCopy (NME + "/tools/command-line/android/hxml", buildDirectory + "/android/haxe");
+		
+		for (asset in assets) {
+			
+			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
