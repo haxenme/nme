@@ -2,11 +2,42 @@ package nme.display;
 #if !jeash
 
 
+import nme.geom.ColorTransform;
 import nme.geom.Matrix;
 import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.Loader;
 
+#if (!cpp && !neko)
+class ColoredTile {
+    public var tilesheet: Tilesheet;
+    public var tileRect: Rectangle;
+	var rect: Rectangle;
+    
+    public var bitmap: BitmapData;
+	var color: ColorTransform;
+	public var vertices: Vector<Float>;
+    
+    public function new(inTilesheet: Tilesheet, inTileRect: Rectangle) {
+        tilesheet = inTilesheet;
+        tileRect = inTileRect;
+		rect = new Rectangle(0, 0, tileRect.width, tileRect.height);
+		color = new ColorTransform();
+		vertices = new Vector<Float>(8, true);
+		bitmap = new BitmapData(Std.int(tileRect.width), Std.int(tileRect.height), true, 0);
+    }
+    
+	public function setColor(red: Float, green: Float, blue: Float, alpha: Float) {
+		bitmap.copyPixels(tilesheet.nmeBitmap, tileRect, new Point(0, 0));
+		color.redMultiplier = red;
+		color.greenMultiplier = green;
+		color.blueMultiplier = blue;
+		color.alphaMultiplier = alpha;
+		bitmap.colorTransform(rect, color);
+	}
+	
+}
+#end
 
 class Tilesheet
 {
@@ -40,7 +71,13 @@ class Tilesheet
 	private var _vertices:Vector<Float>;
 	private var _indices:Vector<Int>;
 	private var _uvs:Vector<Float>;
-
+	
+	private var coloredTiles: Array<ColoredTile>;
+	private var _coloredIds: Vector<Int>;
+	
+	private static var coloredIndices: Vector<Int>;
+	private static var coloredUvs: Vector<Float>;
+	
 	#end
 	
 	
@@ -65,6 +102,17 @@ class Tilesheet
 		_indices = new Vector<Int>();
 		_uvs = new Vector<Float>();
 		
+		coloredTiles = [];
+		_coloredIds = new Vector<Int>();
+		if (coloredIndices == null) {
+			coloredIndices = new Vector<Int>();
+			adjustIndices(coloredIndices, 6);
+			coloredUvs = new Vector<Float>(8, true);
+			coloredUvs[0] = coloredUvs[4] = 0;
+			coloredUvs[1] = coloredUvs[3] = 0;
+			coloredUvs[2] = coloredUvs[6] = 1;
+			coloredUvs[5] = coloredUvs[7] = 1;
+		}
 		#end
 	}
 	
@@ -187,6 +235,7 @@ class Tilesheet
 			var rgbIndex = 0;
 			var alphaIndex = 0;
 			var numValues = 3;
+			var transColor = false;
 			
 			if (useScale)
 			{
@@ -202,12 +251,14 @@ class Tilesheet
 			
 			if (useRGB)
 			{
+				transColor = true;
 				rgbIndex = numValues;
 				numValues += 3;
 			}
 			
 			if (useAlpha)
 			{
+				transColor = true;
 				alphaIndex = numValues;
 				numValues ++;
 			}
@@ -215,11 +266,16 @@ class Tilesheet
 			var totalCount = tileData.length;
 			var itemCount = Std.int (totalCount / numValues);
 			
-			var ids = adjustIDs(_ids, itemCount);
-			var vertices = adjustLen(_vertices, itemCount * 8); 
-			var indices = adjustIndices(_indices, itemCount * 6); 
-			var uvtData = adjustLen(_uvs, itemCount * 8); 
-			
+			var ids: Vector<Int> = null, vertices: Vector<Float> = null, uvtData: Vector<Float> = null, indices: Vector<Int> = null;
+			var coloredIds: Vector<Int> = null;
+			if (!transColor) {
+				ids = adjustIDs(_ids, itemCount);
+				vertices = adjustLen(_vertices, itemCount * 8); 
+				indices = adjustIndices(_indices, itemCount * 6); 
+				uvtData = adjustLen(_uvs, itemCount * 8); 
+			} else {
+				coloredIds = adjustIDs(_coloredIds, itemCount);
+			}
 			var index = 0;
 			var offset8 = 0;
 			var tileIndex:Int = 0;
@@ -241,7 +297,6 @@ class Tilesheet
 				var tileID = Std.int(tileData[index + 2]);
 				var scale = 1.0;
 				var rotation = 0.0;
-				var alpha = 1.0;
 				
 				if (useScale)
 				{
@@ -253,16 +308,6 @@ class Tilesheet
 					rotation = tileData[index + rotationIndex];
 				}
 				
-				if (useRGB)
-				{
-					//ignore for now
-				}
-				
-				if (useAlpha)
-				{
-					alpha = tileData[index + alphaIndex];
-				}
-				
 				if (cacheID != tileID)
 				{
 					cacheID = tileID;
@@ -270,6 +315,24 @@ class Tilesheet
 					tileUV = tileUVs[tileID];
 					tilePoint = tilePoints[tileID];
 				}
+				
+				if (transColor) {
+					var red = 1.0, green = 1.0, blue = 1.0, alpha = 1.0;
+				    if (useRGB) {
+                        red = tileData[index + rgbIndex];
+                        green = tileData[index + rgbIndex + 1];
+                        blue = tileData[index + rgbIndex + 2];
+                    }
+					if (useAlpha) alpha = tileData[index + alphaIndex];
+					var coloredtile: ColoredTile = null;
+					if ((coloredtile = coloredTiles[tileID]) == null) {
+						coloredtile = coloredTiles[tileID] = new ColoredTile(this, tile);
+					}
+					coloredIds[tileIndex] = tileID;
+					coloredtile.setColor(red, green, blue, alpha);
+					vertices = coloredtile.vertices;
+					offset8 = 0;
+                }
 				
 				var tileWidth = tile.width * scale;
 				var tileHeight = tile.height * scale;
@@ -282,18 +345,16 @@ class Tilesheet
 					var aky = (1 - tilePoint.y) * tileHeight;
 					var ca = Math.cos(rotation);
 					var sa = Math.sin(rotation);
-					var ox1 = kx * ca + ky * sa;
-					var ox2 = akx * ca - aky * sa;
-					var oy1 = -kx * sa + ky * ca;
-					var oy2 = akx * sa + aky * ca;
-					vertices[offset8] = x - ox1;
-					vertices[offset8 + 1] = y - oy1;
-					vertices[offset8 + 2] = x + ox2;
-					vertices[offset8 + 3] = y - oy2;
-					vertices[offset8 + 4] = x - ox2;
-					vertices[offset8 + 5] = y + oy2;
-					vertices[offset8 + 6] = x + ox1;
-					vertices[offset8 + 7] = y + oy1;
+					var xc = kx * ca, xs = kx * sa, yc = ky * ca, ys = ky * sa;
+					var axc = akx * ca, axs = akx * sa, ayc = aky * ca, ays = aky * sa;
+					vertices[offset8] = x - (xc + ys);
+					vertices[offset8 + 1] = y - (-xs + yc);
+					vertices[offset8 + 2] = x + axc - ys;
+					vertices[offset8 + 3] = y - (axs + yc);
+					vertices[offset8 + 4] = x - (xc - ays);
+					vertices[offset8 + 5] = y + xs + ayc;
+					vertices[offset8 + 6] = x + axc + ays;
+					vertices[offset8 + 7] = y + (-axs + ayc);
 				}
 				else 
 				{
@@ -305,7 +366,7 @@ class Tilesheet
 					vertices[offset8 + 5] = vertices[offset8 + 7] = y + tileHeight;
 				}
 				
-				if (ids[tileIndex] != tileID)
+				if (!transColor && ids[tileIndex] != tileID)
 				{
 					ids[tileIndex] = tileID;
 					uvtData[offset8] = uvtData[offset8 + 4] = tileUV.left;
@@ -318,9 +379,17 @@ class Tilesheet
 				index += numValues;
 				tileIndex++;
 			}
-			
-			graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
-			graphics.drawTriangles (vertices, indices, uvtData);
+			if (transColor) {
+				for (tid in coloredIds) {
+					var ct = coloredTiles[tid];
+					graphics.beginBitmapFill(ct.bitmap, null, false, smooth);
+					graphics.drawTriangles(ct.vertices, coloredIndices, coloredUvs);
+					graphics.endFill();
+				}
+			} else {
+				graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
+				graphics.drawTriangles (vertices, indices, uvtData);
+			}
 			
 		}
 		else
@@ -337,43 +406,20 @@ class Tilesheet
 				index += 3;
 				
 				var tile = tiles[tileID];
-				//var centerPoint = tilePoints[tileID];
+				var centerPoint = tilePoints[tileID];
+				var ox = centerPoint.x * tile.width, oy = centerPoint.y * tile.height;
 				
 				var scale = 1.0;
 				var rotation = 0.0;
 				var alpha = 1.0;
 				
-				if (useScale)
-				{
-					scale = tileData[index];
-					index ++;
-				}
-				
-				if (useRotation)
-				{
-					rotation = tileData[index];
-					index ++;
-				}
-				
-				if (useRGB)
-				{
-					//ignore for now
-					index += 3;
-				}
-				
-				if (useAlpha)
-				{
-					alpha = tileData[index];
-					index++;
-				}
-				
-				matrix.tx = x - tile.x;
-				matrix.ty = y - tile.y;
+				matrix.tx = x - tile.x - ox;
+				matrix.ty = y - tile.y - oy;
 				
 				// need to add support for rotation, alpha, scale and RGB
 				
 				graphics.beginBitmapFill (nmeBitmap, matrix, false, smooth);
-				graphics.drawRect (x, y, tile.width, tile.height);
+				graphics.drawRect (x - ox, y - oy, tile.width, tile.height);
 			}
 			
 		}
