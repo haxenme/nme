@@ -1046,13 +1046,19 @@ class InstallerBase {
 		
 		var files:Array <String> = FileSystem.readDirectory (path);
 		
+		if (targetPath != "") {
+			
+			targetPath += "/";
+			
+		}
+		
 		for (file in files) {
 			
 			if (FileSystem.isDirectory (path + "/" + file) && recursive) {
 				
 				if (filter (file, "*", exclude)) {
 					
-					parseAssetsElementDirectory (path + "/" + file, targetPath + "/" + file, include, exclude, type, embed, true);
+					parseAssetsElementDirectory (path + "/" + file, targetPath + file, include, exclude, type, embed, true);
 					
 				}
 				
@@ -1060,7 +1066,7 @@ class InstallerBase {
 				
 				if (filter (file, include, exclude)) {
 					
-					assets.push (new Asset (path + "/" + file, targetPath + "/" + file, type, "", embed));
+					assets.push (new Asset (path + "/" + file, targetPath + file, type, "", embed));
 					
 				}
 				
