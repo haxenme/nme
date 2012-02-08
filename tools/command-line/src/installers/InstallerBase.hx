@@ -961,7 +961,7 @@ class InstallerBase {
 						
 						default:
 							
-							return;
+							include = "*";
 						
 					}
 					
