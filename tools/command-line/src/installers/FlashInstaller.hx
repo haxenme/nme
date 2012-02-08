@@ -597,7 +597,7 @@ class FlashInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/flash/bin";
+		var destination:String = buildDirectory + "/flash/bin/";
 		mkdir (destination);
 		
 		for (asset in assets) {

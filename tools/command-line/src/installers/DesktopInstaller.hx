@@ -247,9 +247,9 @@ class DesktopInstaller extends InstallerBase {
 		if (InstallTool.isMac) {
 			
 			for (asset in assets) {
-					
+				
 				asset.targetPath = asset.resourceName = asset.flatName;
-					
+				
 			}
 		
 		}
@@ -314,7 +314,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			} else {
 				
-				copyFile (asset.sourcePath, targetDir + asset.targetPath);
+				copyFile (asset.sourcePath, targetDir + "/" + asset.targetPath);
 				
 			}
 			

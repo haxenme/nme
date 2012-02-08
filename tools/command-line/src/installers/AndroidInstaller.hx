@@ -198,7 +198,7 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/android/bin";
+		var destination:String = buildDirectory + "/android/bin/";
 		mkdir (destination);
 		
 		var packageDirectory:String = defines.get ("APP_PACKAGE");
