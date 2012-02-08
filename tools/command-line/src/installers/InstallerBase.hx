@@ -1308,11 +1308,11 @@ class InstallerBase {
 						var name:String = substitute (element.att.name);
 						compilerFlags.push ("-lib " + name);
 						
-						var path = Utils.getHaxelib (name) + "/include.nmml";
+						var path = Utils.getHaxelib (name);
 						
-						if (FileSystem.exists (path)) {
+						if (FileSystem.exists (path + "/include.nmml")) {
 							
-							var xml:Fast = new Fast (Xml.parse (File.getContent (path)).firstElement ());
+							var xml:Fast = new Fast (Xml.parse (File.getContent (path + "/include.nmml")).firstElement ());
 							parseXML (xml, "", path + "/");
 							
 						}
