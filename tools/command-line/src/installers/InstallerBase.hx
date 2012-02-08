@@ -1273,6 +1273,8 @@ class InstallerBase {
 							var xml:Fast = new Fast (Xml.parse (File.getContent (name)).firstElement ());
 							var path = Path.directory (name);
 							
+							compilerFlags.push ("-cp " + path);
+							
 							if (element.has.section) {
 								
 								//parseXML (xml, element.att.section);
