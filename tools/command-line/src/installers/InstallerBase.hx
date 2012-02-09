@@ -106,6 +106,20 @@ class InstallerBase {
 			
 		}
 		
+		var backgroundColor = defines.get ("WIN_BACKGROUND");
+		
+		if (backgroundColor.indexOf ("#") == 0) {
+			
+			backgroundColor = "0x" + backgroundColor.substr (1);
+			
+		} else if (backgroundColor.indexOf ("0x") == -1) {
+			
+			backgroundColor = "0x" + backgroundColor;
+			
+		}
+		
+		defines.set ("WIN_BACKGROUND", backgroundColor);
+		
 		// Strip off 0x ....
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
