@@ -1,9 +1,23 @@
 #!/bin/sh
 
 
+# I apologize in advance that this is configured for Ubuntu
+# We will add better support for other distributions in the future
+
+
 read -p "Do you wish to install Haxe and Neko? (y/n) " RESP
 
 if [ $RESP = "y" ]; then
+	
+	
+	# If you are running 64-bit, you'll need 32-bit support
+	
+	echo "-----------------------------------"
+	echo " Installing IA32 libraries"
+	echo "-----------------------------------"	
+	
+	sudo apt-get install ia32-libs gcc-multilib g++-multilib
+	
 	
 	# The version of Haxe in the package manager is probably
 	# out-of-date. Download the latest version from haxe.org
@@ -71,11 +85,19 @@ echo "-----------------------------------"
 
 # Download and install NME
 
-wget http://www.haxenme.org/files/8413/2441/1468/NME-3.1.1.zip
-haxelib test NME-3.1.1.zip
-rm NME-3.1.1.zip
+wget http://www.haxenme.org/files/8713/2882/6993/NME-3.2-Beta2.zip
+haxelib test NME-3.2-Beta2.zip
+rm NME-3.2-Beta2.zip
 
 # Add "nme" command shortcut
 
 sudo haxelib run nme setup
+
+
+echo "-----------------------------------"
+echo " Installing additional libraries"
+echo "-----------------------------------"
+
+haxelib install actuate
+haxelib install swf
 

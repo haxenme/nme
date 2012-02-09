@@ -349,6 +349,8 @@ class NMEInstaller {
 			
 			installHaxelibResource ("hxcpp.zip");
 			installHaxelibResource ("jeash.zip");
+			installHaxelibResource ("actuate.zip");
+			installHaxelibResource ("swf.zip");
 			
 			Sys.command ("haxelib", [ "run", "nme", "setup" ] ); // not working for OS X, for some reason
 			
