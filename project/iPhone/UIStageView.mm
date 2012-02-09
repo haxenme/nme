@@ -637,7 +637,7 @@ public:
       key_down.value = keyBACKSPACE;
       mStage->OnEvent(key_down);
 
-      Event key_up(etKeyDown);
+      Event key_up(etKeyUp);
       key_up.code = keyBACKSPACE;
       key_up.value = keyBACKSPACE;
       mStage->OnEvent(key_up);
