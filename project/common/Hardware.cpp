@@ -38,7 +38,8 @@ public:
          mElement.mPrimType = inJob.mTriangles ? ptTriangles : ptTriangleFan;
          mElement.mScaleMode = ssmNormal;
          mElement.mWidth = -1;
-         SetFill(inJob.mFill,inHardware);
+         if (!SetFill(inJob.mFill,inHardware))
+            return;
       }
       else
       {
@@ -80,7 +81,9 @@ public:
       GraphicsSolidFill *solid = inFill->AsSolidFill();
       if (solid)
       {
-          mElement.mColour = solid->mRGB.ToInt();
+         if (solid -> mRGB.a == 0)
+            return false;
+         mElement.mColour = solid->mRGB.ToInt();
       }
       else
       {
@@ -98,7 +101,7 @@ public:
 
             mTextureMapper = grad->matrix.Inverse();
 
-            return true;
+            //return true;
          }
          else
          {
@@ -110,7 +113,8 @@ public:
             mElement.mBitmapSmooth = bmp->smooth;
           }
        }
-       return false;
+       //return false;
+       return true;
    }
 
    ~HardwareBuilder()
