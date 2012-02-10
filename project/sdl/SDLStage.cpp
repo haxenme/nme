@@ -846,7 +846,7 @@ double CapabilitiesGetScreenDPI() {
 	PDL_ScreenMetrics screenMetrics;
 	PDL_GetScreenMetrics (&screenMetrics);
 
-	return screenMetrics.aspectRatio;
+	return screenMetrics.horizontalDPI;
 
 	#else
 
