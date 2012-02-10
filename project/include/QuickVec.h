@@ -320,7 +320,7 @@ public:
    {
       Grow();
       memmove(mPtr + inPos + 1, mPtr + inPos, (mSize-inPos) * sizeof(T_) );
-      mPtr[inPos] = inValue;
+      memcpy(mPtr+inPos,&inValue, sizeof(T_));
       ++mSize;
    }
 

@@ -2529,6 +2529,16 @@ value nme_text_field_set_##prop(value inHandle,value inValue) \
 } \
 DEFINE_PRIM(nme_text_field_set_##prop,2);
 
+#define TEXT_PROP_GET_IDX(prop,Prop,to_val) \
+value nme_text_field_get_##prop(value inHandle,value inIndex) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      return to_val(t->get##Prop(val_int(inIndex))); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_text_field_get_##prop,2);
+
 TEXT_PROP(text,Text,alloc_wstring,val2stdwstr);
 TEXT_PROP(html_text,HTMLText,alloc_wstring,val2stdwstr);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
@@ -2551,6 +2561,8 @@ TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
 TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
 TEXT_PROP_GET(num_lines,NumLines,alloc_int);
 TEXT_PROP(max_chars,MaxChars,alloc_int,val_int);
+TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
+TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
 
 
 value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)

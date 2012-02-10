@@ -62,6 +62,15 @@ class TextField extends InteractiveObject
 		nme_text_field_set_text_format(nmeHandle, format, beginIndex, endIndex);
 	}
 	
+   public function getLineOffset(lineIndex:Int):Int
+   {
+      return nme_text_field_get_line_offset(nmeHandle,lineIndex);
+   }
+
+   public function getLineText(lineIndex:Int):String
+   {
+      return nme_text_field_get_line_text(nmeHandle,lineIndex);
+   }
 	
 	
 	// Getters & Setters
@@ -159,6 +168,8 @@ class TextField extends InteractiveObject
 	private static var nme_text_field_get_num_lines = Loader.load("nme_text_field_get_num_lines", 1);
 	private static var nme_text_field_get_max_chars = Loader.load("nme_text_field_get_max_chars", 1);
 	private static var nme_text_field_set_max_chars = Loader.load("nme_text_field_set_max_chars", 2);
+	private static var nme_text_field_get_line_text = Loader.load("nme_text_field_get_line_text", 2);
+	private static var nme_text_field_get_line_offset = Loader.load("nme_text_field_get_line_offset", 2);
 	
 }
 

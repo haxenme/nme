@@ -132,14 +132,19 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
 
 void TextField::SplitGroup(int inGroup,int inPos)
 {
+   CharGroup empty;
+   memset(&empty,0,sizeof(empty));
+   mCharGroups.InsertAt(inGroup+1,CharGroup());
    CharGroup &group = mCharGroups[inGroup];
-   CharGroup extra = group;
+   CharGroup &extra = mCharGroups[inGroup+1];
+   extra.mFormat = group.mFormat;
    extra.mFormat->IncRef();
+   extra.mFontHeight = group.mFontHeight;
+   extra.mFont = group.mFont;
    extra.mFont->IncRef();
-   group.mChar0 += inPos;
+   extra.mChar0 = group.mChar0 + inPos;
    extra.mString.Set(&group.mString[inPos], group.mString.size()-inPos);
-   group.mString.resize(inPos);
-   mCharGroups.InsertAt(inGroup+1,extra);
+   group.mString.resize(inPos); // TODO: free some memory?
    mLinesDirty = true;
 }
 
@@ -170,7 +175,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    if (inEnd<max)
    {
       int g1_ex = inEnd-mCharGroups[g1].mChar0;
-      if (g1_ex>0)
+      if (g1_ex<mCharGroups[g1].mString.size())
       {
          SplitGroup(g1,g1_ex);
          g1++;
@@ -930,6 +935,48 @@ int TextField::EndOfCharX(int inChar,int inLine)
       return mCharPos[inChar+1].x;
    // Return end-of-line
    return mCharPos[ line.mChar0 ].x + line.mMetrics.width;
+}
+
+
+int TextField::getLineOffset(int inLine)
+{
+   Layout();
+   if (inLine<0 || mLines.size()<1)
+      return 0;
+
+   if (inLine>=mLines.size())
+      return mLines[mLines.size()-1].mChar0;
+
+   return mLines[inLine].mChar0;
+}
+
+WString TextField::getLineText(int inLine)
+{
+   Layout();
+   if (inLine<0 || inLine>=mLines.size())
+      return L"";
+   Line &line = mLines[inLine];
+
+   int g0 = GroupFromChar(line.mChar0);
+   int g1 = GroupFromChar(line.mChar0 + line.mChars-1);
+
+   int g0_pos =  line.mChar0 - mCharGroups[g0].mChar0;
+   wchar_t *g0_first = mCharGroups[g0].mString.mPtr + g0_pos;
+   if (g0==g1)
+   {
+      return WString(g0_first, line.mChars );
+   }
+
+   WString result(g0_first,mCharGroups[g0].mString.size() - g0_pos );
+   for(int g=g0+1;g<g1;g++)
+   {
+      CharGroup &group = mCharGroups[g];
+      result += WString( group.mString.mPtr, group.mString.size() );
+   }
+   CharGroup &group = mCharGroups[g1];
+   result += WString( group.mString.mPtr, line.mChar0 + line.mChars - group.mChar0 );
+
+   return result;
 }
 
 

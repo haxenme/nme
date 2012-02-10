@@ -27,7 +27,6 @@ public:
    int getLineIndexOfChar(int inCharIndex);
    int getLineLength(int inLineIndex);
    const TextLineMetrics &getLineMetrics(int inLineIndex);
-   int getLineOffset(int inLineIndex);
    WString getLineText();
    int getParagraphLength(int inCharIndex);
    TextFormat *getTextFormat(int inFirstChar=-1, int inEndChar=-1);
@@ -76,6 +75,8 @@ public:
    void  setMaxChars(int inMaxChars) { maxChars = inMaxChars; }
    bool  getDisplayAsPassword() const { return displayAsPassword; }
    void  setDisplayAsPassword(bool inValue) { displayAsPassword = inValue; }
+   int   getLineOffset(int inLine);
+   WString getLineText(int inLine);
 
 
    double getWidth();
