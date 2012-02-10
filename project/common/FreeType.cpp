@@ -282,11 +282,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 		#if defined (ANDROID)
 			outFile = "/system/fonts/DroidSerif-Regular.ttf";
 		#elif defined (WEBOS)
-			if (PDL_GetPDKVersion () >= 300) {
-				outFile = "/usr/share/fonts/georgia.ttf";
-			} else {
-				outFile = "/usr/share/fonts/times.ttf";
-			}
+			outFile = "/usr/share/fonts/times.ttf";
 		#else
 			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
 		#endif
