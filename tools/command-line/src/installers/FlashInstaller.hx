@@ -576,13 +576,17 @@ class FlashInstaller extends InstallerBase {
 			
 			var dotSlash:String = "./";
 			
-			if (defines.exists ("windows")) {
+			if (InstallTool.isWindows) {
 				
 				runCommand (destination, ".\\" + defines.get ("APP_FILE") + ".swf", []);
 				
-			} else {
+			} else if (InstallTool.isMac) {
 				
 				runCommand (destination, "open", [ defines.get ("APP_FILE") + ".swf" ]);
+				
+			} else {
+				
+				runCommand (destination, "xdg-open", [ defines.get ("APP_FILE") + ".swf" ]);
 				
 			}
 			

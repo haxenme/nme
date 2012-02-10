@@ -44,13 +44,17 @@ class HTML5Installer extends InstallerBase {
 		var destination:String = buildDirectory + "/html5/bin";
 		var dotSlash:String = "./";
 		
-		if (defines.exists ("windows")) {
+		if (InstallTool.isWindows) {
 			
 			runCommand (destination, ".\\index.html", []);
 			
-		} else {
+		} else if (InstallTool.isMac) {
 			
 			runCommand (destination, "open", [ "index.html" ]);
+			
+		} else {
+			
+			runCommand (destination, "xdg-open", [ "index.html" ]);
 			
 		}
 		
