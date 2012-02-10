@@ -294,7 +294,7 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
     return result;
 }
 
-void AndoidRequestRender()
+void AndroidRequestRender()
 {
    JNIEnv *env = GetEnv();
 	jclass cls =env->FindClass("org/haxe/nme/MainView");
