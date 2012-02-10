@@ -1,9 +1,10 @@
 package nme.display;
 
 
-import nme.text.TextField;
-import nme.events.Event;
 import haxe.Timer;
+import nme.events.Event;
+import nme.text.TextField;
+import nme.text.TextFormat;
 
 
 class FPS extends TextField
@@ -19,10 +20,12 @@ class FPS extends TextField
 		x = inX;
 		y = inY;
 		selectable = false;
-		text = "FPS:";
-		textColor = inCol;
-		times = [];
 		
+		defaultTextFormat = new TextFormat("_sans", 12, inCol);
+		
+		text = "FPS: ";
+		
+		times = [];
 		addEventListener(Event.ENTER_FRAME, onEnter);
 	}
 	
@@ -42,7 +45,7 @@ class FPS extends TextField
 		
 		if (visible)
 		{	
-			text = "FPS:" + times.length;	
+			text = "FPS: " + times.length;	
 		}
 	}
 	
