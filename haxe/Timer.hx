@@ -163,7 +163,7 @@ class Timer {
 			
 		}
 		
-		return limit;
+		return limit * 0.001;
 		
 	}
 	
