@@ -36,6 +36,7 @@ namespace nme
 		void FatCurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2, double perp_len);
 		bool Hits(const RenderState &inState);
 		void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1);
+      virtual int  GetWinding() { return 0xffffffff; }
 		
 		virtual int Iterate(IterateMode inMode,const Matrix &m) = 0;
 		virtual void AlignOrthogonal() {}

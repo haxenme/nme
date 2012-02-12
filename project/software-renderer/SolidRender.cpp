@@ -6,6 +6,7 @@ namespace nme
 	
 	SolidRender::SolidRender(const GraphicsJob &inJob, const GraphicsPath &inPath) : PolygonRender(inJob, inPath, inJob.mFill) { }
 	
+
 	
 	int SolidRender::Iterate(IterateMode inMode,const Matrix &)
 	{

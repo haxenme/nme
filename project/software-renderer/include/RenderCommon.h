@@ -194,6 +194,7 @@ namespace nme
 		int mLeftPos;
 		int mMaxX;
 		int mMinX;
+      int mWinding;
 		Rect	mRect;
 		
 		
@@ -311,6 +312,7 @@ namespace nme
 			mAA =  inAA;
 			mAAMask = ~(mAA-1);
 			mRect = inRect * inAA;
+         mWinding = 0xffffffff;
 			
 			if (sTransitionsBuffer.size() < mRect.h)
 			{
@@ -407,8 +409,7 @@ namespace nme
 			inTrans.Compact();
 			int total = inTrans.mLeft;
 			Transition *end = inTrans.mX.end();
-			// TODO:Winding rule ..
-			int alpha =  (total) ? inFactor : 0;
+			int alpha =  (total & mWinding) ? inFactor : 0;
 			
 			for (Transition *t = inTrans.mX.begin(); t != end; ++t)
 			{
@@ -427,8 +428,7 @@ namespace nme
 					last_x = std::max(t->x, mRect.x);
 					
 					total += t->val;
-					// TODO:Winding rule ..
-					alpha = (total) ? inFactor : 0;
+					alpha = (total & mWinding) ? inFactor : 0;
 				}
 			}
 			

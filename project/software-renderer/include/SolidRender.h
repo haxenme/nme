@@ -13,6 +13,7 @@ namespace nme
 	public:
 		
 		SolidRender(const GraphicsJob &inJob, const GraphicsPath &inPath);
+      int SolidRender::GetWinding() { return 0x0001; }
 		int Iterate(IterateMode inMode,const Matrix &);
 		
 	};

@@ -359,6 +359,7 @@ namespace nme
 				
 				// TODO: make visible_pixels a bit bigger ?
 				SpanRect span(visible_pixels, inState.mTransform.mAAFactor);
+            span.mWinding = GetWinding();
 				mSpanRect = &span;
 				
 				int alpha_factor = Iterate(itCreateRenderer, *inState.mTransform.mMatrix);

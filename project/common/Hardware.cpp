@@ -286,45 +286,48 @@ public:
 
 
    #define FLAT 0.000001
-   void AddPolygon(Vertices &inOutline)
+   void AddPolygon(Vertices &inOutline,const QuickVec<int> &inSubPolys)
    {
       if (mSolidMode && inOutline.size()<3)
          return;
 
       Vertices &vertices = mArrays->mVertices;
       mElement.mFirst = vertices.size();
-      bool isConvex = true;
+      bool isConvex = inSubPolys.size()==1;
       if (mSolidMode)
       {
-         UserPoint base = inOutline[0];
-         int last = inOutline.size()-2;
-         int i = 0;
-         bool positive = true;
-         for( ;i<last;i++)
+         if (isConvex)
          {
-            UserPoint v0 = inOutline[i+1]-base;
-            UserPoint v1 = inOutline[i+2]-base;
-            double diff = v0.Cross(v1);
-            if (fabs(diff)>FLAT)
+            UserPoint base = inOutline[0];
+            int last = inOutline.size()-2;
+            int i = 0;
+            bool positive = true;
+            for( ;i<last;i++)
             {
-               positive = diff > 0;
-               break;
+               UserPoint v0 = inOutline[i+1]-base;
+               UserPoint v1 = inOutline[i+2]-base;
+               double diff = v0.Cross(v1);
+               if (fabs(diff)>FLAT)
+               {
+                  positive = diff > 0;
+                  break;
+               }
             }
-         }
 
-         for(++i;i<last;i++)
-         {
-            UserPoint v0 = inOutline[i+1]-base;
-            UserPoint v1 = inOutline[i+2]-base;
-            double diff = v0.Cross(v1);
-            if (fabs(diff)>FLAT && (diff>0)!=positive)
+            for(++i;i<last;i++)
             {
-               isConvex = false;
-               break;
+               UserPoint v0 = inOutline[i+1]-base;
+               UserPoint v1 = inOutline[i+2]-base;
+               double diff = v0.Cross(v1);
+               if (fabs(diff)>FLAT && (diff>0)!=positive)
+               {
+                  isConvex = false;
+                  break;
+               }
             }
          }
          if (!isConvex)
-            ConvertOutlineToTriangles(inOutline);
+            ConvertOutlineToTriangles(inOutline,inSubPolys);
       }
 
 
@@ -347,10 +350,12 @@ public:
       UserPoint last_move;
       UserPoint last_point;
       int points = 0;
-      
+      QuickVec<int> sub_poly_start;
+
       mArrays->mBlendMode =bmNormal;
 
       Vertices outline;
+
 
       for(int i=0;i<inCount;i++)
       {
@@ -366,9 +371,17 @@ public:
             case pcMoveTo:
                if (points>1)
                {
-                  //if (mSolidMode && (outline.empty() || outline.last()!=last_move) )
-                     //outline.push_back(last_move);
-                  AddPolygon(outline);
+                  // Move in the middle of a solid polygon - treat like a line...
+                  if (mSolidMode)
+                  {
+                     sub_poly_start.push_back(outline.size());
+                     outline.push_back(*point);
+                     last_point = *point++;
+                     points++;
+                     break;
+                  }
+                  sub_poly_start.push_back(outline.size());
+                  AddPolygon(outline,sub_poly_start);
                }
                else if (points==1 && last_move==*point)
                {
@@ -377,6 +390,7 @@ public:
                }
 
                outline.resize(0);
+               sub_poly_start.resize(0);
                points = 1;
                last_point = *point++;
                last_move = last_point;
@@ -433,7 +447,12 @@ public:
       }
 
       if (!outline.empty())
-         AddPolygon(outline);
+      {
+         int n = outline.size();
+         if (sub_poly_start.empty() || sub_poly_start.last()!=n)
+            sub_poly_start.push_back(n);
+         AddPolygon(outline,sub_poly_start);
+      }
    }
 
 

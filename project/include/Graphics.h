@@ -502,7 +502,7 @@ typedef QuickVec<int>         Colours;
 
 void ReleaseVertexBufferObject(unsigned int inVBO);
 
-void ConvertOutlineToTriangles(Vertices &ioOutline);
+void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys);
 
 struct HardwareArrays
 {
