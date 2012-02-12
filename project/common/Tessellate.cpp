@@ -1,4 +1,5 @@
 #include <Graphics.h>
+#include <stdio.h>
 
 namespace nme
 {
