@@ -85,9 +85,9 @@ echo "-----------------------------------"
 
 # Download and install NME
 
-wget http://www.haxenme.org/files/8713/2882/6993/NME-3.2-Beta2.zip
-haxelib test NME-3.2-Beta2.zip
-rm NME-3.2-Beta2.zip
+wget http://www.haxenme.org/files/4813/2916/8134/NME-3.2.0.zip
+haxelib test NME-3.2.0.zip
+rm NME-3.2.0.zip
 
 # Add "nme" command shortcut
 
