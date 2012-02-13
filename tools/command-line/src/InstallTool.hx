@@ -481,12 +481,12 @@ class InstallTool {
 		
 		if (command == "") {
 			
-			Lib.println ("NME Command-Line Tools (3.1.0)");
+			Lib.println ("NME Command-Line Tools (3.2.0)");
 			Lib.println ("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
 			
 		} else if (command == "help") {
 			
-			Lib.println ("NME Command-Line Tools (3.1.0)");
+			Lib.println ("NME Command-Line Tools (3.2.0)");
 			Lib.println ("");
 			Lib.println (" Usage : nme setup (target)");
 			Lib.println (" Usage : nme help");
