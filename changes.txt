@@ -1,6 +1,25 @@
 NME Changes
 
 
+3.2.0
+===============
+Android applications will install to external storage (SD card) by default.
+Improved support for special directories on all targets.
+Added built-in support for SWF assets (Flash and C++ targets).
+Created a new "display" command for improved IDE support.
+Revised and improved the NMML file specification.
+Addressed "disappearing object" issues with the software renderer.
+Added support for "template" files, overwriting the default files for each target.
+URLLoader now supports HTTP POST and SSL on C++ targets.
+Added "mobile", "web" and "desktop" defines, for simplicity.
+Tilesheet.drawTiles now includes compatibility for use in Flash.
+Joystick support added for Windows, Mac and Linux.
+Improved tessellation for primitives in the hardware renderer.
+Made it possible to add additional iOS frameworks through NMML.
+Automatically handling orientation changes on iOS now.
+Many other fixes and improvements.
+
+
 3.1.1
 ===============
 Fixed graphics.drawTriangles (sorry!).
