@@ -15,11 +15,13 @@ class ApplicationMain
 			{
 				return true;
 			}
+			return false;
 			::elseif (WIN_ORIENTATION == "landscape")::
 			if (orientation == nme.display.Stage.OrientationLandscapeLeft || orientation == nme.display.Stage.OrientationLandscapeRight)
 			{
 				return true;
 			}
+			return false;
 			::else::
 			return true;
 			::end::
