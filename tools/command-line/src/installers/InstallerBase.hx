@@ -82,7 +82,7 @@ class InstallerBase {
 		
 		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
 			
-			error ("Your application package must have at least three segments, like <app package=\"com.example.myapp\" />");
+			error ("Your application package must have at least three segments, like <meta package=\"com.example.myapp\" />");
 			
 		}
 		
