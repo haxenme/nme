@@ -74,15 +74,15 @@ class ApplicationMain
 		if (inName == "::id::")
 		{
 			::if (type=="image")::
-			return nme.installer.Assets.getBitmapData ("::id::");
+			return nme.Assets.getBitmapData ("::id::");
 			::elseif (type=="sound")::
-			return nme.installer.Assets.getSound ("::id::");
+			return nme.Assets.getSound ("::id::");
 			::elseif (type=="music")::
-			return nme.installer.Assets.getSound ("::id::");
+			return nme.Assets.getSound ("::id::");
 			::elseif (type== "font")::
-			return nme.installer.Assets.getFont ("::id::");
+			return nme.Assets.getFont ("::id::");
 			::else::
-			return nme.installer.Assets.getBytes ("::id::");
+			return nme.Assets.getBytes ("::id::");
 			::end::
 		}
 		::end::

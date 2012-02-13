@@ -59,11 +59,17 @@ class IOSInstaller extends InstallerBase {
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			
-			case "landscape" : context.IPHONE_ORIENTATION = "LandscapeLeft";
-			case "landscapeLeft" : context.IPHONE_ORIENTATION = "LandscapeLeft";
-			case "landscapeRight" : context.IPHONE_ORIENTATION = "LandscapeRight";
-			case "portrait" : context.IPHONE_ORIENTATION = "Portrait";
-			case "portraitUpsideDown" : context.IPHONE_ORIENTATION = "PortraitUpsideDown";
+			case "landscape":
+				
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
+			
+			case "portrait":
+				
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+			
+			default:
+				
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 			
 		}
 		
