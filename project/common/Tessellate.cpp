@@ -260,7 +260,7 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          break;
 
          EdgePoint *b1=0,*b2=0;
-         printf("Diag %d ?\n",size);
+         //printf("Diag %d ?\n",size);
          if ( FindDiag(&concaveHead,b1,b2))
          {
             // Call recursively...
@@ -286,7 +286,7 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          else
          {
             #if 1
-            printf("No diag?\n");
+            //printf("No diag?\n");
             break;
             #else
             // Hmmm look for "least concave" point ...
@@ -339,13 +339,37 @@ void ReverseSubPoly(UserPoint *ioPtr,int inN)
       std::swap(ioPtr[i],ioPtr[inN-i]);
 }
 
-bool PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN)
+enum PIPResult { PIP_NO, PIP_YES, PIP_MAYBE };
+
+PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN)
 {
-   double area = 0;
-   for(int i=1;i<inN;i++)
-      area += (ioPtr[i]-p0).Cross(ioPtr[i-1]-p0);
-   bool inside =  fabs(area) > 0.001;
-   return inside;
+   int crossing = 0;
+   for(int i=0;i<inN;i++)
+   {
+      UserPoint p1 = ioPtr[i];
+      UserPoint p2 = ioPtr[ (i+1)%inN ];
+      // Should probably do something a bit better here...
+      if (p1.y==p0.y || p2.y==p0.y)
+         return PIP_MAYBE;
+
+      if (p1.y<p0.y && p2.y>p0.y)
+      {
+         double cross = (p1-p0).Cross(p2-p0);
+         if (cross==0)
+            return PIP_MAYBE;
+         if (cross>0)
+            crossing++;
+      }
+      else if(p1.y>p0.y && p2.y<p0.y)
+      {
+         double cross = (p1-p0).Cross(p2-p0);
+         if (cross==0)
+            return PIP_MAYBE;
+         if (cross<0)
+            crossing++;
+      }
+   }
+   return (crossing & 1) ? PIP_YES : PIP_NO;
 }
 
 void AddSubPoly(EdgePoint *outEdge, UserPoint *inP, int inN,bool inReverse)
@@ -468,14 +492,16 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
          }
          bool reverse = area < 0;
          int  parent = -1;
-         for(int prev=subInfo.size()-1; prev>=0; prev--)
+         for(int prev=subInfo.size()-1; prev>=0 && parent==-1; prev--)
          {
             int prev_p0 = subInfo[prev].p0;
             int prev_size = subInfo[prev].size;
-            if (PointInPolygon( *p, &ioOutline[prev_p0], prev_size) )
+            int inside = PIP_MAYBE;
+            for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
             {
-               parent = prev;
-               break;
+               inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
+               if (inside==PIP_YES)
+                  parent = prev;
             }
          }
          if (parent==-1 || subInfo[parent].is_internal )
