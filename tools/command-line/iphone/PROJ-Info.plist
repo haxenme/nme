@@ -42,8 +42,6 @@
 	<key>UIStatusBarHidden</key>
 	<true/>::if (IPHONE_ORIENTATION!=null)::
 	<key>UISupportedInterfaceOrientations</key>
-	<string>UIInterfaceOrientationPortrait</string>
-	<key>UIInterfaceOrientation</key>
 	::IPHONE_ORIENTATION::::end::
 </dict>
 </plist>
