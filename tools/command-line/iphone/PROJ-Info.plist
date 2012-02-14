@@ -40,10 +40,10 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIStatusBarHidden</key>
-	<true/>::if (IPHONE_ORIENTATION!=null)::
+	<true/>::if (IPHONE_INIT_ORIENTATION != null)::
 	<key>UISupportedInterfaceOrientations</key>
-	<string>UIInterfaceOrientationPortrait</string>
+	::IPHONE_INIT_ORIENTATION::
 	<key>UIInterfaceOrientation</key>
-	::IPHONE_ORIENTATION::::end::
+	::IPHONE_SUPPORTED_ORIENTATIONS::::end::
 </dict>
 </plist>
