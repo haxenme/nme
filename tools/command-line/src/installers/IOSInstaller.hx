@@ -61,18 +61,15 @@ class IOSInstaller extends InstallerBase {
 			
 			case "landscape":
 				
-				context.IPHONE_INIT_ORIENTATION = "<string>UIInterfaceOrientationLandscapeLeft</string>";
-				context.IPHONE_SUPPORTED_ORIENTATIONS = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
 			
 			case "portrait":
 				
-				context.IPHONE_INIT_ORIENTATION = "<string>UIInterfaceOrientationPortrait</string>";
-				context.IPHONE_SUPPORTED_ORIENTATIONS = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 			
 			default:
 				
-				context.IPHONE_INIT_ORIENTATION = "<string>UIInterfaceOrientationPortrait</string>";
-				context.IPHONE_SUPPORTED_ORIENTATIONS = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 			
 		}
 		
