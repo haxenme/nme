@@ -11,10 +11,12 @@ class ApplicationMain
 	
 	public static function main()
 	{
+		#if nme
 		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 		::if (sslCaCert != "")::
 		nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
 		::end::
+		#end
 		
 		#if waxe
 		wx.App.boot(function()
@@ -70,6 +72,7 @@ class ApplicationMain
 	
 	public static function getAsset(inName:String):Dynamic
 	{
+		#if nme
 		::foreach assets::
 		if (inName == "::id::")
 		{
@@ -87,6 +90,7 @@ class ApplicationMain
 		}
 		::end::
 		return null;
+		#end
 	}
 	
 	
