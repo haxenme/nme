@@ -608,9 +608,10 @@ class InstallerBase {
 	}
 	
 	
-	private function generateSWFClasses (templatePath:String, outputDirectory:String):Void {
+	private function generateSWFClasses (outputDirectory:String):Void {
 		
-		var templateData = File.getContent (templatePath);
+		var movieClipTemplate = File.getContent (NME + "/tools/command-line/resources/swf/MovieClip.mtt");
+		var simpleButtonTemplate = File.getContent (NME + "/tools/command-line/resources/swf/SimpleButton.mtt");
 		
 		for (asset in swfLibraries) {
 			
@@ -659,19 +660,38 @@ class InstallerBase {
 				name = name.substr (0, 1).toUpperCase () + name.substr (1);
 				
 				var symbolID = swf.symbols.get (className);
+				var templateData = null;
 				
-				var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
-				var template = new Template (templateData);
-				var result = template.execute (context);
+				switch (swf.getSymbol (symbolID)) {
+					
+					case spriteSymbol (data):
+						
+						templateData = movieClipTemplate;
+					
+					case buttonSymbol (data):
+						
+						templateData = simpleButtonTemplate;
+					
+					default:
+					
+				}
 				
-				var directory = outputDirectory + "/" + Path.directory (className.split (".").join ("/"));
-				var fileName = name + ".hx";
-				
-				mkdir (directory);
-				
-				var fileOutput = File.write (directory + "/" + fileName, true);
-				fileOutput.writeString (result);
-				fileOutput.close ();
+				if (templateData != null) {
+					
+					var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
+					var template = new Template (templateData);
+					var result = template.execute (context);
+					
+					var directory = outputDirectory + "/" + Path.directory (className.split (".").join ("/"));
+					var fileName = name + ".hx";
+					
+					mkdir (directory);
+					
+					var fileOutput = File.write (directory + "/" + fileName, true);
+					fileOutput.writeString (result);
+					fileOutput.close ();
+					
+				}
 				
 			}
 			

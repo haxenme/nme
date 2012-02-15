@@ -106,7 +106,7 @@ class WebOSInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/webos/template", destination);
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
 		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/webos/haxe");
+		generateSWFClasses (buildDirectory + "/webos/haxe");
 		
 		for (ndll in ndlls) {
 			

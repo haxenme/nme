@@ -618,7 +618,7 @@ class FlashInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/flash/haxe");
 		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
 		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/flash/haxe");
+		generateSWFClasses (buildDirectory + "/flash/haxe");
 		
 		for (asset in assets) {
 			

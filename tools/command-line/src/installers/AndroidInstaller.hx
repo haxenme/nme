@@ -205,7 +205,7 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		mkdir (packageDirectory);
 		
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", buildDirectory + "/android/haxe");
+		generateSWFClasses (buildDirectory + "/android/haxe");
 		
 		for (ndll in ndlls) {
 			

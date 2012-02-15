@@ -242,7 +242,7 @@ class DesktopInstaller extends InstallerBase {
 		mkdir (getBuildDir ());
 		mkdir (getExeDir ());
 		
-		generateSWFClasses (NME + "/tools/command-line/resources/SWFClass.mtt", targetDir + "/haxe");
+		generateSWFClasses (targetDir + "/haxe");
 		
 		if (InstallTool.isMac) {
 			
