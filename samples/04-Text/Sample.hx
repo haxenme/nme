@@ -1,4 +1,3 @@
-#if !flash
 import nme.Lib;
 import nme.events.Event;
 import nme.events.EventPhase;
@@ -15,26 +14,72 @@ import nme.geom.Rectangle;
 import nme.ui.Keyboard;
 import nme.filters.GlowFilter;
 import nme.filters.BitmapFilter;
-#else
-import flash.Lib;
-import flash.events.Event;
-import flash.events.EventPhase;
-import flash.events.FocusEvent;
-import flash.events.KeyboardEvent;
-import flash.events.MouseEvent;
-import flash.text.TextField;
-import flash.text.TextFieldType;
-import flash.text.TextFieldAutoSize;
-import flash.display.InteractiveObject;
-import flash.display.Sprite;
-import flash.display.DisplayObject;
-import flash.geom.Rectangle;
-import flash.ui.Keyboard;
-import flash.filters.GlowFilter;
-import flash.filters.BitmapFilter;
+import nme.display.Shape;
+import common.Scrollbar;
+
+
+#if !flash
+import nme.text.NMEFont;
+import nme.display.BitmapData;
+
+class MyFont extends NMEFont
+{
+   static var A_CODE = "a".charCodeAt(0);
+   static var B_CODE = "b".charCodeAt(0);
+   static var C_CODE = "c".charCodeAt(0);
+
+   public function new(inDef:NMEFontDef)
+   {
+      super(inDef.height, inDef.height, 0, false);
+   }
+
+   // Implementation should override
+   override public function getGlyphInfo(inChar:Int) : NMEGlyphInfo
+   {
+      switch(inChar)
+      {
+         case A_CODE, B_CODE, C_CODE:
+            return { width:height, height:height, advance:height + 2, offsetX:0, offsetY:0 };
+      }
+      return null;
+   }
+
+   override public function renderGlyph(inChar:Int) : BitmapData
+   {
+      var shape = new Shape();
+      var gfx = shape.graphics;
+      gfx.lineStyle(1,0xffffff);
+      var h = height * 0.05;
+      switch(inChar)
+      {
+         case A_CODE:
+           gfx.moveTo(h*2, h*18);
+           gfx.lineTo(h*10,h*2);
+           gfx.lineTo(h*18,h*18);
+           gfx.moveTo(h*5, h*10);
+           gfx.lineTo(h*15,h*10);
+
+         case B_CODE:
+           gfx.drawRect(h*2,h*2,h*16,h*16);
+           gfx.moveTo(h*2,h*10);
+           gfx.lineTo(h*18,h*10);
+
+         case C_CODE:
+           gfx.moveTo(h*18,h*2);
+           gfx.lineTo(h*2 ,h*2);
+           gfx.lineTo(h*2 ,h*18);
+           gfx.lineTo(h*18,h*18);
+      }
+
+      var bmp = new BitmapData(height,height,true, BitmapData.CLEAR );
+      bmp.draw(shape);
+      return bmp;
+   }
+}
+
+
 #end
 
-import common.Scrollbar;
 
 
 class Sample
@@ -50,7 +95,16 @@ class Sample
       loader.addEventListener(Event.COMPLETE, function(event:Event) { me.Run(loader.data); } );
       loader.load(new flash.net.URLRequest(file));
       #else
-      Run(neko.io.File.getContent(file));
+      Run( #if neko neko.io.File.getContent(file) #else cpp.io.File.getContent(file) #end );
+      #end
+
+      #if !flash
+      nme.text.NMEFont.registerFont("abc", function (def) return new MyFont(def) );
+      var abc = new TextField();
+      abc.x = 20;
+      abc.y = 420;
+      Lib.current.addChild(abc);
+      abc.htmlText = '<font face="abc">abcabcabc</font>';
       #end
    }
 
