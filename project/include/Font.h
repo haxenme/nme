@@ -144,6 +144,7 @@ public:
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
    static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale);
+   static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy) = 0;
