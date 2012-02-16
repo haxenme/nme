@@ -1259,8 +1259,15 @@ class InstallerBase {
 					
 					case "setenv":
 						
+						var value:String = "";
+						
+						if (element.has.value) {
+							
+							value = substitute (element.att.value);
+							
+						}
+						
 						var name:String = element.att.name;
-						var value:String = substitute (element.att.value);
 						
 						defines.set (name, value);
 						Sys.putEnv (name, value);

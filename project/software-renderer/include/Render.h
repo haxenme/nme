@@ -260,6 +260,3 @@ void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inD
 } // end namespace nme
 
 #endif
-
-
-

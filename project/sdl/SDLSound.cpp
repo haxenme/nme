@@ -14,7 +14,7 @@ bool gSDLIsInit = false;
 class SDLSoundChannel;
 
 bool sChannelsInit = false;
-enum { sMaxChannels = 12 };
+enum { sMaxChannels = 8 };
 
 bool sUsedChannel[sMaxChannels];
 bool sDoneChannel[sMaxChannels];
