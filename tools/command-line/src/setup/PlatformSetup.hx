@@ -20,11 +20,11 @@ import neko.Lib;
 class PlatformSetup {
 	
 	
-	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-linux-x86.tar.bz2";
+	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-linux-x86.tar.bz2";
 	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r16-linux.tgz";
-	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-darwin-x86.tar.bz2";
+	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-darwin-x86.tar.bz2";
 	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r16-macosx.zip";
-	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r6b-windows.zip";
+	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-windows.zip";
 	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r16-windows.zip";
 	private static var apacheAntUnixPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.tar.gz";
 	private static var apacheAntWindowsPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.zip";
