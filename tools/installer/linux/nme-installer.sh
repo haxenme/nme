@@ -75,7 +75,12 @@ echo "-----------------------------------"
 
 # Download dependencies using haxelib
 
-haxelib install hxcpp
+#haxelib install hxcpp
+
+wget http://www.haxenme.org/files/7913/2950/5114/hxcpp-2082.zip
+haxelib test hxcpp-2082.zip
+rm hxcpp-2082.zip
+
 haxelib install jeash
 
 
@@ -85,9 +90,9 @@ echo "-----------------------------------"
 
 # Download and install NME
 
-wget http://www.haxenme.org/files/4813/2916/8134/NME-3.2.0.zip
-haxelib test NME-3.2.0.zip
-rm NME-3.2.0.zip
+wget http://www.haxenme.org/files/8413/2950/5137/nme-321.zip
+haxelib test nme-321.zip
+rm nme-321.zip
 
 # Add "nme" command shortcut
 
