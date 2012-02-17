@@ -275,11 +275,11 @@ class PlatformSetup {
 			
 			value = param (description + " [" + value + "]");
 			
-			if (value != "" && value != Sys.getEnv (name)) {
+			if (value != "") {
 				
 				defines.set (name, value);
 				
-			} else {
+			} else if (value == Sys.getEnv (name)) {
 				
 				defines.remove (name);
 				
@@ -627,7 +627,7 @@ class PlatformSetup {
 					
 					downloadPath = apacheAntUnixPath;
 					defaultInstallPath = "/opt/Apache Ant";
-				
+					
 				}
 				
 				downloadFile (downloadPath);
@@ -902,6 +902,13 @@ class PlatformSetup {
 	}
 	
 	
+	private static function stripQuotes (path:String):String {
+		
+		return path.split ("\"").join ("");
+		
+	}
+	
+	
 	private static function throwPermissionsError () {
 		
 		if (InstallTool.isWindows) {
@@ -928,7 +935,7 @@ class PlatformSetup {
 			
 			if (key != "HXCPP_CONFIG") {
 				
-				definesText += "		<set name=\"" + key + "\" value=\"" + defines.get (key) + "\" />\n";
+				definesText += "		<set name=\"" + key + "\" value=\"" + stripQuotes (defines.get (key)) + "\" />\n";
 				
 			}
 			
