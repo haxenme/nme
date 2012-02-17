@@ -297,7 +297,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/lib\"",
@@ -305,7 +305,7 @@
 				PRODUCT_NAME = "::APP_TITLE::";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
 			};
 			name = Debug;
 		};
@@ -316,7 +316,7 @@
 				ARCHS = "::CURRENT_ARCHS::";
 				COPY_PHASE_STRIP = YES;
 				INFOPLIST_FILE = "::APP_FILE::-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/lib\"",
@@ -325,7 +325,7 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
 			};
 			name = Release;
 		};
@@ -336,7 +336,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = "Build Haxe";
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
 			};
 			name = Debug;
 		};
@@ -347,7 +347,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = "Build Haxe";
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
                 ZERO_LINK = NO;
 			};
 			name = Release;
@@ -363,7 +363,7 @@
 				PREBINDING = NO;
                 SDKROOT = iphoneos4.3;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
 			};
 			name = Debug;
 		};
@@ -382,7 +382,7 @@
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				SDKROOT = iphoneos4.3;
-				VALID_ARCHS = "armv6 i386";
+				VALID_ARCHS = "armv7 i386";
 			};
 			name = Release;
 		};
