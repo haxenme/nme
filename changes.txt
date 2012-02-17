@@ -1,6 +1,17 @@
 NME Changes
 
 
+3.2.1
+===============
+Added "nme.text.NMEFont" to allow haxe-based fonts.
+Added "nme.display.SimpleButton" support to SWF generation.
+Resolved issues when compiling waxe-based projects that don't use NME.
+Updated "nme setup" for newer toolchains.
+Android builds now require Android NDK r7 or newer.
+iOS builds now compile for armv7 by default.
+Stability improvements and small fixes.
+
+
 3.2.0
 ===============
 Android applications will install to external storage (SD card) by default.

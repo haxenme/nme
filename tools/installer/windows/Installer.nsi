@@ -7,14 +7,14 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.2.0"
+!define VERSION "3.2.1"
 
 !define HAXE_VERSION "2.08"
 !define NEKO_VERSION "1.8.2"
-!define HXCPP_VERSION "2.08.1"
+!define HXCPP_VERSION "2.08.2"
 !define JEASH_VERSION "0.8.7"
 !define ACTUATE_VERSION "1.38"
-!define SWF_VERSION "1.07"
+!define SWF_VERSION "1.08"
 
 
 ; Installer details
