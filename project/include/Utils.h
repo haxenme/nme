@@ -1,6 +1,7 @@
 #ifndef NME_UTILS_H
 #define NME_UTILS_H
 
+#include <hx/CFFI.h>
 #include <string>
 #include <vector>
 #include <QuickVec.h>
@@ -131,7 +132,9 @@ QuickVec<int>* CapabilitiesGetScreenResolutions ();
 
 bool LaunchBrowser(const char *inUtf8URL);
 
+void ExternalInterface_AddCallback (const char *functionName, AutoGCRoot *inCallback);
 void ExternalInterface_Call (const char *functionName, const char **params, int numParams);
+void ExternalInterface_RegisterCallbacks ();
 
 void HapticVibrate(int period, int duration);
 

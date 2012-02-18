@@ -15,7 +15,7 @@ class ExternalInterface
 	
 	public static function addCallback(functionName:String, closure:Dynamic):Void
 	{	
-		nme_external_interface_add_callback(functionName, closure);	
+		nme_external_interface_add_callback(functionName, closure);
 	}
 	
 	
@@ -52,6 +52,12 @@ class ExternalInterface
 	}
 	
 	
+	public static function registerCallbacks():Void
+	{
+		nme_external_interface_register_callbacks();
+	}
+	
+	
 	
 	// Getters & Setters
 	
@@ -71,6 +77,7 @@ class ExternalInterface
 	private static var nme_external_interface_add_callback = Loader.load("nme_external_interface_add_callback", 2);
 	private static var nme_external_interface_available = Loader.load("nme_external_interface_available", 0);
 	private static var nme_external_interface_call = Loader.load("nme_external_interface_call", 2);
+	private static var nme_external_interface_register_callbacks = Loader.load("nme_external_interface_register_callbacks", 0);
 	
 }
 

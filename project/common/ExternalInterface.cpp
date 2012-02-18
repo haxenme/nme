@@ -1695,7 +1695,8 @@ DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_b
 void nme_external_interface_add_callback (value inFunctionName, value inClosure)
 {
 	#ifdef WEBOS
-		//ExternalInterface_AddCallback (inFunctionName, inClosure);
+		AutoGCRoot *handler = new AutoGCRoot (inClosure);
+		ExternalInterface_AddCallback (val_string (inFunctionName), handler);
 	#endif
 }
 DEFINE_PRIM(nme_external_interface_add_callback,2);
@@ -1723,6 +1724,14 @@ value nme_external_interface_call (value inFunctionName, value args)
 	return alloc_null();
 }
 DEFINE_PRIM(nme_external_interface_call,2);
+
+value nme_external_interface_register_callbacks ()
+{
+	#ifdef WEBOS
+		ExternalInterface_RegisterCallbacks ();
+	#endif
+}
+DEFINE_PRIM(nme_external_interface_register_callbacks,0);
 
 
 // --- Graphics -----------------------------------------------------
