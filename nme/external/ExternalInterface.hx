@@ -17,8 +17,11 @@ class ExternalInterface
 	
 	public static function addCallback(functionName:String, closure:Dynamic):Void
 	{	
+		if (!callbacks.exists (functionName))
+		{
+			nme_external_interface_add_callback(functionName, handler);
+		}
 		callbacks.set (functionName, closure);
-		nme_external_interface_add_callback(functionName, handler);
 	}
 	
 	
