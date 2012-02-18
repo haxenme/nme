@@ -1692,11 +1692,15 @@ DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_b
 
 // --- ExternalInterface -----------------------------------------------------
 
+AutoGCRoot *sExternalInterfaceHandler = 0;
+
 void nme_external_interface_add_callback (value inFunctionName, value inClosure)
 {
 	#ifdef WEBOS
-		AutoGCRoot *handler = new AutoGCRoot (inClosure);
-		ExternalInterface_AddCallback (val_string (inFunctionName), handler);
+		if (sExternalInterfaceHandler == 0) {
+			AutoGCRoot *sExternalInterfaceHandler = new AutoGCRoot (inClosure);
+		}
+		ExternalInterface_AddCallback (val_string (inFunctionName), sExternalInterfaceHandler);
 	#endif
 }
 DEFINE_PRIM(nme_external_interface_add_callback,2);

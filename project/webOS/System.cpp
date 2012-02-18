@@ -7,6 +7,9 @@
 namespace nme {
 	
 	
+	AutoGCRoot *sExternalInterfaceHandler = 0;
+	
+	
 	bool LaunchBrowser (const char *inUtf8URL) {		
 		
 		PDL_LaunchBrowser (inUtf8URL);		
@@ -15,11 +18,38 @@ namespace nme {
 	}
 	
 	
+	PDL_bool ExternalInterface_CallbackHandler (PDL_JSParameters *params) {
+		
+		const char *methodName = PDL_GetJSFunctionName (params);
+		int numParams = PDL_GetNumJSParams (params);
+		value paramValues = alloc_array (numParams);
+		
+		for (int i = 0; i++; i < numParams) {
+			
+			val_array_set_i (paramValues, i, alloc_string (PDL_GetJSParamString (params, i)));
+			
+		}
+		
+		const char *returnValue = val_string (val_call2 (sExternalInterfaceHandler->get(), alloc_string (methodName), paramValues));
+		
+		if (returnValue != NULL) {
+			
+			PDL_JSReply (params, returnValue);
+			
+		}
+		
+	}
+	
+	
 	void ExternalInterface_AddCallback (const char *functionName, AutoGCRoot *inCallback) {
 		
-		// Need to have signature PDL_bool (PDL_JSParameters *params)
+		if (sExternalInterfaceHandler == 0) {
+			
+			sExternalInterfaceHandler = inCallback;
+			
+		}
 		
-		//PDL_RegisterJSHandler(functionName, inCallback->get());
+		PDL_RegisterJSHandler (functionName, ExternalInterface_CallbackHandler);
 		
 	}
 	

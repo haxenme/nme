@@ -12,10 +12,13 @@ class ExternalInterface
 	public static var marshallExceptions:Bool;
 	public static var objectID:String;
 	
+	private static var callbacks:Hash<Dynamic> = new Hash<Dynamic>();
+	
 	
 	public static function addCallback(functionName:String, closure:Dynamic):Void
 	{	
-		nme_external_interface_add_callback(functionName, closure);
+		callbacks.set (functionName, closure);
+		nme_external_interface_add_callback(functionName, handler);
 	}
 	
 	
@@ -49,6 +52,20 @@ class ExternalInterface
 		}
 		
 		return nme_external_interface_call(functionName, params);
+	}
+	
+	
+	private static function handler (functionName:String, params:Array<String>):String {
+		
+		if (callbacks.exists (functionName)) {
+			
+			var callback = callbacks.get (functionName);
+			return Reflect.callMethod (callback, callback, params);
+			
+		}
+		
+		return null;
+		
 	}
 	
 	
