@@ -275,7 +275,7 @@ struct TintSource
       }
       else
       {
-         mCol.a =  (a0 * mPos)>>8;
+         mCol.a =  (a0 * *mPos)>>8;
       }
       mPos+=mPixelStride;
       return mCol;
