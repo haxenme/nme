@@ -29,7 +29,6 @@
 ::end::
 		1EF0A83A121ADB8E003F2F59 /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.cpp */; };
         1EF0A888121AE2F0003F2F59 /* lib/ApplicationMain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EF0A887121AE2F0003F2F59 /* lib/ApplicationMain.a */; };
-::ADDL_PBX_BUILD_FILE::        
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,7 +65,6 @@
 ::end::
         1EF0A839121ADB8E003F2F59 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = Classes/Main.cpp; sourceTree = SOURCE_ROOT; };
         1EF0A887121AE2F0003F2F59 /* lib/ApplicationMain.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "lib/ApplicationMain.a"; path = "lib/ApplicationMain.a"; sourceTree = SOURCE_ROOT; };
-::ADDL_PBX_FILE_REFERENCE::
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,7 +74,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-::ADDL_PBX_FRAMEWORKS_BUILD_PHASE::
 ::foreach ndlls::
                 11B0F00000000010::hash:: /* lib::name::.iphoneos.a in Frameworks */,
                 11B0F00000000000::hash:: /* lib::name::.iphonesim.a in Frameworks */,
@@ -125,7 +122,6 @@
 				1EEEBAFF121BE2B30048A9DF /* Foundation.framework */,
 				1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */,
 				1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */,
-::ADDL_PBX_FRAMEWORK_GROUP::
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

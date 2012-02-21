@@ -20,7 +20,8 @@ enum PixelFormat
    pfARGBSwap     = 0x03,
    pfAlpha        = 0x04,
    pfHardware     = 0x10,
-   pfPadded4444   = 0x11,
+   pfARGB4444     = 0x11,
+   pfRGB565       = 0x12,
    
    pfHasAlpha     = 0x01,
    pfSwapRB       = 0x02,

@@ -218,21 +218,40 @@ public:
      #ifdef IPHONE
       uint8 *dest;
       
-      if ( inSurface->Format() == pfPadded4444 ) {
+      if ( inSurface->Format() == pfARGB4444 ) {
            int size = mTextureWidth * mTextureHeight;
            dest = (uint8 *)malloc( size * 2 );
             
            const uint8 *src = (uint8 *)load->Row( 0 );
-        
                 
            for ( int c = 0; c < size; c++ ) {
-                    
-               dest[ c * 2 ] = src[ c * 4 ];
-               dest[ c * 2 + 1 ] = src[ c * 4 + 1 ];
-                        
+
+             uint8 srca = src[ c * 4 ] / 16;
+             uint8 srcb = src[ c * 4 + 1 ] / 16;
+             uint8 srcc = src[ c * 4 + 2 ] / 16;
+             uint8 srcd = src[ c * 4 + 3 ] / 16;
+
+             dest[ c * 2 ] = ( srcc << 4 | srcd );
+             dest[ c * 2 + 1 ] = ( srca << 4 | srcb );
            }
+      } else if ( inSurface->Format() == pfRGB565 ) {
+           int size = mTextureWidth * mTextureHeight;
+           dest = (uint8 *)malloc( size * 2 );
+            
+           const uint8 *src = (uint8 *)load->Row( 0 );
                 
-                
+           for ( int c = 0; c < size; c++ ) {
+             uint8 srca = src[ c * 4 ] / 8;
+             uint8 srcb = src[ c * 4 + 1 ] / 4;
+             uint8 srcc = src[ c * 4 + 2 ] / 8;
+             
+             //pack into 565
+             unsigned int combined = (srca << 11) | (srcb << 5) | (srcc << 0);
+
+            //write to the buffer
+             dest[ c * 2 +1] = combined >> 8;
+             dest[ c * 2  ] = combined & 0x00FF;
+           }
       }
       #endif
 
@@ -251,13 +270,16 @@ public:
       
       
       #ifdef IPHONE
-        if ( inSurface->Format() == 0x11 ) {
-                
+        if ( inSurface->Format() == pfARGB4444 ) {
                 glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
                     GL_UNSIGNED_SHORT_4_4_4_4, dest  );
                 
                 free( dest );
+        } else if ( inSurface->Format() == pfRGB565 ) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
+                    GL_UNSIGNED_SHORT_5_6_5, dest  );
                 
+                free( dest );
         } else
       #endif
       

@@ -2679,13 +2679,29 @@ value nme_bitmap_data_load(value inFilename, value format)
       surface->DecRef();
       
       if ( val_int( format ) == 1 ) 
-         surface->setFormat( pfPadded4444 );
+         surface->setFormat( pfARGB4444 );
+      else if ( val_int( format ) == 2 ) 
+         surface->setFormat( pfRGB565 );
          
       return result;
    }
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_load,2);
+
+value nme_bitmap_data_set_format(value inHandle, value format)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+   {
+      if ( val_int( format ) == 1 ) 
+         surface->setFormat( pfARGB4444 );
+      else if ( val_int( format ) == 2 ) 
+         surface->setFormat( pfRGB565 );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_format,2);
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {

@@ -32,8 +32,8 @@ class BitmapData implements IBitmapDrawable
 	public static var TRANSPARENT = 0x0001;
 	public static var HARDWARE = 0x0002;
 	public static var FORMAT_8888:Int = 0;
-	public static var FORMAT_4444_PADDED:Int = 1; //Due to the iOS loader premultiplying alpha - you can't 
-	public static var FORMAT_4444:Int = 2; //Placeholder - will switch this on when we use libpng for all
+	public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
+	public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
 	
 	/**
 	 * Returns the height in pixels of the bitmap data
@@ -437,6 +437,10 @@ class BitmapData implements IBitmapDrawable
 		// Handled internally...
 	}
 	
+	public function setFormat(format:Int)
+	{
+		nme_bitmap_data_set_format(nmeHandle, format);
+	}
 	
 	
 	// Getters & Setters
@@ -477,6 +481,7 @@ class BitmapData implements IBitmapDrawable
 	private static var nme_bitmap_data_set_pixel32 = Loader.load("nme_bitmap_data_set_pixel32", 4);
 	private static var nme_bitmap_data_set_pixel_rgba = Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
 	private static var nme_bitmap_data_set_bytes = Loader.load("nme_bitmap_data_set_bytes", 4);
+	private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 2);
 	#if cpp
 	private static var nme_bitmap_data_set_array = Loader.load("nme_bitmap_data_set_array", 3);
 	private static var nme_bitmap_data_create_hardware_surface = Loader.load("nme_bitmap_data_create_hardware_surface", 1);
