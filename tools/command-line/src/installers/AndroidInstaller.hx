@@ -139,7 +139,13 @@ class AndroidInstaller extends InstallerBase {
 		
 		var adb:Dynamic = getADB ();
 		
-		if (debug) {
+      // Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> so you do not miss anything important
+		if (defines.exists("FULL_LOGCAT")) {
+
+			runCommand (adb.path, adb.name, [ "logcat", "-c" ]);
+			runCommand (adb.path, adb.name, [ "logcat" ]);
+
+		} else if (debug) {
 			
 			var filter = "*:E";
 			var includeTags = [ "NME", "Main", "GameActivity", "GLThread", "trace" ];
