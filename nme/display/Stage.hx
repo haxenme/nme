@@ -228,8 +228,6 @@ class Stage extends DisplayObjectContainer
 	private function nmeDoProcessStageEvent(inEvent:Dynamic):Float
 	{
 		var result = 0.0;
-		
-		#if android try { #end
 		//if (inEvent.type!=9) trace("Stage Event : " + inEvent);
 		var type:Int = Std.int(Reflect.field(inEvent, "type"));
 		
@@ -339,12 +337,16 @@ class Stage extends DisplayObjectContainer
 		
 		result = nmeUpdateNextWake();
 		
-		#if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
 		
 		return result;
 	}
-	
 
+   function dummyTrace() { trace(""); }
+	
+   #if android
+   @:functionCode("try {") 
+   @:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
+   #end
 	private function nmeProcessStageEvent(inEvent:Dynamic):Dynamic
 	{
 		nmeDoProcessStageEvent(inEvent);
