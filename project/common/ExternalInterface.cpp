@@ -1734,6 +1734,7 @@ value nme_external_interface_register_callbacks ()
 	#ifdef WEBOS
 		ExternalInterface_RegisterCallbacks ();
 	#endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_external_interface_register_callbacks,0);
 
@@ -2033,12 +2034,22 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
         TILE_RGB      = 0x0004,
         TILE_ALPHA    = 0x0008,
         TILE_SMOOTH   = 0x1000,
+
+        TILE_BLEND_ADD   = 0x10000,
+        TILE_BLEND_MASK  = 0xf0000,
       };
 
-
       int  flags = val_int(inFlags);
+      BlendMode blend = bmNormal;
+      switch(flags & TILE_BLEND_MASK)
+      {
+         case TILE_BLEND_ADD:
+            blend = bmAdd;
+            break;
+      }
+
       bool smooth = flags & TILE_SMOOTH;
-      gfx->beginTiles(&sheet->GetSurface(), smooth );
+      gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
 
       int components = 3;
       int scale_pos = components;

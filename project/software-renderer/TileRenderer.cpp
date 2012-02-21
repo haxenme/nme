@@ -6,6 +6,7 @@ namespace nme
 	
 	TileRenderer::TileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
 	{
+      mBlendMode = bmNormal;
 		mFill = inJob.mFill->AsBitmapFill();
 		mFill->IncRef();
 		mFiller = Filler::Create(mFill);
@@ -16,6 +17,9 @@ namespace nme
 			int c = (inPath.commands[j+inJob.mCommand0]);
 			switch(c)
 			{
+            case pcBlendModeAdd:
+               mBlendMode = bmAdd;
+               break;
 				case pcWideMoveTo:
 				case pcWideLineTo:
 				case pcCurveTo:
@@ -104,7 +108,7 @@ namespace nme
 		{
 			TileData &data= mTileData[i];
 
-			BlendMode blend = data.mHasColour ? bmTinted : bmNormal;
+			BlendMode blend = data.mHasColour ? ( mBlendMode==bmAdd ? bmTintedAdd : bmTinted ): mBlendMode;
 			UserPoint corner(data.mPos);
 			UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 

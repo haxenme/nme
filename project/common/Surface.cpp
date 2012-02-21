@@ -223,7 +223,7 @@ struct ImageSource
 };
 
 
-template<bool INNER>
+template<bool INNER,bool TINT_RGB=false>
 struct TintSource
 {
    typedef ARGB Pixel;
@@ -233,8 +233,14 @@ struct TintSource
       mBase = inBase;
       mStride = inStride;
       mCol = ARGB(inCol);
-      a0 = mCol.a;
-      if (a0>127) a0++;
+      a0 = mCol.a; if (a0>127) a0++;
+      c0 = mCol.c0; if (c0>127) c0++;
+      c1 = mCol.c1; if (c1>127) c1++;
+      c2 = mCol.c2; if (c2>127) c2++;
+      mFormat = inFormat;
+      if (mFormat & pfSwapRB)
+         std::swap(c0,c2);
+
       if (inFormat==pfAlpha)
       {
          mComponentOffset = 0;
@@ -250,25 +256,49 @@ struct TintSource
 
    inline void SetPos(int inX,int inY) const
    {
-      mPos = ((const uint8 *)( mBase + mStride*inY)) + inX*mPixelStride + mComponentOffset;
+      if (TINT_RGB)
+         mPos = ((const uint8 *)( mBase + mStride*inY)) + inX*mPixelStride;
+      else
+         mPos = ((const uint8 *)( mBase + mStride*inY)) + inX*mPixelStride + mComponentOffset;
    }
    inline const ARGB &Next() const
    {
       if (INNER)
          mCol.a =  a0*(255 - *mPos)>>8;
+      else if (TINT_RGB)
+      {
+         ARGB col = *(ARGB *)(mPos);
+         mCol.a =  (a0*col.a)>>8;
+         mCol.c0 =  (c0*col.c0)>>8;
+         mCol.c1 =  (c1*col.c1)>>8;
+         mCol.c2 =  (c2*col.c2)>>8;
+      }
       else
-         mCol.a =  (a0 * *mPos)>>8;
+      {
+         mCol.a =  (a0 * mPos)>>8;
+      }
       mPos+=mPixelStride;
       return mCol;
    }
    bool ShouldSwap(PixelFormat inFormat) const
    {
-      if (inFormat & pfSwapRB)
-         mCol.SwapRB();
-      return false;
+      if (TINT_RGB)
+      {
+         return (inFormat & pfSwapRB) != (mFormat & pfSwapRB );
+      }
+      else
+      {
+         if (gC0IsRed != (bool)(inFormat & pfSwapRB))
+            mCol.SwapRB();
+         return false;
+      }
    }
 
    int a0;
+   int c0;
+   int c1;
+   int c2;
+   PixelFormat mFormat;
    mutable ARGB mCol;
    mutable const uint8 *mPos;
    int   mComponentOffset;
@@ -687,15 +717,27 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       ImageDest<ARGB> dest(outDest);
       bool tint = inBlend==bmTinted;
       bool tint_inner = inBlend==bmTintedInner;
+      bool tint_add = inBlend==bmTintedAdd;
 
       // Blitting tint, we can ignore blend mode too (this is used for rendering text)
       if (tint)
       {
-         TintSource<false> src(mBase,mStride,inTint,mPixelFormat);
-         if (inMask)
-            TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+         if (src_alpha)
+         {
+            TintSource<false> src(mBase,mStride,inTint,mPixelFormat);
+            if (inMask)
+               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            else
+               TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         }
          else
-            TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         {
+            TintSource<false,true> src(mBase,mStride,inTint,mPixelFormat);
+            if (inMask)
+               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            else
+               TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         }
       }
       else if (tint_inner)
       {
@@ -705,6 +747,15 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
             TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmInner );
          else
             TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmInner );
+      }
+      else if (tint_add)
+      {
+         TintSource<false,true> src(mBase,mStride,inTint,mPixelFormat);
+
+         if (inMask)
+            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmAdd );
+         else
+            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmAdd );
       }
       else if (src_alpha)
       {

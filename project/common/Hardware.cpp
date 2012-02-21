@@ -206,6 +206,10 @@ public:
       {
          switch(inCommands[i])
          {
+            case pcBlendModeAdd:
+               mArrays->mBlendMode = bmAdd;
+               break;
+
             case pcBeginAt: case pcMoveTo: case pcLineTo:
                point++;
                break;

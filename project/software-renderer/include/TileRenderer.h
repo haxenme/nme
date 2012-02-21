@@ -60,7 +60,7 @@ namespace nme
 		GraphicsBitmapFill *mFill;
 		Filler				 *mFiller;
 		QuickVec<TileData> mTileData;
-		
+		BlendMode          mBlendMode;
 	};
 
 }

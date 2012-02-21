@@ -15,6 +15,10 @@ class Graphics
 	public static inline var TILE_ALPHA = 0x0008;
 	
 	private static inline var TILE_SMOOTH = 0x1000;
+
+	public static inline var TILE_BLEND_NORMAL   = 0x00000000;
+	public static inline var TILE_BLEND_ADD      = 0x00010000;
+	//public static inline var TILE_BLEND_SUBTRACT = 0x00020000;
 	
 	private var nmeHandle:Dynamic;
 	

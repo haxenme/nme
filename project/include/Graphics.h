@@ -259,6 +259,8 @@ enum PathCommand
    pcTileTrans      = 0x11,
    pcTileCol        = 0x12,
    pcTileTransCol   = 0x13,
+
+   pcBlendModeAdd   = 0x20,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -285,6 +287,7 @@ public:
    void wideLineTo(float x, float y);
    void wideMoveTo(float x, float y);
    void tile(float x, float y, const Rect &inTileRect, float *inDxxDxy,float *inColour);
+   void elementBlendMode(int inMode);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
 };
 
@@ -337,6 +340,8 @@ enum BlendMode
    bmTinted,
    // Used for rendering inner filters
    bmTintedInner,
+   // Used for rendering coloured tiles, with add
+   bmTintedAdd,
 };
 
 class ColorTransform
@@ -683,7 +688,7 @@ public:
 		mVersion++;
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
-   void beginTiles(Surface *inSurface,bool inSmooth=false);
+   void beginTiles(Surface *inSurface,bool inSmooth=false,int inBlendMode=0);
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect, float *inDxxDxy,float *inColour);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );

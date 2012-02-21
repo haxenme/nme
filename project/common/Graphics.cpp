@@ -281,7 +281,7 @@ void Graphics::endTiles()
    }
 }
 
-void Graphics::beginTiles(Surface *bitmapData,bool inSmooth)
+void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode)
 {
    endFill();
    lineStyle(-1);
@@ -290,6 +290,7 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth)
       mTileJob.mFill->DecRef();
    mTileJob.mFill = new GraphicsBitmapFill(bitmapData,Matrix(),false,inSmooth);
    mTileJob.mFill->IncRef();
+   mPathData->elementBlendMode(inBlendMode);
 }
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,

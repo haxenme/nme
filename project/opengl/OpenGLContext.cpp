@@ -581,6 +581,10 @@ public:
       for(int c=0;c<inCalls.size();c++)
       {
          HardwareArrays &arrays = *inCalls[c];
+         DrawElements &elements = arrays.mElements;
+         if (elements.empty())
+            continue;
+
          Vertices &vert = arrays.mVertices;
          Vertices &tex_coords = arrays.mTexCoords;
 			bool persp = arrays.mPerspectiveCorrect;
@@ -589,7 +593,7 @@ public:
             SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );	
          }
          
-         if ( arrays.mBlendMode == 9 ) {
+         if ( arrays.mBlendMode == bmAdd ) {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
          } else {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
@@ -642,7 +646,6 @@ public:
 
    
          sgBufferCount++;
-         DrawElements &elements = arrays.mElements;
          for(int e=0;e<elements.size();e++)
          {
             DrawElement draw = elements[e];

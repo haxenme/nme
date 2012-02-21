@@ -38,6 +38,16 @@ void GraphicsPath::arcTo(float controlX, float controlY, float anchorX, float an
 	data.push_back(anchorY);
 }
 
+void GraphicsPath::elementBlendMode(int inMode)
+{
+   switch(inMode)
+   {
+      case bmAdd:
+         commands.push_back(pcBlendModeAdd);
+   }
+}
+
+
 
 void GraphicsPath::lineTo(float x, float y)
 {
