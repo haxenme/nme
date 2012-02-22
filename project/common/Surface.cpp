@@ -238,7 +238,7 @@ struct TintSource
       c1 = mCol.c1; if (c1>127) c1++;
       c2 = mCol.c2; if (c2>127) c2++;
       mFormat = inFormat;
-      if (mFormat & pfSwapRB)
+      if (gC0IsRed == (bool)(inFormat & pfSwapRB))
          std::swap(c0,c2);
 
       if (inFormat==pfAlpha)
@@ -419,7 +419,7 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
       F(val.c1,ioDest.c1);
       F(val.c2,ioDest.c2);
    }
-   if (DEST_ALPHA || ioDest.a<255)
+   if (DEST_ALPHA && ioDest.a<255)
    {
       int A = ioDest.a + (ioDest.a>>7);
       int A_ = 256-A;

@@ -115,7 +115,7 @@ namespace nme
 			if ( (is_stretch || data.mHasTrans) )
 			{
 				// Can use stretch if there is no skew and no colour transform...
-				if (!data.mHasColour && (!data.mHasTrans || data.mDxDxy==0))
+				if (!data.mHasColour && (!data.mHasTrans || data.mDxDxy==0) &&  mBlendMode==bmNormal )
 				{
 					UserPoint p0 = pos;
 					pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
