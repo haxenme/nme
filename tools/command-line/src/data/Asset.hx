@@ -107,7 +107,7 @@ class Asset {
 	function generateFlatName()
    {
 		
-		var chars:String = id.toLowerCase ();
+		var chars:String = resourceName.toLowerCase ();
 		flatName = "";
 		
 		for (i in 0...chars.length) {

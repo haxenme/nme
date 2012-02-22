@@ -132,14 +132,10 @@ public class GameActivity extends Activity implements SensorEventListener {
     static public int getSoundHandle(String inFilename)
     {
        int id = -1;
-
-       ::foreach assets::
-       ::if (type=="sound")::
-          if (inFilename.equals("::id::"))
-             id = ::APP_PACKAGE::.R.raw.::flatName::;
-          ::end::
-       ::end::
-
+       
+       ::foreach assets::::if (type=="sound")::if (inFilename.equals("::id::")) id = ::APP_PACKAGE::.R.raw.::flatName::;
+	   ::end::::end::
+       
        Log.v("GameActivity","Get sound handle ------" + inFilename + " = " + id);
        if (id>0)
        {
@@ -149,24 +145,20 @@ public class GameActivity extends Activity implements SensorEventListener {
        }
        else
           Log.v("GameActivity","Resource not found" + (-id) );
-
+       
        return -1;
     }
-
+    
     static public int getMusicHandle(String inFilename)
     {
        int id = -1;
        Log.v("GameActivity","Get music handle ------" + inFilename);
-
-       ::foreach assets::
-       ::if (type=="music")::
-          if (inFilename.equals("::id::"))
-             id = ::APP_PACKAGE::.R.raw.::flatName::;
-          ::end::
-       ::end::
-
+       
+       ::foreach assets::::if (type=="music")::if (inFilename.equals("::id::")) id = ::APP_PACKAGE::.R.raw.::flatName::;
+       ::end::::end::
+       
        Log.v("GameActivity","Got music handle ------" + id);
-
+       
        return id;
     }
 

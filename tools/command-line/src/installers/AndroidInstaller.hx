@@ -251,6 +251,7 @@ class AndroidInstaller extends InstallerBase {
 					
 					case Asset.TYPE_SOUND, Asset.TYPE_MUSIC:
 						
+						asset.resourceName = asset.id;
 						targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension (asset.targetPath);
 					
 					default:
