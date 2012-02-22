@@ -268,7 +268,7 @@ struct TintSource
       else if (TINT_RGB)
       {
          ARGB col = *(ARGB *)(mPos);
-         mCol.a =  (a0*col.a)>>8;
+         mCol.a =   (a0*col.a)>>8;
          mCol.c0 =  (c0*col.c0)>>8;
          mCol.c1 =  (c1*col.c1)>>8;
          mCol.c2 =  (c2*col.c2)>>8;
@@ -427,7 +427,7 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
       val.c1 = (val.c1 *A + inSrc.c1*A_)>>8;
       val.c2 = (val.c2 *A + inSrc.c2*A_)>>8;
    }
-   if (inSrc.a==255)
+   if (val.a==255)
    {
       ioDest = val;
       return;

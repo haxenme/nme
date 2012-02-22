@@ -108,7 +108,8 @@ namespace nme
 		{
 			TileData &data= mTileData[i];
 
-			BlendMode blend = data.mHasColour ? ( mBlendMode==bmAdd ? bmTintedAdd : bmTinted ): mBlendMode;
+			BlendMode blend = data.mHasColour ? ( mBlendMode==bmAdd ? bmTintedAdd : bmTinted ):
+                                               mBlendMode;
 			UserPoint corner(data.mPos);
 			UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 

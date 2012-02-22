@@ -216,12 +216,10 @@ struct ARGB
    inline void QBlend(ARGB inVal)
    {
       int A = inVal.a + (inVal.a>>7);
-      int alpha16 = ((a + A)<<8) - a*A;
-      int f = (256-A) * a;
-      A<<=8;
-      c0 = (A*inVal.c0 + f*c0)/alpha16;
-      c1 = (A*inVal.c1 + f*c1)/alpha16;
-      c2 = (A*inVal.c2 + f*c2)/alpha16;
+      int f = (256-A);
+      c0 = (A*inVal.c0 + f*c0)>>8;
+      c1 = (A*inVal.c1 + f*c1)>>8;
+      c2 = (A*inVal.c2 + f*c2)>>8;
    }
 
    inline void QBlendA(ARGB inVal)
