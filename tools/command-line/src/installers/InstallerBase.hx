@@ -1021,53 +1021,57 @@ class InstallerBase {
 			
 			for (childElement in element.elements) {
 				
-				var childPath:String = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
-				var childTargetPath:String = childPath;
-				var childEmbed:String = embed;
-				var childType:String = type;
-				
-				if (childElement.has.rename) {
+				if (isValidElement (childElement, "")) {
 					
-					childTargetPath = childElement.att.rename;
+					var childPath:String = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
+					var childTargetPath:String = childPath;
+					var childEmbed:String = embed;
+					var childType:String = type;
 					
-				}
-				
-				if (childElement.has.embed) {
-					
-					childEmbed = substitute (childElement.att.embed);
-					
-				}
-				
-				switch (childElement.name) {
-					
-					case Asset.TYPE_IMAGE, Asset.TYPE_SOUND, Asset.TYPE_MUSIC, Asset.TYPE_FONT, Asset.TYPE_TEMPLATE:
+					if (childElement.has.rename) {
 						
-						childType = childElement.name;
-					
-					default:
+						childTargetPath = childElement.att.rename;
 						
-						if (childElement.has.type) {
+					}
+					
+					if (childElement.has.embed) {
+						
+						childEmbed = substitute (childElement.att.embed);
+						
+					}
+					
+					switch (childElement.name) {
+						
+						case Asset.TYPE_IMAGE, Asset.TYPE_SOUND, Asset.TYPE_MUSIC, Asset.TYPE_FONT, Asset.TYPE_TEMPLATE:
 							
-							childType = substitute (childElement.att.type);
+							childType = childElement.name;
+						
+						default:
 							
-						}
+							if (childElement.has.type) {
+								
+								childType = substitute (childElement.att.type);
+								
+							}
+						
+					}
+					
+					var id:String = "";
+					
+					if (childElement.has.id) {
+						
+						id = substitute (childElement.att.id);
+						
+					}
+					else if (childElement.has.name) {
+						
+						id = substitute (childElement.att.name);
+						
+					}
+					
+					assets.push (new Asset (path + childPath, targetPath + childTargetPath, childType, id, childEmbed));
 					
 				}
-				
-				var id:String = "";
-				
-				if (childElement.has.id) {
-					
-					id = substitute (childElement.att.id);
-					
-				}
-				else if (childElement.has.name) {
-					
-					id = substitute (childElement.att.name);
-					
-				}
-				
-				assets.push (new Asset (path + childPath, targetPath + childTargetPath, childType, id, childEmbed));
 				
 			}
 			
