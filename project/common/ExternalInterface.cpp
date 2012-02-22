@@ -2593,7 +2593,7 @@ value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value
 {
    uint32 flags = val_int(inFlags);
    PixelFormat format = (flags & 0x01) ? pfARGB : pfXRGB;
-   Surface *result = new SimpleSurface( val_int(inWidth),val_int(inHeight), format );
+   Surface *result = new SimpleSurface( val_number(inWidth),val_number(inHeight), format );
    if (val_is_int(inRGB))
    {
       int rgb = val_int(inRGB);

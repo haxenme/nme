@@ -42,17 +42,19 @@ public:
       mIsRGB = val_bool( val_field(inHandle, _id_isRGB) );
    }
 
+   bool WantRGB() { return true; }
+
    bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy)
    {
       value result = val_ocall1( mHandle.get(), _id_getGlyphInfo, alloc_int(inChar) );
       if (!val_is_null(result))
       {
-         outW = val_int( val_field(result, _id_width) );
-         outH = val_int( val_field(result, _id_height) );
-         outAdvance = val_int( val_field(result, _id_advance) );
-         outOx = val_int( val_field(result, _id_offsetX) );
-         outOy = val_int( val_field(result, _id_offsetY) );
+         outW = val_number( val_field(result, _id_width) );
+         outH = val_number( val_field(result, _id_height) );
+         outAdvance = val_number( val_field(result, _id_advance) );
+         outOx = val_number( val_field(result, _id_offsetX) );
+         outOy = val_number( val_field(result, _id_offsetY) );
          return true;
       }
       return false;
@@ -64,7 +66,6 @@ public:
       Surface *surface = 0;
       if (AbstractToObject(glyphBmp,surface) )
       {
-         //printf("BLIT... %dx%d\n", surface->Width(), surface->Height());
          surface->BlitTo(outTarget, Rect(0,0,surface->Width(), surface->Height()),
                          outTarget.mRect.x, outTarget.mRect.y, bmNormal, 0 );
       }
@@ -216,7 +217,9 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
                w*=2;
             if (mRotation!=gr0 && mRotation!=gr180)
                std::swap(w,h);
-            Tilesheet *sheet = new Tilesheet(w,h,pfAlpha,true);
+            PixelFormat pf = mFace->WantRGB() ? pfARGB : pfAlpha;
+            Tilesheet *sheet = new Tilesheet(w,h,pf,true);
+            sheet->GetSurface().Clear(0);
             mCurrentSheet = mSheets.size();
             mSheets.push_back(sheet);
          }

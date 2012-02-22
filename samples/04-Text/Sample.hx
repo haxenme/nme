@@ -48,7 +48,7 @@ class MyFont extends NMEFont
    {
       var shape = new Shape();
       var gfx = shape.graphics;
-      gfx.lineStyle(1,0xffffff);
+      gfx.lineStyle(1,0x0000ff);
       var h = height * 0.05;
       switch(inChar)
       {
@@ -56,12 +56,14 @@ class MyFont extends NMEFont
            gfx.moveTo(h*2, h*18);
            gfx.lineTo(h*10,h*2);
            gfx.lineTo(h*18,h*18);
+           gfx.lineStyle(1,0xff0000);
            gfx.moveTo(h*5, h*10);
            gfx.lineTo(h*15,h*10);
 
          case B_CODE:
            gfx.drawRect(h*2,h*2,h*16,h*16);
            gfx.moveTo(h*2,h*10);
+           gfx.lineStyle(1,0xff0000);
            gfx.lineTo(h*18,h*10);
 
          case C_CODE:
@@ -88,24 +90,21 @@ class Sample
 
    public function new()
    {
-      var file = "Sample.hx";
-      #if flash
-      var loader = new flash.net.URLLoader();
-      var me = this;
-      loader.addEventListener(Event.COMPLETE, function(event:Event) { me.Run(loader.data); } );
-      loader.load(new flash.net.URLRequest(file));
-      #else
-      Run( #if neko neko.io.File.getContent(file) #else cpp.io.File.getContent(file) #end );
-      #end
+      var bytes = ApplicationMain.getAsset("Sample.hx");
+      Run( bytes.asString() );
 
       #if !flash
+
       nme.text.NMEFont.registerFont("abc", function (def) return new MyFont(def) );
       var abc = new TextField();
       abc.x = 20;
       abc.y = 420;
       Lib.current.addChild(abc);
-      abc.htmlText = '<font face="abc">abcabcabc</font>';
+      // Set colour to white because it modulates the bitmap (blue/red)
+      abc.htmlText = '<font face="abc" color="#ffffff">abcabcabc</font>';
+
       #end
+
    }
 
 
@@ -238,12 +237,7 @@ class Sample
 
    public static function main()
    {
-   #if flash
       new Sample();
-   #else
-      nme.display.Stage.shouldRotateInterface = function(_) { return true; }
-      Lib.create(function(){new Sample();},640,640,30,0xffffff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
-   #end
    }
 
 }
