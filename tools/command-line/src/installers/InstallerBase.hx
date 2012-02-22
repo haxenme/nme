@@ -138,6 +138,13 @@ class InstallerBase {
 			
 		}
 		
+		if (!defines.exists ("SHOW_CONSOLE")) {
+			
+			defines.set ("no_console", "1");
+			Sys.putEnv ("no_console", "1");
+			
+		}
+		
 		buildDirectory = defines.get ("BUILD_DIR");
 		
 		onCreate ();
@@ -1268,6 +1275,10 @@ class InstallerBase {
 						if (element.has.value) {
 							
 							value = substitute (element.att.value);
+							
+						} else {
+							
+							value = "1";
 							
 						}
 						
