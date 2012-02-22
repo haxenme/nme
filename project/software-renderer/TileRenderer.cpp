@@ -125,7 +125,9 @@ namespace nme
 				else
 				{
 					int tile_alpha = 256;
-					if (data.mHasColour)
+               bool just_alpha = (data.mHasColour) &&
+                                 ((data.mColour&0x00ffffff ) == 0x00ffffff);
+					if (data.mHasColour && mBlendMode==bmNormal)
 					{ 
 						tile_alpha = data.mColour>>24;
 						if (tile_alpha>0) tile_alpha++;
@@ -161,17 +163,32 @@ namespace nme
 					
 					// Intersect with clip rect ...
 					Rect visible_pixels = rect.Intersect(inState.mClipRect);
+               if (!visible_pixels.HasPixels())
+                  continue;
 					
+               Rect alpha_rect(visible_pixels);
+               bool offscreen_buffer = mBlendMode!=bmNormal;
+               if (offscreen_buffer)
+               {
+                  for(int i=0;i<4;i++)
+                  {
+                     p[i].x -= visible_pixels.x;
+                     p[i].y -= visible_pixels.y;
+                  }
+                  alpha_rect.x -= visible_pixels.x;
+                  alpha_rect.y -= visible_pixels.y;
+               }
+
 					int aa = 1;
-					SpanRect *span = new SpanRect(visible_pixels,aa);
+					SpanRect *span = new SpanRect(alpha_rect,aa);
 					for(int i=0;i<4;i++)
 						span->Line<false,false>(
-							  Fixed10( p[i].x + 0.5, p[i].y + 0.5 ),
-							  Fixed10( p[(i+1)&3].x + 0.5, p[(i+1)&3].y + 0.5 ) );
+							  Fixed10( p[i].x + 0.5 , p[i].y + 0.5  ),
+							  Fixed10( p[(i+1)&3].x + 0.5 , p[(i+1)&3].y + 0.5 ) );
 					
 					AlphaMask *alpha = span->CreateMask(inState.mTransform,tile_alpha);
 					delete span;
-					
+
 					float uvt[6];
 					uvt[0] = (data.mRect.x) * bmp_scale_x;
 					uvt[1] = (data.mRect.y) * bmp_scale_y;
@@ -181,19 +198,42 @@ namespace nme
 					uvt[5] = (data.mRect.y + data.mRect.h) * bmp_scale_y;
 					mFiller->SetMapping(p,uvt,2);
 					
-					if (data.mHasColour && (( data.mColour&0x00ffffff ) != 0x00ffffff) )
-					{
-						ColorTransform buf;
-						RenderState col_state(inState);
-						ColorTransform tint;
-						tint.redMultiplier =	((data.mColour)	& 0xff) * one_on_255;
-						tint.greenMultiplier = ((data.mColour>>8) & 0xff) * one_on_255;
-						tint.blueMultiplier =  ((data.mColour>>16)  & 0xff) * one_on_255;
-						col_state.CombineColourTransform(inState, &tint, &buf);
-						mFiller->Fill(*alpha,0,0,inTarget,col_state);
-					}
-					else
-						mFiller->Fill(*alpha,0,0,inTarget,inState);
+               // Can render straight to surface ....
+               if (!offscreen_buffer)
+               {
+                  if (data.mHasTrans && !just_alpha)
+                  {
+                     ColorTransform buf;
+                     RenderState col_state(inState);
+                     ColorTransform tint;
+                     tint.redMultiplier =	((data.mColour)	& 0xff) * one_on_255;
+                     tint.greenMultiplier = ((data.mColour>>8) & 0xff) * one_on_255;
+                     tint.blueMultiplier =  ((data.mColour>>16)  & 0xff) * one_on_255;
+                     col_state.CombineColourTransform(inState, &tint, &buf);
+                     mFiller->Fill(*alpha,0,0,inTarget,col_state);
+                  }
+                  else
+                     mFiller->Fill(*alpha,0,0,inTarget,inState);
+               }
+               else
+               {
+                  // Create temp surface
+                  SimpleSurface *tmp = new SimpleSurface(visible_pixels.w,visible_pixels.h, pfARGB);
+                  tmp->IncRef();
+                  tmp->Zero();
+                  {
+                  AutoSurfaceRender tmp_render(tmp);
+                  const RenderTarget &target = tmp_render.Target();
+                  mFiller->Fill(*alpha,0,0,target,inState);
+                  }
+
+				      tmp->BlitTo(inTarget, Rect(0,0,visible_pixels.w,visible_pixels.h),
+                          visible_pixels.x, visible_pixels.y,
+                         just_alpha ? bmAdd : blend, 0, data.mColour | 0xff000000);
+
+                  tmp->DecRef();
+               }
+
 					
 					alpha->Dispose();
 				}
