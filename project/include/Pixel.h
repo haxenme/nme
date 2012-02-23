@@ -157,11 +157,11 @@ struct ARGB
    template<bool SWAP_RB,bool DEST_ALPHA>
    inline void Blend(const ARGB &inVal)
    {
-      int A = inVal.a;
+      int A = inVal.a + (inVal.a>>7);
       if (A>5)
       {
          // Replace if input is full, or we are empty
-         if (A>254 || (DEST_ALPHA && a<5) )
+         if (A>250 || (DEST_ALPHA && a<5) )
          {
             if (SWAP_RB)
             {
@@ -193,7 +193,7 @@ struct ARGB
          else
          {
             int alpha16 = ((a + A)<<8) - a*A;
-            int f = (255-A) * a;
+            int f = (256-A) * a;
             A<<=8;
             if (SWAP_RB)
             {

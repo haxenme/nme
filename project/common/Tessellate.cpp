@@ -451,12 +451,31 @@ void LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
 
 struct SubInfo
 {
+   void calcExtent()
+   {
+     x0 = x1 = first->p.x;
+     y0 = y1 = first->p.y;
+     for(EdgePoint *p = first->next; p!=first; p = p->next )
+     {
+        if (p->p.x < x0) x0 = p->p.x;
+        if (p->p.x > x1) x1 = p->p.x;
+        if (p->p.y < y0) y0 = p->p.y;
+        if (p->p.y > y1) y1 = p->p.y;
+     }
+   }
+   bool contains(UserPoint inP)
+   {
+      return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
+   }
+
    EdgePoint *first;
    EdgePoint  link[2];
    int        group;
    bool       is_internal;
    int        p0;
    int        size;
+   float      x0,x1;
+   float      y0,y1;
 };
 
 void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
@@ -492,18 +511,23 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
          }
          bool reverse = area < 0;
          int  parent = -1;
+
          for(int prev=subInfo.size()-1; prev>=0 && parent==-1; prev--)
          {
-            int prev_p0 = subInfo[prev].p0;
-            int prev_size = subInfo[prev].size;
-            int inside = PIP_MAYBE;
-            for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+            if (subInfo[prev].contains(p[0]))
             {
-               inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
-               if (inside==PIP_YES)
-                  parent = prev;
+               int prev_p0 = subInfo[prev].p0;
+               int prev_size = subInfo[prev].size;
+               int inside = PIP_MAYBE;
+               for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+               {
+                  inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
+                  if (inside==PIP_YES)
+                     parent = prev;
+               }
             }
          }
+
          if (parent==-1 || subInfo[parent].is_internal )
          {
             info.group = groupId++;
@@ -517,6 +541,8 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
          info.first = &edges[index];
          AddSubPoly(info.first,p,info.size,reverse!=info.is_internal);
+         if (sub<subs-1)
+            info.calcExtent();
          index += info.size;
 
          subInfo.push_back(info);
