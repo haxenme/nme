@@ -1,6 +1,7 @@
 package installers;
 
 
+import neko.FileSystem;
 import neko.io.Path;
 import neko.io.Process;
 import neko.Lib;
@@ -283,7 +284,15 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			copyIfNewer (ndll.getSourcePath (system_name, ndll.name + extension), getExeDir () + ndll.name + extension);
+			var ndllPath = ndll.getSourcePath (system_name, ndll.name + ".debug" + extension);
+			
+			if (!debug && !FileSystem.exists (ndllPath)) {
+				
+				ndllPath = ndll.getSourcePath (system_name, ndll.name + extension);
+				
+			}
+			
+			copyIfNewer (ndllPath, getExeDir () + ndll.name + extension);
 			
 		}
 		

@@ -1,6 +1,7 @@
 package installers;
 
 
+import neko.FileSystem;
 import neko.io.Path;
 import neko.Lib;
 import data.Asset;
@@ -110,7 +111,15 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("webOS", ndll.name + ".so"), destination + ndll.name + ".so" );
+			var ndllPath = ndll.getSourcePath ("webOS", ndll.name + ".debug.so");
+			
+			if (!debug || !FileSystem.exists (ndllPath)) {
+				
+				ndllPath = ndll.getSourcePath ("webOS", ndll.name + ".so");
+				
+			}
+			
+			copyIfNewer (ndllPath, destination + ndll.name + ".so" );
 			
 		}
 		

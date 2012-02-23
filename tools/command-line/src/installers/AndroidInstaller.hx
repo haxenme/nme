@@ -215,7 +215,15 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("Android", "lib" + ndll.name + ".so"), destination + "/libs/armeabi/lib" + ndll.name + ".so" );
+			var ndllPath = ndll.getSourcePath ("Android", "lib" + ndll.name + ".debug.so");
+			
+			if (!debug || !FileSystem.exists (ndllPath)) {
+				
+				ndllPath = ndll.getSourcePath ("Android", "lib" + ndll.name + ".so");
+				
+			}
+			
+			copyIfNewer (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
 			
 		}
 		

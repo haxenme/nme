@@ -207,6 +207,12 @@
 	<set name="name_extra" value=".iphoneos" if="iphoneos"/>
 	<set name="name_extra" value=".iphonesim" if="iphonesim"/>
 	
+	<section if="debug">
+		<set name="name_extra" value=".debug"/>
+		<set name="name_extra" value=".debug.iphoneos" if="iphoneos"/>
+		<set name="name_extra" value=".debug.iphonesim" if="iphonesim"/>
+	</section>
+	
 	<set name="no_thirdparty_extras" value="1" if="iphone"/>
 	<set name="no_thirdparty_extras" value="1" if="gph"/>
 	

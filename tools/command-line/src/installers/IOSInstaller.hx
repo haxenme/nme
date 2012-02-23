@@ -211,8 +211,23 @@ class IOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphoneos.a"), destination + "lib/lib" + ndll.name + ".iphoneos.a" );
-			copyIfNewer (ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphonesim.a"), destination + "lib/lib" + ndll.name + ".iphonesim.a" );
+			var deviceNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug.iphoneos.a");
+			var simulatorNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug.iphonesim.a");
+			
+			if (!debug || !FileSystem.exists (deviceNDLLPath)) {
+				
+				deviceNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphoneos.a");
+				
+			}
+			
+			if (!debug || !FileSystem.exists (deviceNDLLPath)) {
+				
+				simulatorNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphonesim.a");
+				
+			}
+			
+			copyIfNewer (deviceNDLLPath, destination + "lib/lib" + ndll.name + ".iphoneos.a" );
+			copyIfNewer (simulatorNDLLPath, destination + "lib/lib" + ndll.name + ".iphonesim.a" );
 			
 		}
 		
