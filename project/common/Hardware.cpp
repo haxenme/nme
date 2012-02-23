@@ -15,6 +15,8 @@ public:
       bool tile_mode = false;
       mElement.mColour = 0xffffffff;
       mSolidMode = false;
+      mPerpLen = 1.0;
+      bool tesselate_lines = false;
 
       if (inJob.mIsTileJob)
       {
@@ -41,6 +43,20 @@ public:
          if (!SetFill(inJob.mFill,inHardware))
             return;
       }
+      else if (tesselate_lines)
+      {
+         // ptTriangleStrip?
+         mElement.mPrimType = ptTriangles;
+         GraphicsStroke *stroke = inJob.mStroke;
+         if (!SetFill(inJob.mFill,inHardware))
+            return;
+
+         double mPerpLen = stroke->thickness;
+         if (mPerpLen<=0.0)
+            mPerpLen = 0.5;
+         else
+            mPerpLen = 0.5;
+      }
       else
       {
          mElement.mPrimType = ptLineStrip;
@@ -63,6 +79,11 @@ public:
       {
          mArrays = &ioData.GetArrays(mSurface,false);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
+      }
+      else if (tesselate_lines && !mSolidMode)
+      {
+         mArrays = &ioData.GetArrays(mSurface,false);
+         AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else
       {
@@ -459,6 +480,114 @@ public:
       }
    }
 
+   struct Segment
+   {
+      inline Segment() { }
+      inline Segment(const UserPoint &inP) : p(inP), curve(inP) { }
+      inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve(inCurve) { }
+
+      UserPoint p;
+      UserPoint curve;
+   };
+
+
+   void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
+   {
+   }
+
+   void AddLineTriangles(const uint8* inCommands, int inCount, const float *inData)
+   {
+      UserPoint *point = (UserPoint *)inData;
+
+      // It is a loop if the path has no breaks, it has more than 2 points
+      //  and it finishes where it starts...
+      UserPoint first;
+      UserPoint prev;
+
+      QuickVec<Segment> strip;
+
+      for(int i=0;i<inCount;i++)
+      {
+         switch(inCommands[i])
+            {
+            case pcWideMoveTo:
+               point++;
+            case pcBeginAt:
+            case pcMoveTo:
+               if (strip.size()==1 && prev==*point)
+               {
+                  point++;
+                  continue;
+               }
+
+               if (strip.size()>1)
+                  AddStrip(strip,false);
+
+               strip.resize(0);
+               strip.push_back(Segment(*point));
+               prev = *point;
+               first = *point++;
+               break;
+               
+            case pcWideLineTo:
+               point++;
+            case pcLineTo:
+               {
+               if (strip.size()>0 && *point==prev)
+               {
+                  point++;
+                  continue;
+               }
+ 
+               strip.push_back(Segment(*point));
+
+               // Implicit loop closing...
+               if (strip.size()>2 && *point==first)
+               {
+                  AddStrip(strip,true);
+                  strip.resize(0);
+                  first = *point;
+               }
+               
+               prev = *point;
+               point++;
+               }
+               break;
+               
+            case pcCurveTo:
+               {
+                  if (strip.size()>0 && *point==prev && point[1]==prev)
+                  {
+                     point+=2;
+                     continue;
+                  }
+ 
+                  strip.push_back(Segment(point[1],point[0]));
+
+                  // Implicit loop closing...
+                  if (strip.size()>2 && point[1]==first)
+                  {
+                     AddStrip(strip,true);
+                     strip.resize(0);
+                     first = point[1];
+                  }
+
+                  prev = point[1];
+                  point +=2;
+              }
+               break;
+            case pcTile: point+=3; break;
+            case pcTileTrans: point+=4; break;
+            case pcTileCol: point+=5; break;
+            case pcTileTransCol: point+=6; break;
+         }
+      }
+
+      if (strip.size()>0)
+           AddStrip(strip,false);
+   }
+
+
 
    HardwareArrays *mArrays;
    Surface      *mSurface;
@@ -466,6 +595,7 @@ public:
    Texture     *mTexture;
    bool        mGradReflect;
    bool        mSolidMode;
+   double      mPerpLen;
    Matrix      mTextureMapper;
 };
 

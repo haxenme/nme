@@ -339,58 +339,6 @@ namespace nme
 						}
 						
 						// Add curvy bits
-						
-						#if 0
-						UserPoint p0_top = prev+perp;
-						UserPoint p2_top = point[1]+perp_end;
-						
-						UserPoint p0_bot = prev-perp;
-						UserPoint p2_bot = point[1]-perp_end;
-						// Solve for control point - it goes though the points perp_len from
-						//  the end control points.  At each end, the gradient of the trajectory
-						//  will point to the control point, and these gradients are parallel
-						//  to the original gradients, g0, g2
-						//
-						//  p0 + a*g0 = ctrl
-						//  p2 + b*g2 = ctrl
-						//
-						//  a g0.x  + p0.x = ctrl.x = p2.x + b *g2.x
-						//  -> a g0.x - b g2.x = p2.x-p0.x
-						//  -> a g0.y - b g2.y = p2.y-p0.y
-						//
-						//  HMM, this does not appear to completely work - I guess my assumption that the
-						//	inner and outer curves are also quadratic beziers is wrong.
-						//	Might have to do it the hard way...
-						double det = g2.y*g0.x - g2.x*g0.y;
-						if (det==0) // degenerate - just use line ...
-						{
-							AddLinePart(p0_top,p2_top,p2_bot,p0_bot);
-						}
-						else
-						{
-							double b_top = ((p2_top.x-p0_top.x)*g0.y - (p2_top.y-p0_top.y)*g0.x) / det;
-							UserPoint ctrl_top = p2_top + g2*b_top;
-							double b_bot = ((p2_bot.x-p0_bot.x)*g0.y - (p2_bot.y-p0_bot.y)*g0.x) / det;
-							UserPoint ctrl_bot = p2_bot + g2*b_bot;
-							
-							if (inMode==itGetExtent)
-							{
-								CurveExtent(p0_top,ctrl_top,p2_top);
-								CurveExtent(p2_bot,ctrl_bot,p0_bot);
-							}
-							else if (inMode==itHitTest)
-							{
-								HitTestCurve(p0_top,ctrl_top,p2_top);
-								HitTestCurve(p2_bot,ctrl_bot,p0_bot);
-							}
-							else
-							{
-								BuildCurve(p0_top,ctrl_top,p2_top);
-								BuildCurve(p2_bot,ctrl_bot,p0_bot);
-							}
-						}
-						#else
-						
 						if (inMode==itGetExtent)
 						{
 							FatCurveExtent(prev, point[0], point[1],perp_len);
@@ -403,7 +351,6 @@ namespace nme
 						{
 							BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
 						}
-						#endif
 						
 						prev = point[1];
 						prev_perp = perp_end;
@@ -417,10 +364,10 @@ namespace nme
 						}
 					}
 					break;
-				case pcTile: points+=3; break;
-				case pcTileTrans: points+=4; break;
-				case pcTileCol: points+=5; break;
-				case pcTileTransCol: points+=6; break;
+				case pcTile: point+=3; break;
+				case pcTileTrans: point+=4; break;
+				case pcTileCol: point+=5; break;
+				case pcTileTransCol: point+=6; break;
 			}
 		}
 		
