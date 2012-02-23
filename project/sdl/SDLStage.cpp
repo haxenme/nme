@@ -243,8 +243,7 @@ public:
 
    void Resize(int inWidth,int inHeight)
    {
-      #ifndef __APPLE__
-	  #ifndef WEBOS
+      #ifdef HX_WINDOWS
       if (mIsOpenGL)
       {
          // Little hack to help windows
@@ -254,7 +253,6 @@ public:
       }
       else
 	  #endif
-      #endif
       {
          // Calling this recreates the gl context and we loose all our textures and
          // display lists. So Work around it.
