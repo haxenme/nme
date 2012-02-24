@@ -286,7 +286,7 @@ class DesktopInstaller extends InstallerBase {
 			
 			var ndllPath = ndll.getSourcePath (system_name, ndll.name + ".debug" + extension);
 			
-			if (!debug && !FileSystem.exists (ndllPath)) {
+			if (!debug || !FileSystem.exists (ndllPath)) {
 				
 				ndllPath = ndll.getSourcePath (system_name, ndll.name + extension);
 				
