@@ -46,9 +46,8 @@ class IOSInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
-		context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 		
-		/*if (defines.exists ("IPHONE_VER") && Std.parseFloat (defines.get ("IPHONE_VER")) >= 5 && !targetFlags.exists ("simulator")) {
+		if (defines.exists ("armv6") && defines.exists ("IPHONE_VER") && Std.parseFloat (defines.get ("IPHONE_VER")) >= 5 && !targetFlags.exists ("simulator")) {
 			
 			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT) armv6";
 			
@@ -56,7 +55,7 @@ class IOSInstaller extends InstallerBase {
 			
 			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 			
-		}*/
+		}
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			

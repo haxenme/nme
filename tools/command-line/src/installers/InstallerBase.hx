@@ -774,6 +774,12 @@ class InstallerBase {
 		defines.set (target, "1");
 		defines.set ("target" , target);
 		
+		if (defines.exists ("armv6")) {
+			
+			compilerFlags.push ("-D armv6");
+			
+		}
+		
 	}
 	
 	
