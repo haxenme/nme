@@ -433,16 +433,22 @@ public:
    
    void EnablePopupKeyboard (bool enabled) {
 		
-	   #ifdef WEBOS
-		if (enabled) {
+		#ifdef WEBOS
+		
+		if (PDL_GetPDKVersion () >= 300) {
 			
-			PDL_SetKeyboardState (PDL_TRUE);
-			
-		} else {
-			
-			PDL_SetKeyboardState (PDL_FALSE);
+			if (enabled) {
+				
+				PDL_SetKeyboardState (PDL_TRUE);
+				
+			} else {
+				
+				PDL_SetKeyboardState (PDL_FALSE);
+				
+			}
 			
 		}
+		
 		#endif
 		
    }
@@ -589,6 +595,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    
    #ifdef WEBOS
    int chunksize = 256;
+   if (PDL_GetPDKVersion () == 100 || PDL_GetHardwareID () < 300)
+   {
+      // use a larger chunksize for older devices
+      chunksize = 1024;
+   }
    #elif HX_WINDOWS
    int chunksize = 2048;
    #else
