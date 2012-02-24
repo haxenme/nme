@@ -432,25 +432,25 @@ public:
    
    
    void EnablePopupKeyboard (bool enabled) {
-		
-		#ifdef WEBOS
-		
-		if (PDL_GetPDKVersion () >= 300) {
-			
-			if (enabled) {
-				
-				PDL_SetKeyboardState (PDL_TRUE);
-				
-			} else {
-				
-				PDL_SetKeyboardState (PDL_FALSE);
-				
-			}
-			
-		}
-		
-		#endif
-		
+      
+      #ifdef WEBOS
+      
+      if (PDL_GetPDKVersion () >= 300) {
+         
+         if (enabled) {
+            
+            PDL_SetKeyboardState (PDL_TRUE);
+            
+         } else {
+            
+            PDL_SetKeyboardState (PDL_FALSE);
+            
+         }
+      	
+      }
+      
+      #endif
+      
    }
    
    
