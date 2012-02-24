@@ -259,8 +259,12 @@ class IOSInstaller extends InstallerBase {
 		
 		for (i in 0...4) {
 			
-			var iname = ["Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-Small.png" ][i];
-			var size = [57,114,72,50][i];
+			var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-Small.png" ][i];
+			var size = [ 57, 114 , 72, 50 ][i];
+			
+			//var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-Small.png", "Icon-Small@2x.png", "Icon-Small-50.png", "iTunesArtwork" ][i];
+			//var size = [ 57, 114, 72, 29, 58, 50, 512 ][i];
+			
 			var name = destination + "/" + iname;
 			
 			if (!icons.updateIcon (size, size, name)) {

@@ -195,10 +195,12 @@ class AndroidInstaller extends InstallerBase {
 			allFiles.push(destination + "/res/drawable-mdpi/icon.png");
 		if (icons.updateIcon (72, 72, destination + "/res/drawable-hdpi/icon.png"))
 			allFiles.push(destination + "/res/drawable-hdpi/icon.png");
+		if (icons.updateIcon (96, 96, destination + "/res/drawable-xhdpi/icon.png"))
+			allFiles.push(destination + "/res/drawable-xhdpi/icon.png");
 		
-		if (orig!=allFiles.length)
+		if (orig != allFiles.length)
 			context.HAS_ICON = true;
-			
+		
 	}
 	
 	
