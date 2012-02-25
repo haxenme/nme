@@ -19,6 +19,21 @@ class IGraphicsData
 }
 
 
+#elseif js
+
+interface IGraphicsData 
+{
+	var jeashGraphicsDataType(default,null):GraphicsDataType;
+}
+
+@:fakeEnum(Int) enum GraphicsDataType 
+{
+	STROKE;
+	SOLID;
+	GRADIENT;
+	PATH;
+}
+
 #else
 typedef IGraphicsData = flash.display.IGraphicsData;
 #end

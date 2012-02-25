@@ -62,9 +62,7 @@ class Capabilities
 }
 
 
-#elseif !jeash
-typedef Capabilities = flash.system.Capabilities;
-#else
+#elseif js
 
 
 class Capabilities
@@ -87,4 +85,8 @@ class Capabilities
 	private static function jeashGetScreenResolutionY():Float { return 0; }
 	
 }
+
+
+#else
+typedef Capabilities = flash.system.Capabilities;
 #end

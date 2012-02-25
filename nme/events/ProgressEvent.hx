@@ -34,6 +34,16 @@ class ProgressEvent extends Event
 }
 
 
+#elseif js
+
+class ProgressEvent
+{
+		public var bytesLoaded : Int;
+		public var bytesTotal : Int;
+		public static var PROGRESS:String = "progress";
+		public static var SOCKET_DATA:String = "socketData";
+}
+
 #else
 typedef ProgressEvent = flash.events.ProgressEvent;
 #end

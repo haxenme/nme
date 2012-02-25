@@ -1,5 +1,5 @@
 package nme.errors;
-#if (cpp || neko)
+#if (cpp || neko || js)
 
 
 class EOFError extends Error

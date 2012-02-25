@@ -109,6 +109,85 @@ class MouseEvent extends Event
 }
 
 
+#elseif js
+
+import nme.geom.Point;
+import nme.display.InteractiveObject;
+
+class MouseEvent extends Event
+{
+	public var altKey : Bool;
+	public var buttonDown : Bool;
+	public var ctrlKey : Bool;
+	public var delta : Int;
+	public var localX : Float;
+	public var localY : Float;
+	public var relatedObject : flash.display.InteractiveObject;
+	public var shiftKey : Bool;
+	public var stageX : Float;
+	public var stageY : Float;
+	public var commandKey : Bool;
+	public var clickCount : Int;
+
+	public static var CLICK : String = "click";
+	public static var DOUBLE_CLICK : String = "doubleClick";
+	public static var MOUSE_DOWN : String = "mouseDown";
+	public static var MOUSE_MOVE : String = "mouseMove";
+	public static var MOUSE_OUT : String = "mouseOut";
+	public static var MOUSE_OVER : String = "mouseOver";
+	public static var MOUSE_UP : String = "mouseUp";
+	public static var MOUSE_WHEEL : String = "mouseWheel";
+	public static var ROLL_OUT : String = "rollOut";
+	public static var ROLL_OVER : String = "rollOver";
+
+	public function new(type : String, 
+			bubbles : Bool = true, 
+			cancelable : Bool = false,
+			localX : Float = 0,
+			localY : Float = 0,
+			?relatedObject : flash.display.InteractiveObject,
+			ctrlKey : Bool = false,
+			altKey : Bool = false,
+			shiftKey : Bool = false,
+			buttonDown : Bool = false,
+			delta : Int = 0,
+			commandKey : Bool = false,
+			clickCount : Int = 0
+			)
+	{
+		super(type, bubbles, cancelable);
+
+		this.shiftKey = shiftKey;
+		this.altKey = altKey;
+		this.ctrlKey = ctrlKey;
+		this.bubbles = bubbles;
+		this.relatedObject = relatedObject;
+		this.delta = delta;
+		this.localX = localX;
+		this.localY = localY;
+		this.buttonDown = buttonDown;
+		this.commandKey = commandKey;
+		this.clickCount = clickCount;
+	}
+
+	public function jeashCreateSimilar(type:String, ?related:InteractiveObject, ?targ:InteractiveObject)
+	{
+		var result = new MouseEvent(type, bubbles, cancelable, localX, localY,
+				related==null ? relatedObject : related,
+				ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount );
+
+		if (targ!=null)
+			result.target = targ;
+		return result;
+	}
+
+	public function updateAfterEvent()
+	{
+	}
+
+
+}
+
 #else
 typedef MouseEvent = flash.events.MouseEvent;
 #end

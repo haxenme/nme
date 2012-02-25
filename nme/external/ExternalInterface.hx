@@ -62,8 +62,8 @@ class ExternalInterface
 		
 		if (callbacks.exists (functionName)) {
 			
-			var callback = callbacks.get (functionName);
-			return Reflect.callMethod (callback, callback, params);
+			var callbackMethod = callbacks.get (functionName);
+			return Reflect.callMethod (callbackMethod, callbackMethod, params);
 			
 		}
 		
@@ -101,6 +101,30 @@ class ExternalInterface
 	
 }
 
+
+#elseif js
+
+import nme.Lib;
+
+class ExternalInterface {
+	static var mCallbacks:Hash<Dynamic>;
+	public static inline var available : Bool = true;
+
+	public static inline var objectID : String = Lib.canvas.id;
+	public static function addCallback(functionName : String, closure : Dynamic) 
+	{
+		if (mCallbacks == null) mCallbacks = new Hash();
+		mCallbacks.set(functionName, closure);
+	}
+
+	public static function call(functionName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic ) : Dynamic
+	{
+		if (!mCallbacks.exists(functionName)) return null;
+		return Reflect.callMethod( null, mCallbacks.get(functionName), [p1, p2, p3, p4, p5] );
+	}
+
+	public static var marshallExceptions : Bool = false;
+}
 
 #else
 typedef ExternalInterface = flash.external.ExternalInterface;

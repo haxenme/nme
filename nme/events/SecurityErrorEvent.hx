@@ -28,6 +28,17 @@ class SecurityErrorEvent extends ErrorEvent
 }
 
 
+#elseif js
+
+class SecurityErrorEvent extends ErrorEvent {
+	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?text : String) : Void
+	{
+		super(type, bubbles, cancelable);
+		this.text = text;
+	}
+	static public var SECURITY_ERROR : String;
+}
+
 #else
 typedef SecurityErrorEvent = flash.events.SecurityErrorEvent;
 #end

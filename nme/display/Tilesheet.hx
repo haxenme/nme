@@ -1,5 +1,5 @@
 package nme.display;
-#if !jeash
+#if !js
 
 
 import nme.geom.Matrix;
@@ -399,5 +399,35 @@ class Tilesheet
 
 
 #else
-typedef Tilesheet = jeash.display.Tilesheet;
+
+
+import Html5Dom;
+
+import nme.geom.Rectangle;
+import nme.geom.Point;
+
+class Tilesheet {
+	
+	public var jeashTileRects:Array<Rectangle>;
+	public var jeashTileHotspots:Array<Point>;
+	public var jeashSurface:HTMLCanvasElement;
+	public var jeashBitmapData:BitmapData;
+	
+	public function new(bitmapData:BitmapData) {
+		jeashSurface = bitmapData.clone().handle();
+		jeashBitmapData = bitmapData;
+		jeashTileRects = [];
+		jeashTileHotspots = [];
+	}
+
+	public function addTileRect(rect:Rectangle, ?hotspot:Point) {
+		jeashTileRects.push(rect.clone());
+		if (hotspot != null)
+			jeashTileHotspots.push(hotspot.clone());
+		else
+			jeashTileHotspots.push(new Point((rect.width-rect.x)/2, (rect.height-rect.y)/2));
+	}
+}
+
+
 #end

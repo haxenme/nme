@@ -32,6 +32,19 @@ class TextEvent extends Event
 }
 
 
+#elseif js
+
+class TextEvent extends Event {
+	public var text : String;
+	function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?text : String) 
+	{
+		super(type, bubbles, cancelable);
+		this.text = text;
+	}
+	static var LINK : String;
+	static var TEXT_INPUT : String;
+}
+
 #else
 typedef TextEvent = flash.events.TextEvent;
 #end

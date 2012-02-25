@@ -1,4 +1,6 @@
 package nme.net;
+#if (cpp || neko || js)
+
 
 class URLVariables implements Dynamic
 {
@@ -35,3 +37,8 @@ class URLVariables implements Dynamic
       return result.join("&");
    }
 }
+
+
+#else
+typedef URLVariables = flash.net.URLVariables;
+#end

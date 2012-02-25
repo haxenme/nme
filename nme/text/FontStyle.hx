@@ -1,13 +1,13 @@
 package nme.text;
-#if (cpp || neko)
+#if (cpp || neko || js)
 
 
-@:fakeEnum(String) extern enum FontStyle
+enum FontStyle
 {
-	BOLD;
-	BOLD_ITALIC;
-	ITALIC;
 	REGULAR;
+	ITALIC;
+	BOLD_ITALIC;
+	BOLD;
 }
 
 

@@ -28,6 +28,24 @@ class IOErrorEvent extends ErrorEvent
 }
 
 
+#elseif js
+
+class IOErrorEvent extends flash.events.Event
+{
+   public var text : String;
+
+   public function new(type : String, ?bubbles : Bool, ?cancelable : Bool,
+         ?inText : String = "")
+   {
+      super(type,bubbles,cancelable);
+
+      text = inText;
+   }
+
+   public static var IO_ERROR = "IO_ERROR";
+
+}
+
 #else
 typedef IOErrorEvent = flash.events.IOErrorEvent;
 #end

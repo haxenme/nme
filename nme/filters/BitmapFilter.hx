@@ -23,6 +23,28 @@ class BitmapFilter
 }
 
 
+#elseif js
+
+
+import Html5Dom;
+
+class BitmapFilter
+{
+   var mType:String;
+
+   public function new(inType) { mType = inType; }
+   public function clone() : flash.filters.BitmapFilter
+   {
+      throw "Implement in subclass. BitmapFilter::clone";
+      return null;
+   }
+
+   public function jeashPreFilter(surface:HTMLCanvasElement) {}
+
+   public function jeashApplyFilter(surface:HTMLCanvasElement) {}
+}
+
+
 #else
 typedef BitmapFilter = flash.filters.BitmapFilter;
 #end

@@ -1,12 +1,12 @@
 package nme.net;
-#if (cpp || neko)
+#if (cpp || neko || js)
 
 
 enum URLLoaderDataFormat
 {
-   BINARY;
-   TEXT;
-   VARIABLES;
+	BINARY;
+	TEXT;
+	VARIABLES;
 }
 
 

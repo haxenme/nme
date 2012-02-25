@@ -64,6 +64,46 @@ class System
 }
 
 
+#elseif js
+
+class System
+{
+
+	public static var vmVersion(getVersion,null) : String;
+
+	public static function getVersion()
+	{
+		return "Jeash - tip";
+	}
+
+	public static var totalMemory(GetMemory,null) : Int;
+
+	public static var useCodePage : Bool = false;
+
+	public static function exit( code : Int ) : Void 
+	{
+		throw "System.close not implemented in Jeash";
+	}
+	public static function gc() : Void { }
+	public static function pause() : Void
+	{
+		throw "System.pause not implemented in Jeash";
+	}
+	public static function resume() : Void
+	{
+		throw "System.resume not implemented in Jeash";
+	}
+	public static function setClipboard( string : String ) : Void
+	{
+		throw "System.setClipboard not implemented in Jeash";
+	}
+
+	static function GetMemory() : Int
+	{
+		return 0;
+	}
+}
+
 #else
 typedef System = flash.system.System;
 #end

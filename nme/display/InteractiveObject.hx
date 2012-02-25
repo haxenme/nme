@@ -92,6 +92,46 @@ class InteractiveObject extends DisplayObject
 }
 
 
+#elseif js
+
+import nme.geom.Point;
+
+class InteractiveObject extends DisplayObject {
+	public var doubleClickEnabled:Bool;
+	public var focusRect:Dynamic;
+	public var mouseEnabled:Bool;
+	public var tabEnabled:Bool;
+	public var tabIndex(jeashGetTabIndex,jeashSetTabIndex):Int;
+	var jeashDoubleClickEnabled:Bool;
+	var jeashTabIndex:Int;
+
+	public function new() {
+		super();
+		tabEnabled = false;
+		mouseEnabled = true;
+		doubleClickEnabled = true;
+		tabIndex = 0;
+		name = "InteractiveObject";
+	}
+
+	override public function toString() { return name; }
+
+	public function OnKey(inKey:flash.events.KeyboardEvent):Void { }
+
+	override public function jeashAsInteractiveObject() return this
+
+	public function jeashGetTabIndex() { return jeashTabIndex; }
+	public function jeashSetTabIndex(inIndex:Int) {
+		jeashTabIndex = inIndex;
+		return inIndex;
+	}
+
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+		 if (!mouseEnabled) return null;
+		 else return super.jeashGetObjectUnderPoint(point)
+
+}
+
 #else
 typedef InteractiveObject = flash.display.InteractiveObject;
 #end
