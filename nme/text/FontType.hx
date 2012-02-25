@@ -1,8 +1,8 @@
 package nme.text;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
-enum FontType
+@:fakeEnum(String) extern enum FontType
 {
 	DEVICE;
 	EMBEDDED;

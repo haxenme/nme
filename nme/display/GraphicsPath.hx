@@ -102,55 +102,6 @@ class GraphicsPath extends IGraphicsData
 }
 
 
-#elseif js
-
-import nme.display.IGraphicsData;
-import Html5Dom;
-
-class GraphicsPath implements IGraphicsData, implements IGraphicsPath
-{
-	public var commands : Vector<Int>;
-	public var data : Vector<Float>;
-	public var winding : GraphicsPathWinding; /* note: currently ignored */
-	public var jeashGraphicsDataType(default,null):GraphicsDataType;
-
-	public function new(?commands : Vector<Int>, ?data : Vector<Float>, ?winding : GraphicsPathWinding) {
-		this.commands = commands;
-		this.data = data;
-		this.winding = winding;
-		this.jeashGraphicsDataType = PATH;
-	}
-
-	public function curveTo(controlX : Float, controlY : Float, anchorX : Float, anchorY : Float) {
-		if (this.commands != null && this.data != null) {
-			this.commands.push(GraphicsPathCommand.CURVE_TO);
-			this.data.push(anchorX);
-			this.data.push(anchorY);
-			this.data.push(controlX);
-			this.data.push(controlY);
-		}
-	}
-
-	public function lineTo(x : Float, y : Float) {
-		if (this.commands != null && this.data != null) {
-			this.commands.push(GraphicsPathCommand.LINE_TO);
-			this.data.push(x);
-			this.data.push(y);
-		}
-	}
-
-	public function moveTo(x : Float, y : Float) {
-		if (this.commands != null && this.data != null) {
-			this.commands.push(GraphicsPathCommand.MOVE_TO);
-			this.data.push(x);
-			this.data.push(y);
-		}
-	}
-
-	//function wideLineTo(x : Float, y : Float) : Void;
-	//function wideMoveTo(x : Float, y : Float) : Void;
-}
-
 #else
 typedef GraphicsPath = flash.display.GraphicsPath;
 #end

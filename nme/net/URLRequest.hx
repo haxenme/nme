@@ -1,9 +1,7 @@
 package nme.net;
 #if (cpp || neko)
 
-
 import nme.utils.ByteArray;
-
 
 class URLRequest
 {
@@ -20,7 +18,7 @@ class URLRequest
 	public var url(default, null):String;
 	public var userPassword:String;
 	public var verbose:Bool;
-	public var method:URLRequestMethod;
+	public var method:String;
 	public var contentType:String;
 	public var data:Dynamic;
 	public var nmeBytes:ByteArray;
@@ -78,21 +76,6 @@ class URLRequest
             throw "Unknown data type";
          }
       }
-   }
-}
-
-
-#elseif js
-
-
-class URLRequest
-{
-   public var url:String;
-
-   public function new(?inURL:String)
-   {
-      if (inURL!=null)
-         url = inURL;
    }
 }
 

@@ -1,5 +1,5 @@
 package nme.filters;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 class BitmapFilterQuality

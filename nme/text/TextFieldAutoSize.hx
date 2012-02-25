@@ -1,13 +1,13 @@
 package nme.text;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 enum TextFieldAutoSize
 {
-	CENTER;
-	LEFT;
-	NONE;
-	RIGHT;
+   CENTER;
+   LEFT;
+   NONE;
+   RIGHT;
 }
 
 

@@ -19,26 +19,6 @@ class GraphicsSolidFill extends IGraphicsData
 }
 
 
-#elseif js
-
-import nme.display.IGraphicsData;
-import nme.display.IGraphicsFill;
-import Html5Dom;
-
-class GraphicsSolidFill implements IGraphicsData, implements IGraphicsFill 
-{
-	public var alpha : Float;
-	public var color : UInt;
-	public var jeashGraphicsDataType(default,null):GraphicsDataType;
-	public var jeashGraphicsFillType(default,null):GraphicsFillType;
-	public function new(color : UInt = 0, alpha : Float = 1) {
-		this.alpha = alpha;
-		this.color = color;
-		this.jeashGraphicsDataType = SOLID;
-		this.jeashGraphicsFillType = SOLID_FILL;
-	}
-}
-
 #else
 //typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
 #end

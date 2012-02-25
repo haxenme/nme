@@ -21,16 +21,6 @@ class Mouse
 }
 
 
-#elseif js
-
-class Mouse
-{
-   public function new() { }
-
-   public static function hide() { }
-   public static function show() { }
-}
-
 #else
 typedef Mouse = flash.ui.Mouse;
 #end

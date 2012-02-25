@@ -1,11 +1,11 @@
 package nme.text;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 enum TextFieldType
 {
-	DYNAMIC;
-	INPUT;
+   DYNAMIC;
+   INPUT;
 }
 
 

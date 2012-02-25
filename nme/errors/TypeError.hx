@@ -1,5 +1,5 @@
 package nme.errors;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 class TypeError extends Error

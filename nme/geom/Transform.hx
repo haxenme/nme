@@ -39,54 +39,6 @@ class Transform
 }
 
 
-#elseif js
-
-
-import nme.display.DisplayObject;
-import nme.geom.Matrix;
-
-
-class Transform
-{
-   public var colorTransform( GetColorTransform, SetColorTransform ) : ColorTransform;
-   public var matrix(jeashGetMatrix,jeashSetMatrix):Matrix;
-   public var pixelBounds(GetPixelBounds,null):Rectangle;
-
-   var mObj:DisplayObject;
-
-   public function new(inParent:DisplayObject)
-   {
-      mObj = inParent;
-   }
-
-   public function jeashGetMatrix() : Matrix { return mObj.jeashGetMatrix(); }
-   public function jeashSetMatrix(inMatrix:Matrix) : Matrix
-       { return mObj.jeashSetMatrix(inMatrix); }
-
-   function GetPixelBounds()
-   {
-   	return mObj.getBounds(nme.Lib.jeashGetStage());
-   }
-
-   public function GetColorTransform() { 
-#if silverlight
-     var gfx = mObj.GetGraphics();
-     return gfx.mColorTransform;
-#else
-     return new ColorTransform();
-#end
-   }
-
-   public function SetColorTransform( inColorTransform : ColorTransform ) : ColorTransform
-   {
-#if silverlight
-     mObj.GetGraphics().mColorTransform = colorTransform;
-#end
-     return inColorTransform;
-   }
-}
-
-
 #else
 typedef Transform = flash.geom.Transform;
 #end

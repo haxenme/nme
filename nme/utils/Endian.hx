@@ -11,13 +11,6 @@ class Endian
 }
 
 
-#elseif js
-
-enum Endian {
-		BIG_ENDIAN;
-		LITTLE_ENDIAN;
-}
-
 #else
 typedef Endian = flash.utils.Endian;
 #end

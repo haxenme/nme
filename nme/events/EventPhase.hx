@@ -1,5 +1,5 @@
 package nme.events;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 class EventPhase

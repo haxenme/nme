@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko || js)
+#if (cpp || neko)
 
 
 enum BlendMode
