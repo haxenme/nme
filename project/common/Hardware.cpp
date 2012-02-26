@@ -16,7 +16,7 @@ public:
       mElement.mColour = 0xffffffff;
       mSolidMode = false;
       mPerpLen = 1.0;
-      bool tesselate_lines = false;
+      bool tessellate_lines = false;
 
       if (inJob.mIsTileJob)
       {
@@ -43,12 +43,12 @@ public:
          if (!SetFill(inJob.mFill,inHardware))
             return;
       }
-      else if (tesselate_lines)
+      else if (tessellate_lines)
       {
          // ptTriangleStrip?
          mElement.mPrimType = ptTriangles;
          GraphicsStroke *stroke = inJob.mStroke;
-         if (!SetFill(inJob.mFill,inHardware))
+         if (!SetFill(stroke->fill,inHardware))
             return;
 
          double mPerpLen = stroke->thickness;
@@ -80,7 +80,7 @@ public:
          mArrays = &ioData.GetArrays(mSurface,false);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
-      else if (tesselate_lines && !mSolidMode)
+      else if (tessellate_lines && !mSolidMode)
       {
          mArrays = &ioData.GetArrays(mSurface,false);
          AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
@@ -493,6 +493,31 @@ public:
 
    void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
    {
+      Vertices &vertices = mArrays->mVertices;
+      mElement.mFirst = vertices.size();
+
+      int segs = inLoop ? inPath.size() : inPath.size()-1;
+      for(int i=1;i<segs;i++)
+      {
+          UserPoint p0 = inPath[i-1].p;
+          UserPoint p1 = inPath[i].p;
+          UserPoint dir = p1-p0;
+          UserPoint perp = dir.Perp(mPerpLen);
+
+          vertices.push_back(p0-perp);
+          vertices.push_back(p0+perp);
+          vertices.push_back(p1+perp);
+
+          vertices.push_back(p1+perp);
+          vertices.push_back(p1-perp);
+          vertices.push_back(p0-perp);
+      }
+
+
+      mElement.mCount = vertices.size()-mElement.mFirst;
+      if (mSurface)
+         CalcTexCoords();
+      mArrays->mElements.push_back(mElement);
    }
 
    void AddLineTriangles(const uint8* inCommands, int inCount, const float *inData)

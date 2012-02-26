@@ -1,6 +1,7 @@
 <xml>
 	
 	<set name="GCC_THIN_ARCHIVE" value="1" if="iphone"/>
+   <set name="debug" value="debug" if ="fulldebug" />
 	
 	<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 	
@@ -207,7 +208,7 @@
 	<set name="name_extra" value=".iphoneos" if="iphoneos"/>
 	<set name="name_extra" value=".iphonesim" if="iphonesim"/>
 	
-	<section if="debug">
+	<section if="fulldebug" >
 		<set name="name_extra" value=".debug"/>
 		<set name="name_extra" value=".debug.iphoneos" if="iphoneos"/>
 		<set name="name_extra" value=".debug.iphonesim" if="iphonesim"/>
