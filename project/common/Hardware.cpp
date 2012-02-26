@@ -2,6 +2,11 @@
 #include <Surface.h>
 
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+
 namespace nme
 {
 
@@ -15,7 +20,7 @@ public:
       bool tile_mode = false;
       mElement.mColour = 0xffffffff;
       mSolidMode = false;
-      mPerpLen = 1.0;
+      mPerpLen = 0.5;
       bool tessellate_lines = false;
 
       if (inJob.mIsTileJob)
@@ -51,11 +56,16 @@ public:
          if (!SetFill(stroke->fill,inHardware))
             return;
 
-         double mPerpLen = stroke->thickness;
+         mPerpLen = stroke->thickness * 0.5;
          if (mPerpLen<=0.0)
             mPerpLen = 0.5;
-         else
+         else if (mPerpLen<0.5)
+         {
             mPerpLen = 0.5;
+         }
+
+         mCaps = stroke->caps;
+         mJoints = stroke->joints;
       }
       else
       {
@@ -486,6 +496,9 @@ public:
       inline Segment(const UserPoint &inP) : p(inP), curve(inP) { }
       inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve(inCurve) { }
 
+      UserPoint getDir0(const UserPoint &inP0) const { return curve-inP0; }
+      UserPoint getDir1(const UserPoint &inP0) const { return inP0-curve; }
+
       UserPoint p;
       UserPoint curve;
    };
@@ -496,13 +509,66 @@ public:
       Vertices &vertices = mArrays->mVertices;
       mElement.mFirst = vertices.size();
 
-      int segs = inLoop ? inPath.size() : inPath.size()-1;
-      for(int i=1;i<segs;i++)
+      // Endcap 0 ...
+      if (!inLoop && mCaps==scSquare || mCaps==scRound)
+      {
+         UserPoint p0 = inPath[0].p;
+         UserPoint perp = inPath[1].getDir0(p0).Perp(mPerpLen);
+
+         UserPoint back(-perp.y, perp.x);
+         if (mCaps==scSquare)
+         {
+            vertices.push_back(p0+perp);
+            vertices.push_back(p0+perp + back);
+            vertices.push_back(p0-perp);
+
+            vertices.push_back(p0+perp + back);
+            vertices.push_back(p0-perp + back);
+            vertices.push_back(p0-perp);
+         }
+         else
+         {
+            int n = std::max(2,(int)(mPerpLen * 6));
+            double dtheta = M_PI / n;
+            double theta = 0.0;
+            UserPoint prev(p0+perp);
+            for(int i=1;i<n;i++)
+            {
+               UserPoint p =  perp*cos(theta) + back*sin(theta);
+               vertices.push_back(p0);
+               vertices.push_back(p0+prev);
+               vertices.push_back(p0+p);
+               prev = p;
+               theta += dtheta;
+            }
+
+            vertices.push_back(p0);
+            vertices.push_back(p0+prev);
+            vertices.push_back(p0-perp);
+         }
+      }
+
+      UserPoint prev_perp;
+
+      for(int i=1;i<inPath.size();i++)
       {
           UserPoint p0 = inPath[i-1].p;
           UserPoint p1 = inPath[i].p;
           UserPoint dir = p1-p0;
           UserPoint perp = dir.Perp(mPerpLen);
+
+          if (i==1)
+             prev_perp = perp;
+
+          UserPoint next_perp;
+          if (i+1<inPath.size())
+             next_perp = inPath[i+1].getDir0(p1).Perp(mPerpLen);
+          else if (!inLoop)
+             next_perp = perp;
+          else
+             next_perp = inPath[1].getDir0(p1).Perp(mPerpLen);
+
+          double cross = prev_perp.Cross(perp);
 
           vertices.push_back(p0-perp);
           vertices.push_back(p0+perp);
@@ -511,6 +577,8 @@ public:
           vertices.push_back(p1+perp);
           vertices.push_back(p1-perp);
           vertices.push_back(p0-perp);
+
+          prev_perp = next_perp;
       }
 
 
@@ -609,7 +677,7 @@ public:
       }
 
       if (strip.size()>0)
-           AddStrip(strip,false);
+         AddStrip(strip,false);
    }
 
 
@@ -622,6 +690,8 @@ public:
    bool        mSolidMode;
    double      mPerpLen;
    Matrix      mTextureMapper;
+   StrokeCaps   mCaps;
+   StrokeJoints mJoints;
 };
 
 void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
