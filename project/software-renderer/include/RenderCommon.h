@@ -73,10 +73,10 @@ namespace nme
 	};
 	
 	
-	static Lines sLineBuffer;
-	static AlphaRuns *sLines = 0;
-	static Transitions *sTransitions = 0;
-	static std::vector<Transitions> sTransitionsBuffer;
+	extern Lines sLineBuffer;
+	extern AlphaRuns *sLines;
+	extern Transitions *sTransitions;
+	extern std::vector<Transitions> sTransitionsBuffer;
 	
 	
 	template<int BITS>	struct AlphaIterator

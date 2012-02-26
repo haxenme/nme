@@ -10,6 +10,10 @@
 namespace nme
 {
 	
+  	Lines sLineBuffer;
+	AlphaRuns *sLines = 0;
+	Transitions *sTransitions = 0;
+	std::vector<Transitions> sTransitionsBuffer;
 
 	Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 	{

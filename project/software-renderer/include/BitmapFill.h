@@ -5,7 +5,7 @@
 namespace nme
 {
 
-static bool IsPOW2(int inX)
+static inline bool IsPOW2(int inX)
 {
    return (inX & (inX-1)) == 0;
 }
