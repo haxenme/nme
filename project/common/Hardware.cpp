@@ -551,43 +551,106 @@ public:
          }
       }
 
+
       UserPoint prev_dir;
+      double prev_alpha = 0;
       for(int i=1;i<inPath.size();i++)
       {
          const Segment &seg = inPath[i];
           UserPoint p0 = inPath[i-1].p;
-          UserPoint p1 = seg.p;
+          UserPoint p = seg.p;
 
-          UserPoint my_dir0 = seg.getDir0(p0).Normalized();
-          UserPoint my_dir1 = seg.getDir1(p0).Normalized();
+          UserPoint dir0 = seg.getDir0(p0).Normalized();
+          UserPoint dir1 = seg.getDir1(p0).Normalized();
 
           if (i==1)
-             prev_dir = my_dir0;
+             prev_dir = dir0;
 
           UserPoint next_dir;
           if (i+1<inPath.size())
-             next_dir = inPath[i+1].getDir0(p1).Normalized();
+             next_dir = inPath[i+1].getDir0(p).Normalized();
           else if (!inLoop)
-             next_dir = my_dir1;
+             next_dir = dir1;
           else
-             next_dir = inPath[1].getDir0(p1).Normalized();
+             next_dir = inPath[1].getDir0(p).Normalized();
 
-          double theta0 = asin(my_dir0.Dot(prev_dir)) * 0.5;
-          double theta1 = asin(my_dir1.Dot(next_dir)) * 0.5;
-          bool bend_right0 = prev_dir.Cross(my_dir0) > 0;
-          bool bend_right1 = my_dir1.Cross(next_dir) > 0;
+          /*
 
-          UserPoint perp = seg.getDirAverage(p0).Perp(mPerpLen);
+                           ---
+                        ---
+                     ---
+                 - B-           next segment
+               Z   \         ...
+               |    \     ...
+               D_____\ ...____
+               |      p      C    ---.
+               |      .\     | ---
+               |      . \   -Y-
+               |      .  A-- |
+               |      .      |
+               |      .      |   p = end segment
+               |      .      |   
+               |      .      |   
+               |      .      |
 
-          vertices.push_back(p0-perp);
-          vertices.push_back(p0+perp);
-          vertices.push_back(p1+perp);
+             A = p + next_perp
+             B = p - next_perp
 
-          vertices.push_back(p1+perp);
-          vertices.push_back(p1-perp);
-          vertices.push_back(p0-perp);
+             C = p + perp1
+             D = p - perp1
 
-          prev_dir  = my_dir1;
+             Y = A + alpha*next_dir
+               = C - alpha*dir1
+
+                = p + next_perp + alpha*next_dir
+                = p + perp1 - alpha*dir1
+
+                -> next_perp-perp1 = alpha*(dir1+next_dir)
+                -> alpha = prep1-next_perp     in either x or y direction...
+                           ---------------
+                           dir1+next_dir
+
+          */
+
+          UserPoint perp0(-dir0.y*mPerpLen, dir0.x*mPerpLen);
+          UserPoint perp1(-dir1.y*mPerpLen, dir1.x*mPerpLen);
+          UserPoint next_perp(-next_dir.y*mPerpLen, next_dir.x*mPerpLen);
+
+          double denom_x = dir1.x+next_dir.x;
+          double denom_y = dir1.y+next_dir.y;
+          double alpha=0;
+
+          // Choose the better-conditioned axis
+          if (fabs(denom_x)>fabs(denom_y))
+             alpha = denom_x==0 ? 0 : (perp1.x-next_perp.x)/denom_x;
+          else
+             alpha = denom_y==0 ? 0 : (perp1.y-next_perp.y)/denom_y;
+ 
+          /*
+             switch(mJoints)
+             {
+                case sjRound:
+                case sjMiter:
+                case sjBevel:
+             }
+          */
+
+          UserPoint Y(p+perp1-dir1*alpha);
+          UserPoint Z(p-perp1+dir1*alpha);
+
+          UserPoint PY(p0+perp0+dir0*prev_alpha);
+          UserPoint PZ(p0-perp0-dir0*prev_alpha);
+
+          vertices.push_back(PY);
+          vertices.push_back(PZ);
+          vertices.push_back(Z);
+
+          vertices.push_back(PY);
+          vertices.push_back(Z);
+          vertices.push_back(Y);
+
+          prev_dir  = dir1;
+          prev_alpha = alpha;
       }
 
 
