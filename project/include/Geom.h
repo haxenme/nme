@@ -161,6 +161,13 @@ struct Point2D
       { return Point2D(-x,-y); }
    inline T Norm2() const
       { return x*x + y*y; }
+   inline Point2D Normalized() const
+   {
+      double len = sqrt((double)(x*x + y*y));
+      if (len>0)
+         return Point2D(x/len,y/len);
+      return *this;
+   }
    inline double Norm() const
       { return sqrt((double)(x*x + y*y)); }
    inline Point2D Perp() const

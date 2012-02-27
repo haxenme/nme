@@ -497,7 +497,10 @@ public:
       inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve(inCurve) { }
 
       UserPoint getDir0(const UserPoint &inP0) const { return curve-inP0; }
-      UserPoint getDir1(const UserPoint &inP0) const { return inP0-curve; }
+      UserPoint getDir1(const UserPoint &inP0) const { return isCurve() ? p-curve : p-inP0; }
+      UserPoint getDirAverage(const UserPoint &inP0) const { return p-inP0; }
+
+      inline bool isCurve() const { return p!=curve; }
 
       UserPoint p;
       UserPoint curve;
@@ -510,7 +513,7 @@ public:
       mElement.mFirst = vertices.size();
 
       // Endcap 0 ...
-      if (!inLoop && mCaps==scSquare || mCaps==scRound)
+      if (!inLoop && (mCaps==scSquare || mCaps==scRound))
       {
          UserPoint p0 = inPath[0].p;
          UserPoint perp = inPath[1].getDir0(p0).Perp(mPerpLen);
@@ -528,10 +531,10 @@ public:
          }
          else
          {
-            int n = std::max(2,(int)(mPerpLen * 6));
+            int n = std::max(2,(int)(mPerpLen * 4));
             double dtheta = M_PI / n;
             double theta = 0.0;
-            UserPoint prev(p0+perp);
+            UserPoint prev(perp);
             for(int i=1;i<n;i++)
             {
                UserPoint p =  perp*cos(theta) + back*sin(theta);
@@ -548,27 +551,33 @@ public:
          }
       }
 
-      UserPoint prev_perp;
-
+      UserPoint prev_dir;
       for(int i=1;i<inPath.size();i++)
       {
+         const Segment &seg = inPath[i];
           UserPoint p0 = inPath[i-1].p;
-          UserPoint p1 = inPath[i].p;
-          UserPoint dir = p1-p0;
-          UserPoint perp = dir.Perp(mPerpLen);
+          UserPoint p1 = seg.p;
+
+          UserPoint my_dir0 = seg.getDir0(p0).Normalized();
+          UserPoint my_dir1 = seg.getDir1(p0).Normalized();
 
           if (i==1)
-             prev_perp = perp;
+             prev_dir = my_dir0;
 
-          UserPoint next_perp;
+          UserPoint next_dir;
           if (i+1<inPath.size())
-             next_perp = inPath[i+1].getDir0(p1).Perp(mPerpLen);
+             next_dir = inPath[i+1].getDir0(p1).Normalized();
           else if (!inLoop)
-             next_perp = perp;
+             next_dir = my_dir1;
           else
-             next_perp = inPath[1].getDir0(p1).Perp(mPerpLen);
+             next_dir = inPath[1].getDir0(p1).Normalized();
 
-          double cross = prev_perp.Cross(perp);
+          double theta0 = asin(my_dir0.Dot(prev_dir)) * 0.5;
+          double theta1 = asin(my_dir1.Dot(next_dir)) * 0.5;
+          bool bend_right0 = prev_dir.Cross(my_dir0) > 0;
+          bool bend_right1 = my_dir1.Cross(next_dir) > 0;
+
+          UserPoint perp = seg.getDirAverage(p0).Perp(mPerpLen);
 
           vertices.push_back(p0-perp);
           vertices.push_back(p0+perp);
@@ -578,7 +587,7 @@ public:
           vertices.push_back(p1-perp);
           vertices.push_back(p0-perp);
 
-          prev_perp = next_perp;
+          prev_dir  = my_dir1;
       }
 
 
