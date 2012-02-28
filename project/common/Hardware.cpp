@@ -560,6 +560,101 @@ public:
        }
    }
 
+   void AddCurveSegment(Vertices &vertices,UserPoint inP0,UserPoint inP1,UserPoint inP2, UserPoint perp0, UserPoint perp1,
+                        UserPoint p0_left, UserPoint p0_right, UserPoint p1_left, UserPoint p1_right)
+   {
+      double len = (inP0 - inP1).Norm() + (inP2 - inP1).Norm();
+      
+      int steps = (int)len*0.25;
+      if (steps < 1) steps = 1;
+      if (steps > 100) steps = 100;
+
+      double step = 1.0 / (steps + 1);
+      double t = 0;
+
+      UserPoint v0 = p0_right - p0_left;
+      UserPoint v1 = p1_right - p1_left;
+      
+      UserPoint last_p_left = inP0 - perp0;
+      UserPoint last_p_right = inP0 + perp0;
+
+      vertices.push_back(p0_left);
+      vertices.push_back(p0_left+v0*10);
+      vertices.push_back(p0_left+v0.Perp(3));
+
+      // Clip against end ...
+      if ( v0.Cross(last_p_left-p0_left)<0 )
+         last_p_left = p0_left;
+      if ( v0.Cross(last_p_right-p0_left)<0 )
+         last_p_right = p0_right;
+      // TODO - against other end?
+      
+      for (int s=1; s <= steps; s++)
+      {
+         t += step;
+         double t_ = 1.0 - t;
+         UserPoint p = inP0 * (t_ * t_) + inP1 * (2.0 * t * t_) + inP2 * (t * t);
+         UserPoint dir = (inP0 * -t_ + inP1 * (1.0 - 2.0 * t) + inP2 * t);
+         UserPoint perp = dir.Perp(mPerpLen);
+         if (s==step)
+         {
+            p = inP2;
+            perp = perp1;
+         }
+
+         UserPoint p_right = p + perp;
+         UserPoint p_left = p - perp;
+
+         if (v0.Cross(dir)>0 )
+         {
+            if ( v0.Cross(p_left-p0_left)>0)
+               p_left = p0_left;
+            if ( v0.Cross(p_right-p0_left)>0)
+               p_right = p0_right;
+         }
+
+         if (v1.Cross(dir)>0  )
+         {
+            if ( v1.Cross(p_left-p1_left)>0)
+               p_left = p1_left;
+            if ( v1.Cross(p_right-p1_left)>0)
+               p_right = p1_right;
+         }
+
+         if (p_left==last_p_left)
+         {
+            if (p_right!=last_p_right)
+            {
+               vertices.push_back(p_left);
+               vertices.push_back(last_p_right);
+               vertices.push_back(p_right);
+            }
+         }
+         else if (p_right==last_p_right)
+         {
+            if (p_left!=last_p_left)
+            {
+               vertices.push_back(last_p_left);
+               vertices.push_back(p_right);
+               vertices.push_back(p_left);
+            }
+         }
+         else
+         {
+            vertices.push_back(last_p_left);
+            vertices.push_back(last_p_right);
+            vertices.push_back(p_left);
+
+            vertices.push_back(p_left);
+            vertices.push_back(last_p_right);
+            vertices.push_back(p_right);
+         }
+
+         last_p_left = p_left;
+         last_p_right = p_right;
+      }
+   }
+
    void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
    {
       Vertices &vertices = mArrays->mVertices;
@@ -609,7 +704,7 @@ public:
       double prev_alpha = 0;
       for(int i=1;i<inPath.size();i++)
       {
-         const Segment &seg = inPath[i];
+          const Segment &seg = inPath[i];
           UserPoint p0 = inPath[i-1].p;
           UserPoint p = seg.p;
 
@@ -763,13 +858,20 @@ public:
                    break;
              }
 
-          vertices.push_back(p0_left);
-          vertices.push_back(p0_right);
-          vertices.push_back(p1_right);
+          if (seg.isCurve())
+          {
+             AddCurveSegment(vertices,p0,seg.curve,seg.p, perp0, perp1, p0_left, p0_right, p1_left, p1_right);
+          }
+          else
+          {
+             vertices.push_back(p0_left);
+             vertices.push_back(p0_right);
+             vertices.push_back(p1_right);
 
-          vertices.push_back(p0_left);
-          vertices.push_back(p1_right);
-          vertices.push_back(p1_left);
+             vertices.push_back(p0_left);
+             vertices.push_back(p1_right);
+             vertices.push_back(p1_left);
+          }
 
           prev_dir  = dir1;
           prev_alpha = alpha;
