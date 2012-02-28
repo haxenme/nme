@@ -66,6 +66,8 @@ public:
 
          mCaps = stroke->caps;
          mJoints = stroke->joints;
+         if (mJoints==sjMiter)
+            mMiterLimit = stroke->miterLimit*mPerpLen;
       }
       else
       {
@@ -506,6 +508,57 @@ public:
       UserPoint curve;
    };
 
+   void AddArc(Vertices &vertices,UserPoint inP, double angle, UserPoint inVx, UserPoint inVy, UserPoint p0, UserPoint p1)
+   {
+      int steps = 1 + angle*8;
+      double d_theta = angle / (steps+1);
+      double theta = d_theta;
+      for(int i=0;i<steps;i++)
+      {
+         UserPoint x = inP + inVx*cos(theta) + inVy*sin(theta);
+         theta += d_theta;
+         vertices.push_back(inP);
+         vertices.push_back(p0);
+         vertices.push_back(x);
+         p0 = x;
+      }
+      vertices.push_back(inP);
+      vertices.push_back(p0);
+      vertices.push_back(p1);
+   }
+
+   void AddMiter(Vertices &vertices,UserPoint inP, UserPoint p0, UserPoint p1, double inAlpha,
+                UserPoint dir1, UserPoint dir2)
+   {
+       if (inAlpha>mMiterLimit)
+       {
+          UserPoint corner0 = p0+dir1*mMiterLimit;
+          UserPoint corner1 = p1-dir2*mMiterLimit;
+
+          vertices.push_back(inP);
+          vertices.push_back(p0);
+          vertices.push_back(corner0);
+
+          vertices.push_back(inP);
+          vertices.push_back(corner0);
+          vertices.push_back(corner1);
+
+          vertices.push_back(inP);
+          vertices.push_back(corner1);
+          vertices.push_back(p1);
+       }
+       else
+       {
+          UserPoint corner = p0+dir1*inAlpha;
+          vertices.push_back(inP);
+          vertices.push_back(p0);
+          vertices.push_back(corner);
+
+          vertices.push_back(inP);
+          vertices.push_back(corner);
+          vertices.push_back(p1);
+       }
+   }
 
    void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
    {
@@ -610,6 +663,15 @@ public:
                            ---------------
                            dir1+next_dir
 
+             Make the split such that DpY and down belongs to this segment - first add this DpY triangle, then
+              the remainder of the segment happens below the D-Y line.
+
+             On one side (right hand, drawn here) the segments will overlap - on the other side, there
+              will be a join.  Which side this will be depends on the sign of alpha.  When reversed, the
+              roles of Y and Z will change.
+
+             BpY is for this upper segment  - but there is an equivalent B'p0Y' for this segment.
+              First we add B'p-Y' triangle, and work from B'Y' line
           */
 
           UserPoint perp0(-dir0.y*mPerpLen, dir0.x*mPerpLen);
@@ -626,28 +688,88 @@ public:
           else
              alpha = denom_y==0 ? 0 : (perp1.y-next_perp.y)/denom_y;
  
-          /*
+          UserPoint p1_left = p-perp1;
+          UserPoint p1_right = p+perp1;
+
+          // This could start getting dodgy when the line doubles-back
+          double max_alpha = (p-p0).Norm()*0.5;
+          if (alpha>0)
+          {
+             p1_right -= dir1 * std::min(alpha,max_alpha);
+             vertices.push_back(p1_left);
+             vertices.push_back(p);
+             vertices.push_back(p1_right);
+          }
+          else if (alpha<0)
+          {
+             p1_left += dir1 * std::max(alpha,-max_alpha);
+             vertices.push_back(p1_left);
+             vertices.push_back(p);
+             vertices.push_back(p1_right);
+          }
+
+          UserPoint p0_left = p0-perp0;
+          UserPoint p0_right = p0+perp0;
+
+          if (prev_alpha>0)
+          {
+             p0_right += dir0 * std::min(prev_alpha,max_alpha);
+             vertices.push_back(p0_left);
+             vertices.push_back(p0);
+             vertices.push_back(p0_right);
+          }
+          else if (prev_alpha<0)
+          {
+             p0_left -= dir0 * std::max(prev_alpha,-max_alpha);
+             vertices.push_back(p0_left);
+             vertices.push_back(p0);
+             vertices.push_back(p0_right);
+          }
+
+          if (alpha!=0)
              switch(mJoints)
              {
                 case sjRound:
+                   {
+                   double angle = acos(dir1.Dot(next_dir));
+                   if (angle<0) angle += M_PI;
+                   if (alpha>0) // left
+                      AddArc(vertices, p, angle, -perp1, dir1*mPerpLen, p1_left, p-next_perp );
+                   else // right
+                      AddArc(vertices, p, angle, perp1, dir1*mPerpLen, p1_right, p+next_perp );
+                   }
+                   break;
+
                 case sjMiter:
+                   if (alpha>0) // left
+                      AddMiter(vertices, p, p-perp1, p-next_perp, alpha, dir1, next_dir);
+                   else // Right
+                      AddMiter(vertices, p, p+perp1, p+next_perp, -alpha, dir1, next_dir);
+                   break;
+
                 case sjBevel:
+                   if (alpha>0) // left
+                   {
+                      vertices.push_back(p1_left);
+                      vertices.push_back(p);
+                      vertices.push_back(p-next_perp);
+                   }
+                   else
+                   {
+                      vertices.push_back(p1_right);
+                      vertices.push_back(p);
+                      vertices.push_back(p+next_perp);
+                   }
+                   break;
              }
-          */
 
-          UserPoint Y(p+perp1-dir1*alpha);
-          UserPoint Z(p-perp1+dir1*alpha);
+          vertices.push_back(p0_left);
+          vertices.push_back(p0_right);
+          vertices.push_back(p1_right);
 
-          UserPoint PY(p0+perp0+dir0*prev_alpha);
-          UserPoint PZ(p0-perp0-dir0*prev_alpha);
-
-          vertices.push_back(PY);
-          vertices.push_back(PZ);
-          vertices.push_back(Z);
-
-          vertices.push_back(PY);
-          vertices.push_back(Z);
-          vertices.push_back(Y);
+          vertices.push_back(p0_left);
+          vertices.push_back(p1_right);
+          vertices.push_back(p1_left);
 
           prev_dir  = dir1;
           prev_alpha = alpha;
@@ -760,6 +882,7 @@ public:
    Texture     *mTexture;
    bool        mGradReflect;
    bool        mSolidMode;
+   double      mMiterLimit;
    double      mPerpLen;
    Matrix      mTextureMapper;
    StrokeCaps   mCaps;
