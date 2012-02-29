@@ -1,15 +1,16 @@
 package nme.text;
-
 #if (cpp || neko)
 
-typedef FontStyle = neash.text.FontStyle;
 
-#elseif js
+@:fakeEnum(String) extern enum FontStyle
+{
+	BOLD;
+	BOLD_ITALIC;
+	ITALIC;
+	REGULAR;
+}
 
-typedef FontStyle = jeash.text.FontStyle;
 
 #else
-
 typedef FontStyle = flash.text.FontStyle;
-
 #end

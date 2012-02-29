@@ -1,15 +1,14 @@
 package nme.net;
-
 #if (cpp || neko)
 
-typedef SharedObjectFlushStatus = neash.net.SharedObjectFlushStatus;
 
-#elseif js
+@:fakeEnum(String) enum SharedObjectFlushStatus 
+{
+	FLUSHED;
+	PENDING;
+}
 
-typedef SharedObjectFlushStatus = jeash.net.SharedObjectFlushStatus;
 
 #else
-
 typedef SharedObjectFlushStatus = flash.net.SharedObjectFlushStatus;
-
 #end

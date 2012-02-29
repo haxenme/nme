@@ -1,7 +1,12 @@
 package nme.errors;
 
-#if (cpp || neko)
 
-typedef RangeError = neash.errors.RangeError;
-
-#end
+class RangeError extends Error
+{
+	
+	public function new(inMessage:String = "")
+	{
+		super(inMessage, 0);
+	}
+	
+}

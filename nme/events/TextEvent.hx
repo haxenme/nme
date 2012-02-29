@@ -1,15 +1,37 @@
 package nme.events;
-
 #if (cpp || neko)
 
-typedef TextEvent = neash.events.TextEvent;
 
-#elseif js
+class TextEvent extends Event
+{
+	
+	public static var LINK:String = "link";
+	public static var TEXT_INPUT:String = "textInput";
+	
+	public var text(default, null):String;
+	
+	
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, text:String = "")
+	{
+		super(type, bubbles, cancelable);
+		this.text = text;
+	}
+	
+	
+	public override function clone ():Event
+	{
+		return new TextEvent (type, bubbles, cancelable, text);
+	}
+	
+	
+	public override function toString ():String
+	{
+		return "[TextEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " text=" + text + "]";
+	}
+	
+}
 
-typedef TextEvent = jeash.events.TextEvent;
 
 #else
-
 typedef TextEvent = flash.events.TextEvent;
-
 #end

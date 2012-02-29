@@ -2,9 +2,9 @@ package nme.display;
 
 
 import haxe.Timer;
-import neash.events.Event;
-import neash.text.TextField;
-import neash.text.TextFormat;
+import nme.events.Event;
+import nme.text.TextField;
+import nme.text.TextFormat;
 
 
 class FPS extends TextField

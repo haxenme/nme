@@ -1,15 +1,15 @@
 package nme.display;
-
 #if (cpp || neko)
 
-typedef StageScaleMode = neash.display.StageScaleMode;
 
-#elseif js
+enum StageScaleMode {
+	SHOW_ALL;
+	NO_SCALE;
+	NO_BORDER;
+	EXACT_FIT;
+}
 
-typedef StageScaleMode = jeash.display.StageScaleMode;
 
 #else
-
 typedef StageScaleMode = flash.display.StageScaleMode;
-
 #end

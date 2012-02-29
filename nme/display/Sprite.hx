@@ -1,15 +1,47 @@
 package nme.display;
-
 #if (cpp || neko)
 
-typedef Sprite = neash.display.Sprite;
 
-#elseif js
+import nme.geom.Rectangle;
 
-typedef Sprite = jeash.display.Sprite;
+
+class Sprite extends DisplayObjectContainer
+{
+	
+	
+	// ignored right now
+	public var buttonMode:Bool;
+	public var useHandCursor:Bool;
+	
+	
+	public function new()
+	{
+		super(DisplayObjectContainer.nme_create_display_object_container(), nmeGetType());
+	}
+	
+	
+	private function nmeGetType()
+	{
+		return "Sprite";
+	}
+	
+	
+	public function startDrag(lockCenter:Bool = false, ?bounds:Rectangle):Void
+	{
+		if (stage != null)
+			stage.nmeStartDrag(this, lockCenter, bounds);
+	}
+	
+	
+	public function stopDrag():Void
+	{
+		if (stage != null)
+			stage.nmeStopDrag(this);
+	}
+	
+}
+
 
 #else
-
 typedef Sprite = flash.display.Sprite;
-
 #end

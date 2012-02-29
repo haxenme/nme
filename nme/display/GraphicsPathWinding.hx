@@ -1,15 +1,16 @@
 package nme.display;
-
 #if (cpp || neko)
 
-typedef GraphicsPathWinding = neash.display.GraphicsPathWinding;
 
-#elseif js
+class GraphicsPathWinding
+{	
+	
+	public static inline var EVEN_ODD = "evenOdd";
+	public static inline var NON_ZERO = "nonZero";
+	
+}
 
-typedef GraphicsPathWinding = jeash.display.GraphicsPathWinding;
 
 #else
-
 typedef GraphicsPathWinding = flash.display.GraphicsPathWinding;
-
 #end

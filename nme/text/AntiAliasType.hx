@@ -1,15 +1,14 @@
 package nme.text;
-
 #if (cpp || neko)
 
-typedef AntiAliasType = neash.text.AntiAliasType;
 
-#elseif js
+enum AntiAliasType
+{
+   ADVANCED;
+   NORMAL;
+}
 
-typedef AntiAliasType = jeash.text.AntiAliasType;
 
 #else
-
 typedef AntiAliasType = flash.text.AntiAliasType;
-
 #end

@@ -1,15 +1,15 @@
 package nme.display;
-
 #if (cpp || neko)
 
-typedef TriangleCulling = neash.display.TriangleCulling;
 
-#elseif js
+enum TriangleCulling
+{
+   NEGATIVE;
+   NONE;
+   POSITIVE;
+}
 
-typedef TriangleCulling = jeash.display.TriangleCulling;
 
 #else
-
 typedef TriangleCulling = flash.display.TriangleCulling;
-
 #end

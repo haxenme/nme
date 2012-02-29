@@ -1,0 +1,5 @@
+-main Sample
+-cpp iphoneos
+-D iphone
+-D iphoneos
+-cp ../..

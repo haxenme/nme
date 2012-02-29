@@ -1,15 +1,13 @@
 package nme.errors;
-
 #if (cpp || neko)
 
-typedef IllegalOperationError = neash.errors.IllegalOperationError;
 
-#elseif js
+class IllegalOperationError extends Error
+{
+}
 
-typedef IllegalOperationError = jeash.errors.IllegalOperationError;
 
 #else
-
 typedef IllegalOperationError = flash.errors.IllegalOperationError;
-
 #end
+

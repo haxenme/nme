@@ -1,15 +1,24 @@
 package nme.display;
-
 #if (cpp || neko)
 
-typedef GraphicsSolidFill = neash.display.GraphicsSolidFill;
 
-#elseif js
+import nme.Loader;
 
-typedef GraphicsSolidFill = jeash.display.GraphicsSolidFill;
+
+class GraphicsSolidFill extends IGraphicsData
+{	
+	
+	public function new(color:Int = 0, alpha:Float = 1.0)
+	{	
+		super(nme_graphics_solid_fill_create(color, alpha));
+	}
+	
+	
+	private static var nme_graphics_solid_fill_create = Loader.load("nme_graphics_solid_fill_create", 2);
+	
+}
+
 
 #else
-
-typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
-
+//typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
 #end

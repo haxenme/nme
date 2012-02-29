@@ -1,15 +1,18 @@
 package nme.media;
-
 #if (cpp || neko)
 
-typedef SoundLoaderContext = neash.media.SoundLoaderContext;
 
-#elseif js
+class SoundLoaderContext
+{
 
-typedef SoundLoaderContext = jeash.media.SoundLoaderContext;
+	public function new()
+	{
+		
+	}
+	
+}
+
 
 #else
-
 typedef SoundLoaderContext = flash.media.SoundLoaderContext;
-
 #end

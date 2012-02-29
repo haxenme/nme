@@ -1,15 +1,15 @@
 package nme.filters;
-
 #if (cpp || neko)
 
-typedef BitmapFilterQuality = neash.filters.BitmapFilterQuality;
 
-#elseif js
+class BitmapFilterQuality
+{
+   public static var HIGH = 3;
+   public static var MEDIUM = 2;
+   public static var LOW = 1;
+}
 
-typedef BitmapFilterQuality = jeash.filters.BitmapFilterQuality;
 
 #else
-
 typedef BitmapFilterQuality = flash.filters.BitmapFilterQuality;
-
 #end

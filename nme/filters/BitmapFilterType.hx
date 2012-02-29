@@ -1,15 +1,15 @@
 package nme.filters;
-
 #if (cpp || neko)
 
-typedef BitmapFilterType = neash.filters.BitmapFilterType;
 
-#elseif js
+class BitmapFilterType
+{
+   public static var FULL = "full";
+   public static var INNER = "inner";
+   public static var OUTER = "outer";
+}
 
-typedef BitmapFilterType = jeash.filters.BitmapFilterType;
 
 #else
-
 typedef BitmapFilterType = flash.filters.BitmapFilterType;
-
 #end

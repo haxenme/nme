@@ -1,15 +1,35 @@
 package nme.errors;
-
 #if (cpp || neko)
 
-typedef Error = neash.errors.Error;
 
-#elseif js
+class Error
+{
+	
+	private var errorID:Int;
+	private var message:Dynamic;
+	private var name:Dynamic;
 
-typedef Error = jeash.errors.Error;
+	public function new(?inMessage:Dynamic, id:Dynamic = 0)
+	{
+		message = inMessage;
+		errorID = id;
+	}
+	
+	
+	private function getStackTrace():String
+	{
+		return "";
+	}
+	
+	
+	public function toString():String
+	{
+		return message;
+	}
+	
+}
+
 
 #else
-
 typedef Error = flash.errors.Error;
-
 #end
