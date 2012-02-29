@@ -1,0 +1,8 @@
+-main InstallTool
+-neko ../../run.n
+-cp src
+-lib buildhx
+-lib gm2d
+-lib nme
+-lib swf
+--remap flash:nme
