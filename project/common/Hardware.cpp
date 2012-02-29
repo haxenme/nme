@@ -21,7 +21,7 @@ public:
       mElement.mColour = 0xffffffff;
       mSolidMode = false;
       mPerpLen = 0.5;
-      bool tessellate_lines = false;
+      bool tessellate_lines = true;
 
       if (inJob.mIsTileJob)
       {
@@ -565,7 +565,7 @@ public:
    {
       double len = (inP0 - inP1).Norm() + (inP2 - inP1).Norm();
       
-      int steps = (int)len*0.25;
+      int steps = (int)len*0.1;
       if (steps < 1) steps = 1;
       if (steps > 100) steps = 100;
 
@@ -650,6 +650,41 @@ public:
       }
    }
 
+   void EndCap(Vertices &vertices,UserPoint p0, UserPoint perp)
+   {
+      UserPoint back(-perp.y, perp.x);
+      if (mCaps==scSquare)
+      {
+         vertices.push_back(p0+perp);
+         vertices.push_back(p0+perp + back);
+         vertices.push_back(p0-perp);
+
+         vertices.push_back(p0+perp + back);
+         vertices.push_back(p0-perp + back);
+         vertices.push_back(p0-perp);
+      }
+      else
+      {
+         int n = std::max(2,(int)(mPerpLen * 4));
+         double dtheta = M_PI / n;
+         double theta = 0.0;
+         UserPoint prev(perp);
+         for(int i=1;i<n;i++)
+         {
+            UserPoint p =  perp*cos(theta) + back*sin(theta);
+            vertices.push_back(p0);
+            vertices.push_back(p0+prev);
+            vertices.push_back(p0+p);
+            prev = p;
+            theta += dtheta;
+         }
+
+         vertices.push_back(p0);
+         vertices.push_back(p0+prev);
+         vertices.push_back(p0-perp);
+      }
+   }
+
    void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
    {
       Vertices &vertices = mArrays->mVertices;
@@ -659,43 +694,9 @@ public:
       if (!inLoop && (mCaps==scSquare || mCaps==scRound))
       {
          UserPoint p0 = inPath[0].p;
-         UserPoint perp = inPath[1].getDir0(p0).Perp(mPerpLen);
-
-         UserPoint back(-perp.y, perp.x);
-         if (mCaps==scSquare)
-         {
-            vertices.push_back(p0+perp);
-            vertices.push_back(p0+perp + back);
-            vertices.push_back(p0-perp);
-
-            vertices.push_back(p0+perp + back);
-            vertices.push_back(p0-perp + back);
-            vertices.push_back(p0-perp);
-         }
-         else
-         {
-            int n = std::max(2,(int)(mPerpLen * 4));
-            double dtheta = M_PI / n;
-            double theta = 0.0;
-            UserPoint prev(perp);
-            for(int i=1;i<n;i++)
-            {
-               UserPoint p =  perp*cos(theta) + back*sin(theta);
-               vertices.push_back(p0);
-               vertices.push_back(p0+prev);
-               vertices.push_back(p0+p);
-               prev = p;
-               theta += dtheta;
-            }
-
-            vertices.push_back(p0);
-            vertices.push_back(p0+prev);
-            vertices.push_back(p0-perp);
-         }
+         EndCap(vertices, p0, inPath[1].getDir0(p0).Perp(mPerpLen));
       }
 
-
-      UserPoint prev_dir;
       double prev_alpha = 0;
       for(int i=1;i<inPath.size();i++)
       {
@@ -706,14 +707,15 @@ public:
           UserPoint dir0 = seg.getDir0(p0).Normalized();
           UserPoint dir1 = seg.getDir1(p0).Normalized();
 
-          if (i==1)
-             prev_dir = dir0;
 
           UserPoint next_dir;
           if (i+1<inPath.size())
              next_dir = inPath[i+1].getDir0(p).Normalized();
           else if (!inLoop)
+          {
              next_dir = dir1;
+             printf("Dup next_dir\n");
+          }
           else
              next_dir = inPath[1].getDir0(p).Normalized();
 
@@ -781,18 +783,23 @@ public:
           UserPoint p1_left = p-perp1;
           UserPoint p1_right = p+perp1;
 
-          // This could start getting dodgy when the line doubles-back
-          double max_alpha = (p-p0).Norm()*0.5;
-          if (alpha>0)
+          // This could start getting dodgy when the line doubles-back 
+          double orig = alpha != 0;
+          double max_alpha = std::max( (p0-p).Norm()*0.5, mPerpLen );
+          if (fabs(alpha)>max_alpha)
           {
-             p1_right -= dir1 * std::min(alpha,max_alpha);
+             // draw overlapped
+          }
+          else if (alpha>0)
+          {
+             p1_right -= dir1 * alpha;
              vertices.push_back(p1_left);
              vertices.push_back(p);
              vertices.push_back(p1_right);
           }
           else if (alpha<0)
           {
-             p1_left += dir1 * std::max(alpha,-max_alpha);
+             p1_left += dir1 * alpha;
              vertices.push_back(p1_left);
              vertices.push_back(p);
              vertices.push_back(p1_right);
@@ -801,7 +808,25 @@ public:
           UserPoint p0_left = p0-perp0;
           UserPoint p0_right = p0+perp0;
 
-          if (prev_alpha>0)
+          if (i==1 && inLoop)
+          {
+             UserPoint prev_dir = inPath[inPath.size()-1].getDir1(inPath[inPath.size()-2].p).Normalized();
+             UserPoint prev_perp(-prev_dir.y*mPerpLen, prev_dir.x*mPerpLen);
+             double denom_x = prev_dir.x+dir0.x;
+             double denom_y = prev_dir.y+dir0.y;
+
+             // Choose the better-conditioned axis
+             if (fabs(denom_x)>fabs(denom_y))
+                prev_alpha = denom_x==0 ? 0 : (prev_perp.x-perp0.x)/denom_x;
+             else
+                prev_alpha = denom_y==0 ? 0 : (prev_perp.y-perp0.y)/denom_y;
+          }
+
+          if (fabs(prev_alpha)>max_alpha)
+          {
+              // do nothing
+          }
+          else if (prev_alpha>0)
           {
              p0_right += dir0 * std::min(prev_alpha,max_alpha);
              vertices.push_back(p0_left);
@@ -816,7 +841,7 @@ public:
              vertices.push_back(p0_right);
           }
 
-          if (alpha!=0)
+          if (alpha)
              switch(mJoints)
              {
                 case sjRound:
@@ -868,7 +893,10 @@ public:
              vertices.push_back(p1_left);
           }
 
-          prev_dir  = dir1;
+          // Endcap end ...
+          if (!inLoop && (i+1==inPath.size()) && (mCaps==scSquare || mCaps==scRound))
+             EndCap(vertices, p, dir1.Perp(-mPerpLen));
+
           prev_alpha = alpha;
       }
 
