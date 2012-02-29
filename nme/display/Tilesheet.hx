@@ -1,5 +1,15 @@
 package nme.display;
-#if !jeash
+
+
+#if (cpp || neko)
+
+typedef Tilesheet = neash.display.Tilesheet;
+
+#elseif js
+
+typedef Tilesheet = jeash.display.Tilesheet;
+
+#else
 
 
 import nme.geom.Matrix;
@@ -21,15 +31,6 @@ class Tilesheet
 	 */
 	public var nmeBitmap:BitmapData;
 	
-	#if (cpp || neko)
-	
-	/**
-	 * @private
-	 */
-	public var nmeHandle:Dynamic;
-	
-	#else
-	
 	static private var defaultRatio:Point = new Point(0, 0);
 	private var bitmapHeight:Int;
 	private var bitmapWidth:Int;
@@ -40,19 +41,11 @@ class Tilesheet
 	private var _vertices:Vector<Float>;
 	private var _indices:Vector<Int>;
 	private var _uvs:Vector<Float>;
-
-	#end
 	
 	
 	public function new(inImage:BitmapData)
 	{
 		nmeBitmap = inImage;
-		
-		#if (cpp || neko)
-		
-		nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
-		
-		#else
 		
 		bitmapWidth = nmeBitmap.width;
 		bitmapHeight = nmeBitmap.height;
@@ -65,28 +58,17 @@ class Tilesheet
 		_indices = new Vector<Int>();
 		_uvs = new Vector<Float>();
 		
-		#end
 	}
 	
 	
 	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null)
 	{
-		#if (cpp || neko)
-		
-		nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
-		
-		#else
-		
 		tiles.push(rectangle);
 		if (centerPoint == null) tilePoints.push(defaultRatio);
 		else tilePoints.push(new Point(centerPoint.x / rectangle.width, centerPoint.y / rectangle.height));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
-		
-		#end
 	}
 	
-	
-	#if (!cpp && !neko)
 	
 	private function adjustIDs(vec:Vector<Int>, len:UInt)
 	{
@@ -145,8 +127,6 @@ class Tilesheet
 		return vec;
 	}
 	
-	#end
-	
 	
 	/**
 	 * Fast method to draw a batch of tiles using a Tilesheet
@@ -162,19 +142,13 @@ class Tilesheet
 	 * 
 	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
 	 * 
-	 * @param	graphics		The nme.display.Graphics object to use for drawing
+	 * @param	graphics		The neash.display.Graphics object to use for drawing
 	 * @param	tileData		An array of all position, ID and optional values for use in drawing
 	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
 	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
 	 */
 	public function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
 	{
-		#if (cpp || neko)
-		
-		graphics.drawTiles (this, tileData, smooth, flags);
-		
-		#else
-		
 		var useScale = (flags & TILE_SCALE) > 0;
 		var useRotation = (flags & TILE_ROTATION) > 0;
 		var useRGB = (flags & TILE_RGB) > 0;
@@ -378,26 +352,9 @@ class Tilesheet
 		}
 		
 		graphics.endFill ();
-		
-		#end
 	}
-	
-	
-	
-	// Native Methods
-	
-	
-	
-	#if (cpp || neko)
-	
-	private static var nme_tilesheet_create = Loader.load("nme_tilesheet_create", 1);
-	private static var nme_tilesheet_add_rect = Loader.load("nme_tilesheet_add_rect", 3);
-	
-	#end
 	
 }
 
 
-#else
-typedef Tilesheet = jeash.display.Tilesheet;
 #end

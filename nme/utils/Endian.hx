@@ -1,16 +1,15 @@
 package nme.utils;
+
 #if (cpp || neko)
 
+typedef Endian = neash.utils.Endian;
 
-class Endian
-{
+#elseif js
 
-	public static inline var BIG_ENDIAN : String = "bigEndian";
-	public static inline var LITTLE_ENDIAN : String = "littleEndian";
-
-}
-
+typedef Endian = jeash.utils.Endian;
 
 #else
+
 typedef Endian = flash.utils.Endian;
+
 #end

@@ -1,18 +1,15 @@
 package nme.errors;
+
 #if (cpp || neko)
 
+typedef SecurityError = neash.errors.SecurityError;
 
-class SecurityError extends Error
-{
-	
-	public function new(inMessage:String = "")
-	{
-		super(inMessage, 0);
-	}
-	
-}
+#elseif js
 
+typedef SecurityError = jeash.errors.SecurityError;
 
 #else
+
 typedef SecurityError = flash.errors.SecurityError;
+
 #end

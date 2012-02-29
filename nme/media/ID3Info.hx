@@ -1,26 +1,15 @@
 package nme.media;
+
 #if (cpp || neko)
 
+typedef ID3Info = neash.media.ID3Info;
 
-class ID3Info
-{
-	
-	public var album:String;
-	public var artist:String;
-	public var comment:String;
-	public var genre:String;
-	public var songName:String;
-	public var track:String;
-	public var year : String;
+#elseif js
 
-
-	public function new() {
-		
-	}
-	
-}
-
+typedef ID3Info = jeash.media.ID3Info;
 
 #else
+
 typedef ID3Info = flash.media.ID3Info;
+
 #end

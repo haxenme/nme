@@ -1,15 +1,15 @@
 package nme.display;
+
 #if (cpp || neko)
 
+typedef SpreadMethod = neash.display.SpreadMethod;
 
-enum SpreadMethod
-{
-	PAD;
-	REPEAT;
-	REFLECT;
-}
+#elseif js
 
+typedef SpreadMethod = jeash.display.SpreadMethod;
 
 #else
+
 typedef SpreadMethod = flash.display.SpreadMethod;
+
 #end

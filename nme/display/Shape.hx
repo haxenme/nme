@@ -1,18 +1,15 @@
 package nme.display;
+
 #if (cpp || neko)
 
+typedef Shape = neash.display.Shape;
 
-class Shape extends DisplayObject
-{
-	
-	public function new()
-	{
-		super(DisplayObject.nme_create_display_object(), "Shape");
-	}
-	
-}
+#elseif js
 
+typedef Shape = jeash.display.Shape;
 
 #else
+
 typedef Shape = flash.display.Shape;
+
 #end

@@ -1,16 +1,15 @@
 package nme.display;
+
 #if (cpp || neko)
 
+typedef BitmapDataChannel = neash.display.BitmapDataChannel;
 
-class BitmapDataChannel
-{
-	static public inline var ALPHA = 0x0008;
-	static public inline var BLUE = 0x0004;
-	static public inline var GREEN = 0x0002;
-	static public inline var RED = 0x0001;
-}
+#elseif js
 
+typedef BitmapDataChannel = jeash.display.BitmapDataChannel;
 
 #else
+
 typedef BitmapDataChannel = flash.display.BitmapDataChannel;
+
 #end

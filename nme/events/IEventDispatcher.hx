@@ -1,22 +1,15 @@
 package nme.events;
+
 #if (cpp || neko)
 
+typedef IEventDispatcher = neash.events.IEventDispatcher;
 
-interface IEventDispatcher
-{
-	
-	public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void;
-	public function dispatchEvent(event:Event):Bool;
-	public function hasEventListener(type:String):Bool;
-	public function removeEventListener(type:String, listener:Function, useCapture:Bool = false):Void;
-	public function willTrigger(type:String):Bool;
+#elseif js
 
-}
-
-
-typedef Function = Dynamic -> Void;
-
+typedef IEventDispatcher = jeash.events.IEventDispatcher;
 
 #else
+
 typedef IEventDispatcher = flash.events.IEventDispatcher;
+
 #end

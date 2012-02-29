@@ -1,16 +1,15 @@
 package nme.text;
+
 #if (cpp || neko)
 
+typedef TextFieldAutoSize = neash.text.TextFieldAutoSize;
 
-enum TextFieldAutoSize
-{
-   CENTER;
-   LEFT;
-   NONE;
-   RIGHT;
-}
+#elseif js
 
+typedef TextFieldAutoSize = jeash.text.TextFieldAutoSize;
 
 #else
+
 typedef TextFieldAutoSize = flash.text.TextFieldAutoSize;
+
 #end

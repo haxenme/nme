@@ -1,29 +1,15 @@
 package nme.media;
+
 #if (cpp || neko)
 
+typedef SoundTransform = neash.media.SoundTransform;
 
-class SoundTransform
-{
-	
-	public var pan:Float;
-	public var volume:Float;
-	
-	
-	public function new(vol:Float = 1.0, panning:Float = 0.0)
-	{
-		volume = vol;
-		pan = panning;
-	}
-	
-	
-	public function clone()
-	{
-		return new SoundTransform(volume, pan);
-	}
-	
-}
+#elseif js
 
+typedef SoundTransform = jeash.media.SoundTransform;
 
 #else
+
 typedef SoundTransform = flash.media.SoundTransform;
+
 #end

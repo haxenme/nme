@@ -1,16 +1,15 @@
 package nme.text;
+
 #if (cpp || neko)
 
+typedef TextFormatAlign = neash.text.TextFormatAlign;
 
-class TextFormatAlign
-{
-   public static var LEFT = "left";
-   public static var RIGHT = "right";
-   public static var CENTER = "center";
-   public static var JUSTIFY = "justify";
-}
+#elseif js
 
+typedef TextFormatAlign = jeash.text.TextFormatAlign;
 
 #else
+
 typedef TextFormatAlign = flash.text.TextFormatAlign;
+
 #end

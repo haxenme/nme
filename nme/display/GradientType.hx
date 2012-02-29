@@ -1,14 +1,15 @@
 package nme.display;
+
 #if (cpp || neko)
 
+typedef GradientType = neash.display.GradientType;
 
-enum GradientType
-{	
-	RADIAL; 
-	LINEAR;	
-}
+#elseif js
 
+typedef GradientType = jeash.display.GradientType;
 
 #else
+
 typedef GradientType = flash.display.GradientType;
+
 #end

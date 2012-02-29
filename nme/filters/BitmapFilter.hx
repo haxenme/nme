@@ -1,28 +1,15 @@
 package nme.filters;
+
 #if (cpp || neko)
 
+typedef BitmapFilter = neash.filters.BitmapFilter;
 
-class BitmapFilter
-{
-	
-	private var type:String;
-	
-	
-	public function new (inType)
-	{
-		type = inType;
-	}
-	
-	
-	public function clone():BitmapFilter
-	{
-		throw("clone not implemented");
-		return null;
-	}
-	
-}
+#elseif js
 
+typedef BitmapFilter = jeash.filters.BitmapFilter;
 
 #else
+
 typedef BitmapFilter = flash.filters.BitmapFilter;
+
 #end

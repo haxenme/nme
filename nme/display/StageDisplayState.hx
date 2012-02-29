@@ -1,15 +1,15 @@
 package nme.display;
+
 #if (cpp || neko)
 
+typedef StageDisplayState = neash.display.StageDisplayState;
 
-enum StageDisplayState
-{
-   NORMAL;
-   FULL_SCREEN;
-   FULL_SCREEN_INTERACTIVE;
-}
+#elseif js
 
+typedef StageDisplayState = jeash.display.StageDisplayState;
 
 #else
+
 typedef StageDisplayState = flash.display.StageDisplayState;
+
 #end

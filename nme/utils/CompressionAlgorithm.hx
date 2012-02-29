@@ -1,8 +1,7 @@
 package nme.utils;
 
-class CompressionAlgorithm
-{
+#if (cpp || neko)
 
-	public static inline var ZLIB = "zlib";
+typedef CompressionAlgorithm = neash.utils.CompressionAlgorithm;
 
-}
+#end
