@@ -569,7 +569,7 @@ public:
       if (steps < 1) steps = 1;
       if (steps > 100) steps = 100;
 
-      double step = 1.0 / (steps + 1);
+      double step = 1.0 / (steps);
       double t = 0;
 
       UserPoint v0 = p0_right - p0_left;
@@ -578,17 +578,12 @@ public:
       UserPoint last_p_left = inP0 - perp0;
       UserPoint last_p_right = inP0 + perp0;
 
-      vertices.push_back(p0_left);
-      vertices.push_back(p0_left+v0*10);
-      vertices.push_back(p0_left+v0.Perp(3));
-
       // Clip against end ...
-      if ( v0.Cross(last_p_left-p0_left)<0 )
+      if ( v0.Cross(last_p_left-p0_left)>0  )
          last_p_left = p0_left;
-      if ( v0.Cross(last_p_right-p0_left)<0 )
+      if ( v0.Cross(last_p_right-p0_left)>0 )
          last_p_right = p0_right;
       // TODO - against other end?
-      
       for (int s=1; s <= steps; s++)
       {
          t += step;
@@ -605,7 +600,7 @@ public:
          UserPoint p_right = p + perp;
          UserPoint p_left = p - perp;
 
-         if (v0.Cross(dir)>0 )
+         if (v0.Cross(dir) < 0  ) // if pointing in same direction (left-handed)
          {
             if ( v0.Cross(p_left-p0_left)>0)
                p_left = p0_left;
@@ -613,11 +608,11 @@ public:
                p_right = p0_right;
          }
 
-         if (v1.Cross(dir)>0  )
+         if (v1.Cross(dir) < 0 ) // if pointing in same direction (left-handed)
          {
-            if ( v1.Cross(p_left-p1_left)>0)
+            if ( v1.Cross(p_left-p1_left)<0)
                p_left = p1_left;
-            if ( v1.Cross(p_right-p1_left)>0)
+            if ( v1.Cross(p_right-p1_left)<0)
                p_right = p1_right;
          }
 
