@@ -344,7 +344,11 @@ class FlashInstaller extends InstallerBase {
 			if (ext == "jpg" || ext == "png" || ext == "gif") {
 				
 				var bytes:haxe.io.Bytes;
-				try { bytes = neko.io.File.read (src, true).readAll (); }
+				try {
+               var file = neko.io.File.read (src, true);
+               bytes = file.readAll ();
+               file.close();
+               }
 				catch (e:Dynamic) { throw "Could not load image file: " + src; }
 				
 				outTags.push (TBitsJPEG (cid, JDJPEG2 (bytes)));
