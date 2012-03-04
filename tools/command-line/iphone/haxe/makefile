@@ -1,3 +1,14 @@
+ifeq ("$(ACTION)","clean")
+default: clean
+else
+default: build-haxe
+endif
+
+ifeq ("$(CONFIGURATION)","Debug")
+   BUILD_STYLE := Debug
+endif
+
+
 ifeq ("$(BUILD_STYLE)","Debug")
    DEBUG := -debug
    CONFIG := Debug
@@ -14,13 +25,6 @@ CONFIG := $(CONFIG)-$(HAXE_OS)
 
 
 LIB_FILE := build/$(CONFIG)/ApplicationMain$(DEBUG).$(HAXE_OS).a
-
-ifeq ("$(ACTION)","clean")
-default: clean
-else
-default: build-haxe
-endif
-
 
 export HXCPP_COMPILE_THREADS := 2
 
