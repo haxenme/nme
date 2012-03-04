@@ -714,7 +714,7 @@ public:
           else if (!inLoop)
           {
              next_dir = dir1;
-             printf("Dup next_dir\n");
+             //printf("Dup next_dir\n");
           }
           else
              next_dir = inPath[1].getDir0(p).Normalized();
