@@ -123,12 +123,15 @@ class EventDispatcher implements IEventDispatcher
       var list = nmeEventMap.get(type);
       for (i in 0...list.length)
       {
-         var li = list[i].get();
-         if (li.Is(listener, capture))
+         if (list[i]!=null)
          {
-            // Null-out here - remove on the dispatch event...
-            list[i] = null;
-            return;
+            var li = list[i].get();
+            if (li.Is(listener, capture))
+            {
+               // Null-out here - remove on the dispatch event...
+               list[i] = null;
+               return;
+            }
          }
       }
    }
