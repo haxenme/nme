@@ -238,8 +238,6 @@ struct TintSource
       c1 = mCol.c1; if (c1>127) c1++;
       c2 = mCol.c2; if (c2>127) c2++;
       mFormat = inFormat;
-      if (gC0IsRed == (bool)(inFormat & pfSwapRB))
-         std::swap(c0,c2);
 
       if (inFormat==pfAlpha)
       {
@@ -248,6 +246,9 @@ struct TintSource
       }
       else
       {
+         if (gC0IsRed == (bool)(inFormat & pfSwapRB))
+            std::swap(c0,c2);
+
          ARGB tmp;
          mComponentOffset = (uint8 *)&tmp.a - (uint8 *)&tmp;
          mPixelStride = 4;
@@ -288,7 +289,8 @@ struct TintSource
       }
       else
       {
-         if (gC0IsRed != (bool)(inFormat & pfSwapRB))
+         // In the alpha case, the order will be in the "natural" way (ie, c0 according to platform)
+         if (inFormat & pfSwapRB)
             mCol.SwapRB();
          return false;
       }
