@@ -11,6 +11,8 @@ class KeyboardEvent extends Event
 	public var altKey:Bool;
 	public var charCode:Int;
 	public var ctrlKey:Bool;
+	public var controlKey:Bool;
+	public var commandKey:Bool;
 	public var keyCode:Int;
 	public var keyLocation:Int;
 	public var shiftKey:Bool;
@@ -24,15 +26,17 @@ class KeyboardEvent extends Event
 		keyLocation = keyLocationValue == null ? 0 : keyLocationValue;
 		charCode = charCodeValue == null ? 0 : charCodeValue;
 		
-		shiftKey = shiftKeyValue == null ? false : shiftKeyValue;
-		altKey = altKeyValue == null ? false : altKeyValue;
-		ctrlKey = ctrlKeyValue == null ? false : ctrlKeyValue;
+		shiftKey = shiftKeyValue;
+		altKey = altKeyValue;
+		controlKey = controlKeyValue;
+		commandKey = commandKeyValue;
+		ctrlKey = ctrlKeyValue || controlKey || commandKey;
 	}
 	
 	
 	public override function clone ():Event
 	{
-		return new KeyboardEvent (type, bubbles, cancelable, charCode, keyCode, keyLocation, ctrlKey, altKey, shiftKey);
+		return new KeyboardEvent (type, bubbles, cancelable, charCode, keyCode, keyLocation, ctrlKey, altKey, shiftKey, controlKey, commandKey);
 	}
 	
 	

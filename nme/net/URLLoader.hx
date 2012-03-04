@@ -183,7 +183,6 @@ class URLLoader extends EventDispatcher
 	{
 		if (nmeHandle != null)
 		{
-			var old_state = state;
 			var old_loaded = bytesLoaded;
 			var old_total = bytesTotal;
 			nme_curl_update_loader(nmeHandle, this);
