@@ -196,6 +196,7 @@
 		<file name="software-renderer/TriangleRender.cpp"/>
 		
 		<file name="opengl/OpenGLContext.cpp" if="ogl"/>
+		<file name="opengl/OGLTexture.cpp" if="ogl"/>
 		
 	</files>
 	

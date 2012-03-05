@@ -1,103 +1,7 @@
-#ifdef WEBOS
+#include "./OGL.h"
 
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-typedef void *WinDC;
-typedef void *GLCtx;
-#define NME_GLES
 
-#elif defined(BLACKBERRY)
-
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-typedef void *WinDC;
-typedef void *GLCtx;
-#define NME_GLES
-
-#elif defined(IPHONE)
-
-#include <OpenGLES/ES1/gl.h>
-#include <OpenGLES/ES1/glext.h>
-
-//typedef CAEAGLLayer *WinDC;
-//typedef EAGLContext *GLCtx;
-typedef void *WinDC;
-typedef void *GLCtx;
-#define NME_GLES
-
-#elif defined(ANDROID)
-
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-typedef void *WinDC;
-typedef void *GLCtx;
-#include <android/log.h>
-#define NME_GLES
-
-#elif defined(GPH)
-
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-typedef void *WinDC;
-typedef void *GLCtx;
-#define NME_GLES
-
-#elif !defined(HX_WINDOWS)
-
-#include <SDL_opengl.h>
-typedef void *WinDC;
-typedef void *GLCtx;
-
-#define FORCE_NON_PO2
-
-#else
-
-#include <windows.h>
-#include <gl/GL.h>
-
-#define FORCE_NON_PO2
-
-typedef HDC WinDC;
-typedef HGLRC GLCtx;
-
-typedef ptrdiff_t GLsizeiptrARB;
-
-#ifndef GL_BUFFER_SIZE
-
-#define GL_BUFFER_SIZE                0x8764
-#define GL_BUFFER_USAGE               0x8765
-#define GL_ARRAY_BUFFER               0x8892
-#define GL_ELEMENT_ARRAY_BUFFER       0x8893
-#define GL_ARRAY_BUFFER_BINDING       0x8894
-#define GL_ELEMENT_ARRAY_BUFFER_BINDING 0x8895
-#define GL_VERTEX_ARRAY_BUFFER_BINDING 0x8896
-#define GL_NORMAL_ARRAY_BUFFER_BINDING 0x8897
-#define GL_COLOR_ARRAY_BUFFER_BINDING 0x8898
-#define GL_INDEX_ARRAY_BUFFER_BINDING 0x8899
-#define GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING 0x889A
-#define GL_EDGE_FLAG_ARRAY_BUFFER_BINDING 0x889B
-#define GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING 0x889C
-#define GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING 0x889D
-#define GL_WEIGHT_ARRAY_BUFFER_BINDING 0x889E
-#define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
-#define GL_READ_ONLY                  0x88B8
-#define GL_WRITE_ONLY                 0x88B9
-#define GL_READ_WRITE                 0x88BA
-#define GL_BUFFER_ACCESS              0x88BB
-#define GL_BUFFER_MAPPED              0x88BC
-#define GL_BUFFER_MAP_POINTER         0x88BD
-#define GL_STREAM_DRAW                0x88E0
-#define GL_STREAM_READ                0x88E1
-#define GL_STREAM_COPY                0x88E2
-#define GL_STATIC_DRAW                0x88E4
-#define GL_STATIC_READ                0x88E5
-#define GL_STATIC_COPY                0x88E6
-#define GL_DYNAMIC_DRAW               0x88E8
-#define GL_DYNAMIC_READ               0x88E9
-#define GL_DYNAMIC_COPY               0x88EA
-
-#endif
-
+#ifdef HX_WINDOWS
 typedef void (APIENTRY * glBindBufferARB_f)(GLenum target, GLuint buffer);
 typedef void (APIENTRY * glDeleteBuffersARB_f)(GLsizei n, const GLuint *buffers);
 typedef void (APIENTRY * glGenBuffersARB_f)(GLsizei n, GLuint *buffers);
@@ -107,21 +11,8 @@ glBindBufferARB_f glBindBuffer=0;
 glDeleteBuffersARB_f glDeleteBuffers=0;
 glGenBuffersARB_f glGenBuffers=0;
 glBufferDataARB_f glBufferData=0;
-
-
 #endif
 
-
-#include <Graphics.h>
-#include <Surface.h>
-
-#ifndef GL_CLAMP_TO_EDGE
-  #define GL_CLAMP_TO_EDGE 0x812F
-#endif
-
-#ifdef GPH
-#define NME_DITHER
-#endif
 
 
 int sgDrawCount = 0;
@@ -141,274 +32,6 @@ void ResetHardwareContext()
    //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
    gTextureContextVersion++;
 }
-
-
-bool gAppleNPO2 = false;
-bool NonPO2Supported(bool inNotRepeating)
-{
-   static bool tried = false;
-
-
-   //OpenGL 2.0 introduced non PO2 as standard, in 2004 - safe to assume it exists on PC
-   #ifdef FORCE_NON_PO2
-   	return true;
-   #endif
-
-   if (!tried)
-   {
-      tried = true;
-      const char* extensions = (char*) glGetString(GL_EXTENSIONS); 
-
-
-      gAppleNPO2 = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
-      //printf("Apple NPO2 : %d\n", apple_npo2);
-   }
-
-   return gAppleNPO2 && inNotRepeating;
-}
-
-
-
-
-class OGLTexture : public Texture
-{
-public:
-   OGLTexture(Surface *inSurface,unsigned int inFlags)
-   {
-      
-      mPixelWidth = inSurface->Width();
-      mPixelHeight = inSurface->Height();
-      mDirtyRect = Rect(0,0);
-      mContextVersion = gTextureContextVersion;
-
-      bool non_po2 = NonPO2Supported(true && (inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2));
-      //printf("Using non-power-of-2 texture %d\n",non_po2);
-            
-      int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
-      int h = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
-      mCanRepeat = IsPower2(w) && IsPower2(h);
-      
-      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
-
-      mTextureWidth = w;
-      mTextureHeight = h;
-      bool copy_required = w!=mPixelWidth || h!=mPixelHeight;
-
-      Surface *load = inSurface;
-      if (copy_required)
-      {
-         int pw = inSurface->Format()==pfAlpha ? 1 : 4;
-         load = new SimpleSurface(w,h,inSurface->Format());
-         load->IncRef();
-         for(int y=0;y<mPixelHeight;y++)
-         {
-             const uint8 *src = inSurface->Row(y);
-             uint8 *dest= (uint8 *)load->Row(y);
-             memcpy(dest,src,mPixelWidth*pw);
-             if (w>mPixelWidth)
-                memcpy(dest+mPixelWidth*pw,dest+(mPixelWidth-1)*pw,pw);
-         }
-         if (h!=mPixelHeight)
-         {
-            memcpy((void *)load->Row(mPixelHeight),load->Row(mPixelHeight-1),
-                   (mPixelWidth + (w!=mPixelWidth))*pw);
-         }
-      }
-
-     #ifdef IPHONE
-      uint8 *dest;
-      
-      if ( inSurface->Format() == pfARGB4444 ) {
-           int size = mTextureWidth * mTextureHeight;
-           dest = (uint8 *)malloc( size * 2 );
-            
-           const uint8 *src = (uint8 *)load->Row( 0 );
-                
-           for ( int c = 0; c < size; c++ ) {
-
-             uint8 srca = src[ c * 4 ] / 16;
-             uint8 srcb = src[ c * 4 + 1 ] / 16;
-             uint8 srcc = src[ c * 4 + 2 ] / 16;
-             uint8 srcd = src[ c * 4 + 3 ] / 16;
-
-             dest[ c * 2 ] = ( srcc << 4 | srcd );
-             dest[ c * 2 + 1 ] = ( srca << 4 | srcb );
-           }
-      } else if ( inSurface->Format() == pfRGB565 ) {
-           int size = mTextureWidth * mTextureHeight;
-           dest = (uint8 *)malloc( size * 2 );
-            
-           const uint8 *src = (uint8 *)load->Row( 0 );
-                
-           for ( int c = 0; c < size; c++ ) {
-             uint8 srca = src[ c * 4 ] / 8;
-             uint8 srcb = src[ c * 4 + 1 ] / 4;
-             uint8 srcc = src[ c * 4 + 2 ] / 8;
-             
-             //pack into 565
-             unsigned int combined = (srca << 11) | (srcb << 5) | (srcc << 0);
-
-            //write to the buffer
-             dest[ c * 2 +1] = combined >> 8;
-             dest[ c * 2  ] = combined & 0x00FF;
-           }
-      }
-      #endif
-
-
-      glGenTextures(1, &mTextureID);
-      // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
-      //  mTextureID, mPixelWidth, mPixelHeight);
-      glBindTexture(GL_TEXTURE_2D,mTextureID);
-      mRepeat = mCanRepeat;
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-
-      PixelFormat fmt = load->Format();
-      GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
-      GLuint store_format = src_format;
-      
-      
-      #ifdef IPHONE
-        if ( inSurface->Format() == pfARGB4444 ) {
-                glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
-                    GL_UNSIGNED_SHORT_4_4_4_4, dest  );
-                
-                free( dest );
-        } else if ( inSurface->Format() == pfRGB565 ) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
-                    GL_UNSIGNED_SHORT_5_6_5, dest  );
-                
-                free( dest );
-        } else
-      #endif
-      
-      glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, src_format,
-            GL_UNSIGNED_BYTE, load->Row(0) );
-
-      mSmooth = true;
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		#ifdef GPH
-		glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-      #else
-      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		#endif
-
-
-      if (copy_required)
-      {
-         load->DecRef();
-      }
-
-      //int err = glGetError();
-   }
-   ~OGLTexture()
-   {
-      if (mTextureID && mContextVersion==gTextureContextVersion)
-      {
-         //__android_log_print(ANDROID_LOG_ERROR, "NME", "DeleteTexture %d (%dx%d)",
-           //mTextureID, mPixelWidth, mPixelHeight);
-         glDeleteTextures(1,&mTextureID);
-      }
-   }
-
-   void Bind(class Surface *inSurface,int inSlot)
-   {
-      glBindTexture(GL_TEXTURE_2D,mTextureID);
-      if (gTextureContextVersion!=mContextVersion)
-      {
-         mContextVersion = gTextureContextVersion;
-         mDirtyRect = Rect(inSurface->Width(),inSurface->Height());
-      }
-      if (mDirtyRect.HasPixels())
-      {
-         //__android_log_print(ANDROID_LOG_INFO, "NME", "UpdateDirtyRect! %d %d",
-             //mPixelWidth, mPixelHeight);
-
-         PixelFormat fmt = inSurface->Format();
-         GLuint src_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
-         glGetError();
-         const uint8 *p0 = 
-            inSurface->Row(mDirtyRect.y) + mDirtyRect.x*inSurface->BytesPP();
-         #if defined(NME_GLES)
-         for(int y=0;y<mDirtyRect.h;y++)
-         {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y + y,
-               mDirtyRect.w, 1,
-               src_format, GL_UNSIGNED_BYTE,
-               p0 + y*inSurface->GetStride());
-         }
-         #else
-         glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
-         glTexSubImage2D(GL_TEXTURE_2D, 0, mDirtyRect.x,mDirtyRect.y,
-            mDirtyRect.w, mDirtyRect.h,
-            src_format, GL_UNSIGNED_BYTE,
-            p0);
-         glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
-         #endif
-         int err = glGetError();
-         mDirtyRect = Rect();
-      }
-   }
-
-   void BindFlags(bool inRepeat,bool inSmooth)
-   {
-      if (!mCanRepeat) inRepeat = false;
-      if (mRepeat!=inRepeat)
-      {
-         mRepeat = inRepeat;
-         if (mRepeat)
-         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-         }
-         else
-         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-         }
-      }
-
-      if (mSmooth!=inSmooth)
-      {
-         mSmooth = inSmooth;
-         if (mSmooth)
-         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-         }
-         else
-         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-         }
-      }
-
-   }
-
-
-   UserPoint PixelToTex(const UserPoint &inPixels)
-   {
-      return UserPoint(inPixels.x/mTextureWidth, inPixels.y/mTextureHeight);
-   }
-
-	UserPoint TexToPaddedTex(const UserPoint &inTex)
-   {
-      return UserPoint(inTex.x*mPixelWidth/mTextureWidth, inTex.y*mPixelHeight/mTextureHeight);
-   }
-
-
-
-   GLuint mTextureID;
-   bool mCanRepeat;
-   bool mRepeat;
-   bool mSmooth;
-   int mPixelWidth;
-   int mPixelHeight;
-   int mTextureWidth;
-   int mTextureHeight;
-};
 
 // --- HardwareContext Interface ---------------------------------------------------------
 
@@ -453,7 +76,7 @@ public:
       mWidth = inWidth;
       mHeight = inHeight;
       #ifdef ANDROID
-      __android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
+      //__android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
       #endif
 
    }
@@ -477,10 +100,12 @@ public:
       }
       else
       {
+         // TODO: Clear with a rect
          glColor4f((GLclampf)( ((inColour >>16) & 0xff) /255.0),
                    (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
                    (GLclampf)( ((inColour     ) & 0xff) /255.0),
                    (GLclampf)1.0 );
+
          glMatrixMode(GL_MODELVIEW);
          glPushMatrix();
          glLoadIdentity();
@@ -504,22 +129,27 @@ public:
          glViewport(mViewport.x, mHeight-mViewport.y1(), mViewport.w, mViewport.h);
    }
 
+   virtual void setOrtho(float x0,float x1, float y0, float y1)
+   {
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      #if defined(NME_GLES)
+      glOrthof
+      #else
+      glOrtho
+      #endif
+            //(0,inRect.w, inRect.h,0, -1, 1);
+         (x0,x1,y0,y1, -1, 1);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      mModelView = Matrix();
+   }
+
    void SetViewport(const Rect &inRect)
    {
       if (inRect!=mViewport)
       {
-         glMatrixMode(GL_PROJECTION);
-         glLoadIdentity();
-         #if defined(NME_GLES)
-         glOrthof
-         #else
-         glOrtho
-         #endif
-            //(0,inRect.w, inRect.h,0, -1, 1);
-            (inRect.x,inRect.x1(), inRect.y1(),inRect.y, -1, 1);
-         glMatrixMode(GL_MODELVIEW);
-         glLoadIdentity();
-         mMatrix = Matrix();
+         setOrtho(inRect.x,inRect.x1(), inRect.y1(),inRect.y);
          mViewport = inRect;
          glViewport(inRect.x, mHeight-inRect.y1(), inRect.w, inRect.h);
       }
@@ -574,29 +204,34 @@ public:
       #endif
    }
 
+   virtual void CombineModelView(const Matrix &inModelView)
+   {
+      // Do not combine ModelView and Projection in fixed-function
+      mModelView=inModelView;
+      float matrix[] =
+      {
+         mModelView.m00, mModelView.m10, 0, 0,
+         mModelView.m01, mModelView.m11, 0, 0,
+         0,           0,           1, 0,
+         mModelView.mtx, mModelView.mty, 0, 1
+      };
+      glLoadMatrixf(matrix);
+ 
+   }
 
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
-   	
+      
       glEnable( GL_BLEND );
       SetViewport(inState.mClipRect);
 
-      if (mMatrix!=*inState.mTransform.mMatrix)
+      if (mModelView!=*inState.mTransform.mMatrix)
       {
-         mMatrix=*inState.mTransform.mMatrix;
-         float matrix[] =
-         {
-            mMatrix.m00, mMatrix.m10, 0, 0,
-            mMatrix.m01, mMatrix.m11, 0, 0,
-            0,           0,           1, 0,
-            mMatrix.mtx, mMatrix.mty, 0, 1
-         };
-         glLoadMatrixf(matrix);
+         CombineModelView(*inState.mTransform.mMatrix);
          mLineScaleV = -1;
          mLineScaleH = -1;
          mLineScaleNormal = -1;
       }
-
 
       uint32 last_col = 0;
       Texture *bound_texture = 0;
@@ -609,10 +244,10 @@ public:
 
          Vertices &vert = arrays.mVertices;
          Vertices &tex_coords = arrays.mTexCoords;
-			bool persp = arrays.mPerspectiveCorrect;
+         bool persp = arrays.mPerspectiveCorrect;
          
          if ( !arrays.mViewport.empty() ) {
-            SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );	
+            SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );   
          }
          
          if ( arrays.mBlendMode == bmAdd ) {
@@ -676,7 +311,7 @@ public:
             {
                bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
                #ifdef NME_DITHER
-					if (!draw.mBitmapSmooth)
+               if (!draw.mBitmapSmooth)
                   glDisable(GL_DITHER);
                #endif
             }
@@ -707,21 +342,21 @@ public:
                      case ssmNormal:
                         if (mLineScaleNormal<0)
                            mLineScaleNormal =
-                              sqrt( 0.5*( mMatrix.m00*mMatrix.m00 + mMatrix.m01*mMatrix.m01 +
-                                          mMatrix.m10*mMatrix.m10 + mMatrix.m11*mMatrix.m11 ) );
+                              sqrt( 0.5*( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 +
+                                          mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 ) );
                         SetLineWidth(draw.mWidth*mLineScaleNormal);
                         break;
                      case ssmVertical:
                         if (mLineScaleV<0)
                            mLineScaleV =
-                              sqrt( mMatrix.m00*mMatrix.m00 + mMatrix.m01*mMatrix.m01 );
+                              sqrt( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 );
                         SetLineWidth(draw.mWidth*mLineScaleV);
                         break;
 
                      case ssmHorizontal:
                         if (mLineScaleH<0)
                            mLineScaleH =
-                              sqrt( mMatrix.m10*mMatrix.m10 + mMatrix.m11*mMatrix.m11 );
+                              sqrt( mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 );
                         SetLineWidth(draw.mWidth*mLineScaleH);
                         break;
                   }
@@ -736,7 +371,7 @@ public:
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
 
             #ifdef NME_DITHER
-				if (bound_texture && !draw.mBitmapSmooth)
+            if (bound_texture && !draw.mBitmapSmooth)
                glEnable(GL_DITHER);
             #endif
          }
@@ -769,8 +404,8 @@ public:
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
       glEnable(GL_TEXTURE_2D);
       #ifdef NME_DITHER
-		if (!inSmooth)
-		  glDisable(GL_DITHER);
+      if (!inSmooth)
+        glDisable(GL_DITHER);
       #endif
    }
 
@@ -803,7 +438,7 @@ public:
       }
 
       #ifdef NME_DITHER
-		glEnable(GL_DITHER);
+      glEnable(GL_DITHER);
       #endif
       mBitmapTexture = 0;
       mBitmapSurface = 0;
@@ -842,7 +477,7 @@ public:
 
    Texture *CreateTexture(Surface *inSurface,unsigned int inFlags)
    {
-      return new OGLTexture(inSurface,inFlags);
+      return OGLCreateTexture(inSurface,inFlags);
    }
 
    void SetQuality(StageQuality inQ)
@@ -867,7 +502,8 @@ public:
       }
    }
 
-   Matrix mMatrix;
+   Matrix mModelView;
+
    double mLineScaleV;
    double mLineScaleH;
    double mLineScaleNormal;
@@ -896,10 +532,18 @@ void ReleaseVertexBufferObject(unsigned int inVBO)
 #endif
 
 
-HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
+class OGL2Context : public OGLContext
 {
-   HardwareContext *ctx =  new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+public:
+   OGL2Context(WinDC inDC, GLCtx inOGLCtx) : OGLContext(inDC,inOGLCtx)
+   {
+   }
 
+};
+
+
+void InitExtensions()
+{
    static bool extentions_init = false;
    if (!extentions_init)
    {
@@ -918,7 +562,17 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
       #endif
       #endif
    }
+}
 
+HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
+{
+   #if 0
+   HardwareContext *ctx =  new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
+   #else
+   HardwareContext *ctx =  new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+   #endif
+
+   InitExtensions();
    return ctx;
 }
 
