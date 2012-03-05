@@ -1642,7 +1642,18 @@ class InstallerBase {
 	public function recursiveCopy (source:String, destination:String, process:Bool = true) {
 		
 		mkdir (destination);
-		var files = FileSystem.readDirectory (source);
+		
+		var files:Array <String> = null;
+		
+		try {
+			
+			files = FileSystem.readDirectory (source);
+			
+		} catch (e:Dynamic) {
+			
+			error ("Could not find source directory \"" + source + "\"");
+			
+		}
 		
 		for (file in files) {
 			
