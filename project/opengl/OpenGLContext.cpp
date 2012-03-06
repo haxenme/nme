@@ -22,6 +22,7 @@ int sgDrawBitmap = 0;
 namespace nme
 {
 
+const double one_on_256 = 1.0/256.0;
 
 static GLuint sgOpenglType[] =
   { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS };
@@ -207,7 +208,6 @@ public:
    virtual void CombineModelView(const Matrix &inModelView)
    {
       // Do not combine ModelView and Projection in fixed-function
-      mModelView=inModelView;
       float matrix[] =
       {
          mModelView.m00, mModelView.m10, 0, 0,
@@ -227,14 +227,14 @@ public:
 
       if (mModelView!=*inState.mTransform.mMatrix)
       {
-         CombineModelView(*inState.mTransform.mMatrix);
+         mModelView=*inState.mTransform.mMatrix;
+         CombineModelView(mModelView);
          mLineScaleV = -1;
          mLineScaleH = -1;
          mLineScaleNormal = -1;
       }
 
       uint32 last_col = 0;
-      Texture *bound_texture = 0;
       for(int c=0;c<inCalls.size();c++)
       {
          HardwareArrays &arrays = *inCalls[c];
@@ -273,45 +273,40 @@ public:
          else
          #endif
          {
-            glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,&vert[0].x);
+            SetPositionData(&vert[0].x,persp);
          }
 
+         Texture *boundTexture = 0;
          bool tex = arrays.mSurface && tex_coords.size();
          if (tex)
          {
-            glEnable(GL_TEXTURE_2D);
-            arrays.mSurface->Bind(*this,0);
-            bound_texture = arrays.mSurface->GetOrCreateTexture(*this);
-            const ColorTransform &t = *inState.mColourTransform;
-            glColor4f(t.redMultiplier,t.greenMultiplier,t.blueMultiplier,t.alphaMultiplier);
+            boundTexture = arrays.mSurface->GetOrCreateTexture(*this);
+            SetTexture(arrays.mSurface,&tex_coords[0].x);
             last_col = -1;
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glTexCoordPointer(2,GL_FLOAT,0,&tex_coords[0]);
+            SetTextureColourTransform(inState.mColourTransform);
          }
          else
          {
-            bound_texture = 0;
-            glDisable(GL_TEXTURE_2D);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            boundTexture = 0;
+            SetTexture(0,0);
          }
 
          if (arrays.mColours.size() == vert.size())
-         {
-            glEnableClientState(GL_COLOR_ARRAY);
-            glColorPointer(4,GL_UNSIGNED_BYTE,0,&arrays.mColours[0]);
-         }
+            SetColourArray(&arrays.mColours[0]);
 
    
+         PrepareDrawing();
+
          sgBufferCount++;
          for(int e=0;e<elements.size();e++)
          {
             DrawElement draw = elements[e];
 
-            if (bound_texture)
+            if (boundTexture)
             {
-               bound_texture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
+               boundTexture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
                #ifdef NME_DITHER
-               if (!draw.mBitmapSmooth)
+               if (!inSmooth)
                   glDisable(GL_DITHER);
                #endif
             }
@@ -321,10 +316,11 @@ public:
                 if (c==0 || last_col!=col)
                 {
                     last_col = col; 
-                    glColor4f((float) ((col >> 16) & 0xFF) / 256,
-                      (float) ((col >> 8) & 0xFF) / 256,
-                      (float) (col & 0xFF) / 256,
-                      (float) ((col >> 24) & 0xFF) / 256);
+                    SetElementColour(
+                      (float) ((col >> 16) & 0xFF) *  one_on_256,
+                      (float) ((col >> 8) & 0xFF) * one_on_256,
+                      (float) (col & 0xFF) * one_on_256,
+                      (float) ((col >> 24) & 0xFF) * one_on_256);
                 }
             }
             
@@ -371,13 +367,65 @@ public:
             glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
 
             #ifdef NME_DITHER
-            if (bound_texture && !draw.mBitmapSmooth)
+            if (boundTexture && !draw.mBitmapSmooth)
                glEnable(GL_DITHER);
             #endif
          }
 
          if (arrays.mColours.size() == vert.size())
-            glDisableClientState(GL_COLOR_ARRAY);
+            SetColourArray(0);
+      }
+   }
+
+   virtual void PrepareDrawing()
+   {
+   }
+
+   virtual void SetElementColour(float r, float g, float b, float a)
+   {
+       glColor4f(r,g,b,a);
+   }
+
+   virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
+   {
+      if (!inSurface)
+      {
+         glDisable(GL_TEXTURE_2D);
+         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      }
+      else
+      {
+         glEnable(GL_TEXTURE_2D);
+         inSurface->Bind(*this,0);
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glTexCoordPointer(2,GL_FLOAT,0,inTexCoords);
+      }
+   }
+
+   virtual void SetPositionData(const float *inData,bool inPerspective)
+   {
+      glVertexPointer(inPerspective ? 4 : 2,GL_FLOAT,0,inData);
+   }
+
+   virtual void SetTextureColourTransform(const ColorTransform *inTransform)
+   {
+      glColor4f( inTransform->redMultiplier,
+                 inTransform->greenMultiplier,
+                 inTransform->blueMultiplier,
+                 inTransform->alphaMultiplier);
+   }
+
+
+   virtual void SetColourArray(const int *inData)
+   {
+      if (inData)
+      {
+         glEnableClientState(GL_COLOR_ARRAY);
+         glColorPointer(4,GL_UNSIGNED_BYTE,0,inData);
+      }
+      else
+      {
+         glDisableClientState(GL_COLOR_ARRAY);
       }
    }
 
@@ -539,6 +587,69 @@ public:
    {
    }
 
+   virtual void setOrtho(float x0,float x1, float y0, float y1)
+   {
+      mScaleX = 2.0/(x1-x0);
+      mScaleY = 2.0/(y1-y0);
+      mOffsetX = (x0+x1)/(x0-x1);
+      mOffsetY = (y0+y1)/(y0-y1);
+   } 
+
+   virtual void CombineModelView(const Matrix &inModelView)
+   {
+      mTrans[0][0] = inModelView.m00 * mScaleX;
+      mTrans[0][1] = inModelView.m01 * mScaleX;
+      mTrans[0][2] = 0;
+      mTrans[0][3] = inModelView.mtx * mScaleX + mOffsetX;
+
+      mTrans[1][0] = inModelView.m10 * mScaleY;
+      mTrans[1][1] = inModelView.m11 * mScaleY;
+      mTrans[1][2] = 0;
+      mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
+   }
+
+   virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
+   {
+      mTextureSurface = inSurface;
+      mTexCoords = inTexCoords;
+   }
+
+   virtual void SetPositionData(const float *inData,bool inPerspective)
+   {
+      mPosition = inData;
+      mPositionPerspective = inData;
+   }
+
+   virtual void SetTextureColourTransform(const ColorTransform &inTransform)
+   {
+   }
+
+   virtual void SetColourArray(const int *inData)
+   {
+   }
+
+   virtual void PrepareDrawing()
+   {
+   }
+
+   virtual void SetElementColour(float r, float g, float b, float a)
+   {
+   }
+
+   Surface   *mTextureSurface;
+   const int *mColourArray;
+   const float *mTexCoords;
+   const float *mPosition;
+   bool  mPositionPerspective;
+   ColorTransform *mTextureTransform;
+
+
+   double mScaleX;
+   double mOffsetX;
+   double mScaleY;
+   double mOffsetY;
+
+   float mTrans[2][4];
 };
 
 
