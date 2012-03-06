@@ -295,10 +295,12 @@ public:
             SetColourArray(&arrays.mColours[0]);
 
    
-         PrepareDrawing();
+         int n = elements.size();
+         if (!PrepareDrawing())
+            n = 0;
 
          sgBufferCount++;
-         for(int e=0;e<elements.size();e++)
+         for(int e=0;e<n;e++)
          {
             DrawElement draw = elements[e];
 
@@ -316,11 +318,7 @@ public:
                 if (c==0 || last_col!=col)
                 {
                     last_col = col; 
-                    SetElementColour(
-                      (float) ((col >> 16) & 0xFF) *  one_on_256,
-                      (float) ((col >> 8) & 0xFF) * one_on_256,
-                      (float) (col & 0xFF) * one_on_256,
-                      (float) ((col >> 24) & 0xFF) * one_on_256);
+                    SetElementColour(col);
                 }
             }
             
@@ -377,13 +375,18 @@ public:
       }
    }
 
-   virtual void PrepareDrawing()
+   virtual bool PrepareDrawing()
    {
+      return true;
    }
 
-   virtual void SetElementColour(float r, float g, float b, float a)
+   virtual void SetElementColour(unsigned int col)
    {
-       glColor4f(r,g,b,a);
+       glColor4f(
+         (float) ((col >> 16) & 0xFF) *  one_on_256,
+         (float) ((col >> 8) & 0xFF) * one_on_256,
+         (float) (col & 0xFF) * one_on_256,
+         (float) ((col >> 24) & 0xFF) * one_on_256);
    }
 
    virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
@@ -585,6 +588,13 @@ class OGL2Context : public OGLContext
 public:
    OGL2Context(WinDC inDC, GLCtx inOGLCtx) : OGLContext(inDC,inOGLCtx)
    {
+      for(int i=0;i<gpuSIZE;i++)
+         mProg[i] = 0;
+   }
+   ~OGL2Context()
+   {
+      for(int i=0;i<gpuSIZE;i++)
+         delete mProg[i];
    }
 
    virtual void setOrtho(float x0,float x1, float y0, float y1)
@@ -620,36 +630,82 @@ public:
       mPositionPerspective = inData;
    }
 
-   virtual void SetTextureColourTransform(const ColorTransform &inTransform)
+   virtual void SetTextureColourTransform(const ColorTransform *inTransform)
    {
+      if (inTransform->IsIdentityColour())
+         mColourTransform = 0;
+      else;
+         mColourTransform = inTransform;
    }
 
    virtual void SetColourArray(const int *inData)
    {
+      mColourArray = inData;
    }
 
-   virtual void PrepareDrawing()
+   virtual bool PrepareDrawing()
    {
+      GPUProgID id = gpuNone; 
+      if (mTexCoords)
+      {
+         if (mColourTransform)
+            id = gpuTextureTransform;
+         else
+            id = gpuTexture;
+      }
+      else
+      {
+         if (mColourArray)
+            id = gpuColour;
+         else
+            id = gpuSolid;
+      }
+      if (id==gpuNone)
+         return false;
+      if (!mProg[id])
+         mProg[id] = GPUProg::create(id);
+      if (!mProg[id])
+         return false;
+
+      GPUProg *prog = mProg[id];
+      prog->bind();
+      prog->setPositionData(mPosition,mPositionPerspective);
+      if (mTexCoords)
+      {
+         prog->setTexCoordData(mTexCoords);
+         mTextureSurface->Bind(*this, prog->getTextureSlot() );
+      }
+      if (mColourTransform)
+         prog->setColourTransform(mColourTransform);
+
+      prog->setTransform(mTrans);
+
+      mCurrentProg = prog;
+      return true;
    }
 
-   virtual void SetElementColour(float r, float g, float b, float a)
+   virtual void SetElementColour(unsigned int col)
    {
+      if (mCurrentProg)
+         mCurrentProg->setTint(col);
    }
 
+   const float *mPosition;
+   bool  mPositionPerspective;
    Surface   *mTextureSurface;
    const int *mColourArray;
    const float *mTexCoords;
-   const float *mPosition;
-   bool  mPositionPerspective;
-   ColorTransform *mTextureTransform;
+   const ColorTransform *mColourTransform;
 
+   GPUProg *mCurrentProg;
+   GPUProg *mProg[gpuSIZE];
 
    double mScaleX;
    double mOffsetX;
    double mScaleY;
    double mOffsetY;
 
-   float mTrans[2][4];
+   Trans2x4 mTrans;
 };
 
 

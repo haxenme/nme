@@ -93,23 +93,35 @@ namespace nme
 
 Texture *OGLCreateTexture(Surface *inSurface,unsigned int inFlags);
 
+enum GPUProgID
+{
+   gpuNone = -1,
+   gpuSolid,
+   gpuColour,
+   gpuTexture,
+   gpuTextureTransform,
+   gpuSIZE,
+};
+
+typedef float Trans2x4[2][4];
+
 class GPUProg
 {
 public:
-   static GPUProg *Create(const char *inVertexShader, const char *inPixelShader);
+   static GPUProg *create(GPUProgID inID);
+
    virtual ~GPUProg() {}
 
    virtual bool bind() = 0;
-   virtual int  getPositionSlot() = 0;
-   virtual int  getTexCoord1DSlot() = 0;
-   virtual int  getTexCoord2DSlot() = 0;
-   virtual int  getTexCoordMaskSlot() = 0;
 
-   virtual void setTextureMode(bool inRepeat, bool inSmooth) = 0;
-   virtual void setMatrix(const float *inMatrix) = 0;
+   virtual void setPositionData(const float *inData, bool inIsPerspective) = 0;
+   virtual void setTexCoordData(const float *inData) = 0;
+   virtual void setColourTransform(const ColorTransform *inTransform) = 0;
+   virtual int  getTextureSlot() = 0;
+
+   virtual void setTransform(const Trans2x4 &inTrans) = 0;
    virtual void setTint(unsigned int inColour) = 0;
-   virtual void setGradientFocus(float inFocus) = 0;
-   virtual void setColourTransform(float *inOffset, float *inScale) = 0;
+   //virtual void setGradientFocus(float inFocus) = 0;
 };
 
 
