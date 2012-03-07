@@ -124,13 +124,12 @@
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/iPhone/" if="iphone"/>
-	<set name="THIRDPARTY_LIBS" value="${QNX_TARGET}/armle-v7/lib" if="blackberry"/>
+	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/BlackBerry/" if="blackberry"/>
 	<set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
 	
 	<set name="SLIBEXT" value=".lib" if="windows"/>
 	<set name="SLIBEXT" value=".a" unless="windows"/>
 	<set name="SLIBEXT" value=".so" if="webos"/>
-	<set name="SLIBEXT" value=".so" if="blackberry"/>
 	
 	
 	<files id="common">
@@ -333,8 +332,8 @@
 		<lib name="-lGLES_CM" if="webos"/>
 		<lib name="-lpdl" if="webos"/>
 		
-		<lib name="-lSDL" if="blackberry"/>
-		<lib name="-lSDL_mixer" if="blackberry" />
+		<!-- <lib name="-lSDL" if="blackberry"/>
+		<lib name="-lSDL_mixer" if="blackberry" /> -->
 		<lib name="-lGLES_CM" if="blackberry"/>
 		
 		<lib name="gdi32.lib" if="windows"/>

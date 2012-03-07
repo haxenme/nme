@@ -776,7 +776,7 @@ class PlatformSetup {
 		
 		}
 		
-		var defines = getDefines ([ "BLACKBERRY_SDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
+		var defines = getDefines ([ "BLACKBERRY_NDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
 		defines.set ("BLACKBERRY_SETUP", "true");
 		
 		if (defines != null) {
