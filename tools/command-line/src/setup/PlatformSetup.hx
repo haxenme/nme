@@ -26,9 +26,10 @@ class PlatformSetup {
 	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r16-macosx.zip";
 	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-windows.zip";
 	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r16-windows.zip";
-	private static var apacheAntUnixPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.tar.gz";
-	private static var apacheAntWindowsPath = "http://apache.mesi.com.ar//ant/binaries/apache-ant-1.8.2-bin.zip";
+	private static var apacheAntUnixPath = "http://apache.mirrorcatalogs.com//ant/binaries/apache-ant-1.8.3-bin.tar.gz";
+	private static var apacheAntWindowsPath = "http://apache.mirrorcatalogs.com//ant/binaries/apache-ant-1.8.3-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
+	private static var blackBerryNativeSDKURL = "https://bdsc.webapps.blackberry.com/native/download/";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u31-download-1501634.html";
 	private static var linuxX64Packages = "ia32-libs gcc-multilib g++-multilib";
@@ -616,7 +617,7 @@ class PlatformSetup {
 				
 				var downloadPath = "";
 				var defaultInstallPath = "";
-				var ignoreRootFolder = "apache-ant-1.8.2";
+				var ignoreRootFolder = "apache-ant-1.8.3";
 			
 				if (InstallTool.isWindows) {
 					
@@ -666,7 +667,7 @@ class PlatformSetup {
 					
 					} else if (InstallTool.isLinux) {
 						
-						InstallTool.runCommand ("", "firefox", [ javaJDKURL ]);
+						InstallTool.runCommand ("", "xdg-open", [ javaJDKURL ]);
 					
 					} else {
 						
@@ -746,8 +747,36 @@ class PlatformSetup {
 	
 	public static function setupBlackBerry ():Void {
 		
-		var defines = getDefines ([ "BLACKBERRY_SDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
+		var answer = ask ("Download and install the BlackBerry Native SDK?");
 		
+		if (answer == Yes || answer == Always) {
+		
+			Lib.println ("You must visit the BlackBerry Developer website to download the Native SDK");
+			var secondAnswer = ask ("Would you like to go there now?");
+		
+			if (secondAnswer != No) {
+			
+				if (InstallTool.isWindows) {
+				
+					Sys.command ("explorer", [ blackBerryNativeSDKURL ]);
+				
+				} else if (InstallTool.isLinux) {
+					
+					InstallTool.runCommand ("", "xdg-open", [ blackBerryNativeSDKURL ]);
+				
+				} else {
+					
+					InstallTool.runCommand ("", "open", [ blackBerryNativeSDKURL ]);
+					
+				}
+				
+			}
+			
+			Lib.println ("");
+		
+		}
+		
+		var defines = getDefines ([ "BLACKBERRY_SDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
 		defines.set ("BLACKBERRY_SETUP", "true");
 		
 		if (defines != null) {
