@@ -88,6 +88,10 @@ typedef void *GLCtx;
 #include <Graphics.h>
 #include <Surface.h>
 
+#ifdef HX_MACOS
+//#define ALLOW_OGL2
+#endif
+
 namespace nme
 {
 
