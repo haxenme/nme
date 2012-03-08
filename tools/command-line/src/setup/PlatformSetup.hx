@@ -776,7 +776,7 @@ class PlatformSetup {
 		
 		}
 		
-		var defines = getDefines ([ "BLACKBERRY_NDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
+		var defines = getDefines ([ "BLACKBERRY_NDK_ROOT", "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to BlackBerry Native SDK", "Path to your debug token", "IP address to access your device", "Password to access your device" ]);
 		defines.set ("BLACKBERRY_SETUP", "true");
 		
 		if (defines != null) {

@@ -1,6 +1,7 @@
 import documentation.DocumentationGenerator;
 import haxe.io.Eof;
 import installers.AndroidInstaller;
+import installers.BlackBerryInstaller;
 import installers.CPPInstaller;
 import installers.FlashInstaller;
 import installers.HTML5Installer;
@@ -91,6 +92,10 @@ class InstallTool {
 				case "html5":
 					
 					installer = new HTML5Installer ();
+				
+				case "blackberry":
+					
+					installer = new BlackBerryInstaller ();
 				
 				default:
 					

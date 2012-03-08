@@ -391,6 +391,7 @@ public:
    void SetCursor(Cursor inCursor)
    {
 	  #ifndef WEBOS
+	  #ifndef BLACKBERRY
       if (sDefaultCursor==0)
          sDefaultCursor = SDL_GetCursor();
 
@@ -418,6 +419,7 @@ public:
             SDL_SetCursor(sTextCursor);
          }
       }
+	  #endif
 	  #endif
    }
 
@@ -652,7 +654,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    #ifndef IPHONE
    #ifndef WEBOS
+   #ifndef BLACKBERRY
    SDL_WM_SetCaption( inTitle, 0 );
+   #endif
    #endif
    #endif
 
