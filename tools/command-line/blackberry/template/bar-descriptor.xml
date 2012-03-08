@@ -8,21 +8,18 @@
     <initialWindow>
         <systemChrome>none</systemChrome>
         <transparent>false</transparent>
-        <autoOrients>true</autoOrients>
+        <!-- <autoOrients>true</autoOrients> -->
         <aspectRatio>landscape</aspectRatio>
     </initialWindow>
 	
-    <env var="LD_LIBRARY_PATH" value="app/native/lib"/>
+    <env var="LD_LIBRARY_PATH" value="app/native"/>
 	
     <author>::APP_COMPANY::</author>
     <authorId>::APP_COMPANY_ID::</authorId>
     <action system="true">run_native</action>
     <category>core.games</category>
     <asset entry="true" path="::APP_FILE::" type="Qnx/Elf">::APP_FILE::</asset>
-    <!-- <asset path="deploy/splashscreen.png">splashscreen.png</asset>-->
-	<asset path="lib">lib</asset>
-	<asset path="assets">assets</asset>
-	::if (HAS_ICON == true)::<asset path="icon.png">icon.png</asset>
-	<icon><image>icon.png</image></icon>::end::
+	<asset path=".">.</asset>
+	::if (HAS_ICON == true)::<icon><image>icon.png</image></icon>::end::
     <!-- <splashscreen>splashscreen.png</splashscreen>-->
 </qnx>

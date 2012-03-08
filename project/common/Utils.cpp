@@ -28,7 +28,7 @@ typedef uint64_t __int64;
 namespace nme
 {
 
-#if defined(IPHONE) || defined(BLACKBERRY)
+#if defined(IPHONE)
 std::string gAssetBase = "assets/";
 #else
 std::string gAssetBase = "";

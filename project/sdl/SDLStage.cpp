@@ -390,9 +390,12 @@ public:
 
    void SetCursor(Cursor inCursor)
    {
-	  #ifndef WEBOS
-	  #ifndef BLACKBERRY
-      if (sDefaultCursor==0)
+	  #if defined(WEBOS) || defined(BLACKBERRY)
+	  SDL_ShowCursor(false);
+	  return;
+	  #endif
+	  
+	  if (sDefaultCursor==0)
          sDefaultCursor = SDL_GetCursor();
 
       mCurrentCursor = inCursor;
@@ -419,8 +422,6 @@ public:
             SDL_SetCursor(sTextCursor);
          }
       }
-	  #endif
-	  #endif
    }
 
    void ShowCursor(bool inShow)
@@ -602,6 +603,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       // use a larger chunksize for older devices
       chunksize = 1024;
    }
+   #elif BLACKBERRY
+   int chunksize = 512;
    #elif HX_WINDOWS
    int chunksize = 2048;
    #else
@@ -641,7 +644,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    int use_w = fullscreen ? 0 : inWidth;
    int use_h = fullscreen ? 0 : inHeight;
 
-#ifdef IPHONE
+#if defined(IPHONE) || defined(BLACKBERRY)
    sdl_flags |= SDL_NOFRAME;
 #else
    if (inIcon)
@@ -664,6 +667,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool is_opengl = false;
    int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
    
+   //int bpp = info->vfmt->BitsPerPixel;
    int startingPass = 0;
    
 	#if defined (WEBOS) || defined (HX_WINDOWS)

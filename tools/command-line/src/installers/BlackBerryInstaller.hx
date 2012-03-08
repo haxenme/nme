@@ -41,6 +41,12 @@ class BlackBerryInstaller extends InstallerBase {
 		ndlls.push (new NDLL ("libSDL", "nme"));
 		ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
 		
+		for (asset in assets) {
+			
+			asset.resourceName = "app/native/" + asset.resourceName;
+			
+		}
+		
 		super.generateContext ();
 		
 		context.CPP_DIR = buildDirectory + "/blackberry/obj";
@@ -52,7 +58,7 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function run ():Void {
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
 		
 	}
 	
@@ -84,16 +90,13 @@ class BlackBerryInstaller extends InstallerBase {
 				
 			}
 			
-			copyIfNewer (ndllPath, destination + "lib/" + ndll.name + ".so" );
+			copyIfNewer (ndllPath, destination + ndll.name + ".so" );
 			
 		}
 		
 		for (asset in assets) {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-				
-				asset.targetPath = "assets/" + asset.targetPath;
-				asset.resourceName = "assets/" + asset.targetPath;
 				
 				mkdir (Path.directory (destination + asset.targetPath));
 				
