@@ -52,7 +52,16 @@ class AndroidInstaller extends InstallerBase {
 			build = "release";
 			
 		}
+
+      // Bug in android build system - can't recognise changes !!!!
 		
+      var depFile = destination + "/bin/build.prop";
+      if (FileSystem.exists(depFile))
+      {
+         trace("force remove : " + depFile);
+         FileSystem.deleteFile(depFile);
+      }
+
 		runCommand (destination, ant, [ build ]);
 		
 	}
