@@ -17,9 +17,33 @@ class AndroidInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/android/bin";
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+      var arm5 = buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so";
+      var arm7 = buildDirectory + "/android/bin/libs/armeabi-7a/libApplicationMain.so";
+
+      if (!defines.exists("ARM7-only"))
+      {
+		   runCommand ("", "haxe", [ hxml ] );
 		
-		copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so");
+		   copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5 );
+      }
+      else
+      {
+         if (FileSystem.exists(arm5))
+            FileSystem.deleteFile(arm5);
+      }
+
+      if (defines.exists("ARM7") || defines.exists("ARM7-only"))
+      {
+		   runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
+		
+		   copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7 );
+      }
+      else
+      {
+         if (FileSystem.exists(arm7))
+            FileSystem.deleteFile(arm7);
+      }
+
 		
 		if (defines.exists ("JAVA_HOME")) {
 			

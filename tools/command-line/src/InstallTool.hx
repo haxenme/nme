@@ -412,6 +412,10 @@ class InstallTool {
 					
 				}
 				
+			} else if (arg.substr(0,4) == "-arm") {
+				
+				defines.set ("ARM" + arg.substr(4), "1");
+				
 			} else if (arg == "-64") {
 				
 				defines.set ("NME_64", "1");
@@ -531,6 +535,8 @@ class InstallTool {
 			Lib.println ("  -xml : Generate XML type information, for use with document");
 			Lib.println ("  -java-externs : Generate Haxe source code from compiled Java classes");
 			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
+			Lib.println ("  [android] -arm7 : Compile for arm-7a and arm5");
+			Lib.println ("  [android] -arm7-only : Compile for arm-7a for testing");
 			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
 			Lib.println ("  [flash] -web : Generate web template files");
 			Lib.println ("  [flash] -chrome : Generate Google Chrome app template files");
