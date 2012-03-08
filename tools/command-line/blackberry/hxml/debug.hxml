@@ -1,0 +1,6 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp ::BUILD_DIR::/blackberry/haxe
+-cpp ::CPP_DIR::
+--remap flash:nme
+-D blackberry
+-debug

@@ -721,7 +721,7 @@ class InstallerBase {
 			
 			switch (target) {
 				
-				case "android", "ios", "webos":
+				case "android", "ios", "webos", "blackberry":
 					
 					defines.set ("mobile", "1");
 				

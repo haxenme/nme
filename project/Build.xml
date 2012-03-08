@@ -107,6 +107,7 @@
 		<compilerflag value="-Iinclude"/>
 		<compilerflag value="-I${QNX_TARGET}/usr/include" />
 		<compilerflag value="-I../../sdl-static/include"/>
+		<file name="linux/NativeFont.cpp"/>
 		
 	</files>
 	
@@ -219,8 +220,8 @@
 	<set name="no_thirdparty_extras" value="1" if="gph"/>
 	
 	<set name="sdl_static" value="1" unless="mobile"/>
-	<unset name="sdl_static" if="dynamic_sdl"/>
 	<set name="sdl_static" value="1" if="blackberry"/>
+	<unset name="sdl_static" if="dynamic_sdl"/>
 	<set name="no_thirdparty_extras" value="1" if="dynamic_sdl"/>
 	
 	<set name="sdl_dynamic_path" value="-L/opt/local/lib" if="macos" />
@@ -286,9 +287,8 @@
 		<lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
 		<lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
 		<lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
-		<lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="blackberry" unless="dynamic_sdl"/>
 		
-		<lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static" unless="blackberry" />
 		<lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" if="sdl_static"/>
@@ -298,15 +298,17 @@
 		<lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
 		
 		<lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
+		<lib name="-L../ndll/BlackBerry" if="blackberry"/>
 		
 		<lib name="-lSDL" if="dynamic_sdl"/>
+		<lib name="-lSDL" if="blackberry"/>
 		<lib name="-lSDL_mixer" if="dynamic_sdl"/>
 		<lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
 		<lib name="-logg" if="dynamic_sdl" unless="webos"/>
 		<lib name="-lsmpeg" if="dynamic_sdl" unless="webos"/>
 		<lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
 		<lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>
-		<lib name="-lSDL" if="dynamic_sdl"/>
+		<lib name="-lTouchControlOverlay" if="blackberry"/>
 		<lib name="-lcurl" if="dynamic_sdl"/>
 		<lib name="-lpng" if="dynamic_sdl"/>
 		<lib name="-ljpeg" if="dynamic_sdl"/>
