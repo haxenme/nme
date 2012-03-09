@@ -670,7 +670,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    //int bpp = info->vfmt->BitsPerPixel;
    int startingPass = 0;
    
-	#if defined (WEBOS) || defined (HX_WINDOWS)
+	#if defined (WEBOS) || defined (HX_WINDOWS) || defined (BLACKBERRY)
 	startingPass = 2;
 	#endif
 
@@ -715,7 +715,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
          }
       }
    }
-
 
    if (!screen)
    {

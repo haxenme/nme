@@ -308,7 +308,7 @@
 		<lib name="-lsmpeg" if="dynamic_sdl" unless="webos"/>
 		<lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
 		<lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>
-		<lib name="-lTouchControlOverlay" if="blackberry"/>
+		
 		<lib name="-lcurl" if="dynamic_sdl"/>
 		<lib name="-lpng" if="dynamic_sdl"/>
 		<lib name="-ljpeg" if="dynamic_sdl"/>
@@ -334,7 +334,12 @@
 		<lib name="-lGLES_CM" if="webos"/>
 		<lib name="-lpdl" if="webos"/>
 		
-		<lib name="-lGLES_CM" if="blackberry"/>
+		<lib name="-lTouchControlOverlay" if="blackberry"/>
+		<lib name="-lbps" if="blackberry"/>
+		<lib name="-lscreen" if="blackberry"/>
+		<lib name="-lEGL" if="blackberry"/>
+		<lib name="-lGLESv1_CM" if="blackberry"/>
+		<lib name="-lm" if="blackberry"/>
 		
 		<lib name="gdi32.lib" if="windows"/>
 		<lib name="opengl32.lib" if="windows"/>

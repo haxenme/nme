@@ -1,25 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>                                                                                                                               
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
-    <id>::APP_PACKAGE::</id>
+    
+	<id>::APP_PACKAGE::</id>
     <name>::APP_TITLE::</name>
     <versionNumber>::APP_VERSION::</versionNumber>
     <description>::APP_DESCRIPTION::</description>
     
     <initialWindow>
+		
         <systemChrome>none</systemChrome>
         <transparent>false</transparent>
         <!-- <autoOrients>true</autoOrients> -->
-        <aspectRatio>landscape</aspectRatio>
+		::if (WIN_ORIENTATION == "landscape")::<aspectRatio>landscape</aspectRatio>::end::
+		::if (WIN_ORIENTATION == "portrait")::<aspectRatio>portrait</aspectRatio>::end::
+		
     </initialWindow>
 	
     <env var="LD_LIBRARY_PATH" value="app/native"/>
 	
     <author>::APP_COMPANY::</author>
     <authorId>::APP_COMPANY_ID::</authorId>
-    <action system="true">run_native</action>
-    <category>core.games</category>
-    <asset entry="true" path="::APP_FILE::" type="Qnx/Elf">::APP_FILE::</asset>
+    
+	<action system="true">run_native</action>
+    
+	<category>core.games</category>
+    
+	<asset entry="true" path="::APP_FILE::" type="Qnx/Elf">::APP_FILE::</asset>
 	<asset path=".">.</asset>
+	
 	::if (HAS_ICON == true)::<icon><image>icon.png</image></icon>::end::
     <!-- <splashscreen>splashscreen.png</splashscreen>-->
+	
 </qnx>

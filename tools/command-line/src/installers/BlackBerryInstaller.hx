@@ -65,6 +65,8 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function traceMessages ():Void {
 		
+		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		
 		//runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
 	}
