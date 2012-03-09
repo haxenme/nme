@@ -56,6 +56,17 @@ class BlackBerryInstaller extends InstallerBase {
 	}
 	
 	
+	override function onCreate ():Void {
+		
+		if (!defines.exists ("BLACKBERRY_SETUP")) {
+			
+			throw "You need to run \"nme setup blackberry\" before you can use the BlackBerry target";
+			
+		}
+		
+	}
+	
+	
 	override function run ():Void {
 		
 		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
