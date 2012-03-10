@@ -18,7 +18,7 @@ class AndroidInstaller extends InstallerBase {
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
       var arm5 = buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so";
-      var arm7 = buildDirectory + "/android/bin/libs/armeabi-7a/libApplicationMain.so";
+      var arm7 = buildDirectory + "/android/bin/libs/armeabi-v7a/libApplicationMain.so";
 
       if (!defines.exists("ARM7-only"))
       {
