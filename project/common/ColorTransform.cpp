@@ -46,7 +46,8 @@ uint32 ColorTransform::Transform(uint32 inVal) const
 
 static uint8 *sgIdentityLUT = 0;
 
-typedef std::pair<double,double> Trans;
+typedef std::pair<int,int> Trans;
+
 struct LUT
 {
 	int mLastUsed;
@@ -83,7 +84,7 @@ const uint8 *GetLUT(double inMultiplier, double inOffset)
 
 	sgLUTID++;
 
-   Trans t(inMultiplier,inOffset);
+   Trans t((int)(inMultiplier*128),(int)(inOffset*128));
 	LUTMap::iterator it = sgLUTs.find(t);
 	if (it!=sgLUTs.end())
 	{
