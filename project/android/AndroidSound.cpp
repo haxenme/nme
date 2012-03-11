@@ -23,6 +23,7 @@ public:
    AndroidSoundChannel(Object *inSound, int inHandle,
 							  double startTime, int loops, const SoundTransform &inTransform)
 	{
+		//LOGV("Android Sound Channel create, in handle, %d",inHandle);
       JNIEnv *env = GetEnv();
 		mStreamID = -1;
 		mSound = inSound;
@@ -33,6 +34,7 @@ public:
          jmethodID mid = env->GetStaticMethodID(cls, "playSound", "(IDDI)I");
          if (mid > 0)
 		   {
+			  // LOGV("Android Sound Channel found play method");
 			      mStreamID = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 		   }
 		}
@@ -124,6 +126,14 @@ public:
    }
    void setTransform(const SoundTransform &inTransform)
 	{
+	  JNIEnv *env = GetEnv();
+
+	  jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "setMusicTransform", "(DD)V");
+	  if(mid>0)
+	  {
+		  env->CallStaticVoidMethod(cls,mid,inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2));
+	  }
 	}
 
 	Object *mSound;
