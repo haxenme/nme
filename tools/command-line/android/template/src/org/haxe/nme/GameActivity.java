@@ -35,7 +35,7 @@ public class GameActivity extends Activity implements SensorEventListener {
     MainView mView;
     static AssetManager mAssets;
     static SoundPool mSoundPool;
-    static int       mSoundPoolID;
+    static int       mSoundPoolID=0;
     static Context mContext;
     static MediaPlayer mMediaPlayer = null;
     static final String GLOBAL_PREF_FILE="nmeAppPrefs";
@@ -51,9 +51,15 @@ public class GameActivity extends Activity implements SensorEventListener {
         mContext = this;
         mHandler = new android.os.Handler();
         mAssets = getAssets();
-        setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);  
 
-        mSoundPoolID = 1;
+		if(mSoundPoolID>1)
+		{
+			mSoundPoolID++;
+		}
+        else
+		{
+			mSoundPoolID = 1;
+		}
         mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
        //getResources().getAssets();
 
@@ -198,7 +204,6 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     static public int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
     {
-       Log.v("GameActivity","playMusic -----" + inResourceID);
        if (mMediaPlayer!=null)
        {
           Log.v("GameActivity","stop MediaPlayer");
@@ -212,14 +217,27 @@ public class GameActivity extends Activity implements SensorEventListener {
 
        mMediaPlayer.setVolume((float)inVolLeft,(float)inVolRight);
        if (inLoop<0)
+	   {
           mMediaPlayer.setLooping(true);
+	   }
        else if (inLoop>0)
        {
+		   // TODO: looping music 
        }
        mMediaPlayer.start();
 
        return 0;
     }
+	
+	static public void setMusicTransform(double inVolLeft, double inVolRight)
+	{
+		if(mMediaPlayer==null)
+		{
+			return;
+		}
+		
+		mMediaPlayer.setVolume((float)inVolLeft,(float)inVolRight);
+	}
     
     static public void stopMusic() {
 		Log.v("GameActivity","stop MediaPlayer");
@@ -306,6 +324,10 @@ public class GameActivity extends Activity implements SensorEventListener {
     }
 
     public void doPause() {
+		if(mSoundPool!=null)
+		{
+			mSoundPool.release();
+		}
         mSoundPool = null;
         mView.sendActivity(NME.DEACTIVATE);
         mView.onPause();
