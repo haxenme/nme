@@ -108,6 +108,7 @@
 		<compilerflag value="-I${QNX_TARGET}/usr/include" />
 		<compilerflag value="-I../../sdl-static/include"/>
 		<file name="linux/NativeFont.cpp"/>
+		<file name="blackberry/System.cpp"/>
 		
 	</files>
 	
