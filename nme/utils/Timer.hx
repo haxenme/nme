@@ -11,10 +11,11 @@ class Timer extends EventDispatcher
 {
 	
 	public var currentCount:Int;
-	public var delay:Float;
+	public var delay (nmeGetFloat, nmeSetFloat):Float;
 	public var repeatCount:Int;
 	public var running:Bool;
 	
+	private var _delay:Float;
 	private var timer:haxe.Timer;
 	
 	
@@ -27,7 +28,7 @@ class Timer extends EventDispatcher
 		
 		super ();
 		
-		this.delay = delay;
+		_delay = delay;
 		this.repeatCount = repeatCount;
 		currentCount = 0;
 	}
@@ -48,7 +49,7 @@ class Timer extends EventDispatcher
 		if (!running)
 		{
 			running = true;
-			timer = new haxe.Timer (delay);
+			timer = new haxe.Timer (_delay);
 			timer.run = timer_onTimer;
 		}
 	}
@@ -63,6 +64,33 @@ class Timer extends EventDispatcher
 			timer.stop();
 			timer = null;
 		}
+	}
+	
+	
+	
+	
+	// Get & Set Methods
+	
+	
+	
+	
+	private function nmeGetDelay():Float
+	{
+		return _delay;
+	}
+	
+	
+	private function nmeSetDelay(value:Float):Float
+	{
+		_delay = value;
+		
+		if (running)
+		{
+			stop();
+			start();
+		}
+		
+		return _delay;
 	}
 	
 	
