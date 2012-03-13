@@ -436,7 +436,7 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 #if !defined(HX_MACOS) && !defined(IPHONE)
 void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 {
-#ifdef HX_WINDOWS
+#if defined(HX_WINDOWS)
    char result[MAX_PATH] = ""; 
    if (inDir==DIR_APP)
    {
@@ -462,6 +462,40 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
          outDir += "\\" + gCompany + "\\" + gFile;
       }
    }
+#elif defined(BLACKBERRY)
+	if (inDir == DIR_APP)
+	{
+		outDir = "app/native";
+	}
+	else if (inDir == DIR_STORAGE)
+	{
+		outDir = "data";
+	}
+	else if (inDir == DIR_USER)
+	{
+		outDir = "shared";
+	}
+	else if (inDir == DIR_DOCS)
+	{
+		outDir = "shared/documents";
+	}
+#elif defined(WEBOS)
+	if (inDir == DIR_APP)
+	{
+		outDir = ".";
+	}
+	else if (inDir == DIR_STORAGE)
+	{
+		outDir = ".";
+	}
+	else if (inDir == DIR_USER)
+	{
+		outDir = "/media/internal";
+	}
+	else if (inDir == DIR_DOCS)
+	{
+		outDir = "/media/internal/documents";
+	}
 #endif
 }
 #endif
