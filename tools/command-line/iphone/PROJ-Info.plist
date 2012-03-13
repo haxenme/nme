@@ -43,5 +43,12 @@
 	<true/>::if (IPHONE_ORIENTATION!=null)::
 	<key>UISupportedInterfaceOrientations</key>
 	::IPHONE_ORIENTATION::::end::
+	<key>UIRequiredDeviceCapabilities</key>
+   <dict>
+	::foreach REQUIRED_CAPABILITY::
+      <key>::name::</key>
+      ::if value::<true/>::else::<false/>::end::
+	::end::
+   </dict>
 </dict>
 </plist>

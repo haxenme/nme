@@ -400,6 +400,19 @@
 	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
 	
 	
+	<!-- <ios/>
+		
+		Specify target characteristics of device.
+       binaries = fat / armv6 / armv7
+       devices  = universal / ipad / iphone
+       deployment = ios version
+		
+      selecting a device (eg, ipad) can change binaries (ie, only arm7 is required)
+
+	-->
+	
+   <ios deployment="3.2" binaries="fat" devices="universal" />
+
 	
 	<!-- <dependency />
 		

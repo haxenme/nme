@@ -11,6 +11,9 @@ import neko.Sys;
 
 
 class IOSInstaller extends InstallerBase {
+
+   var armv6:Bool;
+   var armv7:Bool;
 	
 	
    override function build ():Void {
@@ -46,16 +49,47 @@ class IOSInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
+
+      var deployment = Std.parseFloat(iosDeployment);
+      var binaries = iosBinaries;
+      var devices = iosDevices;
+
+      if (binaries!="fat" && binaries!="armv7" && binaries!="armv6")
+         throw "ios binaries must be one of fat,armv6,armv7";
+      if (devices!="iphone" && devices!="ipad" && devices!="universal")
+         throw "ios devices must be one of universal,iphone,ipad";
+
+      var iphone = devices=="universal" || devices=="iphone";
+      var ipad = devices=="universal" || devices=="ipad";
+
+      armv6 = iphone && deployment < 5.0 && binaries!="armv7";
+      armv7 = binaries!="armv6" || !armv6;
+      var valid_archs = new Array<String>();
+      if (armv6)
+         valid_archs.push("armv6");
+      if (armv7)
+         valid_archs.push("armv7");
+      context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
+      valid_archs.push("i386");
+      context.VALID_ARCHS = valid_archs.join(" ");
+
+	   context.THUMB_SUPPORT = armv6 ? "GCC_THUMB_SUPPORT = NO;" : "";
+
+	   var requiredCapabilies = [];
+      if (armv7 && !armv6)
+        requiredCapabilies.push( { name:"arm7", value:true } );
+         
+	   context.REQUIRED_CAPABILITY = requiredCapabilies;
+
+	   context.ARMV6 = armv6;
+	   context.ARMV7 = armv7;
+
+
+      
+      context.TARGET_DEVICES = switch(devices) { case "universal": "1,2"; case "iphone" : "1"; case "ipad" : "2"; }
+
+      context.DEPLOYMENT = deployment;
 		
-		if (defines.exists ("armv6") && defines.exists ("IPHONE_VER") && Std.parseFloat (defines.get ("IPHONE_VER")) >= 5 && !targetFlags.exists ("simulator")) {
-			
-			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT) armv6";
-			
-		} else {
-			
-			context.CURRENT_ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-			
-		}
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			
@@ -208,28 +242,39 @@ class IOSInstaller extends InstallerBase {
 		
 		mkdir (destination + "lib");
 		
-		for (ndll in ndlls) {
-			
-			var deviceNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug.iphoneos.a");
-			var simulatorNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug.iphonesim.a");
-			
-			if (!debug || !FileSystem.exists (deviceNDLLPath)) {
-				
-				deviceNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphoneos.a");
-				
+      for(archID in 0...3)
+      {
+         var arch = [ "armv6", "armv7", "i386" ][archID];
+
+         if (arch=="armv6" && !armv6)
+            continue;
+         if (arch=="armv7" && !armv7)
+            continue;
+
+
+         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
+
+		   mkdir (destination + "lib/" + arch);
+		   mkdir (destination + "lib/" + arch + "-debug");
+
+		   for (ndll in ndlls)
+         {
+				var releaseLib = ndll.getSourcePath("iPhone", "lib" + ndll.name +  libExt );
+				var debugLib = ndll.getSourcePath("iPhone", "lib" + ndll.name + ".debug" + libExt );
+
+				var releaseDest = destination + "lib/" + arch + "/lib" + ndll.name + ".a";
+				var debugDest = destination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
+
+
+				copyIfNewer(releaseLib, releaseDest);
+
+            if (FileSystem.exists(debugLib)) 
+				   copyIfNewer(debugLib, debugDest);
+            else if (FileSystem.exists(debugDest)) 
+               FileSystem.deleteFile(debugDest);
 			}
+      }
 			
-			if (!debug || !FileSystem.exists (deviceNDLLPath)) {
-				
-				simulatorNDLLPath = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".iphonesim.a");
-				
-			}
-			
-			copyIfNewer (deviceNDLLPath, destination + "lib/lib" + ndll.name + ".iphoneos.a" );
-			copyIfNewer (simulatorNDLLPath, destination + "lib/lib" + ndll.name + ".iphonesim.a" );
-			
-		}
-		
 		mkdir (destination + "assets");
 		
 		for (asset in assets) {

@@ -42,6 +42,9 @@ class InstallerBase {
 	private var sslCaCert:String;
 	private var targetFlags:Hash <String>;
 	private var args:Array <String>;
+	private var iosDeployment:String;
+	private var iosBinaries:String;
+	private var iosDevices:String;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -58,6 +61,9 @@ class InstallerBase {
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
       sslCaCert = "";
+      iosDeployment = "3.2";
+      iosBinaries = "armv6";
+      iosDevices = "universal";
 		
 	}
 	
@@ -1607,6 +1613,20 @@ class InstallerBase {
 					case "dependency":
 						
 						dependencyNames.push (substitute (element.att.name));
+	
+					
+					case "ios":
+						
+						if (element.has.deployment)
+                  {
+                     var deploy = substitute(element.att.deployment);
+                     if (deploy>iosDeployment)
+                        iosDeployment = deploy;
+                  }
+						if (element.has.binaries)
+                     iosBinaries = substitute(element.att.binaries);
+						if (element.has.devices)
+                     iosDevices = substitute(element.att.devices);
 					
 				}
 				
