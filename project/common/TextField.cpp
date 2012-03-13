@@ -128,6 +128,8 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    defaultTextFormat = inFmt;
    mLinesDirty = true;
    mGfxDirty = true;
+   if (mCharGroups.empty())
+      setText(L"");
 }
 
 void TextField::SplitGroup(int inGroup,int inPos)
