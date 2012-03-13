@@ -804,7 +804,7 @@ DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
 
 value nme_capabilities_get_pixel_aspect_ratio () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )
+	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
 		
 		return alloc_float (CapabilitiesGetPixelAspectRatio ());
 		
@@ -819,7 +819,7 @@ DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
 value nme_capabilities_get_screen_dpi () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE)|| defined( HX_WINDOWS ) || defined( HX_MACOS )
+	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE)|| defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
 		
 		return alloc_float (CapabilitiesGetScreenDPI ());
 		
@@ -834,7 +834,7 @@ DEFINE_PRIM (nme_capabilities_get_screen_dpi, 0);
 
 value nme_capabilities_get_screen_resolution_x () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )
+	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
 		
 		return alloc_float (CapabilitiesGetScreenResolutionX ());
 		
@@ -849,7 +849,7 @@ DEFINE_PRIM (nme_capabilities_get_screen_resolution_x, 0);
 
 value nme_capabilities_get_screen_resolution_y () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )
+	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
 		
 		return alloc_float (CapabilitiesGetScreenResolutionY ());
 		

@@ -807,6 +807,8 @@ QuickVec<int>*  CapabilitiesGetScreenResolutions() {
 	
 }
 
+#ifndef BLACKBERRY
+
 double CapabilitiesGetScreenResolutionX() {
 	
 	/*
@@ -877,6 +879,8 @@ double CapabilitiesGetPixelAspectRatio() {
 	return 	CapabilitiesGetScreenResolutionX() / CapabilitiesGetScreenResolutionY();
 	
 }
+
+#endif
 
 
 void TerminateMainLoop()

@@ -9,6 +9,34 @@
 namespace nme {
 	
 	
+	double CapabilitiesGetScreenResolutionX() {
+		
+		return 1024;
+		
+	}
+	
+
+	double CapabilitiesGetScreenResolutionY() {
+		
+		return 600;
+		
+	}
+	
+
+	double CapabilitiesGetScreenDPI() {
+		
+		return 170;
+		
+	}
+	
+
+	double CapabilitiesGetPixelAspectRatio() {
+		
+		return 	CapabilitiesGetScreenResolutionX() / CapabilitiesGetScreenResolutionY();
+		
+	}
+
+	
 	bool GetAcceleration (double &outX, double &outY, double &outZ) {
 		
 		return (accelerometer_read_forces (&outX, &outY, &outZ) == BPS_SUCCESS);
