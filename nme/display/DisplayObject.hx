@@ -179,6 +179,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	override public function dispatchEvent(event:Event):Bool {
+		
+		var result = nmeBroadcast(event);
+		
+		if (event.nmeGetIsCancelled ())
+			return true;
+		
+		if (event.bubbles && parent != null)
+		{
+			parent.dispatchEvent(event);
+		}
+		
+		return result;
+	}
+	
+	
 	/**
 	 * Converts a point from global coordinates to local coordinates.
 	 * @param	inGlobal		A point in global coordinates
@@ -231,9 +247,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	/**
 	 * @private
 	 */
-	public function nmeBroadcast(inEvt:Event)
+	public function nmeBroadcast(inEvt:Event):Bool
 	{
-		dispatchEvent(inEvt);
+		if (inEvt.target == null)
+		{
+			inEvt.target = this;
+		}
+		inEvt.currentTarget = this;
+		return super.dispatchEvent(inEvt);
 	}
 	
 	
@@ -273,7 +294,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for (obj in stack)
 			{
 				inEvt.currentTarget = obj;
-				obj.dispatchEvent(inEvt);
+				obj.nmeBroadcast(inEvt);
 				
 				if (inEvt.nmeGetIsCancelled())
 					return;
@@ -284,7 +305,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		// Next, the "target"
 		inEvt.nmeSetPhase(EventPhase.AT_TARGET);
 		inEvt.currentTarget = this;
-		dispatchEvent(inEvt);
+		nmeBroadcast(inEvt);
 		
 		if (inEvt.nmeGetIsCancelled())
 			return;
@@ -298,7 +319,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for (obj in stack)
 			{
 				inEvt.currentTarget = obj;
-				obj.dispatchEvent(inEvt);
+				obj.nmeBroadcast(inEvt);
 				
 				if (inEvt.nmeGetIsCancelled())
 					return;

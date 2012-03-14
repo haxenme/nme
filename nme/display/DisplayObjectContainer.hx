@@ -139,7 +139,7 @@ class DisplayObjectContainer extends InteractiveObject
 				}
 			}
 		
-		dispatchEvent(inEvt);
+		return super.nmeBroadcast(inEvt);
 	}
 	
 	
