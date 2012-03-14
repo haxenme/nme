@@ -181,7 +181,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	
 	override public function dispatchEvent(event:Event):Bool {
 		
-		var result = nmeBroadcast(event);
+		var result = nmeDispatchEvent(event);
 		
 		if (event.nmeGetIsCancelled ())
 			return true;
@@ -247,7 +247,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	/**
 	 * @private
 	 */
-	public function nmeBroadcast(inEvt:Event):Bool
+	public function nmeBroadcast(inEvt:Event)
+	{
+		nmeDispatchEvent(inEvt);
+	}
+	
+	
+	/**
+	 * @private
+	 */
+	public function nmeDispatchEvent(inEvt:Event):Bool
 	{
 		if (inEvt.target == null)
 		{
@@ -294,7 +303,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for (obj in stack)
 			{
 				inEvt.currentTarget = obj;
-				obj.nmeBroadcast(inEvt);
+				obj.nmeDispatchEvent(inEvt);
 				
 				if (inEvt.nmeGetIsCancelled())
 					return;
@@ -305,7 +314,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		// Next, the "target"
 		inEvt.nmeSetPhase(EventPhase.AT_TARGET);
 		inEvt.currentTarget = this;
-		nmeBroadcast(inEvt);
+		nmeDispatchEvent(inEvt);
 		
 		if (inEvt.nmeGetIsCancelled())
 			return;
@@ -319,7 +328,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for (obj in stack)
 			{
 				inEvt.currentTarget = obj;
-				obj.nmeBroadcast(inEvt);
+				obj.nmeDispatchEvent(inEvt);
 				
 				if (inEvt.nmeGetIsCancelled())
 					return;

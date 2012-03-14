@@ -137,7 +137,7 @@ class Stage extends DisplayObjectContainer
 			var i = old_n - 1;
 			while (i >= common)
 			{
-				nmeFocusOverObjects[i].nmeBroadcast(focusOut);
+				nmeFocusOverObjects[i].nmeDispatchEvent(focusOut);
 				i--;
 			}
 			
@@ -146,7 +146,7 @@ class Stage extends DisplayObjectContainer
 			
 			while (i >= common)
 			{
-				inStack[i].nmeBroadcast(focusIn);
+				inStack[i].nmeDispatchEvent(focusIn);
 				i--;
 			}
 			
@@ -183,7 +183,7 @@ class Stage extends DisplayObjectContainer
 			var i = old_n - 1;
 			while (i >= common)
 			{
-				prev[i].nmeBroadcast(rollOut);
+				prev[i].nmeDispatchEvent(rollOut);
 				i--;
 			}
 			
@@ -191,7 +191,7 @@ class Stage extends DisplayObjectContainer
 			var i = new_n - 1;
 			while (i >= common)
 			{
-				inStack[i].nmeBroadcast(rollOver);
+				inStack[i].nmeDispatchEvent(rollOver);
 				i--;
 			}
 			
@@ -485,7 +485,7 @@ class Stage extends DisplayObjectContainer
 			default:
 				evt = new JoystickEvent (inType, false, false, inEvent.id, inEvent.code);
 		}
-		nmeBroadcast(evt);
+		nmeDispatchEvent(evt);
 	}
 	
 	
@@ -593,7 +593,7 @@ class Stage extends DisplayObjectContainer
 	private function nmeOnResize(inW:Float, inH:Float)
 	{
 		var evt = new Event(Event.RESIZE);
-		nmeBroadcast(evt);
+		nmeDispatchEvent(evt);
 	}
 	
 	
