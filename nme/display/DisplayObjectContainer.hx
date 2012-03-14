@@ -28,31 +28,15 @@ class DisplayObjectContainer extends InteractiveObject
 	
 	public function addChild(child:DisplayObject):DisplayObject
 	{	
-		if (child == this)
-		{	
-			throw "Adding to self";	
-		}
-		
-		if (child.nmeParent == this)
-		{	
-			setChildIndex(child, nmeChildren.length - 1);
-		}
-		else
-		{	
-			child.nmeSetParent(this);
-			nmeChildren.push(child);
-			nme_doc_add_child(nmeHandle, child.nmeHandle);
-		}
-		
+		nmeAddChild(child);
 		return child;
 	}
 	
 	
 	public function addChildAt(child:DisplayObject, index:Int):DisplayObject
-	{	
-		addChild(child);
-		setChildIndex(child, index);
-		
+	{
+		nmeAddChild(child);
+		nmeSetChildIndex(child, index);
 		return child;
 	}
 	
@@ -101,11 +85,8 @@ class DisplayObjectContainer extends InteractiveObject
 	
 	
 	public function getChildIndex(child:DisplayObject):Int
-	{	
-		for (i in 0...nmeChildren.length)
-			if (nmeChildren[i] == child)
-				return i;	
-		return -1;
+	{
+		return nmeGetChildIndex(child);
 	}
 
 	
@@ -114,6 +95,26 @@ class DisplayObjectContainer extends InteractiveObject
 		var result = new Array<DisplayObject>();
 		nmeGetObjectsUnderPoint(point, result);
 		return result;
+	}
+	
+	
+	private inline function nmeAddChild (child:DisplayObject):Void
+	{
+		if (child == this)
+		{	
+			throw "Adding to self";	
+		}
+		
+		if (child.nmeParent == this)
+		{	
+			setChildIndex(child, nmeChildren.length - 1);
+		}
+		else
+		{	
+			child.nmeSetParent(this);
+			nmeChildren.push(child);
+			nme_doc_add_child(nmeHandle, child.nmeHandle);
+		}
 	}
 	
 
@@ -159,6 +160,15 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
+	private function nmeGetChildIndex(child:DisplayObject):Int
+	{
+		for (i in 0...nmeChildren.length)
+			if (nmeChildren[i] == child)
+				return i;	
+		return -1;
+	}
+	
+	
 	public override function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
 	{	
 		super.nmeGetObjectsUnderPoint(point, result);
@@ -191,7 +201,7 @@ class DisplayObjectContainer extends InteractiveObject
 	 */
 	public function nmeRemoveChildFromArray(child:DisplayObject)
 	{
-		var i = getChildIndex(child);
+		var i = nmeGetChildIndex(child);
 		
 		if (i >= 0)
 		{	
@@ -199,42 +209,15 @@ class DisplayObjectContainer extends InteractiveObject
 			nmeChildren.splice(i, 1);	
 		}
 	}
-
-	
-	public function removeChild(child:DisplayObject):DisplayObject
-	{	
-		var c = getChildIndex(child);
-		
-		if (c >= 0)
-		{	
-			child.nmeSetParent(null);
-			return child;
-		}
-		
-		return null;
-	}
 	
 	
-	public function removeChildAt(index:Int):DisplayObject
-	{	
-		if (index >= 0 && index < nmeChildren.length)
-		{	
-			var result = nmeChildren[index];
-			result.nmeSetParent(null);
-			return result;
-		}
-		
-		return null;
-	}
-	
-	
-	public function setChildIndex(child:DisplayObject, index:Int):Void
-	{	
+	private inline function nmeSetChildIndex(child:DisplayObject, index:Int):Void
+	{
 		if (index > nmeChildren.length)
 			throw "Invalid index position " + index;
 		
 		var s:DisplayObject = null;
-		var orig = getChildIndex(child);
+		var orig = nmeGetChildIndex(child);
 		
 		if (orig < 0)
 		{	
@@ -291,28 +274,67 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
+	private inline function nmeSwapChildrenAt(index1:Int, index2:Int):Void
+	{
+		if (index1 < 0 || index2 < 0 || index1 > nmeChildren.length || index2 > nmeChildren.length)
+			throw new RangeError ("swapChildrenAt : index out of bounds");
+		
+		if (index1 != index2)
+		{
+			var tmp = nmeChildren[index1];
+			nmeChildren[index1] = nmeChildren[index2];
+			nmeChildren[index2] = tmp;
+			nme_doc_swap_children(nmeHandle, index1, index2);
+		}
+	}
+
+	
+	public function removeChild(child:DisplayObject):DisplayObject
+	{	
+		var c = nmeGetChildIndex(child);
+		
+		if (c >= 0)
+		{	
+			child.nmeSetParent(null);
+			return child;
+		}
+		
+		return null;
+	}
+	
+	
+	public function removeChildAt(index:Int):DisplayObject
+	{	
+		if (index >= 0 && index < nmeChildren.length)
+		{	
+			var result = nmeChildren[index];
+			result.nmeSetParent(null);
+			return result;
+		}
+		
+		return null;
+	}
+	
+	
+	public function setChildIndex(child:DisplayObject, index:Int):Void
+	{	
+		nmeSetChildIndex(child, index);
+	}
+	
+	
 	public function swapChildren(child1:DisplayObject, child2:DisplayObject):Void
 	{	
-		var idx1 = getChildIndex(child1);
-		var idx2 = getChildIndex(child2);
+		var idx1 = nmeGetChildIndex(child1);
+		var idx2 = nmeGetChildIndex(child2);
 		if (idx1 < 0 || idx2 < 0)
 			throw "swapChildren:Could not find children";
-		swapChildrenAt(idx1, idx2);
+		nmeSwapChildrenAt(idx1, idx2);
 	}
 	
 	
 	public function swapChildrenAt(index1:Int, index2:Int):Void
 	{	
-		if (index1 < 0 || index2 < 0 || index1 > nmeChildren.length || index2 > nmeChildren.length)
-			throw new RangeError ("swapChildrenAt : index out of bounds");
-		
-		if (index1 == index2)
-			return;
-		
-		var tmp = nmeChildren[index1];
-		nmeChildren[index1] = nmeChildren[index2];
-		nmeChildren[index2] = tmp;
-		nme_doc_swap_children(nmeHandle, index1, index2);
+		nmeSwapChildrenAt(index1, index2);
 	}
 	
 	
