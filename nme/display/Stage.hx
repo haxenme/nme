@@ -525,7 +525,7 @@ class Stage extends DisplayObjectContainer
 			if (button > 2)
 			{
 				type = MouseEvent.MOUSE_WHEEL;
-				wheel = button == 3 ? -1 : 1;
+				wheel = button == 3 ? 1 : -1;
 				//trace(wheel);
 			}
 			else
