@@ -11,7 +11,7 @@ class Timer extends EventDispatcher
 {
 	
 	public var currentCount:Int;
-	public var delay (nmeGetFloat, nmeSetFloat):Float;
+	public var delay (nmeGetDelay, nmeSetDelay):Float;
 	public var repeatCount:Int;
 	public var running:Bool;
 	
