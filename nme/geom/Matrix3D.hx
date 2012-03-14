@@ -96,31 +96,48 @@ class Matrix3D
 	{
 		var vec:Vector<Vector3D> = new Vector<Vector3D>();
 		var m = this.clone();
+		var mr = m.rawData;
 		
-		var pos = m.position;
+		var pos = new Vector3D(mr[12], mr[13], mr[14]);
+		mr[12] = 0;
+		mr[13] = 0;
+		mr[14] = 0;
 		
 		var scale = new Vector3D();
-		scale.x = rawData[0];
-		scale.y = rawData[5];
-		scale.z = rawData[10];
 		
-		m.position = new Vector3D();
-		m.rawData[0] = m.rawData[5] = m.rawData[10] = 1;
+		scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
+		scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
+		scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+		
+		if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0)
+		{
+			scale.z = -scale.z;
+		}
+		
+		mr[0] /= scale.x; 
+		mr[1] /= scale.x; 
+		mr[2] /= scale.x; 
+		mr[4] /= scale.y; 
+		mr[5] /= scale.y; 
+		mr[6] /= scale.y; 
+		mr[8] /= scale.z; 
+		mr[9] /= scale.z; 
+		mr[10] /= scale.z;
 		
 		var rot = new Vector3D();
 		
-		var D = rawData[2];		
-		rot.y = Math.asin(D);		
+		rot.y = Math.asin( -mr[2]);
+		
 		var C = Math.cos(rot.y);		
 		if (C > 0)
 		{
-			rot.x = Math.acos(rawData[10] / C);
-			rot.z = Math.acos(rawData[0] / C);
+			rot.x = Math.atan2(mr[6], mr[10]);
+			rot.z = Math.atan2(mr[1], mr[0]);
 		}
 		else
 		{
 			rot.z = 0;
-			rot.x = Math.acos(rawData[5]);
+			rot.x = Math.atan2(mr[4], mr[5]);
 		}  
 		
 		vec.push(pos);
