@@ -1519,7 +1519,7 @@ value nme_display_object_get_matrix(value inObj,value outMatrix, value inFull)
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      Matrix m = val_bool(inFull) ? obj->GetLocalMatrix() : obj->GetFullMatrix(false);
+      Matrix m = val_bool(inFull) ? obj->GetFullMatrix(false) : obj->GetLocalMatrix();
       ToValue(outMatrix,m);
    }
 
@@ -1546,8 +1546,8 @@ value nme_display_object_get_color_transform(value inObj,value outTrans, value i
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      ColorTransform t = val_bool(inFull) ? obj->GetLocalColorTransform() :
-                                            obj->GetFullColorTransform();
+      ColorTransform t = val_bool(inFull) ? obj->GetFullColorTransform() :
+                                            obj->GetLocalColorTransform();
       ToValue(outTrans,t);
    }
 
