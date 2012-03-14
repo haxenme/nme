@@ -286,6 +286,7 @@ class IOSInstaller extends InstallerBase {
 				
 			} else {
 				
+				mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}

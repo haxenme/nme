@@ -319,6 +319,7 @@ class AndroidInstaller extends InstallerBase {
 			
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
+				mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}

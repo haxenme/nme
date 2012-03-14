@@ -323,6 +323,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			} else {
 				
+				mkdir (Path.directory (targetDir + "/" + asset.targetPath));
 				copyFile (asset.sourcePath, targetDir + "/" + asset.targetPath);
 				
 			}

@@ -109,21 +109,13 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
+			mkdir (Path.directory (destination + asset.targetPath));
+			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				// going to root directory now, but should it be a forced "assets" folder later?
 				
-				if (asset.targetPath == "/appinfo.json") {
-					
-					copyFile (asset.sourcePath, destination + asset.targetPath);
-					
-				} else {
-					
-					// going to root directory now, but should it be a forced "assets" folder later?
-					
-					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
-					
-				}
+				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 				
 			} else {
 				

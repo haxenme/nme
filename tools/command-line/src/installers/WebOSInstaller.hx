@@ -125,9 +125,9 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
+			mkdir (Path.directory (destination + asset.targetPath));
+			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-				
-				mkdir (Path.directory (destination + asset.targetPath));
 				
 				if (asset.targetPath == "/appinfo.json") {
 					
