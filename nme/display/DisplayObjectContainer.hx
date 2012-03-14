@@ -2,6 +2,7 @@ package nme.display;
 #if (cpp || neko)
 
 
+import nme.errors.ArgumentError;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.errors.RangeError;
@@ -299,7 +300,7 @@ class DisplayObjectContainer extends InteractiveObject
 			return child;
 		}
 		
-		return null;
+		throw new ArgumentError("The supplied DisplayObject must be a child of the caller.");
 	}
 	
 	
@@ -312,7 +313,7 @@ class DisplayObjectContainer extends InteractiveObject
 			return result;
 		}
 		
-		return null;
+		throw new ArgumentError("The supplied DisplayObject must be a child of the caller.");
 	}
 	
 	
