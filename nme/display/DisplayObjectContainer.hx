@@ -120,7 +120,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override public function nmeBroadcast(inEvt:Event)
 	{	
-		var i = 0;
+		/*var i = 0;
 		
 		if (nmeChildren.length > 0)
 			while (true)
@@ -137,7 +137,7 @@ class DisplayObjectContainer extends InteractiveObject
 					if (i >= nmeChildren.length)
 						break;	
 				}
-			}
+			}*/
 		
 		return super.nmeBroadcast(inEvt);
 	}

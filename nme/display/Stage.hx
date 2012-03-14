@@ -137,7 +137,7 @@ class Stage extends DisplayObjectContainer
 			var i = old_n - 1;
 			while (i >= common)
 			{
-				nmeFocusOverObjects[i].dispatchEvent(focusOut);
+				nmeFocusOverObjects[i].nmeBroadcast(focusOut);
 				i--;
 			}
 			
@@ -146,7 +146,7 @@ class Stage extends DisplayObjectContainer
 			
 			while (i >= common)
 			{
-				inStack[i].dispatchEvent(focusIn);
+				inStack[i].nmeBroadcast(focusIn);
 				i--;
 			}
 			
@@ -183,7 +183,7 @@ class Stage extends DisplayObjectContainer
 			var i = old_n - 1;
 			while (i >= common)
 			{
-				prev[i].dispatchEvent(rollOut);
+				prev[i].nmeBroadcast(rollOut);
 				i--;
 			}
 			
@@ -191,7 +191,7 @@ class Stage extends DisplayObjectContainer
 			var i = new_n - 1;
 			while (i >= common)
 			{
-				inStack[i].dispatchEvent(rollOver);
+				inStack[i].nmeBroadcast(rollOver);
 				i--;
 			}
 			
