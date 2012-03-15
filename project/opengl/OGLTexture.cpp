@@ -9,8 +9,11 @@ bool gAppleNPO2 = false;
 bool NonPO2Supported(bool inNotRepeating)
 {
    static bool tried = false;
-
-
+	
+   #ifdef HX_WINDOWS
+	return false;
+   #endif
+   
    //OpenGL 2.0 introduced non PO2 as standard, in 2004 - safe to assume it exists on PC
    #ifdef FORCE_NON_PO2
       return true;
@@ -164,6 +167,7 @@ public:
       }
 
       //int err = glGetError();
+	  //printf ("GL texture error: %i", err);
    }
    ~OGLTexture()
    {
