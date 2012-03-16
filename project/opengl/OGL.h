@@ -26,7 +26,7 @@
 // Windows ....
 #include <windows.h>
 #include <gl/GL.h>
-#define FORCE_NON_PO2
+//#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
 #endif
 

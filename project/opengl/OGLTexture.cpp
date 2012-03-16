@@ -5,14 +5,10 @@ namespace nme
 
 
 
-bool gAppleNPO2 = false;
+bool gHasNPO2Extension = false;
 bool NonPO2Supported(bool inNotRepeating)
 {
    static bool tried = false;
-	
-   #ifdef HX_WINDOWS
-	return false;
-   #endif
    
    //OpenGL 2.0 introduced non PO2 as standard, in 2004 - safe to assume it exists on PC
    #ifdef FORCE_NON_PO2
@@ -22,14 +18,19 @@ bool NonPO2Supported(bool inNotRepeating)
    if (!tried)
    {
       tried = true;
-      const char* extensions = (char*) glGetString(GL_EXTENSIONS); 
-
-
-      gAppleNPO2 = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
-      //printf("Apple NPO2 : %d\n", apple_npo2);
+      const char* extensions = (char*) glGetString(GL_EXTENSIONS);
+	  
+	  gHasNPO2Extension = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
+	  
+	  if (!gHasNPO2Extension)
+	  {
+		  gHasNPO2Extension = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
+	  }
+      
+      printf("Has NPO2 Extension : %d\n", gHasNPO2Extension);
    }
 
-   return gAppleNPO2 && inNotRepeating;
+   return gHasNPO2Extension && inNotRepeating;
 }
 
 
