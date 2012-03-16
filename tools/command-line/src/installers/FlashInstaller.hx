@@ -204,7 +204,8 @@ class FlashInstaller extends InstallerBase {
 			
 			if (!neko.FileSystem.exists (src)) {
 				
-				throw "Could not find mp3/wav source: " + src;
+				Lib.println ("Warning: Could not embed unsupported audio file \"" + name + "\"");
+				return false;
 				
 			}
 			
