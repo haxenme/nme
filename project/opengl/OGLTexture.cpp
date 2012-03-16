@@ -27,7 +27,7 @@ bool NonPO2Supported(bool inNotRepeating)
 		  gHasNPO2Extension = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
 	  }
       
-      printf("Has NPO2 Extension : %d\n", gHasNPO2Extension);
+      //printf("Has NPO2 Extension : %d\n", gHasNPO2Extension);
    }
 
    return gHasNPO2Extension && inNotRepeating;
