@@ -300,7 +300,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 	} else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
 		
 		#if defined (ANDROID)
-			outFile = "/system/fonts/SansMono.ttf";
+			outFile = "/system/fonts/DroidSansMono.ttf";
 		#elif defined (WEBOS)
 			outFile = "/usr/share/fonts/cour.ttf";
 		#else
