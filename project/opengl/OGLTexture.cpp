@@ -5,7 +5,9 @@ namespace nme
 
 
 
-bool gHasNPO2Extension = false;
+bool gFullNPO2Support = false;
+bool gPartialNPO2Support = false;
+
 bool NonPO2Supported(bool inNotRepeating)
 {
    static bool tried = false;
@@ -20,17 +22,19 @@ bool NonPO2Supported(bool inNotRepeating)
       tried = true;
       const char* extensions = (char*) glGetString(GL_EXTENSIONS);
 	  
-	  gHasNPO2Extension = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
+	  gFullNPO2Support = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
 	  
-	  if (!gHasNPO2Extension)
+	  if (!gFullNPO2Support)
 	  {
-		  gHasNPO2Extension = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
+		  gPartialNPO2Support = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
 	  }
       
-      //printf("Has NPO2 Extension : %d\n", gHasNPO2Extension);
+	  
+      //printf("Full non-PO2 support : %d\n", gFullNPO2Support);
+      //printf("Partial non-PO2 support : %d\n", gPartialNPO2Support);
    }
 
-   return gHasNPO2Extension && inNotRepeating;
+   return (gFullNPO2Support || (gPartialNPO2Support && inNotRepeating));
 }
 
 
