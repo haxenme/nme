@@ -225,12 +225,12 @@ void DisplayObject::RenderBitmap( const RenderTarget &inTarget, const RenderStat
       BitmapCache *mask = inState.mMask;
       ImagePoint buffer;
       mask->PushTargetOffset(inState.mTargetOffset,buffer);
-      mBitmapCache->Render(inTarget,mask,blendMode);
+      mBitmapCache->Render(inTarget,inState.mClipRect,mask,blendMode);
       mask->PopTargetOffset(buffer);
    }
    else
    {
-      mBitmapCache->Render(inTarget,0,blendMode);
+      mBitmapCache->Render(inTarget,inState.mClipRect,0,blendMode);
    }
 }
 
@@ -909,9 +909,24 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
 
 
 
+/*
+static int level = 0;
+struct Leveller
+{
+   Leveller() { level++; print(); printf(">>>\n"); }
+   ~Leveller() { level--; print(); printf(">>>\n"); }
+   void print()
+   {
+      for(int i=0;i<level;i++)
+         printf(" ");
+   }
+};
+*/
 
 void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+   //Leveller level;
+
    Rect visible_bitmap;
 
    bool parent_first = inState.mPhase==rpRender || inState.mPhase==rpCreateMask;
@@ -992,7 +1007,6 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          //obj->DebugRenderMask(inTarget,obj->getMask());
          obj_state->mMask = mask->GetBitmapCache();
       }
-
 
       if (inState.mPhase==rpBitmap)
       {
@@ -1307,13 +1321,20 @@ bool BitmapCache::StillGood(const Transform &inTransform, const Rect &inVisibleP
 }
 
 
-void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend)
+void BitmapCache::Render(const RenderTarget &inTarget,const Rect &inClipRect, const BitmapCache *inMask,BlendMode inBlend)
 {
    if (mBitmap)
    {
       int tint = 0xffffffff;
       if (inTarget.mPixelFormat!=pfAlpha && mBitmap->Format()==pfAlpha)
          tint = 0xff000000;
+
+      Rect src( mRect.x+mTX, mRect.y+mTY, mRect.w, mRect.h);
+      src = src.Intersect(inClipRect);
+      if (!src.HasPixels())
+         return;
+
+      src.Translate(-mRect.x - mTX,-mRect.y-mTY);
 
       if (inTarget.IsHardware())
       {
@@ -1322,13 +1343,13 @@ void BitmapCache::Render(const RenderTarget &inTarget,const BitmapCache *inMask,
               //inTarget.mRect.w, inTarget.mRect.h, inTarget.mRect.x, inTarget.mRect.y );
          inTarget.mHardware->SetViewport(inTarget.mRect);
          inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
-         inTarget.mHardware->RenderBitmap(Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY);
+         inTarget.mHardware->RenderBitmap(src, mRect.x+mTX, mRect.y+mTY);
          inTarget.mHardware->EndBitmapRender();
       }
       else
       {
          // TX,TX is set in StillGood function
-         mBitmap->BlitTo(inTarget, Rect(mRect.w, mRect.h), mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
+         mBitmap->BlitTo(inTarget, src, mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
       }
    }
 }

@@ -414,7 +414,7 @@ public:
 
    bool StillGood(const Transform &inTransform, const Rect &inVisiblePixels,BitmapCache *inMask);
 
-   void Render(const struct RenderTarget &inTarget,const BitmapCache *inMask,BlendMode inBlend);
+   void Render(const struct RenderTarget &inTarget,const Rect &inClipRect,const BitmapCache *inMask,BlendMode inBlend);
    bool HitTest(double inX, double inY);
 
    PixelFormat Format() const;
