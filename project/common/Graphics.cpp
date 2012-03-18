@@ -95,13 +95,13 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    float w = width*0.5;
    x+=w;
    if (rx>w) rx = w;
-   int   lw = w - rx;
+   float lw = w - rx;
    float w_ = lw + rx*SIN45;
    float cw_ = lw + rx*TAN22;
    float h = height*0.5;
    y+=h;
    if (ry>h) ry = h;
-   int   lh = h - ry;
+   float lh = h - ry;
    float h_ = lh + ry*SIN45;
    float ch_ = lh + ry*TAN22;
 
