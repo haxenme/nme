@@ -1330,11 +1330,15 @@ void BitmapCache::Render(const RenderTarget &inTarget,const Rect &inClipRect, co
          tint = 0xff000000;
 
       Rect src( mRect.x+mTX, mRect.y+mTY, mRect.w, mRect.h);
+      int ox = src.x;
+      int oy = src.y;
       src = src.Intersect(inClipRect);
       if (!src.HasPixels())
          return;
-
+      ox -= src.x;
+      oy -= src.y;
       src.Translate(-mRect.x - mTX,-mRect.y-mTY);
+
 
       if (inTarget.IsHardware())
       {
@@ -1343,13 +1347,13 @@ void BitmapCache::Render(const RenderTarget &inTarget,const Rect &inClipRect, co
               //inTarget.mRect.w, inTarget.mRect.h, inTarget.mRect.x, inTarget.mRect.y );
          inTarget.mHardware->SetViewport(inTarget.mRect);
          inTarget.mHardware->BeginBitmapRender(mBitmap,tint);
-         inTarget.mHardware->RenderBitmap(src, mRect.x+mTX, mRect.y+mTY);
+         inTarget.mHardware->RenderBitmap(src, mRect.x+mTX-ox, mRect.y+mTY-oy);
          inTarget.mHardware->EndBitmapRender();
       }
       else
       {
          // TX,TX is set in StillGood function
-         mBitmap->BlitTo(inTarget, src, mRect.x+mTX, mRect.y+mTY,inBlend,inMask,tint);
+         mBitmap->BlitTo(inTarget, src, mRect.x+mTX-ox, mRect.y+mTY-oy,inBlend,inMask,tint);
       }
    }
 }
