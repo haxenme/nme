@@ -42,6 +42,7 @@ class JNI
 	public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
 		init();
+		className = StringTools.replace (className, ".", "/");
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, false));
 		return method.getMemberMethod(useArray);
 	}
@@ -58,6 +59,7 @@ class JNI
 	public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic
 	{
 		init();
+		className = StringTools.replace (className, ".", "/");
 		var method = new JNIMethod (nme_jni_create_method(className, memberName, signature, true));
 		return method.getStaticMethod(useArray);
 	}
