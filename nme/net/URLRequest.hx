@@ -21,6 +21,10 @@ class URLRequest
 	public var method:String;
 	public var contentType:String;
 	public var data:Dynamic;
+	
+	/**
+	 * @private
+	 */
 	public var nmeBytes:ByteArray;
 	
 	
@@ -50,6 +54,10 @@ class URLRequest
 		userPassword = inUser + ":" + inPasswd;
 	}
 
+	
+	/**
+	 * @private
+	 */
    public function nmePrepare()
    {
       if (data==null)

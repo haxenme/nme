@@ -27,8 +27,19 @@ interface IDataInput
 	public function readUTF():String;
 	public function readUTFBytes(inLen:Int):String;
 	
+	/**
+	 * @private
+	 */
 	public function nmeGetBytesAvailable():Int;
+	
+	/**
+	 * @private
+	 */
 	public function nmeGetEndian():String;
+	
+	/**
+	 * @private
+	 */
 	public function nmeSetEndian(s:String):String;
 	
 }

@@ -48,6 +48,9 @@ class URLLoader extends EventDispatcher
 	
 	private var state:Int;
 
+	/**
+	 * @private
+	 */
    public var nmeOnComplete : Dynamic -> Bool;
 	
 

@@ -141,6 +141,9 @@ class Timer {
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	static public function nmeNextWake (limit:Float):Float {
 		
 		var now = nme_time_stamp () * 1000.0;
@@ -180,6 +183,9 @@ class Timer {
 	}
 	
 
+	/**
+	 * @private
+	 */
 	public static function nmeCheckTimers () {
 		
 		var now = GetMS ();

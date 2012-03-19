@@ -25,6 +25,7 @@ class Stage extends DisplayObjectContainer
 	 * Time, in seconds, we wake up before the frame is due.  We then do a
 	 * "busy wait" to ensure the frame comes at the right time.  By increasing this number,
 	 * the frame rate will be more constant, but the busy wait will take more CPU.
+	 * @private
 	 */
 	public static var nmeEarlyWakeup = 0.005;
 	
@@ -377,6 +378,9 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
+	/**
+	 * @private
+	 */
 	public override function nmeGetStage():Stage
 	{
 		return this;

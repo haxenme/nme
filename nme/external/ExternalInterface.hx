@@ -62,8 +62,8 @@ class ExternalInterface
 		
 		if (callbacks.exists (functionName)) {
 			
-			var callback = callbacks.get (functionName);
-			return Reflect.callMethod (callback, callback, params);
+			var handler = callbacks.get (functionName);
+			return Reflect.callMethod (handler, handler, params);
 			
 		}
 		

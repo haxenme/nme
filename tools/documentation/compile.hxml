@@ -32,9 +32,21 @@ haxe.ImportAll
 --next
 
 -xml bin/nme.xml
+-cpp obj/nme
+-cp src
+-cp src/cpp/_std
+nme.ImportAll
+-D nme_document
+-lib nme
+--remap flash:nme
+--no-output
+
+--next
+
 -xml ../../haxedoc.xml
 -cpp obj/nme
 -cp src
+-cp src/cpp/_std
 nme.ImportAll
 -D nme_document
 -lib nme
