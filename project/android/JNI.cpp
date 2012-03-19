@@ -761,7 +761,7 @@ struct JNIMethod : public nme::Object
 
       if (mReturn.isObject())
       {
-         result = JObjectToHaxe(env,mReturn,env->CallStaticObjectMethodA(mClass, mMethod, jargs));
+         result = JObjectToHaxe(env,mReturn,env->CallObjectMethodA(inObject, mMethod, jargs));
       }
       else switch(mReturn.element)
       {
