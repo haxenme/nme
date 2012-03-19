@@ -1,6 +1,39 @@
 NME Changes
 
 
+3.3.0
+===============
+Added native BlackBerry support.
+Added armv6/armv7 support for iOS and Android.
+Improved quality and stability when drawing shapes.
+Fixed support for older webOS devices.
+
+NME-38 	defaults _sans, typewriter not displaying on android 2.3
+NME-37 	soundChannel.stop () is not working for sounds on webOS
+NME-35 	Hardware-based bitmaps are sometimes rendering white (Windows)
+NME-34 	Events that are removed while they are still bubbling cause an error (NME 3.2)
+NME-33 	Events appear not to dispatch when the object is not added to the display list
+NME-31 	Inverted rotationY in Matrix3D.decompose	   
+NME-30 	Inconsistency in Matrix3D.transformVector(s)
+NME-29 	Alpha in colorTransform/concatenatedColorTransform is slightly different than Flash
+NME-28 	The <template /> tag does not create target directories if they do not exist
+NME-27 	Graphics drawn using Tilesheet.drawTiles do not register click events for the parent object
+NME-26 	Using a BlendMode or mask fails when the object has lines
+NME-24 	Calling "removeChild" when the object is not a child does not throw an error
+NME-22 	displayObjectContainer.addChildAt calls addChild internally, but it should act separately
+NME-20 	Using bitmapData.draw fails when the target includes lines
+NME-19 	Delta for MouseEvent.MOUSE_WHEEL should be reversed
+NME-18 	Custom display object events are not bubbling
+NME-16 	nme.utils.Timer does not respect a change in delay unless it is stopped and restarted
+NME-13 	Input TextFields do not respect defaultTextFormat if you don't set the text property first
+NME-11 	Use system folders for SharedObject on Mac
+NME-7 	Need to implement nme.system.Capabilities for BlackBerry
+NME-6 	Need to implement SharedObject for BlackBerry
+NME-5 	Need to implement accelerometer support for BlackBerry
+NME-3 	Android JNI is causing issues in NME 3.2
+NME-1 	Checking the size of a Shape fails when lines are included
+
+
 3.2.1
 ===============
 Added "nme.text.NMEFont" to allow haxe-based fonts.

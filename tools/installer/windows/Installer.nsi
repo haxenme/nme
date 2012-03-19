@@ -7,7 +7,7 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.2.1"
+!define VERSION "3.3.0"
 
 !define HAXE_VERSION "2.08"
 !define NEKO_VERSION "1.8.2"
