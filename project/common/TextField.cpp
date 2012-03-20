@@ -1344,7 +1344,7 @@ void TextField::InsertString(WString &inString)
 
 static bool IsWord(int inCh)
 {
-  return inCh<255 && (isalpha(inCh) || isdigit(inCh) || inCh=='_');
+  return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
 }
 
 // Combine x,y scaling with rotation to calculate pixel coordinates for
@@ -1447,7 +1447,7 @@ void TextField::Layout(const Matrix &inMatrix)
          line.mChars++;
          char_count++;
          cid++;
-         if (!displayAsPassword && !isalpha(ch) && !isdigit(ch) && ch!='_' && ch!=';' && ch!='.' && ch!=',' && ch!='"' && ch!=':' && ch!='\'' && ch!='!' && ch!='?')
+         if (!displayAsPassword && !iswalpha(ch) && !isdigit(ch) && ch!='_' && ch!=';' && ch!='.' && ch!=',' && ch!='"' && ch!=':' && ch!='\'' && ch!='!' && ch!='?')
          {
             if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
             {
