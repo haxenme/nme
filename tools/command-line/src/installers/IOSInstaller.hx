@@ -37,9 +37,16 @@ class IOSInstaller extends InstallerBase {
 		}
 		
 		var iphoneVersion:String = defines.get ("IPHONE_VER");
+		var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
 		
-		//runCommand (buildDirectory + "/iphone", "xcodebuild", [ "PLATFORM_NAME=" + platformName, "-sdk " + platformName + iphoneVersion, "-configuration " + configuration ] );
-		runCommand (buildDirectory + "/iphone", "xcodebuild", [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ] );
+		if (targetFlags.exists ("simulator")) {
+			
+			commands.push ("-arch");
+			commands.push ("i386");
+			
+		}
+		
+		runCommand (buildDirectory + "/iphone", "xcodebuild", commands);
 		
 	}
 	
@@ -49,47 +56,54 @@ class IOSInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
-
-      var deployment = Std.parseFloat(iosDeployment);
-      var binaries = iosBinaries;
-      var devices = iosDevices;
-
-      if (binaries!="fat" && binaries!="armv7" && binaries!="armv6")
-         throw "ios binaries must be one of fat,armv6,armv7";
-      if (devices!="iphone" && devices!="ipad" && devices!="universal")
-         throw "ios devices must be one of universal,iphone,ipad";
-
-      var iphone = devices=="universal" || devices=="iphone";
-      var ipad = devices=="universal" || devices=="ipad";
-
-      armv6 = iphone && deployment < 5.0 && binaries!="armv7";
-      armv7 = binaries!="armv6" || !armv6;
-      var valid_archs = new Array<String>();
-      if (armv6)
-         valid_archs.push("armv6");
-      if (armv7)
-         valid_archs.push("armv7");
-      context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
-      valid_archs.push("i386");
-      context.VALID_ARCHS = valid_archs.join(" ");
-
-	   context.THUMB_SUPPORT = armv6 ? "GCC_THUMB_SUPPORT = NO;" : "";
-
-	   var requiredCapabilies = [];
-      if (armv7 && !armv6)
-        requiredCapabilies.push( { name:"arm7", value:true } );
-         
-	   context.REQUIRED_CAPABILITY = requiredCapabilies;
-
-	   context.ARMV6 = armv6;
-	   context.ARMV7 = armv7;
-
-
-      
-      context.TARGET_DEVICES = switch(devices) { case "universal": "1,2"; case "iphone" : "1"; case "ipad" : "2"; }
-
-      context.DEPLOYMENT = deployment;
 		
+		var deployment = Std.parseFloat (iosDeployment);
+		var binaries = iosBinaries;
+		var devices = iosDevices;
+
+		if (binaries != "fat" && binaries != "armv7" && binaries != "armv6") {
+			
+			InstallerBase.error ("iOS binaries must be one of: \"fat\", \"armv6\", \"armv7\"");
+			
+		}
+		
+		if (devices != "iphone" && devices != "ipad" && devices != "universal") {
+			
+			InstallerBase.error ("iOS devices must be one of: \"universal\", \"iphone\", \"ipad\"");
+			
+		}
+		
+		var iphone = (devices == "universal" || devices == "iphone");
+		var ipad = (devices == "universal" || devices == "ipad");
+		
+		armv6 = (iphone && deployment < 5.0 && binaries != "armv7");
+		armv7 = (binaries != "armv6" || !armv6);
+		
+		var valid_archs = new Array <String> ();
+		
+		if (armv6)
+			valid_archs.push("armv6");
+		
+		if (armv7)
+			valid_archs.push("armv7");
+		
+		context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
+		
+		valid_archs.push("i386");
+		
+		context.VALID_ARCHS = valid_archs.join(" ");
+		context.THUMB_SUPPORT = armv6 ? "GCC_THUMB_SUPPORT = NO;" : "";
+		
+		var requiredCapabilities = [];
+		
+		if (armv7 && !armv6)
+			requiredCapabilities.push( { name: "arm7", value: true } );
+		
+		context.REQUIRED_CAPABILITY = requiredCapabilities;
+		context.ARMV6 = armv6;
+		context.ARMV7 = armv7;
+		context.TARGET_DEVICES = switch(devices) { case "universal": "1,2"; case "iphone" : "1"; case "ipad" : "2"; }
+		context.DEPLOYMENT = deployment;
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			
@@ -200,11 +214,6 @@ class IOSInstaller extends InstallerBase {
 			}
 			
 			var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
-			//var targetPath:String = Sys.getEnv ("HOME") + "/Library/Application Support/iPhone Simulator/4.3.2/Applications/" + defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_TITLE") + ".app";
-			
-			//mkdir (targetPath);
-			//recursiveCopy (applicationPath, targetPath);
-			
 			var family:String = "iphone";
 			
 			if (targetFlags.exists ("ipad")) {
@@ -214,11 +223,9 @@ class IOSInstaller extends InstallerBase {
 			}
 			
 			var launcher:String = NME + "/tools/command-line/iphone/iphonesim";
-			
 			Sys.command ("chmod", [ "755", launcher ]);
 			
 			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
-			//runCommand ("", "open", [ "/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app" ] );
 			
 		}
 		
@@ -242,39 +249,45 @@ class IOSInstaller extends InstallerBase {
 		
 		mkdir (destination + "lib");
 		
-      for(archID in 0...3)
-      {
-         var arch = [ "armv6", "armv7", "i386" ][archID];
-
-         if (arch=="armv6" && !armv6)
-            continue;
-         if (arch=="armv7" && !armv7)
-            continue;
-
-
-         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
-
-		   mkdir (destination + "lib/" + arch);
-		   mkdir (destination + "lib/" + arch + "-debug");
-
-		   for (ndll in ndlls)
-         {
-				var releaseLib = ndll.getSourcePath("iPhone", "lib" + ndll.name +  libExt );
-				var debugLib = ndll.getSourcePath("iPhone", "lib" + ndll.name + ".debug" + libExt );
-
+		for (archID in 0...3) {
+			
+			var arch = [ "armv6", "armv7", "i386" ][archID];
+			
+			if (arch == "armv6" && !armv6)
+				continue;
+			
+			if (arch == "armv7" && !armv7)
+				continue;
+			
+			var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
+			
+			mkdir (destination + "lib/" + arch);
+			mkdir (destination + "lib/" + arch + "-debug");
+			
+			for (ndll in ndlls) {
+				
+				var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
+				var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug" + libExt);
+				
 				var releaseDest = destination + "lib/" + arch + "/lib" + ndll.name + ".a";
 				var debugDest = destination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
-
-
+				
 				copyIfNewer(releaseLib, releaseDest);
-
-            if (FileSystem.exists(debugLib)) 
-				   copyIfNewer(debugLib, debugDest);
-            else if (FileSystem.exists(debugDest)) 
-               FileSystem.deleteFile(debugDest);
+				
+				if (FileSystem.exists(debugLib)) {
+					
+					copyIfNewer(debugLib, debugDest);
+					
+				} else if (FileSystem.exists(debugDest)) {
+					
+					FileSystem.deleteFile(debugDest);
+					
+				}
+				
 			}
-      }
 			
+		}
+		
 		mkdir (destination + "assets");
 		
 		for (asset in assets) {
@@ -296,7 +309,7 @@ class IOSInstaller extends InstallerBase {
 	}
 	
 	
-	function updateIcon () {
+	private function updateIcon () {
 		
 		var destination:String = buildDirectory + "/iphone/";
 		mkdir (destination);
