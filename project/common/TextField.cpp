@@ -7,6 +7,10 @@
 #include <ctype.h>
 #include <time.h>
 
+#ifndef iswalpha
+#define iswalpha isalpha
+#endif
+
 namespace nme
 {
 
