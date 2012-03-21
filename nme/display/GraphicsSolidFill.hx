@@ -20,5 +20,5 @@ class GraphicsSolidFill extends IGraphicsData
 
 
 #else
-//typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
+typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
 #end

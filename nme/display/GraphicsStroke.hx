@@ -20,5 +20,5 @@ class GraphicsStroke extends IGraphicsData
 
 
 #else
-//typedef GraphicsStroke = flash.display.GraphicsStroke;
+typedef GraphicsStroke = flash.display.GraphicsStroke;
 #end

@@ -22,5 +22,5 @@ class GraphicsEndFill extends IGraphicsData
 
 
 #else
-//typedef GraphicsEndFill = flash.display.GraphicsEndFill;
+typedef GraphicsEndFill = flash.display.GraphicsEndFill;
 #end
