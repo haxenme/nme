@@ -6,7 +6,7 @@ import flash.utils.TypedDictionary;
 #end
 
 
-private class ObjectHash <T> {
+class ObjectHash <T> {
 	
 	
 	#if flash
