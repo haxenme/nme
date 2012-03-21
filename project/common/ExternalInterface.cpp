@@ -924,7 +924,7 @@ DEFINE_PRIM(nme_get_url,1);
 
 void nme_haptic_vibrate(value inPeriod, value inDuration)
 {
-	#if defined(WEBOS)
+	#if defined(WEBOS) || defined(ANDROID)
 	HapticVibrate (val_int(inPeriod), val_int(inDuration));
 	#endif
 }

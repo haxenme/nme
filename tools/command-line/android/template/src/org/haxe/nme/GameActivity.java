@@ -19,6 +19,7 @@ import android.content.Context;
 import android.media.SoundPool;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.lang.Math;
 import java.lang.reflect.Constructor;
 
 public class GameActivity extends Activity implements SensorEventListener {
@@ -251,6 +253,29 @@ public class GameActivity extends Activity implements SensorEventListener {
          @Override public void run() {
                 NME.onCallback(inHandle); } });
     }
+	
+	static public void vibrate(int period, int duration)
+	{
+		Vibrator v = (Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
+		
+		if (period == 0)
+		{
+			v.vibrate(duration);
+		}
+		else
+		{	
+			int periodMS = (int) Math.ceil (period / 2);
+			int count = (int) Math.ceil ((duration / period) * 2);
+			long[] pattern = new long[count];
+			
+			for (int i = 0; i < count; i++)
+			{
+				pattern[i] = periodMS;
+			}
+			
+			v.vibrate (pattern, -1);
+		}
+	}
 
     static public void launchBrowser(String inURL)
     {
