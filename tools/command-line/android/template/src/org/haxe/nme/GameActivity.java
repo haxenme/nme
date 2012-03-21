@@ -40,6 +40,8 @@ public class GameActivity extends Activity implements SensorEventListener {
     static int       mSoundPoolID=0;
     static Context mContext;
     static MediaPlayer mMediaPlayer = null;
+	static boolean mMusicComplete = true;
+	static int mMusicLoopsLeft = 0;
     static final String GLOBAL_PREF_FILE="nmeAppPrefs";
     static GameActivity activity;
     public android.os.Handler mHandler;
@@ -169,6 +171,11 @@ public class GameActivity extends Activity implements SensorEventListener {
        
        return id;
     }
+	
+	static public boolean getMusicComplete()
+	{
+		return mMusicComplete;
+	}
 
     static public int getSoundPoolID() { return mSoundPoolID; }
 
@@ -204,7 +211,7 @@ public class GameActivity extends Activity implements SensorEventListener {
        return mSoundPool.play(inSoundID,(float)inVolLeft,(float)inVolRight, 1, inLoop, 1.0f);
     }
 
-    static public int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
+    static public int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
     {
        if (mMediaPlayer!=null)
        {
@@ -212,6 +219,8 @@ public class GameActivity extends Activity implements SensorEventListener {
           mMediaPlayer.stop();
           mMediaPlayer = null;
        }
+	   
+	   mMusicComplete = false;
     
        mMediaPlayer = MediaPlayer.create(mContext, inResourceID);
        if (mMediaPlayer==null)
@@ -222,10 +231,24 @@ public class GameActivity extends Activity implements SensorEventListener {
 	   {
           mMediaPlayer.setLooping(true);
 	   }
-       else if (inLoop>0)
+       else if (inLoop>=0)
        {
-		   // TODO: looping music 
+	      mMusicLoopsLeft = inLoop;
+		  mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+			  @Override public void onCompletion( MediaPlayer mp ) {
+				  if (--mMusicLoopsLeft > 0)
+				  {
+					  mp.seekTo(0);
+					  mp.start();
+				  }
+				  else
+				  {
+					  mMusicComplete = true;
+				  }
+			  }
+		  });
        }
+	   mMediaPlayer.seekTo((int)inStartTime);
        mMediaPlayer.start();
 
        return 0;

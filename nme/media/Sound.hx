@@ -51,6 +51,7 @@ class Sound extends EventDispatcher
 		}
 		else
 		{
+			url = stream.url;
 			nmeLoading = true;
 			nmeLoading = false;
 			nmeCheckLoading();

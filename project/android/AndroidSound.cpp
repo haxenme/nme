@@ -87,10 +87,10 @@ public:
 		if (inHandle>=0)
 		{
 		   jclass cls = env->FindClass("org/haxe/nme/GameActivity");
-         jmethodID mid = env->GetStaticMethodID(cls, "playMusic", "(IDDI)I");
+         jmethodID mid = env->GetStaticMethodID(cls, "playMusic", "(IDDID)I");
          if (mid > 0)
 		   {
-			   mState = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
+			   mState = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops, startTime);
 		   }
 		}
     }
@@ -102,6 +102,12 @@ public:
 
    bool isComplete()
 	{
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "getMusicComplete", "()Z");
+		if (mid > 0){
+			return env->CallStaticBooleanMethod(cls, mid );
+		}
 		return false;
 	}
    double getLeft()
