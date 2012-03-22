@@ -89,7 +89,7 @@ typedef void *GLCtx;
 #include <Surface.h>
 
 #ifdef HX_MACOS
-//#define ALLOW_OGL2
+#define ALLOW_OGL2
 #endif
 
 namespace nme
@@ -107,7 +107,7 @@ enum GPUProgID
    gpuSIZE,
 };
 
-typedef float Trans2x4[2][4];
+typedef float Trans4x4[4][4];
 
 class GPUProg
 {
@@ -120,10 +120,11 @@ public:
 
    virtual void setPositionData(const float *inData, bool inIsPerspective) = 0;
    virtual void setTexCoordData(const float *inData) = 0;
+   virtual void setColourData(const int *inData) = 0;
    virtual void setColourTransform(const ColorTransform *inTransform) = 0;
    virtual int  getTextureSlot() = 0;
 
-   virtual void setTransform(const Trans2x4 &inTrans) = 0;
+   virtual void setTransform(const Trans4x4 &inTrans) = 0;
    virtual void setTint(unsigned int inColour) = 0;
    //virtual void setGradientFocus(float inFocus) = 0;
 };

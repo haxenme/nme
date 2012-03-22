@@ -28,16 +28,13 @@ public:
    GLuint createShader(GLuint inType, const char *inShader)
    {
       GLuint shader = glCreateShader(inType);
-      glShaderSource(inType,1,&inShader,0);
+      glShaderSource(shader,1,&inShader,0);
       glCompileShader(shader);
 
-      GLint compiled;
+      GLint compiled = 0;
       glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
       if (compiled)
-      {
-         printf("Compiled shader\n");
          return shader;
-      }      
 
       GLint blen = 0;	
       GLsizei slen = 0;
@@ -47,7 +44,7 @@ public:
       {
          GLchar* compiler_log = (GLchar*)malloc(blen);
          glGetShaderInfoLog(shader, blen, &slen, compiler_log);
-         printf("Error compiling shader %s\n",  compiler_log);
+         printf("Error compiling shader : %s\n", compiler_log);
          free (compiler_log);
       }
       glDeleteShader(shader);
@@ -96,7 +93,7 @@ public:
       if (linked)
       {
          // All good !
-         printf("Linked!\n");
+         //printf("Linked!\n");
       }
       else
       {
@@ -106,6 +103,10 @@ public:
          glDeleteProgram(mProgramId);
          mVertId = mFragId = mProgramId = 0;
       }
+
+      mPositionSlot = glGetAttribLocation(mProgramId, "glPosition");
+      mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
+      //printf("mTransformSlot %d\n", mTransformSlot);
    }
 
    virtual bool bind()
@@ -122,15 +123,50 @@ public:
 
    void setPositionData(const float *inData, bool inIsPerspective)
    {
+      #ifdef NME_GLES
+      glVertexAttribPointer(mPositionSlot, inIsPerspective ? 2 : 0 , GL_FLOAT, GL_FALSE, 0, inData);
+      #else
+      glVertexPointer(inIsPerspective ? 4 : 2,GL_FLOAT,0,inData);
+      #endif
    }
 
    void setTexCoordData(const float *inData)
    {
+      if (inData)
+      {
+         #ifdef NME_GLES
+         //glEnableVertexAttribArray
+         #else
+         glEnable(GL_TEXTURE_2D);
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glTexCoordPointer(2, GL_FLOAT, 0, inData);
+         #endif
+      }
+      else
+      {
+         #ifdef NME_GLES
+         #else
+         glDisable(GL_TEXTURE_2D);
+         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+         #endif
+      }
    }
 
+   void setColourData(const int *inData)
+   {
+   }
 
    void setColourTransform(const ColorTransform *inTransform)
    {
+      if (inTransform)
+      {
+          glUniform4f(mColourOffsetSlot, 1.0f, 1.0f, 1.0f, 1.0f);
+          glUniform4f(mColourOffsetScale, 1.0f, 0.0f, 0.0f,1);
+         //glColor4f( inTransform->redMultiplier,
+         //           inTransform->greenMultiplier,
+         //           inTransform->blueMultiplier,
+         //           inTransform->alphaMultiplier);
+      }
    }
 
    int  getTextureSlot()
@@ -139,12 +175,29 @@ public:
    }
 
 
-   void setTransform(const Trans2x4 &inTrans)
+   void setTransform(const Trans4x4 &inTrans)
    {
+      /*
+      for(int j=0;j<4;j++)
+      {
+         for(int i=0;i<4;i++)
+            printf("%.3f ", inTrans[j][i] );
+         printf("\n");
+      }
+      printf("\n");
+      */
+      glUniformMatrix4fv(mTransformSlot, 1, 0, inTrans[0]);
+    
+      //Trans4x4 test;
+      //for(int i=0;i<4;i++)
+         //for(int j=0;j<4;j++)
+            //test[i][j] = (i==j) ? (i<3 ? 0.01 : 1 ) : 0;
+      //glUniformMatrix4fv(mTransformSlot, 1, true, test[0]);
    }
 
    void setTint(unsigned int inColour)
    {
+      glUniform4f(mTintSlot, 1.0f, 0.0f, 0.0f,1);
    }
 
    //virtual void setGradientFocus(float inFocus) = 0;
@@ -155,15 +208,21 @@ public:
    GLuint     mVertId;
    GLuint     mFragId;
    int        mContextVersion;
+
    int        mTextureSlot;
 
+   GLuint     mPositionSlot;
+   GLuint     mColourOffsetScale;
+   GLuint     mColourOffsetSlot;
+   GLuint     mTransformSlot;
+   GLuint     mTintSlot;
 };
 
 const char *gSolidVert = 
-" void main(void)\n"
+"uniform mat4 uTransform;\n"
+"void main(void)\n"
 "{\n"
-"   vec4 a = gl_Vertex;\n"
-"   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+"   gl_Position = gl_Vertex * uTransform;\n"
 "}";
 const char *gColourVert = gSolidVert;
 const char *gTextureVert = gSolidVert;

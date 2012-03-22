@@ -590,6 +590,9 @@ public:
    {
       for(int i=0;i<gpuSIZE;i++)
          mProg[i] = 0;
+      for(int i=0;i<4;i++)
+         for(int j=0;j<4;j++)
+            mTrans[i][j] = i==j;
    }
    ~OGL2Context()
    {
@@ -603,6 +606,8 @@ public:
       mScaleY = 2.0/(y1-y0);
       mOffsetX = (x0+x1)/(x0-x1);
       mOffsetY = (y0+y1)/(y0-y1);
+      mModelView = Matrix();
+      CombineModelView(mModelView);
    } 
 
    virtual void CombineModelView(const Matrix &inModelView)
@@ -627,7 +632,7 @@ public:
    virtual void SetPositionData(const float *inData,bool inPerspective)
    {
       mPosition = inData;
-      mPositionPerspective = inData;
+      mPositionPerspective = inPerspective;
    }
 
    virtual void SetTextureColourTransform(const ColorTransform *inTransform)
@@ -662,6 +667,7 @@ public:
       }
       if (id==gpuNone)
          return false;
+
       if (!mProg[id])
          mProg[id] = GPUProg::create(id);
       if (!mProg[id])
@@ -669,16 +675,20 @@ public:
 
       GPUProg *prog = mProg[id];
       prog->bind();
+
+
       prog->setPositionData(mPosition,mPositionPerspective);
+      prog->setTransform(mTrans);
       if (mTexCoords)
       {
          prog->setTexCoordData(mTexCoords);
          mTextureSurface->Bind(*this, prog->getTextureSlot() );
       }
+      if (mColourArray)
+         prog->setColourData(mColourArray);
+      
       if (mColourTransform)
          prog->setColourTransform(mColourTransform);
-
-      prog->setTransform(mTrans);
 
       mCurrentProg = prog;
       return true;
@@ -705,7 +715,7 @@ public:
    double mScaleY;
    double mOffsetY;
 
-   Trans2x4 mTrans;
+   Trans4x4 mTrans;
 };
 
 
