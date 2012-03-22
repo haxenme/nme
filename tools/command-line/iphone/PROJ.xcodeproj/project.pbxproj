@@ -256,18 +256,18 @@
 
             "LIBRARY_SEARCH_PATHS[arch=armv6]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/armv6-debug",
-					"$(SRCROOT)/lib/armv6",
+					"\"$(SRCROOT)/lib/armv6-debug\"",
+					"\"$(SRCROOT)/lib/armv6\"",
 				);
 				"LIBRARY_SEARCH_PATHS[arch=armv7]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/armv7-debug",
-					"$(SRCROOT)/lib/armv7",
+					"\"$(SRCROOT)/lib/armv7-debug\"",
+					"\"$(SRCROOT)/lib/armv7\"",
 				);
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/i386-debug",
-					"$(SRCROOT)/lib/i386",
+					"\"$(SRCROOT)/lib/i386-debug\"",
+					"\"$(SRCROOT)/lib/i386\"",
 				);
 	         OTHER_LDFLAGS = (
                ::foreach ndlls:: "-l::name::",
@@ -293,15 +293,15 @@
 
             "LIBRARY_SEARCH_PATHS[arch=armv6]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/armv6",
+					"\"$(SRCROOT)/lib/armv6\"",
 				);
 				"LIBRARY_SEARCH_PATHS[arch=armv7]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/armv7",
+					"\"$(SRCROOT)/lib/armv7\"",
 				);
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
-					"$(SRCROOT)/lib/i386",
+					"\"$(SRCROOT)/lib/i386\"",
 				);
 	         OTHER_LDFLAGS = (
                ::foreach ndlls:: "-l::name::",
