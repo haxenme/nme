@@ -146,7 +146,7 @@ printf("FRAG: %s\n", mFragProg);
          glEnable(GL_TEXTURE_2D);
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glTexCoordPointer(2, GL_FLOAT, 0, inData);
-         glUniformi(mTextureSlot,0);
+         //glUniformi(mTextureSlot,0);
          #endif
       }
       else

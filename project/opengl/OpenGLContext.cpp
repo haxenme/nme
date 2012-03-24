@@ -743,7 +743,7 @@ void InitExtensions()
 
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
 {
-   #if 1
+   #if 0
    HardwareContext *ctx =  new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
    #else
    HardwareContext *ctx =  new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
