@@ -911,11 +911,8 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-#if defined(HX_WINDOWS) || defined(IPHONE) || defined(ANDROID) || defined(HX_MACOS) || defined(WEBOS) || defined(BLACKBERRY)
 	bool result=LaunchBrowser(val_string(url));
 	return alloc_bool(result);
-#endif
-	return alloc_bool(false);
 }
 DEFINE_PRIM(nme_get_url,1);
 

@@ -46,6 +46,7 @@
 		
 		<compilerflag value="-Iinclude"/>
 		<file name="linux/NativeFont.cpp"/>
+		<file name="linux/System.cpp"/>
 		
 	</files>
 	
