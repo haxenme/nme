@@ -8,6 +8,7 @@
 namespace nme
 {
 
+const float one_on_255 = 1.0/255.0;
 
 class OGLProg : public GPUProg
 {
@@ -104,9 +105,14 @@ public:
          mVertId = mFragId = mProgramId = 0;
       }
 
+printf("VERT: %s\n", mVertProg);
+printf("FRAG: %s\n", mFragProg);
+
       mPositionSlot = glGetAttribLocation(mProgramId, "glPosition");
       mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
-      //printf("mTransformSlot %d\n", mTransformSlot);
+      mTintSlot = glGetUniformLocation(mProgramId, "uTint");
+      mTextureSlot = glGetUniformLocation(mProgramId, "uImage0");
+      printf("mTextureSlot %d\n", mTextureSlot);
    }
 
    virtual bool bind()
@@ -140,6 +146,7 @@ public:
          glEnable(GL_TEXTURE_2D);
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glTexCoordPointer(2, GL_FLOAT, 0, inData);
+         glUniformi(mTextureSlot,0);
          #endif
       }
       else
@@ -177,27 +184,16 @@ public:
 
    void setTransform(const Trans4x4 &inTrans)
    {
-      /*
-      for(int j=0;j<4;j++)
-      {
-         for(int i=0;i<4;i++)
-            printf("%.3f ", inTrans[j][i] );
-         printf("\n");
-      }
-      printf("\n");
-      */
       glUniformMatrix4fv(mTransformSlot, 1, 0, inTrans[0]);
-    
-      //Trans4x4 test;
-      //for(int i=0;i<4;i++)
-         //for(int j=0;j<4;j++)
-            //test[i][j] = (i==j) ? (i<3 ? 0.01 : 1 ) : 0;
-      //glUniformMatrix4fv(mTransformSlot, 1, true, test[0]);
    }
 
    void setTint(unsigned int inColour)
    {
-      glUniform4f(mTintSlot, 1.0f, 0.0f, 0.0f,1);
+      if (mTintSlot>=0)
+         glUniform4f(mTintSlot, ((inColour >> 16) & 0xff) * one_on_255,
+                                ((inColour >> 8) & 0xff) * one_on_255,
+                                ((inColour) & 0xff) * one_on_255,
+                                ((inColour >> 24) & 0xff) * one_on_255 );
    }
 
    //virtual void setGradientFocus(float inFocus) = 0;
@@ -209,13 +205,14 @@ public:
    GLuint     mFragId;
    int        mContextVersion;
 
-   int        mTextureSlot;
+   GLint     mTextureSlot;
+   GLint     mTexCoordSlot;
 
-   GLuint     mPositionSlot;
-   GLuint     mColourOffsetScale;
-   GLuint     mColourOffsetSlot;
-   GLuint     mTransformSlot;
-   GLuint     mTintSlot;
+   GLint     mPositionSlot;
+   GLint     mColourOffsetScale;
+   GLint     mColourOffsetSlot;
+   GLint     mTransformSlot;
+   GLint     mTintSlot;
 };
 
 const char *gSolidVert = 
@@ -225,17 +222,32 @@ const char *gSolidVert =
 "   gl_Position = gl_Vertex * uTransform;\n"
 "}";
 const char *gColourVert = gSolidVert;
-const char *gTextureVert = gSolidVert;
+const char *gTextureVert =
+"uniform mat4 uTransform;\n"
+"varying vec2 vTexCoord;\n"
+"void main(void)\n"
+"{\n"
+"   vTexCoord = gl_MultiTexCoord0.xy;\n"
+"   gl_Position = gl_Vertex * uTransform;\n"
+"}";
 
 
 const char *gSolidFrag = 
+"uniform vec4 uTint;\n"
 "void main(void)\n"
 "{\n"
-"   gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
+"   gl_FragColor = uTint;\n"
 "}\n";
 const char *gColourFrag = gSolidFrag;
-const char *gTextureFrag = gSolidFrag;
-const char *gTextureTransFrag = gSolidFrag;
+const char *gTextureFrag =
+"varying vec2 vTexCoord;\n"
+"sampler2D uImage0;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = texture2D(uImage0,vTexCoord);\n"
+"}\n";
+
+const char *gTextureTransFrag = gTextureFrag;
 
 
 GPUProg *GPUProg::create(GPUProgID inID)
