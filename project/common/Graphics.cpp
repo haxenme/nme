@@ -546,11 +546,6 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
      if (!mHardwareData)
          mHardwareData = new HardwareData();
 
-	 if (mBuiltHardware < mJobs.size() && inState.mPhase == rpHitTest)
-	 {
-		 return false;
-	 }
-
      while(mBuiltHardware<mJobs.size())
      {
          BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
