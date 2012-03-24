@@ -1270,7 +1270,10 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
                continue;
             UserPoint *v = &vert[ draw.mFirst ];
             UserPoint p0 = *v;
-            for(int i=0;i<draw.mCount;i++)
+			
+			int numTriangles = draw.mCount / 3;
+			
+            for(int i=0;i<numTriangles;i++)
             {
                UserPoint base = *v++;
                UserPoint v0 = v[0] - base;
