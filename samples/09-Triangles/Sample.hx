@@ -21,11 +21,23 @@ import flash.Lib;
 class Sample extends Sprite 
 {
    var t0:Float;
+   var s0:Sprite;
+   var s1:Sprite;
+   var s2:Sprite;
 
    public function new()
    {
       super();
       Lib.current.addChild(this);
+      addChild(s0 = new Sprite());
+      addChild(s1 = new Sprite());
+      addChild(s2 = new Sprite());
+
+      s0.scaleX = s0.scaleY = 0.5;
+      s1.scaleX = s1.scaleY = 0.5;
+      s2.scaleX = s2.scaleY = 0.5;
+      s1.x = 550/2;
+      s2.y = 400/2;
 
       #if !flash
 		onLoaded(BitmapData.load("../03-Bitmaps/Image.jpg"));
@@ -52,10 +64,6 @@ class Sample extends Sprite
 
 	function doUpdate(inData:BitmapData)
 	{
-		var gfx = graphics;
-      gfx.clear();
-		gfx.beginBitmapFill(inData);
-		gfx.lineStyle(4,0x0000ff);
 
 		var sx = 1.0/inData.width;
 		var sy = 1.0/inData.height;
@@ -91,11 +99,36 @@ class Sample extends Sprite
 		  300.0*sx, 200.0*sy, w1,
 		  300.0*sx, 000.0*sy, w1  ];
 
+      #if cpp
+		var cols = [ 0xffff0000,
+                   0xff00ff00,
+                   0xff0000ff,
+                   0xffffffff ];
+      #end
+
+		var gfx = s0.graphics;
+      gfx.clear();
+		gfx.beginBitmapFill(inData);
+		gfx.lineStyle(4,0x0000ff);
       drawTriangles(gfx, vertices, indices, tex_uvt );
+
+		var gfx = s1.graphics;
+      gfx.clear();
+		gfx.beginBitmapFill(inData);
+		gfx.lineStyle(4,0x0000ff);
+      drawTriangles(gfx, vertices, indices, tex_uv );
+
+      #if cpp
+		var gfx = s2.graphics;
+      gfx.clear();
+		gfx.beginFill(0x000000);
+		gfx.lineStyle(4,0x808080);
+      drawTriangles(gfx, vertices, indices, null, null, cols );
+      #end
    }
 
    function drawTriangles(inGfx:Graphics, ?verts:Array<Float>, ?indices:Array<Int>,
-                    ?tex:Array<Float>, ?cull:TriangleCulling )
+                    ?tex:Array<Float>, ?cull:TriangleCulling, ? cols:Array<Int> )
    {
       #if flash
       var verts_v = new flash.Vector<Float>(verts.length);
@@ -107,7 +140,7 @@ class Sample extends Sprite
 
       inGfx.drawTriangles(verts_v, indices_v, tex_v, cull);
       #else
-      inGfx.drawTriangles(verts, indices, tex, cull);
+      inGfx.drawTriangles(verts, indices, tex, cull,cols);
       #end
 
    }
@@ -120,7 +153,7 @@ public static function main()
 {
 #if !flash
    nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-        (0*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
+        (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
 #else
    new Sample();
 #end
