@@ -22,10 +22,10 @@ int sgDrawBitmap = 0;
 namespace nme
 {
 
-const double one_on_256 = 1.0/256.0;
+const double one_on_255 = 1.0/255.0;
 
 static GLuint sgOpenglType[] =
-  { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS };
+  { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS, GL_LINES };
 
 
 void ResetHardwareContext()
@@ -59,6 +59,7 @@ public:
       mLineScaleV = -1;
       mLineScaleH = -1;
       mPointSmooth = true;
+      mColourArrayEnabled = false;
       const char *str = (const char *)glGetString(GL_VENDOR);
       if (str && !strncmp(str,"Intel",5))
          mPointSmooth = false;
@@ -283,16 +284,22 @@ public:
             boundTexture = arrays.mSurface->GetOrCreateTexture(*this);
             SetTexture(arrays.mSurface,&tex_coords[0].x);
             last_col = -1;
-            SetTextureColourTransform(inState.mColourTransform);
+            SetModulatingTransform(inState.mColourTransform);
          }
          else
          {
             boundTexture = 0;
             SetTexture(0,0);
+            SetModulatingTransform(0);
          }
 
          if (arrays.mColours.size() == vert.size())
+         {
             SetColourArray(&arrays.mColours[0]);
+            SetModulatingTransform(inState.mColourTransform);
+         }
+         else
+            SetColourArray(0);
 
    
          int n = elements.size();
@@ -318,12 +325,12 @@ public:
                 if (c==0 || last_col!=col)
                 {
                     last_col = col; 
-                    SetElementColour(col);
+                    SetSolidColour(col);
                 }
             }
             
    
-            if ( (draw.mPrimType == ptLineStrip || draw.mPrimType==ptPoints) && draw.mCount>1)
+            if ( (draw.mPrimType == ptLineStrip || draw.mPrimType==ptPoints || draw.mPrimType==ptLines) && draw.mCount>1)
             {
                if (draw.mWidth<0)
                   SetLineWidth(1.0);
@@ -355,7 +362,7 @@ public:
                         break;
                   }
 
-               if (mPointsToo && mLineWidth>1.5)
+               if (mPointsToo && mLineWidth>1.5 && draw.mPrimType!=ptLines )
                   glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
             }
    
@@ -369,9 +376,7 @@ public:
                glEnable(GL_DITHER);
             #endif
          }
-
-         if (arrays.mColours.size() == vert.size())
-            SetColourArray(0);
+         FinishDrawing();
       }
    }
 
@@ -380,13 +385,18 @@ public:
       return true;
    }
 
-   virtual void SetElementColour(unsigned int col)
+   virtual void FinishDrawing()
+   {
+      SetColourArray(0);
+   }
+
+   virtual void SetSolidColour(unsigned int col)
    {
        glColor4f(
-         (float) ((col >> 16) & 0xFF) *  one_on_256,
-         (float) ((col >> 8) & 0xFF) * one_on_256,
-         (float) (col & 0xFF) * one_on_256,
-         (float) ((col >> 24) & 0xFF) * one_on_256);
+         (float) ((col >> 16) & 0xFF) *  one_on_255,
+         (float) ((col >> 8) & 0xFF) * one_on_255,
+         (float) (col & 0xFF) * one_on_255,
+         (float) ((col >> 24) & 0xFF) * one_on_255);
    }
 
    virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
@@ -410,12 +420,13 @@ public:
       glVertexPointer(inPerspective ? 4 : 2,GL_FLOAT,0,inData);
    }
 
-   virtual void SetTextureColourTransform(const ColorTransform *inTransform)
+   virtual void SetModulatingTransform(const ColorTransform *inTransform)
    {
-      glColor4f( inTransform->redMultiplier,
-                 inTransform->greenMultiplier,
-                 inTransform->blueMultiplier,
-                 inTransform->alphaMultiplier);
+      if (inTransform)
+         glColor4f( inTransform->redMultiplier,
+                    inTransform->greenMultiplier,
+                    inTransform->blueMultiplier,
+                    inTransform->alphaMultiplier);
    }
 
 
@@ -423,22 +434,59 @@ public:
    {
       if (inData)
       {
+         mColourArrayEnabled = true;
          glEnableClientState(GL_COLOR_ARRAY);
          glColorPointer(4,GL_UNSIGNED_BYTE,0,inData);
       }
-      else
+      else if (mColourArrayEnabled)
       {
+         mColourArrayEnabled = false;
          glDisableClientState(GL_COLOR_ARRAY);
       }
    }
+
+   virtual void PushBitmapMatrix()
+   {
+      glPushMatrix();
+      glLoadIdentity();
+   }
+
+   virtual void PopBitmapMatrix()
+   {
+      glPopMatrix();
+   }
+
+
+   virtual void PrepareBitmapRender()
+   {
+      glColor4f(
+        (float) ((mTint >> 16) & 0xFF) *one_on_255,
+        (float) ((mTint >> 8) & 0xFF) *one_on_255,
+        (float) (mTint & 0xFF) * one_on_255,
+        (float) ((mTint >> 24) & 0xFF) *one_on_255);
+      glEnable(GL_TEXTURE_2D);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      #ifdef NME_DITHER
+      if (!inSmooth)
+        glDisable(GL_DITHER);
+      #endif
+   }
+
+   virtual void FinishBitmapRender()
+   {
+      glDisable(GL_TEXTURE_2D);
+      #ifdef NME_DITHER
+      glEnable(GL_DITHER);
+      #endif
+   }
+
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint,bool inRepeat,bool inSmooth)
    {
       if (!mUsingBitmapMatrix)
       {
          mUsingBitmapMatrix = true;
-         glPushMatrix();
-         glLoadIdentity();
+         PushBitmapMatrix();
       }
 
       if (mBitmapSurface==inSurface && mTint==inTint)
@@ -446,18 +494,11 @@ public:
 
       mTint = inTint;
       mBitmapSurface = inSurface;
-      glColor4f((float) ((inTint >> 16) & 0xFF) / 256,
-        (float) ((inTint >> 8) & 0xFF) / 256,
-        (float) (inTint & 0xFF) / 256,
-        (float) ((inTint >> 24) & 0xFF) / 256);
       inSurface->Bind(*this,0);
       mBitmapTexture = inSurface->GetOrCreateTexture(*this);
       mBitmapTexture->BindFlags(inRepeat,inSmooth);
-      glEnable(GL_TEXTURE_2D);
-      #ifdef NME_DITHER
-      if (!inSmooth)
-        glDisable(GL_DITHER);
-      #endif
+
+      PrepareBitmapRender();
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
@@ -472,12 +513,16 @@ public:
          vertex[i] =  UserPoint(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
       }
 
-      glVertexPointer(2, GL_FLOAT, 0, &vertex[0].x);
-      glTexCoordPointer(2, GL_FLOAT, 0, &tex[0].x);
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    
+      SetBitmapData(&vertex[0].x,&tex[0].x);
+
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
       sgDrawBitmap++;
+   }
+
+   virtual void SetBitmapData(const float *inPos, const float *inTex)
+   {
+      glVertexPointer(2,GL_FLOAT,0,inPos);
+      glTexCoordPointer(2,GL_FLOAT,0,inTex);
    }
 
    void EndBitmapRender()
@@ -485,14 +530,12 @@ public:
       if (mUsingBitmapMatrix)
       {
          mUsingBitmapMatrix = false;
-         glPopMatrix();
+         PopBitmapMatrix();
       }
 
-      #ifdef NME_DITHER
-      glEnable(GL_DITHER);
-      #endif
       mBitmapTexture = 0;
       mBitmapSurface = 0;
+      FinishBitmapRender();
    }
 
    void SetLineWidth(double inWidth)
@@ -566,6 +609,7 @@ public:
    GLCtx mOGLCtx;
    uint32 mTint;
    int mWidth,mHeight;
+   bool   mColourArrayEnabled;
    bool   mPointsToo;
    bool   mPointSmooth;
    bool   mUsingBitmapMatrix;
@@ -583,6 +627,10 @@ void ReleaseVertexBufferObject(unsigned int inVBO)
 #endif
 
 
+
+
+// --- OGL2 -------------------------------------------------------------------
+
 class OGL2Context : public OGLContext
 {
 public:
@@ -592,7 +640,8 @@ public:
          mProg[i] = 0;
       for(int i=0;i<4;i++)
          for(int j=0;j<4;j++)
-            mTrans[i][j] = i==j;
+            mBitmapTrans[i][j] = mTrans[i][j] = i==j;
+      //mBitmapTrans[2][2] = 0.0;
    }
    ~OGL2Context()
    {
@@ -607,6 +656,12 @@ public:
       mOffsetX = (x0+x1)/(x0-x1);
       mOffsetY = (y0+y1)/(y0-y1);
       mModelView = Matrix();
+
+      mBitmapTrans[0][0] = mScaleX;
+      mBitmapTrans[0][3] = mOffsetX;
+      mBitmapTrans[1][1] = mScaleY;
+      mBitmapTrans[1][3] = mOffsetY;
+
       CombineModelView(mModelView);
    } 
 
@@ -635,12 +690,10 @@ public:
       mPositionPerspective = inPerspective;
    }
 
-   virtual void SetTextureColourTransform(const ColorTransform *inTransform)
+
+   virtual void SetModulatingTransform(const ColorTransform *inTransform)
    {
-      if (inTransform->IsIdentityColour())
-         mColourTransform = 0;
-      else;
-         mColourTransform = inTransform;
+      mColourTransform = inTransform;
    }
 
    virtual void SetColourArray(const int *inData)
@@ -653,15 +706,22 @@ public:
       GPUProgID id = gpuNone; 
       if (mTexCoords)
       {
-         if (mColourTransform)
+         if (mColourTransform && !mColourTransform->IsIdentity())
             id = gpuTextureTransform;
+         else if (mColourArray)
+            id = gpuTextureColourArray;
          else
             id = gpuTexture;
       }
       else
       {
          if (mColourArray)
-            id = gpuColour;
+         {
+            if (mColourTransform && !mColourTransform->IsIdentity())
+               id = gpuColourTransform;
+            else
+               id = gpuColour;
+         }
          else
             id = gpuSolid;
       }
@@ -674,6 +734,7 @@ public:
          return false;
 
       GPUProg *prog = mProg[id];
+      mCurrentProg = prog;
       prog->bind();
 
 
@@ -690,15 +751,57 @@ public:
       if (mColourTransform)
          prog->setColourTransform(mColourTransform);
 
-      mCurrentProg = prog;
       return true;
    }
 
-   virtual void SetElementColour(unsigned int col)
+   virtual void SetBitmapData(const float *inPos, const float *inTex)
+   {
+      mCurrentProg->setPositionData(inPos,false);
+      mCurrentProg->setTexCoordData(inTex);
+   }
+
+
+
+   virtual void FinishDrawing()
+   {
+      if (mCurrentProg)
+         mCurrentProg->finishDrawing();
+   }
+
+
+   virtual void SetSolidColour(unsigned int col)
    {
       if (mCurrentProg)
          mCurrentProg->setTint(col);
    }
+
+
+   virtual void PushBitmapMatrix() { }
+
+   virtual void PopBitmapMatrix() { }
+
+
+   virtual void PrepareBitmapRender()
+   {
+      GPUProgID id = mBitmapSurface->BytesPP() == 1 ? gpuBitmapAlpha : gpuBitmap;
+      if (!mProg[id])
+         mProg[id] = GPUProg::create(id);
+      mCurrentProg = mProg[id];
+      if (!mCurrentProg)
+         return;
+
+      mCurrentProg->bind();
+      mCurrentProg->setTint(mTint);
+      mBitmapSurface->Bind(*this, mCurrentProg->getTextureSlot() );
+      mCurrentProg->setTransform(mBitmapTrans);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   }
+
+   virtual void FinishBitmapRender()
+   {
+      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   }
+
 
    const float *mPosition;
    bool  mPositionPerspective;
@@ -716,7 +819,12 @@ public:
    double mOffsetY;
 
    Trans4x4 mTrans;
+   Trans4x4 mBitmapTrans;
 };
+
+
+
+// ----------------------------------------------------------------------------
 
 
 void InitExtensions()

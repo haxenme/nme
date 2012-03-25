@@ -403,7 +403,7 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
             const QuickVec<int> &inIndices,
             const QuickVec<float> &inUVT, int inCull,
             const QuickVec<int> &inColours,
-            int blendMode, const QuickVec<float> &inViewport )
+            int blendMode, const QuickVec<float,4> &inViewport )
 {
 	Flush( );
 	

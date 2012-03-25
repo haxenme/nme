@@ -84,7 +84,7 @@ const uint8 *GetLUT(double inMultiplier, double inOffset)
 
 	sgLUTID++;
 
-   Trans t((int)(inMultiplier*128),(int)(inOffset*128));
+   Trans t((int)(inMultiplier*128),(int)(inOffset/2));
 	LUTMap::iterator it = sgLUTs.find(t);
 	if (it!=sgLUTs.end())
 	{

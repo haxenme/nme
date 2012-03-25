@@ -84,8 +84,24 @@ public:
 
       if (inJob.mTriangles)
       {
-         mArrays = &ioData.GetArrays(mSurface,false,inJob.mTriangles->mType == vtVertexUVT);
+         bool has_colour = inJob.mTriangles->mColours.size()>0;
+         mArrays = &ioData.GetArrays(mSurface,has_colour,inJob.mTriangles->mType == vtVertexUVT);
          AddTriangles(inJob.mTriangles);
+
+         if (inJob.mStroke && inJob.mStroke->fill)
+         {
+            mElement.mPrimType = ptLines;
+            GraphicsStroke *stroke = inJob.mStroke;
+            if (!SetFill(stroke->fill,inHardware))
+               return;
+
+            mArrays = &ioData.GetArrays(mSurface,false,false);
+            mElement.mFirst = 0;
+            mElement.mCount = 0;
+            mElement.mScaleMode = ssmNormal;
+            mElement.mWidth = stroke->thickness;
+            AddTriangleLines(inJob.mTriangles);
+         }
       }
       else if (tile_mode)
       {
@@ -226,6 +242,41 @@ public:
       mElement.mCount = (vertices.size() - mElement.mFirst)/(persp ? 2:1);
       elements.push_back(mElement);
    }
+
+
+   void AddTriangleLines(GraphicsTrianglePath *inPath)
+   {
+      Vertices &vertices = mArrays->mVertices;
+      Colours &colours = mArrays->mColours;
+      Vertices &tex = mArrays->mTexCoords;
+      DrawElements &elements = mArrays->mElements;
+      mElement.mFirst = vertices.size();
+      mElement.mPrimType = ptLines;
+      
+      //Just overwriting blend mode and viewport
+      mArrays->mViewport = inPath->mViewport;
+      mArrays->mBlendMode = inPath->mBlendMode;
+      
+      int tri_count = inPath->mVertices.size()/3;
+      UserPoint *tri =  &inPath->mVertices[0];
+      for(int v=0;v<tri_count;v++)
+      {
+         vertices.push_back(tri[0]);
+         vertices.push_back(tri[1]);
+         vertices.push_back(tri[1]);
+         vertices.push_back(tri[2]);
+         vertices.push_back(tri[2]);
+         vertices.push_back(tri[0]);
+         tri+=3;
+      }
+
+      mElement.mCount = (vertices.size() - mElement.mFirst);
+      if (mSurface)
+         CalcTexCoords();
+      elements.push_back(mElement);
+   }
+
+
 
   void AddTiles(const uint8* inCommands, int inCount, const float *inData)
   {
@@ -1097,6 +1148,17 @@ HardwareArrays::~HardwareArrays()
    #endif
 }
 
+bool HardwareArrays::ColourMatch(int inWantColour)
+{
+   if (mVertices.empty())
+      return false;
+   if (inWantColour)
+      return !mColours.empty();
+   return false;
+}
+
+
+
 // --- HardwareData ---------------------------------------------------------------------
 HardwareData::~HardwareData()
 {
@@ -1106,7 +1168,7 @@ HardwareData::~HardwareData()
 HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,bool inPersp)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
-           mCalls.last()->mColours.empty() != inWithColour ||
+           !mCalls.last()->ColourMatch(inWithColour) ||
            mCalls.last()->mPerspectiveCorrect != inPersp )
    {
        HardwareArrays *arrays = new HardwareArrays(inSurface,inPersp);

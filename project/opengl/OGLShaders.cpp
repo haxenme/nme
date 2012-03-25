@@ -20,6 +20,7 @@ public:
       mVertId = 0;
       mFragId = 0;
       mTextureSlot = -1;
+      mColourTransform = 0;
       recreate();
    }
 
@@ -46,6 +47,7 @@ public:
          GLchar* compiler_log = (GLchar*)malloc(blen);
          glGetShaderInfoLog(shader, blen, &slen, compiler_log);
          printf("Error compiling shader : %s\n", compiler_log);
+         printf("%s\n", inShader);
          free (compiler_log);
       }
       glDeleteShader(shader);
@@ -84,7 +86,10 @@ public:
           // Show any errors as appropriate
           char *log = new char[logLen];
           glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
-          printf("Prog Info Log: %s\n", log);
+          printf("----\n", mVertProg);
+          printf("VERT: %s\n", mVertProg);
+          printf("FRAG: %s\n", mFragProg);
+          printf("ERROR:\n%s\n\n", mVertProg);
           delete [] log;
       }
 
@@ -98,21 +103,21 @@ public:
       }
       else
       {
-         printf("Bad Linked!\n");
+         printf("Bad Link.\n");
          glDeleteShader(mVertId);
          glDeleteShader(mFragId);
          glDeleteProgram(mProgramId);
          mVertId = mFragId = mProgramId = 0;
       }
 
-printf("VERT: %s\n", mVertProg);
-printf("FRAG: %s\n", mFragProg);
 
       mPositionSlot = glGetAttribLocation(mProgramId, "glPosition");
       mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
       mTintSlot = glGetUniformLocation(mProgramId, "uTint");
+      mColourArraySlot = glGetAttribLocation(mProgramId, "aColourArray");
       mTextureSlot = glGetUniformLocation(mProgramId, "uImage0");
-      printf("mTextureSlot %d\n", mTextureSlot);
+      mColourOffsetSlot = glGetUniformLocation(mProgramId, "uColourOffset");
+      mColourScaleSlot = glGetUniformLocation(mProgramId, "uColourScale");
    }
 
    virtual bool bind()
@@ -130,7 +135,7 @@ printf("FRAG: %s\n", mFragProg);
    void setPositionData(const float *inData, bool inIsPerspective)
    {
       #ifdef NME_GLES
-      glVertexAttribPointer(mPositionSlot, inIsPerspective ? 2 : 0 , GL_FLOAT, GL_FALSE, 0, inData);
+      glVertexAttribPointer(mPositionSlot, inIsPerspective ? 4 : 2 , GL_FLOAT, GL_FALSE, 0, inData);
       #else
       glVertexPointer(inIsPerspective ? 4 : 2,GL_FLOAT,0,inData);
       #endif
@@ -146,7 +151,7 @@ printf("FRAG: %s\n", mFragProg);
          glEnable(GL_TEXTURE_2D);
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glTexCoordPointer(2, GL_FLOAT, 0, inData);
-         //glUniformi(mTextureSlot,0);
+         glUniform1i(mTextureSlot,0);
          #endif
       }
       else
@@ -161,18 +166,61 @@ printf("FRAG: %s\n", mFragProg);
 
    void setColourData(const int *inData)
    {
+      if (inData && mColourArraySlot>=0)
+      {
+         glVertexAttribPointer(mColourArraySlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, inData);
+         glEnableVertexAttribArray(mColourArraySlot);
+      }
+      else if (mColourArraySlot>=0)
+      {
+         glDisableVertexAttribArray(mColourArraySlot);
+      }
+   }
+
+   void finishDrawing()
+   {
+      if (mColourArraySlot>=0)
+      {
+         glDisableVertexAttribArray(mColourArraySlot);
+      }
    }
 
    void setColourTransform(const ColorTransform *inTransform)
    {
-      if (inTransform)
+      mColourTransform = inTransform;
+      if (inTransform && !inTransform->IsIdentity())
       {
-          glUniform4f(mColourOffsetSlot, 1.0f, 1.0f, 1.0f, 1.0f);
-          glUniform4f(mColourOffsetScale, 1.0f, 0.0f, 0.0f,1);
-         //glColor4f( inTransform->redMultiplier,
-         //           inTransform->greenMultiplier,
-         //           inTransform->blueMultiplier,
-         //           inTransform->alphaMultiplier);
+          if (mColourOffsetSlot>=0)
+             glUniform4f(mColourOffsetSlot,
+                      inTransform->redOffset*one_on_255,
+                      inTransform->greenOffset*one_on_255,
+                      inTransform->blueOffset*one_on_255,
+                      inTransform->alphaOffset*one_on_255);
+          if (mColourScaleSlot>=0)
+             glUniform4f(mColourScaleSlot,
+                      inTransform->redMultiplier,
+                      inTransform->greenMultiplier,
+                      inTransform->blueMultiplier,
+                      inTransform->alphaMultiplier);
+          /*
+             printf("offset %d = %f %f %f %f\n",mColourOffsetSlot,
+                      inTransform->redOffset,
+                      inTransform->greenOffset,
+                      inTransform->blueOffset,
+                      inTransform->alphaOffset);
+             printf("scale %d = %f %f %f %f\n",mColourScaleSlot,
+                      inTransform->redMultiplier,
+                      inTransform->greenMultiplier,
+                      inTransform->blueMultiplier,
+                      inTransform->alphaMultiplier);
+          */
+      }
+      else
+      {
+         if (mColourOffsetSlot>=0)
+            glUniform4f(mColourOffsetSlot,0,0,0,0);
+         if (mColourScaleSlot>=0)
+            glUniform4f(mColourScaleSlot,1,1,1,1);
       }
    }
 
@@ -204,12 +252,14 @@ printf("FRAG: %s\n", mFragProg);
    GLuint     mVertId;
    GLuint     mFragId;
    int        mContextVersion;
+   const ColorTransform *mColourTransform;
 
    GLint     mTextureSlot;
    GLint     mTexCoordSlot;
 
    GLint     mPositionSlot;
-   GLint     mColourOffsetScale;
+   GLint     mColourArraySlot;
+   GLint     mColourScaleSlot;
    GLint     mColourOffsetSlot;
    GLint     mTransformSlot;
    GLint     mTintSlot;
@@ -221,7 +271,18 @@ const char *gSolidVert =
 "{\n"
 "   gl_Position = gl_Vertex * uTransform;\n"
 "}";
-const char *gColourVert = gSolidVert;
+
+const char *gColourVert =
+"uniform mat4 uTransform;\n"
+"attribute vec4 aColourArray;\n"
+"varying vec4 vColourArray;\n"
+"void main(void)\n"
+"{\n"
+"   vColourArray = aColourArray;\n"
+"   gl_Position = gl_Vertex * uTransform;\n"
+"}";
+
+
 const char *gTextureVert =
 "uniform mat4 uTransform;\n"
 "varying vec2 vTexCoord;\n"
@@ -232,22 +293,98 @@ const char *gTextureVert =
 "}";
 
 
+const char *gTextureColourVert =
+"uniform mat4 uTransform;\n"
+"varying vec2 vTexCoord;\n"
+"attribute vec4 aColourArray;\n"
+"varying vec4 vColourArray;\n"
+"void main(void)\n"
+"{\n"
+"   vColourArray = aColourArray;\n"
+"   vTexCoord = gl_MultiTexCoord0.xy;\n"
+"   gl_Position = gl_Vertex * uTransform;\n"
+"}";
+
+
+
 const char *gSolidFrag = 
 "uniform vec4 uTint;\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = uTint;\n"
 "}\n";
-const char *gColourFrag = gSolidFrag;
+
+const char *gColourFrag =
+"varying vec4 vColourArray;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = vColourArray;\n"
+"}\n";
+
+
+const char *gColourTransFrag =
+"varying vec4 vColourArray;\n"
+"uniform vec4 uColourScale;\n"
+"uniform vec4 uColourOffset;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = vColourArray*uColourScale+uColourOffset;\n"
+"}\n";
+
+
+
+const char *gBitmapAlphaFrag =
+"varying vec2 vTexCoord;\n"
+"uniform sampler2D uImage0;\n"
+"uniform vec4 uTint;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor.rgb = uTint.rgb;\n"
+"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a;\n"
+"}\n";
+
+
+const char *gBitmapFrag =
+"varying vec2 vTexCoord;\n"
+"uniform sampler2D uImage0;\n"
+"uniform vec4 uTint;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor  = texture2D(uImage0,vTexCoord)*uTint;\n"
+"}\n";
+
+
 const char *gTextureFrag =
 "varying vec2 vTexCoord;\n"
-"sampler2D uImage0;\n"
+"uniform sampler2D uImage0;\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = texture2D(uImage0,vTexCoord);\n"
 "}\n";
 
-const char *gTextureTransFrag = gTextureFrag;
+
+const char *gTextureColourFrag =
+"uniform sampler2D uImage0;\n"
+"varying vec2 vTexCoord;\n"
+"varying vec4 vColourArray;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = texture2D(uImage0,vTexCoord) * vColourArray;\n"
+"}\n";
+
+
+
+const char *gTextureTransFrag =
+"varying vec2 vTexCoord;\n"
+"uniform sampler2D uImage0;\n"
+"uniform vec4 uColourScale;\n"
+"uniform vec4 uColourOffset;\n"
+"void main(void)\n"
+"{\n"
+"   gl_FragColor = texture2D(uImage0,vTexCoord) * uColourScale + uColourOffset;\n"
+"}\n";
+
+
 
 
 GPUProg *GPUProg::create(GPUProgID inID)
@@ -256,12 +393,20 @@ GPUProg *GPUProg::create(GPUProgID inID)
    {
       case gpuSolid:
          return new OGLProg( gSolidVert, gSolidFrag );
+      case gpuColourTransform:
+         return new OGLProg( gColourVert, gColourTransFrag );
       case gpuColour:
          return new OGLProg( gColourVert, gColourFrag );
       case gpuTexture:
          return new OGLProg( gTextureVert, gTextureFrag );
+      case gpuTextureColourArray:
+         return new OGLProg( gTextureColourVert, gTextureColourFrag );
       case gpuTextureTransform:
          return new OGLProg( gTextureVert, gTextureTransFrag );
+      case gpuBitmap:
+         return new OGLProg( gTextureVert, gBitmapFrag );
+      case gpuBitmapAlpha:
+         return new OGLProg( gTextureVert, gBitmapAlphaFrag );
    }
    return 0;
 }

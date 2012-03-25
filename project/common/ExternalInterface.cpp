@@ -473,8 +473,8 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
 
 
 
-template<typename T>
-void FillArrayDouble(QuickVec<T> &outArray,value inVal)
+template<typename T,int N>
+void FillArrayDoubleN(QuickVec<T,N> &outArray,value inVal)
 {
    if (val_is_null(inVal))
       return;
@@ -499,6 +499,11 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 
 }
 
+template<typename T>
+void FillArrayDouble(QuickVec<T> &outArray,value inVal)
+{
+   FillArrayDoubleN<T,16>(outArray,inVal);
+}
 
 void FromValue(value obj, URLRequest &request)
 {
@@ -1971,13 +1976,13 @@ value nme_gfx_draw_triangles(value *arg, int args )
       QuickVec<int> indices;
       QuickVec<float> uvt;
       QuickVec<int> colours;
-      QuickVec<float> viewport;
+      QuickVec<float,4> viewport;
       
       FillArrayDouble(vertices,arg[aVertices]);
       FillArrayInt(indices,arg[aIndices]);
       FillArrayDouble(uvt,arg[aUVData]);
       FillArrayInt(colours, arg[aColours]);
-      FillArrayDouble(viewport, arg[aViewport] );
+      FillArrayDoubleN<float,4>(viewport, arg[aViewport] );
       
       gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours, val_int( arg[ aBlend ] ), viewport );
    }

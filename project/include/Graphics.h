@@ -303,7 +303,7 @@ public:
             const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull,
             const QuickVec<int> &inColours,
-            int blendMode, const QuickVec<float> &inViewport );
+            int blendMode, const QuickVec<float,4> &inViewport );
 
    VertexType       mType;
    int              mTriangleCount;
@@ -311,7 +311,7 @@ public:
    QuickVec<float>  mUVT;
    QuickVec<uint32> mColours;
    int mBlendMode;
-   QuickVec<float> mViewport;
+   QuickVec<float,4> mViewport;
 };
 
 // ----------------------------------------------------------------------
@@ -361,6 +361,10 @@ public:
    {
       return redMultiplier==1 && greenMultiplier==1 && blueMultiplier==1 &&
              redOffset==0 && greenOffset==0 && blueOffset==0;
+   }
+   inline bool HasOffset() const
+   {
+      return redOffset!=0 || greenOffset!=0 || blueOffset!=0 || alphaOffset!=0;
    }
    inline bool IsIdentityAlpha() const
    {
@@ -487,7 +491,7 @@ void ResetHardwareContext();
 
 
 
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints };
+enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints, ptLines };
 
 struct DrawElement
 {
@@ -513,6 +517,8 @@ struct HardwareArrays
 {
    HardwareArrays(Surface *inSurface,bool inPerspectiveCorrect);
    ~HardwareArrays();
+   bool ColourMatch(int inWantColour);
+
 
    Vertices     mVertices;
    QuickVec<UserPoint> mTexCoords;
@@ -521,7 +527,7 @@ struct HardwareArrays
    Surface      *mSurface;
    bool         mPerspectiveCorrect;
    int mBlendMode;
-   QuickVec<float> mViewport;
+   QuickVec<float,4> mViewport;
    unsigned int mVertexBO;
 };
 
@@ -694,7 +700,7 @@ public:
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull, const QuickVec<int> &inColours,
-            int blendMode, const QuickVec<float> &inViewport );
+            int blendMode, const QuickVec<float,4> &inViewport );
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);

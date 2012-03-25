@@ -102,8 +102,12 @@ enum GPUProgID
    gpuNone = -1,
    gpuSolid,
    gpuColour,
+   gpuColourTransform,
    gpuTexture,
+   gpuTextureColourArray,
    gpuTextureTransform,
+   gpuBitmap,
+   gpuBitmapAlpha,
    gpuSIZE,
 };
 
@@ -127,6 +131,7 @@ public:
    virtual void setTransform(const Trans4x4 &inTrans) = 0;
    virtual void setTint(unsigned int inColour) = 0;
    //virtual void setGradientFocus(float inFocus) = 0;
+   virtual void finishDrawing() = 0;
 };
 
 
