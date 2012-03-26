@@ -4462,6 +4462,11 @@
 </f></new>
 	</class>
 	<typedef path="nme.Vector" params="T" file="C:\Development\Haxe\nme/nme/Vector.hx"><c path="Array"><c path="nme.Vector.T"/></c></typedef>
+	<class path="nme.VectorHelper" params="" file="C:\Development\Haxe\nme/nme/Vector.hx" module="nme.Vector"><ofArray public="1" params="T" get="inline" set="null" line="12" static="1"><f a="v:array">
+	<c path="Class"><t path="nme.Vector"><d/></t></c>
+	<c path="Array"><c path="ofArray.T"/></c>
+	<t path="nme.Vector"><c path="ofArray.T"/></t>
+</f></ofArray></class>
 	<typedef path="nme.events.Function" params="" file="C:\Development\Haxe\nme/nme/events/IEventDispatcher.hx" module="nme.events.IEventDispatcher"><f a="">
 	<d/>
 	<e path="Void"/>
@@ -5069,36 +5074,6 @@
 	This exception is raised when reading while data is no longer available in the [Input].
 </haxe_doc>
 	</class>
-	<class path="nme.geom.ColorTransform" params="" file="C:\Development\Haxe\nme/nme/geom/ColorTransform.hx">
-		<alphaMultiplier public="1"><c path="Float"/></alphaMultiplier>
-		<alphaOffset public="1"><c path="Float"/></alphaOffset>
-		<blueMultiplier public="1"><c path="Float"/></blueMultiplier>
-		<blueOffset public="1"><c path="Float"/></blueOffset>
-		<greenMultiplier public="1"><c path="Float"/></greenMultiplier>
-		<greenOffset public="1"><c path="Float"/></greenOffset>
-		<redMultiplier public="1"><c path="Float"/></redMultiplier>
-		<redOffset public="1"><c path="Float"/></redOffset>
-		<concat public="1" set="method" line="36"><f a="second">
-	<c path="nme.geom.ColorTransform"/>
-	<e path="Void"/>
-</f></concat>
-		<new public="1" set="method" line="23"><f a="?inRedMultiplier:?inGreenMultiplier:?inBlueMultiplier:?inAlphaMultiplier:?inRedOffset:?inGreenOffset:?inBlueOffset:?inAlphaOffset">
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<c path="Float"/>
-	<e path="Void"/>
-</f></new>
-		<haxe_doc>
-* @author	Hugh Sanderson
-* @author	Russell Weir
-* @todo Check concat() mirrors flash behaviour
-</haxe_doc>
-	</class>
 	<class path="nme.geom.Vector3D" params="" file="C:\Development\Haxe\nme/nme/geom/Vector3D.hx">
 		<X_AXIS public="1" get="nmeGetX_AXIS" set="null" static="1"><c path="nme.geom.Vector3D"/></X_AXIS>
 		<Y_AXIS public="1" get="nmeGetY_AXIS" set="null" static="1"><c path="nme.geom.Vector3D"/></Y_AXIS>
@@ -5201,27 +5176,57 @@
 	<e path="Void"/>
 </f></new>
 	</class>
+	<class path="nme.geom.ColorTransform" params="" file="C:\Development\Haxe\nme/nme/geom/ColorTransform.hx">
+		<alphaMultiplier public="1"><c path="Float"/></alphaMultiplier>
+		<alphaOffset public="1"><c path="Float"/></alphaOffset>
+		<blueMultiplier public="1"><c path="Float"/></blueMultiplier>
+		<blueOffset public="1"><c path="Float"/></blueOffset>
+		<greenMultiplier public="1"><c path="Float"/></greenMultiplier>
+		<greenOffset public="1"><c path="Float"/></greenOffset>
+		<redMultiplier public="1"><c path="Float"/></redMultiplier>
+		<redOffset public="1"><c path="Float"/></redOffset>
+		<concat public="1" set="method" line="36"><f a="second">
+	<c path="nme.geom.ColorTransform"/>
+	<e path="Void"/>
+</f></concat>
+		<new public="1" set="method" line="23"><f a="?inRedMultiplier:?inGreenMultiplier:?inBlueMultiplier:?inAlphaMultiplier:?inRedOffset:?inGreenOffset:?inBlueOffset:?inAlphaOffset">
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<e path="Void"/>
+</f></new>
+		<haxe_doc>
+* @author	Hugh Sanderson
+* @author	Russell Weir
+* @todo Check concat() mirrors flash behaviour
+</haxe_doc>
+	</class>
 	<class path="nme.media.Sound" params="" file="C:\Development\Haxe\nme/nme/media/Sound.hx">
 		<extends path="nme.events.EventDispatcher"/>
-		<nme_sound_from_file line="134" static="1"><f a=":">
+		<nme_sound_from_file line="135" static="1"><f a=":">
 	<c path="String"/>
 	<e path="Bool"/>
 	<unknown/>
 </f></nme_sound_from_file>
-		<nme_sound_get_id3 line="135" static="1"><f a=":">
+		<nme_sound_get_id3 line="136" static="1"><f a=":">
 	<d/>
 	<c path="nme.media.ID3Info"/>
 	<unknown/>
 </f></nme_sound_get_id3>
-		<nme_sound_get_length line="136" static="1"><f a="">
+		<nme_sound_get_length line="137" static="1"><f a="">
 	<d/>
 	<c path="Float"/>
 </f></nme_sound_get_length>
-		<nme_sound_close line="137" static="1"><f a="">
+		<nme_sound_close line="138" static="1"><f a="">
 	<d/>
 	<unknown/>
 </f></nme_sound_close>
-		<nme_sound_get_status line="138" static="1"><f a="">
+		<nme_sound_get_status line="139" static="1"><f a="">
 	<d/>
 	<unknown/>
 </f></nme_sound_get_status>
@@ -5240,20 +5245,20 @@
 	<e path="Bool"/>
 	<e path="Void"/>
 </f></load>
-		<nmeCheckLoading set="method" line="61"><f a=""><e path="Void"/></f></nmeCheckLoading>
-		<nmeOnError set="method" line="79"><f a="msg">
+		<nmeCheckLoading set="method" line="62"><f a=""><e path="Void"/></f></nmeCheckLoading>
+		<nmeOnError set="method" line="80"><f a="msg">
 	<c path="String"/>
 	<e path="Void"/>
 </f></nmeOnError>
-		<play public="1" set="method" line="87"><f a="?startTime:?loops:?sndTransform">
+		<play public="1" set="method" line="88"><f a="?startTime:?loops:?sndTransform">
 	<c path="Float"/>
 	<c path="Int"/>
 	<c path="nme.media.SoundTransform"/>
 	<c path="nme.media.SoundChannel"/>
 </f></play>
-		<nmeGetID3 set="method" line="103"><f a=""><c path="nme.media.ID3Info"/></f></nmeGetID3>
-		<nmeGetIsBuffering set="method" line="114"><f a=""><e path="Bool"/></f></nmeGetIsBuffering>
-		<nmeGetLength set="method" line="121"><f a=""><c path="Float"/></f></nmeGetLength>
+		<nmeGetID3 set="method" line="104"><f a=""><c path="nme.media.ID3Info"/></f></nmeGetID3>
+		<nmeGetIsBuffering set="method" line="115"><f a=""><e path="Bool"/></f></nmeGetIsBuffering>
+		<nmeGetLength set="method" line="122"><f a=""><c path="Float"/></f></nmeGetLength>
 		<new public="1" set="method" line="25"><f a="?stream:?context:?forcePlayAsMusic">
 	<c path="nme.net.URLRequest"/>
 	<c path="nme.media.SoundLoaderContext"/>
@@ -5781,29 +5786,29 @@
 		<BIG_ENDIAN public="1" get="inline" set="null" line="8" static="1"><c path="String"/></BIG_ENDIAN>
 		<LITTLE_ENDIAN public="1" get="inline" set="null" line="9" static="1"><c path="String"/></LITTLE_ENDIAN>
 	</class>
-	<class path="nme._ObjectHash.ObjectHash" params="T" file="C:\Development\Haxe\nme/nme/ObjectHash.hx" private="1" module="nme.ObjectHash">
+	<class path="nme.ObjectHash" params="T" file="C:\Development\Haxe\nme/nme/ObjectHash.hx">
 		<nextObjectID line="22" static="1"><c path="Int"/></nextObjectID>
-		<hash><c path="IntHash"><c path="nme._ObjectHash.ObjectHash.T"/></c></hash>
+		<hash><c path="IntHash"><c path="nme.ObjectHash.T"/></c></hash>
 		<exists public="1" get="inline" set="null" line="40"><f a="key">
 	<d/>
 	<e path="Bool"/>
 </f></exists>
 		<get public="1" get="inline" set="null" line="55"><f a="key">
 	<d/>
-	<c path="nme._ObjectHash.ObjectHash.T"/>
+	<c path="nme.ObjectHash.T"/>
 </f></get>
 		<getID get="inline" set="null" line="70"><f a="key">
 	<d/>
 	<c path="Int"/>
 </f></getID>
-		<iterator public="1" get="inline" set="null" line="101"><f a=""><t path="Iterator"><c path="nme._ObjectHash.ObjectHash.T"/></t></f></iterator>
+		<iterator public="1" get="inline" set="null" line="101"><f a=""><t path="Iterator"><c path="nme.ObjectHash.T"/></t></f></iterator>
 		<remove public="1" get="inline" set="null" line="124"><f a="key">
 	<d/>
 	<e path="Void"/>
 </f></remove>
 		<set public="1" get="inline" set="null" line="139"><f a="key:value">
 	<d/>
-	<c path="nme._ObjectHash.ObjectHash.T"/>
+	<c path="nme.ObjectHash.T"/>
 	<e path="Void"/>
 </f></set>
 		<new public="1" set="method" line="25"><f a=""><e path="Void"/></f></new>

@@ -8,6 +8,14 @@ Added armv6/armv7 support for iOS and Android.
 Improved quality and stability when drawing shapes.
 Fixed support for older webOS devices.
 
+NME-52 	Iphone dependency tag not working
+NME-51 	Add Lib.getURL support for Linux
+NME-50 	TriangleCulling is inverted between Flash and CPP targets (Win x64 tested)
+NME-49 	Windows crash with latest rc
+NME-47 	ObjectHash class not found
+NME-45 	Three of the Graphics classes are not defined under flash 
+NME-44 	SQLite 1.06 from haxelib caused iOS build to fail
+NME-39 	TextField.wordWrap allows line breaks when a character has accents
 NME-38 	defaults _sans, typewriter not displaying on android 2.3
 NME-37 	soundChannel.stop () is not working for sounds on webOS
 NME-35 	Hardware-based bitmaps are sometimes rendering white (Windows)
