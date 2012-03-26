@@ -24,6 +24,7 @@
 		1EF0A83A000000001C000004 /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000004 /* Icon-Small.png */; };
 ::end::
 		1EF0A83A121ADB8E003F2F59 /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.cpp */; };
+::ADDL_PBX_BUILD_FILE::
 
 /* End PBXBuildFile section */
 
@@ -56,6 +57,7 @@
         1EF0A83900000001C0000004 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small.png"; sourceTree = SOURCE_ROOT; };
 ::end::
         1EF0A839121ADB8E003F2F59 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = Classes/Main.cpp; sourceTree = SOURCE_ROOT; };
+::ADDL_PBX_FILE_REFERENCE::
 
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -77,6 +79,7 @@
 				1EEEBAFC121BE2980048A9DF /* AudioToolbox.framework in Frameworks */,
 				1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */,
 				1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */,
+::ADDL_PBX_FRAMEWORKS_BUILD_PHASE::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +114,7 @@
 				1EEEBAFF121BE2B30048A9DF /* Foundation.framework */,
 				1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */,
 				1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */,
+::ADDL_PBX_FRAMEWORK_GROUP::
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
