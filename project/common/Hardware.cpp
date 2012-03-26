@@ -81,7 +81,6 @@ public:
       mElement.mCount = 0;
 
 
-
       if (inJob.mTriangles)
       {
          bool has_colour = inJob.mTriangles->mColours.size()>0;
@@ -105,7 +104,8 @@ public:
       }
       else if (tile_mode)
       {
-         mArrays = &ioData.GetArrays(mSurface,false);
+         bool has_colour = HasColouredTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount);
+         mArrays = &ioData.GetArrays(mSurface,has_colour);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else if (tessellate_lines && !mSolidMode)
@@ -277,6 +277,15 @@ public:
    }
 
 
+  bool HasColouredTiles(const uint8* inCommands, int inCount)
+  {
+     for(int i=0;i<inCount;i++)
+        if  (inCommands[i] == pcTile || inCommands[i]==pcTileTrans)
+           return false;
+        else if (inCommands[i] == pcTileCol || inCommands[i]==pcTileTransCol)
+           return true;
+     return false;
+  }
 
   void AddTiles(const uint8* inCommands, int inCount, const float *inData)
   {
@@ -893,7 +902,7 @@ public:
           }
 
           if (alpha)
-             switch(mJoints)
+             switch(mPerpLen<1 ? sjBevel : mJoints)
              {
                 case sjRound:
                    {
