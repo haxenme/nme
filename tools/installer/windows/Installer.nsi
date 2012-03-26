@@ -14,7 +14,7 @@
 !define HXCPP_VERSION "2.08.3"
 !define JEASH_VERSION "0.8.7"
 !define ACTUATE_VERSION "1.38"
-!define SWF_VERSION "1.10"
+!define SWF_VERSION "1.11"
 
 
 ; Installer details
