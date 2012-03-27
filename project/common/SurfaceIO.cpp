@@ -57,8 +57,8 @@ struct MySrcManager
       pub.skip_input_data = my_skip_input_data;
       pub.resync_to_restart = my_resync_to_restart;
       pub.term_source = my_term_source;
-       pub.next_input_byte = 0;
-       pub.bytes_in_buffer = 0;
+      pub.next_input_byte = 0;
+      pub.bytes_in_buffer = 0;
       mUsed = false;
       mEOI[0] = 0xff;
       mEOI[1] = JPEG_EOI;
@@ -85,8 +85,8 @@ struct MySrcManager
       }
       else
       {
-          man->pub.next_input_byte = man->mData;
-          man->pub.bytes_in_buffer = man->mLen;
+         man->pub.next_input_byte = man->mData;
+         man->pub.bytes_in_buffer = man->mLen;
          man->mUsed = true;
       }
       return true;
@@ -94,6 +94,13 @@ struct MySrcManager
    static void my_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
+      man->pub.next_input_byte += num_bytes;
+      man->pub.bytes_in_buffer -= num_bytes;
+      if (man->pub.bytes_in_buffer<0)
+      {
+         man->pub.next_input_byte = man->mEOI;
+         man->pub.bytes_in_buffer = 2;
+      }
    }
    static boolean my_resync_to_restart(j_decompress_ptr cinfo, int desired)
    {
