@@ -97,7 +97,7 @@ class IOSInstaller extends InstallerBase {
 		var requiredCapabilities = [];
 		
 		if (armv7 && !armv6)
-			requiredCapabilities.push( { name: "arm7", value: true } );
+			requiredCapabilities.push( { name: "armv7", value: true } );
 		
 		context.REQUIRED_CAPABILITY = requiredCapabilities;
 		context.ARMV6 = armv6;
