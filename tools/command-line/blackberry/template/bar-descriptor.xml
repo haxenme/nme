@@ -28,7 +28,7 @@
 	<asset entry="true" path="::APP_FILE::" type="Qnx/Elf">::APP_FILE::</asset>
 	<asset path=".">.</asset>
 	
-	::if (HAS_ICON == true)::<icon><image>icon.png</image></icon>::end::
+	::if (HAS_ICON)::<icon><image>icon.png</image></icon>::end::
     <!-- <splashscreen>splashscreen.png</splashscreen>-->
 	
 </qnx>
