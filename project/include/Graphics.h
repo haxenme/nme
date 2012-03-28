@@ -507,6 +507,7 @@ struct DrawElement
 
 typedef QuickVec<DrawElement> DrawElements;
 typedef QuickVec<UserPoint>   Vertices;
+typedef QuickVec<UserPoint>   TexCoords;
 typedef QuickVec<int>         Colours;
 
 void ReleaseVertexBufferObject(unsigned int inVBO);
@@ -515,20 +516,28 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
 struct HardwareArrays
 {
-   HardwareArrays(Surface *inSurface,bool inPerspectiveCorrect);
+   enum
+   {
+     BM_ADD      = 0x00000001,
+     PERSPECTIVE = 0x00000002,
+     RADIAL      = 0x00000004,
+
+     FOCAL_MASK  = 0x0000ff00,
+   };
+
+   HardwareArrays(Surface *inSurface,unsigned int inFlags);
    ~HardwareArrays();
    bool ColourMatch(int inWantColour);
 
 
-   Vertices     mVertices;
-   QuickVec<UserPoint> mTexCoords;
-	Colours      mColours;
    DrawElements mElements;
-   Surface      *mSurface;
-   bool         mPerspectiveCorrect;
-   int mBlendMode;
+   Vertices     mVertices;
+   TexCoords    mTexCoords;
+	Colours      mColours;
    QuickVec<float,4> mViewport;
-   unsigned int mVertexBO;
+   Surface      *mSurface;
+   unsigned int mFlags;
+   //unsigned int mVertexBO;
 };
 
 typedef QuickVec<HardwareArrays *> HardwareCalls;
@@ -538,7 +547,7 @@ class HardwareData
 public:
    ~HardwareData();
 
-   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour=false,bool inPerspective=false);
+   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags);
 
    HardwareCalls mCalls;
 };

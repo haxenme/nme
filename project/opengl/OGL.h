@@ -108,6 +108,7 @@ enum GPUProgID
    gpuTextureTransform,
    gpuBitmap,
    gpuBitmapAlpha,
+   gpuRadialGradient,
    gpuSIZE,
 };
 

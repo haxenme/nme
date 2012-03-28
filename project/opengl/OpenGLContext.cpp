@@ -245,13 +245,13 @@ public:
 
          Vertices &vert = arrays.mVertices;
          Vertices &tex_coords = arrays.mTexCoords;
-         bool persp = arrays.mPerspectiveCorrect;
+         bool persp = arrays.mFlags & HardwareArrays::PERSPECTIVE;
          
          if ( !arrays.mViewport.empty() ) {
             SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );   
          }
          
-         if ( arrays.mBlendMode == bmAdd ) {
+         if ( arrays.mFlags & HardwareArrays::BM_ADD ) {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
          } else {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
@@ -285,6 +285,10 @@ public:
             SetTexture(arrays.mSurface,&tex_coords[0].x);
             last_col = -1;
             SetModulatingTransform(inState.mColourTransform);
+            if (arrays.mFlags & HardwareArrays::RADIAL )
+               SetRadialGradient(true, ((arrays.mFlags & HardwareArrays::FOCAL_MASK)>>8) / 255.0 );
+            else
+               SetRadialGradient(0,0);
          }
          else
          {
@@ -378,6 +382,10 @@ public:
          }
          FinishDrawing();
       }
+   }
+
+   virtual void SetRadialGradient(bool inIsRadial, float inFocus)
+   {
    }
 
    virtual bool PrepareDrawing()
@@ -636,6 +644,7 @@ class OGL2Context : public OGLContext
 public:
    OGL2Context(WinDC inDC, GLCtx inOGLCtx) : OGLContext(inDC,inOGLCtx)
    {
+      mIsRadial = false;
       for(int i=0;i<gpuSIZE;i++)
          mProg[i] = 0;
       for(int i=0;i<4;i++)
@@ -706,7 +715,9 @@ public:
       GPUProgID id = gpuNone; 
       if (mTexCoords)
       {
-         if (mColourTransform && !mColourTransform->IsIdentity())
+         if (mIsRadial)
+            id = gpuRadialGradient;
+         else if (mColourTransform && !mColourTransform->IsIdentity())
             id = gpuTextureTransform;
          else if (mColourArray)
             id = gpuTextureColourArray;
@@ -802,9 +813,17 @@ public:
       glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }
 
+   virtual void SetRadialGradient(bool inIsRadial, float inFocus)
+   {
+      mIsRadial = inIsRadial;
+      mRadialFocus = inFocus;
+   }
+
 
    const float *mPosition;
    bool  mPositionPerspective;
+   bool  mIsRadial;
+   float mRadialFocus;
    Surface   *mTextureSurface;
    const int *mColourArray;
    const float *mTexCoords;

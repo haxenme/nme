@@ -363,6 +363,16 @@ const char *gTextureFrag =
 "}\n";
 
 
+const char *gRadialTextureFrag =
+"varying vec2 vTexCoord;\n"
+"uniform sampler2D uImage0;\n"
+"void main(void)\n"
+"{\n"
+"   float rad = sqrt(vTexCoord.x*vTexCoord.x + vTexCoord.y*vTexCoord.y);\n"
+"   gl_FragColor = texture2D(uImage0,vec2(rad,0));\n"
+"}\n";
+
+
 const char *gTextureColourFrag =
 "uniform sampler2D uImage0;\n"
 "varying vec2 vTexCoord;\n"
@@ -397,6 +407,8 @@ GPUProg *GPUProg::create(GPUProgID inID)
          return new OGLProg( gColourVert, gColourTransFrag );
       case gpuColour:
          return new OGLProg( gColourVert, gColourFrag );
+      case gpuRadialGradient:
+         return new OGLProg( gTextureVert, gRadialTextureFrag );
       case gpuTexture:
          return new OGLProg( gTextureVert, gTextureFrag );
       case gpuTextureColourArray:

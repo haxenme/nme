@@ -84,7 +84,12 @@ public:
       if (inJob.mTriangles)
       {
          bool has_colour = inJob.mTriangles->mColours.size()>0;
-         mArrays = &ioData.GetArrays(mSurface,has_colour,inJob.mTriangles->mType == vtVertexUVT);
+         unsigned int flags = 0;
+         if (inJob.mTriangles->mType == vtVertexUVT)
+            flags |= HardwareArrays::PERSPECTIVE;
+         if (inJob.mTriangles->mBlendMode==bmAdd)
+            flags |= HardwareArrays::BM_ADD;
+         mArrays = &ioData.GetArrays(mSurface,has_colour,flags);
          AddTriangles(inJob.mTriangles);
 
          if (inJob.mStroke && inJob.mStroke->fill)
@@ -94,7 +99,7 @@ public:
             if (!SetFill(stroke->fill,inHardware))
                return;
 
-            mArrays = &ioData.GetArrays(mSurface,false,false);
+            mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
             mElement.mFirst = 0;
             mElement.mCount = 0;
             mElement.mScaleMode = ssmNormal;
@@ -104,18 +109,20 @@ public:
       }
       else if (tile_mode)
       {
-         bool has_colour = HasColouredTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount);
-         mArrays = &ioData.GetArrays(mSurface,has_colour);
+         bool has_colour = false;
+         bool bm_add = false;
+         GetTileFlags(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, has_colour, bm_add);
+         mArrays = &ioData.GetArrays(mSurface,has_colour,bm_add ? HardwareArrays::BM_ADD : 0);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else if (tessellate_lines && !mSolidMode)
       {
-         mArrays = &ioData.GetArrays(mSurface,false);
+         mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
          AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else
       {
-         mArrays = &ioData.GetArrays(mSurface,false);
+         mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
    }
@@ -126,6 +133,7 @@ public:
       mSurface = 0;
       mElement.mBitmapRepeat = true;
       mElement.mBitmapSmooth = false;
+      mGradFlags = 0;
 
       GraphicsSolidFill *solid = inFill->AsSolidFill();
       if (solid)
@@ -149,7 +157,12 @@ public:
             mElement.mBitmapSmooth = true;
 
             mTextureMapper = grad->matrix.Inverse();
-
+            if (!grad->isLinear)
+            {
+               mGradFlags |= HardwareArrays::RADIAL;
+               if (grad->focalPointRatio>0)
+                  mGradFlags |= grad->focalPointRatio < 1 ? ((int)(grad->focalPointRatio*255.0) << 8) : 0;
+            }
             //return true;
          }
          else
@@ -180,6 +193,7 @@ public:
       int v0 = vertices.size();
       int t0 = tex.size();
       tex.resize(v0);
+      bool radial = mGradFlags & HardwareArrays::RADIAL;
       for(int i=t0;i<v0;i++)
       {
          UserPoint p = mTextureMapper.Apply(vertices[i].x,vertices[i].y);
@@ -190,10 +204,24 @@ public:
          else
          {
             // The point will be in the (-819.2 ... 819.2) range...
-            p.x = (p.x +819.2) / 1638.4;
-            if (mGradReflect)
-               p.x *= 0.5;
-            p.y = 0;
+            if (radial)
+            {
+               p.x = (p.x +819.2) / 819.2 - 1.0;
+               p.y = (p.y +819.2) / 819.2 - 1.0;
+               if (mGradReflect)
+               {
+                  p.x *= 0.5;
+                  p.y *= 0.5;
+               }
+ 
+            }
+            else
+            {
+               p.x = (p.x +819.2) / 1638.4;
+               p.y = 0;
+               if (mGradReflect)
+                  p.x *= 0.5;
+            }
          }
          tex[i] = p;
        }
@@ -210,9 +238,8 @@ public:
       mElement.mFirst = vertices.size() / (persp?2:1);
       mElement.mPrimType = ptTriangles;
       
-      //Just overwriting blend mode and viewport
+      //Just overwriting viewport
       mArrays->mViewport = inPath->mViewport;
-      mArrays->mBlendMode = inPath->mBlendMode;
       
       const float *t = &inPath->mUVT[0];
       for(int v=0;v<inPath->mVertices.size();v++)
@@ -255,7 +282,6 @@ public:
       
       //Just overwriting blend mode and viewport
       mArrays->mViewport = inPath->mViewport;
-      mArrays->mBlendMode = inPath->mBlendMode;
       
       int tri_count = inPath->mVertices.size()/3;
       UserPoint *tri =  &inPath->mVertices[0];
@@ -277,14 +303,13 @@ public:
    }
 
 
-  bool HasColouredTiles(const uint8* inCommands, int inCount)
+  void GetTileFlags(const uint8* inCommands, int inCount,bool &outColour, bool &outAdd)
   {
      for(int i=0;i<inCount;i++)
-        if  (inCommands[i] == pcTile || inCommands[i]==pcTileTrans)
-           return false;
-        else if (inCommands[i] == pcTileCol || inCommands[i]==pcTileTransCol)
-           return true;
-     return false;
+        if (inCommands[i] == pcTileCol || inCommands[i]==pcTileTransCol)
+           outColour = true;
+        else if (inCommands[i] == pcBlendModeAdd)
+           outAdd = true;
   }
 
   void AddTiles(const uint8* inCommands, int inCount, const float *inData)
@@ -293,16 +318,11 @@ public:
       Vertices &tex = mArrays->mTexCoords;
       UserPoint *point = (UserPoint *)inData;
       mElement.mFirst = vertices.size();
-      mArrays->mBlendMode = bmNormal;
 
       for(int i=0;i<inCount;i++)
       {
          switch(inCommands[i])
          {
-            case pcBlendModeAdd:
-               mArrays->mBlendMode = bmAdd;
-               break;
-
             case pcBeginAt: case pcMoveTo: case pcLineTo:
                point++;
                break;
@@ -448,9 +468,6 @@ public:
       UserPoint last_point;
       int points = 0;
       QuickVec<int> sub_poly_start;
-
-      mArrays->mBlendMode =bmNormal;
-
       Vertices outline;
 
 
@@ -1066,6 +1083,7 @@ public:
    DrawElement mElement;
    Texture     *mTexture;
    bool        mGradReflect;
+   unsigned int mGradFlags;
    bool        mSolidMode;
    double      mMiterLimit;
    double      mPerpLen;
@@ -1099,7 +1117,7 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 
    elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
 
-   HardwareArrays *arrays = &ioData.GetArrays(0,fill==0);
+   HardwareArrays *arrays = &ioData.GetArrays(0,fill==0, /* TODO: bm add ? */ 0);
    Vertices &vertices = arrays->mVertices;
    elem.mFirst = vertices.size();
    vertices.resize( elem.mFirst + elem.mCount );
@@ -1136,34 +1154,25 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 
 // --- HardwareArrays ---------------------------------------------------------------------
 
-HardwareArrays::HardwareArrays(Surface *inSurface,bool inPersp)
+HardwareArrays::HardwareArrays(Surface *inSurface,unsigned int inFlags)
 {
-   mPerspectiveCorrect = inPersp;
+   mFlags = inFlags;
    mSurface = inSurface;
    if (inSurface)
       inSurface->IncRef();
-   #ifdef NME_USE_VBO
-   mVertexBO = 0;
-   #endif
 }
 
 HardwareArrays::~HardwareArrays()
 {
    if (mSurface)
       mSurface->DecRef();
-   #ifdef NME_USE_VBO
-   if (mVertexBO)
-      ReleaseVertexBufferObject(mVertexBO);
-   #endif
 }
 
 bool HardwareArrays::ColourMatch(int inWantColour)
 {
    if (mVertices.empty())
-      return false;
-   if (inWantColour)
-      return !mColours.empty();
-   return false;
+      return true;
+   return mColours.empty() != inWantColour;
 }
 
 
@@ -1174,13 +1183,13 @@ HardwareData::~HardwareData()
    mCalls.DeleteAll();
 }
 
-HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,bool inPersp)
+HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
            !mCalls.last()->ColourMatch(inWithColour) ||
-           mCalls.last()->mPerspectiveCorrect != inPersp )
+           mCalls.last()->mFlags != inFlags )
    {
-       HardwareArrays *arrays = new HardwareArrays(inSurface,inPersp);
+       HardwareArrays *arrays = new HardwareArrays(inSurface,inFlags);
        mCalls.push_back(arrays);
    }
 
