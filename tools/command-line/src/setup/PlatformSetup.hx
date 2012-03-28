@@ -32,7 +32,7 @@ class PlatformSetup {
 	private static var blackBerryNativeSDKURL = "https://bdsc.webapps.blackberry.com/native/download/";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u31-download-1501634.html";
-	private static var linuxX64Packages = "ia32-libs gcc-multilib g++-multilib";
+	private static var linuxX64Packages = "ia32-libs-multiarch gcc-multilib g++-multilib";
 	private static var webOSLinuxX64NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
 	private static var webOSLinuxX86NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
 	private static var webOSLinuxSDKPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.5.676/sdkBinaries/palm-sdk_3.0.5-svn528736-pho676_i386.deb";
