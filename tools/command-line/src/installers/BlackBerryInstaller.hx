@@ -143,7 +143,7 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	private function updateIcon ():Void {
 		
-		var icon_name = icons.findIcon (64, 64);
+		var icon_name = icons.findIcon (86, 86);
 		
 		if (icon_name == "") {
 			
