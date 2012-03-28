@@ -37,7 +37,20 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
-		binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+		if (InstallTool.isWindows) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			
+		} else if (InstallTool.isMac) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macos/x86/usr/bin/";
+			
+		} else {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			
+		}
+		
 		ndlls.push (new NDLL ("libSDL", "nme"));
 		ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
 		
