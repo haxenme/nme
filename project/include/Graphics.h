@@ -527,7 +527,7 @@ struct HardwareArrays
 
    HardwareArrays(Surface *inSurface,unsigned int inFlags);
    ~HardwareArrays();
-   bool ColourMatch(int inWantColour);
+   bool ColourMatch(bool inWantColour);
 
 
    DrawElements mElements;

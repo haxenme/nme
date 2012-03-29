@@ -44,7 +44,7 @@ public:
       glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);       
       if (blen > 1)
       {
-         GLchar* compiler_log = (GLchar*)malloc(blen);
+         char* compiler_log = (char*)malloc(blen);
          glGetShaderInfoLog(shader, blen, &slen, compiler_log);
          printf("Error compiling shader : %s\n", compiler_log);
          printf("%s\n", inShader);

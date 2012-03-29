@@ -1168,7 +1168,7 @@ HardwareArrays::~HardwareArrays()
       mSurface->DecRef();
 }
 
-bool HardwareArrays::ColourMatch(int inWantColour)
+bool HardwareArrays::ColourMatch(bool inWantColour)
 {
    if (mVertices.empty())
       return true;

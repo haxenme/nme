@@ -28,6 +28,9 @@
 #include <gl/GL.h>
 //#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
+#define ALLOW_OGL2
+#define NEED_EXTENSIONS
+
 #endif
 
 
@@ -73,7 +76,16 @@ typedef void *GLCtx;
 #define GL_DYNAMIC_DRAW               0x88E8
 #define GL_DYNAMIC_READ               0x88E9
 #define GL_DYNAMIC_COPY               0x88EA
-
+#define GL_COMPILE_STATUS             0x8B81
+#define GL_LINK_STATUS                0x8B82
+#define GL_VALIDATE_STATUS            0x8B83
+#define GL_INFO_LOG_LENGTH            0x8B84
+#define GL_ATTACHED_SHADERS           0x8B85
+#define GL_ACTIVE_UNIFORMS            0x8B86
+#define GL_ACTIVE_UNIFORM_MAX_LENGTH  0x8B87
+#define GL_SHADER_SOURCE_LENGTH       0x8B88
+#define GL_VERTEX_SHADER              0x8B31
+#define GL_FRAGMENT_SHADER            0x8B30
 #endif
 
 
@@ -90,6 +102,13 @@ typedef void *GLCtx;
 
 #ifdef HX_MACOS
 #define ALLOW_OGL2
+#endif
+
+
+#ifdef NEED_EXTENSIONS
+#define DECLARE_EXTENSION
+#include "OGLExtensions.h"
+#undef DECLARE_EXTENSION
 #endif
 
 namespace nme
@@ -135,6 +154,7 @@ public:
    virtual void finishDrawing() = 0;
 };
 
+void InitOGL2Extensions();
 
 } // end namespace nme
 

@@ -1,18 +1,12 @@
 #include "./OGL.h"
 
 
-#ifdef HX_WINDOWS
-typedef void (APIENTRY * glBindBufferARB_f)(GLenum target, GLuint buffer);
-typedef void (APIENTRY * glDeleteBuffersARB_f)(GLsizei n, const GLuint *buffers);
-typedef void (APIENTRY * glGenBuffersARB_f)(GLsizei n, GLuint *buffers);
-typedef void (APIENTRY * glBufferDataARB_f)(GLenum target, GLsizeiptrARB size, const GLvoid *data, GLenum usage);
 
-glBindBufferARB_f glBindBuffer=0;
-glDeleteBuffersARB_f glDeleteBuffers=0;
-glGenBuffersARB_f glGenBuffers=0;
-glBufferDataARB_f glBufferData=0;
+#ifdef NEED_EXTENSIONS
+#define DEFINE_EXTENSION
+#include "OGLExtensions.h"
+#undef DEFINE_EXTENSION
 #endif
-
 
 
 int sgDrawCount = 0;
@@ -856,14 +850,14 @@ void InitExtensions()
       #ifndef SDL_OGL
          wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
       #endif
-      glBindBuffer=(glBindBufferARB_f) wglGetProcAddress("glBindBufferARB");
-      glDeleteBuffers=(glDeleteBuffersARB_f) wglGetProcAddress("glDeleteBuffersARB");
-      glGenBuffers=(glGenBuffersARB_f) wglGetProcAddress("glGenBuffersARB");
-      glBufferData=(glBufferDataARB_f) wglGetProcAddress("glBufferDataARB");
-      #ifdef NME_USE_VBO
-      if (glBindBuffer)
-         sgUSEVBO = false;
+
+
+      #ifdef NEED_EXTENSIONS
+      #define GET_EXTENSION
+      #include "OGLExtensions.h"
+      #undef EFINE_EXTENSION
       #endif
+
       #endif
    }
 }
