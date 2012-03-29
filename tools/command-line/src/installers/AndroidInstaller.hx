@@ -125,6 +125,12 @@ class AndroidInstaller extends InstallerBase {
 		
 		context.CPP_DIR = buildDirectory + "/android/obj";
 		
+		if (defines.exists ("KEY_STORE")) {
+			
+			context.KEY_STORE = FileSystem.fullPath (defines.get ("KEY_STORE"));
+			
+		}
+		
 		updateIcon();
 		
 	}
