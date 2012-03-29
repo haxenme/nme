@@ -5,6 +5,9 @@
 	
 	<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 	
+	<set name="iphonesim" if="ios" />
+	<set name="iphoneos" if="ios" unless="simulator" />
+	
 	<set name="sdl" value="1" if="linux"/>
 	<set name="sdl" value="1" if="macos"/>
 	<set name="sdl" value="1" if="windows"/>
@@ -207,15 +210,18 @@
 	<set name="tool" value="exe" unless="iphone"/>
 	<set name="tool" value="static" if="iphone"/>
 
-   <set name="IOS_ARCH" value="-v7" if="HXCPP_ARMV7" />
+	<set name="IOS_ARCH" value="-v7" if="HXCPP_ARMV7" />
 	
 	<set name="ndll-tool" value="dll" unless="iphone"/>
 	<set name="ndll-tool" value="static" if="iphone"/>
 	<set name="name_extra" value=".iphoneos${IOS_ARCH}" if="iphoneos"/>
 	<set name="name_extra" value=".iphonesim" if="iphonesim"/>
 	
+	<set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
+	
 	<section if="fulldebug" >
 		<set name="name_extra" value=".debug"/>
+		<set name="name_extra" value=".debug-x86" if="simulator" unless="iphonesim" />
 		<set name="name_extra" value=".debug.iphoneos${IOS_ARCH}" if="iphoneos"/>
 		<set name="name_extra" value=".debug.iphonesim" if="iphonesim"/>
 	</section>
@@ -285,19 +291,19 @@
 		<files id="webos" if="webos"/>
 		<files id="blackberry" if="blackberry"/>
 		
-		<lib name="${THIRDPARTY_LIBS}libfreetype${SLIBEXT}" unless="no_thirdparty_extras"/>
-		<lib name="${THIRDPARTY_LIBS}libjpeg${SLIBEXT}" unless="no_thirdparty_extras"/>
-		<lib name="${THIRDPARTY_LIBS}libpng${SLIBEXT}" unless="no_thirdparty_extras"/>
-		<lib name="${THIRDPARTY_LIBS}zlib${SLIBEXT}" if="windows"/>
-		<lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
-		<lib name="${THIRDPARTY_LIBS}libz${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
+		<lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
+		<lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
+		<lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
+		<lib name="${THIRDPARTY_LIBS}zlib${name_extra}${SLIBEXT}" if="windows"/>
+		<lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
+		<lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
 		
-		<lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static" unless="blackberry" />
-		<lib name="${THIRDPARTY_LIBS}libSDL_mixer${SLIBEXT}" if="sdl_static"/>
-		<lib name="${THIRDPARTY_LIBS}libvorbis${SLIBEXT}" if="sdl_static"/>
-		<lib name="${THIRDPARTY_LIBS}libogg${SLIBEXT}" if="sdl_static"/>
-		<lib name="${THIRDPARTY_LIBS}libsmpeg${SLIBEXT}" if="sdl_static"/>
-		<lib name="${THIRDPARTY_LIBS}libSDL${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
+		<lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
+		<lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
 		<lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
 		
@@ -305,7 +311,8 @@
 		<lib name="-L../ndll/BlackBerry" if="blackberry"/>
 		
 		<lib name="-lSDL" if="dynamic_sdl"/>
-		<lib name="-lSDL" if="blackberry"/>
+		<lib name="-lSDL-x86" if="blackberry"/>
+		<lib name="-lSDL" if="blackberry" unless="simulator" />
 		<lib name="-lSDL_mixer" if="dynamic_sdl"/>
 		<lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
 		<lib name="-logg" if="dynamic_sdl" unless="webos"/>
@@ -338,7 +345,8 @@
 		<lib name="-lGLES_CM" if="webos"/>
 		<lib name="-lpdl" if="webos"/>
 		
-		<lib name="-lTouchControlOverlay" if="blackberry"/>
+		<lib name="-lTouchControlOverlay-x86" if="blackberry"/>
+		<lib name="-lTouchControlOverlay" if="blackberry" unless="simulator" />
 		<lib name="-lbps" if="blackberry"/>
 		<lib name="-lscreen" if="blackberry"/>
 		<lib name="-lEGL" if="blackberry"/>

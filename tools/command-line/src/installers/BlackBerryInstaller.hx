@@ -60,6 +60,12 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
+		if (targetFlags.exists ("simulator")) {
+			
+			compilerFlags.push ("-D simulator");
+			
+		}
+		
 		super.generateContext ();
 		
 		context.CPP_DIR = buildDirectory + "/blackberry/obj";
@@ -82,14 +88,34 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function run ():Void {
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		var deviceIP = defines.get ("BLACKBERRY_DEVICE_IP");
+		var devicePassword = defines.get ("BLACKBERRY_DEVICE_PASSWORD");
+		
+		if (targetFlags.exists ("simulator")) {
+			
+			deviceIP = "192.168.127.128";
+			devicePassword = "playbook";
+			
+		}
+		
+		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
 		
 	}
 	
 	
 	override function traceMessages ():Void {
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD"), defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		var deviceIP = defines.get ("BLACKBERRY_DEVICE_IP");
+		var devicePassword = defines.get ("BLACKBERRY_DEVICE_PASSWORD");
+		
+		if (targetFlags.exists ("simulator")) {
+			
+			deviceIP = "192.168.127.128";
+			devicePassword = "playbook";
+			
+		}
+		
+		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
 		
 		//runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
@@ -106,13 +132,21 @@ class BlackBerryInstaller extends InstallerBase {
 		recursiveCopy (NME + "/tools/command-line/blackberry/hxml", buildDirectory + "/blackberry/haxe");
 		generateSWFClasses (buildDirectory + "/blackberry/haxe");
 		
+		var arch = "";
+		
+		if (targetFlags.exists ("simulator")) {
+			
+			arch = "-x86";
+			
+		}
+		
 		for (ndll in ndlls) {
 			
-			var ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + ".debug.so");
+			var ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + arch + ".debug.so");
 			
 			if (!debug || !FileSystem.exists (ndllPath)) {
 				
-				ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + ".so");
+				ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + arch + ".so");
 				
 			}
 			
