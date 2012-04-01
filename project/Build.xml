@@ -343,12 +343,8 @@
 		<lib name="-lGLES_CM" if="webos"/>
 		<lib name="-lpdl" if="webos"/>
 		
-		<section if="blackberry">
-			<lib name="-lSDL-x86" if="simulator"/>
-			<lib name="-lSDL" unless="simulator" />
-			<lib name="-lTouchControlOverlay-x86" if="simulator"/>
-			<lib name="-lTouchControlOverlay" unless="simulator" />
-		</section>
+		<lib name="-lSDL${name_extra}" if="blackberry"/>
+		<lib name="-lTouchControlOverlay${name_extra}" if="blackberry"/>
 		
 		<lib name="-lbps" if="blackberry"/>
 		<lib name="-lscreen" if="blackberry"/>
