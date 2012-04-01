@@ -10,13 +10,16 @@ read -p "Do you wish to install Haxe and Neko? (y/n) " RESP
 if [ $RESP = "y" ]; then
 	
 	
+	sudo apt-get remove haxe
+	
+
 	# If you are running 64-bit, you'll need 32-bit support
 	
 	echo "-----------------------------------"
 	echo " Installing IA32 libraries"
 	echo "-----------------------------------"	
 	
-	sudo apt-get install ia32-libs gcc-multilib g++-multilib
+	sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
 	
 	
 	# The version of Haxe in the package manager is probably
@@ -77,22 +80,20 @@ echo "-----------------------------------"
 
 #haxelib install hxcpp
 
-wget http://www.haxenme.org/files/7913/2950/5114/hxcpp-2082.zip
-haxelib test hxcpp-2082.zip
-rm hxcpp-2082.zip
+wget http://www.haxenme.org/files/1613/3237/4766/hxcpp-2.08.3.zip
+haxelib test hxcpp-2.08.3.zip
+rm hxcpp-2.08.3.zip
 
 haxelib install jeash
 
 
 echo "-----------------------------------"
-echo " Installing NME 3.3.1"
+echo " Installing NME 3.3.0"
 echo "-----------------------------------"
 
 # Download and install NME
 
-wget http://www.haxenme.org/files/8413/2950/5137/nme-321.zip
-haxelib test nme-321.zip
-rm nme-321.zip
+haxelib install nme
 
 # Add "nme" command shortcut
 
