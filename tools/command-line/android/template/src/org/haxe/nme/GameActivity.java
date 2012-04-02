@@ -15,6 +15,7 @@ import android.view.View;
 import android.util.Log;
 import android.content.res.AssetManager;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.Configuration;
 import android.content.Context;
 import android.media.SoundPool;
 import android.media.MediaPlayer;
@@ -33,6 +34,18 @@ import java.lang.Math;
 import java.lang.reflect.Constructor;
 
 public class GameActivity extends Activity implements SensorEventListener {
+    private static final int DEVICE_ORIENTATION_UNKNOWN			= 0;
+    private static final int DEVICE_ORIENTATION_PORTRAIT		= 1;
+    private static final int DEVICE_ORIENTATION_PORTRAIT_UPSIDE_DOWN	= 2;
+    private static final int DEVICE_ORIENTATION_LANDSCAPE_RIGHT		= 3;
+    private static final int DEVICE_ORIENTATION_LANDSCAPE_LEFT		= 4;
+    private static final int DEVICE_ORIENTATION_FACE_UP			= 5;
+    private static final int DEVICE_ORIENTATION_FACE_DOWN		= 6;
+
+    private static final int DEVICE_ROTATION_0				= 0;
+    private static final int DEVICE_ROTATION_90				= 1;
+    private static final int DEVICE_ROTATION_180			= 2;
+    private static final int DEVICE_ROTATION_270			= 3;
 
     MainView mView;
     static AssetManager mAssets;
@@ -48,6 +61,15 @@ public class GameActivity extends Activity implements SensorEventListener {
     static HashMap<String,Class> mLoadedClasses = new HashMap<String,Class>();
 	static DisplayMetrics metrics;
 	static SensorManager sensorManager;
+
+    private static float[] rotationMatrix = new float[16];
+    private static float[] inclinationMatrix = new float[16];
+    private static float[] accelData = new float[3];
+    private static float[] magnetData = new float[3];
+    private static float[] orientData = new float[3];
+    private static int bufferedDisplayOrientation = -1;
+    private static int bufferedNormalOrientation = -1;
+
 
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -89,6 +111,9 @@ public class GameActivity extends Activity implements SensorEventListener {
 		if (sensorManager != null) {
 			sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_GAME);
+			sensorManager.registerListener(this, 
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_GAME);
 		}
     }
@@ -403,6 +428,9 @@ public class GameActivity extends Activity implements SensorEventListener {
 			sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 				SensorManager.SENSOR_DELAY_GAME);
+			sensorManager.registerListener(this, 
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_GAME);
 		}
     }
    
@@ -414,10 +442,124 @@ public class GameActivity extends Activity implements SensorEventListener {
    }
    
    @Override public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-        	float[] values = event.values;
-        	NME.onAccelerate(values[0], values[1], values[2]);
-        }
+      // use this if you want to test sensor reliability before using the signal.
+      // I have found through experience if I try to use this, I never get an accelerometer
+      // signal :). As a result, it is not used.
+      /*if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
+         Log.d("GameActivity","unreliable..");
+         return;
+      }*/
+
+      loadNewSensorData(event);
+
+      // if sensor values are valid, then find rotation matrix.
+      // this is necessary because Android coordinate system adjusts per orientation.
+      if (accelData != null) {
+         if (magnetData != null) {
+            // check that the rotation matrix is found before use
+            boolean success = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix,
+                                                          accelData, magnetData);
+            if (success) {
+               SensorManager.getOrientation(rotationMatrix, orientData);
+               NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
+               //Log.d("GameActivity","\n >> new orient: " + Math.toDegrees(orientData[0]) + ", " + Math.toDegrees(orientData[1]) + ", " + Math.toDegrees(orientData[2]));
+            }
+         }
+
+         //setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER);
+      }         
+      NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
+      NME.onNormalOrientationFound(bufferedNormalOrientation);
+   }
+
+   private void loadNewSensorData(SensorEvent event) {
+      final int type = event.sensor.getType();
+      if (type == Sensor.TYPE_ACCELEROMETER) {
+         accelData = event.values.clone();
+         NME.onAccelerate(accelData[0], accelData[1], accelData[2]);
+      }
+      if (type == Sensor.TYPE_MAGNETIC_FIELD) {
+         magnetData = event.values.clone();
+         //Log.d("GameActivity","new mag: " + magnetData[0] + ", " + magnetData[1] + ", " + magnetData[2]);
+      }
+   }
+
+   private int prepareDeviceOrientation() {
+      int rawOrientation = getWindow().getWindowManager().getDefaultDisplay().getOrientation();
+      if (rawOrientation != bufferedDisplayOrientation) {
+         bufferedDisplayOrientation = rawOrientation;
+      }
+
+      int screenOrientation = getResources().getConfiguration().orientation;
+      int deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
+
+      if (bufferedNormalOrientation < 0) {
+         switch (screenOrientation) {
+            case Configuration.ORIENTATION_LANDSCAPE:
+               switch(bufferedDisplayOrientation) {
+                  case DEVICE_ROTATION_0:
+                  case DEVICE_ROTATION_180:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
+                     break;
+                  case DEVICE_ROTATION_90:
+                  case DEVICE_ROTATION_270:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_PORTRAIT;
+                     break;
+                  default:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
+               }
+               break;
+            case Configuration.ORIENTATION_PORTRAIT:
+               switch(bufferedDisplayOrientation) {
+                  case DEVICE_ROTATION_0:
+                  case DEVICE_ROTATION_180:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_PORTRAIT;
+                     break;
+                  case DEVICE_ROTATION_90:
+                  case DEVICE_ROTATION_270:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
+                     break;
+                  default:
+                     bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
+               }
+               break;
+            default: // ORIENTATION_SQUARE OR ORIENTATION_UNDEFINED
+               bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
+         }
+      }
+      switch (screenOrientation) {
+         case Configuration.ORIENTATION_LANDSCAPE:
+            switch(bufferedDisplayOrientation) {
+               case DEVICE_ROTATION_0:
+               case DEVICE_ROTATION_270:
+                  deviceOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
+                  break;
+               case DEVICE_ROTATION_90:
+               case DEVICE_ROTATION_180:
+                  deviceOrientation = DEVICE_ORIENTATION_LANDSCAPE_RIGHT;
+                  break;
+               default: // impossible!
+                  deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
+            }
+            break;
+         case Configuration.ORIENTATION_PORTRAIT:
+            switch(bufferedDisplayOrientation) {
+               case DEVICE_ROTATION_0:
+               case DEVICE_ROTATION_90:
+                  deviceOrientation = DEVICE_ORIENTATION_PORTRAIT;
+                  break;
+               case DEVICE_ROTATION_180:
+               case DEVICE_ROTATION_270:
+                  deviceOrientation = DEVICE_ORIENTATION_PORTRAIT_UPSIDE_DOWN;
+                  break;
+               default: // impossible!
+                  deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
+            }
+            break;
+         default: // ORIENTATION_SQUARE OR ORIENTATION_UNDEFINED
+            deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
+      }
+      return deviceOrientation;
    }
    
    @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {

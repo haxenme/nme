@@ -111,6 +111,11 @@ class Stage extends DisplayObjectContainer
 		return nme_stage_get_orientation();
 	}
 	
+	public static dynamic function getNormalOrientation():Int 
+	{
+		return nme_stage_get_normal_orientation();
+	}
+	
 	
 	public function invalidate():Void
 	{
@@ -917,6 +922,7 @@ class Stage extends DisplayObjectContainer
 	private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
 	private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
 	private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
+	private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
 
 }
 

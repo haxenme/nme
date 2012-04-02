@@ -106,6 +106,7 @@ static int _id_cookieString;
 static int _id_verbose;
 
 static int _id_method;
+static int _id_contentType;
 static int _id_nmeBytes;
 
 
@@ -187,6 +188,7 @@ extern "C" void InitIDs()
    _id_cookieString = val_id("cookieString");
    _id_verbose = val_id("verbose");
    _id_method = val_id("method");
+   _id_contentType = val_id("contentType");
    _id_nmeBytes = val_id("nmeBytes");
 
    gObjectKind = alloc_kind();
@@ -512,6 +514,7 @@ void FromValue(value obj, URLRequest &request)
    request.passwd = val_string( val_field(obj, _id_userPassword) );
    request.cookies = val_string( val_field(obj, _id_cookieString) );
    request.method = val_string( val_field(obj, _id_method) );
+   request.contentType = val_string( val_field(obj, _id_contentType) );
    request.debug = val_field_numeric( obj, _id_verbose );
    request.postData = ByteArray( val_field(obj,_id_nmeBytes) );
 }
@@ -1192,8 +1195,7 @@ DEFINE_PRIM(nme_stage_show_cursor,2);
 
 value nme_stage_get_orientation() {
 
-	#if defined (IPHONE)
-	
+	#if defined(IPHONE) || defined(ANDROID)
 		return alloc_int( GetDeviceOrientation() );
 	
 	#else
@@ -1205,6 +1207,19 @@ value nme_stage_get_orientation() {
 }
 
 DEFINE_PRIM (nme_stage_get_orientation, 0);
+
+value nme_stage_get_normal_orientation() {
+
+	#if defined(ANDROID)
+		return alloc_int( GetNormalOrientation() );
+   #elif defined(IPHONE)
+      return alloc_int( 1 ); // ios device sensors are always portrait orientated  
+   #else
+      return alloc_int( 0 );  
+	#endif
+}
+
+DEFINE_PRIM (nme_stage_get_normal_orientation, 0);
 
 
 // --- ManagedStage ----------------------------------------------------------------------

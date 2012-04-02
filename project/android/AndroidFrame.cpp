@@ -166,11 +166,31 @@ public:
                HandleEvent(mouse);
          }
    }
+
+   void OnDeviceOrientationUpdate(int orientation)
+   {
+      currentDeviceOrientation = orientation;
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "Device Orientation %d", currentDeviceOrientation);
+   }
+
+   void OnNormalOrientationFound(int orientation)
+   {
+      normalOrientation = orientation;
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "Normal Orientation %d", normalOrientation);
+   }
+
+   void OnOrientationUpdate(double inX, double inY, double inZ)
+   {
+      mOrientationX = inX;
+      mOrientationY = inY;
+      mOrientationZ = inZ;
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "Orientation %f %f %f", inX, inY, inZ);
+   }
    
    void OnAccelerate(double inX, double inY, double inZ)
    {
-      mAccX = - inX / 9.80665;
-      mAccY = - inY / 9.80665;
+      mAccX = inX / 9.80665;
+      mAccY = inY / 9.80665;
       mAccZ = inZ / 9.80665;
       //__android_log_print(ANDROID_LOG_INFO, "NME", "Accelerometer %f %f %f", inX, inY, inZ);
    }
@@ -197,6 +217,12 @@ public:
    double mDX;
    double mDY;
    
+   int currentDeviceOrientation;
+   int normalOrientation;
+   double mOrientationX;
+   double mOrientationY;
+   double mOrientationZ;
+      
    double mAccX;
    double mAccY;
    double mAccZ;
@@ -304,6 +330,30 @@ void AndroidRequestRender()
     env->CallStaticVoidMethod(cls, mid);
 }
 
+int GetDeviceOrientation() {
+	if (sStage) {
+		return sStage->currentDeviceOrientation;
+	}
+	return 0;
+}
+
+int GetNormalOrientation() {
+	if (sStage) {
+		return sStage->normalOrientation;
+	}
+	return 0;
+}
+
+int GetOrientation(double& outX, double& outY, double& outZ) {
+	if (sStage) {
+		outX = sStage->mOrientationX;
+		outY = sStage->mOrientationY;
+		outZ = sStage->mOrientationZ;
+		return true;
+	}
+	return false;
+}
+
 bool GetAcceleration(double& outX, double& outY, double& outZ) {
 	if (sStage) {
 		outX = sStage->mAccX;
@@ -352,6 +402,36 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * env, jobject obj, int orientation)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnNormalOrientationFound(orientation);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, int orientation)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnDeviceOrientationUpdate(orientation);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onOrientationUpdate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnOrientationUpdate(x,y,z);
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
