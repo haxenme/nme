@@ -32,7 +32,7 @@ class FlashInstaller extends InstallerBase {
 		runCommand ("", "haxe", [ hxml ] );
 		
 		var file = defines.get ("APP_FILE") + ".swf";
-		var input = neko.io.File.read (destination + "/" + file, true);
+		var input = File.read (destination + "/" + file, true);
 		var reader = new format.swf.Reader (input);
 		var swf = reader.read ();
 		input.close();
@@ -69,7 +69,7 @@ class FlashInstaller extends InstallerBase {
 		if (inserted) {
 			
 			swf.tags = new_tags;
-			var output = neko.io.File.write (destination + "/" + file, true);
+			var output = File.write (destination + "/" + file, true);
 			var writer = new format.swf.Writer (output);
 			writer.write (swf);
 			output.close ();
@@ -192,7 +192,7 @@ class FlashInstaller extends InstallerBase {
 					
 					src = name.substr (0, name.length - ext.length) + e;
 					
-					if (neko.FileSystem.exists (src)) {
+					if (FileSystem.exists (src)) {
 						
 						break;
 						
@@ -202,16 +202,16 @@ class FlashInstaller extends InstallerBase {
 				
 			}
 			
-			if (!neko.FileSystem.exists (src)) {
+			if (!FileSystem.exists (src)) {
 				
 				Lib.println ("Warning: Could not embed unsupported audio file \"" + name + "\"");
 				return false;
 				
 			}
 			
-			var ext = neko.io.Path.extension (src);
-			
-			var input = neko.io.File.read (src, true);
+			var ext = Path.extension (src);
+
+			var input = File.read (src, true);
 			
 			if (ext == "mp3") {
 				
@@ -340,19 +340,20 @@ class FlashInstaller extends InstallerBase {
 		} else if (type == "image") {
 			
 			var src = name;
-			var ext = neko.io.Path.extension (src).toLowerCase ();
+			var ext = Path.extension (src).toLowerCase ();
 			
 			if (ext == "jpg" || ext == "png" || ext == "gif") {
 				
-				var bytes:haxe.io.Bytes;
-				try {
-               var file = neko.io.File.read (src, true);
-               bytes = file.readAll ();
-               file.close();
-               }
-				catch (e:Dynamic) { throw "Could not load image file: " + src; }
-				
-				outTags.push (TBitsJPEG (cid, JDJPEG2 (bytes)));
+				if (!FileSystem.exists (src)) {
+
+					Lib.println ("Warning: Could not find image path \"" + src + "\"");
+
+				} else {
+
+					var bytes = File.getBytes (src);
+					outTags.push (TBitsJPEG (cid, JDJPEG2 (bytes)));
+
+				}
 				
 			} else {
 				
@@ -364,8 +365,8 @@ class FlashInstaller extends InstallerBase {
 			
 			// More code ripped off from "samhaxe"
 			var src = name;
-			var font_name = neko.io.Path.withoutExtension (name);
-			var font = nme.text.Font.load (src);
+			var font_name = Path.withoutExtension (name);
+			var font = Font.load (src);
 			
 			var glyphs = new Array <Font2GlyphData> ();
 			var glyph_layout = new Array <FontLayoutGlyphData> ();
@@ -374,7 +375,7 @@ class FlashInstaller extends InstallerBase {
 				
 				if (native_glyph.char_code > 65535) {
 					
-					neko.Lib.println("Warning: glyph with character code greater than 65535 encountered ("+ native_glyph.char_code+"). Skipping...");
+					Lib.println("Warning: glyph with character code greater than 65535 encountered ("+ native_glyph.char_code+"). Skipping...");
 					continue;
 					
 				}
@@ -487,7 +488,7 @@ class FlashInstaller extends InstallerBase {
 			
 		} else {
 			
-			var bytes = neko.io.File.getBytes (name);
+			var bytes = File.getBytes (name);
 			outTags.push (TBinaryData (cid, bytes));
 			
 		}
