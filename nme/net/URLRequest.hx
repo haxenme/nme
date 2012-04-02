@@ -15,7 +15,7 @@ class URLRequest
 	
 	public var authType:Int;
 	public var cookieString:String;
-	public var url(default, null):String;
+	public var url:String;
 	public var userPassword:String;
 	public var verbose:Bool;
 	public var method:String;
@@ -36,8 +36,8 @@ class URLRequest
 		userPassword = "";
 		cookieString = "";
 		authType = 0;
-      contentType = "application/x-www-form-urlencoded";
-      method = URLRequestMethod.GET;
+      	contentType = "application/x-www-form-urlencoded";
+      	method = URLRequestMethod.GET;
 	}
 	
 	
@@ -76,6 +76,16 @@ class URLRequest
          else if (Std.is(data,String))
          {
             var str:String  = data;
+            nmeBytes = new ByteArray();
+            nmeBytes.writeUTFBytes(str);
+         }
+         else if (Std.is(data,Dynamic))
+         {
+         	var vars:URLVariables = new URLVariables();
+			for(i in Reflect.fields(data)) {
+				Reflect.setField(vars, i, Reflect.field(data,i));
+			}
+            var str = vars.toString();
             nmeBytes = new ByteArray();
             nmeBytes.writeUTFBytes(str);
          }

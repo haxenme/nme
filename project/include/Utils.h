@@ -124,6 +124,7 @@ typedef std::wstring WString;
 void SetIcon( const char *path );
 
 int GetDeviceOrientation();
+int GetNormalOrientation();
 double CapabilitiesGetPixelAspectRatio ();
 double CapabilitiesGetScreenDPI ();
 double CapabilitiesGetScreenResolutionX ();

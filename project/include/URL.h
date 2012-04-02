@@ -27,6 +27,7 @@ struct URLRequest
    const char *passwd;
    const char *cookies;
    const char *method;
+   const char *contentType;
    ByteArray  postData;
    bool       debug;
 };

@@ -6,6 +6,7 @@ import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.IOErrorEvent;
 import nme.events.ProgressEvent;
+import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import nme.Loader;
 
@@ -23,7 +24,7 @@ import cpp.io.File;
 * @author   Niel Drummond
 * @author   Russell Weir
 * @author   Joshua Harlan Lifton
-* @todo open and progress events
+* @todo open event
 * @todo Complete Variables type
 **/
 class URLLoader extends EventDispatcher
@@ -132,6 +133,7 @@ class URLLoader extends EventDispatcher
 	
    function nmeDataComplete()
    {
+   		activeLoaders.remove(this);
       if (nmeOnComplete!=null)
       {
          if (nmeOnComplete(data))
@@ -178,9 +180,13 @@ class URLLoader extends EventDispatcher
 	
 	private function onError(msg):Void
 	{
+		activeLoaders.remove(this);
 		dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
 	}
 	
+	private function dispatchHTTPStatus(code:Int):Void {
+		dispatchEvent(new HTTPStatusEvent(HTTPStatusEvent.HTTP_STATUS, false, false, code));
+	}
 	
 	private function update()
 	{
@@ -200,8 +206,11 @@ class URLLoader extends EventDispatcher
 			}
 			
 			var code:Int = nme_curl_get_code(nmeHandle);
+
 			if (state == urlComplete)
 			{
+				dispatchHTTPStatus(code);
+
 				if (code < 400) 
 				{
 					var bytes:ByteArray = nme_curl_get_data(nmeHandle);
@@ -212,7 +221,7 @@ class URLLoader extends EventDispatcher
 						default:
 							data = bytes;
 					}
-               nmeDataComplete();
+               		nmeDataComplete();
 				}
 				else 
 				{
@@ -224,6 +233,8 @@ class URLLoader extends EventDispatcher
 			}
 			else if (state == urlError)
 			{
+				dispatchHTTPStatus(code);
+				
 				var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR,	true, false, nme_curl_get_error_message(nmeHandle), code);
 				nmeHandle = null;
 				dispatchEvent(evt);

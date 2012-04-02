@@ -43,6 +43,7 @@ public:
    unsigned char *mBufferPos;
    unsigned char *mPutBuffer;
 
+  struct curl_slist *headerlist;
 
 	CURLLoader(URLRequest &r)
 	{
@@ -60,6 +61,7 @@ public:
       mBufferRemaining = 0;
       mPutBuffer = 0;
       mBufferPos = 0;
+    headerlist = NULL;
 
 		curl_easy_setopt(mHandle, CURLOPT_URL, r.url);
 
@@ -86,30 +88,52 @@ public:
       else
          curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
 
-      if (r.method && strcmp(r.method,"GET"))
-      {
-         if (!strcmp(r.method,"POST"))
-         {
-            curl_easy_setopt(mHandle, CURLOPT_POST, true);
-            if (r.postData.Ok())
-            {
-               curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, r.postData.Size());
-               curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, r.postData.Bytes());
-            }
-         }
-         else
-         {
-            if (!strcmp(r.method,"PUT"))
-            {
-               curl_easy_setopt(mHandle, CURLOPT_UPLOAD, 1);
-            }
-            else
-               curl_easy_setopt(mHandle, CURLOPT_CUSTOMREQUEST, r.method);
+      if (r.method)
+      { 
+        if (!strcmp(r.method,"POST"))
+        {
+          curl_easy_setopt(mHandle, CURLOPT_POST, true);
 
-            if (r.postData.Ok())
-               SetPutBuffer(r.postData.Bytes(),r.postData.Size());
-         }
+          if (r.postData.Ok())
+          {
+            curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, r.postData.Size());
+            curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, r.postData.Bytes());
+          }
+        }
+        else if (!strcmp(r.method,"PUT"))
+        {
+          // The file to PUT must be set with CURLOPT_INFILE and CURLOPT_INFILESIZE.
+          curl_easy_setopt(mHandle, CURLOPT_PUT, true);
+
+          curl_easy_setopt(mHandle, CURLOPT_UPLOAD, 1);
+          if (r.postData.Ok())
+            SetPutBuffer(r.postData.Bytes(),r.postData.Size());
+        } 
+        else if (!strcmp(r.method,"GET"))
+        {
+          // GET is the default, so this is not necessary but here for completeness.
+          curl_easy_setopt(mHandle, CURLOPT_HTTPGET, true);
+        }
+        else if (!strcmp(r.method,"DELETE"))
+        {
+          curl_easy_setopt(mHandle, CURLOPT_CUSTOMREQUEST, r.method);
+        }
+        else
+        {
+          // unsupported method !!
+        }
       }
+
+      if (r.contentType)
+      {
+        std::vector<char> buffer;
+        buffer.resize(512);
+        snprintf(&buffer[0], buffer.size(), "Content-Type: %s", r.contentType);
+        headerlist = curl_slist_append(headerlist, &buffer[0]);
+
+      }
+      headerlist = curl_slist_append(headerlist, "Expect:");
+      curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, headerlist);
  
       mErrorBuf[0] = '\0';
  
@@ -117,7 +141,7 @@ public:
          field, so we provide one */ 
       curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-		mState = urlLoading;
+		  mState = urlLoading;
 
       if (sCurlMap->size()<MAX_ACTIVE)
       {
