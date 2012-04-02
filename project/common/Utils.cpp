@@ -473,9 +473,9 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	}
 	else if (inDir == DIR_USER)
 	{
-		outDir = "shared";
+		outDir = ".";
 	}
-	else if (inDir == DIR_DOCS)
+	else if (inDir == DIR_DOCS || inDir == DIR_DESKTOP)
 	{
 		outDir = "shared/documents";
 	}
@@ -488,7 +488,7 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	{
 		outDir = ".";
 	}
-	else if (inDir == DIR_USER)
+	else if (inDir == DIR_USER || inDir == DIR_DESKTOP)
 	{
 		outDir = "/media/internal";
 	}
