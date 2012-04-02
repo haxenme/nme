@@ -283,6 +283,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 			outFile = "/system/fonts/DroidSerif-Regular.ttf";
 		#elif defined (WEBOS)
 			outFile = "/usr/share/fonts/times.ttf";
+      #elif defined (BLACKBERRY)
+         outFile = "/usr/fonts/font_repository/monotype/times.ttf";
 		#else
 			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
 		#endif
@@ -293,6 +295,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 			outFile = "/system/fonts/DroidSans.ttf";
 		#elif defined (WEBOS)
 			outFile = "/usr/share/fonts/Prelude-Medium.ttf";
+      #elif defined (BLACKBERRY)
+         outFile = "/usr/fonts/font_repository/monotype/arial.ttf";
 		#else
 			outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
 		#endif
@@ -303,6 +307,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 			outFile = "/system/fonts/DroidSansMono.ttf";
 		#elif defined (WEBOS)
 			outFile = "/usr/share/fonts/cour.ttf";
+      #elif defined (BLACKBERRY)
+         outFile = "/usr/fonts/font_repository/monotype/cour.ttf";
 		#else
 			outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 		#endif
