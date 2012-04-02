@@ -381,10 +381,17 @@ public:
                      UserPoint rg = *point++;
                      UserPoint ba = *point++;
                      Colours &colours = mArrays->mColours;
+                     #ifdef BLACKBERRY
+                     uint32 col = ((int)(rg.x*255)) |
+                                  (((int)(rg.y*255))<<8) |
+                                  (((int)(ba.x*255))<<16) |
+                                  (((int)(ba.y*255))<<24);
+                     #else
                      uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
                                   ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
                                   ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
                                   ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+                     #endif
                      colours.push_back( col );
                      colours.push_back( col );
                      colours.push_back( col );
