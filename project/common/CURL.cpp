@@ -5,6 +5,11 @@
 #include <map>
 #include <string>
 
+#ifdef HX_WINDOWS
+#include <stdio.h>
+#define snprintf _snprintf
+#endif
+
 /**
  * TODO:
  * HTTP redirects
