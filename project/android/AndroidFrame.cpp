@@ -59,6 +59,8 @@ public:
       // Click detection
       mDownX = 0;
       mDownY = 0;
+
+      normalOrientation = 0;
    }
    ~AndroidStage()
    {
@@ -189,9 +191,15 @@ public:
    
    void OnAccelerate(double inX, double inY, double inZ)
    {
-      mAccX = inX / 9.80665;
-      mAccY = inY / 9.80665;
-      mAccZ = inZ / 9.80665;
+      if (normalOrientation == 0 || normalOrientation == 1) { // UNKNOWN || PORTRAIT
+         mAccX = -inX / 9.80665;
+         mAccY = -inY / 9.80665;
+         mAccZ = -inZ / 9.80665;
+      } else { // 4 || LANDSCAPE_LEFT
+         mAccX = inY / 9.80665;
+         mAccY = -inX / 9.80665;
+         mAccZ = -inZ / 9.80665;
+      }
       //__android_log_print(ANDROID_LOG_INFO, "NME", "Accelerometer %f %f %f", inX, inY, inZ);
    }
 
