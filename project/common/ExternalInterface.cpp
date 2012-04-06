@@ -462,13 +462,22 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
    }
    else
    {
-      value *vals = val_array_value(outVal);
-      if (vals)
+      float *f = val_array_float(outVal);
+      if (f)
+      {
          for(int i=0;i<n;i++)
-            vals[i] = alloc_float(inArray[i]);
+            f[i] = inArray[i];
+      }
       else
-         for(int i=0;i<n;i++)
-            val_array_set_i(outVal,i,alloc_float(inArray[i]));
+      {
+         value *vals = val_array_value(outVal);
+         if (vals)
+            for(int i=0;i<n;i++)
+               vals[i] = alloc_float(inArray[i]);
+         else
+            for(int i=0;i<n;i++)
+               val_array_set_i(outVal,i,alloc_float(inArray[i]));
+      }
    }
 }
 
@@ -490,16 +499,25 @@ void FillArrayDoubleN(QuickVec<T,N> &outArray,value inVal)
    }
    else
    {
-      value *vals = val_array_value(inVal);
-      if (vals)
+      float *f = val_array_float(inVal);
+      if (f)
+      {
          for(int i=0;i<n;i++)
-            outArray[i] = val_number(vals[i]);
+            outArray[i] = f[i];
+      }
       else
-         for(int i=0;i<n;i++)
-            outArray[i] = val_number(val_array_i(inVal,i));
+      {
+         value *vals = val_array_value(inVal);
+         if (vals)
+            for(int i=0;i<n;i++)
+               outArray[i] = val_number(vals[i]);
+         else
+            for(int i=0;i<n;i++)
+               outArray[i] = val_number(val_array_i(inVal,i));
+      }
    }
-
 }
+
 
 template<typename T>
 void FillArrayDouble(QuickVec<T> &outArray,value inVal)
@@ -2084,6 +2102,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
 
       int n = val_array_size(inXYIDs)/components;
       double *vals = val_array_double(inXYIDs);
+      float *fvals = val_array_float(inXYIDs);
       int max = sheet->Tiles();
       float rgba_buf[] = { 1, 1, 1, 1 };
       float scale_rot_buf[] = { 1, 1 };
@@ -2104,6 +2123,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
             x = vals[0];
             y = vals[1];
             id =vals[2]+0.5;
+         }
+         else if (fvals)
+         {
+            x = fvals[0];
+            y = fvals[1];
+            id =fvals[2]+0.5;
          }
          else
          {
@@ -2126,13 +2151,13 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                dxx_dxy[1] = 0.0;
                if (flags & TILE_SCALE)
                {
-                  double scale = vals?vals[pos++] : val_number(val_ptr[pos++]);
+                  double scale = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
                   dxx_dxy[0] *= scale;
                }
 
                if (flags & TILE_ROTATION)
                {
-                  double theta = vals?vals[pos++] : val_number(val_ptr[pos++]);
+                  double theta = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
                   dxx_dxy[1] = sin(theta) * dxx_dxy[0];
                   dxx_dxy[0] *= cos(theta);
                }
@@ -2149,6 +2174,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                   rgba[1] = vals[pos++];
                   rgba[2] = vals[pos++];
                }
+               else if (fvals)
+               {
+                  rgba[0] = fvals[pos++];
+                  rgba[1] = fvals[pos++];
+                  rgba[2] = fvals[pos++];
+               }
                else
                {
                   rgba[0] = val_number(val_ptr[pos++]);
@@ -2161,6 +2192,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
             {
                if (vals)
                   rgba[3] = vals[pos++];
+               else if (fvals)
+                  rgba[3] = fvals[pos++];
                else
                   rgba[3] = val_number(val_ptr[pos++]);
             }
@@ -2168,6 +2201,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
             gfx->tile(x-ox,y-oy,r,dxx_dxy,rgba);
             if (vals)
                vals+=components;
+            else if (fvals)
+               fvals+=components;
             else
                val_ptr += components;
          }
