@@ -100,7 +100,7 @@ class Graphics
 	}
 	
 	
-	public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = #if neko 0x7fffffff #else 0xffffffff #end, inSize:Float = -1.0)
+	public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = #if neko 0x3fffffff #else 0xffffffff #end, inSize:Float = -1.0)
 	{
 		nme_gfx_draw_points(nmeHandle, inXY, inPointRGBA, inDefaultRGBA, #if neko true #else false #end, inSize);
 	}
