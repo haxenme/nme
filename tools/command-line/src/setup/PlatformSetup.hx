@@ -43,6 +43,14 @@ class PlatformSetup {
 
 	private static var backedUpConfig:Bool = false;
 	
+   static inline function readLine()
+   {
+   #if haxe_209
+		return Sys.stdin ().readLine ();
+   #else
+		return File.stdin ().readLine ();
+   #end
+   }
 	
 	private static function ask (question:String):Answer {
 		
@@ -50,7 +58,7 @@ class PlatformSetup {
 			
 			Lib.print (question + " [y/n/a] ? ");
 			
-			switch (File.stdin ().readLine ()) {
+			switch (readLine ()) {
 				case "n": return No;
 				case "y": return Yes;
 				case "a": return Always;
@@ -332,6 +340,15 @@ class PlatformSetup {
 		Sys.command("ln -s " + "/usr/lib" +"/" + dir + "/" + file + " " + dest + "/" + file);
 		
 	}
+
+   inline static function getChar()
+   {
+   #if haxe_209
+      return Sys.getChar(false);
+   #else
+      return File.getChar(false);
+   #end
+   }
 	
 	
 	private static function param (name:String, ?passwd:Bool):String {
@@ -341,7 +358,7 @@ class PlatformSetup {
 		if (passwd) {
 			var s = new StringBuf ();
 			var c;
-			while ((c = File.getChar (false)) != 13)
+			while ((c = getChar ()) != 13)
 				s.addChar (c);
 			Lib.print ("");
 			return s.toString ();
@@ -349,7 +366,7 @@ class PlatformSetup {
 		
 		try {
 			
-			return File.stdin ().readLine ();
+			return readLine ();
 			
 		} catch (e:Eof) {
 			
