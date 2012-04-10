@@ -29,8 +29,8 @@ class Loader extends Sprite
 	public var content(default, null):DisplayObject;
 	public var contentLoaderInfo(default, null):LoaderInfo;
 	
-	private var nmeImage:BitmapData;
-	private var nmeSWF:MovieClip;
+	/** @private */ private var nmeImage:BitmapData;
+	/** @private */ private var nmeSWF:MovieClip;
 	
 
 	public function new()

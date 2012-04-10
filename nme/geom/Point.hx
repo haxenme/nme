@@ -112,7 +112,7 @@ class Point
 	
 	
 	
-	private function nmeGetLength()
+	/** @private */ private function nmeGetLength()
 	{
 		return Math.sqrt(x * x + y * y);
 	}

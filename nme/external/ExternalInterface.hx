@@ -83,7 +83,7 @@ class ExternalInterface
 	
 	
 	
-	private static function nmeIsAvailable():Bool
+	/** @private */ private static function nmeIsAvailable():Bool
 	{
 		return nme_external_interface_available();
 	}

@@ -20,7 +20,7 @@ class Sprite extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeGetType()
+	/** @private */ private function nmeGetType()
 	{
       var type = Type.getClassName(Type.getClass(this));
       var pos = type.lastIndexOf(".");

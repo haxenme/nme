@@ -216,20 +216,20 @@ class Rectangle
 	
 	
 	
-	private function nmeGetBottom() { return y + height; }
-	private function nmeSetBottom(b:Float) { height = b - y; return b; }
-	private function nmeGetBottomRight() { return new Point(x + width, y + height); }
-	private function nmeSetBottomRight(p:Point) { width = p.x - x;	height = p.y - y; return p.clone(); }
-	private function nmeGetLeft() { return x; }
-	private function nmeSetLeft(l:Float) { width -= l - x; x = l; return l; }
-	private function nmeGetRight() { return x + width; }
-	private function nmeSetRight(r:Float) { width = r - x; return r; }
-	private function nmeGetSize() { return new Point(width, height); }
-	private function nmeSetSize(p:Point) { width = p.x; height = p.y; return p.clone(); }
-	private function nmeGetTop() { return y; }
-	private function nmeSetTop(t:Float) { height -= t - y; y = t; return t; }
-	private function nmeGetTopLeft() { return new Point(x, y); }
-	private function nmeSetTopLeft(p:Point) { x = p.x; y = p.y; return p.clone(); }
+	/** @private */ private function nmeGetBottom() { return y + height; }
+	/** @private */ private function nmeSetBottom(b:Float) { height = b - y; return b; }
+	/** @private */ private function nmeGetBottomRight() { return new Point(x + width, y + height); }
+	/** @private */ private function nmeSetBottomRight(p:Point) { width = p.x - x;	height = p.y - y; return p.clone(); }
+	/** @private */ private function nmeGetLeft() { return x; }
+	/** @private */ private function nmeSetLeft(l:Float) { width -= l - x; x = l; return l; }
+	/** @private */ private function nmeGetRight() { return x + width; }
+	/** @private */ private function nmeSetRight(r:Float) { width = r - x; return r; }
+	/** @private */ private function nmeGetSize() { return new Point(width, height); }
+	/** @private */ private function nmeSetSize(p:Point) { width = p.x; height = p.y; return p.clone(); }
+	/** @private */ private function nmeGetTop() { return y; }
+	/** @private */ private function nmeSetTop(t:Float) { height -= t - y; y = t; return t; }
+	/** @private */ private function nmeGetTopLeft() { return new Point(x, y); }
+	/** @private */ private function nmeSetTopLeft(p:Point) { x = p.x; y = p.y; return p.clone(); }
 	
 }
 

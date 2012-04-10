@@ -37,10 +37,10 @@ class System
 	
 	
 
-	private static function nmeGetDeviceID():String { return nme_get_unique_device_identifier(); }
+	/** @private */ private static function nmeGetDeviceID():String { return nme_get_unique_device_identifier(); }
 	
 	
-	private static function nmeGetTotalMemory():Int
+	/** @private */ private static function nmeGetTotalMemory():Int
 	{
 		#if neko
 			return neko.vm.Gc.stats().heap;

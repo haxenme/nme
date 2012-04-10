@@ -55,10 +55,7 @@ class URLRequest
 	}
 
 	
-	/**
-	 * @private
-	 */
-   public function nmePrepare()
+   /** @private */ public function nmePrepare()
    {
       if (data==null)
          nmeBytes = null;

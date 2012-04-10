@@ -29,7 +29,7 @@ class Multitouch
 	
 	
 	
-	private static function nmeGetInputMode():MultitouchInputMode
+	/** @private */ private static function nmeGetInputMode():MultitouchInputMode
 	{
 		// No gestures at the moment...
 		if (nme_stage_get_multitouch_active(nme.Lib.current.stage.nmeHandle))
@@ -39,7 +39,7 @@ class Multitouch
 	}
 
 
-	private static function nmeSetInputMode(inMode:MultitouchInputMode):MultitouchInputMode
+	/** @private */ private static function nmeSetInputMode(inMode:MultitouchInputMode):MultitouchInputMode
 	{
 		if (inMode == MultitouchInputMode.GESTURE)
 			return nmeGetInputMode();
@@ -50,7 +50,7 @@ class Multitouch
 	}
 	
 	
-	private static function nmeGetSupportsTouchEvents():Bool { return nme_stage_get_multitouch_supported(nme.Lib.current.stage.nmeHandle); }
+	/** @private */ private static function nmeGetSupportsTouchEvents():Bool { return nme_stage_get_multitouch_supported(nme.Lib.current.stage.nmeHandle); }
 	
 	
 	

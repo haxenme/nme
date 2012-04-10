@@ -17,8 +17,8 @@ class SoundChannel extends EventDispatcher
 	
 	private static var nmeIncompleteList = new Array<SoundChannel>();
 	
-	private var nmeHandle:Dynamic;
-	private var nmeTransform:SoundTransform;
+	/** @private */ private var nmeHandle:Dynamic;
+	/** @private */ private var nmeTransform:SoundTransform;
 	
 	
 	public function new (inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform)
@@ -39,7 +39,7 @@ class SoundChannel extends EventDispatcher
 	}
 	
 	
-	private function nmeCheckComplete():Bool
+	/** @private */ private function nmeCheckComplete():Bool
 	{
 		if (nmeHandle != null && nme_sound_channel_is_complete(nmeHandle))
 		{
@@ -54,19 +54,13 @@ class SoundChannel extends EventDispatcher
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public static function nmeCompletePending()
+	/** @private */ public static function nmeCompletePending()
 	{	
 		return nmeIncompleteList.length > 0;	
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public static function nmePollComplete()
+	/** @private */ public static function nmePollComplete()
 	{	
 		if (nmeIncompleteList.length > 0)
 		{
@@ -96,12 +90,12 @@ class SoundChannel extends EventDispatcher
 	
 	
 	
-	private function nmeGetLeft():Float {	return nme_sound_channel_get_left(nmeHandle); }
-	private function nmeGetRight():Float { return nme_sound_channel_get_right(nmeHandle); }
-	private function nmeGetPosition():Float { return nme_sound_channel_get_position(nmeHandle); }
+	/** @private */ private function nmeGetLeft():Float {	return nme_sound_channel_get_left(nmeHandle); }
+	/** @private */ private function nmeGetRight():Float { return nme_sound_channel_get_right(nmeHandle); }
+	/** @private */ private function nmeGetPosition():Float { return nme_sound_channel_get_position(nmeHandle); }
 	
 	
-	private function nmeGetTransform():SoundTransform
+	/** @private */ private function nmeGetTransform():SoundTransform
 	{
 		if (nmeTransform == null)
 		{
@@ -112,7 +106,7 @@ class SoundChannel extends EventDispatcher
 	}
 	
 	
-	function nmeSetTransform(inTransform:SoundTransform):SoundTransform
+	/** @private */ private function nmeSetTransform(inTransform:SoundTransform):SoundTransform
 	{
 		nmeTransform = inTransform.clone();
 		nme_sound_channel_set_transform(nmeHandle, nmeTransform);

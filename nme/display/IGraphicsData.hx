@@ -5,10 +5,7 @@ package nme.display;
 class IGraphicsData
 {	
 	
-	/**
-	 * @private
-	 */
-	public var nmeHandle:Dynamic;
+	/** @private */ public var nmeHandle:Dynamic;
 	
 	
 	public function new(inHandle:Dynamic)

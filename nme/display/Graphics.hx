@@ -20,7 +20,7 @@ class Graphics
 	public static inline var TILE_BLEND_ADD      = 0x00010000;
 	//public static inline var TILE_BLEND_SUBTRACT = 0x00020000;
 	
-	private var nmeHandle:Dynamic;
+	/** @private */ private var nmeHandle:Dynamic;
 	
 	
 	public function new(inHandle:Dynamic)

@@ -30,14 +30,14 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	#if !no_nme_io
 	// Store these in statics there to avoid GC issues in nme
-	private static var bytes:Dynamic;
-	private static var factory:Dynamic;
-	private static var resize:Dynamic;
-	private static var slen:Dynamic;
+	/** @private */ private static var bytes:Dynamic;
+	/** @private */ private static var factory:Dynamic;
+	/** @private */ private static var resize:Dynamic;
+	/** @private */ private static var slen:Dynamic;
 	#end
 
 	#if neko
-	private var alloced:Int;
+	/** @private */ private var alloced:Int;
 	#end
 	
 	
@@ -74,7 +74,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	#if !no_nme_io
-	static function __init__()
+	/** @private */ static function __init__()
 	{
 		factory = function(inLen:Int) { return new ByteArray(inLen); };
 		resize  = function(inArray:ByteArray,inLen:Int) {
@@ -133,7 +133,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	private function ensureElem(inSize:Int, inUpdateLenght:Bool)
+	/** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool)
 	{
 		var len = inSize + 1;
 		#if neko
@@ -176,7 +176,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	inline function push_uncheck(inByte:Int)
+	/** @private */ inline function push_uncheck(inByte:Int)
 	{
 		#if cpp
 		untyped b.__unsafe_set(length++, inByte);
@@ -335,7 +335,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	private function ThrowEOFi():Int
+	/** @private */ private function ThrowEOFi():Int
 	{
 		throw new EOFError();
 		return 0;
@@ -487,20 +487,9 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetBytesAvailable():Int { return length - position; }
-	
-	/**
-	 * @private
-	 */
-	public function nmeGetEndian():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
-	
-	/**
-	 * @private
-	 */
-	public function nmeSetEndian(s:String):String { bigEndian = (s == Endian.BIG_ENDIAN); return s; }
+	/** @private */ public function nmeGetBytesAvailable():Int { return length - position; }
+	/** @private */ public function nmeGetEndian():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
+	/** @private */ public function nmeSetEndian(s:String):String { bigEndian = (s == Endian.BIG_ENDIAN); return s; }
 	
 	
 	
@@ -508,10 +497,10 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	
-	private static var _double_bytes = Lib.load("std", "double_bytes", 2);
-	private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
-	private static var _float_bytes = Lib.load("std", "float_bytes", 2);
-	private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
+	/** @private */ private static var _double_bytes = Lib.load("std", "double_bytes", 2);
+	/** @private */ private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
+	/** @private */ private static var _float_bytes = Lib.load("std", "float_bytes", 2);
+	/** @private */ private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
 
 	#if !no_nme_io
 	private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);

@@ -6,7 +6,7 @@ class StorageVolumeInfo extends nme.events.EventDispatcher
    static public var storageVolumeInfo(getInstance,null):StorageVolumeInfo;
    static var nmeStorageVolumeInfo:StorageVolumeInfo;
 
-   var volumes:Array<StorageVolume>;
+   /** @private */ var volumes:Array<StorageVolume>;
 
    function new()
    {

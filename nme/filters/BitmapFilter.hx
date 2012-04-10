@@ -5,7 +5,7 @@ package nme.filters;
 class BitmapFilter
 {
 	
-	private var type:String;
+	/** @private */ private var type:String;
 	
 	
 	public function new (inType)

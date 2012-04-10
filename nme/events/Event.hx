@@ -40,14 +40,14 @@ class Event
 	public var target(nmeGetTarget, nmeSetTarget):Dynamic;
 	public var type(nmeGetType, never):String;
 
-	private var _bubbles : Bool;
-	private var _cancelable : Bool;
-	private var _currentTarget : Dynamic;
-	private var _eventPhase : Int;
-	private var _target : Dynamic;
-	private var _type : String;
-	private var nmeIsCancelled:Bool;
-	private var nmeIsCancelledNow:Bool;
+	/** @private */ private var _bubbles : Bool;
+	/** @private */ private var _cancelable : Bool;
+	/** @private */ private var _currentTarget : Dynamic;
+	/** @private */ private var _eventPhase : Int;
+	/** @private */ private var _target : Dynamic;
+	/** @private */ private var _type : String;
+	/** @private */ private var nmeIsCancelled:Bool;
+	/** @private */ private var nmeIsCancelledNow:Bool;
 	
 	
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false)
@@ -69,28 +69,19 @@ class Event
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetIsCancelled()
+	/** @private */ public function nmeGetIsCancelled()
 	{
 		return nmeIsCancelled;
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetIsCancelledNow()
+	/** @private */ public function nmeGetIsCancelledNow()
 	{
 		return nmeIsCancelledNow;
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeSetPhase(inPhase:Int)
+	/** @private */ public function nmeSetPhase(inPhase:Int)
 	{
 		// For internal use only...
 		_eventPhase = inPhase;

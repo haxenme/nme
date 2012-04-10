@@ -35,24 +35,18 @@ class URLLoader extends EventDispatcher
 	public var data:Dynamic;
 	public var dataFormat:URLLoaderDataFormat;
 	
-	/**
-	 * @private
-	 */
-	public var nmeHandle:Dynamic;
+	/** @private */ public var nmeHandle:Dynamic;
 	
-	private static var activeLoaders = new List<URLLoader>();
+	/** @private */ private static var activeLoaders = new List<URLLoader>();
 	private static inline var urlInvalid = 0;
 	private static inline var urlInit = 1;
 	private static inline var urlLoading = 2;
 	private static inline var urlComplete = 3;
 	private static inline var urlError = 4;
 	
-	private var state:Int;
-
-	/**
-	 * @private
-	 */
-   public var nmeOnComplete : Dynamic -> Bool;
+	/** @private */ private var state:Int;
+	
+	/** @private */ public var nmeOnComplete : Dynamic -> Bool;
 	
 
 	public function new(?request:URLRequest)
@@ -131,7 +125,7 @@ class URLLoader extends EventDispatcher
 		}
 	}
 	
-   function nmeDataComplete()
+   /** @private */ private function nmeDataComplete()
    {
    		activeLoaders.remove(this);
       if (nmeOnComplete!=null)
@@ -149,19 +143,13 @@ class URLLoader extends EventDispatcher
 
 
 	
-	/**
-	 * @private
-	 */
-	public static function nmeLoadPending()
+	/** @private */ public static function nmeLoadPending()
 	{
 		return !activeLoaders.isEmpty();
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public static function nmePollData()
+	/** @private */ public static function nmePollData()
 	{
 		if (!activeLoaders.isEmpty())
 		{
@@ -178,17 +166,17 @@ class URLLoader extends EventDispatcher
 	}
 	
 	
-	private function onError(msg):Void
+	/** @private */ private function onError(msg):Void
 	{
 		activeLoaders.remove(this);
 		dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
 	}
 	
-	private function dispatchHTTPStatus(code:Int):Void {
+	/** @private */ private function dispatchHTTPStatus(code:Int):Void {
 		dispatchEvent(new HTTPStatusEvent(HTTPStatusEvent.HTTP_STATUS, false, false, code));
 	}
 	
-	private function update()
+	/** @private */ private function update()
 	{
 		if (nmeHandle != null)
 		{

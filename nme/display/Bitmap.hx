@@ -27,7 +27,7 @@ class Bitmap extends DisplayObject
 	 */
 	public var smoothing(default, nmeSetSmoothing):Bool;
 	
-	private var mGraphics:Graphics;
+	/** @private */ private var mGraphics:Graphics;
 	
 	
 	public function new(?inBitmapData:BitmapData, ?inPixelSnapping:PixelSnapping, ?inSmoothing:Bool):Void
@@ -41,7 +41,7 @@ class Bitmap extends DisplayObject
 	}
 	
 	
-	private function nmeRebuid()
+	/** @private */ private function nmeRebuid()
 	{
 		var gfx = graphics;
 		gfx.clear();
@@ -60,7 +60,7 @@ class Bitmap extends DisplayObject
 	
 	
 	
-	private function nmeSetBitmapData(inBitmapData:BitmapData):BitmapData
+	/** @private */ private function nmeSetBitmapData(inBitmapData:BitmapData):BitmapData
 	{
 		bitmapData = inBitmapData;
 		nmeRebuid();
@@ -69,7 +69,7 @@ class Bitmap extends DisplayObject
 	}
 	
 	
-	private function nmeSetSmoothing(inSmooth:Bool):Bool
+	/** @private */ private function nmeSetSmoothing(inSmooth:Bool):Bool
 	{
 		smoothing = inSmooth;
 		nmeRebuid();

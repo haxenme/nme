@@ -160,12 +160,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 */
 	public var y(nmeGetY, nmeSetY):Float;
 	
-	private var nmeFilters:Array<Dynamic>;
-	private var nmeGraphicsCache:Graphics;
-	private var nmeID:Int;
-	private var nmeParent:DisplayObjectContainer;
-	private var nmeScale9Grid:Rectangle;
-	private var nmeScrollRect:Rectangle;
+	/** @private */	private var nmeFilters:Array<Dynamic>;
+	/** @private */	private var nmeGraphicsCache:Graphics;
+	/** @private */	private var nmeID:Int;
+	/** @private */	private var nmeParent:DisplayObjectContainer;
+	/** @private */	private var nmeScale9Grid:Rectangle;
+	/** @private */	private var nmeScrollRect:Rectangle;
 	
 
 	public function new(inHandle:Dynamic, inType:String)
@@ -238,25 +238,19 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeAsInteractiveObject():InteractiveObject
+	/** @private */ private function nmeAsInteractiveObject():InteractiveObject
 	{
 		return null;
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeBroadcast(inEvt:Event)
+	/** @private */ public function nmeBroadcast(inEvt:Event)
 	{
 		nmeDispatchEvent(inEvt);
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeDispatchEvent(inEvt:Event):Bool
+	/** @private */ public function nmeDispatchEvent(inEvt:Event):Bool
 	{
 		if (inEvt.target == null)
 		{
@@ -267,17 +261,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
+	/** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
 	{
 		// --- IBitmapDrawable interface ---
 		nme_display_object_draw_to_surface(nmeHandle, inSurface, matrix, colorTransform, blendMode, clipRect);
 	}
 	
 	
-	private function nmeFindByID(inID:Int):DisplayObject
+	/** @private */ private function nmeFindByID(inID:Int):DisplayObject
 	{
 		if (nmeID == inID)
 			return this;
@@ -285,7 +276,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeFireEvent(inEvt:Event)
+	/** @private */ private function nmeFireEvent(inEvt:Event)
 	{
 		var stack:Array<InteractiveObject> = [];
 		
@@ -337,10 +328,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetColorTransform():ColorTransform
+	/** @private */ public function nmeGetColorTransform():ColorTransform
 	{ 
 		var trans = new ColorTransform();
 		nme_display_object_get_color_transform(nmeHandle, trans, false);
@@ -348,10 +336,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetConcatenatedColorTransform():ColorTransform
+	/** @private */ public function nmeGetConcatenatedColorTransform():ColorTransform
 	{
 		var trans = new ColorTransform();
 		nme_display_object_get_color_transform(nmeHandle, trans, true);
@@ -359,10 +344,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetConcatenatedMatrix():Matrix
+	/** @private */ public function nmeGetConcatenatedMatrix():Matrix
 	{
 		var mtx = new Matrix();
 		nme_display_object_get_matrix(nmeHandle, mtx, true);
@@ -370,10 +352,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
+	/** @private */ public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
 	{
 		var io = nmeAsInteractiveObject();
 		
@@ -385,10 +364,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetMatrix():Matrix
+	/** @private */ public function nmeGetMatrix():Matrix
 	{
 		var mtx = new Matrix();
 		nme_display_object_get_matrix(nmeHandle, mtx, false);
@@ -396,20 +372,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
+	/** @private */ public function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
 	{
 		if (nme_display_object_hit_test_point(nmeHandle, point.x, point.y, true, false))
 			result.push(this);
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetPixelBounds():Rectangle
+	/** @private */ public function nmeGetPixelBounds():Rectangle
 	{
 		var rect = new Rectangle();
 		nme_display_object_get_pixel_bounds(nmeHandle, rect);
@@ -417,7 +387,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeOnAdded(inObj:DisplayObject, inIsOnStage:Bool)
+	/** @private */ private function nmeOnAdded(inObj:DisplayObject, inIsOnStage:Bool)
 	{
 		if (inObj == this)
 		{
@@ -435,7 +405,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeOnRemoved(inObj:DisplayObject, inWasOnStage:Bool)
+	/** @private */ private function nmeOnRemoved(inObj:DisplayObject, inWasOnStage:Bool)
 	{
 		if (inObj == this)
 		{
@@ -453,19 +423,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeSetColorTransform(inTrans:ColorTransform)
+	/** @private */ public function nmeSetColorTransform(inTrans:ColorTransform)
 	{
 		nme_display_object_set_color_transform(nmeHandle, inTrans);
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeSetMatrix(inMatrix:Matrix)
+	/** @private */ public function nmeSetMatrix(inMatrix:Matrix)
 	{
 		nme_display_object_set_matrix(nmeHandle, inMatrix);
 	}
@@ -485,15 +449,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	
 	
 	
-	private function nmeGetAlpha():Float {	return nme_display_object_get_alpha(nmeHandle); }
-	private function nmeSetAlpha(inAlpha:Float):Float
+	/** @private */ private function nmeGetAlpha():Float {	return nme_display_object_get_alpha(nmeHandle); }
+	/** @private */ private function nmeSetAlpha(inAlpha:Float):Float
 	{
 		nme_display_object_set_alpha(nmeHandle, inAlpha);
 		return inAlpha;	
 	}
    
-   
-	private function nmeGetBG():Null<Int>
+	
+	/** @private */ private function nmeGetBG():Null<Int>
 	{
 		var i:Int = nme_display_object_get_bg(nmeHandle);
 		if ((i& 0x01000000)==0)
@@ -503,7 +467,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeSetBG(inBG:Null<Int>):Null<Int>
+	/** @private */ private function nmeSetBG(inBG:Null<Int>):Null<Int>
 	{	
 		if (inBG == null)
 			nme_display_object_set_bg(nmeHandle, 0);
@@ -514,29 +478,29 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetBlendMode():BlendMode
+	/** @private */ private function nmeGetBlendMode():BlendMode
 	{	
 		var i:Int = nme_display_object_get_blend_mode(nmeHandle);
 		return Type.createEnumIndex(BlendMode, i);	
 	}
 	
 	
-	private function nmeSetBlendMode(inMode:BlendMode):BlendMode
+	/** @private */ private function nmeSetBlendMode(inMode:BlendMode):BlendMode
 	{	
 		nme_display_object_set_blend_mode(nmeHandle, Type.enumIndex(inMode));
 		return inMode;	
 	}
 	
 	
-	private function nmeGetCacheAsBitmap():Bool { return nme_display_object_get_cache_as_bitmap(nmeHandle); }
-	private function nmeSetCacheAsBitmap(inVal:Bool):Bool
+	/** @private */ private function nmeGetCacheAsBitmap():Bool { return nme_display_object_get_cache_as_bitmap(nmeHandle); }
+	/** @private */ private function nmeSetCacheAsBitmap(inVal:Bool):Bool
 	{
 		nme_display_object_set_cache_as_bitmap(nmeHandle,inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetFilters():Array<Dynamic>
+	/** @private */ private function nmeGetFilters():Array<Dynamic>
 	{	
 		if (nmeFilters==null) return [];
 		
@@ -549,7 +513,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeSetFilters (inFilters:Array<Dynamic>):Array<Dynamic>
+	/** @private */ private function nmeSetFilters (inFilters:Array<Dynamic>):Array<Dynamic>
 	{
 		if (inFilters == null)
 		{	
@@ -569,10 +533,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetGraphics():Graphics
+	/** @private */ public function nmeGetGraphics():Graphics
 	{
 		if (nmeGraphicsCache == null)
 			nmeGraphicsCache = new Graphics(nme_display_object_get_graphics(nmeHandle));
@@ -580,15 +541,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetHeight():Float { return nme_display_object_get_height(nmeHandle); }
-	private function nmeSetHeight(inVal:Float):Float
+	/** @private */ private function nmeGetHeight():Float { return nme_display_object_get_height(nmeHandle); }
+	/** @private */ private function nmeSetHeight(inVal:Float):Float
 	{
 		nme_display_object_set_height(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeSetMask(inObject:DisplayObject)
+	/** @private */ private function nmeSetMask(inObject:DisplayObject)
 	{
 		mask = inObject;
 		nme_display_object_set_mask(nmeHandle, inObject == null ? null : inObject.nmeHandle);
@@ -596,24 +557,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetMouseX():Float { return nme_display_object_get_mouse_x(nmeHandle); }
-	private function nmeGetMouseY():Float { return nme_display_object_get_mouse_y(nmeHandle); }
+	/** @private */ private function nmeGetMouseX():Float { return nme_display_object_get_mouse_x(nmeHandle); }
+	/** @private */ private function nmeGetMouseY():Float { return nme_display_object_get_mouse_y(nmeHandle); }
 	
 	
-	private function nmeGetName():String { return nme_display_object_get_name(nmeHandle); }
-	private function nmeSetName(inVal:String):String
+	/** @private */ private function nmeGetName():String { return nme_display_object_get_name(nmeHandle); }
+	/** @private */ private function nmeSetName(inVal:String):String
 	{	
 		nme_display_object_set_name(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetParent():DisplayObjectContainer { return nmeParent;	}
+	/** @private */ private function nmeGetParent():DisplayObjectContainer { return nmeParent;	}
 	
-	/**
-	 * @private
-	 */
-	public function nmeSetParent(inParent:DisplayObjectContainer)
+	
+	/** @private */ public function nmeSetParent(inParent:DisplayObjectContainer)
 	{	
 		if (inParent == nmeParent)
 			return inParent;
@@ -641,16 +600,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetRotation():Float { return nme_display_object_get_rotation(nmeHandle); }
-	private function nmeSetRotation(inVal:Float):Float
+	/** @private */ private function nmeGetRotation():Float { return nme_display_object_get_rotation(nmeHandle); }
+	/** @private */ private function nmeSetRotation(inVal:Float):Float
 	{
 		nme_display_object_set_rotation(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetScale9Grid():Rectangle { return (nmeScale9Grid == null) ? null : nmeScale9Grid.clone(); }
-	private function nmeSetScale9Grid(inRect:Rectangle):Rectangle
+	/** @private */ private function nmeGetScale9Grid():Rectangle { return (nmeScale9Grid == null) ? null : nmeScale9Grid.clone(); }
+	/** @private */ private function nmeSetScale9Grid(inRect:Rectangle):Rectangle
 	{
 		nmeScale9Grid = (inRect == null) ? null : inRect.clone();
 		nme_display_object_set_scale9_grid(nmeHandle, nmeScale9Grid);
@@ -658,24 +617,24 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetScaleX():Float { return nme_display_object_get_scale_x(nmeHandle); }
-	private function nmeSetScaleX(inVal:Float):Float
+	/** @private */ private function nmeGetScaleX():Float { return nme_display_object_get_scale_x(nmeHandle); }
+	/** @private */ private function nmeSetScaleX(inVal:Float):Float
 	{	
 		nme_display_object_set_scale_x(nmeHandle, inVal);
 		return inVal;
 	}
 
 	
-	private function nmeGetScaleY():Float { return nme_display_object_get_scale_y(nmeHandle); }
-	private function nmeSetScaleY(inVal:Float):Float
+	/** @private */ private function nmeGetScaleY():Float { return nme_display_object_get_scale_y(nmeHandle); }
+	/** @private */ private function nmeSetScaleY(inVal:Float):Float
 	{	
 		nme_display_object_set_scale_y(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetScrollRect():Rectangle { return (nmeScrollRect == null) ? null : nmeScrollRect.clone(); }
-	private function nmeSetScrollRect(inRect:Rectangle):Rectangle
+	/** @private */ private function nmeGetScrollRect():Rectangle { return (nmeScrollRect == null) ? null : nmeScrollRect.clone(); }
+	/** @private */ private function nmeSetScrollRect(inRect:Rectangle):Rectangle
 	{
 		nmeScrollRect = (inRect == null) ? null : inRect.clone();
 		nme_display_object_set_scroll_rect(nmeHandle, nmeScrollRect);
@@ -683,10 +642,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeGetStage():Stage
+	/** @private */ public function nmeGetStage():Stage
 	{	
 		if (nmeParent != null)
 			return nmeParent.nmeGetStage();
@@ -695,8 +651,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetTransform():Transform { return new Transform(this); }
-	private function nmeSetTransform(inTransform:Transform):Transform
+	/** @private */ private function nmeGetTransform():Transform { return new Transform(this); }
+	/** @private */ private function nmeSetTransform(inTransform:Transform):Transform
 	{	
 		nmeSetMatrix(inTransform.matrix);
 		nmeSetColorTransform(inTransform.colorTransform);
@@ -704,32 +660,32 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
-	private function nmeGetVisible():Bool { return nme_display_object_get_visible(nmeHandle);	}
-	private function nmeSetVisible(inVal:Bool):Bool
+	/** @private */ private function nmeGetVisible():Bool { return nme_display_object_get_visible(nmeHandle);	}
+	/** @private */ private function nmeSetVisible(inVal:Bool):Bool
 	{	
 		nme_display_object_set_visible(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetWidth():Float { return nme_display_object_get_width(nmeHandle); }
-	private function nmeSetWidth(inVal:Float):Float
+	/** @private */ private function nmeGetWidth():Float { return nme_display_object_get_width(nmeHandle); }
+	/** @private */ private function nmeSetWidth(inVal:Float):Float
 	{	
 		nme_display_object_set_width(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetX():Float { return nme_display_object_get_x(nmeHandle); }
-	private function nmeSetX(inVal:Float):Float
+	/** @private */ private function nmeGetX():Float { return nme_display_object_get_x(nmeHandle); }
+	/** @private */ private function nmeSetX(inVal:Float):Float
 	{	
 		nme_display_object_set_x(nmeHandle, inVal);
 		return inVal;	
 	}
 	
 	
-	private function nmeGetY():Float { return nme_display_object_get_y(nmeHandle); }
-	private function nmeSetY(inVal:Float):Float
+	/** @private */ private function nmeGetY():Float { return nme_display_object_get_y(nmeHandle); }
+	/** @private */ private function nmeSetY(inVal:Float):Float
 	{
 		nme_display_object_set_y(nmeHandle, inVal);
 		return inVal;

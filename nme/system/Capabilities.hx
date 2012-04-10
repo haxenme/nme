@@ -24,13 +24,13 @@ class Capabilities
 	
 	
 	
-	private static function nmeGetPixelAspectRatio():Float { return nme_capabilities_get_pixel_aspect_ratio(); }
-	private static function nmeGetScreenDPI():Float { return nme_capabilities_get_screen_dpi(); }
-	private static function nmeGetScreenResolutionX():Float { return nme_capabilities_get_screen_resolution_x(); }
-	private static function nmeGetScreenResolutionY():Float { return nme_capabilities_get_screen_resolution_y(); }
+	/** @private */ private static function nmeGetPixelAspectRatio():Float { return nme_capabilities_get_pixel_aspect_ratio(); }
+	/** @private */ private static function nmeGetScreenDPI():Float { return nme_capabilities_get_screen_dpi(); }
+	/** @private */ private static function nmeGetScreenResolutionX():Float { return nme_capabilities_get_screen_resolution_x(); }
+	/** @private */ private static function nmeGetScreenResolutionY():Float { return nme_capabilities_get_screen_resolution_y(); }
 	
 	
-	private static function nmeGetScreenResolutions():Array<Array<Int>>
+	/** @private */ private static function nmeGetScreenResolutions():Array<Array<Int>>
 	{
 		var res:Array<Int> = nme_capabilities_get_screen_resolutions();
 		

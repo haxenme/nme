@@ -367,10 +367,7 @@ class BitmapData implements IBitmapDrawable
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
+	/** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
 	{
 		// IBitmapDrawable interface...
 		nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
@@ -446,11 +443,10 @@ class BitmapData implements IBitmapDrawable
 	// Getters & Setters
 	
 	
-	
-	private function nmeGetRect():Rectangle { return new Rectangle (0, 0, width, height); }
-	private function nmeGetWidth():Int { return nme_bitmap_data_width (nmeHandle); }
-	private function nmeGetHeight():Int { return nme_bitmap_data_height (nmeHandle); }
-	private function nmeGetTransparent():Bool { return nme_bitmap_data_get_transparent (nmeHandle); }
+	/** @private */ private function nmeGetRect():Rectangle { return new Rectangle (0, 0, width, height); }
+	/** @private */ private function nmeGetWidth():Int { return nme_bitmap_data_width (nmeHandle); }
+	/** @private */ private function nmeGetHeight():Int { return nme_bitmap_data_height (nmeHandle); }
+	/** @private */ private function nmeGetTransparent():Bool { return nme_bitmap_data_get_transparent (nmeHandle); }
 	
 	
 	

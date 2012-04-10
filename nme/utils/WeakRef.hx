@@ -9,8 +9,8 @@ import nme.Loader;
 class WeakRef<T>
 {
    
-	private var hardRef:T; // Allowing for the reference to be hard simplfies usage
-	private var weakRef:Int;
+	/** @private */ private var hardRef:T; // Allowing for the reference to be hard simplfies usage
+	/** @private */ private var weakRef:Int;
 	
 
 	public function new(inObject:T, inMakeWeak:Bool = true)

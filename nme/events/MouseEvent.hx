@@ -68,10 +68,7 @@ class MouseEvent extends Event
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject)
+	/** @private */ public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject)
 	{
 		var flags : Int = inEvent.flags;
 		var evt = new MouseEvent(inType, true, false, inLocal.x, inLocal.y, null, (flags & efCtrlDown) != 0, (flags & efAltDown) != 0, (flags & efShiftDown) != 0, (flags & efLeftDown) != 0, 0, 0);
@@ -82,10 +79,7 @@ class MouseEvent extends Event
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeCreateSimilar(inType:String, ?related:InteractiveObject, ?targ:InteractiveObject)
+	/** @private */ public function nmeCreateSimilar(inType:String, ?related:InteractiveObject, ?targ:InteractiveObject)
 	{
 		var result = new MouseEvent(inType, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 		

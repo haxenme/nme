@@ -10,8 +10,8 @@ import nme.utils.WeakRef;
 class EventDispatcher implements IEventDispatcher
 {
    
-   private var nmeEventMap:EventMap;
-   private var nmeTarget:IEventDispatcher;
+   /** @private */ private var nmeEventMap:EventMap;
+   /** @private */ private var nmeTarget:IEventDispatcher;
    
    
    public function new(?target:IEventDispatcher):Void

@@ -53,7 +53,7 @@ class GraphicsPath extends IGraphicsData
 	
 	
 	
-	private function nmeGetCommands():Array<Int>
+	/** @private */ private function nmeGetCommands():Array<Int>
 	{	
 		var result = new Array<Int>();
 		nme_graphics_path_get_commands(nmeHandle, result);
@@ -61,14 +61,14 @@ class GraphicsPath extends IGraphicsData
 	}
 	
 	
-	private function nmeSetCommands(inCommands:Array<Int>):Array<Int>
+	/** @private */ private function nmeSetCommands(inCommands:Array<Int>):Array<Int>
 	{	
 		nme_graphics_path_set_commands(nmeHandle, inCommands);
 		return inCommands;	
 	}
 	
 	
-	private function nmeGetData():Array<Float>
+	/** @private */ private function nmeGetData():Array<Float>
 	{	
 		var result = new Array<Float>();		
 		nme_graphics_path_get_data(nmeHandle, result);
@@ -76,7 +76,7 @@ class GraphicsPath extends IGraphicsData
 	}
 	
 	
-	private function nmeSetData(inData:Array<Float>):Array<Float>
+	/** @private */ private function nmeSetData(inData:Array<Float>):Array<Float>
 	{	
 		nme_graphics_path_set_data(nmeHandle, inData);	
 		return inData;

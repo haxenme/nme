@@ -66,19 +66,19 @@ class Stage extends DisplayObjectContainer
 	private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
 	private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 	
-	private var nmeJoyAxisData:IntHash <JoyAxisData>;
-	private var nmeDragBounds:Rectangle;
-	private var nmeDragObject:Sprite;
-	private var nmeDragOffsetX:Float;
-	private var nmeDragOffsetY:Float;
-	private var nmeFocusOverObjects:Array<InteractiveObject>;
-	private var nmeFramePeriod:Float;
-	private var nmeInvalid:Bool;
-	private var nmeLastClickTime:Float;
-	private var nmeLastDown:Array<InteractiveObject>;
-	private var nmeLastRender:Float;
-	private var nmeMouseOverObjects:Array<InteractiveObject>;
-	private var nmeTouchInfo:IntHash<TouchInfo>;
+	/** @private */ private var nmeJoyAxisData:IntHash <JoyAxisData>;
+	/** @private */ private var nmeDragBounds:Rectangle;
+	/** @private */ private var nmeDragObject:Sprite;
+	/** @private */ private var nmeDragOffsetX:Float;
+	/** @private */ private var nmeDragOffsetY:Float;
+	/** @private */ private var nmeFocusOverObjects:Array<InteractiveObject>;
+	/** @private */ private var nmeFramePeriod:Float;
+	/** @private */ private var nmeInvalid:Bool;
+	/** @private */ private var nmeLastClickTime:Float;
+	/** @private */ private var nmeLastDown:Array<InteractiveObject>;
+	/** @private */ private var nmeLastRender:Float;
+	/** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
+	/** @private */ private var nmeTouchInfo:IntHash<TouchInfo>;
 	
 	
 	public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int)
@@ -123,7 +123,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
+	/** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
 	{
 		// Exit ...
 		var new_n = inStack.length;
@@ -161,7 +161,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeCheckInOuts(inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo)
+	/** @private */ private function nmeCheckInOuts(inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo)
 	{
 		var prev = touchInfo == null ? nmeMouseOverObjects : touchInfo.touchOverObjects;
 		var events = touchInfo == null ? nmeMouseChanges : nmeTouchChanges;
@@ -213,7 +213,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeCheckRender()
+	/** @private */ private function nmeCheckRender()
 	{
 		//trace("nmeCheckRender " + frameRate);
 		if (frameRate > 0)
@@ -231,7 +231,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeDoProcessStageEvent(inEvent:Dynamic):Float
+	/** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float
 	{
 		var result = 0.0;
 		//if (inEvent.type!=9) trace("Stage Event : " + inEvent);
@@ -353,14 +353,14 @@ class Stage extends DisplayObjectContainer
    @:functionCode("try {") 
    @:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
    #end
-	private function nmeProcessStageEvent(inEvent:Dynamic):Dynamic
+	/** @private */ private function nmeProcessStageEvent(inEvent:Dynamic):Dynamic
 	{
 		nmeDoProcessStageEvent(inEvent);
 		return null;
 	}
 	
 	
-	private function nmeDrag(inMouse:Point)
+	/** @private */ private function nmeDrag(inMouse:Point)
 	{
 		var p = nmeDragObject.parent;
 		if (p != null)
@@ -383,16 +383,13 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public override function nmeGetStage():Stage
+	/** @private */ public override function nmeGetStage():Stage
 	{
 		return this;
 	}
 	
 	
-	private function nmeNextFrameDue(inOtherTimers:Float)
+	/** @private */ private function nmeNextFrameDue(inOtherTimers:Float)
 	{
 		if (!active && pauseWhenDeactivated)
 			return inOtherTimers;
@@ -406,7 +403,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnChange(inEvent)
+	/** @private */ private function nmeOnChange(inEvent)
 	{
 		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		if (obj != null)
@@ -414,7 +411,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnFocus(inEvent:Dynamic)
+	/** @private */ private function nmeOnFocus(inEvent:Dynamic)
 	{
 		var stack = new Array<InteractiveObject>();
 		var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -438,7 +435,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnJoystick(inEvent:Dynamic, inType:String)
+	/** @private */ private function nmeOnJoystick(inEvent:Dynamic, inType:String)
 	{
 		var evt:JoystickEvent = null;
 		switch (inType)
@@ -498,7 +495,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnKey(inEvent:Dynamic, inType:String)
+	/** @private */ private function nmeOnKey(inEvent:Dynamic, inType:String)
 	{
 		var stack = new Array<InteractiveObject>();
 		var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -516,7 +513,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnMouse(inEvent:Dynamic, inType:String, inFromMouse:Bool)
+	/** @private */ private function nmeOnMouse(inEvent:Dynamic, inType:String, inFromMouse:Bool)
 	{
 		var type = inType;
 		var button:Int = inEvent.value;
@@ -599,14 +596,14 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeOnResize(inW:Float, inH:Float)
+	/** @private */ private function nmeOnResize(inW:Float, inH:Float)
 	{
 		var evt = new Event(Event.RESIZE);
 		nmeDispatchEvent(evt);
 	}
 	
 	
-	private function nmeOnTouch (inEvent:Dynamic, inType:String, touchInfo:TouchInfo)
+	/** @private */ private function nmeOnTouch (inEvent:Dynamic, inType:String, touchInfo:TouchInfo)
 	{
 		var stack = new Array<InteractiveObject>();
 		var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -645,10 +642,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmePollTimers()
+	/** @private */ public function nmePollTimers()
 	{
 		//trace("poll");
 		Timer.nmeCheckTimers();
@@ -658,10 +652,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeRender(inSendEnterFrame:Bool)
+	/** @private */ public function nmeRender(inSendEnterFrame:Bool)
 	{
 		if (!active)
 			return;
@@ -680,10 +671,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeSetActive(inActive:Bool)
+	/** @private */ public function nmeSetActive(inActive:Bool)
 	{
 		// trace("nmeSetActive : " + inActive);
 		if (inActive != active)
@@ -700,10 +688,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void
+	/** @private */ public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void
 	{
 		nmeDragBounds = (bounds == null) ? null : bounds.clone();
 		nmeDragObject = sprite;
@@ -729,20 +714,14 @@ class Stage extends DisplayObjectContainer
 	}
 
 	
-	/**
-	 * @private
-	 */
-	public function nmeStopDrag(sprite:Sprite):Void
+	/** @private */ public function nmeStopDrag(sprite:Sprite):Void
 	{
 		nmeDragBounds = null;
 		nmeDragObject = null;
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeUpdateNextWake()
+	/** @private */ public function nmeUpdateNextWake()
 	{
 		// TODO: In a multi-stage environment, may need to handle this better...
 		var next_wake = Timer.nmeNextWake(315000000.0);
@@ -780,41 +759,41 @@ class Stage extends DisplayObjectContainer
 	
 	
 	
-	private function nmeGetAlign():StageAlign
+	/** @private */ private function nmeGetAlign():StageAlign
 	{
 		var i:Int = nme_stage_get_align(nmeHandle);
 		return Type.createEnumIndex(StageAlign, i);
 	}
 	
 	
-	private function nmeSetAlign(inMode:StageAlign):StageAlign
+	/** @private */ private function nmeSetAlign(inMode:StageAlign):StageAlign
 	{
 		nme_stage_set_align(nmeHandle, Type.enumIndex(inMode));
 		return inMode;
 	}
 	
 	
-	private function nmeGetDisplayState():StageDisplayState
+	/** @private */ private function nmeGetDisplayState():StageDisplayState
 	{
 		var i:Int = nme_stage_get_display_state(nmeHandle);
 		return Type.createEnumIndex(StageDisplayState, i);
 	}
 	
 	
-	private function nmeSetDisplayState(inState:StageDisplayState):StageDisplayState
+	/** @private */ private function nmeSetDisplayState(inState:StageDisplayState):StageDisplayState
 	{
 		nme_stage_set_display_state(nmeHandle, Type.enumIndex(inState));
 		return inState;
 	}
 	
 	
-	private function nmeGetDPIScale():Float
+	/** @private */ private function nmeGetDPIScale():Float
 	{
 		return nme_stage_get_dpi_scale(nmeHandle);
 	}
 	
 	
-	private function nmeGetFocus():InteractiveObject
+	/** @private */ private function nmeGetFocus():InteractiveObject
 	{
 		var id = nme_stage_get_focus_id(nmeHandle);
 		var obj:DisplayObject = nmeFindByID(id);
@@ -822,7 +801,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeSetFocus(inObject:InteractiveObject):InteractiveObject
+	/** @private */ private function nmeSetFocus(inObject:InteractiveObject):InteractiveObject
 	{
 		if (inObject == null)
 			nme_stage_set_focus(nmeHandle, null, 0);
@@ -832,7 +811,7 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeSetFrameRate(inRate:Float):Float
+	/** @private */ private function nmeSetFrameRate(inRate:Float):Float
 	{
 		frameRate = inRate;
 		nmeFramePeriod = frameRate <= 0 ? frameRate : 1.0 / frameRate;
@@ -840,55 +819,55 @@ class Stage extends DisplayObjectContainer
 	}
 	
 	
-	private function nmeIsOpenGL():Bool
+	/** @private */ private function nmeIsOpenGL():Bool
 	{
 		return nme_stage_is_opengl(nmeHandle);
 	}
 	
 	
-	private function nmeGetQuality():StageQuality
+	/** @private */ private function nmeGetQuality():StageQuality
 	{
 		var i:Int = nme_stage_get_quality(nmeHandle);
 		return Type.createEnumIndex(StageQuality, i);
 	}
 	
 	
-	private function nmeSetQuality(inQuality:StageQuality):StageQuality
+	/** @private */ private function nmeSetQuality(inQuality:StageQuality):StageQuality
 	{
 		nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality));
 		return inQuality;
 	}
 	
 	
-	private function nmeGetScaleMode():StageScaleMode
+	/** @private */ private function nmeGetScaleMode():StageScaleMode
 	{
 		var i:Int = nme_stage_get_scale_mode(nmeHandle);
 		return Type.createEnumIndex(StageScaleMode, i);
 	}
 	
 	
-	private function nmeSetScaleMode(inMode:StageScaleMode):StageScaleMode
+	/** @private */ private function nmeSetScaleMode(inMode:StageScaleMode):StageScaleMode
 	{
 		nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode));
 		return inMode;
 	}
 	
 	
-	private function nmeGetStageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
-	private function nmeSetStageFocusRect(inVal:Bool):Bool
+	/** @private */ private function nmeGetStageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
+	/** @private */ private function nmeSetStageFocusRect(inVal:Bool):Bool
 	{
 		nme_stage_set_focus_rect(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetStageHeight():Int
+	/** @private */ private function nmeGetStageHeight():Int
 	{
 		return nme_stage_get_stage_height(nmeHandle);
 	}
 	
 	
-	function nmeGetStageWidth():Int
+	/** @private */ private function nmeGetStageWidth():Int
 	{
 		return nme_stage_get_stage_width(nmeHandle);
 	}

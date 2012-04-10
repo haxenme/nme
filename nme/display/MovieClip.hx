@@ -10,8 +10,8 @@ class MovieClip extends Sprite
 	public var framesLoaded(nmeGetTotalFrames, null):Int;
 	public var totalFrames(nmeGetTotalFrames, null):Int;
 	
-	private var mCurrentFrame:Int;
-	private var mTotalFrames:Int;
+	/** @private */ private var mCurrentFrame:Int;
+	/** @private */ private var mTotalFrames:Int;
 	
 
 	public function new()
@@ -34,7 +34,7 @@ class MovieClip extends Sprite
 	}
 	
 	
-	override function nmeGetType()
+	/** @private */ override function nmeGetType()
 	{
 		return "MovieClip";
 	}
@@ -57,8 +57,8 @@ class MovieClip extends Sprite
 	
 	
 	
-	private function nmeGetCurrentFrame() { return mCurrentFrame; }
-	private function nmeGetTotalFrames() { return mTotalFrames; }
+	/** @private */ private function nmeGetCurrentFrame() { return mCurrentFrame; }
+	/** @private */ private function nmeGetTotalFrames() { return mTotalFrames; }
 
 }
 

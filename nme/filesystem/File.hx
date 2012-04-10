@@ -67,14 +67,14 @@ class File
 	}
 	
 	
-	private function nmeSetNativePath(inPath:String):String
+	/** @private */ private function nmeSetNativePath(inPath:String):String
 	{
 		nativePath = inPath;
 		return nativePath;
 	}
 	
 	
-	private function nmeSetURL(inPath:String):String
+	/** @private */ private function nmeSetURL(inPath:String):String
 	{
 		if (inPath == null)
 		{

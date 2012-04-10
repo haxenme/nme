@@ -17,7 +17,7 @@ class DisplayObjectContainer extends InteractiveObject
 	public var tabChildren(nmeGetTabChildren, nmeSetTabChildren):Bool;
 	//public var textSnapshot(nmeGetTextSnapshot, null):TextSnapshot; // not implemented
 	
-	private var nmeChildren:Array<DisplayObject>;
+	/** @private */ private var nmeChildren:Array<DisplayObject>;
 	
 	
 	public function new(inHandle:Dynamic, inType:String)
@@ -99,7 +99,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	private inline function nmeAddChild (child:DisplayObject):Void
+	/** @private */ private inline function nmeAddChild (child:DisplayObject):Void
 	{
 		if (child == this)
 		{	
@@ -119,7 +119,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	override public function nmeBroadcast(inEvt:Event)
+	/** @private */ override public function nmeBroadcast(inEvt:Event)
 	{	
 		var i = 0;
 		
@@ -144,7 +144,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	override function nmeFindByID(inID:Int):DisplayObject
+	/** @private */ override function nmeFindByID(inID:Int):DisplayObject
 	{	
 		if (nmeID == inID)
 			return this;
@@ -161,7 +161,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	private function nmeGetChildIndex(child:DisplayObject):Int
+	/** @private */ private function nmeGetChildIndex(child:DisplayObject):Int
 	{
 		for (i in 0...nmeChildren.length)
 			if (nmeChildren[i] == child)
@@ -170,7 +170,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	public override function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
+	/** @private */ public override function nmeGetObjectsUnderPoint(point:Point, result:Array<DisplayObject>)
 	{	
 		super.nmeGetObjectsUnderPoint(point, result);
 		
@@ -179,7 +179,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	override function nmeOnAdded(inObj:DisplayObject, inIsOnStage:Bool)
+	/** @private */ override function nmeOnAdded(inObj:DisplayObject, inIsOnStage:Bool)
 	{	
 		super.nmeOnAdded(inObj, inIsOnStage);
 		
@@ -188,7 +188,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	override function nmeOnRemoved(inObj:DisplayObject, inWasOnStage:Bool)
+	/** @private */ override function nmeOnRemoved(inObj:DisplayObject, inWasOnStage:Bool)
 	{	
 		super.nmeOnRemoved(inObj, inWasOnStage);
 		
@@ -197,10 +197,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	/**
-	 * @private
-	 */
-	public function nmeRemoveChildFromArray(child:DisplayObject)
+	/** @private */ public function nmeRemoveChildFromArray(child:DisplayObject)
 	{
 		var i = nmeGetChildIndex(child);
 		
@@ -212,7 +209,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	private inline function nmeSetChildIndex(child:DisplayObject, index:Int):Void
+	/** @private */ private inline function nmeSetChildIndex(child:DisplayObject, index:Int):Void
 	{
 		if (index > nmeChildren.length)
 			throw "Invalid index position " + index;
@@ -275,7 +272,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 	
 	
-	private inline function nmeSwapChildrenAt(index1:Int, index2:Int):Void
+	/** @private */ private inline function nmeSwapChildrenAt(index1:Int, index2:Int):Void
 	{
 		if (index1 < 0 || index2 < 0 || index1 > nmeChildren.length || index2 > nmeChildren.length)
 			throw new RangeError ("swapChildrenAt : index out of bounds");
@@ -344,17 +341,17 @@ class DisplayObjectContainer extends InteractiveObject
 	
 	
 	
-	private function nmeGetMouseChildren():Bool { return nme_doc_get_mouse_children(nmeHandle); }
-	private function nmeSetMouseChildren(inVal:Bool):Bool
+	/** @private */ private function nmeGetMouseChildren():Bool { return nme_doc_get_mouse_children(nmeHandle); }
+	/** @private */ private function nmeSetMouseChildren(inVal:Bool):Bool
 	{
 		nme_doc_set_mouse_children(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetNumChildren():Int { return nmeChildren.length; }
-	private function nmeGetTabChildren() { return false; }
-	private function nmeSetTabChildren(inValue:Bool) { return false; }
+	/** @private */ private function nmeGetNumChildren():Int { return nmeChildren.length; }
+	/** @private */ private function nmeGetTabChildren() { return false; }
+	/** @private */ private function nmeSetTabChildren(inValue:Bool) { return false; }
 	
 	
 	

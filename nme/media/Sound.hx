@@ -18,8 +18,8 @@ class Sound extends EventDispatcher
 	public var length(nmeGetLength, null):Float;
 	public var url(default, null):String;
 
-	private var nmeHandle:Dynamic;
-	private var nmeLoading:Bool;
+	/** @private */ private var nmeHandle:Dynamic;
+	/** @private */ private var nmeLoading:Bool;
 	
 	
 	public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false)
@@ -59,7 +59,7 @@ class Sound extends EventDispatcher
 	}
 	
 	
-	private function nmeCheckLoading()
+	/** @private */ private function nmeCheckLoading()
 	{
 		if (nmeLoading && nmeHandle != null)
 		{
@@ -77,7 +77,7 @@ class Sound extends EventDispatcher
 	}
 	
 	
-	private function nmeOnError(msg:String):Void
+	/** @private */ private function nmeOnError(msg:String):Void
 	{
 		dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
 		nmeHandle = null;
@@ -101,7 +101,7 @@ class Sound extends EventDispatcher
 	
 	
 	
-	private function nmeGetID3():ID3Info
+	/** @private */ private function nmeGetID3():ID3Info
 	{
 		nmeCheckLoading();
 		if (nmeHandle == null || nmeLoading)
@@ -112,14 +112,14 @@ class Sound extends EventDispatcher
 	}
 	
 	
-	private function nmeGetIsBuffering():Bool
+	/** @private */ private function nmeGetIsBuffering():Bool
 	{
 		nmeCheckLoading();
 		return (nmeLoading && nmeHandle == null);
 	}
 	
 	
-	private function nmeGetLength():Float
+	/** @private */ private function nmeGetLength():Float
 	{
 		if (nmeHandle == null || nmeLoading)
 			return 0;

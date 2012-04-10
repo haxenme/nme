@@ -35,8 +35,8 @@ class SharedObject extends EventDispatcher
 	
 	public var data(default, null):Dynamic;
 	
-	private var localPath:String;
-	private var name:String;
+	/** @private */ private var localPath:String;
+	/** @private */ private var name:String;
 	
 	
 	private function new(name:String, localPath:String, data:Dynamic)

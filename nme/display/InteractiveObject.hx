@@ -13,7 +13,7 @@ class InteractiveObject extends DisplayObject
 	public var moveForSoftKeyboard(nmeGetMoveForSoftKeyboard, nmeSetMoveForSoftKeyboard):Bool;
 	public var needsSoftKeyboard(nmeGetNeedsSoftKeyboard, nmeSetNeedsSoftKeyboard):Bool;
 	
-	private var nmeMouseEnabled:Bool;
+	/** @private */ private var nmeMouseEnabled:Bool;
 	
 	
 	public function new(inHandle:Dynamic, inType:String)
@@ -25,7 +25,7 @@ class InteractiveObject extends DisplayObject
 	}
 	
 	
-	override private function nmeAsInteractiveObject():InteractiveObject
+	/** @private */ override private function nmeAsInteractiveObject():InteractiveObject
 	{	
 		return this;	
 	}
@@ -42,8 +42,8 @@ class InteractiveObject extends DisplayObject
 	
 	
 	
-	private function nmeGetMouseEnabled():Bool { return nmeMouseEnabled; }
-	private function nmeSetMouseEnabled(inVal:Bool):Bool
+	/** @private */ private function nmeGetMouseEnabled():Bool { return nmeMouseEnabled; }
+	/** @private */ private function nmeSetMouseEnabled(inVal:Bool):Bool
 	{	
 		nmeMouseEnabled = inVal;
 		nme_display_object_set_mouse_enabled(nmeHandle, inVal);
@@ -51,27 +51,27 @@ class InteractiveObject extends DisplayObject
 	}
 	
 	
-	private function nmeSetMoveForSoftKeyboard(inVal:Bool):Bool
+	/** @private */ private function nmeSetMoveForSoftKeyboard(inVal:Bool):Bool
 	{	
 		nme_display_object_set_moves_for_soft_keyboard(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetMoveForSoftKeyboard():Bool
+	/** @private */ private function nmeGetMoveForSoftKeyboard():Bool
 	{	
 		return nme_display_object_get_moves_for_soft_keyboard(nmeHandle);
 	}
 	
 	
-	private function nmeSetNeedsSoftKeyboard(inVal):Bool
+	/** @private */ private function nmeSetNeedsSoftKeyboard(inVal):Bool
 	{	
 		nme_display_object_set_needs_soft_keyboard(nmeHandle, inVal);
 		return inVal;
 	}
 	
 	
-	private function nmeGetNeedsSoftKeyboard():Bool
+	/** @private */ private function nmeGetNeedsSoftKeyboard():Bool
 	{	
 		return nme_display_object_get_needs_soft_keyboard(nmeHandle);	
 	}

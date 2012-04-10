@@ -15,8 +15,8 @@ class Timer extends EventDispatcher
 	public var repeatCount:Int;
 	public var running:Bool;
 	
-	private var _delay:Float;
-	private var timer:haxe.Timer;
+	/** @private */ private var _delay:Float;
+	/** @private */ private var timer:haxe.Timer;
 	
 	
 	public function new(delay:Float, repeatCount:Int = 0)
@@ -74,13 +74,13 @@ class Timer extends EventDispatcher
 	
 	
 	
-	private function nmeGetDelay():Float
+	/** @private */ private function nmeGetDelay():Float
 	{
 		return _delay;
 	}
 	
 	
-	private function nmeSetDelay(value:Float):Float
+	/** @private */ private function nmeSetDelay(value:Float):Float
 	{
 		_delay = value;
 		
@@ -99,7 +99,7 @@ class Timer extends EventDispatcher
 	
 	
 	
-	private function timer_onTimer ():Void
+	/** @private */ private function timer_onTimer ():Void
 	{
 		currentCount ++;
 		

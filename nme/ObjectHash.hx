@@ -11,15 +11,15 @@ class ObjectHash <T> {
 	
 	#if flash
 	
-	private var dictionary:TypedDictionary <Dynamic, T>;
+	/** @private */ private var dictionary:TypedDictionary <Dynamic, T>;
 	
 	#else
 	
-	private var hash:IntHash <T>;
+	/** @private */ private var hash:IntHash <T>;
 	
 	#end
 	
-	private static var nextObjectID:Int = 0;
+	/** @private */ private static var nextObjectID:Int = 0;
 	
 	
 	public function new () {
@@ -67,7 +67,7 @@ class ObjectHash <T> {
 	}
 	
 	
-	private inline function getID (key:Dynamic):Int {
+	/** @private */ private inline function getID (key:Dynamic):Int {
 		
 		#if cpp
 		

@@ -19,30 +19,24 @@ class Tilesheet
 	public static inline var TILE_BLEND_NORMAL   = 0x00000000;
 	public static inline var TILE_BLEND_ADD      = 0x00010000;
 	
-	/**
-	 * @private
-	 */
-	public var nmeBitmap:BitmapData;
+	/** @private */ public var nmeBitmap:BitmapData;
 	
 	#if (cpp || neko)
 	
-	/**
-	 * @private
-	 */
-	public var nmeHandle:Dynamic;
+	/** @private */ public var nmeHandle:Dynamic;
 	
 	#else
 	
-	static private var defaultRatio:Point = new Point(0, 0);
-	private var bitmapHeight:Int;
-	private var bitmapWidth:Int;
-	private var tilePoints:Array<Point>;
-	private var tiles:Array<Rectangle>;
-	private var tileUVs:Array<Rectangle>;
-	private var _ids:Vector<Int>;
-	private var _vertices:Vector<Float>;
-	private var _indices:Vector<Int>;
-	private var _uvs:Vector<Float>;
+	/** @private */ static private var defaultRatio:Point = new Point(0, 0);
+	/** @private */ private var bitmapHeight:Int;
+	/** @private */ private var bitmapWidth:Int;
+	/** @private */ private var tilePoints:Array<Point>;
+	/** @private */ private var tiles:Array<Rectangle>;
+	/** @private */ private var tileUVs:Array<Rectangle>;
+	/** @private */ private var _ids:Vector<Int>;
+	/** @private */ private var _vertices:Vector<Float>;
+	/** @private */ private var _indices:Vector<Int>;
+	/** @private */ private var _uvs:Vector<Float>;
 
 	#end
 	
@@ -91,7 +85,7 @@ class Tilesheet
 	
 	#if (!cpp && !neko)
 	
-	private function adjustIDs(vec:Vector<Int>, len:UInt)
+	/** @private */ private function adjustIDs(vec:Vector<Int>, len:UInt)
 	{
 		if (vec.length != len)
 		{
@@ -106,7 +100,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustIndices(vec:Vector<Int>, len:UInt)
+	/** @private */ private function adjustIndices(vec:Vector<Int>, len:UInt)
 	{
 		if (vec.length != len)
 		{
@@ -137,7 +131,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustLen(vec:Vector<Float>, len:UInt)
+	/** @private */ private function adjustLen(vec:Vector<Float>, len:UInt)
 	{
 		if (vec.length != len)
 		{

@@ -18,7 +18,7 @@ class Accelerometer extends EventDispatcher
 	
 	private static var defaultInterval:Int = 34;
 	
-	private var timer:Timer;
+	/** @private */ private var timer:Timer;
 	
 	
 	public function new()
@@ -61,7 +61,7 @@ class Accelerometer extends EventDispatcher
 	}
 	
 	
-	private function update():Void
+	/** @private */ private function update():Void
 	{
 		var event = new AccelerometerEvent(AccelerometerEvent.UPDATE);
 		
@@ -81,7 +81,7 @@ class Accelerometer extends EventDispatcher
 	
 	
 	
-	private static function nmeGetIsSupported():Bool { return nme_input_get_acceleration() != null; }
+	/** @private */ private static function nmeGetIsSupported():Bool { return nme_input_get_acceleration() != null; }
 	
 	
 	
