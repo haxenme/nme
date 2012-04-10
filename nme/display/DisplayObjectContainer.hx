@@ -175,7 +175,7 @@ class DisplayObjectContainer extends InteractiveObject
 		super.nmeGetObjectsUnderPoint(point, result);
 		
 		for (child in nmeChildren)
-			nmeGetObjectsUnderPoint(point, result);
+			child.nmeGetObjectsUnderPoint(point, result);
 	}
 	
 	
