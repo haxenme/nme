@@ -66,22 +66,11 @@ class HTML5Installer extends InstallerBase {
 		var destination:String = buildDirectory + "/html5/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
-		
-		/*for (ndll in ndlls) {
-			
-			copyIfNewer (ndll.getSourcePath ("webOS", ndll.name + ".so"), destination + ndll.name + ".so" );
-			
-		}*/
-		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
-			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
+			
+				mkdir (Path.directory (destination + asset.targetPath));
 				
 				if (asset.type != Asset.TYPE_FONT) {
 					
@@ -95,8 +84,20 @@ class HTML5Installer extends InstallerBase {
 					
 				}
 				
-			} else {
+			}
+			
+		}
+		
+		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
+		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
+		
+		for (asset in assets) {
+						
+			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
+				mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}
