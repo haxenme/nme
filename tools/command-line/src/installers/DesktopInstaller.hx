@@ -294,6 +294,12 @@ class DesktopInstaller extends InstallerBase {
 			
 			copyIfNewer (ndllPath, getExeDir () + ndll.name + extension);
 			
+			if (InstallTool.isMac) {
+				
+				runCommand (getExeDir (), "install_name_tool", [ "-id", "@executable_path/" + ndll.name + extension, ndll.name + extension ]);
+				
+			}
+			
 		}
 		
 		var content_dir = getContentDir ();
