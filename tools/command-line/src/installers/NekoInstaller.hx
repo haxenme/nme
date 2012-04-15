@@ -72,13 +72,4 @@ class NekoInstaller extends DesktopInstaller {
 	}
 	
 	
-	override function update ():Void {
-		
-		recursiveCopy (NME + "/tools/command-line/neko/haxe", targetDir + "/haxe");
-		
-		super.update ();
-		
-	}
-	
-	
 }
