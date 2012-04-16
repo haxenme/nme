@@ -71,10 +71,11 @@ if [ $RESP = "y" ]; then
 	if [ `uname -m` = 'x86_64' ]; then
 		
 		# Need to recompile haxelib for 64-bit
-		
+
 		haxe /usr/lib/haxe/std/tools/haxelib/haxelib.hxml
 		sudo cp haxelib /usr/lib/haxe/haxelib
 		rm index.n
+		rm haxelib.n
 		rm haxelib
 		
 	fi
