@@ -1,8 +1,10 @@
 #!/bin/sh
 
 
-# I apologize in advance that this is configured for Ubuntu
-# We will add better support for other distributions in the future
+# I apologize that this is designed only for Ubuntu
+
+# Please feel free to help if you're interested in extending
+# it for more Linux distributions
 
 
 read -p "Do you wish to install Haxe and Neko? (y/n) " RESP
@@ -10,21 +12,41 @@ read -p "Do you wish to install Haxe and Neko? (y/n) " RESP
 if [ $RESP = "y" ]; then
 	
 	
-	sudo apt-get remove haxe
-	
-
-	# If you are running 64-bit, you'll need 32-bit support
-	
+	echo ""
 	echo "-----------------------------------"
-	echo " Installing IA32 libraries"
-	echo "-----------------------------------"	
+	echo " Removing Haxe (if installed)"
+	echo "-----------------------------------"
+
+	sudo apt-get remove haxe
+
 	
-	sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
+	if [ `uname -m` = "x86_64" ]; then
+		
+		
+		echo ""
+		echo "-----------------------------------"
+		echo " Installing IA32 libraries"
+		echo "-----------------------------------"	
 	
+		sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
+		
+		# The Haxe installer will download a 32-bit version of neko
+
+		echo ""
+		echo "-----------------------------------"
+		echo " Downloading 64-bit Neko"
+		echo "-----------------------------------"	
+	
+		wget http://www.haxenme.org/files/5613/3460/7773/neko-1.8.2-linux.tar.gz
+		
+		
+	fi
+
 	
 	# The version of Haxe in the package manager is probably
 	# out-of-date. Download the latest version from haxe.org
 	
+	echo ""
 	echo "-----------------------------------"
 	echo " Downloading the Haxe installer"
 	echo "-----------------------------------"	
@@ -36,6 +58,7 @@ if [ $RESP = "y" ]; then
 
 	tar xvzf hxinst-linux.tgz
 
+	echo ""
 	echo "-----------------------------------"
 	echo " Running the Haxe installer"
 	echo "-----------------------------------"	
@@ -43,28 +66,19 @@ if [ $RESP = "y" ]; then
 	sudo ./hxinst-linux
 	rm hxinst-linux
 	rm hxinst-linux.tgz
-
-	# The installed version of Neko is 32-bit, and we may be on
-	# a 64-bit system, so we'll re-install it using the package
-	# manager
-
 	
-	echo "-----------------------------------"
-	echo " Re-installing Neko (64-bit support)"
-	echo "-----------------------------------"
 	
-	sudo apt-get remove neko
-	sudo apt-get install neko
-
-	# Need to recompile haxelib 
-
-	haxe /usr/lib/haxe/std/tools/haxelib/haxelib.hxml
-	sudo cp haxelib.n /usr/lib/haxe/haxelib.n
-	rm index.n
-	rm haxelib
-	rm haxelib.n
-	sudo nekotools boot /usr/lib/haxe/haxelib.n
-
+	if [ `uname -m` = 'x86_64' ]; then
+		
+		# Need to recompile haxelib for 64-bit
+		
+		haxe /usr/lib/haxe/std/tools/haxelib/haxelib.hxml
+		sudo cp haxelib /usr/lib/haxe/haxelib
+		rm index.n
+		rm haxelib
+		
+	fi
+	
 	# Setup haxelib
 	
 	sudo haxelib setup /usr/lib/haxe/lib
@@ -72,6 +86,7 @@ if [ $RESP = "y" ]; then
 fi
 
 
+echo ""
 echo "-----------------------------------"
 echo " Installing HXCPP and Jeash"
 echo "-----------------------------------"
@@ -80,13 +95,15 @@ echo "-----------------------------------"
 
 #haxelib install hxcpp
 
-wget http://www.haxenme.org/files/1613/3237/4766/hxcpp-2.08.3.zip
-haxelib test hxcpp-2.08.3.zip
-rm hxcpp-2.08.3.zip
+#wget http://www.haxenme.org/files/1613/3237/4766/hxcpp-2.08.3.zip
+#haxelib test hxcpp-2.08.3.zip
+#rm hxcpp-2.08.3.zip
 
+haxelib install hxcpp
 haxelib install jeash
 
 
+echo ""
 echo "-----------------------------------"
 echo " Installing NME 3.3.0"
 echo "-----------------------------------"
@@ -100,10 +117,15 @@ haxelib install nme
 sudo haxelib run nme setup
 
 
+echo ""
 echo "-----------------------------------"
 echo " Installing additional libraries"
 echo "-----------------------------------"
 
 haxelib install actuate
 haxelib install swf
+
+
+echo ""
+
 
