@@ -14,63 +14,115 @@ if [ $RESP = "y" ]; then
 	
 	echo ""
 	echo "-----------------------------------"
-	echo " Removing Haxe (if installed)"
+	echo "    Removing Haxe (if installed)"
 	echo "-----------------------------------"
 
-	sudo apt-get remove haxe
-
+	sudo apt-get remove haxe neko
+	
 	
 	if [ `uname -m` = "x86_64" ]; then
 		
 		
-		echo ""
-		echo "-----------------------------------"
-		echo " Installing IA32 libraries"
-		echo "-----------------------------------"	
+		#echo ""
+		#echo "-----------------------------------"
+		#echo "    Installing IA32 libraries"
+		#echo "-----------------------------------"	
 	
-		sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
+		#sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
 		
-		# The Haxe installer will download a 32-bit version of neko
-
+		
 		echo ""
 		echo "-----------------------------------"
-		echo " Downloading 64-bit Neko"
+		echo "    Downloading Neko (64-bit)"
 		echo "-----------------------------------"	
 	
-		wget http://www.haxenme.org/files/5613/3460/7773/neko-1.8.2-linux.tar.gz
+		wget -c http://www.haxenme.org/files/9313/3468/1422/neko-1.8.2-linux.tar.gz
+		
+		
+	else
+		
+		
+		echo ""
+		echo "-----------------------------------"
+		echo "    Downloading Neko (32-bit)"
+		echo "-----------------------------------"	
+		
+		wget -c http://nekovm.org/_media/neko-1.8.2-linux.tar.gz
 		
 		
 	fi
-
 	
-	# The version of Haxe in the package manager is probably
-	# out-of-date. Download the latest version from haxe.org
 	
 	echo ""
 	echo "-----------------------------------"
-	echo " Downloading the Haxe installer"
-	echo "-----------------------------------"	
+	echo "    Installing Neko"
+	echo "-----------------------------------"
 	
-	wget http://haxe.org/file/hxinst-linux.tgz
-
-	# Extract and run the Haxe installer, then clean up
-	# afterwards
-
-	tar xvzf hxinst-linux.tgz
-
+	
+	# Extract and copy files to /usr/lib/neko
+	
+	tar xvzf neko-1.8.2-linux.tar.gz
+	sudo mkdir -p /usr/lib/neko
+	sudo cp -r neko-1.8.2-linux/* /usr/lib/neko
+	
+	
+	# Add symlinks
+	
+	sudo rm -rf /usr/bin/neko
+	sudo rm -rf /usr/bin/nekoc
+	sudo rm -rf /usr/bin/nekotools
+	sudo rm -rf /usr/lib/libneko.so
+	
+	sudo ln -s /usr/lib/neko/neko /usr/bin/neko
+	sudo ln -s /usr/lib/neko/nekoc /usr/bin/nekoc
+	sudo ln -s /usr/lib/neko/nekotools /usr/bin/nekotools
+	sudo ln -s /usr/lib/neko/libneko.so /usr/lib/libneko.so
+	
+	
+	# Cleanup
+	
+	rm -r neko-1.8.2-linux
+	rm neko-1.8.2-linux.tar.gz
+	
+	
+	
 	echo ""
 	echo "-----------------------------------"
-	echo " Running the Haxe installer"
+	echo "    Downloading Haxe"
 	echo "-----------------------------------"	
-
-	sudo ./hxinst-linux
-	rm hxinst-linux
-	rm hxinst-linux.tgz
+	
+	wget -c http://haxe.org/file/haxe-2.09-linux.tar.gz
+	
+	
+	
+	echo ""
+	echo "-----------------------------------"
+	echo "    Installing Haxe"
+	echo "-----------------------------------"
+	
+	
+	# Extract and copy files to /usr/lib/haxe
+	
+	tar xvzf haxe-2.09-linux.tar.gz
+	sudo mkdir -p /usr/lib/haxe
+	sudo cp -r haxe-2.09-linux/* /usr/lib/haxe
+	
+	
+	# Add symlinks
+	
+	sudo rm -rf /usr/bin/haxe
+	sudo rm -rf /usr/bin/haxelib
+	sudo rm -rf /usr/bin/haxedoc
+	
+	sudo ln -s /usr/lib/haxe/haxe /usr/bin/haxe
+	sudo ln -s /usr/lib/haxe/haxelib /usr/bin/haxelib
+	sudo ln -s /usr/lib/haxe/haxedoc /usr/bin/haxedoc
 	
 	
 	if [ `uname -m` = 'x86_64' ]; then
 		
-		# Need to recompile haxelib for 64-bit
+		
+		# Need to recompile haxelib for 64-bit Neko
 
 		haxe /usr/lib/haxe/std/tools/haxelib/haxelib.hxml
 		sudo cp haxelib /usr/lib/haxe/haxelib
@@ -78,18 +130,37 @@ if [ $RESP = "y" ]; then
 		rm haxelib.n
 		rm haxelib
 		
+		
+		# Need to recompile haxedoc for 64-bit Neko
+		
+		haxe /usr/lib/haxe/std/tools/haxedoc/haxedoc.hxml
+		sudo cp haxedoc /usr/lib/haxe/haxedoc
+		rm haxedoc.n
+		rm haxedoc
+		
+		
 	fi
 	
-	# Setup haxelib
 	
+	# Set up haxelib
+	
+	sudo mkdir -p /usr/lib/haxe/lib
+	sudo chmod -R 777 /usr/lib/haxe/lib/*
 	sudo haxelib setup /usr/lib/haxe/lib
-
+	
+	
+	# Cleanup
+	
+	rm -r haxe-2.09-linux
+	rm haxe-2.09-linux.tar.gz
+	
+	
 fi
 
 
 echo ""
 echo "-----------------------------------"
-echo " Installing HXCPP and Jeash"
+echo "    Installing HXCPP and Jeash"
 echo "-----------------------------------"
 
 # Download dependencies using haxelib
@@ -106,7 +177,7 @@ haxelib install jeash
 
 echo ""
 echo "-----------------------------------"
-echo " Installing NME 3.3.0"
+echo "    Installing NME 3.3.0"
 echo "-----------------------------------"
 
 # Download and install NME
@@ -120,7 +191,7 @@ sudo haxelib run nme setup
 
 echo ""
 echo "-----------------------------------"
-echo " Installing additional libraries"
+echo "    Installing additional libraries"
 echo "-----------------------------------"
 
 haxelib install actuate
@@ -128,5 +199,3 @@ haxelib install swf
 
 
 echo ""
-
-
