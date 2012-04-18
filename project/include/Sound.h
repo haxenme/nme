@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Object.h"
+#include "ByteArray.h"
 
 namespace nme
 {
@@ -18,12 +19,18 @@ struct SoundTransform
 class SoundChannel : public Object
 {
 public:
+   static SoundChannel *Create(const ByteArray &inBytes,const SoundTransform &inTransform);
+
    virtual bool isComplete() = 0;
    virtual double getLeft() = 0;
    virtual double getRight() = 0;
    virtual double getPosition() = 0;
    virtual void stop() = 0;
    virtual void setTransform(const SoundTransform &inTransform) = 0;
+
+   virtual double getDataPosition() { return 0.0; }
+   virtual bool needsData() { return false; }
+   virtual void addData(const ByteArray &inBytes) { }
 };
 
 

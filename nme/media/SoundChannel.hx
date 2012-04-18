@@ -4,6 +4,7 @@ package nme.media;
 
 import nme.events.Event;
 import nme.events.EventDispatcher;
+import nme.events.SampleDataEvent;
 import nme.Loader;
 
 
@@ -19,6 +20,7 @@ class SoundChannel extends EventDispatcher
 	
 	/** @private */ private var nmeHandle:Dynamic;
 	/** @private */ private var nmeTransform:SoundTransform;
+	/** @private */ public var nmeDataProvider:EventDispatcher;
 	
 	
 	public function new (inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform)
@@ -41,13 +43,24 @@ class SoundChannel extends EventDispatcher
 	
 	/** @private */ private function nmeCheckComplete():Bool
 	{
-		if (nmeHandle != null && nme_sound_channel_is_complete(nmeHandle))
+		if (nmeHandle != null )
 		{
-			nmeHandle = null;
-			var complete = new Event(Event.SOUND_COMPLETE);
-			dispatchEvent(complete);
-			
-			return true;
+         if (nmeDataProvider!=null && nme_sound_channel_needs_data(nmeHandle))
+         {
+            var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
+            request.position = nme_sound_channel_get_data_position(nmeHandle);
+            dispatchEvent(request);
+            if (request.data.length > 0)
+               nme_sound_channel_add_data(nmeHandle,request.data);
+         }
+
+         if (nme_sound_channel_is_complete(nmeHandle))
+         {
+			   nmeHandle = null;
+			   var complete = new Event(Event.SOUND_COMPLETE);
+			   dispatchEvent(complete);
+			   return true;
+         }
 		}
 		
 		return false;
@@ -124,9 +137,12 @@ class SoundChannel extends EventDispatcher
 	private static var nme_sound_channel_get_left = Loader.load ("nme_sound_channel_get_left", 1);
 	private static var nme_sound_channel_get_right = Loader.load ("nme_sound_channel_get_right", 1);
 	private static var nme_sound_channel_get_position = Loader.load ("nme_sound_channel_get_position", 1);
+	private static var nme_sound_channel_get_data_position = Loader.load ("nme_sound_channel_get_data_position", 1);
 	private static var nme_sound_channel_stop = Loader.load ("nme_sound_channel_stop", 1);
 	private static var nme_sound_channel_create = Loader.load ("nme_sound_channel_create", 4);
 	private static var nme_sound_channel_set_transform = Loader.load ("nme_sound_channel_set_transform", 2);
+	private static var nme_sound_channel_needs_data = Loader.load ("nme_sound_channel_needs_data", 1);
+	private static var nme_sound_channel_add_data = Loader.load ("nme_sound_channel_add_data", 2);
 
 }
 

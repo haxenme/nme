@@ -3259,6 +3259,8 @@ value nme_sound_get_status(value inSound)
 }
 DEFINE_PRIM(nme_sound_get_status,1);
  
+// --- SoundChannel --------------------------------------------------------
+
 value nme_sound_channel_is_complete(value inChannel)
 {
    SoundChannel *channel;
@@ -3344,6 +3346,62 @@ value nme_sound_channel_create(value inSound, value inStart, value inLoops, valu
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_channel_create,4);
+
+// --- dynamic sound ---
+
+
+value nme_sound_channel_needs_data(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_bool(channel->needsData());
+   }
+   return alloc_bool(false);
+}
+DEFINE_PRIM(nme_sound_channel_needs_data,1);
+
+
+value nme_sound_channel_add_data(value inChannel, value inBytes)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      channel->addData(ByteArray(inBytes));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_add_data,2);
+
+
+value nme_sound_channel_get_data_position(value inChannel)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      return alloc_float(channel->getDataPosition());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_get_data_position,1);
+
+
+
+value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
+{
+   ByteArray bytes(inBytes);
+   SoundTransform trans;
+   FromValue(trans,inTransform);
+   SoundChannel *channel = SoundChannel::Create(bytes,trans);
+   if (channel)
+   {
+      value result = ObjectToAbstract(channel);
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_create_dynamic,2);
+
 
 // --- Tilesheet -----------------------------------------------
 

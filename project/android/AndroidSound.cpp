@@ -71,6 +71,10 @@ public:
 	int mStreamID;
 };
 
+SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+{
+   return 0;
+}
 
 
 class AndroidMusicChannel : public SoundChannel

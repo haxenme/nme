@@ -92,9 +92,36 @@ public:
          // Mix_SetPanning
       }
    }
+
+   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
+   {
+      mChunk = 0;
+      mSound = 0;
+      mChannel = -1;
+
+      // Allocate myself a channel
+      for(int i=0;i<sMaxChannels;i++)
+         if (!sUsedChannel[i])
+         {
+            IncRef();
+            sDoneChannel[i] = false;
+            sUsedChannel[i] = true;
+            mChannel = i;
+            break;
+         }
+
+      if (mChannel>=0)
+      {
+         //Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
+         //Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+         // Mix_SetPanning
+      }
+   }
+ 
    ~SDLSoundChannel()
    {
-      mSound->DecRef();
+      if (mSound)
+         mSound->DecRef();
    }
 
    void CheckDone()
@@ -133,6 +160,10 @@ public:
    int       mChannel;
 };
 
+SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+{
+   return new SDLSoundChannel(inBytes,inTransform);
+}
 
 
 

@@ -251,6 +251,13 @@ public:
     
 };
 
+
+SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+{
+   return 0;
+}
+
+
 class AVAudioPlayerSound : public Sound
 {
 public:

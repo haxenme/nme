@@ -2,8 +2,10 @@ package nme.media;
 #if (cpp || neko)
 
 
+import nme.events.IEventDispatcher;
 import nme.events.EventDispatcher;
 import nme.events.IOErrorEvent;
+import nme.events.SampleDataEvent;
 import nme.net.URLRequest;
 import nme.Loader;
 
@@ -20,6 +22,7 @@ class Sound extends EventDispatcher
 
 	/** @private */ private var nmeHandle:Dynamic;
 	/** @private */ private var nmeLoading:Bool;
+	/** @private */ private var nmeDynamicSound:Bool;
 	
 	
 	public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false)
@@ -27,9 +30,22 @@ class Sound extends EventDispatcher
 		super();
 		bytesLoaded = bytesTotal = 0;
 		nmeLoading = false;
+      nmeDynamicSound = false;
 		if (stream != null)
 			load(stream, context, forcePlayAsMusic);
 	}
+
+   override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void
+   {
+      super.addEventListener(type,listener,useCapture,priority,useWeakReference);
+      if (type==SampleDataEvent.SAMPLE_DATA)
+      {
+         if (nmeHandle!=null)
+            throw "Can't use dynamic sound once file loaded";
+         nmeDynamicSound = true;
+      }
+   }
+
 	
 	
 	public function close()
@@ -61,7 +77,7 @@ class Sound extends EventDispatcher
 	
 	/** @private */ private function nmeCheckLoading()
 	{
-		if (nmeLoading && nmeHandle != null)
+		if (!nmeDynamicSound && nmeLoading && nmeHandle != null)
 		{
 			var status:Dynamic = nme_sound_get_status(nmeHandle);
 			if (status == null)
@@ -88,11 +104,25 @@ class Sound extends EventDispatcher
 	public function play(startTime:Float = 0, loops:Int = 0, ?sndTransform:SoundTransform):SoundChannel
 	{
 		nmeCheckLoading();
+      if (nmeDynamicSound)
+      {
+         var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
+         dispatchEvent(request);
+         if (request.data.length > 0)
+            nmeHandle = nme_sound_channel_create_dynamic(request.data,sndTransform);
+      }
+
 		if (nmeHandle == null || nmeLoading)
 		{
 			return null;
 		}
-		return new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+		var channel =  new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+      if (nmeDynamicSound)
+      {
+         channel.nmeDataProvider = this;
+         nmeHandle = null;
+      }
+      return channel;
 	}
 	
 	
@@ -137,6 +167,7 @@ class Sound extends EventDispatcher
 	private static var nme_sound_get_length = Loader.load("nme_sound_get_length", 1);
 	private static var nme_sound_close = Loader.load("nme_sound_close", 1);
 	private static var nme_sound_get_status = Loader.load("nme_sound_get_status", 1);
+	private static var nme_sound_channel_create_dynamic = Loader.load("nme_sound_channel_create_dynamic", 2);
 
 }
 
