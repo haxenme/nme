@@ -113,70 +113,70 @@ class Memory
 	#else
 		
 		
-		static inline public function getByte(addr:Int):Int
+		static #if !debug inline #end public function getByte(addr:Int):Int
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			return untyped __global__.__hxcpp_memory_get_byte(addr);
 		}
 		
 		
-		static inline public function getDouble(addr:Int):Float
+		static #if !debug inline #end public function getDouble(addr:Int):Float
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			return untyped __global__.__hxcpp_memory_get_double(addr);
 		}
 		
 		
-		static inline public function getFloat(addr:Int):Float
+		static #if !debug inline #end public function getFloat(addr:Int):Float
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			return untyped __global__.__hxcpp_memory_get_float(addr);
 		}
 		
 		
-		static inline public function getI32(addr:Int):Int
+		static #if !debug inline #end public function getI32(addr:Int):Int
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			return untyped __global__.__hxcpp_memory_get_i32(addr);
 		}
 		
 		
-		static inline public function getUI16(addr:Int):Int
+		static #if !debug inline #end public function getUI16(addr:Int):Int
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			return untyped __global__.__hxcpp_memory_get_ui16(addr);
 		}
 		
 		
-		static inline public function setByte(addr:Int, v:Int):Void
+		static #if !debug inline #end public function setByte(addr:Int, v:Int):Void
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			untyped __global__.__hxcpp_memory_set_byte(addr, v);
 		}
 		
 		
-		static inline public function setDouble(addr:Int, v:Float):Void
+		static #if !debug inline #end public function setDouble(addr:Int, v:Float):Void
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			untyped __global__.__hxcpp_memory_set_double(addr, v);
 		}
 		
 		
-		static inline public function setFloat(addr:Int, v:Float):Void
+		static #if !debug inline #end public function setFloat(addr:Int, v:Float):Void
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			untyped __global__.__hxcpp_memory_set_float(addr, v);
 		}
 		
 		
-		static inline public function setI16(addr:Int, v:Int):Void
+		static #if !debug inline #end public function setI16(addr:Int, v:Int):Void
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			untyped __global__.__hxcpp_memory_set_i16(addr, v);
 		}
 		
 		
-		static inline public function setI32(addr:Int, v:Int):Void
+		static #if !debug inline #end public function setI32(addr:Int, v:Int):Void
 		{
 			#if debug if (addr < 0 || addr >= len) throw("Bad address"); #end
 			untyped __global__.__hxcpp_memory_set_i32(addr, v);
