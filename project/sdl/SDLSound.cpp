@@ -21,6 +21,8 @@ bool sDoneChannel[sMaxChannels];
 void *sUsedMusic = 0;
 bool sDoneMusic = false;
 
+unsigned int  sSoundPos = 0;
+
 void onChannelDone(int inChannel)
 {
    if (sUsedChannel[inChannel])
@@ -31,6 +33,11 @@ void onMusicDone()
 {
    if (sUsedMusic)
       sDoneMusic = true;
+}
+
+void  onPostMix(void *udata, Uint8 *stream, int len)
+{
+   sSoundPos += len;
 }
 
 
@@ -52,6 +59,7 @@ static bool Init()
       }
       Mix_ChannelFinished(onChannelDone);
       Mix_HookMusicFinished(onMusicDone);
+      Mix_SetPostMix(onPostMix,0);
    }
 
    return sChannelsInit;
@@ -59,13 +67,17 @@ static bool Init()
 
 // ---  Using "Mix_Chunk" API ----------------------------------------------------
 
+
 class SDLSoundChannel : public SoundChannel
 {
+  enum { BUF_SIZE = 16384 };
+
 public:
    SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
                   const SoundTransform &inTransform)
    {
       mChunk = inChunk;
+      mDynamicBuffer = 0;
       mSound = inSound;
       mSound->IncRef();
 
@@ -96,8 +108,20 @@ public:
    SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
    {
       mChunk = 0;
+      mDynamicBuffer = new short[BUF_SIZE];
+      memset(mDynamicBuffer,0,BUF_SIZE*sizeof(short));
       mSound = 0;
       mChannel = -1;
+      mDynamicChunk.allocated = 0;
+      mDynamicChunk.abuf = (Uint8 *)mDynamicBuffer;
+      mDynamicChunk.alen = BUF_SIZE;
+      mDynamicChunk.volume = MIX_MAX_VOLUME;
+	   mDynamicChunk.length_ticks = 0;
+      mDynamicFillPos = 0;
+      mDynamicStartPos = 0;
+      mDynamicDataDue = 0;
+  
+      Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
 
       // Allocate myself a channel
       for(int i=0;i<sMaxChannels;i++)
@@ -112,14 +136,49 @@ public:
 
       if (mChannel>=0)
       {
-         //Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
-         //Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
-         // Mix_SetPanning
+         FillBuffer(inBytes);
+         // Just once ...
+         if (mDynamicFillPos<2048)
+         {
+            mDynamicDone = true;
+            mDynamicChunk.alen = mDynamicFillPos;
+            Mix_PlayChannel( mChannel , &mDynamicChunk,  0 );
+         }
+         else
+         {
+            mDynamicDone = false;
+            Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 );
+            // TODO: Lock?
+            mDynamicStartPos = sSoundPos;
+         }
+
+         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+      }
+   }
+
+   void FillBuffer(const ByteArray &inBytes)
+   {
+      int floats = inBytes.Size()/sizeof(float);
+      const float *buffer = (const float *)inBytes.Bytes();
+      int pos = mDynamicFillPos & (BUF_SIZE-1);
+      mDynamicFillPos += floats;
+
+      int first = std::min( floats, BUF_SIZE-pos );
+      for(int i=0;i<first;i++)
+         mDynamicBuffer[pos+i] = *buffer++ * 16385;
+
+      if (first<floats)
+      {
+         floats -= first;
+         for(int i=0;i<floats;i++)
+            mDynamicBuffer[i] = *buffer++ * 16385;
       }
    }
  
    ~SDLSoundChannel()
    {
+      delete [] mDynamicBuffer;
+
       if (mSound)
          mSound->DecRef();
    }
@@ -155,9 +214,46 @@ public:
          Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
    }
 
+   double getDataPosition()
+   {
+      int pos = (sSoundPos-mDynamicStartPos)*1000.0/mFrequency;
+   }
+   bool needsData()
+   {
+      if (!mDynamicBuffer || mDynamicDone)
+         return false;
+
+      if (mDynamicDataDue<=sSoundPos)
+      {
+         mDynamicDone = true;
+         return true;
+      }
+
+      return false;
+
+   }
+
+   void addData(const ByteArray &inBytes)
+   {
+      mDynamicDone = false;
+      mDynamicDataDue = mDynamicFillPos + mDynamicStartPos;
+      FillBuffer(inBytes);
+   }
+
+
    Object    *mSound;
    Mix_Chunk *mChunk;
    int       mChannel;
+
+   Mix_Chunk mDynamicChunk;
+   short    *mDynamicBuffer;
+   unsigned int  mDynamicFillPos;
+   unsigned int  mDynamicStartPos;
+   unsigned int  mDynamicDataDue;
+   bool      mDynamicDone;
+   int       mFrequency;
+   Uint16    mFormat;
+   int       mChannels;
 };
 
 SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)

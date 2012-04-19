@@ -630,10 +630,25 @@ void ByteArray::Resize(int inSize)
    val_call2(gByteArrayResize, mValue, alloc_int(inSize) );
 }
 
-int ByteArray::Size()
+int ByteArray::Size() const
 {
    return val_int( val_call1(gByteArrayLen, mValue ));
 }
+
+
+const unsigned char *ByteArray::Bytes() const
+{
+   value bytes = val_call1(gByteArrayBytes,mValue);
+   if (val_is_string(bytes))
+      return (unsigned char *)val_string(bytes);
+   buffer buf = val_to_buffer(bytes);
+   if (buf==0)
+   {
+      val_throw(alloc_string("Bad ByteArray"));
+   }
+   return (unsigned char *)buffer_data(buf);
+}
+
 
 unsigned char *ByteArray::Bytes()
 {

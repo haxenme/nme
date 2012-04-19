@@ -32,13 +32,23 @@ class SoundChannel extends EventDispatcher
 			nmeTransform = sndTransform.clone();
 		}
 		
-		nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
+      if (inSoundHandle!=null)
+		   nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
 		
 		if (nmeHandle != null)
-		{	
 			nmeIncompleteList.push(this);	
-		}
 	}
+
+	public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher)
+	{
+		var result = new SoundChannel(null,0,0,sndTransform);
+      result.nmeDataProvider = dataProvider;
+      result.nmeHandle = inSoundHandle;
+		nmeIncompleteList.push(result);	
+      return result;
+   }
+		
+	
 	
 	
 	/** @private */ private function nmeCheckComplete():Bool
@@ -49,7 +59,7 @@ class SoundChannel extends EventDispatcher
          {
             var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
             request.position = nme_sound_channel_get_data_position(nmeHandle);
-            dispatchEvent(request);
+            nmeDataProvider.dispatchEvent(request);
             if (request.data.length > 0)
                nme_sound_channel_add_data(nmeHandle,request.data);
          }

@@ -20,8 +20,9 @@ struct ByteArray
    ByteArray(const QuickVec<unsigned char>  &inValue);
 
    void          Resize(int inSize);
-   int           Size();
+   int           Size() const;
    unsigned char *Bytes();
+   const unsigned char *Bytes() const;
    bool          Ok() { return mValue!=0; }
 
 

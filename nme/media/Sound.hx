@@ -43,6 +43,7 @@ class Sound extends EventDispatcher
          if (nmeHandle!=null)
             throw "Can't use dynamic sound once file loaded";
          nmeDynamicSound = true;
+         nmeLoading = false;
       }
    }
 
@@ -109,20 +110,22 @@ class Sound extends EventDispatcher
          var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
          dispatchEvent(request);
          if (request.data.length > 0)
+         {
             nmeHandle = nme_sound_channel_create_dynamic(request.data,sndTransform);
-      }
-
-		if (nmeHandle == null || nmeLoading)
-		{
-			return null;
-		}
-		var channel =  new SoundChannel(nmeHandle, startTime, loops, sndTransform);
-      if (nmeDynamicSound)
-      {
-         channel.nmeDataProvider = this;
+         }
+         if (nmeHandle==null)
+            return null;
+		   var result =  SoundChannel.createDynamic(nmeHandle, sndTransform, this);
          nmeHandle = null;
+         return result;
       }
-      return channel;
+      else
+      {
+		   if (nmeHandle == null || nmeLoading)
+			   return null;
+
+		   return new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+      }
 	}
 	
 	

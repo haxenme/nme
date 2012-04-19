@@ -18,6 +18,7 @@ import flash.events.MouseEvent;
 import flash.events.Event;
 #end
 
+import nme.events.SampleDataEvent;
 
 class Bang extends Bitmap
 {
@@ -78,10 +79,13 @@ class Bang extends Bitmap
 
 class Sample extends Sprite
 {
+   var mDown:Bool;
+
    public function new()
    {
       super();
 
+      mDown = false;
       Lib.current.stage.addChild(this);
 
       var bmp = new Bitmap();
@@ -101,12 +105,34 @@ class Sample extends Sprite
          channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
       }
 
+      //var buzz = new Sound();
+      //buzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
+      //buzz.play();
+
+      stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
+   }
+
+   public function onFillData(dataEvent:SampleDataEvent)
+   {
+      var data = dataEvent.data;
+      if (mDown)
+         for(i in 0...2048)
+            data.writeFloat( Math.sin(i*0.001) );
+      else
+         for(i in 0...2048)
+            data.writeFloat( 0.0 );
    }
 
    public function onClick(inEvent:MouseEvent)
    {
+      mDown = true;
       addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
+   }
+
+   public function onUp(inEvent:MouseEvent)
+   {
+      mDown = false;
    }
 
    public static function main()
