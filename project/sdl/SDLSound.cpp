@@ -163,7 +163,9 @@ public:
       int pos = mDynamicFillPos & (BUF_SIZE-1);
       mDynamicFillPos += floats;
 
-      int first = std::min( floats, BUF_SIZE-pos );
+      int first = BUF_SIZE-pos;
+      if (floats<first)
+         first = floats;
       for(int i=0;i<first;i++)
          mDynamicBuffer[pos+i] = *buffer++ * 16385;
 
@@ -216,7 +218,7 @@ public:
 
    double getDataPosition()
    {
-      int pos = (sSoundPos-mDynamicStartPos)*1000.0/mFrequency;
+      return (sSoundPos-mDynamicStartPos)*1000.0/mFrequency;
    }
    bool needsData()
    {
