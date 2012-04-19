@@ -575,6 +575,7 @@ void DisplayObject::setAlpha(double inAlpha)
 {
    colorTransform.alphaMultiplier = inAlpha;
    colorTransform.alphaOffset = 0;
+   DirtyUp(dirtCache);
    DirtyCache();
 }
 
