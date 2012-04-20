@@ -79,7 +79,7 @@ class ObjectHash <T> {
 			
 			key.___id___ = nextObjectID ++;
 			
-			if (nextObjectID == 2147483647) {
+			if (nextObjectID == #if neko 0x3fffffff #else 0x7fffffff #end) {
 				
 				nextObjectID = 0;
 				
@@ -115,6 +115,21 @@ class ObjectHash <T> {
 		#else
 		
 		return hash.iterator ();
+		
+		#end
+		
+	}
+	
+	
+	public inline function keys ():Iterator <T> {
+		
+		#if flash
+		
+		return dictionary.iterator ();
+		
+		#else
+		
+		return hash.keys ();
 		
 		#end
 		
