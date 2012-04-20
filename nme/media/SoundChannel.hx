@@ -15,6 +15,8 @@ class SoundChannel extends EventDispatcher
 	public var rightPeak(nmeGetRight, null):Float;
 	public var position(nmeGetPosition, null):Float;
 	public var soundTransform(nmeGetTransform, nmeSetTransform):SoundTransform;
+
+   public static var nmeDynamicSoundCount = 0;
 	
 	private static var nmeIncompleteList = new Array<SoundChannel>();
 	
@@ -44,7 +46,8 @@ class SoundChannel extends EventDispatcher
 		var result = new SoundChannel(null,0,0,sndTransform);
       result.nmeDataProvider = dataProvider;
       result.nmeHandle = inSoundHandle;
-		nmeIncompleteList.push(result);	
+		nmeIncompleteList.push(result);
+      nmeDynamicSoundCount++;
       return result;
    }
 		
@@ -67,6 +70,8 @@ class SoundChannel extends EventDispatcher
          if (nme_sound_channel_is_complete(nmeHandle))
          {
 			   nmeHandle = null;
+            if (nmeDataProvider!=null)
+               nmeDynamicSoundCount--;
 			   var complete = new Event(Event.SOUND_COMPLETE);
 			   dispatchEvent(complete);
 			   return true;

@@ -70,7 +70,7 @@ static bool Init()
 
 class SDLSoundChannel : public SoundChannel
 {
-  enum { BUF_SIZE = 16384 };
+  enum { BUF_SIZE = (1<<17) };
 
 public:
    SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
@@ -147,8 +147,8 @@ public:
          else
          {
             mDynamicDone = false;
-            Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 );
             // TODO: Lock?
+            Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 );
             mDynamicStartPos = sSoundPos;
          }
 
@@ -160,21 +160,14 @@ public:
    {
       int floats = inBytes.Size()/sizeof(float);
       const float *buffer = (const float *)inBytes.Bytes();
-      int pos = mDynamicFillPos & (BUF_SIZE-1);
+      enum { MASK = BUF_SIZE - 1 };
+
+      for(int i=0;i<floats;i++)
+         mDynamicBuffer[ (i+mDynamicFillPos) & MASK ] = *buffer++ * 16383;
+
+      if (mDynamicFillPos<(sSoundPos-mDynamicStartPos))
+         printf("Too slow - FillBuffer %d / %d)\n", mDynamicFillPos, (sSoundPos-mDynamicStartPos) );
       mDynamicFillPos += floats;
-
-      int first = BUF_SIZE-pos;
-      if (floats<first)
-         first = floats;
-      for(int i=0;i<first;i++)
-         mDynamicBuffer[pos+i] = *buffer++ * 16385;
-
-      if (first<floats)
-      {
-         floats -= first;
-         for(int i=0;i<floats;i++)
-            mDynamicBuffer[i] = *buffer++ * 16385;
-      }
    }
  
    ~SDLSoundChannel()
@@ -239,6 +232,8 @@ public:
    {
       mDynamicDone = false;
       mDynamicDataDue = mDynamicFillPos + mDynamicStartPos;
+      if (mDynamicDataDue>8192)
+         mDynamicDataDue-=8192;
       FillBuffer(inBytes);
    }
 
@@ -260,6 +255,8 @@ public:
 
 SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
 {
+   if (!Init())
+      return 0;
    return new SDLSoundChannel(inBytes,inTransform);
 }
 

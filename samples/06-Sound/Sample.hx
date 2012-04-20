@@ -80,6 +80,7 @@ class Bang extends Bitmap
 class Sample extends Sprite
 {
    var mDown:Bool;
+   var mPhase:Int;
 
    public function new()
    {
@@ -105,8 +106,8 @@ class Sample extends Sprite
          channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
       }
 
-      //var buzz = new Sound();
-      //buzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
+      var buzz = new Sound();
+      buzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
       //buzz.play();
 
       stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
@@ -115,19 +116,25 @@ class Sample extends Sprite
 
    public function onFillData(dataEvent:SampleDataEvent)
    {
+      var size = 2048;
+      var freq = 0.005;
       var data = dataEvent.data;
+      
+      var phase0 = (mPhase*freq) % (Math.PI*2.0);
       if (mDown)
-         for(i in 0...2048)
-            data.writeFloat( Math.sin(i*0.001) );
+         for(i in 0...size)
+            data.writeFloat( Math.sin(phase0 + i*freq) );
       else
-         for(i in 0...2048)
+         for(i in 0...size)
             data.writeFloat( 0.0 );
+      mPhase += size;
    }
 
    public function onClick(inEvent:MouseEvent)
    {
       mDown = true;
-      addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
+      mPhase = 0;
+      //addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
    }
 
    public function onUp(inEvent:MouseEvent)

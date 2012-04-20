@@ -725,6 +725,8 @@ class Stage extends DisplayObjectContainer
 	{
 		// TODO: In a multi-stage environment, may need to handle this better...
 		var next_wake = Timer.nmeNextWake(315000000.0);
+		if (next_wake > 0.001 && nme.media.SoundChannel.nmeDynamicSoundCount>0 )
+        next_wake = 0.001;
 		if (next_wake > 0.02 && (nme.media.SoundChannel.nmeCompletePending() || nme.net.URLLoader.nmeLoadPending()))
 		{
 			next_wake = (active || !pauseWhenDeactivated) ? 0.020 : 0.500;
