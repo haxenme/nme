@@ -30,7 +30,7 @@ class InstallTool {
 	public static var verbose = false;
 	
 	
-	static public function create (nme:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
+	static public function create (nme:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
 		
 		var installer:InstallerBase = null;
 		
@@ -106,7 +106,7 @@ class InstallTool {
 			
 		}
 		
-		installer.create (nme, command, defines, includePaths, projectFile, target, targetFlags, debug, args);
+		installer.create (nme, command, defines, userDefines, includePaths, projectFile, target, targetFlags, debug, args);
 		
 	}
 	
@@ -333,6 +333,7 @@ class InstallTool {
 		var command:String = "";
 		var debug:Bool = false;
 		var defines = new Hash <String> ();
+		var userDefines = new Hash <String> ();
 		var includePaths = new Array <String> ();
 		var targetFlags = new Hash <String> ();
 		
@@ -404,11 +405,11 @@ class InstallTool {
 				
 				if (arg.substr (0, 2) == "-D") {
 					
-					defines.set (arg.substr (2, equals - 2), arg.substr (equals + 1));
+					userDefines.set (arg.substr (2, equals - 2), arg.substr (equals + 1));
 					
 				} else {
 					
-					defines.set (arg.substr (0, equals), arg.substr (equals + 1));
+					userDefines.set (arg.substr (0, equals), arg.substr (equals + 1));
 					
 				}
 				
@@ -422,7 +423,7 @@ class InstallTool {
 				
 			} else if (arg.substr (0, 2) == "-D") {
 				
-				defines.set (arg.substr (2), "");
+				userDefines.set (arg.substr (2), "");
 				
 			} else if (arg.substr (0, 2) == "-l") {
 				
@@ -630,7 +631,7 @@ class InstallTool {
 				
 			}
 			
-			create (nme, command, defines, includePaths, words[0], target, targetFlags, debug, passArgs);
+			create (nme, command, defines, userDefines, includePaths, words[0], target, targetFlags, debug, passArgs);
 			
 		}
 		

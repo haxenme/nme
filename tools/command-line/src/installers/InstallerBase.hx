@@ -68,7 +68,7 @@ class InstallerBase {
 	}
 	
 	
-	public function create (NME:String, command:String, defines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>):Void {
+	public function create (NME:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>):Void {
 		
 		this.NME = NME;
 		this.command = command;
@@ -85,6 +85,20 @@ class InstallerBase {
 		initializeTool ();
 		parseHXCPPConfig ();
 		parseProjectFile ();
+		
+		for (key in userDefines.keys ()) {
+			
+			var value = userDefines.get (key);
+			
+			if (value == "") {
+				
+				compilerFlags.push ("-D " + key);
+				
+			}
+			
+			defines.set (key, value);
+			
+		}
 		
 		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
 			
