@@ -20,6 +20,7 @@ bool sUsedChannel[sMaxChannels];
 bool sDoneChannel[sMaxChannels];
 void *sUsedMusic = 0;
 bool sDoneMusic = false;
+enum { STEREO_SAMPLES = 2 };
 
 unsigned int  sSoundPos = 0;
 
@@ -37,7 +38,7 @@ void onMusicDone()
 
 void  onPostMix(void *udata, Uint8 *stream, int len)
 {
-   sSoundPos += len;
+   sSoundPos += len / sizeof(short) / STEREO_SAMPLES ;
 }
 
 
@@ -45,7 +46,7 @@ static bool Init()
 {
    if (!gSDLIsInit)
    {
-      fprintf(stderr,"Please init Stage before creating sound.\n");
+      ELOG("Please init Stage before creating sound.");
       return false;
    }
 
@@ -107,14 +108,23 @@ public:
 
    SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
    {
+      Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
+      if (mFrequency!=44100)
+         ELOG("Warning - Frequency mismatch %d",mFrequency);
+      if (mFormat!=32784)
+         ELOG("Warning - Format mismatch    %d",mFormat);
+      if (mChannels!=2)
+         ELOG("Warning - channe mismatch    %d",mChannels);
+
+
       mChunk = 0;
-      mDynamicBuffer = new short[BUF_SIZE];
+      mDynamicBuffer = new short[BUF_SIZE * STEREO_SAMPLES];
       memset(mDynamicBuffer,0,BUF_SIZE*sizeof(short));
       mSound = 0;
       mChannel = -1;
       mDynamicChunk.allocated = 0;
       mDynamicChunk.abuf = (Uint8 *)mDynamicBuffer;
-      mDynamicChunk.alen = BUF_SIZE;
+      mDynamicChunk.alen = BUF_SIZE * sizeof(short) * STEREO_SAMPLES; // bytes
       mDynamicChunk.volume = MIX_MAX_VOLUME;
 	  #ifndef WEBOS
 	   mDynamicChunk.length_ticks = 0;
@@ -122,8 +132,6 @@ public:
       mDynamicFillPos = 0;
       mDynamicStartPos = 0;
       mDynamicDataDue = 0;
-  
-      Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
 
       // Allocate myself a channel
       for(int i=0;i<sMaxChannels;i++)
@@ -140,10 +148,10 @@ public:
       {
          FillBuffer(inBytes);
          // Just once ...
-         if (mDynamicFillPos<2048)
+         if (mDynamicFillPos<1024)
          {
             mDynamicDone = true;
-            mDynamicChunk.alen = mDynamicFillPos;
+            mDynamicChunk.alen = mDynamicFillPos * sizeof(short) * STEREO_SAMPLES;
             Mix_PlayChannel( mChannel , &mDynamicChunk,  0 );
          }
          else
@@ -160,16 +168,35 @@ public:
 
    void FillBuffer(const ByteArray &inBytes)
    {
-      int floats = inBytes.Size()/sizeof(float);
+      int time_samples = inBytes.Size()/sizeof(float)/STEREO_SAMPLES;
       const float *buffer = (const float *)inBytes.Bytes();
       enum { MASK = BUF_SIZE - 1 };
 
-      for(int i=0;i<floats;i++)
-         mDynamicBuffer[ (i+mDynamicFillPos) & MASK ] = *buffer++ * 16383;
+      for(int i=0;i<time_samples;i++)
+      {
+         int mono_pos =  (i+mDynamicFillPos) & MASK;
+         mDynamicBuffer[ mono_pos<<1 ] = *buffer++ * ((1<<15)-1);
+         mDynamicBuffer[ (mono_pos<<1) + 1 ] = *buffer++ * ((1<<15)-1);
+      }
 
       if (mDynamicFillPos<(sSoundPos-mDynamicStartPos))
-         printf("Too slow - FillBuffer %d / %d)\n", mDynamicFillPos, (sSoundPos-mDynamicStartPos) );
-      mDynamicFillPos += floats;
+         ELOG("Too slow - FillBuffer %d / %d)", mDynamicFillPos, (sSoundPos-mDynamicStartPos) );
+      mDynamicFillPos += time_samples;
+      if (time_samples<1024 && !mDynamicDone)
+      {
+         mDynamicDone = true;
+         for(int i=0;i<2048;i++)
+         {
+            int mono_pos =  (i+mDynamicFillPos) & MASK;
+            mDynamicBuffer[ mono_pos<<1 ] = 0;
+            mDynamicBuffer[ (mono_pos<<1) + 1 ] = 0;
+         }
+            
+         int samples_left = (int)mDynamicFillPos - (int)(sSoundPos-mDynamicStartPos);
+         int ticks_left = samples_left*1000/44100;
+         //printf("Expire in %d (%d)\n", samples_left, ticks_left );
+         Mix_ExpireChannel(mChannel, ticks_left>0 ? ticks_left : 1 );
+      }
    }
  
    ~SDLSoundChannel()
@@ -234,8 +261,6 @@ public:
    {
       mDynamicDone = false;
       mDynamicDataDue = mDynamicFillPos + mDynamicStartPos;
-      if (mDynamicDataDue>8192)
-         mDynamicDataDue-=8192;
       FillBuffer(inBytes);
    }
 
@@ -282,7 +307,7 @@ public:
       if ( mChunk == NULL )
       {
          mError = SDL_GetError();
-         // printf("Error %s (%s)\n", mError.c_str(), name );
+         // ELOG("Error %s (%s)", mError.c_str(), name );
       }
    }
    ~SDLSound()
@@ -405,7 +430,7 @@ public:
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
-         printf("Error %s (%s)\n", mError.c_str(), name );
+         ELOG("Error in music %s (%s)", mError.c_str(), name );
       }
    }
    ~SDLMusic()
