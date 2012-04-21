@@ -1316,6 +1316,10 @@ class InstallerBase {
 					case "error":
 						
 						error (substitute (element.att.value));
+	
+					case "echo":
+						
+						neko.Lib.println (substitute (element.att.value));
 					
 					case "path":
 						
