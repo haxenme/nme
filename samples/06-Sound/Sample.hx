@@ -80,21 +80,33 @@ class Bang extends Bitmap
 class Sample extends Sprite
 {
    var mDown:Bool;
-   var mPhase:Int;
+   var mWasDown:Bool;
+   var mPhase0:Float;
+   var mFrequency:Float;
+   var mLeftVolume:Float;
+   var mRightVolume:Float;
+   var mPrevLeftVolume:Float;
+   var mPrevRightVolume:Float;
+   var mBuzzStart:Sprite;
+   var mBuzz:Sound;
 
    public function new()
    {
       super();
 
       mDown = false;
+      mWasDown = false;
       Lib.current.stage.addChild(this);
 
       var bmp = new Bitmap();
       bmp.bitmapData = ApplicationMain.getAsset("Data/drum_kit.jpg");
       addChild(bmp);
 
+      mPrevLeftVolume = mLeftVolume = 1.0;
+      mPrevRightVolume = mRightVolume = 1.0;
+      mFrequency = 0.05;
 
-      var sound_name = "Data/Party_Gu-Jeremy_S-8250_hifi.mp3";
+      var sound_name = "music";
       var sound:Sound = ApplicationMain.getAsset(sound_name);
       if (sound==null)
       {
@@ -106,35 +118,102 @@ class Sample extends Sprite
          channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
       }
 
-      var buzz = new Sound();
-      buzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
-      //buzz.play();
+      mBuzzStart = new Sprite();
+      var gfx = mBuzzStart.graphics;
+      gfx.beginFill(0xff0000);
+      gfx.lineStyle(2,0x000000);
+      gfx.drawCircle(0,0,10);
+      addChild(mBuzzStart);
+      mBuzzStart.cacheAsBitmap = true;
+      var text = new nme.text.TextField();
+      text.text = "Drag Me!";
+      text.mouseEnabled = false;
+      text.autoSize = nme.text.TextFieldAutoSize.LEFT;
+      text.x = 10;
+      text.y = -5;
+      mBuzzStart.addChild(text);
+      mBuzzStart.x = 200;
+      mBuzzStart.y = 10;
+
+      mBuzz = new Sound();
+      mBuzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
 
       stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
+      stage.addEventListener( MouseEvent.MOUSE_MOVE, onMove );
    }
 
    public function onFillData(dataEvent:SampleDataEvent)
    {
       var size = 2048;
-      var freq = 0.005;
+      var freq = mFrequency;
       var data = dataEvent.data;
+
+      if (!mDown)
+         size  = 100;
       
-      var phase0 = (mPhase*freq) % (Math.PI*2.0);
+      // Ease in to avoid pops....
+      var first = mDown!=mWasDown ? 100 : 0;
+
       if (mDown)
-         for(i in 0...size)
-            data.writeFloat( Math.sin(phase0 + i*freq) );
+      {
+         for(i in 0...first)
+         {
+            var value = Math.sin(mPhase0 + i*freq) * i / 100;
+            data.writeFloat(value*(mLeftVolume*i + mPrevLeftVolume*(100-i) ) / 100);
+            data.writeFloat(value*(mRightVolume*i + mPrevRightVolume*(100-i) ) / 100);
+         }
+         for(i in first...size)
+         {
+            var value = Math.sin(mPhase0 + i*freq);
+            data.writeFloat(value*mLeftVolume);
+            data.writeFloat(value*mRightVolume);
+         }
+      }
       else
-         for(i in 0...size)
+      {
+         for(i in 0...first)
+         {
+            var value = Math.sin(mPhase0 + i*freq) * (100-i) / 100;
+            data.writeFloat(value*(mLeftVolume*i + mPrevLeftVolume*(100-i) ) / 100);
+            data.writeFloat(value*(mRightVolume*i + mPrevRightVolume*(100-i) ) / 100);
+         }
+         for(i in first...size)
+         {
             data.writeFloat( 0.0 );
-      mPhase += size;
+            data.writeFloat( 0.0 );
+         }
+      }
+
+      mWasDown = mDown;
+      if (!mDown && !mWasDown)
+         mPhase0 = 0;
+      else
+         mPhase0 = (mPhase0 + size*freq) % (Math.PI*2.0);
+      mPrevLeftVolume = mLeftVolume;
+      mPrevRightVolume = mRightVolume;
+   }
+
+   public function onMove(inEvent:MouseEvent)
+   {
+      var right = 2*inEvent.stageX / stage.stageWidth;
+      mRightVolume = right > 1 ? 1 : right;
+      var left = 2 - right;
+      mLeftVolume = left > 1 ? 1 : left;
+
+      mFrequency = 0.5 * inEvent.stageY / stage.stageHeight;
    }
 
    public function onClick(inEvent:MouseEvent)
    {
-      mDown = true;
-      mPhase = 0;
-      //addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
+      if (inEvent.target == mBuzzStart)
+      {
+         mDown = true;
+         var channel = mBuzz.play();
+         channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
+      }
+      else
+         addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
    }
 
    public function onUp(inEvent:MouseEvent)
