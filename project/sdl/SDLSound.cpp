@@ -116,7 +116,9 @@ public:
       mDynamicChunk.abuf = (Uint8 *)mDynamicBuffer;
       mDynamicChunk.alen = BUF_SIZE;
       mDynamicChunk.volume = MIX_MAX_VOLUME;
+	  #ifndef WEBOS
 	   mDynamicChunk.length_ticks = 0;
+	  #endif
       mDynamicFillPos = 0;
       mDynamicStartPos = 0;
       mDynamicDataDue = 0;
