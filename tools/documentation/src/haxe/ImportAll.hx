@@ -1,67 +1,66 @@
-/*
- * Copyright (c) 2005, The haXe Project Contributors
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE HAXE PROJECT CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE HAXE PROJECT CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
- */
 package haxe;
 
-// std
 import Array;
+//import ArrayAccess;
+//import Bool;
 import Class;
 import Date;
 import DateTools;
+//import Dynamic;
 import Enum;
+import EnumValue;
 import EReg;
+//import Float;
 import Hash;
 import IntHash;
 import IntIter;
+//import Iterable;
+//import Iterator;
 import Lambda;
 import List;
 import Math;
+//import Null;
 import Reflect;
 import Std;
 import StdTypes;
 import String;
 import StringBuf;
 import StringTools;
+import Sys;
 import Type;
+//import UInt;
+//import ValueType;
+//import Void;
 import Xml;
+//import XmlType;
 
 import haxe.BaseCode;
+import haxe.EnumFlags;
+//import haxe.FastCell;
 import haxe.FastList;
+//import haxe.FastListIterator;
 import haxe.Firebug;
 import haxe.Http;
-import haxe.ImportAll;
+import haxe.Int32;
+import haxe.Int64;
+import haxe.Json;
 import haxe.Log;
 import haxe.Md5;
 import haxe.PosInfos;
+import haxe.Public;
+import haxe.Resource;
 import haxe.Serializer;
 import haxe.SHA1;
 import haxe.Stack;
+//import haxe.StackItem;
 import haxe.Template;
 import haxe.Timer;
+#if (flash || js)
+import haxe.TimerQueue;
+#end
+//import haxe.TypeResolver;
 import haxe.Unserializer;
-import haxe.Int32;
-import haxe.Resource;
+import haxe.Utf8;
 
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
@@ -72,106 +71,332 @@ import haxe.io.Eof;
 import haxe.io.Error;
 import haxe.io.Input;
 import haxe.io.Output;
+import haxe.io.Path;
 import haxe.io.StringInput;
 
-import haxe.remoting.Context;
-import haxe.remoting.ContextAll;
-import haxe.remoting.Connection;
-import haxe.remoting.AsyncConnection;
-import haxe.remoting.ExternalConnection;
-import haxe.remoting.HttpConnection;
-import haxe.remoting.HttpAsyncConnection;
+/*import haxe.macro.Access;
+import haxe.macro.AnonType;
+import haxe.macro.BaseType;
+import haxe.macro.Binop;
+import haxe.macro.ClassField;
+import haxe.macro.ClassKind;
+import haxe.macro.ClassType;*/
+import haxe.macro.Compiler;
+/*import haxe.macro.ComplexType;
+import haxe.macro.Constant;*/
+import haxe.macro.Context;
+/*import haxe.macro.DefType;
+import haxe.macro.EnumField;
+import haxe.macro.EnumType;
+import haxe.macro.Error;*/
+#if neko
+import haxe.macro.ExampleJSGenerator;
+#end
+import haxe.macro.Expr;
+/*import haxe.macro.ExprDef;
+import haxe.macro.ExprOf;
+import haxe.macro.ExprRequire;
+import haxe.macro.Field;
+import haxe.macro.FieldKind;
+import haxe.macro.FieldType;*/
+import haxe.macro.Format;
+//import haxe.macro.Function;
+//import haxe.macro.FunctionArg;
+import haxe.macro.JSGenApi;
+import haxe.macro.MacroType;
+/*import haxe.macro.MetaAccess;
+import haxe.macro.Metadata;
+import haxe.macro.MethodKind;
+import haxe.macro.Position;
+import haxe.macro.Ref;*/
+import haxe.macro.Tools;
+import haxe.macro.Type;
+/*import haxe.macro.TypeDefKind;
+import haxe.macro.TypeDefinition;
+import haxe.macro.TypeParam;
+import haxe.macro.TypePath;
+import haxe.macro.TypedExpr;
+import haxe.macro.Unop;
+import haxe.macro.VarAccess;*/
+
 import haxe.remoting.AMFConnection;
 import haxe.remoting.AsyncAdapter;
+import haxe.remoting.AsyncConnection;
 import haxe.remoting.AsyncDebugConnection;
-import haxe.remoting.Proxy;
 import haxe.remoting.AsyncProxy;
-import haxe.remoting.LocalConnection;
+import haxe.remoting.Connection;
+import haxe.remoting.Context;
+import haxe.remoting.ContextAll;
 import haxe.remoting.DelayedConnection;
+import haxe.remoting.ExternalConnection;
 import haxe.remoting.FlashJsConnection;
-#if (neko || php)
-import haxe.remoting.SyncSocketConnection;
-#else
+import haxe.remoting.HttpAsyncConnection;
+import haxe.remoting.HttpConnection;
+import haxe.remoting.LocalConnection;
+import haxe.remoting.Proxy;
+//import haxe.remoting.Socket;
 import haxe.remoting.SocketConnection;
-#end
 import haxe.remoting.SocketProtocol;
 #if flash
 import haxe.remoting.SocketWrapper;
 #end
+import haxe.remoting.SyncSocketConnection;
 
-import haxe.rtti.Infos;
 import haxe.rtti.CType;
-import haxe.rtti.XmlParser;
+/*import haxe.rtti.ClassField;
+import haxe.rtti.Classdef;
+import haxe.rtti.EnumField;
+import haxe.rtti.Enumdef;*/
 import haxe.rtti.Generic;
 import haxe.rtti.HtmlEditor;
+import haxe.rtti.Infos;
 import haxe.rtti.Meta;
-
-import haxe.xml.Check;
-import haxe.xml.Fast;
-import haxe.xml.Proxy;
+/*import haxe.rtti.Path;
+import haxe.rtti.PathParams;
+import haxe.rtti.Platforms;
+import haxe.rtti.Rights;
+import haxe.rtti.TypeApi;
+import haxe.rtti.TypeInfos;
+import haxe.rtti.TypeParams;
+import haxe.rtti.TypeRoot;
+import haxe.rtti.TypeTree;
+import haxe.rtti.Typedef;*/
+import haxe.rtti.XmlParser;
 
 import haxe.unit.TestCase;
 import haxe.unit.TestResult;
 import haxe.unit.TestRunner;
 import haxe.unit.TestStatus;
 
-#if flash9
+import haxe.web.Dispatch;
+/*import haxe.web.DispatchConfig;
+import haxe.web.DispatchError;
+import haxe.web.DispatchRule;
+import haxe.web.Lock;
+import haxe.web.MatchRule;*/
+#if (neko || js)
+import haxe.web.Request;
+#end
 
-// generated by haxe
+//import haxe.xml.Attrib;
+import haxe.xml.Check;
+import haxe.xml.Fast;
+//import haxe.xml.Filter;
+import haxe.xml.Proxy;
+//import haxe.xml.Rule;
+
+//import sys.db.Connection;
+
+
+import sys.db.Manager;
+import sys.db.Mysql;
+import sys.db.Object;
+import sys.db.ResultSet;
+/*import sys.db.SBigId;
+import sys.db.SBigInt;
+import sys.db.SBinary;
+import sys.db.SBool;
+import sys.db.SBytes;
+import sys.db.SDate;
+import sys.db.SDateTime;
+import sys.db.SEncoded;
+import sys.db.SFlags;
+import sys.db.SFloat;
+import sys.db.SId;
+import sys.db.SInt;
+import sys.db.SLongBinary;
+import sys.db.SMediumInt;
+import sys.db.SMediumUInt;
+import sys.db.SNekoSerialized;
+import sys.db.SNull;
+import sys.db.SSerialized;
+import sys.db.SSingle;
+import sys.db.SSmallBinary;
+import sys.db.SSmallFlags;
+import sys.db.SSmallInt;
+import sys.db.SSmallText;
+import sys.db.SSmallUInt;
+import sys.db.SString;
+import sys.db.SText;
+import sys.db.STimeStamp;
+import sys.db.STinyInt;
+import sys.db.STinyText;
+import sys.db.STinyUInt;
+import sys.db.SUId;
+import sys.db.SUInt;*/
+//import sys.db.SpodField;
+import sys.db.SpodInfos;
+import sys.db.SpodMacros;
+//import sys.db.SpodRelation;
+//import sys.db.SpodType;
+import sys.db.Sqlite;
+import sys.db.TableCreate;
+import sys.db.Transaction;
+
+import sys.io.File;
+//import sys.io.FileHandle;
+import sys.io.FileInput;
+import sys.io.FileOutput;
+import sys.io.FileSeek;
+import sys.io.Process;
+
+import sys.net.Host;
+import sys.net.Socket;
+
+import sys.FileStat;
+import sys.FileSystem;
+
+
+#if flash
+
 import flash.Boot;
 import flash.Lib;
+import flash.Memory;
+import flash.Vector;
+
 import flash.accessibility.Accessibility;
 import flash.accessibility.AccessibilityImplementation;
 import flash.accessibility.AccessibilityProperties;
+import flash.accessibility.ISearchableText;
+import flash.accessibility.ISimpleTextSelection;
+
+import flash.automation.ActionGenerator;
+import flash.automation.AutomationAction;
+import flash.automation.Configuration;
+import flash.automation.KeyboardAutomationAction;
+import flash.automation.MouseAutomationAction;
+import flash.automation.StageCapture;
+import flash.automation.StageCaptureEvent;
+
 import flash.desktop.Clipboard;
 import flash.desktop.ClipboardFormats;
 import flash.desktop.ClipboardTransferMode;
 import flash.display.ActionScriptVersion;
 import flash.display.AVM1Movie;
 import flash.display.Bitmap;
+import flash.display.BitmapCompressColorSpace;
 import flash.display.BitmapData;
 import flash.display.BitmapDataChannel;
+import flash.display.BitmapEncodingColorSpace;
 import flash.display.BlendMode;
 import flash.display.CapsStyle;
+import flash.display.ColorCorrection;
+import flash.display.ColorCorrectionSupport;
 import flash.display.DisplayObject;
 import flash.display.DisplayObjectContainer;
+import flash.display.FocusDirection;
 import flash.display.FrameLabel;
 import flash.display.GradientType;
 import flash.display.Graphics;
+import flash.display.GraphicsBitmapFill;
+import flash.display.GraphicsEndFill;
+import flash.display.GraphicsGradientFill;
+import flash.display.GraphicsPath;
+import flash.display.GraphicsPathCommand;
+import flash.display.GraphicsPathWinding;
+import flash.display.GraphicsShaderFill;
+import flash.display.GraphicsSolidFill;
+import flash.display.GraphicsStroke;
+import flash.display.GraphicsTrianglePath;
+import flash.display.IBitmapCompressOptions;
 import flash.display.IBitmapDrawable;
+import flash.display.IDrawCommand;
+import flash.display.IGraphicsData;
+import flash.display.IGraphicsFill;
+import flash.display.IGraphicsPath;
+import flash.display.IGraphicsStroke;
 import flash.display.InteractiveObject;
 import flash.display.InterpolationMethod;
+import flash.display.JPEGCompressOptions;
+import flash.display.JPEGEncoderOptions;
+import flash.display.JPEGXRCompressOptions;
+import flash.display.JPEGXREncoderOptions;
 import flash.display.JointStyle;
 import flash.display.LineScaleMode;
 import flash.display.Loader;
 import flash.display.LoaderInfo;
 import flash.display.MorphShape;
 import flash.display.MovieClip;
+import flash.display.NativeMenu;
+import flash.display.NativeMenuItem;
+import flash.display.PNGCompressOptions;
+import flash.display.PNGEncoderOptions;
 import flash.display.PixelSnapping;
 import flash.display.Scene;
+import flash.display.Shader;
+import flash.display.ShaderData;
+import flash.display.ShaderInput;
+import flash.display.ShaderJob;
+import flash.display.ShaderParameter;
+import flash.display.ShaderParameterType;
+import flash.display.ShaderPrecision;
 import flash.display.Shape;
 import flash.display.SimpleButton;
 import flash.display.SpreadMethod;
 import flash.display.Sprite;
 import flash.display.Stage;
+import flash.display.Stage3D;
 import flash.display.StageAlign;
+import flash.display.StageDisplayState;
 import flash.display.StageQuality;
 import flash.display.StageScaleMode;
+import flash.display.StageWorker;
 import flash.display.SWFVersion;
-//import flash.errors.ArgumentsError;
+import flash.display.TriangleCulling;
+import flash.display.Worker;
+
+import flash.display3D.Context3D;
+import flash.display3D.Context3DBlendFactor;
+import flash.display3D.Context3DClearMask;
+import flash.display3D.Context3DCompareMode;
+import flash.display3D.Context3DProgramType;
+import flash.display3D.Context3DRenderMode;
+import flash.display3D.Context3DStencilAction;
+import flash.display3D.Context3DTextureFormat;
+import flash.display3D.Context3DTriangleFace;
+import flash.display3D.Context3DVertexBufferFormat;
+import flash.display3D.IndexBuffer3D;
+import flash.display3D.Program3D;
+import flash.display3D.VertexBuffer3D;
+
+import flash.textures.CubeTexture;
+import flash.textures.RectangleTexture;
+import flash.textures.Texture;
+import flash.textures.TextureBase;
+
+import flash.errors.ArgumentsError;
+import flash.errors.DRMManagerError;
+import flash.errors.DefinitionError;
 import flash.errors.EOFError;
+import flash.errors.Error;
+import flash.errors.EvalError;
+import flash.errors.IOError;
 import flash.errors.IllegalOperationError;
 import flash.errors.InvalidSWFError;
-import flash.errors.IOError;
 import flash.errors.MemoryError;
+import flash.errors.RangeError;
+import flash.errors.ReferenceError;
 import flash.errors.ScriptTimeoutError;
 import flash.errors.SecurityError;
 import flash.errors.StackOverflowError;
+import flash.errors.SyntaxError;
 import flash.errors.TypeError;
+import flash.errors.URIError;
+import flash.errors.UninitializedError;
 import flash.errors.VerifyError;
+
+import flash.events.AccelerometerEvent;
 import flash.events.ActivityEvent;
 import flash.events.AsyncErrorEvent;
 import flash.events.ContextMenuEvent;
+import flash.events.DRMAuthenticateEvent;
+import flash.events.DRMAuthenticationCompleteEvent;
+import flash.events.DRMAuthenticationErrorEvent;
+import flash.events.DRMCustomProperties;
+import flash.events.DRMDeviceGroupErrorEvent;
+import flash.events.DRMDeviceGroupEvent;
+import flash.events.DRMErrorEvent;
+import flash.events.DRMStatusEvent;
 import flash.events.DataEvent;
 import flash.events.ErrorEvent;
 import flash.events.Event;
@@ -179,23 +404,46 @@ import flash.events.EventDispatcher;
 import flash.events.EventPhase;
 import flash.events.FocusEvent;
 import flash.events.FullScreenEvent;
+import flash.events.GameInputEvent;
+import flash.events.GeolocationEvent;
+import flash.events.GestureEvent;
+import flash.events.GesturePhase;
 import flash.events.HTTPStatusEvent;
 import flash.events.IEventDispatcher;
 import flash.events.IMEEvent;
 import flash.events.IOErrorEvent;
 import flash.events.KeyboardEvent;
 import flash.events.MouseEvent;
+import flash.events.NetDataEvent;
 import flash.events.NetFilterEvent;
+import flash.events.NetMonitorEvent;
 import flash.events.NetStatusEvent;
+import flash.events.OutputProgressEvent;
+import flash.events.PressAndTapGestureEvent;
 import flash.events.ProgressEvent;
+import flash.events.SampleDataEvent;
 import flash.events.SecurityErrorEvent;
+import flash.events.ShaderEvent;
+import flash.events.SoftKeyboardEvent;
+import flash.events.SoftKeyboardTrigger;
+import flash.events.StageVideoAvailabilityEvent;
+import flash.events.StageVideoEvent;
 import flash.events.StatusEvent;
 import flash.events.SyncEvent;
 import flash.events.TextEvent;
+import flash.events.ThrottleEvent;
+import flash.events.ThrottleType;
 import flash.events.TimerEvent;
+import flash.events.TouchEvent;
+import flash.events.TransformGestureEvent;
+import flash.events.UncaughtErrorEvent;
+import flash.events.UncaughtErrorEvents;
+import flash.events.VideoEvent;
 import flash.events.WeakFunctionClosure;
 import flash.events.WeakMethodClosure;
+
 import flash.external.ExternalInterface;
+
 import flash.filters.BevelFilter;
 import flash.filters.BitmapFilter;
 import flash.filters.BitmapFilterQuality;
@@ -209,20 +457,56 @@ import flash.filters.DropShadowFilter;
 import flash.filters.GlowFilter;
 import flash.filters.GradientBevelFilter;
 import flash.filters.GradientGlowFilter;
+import flash.filters.ShaderFilter;
+
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
+import flash.geom.Matrix3D;
+import flash.geom.Orientation3D;
+import flash.geom.PerspectiveProjection;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.geom.Transform;
+import flash.geom.Utils3D;
+import flash.geom.Vector3D;
+
+import flash.globalization.Collator;
+import flash.globalization.CollatorMode;
+import flash.globalization.CurrencyFormatter;
+import flash.globalization.CurrencyParseResult;
+import flash.globalization.DateTimeFormatter;
+import flash.globalization.DateTimeNameContext;
+import flash.globalization.DateTimeNameStyle;
+import flash.globalization.DateTimeStyle;
+import flash.globalization.LastOperationStatus;
+import flash.globalization.LocaleID;
+import flash.globalization.NationalDigitsType;
+import flash.globalization.NumberFormatter;
+import flash.globalization.NumberParseResult;
+import flash.globalization.StringTools;
+
+import flash.media.AudioDecoder;
 import flash.media.Camera;
+import flash.media.H264Level;
+import flash.media.H264Profile;
+import flash.media.H264VideoStreamSettings;
 import flash.media.ID3Info;
 import flash.media.Microphone;
+import flash.media.MicrophoneEnhancedMode;
+import flash.media.MicrophoneEnhancedOptions;
 import flash.media.Sound;
 import flash.media.SoundChannel;
+import flash.media.SoundCodec;
 import flash.media.SoundLoaderContext;
 import flash.media.SoundMixer;
 import flash.media.SoundTransform;
+import flash.media.StageVideo;
+import flash.media.StageVideoAvailability;
 import flash.media.Video;
+import flash.media.VideoCodec;
+import flash.media.VideoStatus;
+import flash.media.VideoStreamSettings;
+
 import flash.net.DynamicPropertyOutput;
 import flash.net.FileFilter;
 import flash.net.FileReference;
@@ -231,9 +515,22 @@ import flash.net.IDynamicPropertyOutput;
 import flash.net.IDynamicPropertyWriter;
 import flash.net.LocalConnection;
 import flash.net.NetConnection;
+import flash.net.NetGroup;
+import flash.net.NetGroupInfo;
+import flash.net.NetGroupReceiveMode;
+import flash.net.NetGroupReplicationStrategy;
+import flash.net.NetGroupSendMode;
+import flash.net.NetGroupSendResult;
+import flash.net.NetMonitor;
 import flash.net.NetStream;
+import flash.net.NetStreamAppendBytesAction;
+import flash.net.NetStreamInfo;
+import flash.net.NetStreamMulticastInfo;
+import flash.net.NetStreamPlayOptions;
+import flash.net.NetStreamPlayTransitions;
 import flash.net.ObjectEncoding;
 import flash.net.Responder;
+import flash.net.SecureSocket;
 import flash.net.SharedObject;
 import flash.net.SharedObjectFlushStatus;
 import flash.net.Socket;
@@ -245,19 +542,60 @@ import flash.net.URLRequestMethod;
 import flash.net.URLStream;
 import flash.net.URLVariables;
 import flash.net.XMLSocket;
+
+import flash.net.drm.AddToDeviceGroupSetting;
+import flash.net.drm.AuthenticationMethod;
+import flash.net.drm.DRMAuthenticationContext;
+import flash.net.drm.DRMContentData;
+import flash.net.drm.DRMDeviceGroup;
+import flash.net.drm.DRMManager;
+import flash.net.drm.DRMManagerSession;
+import flash.net.drm.DRMModuleCycleProvider;
+import flash.net.drm.DRMPlaybackTimeWindow;
+import flash.net.drm.DRMURLDownloadContext;
+import flash.net.drm.DRMVoucher;
+import flash.net.drm.DRMVoucherDownloadContext;
+import flash.net.drm.DRMVoucherStoreContext;
+import flash.net.drm.LoadVoucherSetting;
+import flash.net.drm.VoucherAccessInfo;
+
 import flash.printing.PrintJob;
 import flash.printing.PrintJobOptions;
 import flash.printing.PrintJobOrientation;
+
+import flash.sampler.Api;
+import flash.sampler.ClassFactory;
+import flash.sampler.DeleteObjectSample;
+import flash.sampler.NewObjectSample;
+import flash.sampler.Sample;
+import flash.sampler.StackFrame;
+
+import flash.security.CertificateStatus;
+import flash.security.X500DistinguishedName;
+import flash.security.X509Certificate;
+
+import flash.sensors.Accelerometer;
+import flash.sensors.Geolocation;
+
 import flash.system.ApplicationDomain;
+import flash.system.ApplicationInstaller;
+import flash.system.AuthorizedFeatures;
+import flash.system.AuthorizedFeaturesLoader;
 import flash.system.Capabilities;
 import flash.system.FSCommand;
 import flash.system.IME;
 import flash.system.IMEConversionMode;
+import flash.system.ImageDecodingPolicy;
+import flash.system.JPEGLoaderContext;
 import flash.system.LoaderContext;
 import flash.system.Security;
 import flash.system.SecurityDomain;
 import flash.system.SecurityPanel;
 import flash.system.System;
+import flash.system.SystemUpdater;
+import flash.system.SystemUpdaterType;
+import flash.system.TouchscreenType;
+
 import flash.text.AntiAliasType;
 import flash.text.CSMSettings;
 import flash.text.Font;
@@ -275,112 +613,95 @@ import flash.text.TextFieldType;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 import flash.text.TextFormatDisplay;
+import flash.text.TextInteractionMode;
 import flash.text.TextLineMetrics;
 import flash.text.TextRenderer;
 import flash.text.TextRun;
 import flash.text.TextSnapshot;
+
+import flash.text.engine.BreakOpportunity;
+import flash.text.engine.CFFHinting;
+import flash.text.engine.ContentElement;
+import flash.text.engine.DigitCase;
+import flash.text.engine.DigitWidth;
+import flash.text.engine.EastAsianJustifier;
+import flash.text.engine.ElementFormat;
+import flash.text.engine.FontDescription;
+import flash.text.engine.FontLookup;
+import flash.text.engine.FontMetrics;
+import flash.text.engine.FontPosture;
+import flash.text.engine.FontWeight;
+import flash.text.engine.GraphicElement;
+import flash.text.engine.GroupElement;
+import flash.text.engine.JustificationStyle;
+import flash.text.engine.Kerning;
+import flash.text.engine.LigatureLevel;
+import flash.text.engine.LineJustification;
+import flash.text.engine.RenderingMode;
+import flash.text.engine.SpaceJustifier;
+import flash.text.engine.TabAlignment;
+import flash.text.engine.TabStop;
+import flash.text.engine.TextBaseline;
+import flash.text.engine.TextBlock;
+import flash.text.engine.TextElement;
+import flash.text.engine.TextJustifier;
+import flash.text.engine.TextLine;
+import flash.text.engine.TextLineCreationResult;
+import flash.text.engine.TextLineMirrorRegion;
+import flash.text.engine.TextLineValidity;
+import flash.text.engine.TextRotation;
+import flash.text.engine.TypographicCase;
+
+import flash.text.ime.CompositionAttributeRange;
+import flash.text.ime.IIMEClient;
+
+import flash.trace.Trace;
+
 import flash.ui.ContextMenu;
 import flash.ui.ContextMenuBuiltInItems;
+import flash.ui.ContextMenuClipboardItems;
 import flash.ui.ContextMenuItem;
+import flash.ui.GameInput;
+import flash.ui.GameInputControl;
+import flash.ui.GameInputControlType;
+import flash.ui.GameInputDevice;
+import flash.ui.GameInputFinger;
+import flash.ui.GameInputHand;
 import flash.ui.Keyboard;
+import flash.ui.KeyboardType;
 import flash.ui.KeyLocation;
 import flash.ui.Mouse;
+import flash.ui.MouseCursor;
+import flash.ui.MouseCursorData;
+import flash.ui.Multitouch;
+import flash.ui.MultitouchInputMode;
+
 import flash.utils.ByteArray;
+import flash.utils.CompressionAlgorithm;
 import flash.utils.Dictionary;
 import flash.utils.Endian;
 import flash.utils.IDataInput;
 import flash.utils.IDataOutput;
 import flash.utils.IExternalizable;
+import flash.utils.JSON;
+import flash.utils.Namespace;
 import flash.utils.ObjectInput;
 import flash.utils.ObjectOutput;
 import flash.utils.Proxy;
+import flash.utils.QName;
+import flash.utils.RegExp;
 import flash.utils.SetIntervalTimer;
+import flash.utils.Telemetry;
 import flash.utils.Timer;
 import flash.utils.TypedDictionary;
-import flash.utils.QName;
-import flash.utils.Namespace;
+
 import flash.xml.XML;
-import flash.xml.XMLList;
 import flash.xml.XMLDocument;
+import flash.xml.XMLList;
 import flash.xml.XMLNode;
 import flash.xml.XMLNodeType;
 import flash.xml.XMLParser;
 import flash.xml.XMLTag;
-import flash.trace.Trace;
-import flash.sampler.Api;
-import flash.sampler.DeleteObjectSample;
-import flash.sampler.NewObjectSample;
-import flash.sampler.Sample;
-import flash.sampler.StackFrame;
-
-#elseif flash
-
-import flash.Boot;
-import flash.Lib;
-
-import flash.Accessibility;
-import flash.Button;
-import flash.Camera;
-import flash.Color;
-import flash.ContextMenu;
-import flash.ContextMenuItem;
-#if flash_lite
-import flash.ExtendedKey;
-#end
-import flash.Key;
-import flash.LoadVars;
-import flash.LocalConnection;
-import flash.Microphone;
-import flash.Mouse;
-import flash.MovieClip;
-import flash.MovieClipLoader;
-import flash.NetConnection;
-import flash.NetStream;
-import flash.PrintJob;
-import flash.Selection;
-import flash.SharedObject;
-import flash.Sound;
-import flash.Stage;
-import flash.System;
-import flash.TextField;
-import flash.TextFormat;
-import flash.TextSnapshot;
-import flash.Video;
-import flash.XMLRequest;
-import flash.XMLSocket;
-
-import flash.text.StyleSheet;
-import flash.system.Capabilities;
-import flash.system.Security;
-
-#end
-
-#if flash8
-
-import flash.display.BitmapData;
-import flash.external.ExternalInterface;
-import flash.filters.BevelFilter;
-import flash.filters.BitmapFilter;
-import flash.filters.BlurFilter;
-import flash.filters.ColorMatrixFilter;
-import flash.filters.ConvolutionFilter;
-import flash.filters.DisplacementMapFilter;
-import flash.filters.DropShadowFilter;
-import flash.filters.GlowFilter;
-import flash.filters.GradientBevelFilter;
-import flash.filters.GradientGlowFilter;
-
-import flash.geom.ColorTransform;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.geom.Rectangle;
-import flash.geom.Transform;
-
-import flash.net.FileReference;
-import flash.net.FileReferenceList;
-
-import flash.system.IME;
-import flash.text.TextRenderer;
 
 #end
 
@@ -389,25 +710,12 @@ import flash.text.TextRenderer;
 import neko.Boot;
 import neko.FileSystem;
 import neko.Lib;
+import neko.NativeString;
+import neko.NativeArray;
 import neko.Random;
 import neko.Sys;
 import neko.Utf8;
 import neko.Web;
-import neko.NativeString;
-import neko.NativeArray;
-
-import neko.io.File;
-import neko.io.FileInput;
-import neko.io.FileOutput;
-import neko.io.Path;
-import neko.io.Process;
-
-import neko.zip.Compress;
-import neko.zip.CRC32;
-import neko.zip.Reader;
-import neko.zip.Writer;
-import neko.zip.Flush;
-import neko.zip.Uncompress;
 
 import neko.db.Connection;
 import neko.db.Manager;
@@ -417,188 +725,90 @@ import neko.db.ResultSet;
 import neko.db.Sqlite;
 import neko.db.Transaction;
 
+import neko.io.File;
+import neko.io.FileInput;
+import neko.io.FileOutput;
+import neko.io.Path;
+import neko.io.Process;
+
 import neko.net.Host;
 import neko.net.Poll;
 import neko.net.ProxyDetect;
+import neko.net.ProxySettings;
 import neko.net.ServerLoop;
 import neko.net.Socket;
-import neko.net.SocketInput;
-import neko.net.SocketOutput;
 import neko.net.ThreadRemotingServer;
 import neko.net.ThreadServer;
 
 import neko.vm.Deque;
+import neko.vm.Gc;
 import neko.vm.Loader;
+import neko.vm.LoaderHandle;
+import neko.vm.Lock;
 import neko.vm.Module;
+import neko.vm.ModuleHandle;
 import neko.vm.Mutex;
 import neko.vm.Thread;
+import neko.vm.ThreadHandle;
 import neko.vm.Tls;
-import neko.vm.Lock;
 import neko.vm.Ui;
-import neko.vm.Gc;
+
+import neko.zip.Compress;
+import neko.zip.CRC32;
+import neko.zip.Flush;
+import neko.zip.Reader;
+import neko.zip.Uncompress;
+import neko.zip.Writer;
+import neko.zip.ZipEntry;
 
 #end
 
 #if js
 
+import js.Anchor;
+import js.Body;
 import js.Boot;
-import js.Lib;
+import js.Button;
+import js.Checkbox;
+import js.Cookie;
+import js.Document;
 import js.Dom;
-import js.Selection;
-import js.Scroll;
+import js.Event;
+import js.FileUpload;
+import js.Form;
+import js.FormElement;
+import js.Frame;
+import js.Frameset;
+import js.Hidden;
+import js.History;
+import js.HtmlCollection;
+import js.HtmlDom;
+import js.IFrame;
+import js.Image;
+import js.JQuery;
+import js.JqEvent;
+import js.Lib;
+import js.Link;
+import js.Location;
+import js.MetaDom;
+import js.Navigator;
+import js.Option;
+import js.Password;
+import js.Radio;
+import js.Reset;
 import js.SWFObject;
+import js.Screen;
+import js.Scroll;
+import js.Select;
+import js.Selection;
+import js.Storage;
+import js.Style;
+import js.StyleSheet;
+import js.Submit;
+import js.Text;
+import js.Textarea;
+import js.Window;
 import js.XMLHttpRequest;
 import js.XMLSocket;
-
-#end
-
-// TOOLS
-
-#if neko
-
-//import tools.haxedoc.Main;
-//import tools.haxelib.Main;
-//import tools.haxelib.Site;
-//import tools.hxinst.Main;
-
-#end
-
-#if flash10
-
-import flash.Vector;
-import flash.Memory;
-
-import flash.events.SampleDataEvent;
-import flash.events.ShaderEvent;
-
-import flash.display.GraphicsBitmapFill;
-import flash.display.GraphicsEndFill;
-import flash.display.GraphicsGradientFill;
-import flash.display.GraphicsPath;
-import flash.display.GraphicsPathCommand;
-import flash.display.GraphicsPathWinding;
-import flash.display.GraphicsShaderFill;
-import flash.display.GraphicsSolidFill;
-import flash.display.GraphicsStroke;
-import flash.display.GraphicsTrianglePath;
-import flash.display.IGraphicsData;
-import flash.display.IGraphicsFill;
-import flash.display.IGraphicsPath;
-import flash.display.IGraphicsStroke;
-
-import flash.display.Shader;
-import flash.display.ShaderData;
-import flash.display.ShaderInput;
-import flash.display.ShaderJob;
-import flash.display.ShaderParameter;
-import flash.display.ShaderParameterType;
-import flash.display.ShaderPrecision;
-
-import flash.display.TriangleCulling;
-
-import flash.filters.ShaderFilter;
-
-import flash.geom.Matrix3D;
-import flash.geom.Orientation3D;
-import flash.geom.PerspectiveProjection;
-import flash.geom.Utils3D;
-import flash.geom.Vector3D;
-
-import flash.media.SoundCodec;
-
-import flash.net.NetStreamInfo;
-import flash.net.NetStreamPlayOptions;
-import flash.net.NetStreamPlayTransitions;
-
-import flash.text.engine.ContentElement;
-import flash.text.engine.TextJustifier;
-import flash.text.engine.SpaceJustifier;
-import flash.text.engine.EastAsianJustifier;
-import flash.text.engine.TypographicCase;
-import flash.text.engine.TabAlignment;
-import flash.text.engine.TabStop;
-import flash.text.engine.FontDescription;
-import flash.text.engine.FontMetrics;
-import flash.text.engine.FontWeight;
-import flash.text.engine.GraphicElement;
-import flash.text.engine.BreakOpportunity;
-import flash.text.engine.TextRotation;
-import flash.text.engine.Kerning;
-import flash.text.engine.TextElement;
-import flash.text.engine.JustificationStyle;
-import flash.text.engine.ElementFormat;
-import flash.text.engine.LigatureLevel;
-import flash.text.engine.TextLineCreationResult;
-import flash.text.engine.TextBlock;
-import flash.text.engine.FontPosture;
-import flash.text.engine.GroupElement;
-import flash.text.engine.FontLookup;
-import flash.text.engine.DigitCase;
-import flash.text.engine.TextLineMirrorRegion;
-import flash.text.engine.LineJustification;
-import flash.text.engine.TextLineValidity;
-import flash.text.engine.TextBaseline;
-import flash.text.engine.TextLine;
-import flash.text.engine.DigitWidth;
-import flash.text.engine.CFFHinting;
-import flash.text.engine.RenderingMode;
-
-import flash.ui.ContextMenuClipboardItems;
-import flash.ui.MouseCursor;
-
-import flash.system.JPEGLoaderContext;
-#end
-
-#if php
-
-import php.Exception;
-import php.FileSystem;
-import php.HException;
-import php.Lib;
-import php.Session;
-import php.Sys;
-import php.Utf8;
-import php.Web;
-
-import php.db.Connection;
-import php.db.Manager;
-import php.db.Mysql;
-import php.db.Object;
-import php.db.ResultSet;
-import php.db.Sqlite;
-
-import php.io.File;
-import php.io.FileInput;
-import php.io.FileOutput;
-import php.io.Path;
-import php.io.Process;
-
-#end
-
-#if cpp
-
-import cpp.FileSystem;
-import cpp.Lib;
-import cpp.Random;
-import cpp.Sys;
-
-import cpp.io.File;
-import cpp.io.FileInput;
-import cpp.io.FileOutput;
-import cpp.io.Path;
-import cpp.io.Process;
-
-import cpp.net.Host;
-import cpp.net.Socket;
-import cpp.net.SocketInput;
-import cpp.net.SocketOutput;
-
-import cpp.vm.Gc;
-import cpp.vm.Lock;
-import cpp.vm.Mutex;
-import cpp.vm.Thread;
-
-import cpp.zip.Flush;
-import cpp.zip.Uncompress;
 
 #end
