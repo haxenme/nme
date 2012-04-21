@@ -182,7 +182,7 @@ echo "-----------------------------------"
 
 # Download and install NME
 
-haxelib install nme
+haxelib install nme 3.3.1
 
 # Add "nme" command shortcut
 
