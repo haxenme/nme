@@ -196,6 +196,14 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	{
 		return (position < length) ? __get(position++) : ThrowEOFi();
 	}
+
+	
+	public inline function readMultiByte(inLen:Int, charSet:String):String
+	{
+      // TODO - use code page
+		return readUTFBytes(inLen);
+	}
+
 	
 	
 	public function readBytes(outData:ByteArray, inOffset:Int = 0, inLen:Int = 0):Void
