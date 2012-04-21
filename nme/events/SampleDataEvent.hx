@@ -17,6 +17,7 @@ class SampleDataEvent extends Event
 	{
 		super(type, bubbles, cancelable);
       data = new ByteArray();
+      data.bigEndian = false;
       position = 0.0;
 	}
 	
