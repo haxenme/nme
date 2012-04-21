@@ -1081,6 +1081,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 
+   if (inState.mPhase==rpHitTest && !mouseEnabled )
+      return;
+
    const Matrix &matrix = *inState.mTransform.mMatrix;
    Layout(matrix);
 

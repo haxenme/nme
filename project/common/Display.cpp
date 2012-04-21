@@ -178,6 +178,9 @@ void DisplayObject::SetBitmapCache(BitmapCache *inCache)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+   if (inState.mPhase==rpHitTest && !mouseEnabled )
+      return;
+
    if (mGfx && inState.mPhase!=rpBitmap)
    {
       bool hit = false;
@@ -661,6 +664,8 @@ void SimpleButton::Render( const RenderTarget &inTarget, const RenderState &inSt
 {
    if (inState.mPhase==rpHitTest)
    {
+      if (!mouseEnabled)
+         return;
       if (mState[stateHitTest])
       {
           mState[stateHitTest]->Render(inTarget,inState);
@@ -961,11 +966,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    {
       DisplayObject *obj = mChildren[i];
       //printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
-      if (!obj->visible || (inState.mPhase!=rpCreateMask && obj->IsMask()) ||
-         (inState.mPhase==rpHitTest && !obj->mouseEnabled) )
-      {
+      if (!obj->visible || (inState.mPhase!=rpCreateMask && obj->IsMask()) )
          continue;
-      }
 
       RenderState *obj_state = &state;
       full = inState.mTransform.mMatrix->Mult( obj->GetLocalMatrix() );
