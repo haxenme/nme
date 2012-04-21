@@ -7,13 +7,13 @@ in the "license.txt" file, included with the project.
 
 For instructions on how to install NME, please visit:
 
-http://www.haxenme.org/developers/get-started
+http://www.haxenme.org/download
 
 	
 If you would like to work from the source, you can find instructions for
 building the NME command-line tools and "NDLL" files, here:
 
-http://www.haxenme.org/developers/source
+http://www.haxenme.org/documentation/source/
 
 	
 Enjoy! If you have any questions or concerns, please visit the forum or

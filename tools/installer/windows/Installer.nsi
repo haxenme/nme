@@ -7,13 +7,13 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.3.0"
+!define VERSION "3.3.1"
 
-!define HAXE_VERSION "2.08"
+!define HAXE_VERSION "2.09"
 !define NEKO_VERSION "1.8.2"
-!define HXCPP_VERSION "2.08.3"
+!define HXCPP_VERSION "2.09"
 !define JEASH_VERSION "0.8.7"
-!define ACTUATE_VERSION "1.38"
+!define ACTUATE_VERSION "1.39"
 !define SWF_VERSION "1.11"
 
 
@@ -115,7 +115,7 @@ FunctionEnd
 
 ; Install Sections
 
-Section "haXe [${HAXE_VERSION}]" Main
+Section "Haxe [${HAXE_VERSION}]" Main
 	
 	SectionIn 1
 	SetOverwrite on
@@ -212,9 +212,9 @@ SectionEnd
 ; Install section strings
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${Main} "Installs the haXe language compiler and core files (Required)"
-!insertmacro MUI_DESCRIPTION_TEXT ${Neko} "Installs Neko, which is required by various haXe tools (Required)"
-!insertmacro MUI_DESCRIPTION_TEXT ${NME} "Installs the NME library for haXe"
+!insertmacro MUI_DESCRIPTION_TEXT ${Main} "Installs the Haxe language compiler and core files (Required)"
+!insertmacro MUI_DESCRIPTION_TEXT ${Neko} "Installs Neko, which is required by various Haxe tools (Required)"
+!insertmacro MUI_DESCRIPTION_TEXT ${NME} "Installs the NME library for Haxe"
 !insertmacro MUI_DESCRIPTION_TEXT ${HXCPP} "Installs the HXCPP library, which adds C/C++ support (Required for Neko and C++)"
 !insertmacro MUI_DESCRIPTION_TEXT ${Jeash} "Installs the Jeash library, which provides support for HTML5 applications, using Canvas ((Required for HTML5)"
 !insertmacro MUI_DESCRIPTION_TEXT ${Actuate} "Flexible 'tween' library for adding animations."
@@ -225,7 +225,7 @@ SectionEnd
 
 ; Uninstall Sections
 
-Section "un.haXe" UninstMain
+Section "un.Haxe" UninstMain
 	
 	RMDir /r "$INSTDIR\haxe"
 	
@@ -242,7 +242,7 @@ SectionEnd
 ; Uninstall section strings
 
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${UninstMain} "Uninstalls haXe and all installed libraries"
+!insertmacro MUI_DESCRIPTION_TEXT ${UninstMain} "Uninstalls Haxe and all installed libraries"
 !insertmacro MUI_DESCRIPTION_TEXT ${UninstNeko} "Uninstalls Neko"
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_END
 

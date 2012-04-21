@@ -1,6 +1,23 @@
 NME Changes
 
 
+3.3.1
+===============
+Updated for Haxe 2.09
+Improved support for BlackBerry
+Improved URLLoader
+Improved accelerometer orientation
+
+NME-79 	Compilation errors for neko on haxe 2.09
+NME-78 	Need to add a .keys() method to nme.ObjectHash
+NME-67 	DisplayObjectContainer::nmeGetObjectsUnderPoint calls itself rather than it's children
+NME-62 	BlackBerry target needs _sans, _serif, _typewriter default fonts
+NME-56 	Can't compile to Android
+NME-55  ia32-libs-multiarch instead of ia32-libs on new linux ubuntu 11.10
+NME-54 	Hard coded path for windows blackberry bin directory
+NME-39 	TextField.wordWrap allows line breaks when a character has accents
+
+
 3.3.0
 ===============
 Added native BlackBerry support.

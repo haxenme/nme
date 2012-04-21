@@ -29,6 +29,8 @@ class InstallTool {
 	public static var traceEnabled:Bool = true;
 	public static var verbose = false;
 	
+	private static var version = "3.3.1";
+	
 	
 	static public function create (nme:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
 		
@@ -491,12 +493,12 @@ class InstallTool {
 		
 		if (command == "") {
 			
-			Lib.println ("NME Command-Line Tools (3.3.0)");
+			Lib.println ("NME Command-Line Tools (" + version + ")");
 			Lib.println ("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
 			
 		} else if (command == "help") {
 			
-			Lib.println ("NME Command-Line Tools (3.3.0)");
+			Lib.println ("NME Command-Line Tools (" + version + ")");
 			Lib.println ("");
 			Lib.println (" Usage : nme setup (target)");
 			Lib.println (" Usage : nme help");
@@ -544,7 +546,7 @@ class InstallTool {
 			Lib.println ("  [flash] -opera : Generate an Opera Widget");
 			Lib.println ("  [ios] -simulator : Build/test for the iPhone Simulator");
 			Lib.println ("  [ios] -simulator -ipad : Builds/test for the iPad Simulator");
-			Lib.println ("  [run|test] -args a0 a1 a1 ... : pass remainder of the commandline to executable");
+			Lib.println ("  [run|test] -args a0 a1 ... : pass remaining arguments to the executable");
 			
 			return;
 			

@@ -7,7 +7,7 @@
 # it for more Linux distributions
 
 
-read -p "Do you wish to install Haxe and Neko? (y/n) " RESP
+read -p "Do you wish to install Haxe 2.09 and Neko 1.8.2? (y/n) " RESP
 
 if [ $RESP = "y" ]; then
 	
@@ -177,7 +177,7 @@ haxelib install jeash
 
 echo ""
 echo "-----------------------------------"
-echo "    Installing NME 3.3.0"
+echo "    Installing NME 3.3.1"
 echo "-----------------------------------"
 
 # Download and install NME
