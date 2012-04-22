@@ -121,7 +121,7 @@ class ObjectHash <T> {
 	}
 	
 	
-	public inline function keys ():Iterator <T> {
+	/*public inline function keys ():Iterator <T> {
 		
 		#if flash
 		
@@ -129,11 +129,13 @@ class ObjectHash <T> {
 		
 		#else
 		
-		return hash.keys ();
+		// Need to return the object, not the ID
+		
+		//return hash.keys ();
 		
 		#end
 		
-	}
+	}*/
 	
 	
 	public inline function remove (key:Dynamic):Void {

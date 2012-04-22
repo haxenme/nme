@@ -1,40 +1,41 @@
 -xml bin/cpp.xml
 -cpp obj/cpp
--cp src
--cp src/cpp/_std
-haxe.ImportAll
+-cp src/haxe
 --no-output
+-D xmldoc
+-D HXCPP_MULTI_THREADED
+--macro ImportAll.run()
 
 --next
 
 -xml bin/flash.xml
 -swf obj/flash.swf
--cp src
-haxe.ImportAll
 --no-output
+-cp src/haxe
+-swf-version 11.3
+--macro ImportAll.run()
 
 --next
 
 -xml bin/neko.xml
 -neko obj/neko.n
--cp src
-haxe.ImportAll
 --no-output
+-cp src/haxe
+--macro ImportAll.run()
 
 --next
 
 -xml bin/js.xml
 -js obj/js.js
--cp src
-haxe.ImportAll
 --no-output
+-cp src/haxe
+--macro ImportAll.run()
 
 --next
 
 -xml bin/nme.xml
 -cpp obj/nme
 -cp src
--cp src/cpp/_std
 nme.ImportAll
 -D nme_document
 -lib nme
@@ -46,7 +47,6 @@ nme.ImportAll
 -xml ../../haxedoc.xml
 -cpp obj/nme
 -cp src
--cp src/cpp/_std
 nme.ImportAll
 -D nme_document
 -lib nme
