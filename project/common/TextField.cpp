@@ -138,11 +138,9 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
 
 void TextField::SplitGroup(int inGroup,int inPos)
 {
-   CharGroup empty;
-   memset(&empty,0,sizeof(empty));
-   mCharGroups.InsertAt(inGroup+1,CharGroup());
-   CharGroup &group = mCharGroups[inGroup];
-   CharGroup &extra = mCharGroups[inGroup+1];
+   mCharGroups.InsertAt(inGroup+1,new CharGroup);
+   CharGroup &group = *mCharGroups[inGroup];
+   CharGroup &extra = *mCharGroups[inGroup+1];
    extra.mFormat = group.mFormat;
    extra.mFormat->IncRef();
    extra.mFontHeight = group.mFontHeight;
@@ -171,7 +169,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    inFmt->IncRef();
    int g0 = GroupFromChar(inStart);
    int g1 = GroupFromChar(inEnd);
-   int g0_ex = inStart-mCharGroups[g0].mChar0;
+   int g0_ex = inStart-mCharGroups[g0]->mChar0;
    if (g0_ex>0)
    {
       SplitGroup(g0,g0_ex);
@@ -180,8 +178,8 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    }
    if (inEnd<max)
    {
-      int g1_ex = inEnd-mCharGroups[g1].mChar0;
-      if (g1_ex<mCharGroups[g1].mString.size())
+      int g1_ex = inEnd-mCharGroups[g1]->mChar0;
+      if (g1_ex<mCharGroups[g1]->mString.size())
       {
          SplitGroup(g1,g1_ex);
          g1++;
@@ -190,7 +188,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 
    for(int g=g0;g<g1;g++)
    {
-      mCharGroups[g].ApplyFormat(inFmt);
+      mCharGroups[g]->ApplyFormat(inFmt);
    }
 
    inFmt->DecRef();
@@ -679,9 +677,7 @@ void TextField::ShowCaret(bool inFromDrag)
 
 void TextField::Clear()
 {
-   for(int i=0;i<mCharGroups.size();i++)
-      mCharGroups[i].Clear();
-   mCharGroups.resize(0);
+   mCharGroups.DeleteAll();
    mLines.resize(0);
    maxScrollH = 0;
    maxScrollV = 1;
@@ -698,11 +694,11 @@ Cursor TextField::GetCursor()
 void TextField::setText(const WString &inString)
 {
    Clear();
-   CharGroup chars;
-   chars.mString.Set(inString.c_str(),inString.length());
-   chars.mFormat = defaultTextFormat->IncRef();
-   chars.mFont = 0;
-   chars.mFontHeight = 0;
+   CharGroup *chars = new CharGroup;
+   chars->mString.Set(inString.c_str(),inString.length());
+   chars->mFormat = defaultTextFormat->IncRef();
+   chars->mFont = 0;
+   chars->mFontHeight = 0;
    mCharGroups.push_back(chars);
    mLinesDirty = true;
    mFontsDirty = true;
@@ -713,7 +709,7 @@ WString TextField::getText()
 {
    WString result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += WString(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
+      result += WString(mCharGroups[i]->mString.mPtr,mCharGroups[i]->Chars());
    return result;
 }
 
@@ -722,7 +718,7 @@ WString TextField::getHTMLText()
 {
    WString result;
    for(int i=0;i<mCharGroups.size();i++)
-      result += WString(mCharGroups[i].mString.mPtr,mCharGroups[i].Chars());
+      result += WString(mCharGroups[i]->mString.mPtr,mCharGroups[i]->Chars());
    return result;
 }
 
@@ -734,12 +730,12 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
       const TiXmlText *text = child->ToText();
       if (text)
       {
-         CharGroup chars;
-         chars.mFormat = inFormat->IncRef();
-         chars.mFont = 0;
-         chars.mFontHeight = 0;
-         UTF8ToWideVec(chars.mString,text->Value());
-         ioCharCount += chars.Chars();
+         CharGroup *chars = new CharGroup;;
+         chars->mFormat = inFormat->IncRef();
+         chars->mFont = 0;
+         chars->mFontHeight = 0;
+         UTF8ToWideVec(chars->mString,text->Value());
+         ioCharCount += chars->Chars();
 
          mCharGroups.push_back(chars);
          //printf(" %s %d\n", text->Value(), inLineSkips );
@@ -813,17 +809,17 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
             {
                if (mCharGroups.size())
                {
-                  CharGroup &last = mCharGroups[ mCharGroups.size()-1 ];
+                  CharGroup &last = *mCharGroups[ mCharGroups.size()-1 ];
                   last.mString.push_back('\n');
                   ioCharCount++;
                }
                else
                {
-                  CharGroup chars;
-                  chars.mFormat = inFormat->IncRef();
-                  chars.mFont = 0;
-                  chars.mFontHeight = 0;
-                  chars.mString.push_back('\n');
+                  CharGroup *chars = new CharGroup;
+                  chars->mFormat = inFormat->IncRef();
+                  chars->mFont = 0;
+                  chars->mFontHeight = 0;
+                  chars->mString.push_back('\n');
                   ioCharCount++;
                   mCharGroups.push_back(chars);
                }
@@ -902,7 +898,7 @@ int TextField::GroupFromChar(int inChar)
 
    int min = 0;
    int max = mCharGroups.size();
-   CharGroup &last = mCharGroups[max-1];
+   CharGroup &last = *mCharGroups[max-1];
    if (inChar>=last.mChar0)
    {
       if (inChar>=last.mChar0 + last.Chars())
@@ -913,12 +909,12 @@ int TextField::GroupFromChar(int inChar)
    while(min+1<max)
    {
       int mid = (min+max)/2;
-      if (mCharGroups[mid].mChar0>inChar)
+      if (mCharGroups[mid]->mChar0>inChar)
          max = mid;
       else
          min = mid;
    }
-   while(min<max && mCharGroups[min].Chars()==0)
+   while(min<max && mCharGroups[min]->Chars()==0)
       min++;
    return min;
 }
@@ -966,20 +962,20 @@ WString TextField::getLineText(int inLine)
    int g0 = GroupFromChar(line.mChar0);
    int g1 = GroupFromChar(line.mChar0 + line.mChars-1);
 
-   int g0_pos =  line.mChar0 - mCharGroups[g0].mChar0;
-   wchar_t *g0_first = mCharGroups[g0].mString.mPtr + g0_pos;
+   int g0_pos =  line.mChar0 - mCharGroups[g0]->mChar0;
+   wchar_t *g0_first = mCharGroups[g0]->mString.mPtr + g0_pos;
    if (g0==g1)
    {
       return WString(g0_first, line.mChars );
    }
 
-   WString result(g0_first,mCharGroups[g0].mString.size() - g0_pos );
+   WString result(g0_first,mCharGroups[g0]->mString.size() - g0_pos );
    for(int g=g0+1;g<g1;g++)
    {
-      CharGroup &group = mCharGroups[g];
+      CharGroup &group = *mCharGroups[g];
       result += WString( group.mString.mPtr, group.mString.size() );
    }
-   CharGroup &group = mCharGroups[g1];
+   CharGroup &group = *mCharGroups[g1];
    result += WString( group.mString.mPtr, line.mChar0 + line.mChars - group.mChar0 );
 
    return result;
@@ -1188,7 +1184,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    int last_line = mLines.size()-1;
    for(int g=0;g<mCharGroups.size();g++)
    {
-      CharGroup &group = mCharGroups[g];
+      CharGroup &group = *mCharGroups[g];
       if (group.Chars() && group.mFont)
       {
          uint32 group_tint =
@@ -1277,10 +1273,10 @@ void TextField::DeleteChars(int inFirst,int inEnd)
    if (g0>=0 && g0<mCharGroups.size())
    {
       int g1 = GroupFromChar(inEnd-1);
-      CharGroup &group0 = mCharGroups[g0];
+      CharGroup &group0 = *mCharGroups[g0];
       int del_g0 = inFirst==group0.mChar0 ? g0 : g0+1;
       group0.mString.erase( inFirst - group0.mChar0, inEnd-inFirst );
-      CharGroup &group1 = mCharGroups[g1];
+      CharGroup &group1 = *mCharGroups[g1];
       int del_g1 = (inEnd ==group1.mChar0+group1.Chars())? g1+1 : g1;
       if (g0!=g1)
          group1.mString.erase( 0,inEnd - group1.mChar0);
@@ -1291,7 +1287,7 @@ void TextField::DeleteChars(int inFirst,int inEnd)
       if (del_g0 < del_g1)
       {
          for(int g=del_g0; g<del_g1;g++)
-            mCharGroups[g].Clear();
+            delete mCharGroups[g];
          mCharGroups.erase(del_g0, del_g1 - del_g0);
       }
 
@@ -1334,13 +1330,13 @@ void TextField::InsertString(WString &inString)
       }
       else
       {
-         mCharGroups[0].mString.InsertAt(0,inString.c_str(),inString.length());
+         mCharGroups[0]->mString.InsertAt(0,inString.c_str(),inString.length());
       }
    }
    else
    {
       int g = GroupFromChar(caretIndex-1);
-      CharGroup &group = mCharGroups[g];
+      CharGroup &group = *mCharGroups[g];
       group.mString.InsertAt( caretIndex-group.mChar0,inString.c_str(),inString.length());
    }
    caretIndex += inString.length();
@@ -1380,7 +1376,7 @@ void TextField::Layout(const Matrix &inMatrix)
            rot!=mLayoutRotation)
    {
       for(int i=0;i<mCharGroups.size();i++)
-         mCharGroups[i].UpdateFont(scale_v,rot,!embedFonts);
+         mCharGroups[i]->UpdateFont(scale_v,rot,!embedFonts);
       mLinesDirty = true;
       mFontsDirty = false;
       mLayoutScaleV = scale_v;
@@ -1410,7 +1406,7 @@ void TextField::Layout(const Matrix &inMatrix)
 
    for(int i=0;i<mCharGroups.size();i++)
    {
-      CharGroup &g = mCharGroups[i];
+      CharGroup &g = *mCharGroups[i];
       g.mChar0 = char_count;
       int cid = 0;
       int last_word_cid = 0;
@@ -1527,7 +1523,7 @@ void TextField::Layout(const Matrix &inMatrix)
    textWidth += gap;
    if (line.mChars || mLines.empty())
    {
-      mCharGroups[mCharGroups.size()-1].UpdateMetrics(line.mMetrics);
+      mCharGroups[mCharGroups.size()-1]->UpdateMetrics(line.mMetrics);
       y += line.mMetrics.height;
       mLines.push_back(line);
    }
@@ -1588,7 +1584,7 @@ void TextField::Layout(const Matrix &inMatrix)
       int chars = line.mChars;
       if (chars>0)
       {
-         CharGroup &group = mCharGroups[line.mCharGroup0];
+         CharGroup &group = *mCharGroups[line.mCharGroup0];
 
          // Get alignment...
          int extra = (mActiveRect.w - line.mMetrics.width - 1);
@@ -1700,9 +1696,8 @@ TextFormat *TextFormat::Default()
 
 // --- TextFormat -----------------------------------
 
-void CharGroup::Clear()
+CharGroup::~CharGroup()
 {
-   mString.clear();
    mFormat->DecRef();
    if (mFont)
       mFont->DecRef();

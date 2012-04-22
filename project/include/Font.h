@@ -101,6 +101,8 @@ private:
 
 struct CharGroup
 {
+   CharGroup() : mChar0(0), mFontHeight(0), mFormat(0), mFont(0) { };
+   ~CharGroup();
    void  Clear();
    bool  UpdateFont(double inScale,GlyphRotation inRotation,bool inNative);
    void  UpdateMetrics(TextLineMetrics &ioMetrics);
@@ -117,7 +119,7 @@ struct CharGroup
 };
 
 
-typedef QuickVec<CharGroup> CharGroups;
+typedef QuickVec<CharGroup *> CharGroups;
 
 struct Line
 {
