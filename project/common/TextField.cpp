@@ -77,6 +77,7 @@ TextField::~TextField()
    if (mHighlightGfx)
       mHighlightGfx->DecRef();
    defaultTextFormat->DecRef();
+   mCharGroups.DeleteAll();
 }
 
 void TextField::setWidth(double inWidth)
