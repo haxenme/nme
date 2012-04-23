@@ -1,40 +1,19 @@
 package nme.events;
-#if (cpp || neko)
+#if code_completion
 
 
-class TimerEvent extends Event
-{
-	
-	public static var TIMER:String = "timer";
-	public static var TIMER_COMPLETE:String = "timerComplete";
-	
-	
-	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false)
-	{
-		super(type, bubbles, cancelable);
-	}
-	
-	
-	public override function clone ():Event
-	{
-		return new TimerEvent (type, bubbles, cancelable);
-	}
-	
-	
-	public override function toString ():String
-	{
-		return "[TimerEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + "]";
-	}
-	
-	
-	public function updateAfterEvent()
-	{
-		
-	}
-	
+extern class TimerEvent extends Event {
+	function new(type : String, bubbles : Bool = false, cancelable : Bool = false) : Void;
+	function updateAfterEvent() : Void;
+	static var TIMER : String;
+	static var TIMER_COMPLETE : String;
 }
 
 
+#elseif (cpp || neko)
+typedef TimerEvent = neash.events.TimerEvent;
+#elseif js
+typedef TimerEvent = jeash.events.TimerEvent;
 #else
 typedef TimerEvent = flash.events.TimerEvent;
 #end

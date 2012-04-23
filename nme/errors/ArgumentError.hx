@@ -1,13 +1,15 @@
 package nme.errors;
-#if (cpp || neko)
+#if code_completion
 
 
-class ArgumentError extends Error
-{
-	
+@:native("ArgumentError") extern class ArgumentError extends Error {
 }
 
 
+#elseif (cpp || neko)
+typedef ArgumentError = neash.errors.ArgumentError;
+#elseif js
+typedef ArgumentError = jeash.errors.ArgumentError;
 #else
 typedef ArgumentError = flash.errors.ArgumentError;
 #end

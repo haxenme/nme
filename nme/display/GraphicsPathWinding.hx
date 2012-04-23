@@ -1,16 +1,17 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-class GraphicsPathWinding
-{	
-	
-	public static inline var EVEN_ODD = "evenOdd";
-	public static inline var NON_ZERO = "nonZero";
-	
+@:fakeEnum(String) extern enum GraphicsPathWinding {
+	EVEN_ODD;
+	NON_ZERO;
 }
 
 
+#elseif (cpp || neko)
+typedef GraphicsPathWinding = neash.display.GraphicsPathWinding;
+#elseif js
+typedef GraphicsPathWinding = jeash.display.GraphicsPathWinding;
 #else
 typedef GraphicsPathWinding = flash.display.GraphicsPathWinding;
 #end

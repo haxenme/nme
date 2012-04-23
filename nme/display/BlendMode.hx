@@ -1,26 +1,30 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-enum BlendMode
-{
-	NORMAL;
-	LAYER;
-	MULTIPLY;
-	SCREEN;
-	LIGHTEN;
+@:fakeEnum(String) extern enum BlendMode {
+	ADD;
+	ALPHA;
 	DARKEN;
 	DIFFERENCE;
-	ADD;
-	SUBTRACT;
-	INVERT;
-	ALPHA;
 	ERASE;
-	OVERLAY;
 	HARDLIGHT;
+	INVERT;
+	LAYER;
+	LIGHTEN;
+	MULTIPLY;
+	NORMAL;
+	OVERLAY;
+	SCREEN;
+	SHADER;
+	SUBTRACT;
 }
 
 
+#elseif (cpp || neko)
+typedef BlendMode = neash.display.BlendMode;
+#elseif js
+typedef BlendMode = jeash.display.BlendMode;
 #else
 typedef BlendMode = flash.display.BlendMode;
 #end

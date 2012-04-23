@@ -1,4 +1,5 @@
 package nme.ui;
+#if code_completion
 
 
 typedef Acceleration = 
@@ -7,3 +8,8 @@ typedef Acceleration =
 	y:Float,
 	z:Float 
 }
+
+
+#elseif (cpp || neko)
+typedef Acceleration = neash.ui.Acceleration;
+#end

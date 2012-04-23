@@ -1,15 +1,18 @@
 package nme.events;
-#if (cpp || neko)
+#if code_completion
 
 
-class EventPhase
-{
-   public static var CAPTURING_PHASE = 0;
-   public static var AT_TARGET = 1;
-   public static var BUBBLING_PHASE = 2;
+@:fakeEnum(UInt) extern enum EventPhase {
+	AT_TARGET;
+	BUBBLING_PHASE;
+	CAPTURING_PHASE;
 }
 
 
+#elseif (cpp || neko)
+typedef EventPhase = neash.events.EventPhase;
+#elseif js
+typedef EventPhase = jeash.events.EventPhase;
 #else
 typedef EventPhase = flash.events.EventPhase;
 #end

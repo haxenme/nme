@@ -1,16 +1,19 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-enum LineScaleMode
-{	
-	NORMAL; // default
+@:fakeEnum(String) extern enum LineScaleMode {
+	HORIZONTAL;
 	NONE;
+	NORMAL;
 	VERTICAL;
-	HORIZONTAL;	
 }
 
 
+#elseif (cpp || neko)
+typedef LineScaleMode = neash.display.LineScaleMode;
+#elseif js
+typedef LineScaleMode = jeash.display.LineScaleMode;
 #else
 typedef LineScaleMode = flash.display.LineScaleMode;
 #end

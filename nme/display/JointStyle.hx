@@ -1,15 +1,18 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-enum JointStyle
-{	
-	ROUND; // default
+@:fakeEnum(String) extern enum JointStyle {
+	BEVEL;
 	MITER;
-	BEVEL;	
+	ROUND;
 }
 
 
+#elseif (cpp || neko)
+typedef JointStyle = neash.display.JointStyle;
+#elseif js
+typedef JointStyle = jeash.display.JointStyle;
 #else
 typedef JointStyle = flash.display.JointStyle;
 #end

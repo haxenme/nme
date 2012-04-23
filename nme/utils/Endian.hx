@@ -1,16 +1,17 @@
 package nme.utils;
-#if (cpp || neko)
+#if code_completion
 
 
-class Endian
-{
-
-	public static inline var BIG_ENDIAN : String = "bigEndian";
-	public static inline var LITTLE_ENDIAN : String = "littleEndian";
-
+@:fakeEnum(String) extern enum Endian {
+	BIG_ENDIAN;
+	LITTLE_ENDIAN;
 }
 
 
+#elseif (cpp || neko)
+typedef Endian = neash.utils.Endian;
+#elseif js
+typedef Endian = jeash.utils.Endian;
 #else
 typedef Endian = flash.utils.Endian;
 #end

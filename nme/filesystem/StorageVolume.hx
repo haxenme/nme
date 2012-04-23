@@ -1,24 +1,19 @@
 package nme.filesystem;
+#if code_completion
 
-class StorageVolume
+
+extern class StorageVolume
 {
-   public function new(inRootDirPath:File, inName:String, inWritable:Bool,
-                      inRemovable:Bool, inFileSysType:String, inDrive:String)
-   {
-      rootDirectory = inRootDirPath;
-      name = inName;
-      fileSystemType = inFileSysType;
-      isRemovable = inRemovable;
-      isWritable = inWritable;
-      drive = inDrive;
-      if (drive=="") drive = null;
-   }
-
-   public var drive(default,null) : String;
-   public var fileSystemType(default,null) : String;
-   public var isRemovable(default,null) : Bool;
-   public var isWritable(default,null) : Bool;
-   public var name(default,null) : String;
-   public var rootDirectory(default,null) : File;
+	function new(inRootDirPath:File, inName:String, inWritable:Bool, inRemovable:Bool, inFileSysType:String, inDrive:String);
+	var drive(default,null) : String;
+	var fileSystemType(default,null) : String;
+	var isRemovable(default,null) : Bool;
+	var isWritable(default,null) : Bool;
+	var name(default,null) : String;
+	var rootDirectory(default,null) : File;
 }
 
+
+#elseif (cpp || neko)
+typedef StorageVolume = neash.filesystem.StorageVolume;
+#end

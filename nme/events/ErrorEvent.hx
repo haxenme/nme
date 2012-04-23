@@ -1,34 +1,18 @@
 package nme.events;
-#if (cpp || neko)
+#if code_completion
 
 
-class ErrorEvent extends TextEvent
-{
-
-	public var errorID(default, null):Int;
-	
-	
-	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, text:String = "", id:Int = 0)
-	{
-		super(type, bubbles, cancelable, text);
-		errorID = id;
-	}
-	
-	
-	public override function clone ():Event
-	{
-		return new ErrorEvent (type, bubbles, cancelable, text, errorID);
-	}
-	
-	
-	public override function toString ():String
-	{
-		return "[ErrorEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " text=" + text + " errorID=" + errorID + "]";
-	}
-	
+extern class ErrorEvent extends TextEvent {
+	@:require(flash10_1) var errorID(default,null) : Int;
+	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
+	static var ERROR : String;
 }
 
 
+#elseif (cpp || neko)
+typedef ErrorEvent = neash.events.ErrorEvent;
+#elseif js
+typedef ErrorEvent = jeash.events.ErrorEvent;
 #else
 typedef ErrorEvent = flash.events.ErrorEvent;
 #end

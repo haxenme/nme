@@ -1,26 +1,16 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-import nme.Loader;
-
-
-class GraphicsEndFill extends IGraphicsData
-{	
-	
-	public function new()
-	{
-		
-		super(nme_graphics_end_fill_create());
-		
-	}
-	
-	
-	private static var nme_graphics_end_fill_create = Loader.load("nme_graphics_end_fill_create", 0);
-	
+extern class GraphicsEndFill implements IGraphicsData, implements IGraphicsFill {
+	function new() : Void;
 }
 
 
+#elseif (cpp || neko)
+typedef GraphicsEndFill = neash.display.GraphicsEndFill;
+#elseif js
+typedef GraphicsEndFill = jeash.display.GraphicsEndFill;
 #else
 typedef GraphicsEndFill = flash.display.GraphicsEndFill;
 #end

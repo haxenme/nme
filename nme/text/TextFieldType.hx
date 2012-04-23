@@ -1,14 +1,17 @@
 package nme.text;
-#if (cpp || neko)
+#if code_completion
 
 
-enum TextFieldType
-{
-   DYNAMIC;
-   INPUT;
+@:fakeEnum(String) extern enum TextFieldType {
+	DYNAMIC;
+	INPUT;
 }
 
 
+#elseif (cpp || neko)
+typedef TextFieldType = neash.text.TextFieldType;
+#elseif js
+typedef TextFieldType = jeash.text.TextFieldType;
 #else
 typedef TextFieldType = flash.text.TextFieldType;
 #end

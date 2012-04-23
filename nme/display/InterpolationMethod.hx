@@ -1,14 +1,17 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-enum InterpolationMethod
-{	
+@:fakeEnum(String) extern enum InterpolationMethod {
+	LINEAR_RGB;
 	RGB;
-	LINEAR_RGB;	
 }
 
 
+#elseif (cpp || neko)
+typedef InterpolationMethod = neash.display.InterpolationMethod;
+#elseif js
+typedef InterpolationMethod = jeash.display.InterpolationMethod;
 #else
 typedef InterpolationMethod = flash.display.InterpolationMethod;
 #end

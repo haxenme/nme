@@ -1,17 +1,18 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-// The order of this enum is important
-
-enum TriangleCulling
-{
-	POSITIVE;
-	NONE;
+@:fakeEnum(String) extern enum TriangleCulling {
 	NEGATIVE;
+	NONE;
+	POSITIVE;
 }
 
 
+#elseif (cpp || neko)
+typedef TriangleCulling = neash.display.TriangleCulling;
+#elseif js
+typedef TriangleCulling = jeash.display.TriangleCulling;
 #else
 typedef TriangleCulling = flash.display.TriangleCulling;
 #end

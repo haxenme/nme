@@ -1,37 +1,18 @@
 package nme.net;
+#if code_completion
 
-class URLVariables implements Dynamic
-{
-   public function new(?inEncoded:String)
-   {
-      if (inEncoded!=null)
-         decode(inEncoded);
-   }
 
-   public function decode(inVars:String)
-   {
-      var fields = Reflect.fields(this);
-      for(f in fields)
-         Reflect.deleteField(this,f);
-      var fields = inVars.split(";").join("&").split("&");
-      for(f in fields)
-      {
-         var eq = f.indexOf("=");
-         if (eq>0)
-            Reflect.setField(this, StringTools.urlDecode(f.substr(0,eq)),
-                                   StringTools.urlDecode(f.substr(eq+1)) );
-         else if (eq!=0)
-            Reflect.setField(this, StringTools.urlDecode(f),"");
-      }
-   }
-
-   public function toString() : String
-   {
-      var result = new Array<String>();
-      var fields = Reflect.fields(this);
-      for(f in fields)
-          result.push( StringTools.urlEncode(f) + "=" + StringTools.urlEncode(Reflect.field(this,f) ) );
- 
-      return result.join("&");
-   }
+extern class URLVariables implements Dynamic {
+	function new(?source : String) : Void;
+	function decode(source : String) : Void;
+	function toString() : String;
 }
+
+
+#elseif (cpp || neko)
+typedef URLVariables = neash.net.URLVariables;
+#elseif js
+typedef URLVariables = jeash.net.URLVariables;
+#else
+typedef URLVariables = flash.net.URLVariables;
+#end

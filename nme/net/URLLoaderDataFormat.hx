@@ -1,15 +1,18 @@
 package nme.net;
-#if (cpp || neko)
+#if code_completion
 
 
-enum URLLoaderDataFormat
-{
-   BINARY;
-   TEXT;
-   VARIABLES;
+@:fakeEnum(String) extern enum URLLoaderDataFormat {
+	BINARY;
+	TEXT;
+	VARIABLES;
 }
 
 
+#elseif (cpp || neko)
+typedef URLLoaderDataFormat = neash.net.URLLoaderDataFormat;
+#elseif js
+typedef URLLoaderDataFormat = jeash.net.URLLoaderDataFormat;
 #else
 typedef URLLoaderDataFormat = flash.net.URLLoaderDataFormat;
 #end

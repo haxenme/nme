@@ -1,16 +1,19 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-enum StageQuality
-{
-   LOW;
-   MEDIUM;
-   HIGH;
-   BEST;
+@:fakeEnum(String) extern enum StageQuality {
+	BEST;
+	HIGH;
+	LOW;
+	MEDIUM;
 }
 
 
+#elseif (cpp || neko)
+typedef StageQuality = neash.display.StageQuality;
+#elseif js
+typedef StageQuality = jeash.display.StageQuality;
 #else
 typedef StageQuality = flash.display.StageQuality;
 #end

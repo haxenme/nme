@@ -1,85 +1,19 @@
 package nme.display;
-#if (cpp || neko)
+#if code_completion
 
 
-import nme.display.DisplayObject;
-import nme.display.PixelSnapping;
-
-
-class Bitmap extends DisplayObject
-{
-	
-	/**
-	 * You can set the bitmapData property to change which image
-	 * is displayed in the Bitmap. BitmapData objects can be shared
-	 * between multiple Bitmap instances to improve performance
-	 * and reduce memory usage.
-	 */
-	public var bitmapData(default, nmeSetBitmapData):BitmapData;
-	
-	/**
-	 * Adjust the type of pixel snapping used when rendering the image
-	 */
-	public var pixelSnapping:PixelSnapping;
-	
-	/**
-	 * Adjust whether the image should be rendered with smoothing
-	 */
-	public var smoothing(default, nmeSetSmoothing):Bool;
-	
-	/** @private */ private var mGraphics:Graphics;
-	
-	
-	public function new(?inBitmapData:BitmapData, ?inPixelSnapping:PixelSnapping, ?inSmoothing:Bool):Void
-	{
-		super(DisplayObject.nme_create_display_object(), "Bitmap");
-		
-		pixelSnapping = inPixelSnapping;
-		smoothing = inSmoothing;
-		
-		nmeSetBitmapData(inBitmapData);
-	}
-	
-	
-	/** @private */ private function nmeRebuid()
-	{
-		var gfx = graphics;
-		gfx.clear();
-		
-		if (bitmapData != null)
-		{
-			gfx.beginBitmapFill(bitmapData,false,smoothing);
-			gfx.drawRect(0,0,bitmapData.width,bitmapData.height);
-			gfx.endFill();
-		}
-	}
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	/** @private */ private function nmeSetBitmapData(inBitmapData:BitmapData):BitmapData
-	{
-		bitmapData = inBitmapData;
-		nmeRebuid();
-		
-		return inBitmapData;
-	}
-	
-	
-	/** @private */ private function nmeSetSmoothing(inSmooth:Bool):Bool
-	{
-		smoothing = inSmooth;
-		nmeRebuid();
-		
-		return inSmooth;
-	}
-	
+extern class Bitmap extends DisplayObject {
+	var bitmapData : BitmapData;
+	var pixelSnapping : PixelSnapping;
+	var smoothing : Bool;
+	function new(?bitmapData : BitmapData, ?pixelSnapping : PixelSnapping, smoothing : Bool = false) : Void;
 }
 
 
+#elseif (cpp || neko)
+typedef Bitmap = neash.display.Bitmap;
+#elseif js
+typedef Bitmap = jeash.display.Bitmap;
 #else
 typedef Bitmap = flash.display.Bitmap;
 #end

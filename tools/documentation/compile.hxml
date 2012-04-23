@@ -35,6 +35,7 @@
 
 -xml bin/nme.xml
 -cpp obj/nme
+-D code_completion
 -cp src
 nme.ImportAll
 -D nme_document
@@ -47,6 +48,7 @@ nme.ImportAll
 -xml ../../haxedoc.xml
 -cpp obj/nme
 -cp src
+-D code_completion
 nme.ImportAll
 -D nme_document
 -lib nme

@@ -1,15 +1,18 @@
 package nme.ui;
-#if (cpp || neko)
+#if code_completion
 
 
-enum MultitouchInputMode
-{
-   NONE;
-   TOUCH_POINT;
-   GESTURE;
+@:fakeEnum(String) extern enum MultitouchInputMode {
+	GESTURE;
+	NONE;
+	TOUCH_POINT;
 }
 
 
+#elseif (cpp || neko)
+typedef MultitouchInputMode = neash.ui.MultitouchInputMode;
+#elseif js
+typedef MultitouchInputMode = jeash.ui.MultitouchInputMode;
 #else
 typedef MultitouchInputMode = flash.ui.MultitouchInputMode;
 #end

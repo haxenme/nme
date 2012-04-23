@@ -1,35 +1,23 @@
 package nme.errors;
-#if (cpp || neko)
+#if code_completion
 
 
-class Error
-{
-	
-	/** @private */ private var errorID:Int;
-	/** @private */ private var message:Dynamic;
-	/** @private */ private var name:Dynamic;
-
-	public function new(?inMessage:Dynamic, id:Dynamic = 0)
-	{
-		message = inMessage;
-		errorID = id;
-	}
-	
-	
-	private function getStackTrace():String
-	{
-		return "";
-	}
-	
-	
-	public function toString():String
-	{
-		return message;
-	}
-	
+extern class Error #if !flash_strict implements Dynamic #end {
+	var errorID(default,null) : Int;
+	var message : Dynamic;
+	var name : Dynamic;
+	function new(?message : Dynamic, id : Dynamic = 0) : Void;
+	function getStackTrace() : String;
+	static var length : Int;
+	static function getErrorMessage(index : Int) : String;
+	static function throwError(type : Class<Dynamic>, index : UInt, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Dynamic;
 }
 
 
+#elseif (cpp || neko)
+typedef Error = neash.errors.Error;
+#elseif js
+typedef Error = jeash.errors.Error;
 #else
 typedef Error = flash.errors.Error;
 #end

@@ -1,18 +1,16 @@
 package nme.errors;
-#if (cpp || neko)
+#if code_completion
 
 
-class EOFError extends Error
-{
-	
-	public function new()
-	{
-		super("End of file was encountered", 2030);
-	}
-	
+extern class EOFError extends IOError {
+	function new(?message : String, id : Int = 0) : Void;
 }
 
 
+#elseif (cpp || neko)
+typedef EOFError = neash.errors.EOFError;
+#elseif js
+typedef EOFError = jeash.errors.EOFError;
 #else
 typedef EOFError = flash.errors.EOFError;
 #end

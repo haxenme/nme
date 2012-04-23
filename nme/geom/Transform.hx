@@ -1,44 +1,24 @@
 package nme.geom;
-#if (cpp || neko)
+#if code_completion
 
 
-import nme.display.DisplayObject;
-
-
-class Transform
-{
-	
-	public var colorTransform(nmeGetColorTransform, nmeSetColorTransform):ColorTransform;
-	public var concatenatedColorTransform(nmeGetConcatenatedColorTransform, null):ColorTransform;
-	public var concatenatedMatrix(nmeGetConcatenatedMatrix, null):Matrix;
-	public var matrix(nmeGetMatrix, nmeSetMatrix):Matrix;
-	public var pixelBounds(nmeGetPixelBounds, null):Rectangle;
-	
-	/** @private */ private var nmeObj:DisplayObject;
-	
-	
-	public function new(inParent:DisplayObject)
-	{
-		nmeObj = inParent;
-	}
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	/** @private */ private function nmeGetColorTransform():ColorTransform { return nmeObj.nmeGetColorTransform(); }
-	/** @private */ private function nmeSetColorTransform(inTrans:ColorTransform):ColorTransform { nmeObj.nmeSetColorTransform(inTrans); return inTrans; }
-	/** @private */ private function nmeGetConcatenatedColorTransform():ColorTransform { return nmeObj.nmeGetConcatenatedColorTransform(); }
-	/** @private */ private function nmeGetConcatenatedMatrix():Matrix { return nmeObj.nmeGetConcatenatedMatrix(); }
-	/** @private */ private function nmeGetMatrix():Matrix { return nmeObj.nmeGetMatrix(); }
-	/** @private */ private function nmeSetMatrix(inMatrix:Matrix):Matrix { nmeObj.nmeSetMatrix(inMatrix); return inMatrix; }
-	/** @private */ private function nmeGetPixelBounds():Rectangle { return nmeObj.nmeGetPixelBounds(); }
-	
+extern class Transform {
+	var colorTransform : ColorTransform;
+	var concatenatedColorTransform(default,null) : ColorTransform;
+	var concatenatedMatrix(default,null) : Matrix;
+	var matrix : Matrix;
+	@:require(flash10) var matrix3D : Matrix3D;
+	//@:require(flash10) var perspectiveProjection : PerspectiveProjection;
+	var pixelBounds(default,null) : Rectangle;
+	function new(displayObject : nme.display.DisplayObject) : Void;
+	@:require(flash10) function getRelativeMatrix3D(relativeTo : nme.display.DisplayObject) : Matrix3D;
 }
 
 
+#elseif (cpp || neko)
+typedef Transform = neash.geom.Transform;
+#elseif js
+typedef Transform = jeash.geom.Transform;
 #else
 typedef Transform = flash.geom.Transform;
 #end

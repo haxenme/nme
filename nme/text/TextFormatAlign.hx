@@ -1,16 +1,19 @@
 package nme.text;
-#if (cpp || neko)
+#if code_completion
 
 
-class TextFormatAlign
-{
-   public static var LEFT = "left";
-   public static var RIGHT = "right";
-   public static var CENTER = "center";
-   public static var JUSTIFY = "justify";
+@:fakeEnum(String) extern enum TextFormatAlign {
+	CENTER;
+	JUSTIFY;
+	LEFT;
+	RIGHT;
 }
 
 
+#elseif (cpp || neko)
+typedef TextFormatAlign = neash.text.TextFormatAlign;
+#elseif js
+typedef TextFormatAlign = jeash.text.TextFormatAlign;
 #else
 typedef TextFormatAlign = flash.text.TextFormatAlign;
 #end

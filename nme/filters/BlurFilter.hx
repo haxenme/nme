@@ -1,32 +1,19 @@
 package nme.filters;
-#if (cpp || neko)
+#if code_completion
 
 
-class BlurFilter extends BitmapFilter
-{
-	
-	/** @private */ private var blurX:Float;
-	/** @private */ private var blurY:Float;
-	/** @private */ private var quality:Int;
-	
-	
-	public function new(inBlurX:Float = 4.0, inBlurY:Float = 4.0, inQuality:Int = 1)
-	{
-		super("BlurFilter");
-		blurX = inBlurX;
-		blurY = inBlurY;
-		quality = inQuality;
-	}
-	
-	
-	override public function clone():BitmapFilter
-	{
-		return new BlurFilter(blurX, blurY, quality);
-	}
-	
+@:final extern class BlurFilter extends BitmapFilter {
+	var blurX : Float;
+	var blurY : Float;
+	var quality : Int;
+	function new(blurX : Float = 4, blurY : Float = 4, quality : Int = 1) : Void;
 }
 
 
+#elseif (cpp || neko)
+typedef BlurFilter = neash.filters.BlurFilter;
+#elseif js
+typedef BlurFilter = jeash.filters.BlurFilter;
 #else
 typedef BlurFilter = flash.filters.BlurFilter;
 #end
