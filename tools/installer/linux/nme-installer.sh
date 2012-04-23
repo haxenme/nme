@@ -160,19 +160,12 @@ fi
 
 echo ""
 echo "-----------------------------------"
-echo "    Installing HXCPP and Jeash"
+echo "    Installing HXCPP"
 echo "-----------------------------------"
 
 # Download dependencies using haxelib
 
-#haxelib install hxcpp
-
-#wget http://www.haxenme.org/files/1613/3237/4766/hxcpp-2.08.3.zip
-#haxelib test hxcpp-2.08.3.zip
-#rm hxcpp-2.08.3.zip
-
 haxelib install hxcpp
-haxelib install jeash
 
 
 echo ""

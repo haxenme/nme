@@ -12,7 +12,6 @@
 !define HAXE_VERSION "2.09"
 !define NEKO_VERSION "1.8.2"
 !define HXCPP_VERSION "2.09"
-!define JEASH_VERSION "0.8.7"
 !define ACTUATE_VERSION "1.39"
 !define SWF_VERSION "1.11"
 
@@ -169,18 +168,6 @@ Section "HXCPP [${HXCPP_VERSION}]" HXCPP
 	
 SectionEnd
 
-Section "Jeash [${JEASH_VERSION}]" Jeash
-	
-	SectionIn 1
-	SetOverwrite on
-	SetShellVarContext all
-	
-	SetOutPath "$INSTDIR\haxe\lib\jeash"
-	
-	File /r /x .svn "resources\jeash\*.*"
-	
-SectionEnd
-
 Section "Actuate [${ACTUATE_VERSION}]" Actuate
 
 	SectionIn 1
@@ -216,7 +203,6 @@ SectionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${Neko} "Installs Neko, which is required by various Haxe tools (Required)"
 !insertmacro MUI_DESCRIPTION_TEXT ${NME} "Installs the NME library for Haxe"
 !insertmacro MUI_DESCRIPTION_TEXT ${HXCPP} "Installs the HXCPP library, which adds C/C++ support (Required for Neko and C++)"
-!insertmacro MUI_DESCRIPTION_TEXT ${Jeash} "Installs the Jeash library, which provides support for HTML5 applications, using Canvas ((Required for HTML5)"
 !insertmacro MUI_DESCRIPTION_TEXT ${Actuate} "Flexible 'tween' library for adding animations."
 !insertmacro MUI_DESCRIPTION_TEXT ${SWF} "Provides SWF asset support."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END

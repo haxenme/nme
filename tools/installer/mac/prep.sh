@@ -9,8 +9,6 @@ sudo chown root:wheel resources/haxe/private
 sudo chown root:wheel resources/haxe/private/etc
 sudo chown root:wheel resources/hxcpp/usr
 sudo chown root:wheel resources/hxcpp/usr/lib
-sudo chown root:wheel resources/jeash/usr
-sudo chown root:wheel resources/jeash/usr/lib
 sudo chown root:wheel resources/neko/usr
 sudo chown root:wheel resources/neko/usr/lib
 sudo chown root:wheel resources/nme/usr
@@ -21,7 +19,6 @@ sudo chown root:wheel resources/swf/usr/lib
 sudo chmod -R 755 resources/*
 sudo chmod -R 777 resources/actuate/usr/lib/haxe/*
 sudo chmod -R 777 resources/hxcpp/usr/lib/haxe/*
-sudo chmod -R 777 resources/jeash/usr/lib/haxe/*
 sudo chmod -R 777 resources/nme/usr/lib/haxe/*
 sudo chmod -R 777 resources/swf/usr/lib/haxe/*
 
