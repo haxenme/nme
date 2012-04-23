@@ -2,6 +2,9 @@ package nme.text;
 #if code_completion
 
 
+import nme.display.BitmapData;
+
+
 typedef NMEFontDef =
 {
   name:String,
@@ -25,9 +28,9 @@ typedef NMEGlyphInfo =
 
 extern class NMEFont
 {
-	function new(inHeight:Int, inAscent:Int, inDescent:Int, inIsRGB:Bool);
+	function new(inHeight:Int, inAscent:Int, inDescent:Int, inIsRGB:Bool):Void;
 	function getGlyphInfo(inChar:Int) : NMEGlyphInfo;
-	function renderGlyph(inChar:Int) : BitmapData
+	function renderGlyph(inChar:Int) : BitmapData;
 	static function registerFont(inName:String, inFactory:NMEFontFactory):Void;
 }
 

@@ -2,7 +2,7 @@ package nme.events;
 #if code_completion
 
 
-@:fakeEnum(UInt) extern enum EventPhase {
+@:fakeEnum(Int) extern enum EventPhase {
 	AT_TARGET;
 	BUBBLING_PHASE;
 	CAPTURING_PHASE;

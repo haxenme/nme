@@ -4,7 +4,7 @@ package nme.utils;
 
 extern class WeakRef<T>
 {
-	function new(inObject:T, inMakeWeak:Bool = true);
+	function new(inObject:T, inMakeWeak:Bool = true):Void;
 	function get():T;
 	function toString():String;
 }

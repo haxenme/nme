@@ -15,7 +15,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	var mouseX(default,null) : Float;
 	var mouseY(default,null) : Float;
 	var name : String;
-	var opaqueBackground : Null<UInt>;
+	var opaqueBackground : Null<Int>;
 	var parent(default,null) : DisplayObjectContainer;
 	var root(default,null) : DisplayObject;
 	var rotation : Float;

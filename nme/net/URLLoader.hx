@@ -3,8 +3,8 @@ package nme.net;
 
 
 extern class URLLoader extends nme.events.EventDispatcher {
-	var bytesLoaded : UInt;
-	var bytesTotal : UInt;
+	var bytesLoaded : Int;
+	var bytesTotal : Int;
 	var data : Dynamic;
 	var dataFormat : URLLoaderDataFormat;
 	function new(?request : URLRequest) : Void;

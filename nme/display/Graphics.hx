@@ -5,8 +5,8 @@ package nme.display;
 @:final extern class Graphics {
 	function new() : Void;
 	function beginBitmapFill(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
-	function beginFill(color : UInt, alpha : Float = 1) : Void;
-	function beginGradientFill(type : GradientType, colors : Array<UInt>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
+	function beginFill(color : Int, alpha : Float = 1) : Void;
+	function beginGradientFill(type : GradientType, colors : Array<Int>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
 	//@:require(flash10) function beginShaderFill(shader : Shader, ?matrix : nme.geom.Matrix) : Void;
 	function clear() : Void;
 	@:require(flash10) function copyFrom(sourceGraphics : Graphics) : Void;
@@ -22,9 +22,9 @@ package nme.display;
 	@:require(flash10) function drawTriangles(vertices : nme.Vector<Float>, ?indices : nme.Vector<Int>, ?uvtData : nme.Vector<Float>, ?culling : TriangleCulling) : Void;
 	function endFill() : Void;
 	@:require(flash10) function lineBitmapStyle(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
-	function lineGradientStyle(type : GradientType, colors : Array<UInt>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
+	function lineGradientStyle(type : GradientType, colors : Array<Int>, alphas : Array<Dynamic>, ratios : Array<Dynamic>, ?matrix : nme.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
 	//@:require(flash10) function lineShaderStyle(shader : Shader, ?matrix : nme.geom.Matrix) : Void;
-	function lineStyle(?thickness : Float, color : UInt = 0, alpha : Float = 1, pixelHinting : Bool = false, ?scaleMode : LineScaleMode, ?caps : CapsStyle, ?joints : JointStyle, miterLimit : Float = 3) : Void;
+	function lineStyle(?thickness : Float, color : Int = 0, alpha : Float = 1, pixelHinting : Bool = false, ?scaleMode : LineScaleMode, ?caps : CapsStyle, ?joints : JointStyle, miterLimit : Float = 3) : Void;
 	function lineTo(x : Float, y : Float) : Void;
 	function moveTo(x : Float, y : Float) : Void;
 }

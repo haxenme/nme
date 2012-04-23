@@ -2,6 +2,9 @@ package nme;
 #if code_completion
 
 
+import nme.utils.ByteArray;
+
+
 extern class Memory
 {
 	static function select(inBytes:ByteArray):Void;

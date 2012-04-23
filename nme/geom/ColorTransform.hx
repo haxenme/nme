@@ -7,7 +7,7 @@ extern class ColorTransform {
 	var alphaOffset : Float;
 	var blueMultiplier : Float;
 	var blueOffset : Float;
-	var color : UInt;
+	var color : Int;
 	var greenMultiplier : Float;
 	var greenOffset : Float;
 	var redMultiplier : Float;

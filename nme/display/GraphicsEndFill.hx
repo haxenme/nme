@@ -2,7 +2,7 @@ package nme.display;
 #if code_completion
 
 
-extern class GraphicsEndFill implements IGraphicsData, implements IGraphicsFill {
+extern class GraphicsEndFill implements IGraphicsData/*, implements IGraphicsFill*/ {
 	function new() : Void;
 }
 

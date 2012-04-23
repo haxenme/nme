@@ -3,11 +3,11 @@ package nme.utils;
 
 
 extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implements ArrayAccess<Int> {
-	var bytesAvailable(default,null) : UInt;
+	var bytesAvailable(default,null) : Int;
 	var endian : Endian;
-	var length : UInt;
-	var objectEncoding : UInt;
-	var position : UInt;
+	var length : Int;
+	var objectEncoding : Int;
+	var position : Int;
 	function new() : Void;
 	@:require(flash10) function clear() : Void;
 	function compress(#if flash11 ?algorithm : CompressionAlgorithm #end) : Void;
@@ -15,23 +15,23 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	@:require(flash10) function inflate() : Void;
 	function readBoolean() : Bool;
 	function readByte() : Int;
-	function readBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
+	function readBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
 	function readDouble() : Float;
 	function readFloat() : Float;
 	function readInt() : Int;
-	function readMultiByte(length : UInt, charSet : String) : String;
+	function readMultiByte(length : Int, charSet : String) : String;
 	function readObject() : Dynamic;
 	function readShort() : Int;
 	function readUTF() : String;
-	function readUTFBytes(length : UInt) : String;
-	function readUnsignedByte() : UInt;
-	function readUnsignedInt() : UInt;
-	function readUnsignedShort() : UInt;
+	function readUTFBytes(length : Int) : String;
+	function readUnsignedByte() : Int;
+	function readUnsignedInt() : Int;
+	function readUnsignedShort() : Int;
 	function toString() : String;
 	function uncompress(#if flash11 ?algorithm : CompressionAlgorithm #end) : Void;
 	function writeBoolean(value : Bool) : Void;
 	function writeByte(value : Int) : Void;
-	function writeBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
+	function writeBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
 	function writeDouble(value : Float) : Void;
 	function writeFloat(value : Float) : Void;
 	function writeInt(value : Int) : Void;
@@ -40,8 +40,8 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	function writeShort(value : Int) : Void;
 	function writeUTF(value : String) : Void;
 	function writeUTFBytes(value : String) : Void;
-	function writeUnsignedInt(value : UInt) : Void;
-	static var defaultObjectEncoding : UInt;
+	function writeUnsignedInt(value : Int) : Void;
+	static var defaultObjectEncoding : Int;
 }
 
 

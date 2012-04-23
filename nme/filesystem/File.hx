@@ -11,7 +11,7 @@ extern class File
 	static var userDirectory(nmeGetUserDir,null) : File;
 	var nativePath(default, nmeSetNativePath):String;
 	var url(default, nmeSetURL):String;
-	function new(?path:String = null);
+	function new(?path:String = null):Void;
 }
 
 

@@ -7,7 +7,7 @@ extern class TextFormat {
 	var blockIndent : Null<Float>;
 	var bold : Null<Bool>;
 	var bullet : Null<Bool>;
-	var color : Null<UInt>;
+	var color : Null<Int>;
 	//var display : TextFormatDisplay;
 	var font : String;
 	var indent : Null<Float>;
@@ -18,11 +18,11 @@ extern class TextFormat {
 	var letterSpacing : Null<Float>;
 	var rightMargin : Null<Float>;
 	var size : Null<Float>;
-	var tabStops : Array<UInt>;
+	var tabStops : Array<Int>;
 	var target : String;
 	var underline : Null<Bool>;
 	var url : String;
-	function new(?font : String, ?size : Float, ?color : UInt, ?bold : Bool, ?italic : Bool, ?underline : Bool, ?url : String, ?target : String, ?align : TextFormatAlign, ?leftMargin : Float, ?rightMargin : Float, ?indent : Float, ?leading : Float) : Void;
+	function new(?font : String, ?size : Float, ?color : Int, ?bold : Bool, ?italic : Bool, ?underline : Bool, ?url : String, ?target : String, ?align : TextFormatAlign, ?leftMargin : Float, ?rightMargin : Float, ?indent : Float, ?leading : Float) : Void;
 }
 
 

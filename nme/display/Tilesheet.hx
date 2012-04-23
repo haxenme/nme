@@ -1,5 +1,48 @@
 package nme.display;
-#if flash
+#if code_completion
+
+
+import nme.geom.Point;
+import nme.geom.Rectangle;
+
+
+extern class Tilesheet
+{
+	static var TILE_SCALE:Int;
+	static var TILE_ROTATION:Int;
+	static var TILE_RGB:Int;
+	static var TILE_ALPHA:Int;
+	
+	static var TILE_BLEND_NORMAL:Int;
+	static var TILE_BLEND_ADD:Int;
+	
+	function new(inImage:BitmapData):Void;
+	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Void;
+	
+	/**
+	 * Fast method to draw a batch of tiles using a Tilesheet
+	 * 
+	 * The input array accepts the x, y and tile ID for each tile you wish to draw.
+	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to (0, 0) and
+	 * tile 1 to (10, 10)
+	 * 
+	 * You can also set flags for TILE_SCALE, TILE_ROTATION, TILE_RGB and
+	 * TILE_ALPHA.
+	 * 
+	 * Depending on which flags are active, this is the full order of the array:
+	 * 
+	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
+	 * 
+	 * @param	graphics		The nme.display.Graphics object to use for drawing
+	 * @param	tileData		An array of all position, ID and optional values for use in drawing
+	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
+	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
+	 */
+	function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void;
+}
+
+
+#elseif flash
 
 
 import nme.geom.Matrix;

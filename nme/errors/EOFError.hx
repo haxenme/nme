@@ -2,7 +2,7 @@ package nme.errors;
 #if code_completion
 
 
-extern class EOFError extends IOError {
+extern class EOFError/* extends IOError*/ {
 	function new(?message : String, id : Int = 0) : Void;
 }
 

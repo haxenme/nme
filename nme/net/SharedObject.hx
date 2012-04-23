@@ -6,8 +6,8 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	var client : Dynamic;
 	var data(default,null) : Dynamic;
 	var fps(null,default) : Float;
-	var objectEncoding : UInt;
-	var size(default,null) : UInt;
+	var objectEncoding : Int;
+	var size(default,null) : Int;
 	function new() : Void;
 	function clear() : Void;
 	function close() : Void;
@@ -16,7 +16,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	//function send(?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Void;
 	function setDirty(propertyName : String) : Void;
 	function setProperty(propertyName : String, ?value : Dynamic) : Void;
-	static var defaultObjectEncoding : UInt;
+	static var defaultObjectEncoding : Int;
 	static function deleteAll(url : String) : Int;
 	static function getDiskUsage(url : String) : Int;
 	static function getLocal(name : String, ?localPath : String, secure : Bool = false) : SharedObject;

@@ -3,7 +3,7 @@ package nme.media;
 
 
 extern class Sound extends nme.events.EventDispatcher {
-	var bytesLoaded(default,null) : UInt;
+	var bytesLoaded(default,null) : Int;
 	var bytesTotal(default,null) : Int;
 	var id3(default,null) : ID3Info;
 	var isBuffering(default,null) : Bool;
@@ -14,8 +14,8 @@ extern class Sound extends nme.events.EventDispatcher {
 	function close() : Void;
 	@:require(flash10) function extract(target : nme.utils.ByteArray, length : Float, startPosition : Float = -1) : Float;
 	function load(stream : nme.net.URLRequest, ?context : SoundLoaderContext) : Void;
-	@:require(flash11) function loadCompressedDataFromByteArray(bytes : nme.utils.ByteArray, bytesLength : UInt) : Void;
-	@:require(flash11) function loadPCMFromByteArray(bytes : nme.utils.ByteArray, samples : UInt, ?format : String, stereo : Bool = true, sampleRate : Float = 44100) : Void;
+	@:require(flash11) function loadCompressedDataFromByteArray(bytes : nme.utils.ByteArray, bytesLength : Int) : Void;
+	@:require(flash11) function loadPCMFromByteArray(bytes : nme.utils.ByteArray, samples : Int, ?format : String, stereo : Bool = true, sampleRate : Float = 44100) : Void;
 	function play(startTime : Float = 0, loops : Int = 0, ?sndTransform : SoundTransform) : SoundChannel;
 }
 

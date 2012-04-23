@@ -4,7 +4,7 @@ package nme.filesystem;
 
 extern class StorageVolume
 {
-	function new(inRootDirPath:File, inName:String, inWritable:Bool, inRemovable:Bool, inFileSysType:String, inDrive:String);
+	function new(inRootDirPath:File, inName:String, inWritable:Bool, inRemovable:Bool, inFileSysType:String, inDrive:String):Void;
 	var drive(default,null) : String;
 	var fileSystemType(default,null) : String;
 	var isRemovable(default,null) : Bool;

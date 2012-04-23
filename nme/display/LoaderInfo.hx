@@ -6,8 +6,8 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	//var actionScriptVersion(default,null) : ActionScriptVersion;
 	//var applicationDomain(default,null) : nme.system.ApplicationDomain;
 	var bytes(default,null) : nme.utils.ByteArray;
-	var bytesLoaded(default,null) : UInt;
-	var bytesTotal(default,null) : UInt;
+	var bytesLoaded(default,null) : Int;
+	var bytesTotal(default,null) : Int;
 	var childAllowsParent(default,null) : Bool;
 	var content(default,null) : DisplayObject;
 	var contentType(default,null) : String;
@@ -20,7 +20,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	var parentAllowsChild(default,null) : Bool;
 	var sameDomain(default,null) : Bool;
 	var sharedEvents(default,null) : nme.events.EventDispatcher;
-	var swfVersion(default,null) : UInt;
+	var swfVersion(default,null) : Int;
 	//@:require(flash10_1) var uncaughtErrorEvents(default,null) : nme.events.UncaughtErrorEvents;
 	var url(default,null) : String;
 	var width(default,null) : Int;

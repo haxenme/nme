@@ -7,9 +7,9 @@ extern class TextField extends nme.display.InteractiveObject {
 	var antiAliasType : AntiAliasType;
 	var autoSize : TextFieldAutoSize;
 	var background : Bool;
-	var backgroundColor : UInt;
+	var backgroundColor : Int;
 	var border : Bool;
-	var borderColor : UInt;
+	var borderColor : Int;
 	var bottomScrollV(default,null) : Int;
 	var caretIndex(default,null) : Int;
 	var condenseWhite : Bool;
@@ -35,7 +35,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	var sharpness : Float;
 	//var styleSheet : StyleSheet;
 	var text : String;
-	var textColor : UInt;
+	var textColor : Int;
 	var textHeight(default,null) : Float;
 	//@:require(flash11) var textInteractionMode(default,null) : TextInteractionMode;
 	var textWidth(default,null) : Float;

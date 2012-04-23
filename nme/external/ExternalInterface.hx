@@ -1,4 +1,4 @@
-package nme.events;
+package nme.external;
 #if code_completion
 
 
