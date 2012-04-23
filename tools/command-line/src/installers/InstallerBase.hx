@@ -80,12 +80,6 @@ class InstallerBase {
 		this.debug = debug;
 		this.args = args;
 		
-		swfLibraries = new Array <Asset> ();
-		
-		initializeTool ();
-		parseHXCPPConfig ();
-		parseProjectFile ();
-		
 		for (key in userDefines.keys ()) {
 			
 			var value = userDefines.get (key);
@@ -99,6 +93,12 @@ class InstallerBase {
 			defines.set (key, value);
 			
 		}
+		
+		swfLibraries = new Array <Asset> ();
+		
+		initializeTool ();
+		parseHXCPPConfig ();
+		parseProjectFile ();
 		
 		if (defines.get ("APP_PACKAGE").split (".").length < 3) {
 			
