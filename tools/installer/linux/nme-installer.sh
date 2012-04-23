@@ -1,12 +1,6 @@
 #!/bin/sh
 
 
-# I apologize that this is designed only for Ubuntu
-
-# Please feel free to help if you're interested in extending
-# it for more Linux distributions
-
-
 read -p "Do you wish to install Haxe 2.09 and Neko 1.8.2? (y/n) " RESP
 
 if [ $RESP = "y" ]; then
@@ -23,20 +17,42 @@ if [ $RESP = "y" ]; then
 	if [ `uname -m` = "x86_64" ]; then
 		
 		
-		#echo ""
-		#echo "-----------------------------------"
-		#echo "    Installing IA32 libraries"
-		#echo "-----------------------------------"	
-	
-		#sudo apt-get install ia32-libs-multiarch gcc-multilib g++-multilib
-		
-		
 		echo ""
 		echo "-----------------------------------"
 		echo "    Downloading Neko (64-bit)"
 		echo "-----------------------------------"	
 	
-		wget -c http://www.haxenme.org/files/9313/3468/1422/neko-1.8.2-linux.tar.gz
+		wget -c http://nekovm.org/_media/neko-1.8.2-linux64.tar.gz
+		
+		
+		echo ""
+		echo "-----------------------------------"
+		echo "    Installing Neko"
+		echo "-----------------------------------"
+		
+		
+		# Extract and copy files to /usr/lib/neko
+		
+		tar xvzf neko-1.8.2-linux64.tar.gz
+		sudo mkdir -p /usr/lib/neko
+		sudo cp -r neko-1.8.2-linux64/* /usr/lib/neko
+		
+		# Add symlinks
+		
+		sudo rm -rf /usr/bin/neko
+		sudo rm -rf /usr/bin/nekoc
+		sudo rm -rf /usr/bin/nekotools
+		sudo rm -rf /usr/lib/libneko.so
+		
+		sudo ln -s /usr/lib/neko/neko /usr/bin/neko
+		sudo ln -s /usr/lib/neko/nekoc /usr/bin/nekoc
+		sudo ln -s /usr/lib/neko/nekotools /usr/bin/nekotools
+		sudo ln -s /usr/lib/neko/libneko.so /usr/lib/libneko.so
+		
+		# Cleanup
+		
+		rm -r neko-1.8.2-linux64
+		rm neko-1.8.2-linux64.tar.gz
 		
 		
 	else
@@ -50,40 +66,38 @@ if [ $RESP = "y" ]; then
 		wget -c http://nekovm.org/_media/neko-1.8.2-linux.tar.gz
 		
 		
+		echo ""
+		echo "-----------------------------------"
+		echo "    Installing Neko"
+		echo "-----------------------------------"
+		
+		
+		# Extract and copy files to /usr/lib/neko
+		
+		tar xvzf neko-1.8.2-linux.tar.gz
+		sudo mkdir -p /usr/lib/neko
+		sudo cp -r neko-1.8.2-linux/* /usr/lib/neko
+		
+		# Add symlinks
+		
+		sudo rm -rf /usr/bin/neko
+		sudo rm -rf /usr/bin/nekoc
+		sudo rm -rf /usr/bin/nekotools
+		sudo rm -rf /usr/lib/libneko.so
+		
+		sudo ln -s /usr/lib/neko/neko /usr/bin/neko
+		sudo ln -s /usr/lib/neko/nekoc /usr/bin/nekoc
+		sudo ln -s /usr/lib/neko/nekotools /usr/bin/nekotools
+		sudo ln -s /usr/lib/neko/libneko.so /usr/lib/libneko.so
+		
+		
+		# Cleanup
+		
+		rm -r neko-1.8.2-linux
+		rm neko-1.8.2-linux.tar.gz
+		
+		
 	fi
-	
-	
-	echo ""
-	echo "-----------------------------------"
-	echo "    Installing Neko"
-	echo "-----------------------------------"
-	
-	
-	# Extract and copy files to /usr/lib/neko
-	
-	tar xvzf neko-1.8.2-linux.tar.gz
-	sudo mkdir -p /usr/lib/neko
-	sudo cp -r neko-1.8.2-linux/* /usr/lib/neko
-	
-	
-	# Add symlinks
-	
-	sudo rm -rf /usr/bin/neko
-	sudo rm -rf /usr/bin/nekoc
-	sudo rm -rf /usr/bin/nekotools
-	sudo rm -rf /usr/lib/libneko.so
-	
-	sudo ln -s /usr/lib/neko/neko /usr/bin/neko
-	sudo ln -s /usr/lib/neko/nekoc /usr/bin/nekoc
-	sudo ln -s /usr/lib/neko/nekotools /usr/bin/nekotools
-	sudo ln -s /usr/lib/neko/libneko.so /usr/lib/libneko.so
-	
-	
-	# Cleanup
-	
-	rm -r neko-1.8.2-linux
-	rm neko-1.8.2-linux.tar.gz
-	
 	
 	
 	echo ""
@@ -92,7 +106,6 @@ if [ $RESP = "y" ]; then
 	echo "-----------------------------------"	
 	
 	wget -c http://haxe.org/file/haxe-2.09-linux.tar.gz
-	
 	
 	
 	echo ""
@@ -145,13 +158,13 @@ if [ $RESP = "y" ]; then
 	# Set up haxelib
 	
 	sudo mkdir -p /usr/lib/haxe/lib
-	sudo chmod -R 777 /usr/lib/haxe/lib/*
+	sudo chmod -R 777 /usr/lib/haxe/lib
 	sudo haxelib setup /usr/lib/haxe/lib
 	
 	
 	# Cleanup
 	
-	rm -r haxe-2.09-linux
+	rm -r -f haxe-2.09-linux
 	rm haxe-2.09-linux.tar.gz
 	
 	
