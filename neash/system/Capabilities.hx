@@ -59,30 +59,3 @@ class Capabilities
 	private static var nme_capabilities_get_screen_resolutions = Loader.load("nme_capabilities_get_screen_resolutions", 0 );
 	
 }
-
-
-#elseif !jeash
-typedef Capabilities = flash.system.Capabilities;
-#else
-
-
-class Capabilities
-{
-	
-	public static var pixelAspectRatio(jeashGetPixelAspectRatio, null):Float;
-	public static var screenDPI(jeashGetScreenDPI, null):Float;
-	public static var screenResolutionX(jeashGetScreenResolutionX, null):Float;
-	public static var screenResolutionY(jeashGetScreenResolutionY, null):Float;
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	private static function jeashGetPixelAspectRatio():Float { return 1; }
-	private static function jeashGetScreenDPI():Float { return 72; }
-	private static function jeashGetScreenResolutionX():Float { return 0; }
-	private static function jeashGetScreenResolutionY():Float { return 0; }
-	
-}
