@@ -65,7 +65,12 @@ class Icons
          }
          bmp.setPixels(rect,dest);
          */
-         var bytes = bmp.encode("png",0.95);
+         var bytes:ByteArray = bmp.encode("png",0.95);
+         if (bytes == null)
+         {
+         	return false;
+         }
+         
          bytes.writeFile(inDest);
       }
 
