@@ -1,5 +1,4 @@
 -main ApplicationMain ::HAXE_FLAGS::
 -js ::BUILD_DIR::/html5/bin/::APP_FILE::.js
 -cp ::BUILD_DIR::/html5/haxe
---remap flash:jeash
--lib jeash
+--remap flash:nme
