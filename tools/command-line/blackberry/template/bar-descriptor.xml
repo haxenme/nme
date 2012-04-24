@@ -11,8 +11,8 @@
         <systemChrome>none</systemChrome>
         <transparent>false</transparent>
         <!-- <autoOrients>true</autoOrients> -->
-		::if (WIN_ORIENTATION == "landscape")::<aspectRatio>landscape</aspectRatio>::end::
-		::if (WIN_ORIENTATION == "portrait")::<aspectRatio>portrait</aspectRatio>::end::
+		::if (WIN_ORIENTATION == "landscape")::<autoOrients>false</autoOrients><aspectRatio>landscape</aspectRatio>::end::
+		::if (WIN_ORIENTATION == "portrait")::<autoOrients>false</autoOrients><aspectRatio>portrait</aspectRatio>::end::
 		
     </initialWindow>
 	
