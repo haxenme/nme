@@ -1210,6 +1210,10 @@ class InstallerBase {
 					
 					defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
 				
+				case "company-id", "company_id":
+					
+					defines.set ("APP_COMPANY_ID", substitute (element.att.resolve (attribute)));
+				
 			}
 			
 		}

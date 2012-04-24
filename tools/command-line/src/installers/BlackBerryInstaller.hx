@@ -30,7 +30,46 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-nativepackager", [ "-devMode", "-debugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-package", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar", "bin/bar-descriptor.xml" ]);
+		var args = [ "-package", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar", "bin/bar-descriptor.xml" ];
+		
+		if (defines.exists ("KEY_STORE")) {
+			
+			args.push ("-keystore");
+			args.push (FileSystem.fullPath (defines.get ("KEY_STORE")));
+			
+			if (defines.exists ("KEY_STORE_PASSWORD")) {
+				
+				args.push ("-storepass");
+				args.push (defines.get ("KEY_STORE_PASSWORD"));
+				
+			}
+			
+		} else {
+			
+			args.push ("-devMode");
+			args.push ("-debugToken");
+			args.push (FileSystem.fullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
+			
+		}
+		
+		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-nativepackager", args);
+		
+		if (defines.exists ("KEY_STORE")) {
+			
+			args = [ "-keystore", FileSystem.fullPath (defines.get ("KEY_STORE")) ];
+			
+			if (defines.exists ("KEY_STORE_PASSWORD")) {
+				
+				args.push ("-storepass");
+				args.push (defines.get ("KEY_STORE_PASSWORD"));
+				
+			}
+			
+			args.push (defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
+			
+			runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-signer", args);
+			
+		}
 		
 	}
 	
