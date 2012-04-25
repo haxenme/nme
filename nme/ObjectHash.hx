@@ -10,13 +10,10 @@ class ObjectHash <T> {
 	
 	
 	#if flash
-	
 	/** @private */ private var dictionary:TypedDictionary <Dynamic, T>;
-	
 	#else
-	
 	/** @private */ private var hash:IntHash <T>;
-	
+	/** @private */ private var hashKeys:IntHash <Dynamic>;
 	#end
 	
 	/** @private */ private static var nextObjectID:Int = 0;
@@ -31,6 +28,7 @@ class ObjectHash <T> {
 		#else
 		
 		hash = new IntHash <T> ();
+		hashKeys = new IntHash <Dynamic> ();
 		
 		#end
 		
@@ -121,7 +119,7 @@ class ObjectHash <T> {
 	}
 	
 	
-	/*public inline function keys ():Iterator <T> {
+	public inline function keys ():Iterator <Dynamic> {
 		
 		#if flash
 		
@@ -129,13 +127,11 @@ class ObjectHash <T> {
 		
 		#else
 		
-		// Need to return the object, not the ID
-		
-		//return hash.keys ();
+		return hashKeys.iterator ();
 		
 		#end
 		
-	}*/
+	}
 	
 	
 	public inline function remove (key:Dynamic):Void {
@@ -146,7 +142,10 @@ class ObjectHash <T> {
 		
 		#else
 		
-		hash.remove (getID (key));
+		var id = getID (key);
+		
+		hash.remove (id);
+		hashKeys.remove (id);
 		
 		#end
 		
@@ -161,7 +160,10 @@ class ObjectHash <T> {
 		
 		#else
 		
-		hash.set (getID (key), value);
+		var id = getID (key);
+		
+		hash.set (id, value);
+		hashKeys.set (id, key);
 		
 		#end
 		
