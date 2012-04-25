@@ -128,7 +128,14 @@ class ApplicationMain {
 		Lib.current.removeChild(preloader);
 		preloader = null;
 		
-		::APP_MAIN_CLASS::.main ();
+		if (Reflect.field(::APP_MAIN::, "main") == null)
+		{
+			nme.Lib.current.addChild(new ::APP_MAIN::());
+		}
+		else
+		{
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		}
 		
 	}
    

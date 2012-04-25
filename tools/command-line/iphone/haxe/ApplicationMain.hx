@@ -35,7 +35,14 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 				}
 				
-				::APP_MAIN::.main();
+				if (Reflect.field(::APP_MAIN::, "main") == null)
+				{
+					nme.Lib.current.addChild(new ::APP_MAIN::());
+				}
+				else
+				{
+					Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+				}
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::,
 			::WIN_FPS::,

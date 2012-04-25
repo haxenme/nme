@@ -28,7 +28,20 @@ class ApplicationMain {
 		::end::
 		
 		if (call_real)
-			::APP_MAIN_CLASS::.main();
+			begin ();
+	}
+	
+	private static function begin () {
+		
+		if (Reflect.field(::APP_MAIN::, "main") == null)
+		{
+			nme.Lib.current.addChild(new ::APP_MAIN::());
+		}
+		else
+		{
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		}
+		
 	}
 
 	static function onEnter (_) {
@@ -76,7 +89,7 @@ class ApplicationMain {
 		nme.Lib.current.removeChild(mPreloader);
 		mPreloader = null;
 		
-		::APP_MAIN_CLASS::.main ();
+		begin ();
 		
 	}
 	
