@@ -82,6 +82,8 @@ class MouseEvent extends Event
 	{
 		var result = new MouseEvent(inType, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 		
+      result.stageX = stageX;
+      result.stageY = stageY;
 		if (targ != null)
 			result.target = targ;
 		return result;
