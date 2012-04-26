@@ -6,14 +6,14 @@ import flash.utils.TypedDictionary;
 #end
 
 
-class ObjectHash <T> {
+class ObjectHash <K, T> {
 	
 	
 	#if flash
-	/** @private */ private var dictionary:TypedDictionary <Dynamic, T>;
+	/** @private */ private var dictionary:TypedDictionary <K, T>;
 	#else
-	/** @private */ private var hash:IntHash <T>;
-	/** @private */ private var hashKeys:IntHash <Dynamic>;
+	/** @private */ private var hashKeys:IntHash <K>;
+	/** @private */ private var hashValues:IntHash <T>;
 	#end
 	
 	/** @private */ private static var nextObjectID:Int = 0;
@@ -23,19 +23,19 @@ class ObjectHash <T> {
 		
 		#if flash
 		
-		dictionary = new TypedDictionary <Dynamic, T> ();
+		dictionary = new TypedDictionary <K, T> ();
 		
 		#else
 		
-		hash = new IntHash <T> ();
-		hashKeys = new IntHash <Dynamic> ();
+		hashKeys = new IntHash <K> ();
+		hashValues = new IntHash <T> ();
 		
 		#end
 		
 	}
 	
 	
-	public inline function exists (key:Dynamic):Bool {
+	public inline function exists (key:K):Bool {
 		
 		#if flash
 		
@@ -43,14 +43,14 @@ class ObjectHash <T> {
 		
 		#else
 		
-		return hash.exists (getID (key));
+		return hashValues.exists (getID (key));
 		
 		#end
 		
 	}
 	
 	
-	public inline function get (key:Dynamic):T {
+	public inline function get (key:K):T {
 		
 		#if flash
 		
@@ -58,14 +58,14 @@ class ObjectHash <T> {
 		
 		#else
 		
-		return hash.get (getID (key));
+		return hashValues.get (getID (key));
 		
 		#end
 		
 	}
 	
 	
-	/** @private */ private inline function getID (key:Dynamic):Int {
+	/** @private */ private inline function getID (key:K):Int {
 		
 		#if cpp
 		
@@ -112,14 +112,14 @@ class ObjectHash <T> {
 		
 		#else
 		
-		return hash.iterator ();
+		return hashValues.iterator ();
 		
 		#end
 		
 	}
 	
 	
-	public inline function keys ():Iterator <Dynamic> {
+	public inline function keys ():Iterator <K> {
 		
 		#if flash
 		
@@ -134,7 +134,7 @@ class ObjectHash <T> {
 	}
 	
 	
-	public inline function remove (key:Dynamic):Void {
+	public inline function remove (key:K):Void {
 		
 		#if flash
 		
@@ -144,15 +144,15 @@ class ObjectHash <T> {
 		
 		var id = getID (key);
 		
-		hash.remove (id);
 		hashKeys.remove (id);
+		hashValues.remove (id);
 		
 		#end
 		
 	}
 	
 	
-	public inline function set (key:Dynamic, value:T):Void {
+	public inline function set (key:K, value:T):Void {
 		
 		#if flash
 		
@@ -162,8 +162,8 @@ class ObjectHash <T> {
 		
 		var id = getID (key);
 		
-		hash.set (id, value);
 		hashKeys.set (id, key);
+		hashValues.set (id, value);
 		
 		#end
 		
