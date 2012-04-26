@@ -166,6 +166,7 @@ class InstallerBase {
 		}
 		
 		buildDirectory = defines.get ("BUILD_DIR");
+		getBuildNumber ((command == "build" || command == "test"));
 		
 		onCreate ();
 		generateContext ();
@@ -727,6 +728,52 @@ class InstallerBase {
 	}
 	
 	
+	private function getBuildNumber (increment:Bool = true):Void {
+		
+		if (!defines.exists ("APP_BUILD_NUMBER")) {
+			
+			var versionFile = buildDirectory + "/.build";
+			var version:Int = 1;
+			
+			mkdir (buildDirectory);
+			
+			if (FileSystem.exists (versionFile)) {
+				
+				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
+				
+				if (previousVersion != null) {
+					
+					version = previousVersion;
+					
+					if (increment) {
+						
+						version ++;
+						
+					}
+					
+				}
+				
+			}
+			
+			defines.set ("APP_BUILD_NUMBER", Std.string (version));
+			
+			if (increment) {
+				
+				try {
+					
+					var output = File.write (versionFile, false);
+					output.writeString (Std.string (version));
+					output.close ();
+					
+				} catch (e:Dynamic) {}
+				
+			}
+			
+		}
+		
+	}
+	
+	
 	private function initializeTool ():Void {
 		
 		compilerFlags.push ("-D nme_install_tool");
@@ -1203,16 +1250,12 @@ class InstallerBase {
 			
 			switch (attribute) {
 				
-				case "title", "description", "package", "version", "company":
+				case "title", "description", "package", "version", "company", "company-id", "build-number":
 					
 					// if we're happy with this spec, we can shift to using META_TITLE, etc, in the future
 					// for now we'll keep using the same defines, for compatibility
 					
-					defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
-				
-				case "company-id", "company_id":
-					
-					defines.set ("APP_COMPANY_ID", substitute (element.att.resolve (attribute)));
+					defines.set ("APP_" + StringTools.replace (attribute, "-", "_").toUpperCase (), substitute (element.att.resolve (attribute)));
 				
 			}
 			

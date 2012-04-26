@@ -3,8 +3,13 @@
     
 	<id>::APP_PACKAGE::</id>
     <name>::APP_TITLE::</name>
+	<description>::APP_DESCRIPTION::</description>
+	
+	<author>::APP_COMPANY::</author>
+    <authorId>::APP_COMPANY_ID::</authorId>
+	
     <versionNumber>::APP_VERSION::</versionNumber>
-    <description>::APP_DESCRIPTION::</description>
+	<buildId>::APP_BUILD_NUMBER::</buildId>
     
     <initialWindow>
 		
@@ -17,10 +22,6 @@
     </initialWindow>
 	
     <env var="LD_LIBRARY_PATH" value="app/native"/>
-	
-    <author>::APP_COMPANY::</author>
-    <authorId>::APP_COMPANY_ID::</authorId>
-    
 	<action system="true">run_native</action>
     
 	<category>core.games</category>
