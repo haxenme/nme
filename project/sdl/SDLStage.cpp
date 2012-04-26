@@ -335,7 +335,7 @@ public:
 	   
 	   #ifdef HX_MACOS
 	   
-	   if (inEvent.type == etKeyUp && inEvent.value == keyQ && (inEvent.flags & efCommandDown))
+	   if (inEvent.type == etKeyUp && inEvent.value == SDLK_q && (inEvent.flags & efCommandDown))
 	   {
 	       inEvent.type = etQuit;
 	   }
