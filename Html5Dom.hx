@@ -195,7 +195,7 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var length(default,null):Int;
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	@:overload( function set(index:ArrayAccess<Int>, offset:Int):Void {} )
+	@:overload( function (index:ArrayAccess<Int>, offset:Int):Void {} )
 	function set(index:Int8Array, offset:Int):Void;
 	function subarray(offset:Int, length:Int):Int8Array;
 }
@@ -209,7 +209,8 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	var length(default,null):Int;
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	@:overload( function (index:ArrayAccess<Int>, offset:Int):Void {} )
+	function set(index:Uint8Array, offset:Int):Void;
 	function subarray(offset:Int, length:Int):Uint8Array;
 }
 

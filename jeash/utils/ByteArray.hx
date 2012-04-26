@@ -38,7 +38,7 @@ import Html5Dom;
 class ByteArray {
 
 	var data : DataView;
-	var byteView : Int8Array;
+	var byteView : Uint8Array;
 	var bigEndian : Bool;
 
 	public var bytesAvailable(jeashGetBytesAvailable,null) : Int;
@@ -49,12 +49,6 @@ class ByteArray {
 	public var length : Int;
 
 	function jeashGetBytesAvailable():Int return length - position
-
-	function readString( len : Int ) : String {
-		var bytes = Bytes.alloc(len);
-		readFullBytes(bytes,0,len);
-		return bytes.toString();
-	}
 
 	function readFullBytes( bytes : Bytes, pos : Int, len : Int ) {
 		for ( i in pos...pos+len )
@@ -67,7 +61,7 @@ class ByteArray {
 
 		var buffer = new ArrayBuffer(len);
 		this.data = new DataView(buffer);
-		this.byteView = new Int8Array(buffer);
+		this.byteView = new Uint8Array(buffer);
 
 		this.bigEndian = false;
 	}
@@ -244,6 +238,17 @@ class ByteArray {
 		data.setUint32(this.position+=4, value, !bigEndian);
 	}
 
+#if format
+	public function uncompress() {
+		var bytes = haxe.io.Bytes.ofData(cast byteView);
+		var buf = format.tools.Inflate.run(bytes).getData();
+		this.byteView = new Uint8Array(buf);
+
+		this.data = new DataView(byteView.buffer);
+		this.length = byteView.buffer.byteLength;
+	}
+#end
+
 	public function jeashGetEndian() : Endian {
 		if ( bigEndian == true ) {
 			return Endian.BIG_ENDIAN;
@@ -265,7 +270,7 @@ class ByteArray {
 		var bytes = new ByteArray(buffer.byteLength);
 
 		bytes.data = new DataView(buffer);
-		bytes.byteView = new Int8Array(buffer);
+		bytes.byteView = new Uint8Array(buffer);
 		return bytes;
 	}
 
