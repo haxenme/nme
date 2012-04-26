@@ -333,6 +333,15 @@ public:
    void ProcessEvent(Event &inEvent)
    {
 	   
+	   #ifdef HX_MACOS
+	   
+	   if (inEvent.type == etKeyUp && inEvent.value == keyQ && (inEvent.flags & efCommandDown))
+	   {
+	       inEvent.type = etQuit;
+	   }
+	   
+	   #endif
+	   
 	   #ifdef WEBOS
 	   
 	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
