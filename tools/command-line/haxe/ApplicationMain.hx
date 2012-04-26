@@ -48,13 +48,20 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 				}
 				
-				if (Reflect.field(::APP_MAIN::, "main") == null)
+            var hasMain = false;
+            for(method in Type.getClassFields(::APP_MAIN::))
+               if (method=="main")
+               {
+                  hasMain = true;
+                  break;
+               }
+				if (hasMain)
 				{
-					nme.Lib.current.addChild(new ::APP_MAIN::());
+					Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 				}
 				else
 				{
-					Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+					nme.Lib.current.addChild( Type.createInstance(::APP_MAIN::,[]) ); 
 				}
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::, 
