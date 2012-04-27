@@ -704,6 +704,7 @@ void TextField::setText(const WString &inString)
    mLinesDirty = true;
    mFontsDirty = true;
    mGfxDirty = true;
+   mHTMLText = inString;
 }
 
 WString TextField::getText()
@@ -714,13 +715,9 @@ WString TextField::getText()
    return result;
 }
 
-// TODO:
 WString TextField::getHTMLText()
 {
-   WString result;
-   for(int i=0;i<mCharGroups.size();i++)
-      result += WString(mCharGroups[i]->mString.mPtr,mCharGroups[i]->Chars());
-   return result;
+   return mHTMLText;
 }
 
 
@@ -862,6 +859,7 @@ void TextField::setHTMLText(const WString &inString)
    mLinesDirty = true;
    mFontsDirty = true;
    std::string str = "<top>" + WideToUTF8(inString) + "</top>";
+   mHTMLText = inString;
 
    TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
    TiXmlDocument doc;
