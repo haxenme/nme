@@ -65,7 +65,7 @@ class ApplicationMain
 				}
 				else
 				{
-					nme.Lib.current.addChild( Type.createInstance(::APP_MAIN::,[]) ); 	
+					nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
 				}
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::, 

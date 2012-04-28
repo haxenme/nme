@@ -33,13 +33,24 @@ class ApplicationMain {
 	
 	private static function begin () {
 		
-		if (Reflect.field(::APP_MAIN::, "main") == null)
+		var hasMain = false;
+		
+		for (methodName in Type.getClassFields(::APP_MAIN::))
 		{
-			nme.Lib.current.addChild(new ::APP_MAIN::());
+			if (methodName == "main")
+			{
+				hasMain = true;
+				break;
+			}
+		}
+		
+		if (hasMain)
+		{
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 		}
 		else
 		{
-			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+			nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
 		}
 		
 	}
