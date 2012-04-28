@@ -732,7 +732,7 @@ class InstallerBase {
 		
 		if (!defines.exists ("APP_BUILD_NUMBER")) {
 			
-			var versionFile = buildDirectory + "/.build";
+			var versionFile = Path.withoutExtension (projectFile) + ".build";
 			var version:Int = 1;
 			
 			mkdir (buildDirectory);
