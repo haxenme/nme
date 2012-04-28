@@ -48,6 +48,8 @@ class ByteArray {
 	public var position : Int;
 	public var length : Int;
 
+	static inline var BYTE_ARRAY_BUFFER_SIZE = 8192;
+
 	function jeashGetBytesAvailable():Int return length - position
 
 	function readFullBytes( bytes : Bytes, pos : Int, len : Int ) {
@@ -55,9 +57,9 @@ class ByteArray {
 			data.setInt8(this.position++, bytes.get(i));
 	}
 
-	public function new(len:Int) {
+	public function new(len:Int = BYTE_ARRAY_BUFFER_SIZE) {
 		this.position = 0;
-		this.length = len;
+		this.length = 0;
 
 		var buffer = new ArrayBuffer(len);
 		this.data = new DataView(buffer);
@@ -66,38 +68,55 @@ class ByteArray {
 		this.bigEndian = false;
 	}
 
+	function jeashResizeBuffer(len:Int) {
+		var initLength = byteView.length;
+		var resized = new Uint8Array(len);
+
+		resized.set(byteView);
+
+		this.data = new DataView(resized.buffer);
+		this.byteView = resized;
+	}
+
 	public function readByte() : Int {
-		if( this.position >= this.length )
-			throw new IOError("Read error - Out of bounds");
 		return data.getUint8(this.position++);
 	}
 
 	public function readBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) {
-		if( offset < 0 || length < 0 || offset + length > this.length )
+		if(offset < 0 || length < 0)
 			throw new IOError("Read error - Out of bounds");
 
-		if( this.length == 0 && length > 0 )
-			throw new IOError("Read error - Out of bounds");
-
-		if( this.length < length )
-			length = this.length;
+		if(bytes.byteView.length < length + offset) {
+			bytes.jeashResizeBuffer(offset+length);
+		}
 
 		bytes.byteView.set(byteView.subarray(this.position, this.position+length), offset);
 		bytes.position = offset;
 
 		this.position += length;
+		if (bytes.position+length > bytes.length) bytes.length = bytes.position+length;
 	}
 	
 	public function writeByte(value : Int) {
+		if( this.position+1 >= byteView.length )
+			jeashResizeBuffer(this.position+1);
 		data.setInt8(this.position++, value);
+		length++;
 	}
 
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) {
-		if( offset < 0 || length < 0 || offset + length > bytes.length ) throw new IOError("Write error - Out of bounds");
+		if(offset < 0 || length < 0) 
+			throw new IOError("Write error - Out of bounds");
+
+		if(byteView.length < length + this.position) {
+			jeashResizeBuffer(this.position+length);
+		}
+
 		bytes.position = offset+length;
 
 		byteView.set(bytes.byteView.subarray(offset, offset+length), this.position);
 		this.position += length;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readBoolean() {
@@ -109,63 +128,73 @@ class ByteArray {
 	}
 
 	public function readDouble() : Float {
-		if( this.position+8 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getFloat64(this.position += 8, !bigEndian);
+		var double = data.getFloat64(this.position, !bigEndian);
+		this.position += 8;
+		return double;
 	}
 
 	public function writeDouble(x : Float) {
-		if( this.position+8 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setFloat64(this.position += 8, x, !bigEndian);
+		if( this.position+8 >= byteView.length )
+			jeashResizeBuffer(this.position+8);
+		data.setFloat64(this.position, x, !bigEndian);
+		this.position += 8;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readFloat() : Float {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getFloat32(this.position += 4, !bigEndian);
+		var float = data.getFloat32(this.position, !bigEndian);
+		this.position += 4;
+		return float;
 	}
 
 	public function writeFloat( x : Float ) {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setFloat32(this.position += 4, x, !bigEndian);
+		if( this.position+4 >= byteView.length )
+			jeashResizeBuffer(this.position+4);
+		data.setFloat32(this.position, x, !bigEndian);
+		this.position += 4;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readInt() {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getInt32(this.position += 4, !bigEndian);
+		var int = data.getInt32(this.position, !bigEndian);
+		this.position += 4;
+		return int;
 	}
 
 	public function writeInt(value : Int) {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setInt32(this.position += 4, value, !bigEndian);
+		if( this.position+4 >= byteView.length )
+			jeashResizeBuffer(this.position+4);
+		data.setInt32(this.position, value, !bigEndian);
+		this.position += 4;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readShort() {
-		if( this.position+2 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getInt16(this.position += 2, !bigEndian);
+		var short = data.getInt16(this.position, !bigEndian);
+		this.position += 2;
+		return short;
 	}
 
 	public function writeShort(value : Int) {
-		if( this.position+2 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setInt16(this.position += 2, value, !bigEndian);
+		if( this.position+2 >= byteView.length )
+			jeashResizeBuffer(this.position+2);
+		data.setInt16(this.position, value, !bigEndian);
+		this.position += 2;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readUnsignedShort():Int {
-		if( this.position+2 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getUint16(this.position +=2, !bigEndian);
+		var uShort = data.getUint16(this.position, !bigEndian);
+		this.position +=2;
+		return uShort;
 	}
 
 	public function writeUnsignedShort( value : Int ) {
-		if( this.position+2 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setUint16(this.position +=2, value, !bigEndian);
+		if( this.position+2 >= byteView.length )
+			jeashResizeBuffer(this.position+2);
+		data.setUint16(this.position, value, !bigEndian);
+		this.position += 2;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readUTF() {
@@ -177,31 +206,37 @@ class ByteArray {
 	}
 
 	public function writeUTFBytes(value : String) {
+		if( this.position+value.length*4 >= byteView.length ) {
+			jeashResizeBuffer(this.position+value.length*4);
+		}
 		// utf8-decode
 		for( i in 0...value.length ) {
 			var c : Int = StringTools.fastCodeAt(value, i);
 			if( c <= 0x7F ) {
-				data.setUint8(this.position++, c);
+				this.data.setUint8(this.position++, c);
 			} else if( c <= 0x7FF ) {
-				data.setUint8(this.position++, 0xC0 | (c >> 6));
-				data.setUint8(this.position++, 0x80 | (c & 63));
+				this.data.setUint8(this.position++, 0xC0 | (c >> 6));
+				this.data.setUint8(this.position++, 0x80 | (c & 63));
 			} else if( c <= 0xFFFF ) {
-				data.setUint8(this.position++, 0xE0 | (c >> 12));
-				data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
-				data.setUint8(this.position++, 0x80 | (c & 63));
+				this.data.setUint8(this.position++, 0xE0 | (c >> 12));
+				this.data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
+				this.data.setUint8(this.position++, 0x80 | (c & 63));
 			} else {
-				data.setUint8(this.position++, 0xF0 | (c >> 18));
-				data.setUint8(this.position++, 0x80 | ((c >> 12) & 63));
-				data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
-				data.setUint8(this.position++, 0x80 | (c & 63));
+				this.data.setUint8(this.position++, 0xF0 | (c >> 18));
+				this.data.setUint8(this.position++, 0x80 | ((c >> 12) & 63));
+				this.data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
+				this.data.setUint8(this.position++, 0x80 | (c & 63));
 			}
 		}
+		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readUTFBytes(len:Int) {
 		var value = "";
 		var fcc = String.fromCharCode;
 		var max = this.position+len;
+		if (max >= byteView.length)
+			jeashResizeBuffer(max);
 		// utf8-encode
 		while( this.position < max ) {
 			var c = data.getUint8(this.position++);
@@ -227,15 +262,17 @@ class ByteArray {
 	}
 
 	public function readUnsignedInt():Int {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		return data.getUint32(this.position+=4, !bigEndian);
+		var uInt = data.getUint32(this.position, !bigEndian);
+		this.position+=4;
+		return uInt;
 	}
 
 	public function writeUnsignedInt( value : Int ) {
-		if( this.position+4 >= this.length )
-			throw new IOError("Read error - Out of bounds");
-		data.setUint32(this.position+=4, value, !bigEndian);
+		if( this.position+4 >= byteView.length )
+			jeashResizeBuffer(this.position+4);
+		data.setUint32(this.position, value, !bigEndian);
+		this.position+=4;
+		if (this.position > this.length) this.length = this.position;
 	}
 
 #if format
