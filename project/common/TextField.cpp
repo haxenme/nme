@@ -6,6 +6,7 @@
 #include "XML/tinyxml.h"
 #include <ctype.h>
 #include <time.h>
+#include <sstream>
 
 #ifndef iswalpha
 #define iswalpha isalpha
@@ -704,7 +705,6 @@ void TextField::setText(const WString &inString)
    mLinesDirty = true;
    mFontsDirty = true;
    mGfxDirty = true;
-   mHTMLText = inString;
 }
 
 WString TextField::getText()
@@ -715,9 +715,125 @@ WString TextField::getText()
    return result;
 }
 
+WString convertIntToWString (int value)
+{
+	std::wstringstream result;
+	result << value;
+	return result.str();
+}
+
+WString convertIntToHexWString (int value)
+{
+	std::wstringstream result;
+	result << "0x" << std::hex << value;
+	return result.str();
+}
+
 WString TextField::getHTMLText()
 {
-   return mHTMLText;
+   WString result;
+   TextFormat *cacheFormat = NULL;
+   
+   bool inAlign = false;
+   bool inFontTag = false;
+   bool inBoldTag = false;
+   bool inItalicTag = false;
+   bool inUnderlineTag = false;
+   
+   for(int i=0;i<mCharGroups.size();i++)
+   {
+	  CharGroup *charGroup = mCharGroups[i];
+	  TextFormat *format = charGroup->mFormat;
+	  
+	  if (inUnderlineTag && !format->underline)
+	  {
+	  	 result += L"</u>";
+	  	 inAlign = false;
+	  }
+	  
+	  if (inItalicTag && !format->italic)
+	  {
+		  result += L"</i>";
+		  inItalicTag = false;
+	  }
+	  
+	  if (inBoldTag && !format->bold)
+	  {
+		  result += L"</b>";
+		  inBoldTag = false;
+	  }
+	  
+	  if (inFontTag && (WString (format->font).compare (cacheFormat->font) != 0 || format->color != cacheFormat->color || format->size != cacheFormat->size))
+	  {
+		  result += L"</font>";
+		  inFontTag = false;
+	  }
+	  
+	  if (inAlign && format->align != cacheFormat->align)
+	  {
+		  result += L"</p>";
+		  inAlign = false;
+	  }
+	  
+	  if (!inAlign && format->align != tfaLeft)
+	  {
+		  result += L"<p align=\"";
+		  
+		  switch(format->align)
+		  {
+			  case tfaCenter: result += L"center"; break;
+			  case tfaRight: result += L"right"; break;
+			  case tfaJustify: result += L"justify"; break;
+		  }
+		  
+		  result += L"\">";
+		  inAlign = true;
+	  }
+	  
+	  if (!inFontTag)
+	  {
+		  result += L"<font color=\"#";
+		  result += convertIntToHexWString (format->color);
+		  result += L"\" face=\"";
+		  result += format->font;
+		  result += L"\" size=\"";
+		  result += convertIntToWString (format->size);
+		  result += L"\">";
+		  inFontTag = true;
+	  }
+	  
+	  if (!inBoldTag && format->bold)
+	  {
+		  result += L"<b>";
+		  inBoldTag = true;
+	  }
+	  
+	  if (!inItalicTag && format->italic)
+	  {
+		  result += L"<i>";
+		  inItalicTag = true;
+	  }
+	  
+	  if (!inUnderlineTag && format->underline)
+	  {
+		  result += L"<u>";
+		  inUnderlineTag = true;
+	  }
+	  
+	   result += WString(charGroup->mString.mPtr,charGroup->Chars());
+	   cacheFormat = format;
+   }
+   
+   if (inUnderlineTag) result += L"</u>";
+   if (inItalicTag) result += L"</i>";
+   if (inBoldTag) result += L"</b>";
+   if (inFontTag) result += L"</font>";
+   if (inAlign) result += L"</p>";
+   
+   // Need to replace '\n' with "<br>"
+   //std::replace (result.begin(), result.end(), L'\n', L"<br>");
+   
+   return result;
 }
 
 
@@ -859,7 +975,6 @@ void TextField::setHTMLText(const WString &inString)
    mLinesDirty = true;
    mFontsDirty = true;
    std::string str = "<top>" + WideToUTF8(inString) + "</top>";
-   mHTMLText = inString;
 
    TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
    TiXmlDocument doc;

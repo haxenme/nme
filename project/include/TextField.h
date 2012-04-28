@@ -201,7 +201,6 @@ private:
 
 
    CharGroups mCharGroups;
-   WString mHTMLText;
    Lines mLines;
    QuickVec<ImagePoint> mCharPos;
    Graphics *mCaretGfx;
