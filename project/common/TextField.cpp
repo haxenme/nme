@@ -783,6 +783,13 @@ WString TextField::getHTMLText()
 	  
 	  if (!inFontTag)
 	  {
+		  #ifdef ANDROID
+		  result += L"<font face=\"#";
+		  result += format->font;
+		  result += L"\">";
+		  inFontTag = true;
+		  #else
+		  
 		  std::wstringstream fontSize;
 		  fontSize << format->size;
 		  
@@ -797,6 +804,8 @@ WString TextField::getHTMLText()
 		  result += fontSize.str();
 		  result += L"\">";
 		  inFontTag = true;
+		  
+		  #endif
 	  }
 	  
 	  if (!inBoldTag && format->bold)
