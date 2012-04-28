@@ -736,34 +736,37 @@ WString TextField::getHTMLText()
 	  CharGroup *charGroup = mCharGroups[i];
 	  TextFormat *format = charGroup->mFormat;
 	  
-	  if (inUnderlineTag && !format->underline)
+	  if (format != cacheFormat)
 	  {
-	  	 result += L"</u>";
-	  	 inAlign = false;
-	  }
-	  
-	  if (inItalicTag && !format->italic)
-	  {
-		  result += L"</i>";
-		  inItalicTag = false;
-	  }
-	  
-	  if (inBoldTag && !format->bold)
-	  {
-		  result += L"</b>";
-		  inBoldTag = false;
-	  }
-	  
-	  if (inFontTag && (WString (format->font).compare (cacheFormat->font) != 0 || format->color != cacheFormat->color || format->size != cacheFormat->size))
-	  {
-		  result += L"</font>";
-		  inFontTag = false;
-	  }
-	  
-	  if (inAlign && format->align != cacheFormat->align)
-	  {
-		  result += L"</p>";
-		  inAlign = false;
+		  if (inUnderlineTag && !format->underline)
+		  {
+		  	 result += L"</u>";
+		  	 inAlign = false;
+		  }
+		  
+		  if (inItalicTag && !format->italic)
+		  {
+			  result += L"</i>";
+			  inItalicTag = false;
+		  }
+		  
+		  if (inBoldTag && !format->bold)
+		  {
+			  result += L"</b>";
+			  inBoldTag = false;
+		  }
+		  
+		  if (inFontTag && (WString (format->font).compare (cacheFormat->font) != 0 || format->color != cacheFormat->color || format->size != cacheFormat->size))
+		  {
+			  result += L"</font>";
+			  inFontTag = false;
+		  }
+		  
+		  if (inAlign && format->align != cacheFormat->align)
+		  {
+			  result += L"</p>";
+			  inAlign = false;
+		  }
 	  }
 	  
 	  if (!inAlign && format->align != tfaLeft)
