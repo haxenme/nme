@@ -12,6 +12,11 @@
 #define iswalpha isalpha
 #endif
 
+#ifdef ANDROID
+#define wstringstream ostringstream
+#endif
+
+
 namespace nme
 {
 
@@ -715,20 +720,6 @@ WString TextField::getText()
    return result;
 }
 
-WString convertIntToWString (int value)
-{
-	std::wstringstream result;
-	result << value;
-	return result.str();
-}
-
-WString convertIntToHexWString (int value)
-{
-	std::wstringstream result;
-	result << "0x" << std::hex << value;
-	return result.str();
-}
-
 WString TextField::getHTMLText()
 {
    WString result;
@@ -792,12 +783,18 @@ WString TextField::getHTMLText()
 	  
 	  if (!inFontTag)
 	  {
+		  std::wstringstream fontSize;
+		  fontSize << format->size;
+		  
+		  std::wstringstream fontColor;
+	      fontColor << "0x" << std::hex << format->color;
+		  
 		  result += L"<font color=\"#";
-		  result += convertIntToHexWString (format->color);
+		  result += fontColor.str();
 		  result += L"\" face=\"";
 		  result += format->font;
 		  result += L"\" size=\"";
-		  result += convertIntToWString (format->size);
+		  result += fontSize.str();
 		  result += L"\">";
 		  inFontTag = true;
 	  }

@@ -97,6 +97,8 @@ public:
 
    inline int length() const { return mLength; }
    inline int size() const { return mLength; }
+   
+   int compare ( const WString& str ) const { return wcscmp (mString, str.mString); };
 
    WString &operator=(const WString &inRHS);
    inline wchar_t &operator[](int inIndex) { return mString[inIndex]; }
