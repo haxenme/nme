@@ -12,10 +12,6 @@
 #define iswalpha isalpha
 #endif
 
-#ifdef ANDROID
-#define wstringstream ostringstream
-#endif
-
 
 namespace nme
 {
@@ -786,29 +782,14 @@ WString TextField::getHTMLText()
 	  
 	  if (!inFontTag)
 	  {
-		  #ifdef ANDROID
-		  result += L"<font face=\"#";
-		  result += format->font;
-		  result += L"\">";
-		  inFontTag = true;
-		  #else
-		  
-		  std::wstringstream fontSize;
-		  fontSize << format->size;
-		  
-		  std::wstringstream fontColor;
-	      fontColor << "0x" << std::hex << format->color;
-		  
 		  result += L"<font color=\"#";
-		  result += fontColor.str();
+		  result += ColorToWide(format->color);
 		  result += L"\" face=\"";
 		  result += format->font;
 		  result += L"\" size=\"";
-		  result += fontSize.str();
+		  result += IntToWide(format->size);
 		  result += L"\">";
 		  inFontTag = true;
-		  
-		  #endif
 	  }
 	  
 	  if (!inBoldTag && format->bold)
@@ -829,7 +810,7 @@ WString TextField::getHTMLText()
 		  inUnderlineTag = true;
 	  }
 	  
-	   result += WString(charGroup->mString.mPtr,charGroup->Chars());
+	   result += WString(charGroup->mString.mPtr, charGroup->Chars());
 	   cacheFormat = format;
    }
    
