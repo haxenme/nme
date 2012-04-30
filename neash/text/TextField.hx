@@ -93,7 +93,7 @@ class TextField extends InteractiveObject
 	/** @private */ private function nmeSetDisplayAsPassword(inVal:Bool):Bool { nme_text_field_set_display_as_password(nmeHandle, inVal); return inVal; }
 	/** @private */ private function nmeGetEmbedFonts():Bool { return true; }
 	/** @private */ private function nmeSetEmbedFonts(value:Bool):Bool { return true; }
-	/** @private */ private function nmeGetHTMLText():String { return nme_text_field_get_html_text(nmeHandle); }
+	/** @private */ private function nmeGetHTMLText():String { return StringTools.replace (nme_text_field_get_html_text(nmeHandle), "\n", "<br/>"); }
 	/** @private */ private function nmeSetHTMLText(inText:String):String	{ nme_text_field_set_html_text(nmeHandle, inText); return inText; }
 	/** @private */ private function nmeGetMaxChars():Int { return nme_text_field_get_max_chars(nmeHandle); }
 	/** @private */ private function nmeSetMaxChars(inVal:Int):Int { nme_text_field_set_max_chars(nmeHandle, inVal); return inVal; }
