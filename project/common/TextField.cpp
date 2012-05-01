@@ -820,9 +820,6 @@ WString TextField::getHTMLText()
    if (inFontTag) result += L"</font>";
    if (inAlign) result += L"</p>";
    
-   // Need to replace '\n' with "<br>"
-   //std::replace (result.begin(), result.end(), L'\n', L"<br>");
-   
    return result;
 }
 

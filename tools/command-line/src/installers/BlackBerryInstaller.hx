@@ -35,7 +35,7 @@ class BlackBerryInstaller extends InstallerBase {
 		if (defines.exists ("KEY_STORE")) {
 			
 			args.push ("-keystore");
-			args.push (FileSystem.fullPath (defines.get ("KEY_STORE")));
+			args.push (tryFullPath (defines.get ("KEY_STORE")));
 			
 			if (defines.exists ("KEY_STORE_PASSWORD")) {
 				
@@ -48,7 +48,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 			args.push ("-devMode");
 			args.push ("-debugToken");
-			args.push (FileSystem.fullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
+			args.push (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
 			
 		}
 		
@@ -56,7 +56,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (defines.exists ("KEY_STORE")) {
 			
-			args = [ "-keystore", FileSystem.fullPath (defines.get ("KEY_STORE")) ];
+			args = [ "-keystore", tryFullPath (defines.get ("KEY_STORE")) ];
 			
 			if (defines.exists ("KEY_STORE_PASSWORD")) {
 				

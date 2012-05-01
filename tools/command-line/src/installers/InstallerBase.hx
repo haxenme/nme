@@ -1819,6 +1819,21 @@ class InstallerBase {
 	}
 	
 	
+	private function tryFullPath (path:String):String {
+		
+		try {
+			
+			return FileSystem.fullPath (path);
+			
+		} catch (e:Dynamic) {
+			
+			return path;
+			
+		}
+		
+	}
+	
+	
 	private function wantSslCertificate ():Bool {
 		
 		return true;
