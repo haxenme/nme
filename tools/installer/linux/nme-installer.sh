@@ -176,9 +176,9 @@ echo "-----------------------------------"
 echo "    Installing HXCPP"
 echo "-----------------------------------"
 
-# Download dependencies using haxelib
-
-haxelib install hxcpp
+wget -c http://www.haxenme.org/files/5713/3590/3298/hxcpp-2.09.1.zip
+haxelib test hxcpp-2.09.1.zip
+rm hxcpp-2.09.1.zip
 
 
 echo ""
