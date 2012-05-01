@@ -71,7 +71,7 @@ class ObjectHash <K, T> {
 		
 		return untyped __global__.__hxcpp_obj_id (key);
 		
-		#else
+		#elseif !flash
 		
 		if (key.___id___ == null) {
 			
