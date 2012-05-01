@@ -122,21 +122,8 @@ private:
 typedef std::wstring WString;
 #endif
 
-WString IntToWide(int value)
-{
-	int bufferSize = (sizeof(wchar_t) * sizeof(int) / 3) + 3;
-	wchar_t buffer[bufferSize];
-	swprintf(buffer, bufferSize, L"%i", value);
-	return WString(buffer);
-}
-
-WString ColorToWide(int value)
-{
-	int bufferSize = sizeof(wchar_t) * 10;
-	wchar_t buffer[bufferSize];
-	swprintf(buffer, bufferSize, L"%X", value);
-	return WString(buffer);
-}
+WString IntToWide(int value);
+WString ColorToWide(int value);
 
 void SetIcon( const char *path );
 

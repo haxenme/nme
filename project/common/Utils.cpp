@@ -308,6 +308,20 @@ WString UTF8ToWide(const char *inStr)
 #endif
 
 
+WString IntToWide(int value)
+{
+	wchar_t buffer[16];
+	swprintf(buffer, 16, L"%i", value);
+	return WString(buffer);
+}
+
+WString ColorToWide(int value)
+{
+	wchar_t buffer[40];
+	swprintf(buffer, 40, L"%X", value);
+	return WString(buffer);
+}
+
 
 static double t0 = 0;
 double  GetTimeStamp()
