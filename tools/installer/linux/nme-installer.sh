@@ -183,12 +183,12 @@ haxelib install hxcpp
 
 echo ""
 echo "-----------------------------------"
-echo "    Installing NME 3.3.1"
+echo "    Installing NME 3.3.2"
 echo "-----------------------------------"
 
 # Download and install NME
 
-haxelib install nme 3.3.1
+haxelib install nme 3.3.2
 
 # Add "nme" command shortcut
 

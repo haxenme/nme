@@ -1,6 +1,22 @@
 NME Changes
 
 
+3.3.2
+===============
+Jeash is now a part of NME
+Refactored to better handle multiple backends
+Updated documentation for Haxe 2.09
+Added dynamic sound support to Windows, Mac, Linux, BlackBerry and webOS
+Added release signing for BlackBerry
+Improved orientation handling for BlackBerry
+Added build numbers for iOS, Android and BlackBerry
+Improved the ObjectHash data type
+Improved stability and HTML text handling in TextFields
+
+NME-81 	Alpha not being set for DisplayObjects with SW-rendered children
+NME-74 	Command+Q should quit the application on a Mac
+
+
 3.3.1
 ===============
 Updated for Haxe 2.09

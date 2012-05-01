@@ -7,12 +7,12 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.3.1"
+!define VERSION "3.3.2"
 
 !define HAXE_VERSION "2.09"
 !define NEKO_VERSION "1.8.2"
-!define HXCPP_VERSION "2.09"
-!define ACTUATE_VERSION "1.39"
+!define HXCPP_VERSION "2.09.1"
+!define ACTUATE_VERSION "1.40"
 !define SWF_VERSION "1.11"
 
 
