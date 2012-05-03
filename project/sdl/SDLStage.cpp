@@ -420,7 +420,7 @@ public:
          else if (inCursor==curHand)
          {
             if (!sHandCursor)
-               sHandCursor = CreateCursor(sHandCursorData,1,13);
+               sHandCursor = CreateCursor(sHandCursorData,13,1);
             SDL_SetCursor(sHandCursor);
          }
          else

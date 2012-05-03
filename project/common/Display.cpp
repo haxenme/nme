@@ -1606,7 +1606,7 @@ void Stage::HandleEvent(Event &inEvent)
          bool down =  (inEvent.flags & efLeftDown);
          mSimpleButton->setMouseState( over ? ( down ?
              SimpleButton::stateDown : SimpleButton::stateOver) : SimpleButton::stateUp );
-         if (!down)
+         if (!down && !over)
          {
             mSimpleButton->DecRef();
             mSimpleButton = 0;
