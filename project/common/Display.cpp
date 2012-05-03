@@ -647,13 +647,23 @@ SimpleButton::SimpleButton(bool inInitRef) : DisplayObject(inInitRef),
 {
    for(int i=0;i<stateSIZE; i++)
       mState[i] = 0;
+}
 
+SimpleButton::~SimpleButton()
+{
+   for(int i=0;i<stateSIZE; i++)
+      if (mState[i])
+         mState[i]->DecRef();
 }
 
 void SimpleButton::setState(int inState, DisplayObject *inObject)
 {
    if (inState>=0 && inState<stateSIZE)
    {
+       if (inObject)
+          inObject->IncRef();
+       if (mState[inState])
+          mState[inState]->DecRef();
        mState[inState] = inObject;
        DirtyUp(dirtCache);
    }
@@ -1590,14 +1600,16 @@ void Stage::HandleEvent(Event &inEvent)
       }
       else if (but!=mSimpleButton)
       {
+         if (but)
+            but->IncRef();
          if (mSimpleButton)
          {
-            mSimpleButton->setMouseState(SimpleButton::stateUp);
-            mSimpleButton->DecRef();
+            SimpleButton *s = mSimpleButton;
+            mSimpleButton = 0;
+            s->setMouseState(SimpleButton::stateUp);
+            s->DecRef();
          }
          mSimpleButton = but;
-         if (mSimpleButton)
-            mSimpleButton->IncRef();
       }
 
       if (mSimpleButton)
@@ -1608,8 +1620,9 @@ void Stage::HandleEvent(Event &inEvent)
              SimpleButton::stateDown : SimpleButton::stateOver) : SimpleButton::stateUp );
          if (!down && !over)
          {
-            mSimpleButton->DecRef();
+            SimpleButton *s = mSimpleButton;
             mSimpleButton = 0;
+            s->DecRef();
          }
          else if (mSimpleButton->getUseHandCursor())
             cur = curHand;
@@ -1678,11 +1691,18 @@ void Stage::setOpaqueBackground(uint32 inBG)
 
 void Stage::RemovingFromStage(DisplayObject *inObject)
 {
-   if (inObject==mSimpleButton)
+   DisplayObject *b = mSimpleButton;
+   while(b)
    {
-      mSimpleButton->DecRef();
-      mSimpleButton = 0;
+      if (b==inObject)
+      {
+         mSimpleButton->DecRef();
+         mSimpleButton = 0;
+         break;
+      }
+      b = b->getParent();
    }
+
 
    DisplayObject *f = mFocusObject;
    while(f)

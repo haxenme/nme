@@ -337,6 +337,7 @@ public:
    enum { stateUp=0, stateDown, stateOver, stateHitTest, stateSIZE };
    void setMouseState(int inState);
    SimpleButton(bool inInitRef = false);
+   ~SimpleButton();
 
    DisplayObject *mState[stateSIZE];
 
