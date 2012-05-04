@@ -15,11 +15,14 @@ class Particle
    var blue:Float;
    var alpha:Float;
    var angle:Float;
+   var aspect:Float;
    var size:Float;
 
    var dx:Float;
    var dy:Float;
    var da:Float;
+   var daspect:Float;
+
 
    public function new()
    {
@@ -29,6 +32,9 @@ class Particle
       dx = Math.random()*2.0 - 1.0;
       dy = Math.random()*2.0 - 1.0;
       da = Math.random()*0.2 - 0.1;
+      daspect = Math.random()*0.1;
+
+      aspect = Math.random()*1 + 0.25;
 
       red = Math.random();
       green = Math.random();
@@ -36,6 +42,13 @@ class Particle
       alpha = Math.random();
 
       size = Math.random()*1.9+0.1;
+   }
+
+   public function addSimple(data:Array<Float>)
+   {
+      data.push(x);
+      data.push(y);
+      data.push(0);
    }
 
    public function add(data:Array<Float>)
@@ -50,6 +63,43 @@ class Particle
       data.push(blue);
       data.push(alpha);
    }
+
+   public function addTrans(data:Array<Float>)
+   {
+      data.push(x);
+      data.push(y);
+      data.push(0);
+
+      var t00 = size*Math.cos(angle);
+      var t01 = size*Math.sin(angle);
+      var t10 = - t01;
+      var t11 = t00;
+
+      var wobble = 1.0 + Math.cos(aspect)*0.75;
+      data.push(t00 * wobble); // Squish in x-direction...
+      data.push(t01 * wobble);
+
+      data.push(t10);
+      data.push(t11);
+
+      data.push(red);
+      data.push(green);
+      data.push(blue);
+      data.push(alpha);
+   }
+
+
+   public function addColoured(data:Array<Float>)
+   {
+      data.push(x);
+      data.push(y);
+      data.push(0);
+      data.push(red);
+      data.push(green);
+      data.push(blue);
+      data.push(alpha);
+   }
+
 
    public function move()
    {
@@ -80,6 +130,7 @@ class Particle
       }
 
       angle += da;
+      aspect += daspect;
 
    }
 }
@@ -120,16 +171,45 @@ class Sample extends Sprite
 
    public function onEnter(_)
    {
+     var data = new Array<Float>();
+      var flags = 0;
+      particles[0].addSimple(data);
+      graphics.drawTiles(tilesheet,data,true,flags);
+
       var data = new Array<Float>();
+
+      /*
       var flags = Graphics.TILE_SCALE | Graphics.TILE_ROTATION |
-                  Graphics.TILE_ALPHA | Graphics.TILE_RGB;
+                  Graphics.TILE_ALPHA | Graphics.TILE_RGB | Graphics.TILE_BLEND_ADD;
       for(p in particles)
       {
          p.move();
          p.add(data);
       }
+      */
+
+       var flags = Graphics.TILE_TRANS_2x2 |
+                  Graphics.TILE_ALPHA | Graphics.TILE_RGB | Graphics.TILE_BLEND_ADD;
+      for(p in particles)
+      {
+         p.move();
+         p.addTrans(data);
+      }
+
+
+      /*
+      var flags = Graphics.TILE_ALPHA | Graphics.TILE_RGB | Graphics.TILE_BLEND_ADD;
+      for(p in particles)
+      {
+         p.move();
+         p.addColoured(data);
+      }
+      */
       graphics.clear();
       graphics.drawTiles(tilesheet,data,true,flags);
+
+ 
+
    }
 
    public static function main()

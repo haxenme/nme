@@ -15,7 +15,7 @@
 		height="480"
 		orientation="landscape"
 		fps="60"
-		background="0xffffff"
+		background="0x101040"
       resizeable="true"
 		hardware="true"
 	/>

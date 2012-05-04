@@ -17,7 +17,8 @@ namespace nme
 		{
 			UserPoint	 mPos;
 			Rect			mRect;
-			UserPoint	 mDxDxy;
+			UserPoint	 mTransX;
+			UserPoint	 mTransY;
 			unsigned int mColour;
 			bool			mHasTrans;
 			bool			mHasColour;
@@ -30,7 +31,10 @@ namespace nme
 				inPoint += 3;
 				mHasTrans =  (inFlags & pcTile_Trans_Bit);
 				if (mHasTrans)
-					mDxDxy = *inPoint++;
+            {
+					mTransX = *inPoint++;
+					mTransY = *inPoint++;
+            }
 
 				mHasColour = (inFlags & pcTile_Col_Bit);
 				if (mHasColour)

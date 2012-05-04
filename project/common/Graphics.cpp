@@ -364,9 +364,9 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
    mVersion++;
 }
 
-void Graphics::tile(float x, float y, const Rect &inTileRect,float *inDxxDxy,float *inRGBA)
+void Graphics::tile(float x, float y, const Rect &inTileRect,float *inTrans,float *inRGBA)
 {
-   mPathData->tile(x,y,inTileRect,inDxxDxy,inRGBA);
+   mPathData->tile(x,y,inTileRect,inTrans,inRGBA);
    mVersion++;
 }
 

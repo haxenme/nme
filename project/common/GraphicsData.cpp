@@ -77,7 +77,7 @@ void GraphicsPath::wideMoveTo(float x, float y)
 	data.push_back(y);
 }
 
-void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inScaleRot,float *inRGBA)
+void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,float *inRGBA)
 {
 	data.push_back(x);
 	data.push_back(y);
@@ -86,11 +86,13 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inScaleR
 	data.push_back(inTileRect.w);
 	data.push_back(inTileRect.h);
    int command = pcTile;
-   if (inScaleRot)
+   if (inTrans)
    {
       command |= pcTile_Trans_Bit;
-	   data.push_back(inScaleRot[0]);
-	   data.push_back(inScaleRot[1]);
+	   data.push_back(inTrans[0]);
+	   data.push_back(inTrans[1]);
+	   data.push_back(inTrans[2]);
+	   data.push_back(inTrans[3]);
    }
    if (inRGBA)
    {

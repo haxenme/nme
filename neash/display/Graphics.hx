@@ -12,6 +12,8 @@ class Graphics
 	public static inline var TILE_ROTATION = 0x0002;
 	public static inline var TILE_RGB = 0x0004;
 	public static inline var TILE_ALPHA = 0x0008;
+   // Will ignore scale and rotation....
+	public static inline var TILE_TRANS_2x2 = 0x0010;
 	
 	private static inline var TILE_SMOOTH = 0x1000;
 

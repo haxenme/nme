@@ -38,7 +38,7 @@ namespace nme
 							mTileData.push_back(data);
 							point+=3;
 							if (c & pcTile_Trans_Bit)
-								point++;
+								point+=2;
 							if (c & pcTile_Col_Bit)
 								point+=2;
 						}
@@ -116,7 +116,7 @@ namespace nme
 			if ( (is_stretch || data.mHasTrans) )
 			{
 				// Can use stretch if there is no skew and no colour transform...
-				if (!data.mHasColour && (!data.mHasTrans || data.mDxDxy==0) &&  mBlendMode==bmNormal )
+				if (!data.mHasColour && (!data.mHasTrans) &&  mBlendMode==bmNormal )
 				{
 					UserPoint p0 = pos;
 					pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
@@ -137,13 +137,15 @@ namespace nme
 					p[0] = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 					if (data.mHasTrans)
 					{
-						UserPoint t = data.mDxDxy;
-						p[1] = inState.mTransform.mMatrix->Apply(corner.x + data.mRect.w*t.x,
-																			  corner.y - data.mRect.w*t.y );
-						p[2] = inState.mTransform.mMatrix->Apply(corner.x + data.mRect.w*t.x + data.mRect.h*t.y,
-																			  corner.y - data.mRect.w*t.y + data.mRect.h*t.x );
-						p[3] = inState.mTransform.mMatrix->Apply(corner.x +data.mRect.h*t.y,
-																			  corner.y + data.mRect.h*t.x );
+						p[1] = inState.mTransform.mMatrix->Apply(
+                            corner.x + data.mRect.w*data.mTransX.x,
+                            corner.y + data.mRect.w*data.mTransY.x);
+						p[2] = inState.mTransform.mMatrix->Apply(
+                            corner.x + data.mRect.w*data.mTransX.x + data.mRect.h*data.mTransX.y,
+                            corner.y + data.mRect.w*data.mTransY.x + data.mRect.h*data.mTransY.y );
+						p[3] = inState.mTransform.mMatrix->Apply(
+                            corner.x + data.mRect.h*data.mTransX.y,
+                            corner.y + data.mRect.h*data.mTransY.y );
 					}
 					else
 					{

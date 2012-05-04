@@ -342,13 +342,15 @@ public:
 
                   if (inCommands[i]&pcTile_Trans_Bit)
                   {
-                     UserPoint dxx_dxy = *point++;
-                     UserPoint p1(pos.x+size.x*dxx_dxy.x,
-                                  pos.y-size.x*dxx_dxy.y);
-                     UserPoint p2(pos.x+size.x*dxx_dxy.x+size.y*dxx_dxy.y,
-                                  pos.y-size.x*dxx_dxy.y+size.y*dxx_dxy.x );
-                     UserPoint p3(pos.x+size.y*dxx_dxy.y,
-                                  pos.y+size.y*dxx_dxy.x);
+                     UserPoint trans_x = *point++;
+                     UserPoint trans_y = *point++;
+
+                     UserPoint p1(pos.x + size.x*trans_x.x,
+                                  pos.y + size.x*trans_y.x);
+                     UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_x.y,
+                                  pos.y + size.x*trans_y.x + size.y*trans_y.y );
+                     UserPoint p3(pos.x + size.y*trans_x.y,
+                                  pos.y + size.y*trans_y.y );
 
                      vertices.push_back( pos );
                      vertices.push_back( p1 );
@@ -561,7 +563,7 @@ public:
             case pcTileTransCol:
                point += 3;
                if (inCommands[i]&pcTile_Trans_Bit)
-                  point++;
+                  point+=2;
                if (inCommands[i]&pcTile_Col_Bit)
                   point+=2;
          }

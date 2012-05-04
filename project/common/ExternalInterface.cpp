@@ -2083,6 +2083,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
         TILE_ROTATION = 0x0002,
         TILE_RGB      = 0x0004,
         TILE_ALPHA    = 0x0008,
+        TILE_TRANS_2x2= 0x0010,
         TILE_SMOOTH   = 0x1000,
 
         TILE_BLEND_ADD   = 0x10000,
@@ -2102,12 +2103,21 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
 
       int components = 3;
-      int scale_pos = components;
-      if (flags & TILE_SCALE)
-         components++;
-      int rot_pos = components;
-      if (flags & TILE_ROTATION)
-         components++;
+      int scale_pos = 3;
+      int rot_pos = 3;
+      int trans_pos = 3;
+
+      if (flags & TILE_TRANS_2x2)
+         components+=4;
+      else
+      {
+         scale_pos = components;
+         if (flags & TILE_SCALE)
+            components++;
+         rot_pos = components;
+         if (flags & TILE_ROTATION)
+            components++;
+      }
       int rgb_pos = components;
       if (flags & TILE_RGB)
          components+=3;
@@ -2121,11 +2131,9 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       int max = sheet->Tiles();
       float rgba_buf[] = { 1, 1, 1, 1 };
       float scale_rot_buf[] = { 1, 1 };
+      float trans_2x2_buf[] = { 1, 0, 0, 1 };
       float *rgba = (flags & ( TILE_RGB | TILE_ALPHA)) ? rgba_buf : 0;
-      float *dxx_dxy = (flags & ( TILE_SCALE | TILE_ROTATION)) ? scale_rot_buf : 0;
-
-
-
+      float *trans_2x2 = (flags & ( TILE_TRANS_2x2 | TILE_SCALE | TILE_ROTATION )) ? trans_2x2_buf : 0;
       int id;
       double x;
       double y;
@@ -2160,24 +2168,38 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
             const Rect &r = tile.mRect;
             int pos = 3;
 
-            if (dxx_dxy)
+            if (trans_2x2)
             {
-               dxx_dxy[0] = 1.0;
-               dxx_dxy[1] = 0.0;
-               if (flags & TILE_SCALE)
+               if (flags & TILE_TRANS_2x2)
                {
-                  double scale = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                  dxx_dxy[0] *= scale;
+                  trans_2x2[0] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
+                  trans_2x2[1] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
+                  trans_2x2[2] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
+                  trans_2x2[3] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
                }
+               else if (trans_2x2)
+               {
+                  double scale = 1.0;
+                  double cos_theta = 1.0;
+                  double sin_theta = 0.0;
 
-               if (flags & TILE_ROTATION)
-               {
-                  double theta = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                  dxx_dxy[1] = sin(theta) * dxx_dxy[0];
-                  dxx_dxy[0] *= cos(theta);
+                  if (flags & TILE_SCALE)
+                     scale = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
+
+                  if (flags & TILE_ROTATION)
+                  {
+                     double theta = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
+                     cos_theta = cos(theta);
+                     sin_theta = sin(theta);
+                  }
+
+                  trans_2x2[0] = scale*cos_theta;
+                  trans_2x2[1] = scale*sin_theta;
+                  trans_2x2[2] = -trans_2x2[1];
+                  trans_2x2[3] = trans_2x2[0];
                }
-               double ox_ = ox*dxx_dxy[0] + oy*dxx_dxy[1];
-                      oy  =-ox*dxx_dxy[1] + oy*dxx_dxy[0];
+               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[1];
+                      oy  = ox*trans_2x2[2] + oy*trans_2x2[3];
                ox = ox_;
             }
 
@@ -2213,7 +2235,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                   rgba[3] = val_number(val_ptr[pos++]);
             }
 
-            gfx->tile(x-ox,y-oy,r,dxx_dxy,rgba);
+            gfx->tile(x-ox,y-oy,r,trans_2x2,rgba);
             if (vals)
                vals+=components;
             else if (fvals)
