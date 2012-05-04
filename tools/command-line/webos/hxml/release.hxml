@@ -3,3 +3,4 @@
 -cpp ::CPP_DIR::
 --remap flash:nme
 -D webos
+-D HXCPP_RTLD_LAZY
