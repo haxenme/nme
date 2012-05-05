@@ -1099,9 +1099,9 @@ typedef DOMString = String
 
 typedef DOMTimeStamp = Int
 
-typedef DOMObject = Object;
+typedef DOMObject = Dynamic;
 
-typedef Object = Dynamic // Object
+//typedef Object = Dynamic // Object
 
 typedef DOMUserData = Dynamic //any
 

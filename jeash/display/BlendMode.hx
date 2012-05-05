@@ -26,20 +26,20 @@
 
 package jeash.display;
 
-class BlendMode {
-	public static var ADD = "ADD";
-	public static var ALPHA = "ALPHA";
-	public static var DARKEN = "DARKEN";
-	public static var DIFFERENCE = "DIFFERENCE";
-	public static var ERASE = "ERASE";
-	public static var HARDLIGHT = "HARDLIGHT";
-	public static var INVERT = "INVERT";
-	public static var LAYER = "LAYER";
-	public static var LIGHTEN = "LIGHTEN";
-	public static var MULTIPLY = "MULTIPLY";
-	public static var NORMAL = "NORMAL";
-	public static var OVERLAY = "OVERLAY";
-	public static var SCREEN = "SCREEN";
-	public static var SUBTRACT = "SUBTRACT";
+enum BlendMode {
+	ADD;
+	ALPHA;
+	DARKEN;
+	DIFFERENCE;
+	ERASE;
+	HARDLIGHT;
+	INVERT;
+	LAYER;
+	LIGHTEN;
+	MULTIPLY;
+	NORMAL;
+	OVERLAY;
+	SCREEN;
+	SUBTRACT;
 }
 
