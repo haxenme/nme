@@ -41,8 +41,8 @@ class Assets {
 		
 		switch (id) {
 			
-			//::foreach assets::case "::id::": return ByteArray.readFile ("::resourceName::");
-			//::end::
+			::foreach assets::case "::id::": return cast (ApplicationMain.urlLoaders.get ("::resourceName::").data, ByteArray);
+			::end::
 		}
 		
 		return null;

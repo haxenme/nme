@@ -5,6 +5,7 @@ import nme.events.Event;
 import nme.media.Sound;
 import nme.net.URLLoader;
 import nme.net.URLRequest;
+import nme.net.URLLoaderDataFormat;
 import nme.Assets;
 import nme.Lib;
 
@@ -38,6 +39,7 @@ class ApplicationMain {
 		total ++;
 		::elseif (type == "asset")::
 		var urlLoader:URLLoader = new URLLoader ();
+		urlLoader.dataFormat = BINARY;
 		urlLoaders.set ("::resourceName::", urlLoader);
 		total ++;
 		::end::::end::
