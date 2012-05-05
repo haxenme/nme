@@ -37,5 +37,6 @@ class URLRequest {
 		if (inURL!=null)
 			url = inURL;
 		requestHeaders = [];
+		method = "GET";
 	}
 }

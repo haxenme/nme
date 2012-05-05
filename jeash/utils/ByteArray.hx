@@ -86,6 +86,9 @@ class ByteArray {
 		if(offset < 0 || length < 0)
 			throw new IOError("Read error - Out of bounds");
 
+		if (offset == null) offset = 0;
+		if (length == null) length = this.length;
+
 		if(bytes.byteView.length < length + offset) {
 			bytes.jeashResizeBuffer(offset+length);
 		}
@@ -308,6 +311,7 @@ class ByteArray {
 
 		bytes.data = new DataView(buffer);
 		bytes.byteView = new Uint8Array(buffer);
+		bytes.length = buffer.byteLength;
 		return bytes;
 	}
 
