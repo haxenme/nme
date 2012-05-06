@@ -79,10 +79,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var blendMode : jeash.display.BlendMode;
 	public var loaderInfo:LoaderInfo;
 
-
-	// This is used by the swf-code for z-sorting
-	public var __swf_depth:Int;
-
 	public var transform(GetTransform,SetTransform):Transform;
 
 	var mBoundsDirty:Bool;
@@ -120,7 +116,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		jeashScaleX = jeashScaleY = 1.0;
 		alpha = 1.0;
 		rotation = 0.0;
-		__swf_depth = 0;
 		mMatrix = new Matrix();
 		mFullMatrix = new Matrix();
 		mMask = null;
@@ -164,12 +159,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		dispatchEvent(evt);
 
 		var gfx = jeashGetGraphics();
-		if (gfx != null)
+		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface))
 			Lib.jeashRemoveSurface(gfx.jeashSurface);
 	}
-	public function DoMouseEnter() {}
-	public function DoMouseLeave() {}
-
 	public function jeashSetParent(parent:DisplayObjectContainer)
 	{
 		if (parent == this.parent)
@@ -613,12 +605,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashInsertBefore(obj:DisplayObject)
-	{
+	function jeashInsertBefore(obj:DisplayObject) {
 		var gfx1 = jeashGetGraphics();
 		var gfx2 = obj.jeashIsOnStage() ? obj.jeashGetGraphics() : null;
-		if (gfx1 != null)
-		{
+		if (gfx1 != null) {
+			Lib.jeashSetSurfaceId(gfx1.jeashSurface, name);
 			if (gfx2 != null )
 				Lib.jeashAppendSurface(gfx1.jeashSurface, gfx2.jeashSurface);
 			 else 

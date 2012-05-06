@@ -399,8 +399,6 @@ class DisplayObjectContainer extends InteractiveObject
 			if (result != null)
 				stack.push(result);
 		}
-
-		//return super.jeashGetObjectsUnderPoint(point);
 	}
 
 	// TODO: check if we need to merge filters with children.
