@@ -1411,6 +1411,9 @@ class InstallerBase {
 							
 							var xml:Fast = new Fast (Xml.parse (File.getContent (name)).firstElement ());
 							var path = Path.directory (name);
+							if (useFullClassPaths ()) {
+                                                        	path = FileSystem.fullPath (path);
+                                                	}
 							
 							compilerFlags.push ("-cp " + path);
 							
