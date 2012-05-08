@@ -57,9 +57,9 @@ class Lib {
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
-	static inline var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'dblclick', 'click' ];
-	static inline var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
-	static inline var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ]; 
+	static var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'dblclick', 'click' ];
+	static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
+	static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ]; 
 
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 	static inline var DEFAULT_WIDTH = 500;
