@@ -82,7 +82,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		} else if (InstallTool.isMac) {
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macos/x86/usr/bin/";
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
 			
 		} else {
 			
