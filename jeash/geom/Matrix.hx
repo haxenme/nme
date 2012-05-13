@@ -249,7 +249,14 @@ class Matrix
 	{
 		#if js
 		untyped {
-			return "matrix(" + a.toFixed(4) + ", " + b.toFixed(4) + ", " + c.toFixed(4) + ", " + d.toFixed(4) + ", " + tx.toFixed(4) + "px, " + ty.toFixed(4) + "px)";
+			var m = "matrix(";
+			m += a; m += ", ";
+			m += b; m += ", ";
+			m += c; m += ", ";
+			m += d; m += ", ";
+			m += tx; m += "px, ";
+			m += ty; m += "px)";
+			return m;
 		}
 		#end
 	}
@@ -258,10 +265,16 @@ class Matrix
 	{
 		#if js
 		untyped {
-			return "matrix(" + a.toFixed(4) + ", " + b.toFixed(4) + ", " + c.toFixed(4) + ", " + d.toFixed(4) + ", " + tx.toFixed(4) + ", " + ty.toFixed(4) + ")";
+			var m = "matrix(";
+			m += a; m += ", ";
+			m += b; m += ", ";
+			m += c; m += ", ";
+			m += d; m += ", ";
+			m += tx; m += ", ";
+			m += ty; m += ")";
+			return m;
 		}
 		#end
 	}
-
 }
 

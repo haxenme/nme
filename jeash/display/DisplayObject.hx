@@ -97,6 +97,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var jeashScaleY : Float;
 	var jeashRotation : Float;
 	var jeashVisible : Bool;
+	var jeashLastOpacity:Float;
 
 	static var mNameID = 0;
 
@@ -408,11 +409,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			m.tx = m.tx + gfx.jeashExtent.x*m.a + gfx.jeashExtent.y*m.c;
 			m.ty = m.ty + gfx.jeashExtent.x*m.b + gfx.jeashExtent.y*m.d;
 
+			var premulAlpha = (parent != null ? parent.alpha : 1) * alpha;
 			if (inMask != null) {
-				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
+				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, premulAlpha);
 			} else {
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
-				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+				if (premulAlpha != jeashLastOpacity) {
+					Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, premulAlpha);
+					jeashLastOpacity = premulAlpha;
+				}
 			}
 
 		} else {
