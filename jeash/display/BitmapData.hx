@@ -738,10 +738,8 @@ class BitmapData implements IBitmapDrawable {
 			var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 			var imageData = ctx.getImageData (0, 0, width, height);
 			return doHitTest(imageData);
-			ctx.putImageData (imageData, 0, 0);
 		} else {
 			return doHitTest(jeashImageData);
-			jeashImageDataChanged = true;
 		}
 	}
 
@@ -785,7 +783,7 @@ class BitmapData implements IBitmapDrawable {
 		return false;
 	}
 
-	public static function loadFromBytes(bytes:ByteArray) {
+	public static function loadFromBytes(bytes:ByteArray, ?inRawAlpha:ByteArray, onload:BitmapData->Void) {
 		// sanity check, must be a PNG or JPG. 
 		var type = switch (true) {
 			case jeashIsPNG(bytes): "image/png";
@@ -795,18 +793,28 @@ class BitmapData implements IBitmapDrawable {
 			
 		var document : HTMLDocument = cast js.Lib.document;
 		var img : HTMLImageElement = cast document.createElement("img");
-		img.src = Std.format("data:$type;base64,${jeashBase64Encode(bytes)}");
 
 		var bitmapData = new BitmapData(0, 0);
 
 		var canvas = bitmapData.mTextureBuffer;
-		canvas.width = img.width;
-		canvas.height = img.height;
-		canvas.getContext('2d').drawImage(img, 0, 0);
+		var drawImage = function (_) {
+			canvas.width = img.width;
+			canvas.height = img.height;
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, 0, 0);
+			if (inRawAlpha != null) {
+				var pixels = ctx.getImageData(0, 0, img.width, img.height);
+				for (i in 0...inRawAlpha.length) { 
+					pixels.data[i*4+3] = inRawAlpha.readUnsignedByte();
+				}
+				ctx.putImageData(pixels, 0, 0);
+			}
+			onload(bitmapData);
+		}
 
-		bitmapData.jeashImageDataChanged = true;
+		img.addEventListener("load", drawImage, false);
+		img.src = Std.format("data:$type;base64,${jeashBase64Encode(bytes)}");
 
-		return bitmapData;
 	}
 
 	public function scroll(x:Int, y:Int)
