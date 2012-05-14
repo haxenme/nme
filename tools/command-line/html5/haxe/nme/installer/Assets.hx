@@ -80,7 +80,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::::if (type == "asset")::case "::id::": return ApplicationMain.urlLoaders.get ("::resourceName::").data;
+			::foreach assets::::if (type == "text")::case "::id::": return ApplicationMain.urlLoaders.get ("::resourceName::").data;
 			::end::::end::
 		}
 		

@@ -12,6 +12,7 @@ class Asset {
 	public static var TYPE_IMAGE:String = "image";
 	public static var TYPE_MUSIC:String = "music";
 	public static var TYPE_SOUND:String = "sound";
+	public static var TYPE_TEXT:String = "text";
 	
 	public static var TYPE_TEMPLATE:String = "template";
 	
@@ -69,6 +70,10 @@ class Asset {
 				case "mp3", "mp2":
 					
 					this.type = TYPE_MUSIC;
+
+				case "txt", "json", "xml":
+
+					this.type = TYPE_TEXT;
 				
 				default:
 					
@@ -96,6 +101,7 @@ class Asset {
          case TYPE_SOUND : flashClass = "nme.media.Sound";
          case TYPE_IMAGE : flashClass = "nme.display.BitmapData";
          case TYPE_FONT : flashClass = "nme.text.Font";
+         case TYPE_TEXT : flashClass = "String";
          default:
             flashClass = "nme.utils.ByteArray";
       }

@@ -42,6 +42,11 @@ class ApplicationMain {
 		urlLoader.dataFormat = BINARY;
 		urlLoaders.set ("::resourceName::", urlLoader);
 		total ++;
+		::elseif (type == "text")::
+		var urlLoader:URLLoader = new URLLoader ();
+		urlLoader.dataFormat = TEXT;
+		urlLoaders.set ("::resourceName::", urlLoader);
+		total ++;
 		::end::::end::
 		
 		if (total == 0) {
