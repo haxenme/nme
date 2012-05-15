@@ -71,10 +71,12 @@ class Asset {
 					
 					this.type = TYPE_MUSIC;
 
+				#if js
 				case "txt", "json", "xml":
 
 					this.type = TYPE_TEXT;
 				
+				#end
 				default:
 					
 					this.type = TYPE_ASSET;
