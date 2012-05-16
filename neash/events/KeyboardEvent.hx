@@ -22,8 +22,8 @@ class KeyboardEvent extends Event
 		super(type, bubbles, cancelable);
 		
 		keyCode = keyCodeValue;
-		keyLocation = keyLocationValue == null ? 0 : keyLocationValue;
-		charCode = charCodeValue == null ? 0 : charCodeValue;
+		keyLocation = keyLocationValue;
+		charCode = charCodeValue;
 		
 		shiftKey = shiftKeyValue;
 		altKey = altKeyValue;

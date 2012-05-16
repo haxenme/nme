@@ -72,8 +72,8 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
 	
 	public function createBox(scaleX:Float, scaleY:Float, ?rotation:Float, ?tx:Float, ?ty:Float):Void
 	{	
-		a = scaleX == null ? 1.0 : scaleX;
-		d = scaleY == null ? 1.0 : scaleY;
+		a = scaleX;
+		d = scaleY;
 		b = rotation == null ? 0.0 : rotation;
 		this.tx = tx == null ? 0.0 : tx;
 		this.ty = ty == null ? 0.0 : ty;

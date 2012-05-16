@@ -19,12 +19,12 @@ import neash.Loader;
 class BitmapData implements IBitmapDrawable
 {
 	
-	public inline static var CLEAR = createColor(0, 0);
-	public inline static var BLACK = createColor(0x000000);
-	public inline static var WHITE = createColor(0x000000);
-	public inline static var RED = createColor(0xff0000);
-	public inline static var GREEN = createColor(0x00ff00);
-	public inline static var BLUE = createColor(0x0000ff);
+	public static var CLEAR = createColor(0, 0);
+	public static var BLACK = createColor(0x000000);
+	public static var WHITE = createColor(0x000000);
+	public static var RED = createColor(0xff0000);
+	public static var GREEN = createColor(0x00ff00);
+	public static var BLUE = createColor(0x0000ff);
 	public inline static var PNG = "png";
 	public inline static var JPG = "jpg";
 	
