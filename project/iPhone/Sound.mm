@@ -252,12 +252,6 @@ public:
 };
 
 
-SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
-{
-   return 0;
-}
-
-
 class AVAudioPlayerSound : public Sound
 {
 public:
@@ -374,7 +368,7 @@ OpenAL implementation of Sound and SoundChannel classes:
 
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
-static int numberOfPlayedFiles = 0;
+//static int numberOfPlayedFiles = 0;
 
 static bool OpenALInit()
 {
@@ -396,6 +390,7 @@ static bool OpenALInit()
 
 class OpenALChannel : public SoundChannel
 {
+    enum { STEREO_SAMPLES = 2 };
 public:
     OpenALChannel(Object *inSound,unsigned int inBufferID,
                    int inLoops, const SoundTransform &inTransform)
@@ -404,6 +399,11 @@ public:
        mSound = inSound;
        inSound->IncRef();
        mSourceID = 0;
+       mDynamicDone = true;
+       mDynamicBuffer[0] = 0;
+       mDynamicBuffer[1] = 0;
+       mDynamicStackSize = 0;
+       mSampleBuffer = 0;
 
        if (inBufferID>0)
        {
@@ -424,12 +424,135 @@ public:
        }
     }
 
+    OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform)
+    {
+       LOG_SOUND("OpenALChannel dynamic %d",inBytes.Size());
+       mSound = 0;
+       mSourceID = 0;
+
+       mDynamicBuffer[0] = 0;
+       mDynamicBuffer[1] = 0;
+       mDynamicStackSize = 0;
+       mSampleBuffer = 0;
+
+       alGenBuffers(2, mDynamicBuffer);
+       if (!mDynamicBuffer[0])
+       {
+          LOG_SOUND("Error creating dynamic sound buffer!");
+       }
+       else
+       {
+          mSampleBuffer = new short[8192*STEREO_SAMPLES];
+
+          // grab a source ID from openAL
+          alGenSources(1, &mSourceID); 
+ 
+          QueueBuffer(mDynamicBuffer[0],inBytes);
+
+          if (!mDynamicDone)
+             mDynamicStack[mDynamicStackSize++] = mDynamicBuffer[1];
+
+          // set some basic source prefs
+          alSourcef(mSourceID, AL_PITCH, 1.0f);
+          alSourcef(mSourceID, AL_GAIN, inTransform.volume);
+          alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+
+          alSourcePlay(mSourceID);
+      }
+    }
+
+   void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes)
+   {
+      int time_samples = inBytes.Size()/sizeof(float)/STEREO_SAMPLES;
+      const float *buffer = (const float *)inBytes.Bytes();
+
+      for(int i=0;i<time_samples;i++)
+      {
+         mSampleBuffer[ i<<1 ] = *buffer++ * ((1<<15)-1);
+         mSampleBuffer[ (i<<1) + 1 ] = *buffer++ * ((1<<15)-1);
+      }
+
+      mDynamicDone = time_samples < 1024;
+
+      alBufferData(inBuffer, AL_FORMAT_STEREO16, mSampleBuffer, time_samples*STEREO_SAMPLES*sizeof(short), 44100 );
+
+      LOG_SOUND("Dynamic queue buffer %d (%d)", inBuffer, time_samples );
+      alSourceQueueBuffers(mSourceID, 1, &inBuffer );
+   }
+
+   void unqueueBuffers()
+   {
+      ALint processed = 0;
+      alGetSourcei(mSourceID, AL_BUFFERS_PROCESSED, &processed);
+      LOG_SOUND("Recover buffers : %d (%d)", processed, mDynamicStackSize);
+      if (processed)
+      {
+         alSourceUnqueueBuffers(mSourceID,processed,&mDynamicStack[mDynamicStackSize]);
+         mDynamicStackSize += processed;
+      }
+   }
+
+
+
+   bool needsData()
+   {
+      if (!mDynamicBuffer[0] || mDynamicDone)
+         return false;
+
+      unqueueBuffers();
+
+      LOG_SOUND("needsData (%d)", mDynamicStackSize);
+      if (mDynamicStackSize)
+      {
+         mDynamicDone = true;
+         return true;
+      }
+
+      return false;
+
+   }
+
+   void addData(const ByteArray &inBytes)
+   {
+      if (!mDynamicStackSize)
+      {
+         LOG_SOUND("Adding data with no buffers?");
+         return;
+      }
+      mDynamicDone = false;
+      ALuint buffer = mDynamicStack[0];
+      mDynamicStack[0] = mDynamicStack[1];
+      mDynamicStackSize--;
+      QueueBuffer(buffer,inBytes);
+
+      // Make sure it is still playing ...
+      if (!mDynamicDone && mDynamicStackSize==1)
+      {
+         ALint val = 0;
+         alGetSourcei(mSourceID, AL_SOURCE_STATE, &val);
+         if(val != AL_PLAYING)
+         {
+            LOG_SOUND("Kickstart (%d/%d)",val,mDynamicStackSize);
+   
+            // This is an indication that the previous buffer finished playing before we could deliver the new buffer.
+            // You will hear ugly popping noises...
+            alSourcePlay(mSourceID);
+         }
+      }
+   }
+
+
+
     ~OpenALChannel()
     {
        LOG_SOUND("OpenALChannel destructor");
        if (mSourceID)
           alDeleteSources(1, &mSourceID);
-       mSound->DecRef();
+       if (mDynamicBuffer[0])
+          alDeleteBuffers(2, mDynamicBuffer);
+       delete [] mSampleBuffer;
+       if (mSound)
+          mSound->DecRef();
     }
 
    bool isComplete()
@@ -439,6 +562,9 @@ public:
         LOG_SOUND("OpenALChannel isComplete() - never started!");
         return true;
       }
+
+      if (!mDynamicDone)
+         return false;
 
       // got this hint from
       // http://www.gamedev.net/topic/410696-openal-how-to-query-if-a-source-sound-is-playing-solved/
@@ -501,7 +627,23 @@ public:
 
     Object *mSound;
     unsigned int mSourceID;
+    short  *mSampleBuffer;
+    bool   mDynamicDone;
+    ALuint mDynamicStackSize;
+    ALuint mDynamicStack[2];
+    ALuint mDynamicBuffer[2];
 };
+
+
+SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+{
+   if (!OpenALInit())
+      return 0;
+
+   return new OpenALChannel(inBytes, inTransform);
+}
+
+
 
 
 class OpenALSound : public Sound
