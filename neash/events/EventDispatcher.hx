@@ -108,7 +108,7 @@ class EventDispatcher implements IEventDispatcher
       if (nmeEventMap == null)
          return false;
       var h = nmeEventMap.get(type);
-      return (h == null) ? false : (h.length > 0);
+      return (h == null) ? false : (h.length > 0 && h[0] != null);
    }
    
    
