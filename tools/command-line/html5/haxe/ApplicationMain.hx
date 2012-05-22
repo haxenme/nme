@@ -37,7 +37,7 @@ class ApplicationMain {
 		var loader:Loader = new Loader ();
 		loaders.set ("::resourceName::", loader);
 		total ++;
-		::elseif (type == "asset")::
+		::elseif (type == "binary")::
 		var urlLoader:URLLoader = new URLLoader ();
 		urlLoader.dataFormat = BINARY;
 		urlLoaders.set ("::resourceName::", urlLoader);
@@ -95,7 +95,9 @@ class ApplicationMain {
 			::elseif (type=="music")::
 			return Assets.getSound ("::id::");
 			::elseif (type== "font")::
-			 return Assets.getFont ("::id::");
+			return Assets.getFont ("::id::");
+			::elseif (type== "text")::
+			return Assets.getText ("::id::");
 			::else::
 			return Assets.getBytes ("::id::");
 			::end::

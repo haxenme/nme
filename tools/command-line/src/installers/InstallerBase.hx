@@ -1311,7 +1311,7 @@ class InstallerBase {
 		var id:String = element.has.id ? element.att.id : "cacert.pem";
 		var path:String = element.has.path ? element.att.path : NME + "/tools/command-line/resources/cacert.pem";
 		
-		assets.push (new Asset (path, id, Asset.TYPE_ASSET, id, ""));
+		assets.push (new Asset (path, id, Asset.TYPE_TEXT, id, ""));
 		sslCaCert = id;
 		
 	}
@@ -1619,7 +1619,7 @@ class InstallerBase {
 						var path = extensionPath + substitute (element.att.path);
 						var targetPath = "libraries/" + Path.withoutDirectory (path);
 						
-						var asset = new Asset (path, targetPath, Asset.TYPE_ASSET, "", "");
+						var asset = new Asset (path, targetPath, Asset.TYPE_BINARY, "", "");
 						
 						assets.push (asset);
 						

@@ -83,7 +83,7 @@ class Assets {
 			
 		} else {
 			
-			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			trace ("[nme.Assets] There is no ByteArray asset with an ID of \"" + id + "\"");
 			
 			return null;
 			
@@ -134,15 +134,27 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		var bytes = getBytes (id);
+		initialize ();
 		
-		if (bytes == null) {
+		if (resourceClasses.exists (id)) {
 			
-			return null;
+			var data = Type.createInstance (resourceClasses.get (id), []);
+			
+			if (Std.is (data, String)) {
+				
+				return data;
+				
+			} else if (Std.is (data, ByteArray)) {
+				
+				return bytes.readUTFBytes (bytes.length);
+				
+			}
 			
 		} else {
 			
-			return bytes.readUTFBytes (bytes.length);
+			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			
+			return null;
 			
 		}
 		

@@ -7,7 +7,7 @@ import neko.io.Path;
 class Asset {
 	
 	
-	public static var TYPE_ASSET:String = "asset";
+	public static var TYPE_BINARY:String = "binary";
 	public static var TYPE_FONT:String = "font";
 	public static var TYPE_IMAGE:String = "image";
 	public static var TYPE_MUSIC:String = "music";
@@ -49,6 +49,12 @@ class Asset {
 		
 		this.resourceName = this.targetPath;
 		
+		if (this.type == "asset") {
+			
+			this.type = "";
+			
+		}
+		
 		if (this.type == "") {
 			
 			var extension:String = Path.extension (this.targetPath);
@@ -70,16 +76,14 @@ class Asset {
 				case "mp3", "mp2":
 					
 					this.type = TYPE_MUSIC;
-
-				#if js
+				
 				case "txt", "json", "xml":
-
+					
 					this.type = TYPE_TEXT;
 				
-				#end
 				default:
 					
-					this.type = TYPE_ASSET;
+					this.type = TYPE_BINARY;
 				
 			}
 			
@@ -97,16 +101,16 @@ class Asset {
 		
 		hash = Utils.getUniqueID ();
 		
-      switch(this.type)
-      {
-         case TYPE_MUSIC : flashClass = "nme.media.Sound";
-         case TYPE_SOUND : flashClass = "nme.media.Sound";
-         case TYPE_IMAGE : flashClass = "nme.display.BitmapData";
-         case TYPE_FONT : flashClass = "nme.text.Font";
-         case TYPE_TEXT : flashClass = "String";
-         default:
-            flashClass = "nme.utils.ByteArray";
-      }
+		switch(this.type)
+		{
+			case TYPE_MUSIC : flashClass = "nme.media.Sound";
+			case TYPE_SOUND : flashClass = "nme.media.Sound";
+			case TYPE_IMAGE : flashClass = "nme.display.BitmapData";
+			case TYPE_FONT : flashClass = "nme.text.Font";
+			case TYPE_TEXT : flashClass = "String";
+			default:
+			flashClass = "nme.utils.ByteArray";
+		}
 	  
       generateFlatName();
 	}

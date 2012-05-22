@@ -102,6 +102,8 @@ class ApplicationMain
 			return nme.Assets.getSound ("::id::");
 			::elseif (type== "font")::
 			return nme.Assets.getFont ("::id::");
+			::elseif (type== "text")::
+			return nme.Assets.getText ("::id::");
 			::else::
 			return nme.Assets.getBytes ("::id::");
 			::end::

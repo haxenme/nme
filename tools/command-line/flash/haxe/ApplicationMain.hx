@@ -83,6 +83,8 @@ class ApplicationMain {
             return Assets.getSound ("::id::");
 		 ::elseif (type== "font")::
 			 return Assets.getFont ("::id::");
+		 ::elseif (type=="text")::
+			 return Assets.getText ("::id::");
          ::else::
             return Assets.getBytes ("::id::");
          ::end::

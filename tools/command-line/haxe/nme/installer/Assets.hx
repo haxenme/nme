@@ -36,10 +36,6 @@ class Assets {
 		
 	}
 	
-	public static function getResourceName (id:String): String {
-		initialize ();
-      return resourceNames.get(id);
-   }
 	
 	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
 		
@@ -110,6 +106,15 @@ class Assets {
 			return null;
 			
 		}
+		
+	}
+	
+	
+	public static function getResourceName (id:String):String {
+		
+		initialize ();
+		
+		return resourceNames.get (id);
 		
 	}
 	
