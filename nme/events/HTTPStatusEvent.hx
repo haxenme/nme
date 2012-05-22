@@ -1,35 +1,21 @@
 package nme.events;
-#if (cpp || neko)
+#if code_completion
 
 
-class HTTPStatusEvent extends Event
-{
-	
-	public static var HTTP_STATUS = "httpStatus";
-	
-	public var status:Int;
-	
-	public function new(inType:String, bubbles:Bool = false, cancelable:Bool = false, status:Int = 0)
-	{
-		super(inType, bubbles, cancelable);
-		this.status = status;
-	}
-	
-	
-	public override function clone ():Event
-	{
-		return new HTTPStatusEvent (type, bubbles, cancelable, status);
-	}
-	
-	
-	public override function toString ():String
-	{
-		return "[HTTPStatusEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " status=" + status + "]";
-	}
-	
+extern class HTTPStatusEvent extends Event {
+	@:require(flash10_1) var responseHeaders : Array<Dynamic>;
+	@:require(flash10_1) var responseURL : String;
+	var status(default,null) : Int;
+	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, status : Int = 0) : Void;
+	@:require(flash10_1) static var HTTP_RESPONSE_STATUS : String;
+	static var HTTP_STATUS : String;
 }
 
 
+#elseif (cpp || neko)
+typedef IOErrorEvent = neash.events.IOErrorEvent;
+#elseif js
+typedef IOErrorEvent = jeash.events.IOErrorEvent;
 #else
-typedef HTTPStatusEvent = flash.events.HTTPStatusEvent;
+typedef IOErrorEvent = flash.events.IOErrorEvent;
 #end
