@@ -109,8 +109,8 @@ class ApplicationMain
 			::end::
 		}
 		::end::
-		return null;
 		#end
+		return null;
 	}
 	
 	
