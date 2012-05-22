@@ -185,17 +185,18 @@
 		
 		These are the current types:
 			
-			asset
+			binary
 			font
 			image
 			music
 			sound
 			template
+			text
 			
 		Some targets can only support playing one music file at a time. You should use
 		"music" for files which are designed to play as background music, and "sound" for
-		all other audio. "asset" is a generic type which is available as a ByteArray or
-		String in your application.
+		all other audio. "binary" and "text" are generic types which are available as a ByteArray or
+		String in your application. Most targets can use them interchangeably.
 		
 		If an asset is specified as "template", it will not be copied/embedded as an ordinary
 		asset, but instead will be copied to the root directory of your project, so you can
