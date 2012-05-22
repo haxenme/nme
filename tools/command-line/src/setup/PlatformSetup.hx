@@ -673,7 +673,7 @@ class PlatformSetup {
 		
 			if (answer == Yes || answer == Always) {
 			
-				Lib.println ("You must visit the Oracle website to download the Java JDK for your platform");
+				Lib.println ("You must visit the Oracle website to download the Java 6 JDK for your platform");
 				var secondAnswer = ask ("Would you like to go there now?");
 			
 				if (secondAnswer != No) {
