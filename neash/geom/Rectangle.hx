@@ -204,7 +204,7 @@ class Rectangle
 	{
 		var x0 = x > toUnion.x ? toUnion.x : x;
 		var x1 = right < toUnion.right ? toUnion.right : right;
-		var y0 = y > toUnion.y ? toUnion.x : y;
+		var y0 = y > toUnion.y ? toUnion.y : y;
 		var y1 = bottom < toUnion.bottom ? toUnion.bottom : bottom;
 		return new Rectangle(x0, y0, x1 - x0, y1 - y0);
 	}
