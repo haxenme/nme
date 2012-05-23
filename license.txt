@@ -9,7 +9,7 @@ Libraries required to compile the "NDLL" for each platform fall under
 their own licenses, generally the MIT, BSD and zlib licenses. The
 notable exception to this is SDL 1.2, which uses the LGPL license.
 
-NME uses SDL for Windows, Mac and Linux support. The NDLL for these
+NME uses SDL for Windows, Mac, Linux and BlackBerry. The NDLL for these
 platforms should be considered LGPL, but since the NDLL files are
 loaded at runtime, these will not affect NME applications compiled
 for these platforms.
@@ -19,6 +19,9 @@ webOS uses SDL, but dynamically-linked, so the NDLL is unaffected.
 Applications compiled for iOS are statically-linked, as currently
 required by Apple, but since NME does not use SDL with iOS, you 
 should still retain full rights to your application code.
+
+Portions of the API documentation were taken from the ActionScript 3
+Language Reference using the Creative Commons BY-NC-SA 3.0 license.
 
 The NME project waives any requirement to distribute this copyright
 notice with anything other than substantial portions of the source code.
