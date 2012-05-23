@@ -138,7 +138,7 @@ class Assets {
 		
 		if (resourceClasses.exists (id)) {
 			
-			var data = Type.createInstance (resourceClasses.get (id), []);
+			var data:Dynamic = Type.createInstance (resourceClasses.get (id), []);
 			
 			if (Std.is (data, String)) {
 				
@@ -146,7 +146,7 @@ class Assets {
 				
 			} else if (Std.is (data, ByteArray)) {
 				
-				return bytes.readUTFBytes (bytes.length);
+				return data.readUTFBytes (data.length);
 				
 			}
 			
@@ -154,9 +154,9 @@ class Assets {
 			
 			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
 			
-			return null;
-			
 		}
+		
+		return null;
 		
 	}
 	
