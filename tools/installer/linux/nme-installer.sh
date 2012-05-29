@@ -135,8 +135,13 @@ if [ $RESP = "y" ]; then
 	if [ `uname -m` = 'x86_64' ]; then
 		
 		
+		# Need 32-bit support
+		
+		sudo apt-get install ia32-libs
+		
+		
 		# Need to recompile haxelib for 64-bit Neko
-
+		
 		haxe /usr/lib/haxe/std/tools/haxelib/haxelib.hxml
 		sudo cp haxelib /usr/lib/haxe/haxelib
 		rm index.n
