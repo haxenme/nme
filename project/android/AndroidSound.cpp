@@ -62,6 +62,17 @@ public:
 	}
    void stop()
 	{
+		if (mStreamID > -1) {
+			
+		JNIEnv *env = GetEnv();
+
+	  jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "stopSound", "(I)V");
+      if (mid > 0){
+		 env->CallStaticVoidMethod(cls, mid, mStreamID);
+	  }
+	  
+		}
 	}
    void setTransform(const SoundTransform &inTransform)
 	{

@@ -54,6 +54,7 @@ public class GameActivity extends Activity implements SensorEventListener {
     static Context mContext;
     static MediaPlayer mMediaPlayer = null;
 	static boolean mMusicComplete = true;
+	static boolean mMusicWasPlaying = false;
 	static int mMusicLoopsLeft = 0;
     static final String GLOBAL_PREF_FILE="nmeAppPrefs";
     static GameActivity activity;
@@ -296,6 +297,11 @@ public class GameActivity extends Activity implements SensorEventListener {
 		
 		mMediaPlayer.setVolume((float)inVolLeft,(float)inVolRight);
 	}
+	
+	static public void stopSound(int inStreamID) {
+		if (mSoundPool != null)
+			mSoundPool.stop (inStreamID);
+	}
     
     static public void stopMusic() {
 		Log.v("GameActivity","stop MediaPlayer");
@@ -412,8 +418,10 @@ public class GameActivity extends Activity implements SensorEventListener {
         mSoundPool = null;
         mView.sendActivity(NME.DEACTIVATE);
         mView.onPause();
-        if (mMediaPlayer!=null)
-           mMediaPlayer.pause();
+        if (mMediaPlayer!=null) {
+			mMusicWasPlaying = mMediaPlayer.isPlaying();
+            mMediaPlayer.pause();
+		}
            
         if (sensorManager != null) 
         	sensorManager.unregisterListener(this);
@@ -428,8 +436,11 @@ public class GameActivity extends Activity implements SensorEventListener {
         mSoundPoolID++;
         mSoundPool = new SoundPool(8,android.media.AudioManager.STREAM_MUSIC,0);
         mView.onResume();
-        if (mMediaPlayer!=null)
-           mMediaPlayer.start();
+        if (mMediaPlayer!=null) {
+			if (mMusicWasPlaying) {
+				mMediaPlayer.start();
+			}
+		}
         mView.sendActivity(NME.ACTIVATE);
         
 		if (sensorManager != null) {
