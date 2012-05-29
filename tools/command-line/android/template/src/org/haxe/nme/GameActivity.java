@@ -201,6 +201,14 @@ public class GameActivity extends Activity implements SensorEventListener {
 	{
 		return mMusicComplete;
 	}
+	
+	static public int getSoundLength(int inResourceID)
+	{
+		MediaPlayer mp = MediaPlayer.create(mContext, inResourceID);
+		if (mp == null)
+			return -1;
+		return mp.getDuration();
+	}
 
     static public int getSoundPoolID() { return mSoundPoolID; }
 

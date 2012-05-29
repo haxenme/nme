@@ -464,6 +464,13 @@ class InstallTool {
 			
 		}
 		
+		if (userDefines.exists ("debug")) {
+			
+			debug = true;
+			defines.set ("debug", "");
+			
+		}
+		
 		if (Sys.environment ().exists ("HOME")) {
 			
 			includePaths.push (Sys.getEnv ("HOME"));

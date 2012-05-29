@@ -174,6 +174,7 @@ public:
 
       mMode = MODE_UNKNOWN;
 		mID = -1;
+		mLength = 0;
       mManagerID = getSoundPoolID();
       mSoundName = inSound;
 
@@ -224,7 +225,24 @@ public:
    int getBytesTotal() { return 0; }
    bool ok() { return mID >= 0; }
    std::string getError() { return ok() ? "" : "Error"; }
-   double getLength() { return 0; }
+   
+   double getLength() {
+	   
+	   if (mLength == 0 && mID > 0) {
+	   
+	   JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "getSoundLength", "(I)I");
+      if (mid > 0)
+		{
+			 mLength = env->CallStaticIntMethod(cls, mid, mID);
+		}
+		
+	   }
+	   
+	   return mLength;
+   }
+   
    void close()  { }
 
    int getSoundPoolID()
@@ -256,6 +274,7 @@ public:
 	}
 
 	int mID;
+	int mLength;
    int mManagerID;
    std::string mSoundName;
    SoundMode mMode;

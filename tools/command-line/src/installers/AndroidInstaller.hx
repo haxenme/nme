@@ -17,33 +17,38 @@ class AndroidInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/android/bin";
 		var hxml:String = buildDirectory + "/android/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-      var arm5 = buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so";
-      var arm7 = buildDirectory + "/android/bin/libs/armeabi-v7a/libApplicationMain.so";
-
-      if (!defines.exists("ARM7-only"))
-      {
-		   runCommand ("", "haxe", [ hxml ] );
+		var arm5 = buildDirectory + "/android/bin/libs/armeabi/libApplicationMain.so";
+		var arm7 = buildDirectory + "/android/bin/libs/armeabi-v7a/libApplicationMain.so";
 		
-		   copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5 );
-      }
-      else
-      {
-         if (FileSystem.exists(arm5))
-            FileSystem.deleteFile(arm5);
-      }
-
-      if (defines.exists("ARM7") || defines.exists("ARM7-only"))
-      {
-		   runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
+		if (!defines.exists ("ARM7-only")) {
+			
+			runCommand ("", "haxe", [ hxml ] );
+			copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5);
+			
+		} else {
+			
+			if (FileSystem.exists (arm5)) {
+				
+				FileSystem.deleteFile (arm5);
+				
+			}
+			
+		}
 		
-		   copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7 );
-      }
-      else
-      {
-         if (FileSystem.exists(arm7))
-            FileSystem.deleteFile(arm7);
-      }
-
+		if (defines.exists ("ARM7") || defines.exists ("ARM7-only")) {
+			
+			runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
+			copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7);
+			
+		} else {
+			
+			if (FileSystem.exists (arm7)) {
+				
+				FileSystem.deleteFile (arm7);
+				
+			}
+			
+		}
 		
 		if (defines.exists ("JAVA_HOME")) {
 			
@@ -76,16 +81,17 @@ class AndroidInstaller extends InstallerBase {
 			build = "release";
 			
 		}
-
-      // Bug in android build system - can't recognise changes !!!!
 		
-      var depFile = destination + "/bin/build.prop";
-      if (FileSystem.exists(depFile))
-      {
-         trace("force remove : " + depFile);
-         FileSystem.deleteFile(depFile);
-      }
-
+		// Fix bug in Android build system, force compile
+		
+		var buildProperties = destination + "/bin/build.prop";
+		
+		if (FileSystem.exists (buildProperties)) {
+			
+			FileSystem.deleteFile (buildProperties);
+			
+		}
+		
 		runCommand (destination, ant, [ build ]);
 		
 	}
@@ -144,23 +150,6 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-      /*
-         Leave this up to hxcpp....
-		if (Sys.getEnv ("ANDROID_HOST") == null || Sys.getEnv ("ANDROID_HOST") == "") {
-			
-			if (InstallTool.isLinux) {
-				
-				Sys.putEnv ("ANDROID_HOST", "linux-x86");
-				
-			} else {
-				
-				Sys.putEnv ("ANDROID_HOST", "windows");
-				
-			}
-			
-		}
-      */
-		
 	}
 	
 	
@@ -178,12 +167,13 @@ class AndroidInstaller extends InstallerBase {
 		
 		var adb:Dynamic = getADB ();
 		
-      // Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> so you do not miss anything important
+		// Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> if you do not want to filter log messages
+		
 		if (defines.exists("FULL_LOGCAT")) {
-
+			
 			runCommand (adb.path, adb.name, [ "logcat", "-c" ]);
 			runCommand (adb.path, adb.name, [ "logcat" ]);
-
+			
 		} else if (debug) {
 			
 			var filter = "*:E";
