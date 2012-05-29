@@ -79,7 +79,7 @@ class Assets {
 		
 		if (resourceClasses.exists (id)) {
 			
-			return cast (Type.createInstance (resourceClasses.get (id), []), ByteArray);
+			return Type.createInstance (resourceClasses.get (id), []);
 			
 		} else {
 			
@@ -134,29 +134,17 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		initialize ();
+		var bytes = getBytes (id);
 		
-		if (resourceClasses.exists (id)) {
+		if (bytes == null) {
 			
-			var data:Dynamic = Type.createInstance (resourceClasses.get (id), []);
-			
-			if (Std.is (data, String)) {
-				
-				return data;
-				
-			} else if (Std.is (data, ByteArray)) {
-				
-				return data.readUTFBytes (data.length);
-				
-			}
+			return null;
 			
 		} else {
 			
-			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			return bytes.readUTFBytes (bytes.length);
 			
 		}
-		
-		return null;
 		
 	}
 	

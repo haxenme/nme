@@ -107,7 +107,6 @@ class Asset {
 			case TYPE_SOUND : flashClass = "nme.media.Sound";
 			case TYPE_IMAGE : flashClass = "nme.display.BitmapData";
 			case TYPE_FONT : flashClass = "nme.text.Font";
-			case TYPE_TEXT : flashClass = "String";
 			default:
 			flashClass = "nme.utils.ByteArray";
 		}
