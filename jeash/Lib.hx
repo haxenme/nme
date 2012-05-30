@@ -399,10 +399,8 @@ class Lib {
 	}
 
 	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { 
-		if (surface.id == null || surface.id.length == 0) {
-			var regex = ~/[^a-zA-Z0-9]/g;
-			surface.id = regex.replace(name, "_"); 
-		}
+		var regex = ~/[^a-zA-Z0-9\-]/g;
+		surface.id = regex.replace(name, "_"); 
 	}
 
 	public inline static function jeashDrawSurfaceRect(surface:HTMLElement, tgt:HTMLCanvasElement, x:Float, y:Float, rect:Rectangle) {
