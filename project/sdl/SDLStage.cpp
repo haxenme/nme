@@ -664,12 +664,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 #endif
 
 
-   #ifndef IPHONE
-   #ifndef WEBOS
-   #ifndef BLACKBERRY
+   #if defined (HX_WINDOWS) || defined (HX_LINUX)
    SDL_WM_SetCaption( inTitle, 0 );
-   #endif
-   #endif
    #endif
 
    SDL_Surface* screen = 0;
