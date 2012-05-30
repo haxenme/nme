@@ -290,7 +290,10 @@ public class GameActivity extends Activity implements SensorEventListener
 			return -1;
 		}
 		
-		return mp.getDuration();
+		int duration = mp.getDuration();
+		mp.release();
+		
+		return duration;
 	}
 	
 	
