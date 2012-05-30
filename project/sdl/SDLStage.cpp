@@ -335,9 +335,18 @@ public:
 	   
 	   #ifdef HX_MACOS
 	   
-	   if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown) && (inEvent.code == SDLK_q || inEvent.code == SDLK_w))
+	   if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
 	   {
-	       inEvent.type = etQuit;
+		   switch (inEvent.code)
+		   {
+			   case SDLK_q:
+			   case SDLK_w: 
+				   inEvent.type = etQuit;
+				   break;
+			   case SDLK_m:
+				   SDL_WM_IconifyWindow();
+				   return;
+		   }
 	   }
 	   
 	   #endif
