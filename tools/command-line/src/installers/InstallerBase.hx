@@ -1604,7 +1604,7 @@ class InstallerBase {
 							
 						}
 						
-						compilerFlags.push(substitute (substitute (element.att.name)));
+						compilerFlags.push (substitute (flag));
 					
 					case "window":
 						
