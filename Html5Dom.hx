@@ -2066,7 +2066,8 @@ extern interface CanvasRenderingContext2D {
     public function strokeText(text: DOMString, x: Float, y: Float, maxWidth: Float):Void;
     public function measureText(text: DOMString):TextMetrics;
 
-    public function drawImage(image: Dynamic, sx: Float, sy: Float, ?sw: Float, ?sh: Float, ?dx: Float, ?dy: Float, ?dw: Float, ?dh: Float):Void;
+    //@:overload( function (image: Dynamic, dx: Float, dy: Float):Void {} )
+		public function drawImage(image: Dynamic, sx: Float, sy: Float, ?sw: Float, ?sh: Float, ?dx: Float, ?dy: Float, ?dw: Float, ?dh: Float):Void;
 
     public function createImageData(sw: Float, sh: Float):ImageData;
     public function getImageData(sx: Float, sy: Float, sw: Float, sh: Float):ImageData;

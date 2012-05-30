@@ -91,13 +91,13 @@ class Bitmap extends jeash.display.DisplayObject {
 		} 
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement) {
+	override public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 		if (bitmapData == null) return;
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
 		}
 
-		var m = mFullMatrix.clone();
+		var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
 		var imageDataLease = bitmapData.jeashGetLease();
 		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
 			var srcCanvas = bitmapData.handle();
@@ -113,7 +113,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 
 		if (inMask != null) {
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
 		} else {
 
 			Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);

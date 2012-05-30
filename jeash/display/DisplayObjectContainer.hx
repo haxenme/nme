@@ -135,14 +135,26 @@ class DisplayObjectContainer extends InteractiveObject
 		return jeashChildren.length;
 	}
 
-	override public function jeashRender(inParentMatrix:Matrix, inMask:HTMLCanvasElement) {
+	override public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 
 		if (!visible) return;
 
-		super.jeashRender(inParentMatrix, inMask);
+		super.jeashRender(inMatrix, inMask, clipRect);
 		for(obj in jeashChildren) {
 			if (obj.visible) {
-				obj.jeashRender(mFullMatrix, inMask);
+				if (clipRect != null) {
+					var rect = new Rectangle();
+
+					if(obj.mMtxDirty || obj.mMtxChainDirty){
+						obj.jeashValidateMatrix();
+					}
+
+					rect.topLeft = obj.globalToLocal(clipRect.topLeft);
+					rect.bottomRight = obj.globalToLocal(clipRect.bottomRight);
+					obj.jeashRender(null, inMask, rect);
+				} else {
+					obj.jeashRender(null, inMask, null);
+				}
 			} 
 		}
 

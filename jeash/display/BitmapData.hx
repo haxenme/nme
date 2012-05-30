@@ -567,7 +567,6 @@ class BitmapData implements IBitmapDrawable {
 			clipRect:Rectangle,
 			smothing:Bool):Void {
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
-		ctx.save();
 		if (matrix != null) {
 			ctx.save();
 			if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
@@ -580,7 +579,6 @@ class BitmapData implements IBitmapDrawable {
 		jeashBuildLease();
 
 		ctx.drawImage(handle(), 0, 0);
-		ctx.restore();
 	}
 
 	public function colorTransform(rect:Rectangle, colorTransform:ColorTransform) {

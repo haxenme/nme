@@ -385,7 +385,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 
-	public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement) {
+	public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 		
 		var gfx = jeashGetGraphics();
 
@@ -397,7 +397,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				jeashValidateMatrix();
 			}
 			
-			var m = mFullMatrix.clone();
+			var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
 
 			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
 				if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
@@ -411,8 +411,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			var premulAlpha = (parent != null ? parent.alpha : 1) * alpha;
 			if (inMask != null) {
-				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, premulAlpha);
+				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, premulAlpha, clipRect);
 			} else {
+				// clipRect is ignored, used anywhere ?
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				if (premulAlpha != jeashLastOpacity) {
 					Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, premulAlpha);
@@ -434,7 +435,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
 		if (matrix==null) matrix = new Matrix();
-		jeashRender(matrix, inSurface);
+		jeashRender(matrix, inSurface, clipRect);
 	}
 
 	public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
