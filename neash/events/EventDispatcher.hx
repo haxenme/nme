@@ -31,7 +31,7 @@ class EventDispatcher implements IEventDispatcher
          nmeEventMap.set(type, list);
       }
       
-      var l =  new Listener(listener, useCapture, priority);
+      var l = new Listener(listener, useCapture, priority);
       list.push(new WeakRef<Listener>(l, useWeakReference));
    }
    
@@ -108,7 +108,12 @@ class EventDispatcher implements IEventDispatcher
       if (nmeEventMap == null)
          return false;
       var h = nmeEventMap.get(type);
-      return (h == null) ? false : (h.length > 0 && h[0] != null);
+      if (h != null) {
+         for (item in h) {
+            if (item != null) return true;
+         }
+      }
+      return false;
    }
    
    
