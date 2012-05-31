@@ -16,7 +16,7 @@
 		orientation="portrait"
 		fps="60"
 		background="0xffffff"
-      resizeable="true"
+      resizable="true"
 		hardware="true"
 	/>
 

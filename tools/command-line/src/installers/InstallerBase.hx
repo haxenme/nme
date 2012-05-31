@@ -823,11 +823,11 @@ class InstallerBase {
 		
 		if (defines.exists ("mac")) {
 			
-			setDefault ("WIN_RESIZEABLE", "false");
+			setDefault ("WIN_RESIZABLE", "false");
 			
 		} else {
 			
-			setDefault ("WIN_RESIZEABLE", "true");
+			setDefault ("WIN_RESIZABLE", "true");
 			
 		}
 		

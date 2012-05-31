@@ -72,7 +72,7 @@ class ApplicationMain
 			::WIN_FPS::, 
 			::WIN_BACKGROUND::,
 			(::WIN_HARDWARE:: ? nme.Lib.HARDWARE : 0) |
-			(::WIN_RESIZEABLE:: ? nme.Lib.RESIZABLE : 0) |
+			(::WIN_RESIZABLE:: ? nme.Lib.RESIZABLE : 0) |
 			(::WIN_BORDERLESS:: ? nme.Lib.BORDERLESS : 0) |
 			(::WIN_VSYNC:: ? nme.Lib.VSYNC : 0) |
 			(::WIN_FULLSCREEN:: ? nme.Lib.FULLSCREEN : 0) |

@@ -16,7 +16,7 @@
 		orientation="landscape"
 		fps="60"
 		background="0x101040"
-      resizeable="true"
+      resizable="true"
 		hardware="true"
 	/>
 
