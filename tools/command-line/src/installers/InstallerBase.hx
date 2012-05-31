@@ -820,7 +820,17 @@ class InstallerBase {
 		setDefault ("WIN_FPS", "60");
 		setDefault ("WIN_BACKGROUND", "0xffffff");
 		setDefault ("WIN_HARDWARE", "true");
-		setDefault ("WIN_RESIZEABLE", "true");
+		
+		if (defines.exists ("mac")) {
+			
+			setDefault ("WIN_RESIZEABLE", "false");
+			
+		} else {
+			
+			setDefault ("WIN_RESIZEABLE", "true");
+			
+		}
+		
 		setDefault ("WIN_BORDERLESS", "false");
 		setDefault ("WIN_FULLSCREEN", "false");
 		setDefault ("WIN_VSYNC", "false");
