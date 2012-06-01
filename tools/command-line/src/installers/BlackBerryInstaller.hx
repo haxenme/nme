@@ -181,7 +181,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			var ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + arch + ".debug.so");
+			var ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + "-debug" + arch + ".so");
 			var debugExists = FileSystem.exists (ndllPath);
 			
 			if (!debug || !debugExists) {

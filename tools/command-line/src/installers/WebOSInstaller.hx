@@ -111,7 +111,7 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			var ndllPath = ndll.getSourcePath ("webOS", ndll.name + ".debug.so");
+			var ndllPath = ndll.getSourcePath ("webOS", ndll.name + "-debug.so");
 			var debugExists = FileSystem.exists (ndllPath);
 			
 			if (!debug || !debugExists) {

@@ -267,7 +267,7 @@ class IOSInstaller extends InstallerBase {
 			for (ndll in ndlls) {
 				
 				var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
-				var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + ".debug" + libExt);
+				var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + "-debug" + libExt);
 				
 				var releaseDest = destination + "lib/" + arch + "/lib" + ndll.name + ".a";
 				var debugDest = destination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";

@@ -604,6 +604,17 @@ class InstallTool {
 			
 			if (words.length != 2) {
 				
+				if (command == "build" && words.length == 1 && words[0].indexOf (".nmml") == -1) {
+					
+					if (nme.indexOf ("C:\\Motion-Twin") == -1 && nme.indexOf ("/usr/lib/haxe/lib") == -1) {
+						
+						rebuildNME (words[0].split (","));
+						return;
+						
+					}
+					
+				}
+				
 				if (command != "document" || (command == "document" && words.length != 1)) {
 					
 					argumentError ("Incorrect number of arguments for command '" + command + "'");
@@ -641,6 +652,75 @@ class InstallTool {
 			}
 			
 			create (nme, command, defines, userDefines, includePaths, words[0], target, targetFlags, debug, passArgs);
+			
+		}
+		
+	}
+	
+	
+	static private function rebuildNME (targets:Array<String>):Void {
+		
+		if (!FileSystem.exists (nme + "/../sdl-static")) {
+			
+			error ("You must have \"sdl-static\" checked out next to NME to rebuild");
+			return;
+			
+		}
+		
+		var projectDirectory = nme + "/project";
+		
+		// The -Ddebug directive creates a debug build of the library, but the -Dfulldebug directive
+		// will create a debug library using the ".debug" suffix on the file name, so both the release
+		// and debug libraries can exist in the same directory
+		
+		for (target in targets) {
+			
+			switch (target) {
+				
+				case "android":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARM7" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARM7", "-Dfulldebug" ]);
+				
+				case "blackberry":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ]);
+				
+				case "ios":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARM7" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARM7", "-Dfulldebug" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim", "-Dfulldebug" ]);
+				
+				case "linux":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ]);
+				
+				case "mac":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+				
+				case "webos":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ]);
+				
+				case "windows":
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+				
+			}
 			
 		}
 		

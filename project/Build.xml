@@ -219,12 +219,14 @@
 	
 	<set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
 	
-	<section if="fulldebug" >
+	<set name="debug_extra" value="-debug" if="fulldebug" />
+	
+	<!-- <section if="fulldebug" >
 		<set name="name_extra" value=".debug"/>
 		<set name="name_extra" value=".debug-x86" if="simulator" unless="iphonesim" />
 		<set name="name_extra" value=".debug.iphoneos${IOS_ARCH}" if="iphoneos"/>
 		<set name="name_extra" value=".debug.iphonesim" if="iphonesim"/>
-	</section>
+	</section> -->
 	
 	<set name="no_thirdparty_extras" value="1" if="iphone"/>
 	<set name="no_thirdparty_extras" value="1" if="gph"/>
@@ -274,7 +276,7 @@
 	<set name="name_prefix" value="lib" if="iphone" />
 	
 	
-	<target id="NDLL" output="${name_prefix}nme${name_extra}" tool="linker" toolid="${ndll-tool}">
+	<target id="NDLL" output="${name_prefix}nme${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
 		
 		<outdir name="../ndll/${BINDIR}" />
 		<ext value=".ndll" unless="mobile"/>

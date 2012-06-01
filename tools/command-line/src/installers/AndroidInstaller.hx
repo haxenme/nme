@@ -246,7 +246,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (ndll in ndlls) {
 			
-			var ndllPath = ndll.getSourcePath ("Android", "lib" + ndll.name + ".debug.so");
+			var ndllPath = ndll.getSourcePath ("Android", "lib" + ndll.name + "-debug.so");
 			var debugExists = FileSystem.exists (ndllPath);
 			
 			if (!debug || !debugExists) {
