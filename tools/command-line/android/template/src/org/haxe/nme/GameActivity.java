@@ -226,7 +226,7 @@ public class GameActivity extends Activity implements SensorEventListener
     {
 		Log.v("GameActivity", "Get music handle ------" + inFilename);
 		
-		int id = getResourceID(inFileName);
+		int id = getResourceID(inFilename);
 		
 		Log.v("GameActivity", "Got music handle ------" + id);
 		
@@ -256,9 +256,9 @@ public class GameActivity extends Activity implements SensorEventListener
 	
 	public static int getResourceID(String inFilename)
 	{
-		::foreach assets::::if (type == "music")::if (inFilename.equals("::id::")) id = ::APP_PACKAGE::.R.raw.::flatName::;
+		::foreach assets::::if (type == "music")::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
 		::end::::end::
-		::foreach assets::::if (type == "sound")::if (inFilename.equals("::id::")) id = ::APP_PACKAGE::.R.raw.::flatName::;
+		::foreach assets::::if (type == "sound")::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
 		::end::::end::
 		return -1;
 	}
