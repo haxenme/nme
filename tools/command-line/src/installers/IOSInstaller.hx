@@ -164,7 +164,13 @@ class IOSInstaller extends InstallerBase {
 		
 		if (!defines.exists("IPHONE_VER")) {
          	
-			var dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
+			var dev_path = "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs";
+			
+			if (!FileSystem.exists (dev_path)) {
+				
+				dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
+				
+			}
          	
 			if (neko.FileSystem.exists (dev_path)) {
             	
