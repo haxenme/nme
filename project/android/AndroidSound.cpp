@@ -237,18 +237,31 @@ public:
    bool ok() { return mID >= 0; }
    std::string getError() { return ok() ? "" : "Error"; }
    
+   int getResourceID(){
+	   if(mResourceID==-1){
+		   	JNIEnv *env = GetEnv();
+			jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+			jmethodID mid = env->GetStaticMethodID(cls, "getResourceID", "(Ljava/lang/String;)I");
+			if (mid > 0)
+			{
+				 mResourceID = env->CallStaticIntMethod(cls, mid, env->NewStringUTF(mSoundName.c_str()));
+			}
+	   }
+	   return mResourceID;
+   }
+   
    double getLength() {
 	   
 	   if (mLength == 0 && mID > 0) {
-	   
-	   JNIEnv *env = GetEnv();
-		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = env->GetStaticMethodID(cls, "getSoundLength", "(I)I");
-      if (mid > 0)
-		{
-			 mLength = env->CallStaticIntMethod(cls, mid, mID);
-		}
-		
+	      
+		  JNIEnv *env = GetEnv();
+		  jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+          jmethodID mid = env->GetStaticMethodID(cls, "getSoundLength", "(I)I");
+          if (mid > 0)
+		  {
+			 mLength = env->CallStaticIntMethod(cls, mid, getResourceID());
+		  }
+		  
 	   }
 	   
 	   return mLength;
@@ -287,6 +300,7 @@ public:
 	int mID;
 	int mLength;
    int mManagerID;
+   int mResourceID;
    std::string mSoundName;
    SoundMode mMode;
 };
