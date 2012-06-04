@@ -171,7 +171,7 @@ class InstallerBase {
 			
 			if (port != null && port != "" && port != "0") {
 				
-				compilerFlags.unshift ("--connect " + port);
+				compilerFlags.push ("--connect " + port);
 				
 			}
 			
