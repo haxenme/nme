@@ -118,6 +118,11 @@ class Graphics
 		nme_gfx_draw_round_rect(nmeHandle, inX, inY, inWidth, inHeight, inRadX, inRadY == null ? inRadX : inRadY);
 	}
 	
+	public function drawPath(commands:Array<Int>, data:Array<Float>, winding:String = GraphicsPathWinding.EVEN_ODD)
+	{
+		nme_gfx_draw_path(nmeHandle, commands, data, winding == GraphicsPathWinding.EVEN_ODD);
+	}
+	
 	
 	/**
 	 * @private
@@ -213,6 +218,7 @@ class Graphics
 	private static var nme_gfx_draw_data = Loader.load("nme_gfx_draw_data", 2);
 	private static var nme_gfx_draw_datum = Loader.load("nme_gfx_draw_datum", 2);
 	private static var nme_gfx_draw_rect = Loader.load("nme_gfx_draw_rect", 5);
+	private static var nme_gfx_draw_path = Loader.load("nme_gfx_draw_path", 4);
 	private static var nme_gfx_draw_tiles = Loader.load("nme_gfx_draw_tiles", 4);
 	private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
 	private static var nme_gfx_draw_round_rect = Loader.load("nme_gfx_draw_round_rect", -1);

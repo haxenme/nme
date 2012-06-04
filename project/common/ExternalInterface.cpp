@@ -1999,6 +1999,25 @@ value nme_gfx_draw_rect(value inGfx,value inX, value inY, value inWidth, value i
 }
 DEFINE_PRIM(nme_gfx_draw_rect,5);
 
+value nme_gfx_draw_path(value inGfx, value inCommands, value inData, value inWinding)
+{
+	Graphics *gfx;
+	if (AbstractToObject(inGfx,gfx))
+	{
+		QuickVec<uint8> commands;
+		QuickVec<float> data;
+		
+		FillArrayInt(commands, inCommands);
+		FillArrayDouble(data, inData);
+		
+		if (!val_bool(inWinding))
+			gfx->drawPath(commands, data, wrNonZero);
+		else
+			gfx->drawPath(commands, data, wrOddEven);
+	}
+	return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_draw_path, 4);
 
 value nme_gfx_draw_round_rect(value *arg, int args)
 {
