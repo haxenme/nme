@@ -185,19 +185,17 @@ echo "-----------------------------------"
 echo "    Installing HXCPP"
 echo "-----------------------------------"
 
-wget -c http://www.haxenme.org/files/5713/3590/3298/hxcpp-2.09.1.zip
-haxelib test hxcpp-2.09.1.zip
-rm hxcpp-2.09.1.zip
+haxelib install hxcpp
 
 
 echo ""
 echo "-----------------------------------"
-echo "    Installing NME 3.3.2"
+echo "    Installing NME 3.3.3"
 echo "-----------------------------------"
 
 # Download and install NME
 
-haxelib install nme 3.3.2
+haxelib install nme 3.3.3
 
 # Add "nme" command shortcut
 
