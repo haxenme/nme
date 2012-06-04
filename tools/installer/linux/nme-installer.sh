@@ -30,7 +30,6 @@ if [ $RESP = "y" ]; then
 		echo "    Installing Neko"
 		echo "-----------------------------------"
 		
-		
 		# Extract and copy files to /usr/lib/neko
 		
 		tar xvzf neko-1.8.2-linux64.tar.gz
@@ -98,6 +97,11 @@ if [ $RESP = "y" ]; then
 		
 		
 	fi
+	
+	
+	# Install libgc, which is required for Neko
+	
+	sudo apt-get install libgc-dev
 	
 	
 	echo ""
