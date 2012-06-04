@@ -1,7 +1,7 @@
 package neash.geom;
 
 
-import neash.Vector;
+import nme.Vector;
 
 
 //some of the code below is modified from sandy3d and five3d
