@@ -128,7 +128,7 @@ class Tools {
 	}
 
 	public static function dumpTag( t : SWFTag, ?max : Int ) {
-		var infos = switch( t ) {
+		var infos:Array<Dynamic> = switch( t ) {
 		case TShowFrame: [];
 		case TBackgroundColor(color): [StringTools.hex(color,6)];
 		case TShape(id,sdata): ["id",id]; // TODO write when TShape final
