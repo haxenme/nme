@@ -207,6 +207,31 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	
+	public function hitTestObject(object:DisplayObject):Bool
+	{
+		if (object != null && object.parent != null && parent != null)
+		{
+			var currentMatrix = transform.concatenatedMatrix;
+			var targetMatrix = object.transform.concatenatedMatrix;
+			
+			var xPoint = new Point(1, 0);
+			var yPoint = new Point(0, 1);
+			
+			var currentWidth = width * currentMatrix.deltaTransformPoint(xPoint).length;
+			var currentHeight = height * currentMatrix.deltaTransformPoint(yPoint).length;
+			var targetWidth = object.width * targetMatrix.deltaTransformPoint(xPoint).length;
+			var targetHeight = object.height * targetMatrix.deltaTransformPoint(yPoint).length;
+			
+			var currentRect = new Rectangle(currentMatrix.tx, currentMatrix.ty, currentWidth, currentHeight);
+			var targetRect = new Rectangle(targetMatrix.tx, targetMatrix.ty, targetWidth, targetHeight);
+			
+			return currentRect.intersects (targetRect);
+		}
+		
+		return false;
+	}
+	
+	
 	/**
 	 * Determines if the specified local coordinate point overlaps the
 	 * contents of this object.

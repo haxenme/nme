@@ -105,6 +105,12 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
 	}
 	
 	
+	public function deltaTransformPoint(point:Point):Point
+	{
+		return new Point(point.x * a + point.y * c, point.x * b + point.y * d);
+	}
+	
+	
 	public function identity():Void
 	{	
 		a = 1;
