@@ -165,6 +165,18 @@ class InstallerBase {
 			
 		}
 		
+		if (defines.exists ("HAXE_SERVER_PORT")) {
+			
+			var port = defines.get ("HAXE_SERVER_PORT");
+			
+			if (port != null && port > 0) {
+				
+				compilerFlags.unshift ("--connect " + port);
+				
+			}
+			
+		}
+		
 		buildDirectory = defines.get ("BUILD_DIR");
 		getBuildNumber ((command == "build" || command == "test"));
 		
