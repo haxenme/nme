@@ -20,18 +20,18 @@ import neko.Lib;
 class PlatformSetup {
 	
 	
-	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-linux-x86.tar.bz2";
-	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r16-linux.tgz";
-	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-darwin-x86.tar.bz2";
-	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r16-macosx.zip";
-	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r7b-windows.zip";
-	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r16-windows.zip";
-	private static var apacheAntUnixPath = "http://apache.mirrorcatalogs.com//ant/binaries/apache-ant-1.8.3-bin.tar.gz";
-	private static var apacheAntWindowsPath = "http://apache.mirrorcatalogs.com//ant/binaries/apache-ant-1.8.3-bin.zip";
+	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-linux-x86.tar.bz2";
+	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r18-linux.tgz";
+	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-darwin-x86.tar.bz2";
+	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r18-macosx.zip";
+	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-windows.zip";
+	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r18-windows.zip";
+	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.tar.gz";
+	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
 	private static var blackBerryNativeSDKURL = "https://bdsc.webapps.blackberry.com/native/download/";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
-	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u31-download-1501634.html";
+	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u32-downloads-1594644.html";
 	private static var linuxX64Packages = "ia32-libs-multiarch gcc-multilib g++-multilib";
 	private static var webOSLinuxX64NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_amd64.deb";
 	private static var webOSLinuxX86NovacomPath = "http://cdn.downloads.palm.com/sdkdownloads/3.0.4.669/sdkBinaries/palm-novacom_1.0.80_i386.deb";
@@ -634,7 +634,7 @@ class PlatformSetup {
 				
 				var downloadPath = "";
 				var defaultInstallPath = "";
-				var ignoreRootFolder = "apache-ant-1.8.3";
+				var ignoreRootFolder = "apache-ant-1.8.4";
 			
 				if (InstallTool.isWindows) {
 					
