@@ -61,6 +61,8 @@ class DesktopInstaller extends InstallerBase {
 		}*/
 		
 		defines.set ("XML_DIR", defines.get ("XML_DIR") + "/" + targetName);
+		
+		compilerFlags.push ("-D " + targetName);
 		compilerFlags.push ("-cp " + targetDir + "/haxe");
 		
 		super.generateContext ();
