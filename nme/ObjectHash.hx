@@ -73,9 +73,9 @@ class ObjectHash <K, T> {
 		
 		#elseif !flash
 		
-		if (key.___id___ == null) {
+		if (untyped key.___id___ == null) {
 			
-			key.___id___ = nextObjectID ++;
+			untyped key.___id___ = nextObjectID ++;
 			
 			if (nextObjectID == #if neko 0x3fffffff #else 0x7fffffff #end) {
 				
@@ -85,7 +85,7 @@ class ObjectHash <K, T> {
 			
 		}
 		
-		return key.___id___;
+		return untyped key.___id___;
 		
 		#else
 		
