@@ -119,7 +119,7 @@ class Lib {
 		return Std.is(v,c) ? v : null;
 	}
 
-	static var starttime : Float;
+	static var starttime : Float = haxe.Timer.stamp();
 	public static function getTimer() : Int { 
 		return Std.int((haxe.Timer.stamp() - starttime )*1000); 
 	}
