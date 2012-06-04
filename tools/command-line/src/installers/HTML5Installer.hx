@@ -34,7 +34,7 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@" + font.flatName;
+		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@NME_" + font.flatName;
 		
 	}
 	

@@ -54,7 +54,7 @@ class Assets {
 		
 		switch (id) {
 			
-			::foreach assets::::if (type == "font")::case "::id::": var font = cast (new NME_::flatName:: (), Font); font.fontName = "::flatName::"; return font; 
+			::foreach assets::::if (type == "font")::case "::id::": var font = cast (new NME_::flatName:: (), Font); return font; 
 			::end::::end::
 		}
 		

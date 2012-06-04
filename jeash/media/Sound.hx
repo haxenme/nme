@@ -136,7 +136,15 @@ class Sound extends EventDispatcher {
 		jeashStreamUrl = stream.url;
 
 		// initiate a network request, so the resource is cached by the browser
-		jeashSoundCache = new URLLoader(stream);
+		try {
+			
+			jeashSoundCache = new URLLoader(stream);
+			
+		} catch (e:Dynamic) {
+			
+			flash.Lib.trace("Warning: Could not preload '" + stream.url + "'");
+			
+		}
 	}
 
 	public function play(startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel {
