@@ -268,7 +268,7 @@ class RunScript {
 		
 		if (result != 0) {
 			
-			throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
+			//throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
 			
 		}
 		
