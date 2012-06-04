@@ -2,6 +2,7 @@ package installers;
 
 
 import data.Asset;
+import neko.io.File;
 import neko.io.Path;
 import neko.io.Process;
 import neko.FileSystem;
@@ -257,7 +258,8 @@ class AndroidInstaller extends InstallerBase {
 			
 			if (debugExists) {
 				
-				copyFile (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
+				mkdir (destination + "/libs/armeabi/");
+				File.copy (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
 				
 			} else {
 				

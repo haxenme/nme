@@ -2,6 +2,7 @@ package installers;
 
 
 import neko.FileSystem;
+import neko.io.File;
 import neko.io.Path;
 import neko.io.Process;
 import neko.Lib;
@@ -297,7 +298,7 @@ class DesktopInstaller extends InstallerBase {
 			
 			if (debugExists) {
 				
-				copyFile (ndllPath, getExeDir () + ndll.name + extension);
+				File.copy (ndllPath, getExeDir () + ndll.name + extension);
 				
 			} else {
 				

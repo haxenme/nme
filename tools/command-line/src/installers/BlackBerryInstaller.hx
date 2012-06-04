@@ -3,6 +3,7 @@ package installers;
 
 import data.NDLL;
 import neko.FileSystem;
+import neko.io.File;
 import neko.io.Path;
 import neko.Lib;
 import data.Asset;
@@ -192,11 +193,11 @@ class BlackBerryInstaller extends InstallerBase {
 			
 			if (debugExists) {
 				
-				copyFile (ndllPath, destination + ndll.name + ".so" );
+				File.copy (ndllPath, destination + ndll.name + ".so");
 				
 			} else {
 				
-				copyIfNewer (ndllPath, destination + ndll.name + ".so" );
+				copyIfNewer (ndllPath, destination + ndll.name + ".so");
 				
 			}
 			
