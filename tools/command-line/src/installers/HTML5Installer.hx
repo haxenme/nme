@@ -69,7 +69,7 @@ class HTML5Installer extends InstallerBase {
 		for (asset in assets) {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-			
+				
 				mkdir (Path.directory (destination + asset.targetPath));
 				
 				if (asset.type != Asset.TYPE_FONT) {

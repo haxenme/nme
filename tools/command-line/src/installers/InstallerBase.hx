@@ -1046,7 +1046,7 @@ class InstallerBase {
 				
 			} else {
 				
-				var exclude:String = ".*|cvs|thumbs.db|desktop.ini";
+				var exclude:String = ".*|cvs|thumbs.db|desktop.ini|*.hash";
 				var include:String = "";
 				
 				if (element.has.exclude) {

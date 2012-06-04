@@ -77,7 +77,7 @@ class Asset {
 					
 					this.type = TYPE_MUSIC;
 				
-				case "text", "txt", "json", "xml", "hash":
+				case "text", "txt", "json", "xml":
 					
 					this.type = TYPE_TEXT;
 				
