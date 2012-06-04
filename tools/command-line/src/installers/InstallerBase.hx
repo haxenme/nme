@@ -169,7 +169,7 @@ class InstallerBase {
 			
 			var port = defines.get ("HAXE_SERVER_PORT");
 			
-			if (port != null && port > 0) {
+			if (port != null && port != "" && port != "0") {
 				
 				compilerFlags.unshift ("--connect " + port);
 				
