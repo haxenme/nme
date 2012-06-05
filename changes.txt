@@ -1,6 +1,32 @@
 NME Changes
 
 
+3.3.3
+===============
+Official support for debug and release native libraries
+Improved the windowing and shortcuts for OS X applications
+Added dynamic sound support for iOS
+Improved ByteArray support for HTML5
+Added 2x2 transforms on drawTiles
+Added "windows", "mac" and "linux" preprocessor defines
+Many small fixes and improvements
+
+NME-99  Linux installer fails on new Ubuntu install
+NME-98 	Waxe cpp compilation problem: ApplicationMain.hx template, getAsset() method returning nothing
+NME-97 	nme/neash.geom.Rectangle unison() method bug
+NME-96 	SDL_GL Anti-aliasing bug
+NME-94 	Jeash SimpleButton impl. is missing
+NME-93 	HTTPStatusEvent: Recursive typedef is not allowed
+NME-88 	hasEventListener for MOUSE_UP on stage (iOS) fails
+NME-87 	ObjectHash breaks compilation
+NME-86 	TextField.htmlText problem on windows/C++
+NME-85 	TextField.htmlText crash
+NME-84 	Signing APK files fails because of wrong version of Java JDK
+NME-83 	Version number in NMML does not get passed through to Android APK file
+JEASH-11  Using ObjectHash targeting HTML5 fails.
+JEASH-5  jeash.display.SimpleButton
+
+
 3.3.2
 ===============
 Jeash is now a part of NME
