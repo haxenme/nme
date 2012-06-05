@@ -252,10 +252,19 @@ class DesktopInstaller extends InstallerBase {
 			
 			for (asset in assets) {
 				
-				asset.targetPath = asset.resourceName = asset.flatName;
+				var name = asset.flatName;
+				var extension = Path.extension (asset.targetPath);
+				
+				if (extension != null && extension != "") {
+					
+					name += "." + extension;
+					
+				}
+				
+				asset.targetPath = asset.resourceName = name;
 				
 			}
-		
+			
 		}
 		
 		recursiveCopy (NME + "/tools/command-line/haxe", targetDir + "/haxe");
