@@ -228,10 +228,10 @@ class IOSInstaller extends InstallerBase {
 				
 			}
 			
-			var launcher:String = NME + "/tools/command-line/iphone/iphonesim";
-			Sys.command ("chmod", [ "755", launcher ]);
+			var launcher:String = NME + "/tools/command-line/bin/ios-sim";
+			Sys.command ("chmod", [ "+x", launcher ]);
 			
-			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), defines.get ("IPHONE_VER"), family ] );
+			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), "--sdk", defines.get ("IPHONE_VER"), "--family", family ] );
 			
 		}
 		
