@@ -218,7 +218,7 @@ public:
       }
       mPrimarySurface->IncRef();
 	  
-	  #ifdef WEBOS
+	  #if defined(WEBOS) || defined(BLACKBERRY)
 	  mMultiTouch = true;
 	  #else
 	  mMultiTouch = false;
@@ -351,7 +351,7 @@ public:
 	   
 	   #endif
 	   
-	   #ifdef WEBOS
+	  #if defined(WEBOS) || defined(BLACKBERRY)
 	   
 	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
 		   
@@ -476,7 +476,7 @@ public:
    
    
    bool getMultitouchSupported() { 
-	   #ifdef WEBOS
+	   #if defined(WEBOS) || defined(BLACKBERRY)
 	   return true;
 	   #else
 	   return false;
@@ -484,7 +484,7 @@ public:
    }
    void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
    bool getMultitouchActive() {
-	   #ifdef WEBOS
+	   #if defined(WEBOS) || defined(BLACKBERRY)
 	   return mMultiTouch;
 	   #else
 	   return false;
@@ -1074,7 +1074,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEMOTION:
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
-		 #ifdef WEBOS
+		 #if defined(WEBOS) || defined(BLACKBERRY)
 		 mouse.value = inEvent.motion.which;
 		 mouse.flags |= efLeftDown;
 		 #else
@@ -1086,7 +1086,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEBUTTONDOWN:
       {
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-         #ifdef WEBOS
+         #if defined(WEBOS) || defined(BLACKBERRY)
 		 mouse.value = inEvent.motion.which;
 		 mouse.flags |= efLeftDown;
 		 #else
@@ -1098,7 +1098,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_MOUSEBUTTONUP:
       {
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-		 #ifdef WEBOS
+		 #if defined(WEBOS) || defined(BLACKBERRY)
 		 mouse.value = inEvent.motion.which;
 		 #else
 		 AddModStates(mouse.flags);
