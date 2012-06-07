@@ -305,7 +305,6 @@
 		<lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
-		<lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static"/>
 		<lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
 		<lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
 		
