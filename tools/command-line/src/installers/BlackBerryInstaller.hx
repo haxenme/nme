@@ -133,7 +133,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("simulator")) {
 			
-			deviceIP = "192.168.127.128";
+			deviceIP = defines.get ("BLACKBERRY_SIMULATOR_IP");
 			devicePassword = "playbook";
 			
 		}
@@ -150,7 +150,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("simulator")) {
 			
-			deviceIP = "192.168.127.128";
+			deviceIP = defines.get ("BLACKBERRY_SIMULATOR_IP");
 			devicePassword = "playbook";
 			
 		}
@@ -191,15 +191,7 @@ class BlackBerryInstaller extends InstallerBase {
 				
 			}
 			
-			if (debugExists) {
-				
-				File.copy (ndllPath, destination + ndll.name + ".so");
-				
-			} else {
-				
-				copyIfNewer (ndllPath, destination + ndll.name + ".so");
-				
-			}
+			File.copy (ndllPath, destination + ndll.name + ".so");
 			
 		}
 		
