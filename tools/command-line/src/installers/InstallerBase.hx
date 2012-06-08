@@ -185,11 +185,18 @@ class InstallerBase {
 		
 		// Commands:
 		//
+		// clean = Remove the build directory if it exists
 		// update = Assets or extenal library have changed - files need updating copy files to target directories
 		// build = Create files ready to be installed, but do not run.  eg: build server
 		// run = run, updating the device is required (eg, android installer)
 		// rerun = run, without updating the device
 		// test = change is made, needs to be tested:  update, build, run
+		
+		if (command == "clean" || targetFlags.exists ("clean")) {
+			
+			clean ();
+			
+		}
 		
 		if (command == "update" || command == "build" || command == "test") {
 			
@@ -252,7 +259,7 @@ class InstallerBase {
 			
 		}
 		
-		var validCommands = [ "update", "build", "test", "run", "rerun", "trace", "uninstall", "document", "display" ];
+		var validCommands = [ "clean", "update", "build", "test", "run", "rerun", "trace", "uninstall", "document", "display" ];
 		
 		if (!validCommands.remove (command)) {
 			
@@ -266,6 +273,7 @@ class InstallerBase {
 	function onCreate ():Void { }
 	function useFullClassPaths () { return false; }
 	
+	function clean () { error ("Clean not implemented."); }
 	function update () { error ("Update not implemented."); }
 	function build () { error ("Build not implemented."); }
 	function run () { error ("Run not implemented."); }
@@ -1783,6 +1791,33 @@ class InstallerBase {
 				}
 				
 			}
+			
+		}
+		
+	}
+	
+	
+	private function removeDirectory (directory:String):Void {
+		
+		if (FileSystem.exists (directory)) {
+			
+			for (file in FileSystem.readDirectory (directory)) {
+				
+				var path = directory + "/" + file;
+				
+				if (FileSystem.isDirectory (path)) {
+					
+					removeDirectory (path);
+					
+				} else {
+					
+					FileSystem.deleteFile (path);
+					
+				}
+				
+			}
+			
+			FileSystem.deleteDirectory (directory);
 			
 		}
 		

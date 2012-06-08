@@ -75,6 +75,19 @@ class BlackBerryInstaller extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		var targetPath = buildDirectory + "/blackberry/";
+		
+		if (FileSystem.exists (targetPath)) {
+			
+			removeDirectory (targetPath);
+			
+		}
+		
+	}
+	
+	
 	override function generateContext ():Void {
 		
 		if (InstallTool.isWindows) {

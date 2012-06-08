@@ -46,6 +46,17 @@ class DesktopInstaller extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		if (FileSystem.exists (targetDir)) {
+			
+			removeDirectory (targetDir);
+			
+		}
+		
+	}
+	
+	
 	private function copyResultTo (inExe:String):Void {
 		
 		throw "copyResultTo : Not implemented";

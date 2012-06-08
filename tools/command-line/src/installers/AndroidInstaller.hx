@@ -98,6 +98,19 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		var targetPath = buildDirectory + "/android/";
+		
+		if (FileSystem.exists (targetPath)) {
+			
+			removeDirectory (targetPath);
+			
+		}
+		
+	}
+	
+	
 	private function getADB ():Dynamic {
 		
 		var path:String = defines.get ("ANDROID_SDK") + "/tools/";

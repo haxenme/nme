@@ -105,6 +105,19 @@ class FlashInstaller extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		var targetPath = buildDirectory + "/flash/";
+		
+		if (FileSystem.exists (targetPath)) {
+			
+			removeDirectory (targetPath);
+			
+		}
+		
+	}
+	
+	
 	private function compressToZip (path:String):Void {
 		
 		var files = new Array <Dynamic> ();

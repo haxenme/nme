@@ -23,6 +23,19 @@ class HTML5Installer extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		var targetPath = buildDirectory + "/html5/";
+		
+		if (FileSystem.exists (targetPath)) {
+			
+			removeDirectory (targetPath);
+			
+		}
+		
+	}
+	
+	
 	private function generateFontData (font:Asset, destination:String):Void {
 		
 		var sourcePath = font.sourcePath;

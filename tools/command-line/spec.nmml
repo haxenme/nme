@@ -387,33 +387,44 @@
 	
 	<!-- <certificate />
 		
-		Use the certificate node to release-sign Android applications.
+		Use the certificate node to release-sign Android or BlackBerry applications.
 		
 		If you do not include the password attribute, you will be prompted for your certificate password
-		at the command-line. By default, the alias will be set to the file name of your certificate,
+		at the command-line.
+		
+		For Android, the alias will be set to the file name of your certificate by default,
 		without the extension. If the alias name is different, you can use the alias attribute.
 		
 		If you have set the password attribute, the alias_password attribute will default to the same 
 		value. Otherwise you can add an alias-password attribute to specify a different value.
+		
+		BlackBerry does not use the "alias" or "alias-password" attributes.
 		
 	-->
 	
 	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
 	
 	
+	
 	<!-- <ios/>
 		
-		Specify target characteristics of device.
-       binaries = fat / armv6 / armv7
-       devices  = universal / ipad / iphone
-       deployment = ios version
+		Control iOS-specific values when compiling.
 		
-      selecting a device (eg, ipad) can change binaries (ie, only arm7 is required)
-
+		The "deployment" attribute can set the minimum iOS version you wish to target.
+		
+		The "binaries" attribute can be "armv6", "armv7" or "fat"
+		
+		The "devices" attribute can specify "ipad", "iphone" or "universal"
+		
+		If you select a device, it can set the binaries. For example, if you only want to
+		target the iPad, only armv7 will be required, or if you wish to target both, it will
+		create a universal binary by default.
+		
 	-->
 	
-   <ios deployment="3.2" binaries="fat" devices="universal" />
-
+	<ios deployment="3.2" binaries="fat" devices="universal" />
+	
+	
 	
 	<!-- <dependency />
 		

@@ -35,6 +35,19 @@ class WebOSInstaller extends InstallerBase {
 	}
 	
 	
+	override function clean ():Void {
+		
+		var targetPath = buildDirectory + "/webos/";
+		
+		if (FileSystem.exists (targetPath)) {
+			
+			removeDirectory (targetPath);
+			
+		}
+		
+	}
+	
+	
 	override function generateContext ():Void {
 		
 		sdkDir = "";
