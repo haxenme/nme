@@ -100,7 +100,7 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function clean ():Void {
 		
-		var targetPath = buildDirectory + "/android/";
+		var targetPath = buildDirectory + "/android";
 		
 		if (FileSystem.exists (targetPath)) {
 			

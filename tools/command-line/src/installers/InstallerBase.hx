@@ -181,6 +181,14 @@ class InstallerBase {
 		getBuildNumber ((command == "build" || command == "test"));
 		
 		onCreate ();
+		
+		if (command == "clean" || targetFlags.exists ("clean")) {
+			
+			print ("----- CLEAN -----");
+			clean ();
+			
+		}
+		
 		generateContext ();
 		
 		// Commands:
@@ -191,12 +199,6 @@ class InstallerBase {
 		// run = run, updating the device is required (eg, android installer)
 		// rerun = run, without updating the device
 		// test = change is made, needs to be tested:  update, build, run
-		
-		if (command == "clean" || targetFlags.exists ("clean")) {
-			
-			clean ();
-			
-		}
 		
 		if (command == "update" || command == "build" || command == "test") {
 			

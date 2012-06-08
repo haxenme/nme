@@ -53,7 +53,7 @@ class IOSInstaller extends InstallerBase {
 	
 	override function clean ():Void {
 		
-		var targetPath = buildDirectory + "/iphone/";
+		var targetPath = buildDirectory + "/iphone";
 		
 		if (FileSystem.exists (targetPath)) {
 			

@@ -107,7 +107,7 @@ class FlashInstaller extends InstallerBase {
 	
 	override function clean ():Void {
 		
-		var targetPath = buildDirectory + "/flash/";
+		var targetPath = buildDirectory + "/flash";
 		
 		if (FileSystem.exists (targetPath)) {
 			

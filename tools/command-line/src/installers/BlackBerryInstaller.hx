@@ -77,7 +77,7 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function clean ():Void {
 		
-		var targetPath = buildDirectory + "/blackberry/";
+		var targetPath = buildDirectory + "/blackberry";
 		
 		if (FileSystem.exists (targetPath)) {
 			
@@ -190,6 +190,8 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
+		ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
+		
 		for (ndll in ndlls) {
 			
 			var ndllPath = ndll.getSourcePath ("BlackBerry", ndll.name + "-debug" + arch + ".so");
@@ -205,7 +207,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		var linkedLibraries = [ new NDLL ("libSDL", "nme"), new NDLL ("libTouchControlOverlay", "nme") ];
+		var linkedLibraries = [ new NDLL ("libSDL", "nme") ];
 		
 		for (ndll in linkedLibraries) {
 			
@@ -221,6 +223,7 @@ class BlackBerryInstaller extends InstallerBase {
 				}
 				
 				copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
+				File.copy (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + deviceLib);
 				
 			} else {
 				

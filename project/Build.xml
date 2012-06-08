@@ -345,7 +345,6 @@
 		<lib name="-lpdl" if="webos"/>
 		
 		<lib name="-lSDL${name_extra}" if="blackberry"/>
-		<lib name="-lTouchControlOverlay${name_extra}" if="blackberry"/>
 		
 		<lib name="-lbps" if="blackberry"/>
 		<lib name="-lscreen" if="blackberry"/>
