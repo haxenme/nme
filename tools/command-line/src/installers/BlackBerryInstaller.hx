@@ -91,9 +91,6 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		ndlls.push (new NDLL ("libSDL", "nme"));
-		ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
-		
 		for (asset in assets) {
 			
 			asset.resourceName = "app/native/" + asset.resourceName;
@@ -192,6 +189,37 @@ class BlackBerryInstaller extends InstallerBase {
 			}
 			
 			File.copy (ndllPath, destination + ndll.name + ".so");
+			
+		}
+		
+		var linkedLibraries = [ new NDLL ("libSDL", "nme"), new NDLL ("libTouchControlOverlay", "nme") ];
+		
+		for (ndll in linkedLibraries) {
+			
+			var deviceLib = ndll.name + ".so";
+			var simulatorLib = ndll.name + "-x86.so";
+			
+			if (targetFlags.exists ("simulator")) {
+				
+				if (FileSystem.exists (destination + deviceLib)) {
+					
+					FileSystem.deleteFile (destination + deviceLib);
+					
+				}
+				
+				copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
+				
+			} else {
+				
+				if (FileSystem.exists (destination + simulatorLib)) {
+					
+					FileSystem.deleteFile (destination + simulatorLib);
+					
+				}
+				
+				copyIfNewer (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
+				
+			}
 			
 		}
 		
