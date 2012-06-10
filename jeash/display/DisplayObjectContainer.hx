@@ -354,21 +354,36 @@ class DisplayObjectContainer extends InteractiveObject
 			Lib.jeashSwapSurface(gfx1.jeashSurface, gfx2.jeashSurface);
 	}
 
-	public function swapChildren( child1 : DisplayObject, child2 : DisplayObject )
-	{
+	public function swapChildren( child1 : DisplayObject, child2 : DisplayObject ) {
 		var c1 : Int = -1;
 		var c2 : Int = -1;
 		var swap : DisplayObject;
 		for ( i in 0...jeashChildren.length )
 			if ( jeashChildren[i] == child1 ) c1 = i;
 			else if  ( jeashChildren[i] == child2 ) c2 = i;
-		if ( c1 != -1 && c2 != -1 )
-		{
+		if ( c1 != -1 && c2 != -1 ) {
 			swap = jeashChildren[c1];
 			jeashChildren[c1] = jeashChildren[c2];
 			jeashChildren[c2] = swap;
 			swap = null;
 			jeashSwapSurface(c1, c2);
+			child1.jeashUnifyChildrenWithDOM();
+			child2.jeashUnifyChildrenWithDOM();
+		}
+	}
+
+	override private function jeashUnifyChildrenWithDOM(lastMoveGfx:Graphics = null) {
+		var gfx1 = jeashGetGraphics();
+		if (gfx1 != null) {
+			lastMoveGfx = gfx1;
+			for (child in jeashChildren) {
+				var gfx2 = child.jeashGetGraphics();
+				if (gfx2 != null) {
+					Lib.jeashSetSurfaceZIndexAfter(gfx2.jeashSurface, lastMoveGfx.jeashSurface);
+					lastMoveGfx = gfx2;
+				}
+				child.jeashUnifyChildrenWithDOM(lastMoveGfx);
+			}
 		}
 	}
 

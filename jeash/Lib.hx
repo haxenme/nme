@@ -193,6 +193,28 @@ class Lib {
 		}
 	}
 
+	public static function jeashSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement) {
+		var c1 : Int = -1;
+		var c2 : Int = -1;
+		var swap : Node;
+		for ( i in 0...mMe.__scr.childNodes.length )
+			if ( mMe.__scr.childNodes[i] == surface1 ) c1 = i;
+			else if  ( mMe.__scr.childNodes[i] == surface2 ) c2 = i;
+
+		if ( c1 != -1 && c2 != -1 )
+		{
+			swap = jeashRemoveSurface(cast mMe.__scr.childNodes[c1]);
+			if (c2 < mMe.__scr.childNodes.length-1)
+			{
+				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2++]);
+			} else {
+				mMe.__scr.appendChild(swap);
+			}
+
+		}
+	}
+
+
 	public static function jeashIsOnStage(surface:HTMLElement) {
 		for ( i in 0...mMe.__scr.childNodes.length )
 			if ( mMe.__scr.childNodes[i] == surface ) {

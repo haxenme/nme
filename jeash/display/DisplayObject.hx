@@ -749,5 +749,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private function jeashGetRotation():Float{
 		return jeashRotation;
 	}
+
+	private function jeashUnifyChildrenWithDOM(lastMoveGfx:Graphics = null) {
+		var gfx1 = jeashGetGraphics();
+		if (gfx1 != null && lastMoveGfx != null) 
+			Lib.jeashSetSurfaceZIndexAfter(gfx1.jeashSurface, lastMoveGfx.jeashSurface);
+	}
 }
 
