@@ -34,7 +34,7 @@ import jeash.events.ProgressEvent;
 import jeash.errors.IOError;
 import jeash.utils.ByteArray;
 
-import Html5Dom;
+import jeash.Html5Dom;
 import js.Dom;
 import js.Lib;
 import js.XMLHttpRequest;

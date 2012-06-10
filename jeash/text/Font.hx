@@ -34,7 +34,7 @@ import jeash.display.Graphics;
 import haxe.Unserializer;
 import haxe.Resource;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 typedef GlyphMetrics =
 {

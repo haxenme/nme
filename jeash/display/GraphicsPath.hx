@@ -27,7 +27,7 @@
 package jeash.display;
 
 import jeash.display.IGraphicsData;
-import Html5Dom;
+import jeash.Html5Dom;
 
 class GraphicsPath implements IGraphicsData, implements IGraphicsPath
 {

@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-import Html5Dom;
+import jeash.Html5Dom;
 import jeash.events.Event;
 import jeash.geom.Matrix;
 import jeash.geom.Rectangle;

@@ -26,7 +26,7 @@
 
 package jeash;
 
-import Html5Dom;
+import jeash.Html5Dom;
 import jeash.display.Stage;
 import jeash.display.MovieClip;
 import jeash.display.Graphics;

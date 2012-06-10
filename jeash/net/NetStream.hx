@@ -34,7 +34,7 @@ import jeash.events.EventDispatcher;
 import jeash.media.VideoElement;
 import jeash.Lib;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 class NetStream extends EventDispatcher {
 	/*

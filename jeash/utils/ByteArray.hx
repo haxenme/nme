@@ -33,7 +33,7 @@ import haxe.io.BytesBuffer;
 
 import jeash.errors.IOError;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 class ByteArray {
 

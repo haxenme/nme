@@ -26,7 +26,7 @@
 
 package jeash.utils;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 interface IDataOutput {
 	var endian : Endian;

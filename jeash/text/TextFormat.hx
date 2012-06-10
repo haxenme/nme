@@ -25,7 +25,7 @@
  */
 
 package jeash.text;
-import Html5Dom;
+import jeash.Html5Dom;
 
 class TextFormat
 {

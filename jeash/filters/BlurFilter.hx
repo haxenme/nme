@@ -31,7 +31,7 @@ import jeash.geom.Rectangle;
 import jeash.geom.Point;
 
 #if js
-import Html5Dom;
+import jeash.Html5Dom;
 #end
 
 class BlurFilter extends BitmapFilter {

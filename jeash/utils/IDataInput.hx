@@ -26,7 +26,7 @@
 
 package jeash.utils;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 interface IDataInput {
 	var bytesAvailable(default,null) : UInt;

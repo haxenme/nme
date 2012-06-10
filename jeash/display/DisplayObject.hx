@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 import jeash.accessibility.AccessibilityProperties;
 import jeash.display.Stage;

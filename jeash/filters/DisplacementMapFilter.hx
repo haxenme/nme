@@ -1,6 +1,6 @@
 package jeash.filters;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 class DisplacementMapFilter extends BitmapFilter {
 	public var alpha : Float;

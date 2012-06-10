@@ -33,7 +33,7 @@ import jeash.geom.Rectangle;
 import jeash.geom.Matrix;
 import jeash.geom.Point;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 class Bitmap extends jeash.display.DisplayObject {
 	public var bitmapData(default,jeashSetBitmapData) : BitmapData;

@@ -28,7 +28,7 @@
 
 package jeash.geom;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 //some of the code below is modified from sandy3d and five3d
 class Matrix3D {

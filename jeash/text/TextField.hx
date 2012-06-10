@@ -37,7 +37,7 @@ import jeash.events.KeyboardEvent;
 import jeash.events.FocusEvent;
 import jeash.ui.Keyboard;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 typedef SpanAttribs = {
 	var face:String;

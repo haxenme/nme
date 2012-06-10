@@ -28,7 +28,7 @@ package jeash.display;
 
 import jeash.display.IGraphicsData;
 import jeash.display.IGraphicsFill;
-import Html5Dom;
+import jeash.Html5Dom;
 
 class GraphicsGradientFill implements IGraphicsData, implements IGraphicsFill
 {

@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package jeash;
+
 typedef UInt = Int;
 typedef Vector<T> = Array<T>;
 

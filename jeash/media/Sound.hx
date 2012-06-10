@@ -32,7 +32,7 @@ import jeash.events.IOErrorEvent;
 import jeash.net.URLRequest;
 import jeash.net.URLLoader;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 /**
 * @author	Russell Weir

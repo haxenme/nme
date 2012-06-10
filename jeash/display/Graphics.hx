@@ -43,7 +43,7 @@
 
 package jeash.display;
 
-import Html5Dom;
+import jeash.Html5Dom;
 import jeash.geom.Matrix;
 import jeash.geom.Point;
 import jeash.geom.Rectangle;

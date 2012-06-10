@@ -29,7 +29,7 @@ package jeash.media;
 import jeash.events.Event;
 import jeash.events.EventDispatcher;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 /**
 * @author	Russell Weir

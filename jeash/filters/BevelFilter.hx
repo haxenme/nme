@@ -26,7 +26,7 @@
 
 package jeash.filters;
 
-import Html5Dom;
+import jeash.Html5Dom;
 
 class BevelFilter extends BitmapFilter {
 	public var angle : Float;
