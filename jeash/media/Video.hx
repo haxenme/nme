@@ -34,6 +34,7 @@ import jeash.display.Graphics;
 import jeash.display.Stage;
 import jeash.geom.Matrix;
 import jeash.geom.Point;
+import jeash.geom.Rectangle;
 import jeash.Lib;
 import jeash.net.NetStream;
 import js.Dom;
@@ -115,7 +116,7 @@ class Video extends DisplayObject {
 		jeashGraphics.drawRect(0, 0, width, height);
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement)
+	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle)
 	{
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
