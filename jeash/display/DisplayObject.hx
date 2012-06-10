@@ -224,8 +224,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		var bounding_box:Bool = shapeFlag==null ? true : !shapeFlag;
 
-		// TODO:
-		return true;
+		if (!bounding_box)
+			return jeashGetObjectUnderPoint(new Point(x, y)) != null;
+		else {
+			var gfx = jeashGetGraphics();
+			if (gfx != null) {
+				var extX = gfx.jeashExtent.x;
+				var extY = gfx.jeashExtent.y;
+				var local = globalToLocal(new Point(x, y));
+				if (local.x-extX < 0 || local.y-extY < 0 || (local.x-extX)*scaleX > width || (local.y-extY)*scaleY > height) 
+					return false; 
+				else 
+					return true; 
+			}
+			return false;
+		}
 	}
 
 	public function localToGlobal( point:Point )
