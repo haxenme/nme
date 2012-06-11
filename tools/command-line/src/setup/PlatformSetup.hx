@@ -585,7 +585,7 @@ class PlatformSetup {
 			
 			var downloadPath = "";
 			var defaultInstallPath = "";
-			var ignoreRootFolder = "android-ndk-r7b";
+			var ignoreRootFolder = "android-ndk-r8";
 			
 			if (InstallTool.isWindows) {
 				
