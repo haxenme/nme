@@ -34,11 +34,6 @@ import jeash.net.URLLoader;
 
 import jeash.Html5Dom;
 
-/**
-* @author	Russell Weir
-* @todo Possibly implement streaming
-* @todo Review events match flash
-**/
 class Sound extends EventDispatcher {
 	public var bytesLoaded(default,null) : Int;
 	public var bytesTotal(default,null) : Int;
@@ -56,7 +51,6 @@ class Sound extends EventDispatcher {
 	static inline var EXTENSION_WAV = "wav";
 	static inline var EXTENSION_AAC = "aac";
 
-	//var jeashSoundChannels:Array<SoundChannel>;
 	var jeashStreamUrl:String;
 	var jeashSoundChannels : IntHash<SoundChannel>;
 	var jeashSoundIdx : Int;
@@ -78,7 +72,6 @@ class Sound extends EventDispatcher {
 			load(stream, context);
 	}
 
-	/////////////////// Neash API /////////////////////////////
 	public static function jeashCanPlayType(extension:String) {
 
 			var audio : HTMLMediaElement = cast js.Lib.document.createElement("audio");
@@ -99,50 +92,31 @@ class Sound extends EventDispatcher {
 			}
 	}
 
-	private function jeashCreateAudio() {
-	}
-
-	/////////////////// Flash API /////////////////////////////
-
 	public function close() : Void	{	}
 
-	public function load(stream : URLRequest, ?context : SoundLoaderContext) : Void
-	{
-
-		//m_sound.addEventListener("audiowritten", TODO, false);
-		//m_sound.addEventListener("loadstart", TODO, false);
-		//m_sound.addEventListener("progress", TODO, false);
-		//m_sound.addEventListener("stalled", TODO, false);
-		//m_sound.addEventListener("suspend", TODO, false);
-		//m_sound.addEventListener("durationchange", TODO, false);
-		//m_sound.addEventListener("loadedmetadata", TODO, false);
-		//m_sound.addEventListener("emptied", TODO, false);
-		//m_sound.addEventListener("timeupdate", TODO, false);
-		//m_sound.addEventListener("loadeddata", TODO, false);
-		//m_sound.addEventListener("waiting", TODO, false);
-		//m_sound.addEventListener("playing", TODO, false);
-		//m_sound.addEventListener("play", TODO, false);
-		//m_sound.addEventListener("canplaythrough", TODO, false);
-		//m_sound.addEventListener("ratechange", TODO, false);
-		//m_sound.addEventListener("pause", TODO, false);
-		//m_sound.addEventListener("seeking", TODO, false);
-		//m_sound.addEventListener("seeked", TODO, false);
+	public function load(stream : URLRequest, ?context : SoundLoaderContext) : Void {
 
 		var url = stream.url.split("?");
 		var extension = url[0].substr(url[0].lastIndexOf(".")+1);
+		#if debug
 		if (!jeashCanPlayType(extension.toLowerCase()))
 			flash.Lib.trace("Warning: '" + stream.url + "' may not play on this browser.");
+		#end
 
 		jeashStreamUrl = stream.url;
 
 		// initiate a network request, so the resource is cached by the browser
 		try {
 			
-			jeashSoundCache = new URLLoader(stream);
+			jeashSoundCache = new URLLoader();
+			jeashAddEventListeners();
+			jeashSoundCache.load(stream);
 			
 		} catch (e:Dynamic) {
 			
+			#if debug
 			flash.Lib.trace("Warning: Could not preload '" + stream.url + "'");
+			#end
 			
 		}
 	}
@@ -166,46 +140,34 @@ class Sound extends EventDispatcher {
 		jeashSoundIdx++;
 		var audio = channel.jeashAudio;
 
-		jeashAddEventListeners(audio);
-
 		return channel;
 	}
 
 
-	////////////////////// Privates //////////////////////////
-
-	private function jeashAddEventListeners(audio:HTMLMediaElement) {
-		audio.addEventListener("canplay", cast __onSoundLoaded, false);
-		audio.addEventListener("error", cast __onSoundLoadError, false);
-		audio.addEventListener("abort", cast __onSoundLoadError, false);
+	private function jeashAddEventListeners() {
+		jeashSoundCache.addEventListener(Event.COMPLETE, jeashOnSoundLoaded);
+		jeashSoundCache.addEventListener(IOErrorEvent.IO_ERROR, jeashOnSoundLoadError);
 	}
 
-	private function jeashRemoveEventListeners(audio:HTMLMediaElement) {
-		audio.removeEventListener("canplay", cast __onSoundLoaded, false);
-		audio.removeEventListener("error", cast __onSoundLoadError, false);
-		audio.removeEventListener("abort", cast __onSoundLoadError, false);
-
+	private function jeashRemoveEventListeners() {
+		jeashSoundCache.removeEventListener(Event.COMPLETE, jeashOnSoundLoaded, false);
+		jeashSoundCache.removeEventListener(IOErrorEvent.IO_ERROR, jeashOnSoundLoadError, false);
 	}
 
-	private function __onSoundLoaded(evt : Event)
-	{
-		var audio : HTMLMediaElement = evt.target;
+	private function jeashOnSoundLoaded(evt : Event) {
+		jeashRemoveEventListeners();
 
-		// sound is automatically played, because audio.autoplay is true
-
-		jeashRemoveEventListeners(audio);
-		
 		var evt = new Event(Event.COMPLETE);
 		dispatchEvent(evt);
 	}
 
-	private function __onSoundLoadError(evt : IOErrorEvent)
-	{
-		var audio : HTMLMediaElement = cast evt.target;
+	private function jeashOnSoundLoadError(evt : IOErrorEvent) {
+		jeashRemoveEventListeners();
 
-		jeashRemoveEventListeners(audio);
+		#if debug
+		flash.Lib.trace("Error loading sound '" + jeashStreamUrl + "'");
+		#end
 
-		flash.Lib.trace("Error loading sound '" + audio.src + "'");
 		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
 		dispatchEvent(evt);
 	}

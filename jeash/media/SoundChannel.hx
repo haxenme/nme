@@ -41,7 +41,7 @@ class SoundChannel extends EventDispatcher {
 	public var leftPeak(default,null) : Float;
 	public var position(default,null) : Float;
 	public var rightPeak(default,null) : Float;
-	public var soundTransform(default,__setSoundTransform) : SoundTransform;
+	public var soundTransform(default,jeashSetSoundTransform) : SoundTransform;
 
 	var jeashAudioCurrentLoop:Int;
 	var jeashAudioTotalLoops:Int;
@@ -104,8 +104,8 @@ class SoundChannel extends EventDispatcher {
 		}
 	}
 
-	private function __setSoundTransform( v : SoundTransform ) : SoundTransform
-	{
+	private function jeashSetSoundTransform( v : SoundTransform ) : SoundTransform {
+		jeashAudio.volume = v.volume;
 		return this.soundTransform = v;
 	}
 
