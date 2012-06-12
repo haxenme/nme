@@ -116,8 +116,13 @@ class RunScript {
 				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ]);
+				
+				if (isRunning64 ()) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ]);
+					
+				}
 			
 			case "mac":
 				
@@ -210,6 +215,43 @@ class RunScript {
 		}
 		
 		return result;
+		
+	}
+	
+	
+	public static function isRunning64 ():Bool {
+		
+		if (Sys.systemName () == "Linux") {
+			
+			var proc = new Process ("uname", [ "-m" ]);
+			var result = "";
+			
+			try {
+				
+				while (true) {
+					
+					var line = proc.stdout.readLine ();
+					
+					if (line.substr (0,1) != "-") {
+						
+						result = line;
+						break;
+						
+					}
+					
+				}
+				
+			} catch (e:Dynamic) { };
+			
+			proc.close();
+			
+			return result == "x86_64";
+			
+		} else {
+			
+			return false;
+			
+		}
 		
 	}
 	
