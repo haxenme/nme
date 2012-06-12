@@ -158,13 +158,6 @@ class InstallerBase {
 			
 		}
 		
-		if (!defines.exists ("SHOW_CONSOLE")) {
-			
-			defines.set ("no_console", "1");
-			Sys.putEnv ("no_console", "1");
-			
-		}
-		
 		if (defines.exists ("HAXE_SERVER_PORT")) {
 			
 			var port = defines.get ("HAXE_SERVER_PORT");

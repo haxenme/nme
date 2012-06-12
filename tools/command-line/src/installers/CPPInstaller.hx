@@ -29,6 +29,17 @@ class CPPInstaller extends DesktopInstaller {
 
 	override function generateContext ():Void {
 		
+		if (targetName == "windows") {
+			
+			if (!defines.exists ("SHOW_CONSOLE") && (!debug || defines.exists ("HIDE_CONSOLE"))) {
+				
+				defines.set ("no_console", "1");
+				Sys.putEnv ("no_console", "1");
+				
+			}
+			
+		}
+		
 		super.generateContext ();
 		
 		context.CPP_DIR = getBuildDir ();
