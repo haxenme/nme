@@ -245,7 +245,7 @@ class Icons
          name = inAppIcon;
       else
       {
-         var sizes = [ 32, 48, 64 ];
+         var sizes = [ 16, 24, 32, 48, 64, 128, 256 ];
 
 
          var bmps = new Array<BitmapData>();
@@ -254,10 +254,10 @@ class Icons
          for(size in sizes)
          {
             var bmp = getIconBitmap(size,size);
-            if (bmp==null)
-               break;
-            bmps.push(bmp);
-            data_pos += 16;
+            if (bmp !=null) {
+				bmps.push(bmp);
+				data_pos += 16;
+			}
          }
 
          var ico = new ByteArray();
@@ -331,15 +331,27 @@ class Icons
 
             ico.writeBytes(and_mask,0,and_mask.length);
          }
-
+		
+		 if (bmps.length > 0) {
          name = inTmp + "/icon.ico";
          var file = neko.io.File.write( name,true);
          file.writeBytes(ico,0,ico.length);
          file.close();
+		 } else {
+			 
+			 return;
+			 
+		 }
       }
-
-      var command = "ReplaceVistaIcon.exe";
-      InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
+	
+	  try {
+		
+		  var command = "ReplaceVistaIcon.exe";
+		InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
+	  
+	  } catch (e:Dynamic) {
+		  
+	  }
 	  
    }
 
