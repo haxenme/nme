@@ -830,7 +830,9 @@ double CapabilitiesGetScreenResolutionX() {
 	
 	initSDL ();
 	
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+	return sgDesktopWidth;
+	
+	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
 	
 	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
 		
@@ -839,7 +841,7 @@ double CapabilitiesGetScreenResolutionX() {
 		
 	}
 	
-	return modes[0]->w;
+	return modes[0]->w;*/
 	
 }
 
@@ -847,7 +849,9 @@ double CapabilitiesGetScreenResolutionY() {
 	
 	initSDL ();
 	
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+	return sgDesktopHeight;
+	
+	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
 	
 	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
 		
@@ -856,7 +860,7 @@ double CapabilitiesGetScreenResolutionY() {
 		
 	}
 	
-	return modes[0]->h;
+	return modes[0]->h;*/
 	
 }
 
