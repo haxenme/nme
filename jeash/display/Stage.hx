@@ -115,27 +115,23 @@ class Stage extends DisplayObjectContainer
 	}
 
 	// @r551
-	public function jeashStartDrag(sprite:Sprite, lockCenter:Bool = false, ?bounds:Rectangle)
-	{
+	public function jeashStartDrag(sprite:Sprite, lockCenter:Bool = false, ?bounds:Rectangle) {
 		jeashDragBounds = (bounds==null) ? null : bounds.clone();
 		jeashDragObject = sprite;
 
-		if (jeashDragObject!=null)
-		{
-			if (lockCenter)
-			{
+		if (jeashDragObject!=null) {
+			var mouse = new Point(mouseX,mouseY);
+			var p = jeashDragObject.parent;
+
+			if (p!=null)
+				mouse = p.globalToLocal(mouse);
+
+			if (lockCenter) {
 				var bounds = sprite.getBounds(this);
-				jeashDragOffsetX = -bounds.width/2-bounds.x;
-				jeashDragOffsetY = -bounds.height/2-bounds.y;
-			}
-			else
-			{
-				var mouse = new Point(mouseX,mouseY);
-				var p = jeashDragObject.parent;
 
-				if (p!=null)
-					mouse = p.globalToLocal(mouse);
-
+				jeashDragOffsetX = jeashDragObject.x - (bounds.width/2+bounds.x);
+				jeashDragOffsetY = jeashDragObject.y - (bounds.height/2+bounds.y);
+			} else {
 				jeashDragOffsetX = jeashDragObject.x - mouse.x;
 				jeashDragOffsetY = jeashDragObject.y - mouse.y;
 			}
