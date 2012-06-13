@@ -716,7 +716,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
             }
 
             sdl_flags |= SDL_OPENGL;
-            if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags | SDL_OPENGL)))
+            if (!SDL_VideoModeOK( use_w, use_h, 32, sdl_flags) || !(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
             {
                if (pass==2 && aa_pass==0)
                {
