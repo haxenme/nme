@@ -485,6 +485,12 @@ public class GameActivity extends Activity implements SensorEventListener
 	public static int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
 	{
 		Log.v("GameActivity", "PlaySound -----" + inSoundID);
+		
+		if (inLoop > 0)
+		{
+			inLoop--;
+		}
+		
 		return mSoundPool.play(inSoundID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
 	}
 	
