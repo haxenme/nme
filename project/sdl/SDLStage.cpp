@@ -1219,6 +1219,9 @@ void MainLoop()
       }
    }
 
+   Event deactivate( etDeactivate );
+   sgSDLFrame->ProcessEvent(deactivate);
+ 
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
