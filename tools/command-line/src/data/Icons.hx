@@ -245,8 +245,6 @@ class Icons
 				
 				// write in PNG format
 				
-				format.
-				
 			}
 			
 		}
