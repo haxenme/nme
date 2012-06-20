@@ -26,6 +26,6 @@ extern class JNI
 }
 
 
-#elseif (cpp || neko)
+#elseif android
 typedef JNI = neash.JNI;
 #end
