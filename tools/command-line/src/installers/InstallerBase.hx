@@ -324,10 +324,12 @@ class InstallerBase {
 			 extension == "html" || 
              extension == "ini" ||
              extension == "gpe" ||
+             extension == "pch" ||
              extension == "pbxproj" ||
              extension == "plist" ||
              extension == "json" ||
              extension == "cpp" ||
+             extension == "mm" ||
              extension == "properties")) {
 			
 			print("process " + source + " " + destination);

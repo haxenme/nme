@@ -284,7 +284,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		for (javaPath in javaPaths) {
 			
-			try {
+			//try {
 				
 				if (FileSystem.isDirectory (javaPath)) {
 					
@@ -296,11 +296,11 @@ class AndroidInstaller extends InstallerBase {
 					
 				}
 				
-			} catch (e:Dynamic) {
+			//} catch (e:Dynamic) {
 				
-				throw"Could not find javaPath " + javaPath +" required by extension."; 
+			//	throw"Could not find javaPath " + javaPath +" required by extension."; 
 				
-			}
+			//}
 			
 		}
 		

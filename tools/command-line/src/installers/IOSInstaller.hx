@@ -11,61 +11,47 @@ import neko.Sys;
 
 
 class IOSInstaller extends InstallerBase {
+	private static inline var PATH:String = "ios";
 
-   var armv6:Bool;
-   var armv7:Bool;
+   	var armv6:Bool;
+   	var armv7:Bool;
 	
-	
-   override function build ():Void {
-	   
+   	override function build ():Void {
 		//throw "Build not supported on IOS target - please build from Xcode";
-	   
-		var platformName:String = "iphoneos";
-		
 		if (targetFlags.exists ("simulator")) {
+			var platformName:String = "iphoneos";
 			
-			platformName = "iphonesimulator";
+			if (targetFlags.exists("simulator")) {
+				platformName = "iphonesimulator";
+			}
 			
+			var configuration:String = "Release";
+			
+			if (debug) {
+				configuration = "Debug";
+			}
+			
+			var iphoneVersion:String = defines.get ("IPHONE_VER");
+			var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+			
+			if (targetFlags.exists("simulator")) {
+				commands.push ("-arch");
+				commands.push ("i386");
+			}
+			
+			runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
 		}
-		
-		var configuration:String = "Release";
-		
-		if (debug) {
-			
-			configuration = "Debug";
-			
-		}
-		
-		var iphoneVersion:String = defines.get ("IPHONE_VER");
-		var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
-		
-		if (targetFlags.exists ("simulator")) {
-			
-			commands.push ("-arch");
-			commands.push ("i386");
-			
-		}
-		
-		runCommand (buildDirectory + "/iphone", "xcodebuild", commands);
-		
 	}
-	
 	
 	override function clean ():Void {
-		
-		var targetPath = buildDirectory + "/iphone";
+		var targetPath = buildDirectory + "/" + PATH;
 		
 		if (FileSystem.exists (targetPath)) {
-			
 			removeDirectory (targetPath);
-			
 		}
-		
 	}
 	
-	
 	private override function generateContext ():Void {
-		
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
@@ -75,15 +61,11 @@ class IOSInstaller extends InstallerBase {
 		var devices = iosDevices;
 
 		if (binaries != "fat" && binaries != "armv7" && binaries != "armv6") {
-			
 			InstallerBase.error ("iOS binaries must be one of: \"fat\", \"armv6\", \"armv7\"");
-			
 		}
 		
 		if (devices != "iphone" && devices != "ipad" && devices != "universal") {
-			
 			InstallerBase.error ("iOS devices must be one of: \"universal\", \"iphone\", \"ipad\"");
-			
 		}
 		
 		var iphone = (devices == "universal" || devices == "iphone");
@@ -119,19 +101,12 @@ class IOSInstaller extends InstallerBase {
 		context.DEPLOYMENT = deployment;
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
-			
 			case "landscape":
-				
 				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
-			
 			case "portrait":
-				
 				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
-			
 			default:
-				
 				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
-			
 		}
 		
 		context.ADDL_PBX_BUILD_FILE = "";
@@ -140,9 +115,7 @@ class IOSInstaller extends InstallerBase {
 		context.ADDL_PBX_FRAMEWORK_GROUP = "";
 		
 		for (dependencyName in dependencyNames) {
-			
 			if (Path.extension (dependencyName) == "framework") {
-				
 				var frameworkID = "11C0000000000018" + Utils.getUniqueID ();
 				var fileID = "11C0000000000018" + Utils.getUniqueID ();
 				
@@ -150,126 +123,97 @@ class IOSInstaller extends InstallerBase {
 				context.ADDL_PBX_FILE_REFERENCE += "		" + fileID + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependencyName + "; path = System/Library/Frameworks/" + dependencyName + "; sourceTree = SDKROOT; };\n";
 				context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependencyName + " in Frameworks */,\n";
 				context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependencyName + " */,\n";
-				
 			}
-			
 		}
 		
-		context.HXML_PATH = NME + "/tools/command-line/iphone/haxe/Build.hxml";
-		
-		updateIcon ();
-		
+		context.HXML_PATH = NME + "/tools/command-line/iphone/PROJ/haxe/Build.hxml";
+		updateIcon();
 	}
 	
-	
-	private override function onCreate ():Void {
-		
+	private override function onCreate ():Void {	
 		ndlls.push (new NDLL ("curl_ssl", "nme", false));
 		ndlls.push (new NDLL ("png", "nme", false));
 		ndlls.push (new NDLL ("jpeg", "nme", false));
 		ndlls.push (new NDLL ("z", "nme", false));
 		
 		for (asset in assets) {
-			
 			asset.resourceName = asset.flatName;
-			
 		}
 		
 		if (!defines.exists("IPHONE_VER")) {
-         	
-			var dev_path = "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs";
-			
-			if (!FileSystem.exists (dev_path)) {
-				
-				dev_path = "/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/";
-				
-			}
+			if (!defines.exists("DEVELOPER_DIR")) {
+		        var proc = new neko.io.Process("xcode-select", ["--print-path"]);
+		        var developer_dir = proc.stdout.readLine();
+		        proc.close();
+		        defines.set("DEVELOPER_DIR", developer_dir);
+		    }
+			var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
          	
 			if (neko.FileSystem.exists (dev_path)) {
-            	
 				var best = "";
             	var files = neko.FileSystem.readDirectory (dev_path);
             	var extract_version = ~/^iPhoneOS(.*).sdk$/;
 				
             	for (file in files) {
-       				
 					if (extract_version.match (file)) {
-       					
 						var ver = extract_version.matched (1);
 						
                   		if (ver > best)
                      		best = ver;
-						
                		}
-					
             	}
 				
             	if (best != "")
                		defines.set ("IPHONE_VER", best);
-				
 			}
-		
       	}
-		
-		//setDefault ("IPHONE_VER", "4.3");
-		
 	}
 	
 	
-	override function run ():Void { 
-		
+	override function run ():Void {
 		if (!targetFlags.exists ("simulator")) {
-			
-			runCommand ("", "open", [ buildDirectory + "/iphone/" + defines.get ("APP_FILE") + ".xcodeproj" ] );
-			
+			runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
 		} else {
-			
 			var configuration:String = "Release";
 			
 			if (debug) {
-				
 				configuration = "Debug";
-				
 			}
 			
-			var applicationPath:String = buildDirectory + "/iphone/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
+			var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
 			var family:String = "iphone";
 			
 			if (targetFlags.exists ("ipad")) {
-				
 				family = "ipad";
-				
 			}
 			
 			var launcher:String = NME + "/tools/command-line/bin/ios-sim";
 			Sys.command ("chmod", [ "+x", launcher ]);
 			
 			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), "--sdk", defines.get ("IPHONE_VER"), "--family", family ] );
-			
 		}
-		
 	}
 	
-	
 	override function update ():Void {
-		
-		var destination:String = buildDirectory + "/iphone/";
+		var destination:String = buildDirectory + "/" + PATH + "/";
+		var projDestination:String = destination + defines.get("APP_FILE") + "/";
 		
 		mkdir (destination);
-		mkdir (destination + "/haxe");
-		mkdir (destination + "/haxe/nme/installer");
+		mkdir (projDestination);
+		mkdir (projDestination + "/haxe");
+		mkdir (projDestination + "/haxe/nme/installer");
 		
-		copyFile (NME + "/tools/command-line/haxe/nme/installer/Assets.hx", destination + "/haxe/nme/installer/Assets.hx");
-		recursiveCopy (NME + "/tools/command-line/iphone/haxe", destination + "/haxe");
-		recursiveCopy (NME + "/tools/command-line/iphone/Classes", destination + "Classes");
-		recursiveCopy (NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get ("APP_FILE") + ".xcodeproj");
-		copyFile (NME + "/tools/command-line/iphone/PROJ-Info.plist", destination + defines.get ("APP_FILE") + "-Info.plist");
-		generateSWFClasses (destination + "/haxe");
+		copyFile(NME + "/tools/command-line/haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
+		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/haxe", projDestination + "/haxe");
+		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/Classes", projDestination + "Classes");
+		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist");
+		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch");
+		recursiveCopy(NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
+		generateSWFClasses(projDestination + "/haxe");
 		
-		mkdir (destination + "lib");
+		mkdir (projDestination + "lib");
 		
 		for (archID in 0...3) {
-			
 			var arch = [ "armv6", "armv7", "i386" ][archID];
 			
 			if (arch == "armv6" && !armv6)
@@ -280,63 +224,46 @@ class IOSInstaller extends InstallerBase {
 			
 			var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
 			
-			mkdir (destination + "lib/" + arch);
-			mkdir (destination + "lib/" + arch + "-debug");
+			mkdir (projDestination + "lib/" + arch);
+			mkdir (projDestination + "lib/" + arch + "-debug");
 			
 			for (ndll in ndlls) {
-				
 				var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
 				var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + "-debug" + libExt);
 				
-				var releaseDest = destination + "lib/" + arch + "/lib" + ndll.name + ".a";
-				var debugDest = destination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
+				var releaseDest = projDestination + "lib/" + arch + "/lib" + ndll.name + ".a";
+				var debugDest = projDestination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
 				
 				copyIfNewer(releaseLib, releaseDest);
 				
 				if (FileSystem.exists(debugLib)) {
-					
 					copyIfNewer(debugLib, debugDest);
-					
 				} else if (FileSystem.exists(debugDest)) {
-					
 					FileSystem.deleteFile(debugDest);
-					
 				}
-				
 			}
-			
 		}
 		
-		mkdir (destination + "assets");
+		mkdir (projDestination + "assets");
 		
 		for (asset in assets) {
-			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-				
-				mkdir (Path.directory (destination + "assets/" + asset.flatName));
-				copyIfNewer (asset.sourcePath, destination + "assets/" + asset.flatName);
-				
+				mkdir (Path.directory (projDestination + "assets/" + asset.flatName));
+				copyIfNewer (asset.sourcePath, projDestination + "assets/" + asset.flatName);
 			} else {
-				
-				mkdir (Path.directory (destination + asset.targetPath));
-				copyFile (asset.sourcePath, destination + asset.targetPath);
-				
+				mkdir (Path.directory (projDestination + asset.targetPath));
+				copyFile (asset.sourcePath, projDestination + asset.targetPath);
 			}
-			
 		}
-		
 	}
 	
-	
 	private function updateIcon () {
-		
-		var destination:String = buildDirectory + "/iphone/";
+		var destination:String = buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/";
 		mkdir (destination);
 		
 		var has_icon = true;
 		
 		for (i in 0...4) {
-			
 			var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-Small.png" ][i];
 			var size = [ 57, 114 , 72, 50 ][i];
 			
@@ -346,19 +273,13 @@ class IOSInstaller extends InstallerBase {
 			var name = destination + "/" + iname;
 			
 			if (!icons.updateIcon (size, size, name)) {
-				
 				has_icon = false;
-				
 			}
-			
 		}
 		
 		context.HAS_ICON = has_icon;
-		
 	}
 	
 	
 	override function useFullClassPaths () { return true; }
-	
-	
 }
