@@ -139,7 +139,9 @@ class ApplicationMain {
 		
 		if (Reflect.field(::APP_MAIN::, "main") == null)
 		{
-			nme.Lib.current.addChild(new ::APP_MAIN::());
+			var mainDisplayObj:jeash.display.DisplayObject = cast new ::APP_MAIN::();
+			if (mainDisplayObj != null)
+				nme.Lib.current.addChild(mainDisplayObj);
 		}
 		else
 		{
