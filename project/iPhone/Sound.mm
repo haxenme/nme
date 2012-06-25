@@ -12,9 +12,9 @@
 typedef unsigned char uint8;
 
 
-//#define LOG_SOUND(args...) NSLog(@args)
+#define LOG_SOUND(args...) NSLog(@args)
 
-#define LOG_SOUND(args...)  { }
+//#define LOG_SOUND(args...)  { }
 
 
 @interface AVAudioPlayerChannelDelegate : NSObject <AVAudioPlayerDelegate>  {
@@ -46,10 +46,6 @@ typedef unsigned char uint8;
         isPlaying = true;
     }
     return self;
-}
-
-- (void)dealloc {
-    [super dealloc];
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
@@ -99,24 +95,70 @@ AVSoundPlayer implementation of Sound and SoundChannel classes:
 class AVAudioPlayerChannel : public SoundChannel  {
 
 public:
-    AVAudioPlayerChannel(Object  *inSound,const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform) {
 
-       LOG_SOUND("AVAudioPlayerChannel constructor");
+    AVAudioPlayerChannel(Object *inSound, unsigned char *inData, int len, int inLoops, float inOffset, const SoundTransform &inTransform)
+    {////////////////////TODO
+       LOG_SOUND("AVAudioPlayerChannel constructor with buffer");
        mSound = inSound;
        // each channel keeps the originating Sound object alive.
        inSound->IncRef();
        
        LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
-       theActualPlayer = [[AVAudioPlayer alloc] init];
 
-       std::string name = GetResourcePath() + gAssetBase + inFilename;
+       NSData *data = [NSData dataWithBytes:inData length:len];
+
+       if (data != nil) {
+        NSLog(@"data not nil!");
+         NSError *err = nil;
+         theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:&err];
+         if (err != nil) {
+          LOG_SOUND("Error! %@", [err localizedDescription]);
+             //mError = [[err description] UTF8String];
+         }
+
+         // for each player there is a delegate
+         // the reason for this is that AVAudioPlayer has no way to loop
+         // starting at an offset. So what we need to do is to
+         // get the delegate to react to a loop end, rewing the player
+         // and play again.
+         LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initialising the delegate");
+         thePlayerDelegate = [[AVAudioPlayerChannelDelegate alloc] initWithLoopsOffset:inLoops offset:inOffset];
+         [theActualPlayer setDelegate:thePlayerDelegate];
+
+         // the sound channel has been created because play() was called
+         // on a Sound, so let's play
+         LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
+         theActualPlayer.currentTime = inOffset/1000;
+      if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+        [theActualPlayer setPan: inTransform.pan];
+       [theActualPlayer setVolume: inTransform.volume];
+         [theActualPlayer play];
+
+         LOG_SOUND("AVAudioPlayerChannel constructor exiting");
+       }
+    }
+
+    AVAudioPlayerChannel(Object *inSound, const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform)
+    {
+       LOG_SOUND("AVAudioPlayerChannel constructor with inFilename");
+       mSound = inSound;
+       // each channel keeps the originating Sound object alive.
+       inSound->IncRef();
+       
+       LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
+
+       std::string name;
+       if (inFilename[0] == '/') {
+        name = inFilename;
+       } else {
+        name = GetResourcePath() + gAssetBase + inFilename;
+       }
 
        NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
 
        NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
 
-       [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
-       [theFileName release];
+       theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
        
        // for each player there is a delegate
        // the reason for this is that AVAudioPlayer has no way to loop
@@ -124,8 +166,7 @@ public:
        // get the delegate to react to a loop end, rewing the player
        // and play again.
        LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initialising the delegate");
-       thePlayerDelegate = [AVAudioPlayerChannelDelegate alloc];
-       [thePlayerDelegate initWithLoopsOffset:inLoops offset:inOffset];
+       thePlayerDelegate = [[AVAudioPlayerChannelDelegate alloc] initWithLoopsOffset:inLoops offset:inOffset];
        [theActualPlayer setDelegate:thePlayerDelegate];
 
        // the sound channel has been created because play() was called
@@ -186,8 +227,6 @@ public:
             // If all the channels associated to a Sound will be destroyed,
             // then the Sound itself might be eligible for destruction (if there are
             // no more references to it anywhere else).
-            [thePlayerDelegate release];
-            [theActualPlayer release];
             theActualPlayer = nil;
             thePlayerDelegate = nil;
           }
@@ -237,8 +276,6 @@ public:
     // If someone calls isComplete() in the future,
     // that function will see the nil and avoid doing another
     // release.
-    [theActualPlayer release];
-    [thePlayerDelegate release];
     theActualPlayer = nil;
     thePlayerDelegate = nil;
 
@@ -257,8 +294,9 @@ class AVAudioPlayerSound : public Sound
 public:
    AVAudioPlayerSound(const std::string &inFilename) : mFilename(inFilename)
    {
-      LOG_SOUND("AVAudioPlayerSound constructor()");
+      LOG_SOUND("AVAudioPlayerSound constructor() with inFilename");
       IncRef();
+      len = 0;
        
       // we copy the filename to a local variable,
       // We pass the filename to create one AVSoundPlayer
@@ -273,25 +311,48 @@ public:
       // release it soon after. Note that
       // no buffers are loaded until we invoke either the play or prepareToPlay
       // methods, so very little memory is used.
-    
-       AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] init];
 
-       std::string path = GetResourcePath() + gAssetBase + inFilename;
+       std::string path;
+       if (inFilename[0] == '/') {
+        path = inFilename;
+       } else {
+        path = GetResourcePath() + gAssetBase + inFilename;
+       }
        NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
        NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
-       [ns_name release];
-
 
        NSError *err = nil;
-       [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
+
+       AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
        if (err != nil)
        {
            mError = [[err description] UTF8String];
        }
 
-
        theDuration = [theActualPlayer duration] * 1000;
-       [theActualPlayer release];    
+   }
+   
+   AVAudioPlayerSound(unsigned char *inData, int len) : bufferData(inData), len(len)
+   {////////////////////TODO
+       LOG_SOUND("AVAudioPlayerSound constructor() with buffer");
+       IncRef();
+
+       //bufferData = (unsigned char *)inData;
+       //len = len;
+       printf("LEN: %d", len);
+
+       NSData *data = [NSData dataWithBytes:bufferData length:len];
+       if (data != nil) {
+        NSLog(@"data not nil!");
+         NSError *err = nil;
+         AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:&err];
+         if (err != nil)
+         {
+             mError = [[err description] UTF8String];
+         }
+
+         theDuration = [theActualPlayer duration] * 1000;
+       }
    }
 
    ~AVAudioPlayerSound()
@@ -350,11 +411,16 @@ public:
       
       // this creates the channel, note that the channel is an AVAudioPlayer that plays
       // right away
-      return new AVAudioPlayerChannel(this, mFilename, loops, startTime, inTransform);
+      if (len == 0)
+        return new AVAudioPlayerChannel(this, mFilename, loops, startTime, inTransform);
+      else
+        return new AVAudioPlayerChannel(this, bufferData, len, loops, startTime, inTransform);
    }
 
    std::string mError;
    std::string mFilename;
+   unsigned char *bufferData;
+   int len;
    double theDuration;
 };
 
@@ -654,14 +720,16 @@ public:
       IncRef();
       mBufferID = 0;
 
-	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+          NSString *url;
+          if (inFilename[0] == '/') {
+            url = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
+          } else {
+            std::string asset = GetResourcePath() + gAssetBase + inFilename;
+            url = [[NSString alloc] initWithUTF8String:asset.c_str()];
+          }
 
-      std::string asset = GetResourcePath() + gAssetBase + inFilename;
-
-      NSString *url = [[NSString alloc] initWithUTF8String:asset.c_str()];
          // get some audio data from a wave file
-         CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:url] retain];
-         //[path release];
+         CFURLRef fileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:url];
  
          if (!fileURL)
          {
@@ -697,8 +765,22 @@ public:
                alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
             }
          }
+   }
 
-      [pool release];
+   OpenALSound(unsigned char *inData, int len)
+   {
+      LOG_SOUND("OpenALSound constructor() for buffer with %d bytes.", len);
+      IncRef();
+      mBufferID = 0;
+
+    ALenum  format;
+    ALsizei freq;
+ 
+      // grab a buffer ID from openAL
+      alGenBuffers(1, &mBufferID);
+    
+      // load the awaiting data blob into the openAL buffer.
+      alBufferData(mBufferID,format,&inData[0],len,freq);
    }
 
    ~OpenALSound()
@@ -723,7 +805,7 @@ public:
     
 
       // Open a file with ExtAudioFileOpen()
-      LOG_SOUND("OpenALSound Open a file with ExtAudioFileOpen()");
+      LOG_SOUND("OpenALSound Open a file with ExtAudioFileOpen() inFileURL=%@", inFileURL);
       err = ExtAudioFileOpenURL(inFileURL, &extRef);
       if (err)
       {
@@ -793,7 +875,7 @@ public:
       {
          // Read all the data into memory
          UInt32 dataSize = theFileLengthInFrames * theOutputFormat.mBytesPerFrame;;
-         LOG_SOUND("OpenALSound dataSize: %u", dataSize);
+         LOG_SOUND("OpenALSound dataSize: %lu", dataSize);
          outBuffer.resize(dataSize);
 
          AudioBufferList theDataBuffer;
@@ -806,7 +888,7 @@ public:
          err = ExtAudioFileRead(extRef, (UInt32*)&theFileLengthInFrames, &theDataBuffer);
          if (err)
          {
-            LOG_SOUND("OpenALSound dataSize: %u", dataSize);
+            LOG_SOUND("OpenALSound dataSize: %lu", dataSize);
             mError = "Read audio buffer";
          }
          else
@@ -908,6 +990,35 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
        if (!OpenALInit())
           return 0;
        return new OpenALSound(inFilename);
+   }
+}
+
+Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
+{
+   // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
+   // depending on the inForceMusic flag.
+   //
+   // OpenAL has lower latency but can be expensive memory-wise when playing
+   // files more than a few seconds long, and it's not really needed anyways if there is
+   // no need to work with the uncompressed data.
+   //
+   // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
+   // sound data, but uses "Apple's optimized pathways" and doesn't need to store
+   // uncompressed sound data in memory.
+   //
+   // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
+   // inForceMusic is true.
+
+   LOG_SOUND("Sound.mm Create()"); 
+   if (inForceMusic)
+   {
+      return new AVAudioPlayerSound(inData, len);
+   }
+   else
+   {
+       if (!OpenALInit())
+          return 0;
+       return new OpenALSound(inData, len);
    }
 }
 
