@@ -51,11 +51,21 @@ public class HaxeObject
    }
    public Object call3(String function,Object arg0,Object arg1,Object arg2)
    {
-      Object[] args = new Object[2];
+      Object[] args = new Object[3];
       args[0] = arg0;
       args[1] = arg1;
       args[2] = arg2;
       //Log.e("HaxeObject","Calling obj3 " + function + "(" + arg0 + "," + arg1 + "," + arg2 + ")" );
+      return NME.callObjectFunction(__haxeHandle,function,args);
+   }
+   public Object call4(String function,Object arg0,Object arg1,Object arg2,Object arg3)
+   {
+      Object[] args = new Object[4];
+      args[0] = arg0;
+      args[1] = arg1;
+      args[2] = arg2;
+      args[3] = arg3;
+      //Log.e("HaxeObject","Calling obj4 " + function + "(" + arg0 + "," + arg1 + "," + arg2 + "," + arg3 + ")" );
       return NME.callObjectFunction(__haxeHandle,function,args);
    }
 

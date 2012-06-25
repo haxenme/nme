@@ -12,9 +12,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -56,12 +53,6 @@ public class GameActivity extends Activity implements SensorEventListener
 	static Context mContext;
 	static DisplayMetrics metrics;
 	static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
-	static MediaPlayer mMediaPlayer = null;
-	static boolean mMusicComplete = true;
-	static int mMusicLoopsLeft = 0;
-	static boolean mMusicWasPlaying = false;
-	static SoundPool mSoundPool;
-	static int mSoundPoolID = 0;
 	static SensorManager sensorManager;
 	
 	public Handler mHandler;
@@ -74,7 +65,7 @@ public class GameActivity extends Activity implements SensorEventListener
 	private static float[] magnetData = new float[3];
 	private static float[] orientData = new float[3];
 	private static float[] rotationMatrix = new float[16];
-	
+	private Sound _sound;
 	
 	protected void onCreate(Bundle state)
 	{
@@ -85,16 +76,7 @@ public class GameActivity extends Activity implements SensorEventListener
 		mHandler = new Handler();
 		mAssets = getAssets();
 		
-		if (mSoundPoolID > 1)
-		{
-			mSoundPoolID++;
-		}
-		else
-		{
-			mSoundPoolID = 1;
-		}
-		
-		mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
+		_sound = new Sound(getApplication());
 		//getResources().getAssets();
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -157,20 +139,10 @@ public class GameActivity extends Activity implements SensorEventListener
 	
 	public void doPause()
 	{
-		if (mSoundPool != null)
-		{
-			mSoundPool.release();
-		}
-		mSoundPool = null;
+		_sound.doPause();
 		
 		mView.sendActivity(NME.DEACTIVATE);
 		mView.onPause();
-		
-		if (mMediaPlayer != null)
-		{
-			mMusicWasPlaying = mMediaPlayer.isPlaying();
-			mMediaPlayer.pause();
-		}
 		
 		if (sensorManager != null)
 		{
@@ -178,21 +150,11 @@ public class GameActivity extends Activity implements SensorEventListener
 		}
 	}
 	
-	
 	public void doResume()
-	{
-		mSoundPoolID++;
-		mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
-		
+	{	
 		mView.onResume();
 		
-		if (mMediaPlayer != null)
-		{
-			if (mMusicWasPlaying)
-			{
-				mMediaPlayer.start();
-			}
-		}
+		_sound.doResume();
 		
 		mView.sendActivity(NME.ACTIVATE);
 		
@@ -209,28 +171,19 @@ public class GameActivity extends Activity implements SensorEventListener
 		return mContext;
 	}
 	
-	
 	public static GameActivity getInstance()
 	{
 		return activity;
 	}
 	
-	
-	public static boolean getMusicComplete()
+	public static MainView getMainView()
 	{
-		return mMusicComplete;
+		return activity.mView;
 	}
-	
-	
-	public static int getMusicHandle(String inFilename)
-    {
-		Log.v("GameActivity", "Get music handle ------" + inFilename);
-		
-		int id = getResourceID(inFilename);
-		
-		Log.v("GameActivity", "Got music handle ------" + id);
-		
-		return id;
+
+	public void queueRunnable(java.lang.Runnable runnable)
+	{
+		Log.e("GameActivity", "queueing...");
 	}
 	
 	
@@ -261,49 +214,6 @@ public class GameActivity extends Activity implements SensorEventListener
 		::foreach assets::::if (type == "sound")::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
 		::end::::end::
 		return -1;
-	}
-	
-	
-	public static int getSoundHandle(String inFilename)
-	{
-		int id = getResourceID(inFilename);
-		
-		Log.v("GameActivity","Get sound handle ------" + inFilename + " = " + id);
-		
-		if (id > 0)
-		{
-			int index = mSoundPool.load(mContext, id, 1);
-			Log.v("GameActivity", "Loaded index: " + index);
-			return index;
-		}
-		else
-		{
-			Log.v("GameActivity", "Resource not found: " + (-id));
-		}
-		
-		return -1;
-    }
-	
-	
-	public static int getSoundLength(int inResourceID)
-	{
-		MediaPlayer mp = MediaPlayer.create(mContext, inResourceID);
-		
-		if (mp == null)
-		{
-			return -1;
-		}
-		
-		int duration = mp.getDuration();
-		mp.release();
-		
-		return duration;
-	}
-	
-	
-	public static int getSoundPoolID()
-	{
-		return mSoundPoolID;
 	}
 	
 	
@@ -424,76 +334,7 @@ public class GameActivity extends Activity implements SensorEventListener
 		NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
 		NME.onNormalOrientationFound(bufferedNormalOrientation);
 	}
-	
-	
-	public static void playMusic(String inFilename)
-    {
-		
-    }
-	
-	
-	public static int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
-    {
-		if (mMediaPlayer != null)
-		{
-			Log.v("GameActivity", "stop MediaPlayer");
-			mMediaPlayer.stop();
-			mMediaPlayer = null;
-		}
-		
-		mMusicComplete = false;
-		mMediaPlayer = MediaPlayer.create(mContext, inResourceID);
-		
-		if (mMediaPlayer == null)
-		{
-			return -1;
-		}
-		
-		mMediaPlayer.setVolume((float)inVolLeft, (float)inVolRight);
-		
-		if (inLoop < 0)
-		{
-			mMediaPlayer.setLooping(true);
-		}
-		else if (inLoop >= 0)
-		{
-			mMusicLoopsLeft = inLoop;
-			mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-			{
-				@Override public void onCompletion(MediaPlayer mp)
-				{
-					if (--mMusicLoopsLeft > 0)
-					{
-						mp.seekTo(0);
-						mp.start();
-					}
-					else
-					{
-						mMusicComplete = true;
-					}
-				}
-			});
-		}
-		
-		mMediaPlayer.seekTo((int)inStartTime);
-		mMediaPlayer.start();
-		
-		return 0;
-	}
-	
-	
-	public static int playSound(int inSoundID, double inVolLeft, double inVolRight, int inLoop)
-	{
-		Log.v("GameActivity", "PlaySound -----" + inSoundID);
-		
-		if (inLoop > 0)
-		{
-			inLoop--;
-		}
-		
-		return mSoundPool.play(inSoundID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
-	}
-	
+
 	
 	public static void popView()
 	{
@@ -624,17 +465,6 @@ public class GameActivity extends Activity implements SensorEventListener
 	}
 	
 	
-	public static void setMusicTransform(double inVolLeft, double inVolRight)
-	{
-		if (mMediaPlayer==null)
-		{
-			return;
-		}
-		
-		mMediaPlayer.setVolume((float)inVolLeft, (float)inVolRight);
-	}
-	
-	
 	public static void setUserPreference(String inId, String inPreference)
 	{
 		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
@@ -655,26 +485,6 @@ public class GameActivity extends Activity implements SensorEventListener
 			// On the Nexus One, SHOW_FORCED makes it impossible
 			// to manually dismiss the keyboard.
 			// On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
-		}
-	}
-	
-	
-	public static void stopMusic()
-	{
-		Log.v("GameActivity", "stop MediaPlayer");
-		
-		if (mMediaPlayer != null)
-		{
-			mMediaPlayer.stop();
-		}
-	}
-	
-	
-	static public void stopSound(int inStreamID)
-	{
-		if (mSoundPool != null)
-		{
-			mSoundPool.stop (inStreamID);
 		}
 	}
 	
@@ -701,5 +511,4 @@ public class GameActivity extends Activity implements SensorEventListener
 			v.vibrate(pattern, -1);
 		}
 	}
-	
 }
