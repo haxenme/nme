@@ -29,7 +29,7 @@ class Sound extends EventDispatcher
 		super();
 		bytesLoaded = bytesTotal = 0;
 		nmeLoading = false;
-      nmeDynamicSound = false;
+      	nmeDynamicSound = false;
 		if (stream != null)
 			load(stream, context, forcePlayAsMusic);
 	}
@@ -73,6 +73,15 @@ class Sound extends EventDispatcher
 			nmeCheckLoading();
 		}
 	}
+
+	public function loadCompressedDataFromByteArray(bytes:nme.utils.ByteArray, length:Int, forcePlayAsMusic:Bool = false):Void {
+		bytesLoaded = bytesTotal = length;
+		nmeHandle = nme_sound_from_data(bytes.getData(), length, forcePlayAsMusic);
+		if (nmeHandle == null)
+		{
+			throw ("Could not load buffer with length: " + length);
+		}
+	}
 	
 	
 	/** @private */ private function nmeCheckLoading()
@@ -84,6 +93,7 @@ class Sound extends EventDispatcher
 				throw "Could not get sound status";
 			bytesLoaded = status.bytesLoaded;
 			bytesTotal = status.bytesTotal;
+			trace(bytesLoaded + "/" + bytesTotal);
 			nmeLoading = bytesLoaded < bytesTotal;
 			if (status.error != null)
 			{
@@ -122,7 +132,6 @@ class Sound extends EventDispatcher
       {
 		   if (nmeHandle == null || nmeLoading)
 			   return null;
-
 		   return new SoundChannel(nmeHandle, startTime, loops, sndTransform);
       }
 	}
@@ -165,6 +174,7 @@ class Sound extends EventDispatcher
 	
 	
 	private static var nme_sound_from_file = Loader.load("nme_sound_from_file", 2);
+	private static var nme_sound_from_data = Loader.load("nme_sound_from_data", 3);
 	private static var nme_sound_get_id3 = Loader.load("nme_sound_get_id3", 2);
 	private static var nme_sound_get_length = Loader.load("nme_sound_get_length", 1);
 	private static var nme_sound_close = Loader.load("nme_sound_close", 1);
