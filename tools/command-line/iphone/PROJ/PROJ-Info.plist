@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>::APP_TITLE::</string>
+	<string>${PRODUCT_NAME}</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
@@ -13,24 +13,24 @@
 	<key>CFBundleIcons</key>
 	<dict>
 		<key>CFBundlePrimaryIcon</key>
-		<dict>
-			<key>CFBundleIconFiles</key>
-			<array>
-				<string>Icon.png</string>
-				<string>Icon@2x.png</string>
-				<string>Icon-72.png</string>
-				<string>Icon-Small.png</string>
-			</array>
-			<key>UIPrerenderedIcon</key>
-			<::PRERENDERED_ICON::/>
-		</dict>
+			<dict>
+				<key>CFBundleIconFiles</key>
+					<array>
+						<string>Icon.png</string>
+						<string>Icon@2x.png</string>
+						<string>Icon-72.png</string>
+						<string>Icon-Small.png</string>
+					</array>
+				<key>UIPrerenderedIcon</key>
+					<::PRERENDERED_ICON::/>
+			</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>
 	<string>::APP_PACKAGE::</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>::APP_FILE::</string>
+	<string>${PRODUCT_NAME}</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -42,15 +42,16 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIStatusBarHidden</key>
-	<true/>::if (IPHONE_ORIENTATION!=null)::
+	<true/>
+	::if (IPHONE_ORIENTATION!=null)::
 	<key>UISupportedInterfaceOrientations</key>
 	::IPHONE_ORIENTATION::::end::
 	<key>UIRequiredDeviceCapabilities</key>
-   <dict>
-	::foreach REQUIRED_CAPABILITY::
-      <key>::name::</key>
-      ::if value::<true/>::else::<false/>::end::
-	::end::
-   </dict>
+   	<dict>
+		::foreach REQUIRED_CAPABILITY::
+     		<key>::name::</key>
+     		::if value::<true/>::else::<false/>::end::
+		::end::
+   	</dict>
 </dict>
 </plist>

@@ -75,13 +75,13 @@ class ApplicationMain
 		{
 			::if (type == "image")::
 			return nme.Assets.getBitmapData ("::id::");
-			::elseif (type=="sound")::
+			::elseif (type == "sound")::
 			return nme.Assets.getSound ("::id::");
-			::elseif (type=="music")::
+			::elseif (type == "music")::
 			return nme.Assets.getSound ("::id::");
-			::elseif (type== "font")::
+			::elseif (type == "font")::
 			return nme.Assets.getFont ("::id::");
-			::elseif (type== "text")::
+			::elseif (type == "text")::
 			return nme.Assets.getText ("::id::");
 			::else::
 			return nme.Assets.getBytes ("::id::");
