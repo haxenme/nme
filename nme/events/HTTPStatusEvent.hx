@@ -13,9 +13,9 @@ extern class HTTPStatusEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef IOErrorEvent = neash.events.IOErrorEvent;
+typedef HTTPStatusEvent = neash.events.HTTPStatusEvent;
 #elseif js
-typedef IOErrorEvent = jeash.events.IOErrorEvent;
+typedef HTTPStatusEvent = jeash.events.HTTPStatusEvent;
 #else
-typedef IOErrorEvent = flash.events.IOErrorEvent;
+typedef HTTPStatusEvent = flash.events.HTTPStatusEvent;
 #end
