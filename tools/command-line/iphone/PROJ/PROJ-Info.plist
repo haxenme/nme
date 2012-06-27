@@ -43,9 +43,9 @@
 	<true/>
 	<key>UIStatusBarHidden</key>
 	<true/>
-	::if (IPHONE_ORIENTATION!=null)::
+	::if (IOS_APP_ORIENTATION != null)::
 	<key>UISupportedInterfaceOrientations</key>
-	::IPHONE_ORIENTATION::::end::
+	::IOS_APP_ORIENTATION::::end::
 	<key>UIRequiredDeviceCapabilities</key>
    	<dict>
 		::foreach REQUIRED_CAPABILITY::

@@ -101,12 +101,22 @@ class IOSInstaller extends InstallerBase {
 		context.DEPLOYMENT = deployment;
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
-			case "landscape":
-				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
 			case "portrait":
-				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string></array>";
+			case "landscapeLeft":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string></array>";
+			case "landscapeRight":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeRight</string></array>";
+			case "portraitUpsideDown":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+			case "landscape":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
+			case "all":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+			case "allButUpsideDown":
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string></array>";
 			default:
-				context.IPHONE_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 		}
 		
 		context.ADDL_PBX_BUILD_FILE = "";
