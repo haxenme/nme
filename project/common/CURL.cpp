@@ -13,7 +13,6 @@
 /**
  * TODO:
  * HTTP redirects
- * HTTP POST method.
  */
 
 namespace nme
@@ -44,9 +43,9 @@ public:
 	char mErrorBuf[CURL_ERROR_SIZE];
 	QuickVec<unsigned char> mBytes;
 
-   size_t         mBufferRemaining;
-   unsigned char *mBufferPos;
-   unsigned char *mPutBuffer;
+  size_t         mBufferRemaining;
+  unsigned char *mBufferPos;
+  unsigned char *mPutBuffer;
 
   struct curl_slist *headerlist;
 
@@ -63,142 +62,143 @@ public:
 		if (!sCurlMap)
 			sCurlMap = new CurlMap;
 
-      mBufferRemaining = 0;
-      mPutBuffer = 0;
-      mBufferPos = 0;
+    mBufferRemaining = 0;
+    mPutBuffer = 0;
+    mBufferPos = 0;
     headerlist = NULL;
 
 		curl_easy_setopt(mHandle, CURLOPT_URL, r.url);
 
-      /* send all data to this function  */ 
-      curl_easy_setopt(mHandle, CURLOPT_WRITEFUNCTION, staticOnData);
-      curl_easy_setopt(mHandle, CURLOPT_WRITEDATA, (void *)this);
+    /* send all data to this function  */ 
+    curl_easy_setopt(mHandle, CURLOPT_WRITEFUNCTION, staticOnData);
+    curl_easy_setopt(mHandle, CURLOPT_WRITEDATA, (void *)this);
 		curl_easy_setopt(mHandle, CURLOPT_NOPROGRESS, 0);
-      if (r.authType!=0)
+    if (r.authType!=0)
+    {
+      curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, r.authType);
+      if (r.passwd && r.passwd[0])
+        curl_easy_setopt(mHandle, CURLOPT_USERPWD, r.passwd);
+    }
+    curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
+    curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
+    curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
+    if (r.debug)
+      curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
+    if (r.cookies && r.cookies[0])
+      curl_easy_setopt( mHandle, CURLOPT_COOKIE, r.cookies );
+    if (sCACertFile.empty())
+      curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, false);
+    else
+      curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
+
+    if (r.method)
+    { 
+      if (!strcmp(r.method,"POST"))
       {
-         curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, r.authType);
-         if (r.passwd && r.passwd[0])
-            curl_easy_setopt(mHandle, CURLOPT_USERPWD, r.passwd);
-      }
-      curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
-      curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
-      curl_easy_setopt(mHandle, CURLOPT_ERRORBUFFER, mErrorBuf );
-      if (r.debug)
-         curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
-      curl_easy_setopt( mHandle, CURLOPT_COOKIEFILE, "" );
-      if (r.cookies && r.cookies[0])
-         curl_easy_setopt( mHandle, CURLOPT_COOKIE, r.cookies );
-      if (sCACertFile.empty())
-         curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, false);
-      else
-         curl_easy_setopt(mHandle, CURLOPT_CAINFO, sCACertFile.c_str());
+        curl_easy_setopt(mHandle, CURLOPT_POST, true);
 
-      if (r.method)
-      { 
-        if (!strcmp(r.method,"POST"))
+        if (r.postData.Ok())
         {
-          curl_easy_setopt(mHandle, CURLOPT_POST, true);
-
-          if (r.postData.Ok())
-          {
-            curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, r.postData.Size());
-            curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, r.postData.Bytes());
-          }
-        }
-        else if (!strcmp(r.method,"PUT"))
-        {
-          // The file to PUT must be set with CURLOPT_INFILE and CURLOPT_INFILESIZE.
-          curl_easy_setopt(mHandle, CURLOPT_PUT, true);
-
-          curl_easy_setopt(mHandle, CURLOPT_UPLOAD, 1);
-          if (r.postData.Ok())
-            SetPutBuffer(r.postData.Bytes(),r.postData.Size());
-        } 
-        else if (!strcmp(r.method,"GET"))
-        {
-          // GET is the default, so this is not necessary but here for completeness.
-          curl_easy_setopt(mHandle, CURLOPT_HTTPGET, true);
-        }
-        else if (!strcmp(r.method,"DELETE"))
-        {
-          curl_easy_setopt(mHandle, CURLOPT_CUSTOMREQUEST, r.method);
-        }
-        else
-        {
-          // unsupported method !!
+          curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, r.postData.Size());
+          curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, r.postData.Bytes());
         }
       }
-
-      if (r.contentType)
+      else if (!strcmp(r.method,"PUT"))
       {
-        std::vector<char> buffer;
-        buffer.resize(512);
-        snprintf(&buffer[0], buffer.size(), "Content-Type: %s", r.contentType);
-        headerlist = curl_slist_append(headerlist, &buffer[0]);
+        // The file to PUT must be set with CURLOPT_INFILE and CURLOPT_INFILESIZE.
+        curl_easy_setopt(mHandle, CURLOPT_PUT, true);
 
+        curl_easy_setopt(mHandle, CURLOPT_UPLOAD, 1);
+        if (r.postData.Ok())
+          SetPutBuffer(r.postData.Bytes(),r.postData.Size());
+      } 
+      else if (!strcmp(r.method,"GET"))
+      {
+        // GET is the default, so this is not necessary but here for completeness.
+        curl_easy_setopt(mHandle, CURLOPT_HTTPGET, true);
       }
-      headerlist = curl_slist_append(headerlist, "Expect:");
-      curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, headerlist);
- 
-      mErrorBuf[0] = '\0';
- 
-      /* some servers don't like requests that are made without a user-agent
-         field, so we provide one */ 
-      curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-		  mState = urlLoading;
-
-      if (sCurlMap->size()<MAX_ACTIVE)
+      else if (!strcmp(r.method,"DELETE"))
       {
-         StartProcessing();
+        curl_easy_setopt(mHandle, CURLOPT_CUSTOMREQUEST, r.method);
       }
       else
       {
-         if (sCurlList==0)
-           sCurlList = new CurlList;
-         sCurlList->push_back(this);
+        // unsupported method !!
       }
-   }
+    }
 
-   size_t ReadFunc( void *ptr, size_t size, size_t nmemb)
-   {
-      size_t bytes = size * nmemb;
-      if (mBufferRemaining<=bytes)
-         bytes = mBufferRemaining;
+    if (r.contentType)
+    {
+      std::vector<char> buffer;
+      buffer.resize(512);
+      snprintf(&buffer[0], buffer.size(), "Content-Type: %s", r.contentType);
+      headerlist = curl_slist_append(headerlist, &buffer[0]);
+    }
+    headerlist = curl_slist_append(headerlist, "Expect:");
+    curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, headerlist);
+ 
+    mErrorBuf[0] = '\0';
+ 
+    /* some servers don't like requests that are made without a user-agent
+      field, so we provide one */ 
+    curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-      memcpy(ptr,mBufferPos,bytes);
-      mBufferPos += bytes;
-      mBufferRemaining -= bytes;
+		mState = urlLoading;
 
-      return bytes;
-   }
+    if (sCurlMap->size()<MAX_ACTIVE)
+    {
+      StartProcessing();
+    }
+    else
+    {
+      if (sCurlList==0)
+        sCurlList = new CurlList;
+      sCurlList->push_back(this);
+    }
+  }
 
-   static size_t SReadFunc( void *ptr, size_t size, size_t nmemb, void *userdata)
-   {
-      return ((CURLLoader *)userdata)->ReadFunc(ptr,size,nmemb);
-   }
+  size_t ReadFunc( void *ptr, size_t size, size_t nmemb)
+  {
+    size_t bytes = size * nmemb;
+    if (mBufferRemaining<=bytes)
+      bytes = mBufferRemaining;
 
-   void SetPutBuffer(const unsigned char *inBuffer, size_t inLen)
-   {
-      mPutBuffer = new unsigned char[inLen];
-      mBufferRemaining = 0;
-      mBufferPos = mPutBuffer;
-      memcpy(mPutBuffer,inBuffer,inLen);
-      curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc);
-      curl_easy_setopt(mHandle, CURLOPT_INFILESIZE, inLen);
-   }
+    memcpy(ptr,mBufferPos,bytes);
+    mBufferPos += bytes;
+    mBufferRemaining -= bytes;
 
-   void StartProcessing()
-   {
+    return bytes;
+  }
+
+  static size_t SReadFunc( void *ptr, size_t size, size_t nmemb, void *userdata)
+  {
+    return ((CURLLoader *)userdata)->ReadFunc(ptr,size,nmemb);
+  }
+
+  void SetPutBuffer(const unsigned char *inBuffer, size_t inLen)
+  {
+    mPutBuffer = new unsigned char[inLen];
+    mBufferRemaining = 0;
+    mBufferPos = mPutBuffer;
+    memcpy(mPutBuffer,inBuffer,inLen);
+    curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc);
+    curl_easy_setopt(mHandle, CURLOPT_INFILESIZE, inLen);
+  }
+
+  void StartProcessing()
+  {
 		(*sCurlMap)[mHandle] = this;
-		int c1 = curl_multi_add_handle(sCurlM,mHandle);
-		int result = curl_multi_perform(sCurlM, &sRunning);
-      processMultiMessages();
+    //int c1 = curl_multi_add_handle(sCurlM,mHandle);
+    curl_multi_add_handle(sCurlM,mHandle);
+    //int result = curl_multi_perform(sCurlM, &sRunning);
+    curl_multi_perform(sCurlM, &sRunning);
+    processMultiMessages();
 	}
 
 	~CURLLoader()
 	{
-      delete [] mPutBuffer;
+    delete [] mPutBuffer;
 		curl_easy_cleanup(mHandle);
 		sLoaders--;
 		if (sLoaders==0)
@@ -269,7 +269,7 @@ public:
 	{
 		long http_code = 0;
 		int curl_code = curl_easy_getinfo(mHandle,CURLINFO_RESPONSE_CODE,&http_code);
-		if (curl_code!=CURLE_OK)
+		if (curl_code != CURLE_OK)
 			mState = urlError;
 		else if (http_code>0)
 		{
@@ -324,9 +324,9 @@ bool URLLoader::processAll()
 		   if (code!= CURLM_CALL_MULTI_PERFORM)
 			   break;
 	   }
-	   if (check)
+	   if (check) {
          processMultiMessages();
-
+      }
       while(sCurlMap && sCurlList && !sCurlList->empty() && sCurlMap->size()<MAX_ACTIVE )
       {
          CURLLoader *curl = (*sCurlList)[0];
