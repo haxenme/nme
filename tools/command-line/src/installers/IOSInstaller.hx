@@ -55,6 +55,7 @@ class IOSInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.HAS_ICON = false;
+		context.HAS_LAUNCH_IMAGE = false;
 		
 		var deployment = Std.parseFloat (iosDeployment);
 		var binaries = iosBinaries;
@@ -272,11 +273,10 @@ class IOSInstaller extends InstallerBase {
 		mkdir(destination);
 		
 		var has_icon = true;
-		defines.set("PRERENDERED_ICON", "true");
 		
-		for (i in 0...5) {
-			var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-72@2x.png", "Icon-Small.png" ][i];
-			var size = [ 57, 114 , 72, 144, 50 ][i];
+		for (i in 0...4) {
+			var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-72@2x.png" ][i];
+			var size = [ 57, 114 , 72, 144 ][i];
 			
 			var name = destination + "/" + iname;
 			
