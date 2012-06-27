@@ -28,24 +28,23 @@ import cpp.io.File;
 **/
 class URLLoader extends EventDispatcher
 {
-
 	public var bytesLoaded(default, null):Int;
 	public var bytesTotal(default, null):Int;
 	public var data:Dynamic;
 	public var dataFormat:URLLoaderDataFormat;
 	
-	/** @private */ public var nmeHandle:Dynamic;
+	/** @private */ private var nmeHandle:Dynamic;
 	
 	/** @private */ private static var activeLoaders = new List<URLLoader>();
-	private static inline var urlInvalid = 0;
-	private static inline var urlInit = 1;
-	private static inline var urlLoading = 2;
-	private static inline var urlComplete = 3;
-	private static inline var urlError = 4;
+	private static inline var urlInvalid 	= 0;
+	private static inline var urlInit 		= 1;
+	private static inline var urlLoading 	= 2;
+	private static inline var urlComplete 	= 3;
+	private static inline var urlError 		= 4;
 	
 	/** @private */ private var state:Int;
 	
-	/** @private */ public var nmeOnComplete : Dynamic -> Bool;
+	/** @private */ public var nmeOnComplete:Dynamic -> Bool;
 	
 
 	public function new(?request:URLRequest)
@@ -60,30 +59,24 @@ class URLLoader extends EventDispatcher
 			load(request);
 	}
 	
-	
 	public function close()
 	{
-		
 	}
-	
 	
 	public function getCookies():Array<String>
 	{
 		return nme_curl_get_cookies(nmeHandle);
 	}
 	
-	
 	public static function hasActive()
 	{
 		return !activeLoaders.isEmpty();
 	}
 	
-	
 	public static function initialize(inCACertFilePath:String)
 	{
 		nme_curl_initialize(inCACertFilePath);
 	}
-	
 	
 	public function load(request:URLRequest)
 	{
@@ -109,11 +102,11 @@ class URLLoader extends EventDispatcher
 				return;
 			}
 
-         nmeDataComplete();
+         	nmeDataComplete();
 		}
 		else
 		{
-         request.nmePrepare();
+         	request.nmePrepare();
 			nmeHandle = nme_curl_create(request);
 			if (nmeHandle == null)
 			{
@@ -146,7 +139,6 @@ class URLLoader extends EventDispatcher
 	{
 		return !activeLoaders.isEmpty();
 	}
-	
 	
 	/** @private */ public static function nmePollData()
 	{
@@ -230,11 +222,7 @@ class URLLoader extends EventDispatcher
 	}
 	
 	
-	
 	// Native Methods
-	
-	
-	
 	private static var nme_curl_create = Loader.load("nme_curl_create", 1);
 	private static var nme_curl_process_loaders = Loader.load("nme_curl_process_loaders", 0);
 	private static var nme_curl_update_loader = Loader.load("nme_curl_update_loader", 2);
