@@ -477,6 +477,17 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    return sound;
 }
 
+Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic) {
+   if (!Init())
+      return 0;
+   Sound *sound=0;/* = inForceMusic ? 0 :  new SDLSound(inFilename);
+   if (!sound || !sound->ok())
+   {
+      if (sound) sound->DecRef();
+      sound = new SDLMusic(inFilename);
+   }*/
+   return sound;
+}
 
 
 }
