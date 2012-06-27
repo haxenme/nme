@@ -96,7 +96,7 @@ struct MySrcManager
       MySrcManager *man = (MySrcManager *)cinfo->src;
       man->pub.next_input_byte += num_bytes;
       man->pub.bytes_in_buffer -= num_bytes;
-      if (man->pub.bytes_in_buffer<0)
+      if (man->pub.bytes_in_buffer == 0) // was < 0 and was always false PJK 16JUN12
       {
          man->pub.next_input_byte = man->mEOI;
          man->pub.bytes_in_buffer = 2;

@@ -176,8 +176,6 @@ public:
          return;
       }
 
-      int was = mPtr[0];
-
       // Before/at start
       if (inValue<=mPtr[0])
       {

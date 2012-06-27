@@ -1473,7 +1473,6 @@ Surface *HardwareSurface::clone()
 
 void HardwareSurface::getPixels(const Rect &inRect, uint32 *outPixels,bool inIgnoreOrder)
 {
-   Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
    memset(outPixels,0,Width()*Height()*4);
 }
 

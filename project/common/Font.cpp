@@ -186,6 +186,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
       int orig_h = gh;
       switch(mRotation)
       {
+         case gr0: break;
          case gr270:
             std::swap(gw,gh);
             std::swap(ox,oy);
@@ -267,6 +268,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
 
             switch(mRotation)
             {
+               case gr0: break;
                case gr270:
                   src = buf->Row(0) + buf->Width() -1 - y;
                   for(int x=0; x<target.mRect.w; x++)

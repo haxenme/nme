@@ -92,7 +92,6 @@ namespace nme
 		
 		for (; y < y1; y++)
 		{
-			int sy = y - inTY;
 			const AlphaRun *end = &mAlphaRuns[start[y + 1]];
 			const AlphaRun *run = &mAlphaRuns[start[y]];
 			

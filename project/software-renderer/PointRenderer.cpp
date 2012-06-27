@@ -75,7 +75,7 @@ namespace nme
 		int y1 = visible_pixels.y1();
 
 		bool swap = gC0IsRed != (bool)(inTarget.mPixelFormat & pfSwapRB);
-		bool alpha = (inTarget.mPixelFormat & pfHasAlpha);
+		//bool alpha = (inTarget.mPixelFormat & pfHasAlpha);
 
 		if (!mHasColours)
 		{

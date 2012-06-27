@@ -157,7 +157,6 @@ bool FindDiag(EdgePoint *concaveHead,EdgePoint *&p1,EdgePoint *&p2)
       UserPoint corner = p->p;
       UserPoint v1( p->prev->p - corner ); 
       UserPoint v2( p->next->p - corner );
-      double denom = v1.Cross(v2);
       for(EdgePoint *other=p->next; ;  )
       {
          UserPoint v( other->p-corner );
@@ -202,7 +201,6 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
    EdgePoint concaveHead;
    concaveHead.nextConcave = concaveHead.prevConcave = &concaveHead;
 
-   EdgePoint *p = head;
    for(EdgePoint *p = head; ; )
    {
       p->calcConcave(concaveHead);

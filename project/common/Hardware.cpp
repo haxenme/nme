@@ -274,8 +274,6 @@ public:
    void AddTriangleLines(GraphicsTrianglePath *inPath)
    {
       Vertices &vertices = mArrays->mVertices;
-      Colours &colours = mArrays->mColours;
-      Vertices &tex = mArrays->mTexCoords;
       DrawElements &elements = mArrays->mElements;
       mElement.mFirst = vertices.size();
       mElement.mPrimType = ptLines;
@@ -869,8 +867,7 @@ public:
           UserPoint p1_left = p-perp1;
           UserPoint p1_right = p+perp1;
 
-          // This could start getting dodgy when the line doubles-back 
-          double orig = alpha != 0;
+          // This could start getting dodgy when the line doubles-back
           double max_alpha = std::max( (p0-p).Norm()*0.5, mPerpLen );
           if (fabs(alpha)>max_alpha)
           {
@@ -1358,9 +1355,8 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
             if (draw.mCount<3)
                continue;
             UserPoint *v = &vert[ draw.mFirst ];
-            UserPoint p0 = *v;
 			
-			int numTriangles = draw.mCount / 3;
+			   int numTriangles = draw.mCount / 3;
 			
             for(int i=0;i<numTriangles;i++)
             {

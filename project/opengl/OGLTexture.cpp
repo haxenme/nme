@@ -219,6 +219,9 @@ public:
          glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
          #endif
          int err = glGetError();
+         if (err != GL_NO_ERROR) {
+          ELOG("GL Error: %d", err);
+         }
          mDirtyRect = Rect();
       }
    }

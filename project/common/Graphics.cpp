@@ -175,6 +175,8 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
 {
    switch(inData->GetType())
    {
+      case gdtUnknown: break;
+      case gdtTrianglePath: break;
       case gdtPath:
          {
          GraphicsPath *path = inData->AsPath();
@@ -777,7 +779,7 @@ GraphicsStroke::~GraphicsStroke()
 
 GraphicsStroke *GraphicsStroke::CloneWithFill(IGraphicsFill *inFill)
 {
-   if (mRefCount,2)
+   if (mRefCount < 2)
    {
       if (fill)
          fill->DecRef();

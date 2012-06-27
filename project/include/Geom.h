@@ -72,7 +72,8 @@ struct TRect
 	{
 		switch(inRotation)
 		{
-			case gr90: return TRect(y-h,x,h,w);
+         case gr0: break;
+         case gr90: return TRect(y-h,x,h,w);
 			case gr180: return TRect(-x-w,-y-h,w,h);
 			case gr270: return TRect(-y,-x-w,h,w);
 		}

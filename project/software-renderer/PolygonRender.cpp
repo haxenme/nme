@@ -297,8 +297,7 @@ namespace nme
 		
 		double step = 1.0 / (steps + 1);
 		double t = 0;
-		
-		UserPoint last = inP0;
+
 		UserPoint last_p0 = inP0 + perp0;
 		UserPoint last_p1 = inP0 - perp0;
 		
@@ -354,8 +353,6 @@ namespace nme
 			if (!mAlphaMask)
 			{
 				SetTransform(inState.mTransform);
-				
-				Rect clip = inState.mClipRect;
 				
 				// TODO: make visible_pixels a bit bigger ?
 				SpanRect span(visible_pixels, inState.mTransform.mAAFactor);

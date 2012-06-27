@@ -414,6 +414,7 @@ UserPoint TextField::TargetToRect(const Matrix &inMatrix,const UserPoint &inPoin
    UserPoint p = (inPoint - UserPoint(inMatrix.mtx, inMatrix.mty));
    switch(mLayoutRotation)
    {
+      case gr0: break;
       case gr90: return UserPoint(p.y,-p.x);
       case gr180: return UserPoint(-p.x,-p.y);
       case gr270: return UserPoint(-p.y,p.x);
@@ -426,6 +427,7 @@ UserPoint TextField::RectToTarget(const Matrix &inMatrix,const UserPoint &inPoin
    UserPoint trans(inMatrix.mtx, inMatrix.mty);
    switch(mLayoutRotation)
    {
+      case gr0: break;
       case gr90: return UserPoint(-inPoint.y,inPoint.x) + trans;
       case gr180: return UserPoint(-inPoint.x,-inPoint.y) + trans;
       case gr270: return UserPoint(inPoint.y,-inPoint.x) + trans;
@@ -771,7 +773,8 @@ WString TextField::getHTMLText()
 		  
 		  switch(format->align)
 		  {
-			  case tfaCenter: result += L"center"; break;
+           case tfaLeft: break;
+           case tfaCenter: result += L"center"; break;
 			  case tfaRight: result += L"right"; break;
 			  case tfaJustify: result += L"justify"; break;
 		  }
@@ -966,6 +969,9 @@ void TextField::setHTMLText(const WString &inString)
    TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
    TiXmlDocument doc;
    const char *err = doc.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
+   if (err != NULL) {
+      ELOG("Error parsing HTML input");
+   }
    const TiXmlNode *top =  doc.FirstChild();
    if (top)
    {
@@ -1221,6 +1227,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    UserPoint dPdY(0,1);
    switch(mLayoutRotation)
    {
+      case gr0: break;
       case gr90: dPdX = UserPoint(0,1); dPdY = UserPoint(-1,0); break;
       case gr180: dPdX = UserPoint(-1,0); dPdY = UserPoint(0,-1); break;
       case gr270: dPdX = UserPoint(0,-1); dPdY = UserPoint(1,0); break;
@@ -1638,6 +1645,7 @@ void TextField::Layout(const Matrix &inMatrix)
       {
          switch(autoSize)
          {
+            case asNone: break;
             case asLeft: mActiveRect.w = textWidth;
                          break;
             case asRight: mActiveRect.x = mActiveRect.x1()-textWidth - gap;
@@ -1691,6 +1699,8 @@ void TextField::Layout(const Matrix &inMatrix)
          int extra = (mActiveRect.w - line.mMetrics.width - 1);
          switch(group.mFormat->align(tfaLeft))
          {
+            case tfaJustify: break;
+            case tfaRight: break;
             case tfaLeft: extra = 0; break;
             case tfaCenter: extra/=2; break;
          }
@@ -1714,7 +1724,6 @@ void TextField::Layout(const Matrix &inMatrix)
 
 // --- TextFormat -----------------------------------
 
-static int sFmtObjs = 0;
 TextFormat::TextFormat() :
    align(tfaLeft),
    blockIndent(0),
