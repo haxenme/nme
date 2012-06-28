@@ -53,7 +53,7 @@ class IOSInstaller extends InstallerBase {
 	
 	private override function generateContext ():Void {
 		super.generateContext ();
-		
+
 		context.HAS_ICON = false;
 		context.HAS_LAUNCH_IMAGE = false;
 		
@@ -103,13 +103,7 @@ class IOSInstaller extends InstallerBase {
 		
 		switch (defines.get ("WIN_ORIENTATION")) {
 			case "portrait":
-				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string></array>";
-			case "landscapeLeft":
-				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string></array>";
-			case "landscapeRight":
-				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeRight</string></array>";
-			case "portraitUpsideDown":
-				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
+				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 			case "landscape":
 				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
 			case "all":

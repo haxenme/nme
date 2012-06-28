@@ -649,6 +649,7 @@ class InstallerBase {
 		var appMain:String = defines.get ("APP_MAIN");
 		var indexOfPeriod = appMain.lastIndexOf (".");
 		
+		context.STATUS_BAR_HIDDEN = context.WIN_FULLSCREEN || defines.exists("fullscreen");
 		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
 		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
 		context.HXML_PATH = NME + "/tools/command-line/" + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
@@ -1364,7 +1365,6 @@ class InstallerBase {
 							value = substitute (element.att.value);
 							
 						}
-						
 						defines.set (element.att.name, value);
 					
 					case "unset":
@@ -1877,10 +1877,10 @@ class InstallerBase {
 	
 	
 	private function setDefault (name:String, value:String):Void {
-		
 		if (!defines.exists (name)) {
 			
 			defines.set (name, value);
+		
 			
 		}
 		

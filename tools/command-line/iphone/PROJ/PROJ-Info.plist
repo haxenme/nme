@@ -52,7 +52,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIStatusBarHidden</key>
-	<true/>
+	<::STATUS_BAR_HIDDEN::/>
 	::if (IOS_APP_ORIENTATION != null)::
 	<key>UISupportedInterfaceOrientations</key>
 	::IOS_APP_ORIENTATION::::end::
