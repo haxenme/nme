@@ -2,6 +2,7 @@ package installers;
 
 
 import data.Asset;
+import data.LaunchImage;
 import data.Icon;
 import data.Icons;
 import data.NDLL;
@@ -30,6 +31,7 @@ class InstallerBase {
 	private var context:Dynamic;
 	private var debug:Bool;
 	private var dependencyNames:Array <String>;
+	private var launchImages:Array<LaunchImage>;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
 	private var javaPaths:Array <String>;
@@ -55,6 +57,7 @@ class InstallerBase {
 		compilerFlags = new Array <String> ();
 		defines = new Hash <String> ();
 		dependencyNames = new Array <String> ();
+		launchImages = new Array<LaunchImage>();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
 		javaPaths = new Array <String> ();
@@ -1510,6 +1513,37 @@ class InstallerBase {
 							ndlls.push (new NDLL (name, haxelib));
 							
 						}
+					
+					case "launchImage":
+						
+						var name:String = "";
+						
+						if (element.has.path) {
+							
+							name = substitute(element.att.path);
+							
+						} else {
+							
+							name = substitute(element.att.name);
+							
+						}
+						
+						var width:String = "";
+						var height:String = "";
+						
+						if (element.has.width) {
+							
+							width = substitute (element.att.width);
+							
+						}
+						
+						if (element.has.height) {
+							
+							height = substitute (element.att.height);
+							
+						}
+						
+						launchImages.push (new LaunchImage(name, width, height));
 					
 					case "icon":
 						

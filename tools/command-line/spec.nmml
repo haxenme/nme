@@ -144,6 +144,24 @@
 	
 	
 	
+	<!-- <launchImage />
+		
+		Use launchImage nodes to add the various launch image sizes to your project.
+		These are images which are shown by the OS while your app is launching. They
+		tend to display a logo or a screenshot of what the app will look like once
+		launched.
+		
+	-->
+	
+	<launchImage path="Default.png" width="320" height="480" />
+	<launchImage path="Default@2x.png" width="640" height="960" />
+	<launchImage path="Default-Portrait~ipad.png" width="768" height="1024" />
+	<launchImage path="Default-Portrait@2x~ipad.png" width="1536" height="2048" />
+	<launchImage path="Default-Landscape~ipad.png" width="1024" height="768" />
+	<launchImage path="Default-Landscape@2x~ipad.png" width="2048" height="1536" />
+	
+	
+	
 	<!-- <assets />
 		
 		Use asset nodes to add resources to your project.

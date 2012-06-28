@@ -139,6 +139,7 @@ class IOSInstaller extends InstallerBase {
 		
 		context.HXML_PATH = NME + "/tools/command-line/iphone/PROJ/haxe/Build.hxml";
 		updateIcon();
+		updateLaunchImage();
 	}
 	
 	private override function onCreate ():Void {	
@@ -269,7 +270,7 @@ class IOSInstaller extends InstallerBase {
 	}
 	
 	private function updateIcon () {
-		var destination:String = buildDirectory + "/" + PATH + "/";
+		var destination:String = buildDirectory + "/" + PATH;
 		mkdir(destination);
 		
 		var has_icon = true;
@@ -277,7 +278,6 @@ class IOSInstaller extends InstallerBase {
 		for (i in 0...4) {
 			var iname = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-72@2x.png" ][i];
 			var size = [ 57, 114 , 72, 144 ][i];
-			
 			var name = destination + "/" + iname;
 			
 			if (!icons.updateIcon(size, size, name)) {
@@ -286,6 +286,21 @@ class IOSInstaller extends InstallerBase {
 		}
 		
 		context.HAS_ICON = has_icon;
+	}
+
+	private function updateLaunchImage () {
+		var destination:String = buildDirectory + "/" + PATH;
+		mkdir(destination);
+		
+		var has_launch_image = true;
+		
+		for (launchImage in launchImages) {
+			var splitPath = launchImage.name.split("/");
+			var path = destination + "/" + splitPath[splitPath.length-1];
+			copyFile(launchImage.name, path, false);
+		}
+
+		context.HAS_LAUNCH_IMAGE = has_launch_image;
 	}
 	
 	
