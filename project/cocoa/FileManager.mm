@@ -177,15 +177,16 @@ namespace nme
 std::string GetApplicationSupportDirectory()
 {
    std::string result;
-
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
+   #ifndef OBJC_ARC
+   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+   #endif
    NSString *path = [[NSFileManager defaultManager] applicationSupportDirectory];
    if (path)
       result = [path UTF8String];
 
+   #ifndef OBJC_ARC
    [pool drain];
-
+   #endif
    return result;
 }
 
@@ -193,12 +194,16 @@ std::string GetApplicationSupportDirectory()
 std::string GetBundleDirectory()
 {
    std::string result;
-   NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+   #ifndef OBJC_ARC
+   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+   #endif
    NSString *path = [ [NSBundle mainBundle]  bundlePath];
    if (path)
       result = [path UTF8String];
 
+   #ifndef OBJC_ARC
    [pool drain];
+   #endif
    return result;
 }
 
@@ -209,11 +214,15 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
       #ifdef IPHONE
       inDir = (SpecialDir)NSDocumentDirectory;
       #else
-	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	  #ifndef OBJC_ARC
+	  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	  #endif
       NSString *path = NSHomeDirectory();
       if (path)
          outDir = [path UTF8String];
-      [pool drain];
+	  #ifndef OBJC_ARC
+	  [pool drain];
+	  #endif
       return;
       #endif
    }
@@ -224,7 +233,9 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
       outDir = GetBundleDirectory();
    else
    {
-	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	  #ifndef OBJC_ARC
+	  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	  #endif
       NSUInteger dir_lut[] = { 0, 0, NSDesktopDirectory, NSDocumentDirectory, NSUserDirectory,0  };
       NSArray *paths = NSSearchPathForDirectoriesInDomains(dir_lut[inDir], NSUserDomainMask, YES);
       if (paths && [paths count]>0)
@@ -233,8 +244,9 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
          if (path)
             outDir = [path UTF8String];
       }
-
-      [pool drain];
+	  #ifndef OBJC_ARC
+	  [pool drain];
+	  #endif
    }
 }
 
