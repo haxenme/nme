@@ -9,14 +9,13 @@ import data.NDLL;
 import format.SWF;
 import haxe.Stack;
 import haxe.Template;
+import haxe.io.Path;
 import haxe.xml.Fast;
-import neko.io.File;
-import neko.io.FileOutput;
-import neko.io.Path;
-import neko.FileSystem;
 import neko.Lib;
-import neko.Sys;
 import nme.utils.ByteArray;
+import sys.io.File;
+import sys.io.FileOutput;
+import sys.FileSystem;
 
 
 class InstallerBase {
@@ -1228,7 +1227,7 @@ class InstallerBase {
 	
 	public function parseHXCPPConfig ():Void {
 		
-		var env = neko.Sys.environment();
+		var env = Sys.environment();
 		// If the user has set it themselves, they must know what they are doing...
 		if (env.exists("HXCPP_CONFIG"))
 			return;
@@ -1240,7 +1239,7 @@ class InstallerBase {
 			home = env.get("USERPROFILE");
 		else
 		{
-			neko.Lib.println("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
+			Lib.println("Warning : No 'HOME' variable set - .hxcpp_config.xml might be missing.");
 			return;
 		}
 		
@@ -1254,7 +1253,7 @@ class InstallerBase {
 		
 		defines.set("HXCPP_CONFIG", config);
 		
-		if (neko.FileSystem.exists (config)) {
+		if (FileSystem.exists (config)) {
 			
 			var xml:Fast = null;
 			
@@ -1396,7 +1395,7 @@ class InstallerBase {
 	
 					case "echo":
 						
-						neko.Lib.println (substitute (element.att.value));
+						Lib.println (substitute (element.att.value));
 					
 					case "path":
 						

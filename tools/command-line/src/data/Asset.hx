@@ -1,7 +1,7 @@
 package data;
 
 
-import neko.io.Path;
+import haxe.io.Path;
 
 
 class Asset {

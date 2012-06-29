@@ -1,8 +1,7 @@
 package data;
 
 
-import neko.FileSystem;
-import neko.Sys;
+import sys.FileSystem;
 
 
 class NDLL {

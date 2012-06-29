@@ -1,11 +1,10 @@
 package installers;
 
 
-import neko.io.File;
-import neko.io.Path;
-import neko.io.Process;
+import haxe.io.Path;
 import neko.Lib;
-import neko.Sys;
+import sys.io.File;
+import sys.io.Process;
 
 
 class NekoInstaller extends DesktopInstaller {

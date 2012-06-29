@@ -3,13 +3,13 @@ package setup;
 
 import haxe.Http;
 import haxe.io.Eof;
+import haxe.io.Path;
 import installers.InstallerBase;
-import neko.io.File;
-import neko.io.Path;
 import neko.zip.Reader;
-import neko.FileSystem;
-import neko.Sys;
 import neko.Lib;
+import sys.io.File;
+import sys.io.Process;
+import sys.FileSystem;
 
 
 /**
@@ -910,7 +910,7 @@ class PlatformSetup {
 
 			if (answer != No) {
 
-				var process = new neko.io.Process("uname", ["-m"]);
+				var process = new Process("uname", ["-m"]);
 				var ret = process.stdout.readAll().toString();
 				var ret2 = process.stderr.readAll().toString();
 				process.exitCode(); //you need this to wait till the process is closed!
@@ -1046,9 +1046,9 @@ class Progress extends haxe.io.Output {
 	function bytes(n) {
 		cur += n;
 		if( max == null )
-			neko.Lib.print(cur+" bytes\r");
+			Lib.print(cur+" bytes\r");
 		else
-			neko.Lib.print(cur+"/"+max+" ("+Std.int((cur*100.0)/max)+"%)\r");
+			Lib.print(cur+"/"+max+" ("+Std.int((cur*100.0)/max)+"%)\r");
 	}
 
 	public override function writeByte(c) {
@@ -1069,7 +1069,7 @@ class Progress extends haxe.io.Output {
 		var speed = (cur / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		neko.Lib.print("Download complete : "+cur+" bytes in "+time+"s ("+speed+"KB/s)\n");
+		Lib.print("Download complete : "+cur+" bytes in "+time+"s ("+speed+"KB/s)\n");
 	}
 
 	public override function prepare(m) {

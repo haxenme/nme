@@ -4,14 +4,15 @@ package generate;
 import haxe.io.Bytes;
 import haxe.io.Input;
 import haxe.io.Output;
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.Path;
-import neko.io.Process;
-import neko.Lib;
-import neko.Sys;
-import neko.zip.Reader;
+import haxe.io.Path;
+import haxe.BaseCode;
 import installers.InstallerBase;
+import sys.io.File;
+import sys.io.Process;
+import sys.FileSystem;
+import neko.zip.Compress;
+import neko.zip.Reader;
+import neko.Lib;
 
 
 class GenerateJavaExterns
@@ -706,12 +707,12 @@ class GenerateJavaExterns
 			
 			var class_name =  java_name.substr(0, java_name.length - 4) + "class";
 			
-			var dx = neko.Sys.getEnv("ANDROID_SDK") + "/platforms/android-7/tools/dx";
+			var dx = Sys.getEnv("ANDROID_SDK") + "/platforms/android-7/tools/dx";
 			Sys.command(dx, [ "--dex", "--output=classes.jar", class_name ]);
 			
 			var class_def = File.getBytes("classes.jar");
-			class_def = neko.zip.Compress.run(class_def, 9);
-			var class_str = haxe.BaseCode.encode(class_def.toString(), base64);
+			class_def = Compress.run(class_def, 9);
+			var class_str = BaseCode.encode(class_def.toString(), base64);
 			
 			output("\n   static var classDef = \"" + class_str + "\";\n");
 		}

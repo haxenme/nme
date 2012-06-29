@@ -1,6 +1,6 @@
 
-import neko.io.Process;
 import neko.Lib;
+import sys.io.Process;
 
 
 class Utils {

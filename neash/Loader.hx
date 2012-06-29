@@ -3,13 +3,10 @@ package neash;
 
 #if neko
 import neko.Lib;
-import neko.Sys;
-import neko.io.Process;
 #elseif cpp
 import cpp.Lib;
-import cpp.Sys;
-import cpp.io.Process;
 #end
+import sys.io.Process;
  
 
 class Loader

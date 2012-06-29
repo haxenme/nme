@@ -2,11 +2,12 @@ package data;
 
 
 import haxe.io.BytesOutput;
-import neko.FileSystem;
-import neko.Sys;
+import haxe.io.Path;
 import nme.display.BitmapData;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
+import sys.io.File;
+import sys.FileSystem;
 
 
 class Icons
@@ -30,7 +31,7 @@ class Icons
       for(icon in mIcons)
          if (icon.isSize(inWidth,inHeight))
          {
-            var ext =  neko.io.Path.extension(icon.name).toLowerCase();
+            var ext = Path.extension(icon.name).toLowerCase();
             if (ext=="png" )
             {
                return icon.name;
@@ -44,7 +45,7 @@ class Icons
       var bmp = getIconBitmap(inWidth,inHeight,inDest);
       if (bmp==null)
       {
-         if (!neko.FileSystem.exists(inDest))
+         if (!FileSystem.exists(inDest))
             return false;
       }
       else
@@ -118,7 +119,7 @@ class Icons
       if (found==null)
          return null;
 
-      var ext =  neko.io.Path.extension(found.name).toLowerCase();
+      var ext = Path.extension(found.name).toLowerCase();
 
       if (ext=="svg")
       {
@@ -254,7 +255,7 @@ class Icons
 		if (bytes.length > 0) {
 			
 			var filename = resource_dest + "/icon.icns";
-			var file = neko.io.File.write (filename, true);
+			var file = File.write (filename, true);
 			file.bigEndian = true;
 			
 			for (c in 0...4)
@@ -386,7 +387,7 @@ class Icons
 			if (bmps.length > 0) {
 				
 				name = inTmp + "/icon.ico";
-				var file = neko.io.File.write (name, true);
+				var file = File.write (name, true);
 				file.writeBytes (ico, 0, ico.length);
 				file.close ();
 				

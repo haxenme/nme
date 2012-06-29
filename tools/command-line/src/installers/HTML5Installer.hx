@@ -2,8 +2,8 @@ package installers;
 
 
 import data.Asset;
-import neko.FileSystem;
-import neko.io.Path;
+import haxe.io.Path;
+import sys.FileSystem;
 
 
 /**

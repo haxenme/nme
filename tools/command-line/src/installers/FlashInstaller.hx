@@ -1,24 +1,21 @@
 package installers;
 
 
-import haxe.Int32;
-import haxe.io.Bytes;
-import haxe.SHA1;
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.Path;
-import neko.Lib;
-import neko.Sys;
 import data.Asset;
-import neko.zip.Writer;
-import nme.utils.ByteArray;
-
 import format.swf.Data;
 import format.swf.Constants;
 import format.mp3.Data;
 import format.wav.Data;
-
+import haxe.io.Bytes;
+import haxe.io.Path;
+import haxe.Int32;
+import haxe.SHA1;
+import neko.zip.Writer;
+import neko.Lib;
 import nme.text.Font;
+import nme.utils.ByteArray;
+import sys.io.File;
+import sys.FileSystem;
 
 
 class FlashInstaller extends InstallerBase {
@@ -197,7 +194,7 @@ class FlashInstaller extends InstallerBase {
 		if (type == "music" || type == "sound") {
 			
 			var src = name;
-			var ext = neko.io.Path.extension (src);
+			var ext = Path.extension (src);
 			
 			if (ext != "mp3" && ext != "wav") {
 				

@@ -1,5 +1,6 @@
 import documentation.DocumentationGenerator;
 import haxe.io.Eof;
+import haxe.io.Path;
 import installers.AndroidInstaller;
 import installers.BlackBerryInstaller;
 import installers.CPPInstaller;
@@ -10,13 +11,11 @@ import installers.IOSInstaller;
 import installers.NekoInstaller;
 import installers.WebOSInstaller;
 import generate.GenerateJavaExterns;
-import setup.PlatformSetup;
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.Path;
 import neko.Lib;
-import neko.Sys;
 import nme.Loader;
+import setup.PlatformSetup;
+import sys.io.File;
+import sys.FileSystem;
 
 
 class InstallTool {

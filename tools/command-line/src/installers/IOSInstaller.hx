@@ -3,11 +3,11 @@ package installers;
 
 import data.Asset;
 import data.NDLL;
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.Path;
+import haxe.io.Path;
 import neko.Lib;
-import neko.Sys;
+import sys.io.File;
+import sys.io.Process;
+import sys.FileSystem;
 
 
 class IOSInstaller extends InstallerBase {
@@ -148,16 +148,16 @@ class IOSInstaller extends InstallerBase {
 		
 		if (!defines.exists("IPHONE_VER")) {
 			if (!defines.exists("DEVELOPER_DIR")) {
-		        var proc = new neko.io.Process("xcode-select", ["--print-path"]);
+		        var proc = new Process("xcode-select", ["--print-path"]);
 		        var developer_dir = proc.stdout.readLine();
 		        proc.close();
 		        defines.set("DEVELOPER_DIR", developer_dir);
 		    }
 			var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
          	
-			if (neko.FileSystem.exists (dev_path)) {
+			if (FileSystem.exists (dev_path)) {
 				var best = "";
-            	var files = neko.FileSystem.readDirectory (dev_path);
+            	var files = FileSystem.readDirectory (dev_path);
             	var extract_version = ~/^iPhoneOS(.*).sdk$/;
 				
             	for (file in files) {

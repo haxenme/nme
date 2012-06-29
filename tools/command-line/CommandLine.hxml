@@ -5,3 +5,4 @@
 -lib nme
 -lib swf
 --remap flash:nme
+-D haxe3

@@ -1,10 +1,9 @@
 package installers;
 
 
-import neko.io.Path;
-import neko.io.Process;
+import haxe.io.Path;
+import sys.io.Process;
 import neko.Lib;
-import neko.Sys;
 
 
 class CPPInstaller extends DesktopInstaller {

@@ -1,11 +1,11 @@
 package installers;
 
 
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.Path;
-import neko.Lib;
 import data.Asset;
+import haxe.io.Path;
+import neko.Lib;
+import sys.io.File;
+import sys.FileSystem;
 
 
 class WebOSInstaller extends InstallerBase {
