@@ -283,7 +283,7 @@ class RunScript {
 	}
 	
 
-	public static function runCommand (path:String, command:String, args:Array<String>) {
+	public static function runCommand (path:String, command:String, args:Array<String>):Int {
 		
 		var oldPath:String = "";
 		
@@ -310,11 +310,13 @@ class RunScript {
 			
 		}
 		
-		if (result != 0) {
+		return result;
+		
+		//if (result != 0) {
 			
 			//throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
 			
-		}
+		//}
 		
 	}
 	
@@ -348,7 +350,7 @@ class RunScript {
 		} else {
 			
 			args.unshift ("tools/command-line/command-line.n");
-			runCommand (nmeDirectory, "neko", args);
+			Sys.exit (runCommand (nmeDirectory, "neko", args));
 			
 		}
 		
