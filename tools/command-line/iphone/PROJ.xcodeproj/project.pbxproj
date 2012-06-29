@@ -287,9 +287,11 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = ::CURRENT_ARCHS::;
+				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				::end::
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -316,9 +318,11 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = ::CURRENT_ARCHS::;
+				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				::end::
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				/* COMPRESS_PNG_FILES = NO; */
 				COPY_PHASE_STRIP = YES;
@@ -403,9 +407,11 @@
 		1EF0A880121AE1CE003F2F59 /* Debug */ = {/* Build configuration list for PBXLegacyTarget "Build Haxe" */
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				::end::
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -424,9 +430,11 @@
 		1EF0A881121AE1CE003F2F59 /* Release */ = {/* Build configuration list for PBXLegacyTarget "Build Haxe" */
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				::end::
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

@@ -56,6 +56,7 @@ class IOSInstaller extends InstallerBase {
 
 		context.HAS_ICON = false;
 		context.HAS_LAUNCH_IMAGE = false;
+		context.OBJC_ARC = false;
 		
 		var deployment = Std.parseFloat (iosDeployment);
 		var binaries = iosBinaries;
@@ -82,7 +83,10 @@ class IOSInstaller extends InstallerBase {
 		
 		if (armv7)
 			valid_archs.push("armv7");
-		
+
+		if (iosCompiler == "llvm" || iosCompiler == "clang")
+			context.OBJC_ARC = true;
+
 		context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
 		
 		valid_archs.push("i386");

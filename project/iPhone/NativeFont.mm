@@ -274,7 +274,9 @@ public:
       memset(&mMetrics,0,sizeof(mMetrics));
       mFontTable = 0;
 
+      #ifndef OBJC_ARC
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+      #endif
       // NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
 
       if (!inName.IsSet() || !inName.Get().size())
@@ -324,9 +326,13 @@ public:
                          name = font;
                       }
                    }
+                   #ifndef OBJC_ARC
                    [fontNames release];
+                   #endif
                }
+               #ifndef OBJC_ARC
                [familyNames release];
+               #endif
             }
          }
    
@@ -386,9 +392,11 @@ public:
       }
  
       //printf("Loaded native font : %p\n", mFont);
+      #ifndef OBJC_ARC
       if (mFont)
          [mFont retain];
       [pool drain];
+      #endif
    }
 
    bool IsOk() { return mFont || mCGFont; }
@@ -397,7 +405,9 @@ public:
    {
       if (mFontTable)
         freeFontTable(mFontTable);
+      #ifndef OBJC_ARC
       if (mFont) [mFont release];
+      #endif
       if (mCGFont)
          CGFontRelease( mCGFont );
    }
@@ -454,7 +464,11 @@ public:
       if (inChar<256)
       {
          NSString *str = [[NSString alloc] initWithUTF8String:gGlyphNames[inChar]];
+         #ifndef OBJC_ARC
          int glyph = CGFontGetGlyphWithGlyphName(mCGFont, (__CFString *)str);
+         #else
+         int glyph = CGFontGetGlyphWithGlyphName(mCGFont, (__bridge __CFString *)str);
+         #endif
 
          if (glyph>0)
            return glyph;
@@ -495,8 +509,9 @@ public:
 
    void RenderGlyph(int inChar,const RenderTarget &outTarget)
    {
+      #ifndef OBJC_ARC
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
+      #endif
       CGSize size = CGSizeMake(outTarget.mRect.w, outTarget.mRect.h);
       // Create a context to render into.
       //printf("Drawing at size %dx%d...\n", outTarget.mRect.w, outTarget.mRect.h);
@@ -578,8 +593,9 @@ public:
       CFRelease(imageData); // We're done with this data now.
 
       UIGraphicsEndImageContext();
-
+      #ifndef OBJC_ARC
       [pool drain];
+      #endif
    }
 
    void UpdateMetrics(TextLineMetrics &ioMetrics)

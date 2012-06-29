@@ -1182,8 +1182,6 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                   Extent2DF screen_extent;
                   obj->GetExtent(obj_state->mTransform,screen_extent,true);
                   // Get bounding pixel rect
-                  int x1 = obj_state->mClipRect.x;
-                  int y1 = obj_state->mClipRect.y;
                   rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
                   // Intersect with clip rect ...
@@ -1554,6 +1552,7 @@ void Stage::HandleEvent(Event &inEvent)
             mMouseDownObject->DecRef();
             mMouseDownObject = 0;
             break;
+         default: break;
       }
    }
 
@@ -1568,7 +1567,7 @@ void Stage::HandleEvent(Event &inEvent)
       // Non-cancelled back key ...
       if (inEvent.result==0 && inEvent.code==27 && inEvent.type == etKeyUp)
       {
-          TerminateMainLoop();
+          StopAnimation();
       }
       #endif
       return;
@@ -1768,6 +1767,9 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
 
    switch(align)
    {
+      case saTopLeft: break;
+      case saLeft: break;
+      case saBottomLeft: break;
       case saTopRight:
       case saRight:
       case saBottomRight:
@@ -1781,6 +1783,9 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
 
    switch(align)
    {
+      case saTopLeft: break;
+      case saTopRight: break;
+      case saTop: break;
       case saBottomRight:
       case saBottomLeft:
       case saBottom:

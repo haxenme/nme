@@ -227,6 +227,10 @@ public:
             // If all the channels associated to a Sound will be destroyed,
             // then the Sound itself might be eligible for destruction (if there are
             // no more references to it anywhere else).
+            #ifndef OBJC_ARC
+            [theActualPlayer release];
+            [thePlayerDelegate release];
+            #endif
             theActualPlayer = nil;
             thePlayerDelegate = nil;
           }
@@ -276,6 +280,10 @@ public:
     // If someone calls isComplete() in the future,
     // that function will see the nil and avoid doing another
     // release.
+    #ifndef OBJC_ARC
+    [theActualPlayer release];
+    [thePlayerDelegate release];
+    #endif
     theActualPlayer = nil;
     thePlayerDelegate = nil;
 
@@ -320,6 +328,9 @@ public:
        }
        NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
        NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
+       #ifndef OBJC_ARC
+       [ns_name release];
+       #endif
 
        NSError *err = nil;
 
@@ -330,6 +341,9 @@ public:
        }
 
        theDuration = [theActualPlayer duration] * 1000;
+       #ifndef OBJC_ARC
+       [theActualPlayer release];
+       #endif
    }
    
    AVAudioPlayerSound(unsigned char *inData, int len) : bufferData(inData), len(len)
@@ -720,6 +734,9 @@ public:
       IncRef();
       mBufferID = 0;
 
+          #ifndef OBJC_ARC
+          NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+          #endif
           NSString *url;
           if (inFilename[0] == '/') {
             url = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
@@ -728,9 +745,13 @@ public:
             url = [[NSString alloc] initWithUTF8String:asset.c_str()];
           }
 
-         // get some audio data from a wave file
+         // get some audio data from a wave file 
+         #ifndef OBJC_ARC
+         CFURLRef fileURL = (CFURLRef)[NSURL fileURLWithPath:url];
+         #else
          CFURLRef fileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:url];
- 
+         #endif
+
          if (!fileURL)
          {
             LOG_SOUND("OpenALSound constructor() error in url");
@@ -765,6 +786,9 @@ public:
                alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
             }
          }
+          #ifndef OBJC_ARC
+          [pool drain];
+          #endif
    }
 
    OpenALSound(unsigned char *inData, int len)

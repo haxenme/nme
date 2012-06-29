@@ -1078,10 +1078,38 @@ DEFINE_PRIM(nme_terminate,0);
 
 value nme_close( value force )
 {
-   TerminateMainLoop();
+   StopAnimation();
    return alloc_null();
 }
 DEFINE_PRIM(nme_close,0);
+
+value nme_start_animation()
+{
+   StartAnimation();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_start_animation,0);
+
+value nme_pause_animation()
+{
+   PauseAnimation();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_pause_animation,0);
+
+value nme_resume_animation()
+{
+   ResumeAnimation();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_resume_animation,0);
+
+value nme_stop_animation()
+{
+   StopAnimation();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stop_animation,0);
 
 value nme_stage_set_next_wake(value inStage, value inNextWake)
 {
@@ -2124,7 +2152,6 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       int components = 3;
       int scale_pos = 3;
       int rot_pos = 3;
-      int trans_pos = 3;
 
       if (flags & TILE_TRANS_2x2)
          components+=4;
@@ -2137,10 +2164,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
          if (flags & TILE_ROTATION)
             components++;
       }
-      int rgb_pos = components;
       if (flags & TILE_RGB)
          components+=3;
-      int alpha_pos = components;
       if (flags & TILE_ALPHA)
          components++;
 
@@ -2149,7 +2174,6 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       float *fvals = val_array_float(inXYIDs);
       int max = sheet->Tiles();
       float rgba_buf[] = { 1, 1, 1, 1 };
-      float scale_rot_buf[] = { 1, 1 };
       float trans_2x2_buf[] = { 1, 0, 0, 1 };
       float *rgba = (flags & ( TILE_RGB | TILE_ALPHA)) ? rgba_buf : 0;
       float *trans_2x2 = (flags & ( TILE_TRANS_2x2 | TILE_SCALE | TILE_ROTATION )) ? trans_2x2_buf : 0;
@@ -3254,6 +3278,30 @@ value nme_sound_from_file(value inFilename,value inForceMusic)
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_from_file,2);
+
+value nme_sound_from_data(value inData, value inLen, value inForceMusic)
+{
+   int length = val_int(inLen);
+   Sound *sound;
+   printf("trying bytes with length %d", length);
+   if (!val_is_null(inData) && length > 0) {
+      buffer buf = val_to_buffer(inData);
+      if (buf == 0) {
+         val_throw(alloc_string("Bad ByteArray"));
+      }
+      printf("I'm here! trying bytes with length %d", length);
+      sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+   }
+
+   if (sound)
+   {
+      value result =  ObjectToAbstract(sound);
+      sound->DecRef();
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_from_data, 3);
 
 #define GET_ID3(name) \
   sound->getID3Value(name,val); \

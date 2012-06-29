@@ -14,7 +14,6 @@ namespace nme
 
 typedef std::map<HWND,class WindowsFrame *> FrameMap;
 static FrameMap sgFrameMap;
-void MainLoop();
 
 class DIBSurface : public SimpleSurface
 {
@@ -382,7 +381,7 @@ public:
       switch (uMsg)
       {
          case WM_CLOSE:
-            TerminateMainLoop();
+            StopAnimation();
             break;
          case WM_PAINT:
             {
@@ -542,18 +541,18 @@ void CreateMainFrame(FrameCreationCallback inOnCreate,int inWidth,int inHeight,u
    SetCursor(LoadCursor(0, IDC_ARROW));
    inOnCreate( frame );
 
-	MainLoop();
+	StartAnimation();
 }
 
 
 bool sgDead = false;
 
-void TerminateMainLoop()
+void StopAnimation()
 {
-   sgDead =true;
+   sgDead = true;
 }
 
-void MainLoop()
+void StartAnimation()
 {
    MSG msg;
    while( !sgDead )
@@ -576,7 +575,5 @@ void MainLoop()
 		}
    }
 }
-
-
 
 } // end namespace nme

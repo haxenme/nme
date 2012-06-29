@@ -21,8 +21,6 @@
 namespace nme
 {
 
-void MainLoop();
-
 static int sgDesktopWidth = 320;
 static int sgDesktopHeight = 240;
 static bool sgDead = false;
@@ -281,7 +279,7 @@ public:
 	   const BYTE*	pTsb = m_pInput->GetTsbMap();
 
 		if(pKey[DGXKEY_HOME])
-		   return TerminateMainLoop();
+		   return StopAnimation();
 
 		double now = GetTimeStamp();
 
@@ -517,13 +515,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 	sgDGEFrame->Resize(320,240);
 
-   MainLoop();
+   StartAnimation();
 }
 
 
-void TerminateMainLoop()
+void StopAnimation()
 {
-	//printf("TerminateMainLoop...\n");
+	//printf("StopAnimation...\n");
    // Mix_CloseAudio();
    sgDead = true;
 }
@@ -709,9 +707,9 @@ void ProcessEvent(DGE_Event &inEvent)
 #endif
 
 
-void MainLoop()
+void StartAnimation()
 {
-	//printf("MainLoop....\n");
+	//printf("StartAnimation....\n");
 	// Run Program
 	static int idx = 0;
 	while(!sgDead)

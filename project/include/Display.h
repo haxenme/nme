@@ -505,7 +505,10 @@ enum WindowFlags
    wfHW_AA_HIRES= 0x00000060,
 };
 
-void TerminateMainLoop();
+void StartAnimation();
+void PauseAnimation();
+void ResumeAnimation();
+void StopAnimation();
 
 Stage *IPhoneGetStage();
 

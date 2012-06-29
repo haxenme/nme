@@ -433,6 +433,8 @@
 		The "binaries" attribute can be "armv6", "armv7" or "fat"
 		
 		The "devices" attribute can specify "ipad", "iphone" or "universal"
+
+		The "compiler" attribute enables LLVM/clang and Automatic Reference Counting when set to "llvm"
 		
 		If you select a device, it can set the binaries. For example, if you only want to
 		target the iPad, only armv7 will be required, or if you wish to target both, it will
@@ -440,7 +442,7 @@
 		
 	-->
 	
-	<ios deployment="3.2" binaries="fat" devices="universal" />
+	<ios deployment="3.2" binaries="fat" devices="universal" compiler="gcc" />
 	
 	
 	

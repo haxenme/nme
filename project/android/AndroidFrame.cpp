@@ -300,7 +300,22 @@ void CreateMainFrame( FrameCreationCallback inOnFrame, int inWidth,int inHeight,
 	//__android_log_print(ANDROID_LOG_INFO, "CreateMainFrame", "%dx%d  %p", inWidth,inHeight,sOnFrame);
 }
 
-void TerminateMainLoop()
+void StartAnimation()
+{
+   sCloseActivity = false;
+}
+
+void PauseAnimation()
+{
+   sCloseActivity = true;
+}
+
+void ResumeAnimation()
+{
+   sCloseActivity = false;
+}
+
+void StopAnimation()
 {
    sCloseActivity = true;
 }

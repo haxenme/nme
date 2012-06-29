@@ -23,8 +23,6 @@
 namespace nme
 {
 
-void MainLoop();
-
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 
@@ -779,7 +777,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    inOnFrame(sgSDLFrame);
 
-   MainLoop();
+   StartAnimation();
 }
 
 bool sgDead = false;
@@ -895,7 +893,7 @@ double CapabilitiesGetPixelAspectRatio() {
 #endif
 
 
-void TerminateMainLoop()
+void StopAnimation()
 {
    #ifdef NME_MIXER
    Mix_CloseAudio();
@@ -1179,7 +1177,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #endif
 
 
-void MainLoop()
+void StartAnimation()
 {
    SDL_Event event;
    while(!sgDead)

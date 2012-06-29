@@ -29,11 +29,19 @@ namespace nme { int gFixedOrientation = -1; }
 
 @interface NMEAppDelegate : NSObject <UIApplicationDelegate>
 {
-    UIWindow *window;
-    UIViewController *controller;
+   UIWindow *window;
+   UIViewController *controller;
+   BOOL isRunning;
+   BOOL isPaused;
 }
+- (void) setActive:(BOOL)isActive;
+- (void) startAnimation;
+- (void) pauseAnimation;
+- (void) resumeAnimation;
+- (void) stopAnimation;
 @property (nonatomic, retain) IBOutlet UIWindow *window;
 @property (nonatomic, retain) IBOutlet UIViewController *controller;
+
 @end
 
 
@@ -73,8 +81,6 @@ namespace nme { int gFixedOrientation = -1; }
 @property (nonatomic) NSInteger animationFrameInterval;
 
 - (void) myInit;
-- (void) startAnimation;
-- (void) stopAnimation;
 - (void) drawView:(id)sender;
 - (void) onPoll:(id)sender;
 - (void) enableKeyboard:(bool)withEnable;
@@ -203,7 +209,11 @@ public:
  
          CreateOGLFramebuffer();
       
-         mHardwareContext = HardwareContext::CreateOpenGL(inLayer,mOGLContext);
+         #ifndef OBJC_ARC
+         mHardwareContext = HardwareContext::CreateOpenGL(inLayer, mOGLContext);
+         #else
+         mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)inLayer, (__bridge void *)mOGLContext);
+         #endif
          mHardwareContext->IncRef();
          mHardwareContext->SetWindowSize(backingWidth, backingHeight);
          mHardwareSurface = new HardwareSurface(mHardwareContext);
@@ -244,7 +254,9 @@ public:
          if ([EAGLContext currentContext] == mOGLContext)
             [EAGLContext setCurrentContext:nil];
 
+         #ifndef OBJC_ARC
          [mOGLContext release];
+         #endif
       }
       else
       {
@@ -292,7 +304,9 @@ public:
 
       //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
        
-      if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
+       int framebufferStatus = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
+
+      if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE_OES)
       {
          NSLog(@"Failed to make complete framebuffer object %x",
               glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
@@ -401,20 +415,23 @@ public:
           int size = backingWidth*backingHeight*4;
           CGDataProviderRef dataProvider = CGDataProviderCreateDirect(mImageData[mRenderBuffer], size, &providerCallbacks);
 
-          CGImageRef ref = CGImageCreate( backingWidth, backingHeight,
+          CGImageRef imageRef = CGImageCreate( backingWidth, backingHeight,
                 8, 32, backingWidth*4, colorSpace,
                 kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
                 dataProvider, 0, false, kCGRenderingIntentDefault);
 
-          mLayer.contents =  (objc_object*)ref;
+          #ifndef OBJC_ARC // todo: figure out this cast for LLVM
+          mLayer.contents = (objc_object*)imageRef;
+          #endif
 
           CGDataProviderRelease(dataProvider);
 
-          CGImageRelease(ref);
+          CGImageRelease(imageRef);
 
           mRenderBuffer = 1-mRenderBuffer;
        }
    }
+
    void GetMouse()
    {
       // TODO
@@ -477,27 +494,72 @@ public:
 
 @implementation UIStageViewController
 
+#define UIInterfaceOrientationPortraitMask (1 << UIInterfaceOrientationPortrait)
+#define UIInterfaceOrientationLandscapeLeftMask  (1 << UIInterfaceOrientationLandscapeLeft)
+#define UIInterfaceOrientationLandscapeRightMask  (1 << UIInterfaceOrientationLandscapeRight)
+#define UIInterfaceOrientationPortraitUpsideDownMask  (1 << UIInterfaceOrientationPortraitUpsideDown)
+   
+#define UIInterfaceOrientationLandscapeMask   (UIInterfaceOrientationLandscapeLeftMask | UIInterfaceOrientationLandscapeRightMask)
+#define UIInterfaceOrientationAllMask  (UIInterfaceOrientationPortraitMask | UIInterfaceOrientationLandscapeLeftMask | UIInterfaceOrientationLandscapeRightMask | UIInterfaceOrientationPortraitUpsideDownMask)
+#define UIInterfaceOrientationAllButUpsideDownMask  (UIInterfaceOrientationPortraitMask | UIInterfaceOrientationLandscapeLeftMask | UIInterfaceOrientationLandscapeRightMask)
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-   if (gFixedOrientation>=0)
-      return interfaceOrientation==gFixedOrientation;
+   if (gFixedOrientation >= 0)
+      return interfaceOrientation == gFixedOrientation;
    Event evt(etShouldRotate);
    evt.value = interfaceOrientation;
    sgMainView->mStage->OnEvent(evt);
-
    return evt.result == 2;
 }
 
+- (NSUInteger)supportedInterfaceOrientations
+{
+   int mask = 1;
+   bool isOverridden = false;
+
+   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationLandscapeLeft]) {
+      isOverridden = true;
+      mask = UIInterfaceOrientationLandscapeLeftMask;
+   }
+
+   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationLandscapeRight]) {
+      if (isOverridden) {
+         mask |= UIInterfaceOrientationLandscapeRightMask;
+      } else {
+         isOverridden = true;
+         mask = UIInterfaceOrientationLandscapeRightMask;
+      }
+   }
+
+   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationPortraitUpsideDown]) {
+      if (isOverridden) {
+         mask |= UIInterfaceOrientationPortraitUpsideDownMask;
+      } else {
+         isOverridden = true;
+         mask = UIInterfaceOrientationPortraitUpsideDownMask;
+      }
+   }
+
+   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationPortrait]) {
+      if (isOverridden) {
+         mask |= UIInterfaceOrientationPortraitMask;
+      } else {
+         isOverridden = true;
+         mask = UIInterfaceOrientationPortraitMask;
+      }
+   }
+
+   if (!isOverridden) {
+      mask = UIInterfaceOrientationAllMask;
+   }
+   return mask;
+}
 
 - (void)loadView
 {
    UIStageView *view = [[UIStageView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    self.view = view;
-   //[view release];
-}
-- (void)dealloc
-{
-    [super dealloc];
 }
 
 @end
@@ -571,7 +633,6 @@ public:
 	      if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
 	      {
 		      mStage->mDPIScale = [[UIScreen mainScreen] scale];
-            printf("Using DPI scale %f\n", mStage->mDPIScale);
 		      self.contentScaleFactor = mStage->mDPIScale;
 	      }
       }
@@ -815,7 +876,12 @@ public:
           //  delegate all the events to ourselves..
           if (mTextField==nil)
           {
+             #ifndef OBJC_ARC
              mTextField = [[[UITextField alloc] initWithFrame: CGRectMake(0,0,0,0)] autorelease];
+             #else
+             mTextField = [[UITextField alloc] initWithFrame: CGRectMake(0,0,0,0)];
+             #endif
+
              mTextField.delegate = self;
              /* placeholder so there is something to delete! (from SDL code) */
              mTextField.text = @" ";   
@@ -862,81 +928,7 @@ public:
       mStage->OnSoftwareResize(self.layer);
 }
 
-- (NSInteger) animationFrameInterval
-{
-   return animationFrameInterval;
-}
-
-- (void) setAnimationFrameInterval:(NSInteger)frameInterval
-{
-   // Frame interval defines how many display frames must pass between each time the
-   // display link fires. The display link will only fire 30 times a second when the
-   // frame internal is two on a display that refreshes 60 times a second. The default
-   // frame interval setting of one will fire 60 times a second when the display refreshes
-   // at 60 times a second. A frame interval setting of less than one results in undefined
-   // behavior.
-   if (frameInterval >= 1)
-   {
-      animationFrameInterval = frameInterval;
-      
-      if (animating)
-      {
-         [self stopAnimation];
-         [self startAnimation];
-      }
-   }
-}
-
-- (void) startAnimation
-{
-   if (!animating)
-   {
-      /*
-      if (displayLinkSupported)
-      {
-         // CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions
-         // will result in a warning, but can be dismissed
-         // if the system version runtime check for CADisplayLink exists in -initWithCoder:.
-         // The runtime check ensures this code will
-         // not be called in system versions earlier than 3.1.
-
-         displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawView:)];
-         [displayLink setFrameInterval:animationFrameInterval];
-         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-      }
-      else
-      */
-
-         //animationTimer = [NSTimer
-             //scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval)
-             //scheduledTimerWithTimeInterval:(NSTimeInterval)(0.0001)
-             //target:self selector:@selector(onPoll:)
-             //userInfo:nil
-             //repeats:TRUE];
-      
-      animating = TRUE;
-   }
-}
-
-- (void)stopAnimation
-{
-   if (animating)
-   {
-      if (displayLinkSupported)
-      {
-         [displayLink invalidate];
-         displayLink = nil;
-      }
-      else
-      {
-         //[animationTimer invalidate];
-         animationTimer = nil;
-      }
-      
-      animating = FALSE;
-   }
-}
-
+#ifndef OBJC_ARC
 - (void) dealloc
 {
     if (mStage) mStage->DecRef();
@@ -945,12 +937,12 @@ public:
    
     [super dealloc];
 }
+#endif
 
 @end
 
 
 double sgWakeUp = 0.0;
-bool sgTerminated = false;
 
 // --- NMEAppDelegate ----------------------------------------------------------
 
@@ -968,7 +960,7 @@ public:
 @synthesize window;
 @synthesize controller;
 
-namespace nme { void MainLoop(); }
+namespace nme {}
 
 - (void) applicationDidFinishLaunching:(UIApplication *)application
 {
@@ -978,17 +970,26 @@ namespace nme { void MainLoop(); }
    UIStageViewController  *c = [[UIStageViewController alloc] init];
    controller = c;
    [win addSubview:c.view];
-   //[c release];
-   //[win release];
+   self.window.rootViewController = c;
    nme_app_set_active(true);
    application.idleTimerDisabled = YES;
    sOnFrame( new UIViewFrame() );
-
-   [self performSelectorOnMainThread:@selector(mainLoop) withObject:nil waitUntilDone:NO];
 }
 
 - (void) mainLoop {
-   while(!sgTerminated)
+   isRunning = YES;
+   while (isRunning) {
+      while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
+
+      /*if (paused) {
+         usleep(250000); // Sleep for a quarter of a second (250,000 microseconds) so that the framerate is 4 fps.
+      }*/
+      
+      sgMainView->mStage->OnPoll();
+      
+      while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
+   }
+   /*while(!sgTerminated)
    {
        double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
        if (delta<0) delta = 0;
@@ -996,24 +997,54 @@ namespace nme { void MainLoop(); }
        {
           sgMainView->mStage->OnPoll();
        }
-   }
+   }*/
 }
 
+- (void) startAnimation
+{
+   if (!isPaused)
+      [self performSelectorOnMainThread:@selector(mainLoop) withObject:nil waitUntilDone:NO];
+}
 
+- (void) pauseAnimation
+{
+   isPaused = YES;
+   [self stopAnimation];
+}
 
+- (void) resumeAnimation
+{
+   isPaused = NO;
+   [self startAnimation];
+}
 
+- (void) stopAnimation
+{
+   isRunning = NO;
+}
 
-- (void) applicationWillResignActive:(UIApplication *)application {nme_app_set_active(false);} 
-- (void) applicationDidBecomeActive:(UIApplication *)application {nme_app_set_active(true); }
-- (void)applicationWillTerminate:(UIApplication *)application { nme_app_set_active(false); }
+- (void) setActive:(BOOL)isActive
+{
+   if (isActive) {
+      [self startAnimation];
+   } else {
+      [self stopAnimation];
+   }
+   nme_app_set_active(isActive);
+}
 
+- (void) applicationWillResignActive:(UIApplication *)application {[self setActive:false];} 
+- (void) applicationDidBecomeActive:(UIApplication *)application {[self setActive:true];} 
+- (void) applicationWillTerminate:(UIApplication *)application {[self setActive:false];} 
 
+#ifndef OBJC_ARC
 - (void) dealloc
 {
-	[window release];
-	[controller release];
-	[super dealloc];
+   [window release];
+   [controller release];
+   [super dealloc];
 }
+#endif
 
 @end
 
@@ -1041,7 +1072,22 @@ namespace nme
 {
 Stage *IPhoneGetStage() { return sgMainView->mStage; }
 
-void TerminateMainLoop() { sgTerminated=true; }
+void StartAnimation() {
+   NMEAppDelegate *appDelegate = (NMEAppDelegate *)[[UIApplication sharedApplication] delegate];
+   [appDelegate startAnimation];
+}
+void PauseAnimation() {
+   NMEAppDelegate *appDelegate = (NMEAppDelegate *)[[UIApplication sharedApplication] delegate];
+   [appDelegate pauseAnimation];
+}
+void ResumeAnimation() {
+   NMEAppDelegate *appDelegate = (NMEAppDelegate *)[[UIApplication sharedApplication] delegate];
+   [appDelegate resumeAnimation];
+}
+void StopAnimation() {
+   NMEAppDelegate *appDelegate = (NMEAppDelegate *)[[UIApplication sharedApplication] delegate];
+   [appDelegate stopAnimation];
+}
 void SetNextWakeUp(double inWakeUp) { sgWakeUp = inWakeUp; }
 
 int GetDeviceOrientation() {
@@ -1111,9 +1157,14 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    if (!sgHardwareRendering)
       gC0IsRed = false;
 
+
+   #ifndef OBJC_ARC
    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   #endif
    UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
+   #ifndef OBJC_ARC
    [pool release];
+   #endif
 }
 
 bool GetAcceleration(double &outX, double &outY, double &outZ)
@@ -1191,8 +1242,9 @@ FILE *OpenOverwrite(const char *inName)
 	}
 
     FILE * result = fopen([path cStringUsingEncoding:1],"w");
-
+    #ifndef OBJC_ARC
     [str release];
+    #endif
     return result;
 }
 
@@ -1210,9 +1262,9 @@ void nme_app_set_active(bool inActive)
    }
 
    if (inActive)
-      [ sgMainView startAnimation ];
+      nme::StartAnimation();
    else
-      [ sgMainView stopAnimation ];
+      nme::StopAnimation();
 }
 
 

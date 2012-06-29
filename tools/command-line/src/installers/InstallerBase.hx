@@ -46,6 +46,7 @@ class InstallerBase {
 	private var iosDeployment:String;
 	private var iosBinaries:String;
 	private var iosDevices:String;
+	private var iosCompiler:String;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -66,6 +67,7 @@ class InstallerBase {
       iosDeployment = "3.2";
       iosBinaries = "armv6";
       iosDevices = "universal";
+      iosCompiler = "gcc";
 		
 	}
 	
@@ -1755,6 +1757,8 @@ class InstallerBase {
                      iosBinaries = substitute(element.att.binaries);
 						if (element.has.devices)
                      iosDevices = substitute(element.att.devices);
+						if (element.has.compiler)
+                     iosCompiler = substitute(element.att.compiler);
 					
 				}
 				
