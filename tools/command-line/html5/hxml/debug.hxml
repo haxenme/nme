@@ -3,3 +3,4 @@
 -cp ::BUILD_DIR::/html5/haxe
 --remap flash:nme
 -debug
+--js-modern
