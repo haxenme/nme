@@ -78,15 +78,24 @@ class HTML5Installer extends InstallerBase {
 		
 		if (InstallTool.isWindows) {
 			
-			runCommand (destination, ".\\index.html", []);
+			if (defines.exists ("DEV_URL"))
+				runCommand (destination, defines.get("DEV_URL"), []);
+			else
+				runCommand (destination, ".\\index.html", []);
 			
 		} else if (InstallTool.isMac) {
 			
-			runCommand (destination, "open", [ "index.html" ]);
+			if (defines.exists ("DEV_URL"))
+				runCommand (destination, "open", [ defines.get("DEV_URL") ]);
+			else
+				runCommand (destination, "open", [ "index.html" ]);
 			
 		} else {
 			
-			runCommand (destination, "xdg-open", [ "index.html" ]);
+			if (defines.exists ("DEV_URL"))
+				runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
+			else
+				runCommand (destination, "xdg-open", [ "index.html" ]);
 			
 		}
 		

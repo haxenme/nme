@@ -27,9 +27,22 @@ class ApplicationMain {
 		}
 		::end::
 		
+		::if (WEB!="")::
+		haxe.Log.trace = flashTrace;
+		::end::
+
 		if (call_real)
 			begin ();
 	}
+
+	private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
+		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
+		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
+
+        if (flash.external.ExternalInterface.available)
+			flash.external.ExternalInterface.call("console.log", message);
+		else untyped flash.Boot.__trace(v, pos);
+    }
 	
 	private static function begin () {
 		

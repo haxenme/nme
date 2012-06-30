@@ -22,7 +22,10 @@ class FlashInstaller extends InstallerBase {
 	
 	
 	override function build ():Void {
-		
+
+		if (defines.exists ("DEV_URL") 
+				|| targetFlags.exists("web") || targetFlags.exists("chrome") || targetFlags.exists("opera"))
+			defines.set("WEB", "true");
 		var destination:String = buildDirectory + "/flash/bin";
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -72,8 +75,9 @@ class FlashInstaller extends InstallerBase {
 			output.close ();
 			
 		}
-		
-		if (targetFlags.exists ("web")) {
+
+		if (targetFlags.exists ("web") 
+			|| defines.exists ("DEV_URL") && !targetFlags.exists ("chrome") && !targetFlags.exists ("opera")) {
 			
 			recursiveCopy (NME + "/tools/command-line/flash/templates/web", buildDirectory + "/flash/bin");
 			
@@ -591,20 +595,37 @@ class FlashInstaller extends InstallerBase {
 		if (player == null || player == "") {
 			
 			var dotSlash:String = "./";
-			
+
+			var filename:String;
+			if (targetFlags.exists ("web") || targetFlags.exists ("chrome") || targetFlags.exists ("opera"))
+				filename = "index.html";
+			else
+				filename = defines.get ("APP_FILE") + ".swf";
+
 			if (InstallTool.isWindows) {
 				
-				runCommand (destination, ".\\" + defines.get ("APP_FILE") + ".swf", []);
+				if (defines.exists ("DEV_URL"))
+					runCommand (destination, defines.get("DEV_URL"), []);
+				else
+					runCommand (destination, ".\\" + filename, []);
 				
 			} else if (InstallTool.isMac) {
 				
-				runCommand (destination, "open", [ defines.get ("APP_FILE") + ".swf" ]);
+				if (defines.exists ("DEV_URL"))
+					runCommand (destination, "open", [ defines.get("DEV_URL") ]);
+				else
+					runCommand (destination, "open", [ filename ]);
 				
 			} else {
 				
-				runCommand (destination, "xdg-open", [ defines.get ("APP_FILE") + ".swf" ]);
+				if (defines.exists ("DEV_URL"))
+					runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
+				else
+					runCommand (destination, "xdg-open", [ filename ]);
 				
 			}
+
+
 			
 		} else {
 			
