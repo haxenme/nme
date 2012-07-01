@@ -12,9 +12,9 @@ extern class ExternalInterface {
 
 
 #elseif (cpp || neko)
-typedef ExternalInterface = neash.events.ExternalInterface;
+typedef ExternalInterface = neash.external.ExternalInterface;
 #elseif js
-typedef ExternalInterface = jeash.events.ExternalInterface;
+typedef ExternalInterface = jeash.external.ExternalInterface;
 #else
-typedef ExternalInterface = flash.events.ExternalInterface;
+typedef ExternalInterface = flash.external.ExternalInterface;
 #end

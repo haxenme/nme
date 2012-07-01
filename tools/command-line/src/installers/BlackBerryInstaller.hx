@@ -216,24 +216,11 @@ class BlackBerryInstaller extends InstallerBase {
 			
 			if (targetFlags.exists ("simulator")) {
 				
-				if (FileSystem.exists (destination + deviceLib)) {
-					
-					FileSystem.deleteFile (destination + deviceLib);
-					
-				}
-				
-				copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
 				File.copy (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + deviceLib);
 				
 			} else {
 				
-				if (FileSystem.exists (destination + simulatorLib)) {
-					
-					FileSystem.deleteFile (destination + simulatorLib);
-					
-				}
-				
-				copyIfNewer (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
+				File.copy (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
 				
 			}
 			
