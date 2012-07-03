@@ -31,7 +31,7 @@ package nme.display;
 	 * 
 	 * @param bitmap A transparent or opaque bitmap image that contains the bits
 	 *               to be displayed.
-	 * @param matrix A matrix object (of the flash.geom.Matrix class), which you
+	 * @param matrix A matrix object (of the nme.geom.Matrix class), which you
 	 *               can use to define transformations on the bitmap. For
 	 *               example, you can use the following matrix to rotate a bitmap
 	 *               by 45 degrees (pi/4 radians):
@@ -90,7 +90,7 @@ package nme.display;
 	 *                            <code>GradientType.LINEAR</code> or
 	 *                            <code>GradientType.RADIAL</code>.
 	 * @param matrix              A transformation matrix as defined by the
-	 *                            flash.geom.Matrix class. The flash.geom.Matrix
+	 *                            nme.geom.Matrix class. The nme.geom.Matrix
 	 *                            class includes a
 	 *                            <code>createGradientBox()</code> method, which
 	 *                            lets you conveniently set up the matrix for use
@@ -168,7 +168,7 @@ package nme.display;
 	 *               changes made to the shader, such as changing a parameter
 	 *               value, input, or bytecode, are not applied to the copied
 	 *               shader that's used for the fill.</p>
-	 * @param matrix A matrix object (of the flash.geom.Matrix class), which you
+	 * @param matrix A matrix object (of the nme.geom.Matrix class), which you
 	 *               can use to define transformations on the shader. For
 	 *               example, you can use the following matrix to rotate a shader
 	 *               by 45 degrees (pi/4 radians):
@@ -442,7 +442,7 @@ package nme.display;
 	 * 
 	 * @param bitmap The bitmap to use for the line stroke.
 	 * @param matrix An optional transformation matrix as defined by the
-	 *               flash.geom.Matrix class. The matrix can be used to scale or
+	 *               nme.geom.Matrix class. The matrix can be used to scale or
 	 *               otherwise manipulate the bitmap before applying it to the
 	 *               line style.
 	 * @param repeat Whether to repeat the bitmap in a tiled fashion.
@@ -475,7 +475,7 @@ package nme.display;
 	 *                            specifies which gradient type to use, either
 	 *                            GradientType.LINEAR or GradientType.RADIAL.
 	 * @param matrix              A transformation matrix as defined by the
-	 *                            flash.geom.Matrix class. The flash.geom.Matrix
+	 *                            nme.geom.Matrix class. The nme.geom.Matrix
 	 *                            class includes a
 	 *                            <code>createGradientBox()</code> method, which
 	 *                            lets you conveniently set up the matrix for use
@@ -527,7 +527,7 @@ package nme.display;
 	 * 
 	 * @param shader The shader to use for the line stroke.
 	 * @param matrix An optional transformation matrix as defined by the
-	 *               flash.geom.Matrix class. The matrix can be used to scale or
+	 *               nme.geom.Matrix class. The matrix can be used to scale or
 	 *               otherwise manipulate the bitmap before applying it to the
 	 *               line style.
 	 */

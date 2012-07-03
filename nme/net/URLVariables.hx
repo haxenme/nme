@@ -6,7 +6,7 @@ package nme.net;
  * The URLVariables class allows you to transfer variables between an
  * application and a server. Use URLVariables objects with methods of the
  * URLLoader class, with the <code>data</code> property of the URLRequest
- * class, and with flash.net package functions.
+ * class, and with nme.net package functions.
  */
 extern class URLVariables implements Dynamic {
 

@@ -8,7 +8,7 @@ package nme.system;
  * with shared objects and the use of the Clipboard.
  *
  * <p>Additional properties and methods are in other classes within the
- * flash.system package: the Capabilities class, the IME class, and the
+ * nme.system package: the Capabilities class, the IME class, and the
  * Security class.</p>
  *
  * <p>This class contains only static methods and properties. You cannot

@@ -424,7 +424,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * shared objects that ActionScript 2.0 or 1.0 SWF files can read, set
 	 * <code>SharedObject.defaultObjectEncoding</code> to use the ActionScript
 	 * 1.0 or ActionScript 2.0 format,
-	 * <code>flash.net.ObjectEncoding.AMF0</code>, at the beginning of your
+	 * <code>nme.net.ObjectEncoding.AMF0</code>, at the beginning of your
 	 * script, before you create any local shared objects. All local shared
 	 * objects created thereafter will use AMF0 encoding and can interact with
 	 * older content. You cannot change the <code>objectEncoding</code> value of

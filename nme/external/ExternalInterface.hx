@@ -152,7 +152,7 @@ extern class ExternalInterface {
 	 *                       ActionScript:
 	 *
 	 *
-	 *                       <p><code>flash.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
+	 *                       <p><code>nme.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
 	 *                       </li>
 	 *                       </ol>
 	 */
@@ -225,7 +225,7 @@ extern class ExternalInterface {
 	 *                       ActionScript:
 	 *
 	 *
-	 *                       <p><code>flash.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
+	 *                       <p><code>nme.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
 	 *                       </li>
 	 *                       </ol>
 	 */

@@ -95,10 +95,10 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The type of anti-aliasing used for this text field. Use
-	 * <code>flash.text.AntiAliasType</code> constants for this property. You can
+	 * <code>nme.text.AntiAliasType</code> constants for this property. You can
 	 * control this setting only if the font is embedded (with the
 	 * <code>embedFonts</code> property set to <code>true</code>). The default
-	 * setting is <code>flash.text.AntiAliasType.NORMAL</code>.
+	 * setting is <code>nme.text.AntiAliasType.NORMAL</code>.
 	 *
 	 * <p>To set values for this property, use the following string values:</p>
 	 */
@@ -144,7 +144,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * fixed.</p>
 	 * 
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
-	 *                       of flash.text.TextFieldAutoSize.
+	 *                       of nme.text.TextFieldAutoSize.
 	 */
 	var autoSize : TextFieldAutoSize;
 
@@ -284,14 +284,14 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The type of grid fitting used for this text field. This property applies
-	 * only if the <code>flash.text.AntiAliasType</code> property of the text
-	 * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>.
+	 * only if the <code>nme.text.AntiAliasType</code> property of the text
+	 * field is set to <code>nme.text.AntiAliasType.ADVANCED</code>.
 	 *
 	 * <p>The type of grid fitting used determines whether Flash Player forces
 	 * strong horizontal and vertical lines to fit to a pixel or subpixel grid,
 	 * or not at all.</p>
 	 *
-	 * <p>For the <code>flash.text.GridFitType</code> property, you can use the
+	 * <p>For the <code>nme.text.GridFitType</code> property, you can use the
 	 * following string values:</p>
 	 * 
 	 * @default pixel
@@ -486,8 +486,8 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The sharpness of the glyph edges in this text field. This property applies
-	 * only if the <code>flash.text.AntiAliasType</code> property of the text
-	 * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>. The range
+	 * only if the <code>nme.text.AntiAliasType</code> property of the text
+	 * field is set to <code>nme.text.AntiAliasType.ADVANCED</code>. The range
 	 * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
 	 * set <code>sharpness</code> to a value outside that range, Flash sets the
 	 * property to the nearest value in the range (either -400 or 400).
@@ -559,8 +559,8 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The thickness of the glyph edges in this text field. This property applies
-	 * only when <code>flash.text.AntiAliasType</code> is set to
-	 * <code>flash.text.AntiAliasType.ADVANCED</code>.
+	 * only when <code>nme.text.AntiAliasType</code> is set to
+	 * <code>nme.text.AntiAliasType.ADVANCED</code>.
 	 *
 	 * <p>The range for <code>thickness</code> is a number from -200 to 200. If
 	 * you attempt to set <code>thickness</code> to a value outside that range,
@@ -579,7 +579,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * 
 	 * @default dynamic
 	 * @throws ArgumentError The <code>type</code> specified is not a member of
-	 *                       flash.text.TextFieldType.
+	 *                       nme.text.TextFieldType.
 	 */
 	var type : TextFieldType;
 
@@ -888,10 +888,10 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Returns true if an embedded font is available with the specified
 	 * <code>fontName</code> and <code>fontStyle</code> where
-	 * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
+	 * <code>Font.fontType</code> is <code>nme.text.FontType.EMBEDDED</code>.
 	 * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
 	 * SWF file. Normal embedded fonts are only used with TextField objects. CFF
-	 * embedded fonts are only used with the flash.text.engine classes. The two
+	 * embedded fonts are only used with the nme.text.engine classes. The two
 	 * types are distinguished by the <code>fontType</code> property of the
 	 * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
 	 * function.
@@ -908,11 +908,11 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * 
 	 * @param fontName  The name of the embedded font to check.
 	 * @param fontStyle Specifies the font style to check. Use
-	 *                  <code>flash.text.FontStyle</code>
+	 *                  <code>nme.text.FontStyle</code>
 	 * @return <code>true</code> if a compatible embedded font is available,
 	 *         otherwise <code>false</code>.
 	 * @throws ArgumentError The <code>fontStyle</code> specified is not a member
-	 *                       of <code>flash.text.FontStyle</code>.
+	 *                       of <code>nme.text.FontStyle</code>.
 	 */
 	@:require(flash10) static function isFontCompatible(fontName : String, fontStyle : String) : Bool;
 }

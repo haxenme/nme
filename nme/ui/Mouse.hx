@@ -15,7 +15,7 @@ extern class Mouse {
 	 * Sets or returns the type of cursor, or, for a native cursor, the cursor
 	 * name.
 	 *
-	 * <p>The default value is <code>flash.ui.MouseCursor.AUTO</code>.</p>
+	 * <p>The default value is <code>nme.ui.MouseCursor.AUTO</code>.</p>
 	 *
 	 * <p>To set values for this property, use the following string values:</p>
 	 *
@@ -23,10 +23,10 @@ extern class Mouse {
 	 * property sets or gets the cursor name when you are using a native cursor.
 	 * A native cursor name defined using <code>Mouse.registerCursor()</code>
 	 * overwrites currently predefined cursor types (such as
-	 * <code>flash.ui.MouseCursor.IBEAM</code>).</p>
+	 * <code>nme.ui.MouseCursor.IBEAM</code>).</p>
 	 * 
 	 * @throws ArgumentError If set to any value which is not a member of
-	 *                       <code>flash.ui.MouseCursor</code>, or is not a
+	 *                       <code>nme.ui.MouseCursor</code>, or is not a
 	 *                       string specified using the
 	 *                       <code>Mouse.registerCursor()</code> method.
 	 */

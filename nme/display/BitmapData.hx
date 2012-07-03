@@ -51,7 +51,7 @@ package nme.display;
  * object . You can use the methods of the BitmapData class to create
  * arbitrarily sized transparent or opaque bitmap images and manipulate them
  * in various ways at runtime. You can also access the BitmapData for a bitmap
- * image that you load with the <code>flash.display.Loader</code> class.
+ * image that you load with the <code>nme.display.Loader</code> class.
  *
  * <p>This class lets you separate bitmap rendering operations from the
  * internal display updating routines of Flash Player. By manipulating a
@@ -436,7 +436,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                       parameter to a ColorTransform object created with
 	 *                       the default <code>new ColorTransform()</code>
 	 *                       constructor.
-	 * @param blendMode      A string value, from the flash.display.BlendMode
+	 * @param blendMode      A string value, from the nme.display.BlendMode
 	 *                       class, specifying the blend mode to be applied to
 	 *                       the resulting bitmap.
 	 * @param clipRect       A Rectangle object that defines the area of the

@@ -144,7 +144,7 @@ package nme.display;
  *                               <code>gesturePan</code> event, or all if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -184,7 +184,7 @@ package nme.display;
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
- *                               flash.ui.Multitouch class to manage touch
+ *                               nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -231,7 +231,7 @@ package nme.display;
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
- *                               flash.ui.Multitouch class to manage touch
+ *                               nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -323,7 +323,7 @@ package nme.display;
  *                               <code>gestureTwoFingerTap</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -366,7 +366,7 @@ package nme.display;
  *                               <code>gestureZoom</code> event, or all if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -782,7 +782,7 @@ package nme.display;
  *                               <code>touchBegin</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -814,7 +814,7 @@ package nme.display;
  *                               event or a <code>touchEnd</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -847,7 +847,7 @@ package nme.display;
  *                               <code>touchMove</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -881,7 +881,7 @@ package nme.display;
  *                               event or a <code>touchOut</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -916,7 +916,7 @@ package nme.display;
  *                               <code>touchOver</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -951,7 +951,7 @@ package nme.display;
  *                               <code>touchRollOut</code> event, or both if
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
- *                               Use the flash.ui.Multitouch class to manage
+ *                               Use the nme.ui.Multitouch class to manage
  *                               touch event handling (enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
@@ -986,7 +986,7 @@ package nme.display;
  *                               <code>touchRollOver</code> event, or both if
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
- *                               Use the flash.ui.Multitouch class to manage
+ *                               Use the nme.ui.Multitouch class to manage
  *                               touch event handling (enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
@@ -1021,7 +1021,7 @@ package nme.display;
  *                               event or a <code>touchTap</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -1103,7 +1103,7 @@ extern class InteractiveObject extends DisplayObject {
 	 * events). Any children of this instance on the display list are not
 	 * affected. To change the <code>mouseEnabled</code> behavior for all
 	 * children of an object on the display list, use
-	 * <code>flash.display.DisplayObjectContainer.mouseChildren</code>.
+	 * <code>nme.display.DisplayObjectContainer.mouseChildren</code>.
 	 *
 	 * <p> No event is dispatched by setting this property. You must use the
 	 * <code>addEventListener()</code> method to create interactive

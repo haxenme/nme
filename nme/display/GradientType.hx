@@ -5,7 +5,7 @@ package nme.display;
 /**
  * The GradientType class provides values for the <code>type</code> parameter
  * in the <code>beginGradientFill()</code> and
- * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+ * <code>lineGradientStyle()</code> methods of the nme.display.Graphics
  * class.
  */
 @:fakeEnum(String) extern enum GradientType {

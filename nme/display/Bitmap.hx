@@ -4,7 +4,7 @@ package nme.display;
 
 /**
  * The Bitmap class represents display objects that represent bitmap images.
- * These can be images that you load with the flash.display.Loader class, or
+ * These can be images that you load with the nme.display.Loader class, or
  * they can be images that you create with the <code>Bitmap()</code>
  * constructor.
  *

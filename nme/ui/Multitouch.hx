@@ -21,11 +21,11 @@ package nme.ui;
  *
  * <p>
  * <ul>
- *   <li>flash.events.TouchEvent</li>
- *   <li>flash.events.GestureEvent</li>
- *   <li>flash.events.GesturePhase</li>
- *   <li>flash.events.TransformGestureEvent</li>
- *   <li>flash.events.PressAndTapGestureEvent</li>
+ *   <li>nme.events.TouchEvent</li>
+ *   <li>nme.events.GestureEvent</li>
+ *   <li>nme.events.GesturePhase</li>
+ *   <li>nme.events.TransformGestureEvent</li>
+ *   <li>nme.events.PressAndTapGestureEvent</li>
  * </ul>
  * </p>
  *
@@ -48,7 +48,7 @@ package nme.ui;
 	 * events with multiple points of contact and specific events for different
 	 * gestures (such as rotation and pan), or only a single point of contact
 	 * (such as tap), or none at all (contact is handled as a mouse event). To
-	 * set this property, use values from the flash.ui.MultitouchInputMode class.
+	 * set this property, use values from the nme.ui.MultitouchInputMode class.
 	 * 
 	 * @default gesture
 	 */

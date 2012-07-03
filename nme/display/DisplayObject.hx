@@ -290,7 +290,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 
 	/**
 	 * An indexed array that contains each filter object currently associated
-	 * with the display object. The flash.filters package contains several
+	 * with the display object. The nme.filters package contains several
 	 * classes that define specific filters you can use.
 	 *
 	 * <p>Filters can be applied in Flash Professional at design time, or at run
@@ -345,7 +345,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * long as the display object does not change, the final image does not need
 	 * updating.</p>
 	 *
-	 * <p>The flash.filters package includes classes for filters. For example, to
+	 * <p>The nme.filters package includes classes for filters. For example, to
 	 * create a DropShadow filter, you would write:</p>
 	 * 
 	 * @throws ArgumentError When <code>filters</code> includes a ShaderFilter

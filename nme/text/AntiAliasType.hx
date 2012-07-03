@@ -4,7 +4,7 @@ package nme.text;
 
 /**
  * The AntiAliasType class provides values for anti-aliasing in the
- * flash.text.TextField class.
+ * nme.text.TextField class.
  */
 @:fakeEnum(String) extern enum AntiAliasType {
 

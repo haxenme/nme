@@ -15,12 +15,12 @@ package nme.display;
  *
  * <ul>
  *   <li>The <code>sourceChannel</code> and <code>destChannel</code>
- * parameters of the <code>flash.display.BitmapData.copyChannel()</code>
+ * parameters of the <code>nme.display.BitmapData.copyChannel()</code>
  * method</li>
  *   <li>The <code>channelOptions</code> parameter of the
- * <code>flash.display.BitmapData.noise()</code> method</li>
- *   <li>The <code>flash.filters.DisplacementMapFilter.componentX</code> and
- * <code>flash.filters.DisplacementMapFilter.componentY</code> properties</li>
+ * <code>nme.display.BitmapData.noise()</code> method</li>
+ *   <li>The <code>nme.filters.DisplacementMapFilter.componentX</code> and
+ * <code>nme.filters.DisplacementMapFilter.componentY</code> properties</li>
  * </ul>
  */
 extern class BitmapDataChannel {

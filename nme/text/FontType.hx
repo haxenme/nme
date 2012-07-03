@@ -40,7 +40,7 @@ package nme.text;
 	 * SWF file.</p>
 	 *
 	 * <p>Fonts of type <code>EMBEDDED</code> can only be used by TextField. If
-	 * flash.text.engine classes are directed to use such a font they will fall
+	 * nme.text.engine classes are directed to use such a font they will fall
 	 * back to device fonts.</p>
 	 */
 	EMBEDDED;

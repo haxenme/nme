@@ -288,7 +288,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>
@@ -364,7 +364,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>
@@ -519,7 +519,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>
@@ -615,7 +615,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>

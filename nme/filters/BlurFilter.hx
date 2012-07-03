@@ -107,11 +107,11 @@ package nme.filters;
 	 *                the quality using the BitmapFilterQuality constants:
 	 *                <ul>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.LOW</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.LOW</code></li>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.MEDIUM</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.MEDIUM</code></li>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.HIGH</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.HIGH</code></li>
 	 *                </ul>
 	 *
 	 *                <p>High quality approximates a Gaussian blur. For most

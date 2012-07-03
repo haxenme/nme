@@ -12,7 +12,7 @@ package nme.display;
  * <p>You can access LoaderInfo objects in two ways: </p>
  *
  * <ul>
- *   <li>The <code>contentLoaderInfo</code> property of a flash.display.Loader
+ *   <li>The <code>contentLoaderInfo</code> property of a nme.display.Loader
  * object— The <code>contentLoaderInfo</code> property is always available
  * for any Loader object. For a Loader object that has not called the
  * <code>load()</code> or <code>loadBytes()</code> method, or that has not

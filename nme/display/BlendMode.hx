@@ -7,9 +7,9 @@ package nme.display;
  * constants are used in the following:
  * <ul>
  *   <li> The <code>blendMode</code> property of the
- * flash.display.DisplayObject class.</li>
+ * nme.display.DisplayObject class.</li>
  *   <li> The <code>blendMode</code> parameter of the <code>draw()</code>
- * method of the flash.display.BitmapData class</li>
+ * method of the nme.display.BitmapData class</li>
  * </ul>
  */
 @:fakeEnum(String) extern enum BlendMode {
@@ -30,7 +30,7 @@ package nme.display;
 	 * Applies the alpha value of each pixel of the display object to the
 	 * background. This requires the <code>blendMode</code> property of the
 	 * parent display object be set to
-	 * <code>flash.display.BlendMode.LAYER</code>.
+	 * <code>nme.display.BlendMode.LAYER</code>.
 	 *
 	 * <p>Not supported under GPU rendering.</p>
 	 */
@@ -66,7 +66,7 @@ package nme.display;
 	/**
 	 * Erases the background based on the alpha value of the display object. This
 	 * process requires that the <code>blendMode</code> property of the parent
-	 * display object be set to <code>flash.display.BlendMode.LAYER</code>.
+	 * display object be set to <code>nme.display.BlendMode.LAYER</code>.
 	 *
 	 * <p>Not supported under GPU rendering.</p>
 	 */

@@ -36,7 +36,7 @@ extern class TextFormat {
 	 * 
 	 * @default TextFormatAlign.LEFT
 	 * @throws ArgumentError The <code>align</code> specified is not a member of
-	 *                       flash.text.TextFormatAlign.
+	 *                       nme.text.TextFormatAlign.
 	 */
 	var align : TextFormatAlign;
 

@@ -330,7 +330,7 @@ extern class Capabilities {
 
 	/**
 	 * Specifies the type of touchscreen supported, if any. Values are defined in
-	 * the flash.system.TouchscreenType class.
+	 * the nme.system.TouchscreenType class.
 	 */
 	//@:require(flash10_1) static var touchscreenType(default,null) : TouchscreenType;
 

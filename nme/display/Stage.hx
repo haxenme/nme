@@ -177,7 +177,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * (camera/scanner/etc.). </p>
 	 *
 	 * <p>The three possible values are strings with corresponding constants in
-	 * the flash.display.ColorCorrection class:</p>
+	 * the nme.display.ColorCorrection class:</p>
 	 *
 	 * <ul>
 	 *   <li><code>"default"</code>: Use the same color correction as the host
@@ -196,7 +196,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * system (usually the browser). Currently the return values can be:
 	 *
 	 * <p>The three possible values are strings with corresponding constants in
-	 * the flash.display.ColorCorrectionSupport class:</p>
+	 * the nme.display.ColorCorrectionSupport class:</p>
 	 *
 	 * <ul>
 	 *   <li><code>"unsupported"</code>: Color correction is not available.</li>

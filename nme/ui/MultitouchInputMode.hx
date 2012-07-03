@@ -4,7 +4,7 @@ package nme.ui;
 
 /**
  * The MultitouchInputMode class provides values for the
- * <code>inputMode</code> property in the flash.ui.Multitouch class. These
+ * <code>inputMode</code> property in the nme.ui.Multitouch class. These
  * values set the type of touch events the Flash runtime dispatches when the
  * user interacts with a touch-enabled device.
  */
