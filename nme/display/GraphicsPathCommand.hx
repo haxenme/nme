@@ -2,6 +2,13 @@ package nme.display;
 #if code_completion
 
 
+/**
+ * Defines the values to use for specifying path-drawing commands.
+ *
+ * <p>The values in this class are used by the
+ * <code>Graphics.drawPath()</code> method, or stored in the
+ * <code>commands</code> vector of a GraphicsPath object.</p>
+ */
 @:fakeEnum(Int) extern enum GraphicsPathCommand {
 	NO_OP;
 	MOVE_TO;

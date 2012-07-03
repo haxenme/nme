@@ -20,8 +20,8 @@ Applications compiled for iOS are statically-linked, as currently
 required by Apple, but since NME does not use SDL with iOS, you 
 should still retain full rights to your application code.
 
-Portions of the API documentation were taken from the ActionScript 3
-Language Reference using the Creative Commons BY-NC-SA 3.0 license.
+Large portions of the API documentation have been adapted from the 
+open-source Flex SDK documentation under the Mozilla Public License.
 
 The NME project waives any requirement to distribute this copyright
 notice with anything other than substantial portions of the source code.

@@ -2,6 +2,10 @@ package nme.display;
 #if code_completion
 
 
+/**
+ * The StageScaleMode class provides values for the
+ * <code>Stage.scaleMode</code> property.
+ */
 @:fakeEnum(String) extern enum StageScaleMode {
 	EXACT_FIT;
 	NO_BORDER;
