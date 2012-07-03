@@ -290,9 +290,9 @@ class IOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/" + PATH;
 		mkdir(destination);
 		
-		//var has_launch_image = true;
-        var has_launch_image = false;
-		
+		var has_launch_image = false;
+		if (launchImages.length > 0) has_launch_image = true;
+
 		for (launchImage in launchImages) {
 			var splitPath = launchImage.name.split("/");
 			var path = destination + "/" + splitPath[splitPath.length-1];
