@@ -190,7 +190,7 @@ class IOSInstaller extends InstallerBase {
 				configuration = "Debug";
 			}
 			
-			var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_TITLE") + ".app";
+			var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_FILE") + ".app";
 			var family:String = "iphone";
 			
 			if (targetFlags.exists ("ipad")) {
