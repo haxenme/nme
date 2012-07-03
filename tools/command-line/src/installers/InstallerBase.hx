@@ -650,8 +650,7 @@ class InstallerBase {
 		
 		var appMain:String = defines.get ("APP_MAIN");
 		var indexOfPeriod = appMain.lastIndexOf (".");
-		
-		context.STATUS_BAR_HIDDEN = context.WIN_FULLSCREEN || defines.exists("fullscreen");
+        
 		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
 		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
 		context.HXML_PATH = NME + "/tools/command-line/" + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
@@ -831,11 +830,13 @@ class InstallerBase {
 			
 			setDefault ("WIN_WIDTH", "0");
 			setDefault ("WIN_HEIGHT", "0");
+            setDefault ("WIN_FULLSCREEN", "true");
 			
 		} else {
 			
 			setDefault ("WIN_WIDTH", "640");
 			setDefault ("WIN_HEIGHT", "480");
+            setDefault ("WIN_FULLSCREEN", "false");
 			
 		}
 		
@@ -855,7 +856,6 @@ class InstallerBase {
 		}
 		
 		setDefault ("WIN_BORDERLESS", "false");
-		setDefault ("WIN_FULLSCREEN", "false");
 		setDefault ("WIN_VSYNC", "false");
 		setDefault ("WIN_ANTIALIASING", "1");
 		setDefault ("APP_FILE", "MyApplication");
