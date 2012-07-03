@@ -4,8 +4,8 @@ package nme.display;
 
 /**
  * The Bitmap class represents display objects that represent bitmap images.
- * These can be images that you load with the nme.display.Loader class, or
- * they can be images that you create with the <code>Bitmap()</code>
+ * These can be images that you load with the nme.Assets or nme.display.Loader
+ * classes, or they can be images that you create with the <code>Bitmap()</code>
  * constructor.
  *
  * <p>The <code>Bitmap()</code> constructor allows you to create a Bitmap
