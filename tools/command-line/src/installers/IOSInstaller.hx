@@ -18,29 +18,29 @@ class IOSInstaller extends InstallerBase {
 	
    	override function build ():Void {
 		//throw "Build not supported on IOS target - please build from Xcode";
-		if (targetFlags.exists ("simulator")) {
-			var platformName:String = "iphoneos";
+		
+        var platformName:String = "iphoneos";
+        
+        if (targetFlags.exists("simulator")) {
+            platformName = "iphonesimulator";
+        }
+        
+        var configuration:String = "Release";
+        
+        if (debug) {
+            configuration = "Debug";
+        }
 			
-			if (targetFlags.exists("simulator")) {
-				platformName = "iphonesimulator";
-			}
+        var iphoneVersion:String = defines.get ("IPHONE_VER");
+        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
 			
-			var configuration:String = "Release";
+        if (targetFlags.exists("simulator")) {
+            commands.push ("-arch");
+            commands.push ("i386");
+        }
 			
-			if (debug) {
-				configuration = "Debug";
-			}
-			
-			var iphoneVersion:String = defines.get ("IPHONE_VER");
-			var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
-			
-			if (targetFlags.exists("simulator")) {
-				commands.push ("-arch");
-				commands.push ("i386");
-			}
-			
-			runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
-		}
+        runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
+        
 	}
 	
 	override function clean ():Void {
@@ -181,15 +181,35 @@ class IOSInstaller extends InstallerBase {
 	
 	
 	override function run ():Void {
+        
+        var configuration:String = "Release";
+			
+        if (debug) {
+            configuration = "Debug";
+        }
+        
 		if (!targetFlags.exists ("simulator")) {
-			runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
+			//runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
+            
+            var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+            
+            runCommand ("", "codesign", [ "-f", "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ]);
+            
+            var launcher = NME + "/tools/command-line/bin/fruitstrap";
+            Sys.command ("chmod", [ "+x", launcher ]);
+            
+            if (debug) {
+                
+                runCommand ("", launcher, [ "--debug", "--bundle", FileSystem.fullPath (applicationPath) ]);
+                
+            } else {
+                
+                runCommand ("", launcher, [ "--bundle", FileSystem.fullPath (applicationPath) ]);
+                
+            }
+            
 		} else {
-			var configuration:String = "Release";
-			
-			if (debug) {
-				configuration = "Debug";
-			}
-			
+            
 			var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_FILE") + ".app";
 			var family:String = "iphone";
 			
@@ -216,6 +236,7 @@ class IOSInstaller extends InstallerBase {
 		copyFile(NME + "/tools/command-line/haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
 		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/haxe", projDestination + "/haxe");
 		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/Classes", projDestination + "Classes");
+        copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Entitlements.plist", projDestination + defines.get("APP_FILE") + "-Entitlements.plist");
 		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist");
 		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch");
 		recursiveCopy(NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
