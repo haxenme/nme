@@ -212,7 +212,7 @@
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/make;
-			buildWorkingDirectory = ::APP_TITLE::/haxe;
+			buildWorkingDirectory = "::APP_TITLE::/haxe";
 			dependencies = (
 			);
 			name = "Build Haxe";
