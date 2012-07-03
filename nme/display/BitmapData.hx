@@ -3,58 +3,15 @@ package nme.display;
 
 
 /**
- * The BitmapData class lets you work with the data (pixels) of a Bitmap object. 
- * You can use the methods of the BitmapData class
- * to create arbitrarily sized transparent or opaque bitmap images and manipulate them in various 
- * ways at runtime. 
- * 
- * The methods of the BitmapData class support 
- * effects that are not available through the filters available to non-bitmap display objects.
- * 
- * A BitmapData object contains an array of pixel data. This data can represent either 
- * a fully opaque bitmap or a transparent bitmap that contains alpha channel data. 
- * Either type of BitmapData object is stored as a buffer of 32-bit integers. 
- * Each 32-bit integer determines the properties of a single pixel in the bitmap.
- * 
- * Each 32-bit integer is a combination of four 8-bit channel values (from 0 to 255) that 
- * describe the alpha transparency and the red, green, and blue (ARGB) values of the pixel.
- * (For ARGB values, the most significant byte represents the alpha channel value, followed by red, 
- * green, and blue.)
- * 
- * The four channels (alpha, red, green, and blue) are represented as numbers
- * when you use them with the <code>BitmapData.copyChannel()</code> method, and these numbers
- * are represented by the following constants in the BitmapDataChannel class:
- * 
- * <ul>
- * <li>
- * <code>BitmapDataChannel.ALPHA</code>
- * </li>
- * <li>
- * <code>BitmapDataChannel.RED</code>
- * </li>
- * <li>
- * <code>BitmapDataChannel.GREEN</code>
- * </li>
- * <li>
- * <code>BitmapDataChannel.BLUE</code>
- * </li>
- * </ul>
- * 
- * You can attach BitmapData objects to a Bitmap object by using the 
- * <code>bitmapData</code> property of the Bitmap object.
- * 
- * You can use a BitmapData object to fill a Graphics object by using the 
- * <code>Graphics.beginBitmapFill()</code> method.
- */
-/**
  * The BitmapData class lets you work with the data (pixels) of a Bitmap
- * object . You can use the methods of the BitmapData class to create
+ * object. You can use the methods of the BitmapData class to create
  * arbitrarily sized transparent or opaque bitmap images and manipulate them
  * in various ways at runtime. You can also access the BitmapData for a bitmap
- * image that you load with the <code>nme.display.Loader</code> class.
+ * image that you load with the <code>nme.Assets</code> or 
+ * <code>nme.display.Loader</code> classes.
  *
  * <p>This class lets you separate bitmap rendering operations from the
- * internal display updating routines of Flash Player. By manipulating a
+ * internal display updating routines of NME. By manipulating a
  * BitmapData object directly, you can create complex images without incurring
  * the per-frame overhead of constantly redrawing the content from vector
  * data.</p>
@@ -72,6 +29,12 @@ package nme.display;
  * 0 to 255) that describe the alpha transparency and the red, green, and blue
  * (ARGB) values of the pixel. (For ARGB values, the most significant byte
  * represents the alpha channel value, followed by red, green, and blue.)</p>
+ * 
+ * <p>When you are targeting the Neko runtime, the pixel data is stored as an object
+ * with separate red, green, blue (RGB) and alpha (A) values. Unlike other targets, 
+ * Neko uses 31-bit integers, so this necessary in order to store the full data for each 
+ * pixel. You can use the <code>nme.display.BitmapInt32</class> object to represent
+ * either data format.</p>
  *
  * <p>The four channels (alpha, red, green, and blue) are represented as
  * numbers when you use them with the <code>BitmapData.copyChannel()</code>
@@ -92,41 +55,23 @@ package nme.display;
  *
  * <p>You can use a BitmapData object to fill a Graphics object by using the
  * <code>Graphics.beginBitmapFill()</code> method.</p>
+ * 
+ * <p>You can also use a BitmapData object to perform batch tile rendering
+ * using the <code>nme.display.Tilesheet</code> class.</p>
  *
- * <p>In the AIR runtime, the DockIcon, Icon, InteractiveIcon, and
- * SystemTrayIcon classes each include a <code>bitmaps</code> property that is
- * an array of BitmapData objects that define the bitmap images for an
- * icon.</p>
- *
- * <p>In AIR 1.5 and Flash Player 10, the maximum size for a BitmapData object
+ * <p>In Flash Player 10, the maximum size for a BitmapData object
  * is 8,191 pixels in width or height, and the total number of pixels cannot
  * exceed 16,777,215 pixels. (So, if a BitmapData object is 8,191 pixels wide,
- * it can only be 2,048 pixels high.) In Flash Player 9 and earlier and AIR
- * 1.1 and earlier, the limitation is 2,880 pixels in height and 2,880 in
- * width.</p>
- *
- * <p>Calls to any method or property of a BitmapData object throw an
- * ArgumentError error if the BitmapData object is invalid (for example, if it
- * has <code>height == 0</code> and <code>width == 0</code>) or it has been
- * disposed of via dispose(). </p>
+ * it can only be 2,048 pixels high.) In Flash Player 9 and earlier, the limitation 
+ * is 2,880 pixels in height and 2,880 in width.</p>
  */
 extern class BitmapData implements IBitmapDrawable {
 	
 	/**
 	 * The height of the bitmap image in pixels.
 	 */
-
-	/**
-	 * The height of the bitmap image in pixels.
-	 */
 	var height (default, null):Int;
 	
-	/**
-	 * The rectangle that defines the size and location of the bitmap image. The 
-	 * top and left of the rectangle are 0; the width and height are equal to the 
-	 * width and height in pixels of the BitmapData object. 
-	 */
-
 	/**
 	 * The rectangle that defines the size and location of the bitmap image. The
 	 * top and left of the rectangle are 0; the width and height are equal to the
@@ -134,15 +79,6 @@ extern class BitmapData implements IBitmapDrawable {
 	 */
 	var rect (default, null):nme.geom.Rectangle;
 	
-	/**
-	 * Defines whether the bitmap image supports per-pixel transparency. You can set 
-	 * this value only when you construct a BitmapData object by passing in 
-	 * <code>true</code> for the transparent parameter of the <code>constructor</code>.
-	 * Then, after you create a BitmapData object, you can check whether it supports 
-	 * per-pixel transparency by determining if the value of the transparent property 
-	 * is <code>true</code>. 
-	 */
-
 	/**
 	 * Defines whether the bitmap image supports per-pixel transparency. You can
 	 * set this value only when you construct a BitmapData object by passing in
@@ -153,10 +89,6 @@ extern class BitmapData implements IBitmapDrawable {
 	 */
 	var transparent (default, null):Bool;
 	
-	/**
-	 * The width of the bitmap image in pixels.
-	 */
-
 	/**
 	 * The width of the bitmap image in pixels.
 	 */
@@ -177,7 +109,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param	transparent		Specifies whether the bitmap image supports per-pixel transparency. The default value is <code>true</code> (transparent). To create a fully transparent bitmap, set the value of the <code>transparent</code> parameter to <code>true</code> and the value of the <code>fillColor</code> parameter to 0x00000000 (or to 0). Setting the <code>transparent</code> property to <code>false</code> can result in minor improvements in rendering performance.
 	 * @param	fillColor		A 32-bit ARGB color value that you use to fill the bitmap image area. The default value is 0xFFFFFFFF (solid white).
 	 */
-	function new (width:Int, height:Int, transparent:Bool = true, fillColor:Int = 0xFFFFFFFF):Void;
+	function new (width:Int, height:Int, transparent:Bool = true, fillColor:BitmapInt32 = 0xFFFFFFFF):Void;
 	
 	/**
 	 * Takes a source image and a filter object and generates the filtered image. 

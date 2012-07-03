@@ -4,9 +4,9 @@ package nme.display;
 
 /**
  * The Bitmap class represents display objects that represent bitmap images.
- * These can be images that you load with the nme.Assets or nme.display.Loader
- * classes, or they can be images that you create with the <code>Bitmap()</code>
- * constructor.
+ * These can be images that you load with the <code>nme.Assets</code> or 
+ * <code>nme.display.Loader</code> classes, or they can be images that you 
+ * create with the <code>Bitmap()</code> constructor.
  *
  * <p>The <code>Bitmap()</code> constructor allows you to create a Bitmap
  * object that contains a reference to a BitmapData object. After you create a
@@ -22,29 +22,14 @@ package nme.display;
  * object instance.</p>
  *
  * <p>A BitmapData object can be drawn to the screen by a Bitmap object in one
- * of two ways: by using the vector renderer as a fill-bitmap shape, or by
- * using a faster pixel-copying routine. The pixel-copying routine is
- * substantially faster than the vector renderer, but the Bitmap object must
- * meet certain conditions to use it:</p>
- *
- * <ul>
- *   <li> No stretching, rotation, or skewing can be applied to the Bitmap
- * object.</li>
- *   <li> No color transform can be applied to the Bitmap object. </li>
- *   <li> No blend mode can be applied to the Bitmap object. </li>
- *   <li> No clipping can be done through mask layers or
- * <code>setMask()</code> methods. </li>
- *   <li> The image itself cannot be a mask. </li>
- *   <li> The destination coordinates must be on a whole pixel boundary. </li>
- * </ul>
- *
- * <p>If you load a Bitmap object from a domain other than that of the Loader
- * object used to load the image, and there is no URL policy file that permits
- * access to the domain of the Loader object, then a script in that domain
- * cannot access the Bitmap object or its properties and methods. For more
- * information, see the Flash Player Developer Center Topic: <a
- * href="http://www.adobe.com/go/devnet_security_en"
- * scope="external">Security</a>.</p>
+ * of two ways: by using the default hardware renderer with a single hardware surface, 
+ * or by using the slower software renderer when 3D acceleration is not available.</p>
+ * 
+ * <p>If you would prefer to perform a batch rendering command, rather than using a
+ * single surface for each Bitmap object, you can also draw to the screen using the
+ * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+ * available to <code>nme.display.Tilesheet</code> and <code>nme.display.Graphics
+ * objects.</code></p>
  *
  * <p><b>Note:</b> The Bitmap class is not a subclass of the InteractiveObject
  * class, so it cannot dispatch mouse events. However, you can use the
@@ -62,6 +47,7 @@ extern class Bitmap extends DisplayObject {
 
 	/**
 	 * Controls whether or not the Bitmap object is snapped to the nearest pixel.
+	 * This value is ignored in the native and HTML5 targets.
 	 * The PixelSnapping class includes possible values:
 	 * <ul>
 	 *   <li><code>PixelSnapping.NEVER</code>—No pixel snapping occurs.</li>
@@ -71,8 +57,8 @@ extern class Bitmap extends DisplayObject {
 	 * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
 	 * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
 	 * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	 * Internally, this value allows the image to be drawn as fast as possible
-	 * using the vector renderer.</li>
+	 * When targeting Flash Player, this value allows the image to be drawn as fast 
+	 * as possible using the internal vector renderer.</li>
 	 * </ul>
 	 */
 	var pixelSnapping:PixelSnapping;
