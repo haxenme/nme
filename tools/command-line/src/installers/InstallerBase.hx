@@ -363,6 +363,7 @@ class InstallerBase {
 		var result:String = template.execute (context);
 		
 		Lib.println (result);
+		Lib.println ("-D code_completion");
 		
 	}
 	
