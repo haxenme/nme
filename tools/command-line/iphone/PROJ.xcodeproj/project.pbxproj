@@ -211,7 +211,7 @@
 			buildConfigurationList = 1EF0A885121AE21C003F2F59 /* Build configuration list for PBXLegacyTarget "Build Haxe" */;
 			buildPhases = (
 			);
-			buildToolPath = /usr/bin/make;
+			buildToolPath = make;
 			buildWorkingDirectory = "::APP_FILE::/haxe";
 			dependencies = (
 			);
