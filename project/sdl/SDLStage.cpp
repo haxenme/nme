@@ -892,6 +892,8 @@ double CapabilitiesGetPixelAspectRatio() {
 
 #endif
 
+void PauseAnimation() {}
+void ResumeAnimation() {}
 
 void StopAnimation()
 {
