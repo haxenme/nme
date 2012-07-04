@@ -41,6 +41,20 @@ class IOSInstaller extends InstallerBase {
 			
         runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
         
+        if (!targetFlags.exists ("simulator")) {
+            
+            var configuration:String = "Release";
+			
+            if (debug) {
+                configuration = "Debug";
+            }
+            
+            var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+            
+            runCommand ("", "codesign", [ "-f", "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ]);
+            
+        }
+        
 	}
 	
 	override function clean ():Void {
@@ -191,8 +205,6 @@ class IOSInstaller extends InstallerBase {
 		if (!targetFlags.exists ("simulator")) {
             
             var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
-            
-            runCommand ("", "codesign", [ "-f", "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ]);
             
             var launcher = NME + "/tools/command-line/bin/fruitstrap";
             Sys.command ("chmod", [ "+x", launcher ]);
