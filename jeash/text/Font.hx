@@ -145,19 +145,28 @@ class Font
 	// hxswfml ttf2hash myfont.ttf -glyphs [32-126] > myfont.hash; haxe -resource myfont.hash@myfont ...; Font.registerFont( Resource.get( "myfont" ) );
 	public static function jeashOfResource(name:String) {
 		var data = Resource.getString(name);
-		if (data == null) throw "Resource data for string '" + name + "' not found.";
-		jeashFontData[cast name] = Resource.getString(name);
+		//if (data == null) throw "Resource data for string '" + name + "' not found.";
+		if (data == null) trace("Resource data for string '" + name + "' not found.");
+		else jeashFontData[cast name] = data;
 	}
 
 	function jeashSetFontName(name:String) {
 		this.fontName = name;
-		if (jeashFontData[cast fontName] == null)
-			try { jeashOfResource(name); } catch (e:Dynamic) {
+		if (jeashFontData[cast fontName] == null) {
+			try {
+				jeashOfResource(name); 
+			} catch (e:Dynamic) {
 				flash.Lib.trace("Glyph data for font '" + name + "' does not exist, defaulting to '" + DEFAULT_FONT_NAME + "'.");
 				this.fontName = DEFAULT_FONT_NAME;
 			}
-
-		jeashGlyphData = Unserializer.run(jeashFontData[cast fontName]);
+		} else {
+			try {
+				jeashGlyphData = Unserializer.run(jeashFontData[cast fontName]);
+			} catch (e:Dynamic) {
+				flash.Lib.trace("Error decoding font '" + name + "', defaulting to '" + DEFAULT_FONT_NAME + "'.");
+				this.fontName = DEFAULT_FONT_NAME;
+			}
+		}
 		return name;
 	}
 
