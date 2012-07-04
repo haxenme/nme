@@ -81,6 +81,7 @@ class TextField extends jeash.display.InteractiveObject {
 	public var textColor(GetTextColour,SetTextColour):Int;
 	public var textWidth(GetTextWidth,null):Float;
 	public var textHeight(GetTextHeight,null):Float;
+	private var _defaultTextFormat : TextFormat;
 	public var defaultTextFormat(jeashGetDefaultTextFormat,jeashSetDefaultTextFormat) : TextFormat;
 	public static var mDefaultFont = Font.DEFAULT_FONT_NAME;
 
@@ -618,11 +619,13 @@ class TextField extends jeash.display.InteractiveObject {
 		// TODO:
 	}
 
-	public function jeashGetDefaultTextFormat() 
-		return defaultTextFormat
+	public function jeashGetDefaultTextFormat() {
+		return _defaultTextFormat;
+	}
 
 	function jeashSetDefaultTextFormat(inFmt:TextFormat) {
 		setTextFormat(inFmt);
+		_defaultTextFormat = inFmt;
 		return inFmt;
 	}
 

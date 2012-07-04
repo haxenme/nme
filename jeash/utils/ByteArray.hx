@@ -59,22 +59,22 @@ class ByteArray {
 
 	public function new(len:Int = BYTE_ARRAY_BUFFER_SIZE) {
 		this.position = 0;
-		this.length = 0;
+		this.length = len;
 
-		var buffer = new ArrayBuffer(len);
-		this.data = new DataView(buffer);
-		this.byteView = new Uint8Array(buffer);
+		var buffer = untyped __new__("ArrayBuffer", len);
+		this.data = untyped __new__("DataView", buffer);
+		this.byteView = untyped __new__("Uint8Array", buffer);
 
 		this.bigEndian = false;
 	}
 
 	function jeashResizeBuffer(len:Int) {
 		var initLength = byteView.length;
-		var resized = new Uint8Array(len);
+		var resized:Uint8Array = untyped __new__("Uint8Array", len);
 
 		resized.set(byteView);
 
-		this.data = new DataView(resized.buffer);
+		this.data = untyped __new__("DataView", resized.buffer);
 		this.byteView = resized;
 	}
 
@@ -308,10 +308,8 @@ class ByteArray {
 
 	public static function jeashOfBuffer(buffer:ArrayBuffer) {
 		var bytes = new ByteArray(buffer.byteLength);
-
-		bytes.data = new DataView(buffer);
-		bytes.byteView = new Uint8Array(buffer);
-		bytes.length = buffer.byteLength;
+		bytes.data = untyped __new__("DataView", buffer);
+		bytes.byteView = untyped __new__("Uint8Array", buffer);
 		return bytes;
 	}
 

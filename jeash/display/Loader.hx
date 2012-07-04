@@ -36,6 +36,7 @@ import jeash.events.Event;
 import jeash.events.IOErrorEvent;
 import jeash.system.LoaderContext;
 import jeash.geom.Rectangle;
+import jeash.utils.ByteArray;
 
 /**
 * @author	Hugh Sanderson
@@ -100,6 +101,22 @@ class Loader extends DisplayObjectContainer
 		}
 	}
 	
+	public function loadBytes(buffer:ByteArray):Void {
+		try {
+			contentLoaderInfo.addEventListener(Event.COMPLETE, handleLoad, false, 2147483647);
+			BitmapData.loadFromBytes(buffer, null, function(bmd:BitmapData):Void {
+				content = new Bitmap(bmd);
+				Reflect.setField(contentLoaderInfo, "content", this.content);
+				addChild(content);
+				contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+			});
+		} catch(e:Dynamic) {
+			trace("Error " + e);
+			var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+			contentLoaderInfo.dispatchEvent(evt);
+		}
+	}
+
 	private function handleLoad(e:Event):Void {
 		content.jeashInvalidateBounds();
 		content.jeashRender(null, null);

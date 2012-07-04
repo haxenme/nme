@@ -79,10 +79,23 @@ class URLLoader extends EventDispatcher {
 
 	function onData (_) {
 		var content:Dynamic = getData();
-		if (Std.is(content, ArrayBuffer)) {
+
+		if (Std.is(content, String)) {
+			this.data = Std.string(content);
+		} else if (Std.is(content, ByteArray)) {
 			this.data = ByteArray.jeashOfBuffer(content);
 		} else {
-			this.data = Std.string(content);
+			switch (dataFormat) {
+				case BINARY:
+					this.data = ByteArray.jeashOfBuffer(content);
+				default:
+					var bytes:nme.utils.ByteArray = ByteArray.jeashOfBuffer(content);
+					if (bytes != null && bytes.length > 0) {
+						this.data = Std.string(bytes.readUTFBytes(bytes.length));
+					} else {
+						this.data = Std.string(content);
+					}
+			}
 		}
 
 		var evt = new Event(Event.COMPLETE);
@@ -175,10 +188,10 @@ class URLLoader extends EventDispatcher {
 		try {
 			if(method == "GET" && uri != null && uri != "") {
 				var question = url.split("?").length <= 1;
-				xmlHttpRequest.open(method,url+(if( question ) "?" else "&")+uri,true);
+				xmlHttpRequest.open(method, url+(if( question ) "?" else "&")+uri,true);
 				uri = "";
 			} else 
-				xmlHttpRequest.open(method,url,true);
+				xmlHttpRequest.open(method, url, true);
 		} catch( e : Dynamic ) {
 			onError(e.toString());
 			return;
@@ -190,8 +203,9 @@ class URLLoader extends EventDispatcher {
 			default:
 		}
 
-		for( header in requestHeaders )
+		for( header in requestHeaders ) {
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
+		}
 
 		xmlHttpRequest.send(uri);
 
