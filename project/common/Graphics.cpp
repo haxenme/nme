@@ -781,15 +781,16 @@ GraphicsStroke *GraphicsStroke::CloneWithFill(IGraphicsFill *inFill)
 {
    if (mRefCount < 2)
    {
+      inFill->IncRef();
       if (fill)
          fill->DecRef();
       fill = inFill;
-      fill->IncRef();
       return this;
    }
 
    GraphicsStroke *clone = new GraphicsStroke(inFill,thickness,pixelHinting,scaleMode,caps,joints,miterLimit);
    DecRef();
+   clone->IncRef();
    return clone;
 }
 
