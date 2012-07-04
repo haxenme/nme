@@ -401,13 +401,24 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
       switch(inType.element)
       {
          ARRAY_SET(Boolean,jboolean,alloc_bool)
-         ARRAY_SET(Byte,jbyte,alloc_int)
+         //ARRAY_SET(Byte,jbyte,alloc_int)
          ARRAY_SET(Char,jchar,alloc_int)
          ARRAY_SET(Short,jshort,alloc_int)
          ARRAY_SET(Int,jint,alloc_int)
          ARRAY_SET(Long,jlong,alloc_int)
          ARRAY_SET(Float,jfloat,alloc_float)
          ARRAY_SET(Double,jdouble,alloc_float)
+         case jniByte:
+            {
+               if (len>0) {
+                   jboolean copy;
+                   jbyte *data = inEnv->GetByteArrayElements((jbyteArray)inObject,&copy);
+                   for(int i=0;i<len;i++) {
+                       val_array_set_i(result,i,alloc_int(data[i]));
+                   }
+                   inEnv->ReleaseByteArrayElements((jbyteArray)inObject,data,JNI_ABORT);
+               }
+            }
       }
       return result;
    }
@@ -486,8 +497,8 @@ const char *JNIParseType(const char *inStr, JNIType &outType,int inDepth=0)
             else if (!strncmp(src,"org/haxe/nme/HaxeObject;",24))
                outType = JNIType(jniObjectHaxe,inDepth);
             else
-                  outType = JNIType(jniObject,inDepth);
-               return inStr+1;
+               outType = JNIType(jniObject,inDepth);
+            return inStr+1;
          }
    }
    outType = JNIType();
@@ -514,7 +525,7 @@ const char *JNIParseType(const char *inStr, JNIType &outType,int inDepth=0)
 
 
 
-bool HaxeToJNI(JNIEnv *inEnv,value inValue, JNIType inType, jvalue &out)
+bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
 {
    if (inType.isUnknown())
       return false;
@@ -543,13 +554,27 @@ bool HaxeToJNI(JNIEnv *inEnv,value inValue, JNIType inType, jvalue &out)
       switch(inType.element)
       {
          ARRAY_COPY(Boolean,jboolean)
-         ARRAY_COPY(Byte,jbyte)
+         //ARRAY_COPY(Byte,jbyte)
          ARRAY_COPY(Char,jchar)
          ARRAY_COPY(Short,jshort)
          ARRAY_COPY(Int,jint)
          ARRAY_COPY(Long,jlong)
          ARRAY_COPY(Float,jfloat)
          ARRAY_COPY(Double,jdouble)
+         case jniByte:
+            {
+            jbyteArray arr = inEnv->NewByteArray(len);
+            if (len>0) {
+               jboolean copy;
+               jbyte *data = inEnv->GetByteArrayElements(arr,&copy);
+               for(int i=0;i<len;i++) {
+                  data[i] = (int)val_number(val_array_i(inValue,i));
+               }
+               inEnv->ReleaseByteArrayElements(arr,data,0);
+            }
+            out.l = arr;
+            return true;
+            }
          case jniVoid: out.l = 0; return true;
       }
       return false;
