@@ -95,16 +95,21 @@ namespace nme
     class AVAudioPlayerChannel : public SoundChannel  {
         
     public:
-        AVAudioPlayerChannel(Object  *inSound,const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform) {
-            
-            LOG_SOUND("AVAudioPlayerChannel constructor");
+        AVAudioPlayerChannel(Object *inSound, const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform)
+        {
+            LOG_SOUND("AVAudioPlayerChannel constructor with inFilename");
             mSound = inSound;
             // each channel keeps the originating Sound object alive.
             inSound->IncRef();
-            
+           
             LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
-            
-            std::string name = GetResourcePath() + gAssetBase + inFilename;
+
+            std::string name;
+            if (inFilename[0] == '/') {
+             name = inFilename;
+            } else {
+             name = GetResourcePath() + gAssetBase + inFilename;
+            }
             
             NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
             
