@@ -48,10 +48,6 @@ typedef unsigned char uint8;
     return self;
 }
 
-- (void)dealloc {
-    [super dealloc];
-}
-
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
     LOG_SOUND("AVAudioPlayerChannelDelegate audioPlayerDidFinishPlaying()");
     LOG_SOUND("loops : %d", loops );
@@ -107,7 +103,6 @@ namespace nme
             inSound->IncRef();
             
             LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
-            theActualPlayer = [[AVAudioPlayer alloc] init];
             
             std::string name = GetResourcePath() + gAssetBase + inFilename;
             
@@ -115,17 +110,18 @@ namespace nme
             
             NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
             
-            [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
+            theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
+            #ifndef OBJC_ARC
             [theFileName release];
-            
+            #endif
+
             // for each player there is a delegate
             // the reason for this is that AVAudioPlayer has no way to loop
             // starting at an offset. So what we need to do is to
             // get the delegate to react to a loop end, rewing the player
             // and play again.
             LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initialising the delegate");
-            thePlayerDelegate = [AVAudioPlayerChannelDelegate alloc];
-            [thePlayerDelegate initWithLoopsOffset:inLoops offset:inOffset];
+            thePlayerDelegate = [[AVAudioPlayerChannelDelegate alloc] initWithLoopsOffset:inLoops offset:inOffset];
             [theActualPlayer setDelegate:thePlayerDelegate];
             
             // the sound channel has been created because play() was called
@@ -186,8 +182,10 @@ namespace nme
                     // If all the channels associated to a Sound will be destroyed,
                     // then the Sound itself might be eligible for destruction (if there are
                     // no more references to it anywhere else).
+                    #ifndef OBJC_ARC
                     [thePlayerDelegate release];
                     [theActualPlayer release];
+                    #endif
                     theActualPlayer = nil;
                     thePlayerDelegate = nil;
                 }
@@ -237,8 +235,10 @@ namespace nme
             // If someone calls isComplete() in the future,
             // that function will see the nil and avoid doing another
             // release.
+            #ifndef OBJC_ARC
             [theActualPlayer release];
             [thePlayerDelegate release];
+            #endif
             theActualPlayer = nil;
             thePlayerDelegate = nil;
             
@@ -274,16 +274,16 @@ namespace nme
             // no buffers are loaded until we invoke either the play or prepareToPlay
             // methods, so very little memory is used.
             
-            AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] init];
             
             std::string path = GetResourcePath() + gAssetBase + inFilename;
             NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
             NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
+            #ifndef OBJC_ARC
             [ns_name release];
-            
+            #endif
             
             NSError *err = nil;
-            [theActualPlayer initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
+            AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
             if (err != nil)
             {
                 mError = [[err description] UTF8String];
@@ -291,7 +291,9 @@ namespace nme
             
             
             theDuration = [theActualPlayer duration] * 1000;
-            [theActualPlayer release];    
+            #ifndef OBJC_ARC
+            [theActualPlayer release];
+            #endif
         }
         
         ~AVAudioPlayerSound()
@@ -654,13 +656,19 @@ namespace nme
             IncRef();
             mBufferID = 0;
             
+            #ifndef OBJC_ARC
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-            
+            #endif
+
             std::string asset = GetResourcePath() + gAssetBase + inFilename;
             
             NSString *url = [[NSString alloc] initWithUTF8String:asset.c_str()];
             // get some audio data from a wave file
+            #ifndef OBJC_ARC
             CFURLRef fileURL = (CFURLRef)[[NSURL fileURLWithPath:url] retain];
+            #else
+            CFURLRef fileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:url];
+            #endif
             //[path release];
             
             if (!fileURL)
@@ -697,8 +705,9 @@ namespace nme
                     alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
                 }
             }
-            
+            #ifndef OBJC_ARC
             [pool release];
+            #endif
         }
         
         ~OpenALSound()
