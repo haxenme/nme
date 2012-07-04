@@ -591,31 +591,31 @@ DEFINE_PRIM(nme_error_output,1);
 
 // --- ByteArray -----------------------------------------------------
 
-value gByteArrayCreate = 0;
-value gByteArrayLen = 0;
-value gByteArrayResize = 0;
-value gByteArrayBytes = 0;
+AutoGCRoot *gByteArrayCreate = 0;
+AutoGCRoot *gByteArrayLen = 0;
+AutoGCRoot *gByteArrayResize = 0;
+AutoGCRoot *gByteArrayBytes = 0;
 
 value nme_byte_array_init(value inFactory, value inLen, value inResize, value inBytes)
 {
-   gByteArrayCreate = inFactory;
-   gByteArrayLen = inLen;
-   gByteArrayResize = inResize;
-   gByteArrayBytes = inBytes;
+   gByteArrayCreate = new AutoGCRoot(inFactory);
+   gByteArrayLen = new AutoGCRoot(inLen);
+   gByteArrayResize = new AutoGCRoot(inResize);
+   gByteArrayBytes = new AutoGCRoot(inBytes);
    return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_init,4);
 
 ByteArray::ByteArray(int inSize)
 {
-   mValue = val_call1(gByteArrayCreate, alloc_int(inSize) );
+   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inSize) );
 }
 
 ByteArray::ByteArray() : mValue(0) { }
 
 ByteArray::ByteArray(const QuickVec<uint8> &inData)
 {
-   mValue = val_call1(gByteArrayCreate, alloc_int(inData.size()) );
+   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) );
    uint8 *bytes = Bytes();
    if (bytes)
      memcpy(bytes, &inData[0], inData.size() );
@@ -627,18 +627,18 @@ ByteArray::ByteArray(value inValue) : mValue(inValue) { }
 
 void ByteArray::Resize(int inSize)
 {
-   val_call2(gByteArrayResize, mValue, alloc_int(inSize) );
+   val_call2(gByteArrayResize->get(), mValue, alloc_int(inSize) );
 }
 
 int ByteArray::Size() const
 {
-   return val_int( val_call1(gByteArrayLen, mValue ));
+   return val_int( val_call1(gByteArrayLen->get(), mValue ));
 }
 
 
 const unsigned char *ByteArray::Bytes() const
 {
-   value bytes = val_call1(gByteArrayBytes,mValue);
+   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
    buffer buf = val_to_buffer(bytes);
@@ -652,7 +652,7 @@ const unsigned char *ByteArray::Bytes() const
 
 unsigned char *ByteArray::Bytes()
 {
-   value bytes = val_call1(gByteArrayBytes,mValue);
+   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
    buffer buf = val_to_buffer(bytes);

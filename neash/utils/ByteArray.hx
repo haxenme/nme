@@ -26,14 +26,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	public var endian(nmeGetEndian, nmeSetEndian):String;
 	public var position:Int;
 	
-	#if !no_nme_io
-	// Store these in statics there to avoid GC issues in nme
-	/** @private */ private static var bytes:Dynamic;
-	/** @private */ private static var factory:Dynamic;
-	/** @private */ private static var resize:Dynamic;
-	/** @private */ private static var slen:Dynamic;
-	#end
-
 	#if neko
 	/** @private */ private var alloced:Int;
 	#end
@@ -74,14 +66,14 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	#if !no_nme_io
 	/** @private */ static function __init__()
 	{
-		factory = function(inLen:Int) { return new ByteArray(inLen); };
-		resize  = function(inArray:ByteArray,inLen:Int) {
+		var factory = function(inLen:Int) { return new ByteArray(inLen); };
+		var resize  = function(inArray:ByteArray,inLen:Int) {
 			if (inLen > 0)
 				inArray.ensureElem(inLen - 1, true);
 			inArray.length = inLen;
 		};
-		bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
-		slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
+		var bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
+		var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 		
 		var init = Loader.load("nme_byte_array_init", 4);
 		init(factory, slen, resize, bytes);
