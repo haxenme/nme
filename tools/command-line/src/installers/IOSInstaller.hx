@@ -189,7 +189,6 @@ class IOSInstaller extends InstallerBase {
         }
         
 		if (!targetFlags.exists ("simulator")) {
-			//runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
             
             var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
             
@@ -286,6 +285,12 @@ class IOSInstaller extends InstallerBase {
 				copyFile (asset.sourcePath, projDestination + asset.targetPath);
 			}
 		}
+        
+        if (command == "update") {
+            
+            runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
+            
+        }
 	}
 	
 	private function updateIcon () {
