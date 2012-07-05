@@ -35,29 +35,30 @@ import jeash.net.URLLoader;
 import jeash.Html5Dom;
 
 class Sound extends EventDispatcher {
-	public var bytesLoaded(default,null) : Int;
-	public var bytesTotal(default,null) : Int;
-	public var id3(default,null) : ID3Info;
-	public var isBuffering(default,null) : Bool;
-	public var length(default,null) : Float;
-	public var url(default,null) : String;
+	public var bytesLoaded(default, null) : Int;
+	public var bytesTotal(default, null) : Int;
+	public var id3(default, null) : ID3Info;
+	public var isBuffering(default, null) : Bool;
+	public var length(default, null) : Float;
+	public var url(default, null) : String;
 
-	static inline var MEDIA_TYPE_MP3 = "audio/mpeg";
-	static inline var MEDIA_TYPE_OGG = "audio/ogg; codecs=\"vorbis\"";
-	static inline var MEDIA_TYPE_WAV = "audio/wav; codecs=\"1\"";
-	static inline var MEDIA_TYPE_AAC = "audio/mp4; codecs=\"mp4a.40.2\"";
-	static inline var EXTENSION_MP3 = "mp3";
-	static inline var EXTENSION_OGG = "ogg";
-	static inline var EXTENSION_WAV = "wav";
-	static inline var EXTENSION_AAC = "aac";
+	static inline var MEDIA_TYPE_MP3 	= "audio/mpeg";
+	static inline var MEDIA_TYPE_OGG 	= "audio/ogg; codecs=\"vorbis\"";
+	static inline var MEDIA_TYPE_WAV 	= "audio/wav; codecs=\"1\"";
+	static inline var MEDIA_TYPE_AAC 	= "audio/mp4; codecs=\"mp4a.40.2\"";
+	
+	static inline var EXTENSION_MP3 	= "mp3";
+	static inline var EXTENSION_OGG 	= "ogg";
+	static inline var EXTENSION_WAV 	= "wav";
+	static inline var EXTENSION_AAC 	= "aac";
 
 	var jeashStreamUrl:String;
 	var jeashSoundChannels : IntHash<SoundChannel>;
 	var jeashSoundIdx : Int;
 	var jeashSoundCache : URLLoader;
 
-	public function new(?stream : URLRequest, ?context : SoundLoaderContext) : Void {
-		super( this );
+	public function new(?stream:URLRequest, ?context:SoundLoaderContext):Void {
+		super(this);
 		bytesLoaded = 0;
 		bytesTotal = 0;
 		id3 = null;
@@ -68,60 +69,73 @@ class Sound extends EventDispatcher {
 		jeashSoundChannels = new IntHash();
 		jeashSoundIdx = 0;
 
-		if(stream != null)
+		if (stream != null)
 			load(stream, context);
 	}
 
-	public static function jeashCanPlayType(extension:String) {
-
-			var audio : HTMLMediaElement = cast js.Lib.document.createElement("audio");
-			var playable = function (ok:String)
-					if (ok != "" && ok != "no") return true; else return false;
-
-			switch (extension) {
-				case EXTENSION_MP3:
-					return playable(audio.canPlayType(MEDIA_TYPE_MP3));
-				case EXTENSION_OGG:
-					return playable(audio.canPlayType(MEDIA_TYPE_OGG));
-				case EXTENSION_WAV:
-					return playable(audio.canPlayType(MEDIA_TYPE_WAV));
-				case EXTENSION_AAC:
-					return playable(audio.canPlayType(MEDIA_TYPE_AAC));
-				default:
-					return false;
-			}
+	public static function jeashCanPlayType(extension:String):Bool {
+		var mime:String = jeashMimeForExtension(extension);
+		if (mime == null) return false;
+		return jeashCanPlayMime(mime);
 	}
 
-	public function close() : Void	{	}
+	private static inline function jeashMimeForExtension(extension:String):String {
+		var mime:String = null;
+		switch (extension) {
+			case EXTENSION_MP3:
+				mime = MEDIA_TYPE_MP3;
+			case EXTENSION_OGG:
+				mime = MEDIA_TYPE_OGG;
+			case EXTENSION_WAV:
+				mime = MEDIA_TYPE_WAV;
+			case EXTENSION_AAC:
+				mime = MEDIA_TYPE_AAC;
+			default:
+				mime = null;
+		}
+		return mime;
+	}
 
-	public function load(stream : URLRequest, ?context : SoundLoaderContext) : Void {
+	public static function jeashCanPlayMime(mime:String):Bool {
+		var audio : HTMLMediaElement = cast js.Lib.document.createElement("audio");
+		var playable = function (ok:String) {
+			if (ok != "" && ok != "no") return true; else return false;
+		}
+		return playable(audio.canPlayType(mime));
+	}
 
-		var url = stream.url.split("?");
-		var extension = url[0].substr(url[0].lastIndexOf(".")+1);
+	public function close():Void	{	}
+
+	public function load(stream:URLRequest, ?context:SoundLoaderContext):Void {
+		jeashLoad(stream, context);
+	}
+
+	public function jeashLoad(stream:URLRequest, ?context:SoundLoaderContext, ?mime:String):Void {
 		#if debug
-		if (!jeashCanPlayType(extension.toLowerCase()))
-			flash.Lib.trace("Warning: '" + stream.url + "' may not play on this browser.");
+		if (mime == null) {
+			var url = stream.url.split("?");
+			var extension = url[0].substr(url[0].lastIndexOf(".")+1);
+			mime = jeashMimeForExtension(extension);
+		}
+		if (mime == null || !jeashCanPlayMime(mime))
+			trace("Warning: '" + stream.url + "' with type '" + mime + "' may not play on this browser.");
 		#end
 
 		jeashStreamUrl = stream.url;
 
 		// initiate a network request, so the resource is cached by the browser
 		try {
-			
 			jeashSoundCache = new URLLoader();
 			jeashAddEventListeners();
 			jeashSoundCache.load(stream);
-			
 		} catch (e:Dynamic) {
-			
 			#if debug
-			flash.Lib.trace("Warning: Could not preload '" + stream.url + "'");
+			trace("Warning: Could not preload '" + stream.url + "'");
 			#end
-			
 		}
 	}
 
-	public function play(startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel {
+	public function play(startTime:Float=0.0, loops:Int=0, sndTransform:SoundTransform=null):SoundChannel {
 		if (jeashStreamUrl == null) return null;
 
 		// --
@@ -144,32 +158,31 @@ class Sound extends EventDispatcher {
 	}
 
 
-	private function jeashAddEventListeners() {
+	private function jeashAddEventListeners():Void {
 		jeashSoundCache.addEventListener(Event.COMPLETE, jeashOnSoundLoaded);
 		jeashSoundCache.addEventListener(IOErrorEvent.IO_ERROR, jeashOnSoundLoadError);
 	}
 
-	private function jeashRemoveEventListeners() {
+	private function jeashRemoveEventListeners():Void {
 		jeashSoundCache.removeEventListener(Event.COMPLETE, jeashOnSoundLoaded, false);
 		jeashSoundCache.removeEventListener(IOErrorEvent.IO_ERROR, jeashOnSoundLoadError, false);
 	}
 
-	private function jeashOnSoundLoaded(evt : Event) {
+	private function jeashOnSoundLoaded(evt:Event):Void {
 		jeashRemoveEventListeners();
 
 		var evt = new Event(Event.COMPLETE);
 		dispatchEvent(evt);
 	}
 
-	private function jeashOnSoundLoadError(evt : IOErrorEvent) {
+	private function jeashOnSoundLoadError(evt:IOErrorEvent):Void {
 		jeashRemoveEventListeners();
 
 		#if debug
-		flash.Lib.trace("Error loading sound '" + jeashStreamUrl + "'");
+		trace("Error loading sound '" + jeashStreamUrl + "'");
 		#end
 
 		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
 		dispatchEvent(evt);
 	}
-
 }

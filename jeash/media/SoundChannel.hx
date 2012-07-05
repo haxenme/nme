@@ -37,21 +37,22 @@ import jeash.Html5Dom;
 * @todo Implement soundTransform
 **/
 class SoundChannel extends EventDispatcher {
-	public var ChannelId(default,null) : Int;
-	public var leftPeak(default,null) : Float;
-	public var position(default,null) : Float;
-	public var rightPeak(default,null) : Float;
-	public var soundTransform(default,jeashSetSoundTransform) : SoundTransform;
+	public var ChannelId(default, null):Int;
+	public var leftPeak(default, null):Float;
+	public var position(default, null):Float;
+	public var rightPeak(default, null):Float;
+	public var soundTransform(default, jeashSetSoundTransform):SoundTransform;
 
 	var jeashAudioCurrentLoop:Int;
 	var jeashAudioTotalLoops:Int;
 	var jeashRemoveRef:Void->Void;
 	var jeashStartTime:Float;
 
-	public var jeashAudio (default, null) : HTMLMediaElement;
+	public var jeashAudio (default, null):HTMLMediaElement;
 
-	private function new() : Void {
-		super( this );
+	private function new():Void {
+		super(this);
+
 		ChannelId = -1;
 		leftPeak = 0.;
 		position = 0.;
@@ -61,12 +62,14 @@ class SoundChannel extends EventDispatcher {
 		jeashAudioTotalLoops = 1;
 	}
 
-	public static function jeashCreate(src:String, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null, removeRef:Void->Void) {
+	public static function jeashCreate(src:String, startTime:Float=0.0, loops:Int=0, sndTransform:SoundTransform=null, removeRef:Void->Void):SoundChannel {
 		var channel = new SoundChannel();
 		channel.jeashAudio = cast js.Lib.document.createElement("audio");
 		channel.jeashRemoveRef = removeRef;
 		channel.jeashAudio.addEventListener("ended", cast channel.__onSoundChannelFinished, false);
 		channel.jeashAudio.addEventListener("seeked", cast channel.__onSoundSeeked, false);
+		channel.jeashAudio.addEventListener("stalled", cast channel.__onStalled, false);
+		channel.jeashAudio.addEventListener("progress", cast channel.__onProgress, false);
 		if (loops > 0) {
 			channel.jeashAudioTotalLoops = loops;
 			// webkit-specific 
@@ -96,7 +99,7 @@ class SoundChannel extends EventDispatcher {
 		return channel;
 	}
 
-	public function stop() : Void {
+	public function stop():Void {
 		if (jeashAudio != null) {
 			jeashAudio.pause();
 			jeashAudio = null;
@@ -104,12 +107,12 @@ class SoundChannel extends EventDispatcher {
 		}
 	}
 
-	private function jeashSetSoundTransform( v : SoundTransform ) : SoundTransform {
+	private function jeashSetSoundTransform(v:SoundTransform):SoundTransform {
 		jeashAudio.volume = v.volume;
 		return this.soundTransform = v;
 	}
 
-	private function __onSoundSeeked(evt : Event) {
+	private function __onSoundSeeked(evt:Event):Void {
 		if (jeashAudioCurrentLoop >= jeashAudioTotalLoops) {
 			jeashAudio.loop = false;
 			stop();
@@ -118,10 +121,21 @@ class SoundChannel extends EventDispatcher {
 		}
 	}
 
-	private function __onSoundChannelFinished(evt : Event) {
+	private function __onStalled(evt:Event):Void {
+		trace("sound stalled");
+		jeashAudio.load();
+	}
+
+	private function __onProgress(evt:Event):Void {
+		trace("sound progress: " + evt);
+	}
+
+	private function __onSoundChannelFinished(evt:Event):Void {
 		if (jeashAudioCurrentLoop >= jeashAudioTotalLoops) {
 			jeashAudio.removeEventListener("ended", cast __onSoundChannelFinished, false);
 			jeashAudio.removeEventListener("seeked", cast __onSoundSeeked, false);
+			jeashAudio.removeEventListener("stalled", cast __onStalled, false);
+			jeashAudio.removeEventListener("progress", cast __onProgress, false);
 			jeashAudio = null;
 			var evt = new Event(Event.COMPLETE);
 			evt.target = this;
@@ -135,4 +149,3 @@ class SoundChannel extends EventDispatcher {
 		}
 	}
 }
-
