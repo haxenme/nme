@@ -5,7 +5,7 @@ package nme.display;
 /**
  * The DisplayObject class is the base class for all objects that can be
  * placed on the display list. The display list manages all objects displayed
- * in the Flash runtimes. Use the DisplayObjectContainer class to arrange the
+ * in NME. Use the DisplayObjectContainer class to arrange the
  * display objects in the display list. DisplayObjectContainer objects can
  * have child display objects, while other display objects, such as Shape and
  * TextField objects, are "leaf" nodes that have only parents and siblings, no
@@ -232,9 +232,11 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	//@:require(flash10) var blendShader(null,default) : Shader;
 
 	/**
-	 * If set to <code>true</code>, Flash runtimes cache an internal bitmap
-	 * representation of the display object. This caching can increase
-	 * performance for display objects that contain complex vector content.
+	 * If set to <code>true</code>, NME will use the software renderer to cache
+	 * an internal bitmap representation of the display object. For native targets,
+	 * this is often much slower than the default hardware renderer. When you
+	 * are using the Flash target, this caching may increase performance for display 
+	 * objects that contain complex vector content.
 	 *
 	 * <p>All vector data for a display object that has a cached bitmap is drawn
 	 * to the bitmap instead of the main display. If

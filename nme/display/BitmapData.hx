@@ -285,7 +285,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * <p><code>BitmapData.dispose()</code> releases the memory occupied by the
 	 * actual bitmap data, immediately (a bitmap can consume up to 64 MB of
 	 * memory). After using <code>BitmapData.dispose()</code>, the BitmapData
-	 * object is no longer usable and the Flash runtime throws an exception if
+	 * object is no longer usable and an exception may be thrown if
 	 * you call functions on the BitmapData object. However,
 	 * <code>BitmapData.dispose()</code> does not garbage collect the BitmapData
 	 * object (approximately 128 bytes); the memory occupied by the actual
@@ -297,14 +297,11 @@ extern class BitmapData implements IBitmapDrawable {
 
 	/**
 	 * Draws the <code>source</code> display object onto the bitmap image, using
-	 * the Flash runtime vector renderer. You can specify <code>matrix</code>,
+	 * the NME software renderer. You can specify <code>matrix</code>,
 	 * <code>colorTransform</code>, <code>blendMode</code>, and a destination
 	 * <code>clipRect</code> parameter to control how the rendering performs.
 	 * Optionally, you can specify whether the bitmap should be smoothed when
 	 * scaled (this works only if the source object is a BitmapData object).
-	 *
-	 * <p>This method directly corresponds to how objects are drawn with the
-	 * standard vector renderer for objects in the authoring tool interface.</p>
 	 *
 	 * <p>The source display object does not use any of its applied
 	 * transformations for this call. It is treated as it exists in the library
@@ -313,42 +310,6 @@ extern class BitmapData implements IBitmapDrawable {
 	 * properties, you can copy its <code>transform</code> property object to the
 	 * <code>transform</code> property of the Bitmap object that uses the
 	 * BitmapData object.</p>
-	 *
-	 * <p>This method is supported over RTMP in Flash Player 9.0.115.0 and later
-	 * and in Adobe AIR. You can control access to streams on Flash Media Server
-	 * in a server-side script. For more information, see the
-	 * <code>Client.audioSampleAccess</code> and
-	 * <code>Client.videoSampleAccess</code> properties in <a
-	 * href="http://www.adobe.com/go/documentation" scope="external">
-	 * <i>Server-Side ActionScript Language Reference for Adobe Flash Media
-	 * Server</i></a>.</p>
-	 *
-	 * <p>If the source object and (in the case of a Sprite or MovieClip object)
-	 * all of its child objects do not come from the same domain as the caller,
-	 * or are not in a content that is accessible to the caller by having called
-	 * the <code>Security.allowDomain()</code> method, a call to the
-	 * <code>draw()</code> throws a SecurityError exception. This restriction
-	 * does not apply to AIR content in the application security sandbox.</p>
-	 *
-	 * <p>There are also restrictions on using a loaded bitmap image as the
-	 * <code>source</code>. A call to the <code>draw()</code> method is
-	 * successful if the loaded image comes from the same domain as the caller.
-	 * Also, a cross-domain policy file on the image's server can grant
-	 * permission to the domain of the SWF content calling the
-	 * <code>draw()</code> method. In this case, you must set the
-	 * <code>checkPolicyFile</code> property of a LoaderContext object, and use
-	 * this object as the <code>context</code> parameter when calling the
-	 * <code>load()</code> method of the Loader object used to load the image.
-	 * These restrictions do not apply to AIR content in the application security
-	 * sandbox.</p>
-	 *
-	 * <p>On Windows, the <code>draw()</code> method cannot capture SWF content
-	 * embedded in an HTML page in an HTMLLoader object in Adobe AIR.</p>
-	 *
-	 * <p>The <code>draw()</code> method cannot capture PDF content in Adobe AIR.
-	 * Nor can it capture or SWF content embedded in HTML in which the
-	 * <code>wmode</code> attribute is set to <code>"window"</code> in Adobe
-	 * AIR.</p>
 	 * 
 	 * @param source         The display object or BitmapData object to draw to
 	 *                       the BitmapData object. (The DisplayObject and
@@ -1008,8 +969,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param changeRect The area of the BitmapData object that has changed. If
 	 *                   you do not specify a value for this parameter, the
 	 *                   entire area of the BitmapData object is considered
-	 *                   changed. This parameter requires Flash Player version
-	 *                   9.0.115.0 or later.
+	 *                   changed.
 	 */
 	function unlock(?changeRect : nme.geom.Rectangle) : Void;
 }

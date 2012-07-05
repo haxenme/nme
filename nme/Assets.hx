@@ -9,7 +9,21 @@ import nme.utils.ByteArray;
 
 
 /**
- * Provides a cross-platform interface for accessing embedded assets
+ * <p>The Assets class provides a cross-platform interface to access 
+ * embedded images, fonts, sounds and other resource files.</p>
+ * 
+ * <p>The contents are populated automatically when an application
+ * is compiled using the NME command-line tools, based on the
+ * contents of the *.nmml project file.</p>
+ * 
+ * <p>For most platforms, the assets are included in the same directory
+ * or package as the application, and the paths are handled
+ * automatically. For web content, the assets are preloaded before
+ * the start of the rest of the application. You can customize the 
+ * preloader by extending the <code>NMEPreloader</code> class,
+ * and specifying a custom preloader using <window preloader="" />
+ * in the project file.</p>
+ * 
  * @author Joshua Granick
  */
 class Assets
