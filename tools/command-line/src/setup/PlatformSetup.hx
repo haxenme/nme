@@ -859,11 +859,20 @@ class PlatformSetup {
 					
 					Lib.println ("Registering Code Signing Keys...");
 					
-					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", defines.get ("CSK_PASSWORD") ]);
-					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("PBDT_CSJ_FILE") ]);
-					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("RDT_CSJ_FILE") ]);
+					try {
+						
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", defines.get ("CSK_PASSWORD") ]);
+						
+					} catch (e:Dynamic) { }
 					
-					Lib.println ("Done.");
+					try {
+						
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("PBDT_CSJ_FILE") ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("RDT_CSJ_FILE") ]);
+						
+						Lib.println ("Done.");
+						
+					} catch (e:Dynamic) {}
 					
 					cskPassword = defines.get ("CSK_PASSWORD");
 					
@@ -873,9 +882,17 @@ class PlatformSetup {
 					
 					Lib.println ("Creating keystore...");
 					
-					InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", defines.get ("KEYSTORE_PASSWORD"), "-dname", "cn=(" + defines.get ("COMPANY_NAME") + ")", "-alias", "author" ]);
-					
-					Lib.println ("Done.");
+					try {
+						
+						InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", defines.get ("KEYSTORE_PASSWORD"), "-dname", "cn=(" + defines.get ("COMPANY_NAME") + ")", "-alias", "author" ]);
+						
+						Lib.println ("Done.");
+						
+					} catch (e:Dynamic) {
+						
+						Sys.exit (1);
+						
+					}
 					
 					keystorePassword = defines.get ("KEYSTORE_PASSWORD");
 					outputPath = defines.get ("OUTPUT_PATH");
@@ -915,9 +932,17 @@ class PlatformSetup {
 				
 				Lib.println ("Requesting Debug Token...");
 				
-				InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword, "-deviceId", "0x" + devicePIN, debugTokenPath ]);
-				
-				Lib.println ("Done.");
+				try {
+					
+					InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword, "-deviceId", "0x" + devicePIN, debugTokenPath ]);
+					
+					Lib.println ("Done.");
+					
+				} catch (e:Dynamic) {
+					
+					Sys.exit (1);
+					
+				}
 				
 				var defines = getDefines ();
 				defines.set ("BLACKBERRY_DEBUG_TOKEN", debugTokenPath);
@@ -948,12 +973,13 @@ class PlatformSetup {
 					
 					InstallTool.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ]);
 					
+					Lib.println ("Done.");
+					
 				} catch (e:Dynamic) {
 					
+					Sys.exit (1);
 					
 				}
-				
-				Lib.println ("Done.");
 				
 			}
 			
