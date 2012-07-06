@@ -28,6 +28,10 @@ class Lib
 	public static var version(nmeGetVersion, null):String;
 	
 	
+	/**
+	 * Closes the application.
+	 * This is method is ignored in the Flash and HTML5 targets.
+	 */
 	public static function close():Void
 	{
 		#if (cpp || neko)
@@ -36,22 +40,50 @@ class Lib
 	}
 	
 	
-	public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0,  inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData):Void
+	/**
+	 * Creates a new application window. If you are using the NME
+	 * command-line tools, this method will be called automatically
+	 * as a part of the default platform templates.
+	 * This is method is ignored in the Flash and HTML5 targets.
+	 * @param	onLoaded		A method callback that is called once the window is created.
+	 * @param	width		The requested width of the window. Use a width and height of 0 to request the full screen size.
+	 * @param	height		The requested height of the window. Use a width and height of 0 to request the full screen size.
+	 * @param	frameRate		The requested frame rate for the application.
+	 * @param	color		An RGB color to use for the application background.
+	 * @param	flags		A series of bit flags which can specify windowing options, like FULLSCREEN or HARDWARE
+	 * @param	title		The title to use when creating the application window.
+	 * @param	icon		An icon to use for the created application window.
+	 */
+	public static function create(onLoaded:Void->Void, width:Int, height:Int, frameRate:Float = 60.0, color:Int = 0xffffff, flags:Int = 0x0f, title:String = "NME", icon:BitmapData = null):Void
 	{
 		#if (cpp || neko)
-		neash.Lib.create(inOnLoaded, inWidth, inHeight, inFrameRate, inColour, inFlags, inTitle, inIcon);
+		neash.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon);
 		#end
 	}
 	
 	
-	public static function createManagedStage(inWidth:Int, inHeight:Int):Void
+	/**
+	 * Creates a managed stage, for greater control customization and control
+	 * of application events.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 * @param	width		The requested width of the managed stage.
+	 * @param	height		The requested width of the managed stage.
+	 */
+	public static function createManagedStage(width:Int, height:Int)
 	{
 		#if (cpp || neko)
-		neash.Lib.createManagedStage(inWidth, inHeight);
+		return neash.Lib.createManagedStage(width, height);
 		#end
+		return null;
 	}
 	
 	
+	/**
+	 * Similar to the <code>close()</code> method, but the current 
+	 * <code>Stage</code> object is given an opportunity to handle 
+	 * the quit event before the application process is ended.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 */
 	public static function exit():Void
 	{
 		#if (cpp || neko)
@@ -60,6 +92,11 @@ class Lib
 	}
 	
 	
+	/**
+	 * Terminates the application process immediately without
+	 * performing a clean shutdown.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 */
 	public static function forceClose():Void
 	{
 		#if (cpp || neko)
@@ -68,6 +105,15 @@ class Lib
 	}
 	
 	
+	/**
+	 * Returns the time in milliseconds, relative to the start of
+	 * the application. This is a high performance call in order to 
+	 * help regulate time-based operations. Depending upon the
+	 * target platform, this value may or may not be an absolute
+	 * timestamp. If you need an exact time, you should use the
+	 * <code>Date</code> object.
+	 * @return		A relative time value in milliseconds.
+	 */
 	public inline static function getTimer():Int
 	{
 		#if (cpp || neko)
@@ -80,7 +126,12 @@ class Lib
 	}
 	
 	
-	public static function getURL(url:URLRequest, ?target:String):Void
+	/**
+	 * Opens a browser window with the specified URL. 
+	 * @param	url		The URL to open.
+	 * @param	target		An optional window target value.
+	 */
+	public static function getURL(url:URLRequest, target:String = null):Void
 	{
 		#if (cpp || neko)
 		neash.Lib.getURL(url, target);
@@ -92,22 +143,47 @@ class Lib
 	}
 	
 	
-	public static function postUICallback(inCallback:Void->Void)
+	/**
+	 * For some target platforms, NME operates on a separate thread
+	 * than the native application UI. In these cases, you can use this
+	 * method to make thread-safe calls to the native UI.
+	 * 
+	 * If the platform does not require thread-safe callbacks, the 
+	 * handler method will be called immediately.
+	 * @param	handler		The method handler you wish to call when the UI is available. 
+	 */
+	public static function postUICallback(handler:Void->Void)
 	{
 		#if (cpp || neko)
-		neash.Lib.postUICallback(inCallback);
+		neash.Lib.postUICallback(handler);
+		#else
+		handler();
 		#end
 	}
 	
 	
-	public static function setPackage(inCompany:String, inFile:String, inPack:String, inVersion:String):Void
+	/**
+	 * Specifies meta-data for the running application. If you are using 
+	 * the NME command-line tools, this method will be called automatically
+	 * as a part of the default platform templates.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 * @param	company		The company name for the application.
+	 * @param	file		The file name for the application.
+	 * @param	packageName		The package name of the application.
+	 * @param	version		The version string of the application.
+	 */
+	public static function setPackage(company:String, file:String, packageName:String, version:String):Void
 	{
 		#if (cpp || neko)
-		neash.Lib.setPackage(inCompany, inFile, inPack, inVersion);
+		neash.Lib.setPackage(company, file, packageName, version);
 		#end
 	}
 	
 	
+	/**
+	 * Sends a <code>trace</code> call for the current platform.
+	 * @param	arg
+	 */
 	public static function trace(arg:Dynamic):Void
 	{
 		#if (cpp || neko)
