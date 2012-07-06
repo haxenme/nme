@@ -144,6 +144,20 @@ class Lib
 	
 	
 	/**
+	 * For supported platforms, the NME application will be
+	 * paused. This can help improve response times if fullscreen
+	 * native UI element is being used temporarily.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 */
+	public static function pause():Void
+	{
+		#if (cpp || neko)
+		neash.Lib.pause();
+		#end
+	}
+	
+	
+	/**
 	 * For some target platforms, NME operates on a separate thread
 	 * than the native application UI. In these cases, you can use this
 	 * method to make thread-safe calls to the native UI.
@@ -158,6 +172,20 @@ class Lib
 		neash.Lib.postUICallback(handler);
 		#else
 		handler();
+		#end
+	}
+	
+	
+	/**
+	 * Resumes the NME application. For certain platforms,
+	 * pausing the application can improve response times when
+	 * a fullscreen native UI element is being displayed.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 */
+	public static function resume():Void
+	{
+		#if (cpp || neko)
+		neash.Lib.pause();
 		#end
 	}
 	

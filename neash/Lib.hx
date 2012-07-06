@@ -134,6 +134,12 @@ class Lib
    }
    
    
+   public static function pause()
+   {
+	   nme_pause_animation();
+   }
+   
+   
    public static function postUICallback(inCallback:Void->Void)
    {
       #if android
@@ -143,6 +149,12 @@ class Lib
       //  (or use timer?)
       inCallback();
       #end
+   }
+   
+   
+   public static function resume()
+   {
+	   nme_resume_animation();
    }
    
    // Is this still used?
@@ -203,5 +215,7 @@ class Lib
    private static var nme_set_package = Loader.load("nme_set_package", 4);
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_get_url = Loader.load("nme_get_url", 1);
+   private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
+   private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
 
 }
