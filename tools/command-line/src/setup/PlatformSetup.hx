@@ -823,7 +823,7 @@ class PlatformSetup {
 			
 		}
 		
-		var secondAnswer = ask ("Do you have a debug token?");
+		var secondAnswer = ask ("Do you have a valid debug token?");
 		
 		if (secondAnswer == No) {
 			
@@ -919,7 +919,13 @@ class PlatformSetup {
 					
 				}
 				
-				var devicePIN = param ("Device PIN");
+				var deviceIDs = [ param ("Device PIN") ];
+				
+				while (ask ("Would you like to add another device PIN?") != No) {
+					
+					deviceIDs.push (param ("Device PIN"));
+					
+				}
 				
 				if (outputPath == null) {
 					
@@ -933,7 +939,18 @@ class PlatformSetup {
 				
 				try {
 					
-					InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword, "-deviceId", "0x" + devicePIN, debugTokenPath ]);
+					var params = [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword ];
+					
+					for (id in deviceIDs) {
+						
+						params.push ("-deviceId");
+						params.push ("0x" + id);
+						
+					}
+					
+					params.push (debugTokenPath);
+					
+					InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params);
 					
 					Lib.println ("Done.");
 					
