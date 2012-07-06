@@ -1,6 +1,6 @@
 package neko.tls;
 
-import neko.net.Host;
+import sys.net.Host;
 
 enum SocketHandle {}
 enum CTX {}

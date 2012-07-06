@@ -6,3 +6,4 @@
 -lib swf
 --remap flash:nme
 -D haxe3
+-D hxssl

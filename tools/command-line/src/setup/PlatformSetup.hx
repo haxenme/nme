@@ -29,6 +29,7 @@ class PlatformSetup {
 	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.tar.gz";
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
+	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
 	private static var blackBerryNativeSDKURL = "https://bdsc.webapps.blackberry.com/native/download/";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u32-downloads-1594644.html";
@@ -340,14 +341,33 @@ class PlatformSetup {
 		Sys.command("ln -s " + "/usr/lib" +"/" + dir + "/" + file + " " + dest + "/" + file);
 		
 	}
-
-   inline static function getChar()
-   {
-   #if haxe_209
-      return Sys.getChar(false);
-   #else
-      return File.getChar(false);
-   #end
+	
+	
+	inline static function getChar() {
+	   #if haxe_209
+		  return Sys.getChar(false);
+	   #else
+		  return File.getChar(false);
+	   #end
+   }
+   
+   
+	private static function openURL (url:String):Void {
+		
+		if (InstallTool.isWindows) {
+			
+			Sys.command ("explorer", [ url ]);
+			
+		} else if (InstallTool.isLinux) {
+			
+			InstallTool.runCommand ("", "xdg-open", [ url ]);
+			
+		} else {
+			
+			InstallTool.runCommand ("", "open", [ url ]);
+			
+		}
+		
    }
 	
 	
@@ -391,9 +411,9 @@ class PlatformSetup {
 					
 					setupBlackBerry ();
 				
-				case "html5":
+				//case "html5":
 					
-					setupHTML5 ();
+					//setupHTML5 ();
 				
 				case "ios":
 					
@@ -677,20 +697,8 @@ class PlatformSetup {
 				var secondAnswer = ask ("Would you like to go there now?");
 			
 				if (secondAnswer != No) {
-				
-					if (InstallTool.isWindows) {
 					
-						Sys.command ("explorer", [ javaJDKURL ]);
-					
-					} else if (InstallTool.isLinux) {
-						
-						InstallTool.runCommand ("", "xdg-open", [ javaJDKURL ]);
-					
-					} else {
-						
-						InstallTool.runCommand ("", "open", [ javaJDKURL ]);
-						
-					}
+					openURL (javaJDKURL);
 					
 				}
 				
@@ -767,34 +775,21 @@ class PlatformSetup {
 		var answer = ask ("Download and install the BlackBerry Native SDK?");
 		
 		if (answer == Yes || answer == Always) {
-		
+			
 			Lib.println ("You must visit the BlackBerry Developer website to download the Native SDK");
 			var secondAnswer = ask ("Would you like to go there now?");
-		
-			if (secondAnswer != No) {
 			
-				if (InstallTool.isWindows) {
+			if (secondAnswer != No) {
 				
-					Sys.command ("explorer", [ blackBerryNativeSDKURL ]);
-				
-				} else if (InstallTool.isLinux) {
-					
-					InstallTool.runCommand ("", "xdg-open", [ blackBerryNativeSDKURL ]);
-				
-				} else {
-					
-					InstallTool.runCommand ("", "open", [ blackBerryNativeSDKURL ]);
-					
-				}
+				openURL (blackBerryNativeSDKURL);
 				
 			}
 			
 			Lib.println ("");
-		
+			
 		}
 		
-		var defines = getDefines ([ "BLACKBERRY_NDK_ROOT", "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD", "BLACKBERRY_SIMULATOR_IP" ], [ "Path to BlackBerry Native SDK", "Path to your debug token", "IP address to access your device", "Password to access your device", "IP address for the device simulator" ]);
-		defines.set ("BLACKBERRY_SETUP", "true");
+		var defines = getDefines ([ "BLACKBERRY_NDK_ROOT" ], [ "Path to BlackBerry Native SDK" ]);
 		
 		if (defines != null) {
 			
@@ -802,12 +797,200 @@ class PlatformSetup {
 			
 		}
 		
+		var binDirectory = "";
+		
+		if (InstallTool.isWindows) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			
+		} else if (InstallTool.isMac) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
+			
+		} else {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			
+		}
+		
+		if (answer == Always) {
+			
+			Lib.println ("Configure a BlackBerry device? [y/n/a] a");
+			
+		} else {
+			
+			answer = ask ("Configure a BlackBerry device?");
+			
+		}
+		
+		var secondAnswer = ask ("Do you have a debug token?");
+		
+		if (secondAnswer == No) {
+			
+			secondAnswer = ask ("Have you requested code signing keys?");
+			
+			if (secondAnswer == No) {
+				
+				secondAnswer = ask ("Would you like to request them now?");
+				
+				if (secondAnswer != No) {
+					
+					openURL (blackBerryCodeSigningURL);
+					
+				}
+				
+				Lib.println ("");
+				Lib.println ("It can take up to two hours for code signing keys to arrive");
+				Lib.println ("Please run \"nme setup blackberry\" again at that time");
+				Sys.exit (0);
+				
+			} else {
+				
+				secondAnswer = ask ("Have you created a keystore file?");
+				
+				var cskPassword:String = null;
+				var keystorePath:String = null;
+				var keystorePassword:String = null;
+				var outputPath:String = null;
+				
+				if (secondAnswer == No) {
+					
+					var defines = getDefines ([ "PBDT_CSJ_FILE", "RDT_CSJ_FILE", "CSK_PIN", "CSK_PASSWORD" ], [ "Path to PBDT (*.csj) File", "Path to RDT (*.csj) File", "Code Signing Key PIN", "Code Signing Key Password" ]);
+					
+					Lib.println ("Registering Code Signing Keys...");
+					
+					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", defines.get ("CSK_PASSWORD") ]);
+					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("PBDT_CSJ_FILE") ]);
+					InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("RDT_CSJ_FILE") ]);
+					
+					Lib.println ("Done.");
+					
+					cskPassword = defines.get ("CSK_PASSWORD");
+					
+					var defines = getDefines ([ "KEYSTORE_PASSWORD", "COMPANY_NAME", "OUTPUT_PATH" ], [ "Keystore Password", "Your Company Name", "Output Directory" ]);
+					
+					keystorePath = defines.get ("OUTPUT_PATH") + "/author.p12";
+					
+					Lib.println ("Creating keystore...");
+					
+					InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", defines.get ("KEYSTORE_PASSWORD"), "-dname", "cn=(" + defines.get ("COMPANY_NAME") + ")", "-alias", "author" ]);
+					
+					Lib.println ("Done.");
+					
+					keystorePassword = defines.get ("KEYSTORE_PASSWORD");
+					outputPath = defines.get ("OUTPUT_PATH");
+					
+				}
+				
+				var names:Array<String> = [];
+				var descriptions:Array<String> = [];
+				
+				if (cskPassword == null) {
+					
+					cskPassword = param ("Code Signing Key Password");
+					
+				}
+				
+				if (keystorePath == null) {
+					
+					keystorePath = param ("Path to Keystore (*.p12) File");
+					
+				}
+				
+				if (keystorePassword == null) {
+					
+					keystorePassword = param ("Keystore Password");
+					
+				}
+				
+				var devicePIN = param ("Device PIN");
+				
+				if (outputPath == null) {
+					
+					outputPath = param ("Output Directory");
+					
+				}
+				
+				var debugTokenPath = outputPath + "/debugToken.bar";
+				
+				Lib.println ("Requesting Debug Token...");
+				
+				InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword, "-deviceId", "0x" + devicePIN, debugTokenPath ]);
+				
+				Lib.println ("Done.");
+				
+				var defines = getDefines ();
+				defines.set ("BLACKBERRY_DEBUG_TOKEN", debugTokenPath);
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				
+			}
+			
+		}
+		
+		if (answer == Yes || answer == Always) {
+			
+			var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to Debug Token", "Device IP Address", "Device Password" ]);
+			
+			if (defines != null) {
+				
+				defines.set ("BLACKBERRY_SETUP", "true");
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				
+			}
+			
+			var secondAnswer = ask ("Install debug token on device?");
+			
+			if (secondAnswer != No) {
+				
+				Lib.println ("Installing debug token...");
+				
+				try {
+					
+					InstallTool.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ]);
+					
+				} catch (e:Dynamic) {
+					
+					
+				}
+				
+				Lib.println ("Done.");
+				
+			}
+			
+		}
+		
+		if (answer == Always) {
+			
+			Lib.println ("Configure the BlackBerry simulator? [y/n/a] a");
+			
+		} else {
+			
+			answer = ask ("Configure the BlackBerry simulator?");
+			
+		}
+		
+		if (answer == Yes || answer == Always) {
+			
+			var defines = getDefines ([ "BLACKBERRY_SIMULATOR_IP" ], [ "Simulator IP address" ]);
+			
+			if (defines != null) {
+				
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				
+			}
+			
+		}
+		
+		var defines = getDefines ();
+		defines.set ("BLACKBERRY_SETUP", "true");
+		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+		
 	}
 	
 	
 	public static function setupHTML5 ():Void {
 		
-		InstallTool.runCommand ("", "haxelib", [ "install", "jeash" ]);
+		//InstallTool.runCommand ("", "haxelib", [ "install", "jeash" ]);
 		
 	}
 
@@ -846,7 +1029,7 @@ class PlatformSetup {
 		var answer = ask ("Download and install the HP webOS SDK?");
 		
 		if (answer == Yes || answer == Always) {
-						
+			
 			var sdkPath = "";
 			
 			if (InstallTool.isWindows) {
@@ -994,10 +1177,15 @@ class PlatformSetup {
 			input.close ();
 			
 			if (!backedUpConfig) {
-			
-				var backup = File.write (path + ".bak", false);
-				backup.writeBytes (bytes, 0, bytes.length);
-				backup.close ();
+				
+				try {
+					
+					var backup = File.write (path + ".bak", false);
+					backup.writeBytes (bytes, 0, bytes.length);
+					backup.close ();
+					
+				} catch (e:Dynamic) { }
+				
 				backedUpConfig = true;
 			
 			}
