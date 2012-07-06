@@ -75,9 +75,10 @@ class Lib {
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
 		__scr.style.setProperty("overflow", "hidden", "");
 		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
-		__scr.style.width = width + "px";
-		__scr.style.height = height + "px";
-
+		if (__scr.style.getPropertyValue("width") != "100%")
+			__scr.style.width = width + "px";
+		if (__scr.style.getPropertyValue("height") != "100%")
+			__scr.style.height = height + "px";
 	}
 
 	static public function trace( arg:Dynamic ) {
@@ -578,9 +579,7 @@ class Lib {
 			if (Reflect.hasField(window, "on" + HTML_ORIENTATION_EVENT_TYPE))
 				window.addEventListener(HTML_ORIENTATION_EVENT_TYPE, jeashGetStage().jeashQueueStageEvent, true);
 
-			for (type in HTML_WINDOW_EVENT_TYPES) 
-
-			{
+			for (type in HTML_WINDOW_EVENT_TYPES) {
 				window.addEventListener(type, jeashGetStage().jeashQueueStageEvent, false);
 			}
 

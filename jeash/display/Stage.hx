@@ -101,7 +101,7 @@ class Stage extends DisplayObjectContainer
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
 		tabEnabled = true;
-		frameRate=DEFAULT_FRAMERATE;
+		frameRate = DEFAULT_FRAMERATE;
 		jeashSetBackgroundColour(0xffffff);
 		name = "Stage";
 		loaderInfo = LoaderInfo.create(null);
@@ -115,7 +115,7 @@ class Stage extends DisplayObjectContainer
 		jeashFocusOverObjects = [];
 		jeashUIEventsQueue = untyped __new__("Array", UI_EVENTS_QUEUE_MAX);
 		jeashUIEventsQueueIndex = 0;
-
+		
 		// bug in 2.07 release
 		// displayState = StageDisplayState.NORMAL;
 	}
@@ -259,8 +259,7 @@ class Stage extends DisplayObjectContainer
 
 		switch(evt.type) {
 			case "resize":
-				jeashOnResize(jeashGetStageWidth(), jeashGetStageHeight());
-
+				jeashOnResize(Lib.jeashGetWidth(), Lib.jeashGetHeight());
 			case "mousemove":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_MOVE);
 
