@@ -855,36 +855,38 @@ class PlatformSetup {
 				
 				if (secondAnswer == No) {
 					
-					var defines = getDefines ([ "PBDT_CSJ_FILE", "RDT_CSJ_FILE", "CSK_PIN", "CSK_PASSWORD" ], [ "Path to PBDT (*.csj) File", "Path to RDT (*.csj) File", "Code Signing Key PIN", "Code Signing Key Password" ]);
+					var pbdtFile = param ("Path to PBDT (*.csj) file");
+					var rdtFile = param ("Path to RDT (*.csj) file");
+					var cskPIN = param ("Code signing key PIN");
+					cskPassword = param ("Code signing key password");
 					
-					Lib.println ("Registering Code Signing Keys...");
+					Lib.println ("Registering code signing keys...");
 					
 					try {
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", defines.get ("CSK_PASSWORD") ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
 						
 					} catch (e:Dynamic) { }
 					
 					try {
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("PBDT_CSJ_FILE") ]);
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", defines.get ("CSK_PIN"), defines.get ("RDT_CSJ_FILE") ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, pbdtFile ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, rdtFile ]);
 						
 						Lib.println ("Done.");
 						
 					} catch (e:Dynamic) {}
 					
-					cskPassword = defines.get ("CSK_PASSWORD");
-					
-					var defines = getDefines ([ "KEYSTORE_PASSWORD", "COMPANY_NAME", "OUTPUT_PATH" ], [ "Keystore Password", "Your Company Name", "Output Directory" ]);
-					
-					keystorePath = defines.get ("OUTPUT_PATH") + "/author.p12";
+					keystorePassword = param ("Keystore password");
+					var companyName = param ("Company name");
+					outputPath = param ("Output directory");
+					keystorePath = outputPath + "/author.p12";
 					
 					Lib.println ("Creating keystore...");
 					
 					try {
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", defines.get ("KEYSTORE_PASSWORD"), "-dname", "cn=(" + defines.get ("COMPANY_NAME") + ")", "-alias", "author" ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
 						
 						Lib.println ("Done.");
 						
@@ -894,9 +896,6 @@ class PlatformSetup {
 						
 					}
 					
-					keystorePassword = defines.get ("KEYSTORE_PASSWORD");
-					outputPath = defines.get ("OUTPUT_PATH");
-					
 				}
 				
 				var names:Array<String> = [];
@@ -904,19 +903,19 @@ class PlatformSetup {
 				
 				if (cskPassword == null) {
 					
-					cskPassword = param ("Code Signing Key Password");
+					cskPassword = param ("Code signing key password");
 					
 				}
 				
 				if (keystorePath == null) {
 					
-					keystorePath = param ("Path to Keystore (*.p12) File");
+					keystorePath = param ("Path to keystore (*.p12) file");
 					
 				}
 				
 				if (keystorePassword == null) {
 					
-					keystorePassword = param ("Keystore Password");
+					keystorePassword = param ("Keystore password");
 					
 				}
 				
@@ -924,13 +923,13 @@ class PlatformSetup {
 				
 				if (outputPath == null) {
 					
-					outputPath = param ("Output Directory");
+					outputPath = param ("Output directory");
 					
 				}
 				
 				var debugTokenPath = outputPath + "/debugToken.bar";
 				
-				Lib.println ("Requesting Debug Token...");
+				Lib.println ("Requesting debug token...");
 				
 				try {
 					
@@ -954,7 +953,7 @@ class PlatformSetup {
 		
 		if (answer == Yes || answer == Always) {
 			
-			var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to Debug Token", "Device IP Address", "Device Password" ]);
+			var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to debug token", "Device IP address", "Device password" ]);
 			
 			if (defines != null) {
 				
