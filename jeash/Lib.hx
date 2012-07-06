@@ -59,7 +59,9 @@ class Lib {
 	static inline var VENDOR_HTML_TAG = "data-";
 	static var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'dblclick', 'click' ];
 	static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
-	static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ]; 
+	static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ];
+	public static inline var HTML_ACCELEROMETER_EVENT_TYPE = 'devicemotion';
+	public static inline var HTML_ORIENTATION_EVENT_TYPE = 'orientationchange';
 
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 	static inline var DEFAULT_WIDTH = 500;
@@ -559,15 +561,23 @@ class Lib {
 				}
 			}
 
-			for (type in HTML_TOUCH_EVENT_TYPES) {
-				tgt.addEventListener(type, jeashGetStage().jeashQueueStageEvent, true);
+			if (Reflect.hasField(tgt, "on" + HTML_TOUCH_EVENT_TYPES[0])) {
+				for (type in HTML_TOUCH_EVENT_TYPES) {
+					tgt.addEventListener(type, jeashGetStage().jeashQueueStageEvent, true);
+				}
 			}
 
 			for (type in HTML_DIV_EVENT_TYPES) 
 				tgt.addEventListener(type, jeashGetStage().jeashQueueStageEvent, true);
 
-
 			var window : Window = cast js.Lib.window;
+
+			if (Reflect.hasField(window, "on" + HTML_ACCELEROMETER_EVENT_TYPE))
+				window.addEventListener(HTML_ACCELEROMETER_EVENT_TYPE, jeashGetStage().jeashQueueStageEvent, true);
+
+			if (Reflect.hasField(window, "on" + HTML_ORIENTATION_EVENT_TYPE))
+				window.addEventListener(HTML_ORIENTATION_EVENT_TYPE, jeashGetStage().jeashQueueStageEvent, true);
+
 			for (type in HTML_WINDOW_EVENT_TYPES) 
 
 			{

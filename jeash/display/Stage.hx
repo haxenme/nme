@@ -41,6 +41,11 @@ import jeash.geom.Rectangle;
 
 class Stage extends DisplayObjectContainer
 {
+	public static var OrientationPortrait = 1;
+	public static var OrientationPortraitUpsideDown = 2;
+	public static var OrientationLandscapeRight = 3;
+	public static var OrientationLandscapeLeft = 4;
+
 	var jeashWindowWidth : Int;
 	var jeashWindowHeight : Int;
 	var jeashTimer : Dynamic;
@@ -75,6 +80,7 @@ class Stage extends DisplayObjectContainer
 	public var displayState(jeashGetDisplayState,jeashSetDisplayState):StageDisplayState;
 	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
 	public var fullScreenHeight(jeashGetFullScreenHeight,null):UInt;
+	public static var jeashAcceleration:jeash.ui.Acceleration = {x:0.0, y:1.0, z:0.0};
 
 	public function jeashGetStageWidth() { return jeashWindowWidth; }
 	public function jeashGetStageHeight() { return jeashWindowHeight; }
@@ -329,8 +335,25 @@ class Stage extends DisplayObjectContainer
 				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_END, touchInfo, true);
 				jeashTouchInfo[evt.changedTouches[0].identifier] = null;
 
+			case Lib.HTML_ACCELEROMETER_EVENT_TYPE:
+				var evt:AccelerationEvent = cast evt;
+				jeashHandleAccelerometer(evt);
+
+			case Lib.HTML_ORIENTATION_EVENT_TYPE:
+				jeashHandleOrientationChange();
+
 			default:
 		}
+	}
+
+	function jeashHandleAccelerometer(evt:AccelerationEvent):Void {
+		jeashAcceleration.x = evt.accelerationIncludingGravity.x;
+		jeashAcceleration.y = evt.accelerationIncludingGravity.y;
+		jeashAcceleration.z = evt.accelerationIncludingGravity.z;
+	}
+
+	function jeashHandleOrientationChange():Void {
+		//js.Lib.alert("orientation: " + getOrientation());
 	}
 
 	// @r551
@@ -443,6 +466,21 @@ class Stage extends DisplayObjectContainer
 		jeashBroadcast(event);
 	}
 
+	public static dynamic function getOrientation():Int {
+		var rotation:Int = untyped window.orientation;
+		var orientation:Int = OrientationPortrait;
+		switch (rotation) {
+			case -90:
+				orientation = OrientationLandscapeLeft;
+			case 180:
+				orientation = OrientationPortraitUpsideDown;
+			case 90:
+				orientation = OrientationLandscapeRight;
+			default:
+				orientation = OrientationPortrait;
+		}
+		return orientation;
+	}
 
 	public function jeashGetBackgroundColour() { return jeashBackgroundColour; }
 	public function jeashSetBackgroundColour(col:Int) : Int

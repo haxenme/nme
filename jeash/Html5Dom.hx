@@ -2895,6 +2895,22 @@ extern interface TouchEvent implements UIEvent {
 	public var shiftKey		(default, null):Bool;
 }
 
+typedef Acceleration = {
+	x:Float,
+	y:Float,
+	z:Float 
+}
+typedef RotationRate = {
+	alpha:Float,
+	beta:Float,
+	gamma:Float
+}
+extern interface AccelerationEvent {
+	public var acceleration 					(default, null):Acceleration;
+	public var accelerationIncludingGravity 	(default, null):Acceleration;
+	public var rotationRate 					(default, null):RotationRate;
+}
+
 extern interface PopStateEvent implements Event {
     public var state        (default, null): Dynamic;
     
@@ -3624,6 +3640,7 @@ extern interface Window implements ArrayAccess<WindowProxy>, implements EventTar
     public var returnValue      : DOMString;
     public var sessionStorage   (default, null): Storage;
     public var crypto           (default, null): Crypto;
+    public var orientation 		(default, null): Int;
     
     public var onabort: EventListener<Event>;
     public var onafterprint: EventListener<Event>;

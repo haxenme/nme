@@ -9,7 +9,8 @@ typedef Acceleration =
 	z:Float 
 }
 
-
 #elseif (cpp || neko)
 typedef Acceleration = neash.ui.Acceleration;
+#elseif js
+typedef Acceleration = jeash.ui.Acceleration;
 #end
