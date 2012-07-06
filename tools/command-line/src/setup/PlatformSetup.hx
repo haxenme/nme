@@ -823,70 +823,136 @@ class PlatformSetup {
 			
 		}
 		
-		var secondAnswer = ask ("Do you have a valid debug token?");
-		
-		if (secondAnswer == No) {
-			
-			secondAnswer = ask ("Have you requested code signing keys?");
+		if (answer == Yes || answer == Always) {
+
+			var secondAnswer = ask ("Do you have a valid debug token?");
 			
 			if (secondAnswer == No) {
 				
-				secondAnswer = ask ("Would you like to request them now?");
-				
-				if (secondAnswer != No) {
-					
-					openURL (blackBerryCodeSigningURL);
-					
-				}
-				
-				Lib.println ("");
-				Lib.println ("It can take up to two hours for code signing keys to arrive");
-				Lib.println ("Please run \"nme setup blackberry\" again at that time");
-				Sys.exit (0);
-				
-			} else {
-				
-				secondAnswer = ask ("Have you created a keystore file?");
-				
-				var cskPassword:String = null;
-				var keystorePath:String = null;
-				var keystorePassword:String = null;
-				var outputPath:String = null;
+				secondAnswer = ask ("Have you requested code signing keys?");
 				
 				if (secondAnswer == No) {
 					
-					var pbdtFile = param ("Path to PBDT (*.csj) file");
-					var rdtFile = param ("Path to RDT (*.csj) file");
-					var cskPIN = param ("Code signing key PIN");
-					cskPassword = param ("Code signing key password");
+					secondAnswer = ask ("Would you like to request them now?");
 					
-					Lib.println ("Registering code signing keys...");
+					if (secondAnswer != No) {
+						
+						openURL (blackBerryCodeSigningURL);
+						
+					}
+					
+					Lib.println ("");
+					Lib.println ("It can take up to two hours for code signing keys to arrive");
+					Lib.println ("Please run \"nme setup blackberry\" again at that time");
+					Sys.exit (0);
+					
+				} else {
+					
+					secondAnswer = ask ("Have you created a keystore file?");
+					
+					var cskPassword:String = null;
+					var keystorePath:String = null;
+					var keystorePassword:String = null;
+					var outputPath:String = null;
+					
+					if (secondAnswer == No) {
+						
+						var pbdtFile = param ("Path to PBDT (*.csj) file");
+						var rdtFile = param ("Path to RDT (*.csj) file");
+						var cskPIN = param ("Code signing key PIN");
+						cskPassword = param ("Code signing key password");
+						
+						Lib.println ("Registering code signing keys...");
+						
+						try {
+							
+							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
+							
+						} catch (e:Dynamic) { }
+						
+						try {
+							
+							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, pbdtFile ]);
+							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, rdtFile ]);
+							
+							Lib.println ("Done.");
+							
+						} catch (e:Dynamic) {}
+						
+						keystorePassword = param ("Keystore password");
+						var companyName = param ("Company name");
+						outputPath = param ("Output directory");
+						keystorePath = outputPath + "/author.p12";
+						
+						Lib.println ("Creating keystore...");
+						
+						try {
+							
+							InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
+							
+							Lib.println ("Done.");
+							
+						} catch (e:Dynamic) {
+							
+							Sys.exit (1);
+							
+						}
+						
+					}
+					
+					var names:Array<String> = [];
+					var descriptions:Array<String> = [];
+					
+					if (cskPassword == null) {
+						
+						cskPassword = param ("Code signing key password");
+						
+					}
+					
+					if (keystorePath == null) {
+						
+						keystorePath = param ("Path to keystore (*.p12) file");
+						
+					}
+					
+					if (keystorePassword == null) {
+						
+						keystorePassword = param ("Keystore password");
+						
+					}
+					
+					var deviceIDs = [ param ("Device PIN") ];
+					
+					while (ask ("Would you like to add another device PIN?") != No) {
+						
+						deviceIDs.push (param ("Device PIN"));
+						
+					}
+					
+					if (outputPath == null) {
+						
+						outputPath = param ("Output directory");
+						
+					}
+					
+					var debugTokenPath = outputPath + "/debugToken.bar";
+					
+					Lib.println ("Requesting debug token...");
 					
 					try {
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
+						var params = [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword ];
 						
-					} catch (e:Dynamic) { }
-					
-					try {
+						for (id in deviceIDs) {
+							
+							params.push ("-deviceId");
+							params.push ("0x" + id);
+							
+						}
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, pbdtFile ]);
-						InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, rdtFile ]);
+						params.push (debugTokenPath);
 						
-						Lib.println ("Done.");
-						
-					} catch (e:Dynamic) {}
-					
-					keystorePassword = param ("Keystore password");
-					var companyName = param ("Company name");
-					outputPath = param ("Output directory");
-					keystorePath = outputPath + "/author.p12";
-					
-					Lib.println ("Creating keystore...");
-					
-					try {
-						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params);
 						
 						Lib.println ("Done.");
 						
@@ -896,104 +962,42 @@ class PlatformSetup {
 						
 					}
 					
-				}
-				
-				var names:Array<String> = [];
-				var descriptions:Array<String> = [];
-				
-				if (cskPassword == null) {
-					
-					cskPassword = param ("Code signing key password");
+					var defines = getDefines ();
+					defines.set ("BLACKBERRY_DEBUG_TOKEN", debugTokenPath);
+					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 					
 				}
 				
-				if (keystorePath == null) {
+			}
+			
+			if (answer == Yes || answer == Always) {
+				
+				var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to debug token", "Device IP address", "Device password" ]);
+				
+				if (defines != null) {
 					
-					keystorePath = param ("Path to keystore (*.p12) file");
+					defines.set ("BLACKBERRY_SETUP", "true");
+					writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 					
 				}
 				
-				if (keystorePassword == null) {
-					
-					keystorePassword = param ("Keystore password");
-					
-				}
+				var secondAnswer = ask ("Install debug token on device?");
 				
-				var deviceIDs = [ param ("Device PIN") ];
-				
-				while (ask ("Would you like to add another device PIN?") != No) {
+				if (secondAnswer != No) {
 					
-					deviceIDs.push (param ("Device PIN"));
+					Lib.println ("Installing debug token...");
 					
-				}
-				
-				if (outputPath == null) {
-					
-					outputPath = param ("Output directory");
-					
-				}
-				
-				var debugTokenPath = outputPath + "/debugToken.bar";
-				
-				Lib.println ("Requesting debug token...");
-				
-				try {
-					
-					var params = [ "-cskpass", cskPassword, "-keystore", keystorePath, "-storepass", keystorePassword ];
-					
-					for (id in deviceIDs) {
+					try {
 						
-						params.push ("-deviceId");
-						params.push ("0x" + id);
+						InstallTool.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ]);
+						
+						Lib.println ("Done.");
+						
+					} catch (e:Dynamic) {
+						
+						Sys.exit (1);
 						
 					}
-					
-					params.push (debugTokenPath);
-					
-					InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params);
-					
-					Lib.println ("Done.");
-					
-				} catch (e:Dynamic) {
-					
-					Sys.exit (1);
-					
-				}
-				
-				var defines = getDefines ();
-				defines.set ("BLACKBERRY_DEBUG_TOKEN", debugTokenPath);
-				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
-				
-			}
-			
-		}
-		
-		if (answer == Yes || answer == Always) {
-			
-			var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to debug token", "Device IP address", "Device password" ]);
-			
-			if (defines != null) {
-				
-				defines.set ("BLACKBERRY_SETUP", "true");
-				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
-				
-			}
-			
-			var secondAnswer = ask ("Install debug token on device?");
-			
-			if (secondAnswer != No) {
-				
-				Lib.println ("Installing debug token...");
-				
-				try {
-					
-					InstallTool.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ]);
-					
-					Lib.println ("Done.");
-					
-				} catch (e:Dynamic) {
-					
-					Sys.exit (1);
 					
 				}
 				
