@@ -254,7 +254,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #define TIMES_ROMAN "Times New Roman.ttf"
 #endif
 
-   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf"))
+   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
       outFile = FONT_BASE TIMES_ROMAN;
    else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
       outFile = FONT_BASE "Arial.ttf"; // Helvetica.dfont does not render

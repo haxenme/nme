@@ -1730,7 +1730,7 @@ TextFormat::TextFormat() :
    bold(false),
    bullet(false),
    color(0x00000000),
-   font( WString(L"Times",5) ),
+   font( WString(L"_serif",6) ),
    indent(0),
    italic(false),
    kerning(false),
