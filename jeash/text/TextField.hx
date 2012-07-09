@@ -615,6 +615,10 @@ class TextField extends jeash.display.InteractiveObject {
 		return mHTMLText;
 	}
 
+	public function appendText(newText : String) {
+		this.text += newText;
+	}
+
 	public function setSelection(beginIndex : Int, endIndex : Int) {
 		// TODO:
 	}
