@@ -283,7 +283,7 @@ class PlatformSetup {
 				
 			}
 			
-			value = param (description + " [" + value + "]");
+			value = unescapePath (param (description + " [" + value + "]"));
 			
 			if (value != "") {
 				
@@ -386,7 +386,7 @@ class PlatformSetup {
 		
 		try {
 			
-			return StringTools.replace (readLine (), "\\ ", " ");
+			return readLine ();
 			
 		} catch (e:Eof) {
 			
@@ -554,7 +554,7 @@ class PlatformSetup {
 
 			downloadFile (downloadPath);
 			
-			var path = param ("Output directory [" + defaultInstallPath + "]");
+			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
@@ -626,7 +626,7 @@ class PlatformSetup {
 			
 			downloadFile (downloadPath);
 			
-			var path = param ("Output directory [" + defaultInstallPath + "]");
+			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
 			path = createPath (path, defaultInstallPath);
 			
 			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
@@ -670,7 +670,7 @@ class PlatformSetup {
 				
 				downloadFile (downloadPath);
 				
-				var path = param ("Output directory [" + defaultInstallPath + "]");
+				var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
 				path = createPath (path, defaultInstallPath);
 				
 				extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
@@ -857,8 +857,8 @@ class PlatformSetup {
 					
 					if (secondAnswer == No) {
 						
-						var pbdtFile = param ("Path to PBDT (*.csj) file");
-						var rdtFile = param ("Path to RDT (*.csj) file");
+						var pbdtFile = unescapePath (param ("Path to PBDT (*.csj) file"));
+						var rdtFile = unescapePath (param ("Path to RDT (*.csj) file"));
 						var cskPIN = param ("Code signing key PIN");
 						cskPassword = param ("Code signing key password");
 						
@@ -881,7 +881,7 @@ class PlatformSetup {
 						
 						keystorePassword = param ("Keystore password");
 						var companyName = param ("Company name");
-						outputPath = param ("Output directory");
+						outputPath = unescapePath (param ("Output directory"));
 						keystorePath = outputPath + "/author.p12";
 						
 						Lib.println ("Creating keystore...");
@@ -911,7 +911,7 @@ class PlatformSetup {
 					
 					if (keystorePath == null) {
 						
-						keystorePath = param ("Path to keystore (*.p12) file");
+						keystorePath = unescapePath (param ("Path to keystore (*.p12) file"));
 						
 					}
 					
@@ -931,7 +931,7 @@ class PlatformSetup {
 					
 					if (outputPath == null) {
 						
-						outputPath = param ("Output directory");
+						outputPath = unescapePath (param ("Output directory"));
 						
 					}
 					
@@ -1197,6 +1197,13 @@ class PlatformSetup {
 		}
 		
 		Sys.exit (1);
+		
+	}
+	
+	
+	private static function unescapePath (path:String):String {
+		
+		return StringTools.replace (path, "\\ ", " ");
 		
 	}
 	
