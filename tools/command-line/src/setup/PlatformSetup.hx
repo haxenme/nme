@@ -386,7 +386,7 @@ class PlatformSetup {
 		
 		try {
 			
-			return readLine ();
+			return StringTools.replace (readLine (), "\\ ", " ");
 			
 		} catch (e:Eof) {
 			
