@@ -380,13 +380,12 @@ class Graphics {
 
 			var fillColour = d.fillColour;
 			var fillAlpha = d.fillAlpha;
-			if (  fillAlpha >= 0. && fillAlpha <= 1.) {
-				var g = d.solidGradient;
-				if (g != null)
-					ctx.fillStyle = createCanvasGradient(ctx, g);
-				else 
-					ctx.fillStyle = createCanvasColor(fillColour, fillAlpha);
-			}
+			var g = d.solidGradient;
+			if (g != null)
+				ctx.fillStyle = createCanvasGradient(ctx, g);
+			else 
+				// Alpha value gets clamped in [0;1] range.
+				ctx.fillStyle = createCanvasColor(fillColour, (fillAlpha > 1.0) ? 1.0 : ((fillAlpha < 0.0) ? 0.0 : fillAlpha));
 			ctx.fill();
 
 			ctx.save();
