@@ -33,7 +33,7 @@ class Capabilities {
 	public static var screenDPI(jeashGetScreenDPI, null):Float;
 	public static var screenResolutionX(jeashGetScreenResolutionX, null):Float;
 	public static var screenResolutionY(jeashGetScreenResolutionY, null):Float;
-	
+	public static var language(jeashGetLanguage, null):String;
 	
 	
 	// Getters & Setters
@@ -44,5 +44,5 @@ class Capabilities {
 	private static function jeashGetScreenDPI():Float { return 72; }
 	private static function jeashGetScreenResolutionX():Float { return 0; }
 	private static function jeashGetScreenResolutionY():Float { return 0; }
-	
+	private static function jeashGetLanguage():String { return untyped navigator.language; }
 }

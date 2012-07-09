@@ -13,4 +13,14 @@ bool LaunchBrowser(const char *inUtf8URL)
 	return true;
 }
 
+std::string CapabilitiesGetLanguage()
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
+	std::string result(language?[language UTF8String]:"");
+	[str release];
+	[pool drain];
+	return result;
+}
+
 }

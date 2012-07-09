@@ -16,7 +16,7 @@ class Capabilities
 	public static var screenResolutionX(nmeGetScreenResolutionX, null):Float;
 	public static var screenResolutionY(nmeGetScreenResolutionY, null):Float;
 	public static var screenResolutions(nmeGetScreenResolutions, null):Array<Array<Int>>;
-	
+	public static var language(nmeGetLanguage, null):String;
 	
 	
 	// Getters & Setters
@@ -27,6 +27,7 @@ class Capabilities
 	/** @private */ private static function nmeGetScreenDPI():Float { return nme_capabilities_get_screen_dpi(); }
 	/** @private */ private static function nmeGetScreenResolutionX():Float { return nme_capabilities_get_screen_resolution_x(); }
 	/** @private */ private static function nmeGetScreenResolutionY():Float { return nme_capabilities_get_screen_resolution_y(); }
+	/** @private */ private static function nmeGetLanguage():String { return nme_capabilities_get_language(); }
 	
 	
 	/** @private */ private static function nmeGetScreenResolutions():Array<Array<Int>>
@@ -57,5 +58,6 @@ class Capabilities
 	private static var nme_capabilities_get_screen_resolution_x = Loader.load("nme_capabilities_get_screen_resolution_x", 0);
 	private static var nme_capabilities_get_screen_resolution_y = Loader.load("nme_capabilities_get_screen_resolution_y", 0);
 	private static var nme_capabilities_get_screen_resolutions = Loader.load("nme_capabilities_get_screen_resolutions", 0 );
+	private static var nme_capabilities_get_language = Loader.load("nme_capabilities_get_language", 0);
 	
 }

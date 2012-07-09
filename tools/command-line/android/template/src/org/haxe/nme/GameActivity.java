@@ -31,7 +31,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.Math;
 import java.util.HashMap;
-
+import java.util.Locale;
 
 public class GameActivity extends Activity implements SensorEventListener
 {
@@ -125,6 +125,11 @@ public class GameActivity extends Activity implements SensorEventListener
 	public static double CapabilitiesGetScreenResolutionY()
 	{
 		return metrics.heightPixels;
+	}
+	
+	public static String CapabilitiesGetLanguage()
+	{
+		return Locale.getDefault().getLanguage();
 	}
 	
 	

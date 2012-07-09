@@ -18,6 +18,20 @@ bool LaunchBrowser(const char *inUtf8URL)
 	return true;
 }
 
+std::string CapabilitiesGetLanguage()
+{
+	#ifndef OBJC_ARC
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    #endif
+	NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
+	std::string result(language?[language UTF8String]:"");
+	#ifndef OBJC_ARC
+	[str release];
+	[pool drain];
+    #endif
+	return result;
+}
+
 std::string GetUserPreference(const char *inId)
 {
 	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];

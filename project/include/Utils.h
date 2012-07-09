@@ -135,6 +135,8 @@ double CapabilitiesGetScreenResolutionX ();
 double CapabilitiesGetScreenResolutionY ();
 QuickVec<int>* CapabilitiesGetScreenResolutions ();
 
+std::string CapabilitiesGetLanguage();
+
 bool LaunchBrowser(const char *inUtf8URL);
 
 void ExternalInterface_AddCallback (const char *functionName, AutoGCRoot *inCallback);

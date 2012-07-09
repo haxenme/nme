@@ -68,6 +68,20 @@ namespace nme {
 		
 	}
 	
+	std::string CapabilitiesGetLanguage() {
+	
+		JNIEnv *env = GetEnv();
+		jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetLanguage", "()Ljava/lang/String;");
+		if(mid == 0)
+			return std::string("");
+		
+		jstring jLang = (jstring) env->CallStaticObjectMethod(cls, mid);
+		const char *nativeLang = env->GetStringUTFChars(jLang, 0);
+		std::string result(nativeLang);
+		env->ReleaseStringUTFChars(jLang, nativeLang);
+		return result;
+	}
 	
 	void HapticVibrate (int period, int duration)
 	{

@@ -903,6 +903,21 @@ value nme_capabilities_get_screen_resolution_y () {
 }
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_y, 0);
 
+value nme_capabilities_get_language() {
+	
+	#if defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )
+		
+		return alloc_string(CapabilitiesGetLanguage().c_str());
+		
+	#else
+		
+		return alloc_null();
+		
+	#endif
+	
+}
+DEFINE_PRIM (nme_capabilities_get_language, 0);
+
 
 // ---  nme.filesystem -------------------------------------------------------------
 value nme_get_resource_path()
