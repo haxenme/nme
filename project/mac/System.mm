@@ -1,5 +1,6 @@
 #import <AppKit/NSWorkspace.h>
 #import <Cocoa/Cocoa.h>
+#include <string>
 
 namespace nme {
 
@@ -17,8 +18,7 @@ std::string CapabilitiesGetLanguage()
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
-	std::string result(language?[language UTF8String]:"");
-	[str release];
+	std::string result = (language?[language UTF8String]:"");
 	[pool drain];
 	return result;
 }
