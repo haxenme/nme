@@ -30,7 +30,9 @@ class PlatformSetup {
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
 	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
-	private static var blackBerryNativeSDKURL = "https://bdsc.webapps.blackberry.com/native/download/";
+	private static var blackBerryLinuxNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-linux-560-201206041807-201206052239.bin";
+	private static var blackBerryMacNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-macosx-560-201206041807-201206052239.dmg";
+	private static var blackBerryWindowsNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-win32-560-201206041807-201206052239.exe";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u32-downloads-1594644.html";
 	private static var linuxX64Packages = "ia32-libs-multiarch gcc-multilib g++-multilib";
@@ -98,7 +100,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function downloadFile (remotePath:String, localPath:String = ""):Void {
+	private static function downloadFile (remotePath:String, localPath:String = "", followingLocation:Bool = false):Void {
 		
 		if (localPath == "") {
 			
@@ -106,7 +108,7 @@ class PlatformSetup {
 			
 		}
 		
-		if (FileSystem.exists (localPath)) {
+		if (!followingLocation && FileSystem.exists (localPath)) {
 			
 			var answer = ask ("File found. Install existing file?");
 			
@@ -128,8 +130,25 @@ class PlatformSetup {
 			throw e;
 		};
 		
-		Lib.println ("Downloading " + localPath + "...");
+		if (!followingLocation) {
+			
+			Lib.println ("Downloading " + localPath + "...");
+			
+		}
+		
 		h.customRequest (false, progress);
+		
+		if (h.responseHeaders != null && h.responseHeaders.exists ("Location")) {
+			
+			var location = h.responseHeaders.get ("Location");
+			
+			if (location != remotePath) {
+				
+				downloadFile (location, localPath, true);
+				
+			}
+			
+		}
 		
 	}
 	
@@ -776,16 +795,39 @@ class PlatformSetup {
 		
 		if (answer == Yes || answer == Always) {
 			
-			Lib.println ("You must visit the BlackBerry Developer website to download the Native SDK");
-			var secondAnswer = ask ("Would you like to go there now?");
+			var downloadPath = "";
+			var defaultInstallPath = "";
 			
-			if (secondAnswer != No) {
+			if (InstallTool.isWindows) {
 				
-				openURL (blackBerryNativeSDKURL);
+				downloadPath = blackBerryWindowsNativeSDKPath;
+				//defaultInstallPath = "C:\\Development\\Android NDK";
+				
+			} else if (InstallTool.isLinux) {
+				
+				downloadPath = blackBerryLinuxNativeSDKPath;
+				//defaultInstallPath = "/opt/Android NDK";
+				
+			} else {
+				
+				downloadPath = blackBerryMacNativeSDKPath;
+				//defaultInstallPath = "/opt/Android NDK";
 				
 			}
 			
+			downloadFile (downloadPath);
+			runInstaller (Path.withoutDirectory (downloadPath));
 			Lib.println ("");
+			
+			/*var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
+			path = createPath (path, defaultInstallPath);
+			
+			extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+			
+			setAndroidNDK = true;
+			defines.set ("ANDROID_NDK_ROOT", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+			Lib.println ("");*/
 			
 		}
 		
@@ -1310,7 +1352,13 @@ class Progress extends haxe.io.Output {
 		var speed = (cur / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		Lib.print("Download complete : "+cur+" bytes in "+time+"s ("+speed+"KB/s)\n");
+		
+		if (cur > 0) {
+			
+			Lib.print("Download complete : " + cur + " bytes in " + time + "s (" + speed + "KB/s)\n");
+			
+		}
+		
 	}
 
 	public override function prepare(m) {
