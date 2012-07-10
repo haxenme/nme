@@ -151,6 +151,8 @@ class Font
 	}
 
 	function jeashSetFontName(name:String) {
+		if (name == "_sans" || name == "_serif" || name == "_typewriter")
+			name = DEFAULT_FONT_NAME; // just avoid crash for "device" fonts with default until they are specifically supported
 		this.fontName = name;
 		if (jeashFontData[cast fontName] == null) {
 			try {
