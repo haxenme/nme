@@ -27,7 +27,52 @@ class Capabilities
 	/** @private */ private static function nmeGetScreenDPI():Float { return nme_capabilities_get_screen_dpi(); }
 	/** @private */ private static function nmeGetScreenResolutionX():Float { return nme_capabilities_get_screen_resolution_x(); }
 	/** @private */ private static function nmeGetScreenResolutionY():Float { return nme_capabilities_get_screen_resolution_y(); }
-	/** @private */ private static function nmeGetLanguage():String { return nme_capabilities_get_language(); }
+	
+	
+	/** @private */ private static function nmeGetLanguage():String
+	{
+		var locale:String = nme_capabilities_get_language();
+		
+		if (locale == null || locale == "" || locale == "C" || locale == "POSIX") {
+			
+			return "en-US";
+			
+		} else {
+			
+			var formattedLocale = "";
+			var length = locale.length;
+			
+			if (length > 5) {
+				
+				length = 5;
+				
+			}
+			
+			for (i in length) {
+				
+				var char = locale.charAt (i);
+				
+				if (i < 2) {
+					
+					formattedLocale += char.toLowerCase ();
+					
+				} else if (i == 2) {
+					
+					formattedLocale += "-";
+					
+				} else {
+					
+					formattedLocale += char.toUpperCase ();
+					
+				}
+				
+			}
+			
+			return formattedLocale;
+			
+		}
+		
+	}
 	
 	
 	/** @private */ private static function nmeGetScreenResolutions():Array<Array<Int>>

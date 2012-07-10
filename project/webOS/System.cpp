@@ -10,6 +10,15 @@ namespace nme {
 	AutoGCRoot *sExternalInterfaceHandler = 0;
 	
 	
+	std::string CapabilitiesGetLanguage () {
+		
+		char locale[5];
+		PDL_GetLanguage(locale, sizeof(locale));
+		return locale;
+		
+	}
+	
+	
 	bool LaunchBrowser (const char *inUtf8URL) {
 		
 		PDL_LaunchBrowser (inUtf8URL);		

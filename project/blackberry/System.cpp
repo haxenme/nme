@@ -1,12 +1,26 @@
 #include <math.h>
 #include <stdbool.h>
 #include <bps/accelerometer.h>
+#include <bps/locale.h>
 #include <bps/navigator.h>
 #include <sys/platform.h>
 #include "bps/event.h"
+#include <string>
 
 
 namespace nme {
+	
+	
+	std::string CapabilitiesGetLanguage () {
+		
+		char* country = NULL;
+		char* language = NULL;
+		
+		locale_get(&language, &country);
+		
+		return std::string(language) + "-" + std::string(country);
+		
+	}
 	
 	
 	double CapabilitiesGetScreenResolutionX() {

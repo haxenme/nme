@@ -845,75 +845,35 @@ DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
 
 value nme_capabilities_get_pixel_aspect_ratio () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
-		
-		return alloc_float (CapabilitiesGetPixelAspectRatio ());
-		
-	#else
-		
-		return alloc_float (1);
-		
-	#endif
+	return alloc_float (CapabilitiesGetPixelAspectRatio ());
 	
 }
 DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
 value nme_capabilities_get_screen_dpi () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE)|| defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
-		
-		return alloc_float (CapabilitiesGetScreenDPI ());
-		
-	#else
-		
-		return alloc_float (72);
-		
-	#endif
+	return alloc_float (CapabilitiesGetScreenDPI ());
 	
 }
 DEFINE_PRIM (nme_capabilities_get_screen_dpi, 0);
 
 value nme_capabilities_get_screen_resolution_x () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
-		
-		return alloc_float (CapabilitiesGetScreenResolutionX ());
-		
-	#else
-		
-		return alloc_float (0);
-		
-	#endif
+	return alloc_float (CapabilitiesGetScreenResolutionX ());
 	
 }
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_x, 0);
 
 value nme_capabilities_get_screen_resolution_y () {
 	
-	#if defined (WEBOS) || defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined(BLACKBERRY)
-		
-		return alloc_float (CapabilitiesGetScreenResolutionY ());
-		
-	#else
-		
-		return alloc_float (0);
-		
-	#endif
+	return alloc_float (CapabilitiesGetScreenResolutionY ());
 	
 }
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_y, 0);
 
 value nme_capabilities_get_language() {
 	
-	#if defined (ANDROID) || defined (IPHONE) || defined( HX_WINDOWS ) || defined( HX_MACOS )
-		
-		return alloc_string(CapabilitiesGetLanguage().c_str());
-		
-	#else
-		
-		return alloc_null();
-		
-	#endif
+	return alloc_string(CapabilitiesGetLanguage().c_str());
 	
 }
 DEFINE_PRIM (nme_capabilities_get_language, 0);
