@@ -48,7 +48,7 @@ class Capabilities
 				
 			}
 			
-			for (i in length) {
+			for (i in 0...length) {
 				
 				var char = locale.charAt (i);
 				
