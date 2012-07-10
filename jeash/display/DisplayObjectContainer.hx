@@ -202,7 +202,7 @@ class DisplayObjectContainer extends InteractiveObject
 			jeashChildren[i].jeashAddToStage();
 	}
 
-	public function addChildAt( obj : DisplayObject, index : Int )
+	public function addChildAt( obj : DisplayObject, index : Int ):DisplayObject
 	{
 		if(index > jeashChildren.length || index < 0) {
 			throw "Invalid index position " + index;
@@ -211,7 +211,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (obj.parent == this)
 		{
 			setChildIndex(obj, index);
-			return;
+			return obj;
 		}
 
 		if(index == jeashChildren.length)
@@ -223,6 +223,7 @@ class DisplayObjectContainer extends InteractiveObject
 			jeashChildren.insert(index, obj);
 		}
 		obj.jeashSetParent(this);
+		return obj;
 	}
 
 	// @r498
