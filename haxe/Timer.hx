@@ -121,6 +121,14 @@ class Timer {
 	}
 	
 	
+	public static function measure<T>( f : Void -> T, ?pos : PosInfos ) : T {
+		var t0 = stamp();
+		var r = f();
+		Log.trace((stamp() - t0) + "s", pos);
+		return r;
+	}
+	
+	
 	// Set this with "run=..."
 	dynamic public function run () {
 		
