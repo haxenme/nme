@@ -200,7 +200,7 @@ class Graphics {
 	private var mPenY:Float;
 	private var mLastMoveID:Int;
 
-	private var mBoundsDirty:Bool;
+	public var boundsDirty:Bool;
 	public var jeashExtent(default,null):Rectangle;
 	private var nextDrawIndex:Int;
 	
@@ -208,7 +208,6 @@ class Graphics {
 	private var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLElement) {
-
 		// sanity check
 		Lib.jeashBootstrap();
 
@@ -234,6 +233,7 @@ class Graphics {
 		mFillColour = 0x000000;
 		mFillAlpha = 0.0;
 		mLastMoveID = 0;
+		boundsDirty = true;
 
 		jeashClearLine();
 		mLineJobs = [];
@@ -256,7 +256,6 @@ class Graphics {
 		g = (0x00FF00 & color) >> 8;
 		b = (0x0000FF & color);
 		return 'rgba' + '(' + r + ',' + g + ',' + b + ',' + alpha + ')';
-
 	}
 
 	private function createCanvasGradient(ctx : CanvasRenderingContext2D, g : Grad) : CanvasGradient {
@@ -284,7 +283,6 @@ class Graphics {
 	}
 
 	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix) {
-
 		if (!jeashChanged) {
 			return false;
 		}
@@ -418,8 +416,7 @@ class Graphics {
 		return true;
 	}
 
-	public function jeashHitTest(inX:Float, inY:Float) : Bool
-	{
+	public function jeashHitTest(inX:Float, inY:Float) : Bool {
 		var ctx : CanvasRenderingContext2D = getContext();
 		if (ctx==null) return false;
 
@@ -445,8 +442,7 @@ class Graphics {
 	}
 
 
-	public function blit(inTexture:BitmapData)
-	{
+	public function blit(inTexture:BitmapData) {
 		ClosePolygon(true);
 
 		var ctx = getContext();
@@ -548,8 +544,7 @@ class Graphics {
 
 
 
-	public function beginFill(color:Int, ?alpha:Null<Float>)
-	{
+	public function beginFill(color:Int, ?alpha:Null<Float>) {
 		ClosePolygon(true);
 
 		mFillColour =  color;
@@ -559,13 +554,11 @@ class Graphics {
 		mBitmap = null;
 	}
 
-	public function endFill()
-	{
+	public function endFill() {
 		ClosePolygon(true);
 	}
 
-	function DrawEllipse(x:Float,y:Float,rx:Float,ry:Float)
-	{
+	function DrawEllipse(x:Float,y:Float,rx:Float,ry:Float) {
 		moveTo(x+rx, y);
 		curveTo(rx+x        ,-0.4142*ry+y,0.7071*rx+x ,-0.7071*ry+y);
 		curveTo(0.4142*rx+x ,-ry+y       ,x           ,-ry+y);
@@ -576,8 +569,7 @@ class Graphics {
 		curveTo(0.4142*rx+x ,ry+y        ,0.7071*rx+x ,0.7071*ry+y) ;
 		curveTo(rx+x        ,0.4142*ry+y ,rx+x        ,y);
 	}
-	public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float)
-	{
+	public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float) {
 		ClosePolygon(false);
 
 		rx /= 2; ry /= 2;
@@ -586,8 +578,7 @@ class Graphics {
 		ClosePolygon(false);
 	}
 
-	public function drawCircle(x:Float,y:Float,rad:Float)
-	{
+	public function drawCircle(x:Float,y:Float,rad:Float) {
 		ClosePolygon(false);
 
 		DrawEllipse(x,y,rad,rad);
@@ -725,23 +716,20 @@ class Graphics {
 	}
 
 
-	public function jeashClearLine()
-	{
+	public function jeashClearLine() {
 		mCurrentLine = new LineJob( null,-1,-1,  0.0,
 				0.0, 0x000, 1, CORNER_ROUND, END_ROUND,
 				SCALE_NORMAL, 3.0);
 	}
 
-	inline public function jeashClearCanvas()
-	{
+	inline public function jeashClearCanvas() {
 		if (jeashSurface != null) {
 			var w = jeashSurface.width;
 			jeashSurface.width = w;
 		}
 	}
 
-	public function clear()
-	{
+	public function clear() {
 		jeashClearLine();
 
 		mPenX = 0.0;
@@ -762,6 +750,11 @@ class Graphics {
 		// clear the canvas
 		jeashClearNextCycle = true;
 
+		boundsDirty = true;
+		jeashExtent.x = 0;
+		jeashExtent.y = 0;
+		jeashExtent.width = 0;
+		jeashExtent.height = 0;
 
 		mLineJobs = [];
 	}
@@ -780,6 +773,7 @@ class Graphics {
 		jeashExtent.y = minY;
 		jeashExtent.width = maxX-minX;
 		jeashExtent.height = maxY-minY;
+		boundsDirty = true;
 	}
 
 	public function moveTo(inX:Float,inY:Float) {
@@ -820,8 +814,7 @@ class Graphics {
 
 	}
 
-	public function curveTo(inCX:Float,inCY:Float,inX:Float,inY:Float)
-	{
+	public function curveTo(inCX:Float,inCY:Float,inX:Float,inY:Float) {
 		var pid = mPoints.length;
 		if (pid==0)
 		{
@@ -843,22 +836,17 @@ class Graphics {
 
 	}
 
-
 	public function flush() { ClosePolygon(true); }
 
-	private function AddDrawable(inDrawable:Drawable)
-	{
+	private function AddDrawable(inDrawable:Drawable) {
 		if (inDrawable==null)
 			return; // throw ?
 
 		mDrawList.unshift( inDrawable );
-
 	}
 
-	private function AddLineSegment()
-	{
-		if (mCurrentLine.point_idx1>0)
-		{
+	private function AddLineSegment() {
+		if (mCurrentLine.point_idx1>0) {
 			mLineJobs.push(
 					new LineJob(
 						mCurrentLine.grad,
@@ -877,8 +865,7 @@ class Graphics {
 		mCurrentLine.point_idx0 = mCurrentLine.point_idx1 = -1;
 	}
 
-	private function ClosePolygon(inCancelFill)
-	{
+	private function ClosePolygon(inCancelFill) {
 		var l =  mPoints.length;
 		if (l>0)
 		{
@@ -975,8 +962,7 @@ class Graphics {
 		}
 	}
 
-	public static function jeashDetectIsPointInPathMode()
-	{
+	public static function jeashDetectIsPointInPathMode() {
 		var canvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
 		var ctx = canvas.getContext('2d');
 		if (ctx.isPointInPath == null)
@@ -995,7 +981,7 @@ class Graphics {
 	}
 
 	inline function getContext() : CanvasRenderingContext2D {
-	       	try {
+		try {
 			return jeashSurface.getContext("2d");
 		} catch (e:Dynamic) {
 			return null;

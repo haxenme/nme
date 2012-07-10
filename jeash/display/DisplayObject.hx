@@ -81,7 +81,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public var transform(GetTransform,SetTransform):Transform;
 
-	var mBoundsDirty:Bool;
+	var mBoundsDirty(getBoundsDirty, setBoundsDirty):Bool;
 	var mMtxChainDirty:Bool;
 	var mMtxDirty:Bool;
 	
@@ -520,6 +520,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mBoundsRect.width *= scaleX;
 				mBoundsRect.height *= scaleY;
 			}
+			gfx.boundsDirty = false;
 		}
 		mBoundsDirty=false;
 	}
@@ -767,6 +768,19 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var gfx1 = jeashGetGraphics();
 		if (gfx1 != null && lastMoveGfx != null) 
 			Lib.jeashSetSurfaceZIndexAfter(gfx1.jeashSurface, lastMoveGfx.jeashSurface);
+	}
+
+	private function getBoundsDirty():Bool {
+		var gfx = jeashGetGraphics();
+		if (gfx == null)
+			return mBoundsDirty;
+		else
+			return mBoundsDirty || gfx.boundsDirty;
+	}
+
+	private function setBoundsDirty(inValue:Bool):Bool {
+		mBoundsDirty = inValue;
+		return inValue;
 	}
 }
 
