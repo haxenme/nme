@@ -22,9 +22,9 @@ else
 endif
 
 ifeq ("$(CLANG_ENABLE_OBJC_ARC)", "YES")
-   OBJC_ARC := -D OBJC_ARC
+   HXCPP_CLANG := -D HXCPP_CLANG -D OBJC_ARC
 else
-   OBJC_ARC := 
+   HXCPP_CLANG := 
 endif
 
 HAXE_OS := $(PLATFORM_NAME)
@@ -43,19 +43,19 @@ export HXCPP_COMPILE_THREADS := 2
 
 build-haxe-i386:
 	@echo "Haxe simulator build CONFIG : $(CONFIG)"
-	haxe Build.hxml -D simulator -cpp build/$(CONFIG) $(DEBUG) $(OBJC_ARC)
+	haxe Build.hxml -D simulator -cpp build/$(CONFIG) $(DEBUG) $(HXCPP_CLANG)
 	cp $(LIB_BASE).iphonesim.a ../lib/i386$(LIB_DEST)
 	touch ../Classes/Main.mm
 
 build-haxe-armv6:
 	@echo "Haxe armv6 build CONFIG : $(CONFIG)"
-	haxe Build.hxml -D HXCPP_ARMV6 -cpp build/$(CONFIG) $(DEBUG) $(OBJC_ARC)
+	haxe Build.hxml -D HXCPP_ARMV6 -cpp build/$(CONFIG) $(DEBUG) $(HXCPP_CLANG)
 	cp $(LIB_BASE).iphoneos.a ../lib/armv6$(LIB_DEST)
 	touch ../Classes/Main.mm
 
 build-haxe-armv7:
 	@echo "Haxe armv7 build CONFIG : $(CONFIG)"
-	haxe Build.hxml -D HXCPP_ARMV7 -cpp build/$(CONFIG) $(DEBUG) $(OBJC_ARC)
+	haxe Build.hxml -D HXCPP_ARMV7 -cpp build/$(CONFIG) $(DEBUG) $(HXCPP_CLANG)
 	cp $(LIB_BASE).iphoneos-v7.a ../lib/armv7$(LIB_DEST)
 	touch ../Classes/Main.mm
 
