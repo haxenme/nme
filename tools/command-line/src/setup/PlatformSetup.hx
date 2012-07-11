@@ -865,6 +865,8 @@ class PlatformSetup {
 			
 		}
 		
+		var debugTokenPath:String = null;
+		
 		if (answer == Yes || answer == Always) {
 
 			var secondAnswer = ask ("Do you have a valid debug token?");
@@ -977,7 +979,7 @@ class PlatformSetup {
 						
 					}
 					
-					var debugTokenPath = outputPath + "/debugToken.bar";
+					debugTokenPath = outputPath + "/debugToken.bar";
 					
 					Lib.println ("Requesting debug token...");
 					
@@ -1014,7 +1016,20 @@ class PlatformSetup {
 			
 			if (answer == Yes || answer == Always) {
 				
-				var defines = getDefines ([ "BLACKBERRY_DEBUG_TOKEN", "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ], [ "Path to debug token", "Device IP address", "Device password" ]);
+				var names:Array<String> = [];
+				var descriptions:Array<String> = [];
+				
+				if (debugTokenPath == null) {
+					
+					names.push ("BLACKBERRY_DEBUG_TOKEN");
+					descriptions.push ("Path to debug token");
+					
+				}
+				
+				names = names.concat ([ "BLACKBERRY_DEVICE_IP", "BLACKBERRY_DEVICE_PASSWORD" ]);
+				descriptions = descriptions.concat ([ "Device IP address", "Device password" ]);
+				
+				var defines = getDefines (names, descriptions);
 				
 				if (defines != null) {
 					
@@ -1246,6 +1261,12 @@ class PlatformSetup {
 	private static function unescapePath (path:String):String {
 		
 		path = StringTools.replace (path, "\\ ", " ");
+		
+		if (!InstallTool.isWindows && StringTools.startsWith (path, "~/")) {
+			
+			path = Sys.getEnv ("HOME") + "/" + path.substr (2);
+			
+		}
 		
 		return path;
 		
