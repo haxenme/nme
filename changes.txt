@@ -1,6 +1,11 @@
 NME Changes
 
 
+3.4.0
+===============
+
+
+
 3.3.3
 ===============
 Official support for debug and release native libraries

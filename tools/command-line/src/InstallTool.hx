@@ -28,7 +28,7 @@ class InstallTool {
 	public static var traceEnabled:Bool = true;
 	public static var verbose = false;
 	
-	private static var version = "3.3.3";
+	private static var version = "3.4.0";
 	
 	
 	static public function create (nme:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
