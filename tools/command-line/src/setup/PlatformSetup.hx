@@ -45,6 +45,7 @@ class PlatformSetup {
 	private static var windowsVisualStudioCPPPath = "http://download.microsoft.com/download/1/D/9/1D9A6C0E-FC89-43EE-9658-B9F0E3A76983/vc_web.exe";
 
 	private static var backedUpConfig:Bool = false;
+	private static var triedSudo:Bool = false;
 	
    static inline function readLine()
    {
@@ -524,7 +525,59 @@ class PlatformSetup {
 				Sys.command ("chmod", [ "755", path ]);
 				InstallTool.runCommand ("", path, []);
 				Lib.println ("Done");
-			
+				
+			} else if (Path.extension (path) == "dmg") {
+				
+				var process = new Process("hdiutil", [ "mount", path ]);
+				var ret = process.stdout.readAll().toString();
+				process.exitCode(); //you need this to wait till the process is closed!
+				process.close();
+				
+				if (ret != null && ret != "") {
+					
+					path = StringTools.trim (ret.substr (ret.indexOf ("/Volumes")));
+					
+				}
+				
+				if (StringTools.startsWith (path, "/Volumes") && FileSystem.exists (path)) {
+					
+					var apps = [];
+					var files:Array <String> = FileSystem.readDirectory (path);
+					
+					for (file in files) {
+						
+						if (Path.extension (file) == "app") {
+							
+							apps.push (file);
+							
+						}
+						
+					}
+					
+					if (apps.length == 1) {
+						
+						Lib.println (message);
+						InstallTool.runCommand ("", "open", [ "-W", path + "/" + apps[0] ]);
+						Lib.println ("Done");
+						
+					}
+					
+					try {
+						
+						var process = new Process("hdiutil", [ "unmount", path ]);
+						process.exitCode(); //you need this to wait till the process is closed!
+						process.close();
+						
+					} catch (e:Dynamic) {
+					
+					}
+					
+				} else {
+					
+					InstallTool.runCommand ("", "open", [ path ]);
+					
+				}
+				
 			} else {
 				
 				InstallTool.runCommand ("", "open", [ path ]);
