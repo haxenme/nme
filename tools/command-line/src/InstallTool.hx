@@ -508,7 +508,7 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println (" Usage : nme setup (target)");
 			Lib.println (" Usage : nme help");
-			Lib.println (" Usage : nme [clean|update|build|run|test|display] <project> <target> [options]");
+			Lib.println (" Usage : nme [clean|update|build|run|test|display] <project> (target) [options]");
 			Lib.println (" Usage : nme document <project> (target)");
 			Lib.println (" Usage : nme generate <args> [options]");
 			Lib.println ("");
@@ -516,7 +516,7 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println ("  setup : Setup NME or a specific target");
 			Lib.println ("  help : Show this information");
-			Lib.println ("  clean : Remove the target build directory, if it exists");
+			Lib.println ("  clean : Remove the target build directory if it exists");
 			Lib.println ("  update : Copy assets for the specified project/target");
 			Lib.println ("  build : Compile and package for the specified project/target");
 			Lib.println ("  run : Install and run for the specified project/target");
@@ -528,8 +528,9 @@ class InstallTool {
 			Lib.println (" Targets : ");
 			Lib.println ("");
 			Lib.println ("  android : Create Google Android applications");
+			Lib.println ("  blackberry : Create BlackBerry applications");
 			Lib.println ("  flash : Create SWF applications for Adobe Flash Player");
-			Lib.println ("  html5 : Create HTML5 canvas applications using Jeash");
+			Lib.println ("  html5 : Create HTML5 canvas applications");
 			Lib.println ("  ios : Create Apple iOS applications");
 			Lib.println ("  linux : Create Linux applications");
 			Lib.println ("  mac : Create Apple Mac OS X applications");
@@ -541,20 +542,22 @@ class InstallTool {
 			Lib.println ("  -debug : Use debug configuration instead of release");
 			Lib.println ("  -verbose : Print additional information (when available)");
 			Lib.println ("  -clean : Add a \"clean\" action before running the current command");
-			Lib.println ("  -hxml : Print HXML information (for use with display)");
-			Lib.println ("  -nmml : Print NMML information (for use with display)");
-			Lib.println ("  -xml : Generate XML type information, for use with document");
-			Lib.println ("  -java-externs : Generate Haxe source code from compiled Java classes");
 			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
+			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
 			Lib.println ("  [android] -arm7 : Compile for arm-7a and arm5");
 			Lib.println ("  [android] -arm7-only : Compile for arm-7a for testing");
-			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
+			Lib.println ("  [ios|blackberry] -simulator : Build/test for the device simulator");
+			Lib.println ("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
 			Lib.println ("  [flash] -web : Generate web template files");
 			Lib.println ("  [flash] -chrome : Generate Google Chrome app template files");
 			Lib.println ("  [flash] -opera : Generate an Opera Widget");
-			Lib.println ("  [ios] -simulator : Build/test for the iPhone Simulator");
-			Lib.println ("  [ios] -simulator -ipad : Builds/test for the iPad Simulator");
-			Lib.println ("  [run|test] -args a0 a1 ... : pass remaining arguments to the executable");
+			Lib.println ("  [html5] -minify : Minify output using the Google Closure compiler");
+			Lib.println ("  [html5] -minify -yui : Minify output using the YUI compressor");
+			Lib.println ("  (display) -hxml : Print HXML information for the project");
+			Lib.println ("  (display) -nmml : Print NMML information for the project");
+			Lib.println ("  (document) -xml : Generate XML type information");
+			Lib.println ("  (generate) -java-externs : Generate Haxe classes from compiled Java");
+			Lib.println ("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
 			
 			return;
 			
