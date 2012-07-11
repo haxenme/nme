@@ -71,7 +71,8 @@ class Lib {
 	{
 		mKilled = false;
 
-		__scr = cast js.Lib.document.getElementById(title);
+		var document : HTMLDocument = cast js.Lib.document;
+		__scr = cast document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
 		__scr.style.setProperty("overflow", "hidden", "");
 		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
@@ -85,6 +86,20 @@ class Lib {
 		untyped {
 			if (window.console != null) window.console.log(arg);
 		}
+	}
+
+	static public function preventDefaultTouchMove():Void {
+		var document : HTMLDocument = cast js.Lib.document;
+		document.addEventListener("touchmove", function(evt:Html5Dom.Event):Void {
+			evt.preventDefault();
+		}, false);
+	}
+
+	static public function setUserScalable(isScalable:Bool=true):Void {
+		var document : HTMLDocument = cast js.Lib.document;
+		var meta:HTMLMetaElement = cast document.createElement("meta");
+		meta.name = "viewport";
+		meta.content = "user-scalable=" + (isScalable?"yes":"no");
 	}
 
 	static public function getURL( request:URLRequest, ?target:String )
