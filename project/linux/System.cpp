@@ -12,7 +12,13 @@ namespace nme {
 	
 	std::string CapabilitiesGetLanguage () {
 		
-		const char* locale = setlocale(LC_ALL, "");
+		const char* locale = getenv ("LANG");
+		
+		if (locale == NULL) {
+			
+			locale = setlocale (LC_ALL, "");
+			
+		}
 		
 		if (locale != NULL) {
 			
