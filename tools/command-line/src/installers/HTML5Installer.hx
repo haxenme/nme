@@ -39,6 +39,25 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
+		if (targetFlags.exists ("compile")) {
+			
+			if (defines.exists ("JAVA_HOME")) {
+				
+				Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
+				
+			}
+			
+			var sourceFile = buildDirectory + "/html5/bin/" + defines.get ("APP_FILE") + ".js";
+			var tempFile = buildDirectory + "/html5/bin/_" + defines.get ("APP_FILE") + ".js";
+			
+			FileSystem.rename (sourceFile, tempFile);
+			
+			runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/compiler.jar", "--js", tempFile, "--js_output_file", sourceFile ]);
+			
+			FileSystem.deleteFile (tempFile);
+			
+		}
+		
 	}
 	
 	
