@@ -33,26 +33,23 @@ class HTML5Installer extends InstallerBase {
 			
 			FileSystem.rename (sourceFile, tempFile);
 			
-			runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/yuicompressor-2.4.7.jar", "-o", sourceFile, tempFile ]);
-			
-			FileSystem.deleteFile (tempFile);
-			
-		}
-		
-		if (targetFlags.exists ("compile")) {
-			
-			if (defines.exists ("JAVA_HOME")) {
+			if (targetFlags.exists ("yui")) {
 				
-				Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
+				runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/yuicompressor-2.4.7.jar", "-o", sourceFile, tempFile ]);
+				
+			} else {
+				
+				var args = [ "-jar", NME + "/tools/command-line/bin/compiler.jar", "--js", tempFile, "--js_output_file", sourceFile ];
+				
+				if (!InstallTool.verbose) {
+					
+					args.push ("--jscomp_off=uselessCode");
+					
+				}
+				
+				runCommand ("", "java", args);
 				
 			}
-			
-			var sourceFile = buildDirectory + "/html5/bin/" + defines.get ("APP_FILE") + ".js";
-			var tempFile = buildDirectory + "/html5/bin/_" + defines.get ("APP_FILE") + ".js";
-			
-			FileSystem.rename (sourceFile, tempFile);
-			
-			runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/compiler.jar", "--js", tempFile, "--js_output_file", sourceFile ]);
 			
 			FileSystem.deleteFile (tempFile);
 			

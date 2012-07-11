@@ -211,11 +211,11 @@ class IOSInstaller extends InstallerBase {
             
             if (debug) {
                 
-                runCommand ("", launcher, [ "install", "--debug", "--timeout", "100", "--bundle", FileSystem.fullPath (applicationPath) ]);
+                runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
                 
             } else {
                 
-                runCommand ("", launcher, [ "install", "--debug", "--timeout", "100", "--bundle", FileSystem.fullPath (applicationPath) ]);
+                runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
                 
             }
             
