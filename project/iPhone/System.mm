@@ -26,7 +26,7 @@ std::string CapabilitiesGetLanguage()
 	NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
 	std::string result(language?[language UTF8String]:"");
 	#ifndef OBJC_ARC
-	[str release];
+	[language release];
 	[pool drain];
     #endif
 	return result;
