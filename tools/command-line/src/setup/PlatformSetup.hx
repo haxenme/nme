@@ -899,8 +899,8 @@ class PlatformSetup {
 					
 					if (secondAnswer == No) {
 						
-						var pbdtFile = unescapePath (param ("Path to PBDT (*.csj) file"));
-						var rdtFile = unescapePath (param ("Path to RDT (*.csj) file"));
+						var pbdtFile = unescapePath (param ("Path to client-PBDT-*.csj file"));
+						var rdkFile = unescapePath (param ("Path to client-RDK-*.csj file"));
 						var cskPIN = param ("Code signing key PIN");
 						cskPassword = param ("Code signing key password");
 						
@@ -908,14 +908,14 @@ class PlatformSetup {
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
+							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
 							
 						} catch (e:Dynamic) { }
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, pbdtFile ]);
-							InstallTool.runCommand ("", binDirectory + "/blackberry-signer", [ "-register", "-csjpin", cskPIN, rdtFile ]);
+							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, pbdtFile ]);
+							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, rdkFile ]);
 							
 							Lib.println ("Done.");
 							
@@ -930,7 +930,7 @@ class PlatformSetup {
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "/blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
+							InstallTool.runCommand ("", binDirectory + "blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
 							
 							Lib.println ("Done.");
 							
@@ -1245,7 +1245,9 @@ class PlatformSetup {
 	
 	private static function unescapePath (path:String):String {
 		
-		return StringTools.replace (path, "\\ ", " ");
+		path = StringTools.replace (path, "\\ ", " ");
+		
+		return path;
 		
 	}
 	
