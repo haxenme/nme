@@ -241,10 +241,13 @@ class Icons
 			
 			if (bmp != null) {
 				
-				//for (c in 0...4)
-					//out.writeByte (code.charCodeAt(c));
+				for (c in 0...4)
+					out.writeByte (code.charCodeAt(c));
 				
-				// write in PNG format
+				var bytes = bmp.encode ("png");
+				
+				out.writeInt31 (bytes.length + 8);
+				out.writeBytes (bytes, 0, bytes.length);
 				
 			}
 			
