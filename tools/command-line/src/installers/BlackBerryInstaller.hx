@@ -49,8 +49,13 @@ class BlackBerryInstaller extends InstallerBase {
 		} else {
 			
 			args.push ("-devMode");
-			args.push ("-debugToken");
-			args.push (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
+			
+			if (!targetFlags.exists ("simulator")) {
+				
+				args.push ("-debugToken");
+				args.push (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
+				
+			}
 			
 		}
 		
@@ -160,7 +165,15 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		return "";
+		if (targetFlags.exists ("simulator")) {
+			
+			return "gYAAgF-DMYiFsOQ3U6QvuW1fQDY";
+			
+		} else {
+			
+			return "";
+			
+		}
 		
 	}
 	
