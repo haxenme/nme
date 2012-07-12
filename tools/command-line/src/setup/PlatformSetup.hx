@@ -533,31 +533,62 @@ class PlatformSetup {
 				process.exitCode(); //you need this to wait till the process is closed!
 				process.close();
 				
+				var volumePath = "";
+				
 				if (ret != null && ret != "") {
 					
-					path = StringTools.trim (ret.substr (ret.indexOf ("/Volumes")));
+					volumePath = StringTools.trim (ret.substr (ret.indexOf ("/Volumes")));
 					
 				}
 				
-				if (StringTools.startsWith (path, "/Volumes") && FileSystem.exists (path)) {
+				if (volumePath != "" && FileSystem.exists (volumePath)) {
 					
 					var apps = [];
-					var files:Array <String> = FileSystem.readDirectory (path);
+					var packages = [];
+					var executables = [];
+					
+					var files:Array <String> = FileSystem.readDirectory (volumePath);
 					
 					for (file in files) {
 						
-						if (Path.extension (file) == "app") {
+						switch (Path.extension (file)) {
 							
-							apps.push (file);
+							case "app":
+								
+								apps.push (file);
+								
+							case "pkg", "mpkg":
+								
+								packages.push (file);
+							
+							case "bin":
+								
+								executables.push (file);
 							
 						}
 						
 					}
 					
+					var file = "";
+					
 					if (apps.length == 1) {
 						
+						file = apps[0];
+						
+					} else if (packages.length == 1) {
+						
+						file = packages[0];
+						
+					} else if (executables.length == 1) {
+						
+						file = executables[0];
+						
+					}
+					
+					if (file != "") {
+						
 						Lib.println (message);
-						InstallTool.runCommand ("", "open", [ "-W", path + "/" + apps[0] ]);
+						InstallTool.runCommand ("", "open", [ "-W", volumePath + "/" + file ]);
 						Lib.println ("Done");
 						
 					}
@@ -570,6 +601,12 @@ class PlatformSetup {
 						
 					} catch (e:Dynamic) {
 					
+					}
+					
+					if (file == "") {
+						
+						InstallTool.runCommand ("", "open", [ path ]);
+						
 					}
 					
 				} else {
