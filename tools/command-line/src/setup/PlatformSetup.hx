@@ -670,7 +670,7 @@ class PlatformSetup {
 			
 			if (!InstallTool.isWindows) {
 				
-				InstallTool.runCommand (path + "/tools", "chmod", [ "755", "*" ]);
+				InstallTool.runCommand ("", "chmod", [ "-R", "777", path ]);
 				
 			}
 			
