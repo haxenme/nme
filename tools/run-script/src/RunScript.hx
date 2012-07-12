@@ -62,7 +62,37 @@ class RunScript {
 				
 			} else {
 				
-				buildLibrary (target);
+				if (target == "all") {
+					
+					if (new EReg ("window", "i").match (Sys.systemName ())) {
+						
+						buildLibrary ("windows");
+						buildLibrary ("android");
+						buildLibrary ("blackberry");
+						buildLibrary ("webos");
+						
+					} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
+						
+						buildLibrary ("linux");
+						buildLibrary ("android");
+						buildLibrary ("blackberry");
+						buildLibrary ("webos");
+						
+					} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
+						
+						buildLibrary ("mac");
+						buildLibrary ("ios");
+						buildLibrary ("android");
+						buildLibrary ("blackberry");
+						buildLibrary ("webos");
+						
+					}
+					
+				} else {
+					
+					buildLibrary (target);
+					
+				}
 				
 			}
 			
