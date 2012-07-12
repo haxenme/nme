@@ -502,6 +502,21 @@ class InstallerBase {
 	}
 	
 	
+	private function escapePath (path:String):String {
+		
+		if (!InstallTool.isWindows) {
+			
+			path = StringTools.replace (path, " ", "\\ ");
+			
+		}
+		
+		Lib.println (path);
+		
+		return path;
+		
+	}
+	
+	
 	private function filter (text:String, include:String = "*", exclude:String = ""):Bool {
 		
 		include = StringTools.replace (include, ".", "\\.");
