@@ -21,11 +21,11 @@ class PlatformSetup {
 	
 	
 	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-linux-x86.tar.bz2";
-	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r18-linux.tgz";
+	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r20-linux.tgz";
 	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-darwin-x86.tar.bz2";
-	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r18-macosx.zip";
+	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r20-macosx.zip";
 	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-windows.zip";
-	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r18-windows.zip";
+	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r20-windows.zip";
 	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.tar.gz";
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
 	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
