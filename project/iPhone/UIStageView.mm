@@ -420,9 +420,12 @@ public:
                 kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
                 dataProvider, 0, false, kCGRenderingIntentDefault);
 
-          #ifndef OBJC_ARC // todo: figure out this cast for LLVM
-          mLayer.contents = (objc_object*)imageRef;
+          #ifdef HXCPP_CLANG
+          mLayer.contents = objc_unretainedObject(imageRef);
+          #else
+            mLayer.contents = (objc_object*)imageRef;
           #endif
+
 
           CGDataProviderRelease(dataProvider);
 
