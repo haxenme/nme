@@ -6,7 +6,7 @@
 	<description>::APP_DESCRIPTION::</description>
 	
 	<author>::APP_COMPANY::</author>
-    <authorId>::APP_COMPANY_ID::</authorId>
+    <authorId>::BLACKBERRY_AUTHOR_ID::</authorId>
 	
     <versionNumber>::APP_VERSION::</versionNumber>
 	<buildId>::APP_BUILD_NUMBER::</buildId>

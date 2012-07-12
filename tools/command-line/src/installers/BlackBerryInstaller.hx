@@ -6,6 +6,7 @@ import data.NDLL;
 import haxe.io.Path;
 import neko.Lib;
 import sys.io.File;
+import sys.io.Process;
 import sys.FileSystem;
 
 
@@ -119,8 +120,47 @@ class BlackBerryInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.CPP_DIR = buildDirectory + "/blackberry/obj";
+		context.BLACKBERRY_AUTHOR_ID = getAuthorID ();
 		
 		updateIcon ();
+		
+	}
+	
+	
+	private function getAuthorID ():String {
+		
+		if (defines.exists ("BLACKBERRY_DEBUG_TOKEN")) {
+			
+			InstallTool.mkdir (buildDirectory + "/blackberry");
+			
+			var cacheCwd = Sys.getCwd ();
+			Sys.setCwd (buildDirectory + "/blackberry");
+			
+			var process = new Process(binDirectory + "blackberry-nativepackager", [ "-listmanifest", escapePath (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
+			var ret = process.stdout.readAll().toString();
+			var ret2 = process.stderr.readAll().toString();
+			process.exitCode(); //you need this to wait till the process is closed!
+			process.close();
+			
+			Sys.setCwd (cacheCwd);
+			
+			if (ret != null) {
+				
+				var search = "Package-Author-Id: ";
+				var index = ret.indexOf (search);
+				
+				if (index > -1) {
+					
+					var start = index + search.length;
+					return ret.substr (start, ret.indexOf ("\n", index) - start);
+					
+				}
+				
+			}
+			
+		}
+		
+		return "";
 		
 	}
 	
@@ -216,11 +256,23 @@ class BlackBerryInstaller extends InstallerBase {
 			
 			if (targetFlags.exists ("simulator")) {
 				
-				File.copy (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + deviceLib);
+				if (FileSystem.exists (destination + deviceLib)) {
+					
+					FileSystem.deleteFile (destination + deviceLib);
+					
+				}
+				
+				copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
 				
 			} else {
 				
-				File.copy (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
+				if (FileSystem.exists (destination + simulatorLib)) {
+					
+					FileSystem.deleteFile (destination + simulatorLib);
+					
+				}
+				
+				copyIfNewer (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
 				
 			}
 			

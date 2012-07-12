@@ -508,9 +508,13 @@ class InstallerBase {
 			
 			path = StringTools.replace (path, " ", "\\ ");
 			
+			if (StringTools.startsWith (path, "~/")) {
+				
+				path = Sys.getEnv ("HOME") + "/" + path.substr (2);
+				
+			}
+			
 		}
-		
-		Lib.println (path);
 		
 		return path;
 		
