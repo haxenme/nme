@@ -420,8 +420,8 @@ public:
                 kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
                 dataProvider, 0, false, kCGRenderingIntentDefault);
 
-          #ifdef HXCPP_CLANG
-          mLayer.contents = objc_unretainedObject(imageRef);
+          #ifdef HXCPP_CLANG // this cast currently does not build.
+          //mLayer.contents = objc_unretainedObject(imageRef);
           #else
             mLayer.contents = (objc_object*)imageRef;
           #endif
