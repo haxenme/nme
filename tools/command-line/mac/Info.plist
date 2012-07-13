@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -17,13 +17,12 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>::APP_VERSION_SHORT::</string>
+	<string>::APP_VERSION::</string>
 	<key>CFBundleSignature</key>
 	<string>haxe</string>
 	<key>CFBundleVersion</key>
-	<string>::APP_VERSION::</string>
+	<string>::APP_BUILD_NUMBER::</string>
 	<key>NSAppleScriptEnabled</key>
 	<string>NO</string>
 </dict>
 </plist>
-
