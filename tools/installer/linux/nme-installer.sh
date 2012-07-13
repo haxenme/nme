@@ -193,6 +193,10 @@ echo "-----------------------------------"
 echo "    Installing NME 3.3.3"
 echo "-----------------------------------"
 
+# Install libssl, which is required for the command-line tools
+
+sudo apt-get install libssl0.9.8
+
 # Download and install NME
 
 haxelib install nme 3.3.3
