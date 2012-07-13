@@ -689,7 +689,7 @@ class PlatformSetup {
 			
 			if (!InstallTool.isWindows && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {
 				
-				InstallTool.runCommand ("", "chmod", [ "-R", "777", "~/.android");
+				InstallTool.runCommand ("", "chmod", [ "-R", "777", "~/.android" ]);
 				InstallTool.runCommand ("", "cp", [ InstallTool.nme + "/tools/command-line/bin/debug.keystore", "~/.android/debug.keystore" ] );
 				
 			}
