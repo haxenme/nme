@@ -3,3 +3,4 @@
 -neko welcome.n
 -lib nme
 -lib gm2d
+--dead-code-elimination
