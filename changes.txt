@@ -6,6 +6,7 @@ NME Changes
 Added support for the BlackBerry simulator
 Fixed support for Mac and iOS builds using the new Xcode
 Added support for command-line builds to iOS devices
+Improved "nme setup" for BlackBerry
 
 
 3.3.3
