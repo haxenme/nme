@@ -1,5 +1,5 @@
 <haxe>
-	<class path="Array" params="T" file="C:\Motion-Twin\haxe/std/Array.hx" extern="1">
+	<class path="Array" params="T" file="/usr/lib/haxe/std/Array.hx" extern="1">
 		<length public="1" set="null">
 			<c path="Int"/>
 			<haxe_doc>
@@ -151,11 +151,11 @@
 	is less memory and CPU consuming, unless you really need indexed access.
 </haxe_doc>
 	</class>
-	<class path="Class" params="T" file="C:\Motion-Twin\haxe/std/Class.hx" extern="1"><haxe_doc>
+	<class path="Class" params="T" file="/usr/lib/haxe/std/Class.hx" extern="1"><haxe_doc>
 	An abstract type that represents a Class.
 	See [Type] for the haXe Reflection API.
 </haxe_doc></class>
-	<class path="Hash" params="T" file="C:\Motion-Twin\haxe/std/cpp/_std/Hash.hx">
+	<class path="Hash" params="T" file="/usr/lib/haxe/std/cpp/_std/Hash.hx">
 		<__Internal><d/></__Internal>
 		<set public="1" set="method" line="33">
 			<f a="key:value">
@@ -228,7 +228,7 @@
 </haxe_doc>
 		<meta><m n=":core_api"/></meta>
 	</class>
-	<class path="IntHash" params="T" file="C:\Motion-Twin\haxe/std/cpp/_std/IntHash.hx">
+	<class path="IntHash" params="T" file="/usr/lib/haxe/std/cpp/_std/IntHash.hx">
 		<h><d/></h>
 		<set public="1" set="method" line="34">
 			<f a="key:value">
@@ -300,7 +300,7 @@
 </haxe_doc>
 		<meta><m n=":core_api"/></meta>
 	</class>
-	<class path="Std" params="" file="C:\Motion-Twin\haxe/std/cpp/_std/Std.hx">
+	<class path="Std" params="" file="/usr/lib/haxe/std/cpp/_std/Std.hx">
 		<is public="1" set="method" line="27" static="1">
 			<f a="v:t">
 				<d/>
@@ -361,19 +361,19 @@
 </haxe_doc>
 		<meta><m n=":core_api"/></meta>
 	</class>
-	<enum path="Void" params="" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes"><haxe_doc>
+	<enum path="Void" params="" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes"><haxe_doc>
 	The standard Void type. Only [null] values can be of the type [Void].
 </haxe_doc></enum>
-	<class path="Float" params="" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes" extern="1"><haxe_doc>
+	<class path="Float" params="" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes" extern="1"><haxe_doc>
 	The standard Float type, this is a double-precision IEEE 64bit float.
 </haxe_doc></class>
-	<class path="Int" params="" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes" extern="1">
+	<class path="Int" params="" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes" extern="1">
 		<extends path="Float"/>
 		<haxe_doc>
 	The standard Int type. Its precision depends on the platform.
 </haxe_doc>
 	</class>
-	<typedef path="Null" params="T" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes">
+	<typedef path="Null" params="T" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes">
 		<c path="Null.T"/>
 		<haxe_doc>
 	[Null] can be useful in two cases. In order to document some methods
@@ -382,18 +382,18 @@
 	can't.
 </haxe_doc>
 	</typedef>
-	<enum path="Bool" params="" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes">
+	<enum path="Bool" params="" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes">
 		<true/>
 		<false/>
 		<haxe_doc>
 	The standard Boolean type is represented as an enum with two choices.
 </haxe_doc>
 	</enum>
-	<class path="Dynamic" params="T" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes" extern="1"><haxe_doc>
+	<class path="Dynamic" params="T" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes" extern="1"><haxe_doc>
 	Dynamic is an internal compiler type which has special behavior.
 	See the haXe language reference for more informations.
 </haxe_doc></class>
-	<typedef path="Iterator" params="T" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes">
+	<typedef path="Iterator" params="T" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes">
 		<a>
 			<next set="method"><f a=""><c path="Iterator.T"/></f></next>
 			<hasNext set="method"><f a=""><e path="Bool"/></f></hasNext>
@@ -404,18 +404,18 @@
 	documentation for more informations.
 </haxe_doc>
 	</typedef>
-	<typedef path="Iterable" params="T" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes">
+	<typedef path="Iterable" params="T" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes">
 		<a><iterator set="method"><f a=""><t path="Iterator"><c path="Iterable.T"/></t></f></iterator></a>
 		<haxe_doc>
 	An Iterable is a data structure which has an iterator() method.
 	See [Lambda] for generic functions on iterable structures.
 </haxe_doc>
 	</typedef>
-	<class path="ArrayAccess" params="T" file="C:\Motion-Twin\haxe/std/StdTypes.hx" module="StdTypes" extern="1" interface="1"><haxe_doc>
+	<class path="ArrayAccess" params="T" file="/usr/lib/haxe/std/StdTypes.hx" module="StdTypes" extern="1" interface="1"><haxe_doc>
 	ArrayAccess is used to indicate a class that can be accessed using brackets.
 	The type parameter represent the type of the elements stored.
 </haxe_doc></class>
-	<class path="String" params="" file="C:\Motion-Twin\haxe/std/String.hx" extern="1">
+	<class path="String" params="" file="/usr/lib/haxe/std/String.hx" extern="1">
 		<fromCharCode public="1" set="method" static="1"><f a="code">
 	<c path="Int"/>
 	<c path="String"/>
@@ -533,7 +533,7 @@
 	The basic String class.
 </haxe_doc>
 	</class>
-	<class path="StringBuf" params="" file="C:\Motion-Twin\haxe/std/StringBuf.hx">
+	<class path="StringBuf" params="" file="/usr/lib/haxe/std/StringBuf.hx">
 		<add public="1" get="inline" set="null" line="50">
 			<f a="x">
 				<d/>
@@ -582,8 +582,26 @@
 	appending small elements together.
 </haxe_doc>
 	</class>
-	<typedef path="haxe.TimerList" params="" file="C:\Development\Haxe\nme/haxe/Timer.hx" module="haxe.Timer"><c path="Array"><c path="haxe.Timer"/></c></typedef>
-	<class path="nme.Loader" params="" file="C:\Development\Haxe\nme/nme/Loader.hx" extern="1">
+	<class path="haxe.Log" params="" file="/usr/lib/haxe/std/haxe/Log.hx">
+		<trace public="1" set="dynamic" line="29" static="1"><f a="v:?infos">
+	<d/>
+	<t path="haxe.PosInfos"/>
+	<e path="Void"/>
+</f></trace>
+		<clear public="1" set="dynamic" line="54" static="1"><f a=""><e path="Void"/></f></clear>
+	</class>
+	<typedef path="haxe.PosInfos" params="" file="/usr/lib/haxe/std/haxe/PosInfos.hx"><a>
+	<methodName><c path="String"/></methodName>
+	<lineNumber><c path="Int"/></lineNumber>
+	<fileName><c path="String"/></fileName>
+	<customParams>
+		<c path="Array"><d/></c>
+		<meta><m n=":optional"/></meta>
+	</customParams>
+	<className><c path="String"/></className>
+</a></typedef>
+	<typedef path="haxe.TimerList" params="" file="/Users/joshua/Development/Haxe/nme/haxe/Timer.hx" module="haxe.Timer"><c path="Array"><c path="haxe.Timer"/></c></typedef>
+	<class path="nme.Loader" params="" file="/Users/joshua/Development/Haxe/nme/nme/Loader.hx" extern="1">
 		<load public="1" set="method" static="1"><f a="func:args">
 	<c path="String"/>
 	<c path="Int"/>
@@ -600,9 +618,14 @@
 	<d/>
 </f></tryLoad>
 	</class>
-	<class path="haxe.Timer" params="" file="C:\Development\Haxe\nme/haxe/Timer.hx">
+	<class path="haxe.Timer" params="" file="/Users/joshua/Development/Haxe/nme/haxe/Timer.hx">
 		<sRunningTimers line="107" static="1"><t path="haxe.TimerList"/></sRunningTimers>
-		<nmeNextWake public="1" set="method" line="147" static="1">
+		<measure public="1" params="T" set="method" line="124" static="1"><f a="f:?pos">
+	<f a=""><c path="measure.T"/></f>
+	<t path="haxe.PosInfos"/>
+	<c path="measure.T"/>
+</f></measure>
+		<nmeNextWake public="1" set="method" line="155" static="1">
 			<f a="limit">
 				<c path="Float"/>
 				<c path="Float"/>
@@ -611,26 +634,26 @@
 	 * @private
 	 </haxe_doc>
 		</nmeNextWake>
-		<nmeCheckTimers public="1" set="method" line="189" static="1">
+		<nmeCheckTimers public="1" set="method" line="197" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>
 	 * @private
 	 </haxe_doc>
 		</nmeCheckTimers>
-		<GetMS set="method" line="202" static="1"><f a=""><c path="Float"/></f></GetMS>
-		<delay public="1" set="method" line="210" static="1"><f a="f:time">
+		<GetMS set="method" line="210" static="1"><f a=""><c path="Float"/></f></GetMS>
+		<delay public="1" set="method" line="218" static="1"><f a="f:time">
 	<f a=""><e path="Void"/></f>
 	<c path="Int"/>
 	<c path="haxe.Timer"/>
 </f></delay>
-		<stamp public="1" set="method" line="224" static="1"><f a=""><c path="Float"/></f></stamp>
-		<nme_time_stamp line="231" static="1"><f a=""><c path="Float"/></f></nme_time_stamp>
+		<stamp public="1" set="method" line="232" static="1"><f a=""><c path="Float"/></f></stamp>
+		<nme_time_stamp line="239" static="1"><f a=""><c path="Float"/></f></nme_time_stamp>
 		<mTime><c path="Float"/></mTime>
 		<mFireAt><c path="Float"/></mFireAt>
 		<mRunning><e path="Bool"/></mRunning>
-		<run public="1" set="dynamic" line="125"><f a=""><e path="Void"/></f></run>
-		<stop public="1" set="method" line="132"><f a=""><e path="Void"/></f></stop>
-		<nmeCheck set="method" line="174"><f a="inTime">
+		<run public="1" set="dynamic" line="133"><f a=""><e path="Void"/></f></run>
+		<stop public="1" set="method" line="140"><f a=""><e path="Void"/></f></stop>
+		<nmeCheck set="method" line="182"><f a="inTime">
 	<c path="Float"/>
 	<e path="Void"/>
 </f></nmeCheck>
@@ -639,9 +662,9 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<class path="nme.Assets" params="" file="C:\Development\Haxe\nme/nme/Assets.hx">
-		<cachedBitmapData public="1" line="18" static="1"><c path="Hash"><c path="nme.display.BitmapData"/></c></cachedBitmapData>
-		<getBitmapData public="1" set="method" line="28" static="1">
+	<class path="nme.Assets" params="" file="/Users/joshua/Development/Haxe/nme/nme/Assets.hx">
+		<cachedBitmapData public="1" line="32" static="1"><c path="Hash"><c path="nme.display.BitmapData"/></c></cachedBitmapData>
+		<getBitmapData public="1" set="method" line="42" static="1">
 			<f a="id:?useCache">
 				<c path="String"/>
 				<e path="Bool"/>
@@ -655,7 +678,7 @@
 	 * @return		A new BItmapData object
 	 </haxe_doc>
 		</getBitmapData>
-		<getBytes public="1" set="method" line="40" static="1">
+		<getBytes public="1" set="method" line="54" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="nme.utils.ByteArray"/>
@@ -667,7 +690,7 @@
 	 * @return		A new ByteArray object
 	 </haxe_doc>
 		</getBytes>
-		<getFont public="1" set="method" line="52" static="1">
+		<getFont public="1" set="method" line="66" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="nme.text.Font"/>
@@ -679,7 +702,7 @@
 	 * @return		A new Font object
 	 </haxe_doc>
 		</getFont>
-		<getSound public="1" set="method" line="64" static="1">
+		<getSound public="1" set="method" line="78" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="nme.media.Sound"/>
@@ -691,7 +714,7 @@
 	 * @return		A new Sound object
 	 </haxe_doc>
 		</getSound>
-		<getText public="1" set="method" line="76" static="1">
+		<getText public="1" set="method" line="90" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="String"/>
@@ -703,12 +726,26 @@
 	 * @return		A new String object
 	 </haxe_doc>
 		</getText>
-		<haxe_doc>
- * Provides a cross-platform interface for accessing embedded assets
+		<haxe_doc><![CDATA[
+ * <p>The Assets class provides a cross-platform interface to access 
+ * embedded images, fonts, sounds and other resource files.</p>
+ * 
+ * <p>The contents are populated automatically when an application
+ * is compiled using the NME command-line tools, based on the
+ * contents of the *.nmml project file.</p>
+ * 
+ * <p>For most platforms, the assets are included in the same directory
+ * or package as the application, and the paths are handled
+ * automatically. For web content, the assets are preloaded before
+ * the start of the rest of the application. You can customize the 
+ * preloader by extending the <code>NMEPreloader</code> class,
+ * and specifying a custom preloader using <window preloader="" />
+ * in the project file.</p>
+ * 
  * @author Joshua Granick
- </haxe_doc>
+ ]]></haxe_doc>
 	</class>
-	<class path="nme.JNI" params="" file="C:\Development\Haxe\nme/nme/JNI.hx" extern="1">
+	<class path="nme.JNI" params="" file="/Users/joshua/Development/Haxe/nme/nme/JNI.hx" extern="1">
 		<createMemberMethod public="1" set="method" static="1">
 			<f a="className:memberName:signature:?useArray">
 				<c path="String"/>
@@ -744,64 +781,183 @@
 	 </haxe_doc>
 		</createStaticMethod>
 	</class>
-	<class path="nme.Lib" params="" file="C:\Development\Haxe\nme/nme/Lib.hx" extern="1">
-		<FULLSCREEN public="1" static="1"><unknown/></FULLSCREEN>
-		<BORDERLESS public="1" static="1"><unknown/></BORDERLESS>
-		<RESIZABLE public="1" static="1"><unknown/></RESIZABLE>
-		<HARDWARE public="1" static="1"><unknown/></HARDWARE>
-		<VSYNC public="1" static="1"><unknown/></VSYNC>
-		<HW_AA public="1" static="1"><unknown/></HW_AA>
-		<HW_AA_HIRES public="1" static="1"><unknown/></HW_AA_HIRES>
+	<class path="nme.Lib" params="" file="/Users/joshua/Development/Haxe/nme/nme/Lib.hx">
+		<FULLSCREEN public="1" line="13" static="1"><c path="Int"/></FULLSCREEN>
+		<BORDERLESS public="1" line="14" static="1"><c path="Int"/></BORDERLESS>
+		<RESIZABLE public="1" line="15" static="1"><c path="Int"/></RESIZABLE>
+		<HARDWARE public="1" line="16" static="1"><c path="Int"/></HARDWARE>
+		<VSYNC public="1" line="17" static="1"><c path="Int"/></VSYNC>
+		<HW_AA public="1" line="18" static="1"><c path="Int"/></HW_AA>
+		<HW_AA_HIRES public="1" line="19" static="1"><c path="Int"/></HW_AA_HIRES>
+		<company public="1" get="nmeGetCompany" set="null" static="1"><c path="String"/></company>
 		<current public="1" get="nmeGetCurrent" set="null" static="1"><c path="nme.display.MovieClip"/></current>
-		<initHeight public="1" set="null" static="1"><c path="Int"/></initHeight>
-		<initWidth public="1" set="null" static="1"><c path="Int"/></initWidth>
+		<file public="1" get="nmeGetFile" set="null" static="1"><c path="String"/></file>
+		<initHeight public="1" get="nmeGetInitHeight" set="null" static="1"><c path="Int"/></initHeight>
+		<initWidth public="1" get="nmeGetInitWidth" set="null" static="1"><c path="Int"/></initWidth>
+		<packageName public="1" get="nmeGetPackageName" set="null" static="1"><c path="String"/></packageName>
 		<stage public="1" get="nmeGetStage" set="null" static="1"><c path="nme.display.Stage"/></stage>
-		<company public="1" set="null" static="1"><c path="String"/></company>
-		<version public="1" set="null" static="1"><c path="String"/></version>
-		<packageName public="1" set="null" static="1"><c path="String"/></packageName>
-		<file public="1" set="null" static="1"><c path="String"/></file>
-		<close public="1" set="method" static="1"><f a=""><e path="Void"/></f></close>
-		<create public="1" set="method" static="1"><f a="inOnLoaded:inWidth:inHeight:?inFrameRate:?inColour:?inFlags:?inTitle:?inIcon">
-	<f a=""><e path="Void"/></f>
-	<c path="Int"/>
-	<c path="Int"/>
-	<c path="Float"/>
-	<c path="Int"/>
-	<c path="Int"/>
-	<c path="String"/>
-	<c path="nme.display.BitmapData"/>
-	<e path="Void"/>
-</f></create>
-		<createManagedStage public="1" set="method" static="1"><f a="inWidth:inHeight">
-	<c path="Int"/>
-	<c path="Int"/>
-	<c path="nme.display.ManagedStage"/>
-</f></createManagedStage>
-		<exit public="1" set="method" static="1"><f a=""><e path="Void"/></f></exit>
-		<forceClose public="1" set="method" static="1"><f a=""><e path="Void"/></f></forceClose>
-		<getTimer public="1" set="method" static="1"><f a=""><c path="Int"/></f></getTimer>
-		<getURL public="1" set="method" static="1"><f a="url:?target">
-	<c path="nme.net.URLRequest"/>
-	<c path="String"/>
-	<e path="Void"/>
-</f></getURL>
-		<postUICallback public="1" set="method" static="1"><f a="inCallback">
-	<f a=""><e path="Void"/></f>
-	<e path="Void"/>
-</f></postUICallback>
-		<setIcon public="1" set="method" static="1"><f a="path">
-	<c path="String"/>
-	<e path="Void"/>
-</f></setIcon>
-		<setPackage public="1" set="method" static="1"><f a="inCompany:inFile:inPack:inVersion">
-	<c path="String"/>
-	<c path="String"/>
-	<c path="String"/>
-	<c path="String"/>
-	<e path="Void"/>
-</f></setPackage>
+		<version public="1" get="nmeGetVersion" set="null" static="1"><c path="String"/></version>
+		<close public="1" set="method" line="35" static="1">
+			<f a=""><e path="Void"/></f>
+			<haxe_doc>
+	 * Closes the application.
+	 * This is method is ignored in the Flash and HTML5 targets.
+	 </haxe_doc>
+		</close>
+		<create public="1" set="method" line="58" static="1">
+			<f a="onLoaded:width:height:?frameRate:?color:?flags:?title:?icon">
+				<f a=""><e path="Void"/></f>
+				<c path="Int"/>
+				<c path="Int"/>
+				<c path="Float"/>
+				<c path="Int"/>
+				<c path="Int"/>
+				<c path="String"/>
+				<c path="nme.display.BitmapData"/>
+				<e path="Void"/>
+			</f>
+			<haxe_doc>
+	 * Creates a new application window. If you are using the NME
+	 * command-line tools, this method will be called automatically
+	 * as a part of the default platform templates.
+	 * This is method is ignored in the Flash and HTML5 targets.
+	 * @param	onLoaded		A method callback that is called once the window is created.
+	 * @param	width		The requested width of the window. Use a width and height of 0 to request the full screen size.
+	 * @param	height		The requested height of the window. Use a width and height of 0 to request the full screen size.
+	 * @param	frameRate		The requested frame rate for the application.
+	 * @param	color		An RGB color to use for the application background.
+	 * @param	flags		A series of bit flags which can specify windowing options, like FULLSCREEN or HARDWARE
+	 * @param	title		The title to use when creating the application window.
+	 * @param	icon		An icon to use for the created application window.
+	 </haxe_doc>
+		</create>
+		<createManagedStage public="1" set="method" line="74" static="1">
+			<f a="width:height">
+				<c path="Int"/>
+				<c path="Int"/>
+				<unknown/>
+			</f>
+			<haxe_doc>
+	 * Creates a managed stage, for greater control customization and control
+	 * of application events.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 * @param	width		The requested width of the managed stage.
+	 * @param	height		The requested width of the managed stage.
+	 </haxe_doc>
+		</createManagedStage>
+		<exit public="1" set="method" line="90" static="1">
+			<f a=""><e path="Void"/></f>
+			<haxe_doc><![CDATA[
+	 * Similar to the <code>close()</code> method, but the current 
+	 * <code>Stage</code> object is given an opportunity to handle 
+	 * the quit event before the application process is ended.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 ]]></haxe_doc>
+		</exit>
+		<forceClose public="1" set="method" line="104" static="1">
+			<f a=""><e path="Void"/></f>
+			<haxe_doc>
+	 * Terminates the application process immediately without
+	 * performing a clean shutdown.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 </haxe_doc>
+		</forceClose>
+		<getTimer public="1" get="inline" set="null" line="122" static="1">
+			<f a=""><c path="Int"/></f>
+			<haxe_doc><![CDATA[
+	 * Returns the time in milliseconds, relative to the start of
+	 * the application. This is a high performance call in order to 
+	 * help regulate time-based operations. Depending upon the
+	 * target platform, this value may or may not be an absolute
+	 * timestamp. If you need an exact time, you should use the
+	 * <code>Date</code> object.
+	 * @return		A relative time value in milliseconds.
+	 ]]></haxe_doc>
+		</getTimer>
+		<getURL public="1" set="method" line="141" static="1">
+			<f a="url:?target">
+				<c path="nme.net.URLRequest"/>
+				<c path="String"/>
+				<e path="Void"/>
+			</f>
+			<haxe_doc>
+	 * Opens a browser window with the specified URL. 
+	 * @param	url		The URL to open.
+	 * @param	target		An optional window target value.
+	 </haxe_doc>
+		</getURL>
+		<pause public="1" set="method" line="160" static="1">
+			<f a=""><e path="Void"/></f>
+			<haxe_doc>
+	 * For supported platforms, the NME application will be
+	 * paused. This can help improve response times if fullscreen
+	 * native UI element is being used temporarily.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 </haxe_doc>
+		</pause>
+		<postUICallback public="1" set="method" line="178" static="1">
+			<f a="handler">
+				<f a=""><e path="Void"/></f>
+				<e path="Void"/>
+			</f>
+			<haxe_doc>
+	 * For some target platforms, NME operates on a separate thread
+	 * than the native application UI. In these cases, you can use this
+	 * method to make thread-safe calls to the native UI.
+	 * 
+	 * If the platform does not require thread-safe callbacks, the 
+	 * handler method will be called immediately.
+	 * @param	handler		The method handler you wish to call when the UI is available. 
+	 </haxe_doc>
+		</postUICallback>
+		<resume public="1" set="method" line="195" static="1">
+			<f a=""><e path="Void"/></f>
+			<haxe_doc>
+	 * Resumes the NME application. For certain platforms,
+	 * pausing the application can improve response times when
+	 * a fullscreen native UI element is being displayed.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 </haxe_doc>
+		</resume>
+		<setPackage public="1" set="method" line="214" static="1">
+			<f a="company:file:packageName:version">
+				<c path="String"/>
+				<c path="String"/>
+				<c path="String"/>
+				<c path="String"/>
+				<e path="Void"/>
+			</f>
+			<haxe_doc>
+	 * Specifies meta-data for the running application. If you are using 
+	 * the NME command-line tools, this method will be called automatically
+	 * as a part of the default platform templates.
+	 * This method is ignored in the Flash and HTML5 targets.
+	 * @param	company		The company name for the application.
+	 * @param	file		The file name for the application.
+	 * @param	packageName		The package name of the application.
+	 * @param	version		The version string of the application.
+	 </haxe_doc>
+		</setPackage>
+		<trace public="1" set="method" line="227" static="1">
+			<f a="arg">
+				<d/>
+				<e path="Void"/>
+			</f>
+			<haxe_doc><![CDATA[
+	 * Sends a <code>trace</code> call for the current platform.
+	 * @param	arg
+	 ]]></haxe_doc>
+		</trace>
+		<nmeGetCompany set="method" line="246" static="1"><f a=""><c path="String"/></f></nmeGetCompany>
+		<nmeGetCurrent set="method" line="256" static="1"><f a=""><c path="nme.display.MovieClip"/></f></nmeGetCurrent>
+		<nmeGetFile set="method" line="270" static="1"><f a=""><c path="String"/></f></nmeGetFile>
+		<nmeGetInitHeight set="method" line="280" static="1"><f a=""><c path="Int"/></f></nmeGetInitHeight>
+		<nmeGetInitWidth set="method" line="290" static="1"><f a=""><c path="Int"/></f></nmeGetInitWidth>
+		<nmeGetPackageName set="method" line="300" static="1"><f a=""><c path="String"/></f></nmeGetPackageName>
+		<nmeGetStage set="method" line="310" static="1"><f a=""><c path="nme.display.Stage"/></f></nmeGetStage>
+		<nmeGetVersion set="method" line="322" static="1"><f a=""><c path="String"/></f></nmeGetVersion>
 	</class>
-	<class path="nme.Memory" params="" file="C:\Development\Haxe\nme/nme/Memory.hx" extern="1">
+	<class path="nme.Memory" params="" file="/Users/joshua/Development/Haxe/nme/nme/Memory.hx" extern="1">
 		<select public="1" set="method" static="1"><f a="inBytes">
 	<c path="nme.utils.ByteArray"/>
 	<e path="Void"/>
@@ -852,7 +1008,7 @@
 	<e path="Void"/>
 </f></setI32>
 	</class>
-	<class path="nme.ObjectHash" params="K:T" file="C:\Development\Haxe\nme/nme/ObjectHash.hx">
+	<class path="nme.ObjectHash" params="K:T" file="/Users/joshua/Development/Haxe/nme/nme/ObjectHash.hx">
 		<nextObjectID line="19" static="1">
 			<c path="Int"/>
 			<haxe_doc> @private </haxe_doc>
@@ -893,13 +1049,13 @@
 </f></set>
 		<new public="1" set="method" line="22"><f a=""><e path="Void"/></f></new>
 	</class>
-	<typedef path="nme.Vector" params="T" file="C:\Development\Haxe\nme/nme/Vector.hx"><c path="Array"><c path="nme.Vector.T"/></c></typedef>
-	<class path="nme.VectorHelper" params="" file="C:\Development\Haxe\nme/nme/Vector.hx" module="nme.Vector"><ofArray public="1" params="T" get="inline" set="null" line="12" static="1"><f a="v:array">
+	<typedef path="nme.Vector" params="T" file="/Users/joshua/Development/Haxe/nme/nme/Vector.hx"><c path="Array"><c path="nme.Vector.T"/></c></typedef>
+	<class path="nme.VectorHelper" params="" file="/Users/joshua/Development/Haxe/nme/nme/Vector.hx" module="nme.Vector"><ofArray public="1" params="T" get="inline" set="null" line="12" static="1"><f a="v:array">
 	<c path="Class"><t path="nme.Vector"><d/></t></c>
 	<c path="Array"><c path="ofArray.T"/></c>
 	<t path="nme.Vector"><c path="ofArray.T"/></t>
 </f></ofArray></class>
-	<class path="nme.events.IEventDispatcher" params="" file="C:\Development\Haxe\nme/nme/events/IEventDispatcher.hx" extern="1" interface="1">
+	<class path="nme.events.IEventDispatcher" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/IEventDispatcher.hx" extern="1" interface="1">
 		<addEventListener public="1" set="method"><f a="type:listener:?useCapture:?priority:?useWeakReference">
 	<c path="String"/>
 	<f a="">
@@ -933,7 +1089,7 @@
 	<e path="Bool"/>
 </f></willTrigger>
 	</class>
-	<class path="nme.events.EventDispatcher" params="" file="C:\Development\Haxe\nme/nme/events/EventDispatcher.hx" extern="1">
+	<class path="nme.events.EventDispatcher" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/EventDispatcher.hx" extern="1">
 		<implements path="nme.events.IEventDispatcher"/>
 		<addEventListener public="1" set="method">
 			<f a="type:listener:?useCapture:?priority:?useWeakReference">
@@ -1209,8 +1365,8 @@
  *                   class.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.IBitmapDrawable" params="" file="C:\Development\Haxe\nme/nme/display/IBitmapDrawable.hx" extern="1" interface="1"/>
-	<class path="nme.display.DisplayObject" params="" file="C:\Development\Haxe\nme/nme/display/DisplayObject.hx" extern="1">
+	<class path="nme.display.IBitmapDrawable" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/IBitmapDrawable.hx" extern="1" interface="1"/>
+	<class path="nme.display.DisplayObject" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/DisplayObject.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<implements path="nme.display.IBitmapDrawable"/>
 		<alpha public="1">
@@ -1252,9 +1408,11 @@
 		<cacheAsBitmap public="1">
 			<e path="Bool"/>
 			<haxe_doc><![CDATA[
-	 * If set to <code>true</code>, Flash runtimes cache an internal bitmap
-	 * representation of the display object. This caching can increase
-	 * performance for display objects that contain complex vector content.
+	 * If set to <code>true</code>, NME will use the software renderer to cache
+	 * an internal bitmap representation of the display object. For native targets,
+	 * this is often much slower than the default hardware renderer. When you
+	 * are using the Flash target, this caching may increase performance for display 
+	 * objects that contain complex vector content.
 	 *
 	 * <p>All vector data for a display object that has a cached bitmap is drawn
 	 * to the bitmap instead of the main display. If
@@ -1311,7 +1469,7 @@
 			<c path="Array"><d/></c>
 			<haxe_doc><![CDATA[
 	 * An indexed array that contains each filter object currently associated
-	 * with the display object. The flash.filters package contains several
+	 * with the display object. The nme.filters package contains several
 	 * classes that define specific filters you can use.
 	 *
 	 * <p>Filters can be applied in Flash Professional at design time, or at run
@@ -1366,7 +1524,7 @@
 	 * long as the display object does not change, the final image does not need
 	 * updating.</p>
 	 *
-	 * <p>The flash.filters package includes classes for filters. For example, to
+	 * <p>The nme.filters package includes classes for filters. For example, to
 	 * create a DropShadow filter, you would write:</p>
 	 * 
 	 * @throws ArgumentError When <code>filters</code> includes a ShaderFilter
@@ -2040,7 +2198,7 @@
 		<haxe_doc><![CDATA[
  * The DisplayObject class is the base class for all objects that can be
  * placed on the display list. The display list manages all objects displayed
- * in the Flash runtimes. Use the DisplayObjectContainer class to arrange the
+ * in NME. Use the DisplayObjectContainer class to arrange the
  * display objects in the display list. DisplayObjectContainer objects can
  * have child display objects, while other display objects, such as Shape and
  * TextField objects, are "leaf" nodes that have only parents and siblings, no
@@ -2167,7 +2325,7 @@
  *                         content is either minimized or obscured. </p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.Bitmap" params="" file="C:\Development\Haxe\nme/nme/display/Bitmap.hx" extern="1">
+	<class path="nme.display.Bitmap" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Bitmap.hx" extern="1">
 		<extends path="nme.display.DisplayObject"/>
 		<bitmapData public="1">
 			<c path="nme.display.BitmapData"/>
@@ -2179,6 +2337,7 @@
 			<e path="nme.display.PixelSnapping"/>
 			<haxe_doc><![CDATA[
 	 * Controls whether or not the Bitmap object is snapped to the nearest pixel.
+	 * This value is ignored in the native and HTML5 targets.
 	 * The PixelSnapping class includes possible values:
 	 * <ul>
 	 *   <li><code>PixelSnapping.NEVER</code>—No pixel snapping occurs.</li>
@@ -2188,8 +2347,8 @@
 	 * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
 	 * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
 	 * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	 * Internally, this value allows the image to be drawn as fast as possible
-	 * using the vector renderer.</li>
+	 * When targeting Flash Player, this value allows the image to be drawn as fast 
+	 * as possible using the internal vector renderer.</li>
 	 * </ul>
 	 ]]></haxe_doc>
 		</pixelSnapping>
@@ -2209,9 +2368,9 @@
 </f></new>
 		<haxe_doc><![CDATA[
  * The Bitmap class represents display objects that represent bitmap images.
- * These can be images that you load with the flash.display.Loader class, or
- * they can be images that you create with the <code>Bitmap()</code>
- * constructor.
+ * These can be images that you load with the <code>nme.Assets</code> or 
+ * <code>nme.display.Loader</code> classes, or they can be images that you 
+ * create with the <code>Bitmap()</code> constructor.
  *
  * <p>The <code>Bitmap()</code> constructor allows you to create a Bitmap
  * object that contains a reference to a BitmapData object. After you create a
@@ -2227,29 +2386,14 @@
  * object instance.</p>
  *
  * <p>A BitmapData object can be drawn to the screen by a Bitmap object in one
- * of two ways: by using the vector renderer as a fill-bitmap shape, or by
- * using a faster pixel-copying routine. The pixel-copying routine is
- * substantially faster than the vector renderer, but the Bitmap object must
- * meet certain conditions to use it:</p>
- *
- * <ul>
- *   <li> No stretching, rotation, or skewing can be applied to the Bitmap
- * object.</li>
- *   <li> No color transform can be applied to the Bitmap object. </li>
- *   <li> No blend mode can be applied to the Bitmap object. </li>
- *   <li> No clipping can be done through mask layers or
- * <code>setMask()</code> methods. </li>
- *   <li> The image itself cannot be a mask. </li>
- *   <li> The destination coordinates must be on a whole pixel boundary. </li>
- * </ul>
- *
- * <p>If you load a Bitmap object from a domain other than that of the Loader
- * object used to load the image, and there is no URL policy file that permits
- * access to the domain of the Loader object, then a script in that domain
- * cannot access the Bitmap object or its properties and methods. For more
- * information, see the Flash Player Developer Center Topic: <a
- * href="http://www.adobe.com/go/devnet_security_en"
- * scope="external">Security</a>.</p>
+ * of two ways: by using the default hardware renderer with a single hardware surface, 
+ * or by using the slower software renderer when 3D acceleration is not available.</p>
+ * 
+ * <p>If you would prefer to perform a batch rendering command, rather than using a
+ * single surface for each Bitmap object, you can also draw to the screen using the
+ * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+ * available to <code>nme.display.Tilesheet</code> and <code>nme.display.Graphics
+ * objects.</code></p>
  *
  * <p><b>Note:</b> The Bitmap class is not a subclass of the InteractiveObject
  * class, so it cannot dispatch mouse events. However, you can use the
@@ -2257,7 +2401,7 @@
  * contains the Bitmap object.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.BitmapData" params="" file="C:\Development\Haxe\nme/nme/display/BitmapData.hx" extern="1">
+	<class path="nme.display.BitmapData" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/BitmapData.hx" extern="1">
 		<implements path="nme.display.IBitmapDrawable"/>
 		<height public="1" set="null">
 			<c path="Int"/>
@@ -2499,7 +2643,7 @@
 	 * <p><code>BitmapData.dispose()</code> releases the memory occupied by the
 	 * actual bitmap data, immediately (a bitmap can consume up to 64 MB of
 	 * memory). After using <code>BitmapData.dispose()</code>, the BitmapData
-	 * object is no longer usable and the Flash runtime throws an exception if
+	 * object is no longer usable and an exception may be thrown if
 	 * you call functions on the BitmapData object. However,
 	 * <code>BitmapData.dispose()</code> does not garbage collect the BitmapData
 	 * object (approximately 128 bytes); the memory occupied by the actual
@@ -2520,14 +2664,11 @@
 			</f>
 			<haxe_doc><![CDATA[
 	 * Draws the <code>source</code> display object onto the bitmap image, using
-	 * the Flash runtime vector renderer. You can specify <code>matrix</code>,
+	 * the NME software renderer. You can specify <code>matrix</code>,
 	 * <code>colorTransform</code>, <code>blendMode</code>, and a destination
 	 * <code>clipRect</code> parameter to control how the rendering performs.
 	 * Optionally, you can specify whether the bitmap should be smoothed when
 	 * scaled (this works only if the source object is a BitmapData object).
-	 *
-	 * <p>This method directly corresponds to how objects are drawn with the
-	 * standard vector renderer for objects in the authoring tool interface.</p>
 	 *
 	 * <p>The source display object does not use any of its applied
 	 * transformations for this call. It is treated as it exists in the library
@@ -2536,42 +2677,6 @@
 	 * properties, you can copy its <code>transform</code> property object to the
 	 * <code>transform</code> property of the Bitmap object that uses the
 	 * BitmapData object.</p>
-	 *
-	 * <p>This method is supported over RTMP in Flash Player 9.0.115.0 and later
-	 * and in Adobe AIR. You can control access to streams on Flash Media Server
-	 * in a server-side script. For more information, see the
-	 * <code>Client.audioSampleAccess</code> and
-	 * <code>Client.videoSampleAccess</code> properties in <a
-	 * href="http://www.adobe.com/go/documentation" scope="external">
-	 * <i>Server-Side ActionScript Language Reference for Adobe Flash Media
-	 * Server</i></a>.</p>
-	 *
-	 * <p>If the source object and (in the case of a Sprite or MovieClip object)
-	 * all of its child objects do not come from the same domain as the caller,
-	 * or are not in a content that is accessible to the caller by having called
-	 * the <code>Security.allowDomain()</code> method, a call to the
-	 * <code>draw()</code> throws a SecurityError exception. This restriction
-	 * does not apply to AIR content in the application security sandbox.</p>
-	 *
-	 * <p>There are also restrictions on using a loaded bitmap image as the
-	 * <code>source</code>. A call to the <code>draw()</code> method is
-	 * successful if the loaded image comes from the same domain as the caller.
-	 * Also, a cross-domain policy file on the image's server can grant
-	 * permission to the domain of the SWF content calling the
-	 * <code>draw()</code> method. In this case, you must set the
-	 * <code>checkPolicyFile</code> property of a LoaderContext object, and use
-	 * this object as the <code>context</code> parameter when calling the
-	 * <code>load()</code> method of the Loader object used to load the image.
-	 * These restrictions do not apply to AIR content in the application security
-	 * sandbox.</p>
-	 *
-	 * <p>On Windows, the <code>draw()</code> method cannot capture SWF content
-	 * embedded in an HTML page in an HTMLLoader object in Adobe AIR.</p>
-	 *
-	 * <p>The <code>draw()</code> method cannot capture PDF content in Adobe AIR.
-	 * Nor can it capture or SWF content embedded in HTML in which the
-	 * <code>wmode</code> attribute is set to <code>"window"</code> in Adobe
-	 * AIR.</p>
 	 * 
 	 * @param source         The display object or BitmapData object to draw to
 	 *                       the BitmapData object. (The DisplayObject and
@@ -2591,7 +2696,7 @@
 	 *                       parameter to a ColorTransform object created with
 	 *                       the default <code>new ColorTransform()</code>
 	 *                       constructor.
-	 * @param blendMode      A string value, from the flash.display.BlendMode
+	 * @param blendMode      A string value, from the nme.display.BlendMode
 	 *                       class, specifying the blend mode to be applied to
 	 *                       the resulting bitmap.
 	 * @param clipRect       A Rectangle object that defines the area of the
@@ -3378,8 +3483,7 @@
 	 * @param changeRect The area of the BitmapData object that has changed. If
 	 *                   you do not specify a value for this parameter, the
 	 *                   entire area of the BitmapData object is considered
-	 *                   changed. This parameter requires Flash Player version
-	 *                   9.0.115.0 or later.
+	 *                   changed.
 	 ]]></haxe_doc>
 		</unlock>
 		<new public="1" set="method">
@@ -3387,7 +3491,7 @@
 				<c path="Int"/>
 				<c path="Int"/>
 				<e path="Bool"/>
-				<c path="Int"/>
+				<t path="nme.display.BitmapInt32"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc><![CDATA[
@@ -3408,13 +3512,14 @@
 		</new>
 		<haxe_doc><![CDATA[
  * The BitmapData class lets you work with the data (pixels) of a Bitmap
- * object . You can use the methods of the BitmapData class to create
+ * object. You can use the methods of the BitmapData class to create
  * arbitrarily sized transparent or opaque bitmap images and manipulate them
  * in various ways at runtime. You can also access the BitmapData for a bitmap
- * image that you load with the <code>flash.display.Loader</code> class.
+ * image that you load with the <code>nme.Assets</code> or 
+ * <code>nme.display.Loader</code> classes.
  *
  * <p>This class lets you separate bitmap rendering operations from the
- * internal display updating routines of Flash Player. By manipulating a
+ * internal display updating routines of NME. By manipulating a
  * BitmapData object directly, you can create complex images without incurring
  * the per-frame overhead of constantly redrawing the content from vector
  * data.</p>
@@ -3432,6 +3537,12 @@
  * 0 to 255) that describe the alpha transparency and the red, green, and blue
  * (ARGB) values of the pixel. (For ARGB values, the most significant byte
  * represents the alpha channel value, followed by red, green, and blue.)</p>
+ * 
+ * <p>When you are targeting the Neko runtime, the pixel data is stored as an object
+ * with separate red, green, blue (RGB) and alpha (A) values. Unlike other targets, 
+ * Neko uses 31-bit integers, so this necessary in order to store the full data for each 
+ * pixel. You can use the <code>nme.display.BitmapInt32</class> object to represent
+ * either data format.</p>
  *
  * <p>The four channels (alpha, red, green, and blue) are represented as
  * numbers when you use them with the <code>BitmapData.copyChannel()</code>
@@ -3452,26 +3563,18 @@
  *
  * <p>You can use a BitmapData object to fill a Graphics object by using the
  * <code>Graphics.beginBitmapFill()</code> method.</p>
+ * 
+ * <p>You can also use a BitmapData object to perform batch tile rendering
+ * using the <code>nme.display.Tilesheet</code> class.</p>
  *
- * <p>In the AIR runtime, the DockIcon, Icon, InteractiveIcon, and
- * SystemTrayIcon classes each include a <code>bitmaps</code> property that is
- * an array of BitmapData objects that define the bitmap images for an
- * icon.</p>
- *
- * <p>In AIR 1.5 and Flash Player 10, the maximum size for a BitmapData object
+ * <p>In Flash Player 10, the maximum size for a BitmapData object
  * is 8,191 pixels in width or height, and the total number of pixels cannot
  * exceed 16,777,215 pixels. (So, if a BitmapData object is 8,191 pixels wide,
- * it can only be 2,048 pixels high.) In Flash Player 9 and earlier and AIR
- * 1.1 and earlier, the limitation is 2,880 pixels in height and 2,880 in
- * width.</p>
- *
- * <p>Calls to any method or property of a BitmapData object throw an
- * ArgumentError error if the BitmapData object is invalid (for example, if it
- * has <code>height == 0</code> and <code>width == 0</code>) or it has been
- * disposed of via dispose(). </p>
+ * it can only be 2,048 pixels high.) In Flash Player 9 and earlier, the limitation 
+ * is 2,880 pixels in height and 2,880 in width.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.BitmapDataChannel" params="" file="C:\Development\Haxe\nme/nme/display/BitmapDataChannel.hx" extern="1">
+	<class path="nme.display.BitmapDataChannel" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/BitmapDataChannel.hx" extern="1">
 		<ALPHA public="1" get="inline" set="null" line="31" static="1">
 			<c path="Int"/>
 			<haxe_doc>
@@ -3509,17 +3612,17 @@
  *
  * <ul>
  *   <li>The <code>sourceChannel</code> and <code>destChannel</code>
- * parameters of the <code>flash.display.BitmapData.copyChannel()</code>
+ * parameters of the <code>nme.display.BitmapData.copyChannel()</code>
  * method</li>
  *   <li>The <code>channelOptions</code> parameter of the
- * <code>flash.display.BitmapData.noise()</code> method</li>
- *   <li>The <code>flash.filters.DisplacementMapFilter.componentX</code> and
- * <code>flash.filters.DisplacementMapFilter.componentY</code> properties</li>
+ * <code>nme.display.BitmapData.noise()</code> method</li>
+ *   <li>The <code>nme.filters.DisplacementMapFilter.componentX</code> and
+ * <code>nme.filters.DisplacementMapFilter.componentY</code> properties</li>
  * </ul>
  ]]></haxe_doc>
 	</class>
-	<typedef path="nme.display.BitmapInt32" params="" file="C:\Development\Haxe\nme/nme/display/BitmapInt32.hx"><c path="Int"/></typedef>
-	<enum path="nme.display.BlendMode" params="" file="C:\Development\Haxe\nme/nme/display/BlendMode.hx">
+	<typedef path="nme.display.BitmapInt32" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/BitmapInt32.hx"><c path="Int"/></typedef>
+	<enum path="nme.display.BlendMode" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/BlendMode.hx">
 		<SUBTRACT><haxe_doc><![CDATA[
 	 * Subtracts the values of the constituent colors in the display object from
 	 * the values of the background color, applying a floor of 0. This setting is
@@ -3621,7 +3724,7 @@
 		<ERASE><haxe_doc><![CDATA[
 	 * Erases the background based on the alpha value of the display object. This
 	 * process requires that the <code>blendMode</code> property of the parent
-	 * display object be set to <code>flash.display.BlendMode.LAYER</code>.
+	 * display object be set to <code>nme.display.BlendMode.LAYER</code>.
 	 *
 	 * <p>Not supported under GPU rendering.</p>
 	 ]]></haxe_doc></ERASE>
@@ -3652,7 +3755,7 @@
 	 * Applies the alpha value of each pixel of the display object to the
 	 * background. This requires the <code>blendMode</code> property of the
 	 * parent display object be set to
-	 * <code>flash.display.BlendMode.LAYER</code>.
+	 * <code>nme.display.BlendMode.LAYER</code>.
 	 *
 	 * <p>Not supported under GPU rendering.</p>
 	 ]]></haxe_doc></ALPHA>
@@ -3671,36 +3774,36 @@
  * constants are used in the following:
  * <ul>
  *   <li> The <code>blendMode</code> property of the
- * flash.display.DisplayObject class.</li>
+ * nme.display.DisplayObject class.</li>
  *   <li> The <code>blendMode</code> parameter of the <code>draw()</code>
- * method of the flash.display.BitmapData class</li>
+ * method of the nme.display.BitmapData class</li>
  * </ul>
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.CapsStyle" params="" file="C:\Development\Haxe\nme/nme/display/CapsStyle.hx">
+	<enum path="nme.display.CapsStyle" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/CapsStyle.hx">
 		<SQUARE><haxe_doc><![CDATA[
 	 * Used to specify square caps in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></SQUARE>
 		<ROUND><haxe_doc><![CDATA[
 	 * Used to specify round caps in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></ROUND>
 		<NONE><haxe_doc><![CDATA[
 	 * Used to specify no caps in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></NONE>
 		<haxe_doc><![CDATA[
  * The CapsStyle class is an enumeration of constant values that specify the
  * caps style to use in drawing lines. The constants are provided for use as
  * values in the <code>caps</code> parameter of the
- * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
+ * <code>nme.display.Graphics.lineStyle()</code> method. You can specify the
  * following three types of caps:
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.InteractiveObject" params="" file="C:\Development\Haxe\nme/nme/display/InteractiveObject.hx" extern="1">
+	<class path="nme.display.InteractiveObject" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/InteractiveObject.hx" extern="1">
 		<extends path="nme.display.DisplayObject"/>
 		<doubleClickEnabled public="1">
 			<e path="Bool"/>
@@ -3742,7 +3845,7 @@
 	 * events). Any children of this instance on the display list are not
 	 * affected. To change the <code>mouseEnabled</code> behavior for all
 	 * children of an object on the display list, use
-	 * <code>flash.display.DisplayObjectContainer.mouseChildren</code>.
+	 * <code>nme.display.DisplayObjectContainer.mouseChildren</code>.
 	 *
 	 * <p> No event is dispatched by setting this property. You must use the
 	 * <code>addEventListener()</code> method to create interactive
@@ -4028,7 +4131,7 @@
  *                               <code>gesturePan</code> event, or all if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4068,7 +4171,7 @@
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
- *                               flash.ui.Multitouch class to manage touch
+ *                               nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4115,7 +4218,7 @@
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
- *                               flash.ui.Multitouch class to manage touch
+ *                               nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4207,7 +4310,7 @@
  *                               <code>gestureTwoFingerTap</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -4250,7 +4353,7 @@
  *                               <code>gestureZoom</code> event, or all if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4666,7 +4769,7 @@
  *                               <code>touchBegin</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4698,7 +4801,7 @@
  *                               event or a <code>touchEnd</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -4731,7 +4834,7 @@
  *                               <code>touchMove</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4765,7 +4868,7 @@
  *                               event or a <code>touchOut</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -4800,7 +4903,7 @@
  *                               <code>touchOver</code> event, or both if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
- *                               the flash.ui.Multitouch class to manage touch
+ *                               the nme.ui.Multitouch class to manage touch
  *                               event handling (enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
@@ -4835,7 +4938,7 @@
  *                               <code>touchRollOut</code> event, or both if
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
- *                               Use the flash.ui.Multitouch class to manage
+ *                               Use the nme.ui.Multitouch class to manage
  *                               touch event handling (enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
@@ -4870,7 +4973,7 @@
  *                               <code>touchRollOver</code> event, or both if
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
- *                               Use the flash.ui.Multitouch class to manage
+ *                               Use the nme.ui.Multitouch class to manage
  *                               touch event handling (enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
@@ -4905,7 +5008,7 @@
  *                               event or a <code>touchTap</code> event, or
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
- *                               interaction. Use the flash.ui.Multitouch
+ *                               interaction. Use the nme.ui.Multitouch
  *                               class to manage touch event handling (enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
@@ -4926,7 +5029,7 @@
  *                               environment compatibility information.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.DisplayObjectContainer" params="" file="C:\Development\Haxe\nme/nme/display/DisplayObjectContainer.hx" extern="1">
+	<class path="nme.display.DisplayObjectContainer" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/DisplayObjectContainer.hx" extern="1">
 		<extends path="nme.display.InteractiveObject"/>
 		<mouseChildren public="1">
 			<e path="Bool"/>
@@ -5337,7 +5440,7 @@
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.text.TextField" params="" file="C:\Development\Haxe\nme/nme/text/TextField.hx" extern="1">
+	<class path="nme.text.TextField" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/TextField.hx" extern="1">
 		<extends path="nme.display.InteractiveObject"/>
 		<isFontCompatible public="1" static="1">
 			<f a="fontName:fontStyle">
@@ -5349,10 +5452,10 @@
 			<haxe_doc><![CDATA[
 	 * Returns true if an embedded font is available with the specified
 	 * <code>fontName</code> and <code>fontStyle</code> where
-	 * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
+	 * <code>Font.fontType</code> is <code>nme.text.FontType.EMBEDDED</code>.
 	 * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
 	 * SWF file. Normal embedded fonts are only used with TextField objects. CFF
-	 * embedded fonts are only used with the flash.text.engine classes. The two
+	 * embedded fonts are only used with the nme.text.engine classes. The two
 	 * types are distinguished by the <code>fontType</code> property of the
 	 * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
 	 * function.
@@ -5369,11 +5472,11 @@
 	 * 
 	 * @param fontName  The name of the embedded font to check.
 	 * @param fontStyle Specifies the font style to check. Use
-	 *                  <code>flash.text.FontStyle</code>
+	 *                  <code>nme.text.FontStyle</code>
 	 * @return <code>true</code> if a compatible embedded font is available,
 	 *         otherwise <code>false</code>.
 	 * @throws ArgumentError The <code>fontStyle</code> specified is not a member
-	 *                       of <code>flash.text.FontStyle</code>.
+	 *                       of <code>nme.text.FontStyle</code>.
 	 ]]></haxe_doc>
 		</isFontCompatible>
 		<alwaysShowSelection public="1">
@@ -5391,10 +5494,10 @@
 			<e path="nme.text.AntiAliasType"/>
 			<haxe_doc><![CDATA[
 	 * The type of anti-aliasing used for this text field. Use
-	 * <code>flash.text.AntiAliasType</code> constants for this property. You can
+	 * <code>nme.text.AntiAliasType</code> constants for this property. You can
 	 * control this setting only if the font is embedded (with the
 	 * <code>embedFonts</code> property set to <code>true</code>). The default
-	 * setting is <code>flash.text.AntiAliasType.NORMAL</code>.
+	 * setting is <code>nme.text.AntiAliasType.NORMAL</code>.
 	 *
 	 * <p>To set values for this property, use the following string values:</p>
 	 ]]></haxe_doc>
@@ -5441,7 +5544,7 @@
 	 * fixed.</p>
 	 * 
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
-	 *                       of flash.text.TextFieldAutoSize.
+	 *                       of nme.text.TextFieldAutoSize.
 	 ]]></haxe_doc>
 		</autoSize>
 		<background public="1">
@@ -5792,8 +5895,8 @@
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
 	 * The sharpness of the glyph edges in this text field. This property applies
-	 * only if the <code>flash.text.AntiAliasType</code> property of the text
-	 * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>. The range
+	 * only if the <code>nme.text.AntiAliasType</code> property of the text
+	 * field is set to <code>nme.text.AntiAliasType.ADVANCED</code>. The range
 	 * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
 	 * set <code>sharpness</code> to a value outside that range, Flash sets the
 	 * property to the nearest value in the range (either -400 or 400).
@@ -5840,8 +5943,8 @@
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
 	 * The thickness of the glyph edges in this text field. This property applies
-	 * only when <code>flash.text.AntiAliasType</code> is set to
-	 * <code>flash.text.AntiAliasType.ADVANCED</code>.
+	 * only when <code>nme.text.AntiAliasType</code> is set to
+	 * <code>nme.text.AntiAliasType.ADVANCED</code>.
 	 *
 	 * <p>The range for <code>thickness</code> is a number from -200 to 200. If
 	 * you attempt to set <code>thickness</code> to a value outside that range,
@@ -5861,7 +5964,7 @@
 	 * 
 	 * @default dynamic
 	 * @throws ArgumentError The <code>type</code> specified is not a member of
-	 *                       flash.text.TextFieldType.
+	 *                       nme.text.TextFieldType.
 	 ]]></haxe_doc>
 		</type>
 		<useRichTextClipboard public="1">
@@ -6329,7 +6432,7 @@
  *                                  options
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.FPS" params="" file="C:\Development\Haxe\nme/nme/display/FPS.hx">
+	<class path="nme.display.FPS" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/FPS.hx">
 		<extends path="nme.text.TextField"/>
 		<times><c path="Array"><c path="Float"/></c></times>
 		<onEnter set="method" line="38"><f a="_">
@@ -6343,7 +6446,7 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<enum path="nme.display.GradientType" params="" file="C:\Development\Haxe\nme/nme/display/GradientType.hx">
+	<enum path="nme.display.GradientType" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GradientType.hx">
 		<RADIAL><haxe_doc>
 	 * Value used to specify a radial gradient fill.
 	 </haxe_doc></RADIAL>
@@ -6353,12 +6456,12 @@
 		<haxe_doc><![CDATA[
  * The GradientType class provides values for the <code>type</code> parameter
  * in the <code>beginGradientFill()</code> and
- * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+ * <code>lineGradientStyle()</code> methods of the nme.display.Graphics
  * class.
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.Graphics" params="" file="C:\Development\Haxe\nme/nme/display/Graphics.hx" extern="1">
+	<class path="nme.display.Graphics" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Graphics.hx" extern="1">
 		<beginBitmapFill public="1" set="method">
 			<f a="bitmap:?matrix:?repeat:?smooth">
 				<c path="nme.display.BitmapData"/>
@@ -6379,7 +6482,7 @@
 	 * 
 	 * @param bitmap A transparent or opaque bitmap image that contains the bits
 	 *               to be displayed.
-	 * @param matrix A matrix object (of the flash.geom.Matrix class), which you
+	 * @param matrix A matrix object (of the nme.geom.Matrix class), which you
 	 *               can use to define transformations on the bitmap. For
 	 *               example, you can use the following matrix to rotate a bitmap
 	 *               by 45 degrees (pi/4 radians):
@@ -6454,7 +6557,7 @@
 	 *                            <code>GradientType.LINEAR</code> or
 	 *                            <code>GradientType.RADIAL</code>.
 	 * @param matrix              A transformation matrix as defined by the
-	 *                            flash.geom.Matrix class. The flash.geom.Matrix
+	 *                            nme.geom.Matrix class. The nme.geom.Matrix
 	 *                            class includes a
 	 *                            <code>createGradientBox()</code> method, which
 	 *                            lets you conveniently set up the matrix for use
@@ -6846,7 +6949,7 @@
 	 * 
 	 * @param bitmap The bitmap to use for the line stroke.
 	 * @param matrix An optional transformation matrix as defined by the
-	 *               flash.geom.Matrix class. The matrix can be used to scale or
+	 *               nme.geom.Matrix class. The matrix can be used to scale or
 	 *               otherwise manipulate the bitmap before applying it to the
 	 *               line style.
 	 * @param repeat Whether to repeat the bitmap in a tiled fashion.
@@ -6890,7 +6993,7 @@
 	 *                            specifies which gradient type to use, either
 	 *                            GradientType.LINEAR or GradientType.RADIAL.
 	 * @param matrix              A transformation matrix as defined by the
-	 *                            flash.geom.Matrix class. The flash.geom.Matrix
+	 *                            nme.geom.Matrix class. The nme.geom.Matrix
 	 *                            class includes a
 	 *                            <code>createGradientBox()</code> method, which
 	 *                            lets you conveniently set up the matrix for use
@@ -7127,8 +7230,8 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.display.IGraphicsData" params="" file="C:\Development\Haxe\nme/nme/display/IGraphicsData.hx" extern="1" interface="1"/>
-	<class path="nme.display.GraphicsEndFill" params="" file="C:\Development\Haxe\nme/nme/display/GraphicsEndFill.hx" extern="1">
+	<class path="nme.display.IGraphicsData" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/IGraphicsData.hx" extern="1" interface="1"/>
+	<class path="nme.display.GraphicsEndFill" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GraphicsEndFill.hx" extern="1">
 		<implements path="nme.display.IGraphicsData"/>
 		<new public="1" set="method">
 			<f a=""><e path="Void"/></f>
@@ -7145,7 +7248,7 @@
  * <code>Graphics.endFill()</code> method. </p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.GraphicsPath" params="" file="C:\Development\Haxe\nme/nme/display/GraphicsPath.hx" extern="1">
+	<class path="nme.display.GraphicsPath" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GraphicsPath.hx" extern="1">
 		<implements path="nme.display.IGraphicsData"/>
 		<commands public="1">
 			<t path="nme.Vector"><c path="Int"/></t>
@@ -7294,13 +7397,13 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<enum path="nme.display.GraphicsPathWinding" params="" file="C:\Development\Haxe\nme/nme/display/GraphicsPathWinding.hx">
+	<enum path="nme.display.GraphicsPathWinding" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GraphicsPathWinding.hx">
 		<NON_ZERO/>
 		<EVEN_ODD/>
 		<haxe_doc><![CDATA[
  * The GraphicsPathWinding class provides values for the
- * <code>flash.display.GraphicsPath.winding</code> property and the
- * <code>flash.display.Graphics.drawPath()</code> method to determine the
+ * <code>nme.display.GraphicsPath.winding</code> property and the
+ * <code>nme.display.Graphics.drawPath()</code> method to determine the
  * direction to draw a path. A clockwise path is positively wound, and a
  * counter-clockwise path is negatively wound:
  *
@@ -7309,7 +7412,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.GraphicsSolidFill" params="" file="C:\Development\Haxe\nme/nme/display/GraphicsSolidFill.hx" extern="1">
+	<class path="nme.display.GraphicsSolidFill" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GraphicsSolidFill.hx" extern="1">
 		<implements path="nme.display.IGraphicsData"/>
 		<alpha public="1">
 			<c path="Float"/>
@@ -7351,7 +7454,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.display.GraphicsStroke" params="" file="C:\Development\Haxe\nme/nme/display/GraphicsStroke.hx" extern="1">
+	<class path="nme.display.GraphicsStroke" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/GraphicsStroke.hx" extern="1">
 		<implements path="nme.display.IGraphicsData"/>
 		<caps public="1">
 			<e path="nme.display.CapsStyle"/>
@@ -7566,7 +7669,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<enum path="nme.display.InterpolationMethod" params="" file="C:\Development\Haxe\nme/nme/display/InterpolationMethod.hx">
+	<enum path="nme.display.InterpolationMethod" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/InterpolationMethod.hx">
 		<RGB><haxe_doc><![CDATA[
 	 * Specifies that the RGB interpolation method should be used. This means
 	 * that the gradient is rendered with exponential sRGB (standard RGB) space.
@@ -7600,30 +7703,30 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.JointStyle" params="" file="C:\Development\Haxe\nme/nme/display/JointStyle.hx">
+	<enum path="nme.display.JointStyle" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/JointStyle.hx">
 		<ROUND><haxe_doc><![CDATA[
 	 * Specifies round joints in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></ROUND>
 		<MITER><haxe_doc><![CDATA[
 	 * Specifies mitered joints in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></MITER>
 		<BEVEL><haxe_doc><![CDATA[
 	 * Specifies beveled joints in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method.
+	 * <code>nme.display.Graphics.lineStyle()</code> method.
 	 ]]></haxe_doc></BEVEL>
 		<haxe_doc><![CDATA[
  * The JointStyle class is an enumeration of constant values that specify the
  * joint style to use in drawing lines. These constants are provided for use
  * as values in the <code>joints</code> parameter of the
- * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+ * <code>nme.display.Graphics.lineStyle()</code> method. The method supports
  * three types of joints: miter, round, and bevel, as the following example
  * shows:
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.LineScaleMode" params="" file="C:\Development\Haxe\nme/nme/display/LineScaleMode.hx">
+	<enum path="nme.display.LineScaleMode" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/LineScaleMode.hx">
 		<VERTICAL><haxe_doc><![CDATA[
 	 * With this setting used as the <code>scaleMode</code> parameter of the
 	 * <code>lineStyle()</code> method, the thickness of the line scales
@@ -7657,7 +7760,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.Loader" params="" file="C:\Development\Haxe\nme/nme/display/Loader.hx" extern="1">
+	<class path="nme.display.Loader" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Loader.hx" extern="1">
 		<extends path="nme.display.DisplayObjectContainer"/>
 		<content public="1" set="null">
 			<c path="nme.display.DisplayObject"/>
@@ -7817,7 +7920,7 @@
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>
@@ -7897,7 +8000,7 @@
 	 *                      add the loaded content as a child to the specified
 	 *                      DisplayObjectContainer. This could happen if the
 	 *                      loaded content is a
-	 *                      <code>flash.display.AVM1Movie</code> or if the
+	 *                      <code>nme.display.AVM1Movie</code> or if the
 	 *                      <code>addChild()</code> call to the
 	 *                      requestedContentParent throws an error.
 	 * @event complete      Dispatched by the <code>contentLoaderInfo</code>
@@ -8102,7 +8205,7 @@
  * mask, as shown in the following code:</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.LoaderInfo" params="" file="C:\Development\Haxe\nme/nme/display/LoaderInfo.hx" extern="1">
+	<class path="nme.display.LoaderInfo" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/LoaderInfo.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<getLoaderInfoByDefinition public="1" set="method" static="1">
 			<f a="object">
@@ -8425,7 +8528,7 @@
  * <p>You can access LoaderInfo objects in two ways: </p>
  *
  * <ul>
- *   <li>The <code>contentLoaderInfo</code> property of a flash.display.Loader
+ *   <li>The <code>contentLoaderInfo</code> property of a nme.display.Loader
  * object— The <code>contentLoaderInfo</code> property is always available
  * for any Loader object. For a Loader object that has not called the
  * <code>load()</code> or <code>loadBytes()</code> method, or that has not
@@ -8513,7 +8616,7 @@
  *                   content is removed prior to the load beginning.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.Stage" params="" file="C:\Development\Haxe\nme/nme/display/Stage.hx" extern="1">
+	<class path="nme.display.Stage" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Stage.hx" extern="1">
 		<extends path="nme.display.DisplayObjectContainer"/>
 		<align public="1">
 			<e path="nme.display.StageAlign"/>
@@ -8554,7 +8657,7 @@
 	 * system (usually the browser). Currently the return values can be:
 	 *
 	 * <p>The three possible values are strings with corresponding constants in
-	 * the flash.display.ColorCorrectionSupport class:</p>
+	 * the nme.display.ColorCorrectionSupport class:</p>
 	 *
 	 * <ul>
 	 *   <li><code>"unsupported"</code>: Color correction is not available.</li>
@@ -9234,7 +9337,7 @@
  *                               of the stageVideos property changes.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.ManagedStage" params="" file="C:\Development\Haxe\nme/nme/display/ManagedStage.hx" extern="1">
+	<class path="nme.display.ManagedStage" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/ManagedStage.hx" extern="1">
 		<extends path="nme.display.Stage"/>
 		<etUnknown public="1" static="1"><c path="Int"/></etUnknown>
 		<etKeyDown public="1" static="1"><c path="Int"/></etKeyDown>
@@ -9287,7 +9390,7 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<class path="nme.display.Sprite" params="" file="C:\Development\Haxe\nme/nme/display/Sprite.hx" extern="1">
+	<class path="nme.display.Sprite" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Sprite.hx" extern="1">
 		<extends path="nme.display.DisplayObjectContainer"/>
 		<buttonMode public="1">
 			<e path="Bool"/>
@@ -9497,7 +9600,7 @@
  * compatibility.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.MovieClip" params="" file="C:\Development\Haxe\nme/nme/display/MovieClip.hx" extern="1">
+	<class path="nme.display.MovieClip" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/MovieClip.hx" extern="1">
 		<extends path="nme.display.Sprite"/>
 		<currentFrame public="1" set="null">
 			<c path="Int"/>
@@ -9731,7 +9834,7 @@
  ]]></haxe_doc>
 		<haxe_dynamic><d/></haxe_dynamic>
 	</class>
-	<enum path="nme.display.PixelSnapping" params="" file="C:\Development\Haxe\nme/nme/display/PixelSnapping.hx">
+	<enum path="nme.display.PixelSnapping" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/PixelSnapping.hx">
 		<NEVER><haxe_doc><![CDATA[
 	 * A constant value used in the <code>pixelSnapping</code> property of a
 	 * Bitmap object to specify that no pixel snapping occurs.
@@ -9757,7 +9860,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.Shape" params="" file="C:\Development\Haxe\nme/nme/display/Shape.hx" extern="1">
+	<class path="nme.display.Shape" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Shape.hx" extern="1">
 		<extends path="nme.display.DisplayObject"/>
 		<graphics public="1" set="null">
 			<c path="nme.display.Graphics"/>
@@ -9787,7 +9890,7 @@
  * does not.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.display.SimpleButton" params="" file="C:\Development\Haxe\nme/nme/display/SimpleButton.hx" extern="1">
+	<class path="nme.display.SimpleButton" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/SimpleButton.hx" extern="1">
 		<extends path="nme.display.InteractiveObject"/>
 		<downState public="1">
 			<c path="nme.display.DisplayObject"/>
@@ -9911,7 +10014,7 @@
  * <p>The SimpleButton class inherits from the InteractiveObject class.</p>
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.display.SpreadMethod" params="" file="C:\Development\Haxe\nme/nme/display/SpreadMethod.hx">
+	<enum path="nme.display.SpreadMethod" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/SpreadMethod.hx">
 		<REPEAT><haxe_doc><![CDATA[
 	 * Specifies that the gradient use the <i>repeat</i> spread method.
 	 ]]></haxe_doc></REPEAT>
@@ -9931,7 +10034,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.StageAlign" params="" file="C:\Development\Haxe\nme/nme/display/StageAlign.hx">
+	<enum path="nme.display.StageAlign" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/StageAlign.hx">
 		<TOP_RIGHT><haxe_doc>
 	 * Specifies that the Stage is aligned to the right.
 	 </haxe_doc></TOP_RIGHT>
@@ -9962,7 +10065,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.StageDisplayState" params="" file="C:\Development\Haxe\nme/nme/display/StageDisplayState.hx">
+	<enum path="nme.display.StageDisplayState" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/StageDisplayState.hx">
 		<NORMAL><haxe_doc>
 	 * Specifies that the Stage is in normal mode.
 	 </haxe_doc></NORMAL>
@@ -9974,7 +10077,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.StageQuality" params="" file="C:\Development\Haxe\nme/nme/display/StageQuality.hx">
+	<enum path="nme.display.StageQuality" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/StageQuality.hx">
 		<MEDIUM><haxe_doc>
 	 * Specifies medium rendering quality: graphics are anti-aliased using a 2 x
 	 * 2 pixel grid, but bitmaps are not smoothed. This setting is suitable for
@@ -9998,7 +10101,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.display.StageScaleMode" params="" file="C:\Development\Haxe\nme/nme/display/StageScaleMode.hx">
+	<enum path="nme.display.StageScaleMode" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/StageScaleMode.hx">
 		<SHOW_ALL/>
 		<NO_SCALE/>
 		<NO_BORDER/>
@@ -10009,7 +10112,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.display.Tilesheet" params="" file="C:\Development\Haxe\nme/nme/display/Tilesheet.hx" extern="1">
+	<class path="nme.display.Tilesheet" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/Tilesheet.hx" extern="1">
 		<TILE_SCALE public="1" static="1"><c path="Int"/></TILE_SCALE>
 		<TILE_ROTATION public="1" static="1"><c path="Int"/></TILE_ROTATION>
 		<TILE_RGB public="1" static="1"><c path="Int"/></TILE_RGB>
@@ -10055,7 +10158,7 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<enum path="nme.display.TriangleCulling" params="" file="C:\Development\Haxe\nme/nme/display/TriangleCulling.hx">
+	<enum path="nme.display.TriangleCulling" params="" file="/Users/joshua/Development/Haxe/nme/nme/display/TriangleCulling.hx">
 		<POSITIVE><haxe_doc>
 	 * Specifies culling of all triangles facing away from the current view
 	 * point. This is also known as backface culling.
@@ -10089,7 +10192,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.errors.Error" params="" file="C:\Development\Haxe\nme/nme/errors/Error.hx" extern="1">
+	<class path="nme.errors.Error" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/Error.hx" extern="1">
 		<length public="1" static="1"><c path="Int"/></length>
 		<getErrorMessage public="1" set="method" static="1"><f a="index">
 	<c path="Int"/>
@@ -10116,11 +10219,11 @@
 </f></new>
 		<haxe_dynamic><d/></haxe_dynamic>
 	</class>
-	<class path="nme.errors.ArgumentError" params="" file="C:\Development\Haxe\nme/nme/errors/ArgumentError.hx" extern="1">
+	<class path="nme.errors.ArgumentError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/ArgumentError.hx" extern="1">
 		<extends path="nme.errors.Error"/>
 		<meta><m n=":native"><e>ArgumentError</e></m></meta>
 	</class>
-	<class path="nme.errors.EOFError" params="" file="C:\Development\Haxe\nme/nme/errors/EOFError.hx" extern="1">
+	<class path="nme.errors.EOFError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/EOFError.hx" extern="1">
 		<new public="1" set="method">
 			<f a="?message:?id">
 				<c path="String"/>
@@ -10140,7 +10243,7 @@
  * data to satisfy the read request.
  </haxe_doc>
 	</class>
-	<class path="nme.errors.IllegalOperationError" params="" file="C:\Development\Haxe\nme/nme/errors/IllegalOperationError.hx" extern="1">
+	<class path="nme.errors.IllegalOperationError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/IllegalOperationError.hx" extern="1">
 		<extends path="nme.errors.Error"/>
 		<new public="1" set="method">
 			<f a="?message:?id">
@@ -10177,19 +10280,19 @@
  * </ul>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.errors.RangeError" params="" file="C:\Development\Haxe\nme/nme/errors/RangeError.hx" extern="1">
+	<class path="nme.errors.RangeError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/RangeError.hx" extern="1">
 		<extends path="nme.errors.Error"/>
 		<meta><m n=":native"><e>RangeError</e></m></meta>
 	</class>
-	<class path="nme.errors.SecurityError" params="" file="C:\Development\Haxe\nme/nme/errors/SecurityError.hx" extern="1">
+	<class path="nme.errors.SecurityError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/SecurityError.hx" extern="1">
 		<extends path="nme.errors.Error"/>
 		<meta><m n=":native"><e>SecurityError</e></m></meta>
 	</class>
-	<class path="nme.errors.TypeError" params="" file="C:\Development\Haxe\nme/nme/errors/TypeError.hx" extern="1">
+	<class path="nme.errors.TypeError" params="" file="/Users/joshua/Development/Haxe/nme/nme/errors/TypeError.hx" extern="1">
 		<extends path="nme.errors.Error"/>
 		<meta><m n=":native"><e>TypeError</e></m></meta>
 	</class>
-	<class path="nme.events.Event" params="" file="C:\Development\Haxe\nme/nme/events/Event.hx" extern="1">
+	<class path="nme.events.Event" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/Event.hx" extern="1">
 		<ACTIVATE public="1" static="1">
 			<c path="String"/>
 			<haxe_doc><![CDATA[
@@ -10871,7 +10974,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.AccelerometerEvent" params="" file="C:\Development\Haxe\nme/nme/events/AccelerometerEvent.hx" extern="1">
+	<class path="nme.events.AccelerometerEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/AccelerometerEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<UPDATE public="1" static="1">
 			<c path="String"/>
@@ -10961,7 +11064,7 @@
  </haxe_doc>
 		<meta><m n=":require"><e>flash10_1</e></m></meta>
 	</class>
-	<class path="nme.events.TextEvent" params="" file="C:\Development\Haxe\nme/nme/events/TextEvent.hx" extern="1">
+	<class path="nme.events.TextEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/TextEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<LINK public="1" static="1">
 			<c path="String"/>
@@ -11030,7 +11133,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.ErrorEvent" params="" file="C:\Development\Haxe\nme/nme/events/ErrorEvent.hx" extern="1">
+	<class path="nme.events.ErrorEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/ErrorEvent.hx" extern="1">
 		<extends path="nme.events.TextEvent"/>
 		<ERROR public="1" static="1">
 			<c path="String"/>
@@ -11100,7 +11203,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.events.EventPhase" params="" file="C:\Development\Haxe\nme/nme/events/EventPhase.hx">
+	<enum path="nme.events.EventPhase" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/EventPhase.hx">
 		<CAPTURING_PHASE/>
 		<BUBBLING_PHASE/>
 		<AT_TARGET/>
@@ -11110,7 +11213,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>Int</e></m></meta>
 	</enum>
-	<class path="nme.events.FocusEvent" params="" file="C:\Development\Haxe\nme/nme/events/FocusEvent.hx" extern="1">
+	<class path="nme.events.FocusEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/FocusEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<FOCUS_IN public="1" static="1">
 			<c path="String"/>
@@ -11241,7 +11344,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.IOErrorEvent" params="" file="C:\Development\Haxe\nme/nme/events/IOErrorEvent.hx" extern="1">
+	<class path="nme.events.IOErrorEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/IOErrorEvent.hx" extern="1">
 		<extends path="nme.events.ErrorEvent"/>
 		<DISK_ERROR public="1" static="1"><c path="String"/></DISK_ERROR>
 		<IO_ERROR public="1" static="1">
@@ -11298,7 +11401,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.JoystickEvent" params="" file="C:\Development\Haxe\nme/nme/events/JoystickEvent.hx" extern="1">
+	<class path="nme.events.JoystickEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/JoystickEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<AXIS_MOVE public="1" static="1"><c path="String"/></AXIS_MOVE>
 		<BALL_MOVE public="1" static="1"><c path="String"/></BALL_MOVE>
@@ -11322,7 +11425,7 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<class path="nme.events.KeyboardEvent" params="" file="C:\Development\Haxe\nme/nme/events/KeyboardEvent.hx" extern="1">
+	<class path="nme.events.KeyboardEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/KeyboardEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<KEY_DOWN public="1" static="1">
 			<c path="String"/>
@@ -11436,7 +11539,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.MouseEvent" params="" file="C:\Development\Haxe\nme/nme/events/MouseEvent.hx" extern="1">
+	<class path="nme.events.MouseEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/MouseEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<CLICK public="1" static="1">
 			<c path="String"/>
@@ -11721,7 +11824,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.ProgressEvent" params="" file="C:\Development\Haxe\nme/nme/events/ProgressEvent.hx" extern="1">
+	<class path="nme.events.ProgressEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/ProgressEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<PROGRESS public="1" static="1">
 			<c path="String"/>
@@ -11796,7 +11899,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.SecurityErrorEvent" params="" file="C:\Development\Haxe\nme/nme/events/SecurityErrorEvent.hx" extern="1">
+	<class path="nme.events.SecurityErrorEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/SecurityErrorEvent.hx" extern="1">
 		<extends path="nme.events.ErrorEvent"/>
 		<SECURITY_ERROR public="1" static="1">
 			<c path="String"/>
@@ -11857,7 +11960,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.TimerEvent" params="" file="C:\Development\Haxe\nme/nme/events/TimerEvent.hx" extern="1">
+	<class path="nme.events.TimerEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/TimerEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<TIMER public="1" static="1">
 			<c path="String"/>
@@ -11914,7 +12017,7 @@
  * 
  ]]></haxe_doc>
 	</class>
-	<class path="nme.events.TouchEvent" params="" file="C:\Development\Haxe\nme/nme/events/TouchEvent.hx" extern="1">
+	<class path="nme.events.TouchEvent" params="" file="/Users/joshua/Development/Haxe/nme/nme/events/TouchEvent.hx" extern="1">
 		<extends path="nme.events.Event"/>
 		<TOUCH_BEGIN public="1" static="1">
 			<c path="String"/>
@@ -12197,7 +12300,7 @@
  ]]></haxe_doc>
 		<meta><m n=":require"><e>flash10_1</e></m></meta>
 	</class>
-	<class path="nme.external.ExternalInterface" params="" file="C:\Development\Haxe\nme/nme/external/ExternalInterface.hx" extern="1">
+	<class path="nme.external.ExternalInterface" params="" file="/Users/joshua/Development/Haxe/nme/nme/external/ExternalInterface.hx" extern="1">
 		<available public="1" set="null" static="1">
 			<e path="Bool"/>
 			<haxe_doc><![CDATA[
@@ -12287,7 +12390,7 @@
 	 *                       ActionScript:
 	 *
 	 *
-	 *                       <p><code>flash.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
+	 *                       <p><code>nme.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
 	 *                       </li>
 	 *                       </ol>
 	 ]]></haxe_doc>
@@ -12369,7 +12472,7 @@
 	 *                       ActionScript:
 	 *
 	 *
-	 *                       <p><code>flash.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
+	 *                       <p><code>nme.system.Security.allowDomain(<i>sourceDomain</i>)</code></p>
 	 *                       </li>
 	 *                       </ol>
 	 ]]></haxe_doc>
@@ -12443,12 +12546,12 @@
  * HTML page.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.feedback.Haptic" params="" file="C:\Development\Haxe\nme/nme/feedback/Haptic.hx" extern="1"><vibrate public="1" set="method" static="1"><f a="?period:?duration">
+	<class path="nme.feedback.Haptic" params="" file="/Users/joshua/Development/Haxe/nme/nme/feedback/Haptic.hx" extern="1"><vibrate public="1" set="method" static="1"><f a="?period:?duration">
 	<c path="Int"/>
 	<c path="Int"/>
 	<e path="Void"/>
 </f></vibrate></class>
-	<class path="nme.filesystem.File" params="" file="C:\Development\Haxe\nme/nme/filesystem/File.hx" extern="1">
+	<class path="nme.filesystem.File" params="" file="/Users/joshua/Development/Haxe/nme/nme/filesystem/File.hx" extern="1">
 		<applicationDirectory public="1" get="nmeGetAppDir" set="null" static="1">
 			<c path="nme.filesystem.File"/>
 			<haxe_doc><![CDATA[
@@ -12801,7 +12904,7 @@
  *                         <code>browseForOpenMultiple()</code> method.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.filesystem.StorageVolume" params="" file="C:\Development\Haxe\nme/nme/filesystem/StorageVolume.hx" extern="1">
+	<class path="nme.filesystem.StorageVolume" params="" file="/Users/joshua/Development/Haxe/nme/nme/filesystem/StorageVolume.hx" extern="1">
 		<drive public="1" set="null">
 			<c path="String"/>
 			<haxe_doc><![CDATA[
@@ -12890,7 +12993,7 @@
  * </ul>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.filesystem.StorageVolumeInfo" params="" file="C:\Development\Haxe\nme/nme/filesystem/StorageVolumeInfo.hx" extern="1">
+	<class path="nme.filesystem.StorageVolumeInfo" params="" file="/Users/joshua/Development/Haxe/nme/nme/filesystem/StorageVolumeInfo.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<isSupported public="1" static="1">
 			<unknown/>
@@ -12962,7 +13065,7 @@
  *                             particular locations.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.filters.BitmapFilter" params="" file="C:\Development\Haxe\nme/nme/filters/BitmapFilter.hx" extern="1">
+	<class path="nme.filters.BitmapFilter" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/BitmapFilter.hx" extern="1">
 		<clone public="1" set="method">
 			<f a=""><c path="nme.filters.BitmapFilter"/></f>
 			<haxe_doc>
@@ -12984,7 +13087,7 @@
  * <p>You can neither directly instantiate nor extend BitmapFilter.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.filters.BitmapFilterQuality" params="" file="C:\Development\Haxe\nme/nme/filters/BitmapFilterQuality.hx" extern="1">
+	<class path="nme.filters.BitmapFilterQuality" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/BitmapFilterQuality.hx" extern="1">
 		<HIGH public="1" get="inline" set="null" line="14" static="1">
 			<c path="Int"/>
 			<haxe_doc>
@@ -13008,7 +13111,7 @@
  * of a BitmapFilter object.
  </haxe_doc>
 	</class>
-	<enum path="nme.filters.BitmapFilterType" params="" file="C:\Development\Haxe\nme/nme/filters/BitmapFilterType.hx">
+	<enum path="nme.filters.BitmapFilterType" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/BitmapFilterType.hx">
 		<OUTER><haxe_doc>
 	 * Defines the setting that applies a filter to the outer area of an object.
 	 </haxe_doc></OUTER>
@@ -13024,7 +13127,7 @@
  </haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.filters.BlurFilter" params="" file="C:\Development\Haxe\nme/nme/filters/BlurFilter.hx" extern="1">
+	<class path="nme.filters.BlurFilter" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/BlurFilter.hx" extern="1">
 		<extends path="nme.filters.BitmapFilter"/>
 		<blurX public="1">
 			<c path="Float"/>
@@ -13089,11 +13192,11 @@
 	 *                the quality using the BitmapFilterQuality constants:
 	 *                <ul>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.LOW</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.LOW</code></li>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.MEDIUM</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.MEDIUM</code></li>
 	 *
-	 *                <li><code>flash.filters.BitmapFilterQuality.HIGH</code></li>
+	 *                <li><code>nme.filters.BitmapFilterQuality.HIGH</code></li>
 	 *                </ul>
 	 *
 	 *                <p>High quality approximates a Gaussian blur. For most
@@ -13155,7 +13258,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.filters.DropShadowFilter" params="" file="C:\Development\Haxe\nme/nme/filters/DropShadowFilter.hx" extern="1">
+	<class path="nme.filters.DropShadowFilter" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/DropShadowFilter.hx" extern="1">
 		<extends path="nme.filters.BitmapFilter"/>
 		<alpha public="1">
 			<c path="Float"/>
@@ -13352,7 +13455,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.filters.GlowFilter" params="" file="C:\Development\Haxe\nme/nme/filters/GlowFilter.hx" extern="1">
+	<class path="nme.filters.GlowFilter" params="" file="/Users/joshua/Development/Haxe/nme/nme/filters/GlowFilter.hx" extern="1">
 		<extends path="nme.filters.BitmapFilter"/>
 		<alpha public="1">
 			<c path="Float"/>
@@ -13526,7 +13629,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.geom.ColorTransform" params="" file="C:\Development\Haxe\nme/nme/geom/ColorTransform.hx" extern="1">
+	<class path="nme.geom.ColorTransform" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/ColorTransform.hx" extern="1">
 		<alphaMultiplier public="1">
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
@@ -13707,7 +13810,7 @@
  * that are attached to the movie clip.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.geom.Matrix" params="" file="C:\Development\Haxe\nme/nme/geom/Matrix.hx" extern="1">
+	<class path="nme.geom.Matrix" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Matrix.hx" extern="1">
 		<a public="1">
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
@@ -14111,7 +14214,7 @@
  * before you can call the methods of the Matrix object.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.geom.Matrix3D" params="" file="C:\Development\Haxe\nme/nme/geom/Matrix3D.hx" extern="1">
+	<class path="nme.geom.Matrix3D" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Matrix3D.hx" extern="1">
 		<interpolate public="1" static="1"><f a="thisMat:toMat:percent">
 	<c path="nme.geom.Matrix3D"/>
 	<c path="nme.geom.Matrix3D"/>
@@ -14361,7 +14464,7 @@
  ]]></haxe_doc>
 		<meta><m n=":require"><e>flash10</e></m></meta>
 	</class>
-	<class path="nme.geom.Point" params="" file="C:\Development\Haxe\nme/nme/geom/Point.hx" extern="1">
+	<class path="nme.geom.Point" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Point.hx" extern="1">
 		<distance public="1" set="method" static="1">
 			<f a="pt1:pt2">
 				<c path="nme.geom.Point"/>
@@ -14578,7 +14681,7 @@
  * object.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.geom.Rectangle" params="" file="C:\Development\Haxe\nme/nme/geom/Rectangle.hx" extern="1">
+	<class path="nme.geom.Rectangle" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Rectangle.hx" extern="1">
 		<bottom public="1">
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
@@ -14997,7 +15100,7 @@
  * <code>drawRect()</code> method of the Graphics class.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.geom.Transform" params="" file="C:\Development\Haxe\nme/nme/geom/Transform.hx" extern="1">
+	<class path="nme.geom.Transform" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Transform.hx" extern="1">
 		<colorTransform public="1">
 			<c path="nme.geom.ColorTransform"/>
 			<haxe_doc>
@@ -15153,7 +15256,7 @@
  * transformation, create a perspective projection Matrix3D object.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.geom.Vector3D" params="" file="C:\Development\Haxe\nme/nme/geom/Vector3D.hx" extern="1">
+	<class path="nme.geom.Vector3D" params="" file="/Users/joshua/Development/Haxe/nme/nme/geom/Vector3D.hx" extern="1">
 		<X_AXIS public="1" static="1"><c path="nme.geom.Vector3D"/></X_AXIS>
 		<Y_AXIS public="1" static="1"><c path="nme.geom.Vector3D"/></Y_AXIS>
 		<Z_AXIS public="1" static="1"><c path="nme.geom.Vector3D"/></Z_AXIS>
@@ -15242,7 +15345,7 @@
 </f></new>
 		<meta><m n=":require"><e>flash10</e></m></meta>
 	</class>
-	<class path="nme.media.ID3Info" params="" file="C:\Development\Haxe\nme/nme/media/ID3Info.hx" extern="1">
+	<class path="nme.media.ID3Info" params="" file="/Users/joshua/Development/Haxe/nme/nme/media/ID3Info.hx" extern="1">
 		<album public="1"><c path="String"/></album>
 		<artist public="1"><c path="String"/></artist>
 		<comment public="1"><c path="String"/></comment>
@@ -15254,7 +15357,7 @@
 		<meta><m n=":final"/></meta>
 		<haxe_dynamic><d/></haxe_dynamic>
 	</class>
-	<class path="nme.media.Sound" params="" file="C:\Development\Haxe\nme/nme/media/Sound.hx" extern="1">
+	<class path="nme.media.Sound" params="" file="/Users/joshua/Development/Haxe/nme/nme/media/Sound.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<bytesLoaded public="1" set="null">
 			<c path="Int"/>
@@ -15659,7 +15762,7 @@
  * @event sampleData Dispatched when the runtime requests new audio data.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.media.SoundChannel" params="" file="C:\Development\Haxe\nme/nme/media/SoundChannel.hx" extern="1">
+	<class path="nme.media.SoundChannel" params="" file="/Users/joshua/Development/Haxe/nme/nme/media/SoundChannel.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<leftPeak public="1" set="null">
 			<c path="Float"/>
@@ -15719,7 +15822,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.media.SoundLoaderContext" params="" file="C:\Development\Haxe\nme/nme/media/SoundLoaderContext.hx" extern="1">
+	<class path="nme.media.SoundLoaderContext" params="" file="/Users/joshua/Development/Haxe/nme/nme/media/SoundLoaderContext.hx" extern="1">
 		<bufferTime public="1">
 			<c path="Float"/>
 			<haxe_doc><![CDATA[
@@ -15876,7 +15979,7 @@
  * scope="external">Security</a>.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.media.SoundTransform" params="" file="C:\Development\Haxe\nme/nme/media/SoundTransform.hx" extern="1">
+	<class path="nme.media.SoundTransform" params="" file="/Users/joshua/Development/Haxe/nme/nme/media/SoundTransform.hx" extern="1">
 		<leftToLeft public="1">
 			<c path="Float"/>
 			<haxe_doc>
@@ -15939,7 +16042,7 @@
  </haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.net.SharedObject" params="" file="C:\Development\Haxe\nme/nme/net/SharedObject.hx" extern="1">
+	<class path="nme.net.SharedObject" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/SharedObject.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<defaultObjectEncoding public="1" static="1">
 			<c path="Int"/>
@@ -15959,7 +16062,7 @@
 	 * shared objects that ActionScript 2.0 or 1.0 SWF files can read, set
 	 * <code>SharedObject.defaultObjectEncoding</code> to use the ActionScript
 	 * 1.0 or ActionScript 2.0 format,
-	 * <code>flash.net.ObjectEncoding.AMF0</code>, at the beginning of your
+	 * <code>nme.net.ObjectEncoding.AMF0</code>, at the beginning of your
 	 * script, before you create any local shared objects. All local shared
 	 * objects created thereafter will use AMF0 encoding and can interact with
 	 * older content. You cannot change the <code>objectEncoding</code> value of
@@ -16599,7 +16702,7 @@
  *                   by the server.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.net.SharedObjectFlushStatus" params="" file="C:\Development\Haxe\nme/nme/net/SharedObjectFlushStatus.hx" extern="1">
+	<class path="nme.net.SharedObjectFlushStatus" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/SharedObjectFlushStatus.hx" extern="1">
 		<FLUSHED public="1" static="1">
 			<c path="String"/>
 			<haxe_doc>
@@ -16619,7 +16722,7 @@
  * from a call to the <code>SharedObject.flush()</code> method.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.net.URLLoader" params="" file="C:\Development\Haxe\nme/nme/net/URLLoader.hx" extern="1">
+	<class path="nme.net.URLLoader" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/URLLoader.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<bytesLoaded public="1">
 			<c path="Int"/>
@@ -16883,7 +16986,7 @@
  *                           digest string does not match the component.
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.net.URLLoaderDataFormat" params="" file="C:\Development\Haxe\nme/nme/net/URLLoaderDataFormat.hx">
+	<enum path="nme.net.URLLoaderDataFormat" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/URLLoaderDataFormat.hx">
 		<VARIABLES><haxe_doc>
 	 * Specifies that downloaded data is received as URL-encoded variables.
 	 </haxe_doc></VARIABLES>
@@ -16899,7 +17002,7 @@
  </haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.net.URLRequest" params="" file="C:\Development\Haxe\nme/nme/net/URLRequest.hx" extern="1">
+	<class path="nme.net.URLRequest" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/URLRequest.hx" extern="1">
 		<contentType public="1">
 			<c path="String"/>
 			<haxe_doc><![CDATA[
@@ -17171,7 +17274,7 @@
  ]]></haxe_doc>
 		<meta><m n=":final"/></meta>
 	</class>
-	<class path="nme.net.URLRequestMethod" params="" file="C:\Development\Haxe\nme/nme/net/URLRequestMethod.hx" extern="1">
+	<class path="nme.net.URLRequestMethod" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/URLRequestMethod.hx" extern="1">
 		<DELETE public="1" static="1">
 			<c path="String"/>
 			<meta><m n=":require"><e>flash10_1</e></m></meta>
@@ -17223,7 +17326,7 @@
  * <code>GET</code> method when sending data to a server.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.net.URLVariables" params="" file="C:\Development\Haxe\nme/nme/net/URLVariables.hx" extern="1">
+	<class path="nme.net.URLVariables" params="" file="/Users/joshua/Development/Haxe/nme/nme/net/URLVariables.hx" extern="1">
 		<decode public="1" set="method">
 			<f a="source">
 				<c path="String"/>
@@ -17270,11 +17373,11 @@
  * The URLVariables class allows you to transfer variables between an
  * application and a server. Use URLVariables objects with methods of the
  * URLLoader class, with the <code>data</code> property of the URLRequest
- * class, and with flash.net package functions.
+ * class, and with nme.net package functions.
  ]]></haxe_doc>
 		<haxe_dynamic><d/></haxe_dynamic>
 	</class>
-	<class path="nme.sensors.Accelerometer" params="" file="C:\Development\Haxe\nme/nme/sensors/Accelerometer.hx" extern="1">
+	<class path="nme.sensors.Accelerometer" params="" file="/Users/joshua/Development/Haxe/nme/nme/sensors/Accelerometer.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<isSupported public="1" static="1">
 			<e path="Bool"/>
@@ -17371,7 +17474,7 @@
  ]]></haxe_doc>
 		<meta><m n=":require"><e>flash10_1</e></m></meta>
 	</class>
-	<class path="nme.system.Capabilities" params="" file="C:\Development\Haxe\nme/nme/system/Capabilities.hx" extern="1">
+	<class path="nme.system.Capabilities" params="" file="/Users/joshua/Development/Haxe/nme/nme/system/Capabilities.hx" extern="1">
 		<_internal public="1" set="null" static="1"><c path="Int"/></_internal>
 		<avHardwareDisable public="1" set="null" static="1">
 			<e path="Bool"/>
@@ -17764,7 +17867,7 @@
  * <p>All properties of the Capabilities class are read-only.</p>
  ]]></haxe_doc>
 	</class>
-	<class path="nme.system.System" params="" file="C:\Development\Haxe\nme/nme/system/System.hx" extern="1">
+	<class path="nme.system.System" params="" file="/Users/joshua/Development/Haxe/nme/nme/system/System.hx" extern="1">
 		<deviceID public="1" set="null" static="1"><c path="String"/></deviceID>
 		<totalMemory public="1" set="null" static="1">
 			<c path="Int"/>
@@ -17819,14 +17922,14 @@
  * with shared objects and the use of the Clipboard.
  *
  * <p>Additional properties and methods are in other classes within the
- * flash.system package: the Capabilities class, the IME class, and the
+ * nme.system package: the Capabilities class, the IME class, and the
  * Security class.</p>
  *
  * <p>This class contains only static methods and properties. You cannot
  * create new instances of the System class.</p>
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.text.AntiAliasType" params="" file="C:\Development\Haxe\nme/nme/text/AntiAliasType.hx">
+	<enum path="nme.text.AntiAliasType" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/AntiAliasType.hx">
 		<NORMAL><haxe_doc><![CDATA[
 	 * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
 	 * earlier. This setting is recommended for applications that do not have a
@@ -17845,11 +17948,11 @@
 	 ]]></haxe_doc></ADVANCED>
 		<haxe_doc>
  * The AntiAliasType class provides values for anti-aliasing in the
- * flash.text.TextField class.
+ * nme.text.TextField class.
  </haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.text.Font" params="" file="C:\Development\Haxe\nme/nme/text/Font.hx" extern="1">
+	<class path="nme.text.Font" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/Font.hx" extern="1">
 		<enumerateFonts public="1" set="method" static="1">
 			<f a="?enumerateDeviceFonts">
 				<e path="Bool"/>
@@ -17923,7 +18026,7 @@
  * Use the Font class as an abstract base class.
  </haxe_doc>
 	</class>
-	<enum path="nme.text.FontStyle" params="" file="C:\Development\Haxe\nme/nme/text/FontStyle.hx">
+	<enum path="nme.text.FontStyle" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/FontStyle.hx">
 		<REGULAR><haxe_doc><![CDATA[
 	 * Defines the plain style of a font for the <code>fontStyle</code> parameter
 	 * in the <code>setAdvancedAntiAliasingTable()</code> method. Use the syntax
@@ -17949,7 +18052,7 @@
  </haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.text.FontType" params="" file="C:\Development\Haxe\nme/nme/text/FontType.hx">
+	<enum path="nme.text.FontType" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/FontType.hx">
 		<EMBEDDED_CFF/>
 		<EMBEDDED><haxe_doc><![CDATA[
 	 * Indicates that this is an embedded font. Font outlines are embedded in the
@@ -17965,7 +18068,7 @@
 	 * SWF file.</p>
 	 *
 	 * <p>Fonts of type <code>EMBEDDED</code> can only be used by TextField. If
-	 * flash.text.engine classes are directed to use such a font they will fall
+	 * nme.text.engine classes are directed to use such a font they will fall
 	 * back to device fonts.</p>
 	 ]]></haxe_doc></EMBEDDED>
 		<DEVICE><haxe_doc><![CDATA[
@@ -17990,24 +18093,24 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<typedef path="nme.text.NMEFontDef" params="" file="C:\Development\Haxe\nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><a>
+	<typedef path="nme.text.NMEFontDef" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><a>
 	<name><c path="String"/></name>
 	<italic><e path="Bool"/></italic>
 	<height><c path="Int"/></height>
 	<bold><e path="Bool"/></bold>
 </a></typedef>
-	<typedef path="nme.text.NMEFontFactory" params="" file="C:\Development\Haxe\nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><f a="">
+	<typedef path="nme.text.NMEFontFactory" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><f a="">
 	<t path="nme.text.NMEFontDef"/>
 	<c path="nme.text.NMEFont"/>
 </f></typedef>
-	<typedef path="nme.text.NMEGlyphInfo" params="" file="C:\Development\Haxe\nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><a>
+	<typedef path="nme.text.NMEGlyphInfo" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/NMEFont.hx" module="nme.text.NMEFont"><a>
 	<width><c path="Int"/></width>
 	<offsetY><c path="Int"/></offsetY>
 	<offsetX><c path="Int"/></offsetX>
 	<height><c path="Int"/></height>
 	<advance><c path="Int"/></advance>
 </a></typedef>
-	<class path="nme.text.NMEFont" params="" file="C:\Development\Haxe\nme/nme/text/NMEFont.hx" extern="1">
+	<class path="nme.text.NMEFont" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/NMEFont.hx" extern="1">
 		<registerFont public="1" set="method" static="1"><f a="inName:inFactory">
 	<c path="String"/>
 	<t path="nme.text.NMEFontFactory"/>
@@ -18029,7 +18132,7 @@
 	<e path="Void"/>
 </f></new>
 	</class>
-	<enum path="nme.text.TextFieldAutoSize" params="" file="C:\Development\Haxe\nme/nme/text/TextFieldAutoSize.hx">
+	<enum path="nme.text.TextFieldAutoSize" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/TextFieldAutoSize.hx">
 		<RIGHT><haxe_doc>
 	 * Specifies that the text is to be treated as right-justified text, meaning
 	 * that the right side of the text field remains fixed and any resizing of a
@@ -18054,7 +18157,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.text.TextFieldType" params="" file="C:\Development\Haxe\nme/nme/text/TextFieldType.hx">
+	<enum path="nme.text.TextFieldType" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/TextFieldType.hx">
 		<INPUT><haxe_doc><![CDATA[
 	 * Used to specify an <code>input</code> TextField.
 	 ]]></haxe_doc></INPUT>
@@ -18067,7 +18170,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.text.TextFormat" params="" file="C:\Development\Haxe\nme/nme/text/TextFormat.hx" extern="1">
+	<class path="nme.text.TextFormat" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/TextFormat.hx" extern="1">
 		<align public="1">
 			<e path="nme.text.TextFormatAlign"/>
 			<haxe_doc><![CDATA[
@@ -18076,7 +18179,7 @@
 	 * 
 	 * @default TextFormatAlign.LEFT
 	 * @throws ArgumentError The <code>align</code> specified is not a member of
-	 *                       flash.text.TextFormatAlign.
+	 *                       nme.text.TextFormatAlign.
 	 ]]></haxe_doc>
 		</align>
 		<blockIndent public="1">
@@ -18324,7 +18427,7 @@
  * property description.</p>
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.text.TextFormatAlign" params="" file="C:\Development\Haxe\nme/nme/text/TextFormatAlign.hx">
+	<enum path="nme.text.TextFormatAlign" params="" file="/Users/joshua/Development/Haxe/nme/nme/text/TextFormatAlign.hx">
 		<RIGHT><haxe_doc><![CDATA[
 	 * Constant; aligns text to the right within the text field. Use the syntax
 	 * <code>TextFormatAlign.RIGHT</code>.
@@ -18347,13 +18450,13 @@
  </haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<typedef path="nme.ui.Acceleration" params="" file="C:\Development\Haxe\nme/nme/ui/Acceleration.hx"><a>
+	<typedef path="nme.ui.Acceleration" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/Acceleration.hx"><a>
 	<z><c path="Float"/></z>
 	<y><c path="Float"/></y>
 	<x><c path="Float"/></x>
 </a></typedef>
-	<class path="nme.ui.Accelerometer" params="" file="C:\Development\Haxe\nme/nme/ui/Accelerometer.hx" extern="1"><get public="1" set="method" static="1"><f a=""><t path="nme.ui.Acceleration"/></f></get></class>
-	<class path="nme.ui.Keyboard" params="" file="C:\Development\Haxe\nme/nme/ui/Keyboard.hx" extern="1">
+	<class path="nme.ui.Accelerometer" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/Accelerometer.hx" extern="1"><get public="1" set="method" static="1"><f a=""><t path="nme.ui.Acceleration"/></f></get></class>
+	<class path="nme.ui.Keyboard" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/Keyboard.hx" extern="1">
 		<A public="1" static="1">
 			<c path="Int"/>
 			<meta><m n=":require"><e>flash10_1</e></m></meta>
@@ -19032,7 +19135,7 @@
  * used to control games.
  </haxe_doc>
 	</class>
-	<class path="nme.ui.Mouse" params="" file="C:\Development\Haxe\nme/nme/ui/Mouse.hx" extern="1">
+	<class path="nme.ui.Mouse" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/Mouse.hx" extern="1">
 		<cursor public="1" static="1">
 			<d/>
 			<meta><m n=":require"><e>flash10</e></m></meta>
@@ -19040,7 +19143,7 @@
 	 * Sets or returns the type of cursor, or, for a native cursor, the cursor
 	 * name.
 	 *
-	 * <p>The default value is <code>flash.ui.MouseCursor.AUTO</code>.</p>
+	 * <p>The default value is <code>nme.ui.MouseCursor.AUTO</code>.</p>
 	 *
 	 * <p>To set values for this property, use the following string values:</p>
 	 *
@@ -19048,10 +19151,10 @@
 	 * property sets or gets the cursor name when you are using a native cursor.
 	 * A native cursor name defined using <code>Mouse.registerCursor()</code>
 	 * overwrites currently predefined cursor types (such as
-	 * <code>flash.ui.MouseCursor.IBEAM</code>).</p>
+	 * <code>nme.ui.MouseCursor.IBEAM</code>).</p>
 	 * 
 	 * @throws ArgumentError If set to any value which is not a member of
-	 *                       <code>flash.ui.MouseCursor</code>, or is not a
+	 *                       <code>nme.ui.MouseCursor</code>, or is not a
 	 *                       string specified using the
 	 *                       <code>Mouse.registerCursor()</code> method.
 	 ]]></haxe_doc>
@@ -19101,7 +19204,7 @@
  * but you can hide it and implement a custom pointer.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.ui.Multitouch" params="" file="C:\Development\Haxe\nme/nme/ui/Multitouch.hx" extern="1">
+	<class path="nme.ui.Multitouch" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/Multitouch.hx" extern="1">
 		<inputMode public="1" static="1">
 			<e path="nme.ui.MultitouchInputMode"/>
 			<haxe_doc>
@@ -19110,7 +19213,7 @@
 	 * events with multiple points of contact and specific events for different
 	 * gestures (such as rotation and pan), or only a single point of contact
 	 * (such as tap), or none at all (contact is handled as a mouse event). To
-	 * set this property, use values from the flash.ui.MultitouchInputMode class.
+	 * set this property, use values from the nme.ui.MultitouchInputMode class.
 	 * 
 	 * @default gesture
 	 </haxe_doc>
@@ -19185,11 +19288,11 @@
  *
  * <p>
  * <ul>
- *   <li>flash.events.TouchEvent</li>
- *   <li>flash.events.GestureEvent</li>
- *   <li>flash.events.GesturePhase</li>
- *   <li>flash.events.TransformGestureEvent</li>
- *   <li>flash.events.PressAndTapGestureEvent</li>
+ *   <li>nme.events.TouchEvent</li>
+ *   <li>nme.events.GestureEvent</li>
+ *   <li>nme.events.GesturePhase</li>
+ *   <li>nme.events.TransformGestureEvent</li>
+ *   <li>nme.events.PressAndTapGestureEvent</li>
  * </ul>
  * </p>
  *
@@ -19206,7 +19309,7 @@
  ]]></haxe_doc>
 		<meta><m n=":require"><e>flash10_1</e></m></meta>
 	</class>
-	<enum path="nme.ui.MultitouchInputMode" params="" file="C:\Development\Haxe\nme/nme/ui/MultitouchInputMode.hx">
+	<enum path="nme.ui.MultitouchInputMode" params="" file="/Users/joshua/Development/Haxe/nme/nme/ui/MultitouchInputMode.hx">
 		<TOUCH_POINT/>
 		<NONE><haxe_doc>
 	 * Specifies that all user contact with a touch-enabled device is interpreted
@@ -19220,13 +19323,13 @@
 	 </haxe_doc></GESTURE>
 		<haxe_doc><![CDATA[
  * The MultitouchInputMode class provides values for the
- * <code>inputMode</code> property in the flash.ui.Multitouch class. These
+ * <code>inputMode</code> property in the nme.ui.Multitouch class. These
  * values set the type of touch events the Flash runtime dispatches when the
  * user interacts with a touch-enabled device.
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.utils.IDataInput" params="" file="C:\Development\Haxe\nme/nme/utils/IDataInput.hx" extern="1" interface="1">
+	<class path="nme.utils.IDataInput" params="" file="/Users/joshua/Development/Haxe/nme/nme/utils/IDataInput.hx" extern="1" interface="1">
 		<bytesAvailable public="1" set="null"><c path="Int"/></bytesAvailable>
 		<endian public="1"><e path="nme.utils.Endian"/></endian>
 		<objectEncoding public="1"><c path="Int"/></objectEncoding>
@@ -19257,7 +19360,7 @@
 		<readUnsignedInt public="1" set="method"><f a=""><c path="Int"/></f></readUnsignedInt>
 		<readUnsignedShort public="1" set="method"><f a=""><c path="Int"/></f></readUnsignedShort>
 	</class>
-	<class path="nme.utils.ByteArray" params="" file="C:\Development\Haxe\nme/nme/utils/ByteArray.hx" extern="1">
+	<class path="nme.utils.ByteArray" params="" file="/Users/joshua/Development/Haxe/nme/nme/utils/ByteArray.hx" extern="1">
 		<implements path="nme.utils.IDataInput"/>
 		<defaultObjectEncoding public="1" static="1">
 			<c path="Int"/>
@@ -19884,7 +19987,7 @@
  * </p>
  ]]></haxe_doc>
 	</class>
-	<enum path="nme.utils.CompressionAlgorithm" params="" file="C:\Development\Haxe\nme/nme/utils/CompressionAlgorithm.hx">
+	<enum path="nme.utils.CompressionAlgorithm" params="" file="/Users/joshua/Development/Haxe/nme/nme/utils/CompressionAlgorithm.hx">
 		<ZLIB><haxe_doc>
 	 * Defines the string to use for the zlib compression algorithm.
 	 </haxe_doc></ZLIB>
@@ -19899,7 +20002,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<enum path="nme.utils.Endian" params="" file="C:\Development\Haxe\nme/nme/utils/Endian.hx">
+	<enum path="nme.utils.Endian" params="" file="/Users/joshua/Development/Haxe/nme/nme/utils/Endian.hx">
 		<LITTLE_ENDIAN/>
 		<BIG_ENDIAN/>
 		<haxe_doc><![CDATA[
@@ -19918,7 +20021,7 @@
  ]]></haxe_doc>
 		<meta><m n=":fakeEnum"><e>String</e></m></meta>
 	</enum>
-	<class path="nme.utils.Timer" params="" file="C:\Development\Haxe\nme/nme/utils/Timer.hx" extern="1">
+	<class path="nme.utils.Timer" params="" file="/Users/joshua/Development/Haxe/nme/nme/utils/Timer.hx" extern="1">
 		<extends path="nme.events.EventDispatcher"/>
 		<currentCount public="1" set="null">
 			<c path="Int"/>
@@ -20032,7 +20135,7 @@
  *                      requests set by <code>Timer.repeatCount</code>.
  ]]></haxe_doc>
 	</class>
-	<class path="nme.utils.WeakRef" params="T" file="C:\Development\Haxe\nme/nme/utils/WeakRef.hx" extern="1">
+	<class path="nme.utils.WeakRef" params="T" file="/Users/joshua/Development/Haxe/nme/nme/utils/WeakRef.hx" extern="1">
 		<get public="1" set="method"><f a=""><c path="nme.utils.WeakRef.T"/></f></get>
 		<toString public="1" set="method"><f a=""><c path="String"/></f></toString>
 		<new public="1" set="method"><f a="inObject:?inMakeWeak">

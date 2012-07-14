@@ -57,4 +57,4 @@ nme.ImportAll
 
 --next
 
--cmd chxdoc -o output --tmpDir=obj --xmlBasePath=bin cpp.xml,cpp flash.xml,flash neko.xml,neko js.xml,js nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
+-cmd ./chxdoc -o output --tmpDir=obj --xmlBasePath=bin cpp.xml,cpp flash.xml,flash neko.xml,neko js.xml,js nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
