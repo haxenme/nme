@@ -10,7 +10,7 @@ package nme.display;
  * <p>Use the URLLoader class to load text or binary data.</p>
  *
  * <p>The Loader class overrides the following methods that it inherits,
- * because a Loader object can only have one child display object—the
+ * because a Loader object can only have one child display object - the
  * display object that it loads. Calling the following methods throws an
  * exception: <code>addChild()</code>, <code>addChildAt()</code>,
  * <code>removeChild()</code>, <code>removeChildAt()</code>, and
@@ -578,7 +578,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *
 	 *                <p>If the <code>context</code> parameter is not specified
 	 *                or refers to a null object, the content is loaded into the
-	 *                current security domain— a process referred to as "import
+	 *                current security domain -  a process referred to as "import
 	 *                loading" in Flash Player security documentation.
 	 *                Specifically, if the loading SWF file trusts the remote SWF
 	 *                by incorporating the remote SWF into its code, then the

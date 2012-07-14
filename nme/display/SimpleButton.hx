@@ -22,7 +22,7 @@ extern class SimpleButton extends InteractiveObject {
 
 	/**
 	 * Specifies a display object that is used as the visual object for the
-	 * button "Down" state —the state that the button is in when the user
+	 * button "Down" state  - the state that the button is in when the user
 	 * selects the <code>hitTestState</code> object.
 	 */
 	var downState : DisplayObject;
@@ -47,13 +47,13 @@ extern class SimpleButton extends InteractiveObject {
 	 * button. For a basic button, set the <code>hitTestState</code> property to
 	 * the same display object as the <code>overState</code> property. If you do
 	 * not set the <code>hitTestState</code> property, the SimpleButton is
-	 * inactive — it does not respond to user input events.
+	 * inactive  -  it does not respond to user input events.
 	 */
 	var hitTestState : DisplayObject;
 
 	/**
 	 * Specifies a display object that is used as the visual object for the
-	 * button over state — the state that the button is in when the pointer is
+	 * button over state  -  the state that the button is in when the pointer is
 	 * positioned over the button.
 	 */
 	var overState : DisplayObject;
@@ -82,7 +82,7 @@ extern class SimpleButton extends InteractiveObject {
 
 	/**
 	 * Specifies a display object that is used as the visual object for the
-	 * button up state — the state that the button is in when the pointer is
+	 * button up state  -  the state that the button is in when the pointer is
 	 * not positioned over the button.
 	 */
 	var upState : DisplayObject;

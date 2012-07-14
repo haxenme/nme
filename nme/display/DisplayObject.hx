@@ -689,10 +689,10 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 
 	/**
 	 * An object with properties pertaining to a display object's matrix, color
-	 * transform, and pixel bounds. The specific properties — matrix,
+	 * transform, and pixel bounds. The specific properties  -  matrix,
 	 * colorTransform, and three read-only properties
 	 * (<code>concatenatedMatrix</code>, <code>concatenatedColorTransform</code>,
-	 * and <code>pixelBounds</code>) — are described in the entry for the
+	 * and <code>pixelBounds</code>)  -  are described in the entry for the
 	 * Transform class.
 	 *
 	 * <p>Each of the transform object's properties is itself an object. This

@@ -92,18 +92,18 @@ package nme.display;
 	/**
 	 * Specifies the stroke thickness scaling. Valid values are:
 	 * <ul>
-	 *   <li> <code>LineScaleMode.NORMAL</code>—Always scale the line thickness
+	 *   <li> <code>LineScaleMode.NORMAL</code> - Always scale the line thickness
 	 * when the object is scaled (the default). </li>
-	 *   <li> <code>LineScaleMode.NONE</code>—Never scale the line thickness.
+	 *   <li> <code>LineScaleMode.NONE</code> - Never scale the line thickness.
 	 * </li>
-	 *   <li> <code>LineScaleMode.VERTICAL</code>—Do not scale the line
+	 *   <li> <code>LineScaleMode.VERTICAL</code> - Do not scale the line
 	 * thickness if the object is scaled vertically <i>only</i>. For example,
 	 * consider the following circles, drawn with a one-pixel line, and each with
 	 * the <code>scaleMode</code> parameter set to
 	 * <code>LineScaleMode.VERTICAL</code>. The circle on the left is scaled
 	 * vertically only, and the circle on the right is scaled both vertically and
 	 * horizontally:   </li>
-	 *   <li> <code>LineScaleMode.HORIZONTAL</code>—Do not scale the line
+	 *   <li> <code>LineScaleMode.HORIZONTAL</code> - Do not scale the line
 	 * thickness if the object is scaled horizontally <i>only</i>. For example,
 	 * consider the following circles, drawn with a one-pixel line, and each with
 	 * the <code>scaleMode</code> parameter set to
@@ -146,12 +146,12 @@ package nme.display;
 	 * @param scaleMode    A value from the LineScaleMode class that specifies
 	 *                     which scale mode to use:
 	 *                     <ul>
-	 *                       <li> <code>LineScaleMode.NORMAL</code>—Always
+	 *                       <li> <code>LineScaleMode.NORMAL</code> - Always
 	 *                     scale the line thickness when the object is scaled
 	 *                     (the default). </li>
-	 *                       <li> <code>LineScaleMode.NONE</code>—Never scale
+	 *                       <li> <code>LineScaleMode.NONE</code> - Never scale
 	 *                     the line thickness. </li>
-	 *                       <li> <code>LineScaleMode.VERTICAL</code>—Do not
+	 *                       <li> <code>LineScaleMode.VERTICAL</code> - Do not
 	 *                     scale the line thickness if the object is scaled
 	 *                     vertically <i>only</i>. For example, consider the
 	 *                     following circles, drawn with a one-pixel line, and
@@ -160,7 +160,7 @@ package nme.display;
 	 *                     left is scaled vertically only, and the circle on the
 	 *                     right is scaled both vertically and horizontally:
 	 *                     </li>
-	 *                       <li> <code>LineScaleMode.HORIZONTAL</code>—Do not
+	 *                       <li> <code>LineScaleMode.HORIZONTAL</code> - Do not
 	 *                     scale the line thickness if the object is scaled
 	 *                     horizontally <i>only</i>. For example, consider the
 	 *                     following circles, drawn with a one-pixel line, and

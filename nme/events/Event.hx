@@ -128,7 +128,7 @@ extern class Event {
 	 * <p>Returns a new Event object that is a copy of the original instance of
 	 * the Event object. You do not normally call <code>clone()</code>; the
 	 * EventDispatcher class calls it automatically when you redispatch an
-	 * event—that is, when you call <code>dispatchEvent(event)</code> from a
+	 * event - that is, when you call <code>dispatchEvent(event)</code> from a
 	 * handler that is handling <code>event</code>.</p>
 	 *
 	 * <p>The new Event object includes all the properties of the original.</p>

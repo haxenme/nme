@@ -252,7 +252,7 @@ package nme.net;
 	 * see the description of the URLRequest class.</p>
 	 *
 	 * <p>For content running in Adobe AIR, files in the application security
-	 * sandobx — files installed with the AIR application — can access URLs
+	 * sandobx  -  files installed with the AIR application  -  can access URLs
 	 * using any of the following URL schemes:</p>
 	 *
 	 * <ul>

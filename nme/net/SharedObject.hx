@@ -76,11 +76,11 @@ package nme.net;
  * space and to user privacy controls. Perform these checks when you call
  * <code>getLocal()</code> and <code>flush()</code>:
  * <ul>
- *   <li><code>SharedObject.getLocal()</code> — Flash Player throws an
+ *   <li><code>SharedObject.getLocal()</code>  -  Flash Player throws an
  * exception when a call to this method fails, such as when the user has
  * disabled third-party shared objects and the domain of your SWF file does
  * not match the domain in the browser address bar.</li>
- *   <li><code>SharedObject.flush()</code> — Flash Player throws an
+ *   <li><code>SharedObject.flush()</code>  -  Flash Player throws an
  * exception when a call to this method fails. It returns
  * <code>SharedObjectFlushStatus.FLUSHED</code> when it succeeds. It returns
  * <code>SharedObjectFlushStatus.PENDING</code> when additional storage space
@@ -128,7 +128,7 @@ package nme.net;
  * <code>netStatus</code> event with a <code>code</code> property of
  * <code>SharedObject.Flush.Failed</code>. </p>
  * 
- * @event asyncError Dispatched when an exception is thrown asynchronously —
+ * @event asyncError Dispatched when an exception is thrown asynchronously  - 
  *                   that is, from native asynchronous code.
  * @event netStatus  Dispatched when a SharedObject instance is reporting its
  *                   status or error condition. The <code>netStatus</code>
@@ -155,7 +155,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	/**
 	 * The collection of attributes assigned to the <code>data</code> property of
 	 * the object; these attributes can be shared and stored. Each attribute can
-	 * be an object of any ActionScript or JavaScript type — Array, Number,
+	 * be an object of any ActionScript or JavaScript type  -  Array, Number,
 	 * Boolean, ByteArray, XML, and so on. For example, the following lines
 	 * assign values to various aspects of a shared object:
 	 *
@@ -275,8 +275,8 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * <p>Before attempting to work with a remote shared object, first check for
 	 * any errors using a <code>try..catch..finally</code> statement. Then,
 	 * listen for and handle the <code>sync</code> event before you make changes
-	 * to the shared object. Any changes made locally — before the
-	 * <code>sync</code> event is dispatched — might be lost. </p>
+	 * to the shared object. Any changes made locally  -  before the
+	 * <code>sync</code> event is dispatched  -  might be lost. </p>
 	 *
 	 * <p> Call the <code>connect()</code> method to connect to a remote shared
 	 * object, for example: </p>
@@ -297,7 +297,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	/**
 	 * Immediately writes a locally persistent shared object to a local file. If
 	 * you don't use this method, Flash Player writes the shared object to a file
-	 * when the shared object session ends — that is, when the SWF file is
+	 * when the shared object session ends  -  that is, when the SWF file is
 	 * closed, when the shared object is garbage-collected because it no longer
 	 * has any references to it, or when you call
 	 * <code>SharedObject.clear()</code> or <code>SharedObject.close()</code>.

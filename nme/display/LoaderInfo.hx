@@ -13,7 +13,7 @@ package nme.display;
  *
  * <ul>
  *   <li>The <code>contentLoaderInfo</code> property of a nme.display.Loader
- * object— The <code>contentLoaderInfo</code> property is always available
+ * object -  The <code>contentLoaderInfo</code> property is always available
  * for any Loader object. For a Loader object that has not called the
  * <code>load()</code> or <code>loadBytes()</code> method, or that has not
  * sufficiently loaded, attempting to access many of the properties of the
@@ -36,7 +36,7 @@ package nme.display;
  * the SWF file.</p>
  *
  * <p>The following diagram shows the different uses of the LoaderInfo
- * object—for the instance of the main class of the SWF file, for the
+ * object - for the instance of the main class of the SWF file, for the
  * <code>contentLoaderInfo</code> property of a Loader object, and for the
  * <code>loaderInfo</code> property of a loaded object:</p>
  *

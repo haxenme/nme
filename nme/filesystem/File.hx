@@ -25,15 +25,15 @@ package nme.filesystem;
  * commonly used directory locations. These static properties include:</p>
  *
  * <ul>
- *   <li><code>File.applicationStorageDirectory</code>—a storage directory
+ *   <li><code>File.applicationStorageDirectory</code> - a storage directory
  * unique to each installed AIR application</li>
- *   <li><code>File.applicationDirectory</code>—the read-only directory
+ *   <li><code>File.applicationDirectory</code> - the read-only directory
  * where the application is installed (along with any installed assets)</li>
- *   <li><code>File.desktopDirectory</code>—the user's desktop
+ *   <li><code>File.desktopDirectory</code> - the user's desktop
  * directory</li>
- *   <li><code>File.documentsDirectory</code>—the user's documents
+ *   <li><code>File.documentsDirectory</code> - the user's documents
  * directory</li>
- *   <li><code>File.userDirectory</code>—the user directory</li>
+ *   <li><code>File.userDirectory</code> - the user directory</li>
  * </ul>
  *
  * <p>These properties have meaningful values on different operating systems.

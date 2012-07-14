@@ -13,8 +13,8 @@ package nme.display;
  * <p>The Stage object is not globally accessible. You need to access it
  * through the <code>stage</code> property of a DisplayObject instance.</p>
  *
- * <p>The Stage class has several ancestor classes — DisplayObjectContainer,
- * InteractiveObject, DisplayObject, and EventDispatcher — from which it
+ * <p>The Stage class has several ancestor classes  -  DisplayObjectContainer,
+ * InteractiveObject, DisplayObject, and EventDispatcher  -  from which it
  * inherits properties and methods. Many of these properties and methods are
  * either inapplicable to Stage objects, or require security checks when
  * called on a Stage object. The properties and methods that require security
@@ -406,20 +406,20 @@ extern class Stage extends DisplayObjectContainer {
 	 * A value from the StageQuality class that specifies which rendering quality
 	 * is used. The following are valid values:
 	 * <ul>
-	 *   <li><code>StageQuality.LOW</code>—Low rendering quality. Graphics are
+	 *   <li><code>StageQuality.LOW</code> - Low rendering quality. Graphics are
 	 * not anti-aliased, and bitmaps are not smoothed, but runtimes still use
 	 * mip-mapping.</li>
-	 *   <li><code>StageQuality.MEDIUM</code>—Medium rendering quality.
+	 *   <li><code>StageQuality.MEDIUM</code> - Medium rendering quality.
 	 * Graphics are anti-aliased using a 2 x 2 pixel grid, bitmap smoothing is
 	 * dependent on the <code>Bitmap.smoothing</code> setting. Runtimes use
 	 * mip-mapping. This setting is suitable for movies that do not contain
 	 * text.</li>
-	 *   <li><code>StageQuality.HIGH</code>—High rendering quality. Graphics
+	 *   <li><code>StageQuality.HIGH</code> - High rendering quality. Graphics
 	 * are anti-aliased using a 4 x 4 pixel grid, and bitmap smoothing is
 	 * dependent on the <code>Bitmap.smoothing</code> setting. Runtimes use
 	 * mip-mapping. This is the default rendering quality setting that Flash
 	 * Player uses.</li>
-	 *   <li><code>StageQuality.BEST</code>—Very high rendering quality.
+	 *   <li><code>StageQuality.BEST</code> - Very high rendering quality.
 	 * Graphics are anti-aliased using a 4 x 4 pixel grid. If
 	 * <code>Bitmap.smoothing</code> is <code>true</code> the runtime uses a high
 	 * quality downscale algorithm that produces fewer artifacts (however, using
@@ -463,18 +463,18 @@ extern class Stage extends DisplayObjectContainer {
 	 * A value from the StageScaleMode class that specifies which scale mode to
 	 * use. The following are valid values:
 	 * <ul>
-	 *   <li><code>StageScaleMode.EXACT_FIT</code>—The entire application is
+	 *   <li><code>StageScaleMode.EXACT_FIT</code> - The entire application is
 	 * visible in the specified area without trying to preserve the original
 	 * aspect ratio. Distortion can occur, and the application may appear
 	 * stretched or compressed. </li>
-	 *   <li><code>StageScaleMode.SHOW_ALL</code>—The entire application is
+	 *   <li><code>StageScaleMode.SHOW_ALL</code> - The entire application is
 	 * visible in the specified area without distortion while maintaining the
 	 * original aspect ratio of the application. Borders can appear on two sides
 	 * of the application. </li>
-	 *   <li><code>StageScaleMode.NO_BORDER</code>—The entire application fills
+	 *   <li><code>StageScaleMode.NO_BORDER</code> - The entire application fills
 	 * the specified area, without distortion but possibly with some cropping,
 	 * while maintaining the original aspect ratio of the application. </li>
-	 *   <li><code>StageScaleMode.NO_SCALE</code>—The entire application is
+	 *   <li><code>StageScaleMode.NO_SCALE</code> - The entire application is
 	 * fixed, so that it remains unchanged even as the size of the player window
 	 * changes. Cropping might occur if the player window is smaller than the
 	 * content. </li>
