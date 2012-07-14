@@ -3,7 +3,9 @@ NME Changes
 
 3.4.0
 ===============
-
+Added support for the BlackBerry simulator
+Fixed support for Mac and iOS builds using the new Xcode
+Added support for command-line builds to iOS devices
 
 
 3.3.3
