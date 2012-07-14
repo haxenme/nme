@@ -362,6 +362,12 @@ class RunScript {
 		
 		var args:Array <String> = Sys.args ();
 		
+		/*if (args.length == 1) {
+			
+			runCommand (nmeDirectory + "/tools/welcome", "neko", [ "welcome.n" ]);
+			
+		} else */
+		
 		if (args[0] == "rebuild" && nmeDirectory.indexOf ("C:\\Motion-Twin") == -1 && nmeDirectory.indexOf ("/usr/lib/haxe/lib") == -1) {
 			
 			var targets:Array <String> = null;
