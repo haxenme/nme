@@ -50,10 +50,10 @@ extern class Bitmap extends DisplayObject {
 	 * This value is ignored in the native and HTML5 targets.
 	 * The PixelSnapping class includes possible values:
 	 * <ul>
-	 *   <li><code>PixelSnapping.NEVER</code>—No pixel snapping occurs.</li>
-	 *   <li><code>PixelSnapping.ALWAYS</code>—The image is always snapped to
+	 *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
+	 *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
 	 * the nearest pixel, independent of transformation.</li>
-	 *   <li><code>PixelSnapping.AUTO</code>—The image is snapped to the
+	 *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
 	 * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
 	 * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
 	 * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
