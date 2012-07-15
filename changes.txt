@@ -4,9 +4,22 @@ NME Changes
 3.4.0
 ===============
 Added support for the BlackBerry simulator
-Fixed support for Mac and iOS builds using the new Xcode
-Added support for command-line builds to iOS devices
-Improved "nme setup" for BlackBerry
+Implemented the "build" and "run" commands for iOS devices (without opening Xcode)
+Improved support for current versions of Xcode
+Added the "rebuild" command for use with development builds
+Expanded "nme setup blackberry" to help with keystore and debug token files
+Added the "clean" command and "-clean" flag to clean the export directory
+Increased the resolution support for Windows and Mac icons
+Added "-minify" and "-minify -yui" flags to help reduce HTML5 output
+Imported documentation from the open-source Flex SDK
+Added orientation and accelerometer support for HTML5
+Added multi-touch support for BlackBerry
+Updated to support Haxe 2.10
+Added "ios" preprocessor define
+Implemented Capabilities.language
+Added Lib.pause() and Lib.resume() for use with fullscreen native UI
+Added launchImage support for iOS
+Many small fixes and improvements
 
 
 3.3.3
