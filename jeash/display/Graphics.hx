@@ -999,7 +999,6 @@ class Graphics {
 
 		// re-allocate canvas, copy into larger canvas.
 		var dstCanvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
-		var ctx = dstCanvas.getContext("2d");
 
 		dstCanvas.width = width;
 		dstCanvas.height = height;
@@ -1010,10 +1009,9 @@ class Graphics {
 		if (Lib.jeashIsOnStage(jeashSurface)) {
 			Lib.jeashAppendSurface(dstCanvas);
 			Lib.jeashCopyStyle(jeashSurface, dstCanvas);
-			Lib.jeashSwapSurface(jeashSurface,dstCanvas);
+			Lib.jeashSwapSurface(jeashSurface, dstCanvas);
 			Lib.jeashRemoveSurface(jeashSurface);
 		}
-
 		jeashSurface = dstCanvas;
 	}
 }

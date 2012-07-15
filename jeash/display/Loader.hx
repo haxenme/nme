@@ -123,9 +123,8 @@ class Loader extends DisplayObjectContainer
 		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);
 	}
 	
-	override function BuildBounds()
-	{
-		super.BuildBounds();
+	override function buildBounds() {
+		super.buildBounds();
 				
 		if(mImage!=null)
 		{
@@ -140,7 +139,4 @@ class Loader extends DisplayObjectContainer
 			}
 		}
 	}
-
-	override function jeashIsOnStage () 
-		if (parent != null && parent.jeashIsOnStage() == true) return true; else return false
 }

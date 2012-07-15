@@ -34,12 +34,13 @@ import jeash.geom.Point;
 import jeash.Lib;
 import jeash.events.MouseEvent;
 
-class Sprite extends DisplayObjectContainer {
+class Sprite extends DisplayObjectContainer
+{
 	var jeashGraphics:Graphics;
-	public var graphics(jeashGetGraphics,null):Graphics;
-	public var useHandCursor(default,jeashSetUseHandCursor):Bool;
+	public var graphics(jeashGetGraphics, null):Graphics;
+	public var useHandCursor(default, jeashSetUseHandCursor):Bool;
 	public var buttonMode:Bool;
-	public var dropTarget(jeashGetDropTarget,null):DisplayObject;
+	public var dropTarget(jeashGetDropTarget, null):DisplayObject;
 
 	var jeashCursorCallbackOver:Dynamic->Void;
 	var jeashCursorCallbackOut:Dynamic->Void;
@@ -75,11 +76,11 @@ class Sprite extends DisplayObjectContainer {
 		}
 	}
 
-	override public function jeashGetGraphics() { 
+	override private function jeashGetGraphics() { 
 		return jeashGraphics; 
 	}
 
-	function jeashSetUseHandCursor(cursor:Bool) {
+	private function jeashSetUseHandCursor(cursor:Bool) {
 		if (cursor == this.useHandCursor) return cursor;
 
 		if (jeashCursorCallbackOver != null)
@@ -100,64 +101,62 @@ class Sprite extends DisplayObjectContainer {
 		return cursor;
 	}
 
-	function jeashGetDropTarget() return jeashDropTarget
+	private function jeashGetDropTarget() return jeashDropTarget
 
 	// force monomorphic access for better JIT-ing
-	override public function jeashSetX(n:Float):Float {
+	override private function jeashSetX(n:Float):Float {
 		jeashInvalidateMatrix(true);
-		jeashX=n;
-		if(parent!=null)
+		jeashX = n;
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 		return n;
 	}
 
 	// force monomorphic access for better JIT-ing
-	override public function jeashSetY(n:Float):Float {
+	override private function jeashSetY(n:Float):Float {
 		jeashInvalidateMatrix(true);
-		jeashY=n;
-		if(parent!=null)
+		jeashY = n;
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 		return n;
 	}
 
 	// force monomorphic access for better JIT-ing
-	override public function jeashSetScaleX(inS:Float) { 
-		if(jeashScaleX==inS)
+	override private function jeashSetScaleX(inS:Float) { 
+		if (jeashScaleX == inS)
 			return inS;		
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
-		if(!mMtxDirty)
+		if (mBoundsDirty)
+			buildBounds();
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);	
-		jeashScaleX=inS;
+		jeashScaleX = inS;
 		return inS;
 	}
 
 	// force monomorphic access for better JIT-ing
-	override public function jeashSetScaleY(inS:Float) { 
-		if(jeashScaleY==inS)
+	override private function jeashSetScaleY(inS:Float) { 
+		if (jeashScaleY == inS)
 			return inS;		
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
-		if(!mMtxDirty)
+		if (mBoundsDirty)
+			buildBounds();
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);	
 		jeashScaleY=inS;
 		return inS;
 	}
 
 	// force monomorphic access for better JIT-ing
-	override private function jeashSetRotation(n:Float):Float{
-		if(!mMtxDirty)
+	override private function jeashSetRotation(n:Float):Float {
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 
 		jeashRotation = n;
 		return n;
 	}
-	
 }
-

@@ -41,6 +41,8 @@ import jeash.geom.Rectangle;
 
 class Stage extends DisplayObjectContainer
 {
+	public static inline var NAME:String = "Stage";
+
 	public static var OrientationPortrait = 1;
 	public static var OrientationPortraitUpsideDown = 2;
 	public static var OrientationLandscapeRight = 3;
@@ -91,8 +93,7 @@ class Stage extends DisplayObjectContainer
 	static inline var DEFAULT_FRAMERATE = 60.0;
 	static inline var UI_EVENTS_QUEUE_MAX = 1000;
 
-	public function new(width:Int, height:Int)
-	{
+	public function new(width:Int, height:Int) {
 		super();
 		jeashFocusObject = null;
 		jeashWindowWidth = width;
@@ -103,7 +104,7 @@ class Stage extends DisplayObjectContainer
 		tabEnabled = true;
 		frameRate = DEFAULT_FRAMERATE;
 		jeashSetBackgroundColour(0xffffff);
-		name = "Stage";
+		name = NAME;
 		loaderInfo = LoaderInfo.create(null);
 		loaderInfo.parameters.width = Std.string(jeashWindowWidth);
 		loaderInfo.parameters.height = Std.string(jeashWindowHeight);
@@ -115,9 +116,10 @@ class Stage extends DisplayObjectContainer
 		jeashFocusOverObjects = [];
 		jeashUIEventsQueue = untyped __new__("Array", UI_EVENTS_QUEUE_MAX);
 		jeashUIEventsQueueIndex = 0;
-		
-		// bug in 2.07 release
-		// displayState = StageDisplayState.NORMAL;
+	}
+
+	override private function getStage() {
+		return jeash.Lib.jeashGetStage();
 	}
 
 	// @r551
@@ -145,8 +147,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 	// @r551
-	function jeashDrag(point:Point)
-	{
+	function jeashDrag(point:Point) {
 		var p = jeashDragObject.parent;
 		if (p!=null)
 			point = p.globalToLocal(point);
@@ -167,14 +168,12 @@ class Stage extends DisplayObjectContainer
 		jeashDragObject.y = y;
 	}
 
-	public function jeashStopDrag(sprite:Sprite) : Void
-	{
+	public function jeashStopDrag(sprite:Sprite) : Void {
 		jeashDragBounds = null;
 		jeashDragObject = null;
 	}
 
 	function jeashCheckFocusInOuts(event:FocusEvent, inStack:Array<InteractiveObject>) {
-
 		var new_n = inStack.length;
 		var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
 		var old_n = jeashFocusOverObjects.length;
@@ -251,8 +250,9 @@ class Stage extends DisplayObjectContainer
 		}
 	}
 
-	public function jeashQueueStageEvent(evt:Html5Dom.Event)
-		jeashUIEventsQueue[jeashUIEventsQueueIndex++] = evt
+	public function jeashQueueStageEvent(evt:Html5Dom.Event) {
+		jeashUIEventsQueue[jeashUIEventsQueueIndex++] = evt;
+	}
 
 	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
@@ -456,8 +456,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 
-	public function jeashOnResize(inW:Int, inH:Int)
-	{
+	public function jeashOnResize(inW:Int, inH:Int) {
 		jeashWindowWidth = inW;
 		jeashWindowHeight = inH;
 		var event = new jeash.events.Event( jeash.events.Event.RESIZE );
@@ -482,8 +481,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 	public function jeashGetBackgroundColour() { return jeashBackgroundColour; }
-	public function jeashSetBackgroundColour(col:Int) : Int
-	{
+	public function jeashSetBackgroundColour(col:Int) : Int {
 		jeashBackgroundColour = col;
 		return col;
 	}
@@ -506,8 +504,7 @@ class Stage extends DisplayObjectContainer
 		return inQuality;
 	}
 
-	public function jeashGetQuality():String
-	{
+	public function jeashGetQuality():String {
 		return if (this.quality != null)
 			this.quality;
 		else
@@ -557,15 +554,13 @@ class Stage extends DisplayObjectContainer
 		this.jeashBroadcast(event);
 	}
 
-	override function jeashIsOnStage() { return true; }
 	override function jeashGetMouseX() { return this.mouseX; }
 	override function jeashSetMouseX(x:Float) { this.mouseX = x; return x; }
 	override function jeashGetMouseY() { return this.mouseY; }
 	override function jeashSetMouseY(y:Float) { this.mouseY = y; return y; }
 
 	inline function jeashGetShowDefaultContextMenu() { return jeashShowDefaultContextMenu; }
-	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool)
-	{
+	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool) {
 		if (showDefaultContextMenu != this.showDefaultContextMenu && this.showDefaultContextMenu != null)
 			if (!showDefaultContextMenu) Lib.jeashDisableRightClick(); else Lib.jeashEnableRightClick();
 		jeashShowDefaultContextMenu = showDefaultContextMenu;
@@ -573,8 +568,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 	inline function jeashGetDisplayState() { return this.displayState; }
-	function jeashSetDisplayState(displayState:StageDisplayState)
-	{
+	function jeashSetDisplayState(displayState:StageDisplayState) {
 		if (displayState != this.displayState && this.displayState != null)
 			switch (displayState) {
 				case NORMAL: Lib.jeashDisableFullScreen();
@@ -586,11 +580,9 @@ class Stage extends DisplayObjectContainer
 
 	inline function jeashGetFullScreenWidth() { return Lib.jeashFullScreenWidth(); }
 	inline function jeashGetFullScreenHeight() { return Lib.jeashFullScreenHeight(); }
-
 }
 
-class TouchInfo {
+private class TouchInfo {
 	public var touchOverObjects:Array<InteractiveObject>;
 	public function new() touchOverObjects = []
 }
-

@@ -196,7 +196,7 @@ class TextField extends jeash.display.InteractiveObject {
 		if(parent!=null)
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
-			BuildBounds();
+			buildBounds();
 
 		if (inWidth!=mWidth) {
 			mWidth = inWidth;
@@ -211,7 +211,7 @@ class TextField extends jeash.display.InteractiveObject {
 		if(parent!=null)
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
-			BuildBounds();
+			buildBounds();
 		
 		if (inHeight!=mHeight) {
 			mHeight = inHeight;
@@ -476,7 +476,7 @@ class TextField extends jeash.display.InteractiveObject {
 		}
 	}
 
-	override public function GetBackgroundRect() : Rectangle {
+	override private function getBackgroundRect() : Rectangle {
 		if (border)
 			return new Rectangle(-2,-2,width+4,height+4);
 		else

@@ -52,34 +52,33 @@ import jeash.Lib;
  */
 class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
-	
-	public var x(jeashGetX,jeashSetX):Float;
-	public var y(jeashGetY,jeashSetY):Float;
-	public var scaleX(jeashGetScaleX,jeashSetScaleX):Float;
-	public var scaleY(jeashGetScaleY,jeashSetScaleY):Float;
-	public var rotation(jeashGetRotation,jeashSetRotation):Float;
+	public var x(jeashGetX, jeashSetX):Float;
+	public var y(jeashGetY, jeashSetY):Float;
+	public var scaleX(jeashGetScaleX, jeashSetScaleX):Float;
+	public var scaleY(jeashGetScaleY, jeashSetScaleY):Float;
+	public var rotation(jeashGetRotation, jeashSetRotation):Float;
 	
 	public var accessibilityProperties:AccessibilityProperties;
 	public var alpha:Float;
-	public var name(default,default):String;
+	public var name(default, default):String;
 	public var cacheAsBitmap:Bool;
-	public var width(jeashGetWidth,jeashSetWidth):Float;
-	public var height(jeashGetHeight,jeashSetHeight):Float;
+	public var width(jeashGetWidth, jeashSetWidth):Float;
+	public var height(jeashGetHeight, jeashSetHeight):Float;
 
-	public var visible(jeashGetVisible,jeashSetVisible):Bool;
-	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
+	public var visible(jeashGetVisible, jeashSetVisible):Bool;
+	public var opaqueBackground(getOpaqueBackground, setOpaqueBackground):Null<Int>;
 	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
 	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
-	public var parent:DisplayObjectContainer;
-	public var stage(GetStage,null):Stage;
+	public var parent(default, jeashSetParent):DisplayObjectContainer;
+	public var stage(getStage, null):Stage;
 	
-	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
-	public var mask(GetMask,SetMask):DisplayObject;
-	public var filters(jeashGetFilters,jeashSetFilters):Array<Dynamic>;
-	public var blendMode : jeash.display.BlendMode;
+	public var scrollRect(getScrollRect, setScrollRect):Rectangle;
+	public var mask(getMask, setMask):DisplayObject;
+	public var filters(jeashGetFilters, jeashSetFilters):Array<Dynamic>;
+	public var blendMode:jeash.display.BlendMode;
 	public var loaderInfo:LoaderInfo;
 
-	public var transform(GetTransform,SetTransform):Transform;
+	public var transform(getTransform, setTransform):Transform;
 
 	var mBoundsDirty(getBoundsDirty, setBoundsDirty):Bool;
 	var mMtxChainDirty:Bool;
@@ -108,8 +107,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMaskingObj:DisplayObject;
 	var mMaskHandle:Dynamic;
 	var jeashFilters:Array<BitmapFilter>;
-	
-	
+
 	public function new() {
 		parent = null;
 		super(null);
@@ -133,98 +131,63 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	override public function toString() { return name; }
 
-	function jeashDoAdded(inObj:DisplayObject) {
-		if (inObj==this) {
-			var evt = new jeash.events.Event(jeash.events.Event.ADDED, true, false);
-			evt.target = inObj;
-			dispatchEvent(evt);
-		}
+	private function jeashSetParent(inValue:DisplayObjectContainer):DisplayObjectContainer {
+		if (inValue == this.parent) return inValue;
 
-		if (jeashIsOnStage()) {
-			var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
-			evt.target = inObj;
-			dispatchEvent(evt);
-		}
-	}
+		mMtxChainDirty = true;
 
-	function jeashDoRemoved(inObj:DisplayObject)
-	{
-		if (inObj==this)
-		{
-			var evt = new jeash.events.Event(jeash.events.Event.REMOVED, true, false);
-			evt.target = inObj;
-			dispatchEvent(evt);
-		}
-		var evt = new jeash.events.Event(jeash.events.Event.REMOVED_FROM_STAGE, false, false);
-		evt.target = inObj;
-		dispatchEvent(evt);
-
-		var gfx = jeashGetGraphics();
-		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface))
-			Lib.jeashRemoveSurface(gfx.jeashSurface);
-	}
-	public function jeashSetParent(parent:DisplayObjectContainer)
-	{
-		if (parent == this.parent)
-			return;
-
-		mMtxChainDirty=true;
-
-		if (this.parent != null)
-		{
+		if (this.parent != null) {
 			this.parent.__removeChild(this);
 			this.parent.jeashInvalidateBounds();	
 		}
 		
-		if(parent != null)
-		{
-			parent.jeashInvalidateBounds();
+		if (inValue != null) {
+			inValue.jeashInvalidateBounds();
 		}
 
-		if (this.parent==null && parent!=null)
-		{
-			this.parent = parent;
-			jeashDoAdded(this);
+		if (this.parent == null && inValue != null) {
+			this.parent = inValue;
+			var evt = new jeash.events.Event(jeash.events.Event.ADDED, true, false);
+			evt.target = this;
+			dispatchEvent(evt);
+		} else if (this.parent != null && inValue == null) {
+			this.parent = inValue;
+			var evt = new jeash.events.Event(jeash.events.Event.REMOVED, true, false);
+			evt.target = this;
+			dispatchEvent(evt);
+		} else {
+			this.parent = inValue;
 		}
-		else if (this.parent != null && parent==null)
-		{
-			this.parent = parent;
-			jeashDoRemoved(this);
-		}
-		else{
-			this.parent = parent;
-		}
-
+		return inValue;
 	}
 
-	public function GetStage() { return jeash.Lib.jeashGetStage(); }
-	public function AsContainer() : DisplayObjectContainer { return null; }
+	private function getStage() {
+		var gfx = jeashGetGraphics();
+		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface))
+			return jeash.Lib.jeashGetStage();
+		return null;
+	}
 
-	public function GetScrollRect() : Rectangle
-	{
-		if (mScrollRect==null) return null;
+	private function getScrollRect() : Rectangle {
+		if (mScrollRect == null) return null;
 		return mScrollRect.clone();
 	}
 
-	public function jeashAsInteractiveObject() : jeash.display.InteractiveObject
-	{ return null; }
-
-	public function SetScrollRect(inRect:Rectangle)
-	{
+	private function setScrollRect(inRect:Rectangle) {
 		mScrollRect = inRect;
-		return GetScrollRect();
+		return getScrollRect();
 	}
 
-	public function hitTestObject(obj:DisplayObject)
-	{
+	private function jeashAsInteractiveObject() : jeash.display.InteractiveObject { return null; }
+
+	public function hitTestObject(obj:DisplayObject) {
 		return false;
 	}
 
-	public function hitTestPoint(x:Float, y:Float, ?shapeFlag:Bool)
-	{
-		var bounding_box:Bool = shapeFlag==null ? true : !shapeFlag;
+	public function hitTestPoint(x:Float, y:Float, ?shapeFlag:Bool) {
+		var boundingBox:Bool = shapeFlag == null ? true : !shapeFlag;
 
-		if (!bounding_box)
+		if (!boundingBox)
 			return jeashGetObjectUnderPoint(new Point(x, y)) != null;
 		else {
 			var gfx = jeashGetGraphics();
@@ -241,89 +204,86 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	public function localToGlobal( point:Point )
-	{
-		if ( this.parent == null )
-		{
-			return new Point( this.x + point.x, this.y + point.y );
+	public function localToGlobal( point:Point ) {
+		if (this.parent == null) {
+			return new Point(this.x + point.x, this.y + point.y);
 		} else {
 			point.x = point.x + this.x;
 			point.y = point.y + this.y;
-			return this.parent.localToGlobal( point );
+			return this.parent.localToGlobal(point);
 		}
 	}
 
-	function jeashGetMouseX() { return globalToLocal(new Point(stage.mouseX, 0)).x; }
-	function jeashSetMouseX(x:Float) { return null; }
-	function jeashGetMouseY() { return globalToLocal(new Point(0, stage.mouseY)).y; }
-	function jeashSetMouseY(y:Float) { return null; }
+	private function jeashGetMouseX() { return globalToLocal(new Point(stage.mouseX, 0)).x; }
+	private function jeashSetMouseX(x:Float) { return null; }
+	private function jeashGetMouseY() { return globalToLocal(new Point(0, stage.mouseY)).y; }
+	private function jeashSetMouseY(y:Float) { return null; }
 
-	public function GetTransform() { return  new Transform(this); }
+	private function getTransform() { return  new Transform(this); }
 
-	public function SetTransform(trans:Transform)
-	{
+	private function setTransform(trans:Transform) {
 		mMatrix = trans.matrix.clone();
 		return trans;
 	}
 	
-	public function getFullMatrix(?childMatrix:Matrix=null) {
-		if(childMatrix==null) {
+	private function getFullMatrix(?childMatrix:Matrix=null) {
+		if (childMatrix == null) {
 			return mFullMatrix.clone();
 		} else {
 			return childMatrix.mult(mFullMatrix);
 		}
 	}
 
-	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle 
-	{		
-		if(mMtxDirty || mMtxChainDirty)
+	public function getBounds(targetCoordinateSpace:DisplayObject) : Rectangle {
+		if (mMtxDirty || mMtxChainDirty)
 			jeashValidateMatrix();
 		
-		if(mBoundsDirty)
-		{
-			BuildBounds();
+		if (mBoundsDirty) {
+			buildBounds();
 		}
 		
 		var mtx : Matrix = mFullMatrix.clone();
 		//perhaps inverse should be stored and updated lazily?
-		mtx.concat(targetCoordinateSpace.mFullMatrix.clone().invert());
+		if (targetCoordinateSpace != null) // will be null when target space is stage and this is not on stage
+			mtx.concat(targetCoordinateSpace.mFullMatrix.clone().invert());
 		var rect : Rectangle = mBoundsRect.transform(mtx);	//transform does cloning
 		return rect;
 	}
 
-	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle 
-	{
+	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle {
 		// TODO
 		return null;
 	}
 
-	public function globalToLocal(inPos:Point) 
-		return mFullMatrix.clone().invert().transformPoint(inPos)
-	
-	public function jeashGetNumChildren() return 0
+	public function globalToLocal(inPos:Point) {
+		return mFullMatrix.clone().invert().transformPoint(inPos);
+	}
 
-	public function jeashGetMatrix() return mMatrix.clone()
+	public function jeashGetMatrix() {
+		return mMatrix.clone();
+	}
 
 	public function jeashSetMatrix(inMatrix:Matrix) {
 		mMatrix = inMatrix.clone();
 		return inMatrix;
 	}
 
-	public function jeashGetGraphics() : jeash.display.Graphics return null
+	private function jeashGetGraphics() : jeash.display.Graphics {
+		return null;
+	}
 
-	public function GetOpaqueBackground() { return mOpaqueBackground; }
-	public function SetOpaqueBackground(inBG:Null<Int>)
-	{
+	private function getOpaqueBackground() { 
+		return mOpaqueBackground;
+	}
+	private function setOpaqueBackground(inBG:Null<Int>) {
 		mOpaqueBackground = inBG;
 		return mOpaqueBackground;
 	}
 
-	public function GetBackgroundRect()
-	{
-		if (mGraphicsBounds==null)
-		{
+	private function getBackgroundRect() {
+		if (mGraphicsBounds == null) {
 			var gfx = jeashGetGraphics();
-			if (gfx!=null)
+			if (gfx != null)
 				mGraphicsBounds = gfx.jeashExtent.clone();
 		}
 		return mGraphicsBounds;
@@ -340,10 +300,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 */
 	//** internal **//
 	//** FINAL **//	
-	public function jeashInvalidateBounds():Void{
+	private function jeashInvalidateBounds():Void{
 		//TODO :: adjust so that parent is only invalidated if it's bounds are changed by this change
-		mBoundsDirty=true;
-		if(parent!=null)
+		mBoundsDirty = true;
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 	}
 	
@@ -353,42 +313,41 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 * - an object's parent has its matrices invalidated
 	 * ---> 	Invalidates up through children
 	 */
-	function jeashInvalidateMatrix( ? local : Bool = false):Void {
-		mMtxChainDirty= mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
+	private function jeashInvalidateMatrix( ? local : Bool = false):Void {
+		mMtxChainDirty = mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
 		mMtxDirty = mMtxDirty || local; //invalidate the local matrix
 	}
 	
-	public function jeashValidateMatrix() {
-		
-		if(mMtxDirty || (mMtxChainDirty && parent!=null)) {
+	private function jeashValidateMatrix() {
+		if (mMtxDirty || (mMtxChainDirty && parent!=null)) {
 			//validate parent matrix
-			if(mMtxChainDirty && parent!=null) {
+			if (mMtxChainDirty && parent != null) {
 				parent.jeashValidateMatrix();
 			}
 			
 			//validate local matrix
-			if(mMtxDirty) {
+			if (mMtxDirty) {
 				//update matrix if necessary
 				//set non scale elements to identity
 				mMatrix.b = mMatrix.c = mMatrix.tx = mMatrix.ty = 0;
 			
 				//set scale
-				mMatrix.a=jeashScaleX;
-				mMatrix.d=jeashScaleY;
+				mMatrix.a = jeashScaleX;
+				mMatrix.d = jeashScaleY;
 			
 				//set rotation if necessary
 				var rad = jeashRotation * Math.PI / 180.0;
 		
-				if(rad!=0.0)
+				if (rad != 0.0)
 					mMatrix.rotate(rad);
 			
 				//set translation
-				mMatrix.tx=jeashX;
-				mMatrix.ty=jeashY;	
+				mMatrix.tx = jeashX;
+				mMatrix.ty = jeashY;	
 			}
 			
 			
-			if (parent!=null)
+			if (parent != null)
 				mFullMatrix = parent.getFullMatrix(mMatrix);
 			else
 				mFullMatrix = mMatrix;
@@ -396,17 +355,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mMtxDirty = mMtxChainDirty = false;
 		}
 	}
-	
 
-	public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		
+	private function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 		var gfx = jeashGetGraphics();
 
-		if (gfx!=null) {
+		if (gfx != null) {
 			// Cases when the rendering phase should be skipped
 			if (!jeashVisible) return;
 
-			if(mMtxDirty || mMtxChainDirty){
+			if (mMtxDirty || mMtxChainDirty) {
 				jeashValidateMatrix();
 			}
 			
@@ -435,7 +392,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			}
 
 		} else {
-			if(mMtxDirty || mMtxChainDirty){
+			if (mMtxDirty || mMtxChainDirty) {
 				jeashValidateMatrix();
 			}
 		}
@@ -447,11 +404,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			blendMode:BlendMode,
 			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
-		if (matrix==null) matrix = new Matrix();
+		if (matrix == null) matrix = new Matrix();
 		jeashRender(matrix, inSurface, clipRect);
 	}
 
-	public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
+	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {
 		if (!visible) return null;
 		var gfx = jeashGetGraphics();
 		if (gfx != null) {
@@ -472,68 +429,63 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return null;
 	}
 
-
 	// Masking
-	public function GetMask() : DisplayObject { return mMask; }
+	private function getMask() : DisplayObject {
+		return mMask;
+	}
 
-	public function SetMask(inMask:DisplayObject) : DisplayObject
-	{
-		if (mMask!=null)
+	private function setMask(inMask:DisplayObject) : DisplayObject {
+		if (mMask != null)
 			mMask.mMaskingObj = null;
 		mMask = inMask;
-		if (mMask!=null)
+		if (mMask != null)
 			mMask.mMaskingObj = this;
 		return mMask;
 	}
 
 	// @r533
-	public function jeashSetFilters(filters:Array<Dynamic>) {
-		if (filters==null)
+	private function jeashSetFilters(filters:Array<Dynamic>) {
+		if (filters == null) {
 			jeashFilters = null;
-		else {
+		} else {
 			jeashFilters = new Array<BitmapFilter>();
-			for(filter in filters) jeashFilters.push(filter.clone());
+			for (filter in filters) jeashFilters.push(filter.clone());
 		}
 
 		return filters;
 	}
 
 	// @r533
-	public function jeashGetFilters() {
-		if (jeashFilters==null) return [];
+	private function jeashGetFilters() {
+		if (jeashFilters == null) return [];
 		var result = new Array<BitmapFilter>();
-		for(filter in jeashFilters)
+		for (filter in jeashFilters)
 			result.push(filter.clone());
 		return result;
 	}
 
-	function BuildBounds()
-	{
+	private function buildBounds() {
 		var gfx = jeashGetGraphics();
-		if (gfx==null)
+		if (gfx == null) {
 			mBoundsRect = new Rectangle(x,y,0,0);
-		else
-		{
+		} else {
 			mBoundsRect = gfx.jeashExtent.clone();
-			if (mScale9Grid!=null)
-			{
+			if (mScale9Grid != null) {
 				mBoundsRect.width *= scaleX;
 				mBoundsRect.height *= scaleY;
 			}
 			gfx.boundsDirty = false;
 		}
-		mBoundsDirty=false;
+		mBoundsDirty = false;
 	}
 
-	function GetScreenBounds()
-	{
-		if(mBoundsDirty)
-			BuildBounds();
+	private function getScreenBounds() {
+		if (mBoundsDirty)
+			buildBounds();
 		return mBoundsRect.clone();
 	}
 
-	public function jeashGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
-	{
+	private function jeashGetInteractiveObjectStack(outStack:Array<InteractiveObject>) {
 		var io = jeashAsInteractiveObject();
 		if (io != null)
 			outStack.push(io);
@@ -542,20 +494,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @r551
-	public function jeashFireEvent(event:jeash.events.Event)
-	{
+	private function jeashFireEvent(event:jeash.events.Event) {
 		var stack:Array<InteractiveObject> = [];
 		if (this.parent != null)
 			this.parent.jeashGetInteractiveObjectStack(stack);
 		var l = stack.length;
 
-		if (l>0)
-		{
+		if (l > 0) {
 			// First, the "capture" phase ...
 			event.jeashSetPhase(EventPhase.CAPTURING_PHASE);
 			stack.reverse();
-			for(obj in stack)
-			{
+			for (obj in stack) {
 				event.currentTarget = obj;
 				obj.jeashDispatchEvent(event);
 				if (event.jeashGetIsCancelled())
@@ -571,12 +520,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			return;
 
 		// Last, the "bubbles" phase
-		if (event.bubbles)
-		{
+		if (event.bubbles) {
 			event.jeashSetPhase(EventPhase.BUBBLING_PHASE);
 			stack.reverse();
-			for(obj in stack)
-			{
+			for (obj in stack) {
 				event.currentTarget = obj;
 				obj.jeashDispatchEvent(event);
 				if (event.jeashGetIsCancelled())
@@ -586,15 +533,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @533
-	public function jeashBroadcast(event:jeash.events.Event)
-	{
+	private function jeashBroadcast(event:jeash.events.Event) {
 		jeashDispatchEvent(event);
 	}
 	
-	public function jeashDispatchEvent(event:jeash.events.Event):Bool
-	{
-		if (event.target == null)
-		{
+	private function jeashDispatchEvent(event:jeash.events.Event):Bool {
+		if (event.target == null) {
 			event.target = this;
 		}
 		event.currentTarget = this;
@@ -602,51 +546,82 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	override public function dispatchEvent(event:jeash.events.Event):Bool {
-		
 		var result = jeashDispatchEvent(event);
 		
-		if (event.jeashGetIsCancelled ())
+		if (event.jeashGetIsCancelled())
 			return true;
 		
-		if (event.bubbles && parent != null)
-		{
+		if (event.bubbles && parent != null) {
 			parent.dispatchEvent(event);
 		}
 		
 		return result;
 	}
 
-	function jeashAddToStage()
-	{
+	private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
+		var wasOnStage = (stage != null);
 		var gfx = jeashGetGraphics();
-		if (gfx != null) {
+		if (gfx == null) throw this + " tried to add to stage with null graphics context";
+
+		if (newParent.jeashGetGraphics() != null) {
 			Lib.jeashSetSurfaceId(gfx.jeashSurface, name);
-			Lib.jeashAppendSurface(gfx.jeashSurface);
+
+			if (beforeSibling != null && beforeSibling.jeashGetGraphics() != null) {
+				Lib.jeashAppendSurface(gfx.jeashSurface, beforeSibling.jeashGetGraphics().jeashSurface);
+			} else {
+				var stageChildren = [];
+				for (child in newParent.jeashChildren) {
+					if (child.stage != null)
+						stageChildren.push(child);
+				}
+
+				if (stageChildren.length < 1) {
+					Lib.jeashAppendSurface(gfx.jeashSurface, null, newParent.jeashGetGraphics().jeashSurface);
+				} else {
+					var nextSibling = stageChildren[stageChildren.length-1];
+					var container;
+					while (Std.is(nextSibling, DisplayObjectContainer)) {
+						container = cast(nextSibling, DisplayObjectContainer);
+						if (container.numChildren > 0)
+							nextSibling = container.jeashChildren[container.numChildren-1];
+						else
+							break;
+					}
+					if (nextSibling.jeashGetGraphics() != gfx) {
+						Lib.jeashAppendSurface(gfx.jeashSurface, null, nextSibling.jeashGetGraphics().jeashSurface);
+					} else {
+						Lib.jeashAppendSurface(gfx.jeashSurface);
+					}
+				}
+			}
+		} else {
+			if (newParent.name == Stage.NAME) // only stage is allowed to add to a parent with no context
+				Lib.jeashAppendSurface(gfx.jeashSurface);
+		}
+
+		if (!wasOnStage && stage != null) {
+			var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
+			evt.target = this;
+			dispatchEvent(evt);
 		}
 	}
 
-	function jeashInsertBefore(obj:DisplayObject) {
-		var gfx1 = jeashGetGraphics();
-		var gfx2 = obj.jeashIsOnStage() ? obj.jeashGetGraphics() : null;
-		if (gfx1 != null) {
-			Lib.jeashSetSurfaceId(gfx1.jeashSurface, name);
-			if (gfx2 != null )
-				Lib.jeashAppendSurface(gfx1.jeashSurface, gfx2.jeashSurface);
-			 else 
-				Lib.jeashAppendSurface(gfx1.jeashSurface);
-		}
-	}
+	private function jeashRemoveFromStage() {
+		this.parent = null;
 
-	function jeashIsOnStage() {
 		var gfx = jeashGetGraphics();
-		if (gfx != null)
-			return Lib.jeashIsOnStage(gfx.jeashSurface);
+		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface)) {
+			Lib.jeashRemoveSurface(gfx.jeashSurface);
 
-		return false;
+			var evt = new jeash.events.Event(jeash.events.Event.REMOVED_FROM_STAGE, false, false);
+			evt.target = this;
+			dispatchEvent(evt);
+		}
 	}
 
-	function jeashGetVisible() { return jeashVisible; }
-	function jeashSetVisible(visible:Bool) {
+	private function jeashGetVisible() { return jeashVisible; }
+
+	private function jeashSetVisible(visible:Bool) {
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			if (gfx.jeashSurface != null)
@@ -655,19 +630,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return visible;
 	}
 
-	public function jeashGetHeight() : Float
-	{
-		BuildBounds();
+	private function jeashGetHeight() : Float {
+		if (mBoundsDirty) buildBounds();
 		return jeashScaleY * mBoundsRect.height;
 	}
-	public function jeashSetHeight(inHeight:Float) : Float {
-		if(parent!=null)
+
+	private function jeashSetHeight(inHeight:Float) : Float {
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
+		if (mBoundsDirty)
+			buildBounds();
 		var h = mBoundsRect.height;
-		if (jeashScaleY*h != inHeight)
-		{
+		if (jeashScaleY*h != inHeight) {
 			if (h<=0) return 0;
 			jeashScaleY = inHeight/h;
 			jeashInvalidateMatrix(true);
@@ -675,85 +649,81 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inHeight;
 	}
 
-	public function jeashGetWidth() : Float {
-		if(mBoundsDirty){
-			BuildBounds();
-		}
+	private function jeashGetWidth() : Float {
+		if (mBoundsDirty) buildBounds();
 		return jeashScaleX * mBoundsRect.width;
 	}
 
-	public function jeashSetWidth(inWidth:Float) : Float {
-		if(parent!=null)
+	private function jeashSetWidth(inWidth:Float) : Float {
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
+		if (mBoundsDirty)
+			buildBounds();
 		var w = mBoundsRect.width;
-		if (jeashScaleX*w != inWidth)
-		{
-			if (w<=0) return 0;
+		if (jeashScaleX*w != inWidth) {
+			if (w <= 0) return 0;
 			jeashScaleX = inWidth/w;
 			jeashInvalidateMatrix(true);
 		}
 		return inWidth;
 	}
 
-	public function jeashGetX():Float{
+	private function jeashGetX():Float {
 		return jeashX;
 	}
 	
-	public function jeashGetY():Float{
+	private function jeashGetY():Float {
 		return jeashY;
 	}
 	
-	public function jeashSetX(n:Float):Float{
+	private function jeashSetX(n:Float):Float {
 		jeashInvalidateMatrix(true);
-		jeashX=n;
-		if(parent!=null)
+		jeashX = n;
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 		return n;
 	}
 
-	public function jeashSetY(n:Float):Float{
+	private function jeashSetY(n:Float):Float{
 		jeashInvalidateMatrix(true);
-		jeashY=n;
-		if(parent!=null)
+		jeashY = n;
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 		return n;
 	}
 
-
-	public function jeashGetScaleX() { return jeashScaleX; }
-	public function jeashGetScaleY() { return jeashScaleY; }
-	public function jeashSetScaleX(inS:Float) { 
-		if(jeashScaleX==inS)
+	private function jeashGetScaleX() { return jeashScaleX; }
+	private function jeashGetScaleY() { return jeashScaleY; }
+	private function jeashSetScaleX(inS:Float) { 
+		if (jeashScaleX == inS)
 			return inS;		
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
-		if(!mMtxDirty)
+		if (mBoundsDirty)
+			buildBounds();
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);	
 		jeashScaleX=inS;
 		return inS;
 	}
 
-	public function jeashSetScaleY(inS:Float) { 
-		if(jeashScaleY==inS)
+	private function jeashSetScaleY(inS:Float) { 
+		if (jeashScaleY == inS)
 			return inS;		
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			BuildBounds();
-		if(!mMtxDirty)
+		if (mBoundsDirty)
+			buildBounds();
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);	
-		jeashScaleY=inS;
+		jeashScaleY = inS;
 		return inS;
 	}
 
 	private function jeashSetRotation(n:Float):Float{
-		if(!mMtxDirty)
+		if (!mMtxDirty)
 			jeashInvalidateMatrix(true);
-		if(parent!=null)
+		if (parent != null)
 			parent.jeashInvalidateBounds();
 
 		jeashRotation = n;

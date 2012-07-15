@@ -66,8 +66,8 @@ class Bitmap extends jeash.display.DisplayObject {
 
 	override public function jeashGetGraphics() return jeashGraphics
 	
-	override function BuildBounds() {
-		super.BuildBounds();
+	override function buildBounds() {
+		super.buildBounds();
 				
 		if(bitmapData!=null)
 		{

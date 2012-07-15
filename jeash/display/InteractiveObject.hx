@@ -28,7 +28,8 @@ package jeash.display;
 
 import jeash.geom.Point;
 
-class InteractiveObject extends DisplayObject {
+class InteractiveObject extends DisplayObject
+{
 	public var doubleClickEnabled:Bool;
 	public var focusRect:Dynamic;
 	public var mouseEnabled:Bool;
@@ -56,7 +57,7 @@ class InteractiveObject extends DisplayObject {
 		return inIndex;
 	}
 
-	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+	override private function jeashGetObjectUnderPoint(point:Point):DisplayObject 
 		 if (!mouseEnabled) return null;
 		 else return super.jeashGetObjectUnderPoint(point)
 

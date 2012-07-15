@@ -27,7 +27,8 @@
 package jeash.display;
 
 
-class MovieClip extends Sprite, implements Dynamic<Dynamic> {
+class MovieClip extends Sprite, implements Dynamic<Dynamic>
+{
    public var enabled:Bool;
    public var currentFrame(GetCurrentFrame,null):Int;
    public var framesLoaded(GetTotalFrames,null):Int;
@@ -39,8 +40,7 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic> {
    function GetTotalFrames() { return mTotalFrames; }
    function GetCurrentFrame() { return mCurrentFrame; }
 
-   public function new()
-   {
+   public function new() {
       super();
       enabled = true;
       mCurrentFrame = 0;
@@ -52,10 +52,4 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic> {
    public function gotoAndStop(frame:Dynamic, ?scene:String):Void { }
    public function play():Void { }
    public function stop():Void { }
-
-
 }
-
-
-
-
