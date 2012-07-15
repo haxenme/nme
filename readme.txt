@@ -1,26 +1,43 @@
-NME Readme
+Introduction
+============
+
+NME (Neko Media Engine) is an incredible cross-platform framework.
+
+Using the Haxe programming language, NME makes it possible to target Windows, Mac, Linux, iOS, Android, BlackBerry, webOS, Flash and HTML5.
+
+You can learn more about NME at:
+
+http://www.haxenme.org
+
+We hope you enjoy the project!
 
 
-NME is distributed under the MIT license. More information is available
-in the "license.txt" file, included with the project.
+Download
+========
+
+You can download the latest release of NME, here:
+
+http://www.haxenme.org
 
 
-For instructions on how to install NME, please visit:
+Development
+===========
 
-http://www.haxenme.org/download
+If you are interested in working from development builds of NME you can find information about using the source code, here:
 
-	
-If you would like to work from the source, you can find instructions for
-building the NME command-line tools and "NDLL" files, here:
+http://www.haxenme.org/documentation/source
 
-http://www.haxenme.org/documentation/source/
 
-	
-Enjoy! If you have any questions or concerns, please visit the forum or
-mailing list, found here:
+License
+=======
+
+NME is distributed using the open-source MIT license. For information regarding some of the dependencies  used in NME, open "license.txt" in this directory.
+
+
+Support
+=======
+
+If you have questions, concerns, or need help, please visit the forum or join the mailing list:
 
 http://www.haxenme.org/community/forums
 http://www.haxenme.org/community/mailing-list
-
-
-Thank you for choosing NME. We hope you enjoy the project!
