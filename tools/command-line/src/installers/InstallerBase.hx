@@ -67,7 +67,7 @@ class InstallerBase {
       iosDeployment = "3.2";
       iosBinaries = "armv6";
       iosDevices = "universal";
-      iosCompiler = "clang";
+      iosCompiler = "gcc";
 		
 	}
 	
