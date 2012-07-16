@@ -165,6 +165,14 @@ class RunScript {
 			
 			case "windows":
 				
+				if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+					
+					Lib.println ("Warning: Visual Studio 2012 is not supported. Trying Visual Studio 2010...");
+					
+					Sys.putEnv ("VS110COMNTOOLS", Sys.getEnv ("VS100COMNTOOLS"));
+					
+				}
+				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
 			
