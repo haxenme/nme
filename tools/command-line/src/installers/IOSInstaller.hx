@@ -88,7 +88,7 @@ class IOSInstaller extends InstallerBase {
 		var ipad = (devices == "universal" || devices == "ipad");
 		
 		armv6 = (iphone && deployment < 5.0 && binaries != "armv7");
-		armv7 = (binaries != "armv6" || !armv6);
+		armv7 = (binaries != "armv6" || !armv6 || ipad);
 		
 		var valid_archs = new Array <String> ();
 		
