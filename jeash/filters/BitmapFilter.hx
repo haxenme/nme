@@ -30,16 +30,15 @@ import jeash.Html5Dom;
 
 class BitmapFilter
 {
-   var mType:String;
+	private var _jeashCached : Bool;
+	private var _mType:String;
 
-   public function new(inType) { mType = inType; }
-   public function clone() : jeash.filters.BitmapFilter
-   {
-      throw "Implement in subclass. BitmapFilter::clone";
-      return null;
-   }
+	public function new(inType) { _mType = inType; }
+	public function clone() : jeash.filters.BitmapFilter {
+		throw "Implement in subclass. BitmapFilter::clone";
+		return null;
+	}
 
-   public function jeashPreFilter(surface:HTMLCanvasElement) {}
-
-   public function jeashApplyFilter(surface:HTMLCanvasElement) {}
+	public function jeashPreFilter(surface:HTMLCanvasElement) {}
+	public function jeashApplyFilter(surface:HTMLCanvasElement, ?refreshCache:Bool) {}
 }

@@ -393,7 +393,9 @@ class Lib {
 			untyped {
 				try {
 					mMe.__scr.oncontextmenu = null;
-				} catch (e:Dynamic) {}
+				} catch (e:Dynamic) {
+					jeash.Lib.trace("Enable right click not supported in this browser.");
+				}
 			}
 		}
 	}

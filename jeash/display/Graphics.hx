@@ -88,7 +88,8 @@ typedef Grad = {
 	var focal:Float;
 }
 
-class LineJob {
+class LineJob
+{
 	public function new( inGrad:Grad, inPoint_idx0:Int, inPoint_idx1:Int, inThickness:Float,
 			inAlpha:Float, inColour:Int, inPixel_hinting:Int, inJoints:Int, inCaps:Int,
 			inScale_mode:Int, inMiter_limit:Float)
@@ -141,40 +142,43 @@ enum PointInPathMode {
 	DEVICE_SPACE;
 }
 
-class Graphics {
-	private static inline var RADIAL  = 0x0001;
+class Graphics
+{
+	private static inline var JEASH_MAX_DIM 	= 5000;
 
-	private static inline var SPREAD_REPEAT  = 0x0002;
-	private static inline var SPREAD_REFLECT = 0x0004;
+	private static inline var RADIAL  			= 0x0001;
 
-	private static inline var  END_NONE         = 0x0000;
-	private static inline var  END_ROUND        = 0x0100;
-	private static inline var  END_SQUARE       = 0x0200;
+	private static inline var SPREAD_REPEAT  	= 0x0002;
+	private static inline var SPREAD_REFLECT 	= 0x0004;
 
-	private static inline var  CORNER_ROUND     = 0x0000;
-	private static inline var  CORNER_MITER     = 0x1000;
-	private static inline var  CORNER_BEVEL     = 0x2000;
+	private static inline var END_NONE         	= 0x0000;
+	private static inline var END_ROUND        	= 0x0100;
+	private static inline var END_SQUARE       	= 0x0200;
 
-	private static inline var  PIXEL_HINTING    = 0x4000;
+	private static inline var CORNER_ROUND     	= 0x0000;
+	private static inline var CORNER_MITER     	= 0x1000;
+	private static inline var CORNER_BEVEL     	= 0x2000;
 
-	private static inline var BMP_REPEAT  = 0x0010;
-	private static inline var BMP_SMOOTH  = 0x10000;
+	private static inline var PIXEL_HINTING    	= 0x4000;
 
-	private static inline var  SCALE_NONE       = 0;
-	private static inline var  SCALE_VERTICAL   = 1;
-	private static inline var  SCALE_HORIZONTAL = 2;
-	private static inline var  SCALE_NORMAL     = 3;
+	private static inline var BMP_REPEAT  		= 0x0010;
+	private static inline var BMP_SMOOTH  		= 0x10000;
 
-	private static inline var MOVE = 0;
-	private static inline var LINE = 1;
-	private static inline var CURVE = 2;
+	private static inline var SCALE_NONE       	= 0;
+	private static inline var SCALE_VERTICAL   	= 1;
+	private static inline var SCALE_HORIZONTAL 	= 2;
+	private static inline var SCALE_NORMAL     	= 3;
 
-	public static inline var TILE_SCALE    = 0x0001;
-	public static inline var TILE_ROTATION = 0x0002;
-	public static inline var TILE_RGB      = 0x0004;
-	public static inline var TILE_ALPHA    = 0x0008;
+	private static inline var MOVE 				= 0;
+	private static inline var LINE 				= 1;
+	private static inline var CURVE 			= 2;
 
-	public var jeashSurface(default,null):HTMLCanvasElement;
+	public static inline var TILE_SCALE    		= 0x0001;
+	public static inline var TILE_ROTATION 		= 0x0002;
+	public static inline var TILE_RGB      		= 0x0004;
+	public static inline var TILE_ALPHA    		= 0x0008;
+
+	public var jeashSurface(default, null):HTMLCanvasElement;
 	public var jeashChanged:Bool;
 
 	// Current set of points
@@ -185,14 +189,14 @@ class Graphics {
 	private var mFillColour:Int;
 	private var mFillAlpha:Float;
 	private var mSolidGradient:Grad;
-	private var mBitmap(default,null):Texture;
+	private var mBitmap(default, null):Texture;
 
 	// Lines ...
 	private var mCurrentLine:LineJob;
 	private var mLineJobs:LineJobs;
 
 	// List of drawing commands ...
-	private var mDrawList(default,null):DrawList;
+	private var mDrawList(default, null):DrawList;
 	private var mLineDraws:DrawList;
 
 	// Current position ...
@@ -201,17 +205,16 @@ class Graphics {
 	private var mLastMoveID:Int;
 
 	public var boundsDirty:Bool;
-	public var jeashExtent(default,null):Rectangle;
+	public var jeashExtent(default, null):Rectangle;
+	private var _padding:Float;
 	private var nextDrawIndex:Int;
-	
-	private static inline var JEASH_MAX_DIMENSION = 5000;
 	private var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLElement) {
 		// sanity check
 		Lib.jeashBootstrap();
 
-		if ( inSurface == null ) {
+		if (inSurface == null) {
 			jeashSurface = cast js.Lib.document.createElement("canvas");
 			jeashSurface.width = 0;
 			jeashSurface.height = 0;
@@ -241,11 +244,8 @@ class Graphics {
 		nextDrawIndex = 0;
 
 		jeashExtent = new Rectangle();
+		_padding = 0.0;
 		jeashClearNextCycle = true;
-	}
-
-	public function SetSurface(inSurface:Dynamic) {
-		jeashSurface = inSurface;
 	}
 
 	private function createCanvasColor(color : Int, alpha : Float) {
@@ -282,12 +282,23 @@ class Graphics {
 		return gradient;
 	}
 
-	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix) {
-		if (!jeashChanged) {
+	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix, ?filters:Array<jeash.filters.BitmapFilter>) {
+		if (!jeashChanged)
 			return false;
+
+		closePolygon(true);
+		var padding = _padding;
+
+		if (filters != null) {
+			for (filter in filters) {
+				if (Reflect.hasField(filter, "blurX")) {
+					padding += (Math.max(Reflect.field(filter, "blurX"), Reflect.field(filter, "blurY")) * 4);
+				}
+			}
 		}
 
-		ClosePolygon(true);
+		if (padding > 0)
+			jeashExpandStandardExtent(-padding/2, -padding/2);
 
 		if (jeashExtent.width - jeashExtent.x > jeashSurface.width || jeashExtent.height - jeashExtent.y > jeashSurface.height) {
 			jeashAdjustSurface();
@@ -299,7 +310,16 @@ class Graphics {
 		}
 
 		var ctx = getContext();
-		if (ctx==null) return false;
+		if (ctx == null) return false;
+
+		if (filters != null) {
+			for (filter in filters) {
+				if (Std.is(filter, jeash.filters.DropShadowFilter)) {
+					// shadow must be applied before we draw to the context
+					filter.jeashApplyFilter(jeashSurface, true);
+				}
+			}
+		}
 
 		var len : Int = mDrawList.length;
 
@@ -308,15 +328,14 @@ class Graphics {
 		if (jeashExtent.x != 0 || jeashExtent.y != 0)
 			ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
-		for ( i in nextDrawIndex...len ) {
+		for (i in nextDrawIndex...len) {
 			var d = mDrawList[(len-1)-i];
 	
 			if (d.lineJobs.length > 0) {
 				for (lj in d.lineJobs) {
 					ctx.lineWidth = lj.thickness;
 
-					switch(lj.joints)
-					{
+					switch(lj.joints) {
 						case CORNER_ROUND:
 							ctx.lineJoin = "round";
 						case CORNER_MITER:
@@ -348,13 +367,12 @@ class Graphics {
 
 						switch (p.type) {
 							case MOVE:
-								ctx.moveTo(p.x , p.y);
+								ctx.moveTo(p.x, p.y);
 							case CURVE:
 								ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
 							default:
 								ctx.lineTo(p.x, p.y);
 						}
-
 					}
 					ctx.closePath();
 					ctx.stroke();
@@ -362,8 +380,7 @@ class Graphics {
 			} else {
 				ctx.beginPath();
 
-				for ( p in d.points ) {
-
+				for (p in d.points) {
 					switch (p.type) {
 						case MOVE:
 							ctx.moveTo(p.x , p.y);
@@ -381,14 +398,13 @@ class Graphics {
 			var g = d.solidGradient;
 			if (g != null)
 				ctx.fillStyle = createCanvasGradient(ctx, g);
-			else 
-				// Alpha value gets clamped in [0;1] range.
+			else  // Alpha value gets clamped in [0;1] range.
 				ctx.fillStyle = createCanvasColor(fillColour, (fillAlpha > 1.0) ? 1.0 : ((fillAlpha < 0.0) ? 0.0 : fillAlpha));
 			ctx.fill();
-
 			ctx.save();
+
 			var bitmap = d.bitmap;
-			if ( bitmap != null) {
+			if (bitmap != null) {
 				ctx.clip();
 
 				if (jeashExtent.x != 0 || jeashExtent.y != 0)
@@ -397,18 +413,14 @@ class Graphics {
 				var img = bitmap.texture_buffer;
 				var matrix = bitmap.matrix;
 
-				if(matrix != null) {
-					ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
+				if (matrix != null) {
+					ctx.transform(matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty);
 				}
-
-				ctx.drawImage( img, 0, 0 );
-
+				ctx.drawImage(img, 0, 0);
 			}
 			ctx.restore();
 		}
-		
 		ctx.restore();
-		
 
 		jeashChanged = false;
 		nextDrawIndex = len;
@@ -418,13 +430,12 @@ class Graphics {
 
 	public function jeashHitTest(inX:Float, inY:Float) : Bool {
 		var ctx : CanvasRenderingContext2D = getContext();
-		if (ctx==null) return false;
+		if (ctx == null) return false;
 
 		ctx.save();
-		for(d in mDrawList)
-		{
+		for(d in mDrawList) {
 			ctx.beginPath();
-			for ( p in d.points ) {
+			for (p in d.points) {
 				switch (p.type) {
 					case MOVE:
 						ctx.moveTo(p.x , p.y);
@@ -435,22 +446,19 @@ class Graphics {
 				}
 			}
 			ctx.closePath();
-			if ( ctx.isPointInPath(inX, inY) ) return true;
+			if (ctx.isPointInPath(inX, inY)) return true;
 		}
 		ctx.restore();
 		return false;
 	}
 
-
 	public function blit(inTexture:BitmapData) {
-		ClosePolygon(true);
+		closePolygon(true);
 
 		var ctx = getContext();
 		if (ctx != null) 
 			ctx.drawImage(inTexture.handle(),mPenX,mPenY);
 	}
-
-
 
 	public function lineStyle(?thickness:Null<Float>,
 			?color:Null<Int>,
@@ -462,30 +470,24 @@ class Graphics {
 			?miterLimit:Null<Float> )
 	{
 		// Finish off old line before starting a new one
-		AddLineSegment();
+		addLineSegment();
 
 		//with no parameters it clears the current line (to draw nothing)
-		if( thickness == null )
-		{
+		if(thickness == null) {
 			jeashClearLine();
 			return;
-		}
-		else
-		{
+		} else {
 			mCurrentLine.grad = null;
 			mCurrentLine.thickness = thickness;
 			mCurrentLine.colour = color==null ? 0 : color;
 			mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
 			mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
-			mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting)?
-				0 : PIXEL_HINTING;
+			mCurrentLine.pixel_hinting = (pixelHinting==null || !pixelHinting) ? 0 : PIXEL_HINTING;
 		}
 
 		//mCurrentLine.caps = END_ROUND;
-		if (caps!=null)
-		{
-			switch(caps)
-			{
+		if (caps != null) {
+			switch(caps) {
 				case CapsStyle.ROUND:
 					mCurrentLine.caps = END_ROUND;
 				case CapsStyle.SQUARE:
@@ -496,10 +498,8 @@ class Graphics {
 		}
 
 		mCurrentLine.scale_mode = SCALE_NORMAL;
-		if (scaleMode!=null)
-		{
-			switch(scaleMode)
-			{
+		if (scaleMode != null) {
+			switch(scaleMode) {
 				case LineScaleMode.NORMAL:
 					mCurrentLine.scale_mode = SCALE_NORMAL;
 				case LineScaleMode.VERTICAL:
@@ -511,12 +511,9 @@ class Graphics {
 			}
 		}
 
-
 		mCurrentLine.joints = CORNER_ROUND;
-		if (joints!=null)
-		{
-			switch(joints)
-			{
+		if (joints != null) {
+			switch(joints) {
 				case JointStyle.ROUND:
 					mCurrentLine.joints = CORNER_ROUND;
 				case JointStyle.MITER:
@@ -536,7 +533,7 @@ class Graphics {
 			?interpolationMethod : InterpolationMethod,
 			?focalPointRatio : Null<Float>) : Void
 	{
-		mCurrentLine.grad = CreateGradient(type,colors,alphas,ratios,
+		mCurrentLine.grad = createGradient(type, colors, alphas, ratios,
 				matrix,spreadMethod,
 				interpolationMethod,
 				focalPointRatio);
@@ -545,20 +542,20 @@ class Graphics {
 
 
 	public function beginFill(color:Int, ?alpha:Null<Float>) {
-		ClosePolygon(true);
+		closePolygon(true);
 
 		mFillColour =  color;
 		mFillAlpha = alpha==null ? 1.0 : alpha;
-		mFilling=true;
+		mFilling = true;
 		mSolidGradient = null;
 		mBitmap = null;
 	}
 
 	public function endFill() {
-		ClosePolygon(true);
+		closePolygon(true);
 	}
 
-	function DrawEllipse(x:Float,y:Float,rx:Float,ry:Float) {
+	function jeashDrawEllipse(x:Float, y:Float, rx:Float, ry:Float) {
 		moveTo(x+rx, y);
 		curveTo(rx+x        ,-0.4142*ry+y,0.7071*rx+x ,-0.7071*ry+y);
 		curveTo(0.4142*rx+x ,-ry+y       ,x           ,-ry+y);
@@ -569,33 +566,34 @@ class Graphics {
 		curveTo(0.4142*rx+x ,ry+y        ,0.7071*rx+x ,0.7071*ry+y) ;
 		curveTo(rx+x        ,0.4142*ry+y ,rx+x        ,y);
 	}
-	public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float) {
-		ClosePolygon(false);
+
+	public function drawEllipse(x:Float, y:Float, rx:Float, ry:Float) {
+		closePolygon(false);
 
 		rx /= 2; ry /= 2;
-		DrawEllipse(x+rx,y+ry,rx,ry);
+		jeashDrawEllipse(x + rx, y + ry, rx, ry);
 
-		ClosePolygon(false);
+		closePolygon(false);
 	}
 
-	public function drawCircle(x:Float,y:Float,rad:Float) {
-		ClosePolygon(false);
+	public function drawCircle(x:Float, y:Float, rad:Float) {
+		closePolygon(false);
 
-		DrawEllipse(x,y,rad,rad);
+		jeashDrawEllipse(x, y, rad, rad);
 
-		ClosePolygon(false);
+		closePolygon(false);
 	}
 
-	public function drawRect(x:Float,y:Float,width:Float,height:Float) {
-		ClosePolygon(false);
-
+	public function drawRect(x:Float, y:Float, width:Float, height:Float) {
+		closePolygon(false);
+		
 		moveTo(x,y);
 		lineTo(x+width,y);
 		lineTo(x+width,y+height);
 		lineTo(x,y+height);
 		lineTo(x,y);
 
-		ClosePolygon(false);
+		closePolygon(false);
 	}
 
 	public function drawRoundRect(x:Float, y:Float, width:Float, height:Float, rx:Float, ry:Float) {
@@ -614,7 +612,7 @@ class Graphics {
 		var h_ = lh + ry*Math.sin(Math.PI/4);
 		var ch_ = lh + ry*Math.tan(Math.PI/8);
 
-		ClosePolygon(false);
+		closePolygon(false);
 
 		moveTo(x+w,y+lh);
 		curveTo(x+w,  y+ch_, x+w_, y+h_);
@@ -630,10 +628,10 @@ class Graphics {
 		curveTo(x+w,  y-ch_, x+w,  y-lh);
 		lineTo(x+w,  y+lh);
 
-		ClosePolygon(false);
+		closePolygon(false);
 	}
 
-	function CreateGradient(type : GradientType,
+	function createGradient(type : GradientType,
 			colors : Array<Dynamic>,
 			alphas : Array<Dynamic>,
 			ratios : Array<Dynamic>,
@@ -642,35 +640,30 @@ class Graphics {
 			interpolationMethod : Null<InterpolationMethod>,
 			focalPointRatio : Null<Float>)
 	{
-
 		var points = new GradPoints();
 		for(i in 0...colors.length)
 			points.push({col:colors[i], alpha:alphas[i], ratio:ratios[i]});
 
-
 		var flags = 0;
 
-		if (type==GradientType.RADIAL)
+		if (type == GradientType.RADIAL)
 			flags |= RADIAL;
 
-		if (spreadMethod==SpreadMethod.REPEAT)
+		if (spreadMethod == SpreadMethod.REPEAT)
 			flags |= SPREAD_REPEAT;
 		else if (spreadMethod==SpreadMethod.REFLECT)
 			flags |= SPREAD_REFLECT;
 
 
-		if (matrix==null)
-		{
+		if (matrix == null) {
 			matrix = new Matrix();
 			matrix.createGradientBox(25,25);
-		}
-		else
+		} else
 			matrix = matrix.clone();
 
 		var focal : Float = focalPointRatio ==null ? 0 : focalPointRatio;
 		return  { points : points, matrix : matrix, flags : flags, focal:focal };
 	}
-
 
 	public function beginGradientFill(type : GradientType,
 			colors : Array<Dynamic>,
@@ -681,23 +674,20 @@ class Graphics {
 			?interpolationMethod : Null<InterpolationMethod>,
 			?focalPointRatio : Null<Float>) : Void
 	{
-		ClosePolygon(true);
+		closePolygon(true);
 
 		mFilling = true;
 		mBitmap = null;
-		mSolidGradient = CreateGradient(type,colors,alphas,ratios,
+		mSolidGradient = createGradient(type,colors,alphas,ratios,
 				matrix,spreadMethod,
 				interpolationMethod,
 				focalPointRatio);
 	}
 
-
-
-
 	public function beginBitmapFill(bitmap:BitmapData, ?matrix:Matrix,
 			?in_repeat:Bool, ?in_smooth:Bool)
 	{
-		ClosePolygon(true);
+		closePolygon(true);
 
 		var repeat:Bool = in_repeat==null ? true : in_repeat;
 		var smooth:Bool = in_smooth==null ? false : in_smooth;
@@ -715,9 +705,8 @@ class Graphics {
 
 	}
 
-
 	public function jeashClearLine() {
-		mCurrentLine = new LineJob( null,-1,-1,  0.0,
+		mCurrentLine = new LineJob( null, -1, -1, 0.0,
 				0.0, 0x000, 1, CORNER_ROUND, END_ROUND,
 				SCALE_NORMAL, 3.0);
 	}
@@ -751,28 +740,31 @@ class Graphics {
 		jeashClearNextCycle = true;
 
 		boundsDirty = true;
-		jeashExtent.x = 0;
-		jeashExtent.y = 0;
-		jeashExtent.width = 0;
-		jeashExtent.height = 0;
+		jeashExtent.x = 0.0;
+		jeashExtent.y = 0.0;
+		jeashExtent.width = 0.0;
+		jeashExtent.height = 0.0;
+		_padding = 0.0;
 
 		mLineJobs = [];
 	}
 
-	function jeashExpandStandardExtent(x:Float, y:Float) {
+	function jeashExpandStandardExtent(x:Float, y:Float, ?thickness:Float) {
+		if (thickness != null && thickness > _padding) _padding = thickness;
+
 		var maxX, minX, maxY, minY;
 		minX = jeashExtent.x;
 		minY = jeashExtent.y;
-		maxX = jeashExtent.width+minX;
-		maxY = jeashExtent.height+minY;
-		maxX=x>maxX?x:maxX;
-		minX=x<minX?x:minX;
-		maxY=y>maxY?y:maxY;
-		minY=y<minY?y:minY;
+		maxX = jeashExtent.width + minX;
+		maxY = jeashExtent.height + minY;
+		maxX = x > maxX ? x : maxX;
+		minX = x < minX ? x : minX;
+		maxY = y > maxY ? y : maxY;
+		minY = y < minY ? y : minY;
 		jeashExtent.x = minX;
 		jeashExtent.y = minY;
-		jeashExtent.width = maxX-minX;
-		jeashExtent.height = maxY-minY;
+		jeashExtent.width = maxX - minX;
+		jeashExtent.height = maxY - minY;
 		boundsDirty = true;
 	}
 
@@ -783,70 +775,65 @@ class Graphics {
 		jeashExpandStandardExtent(inX, inY);
 
 		if (!mFilling) {
-			ClosePolygon(false);
+			closePolygon(false);
 		} else {
-			AddLineSegment();
+			addLineSegment();
 			mLastMoveID = mPoints.length;
-			mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
+			mPoints.push(new GfxPoint(mPenX, mPenY, 0.0, 0.0, MOVE));
 		}
 	}
 
-	public function lineTo(inX:Float,inY:Float) {
+	public function lineTo(inX:Float, inY:Float) {
 		var pid = mPoints.length;
-		if (pid==0) {
+		if (pid == 0) {
+			mPoints.push(new GfxPoint(mPenX, mPenY, 0.0, 0.0, MOVE));
+			pid++;
+		}
+
+		mPenX = inX;
+		mPenY = inY;
+		jeashExpandStandardExtent(inX, inY, mCurrentLine.thickness);
+		mPoints.push(new GfxPoint(mPenX, mPenY, 0.0, 0.0, LINE));
+
+		if (mCurrentLine.grad != null || mCurrentLine.alpha > 0) {
+			if (mCurrentLine.point_idx0 < 0)
+				mCurrentLine.point_idx0 = pid - 1;
+			mCurrentLine.point_idx1 = pid;
+		}
+
+		if (!mFilling) closePolygon(false);
+	}
+
+	public function curveTo(inCX:Float, inCY:Float, inX:Float, inY:Float) {
+		var pid = mPoints.length;
+		if (pid == 0) {
 			mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
 			pid++;
 		}
 
 		mPenX = inX;
 		mPenY = inY;
-		jeashExpandStandardExtent(inX, inY);
-		mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, LINE ) );
+		jeashExpandStandardExtent(inX, inY, mCurrentLine.thickness);
+		mPoints.push(new GfxPoint(inX, inY, inCX, inCY, CURVE));
 
-		if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
-		{
-			if (mCurrentLine.point_idx0<0)
+		if (mCurrentLine.grad != null || mCurrentLine.alpha > 0) {
+			if (mCurrentLine.point_idx0 < 0)
 				mCurrentLine.point_idx0 = pid-1;
 			mCurrentLine.point_idx1 = pid;
 		}
-
-		if ( !mFilling ) ClosePolygon(false);
-
 	}
 
-	public function curveTo(inCX:Float,inCY:Float,inX:Float,inY:Float) {
-		var pid = mPoints.length;
-		if (pid==0)
-		{
-			mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
-			pid++;
-		}
+	public function flush() { closePolygon(true); }
 
-		mPenX = inX;
-		mPenY = inY;
-		jeashExpandStandardExtent(inX, inY);
-		mPoints.push( new GfxPoint( inX, inY, inCX, inCY, CURVE ) );
-
-		if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
-		{
-			if (mCurrentLine.point_idx0<0)
-				mCurrentLine.point_idx0 = pid-1;
-			mCurrentLine.point_idx1 = pid;
-		}
-
-	}
-
-	public function flush() { ClosePolygon(true); }
-
-	private function AddDrawable(inDrawable:Drawable) {
-		if (inDrawable==null)
+	private function addDrawable(inDrawable:Drawable) {
+		if (inDrawable == null)
 			return; // throw ?
 
 		mDrawList.unshift( inDrawable );
 	}
 
-	private function AddLineSegment() {
-		if (mCurrentLine.point_idx1>0) {
+	private function addLineSegment() {
+		if (mCurrentLine.point_idx1 > 0) {
 			mLineJobs.push(
 					new LineJob(
 						mCurrentLine.grad,
@@ -865,23 +852,18 @@ class Graphics {
 		mCurrentLine.point_idx0 = mCurrentLine.point_idx1 = -1;
 	}
 
-	private function ClosePolygon(inCancelFill) {
-		var l =  mPoints.length;
-		if (l>0)
-		{
-			if (l>1)
-			{
-				if (mFilling && l>2)
-				{
+	private function closePolygon(inCancelFill) {
+		var l = mPoints.length;
+		if (l > 0) {
+			if (l > 1) {
+				if (mFilling && l > 2) {
 					// Make implicit closing line
-					if (mPoints[mLastMoveID].x!=mPoints[l-1].x || mPoints[mLastMoveID].y!=mPoints[l-1].y)
-					{
+					if (mPoints[mLastMoveID].x != mPoints[l-1].x || mPoints[mLastMoveID].y != mPoints[l-1].y) {
 						lineTo(mPoints[mLastMoveID].x, mPoints[mLastMoveID].y);
-
 					}
 				}
 
-				AddLineSegment();
+				addLineSegment();
 
 				var drawable : Drawable = { 
 					points: mPoints, 
@@ -891,17 +873,14 @@ class Graphics {
 					bitmap: mBitmap,
 					lineJobs: mLineJobs 
 				};
-
-				AddDrawable( drawable );
-
+				addDrawable(drawable);
 			}
 
 			mLineJobs = [];
 			mPoints = [];
 		}
 
-		if (inCancelFill)
-		{
+		if (inCancelFill) {
 			mFillAlpha = 0;
 			mSolidGradient = null;
 			mBitmap = null;
@@ -914,7 +893,7 @@ class Graphics {
 	public function drawGraphicsData(points:Vector<IGraphicsData>) {
 		for (data in points) {
 			if (data == null) {
-				mFilling=true;
+				mFilling = true;
 			} else {
 				switch (data.jeashGraphicsDataType) {
 					case STROKE:
@@ -924,11 +903,9 @@ class Graphics {
 						} else {
 							switch(stroke.fill.jeashGraphicsFillType) {
 								case SOLID_FILL:
-						
 									var fill : GraphicsSolidFill = cast stroke.fill;
 									lineStyle(stroke.thickness, fill.color, fill.alpha, stroke.pixelHinting, stroke.scaleMode, stroke.caps, stroke.joints, stroke.miterLimit);
 								case GRADIENT_FILL:
-
 									var fill : GraphicsGradientFill = cast stroke.fill;
 									lineGradientStyle(fill.type, fill.colors, fill.alphas, fill.ratios, fill.matrix, fill.spreadMethod, fill.interpolationMethod, fill.focalPointRatio);
 							}
@@ -948,7 +925,6 @@ class Graphics {
 								case GraphicsPathCommand.CURVE_TO:
 									curveTo(path.data[j], path.data[j+1], path.data[j+2], path.data[j+3]);
 									j = j + 4;
-
 							}
 						}
 					case SOLID:
@@ -968,10 +944,10 @@ class Graphics {
 		if (ctx.isPointInPath == null)
 			return USER_SPACE;
 		ctx.save();
-		ctx.translate(1,0);
+		ctx.translate(1, 0);
 		ctx.beginPath();
-		ctx.rect(0,0,1,1);
-		var rv = if (ctx.isPointInPath(0.3,0.3)) {
+		ctx.rect(0, 0, 1, 1);
+		var rv = if (ctx.isPointInPath(0.3, 0.3)) {
 			USER_SPACE;
 		} else {
 			DEVICE_SPACE;
@@ -995,11 +971,10 @@ class Graphics {
 		var height = Math.ceil(jeashExtent.height - jeashExtent.y);
 
 		// prevent allocating too large canvas sizes
-		if (width > JEASH_MAX_DIMENSION || height > JEASH_MAX_DIMENSION) return;
+		if (width > JEASH_MAX_DIM || height > JEASH_MAX_DIM) return;
 
 		// re-allocate canvas, copy into larger canvas.
 		var dstCanvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
-
 		dstCanvas.width = width;
 		dstCanvas.height = height;
 

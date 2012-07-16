@@ -60,38 +60,32 @@ class DropShadowFilter extends BitmapFilter
 		inner = in_inner;
 		knockout = in_knockout;
 		hideObject = in_hideObject;
-		jeashCached = false;
+		_jeashCached = false;
 	}
-	override public function clone() : BitmapFilter
-	{
+
+	override public function clone() : BitmapFilter {
 		return new DropShadowFilter(distance, angle, color, alpha, blurX, blurY,
 				strength, quality, inner, knockout, hideObject );
 
 	}
 
-	static inline var DEGREES_FULL_RADIUS = 360.0;
-	var jeashCached : Bool;
-	override public function jeashApplyFilter(surface:HTMLCanvasElement)
-	{
-		if (jeashCached) return;
-		var distanceX = distance*Math.sin(2*Math.PI*angle/DEGREES_FULL_RADIUS);
-		var distanceY = distance*Math.cos(2*Math.PI*angle/DEGREES_FULL_RADIUS);
-		var blurRadius = if (distanceY == 0) blurX;
-		else if (distanceX == 0) blurY;
-		else (blurX * (distanceX/distanceY)/(distanceX+distanceY) + blurY * (distanceY/distanceX)/(distanceX+distanceY))/2;
-		flash.Lib.trace(distanceX);
+	private static inline var DEGREES_FULL_RADIUS = 360.0;
+	override public function jeashApplyFilter(surface:HTMLCanvasElement, ?refreshCache:Bool) {
+		if (!_jeashCached || refreshCache) {
+			var distanceX = distance*Math.sin(2*Math.PI*angle/DEGREES_FULL_RADIUS);
+			var distanceY = distance*Math.cos(2*Math.PI*angle/DEGREES_FULL_RADIUS);
+			var blurRadius = Math.max(blurX, blurY); //if (distanceY == 0) blurX;
+			//else if (distanceX == 0) blurY;
+			//else (blurX * (distanceX/distanceY)/(distanceX+distanceY) + blurY * (distanceY/distanceX)/(distanceX+distanceY))/2;
 
-		untyped
-		{
-			var ctx = surface.getContext('2d');
-			ctx.shadowOffsetX = distanceX;
-			ctx.shadowOffsetX = distanceX;
-			ctx.shadowBlur = blurRadius;
-			ctx.shadowColor = StringTools.hex(color);
-		}
-		//Lib.jeashSetSurfaceBoxShadow(surface, distanceX, distanceY, blurRadius, color, inner);  
-		jeashCached = true;
+			var context:CanvasRenderingContext2D = surface.getContext("2d");
+			context.shadowOffsetX = distanceX;
+	        context.shadowOffsetY = distanceY;
+	        context.shadowBlur = blurRadius;
+	        context.shadowColor = StringTools.hex(color, 6);
+
+	        _jeashCached = true;
+	    }
 	}
-
 }
 

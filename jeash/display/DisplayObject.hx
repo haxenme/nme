@@ -370,7 +370,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
 
 			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
-				if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
+				if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
 				for (filter in jeashFilters) {
 					filter.jeashApplyFilter(gfx.jeashSurface);
 				}
