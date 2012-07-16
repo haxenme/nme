@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-read -p "Do you wish to install Haxe 2.09 and Neko 1.8.2? (y/n) " RESP
+read -p "Do you wish to install Haxe 2.10 and Neko 1.8.2? (y/n) " RESP
 
 if [ $RESP = "y" ]; then
 	
@@ -109,7 +109,7 @@ if [ $RESP = "y" ]; then
 	echo "    Downloading Haxe"
 	echo "-----------------------------------"	
 	
-	wget -c http://haxe.org/file/haxe-2.09-linux.tar.gz
+	wget -c http://haxe.org/file/haxe-2.10-linux.tar.gz
 	
 	
 	echo ""
@@ -120,9 +120,9 @@ if [ $RESP = "y" ]; then
 	
 	# Extract and copy files to /usr/lib/haxe
 	
-	tar xvzf haxe-2.09-linux.tar.gz
+	tar xvzf haxe-2.10-linux.tar.gz
 	sudo mkdir -p /usr/lib/haxe
-	sudo cp -r haxe-2.09-linux/* /usr/lib/haxe
+	sudo cp -r haxe-2.10-linux/* /usr/lib/haxe
 	
 	
 	# Add symlinks
@@ -173,8 +173,8 @@ if [ $RESP = "y" ]; then
 	
 	# Cleanup
 	
-	rm -r -f haxe-2.09-linux
-	rm haxe-2.09-linux.tar.gz
+	rm -r -f haxe-2.10-linux
+	rm haxe-2.10-linux.tar.gz
 	
 	
 fi
@@ -190,7 +190,7 @@ haxelib install hxcpp
 
 echo ""
 echo "-----------------------------------"
-echo "    Installing NME 3.3.3"
+echo "    Installing NME"
 echo "-----------------------------------"
 
 # Install libssl, which is required for the command-line tools
@@ -199,7 +199,7 @@ sudo apt-get install libssl0.9.8
 
 # Download and install NME
 
-haxelib install nme 3.3.3
+haxelib install nme
 
 # Add "nme" command shortcut
 
