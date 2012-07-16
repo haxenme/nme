@@ -51,7 +51,7 @@ class IOSInstaller extends InstallerBase {
             
             var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
             
-            runCommand ("", "codesign", [ "-f", "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ]);
+            runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true);
             
         }
         

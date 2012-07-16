@@ -1878,7 +1878,7 @@ class InstallerBase {
 	}
 	
 	
-	private function runCommand (path:String, command:String, args:Array <String>):Void {
+	private function runCommand (path:String, command:String, args:Array <String>, ignoreErrors:Bool = false):Void {
 		
 		try {
 			
@@ -1892,7 +1892,11 @@ class InstallerBase {
 			
 		} catch (e:Dynamic) {
 			
-			error ("", e);
+			if (!ignoreErrors) {
+				
+				error ("", e);
+				
+			}
 			
 		}
 	  
