@@ -335,6 +335,7 @@ value JObjectToHaxeObject(JNIEnv *env,jobject inObject)
  *
  */
 #define ARRAY_SET(PRIM,JTYPE,CREATE) \
+   case jni##PRIM: \
    { \
       if (len>0) \
       { \
@@ -346,7 +347,8 @@ value JObjectToHaxeObject(JNIEnv *env,jobject inObject)
           } \
           inEnv->Release##PRIM##ArrayElements((JTYPE##Array)inObject,data,JNI_ABORT); \
       } \
-   }
+   }\
+   break;
 
 value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
 {
