@@ -542,6 +542,7 @@ class InstallTool {
 			Lib.println ("  -debug : Use debug configuration instead of release");
 			Lib.println ("  -verbose : Print additional information (when available)");
 			Lib.println ("  -clean : Add a \"clean\" action before running the current command");
+			Lib.println ("  -xml : Generate XML type information, can be used with \"document\"");
 			Lib.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
 			Lib.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
 			Lib.println ("  [android] -arm7 : Compile for arm-7a and arm5");
@@ -555,7 +556,6 @@ class InstallTool {
 			Lib.println ("  [html5] -minify -yui : Minify output using the YUI compressor");
 			Lib.println ("  (display) -hxml : Print HXML information for the project");
 			Lib.println ("  (display) -nmml : Print NMML information for the project");
-			Lib.println ("  (document) -xml : Generate XML type information");
 			Lib.println ("  (generate) -java-externs : Generate Haxe classes from compiled Java");
 			Lib.println ("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
 			
