@@ -1,4 +1,8 @@
 
+ifeq ("$(ARCHS)","normal")
+	ARCHS = armv6 armv7 i386
+endif
+
 HAXE_BUILDS := $(ARCHS:%=build-haxe-%)
 
 ifeq ("$(ACTION)","clean")
