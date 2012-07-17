@@ -335,7 +335,24 @@ class InstallTool {
 		
 		// Library search path fix
 		
-		untyped $loader.path = $array(Utils.getHaxelib ("nme"), $loader.path);
+		var path = Utils.getHaxelib ("nme") + "ndll/";
+		
+		if (new EReg ("window", "i").match (Sys.systemName ())) {
+			
+			untyped $loader.path = $array(path + "Windows/", $loader.path);
+			
+		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
+			
+			untyped $loader.path = $array(path + "Mac/", $loader.path);
+			
+		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
+			
+			untyped $loader.path = $array(path + "Linux/", $loader.path);
+			untyped $loader.path = $array(path + "Linux64/", $loader.path);
+			
+		}
+		
+		//Sys.println (untyped $loader.path);
 		
 	}
 	
