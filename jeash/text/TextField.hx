@@ -672,14 +672,14 @@ class TextField extends jeash.display.InteractiveObject {
 		var m = mFullMatrix.clone();
 
 		if (!mHTMLMode && jeashFilters != null && (jeashGraphics.jeashChanged || inMask != null)) {
-			if (jeashGraphics.jeashRender(inMask, m)) jeashInvalidateBounds();
+			if (jeashGraphics.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
 			for (filter in jeashFilters) {
 				filter.jeashApplyFilter(jeashGraphics.jeashSurface);
 			}
-		} else if (jeashGraphics.jeashRender(inMask, m)) jeashInvalidateBounds();
+		} else if (jeashGraphics.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
 
-		m.tx = m.tx + jeashGraphics.jeashExtent.x*m.a + jeashGraphics.jeashExtent.y*m.c;
-		m.ty = m.ty + jeashGraphics.jeashExtent.x*m.b + jeashGraphics.jeashExtent.y*m.d;
+		m.tx = m.tx + jeashGraphics.jeashExtentWithFilters.x*m.a + jeashGraphics.jeashExtentWithFilters.y*m.c;
+		m.ty = m.ty + jeashGraphics.jeashExtentWithFilters.x*m.b + jeashGraphics.jeashExtentWithFilters.y*m.d;
 
 		if (!mHTMLMode && inMask != null) {
 			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
