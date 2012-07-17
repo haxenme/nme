@@ -153,9 +153,9 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 
 		#if debug
-		for (child in jeashChildren)
+		for (child in jeashChildren) {
 			if (child == object) {
-				throw "Internal error: child already existed at index " + i;
+				throw "Internal error: child already existed at index " + getChildIndex(object);
 			}
 		}
 		#end
