@@ -209,7 +209,7 @@ class Graphics
 	public var jeashExtentWithFilters(default, null):Rectangle;
 	private var _padding:Float;
 	private var nextDrawIndex:Int;
-	private var jeashClearNextCycle:Bool;
+	public var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLElement) {
 		// sanity check
@@ -285,8 +285,7 @@ class Graphics
 	}
 
 	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix, ?filters:Array<jeash.filters.BitmapFilter>) {
-		if (!jeashChanged)
-			return false;
+		if (!jeashChanged) return false;
 
 		closePolygon(true);
 		var padding = _padding;
@@ -301,14 +300,17 @@ class Graphics
 
 		jeashExpandFilteredExtent(-padding/2, -padding/2);
 
-		if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
-				|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
-			jeashAdjustSurface();
-		}
 
 		if (jeashClearNextCycle) {
+			nextDrawIndex = 0;
 			jeashClearCanvas();
 			jeashClearNextCycle = false;
+			jeashAdjustSurface();
+		} else {	
+			if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
+					|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
+				jeashAdjustSurface();
+			}
 		}
 
 		var ctx = getContext();

@@ -80,6 +80,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public var transform(getTransform, setTransform):Transform;
 
+	private var _graphicsDirty(never, setGraphicsDirty):Bool;
 	var mBoundsDirty(getBoundsDirty, setBoundsDirty):Bool;
 	var mMtxChainDirty:Bool;
 	var mMtxDirty:Bool;
@@ -390,7 +391,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					jeashLastOpacity = premulAlpha;
 				}
 			}
-
 		} else {
 			if (mMtxDirty || mMtxChainDirty) {
 				jeashValidateMatrix();
@@ -445,14 +445,24 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	// @r533
 	private function jeashSetFilters(filters:Array<Dynamic>) {
+		var oldFilterCount = (jeashFilters == null) ? 0 : jeashFilters.length;
+
 		if (filters == null) {
 			jeashFilters = null;
+			if (oldFilterCount > 0) _graphicsDirty = true;
 		} else {
 			jeashFilters = new Array<BitmapFilter>();
 			for (filter in filters) jeashFilters.push(filter.clone());
+			_graphicsDirty = true;
 		}
-
 		return filters;
+	}
+
+	private function setGraphicsDirty(inValue:Bool):Bool {
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+			gfx.jeashChanged = gfx.jeashClearNextCycle = inValue;
+		return inValue;
 	}
 
 	// @r533

@@ -676,7 +676,7 @@ class TextField extends jeash.display.InteractiveObject {
 			for (filter in jeashFilters) {
 				filter.jeashApplyFilter(jeashGraphics.jeashSurface);
 			}
-		} else if (jeashGraphics.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
+		} else if (jeashGraphics.jeashRender(inMask, m)) jeashInvalidateBounds();
 
 		m.tx = m.tx + jeashGraphics.jeashExtentWithFilters.x*m.a + jeashGraphics.jeashExtentWithFilters.y*m.c;
 		m.ty = m.ty + jeashGraphics.jeashExtentWithFilters.x*m.b + jeashGraphics.jeashExtentWithFilters.y*m.d;
