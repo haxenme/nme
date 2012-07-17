@@ -519,6 +519,10 @@ class BitmapData implements IBitmapDrawable {
 			image.addEventListener( "error", function (e) { if (!image.complete) jeashOnLoad(data, e); }, false);
 		}
 		image.src = inFilename;
+		
+		// Another IE9 bug: loading 20+ images fails unless this line is added.
+		// (issue #1019768)
+		if (image.complete) {}
 	}
 
 	static public function jeashCreateFromHandle(inHandle:HTMLCanvasElement) : BitmapData {
