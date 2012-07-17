@@ -116,7 +116,7 @@ class BlurFilter extends BitmapFilter {
 		}
 	}
 	
-	override public function jeashApplyFilter(surface:HTMLCanvasElement) {
+	override public function jeashApplyFilter(surface:HTMLCanvasElement, ?refreshCache:Bool) {
 		if (surface.width > 0 && surface.height > 0) {
 			if (jeashKernel == null) jeashPreFilter(surface);
 			var ctx: CanvasRenderingContext2D = surface.getContext('2d');
