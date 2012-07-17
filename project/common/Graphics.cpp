@@ -63,8 +63,10 @@ int Graphics::Version() const
 #define SIN45 0.70710678118654752440084436210485
 #define TAN22 0.4142135623730950488016887242097
 
-void Graphics::drawEllipse(float x,float  y,float  width,float  height)
+void Graphics::drawEllipse(float x, float y, float width, float height)
 {
+   x += width/2;
+   y += height/2;
    float w = width*0.5;
    float w_ = w*SIN45;
    float cw_ = w*TAN22;

@@ -650,8 +650,10 @@ public:
       double len = (inP0 - inP1).Norm() + (inP2 - inP1).Norm();
       
       int steps = (int)len*0.1;
-      if (steps < 1) steps = 1;
-      if (steps > 100) steps = 100;
+      
+      if (len < 50 && steps < 10) steps = 50;
+      else if (steps < 1) steps = 1;
+      else if (steps > 100) steps = 100;
 
       double step = 1.0 / (steps);
       double t = 0;
