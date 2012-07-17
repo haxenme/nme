@@ -358,6 +358,15 @@ class RunScript {
 	}
 	
 	
+	public static function __init__ () {
+		
+		// Library search path fix
+		
+		untyped $loader.path = $array(getHaxelib ("nme"), $loader.path);
+		
+	}
+	
+	
 	public static function main () {
 		
 		nmeDirectory = getHaxelib ("nme");

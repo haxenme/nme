@@ -329,7 +329,18 @@ class InstallTool {
 	}
 	
 	
+	public static function __init__ () {
+		
+		// Library search path fix
+		
+		untyped $loader.path = $array(Utils.getHaxelib ("nme"), $loader.path);
+		
+	}
+	
+	
 	public static function main () {
+		
+		
 		
 		var command:String = "";
 		var debug:Bool = false;
