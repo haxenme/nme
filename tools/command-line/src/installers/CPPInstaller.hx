@@ -44,6 +44,10 @@ class CPPInstaller extends DesktopInstaller {
 				
 			}
 			
+		} else if (targetName == "mac") {
+			
+			Sys.putEnv ("HXCPP_CLANG", "1");
+			
 		}
 		
 		super.generateContext ();
