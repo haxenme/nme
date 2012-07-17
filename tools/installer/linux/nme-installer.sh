@@ -22,7 +22,7 @@ if [ $RESP = "y" ]; then
 		echo "    Downloading Neko (64-bit)"
 		echo "-----------------------------------"	
 	
-		wget -c http://nekovm.org/_media/neko-1.8.2-linux64.tar.gz
+		wget -c http://www.haxenme.org/files/9013/4248/3860/neko-1.8.2-linux64.tar.gz
 		
 		
 		echo ""
