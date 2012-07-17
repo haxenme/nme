@@ -376,8 +376,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				}
 			} else if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
 
-			m.tx = m.tx + gfx.jeashExtent.x*m.a + gfx.jeashExtent.y*m.c;
-			m.ty = m.ty + gfx.jeashExtent.x*m.b + gfx.jeashExtent.y*m.d;
+			m.tx = m.tx + gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
+			m.ty = m.ty + gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
 
 			var premulAlpha = (parent != null ? parent.alpha : 1) * alpha;
 			if (inMask != null) {
@@ -467,7 +467,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private function buildBounds() {
 		var gfx = jeashGetGraphics();
 		if (gfx == null) {
-			mBoundsRect = new Rectangle(x,y,0,0);
+			mBoundsRect = new Rectangle(x, y, 0, 0);
 		} else {
 			mBoundsRect = gfx.jeashExtent.clone();
 			if (mScale9Grid != null) {

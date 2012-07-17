@@ -206,6 +206,7 @@ class Graphics
 
 	public var boundsDirty:Bool;
 	public var jeashExtent(default, null):Rectangle;
+	public var jeashExtentWithFilters(default, null):Rectangle;
 	private var _padding:Float;
 	private var nextDrawIndex:Int;
 	private var jeashClearNextCycle:Bool;
@@ -244,6 +245,7 @@ class Graphics
 		nextDrawIndex = 0;
 
 		jeashExtent = new Rectangle();
+		jeashExtentWithFilters = new Rectangle();
 		_padding = 0.0;
 		jeashClearNextCycle = true;
 	}
@@ -297,10 +299,10 @@ class Graphics
 			}
 		}
 
-		if (padding > 0)
-			jeashExpandStandardExtent(-padding/2, -padding/2);
+		jeashExpandFilteredExtent(-padding/2, -padding/2);
 
-		if (jeashExtent.width - jeashExtent.x > jeashSurface.width || jeashExtent.height - jeashExtent.y > jeashSurface.height) {
+		if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
+				|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
 			jeashAdjustSurface();
 		}
 
@@ -325,8 +327,8 @@ class Graphics
 
 		ctx.save();
 		
-		if (jeashExtent.x != 0 || jeashExtent.y != 0)
-			ctx.translate(-jeashExtent.x, -jeashExtent.y);
+		if (jeashExtentWithFilters.x != 0 || jeashExtentWithFilters.y != 0)
+			ctx.translate(-jeashExtentWithFilters.x, -jeashExtentWithFilters.y);
 
 		for (i in nextDrawIndex...len) {
 			var d = mDrawList[(len-1)-i];
@@ -405,10 +407,7 @@ class Graphics
 
 			var bitmap = d.bitmap;
 			if (bitmap != null) {
-				ctx.clip();
-
-				if (jeashExtent.x != 0 || jeashExtent.y != 0)
-					ctx.translate(-jeashExtent.x, -jeashExtent.y);
+				//ctx.clip();
 
 				var img = bitmap.texture_buffer;
 				var matrix = bitmap.matrix;
@@ -768,6 +767,22 @@ class Graphics
 		boundsDirty = true;
 	}
 
+	function jeashExpandFilteredExtent(x:Float, y:Float) {
+		var maxX, minX, maxY, minY;
+		minX = jeashExtent.x;
+		minY = jeashExtent.y;
+		maxX = jeashExtent.width + minX;
+		maxY = jeashExtent.height + minY;
+		maxX = x > maxX ? x : maxX;
+		minX = x < minX ? x : minX;
+		maxY = y > maxY ? y : maxY;
+		minY = y < minY ? y : minY;
+		jeashExtentWithFilters.x = minX;
+		jeashExtentWithFilters.y = minY;
+		jeashExtentWithFilters.width = maxX - minX;
+		jeashExtentWithFilters.height = maxY - minY;
+	}
+
 	public function moveTo(inX:Float,inY:Float) {
 		mPenX = inX;
 		mPenY = inY;
@@ -967,8 +982,8 @@ class Graphics
 	function jeashAdjustSurface() {
 		if (Reflect.field(jeashSurface, "getContext") == null) return;
 
-		var width = Math.ceil(jeashExtent.width - jeashExtent.x);
-		var height = Math.ceil(jeashExtent.height - jeashExtent.y);
+		var width = Math.ceil(jeashExtentWithFilters.width - jeashExtentWithFilters.x);
+		var height = Math.ceil(jeashExtentWithFilters.height - jeashExtentWithFilters.y);
 
 		// prevent allocating too large canvas sizes
 		if (width > JEASH_MAX_DIM || height > JEASH_MAX_DIM) return;
