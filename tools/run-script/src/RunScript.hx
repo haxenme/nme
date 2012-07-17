@@ -358,6 +358,8 @@ class RunScript {
 	}
 	
 	
+	#if haxe_210
+	
 	public static function __init__ () {
 		
 		// Library search path fix
@@ -365,6 +367,8 @@ class RunScript {
 		untyped $loader.path = $array(getHaxelib ("nme"), $loader.path);
 		
 	}
+	
+	#end
 	
 	
 	public static function main () {

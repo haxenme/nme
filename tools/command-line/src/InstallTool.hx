@@ -329,6 +329,8 @@ class InstallTool {
 	}
 	
 	
+	#if haxe_210
+	
 	public static function __init__ () {
 		
 		// Library search path fix
@@ -336,6 +338,8 @@ class InstallTool {
 		untyped $loader.path = $array(Utils.getHaxelib ("nme"), $loader.path);
 		
 	}
+	
+	#end
 	
 	
 	public static function main () {
