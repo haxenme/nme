@@ -101,11 +101,13 @@ static int _id_blueOffset;
 static int _id_rgb;
 
 static int _id_authType;
-static int _id_userPassword;
+static int _id_credentials;
 static int _id_cookieString;
 static int _id_verbose;
 
 static int _id_method;
+static int _id_requestHeaders;
+static int _id_name;
 static int _id_contentType;
 static int _id_nmeBytes;
 
@@ -184,10 +186,12 @@ extern "C" void InitIDs()
    _id_rgb = val_id("rgb");
 
    _id_authType = val_id("authType");
-   _id_userPassword = val_id("userPassword");
+   _id_credentials = val_id("credentials");
    _id_cookieString = val_id("cookieString");
    _id_verbose = val_id("verbose");
    _id_method = val_id("method");
+   _id_requestHeaders = val_id("requestHeaders");
+   _id_name = val_id("name");
    _id_contentType = val_id("contentType");
    _id_nmeBytes = val_id("nmeBytes");
 
@@ -529,15 +533,30 @@ void FromValue(value obj, URLRequest &request)
 {
    request.url = val_string( val_field(obj, _id_url) );
    request.authType = val_field_numeric(obj, _id_authType );
-   request.passwd = val_string( val_field(obj, _id_userPassword) );
+   request.credentials = val_string( val_field(obj, _id_credentials) );
    request.cookies = val_string( val_field(obj, _id_cookieString) );
    request.method = val_string( val_field(obj, _id_method) );
    request.contentType = val_string( val_field(obj, _id_contentType) );
    request.debug = val_field_numeric( obj, _id_verbose );
    request.postData = ByteArray( val_field(obj,_id_nmeBytes) );
+
+   // headers
+  if (!val_is_null(val_field(obj, _id_requestHeaders)) && val_array_size(val_field(obj, _id_requestHeaders)) )
+  {
+    int size = val_array_size(val_field(obj, _id_requestHeaders));
+   QuickVec<URLRequestHeader> headers;
+     value *header_array = val_array_value(val_field(obj, _id_requestHeaders));
+     for(int i = 0; i < val_array_size(val_field(obj, _id_requestHeaders)); i++)
+     {
+        value headerVal = header_array ? header_array[i] : val_array_i(val_field(obj, _id_requestHeaders), i);
+        URLRequestHeader header;
+        header.name = val_string(val_field(headerVal, _id_name));
+        header.value = val_string(val_field(headerVal, _id_value));
+        headers.push_back(header);
+    }
+  request.headers = headers;
+  }
 }
-
-
 }
 
 #define DO_PROP_READ(Obj,obj_prefix,prop,Prop,to_val) \

@@ -26,7 +26,8 @@
 
 package jeash.net;
 
-class URLRequest {
+class URLRequest
+{
 	public var url:String;
 	public var requestHeaders:Array<URLRequestHeader>;
 	public var method : String;
@@ -34,9 +35,10 @@ class URLRequest {
 	public var contentType:String;
 
 	public function new(?inURL:String) {
-		if (inURL!=null)
+		if (inURL != null)
 			url = inURL;
 		requestHeaders = [];
-		method = "GET";
+		method = URLRequestMethod.GET;
+		contentType = "application/x-www-form-urlencoded";
 	}
 }

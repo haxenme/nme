@@ -20,16 +20,23 @@ enum URLState
 	urlError,
 };
 
+struct URLRequestHeader
+{
+   const char *name;
+   const char *value;
+};
+
 struct URLRequest
 {
    const char *url;
    int        authType;
-   const char *passwd;
+   const char *credentials;
    const char *cookies;
    const char *method;
    const char *contentType;
    ByteArray  postData;
    bool       debug;
+   QuickVec<URLRequestHeader> headers; 
 };
 
 class URLLoader : public Object

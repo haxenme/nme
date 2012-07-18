@@ -41,7 +41,8 @@ import js.XMLHttpRequest;
 
 typedef XMLHttpRequestProgressEvent = Dynamic;
 
-class URLLoader extends EventDispatcher {
+class URLLoader extends EventDispatcher
+{
 	public var bytesLoaded:Int;
 	public var bytesTotal:Int;
 	public var data:Dynamic;
@@ -186,7 +187,7 @@ class URLLoader extends EventDispatcher {
 		}
 
 		try {
-			if(method == "GET" && uri != null && uri != "") {
+			if (method == "GET" && uri != null && uri != "") {
 				var question = url.split("?").length <= 1;
 				xmlHttpRequest.open(method, url+(if( question ) "?" else "&")+uri,true);
 				uri = "";

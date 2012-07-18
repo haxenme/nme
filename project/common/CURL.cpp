@@ -18,6 +18,8 @@
 namespace nme
 {
 
+
+
 static std::string sCACertFile("");
 static CURLM *sCurlM = 0;
 static int sRunning = 0;
@@ -76,8 +78,8 @@ public:
     if (r.authType!=0)
     {
       curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, r.authType);
-      if (r.passwd && r.passwd[0])
-        curl_easy_setopt(mHandle, CURLOPT_USERPWD, r.passwd);
+      if (r.credentials && r.credentials[0])
+        curl_easy_setopt(mHandle, CURLOPT_USERPWD, r.credentials);
     }
     curl_easy_setopt(mHandle, CURLOPT_PROGRESSFUNCTION, staticOnProgress);
     curl_easy_setopt(mHandle, CURLOPT_PROGRESSDATA, (void *)this);
@@ -136,6 +138,22 @@ public:
       headerlist = curl_slist_append(headerlist, &buffer[0]);
     }
     headerlist = curl_slist_append(headerlist, "Expect:");
+
+
+    if (r.headers != 0) {
+      int n = r.headers.size();
+      if (n >= 0) {
+        for(int i = 0; i < n; i++)
+        {
+          URLRequestHeader h = r.headers[i];
+          std::vector<char> buffer;
+          buffer.resize(512);
+          snprintf(&buffer[0], buffer.size(), "%s: %s", h.name, h.value);
+          headerlist = curl_slist_append(headerlist, &buffer[0]);
+        }
+      }
+    }
+
     curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, headerlist);
  
     mErrorBuf[0] = '\0';
