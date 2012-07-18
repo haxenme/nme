@@ -34,7 +34,7 @@ class URLRequest
 		requestHeaders = [];
 		method = URLRequestMethod.GET;
 
-		verbose = true;
+		verbose = false;
 		cookieString = "";
 		authType = 0;
 		contentType = "application/x-www-form-urlencoded";
