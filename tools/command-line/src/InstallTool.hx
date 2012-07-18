@@ -347,8 +347,15 @@ class InstallTool {
 			
 		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
 			
-			untyped $loader.path = $array(path + "Linux/", $loader.path);
-			untyped $loader.path = $array(path + "Linux64/", $loader.path);
+			if (Lib.load ("std", "sys_is64", 0) ()) {
+				
+				untyped $loader.path = $array(path + "Linux64/", $loader.path);
+				
+			} else {
+				
+				untyped $loader.path = $array(path + "Linux/", $loader.path);
+				
+			}
 			
 		}
 		
