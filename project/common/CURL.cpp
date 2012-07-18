@@ -139,18 +139,15 @@ public:
     }
     headerlist = curl_slist_append(headerlist, "Expect:");
 
-
-    if (r.headers != 0) {
-      int n = r.headers.size();
-      if (n >= 0) {
-        for(int i = 0; i < n; i++)
-        {
-          URLRequestHeader h = r.headers[i];
-          std::vector<char> buffer;
-          buffer.resize(512);
-          snprintf(&buffer[0], buffer.size(), "%s: %s", h.name, h.value);
-          headerlist = curl_slist_append(headerlist, &buffer[0]);
-        }
+    int n = r.headers.size();
+    if (n >= 0) {
+      for(int i = 0; i < n; i++)
+      {
+        URLRequestHeader h = r.headers[i];
+        std::vector<char> buffer;
+        buffer.resize(512);
+        snprintf(&buffer[0], buffer.size(), "%s: %s", h.name, h.value);
+        headerlist = curl_slist_append(headerlist, &buffer[0]);
       }
     }
 

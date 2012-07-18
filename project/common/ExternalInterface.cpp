@@ -544,7 +544,7 @@ void FromValue(value obj, URLRequest &request)
   if (!val_is_null(val_field(obj, _id_requestHeaders)) && val_array_size(val_field(obj, _id_requestHeaders)) )
   {
     int size = val_array_size(val_field(obj, _id_requestHeaders));
-   QuickVec<URLRequestHeader> headers;
+    QuickVec<URLRequestHeader> headers;
      value *header_array = val_array_value(val_field(obj, _id_requestHeaders));
      for(int i = 0; i < val_array_size(val_field(obj, _id_requestHeaders)); i++)
      {
