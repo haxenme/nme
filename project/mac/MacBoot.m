@@ -61,7 +61,12 @@ static NSString *getApplicationName(void)
     NSString *appName = 0;
 
     /* Determine the application name */
+
+    #ifndef OBJC_ARC
     dict = (NSDictionary *)CFBundleGetInfoDictionary(CFBundleGetMainBundle());
+    #else
+    dict = (__bridge NSDictionary *)CFBundleGetInfoDictionary(CFBundleGetMainBundle());
+    #endif
     if (dict)
         appName = [dict objectForKey: @"CFBundleName"];
     
@@ -76,11 +81,16 @@ FILE *OpenRead(const char *inName)
     FILE * result = fopen(inName,"rb");
     if (!result)
     {
+
+       #ifndef OBJC_ARC
        NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+       #endif
        NSString *str = [[NSString alloc] initWithUTF8String:inName];
        NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
        result = fopen([pathInBundle cStringUsingEncoding:1],"rb");
+       #ifndef OBJC_ARC
        [pool release];
+       #endif
     }
     return result;
 }
@@ -94,19 +104,25 @@ bool GetBundleFilename(const char *inName, char *outBuffer,int inSize)
       return true;
    }
 
+   #ifndef OBJC_ARC
    NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+   #endif
    NSString *str = [[NSString alloc] initWithUTF8String:inName];
    NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
    if (pathInBundle==0)
    {
+      #ifndef OBJC_ARC
       [pool release];
+      #endif
       strncpy(outBuffer, inName, inSize);
       outBuffer[inSize-1] = '\0';
       return true;
    }
    strncpy(outBuffer,[pathInBundle cStringUsingEncoding:1], inSize);
    outBuffer[inSize-1] = '\0';
+   #ifndef OBJC_ARC
    [pool release];
+   #endif
  
    return true;
 }
@@ -227,9 +243,11 @@ static void setApplicationMenu(void)
     /* Tell the application object that this is now the application menu */
     [NSApp setAppleMenu:appleMenu];
 
+    #ifndef OBJC_ARC
     /* Finally give up our references to the objects */
     [appleMenu release];
     [menuItem release];
+     #endif
 }
 
 /* Create a window menu */
@@ -244,7 +262,9 @@ static void setupWindowMenu(void)
     /* "Minimize" item */
     menuItem = [[NSMenuItem alloc] initWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
     [windowMenu addItem:menuItem];
+    #ifndef OBJC_ARC
     [menuItem release];
+    #endif
     
     /* Put menu into the menubar */
     windowMenuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
@@ -254,15 +274,20 @@ static void setupWindowMenu(void)
     /* Tell the application object that this is now the window menu */
     [NSApp setWindowsMenu:windowMenu];
 
+
+    #ifndef OBJC_ARC
     /* Finally give up our references to the objects */
     [windowMenu release];
     [windowMenuItem release];
+    #endif
 }
 
 /* Replacement for NSApplicationMain */
 static void CustomApplicationMain (int argc, char **argv)
 {
+    #ifndef OBJC_ARC
     NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+    #endif
     SDLMain				*sdlMain;
 
     /* Ensure the application object is initialised */
@@ -290,9 +315,11 @@ static void CustomApplicationMain (int argc, char **argv)
     
     /* Start the main event loop */
     [NSApp run];
-    
+
+    #ifndef OBJC_ARC
     //[sdlMain release];
     //[pool release];
+    #endif
 }
 
 #endif

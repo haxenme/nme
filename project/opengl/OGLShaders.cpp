@@ -86,7 +86,7 @@ public:
           // Show any errors as appropriate
           char *log = new char[logLen];
           glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
-          printf("----\n", mVertProg);
+          printf("----\n");
           printf("VERT: %s\n", mVertProg);
           printf("FRAG: %s\n", mFragProg);
           printf("ERROR:\n%s\n\n", mVertProg);
@@ -419,6 +419,8 @@ GPUProg *GPUProg::create(GPUProgID inID)
          return new OGLProg( gTextureVert, gBitmapFrag );
       case gpuBitmapAlpha:
          return new OGLProg( gTextureVert, gBitmapAlphaFrag );
+      default:
+        break;
    }
    return 0;
 }
