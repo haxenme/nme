@@ -28,7 +28,7 @@ class PlatformSetup {
 	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r20-windows.zip";
 	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.tar.gz";
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
-	private static var appleXCodeURL = "http://developer.apple.com/xcode/";
+	private static var appleXcodeURL = "http://developer.apple.com/xcode/";
 	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
 	private static var blackBerryLinuxNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-linux-560-201206041807-201206052239.bin";
 	private static var blackBerryMacNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-macosx-560-201206041807-201206052239.dmg";
@@ -1199,17 +1199,17 @@ class PlatformSetup {
 	
 	public static function setupMac ():Void {
 		
-		var answer = ask ("Download and install Apple XCode?");
+		var answer = ask ("Download and install Apple Xcode?");
 		
 		if (answer == Yes || answer == Always) {
 			
-			Lib.println ("You must purchase XCode from the Mac App Store or download using a paid");
+			Lib.println ("You must purchase Xcode from the Mac App Store or download using a paid");
 			Lib.println ("member account with Apple.");
 			var secondAnswer = ask ("Would you like to open the download page?");
 			
 			if (secondAnswer != No) {
 				
-				InstallTool.runCommand ("", "open", [ appleXCodeURL ]);
+				InstallTool.runCommand ("", "open", [ appleXcodeURL ]);
 				
 			}
 			
