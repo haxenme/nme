@@ -143,9 +143,10 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 
 	public function addChild(object:DisplayObject):DisplayObject {
-		if (object == this) {
+		if (object == null)
+			throw "DisplayObjectContainer asked to add null child object";
+		if (object == this)
 			throw "Adding to self";
-		}
 
 		if (object.parent == this) {
 			setChildIndex(object, jeashChildren.length-1);
@@ -163,7 +164,6 @@ class DisplayObjectContainer extends InteractiveObject
 		if (stage != null) object.jeashAddToStage(this);
 		jeashChildren.push(object);
 		object.parent = this;
-
 		return object;
 	}
 

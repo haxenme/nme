@@ -31,7 +31,8 @@ import jeash.display.InteractiveObject;
 import jeash.media.SoundTransform;
 import jeash.events.MouseEvent;
 
-class SimpleButton extends DisplayObjectContainer {
+class SimpleButton extends DisplayObjectContainer
+{
 	public var downState(default, jeashSetDownState) : DisplayObject;
 	public var enabled : Bool;
 	public var hitTestState(default, jeashSetHitTestState) : DisplayObject;
@@ -44,21 +45,18 @@ class SimpleButton extends DisplayObjectContainer {
 	var currentState (default, jeashSetCurrentState) : DisplayObject;
 
 	public function new(?upState : DisplayObject, ?overState : DisplayObject, ?downState : DisplayObject, ?hitTestState : DisplayObject) {
-
 		super();
 
-		this.upState = if (upState != null) upState; else jeashGenerateDefaultState();
-		this.overState = if (overState != null) overState; else jeashGenerateDefaultState();
-		this.downState = if (downState != null) downState; else jeashGenerateDefaultState();
-		this.hitTestState = if (hitTestState != null) hitTestState; else jeashGenerateDefaultState();
+		this.upState = (upState != null) ? upState : jeashGenerateDefaultState();
+		this.overState = (overState != null) ? overState : jeashGenerateDefaultState();
+		this.downState = (downState != null) ? downState : jeashGenerateDefaultState();
+		this.hitTestState = (hitTestState != null) ? hitTestState : jeashGenerateDefaultState();
 
 		currentState = this.upState;
-
-		switchState(this.upState);
 	}
 
 	function switchState(state:DisplayObject) {
-		if (this.currentState != null /*&& Lib.jeashIsOnStage (this.currentState.jeashGetGraphics ().jeashSurface)*/) {
+		if (this.currentState != null && this.currentState.stage != null) {
 			removeChild(this.currentState);
 			addChild(state);
 		} else {
@@ -75,7 +73,6 @@ class SimpleButton extends DisplayObjectContainer {
 
 	function jeashSetHitTestState (hitTestState:DisplayObject) {
 		if (hitTestState != this.hitTestState) {
-
 			// Events bubble up to this instance.
 			addEventListener(MouseEvent.MOUSE_OVER, function (_) { if (overState != currentState) currentState = overState; });
 			addEventListener(MouseEvent.MOUSE_OUT, function (_) {  if (upState != currentState) currentState = upState; });
@@ -105,12 +102,11 @@ class SimpleButton extends DisplayObjectContainer {
 
 	override function jeashSetParent(displayObject : DisplayObjectContainer):DisplayObjectContainer {
 		super.jeashSetParent(displayObject);
-		addChild(currentState);
-		if (hitTestState != null) addChild(hitTestState);
-		switchState(currentState);
+		if (currentState != null) {
+			addChild(currentState);
+			if (hitTestState != null) addChild(hitTestState);
+			switchState(currentState);
+		}
 		return displayObject;
 	}
-
-	/*override function jeashIsOnStage () 
-		if (parent != null && parent.jeashIsOnStage() == true) return true; else return false*/
 }
