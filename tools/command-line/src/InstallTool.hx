@@ -368,8 +368,6 @@ class InstallTool {
 	
 	public static function main () {
 		
-		
-		
 		var command:String = "";
 		var debug:Bool = false;
 		var defines = new Hash <String> ();
@@ -387,7 +385,7 @@ class InstallTool {
 			
 			var lastArgument:String = new Path (args[args.length - 1]).toString ();
 			
-			if (lastArgument.substr (-1) == "/" || lastArgument.substr (-1) == "\\") {
+			if ((StringTools.endsWith (lastArgument, "/") || StringTools.endsWith (lastArgument, "\\")) && !StringTools.endsWith (lastArgument, ":\\")) {
 				
 				lastArgument = lastArgument.substr (0, lastArgument.length - 1);
 				
@@ -396,9 +394,9 @@ class InstallTool {
 			if (FileSystem.exists (lastArgument) && FileSystem.isDirectory (lastArgument)) {
 				
 				nme = Sys.getCwd ();
-            var last = nme.substr(-1,1);
-            if (last=="/" || last=="\\")
-               nme = nme.substr(0,-1);
+				var last = nme.substr(-1,1);
+				if (last=="/" || last=="\\")
+				nme = nme.substr(0,-1);
 				Sys.setCwd (lastArgument);
 				
 				defines.set ("NME", nme);
@@ -431,16 +429,16 @@ class InstallTool {
 		
 		var words:Array <String> = new Array <String> ();
 		var passArgs:Array <String> = new Array <String> ();
-      var pushArgs = false;
+		var pushArgs = false;
 		
 		for (arg in args) {
 			
 			var equals:Int = arg.indexOf ("=");
 			
-         if (pushArgs) {
-
-           passArgs.push(arg);
-
+			if (pushArgs) {
+				
+				passArgs.push(arg);
+				
 			} else if (equals > 0) {
 				
 				if (arg.substr (0, 2) == "-D") {
