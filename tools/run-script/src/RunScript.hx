@@ -120,6 +120,8 @@ class RunScript {
 			
 			case "android":
 				
+				mkdir (nmeDirectory + "/ndll/Android");
+				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7" ]);
@@ -127,12 +129,16 @@ class RunScript {
 			
 			case "blackberry":
 				
+				mkdir (nmeDirectory + "/ndll/BlackBerry");
+				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator", "-Dfulldebug" ]);
 			
 			case "ios":
+				
+				mkdir (nmeDirectory + "/ndll/iPhone");
 				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ]);
@@ -143,10 +149,14 @@ class RunScript {
 			
 			case "linux":
 				
+				mkdir (nmeDirectory + "/ndll/Linux");
+				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
 				
 				if (isRunning64 ()) {
+					
+					mkdir (nmeDirectory + "/ndll/Linux64");
 					
 					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ]);
 					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ]);
@@ -155,10 +165,14 @@ class RunScript {
 			
 			case "mac":
 				
+				mkdir (nmeDirectory + "/ndll/Mac");
+				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
 			
 			case "webos":
+				
+				mkdir (nmeDirectory + "/ndll/webOS");
 				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ]);
@@ -172,6 +186,8 @@ class RunScript {
 					Sys.putEnv ("VS110COMNTOOLS", Sys.getEnv ("VS100COMNTOOLS"));
 					
 				}
+				
+				mkdir (nmeDirectory + "/ndll/Windows");
 				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
@@ -287,6 +303,61 @@ class RunScript {
 		} else {
 			
 			return false;
+			
+		}
+		
+	}
+	
+	
+	public static function mkdir (directory:String):Void {
+		
+		directory = StringTools.replace (directory, "\\", "/");
+		var total = "";
+		
+		if (directory.substr (0, 1) == "/") {
+			
+			total = "/";
+			
+		}
+		
+		var parts = directory.split("/");
+		var oldPath = "";
+		
+		if (parts.length > 0 && parts[0].indexOf (":") > -1) {
+			
+			oldPath = Sys.getCwd ();
+			Sys.setCwd (parts[0] + "\\");
+			parts.shift ();
+			
+		}
+		
+		for (part in parts) {
+			
+			if (part != "." && part != "") {
+				
+				if (total != "") {
+					
+					total += "/";
+					
+				}
+				
+				total += part;
+				
+				if (!FileSystem.exists (total)) {
+					
+					//print("mkdir " + total);
+					
+					FileSystem.createDirectory (total);
+					
+				}
+				
+			}
+			
+		}
+		
+		if (oldPath != "") {
+			
+			Sys.setCwd (oldPath);
 			
 		}
 		

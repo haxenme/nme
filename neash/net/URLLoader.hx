@@ -77,6 +77,8 @@ class URLLoader extends EventDispatcher
 		if (pref != "http://" && pref != "https:/") { // local file
 			try {
 				var bytes = ByteArray.readFile(request.url);
+				if (bytes == null)
+					throw ("Could not open file \"" + request.url + "\"");
 				switch (dataFormat) {
 					case TEXT:
 						data = bytes.asString();
