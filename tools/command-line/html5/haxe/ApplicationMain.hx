@@ -28,7 +28,11 @@ class ApplicationMain {
 		urlLoaders = new Hash <URLLoader> ();
 		total = 0;
 		
+		::if (PRELOADER_NAME!="")::
+		preloader = new ::PRELOADER_NAME:: ();
+		::else::
 		preloader = new NMEPreloader ();
+		::end::
 		Lib.current.addChild (preloader);
 		preloader.onInit ();
 		
