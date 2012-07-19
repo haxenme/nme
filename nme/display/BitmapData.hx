@@ -368,7 +368,18 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                       application security sandbox.
 	 */
 	function draw(source : IBitmapDrawable, ?matrix : nme.geom.Matrix, ?colorTransform : nme.geom.ColorTransform, ?blendMode : BlendMode, ?clipRect : nme.geom.Rectangle, smoothing : Bool = false) : Void;
-
+	
+	/**
+	 * Encodes the current image as a JPG or PNG format ByteArray.
+	 * 
+	 * This method is not available to the HTML5 and Flash targets.
+	 * 
+	 * @param format  The encoding format, either "png" or "jpg".
+	 * @param quality The encoding quality, when encoding with the JPG format.
+	 * @return  A ByteArray in the specified encoding format
+	 */
+	function encode(format : String, quality : Float = 0.9) : ByteArray;
+	
 	/**
 	 * Fills a rectangular area of pixels with a specified ARGB color.
 	 * 
