@@ -7,13 +7,13 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.3.3"
+!define VERSION "3.4.0"
 
-!define HAXE_VERSION "2.09"
+!define HAXE_VERSION "2.10"
 !define NEKO_VERSION "1.8.2"
-!define HXCPP_VERSION "2.09.3"
-!define ACTUATE_VERSION "1.40"
-!define SWF_VERSION "1.12"
+!define HXCPP_VERSION "2.10"
+!define ACTUATE_VERSION "1.43"
+!define SWF_VERSION "1.13"
 
 
 ; Installer details
