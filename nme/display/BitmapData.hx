@@ -378,7 +378,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param quality The encoding quality, when encoding with the JPG format.
 	 * @return  A ByteArray in the specified encoding format
 	 */
-	function encode(format : String, quality : Float = 0.9) : ByteArray;
+	function encode(format : String, quality : Float = 0.9) : nme.utils.ByteArray;
 	
 	/**
 	 * Fills a rectangular area of pixels with a specified ARGB color.
