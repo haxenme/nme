@@ -58,7 +58,7 @@ class SimpleButton extends DisplayObjectContainer {
 	}
 
 	function switchState(state:DisplayObject) {
-		if (this.currentState != null && this.currentState.jeashIsOnStage()) {
+		if (this.currentState != null /*&& Lib.jeashIsOnStage (this.currentState.jeashGetGraphics ().jeashSurface)*/) {
 			removeChild(this.currentState);
 			addChild(state);
 		} else {
@@ -103,13 +103,14 @@ class SimpleButton extends DisplayObjectContainer {
 		return this.upState = upState;
 	}
 
-	override function jeashSetParent(displayObject : DisplayObjectContainer) {
+	override function jeashSetParent(displayObject : DisplayObjectContainer):DisplayObjectContainer {
 		super.jeashSetParent(displayObject);
 		addChild(currentState);
 		if (hitTestState != null) addChild(hitTestState);
 		switchState(currentState);
+		return displayObject;
 	}
 
-	override function jeashIsOnStage () 
-		if (parent != null && parent.jeashIsOnStage() == true) return true; else return false
+	/*override function jeashIsOnStage () 
+		if (parent != null && parent.jeashIsOnStage() == true) return true; else return false*/
 }
