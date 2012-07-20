@@ -39,7 +39,7 @@ class Sound extends EventDispatcher
       super.addEventListener(type,listener,useCapture,priority,useWeakReference);
       if (type==SampleDataEvent.SAMPLE_DATA)
       {
-         if (nmeHandle!=null)
+         if (nmeHandle != null)
             throw "Can't use dynamic sound once file loaded";
          nmeDynamicSound = true;
          nmeLoading = false;
@@ -93,7 +93,7 @@ class Sound extends EventDispatcher
 				throw "Could not get sound status";
 			bytesLoaded = status.bytesLoaded;
 			bytesTotal = status.bytesTotal;
-			trace(bytesLoaded + "/" + bytesTotal);
+			//trace(bytesLoaded + "/" + bytesTotal);
 			nmeLoading = bytesLoaded < bytesTotal;
 			if (status.error != null)
 			{

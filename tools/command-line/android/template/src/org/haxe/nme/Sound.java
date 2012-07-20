@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException; 
-import java.util.HashSet;
+import java.util.Hashtable;
 
 import android.content.Context;
 import android.util.Log;
@@ -14,14 +14,84 @@ import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.net.Uri;
 
+class ManagedMediaPlayer
+{
+	public MediaPlayer mp;
+	public float leftVol;
+	public float rightVol;
+	public boolean isComplete = true;
+	public int loopsLeft = 0;
+
+	public ManagedMediaPlayer(MediaPlayer mp, float leftVol, float rightVol, int loop) {
+		this.mp = mp;
+		setVolume(leftVol, rightVol);
+		isComplete = false;
+		final ManagedMediaPlayer mmp = this;
+
+		if (loop < 0) {
+			mp.setLooping(true);
+		} else if (loop >= 0) {
+			this.loopsLeft = loop;
+			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+				@Override public void onCompletion(MediaPlayer mp) {
+					if (--mmp.loopsLeft > 0) {
+						mp.seekTo(0);
+						mp.start();
+					} else {
+						mmp.setComplete();
+					}
+				}
+			});
+		}
+	}
+
+	public ManagedMediaPlayer setMediaPlayer(MediaPlayer mp) {
+		this.mp = mp;
+		return this;
+	}
+
+	public void setVolume(float leftVol, float rightVol) {
+		if (mp != null)
+			mp.setVolume((float)leftVol, (float)rightVol);
+		this.leftVol = leftVol;
+		this.rightVol = rightVol;
+	}
+
+	public int getDuration() {
+		if (mp != null)
+			return mp.getDuration();
+		return -1;
+	}
+
+	public int getCurrentPosition() {
+		if (mp != null)
+			return mp.getCurrentPosition();
+		return -1;
+	}
+
+	public void stop() {
+		if (mp != null)
+			mp.stop();
+		release();
+	}
+
+	public void setComplete() {
+		this.isComplete = true;
+		stop();
+	}
+
+	public void release() {
+		if (mp != null)
+			mp.release();
+	}
+}
+
 public class Sound
 {
 	private static Context mContext;
 	private static Sound instance;
 
-	private static HashSet<MediaPlayer> mpSet = new HashSet<MediaPlayer>();
-	private static boolean mMusicComplete = true;
-	private static int mMusicLoopsLeft = 0;
+	private static Hashtable<String, ManagedMediaPlayer> mediaPlayers = new Hashtable<String, ManagedMediaPlayer>();
 	private static boolean mMusicWasPlaying = false;
 	private static SoundPool mSoundPool;
 	private static int mSoundPoolID = 0;
@@ -49,8 +119,10 @@ public class Sound
 		}
 		mSoundPool = null;
 
-        for (MediaPlayer mp : mpSet) {
-            if (mp != null && mp.isPlaying()) {
+		MediaPlayer mp;
+		for (ManagedMediaPlayer mmp : mediaPlayers.values()) {
+			mp = mmp.mp;
+            if (mp.isPlaying()) {
 				mMusicWasPlaying = mp.isPlaying();
 				mp.pause();
             }
@@ -62,7 +134,9 @@ public class Sound
 		mSoundPoolID++;
 		mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
 
-        for (MediaPlayer mp : mpSet) {
+		MediaPlayer mp;
+		for (ManagedMediaPlayer mmp : mediaPlayers.values()) {
+			mp = mmp.mp;
             if (mp != null && mMusicWasPlaying) {
 				mp.start();
             }
@@ -81,14 +155,11 @@ public class Sound
 		
 		Log.v("Sound","Get sound handle ------" + inFilename + " = " + id);
 		
-		if (id > 0)
-		{
+		if (id > 0) {
 			int index = mSoundPool.load(mContext, id, 1);
 			Log.v("Sound", "Loaded index: " + index);
 			return index;
-		}
-		else
-		{
+		} else {
 			Log.v("Sound", "Resource not found: " + (-id));
 			int index = mSoundPool.load(inFilename, 1);
 			Log.v("Sound", "Loaded index from path: " + index);
@@ -97,22 +168,6 @@ public class Sound
 		
 		//return -1;
     }
-	
-	public static int getSoundLength(String inFilename)
-	{
-		int id = GameActivity.getResourceID(inFilename);
-
-		if (id > 0) {
-			MediaPlayer mp = MediaPlayer.create(mContext, id);
-			
-			if (mp != null) {
-				int duration = mp.getDuration();
-				mp.release();
-				return duration;
-			}
-		}
-		return -1;
-	}
 	
 	public static int getSoundPoolID()
 	{
@@ -144,143 +199,111 @@ public class Sound
 	 * This allows for larger audio files but consumes more CPU than SoundPool
 	 */
 	
-	public static int getMusicHandle(String inFilename)
+	private static int getMusicHandle(String inPath)
     {
-		int id = GameActivity.getResourceID(inFilename);
-		
-		Log.v("Sound","Get music handle ------" + inFilename + " = " + id);
-		
-		/*if (id > 0)
-		{
-			int index = mSoundPool.load(mContext, id, 1);
-			Log.v("Sound", "Loaded index: " + index);
-			return index;
-		}
-		else
-		{
-			Log.v("Sound", "Resource not found: " + (-id));
-			int index = mSoundPool.load(inFilename, 1);
-			Log.v("Sound", "Loaded index from path: " + index);
-			return index;
-		}*/
-		
+		int id = GameActivity.getResourceID(inPath);
+		Log.v("Sound","Get music handle ------" + inPath + " = " + id);	
 		return id;		
 	}
 
-	public static int playMusic(int inResourceID, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
+	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
     {
     	Log.i("Sound", "playMusic");
-		/*if (mMediaPlayer != null) {
-			Log.v("Sound", "stop MediaPlayer");
-			mMediaPlayer.stop();
-			mMediaPlayer = null;
-		}*/
-		
-		mMusicComplete = false;
-		MediaPlayer mp = MediaPlayer.create(mContext, inResourceID);
-		
-		if (mp == null) {
-			return -1;
-		}
-		return playMediaPlayer(mp, inVolLeft, inVolRight, inLoop, inStartTime);
-	}
-
-	public static int playMusic(String inFilename, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
-    {
-    	Log.i("Sound", "playMusic");
-		/*if (mMediaPlayer != null) {
-			Log.v("Sound", "stop MediaPlayer");
-			mMediaPlayer.stop();
-			mMediaPlayer = null;
-		}*/
-		
-		mMusicComplete = false;
 
 		MediaPlayer mp = null;
-
-		if (inFilename.charAt(0) == File.separatorChar) {
-			try {
-	        	FileInputStream fis = new FileInputStream(new File(inFilename));
-		        FileDescriptor fd = fis.getFD();
-				mp = new MediaPlayer();
-				mp.setDataSource(fd);
-				mp.prepare();
-	        } catch(FileNotFoundException e) { 
-	            System.out.println(e.getMessage());
-	            return -1;
-	        } catch(IOException e) { 
-	            System.out.println(e.getMessage());
-	            return -1;
-	        }
-	    } else {
-			Uri uri = Uri.parse(inFilename);
-			mp = MediaPlayer.create(mContext, uri);
-	    }
+		int resourceID = getMusicHandle(inPath); // check to see if this is a bundled resource
+		if (resourceID < 0) { // not in bundle, try to play from filesystem
+			if (inPath.charAt(0) == File.separatorChar) {
+				try {
+		        	FileInputStream fis = new FileInputStream(new File(inPath));
+			        FileDescriptor fd = fis.getFD();
+					mp = new MediaPlayer();
+					mp.setDataSource(fd);
+					mp.prepare();
+		        } catch(FileNotFoundException e) { 
+		            System.out.println(e.getMessage());
+		            return -1;
+		        } catch(IOException e) { 
+		            System.out.println(e.getMessage());
+		            return -1;
+		        }
+		    } else {
+				Uri uri = Uri.parse(inPath);
+				mp = MediaPlayer.create(mContext, uri);
+		    }
+		} else {
+			mp = MediaPlayer.create(mContext, resourceID);
+		}
 
 		if (mp == null) {
 			return -1;
 		}
 
-		return playMediaPlayer(mp, inVolLeft, inVolRight, inLoop, inStartTime);
+		return playMediaPlayer(mp, inPath, inVolLeft, inVolRight, inLoop, inStartTime);
 	}
 		
-	private static int playMediaPlayer(MediaPlayer mp, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
-	{
-		if (inLoop < 0) {
-			mp.setLooping(true);
-		} else if (inLoop >= 0) {
-			mMusicLoopsLeft = inLoop;
-			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-			{
-				@Override public void onCompletion(MediaPlayer mp)
-				{
-					if (--mMusicLoopsLeft > 0) {
-						mp.seekTo(0);
-						mp.start();
-					} else {
-						mMusicComplete = true;
-						mp.stop();
-						mp.release();
-					}
-				}
-			});
-		}
-		
-        mpSet.add(mp);
-		setMusicVolume(mp, inVolLeft, inVolRight);
+	private static int playMediaPlayer(MediaPlayer mp, final String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
+	{	
+		ManagedMediaPlayer mmp;
+		if (mediaPlayers.containsKey(inPath))
+			mmp = mediaPlayers.get(inPath).setMediaPlayer(mp);
+		else
+			mmp = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
+
+        mediaPlayers.put(inPath, mmp);
 		mp.seekTo((int)inStartTime);
 		mp.start();
-		
+
 		return 0;
 	}
 
-	public static void stopMusic()
+	public static void stopMusic(String inPath)
 	{
 		Log.v("Sound", "stopMusic");
-        for (MediaPlayer mp : mpSet) {
-            if (mp != null) {
-				mp.stop();
-            }
-        }
+		
+		if (mediaPlayers.containsKey(inPath))
+			mediaPlayers.get(inPath).stop();
 	}
 	
-	public static boolean getMusicComplete()
+	public static int getDuration(String inPath)
 	{
-		return mMusicComplete;
+		if (mediaPlayers.containsKey(inPath))
+			return mediaPlayers.get(inPath).getDuration();
+		return -1;
+	}
+	
+	public static int getPosition(String inPath)
+	{
+		if (mediaPlayers.containsKey(inPath))
+			return mediaPlayers.get(inPath).getCurrentPosition();
+		return -1;
+	}
+	
+	public static double getLeft(String inPath)
+	{
+		if (mediaPlayers.containsKey(inPath))
+			return mediaPlayers.get(inPath).leftVol;
+		return -1;
+	}
+	
+	public static double getRight(String inPath)
+	{
+		if (mediaPlayers.containsKey(inPath))
+			return mediaPlayers.get(inPath).rightVol;
+		return -1;
+	}
+	
+	public static boolean getComplete(String inPath)
+	{
+		if (mediaPlayers.containsKey(inPath))
+			return mediaPlayers.get(inPath).isComplete;
+		return true;
 	}
 
-	public static void setMusicTransform(double inVolLeft, double inVolRight)
+	public static void setMusicTransform(String inPath, double inVolLeft, double inVolRight)
 	{
-        for (MediaPlayer mp : mpSet) {
-            if (mp != null) {
-            	setMusicVolume(mp, inVolLeft, inVolRight);
-            }
-        }
-	}
-
-	private static void setMusicVolume(MediaPlayer mp, double inVolLeft, double inVolRight)
-	{
-		mp.setVolume((float)inVolLeft, (float)inVolRight);
+		if (mediaPlayers.containsKey(inPath))
+			mediaPlayers.get(inPath).setVolume((float)inVolLeft, (float)inVolRight);
 	}
 }
 	

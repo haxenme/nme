@@ -3324,7 +3324,7 @@ DEFINE_PRIM(nme_sound_get_id3,2);
 value nme_sound_get_length(value inSound)
 {
    Sound *sound;
-   if (AbstractToObject(inSound,sound))
+   if (AbstractToObject(inSound, sound))
    {
       return alloc_float( sound->getLength() );
    }
