@@ -155,12 +155,14 @@ class MainView extends GLSurfaceView {
            final int id = ev.getPointerId(i);
            final float x = ev.getX(i);
            final float y = ev.getY(i);
+           final float sizeX = ev.getSize(i);
+           final float sizeY = ev.getSize(i);
            //if (type!=etTouchMove)
-           //   Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + " idx="+ idx +" " + x + ", "+ y);
+              //Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + " idx="+ idx +" " + x + ", "+ y + "," + sizeX + "," + sizeY);
            if (type==etTouchMove || i==idx)
            {
 	           queueEvent(new Runnable(){
-                 public void run() { me.HandleResult( NME.onTouch(t,x,y,id) ); }
+                 public void run() { me.HandleResult( NME.onTouch(t,x,y,id,sizeX,sizeY) ); }
                  });
            }
        }

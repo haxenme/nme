@@ -16,7 +16,7 @@ public class NME {
      public static native int onNormalOrientationFound(int orientation);
      public static native int onOrientationUpdate(float x, float y, float z);
      public static native int onAccelerate(float x, float y, float z);
-     public static native int onTouch(int type, float x, float y, int id);
+     public static native int onTouch(int type, float x, float y, int id, float sizeX, float sizeY);
      public static native int onResize(int width, int height);
      public static native int onTrackball(float x,float y);
      public static native int onKeyChange(int inCode, boolean inIsDown);

@@ -84,8 +84,8 @@ enum EventResult
 
 struct Event
 {
-   Event(EventType inType=etUnknown,int inX=0,int inY=0,int inValue=0,int inID=0,int inFlags=0):
-        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags), result(erOk)
+   Event(EventType inType=etUnknown,int inX=0,int inY=0,int inValue=0,int inID=0,int inFlags=0,float inSx=0,float inSy=0):
+        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags), result(erOk), sx(inSx), sy(inSy)
    {
    }
 
@@ -96,6 +96,7 @@ struct Event
    int       id;
    int       flags;
    EventResult result;
+   float       sx,sy;
 };
 
 typedef void (*EventHandler)(Event &ioEvent, void *inUserData);

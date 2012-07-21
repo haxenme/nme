@@ -287,7 +287,7 @@ class Stage extends DisplayObjectContainer
 				var touchInfo = new TouchInfo();
 				nmeTouchInfo.set(inEvent.value, touchInfo);
 				nmeOnTouch(inEvent, TouchEvent.TOUCH_BEGIN, touchInfo);
-				// trace("etTouchBegin : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y+ " OBJ:" + inEvent.id  );
+				// trace("etTouchBegin : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y+ " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
 				if ((inEvent.flags & 0x8000) > 0)
 					nmeOnMouse(inEvent, MouseEvent.MOUSE_DOWN, false);
 			
@@ -299,7 +299,7 @@ class Stage extends DisplayObjectContainer
 				var touchInfo = nmeTouchInfo.get (inEvent.value);
 				nmeOnTouch (inEvent, TouchEvent.TOUCH_END, touchInfo);
 				nmeTouchInfo.remove(inEvent.value);
-				// trace("etTouchEnd : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y + " OBJ:" + inEvent.id );
+				// trace("etTouchEnd : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y + " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
 				if ((inEvent.flags & 0x8000) > 0)
 					nmeOnMouse(inEvent, MouseEvent.MOUSE_UP, false);
 			
@@ -615,7 +615,7 @@ class Stage extends DisplayObjectContainer
 			var obj = stack[0];
 			stack.reverse();
 			var local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
-			var evt = TouchEvent.nmeCreate(inType, inEvent, local, obj);
+			var evt = TouchEvent.nmeCreate(inType, inEvent, local, obj, inEvent.sx, inEvent.sy);
 			evt.touchPointID = inEvent.value;
 			evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
 			//if (evt.isPrimaryTouchPoint)
@@ -633,7 +633,7 @@ class Stage extends DisplayObjectContainer
 		else
 		{
 			//trace("No object?");
-			var evt = TouchEvent.nmeCreate(inType, inEvent, new Point(inEvent.x, inEvent.y), null);
+			var evt = TouchEvent.nmeCreate(inType, inEvent, new Point(inEvent.x, inEvent.y), null, inEvent.sx, inEvent.sy);
 			evt.touchPointID = inEvent.value;
 			evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
 			//if (evt.isPrimaryTouchPoint)
