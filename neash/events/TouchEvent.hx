@@ -23,7 +23,7 @@ class TouchEvent extends MouseEvent
 	public var sizeX:Float;
 	public var sizeY:Float;
 
-	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, in_localX:Float = 0, in_localY:Float = 0, in_sizeX:Float = 0, in_sizeY:Float = 0, in_relatedObject:InteractiveObject = null, in_ctrlKey:Bool = false, in_altKey:Bool = false, in_shiftKey:Bool = false, in_buttonDown:Bool = false, in_delta:Int = 0, in_commandKey:Bool = false, in_clickCount:Int = 0)
+	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, in_localX:Float = 0, in_localY:Float = 0, in_sizeX:Float = 1, in_sizeY:Float = 1, in_relatedObject:InteractiveObject = null, in_ctrlKey:Bool = false, in_altKey:Bool = false, in_shiftKey:Bool = false, in_buttonDown:Bool = false, in_delta:Int = 0, in_commandKey:Bool = false, in_clickCount:Int = 0)
 	{
 		super(type, bubbles, cancelable, in_localX, in_localY, in_relatedObject, in_ctrlKey, in_altKey, in_shiftKey, in_buttonDown, in_delta, in_commandKey, in_clickCount);
 		touchPointID = 0;
