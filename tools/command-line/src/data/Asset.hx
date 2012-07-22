@@ -142,6 +142,9 @@ class Asset {
 			flatName = "_";
 			
 		}
+
+      if (flatName.substr(0,1)=="_")
+         flatName = "file" + flatName;
 		
 		while (usedFlatNames.exists (flatName)) {
 			
