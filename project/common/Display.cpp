@@ -31,7 +31,9 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    visible = true;
    mBitmapCache = 0;
    cacheAsBitmap = false;
+   pedanticBitmapCaching = false;
    blendMode = bmNormal;
+   pixelSnapping = psNone;
    opaqueBackground = 0;
    mouseEnabled = true;
    needsSoftKeyboard = false;
@@ -136,6 +138,14 @@ void DisplayObject::setCacheAsBitmap(bool inVal)
 {
    cacheAsBitmap = inVal;
 }
+
+
+void DisplayObject::setPixelSnapping(int inVal)
+{
+   pixelSnapping = inVal;
+   DirtyCache();
+}
+
 
 void DisplayObject::setVisible(bool inVal)
 {
@@ -1005,6 +1015,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
 
          obj_state = &clip_state;
+      }
+
+      if (obj->pixelSnapping)
+      {
+         if (obj->pixelSnapping!=psAuto || (
+             full.m00>0.99 && full.m00<1.01 && full.m01==0 &&
+             full.m11>0.99 && full.m11<1.01 && full.m10==0 ) )
+         {
+            full.mtx = (int)full.mtx;
+            full.mty = (int)full.mty;
+         }
       }
 
       obj_state->mMask = orig_mask;

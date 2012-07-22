@@ -130,6 +130,12 @@ enum StageAlign
    saBottom,
 };
 
+enum PixelSnapping
+{
+   psNone = 0,
+   psAuto = 1,
+   psAlways = 2,
+};
 
 enum Cursor { curNone, curPointer, curHand,
               curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
@@ -174,6 +180,10 @@ public:
    void setMovesForSoftKeyboard(bool inVal) { movesForSoftKeyboard = inVal; }
    bool getCacheAsBitmap() { return cacheAsBitmap; }
    void setCacheAsBitmap(bool inVal);
+   bool getPedanticBitmapCaching() { return pedanticBitmapCaching; }
+   void setPedanticBitmapCaching(bool inVal) { pedanticBitmapCaching=inVal; }
+   int getPixelSnapping() { return pixelSnapping; }
+   void setPixelSnapping(int inVal);
    bool getVisible() { return visible; }
    void setVisible(bool inVal);
    const wchar_t *getName() { return name.c_str(); }
@@ -200,6 +210,8 @@ public:
 
    BlendMode blendMode;
    bool cacheAsBitmap;
+   bool pedanticBitmapCaching;
+   unsigned char pixelSnapping;
    ColorTransform  colorTransform;
    FilterList filters;
 

@@ -495,7 +495,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 
    if (inLine)
    {
-      if (mLineJob.mStroke && mLineJob.mCommand0 <n)
+      if (mLineJob.mStroke && mLineJob.mCommand0 <n-1)
       {
          mLineJob.mStroke->IncRef();
          mLineJob.mCommandCount = n-mLineJob.mCommand0;
