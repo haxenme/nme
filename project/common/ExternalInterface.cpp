@@ -1387,6 +1387,14 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpBitmap;
 
+      // get current position
+      Matrix objMatrix = obj->GetLocalMatrix();
+      float objX = objMatrix.mtx;
+      float objY = objMatrix.mty;
+      // untranslate for draw
+      obj->setX(0);
+      obj->setY(0);
+
       DisplayObjectContainer *dummy = new DisplayObjectContainer(true);
       dummy->hackAddChild(obj);
       dummy->Render(render.Target(), state);
@@ -1395,6 +1403,9 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       dummy->Render(render.Target(), state);
       dummy->hackRemoveChildren();
       dummy->DecRef();
+      // restore original translation now that surface has rendered
+      obj->setX(objX);
+      obj->setY(objY);
    }
 
    return alloc_null();
