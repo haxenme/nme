@@ -14,10 +14,8 @@ class Event
 	public static var CONNECT = "connect";
 	public static var DEACTIVATE = "deactivate";
 	public static var ENTER_FRAME = "enterFrame";
-	public static var GOT_INPUT_FOCUS = "gotInputFocus";
 	public static var ID3 = "id3";
 	public static var INIT = "init";
-	public static var LOST_INPUT_FOCUS = "lostInputFocus";
 	public static var MOUSE_LEAVE = "mouseLeave";
 	public static var OPEN = "open";
 	public static var REMOVED = "removed";

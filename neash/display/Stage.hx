@@ -316,11 +316,11 @@ class Stage extends DisplayObjectContainer
 				nmeSetActive(false);
 			
 			case 22: // etGotInputFocus
-				var evt = new Event(Event.GOT_INPUT_FOCUS);
+				var evt = new Event(FocusEvent.FOCUS_IN);
 				nmeBroadcast(evt);
 			
 			case 23: // etLostInputFocus
-				var evt = new Event(Event.LOST_INPUT_FOCUS);
+				var evt = new Event(FocusEvent.FOCUS_OUT);
 				nmeBroadcast(evt);
 			
 			case 24: // etJoyAxisMove
