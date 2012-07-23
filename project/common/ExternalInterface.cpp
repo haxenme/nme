@@ -1387,14 +1387,25 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpBitmap;
 
-      // get current position
+      // get current transformation
       Matrix objMatrix = obj->GetLocalMatrix();
-      float objX = objMatrix.mtx;
-      float objY = objMatrix.mty;
-      // untranslate for draw
-      obj->setX(0);
-      obj->setY(0);
+      
+      // untransform for draw (set matrix to identity)
+      float m00 = objMatrix.m00;
+      float m01 = objMatrix.m01;
+      float m10 = objMatrix.m10;
+      float m11 = objMatrix.m11;
+      float mtx = objMatrix.mtx;
+      float mty = objMatrix.mty;
+      objMatrix.m00 = 1;
+      objMatrix.m01 = 0;
+      objMatrix.m10 = 0;
+      objMatrix.m11 = 1;
+      objMatrix.mtx = 0;
+      objMatrix.mty = 0;
+      obj->setMatrix(objMatrix);
 
+      // save current alpha but set to baseline for draw
       float objAlpha = obj->getAlpha();
       obj->setAlpha(1);
 
@@ -1406,10 +1417,17 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       dummy->Render(render.Target(), state);
       dummy->hackRemoveChildren();
       dummy->DecRef();
-      // restore original translation now that surface has rendered
-      obj->setX(objX);
-      obj->setY(objY);
 
+      // restore original transformation now that surface has rendered
+      objMatrix.m00 = m00;
+      objMatrix.m01 = m01;
+      objMatrix.m10 = m10;
+      objMatrix.m11 = m11;
+      objMatrix.mtx = mtx;
+      objMatrix.mty = mty;
+      obj->setMatrix(objMatrix);
+
+      // restore alpha
       obj->setAlpha(objAlpha);
    }
 
