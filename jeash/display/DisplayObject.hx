@@ -370,15 +370,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
 
-			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
-				if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
+			if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
+					
+			if (jeashFilters != null) {
 				for (filter in jeashFilters) {
 					filter.jeashApplyFilter(gfx.jeashSurface);
 				}
-			} else if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
+			}
 
-			m.tx = m.tx + gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
-			m.ty = m.ty + gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
+			m.tx += gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
+			m.ty += gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
 
 			var premulAlpha = (parent != null ? parent.alpha : 1) * alpha;
 			if (inMask != null) {
@@ -404,8 +405,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			blendMode:BlendMode,
 			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
+		var oldAlpha = alpha;
+		alpha = 1;
 		if (matrix == null) matrix = new Matrix();
 		jeashRender(matrix, inSurface, clipRect);
+		alpha = oldAlpha;
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {

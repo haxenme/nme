@@ -344,8 +344,8 @@ class Lib {
 	}
 
 	public static function jeashDrawToSurface(surface:HTMLCanvasElement, tgt:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0, ?clipRect:Rectangle) {
-		var srcCtx : CanvasRenderingContext2D = surface.getContext("2d");
-		var tgtCtx : CanvasRenderingContext2D = tgt.getContext("2d");
+		var srcCtx:CanvasRenderingContext2D = surface.getContext("2d");
+		var tgtCtx:CanvasRenderingContext2D = tgt.getContext("2d");
 
 		if (alpha != 1.0)
 			tgtCtx.globalAlpha = alpha;
@@ -358,6 +358,7 @@ class Lib {
 				else 
 					tgtCtx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 				jeashDrawClippedImage(surface, tgtCtx, clipRect);
+				
 				tgtCtx.restore();
 			} else {
 				jeashDrawClippedImage(surface, tgtCtx, clipRect);
@@ -372,8 +373,9 @@ class Lib {
 			if (clipRect.width > surface.width - clipRect.x) clipRect.width = surface.width - clipRect.x;
 			if (clipRect.height > surface.height - clipRect.y) clipRect.height = surface.height - clipRect.y;
 			tgtCtx.drawImage(surface, clipRect.x, clipRect.y, clipRect.width, clipRect.height, clipRect.x, clipRect.y, clipRect.width, clipRect.height);
-		} else
+		} else {
 			tgtCtx.drawImage(surface, 0, 0);
+		}
 	}
 
 	public static function jeashDisableRightClick() {

@@ -135,14 +135,16 @@ class BitmapData implements IBitmapDrawable {
 		throw "BitmapData.applyFilter not implemented in Jeash";
 	}
 
-	public function draw( source:IBitmapDrawable,
+	public function draw(source:IBitmapDrawable,
 			matrix:Matrix = null,
-			colorTransform:ColorTransform = null,
+			inColorTransform:ColorTransform = null,
 			blendMode:BlendMode = null,
 			clipRect:Rectangle = null,
 			smoothing:Bool = false ):Void {
 		jeashBuildLease();
-		source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
+		source.drawToSurface(mTextureBuffer, matrix, inColorTransform, blendMode, clipRect, smoothing);
+		if (inColorTransform != null)
+			this.colorTransform(new Rectangle(0, 0, mTextureBuffer.width, mTextureBuffer.height), inColorTransform);
 	}
 
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true) : Rectangle {
@@ -566,8 +568,8 @@ class BitmapData implements IBitmapDrawable {
 
 	public function drawToSurface(inSurface : Dynamic,
 			matrix:jeash.geom.Matrix,
-			colorTransform:jeash.geom.ColorTransform,
-			blendMode: BlendMode,
+			inColorTransform:jeash.geom.ColorTransform,
+			blendMode:BlendMode,
 			clipRect:Rectangle,
 			smothing:Bool):Void {
 		jeashBuildLease();
@@ -583,15 +585,18 @@ class BitmapData implements IBitmapDrawable {
 			ctx.restore();
 		} else
 			ctx.drawImage(handle(), 0, 0);
+
+		if (inColorTransform != null)
+			this.colorTransform(new Rectangle(0, 0, mTextureBuffer.width, mTextureBuffer.height), inColorTransform);
 	}
 
 	public function colorTransform(rect:Rectangle, colorTransform:ColorTransform) {
-		rect = clipRect (rect);
 		if (rect == null) return;
+		rect = clipRect(rect);
 
 		if (!jeashLocked) {
 			jeashBuildLease();
-			var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+			var ctx:CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 
 			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
 			var offsetX : Int;
@@ -602,7 +607,7 @@ class BitmapData implements IBitmapDrawable {
 				imagedata.data[offsetX + 2] = Std.int((imagedata.data[offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
 				imagedata.data[offsetX + 3] = Std.int((imagedata.data[offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
 			}
-			ctx.putImageData (imagedata, rect.x, rect.y);
+			ctx.putImageData(imagedata, rect.x, rect.y);
 		} else {
 			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
 			var offsetY : Int;
