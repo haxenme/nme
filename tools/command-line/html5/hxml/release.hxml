@@ -3,4 +3,3 @@
 -cp ::BUILD_DIR::/html5/haxe
 --remap flash:nme
 --js-modern
---dead-code-elimination

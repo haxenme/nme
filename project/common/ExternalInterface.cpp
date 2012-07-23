@@ -1395,6 +1395,9 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       obj->setX(0);
       obj->setY(0);
 
+      float objAlpha = obj->getAlpha();
+      obj->setAlpha(1);
+
       DisplayObjectContainer *dummy = new DisplayObjectContainer(true);
       dummy->hackAddChild(obj);
       dummy->Render(render.Target(), state);
@@ -1406,6 +1409,8 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       // restore original translation now that surface has rendered
       obj->setX(objX);
       obj->setY(objY);
+
+      obj->setAlpha(objAlpha);
    }
 
    return alloc_null();
