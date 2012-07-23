@@ -351,6 +351,7 @@
 		<lib name="-lEGL" if="blackberry"/>
 		<lib name="-lGLESv1_CM" if="blackberry"/>
 		<lib name="-lm" if="blackberry"/>
+        <lib name="-lsocket" if="blackberry"/>
 		
 		<lib name="gdi32.lib" if="windows"/>
 		<lib name="opengl32.lib" if="windows"/>

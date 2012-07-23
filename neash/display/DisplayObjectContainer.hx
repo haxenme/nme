@@ -296,7 +296,9 @@ class DisplayObjectContainer extends InteractiveObject
 			return child;
 		}
 		
-		throw new ArgumentError("The supplied DisplayObject must be a child of the caller.");
+		//throw new ArgumentError("The supplied DisplayObject must be a child of the caller.");
+		
+		return null;
 	}
 	
 	
