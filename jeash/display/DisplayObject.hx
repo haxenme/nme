@@ -273,7 +273,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return null;
 	}
 
-	public function jeashGetSurface():HTMLCanvasElement {
+	private function jeashGetSurface():HTMLCanvasElement {
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			return gfx.jeashSurface;

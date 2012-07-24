@@ -30,7 +30,6 @@ import jeash.display.BlendMode;
 import jeash.geom.ColorTransform;
 import jeash.geom.Matrix;
 import jeash.geom.Rectangle;
-import jeash.Html5Dom;
 
 interface IBitmapDrawable {
 	function drawToSurface(inSurface : Dynamic,
@@ -39,5 +38,4 @@ interface IBitmapDrawable {
 			blendMode:BlendMode,
 			clipRect:Rectangle,
 			smoothing:Bool):Void;
-	function jeashGetSurface():HTMLCanvasElement;
 }

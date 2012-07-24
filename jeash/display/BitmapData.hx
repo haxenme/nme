@@ -557,11 +557,12 @@ class BitmapData implements IBitmapDrawable {
 		jeashBuildLease();
 
 		if (inColorTransform != null) {
+			var surface = jeashGetSurface();
 			var rect = new Rectangle();
 			rect.x = 0;
 			rect.y = 0;
-			rect.width = jeashGetSurface().width;
-			rect.height = jeashGetSurface().height;
+			rect.width = surface.width;
+			rect.height = surface.height;
 			colorTransform(rect, inColorTransform);
 		}
 
@@ -583,7 +584,7 @@ class BitmapData implements IBitmapDrawable {
 		throw "BitmapData.applyFilter not implemented in Jeash";
 	}
 
-	public function jeashGetSurface():HTMLCanvasElement {
+	private function jeashGetSurface():HTMLCanvasElement {
 		if (!jeashLocked)
 			return mTextureBuffer;
 		return null;
