@@ -429,9 +429,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		Lib.jeashDrawToSurface(surface, canvas);
 		Lib.jeashCopyStyle(surface, canvas);
 
-		var rect = new Rectangle(0, 0, canvas.width, canvas.height);
-		BitmapData.jeashColorTransform(rect, colorTransform, canvas);
-
+		if (colorTransform != null) {
+			var rect = new Rectangle(0, 0, canvas.width, canvas.height);
+			BitmapData.jeashColorTransform(rect, colorTransform, canvas);
+		}
 		Lib.jeashDrawToSurface(canvas, inSurface, matrix);
 	}
 
