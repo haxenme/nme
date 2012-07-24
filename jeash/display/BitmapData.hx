@@ -143,8 +143,21 @@ class BitmapData implements IBitmapDrawable {
 			smoothing:Bool = false ):Void {
 		jeashBuildLease();
 		source.drawToSurface(mTextureBuffer, matrix, inColorTransform, blendMode, clipRect, smoothing);
-		if (inColorTransform != null)
-			this.colorTransform(new Rectangle(0, 0, mTextureBuffer.width, mTextureBuffer.height), inColorTransform);
+
+		if (inColorTransform != null) {
+			var rect = new Rectangle();
+			var object:DisplayObject = cast source;
+			rect.x = matrix != null ? matrix.tx : 0;
+			rect.y = matrix != null ? matrix.ty : 0;
+			try {
+				rect.width = Reflect.getProperty(source, "width");
+				rect.height = Reflect.getProperty(source, "height");
+			} catch(e:Dynamic) {
+				rect.width = mTextureBuffer.width;
+				rect.height = mTextureBuffer.height;
+			}
+			this.colorTransform(rect, inColorTransform);
+		}
 	}
 
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true) : Rectangle {
