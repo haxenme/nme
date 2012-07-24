@@ -84,7 +84,7 @@ class BitmapData implements IBitmapDrawable {
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
-	public var rect : Rectangle;
+	public var rect:Rectangle;
 
 	var jeashImageData:ImageData;
 	var jeashImageDataChanged:Bool;
@@ -101,7 +101,6 @@ class BitmapData implements IBitmapDrawable {
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
 			?inFillColor:Int) {
-
 		jeashLocked = false;
 		jeashLeaseNum = 0;
 		jeashLease = new ImageDataLease();
@@ -127,36 +126,6 @@ class BitmapData implements IBitmapDrawable {
 			if (!jeashTransparent) inFillColor |= 0xFF000000;
 			jeashInitColor = inFillColor;
 			jeashFillRect(rect, inFillColor);
-		}
-
-	}
-
-	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
-		throw "BitmapData.applyFilter not implemented in Jeash";
-	}
-
-	public function draw(source:IBitmapDrawable,
-			matrix:Matrix = null,
-			inColorTransform:ColorTransform = null,
-			blendMode:BlendMode = null,
-			clipRect:Rectangle = null,
-			smoothing:Bool = false ):Void {
-		jeashBuildLease();
-		source.drawToSurface(mTextureBuffer, matrix, inColorTransform, blendMode, clipRect, smoothing);
-
-		if (inColorTransform != null) {
-			var rect = new Rectangle();
-			var object:DisplayObject = cast source;
-			rect.x = matrix != null ? matrix.tx : 0;
-			rect.y = matrix != null ? matrix.ty : 0;
-			try {
-				rect.width = Reflect.getProperty(source, "width");
-				rect.height = Reflect.getProperty(source, "height");
-			} catch(e:Dynamic) {
-				rect.width = mTextureBuffer.width;
-				rect.height = mTextureBuffer.height;
-			}
-			this.colorTransform(rect, inColorTransform);
 		}
 	}
 
@@ -206,9 +175,14 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function dispose() : Void {
+		jeashClearCanvas();
+		mTextureBuffer = null;
+		jeashLeaseNum = 0;
+		jeashLease = null;
+		jeashImageData = null;
 	}
 
-	public function compare ( inBitmapTexture : BitmapData ) : Int {
+	public function compare (inBitmapTexture:BitmapData):Int {
 		throw "Not implemented. compare";
 		return 0x00000000;
 	}
@@ -235,29 +209,25 @@ class BitmapData implements IBitmapDrawable {
 		}
 	}
 
-	private function clipRect (r: Rectangle): Rectangle {
-		if (r.x < 0)
-		{
+	private function clipRect(r:Rectangle):Rectangle {
+		if (r.x < 0) {
 			r.width -= -r.x;
 			r.x = 0;
 			if (r.x + r.width <= 0)
 				return null;
 		}
-		if (r.y < 0)
-		{
+		if (r.y < 0) {
 			r.height -= -r.y;
 			r.y = 0;
 			if (r.y + r.height <= 0)
 				return null;
 		}
-		if (r.x + r.width >= getWidth ())
-		{
+		if (r.x + r.width >= getWidth ()) {
 			r.width -= r.x + r.width - getWidth ();
 			if (r.width <= 0)
 				return null;
 		}
-		if (r.y + r.height >= getHeight ())
-		{
+		if (r.y + r.height >= getHeight ()) {
 			r.height -= r.y + r.height - getHeight ();
 			if (r.height <= 0)
 				return null;
@@ -268,7 +238,6 @@ class BitmapData implements IBitmapDrawable {
 	inline public function jeashClearCanvas() mTextureBuffer.width = mTextureBuffer.width
 
 	function jeashFillRect(rect:Rectangle, color: UInt) {
-
 		jeashBuildLease();
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
@@ -586,6 +555,16 @@ class BitmapData implements IBitmapDrawable {
 			clipRect:Rectangle,
 			smothing:Bool):Void {
 		jeashBuildLease();
+
+		if (inColorTransform != null) {
+			var rect = new Rectangle();
+			rect.x = 0;
+			rect.y = 0;
+			rect.width = jeashGetSurface().width;
+			rect.height = jeashGetSurface().height;
+			colorTransform(rect, inColorTransform);
+		}
+
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
 		if (matrix != null) {
 			ctx.save();
@@ -598,20 +577,43 @@ class BitmapData implements IBitmapDrawable {
 			ctx.restore();
 		} else
 			ctx.drawImage(handle(), 0, 0);
+	}
 
-		if (inColorTransform != null)
-			this.colorTransform(new Rectangle(0, 0, mTextureBuffer.width, mTextureBuffer.height), inColorTransform);
+	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
+		throw "BitmapData.applyFilter not implemented in Jeash";
+	}
+
+	public function jeashGetSurface():HTMLCanvasElement {
+		if (!jeashLocked)
+			return mTextureBuffer;
+		return null;
+	}
+
+	public function draw(source:IBitmapDrawable,
+			matrix:Matrix = null,
+			inColorTransform:ColorTransform = null,
+			blendMode:BlendMode = null,
+			clipRect:Rectangle = null,
+			smoothing:Bool = false ):Void {
+		source.drawToSurface(mTextureBuffer, matrix, inColorTransform, blendMode, clipRect, smoothing);
 	}
 
 	public function colorTransform(rect:Rectangle, colorTransform:ColorTransform) {
-		if (rect == null) return;
-		rect = clipRect(rect);
-
-		if (!jeashLocked) {
+		if (!jeashLocked)
 			jeashBuildLease();
-			var ctx:CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		rect = clipRect(rect);
+		jeashColorTransform(rect, colorTransform, jeashGetSurface(), jeashLocked?jeashImageData:null);
+		if (jeashLocked)
+			jeashImageDataChanged = true;
+	}
 
-			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+	public static inline function jeashColorTransform(rect:Rectangle, colorTransform:ColorTransform, surface:HTMLCanvasElement, ?imagedata:ImageData) {
+		if (rect != null && rect.width > 0 && rect.height > 0) {
+			var ctx:CanvasRenderingContext2D = null;
+			if (imagedata == null) {
+				ctx = surface.getContext('2d');
+				imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+			}
 			var offsetX : Int;
 			for (i in 0...imagedata.data.length >> 2) {
 				offsetX = i * 4;
@@ -620,23 +622,8 @@ class BitmapData implements IBitmapDrawable {
 				imagedata.data[offsetX + 2] = Std.int((imagedata.data[offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
 				imagedata.data[offsetX + 3] = Std.int((imagedata.data[offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
 			}
-			ctx.putImageData(imagedata, rect.x, rect.y);
-		} else {
-			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
-			var offsetY : Int;
-			var offsetX : Int;
-
-			for (i in 0...Math.round(rect.height)) {
-				offsetY = (i * jeashImageData.width);
-				for (j in 0...Math.round(rect.width)) {
-					offsetX = 4 * (j + offsetY);
-					jeashImageData.data[s + offsetX] = Std.int((jeashImageData.data[s + offsetX] * colorTransform.redMultiplier) + colorTransform.redOffset);
-					jeashImageData.data[s + offsetX + 1] = Std.int((jeashImageData.data[s + offsetX + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
-					jeashImageData.data[s + offsetX + 2] = Std.int((jeashImageData.data[s + offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
-					jeashImageData.data[s + offsetX + 3] = Std.int((jeashImageData.data[s + offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
-				}
-			}
-			jeashImageDataChanged = true;
+			if (ctx != null)
+				ctx.putImageData(imagedata, rect.x, rect.y);
 		}
 	}
 

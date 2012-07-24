@@ -44,7 +44,7 @@ class Shape extends DisplayObject {
 		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
-	override public function jeashGetGraphics() return jeashGraphics
+	override private function jeashGetGraphics() return jeashGraphics
 	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
 		if (parent == null) return null;
 		if (parent.mouseEnabled && super.jeashGetObjectUnderPoint(point) == this) return parent;

@@ -273,6 +273,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return null;
 	}
 
+	public function jeashGetSurface():HTMLCanvasElement {
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+			return gfx.jeashSurface;
+		return null;
+	}
+
 	private function getOpaqueBackground() { 
 		return mOpaqueBackground;
 	}
@@ -347,7 +354,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mMatrix.ty = jeashY;	
 			}
 			
-			
 			if (parent != null)
 				mFullMatrix = parent.getFullMatrix(mMatrix);
 			else
@@ -355,6 +361,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			mMtxDirty = mMtxChainDirty = false;
 		}
+	}
+
+	function jeashApplyFilters(surface:HTMLCanvasElement) {
+		if (jeashFilters != null) {
+			for (filter in jeashFilters) {
+				filter.jeashApplyFilter(surface);
+			}
+		} 
 	}
 
 	private function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
@@ -372,11 +386,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
 					
-			if (jeashFilters != null) {
-				for (filter in jeashFilters) {
-					filter.jeashApplyFilter(gfx.jeashSurface);
-				}
-			}
+			jeashApplyFilters(gfx.jeashSurface);
 
 			m.tx += gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
 			m.ty += gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
@@ -407,9 +417,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			smoothing:Bool):Void {
 		var oldAlpha = alpha;
 		alpha = 1;
-		if (matrix == null) matrix = new Matrix();
-		jeashRender(matrix, inSurface, clipRect);
+		jeashRender(null, null, null);
 		alpha = oldAlpha;
+
+		// copy the surface before draw to new surface
+		var surface = jeashGetSurface();
+		var canvas:HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
+		canvas.width = surface.width;
+		canvas.height = surface.height;
+
+		Lib.jeashDrawToSurface(surface, canvas);
+		Lib.jeashCopyStyle(surface, canvas);
+
+		var rect = new Rectangle(0, 0, canvas.width, canvas.height);
+		BitmapData.jeashColorTransform(rect, colorTransform, canvas);
+
+		Lib.jeashDrawToSurface(canvas, inSurface, matrix);
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {
