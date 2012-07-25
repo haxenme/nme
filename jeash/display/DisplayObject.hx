@@ -273,11 +273,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return null;
 	}
 
-	private function jeashGetSurface():HTMLCanvasElement {
+	private inline function jeashGetSurface():HTMLCanvasElement {
 		var gfx = jeashGetGraphics();
+		var surface = null;
 		if (gfx != null)
-			return gfx.jeashSurface;
-		return null;
+			surface = gfx.jeashSurface;
+		return surface;
 	}
 
 	private function getOpaqueBackground() { 
@@ -409,9 +410,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	public function drawToSurface(inSurface : Dynamic,
+	public function drawToSurface(inSurface:Dynamic,
 			matrix:jeash.geom.Matrix,
-			colorTransform:jeash.geom.ColorTransform,
+			inColorTransform:jeash.geom.ColorTransform,
 			blendMode:BlendMode,
 			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
@@ -421,19 +422,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		alpha = oldAlpha;
 
 		// copy the surface before draw to new surface
-		var surface = jeashGetSurface();
-		var canvas:HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
-		canvas.width = surface.width;
-		canvas.height = surface.height;
-
-		Lib.jeashDrawToSurface(surface, canvas);
-		Lib.jeashCopyStyle(surface, canvas);
-
-		if (colorTransform != null) {
-			var rect = new Rectangle(0, 0, canvas.width, canvas.height);
-			BitmapData.jeashColorTransform(rect, colorTransform, canvas);
-		}
-		Lib.jeashDrawToSurface(canvas, inSurface, matrix);
+		var surfaceCopy = BitmapData.jeashCopySurface(jeashGetSurface());
+		BitmapData.jeashColorTransformSurface(surfaceCopy, inColorTransform);
+		Lib.jeashDrawToSurface(surfaceCopy, inSurface, matrix);
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {

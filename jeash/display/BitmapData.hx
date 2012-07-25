@@ -548,25 +548,17 @@ class BitmapData implements IBitmapDrawable {
 		jeashBuildLease();
 	}
 
-	public function drawToSurface(inSurface : Dynamic,
+	public function drawToSurface(inSurface:Dynamic,
 			matrix:jeash.geom.Matrix,
 			inColorTransform:jeash.geom.ColorTransform,
 			blendMode:BlendMode,
 			clipRect:Rectangle,
 			smothing:Bool):Void {
-		jeashBuildLease();
+		// copy the surface before draw to new surface
+		var surfaceCopy = BitmapData.jeashCopySurface(jeashGetSurface());
+		BitmapData.jeashColorTransformSurface(surfaceCopy, inColorTransform);
 
-		if (inColorTransform != null) {
-			var surface = jeashGetSurface();
-			var rect = new Rectangle();
-			rect.x = 0;
-			rect.y = 0;
-			rect.width = surface.width;
-			rect.height = surface.height;
-			colorTransform(rect, inColorTransform);
-		}
-
-		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
+		var ctx:CanvasRenderingContext2D = inSurface.getContext('2d');
 		if (matrix != null) {
 			ctx.save();
 			if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
@@ -574,20 +566,38 @@ class BitmapData implements IBitmapDrawable {
 			else
 				ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 
-			ctx.drawImage(handle(), 0, 0);
+			ctx.drawImage(surfaceCopy, 0, 0);
 			ctx.restore();
 		} else
-			ctx.drawImage(handle(), 0, 0);
+			ctx.drawImage(surfaceCopy, 0, 0);
+	}
+
+	public static inline function jeashCopySurface(originalSurface:HTMLCanvasElement):HTMLCanvasElement {
+		var newSurface:HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
+		newSurface.width = originalSurface.width;
+		newSurface.height = originalSurface.height;
+
+		Lib.jeashDrawToSurface(originalSurface, newSurface);
+		Lib.jeashCopyStyle(originalSurface, newSurface);
+		return newSurface;
 	}
 
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
 		throw "BitmapData.applyFilter not implemented in Jeash";
 	}
 
-	private function jeashGetSurface():HTMLCanvasElement {
+	public static inline function jeashColorTransformSurface(surface:HTMLCanvasElement, inColorTransform:ColorTransform):Void {
+		if (inColorTransform != null) {
+			var rect = new Rectangle(0, 0, surface.width, surface.height);
+			BitmapData.jeashColorTransform(rect, inColorTransform, surface);
+		}
+	}
+
+	private inline function jeashGetSurface():HTMLCanvasElement {
+		var surface = null;
 		if (!jeashLocked)
-			return mTextureBuffer;
-		return null;
+			surface = mTextureBuffer;
+		return surface;
 	}
 
 	public function draw(source:IBitmapDrawable,
