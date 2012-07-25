@@ -20,10 +20,8 @@ import sys.FileSystem;
 
 class FlashInstaller extends InstallerBase {
 	
-	
 	override function build ():Void {
-
-		if (defines.exists ("DEV_URL") 
+		if (defines.exists("DEV_URL") 
 				|| targetFlags.exists("web") || targetFlags.exists("chrome") || targetFlags.exists("opera"))
 			defines.set("WEB", "true");
 		var destination:String = buildDirectory + "/flash/bin";
@@ -515,9 +513,13 @@ class FlashInstaller extends InstallerBase {
 	
 	
 	override function generateContext ():Void {
-		
+		if (defines.exists("BOOTSTRAP_VARS"))
+			defines.set("FLASHVARS", defines.get("BOOTSTRAP_VARS"));
+		else
+			setDefault("FLASHVARS", "");
+
 		super.generateContext ();
-		
+
 		if (targetFlags.exists ("opera")) {
 			
 			var packageName = defines.get ("APP_PACKAGE");
