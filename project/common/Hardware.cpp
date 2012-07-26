@@ -1247,6 +1247,8 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
       HardwareArrays &arrays = *inCalls[c];
       Vertices &vert = arrays.mVertices;
 
+      // TODO: include extent in HardwareArrays
+
       DrawElements &elements = arrays.mElements;
       for(int e=0;e<elements.size();e++)
       {
@@ -1363,33 +1365,40 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
             for(int i=0;i<numTriangles;i++)
             {
                UserPoint base = *v++;
-               UserPoint v0 = v[0] - base;
-               UserPoint v1 = v[1] - base;
-               UserPoint v2 = pos - base;
-               double dot00 = v0.Dot(v0);
-               double dot01 = v0.Dot(v1);
-               double dot02 = v0.Dot(v2);
-               double dot11 = v1.Dot(v1);
-               double dot12 = v1.Dot(v2);
-
-               // Compute barycentric coordinates
-               double denom = (dot00 * dot11 - dot01 * dot01);
-               if (denom!=0)
+               bool bgx = pos.x>base.x;
+               if ( bgx!=(pos.x>v[0].x) || bgx!=(pos.x>v[1].x) )
                {
-                  denom = 1 / denom;
-                  double u = (dot11 * dot02 - dot01 * dot12) * denom;
-                  if (u>=0)
+                  bool bgy = pos.y>base.y;
+                  if ( bgy!=(pos.y>v[0].y) || bgy!=(pos.y>v[1].y) )
                   {
-                     double v = (dot00 * dot12 - dot01 * dot02) * denom;
+                     UserPoint v0 = v[0] - base;
+                     UserPoint v1 = v[1] - base;
+                     UserPoint v2 = pos - base;
+                     double dot00 = v0.Dot(v0);
+                     double dot01 = v0.Dot(v1);
+                     double dot02 = v0.Dot(v2);
+                     double dot11 = v1.Dot(v1);
+                     double dot12 = v1.Dot(v2);
 
-                     // Check if point is in triangle
-                     if ( (v >= 0) && (u + v < 1) )
-                        return true;
+                     // Compute barycentric coordinates
+                     double denom = (dot00 * dot11 - dot01 * dot01);
+                     if (denom!=0)
+                     {
+                        denom = 1 / denom;
+                        double u = (dot11 * dot02 - dot01 * dot12) * denom;
+                        if (u>=0)
+                        {
+                           double v = (dot00 * dot12 - dot01 * dot02) * denom;
+
+                           // Check if point is in triangle
+                           if ( (v >= 0) && (u + v < 1) )
+                              return true;
+                        }
+                     }
                   }
                }
                v+=2;
             }
-
          }
       }
    }
