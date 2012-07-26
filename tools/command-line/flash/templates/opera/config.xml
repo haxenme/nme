@@ -1,8 +1,8 @@
 <widget defaultmode="application">
   <widgetname>::APP_TITLE::</widgetname>
   <description>::APP_DESCRIPTION::</description>
-  <width>::WIN_WIDTH::</width>
-  <height>::WIN_HEIGHT::</height>
+  <width>::if (WIN_WIDTH == "0")::800::else::::WIN_WIDTH::::end::</width>
+  <height>::if (WIN_HEIGHT == "0")::500::else::::WIN_HEIGHT::::end::</height>
   <author>
     <name>::APP_COMPANY::</name>
     <!-- <email></email> -->
