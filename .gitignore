@@ -1,0 +1,13 @@
+# Compiled NDLL on all platforms.
+ndll/*/nme.ndll
+ndll/*/nme-debug.ndll
+
+# Command line Neko binary.
+tools/command-line/command-line.n
+
+# Compilation artifacts from hxcpp.
+project/all_objs
+project/obj
+
+# Compilation artifacts from Visual Studio.
+project/vc*.pdb
