@@ -410,6 +410,9 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    png_set_palette_to_rgb(png_ptr);
    png_set_gray_to_rgb(png_ptr);
 
+   // Stripping 16 bits per channel to 8 bits per channel.
+   if (bit_depth == 16)
+      png_set_strip_16(png_ptr);
 
    if (!gC0IsRed)
       png_set_bgr(png_ptr);
