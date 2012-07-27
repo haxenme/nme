@@ -604,7 +604,7 @@ class FlashInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("air")) {
 			
-			compilerFlags.push ("-lib air2");
+			compilerFlags.push ("-lib air3");
 			
 		}
 		
