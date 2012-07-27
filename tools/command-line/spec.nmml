@@ -405,7 +405,7 @@
 	
 	<!-- <certificate />
 		
-		Use the certificate node to release-sign Android or BlackBerry applications.
+		Use the certificate node to release-sign Android, BlackBerry or AIR applications.
 		
 		If you do not include the password attribute, you will be prompted for your certificate password
 		at the command-line.
@@ -418,9 +418,11 @@
 		
 		BlackBerry does not use the "alias" or "alias-password" attributes.
 		
+		You can use the "type" attribute with AIR to specify the keystore type.
+		
 	-->
 	
-	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
+	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" type="pkcs12" />
 	
 	
 	

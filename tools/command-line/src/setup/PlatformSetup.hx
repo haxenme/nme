@@ -20,6 +20,8 @@ import sys.FileSystem;
 class PlatformSetup {
 	
 	
+	private static var airMacPath = "http://airdownload.adobe.com/air/mac/download/latest/AdobeAIRSDK.tbz2";
+	private static var airWindowsPath = "http://airdownload.adobe.com/air/win/download/latest/AdobeAIRSDK.zip";
 	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-linux-x86.tar.bz2";
 	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r20-linux.tgz";
 	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8-darwin-x86.tar.bz2";
@@ -162,7 +164,7 @@ class PlatformSetup {
 			
 			var arguments = "xvzf";			
 						
-			if (extension == "bz2") {
+			if (extension == "bz2" || extension == "tbz2") {
 				
 				arguments = "xvjf";
 				
@@ -175,6 +177,8 @@ class PlatformSetup {
 				Sys.command ("rm", [ "-r", ignoreRootFolder ]);
 				
 			} else {
+				
+				InstallTool.runCommand ("", "tar", [ arguments, sourceZIP, "-C", targetPath ]);
 				
 				//InstallTool.runCommand (targetPath, "tar", [ arguments, FileSystem.fullPath (sourceZIP) ]);
 				
@@ -423,6 +427,10 @@ class PlatformSetup {
 			
 			switch (target) {
 				
+				case "air":
+					
+					setupAIR ();
+				
 				case "android":
 					
 					setupAndroid ();
@@ -620,6 +628,70 @@ class PlatformSetup {
 				InstallTool.runCommand ("", "open", [ path ]);
 				
 			}
+			
+		}
+		
+	}
+	
+	
+	public static function setupAIR ():Void {
+		
+		var setAIRSDK = false;
+		var defines = getDefines ();
+		var answer = ask ("Download and install the Adobe AIR SDK?");
+		
+		if (answer == Yes || answer == Always) {
+			
+			var downloadPath = "";
+			var defaultInstallPath = "";
+			
+			if (InstallTool.isWindows) {
+				
+				downloadPath = airWindowsPath;
+				defaultInstallPath = "C:\\Development\\Android SDK";
+				
+			} else if (InstallTool.isMac) {
+				
+				downloadPath = airMacPath;
+				defaultInstallPath = "/opt/AIR SDK";
+				
+			}
+
+			downloadFile (downloadPath);
+			
+			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
+			path = createPath (path, defaultInstallPath);
+			
+			extractFile (Path.withoutDirectory (downloadPath), path, "");
+			
+			setAIRSDK = true;
+			defines.set ("AIR_SDK", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+			Lib.println ("");
+			
+		}
+		
+		var requiredVariables = new Array <String> ();
+		var requiredVariableDescriptions = new Array <String> ();
+		
+		if (!setAIRSDK) {
+			
+			requiredVariables.push ("AIR_SDK");
+			requiredVariableDescriptions.push ("Path to AIR SDK");
+			
+		}
+		
+		if (!setAIRSDK) {
+			
+			Lib.println ("");
+			
+		}
+		
+		var defines = getDefines (requiredVariables, requiredVariableDescriptions, null);
+		
+		if (defines != null) {
+			
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
 		}
 		

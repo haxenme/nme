@@ -62,6 +62,10 @@ class InstallTool {
 			
 			installer = new DocumentationGenerator ();
 			
+		} else if (targetFlags.exists ("air")) {
+			
+			installer = new FlashInstaller ();
+			
 		} else {
 			
 			switch (target) {
