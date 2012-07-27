@@ -916,6 +916,7 @@ class InstallerBase {
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
+		setDefault ("BOOTSTRAP_VARS", "{}");
 		
 		defines.set ("target_" + target, "1");
 		defines.set (target, "1");

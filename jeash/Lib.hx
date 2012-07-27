@@ -602,6 +602,11 @@ class Lib {
 
 		jeashGetStage().jeashUpdateNextWake();
 
+		try {
+			var bootstrapVars = untyped window.bootstrapVars();
+			for (prop in Reflect.fields(bootstrapVars))
+				Reflect.setField(current.loaderInfo.parameters, prop, Reflect.field(bootstrapVars, prop));
+		} catch(e:Dynamic) {}
 		return mMe;
 	}
 

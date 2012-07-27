@@ -596,18 +596,11 @@ class FlashInstaller extends InstallerBase {
 	
 	
 	override function generateContext ():Void {
-		
-		if (defines.exists("BOOTSTRAP_VARS"))
-			defines.set("FLASHVARS", defines.get("BOOTSTRAP_VARS"));
-		else
-			setDefault("FLASHVARS", "");
-		
 		if (targetFlags.exists ("air")) {
 			
 			compilerFlags.push ("-lib air3");
 			
 		}
-		
 		super.generateContext ();
 
 		if (targetFlags.exists ("opera")) {
