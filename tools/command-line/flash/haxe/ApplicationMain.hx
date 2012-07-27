@@ -15,6 +15,9 @@ class ApplicationMain {
 		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;
 		
+		nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
+		nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+		
 		if (loaded < total || true) /* Always wait for event */ {
 			
 			call_real = false;

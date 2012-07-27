@@ -101,6 +101,89 @@ class FlashInstaller extends InstallerBase {
 			
 			compressToZip (buildDirectory + "/flash/bin/" + defines.get ("APP_FILE") + ".wgt");
 			
+		} else if (targetFlags.exists ("air")) {
+			
+			var airTarget = "air";
+			//var outputFile = defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION");
+			var outputFile = defines.get ("APP_FILE") + ".air";
+			
+			if (target == "ios") {
+				
+				if (targetFlags.exists ("simulator")) {
+					
+					if (debug) {
+						
+						airTarget = "ipa-debug-interpreter-simulator";
+						
+					} else {
+						
+						airTarget = "ipa-test-interpreter-simulator";
+						
+					}
+					
+				} else {
+					
+					if (debug) {
+						
+						airTarget = "ipa-debug-interpreter";
+						
+					} else {
+						
+						airTarget = "ipa-ad-hoc";
+						
+					}
+					
+				}
+				
+			} else if (target == "android") {
+				
+				if (debug) {
+					
+					airTarget = "apk-debug";
+					
+				} else {
+					
+					airTarget = "apk";
+					
+				}
+				
+			}
+			
+			/*getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
+			getIcon (32, buildDirectory + "/flash/bin/icon_32.png");
+			getIcon (48, buildDirectory + "/flash/bin/icon_48.png");
+			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");*/
+			
+			copyFile (NME + "/tools/command-line/flash/templates/air/application.xml", buildDirectory + "/flash/bin/application.xml");
+			
+			var args = [ "-package", "-storetype", defines.get ("KEY_STORE_TYPE"), "-keystore", defines.get ("KEY_STORE") ];
+			
+			if (defines.exists ("KEY_STORE_ALIAS")) {
+				
+				args.push ("-alias");
+				args.push (defines.get ("KEY_STORE_ALIAS"));
+				
+			}
+			
+			if (defines.exists ("KEY_STORE_PASSWORD")) {
+				
+				args.push ("-storepass");
+				args.push (defines.get ("KEY_STORE_PASSWORD"));
+				
+			}
+			
+			if (defines.exists ("KEY_STORE_ALIAS_PASSWORD")) {
+				
+				args.push ("-keypass");
+				args.push (defines.get ("KEY_STORE_ALIAS_PASSWORD"));
+				
+			}
+			
+			args = args.concat ([ "-target", airTarget, outputFile, "application.xml" ]);
+			args = args.concat ([ defines.get ("APP_FILE") + ".swf" /*, "icon_16.png", "icon_32.png", "icon_48.png", "icon_128.png"*/ ]);
+			
+			runCommand (destination, defines.get ("AIR_SDK") + "/bin/adt", args);
+			
 		}
 		
 	}
@@ -516,6 +599,12 @@ class FlashInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
+		if (targetFlags.exists ("air")) {
+			
+			compilerFlags.push ("-lib air2");
+			
+		}
+		
 		super.generateContext ();
 		
 		if (targetFlags.exists ("opera")) {
@@ -580,56 +669,74 @@ class FlashInstaller extends InstallerBase {
 	override function run ():Void {
 		
 		var destination:String = buildDirectory + "/flash/bin";
-		var player:String;
 		
-		if (defines.exists ("SWF_PLAYER")) {
+		if (targetFlags.exists ("air")) {
 			
-			player = defines.get ("SWF_PLAYER");
+			var args = [ "-profile", "desktop" ];
+			
+			if (!debug) {
+				
+				args.push ("-nodebug");
+				
+			}
+			
+			args.push ("application.xml");
+			
+			runCommand (destination, defines.get ("AIR_SDK") + "/bin/adl", args);
 			
 		} else {
 			
-			player = Sys.getEnv ("FLASH_PLAYER_EXE");
+			var player:String;
 			
-		}
-		
-		if (player == null || player == "") {
-			
-			var dotSlash:String = "./";
-
-			var filename:String;
-			if (targetFlags.exists ("web") || targetFlags.exists ("chrome") || targetFlags.exists ("opera"))
-				filename = "index.html";
-			else
-				filename = defines.get ("APP_FILE") + ".swf";
-
-			if (InstallTool.isWindows) {
+			if (defines.exists ("SWF_PLAYER")) {
 				
-				if (defines.exists ("DEV_URL"))
-					runCommand (destination, defines.get("DEV_URL"), []);
-				else
-					runCommand (destination, ".\\" + filename, []);
-				
-			} else if (InstallTool.isMac) {
-				
-				if (defines.exists ("DEV_URL"))
-					runCommand (destination, "open", [ defines.get("DEV_URL") ]);
-				else
-					runCommand (destination, "open", [ filename ]);
+				player = defines.get ("SWF_PLAYER");
 				
 			} else {
 				
-				if (defines.exists ("DEV_URL"))
-					runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
-				else
-					runCommand (destination, "xdg-open", [ filename ]);
+				player = Sys.getEnv ("FLASH_PLAYER_EXE");
 				
 			}
-
-
 			
-		} else {
-			
-			runCommand (destination, player, [ defines.get ("APP_FILE") + ".swf" ]);
+			if (player == null || player == "") {
+				
+				var dotSlash:String = "./";
+
+				var filename:String;
+				
+				if (targetFlags.exists ("web") || targetFlags.exists ("chrome") || targetFlags.exists ("opera"))
+					filename = "index.html";
+				else
+					filename = defines.get ("APP_FILE") + ".swf";
+
+				if (InstallTool.isWindows) {
+					
+					if (defines.exists ("DEV_URL"))
+						runCommand (destination, defines.get("DEV_URL"), []);
+					else
+						runCommand (destination, ".\\" + filename, []);
+					
+				} else if (InstallTool.isMac) {
+					
+					if (defines.exists ("DEV_URL"))
+						runCommand (destination, "open", [ defines.get("DEV_URL") ]);
+					else
+						runCommand (destination, "open", [ filename ]);
+					
+				} else {
+					
+					if (defines.exists ("DEV_URL"))
+						runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
+					else
+						runCommand (destination, "xdg-open", [ filename ]);
+					
+				}
+				
+			} else {
+				
+				runCommand (destination, player, [ defines.get ("APP_FILE") + ".swf" ]);
+				
+			}
 			
 		}
 		

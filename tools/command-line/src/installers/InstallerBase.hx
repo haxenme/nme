@@ -148,12 +148,23 @@ class InstallerBase {
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
 		setDefault ("XML_DIR", defines.get ("BUILD_DIR") + "/" + target);
-		setDefault ("KEY_STORE_ALIAS_PASSWORD", defines.get ("KEY_STORE_PASSWORD"));
+		setDefault ("KEY_STORE_TYPE", "pkcs12");
 		
 		if (defines.exists ("KEY_STORE")) {
 			
 			setDefault ("KEY_STORE_ALIAS", Path.withoutExtension (Path.withoutDirectory (defines.get ("KEY_STORE"))));
 			
+		} else {
+			
+			setDefault ("KEY_STORE", NME + "/tools/command-line/bin/debug.p12");
+			setDefault ("KEY_STORE_PASSWORD", "nme");
+			
+		}
+		
+		if (defines.exists ("KEY_STORE_PASSWORD")) {
+			
+			setDefault ("KEY_STORE_ALIAS_PASSWORD", defines.get ("KEY_STORE_PASSWORD"));
+		
 		}
 		
 		if (defines.exists ("NME_64")) {
@@ -845,6 +856,13 @@ class InstallerBase {
 			
 		}
 		
+		if (targetFlags.exists ("air")) {
+			
+			defines.set ("air", "1");
+			compilerFlags.push ("-D air");
+			
+		}
+		
 		if (defines.exists ("mobile")) {
 			
 			setDefault ("WIN_WIDTH", "0");
@@ -882,7 +900,17 @@ class InstallerBase {
 		setDefault ("APP_PACKAGE", "com.example.myapp");
 		setDefault ("APP_VERSION", "1.0.0");
 		setDefault ("APP_COMPANY", "Example Inc.");
-		setDefault ("SWF_VERSION", "10");
+		
+		if (targetFlags.exists ("air")) {
+			
+			setDefault ("SWF_VERSION", "11.3");
+			
+		} else {
+			
+			setDefault ("SWF_VERSION", "10.1");
+			
+		}
+		
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
 		setDefault ("PRERENDERED_ICON", "false");
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
@@ -1736,6 +1764,12 @@ class InstallerBase {
 					case "certificate":
 						
 						defines.set ("KEY_STORE", substitute (element.att.path));
+						
+						if (element.has.type) {
+							
+							defines.set ("KEY_STORE_TYPE", substitute (element.att.type));
+							
+						}
 						
 						if (element.has.password) {
 							
