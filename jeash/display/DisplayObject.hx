@@ -205,16 +205,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	public function localToGlobal( point:Point ) {
-		if (this.parent == null) {
-			return new Point(this.x + point.x, this.y + point.y);
-		} else {
-			point.x = point.x + this.x;
-			point.y = point.y + this.y;
-			return this.parent.localToGlobal(point);
-		}
-	}
-
 	private function jeashGetMouseX() { return globalToLocal(new Point(stage.mouseX, 0)).x; }
 	private function jeashSetMouseX(x:Float) { return null; }
 	private function jeashGetMouseY() { return globalToLocal(new Point(0, stage.mouseY)).y; }
@@ -258,6 +248,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function globalToLocal(inPos:Point) {
 		return mFullMatrix.clone().invert().transformPoint(inPos);
+	}
+
+	public function localToGlobal( point:Point ) {
+		return mFullMatrix.clone().transformPoint(point);
 	}
 
 	public function jeashGetMatrix() {
