@@ -12,11 +12,6 @@ Renderer *CreateTileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPat
 Renderer *CreateTriangleRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
 
 
-Lines sLineBuffer;
-AlphaRuns *sLines = 0;
-Transitions *sTransitions = 0;
-std::vector<Transitions> sTransitionsBuffer;
-
 Renderer *Renderer::CreateSoftware(const GraphicsJob &inJob, const GraphicsPath &inPath)
 {
    if (inJob.mTriangles)
