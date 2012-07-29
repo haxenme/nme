@@ -178,7 +178,7 @@ public:
    }
    
    
-   inline void LineRender::EndCap(UserPoint p0, UserPoint perp)
+   inline void EndCap(UserPoint p0, UserPoint perp)
    {
       switch(mStroke->caps)
       {
@@ -430,7 +430,7 @@ public:
    }
    
    
-   TriangleLineRender::~TriangleLineRender()
+   ~TriangleLineRender()
    {
       if (mSolid) mSolid->Destroy();
    }
