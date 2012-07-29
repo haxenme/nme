@@ -1,4 +1,5 @@
 #include "PolygonRender.h"
+#include <Surface.h>
 
 
 namespace nme

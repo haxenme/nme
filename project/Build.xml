@@ -183,9 +183,6 @@
 		<file name="common/XML/tinyxmlerror.cpp"/>
 		<file name="common/XML/tinyxmlparser.cpp"/>
 		
-		<compilerflag value="-Isoftware-renderer/include"/>
-		
-		
 		<file name="software-renderer/AlphaMask.cpp"/>
 		<file name="software-renderer/BitmapFill.cpp"/>
 		<file name="software-renderer/BitmapFillPerspective.cpp"/>
