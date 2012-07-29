@@ -1608,7 +1608,7 @@ void Stage::HandleEvent(Event &inEvent)
       UserPoint pixels(inEvent.x,inEvent.y);
       hit_obj = HitTest(pixels);
       //if (inEvent.type!=etTouchMove)
-      //  ELOG("  type=%d %d,%d obj=%p", inEvent.type, inEvent.x, inEvent.y, hit_obj);
+        //ELOG("  type=%d %d,%d obj=%p (%S)", inEvent.type, inEvent.x, inEvent.y, hit_obj, hit_obj?hit_obj->name.c_str():L"(none)");
 
       SimpleButton *but = hit_obj ? dynamic_cast<SimpleButton *>(hit_obj) : 0;
       inEvent.id = hit_obj ? hit_obj->id : id;

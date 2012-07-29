@@ -262,6 +262,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		return nme_display_object_hit_test_point(nmeHandle, x, y, shapeFlag, true);
 	}
+
+	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle
+   {
+      var result = new Rectangle();
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace, result, true );
+      return result;
+   }
+
+   public function  getRect(targetCoordinateSpace : DisplayObject) : Rectangle
+   {
+      var result = new Rectangle();
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace, result, false );
+      return result;
+   }
+
+
 	
 	
 	/**
@@ -801,6 +817,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private static var nme_display_object_get_color_transform = Loader.load("nme_display_object_get_color_transform", 3);
 	private static var nme_display_object_set_color_transform = Loader.load("nme_display_object_set_color_transform", 2);
 	private static var nme_display_object_get_pixel_bounds = Loader.load("nme_display_object_get_pixel_bounds", 2);
+	private static var nme_display_object_get_bounds = Loader.load("nme_display_object_get_bounds", 4);
 	private static var nme_display_object_hit_test_point = Loader.load("nme_display_object_hit_test_point", 5);
 
 }

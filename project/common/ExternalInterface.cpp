@@ -1667,6 +1667,25 @@ value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
 }
 DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
+value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, value inIncludeStroke)
+{
+   DisplayObject *obj;
+   DisplayObject *target;
+   if (AbstractToObject(inObj,obj) && AbstractToObject(inTarget,target))
+   {
+      /*
+      Matrix m = obj->GetFullMatrix(false);
+      Transform trans;
+      trans.mMatrix = &m;
+
+      Extent2DF ext;
+      obj->GetExtent(trans, ext, false);
+      */
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_get_bounds,4);
+
 
 value nme_display_object_request_soft_keyboard(value inObj)
 {
