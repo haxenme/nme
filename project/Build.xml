@@ -197,7 +197,6 @@
 		<file name="software-renderer/SolidFill.cpp"/>
 		<file name="software-renderer/SolidRender.cpp"/>
 		<file name="software-renderer/TileRenderer.cpp"/>
-		<file name="software-renderer/TriangleLineRender.cpp"/>
 		<file name="software-renderer/TriangleRender.cpp"/>
 		
 		<file name="opengl/OpenGLContext.cpp" if="ogl"/>
