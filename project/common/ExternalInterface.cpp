@@ -3228,6 +3228,24 @@ value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value o
 DEFINE_PRIM(nme_bitmap_data_generate_filter_rect,3);
 
 
+
+value nme_bitmap_data_noise(value *args, int nArgs)
+{
+   enum { aSurface, aRandomSeed, aLow, aHigh, aChannelOptions, aGrayScale };
+
+   Surface *surf;
+   if (AbstractToObject(args[aSurface],surf))
+   {
+      surf->noise(val_int(args[aRandomSeed]), val_int(args[aLow]), val_int(args[aHigh]),
+            val_int(args[aChannelOptions]), val_int(args[aGrayScale]));
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_bitmap_data_noise);
+
+
+
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
    enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};

@@ -444,6 +444,10 @@ class BitmapData implements IBitmapDrawable
 	{
 		nme_bitmap_data_set_format(nmeHandle, format);
 	}
+
+	public function noise(randomSeed:Int, low:Int = 0, high:Int = 255, channelOptions:Int = 7, grayScale:Bool = false) {
+		nme_bitmap_data_noise(nmeHandle, randomSeed, low, high, channelOptions, grayScale);
+	}
 	
 	
 	// Getters & Setters
@@ -497,6 +501,7 @@ class BitmapData implements IBitmapDrawable
 	private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 1);
 	private static var nme_bitmap_data_encode = Loader.load("nme_bitmap_data_encode", 3);
 	private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
+	private static var nme_bitmap_data_noise = Loader.load("nme_bitmap_data_noise", -1);
 	
 }
 

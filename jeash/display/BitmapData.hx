@@ -78,6 +78,48 @@ typedef CopyPixelAtom = {
 	var destY:Float;
 }
 
+/** A MINSTD pseudo-random number generator.
+ *
+ * This generates a pseudo-random number sequence equivalent to std::minstd_rand0 from the C++ standard library, which
+ * is the generator that Flash uses to generate noise for BitmapData.noise().
+ *
+ * MINSTD was originally suggested in "A pseudo-random number generator for the System/360", P.A. Lewis, A.S. Goodman,
+ * J.M. Miller, IBM Systems Journal, Vol. 8, No. 2, 1969, pp. 136-146 */
+private class MinstdGenerator {
+	static inline var a = 16807;
+	static inline var m = (1 << 31) - 1;
+
+	var value:Int;
+
+	public function new(seed:Int) {
+		if (seed == 0) {
+			this.value = 1;
+		} else {
+			this.value = seed;
+		}
+	}
+
+	public function nextValue():Int {
+		var lo = a * (value & 0xffff);
+		var hi = a * (value >>> 16);
+		lo += (hi & 0x7fff) << 16;
+
+		if (lo < 0 || lo > m) {
+			lo &= m;
+			++lo;
+		}
+
+		lo += hi >>> 15;
+
+		if (lo < 0 || lo > m) {
+			lo &= m;
+			++lo;
+		}
+
+		return value = lo;
+	}
+}
+
 class BitmapData implements IBitmapDrawable {
 	private var mTextureBuffer:HTMLCanvasElement;
 	private var jeashTransparent:Bool;
@@ -437,6 +479,41 @@ class BitmapData implements IBitmapDrawable {
 				pos++;
 			}
 			jeashImageDataChanged = true;
+		}
+	}
+
+	public function noise(randomSeed:Int, low:Int = 0, high:Int = 255, channelOptions:Int = 7, grayScale:Bool = false) {
+		var generator = new MinstdGenerator(randomSeed);
+		var ctx:CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		var imageData =
+				if (jeashLocked) jeashImageData
+				else ctx.createImageData(mTextureBuffer.width, mTextureBuffer.height);
+
+		for (i in 0...(mTextureBuffer.width*mTextureBuffer.height)) {
+			if (grayScale) {
+				imageData.data[i*4] = imageData.data[i*4+1] = imageData.data[i*4+2] =
+						low + generator.nextValue() % (high - low + 1);
+			} else {
+				imageData.data[i*4] =
+						if (channelOptions & BitmapDataChannel.RED == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i*4+1] =
+						if (channelOptions & BitmapDataChannel.GREEN == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i*4+2] =
+						if (channelOptions & BitmapDataChannel.BLUE == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+			}
+
+			imageData.data[i*4+3] =
+					if (channelOptions & BitmapDataChannel.ALPHA == 0) 255
+					else low + generator.nextValue() % (high - low + 1);
+		}
+
+		if (jeashLocked) {
+			jeashImageDataChanged = true;
+		} else {
+			ctx.putImageData(imageData, 0, 0);
 		}
 	}
 
