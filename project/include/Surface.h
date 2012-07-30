@@ -96,6 +96,8 @@ public:
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform) { }
    virtual void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter) { }
 
+   virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
+
    int Version() const  { return mVersion; }
 
 protected:
@@ -159,6 +161,7 @@ public:
    void setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo=false);
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
+   void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
    void createHardwareSurface();
    void destroyHardwareSurface();
    
