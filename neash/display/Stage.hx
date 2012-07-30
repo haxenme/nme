@@ -536,51 +536,51 @@ class Stage extends DisplayObjectContainer
 			}
 			else
 				type = sUpEvents[button];
-			}
+		}
 			
-			if (nmeDragObject != null)
-				nmeDrag(new Point(inEvent.x, inEvent.y));
-			
-			var stack = new Array<InteractiveObject>();
-			var obj:DisplayObject = nmeFindByID(inEvent.id);
-			if (obj != null)
-				obj.nmeGetInteractiveObjectStack(stack);
-			
-			var local:Point = null;
-			if (stack.length > 0)
+		if (nmeDragObject != null)
+			nmeDrag(new Point(inEvent.x, inEvent.y));
+
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
+		if (obj != null)
+			obj.nmeGetInteractiveObjectStack(stack);
+
+		var local:Point = null;
+		if (stack.length > 0)
+		{
+			var obj = stack[0];
+			stack.reverse();
+			local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+			var evt = MouseEvent.nmeCreate(type, inEvent, local, obj);
+			evt.delta = wheel;
+			if (inFromMouse)
+				nmeCheckInOuts(evt, stack);
+			obj.nmeFireEvent(evt);
+		}
+		else
+		{
+			//trace("No obj?");
+			local = new Point(inEvent.x, inEvent.y);
+			var evt = MouseEvent.nmeCreate(type, inEvent, local, null);
+			evt.delta = wheel;
+			if (inFromMouse)
+				nmeCheckInOuts(evt, stack);
+		}
+
+		var click_obj = stack.length > 0 ? stack[ stack.length - 1] : this;
+		if (inType == MouseEvent.MOUSE_DOWN && button < 3)
+		{
+			nmeLastDown[button] = click_obj;
+		}
+		else if (inType == MouseEvent.MOUSE_UP && button < 3)
+		{
+			if (click_obj == nmeLastDown[button])
 			{
-				var obj = stack[0];
-				stack.reverse();
-				local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
-				var evt = MouseEvent.nmeCreate(type, inEvent, local, obj);
-				evt.delta = wheel;
-				if (inFromMouse)
-					nmeCheckInOuts(evt, stack);
-				obj.nmeFireEvent(evt);
-			}
-			else
-			{
-				//trace("No obj?");
-				local = new Point(inEvent.x, inEvent.y);
-				var evt = MouseEvent.nmeCreate(type, inEvent, local, null);
-				evt.delta = wheel;
-				if (inFromMouse)
-					nmeCheckInOuts(evt, stack);
-			}
-			
-			var click_obj = stack.length > 0 ? stack[ stack.length - 1] : this;
-			if (inType == MouseEvent.MOUSE_DOWN && button < 3)
-			{
-				nmeLastDown[button] = click_obj;
-			}
-			else if (inType == MouseEvent.MOUSE_UP && button < 3)
-			{
-				if (click_obj == nmeLastDown[button])
-				{
 				var evt = MouseEvent.nmeCreate(sClickEvents[button], inEvent, local, click_obj);
 				click_obj.nmeFireEvent(evt);
 
-				if (button == 0 && click_obj.doubleClickEnabled)				
+				if (button == 0 && click_obj.doubleClickEnabled)
 				{
 					var now = Timer.stamp();
 					if (now - nmeLastClickTime < 0.25)
