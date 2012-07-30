@@ -28,6 +28,7 @@ class CachedExtentRenderer : public Renderer
 {
 public:
    bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent,bool inIncludeStroke);
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent,bool inForBitmap,bool inIncludeStroke);
 
 
    // Implement this one instead...

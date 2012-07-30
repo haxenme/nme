@@ -5,6 +5,7 @@
 #include <CachedExtent.h>
 #include <vector>
 #include "AlphaMask.h"
+#include <stdio.h>
 
 
 namespace nme
