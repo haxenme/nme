@@ -173,18 +173,6 @@ class InstallerBase {
 			
 		}
 		
-		if (defines.exists ("HAXE_SERVER_PORT")) {
-			
-			var port = defines.get ("HAXE_SERVER_PORT");
-			
-			if (port != null && port != "" && port != "0") {
-				
-				compilerFlags.push ("--connect " + port);
-				
-			}
-			
-		}
-		
 		buildDirectory = defines.get ("BUILD_DIR");
 		getBuildNumber ((command == "build" || command == "test"));
 		
@@ -786,10 +774,15 @@ class InstallerBase {
 			
 			var versionFile = Path.withoutExtension (projectFile) + ".build";
 			var version:Int = 1;
+
+         // Do not create this file if it does not already exist
+         var writeFile = false;
 			
 			mkdir (buildDirectory);
 			
 			if (FileSystem.exists (versionFile)) {
+
+            writeFile = true;
 				
 				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
 				
@@ -809,7 +802,7 @@ class InstallerBase {
 			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
-			if (increment) {
+			if (writeFile) {
 				
 				try {
 					

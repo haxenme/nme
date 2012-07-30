@@ -525,7 +525,7 @@ class InstallTool {
 		
 		includePaths.push (nme + "/tools/command-line");
 		
-		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "clean", "installer", "uninstall", "trace", "document", "generate", "display" ];
+		var validCommands:Array <String> = [ "setup", "help", "copy-if-newer", "run", "rerun", "update", "test", "build", "clean", "installer", "uninstall", "trace", "document", "generate", "display", "new"  ];
 		
 		if (!Lambda.exists (validCommands, function (c) return command == c)) {
 			
@@ -552,6 +552,7 @@ class InstallTool {
 			Lib.println (" Usage : nme [clean|update|build|run|test|display] <project> (target) [options]");
 			Lib.println (" Usage : nme document <project> (target)");
 			Lib.println (" Usage : nme generate <args> [options]");
+			Lib.println (" Usage : nme new file.nmml name1=value1 name2=value2 ...");
 			Lib.println ("");
 			Lib.println (" Commands : ");
 			Lib.println ("");
@@ -570,6 +571,7 @@ class InstallTool {
 			Lib.println ("");
 			Lib.println ("  android : Create Google Android applications");
 			Lib.println ("  blackberry : Create BlackBerry applications");
+			Lib.println ("  cpp : Create application for the system you are compiling on");
 			Lib.println ("  flash : Create SWF applications for Adobe Flash Player");
 			Lib.println ("  html5 : Create HTML5 canvas applications");
 			Lib.println ("  ios : Create Apple iOS applications");
@@ -644,7 +646,21 @@ class InstallTool {
 				new GenerateJavaExterns (words[0], words[1]);
 				
 			}
+	
+		} else if (command == "new") {
 			
+				if (words.length != 1 || words[0].split(".").pop()!="nmml" ) {
+					
+					argumentError ("You should specify the output nmml file after the 'new' command.");
+					return;
+					
+				}
+				
+	         for (key in userDefines.keys ())
+                defines.set(key,userDefines.get(key));
+			
+				new NewProject (nme,words[0], defines);
+				
 		} else {
 			
 			if (words.length != 2) {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <app
+     file="::file::"
+     title="::title::"
+     package="::package::"
+     version="::if (version==null)::1.0.0::else::::version::::end::"
+     company="::if (company==null)::nme::else::::company::::end::" 
+	  main="::main::"
+  />
+
+  <window
+      width="::if (width==null)::640::else::::width::::end::" 
+		height="::if (height==null)::480::else::::height::::end::" 
+		orientation="::if (orientation==null)::landscape::else::::orientation::::end::" 
+		fps="::if (fps==null)::60::else::::fps::::end::"
+		background="::if (background==null)::0xffffff::else::::background::::end::"
+      resizable="true"
+		hardware="true"
+	/>
+
+  ::if (src!=null)::
+  <source path="::src::" />
+  ::end::
+  
+  <haxelib name="nme" />
+  <!-- <icon name="icon.svg" /> -->
+
+  <ndll name="std" />
+  <ndll name="regexp" />
+  <ndll name="zlib" />
+  <ndll name="nme" haxelib="nme" />
+
+</project>
