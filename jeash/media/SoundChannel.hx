@@ -123,7 +123,9 @@ class SoundChannel extends EventDispatcher {
 
 	private function __onStalled(evt:Event):Void {
 		trace("sound stalled");
-		jeashAudio.load();
+		if (jeashAudio != null) {
+			jeashAudio.load();
+		}
 	}
 
 	private function __onProgress(evt:Event):Void {
