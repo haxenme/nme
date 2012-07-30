@@ -1,7 +1,6 @@
 #include <Graphics.h>
 #include <Surface.h>
 #include <Pixel.h>
-#include <random>
 
 namespace nme
 {
@@ -1448,7 +1447,7 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
 
 void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale)
 {
-   std::minstd_rand0 generator(randomSeed);
+   srand (randomSeed);
 
    RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight));
    ARGB tmpRgb;
@@ -1460,13 +1459,13 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
       {
          if (grayScale)
          {
-            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + generator() % (high - low + 1);
+            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + rand() % (high - low + 1);
          }
          else
          {
             if (channelOptions & CHAN_RED)
             {
-               tmpRgb.c2 = low + generator() % (high - low + 1);
+               tmpRgb.c2 = low + rand() % (high - low + 1);
             }
             else
             {
@@ -1475,7 +1474,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
             if (channelOptions & CHAN_GREEN)
             {
-               tmpRgb.c1 = low + generator() % (high - low + 1);
+               tmpRgb.c1 = low + rand() % (high - low + 1);
             }
             else
             {
@@ -1484,7 +1483,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
             if (channelOptions & CHAN_BLUE)
             {
-               tmpRgb.c0 = low + generator() % (high - low + 1);
+               tmpRgb.c0 = low + rand() % (high - low + 1);
             }
             else
             {
@@ -1494,7 +1493,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
          if (channelOptions & CHAN_ALPHA)
          {
-            tmpRgb.a = low + generator() % (high - low + 1);
+            tmpRgb.a = low + rand() % (high - low + 1);
          }
          else
          {
@@ -1513,6 +1512,8 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
          rgb++;
       }
    }
+   
+   srand (1);
 
    EndRender();
 }
