@@ -21,9 +21,6 @@ import sys.FileSystem;
 class FlashInstaller extends InstallerBase {
 	
 	override function build ():Void {
-		if (defines.exists("DEV_URL") 
-				|| targetFlags.exists("web") || targetFlags.exists("chrome") || targetFlags.exists("opera"))
-			defines.set("WEB", "true");
 		var destination:String = buildDirectory + "/flash/bin";
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
@@ -596,6 +593,11 @@ class FlashInstaller extends InstallerBase {
 	
 	
 	override function generateContext ():Void {
+		if (defines.exists("DEV_URL") 
+				|| targetFlags.exists("web") || targetFlags.exists("chrome") || targetFlags.exists("opera")) {
+			defines.set("WEB", "true");
+		}
+
 		if (targetFlags.exists ("air")) {
 			
 			compilerFlags.push ("-lib air3");
