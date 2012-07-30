@@ -52,7 +52,7 @@ public:
       UserPoint screen(inState.mClipRect.x, inState.mClipRect.y);
 
       Extent2DF extent;
-      CachedExtentRenderer::GetExtent(inState.mTransform,extent);
+      CachedExtentRenderer::GetExtent(inState.mTransform,extent,true);
       if (!extent.Contains(screen))
           return false;
 
@@ -76,7 +76,7 @@ public:
    bool Render( const RenderTarget &inTarget, const RenderState &inState )
    {
       Extent2DF extent;
-      CachedExtentRenderer::GetExtent(inState.mTransform,extent);
+      CachedExtentRenderer::GetExtent(inState.mTransform,extent,true);
 
       if (!extent.Valid())
          return true;

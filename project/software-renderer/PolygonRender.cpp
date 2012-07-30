@@ -14,6 +14,7 @@ PolygonRender::PolygonRender(const GraphicsJob &inJob, const GraphicsPath &inPat
 {
    mBuildExtent = 0;
    mAlphaMask = 0;
+   mIncludeStrokeInExtent = true;
    
    switch(inFill->GetType())
    {
@@ -225,8 +226,12 @@ void PolygonRender::GetExtent(CachedExtent &ioCache)
    *mBuildExtent = Extent2DF();
    
    SetTransform(ioCache.mTransform);
+
+   mIncludeStrokeInExtent = ioCache.mIncludeStroke;
    
    Iterate(itGetExtent,*ioCache.mTransform.mMatrix);
+
+   mIncludeStrokeInExtent = true;
    
    mBuildExtent = 0;
 }
@@ -240,7 +245,7 @@ bool PolygonRender::Hits(const RenderState &inState)
    UserPoint screen(inState.mClipRect.x, inState.mClipRect.y);
    
    Extent2DF extent;
-   CachedExtentRenderer::GetExtent(inState.mTransform, extent);
+   CachedExtentRenderer::GetExtent(inState.mTransform, extent,true);
    
    if (!extent.Contains(screen))
       return false;
@@ -331,7 +336,7 @@ void PolygonRender::HitTestFatCurve(const UserPoint &inP0, const UserPoint &inP1
 bool PolygonRender::Render(const RenderTarget &inTarget, const RenderState &inState)
 {
    Extent2DF extent;
-   CachedExtentRenderer::GetExtent(inState.mTransform, extent);
+   CachedExtentRenderer::GetExtent(inState.mTransform, extent,true);
    
    if (!extent.Valid())
       return true;

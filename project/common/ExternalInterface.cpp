@@ -1521,7 +1521,7 @@ value nme_display_object_hit_test_point(
          trans.mMatrix = &m;
 
          Extent2DF ext;
-         obj->GetExtent(trans, ext, true );
+         obj->GetExtent(trans, ext, true, true );
          return alloc_bool( ext.Contains(pos) );
       }
    }
@@ -1673,14 +1673,21 @@ value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds
    DisplayObject *target;
    if (AbstractToObject(inObj,obj) && AbstractToObject(inTarget,target))
    {
-      /*
+      Matrix reference = target->GetFullMatrix(false);
+      Matrix ref_i = reference.Inverse();
+
       Matrix m = obj->GetFullMatrix(false);
+      m = ref_i.Mult(m);
+
       Transform trans;
       trans.mMatrix = &m;
 
       Extent2DF ext;
-      obj->GetExtent(trans, ext, false);
-      */
+      obj->GetExtent(trans, ext, false, val_bool(inIncludeStroke) );
+      
+      Rect rect;
+      if (ext.GetRect(rect))
+         ToValue(outBounds,rect);
    }
    return alloc_null();
 }

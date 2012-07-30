@@ -238,16 +238,24 @@ public:
                inMode==itCreateRenderer ? &LineRender::BuildSolid :
                        &LineRender::BuildHitTest;
 
-      double perp_len = GetPerpLen(m);
-
-      int alpha = 256;
-      if (perp_len<0.5)
-      {
-         alpha = 512 * perp_len;
-         perp_len = 0.5;
-         if (alpha<10)
-            return 0;
-      }
+     double perp_len = 0.0;
+     int alpha = 256;
+     
+     if (mIncludeStrokeInExtent || inMode!=itGetExtent)
+     {
+        perp_len = GetPerpLen(m);
+        if (perp_len<0.5 && inMode!=itGetExtent)
+        {
+           alpha = 512 * perp_len;
+           perp_len = 0.5;
+           if (alpha<10)
+              return 0;
+        }
+     }
+     else
+     {
+        mDTheta = 1e20;
+     }
 
 
       int n = mCommandCount;
@@ -436,12 +444,12 @@ public:
    }
    
 
-   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent,bool inIncludeStroke)
    {
       bool result = false;
       if (mSolid)
-         result = mSolid->GetExtent(inTransform,ioExtent);
-      return CachedExtentRenderer::GetExtent(inTransform,ioExtent) || result;
+         result = mSolid->GetExtent(inTransform,ioExtent,inIncludeStroke);
+      return CachedExtentRenderer::GetExtent(inTransform,ioExtent,inIncludeStroke) || result;
    }
    
    
@@ -459,7 +467,14 @@ public:
             inMode==itCreateRenderer ? &LineRender::BuildSolid :
                   &LineRender::BuildHitTest;
       
-     double perp_len = GetPerpLen(m);
+     double perp_len = 0.0;
+     
+     if (mIncludeStrokeInExtent || inMode!=itGetExtent)
+        perp_len = GetPerpLen(m);
+     else
+     {
+        mDTheta = 1e20;
+     }
       
      UserPoint *point = 0;
      if (inMode==itHitTest)

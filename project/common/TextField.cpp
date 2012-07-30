@@ -1339,7 +1339,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       hardware->EndBitmapRender();
 }
 
-void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap)
+void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke)
 {
    Layout(*inTrans.mMatrix);
 
@@ -1354,7 +1354,7 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
    else if (inForBitmap && border)
    {
       BuildBackground();
-      return DisplayObject::GetExtent(inTrans,outExt,inForBitmap);
+      return DisplayObject::GetExtent(inTrans,outExt,inForBitmap,inIncludeStroke);
    }
    else
    {

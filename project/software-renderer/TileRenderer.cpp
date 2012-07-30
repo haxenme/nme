@@ -110,7 +110,7 @@ public:
    }
    
    
-   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent, bool)
    {
       /*
       printf("In extent %f,%f ... %f,%f\n",

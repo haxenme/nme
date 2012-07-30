@@ -225,7 +225,7 @@ public:
    bool   needsSoftKeyboard;
    bool   movesForSoftKeyboard;
 
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -328,7 +328,7 @@ public:
    bool IsCacheDirty();
    void ClearCacheDirty();
    bool NonNormalBlendChild();
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
@@ -353,7 +353,7 @@ public:
 
    DisplayObject *mState[stateSIZE];
 
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void DirtyUp(uint32 inFlags);
    bool IsCacheDirty();

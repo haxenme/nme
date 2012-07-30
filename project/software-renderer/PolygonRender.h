@@ -61,6 +61,7 @@ public:
    int mData0;
    int mCommandCount;
    int mDataCount;
+   bool mIncludeStrokeInExtent;
    
 };
 

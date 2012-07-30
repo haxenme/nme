@@ -266,14 +266,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle
    {
       var result = new Rectangle();
-		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace, result, true );
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace.nmeHandle, result, true );
       return result;
    }
 
    public function  getRect(targetCoordinateSpace : DisplayObject) : Rectangle
    {
       var result = new Rectangle();
-		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace, result, false );
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace.nmeHandle, result, false );
       return result;
    }
 

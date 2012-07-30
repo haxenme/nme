@@ -114,7 +114,7 @@ public:
          return PolygonRender::Render(inTarget,inState);
 
       Extent2DF extent;
-      CachedExtentRenderer::GetExtent(inState.mTransform,extent);
+      CachedExtentRenderer::GetExtent(inState.mTransform,extent,true);
 
       if (!extent.Valid())
          return true;

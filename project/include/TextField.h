@@ -141,7 +141,7 @@ public:
 	int  textHeight;
    Rect mActiveRect;
 
-   void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
    Cursor GetCursor();
    bool WantsFocus() { return isInput && mouseEnabled; }
    bool CaptureDown(Event &inEvent);
