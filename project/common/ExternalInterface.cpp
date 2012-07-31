@@ -1393,6 +1393,28 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpBitmap;
 
+      // get current transformation
+      Matrix objMatrix = obj->GetLocalMatrix();
+      
+      // untransform for draw (set matrix to identity)
+      float m00 = objMatrix.m00;
+      float m01 = objMatrix.m01;
+      float m10 = objMatrix.m10;
+      float m11 = objMatrix.m11;
+      float mtx = objMatrix.mtx;
+      float mty = objMatrix.mty;
+      objMatrix.m00 = 1;
+      objMatrix.m01 = 0;
+      objMatrix.m10 = 0;
+      objMatrix.m11 = 1;
+      objMatrix.mtx = 0;
+      objMatrix.mty = 0;
+      obj->setMatrix(objMatrix);
+
+      // save current alpha but set to baseline for draw
+      float objAlpha = obj->getAlpha();
+      obj->setAlpha(1);
+
       DisplayObjectContainer *dummy = new DisplayObjectContainer(true);
       dummy->hackAddChild(obj);
       dummy->Render(render.Target(), state);
@@ -1401,6 +1423,18 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       dummy->Render(render.Target(), state);
       dummy->hackRemoveChildren();
       dummy->DecRef();
+
+      // restore original transformation now that surface has rendered
+      objMatrix.m00 = m00;
+      objMatrix.m01 = m01;
+      objMatrix.m10 = m10;
+      objMatrix.m11 = m11;
+      objMatrix.mtx = mtx;
+      objMatrix.mty = mty;
+      obj->setMatrix(objMatrix);
+
+      // restore alpha
+      obj->setAlpha(objAlpha);
    }
 
    return alloc_null();
@@ -1493,7 +1527,7 @@ value nme_display_object_hit_test_point(
          trans.mMatrix = &m;
 
          Extent2DF ext;
-         obj->GetExtent(trans, ext, true );
+         obj->GetExtent(trans, ext, true, true );
          return alloc_bool( ext.Contains(pos) );
       }
    }
@@ -1639,6 +1673,32 @@ value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
 }
 DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
+value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, value inIncludeStroke)
+{
+   DisplayObject *obj;
+   DisplayObject *target;
+   if (AbstractToObject(inObj,obj) && AbstractToObject(inTarget,target))
+   {
+      Matrix reference = target->GetFullMatrix(false);
+      Matrix ref_i = reference.Inverse();
+
+      Matrix m = obj->GetFullMatrix(false);
+      m = ref_i.Mult(m);
+
+      Transform trans;
+      trans.mMatrix = &m;
+
+      Extent2DF ext;
+      obj->GetExtent(trans, ext, false, val_bool(inIncludeStroke) );
+      
+      Rect rect;
+      if (ext.GetRect(rect))
+         ToValue(outBounds,rect);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_display_object_get_bounds,4);
+
 
 value nme_display_object_request_soft_keyboard(value inObj)
 {
@@ -1670,6 +1730,8 @@ DO_DISPLAY_PROP(alpha,Alpha,alloc_float,val_number)
 DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
 DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
 DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
+DO_DISPLAY_PROP(pedantic_bitmap_caching,PedanticBitmapCaching,alloc_bool,val_bool)
+DO_DISPLAY_PROP(pixel_snapping,PixelSnapping,alloc_int,val_int)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
 DO_DISPLAY_PROP(name,Name,alloc_wstring,val2stdwstr)
 DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
@@ -3179,6 +3241,24 @@ value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value o
 DEFINE_PRIM(nme_bitmap_data_generate_filter_rect,3);
 
 
+
+value nme_bitmap_data_noise(value *args, int nArgs)
+{
+   enum { aSurface, aRandomSeed, aLow, aHigh, aChannelOptions, aGrayScale };
+
+   Surface *surf;
+   if (AbstractToObject(args[aSurface],surf))
+   {
+      surf->noise(val_int(args[aRandomSeed]), val_int(args[aLow]), val_int(args[aHigh]),
+            val_int(args[aChannelOptions]), val_int(args[aGrayScale]));
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_bitmap_data_noise);
+
+
+
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
    enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
@@ -3330,7 +3410,7 @@ DEFINE_PRIM(nme_sound_get_id3,2);
 value nme_sound_get_length(value inSound)
 {
    Sound *sound;
-   if (AbstractToObject(inSound,sound))
+   if (AbstractToObject(inSound, sound))
    {
       return alloc_float( sound->getLength() );
    }

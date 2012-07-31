@@ -405,7 +405,7 @@
 	
 	<!-- <certificate />
 		
-		Use the certificate node to release-sign Android or BlackBerry applications.
+		Use the certificate node to release-sign Android, BlackBerry or AIR applications.
 		
 		If you do not include the password attribute, you will be prompted for your certificate password
 		at the command-line.
@@ -418,9 +418,11 @@
 		
 		BlackBerry does not use the "alias" or "alias-password" attributes.
 		
+		You can use the "type" attribute with AIR to specify the keystore type.
+		
 	-->
 	
-	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" />
+	<certificate path="path/to/certificate.crt" password="1234" alias="my-alias" alias-password="4321" type="pkcs12" />
 	
 	
 	
@@ -516,6 +518,29 @@
 		Visual Studio (using this value for devenv or VCExpress.exe) for debugging.
 		
 	-->
+
+	<!-- Build Dir
+
+		Select the directory where you want build artifacts to be placed into. They will
+		be in a separate subdirectory per target.
+	-->
+	<set name="BUILD_DIR" value="bin" />
 	
+	<!-- Dev URL
+
+		If for a given target you have the build dir already sym linked or live on
+		a web server at a given URL, you can define that URL per target and a browser
+		will be opened to that URL automatically when the build is complete.
+	-->
+	<set name="DEV_URL" value="http://myserver.local/html5" if="target_html5" />
+	<set name="DEV_URL" value="https://www.myserver.com/" if="target_flash" />
+	
+	<!-- Bootstrap Vars
+
+		These are passed along to the HTML wrapper as FlashVars for Flash and HTML5. 
+		Just as in Flash, you can access them at nme.Lib.current.loaderInfo.parameters
+		too get them from the 'root movieclip'.
+	-->
+	<set name="BOOTSTRAP_VARS" value="{test1:'hi', test2:'bye'}" />
 	
 </project>

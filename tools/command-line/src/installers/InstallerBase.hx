@@ -148,29 +148,28 @@ class InstallerBase {
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
 		setDefault ("XML_DIR", defines.get ("BUILD_DIR") + "/" + target);
-		setDefault ("KEY_STORE_ALIAS_PASSWORD", defines.get ("KEY_STORE_PASSWORD"));
+		setDefault ("KEY_STORE_TYPE", "pkcs12");
 		
 		if (defines.exists ("KEY_STORE")) {
 			
 			setDefault ("KEY_STORE_ALIAS", Path.withoutExtension (Path.withoutDirectory (defines.get ("KEY_STORE"))));
 			
+		} else {
+			
+			setDefault ("KEY_STORE", NME + "/tools/command-line/bin/debug.p12");
+			setDefault ("KEY_STORE_PASSWORD", "nme");
+			
+		}
+		
+		if (defines.exists ("KEY_STORE_PASSWORD")) {
+			
+			setDefault ("KEY_STORE_ALIAS_PASSWORD", defines.get ("KEY_STORE_PASSWORD"));
+		
 		}
 		
 		if (defines.exists ("NME_64")) {
 			
 			compilerFlags.push ("-D HXCPP_M64");
-			
-		}
-		
-		if (defines.exists ("HAXE_SERVER_PORT")) {
-			
-			var port = defines.get ("HAXE_SERVER_PORT");
-			
-			if (port != null && port != "" && port != "0") {
-				
-				compilerFlags.push ("--connect " + port);
-				
-			}
 			
 		}
 		
@@ -775,10 +774,15 @@ class InstallerBase {
 			
 			var versionFile = Path.withoutExtension (projectFile) + ".build";
 			var version:Int = 1;
+
+         // Do not create this file if it does not already exist
+         var writeFile = false;
 			
 			mkdir (buildDirectory);
 			
 			if (FileSystem.exists (versionFile)) {
+
+            writeFile = true;
 				
 				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
 				
@@ -798,7 +802,7 @@ class InstallerBase {
 			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
-			if (increment) {
+			if (writeFile) {
 				
 				try {
 					
@@ -845,6 +849,13 @@ class InstallerBase {
 			
 		}
 		
+		if (targetFlags.exists ("air")) {
+			
+			defines.set ("air", "1");
+			compilerFlags.push ("-D air");
+			
+		}
+		
 		if (defines.exists ("mobile")) {
 			
 			setDefault ("WIN_WIDTH", "0");
@@ -882,12 +893,23 @@ class InstallerBase {
 		setDefault ("APP_PACKAGE", "com.example.myapp");
 		setDefault ("APP_VERSION", "1.0.0");
 		setDefault ("APP_COMPANY", "Example Inc.");
-		setDefault ("SWF_VERSION", "10");
+		
+		if (targetFlags.exists ("air")) {
+			
+			setDefault ("SWF_VERSION", "11.3");
+			
+		} else {
+			
+			setDefault ("SWF_VERSION", "10.1");
+			
+		}
+		
 		setDefault ("PRELOADER_NAME", "NMEPreloader");
 		setDefault ("PRERENDERED_ICON", "false");
 		setDefault ("ANDROID_INSTALL_LOCATION", "preferExternal");
 		setDefault ("BUILD_DIR", "bin");
 		setDefault ("DOCS_DIR", "docs");
+		setDefault ("BOOTSTRAP_VARS", "{}");
 		
 		defines.set ("target_" + target, "1");
 		defines.set (target, "1");
@@ -991,6 +1013,16 @@ class InstallerBase {
 				case "path":
 					
 					defines.set ("BUILD_DIR", substitute (element.att.path));
+				
+				case "min-swf-version":
+					
+					var version = substitute (element.att.resolve ("swf-version"));
+					
+					if (!defines.exists ("SWF_VERSION") || Std.parseInt (defines.get ("SWF_VERSION")) <= Std.parseInt (version)) {
+						
+						defines.set ("SWF_VERSION", version);
+						
+					}
 				
 				case "swf-version":
 					
@@ -1736,6 +1768,12 @@ class InstallerBase {
 					case "certificate":
 						
 						defines.set ("KEY_STORE", substitute (element.att.path));
+						
+						if (element.has.type) {
+							
+							defines.set ("KEY_STORE_TYPE", substitute (element.att.type));
+							
+						}
 						
 						if (element.has.password) {
 							

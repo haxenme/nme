@@ -15,6 +15,9 @@ class ApplicationMain {
 		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;
 		
+		nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
+		nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+		
 		if (loaded < total || true) /* Always wait for event */ {
 			
 			call_real = false;
@@ -27,14 +30,15 @@ class ApplicationMain {
 		}
 		::end::
 		
-		::if (WEB!="")::
-		haxe.Log.trace = flashTrace;
+		::if (WEB!=null)::
+		haxe.Log.trace = flashTrace; // ::WEB::
 		::end::
 
 		if (call_real)
 			begin ();
 	}
 
+	::if (WEB!=null)::
 	private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
 		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
 		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
@@ -43,6 +47,7 @@ class ApplicationMain {
 			flash.external.ExternalInterface.call("console.log", message);
 		else untyped flash.Boot.__trace(v, pos);
     }
+	::end::
 	
 	private static function begin () {
 		

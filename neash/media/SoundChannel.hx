@@ -24,16 +24,15 @@ class SoundChannel extends EventDispatcher
 	/** @private */ public var nmeDataProvider:EventDispatcher;
 	
 	
-	public function new (inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform)
+	public function new(inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform)
 	{
 		super();
 		
-		if (sndTransform != null)
-		{
+		if (sndTransform != null) {
 			nmeTransform = sndTransform.clone();
 		}
 		
-      if (inSoundHandle!=null)
+	    if (inSoundHandle!=null)
 		   nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
 		
 		if (nmeHandle != null)
@@ -43,12 +42,12 @@ class SoundChannel extends EventDispatcher
 	public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher)
 	{
 		var result = new SoundChannel(null,0,0,sndTransform);
-      result.nmeDataProvider = dataProvider;
-      result.nmeHandle = inSoundHandle;
+      	result.nmeDataProvider = dataProvider;
+      	result.nmeHandle = inSoundHandle;
 		nmeIncompleteList.push(result);
-      nmeDynamicSoundCount++;
-      return result;
-   }
+      	nmeDynamicSoundCount++;
+      	return result;
+   	}
 		
 	
 	

@@ -495,7 +495,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 
    if (inLine)
    {
-      if (mLineJob.mStroke && mLineJob.mCommand0 <n)
+      if (mLineJob.mStroke && mLineJob.mCommand0 <n-1)
       {
          mLineJob.mStroke->IncRef();
          mLineJob.mCommandCount = n-mLineJob.mCommand0;
@@ -508,7 +508,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 }
 
 
-Extent2DF Graphics::GetSoftwareExtent(const Transform &inTransform)
+Extent2DF Graphics::GetSoftwareExtent(const Transform &inTransform, bool inIncludeStroke)
 {
    Extent2DF result;
    Flush();
@@ -519,7 +519,7 @@ Extent2DF Graphics::GetSoftwareExtent(const Transform &inTransform)
       if (!job.mSoftwareRenderer)
          job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
 
-      job.mSoftwareRenderer->GetExtent(inTransform,result);
+      job.mSoftwareRenderer->GetExtent(inTransform,result,inIncludeStroke);
    }
 
    return result;
@@ -534,7 +534,7 @@ const Extent2DF &Graphics::GetExtent0(double inRotation)
       trans.mMatrix = &m;
       if (inRotation)
          m.Rotate(inRotation);
-      mExtent0 = GetSoftwareExtent(trans);
+      mExtent0 = GetSoftwareExtent(trans,true);
       mRotation0 = inRotation;
       mMeasuredJobs = mJobs.size();
    }

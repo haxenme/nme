@@ -31,7 +31,9 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    visible = true;
    mBitmapCache = 0;
    cacheAsBitmap = false;
+   pedanticBitmapCaching = false;
    blendMode = bmNormal;
+   pixelSnapping = psNone;
    opaqueBackground = 0;
    mouseEnabled = true;
    needsSoftKeyboard = false;
@@ -136,6 +138,14 @@ void DisplayObject::setCacheAsBitmap(bool inVal)
 {
    cacheAsBitmap = inVal;
 }
+
+
+void DisplayObject::setPixelSnapping(int inVal)
+{
+   pixelSnapping = inVal;
+   DirtyCache();
+}
+
 
 void DisplayObject::setVisible(bool inVal)
 {
@@ -313,10 +323,10 @@ Matrix &DisplayObject::GetLocalMatrix()
    return mLocalMatrix;
 }
 
-void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
+void DisplayObject::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke)
 {
    if (mGfx)
-      outExt.Add(mGfx->GetSoftwareExtent(inTrans));
+      outExt.Add(mGfx->GetSoftwareExtent(inTrans,inIncludeStroke));
 }
 
 
@@ -414,7 +424,7 @@ void DisplayObject::setWidth(double inValue)
       rot.Rotate(rotation);
    trans0.mMatrix = &rot;
    Extent2DF ext0;
-   GetExtent(trans0,ext0,false);
+   GetExtent(trans0,ext0,false,true);
 
    if (!ext0.Valid())
       return;
@@ -431,7 +441,7 @@ double DisplayObject::getWidth()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-   GetExtent(trans,ext,false);
+   GetExtent(trans,ext,false,true);
 
    if (!ext.Valid())
    {
@@ -450,7 +460,7 @@ void DisplayObject::setHeight(double inValue)
       rot.Rotate(rotation);
    trans0.mMatrix = &rot;
    Extent2DF ext0;
-   GetExtent(trans0,ext0,false);
+   GetExtent(trans0,ext0,false,true);
 
    if (!ext0.Valid())
       return;
@@ -467,7 +477,7 @@ double DisplayObject::getHeight()
    Transform trans;
    trans.mMatrix = &GetLocalMatrix();
    Extent2DF ext;
-   GetExtent(trans,ext,false);
+   GetExtent(trans,ext,false,true);
    if (!ext.Valid())
       return 0;
 
@@ -699,9 +709,9 @@ void SimpleButton::setMouseState(int inState)
    mMouseState = inState;
 }
 
-void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
+void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen, bool inIncludeStroke)
 {
-   DisplayObject::GetExtent(inTrans,outExt,inForScreen);
+   DisplayObject::GetExtent(inTrans,outExt,inForScreen,inIncludeStroke);
 
    Matrix full;
    Transform trans(inTrans);
@@ -726,7 +736,7 @@ void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool in
       }
       else
          // Seems scroll rects are ignored when calculating extent...
-         obj->GetExtent(trans,outExt,inForScreen);
+         obj->GetExtent(trans,outExt,inForScreen,inIncludeStroke);
    }
 }
 
@@ -863,7 +873,7 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
    }
 
    Extent2DF ext;
-   GetExtent(trans,ext,false);
+   GetExtent(trans,ext,false,true);
 
    Rect rect;
    if (!ext.GetRect(rect,0.999,0.999))
@@ -1007,6 +1017,17 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          obj_state = &clip_state;
       }
 
+      if (obj->pixelSnapping)
+      {
+         if (obj->pixelSnapping!=psAuto || (
+             full.m00>0.99 && full.m00<1.01 && full.m01==0 &&
+             full.m11>0.99 && full.m11<1.01 && full.m10==0 ) )
+         {
+            full.mtx = (int)full.mtx;
+            full.mty = (int)full.mty;
+         }
+      }
+
       obj_state->mMask = orig_mask;
 
       DisplayObject *mask = obj->getMask();
@@ -1029,7 +1050,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->CheckCacheDirty(inTarget.IsHardware());
 
             Extent2DF screen_extent;
-            obj->GetExtent(obj_state->mTransform,screen_extent,true);
+            obj->GetExtent(obj_state->mTransform,screen_extent,true,true);
             BitmapCache *mask = obj_state->mMask;
 
             // Get bounding pixel rect
@@ -1180,7 +1201,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                {
                   // TODO: this should actually be a rectangle rotated like the object?
                   Extent2DF screen_extent;
-                  obj->GetExtent(obj_state->mTransform,screen_extent,true);
+                  obj->GetExtent(obj_state->mTransform,screen_extent,true,true);
                   // Get bounding pixel rect
                   rect = obj_state->mTransform.GetTargetRect(screen_extent);
 
@@ -1222,9 +1243,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
       DisplayObject::Render(inTarget,inState);
 }
 
-void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen)
+void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke)
 {
-   DisplayObject::GetExtent(inTrans,outExt,inForScreen);
+   DisplayObject::GetExtent(inTrans,outExt,inForScreen,inIncludeStroke);
 
    Matrix full;
    Transform trans(inTrans);
@@ -1246,7 +1267,7 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
       }
       else
          // Seems scroll rects are ignored when calculating extent...
-         obj->GetExtent(trans,outExt,inForScreen);
+         obj->GetExtent(trans,outExt,inForScreen,inIncludeStroke);
    }
 }
 
@@ -1587,7 +1608,7 @@ void Stage::HandleEvent(Event &inEvent)
       UserPoint pixels(inEvent.x,inEvent.y);
       hit_obj = HitTest(pixels);
       //if (inEvent.type!=etTouchMove)
-        //ELOG("  type=%d %d,%d obj=%p %f,%f", inEvent.type, inEvent.x, inEvent.y, hit_obj, inEvent.sx, inEvent.sy);
+        //ELOG("  type=%d %d,%d obj=%p (%S)", inEvent.type, inEvent.x, inEvent.y, hit_obj, hit_obj?hit_obj->name.c_str():L"(none)");
 
       SimpleButton *but = hit_obj ? dynamic_cast<SimpleButton *>(hit_obj) : 0;
       inEvent.id = hit_obj ? hit_obj->id : id;

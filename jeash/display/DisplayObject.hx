@@ -205,16 +205,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	public function localToGlobal( point:Point ) {
-		if (this.parent == null) {
-			return new Point(this.x + point.x, this.y + point.y);
-		} else {
-			point.x = point.x + this.x;
-			point.y = point.y + this.y;
-			return this.parent.localToGlobal(point);
-		}
-	}
-
 	private function jeashGetMouseX() { return globalToLocal(new Point(stage.mouseX, 0)).x; }
 	private function jeashSetMouseX(x:Float) { return null; }
 	private function jeashGetMouseY() { return globalToLocal(new Point(0, stage.mouseY)).y; }
@@ -260,6 +250,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mFullMatrix.clone().invert().transformPoint(inPos);
 	}
 
+	public function localToGlobal( point:Point ) {
+		return mFullMatrix.clone().transformPoint(point);
+	}
+
 	public function jeashGetMatrix() {
 		return mMatrix.clone();
 	}
@@ -271,6 +265,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private function jeashGetGraphics() : jeash.display.Graphics {
 		return null;
+	}
+
+	private inline function jeashGetSurface():HTMLCanvasElement {
+		var gfx = jeashGetGraphics();
+		var surface = null;
+		if (gfx != null)
+			surface = gfx.jeashSurface;
+		return surface;
 	}
 
 	private function getOpaqueBackground() { 
@@ -347,7 +349,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mMatrix.ty = jeashY;	
 			}
 			
-			
 			if (parent != null)
 				mFullMatrix = parent.getFullMatrix(mMatrix);
 			else
@@ -355,6 +356,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			mMtxDirty = mMtxChainDirty = false;
 		}
+	}
+
+	function jeashApplyFilters(surface:HTMLCanvasElement) {
+		if (jeashFilters != null) {
+			for (filter in jeashFilters) {
+				filter.jeashApplyFilter(surface);
+			}
+		} 
 	}
 
 	private function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
@@ -370,15 +379,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
 
-			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
-				if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
-				for (filter in jeashFilters) {
-					filter.jeashApplyFilter(gfx.jeashSurface);
-				}
-			} else if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
+			if (gfx.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
+					
+			jeashApplyFilters(gfx.jeashSurface);
 
-			m.tx = m.tx + gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
-			m.ty = m.ty + gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
+			m.tx += gfx.jeashExtentWithFilters.x*m.a + gfx.jeashExtentWithFilters.y*m.c;
+			m.ty += gfx.jeashExtentWithFilters.x*m.b + gfx.jeashExtentWithFilters.y*m.d;
 
 			var premulAlpha = (parent != null ? parent.alpha : 1) * alpha;
 			if (inMask != null) {
@@ -398,14 +404,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	public function drawToSurface(inSurface : Dynamic,
+	public function drawToSurface(inSurface:Dynamic,
 			matrix:jeash.geom.Matrix,
-			colorTransform:jeash.geom.ColorTransform,
+			inColorTransform:jeash.geom.ColorTransform,
 			blendMode:BlendMode,
 			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
-		if (matrix == null) matrix = new Matrix();
-		jeashRender(matrix, inSurface, clipRect);
+		var oldAlpha = alpha;
+		alpha = 1;
+		jeashRender(null, null, null);
+		alpha = oldAlpha;
+
+		// copy the surface before draw to new surface
+		var surfaceCopy = BitmapData.jeashCopySurface(jeashGetSurface());
+		BitmapData.jeashColorTransformSurface(surfaceCopy, inColorTransform);
+		Lib.jeashDrawToSurface(surfaceCopy, inSurface, matrix);
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {

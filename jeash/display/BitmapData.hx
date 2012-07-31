@@ -78,13 +78,55 @@ typedef CopyPixelAtom = {
 	var destY:Float;
 }
 
+/** A MINSTD pseudo-random number generator.
+ *
+ * This generates a pseudo-random number sequence equivalent to std::minstd_rand0 from the C++ standard library, which
+ * is the generator that Flash uses to generate noise for BitmapData.noise().
+ *
+ * MINSTD was originally suggested in "A pseudo-random number generator for the System/360", P.A. Lewis, A.S. Goodman,
+ * J.M. Miller, IBM Systems Journal, Vol. 8, No. 2, 1969, pp. 136-146 */
+private class MinstdGenerator {
+	static inline var a = 16807;
+	static inline var m = (1 << 31) - 1;
+
+	var value:Int;
+
+	public function new(seed:Int) {
+		if (seed == 0) {
+			this.value = 1;
+		} else {
+			this.value = seed;
+		}
+	}
+
+	public function nextValue():Int {
+		var lo = a * (value & 0xffff);
+		var hi = a * (value >>> 16);
+		lo += (hi & 0x7fff) << 16;
+
+		if (lo < 0 || lo > m) {
+			lo &= m;
+			++lo;
+		}
+
+		lo += hi >>> 15;
+
+		if (lo < 0 || lo > m) {
+			lo &= m;
+			++lo;
+		}
+
+		return value = lo;
+	}
+}
+
 class BitmapData implements IBitmapDrawable {
 	private var mTextureBuffer:HTMLCanvasElement;
 	private var jeashTransparent:Bool;
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
-	public var rect : Rectangle;
+	public var rect:Rectangle;
 
 	var jeashImageData:ImageData;
 	var jeashImageDataChanged:Bool;
@@ -101,7 +143,6 @@ class BitmapData implements IBitmapDrawable {
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
 			?inFillColor:Int) {
-
 		jeashLocked = false;
 		jeashLeaseNum = 0;
 		jeashLease = new ImageDataLease();
@@ -128,21 +169,6 @@ class BitmapData implements IBitmapDrawable {
 			jeashInitColor = inFillColor;
 			jeashFillRect(rect, inFillColor);
 		}
-
-	}
-
-	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
-		throw "BitmapData.applyFilter not implemented in Jeash";
-	}
-
-	public function draw( source:IBitmapDrawable,
-			matrix:Matrix = null,
-			colorTransform:ColorTransform = null,
-			blendMode:BlendMode = null,
-			clipRect:Rectangle = null,
-			smoothing:Bool = false ):Void {
-		jeashBuildLease();
-		source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
 	}
 
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true) : Rectangle {
@@ -191,9 +217,14 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function dispose() : Void {
+		jeashClearCanvas();
+		mTextureBuffer = null;
+		jeashLeaseNum = 0;
+		jeashLease = null;
+		jeashImageData = null;
 	}
 
-	public function compare ( inBitmapTexture : BitmapData ) : Int {
+	public function compare (inBitmapTexture:BitmapData):Int {
 		throw "Not implemented. compare";
 		return 0x00000000;
 	}
@@ -220,29 +251,25 @@ class BitmapData implements IBitmapDrawable {
 		}
 	}
 
-	private function clipRect (r: Rectangle): Rectangle {
-		if (r.x < 0)
-		{
+	private function clipRect(r:Rectangle):Rectangle {
+		if (r.x < 0) {
 			r.width -= -r.x;
 			r.x = 0;
 			if (r.x + r.width <= 0)
 				return null;
 		}
-		if (r.y < 0)
-		{
+		if (r.y < 0) {
 			r.height -= -r.y;
 			r.y = 0;
 			if (r.y + r.height <= 0)
 				return null;
 		}
-		if (r.x + r.width >= getWidth ())
-		{
+		if (r.x + r.width >= getWidth ()) {
 			r.width -= r.x + r.width - getWidth ();
 			if (r.width <= 0)
 				return null;
 		}
-		if (r.y + r.height >= getHeight ())
-		{
+		if (r.y + r.height >= getHeight ()) {
 			r.height -= r.y + r.height - getHeight ();
 			if (r.height <= 0)
 				return null;
@@ -253,7 +280,6 @@ class BitmapData implements IBitmapDrawable {
 	inline public function jeashClearCanvas() mTextureBuffer.width = mTextureBuffer.width
 
 	function jeashFillRect(rect:Rectangle, color: UInt) {
-
 		jeashBuildLease();
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
@@ -456,6 +482,41 @@ class BitmapData implements IBitmapDrawable {
 		}
 	}
 
+	public function noise(randomSeed:Int, low:Int = 0, high:Int = 255, channelOptions:Int = 7, grayScale:Bool = false) {
+		var generator = new MinstdGenerator(randomSeed);
+		var ctx:CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		var imageData =
+				if (jeashLocked) jeashImageData
+				else ctx.createImageData(mTextureBuffer.width, mTextureBuffer.height);
+
+		for (i in 0...(mTextureBuffer.width*mTextureBuffer.height)) {
+			if (grayScale) {
+				imageData.data[i*4] = imageData.data[i*4+1] = imageData.data[i*4+2] =
+						low + generator.nextValue() % (high - low + 1);
+			} else {
+				imageData.data[i*4] =
+						if (channelOptions & BitmapDataChannel.RED == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i*4+1] =
+						if (channelOptions & BitmapDataChannel.GREEN == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i*4+2] =
+						if (channelOptions & BitmapDataChannel.BLUE == 0) 0
+						else low + generator.nextValue() % (high - low + 1);
+			}
+
+			imageData.data[i*4+3] =
+					if (channelOptions & BitmapDataChannel.ALPHA == 0) 255
+					else low + generator.nextValue() % (high - low + 1);
+		}
+
+		if (jeashLocked) {
+			jeashImageDataChanged = true;
+		} else {
+			ctx.putImageData(imageData, 0, 0);
+		}
+	}
+
 	public function clone() : BitmapData {
 		var bitmapData = new BitmapData(width, height, jeashTransparent);
 
@@ -564,36 +625,83 @@ class BitmapData implements IBitmapDrawable {
 		jeashBuildLease();
 	}
 
-	public function drawToSurface(inSurface : Dynamic,
+	public function drawToSurface(inSurface:Dynamic,
 			matrix:jeash.geom.Matrix,
-			colorTransform:jeash.geom.ColorTransform,
-			blendMode: BlendMode,
+			inColorTransform:jeash.geom.ColorTransform,
+			blendMode:BlendMode,
 			clipRect:Rectangle,
 			smothing:Bool):Void {
-		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
+		// copy the surface before draw to new surface
+		var surfaceCopy = BitmapData.jeashCopySurface(jeashGetSurface());
+		BitmapData.jeashColorTransformSurface(surfaceCopy, inColorTransform);
+
+		var ctx:CanvasRenderingContext2D = inSurface.getContext('2d');
 		if (matrix != null) {
 			ctx.save();
 			if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
 				ctx.translate(matrix.tx, matrix.ty);
 			else
 				ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+
+			ctx.drawImage(surfaceCopy, 0, 0);
 			ctx.restore();
+		} else
+			ctx.drawImage(surfaceCopy, 0, 0);
+	}
+
+	public static inline function jeashCopySurface(originalSurface:HTMLCanvasElement):HTMLCanvasElement {
+		var newSurface:HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
+		newSurface.width = originalSurface.width;
+		newSurface.height = originalSurface.height;
+
+		Lib.jeashDrawToSurface(originalSurface, newSurface);
+		Lib.jeashCopyStyle(originalSurface, newSurface);
+		return newSurface;
+	}
+
+	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
+		throw "BitmapData.applyFilter not implemented in Jeash";
+	}
+
+	public static inline function jeashColorTransformSurface(surface:HTMLCanvasElement, inColorTransform:ColorTransform):Void {
+		if (inColorTransform != null) {
+			var rect = new Rectangle(0, 0, surface.width, surface.height);
+			BitmapData.jeashColorTransform(rect, inColorTransform, surface);
 		}
+	}
 
-		jeashBuildLease();
+	private inline function jeashGetSurface():HTMLCanvasElement {
+		var surface = null;
+		if (!jeashLocked)
+			surface = mTextureBuffer;
+		return surface;
+	}
 
-		ctx.drawImage(handle(), 0, 0);
+	public function draw(source:IBitmapDrawable,
+			matrix:Matrix = null,
+			inColorTransform:ColorTransform = null,
+			blendMode:BlendMode = null,
+			clipRect:Rectangle = null,
+			smoothing:Bool = false ):Void {
+		source.drawToSurface(mTextureBuffer, matrix, inColorTransform, blendMode, clipRect, smoothing);
 	}
 
 	public function colorTransform(rect:Rectangle, colorTransform:ColorTransform) {
-		rect = clipRect (rect);
-		if (rect == null) return;
-
-		if (!jeashLocked) {
+		if (!jeashLocked)
 			jeashBuildLease();
-			var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		rect = clipRect(rect);
+		jeashColorTransform(rect, colorTransform, jeashGetSurface(), jeashLocked?jeashImageData:null);
+		if (jeashLocked)
+			jeashImageDataChanged = true;
+	}
 
-			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+	public static inline function jeashColorTransform(rect:Rectangle, colorTransform:ColorTransform, surface:HTMLCanvasElement, ?imagedata:ImageData) {
+		if (rect != null && rect.width > 0 && rect.height > 0) {
+			var ctx:CanvasRenderingContext2D = null;
+			if (imagedata == null) {
+				ctx = surface.getContext('2d');
+				imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+			}
 			var offsetX : Int;
 			for (i in 0...imagedata.data.length >> 2) {
 				offsetX = i * 4;
@@ -602,23 +710,8 @@ class BitmapData implements IBitmapDrawable {
 				imagedata.data[offsetX + 2] = Std.int((imagedata.data[offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
 				imagedata.data[offsetX + 3] = Std.int((imagedata.data[offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
 			}
-			ctx.putImageData (imagedata, rect.x, rect.y);
-		} else {
-			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
-			var offsetY : Int;
-			var offsetX : Int;
-
-			for (i in 0...Math.round(rect.height)) {
-				offsetY = (i * jeashImageData.width);
-				for (j in 0...Math.round(rect.width)) {
-					offsetX = 4 * (j + offsetY);
-					jeashImageData.data[s + offsetX] = Std.int((jeashImageData.data[s + offsetX] * colorTransform.redMultiplier) + colorTransform.redOffset);
-					jeashImageData.data[s + offsetX + 1] = Std.int((jeashImageData.data[s + offsetX + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
-					jeashImageData.data[s + offsetX + 2] = Std.int((jeashImageData.data[s + offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
-					jeashImageData.data[s + offsetX + 3] = Std.int((jeashImageData.data[s + offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
-				}
-			}
-			jeashImageDataChanged = true;
+			if (ctx != null)
+				ctx.putImageData(imagedata, rect.x, rect.y);
 		}
 	}
 

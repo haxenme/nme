@@ -196,7 +196,7 @@ class Lib
 	{
 		#if code_completion
 		#elseif (cpp || neko)
-		neash.Lib.pause();
+		neash.Lib.resume();
 		#end
 	}
 	

@@ -17,11 +17,6 @@ class Bitmap extends DisplayObject
 	public var bitmapData(default, nmeSetBitmapData):BitmapData;
 	
 	/**
-	 * Adjust the type of pixel snapping used when rendering the image
-	 */
-	public var pixelSnapping:PixelSnapping;
-	
-	/**
 	 * Adjust whether the image should be rendered with smoothing
 	 */
 	public var smoothing(default, nmeSetSmoothing):Bool;
@@ -33,7 +28,7 @@ class Bitmap extends DisplayObject
 	{
 		super(DisplayObject.nme_create_display_object(), "Bitmap");
 		
-		pixelSnapping = inPixelSnapping;
+		pixelSnapping = inPixelSnapping==null ? PixelSnapping.AUTO : inPixelSnapping;
 		smoothing = inSmoothing;
 		
 		nmeSetBitmapData(inBitmapData);

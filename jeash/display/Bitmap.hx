@@ -35,7 +35,8 @@ import jeash.geom.Point;
 
 import jeash.Html5Dom;
 
-class Bitmap extends jeash.display.DisplayObject {
+class Bitmap extends jeash.display.DisplayObject
+{
 	public var bitmapData(default,jeashSetBitmapData) : BitmapData;
 	public var pixelSnapping : PixelSnapping;
 	public var smoothing : Bool;
@@ -64,31 +65,21 @@ class Bitmap extends jeash.display.DisplayObject {
 		return inBitmapData;
 	}
 
-	override public function jeashGetGraphics() return jeashGraphics
+	override private function jeashGetGraphics() return jeashGraphics
 	
 	override function buildBounds() {
 		super.buildBounds();
 				
-		if(bitmapData!=null)
-		{
+		if(bitmapData!=null) {
 			var r:Rectangle = new Rectangle(0, 0, bitmapData.width, bitmapData.height);		
 			
-			if (r.width!=0 || r.height!=0)
-			{
+			if (r.width!=0 || r.height!=0) {
 				if (mBoundsRect.width==0 && mBoundsRect.height==0)
 					mBoundsRect = r.clone();
 				else
 					mBoundsRect.extendBounds(r);
 			}
 		}
-	}
-
-	function jeashApplyFilters(surface:HTMLCanvasElement) {
-		if (jeashFilters != null) {
-				for (filter in jeashFilters) {
-					filter.jeashApplyFilter(jeashGraphics.jeashSurface);
-				}
-		} 
 	}
 
 	override public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
@@ -115,19 +106,17 @@ class Bitmap extends jeash.display.DisplayObject {
 		if (inMask != null) {
 			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
 		} else {
-
 			Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 		}
-
 	}
 
-	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
 		if (!visible) return null; 
 		else if (this.bitmapData != null) {
 			var local = globalToLocal(point);
 			if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; else return cast this;
 		}
-		else return super.jeashGetObjectUnderPoint(point)
-
+		else return super.jeashGetObjectUnderPoint(point);
+	}
 }

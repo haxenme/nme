@@ -300,7 +300,6 @@ class Graphics
 
 		jeashExpandFilteredExtent(-padding/2, -padding/2);
 
-
 		if (jeashClearNextCycle) {
 			nextDrawIndex = 0;
 			jeashClearCanvas();
@@ -998,6 +997,7 @@ class Graphics
 		if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
 
 		Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
+
 		if (Lib.jeashIsOnStage(jeashSurface)) {
 			Lib.jeashAppendSurface(dstCanvas);
 			Lib.jeashCopyStyle(jeashSurface, dstCanvas);

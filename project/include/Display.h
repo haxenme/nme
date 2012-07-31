@@ -131,6 +131,12 @@ enum StageAlign
    saBottom,
 };
 
+enum PixelSnapping
+{
+   psNone = 0,
+   psAuto = 1,
+   psAlways = 2,
+};
 
 enum Cursor { curNone, curPointer, curHand,
               curTextSelect0, curTextSelect90, curTextSelect180, curTextSelect270 };
@@ -175,6 +181,10 @@ public:
    void setMovesForSoftKeyboard(bool inVal) { movesForSoftKeyboard = inVal; }
    bool getCacheAsBitmap() { return cacheAsBitmap; }
    void setCacheAsBitmap(bool inVal);
+   bool getPedanticBitmapCaching() { return pedanticBitmapCaching; }
+   void setPedanticBitmapCaching(bool inVal) { pedanticBitmapCaching=inVal; }
+   int getPixelSnapping() { return pixelSnapping; }
+   void setPixelSnapping(int inVal);
    bool getVisible() { return visible; }
    void setVisible(bool inVal);
    const wchar_t *getName() { return name.c_str(); }
@@ -201,6 +211,8 @@ public:
 
    BlendMode blendMode;
    bool cacheAsBitmap;
+   bool pedanticBitmapCaching;
+   unsigned char pixelSnapping;
    ColorTransform  colorTransform;
    FilterList filters;
 
@@ -214,7 +226,7 @@ public:
    bool   needsSoftKeyboard;
    bool   movesForSoftKeyboard;
 
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
 
@@ -317,7 +329,7 @@ public:
    bool IsCacheDirty();
    void ClearCacheDirty();
    bool NonNormalBlendChild();
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
@@ -342,7 +354,7 @@ public:
 
    DisplayObject *mState[stateSIZE];
 
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen);
+   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void DirtyUp(uint32 inFlags);
    bool IsCacheDirty();

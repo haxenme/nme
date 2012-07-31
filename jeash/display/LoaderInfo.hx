@@ -64,7 +64,8 @@ class LoaderInfo extends EventDispatcher {
 
 	public static function create(ldr : Loader) {
 		var li = new LoaderInfo();
-		li.loader = ldr;
+		if (ldr != null)
+			li.loader = ldr;
 
 		return li;
 	}

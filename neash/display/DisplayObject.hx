@@ -34,6 +34,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 */
 	public var cacheAsBitmap(nmeGetCacheAsBitmap, nmeSetCacheAsBitmap):Bool;
 	
+/**
+	 * When cacheAsBitmap is true, new bitmaps are generated when the DisplayObject changes.
+	 * When pedanticBitmapCaching=true, new bitmaps will be generated for non-integer sub-pixel movements.
+	 * When pedanticBitmapCaching=false, new bitmaps will not be generated for general translations.
+    * This allows for the number of renders to be kept small, while maintaining sub-pixel anti-aliasing,
+    *  at the cost of sub-pixel accuracy in position.
+    * Note that this is not supported in flash (which effectively defaults to true), an it is generally a perfromance optimisation.
+	 */
+	public var pedanticBitmapCaching(nmeGetPedanticBitmapCaching, nmeSetPedanticBitmapCaching):Bool;
+
+/**
+  * This allows translations to be aligned to pixel boundaries, giving more predicatble results.
+  * Note that this more general that the flash.display.Bitmap.pixelSnapping in that it can be applied to any DisplayObject.
+  */
+	public var pixelSnapping(nmeGetPixelSnapping, nmeSetPixelSnapping) :PixelSnapping;
 	/**
 	 * An array of BitmapFilters being used with this object.
 	 * 
@@ -247,6 +262,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		return nme_display_object_hit_test_point(nmeHandle, x, y, shapeFlag, true);
 	}
+
+	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle
+   {
+      var result = new Rectangle();
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace.nmeHandle, result, true );
+      return result;
+   }
+
+   public function  getRect(targetCoordinateSpace : DisplayObject) : Rectangle
+   {
+      var result = new Rectangle();
+		nme_display_object_get_bounds(nmeHandle, targetCoordinateSpace.nmeHandle, result, false );
+      return result;
+   }
+
+
 	
 	
 	/**
@@ -523,6 +554,24 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inVal;
 	}
 	
+	/** @private */ private function nmeGetPedanticBitmapCaching():Bool { return nme_display_object_get_pedantic_bitmap_caching(nmeHandle); }
+	/** @private */ private function nmeSetPedanticBitmapCaching(inVal:Bool):Bool
+	{
+		nme_display_object_set_pedantic_bitmap_caching(nmeHandle,inVal);
+		return inVal;
+	}
+	/** @private */ private function nmeGetPixelSnapping():PixelSnapping
+   {
+      var val:Int = nme_display_object_get_pixel_snapping(nmeHandle);
+		return Type.createEnumIndex(PixelSnapping, val);
+   }
+	/** @private */ private function nmeSetPixelSnapping(inVal:PixelSnapping):PixelSnapping
+	{
+		if (inVal==null)
+			nme_display_object_set_pixel_snapping(nmeHandle,0);
+			nme_display_object_set_pixel_snapping(nmeHandle,Type.enumIndex(inVal));
+		return inVal;
+	}
 	
 	/** @private */ private function nmeGetFilters():Array<Dynamic>
 	{	
@@ -751,6 +800,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private static var nme_display_object_set_blend_mode = Loader.load("nme_display_object_set_blend_mode", 2);
 	private static var nme_display_object_get_cache_as_bitmap = Loader.load("nme_display_object_get_cache_as_bitmap", 1);
 	private static var nme_display_object_set_cache_as_bitmap = Loader.load("nme_display_object_set_cache_as_bitmap", 2);
+	private static var nme_display_object_get_pedantic_bitmap_caching = Loader.load("nme_display_object_get_pedantic_bitmap_caching", 1);
+	private static var nme_display_object_set_pedantic_bitmap_caching = Loader.load("nme_display_object_set_pedantic_bitmap_caching", 2);
+	private static var nme_display_object_get_pixel_snapping = Loader.load("nme_display_object_get_pixel_snapping", 1);
+	private static var nme_display_object_set_pixel_snapping = Loader.load("nme_display_object_set_pixel_snapping", 2);
 	private static var nme_display_object_get_visible = Loader.load("nme_display_object_get_visible", 1);
 	private static var nme_display_object_set_visible = Loader.load("nme_display_object_set_visible", 2);
 	private static var nme_display_object_set_filters = Loader.load("nme_display_object_set_filters", 2);
@@ -764,6 +817,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private static var nme_display_object_get_color_transform = Loader.load("nme_display_object_get_color_transform", 3);
 	private static var nme_display_object_set_color_transform = Loader.load("nme_display_object_set_color_transform", 2);
 	private static var nme_display_object_get_pixel_bounds = Loader.load("nme_display_object_get_pixel_bounds", 2);
+	private static var nme_display_object_get_bounds = Loader.load("nme_display_object_get_bounds", 4);
 	private static var nme_display_object_hit_test_point = Loader.load("nme_display_object_hit_test_point", 5);
 
 }

@@ -56,31 +56,21 @@ class ColorTransform
       greenOffset = inGreenOffset==null ? 0.0 : inGreenOffset;
       blueOffset = inBlueOffset==null ? 0.0 : inBlueOffset;
       alphaOffset = inAlphaOffset==null ? 0.0 : inAlphaOffset;
-      color = 0;
    }
 
-   public function concat(second : jeash.geom.ColorTransform) : Void
-   {
+   public function concat(second : jeash.geom.ColorTransform) : Void {
       redMultiplier += second.redMultiplier;
 	  greenMultiplier += second.greenMultiplier;
 	  blueMultiplier += second.blueMultiplier;
 	  alphaMultiplier += second.alphaMultiplier;
    }
-   
-   
-	
-	// Getters & Setters
-	
-	
-	private function jeashGetColor():Int
-	{
+
+	private function jeashGetColor():Int {
 		return ((Std.int (redOffset) << 16) | (Std.int (greenOffset) << 8) | Std.int (blueOffset));
 	}
-	
-	
-	private function jeashSetColor(value:Int):Int
-	{
-		redOffset = (value >> 16) & 0xFF;
+
+	private function jeashSetColor(value:Int):Int {
+      redOffset = (value >> 16) & 0xFF;
 		greenOffset = (value >> 8) & 0xFF;
 		blueOffset = value & 0xFF;
 		
@@ -90,6 +80,4 @@ class ColorTransform
 		
 		return color;
 	}
-	
 }
-

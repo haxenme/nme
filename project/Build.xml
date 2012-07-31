@@ -183,9 +183,6 @@
 		<file name="common/XML/tinyxmlerror.cpp"/>
 		<file name="common/XML/tinyxmlparser.cpp"/>
 		
-		<compilerflag value="-Isoftware-renderer/include"/>
-		
-		
 		<file name="software-renderer/AlphaMask.cpp"/>
 		<file name="software-renderer/BitmapFill.cpp"/>
 		<file name="software-renderer/BitmapFillPerspective.cpp"/>
@@ -197,7 +194,6 @@
 		<file name="software-renderer/SolidFill.cpp"/>
 		<file name="software-renderer/SolidRender.cpp"/>
 		<file name="software-renderer/TileRenderer.cpp"/>
-		<file name="software-renderer/TriangleLineRender.cpp"/>
 		<file name="software-renderer/TriangleRender.cpp"/>
 		
 		<file name="opengl/OpenGLContext.cpp" if="ogl"/>
@@ -351,6 +347,7 @@
 		<lib name="-lEGL" if="blackberry"/>
 		<lib name="-lGLESv1_CM" if="blackberry"/>
 		<lib name="-lm" if="blackberry"/>
+        <lib name="-lsocket" if="blackberry"/>
 		
 		<lib name="gdi32.lib" if="windows"/>
 		<lib name="opengl32.lib" if="windows"/>

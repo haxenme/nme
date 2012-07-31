@@ -17,12 +17,12 @@ namespace nme
 	}
 	
 
-	bool TriangleLineRender::GetExtent(const Transform &inTransform,Extent2DF &ioExtent)
+	bool TriangleLineRender::GetExtent(const Transform &inTransform,Extent2DF &ioExtent,bool inIncludeStroke)
 	{
 		bool result = false;
 		if (mSolid)
-			result = mSolid->GetExtent(inTransform,ioExtent);
-		return CachedExtentRenderer::GetExtent(inTransform,ioExtent) || result;
+			result = mSolid->GetExtent(inTransform,ioExtent,inIncludeStroke);
+		return CachedExtentRenderer::GetExtent(inTransform,ioExtent,inIncludeStroke) || result;
 	}
 	
 	

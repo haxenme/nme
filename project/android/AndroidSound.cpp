@@ -90,23 +90,6 @@ namespace nme
 	class AndroidMusicChannel : public SoundChannel
 	{
 	public:
-		AndroidMusicChannel(Object *inSound, int inHandle, double startTime, int loops, const SoundTransform &inTransform)
-		{
-			JNIEnv *env = GetEnv();
-			mState = 0;
-			mSound = inSound;
-			inSound->IncRef();
-
-			if (inHandle >= 0)
-			{
-				jclass cls = env->FindClass("org/haxe/nme/Sound");
-				jmethodID mid = env->GetStaticMethodID(cls, "playMusic", "(IDDID)I");
-				if (mid > 0) {
-					mState = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops, startTime);
-				}
-			}
-	    }
-
 		AndroidMusicChannel(Object *inSound, const std::string &inPath, double startTime, int loops, const SoundTransform &inTransform)
 		{
 			JNIEnv *env = GetEnv();
@@ -120,6 +103,7 @@ namespace nme
 			if (mid > 0) {
 				mState = env->CallStaticIntMethod(cls, mid, path, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops, startTime);
 			}
+			mSoundPath = inPath;
 	    }
 
 		~AndroidMusicChannel()
@@ -131,25 +115,48 @@ namespace nme
 		{
 			JNIEnv *env = GetEnv();
 			jclass cls = env->FindClass("org/haxe/nme/Sound");
-			jmethodID mid = env->GetStaticMethodID(cls, "getMusicComplete", "()Z");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "getComplete", "(Ljava/lang/String;)Z");
 			if (mid > 0) {
-				return env->CallStaticBooleanMethod(cls, mid);
+				return env->CallStaticBooleanMethod(cls, mid, path);
 			}
 			return false;
 		}
 
+		double getPosition()
+		{
+			JNIEnv *env = GetEnv();
+			jclass cls = env->FindClass("org/haxe/nme/Sound");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "getPosition", "(Ljava/lang/String;)I");
+			if (mid > 0) {
+				return env->CallStaticIntMethod(cls, mid, path);
+			}
+			return -1;
+		}
+
 		double getLeft()
 		{
-			return 0.5;
+			JNIEnv *env = GetEnv();
+			jclass cls = env->FindClass("org/haxe/nme/Sound");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "getLeft", "(Ljava/lang/String;)D");
+			if (mid > 0) {
+				return env->CallStaticDoubleMethod(cls, mid, path);
+			}
+			return -1;
 		}
 
 		double getRight()
 		{
-			return 0.5;
-		}
-
-		double getPosition()
-		{
+			JNIEnv *env = GetEnv();
+			jclass cls = env->FindClass("org/haxe/nme/Sound");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "getRight", "(Ljava/lang/String;)D");
+			if (mid > 0) {
+				return env->CallStaticDoubleMethod(cls, mid, path);
+			}
+			return -1;
 		}
 
 		void stop()
@@ -157,9 +164,10 @@ namespace nme
 			JNIEnv *env = GetEnv();
 
 			jclass cls = env->FindClass("org/haxe/nme/Sound");
-			jmethodID mid = env->GetStaticMethodID(cls, "stopMusic", "()V");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "stopMusic", "(Ljava/lang/String;)V");
 			if (mid > 0) {
-				env->CallStaticVoidMethod(cls, mid);
+				env->CallStaticVoidMethod(cls, mid, path);
 			}
 		}
 
@@ -168,14 +176,16 @@ namespace nme
 			JNIEnv *env = GetEnv();
 
 			jclass cls = env->FindClass("org/haxe/nme/Sound");
-			jmethodID mid = env->GetStaticMethodID(cls, "setMusicTransform", "(DD)V");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "setMusicTransform", "(Ljava/lang/String;DD)V");
 			if (mid > 0 ) {
-				env->CallStaticVoidMethod(cls, mid, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2));
+				env->CallStaticVoidMethod(cls, mid, path, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2));
 			}
 		}
 
 		Object *mSound;
 		int mState;
+		std::string mSoundPath;
 	};
 
 
@@ -185,7 +195,6 @@ namespace nme
 	   {
 			MODE_UNKNOWN,
 			MODE_SOUND_ID,
-			MODE_MUSIC_RES_ID,
 			MODE_MUSIC_PATH,
 		};
 
@@ -213,14 +222,6 @@ namespace nme
 				}
 			}
 
-			if (handleID < 0) {
-				jmethodID gmh = env->GetStaticMethodID(cls, "getMusicHandle", "(Ljava/lang/String;)I");
-				if (gmh > 0) {
-					handleID = env->CallStaticIntMethod(cls, gmh, path);
-					if (handleID > 0)
-						mMode = MODE_MUSIC_RES_ID;
-				}
-			}
 			//env->ReleaseStringUTFChars(str, inSound.c_str() );
 
 			if (handleID < 0)
@@ -246,11 +247,11 @@ namespace nme
 
 		double getLength()
 		{
-			if (mLength == 0 && handleID > 0) {
+			if (mLength == 0) {
 				JNIEnv *env = GetEnv();
 				jclass cls = env->FindClass("org/haxe/nme/Sound");
 				jstring path = env->NewStringUTF(mSoundPath.c_str());
-				jmethodID mid = env->GetStaticMethodID(cls, "getSoundLength", "(Ljava/lang/String;)I");
+				jmethodID mid = env->GetStaticMethodID(cls, "getDuration", "(Ljava/lang/String;)I");
 				if (mid > 0) {
 					mLength = env->CallStaticIntMethod(cls, mid, path);
 				}
@@ -274,9 +275,6 @@ namespace nme
 		SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
 		{
 			switch (mMode) {
-				case MODE_MUSIC_RES_ID:
-					return new AndroidMusicChannel(this, handleID, startTime, loops, inTransform);
-					break;
 				case MODE_SOUND_ID:
 					{
 						int mid = getSoundPoolID();

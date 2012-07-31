@@ -1445,6 +1445,79 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
    result->DecRef();
 }
 
+void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale)
+{
+   srand (randomSeed);
+
+   RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight));
+   ARGB tmpRgb;
+
+   for (int y=0;y<mHeight;y++)
+   {
+      ARGB *rgb = ((ARGB *)target.Row(y));
+      for(int x=0;x<mWidth;x++)
+      {
+         if (grayScale)
+         {
+            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + rand() % (high - low + 1);
+         }
+         else
+         {
+            if (channelOptions & CHAN_RED)
+            {
+               tmpRgb.c2 = low + rand() % (high - low + 1);
+            }
+            else
+            {
+               tmpRgb.c2 = 0;
+            }
+
+            if (channelOptions & CHAN_GREEN)
+            {
+               tmpRgb.c1 = low + rand() % (high - low + 1);
+            }
+            else
+            {
+               tmpRgb.c1 = 0;
+            }
+
+            if (channelOptions & CHAN_BLUE)
+            {
+               tmpRgb.c0 = low + rand() % (high - low + 1);
+            }
+            else
+            {
+               tmpRgb.c0 = 0;
+            }
+         }
+
+         if (channelOptions & CHAN_ALPHA)
+         {
+            tmpRgb.a = low + rand() % (high - low + 1);
+         }
+         else
+         {
+            tmpRgb.a = 255;
+         }
+
+         if ((bool)(mPixelFormat & pfSwapRB) == gC0IsRed)
+         {
+            *rgb = tmpRgb;
+         }
+         else
+         {
+            rgb->SetSwapRGBA(tmpRgb);
+         }
+
+         rgb++;
+      }
+   }
+   
+   srand (1);
+
+   EndRender();
+}
+
 
 
 

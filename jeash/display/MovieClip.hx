@@ -45,6 +45,7 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic>
       enabled = true;
       mCurrentFrame = 0;
       mTotalFrames = 0;
+      this.loaderInfo = LoaderInfo.create(null);
       name = "MovieClip " + jeash.display.DisplayObject.mNameID++;
    }
 

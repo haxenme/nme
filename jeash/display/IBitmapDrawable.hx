@@ -38,5 +38,4 @@ interface IBitmapDrawable {
 			blendMode:BlendMode,
 			clipRect:Rectangle,
 			smoothing:Bool):Void;
-
 }

@@ -200,7 +200,7 @@ public:
 
 enum StrokeCaps { scRound, scNone, scSquare };
 enum StrokeJoints { sjRound, sjMiter, sjBevel };
-enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal };
+enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal, ssmOpenGL };
 
 class GraphicsStroke : public IGraphicsStroke
 {
@@ -623,7 +623,7 @@ public:
 
    virtual bool Render( const RenderTarget &inTarget, const RenderState &inState ) = 0;
 
-   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent) = 0;
+   virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent, bool inIncludeStroke) = 0;
 
    virtual bool Hits(const RenderState &inState) { return false; }
 
@@ -666,7 +666,7 @@ public:
 
    void clear();
 
-   Extent2DF GetSoftwareExtent(const Transform &inTransform);
+   Extent2DF GetSoftwareExtent(const Transform &inTransform,bool inIncludeStroke);
 
    bool Render( const RenderTarget &inTarget, const RenderState &inState );
 
