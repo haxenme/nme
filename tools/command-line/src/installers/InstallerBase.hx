@@ -1014,6 +1014,16 @@ class InstallerBase {
 					
 					defines.set ("BUILD_DIR", substitute (element.att.path));
 				
+				case "min-swf-version":
+					
+					var version = substitute (element.att.resolve ("swf-version"));
+					
+					if (!defines.exists ("SWF_VERSION") || Std.parseInt (defines.get ("SWF_VERSION")) <= Std.parseInt (version)) {
+						
+						defines.set ("SWF_VERSION", version);
+						
+					}
+				
 				case "swf-version":
 					
 					defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
