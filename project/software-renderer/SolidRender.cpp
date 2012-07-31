@@ -39,8 +39,8 @@ public:
                   point++;
                case pcMoveTo:
                case pcBeginAt:
-                  point++;
                   last = *point;
+                  point++;
                   break;
 
                case pcWideLineTo:
