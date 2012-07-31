@@ -35,12 +35,18 @@ public:
          {
             switch(mCommands[ mCommand0 + i])
             {
-               case pcWideLineTo:
                case pcWideMoveTo:
                   point++;
-               case pcLineTo:
                case pcMoveTo:
                case pcBeginAt:
+                  point++;
+                  last = *point;
+                  break;
+
+               case pcWideLineTo:
+                  point++;
+               case pcLineTo:
+                  mBuildExtent->Add(last);
                   last = *point;
                   mBuildExtent->Add(last);
                   point++;
