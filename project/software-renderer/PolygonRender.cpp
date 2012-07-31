@@ -82,10 +82,18 @@ void PolygonRender::BuildCurve(const UserPoint &inP0, const UserPoint &inP1, con
       double t_ = 1.0 - t;
       UserPoint p = inP0 * (t_* t_) + inP1 * (2.0 * t * t_) + inP2 * (t * t);
       Fixed10 fixed = mTransform.ToImageAA(p);
+      #ifdef ANDROID
+      mSpanRect->Line00(last, fixed);
+      #else
       mSpanRect->Line<false, false>(last, fixed);
+      #endif
       last = fixed;
    }
+   #ifdef ANDROID
+   mSpanRect->Line00(last, mTransform.ToImageAA(inP2));
+   #else
    mSpanRect->Line<false, false>(last, mTransform.ToImageAA(inP2));
+   #endif
 }
 
 
@@ -114,16 +122,26 @@ void PolygonRender::BuildFatCurve(const UserPoint &inP0, const UserPoint &inP1, 
       
       Fixed10 p0 = mTransform.ToImageAA(p + perp);
       Fixed10 p1 = mTransform.ToImageAA(p - perp);
+      #ifdef ANDROID
+      mSpanRect->Line00(last_p0, p0);
+      mSpanRect->Line00(p1, last_p1);
+      #else
       mSpanRect->Line<false, false>(last_p0, p0);
       mSpanRect->Line<false, false>(p1, last_p1);
+      #endif
       last_p0 = p0;
       last_p1 = p1;
    }
    
    Fixed10 p0 = mTransform.ToImageAA(inP2 + perp1);
    Fixed10 p1 = mTransform.ToImageAA(inP2 - perp1);
+   #ifdef ANDROID
+   mSpanRect->Line00(last_p0, p0);
+   mSpanRect->Line00(p1, last_p1);
+   #else
    mSpanRect->Line<false, false>(last_p0, p0);
    mSpanRect->Line<false, false>(p1, last_p1);
+   #endif
 }
 
 
@@ -141,7 +159,11 @@ void PolygonRender::BuildHitTest(const UserPoint &inP0, const UserPoint &inP1)
 
 void PolygonRender::BuildSolid(const UserPoint &inP0, const UserPoint &inP1)
 {
+   #ifdef ANDROID
+   mSpanRect->Line00(mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1));
+   #else
    mSpanRect->Line<false, false>(mTransform.ToImageAA(inP0), mTransform.ToImageAA(inP1));
+   #endif
 }
 
 
