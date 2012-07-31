@@ -200,8 +200,15 @@ public:
    }
    
    
-   double GetPerpLen(const Matrix &m)
+   double GetPerpLen(const Matrix &m, bool inForExtent)
    {
+      if (!mIncludeStrokeInExtent && inForExtent)
+      {
+         mDTheta = 1e20;
+         return 0.0;
+      }
+
+
       // Convert line data to solid data
       double perp_len = mStroke->thickness;
       if (perp_len==0.0)
@@ -215,6 +222,7 @@ public:
                // Done!
                break;
             case ssmNormal:
+            case ssmOpenGL:
                perp_len *= sqrt( 0.5*(m.m00*m.m00 + m.m01*m.m01 + m.m10*m.m10 + m.m11*m.m11) );
                break;
             case ssmVertical:
@@ -241,21 +249,8 @@ public:
      double perp_len = 0.0;
      int alpha = 256;
      
-     if (mIncludeStrokeInExtent || inMode!=itGetExtent)
-     {
-        perp_len = GetPerpLen(m);
-        if (perp_len<0.5 && inMode!=itGetExtent)
-        {
-           alpha = 512 * perp_len;
-           perp_len = 0.5;
-           if (alpha<10)
-              return 0;
-        }
-     }
-     else
-     {
-        mDTheta = 1e20;
-     }
+     perp_len = GetPerpLen(m,inMode==itGetExtent);
+
 
 
       int n = mCommandCount;
@@ -467,15 +462,8 @@ public:
             inMode==itCreateRenderer ? &LineRender::BuildSolid :
                   &LineRender::BuildHitTest;
       
-     double perp_len = 0.0;
+     double perp_len = GetPerpLen(m,inMode==itGetExtent);
      
-     if (mIncludeStrokeInExtent || inMode!=itGetExtent)
-        perp_len = GetPerpLen(m);
-     else
-     {
-        mDTheta = 1e20;
-     }
-      
      UserPoint *point = 0;
      if (inMode==itHitTest)
        point = &mTriangles->mVertices[0];

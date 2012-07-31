@@ -200,7 +200,7 @@ public:
 
 enum StrokeCaps { scRound, scNone, scSquare };
 enum StrokeJoints { sjRound, sjMiter, sjBevel };
-enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal };
+enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal, ssmOpenGL };
 
 class GraphicsStroke : public IGraphicsStroke
 {

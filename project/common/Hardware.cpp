@@ -48,7 +48,7 @@ public:
          if (!SetFill(inJob.mFill,inHardware))
             return;
       }
-      else if (tessellate_lines)
+      else if (tessellate_lines && inJob.mStroke->scaleMode==ssmNormal)
       {
          // ptTriangleStrip?
          mElement.mPrimType = ptTriangles;
@@ -71,6 +71,7 @@ public:
       }
       else
       {
+         tessellate_lines = false;
          mElement.mPrimType = ptLineStrip;
          GraphicsStroke *stroke = inJob.mStroke;
          mElement.mScaleMode = stroke->scaleMode;
@@ -1265,6 +1266,7 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
             {
                case ssmNone: width = draw.mWidth; break;
                case ssmNormal:
+               case ssmOpenGL:
                   if (sLineScaleNormal<0)
                      sLineScaleNormal =
                         sqrt( 0.5*( m.m00*m.m00 + m.m01*m.m01 +

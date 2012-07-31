@@ -420,10 +420,10 @@ void SpanRect::Line(Fixed10 inP0, Fixed10 inP1)
    }
 }
 
-void SpanRect::Line00(Fixed10 inP0, Fixed10 inP1) { return Line<false,false>(inP0,inP1); }
-void SpanRect::Line01(Fixed10 inP0, Fixed10 inP1) { return Line<false,true >(inP0,inP1); }
-void SpanRect::Line10(Fixed10 inP0, Fixed10 inP1) { return Line<true ,false>(inP0,inP1); }
-void SpanRect::Line11(Fixed10 inP0, Fixed10 inP1) { return Line<true ,true >(inP0,inP1); }
+void SpanRect::Line00(Fixed10 inP0, Fixed10 inP1) { Line<false,false>(inP0,inP1); }
+void SpanRect::Line01(Fixed10 inP0, Fixed10 inP1) { Line<false,true >(inP0,inP1); }
+void SpanRect::Line10(Fixed10 inP0, Fixed10 inP1) { Line<true ,false>(inP0,inP1); }
+void SpanRect::Line11(Fixed10 inP0, Fixed10 inP1) { Line<true ,true >(inP0,inP1); }
 
 
 void BuildAlphaRuns(const SpanRect &inRect,Transitions &inTrans, AlphaRuns &outRuns, int inFactor)

@@ -80,8 +80,7 @@ struct SpanRect
 
    AlphaMask *CreateMask(const Transform &inTransform, int inAlpha);
 
-   template<bool MASK_AA_X, bool MASK_AA_Y> void Line(Fixed10 inP0, Fixed10 inP1);
-
+   // first bit = X AA, second bit = Y AA
    void Line00(Fixed10 inP0, Fixed10 inP1);
    void Line01(Fixed10 inP0, Fixed10 inP1);
    void Line10(Fixed10 inP0, Fixed10 inP1);
@@ -94,6 +93,9 @@ struct SpanRect
    int mMinX;
    int mWinding;
    Rect   mRect;
+
+private:
+   template<bool MASK_AA_X, bool MASK_AA_Y> inline void Line(Fixed10 inP0, Fixed10 inP1);
 };
 
 

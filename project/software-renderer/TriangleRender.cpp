@@ -152,7 +152,6 @@ public:
    
             SpanRect *span = new SpanRect(visible_pixels,inState.mTransform.mAAFactor);
 			
-			#ifdef ANDROID
             if (aa1 || edge_aa[0])
                span->Line01( mTransform.ToImageAA(point[0]),mTransform.ToImageAA(point[1]) );
             else
@@ -167,22 +166,6 @@ public:
                span->Line01( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
             else
                span->Line11( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
-            #else
-            if (aa1 || edge_aa[0])
-               span->Line<false,true>( mTransform.ToImageAA(point[0]),mTransform.ToImageAA(point[1]) );
-            else
-               span->Line<true,true>( mTransform.ToImageAA(point[0]),mTransform.ToImageAA(point[1]) );
-
-            if (aa1 || edge_aa[1])
-               span->Line<false,true>( mTransform.ToImageAA(point[1]),mTransform.ToImageAA(point[2]) );
-            else
-               span->Line<true,true>( mTransform.ToImageAA(point[1]),mTransform.ToImageAA(point[2]) );
-
-            if (aa1 || edge_aa[2])
-               span->Line<false,true>( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
-            else
-               span->Line<true,true>( mTransform.ToImageAA(point[2]),mTransform.ToImageAA(point[0]) );
-            #endif
 
             alpha = span->CreateMask(mTransform,256);
             delete span;

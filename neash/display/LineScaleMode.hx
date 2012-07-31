@@ -7,4 +7,5 @@ enum LineScaleMode
 	NONE;
 	VERTICAL;
 	HORIZONTAL;	
+	OPENGL;	
 }

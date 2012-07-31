@@ -339,6 +339,7 @@ public:
                   {
                      case ssmNone: SetLineWidth(draw.mWidth); break;
                      case ssmNormal:
+                     case ssmOpenGL:
                         if (mLineScaleNormal<0)
                            mLineScaleNormal =
                               sqrt( 0.5*( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 +
