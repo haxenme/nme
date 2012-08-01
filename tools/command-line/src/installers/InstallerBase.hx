@@ -154,7 +154,7 @@ class InstallerBase {
 			
 			setDefault ("KEY_STORE_ALIAS", Path.withoutExtension (Path.withoutDirectory (defines.get ("KEY_STORE"))));
 			
-		} else {
+		} else if (targetFlags.exists ("air")) {
 			
 			setDefault ("KEY_STORE", NME + "/tools/command-line/bin/debug.p12");
 			setDefault ("KEY_STORE_PASSWORD", "nme");
