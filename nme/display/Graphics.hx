@@ -207,8 +207,8 @@ package nme.display;
 	 * @param sourceGraphics The Graphics object from which to copy the drawing
 	 *                       commands.
 	 */
-	@:require(flash10) function copyFrom(sourceGraphics : Graphics) : Void;
-	@:require(flash11) function cubicCurveTo(controlX1 : Float, controlY1 : Float, controlX2 : Float, controlY2 : Float, anchorX : Float, anchorY : Float) : Void;
+	//@:require(flash10) function copyFrom(sourceGraphics : Graphics) : Void;
+	//@:require(flash11) function cubicCurveTo(controlX1 : Float, controlY1 : Float, controlX2 : Float, controlY2 : Float, anchorX : Float, anchorY : Float) : Void;
 
 	/**
 	 * Draws a curve using the current line style from the current drawing
@@ -289,7 +289,7 @@ package nme.display;
 	 * sub-paths are rendered during this operation. </p>
 	 * 
 	 */
-	@:require(flash10) function drawGraphicsData(graphicsData : nme.Vector<IGraphicsData>) : Void;
+	function drawGraphicsData(graphicsData : nme.Vector<IGraphicsData>) : Void;
 
 	/**
 	 * Submits a series of commands for drawing. The <code>drawPath()</code>
@@ -336,7 +336,7 @@ package nme.display;
 	 * @param winding Specifies the winding rule using a value defined in the
 	 *                GraphicsPathWinding class.
 	 */
-	@:require(flash10) function drawPath(commands : nme.Vector<Int>, data : nme.Vector<Float>, ?winding : GraphicsPathWinding) : Void;
+	function drawPath(commands : nme.Vector<Int>, data : nme.Vector<Float>, ?winding : GraphicsPathWinding) : Void;
 
 	/**
 	 * Draws a rectangle. Set the line style, fill, or both before you call the
@@ -404,7 +404,7 @@ package nme.display;
 	 *                parameter can be set to any value defined by the
 	 *                TriangleCulling class.
 	 */
-	@:require(flash10) function drawTriangles(vertices : nme.Vector<Float>, ?indices : nme.Vector<Int>, ?uvtData : nme.Vector<Float>, ?culling : TriangleCulling) : Void;
+	function drawTriangles(vertices : nme.Vector<Float>, ?indices : nme.Vector<Int>, ?uvtData : nme.Vector<Float>, ?culling : TriangleCulling) : Void;
 
 	/**
 	 * Applies a fill to the lines and curves that were added since the last call
@@ -448,7 +448,7 @@ package nme.display;
 	 * @param repeat Whether to repeat the bitmap in a tiled fashion.
 	 * @param smooth Whether smoothing should be applied to the bitmap.
 	 */
-	@:require(flash10) function lineBitmapStyle(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
+	function lineBitmapStyle(bitmap : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
 
 	/**
 	 * Specifies a gradient to use for the stroke when drawing lines.

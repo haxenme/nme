@@ -186,7 +186,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *         objects are not equal, the method returns the number -4.
 	 * @throws TypeError The otherBitmapData is null.
 	 */
-	function compare(otherBitmapData : BitmapData) : Dynamic;
+	//function compare(otherBitmapData : BitmapData) : Dynamic;
 
 	/**
 	 * Transfers data from one channel of another BitmapData object or the
@@ -402,7 +402,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param y     The <i>y</i> coordinate of the image.
 	 * @param color The ARGB color to use as a fill.
 	 */
-	function floodFill(x : Int, y : Int, color : Int) : Void;
+	//function floodFill(x : Int, y : Int, color : Int) : Void;
 
 	/**
 	 * Determines the destination rectangle that the <code>applyFilter()</code>
@@ -538,7 +538,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @return A Vector representing the given Rectangle.
 	 * @throws TypeError The rect is null.
 	 */
-	@:require(flash10) function getVector(rect : nme.geom.Rectangle) : nme.Vector<Int>;
+	function getVector(rect : nme.geom.Rectangle) : nme.Vector<Int>;
 
 	/**
 	 * Computes a 256-value binary number histogram of a BitmapData object. This
@@ -550,7 +550,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * 
 	 * @param hRect The area of the BitmapData object to use.
 	 */
-	@:require(flash10) function histogram(?hRect : nme.geom.Rectangle) : nme.Vector<nme.Vector<Float>>;
+	//@:require(flash10) function histogram(?hRect : nme.geom.Rectangle) : nme.Vector<nme.Vector<Float>>;
 
 	/**
 	 * Performs pixel-level hit detection between one bitmap image and a point,
@@ -591,7 +591,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                       Point, Rectangle, Bitmap, or BitmapData object.
 	 * @throws TypeError     The firstPoint is null.
 	 */
-	function hitTest(firstPoint : nme.geom.Point, firstAlphaThreshold : Int, secondObject : Dynamic, ?secondBitmapDataPoint : nme.geom.Point, secondAlphaThreshold : Int = 1) : Bool;
+	//function hitTest(firstPoint : nme.geom.Point, firstAlphaThreshold : Int, secondObject : Dynamic, ?secondBitmapDataPoint : nme.geom.Point, secondAlphaThreshold : Int = 1) : Bool;
 
 	/**
 	 * Locks an image so that any objects that reference the BitmapData object,
@@ -642,7 +642,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                         alpha transparency value.
 	 * @throws TypeError The sourceBitmapData, sourceRect or destPoint are null.
 	 */
-	function merge(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, redMultiplier : Int, greenMultiplier : Int, blueMultiplier : Int, alphaMultiplier : Int) : Void;
+	//function merge(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, redMultiplier : Int, greenMultiplier : Int, blueMultiplier : Int, alphaMultiplier : Int) : Void;
 
 	/**
 	 * Fills an image with pixels representing random noise.
@@ -718,7 +718,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                         upper-left corner of the source rectangle.
 	 * @throws TypeError The sourceBitmapData, sourceRect or destPoint are null.
 	 */
-	function paletteMap(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, ?redArray : Array<Int>, ?greenArray : Array<Int>, ?blueArray : Array<Int>, ?alphaArray : Array<Int>) : Void;
+	//function paletteMap(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, ?redArray : Array<Int>, ?greenArray : Array<Int>, ?blueArray : Array<Int>, ?alphaArray : Array<Int>) : Void;
 
 	/**
 	 * Generates a Perlin noise image.
@@ -786,7 +786,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 *                       values. The alpha channel value is not affected if
 	 *                       this value is set to <code>true</code>.
 	 */
-	function perlinNoise(baseX : Float, baseY : Float, numOctaves : Int, randomSeed : Int, stitch : Bool, fractalNoise : Bool, channelOptions : Int = 7, grayScale : Bool = false, ?offsets : Array<nme.geom.Point>) : Void;
+	//function perlinNoise(baseX : Float, baseY : Float, numOctaves : Int, randomSeed : Int, stitch : Bool, fractalNoise : Bool, channelOptions : Int = 7, grayScale : Bool = false, ?offsets : Array<nme.geom.Point>) : Void;
 
 	/**
 	 * Performs a pixel dissolve either from a source image to a destination
@@ -823,7 +823,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @throws TypeError The sourceBitmapData, sourceRect or destPoint are null.
 	 * @throws TypeError The numPixels value is negative
 	 */
-	function pixelDissolve(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, randomSeed : Int = 0, numPixels : Int = 0, fillColor : Int = 0) : Int;
+	//function pixelDissolve(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, randomSeed : Int = 0, numPixels : Int = 0, fillColor : Int = 0) : Int;
 
 	/**
 	 * Scrolls an image by a certain (<i>x</i>, <i>y</i>) pixel amount. Edge
@@ -916,7 +916,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @throws RangeError The vector array is not large enough to read all the
 	 *                    pixel data.
 	 */
-	@:require(flash10) function setVector(rect : nme.geom.Rectangle, inputVector : nme.Vector<Int>) : Void;
+	function setVector(rect : nme.geom.Rectangle, inputVector : nme.Vector<Int>) : Void;
 
 	/**
 	 * Tests pixel values in an image against a specified threshold and sets
@@ -968,7 +968,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @throws TypeError     The sourceBitmapData, sourceRect destPoint or
 	 *                       operation are null.
 	 */
-	function threshold(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, operation : String, threshold : Int, color : Int = 0, mask : Int = 0xFFFFFFFF, copySource : Bool = false) : Int;
+	//function threshold(sourceBitmapData : BitmapData, sourceRect : nme.geom.Rectangle, destPoint : nme.geom.Point, operation : String, threshold : Int, color : Int = 0, mask : Int = 0xFFFFFFFF, copySource : Bool = false) : Int;
 
 	/**
 	 * Unlocks an image so that any objects that reference the BitmapData object,

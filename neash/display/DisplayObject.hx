@@ -248,7 +248,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	
 	
 	/**
-	 * Determines if the specified local coordinate point overlaps the
+	 * Determines if the specified global coordinate point overlaps the
 	 * contents of this object.
 	 * 
 	 * This method does not check for transparency, so if the object contains

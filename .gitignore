@@ -1,0 +1,11 @@
+.DS_Store
+ndll/*
+project/all_objs
+project/obj
+tools/command-line/command-line.n
+tools/unit-testing/Export
+tools/installer/mac/*.dmg
+tools/installer/mac/*.mpkg
+tools/installer/mac/resources
+*.userprefs
+*.swp

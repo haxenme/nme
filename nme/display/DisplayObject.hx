@@ -548,7 +548,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * represent counterclockwise rotation. Values outside this range are added
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
-	@:require(flash10) var rotationX : Float;
+	//@:require(flash10) var rotationX : Float;
 
 	/**
 	 * Indicates the y-axis rotation of the DisplayObject instance, in degrees,
@@ -557,7 +557,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * represent counterclockwise rotation. Values outside this range are added
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
-	@:require(flash10) var rotationY : Float;
+	//@:require(flash10) var rotationY : Float;
 
 	/**
 	 * Indicates the z-axis rotation of the DisplayObject instance, in degrees,
@@ -566,7 +566,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * represent counterclockwise rotation. Values outside this range are added
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
-	@:require(flash10) var rotationZ : Float;
+	//@:require(flash10) var rotationZ : Float;
 
 	/**
 	 * The current scaling grid that is in effect. If set to <code>null</code>,
@@ -649,7 +649,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <code>y</code> and <code>z</code> property values, which are defined in
 	 * whole pixels. </p>
 	 */
-	@:require(flash10) var scaleZ : Float;
+	//@:require(flash10) var scaleZ : Float;
 
 	/**
 	 * The scroll rectangle bounds of the display object. The display object is
@@ -789,7 +789,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <p><code> (x~~cameraFocalLength/cameraRelativeZPosition,
 	 * y~~cameraFocalLength/cameraRelativeZPosition)</code></p>
 	 */
-	@:require(flash10) var z : Float;
+	//@:require(flash10) var z : Float;
 
 	/**
 	 * Returns a rectangle that defines the area of the display object relative
@@ -874,7 +874,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * @return A Vector3D object with coordinates relative to the
 	 *         three-dimensional display object.
 	 */
-	@:require(flash10) function globalToLocal3D(point : nme.geom.Point) : nme.geom.Vector3D;
+	//@:require(flash10) function globalToLocal3D(point : nme.geom.Point) : nme.geom.Vector3D;
 
 	/**
 	 * Evaluates the bounding box of the display object to see if it overlaps or
@@ -926,7 +926,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * @return A two-dimensional point representing a three-dimensional point in
 	 *         two-dimensional space.
 	 */
-	@:require(flash10) function local3DToGlobal(point3d : nme.geom.Vector3D) : nme.geom.Point;
+	//@:require(flash10) function local3DToGlobal(point3d : nme.geom.Vector3D) : nme.geom.Point;
 
 	/**
 	 * Converts the <code>point</code> object from the display object's (local)

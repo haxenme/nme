@@ -295,7 +295,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 *                       call the <code>Security.allowDomain()</code> method.
 	 */
 	function removeChildAt(index : Int) : DisplayObject;
-	@:require(flash11) function removeChildren(beginIndex : Int = 0, endIndex : Int = 2147483647) : Void;
+	//@:require(flash11) function removeChildren(beginIndex : Int = 0, endIndex : Int = 2147483647) : Void;
 
 	/**
 	 * Changes the position of an existing child in the display object container.
