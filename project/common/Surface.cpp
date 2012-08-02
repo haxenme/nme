@@ -1445,9 +1445,62 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
    result->DecRef();
 }
 
+/* A MINSTD pseudo-random number generator.
+ *
+ * This generates a pseudo-random number sequence equivalent to std::minstd_rand0 from the C++11 standard library, which
+ * is the generator that Flash uses to generate noise for BitmapData.noise().
+ *
+ * It is reimplemented here because std::minstd_rand0 is not available in earlier versions of C++.
+ *
+ * MINSTD was originally suggested in "A pseudo-random number generator for the System/360", P.A. Lewis, A.S. Goodman,
+ * J.M. Miller, IBM Systems Journal, Vol. 8, No. 2, 1969, pp. 136-146 */
+class MinstdGenerator
+{
+public:
+   MinstdGenerator(int seed)
+   {
+      if (seed == 0) {
+         x = 1;
+      } else {
+         x = seed;
+      }
+   }
+
+   unsigned int operator () ()
+   {
+      const unsigned int a = 16807;
+      const unsigned int m = (1 << 31) - 1;
+
+      unsigned int lo = a * (x & 0xffff);
+      unsigned int hi = a * (x >> 16);
+      lo += (hi & 0x7fff) << 16;
+
+      if (lo > m)
+      {
+         lo &= m;
+         ++lo;
+      }
+
+      lo += hi >> 15;
+
+      if (lo > m)
+      {
+         lo &= m;
+         ++lo;
+      }
+
+      x = lo;
+
+      return x;
+   }
+
+private:
+   int x;
+};
+
 void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale)
 {
-   srand (randomSeed);
+   MinstdGenerator generator(randomSeed);
 
    RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight));
    ARGB tmpRgb;
@@ -1459,13 +1512,13 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
       {
          if (grayScale)
          {
-            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + rand() % (high - low + 1);
+            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + generator() % (high - low + 1);
          }
          else
          {
             if (channelOptions & CHAN_RED)
             {
-               tmpRgb.c2 = low + rand() % (high - low + 1);
+               tmpRgb.c2 = low + generator() % (high - low + 1);
             }
             else
             {
@@ -1474,7 +1527,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
             if (channelOptions & CHAN_GREEN)
             {
-               tmpRgb.c1 = low + rand() % (high - low + 1);
+               tmpRgb.c1 = low + generator() % (high - low + 1);
             }
             else
             {
@@ -1483,7 +1536,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
             if (channelOptions & CHAN_BLUE)
             {
-               tmpRgb.c0 = low + rand() % (high - low + 1);
+               tmpRgb.c0 = low + generator() % (high - low + 1);
             }
             else
             {
@@ -1493,7 +1546,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
          if (channelOptions & CHAN_ALPHA)
          {
-            tmpRgb.a = low + rand() % (high - low + 1);
+            tmpRgb.a = low + generator() % (high - low + 1);
          }
          else
          {
@@ -1513,8 +1566,6 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
       }
    }
    
-   srand (1);
-
    EndRender();
 }
 
