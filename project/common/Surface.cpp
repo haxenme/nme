@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <Surface.h>
 #include <Pixel.h>
+#include <limits.h>
 
 namespace nme
 {
@@ -1469,7 +1470,7 @@ public:
    unsigned int operator () ()
    {
       const unsigned int a = 16807;
-      const unsigned int m = (1 << 31) - 1;
+      const unsigned int m = UINT_MAX;
 
       unsigned int lo = a * (x & 0xffff);
       unsigned int hi = a * (x >> 16);
