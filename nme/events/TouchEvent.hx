@@ -107,11 +107,13 @@ package nme.events;
 
 	/**
 	 * Width of the contact area.
+	 * Only supported on Android (C++ target), in the range of 0-1.
 	 */
 	var sizeX : Float;
 
 	/**
 	 * Height of the contact area.
+	 * Only supported on Android (C++ target), in the range of 0-1.
 	 */
 	var sizeY : Float;
 
