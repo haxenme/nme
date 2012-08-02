@@ -120,7 +120,7 @@ public:
       // __android_log_print(ANDROID_LOG_INFO, "NME", "Trackball %f %f", inX, inY);
    }
 
-   void OnTouch(int inType,double inX, double inY, int inID)
+   void OnTouch(int inType,double inX, double inY, int inID, float sizeX, float sizeY)
    {
          if (mSingleTouchID==NO_TOUCH || inID==mSingleTouchID || mMultiTouch)
          {
@@ -158,12 +158,15 @@ public:
                   mouse.flags |= efLeftDown;
                }
                mouse.value = inID;
+               
+               mouse.sx = sizeX;
+               mouse.sy = sizeY;
 
                //if (inType==etTouchBegin)
-                  //ELOG("DOWN %d %f,%f (%s)", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S" );
+                  //ELOG("DOWN %d %f,%f (%s) %f,%f", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S", sizeX, sizeY );
 
                //if (inType==etTouchEnd)
-                  //ELOG("UP %d %f,%f (%s)", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S" );
+                  //ELOG("UP %d %f,%f (%s) %f,%f", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S", sizeX, sizeY );
 
                HandleEvent(mouse);
          }
@@ -470,13 +473,13 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id, jfloat sizeX, jfloat sizeY)
 {
 
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
-      nme::sStage->OnTouch(type,x,y,id);
+      nme::sStage->OnTouch(type,x,y,id,sizeX,sizeY);
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
