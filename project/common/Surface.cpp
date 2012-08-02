@@ -1457,10 +1457,10 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
 class MinstdGenerator
 {
 public:
-   MinstdGenerator(int seed)
+   MinstdGenerator(unsigned int seed)
    {
       if (seed == 0) {
-         x = 1;
+         x = 1U;
       } else {
          x = seed;
       }
@@ -1468,12 +1468,12 @@ public:
 
    unsigned int operator () ()
    {
-      const unsigned int a = 16807;
-      const unsigned int m = (1 << 31) - 1;
+      const unsigned int a = 16807U;
+      const unsigned int m = (1U << 31) - 1;
 
-      unsigned int lo = a * (x & 0xffff);
+      unsigned int lo = a * (x & 0xffffU);
       unsigned int hi = a * (x >> 16);
-      lo += (hi & 0x7fff) << 16;
+      lo += (hi & 0x7fffU) << 16;
 
       if (lo > m)
       {
@@ -1495,7 +1495,7 @@ public:
    }
 
 private:
-   int x;
+   unsigned int x;
 };
 
 void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale)
