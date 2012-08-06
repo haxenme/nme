@@ -5,6 +5,9 @@ import data.Asset;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
+import helpers.WebOSHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.FileSystem;
@@ -20,7 +23,7 @@ class WebOSInstaller extends InstallerBase {
 		
 		var hxml:String = buildDirectory + "/webos/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		
 		if (debug) {
 			
@@ -32,7 +35,7 @@ class WebOSInstaller extends InstallerBase {
 			
 		}
 		
-		runPalmCommand (true, "package" ,[ "bin" ] );
+		WebOSHelper.createPackage (buildDirectory + "/webos", "bin");
 		
 	}
 	
@@ -52,25 +55,7 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
-		sdkDir = "";
-		
-		if (defines.exists ("PalmSDK")) {
-			
-			sdkDir = defines.get ("PalmSDK");
-			
-		} else {
-			
-			if (InstallTool.isWindows) {
-				
-				sdkDir = "c:\\Program Files (x86)\\HP webOS\\SDK\\";
-				
-			} else {
-				
-				sdkDir = "/opt/PalmSDK/Current/";
-				
-			}
-			
-		}
+		WebOSHelper.initialize (defines);
 		
 		super.generateContext ();
 		
@@ -83,34 +68,15 @@ class WebOSInstaller extends InstallerBase {
 	
 	override function run ():Void {
 		
-		runPalmCommand (true, "install", [ defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk" ] );
-		runPalmCommand (false, "launch", [ defines.get ("APP_PACKAGE") ] );
-		
-	}
-	
-	
-	private function runPalmCommand (inBinDir:Bool, inCommand:String, args:Array<String>):Void {
-		
-		var dir = inBinDir ? buildDirectory + "/webos" : "";
-		
-		if (InstallTool.isWindows) {
-			
-			var jar_file = defines.get("PalmSDK") + "\\share\\jars\\webos-tools.jar";
-			var new_args = ["-Dpalm.command=palm-" + inCommand , "-jar", jar_file].concat(args);
-			runCommand (dir, "java" , new_args );
-			
-		} else {
-			
-			runCommand (dir, sdkDir + "/bin/palm-" + inCommand, args);
-			
-		}
+		WebOSHelper.install (buildDirectory + "/webos", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + "_all.ipk");
+		WebOSHelper.launch (defines.get ("APP_PACKAGE"));
 		
 	}
 	
 	
 	override function traceMessages ():Void {
 		
-		runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
+		WebOSHelper.trace (defines.get ("APP_PACKAGE"));
 		
 	}
 	
@@ -123,7 +89,7 @@ class WebOSInstaller extends InstallerBase {
 		FileHelper.recursiveCopy (templatePaths[0] + "webos/template", destination, context);
 		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/webos/haxe", context);
 		FileHelper.recursiveCopy (templatePaths[0] + "webos/hxml", buildDirectory + "/webos/haxe", context);
-		generateSWFClasses (buildDirectory + "/webos/haxe");
+		SWFHelper.generateSWFClasses (NME, swfLibraries, buildDirectory + "/webos/haxe");
 		
 		for (ndll in ndlls) {
 			

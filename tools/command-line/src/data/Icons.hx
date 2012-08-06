@@ -5,6 +5,7 @@ import haxe.io.BytesOutput;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
 import nme.display.BitmapData;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
@@ -407,7 +408,7 @@ class Icons
 		try {
 			
 			var command = "ReplaceVistaIcon.exe";
-			InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
+			ProcessHelper.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ], false);
 			
 		} catch (e:Dynamic) {
 			

@@ -6,6 +6,8 @@ import data.NDLL;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -41,7 +43,7 @@ class IOSInstaller extends InstallerBase {
             commands.push ("i386");
         }
 			
-        runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
+        ProcessHelper.runCommand (buildDirectory + "/" + PATH, "xcodebuild", commands);
         
         if (!targetFlags.exists ("simulator")) {
             
@@ -53,7 +55,7 @@ class IOSInstaller extends InstallerBase {
             
             var applicationPath:String = buildDirectory + "/" + PATH + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
             
-            runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true);
+            ProcessHelper.runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true, true);
             
         }
         
@@ -213,11 +215,11 @@ class IOSInstaller extends InstallerBase {
             
             if (debug) {
                 
-                runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
+                ProcessHelper.runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
                 
             } else {
                 
-                runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
+                ProcessHelper.runCommand ("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath (applicationPath) ]);
                 
             }
             
@@ -233,7 +235,7 @@ class IOSInstaller extends InstallerBase {
 			var launcher:String = NME + "/tools/command-line/bin/ios-sim";
 			Sys.command ("chmod", [ "+x", launcher ]);
 			
-			runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), "--sdk", defines.get ("IPHONE_VER"), "--family", family ] );
+			ProcessHelper.runCommand ("", launcher, [ "launch", FileSystem.fullPath (applicationPath), "--sdk", defines.get ("IPHONE_VER"), "--family", family ] );
 		}
 	}
 	
@@ -253,7 +255,7 @@ class IOSInstaller extends InstallerBase {
 		FileHelper.copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist", context);
 		FileHelper.copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch", context);
 		FileHelper.recursiveCopy(templatePaths[0] + "iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj", context);
-		generateSWFClasses(projDestination + "/haxe");
+		SWFHelper.generateSWFClasses(NME, swfLibraries, projDestination + "/haxe");
 		
 		PathHelper.mkdir (projDestination + "lib");
 		
@@ -302,7 +304,7 @@ class IOSInstaller extends InstallerBase {
         
         if (command == "update") {
             
-            runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
+            ProcessHelper.runCommand ("", "open", [ buildDirectory + "/" + PATH + "/" + defines.get("APP_FILE") + ".xcodeproj" ] );
             
         }
 	}

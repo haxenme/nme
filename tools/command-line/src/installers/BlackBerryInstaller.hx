@@ -6,6 +6,8 @@ import data.NDLL;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -22,7 +24,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		var hxml:String = buildDirectory + "/blackberry/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		
 		if (debug) {
 			
@@ -61,7 +63,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-nativepackager", args);
+		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-nativepackager", args);
 		
 		if (defines.exists ("KEY_STORE")) {
 			
@@ -76,7 +78,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 			args.push (defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
 			
-			runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-signer", args);
+			ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-signer", args);
 			
 		}
 		
@@ -203,7 +205,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
 		
 	}
 	
@@ -220,7 +222,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
 		
 		//runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
 		
@@ -235,7 +237,7 @@ class BlackBerryInstaller extends InstallerBase {
 		FileHelper.recursiveCopy (templatePaths[0] + "blackberry/template", destination, context);
 		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/blackberry/haxe", context);
 		FileHelper.recursiveCopy (templatePaths[0] + "blackberry/hxml", buildDirectory + "/blackberry/haxe", context);
-		generateSWFClasses (buildDirectory + "/blackberry/haxe");
+		SWFHelper.generateSWFClasses (NME, swfLibraries, buildDirectory + "/blackberry/haxe");
 		
 		var arch = "";
 		

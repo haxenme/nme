@@ -5,6 +5,7 @@ import haxe.Http;
 import haxe.io.Eof;
 import haxe.io.Path;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
 import installers.InstallerBase;
 import neko.zip.Reader;
 import neko.Lib;
@@ -173,13 +174,13 @@ class PlatformSetup {
 			
 			if (ignoreRootFolder != "") {
 				
-				InstallTool.runCommand ("", "tar", [ arguments, sourceZIP ]);
-				InstallTool.runCommand ("", "cp", [ "-R", ignoreRootFolder + "/*", targetPath ]);
+				ProcessHelper.runCommand ("", "tar", [ arguments, sourceZIP ], false);
+				ProcessHelper.runCommand ("", "cp", [ "-R", ignoreRootFolder + "/*", targetPath ], false);
 				Sys.command ("rm", [ "-r", ignoreRootFolder ]);
 				
 			} else {
 				
-				InstallTool.runCommand ("", "tar", [ arguments, sourceZIP, "-C", targetPath ]);
+				ProcessHelper.runCommand ("", "tar", [ arguments, sourceZIP, "-C", targetPath ], false);
 				
 				//InstallTool.runCommand (targetPath, "tar", [ arguments, FileSystem.fullPath (sourceZIP) ]);
 				
@@ -385,11 +386,11 @@ class PlatformSetup {
 			
 		} else if (InstallTool.isLinux) {
 			
-			InstallTool.runCommand ("", "xdg-open", [ url ]);
+			ProcessHelper.runCommand ("", "xdg-open", [ url ], false);
 			
 		} else {
 			
-			InstallTool.runCommand ("", "open", [ url ]);
+			ProcessHelper.runCommand ("", "open", [ url ], false);
 			
 		}
 		
@@ -507,7 +508,7 @@ class PlatformSetup {
 			try {
 				
 				Lib.println (message);
-				InstallTool.runCommand ("", "call", [ path ]);
+				ProcessHelper.runCommand ("", "call", [ path ], false);
 				Lib.println ("Done");
 				
 			} catch (e:Dynamic) {}
@@ -516,12 +517,12 @@ class PlatformSetup {
 			
 			if (Path.extension (path) == "deb") {
 				
-				InstallTool.runCommand ("", "sudo", [ "dpkg", "-i", "--force-architecture", path ]);
+				ProcessHelper.runCommand ("", "sudo", [ "dpkg", "-i", "--force-architecture", path ], false);
 				
 			} else {
 				
 				Lib.println (message);
-				InstallTool.runCommand ("", path, []);
+				ProcessHelper.runCommand ("", path, [], false);
 				Lib.println ("Done");
 				
 			}
@@ -532,7 +533,7 @@ class PlatformSetup {
 				
 				Lib.println (message);
 				Sys.command ("chmod", [ "755", path ]);
-				InstallTool.runCommand ("", path, []);
+				ProcessHelper.runCommand ("", path, [], false);
 				Lib.println ("Done");
 				
 			} else if (Path.extension (path) == "dmg") {
@@ -597,7 +598,7 @@ class PlatformSetup {
 					if (file != "") {
 						
 						Lib.println (message);
-						InstallTool.runCommand ("", "open", [ "-W", volumePath + "/" + file ]);
+						ProcessHelper.runCommand ("", "open", [ "-W", volumePath + "/" + file ], false);
 						Lib.println ("Done");
 						
 					}
@@ -614,19 +615,19 @@ class PlatformSetup {
 					
 					if (file == "") {
 						
-						InstallTool.runCommand ("", "open", [ path ]);
+						ProcessHelper.runCommand ("", "open", [ path ], false);
 						
 					}
 					
 				} else {
 					
-					InstallTool.runCommand ("", "open", [ path ]);
+					ProcessHelper.runCommand ("", "open", [ path ], false);
 					
 				}
 				
 			} else {
 				
-				InstallTool.runCommand ("", "open", [ path ]);
+				ProcessHelper.runCommand ("", "open", [ path ], false);
 				
 			}
 			
@@ -743,7 +744,7 @@ class PlatformSetup {
 			
 			if (!InstallTool.isWindows) {
 				
-				InstallTool.runCommand ("", "chmod", [ "-R", "777", path ]);
+				ProcessHelper.runCommand ("", "chmod", [ "-R", "777", path ], false);
 				
 			}
 			
@@ -762,8 +763,8 @@ class PlatformSetup {
 			
 			if (!InstallTool.isWindows && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {
 				
-				InstallTool.runCommand ("", "chmod", [ "-R", "777", "~/.android" ]);
-				InstallTool.runCommand ("", "cp", [ InstallTool.nme + "/tools/command-line/bin/debug.keystore", "~/.android/debug.keystore" ] );
+				ProcessHelper.runCommand ("", "chmod", [ "-R", "777", "~/.android" ], false);
+				ProcessHelper.runCommand ("", "cp", [ InstallTool.nme + "/tools/command-line/bin/debug.keystore", "~/.android/debug.keystore" ], false);
 				
 			}
 			
@@ -1074,14 +1075,14 @@ class PlatformSetup {
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ]);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-signer", [ "-csksetup", "-cskpass", cskPassword ], false);
 							
 						} catch (e:Dynamic) { }
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, pbdtFile ]);
-							InstallTool.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, rdkFile ]);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, pbdtFile ], false);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-signer", [ "-register", "-cskpass", cskPassword, "-csjpin", cskPIN, rdkFile ], false);
 							
 							Lib.println ("Done.");
 							
@@ -1096,7 +1097,7 @@ class PlatformSetup {
 						
 						try {
 							
-							InstallTool.runCommand ("", binDirectory + "blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ]);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-keytool", [ "-genkeypair", "-keystore", keystorePath, "-storepass", keystorePassword, "-dname", "cn=(" + companyName + ")", "-alias", "author" ], false);
 							
 							Lib.println ("Done.");
 							
@@ -1160,7 +1161,7 @@ class PlatformSetup {
 						
 						params.push (debugTokenPath);
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params);
+						ProcessHelper.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params, false);
 						
 						Lib.println ("Done.");
 						
@@ -1210,7 +1211,7 @@ class PlatformSetup {
 					
 					try {
 						
-						InstallTool.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ]);
+						ProcessHelper.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
 						
 						Lib.println ("Done.");
 						
@@ -1265,7 +1266,7 @@ class PlatformSetup {
 	public static function setupLinux ():Void {
 		
 		var parameters = [ "apt-get", "install" ].concat (linuxX64Packages.split (" "));
-		InstallTool.runCommand ("", "sudo", parameters);
+		ProcessHelper.runCommand ("", "sudo", parameters, false);
 		
 	}
 	
@@ -1282,7 +1283,7 @@ class PlatformSetup {
 			
 			if (secondAnswer != No) {
 				
-				InstallTool.runCommand ("", "open", [ appleXcodeURL ]);
+				ProcessHelper.runCommand ("", "open", [ appleXcodeURL ], false);
 				
 			}
 			

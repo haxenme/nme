@@ -7,6 +7,7 @@ import haxe.io.Output;
 import haxe.io.Path;
 import haxe.BaseCode;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
 import installers.InstallerBase;
 import sys.io.File;
 import sys.io.Process;
@@ -114,7 +115,7 @@ class GenerateJavaExterns
 			if (FileSystem.exists(androidJAR))
 			{
 				PathHelper.mkdir("android-7");
-				InstallTool.runCommand("android-7", "jar", [ "-xf", androidJAR ] );
+				ProcessHelper.runCommand("android-7", "jar", [ "-xf", androidJAR ], false);
 			}
 		}
 		extractedAndroidClasses = true;

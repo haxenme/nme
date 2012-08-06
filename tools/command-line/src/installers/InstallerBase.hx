@@ -589,98 +589,6 @@ class InstallerBase {
 	}
 	
 	
-	private function generateSWFClasses (outputDirectory:String):Void {
-		
-		var movieClipTemplate = File.getContent (NME + "/tools/command-line/resources/swf/MovieClip.mtt");
-		var simpleButtonTemplate = File.getContent (NME + "/tools/command-line/resources/swf/SimpleButton.mtt");
-		
-		for (asset in swfLibraries) {
-			
-			if (!FileSystem.exists (asset.sourcePath)) {
-				
-				error ("SWF library path \"" + asset.sourcePath + "\" does not exist");
-				
-			}
-			
-			var input = File.read (asset.sourcePath, true);
-			var data = new ByteArray ();
-			
-			try {
-				
-				while (true) {
-					
-					data.writeByte (input.readByte ());
-					
-				}
-				
-			} catch (e:Dynamic) {
-				
-			}
-			
-			var swf = new SWF (data);
-			
-			for (className in swf.symbols.keys ()) {
-				
-				var lastIndexOfPeriod:Int = className.lastIndexOf (".");
-				
-				var packageName = "";
-				var name = "";
-				
-				if (lastIndexOfPeriod == -1) {
-					
-					name = className;
-					
-				} else {
-					
-					packageName = className.substr (0, lastIndexOfPeriod);
-					name = className.substr (lastIndexOfPeriod + 1);
-					
-				}
-				
-				packageName = packageName.toLowerCase ();
-				name = name.substr (0, 1).toUpperCase () + name.substr (1);
-				
-				var symbolID = swf.symbols.get (className);
-				var templateData = null;
-				
-				switch (swf.getSymbol (symbolID)) {
-					
-					case spriteSymbol (data):
-						
-						templateData = movieClipTemplate;
-					
-					case buttonSymbol (data):
-						
-						templateData = simpleButtonTemplate;
-					
-					default:
-					
-				}
-				
-				if (templateData != null) {
-					
-					var context = { PACKAGE_NAME: packageName, CLASS_NAME: name, SWF_ID: asset.id, SYMBOL_ID: symbolID };
-					var template = new Template (templateData);
-					var result = template.execute (context);
-					
-					var directory = outputDirectory + "/" + Path.directory (className.split (".").join ("/"));
-					var fileName = name + ".hx";
-					
-					PathHelper.mkdir (directory);
-					
-					var fileOutput = File.write (directory + "/" + fileName, true);
-					fileOutput.writeString (result);
-					fileOutput.close ();
-					
-				}
-				
-			}
-			
-		}
-		
-	}
-	
-	
 	private function getBuildNumber (increment:Bool = true):Void {
 		
 		if (!defines.exists ("APP_BUILD_NUMBER")) {
@@ -1735,31 +1643,6 @@ class InstallerBase {
 			
 		}
 		
-	}
-	
-	
-	private function runCommand (path:String, command:String, args:Array <String>, ignoreErrors:Bool = false):Void {
-		
-		try {
-			
-			if (path != "" && !FileSystem.exists (FileSystem.fullPath (new Path (path).dir))) {
-				
-				error ("The specified target path \"" + path + "\" does not exist");
-				
-			}
-			
-			InstallTool.runCommand (path, command, args);
-			
-		} catch (e:Dynamic) {
-			
-			if (!ignoreErrors) {
-				
-				error ("", e);
-				
-			}
-			
-		}
-	  
 	}
 	
 	

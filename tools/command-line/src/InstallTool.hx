@@ -204,42 +204,6 @@ class InstallTool {
 		
 	}
 	
-
-	public static function runCommand (path:String, command:String, args:Array<String>) {
-		
-		var oldPath:String = "";
-		
-		if (path != "") {
-			
-			print("cd " + path);
-			
-			oldPath = Sys.getCwd ();
-			Sys.setCwd (path);
-			
-		}
-		
-		print(command + (args==null ? "": " " + args.join(" ")) );
-		
-		var result:Dynamic = Sys.command (command, args);
-		
-		if (result == 0)
-			print("Ok.");
-			
-		
-		if (oldPath != "") {
-			
-			Sys.setCwd (oldPath);
-			
-		}
-		
-		if (result != 0) {
-			
-			throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
-			
-		}
-		
-	}
-	
 	
 	#if haxe_210
 	

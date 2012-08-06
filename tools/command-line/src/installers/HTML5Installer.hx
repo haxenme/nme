@@ -5,6 +5,7 @@ import data.Asset;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
 import sys.FileSystem;
 import sys.io.Process;
 
@@ -25,7 +26,7 @@ class HTML5Installer extends InstallerBase {
 		
 		var hxml:String = outputDirectory + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		
 		if (targetFlags.exists ("minify")) {
 			
@@ -42,7 +43,7 @@ class HTML5Installer extends InstallerBase {
 			
 			if (targetFlags.exists ("yui")) {
 				
-				runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/yuicompressor-2.4.7.jar", "-o", sourceFile, tempFile ]);
+				ProcessHelper.runCommand ("", "java", [ "-jar", NME + "/tools/command-line/bin/yuicompressor-2.4.7.jar", "-o", sourceFile, tempFile ]);
 				
 			} else {
 				
@@ -54,7 +55,7 @@ class HTML5Installer extends InstallerBase {
 					
 				}
 				
-				runCommand ("", "java", args);
+				ProcessHelper.runCommand ("", "java", args);
 				
 			}
 			
@@ -99,7 +100,7 @@ class HTML5Installer extends InstallerBase {
 		            commands.push ("i386");
 		        }
 					
-		        runCommand (outputDirectory + "/bin", "xcodebuild", commands);
+		        ProcessHelper.runCommand (outputDirectory + "/bin", "xcodebuild", commands);
 		        
 		        if (!targetFlags.exists ("simulator")) {
 		            
@@ -111,7 +112,7 @@ class HTML5Installer extends InstallerBase {
 		            
 		            var applicationPath:String = outputDirectory + "/bin/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
 		            
-		           	runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", outputDirectory + "/bin/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true);
+		           	ProcessHelper.runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", outputDirectory + "/bin/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true, true);
 		            
 		        }
 				
@@ -175,7 +176,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
 			
-			runCommand (Path.directory (targetPath), "neko", [ templatePaths[0] + "html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath), "-glyphs", "32-255" ] );
+			ProcessHelper.runCommand (Path.directory (targetPath), "neko", [ templatePaths[0] + "html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath), "-glyphs", "32-255" ] );
 			
 		}
 		
@@ -224,23 +225,23 @@ class HTML5Installer extends InstallerBase {
 		if (InstallTool.isWindows) {
 			
 			if (defines.exists ("DEV_URL"))
-				runCommand (destination, defines.get("DEV_URL"), []);
+				ProcessHelper.runCommand (destination, defines.get("DEV_URL"), []);
 			else
-				runCommand (destination, ".\\index.html", []);
+				ProcessHelper.runCommand (destination, ".\\index.html", []);
 			
 		} else if (InstallTool.isMac) {
 			
 			if (defines.exists ("DEV_URL"))
-				runCommand (destination, "open", [ defines.get("DEV_URL") ]);
+				ProcessHelper.runCommand (destination, "open", [ defines.get("DEV_URL") ]);
 			else
-				runCommand (destination, "open", [ "index.html" ]);
+				ProcessHelper.runCommand (destination, "open", [ "index.html" ]);
 			
 		} else {
 			
 			if (defines.exists ("DEV_URL"))
-				runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
+				ProcessHelper.runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
 			else
-				runCommand (destination, "xdg-open", [ "index.html" ]);
+				ProcessHelper.runCommand (destination, "xdg-open", [ "index.html" ]);
 			
 		}
 		
@@ -254,7 +255,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (targetFlags.exists ("html5")) {
 			
-			runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+			ProcessHelper.runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
 			
 			destination += "www/";
 			

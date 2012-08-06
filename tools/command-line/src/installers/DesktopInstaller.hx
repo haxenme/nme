@@ -5,6 +5,8 @@ import data.Asset;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -22,7 +24,7 @@ class DesktopInstaller extends InstallerBase {
 		
 		var hxml:String = targetDir + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		
 		var exe = getExeDir () + "/" + getExeName();
 		
@@ -30,7 +32,7 @@ class DesktopInstaller extends InstallerBase {
 		
 		if (!InstallTool.isWindows) {
 			
-			runCommand ("", "chmod", [ "755", exe ]);
+			ProcessHelper.runCommand ("", "chmod", [ "755", exe ]);
 			
 		} else {
 			
@@ -225,11 +227,11 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			runCommand (getExeDir (), defines.get ("VSDEBUG"),  [ flag, getCwd () + getExeName () ].concat(args));
+			ProcessHelper.runCommand (getExeDir (), defines.get ("VSDEBUG"),  [ flag, getCwd () + getExeName () ].concat(args));
 			
 		} else {
 			
-			runCommand (getExeDir (), getCwd () + getExeName (), args);
+			ProcessHelper.runCommand (getExeDir (), getCwd () + getExeName (), args);
 			
 		}
 		
@@ -258,7 +260,7 @@ class DesktopInstaller extends InstallerBase {
 		PathHelper.mkdir (getBuildDir ());
 		PathHelper.mkdir (getExeDir ());
 		
-		generateSWFClasses (targetDir + "/haxe");
+		SWFHelper.generateSWFClasses (NME, swfLibraries, targetDir + "/haxe");
 		
 		if (InstallTool.isMac) {
 			

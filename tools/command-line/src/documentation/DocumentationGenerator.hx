@@ -2,6 +2,7 @@ package documentation;
 
 
 import helpers.PathHelper;
+import helpers.ProcessHelper;
 import installers.InstallerBase;
 import sys.FileSystem;
 
@@ -67,7 +68,7 @@ class DocumentationGenerator extends InstallerBase {
 				
 			}
 			
-			runCommand (docsDirectory, "haxedoc", commands);
+			ProcessHelper.runCommand (docsDirectory, "haxedoc", commands);
 			
 		}
 		

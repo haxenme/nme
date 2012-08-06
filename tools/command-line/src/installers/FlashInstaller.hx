@@ -12,6 +12,8 @@ import haxe.Int32;
 import haxe.SHA1;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
 import neko.zip.Writer;
 import neko.Lib;
 import nme.text.Font;
@@ -26,7 +28,7 @@ class FlashInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/flash/bin";
 		var hxml:String = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
-		runCommand ("", "haxe", [ hxml ] );
+		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		
 		var file = defines.get ("APP_FILE") + ".swf";
 		var input = File.read (destination + "/" + file, true);
@@ -179,7 +181,7 @@ class FlashInstaller extends InstallerBase {
 			args = args.concat ([ "-target", airTarget, outputFile, "application.xml" ]);
 			args = args.concat ([ defines.get ("APP_FILE") + ".swf" /*, "icon_16.png", "icon_32.png", "icon_48.png", "icon_128.png"*/ ]);
 			
-			runCommand (destination, defines.get ("AIR_SDK") + "/bin/adt", args);
+			ProcessHelper.runCommand (destination, defines.get ("AIR_SDK") + "/bin/adt", args);
 			
 		}
 		
@@ -682,7 +684,7 @@ class FlashInstaller extends InstallerBase {
 			
 			args.push ("application.xml");
 			
-			runCommand (destination, defines.get ("AIR_SDK") + "/bin/adl", args);
+			ProcessHelper.runCommand (destination, defines.get ("AIR_SDK") + "/bin/adl", args);
 			
 		} else {
 			
@@ -712,29 +714,29 @@ class FlashInstaller extends InstallerBase {
 				if (InstallTool.isWindows) {
 					
 					if (defines.exists ("DEV_URL"))
-						runCommand (destination, defines.get("DEV_URL"), []);
+						ProcessHelper.runCommand (destination, defines.get("DEV_URL"), []);
 					else
-						runCommand (destination, ".\\" + filename, []);
+						ProcessHelper.runCommand (destination, ".\\" + filename, []);
 					
 				} else if (InstallTool.isMac) {
 					
 					if (defines.exists ("DEV_URL"))
-						runCommand (destination, "open", [ defines.get("DEV_URL") ]);
+						ProcessHelper.runCommand (destination, "open", [ defines.get("DEV_URL") ]);
 					else
-						runCommand (destination, "open", [ filename ]);
+						ProcessHelper.runCommand (destination, "open", [ filename ]);
 					
 				} else {
 					
 					if (defines.exists ("DEV_URL"))
-						runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
+						ProcessHelper.runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
 					else
-						runCommand (destination, "xdg-open", [ filename ]);
+						ProcessHelper.runCommand (destination, "xdg-open", [ filename ]);
 					
 				}
 				
 			} else {
 				
-				runCommand (destination, player, [ defines.get ("APP_FILE") + ".swf" ]);
+				ProcessHelper.runCommand (destination, player, [ defines.get ("APP_FILE") + ".swf" ]);
 				
 			}
 			
@@ -762,7 +764,7 @@ class FlashInstaller extends InstallerBase {
 		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/flash/haxe", context);
 		FileHelper.recursiveCopy (templatePaths[0] + "flash/hxml", buildDirectory + "/flash/haxe", context);
 		FileHelper.recursiveCopy (templatePaths[0] + "flash/haxe", buildDirectory + "/flash/haxe", context);
-		generateSWFClasses (buildDirectory + "/flash/haxe");
+		SWFHelper.generateSWFClasses (NME, swfLibraries, buildDirectory + "/flash/haxe");
 		
 		for (asset in assets) {
 			

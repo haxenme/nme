@@ -5,6 +5,8 @@ import data.Asset;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
+import helpers.ProcessHelper;
+import helpers.SWFHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -24,7 +26,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		if (!defines.exists ("ARM7-only")) {
 			
-			runCommand ("", "haxe", [ hxml ] );
+			ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 			FileHelper.copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5);
 			
 		} else {
@@ -39,7 +41,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		if (defines.exists ("ARM7") || defines.exists ("ARM7-only")) {
 			
-			runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
+			ProcessHelper.runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
 			FileHelper.copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7);
 			
 		} else {
@@ -94,7 +96,7 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		runCommand (destination, ant, [ build ]);
+		ProcessHelper.runCommand (destination, ant, [ build ]);
 		
 	}
 	
@@ -173,7 +175,7 @@ class AndroidInstaller extends InstallerBase {
 		var pack:String = defines.get ("APP_PACKAGE");
 		var adb:Dynamic = getADB ();
 		
-		runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
+		ProcessHelper.runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
 		
 	}
 	
@@ -186,8 +188,8 @@ class AndroidInstaller extends InstallerBase {
 		
 		if (defines.exists("FULL_LOGCAT")) {
 			
-			runCommand (adb.path, adb.name, [ "logcat", "-c" ]);
-			runCommand (adb.path, adb.name, [ "logcat" ]);
+			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", "-c" ]);
+			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat" ]);
 			
 		} else if (debug) {
 			
@@ -202,11 +204,11 @@ class AndroidInstaller extends InstallerBase {
 			
 			Lib.println (filter);
 			
-			runCommand (adb.path, adb.name, [ "logcat", filter ]);
+			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", filter ]);
 			
 		} else {
 			
-			runCommand (adb.path, adb.name, [ "logcat", "*:S trace:I" ]);
+			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", "*:S trace:I" ]);
 			
 		}
 		
@@ -218,7 +220,7 @@ class AndroidInstaller extends InstallerBase {
 		var adb:Dynamic = getADB ();
 		var pack:String = defines.get ("APP_PACKAGE");
 		
-		runCommand (adb.path, adb.name, [ "uninstall", pack ]);
+		ProcessHelper.runCommand (adb.path, adb.name, [ "uninstall", pack ]);
 		
 	}
 	
@@ -257,7 +259,7 @@ class AndroidInstaller extends InstallerBase {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		PathHelper.mkdir (packageDirectory);
 		
-		generateSWFClasses (buildDirectory + "/android/haxe");
+		SWFHelper.generateSWFClasses (NME, swfLibraries, buildDirectory + "/android/haxe");
 		
 		for (ndll in ndlls) {
 			
@@ -363,7 +365,7 @@ class AndroidInstaller extends InstallerBase {
 		var apk:String = FileSystem.fullPath (buildDirectory) + "/android/bin/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
 		var adb:Dynamic = getADB ();
 		
-		runCommand (adb.path, adb.name, [ "install", "-r", apk ]);
+		ProcessHelper.runCommand (adb.path, adb.name, [ "install", "-r", apk ]);
 		
    }
 	
