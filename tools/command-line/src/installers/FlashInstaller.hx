@@ -74,11 +74,11 @@ class FlashInstaller extends InstallerBase {
 		if (targetFlags.exists ("web") 
 			|| defines.exists ("DEV_URL") && !targetFlags.exists ("chrome") && !targetFlags.exists ("opera")) {
 			
-			recursiveCopy (NME + "/tools/command-line/flash/templates/web", buildDirectory + "/flash/bin");
+			recursiveCopy (templatePaths[0] + "flash/templates/web", buildDirectory + "/flash/bin");
 			
 		} else if (targetFlags.exists ("chrome")) {
 			
-			recursiveCopy (NME + "/tools/command-line/flash/templates/chrome", buildDirectory + "/flash/bin");
+			recursiveCopy (templatePaths[0] + "flash/templates/chrome", buildDirectory + "/flash/bin");
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");
@@ -87,7 +87,7 @@ class FlashInstaller extends InstallerBase {
 			
 		} else if (targetFlags.exists ("opera")) {
 			
-			recursiveCopy (NME + "/tools/command-line/flash/templates/opera", buildDirectory + "/flash/bin");
+			recursiveCopy (templatePaths[0] + "flash/templates/opera", buildDirectory + "/flash/bin");
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (32, buildDirectory + "/flash/bin/icon_32.png");
@@ -149,7 +149,7 @@ class FlashInstaller extends InstallerBase {
 			getIcon (48, buildDirectory + "/flash/bin/icon_48.png");
 			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");*/
 			
-			copyFile (NME + "/tools/command-line/flash/templates/air/application.xml", buildDirectory + "/flash/bin/application.xml");
+			copyFile (templatePaths[0] + "flash/templates/air/application.xml", buildDirectory + "/flash/bin/application.xml");
 			
 			var args = [ "-package", "-storetype", defines.get ("KEY_STORE_TYPE"), "-keystore", defines.get ("KEY_STORE") ];
 			
@@ -757,9 +757,9 @@ class FlashInstaller extends InstallerBase {
 			
 		}
 		
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/tools/command-line/flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (NME + "/tools/command-line/flash/haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/flash/haxe");
+		recursiveCopy (templatePaths[0] + "flash/hxml", buildDirectory + "/flash/haxe");
+		recursiveCopy (templatePaths[0] + "flash/haxe", buildDirectory + "/flash/haxe");
 		generateSWFClasses (buildDirectory + "/flash/haxe");
 		
 		for (asset in assets) {

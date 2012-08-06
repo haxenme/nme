@@ -173,7 +173,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
 			
-			runCommand (Path.directory (targetPath), "neko", [ NME + "/tools/command-line/html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath), "-glyphs", "32-255" ] );
+			runCommand (Path.directory (targetPath), "neko", [ templatePaths[0] + "html5/hxswfml.n", "ttf2hash", FileSystem.fullPath (sourcePath), "-glyphs", "32-255" ] );
 			
 		}
 		
@@ -280,10 +280,10 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
-		recursiveCopy (NME + "/tools/command-line/haxe", outputDirectory + "/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/haxe", outputDirectory + "/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/hxml", outputDirectory + "/haxe");
+		recursiveCopy (templatePaths[0] + "html5/template", destination);
+		recursiveCopy (templatePaths[0] + "haxe", outputDirectory + "/haxe");
+		recursiveCopy (templatePaths[0] + "html5/haxe", outputDirectory + "/haxe");
+		recursiveCopy (templatePaths[0] + "html5/hxml", outputDirectory + "/haxe");
 		
 		for (asset in assets) {
 						

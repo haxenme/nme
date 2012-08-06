@@ -230,9 +230,9 @@ class BlackBerryInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/blackberry/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/tools/command-line/blackberry/template", destination);
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/blackberry/haxe");
-		recursiveCopy (NME + "/tools/command-line/blackberry/hxml", buildDirectory + "/blackberry/haxe");
+		recursiveCopy (templatePaths[0] + "blackberry/template", destination);
+		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/blackberry/haxe");
+		recursiveCopy (templatePaths[0] + "blackberry/hxml", buildDirectory + "/blackberry/haxe");
 		generateSWFClasses (buildDirectory + "/blackberry/haxe");
 		
 		var arch = "";

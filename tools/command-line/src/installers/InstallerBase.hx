@@ -40,6 +40,7 @@ class InstallerBase {
 	private var projectFile:String;
 	private var swfLibraries:Array <Asset>;
 	private var target:String;
+	private var templatePaths:Array <String>;
 	private var sslCaCert:String;
 	private var targetFlags:Hash <String>;
 	private var args:Array <String>;
@@ -83,6 +84,8 @@ class InstallerBase {
 		this.targetFlags = targetFlags;
 		this.debug = debug;
 		this.args = args;
+		
+		templatePaths = [ NME + "/templates/default/" ];
 		
 		for (key in userDefines.keys ()) {
 			
@@ -671,7 +674,7 @@ class InstallerBase {
         
 		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
 		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
-		context.HXML_PATH = NME + "/tools/command-line/" + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
+		context.HXML_PATH = templatePaths[0] + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}
 	

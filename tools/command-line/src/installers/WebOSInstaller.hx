@@ -118,9 +118,9 @@ class WebOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/webos/bin/";
 		mkdir (destination);
 		
-		recursiveCopy (NME + "/tools/command-line/webos/template", destination);
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/webos/haxe");
-		recursiveCopy (NME + "/tools/command-line/webos/hxml", buildDirectory + "/webos/haxe");
+		recursiveCopy (templatePaths[0] + "webos/template", destination);
+		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/webos/haxe");
+		recursiveCopy (templatePaths[0] + "webos/hxml", buildDirectory + "/webos/haxe");
 		generateSWFClasses (buildDirectory + "/webos/haxe");
 		
 		for (ndll in ndlls) {

@@ -149,7 +149,7 @@ class IOSInstaller extends InstallerBase {
 			}
 		}
 		
-		context.HXML_PATH = NME + "/tools/command-line/iphone/PROJ/haxe/Build.hxml";
+		context.HXML_PATH = templatePaths[0] + "iphone/PROJ/haxe/Build.hxml";
 		updateIcon();
 		updateLaunchImage();
 	}
@@ -244,13 +244,13 @@ class IOSInstaller extends InstallerBase {
 		mkdir (projDestination + "/haxe");
 		mkdir (projDestination + "/haxe/nme/installer");
 		
-		copyFile(NME + "/tools/command-line/haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
-		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/haxe", projDestination + "/haxe");
-		recursiveCopy(NME + "/tools/command-line/iphone/PROJ/Classes", projDestination + "Classes");
-        copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Entitlements.plist", projDestination + defines.get("APP_FILE") + "-Entitlements.plist");
-		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist");
-		copyFile(NME + "/tools/command-line/iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch");
-		recursiveCopy(NME + "/tools/command-line/iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
+		copyFile(templatePaths[0] + "haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
+		recursiveCopy(templatePaths[0] + "iphone/PROJ/haxe", projDestination + "/haxe");
+		recursiveCopy(templatePaths[0] + "iphone/PROJ/Classes", projDestination + "Classes");
+        copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Entitlements.plist", projDestination + defines.get("APP_FILE") + "-Entitlements.plist");
+		copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist");
+		copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch");
+		recursiveCopy(templatePaths[0] + "iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
 		generateSWFClasses(projDestination + "/haxe");
 		
 		mkdir (projDestination + "lib");

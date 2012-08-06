@@ -12,7 +12,7 @@ class NekoInstaller extends DesktopInstaller {
 	
 	override function copyResultTo (inExe:String) {
 		
-		var nekoExecutablePath = NME + "/tools/command-line/neko/bin/neko-" + targetName + get64 ();
+		var nekoExecutablePath = templatePaths[0] + "neko/bin/neko-" + targetName + get64 ();
 		var nekoExecutableContents = File.getBytes (nekoExecutablePath);
 		
 		var applicationFilePath = getBuildDir () + "/ApplicationMain.n";
@@ -25,7 +25,7 @@ class NekoInstaller extends DesktopInstaller {
 		output.writeUInt30 (nekoExecutableContents.length);
 		output.close ();
 		
-		recursiveCopy (NME + "/tools/command-line/neko/ndll/" + targetName + get64 () + "/", getExeDir (), false);
+		recursiveCopy (templatePaths[0] + "neko/ndll/" + targetName + get64 () + "/", getExeDir (), false);
 		
 		/*
 		
@@ -59,7 +59,7 @@ class NekoInstaller extends DesktopInstaller {
 		super.generateContext ();
 		
 		context.NEKO_FILE = getBuildDir () + "/ApplicationMain.n";
-		context.HXML_PATH = NME + "/tools/command-line/neko/hxml/" + (debug ? "debug" : "release") + ".hxml";
+		context.HXML_PATH = templatePaths[0] + "neko/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}
    
