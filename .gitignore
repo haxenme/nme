@@ -1,7 +1,9 @@
 .DS_Store
-ndll/*
+ndll/*/nme.ndll
+ndll/*/nme-debug.ndll
 project/all_objs
 project/obj
+project/vc*.pdb
 tools/command-line/command-line.n
 tools/unit-testing/Export
 tools/installer/mac/*.dmg
