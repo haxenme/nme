@@ -65,6 +65,10 @@ class InstallTool {
 		} else if (targetFlags.exists ("air")) {
 			
 			installer = new FlashInstaller ();
+		
+		} else if (targetFlags.exists ("html5")) {
+			
+			installer = new HTML5Installer ();
 			
 		} else {
 			

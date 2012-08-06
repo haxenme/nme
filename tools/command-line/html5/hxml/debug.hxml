@@ -1,6 +1,6 @@
 -main ApplicationMain ::HAXE_FLAGS::
--js ::BUILD_DIR::/html5/bin/::APP_FILE::.js
--cp ::BUILD_DIR::/html5/haxe
+-js ::OUTPUT_FILE::
+-cp ::OUTPUT_DIR::/haxe
 --remap flash:nme
 -debug
 --js-modern

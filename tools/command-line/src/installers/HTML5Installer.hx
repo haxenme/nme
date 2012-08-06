@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import haxe.io.Path;
 import sys.FileSystem;
+import sys.io.Process;
 
 
 /**
@@ -14,9 +15,13 @@ import sys.FileSystem;
 class HTML5Installer extends InstallerBase {
 	
 	
+	private var outputDirectory:String;
+	private var outputFile:String;
+	
+	
 	override function build ():Void {
 		
-		var hxml:String = buildDirectory + "/html5/haxe/" + (debug ? "debug" : "release") + ".hxml";
+		var hxml:String = outputDirectory + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		runCommand ("", "haxe", [ hxml ] );
 		
@@ -28,8 +33,8 @@ class HTML5Installer extends InstallerBase {
 				
 			}
 			
-			var sourceFile = buildDirectory + "/html5/bin/" + defines.get ("APP_FILE") + ".js";
-			var tempFile = buildDirectory + "/html5/bin/_" + defines.get ("APP_FILE") + ".js";
+			var sourceFile = outputDirectory + "/bin/" + defines.get ("APP_FILE") + ".js";
+			var tempFile = outputDirectory + "/bin/_" + defines.get ("APP_FILE") + ".js";
 			
 			FileSystem.rename (sourceFile, tempFile);
 			
@@ -55,6 +60,66 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
+		if (targetFlags.exists ("html5")) {
+			
+			var ant:String = defines.get ("ANT_HOME");
+			
+			if (ant == null || ant == "") {
+				
+				ant = "ant";
+				
+			} else {
+				
+				ant += "/bin/ant";
+				
+			}
+			
+			if (target == "ios") {
+				
+				var platformName:String = "iphoneos";
+		        
+		        if (targetFlags.exists("simulator")) {
+		            platformName = "iphonesimulator";
+		        }
+		        
+		        var configuration:String = "Release";
+		        
+		        if (debug) {
+		            configuration = "Debug";
+		        }
+					
+		        var iphoneVersion:String = defines.get ("IPHONE_VER");
+		        //var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+		        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+					
+		        if (targetFlags.exists("simulator")) {
+		            commands.push ("-arch");
+		            commands.push ("i386");
+		        }
+					
+		        runCommand (outputDirectory + "/bin", "xcodebuild", commands);
+		        
+		        if (!targetFlags.exists ("simulator")) {
+		            
+		            var configuration:String = "Release";
+					
+		            if (debug) {
+		                configuration = "Debug";
+		            }
+		            
+		            var applicationPath:String = outputDirectory + "/bin/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+		            
+		           	runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", outputDirectory + "/bin/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true);
+		            
+		        }
+				
+			}
+			
+			//runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ buildDirectory + "/html5/bin", defines.get ("APP_PACKAGE") ]);
+			//runCommand (buildDirectory + "/html5/bin", ant, [ "
+			
+		}
+		
 	}
 	
 	
@@ -67,6 +132,36 @@ class HTML5Installer extends InstallerBase {
 			removeDirectory (targetPath);
 			
 		}
+		
+	}
+	
+	
+	override function generateContext () {
+		
+		super.generateContext ();
+		
+		outputDirectory = buildDirectory + "/html5/";
+		
+		if (target == "html5") {
+			
+			outputDirectory += "web";
+			
+		} else {
+			
+			outputDirectory += target;
+			
+		}
+		
+		outputFile = outputDirectory + "/bin/" + defines.get ("APP_FILE") + ".js";
+		
+		if (target != "html5") {
+			
+			outputFile = outputDirectory + "/bin/www/" + defines.get ("APP_FILE") + ".js";
+			
+		}
+		
+		context.OUTPUT_DIR = outputDirectory;
+		context.OUTPUT_FILE = outputFile;
 		
 	}
 	
@@ -84,6 +179,38 @@ class HTML5Installer extends InstallerBase {
 		
 		context.HAXE_FLAGS += "\n-resource " + FileSystem.fullPath (sourcePath) + ".hash@NME_" + font.flatName;
 		
+	}
+	
+	
+	private override function onCreate ():Void {	
+		
+		if (targetFlags.exists ("html5") && !defines.exists("IPHONE_VER")) {
+			if (!defines.exists("DEVELOPER_DIR")) {
+		        var proc = new Process("xcode-select", ["--print-path"]);
+		        var developer_dir = proc.stdout.readLine();
+		        proc.close();
+		        defines.set("DEVELOPER_DIR", developer_dir);
+		    }
+			var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
+         	
+			if (FileSystem.exists (dev_path)) {
+				var best = "";
+            	var files = FileSystem.readDirectory (dev_path);
+            	var extract_version = ~/^iPhoneOS(.*).sdk$/;
+				
+            	for (file in files) {
+					if (extract_version.match (file)) {
+						var ver = extract_version.matched (1);
+						
+                  		if (ver > best)
+                     		best = ver;
+               		}
+            	}
+				
+            	if (best != "")
+               		defines.set ("IPHONE_VER", best);
+			}
+      	}
 	}
 	
 	
@@ -120,8 +247,16 @@ class HTML5Installer extends InstallerBase {
 	
 	override function update ():Void {
 		
-		var destination:String = buildDirectory + "/html5/bin/";
+		var destination = outputDirectory + "/bin/";
 		mkdir (destination);
+		
+		if (targetFlags.exists ("html5")) {
+			
+			runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+			
+			destination += "www/";
+			
+		}
 		
 		for (asset in assets) {
 			
@@ -146,9 +281,9 @@ class HTML5Installer extends InstallerBase {
 		}
 		
 		recursiveCopy (NME + "/tools/command-line/html5/template", destination);
-		recursiveCopy (NME + "/tools/command-line/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/haxe", buildDirectory + "/html5/haxe");
-		recursiveCopy (NME + "/tools/command-line/html5/hxml", buildDirectory + "/html5/haxe");
+		recursiveCopy (NME + "/tools/command-line/haxe", outputDirectory + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/haxe", outputDirectory + "/haxe");
+		recursiveCopy (NME + "/tools/command-line/html5/hxml", outputDirectory + "/haxe");
 		
 		for (asset in assets) {
 						
