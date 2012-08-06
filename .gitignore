@@ -1,6 +1,6 @@
 .DS_Store
-ndll/*/nme.ndll
-ndll/*/nme-debug.ndll
+ndll/*/nme*
+ndll/*/libnme*
 project/all_objs
 project/obj
 project/vc*.pdb
