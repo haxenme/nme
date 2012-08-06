@@ -48,16 +48,16 @@ class Bitmap extends jeash.display.DisplayObject
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
-		name = "Bitmap_" + DisplayObject.mNameID++;
 
 		jeashGraphics = new Graphics();
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 
 		if (inBitmapData != null) {
 			jeashSetBitmapData(inBitmapData);
 			jeashRender(null, null);
 		}
 	}
+
+	override public function toString() { return "[Bitmap name=" + this.name + " id=" + _jeashId + "]"; }
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData {
 		jeashInvalidateBounds();
@@ -67,28 +67,30 @@ class Bitmap extends jeash.display.DisplayObject
 
 	override private function jeashGetGraphics() return jeashGraphics
 	
-	override function buildBounds() {
-		super.buildBounds();
+	override function validateBounds() {
+		if (_boundsInvalid) {
+			super.validateBounds();
+			if (bitmapData != null) {
+				var r:Rectangle = new Rectangle(0, 0, bitmapData.width, bitmapData.height);		
 				
-		if(bitmapData!=null) {
-			var r:Rectangle = new Rectangle(0, 0, bitmapData.width, bitmapData.height);		
-			
-			if (r.width!=0 || r.height!=0) {
-				if (mBoundsRect.width==0 && mBoundsRect.height==0)
-					mBoundsRect = r.clone();
-				else
-					mBoundsRect.extendBounds(r);
-			}
+				if (r.width != 0 || r.height != 0) {
+					if (jeashBoundsRect.width == 0 && jeashBoundsRect.height == 0)
+						jeashBoundsRect = r.clone();
+					else
+						jeashBoundsRect.extendBounds(r);
+				}
+			}			
+			jeashSetDimensions();
 		}
 	}
 
-	override public function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 		if (bitmapData == null) return;
-		if(mMtxDirty || mMtxChainDirty){
+		if (_matrixInvalid || _matrixChainInvalid){
 			jeashValidateMatrix();
 		}
 
-		var m = if (inMatrix != null) inMatrix else mFullMatrix.clone();
+		var m = jeashGetFullMatrix();
 		var imageDataLease = bitmapData.jeashGetLease();
 		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
 			var srcCanvas = bitmapData.handle();

@@ -36,23 +36,23 @@ import jeash.events.MouseEvent;
 
 class Sprite extends DisplayObjectContainer
 {
-	var jeashGraphics:Graphics;
-	public var graphics(jeashGetGraphics, null):Graphics;
+	private var jeashGraphics:Graphics;
+	public var graphics(jeashGetGraphics, never):Graphics;
 	public var useHandCursor(default, jeashSetUseHandCursor):Bool;
 	public var buttonMode:Bool;
-	public var dropTarget(jeashGetDropTarget, null):DisplayObject;
+	private var jeashDropTarget:DisplayObject;
+	public var dropTarget(jeashGetDropTarget, never):DisplayObject;
 
 	var jeashCursorCallbackOver:Dynamic->Void;
 	var jeashCursorCallbackOut:Dynamic->Void;
-	var jeashDropTarget:DisplayObject;
 
 	public function new() {
-		jeashGraphics = new Graphics();
 		super();
+		jeashGraphics = new Graphics();
 		buttonMode = false;
-		name = "Sprite " + DisplayObject.mNameID++;
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
+
+	override public function toString() { return "[Sprite name=" + this.name + " id=" + _jeashId + "]"; }
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void {
 		if (stage != null)
@@ -102,61 +102,4 @@ class Sprite extends DisplayObjectContainer
 	}
 
 	private function jeashGetDropTarget() return jeashDropTarget
-
-	// force monomorphic access for better JIT-ing
-	override private function jeashSetX(n:Float):Float {
-		jeashInvalidateMatrix(true);
-		jeashX = n;
-		if (parent != null)
-			parent.jeashInvalidateBounds();
-		return n;
-	}
-
-	// force monomorphic access for better JIT-ing
-	override private function jeashSetY(n:Float):Float {
-		jeashInvalidateMatrix(true);
-		jeashY = n;
-		if (parent != null)
-			parent.jeashInvalidateBounds();
-		return n;
-	}
-
-	// force monomorphic access for better JIT-ing
-	override private function jeashSetScaleX(inS:Float) { 
-		if (jeashScaleX == inS)
-			return inS;		
-		if (parent != null)
-			parent.jeashInvalidateBounds();
-		if (mBoundsDirty)
-			buildBounds();
-		if (!mMtxDirty)
-			jeashInvalidateMatrix(true);	
-		jeashScaleX = inS;
-		return inS;
-	}
-
-	// force monomorphic access for better JIT-ing
-	override private function jeashSetScaleY(inS:Float) { 
-		if (jeashScaleY == inS)
-			return inS;		
-		if (parent != null)
-			parent.jeashInvalidateBounds();
-		if (mBoundsDirty)
-			buildBounds();
-		if (!mMtxDirty)
-			jeashInvalidateMatrix(true);	
-		jeashScaleY=inS;
-		return inS;
-	}
-
-	// force monomorphic access for better JIT-ing
-	override private function jeashSetRotation(n:Float):Float {
-		if (!mMtxDirty)
-			jeashInvalidateMatrix(true);
-		if (parent != null)
-			parent.jeashInvalidateBounds();
-
-		jeashRotation = n;
-		return n;
-	}
 }

@@ -82,6 +82,9 @@ class Stage extends DisplayObjectContainer
 	public var displayState(jeashGetDisplayState,jeashSetDisplayState):StageDisplayState;
 	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
 	public var fullScreenHeight(jeashGetFullScreenHeight,null):UInt;
+	public var loaderInfo:LoaderInfo;
+	private var _mouseX:Float;
+	private var _mouseY:Float;
 	public static var jeashAcceleration:jeash.ui.Acceleration = {x:0.0, y:1.0, z:0.0};
 
 	public function jeashGetStageWidth() { return jeashWindowWidth; }
@@ -118,6 +121,8 @@ class Stage extends DisplayObjectContainer
 		jeashUIEventsQueueIndex = 0;
 	}
 
+	override public function toString() { return "[Stage id=" + _jeashId + "]"; }
+
 	override private function getStage() {
 		return jeash.Lib.jeashGetStage();
 	}
@@ -128,7 +133,7 @@ class Stage extends DisplayObjectContainer
 		jeashDragObject = sprite;
 
 		if (jeashDragObject!=null) {
-			var mouse = new Point(mouseX,mouseY);
+			var mouse = new Point(_mouseX, _mouseY);
 			var p = jeashDragObject.parent;
 
 			if (p!=null)
@@ -366,8 +371,8 @@ class Stage extends DisplayObjectContainer
 		var obj = jeashGetObjectUnderPoint(point);
 
 		// used in drag implementation
-		mouseX = point.x;
-		mouseY = point.y;
+		_mouseX = point.x;
+		_mouseY = point.y;
 
 		var stack = new Array<InteractiveObject>();
 		if (obj!=null) obj.jeashGetInteractiveObjectStack(stack);
@@ -400,8 +405,8 @@ class Stage extends DisplayObjectContainer
 		var obj = jeashGetObjectUnderPoint(point);
 
 		// used in drag implementation
-		mouseX = point.x;
-		mouseY = point.y;
+		_mouseX = point.x;
+		_mouseY = point.y;
 
 		var stack = new Array<InteractiveObject>();
 		if (obj!=null) obj.jeashGetInteractiveObjectStack(stack);
@@ -496,7 +501,7 @@ class Stage extends DisplayObjectContainer
 	public function jeashRenderToCanvas(canvas:HTMLCanvasElement) {
 		canvas.width = canvas.width;
 
-		jeashRender(null, canvas);
+		jeashRender(canvas);
 	}
 
 	public function jeashSetQuality(inQuality:String):String {
@@ -554,10 +559,8 @@ class Stage extends DisplayObjectContainer
 		this.jeashBroadcast(event);
 	}
 
-	override function jeashGetMouseX() { return this.mouseX; }
-	override function jeashSetMouseX(x:Float) { this.mouseX = x; return x; }
-	override function jeashGetMouseY() { return this.mouseY; }
-	override function jeashSetMouseY(y:Float) { this.mouseY = y; return y; }
+	override function jeashGetMouseX() { return _mouseX; }
+	override function jeashGetMouseY() { return _mouseY; }
 
 	inline function jeashGetShowDefaultContextMenu() { return jeashShowDefaultContextMenu; }
 	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool) {

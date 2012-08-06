@@ -29,6 +29,7 @@ package jeash.display;
 
 class MovieClip extends Sprite, implements Dynamic<Dynamic>
 {
+   public var loaderInfo:LoaderInfo;
    public var enabled:Bool;
    public var currentFrame(GetCurrentFrame,null):Int;
    public var framesLoaded(GetTotalFrames,null):Int;
@@ -46,8 +47,9 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic>
       mCurrentFrame = 0;
       mTotalFrames = 0;
       this.loaderInfo = LoaderInfo.create(null);
-      name = "MovieClip " + jeash.display.DisplayObject.mNameID++;
    }
+
+   override public function toString() { return "[MovieClip name=" + this.name + " id=" + _jeashId + "]"; }
 
    public function gotoAndPlay(frame:Dynamic, ?scene:String):Void { }
    public function gotoAndStop(frame:Dynamic, ?scene:String):Void { }

@@ -27,44 +27,62 @@
 package jeash.geom;
 
 import jeash.display.DisplayObject;
-import jeash.geom.Matrix;
 
 class Transform
 {
-   public var colorTransform( GetColorTransform, SetColorTransform ) : ColorTransform;
-   public var matrix(jeashGetMatrix,jeashSetMatrix):Matrix;
-   public var pixelBounds(GetPixelBounds,null):Rectangle;
+  public static inline var DEG_TO_RAD:Float = Math.PI / 180.0;
 
-   var mObj:DisplayObject;
+  private var _matrix:Matrix;
+  private var _fullMatrix:Matrix;
+  public var matrix(getMatrix, setMatrix):Matrix;
+  public var colorTransform(default, setColorTransform):ColorTransform;
+  public var pixelBounds(getPixelBounds, never):Rectangle;
 
-   public function new(inParent:DisplayObject)
-   {
-      mObj = inParent;
-   }
+  private var _displayObject:DisplayObject;
 
-   public function jeashGetMatrix() : Matrix { return mObj.jeashGetMatrix(); }
-   public function jeashSetMatrix(inMatrix:Matrix) : Matrix
-       { return mObj.jeashSetMatrix(inMatrix); }
+  public function new(displayObject:DisplayObject) {
+    if (displayObject == null) throw "Cannot create Transform with no DisplayObject.";
+    _displayObject = displayObject;
 
-   function GetPixelBounds()
-   {
-   	return mObj.getBounds(jeash.Lib.jeashGetStage());
-   }
+    _matrix = new Matrix();
+    _fullMatrix = new Matrix();
+    this.colorTransform = new ColorTransform();
+  }
 
-   public function GetColorTransform() { 
-#if silverlight
-     var gfx = mObj.GetGraphics();
-     return gfx.mColorTransform;
-#else
-     return new ColorTransform();
-#end
-   }
+  private function getMatrix():Matrix {
+    return _matrix.clone();
+  }
+  
+  private function setMatrix(inValue:Matrix):Matrix {
+    jeashSetMatrix(inValue);
+    _displayObject.jeashInvalidateMatrix(true);
+    return _matrix;
+  }
+  
+  public inline function jeashSetMatrix(inValue:Matrix):Void {
+    _matrix.copy(inValue);
+  }
 
-   public function SetColorTransform( inColorTransform : ColorTransform ) : ColorTransform
-   {
-#if silverlight
-     mObj.GetGraphics().mColorTransform = colorTransform;
-#end
-     return inColorTransform;
-   }
+  public inline function jeashGetFullMatrix(?localMatrix:Matrix):Matrix {
+    var m;
+    if (localMatrix != null)
+      m = localMatrix.mult(_fullMatrix);
+    else
+      m = _fullMatrix.clone();
+    return m;
+  }
+
+  public inline function jeashSetFullMatrix(inValue:Matrix):Matrix {
+    _fullMatrix.copy(inValue);
+    return _fullMatrix;
+  }
+
+  private function setColorTransform(inValue:ColorTransform):ColorTransform {
+    this.colorTransform = inValue;
+    return inValue;
+  }
+
+  private function getPixelBounds():Rectangle {
+    return _displayObject.getBounds(null);
+  }
 }

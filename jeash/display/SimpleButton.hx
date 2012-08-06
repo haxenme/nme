@@ -55,6 +55,8 @@ class SimpleButton extends DisplayObjectContainer
 		currentState = this.upState;
 	}
 
+	override public function toString() { return "[SimpleButton name=" + this.name + " id=" + _jeashId + "]"; }
+
 	function switchState(state:DisplayObject) {
 		if (this.currentState != null && this.currentState.stage != null) {
 			removeChild(this.currentState);

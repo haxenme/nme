@@ -36,96 +36,73 @@ import jeash.Lib;
 class DisplayObjectContainer extends InteractiveObject
 {
 	public var jeashChildren:Array<DisplayObject>;
-	public var numChildren(jeashGetNumChildren, null):Int;
+	public var numChildren(jeashGetNumChildren, never):Int;
 	public var mouseChildren:Bool;
 	public var tabChildren:Bool;
 
 	public function new() {
 		jeashChildren = new Array<DisplayObject>();
 		mouseChildren = true;
-		numChildren = 0;
 		tabChildren = true;
 		super();
-		name = "DisplayObjectContainer " +  jeash.display.DisplayObject.mNameID++;
 	}
 
-	// @r498
+	override public function toString() { return "[DisplayObjectContainer name=" + this.name + " id=" + _jeashId + "]"; }
+
 	override public function jeashBroadcast(event:jeash.events.Event) {
 		for (child in jeashChildren)
 			child.jeashBroadcast(event);
 		dispatchEvent(event);
 	}
 
-	override function buildBounds() {
-		//if (mBoundsDirty) {
-		super.buildBounds();
-		for (obj in jeashChildren) {
-			if (obj.visible) {
-				var r = obj.getBounds(this);
-				if (r.width != 0 || r.height != 0) {
-					if (mBoundsRect.width == 0 && mBoundsRect.height == 0)
-						mBoundsRect = r.clone();
-					else
-						mBoundsRect.extendBounds(r);
+	override function validateBounds() {
+		if (_boundsInvalid) {
+			super.validateBounds();
+			for (obj in jeashChildren) {
+				if (obj.visible) {
+					var r = obj.getBounds(this);
+					if (r.width != 0 || r.height != 0) {
+						if (jeashBoundsRect.width == 0 && jeashBoundsRect.height == 0)
+							jeashBoundsRect = r.clone();
+						else
+							jeashBoundsRect.extendBounds(r);
+					}
 				}
 			}
+			jeashSetDimensions();
 		}
-		//}
 	}
 
 	//** FINAL **//	
-	override function jeashInvalidateMatrix(local:Bool=false) : Void {
-		//invalidate children only if they are not already invalidated
-		if (!mMtxChainDirty && !mMtxDirty) {				
-			for (child in jeashChildren)
+	override public function jeashInvalidateMatrix(local:Bool=false) : Void {
+		if (!_matrixChainInvalid && !_matrixInvalid) {	
+			for (child in jeashChildren) {
 				child.jeashInvalidateMatrix();
-		}			
-		mMtxChainDirty = mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
-		mMtxDirty = mMtxDirty || local; 		//invalidate the local matrix
-	}
-
-	override private function getBackgroundRect() {
-		var r = super.getBackgroundRect();
-		if (r != null) r = r.clone();
-
-		for (child in jeashChildren) {
-			if (child.visible) {
-				var o = child.getBackgroundRect();
-				if (o != null) {
-					var trans = o.transform(child.mMatrix);
-					if (r == null || r.width == 0 || r.height == 0)
-						r = trans;
-					else if (trans.width != 0 && trans.height != 0)
-						r.extendBounds(trans);
-				}
 			}
 		}
-		return r;
+		super.jeashInvalidateMatrix(local);
 	}
 
-	private function jeashGetNumChildren() {
+	private inline function jeashGetNumChildren() {
 		return jeashChildren.length;
 	}
 
-	override private function jeashRender(inMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!visible) return;
+	override private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+		if (!jeashVisible) return;
 
-		super.jeashRender(inMatrix, inMask, clipRect);
-		for (obj in jeashChildren) {
-			if (obj.visible) {
+		if (clipRect == null && jeashScrollRect != null) {
+			clipRect = jeashScrollRect;
+		}
+		super.jeashRender(inMask, clipRect);
+		for (child in jeashChildren) {
+			if (child.jeashVisible) {
 				if (clipRect != null) {
-					var rect = new Rectangle();
-
-					if (obj.mMtxDirty || obj.mMtxChainDirty){
-						obj.jeashValidateMatrix();
+					if (child._matrixInvalid || child._matrixChainInvalid) {
+						child.invalidateGraphics();
+						child.jeashValidateMatrix();
 					}
-
-					rect.topLeft = obj.globalToLocal(clipRect.topLeft);
-					rect.bottomRight = obj.globalToLocal(clipRect.bottomRight);
-					obj.jeashRender(null, inMask, rect);
-				} else {
-					obj.jeashRender(null, inMask, null);
 				}
+				child.jeashRender(inMask, clipRect);
 			} 
 		}
 	}
@@ -223,9 +200,8 @@ class DisplayObjectContainer extends InteractiveObject
 			if (child == inChild) {
 				child.jeashRemoveFromStage();
 				#if debug
-				if (getChildIndex(child) >= 0) {
+				if (getChildIndex(child) >= 0)
 					throw "Not removed properly";
-				}
 				#end
 				return child;
 			}

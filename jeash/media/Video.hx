@@ -68,19 +68,18 @@ class Video extends DisplayObject {
 		this.width = width;
 		this.height = height;
 		
-		name = "Video_" + DisplayObject.mNameID++;
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
-		
 		this.smoothing = false;
 		this.deblocking = 0;
 		
-		this.addEventListener(Event.ADDED_TO_STAGE, added);
+		//this.addEventListener(Event.ADDED_TO_STAGE, added);
 	}
+
+	override public function toString() { return "[Video name=" + this.name + " id=" + _jeashId + "]"; }
 	
-	private function added(e:Event):Void 
+	/*private function added(e:Event):Void 
 	{
 		removeEventListener(Event.ADDED_TO_STAGE, added);
-	}
+	}*/
 	
 	override function jeashGetGraphics():Graphics
 	{ 
@@ -116,16 +115,15 @@ class Video extends DisplayObject {
 		jeashGraphics.drawRect(0, 0, width, height);
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle)
+	override public function jeashRender(inMask:HTMLCanvasElement, ?clipRect:Rectangle)
 	{
-		if(mMtxDirty || mMtxChainDirty){
+		if (mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
 		}
 
 		var gfx = jeashGetGraphics();
 
-		if (gfx!=null)
-		{
+		if (gfx != null) {
 			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, mFullMatrix);
 		}
 	}

@@ -189,23 +189,20 @@ class Rectangle
       return new Rectangle(tx0+m.tx,ty0+m.ty, tx1-tx0, ty1-ty0);
    }
 
-   public function extendBounds(r:Rectangle)
-   {
-      var dx = x-r.x;
-      if (dx>0)
-      {
-         x-=dx;
-         width+=dx;
+   public function extendBounds(r:Rectangle) {
+      var dx = x - r.x;
+      if (dx > 0) {
+         x -= dx;
+         width += dx;
       }
-      var dy = y-r.y;
-      if (dy>0)
-      {
-         y-=dy;
-         height+=dy;
+      var dy = y - r.y;
+      if (dy > 0) {
+         y -= dy;
+         height += dy;
       }
-      if (r.right>right)
+      if (r.right > right)
          right = r.right;
-      if (r.bottom>bottom)
+      if (r.bottom > bottom)
          bottom = r.bottom;
    }
 }

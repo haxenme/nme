@@ -75,7 +75,8 @@ typedef RowChar = {
 
 typedef RowChars = Array<RowChar>;
 
-class TextField extends jeash.display.InteractiveObject {
+class TextField extends jeash.display.InteractiveObject
+{
 	public var htmlText(GetHTMLText,SetHTMLText):String;
 	public var text(GetText,SetText):String;
 	public var textColor(GetTextColour,SetTextColour):Int;
@@ -111,7 +112,6 @@ class TextField extends jeash.display.InteractiveObject {
 	public var mTextHeight:Int;
 	public var mFace:String;
 	public var mDownChar:Int;
-
 
 	public var selectionBeginIndex : Int;
 	public var selectionEndIndex : Int;
@@ -175,46 +175,42 @@ class TextField extends jeash.display.InteractiveObject {
 		mLineInfo = [];
 		defaultTextFormat = new TextFormat();
 
-		name = "TextField " + jeash.display.DisplayObject.mNameID++;
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
-
 		borderColor = 0x000000;
 		border = false;
 		backgroundColor = 0xffffff;
 		background = false;
-
 	}
+
+	override public function toString() { return "[TextField name=" + this.name + " id=" + _jeashId + "]"; }
 
 	override public function jeashGetWidth() : Float { 
 		return getBounds(this.stage).width;
 	}
-	override public function jeashGetHeight() : Float { 
-		return getBounds(this.stage).height;
-	}
-	override public function jeashSetWidth(inWidth:Float) : Float {
-
-		if(parent!=null)
+	override public function jeashSetWidth(inValue:Float) : Float {
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			buildBounds();
+		if (_boundsInvalid)
+			validateBounds();
 
-		if (inWidth!=mWidth) {
-			mWidth = inWidth;
+		if (inValue != mWidth) {
+			mWidth = inValue;
 			Rebuild();
 		}
 
 		return mWidth;
 	}
 
-	override public function jeashSetHeight(inHeight:Float) : Float {
-		
-		if(parent!=null)
+	override public function jeashGetHeight() : Float { 
+		return getBounds(this.stage).height;
+	}
+	override public function jeashSetHeight(inValue:Float) : Float {
+		if (parent != null)
 			parent.jeashInvalidateBounds();
-		if(mBoundsDirty)
-			buildBounds();
+		if (_boundsInvalid)
+			validateBounds();
 		
-		if (inHeight!=mHeight) {
-			mHeight = inHeight;
+		if (inValue != mHeight) {
+			mHeight = inValue;
 			Rebuild();
 		}
 
@@ -364,7 +360,6 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 	function Rebuild() {
-
 		if (mHTMLMode) return;
 
 		mLineInfo = [];
@@ -475,14 +470,6 @@ class TextField extends jeash.display.InteractiveObject {
 			jeashGraphics.drawRect(-2,-2,width+4,height+4);
 		}
 	}
-
-	override private function getBackgroundRect() : Rectangle {
-		if (border)
-			return new Rectangle(-2,-2,width+4,height+4);
-		else
-			return new Rectangle(0,0,width,height);
-	}
-
 
 	public function GetTextWidth() : Float{ return mMaxWidth; }
 	public function GetTextHeight() : Float{ return mMaxHeight; }
@@ -661,34 +648,41 @@ class TextField extends jeash.display.InteractiveObject {
 		else return super.jeashGetObjectUnderPoint(point)
 
 
-	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		
+	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
 		if (!jeashVisible) return;
 
-		if(mMtxDirty || mMtxChainDirty){
+		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
-		}
-		
-		var m = mFullMatrix.clone();
 
 		if (!mHTMLMode && jeashFilters != null && (jeashGraphics.jeashChanged || inMask != null)) {
-			if (jeashGraphics.jeashRender(inMask, m, jeashFilters)) jeashInvalidateBounds();
-			for (filter in jeashFilters) {
-				filter.jeashApplyFilter(jeashGraphics.jeashSurface);
+			if (jeashGraphics.jeashRender(inMask, jeashFilters)) {
+				jeashInvalidateBounds();
+				jeashApplyFilters(jeashGraphics.jeashSurface);
 			}
-		} else if (jeashGraphics.jeashRender(inMask, m)) jeashInvalidateBounds();
+		} else if (jeashGraphics.jeashRender(inMask)) jeashInvalidateBounds();
 
-		m.tx = m.tx + jeashGraphics.jeashExtentWithFilters.x*m.a + jeashGraphics.jeashExtentWithFilters.y*m.c;
-		m.ty = m.ty + jeashGraphics.jeashExtentWithFilters.x*m.b + jeashGraphics.jeashExtentWithFilters.y*m.d;
-
+		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (!mHTMLMode && inMask != null) {
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
+			var m = getSurfaceTransform(jeashGraphics);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, fullAlpha, clipRect);
 		} else {
-			Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
-			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
+				var m = getSurfaceTransform(jeashGraphics);
+				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
+				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
+			}
+			if (fullAlpha != _lastFullAlpha) {
+				Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, fullAlpha);
+				_lastFullAlpha = fullAlpha;
+			}
+			/*if (clipRect != null) {
+				var rect = new Rectangle();
+				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
+				rect.bottomRight = this.globalToLocal(this.parent.localToGlobal(clipRect.bottomRight));
+				Lib.jeashSetSurfaceClipping(jeashGraphics.jeashSurface, rect);
+			}*/
 		}
 	}
-
 }
 
 import jeash.geom.Matrix;

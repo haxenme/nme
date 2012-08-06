@@ -44,12 +44,9 @@ class InteractiveObject extends DisplayObject
 		mouseEnabled = true;
 		doubleClickEnabled = true;
 		tabIndex = 0;
-		name = "InteractiveObject";
 	}
 
-	override public function toString() { return name; }
-
-	override public function jeashAsInteractiveObject() return this
+	override public function toString() { return "[InteractiveObject name=" + this.name + " id=" + _jeashId + "]"; }
 
 	public function jeashGetTabIndex() { return jeashTabIndex; }
 	public function jeashSetTabIndex(inIndex:Int) {

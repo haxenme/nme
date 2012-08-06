@@ -47,7 +47,6 @@ import jeash.Html5Dom;
 import jeash.geom.Matrix;
 import jeash.geom.Point;
 import jeash.geom.Rectangle;
-import jeash.geom.ColorTransform;
 import jeash.display.LineScaleMode;
 import jeash.display.CapsStyle;
 import jeash.display.JointStyle;
@@ -284,7 +283,8 @@ class Graphics
 		return gradient;
 	}
 
-	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix, ?filters:Array<jeash.filters.BitmapFilter>) {
+	public function jeashRender(?maskHandle:HTMLCanvasElement, ?filters:Array<jeash.filters.BitmapFilter>, 
+			?clip0:Point, ?clip1:Point, ?clip2:Point, ?clip3:Point) {
 		if (!jeashChanged) return false;
 
 		closePolygon(true);
@@ -314,6 +314,17 @@ class Graphics
 
 		var ctx = getContext();
 		if (ctx == null) return false;
+
+		if (clip0 != null) {
+			//ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
+			ctx.beginPath();
+			ctx.moveTo(clip0.x, clip0.y);
+			ctx.lineTo(clip1.x, clip1.y);
+			ctx.lineTo(clip2.x, clip2.y);
+			ctx.lineTo(clip3.x, clip3.y);
+			ctx.closePath();
+			ctx.clip();
+		}
 
 		if (filters != null) {
 			for (filter in filters) {
@@ -384,6 +395,7 @@ class Graphics
 				ctx.beginPath();
 
 				for (p in d.points) {
+
 					switch (p.type) {
 						case MOVE:
 							ctx.moveTo(p.x , p.y);
@@ -411,10 +423,9 @@ class Graphics
 				//ctx.clip();
 
 				var img = bitmap.texture_buffer;
-				var matrix = bitmap.matrix;
-
-				if (matrix != null) {
-					ctx.transform(matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty);
+				var m = bitmap.matrix;
+				if (m != null) {
+					ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
 				}
 				ctx.drawImage(img, 0, 0);
 			}
@@ -457,7 +468,7 @@ class Graphics
 
 		var ctx = getContext();
 		if (ctx != null) 
-			ctx.drawImage(inTexture.handle(),mPenX,mPenY);
+			ctx.drawImage(inTexture.handle(), mPenX, mPenY);
 	}
 
 	public function lineStyle(?thickness:Null<Float>,
@@ -750,6 +761,10 @@ class Graphics
 	}
 
 	function jeashExpandStandardExtent(x:Float, y:Float, ?thickness:Float) {
+		if (_padding > 0) {
+			jeashExtent.width -= _padding;
+			jeashExtent.height -= _padding;
+		}
 		if (thickness != null && thickness > _padding) _padding = thickness;
 
 		var maxX, minX, maxY, minY;
@@ -763,8 +778,8 @@ class Graphics
 		minY = y < minY ? y : minY;
 		jeashExtent.x = minX;
 		jeashExtent.y = minY;
-		jeashExtent.width = maxX - minX;
-		jeashExtent.height = maxY - minY;
+		jeashExtent.width = maxX - minX + _padding;
+		jeashExtent.height = maxY - minY + _padding;
 		boundsDirty = true;
 	}
 
@@ -784,7 +799,7 @@ class Graphics
 		jeashExtentWithFilters.height = maxY - minY;
 	}
 
-	public function moveTo(inX:Float,inY:Float) {
+	public function moveTo(inX:Float, inY:Float) {
 		mPenX = inX;
 		mPenY = inY;
 
@@ -994,8 +1009,6 @@ class Graphics
 		dstCanvas.width = width;
 		dstCanvas.height = height;
 
-		if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
-
 		Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
 
 		if (Lib.jeashIsOnStage(jeashSurface)) {
@@ -1003,7 +1016,9 @@ class Graphics
 			Lib.jeashCopyStyle(jeashSurface, dstCanvas);
 			Lib.jeashSwapSurface(jeashSurface, dstCanvas);
 			Lib.jeashRemoveSurface(jeashSurface);
+			if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
 		}
+		
 		jeashSurface = dstCanvas;
 	}
 }

@@ -125,7 +125,6 @@ class Lib {
 		if (mMainClassRoot == null) {
 			mMainClassRoot = new MovieClip();
 			mCurrent = mMainClassRoot;
-			mCurrent.name = "Root MovieClip";
 			jeashGetStage().addChild(mCurrent);
 		}
 		return mMainClassRoot;
@@ -145,10 +144,7 @@ class Lib {
 			var width = jeashGetWidth();
 			var height = jeashGetHeight();
 			mStage = new jeash.display.Stage(width, height);
-
-			//mStage.addChild(jeashGetCurrent());
 		}
-
 		return mStage; 
 	}
 
@@ -250,6 +246,7 @@ class Lib {
 	}
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
+		//trace("setting transform: " + matrix);
 		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1 && surface.getAttribute("data-jeash-anim") == null) {
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
@@ -260,6 +257,12 @@ class Lib {
 			surface.style.setProperty("-o-transform", matrix.toString(), "");
 			surface.style.setProperty("-ms-transform", matrix.toString(), "");
 		}
+	}
+
+	public static function jeashSetSurfaceClipping(surface:HTMLElement, rect:Rectangle) {
+		//rect(<top>, <right>, <bottom>, <left>)
+		//trace("clip: " + "rect(" + rect.top + "px, " + rect.right + "px, " + rect.bottom + "px, " + rect.left + "px)");
+		//surface.style.setProperty("clip", "rect(" + rect.top + "px, " + rect.right + "px, " + rect.bottom + "px, " + rect.left + "px)", "");
 	}
 
 	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float) {

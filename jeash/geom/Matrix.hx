@@ -61,7 +61,18 @@ class Matrix
 	}
 
 
-	public function clone() { return new jeash.geom.Matrix(a,b,c,d,tx,ty); }
+	public function clone() {
+		return new Matrix(a,b,c,d,tx,ty);
+	}
+
+	public function copy(m:Matrix) {
+		a = m.a;
+		b = m.b;
+		c = m.c;
+		d = m.d;
+		tx = m.tx;
+		ty = m.ty;
+	}
 
 	public function createGradientBox(in_width : Float, in_height : Float,
 			?rotation : Float, ?in_tx : Float, ?in_ty : Float) : Void
@@ -70,17 +81,14 @@ class Matrix
 		d = in_height/1638.4;
 
 		// rotation is clockwise
-		if (rotation!=null && rotation!=0.0)
-		{
+		if (rotation != null && rotation != 0.0) {
 			var cos = Math.cos(rotation);
 			var sin = Math.sin(rotation);
 			b = sin*d;
 			c = -sin*a;
 			a *= cos;
 			d *= cos;
-		}
-		else
-		{
+		} else {
 			b = c = 0;
 		}
 
@@ -88,8 +96,7 @@ class Matrix
 		ty = in_ty!=null ? in_ty+in_height/2 : in_height/2;
 	}
 
-	public function setRotation(inTheta:Float,?inScale:Float)
-	{
+	public function setRotation(inTheta:Float,?inScale:Float) {
 		var scale:Float = inScale==null ? 1.0 : inScale;
 		a = Math.cos(inTheta)*scale;
 		c = Math.sin(inTheta)*scale;
@@ -97,17 +104,13 @@ class Matrix
 		d = a;
 	}
 
-	public function invert() : jeash.geom.Matrix
-	{
+	public function invert():Matrix {
 		var norm = a*d-b*c;
-		if (norm==0)
-		{
+		if (norm == 0) {
 			a = b = c = d = 0;
 			tx=-tx;
 			ty=-ty;
-		}
-		else
-		{
+		} else {
 			norm = 1.0/norm;
 			var a1 = d*norm;
 			d = a*norm;
@@ -122,14 +125,12 @@ class Matrix
 		return this;
 	}
 
-	public function transformPoint(inPos:Point)
-	{
+	public function transformPoint(inPos:Point) {
 		return new Point( inPos.x*a + inPos.y*c + tx,
 				inPos.x*b + inPos.y*d + ty );
 	}
 
-	public function translate(inDX:Float, inDY:Float)
-	{
+	public function translate(inDX:Float, inDY:Float) {
 		tx += inDX;
 		ty += inDY;
 	}
@@ -149,8 +150,7 @@ class Matrix
 
 	 */
 
-	public function rotate(inTheta:Float)
-	{
+	public function rotate(inTheta:Float) {
 		var cos = Math.cos(inTheta);
 		var sin = Math.sin(inTheta);
 
@@ -177,8 +177,7 @@ class Matrix
 	   [  c  d   0 ][  0   sy  0 ]
 	   [  tx ty  1 ][  0   0   1 ]
 	 */
-	public function scale(inSX:Float, inSY:Float)
-	{
+	public function scale(inSX:Float, inSY:Float) {
 		a*=inSX;
 		b*=inSY;
 
@@ -207,8 +206,7 @@ class Matrix
 
 
 	 */
-	public function concat(m:jeash.geom.Matrix)
-	{
+	public function concat(m:Matrix) {
 		var a1 = a*m.a + b*m.c;
 		b = a*m.b + b*m.d;
 		a = a1;
@@ -222,21 +220,13 @@ class Matrix
 		tx = tx1;
 	}
 
-	public function mult(m:jeash.geom.Matrix)
-	{
-		var result = new jeash.geom.Matrix();
-		result.a = a*m.a + b*m.c;
-		result.b = a*m.b + b*m.d;
-		result.c = c*m.a + d*m.c;
-		result.d = c*m.b + d*m.d;
-
-		result.tx = tx*m.a + ty*m.c + m.tx;
-		result.ty = tx*m.b + ty*m.d + m.ty;
+	public function mult(m:Matrix) {
+		var result = clone();
+		result.concat(m);
 		return result;
 	}
 
-	public function identity() 
-	{
+	public function identity() {
 		a = 1;
 		b = 0;
 		c = 0;
@@ -245,8 +235,7 @@ class Matrix
 		ty = 0;
 	}
 
-	public inline function toMozString()
-	{
+	public inline function toMozString() {
 		#if js
 		untyped {
 			var m = "matrix(";
@@ -261,8 +250,7 @@ class Matrix
 		#end
 	}
 
-	public inline function toString()
-	{
+	public inline function toString() {
 		#if js
 		untyped {
 			var m = "matrix(";

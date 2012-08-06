@@ -52,15 +52,14 @@ class Loader extends DisplayObjectContainer
 	var mImage:BitmapData;
 	var mShape:Shape;
 
-	public function new()
-	{
+	public function new() {
 		super();
 		contentLoaderInfo = LoaderInfo.create(this);
-		name = "Loader " + jeash.display.DisplayObject.mNameID++;
 	}
 
-	public function load(request:URLRequest, ?context:LoaderContext)
-	{
+	override public function toString() { return "[Loader name=" + this.name + " id=" + _jeashId + "]"; }
+
+	public function load(request:URLRequest, ?context:LoaderContext) {
 		// get the file extension for the content type
 		var parts = request.url.split(".");
 		var extension : String = if(parts.length == 0) "" else parts[parts.length-1].toLowerCase();
@@ -123,20 +122,19 @@ class Loader extends DisplayObjectContainer
 		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);
 	}
 	
-	override function buildBounds() {
-		super.buildBounds();
-				
-		if(mImage!=null)
-		{
-			var r:Rectangle = new Rectangle(0, 0, mImage.width, mImage.height);		
-			
-			if (r.width!=0 || r.height!=0)
-			{
-				if (mBoundsRect.width==0 && mBoundsRect.height==0)
-					mBoundsRect = r.clone();
-				else
-					mBoundsRect.extendBounds(r);
+	override function validateBounds() {
+		if (_boundsInvalid) {
+			super.validateBounds();
+			if (mImage != null) {
+				var r:Rectangle = new Rectangle(0, 0, mImage.width, mImage.height);		
+				if (r.width != 0 || r.height != 0) {
+					if (jeashBoundsRect.width == 0 && jeashBoundsRect.height == 0)
+						jeashBoundsRect = r.clone();
+					else
+						jeashBoundsRect.extendBounds(r);
+				}
 			}
+			jeashSetDimensions();
 		}
 	}
 }

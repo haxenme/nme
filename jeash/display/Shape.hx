@@ -33,16 +33,16 @@ import jeash.geom.Point;
 import jeash.Lib;
 
 class Shape extends DisplayObject {
-	var jeashGraphics:Graphics;
+	private var jeashGraphics:Graphics;
 
-	public var graphics(jeashGetGraphics,null):Graphics;
+	public var graphics(jeashGetGraphics, never):Graphics;
 
 	public function new() {
-		jeashGraphics = new Graphics();
 		super();
-		name = "Shape " + DisplayObject.mNameID++;
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
+		jeashGraphics = new Graphics();
 	}
+
+	override public function toString() { return "[Shape name=" + this.name + " id=" + _jeashId + "]"; }
 
 	override private function jeashGetGraphics() return jeashGraphics
 	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
