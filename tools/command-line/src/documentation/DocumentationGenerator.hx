@@ -1,6 +1,7 @@
 package documentation;
 
 
+import helpers.PathHelper;
 import installers.InstallerBase;
 import sys.FileSystem;
 
@@ -29,7 +30,7 @@ class DocumentationGenerator extends InstallerBase {
 		if (paths.length > 0) {
 			
 			var docsDirectory = defines.get ("DOCS_DIR");
-			mkdir (docsDirectory);
+			PathHelper.mkdir (docsDirectory);
 			
 			var relativePathPrefix = "";
 			

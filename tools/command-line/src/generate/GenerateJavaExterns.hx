@@ -6,6 +6,7 @@ import haxe.io.Input;
 import haxe.io.Output;
 import haxe.io.Path;
 import haxe.BaseCode;
+import helpers.PathHelper;
 import installers.InstallerBase;
 import sys.io.File;
 import sys.io.Process;
@@ -112,7 +113,7 @@ class GenerateJavaExterns
 			
 			if (FileSystem.exists(androidJAR))
 			{
-				InstallTool.mkdir("android-7");
+				PathHelper.mkdir("android-7");
 				InstallTool.runCommand("android-7", "jar", [ "-xf", androidJAR ] );
 			}
 		}

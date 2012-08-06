@@ -3,6 +3,8 @@ package data;
 
 import haxe.io.BytesOutput;
 import haxe.io.Path;
+import helpers.FileHelper;
+import helpers.PathHelper;
 import nme.display.BitmapData;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
@@ -93,7 +95,7 @@ class Icons
          if (icon.isSize(inWidth,inHeight))
          {
             //mContext.HAS_ICON = true;
-            if (inTimedFile!="" && FileSystem.exists(inTimedFile) && !InstallTool.isNewer(icon.name,inTimedFile))
+            if (inTimedFile!="" && FileSystem.exists(inTimedFile) && !FileHelper.isNewer(icon.name,inTimedFile))
                return null;
 
             var bmp = nme.display.BitmapData.load(icon.name);
@@ -109,7 +111,7 @@ class Icons
             {
                found = icon;
                //mContext.HAS_ICON = true;
-               if (inTimedFile!="" && FileSystem.exists(inTimedFile) &&!InstallTool.isNewer(icon.name,inTimedFile))
+               if (inTimedFile!="" && FileSystem.exists(inTimedFile) &&!FileHelper.isNewer(icon.name,inTimedFile))
                   return null;
 
                break;

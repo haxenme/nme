@@ -1,6 +1,8 @@
 import documentation.DocumentationGenerator;
 import haxe.io.Eof;
 import haxe.io.Path;
+import helpers.FileHelper;
+import helpers.PathHelper;
 import installers.AndroidInstaller;
 import installers.BlackBerryInstaller;
 import installers.CPPInstaller;
@@ -134,25 +136,6 @@ class InstallTool {
 	}
 	
 	
-	public static function copyIfNewer (source:String, destination:String) {
-		
-		if (!isNewer (source, destination)) {
-			
-			return;
-			
-		}
-		
-		if (verbose) {
-			
-			Lib.println ("Copy " + source + " to " + destination);
-			
-		}
-		
-		File.copy (source, destination);
-		
-	}
-	
-	
 	public static function error (message:String = "", e:Dynamic = null):Void {
 		
 		if (message != "") {
@@ -207,85 +190,6 @@ class InstallTool {
 		}
 		
 		return path + "/";
-		
-	}
-	
-	
-	public static function isNewer (source:String, destination:String):Bool {
-		
-		if (source == null || !FileSystem.exists (source)) {
-			
-			error ("Cannot copy \"" + source + "\" because the path does not exist");
-			return false;
-			
-		}
-		
-		if (FileSystem.exists (destination)) {
-			
-			if (FileSystem.stat (source).mtime.getTime () < FileSystem.stat (destination).mtime.getTime ()) {
-				
-				return false;
-				
-			}
-			
-		}
-		
-		return true;
-		
-	}
-	
-	
-	public static function mkdir (directory:String):Void {
-		
-		directory = StringTools.replace (directory, "\\", "/");
-		var total = "";
-		
-		if (directory.substr (0, 1) == "/") {
-			
-			total = "/";
-			
-		}
-		
-		var parts = directory.split("/");
-		var oldPath = "";
-		
-		if (parts.length > 0 && parts[0].indexOf (":") > -1) {
-			
-			oldPath = Sys.getCwd ();
-			Sys.setCwd (parts[0] + "\\");
-			parts.shift ();
-			
-		}
-		
-		for (part in parts) {
-			
-			if (part != "." && part != "") {
-				
-				if (total != "") {
-					
-					total += "/";
-					
-				}
-				
-				total += part;
-				
-				if (!FileSystem.exists (total)) {
-					
-					print("mkdir " + total);
-					
-					FileSystem.createDirectory (total);
-					
-				}
-				
-			}
-			
-		}
-		
-		if (oldPath != "") {
-			
-			Sys.setCwd (oldPath);
-			
-		}
 		
 	}
 	
@@ -617,7 +521,7 @@ class InstallTool {
 				
 			}
 			
-			copyIfNewer (words[0], words[1]);
+			FileHelper.copyIfNewer (words[0], words[1]);
 			
 		} else if (command == "setup") {
 			

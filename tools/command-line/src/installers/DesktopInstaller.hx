@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -253,8 +254,8 @@ class DesktopInstaller extends InstallerBase {
 	
 	override function update ():Void {
 		
-		mkdir (getBuildDir ());
-		mkdir (getExeDir ());
+		PathHelper.mkdir (getBuildDir ());
+		PathHelper.mkdir (getExeDir ());
 		
 		generateSWFClasses (targetDir + "/haxe");
 		
@@ -331,7 +332,7 @@ class DesktopInstaller extends InstallerBase {
 		
 		if (InstallTool.isMac) {
 			
-			mkdir (content_dir);
+			PathHelper.mkdir (content_dir);
 			
 			var filename =  icons.createMacIcon (content_dir);
 			
@@ -349,12 +350,12 @@ class DesktopInstaller extends InstallerBase {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (content_dir + asset.targetPath));
+				PathHelper.mkdir (Path.directory (content_dir + asset.targetPath));
 				copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
 				
 			} else {
 				
-				mkdir (Path.directory (targetDir + "/" + asset.targetPath));
+				PathHelper.mkdir (Path.directory (targetDir + "/" + asset.targetPath));
 				copyFile (asset.sourcePath, targetDir + "/" + asset.targetPath);
 				
 			}
@@ -372,7 +373,7 @@ class DesktopInstaller extends InstallerBase {
 			
 			if (icon_name == "") {
 				
-				mkdir(targetDir + "/haxe");
+				PathHelper.mkdir(targetDir + "/haxe");
 				
 				var tmp_name = targetDir + "/haxe/icon.png";
 				

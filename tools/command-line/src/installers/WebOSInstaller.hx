@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.FileSystem;
@@ -116,7 +117,7 @@ class WebOSInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/webos/bin/";
-		mkdir (destination);
+		PathHelper.mkdir (destination);
 		
 		recursiveCopy (templatePaths[0] + "webos/template", destination);
 		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/webos/haxe");
@@ -148,7 +149,7 @@ class WebOSInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
+			PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
@@ -182,7 +183,7 @@ class WebOSInstaller extends InstallerBase {
 		if (icon_name == "") {
 			
 			var tmpDir = buildDirectory + "/webos/haxe";
-			mkdir (tmpDir);
+			PathHelper.mkdir (tmpDir);
 			var tmp_name = tmpDir + "/icon.png";
 			
 			if (icons.updateIcon (64, 64, tmp_name)) {

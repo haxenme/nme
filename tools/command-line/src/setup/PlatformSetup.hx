@@ -4,6 +4,7 @@ package setup;
 import haxe.Http;
 import haxe.io.Eof;
 import haxe.io.Path;
+import helpers.PathHelper;
 import installers.InstallerBase;
 import neko.zip.Reader;
 import neko.Lib;
@@ -83,12 +84,12 @@ class PlatformSetup {
 			
 			if (path == "") {
 				
-				InstallTool.mkdir (defaultPath);
+				PathHelper.mkdir (defaultPath);
 				return defaultPath;
 				
 			} else {
 				
-				InstallTool.mkdir (path);
+				PathHelper.mkdir (path);
 				return path;
 				
 			}
@@ -212,7 +213,7 @@ class PlatformSetup {
 						var file = dirs.pop();
 						for( d in dirs ) {
 							path += d;
-							InstallTool.mkdir (targetPath + "/" + path);
+							PathHelper.mkdir (targetPath + "/" + path);
 							path += "/";
 						}
 					

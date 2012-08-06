@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -224,10 +225,10 @@ class AndroidInstaller extends InstallerBase {
 	private function updateIcon () {
 		
 		var destination:String = buildDirectory + "/android/bin";
-		mkdir (destination);
-		mkdir (destination + "/res/drawable-ldpi/");
-		mkdir (destination + "/res/drawable-mdpi/");
-		mkdir (destination + "/res/drawable-hdpi/");
+		PathHelper.mkdir (destination);
+		PathHelper.mkdir (destination + "/res/drawable-ldpi/");
+		PathHelper.mkdir (destination + "/res/drawable-mdpi/");
+		PathHelper.mkdir (destination + "/res/drawable-hdpi/");
 		
 		var orig = allFiles.length;
 		
@@ -249,11 +250,11 @@ class AndroidInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/android/bin/";
-		mkdir (destination);
+		PathHelper.mkdir (destination);
 		
 		var packageDirectory:String = defines.get ("APP_PACKAGE");
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
-		mkdir (packageDirectory);
+		PathHelper.mkdir (packageDirectory);
 		
 		generateSWFClasses (buildDirectory + "/android/haxe");
 		
@@ -270,7 +271,7 @@ class AndroidInstaller extends InstallerBase {
 			
 			if (debugExists) {
 				
-				mkdir (destination + "/libs/armeabi/");
+				PathHelper.mkdir (destination + "/libs/armeabi/");
 				File.copy (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
 				
 			} else {
@@ -338,7 +339,7 @@ class AndroidInstaller extends InstallerBase {
 			
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}

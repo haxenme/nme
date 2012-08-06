@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.PathHelper;
 import sys.FileSystem;
 import sys.io.Process;
 
@@ -248,7 +249,7 @@ class HTML5Installer extends InstallerBase {
 	override function update ():Void {
 		
 		var destination = outputDirectory + "/bin/";
-		mkdir (destination);
+		PathHelper.mkdir (destination);
 		
 		if (targetFlags.exists ("html5")) {
 			
@@ -262,7 +263,7 @@ class HTML5Installer extends InstallerBase {
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				
 				if (asset.type != Asset.TYPE_FONT) {
 					
@@ -289,7 +290,7 @@ class HTML5Installer extends InstallerBase {
 						
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}

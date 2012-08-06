@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import data.NDLL;
 import haxe.io.Path;
+import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -239,10 +240,10 @@ class IOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/" + PATH + "/";
 		var projDestination:String = destination + defines.get("APP_FILE") + "/";
 		
-		mkdir (destination);
-		mkdir (projDestination);
-		mkdir (projDestination + "/haxe");
-		mkdir (projDestination + "/haxe/nme/installer");
+		PathHelper.mkdir (destination);
+		PathHelper.mkdir (projDestination);
+		PathHelper.mkdir (projDestination + "/haxe");
+		PathHelper.mkdir (projDestination + "/haxe/nme/installer");
 		
 		copyFile(templatePaths[0] + "haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
 		recursiveCopy(templatePaths[0] + "iphone/PROJ/haxe", projDestination + "/haxe");
@@ -253,7 +254,7 @@ class IOSInstaller extends InstallerBase {
 		recursiveCopy(templatePaths[0] + "iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
 		generateSWFClasses(projDestination + "/haxe");
 		
-		mkdir (projDestination + "lib");
+		PathHelper.mkdir (projDestination + "lib");
 		
 		for (archID in 0...3) {
 			var arch = [ "armv6", "armv7", "i386" ][archID];
@@ -266,8 +267,8 @@ class IOSInstaller extends InstallerBase {
 			
 			var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
 			
-			mkdir (projDestination + "lib/" + arch);
-			mkdir (projDestination + "lib/" + arch + "-debug");
+			PathHelper.mkdir (projDestination + "lib/" + arch);
+			PathHelper.mkdir (projDestination + "lib/" + arch + "-debug");
 			
 			for (ndll in ndlls) {
 				var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
@@ -286,14 +287,14 @@ class IOSInstaller extends InstallerBase {
 			}
 		}
 		
-		mkdir (projDestination + "assets");
+		PathHelper.mkdir (projDestination + "assets");
 		
 		for (asset in assets) {
 			if (asset.type != Asset.TYPE_TEMPLATE) {
-				mkdir (Path.directory (projDestination + "assets/" + asset.flatName));
+				PathHelper.mkdir (Path.directory (projDestination + "assets/" + asset.flatName));
 				copyIfNewer (asset.sourcePath, projDestination + "assets/" + asset.flatName);
 			} else {
-				mkdir (Path.directory (projDestination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (projDestination + asset.targetPath));
 				copyFile (asset.sourcePath, projDestination + asset.targetPath);
 			}
 		}
@@ -307,7 +308,7 @@ class IOSInstaller extends InstallerBase {
 	
 	private function updateIcon () {
 		var destination:String = buildDirectory + "/" + PATH;
-		mkdir(destination);
+		PathHelper.mkdir(destination);
 		
 		var has_icon = true;
 		
@@ -326,7 +327,7 @@ class IOSInstaller extends InstallerBase {
 
 	private function updateLaunchImage () {
 		var destination:String = buildDirectory + "/" + PATH;
-		mkdir(destination);
+		PathHelper.mkdir(destination);
 		
 		var has_launch_image = false;
 		if (launchImages.length > 0) has_launch_image = true;

@@ -10,6 +10,7 @@ import haxe.io.Bytes;
 import haxe.io.Path;
 import haxe.Int32;
 import haxe.SHA1;
+import helpers.PathHelper;
 import neko.zip.Writer;
 import neko.Lib;
 import nme.text.Font;
@@ -744,13 +745,13 @@ class FlashInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/flash/bin/";
-		mkdir (destination);
+		 (destination);
 		
 		for (asset in assets) {
 			
 			if (!asset.embed) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 				
 			}
@@ -766,7 +767,7 @@ class FlashInstaller extends InstallerBase {
 			
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
-				mkdir (Path.directory (destination + asset.targetPath));
+				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				copyFile (asset.sourcePath, destination + asset.targetPath);
 				
 			}

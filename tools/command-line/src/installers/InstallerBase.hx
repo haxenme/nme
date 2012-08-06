@@ -11,6 +11,7 @@ import haxe.Stack;
 import haxe.Template;
 import haxe.io.Path;
 import haxe.xml.Fast;
+import helpers.PathHelper;
 import neko.Lib;
 import nme.utils.ByteArray;
 import sys.io.File;
@@ -312,7 +313,7 @@ class InstallerBase {
 		
 		print ("Copy " + source + " to " + destination);
 		
-		mkdir (Path.directory (destination));
+		PathHelper.mkdir (Path.directory (destination));
 		File.copy (source, destination);
 		
 	}
@@ -756,7 +757,7 @@ class InstallerBase {
 					var directory = outputDirectory + "/" + Path.directory (className.split (".").join ("/"));
 					var fileName = name + ".hx";
 					
-					mkdir (directory);
+					PathHelper.mkdir (directory);
 					
 					var fileOutput = File.write (directory + "/" + fileName, true);
 					fileOutput.writeString (result);
@@ -781,7 +782,7 @@ class InstallerBase {
          // Do not create this file if it does not already exist
          var writeFile = false;
 			
-			mkdir (buildDirectory);
+			PathHelper.mkdir (buildDirectory);
 			
 			if (FileSystem.exists (versionFile)) {
 
@@ -1003,13 +1004,6 @@ class InstallerBase {
 		}
 		
 		return true;
-		
-	}
-	
-	
-	private function mkdir (directory:String):Void {
-		
-		InstallTool.mkdir (directory);
 		
 	}
 	
@@ -1861,7 +1855,7 @@ class InstallerBase {
 	
 	public function recursiveCopy (source:String, destination:String, process:Bool = true) {
 		
-		mkdir (destination);
+		PathHelper.mkdir (destination);
 		
 		var files:Array <String> = null;
 		

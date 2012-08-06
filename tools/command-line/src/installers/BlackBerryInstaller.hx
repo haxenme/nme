@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import data.NDLL;
 import haxe.io.Path;
+import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -136,7 +137,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (defines.exists ("BLACKBERRY_DEBUG_TOKEN")) {
 			
-			InstallTool.mkdir (buildDirectory + "/blackberry");
+			PathHelper.mkdir (buildDirectory + "/blackberry");
 			
 			var cacheCwd = Sys.getCwd ();
 			Sys.setCwd (buildDirectory + "/blackberry");
@@ -228,7 +229,7 @@ class BlackBerryInstaller extends InstallerBase {
 	override function update ():Void {
 		
 		var destination:String = buildDirectory + "/blackberry/bin/";
-		mkdir (destination);
+		PathHelper.mkdir (destination);
 		
 		recursiveCopy (templatePaths[0] + "blackberry/template", destination);
 		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/blackberry/haxe");
@@ -293,7 +294,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		for (asset in assets) {
 			
-			mkdir (Path.directory (destination + asset.targetPath));
+			PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 			
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
@@ -319,7 +320,7 @@ class BlackBerryInstaller extends InstallerBase {
 		if (icon_name == "") {
 			
 			var tmpDir = buildDirectory + "/blackberry/haxe";
-			mkdir (tmpDir);
+			PathHelper.mkdir (tmpDir);
 			var tmp_name = tmpDir + "/icon.png";
 			
 			if (icons.updateIcon (86, 86, tmp_name)) {
