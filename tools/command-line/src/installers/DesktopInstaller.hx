@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
@@ -50,7 +51,7 @@ class DesktopInstaller extends InstallerBase {
 		
 		if (FileSystem.exists (targetDir)) {
 			
-			removeDirectory (targetDir);
+			PathHelper.removeDirectory (targetDir);
 			
 		}
 		
@@ -278,9 +279,9 @@ class DesktopInstaller extends InstallerBase {
 			
 		}
 		
-		recursiveCopy (templatePaths[0] + "haxe", targetDir + "/haxe");
-		recursiveCopy (templatePaths[0] + "cpp/hxml", targetDir + "/haxe");
-		recursiveCopy (templatePaths[0] + getVM () + "/hxml", targetDir + "/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", targetDir + "/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "cpp/hxml", targetDir + "/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + getVM () + "/hxml", targetDir + "/haxe", context);
 		
 		var system_name = targetName.substr (0, 1).toUpperCase () + targetName.substr (1) + get64 ();
 		
@@ -322,7 +323,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			} else {
 				
-				copyIfNewer (ndllPath, getExeDir () + ndll.name + extension);
+				FileHelper.copyIfNewer (ndllPath, getExeDir () + ndll.name + extension);
 				
 			}
 			
@@ -336,13 +337,13 @@ class DesktopInstaller extends InstallerBase {
 			
 			var filename =  icons.createMacIcon (content_dir);
 			
-			if (addFile(filename)) {
+			if (FileHelper.addFile(filename)) {
 				
 				context.HAS_ICON = true;
 				
 			}
 			
-			copyFile(templatePaths[0] + "mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
+			FileHelper.copyFile(templatePaths[0] + "mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
 			
 		}
 		
@@ -351,12 +352,12 @@ class DesktopInstaller extends InstallerBase {
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (content_dir + asset.targetPath));
-				copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
+				FileHelper.copyIfNewer (asset.sourcePath, content_dir + asset.targetPath );
 				
 			} else {
 				
 				PathHelper.mkdir (Path.directory (targetDir + "/" + asset.targetPath));
-				copyFile (asset.sourcePath, targetDir + "/" + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, targetDir + "/" + asset.targetPath, context);
 				
 			}
 			

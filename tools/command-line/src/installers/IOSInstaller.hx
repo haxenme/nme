@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import data.NDLL;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
@@ -62,7 +63,7 @@ class IOSInstaller extends InstallerBase {
 		var targetPath = buildDirectory + "/" + PATH;
 		
 		if (FileSystem.exists (targetPath)) {
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 		}
 	}
 	
@@ -245,13 +246,13 @@ class IOSInstaller extends InstallerBase {
 		PathHelper.mkdir (projDestination + "/haxe");
 		PathHelper.mkdir (projDestination + "/haxe/nme/installer");
 		
-		copyFile(templatePaths[0] + "haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx");
-		recursiveCopy(templatePaths[0] + "iphone/PROJ/haxe", projDestination + "/haxe");
-		recursiveCopy(templatePaths[0] + "iphone/PROJ/Classes", projDestination + "Classes");
-        copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Entitlements.plist", projDestination + defines.get("APP_FILE") + "-Entitlements.plist");
-		copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist");
-		copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch");
-		recursiveCopy(templatePaths[0] + "iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj");
+		FileHelper.copyFile(templatePaths[0] + "haxe/nme/installer/Assets.hx", projDestination + "/haxe/nme/installer/Assets.hx", context);
+		FileHelper.recursiveCopy(templatePaths[0] + "iphone/PROJ/haxe", projDestination + "/haxe", context);
+		FileHelper.recursiveCopy(templatePaths[0] + "iphone/PROJ/Classes", projDestination + "Classes", context);
+        FileHelper.copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Entitlements.plist", projDestination + defines.get("APP_FILE") + "-Entitlements.plist", context);
+		FileHelper.copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Info.plist", projDestination + defines.get("APP_FILE") + "-Info.plist", context);
+		FileHelper.copyFile(templatePaths[0] + "iphone/PROJ/PROJ-Prefix.pch", projDestination + defines.get("APP_FILE") + "-Prefix.pch", context);
+		FileHelper.recursiveCopy(templatePaths[0] + "iphone/PROJ.xcodeproj", destination + defines.get("APP_FILE") + ".xcodeproj", context);
 		generateSWFClasses(projDestination + "/haxe");
 		
 		PathHelper.mkdir (projDestination + "lib");
@@ -277,10 +278,10 @@ class IOSInstaller extends InstallerBase {
 				var releaseDest = projDestination + "lib/" + arch + "/lib" + ndll.name + ".a";
 				var debugDest = projDestination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
 				
-				copyIfNewer(releaseLib, releaseDest);
+				FileHelper.copyIfNewer(releaseLib, releaseDest);
 				
 				if (FileSystem.exists(debugLib)) {
-					copyIfNewer(debugLib, debugDest);
+					FileHelper.copyIfNewer(debugLib, debugDest);
 				} else if (FileSystem.exists(debugDest)) {
 					FileSystem.deleteFile(debugDest);
 				}
@@ -292,10 +293,10 @@ class IOSInstaller extends InstallerBase {
 		for (asset in assets) {
 			if (asset.type != Asset.TYPE_TEMPLATE) {
 				PathHelper.mkdir (Path.directory (projDestination + "assets/" + asset.flatName));
-				copyIfNewer (asset.sourcePath, projDestination + "assets/" + asset.flatName);
+				FileHelper.copyIfNewer (asset.sourcePath, projDestination + "assets/" + asset.flatName);
 			} else {
 				PathHelper.mkdir (Path.directory (projDestination + asset.targetPath));
-				copyFile (asset.sourcePath, projDestination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, projDestination + asset.targetPath, context);
 			}
 		}
         
@@ -335,7 +336,7 @@ class IOSInstaller extends InstallerBase {
 		for (launchImage in launchImages) {
 			var splitPath = launchImage.name.split("/");
 			var path = destination + "/" + splitPath[splitPath.length-1];
-			copyFile(launchImage.name, path, false);
+			FileHelper.copyFile(launchImage.name, path, context, false);
 		}
 
 		context.HAS_LAUNCH_IMAGE = has_launch_image;

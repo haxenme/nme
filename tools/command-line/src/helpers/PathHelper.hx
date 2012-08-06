@@ -8,6 +8,25 @@ import neko.Lib;
 class PathHelper {
 	
 	
+	public static function escape (path:String):String {
+		
+		if (!InstallTool.isWindows) {
+			
+			path = StringTools.replace (path, " ", "\\ ");
+			
+			if (StringTools.startsWith (path, "~/")) {
+				
+				path = Sys.getEnv ("HOME") + "/" + path.substr (2);
+				
+			}
+			
+		}
+		
+		return path;
+		
+	}
+	
+	
 	public static function mkdir (directory:String):Void {
 		
 		directory = StringTools.replace (directory, "\\", "/");
@@ -57,6 +76,48 @@ class PathHelper {
 		if (oldPath != "") {
 			
 			Sys.setCwd (oldPath);
+			
+		}
+		
+	}
+	
+	
+	public static function removeDirectory (directory:String):Void {
+		
+		if (FileSystem.exists (directory)) {
+			
+			for (file in FileSystem.readDirectory (directory)) {
+				
+				var path = directory + "/" + file;
+				
+				if (FileSystem.isDirectory (path)) {
+					
+					removeDirectory (path);
+					
+				} else {
+					
+					FileSystem.deleteFile (path);
+					
+				}
+				
+			}
+			
+			FileSystem.deleteDirectory (directory);
+			
+		}
+		
+	}
+	
+	
+	public static function tryFullPath (path:String):String {
+		
+		try {
+			
+			return FileSystem.fullPath (path);
+			
+		} catch (e:Dynamic) {
+			
+			return path;
 			
 		}
 		

@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
@@ -24,7 +25,7 @@ class AndroidInstaller extends InstallerBase {
 		if (!defines.exists ("ARM7-only")) {
 			
 			runCommand ("", "haxe", [ hxml ] );
-			copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5);
+			FileHelper.copyIfNewer (buildDirectory + "/android/obj/libApplicationMain" + (debug ? "-debug" : "") + ".so", arm5);
 			
 		} else {
 			
@@ -39,7 +40,7 @@ class AndroidInstaller extends InstallerBase {
 		if (defines.exists ("ARM7") || defines.exists ("ARM7-only")) {
 			
 			runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
-			copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7);
+			FileHelper.copyIfNewer (buildDirectory + "/android/obj/libApplicationMain-7" + (debug ? "-debug" : "") + ".so", arm7);
 			
 		} else {
 			
@@ -104,7 +105,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		if (FileSystem.exists (targetPath)) {
 			
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 			
 		}
 		
@@ -276,7 +277,7 @@ class AndroidInstaller extends InstallerBase {
 				
 			} else {
 				
-				copyIfNewer (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
+				FileHelper.copyIfNewer (ndllPath, destination + "/libs/armeabi/lib" + ndll.name + ".so");
 				
 			}
 			
@@ -288,11 +289,11 @@ class AndroidInstaller extends InstallerBase {
 				
 				if (FileSystem.isDirectory (javaPath)) {
 					
-					recursiveCopy (javaPath, destination + "/src", true);
+					FileHelper.recursiveCopy (javaPath, destination + "/src", context, true);
 					
 				} else {
 					
-					copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
+					FileHelper.copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
 					
 				}
 				
@@ -324,23 +325,23 @@ class AndroidInstaller extends InstallerBase {
 					
 				}
 				
-				copyIfNewer (asset.sourcePath, targetPath);
+				FileHelper.copyIfNewer (asset.sourcePath, targetPath);
 				
 			}
 			
 		}
 		
-		recursiveCopy (templatePaths[0] + "android/template", destination);
-		copyFile (templatePaths[0] + "android/MainActivity.java", packageDirectory + "/MainActivity.java");
-		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/android/haxe");
-		recursiveCopy (templatePaths[0] + "android/hxml", buildDirectory + "/android/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "android/template", destination, context);
+		FileHelper.copyFile (templatePaths[0] + "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/android/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "android/hxml", buildDirectory + "/android/haxe", context);
 		
 		for (asset in assets) {
 			
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
 			

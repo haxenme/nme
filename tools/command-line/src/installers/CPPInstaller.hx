@@ -2,6 +2,7 @@ package installers;
 
 
 import haxe.io.Path;
+import helpers.FileHelper;
 import sys.io.Process;
 import neko.Lib;
 
@@ -21,7 +22,7 @@ class CPPInstaller extends DesktopInstaller {
 		var debugString:String = (debug ? "-debug" : "");
 		var extension:String = (targetName=="windows") ? ".exe" : "";
 		
-		copyIfNewer (getBuildDir() + "/ApplicationMain" + debugString + extension, path);
+		FileHelper.copyIfNewer (getBuildDir() + "/ApplicationMain" + debugString + extension, path);
 		
 	}
 	

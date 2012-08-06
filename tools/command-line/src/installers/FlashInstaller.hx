@@ -10,6 +10,7 @@ import haxe.io.Bytes;
 import haxe.io.Path;
 import haxe.Int32;
 import haxe.SHA1;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.zip.Writer;
 import neko.Lib;
@@ -75,11 +76,11 @@ class FlashInstaller extends InstallerBase {
 		if (targetFlags.exists ("web") 
 			|| defines.exists ("DEV_URL") && !targetFlags.exists ("chrome") && !targetFlags.exists ("opera")) {
 			
-			recursiveCopy (templatePaths[0] + "flash/templates/web", buildDirectory + "/flash/bin");
+			FileHelper.recursiveCopy (templatePaths[0] + "flash/templates/web", buildDirectory + "/flash/bin", context);
 			
 		} else if (targetFlags.exists ("chrome")) {
 			
-			recursiveCopy (templatePaths[0] + "flash/templates/chrome", buildDirectory + "/flash/bin");
+			FileHelper.recursiveCopy (templatePaths[0] + "flash/templates/chrome", buildDirectory + "/flash/bin", context);
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");
@@ -88,7 +89,7 @@ class FlashInstaller extends InstallerBase {
 			
 		} else if (targetFlags.exists ("opera")) {
 			
-			recursiveCopy (templatePaths[0] + "flash/templates/opera", buildDirectory + "/flash/bin");
+			FileHelper.recursiveCopy (templatePaths[0] + "flash/templates/opera", buildDirectory + "/flash/bin", context);
 			
 			getIcon (16, buildDirectory + "/flash/bin/icon_16.png");
 			getIcon (32, buildDirectory + "/flash/bin/icon_32.png");
@@ -150,7 +151,7 @@ class FlashInstaller extends InstallerBase {
 			getIcon (48, buildDirectory + "/flash/bin/icon_48.png");
 			getIcon (128, buildDirectory + "/flash/bin/icon_128.png");*/
 			
-			copyFile (templatePaths[0] + "flash/templates/air/application.xml", buildDirectory + "/flash/bin/application.xml");
+			FileHelper.copyFile (templatePaths[0] + "flash/templates/air/application.xml", buildDirectory + "/flash/bin/application.xml", context);
 			
 			var args = [ "-package", "-storetype", defines.get ("KEY_STORE_TYPE"), "-keystore", defines.get ("KEY_STORE") ];
 			
@@ -191,7 +192,7 @@ class FlashInstaller extends InstallerBase {
 		
 		if (FileSystem.exists (targetPath)) {
 			
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 			
 		}
 		
@@ -654,7 +655,7 @@ class FlashInstaller extends InstallerBase {
 		
 		if (icon != "") {
 			
-			copyIfNewer (icon, targetPath);
+			FileHelper.copyIfNewer (icon, targetPath);
 			
 		} else {
 			
@@ -752,15 +753,15 @@ class FlashInstaller extends InstallerBase {
 			if (!asset.embed) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 				
 			}
 			
 		}
 		
-		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/flash/haxe");
-		recursiveCopy (templatePaths[0] + "flash/hxml", buildDirectory + "/flash/haxe");
-		recursiveCopy (templatePaths[0] + "flash/haxe", buildDirectory + "/flash/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/flash/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "flash/hxml", buildDirectory + "/flash/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "flash/haxe", buildDirectory + "/flash/haxe", context);
 		generateSWFClasses (buildDirectory + "/flash/haxe");
 		
 		for (asset in assets) {
@@ -768,7 +769,7 @@ class FlashInstaller extends InstallerBase {
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
 			

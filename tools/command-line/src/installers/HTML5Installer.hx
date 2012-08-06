@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import sys.FileSystem;
 import sys.io.Process;
@@ -130,7 +131,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (FileSystem.exists (targetPath)) {
 			
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 			
 		}
 		
@@ -269,7 +270,7 @@ class HTML5Installer extends InstallerBase {
 					
 					// going to root directory now, but should it be a forced "assets" folder later?
 					
-					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 					
 				} else {
 					
@@ -281,17 +282,17 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		recursiveCopy (templatePaths[0] + "html5/template", destination);
-		recursiveCopy (templatePaths[0] + "haxe", outputDirectory + "/haxe");
-		recursiveCopy (templatePaths[0] + "html5/haxe", outputDirectory + "/haxe");
-		recursiveCopy (templatePaths[0] + "html5/hxml", outputDirectory + "/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "html5/template", destination, context);
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", outputDirectory + "/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "html5/haxe", outputDirectory + "/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "html5/hxml", outputDirectory + "/haxe", context);
 		
 		for (asset in assets) {
 						
 			if (asset.type == Asset.TYPE_TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
 			

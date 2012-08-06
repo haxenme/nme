@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
@@ -23,11 +24,11 @@ class WebOSInstaller extends InstallerBase {
 		
 		if (debug) {
 			
-			copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain-debug", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain-debug", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
 			
 		} else {
 			
-			copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/webos/obj/ApplicationMain", buildDirectory + "/webos/bin/" + defines.get ("APP_FILE"));
 			
 		}
 		
@@ -42,7 +43,7 @@ class WebOSInstaller extends InstallerBase {
 		
 		if (FileSystem.exists (targetPath)) {
 			
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 			
 		}
 		
@@ -119,9 +120,9 @@ class WebOSInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/webos/bin/";
 		PathHelper.mkdir (destination);
 		
-		recursiveCopy (templatePaths[0] + "webos/template", destination);
-		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/webos/haxe");
-		recursiveCopy (templatePaths[0] + "webos/hxml", buildDirectory + "/webos/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "webos/template", destination, context);
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/webos/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "webos/hxml", buildDirectory + "/webos/haxe", context);
 		generateSWFClasses (buildDirectory + "/webos/haxe");
 		
 		for (ndll in ndlls) {
@@ -141,7 +142,7 @@ class WebOSInstaller extends InstallerBase {
 				
 			} else {
 				
-				copyIfNewer (ndllPath, destination + ndll.name + ".so" );
+				FileHelper.copyIfNewer (ndllPath, destination + ndll.name + ".so" );
 				
 			}
 			
@@ -155,19 +156,19 @@ class WebOSInstaller extends InstallerBase {
 				
 				if (asset.targetPath == "/appinfo.json") {
 					
-					copyFile (asset.sourcePath, destination + asset.targetPath);
+					FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 					
 				} else {
 					
 					// going to root directory now, but should it be a forced "assets" folder later?
 					
-					copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 					
 				}
 				
 			} else {
 				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
 			

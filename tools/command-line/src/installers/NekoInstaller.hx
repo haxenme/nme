@@ -2,6 +2,7 @@ package installers;
 
 
 import haxe.io.Path;
+import helpers.FileHelper;
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
@@ -25,7 +26,7 @@ class NekoInstaller extends DesktopInstaller {
 		output.writeUInt30 (nekoExecutableContents.length);
 		output.close ();
 		
-		recursiveCopy (templatePaths[0] + "neko/ndll/" + targetName + get64 () + "/", getExeDir (), false);
+		FileHelper.recursiveCopy (templatePaths[0] + "neko/ndll/" + targetName + get64 () + "/", getExeDir (), context, false);
 		
 		/*
 		

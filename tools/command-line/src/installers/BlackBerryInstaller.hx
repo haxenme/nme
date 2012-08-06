@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import data.NDLL;
 import haxe.io.Path;
+import helpers.FileHelper;
 import helpers.PathHelper;
 import neko.Lib;
 import sys.io.File;
@@ -25,11 +26,11 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (debug) {
 			
-			copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain-debug", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain-debug", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
 			
 		} else {
 			
-			copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
 			
 		}
 		
@@ -38,7 +39,7 @@ class BlackBerryInstaller extends InstallerBase {
 		if (defines.exists ("KEY_STORE")) {
 			
 			args.push ("-keystore");
-			args.push (tryFullPath (defines.get ("KEY_STORE")));
+			args.push (PathHelper.tryFullPath (defines.get ("KEY_STORE")));
 			
 			if (defines.exists ("KEY_STORE_PASSWORD")) {
 				
@@ -54,7 +55,7 @@ class BlackBerryInstaller extends InstallerBase {
 			if (!targetFlags.exists ("simulator")) {
 				
 				args.push ("-debugToken");
-				args.push (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
+				args.push (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
 				
 			}
 			
@@ -64,7 +65,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (defines.exists ("KEY_STORE")) {
 			
-			args = [ "-keystore", tryFullPath (defines.get ("KEY_STORE")) ];
+			args = [ "-keystore", PathHelper.tryFullPath (defines.get ("KEY_STORE")) ];
 			
 			if (defines.exists ("KEY_STORE_PASSWORD")) {
 				
@@ -88,7 +89,7 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (FileSystem.exists (targetPath)) {
 			
-			removeDirectory (targetPath);
+			PathHelper.removeDirectory (targetPath);
 			
 		}
 		
@@ -142,7 +143,7 @@ class BlackBerryInstaller extends InstallerBase {
 			var cacheCwd = Sys.getCwd ();
 			Sys.setCwd (buildDirectory + "/blackberry");
 			
-			var process = new Process(binDirectory + "blackberry-nativepackager", [ "-listmanifest", escapePath (tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
+			var process = new Process(binDirectory + "blackberry-nativepackager", [ "-listmanifest", PathHelper.escape (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
 			var ret = process.stdout.readAll().toString();
 			var ret2 = process.stderr.readAll().toString();
 			process.exitCode(); //you need this to wait till the process is closed!
@@ -231,9 +232,9 @@ class BlackBerryInstaller extends InstallerBase {
 		var destination:String = buildDirectory + "/blackberry/bin/";
 		PathHelper.mkdir (destination);
 		
-		recursiveCopy (templatePaths[0] + "blackberry/template", destination);
-		recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/blackberry/haxe");
-		recursiveCopy (templatePaths[0] + "blackberry/hxml", buildDirectory + "/blackberry/haxe");
+		FileHelper.recursiveCopy (templatePaths[0] + "blackberry/template", destination, context);
+		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/blackberry/haxe", context);
+		FileHelper.recursiveCopy (templatePaths[0] + "blackberry/hxml", buildDirectory + "/blackberry/haxe", context);
 		generateSWFClasses (buildDirectory + "/blackberry/haxe");
 		
 		var arch = "";
@@ -276,7 +277,7 @@ class BlackBerryInstaller extends InstallerBase {
 					
 				}
 				
-				copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
+				FileHelper.copyIfNewer (ndll.getSourcePath ("BlackBerry", simulatorLib), destination + simulatorLib);
 				
 			} else {
 				
@@ -286,7 +287,7 @@ class BlackBerryInstaller extends InstallerBase {
 					
 				}
 				
-				copyIfNewer (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
+				FileHelper.copyIfNewer (ndll.getSourcePath ("BlackBerry", deviceLib), destination + deviceLib);
 				
 			}
 			
@@ -300,11 +301,11 @@ class BlackBerryInstaller extends InstallerBase {
 				
 				// going to root directory now, but should it be a forced "assets" folder later?
 				
-				copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
 				
 			} else {
 				
-				copyFile (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
 			
