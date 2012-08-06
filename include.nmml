@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension>
+	
+	<ndll name="std" haxelib="hxcpp" />
+	<ndll name="regexp" haxelib="hxcpp" />
+	<ndll name="zlib" haxelib="hxcpp" />
+	<ndll name="nme" />
+	
+</extension>

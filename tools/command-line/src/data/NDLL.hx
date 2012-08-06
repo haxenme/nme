@@ -45,7 +45,7 @@ class NDLL {
 			
 			return path;
 			
-		} else if (extension != "") {
+		} else if (extension != "" && haxelib == "nme-extension") {
 			
 			return extension + "/ndll/" + directoryName + "/" + filename;
 			
