@@ -219,7 +219,7 @@ class HTML5Installer extends InstallerBase {
 	
 	override function run ():Void {
 		
-		var destination:String = buildDirectory + "/html5/bin";
+		var destination:String = buildDirectory + "/html5/web/bin";
 		var dotSlash:String = "./";
 		
 		if (InstallTool.isWindows) {

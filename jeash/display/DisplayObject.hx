@@ -768,11 +768,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 */
 	//** internal **//
 	//** FINAL **//
-	private function jeashInvalidateBounds():Void {
+	private inline function jeashInvalidateBounds():Void {
 		//TODO :: adjust so that parent is only invalidated if it's bounds are changed by this change
 		jeashSetFlag(BOUNDS_INVALID);
 		if (parent != null)
-			parent.jeashInvalidateBounds();
+			parent.jeashSetFlag(BOUNDS_INVALID);
 	}
 
 	private inline function getMatrixChainInvalid():Bool {
