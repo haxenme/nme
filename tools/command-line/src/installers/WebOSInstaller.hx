@@ -8,7 +8,6 @@ import helpers.PathHelper;
 import helpers.ProcessHelper;
 import helpers.SWFHelper;
 import helpers.WebOSHelper;
-import neko.Lib;
 import sys.io.File;
 import sys.FileSystem;
 
