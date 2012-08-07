@@ -408,7 +408,7 @@ class RunScript {
 		
 		var result:Dynamic = Sys.command (command, args);
 		
-		if (result == 0)
+		//if (result == 0)
 			//print("Ok.");
 			
 		
@@ -433,12 +433,6 @@ class RunScript {
 		
 		nmeDirectory = getHaxelib ("nme");
 		
-		if (!FileSystem.exists (nmeDirectory + "/tools/command-line/command-line.n")) {
-			
-			build ();
-			
-		}
-		
 		var args:Array <String> = Sys.args ();
 		
 		/*if (args.length == 1) {
@@ -462,6 +456,12 @@ class RunScript {
 			}
 			
 		} else {
+			
+			if (!FileSystem.exists (nmeDirectory + "/tools/command-line/command-line.n")) {
+				
+				build ();
+				
+			}
 			
 			args.unshift ("tools/command-line/command-line.n");
 			Sys.exit (runCommand (nmeDirectory, "neko", args));

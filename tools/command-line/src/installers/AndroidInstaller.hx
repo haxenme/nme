@@ -3,6 +3,7 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.AndroidHelper;
 import helpers.FileHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
@@ -54,49 +55,7 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		if (defines.exists ("JAVA_HOME")) {
-			
-			Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
-			
-		}
-		
-		if (defines.exists ("ANDROID_SDK")) {
-			
-			Sys.putEnv ("ANDROID_SDK", defines.get ("ANDROID_SDK"));
-			
-		}
-		
-		var ant:String = defines.get ("ANT_HOME");
-		
-		if (ant == null || ant == "") {
-			
-			ant = "ant";
-			
-		} else {
-			
-			ant += "/bin/ant";
-			
-		}
-		
-		var build:String = "debug";
-		
-		if (defines.exists ("KEY_STORE")) {
-			
-			build = "release";
-			
-		}
-		
-		// Fix bug in Android build system, force compile
-		
-		var buildProperties = destination + "/bin/build.prop";
-		
-		if (FileSystem.exists (buildProperties)) {
-			
-			FileSystem.deleteFile (buildProperties);
-			
-		}
-		
-		ProcessHelper.runCommand (destination, ant, [ build ]);
+		AndroidHelper.build (destination);
 		
 	}
 	
@@ -114,35 +73,9 @@ class AndroidInstaller extends InstallerBase {
 	}
 	
 	
-	private function getADB ():Dynamic {
-		
-		var path:String = defines.get ("ANDROID_SDK") + "/tools/";
-		var name:String = "adb";
-		
-		if (defines.get ("HOST") == "windows") {
-			
-			name += ".exe";
-			
-		}
-		
-		if (!FileSystem.exists (path + name)) {
-			
-			path = defines.get ("ANDROID_SDK") + "/platform-tools/";
-			
-		}
-		
-		if (!InstallTool.isWindows) {
-			
-			name = "./" + name;
-			
-		}
-		
-		return { path: path, name: name };
-		
-	}
-	
-	
 	override function generateContext ():Void {
+		
+		AndroidHelper.initialize (defines);
 		
 		super.generateContext ();
 		
@@ -150,7 +83,7 @@ class AndroidInstaller extends InstallerBase {
 		
 		if (defines.exists ("KEY_STORE")) {
 			
-			context.KEY_STORE = FileSystem.fullPath (defines.get ("KEY_STORE"));
+			context.KEY_STORE = PathHelper.tryFullPath (defines.get ("KEY_STORE"));
 			
 		}
 		
@@ -172,55 +105,21 @@ class AndroidInstaller extends InstallerBase {
 	
 	override function run ():Void {
 		
-		var pack:String = defines.get ("APP_PACKAGE");
-		var adb:Dynamic = getADB ();
-		
-		ProcessHelper.runCommand (adb.path, adb.name, [ "shell", "am start -a android.intent.action.MAIN -n " + pack + "/" + pack + ".MainActivity" ]);
+		AndroidHelper.run (defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_PACKAGE") + ".MainActivity");
 		
 	}
 	
 	
 	override function traceMessages ():Void {
 		
-		var adb:Dynamic = getADB ();
-		
-		// Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> if you do not want to filter log messages
-		
-		if (defines.exists("FULL_LOGCAT")) {
-			
-			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", "-c" ]);
-			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat" ]);
-			
-		} else if (debug) {
-			
-			var filter = "*:E";
-			var includeTags = [ "NME", "Main", "GameActivity", "GLThread", "trace" ];
-			
-			for (tag in includeTags) {
-				
-				filter += " " + tag + ":D";
-				
-			}
-			
-			Lib.println (filter);
-			
-			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", filter ]);
-			
-		} else {
-			
-			ProcessHelper.runCommand (adb.path, adb.name, [ "logcat", "*:S trace:I" ]);
-			
-		}
+		AndroidHelper.trace (debug);
 		
 	}
 	
 	
 	override function uninstall ():Void {
 		
-		var adb:Dynamic = getADB ();
-		var pack:String = defines.get ("APP_PACKAGE");
-		
-		ProcessHelper.runCommand (adb.path, adb.name, [ "uninstall", pack ]);
+		AndroidHelper.uninstall (defines.get ("APP_PACKAGE"));
 		
 	}
 	
@@ -362,10 +261,7 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		var apk:String = FileSystem.fullPath (buildDirectory) + "/android/bin/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk";
-		var adb:Dynamic = getADB ();
-		
-		ProcessHelper.runCommand (adb.path, adb.name, [ "install", "-r", apk ]);
+		AndroidHelper.install (FileSystem.fullPath (buildDirectory) + "/android/bin/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk");
 		
    }
 	

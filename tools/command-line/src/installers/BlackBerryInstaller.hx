@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import data.NDLL;
 import haxe.io.Path;
+import helpers.BlackBerryHelper;
 import helpers.FileHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
@@ -36,51 +37,7 @@ class BlackBerryInstaller extends InstallerBase {
 			
 		}
 		
-		var args = [ "-package", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar", "bin/bar-descriptor.xml" ];
-		
-		if (defines.exists ("KEY_STORE")) {
-			
-			args.push ("-keystore");
-			args.push (PathHelper.tryFullPath (defines.get ("KEY_STORE")));
-			
-			if (defines.exists ("KEY_STORE_PASSWORD")) {
-				
-				args.push ("-storepass");
-				args.push (defines.get ("KEY_STORE_PASSWORD"));
-				
-			}
-			
-		} else {
-			
-			args.push ("-devMode");
-			
-			if (!targetFlags.exists ("simulator")) {
-				
-				args.push ("-debugToken");
-				args.push (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN")));
-				
-			}
-			
-		}
-		
-		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-nativepackager", args);
-		
-		if (defines.exists ("KEY_STORE")) {
-			
-			args = [ "-keystore", PathHelper.tryFullPath (defines.get ("KEY_STORE")) ];
-			
-			if (defines.exists ("KEY_STORE_PASSWORD")) {
-				
-				args.push ("-storepass");
-				args.push (defines.get ("KEY_STORE_PASSWORD"));
-				
-			}
-			
-			args.push (defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
-			
-			ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-signer", args);
-			
-		}
+		BlackBerryHelper.createPackage (buildDirectory + "/blackberry", "bin/bar-descriptor.xml", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
 		
 	}
 	
@@ -100,19 +57,7 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
-		if (InstallTool.isWindows) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
-			
-		} else if (InstallTool.isMac) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
-			
-		} else {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
-			
-		}
+		BlackBerryHelper.initialize (defines, targetFlags);
 		
 		for (asset in assets) {
 			
@@ -129,55 +74,9 @@ class BlackBerryInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.CPP_DIR = buildDirectory + "/blackberry/obj";
-		context.BLACKBERRY_AUTHOR_ID = getAuthorID ();
+		context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.getAuthorID (buildDirectory + "/blackberry");
 		
 		updateIcon ();
-		
-	}
-	
-	
-	private function getAuthorID ():String {
-		
-		if (defines.exists ("BLACKBERRY_DEBUG_TOKEN")) {
-			
-			PathHelper.mkdir (buildDirectory + "/blackberry");
-			
-			var cacheCwd = Sys.getCwd ();
-			Sys.setCwd (buildDirectory + "/blackberry");
-			
-			var process = new Process(binDirectory + "blackberry-nativepackager", [ "-listmanifest", PathHelper.escape (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
-			var ret = process.stdout.readAll().toString();
-			var ret2 = process.stderr.readAll().toString();
-			process.exitCode(); //you need this to wait till the process is closed!
-			process.close();
-			
-			Sys.setCwd (cacheCwd);
-			
-			if (ret != null) {
-				
-				var search = "Package-Author-Id: ";
-				var index = ret.indexOf (search);
-				
-				if (index > -1) {
-					
-					var start = index + search.length;
-					return ret.substr (start, ret.indexOf ("\n", index) - start);
-					
-				}
-				
-			}
-			
-		}
-		
-		if (targetFlags.exists ("simulator")) {
-			
-			return "gYAAgF-DMYiFsOQ3U6QvuW1fQDY";
-			
-		} else {
-			
-			return "";
-			
-		}
 		
 	}
 	
@@ -195,36 +94,14 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	override function run ():Void {
 		
-		var deviceIP = defines.get ("BLACKBERRY_DEVICE_IP");
-		var devicePassword = defines.get ("BLACKBERRY_DEVICE_PASSWORD");
-		
-		if (targetFlags.exists ("simulator")) {
-			
-			deviceIP = defines.get ("BLACKBERRY_SIMULATOR_IP");
-			devicePassword = "playbook";
-			
-		}
-		
-		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-installApp", "-launchApp", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
+		BlackBerryHelper.deploy (buildDirectory + "/blackberry", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
 		
 	}
 	
 	
 	override function traceMessages ():Void {
 		
-		var deviceIP = defines.get ("BLACKBERRY_DEVICE_IP");
-		var devicePassword = defines.get ("BLACKBERRY_DEVICE_PASSWORD");
-		
-		if (targetFlags.exists ("simulator")) {
-			
-			deviceIP = defines.get ("BLACKBERRY_SIMULATOR_IP");
-			devicePassword = "playbook";
-			
-		}
-		
-		ProcessHelper.runCommand (buildDirectory + "/blackberry", binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar" ] );
-		
-		//runPalmCommand (false, "log", [ "-f", defines.get ("APP_PACKAGE") ]);
+		BlackBerryHelper.trace (buildDirectory + "/blackberry", defines.get ("APP_PACKAGE") + "_" + defines.get ("APP_VERSION") + ".bar");
 		
 	}
 	
