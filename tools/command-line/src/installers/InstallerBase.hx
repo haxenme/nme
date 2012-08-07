@@ -833,7 +833,7 @@ class InstallerBase {
 					
 					// if we are happy with this spec, we can tighten up this parsing a bit, later
 					
-					defines.set ("APP_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
+					defines.set ("APP_" + StringTools.replace (attribute.toUpperCase (), "-", "_"), substitute (element.att.resolve (attribute)));
 				
 			}
 			

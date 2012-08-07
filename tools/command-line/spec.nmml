@@ -21,12 +21,25 @@
 		Use app nodes to set the "main" class for your project, and optionally configure
 		the output file name, path and (if targeting Flash) SWF version.
 		
+		There are two attributes that can be used to set the SWF version. The swf-version
+		attribute will overwrite the current SWF version. The min-swf-version attribute
+		will only update the SWF version if it is lower than the minimum SWF version
+		specified.
+		
+		If you are creating a library, it is recommended that you use the min-swf-version
+		if necessary, to increase the output value when you need certain features from Flash
+		Player, but to prevent the user's desired output version from being decreased.
+		
 		Use the preloader attribute to specify a custom class name to use as the preloader for your
 		application. This applies to Flash and HTML5, which require a preloader by default.
+		
+		If you are testing an HTML5 or Flash application locally, and need the output to display
+		using a web URL instead of opening the file directly, you can specify the url attribute.
 		
 	-->
 	
 	<app main="com.example.myapp.MyApp" file="MyProject" path="Export" preloader="CustomPreloaderClass" swf-version="11" />
+	<app url="http://localhost/my/application" min-swf-version="10" />
 	
 	
 	
@@ -42,7 +55,7 @@
 	-->
 	
 	<window width="0" height="0" background="0xFFFFFF" fps="30" />
-	<window width="800" height="600" orientation="portrait" fps="60" background="0xFFFFFF" resizable="false" borderless="false" vsync="false" fullscreen="false" antialiasing="4"	/>
+	<window width="800" height="600" orientation="portrait" fps="60" background="0xFFFFFF" resizable="false" borderless="false" vsync="false" fullscreen="false" antialiasing="4" />
 	
 	
 	
@@ -526,21 +539,5 @@
 	-->
 	<set name="BUILD_DIR" value="bin" />
 	
-	<!-- Dev URL
-
-		If for a given target you have the build dir already sym linked or live on
-		a web server at a given URL, you can define that URL per target and a browser
-		will be opened to that URL automatically when the build is complete.
-	-->
-	<set name="DEV_URL" value="http://myserver.local/html5" if="target_html5" />
-	<set name="DEV_URL" value="https://www.myserver.com/" if="target_flash" />
-	
-	<!-- Bootstrap Vars
-
-		These are passed along to the HTML wrapper as FlashVars for Flash and HTML5. 
-		Just as in Flash, you can access them at nme.Lib.current.loaderInfo.parameters
-		too get them from the 'root movieclip'.
-	-->
-	<set name="BOOTSTRAP_VARS" value="{test1:'hi', test2:'bye'}" />
 	
 </project>

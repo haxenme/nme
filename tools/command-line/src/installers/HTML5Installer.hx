@@ -219,29 +219,13 @@ class HTML5Installer extends InstallerBase {
 	
 	override function run ():Void {
 		
-		var destination:String = buildDirectory + "/html5/web/bin";
-		var dotSlash:String = "./";
-		
-		if (InstallTool.isWindows) {
-			
-			if (defines.exists ("DEV_URL"))
-				ProcessHelper.runCommand (destination, defines.get("DEV_URL"), []);
-			else
-				ProcessHelper.runCommand (destination, ".\\index.html", []);
-			
-		} else if (InstallTool.isMac) {
-			
-			if (defines.exists ("DEV_URL"))
-				ProcessHelper.runCommand (destination, "open", [ defines.get("DEV_URL") ]);
-			else
-				ProcessHelper.runCommand (destination, "open", [ "index.html" ]);
-			
+		if (defines.exists ("APP_URL")) {
+				
+			ProcessHelper.openURL (defines.get ("APP_URL"));		
+				
 		} else {
 			
-			if (defines.exists ("DEV_URL"))
-				ProcessHelper.runCommand (destination, "xdg-open", [ defines.get("DEV_URL") ]);
-			else
-				ProcessHelper.runCommand (destination, "xdg-open", [ "index.html" ]);
+			ProcessHelper.openFile (buildDirectory + "/html5/web/bin", "index.html");
 			
 		}
 		

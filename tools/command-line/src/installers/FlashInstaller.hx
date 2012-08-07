@@ -23,11 +23,9 @@ class FlashInstaller extends InstallerBase {
 		var hxml = buildDirectory + "/flash/haxe/" + (debug ? "debug" : "release") + ".hxml";
 		
 		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
-		
 		FlashHelper.embedAssets (destination + "/" + defines.get ("APP_FILE") + ".swf", assets);
 
-		if (targetFlags.exists ("web") 
-			|| defines.exists ("DEV_URL") && !targetFlags.exists ("chrome") && !targetFlags.exists ("opera")) {
+		if (targetFlags.exists ("web")) {
 			
 			FileHelper.recursiveCopy (templatePaths[0] + "flash/templates/web", buildDirectory + "/flash/bin", context);
 			
@@ -84,6 +82,12 @@ class FlashInstaller extends InstallerBase {
 	
 	override function generateContext ():Void {
 		
+		if (defines.exists ("APP_URL") && !targetFlags.exists ("chrome") && !targetFlags.exists ("opera")) {
+			
+			targetFlags.set ("web", "1");
+			
+		}
+		
 		FlashHelper.initialize (defines, targetFlags);
 		
 		if (targetFlags.exists ("air")) {
@@ -91,11 +95,6 @@ class FlashInstaller extends InstallerBase {
 			AIRHelper.initialize (defines, targetFlags, target);
 			compilerFlags.push ("-lib air3");
 			
-		}
-		
-		if (defines.exists("DEV_URL") 
-				|| targetFlags.exists("web") || targetFlags.exists("chrome") || targetFlags.exists("opera")) {
-			defines.set("WEB", "true");
 		}
 		
 		super.generateContext ();
@@ -179,7 +178,15 @@ class FlashInstaller extends InstallerBase {
 			
 		} else {
 			
-			FlashHelper.run (destination, defines.get ("APP_FILE") + ".swf");
+			var targetPath = defines.get ("APP_FILE") + ".swf";
+			
+			if (targetFlags.exists ("web")) {
+				
+				targetPath = "index.html";
+				
+			}
+			
+			FlashHelper.run (destination, targetPath);
 			
 		}
 		

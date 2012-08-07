@@ -8,6 +8,102 @@ import sys.FileSystem;
 class ProcessHelper {
 	
 	
+	public static function openFile (workingDirectory:String, targetPath:String, executable:String = ""):Void {
+		
+		if (executable == null) { 
+			
+			executable = "";
+			
+		}
+		
+		if (InstallTool.isWindows) {
+			
+			if (executable == "") {
+				
+				if (targetPath.indexOf (":\\") == -1) {
+					
+					runCommand (workingDirectory, targetPath, []);
+					
+				} else {
+					
+					runCommand (workingDirectory, ".\\" + targetPath, []);
+					
+				}
+				
+			} else {
+				
+				if (targetPath.indexOf (":\\") == -1) {
+					
+					runCommand (workingDirectory, executable, [ targetPath ]);
+					
+				} else {
+					
+					runCommand (workingDirectory, executable, [ ".\\" + targetPath ]);
+					
+				}
+				
+			}
+			
+		} else if (InstallTool.isMac) {
+			
+			if (executable == "") {
+				
+				executable = "open";
+				
+			}
+			
+			if (targetPath.substr (0) == "/") {
+				
+				runCommand (workingDirectory, executable, [ targetPath ]);
+				
+			} else {
+				
+				runCommand (workingDirectory, executable, [ "./" + targetPath ]);
+				
+			}
+			
+		} else {
+			
+			if (executable == "") {
+				
+				executable = "xdg-open";
+				
+			}
+			
+			if (targetPath.substr (0) == "/") {
+				
+				runCommand (workingDirectory, executable, [ targetPath ]);
+				
+			} else {
+				
+				runCommand (workingDirectory, executable, [ "./" + targetPath ]);
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	public static function openURL (url:String):Void {
+		
+		if (InstallTool.isWindows) {
+			
+			runCommand ("", url, []);
+			
+		} else if (InstallTool.isMac) {
+			
+			runCommand ("", "open", [ url ]);
+			
+		} else {
+			
+			runCommand ("", "xdg-open", [ url ]);
+			
+		}
+		
+	}
+	
+	
 	public static function runCommand (path:String, command:String, args:Array <String>, safeExecute:Bool = true, ignoreErrors:Bool = false):Void {
 		
 		if (safeExecute) {

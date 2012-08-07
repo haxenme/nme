@@ -421,55 +421,29 @@ class FlashHelper {
 	
 	public static function run (workingDirectory:String, targetPath:String):Void {
 		
-		var player:String;
-		
-		if (defines.exists ("SWF_PLAYER")) {
-			
-			player = defines.get ("SWF_PLAYER");
-			
+		if (defines.exists ("APP_URL")) {
+				
+			ProcessHelper.openURL (defines.get ("APP_URL"));		
+				
 		} else {
 			
-			player = Sys.getEnv ("FLASH_PLAYER_EXE");
+			var player:String = null;
 			
-		}
-		
-		if (player == null || player == "") {
-			
-			var dotSlash:String = "./";
-
-			var filename:String;
-			
-			if (targetFlags.exists ("web") || targetFlags.exists ("chrome") || targetFlags.exists ("opera"))
-				filename = "index.html";
-			else
-				filename = targetPath;
-
-			if (InstallTool.isWindows) {
+			if (!StringTools.endsWith (targetPath, ".html")) {
 				
-				if (defines.exists ("DEV_URL"))
-					ProcessHelper.runCommand (workingDirectory, defines.get("DEV_URL"), []);
-				else
-					ProcessHelper.runCommand (workingDirectory, ".\\" + filename, []);
-				
-			} else if (InstallTool.isMac) {
-				
-				if (defines.exists ("DEV_URL"))
-					ProcessHelper.runCommand (workingDirectory, "open", [ defines.get("DEV_URL") ]);
-				else
-					ProcessHelper.runCommand (workingDirectory, "open", [ filename ]);
-				
-			} else {
-				
-				if (defines.exists ("DEV_URL"))
-					ProcessHelper.runCommand (workingDirectory, "xdg-open", [ defines.get("DEV_URL") ]);
-				else
-					ProcessHelper.runCommand (workingDirectory, "xdg-open", [ filename ]);
+				if (defines.exists ("SWF_PLAYER")) {
+					
+					player = defines.get ("SWF_PLAYER");
+					
+				} else {
+					
+					player = Sys.getEnv ("FLASH_PLAYER_EXE");
+					
+				}
 				
 			}
 			
-		} else {
-			
-			ProcessHelper.runCommand (workingDirectory, player, [ targetPath ]);
+			ProcessHelper.openFile (workingDirectory, targetPath, player);
 			
 		}
 		
