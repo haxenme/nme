@@ -9,5 +9,9 @@ tools/unit-testing/Export
 tools/installer/mac/*.dmg
 tools/installer/mac/*.mpkg
 tools/installer/mac/resources
+tools/documentation/output
+tools/documentation/bin
+tools/documentation/obj
+tools/documentation/chxdoc
 *.userprefs
 *.swp
