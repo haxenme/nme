@@ -154,7 +154,7 @@ class HTML5Installer extends InstallerBase {
 			
 		} else {
 			
-			CordovaHelper.launch (buildDirectory + "/html5/ios/bin", debug);
+			CordovaHelper.launch (buildDirectory + "/html5/" + target + "/bin", debug);
 			
 		}
 		
@@ -168,7 +168,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (target != "html5") {
 			
-			CordovaHelper.create (destination);
+			CordovaHelper.create (destination, context);
 			destination += CordovaHelper.contentPath;
 			
 		}

@@ -1258,8 +1258,12 @@ class PlatformSetup {
 	
 	public static function setupHTML5 ():Void {
 		
-		var defines = getDefines ([ "CORDOVA_PATH" ], [ "Path to Apache Cordova" ]);
+		var defines = getDefines ([ "CORDOVA_PATH", "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to Apache Cordova", "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		
 		defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
+		defines.set ("WEBWORKS_SDK_BBOS", unescapePath (defines.get ("WEBWORKS_SDK_BBOS")));
+		defines.set ("WEBWORKS_SDK_PLAYBOOK", unescapePath (defines.get ("WEBWORKS_SDK_PLAYBOOK")));
+		
 		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 		
 	}
@@ -1403,7 +1407,13 @@ class PlatformSetup {
 	
 	private static function stripQuotes (path:String):String {
 		
-		return path.split ("\"").join ("");
+		if (path != null) {
+			
+			return path.split ("\"").join ("");
+			
+		}
+		
+		return path;
 		
 	}
 	
@@ -1427,6 +1437,12 @@ class PlatformSetup {
 	
 	private static function unescapePath (path:String):String {
 		
+		if (path == null) {
+			
+			path = "";
+			
+		}
+			
 		path = StringTools.replace (path, "\\ ", " ");
 		
 		if (!InstallTool.isWindows && StringTools.startsWith (path, "~/")) {

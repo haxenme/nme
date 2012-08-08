@@ -1,6 +1,9 @@
 package helpers;
 
 
+import sys.io.File;
+
+
 class CordovaHelper {
 	
 	
@@ -14,34 +17,41 @@ class CordovaHelper {
 	
 	public static function build (workingDirectory:String, debug:Bool):Void {
 		
-		if (target == "ios") {
+		switch (target) {
 			
-			var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
+			case "ios":
+				
+				var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
+				
+				IOSHelper.build (cordovaLib, debug, [ "-project", "CordovaLib.xcodeproj" ]);
+				IOSHelper.build (workingDirectory, debug, [ "CORDOVALIB=" + cordovaLib ]);
+				
+				if (!targetFlags.exists ("simulator")) {
+		            
+		            //var entitlements = buildDirectory + "/ios/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist";
+		            IOSHelper.sign (workingDirectory, null, debug);
+		            
+		        }
 			
-			IOSHelper.build (cordovaLib, debug, [ "-project", "CordovaLib.xcodeproj" ]);
-			IOSHelper.build (workingDirectory, debug, [ "CORDOVALIB=" + cordovaLib ]);
-			
-			if (!targetFlags.exists ("simulator")) {
-	            
-	            //var entitlements = buildDirectory + "/ios/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist";
-	            
-	            IOSHelper.sign (workingDirectory, null, debug);
-	            
-	        }
+		    case "blackberry":
+		    	
+				AntHelper.run (workingDirectory, [ "playbook", "build" ]);
 			
 		}
 		
 	}
 	
 	
-	public static function create (targetPath:String):Void {
+	public static function create (targetPath:String, context:Dynamic):Void {
 		
 		PathHelper.removeDirectory (targetPath);
 		ProcessHelper.runCommand ("", defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
 		
-		if (target == "ios") {
+		switch (target) {
 			
-			
+			case "blackberry":
+				
+				FileHelper.recursiveCopy (NME + "/templates/cordova/blackberry/template", targetPath, context);
 			
 		}
 		
@@ -55,9 +65,16 @@ class CordovaHelper {
 		CordovaHelper.target = target;
 		CordovaHelper.targetFlags = targetFlags;
 		
-		if (target == "ios") {
+		switch (target) {
 			
-			IOSHelper.initialize (defines, targetFlags, NME);
+			case "ios":
+				
+				IOSHelper.initialize (defines, targetFlags, NME);
+			
+			case "blackberry":
+				
+				AntHelper.initialize (defines);
+				BlackBerryHelper.initialize (defines, targetFlags);
 			
 		}
 		
@@ -66,9 +83,17 @@ class CordovaHelper {
 	
 	public static function launch (workingDirectory:String, debug:Bool):Void {
 		
-		if (target == "ios") {
+		switch (target) {
+		
+			case "ios":
+				
+				IOSHelper.launch (workingDirectory, debug);
 			
-			IOSHelper.launch (workingDirectory, debug);
+			case "blackberry":
+				
+				var safePackageName = StringTools.replace (defines.get ("APP_TITLE"), " ", "");
+				
+				BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
 			
 		}
 		
