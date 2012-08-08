@@ -4,6 +4,7 @@ package installers;
 import data.Asset;
 import haxe.io.Path;
 import helpers.FileHelper;
+import helpers.IOSHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
 import sys.FileSystem;
@@ -63,63 +64,12 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		if (targetFlags.exists ("html5")) {
+		if (target == "ios") {
 			
-			var ant:String = defines.get ("ANT_HOME");
+			var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
 			
-			if (ant == null || ant == "") {
-				
-				ant = "ant";
-				
-			} else {
-				
-				ant += "/bin/ant";
-				
-			}
-			
-			if (target == "ios") {
-				
-				var platformName:String = "iphoneos";
-		        
-		        if (targetFlags.exists("simulator")) {
-		            platformName = "iphonesimulator";
-		        }
-		        
-		        var configuration:String = "Release";
-		        
-		        if (debug) {
-		            configuration = "Debug";
-		        }
-					
-		        var iphoneVersion:String = defines.get ("IPHONE_VER");
-		        //var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
-		        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
-					
-		        if (targetFlags.exists("simulator")) {
-		            commands.push ("-arch");
-		            commands.push ("i386");
-		        }
-					
-		        ProcessHelper.runCommand (outputDirectory + "/bin", "xcodebuild", commands);
-		        
-		        if (!targetFlags.exists ("simulator")) {
-		            
-		            var configuration:String = "Release";
-					
-		            if (debug) {
-		                configuration = "Debug";
-		            }
-		            
-		            var applicationPath:String = outputDirectory + "/bin/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
-		            
-		           	ProcessHelper.runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", outputDirectory + "/bin/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist", FileSystem.fullPath (applicationPath) ], true, true);
-		            
-		        }
-				
-			}
-			
-			//runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ buildDirectory + "/html5/bin", defines.get ("APP_PACKAGE") ]);
-			//runCommand (buildDirectory + "/html5/bin", ant, [ "
+			IOSHelper.build (cordovaLib, debug, [ "-project", "CordovaLib.xcodeproj" ]);
+			IOSHelper.build (outputDirectory + "/bin", debug, [ "CORDOVALIB=" + cordovaLib ]);
 			
 		}
 		
@@ -140,6 +90,12 @@ class HTML5Installer extends InstallerBase {
 	
 	
 	override function generateContext () {
+		
+		if (target == "ios") {
+			
+			IOSHelper.initialize (defines, targetFlags, NME);
+			
+		}
 		
 		super.generateContext ();
 		
@@ -185,47 +141,23 @@ class HTML5Installer extends InstallerBase {
 	}
 	
 	
-	private override function onCreate ():Void {	
-		
-		if (targetFlags.exists ("html5") && !defines.exists("IPHONE_VER")) {
-			if (!defines.exists("DEVELOPER_DIR")) {
-		        var proc = new Process("xcode-select", ["--print-path"]);
-		        var developer_dir = proc.stdout.readLine();
-		        proc.close();
-		        defines.set("DEVELOPER_DIR", developer_dir);
-		    }
-			var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
-         	
-			if (FileSystem.exists (dev_path)) {
-				var best = "";
-            	var files = FileSystem.readDirectory (dev_path);
-            	var extract_version = ~/^iPhoneOS(.*).sdk$/;
-				
-            	for (file in files) {
-					if (extract_version.match (file)) {
-						var ver = extract_version.matched (1);
-						
-                  		if (ver > best)
-                     		best = ver;
-               		}
-            	}
-				
-            	if (best != "")
-               		defines.set ("IPHONE_VER", best);
-			}
-      	}
-	}
-	
-	
 	override function run ():Void {
 		
-		if (defines.exists ("APP_URL")) {
-				
-			ProcessHelper.openURL (defines.get ("APP_URL"));		
-				
-		} else {
+		if (target == "html5") {
 			
-			ProcessHelper.openFile (buildDirectory + "/html5/web/bin", "index.html");
+			if (defines.exists ("APP_URL")) {
+					
+				ProcessHelper.openURL (defines.get ("APP_URL"));		
+					
+			} else {
+				
+				ProcessHelper.openFile (buildDirectory + "/html5/web/bin", "index.html");
+				
+			}
+			
+		} else if (target == "ios") {
+			
+			IOSHelper.launch (buildDirectory + "/html5/ios/bin", debug);
 			
 		}
 		
@@ -237,9 +169,10 @@ class HTML5Installer extends InstallerBase {
 		var destination = outputDirectory + "/bin/";
 		PathHelper.mkdir (destination);
 		
-		if (targetFlags.exists ("html5")) {
+		if (target == "ios") {
 			
-			ProcessHelper.runCommand ("", "~/Development/PhoneGap/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+			PathHelper.removeDirectory (destination);
+			ProcessHelper.runCommand ("", defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
 			
 			destination += "www/";
 			

@@ -183,7 +183,7 @@ class IOSInstaller extends InstallerBase {
 	
 	override function run ():Void {
         
-        IOSHelper.launch (buildDirectory + "/ios", debug);
+        IOSHelper.launch (buildDirectory + "/ios/bin", debug);
         
 	}
 	

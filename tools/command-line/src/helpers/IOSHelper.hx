@@ -13,7 +13,7 @@ class IOSHelper {
 	private static var targetFlags:Hash <String>;
 	
 	
-	public static function build (workingDirectory:String, debug:Bool):Void {
+	public static function build (workingDirectory:String, debug:Bool, additionalArguments:Array <String> = null):Void {
 		
 		var platformName:String = "iphoneos";
         
@@ -39,6 +39,12 @@ class IOSHelper {
             commands.push ("-arch");
             commands.push ("i386");
             
+        }
+        
+        if (additionalArguments != null) {
+        	
+        	commands = commands.concat (additionalArguments);
+        	
         }
 			
         ProcessHelper.runCommand (workingDirectory, "xcodebuild", commands);

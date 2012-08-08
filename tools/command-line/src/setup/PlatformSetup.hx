@@ -441,9 +441,9 @@ class PlatformSetup {
 					
 					setupBlackBerry ();
 				
-				//case "html5":
+				case "html5":
 					
-					//setupHTML5 ();
+					setupHTML5 ();
 				
 				case "ios":
 					
@@ -1258,7 +1258,9 @@ class PlatformSetup {
 	
 	public static function setupHTML5 ():Void {
 		
-		//InstallTool.runCommand ("", "haxelib", [ "install", "jeash" ]);
+		var defines = getDefines ([ "CORDOVA_PATH" ], [ "Path to Apache Cordova" ]);
+		defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
+		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 		
 	}
 
