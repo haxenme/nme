@@ -3,5 +3,4 @@
 -cp ::OUTPUT_DIR::/haxe
 --remap flash:nme
 --js-modern
-
-# --dead-code-elimination
+--dead-code-elimination
