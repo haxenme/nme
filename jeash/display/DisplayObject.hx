@@ -628,6 +628,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private function jeashSetWidth(inValue:Float):Float {
 		var w = jeashBoundsRect.width;
 		if (jeashScaleX * w != inValue) {
+			if (_boundsInvalid) validateBounds();
 			if (w <= 0) return 0;
 			jeashScaleX = inValue / w;
 			jeashInvalidateMatrix(true);
@@ -644,6 +645,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private function jeashSetHeight(inValue:Float):Float {
 		var h = jeashBoundsRect.height;
 		if (jeashScaleY * h != inValue) {
+			if (_boundsInvalid) validateBounds();
 			if (h <= 0) return 0;
 			jeashScaleY = inValue / h;
 			jeashInvalidateMatrix(true);
