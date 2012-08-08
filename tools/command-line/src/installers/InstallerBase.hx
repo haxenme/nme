@@ -580,10 +580,16 @@ class InstallerBase {
 		}
 		
 		var appMain:String = defines.get ("APP_MAIN");
-		var indexOfPeriod = appMain.lastIndexOf (".");
-        
-		context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
-		context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
+		
+		if (appMain != null) {
+			
+			var indexOfPeriod = appMain.lastIndexOf (".");
+	        
+			context.APP_MAIN_PACKAGE = appMain.substr (0, indexOfPeriod + 1);
+			context.APP_MAIN_CLASS = appMain.substr (indexOfPeriod + 1);
+				
+		}
+		
 		context.HXML_PATH = templatePaths[0] + target + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
 		
 	}

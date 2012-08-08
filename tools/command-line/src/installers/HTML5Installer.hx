@@ -25,9 +25,12 @@ class HTML5Installer extends InstallerBase {
 	
 	override function build ():Void {
 		
-		var hxml:String = outputDirectory + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
-		
-		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
+		if (defines.exists ("APP_MAIN")) {
+			
+			var hxml:String = outputDirectory + "/haxe/" + (debug ? "debug" : "release") + ".hxml";
+			ProcessHelper.runCommand ("", "haxe", [ hxml ] );
+			
+		}
 		
 		if (targetFlags.exists ("minify")) {
 			
@@ -196,9 +199,14 @@ class HTML5Installer extends InstallerBase {
 		}
 		
 		FileHelper.recursiveCopy (templatePaths[0] + "html5/template", destination, context);
-		FileHelper.recursiveCopy (templatePaths[0] + "haxe", outputDirectory + "/haxe", context);
-		FileHelper.recursiveCopy (templatePaths[0] + "html5/haxe", outputDirectory + "/haxe", context);
-		FileHelper.recursiveCopy (templatePaths[0] + "html5/hxml", outputDirectory + "/haxe", context);
+		
+		if (defines.exists ("APP_MAIN")) {
+			
+			FileHelper.recursiveCopy (templatePaths[0] + "haxe", outputDirectory + "/haxe", context);
+			FileHelper.recursiveCopy (templatePaths[0] + "html5/haxe", outputDirectory + "/haxe", context);
+			FileHelper.recursiveCopy (templatePaths[0] + "html5/hxml", outputDirectory + "/haxe", context);
+			
+		}
 		
 		for (asset in assets) {
 						

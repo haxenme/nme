@@ -1,3 +1,6 @@
+#if nme
+
+
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 import nme.display.Bitmap;
 import nme.display.Loader;
@@ -163,3 +166,33 @@ class ApplicationMain {
 		class NME_::flatName:: extends ::flashClass:: { }
 	::end::
 ::end::
+
+
+#else
+
+
+import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
+
+
+class ApplicationMain {
+	
+	
+	public static function main () {
+		
+		if (Reflect.field(::APP_MAIN::, "main") == null) {
+			
+			new ::APP_MAIN::();
+			
+		} else {
+			
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+			
+		}
+		
+	}
+	
+	
+}
+
+
+#end
