@@ -35,7 +35,15 @@ class CordovaHelper {
 			
 		    case "blackberry":
 		    	
-				AntHelper.run (workingDirectory, [ "playbook", "build" ]);
+		    	if (targetFlags.exists ("bbos")) {
+		    		
+		    		AntHelper.run (workingDirectory, [ "blackberry", "build" ]);
+		    		
+		    	} else {
+		    		
+					AntHelper.run (workingDirectory, [ "playbook", "build" ]);
+					
+				}
 			
 		}
 		
@@ -91,9 +99,24 @@ class CordovaHelper {
 			
 			case "blackberry":
 				
-				var safePackageName = StringTools.replace (defines.get ("APP_TITLE"), " ", "");
+				if (targetFlags.exists ("bbos")) {
+		    		
+		    		if (targetFlags.exists ("simulator")) {
+		    			
+		    			AntHelper.run (workingDirectory, [ "blackberry", "load-simulator" ]);
+		    			
+		    		} else {
+		    			
+		    			AntHelper.run (workingDirectory, [ "blackberry", "load-device" ]);
+		    			
+		    		}
+		    		
+		    	} else {
+					
+					var safePackageName = StringTools.replace (defines.get ("APP_TITLE"), " ", "");
+					BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
 				
-				BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
+				}
 			
 		}
 		
