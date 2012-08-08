@@ -3,8 +3,8 @@ package installers;
 
 import data.Asset;
 import haxe.io.Path;
+import helpers.CordovaHelper;
 import helpers.FileHelper;
-import helpers.IOSHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
 import sys.FileSystem;
@@ -64,12 +64,9 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		if (target == "ios") {
+		if (target != "html5") {
 			
-			var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
-			
-			IOSHelper.build (cordovaLib, debug, [ "-project", "CordovaLib.xcodeproj" ]);
-			IOSHelper.build (outputDirectory + "/bin", debug, [ "CORDOVALIB=" + cordovaLib ]);
+			CordovaHelper.build (outputDirectory + "/bin", debug);
 			
 		}
 		
@@ -91,9 +88,9 @@ class HTML5Installer extends InstallerBase {
 	
 	override function generateContext () {
 		
-		if (target == "ios") {
+		if (targetFlags.exists ("html5")) {
 			
-			IOSHelper.initialize (defines, targetFlags, NME);
+			CordovaHelper.initialize (defines, targetFlags, target, NME);
 			
 		}
 		
@@ -115,7 +112,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (target != "html5") {
 			
-			outputFile = outputDirectory + "/bin/www/" + defines.get ("APP_FILE") + ".js";
+			outputFile = outputDirectory + "/bin/" + CordovaHelper.contentPath + defines.get ("APP_FILE") + ".js";
 			
 		}
 		
@@ -155,9 +152,9 @@ class HTML5Installer extends InstallerBase {
 				
 			}
 			
-		} else if (target == "ios") {
+		} else {
 			
-			IOSHelper.launch (buildDirectory + "/html5/ios/bin", debug);
+			CordovaHelper.launch (buildDirectory + "/html5/ios/bin", debug);
 			
 		}
 		
@@ -169,12 +166,10 @@ class HTML5Installer extends InstallerBase {
 		var destination = outputDirectory + "/bin/";
 		PathHelper.mkdir (destination);
 		
-		if (target == "ios") {
+		if (target != "html5") {
 			
-			PathHelper.removeDirectory (destination);
-			ProcessHelper.runCommand ("", defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ destination, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
-			
-			destination += "www/";
+			CordovaHelper.create (destination);
+			destination += CordovaHelper.contentPath;
 			
 		}
 		

@@ -29,7 +29,7 @@ class IOSInstaller extends InstallerBase {
             
             var entitlements = buildDirectory + "/ios/" + defines.get("APP_FILE") + "/" + defines.get("APP_FILE") + "-Entitlements.plist";
             
-            IOSHelper.sign (buildDirectory + "/ios", entitlements, debug);
+            IOSHelper.sign (buildDirectory + "/ios/bin", entitlements, debug);
             
         }
         

@@ -152,9 +152,19 @@ class IOSHelper {
             
         }
         
-        var applicationPath:String = workingDirectory + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+        var commands = [ "-s", "iPhone Developer" ];
         
-        ProcessHelper.runCommand ("", "codesign", [ "-s", "iPhone Developer", "--entitlements", entitlementsPath, FileSystem.fullPath (applicationPath) ], true, true);
+        if (entitlementsPath != null) {
+        	
+        	commands.push ("--entitlements");
+        	commands.push (entitlementsPath);
+        	
+        }
+        
+        var applicationPath:String = workingDirectory + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+        commands.push (FileSystem.fullPath (applicationPath));
+        
+        ProcessHelper.runCommand ("", "codesign", commands, true, true);
 		
 	}
 	
