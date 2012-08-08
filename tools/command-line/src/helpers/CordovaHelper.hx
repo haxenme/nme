@@ -57,6 +57,10 @@ class CordovaHelper {
 		
 		switch (target) {
 			
+			case "ios":
+				
+				FileHelper.copyFile (NME + "/templates/cordova/ios/template/PROJ/PROJ-Info.plist", targetPath + "/" + defines.get ("APP_FILE") + "/" + defines.get ("APP_FILE") + "-Info.plist", context);
+			
 			case "blackberry":
 				
 				FileHelper.recursiveCopy (NME + "/templates/cordova/blackberry/template", targetPath, context);
