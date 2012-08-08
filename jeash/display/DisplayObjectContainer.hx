@@ -202,26 +202,29 @@ class DisplayObjectContainer extends InteractiveObject
 	public function removeChild(inChild:DisplayObject):DisplayObject {
 		for (child in jeashChildren) {
 			if (child == inChild)
-				return __removeChild(child);
+				return jeashRemoveChild(child);
 		}
 		throw "removeChild : none found?";
 	}
 
 	public function removeChildAt(index:Int):DisplayObject {
 		if (index >= 0 && index < jeashChildren.length)
-			return __removeChild(jeashChildren[index]);
+			return jeashRemoveChild(jeashChildren[index]);
 		throw "removeChildAt("+index+") : none found?";
 	}
 
-	public inline function __removeChild(child:DisplayObject):DisplayObject {
+	public inline function jeashRemoveChild(child:DisplayObject):DisplayObject {
 		child.jeashRemoveFromStage();
-		jeashChildren.remove(child);
 		child.parent = null;
 		#if debug
 		if (getChildIndex(child) >= 0)
 			throw "Not removed properly";
 		#end
 		return child;
+	}
+
+	public inline function __removeChild(child:DisplayObject):Void {
+		jeashChildren.remove(child);
 	}
 
 	public function setChildIndex(child:DisplayObject, index:Int) {
