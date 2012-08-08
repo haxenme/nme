@@ -541,6 +541,16 @@ class InstallerBase {
 		
 		context = { };
 		
+		for (compilerFlag in compilerFlags) {
+			
+			if (StringTools.startsWith (compilerFlag, "-lib")) {
+				
+				Reflect.setField (context, "LIB_" + compilerFlag.substr (5).toUpperCase (), "true");
+				
+			}
+			
+		}
+		
 		for (key in defines.keys ()) {
 			
 			Reflect.setField (context, key, defines.get (key));
