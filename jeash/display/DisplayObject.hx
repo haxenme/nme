@@ -128,13 +128,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		this.transform = new Transform(this);
 		jeashX = jeashY = 0.0;
 		jeashScaleX = jeashScaleY = 1.0;
-		rotation = 0.0;
+		jeashRotation = 0.0;
+		jeashWidth = jeashHeight = 0.0;
 
 		// initialize graphics metadata
 		visible = true;
 		alpha = 1.0;
 		jeashFilters = new Array<BitmapFilter>();
 		jeashBoundsRect = new Rectangle();
+
+		jeashScrollRect = null;
+		jeashMask = null;
+		jeashMaskingObj = null;
 	}
 
 	override public function toString() { return "[DisplayObject name=" + this.name + " id=" + _jeashId + "]"; }
@@ -680,10 +685,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inValue;
 	}
 	
-	private inline function jeashGetScaleX():Float {
+	private function jeashGetScaleX():Float {
 		return jeashScaleX;
 	}
-	private inline function jeashSetScaleX(inValue:Float) { 
+	private function jeashSetScaleX(inValue:Float) { 
 		if (jeashScaleX != inValue) {
 			jeashScaleX = inValue;
 			jeashInvalidateMatrix(true);
@@ -692,10 +697,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inValue;
 	}
 	
-	private inline function jeashGetScaleY():Float {
+	private function jeashGetScaleY():Float {
 		return jeashScaleY;
 	}
-	private inline function jeashSetScaleY(inValue:Float) { 
+	private function jeashSetScaleY(inValue:Float) { 
 		if (jeashScaleY != inValue) {
 			jeashScaleY = inValue;
 			jeashInvalidateMatrix(true);
@@ -704,10 +709,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inValue;
 	}
 	
-	private inline function jeashGetRotation():Float {
+	private function jeashGetRotation():Float {
 		return jeashRotation;
 	}
-	private inline function jeashSetRotation(inValue:Float):Float {
+	private function jeashSetRotation(inValue:Float):Float {
 		if (jeashRotation != inValue) {
 			jeashRotation = inValue;
 			jeashInvalidateMatrix(true);
