@@ -37,9 +37,9 @@ import jeash.Html5Dom;
 
 class Bitmap extends jeash.display.DisplayObject
 {
-	public var bitmapData(default,jeashSetBitmapData) : BitmapData;
-	public var pixelSnapping : PixelSnapping;
-	public var smoothing : Bool;
+	public var bitmapData(default, jeashSetBitmapData):BitmapData;
+	public var pixelSnapping:PixelSnapping;
+	public var smoothing:Bool;
 
 	public var jeashGraphics(default,null):Graphics;
 	var jeashCurrentLease:ImageDataLease;
@@ -59,7 +59,7 @@ class Bitmap extends jeash.display.DisplayObject
 
 	override public function toString() { return "[Bitmap name=" + this.name + " id=" + _jeashId + "]"; }
 
-	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData {
+	public function jeashSetBitmapData(inBitmapData:BitmapData):BitmapData {
 		jeashInvalidateBounds();
 		bitmapData = inBitmapData;
 		return inBitmapData;
@@ -85,12 +85,12 @@ class Bitmap extends jeash.display.DisplayObject
 	}
 
 	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+		if (!jeashVisible) return;
 		if (bitmapData == null) return;
-		if (_matrixInvalid || _matrixChainInvalid){
-			jeashValidateMatrix();
-		}
 
-		var m = jeashGetFullMatrix();
+		if (_matrixInvalid || _matrixChainInvalid)
+			jeashValidateMatrix();
+
 		var imageDataLease = bitmapData.jeashGetLease();
 		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
 			var srcCanvas = bitmapData.handle();
@@ -101,16 +101,24 @@ class Bitmap extends jeash.display.DisplayObject
 			jeashCurrentLease = imageDataLease.clone();
 
 			jeashApplyFilters(jeashGraphics.jeashSurface);
-		} else if (inMask != null) {
-			jeashApplyFilters(jeashGraphics.jeashSurface);
 		}
 
+		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (inMask != null) {
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
+			jeashApplyFilters(jeashGraphics.jeashSurface);
+			var m = getSurfaceTransform(jeashGraphics);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, fullAlpha, clipRect);
 		} else {
-			Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
-			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
-		}
+			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
+				var m = getSurfaceTransform(jeashGraphics);
+				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
+				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
+			}
+			if (fullAlpha != _lastFullAlpha) {
+				Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, fullAlpha);
+				_lastFullAlpha = fullAlpha;
+			}
+		}		
 	}
 
 	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {

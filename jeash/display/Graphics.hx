@@ -265,7 +265,7 @@ class Graphics
 
 		var matrix = g.matrix;
 		if ((g.flags & RADIAL) == 0) {
-			var p1 = matrix.transformPoint(new Point( -819.2, 0));
+			var p1 = matrix.transformPoint(new Point(-819.2, 0));
 			var p2 = matrix.transformPoint(new Point(819.2, 0));
 			gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
 		} else {
@@ -284,7 +284,7 @@ class Graphics
 	}
 
 	public function jeashRender(?maskHandle:HTMLCanvasElement, ?filters:Array<jeash.filters.BitmapFilter>, 
-			?clip0:Point, ?clip1:Point, ?clip2:Point, ?clip3:Point) {
+			sx:Float=1.0, sy:Float=1.0, ?clip0:Point, ?clip1:Point, ?clip2:Point, ?clip3:Point) {
 		if (!jeashChanged) return false;
 
 		closePolygon(true);
@@ -298,17 +298,17 @@ class Graphics
 			}
 		}
 
-		jeashExpandFilteredExtent(-padding/2, -padding/2);
+		jeashExpandFilteredExtent(-(padding*sx)/2, -(padding*sy)/2);
 
 		if (jeashClearNextCycle) {
 			nextDrawIndex = 0;
 			jeashClearCanvas();
 			jeashClearNextCycle = false;
-			jeashAdjustSurface();
+			jeashAdjustSurface(sx, sy);
 		} else {	
 			if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
 					|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
-				jeashAdjustSurface();
+				jeashAdjustSurface(sx, sy);
 			}
 		}
 
@@ -335,12 +335,13 @@ class Graphics
 			}
 		}
 
-		var len : Int = mDrawList.length;
+		var len:Int = mDrawList.length;
 
 		ctx.save();
 		
 		if (jeashExtentWithFilters.x != 0 || jeashExtentWithFilters.y != 0)
 			ctx.translate(-jeashExtentWithFilters.x, -jeashExtentWithFilters.y);
+		ctx.scale(sx, sy);
 
 		for (i in nextDrawIndex...len) {
 			var d = mDrawList[(len-1)-i];
@@ -599,10 +600,10 @@ class Graphics
 		closePolygon(false);
 		
 		moveTo(x,y);
-		lineTo(x+width,y);
-		lineTo(x+width,y+height);
-		lineTo(x,y+height);
-		lineTo(x,y);
+		lineTo(x + width, y);
+		lineTo(x + width, y + height);
+		lineTo(x, y + height);
+		lineTo(x, y);
 
 		closePolygon(false);
 	}
@@ -995,30 +996,30 @@ class Graphics
 		}
 	}
 
-	function jeashAdjustSurface() {
-		if (Reflect.field(jeashSurface, "getContext") == null) return;
+	inline function jeashAdjustSurface(sx:Float=1.0, sy:Float=1.0):Void {
+		if (Reflect.field(jeashSurface, "getContext") != null) {
+			var width = Math.ceil((jeashExtentWithFilters.width - jeashExtentWithFilters.x)*sx);
+			var height = Math.ceil((jeashExtentWithFilters.height - jeashExtentWithFilters.y)*sy);
 
-		var width = Math.ceil(jeashExtentWithFilters.width - jeashExtentWithFilters.x);
-		var height = Math.ceil(jeashExtentWithFilters.height - jeashExtentWithFilters.y);
+			// prevent allocating too large canvas sizes
+			if (width <= JEASH_MAX_DIM && height <= JEASH_MAX_DIM) {
+				// re-allocate canvas, copy into larger canvas.
+				var dstCanvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
+				dstCanvas.width = width;
+				dstCanvas.height = height;
 
-		// prevent allocating too large canvas sizes
-		if (width > JEASH_MAX_DIM || height > JEASH_MAX_DIM) return;
+				Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
 
-		// re-allocate canvas, copy into larger canvas.
-		var dstCanvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
-		dstCanvas.width = width;
-		dstCanvas.height = height;
-
-		Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
-
-		if (Lib.jeashIsOnStage(jeashSurface)) {
-			Lib.jeashAppendSurface(dstCanvas);
-			Lib.jeashCopyStyle(jeashSurface, dstCanvas);
-			Lib.jeashSwapSurface(jeashSurface, dstCanvas);
-			Lib.jeashRemoveSurface(jeashSurface);
-			if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
+				if (Lib.jeashIsOnStage(jeashSurface)) {
+					Lib.jeashAppendSurface(dstCanvas);
+					Lib.jeashCopyStyle(jeashSurface, dstCanvas);
+					Lib.jeashSwapSurface(jeashSurface, dstCanvas);
+					Lib.jeashRemoveSurface(jeashSurface);
+					if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
+				}
+				
+				jeashSurface = dstCanvas;
+			}
 		}
-		
-		jeashSurface = dstCanvas;
 	}
 }

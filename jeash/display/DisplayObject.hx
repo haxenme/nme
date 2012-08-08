@@ -148,7 +148,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			this.parent.__removeChild(this);
 			this.parent.jeashInvalidateBounds();	
 		}
-		
+
 		if (inValue != null)
 			inValue.jeashInvalidateBounds();
 
@@ -334,53 +334,54 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (!jeashVisible) return;
 
 		var gfx = jeashGetGraphics();
-		if (gfx != null) {
-			if (_matrixInvalid || _matrixChainInvalid)
-				jeashValidateMatrix();
+		if (gfx == null) return;
 
-			var clip0:Point = null;
-			var clip1:Point = null;
-			var clip2:Point = null;
-			var clip3:Point = null;
-			if (clipRect != null) {
-				var topLeft = clipRect.topLeft;
-				var topRight = clipRect.topLeft.clone();
-				topRight.x += clipRect.width;
-				var bottomRight = clipRect.bottomRight;
-				var bottomLeft = clipRect.bottomRight.clone();
-				bottomLeft.x -= clipRect.width;
-				clip0 = this.globalToLocal(this.parent.localToGlobal(topLeft));
-				clip1 = this.globalToLocal(this.parent.localToGlobal(topRight));
-				clip2 = this.globalToLocal(this.parent.localToGlobal(bottomRight));
-				clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
-			}
+		if (_matrixInvalid || _matrixChainInvalid)
+			jeashValidateMatrix();
 
-			if (gfx.jeashRender(inMask, jeashFilters, clip0, clip1, clip2, clip3)) {
-				jeashInvalidateBounds();
-				jeashApplyFilters(gfx.jeashSurface);	
-			}
+		var clip0:Point = null;
+		var clip1:Point = null;
+		var clip2:Point = null;
+		var clip3:Point = null;
+		if (clipRect != null) {
+			var topLeft = clipRect.topLeft;
+			var topRight = clipRect.topLeft.clone();
+			topRight.x += clipRect.width;
+			var bottomRight = clipRect.bottomRight;
+			var bottomLeft = clipRect.bottomRight.clone();
+			bottomLeft.x -= clipRect.width;
+			clip0 = this.globalToLocal(this.parent.localToGlobal(topLeft));
+			clip1 = this.globalToLocal(this.parent.localToGlobal(topRight));
+			clip2 = this.globalToLocal(this.parent.localToGlobal(bottomRight));
+			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
+		}
 
-			var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
-			if (inMask != null) {
+		if (gfx.jeashRender(inMask, jeashFilters, 1, 1, clip0, clip1, clip2, clip3)) {
+			jeashInvalidateBounds();
+			jeashApplyFilters(gfx.jeashSurface);	
+		}
+
+		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
+		if (inMask != null) {
+			var m = getSurfaceTransform(gfx);
+			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, fullAlpha, clipRect);
+		} else {
+			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
-				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, fullAlpha, clipRect);
-			} else {
-				if (jeashTestFlag(TRANSFORM_INVALID)) {
-					var m = getSurfaceTransform(gfx);
-					Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
-					jeashClearFlag(TRANSFORM_INVALID);
-				}
-				if (fullAlpha != _lastFullAlpha) {
-					Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, fullAlpha);
-					_lastFullAlpha = fullAlpha;
-				}
-				/*if (clipRect != null) {
-					var rect = new Rectangle();
-					rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
-					rect.bottomRight = this.globalToLocal(this.parent.localToGlobal(clipRect.bottomRight));
-					Lib.jeashSetSurfaceClipping(gfx.jeashSurface, rect);
-				}*/
+
+				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
+				jeashClearFlag(TRANSFORM_INVALID);
 			}
+			if (fullAlpha != _lastFullAlpha) {
+				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, fullAlpha);
+				_lastFullAlpha = fullAlpha;
+			}
+			/*if (clipRect != null) {
+				var rect = new Rectangle();
+				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
+				rect.bottomRight = this.globalToLocal(this.parent.localToGlobal(clipRect.bottomRight));
+				Lib.jeashSetSurfaceClipping(gfx.jeashSurface, rect);
+			}*/
 		}
 	}
 
@@ -587,8 +588,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				}
 			}
 		} else {
-			if (newParent.name == Stage.NAME) // only stage is allowed to add to a parent with no context
+			if (newParent.name == Stage.NAME) { // only stage is allowed to add to a parent with no context
 				Lib.jeashAppendSurface(gfx.jeashSurface);
+			}
 		}
 
 		if (!wasOnStage && stage != null) {
@@ -598,8 +600,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashRemoveFromStage() {
-		this.parent = null;
-
 		var gfx = jeashGetGraphics();
 		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface)) {
 			Lib.jeashRemoveSurface(gfx.jeashSurface);

@@ -109,8 +109,11 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
 		super.jeashAddToStage(newParent, beforeSibling);
-		for (child in jeashChildren)
-			child.jeashAddToStage(this);
+		for (child in jeashChildren) {
+			if (child.stage == null) {
+				child.jeashAddToStage(this);
+			}
+		}
 	}
 
 	override private function jeashRemoveFromStage() {
@@ -141,6 +144,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (stage != null) object.jeashAddToStage(this);
 		jeashChildren.push(object);
 		object.parent = this;
+
 		return object;
 	}
 
@@ -197,28 +201,27 @@ class DisplayObjectContainer extends InteractiveObject
 
 	public function removeChild(inChild:DisplayObject):DisplayObject {
 		for (child in jeashChildren) {
-			if (child == inChild) {
-				child.jeashRemoveFromStage();
-				#if debug
-				if (getChildIndex(child) >= 0)
-					throw "Not removed properly";
-				#end
-				return child;
-			}
+			if (child == inChild)
+				return __removeChild(child);
 		}
 		throw "removeChild : none found?";
 	}
 
-	public function removeChildAt(inI:Int):DisplayObject {
-		jeashChildren[inI].jeashRemoveFromStage();
-		return jeashChildren[inI];
+	public function removeChildAt(index:Int):DisplayObject {
+		if (index >= 0 && index < jeashChildren.length)
+			return __removeChild(jeashChildren[index]);
+		throw "removeChildAt("+index+") : none found?";
 	}
 
-	public function __removeChild(child:DisplayObject ) {
-		var i = getChildIndex(child);
-		if (i >= 0) {
-			jeashChildren.splice(i, 1);
-		}
+	public inline function __removeChild(child:DisplayObject):DisplayObject {
+		child.jeashRemoveFromStage();
+		jeashChildren.remove(child);
+		child.parent = null;
+		#if debug
+		if (getChildIndex(child) >= 0)
+			throw "Not removed properly";
+		#end
+		return child;
 	}
 
 	public function setChildIndex(child:DisplayObject, index:Int) {
