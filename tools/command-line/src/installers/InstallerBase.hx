@@ -772,21 +772,69 @@ class InstallerBase {
 		
 		if (element.x.get ("if") != null) {
 			
-			if (!defines.exists (element.x.get ("if"))) {
+			var value = element.x.get ("if");
+			var optionalDefines = value.split ("||");
+			
+			for (optional in optionalDefines) {
 				
-				return false;
+				var requiredDefines = optional.split (" ");
+				var match = true;
+				
+				for (required in requiredDefines) {
+					
+					var check = StringTools.trim (required);
+					
+					if (check != "" && !defines.exists (check)) {
+						
+						match = false;
+						
+					}
+					
+				}
+				
+				if (match) {
+					
+					return true;
+					
+				}
 				
 			}
+			
+			return false;
 			
 		}
 		
 		if (element.has.unless) {
 			
-			if (defines.exists (element.att.unless)) {
+			var value = element.att.unless;
+			var optionalDefines = value.split ("||");
+			
+			for (optional in optionalDefines) {
 				
-				return false;
+				var requiredDefines = optional.split (" ");
+				var match = true;
+				
+				for (required in requiredDefines) {
+					
+					var check = StringTools.trim (required);
+					
+					if (check != "" && !defines.exists (check)) {
+						
+						match = false;
+						
+					}
+					
+				}
+				
+				if (match) {
+					
+					return false;
+					
+				}
 				
 			}
+			
+			return true;
 			
 		}
 		

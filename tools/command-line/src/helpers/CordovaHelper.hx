@@ -37,7 +37,7 @@ class CordovaHelper {
 		    	
 		    	if (targetFlags.exists ("bbos")) {
 		    		
-		    		AntHelper.run (workingDirectory, [ "blackberry", "build" ]);
+		    		AntHelper.run (workingDirectory, [ "blackberry", "build", "-Dcode.sign=false" ]);
 		    		
 		    	} else {
 		    		
