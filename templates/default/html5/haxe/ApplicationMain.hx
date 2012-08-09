@@ -31,6 +31,10 @@ class ApplicationMain {
 		urlLoaders = new Hash <URLLoader> ();
 		total = 0;
 		
+		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
+		jeash.Lib.preventDefaultTouchMove ();
+		::end::::end::
+		
 		::if (PRELOADER_NAME!="")::
 		preloader = new ::PRELOADER_NAME:: ();
 		::else::
