@@ -1264,6 +1264,13 @@ class PlatformSetup {
 		defines.set ("WEBWORKS_SDK_BBOS", unescapePath (defines.get ("WEBWORKS_SDK_BBOS")));
 		defines.set ("WEBWORKS_SDK_PLAYBOOK", unescapePath (defines.get ("WEBWORKS_SDK_PLAYBOOK")));
 		
+		// temporary hack
+		
+		Sys.println ("");
+		Sys.println ("Setting Apache Cordova install path...");
+		ProcessHelper.runCommand (defines.get ("CORDOVA_PATH") + "/lib/ios", "make", [ "install" ], true, true);
+		Sys.println ("Done.");
+		
 		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 		
 	}
