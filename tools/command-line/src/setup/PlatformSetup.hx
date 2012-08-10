@@ -1258,10 +1258,106 @@ class PlatformSetup {
 	
 	public static function setupHTML5 ():Void {
 		
-		//var defines = getDefines ([ "CORDOVA_PATH", "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to Apache Cordova", "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
-		var defines = getDefines ([ "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		var setApacheCordova = false;
 		
-		//defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
+		var defines = getDefines ();
+		var answer = ask ("Download and install Apache Cordova?");
+		
+		if (answer == Yes || answer == Always) {
+			
+			var downloadPath = "";
+			var defaultInstallPath = "";
+			
+			if (InstallTool.isWindows) {
+				
+				defaultInstallPath = "C:\\Development\\Android SDK";
+			
+			} else {
+				
+				defaultInstallPath = "/opt/Apache Cordova";
+				
+			}
+			
+			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
+			path = createPath (path, defaultInstallPath);
+			
+			if (InstallTool.isMac) {
+				
+				PathHelper.removeDirectory (path + "/lib/ios");
+				ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/jgranick/incubator-cordova-ios", "ios" ]);
+				ProcessHelper.runCommand (path + "/lib/ios", "./build.sh", []);
+				
+			}
+			
+			PathHelper.removeDirectory (path + "/lib/blackberry");
+			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-blackberry-webworks", "blackberry" ]);
+			
+			PathHelper.removeDirectory (path + "/lib/android");
+			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-android", "android" ]);
+			
+			if (InstallTool.isMac) {
+				
+				PathHelper.removeDirectory (path + "/lib/mac");
+				ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-mac", "mac" ]);
+				
+			}
+			
+			PathHelper.removeDirectory (path + "/lib/webos");
+			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-webos", "webos" ]);
+			
+			/*
+			downloadFile ("https://github.com/jgranick/incubator-cordova-ios/zipball/master", "cordova-ios.zip");
+			PathHelper.mkdir (path + "/lib/ios");
+			extractFile ("cordova-ios.zip", path + "/lib/ios");
+			
+			ProcessHelper.runCommand ("", path + "/lib/ios/build.sh", []);
+			
+			downloadFile ("https://github.com/apache/incubator-cordova-blackberry-webworks/zipball/master", "cordova-blackberry.zip");
+			PathHelper.mkdir (path + "/lib/blackberry");
+			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry");
+			
+			downloadFile ("https://github.com/apache/incubator-cordova-android/zipball/master", "cordova-android.zip");
+			PathHelper.mkdir (path + "/lib/android");
+			extractFile ("cordova-android.zip", path + "/lib/android");
+			
+			downloadFile ("https://github.com/apache/incubator-cordova-mac/zipball/master", "cordova-mac.zip");
+			PathHelper.mkdir (path + "/lib/mac");
+			extractFile ("cordova-mac.zip", path + "/lib/mac");
+			
+			downloadFile ("https://github.com/apache/incubator-cordova-webos/zipball/master", "cordova-webos.zip");
+			PathHelper.mkdir (path + "/lib/webos");
+			extractFile ("cordova-webos.zip", path + "/lib/webos");*/
+			
+			
+			if (!InstallTool.isWindows) {
+				
+				ProcessHelper.runCommand ("", "chmod", [ "-R", "777", path ], false);
+				
+			}
+			
+			setApacheCordova = true;
+			defines.set ("CORDOVA_PATH", path);
+			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+			Lib.println ("");
+			
+		}
+		
+		var requiredVariables = [];
+		var requiredVariableDescriptions = [];
+		
+		if (!setApacheCordova) {
+			
+			requiredVariables.push ("CORDOVA_PATH");
+			requiredVariableDescriptions.push ("Path to Apache Cordova");
+			
+		}
+		
+		requiredVariables = requiredVariables.concat ([ "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ]);
+		requiredVariableDescriptions = requiredVariableDescriptions.concat ([ "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		
+		defines = getDefines (requiredVariables, requiredVariableDescriptions);
+		
+		defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
 		defines.set ("WEBWORKS_SDK_BBOS", unescapePath (defines.get ("WEBWORKS_SDK_BBOS")));
 		defines.set ("WEBWORKS_SDK_PLAYBOOK", unescapePath (defines.get ("WEBWORKS_SDK_PLAYBOOK")));
 		
