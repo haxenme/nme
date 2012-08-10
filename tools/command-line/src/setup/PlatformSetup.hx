@@ -1258,18 +1258,19 @@ class PlatformSetup {
 	
 	public static function setupHTML5 ():Void {
 		
-		var defines = getDefines ([ "CORDOVA_PATH", "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to Apache Cordova", "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		//var defines = getDefines ([ "CORDOVA_PATH", "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to Apache Cordova", "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		var defines = getDefines ([ "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ], [ "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
 		
-		defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
+		//defines.set ("CORDOVA_PATH", unescapePath (defines.get ("CORDOVA_PATH")));
 		defines.set ("WEBWORKS_SDK_BBOS", unescapePath (defines.get ("WEBWORKS_SDK_BBOS")));
 		defines.set ("WEBWORKS_SDK_PLAYBOOK", unescapePath (defines.get ("WEBWORKS_SDK_PLAYBOOK")));
 		
 		// temporary hack
 		
-		Sys.println ("");
+		/*Sys.println ("");
 		Sys.println ("Setting Apache Cordova install path...");
 		ProcessHelper.runCommand (defines.get ("CORDOVA_PATH") + "/lib/ios", "make", [ "install" ], true, true);
-		Sys.println ("Done.");
+		Sys.println ("Done.");*/
 		
 		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 		

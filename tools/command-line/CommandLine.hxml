@@ -1,9 +1,9 @@
 -main InstallTool
 -neko command-line.n
 -cp src
--lib gm2d
 -lib nme
 -lib swf
+-lib gm2d
 --remap flash:nme
 -D haxe3
 -D hxssl

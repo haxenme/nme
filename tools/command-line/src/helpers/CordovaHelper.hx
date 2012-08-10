@@ -9,6 +9,7 @@ class CordovaHelper {
 	
 	public static var contentPath = "www/";
 	
+	private static var cordovaPath:String;
 	private static var defines:Hash <String>;
 	private static var NME:String;
 	private static var target:String;
@@ -21,9 +22,12 @@ class CordovaHelper {
 			
 			case "ios":
 				
-				var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
+				// temporary hack
+				ProcessHelper.runCommand ("", "defaults", [ "write", "com.apple.dt.Xcode", "IDEApplicationwideBuildSettings", "-dict-add", "CORDOVALIB", cordovaPath ]);
 				
-				IOSHelper.build (cordovaLib, debug, [ "-project", "CordovaLib.xcodeproj" ]);
+				
+				var cordovaLib = cordovaPath + "/lib/ios/CordovaLib";
+				
 				IOSHelper.build (workingDirectory, debug, [ "CORDOVALIB=" + cordovaLib ]);
 				
 				if (!targetFlags.exists ("simulator")) {
@@ -53,7 +57,7 @@ class CordovaHelper {
 	public static function create (targetPath:String, context:Dynamic):Void {
 		
 		PathHelper.removeDirectory (targetPath);
-		ProcessHelper.runCommand ("", defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+		ProcessHelper.runCommand ("", cordovaPath + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
 		
 		switch (target) {
 			
@@ -72,6 +76,7 @@ class CordovaHelper {
 	
 	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>, target:String, NME:String):Void {
 		
+		CordovaHelper.cordovaPath = Utils.getHaxelib ("cordova");
 		CordovaHelper.defines = defines;
 		CordovaHelper.NME = NME;
 		CordovaHelper.target = target;

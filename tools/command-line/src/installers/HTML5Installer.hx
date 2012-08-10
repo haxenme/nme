@@ -93,6 +93,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (targetFlags.exists ("html5")) {
 			
+			compilerFlags.push ("-lib cordova");
 			CordovaHelper.initialize (defines, targetFlags, target, NME);
 			
 		}
