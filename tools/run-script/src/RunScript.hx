@@ -1,3 +1,6 @@
+import neko.zip.Writer;
+import haxe.io.Eof;
+import haxe.Http;
 import haxe.io.Path;
 import neko.Lib;
 import sys.io.File;
@@ -8,6 +11,9 @@ import sys.FileSystem;
 class RunScript {
 	
 	
+	private static var isLinux:Bool;
+	private static var isMac:Bool;
+	private static var isWindows:Bool;
 	private static var nmeDirectory:String;
 	
 	
@@ -17,15 +23,15 @@ class RunScript {
 			
 			targets = [ "tools" ];
 			
-			if (new EReg ("window", "i").match (Sys.systemName ())) {
+			if (isWindows) {
 				
 				targets.push ("windows");
 				
-			} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
+			} else if (isLinux) {
 				
 				targets.push ("linux");
 				
-			} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
+			} else if (isMac) {
 				
 				targets.push ("mac");
 				
@@ -64,21 +70,21 @@ class RunScript {
 				
 				if (target == "all") {
 					
-					if (new EReg ("window", "i").match (Sys.systemName ())) {
+					if (isWindows) {
 						
 						buildLibrary ("windows");
 						buildLibrary ("android");
 						buildLibrary ("blackberry");
 						buildLibrary ("webos");
 						
-					} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
+					} else if (isLinux) {
 						
 						buildLibrary ("linux");
 						buildLibrary ("android");
 						buildLibrary ("blackberry");
 						buildLibrary ("webos");
 						
-					} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
+					} else if (isMac) {
 						
 						buildLibrary ("mac");
 						buildLibrary ("ios");
@@ -193,6 +199,23 @@ class RunScript {
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
 			
 		}
+		
+	}
+	
+	
+	private static function downloadFile (remotePath:String, localPath:String) {
+		
+		var out = File.write (localPath, true);
+		var progress = new Progress (out);
+		var h = new Http (remotePath);
+		
+		h.onError = function (e) {
+			progress.close();
+			FileSystem.deleteFile (localPath);
+			throw e;
+		};
+		
+		h.customRequest (false, progress);
 		
 	}
 	
@@ -364,6 +387,32 @@ class RunScript {
 	}
 	
 	
+	private static function param (name:String, ?passwd:Bool):String {
+		
+		Sys.print (name + " : ");
+		
+		if (passwd) {
+			var s = new StringBuf ();
+			var c;
+			while ((c = Sys.getChar(false)) != 13)
+				s.addChar (c);
+			Sys.print ("");
+			return s.toString ();
+		}
+		
+		try {
+			
+			return Sys.stdin ().readLine ();
+			
+		} catch (e:Eof) {
+			
+			return "";
+			
+		}
+		
+	}
+	
+	
 	private static function removeDirectory (directory:String):Void {
 		
 		if (FileSystem.exists (directory)) {
@@ -433,26 +482,56 @@ class RunScript {
 		
 		nmeDirectory = getHaxelib ("nme");
 		
+		if (new EReg ("window", "i").match (Sys.systemName ())) {
+			
+			isLinux = false;
+			isMac = false;
+			isWindows = true;
+			
+		} else if (new EReg ("linux", "i").match (Sys.systemName ())) {
+			
+			isLinux = true;
+			isMac = false;
+			isWindows = false;
+			
+		} else if (new EReg ("mac", "i").match (Sys.systemName ())) {
+			
+			isLinux = false;
+			isMac = true;
+			isWindows = false;
+			
+		}
+		
 		var args:Array <String> = Sys.args ();
+		var command = args[0];
 		
-		/*if (args.length == 1) {
+		if (command == "rebuild" || command == "release") {
 			
-			runCommand (nmeDirectory + "/tools/welcome", "neko", [ "welcome.n" ]);
-			
-		} else */
-		
-		if (args[0] == "rebuild" && nmeDirectory.indexOf ("C:\\Motion-Twin") == -1 && nmeDirectory.indexOf ("/usr/lib/haxe/lib") == -1) {
+			if (nmeDirectory.indexOf ("C:\\Motion-Twin") != -1 || nmeDirectory.indexOf ("/usr/lib/haxe/lib") != -1) {
+				
+				Sys.println ("This command can only be run from a development build of NME");
+				return;
+				
+			}
 			
 			var targets:Array <String> = null;
 			
 			if (args.length > 2) {
 				
-				build (args[1].split (","));
+				targets = args[1].split (",");
 				
-			} else {
+			}
+			
+			switch (command) {
 				
-				build ();
+				case "rebuild":
+					
+					build (targets);
 				
+				case "release":
+					
+					release (targets);
+					
 			}
 			
 		} else {
@@ -471,7 +550,250 @@ class RunScript {
 	}
 	
 	
+	public static function recursiveZip (source:String, destination:String, ignore:Array <String> = null, subFolder:String = "", files:Array <Dynamic> = null) {
+		
+		if (files == null) {
+			
+			files = new Array <Dynamic> ();
+			
+		}
+		
+		for (file in FileSystem.readDirectory (source)) {
+			
+			var ignoreFile = false;
+			
+			if (ignore != null) {
+				
+				for (ignoreName in ignore) {
+					
+					if (file == ignoreName) {
+						
+						ignoreFile = true;
+						
+					}
+					
+				}
+				
+			}
+			
+			if (!ignoreFile) {
+				
+				var name = file;
+				
+				if (subFolder != "") {
+					
+					name = subFolder + "/" + file;
+					
+				}
+				
+				//var date = FileSystem.stat (directory + "/" + file).ctime;
+				var date = Date.now ();
+				var data = null;
+				
+				if (isWindows) {
+					
+					Sys.println ("Adding: " + name);
+					
+					var input = File.read (source + "/" + file, true);
+					var data = input.readAll ();
+					input.close ();
+					
+				}
+				
+				files.push ( { fileName: name, fileTime: date, data: data } );
+				
+				if (FileSystem.isDirectory (source + "/" + file)) {
+					
+					if (subFolder != "") {
+						
+						recursiveZip (source + "/" + file, null, ignore, subFolder + "/" + file, files);
+						
+					} else {
+						
+						recursiveZip (source + "/" + file, null, ignore, file, files);
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		if (destination != null) {
+			
+			if (isWindows) {
+				
+				Sys.println ("Writing: " + destination);
+				
+				var output = File.write (destination, true);
+				Writer.writeZip (output, files, 1);
+				output.close ();
+				
+				Sys.println ("Done.");
+				Sys.println ("");
+				
+			} else {
+				
+				var includeList = "";
+				
+				for (file in files) {
+					
+					includeList += source + file.fileName + "\n";
+					
+				}
+				
+				File.saveContent (destination + ".list", includeList);
+				runCommand ("", "zip", [ "-r", destination, source, "-i@" + destination + ".list" ]);
+				FileSystem.deleteFile (destination + ".list");
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	private static function release (targets:Array<String> = null):Void {
+		
+		if (targets == null) {
+			
+			targets = [ "zip" ];
+			
+		}
+		
+		for (target in targets) {
+			
+			switch (target) {
+				
+				case "upload":
+					
+					var user = param ("FTP username");
+					var password = param ("FTP password", true);
+					
+					if (isWindows) {
+						
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows", "nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows", "nme-debug.ndll" ]);
+						
+					} else if (isLinux) {
+						
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux", "nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux", "nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64", "nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64", "nme-debug.ndll" ]);
+						
+					} else if (isMac) {
+						
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac", "nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac", "nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphonesim.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphonesim.a" ]);
+						
+					}
+			
+				case "download":
+					
+					if (!isWindows) {
+					
+						downloadFile ("http://www.haxenme.org/builds/ndll/Windows/nme.ndll", nmeDirectory + "/ndll/Windows/nme.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/Windows/nme-debug.ndll", nmeDirectory + "/ndll/Windows/nme-debug.ndll");
+					
+					}
+					
+					if (!isLinux) {
+						
+						downloadFile ("http://www.haxenme.org/builds/ndll/Linux/nme.ndll", nmeDirectory + "/ndll/Linux/nme.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/Linux/nme-debug.ndll", nmeDirectory + "/ndll/Linux/nme-debug.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/Linux64/nme.ndll", nmeDirectory + "/ndll/Linux64/nme.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/Linux64/nme-debug.ndll", nmeDirectory + "/ndll/Linux64/nme-debug.ndll");
+						
+					}
+					
+					if (!isMac) {
+						
+						downloadFile ("http://www.haxenme.org/builds/ndll/Mac/nme.ndll", nmeDirectory + "/ndll/Mac/nme.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/Mac/nme-debug.ndll", nmeDirectory + "/ndll/Mac/nme-debug.ndll");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme.iphoneos.a", nmeDirectory + "/ndll/iPhone/libnme.iphoneos.a");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme.iphoneos-v7.a", nmeDirectory + "/ndll/iPhone/libnme.iphoneos-v7.a");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme.iphonesim.a", nmeDirectory + "/ndll/iPhone/libnme.iphonesim.a");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme-debug.iphoneos.a", nmeDirectory + "/ndll/iPhone/libnme-debug.iphoneos.a");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme-debug.iphoneos-v7.a", nmeDirectory + "/ndll/iPhone/libnme-debug.iphoneos-v7.a");
+						downloadFile ("http://www.haxenme.org/builds/ndll/iPhone/libnme-debug.iphonesim.a", nmeDirectory + "/ndll/iPhone/libnme-debug.iphonesim.a");
+						
+					}
+					
+				case "zip":
+				
+					recursiveZip (nmeDirectory, nmeDirectory + "../nme.zip",  [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store" ]);
+					
+					if (target == "haxelib") {
+						
+						runCommand (nmeDirectory, "haxelib", [ "submit", "../nme.zip" ]);
+						
+					}
+				
+			}
+			
+		}
+		
+	}
+	
+	
 	private static var nme_error_output;
 	
 	
+}
+
+
+class Progress extends haxe.io.Output {
+
+	var o : haxe.io.Output;
+	var cur : Int;
+	var max : Int;
+	var start : Float;
+
+	public function new(o) {
+		this.o = o;
+		cur = 0;
+		start = haxe.Timer.stamp();
+	}
+
+	function bytes(n) {
+		cur += n;
+		if( max == null )
+			Lib.print(cur+" bytes\r");
+		else
+			Lib.print(cur+"/"+max+" ("+Std.int((cur*100.0)/max)+"%)\r");
+	}
+
+	public override function writeByte(c) {
+		o.writeByte(c);
+		bytes(1);
+	}
+
+	public override function writeBytes(s,p,l) {
+		var r = o.writeBytes(s,p,l);
+		bytes(r);
+		return r;
+	}
+
+	public override function close() {
+		super.close();
+		o.close();
+		var time = haxe.Timer.stamp() - start;
+		var speed = (cur / time) / 1024;
+		time = Std.int(time * 10) / 10;
+		speed = Std.int(speed * 10) / 10;
+		Lib.print("Download complete : " + cur + " bytes in " + time + "s (" + speed + "KB/s)\n");
+	}
+
+	public override function prepare(m) {
+		max = m;
+	}
+
 }
