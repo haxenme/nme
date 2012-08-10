@@ -174,6 +174,20 @@ class PlatformSetup {
 			
 			if (ignoreRootFolder != "") {
 				
+				if (ignoreRootFolder == "*") {
+					
+					for (file in FileSystem.readDirectory (targetPath)) {
+						
+						if (FileSystem.isDirectory (targetPath + "/" + file)) {
+							
+							ignoreRootFolder = file;
+							
+						}
+						
+					}
+					
+				}
+				
 				ProcessHelper.runCommand ("", "tar", [ arguments, sourceZIP ], false);
 				ProcessHelper.runCommand ("", "cp", [ "-R", ignoreRootFolder + "/*", targetPath ], false);
 				Sys.command ("rm", [ "-r", ignoreRootFolder ]);
@@ -1281,7 +1295,7 @@ class PlatformSetup {
 			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
 			path = createPath (path, defaultInstallPath);
 			
-			if (InstallTool.isMac) {
+			/*if (InstallTool.isMac) {
 				
 				PathHelper.removeDirectory (path + "/lib/ios");
 				ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/jgranick/incubator-cordova-ios", "ios" ]);
@@ -1303,30 +1317,43 @@ class PlatformSetup {
 			}
 			
 			PathHelper.removeDirectory (path + "/lib/webos");
-			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-webos", "webos" ]);
+			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-webos", "webos" ]);*/
 			
-			/*
-			downloadFile ("https://github.com/jgranick/incubator-cordova-ios/zipball/master", "cordova-ios.zip");
-			PathHelper.mkdir (path + "/lib/ios");
-			extractFile ("cordova-ios.zip", path + "/lib/ios");
-			
-			ProcessHelper.runCommand ("", path + "/lib/ios/build.sh", []);
+			if (InstallTool.isMac) {
+				
+				downloadFile ("https://github.com/jgranick/incubator-cordova-ios/zipball/master", "cordova-ios.zip");
+				PathHelper.removeDirectory (path + "/lib/ios");
+				PathHelper.mkdir (path + "/lib/ios");
+				extractFile ("cordova-ios.zip", path + "/lib/ios", "*");
+				
+				ProcessHelper.runCommand (path + "/lib/ios", "chmod", [ "+x", "./build.sh" ]);
+				ProcessHelper.runCommand (path + "/lib/ios", "./build.sh", []);
+				
+			}
 			
 			downloadFile ("https://github.com/apache/incubator-cordova-blackberry-webworks/zipball/master", "cordova-blackberry.zip");
+			PathHelper.removeDirectory (path + "/lib/blackberry");
 			PathHelper.mkdir (path + "/lib/blackberry");
-			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry");
+			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry", "*");
 			
 			downloadFile ("https://github.com/apache/incubator-cordova-android/zipball/master", "cordova-android.zip");
+			PathHelper.removeDirectory (path + "/lib/android");
 			PathHelper.mkdir (path + "/lib/android");
-			extractFile ("cordova-android.zip", path + "/lib/android");
+			extractFile ("cordova-android.zip", path + "/lib/android", "*");
 			
-			downloadFile ("https://github.com/apache/incubator-cordova-mac/zipball/master", "cordova-mac.zip");
-			PathHelper.mkdir (path + "/lib/mac");
-			extractFile ("cordova-mac.zip", path + "/lib/mac");
+			if (InstallTool.isMac) {
+				
+				downloadFile ("https://github.com/apache/incubator-cordova-mac/zipball/master", "cordova-mac.zip");
+				PathHelper.removeDirectory (path + "/lib/mac");
+				PathHelper.mkdir (path + "/lib/mac");
+				extractFile ("cordova-mac.zip", path + "/lib/mac", "*");
+				
+			}
 			
 			downloadFile ("https://github.com/apache/incubator-cordova-webos/zipball/master", "cordova-webos.zip");
+			PathHelper.removeDirectory (path + "/lib/webos");
 			PathHelper.mkdir (path + "/lib/webos");
-			extractFile ("cordova-webos.zip", path + "/lib/webos");*/
+			extractFile ("cordova-webos.zip", path + "/lib/webos", "*");
 			
 			
 			if (!InstallTool.isWindows) {
