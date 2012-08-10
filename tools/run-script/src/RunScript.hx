@@ -673,26 +673,26 @@ class RunScript {
 					
 					if (isWindows) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows", "nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows", "nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows/nme-debug.ndll" ]);
 						
 					} else if (isLinux) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux", "nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux", "nme-debug.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64", "nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64", "nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64/nme-debug.ndll" ]);
 						
 					} else if (isMac) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac", "nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac", "nme-debug.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphoneos.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphoneos-v7.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme.iphonesim.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphoneos.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphoneos-v7.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone", "libnme-debug.iphonesim.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphonesim.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphonesim.a" ]);
 						
 					}
 			

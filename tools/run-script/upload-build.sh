@@ -7,6 +7,6 @@ ftp -n -v www.haxenme.org << EOT
 ascii
 user $USER $PASSWD
 prompt
-put ndll/$3/$4 /public_html/haxenme/builds/ndll/$3
+put ndll/$3 /public_html/haxenme/builds/ndll/$3
 bye
 EOT
