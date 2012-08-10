@@ -703,6 +703,8 @@ class PlatformSetup {
 			
 		}
 		
+		ProcessHelper.runCommand ("", "haxelib", [ "install", "air3" ], true, true);
+		
 		var defines = getDefines (requiredVariables, requiredVariableDescriptions, null);
 		
 		if (defines != null) {
@@ -1368,6 +1370,8 @@ class PlatformSetup {
 			Lib.println ("");
 			
 		}
+		
+		ProcessHelper.runCommand ("", "haxelib", [ "install", "cordova" ], true, true);
 		
 		var requiredVariables = [];
 		var requiredVariableDescriptions = [];
