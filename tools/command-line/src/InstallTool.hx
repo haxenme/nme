@@ -29,8 +29,7 @@ class InstallTool {
 	public static var nme:String = "";
 	public static var traceEnabled:Bool = true;
 	public static var verbose = false;
-	
-	private static var version = "3.4.1";
+	public static var version = "3.4.1";
 	
 	
 	static public function create (nme:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
@@ -194,6 +193,23 @@ class InstallTool {
 	}
 	
 	
+	private static function getVersion ():String {
+		
+		for (element in Xml.parse (File.getContent (nme + "/haxelib.xml")).firstElement ().elements ()) {
+			
+			if (element.nodeName == "version") {
+				
+				return element.get ("name");
+				
+			}
+			
+		}
+		
+		return "";
+		
+	}
+	
+	
 	public static function print (message:String):Void {
 		
 		if (verbose) {
@@ -302,6 +318,8 @@ class InstallTool {
 			isMac = true;
 			
 		}
+		
+		version = getVersion ();
 		
 		var words:Array <String> = new Array <String> ();
 		var passArgs:Array <String> = new Array <String> ();

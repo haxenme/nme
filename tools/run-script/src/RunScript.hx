@@ -295,6 +295,23 @@ class RunScript {
 	}
 	
 	
+	private static function getVersion ():String {
+		
+		for (element in Xml.parse (File.getContent (nmeDirectory + "/haxelib.xml")).firstElement ().elements ()) {
+			
+			if (element.nodeName == "version") {
+				
+				return element.get ("name");
+				
+			}
+			
+		}
+		
+		return "";
+		
+	}
+	
+	
 	public static function isRunning64 ():Bool {
 		
 		if (Sys.systemName () == "Linux") {
@@ -666,22 +683,26 @@ class RunScript {
 					}
 					
 				case "zip":
-				
-					recursiveCopy (nmeDirectory, nmeDirectory + "../nme-release-zip/nme", [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
 					
-					if (FileSystem.exists (nmeDirectory + "../nme.zip")) {
+					var currentDate = Date.now ();
+					var tempPath = "../nme-release-zip";
+					var targetPath = "../nme-" + getVersion () + "-" + currentDate.getFullYear () + StringTools.lpad (Std.string (currentDate.getMonth ()), "0", 2) + StringTools.lpad (Std.string (currentDate.getDate ()), "0", 2) + ".zip";
+					
+					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
+					
+					if (FileSystem.exists (nmeDirectory + targetPath)) {
 						
-						FileSystem.deleteFile (nmeDirectory + "../nme.zip");
+						FileSystem.deleteFile (nmeDirectory + targetPath);
 						
 					}
 					
 					if (!isWindows) {
 						
-						runCommand (nmeDirectory + "../nme-release-zip", "zip", [ "-r", "../nme.zip", "*" ]);
+						runCommand (nmeDirectory + tempPath, "zip", [ "-r", targetPath, "*" ]);
 						
 					}
 					
-					removeDirectory (nmeDirectory + "../nme-release-zip");
+					removeDirectory (nmeDirectory + tempPath);
 				
 			}
 			
