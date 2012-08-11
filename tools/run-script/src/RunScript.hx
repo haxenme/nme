@@ -295,6 +295,64 @@ class RunScript {
 	}
 	
 	
+	private static function getRevision ():String {
+		
+		var result = "r0";
+		
+		if (FileSystem.exists (nmeDirectory + "/.git")) {
+			
+			var cacheCwd = Sys.getCwd ();
+			Sys.setCwd (nmeDirectory);
+			
+			var proc = new Process ("git", [ "svn", "log", "--oneline", "-1" ]);
+			
+			try {
+				
+				result = proc.stdout.readLine ();
+				result = result.substr (0, result.indexOf (" |"));
+				
+			} catch (e:Dynamic) { };
+			
+			proc.close();
+			Sys.setCwd (cacheCwd);
+			
+		} else if (FileSystem.exists (nmeDirectory + "/.svn")) {
+			
+			var cacheCwd = Sys.getCwd ();
+			Sys.setCwd (nmeDirectory);
+			
+			var proc = new Process ("git", [ "svn", "log", "--oneline", "-1" ]);
+			
+			try {
+				
+				while (true) {
+					
+					result = proc.stdout.readLine ();
+					
+					var checkString = "Revision: ";
+					var index = result.indexOf (checkString);
+					
+					if (index > -1) {
+						
+						result = result.substr (checkString.length);
+						break;
+						
+					}
+					
+				}
+				
+			} catch (e:Dynamic) { };
+			
+			proc.close();
+			Sys.setCwd (cacheCwd);
+			
+		}
+		
+		return result;
+		
+	}
+	
+	
 	private static function getVersion ():String {
 		
 		for (element in Xml.parse (File.getContent (nmeDirectory + "/haxelib.xml")).firstElement ().elements ()) {
@@ -684,9 +742,8 @@ class RunScript {
 					
 				case "zip":
 					
-					var currentDate = Date.now ();
 					var tempPath = "../nme-release-zip";
-					var targetPath = "../nme-" + getVersion () + "-" + currentDate.getFullYear () + StringTools.lpad (Std.string (currentDate.getMonth ()), "0", 2) + StringTools.lpad (Std.string (currentDate.getDate ()), "0", 2) + ".zip";
+					var targetPath = "../nme-" + getVersion () + "-" + getRevision () + ".zip";
 					
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
 					
