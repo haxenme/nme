@@ -550,27 +550,21 @@ class RunScript {
 	}
 	
 	
-	public static function recursiveZip (source:String, destination:String, ignore:Array <String> = null, subFolder:String = "", files:Array <Dynamic> = null) {
+	public static function recursiveCopy (source:String, destination:String, ignore:Array <String>) {
 		
-		if (files == null) {
-			
-			files = new Array <Dynamic> ();
-			
-		}
+		mkdir (destination);
 		
-		for (file in FileSystem.readDirectory (source)) {
+		var files = FileSystem.readDirectory (source);
+		
+		for (file in files) {
 			
 			var ignoreFile = false;
 			
-			if (ignore != null) {
+			for (ignoreName in ignore) {
 				
-				for (ignoreName in ignore) {
+				if (file == ignoreName) {
 					
-					if (file == ignoreName) {
-						
-						ignoreFile = true;
-						
-					}
+					ignoreFile = true;
 					
 				}
 				
@@ -578,74 +572,18 @@ class RunScript {
 			
 			if (!ignoreFile) {
 				
-				var name = file;
+				var itemDestination:String = destination + "/" + file;
+				var itemSource:String = source + "/" + file;
 				
-				if (subFolder != "") {
+				if (FileSystem.isDirectory (itemSource)) {
 					
-					name = subFolder + "/" + file;
+					recursiveCopy (itemSource, itemDestination, ignore);
 					
-				}
-				
-				//var date = FileSystem.stat (directory + "/" + file).ctime;
-				var date = Date.now ();
-				var data = null;
-				
-				if (isWindows) {
+				} else {
 					
-					Sys.println ("Adding: " + name);
-					
-					var input = File.read (source + "/" + file, true);
-					var data = input.readAll ();
-					input.close ();
+					File.copy (itemSource, itemDestination);
 					
 				}
-				
-				files.push ( { fileName: name, fileTime: date, data: data } );
-				
-				if (FileSystem.isDirectory (source + "/" + file)) {
-					
-					if (subFolder != "") {
-						
-						recursiveZip (source + "/" + file, null, ignore, subFolder + "/" + file, files);
-						
-					} else {
-						
-						recursiveZip (source + "/" + file, null, ignore, file, files);
-						
-					}
-					
-				}
-				
-			}
-			
-		}
-		
-		if (destination != null) {
-			
-			if (isWindows) {
-				
-				Sys.println ("Writing: " + destination);
-				
-				var output = File.write (destination, true);
-				Writer.writeZip (output, files, 1);
-				output.close ();
-				
-				Sys.println ("Done.");
-				Sys.println ("");
-				
-			} else {
-				
-				var includeList = "";
-				
-				for (file in files) {
-					
-					includeList += source + file.fileName + "\n";
-					
-				}
-				
-				File.saveContent (destination + ".list", includeList);
-				runCommand ("", "zip", [ "-r", destination, source, "-i@" + destination + ".list" ]);
-				FileSystem.deleteFile (destination + ".list");
 				
 			}
 			
@@ -729,13 +667,21 @@ class RunScript {
 					
 				case "zip":
 				
-					recursiveZip (nmeDirectory, nmeDirectory + "../nme.zip",  [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store" ]);
+					recursiveCopy (nmeDirectory, nmeDirectory + "../nme-release-zip/nme", [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
 					
-					if (target == "haxelib") {
+					if (FileSystem.exists (nmeDirectory + "../nme.zip")) {
 						
-						runCommand (nmeDirectory, "haxelib", [ "submit", "../nme.zip" ]);
+						FileSystem.deleteFile (nmeDirectory + "../nme.zip");
 						
 					}
+					
+					if (!isWindows) {
+						
+						runCommand (nmeDirectory + "../nme-release-zip", "zip", [ "-r", "../nme.zip", "*" ]);
+						
+					}
+					
+					removeDirectory (nmeDirectory + "../nme-release-zip");
 				
 			}
 			
