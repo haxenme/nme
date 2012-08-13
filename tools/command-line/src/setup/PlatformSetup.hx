@@ -1338,7 +1338,7 @@ class PlatformSetup {
 			PathHelper.mkdir (path + "/lib/blackberry");
 			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry", "*");
 			
-			downloadFile ("https://github.com/apache/incubator-cordova-android/zipball/master", "cordova-android.zip");
+			downloadFile ("https://github.com/jgranick/incubator-cordova-android/zipball/master", "cordova-android.zip");
 			PathHelper.removeDirectory (path + "/lib/android");
 			PathHelper.mkdir (path + "/lib/android");
 			extractFile ("cordova-android.zip", path + "/lib/android", "*");

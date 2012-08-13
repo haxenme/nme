@@ -18,8 +18,6 @@ class CordovaHelper {
 	
 	public static function build (workingDirectory:String, debug:Bool):Void {
 		
-		Sys.println ("build");
-		
 		switch (target) {
 			
 			case "ios":
@@ -51,6 +49,10 @@ class CordovaHelper {
 					
 				}
 			
+			case "android":
+				
+				AndroidHelper.build (workingDirectory);
+			
 		}
 		
 	}
@@ -59,6 +61,12 @@ class CordovaHelper {
 	public static function create (workingDirectory:String, targetPath:String, context:Dynamic):Void {
 		
 		//if (!FileSystem.exists (targetPath)) {
+		
+			if (target == "android") {
+				
+				Sys.putEnv ("ANDROID_BIN", defines.get ("ANDROID_SDK") + "/tools/android");
+				
+			}
 			
 			PathHelper.removeDirectory (targetPath);
 			ProcessHelper.runCommand (workingDirectory, defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
@@ -99,6 +107,10 @@ class CordovaHelper {
 				AntHelper.initialize (defines);
 				BlackBerryHelper.initialize (defines, targetFlags);
 			
+			case "android":
+				
+				AndroidHelper.initialize (defines);
+			
 		}
 		
 	}
@@ -132,6 +144,19 @@ class CordovaHelper {
 					BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
 				
 				}
+			
+			case "android":
+				
+				var build:String = "debug";
+				
+				if (defines.exists ("KEY_STORE")) {
+					
+					build = "release";
+					
+				}
+				
+				AndroidHelper.install (FileSystem.fullPath (workingDirectory) + "/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk");
+				AndroidHelper.run (defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_PACKAGE") + "." + defines.get ("APP_FILE"));
 			
 		}
 		
