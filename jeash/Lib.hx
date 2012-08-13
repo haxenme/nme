@@ -94,7 +94,7 @@ class Lib {
 	}
 
 	static public function preventDefaultTouchMove():Void {
-		var document : HTMLDocument = cast js.Lib.document;
+		var document:HTMLDocument = cast js.Lib.document;
 		document.addEventListener("touchmove", function(evt:Html5Dom.Event):Void {
 			evt.preventDefault();
 		}, false);
@@ -224,13 +224,16 @@ class Lib {
 	}
 
 
-	public static function jeashIsOnStage(surface:HTMLElement) {
-		for (i in 0...mMe.__scr.childNodes.length) {
-			if (mMe.__scr.childNodes[i] == surface) {
-				return true;
+	public static inline function jeashIsOnStage(surface:HTMLElement) {
+		var success = false;
+		var nodes = mMe.__scr.childNodes;
+		for (i in 0...nodes.length) {
+			if (nodes[i] == surface) {
+				success = true;
+				break;
 			}
 		}
-		return false;
+		return success;
 	}
 
 	public static function jeashRemoveSurface(surface:HTMLElement) {
@@ -246,14 +249,14 @@ class Lib {
 	}
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
-		//trace("setting transform: " + matrix);
 		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1 && surface.getAttribute("data-jeash-anim") == null) {
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
 		} else {
-			surface.style.left = "0px"; surface.style.top = "0px";
+			//surface.style.left = "0px"; surface.style.top = "0px";
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
-			surface.style.setProperty("-webkit-transform", matrix.toString(), "");
+			surface.style.setProperty("-webkit-transform", matrix.to3DString(), ""); // 3D matrix for 2D transform invokes hw acceleration
+			//surface.style.setProperty("-webkit-transform", matrix.toString(), "");
 			surface.style.setProperty("-o-transform", matrix.toString(), "");
 			surface.style.setProperty("-ms-transform", matrix.toString(), "");
 		}

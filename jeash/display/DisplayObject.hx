@@ -361,10 +361,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
 		}
 
-		if (gfx.jeashRender(inMask, jeashFilters, 1, 1, clip0, clip1, clip2, clip3)) {
-			jeashInvalidateBounds();
-			jeashApplyFilters(gfx.jeashSurface);	
-		}
+		if (gfx.jeashRender(inMask, jeashFilters, 1, 1, clip0, clip1, clip2, clip3))
+			handleGraphicsUpdated(gfx);
 
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (inMask != null) {
@@ -373,7 +371,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
-
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
@@ -388,6 +385,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				Lib.jeashSetSurfaceClipping(gfx.jeashSurface, rect);
 			}*/
 		}
+	}
+
+	private inline function handleGraphicsUpdated(gfx:Graphics):Void {
+		jeashInvalidateBounds();
+		jeashApplyFilters(gfx.jeashSurface);
+		jeashSetFlag(TRANSFORM_INVALID);
 	}
 
 	private inline function getSurfaceTransform(gfx:Graphics):Matrix {
@@ -467,7 +470,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private inline function invalidateGraphics():Void {
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
-			gfx.jeashChanged = gfx.jeashClearNextCycle = true;
+			gfx.jeashInvalidate();
 	}
 
 	// @r533

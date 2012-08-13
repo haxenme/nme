@@ -100,7 +100,7 @@ class Bitmap extends jeash.display.DisplayObject
 			Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
 			jeashCurrentLease = imageDataLease.clone();
 
-			jeashApplyFilters(jeashGraphics.jeashSurface);
+			handleGraphicsUpdated(jeashGraphics);
 		}
 
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;

@@ -654,12 +654,8 @@ class TextField extends jeash.display.InteractiveObject
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
 
-		if (!mHTMLMode && jeashFilters != null && (jeashGraphics.jeashChanged || inMask != null)) {
-			if (jeashGraphics.jeashRender(inMask, jeashFilters)) {
-				jeashInvalidateBounds();
-				jeashApplyFilters(jeashGraphics.jeashSurface);
-			}
-		} else if (jeashGraphics.jeashRender(inMask)) jeashInvalidateBounds();
+		if (jeashGraphics.jeashRender(inMask, jeashFilters))
+			handleGraphicsUpdated(jeashGraphics);
 
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (!mHTMLMode && inMask != null) {

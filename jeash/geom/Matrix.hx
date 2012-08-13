@@ -61,7 +61,7 @@ class Matrix
 	}
 
 
-	public function clone() {
+	public inline function clone() {
 		return new Matrix(a,b,c,d,tx,ty);
 	}
 
@@ -220,7 +220,7 @@ class Matrix
 		tx = tx1;
 	}
 
-	public function mult(m:Matrix) {
+	public inline function mult(m:Matrix) {
 		var result = clone();
 		result.concat(m);
 		return result;
@@ -237,31 +237,51 @@ class Matrix
 
 	public inline function toMozString() {
 		#if js
-		untyped {
-			var m = "matrix(";
-			m += a; m += ", ";
-			m += b; m += ", ";
-			m += c; m += ", ";
-			m += d; m += ", ";
-			m += tx; m += "px, ";
-			m += ty; m += "px)";
-			return m;
-		}
+		var m = "matrix(";
+		m += a; m += ", ";
+		m += b; m += ", ";
+		m += c; m += ", ";
+		m += d; m += ", ";
+		m += tx; m += "px, ";
+		m += ty; m += "px)";
+		return m;
 		#end
 	}
 
 	public inline function toString() {
 		#if js
-		untyped {
-			var m = "matrix(";
-			m += a; m += ", ";
-			m += b; m += ", ";
-			m += c; m += ", ";
-			m += d; m += ", ";
-			m += tx; m += ", ";
-			m += ty; m += ")";
-			return m;
-		}
+		var m = "matrix(";
+		m += a; m += ", ";
+		m += b; m += ", ";
+		m += c; m += ", ";
+		m += d; m += ", ";
+		m += tx; m += ", ";
+		m += ty; m += ")";
+		return m;
+		#end
+	}
+
+	public inline function to3DString() {
+		// identityMatrix
+		//  [a,b,tx,0],
+		//  [c,d,ty,0],
+		//  [0,0,1, 0],
+		//  [0,0,0, 1]
+		//
+		// matrix3d(a,       b, 0, 0, c, d,       0, 0, 0, 0, 1, 0, tx,     ty, 0, 1)
+		#if js
+		var m = "matrix3d(";
+		m += a; m += ", ";
+		m += b; m += ", ";
+		m += "0, 0, ";
+		m += c; m += ", ";
+		m += d; m += ", ";
+		m += "0, 0, 0, 0, 1, 0, ";
+		m += tx; m += ", ";
+		m += ty; m += ", ";
+		m += "0, 1";
+		m += ")";
+		return m;
 		#end
 	}
 }

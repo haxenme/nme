@@ -61,7 +61,7 @@ typedef DrawList = Array<Drawable>;
 
 class GfxPoint {
 	public function new(inX:Float,inY:Float,inCX:Float,inCY:Float,inType:Int)
-	{ x = inX; y=inY; cx=inCX; cy=inCY; type=inType; }
+	{ x=inX; y=inY; cx=inCX; cy=inCY; type=inType; }
 
 	public var x:Float;
 	public var y:Float;
@@ -158,6 +158,12 @@ class Graphics
 	private static inline var CORNER_MITER     	= 0x1000;
 	private static inline var CORNER_BEVEL     	= 0x2000;
 
+	private static inline var ROUND:String     	= "round";
+	private static inline var MITER:String     	= "miter";
+	private static inline var BEVEL:String     	= "bevel";
+	private static inline var SQUARE:String     = "square";
+	private static inline var BUTT:String     	= "butt";
+
 	private static inline var PIXEL_HINTING    	= 0x4000;
 
 	private static inline var BMP_REPEAT  		= 0x0010;
@@ -178,7 +184,7 @@ class Graphics
 	public static inline var TILE_ALPHA    		= 0x0008;
 
 	public var jeashSurface(default, null):HTMLCanvasElement;
-	public var jeashChanged:Bool;
+	private var jeashChanged:Bool;
 
 	// Current set of points
 	private var mPoints:GfxPoints;
@@ -208,7 +214,7 @@ class Graphics
 	public var jeashExtentWithFilters(default, null):Rectangle;
 	private var _padding:Float;
 	private var nextDrawIndex:Int;
-	public var jeashClearNextCycle:Bool;
+	private var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLElement) {
 		// sanity check
@@ -316,7 +322,6 @@ class Graphics
 		if (ctx == null) return false;
 
 		if (clip0 != null) {
-			//ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
 			ctx.beginPath();
 			ctx.moveTo(clip0.x, clip0.y);
 			ctx.lineTo(clip1.x, clip1.y);
@@ -341,8 +346,10 @@ class Graphics
 		
 		if (jeashExtentWithFilters.x != 0 || jeashExtentWithFilters.y != 0)
 			ctx.translate(-jeashExtentWithFilters.x, -jeashExtentWithFilters.y);
-		ctx.scale(sx, sy);
+		if (sx != 1 || sy != 0)
+			ctx.scale(sx, sy);
 
+		var doStroke = false;
 		for (i in nextDrawIndex...len) {
 			var d = mDrawList[(len-1)-i];
 	
@@ -352,20 +359,20 @@ class Graphics
 
 					switch(lj.joints) {
 						case CORNER_ROUND:
-							ctx.lineJoin = "round";
+							ctx.lineJoin = ROUND;
 						case CORNER_MITER:
-							ctx.lineJoin = "miter";
+							ctx.lineJoin = MITER;
 						case CORNER_BEVEL:
-							ctx.lineJoin = "bevel";
+							ctx.lineJoin = BEVEL;
 					}
 
 					switch(lj.caps) {
 						case END_ROUND:
-							ctx.lineCap = "round";
+							ctx.lineCap = ROUND;
 						case END_SQUARE:
-							ctx.lineCap = "square";
+							ctx.lineCap = SQUARE;
 						case END_NONE:
-							ctx.lineCap = "butt";
+							ctx.lineCap = BUTT;
 					}
 
 					ctx.miterLimit = lj.miter_limit;
@@ -390,16 +397,15 @@ class Graphics
 						}
 					}
 					ctx.closePath();
-					ctx.stroke();
+					doStroke = true;
 				}
 			} else {
 				ctx.beginPath();
 
 				for (p in d.points) {
-
 					switch (p.type) {
 						case MOVE:
-							ctx.moveTo(p.x , p.y);
+							ctx.moveTo(p.x, p.y);
 						case CURVE:
 							ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
 						default:
@@ -415,8 +421,9 @@ class Graphics
 			if (g != null)
 				ctx.fillStyle = createCanvasGradient(ctx, g);
 			else  // Alpha value gets clamped in [0;1] range.
-				ctx.fillStyle = createCanvasColor(fillColour, (fillAlpha > 1.0) ? 1.0 : ((fillAlpha < 0.0) ? 0.0 : fillAlpha));
+				ctx.fillStyle = createCanvasColor(fillColour, Math.min(1.0, Math.max(0.0, fillAlpha)));
 			ctx.fill();
+			if (doStroke) ctx.stroke();
 			ctx.save();
 
 			var bitmap = d.bitmap;
@@ -653,7 +660,7 @@ class Graphics
 			focalPointRatio : Null<Float>)
 	{
 		var points = new GradPoints();
-		for(i in 0...colors.length)
+		for (i in 0...colors.length)
 			points.push({col:colors[i], alpha:alphas[i], ratio:ratios[i]});
 
 		var flags = 0;
@@ -759,6 +766,10 @@ class Graphics
 		_padding = 0.0;
 
 		mLineJobs = [];
+	}
+
+	public inline function jeashInvalidate():Void {
+		jeashChanged = jeashClearNextCycle = true;
 	}
 
 	function jeashExpandStandardExtent(x:Float, y:Float, ?thickness:Float) {
