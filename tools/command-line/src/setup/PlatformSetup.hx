@@ -703,8 +703,6 @@ class PlatformSetup {
 			
 		}
 		
-		ProcessHelper.runCommand ("", "haxelib", [ "install", "air3" ], true, true);
-		
 		var defines = getDefines (requiredVariables, requiredVariableDescriptions, null);
 		
 		if (defines != null) {
@@ -712,6 +710,8 @@ class PlatformSetup {
 			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
 			
 		}
+		
+		ProcessHelper.runCommand ("", "haxelib", [ "install", "air3" ], true, true);
 		
 	}
 	
@@ -1286,7 +1286,7 @@ class PlatformSetup {
 			
 			if (InstallTool.isWindows) {
 				
-				defaultInstallPath = "C:\\Development\\Android SDK";
+				defaultInstallPath = "C:\\Development\\Apache Cordova";
 			
 			} else {
 				
@@ -1333,7 +1333,7 @@ class PlatformSetup {
 				
 			}
 			
-			downloadFile ("https://github.com/apache/incubator-cordova-blackberry-webworks/zipball/master", "cordova-blackberry.zip");
+			downloadFile ("https://github.com/jgranick/incubator-cordova-blackberry-webworks/zipball/master", "cordova-blackberry.zip");
 			PathHelper.removeDirectory (path + "/lib/blackberry");
 			PathHelper.mkdir (path + "/lib/blackberry");
 			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry", "*");
@@ -1371,8 +1371,6 @@ class PlatformSetup {
 			
 		}
 		
-		ProcessHelper.runCommand ("", "haxelib", [ "install", "cordova" ], true, true);
-		
 		var requiredVariables = [];
 		var requiredVariableDescriptions = [];
 		
@@ -1400,6 +1398,8 @@ class PlatformSetup {
 		Sys.println ("Done.");*/
 		
 		writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+		
+		ProcessHelper.runCommand ("", "haxelib", [ "install", "cordova" ], true, true);
 		
 	}
 
@@ -1694,7 +1694,9 @@ class Progress extends haxe.io.Output {
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
 		
-		if (cur > 0) {
+		// When the path is a redirect, we don't want to display that the download completed
+		
+		if (cur > 400) {
 			
 			Lib.print("Download complete : " + cur + " bytes in " + time + "s (" + speed + "KB/s)\n");
 			

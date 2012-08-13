@@ -30,7 +30,8 @@
         version="::APP_VERSION::" id="::APP_PACKAGE::"> -->
 
   <name>::APP_TITLE::</name>
-  <author>::APP_COMPANY::</author>
+  
+  <publisher>::APP_COMPANY::</publisher>
 
   <description>::APP_DESCRIPTION::</description>
     

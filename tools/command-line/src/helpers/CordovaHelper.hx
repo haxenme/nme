@@ -2,6 +2,7 @@ package helpers;
 
 
 import sys.io.File;
+import sys.FileSystem;
 
 
 class CordovaHelper {
@@ -16,6 +17,8 @@ class CordovaHelper {
 	
 	
 	public static function build (workingDirectory:String, debug:Bool):Void {
+		
+		Sys.println ("build");
 		
 		switch (target) {
 			
@@ -53,10 +56,14 @@ class CordovaHelper {
 	}
 	
 	
-	public static function create (targetPath:String, context:Dynamic):Void {
+	public static function create (workingDirectory:String, targetPath:String, context:Dynamic):Void {
 		
-		PathHelper.removeDirectory (targetPath);
-		ProcessHelper.runCommand ("", defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+		//if (!FileSystem.exists (targetPath)) {
+			
+			PathHelper.removeDirectory (targetPath);
+			ProcessHelper.runCommand (workingDirectory, defines.get ("CORDOVA_PATH") + "/lib/" + target + "/bin/create", [ targetPath, defines.get ("APP_PACKAGE"), defines.get ("APP_FILE") ]);
+			
+		//}
 		
 		switch (target) {
 			
@@ -66,6 +73,7 @@ class CordovaHelper {
 			
 			case "blackberry":
 				
+				context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.getAuthorID (targetPath);
 				FileHelper.recursiveCopy (NME + "/templates/cordova/blackberry/template", targetPath, context);
 			
 		}

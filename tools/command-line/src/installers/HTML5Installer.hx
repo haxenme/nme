@@ -172,7 +172,7 @@ class HTML5Installer extends InstallerBase {
 		
 		if (target != "html5") {
 			
-			CordovaHelper.create (destination, context);
+			CordovaHelper.create ("", destination, context);
 			destination += CordovaHelper.contentPath;
 			
 		}
