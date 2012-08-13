@@ -654,7 +654,8 @@ class TextField extends jeash.display.InteractiveObject
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
 
-		if (jeashGraphics.jeashRender(inMask, jeashFilters))
+		//if (jeashGraphics.jeashRender(inMask, jeashFilters, _fullScaleX, _fullScaleY))
+		if (jeashGraphics.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(jeashGraphics);
 
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
@@ -664,6 +665,8 @@ class TextField extends jeash.display.InteractiveObject
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(jeashGraphics);
+				//m.a = 1.0;
+				//m.d = 1.0;
 				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}

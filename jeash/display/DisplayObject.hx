@@ -76,8 +76,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var x(jeashGetX, jeashSetX):Float;
 	private var jeashY:Float;
 	public var y(jeashGetY, jeashSetY):Float;
+	private var _fullScaleX:Float;
 	private var jeashScaleX:Float;
 	public var scaleX(jeashGetScaleX, jeashSetScaleX):Float;
+	private var _fullScaleY:Float;
 	private var jeashScaleY:Float;
 	public var scaleY(jeashGetScaleY, jeashSetScaleY):Float;
 	private var jeashRotation:Float;
@@ -322,7 +324,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				jeashSetMatrix(m);
 			}
 			
-			jeashSetFullMatrix(parent == null ? m : parent.jeashGetFullMatrix(m));
+			var fm = parent == null ? m : parent.jeashGetFullMatrix(m);
+			jeashSetFullMatrix(fm);
+			_fullScaleX = fm.a;
+			_fullScaleY = fm.d;
 			jeashSetFlag(TRANSFORM_INVALID);
 			jeashClearFlag(MATRIX_INVALID | MATRIX_CHAIN_INVALID);
 		}
@@ -344,7 +349,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
 
-		var clip0:Point = null;
+		/*var clip0:Point = null;
 		var clip1:Point = null;
 		var clip2:Point = null;
 		var clip3:Point = null;
@@ -359,9 +364,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clip1 = this.globalToLocal(this.parent.localToGlobal(topRight));
 			clip2 = this.globalToLocal(this.parent.localToGlobal(bottomRight));
 			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
-		}
+		}*/
 
-		if (gfx.jeashRender(inMask, jeashFilters, 1, 1, clip0, clip1, clip2, clip3))
+		//if (gfx.jeashRender(inMask, jeashFilters, _fullScaleX, _fullScaleY, clip0, clip1, clip2, clip3))
+		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
 
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
@@ -371,6 +377,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
+				//m.a = 1.0;
+				//m.d = 1.0;
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
