@@ -30,15 +30,16 @@ class ApplicationMain {
 		}
 		::end::
 		
-		::if (WEB!=null)::
+		::if (web!=null)::
 		haxe.Log.trace = flashTrace; // ::WEB::
+		::else::
 		::end::
 
 		if (call_real)
 			begin ();
 	}
 
-	::if (WEB!=null)::
+	::if (web!=null)::
 	private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
 		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
 		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
