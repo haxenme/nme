@@ -253,7 +253,7 @@ class Lib {
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
 		} else {
-			//surface.style.left = "0px"; surface.style.top = "0px";
+			surface.style.left = "0px"; surface.style.top = "0px";
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
 			surface.style.setProperty("-webkit-transform", matrix.to3DString(), ""); // 3D matrix for 2D transform invokes hw acceleration
 			//surface.style.setProperty("-webkit-transform", matrix.toString(), "");
