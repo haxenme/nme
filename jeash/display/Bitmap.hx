@@ -53,7 +53,7 @@ class Bitmap extends jeash.display.DisplayObject
 
 		if (inBitmapData != null) {
 			jeashSetBitmapData(inBitmapData);
-			jeashRender(null, null);
+			jeashRender();
 		}
 	}
 

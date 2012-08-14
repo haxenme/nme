@@ -96,7 +96,7 @@ class Matrix
 		ty = in_ty!=null ? in_ty+in_height/2 : in_height/2;
 	}
 
-	public function setRotation(inTheta:Float,?inScale:Float) {
+	private inline function setRotation(inTheta:Float,?inScale:Float) {
 		var scale:Float = inScale==null ? 1.0 : inScale;
 		a = Math.cos(inTheta)*scale;
 		c = Math.sin(inTheta)*scale;
@@ -125,9 +125,21 @@ class Matrix
 		return this;
 	}
 
+	public inline function jeashTransformX(inPos:Point):Float {
+		return inPos.x * a + inPos.y * c + tx;
+	}
+
+	public inline function jeashTransformY(inPos:Point):Float {
+		return inPos.x * b + inPos.y * d + ty;
+	}
+
 	public function transformPoint(inPos:Point) {
-		return new Point( inPos.x*a + inPos.y*c + tx,
-				inPos.x*b + inPos.y*d + ty );
+		return new Point(jeashTransformX(inPos), jeashTransformY(inPos));
+	}
+
+	public inline function jeashTranslateTransformed(inPos:Point):Void {
+		tx = jeashTransformX(inPos);
+		ty = jeashTransformY(inPos);
 	}
 
 	public function translate(inDX:Float, inDY:Float) {

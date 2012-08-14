@@ -309,8 +309,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				m.identity();
 			
 				// set scale
-				m.a = jeashScaleX;
-				m.d = jeashScaleY;
+				m.scale(jeashScaleX, jeashScaleY);
 			
 				// set rotation if necessary
 				var rad = jeashRotation * Transform.DEG_TO_RAD;
@@ -318,8 +317,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					m.rotate(rad);
 			
 				// set translation
-				m.tx = jeashX;
-				m.ty = jeashY;
+				m.translate(jeashX, jeashY);
 
 				jeashSetMatrix(m);
 			}
@@ -366,7 +364,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
 		}*/
 
-		//if (gfx.jeashRender(inMask, jeashFilters, _fullScaleX, _fullScaleY, clip0, clip1, clip2, clip3))
 		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
 
@@ -377,8 +374,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
-				//m.a = 1.0;
-				//m.d = 1.0;
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
@@ -404,8 +399,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private inline function getSurfaceTransform(gfx:Graphics):Matrix {
 		var extent = gfx.jeashExtentWithFilters;
 		var m = jeashGetFullMatrix();
-		m.tx += extent.x * m.a + extent.y * m.c;
-		m.ty += extent.x * m.b + extent.y * m.d;
+		m.jeashTranslateTransformed(extent.topLeft);
 		return m;
 	}
 
