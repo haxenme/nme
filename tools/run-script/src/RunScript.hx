@@ -353,13 +353,29 @@ class RunScript {
 	}
 	
 	
-	private static function getVersion ():String {
+	private static function getVersion (library:String = "nme", haxelibFormat:Bool = false):String {
 		
-		for (element in Xml.parse (File.getContent (nmeDirectory + "/haxelib.xml")).firstElement ().elements ()) {
+		var libraryPath = nmeDirectory;
+		
+		if (library != "nme") {
+			
+			libraryPath = getHaxelib (library);
+			
+		}
+		
+		for (element in Xml.parse (File.getContent (libraryPath + "/haxelib.xml")).firstElement ().elements ()) {
 			
 			if (element.nodeName == "version") {
 				
-				return element.get ("name");
+				if (haxelibFormat) {
+					
+					return StringTools.replace (element.get ("name"), ".", ",");
+					
+				} else {
+					
+					return element.get ("name");
+					
+				}
 				
 			}
 			
@@ -760,6 +776,50 @@ class RunScript {
 					}
 					
 					removeDirectory (nmeDirectory + tempPath);
+				
+				case "installer":
+					
+					var hxcppPath = getHaxelib ("hxcpp");
+					var nmePath = getHaxelib ("nme");
+					var swfPath = getHaxelib ("swf");
+					var actuatePath = getHaxelib ("actuate");
+					
+					var hxcppVersion = getVersion ("hxcpp", true);
+					var nmeVersion = getVersion ("nme", true);
+					var swfVersion = getVersion ("swf", true);
+					var actuateVersion = getVersion ("actuate", true);
+					
+					if (isMac) {
+						
+						var tempPath = "../nme-release-installer";
+						var targetPath = "../NME-" + getVersion () + "-Mac-" + getRevision () + ".mpkg";
+						
+						var haxePath = "/usr/lib/haxe";
+						var nekoPath = "/usr/lib/neko";
+						
+						removeDirectory (nmeDirectory + tempPath);
+						recursiveCopy (nmeDirectory + "/tools/installer/mac", nmeDirectory + tempPath, [ ]);
+						
+						recursiveCopy ("/usr/lib/haxe", nmeDirectory + tempPath + "/resources/haxe/usr/lib/haxe", [ "lib" ]);
+						recursiveCopy ("/usr/lib/neko", nmeDirectory + tempPath + "/resources/haxe/usr/lib/neko", []);
+						
+						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
+						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
+						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/" + swfVersion, [ ".git", ".svn" ]);
+						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/" + actuateVersion, [ ".git", ".svn" ]);
+						
+						File.saveContent (nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/.current", getVersion ("hxcpp"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/.current", getVersion ("nme"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/.current", getVersion ("swf"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/.current", getVersion ("actuate"));
+						
+						runCommand (nmeDirectory + tempPath, "chmod", [ "+x", "./prep.sh" ]);
+						runCommand (nmeDirectory + tempPath, "./prep.sh", [ ]);
+						
+						runCommand (nmeDirectory + tempPath, "/Applications/PackageMaker.app/Contents/MacOS/PackageMaker", [ nmeDirectory + tempPath + "/Installer.pmdoc" ]);
+						removeDirectory (nmeDirectory + tempPath);
+						
+					}
 				
 			}
 			
