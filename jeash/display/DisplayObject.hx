@@ -296,6 +296,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashMatrixOverridden():Void {
 		jeashSetFlag(MATRIX_OVERRIDDEN);
 		jeashSetFlag(MATRIX_INVALID);
+		jeashInvalidateBounds();
 	}
 	
 	private function jeashValidateMatrix() {
@@ -310,7 +311,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			if (jeashTestFlag(MATRIX_OVERRIDDEN))
 				jeashClearFlag(MATRIX_INVALID);
-				
+
 			if (_matrixInvalid) {
 				// update matrix if necessary
 				m.identity();
