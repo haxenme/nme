@@ -56,15 +56,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private static inline var GRAPHICS_INVALID:Int 				= 1 << 1;
 	private static inline var MATRIX_INVALID:Int 				= 1 << 2;
 	private static inline var MATRIX_CHAIN_INVALID:Int 			= 1 << 3;
-	private static inline var TRANSFORM_INVALID:Int 			= 1 << 4;
-	private static inline var BOUNDS_INVALID:Int 				= 1 << 5;
+	private static inline var MATRIX_OVERRIDDEN:Int 			= 1 << 4;
+	private static inline var TRANSFORM_INVALID:Int 			= 1 << 5;
+	private static inline var BOUNDS_INVALID:Int 				= 1 << 6;
 	
 	private static inline var RENDER_VALIDATE_IN_PROGRESS:Int 	= 1 << 10;
 		
 	private static inline var ALL_RENDER_FLAGS:Int =
 			GRAPHICS_INVALID |
-			MATRIX_INVALID |
-			MATRIX_CHAIN_INVALID |
 			TRANSFORM_INVALID |
 			BOUNDS_INVALID;
 
@@ -293,6 +292,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			jeashSetFlag(MATRIX_CHAIN_INVALID);	// a parent has an invalid matrix
 		}
 	}
+
+	public function jeashMatrixOverridden():Void {
+		jeashSetFlag(MATRIX_OVERRIDDEN);
+		jeashSetFlag(MATRIX_INVALID);
+	}
 	
 	private function jeashValidateMatrix() {
 		var parentMatrixInvalid = _matrixChainInvalid && parent != null;
@@ -304,6 +308,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			// validate local matrix
 			var m = jeashGetMatrix();
 
+			if (jeashTestFlag(MATRIX_OVERRIDDEN))
+				jeashClearFlag(MATRIX_INVALID);
+				
 			if (_matrixInvalid) {
 				// update matrix if necessary
 				m.identity();
@@ -327,7 +334,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			_fullScaleX = fm.a;
 			_fullScaleY = fm.d;
 			jeashSetFlag(TRANSFORM_INVALID);
-			jeashClearFlag(MATRIX_INVALID | MATRIX_CHAIN_INVALID);
+			jeashClearFlag(MATRIX_INVALID | MATRIX_CHAIN_INVALID | MATRIX_OVERRIDDEN);
 		}
 	}
 

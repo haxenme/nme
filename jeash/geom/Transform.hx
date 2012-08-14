@@ -55,7 +55,7 @@ class Transform
   
   private function setMatrix(inValue:Matrix):Matrix {
     jeashSetMatrix(inValue);
-    _displayObject.jeashInvalidateMatrix(true);
+    _displayObject.jeashMatrixOverridden();
     return _matrix;
   }
   
