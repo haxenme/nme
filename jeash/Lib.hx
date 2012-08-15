@@ -57,8 +57,6 @@ class Lib {
 	static var mMainClassRoot:jeash.display.MovieClip;
 	static var mCurrent:jeash.display.MovieClip;
 
-	public static var mLastMouse:jeash.geom.Point = new jeash.geom.Point();
-
 	var __scr : HTMLDivElement;
 	var mArgs:Array<String>;
 
@@ -158,7 +156,7 @@ class Lib {
 			surface.style.setProperty("-webkit-transform-origin", "0 0", "");
 			surface.style.setProperty("-o-transform-origin", "0 0", "");
 			surface.style.setProperty("-ms-transform-origin", "0 0", "");
-
+			
 			// disable blue selection rectangle, but only for canvas elements
 			untyped {
 				try {

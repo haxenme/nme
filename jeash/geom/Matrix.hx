@@ -42,12 +42,15 @@ import jeash.geom.Point;
 
 class Matrix
 {
-	public var a : Float;
-	public var b : Float;
-	public var c : Float;
-	public var d : Float;
-	public var tx : Float;
-	public var ty : Float;
+	public var a:Float;
+	public var b:Float;
+	public var c:Float;
+	public var d:Float;
+	public var tx(default, setTx):Float;
+	public var ty(default, setTy):Float;
+
+	public var _sx:Float;
+	public var _sy:Float;
 
 	public function new(?in_a : Float, ?in_b : Float, ?in_c : Float, ?in_d : Float,
 			?in_tx : Float, ?in_ty : Float)
@@ -58,11 +61,16 @@ class Matrix
 		d = in_d==null ? 1.0 : in_d;
 		tx = in_tx==null ? 0.0 : in_tx;
 		ty = in_ty==null ? 0.0 : in_ty;
+		_sx = 1.0;
+		_sy = 1.0;
 	}
 
 
 	public inline function clone() {
-		return new Matrix(a,b,c,d,tx,ty);
+		var m = new Matrix(a,b,c,d,tx,ty);
+		m._sx = _sx;
+		m._sy = _sy;
+		return m;
 	}
 
 	public function copy(m:Matrix) {
@@ -72,6 +80,8 @@ class Matrix
 		d = m.d;
 		tx = m.tx;
 		ty = m.ty;
+		_sx = m._sx;
+		_sy = m._sy;
 	}
 
 	public function createGradientBox(in_width : Float, in_height : Float,
@@ -102,6 +112,7 @@ class Matrix
 		c = Math.sin(inTheta)*scale;
 		b = -c;
 		d = a;
+		cleanValues();
 	}
 
 	public function invert():Matrix {
@@ -122,6 +133,9 @@ class Matrix
 			ty = - b*tx - d*ty; 
 			tx = tx1;
 		}
+		_sx /= _sx;
+		_sy /= _sy;
+		cleanValues();
 		return this;
 	}
 
@@ -140,11 +154,23 @@ class Matrix
 	public inline function jeashTranslateTransformed(inPos:Point):Void {
 		tx = jeashTransformX(inPos);
 		ty = jeashTransformY(inPos);
+		cleanValues();
 	}
 
 	public function translate(inDX:Float, inDY:Float) {
-		tx += inDX;
-		ty += inDY;
+		var m = new Matrix();
+		m.tx = inDX;
+		m.ty = inDY;
+		this.concat(m);
+	}
+
+	private function setTx(inValue:Float):Float {
+		tx = inValue;// * _sx;
+		return tx;
+	}
+	private function setTy(inValue:Float):Float {
+		ty = inValue;// * _sy;
+		return ty;
 	}
 
 
@@ -177,6 +203,7 @@ class Matrix
 		var tx1 = tx*cos - ty*sin;
 		ty = tx*sin + ty*cos;
 		tx = tx1;
+		cleanValues();
 	}
 
 
@@ -190,14 +217,15 @@ class Matrix
 	   [  tx ty  1 ][  0   0   1 ]
 	 */
 	public function scale(inSX:Float, inSY:Float) {
-		a*=inSX;
-		b*=inSY;
-
-		c*=inSX;
-		d*=inSY;
-
-		tx*=inSX;
-		ty*=inSY;
+		_sx = inSX;
+		_sy = inSY;
+		a *= inSX;
+		b *= inSY;
+		c *= inSX;
+		d *= inSY;
+		tx *= inSX;
+		ty *= inSY;
+		cleanValues();
 	}
 
 
@@ -230,6 +258,18 @@ class Matrix
 		var tx1 = tx*m.a + ty*m.c + m.tx;
 		ty = tx*m.b + ty*m.d + m.ty;
 		tx = tx1;
+		_sx *= m._sx;
+		_sy *= m._sy;
+		cleanValues();
+	}
+
+	private inline function cleanValues():Void {
+		a = Math.round(a * 1000) / 1000;
+		b = Math.round(b * 1000) / 1000;
+		c = Math.round(c * 1000) / 1000;
+		d = Math.round(d * 1000) / 1000;
+		tx = Math.round(tx * 10) / 10;
+		ty = Math.round(ty * 10) / 10;
 	}
 
 	public inline function mult(m:Matrix) {
@@ -245,6 +285,8 @@ class Matrix
 		d = 1;
 		tx = 0;
 		ty = 0;
+		_sx = 1.0;
+		_sy = 1.0;
 	}
 
 	public inline function toMozString() {

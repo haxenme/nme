@@ -106,11 +106,11 @@ class Bitmap extends jeash.display.DisplayObject
 		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (inMask != null) {
 			jeashApplyFilters(jeashGraphics.jeashSurface);
-			var m = getSurfaceTransform(jeashGraphics);
+			var m = getBitmapSurfaceTransform(jeashGraphics);
 			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, fullAlpha, clipRect);
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
-				var m = getSurfaceTransform(jeashGraphics);
+				var m = getBitmapSurfaceTransform(jeashGraphics);
 				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}
@@ -119,6 +119,13 @@ class Bitmap extends jeash.display.DisplayObject
 				_lastFullAlpha = fullAlpha;
 			}
 		}		
+	}
+
+	private inline function getBitmapSurfaceTransform(gfx:Graphics):Matrix {
+		var extent = gfx.jeashExtentWithFilters;
+		var fm = jeashGetFullMatrix();
+		fm.jeashTranslateTransformed(extent.topLeft);
+		return fm;
 	}
 
 	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {

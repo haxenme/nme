@@ -141,9 +141,9 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 		#end
 
+		object.parent = this;
 		if (stage != null) object.jeashAddToStage(this);
 		jeashChildren.push(object);
-		object.parent = this;
 
 		return object;
 	}

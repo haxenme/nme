@@ -330,11 +330,20 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				jeashSetMatrix(m);
 			}
 			
+			var cm = jeashGetFullMatrix();
 			var fm = parent == null ? m : parent.jeashGetFullMatrix(m);
-			jeashSetFullMatrix(fm);
-			_fullScaleX = fm.a;
-			_fullScaleY = fm.d;
-			jeashSetFlag(TRANSFORM_INVALID);
+			_fullScaleX = fm._sx;
+			_fullScaleY = fm._sy;
+
+			if (cm.a != fm.a
+					|| cm.b != fm.b
+					|| cm.c != fm.c
+					|| cm.d != fm.d
+					|| cm.tx != fm.tx
+					|| cm.ty != fm.ty) {
+				jeashSetFullMatrix(fm);
+				jeashSetFlag(TRANSFORM_INVALID);
+			}
 			jeashClearFlag(MATRIX_INVALID | MATRIX_CHAIN_INVALID | MATRIX_OVERRIDDEN);
 		}
 	}
@@ -406,9 +415,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private inline function getSurfaceTransform(gfx:Graphics):Matrix {
 		var extent = gfx.jeashExtentWithFilters;
-		var m = jeashGetFullMatrix();
-		m.jeashTranslateTransformed(extent.topLeft);
-		return m;
+		var fm = jeashGetFullMatrix();
+
+		/*var tx = fm.tx;
+		var ty = fm.ty;
+		var nm = new Matrix();
+		nm.scale(1/_fullScaleX, 1/_fullScaleY);
+		fm = fm.mult(nm);
+		fm.tx = tx;
+		fm.ty = ty;*/
+
+		fm.jeashTranslateTransformed(extent.topLeft);
+		return fm;
 	}
 
 	public function drawToSurface(inSurface:Dynamic,
