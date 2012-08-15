@@ -345,7 +345,7 @@ class Graphics
 		ctx.save();
 		
 		if (jeashExtentWithFilters.x != 0 || jeashExtentWithFilters.y != 0)
-			ctx.translate(-jeashExtentWithFilters.x, -jeashExtentWithFilters.y);
+			ctx.translate(-jeashExtentWithFilters.x*sx, -jeashExtentWithFilters.y*sy);
 		if (sx != 1 || sy != 0)
 			ctx.scale(sx, sy);
 
