@@ -151,7 +151,8 @@ class Lib {
 			surface.style.setProperty("position", "absolute", "");
 			surface.style.setProperty("left", "0px", "");
 			surface.style.setProperty("top", "0px", "");
-
+			
+			surface.style.setProperty("transform-origin", "0 0", "");
 			surface.style.setProperty("-moz-transform-origin", "0 0", "");
 			surface.style.setProperty("-webkit-transform-origin", "0 0", "");
 			surface.style.setProperty("-o-transform-origin", "0 0", "");
@@ -252,6 +253,7 @@ class Lib {
 			surface.style.top = matrix.ty + "px";
 		} else {
 			surface.style.left = "0px"; surface.style.top = "0px";
+			surface.style.setProperty("transform", matrix.toString(), "");
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
 			surface.style.setProperty("-webkit-transform", matrix.to3DString(), ""); // 3D matrix for 2D transform invokes hw acceleration
 			//surface.style.setProperty("-webkit-transform", matrix.toString(), "");
@@ -342,7 +344,7 @@ class Lib {
 
 	public static function jeashCopyStyle(src:HTMLElement, tgt:HTMLElement) {
 		tgt.id = src.id;
-		for (prop in ["left", "top", "-moz-transform", "-moz-transform-origin", "-webkit-transform", "-webkit-transform-origin", "-o-transform", "-o-transform-origin", "opacity", "display"])
+		for (prop in ["left", "top", "transform", "transform-origin", "-moz-transform", "-moz-transform-origin", "-webkit-transform", "-webkit-transform-origin", "-o-transform", "-o-transform-origin", "opacity", "display"])
 			tgt.style.setProperty(prop, src.style.getPropertyValue(prop), "");
 		
 	}
@@ -461,6 +463,7 @@ class Lib {
 	}
 
 	public inline static function jeashSetSurfaceScale(surface:HTMLElement, scale:Float) {
+		surface.style.setProperty("transform", "scale(" + scale + ")", "");
 		surface.style.setProperty("-moz-transform", "scale(" + scale + ")", "");
 		surface.style.setProperty("-webkit-transform", "scale(" + scale + ")", "");
 		surface.style.setProperty("-o-transform", "scale(" + scale + ")", "");
@@ -468,6 +471,7 @@ class Lib {
 	}
 
 	public inline static function jeashSetSurfaceRotation(surface:HTMLElement, rotate:Float) {
+		surface.style.setProperty("transform", "rotate(" + rotate + "deg)", "");
 		surface.style.setProperty("-moz-transform", "rotate(" + rotate + "deg)", "");
 		surface.style.setProperty("-webkit-transform", "rotate(" + rotate + "deg)", "");
 		surface.style.setProperty("-o-transform", "rotate(" + rotate + "deg)", "");
@@ -503,7 +507,7 @@ class Lib {
 		var animationDiscreteRule = if (discrete) "steps(::steps::, end)"; else "";
 		var animationInfiniteRule = if (infinite) "infinite"; else "";
 		var animationTpl = "";
-		for (prefix in ["-animation", "-moz-animation", "-webkit-animation", "-o-animation", "-ms-animation"])
+		for (prefix in ["animation", "-moz-animation", "-webkit-animation", "-o-animation", "-ms-animation"])
 		       animationTpl += prefix + ": ::id:: ::duration::s " + animationDiscreteRule + " " + animationInfiniteRule  + "; ";
 		var animationStylesheetRule = new haxe.Template(animationTpl).execute({
 			id: surface.id,
@@ -649,6 +653,9 @@ class Lib {
 	public static function jeashBootstrap() {
 		if (mMe == null) {
 			var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+			if (untyped navigator.userAgent.indexOf ("BlackBerry") > -1 && tgt.style.height == "100%") {
+				tgt.style.height = untyped screen.height + "px";
+			}
 			Run(tgt, jeashGetWidth(), jeashGetHeight());
 		}
 	}
