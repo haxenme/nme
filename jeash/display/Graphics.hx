@@ -323,10 +323,10 @@ class Graphics
 
 		if (clip0 != null) {
 			ctx.beginPath();
-			ctx.moveTo(clip0.x, clip0.y);
-			ctx.lineTo(clip1.x, clip1.y);
-			ctx.lineTo(clip2.x, clip2.y);
-			ctx.lineTo(clip3.x, clip3.y);
+			ctx.moveTo(clip0.x*sx, clip0.y*sy);
+			ctx.lineTo(clip1.x*sx, clip1.y*sy);
+			ctx.lineTo(clip2.x*sx, clip2.y*sy);
+			ctx.lineTo(clip3.x*sx, clip3.y*sy);
 			ctx.closePath();
 			ctx.clip();
 		}

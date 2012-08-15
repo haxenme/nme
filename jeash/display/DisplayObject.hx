@@ -364,7 +364,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
 
-		/*var clip0:Point = null;
+		/*
+		var clip0:Point = null;
 		var clip1:Point = null;
 		var clip2:Point = null;
 		var clip3:Point = null;
@@ -379,7 +380,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clip1 = this.globalToLocal(this.parent.localToGlobal(topRight));
 			clip2 = this.globalToLocal(this.parent.localToGlobal(bottomRight));
 			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
-		}*/
+		}
+		*/
 
 		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
@@ -417,14 +419,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var extent = gfx.jeashExtentWithFilters;
 		var fm = jeashGetFullMatrix();
 
-		/*var tx = fm.tx;
+		/*
+		var tx = fm.tx;
 		var ty = fm.ty;
 		var nm = new Matrix();
 		nm.scale(1/_fullScaleX, 1/_fullScaleY);
 		fm = fm.mult(nm);
 		fm.tx = tx;
-		fm.ty = ty;*/
-
+		fm.ty = ty;
+		*/
+		
 		fm.jeashTranslateTransformed(extent.topLeft);
 		return fm;
 	}
