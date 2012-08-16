@@ -15,6 +15,7 @@ class RunScript {
 	private static var isMac:Bool;
 	private static var isWindows:Bool;
 	private static var nmeDirectory:String;
+	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools/documentation/bin" ];
 	
 	
 	private static function build (targets:Array<String> = null):Void {
@@ -653,7 +654,7 @@ class RunScript {
 			
 			for (ignoreName in ignore) {
 				
-				if (file == ignoreName) {
+				if (file == ignoreName || StringTools.endsWith (source + "/" + file, ignoreName)) {
 					
 					ignoreFile = true;
 					
@@ -761,7 +762,7 @@ class RunScript {
 					var tempPath = "../nme-release-zip";
 					var targetPath = "../nme-" + getVersion () + "-" + getRevision () + ".zip";
 					
-					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
+					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
 					
 					if (FileSystem.exists (nmeDirectory + targetPath)) {
 						
@@ -804,7 +805,7 @@ class RunScript {
 						recursiveCopy ("/usr/lib/neko", nmeDirectory + tempPath + "/resources/haxe/usr/lib/neko", []);
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
-						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, [ "bin", "obj", "resources", ".git", ".svn", ".DS_Store", "all_objs" ]);
+						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, nmeFilters);
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/" + actuateVersion, [ ".git", ".svn" ]);
 						
