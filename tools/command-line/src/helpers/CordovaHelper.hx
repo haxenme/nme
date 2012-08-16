@@ -1,6 +1,9 @@
 package helpers;
 
 
+import data.Asset;
+import data.Icons;
+import haxe.io.Path;
 import sys.io.File;
 import sys.FileSystem;
 
@@ -134,6 +137,7 @@ class CordovaHelper {
 		    			
 		    		} else {
 		    			
+		    			//AntHelper.run (workingDirectory, [ "blackberry", "clean-device" ]);
 		    			AntHelper.run (workingDirectory, [ "blackberry", "load-device" ]);
 		    			
 		    		}
@@ -157,6 +161,73 @@ class CordovaHelper {
 				
 				AndroidHelper.install (FileSystem.fullPath (workingDirectory) + "/bin/" + defines.get ("APP_FILE") + "-" + build + ".apk");
 				AndroidHelper.run (defines.get ("APP_PACKAGE") + "/" + defines.get ("APP_PACKAGE") + "." + defines.get ("APP_FILE"));
+			
+		}
+		
+	}
+	
+	
+	public static function updateIcon (buildDirectory:String, icons:Icons, assets:Array <Asset>, context:Dynamic):Void {
+		
+		var iconCount = 0;
+		var sizes = [];
+		var targetPaths = [];
+		
+		switch (target) {
+			
+			case "blackberry":
+				
+				// 80 for BBOS?
+				
+				sizes = [ 86 ];
+				targetPaths = [ "res/icon/icon.png" ];
+			
+			case "ios":
+				
+				sizes = [ 57, 114 , 72, 144 ];
+				targetPaths = [ "res/icon/cordova_ios_57.png", "res/icon/cordova_ios_114", "res/icon/cordova_ios_72.png", "res/icon/cordova_ios_144.png" ];
+			
+			case "android":
+				
+				sizes = [ 36, 48, 72, 96 ];
+				targetPaths = [ "res/drawable-ldpi/icon.png", "res/drawable-mdpi/icon.png", "res/drawable-hdpi/icon.png", "res/drawable-xhdpi/icon.png" ];
+				
+		}
+		
+		for (i in 0...sizes.length) {
+			
+			var icon_name = icons.findIcon (sizes[i], sizes[i]);
+			
+			if (icon_name == "") {
+				
+				var tmpDir = buildDirectory + "/haxe";
+				PathHelper.mkdir (tmpDir);
+				var tmp_name = tmpDir + "/icon";
+				
+				if (iconCount > 0) {
+					
+					tmp_name += iconCount;
+					
+				}
+				
+				tmp_name += ".png";
+				
+				if (icons.updateIcon (86, 86, tmp_name)) {
+					
+					icon_name = tmp_name;
+					iconCount++;
+					
+				}
+				
+			}
+			
+			if (icon_name != "") {
+				
+				assets.push (new Asset (icon_name, targetPaths[i], Asset.TYPE_IMAGE, Path.withoutDirectory (icon_name), "1"));
+				context.APP_ICON = targetPaths[i];
+				context.HAS_ICON = true;
+				
+			}
 			
 		}
 		

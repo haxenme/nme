@@ -123,6 +123,8 @@ class HTML5Installer extends InstallerBase {
 		context.OUTPUT_DIR = outputDirectory;
 		context.OUTPUT_FILE = outputFile;
 		
+		CordovaHelper.updateIcon (buildDirectory + "/html5/" + target, icons, assets, context);
+		
 	}
 	
 	

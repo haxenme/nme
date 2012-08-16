@@ -64,9 +64,12 @@
   <!-- Expose access to all URIs, including the file and http protocols -->
   <access subdomains="true" uri="*" />
 
-  <icon rim:hover="false" src="res/icon/cordova_bb_80.png" />
-  <icon rim:hover="true" src="res/icon/cordova_bb_80.png" />
-
+  <!-- <icon rim:hover="false" src="res/icon/cordova_bb_80.png" />
+  <icon rim:hover="true" src="res/icon/cordova_bb_80.png" /> -->
+  
+  <icon rim:hover="false" src="::APP_ICON::" />
+  <icon rim:hover="true" src="::APP_ICON::" />
+  
   <rim:loadingScreen backgroundColor="#CFCFCF"
                      foregroundImage="res/screen/blackberry_transparent_300.png"
 		     onFirstLaunch="true">
