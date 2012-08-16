@@ -185,7 +185,7 @@ class CordovaHelper {
 			case "ios":
 				
 				sizes = [ 57, 114 , 72, 144 ];
-				targetPaths = [ "res/icon/cordova_ios_57.png", "res/icon/cordova_ios_114", "res/icon/cordova_ios_72.png", "res/icon/cordova_ios_144.png" ];
+				targetPaths = [ "../" + defines.get ("APP_FILE") + "/Resources/icons/icon.png", "../" + defines.get ("APP_FILE") + "/Resources/icons/icon@2x.png", "../" + defines.get ("APP_FILE") + "/Resources/icons/icon-72.png", "../" + defines.get ("APP_FILE") + "/Resources/icons/icon-72@2x.png" ];
 			
 			case "android":
 				

@@ -8,6 +8,7 @@ import helpers.FileHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
 import sys.FileSystem;
+import sys.io.File;
 import sys.io.Process;
 
 
@@ -189,7 +190,15 @@ class HTML5Installer extends InstallerBase {
 					
 					// going to root directory now, but should it be a forced "assets" folder later?
 					
-					FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					if (target == "html5") {
+						
+						FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+						
+					} else {
+						
+						File.copy (asset.sourcePath, destination + asset.targetPath);
+						
+					}
 					
 				} else {
 					
