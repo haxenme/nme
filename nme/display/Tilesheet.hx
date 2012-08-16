@@ -403,5 +403,5 @@ class Tilesheet
 #elseif (cpp || neko)
 typedef Tilesheet = neash.display.Tilesheet;
 #elseif js
-typedef Tilesheet = jeash.display.Tilesheet;
+//typedef Tilesheet = jeash.display.Tilesheet;
 #end

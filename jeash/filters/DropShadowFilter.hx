@@ -82,7 +82,7 @@ class DropShadowFilter extends BitmapFilter
 			context.shadowOffsetX = distanceX;
 	        context.shadowOffsetY = distanceY;
 	        context.shadowBlur = blurRadius;
-	        context.shadowColor = StringTools.hex(color, 6);
+	        context.shadowColor = "#" + StringTools.hex(color, 6);
 
 	        _jeashCached = true;
 	    }
