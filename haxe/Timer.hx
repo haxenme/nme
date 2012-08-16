@@ -5,16 +5,14 @@ package haxe;
 // Original haxe.Timer class
 
 class Timer {
-	#if (neko || php)
+	#if (neko || php || cpp)
 	#else
 
 	private var id : Null<Int>;
 
-	#if js
-	private static var arr = new Array<Timer>();
-	private var timerId : Int;
-	#end
-
+	/**
+		Create a new timer that will run every [time_ms] (in milliseconds).
+	**/
 	public function new( time_ms : Int ){
 		#if flash9
 			var me = this;
@@ -23,12 +21,14 @@ class Timer {
 			var me = this;
 			id = untyped _global["setInterval"](function() { me.run(); },time_ms);
 		#elseif js
-			id = arr.length;
-			arr[id] = this;
-			timerId = untyped window.setInterval("haxe.Timer.arr["+id+"].run();",time_ms);
+			var me = this;
+			id = untyped window.setInterval(function() me.run(),time_ms);
 		#end
 	}
 
+	/**
+		Stop the timer definitely.
+	**/
 	public function stop() {
 		if( id == null )
 			return;
@@ -37,22 +37,20 @@ class Timer {
 		#elseif flash
 			untyped _global["clearInterval"](id);
 		#elseif js
-			untyped window.clearInterval(timerId);
-			arr[id] = null;
-			if( id > 100 && id == arr.length - 1 ) {
-				// compact array
-				var p = id - 1;
-				while( p >= 0 && arr[p] == null )
-					p--;
-				arr = arr.slice(0,p+1);
-			}
+			untyped window.clearInterval(id);
 		#end
 		id = null;
 	}
 
+	/**
+		This is the [run()] method that is called when the Timer executes. It can be either overriden in subclasses or directly rebinded with another function-value.
+	**/
 	public dynamic function run() {
 	}
 
+	/**
+		This will delay the call to [f] for the given time. [f] will only be called once.
+	**/
 	public static function delay( f : Void -> Void, time_ms : Int ) {
 		var t = new haxe.Timer(time_ms);
 		t.run = function() {
@@ -63,7 +61,10 @@ class Timer {
 	}
 
 	#end
-	
+
+	/**
+		Measure the time it takes to execute the function [f] and trace it. Returns the value returned by [f].
+	**/
 	public static function measure<T>( f : Void -> T, ?pos : PosInfos ) : T {
 		var t0 = stamp();
 		var r = f();
@@ -72,19 +73,17 @@ class Timer {
 	}
 
 	/**
-		Returns a timestamp, in seconds
+		Returns the most precise timestamp, in seconds. The value itself might differ depending on platforms, only differences between two values make sense.
 	**/
 	public static function stamp() : Float {
 		#if flash
 			return flash.Lib.getTimer() / 1000;
-		#elseif neko
-			return neko.Sys.time();
-		#elseif php
-			return php.Sys.time();
+		#elseif (neko || php)
+			return Sys.time();
 		#elseif js
 			return Date.now().getTime() / 1000;
 		#elseif cpp
-			return untyped __time_stamp();
+			return untyped __global__.__time_stamp();
 		#else
 			return 0;
 		#end
