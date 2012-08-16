@@ -2,6 +2,29 @@ Changes
 =======
 
 
+3.4.1
+---------------
+* Added (beta) support for Apache Cordova, deploying HTML5 to Android, iOS and BlackBerry
+* Added initial support for BlackBerry OS 6 and 7 devices, using HTML5
+* Added (beta) support for Adobe AIR, deploying Flash to the desktop (so far)
+* Improved trace() to consistently output in real-time on native targets
+* Added support for <window parameters="" /> in Flash and HTML5
+* Added support for <app url="" /> in Flash and HTML5
+* Improved HTML5 rendering to use CSS3 transforms
+* Added custom HTML5 preloader support
+* Fixed HTML5 glow and drop shadow filters
+* Disabled touch scrolling by default for HTML5 projects
+* Improved bitmapData.draw for all platforms
+* NME is now an extension, removing the need for boilerplate <ndll /> tags
+* Added an OpenGL line scaling mode on native targets (used by default)
+* Implemented bitmapData.noise for native targets
+* Implemented displayObject.getBounds and displayObject.getRect for native targets
+* Changed stage focus events to FocusEvent.FOCUS_IN and FocusEvent.FOCUS_OUT
+* Fixed URLLoader for BlackBerry
+* Fixed issues which occurred for launching iOS projects
+* Added unit tests for bitmaps, display objects and graphics
+
+
 3.4.0
 ---------------
 * Added support for the BlackBerry simulator
