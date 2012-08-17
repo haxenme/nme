@@ -60,8 +60,8 @@ class UnitTesting extends Sprite {
 	
 	private function fill (color:Int):Void {
 		
-		graphics.beginFill (color);
-		graphics.drawRect (0, 0, Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+		Lib.current.graphics.beginFill (color);
+		Lib.current.graphics.drawRect (0, 0, Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		
 	}
 	
