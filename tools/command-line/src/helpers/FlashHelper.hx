@@ -7,7 +7,6 @@ import format.swf.Data;
 import format.swf.Constants;
 import format.swf.Reader;
 import format.swf.Writer;
-import format.mp3.Data;
 import format.wav.Data;
 import nme.text.Font;
 import nme.utils.ByteArray;
@@ -71,63 +70,71 @@ class FlashHelper {
 			var input = File.read (src, true);
 			
 			if (ext == "mp3") {
-				
-				// Code lifted from "samhaxe"
-				var r = new format.mp3.Reader (input);
-				var mp3 = r.read ();
-				
-				if (mp3.frames.length == 0) {
-					
-					throw "No frames found in mp3: " + src;
-					
-				}
-				
-				// Guess about the format based on the header of the first frame found
-				var fr0 = mp3.frames[0];
-				var hdr0 = fr0.header;
-				
-				// Verify Layer3-ness
-				if (hdr0.layer != Layer.Layer3) {
-					
-					throw "Only Layer-III mp3 files are supported by flash. File " + src + " is: " + format.mp3.Tools.getFrameInfo (fr0);
-					
+
+				var reader = new mpeg.audio.MpegAudioReader(input);
+
+				var frameDataWriter = new haxe.io.BytesOutput();
+				var totalLengthSamples = 0;
+				var samplingFrequency = -1;
+				var isStereo:Null<Bool> = null;
+				var encoderDelay = 0;
+				var endPadding = 0;
+				var decoderDelay = 529; // This is a constant delay caused by the Fraunhofer MP3 Decoder used in Flash Player.
+
+				while (true) {
+					switch (reader.readNext()) {
+						case Frame(frame):
+						if (frame.header.layer != mpeg.audio.Layer.Layer3) {
+							throw "Only Layer-III MP3 files are supported by Flash. File " + src + " is: " + frame.header.layer + ".";
+						}
+						var frameSamplingFrequency = frame.header.samplingFrequency;
+						if (samplingFrequency == -1) {
+							samplingFrequency = frameSamplingFrequency;
+						} else if (frameSamplingFrequency != samplingFrequency) {
+							throw "File " + src + " has a variable sampling frequency, which is not supported by Flash.";
+						}
+						var frameIsStereo = frame.header.mode != mpeg.audio.Mode.SingleChannel;
+						if (isStereo == null) {
+							isStereo = frameIsStereo;
+						} else if (frameIsStereo != isStereo) {
+							throw "File " + src + " contains mixed mono and stereo frames, which is not supported by Flash.";
+						}
+						frameDataWriter.write(frame.frameData);
+						totalLengthSamples += mpeg.audio.Utils.lookupSamplesPerFrame(frame.header.version);
+
+						case GaplessInfo(giEncoderDelay, giEndPadding):
+						encoderDelay = giEncoderDelay;
+						endPadding = giEndPadding;
+
+						case Info(info): // ignore
+						case Unknown(bytes): // ignore
+						case End: break;
+					}
 				}
 
-				// Check sampling rate
-				var flashRate = switch (hdr0.samplingRate) {
-					
-					case SR_11025: SR11k;
-					case SR_22050: SR22k;
-					case SR_44100: SR44k;
-					default:
-						throw "Only 11025, 22050 and 44100 Hz mp3 files are supported by flash. File " + src + " is: " + format.mp3.Tools.getFrameInfo (fr0);
-					
+				if (totalLengthSamples == 0) {
+					throw "File " + src + " does not contain any valid MP3 audio data!";
 				}
 
-				var isStereo = switch (hdr0.channelMode) {
-					
-					case Stereo, JointStereo, DualChannel: true;
-					case Mono: false;
-					
+				var flashSamplingFrequency = switch (samplingFrequency) {
+					case 11025: SR11k;
+					case 22050: SR22k;
+					case 44100: SR44k;
+
+					default: throw "Only 11025, 22050 and 44100kHz MP3 files are supported by Flash. "
+							+ "File " + src + " is: " + samplingFrequency + "kHz.";
 				}
-				
-				// Should we do this? For now, let's do.
-				var write_id3v2 = true;
-				
-				var rawdata = new haxe.io.BytesOutput ();
-				(new format.mp3.Writer (rawdata)).write (mp3, write_id3v2);
-				var dataBytes = rawdata.getBytes ();
-				
+
+				var frameData = frameDataWriter.getBytes();
+
 				var snd = {
-					
-					sid : cid,
-					format : SFMP3,
-					rate : flashRate,
-					is16bit : true,
-					isStereo : isStereo,
-					samples : haxe.Int32.ofInt (mp3.sampleCount),
-					data : SDMp3 (0, dataBytes)
-					
+					sid: cid,
+					format: SFMP3,
+					rate: flashSamplingFrequency,
+					is16bit: true,
+					isStereo: isStereo,
+					samples: haxe.Int32.ofInt(totalLengthSamples - endPadding - encoderDelay),
+					data: SDMp3(encoderDelay + decoderDelay, frameData)
 				};
 				
 				outTags.push (TSound (snd));
