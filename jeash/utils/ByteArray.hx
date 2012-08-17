@@ -58,6 +58,7 @@ class ByteArray {
 	}
 
 	public function new(len:Int = BYTE_ARRAY_BUFFER_SIZE) {
+	
 		this.position = 0;
 		this.length = len;
 
@@ -104,7 +105,9 @@ class ByteArray {
 		if( this.position+1 >= byteView.length )
 			jeashResizeBuffer(this.position+1);
 		data.setInt8(this.position++, value);
-		length++;
+		if (this.position > length) {
+			length++;
+		}
 	}
 
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) {
