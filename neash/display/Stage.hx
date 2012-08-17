@@ -865,13 +865,13 @@ class Stage extends DisplayObjectContainer
 	
 	/** @private */ private function nmeGetStageHeight():Int
 	{
-		return nme_stage_get_stage_height(nmeHandle);
+		return Std.int (cast (nme_stage_get_stage_height(nmeHandle), Float));
 	}
 	
 	
 	/** @private */ private function nmeGetStageWidth():Int
 	{
-		return nme_stage_get_stage_width(nmeHandle);
+		return Std.int (cast (nme_stage_get_stage_width(nmeHandle), Float));
 	}
 	
 	
