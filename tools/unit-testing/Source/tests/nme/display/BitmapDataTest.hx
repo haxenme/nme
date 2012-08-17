@@ -136,12 +136,10 @@ import nme.geom.Rectangle;
 		
 		#end
 		
-		#if !js
-		var filterRect = bitmapData.generateFilterRect (bitmapData.rect, filter);
+		var filterRect = untyped bitmapData.generateFilterRect (bitmapData.rect, filter);
 		
 		assertTrue (filterRect.width > 100 && filterRect.width <= 110);
 		assertTrue (filterRect.height > 100 && filterRect.height <= 110);
-		#end
 		
 	}
 	
