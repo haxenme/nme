@@ -9,7 +9,7 @@ import nme.geom.Point;
 import nme.Lib;
 
 
-class DisplayObjectTest extends TestCase {
+@:keep class DisplayObjectTest extends TestCase {
 	
 	
 	public function testRect () {

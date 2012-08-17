@@ -9,7 +9,7 @@ import nme.display.Sprite;
 import nme.geom.Matrix;
 
 
-class GraphicsTest extends TestCase {
+@:keep class GraphicsTest extends TestCase {
 	
 	
 	public function testGeometry () {

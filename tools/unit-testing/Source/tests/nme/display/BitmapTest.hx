@@ -6,7 +6,7 @@ import nme.display.Bitmap;
 import nme.display.BitmapData;
 
 
-class BitmapTest extends TestCase {
+@:keep class BitmapTest extends TestCase {
 	
 	
 	public function testBitmap () {

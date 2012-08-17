@@ -21,6 +21,18 @@ class UnitTesting extends Sprite {
 		
 		super ();
 		
+		#if js
+		var div = js.Lib.document.createElement ("div");
+		div.id = "haxe:trace";
+		div.style.position = "absolute";
+		div.style.top = (Lib.current.stage.stageHeight + 10) + "px";
+		div.style.left = "10px";
+		div.style.width = (Lib.current.stage.stageWidth - 20) + "px";
+		div.style.fontFamily = "Helvetica, Arial, sans-serif";
+		div.style.fontSize = "14px";
+		js.Lib.document.body.appendChild (div);
+		#end
+		
 		fill (0xEEEEEE);
 		
 		var runner = new TestRunner ();

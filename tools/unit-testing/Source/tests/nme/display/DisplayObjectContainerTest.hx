@@ -11,7 +11,7 @@ import nme.geom.Point;
 import nme.Lib;
 
 
-class DisplayObjectContainerTest extends TestCase {
+@:keep class DisplayObjectContainerTest extends TestCase {
 	
 	
 	public function testChildren () {

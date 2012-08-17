@@ -11,7 +11,7 @@ import nme.geom.Point;
 import nme.geom.Rectangle;
 
 
-class BitmapDataTest extends TestCase {
+@:keep class BitmapDataTest extends TestCase {
 	
 	
 	public function testBasics () {
@@ -136,10 +136,12 @@ class BitmapDataTest extends TestCase {
 		
 		#end
 		
+		#if !js
 		var filterRect = bitmapData.generateFilterRect (bitmapData.rect, filter);
 		
 		assertTrue (filterRect.width > 100 && filterRect.width <= 110);
 		assertTrue (filterRect.height > 100 && filterRect.height <= 110);
+		#end
 		
 	}
 	
