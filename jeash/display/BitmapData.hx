@@ -294,7 +294,7 @@ class BitmapData implements IBitmapDrawable {
 				var trpData = trpCtx.getImageData(rect.x, rect.y, rect.width, rect.height);
 				ctx.putImageData(trpData, rect.x, rect.y);
 			}
-			var style = 'rgba('; style += r; style += ', '; style += g; style += ', '; style += b; style += ', '; style += (a/256); style += ')';
+			var style = 'rgba('; style += r; style += ', '; style += g; style += ', '; style += b; style += ', '; style += (a/255); style += ')';
 			ctx.fillStyle = style;
 			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 		} else {
