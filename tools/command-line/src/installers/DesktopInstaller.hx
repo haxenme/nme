@@ -345,7 +345,7 @@ class DesktopInstaller extends InstallerBase {
 				
 			}
 			
-			FileHelper.copyFile(templatePaths[0] + "mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", true);
+			FileHelper.copyFile(templatePaths[0] + "mac/Info.plist", targetDir + "/bin/" + defines.get ("APP_FILE") + ".app/Contents/Info.plist", context, true);
 			
 		}
 		

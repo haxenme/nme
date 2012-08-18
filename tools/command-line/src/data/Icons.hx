@@ -1,12 +1,14 @@
 package data;
 
 
+import format.SVG;
 import haxe.io.BytesOutput;
 import haxe.io.Path;
 import helpers.FileHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
 import nme.display.BitmapData;
+import nme.display.Shape;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
 import sys.io.File;
@@ -126,24 +128,14 @@ class Icons
 
       if (ext=="svg")
       {
-         var bytes = ByteArray.readFile(found.name);
-         var svg = new gm2d.svg.SVG2Gfx( Xml.parse(bytes.asString()) );
+         var svg = new SVG (File.getContent (found.name));
+         var shape = new Shape ();
+         svg.render (shape.graphics, 0, 0, inWidth, inHeight);
+         
+         var bitmapData = new BitmapData (inWidth, inHeight, true, inBackgroundColour==null ? {a:0, rgb:0xffffff} : inBackgroundColour);
+         bitmapData.draw (shape);
 
-	      var shape = svg.CreateShape();
-         var scale = inHeight/32;
-
-         InstallTool.print("Creating " + inWidth + "x" + inHeight + " icon from " + found.name );
-
-         shape.scaleX = scale;
-         shape.scaleY = scale;
-         shape.x = (inWidth - 32*scale)/2;
-
-         var bmp = new nme.display.BitmapData(inWidth,inHeight, true,
-                           inBackgroundColour==null ? {a:0, rgb:0xffffff} : inBackgroundColour );
-
-         bmp.draw(shape);
-
-         return bmp;
+         return bitmapData;
       }
       else
       {
