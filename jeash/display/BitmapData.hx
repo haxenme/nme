@@ -140,7 +140,7 @@ class BitmapData implements IBitmapDrawable {
 
 	private var _jeashId:String;
 
-	public function new(width:Int, height:Int, ?transparent:Bool = true, ?inFillColor:Int) {
+	public function new(width:Int, height:Int, ?transparent:Bool = true, ?inFillColor:Int = 0xFFFFFFFF) {
 		jeashLocked = false;
 		jeashLeaseNum = 0;
 		jeashLease = new ImageDataLease();

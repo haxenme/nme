@@ -239,7 +239,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function getRect(targetCoordinateSpace:DisplayObject):Rectangle {
 		// TODO
-		return null;
+		return new Rectangle ();
 	}
 
 	public function globalToLocal(inPos:Point) {
