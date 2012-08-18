@@ -192,7 +192,9 @@ class Icons
 		var out = new BytesOutput ();
 		out.bigEndian = true;
 		
-		for (i in 0...4) {
+		// Not sure why the 128x128 icon is not saving properly. Disabling for now
+		
+		for (i in 0...3) {
 			
 			var s =  ([ 16, 32, 48, 128 ])[i];
 			var code =  ([ "is32", "il32", "ih32", "it32" ])[i];
@@ -228,10 +230,10 @@ class Icons
 			
 		}
 		
-		for (i in 0...3) {
+		for (i in 0...5) {
 			
-			var s =  ([ 256, 512, 1024 ])[i];
-			var code =  ([ "ic08", "ic09", "ic10" ])[i];
+			var s =  ([ 32, 64, 256, 512, 1024 ])[i];
+			var code =  ([ "ic11", "ic12", "ic08", "ic09", "ic10" ])[i];
 			var bmp = getIconBitmap (s, s);
 			
 			if (bmp != null) {
