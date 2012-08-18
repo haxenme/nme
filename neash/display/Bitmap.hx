@@ -24,27 +24,37 @@ class Bitmap extends DisplayObject
 	/** @private */ private var mGraphics:Graphics;
 	
 	
-	public function new(?inBitmapData:BitmapData, ?inPixelSnapping:PixelSnapping, ?inSmoothing:Bool):Void
+	public function new(bitmapData:BitmapData = null, pixelSnapping:PixelSnapping = null, smoothing:Bool = false):Void
 	{
 		super(DisplayObject.nme_create_display_object(), "Bitmap");
 		
-		pixelSnapping = inPixelSnapping==null ? PixelSnapping.AUTO : inPixelSnapping;
-		smoothing = inSmoothing;
+		this.pixelSnapping = pixelSnapping == null ? PixelSnapping.AUTO : pixelSnapping;
+		this.smoothing = smoothing;
 		
-		nmeSetBitmapData(inBitmapData);
+		if (bitmapData != null)
+		{	
+			nmeSetBitmapData (bitmapData);	
+		}
+		else if (this.bitmapData != null)
+		{
+			nmeRebuild ();	
+		}
 	}
 	
 	
-	/** @private */ private function nmeRebuid()
+	/** @private */ private function nmeRebuild()
 	{
-		var gfx = graphics;
-		gfx.clear();
-		
-		if (bitmapData != null)
-		{
-			gfx.beginBitmapFill(bitmapData,false,smoothing);
-			gfx.drawRect(0,0,bitmapData.width,bitmapData.height);
-			gfx.endFill();
+		if (nmeHandle != null && bitmapData != null)
+		{	
+			var gfx = graphics;
+			gfx.clear();
+			
+			if (bitmapData != null)
+			{
+				gfx.beginBitmapFill(bitmapData,false,smoothing);
+				gfx.drawRect(0,0,bitmapData.width,bitmapData.height);
+				gfx.endFill();
+			}	
 		}
 	}
 	
@@ -57,7 +67,7 @@ class Bitmap extends DisplayObject
 	/** @private */ private function nmeSetBitmapData(inBitmapData:BitmapData):BitmapData
 	{
 		bitmapData = inBitmapData;
-		nmeRebuid();
+		nmeRebuild();
 		
 		return inBitmapData;
 	}
@@ -66,7 +76,7 @@ class Bitmap extends DisplayObject
 	/** @private */ private function nmeSetSmoothing(inSmooth:Bool):Bool
 	{
 		smoothing = inSmooth;
-		nmeRebuid();
+		nmeRebuild();
 		
 		return inSmooth;
 	}
