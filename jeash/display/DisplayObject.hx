@@ -243,10 +243,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	public function globalToLocal(inPos:Point) {
+		if (_matrixInvalid || _matrixChainInvalid)
+			jeashValidateMatrix();
+		
 		return jeashGetFullMatrix().invert().transformPoint(inPos);
 	}
 
 	public function localToGlobal( point:Point ) {
+		if (_matrixInvalid || _matrixChainInvalid)
+			jeashValidateMatrix();
+		
+		var matrix = jeashGetFullMatrix();
 		return jeashGetFullMatrix().transformPoint(point);
 	}
 
