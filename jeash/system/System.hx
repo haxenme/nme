@@ -42,20 +42,20 @@ class System
 
 	public static function exit( code : Int ) : Void 
 	{
-		throw "System.close not implemented in Jeash";
+		throw "System.exit is currently not supported for HTML5";
 	}
 	public static function gc() : Void { }
 	public static function pause() : Void
 	{
-		throw "System.pause not implemented in Jeash";
+		throw "System.pause is currently not supported for HTML5";
 	}
 	public static function resume() : Void
 	{
-		throw "System.resume not implemented in Jeash";
+		throw "System.resume is currently not supported for HTML5";
 	}
 	public static function setClipboard( string : String ) : Void
 	{
-		throw "System.setClipboard not implemented in Jeash";
+		throw "System.setClipboard is currently not supported for HTML5";
 	}
 
 	static function GetMemory() : Int

@@ -224,7 +224,7 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function compare (inBitmapTexture:BitmapData):Int {
-		throw "Not implemented. compare";
+		throw "bitmapData.compare is currently not supported for HTML5";
 		return 0x00000000;
 	}
 
@@ -659,7 +659,7 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
-		throw "BitmapData.applyFilter not implemented in Jeash";
+		throw "bitmapData.applyFilter is currently not supported for HTML5";
 	}
 
 	public static inline function jeashColorTransformSurface(surface:HTMLCanvasElement, inColorTransform:ColorTransform):Void {
@@ -812,12 +812,12 @@ class BitmapData implements IBitmapDrawable {
 
 					return false;
 				case "Bitmap":
-					throw "BitmapData::hitTest secondObject argument as BitmapData is not (yet) supported.";
+					throw "bitmapData.hitTest with a second object of type Bitmap is currently not supported for HTML5";
 
 					return false;
 
 				case "BitmapData":
-					throw "BitmapData::hitTest secondObject argument as BitmapData is not (yet) supported.";
+					throw "bitmapData.hitTest with a second object of type BitmapData is currently not supported for HTML5";
 
 					return false;
 				default:
@@ -911,8 +911,9 @@ class BitmapData implements IBitmapDrawable {
 
 	}
 
-	public function scroll(x:Int, y:Int)
-		throw "Not implemented yet, patches welcome. BitmapData::scroll."
+	public function scroll(x:Int, y:Int) {
+		throw ("bitmapData.scroll is currently not supported for HTML5");
+	}
 
 	public inline function jeashGetLease() return jeashLease
 
