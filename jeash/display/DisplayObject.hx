@@ -238,8 +238,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	public function getRect(targetCoordinateSpace:DisplayObject):Rectangle {
-		// TODO
-		return new Rectangle ();
+		// should not account for stroke widths, but is that possible?
+		return getBounds(targetCoordinateSpace);
 	}
 
 	public function globalToLocal(inPos:Point) {
