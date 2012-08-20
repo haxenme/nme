@@ -15,12 +15,15 @@ sudo chown root:wheel resources/nme/usr
 sudo chown root:wheel resources/nme/usr/lib
 sudo chown root:wheel resources/swf/usr
 sudo chown root:wheel resources/swf/usr/lib
+sudo chown root:wheel resources/svg/usr
+sudo chown root:wheel resources/svg/usr/lib
 
 sudo chmod -R 755 resources/*
 sudo chmod -R 777 resources/actuate/usr/lib/haxe/*
 sudo chmod -R 777 resources/hxcpp/usr/lib/haxe/*
 sudo chmod -R 777 resources/nme/usr/lib/haxe/*
 sudo chmod -R 777 resources/swf/usr/lib/haxe/*
+sudo chmod -R 777 resources/svg/usr/lib/haxe/*
 
 sudo find resources/. -name '.DS_Store' -type f -delete
 sudo find Installer.pmdoc/. -name '*-contents.xml' -type f -delete

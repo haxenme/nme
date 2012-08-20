@@ -7,13 +7,14 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.4.1"
+!define VERSION "3.4.2"
 
 !define HAXE_VERSION "2.10"
 !define NEKO_VERSION "1.8.2"
 !define HXCPP_VERSION "2.10.1"
 !define ACTUATE_VERSION "1.43"
 !define SWF_VERSION "1.13"
+!define SVG_VERSION "1.01"
 
 
 ; Installer details
@@ -192,6 +193,18 @@ Section "SWF [${SWF_VERSION}]" SWF
 	
 SectionEnd
 
+Section "SVG [${SVG_VERSION}]" SVG
+
+	SectionIn 1
+	SetOverwrite on
+	SetShellVarContext all
+	
+	SetOutPath "$INSTDIR\haxe\lib\svg"
+	
+	File /r /x .svn "resources\svg\*.*"
+	
+SectionEnd
+
 
 
 ;--------------------------------
@@ -205,6 +218,7 @@ SectionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${HXCPP} "Installs the HXCPP library, which adds C/C++ support (Required for Neko and C++)"
 !insertmacro MUI_DESCRIPTION_TEXT ${Actuate} "Flexible 'tween' library for adding animations."
 !insertmacro MUI_DESCRIPTION_TEXT ${SWF} "Provides SWF asset support."
+!insertmacro MUI_DESCRIPTION_TEXT ${SVG} "Provides SVG asset support."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------

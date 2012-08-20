@@ -213,6 +213,7 @@ echo "-----------------------------------"
 
 haxelib install actuate
 haxelib install swf
+haxelib install svg
 
 
 echo ""

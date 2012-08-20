@@ -784,11 +784,13 @@ class RunScript {
 					var nmePath = getHaxelib ("nme");
 					var swfPath = getHaxelib ("swf");
 					var actuatePath = getHaxelib ("actuate");
+					var svgPath = getHaxelib ("svg");
 					
 					var hxcppVersion = getVersion ("hxcpp", true);
 					var nmeVersion = getVersion ("nme", true);
 					var swfVersion = getVersion ("swf", true);
 					var actuateVersion = getVersion ("actuate", true);
+					var svgVersion = getVersion ("svg", true);
 					
 					if (isMac) {
 						
@@ -808,11 +810,13 @@ class RunScript {
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, nmeFilters);
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/" + actuateVersion, [ ".git", ".svn" ]);
+						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/usr/lib/haxe/lib/svg/" + svgVersion, [ ".git", ".svn" ]);
 						
 						File.saveContent (nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/.current", getVersion ("hxcpp"));
 						File.saveContent (nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/.current", getVersion ("nme"));
 						File.saveContent (nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/.current", getVersion ("swf"));
 						File.saveContent (nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/.current", getVersion ("actuate"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/svg/usr/lib/haxe/lib/svg/.current", getVersion ("svg"));
 						
 						runCommand (nmeDirectory + tempPath, "chmod", [ "+x", "./prep.sh" ]);
 						runCommand (nmeDirectory + tempPath, "./prep.sh", [ ]);

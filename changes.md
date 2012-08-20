@@ -2,6 +2,16 @@ Changes
 =======
 
 
+3.4.2
+---------------
+* Improved support for SVG assets
+* Added gapless MP3 embedding for Flash
+* Improved the icon generation for OS X
+* Updated the unit tests to work with HTML5 and Flash
+* Multiple HTML5 target fixes
+* Fixed SharedObject support on Linux
+
+
 3.4.1
 ---------------
 * Added (beta) support for Apache Cordova, deploying HTML5 to Android, iOS and BlackBerry
