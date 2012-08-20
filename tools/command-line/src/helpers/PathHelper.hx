@@ -14,6 +14,19 @@ class PathHelper {
 			
 			path = StringTools.replace (path, " ", "\\ ");
 			
+			return expand (path);
+			
+		}
+		
+		return expand (path);
+		
+	}
+	
+	
+	public static function expand (path:String):String {
+		
+		if (!InstallTool.isWindows) {
+			
 			if (StringTools.startsWith (path, "~/")) {
 				
 				path = Sys.getEnv ("HOME") + "/" + path.substr (2);

@@ -21,6 +21,7 @@ class ManagedMediaPlayer
 	public float rightVol;
 	public boolean isComplete = true;
 	public int loopsLeft = 0;
+	public boolean wasPlaying = false;
 
 	public ManagedMediaPlayer(MediaPlayer mp, float leftVol, float rightVol, int loop) {
 		this.mp = mp;
@@ -68,6 +69,22 @@ class ManagedMediaPlayer
 			return mp.getCurrentPosition();
 		return -1;
 	}
+	
+	public boolean isPlaying() {
+		if (mp != null)
+			return mp.isPlaying();
+		return false;
+	}
+	
+	public void pause() {
+		if (mp != null)
+			mp.pause();
+	}
+	
+	public void start() {
+		if (mp != null)
+			mp.start();
+	}
 
 	public void stop() {
 		if (mp != null)
@@ -91,8 +108,9 @@ public class Sound
 	private static Context mContext;
 	private static Sound instance;
 
-	private static Hashtable<String, ManagedMediaPlayer> mediaPlayers = new Hashtable<String, ManagedMediaPlayer>();
-	private static boolean mMusicWasPlaying = false;
+	//private static Hashtable<String, ManagedMediaPlayer> mediaPlayers = new Hashtable<String, ManagedMediaPlayer>();
+	private static MediaPlayer mediaPlayer;
+	private static boolean mediaPlayerWasPlaying;
 	private static SoundPool mSoundPool;
 	private static int mSoundPoolID = 0;
 
@@ -118,15 +136,16 @@ public class Sound
 			mSoundPool.release();
 		}
 		mSoundPool = null;
-
-		MediaPlayer mp;
-		for (ManagedMediaPlayer mmp : mediaPlayers.values()) {
-			mp = mmp.mp;
-            if (mp.isPlaying()) {
-				mMusicWasPlaying = mp.isPlaying();
-				mp.pause();
-            }
-        }
+		
+		if (mediaPlayer != null) {
+			mediaPlayerWasPlaying = mediaPlayer.isPlaying ();
+			mediaPlayer.pause();
+		}
+		
+		//for (ManagedMediaPlayer mediaPlayer : mediaPlayers.values()) {
+			//mediaPlayerWasPlaying = mediaPlayer.isPlaying();
+			//mediaPlayer.pause ();
+		//}
 	}
 
 	public void doResume()
@@ -134,13 +153,15 @@ public class Sound
 		mSoundPoolID++;
 		mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
 
-		MediaPlayer mp;
-		for (ManagedMediaPlayer mmp : mediaPlayers.values()) {
-			mp = mmp.mp;
-            if (mp != null && mMusicWasPlaying) {
-				mp.start();
-            }
-        }
+		if (mediaPlayer != null && mediaPlayerWasPlaying) {
+			mediaPlayer.start ();
+		}	
+		
+		//for (ManagedMediaPlayer mediaPlayer : mediaPlayers.values()) {
+			//if (mediaPlayer.wasPlaying) {
+				//mediaPlayer.start ();
+			//}
+		//}
 	}
 	
 	/*
@@ -209,7 +230,14 @@ public class Sound
 	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
     {
     	Log.i("Sound", "playMusic");
-
+		
+		if (mediaPlayer != null) {
+			
+			mediaPlayer.stop ();
+			mediaPlayer.release ();
+			
+		}
+		
 		MediaPlayer mp = null;
 		int resourceID = getMusicHandle(inPath); // check to see if this is a bundled resource
 		if (resourceID < 0) { // not in bundle, try to play from filesystem
@@ -244,13 +272,16 @@ public class Sound
 		
 	private static int playMediaPlayer(MediaPlayer mp, final String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
 	{	
-		ManagedMediaPlayer mmp;
-		if (mediaPlayers.containsKey(inPath))
-			mmp = mediaPlayers.get(inPath).setMediaPlayer(mp);
-		else
-			mmp = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
+	
+		mediaPlayer = mp;
+	
+		//ManagedMediaPlayer mmp;
+		//if (mediaPlayers.containsKey(inPath))
+			//mmp = mediaPlayers.get(inPath).setMediaPlayer(mp);
+		//else
+			//mmp = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
 
-        mediaPlayers.put(inPath, mmp);
+        //mediaPlayers.put(inPath, mmp);
 		mp.seekTo((int)inStartTime);
 		mp.start();
 
@@ -261,49 +292,72 @@ public class Sound
 	{
 		Log.v("Sound", "stopMusic");
 		
-		if (mediaPlayers.containsKey(inPath))
-			mediaPlayers.get(inPath).stop();
+		if (mediaPlayer != null) {
+			mediaPlayer.stop ();
+		}
+		
+		//if (mediaPlayers.containsKey(inPath)) {
+			//mediaPlayers.get(inPath).stop();
+		//}
 	}
 	
 	public static int getDuration(String inPath)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			return mediaPlayers.get(inPath).getDuration();
+		if (mediaPlayer != null) {
+			return mediaPlayer.getDuration ();
+		}
+		
+		//if (mediaPlayers.containsKey(inPath))
+		//	return mediaPlayers.get(inPath).getDuration();
 		return -1;
 	}
 	
 	public static int getPosition(String inPath)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			return mediaPlayers.get(inPath).getCurrentPosition();
+		if (mediaPlayer != null) {
+			return mediaPlayer.getCurrentPosition ();
+		}
+		
+		//if (mediaPlayers.containsKey(inPath))
+		//	return mediaPlayers.get(inPath).getCurrentPosition();
 		return -1;
 	}
 	
 	public static double getLeft(String inPath)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			return mediaPlayers.get(inPath).leftVol;
-		return -1;
+		return 0.5;
+		
+		//if (mediaPlayers.containsKey(inPath))
+		//	return mediaPlayers.get(inPath).leftVol;
+		//return -1;
 	}
 	
 	public static double getRight(String inPath)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			return mediaPlayers.get(inPath).rightVol;
-		return -1;
+		return 0.5;
+		
+		//if (mediaPlayers.containsKey(inPath))
+		//	return mediaPlayers.get(inPath).rightVol;
+		//return -1;
 	}
 	
 	public static boolean getComplete(String inPath)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			return mediaPlayers.get(inPath).isComplete;
 		return true;
+		
+		//if (mediaPlayers.containsKey(inPath))
+		//	return mediaPlayers.get(inPath).isComplete;
+		//return true;
 	}
 
 	public static void setMusicTransform(String inPath, double inVolLeft, double inVolRight)
 	{
-		if (mediaPlayers.containsKey(inPath))
-			mediaPlayers.get(inPath).setVolume((float)inVolLeft, (float)inVolRight);
+		if (mediaPlayer != null) {
+			mediaPlayer.setVolume((float)inVolLeft, (float)inVolRight);
+		}
+			
+		//if (mediaPlayers.containsKey(inPath))
+		//	mediaPlayers.get(inPath).setVolume((float)inVolLeft, (float)inVolRight);
 	}
 }
 	
