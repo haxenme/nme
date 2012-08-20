@@ -167,6 +167,7 @@ class URLLoader extends EventDispatcher
 
 		var uri:Dynamic = "";
 		switch (true) {
+			case (data == null):
 			case Std.is(data, ByteArray):
 				var data:ByteArray = cast data;
 				switch (dataFormat) {
@@ -207,12 +208,19 @@ class URLLoader extends EventDispatcher
 		for( header in requestHeaders ) {
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
 		}
-
-		xmlHttpRequest.send(uri);
-
-		onOpen();
-
-		getData = function () { return xmlHttpRequest.response; };
+		
+		if (uri != "") {
+			
+			xmlHttpRequest.send(uri);
+			onOpen();
+			getData = function () { return xmlHttpRequest.response; };
+			
+		} else {
+			
+			throw "Cannot access path \"" + url + "\", access may be denied";
+			//onError ("Cannot access path \"" + url + "\", access may be denied");
+			
+		}
 
 	}
 
