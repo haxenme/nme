@@ -654,7 +654,7 @@ class RunScript {
 			
 			for (ignoreName in ignore) {
 				
-				if (file == ignoreName || StringTools.endsWith (source + "/" + file, ignoreName)) {
+				if (file == ignoreName || StringTools.endsWith (source + "/" + file, "/" + ignoreName)) {
 					
 					ignoreFile = true;
 					
