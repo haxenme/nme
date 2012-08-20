@@ -510,6 +510,34 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	{
 		outDir = "/media/internal/documents";
 	}
+#elif defined(HX_LINUX)
+	if (inDir == DIR_APP)
+	{
+		outDir = ".";
+	}
+	else if (inDir == DIR_STORAGE)
+	{
+		if (getenv("XDG_CONFIG_HOME") != NULL)
+		{
+			outDir = getEnv ("XDG_CONFIG_HOME") + "/" + gPackage;
+		}
+		else
+		{
+			outDir = getEnv ("HOME") + "/.config/" + gPackage;
+		}
+	}
+	else if (inDir == DIR_USER)
+	{
+		outDir = getEnv ("HOME");
+	}
+	else if (inDir == DIR_DOCS)
+	{
+		outDir = "$HOME/Documents";
+	}
+	else if (inDir == DIR_DESKTOP)
+	{
+		outDir = "$HOME/Desktop"
+	}
 #endif
 }
 #endif
