@@ -34,12 +34,6 @@ class InstallTool {
 	
 	static public function create (nme:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>) {
 		
-		try {
-			
-			Sys.setCwd (Path.directory (projectFile));
-			
-		} catch (e:Dynamic) {}
-		
 		var installer:InstallerBase = null;
 		
 		if (target == "windows" || target == "mac" || target == "linux") {
@@ -597,7 +591,14 @@ class InstallTool {
 				
 			}
 			
-			create (nme, command, defines, userDefines, includePaths, words[0], target, targetFlags, debug, passArgs);
+			var projectFile = words[0];
+			var cacheCwd = Sys.getCwd ();
+			
+			try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
+			
+			create (nme, command, defines, userDefines, includePaths, projectFile, target, targetFlags, debug, passArgs);
+			
+			try { Sys.setCwd (cacheCwd); } catch (e:Dynamic) {}
 			
 		}
 		
