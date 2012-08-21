@@ -163,7 +163,7 @@ class BitmapData implements IBitmapDrawable {
 			ctx.fill();
 		}
 
-		if ( inFillColor != null ) {
+		if ( inFillColor != null && width > 0 && height > 0) {
 			if (!jeashTransparent) inFillColor |= 0xFF000000;
 			jeashInitColor = inFillColor;
 			jeashFillRect(rect, inFillColor);

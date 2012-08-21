@@ -476,41 +476,41 @@
 </f></tryLoad>
 	</class>
 	<class path="haxe.Timer" params="" file="/Users/joshua/Development/Haxe/nme/haxe/Timer.hx">
-		<sRunningTimers line="107" static="1"><t path="haxe.TimerList"/></sRunningTimers>
-		<measure public="1" params="T" set="method" line="124" static="1"><f a="f:?pos">
+		<sRunningTimers line="106" static="1"><t path="haxe.TimerList"/></sRunningTimers>
+		<measure public="1" params="T" set="method" line="123" static="1"><f a="f:?pos">
 	<f a=""><c path="measure.T"/></f>
 	<t path="haxe.PosInfos"/>
 	<c path="measure.T"/>
 </f></measure>
-		<nmeNextWake public="1" set="method" line="155" static="1">
+		<nmeNextWake public="1" set="method" line="154" static="1">
 			<f a="limit">
 				<c path="Float"/>
 				<c path="Float"/>
 			</f>
 			<haxe_doc>* @private</haxe_doc>
 		</nmeNextWake>
-		<nmeCheckTimers public="1" set="method" line="197" static="1">
+		<nmeCheckTimers public="1" set="method" line="196" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>* @private</haxe_doc>
 		</nmeCheckTimers>
-		<GetMS set="method" line="210" static="1"><f a=""><c path="Float"/></f></GetMS>
-		<delay public="1" set="method" line="218" static="1"><f a="f:time">
+		<GetMS set="method" line="209" static="1"><f a=""><c path="Float"/></f></GetMS>
+		<delay public="1" set="method" line="217" static="1"><f a="f:time">
 	<f a=""><e path="Void"/></f>
 	<c path="Int"/>
 	<c path="haxe.Timer"/>
 </f></delay>
-		<stamp public="1" set="method" line="232" static="1"><f a=""><c path="Float"/></f></stamp>
-		<nme_time_stamp line="239" static="1"><f a=""><c path="Float"/></f></nme_time_stamp>
-		<nmeCheck set="method" line="182"><f a="inTime">
+		<stamp public="1" set="method" line="231" static="1"><f a=""><c path="Float"/></f></stamp>
+		<nme_time_stamp line="238" static="1"><f a=""><c path="Float"/></f></nme_time_stamp>
+		<nmeCheck set="method" line="181"><f a="inTime">
 	<c path="Float"/>
 	<e path="Void"/>
 </f></nmeCheck>
-		<stop public="1" set="method" line="140"><f a=""><e path="Void"/></f></stop>
-		<run public="1" set="dynamic" line="133"><f a=""><e path="Void"/></f></run>
+		<stop public="1" set="method" line="139"><f a=""><e path="Void"/></f></stop>
+		<run public="1" set="dynamic" line="132"><f a=""><e path="Void"/></f></run>
 		<mRunning><e path="Bool"/></mRunning>
 		<mFireAt><c path="Float"/></mFireAt>
 		<mTime><c path="Float"/></mTime>
-		<new public="1" set="method" line="114"><f a="time">
+		<new public="1" set="method" line="113"><f a="time">
 	<c path="Float"/>
 	<e path="Void"/>
 </f></new>

@@ -95,6 +95,12 @@ class RunScript {
 						
 					}
 					
+					buildDocumentation ();
+					
+				} else if (target == "documentation") {
+					
+					buildDocumentation ();
+					
 				} else {
 					
 					buildLibrary (target);
@@ -104,6 +110,13 @@ class RunScript {
 			}
 			
 		}
+		
+	}
+	
+	
+	static private function buildDocumentation ():Void {
+		
+		runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile.hxml" ]);
 		
 	}
 	
