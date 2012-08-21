@@ -7,14 +7,24 @@
 ;--------------------------------
 
 ; Define version info
-!define VERSION "3.4.2"
+!ifndef VERSION
 
-!define HAXE_VERSION "2.10"
-!define NEKO_VERSION "1.8.2"
-!define HXCPP_VERSION "2.10.1"
-!define ACTUATE_VERSION "1.43"
-!define SWF_VERSION "1.13"
-!define SVG_VERSION "1.01"
+   !define VERSION "3.4.2"
+   !define VERSION_FOLDER "3,4,2"
+   
+   !define HAXE_VERSION "2.10"
+   !define NEKO_VERSION "1.8.2"
+   !define HXCPP_VERSION "2.10.1"
+   !define ACTUATE_VERSION "1.43"
+   !define SWF_VERSION "1.13"
+
+   !define SVG_VERSION "1.01"
+   
+!endif
+
+!ifndef OUTPUT_PATH
+   !define OUTPUT_PATH "bin\NME-${VERSION}-Windows.exe"
+!endif
 
 
 ; Installer details
@@ -35,7 +45,7 @@ Caption "NME ${VERSION} Setup"
 UninstallCaption "NME ${VERSION} Uninstall"
 
 ; The file to write
-OutFile "bin\NME-${VERSION}-Windows.exe"
+OutFile "${OUTPUT_PATH}"
 
 ; Default installation folder
 ;InstallDir "$PROGRAMFILES\Motion-Twin\"
@@ -153,7 +163,7 @@ Section "NME [${VERSION}]" NME
 	
 	SetOutPath "$INSTDIR\haxe"
 	
-	File /r /x .svn "..\..\command-line\bin\nme.bat"
+	File /r /x .svn "resources\nme\${VERSION_FOLDER}\tools\command-line\bin\nme.bat"
 	
 SectionEnd
 

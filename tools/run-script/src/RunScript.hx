@@ -686,6 +686,7 @@ class RunScript {
 					
 				} else {
 					
+					Sys.println ("Copying " + itemSource);
 					File.copy (itemSource, itemDestination);
 					
 				}
@@ -805,10 +806,11 @@ class RunScript {
 					var actuateVersion = getVersion ("actuate", true);
 					var svgVersion = getVersion ("svg", true);
 					
+					var tempPath = "../nme-release-installer";
+					
 					if (isMac) {
 						
-						var tempPath = "../nme-release-installer";
-						var targetPath = "../NME-" + getVersion () + "-Mac-" + getRevision () + ".mpkg";
+						//var targetPath = "../NME-" + getVersion () + "-Mac-" + getRevision () + ".mpkg";
 						
 						var haxePath = "/usr/lib/haxe";
 						var nekoPath = "/usr/lib/neko";
@@ -816,8 +818,8 @@ class RunScript {
 						removeDirectory (nmeDirectory + tempPath);
 						recursiveCopy (nmeDirectory + "/tools/installer/mac", nmeDirectory + tempPath, [ ]);
 						
-						recursiveCopy ("/usr/lib/haxe", nmeDirectory + tempPath + "/resources/haxe/usr/lib/haxe", [ "lib" ]);
-						recursiveCopy ("/usr/lib/neko", nmeDirectory + tempPath + "/resources/haxe/usr/lib/neko", []);
+						recursiveCopy (haxePath, nmeDirectory + tempPath + "/resources/haxe/usr/lib/haxe", [ "lib" ]);
+						recursiveCopy (nekoPath, nmeDirectory + tempPath + "/resources/haxe/usr/lib/neko", []);
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, nmeFilters);
@@ -835,6 +837,36 @@ class RunScript {
 						runCommand (nmeDirectory + tempPath, "./prep.sh", [ ]);
 						
 						runCommand (nmeDirectory + tempPath, "/Applications/PackageMaker.app/Contents/MacOS/PackageMaker", [ nmeDirectory + tempPath + "/Installer.pmdoc" ]);
+						removeDirectory (nmeDirectory + tempPath);
+						
+					} else if (isWindows) {
+						
+						var haxePath = "C:\\Motion-Twin\\haxe";
+						var nekoPath = "C:\\Motion-Twin\\neko";
+						
+						removeDirectory (nmeDirectory + tempPath);
+						recursiveCopy (nmeDirectory + "/tools/installer/windows", nmeDirectory + tempPath, []);
+						
+						recursiveCopy (haxePath, nmeDirectory + tempPath + "/resources/haxe", [ "lib" ]);
+						recursiveCopy (nekoPath, nmeDirectory + tempPath + "/resources/neko", []);
+						
+						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
+						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/" + nmeVersion, nmeFilters);
+						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/" + swfVersion, [ ".git", ".svn" ]);
+						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/" + actuateVersion, [ ".git", ".svn" ]);
+						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/" + svgVersion, [ ".git", ".svn" ]);
+						
+						File.saveContent (nmeDirectory + tempPath + "/resources/hxcpp/.current", getVersion ("hxcpp"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/nme/.current", getVersion ("nme"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/swf/.current", getVersion ("swf"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/actuate/.current", getVersion ("actuate"));
+						File.saveContent (nmeDirectory + tempPath + "/resources/svg/.current", getVersion ("svg"));
+						
+						var args = [ "/DVERSION=" + getVersion ("nme"), "/DVERSION_FOLDER=" + nmeVersion, "/DHAXE_VERSION=2.10", "/DNEKO_VERSION=1.8.2", "/DHXCPP_VERSION=" + getVersion ("hxcpp"), "/DACTUATE_VERSION=" + getVersion ("actuate"), "/DSWF_VERSION=" + getVersion ("swf"), "/DSVG_VERSION=" + getVersion ("svg") ];
+						args.push ("/DOUTPUT_PATH=../NME-" + getVersion ("nme") + "-Windows.exe");
+						args.push ("Installer.nsi");
+						
+						runCommand (nmeDirectory + tempPath, "C:\\Program Files (x86)\\NSIS\\makensis.exe", args);
 						removeDirectory (nmeDirectory + tempPath);
 						
 					}
