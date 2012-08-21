@@ -4,12 +4,14 @@ Changes
 
 3.4.2
 ---------------
-* Improved support for SVG assets
-* Added gapless MP3 embedding for Flash
-* Improved the icon generation for OS X
-* Updated the unit tests to work with HTML5 and Flash
-* Multiple HTML5 target fixes
-* Fixed SharedObject support on Linux
+* Added support for SVG assets
+* Improved OS X icons
+* Added gap-free MP3 embedding in Flash
+* Multiple consistency fixes for HTML5
+* Corrected SharedObject support for Linux
+* Fixed a regression with music on Android
+* Fixed some Linux host issues
+* Improved the unit tests for Flash and HTML5
 
 
 3.4.1
