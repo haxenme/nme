@@ -29,7 +29,7 @@ package flash.display;
 	
 	inline function drawTiles (sheet:nme.display.Tilesheet, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void {
 		
-		sheet.drawTiles (this, tileData, smooth, flags);
+		sheet.drawTiles (cast this, tileData, smooth, flags);
 		
 	}
 }
