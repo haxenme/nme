@@ -594,12 +594,11 @@ class InstallTool {
 			var projectFile = words[0];
 			var cacheCwd = Sys.getCwd ();
 			
-         // This can't work:  say "dir/file.nmml" is corrent.  You cd to "dir" and then try to open "dir/file.nmml", which is not there.
-			//try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
+			try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
 			
-			create (nme, command, defines, userDefines, includePaths, projectFile, target, targetFlags, debug, passArgs);
+			create (nme, command, defines, userDefines, includePaths, Path.withoutDirectory (projectFile), target, targetFlags, debug, passArgs);
 			
-			//try { Sys.setCwd (cacheCwd); } catch (e:Dynamic) {}
+			try { Sys.setCwd (cacheCwd); } catch (e:Dynamic) {}
 			
 		}
 		
