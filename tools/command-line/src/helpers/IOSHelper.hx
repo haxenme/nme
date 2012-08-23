@@ -161,10 +161,10 @@ class IOSHelper {
         	
         }
         
-        var applicationPath:String = workingDirectory + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
-        commands.push (FileSystem.fullPath (applicationPath));
+        var applicationPath:String = "build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+        commands.push (applicationPath);
         
-        ProcessHelper.runCommand ("", "codesign", commands, true, true);
+        ProcessHelper.runCommand (workingDirectory, "codesign", commands, true, true);
 		
 	}
 	
