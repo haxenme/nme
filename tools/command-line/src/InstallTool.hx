@@ -158,6 +158,48 @@ class InstallTool {
 	}
 	
 	
+	private static function findProjectFile (path:String):String {
+		
+		if (FileSystem.exists (PathHelper.combine (path, "project.nmml"))) {
+			
+			return PathHelper.combine (path, "project.nmml");
+			
+		} else if (FileSystem.exists (PathHelper.combine (path, "project.xml"))) {
+			
+			return PathHelper.combine (path, "project.xml");
+			
+		} else {
+			
+			var files = FileSystem.readDirectory (path);
+			var matches = [];
+			
+			for (file in files) {
+				
+				if (!FileSystem.isDirectory (PathHelper.combine (path, file))) {
+					
+					if (Path.extension (file) == "nmml") {
+						
+						matches.push (PathHelper.combine (path, file));
+						
+					}
+					
+				}
+				
+			}
+			
+			if (matches.length > 0) {
+				
+				return matches[0];
+				
+			}
+			
+		}
+		
+		return "";
+		
+	}
+	
+	
 	public static function getNeko ():String {
 		
 		var path:String = Sys.getEnv ("NEKO_INSTPATH");
@@ -569,15 +611,7 @@ class InstallTool {
 					
 					if (FileSystem.isDirectory (words[0])) {
 						
-						if (FileSystem.exists (words[0] + "/project.nmml")) {
-							
-							projectFile = words[0] + "/project.nmml";
-							
-						} else if (FileSystem.exists (words[0] + "/project.xml")) {
-							
-							projectFile = words[0] + "/project.xml";
-							
-						}
+						projectFile = findProjectFile (words[0]);
 						
 					} else {
 						
@@ -591,16 +625,7 @@ class InstallTool {
 				
 			} else {
 				
-				if (FileSystem.exists ("project.nmml")) {
-					
-					projectFile = "project.nmml";
-					
-				} else if (FileSystem.exists ("project.xml")) {
-					
-					projectFile = "project.xml";
-					
-				}
-				
+				projectFile = findProjectFile (Sys.getCwd ());
 				target = words[0].toLowerCase ();
 				
 			}
