@@ -8,6 +8,19 @@ import neko.Lib;
 class PathHelper {
 	
 	
+	public static function combine (firstPath:String, secondPath:String):String {
+		
+		if (firstPath == null || firstPath == "") {
+			
+			return secondPath;
+			
+		}
+		
+		return firstPath + "/" + secondPath;
+		
+	}
+	
+	
 	public static function escape (path:String):String {
 		
 		if (!InstallTool.isWindows) {

@@ -609,17 +609,12 @@ class InstallerBase {
 		
 		if (!defines.exists ("APP_BUILD_NUMBER")) {
 			
-			var versionFile = Path.withoutExtension (projectFile) + ".build";
+			var versionFile = PathHelper.combine (Path.directory (projectFile), ".build");
 			var version:Int = 1;
-
-         // Do not create this file if it does not already exist
-         var writeFile = false;
 			
 			PathHelper.mkdir (buildDirectory);
 			
 			if (FileSystem.exists (versionFile)) {
-
-            writeFile = true;
 				
 				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
 				
@@ -639,17 +634,13 @@ class InstallerBase {
 			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
-			if (writeFile) {
+			try {
 				
-				try {
-					
-					var output = File.write (versionFile, false);
-					output.writeString (Std.string (version));
-					output.close ();
-					
-				} catch (e:Dynamic) {}
+				var output = File.write (versionFile, false);
+				output.writeString (Std.string (version));
+				output.close ();
 				
-			}
+			} catch (e:Dynamic) {}
 			
 		}
 		
