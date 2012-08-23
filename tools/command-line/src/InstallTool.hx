@@ -553,20 +553,61 @@ class InstallTool {
 				
 		} else {
 			
-			if (words.length != 2) {
+			if (words.length < 1 || words.length > 2) {
 				
-				if (command != "document" || (command == "document" && words.length != 1)) {
-					
-					argumentError ("Incorrect number of arguments for command '" + command + "'");
-					return;
-					
-				}
+				argumentError ("Incorrect number of arguments for command '" + command + "'");
+				return;
 				
 			}
 			
-			if (!FileSystem.exists (words[0])) {
+			var projectFile = "";
+			var target = "";
+			
+			if (words.length == 2) {
 				
-				argumentError ("You must specify an NMML file when using the '" + command + "' command");
+				if (FileSystem.exists (words[0])) {
+					
+					if (FileSystem.isDirectory (words[0])) {
+						
+						if (FileSystem.exists (words[0] + "/project.nmml")) {
+							
+							projectFile = words[0] + "/project.nmml";
+							
+						} else if (FileSystem.exists (words[0] + "/project.xml")) {
+							
+							projectFile = words[0] + "/project.xml";
+							
+						}
+						
+					} else {
+						
+						projectFile = words[0];
+						
+					}
+					
+				}
+				
+				target = words[1].toLowerCase ();
+				
+			} else {
+				
+				if (FileSystem.exists ("project.nmml")) {
+					
+					projectFile = "project.nmml";
+					
+				} else if (FileSystem.exists ("project.xml")) {
+					
+					projectFile = "project.xml";
+					
+				}
+				
+				target = words[0].toLowerCase ();
+				
+			}
+			
+			if (projectFile == "") {
+				
+				argumentError ("You must have a \"project.nmml\" file or specify another NMML file when using the '" + command + "' command");
 				return;
 				
 			}
@@ -583,15 +624,6 @@ class InstallTool {
 				
 			}
 			
-			var target = "";
-			
-			if (words.length > 1) {
-				
-				target = words[1].toLowerCase ();
-				
-			}
-			
-			var projectFile = words[0];
 			var cacheCwd = Sys.getCwd ();
 			
 			try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
