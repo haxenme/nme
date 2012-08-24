@@ -40,7 +40,7 @@ class AIRHelper {
 		
 		if (target == "ios") {
 			
-			/*if (targetFlags.exists ("simulator")) {
+			if (targetFlags.exists ("simulator")) {
 				
 				if (debug) {
 					
@@ -56,23 +56,13 @@ class AIRHelper {
 				
 				if (debug) {
 					
-					airTarget = "ipa-debug-interpreter";
+					airTarget = "ipa-debug";
 					
 				} else {
 					
-					airTarget = "ipa-ad-hoc";
+					airTarget = "ipa-test";
 					
 				}
-				
-			}*/
-			
-			if (debug) {
-				
-				airTarget = "ipa-debug";
-				
-			} else {
-				
-				airTarget = "ipa-test";
 				
 			}
 			
@@ -167,7 +157,23 @@ class AIRHelper {
 			
 		} else if (target == "ios") {
 			
-			IOSHelper.launch (workingDirectory + "/" + defines.get ("APP_FILE") + ".ipa", debug);
+			var args = [ "-platform", "ios" ];
+			
+			if (targetFlags.exists ("simulator")) {
+				
+				args.push ("-device");
+				args.push ("ios-simulator");
+				args.push ("-platformsdk");
+				args.push (IOSHelper.getSDKDirectory ());
+				
+			}
+			
+			ProcessHelper.runCommand ("", "killall", [ "iPhone Simulator" ], true, true);
+			ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adt", [ "-uninstallApp" ].concat (args).concat ([ "-appid", defines.get ("APP_PACKAGE") ]));
+			ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adt", [ "-installApp" ].concat (args).concat ([ "-package", FileSystem.fullPath (workingDirectory) + "/" + defines.get ("APP_FILE") + ".ipa" ]));
+			ProcessHelper.runCommand ("", "open", [ "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app/" ]);
+			
+			//IOSHelper.launch (workingDirectory + "/" + defines.get ("APP_FILE") + ".ipa", debug);
 				
 		} else {
 			
