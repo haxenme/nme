@@ -51,6 +51,33 @@ class IOSHelper {
 		
 	}
 	
+	
+	public static function getSDKDirectory ():String {
+		
+		var platformName = "iPhoneOS";
+		
+		if (targetFlags.exists ("simulator")) {
+			
+			platformName = "iPhoneSimulator";
+			
+		}
+		
+		var process = new Process ("xcode-select", [ "--print-path" ]);
+		var directory = process.stdout.readLine ();
+		process.close ();
+		
+		if (directory == "" || directory.indexOf ("Run xcode-select") > -1) {
+			
+			directory = "/Applications/Xcode.app/Contents/Developer";
+			
+		}
+		
+		directory += "/Platforms/" + platformName + ".platform/Developer/SDKs/" + platformName + defines.get ("IPHONE_VER") + ".sdk";
+		return directory;
+		
+	}
+	
+	
 	private static function getIOSVersion ():Void {
 		
 		if (!defines.exists("IPHONE_VER")) {

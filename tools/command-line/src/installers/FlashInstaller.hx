@@ -92,7 +92,7 @@ class FlashInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("air")) {
 			
-			AIRHelper.initialize (defines, targetFlags, target);
+			AIRHelper.initialize (defines, targetFlags, target, NME);
 			compilerFlags.push ("-lib air3");
 			
 		}

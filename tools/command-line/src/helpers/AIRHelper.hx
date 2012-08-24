@@ -12,11 +12,19 @@ class AIRHelper {
 	private static var targetFlags:Hash <String>;
 	
 	
-	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>, target:String):Void {
+	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>, target:String, NME:String):Void {
 		
 		AIRHelper.defines = defines;
 		AIRHelper.targetFlags = targetFlags;
 		AIRHelper.target = target;
+		
+		switch (target) {
+			
+			case "ios":
+				
+				IOSHelper.initialize (defines, targetFlags, NME);
+			
+		}
 		
 	}
 	
@@ -67,30 +75,62 @@ class AIRHelper {
 			
 		}
 		
-		var args = [ "-package", "-storetype", defines.get ("KEY_STORE_TYPE"), "-keystore", defines.get ("KEY_STORE") ];
+		var signingOptions = [ "-storetype", defines.get ("KEY_STORE_TYPE"), "-keystore", defines.get ("KEY_STORE") ];
 		
 		if (defines.exists ("KEY_STORE_ALIAS")) {
 			
-			args.push ("-alias");
-			args.push (defines.get ("KEY_STORE_ALIAS"));
+			signingOptions.push ("-alias");
+			signingOptions.push (defines.get ("KEY_STORE_ALIAS"));
 			
 		}
 		
 		if (defines.exists ("KEY_STORE_PASSWORD")) {
 			
-			args.push ("-storepass");
-			args.push (defines.get ("KEY_STORE_PASSWORD"));
+			signingOptions.push ("-storepass");
+			signingOptions.push (defines.get ("KEY_STORE_PASSWORD"));
 			
 		}
 		
 		if (defines.exists ("KEY_STORE_ALIAS_PASSWORD")) {
 			
-			args.push ("-keypass");
-			args.push (defines.get ("KEY_STORE_ALIAS_PASSWORD"));
+			signingOptions.push ("-keypass");
+			signingOptions.push (defines.get ("KEY_STORE_ALIAS_PASSWORD"));
 			
 		}
 		
-		args = args.concat ([ "-target", airTarget, targetPath, applicationXML ]);
+		var args = [ "-package" ];
+		
+		if (airTarget == "air") {
+			
+			args = args.concat (signingOptions);
+			args.push ("-target");
+			args.push ("air");
+			
+		} else {
+			
+			args.push ("-target");
+			args.push (airTarget);
+			args = args.concat (signingOptions);
+			
+		}
+		
+		if (target == "ios") {
+			
+			//args.push ("-provisioning-profile");
+			//args.push ("");
+			
+		}
+		
+		args = args.concat ([ targetPath, applicationXML ]);
+		
+		
+		if (target == "ios") {
+			
+			args.push ("-platformsdk");
+			args.push (IOSHelper.getSDKDirectory ());
+			
+		}
+		
 		args = args.concat (files);
 		//args = args.concat ([ sourcePath /*, "icon_16.png", "icon_32.png", "icon_48.png", "icon_128.png"*/ ]);
 		
