@@ -60,7 +60,7 @@ class FlashInstaller extends InstallerBase {
 			
 			var files = [ defines.get ("APP_FILE") + ".swf"/*, "icon_16.png", "icon_32.png", "icon_48.png", "icon_128.png"*/ ];
 			
-			AIRHelper.run (destination, defines.get ("APP_FILE") + ".air", "application.xml", files, debug);
+			AIRHelper.build (destination, defines.get ("APP_FILE"), "application.xml", files, debug);
 			
 		}
 		
@@ -164,17 +164,7 @@ class FlashInstaller extends InstallerBase {
 		
 		if (targetFlags.exists ("air")) {
 			
-			var args = [ "-profile", "desktop" ];
-			
-			if (!debug) {
-				
-				args.push ("-nodebug");
-				
-			}
-			
-			args.push ("application.xml");
-			
-			ProcessHelper.runCommand (destination, defines.get ("AIR_SDK") + "/bin/adl", args);
+			AIRHelper.run (destination, debug);
 			
 		} else {
 			

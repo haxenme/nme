@@ -1,6 +1,7 @@
 package helpers;
 
 
+import haxe.io.Path;
 import sys.io.Process;
 import sys.FileSystem;
 
@@ -111,6 +112,26 @@ class IOSHelper {
 	}
 	
 	
+	public static function getProvisioningFile ():String {
+		
+		var path = PathHelper.expand ("~/Library/MobileDevice/Provisioning Profiles");
+		var files = FileSystem.readDirectory (path);
+		
+		for (file in files) {
+			
+			if (Path.extension (file) == "mobileprovision") {
+				
+				return path + "/" + file;
+				
+			}
+			
+		}
+		
+		return "";
+		
+	}
+	
+	
 	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>, NME:String):Void {
 		
 		IOSHelper.defines = defines;
@@ -134,7 +155,18 @@ class IOSHelper {
         
 		if (targetFlags.exists ("simulator")) {
 			
-			var applicationPath = workingDirectory + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_FILE") + ".app";
+			var applicationPath = "";
+			
+			if (Path.extension (workingDirectory) == "app" || Path.extension (workingDirectory) == "ipa") {
+				
+				applicationPath = workingDirectory;
+				
+			} else {
+				
+				applicationPath = workingDirectory + "/build/" + configuration + "-iphonesimulator/" + defines.get ("APP_FILE") + ".app";
+				
+			}
+			
 			var family:String = "iphone";
 			
 			if (targetFlags.exists ("ipad")) {
@@ -150,7 +182,18 @@ class IOSHelper {
 			
 		} else {
 			
-			var applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+			var applicationPath = "";
+			
+			if (Path.extension (workingDirectory) == "app" || Path.extension (workingDirectory) == "ipa") {
+				
+				applicationPath = workingDirectory;
+				
+			} else {
+				
+				applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + defines.get ("APP_FILE") + ".app";
+				
+			}
+			
             var launcher = NME + "/tools/command-line/bin/fruitstrap";
 	        Sys.command ("chmod", [ "+x", launcher ]);
 	        

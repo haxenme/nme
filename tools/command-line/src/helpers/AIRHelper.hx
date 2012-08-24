@@ -1,7 +1,7 @@
 package helpers;
 
 
-
+import sys.FileSystem;
 
 
 class AIRHelper {
@@ -24,18 +24,23 @@ class AIRHelper {
 				
 				IOSHelper.initialize (defines, targetFlags, NME);
 			
+			case "android":
+				
+				AndroidHelper.initialize (defines);
+			
 		}
 		
 	}
 	
 	
-	public static function run (workingDirectory:String, targetPath:String, applicationXML:String, files:Array <String>, debug:Bool):Void {
+	public static function build (workingDirectory:String, targetPath:String, applicationXML:String, files:Array <String>, debug:Bool):Void {
 		
 		var airTarget = "air";
+		var extension = ".air";
 		
 		if (target == "ios") {
 			
-			if (targetFlags.exists ("simulator")) {
+			/*if (targetFlags.exists ("simulator")) {
 				
 				if (debug) {
 					
@@ -59,7 +64,19 @@ class AIRHelper {
 					
 				}
 				
+			}*/
+			
+			if (debug) {
+				
+				airTarget = "ipa-debug";
+				
+			} else {
+				
+				airTarget = "ipa-test";
+				
 			}
+			
+			extension = ".ipa";
 			
 		} else if (target == "android") {
 			
@@ -72,6 +89,8 @@ class AIRHelper {
 				airTarget = "apk";
 				
 			}
+			
+			extension = ".apk";
 			
 		}
 		
@@ -112,12 +131,13 @@ class AIRHelper {
 			args.push (airTarget);
 			args = args.concat (signingOptions);
 			
+			
 		}
 		
 		if (target == "ios") {
 			
-			//args.push ("-provisioning-profile");
-			//args.push ("");
+			args.push ("-provisioning-profile");
+			args.push (IOSHelper.getProvisioningFile ());
 			
 		}
 		
@@ -135,6 +155,35 @@ class AIRHelper {
 		//args = args.concat ([ sourcePath /*, "icon_16.png", "icon_32.png", "icon_48.png", "icon_128.png"*/ ]);
 		
 		ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adt", args);
+		
+	}
+	
+	
+	public static function run (workingDirectory:String, debug:Bool):Void {
+		
+		if (target == "android") {
+				
+			AndroidHelper.install (FileSystem.fullPath (workingDirectory) + "/" + defines.get ("APP_FILE") + ".apk");
+			
+		} else if (target == "ios") {
+			
+			IOSHelper.launch (workingDirectory + "/" + defines.get ("APP_FILE") + ".ipa", debug);
+				
+		} else {
+			
+			var args = [ "-profile", "desktop" ];
+			
+			if (!debug) {
+				
+				args.push ("-nodebug");
+				
+			}
+			
+			args.push ("application.xml");
+			
+			ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adl", args);
+			
+		}
 		
 	}
 		
