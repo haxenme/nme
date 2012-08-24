@@ -35,25 +35,7 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 				}
 				
-				var hasMain = false;
-				
-				for (methodName in Type.getClassFields(::APP_MAIN::))
-				{
-					if (methodName == "main")
-					{
-						hasMain = true;
-						break;
-					}
-				}
-				
-				if (hasMain)
-				{
-					Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-				}
-				else
-				{
-					nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
-				}
+				nme.Lib.current.stage.addEventListener (nme.events.Event.RESIZE, initialize);
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::,
 			::WIN_FPS::,
@@ -65,6 +47,32 @@ class ApplicationMain
 			"::APP_TITLE::"
 		);
 		
+	}
+	
+	
+	private static function initialize (event:nme.events.Event):Void
+	{
+		nme.Lib.current.stage.removeEventListener (nme.events.Event.RESIZE, initialize);
+		
+		var hasMain = false;
+				
+		for (methodName in Type.getClassFields(::APP_MAIN::))
+		{
+			if (methodName == "main")
+			{
+				hasMain = true;
+				break;
+			}
+		}
+		
+		if (hasMain)
+		{
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		}
+		else
+		{
+			nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
+		}
 	}
 	
 	
