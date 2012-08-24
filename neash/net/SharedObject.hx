@@ -66,24 +66,58 @@ class SharedObject extends EventDispatcher
 		#end
 	}
 
-   #if !(iphone || android)
-   static public function createDirectoryRecurse(inDir:String)
-   {
-      var parts = inDir.split("\\").join("/").split("/");
-      var total = "";
-      for(part in parts)
-      {
-         if (part!="." && part!="")
-         {
-            if (total!="") total+="/";
-            total += part;
-            // Avoid drives etc...
-            if (total.length>5 && !FileSystem.exists(total))
-               FileSystem.createDirectory(total);
-         }
-      }
-   }
-   #end
+	#if !(iphone || android)
+	static public function mkdir (directory:String):Void
+	{
+		directory = StringTools.replace (directory, "\\", "/");
+		var total = "";
+		
+		if (directory.substr (0, 1) == "/") {
+			
+			total = "/";
+			
+		}
+		
+		var parts = directory.split("/");
+		var oldPath = "";
+		
+		if (parts.length > 0 && parts[0].indexOf (":") > -1) {
+			
+			oldPath = Sys.getCwd ();
+			Sys.setCwd (parts[0] + "\\");
+			parts.shift ();
+			
+		}
+		
+		for (part in parts) {
+			
+			if (part != "." && part != "") {
+				
+				if (total != "") {
+					
+					total += "/";
+					
+				}
+				
+				total += part;
+				
+				if (!FileSystem.exists (total)) {
+					
+					FileSystem.createDirectory (total);
+					
+				}
+				
+			}
+			
+		}
+		
+		if (oldPath != "") {
+			
+			Sys.setCwd (oldPath);
+			
+		}
+	}
+	#end
 	
 	
 	public function flush(minDiskSpace:Int = 0):SharedObjectFlushStatus
@@ -101,7 +135,7 @@ class SharedObject extends EventDispatcher
 			
 			if (!FileSystem.exists(folderPath))
 			{
-				createDirectoryRecurse(folderPath);
+				mkdir(folderPath);
 			}
 			
 			var output:FileOutput = File.write(filePath, false);

@@ -35,6 +35,8 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 				}
 				
+				// Need to wait for resize for the stage size to reflect properly
+				
 				nme.Lib.current.stage.addEventListener (nme.events.Event.RESIZE, initialize);
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::,
