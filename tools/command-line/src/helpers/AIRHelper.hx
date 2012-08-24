@@ -121,7 +121,6 @@ class AIRHelper {
 			args.push (airTarget);
 			args = args.concat (signingOptions);
 			
-			
 		}
 		
 		if (target == "ios") {
@@ -173,7 +172,7 @@ class AIRHelper {
 			ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adt", [ "-uninstallApp" ].concat (args).concat ([ "-appid", defines.get ("APP_PACKAGE") ]));
 			ProcessHelper.runCommand (workingDirectory, defines.get ("AIR_SDK") + "/bin/adt", [ "-installApp" ].concat (args).concat ([ "-package", FileSystem.fullPath (workingDirectory) + "/" + defines.get ("APP_FILE") + ".ipa" ]));
 			
-			if (targetFlags.exists (simulator)) {
+			if (targetFlags.exists ("simulator")) {
 				
 				ProcessHelper.runCommand ("", "open", [ "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app/" ]);
 				
