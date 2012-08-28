@@ -14,12 +14,6 @@ class AndroidHelper {
 	
 	public static function build (projectDirectory:String):Void {
 		
-		if (defines.exists ("JAVA_HOME")) {
-			
-			Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
-			
-		}
-		
 		if (defines.exists ("ANDROID_SDK")) {
 			
 			Sys.putEnv ("ANDROID_SDK", defines.get ("ANDROID_SDK"));

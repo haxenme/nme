@@ -151,6 +151,7 @@
 		<compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
 		<compilerflag value="-I${QNX_TARGET}/usr/include" if="blackberry"/>
 		<compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/>
+		<compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
 		<compilerflag value="-DSDL_OGL" if="sdl"/>
 		<compilerflag value="-DNME_CURL_SSL" if="ssl"/>
 		<compilerflag value="-Wno-conversion" if="linux"/>
@@ -196,6 +197,7 @@
 		<file name="software-renderer/TileRenderer.cpp"/>
 		<file name="software-renderer/TriangleRender.cpp"/>
 		
+		<compilerflag value="-DNME_OGL2" if="NME_OGL2" />
 		<file name="opengl/OpenGLContext.cpp" if="ogl"/>
 		<file name="opengl/OGLTexture.cpp" if="ogl"/>
 		<file name="opengl/OGLShaders.cpp" if="ogl"/>
@@ -345,7 +347,10 @@
 		<lib name="-lbps" if="blackberry"/>
 		<lib name="-lscreen" if="blackberry"/>
 		<lib name="-lEGL" if="blackberry"/>
+		
 		<lib name="-lGLESv1_CM" if="blackberry"/>
+		<!-- <lib name="-lGLESv2" if="blackberry" /> -->
+		
 		<lib name="-lm" if="blackberry"/>
         <lib name="-lsocket" if="blackberry"/>
 		

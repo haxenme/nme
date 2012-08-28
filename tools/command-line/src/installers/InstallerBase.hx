@@ -114,6 +114,19 @@ class InstallerBase {
 			
 		}
 		
+		if (defines.exists ("JAVA_HOME")) {
+			
+			Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
+			
+		}
+		
+		if (InstallTool.isWindows) {
+			
+			// Fix for Java on Windows 8 RTM
+			Sys.putEnv ("PATH", Sys.getEnv ("PATH") + ";" + Sys.getEnv ("JAVA_HOME") + "/bin");
+		
+		}
+		
 		if (command == "trace") {
 			
 			InstallTool.traceEnabled = true;
@@ -754,14 +767,6 @@ class InstallerBase {
 			
 			compilerFlags.push ("-D armv6");
 			
-		}
-		
-		// Fix for Java on Windows 8 RTM
-		
-		if (InstallTool.isWindows && defines.exists ("JAVA_HOME")) {
-			
-			Sys.putEnv ("PATH", Sys.getEnv ("PATH") + ";" + defines.get ("JAVA_HOME") + "/bin");
-		
 		}
 		
 	}

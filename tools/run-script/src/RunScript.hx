@@ -18,7 +18,7 @@ class RunScript {
 	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools/documentation/bin" ];
 	
 	
-	private static function build (targets:Array<String> = null):Void {
+	private static function build (targets:Array<String> = null, flags:Array<String> = null):Void {
 		
 		if (targets == null) {
 			
@@ -73,25 +73,25 @@ class RunScript {
 					
 					if (isWindows) {
 						
-						buildLibrary ("windows");
-						buildLibrary ("android");
-						buildLibrary ("blackberry");
-						buildLibrary ("webos");
+						buildLibrary ("windows", flags);
+						buildLibrary ("android", flags);
+						buildLibrary ("blackberry", flags);
+						buildLibrary ("webos", flags);
 						
 					} else if (isLinux) {
 						
-						buildLibrary ("linux");
-						buildLibrary ("android");
-						buildLibrary ("blackberry");
-						buildLibrary ("webos");
+						buildLibrary ("linux", flags);
+						buildLibrary ("android", flags);
+						buildLibrary ("blackberry", flags);
+						buildLibrary ("webos", flags);
 						
 					} else if (isMac) {
 						
-						buildLibrary ("mac");
-						buildLibrary ("ios");
-						buildLibrary ("android");
-						buildLibrary ("blackberry");
-						buildLibrary ("webos");
+						buildLibrary ("mac", flags);
+						buildLibrary ("ios", flags);
+						buildLibrary ("android", flags);
+						buildLibrary ("blackberry", flags);
+						buildLibrary ("webos", flags);
 						
 					}
 					
@@ -103,7 +103,7 @@ class RunScript {
 					
 				} else {
 					
-					buildLibrary (target);
+					buildLibrary (target, flags);
 					
 				}
 				
@@ -121,12 +121,18 @@ class RunScript {
 	}
 	
 	
-	static private function buildLibrary (target:String):Void {
+	static private function buildLibrary (target:String, flags:Array<String> = null):Void {
 		
 		if (!FileSystem.exists (nmeDirectory + "/../sdl-static")) {
 			
 			error ("You must have \"sdl-static\" checked out next to NME to build libraries");
 			return;
+			
+		}
+		
+		if (flags == null) {
+			
+			flags = [];
 			
 		}
 		
@@ -142,44 +148,44 @@ class RunScript {
 				
 				mkdir (nmeDirectory + "/ndll/Android");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7", "-Dfulldebug" ].concat (flags));
 			
 			case "blackberry":
 				
 				mkdir (nmeDirectory + "/ndll/BlackBerry");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator", "-Dfulldebug" ].concat (flags));
 			
 			case "ios":
 				
 				mkdir (nmeDirectory + "/ndll/iPhone");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7", "-Dfulldebug" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7", "-Dfulldebug" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim", "-Dfulldebug" ].concat (flags));
 			
 			case "linux":
 				
 				mkdir (nmeDirectory + "/ndll/Linux");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (flags), false);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (flags), false);
 				
 				if (isRunning64 ()) {
 					
 					mkdir (nmeDirectory + "/ndll/Linux64");
 					
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ]);
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ]);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (flags), false);
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (flags), false);
 					
 				}
 			
@@ -187,15 +193,15 @@ class RunScript {
 				
 				mkdir (nmeDirectory + "/ndll/Mac");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (flags));
 			
 			case "webos":
 				
 				mkdir (nmeDirectory + "/ndll/webOS");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ].concat (flags));
 			
 			case "windows":
 				
@@ -209,8 +215,8 @@ class RunScript {
 				
 				mkdir (nmeDirectory + "/ndll/Windows");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ]);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ]);
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (flags));
+				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (flags));
 			
 		}
 		
@@ -545,7 +551,7 @@ class RunScript {
 	}
 	
 
-	public static function runCommand (path:String, command:String, args:Array<String>):Int {
+	public static function runCommand (path:String, command:String, args:Array<String>, throwErrors:Bool = true):Int {
 		
 		var oldPath:String = "";
 		
@@ -572,13 +578,14 @@ class RunScript {
 			
 		}
 		
-		return result;
-		
-		//if (result != 0) {
+		if (throwErrors && result != 0) {
 			
+			Sys.exit (1);
 			//throw ("Error running: " + command + " " + args.join (" ") + " [" + path + "]");
 			
-		//}
+		}
+		
+		return result;
 		
 	}
 	
@@ -620,8 +627,19 @@ class RunScript {
 			}
 			
 			var targets:Array <String> = null;
+			var flags = [];
 			
-			if (args.length > 2) {
+			for (arg in args) {
+				
+				if (StringTools.startsWith (arg, "-D")) {
+					
+					flags.push (arg);
+					
+				}
+				
+			}
+			
+			if (args.length > 2 - flags.length) {
 				
 				targets = args[1].split (",");
 				
@@ -631,7 +649,7 @@ class RunScript {
 				
 				case "rebuild":
 					
-					build (targets);
+					build (targets, flags);
 				
 				case "release":
 					

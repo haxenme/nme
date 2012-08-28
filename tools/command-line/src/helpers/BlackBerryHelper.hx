@@ -41,7 +41,15 @@ class BlackBerryHelper {
 			
 		}
 		
-		ProcessHelper.runCommand (workingDirectory, binDirectory + "blackberry-nativepackager", args);
+		var exe = binDirectory + "blackberry-nativepackager";
+			
+		if (InstallTool.isWindows) {
+			
+			exe += ".bat";
+			
+		}
+		
+		ProcessHelper.runCommand (workingDirectory, exe, args);
 		
 		if (defines.exists ("KEY_STORE")) {
 			
@@ -56,7 +64,15 @@ class BlackBerryHelper {
 			
 			args.push (targetPath);
 			
-			ProcessHelper.runCommand (workingDirectory, binDirectory + "blackberry-signer", args);
+			var exe = binDirectory + "blackberry-signer";
+			
+			if (InstallTool.isWindows) {
+				
+				exe += ".bat";
+				
+			}
+			
+			ProcessHelper.runCommand (workingDirectory, exe, args);
 			
 		}
 		
@@ -85,7 +101,15 @@ class BlackBerryHelper {
 		
 		args = args.concat ([ "-device", deviceIP, "-password", devicePassword, targetPath ]);
 		
-		ProcessHelper.runCommand (workingDirectory, binDirectory + "blackberry-deploy", args);
+		var exe = binDirectory + "blackberry-deploy";
+		
+		if (InstallTool.isWindows) {
+			
+			exe += ".bat";
+			
+		}
+		
+		ProcessHelper.runCommand (workingDirectory, exe, args);
 		
 	}
 	
@@ -121,7 +145,15 @@ class BlackBerryHelper {
 			var cacheCwd = Sys.getCwd ();
 			Sys.setCwd (workingDirectory);
 			
-			var process = new Process(binDirectory + "blackberry-nativepackager", [ "-listmanifest", PathHelper.escape (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
+			var exe = binDirectory + "blackberry-nativepackager";
+			
+			if (InstallTool.isWindows) {
+				
+				exe += ".bat";
+				
+			}
+			
+			var process = new Process (exe, [ "-listmanifest", PathHelper.escape (PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"))) ]);
 			var ret = process.stdout.readAll().toString();
 			var ret2 = process.stderr.readAll().toString();
 			process.exitCode(); //you need this to wait till the process is closed!
@@ -170,7 +202,15 @@ class BlackBerryHelper {
 			
 		}
 		
-		ProcessHelper.runCommand (workingDirectory, binDirectory + "blackberry-deploy", [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, targetPath ] );
+		var exe = binDirectory + "blackberry-deploy";
+		
+		if (InstallTool.isWindows) {
+			
+			exe += ".bat";
+			
+		}
+		
+		ProcessHelper.runCommand (workingDirectory, exe, [ "-getFile", "logs/log", "-", "-device", deviceIP, "-password", devicePassword, targetPath ] );
 		
 	}
 		

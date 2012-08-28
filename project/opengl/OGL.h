@@ -3,9 +3,21 @@
 
 #if defined(WEBOS) || defined(BLACKBERRY) || defined(ANDROID) || defined(GPH)
 
-#include <GLES/gl.h>
-#include <GLES/glext.h>
 #define NME_GLES
+
+#ifdef NME_OGL2
+
+	#define NME_GLES2
+	#include <GLES2/gl2.h>
+	#include <GLES2/gl2ext.h>
+	#define ALLOW_OGL2
+	
+#else
+	
+	#include <GLES/gl.h>
+	#include <GLES/glext.h>
+	
+#endif
 
 #elif defined(IPHONE)
 
@@ -28,7 +40,7 @@
 #include <gl/GL.h>
 //#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
-#define ALLOW_OGL2
+#define NME_GLES2
 #define NEED_EXTENSIONS
 
 #endif

@@ -35,12 +35,6 @@ class HTML5Installer extends InstallerBase {
 		
 		if (targetFlags.exists ("minify")) {
 			
-			if (defines.exists ("JAVA_HOME")) {
-				
-				Sys.putEnv ("JAVA_HOME", defines.get ("JAVA_HOME"));
-				
-			}
-			
 			var sourceFile = outputDirectory + "/bin/" + defines.get ("APP_FILE") + ".js";
 			var tempFile = outputDirectory + "/bin/_" + defines.get ("APP_FILE") + ".js";
 			
