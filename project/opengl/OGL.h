@@ -40,7 +40,6 @@
 #include <gl/GL.h>
 //#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
-#define NME_GLES2
 #define NEED_EXTENSIONS
 
 #endif
