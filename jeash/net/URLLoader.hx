@@ -209,18 +209,12 @@ class URLLoader extends EventDispatcher
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
 		}
 		
-		if (uri != "") {
-			
-			xmlHttpRequest.send(uri);
-			onOpen();
-			getData = function () { return xmlHttpRequest.response; };
-			
-		} else {
-			
-			throw "Cannot access path \"" + url + "\", access may be denied";
-			//onError ("Cannot access path \"" + url + "\", access may be denied");
-			
-		}
+		untyped __js__ ("// If you receive \"DOMException: NETWORK_ERR\", you most likely are testing");
+		untyped __js__ ("// locally, and AJAX calls are not allowed in your browser for security");
+		
+		xmlHttpRequest.send(uri);
+		onOpen();
+		getData = function () { return xmlHttpRequest.response; };
 
 	}
 
