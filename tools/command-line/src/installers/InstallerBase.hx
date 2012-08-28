@@ -756,6 +756,14 @@ class InstallerBase {
 			
 		}
 		
+		// Fix for Java on Windows 8 RTM
+		
+		if (InstallTool.isWindows && defines.exists ("JAVA_HOME")) {
+			
+			Sys.putEnv ("PATH", Sys.getEnv ("PATH") + ";" + defines.get ("JAVA_HOME") + "/bin");
+		
+		}
+		
 	}
 	
 	

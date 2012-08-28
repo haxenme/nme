@@ -4,6 +4,7 @@ package helpers;
 class WebOSHelper {
 	
 	
+	private static var defines:Hash <String>;
 	private static var sdkDirectory:String;
 	
 	
@@ -16,6 +17,7 @@ class WebOSHelper {
 	
 	public static function initialize (defines:Hash <String>):Void {
 		
+		WebOSHelper.defines = defines;
 		sdkDirectory = "";
 		
 		if (defines.exists ("PalmSDK")) {
@@ -55,17 +57,7 @@ class WebOSHelper {
 	
 	private static function runPalmCommand (workingDirectory:String, command:String, args:Array<String>):Void {
 		
-		if (InstallTool.isWindows) {
-			
-			var jarFile = sdkDirectory + "\\share\\jars\\webos-tools.jar";
-			var newArgs = [ "-Dpalm.command=palm-" + command , "-jar", command ].concat (args);
-			ProcessHelper.runCommand (workingDirectory, "java" , newArgs);
-			
-		} else {
-			
-			ProcessHelper.runCommand (workingDirectory, sdkDirectory + "/bin/palm-" + command, args);
-			
-		}
+		ProcessHelper.runCommand (workingDirectory, sdkDirectory + "/bin/palm-" + command, args);
 		
 	}
 	
