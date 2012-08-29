@@ -190,28 +190,35 @@ class BlackBerryInstaller extends InstallerBase {
 	
 	private function updateIcon ():Void {
 		
-		var icon_name = icons.findIcon (86, 86);
+		context.ICONS = [];
+		var sizes = [ 150, 86 ];
 		
-		if (icon_name == "") {
+		for (size in sizes) {
 			
-			var tmpDir = buildDirectory + "/blackberry/haxe";
-			PathHelper.mkdir (tmpDir);
-			var tmp_name = tmpDir + "/icon.png";
+			var icon_name = icons.findIcon (size, size);
 			
-			if (icons.updateIcon (86, 86, tmp_name)) {
+			if (icon_name == "") {
 				
-				icon_name = tmp_name;
+				var tmpDir = buildDirectory + "/blackberry/haxe";
+				PathHelper.mkdir (tmpDir);
+				var tmp_name = tmpDir + "/icon_" + size + ".png";
+				
+				if (icons.updateIcon (size, size, tmp_name)) {
+					
+					icon_name = tmp_name;
+					
+				}
 				
 			}
 			
-		}
+			if (icon_name != "") {
+				
+				assets.push (new Asset (icon_name, "icon_" + size + ".png", Asset.TYPE_IMAGE, "icon_" + size + ".png", "1"));
+				context.ICONS.push ("icon_" + size + ".png");
+				context.HAS_ICON = true;
+				
+			}
 		
-		if (icon_name != "") {
-			
-			assets.push (new Asset (icon_name, "icon.png", Asset.TYPE_IMAGE, "icon.png", "1"));
-			context.APP_ICON = "icon.png";
-			context.HAS_ICON = true;
-			
 		}
 		
 	}
