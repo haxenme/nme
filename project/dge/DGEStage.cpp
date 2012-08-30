@@ -224,7 +224,7 @@ public:
 
 		//printf("Create ogl stuff...\n");
 
-      mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+      mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
       mOpenGLContext->IncRef();
       mOpenGLContext->SetWindowSize(inWidth,inHeight);
       mPrimarySurface = new DGESurface(m_pDev,mOpenGLContext);

@@ -722,6 +722,7 @@ class InstallerBase {
 		setDefault ("WIN_FPS", "60");
 		setDefault ("WIN_BACKGROUND", "0xffffff");
 		setDefault ("WIN_HARDWARE", "true");
+		setDefault ("WIN_SHADERS", "false");
 		
 		if (defines.exists ("mac")) {
 			

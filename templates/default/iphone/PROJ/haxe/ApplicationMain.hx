@@ -43,6 +43,7 @@ class ApplicationMain
 			::WIN_FPS::,
 			::WIN_BACKGROUND::,
 			(::WIN_HARDWARE:: ? nme.Lib.HARDWARE : 0) |
+			(::WIN_SHADERS:: ? nme.Lib.SHADERS : 0) |
 			(::WIN_RESIZABLE:: ? nme.Lib.RESIZABLE : 0) |
 			(::WIN_ANTIALIASING:: == 4 ? nme.Lib.HW_AA_HIRES : 0) |
 			(::WIN_ANTIALIASING:: == 2 ? nme.Lib.HW_AA : 0),

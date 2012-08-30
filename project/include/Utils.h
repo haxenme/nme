@@ -59,6 +59,7 @@ inline void DontLog(const char *inFormat,...) { }
 #endif
 
 
+
 namespace nme
 {
 

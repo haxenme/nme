@@ -466,7 +466,7 @@ class HardwareContext;
 class ManagedStage : public Stage
 {
 public:
-   ManagedStage(int inW,int inH);
+   ManagedStage(int inW,int inH,int inFlags);
    ~ManagedStage();
 
    void SetCursor(Cursor inCursor);
@@ -516,6 +516,7 @@ enum WindowFlags
    wfVSync      = 0x00000010,
    wfHW_AA      = 0x00000020,
    wfHW_AA_HIRES= 0x00000060,
+   wfAllowShaders = 0x00000080,
 };
 
 void StartAnimation();

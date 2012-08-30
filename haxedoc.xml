@@ -626,6 +626,7 @@
 		<VSYNC public="1" line="17" static="1"><c path="Int"/></VSYNC>
 		<HW_AA public="1" line="18" static="1"><c path="Int"/></HW_AA>
 		<HW_AA_HIRES public="1" line="19" static="1"><c path="Int"/></HW_AA_HIRES>
+		<ALLOW_SHADERS public="1" line="20" static="1"><c path="Int"/></ALLOW_SHADERS>
 		<company public="1" get="nmeGetCompany" set="null" static="1"><c path="String"/></company>
 		<current public="1" get="nmeGetCurrent" set="null" static="1"><c path="nme.display.MovieClip"/></current>
 		<file public="1" get="nmeGetFile" set="null" static="1"><c path="String"/></file>
@@ -634,12 +635,12 @@
 		<packageName public="1" get="nmeGetPackageName" set="null" static="1"><c path="String"/></packageName>
 		<stage public="1" get="nmeGetStage" set="null" static="1"><c path="nme.display.Stage"/></stage>
 		<version public="1" get="nmeGetVersion" set="null" static="1"><c path="String"/></version>
-		<close public="1" set="method" line="35" static="1">
+		<close public="1" set="method" line="36" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>* Closes the application.
 	 * This is method is ignored in the Flash and HTML5 targets.</haxe_doc>
 		</close>
-		<create public="1" set="method" line="58" static="1">
+		<create public="1" set="method" line="59" static="1">
 			<f a="onLoaded:width:height:?frameRate:?color:?flags:?title:?icon">
 				<f a=""><e path="Void"/></f>
 				<c path="Int"/>
@@ -664,7 +665,7 @@
 	 * @param	title		The title to use when creating the application window.
 	 * @param	icon		An icon to use for the created application window.</haxe_doc>
 		</create>
-		<createManagedStage public="1" set="method" line="74" static="1">
+		<createManagedStage public="1" set="method" line="75" static="1">
 			<f a="width:height">
 				<c path="Int"/>
 				<c path="Int"/>
@@ -676,20 +677,20 @@
 	 * @param	width		The requested width of the managed stage.
 	 * @param	height		The requested width of the managed stage.</haxe_doc>
 		</createManagedStage>
-		<exit public="1" set="method" line="90" static="1">
+		<exit public="1" set="method" line="91" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc><![CDATA[* Similar to the <code>close()</code> method, but the current 
 	 * <code>Stage</code> object is given an opportunity to handle 
 	 * the quit event before the application process is ended.
 	 * This method is ignored in the Flash and HTML5 targets.]]></haxe_doc>
 		</exit>
-		<forceClose public="1" set="method" line="104" static="1">
+		<forceClose public="1" set="method" line="105" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>* Terminates the application process immediately without
 	 * performing a clean shutdown.
 	 * This method is ignored in the Flash and HTML5 targets.</haxe_doc>
 		</forceClose>
-		<getTimer public="1" get="inline" set="null" line="122" static="1">
+		<getTimer public="1" get="inline" set="null" line="123" static="1">
 			<f a=""><c path="Int"/></f>
 			<haxe_doc><![CDATA[* Returns the time in milliseconds, relative to the start of
 	 * the application. This is a high performance call in order to 
@@ -699,7 +700,7 @@
 	 * <code>Date</code> object.
 	 * @return		A relative time value in milliseconds.]]></haxe_doc>
 		</getTimer>
-		<getURL public="1" set="method" line="141" static="1">
+		<getURL public="1" set="method" line="142" static="1">
 			<f a="url:?target">
 				<c path="nme.net.URLRequest"/>
 				<c path="String"/>
@@ -709,14 +710,14 @@
 	 * @param	url		The URL to open.
 	 * @param	target		An optional window target value.</haxe_doc>
 		</getURL>
-		<pause public="1" set="method" line="160" static="1">
+		<pause public="1" set="method" line="161" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>* For supported platforms, the NME application will be
 	 * paused. This can help improve response times if fullscreen
 	 * native UI element is being used temporarily.
 	 * This method is ignored in the Flash and HTML5 targets.</haxe_doc>
 		</pause>
-		<postUICallback public="1" set="method" line="178" static="1">
+		<postUICallback public="1" set="method" line="179" static="1">
 			<f a="handler">
 				<f a=""><e path="Void"/></f>
 				<e path="Void"/>
@@ -729,14 +730,14 @@
 	 * handler method will be called immediately.
 	 * @param	handler		The method handler you wish to call when the UI is available.</haxe_doc>
 		</postUICallback>
-		<resume public="1" set="method" line="195" static="1">
+		<resume public="1" set="method" line="196" static="1">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>* Resumes the NME application. For certain platforms,
 	 * pausing the application can improve response times when
 	 * a fullscreen native UI element is being displayed.
 	 * This method is ignored in the Flash and HTML5 targets.</haxe_doc>
 		</resume>
-		<setPackage public="1" set="method" line="214" static="1">
+		<setPackage public="1" set="method" line="215" static="1">
 			<f a="company:file:packageName:version">
 				<c path="String"/>
 				<c path="String"/>
@@ -753,7 +754,7 @@
 	 * @param	packageName		The package name of the application.
 	 * @param	version		The version string of the application.</haxe_doc>
 		</setPackage>
-		<trace public="1" set="method" line="227" static="1">
+		<trace public="1" set="method" line="228" static="1">
 			<f a="arg">
 				<d/>
 				<e path="Void"/>
@@ -761,14 +762,14 @@
 			<haxe_doc><![CDATA[* Sends a <code>trace</code> call for the current platform.
 	 * @param	arg]]></haxe_doc>
 		</trace>
-		<nmeGetCompany set="method" line="246" static="1"><f a=""><c path="String"/></f></nmeGetCompany>
-		<nmeGetCurrent set="method" line="256" static="1"><f a=""><c path="nme.display.MovieClip"/></f></nmeGetCurrent>
-		<nmeGetFile set="method" line="270" static="1"><f a=""><c path="String"/></f></nmeGetFile>
-		<nmeGetInitHeight set="method" line="280" static="1"><f a=""><c path="Int"/></f></nmeGetInitHeight>
-		<nmeGetInitWidth set="method" line="290" static="1"><f a=""><c path="Int"/></f></nmeGetInitWidth>
-		<nmeGetPackageName set="method" line="300" static="1"><f a=""><c path="String"/></f></nmeGetPackageName>
-		<nmeGetStage set="method" line="310" static="1"><f a=""><c path="nme.display.Stage"/></f></nmeGetStage>
-		<nmeGetVersion set="method" line="322" static="1"><f a=""><c path="String"/></f></nmeGetVersion>
+		<nmeGetCompany set="method" line="247" static="1"><f a=""><c path="String"/></f></nmeGetCompany>
+		<nmeGetCurrent set="method" line="257" static="1"><f a=""><c path="nme.display.MovieClip"/></f></nmeGetCurrent>
+		<nmeGetFile set="method" line="271" static="1"><f a=""><c path="String"/></f></nmeGetFile>
+		<nmeGetInitHeight set="method" line="281" static="1"><f a=""><c path="Int"/></f></nmeGetInitHeight>
+		<nmeGetInitWidth set="method" line="291" static="1"><f a=""><c path="Int"/></f></nmeGetInitWidth>
+		<nmeGetPackageName set="method" line="301" static="1"><f a=""><c path="String"/></f></nmeGetPackageName>
+		<nmeGetStage set="method" line="311" static="1"><f a=""><c path="nme.display.Stage"/></f></nmeGetStage>
+		<nmeGetVersion set="method" line="323" static="1"><f a=""><c path="String"/></f></nmeGetVersion>
 	</class>
 	<class path="nme.Memory" params="" file="/Users/joshua/Development/Haxe/nme/nme/Memory.hx" extern="1">
 		<select public="1" set="method" static="1"><f a="inBytes">

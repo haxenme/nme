@@ -27,8 +27,8 @@ static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 
 static bool sgInitCalled = false;
-
 static bool sgJoystickEnabled = false;
+static bool sgAllowShaders = false;
 
 enum { NO_TOUCH = -1 };
 
@@ -204,7 +204,7 @@ public:
 
       if (mIsOpenGL)
       {
-         mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+         mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
          mOpenGLContext->IncRef();
          mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
          mPrimarySurface = new HardwareSurface(mOpenGLContext);
@@ -256,13 +256,13 @@ public:
          // display lists. So Work around it.
          gTextureContextVersion++;
  
-         mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags );
+         mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
   
          if (mIsOpenGL)
          {
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
             mOpenGLContext->SetWindowSize(inWidth, inHeight);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -305,7 +305,7 @@ public:
          {
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0,0);
+            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
             mOpenGLContext->SetWindowSize(w, h);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -577,6 +577,7 @@ SDL_Joystick *sgJoystick = 0;
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
+
 #ifdef HX_MACOS
    MacBoot();
 #endif
@@ -592,6 +593,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool opengl = (inFlags & wfHardware) != 0;
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
+   sgAllowShaders = (inFlags & wfAllowShaders) != 0;
 
    Rect r(100,100,inWidth,inHeight);
 
@@ -697,7 +699,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
             SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
             SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
 			#ifdef WEBOS
-		 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+		 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, sgAllowShaders ? 2 : 1);
          	#endif
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

@@ -15,7 +15,7 @@ namespace nme
 //typedef std::vector<Stage *> StageList;
 static Stage *sgStage = 0;
 
-ManagedStage::ManagedStage(int inWidth,int inHeight)
+ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
 {
    mHardwareContext = 0;
    mHardwareSurface = 0;
@@ -28,7 +28,7 @@ ManagedStage::ManagedStage(int inWidth,int inHeight)
 
    sgStage = this;
 
-   mHardwareContext = HardwareContext::CreateOpenGL(0,0);
+   mHardwareContext = HardwareContext::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
    mHardwareContext->IncRef();
    mHardwareSurface = new HardwareSurface(mHardwareContext);
    mHardwareSurface->IncRef();

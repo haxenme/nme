@@ -71,6 +71,8 @@ class RunScript {
 				
 				if (target == "all") {
 					
+					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
+					
 					if (isWindows) {
 						
 						buildLibrary ("windows", flags);

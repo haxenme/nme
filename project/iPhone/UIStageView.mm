@@ -96,6 +96,7 @@ namespace nme { int gFixedOrientation = -1; }
 UIStageView *sgMainView = nil;
 static FrameCreationCallback sOnFrame = nil;
 static bool sgHardwareRendering = true;
+static bool sgAllowShaders = false;
 
 
 
@@ -210,9 +211,9 @@ public:
          CreateOGLFramebuffer();
       
          #ifndef OBJC_ARC
-         mHardwareContext = HardwareContext::CreateOpenGL(inLayer, mOGLContext);
+         mHardwareContext = HardwareContext::CreateOpenGL(inLayer, mOGLContext, sgAllowShaders);
          #else
-         mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)inLayer, (__bridge void *)mOGLContext);
+         mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)inLayer, (__bridge void *)mOGLContext, sgAllowShaders);
          #endif
          mHardwareContext->IncRef();
          mHardwareContext->SetWindowSize(backingWidth, backingHeight);
@@ -1156,6 +1157,7 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    char **argv = 0;// *_NSGetArgv();
 
    sgHardwareRendering = (inFlags & wfHardware );
+   sgAllowShaders = (inFlags & wfAllowShaders);
    //printf("Flags %08x %d\n", inFlags, sgHardwareRendering);
    if (!sgHardwareRendering)
       gC0IsRed = false;

@@ -38,9 +38,9 @@ class ManagedStage extends Stage
 	static inline public var efPrimaryTouch   = 0x8000;
 	
 	
-	public function new(inWidth:Int, inHeight:Int)
+	public function new(inWidth:Int, inHeight:Int, inFlags:Int = 0)
 	{	
-		super(nme_managed_stage_create(inWidth, inHeight), inWidth, inHeight);	
+		super(nme_managed_stage_create(inWidth, inHeight, inFlags), inWidth, inHeight);	
 	}
 	
 	

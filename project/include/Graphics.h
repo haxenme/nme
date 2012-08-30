@@ -557,7 +557,7 @@ class HardwareContext : public Object
 {
 public:
    static HardwareContext *current;
-   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx);
+   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
 
    // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );

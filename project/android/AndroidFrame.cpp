@@ -46,7 +46,7 @@ class AndroidStage : public Stage
 public:
    AndroidStage(int inWidth,int inHeight,int inFlags) : Stage(true)
    {
-      mHardwareContext = HardwareContext::CreateOpenGL(0,0);
+      mHardwareContext = HardwareContext::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
       mHardwareContext->IncRef();
       mHardwareContext->SetWindowSize(inWidth,inHeight);
       mHardwareSurface = new HardwareSurface(mHardwareContext);

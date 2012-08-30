@@ -27,6 +27,7 @@ class Lib
    static public var VSYNC = 0x0010;
    static public var HW_AA = 0x0020;
    static public var HW_AA_HIRES = 0x0060;
+   static public var ALLOW_SHADERS = 0x0080;
    
    public static var current(nmeGetCurrent, null):MovieClip;
    public static var initHeight(default, null):Int;
@@ -78,11 +79,11 @@ class Lib
    }
 
 
-   public static function createManagedStage(inWidth:Int, inHeight:Int)
+   public static function createManagedStage(inWidth:Int, inHeight:Int, inFlags:Int = 0)
    {
       initWidth = inWidth;
       initHeight = inHeight;
-      var result = new ManagedStage(inWidth, inHeight);
+      var result = new ManagedStage(inWidth, inHeight, inFlags);
       nmeStage = result;
       return result;
    }

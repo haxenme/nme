@@ -8,13 +8,6 @@
 #undef DEFINE_EXTENSION
 #endif
 
-#ifndef GL_LINE_SMOOTH
-#define GL_LINE_SMOOTH NULL
-#endif
-
-#ifndef GL_POINT_SMOOTH
-#define GL_POINT_SMOOTH NULL
-#endif
 
 
 int sgDrawCount = 0;
@@ -105,7 +98,6 @@ public:
       else
       {
          // TODO: Clear with a rect
-         #ifndef NME_GLES2
          // TODO: Need replacement call for GLES2
          glColor4f((GLclampf)( ((inColour >>16) & 0xff) /255.0),
                    (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
@@ -128,7 +120,6 @@ public:
          glPopMatrix();
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
-         #endif
       }
 
 
@@ -138,7 +129,6 @@ public:
 
    virtual void setOrtho(float x0,float x1, float y0, float y1)
    {
-      #ifndef NME_GLES2
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       #if defined(NME_GLES)
@@ -151,7 +141,6 @@ public:
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
       mModelView = Matrix();
-      #endif
    }
 
    void SetViewport(const Rect &inRect)
@@ -192,10 +181,8 @@ public:
       if (mQuality>=sqBest)
          glEnable(GL_LINE_SMOOTH);
       mLineWidth = 99999;
-      #ifndef NME_GLES2
       // TODO: Need replacement call for GLES2
       glEnableClientState(GL_VERTEX_ARRAY);
-      #endif
       // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
       sgDrawCount = 0;
       sgDrawBitmap = 0;
@@ -218,7 +205,6 @@ public:
 
    virtual void CombineModelView(const Matrix &inModelView)
    {
-      #ifndef NME_GLES2
       // Do not combine ModelView and Projection in fixed-function
       float matrix[] =
       {
@@ -228,7 +214,6 @@ public:
          mModelView.mtx, mModelView.mty, 0, 1
       };
       glLoadMatrixf(matrix);
-      #endif
    }
 
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
@@ -412,18 +397,15 @@ public:
 
    virtual void SetSolidColour(unsigned int col)
    {
-       #ifndef NME_GLES2
        glColor4f(
          (float) ((col >> 16) & 0xFF) *  one_on_255,
          (float) ((col >> 8) & 0xFF) * one_on_255,
          (float) (col & 0xFF) * one_on_255,
          (float) ((col >> 24) & 0xFF) * one_on_255);
-        #endif
    }
 
    virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
    {
-      #ifndef NME_GLES2
       if (!inSurface)
       {
          glDisable(GL_TEXTURE_2D);
@@ -436,30 +418,24 @@ public:
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glTexCoordPointer(2,GL_FLOAT,0,inTexCoords);
       }
-      #endif
    }
 
    virtual void SetPositionData(const float *inData,bool inPerspective)
    {
-      #ifndef NME_GLES2
       glVertexPointer(inPerspective ? 4 : 2,GL_FLOAT,0,inData);
-      #endif
    }
 
    virtual void SetModulatingTransform(const ColorTransform *inTransform)
    {
-      #ifndef NME_GLES2
       if (inTransform)
          glColor4f( inTransform->redMultiplier,
                     inTransform->greenMultiplier,
                     inTransform->blueMultiplier,
                     inTransform->alphaMultiplier);
-       #endif
    }
 
    virtual void SetColourArray(const int *inData)
    {
-      #ifndef NME_GLES2
       if (inData)
       {
          mColourArrayEnabled = true;
@@ -471,27 +447,21 @@ public:
          mColourArrayEnabled = false;
          glDisableClientState(GL_COLOR_ARRAY);
       }
-      #endif
    }
 
    virtual void PushBitmapMatrix()
    {
-      #ifndef NME_GLES2
       glPushMatrix();
       glLoadIdentity();
-      #endif
    }
 
    virtual void PopBitmapMatrix()
    {
-      #ifndef NME_GLES2
       glPopMatrix();
-      #endif
    }
 
    virtual void PrepareBitmapRender()
    {
-      #ifndef NME_GLES2
       glColor4f(
         (float) ((mTint >> 16) & 0xFF) *one_on_255,
         (float) ((mTint >> 8) & 0xFF) *one_on_255,
@@ -502,7 +472,6 @@ public:
       #ifdef NME_DITHER
       if (!inSmooth)
         glDisable(GL_DITHER);
-      #endif
       #endif
    }
 
@@ -555,10 +524,8 @@ public:
    
    virtual void SetBitmapData(const float *inPos, const float *inTex)
    {
-      #ifndef NME_GLES2
       glVertexPointer(2,GL_FLOAT,0,inPos);
       glTexCoordPointer(2,GL_FLOAT,0,inTex);
-      #endif
    }
 
    void EndBitmapRender()
@@ -598,11 +565,9 @@ public:
          mLineWidth = inWidth;
          glLineWidth(w);
          
-         #ifndef NME_GLES2
          // TODO: Need replacement call for GLES2?
          if (mPointsToo)
             glPointSize(inWidth);
-         #endif
       }
    }
 
@@ -836,18 +801,14 @@ public:
       mCurrentProg->setTint(mTint);
       mBitmapSurface->Bind(*this, mCurrentProg->getTextureSlot() );
       mCurrentProg->setTransform(mBitmapTrans);
-      #ifndef NME_GLES2
       // TODO: Need replacement call for GLES2
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      #endif
    }
 
    virtual void FinishBitmapRender()
    {
-      #ifndef NME_GLES2
       // TODO: Need replacement call for GLES2
       glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      #endif
    }
 
    virtual void SetRadialGradient(bool inIsRadial, float inFocus)
@@ -905,13 +866,18 @@ void InitExtensions()
    }
 }
 
-HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx)
+HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
 {
-   #ifdef NME_OGL2
-   HardwareContext *ctx =  new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
-   #else
-   HardwareContext *ctx =  new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
-   #endif
+   HardwareContext *ctx;
+   
+   if (shaders)
+   {
+      ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
+   }
+   else
+   {
+      ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+   }
 
    InitExtensions();
    return ctx;

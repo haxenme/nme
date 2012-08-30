@@ -197,7 +197,6 @@
 		<file name="software-renderer/TileRenderer.cpp"/>
 		<file name="software-renderer/TriangleRender.cpp"/>
 		
-		<compilerflag value="-DNME_OGL2" if="NME_OGL2" />
 		<file name="opengl/OpenGLContext.cpp" if="ogl"/>
 		<file name="opengl/OGLTexture.cpp" if="ogl"/>
 		<file name="opengl/OGLShaders.cpp" if="ogl"/>
@@ -337,9 +336,11 @@
 		
 		<lib name="-ldl" if="android"/>
 		<lib name="-lGLESv1_CM" if="android"/>
+		<lib name="-lGLESv2" if="android"/>
 		<lib name="-lz" if="android"/>
 		
 		<lib name="-lGLES_CM" if="webos"/>
+		<lib name="-lGLESv2" if="webos"/>
 		<lib name="-lpdl" if="webos"/>
 		
 		<lib name="-lSDL${name_extra}" if="blackberry"/>
@@ -349,7 +350,7 @@
 		<lib name="-lEGL" if="blackberry"/>
 		
 		<lib name="-lGLESv1_CM" if="blackberry"/>
-		<!-- <lib name="-lGLESv2" if="blackberry" /> -->
+		<lib name="-lGLESv2" if="blackberry" />
 		
 		<lib name="-lm" if="blackberry"/>
         <lib name="-lsocket" if="blackberry"/>

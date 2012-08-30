@@ -17,6 +17,7 @@ class Lib
 	public static var VSYNC = 0x0010;
 	public static var HW_AA = 0x0020;
 	public static var HW_AA_HIRES = 0x0060;
+	public static var ALLOW_SHADERS = 0x0080;
 	
 	public static var company(nmeGetCompany, null):String;
 	public static var current (nmeGetCurrent, null):MovieClip;

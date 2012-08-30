@@ -5,19 +5,11 @@
 
 #define NME_GLES
 
-#ifdef NME_OGL2
-
-	#define NME_GLES2
-	#include <GLES2/gl2.h>
-	#include <GLES2/gl2ext.h>
-	#define ALLOW_OGL2
-	
-#else
-	
-	#include <GLES/gl.h>
-	#include <GLES/glext.h>
-	
-#endif
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#define ALLOW_OGL2
 
 #elif defined(IPHONE)
 
@@ -32,6 +24,7 @@
 // Mac/Linux....
 #include <SDL_opengl.h>
 #define FORCE_NON_PO2
+#define ALLOW_OGL2
 
 #else
 
