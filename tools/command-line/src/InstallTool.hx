@@ -177,7 +177,7 @@ class InstallTool {
 				
 				if (!FileSystem.isDirectory (PathHelper.combine (path, file))) {
 					
-					if (Path.extension (file) == "nmml") {
+					if (Path.extension (file) == "nmml" && file != "include.nmml") {
 						
 						matches.push (PathHelper.combine (path, file));
 						
