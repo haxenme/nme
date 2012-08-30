@@ -191,7 +191,7 @@ class BlackBerryInstaller extends InstallerBase {
 	private function updateIcon ():Void {
 		
 		context.ICONS = [];
-		var sizes = [ 150, 86 ];
+		var sizes = [ 86, 150 ];
 		
 		for (size in sizes) {
 			
