@@ -105,6 +105,11 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			ThrowEOFi();
 	}
 	
+	public function clear()
+	{
+		position = 0;
+		length = 0;
+	}
 	
 	public function compress(algorithm:String = "")
 	{
