@@ -160,16 +160,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	/** @private */ inline function push_uncheck(inByte:Int)
-	{
-		#if cpp
-		untyped b.__unsafe_set(length++, inByte);
-		#else
-		untyped __dollar__sset(b, length++, inByte & 0xff);
-		#end
-	}
-	
-	
+
 	public inline function readBoolean():Bool
 	{
 		return (position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
@@ -367,9 +358,19 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#end
 	}
 	
+	/** @private */ inline function write_uncheck(inByte:Int)
+	{
+		#if cpp
+		untyped b.__unsafe_set(position++, inByte);
+		#else
+		untyped __dollar__sset(b, position++, inByte & 0xff);
+		#end
+	}
+	
+	
 	public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0)
 	{
-		if (inLength == 0) inLength = bytes.length;
+		if (inLength == 0) inLength = bytes.length - inOffset;
 		ensureElem(position + inLength - 1, true);
 		var opos = position;
 		position += inLength;
@@ -409,20 +410,20 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeInt(value:Int)
 	{
-		ensureElem(length + 3, false);
+		ensureElem(position + 3, true);
 		if (bigEndian)
 		{
-			push_uncheck(value >> 24);
-			push_uncheck(value >> 16);
-			push_uncheck(value >> 8);
-			push_uncheck(value);
+			write_uncheck(value >> 24);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 		}
 		else
 		{
-			push_uncheck(value);
-			push_uncheck(value >> 8);
-			push_uncheck(value >> 16);
-			push_uncheck(value >> 24);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 24);
 		}
 	}
 	
@@ -433,16 +434,16 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeShort(value:Int)
 	{
-		ensureElem(length + 1, false);
+		ensureElem(position + 1, true);
 		if (bigEndian)
 		{
-			push_uncheck(value >> 8);
-			push_uncheck(value);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 		}
 		else
 		{
-			push_uncheck(value);
-			push_uncheck(value >> 8);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
 		}
 	}
 	
