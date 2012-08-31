@@ -74,7 +74,7 @@ class InstallerBase {
 	}
 	
 	
-	public function create (NME:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, debug:Bool, args:Array<String>):Void {
+	public function create (NME:String, command:String, defines:Hash <String>, userDefines:Hash <String>, includePaths:Array <String>, projectFile:String, target:String, targetFlags:Hash <String>, haxeFlags:Array <String>, debug:Bool, args:Array<String>):Void {
 		
 		this.NME = NME;
 		this.command = command;
@@ -87,6 +87,8 @@ class InstallerBase {
 		this.args = args;
 		
 		templatePaths = [ NME + "/templates/default/" ];
+		
+		compilerFlags = compilerFlags.concat (haxeFlags);
 		
 		for (key in userDefines.keys ()) {
 			
