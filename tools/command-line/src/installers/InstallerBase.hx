@@ -18,6 +18,11 @@ import sys.io.File;
 import sys.io.FileOutput;
 import sys.FileSystem;
 
+typedef JavaNode = {
+	@:optional var classpath:String;
+	@:optional var manifest:String;
+	@:optional var resources:String;
+}
 
 class InstallerBase {
 	
@@ -34,7 +39,7 @@ class InstallerBase {
 	private var launchImages:Array<LaunchImage>;
 	private var icons:Icons;
 	private var includePaths:Array <String>;
-	private var javaPaths:Array <String>;
+	private var javaNodes:Array <JavaNode>;
 	private var ndlls:Array <NDLL>;
 	private var allFiles:Array <String>;
 	private var NME:String;
@@ -62,14 +67,14 @@ class InstallerBase {
 		launchImages = new Array<LaunchImage>();
 		icons = new Icons ();
 		includePaths = new Array <String> ();
-		javaPaths = new Array <String> ();
+		javaNodes = new Array <JavaNode> ();
 		allFiles = new Array <String> ();
 		ndlls = new Array <NDLL> ();
-      sslCaCert = "";
-      iosDeployment = "3.2";
-      iosBinaries = "armv6";
-      iosDevices = "universal";
-      iosCompiler = "clang";
+		sslCaCert = "";
+		iosDeployment = "3.2";
+		iosBinaries = "armv6";
+		iosDevices = "universal";
+		iosCompiler = "clang";
 		
 	}
 	
@@ -387,14 +392,25 @@ class InstallerBase {
 			nmml += "\n";
 			
 		}
-		
-		for (javaPath in javaPaths) {
-			
-			nmml += '	<java path="' + javaPath + '" />\n';
-			
+
+		for (javaNode in javaNodes) {
+
+			var node = "<java ";
+
+			if (javaNode.classpath != null)
+				node += "path=" + javaNode.classpath + " ";
+
+			if (javaNode.manifest != null)
+				node += "manifest=" + javaNode.manifest + " ";
+
+			if (javaNode.resources != null)
+				node += "resources=" + javaNode.resources + " ";
+
+			nmml += node + "/>\n";
+
 		}
-		
-		if (javaPaths.length > 0) {
+
+		if (javaNodes.length > 0) {
 			
 			nmml += "\n";
 			
@@ -1393,8 +1409,19 @@ class InstallerBase {
 						parseAppElement (element);
 					
 					case "java":
-						
-						javaPaths.push (extensionPath + substitute (element.att.path));
+
+						var javaNode:JavaNode = {};
+
+						if (element.has.path)
+							javaNode.classpath = extensionPath + substitute (element.att.path);
+
+						if (element.has.manifest)
+							javaNode.manifest = extensionPath + substitute (element.att.manifest);
+
+						if (element.has.resources)
+							javaNode.resources = extensionPath + substitute (element.att.resources);
+
+						javaNodes.push(javaNode);
 					
 					case "haxelib":
 						
