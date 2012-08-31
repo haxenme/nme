@@ -85,7 +85,7 @@ public class BrowserLauncher {
         
         @Override
         protected void onPause() {
-            overridePendingTransition(R.anim.hold, R.anim.slide_out_ro_right);
+            overridePendingTransition(R.anim.hold, R.anim.slide_out_to_right);
             super.onPause();
         }
         
