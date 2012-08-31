@@ -16,7 +16,7 @@
       width="320"
 		height="480"
 		fps="60"
-		background="0xffffff"
+		background="0xbbbbbb"
       resizable="true"
 		hardware="true"
 	/>
