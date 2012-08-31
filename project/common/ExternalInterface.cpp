@@ -3361,7 +3361,6 @@ DEFINE_PRIM(nme_sound_from_file,2);
 
 value nme_sound_from_data(value inData, value inLen, value inForceMusic)
 {
-   #ifndef IPHONE
    int length = val_int(inLen);
    Sound *sound;
    printf("trying bytes with length %d", length);
@@ -3380,7 +3379,6 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       sound->DecRef();
       return result;
    }
-   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_from_data, 3);
