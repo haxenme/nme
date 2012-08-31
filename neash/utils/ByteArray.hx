@@ -155,17 +155,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	#if cpp inline #end function push(inByte:Int)
-	{
-		#if cpp
-		b[length++] = untyped inByte;
-		#else
-		ensureElem(length, false);
-		untyped __dollar__sset(b, length++, inByte & 0xff);
-		#end
-	}
-	
-	
 	/** @private */ inline function push_uncheck(inByte:Int)
 	{
 		#if cpp
@@ -360,24 +349,26 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeBoolean(value:Bool)
 	{
-		push(value ? 1 : 0);
+		writeByte(value ? 1 : 0);
 	}
-	
 	
 	inline public function writeByte(value:Int)
 	{
-		push(value);
+		ensureElem(position, true);
+		#if cpp
+		b[position++] = untyped value;
+		#else
+		untyped __dollar__sset(b, position++, value & 0xff);
+		#end
 	}
-	
 	
 	public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0)
 	{
-		if (inLength == 0)
-			inLength = bytes.length;
-		ensureElem(length + inLength - 1, false);
-		var olen = length;
-		length += inLength;
-		blit(olen, bytes, inOffset, inLength);
+		if (inLength == 0) inLength = bytes.length;
+		ensureElem(position + inLength - 1, true);
+		var opos = position;
+		position += inLength;
+		blit(opos, bytes, inOffset, inLength);
 	}
 	
 	
