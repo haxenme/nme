@@ -493,7 +493,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 {
    if (!Init())
       return 0;
-   Sound *sound = inForceMusic ? 0 :  new SDLSound(inFilename);
+   Sound *sound = new SDLSound(inFilename);
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();
@@ -505,7 +505,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic) {
    if (!Init())
       return 0;
-   Sound *sound = inForceMusic ? 0 :  new SDLSound(inData, len);
+   Sound *sound = new SDLSound(inData, len);
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();

@@ -3371,6 +3371,8 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       }
       printf("I'm here! trying bytes with length %d", length);
       sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+   } else {
+	   val_throw(alloc_string("Empty ByteArray"));
    }
 
    if (sound)
@@ -3378,6 +3380,8 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       value result =  ObjectToAbstract(sound);
       sound->DecRef();
       return result;
+   } else {
+	   val_throw(alloc_string("Not Sound"));
    }
    return alloc_null();
 }
