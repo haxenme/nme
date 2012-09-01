@@ -202,7 +202,7 @@ public class Sound
 		MessageDigest messageDigest = MessageDigest.getInstance("md5");
 		messageDigest.update(data);
 		String md5 = new java.math.BigInteger(1, messageDigest.digest()).toString(16);
-		File file = new File(mContext.getFilesDir() + "/" + md5 + ".wav");
+		File file = new File(mContext.getCacheDir() + "/" + md5 + ".wav");
 
 		//File file = File.createTempFile("temp", ".sound", mContext.getFilesDir());
 		if (!file.exists()) {
