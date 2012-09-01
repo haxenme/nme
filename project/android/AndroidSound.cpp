@@ -227,6 +227,34 @@ namespace nme
 			if (handleID < 0)
 				mMode = MODE_MUSIC_PATH;
 		}
+		
+		AndroidSound(unsigned char *inData, int len, bool inForceMusic)
+		{
+			JNIEnv *env = GetEnv();
+			IncRef();
+
+			mMode = MODE_UNKNOWN;
+			handleID = -1;
+			mLength = 0;
+			mManagerID = getSoundPoolID();
+			mSoundPath = "";
+
+			jclass cls = env->FindClass("org/haxe/nme/Sound");	
+			jbyteArray data = env->NewByteArray(len);
+			env->SetByteArrayRegion(data, 0, len, (const jbyte *)inData);
+
+			if (!inForceMusic) {
+				jmethodID mid = env->GetStaticMethodID(cls, "getSoundHandle", "([B)I");
+				if (mid > 0) {
+					handleID = env->CallStaticIntMethod(cls, mid, data);
+					if (handleID >= 0)
+						mMode = MODE_SOUND_ID;
+				}
+			}
+
+			if (handleID < 0)
+				mMode = MODE_MUSIC_PATH;
+		}
 
 		void reloadSound()
 		{
@@ -301,10 +329,11 @@ namespace nme
 
 	Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 	{
-		return new AndroidSound(inFilename,inForceMusic);
+		return new AndroidSound(inFilename, inForceMusic);
 	}
 
 	Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
 	{
+		return new AndroidSound(inData, len, inForceMusic);
 	}
 }
