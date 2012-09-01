@@ -100,7 +100,7 @@ class FlashHelper {
 							throw "File " + src + " contains mixed mono and stereo frames, which is not supported by Flash.";
 						}
 						frameDataWriter.write(frame.frameData);
-						totalLengthSamples += mpeg.audio.Utils.lookupSamplesPerFrame(frame.header.version);
+						totalLengthSamples += mpeg.audio.Utils.lookupSamplesPerFrame(frame.header.version, frame.header.layer);
 
 						case GaplessInfo(giEncoderDelay, giEndPadding):
 						encoderDelay = giEncoderDelay;
