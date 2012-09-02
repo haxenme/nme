@@ -502,7 +502,7 @@ class RunScript {
 	
 	private static function param (name:String, ?passwd:Bool):String {
 		
-		Sys.print (name + " : ");
+		Sys.print (name + ": ");
 		
 		if (passwd) {
 			var s = new StringBuf ();
@@ -737,8 +737,8 @@ class RunScript {
 					
 					if (isWindows) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows/nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Windows/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme-debug.ndll" ]);
 						
 					} else if (isLinux) {
 						
