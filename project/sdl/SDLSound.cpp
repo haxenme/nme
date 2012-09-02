@@ -310,6 +310,19 @@ public:
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
    }
+   
+   SDLSound(unsigned char *inData, int len)
+   {
+      IncRef();
+
+      mChunk = Mix_LoadWAV_RW(SDL_RWFromMem(inData, len), 1);
+      if ( mChunk == NULL )
+      {
+         mError = SDL_GetError();
+         // ELOG("Error %s (%s)", mError.c_str(), name );
+      }
+   }
+   
    ~SDLSound()
    {
       if (mChunk)
@@ -433,6 +446,18 @@ public:
          ELOG("Error in music %s (%s)", mError.c_str(), name );
       }
    }
+   
+   SDLMusic(unsigned char *inData, int len)
+   {
+      IncRef();
+
+      mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len));
+      if ( mMusic == NULL )
+      {
+         mError = SDL_GetError();
+         ELOG("Error in music with len (%d)", len );
+      }
+   }
    ~SDLMusic()
    {
       if (mMusic)
@@ -468,7 +493,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 {
    if (!Init())
       return 0;
-   Sound *sound = inForceMusic ? 0 :  new SDLSound(inFilename);
+   Sound *sound = new SDLSound(inFilename);
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();
@@ -480,12 +505,12 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic) {
    if (!Init())
       return 0;
-   Sound *sound=0;/* = inForceMusic ? 0 :  new SDLSound(inFilename);
+   Sound *sound = new SDLSound(inData, len);
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();
-      sound = new SDLMusic(inFilename);
-   }*/
+      sound = new SDLMusic(inData, len);
+   }
    return sound;
 }
 

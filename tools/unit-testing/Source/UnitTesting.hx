@@ -8,6 +8,7 @@ import tests.nme.display.BitmapDataTest;
 import tests.nme.display.DisplayObjectTest;
 import tests.nme.display.DisplayObjectContainerTest;
 import tests.nme.display.GraphicsTest;
+import tests.nme.utils.ByteArrayTest;
 import nme.Lib;
 
 
@@ -42,6 +43,9 @@ class UnitTesting extends Sprite {
 		runner.add (new DisplayObjectTest ());
 		runner.add (new DisplayObjectContainerTest ());
 		runner.add (new GraphicsTest ());
+		
+		runner.add (new ByteArrayTest ());
+		
 		
 		var success = runner.run ();
 		

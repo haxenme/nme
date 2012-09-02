@@ -7,6 +7,9 @@ import neash.events.IOErrorEvent;
 import neash.events.SampleDataEvent;
 import neash.net.URLRequest;
 import neash.Loader;
+import nme.errors.Error;
+import nme.utils.ByteArray;
+import nme.utils.Endian;
 
 
 class Sound extends EventDispatcher
@@ -82,7 +85,47 @@ class Sound extends EventDispatcher
 			throw ("Could not load buffer with length: " + length);
 		}
 	}
-	
+
+	public function loadPCMFromByteArray(Bytes:nme.utils.ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100.0):Void {
+		
+		// http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
+		var wav:ByteArray = new ByteArray();
+		wav.endian = Endian.LITTLE_ENDIAN;
+		
+		var AudioFormat:Int = switch(format) {
+			case "float": 3;
+			case "short": 1;
+			default: throw(new Error(Std.format("Unsupported format $format")));
+		};
+		var NumChannels:Int = stereo ? 2 : 1;
+		var SampleRate:Int = Std.int(sampleRate);
+		var BitsPerSample:Int = switch(format) {
+			case "float": 32;
+			case "short": 16;
+			default: throw(new Error(Std.format("Unsupported format $format")));
+		};
+		var ByteRate:Int = Std.int(SampleRate * NumChannels * BitsPerSample / 8);
+		var BlockAlign:Int = Std.int(NumChannels * BitsPerSample / 8);
+		var NumSamples:Int = Std.int(Bytes.length / BlockAlign);
+		
+		wav.writeUTFBytes("RIFF");
+		wav.writeInt(36 + Bytes.length);
+		wav.writeUTFBytes("WAVE");
+		wav.writeUTFBytes("fmt ");
+		wav.writeInt(16); // Subchunk1Size
+		wav.writeShort((AudioFormat)); // AudioFormat
+		wav.writeShort((NumChannels));
+		wav.writeInt((SampleRate));
+		wav.writeInt((ByteRate));
+		wav.writeShort((BlockAlign));
+		wav.writeShort((BitsPerSample));
+		wav.writeUTFBytes("data");
+		wav.writeInt((Bytes.length));
+		wav.writeBytes(Bytes, 0, Bytes.length);
+		
+		wav.position = 0;
+		loadCompressedDataFromByteArray(wav, wav.length);
+	}
 	
 	/** @private */ private function nmeCheckLoading()
 	{
