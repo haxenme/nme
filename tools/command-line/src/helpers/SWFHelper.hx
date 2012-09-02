@@ -41,6 +41,8 @@ class SWFHelper {
 				
 			}
 			
+			data.position = 0;
+			
 			var swf = new SWF (data);
 			
 			for (className in swf.symbols.keys ()) {
