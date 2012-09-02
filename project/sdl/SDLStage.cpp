@@ -750,7 +750,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
             sdl_flags |= SDL_OPENGL;
 			
-			#ifdef BLACKBERRY
+			#if defined(BLACKBERRY) || defined(WEBOS)
 			if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
 			#else
             if (!SDL_VideoModeOK( use_w, use_h, 32, sdl_flags) || !(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
