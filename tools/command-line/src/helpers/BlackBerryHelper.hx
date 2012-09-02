@@ -155,7 +155,7 @@ class BlackBerryHelper {
 				if (index > -1) {
 					
 					var start = index + search.length;
-					return ret.substr (start, ret.indexOf ("\n", index) - start);
+					return StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start));
 					
 				}
 				

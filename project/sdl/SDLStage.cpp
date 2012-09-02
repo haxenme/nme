@@ -926,7 +926,7 @@ double CapabilitiesGetPixelAspectRatio() {
 	PDL_ScreenMetrics screenMetrics;
 	PDL_GetScreenMetrics (&screenMetrics);
 
-	return screenMetrics.horizontalDPI / screenMetrics.verticalDPI;
+	return screenMetrics.aspectRatio;
 	
 	#else
 	
