@@ -2250,19 +2250,19 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
          {
             x = vals[0];
             y = vals[1];
-            id =vals[2]+0.5;
+            id =vals[2];
          }
          else if (fvals)
          {
             x = fvals[0];
             y = fvals[1];
-            id =fvals[2]+0.5;
+            id =fvals[2];
          }
          else
          {
             x = val_number(val_ptr[0]);
             y = val_number(val_ptr[1]);
-            id =val_number(val_ptr[2])+0.5;
+            id =val_number(val_ptr[2]);
          }
          if (id>=0 && id<max)
          {
