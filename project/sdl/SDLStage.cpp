@@ -920,8 +920,19 @@ double CapabilitiesGetScreenDPI() {
 }
 
 double CapabilitiesGetPixelAspectRatio() {
+	
+	#ifdef WEBOS
+	
+	PDL_ScreenMetrics screenMetrics;
+	PDL_GetScreenMetrics (&screenMetrics);
 
-	return 	CapabilitiesGetScreenResolutionX() / CapabilitiesGetScreenResolutionY();
+	return screenMetrics.horizontalDPI / screenMetrics.verticalDPI;
+	
+	#else
+	
+	return 1;
+	
+	#endif
 	
 }
 

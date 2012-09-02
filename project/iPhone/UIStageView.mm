@@ -1101,9 +1101,10 @@ int GetDeviceOrientation() {
 
 double CapabilitiesGetPixelAspectRatio() {
 	
-	CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	//CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	//return screenBounds.size.width / screenBounds.size.height;
 	
-	return screenBounds.size.width / screenBounds.size.height;
+	return 1;
 	
 }
 	

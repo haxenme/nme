@@ -46,7 +46,7 @@ namespace nme {
 
 	double CapabilitiesGetPixelAspectRatio() {
 		
-		return 	CapabilitiesGetScreenResolutionX() / CapabilitiesGetScreenResolutionY();
+		return 1;
 		
 	}
 
