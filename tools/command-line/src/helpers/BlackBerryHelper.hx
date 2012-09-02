@@ -1,6 +1,7 @@
 package helpers;
 
 
+import haxe.io.Eof;
 import sys.io.Process;
 
 
@@ -15,6 +16,13 @@ class BlackBerryHelper {
 	public static function createPackage (workingDirectory:String, descriptorFile:String, targetPath:String):Void {
 		
 		var args = [ "-package", targetPath, descriptorFile ];
+		
+		if (defines.exists ("KEY_STORE") && !defines.exists ("KEY_STORE_PASSWORD")) {
+			
+			defines.set ("KEY_STORE_PASSWORD", prompt ("Keystore password", true));
+			Sys.println ("");
+			
+		}
 		
 		if (defines.exists ("KEY_STORE")) {
 			
@@ -114,28 +122,6 @@ class BlackBerryHelper {
 	}
 	
 	
-	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
-		
-		if (InstallTool.isWindows) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
-			
-		} else if (InstallTool.isMac) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
-			
-		} else {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
-			
-		}
-		
-		BlackBerryHelper.defines = defines;
-		BlackBerryHelper.targetFlags = targetFlags;
-		
-	}
-	
-	
 	public static function getAuthorID (workingDirectory:String):String {
 		
 		if (defines.exists ("BLACKBERRY_DEBUG_TOKEN")) {
@@ -182,6 +168,53 @@ class BlackBerryHelper {
 			return "gYAAgF-DMYiFsOQ3U6QvuW1fQDY";
 			
 		} else {
+			
+			return "";
+			
+		}
+		
+	}
+	
+	
+	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
+		
+		if (InstallTool.isWindows) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			
+		} else if (InstallTool.isMac) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
+			
+		} else {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			
+		}
+		
+		BlackBerryHelper.defines = defines;
+		BlackBerryHelper.targetFlags = targetFlags;
+		
+	}
+	
+	
+	private static function prompt (name:String, ?passwd:Bool):String {
+		
+		Sys.print (name + ": ");
+		
+		if (passwd) {
+			var s = new StringBuf ();
+			var c;
+			while ((c = Sys.getChar(false)) != 13)
+				s.addChar (c);
+			return s.toString ();
+		}
+		
+		try {
+			
+			return Sys.stdin ().readLine ();
+			
+		} catch (e:Eof) {
 			
 			return "";
 			

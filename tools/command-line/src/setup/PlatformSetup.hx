@@ -413,7 +413,7 @@ class PlatformSetup {
 	
 	private static function param (name:String, ?passwd:Bool):String {
 		
-		Lib.print (name + " : ");
+		Lib.print (name + ": ");
 		
 		if (passwd) {
 			var s = new StringBuf ();
