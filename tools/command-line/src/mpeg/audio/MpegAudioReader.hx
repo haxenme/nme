@@ -11,7 +11,9 @@ class MpegAudioReader {
     // This is the next-largest power-of-two.
     static inline var BUFFER_SIZE = 4096;
 
-    static inline var INFO_TAG_SIZE = 348;
+    static inline var HEADER_SIZE = 4;
+
+    static inline var CRC_SIZE = 4;
 
     static var infoTagSignature = Bytes.ofString("Info");
 
@@ -42,7 +44,7 @@ class MpegAudioReader {
     static var samplingFrequenciesByVersionIndex = [
             [11025, 12000, 8000, null],
             [null, null, null, null],
-            [22050, 24000, 12000, null],
+            [22050, 24000, 16000, null],
             [44100, 48000, 32000, null]];
 
     static var modes = [Mode.Stereo, Mode.JointStereo, Mode.DualChannel, Mode.SingleChannel];
@@ -51,7 +53,11 @@ class MpegAudioReader {
 
     static var slotSizeByLayerIndex = [0, 1, 1, 4];
 
-    static var slotsPerBitPerSampleByLayerIndex = [0, 144, 12, 12];
+    static var slotsPerBitPerSampleByLayerIndexByVersionIndex = [
+            [null, 72, 144, 12],
+            null,
+            [null, 72, 144, 12],
+            [null, 144, 144, 12]];
 
     var input:Input;
     var state:MpegAudioReaderState;
@@ -165,7 +171,7 @@ class MpegAudioReader {
         }
         var versionIndex = (b >> 3) & 0x3;
         var layerIndex = (b >> 1) & 0x3;
-        var hasCrc = b & 1 == 1;
+        var hasCrc = b & 1 == 0;
 
         try {
             b = readByte(2);
@@ -230,12 +236,16 @@ class MpegAudioReader {
             var frameLengthSlots = Math.floor(frameLengthBytes / slotSizeByLayerIndex[layerIndex]);
 
             bitrate = Math.floor(samplingFrequency * frameLengthSlots
-                    / slotsPerBitPerSampleByLayerIndex[layerIndex]); // TODO should bitrate be Float?
+                    / slotsPerBitPerSampleByLayerIndexByVersionIndex[versionIndex][layerIndex]); // TODO should bitrate be Float?
 
             frameData = yieldBytes(frameLengthBytes);
         } else {
-            var frameLengthSlots = Math.floor(slotsPerBitPerSampleByLayerIndex[layerIndex] * bitrate / samplingFrequency)
-                    + if (hasPadding) 1 else 0;
+            var frameLengthSlots = Math.floor(slotsPerBitPerSampleByLayerIndexByVersionIndex[versionIndex][layerIndex]
+                    * bitrate / samplingFrequency);
+
+             if (hasPadding) {
+                frameLengthSlots += 1;
+            }
 
             var frameLengthBytes = frameLengthSlots * slotSizeByLayerIndex[layerIndex];
 
@@ -254,10 +264,12 @@ class MpegAudioReader {
         if (!seenFirstFrame) {
             seenFirstFrame = true;
 
-            var info = readInfo(header, frameData);
-            if (info != null) {
-                state = MpegAudioReaderState.Info(info);
-                return Element.Info(info);
+            if (layer == Layer.Layer3) {
+                var info = readInfo(header, frameData);
+                if (info != null) {
+                    state = MpegAudioReaderState.Info(info);
+                    return Element.Info(info);
+                }
             }
         }
 
@@ -268,23 +280,32 @@ class MpegAudioReader {
     }
 
     function readInfo(header:FrameHeader, frameData:Bytes) {
-        var startIndex = 4;
-        while (startIndex < frameData.length - INFO_TAG_SIZE) {
-            if (frameData.get(startIndex) != 0) {
-                break;
+        var sideInformationSize = switch (header.version) {
+            case MpegVersion.Version1: switch (header.mode) {
+                case Mode.Stereo, Mode.JointStereo, Mode.DualChannel: 32;
+                case Mode.SingleChannel: 17;
+            };
+            case MpegVersion.Version2, MpegVersion.Version25: switch (header.mode) {
+                case Mode.Stereo, Mode.JointStereo, Mode.DualChannel: 17;
+                case Mode.SingleChannel: 9;
             }
-            ++startIndex;
+        };
+
+        var sideInformationStartIndex = HEADER_SIZE + (if (header.hasCrc) CRC_SIZE else 0);
+
+        var infoStartIndex = sideInformationStartIndex + sideInformationSize;
+
+        for (i in sideInformationStartIndex...infoStartIndex) {
+            if (frameData.get(i) != 0) {
+                return null;
+            }
         }
 
-        if (startIndex >= frameData.length - INFO_TAG_SIZE) {
-            return null;
-        }
-
-        if (frameData.sub(startIndex, infoTagSignature.length)
+        if (frameData.sub(infoStartIndex, infoTagSignature.length)
                         .compare(infoTagSignature) == 0
-                || frameData.sub(startIndex, xingTagSignature.length)
+                || frameData.sub(infoStartIndex, xingTagSignature.length)
                         .compare(xingTagSignature) == 0) {
-            return new Info(header, startIndex, frameData);
+            return new Info(header, infoStartIndex, frameData);
         } else {
             return null;
         }
