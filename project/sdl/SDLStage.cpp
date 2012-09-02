@@ -17,6 +17,35 @@
 
 #ifdef HX_WINDOWS
 #include <windows.h>
+#include <SDL_syswm.h>
+
+HICON icon;
+struct zWMcursor { void* curs; };
+HWND hwnd;
+SDL_SysWMinfo wminfo;
+
+void init_win32()
+{
+	SDL_Cursor *cursor = SDL_GetCursor();
+
+	HINSTANCE handle = GetModuleHandle(NULL);
+	//((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursorA(NULL, IDC_ARROW);
+	((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursor(NULL, IDC_ARROW);
+	SDL_SetCursor(cursor);
+
+	icon = LoadIcon(handle, (char *)101);
+	SDL_GetWMInfo(&wminfo);
+	hwnd = wminfo.window;
+	SetClassLong(hwnd, GCL_HICON, (LONG)icon);
+
+	SDL_putenv("SDL_VIDEO_WINDOW_POS=center");
+	SDL_putenv("SDL_VIDEO_CENTERED=center");
+}
+
+void done_win32()
+{
+	DestroyIcon(icon);
+}
 #endif
 
 
@@ -46,6 +75,10 @@ int initSDL () {
 	#endif
 	
 	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	
+	#if HX_WINDOWS
+		init_win32();
+	#endif
 	
 	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0) {
 		
@@ -1227,6 +1260,10 @@ void StartAnimation()
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
+
+	#if HX_WINDOWS
+		done_win32();
+	#endif
 }
 
 
