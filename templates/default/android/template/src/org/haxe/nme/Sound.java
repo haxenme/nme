@@ -192,7 +192,7 @@ public class Sound
 		//return -1;
     }
 	
-	public static int getSoundHandle(byte[] data) throws java.lang.Exception
+	public static String getSoundPathByByteArray(byte[] data) throws java.lang.Exception
 	{
 		// HACK! It seems that the API doesn't allow to use non file streams. At least with MediaPlayer/SoundPool. 
 		// The alternative is to use an AudioTrack, but the data should be decoded by hand and not sure if android
@@ -215,9 +215,7 @@ public class Sound
 			Log.v("Sound", "Opened temp sound file :" + file.getAbsolutePath());
 		}
 		
-		int index = mSoundPool.load(file.getAbsolutePath(), 1);
-		Log.v("Sound", "Loaded index: " + index);
-		return index;
+		return file.getAbsolutePath();
 	}
 	
 	public static int getSoundPoolID()

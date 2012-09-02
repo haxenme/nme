@@ -197,9 +197,9 @@ namespace nme
 			MODE_SOUND_ID,
 			MODE_MUSIC_PATH,
 		};
-
-	public:
-		AndroidSound(const std::string &inPath, bool inForceMusic)
+		
+	private:
+		void loadWithPath(const std::string &inPath, bool inForceMusic)
 		{
 			JNIEnv *env = GetEnv();
 			IncRef();
@@ -227,33 +227,26 @@ namespace nme
 			if (handleID < 0)
 				mMode = MODE_MUSIC_PATH;
 		}
+
+	public:
+		AndroidSound(const std::string &inPath, bool inForceMusic)
+		{
+			loadWithPath(inPath, inForceMusic);
+		}
 		
 		AndroidSound(unsigned char *inData, int len, bool inForceMusic)
 		{
 			JNIEnv *env = GetEnv();
-			IncRef();
 
-			mMode = MODE_UNKNOWN;
-			handleID = -1;
-			mLength = 0;
-			mManagerID = getSoundPoolID();
-			mSoundPath = "";
-
-			jclass cls = env->FindClass("org/haxe/nme/Sound");	
 			jbyteArray data = env->NewByteArray(len);
 			env->SetByteArrayRegion(data, 0, len, (const jbyte *)inData);
 
-			if (!inForceMusic) {
-				jmethodID mid = env->GetStaticMethodID(cls, "getSoundHandle", "([B)I");
-				if (mid > 0) {
-					handleID = env->CallStaticIntMethod(cls, mid, data);
-					if (handleID >= 0)
-						mMode = MODE_SOUND_ID;
-				}
-			}
-
-			if (handleID < 0)
-				mMode = MODE_MUSIC_PATH;
+			jclass cls = env->FindClass("org/haxe/nme/Sound");	
+			jmethodID mid = env->GetStaticMethodID(cls, "getSoundPathByByteArray", "([B)Ljava/lang/String;");
+			jstring jname = (jstring)env->CallStaticObjectMethod(cls, mid, data);
+			
+			std::string inPath = std::string(env->GetStringUTFChars(jname, NULL));
+			loadWithPath(inPath, inForceMusic);
 		}
 
 		void reloadSound()
