@@ -105,6 +105,11 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			ThrowEOFi();
 	}
 	
+	public function clear()
+	{
+		position = 0;
+		length = 0;
+	}
 	
 	public function compress(algorithm:String = "")
 	{
@@ -155,27 +160,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	#if cpp inline #end function push(inByte:Int)
-	{
-		#if cpp
-		b[length++] = untyped inByte;
-		#else
-		ensureElem(length, false);
-		untyped __dollar__sset(b, length++, inByte & 0xff);
-		#end
-	}
-	
-	
-	/** @private */ inline function push_uncheck(inByte:Int)
-	{
-		#if cpp
-		untyped b.__unsafe_set(length++, inByte);
-		#else
-		untyped __dollar__sset(b, length++, inByte & 0xff);
-		#end
-	}
-	
-	
+
 	public inline function readBoolean():Bool
 	{
 		return (position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
@@ -360,24 +345,36 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeBoolean(value:Bool)
 	{
-		push(value ? 1 : 0);
+		writeByte(value ? 1 : 0);
 	}
-	
 	
 	inline public function writeByte(value:Int)
 	{
-		push(value);
+		ensureElem(position, true);
+		#if cpp
+		b[position++] = untyped value;
+		#else
+		untyped __dollar__sset(b, position++, value & 0xff);
+		#end
+	}
+	
+	/** @private */ inline function write_uncheck(inByte:Int)
+	{
+		#if cpp
+		untyped b.__unsafe_set(position++, inByte);
+		#else
+		untyped __dollar__sset(b, position++, inByte & 0xff);
+		#end
 	}
 	
 	
 	public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0)
 	{
-		if (inLength == 0)
-			inLength = bytes.length;
-		ensureElem(length + inLength - 1, false);
-		var olen = length;
-		length += inLength;
-		blit(olen, bytes, inOffset, inLength);
+		if (inLength == 0) inLength = bytes.length - inOffset;
+		ensureElem(position + inLength - 1, true);
+		var opos = position;
+		position += inLength;
+		blit(opos, bytes, inOffset, inLength);
 	}
 	
 	
@@ -413,20 +410,20 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeInt(value:Int)
 	{
-		ensureElem(length + 3, false);
+		ensureElem(position + 3, true);
 		if (bigEndian)
 		{
-			push_uncheck(value >> 24);
-			push_uncheck(value >> 16);
-			push_uncheck(value >> 8);
-			push_uncheck(value);
+			write_uncheck(value >> 24);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 		}
 		else
 		{
-			push_uncheck(value);
-			push_uncheck(value >> 8);
-			push_uncheck(value >> 16);
-			push_uncheck(value >> 24);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 24);
 		}
 	}
 	
@@ -437,16 +434,16 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public function writeShort(value:Int)
 	{
-		ensureElem(length + 1, false);
+		ensureElem(position + 1, true);
 		if (bigEndian)
 		{
-			push_uncheck(value >> 8);
-			push_uncheck(value);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 		}
 		else
 		{
-			push_uncheck(value);
-			push_uncheck(value >> 8);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
 		}
 	}
 	

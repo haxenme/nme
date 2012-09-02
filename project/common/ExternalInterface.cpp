@@ -3361,7 +3361,6 @@ DEFINE_PRIM(nme_sound_from_file,2);
 
 value nme_sound_from_data(value inData, value inLen, value inForceMusic)
 {
-   #ifndef IPHONE
    int length = val_int(inLen);
    Sound *sound;
    printf("trying bytes with length %d", length);
@@ -3372,6 +3371,8 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       }
       printf("I'm here! trying bytes with length %d", length);
       sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+   } else {
+	   val_throw(alloc_string("Empty ByteArray"));
    }
 
    if (sound)
@@ -3379,8 +3380,9 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       value result =  ObjectToAbstract(sound);
       sound->DecRef();
       return result;
+   } else {
+	   val_throw(alloc_string("Not Sound"));
    }
-   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_from_data, 3);

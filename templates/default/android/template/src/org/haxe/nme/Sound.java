@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException; 
+import java.security.MessageDigest;
 import java.util.Hashtable;
+import java.util.zip.CRC32;
 
 import android.content.Context;
 import android.util.Log;
@@ -189,6 +191,32 @@ public class Sound
 		
 		//return -1;
     }
+	
+	public static String getSoundPathByByteArray(byte[] data) throws java.lang.Exception
+	{
+		// HACK! It seems that the API doesn't allow to use non file streams. At least with MediaPlayer/SoundPool. 
+		// The alternative is to use an AudioTrack, but the data should be decoded by hand and not sure if android
+		// provides an API for decoding this kind of stuff.
+		// So the partial solution at this point is to create a temporary file that will be loaded.
+		
+		MessageDigest messageDigest = MessageDigest.getInstance("md5");
+		messageDigest.update(data);
+		String md5 = new java.math.BigInteger(1, messageDigest.digest()).toString(16);
+		File file = new File(mContext.getCacheDir() + "/" + md5 + ".wav");
+
+		//File file = File.createTempFile("temp", ".sound", mContext.getFilesDir());
+		if (!file.exists()) {
+			Log.v("Sound", "Created temp sound file :" + file.getAbsolutePath());
+			java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(file);
+			fileOutputStream.write(data);
+			fileOutputStream.flush();
+			fileOutputStream.close();
+		} else {
+			Log.v("Sound", "Opened temp sound file :" + file.getAbsolutePath());
+		}
+		
+		return file.getAbsolutePath();
+	}
 	
 	public static int getSoundPoolID()
 	{

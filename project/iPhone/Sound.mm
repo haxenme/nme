@@ -95,30 +95,39 @@ namespace nme
     class AVAudioPlayerChannel : public SoundChannel  {
         
     public:
-        AVAudioPlayerChannel(Object *inSound, const std::string &inFilename, int inLoops, float  inOffset, const SoundTransform &inTransform)
+        AVAudioPlayerChannel(Object *inSound, const std::string &inFilename,
+            NSData *data,
+            int inLoops, float  inOffset, const SoundTransform &inTransform)
         {
-            LOG_SOUND("AVAudioPlayerChannel constructor with inFilename");
+            LOG_SOUND("AVAudioPlayerChannel constructor");
             mSound = inSound;
             // each channel keeps the originating Sound object alive.
             inSound->IncRef();
            
             LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
 
-            std::string name;
-            if (inFilename[0] == '/') {
-             name = inFilename;
+            if (data == NULL) {
+                LOG_SOUND("AVAudioPlayerChannel construct with name");
+                std::string name;
+                
+                if (inFilename[0] == '/') {
+                    name = inFilename;
+                } else {
+                    name = GetResourcePath() + gAssetBase + inFilename;
+                }
+                
+                NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
+                
+                NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
+                
+                theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
+#ifndef OBJC_ARC
+                [theFileName release];
+#endif
             } else {
-             name = GetResourcePath() + gAssetBase + inFilename;
+                LOG_SOUND("AVAudioPlayerChannel construct with data");
+                theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:nil];
             }
-            
-            NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
-            
-            NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
-            
-            theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
-            #ifndef OBJC_ARC
-            [theFileName release];
-            #endif
 
             // for each player there is a delegate
             // the reason for this is that AVAudioPlayer has no way to loop
@@ -279,7 +288,8 @@ namespace nme
             // no buffers are loaded until we invoke either the play or prepareToPlay
             // methods, so very little memory is used.
             
-            
+            this->data = nil;
+
             std::string path = GetResourcePath() + gAssetBase + inFilename;
             NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
             NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
@@ -294,11 +304,34 @@ namespace nme
                 mError = [[err description] UTF8String];
             }
             
-            
             theDuration = [theActualPlayer duration] * 1000;
             #ifndef OBJC_ARC
             [theActualPlayer release];
             #endif
+        }
+        
+        AVAudioPlayerSound(unsigned char *inDataPtr, int inDataLen)
+        {
+            mFilename = "unknown";
+            
+            LOG_SOUND("AVAudioPlayerSound constructor()");
+            IncRef();
+            
+            printf("AVAudioPlayerSound!!");
+            
+            this->data = [[NSData alloc] initWithBytes:inDataPtr length:inDataLen];
+            
+            NSError *err = nil;
+            AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:&err];
+            if (err != nil)
+            {
+                mError = [[err description] UTF8String];
+            }
+            
+            theDuration = [theActualPlayer duration] * 1000;
+#ifndef OBJC_ARC
+            [theActualPlayer release];
+#endif
         }
         
         ~AVAudioPlayerSound()
@@ -357,12 +390,13 @@ namespace nme
             
             // this creates the channel, note that the channel is an AVAudioPlayer that plays
             // right away
-            return new AVAudioPlayerChannel(this, mFilename, loops, startTime, inTransform);
+            return new AVAudioPlayerChannel(this, mFilename, data, loops, startTime, inTransform);
         }
         
         std::string mError;
         std::string mFilename;
         double theDuration;
+        NSData *data;
     };
     
     /*----------------------------------------------------------
@@ -734,10 +768,9 @@ namespace nme
             UInt32 thePropertySize = sizeof(theFileFormat);
             ExtAudioFileRef extRef = NULL;
             AudioStreamBasicDescription theOutputFormat;
-            
-            
+                        
             // Open a file with ExtAudioFileOpen()
-            LOG_SOUND("OpenALSound Open a file with ExtAudioFileOpen()");
+            LOG_SOUND("OpenALSound Open a file with ExtAudioFileOpen()");            
             err = ExtAudioFileOpenURL(inFileURL, &extRef);
             if (err)
             {
@@ -923,6 +956,26 @@ namespace nme
                 return 0;
             return new OpenALSound(inFilename);
         }
+    }
+    
+    Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
+    {
+        // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
+        // depending on the inForceMusic flag.
+        //
+        // OpenAL has lower latency but can be expensive memory-wise when playing
+        // files more than a few seconds long, and it's not really needed anyways if there is
+        // no need to work with the uncompressed data.
+        //
+        // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
+        // sound data, but uses "Apple's optimized pathways" and doesn't need to store
+        // uncompressed sound data in memory.
+        //
+        // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
+        // inForceMusic is true.
+        
+        LOG_SOUND("Sound.mm Create()");
+        return new AVAudioPlayerSound(inData, len);
     }
     
     
