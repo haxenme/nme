@@ -886,7 +886,9 @@ class RunScript {
 						args.push ("/DOUTPUT_PATH=../NME-" + getVersion ("nme") + "-Windows.exe");
 						args.push ("Installer.nsi");
 						
-						runCommand (nmeDirectory + tempPath, "C:\\Program Files (x86)\\NSIS\\makensis.exe", args);
+						Sys.putEnv ("PATH", Sys.getEnv ("PATH") + ";C:\\Program Files (x86)\\NSIS");
+						
+						runCommand (nmeDirectory + tempPath, "makensis", args);
 						removeDirectory (nmeDirectory + tempPath);
 						
 					}
