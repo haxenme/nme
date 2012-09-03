@@ -2,6 +2,23 @@ Changes
 =======
 
 
+3.4.3
+---------------
+* Project names are now optional when running commands ("nme test blackberry")
+* Added support for OpenGL 2 shader-based rendering
+* Improved support for AIR mobile
+* Minor fixes for BlackBerry release signing
+* Fixed compatibility for webOS devices
+* Flags with two dashes ("--connect") now pass through to the Haxe compiler
+* Build ID file changed from "ProjectName.build" to ".build"
+* Implemented Sound.loadCompressedDataFromByteArray
+* Implemented Sound.loadPCMFromByteArray
+* Fixed AJAX asset loading on HTML5
+* Improved compatibility for MP3 file formats for Flash
+* Removed need for Event.RESIZE to get initial iOS stage width and height
+* Compatibility fixes for Windows 8 RTM
+
+
 3.4.2
 ---------------
 * Added support for SVG assets
