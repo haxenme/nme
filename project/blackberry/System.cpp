@@ -53,7 +53,15 @@ namespace nme {
 	
 	bool GetAcceleration (double &outX, double &outY, double &outZ) {
 		
-		return (accelerometer_read_forces (&outX, &outY, &outZ) == BPS_SUCCESS);
+		// We should adjust by orientation, but SDL for BlackBerry only supports
+		// landscape right now, so we'll adjust for that
+		
+		int result = accelerometer_read_forces (&outY, &outX, &outZ);
+		outX = -outX;
+		outZ = -outZ;
+		
+		return (result == BPS_SUCCESS);
+		//return (accelerometer_read_forces (&outX, &outY, &outZ) == BPS_SUCCESS);
 		
 	}
 	

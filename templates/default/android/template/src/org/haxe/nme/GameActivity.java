@@ -283,7 +283,7 @@ public class GameActivity extends Activity implements SensorEventListener
 		if (type == Sensor.TYPE_ACCELEROMETER)
 		{
 			accelData = event.values.clone();
-			NME.onAccelerate(accelData[0], accelData[1], accelData[2]);
+			NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
 		}
 		
 		if (type == Sensor.TYPE_MAGNETIC_FIELD)
