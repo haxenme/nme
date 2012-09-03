@@ -151,8 +151,9 @@ class AIRHelper {
 	public static function run (workingDirectory:String, debug:Bool):Void {
 		
 		if (target == "android") {
-				
+			
 			AndroidHelper.install (FileSystem.fullPath (workingDirectory) + "/" + defines.get ("APP_FILE") + ".apk");
+			AndroidHelper.run ("air." + defines.get ("APP_PACKAGE") + "/.AppEntry");
 			
 		} else if (target == "ios") {
 			
