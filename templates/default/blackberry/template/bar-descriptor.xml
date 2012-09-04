@@ -22,6 +22,7 @@
     </initialWindow>
 	
     <env var="LD_LIBRARY_PATH" value="app/native"/>
+    ::if (WIN_ORIENTATION == "portrait")::<env var="FORCE_PORTRAIT" value="1" />::end::
 	<action system="true">run_native</action>
     
 	<category>core.games</category>

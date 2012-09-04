@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <bps/accelerometer.h>
 #include <bps/locale.h>
 #include <bps/navigator.h>
@@ -53,11 +54,16 @@ namespace nme {
 	
 	bool GetAcceleration (double &outX, double &outY, double &outZ) {
 		
-		// We should adjust by orientation, but SDL for BlackBerry only supports
-		// landscape right now, so we'll adjust for that
+		int result = accelerometer_read_forces (&outX, &outY, &outZ);
 		
-		int result = accelerometer_read_forces (&outY, &outX, &outZ);
-		outX = -outX;
+		if (getenv ("FORCE_PORTRAIT") != NULL) {
+			
+			int cache = outX;
+			outX = outY;
+			outY = -cache;
+			
+		}
+		
 		outZ = -outZ;
 		
 		return (result == BPS_SUCCESS);
