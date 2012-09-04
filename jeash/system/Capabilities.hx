@@ -41,8 +41,24 @@ class Capabilities {
 	
 	
 	private static function jeashGetPixelAspectRatio():Float { return 1; }
-	private static function jeashGetScreenDPI():Float { return 72; }
-	private static function jeashGetScreenResolutionX():Float { return 0; }
-	private static function jeashGetScreenResolutionY():Float { return 0; }
+	private static function jeashGetScreenDPI():Float {
+		if (screenDPI > 0) return screenDPI;
+		
+		//little trick of measuring the width of a 1 inch div
+		//but sadly most browsers/OSs still return wrong result...
+		var body = js.Lib.document.getElementsByTagName("body")[0];
+		var testDiv = js.Lib.document.createElement("div");
+		testDiv.style.width = testDiv.style.height = "1in";
+		testDiv.style.padding = testDiv.style.margin = 0;
+		testDiv.style.position = "absolute";
+		testDiv.style.top = "-100%";
+		body.appendChild(testDiv);
+		screenDPI = testDiv.offsetWidth;
+		body.removeChild(testDiv);
+		
+		return screenDPI;
+	}
+	private static function jeashGetScreenResolutionX():Float { return js.Lib.window.screen.width; }
+	private static function jeashGetScreenResolutionY():Float { return js.Lib.window.screen.height; }
 	private static function jeashGetLanguage():String { return untyped navigator.language; }
 }

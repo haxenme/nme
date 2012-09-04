@@ -35,48 +35,78 @@ import jeash.errors.IOError;
 
 import jeash.Html5Dom;
 
-class ByteArray {
+class ByteArray
+#if js_can_implement_array_access
+	implements ArrayAccess<Int>
+#end
+{
 
 	var data : DataView;
 	var byteView : Uint8Array;
-	var bigEndian : Bool;
+	var littleEndian : Bool;
 
-	public var bytesAvailable(jeashGetBytesAvailable,null) : Int;
-	public var endian(jeashGetEndian,jeashSetEndian) : Endian;
+	public var bytesAvailable(jeashGetBytesAvailable, null) : Int;
+	public var endian(jeashGetEndian, jeashSetEndian) : String;
 	public var objectEncoding : Int;
 
 	public var position : Int;
 	public var length : Int;
+	private var allocated : Int = 0;
 
-	static inline var BYTE_ARRAY_BUFFER_SIZE = 8192;
+	public function new():Void {
+		var len:Int = 0;
+		this.position = 0;
+		this.length = len;
+		this.allocated = len;
 
-	function jeashGetBytesAvailable():Int return length - position
+		// NOTE: default ByteArray endian is BIG_ENDIAN
+		this.littleEndian = false;
 
+		_jeashResizeBuffer(allocated);
+		//this.byteView = untyped __new__("Uint8Array", allocated);
+		//this.data = untyped __new__("DataView", this.byteView.buffer);
+	}
+
+	private function _jeashResizeBuffer(len:Int) {
+		var oldByteView:Uint8Array = this.byteView;
+		var newByteView:Uint8Array = untyped __new__("Uint8Array", len);
+
+		if (oldByteView != null) newByteView.set(oldByteView);
+
+		this.byteView = newByteView;
+		this.data = untyped __new__("DataView", newByteView.buffer);
+	}
+
+	function jeashGetBytesAvailable():Int { return length - position; }
+	
+	// ArrayAccess
+	#if js_can_implement_array_access
+	public function __get(pos:Int):Int { return data.getUint8(pos); }
+	public function __set(pos:Int, v:Int):Void { data.setUint8(pos, v); }
+	#end
+	
+	public function jeashGet(pos:Int):Int {
+		return data.getUint8(pos);
+	}
+	
+	public function jeashSet(pos:Int, v:Int):Void {
+		data.setUint8(pos, v);
+	}
+
+	// NOTE: It is used somewhere?
 	function readFullBytes( bytes : Bytes, pos : Int, len : Int ) {
+		ensureWrite(len);
 		for ( i in pos...pos+len )
 			data.setInt8(this.position++, bytes.get(i));
 	}
-
-	public function new(len:Int = BYTE_ARRAY_BUFFER_SIZE) {
 	
-		this.position = 0;
-		this.length = len;
-
-		var buffer = untyped __new__("ArrayBuffer", len);
-		this.data = untyped __new__("DataView", buffer);
-		this.byteView = untyped __new__("Uint8Array", buffer);
-
-		this.bigEndian = false;
-	}
-
-	function jeashResizeBuffer(len:Int) {
-		var initLength = byteView.length;
-		var resized:Uint8Array = untyped __new__("Uint8Array", len);
-
-		resized.set(byteView);
-
-		this.data = untyped __new__("DataView", resized.buffer);
-		this.byteView = resized;
+	private function ensureWrite(lengthToEnsure:Int, updateLength:Bool= true):Void {
+		if (lengthToEnsure > allocated) {
+			_jeashResizeBuffer(Std.int(Math.max(lengthToEnsure, allocated * 2)));
+		}
+		if (updateLength) {
+			if (this.length < lengthToEnsure) this.length = lengthToEnsure;
+		}
 	}
 
 	public function readByte() : Int {
@@ -90,9 +120,7 @@ class ByteArray {
 		if (offset == null) offset = 0;
 		if (length == null) length = this.length;
 
-		if(bytes.byteView.length < length + offset) {
-			bytes.jeashResizeBuffer(offset+length);
-		}
+		bytes.ensureWrite(offset + length);
 
 		bytes.byteView.set(byteView.subarray(this.position, this.position+length), offset);
 		bytes.position = offset;
@@ -102,147 +130,144 @@ class ByteArray {
 	}
 	
 	public function writeByte(value : Int) {
-		if( this.position+1 >= byteView.length )
-			jeashResizeBuffer(this.position+1);
-		data.setInt8(this.position++, value);
-		if (this.position > length) {
-			length++;
-		}
+		ensureWrite(this.position + 1);
+		
+		data.setInt8(this.position, value);
+		this.position += length;
 	}
 
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) {
-		if(offset < 0 || length < 0) 
-			throw new IOError("Write error - Out of bounds");
+		if (offset < 0 || length < 0)  throw new IOError("Write error - Out of bounds");
 
-		if(byteView.length < length + this.position) {
-			jeashResizeBuffer(this.position+length);
-		}
-
-		bytes.position = offset+length;
+		ensureWrite(this.position + length);
 
 		byteView.set(bytes.byteView.subarray(offset, offset+length), this.position);
 		this.position += length;
-		if (this.position > this.length) this.length = this.position;
 	}
 
-	public function readBoolean() {
-		return this.readByte() == 1 ? true : false;
+	public function readBoolean():Bool {
+		return (this.readByte() != 0);
 	}
 
-	public function writeBoolean(value : Bool) {
+	public function writeBoolean(value : Bool):Void {
 		this.writeByte(value?1:0);
 	}
 
-	public function readDouble() : Float {
-		var double = data.getFloat64(this.position, !bigEndian);
+	public function readDouble():Float {
+		var double = data.getFloat64(this.position, littleEndian);
 		this.position += 8;
 		return double;
 	}
 
-	public function writeDouble(x : Float) {
-		if( this.position+8 >= byteView.length )
-			jeashResizeBuffer(this.position+8);
-		data.setFloat64(this.position, x, !bigEndian);
+	public function writeDouble(x : Float):Void {
+		ensureWrite(this.position + 8);
+
+		data.setFloat64(this.position, x, littleEndian);
 		this.position += 8;
-		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readFloat() : Float {
-		var float = data.getFloat32(this.position, !bigEndian);
+		var float = data.getFloat32(this.position, littleEndian);
 		this.position += 4;
 		return float;
 	}
 
-	public function writeFloat( x : Float ) {
-		if( this.position+4 >= byteView.length )
-			jeashResizeBuffer(this.position+4);
-		data.setFloat32(this.position, x, !bigEndian);
+	public function writeFloat( x : Float ):Void {
+		ensureWrite(this.position + 4);
+
+		data.setFloat32(this.position, x, littleEndian);
 		this.position += 4;
-		if (this.position > this.length) this.length = this.position;
 	}
 
-	public function readInt() {
-		var int = data.getInt32(this.position, !bigEndian);
+	public function readInt():Int {
+		var int = data.getInt32(this.position, littleEndian);
 		this.position += 4;
 		return int;
 	}
 
-	public function writeInt(value : Int) {
-		if( this.position+4 >= byteView.length )
-			jeashResizeBuffer(this.position+4);
-		data.setInt32(this.position, value, !bigEndian);
+	public function writeInt(value : Int):Void {
+		ensureWrite(this.position + 4);
+
+		data.setInt32(this.position, value, littleEndian);
 		this.position += 4;
-		if (this.position > this.length) this.length = this.position;
 	}
 
-	public function readShort() {
-		var short = data.getInt16(this.position, !bigEndian);
+	public function readShort():Int {
+		var short = data.getInt16(this.position, littleEndian);
 		this.position += 2;
 		return short;
 	}
 
-	public function writeShort(value : Int) {
-		if( this.position+2 >= byteView.length )
-			jeashResizeBuffer(this.position+2);
-		data.setInt16(this.position, value, !bigEndian);
+	public function writeShort(value : Int):Void {
+		ensureWrite(this.position + 2);
+
+		data.setInt16(this.position, value, littleEndian);
 		this.position += 2;
-		if (this.position > this.length) this.length = this.position;
 	}
 
 	public function readUnsignedShort():Int {
-		var uShort = data.getUint16(this.position, !bigEndian);
-		this.position +=2;
+		var uShort = data.getUint16(this.position, littleEndian);
+		this.position += 2;
 		return uShort;
 	}
 
-	public function writeUnsignedShort( value : Int ) {
-		if( this.position+2 >= byteView.length )
-			jeashResizeBuffer(this.position+2);
-		data.setUint16(this.position, value, !bigEndian);
+	public function writeUnsignedShort( value : Int ):Void {
+		ensureWrite(this.position + 2);
+
+		data.setUint16(this.position, value, littleEndian);
 		this.position += 2;
-		if (this.position > this.length) this.length = this.position;
 	}
 
-	public function readUTF() {
-		return readUTFBytes(length - this.position);
+	public function readUTF():String {
+		var bytesCount:Int = readUnsignedShort();
+		return readUTFBytes(bytesCount);
 	}
 
-	public function writeUTF(value : String) {
+	public function writeUTF(value : String):Void {
+		writeUnsignedShort(_getUTFBytesCount(value));
 		writeUTFBytes(value);
 	}
-
-	public function writeUTFBytes(value : String) {
-		if( this.position+value.length*4 >= byteView.length ) {
-			jeashResizeBuffer(this.position+value.length*4);
+	
+	private function _getUTFBytesCount(value : String):Int {
+		var count:Int = 0;
+		// utf8-decode
+		for( i in 0...value.length ) {
+			var c : Int = StringTools.fastCodeAt(value, i);
+			if( c <= 0x7F ) count += 1;
+			else if( c <= 0x7FF ) count += 2;
+			else if( c <= 0xFFFF ) count += 3;
+			else count += 4;
 		}
+		return count;
+	}
+
+	public function writeUTFBytes(value : String):Void {
 		// utf8-decode
 		for( i in 0...value.length ) {
 			var c : Int = StringTools.fastCodeAt(value, i);
 			if( c <= 0x7F ) {
-				this.data.setUint8(this.position++, c);
+				writeByte(c);
 			} else if( c <= 0x7FF ) {
-				this.data.setUint8(this.position++, 0xC0 | (c >> 6));
-				this.data.setUint8(this.position++, 0x80 | (c & 63));
+				writeByte(0xC0 | (c >> 6));
+				writeByte(0x80 | (c & 63));
 			} else if( c <= 0xFFFF ) {
-				this.data.setUint8(this.position++, 0xE0 | (c >> 12));
-				this.data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
-				this.data.setUint8(this.position++, 0x80 | (c & 63));
+				writeByte(0xE0 | (c >> 12));
+				writeByte(0x80 | ((c >> 6) & 63));
+				writeByte(0x80 | (c & 63));
 			} else {
-				this.data.setUint8(this.position++, 0xF0 | (c >> 18));
-				this.data.setUint8(this.position++, 0x80 | ((c >> 12) & 63));
-				this.data.setUint8(this.position++, 0x80 | ((c >> 6) & 63));
-				this.data.setUint8(this.position++, 0x80 | (c & 63));
+				writeByte(0xF0 | (c >> 18));
+				writeByte(0x80 | ((c >> 12) & 63));
+				writeByte(0x80 | ((c >> 6) & 63));
+				writeByte(0x80 | (c & 63));
 			}
 		}
-		if (this.position > this.length) this.length = this.position;
 	}
 
-	public function readUTFBytes(len:Int) {
+	public function readUTFBytes(len:Int):String {
 		var value = "";
 		var fcc = String.fromCharCode;
-		var max = this.position+len;
-		if (max >= byteView.length)
-			jeashResizeBuffer(max);
+		var max = this.position + len;
+
 		// utf8-encode
 		while( this.position < max ) {
 			var c = data.getUint8(this.position++);
@@ -268,17 +293,16 @@ class ByteArray {
 	}
 
 	public function readUnsignedInt():Int {
-		var uInt = data.getUint32(this.position, !bigEndian);
+		var uInt = data.getUint32(this.position, littleEndian);
 		this.position+=4;
 		return uInt;
 	}
 
-	public function writeUnsignedInt( value : Int ) {
-		if( this.position+4 >= byteView.length )
-			jeashResizeBuffer(this.position+4);
-		data.setUint32(this.position, value, !bigEndian);
-		this.position+=4;
-		if (this.position > this.length) this.length = this.position;
+	public function writeUnsignedInt( value : Int ):Void {
+		ensureWrite(this.position + 4);
+
+		data.setUint32(this.position, value, littleEndian);
+		this.position += 4;
 	}
 
 #if format
@@ -292,29 +316,21 @@ class ByteArray {
 	}
 #end
 
-	public function jeashGetEndian() : Endian {
-		if ( bigEndian == true ) {
-			return Endian.BIG_ENDIAN;
-		} else {
-			return Endian.LITTLE_ENDIAN;
-		}
+	public function jeashGetEndian() : String {
+		return (littleEndian == true) ? Endian.LITTLE_ENDIAN : Endian.BIG_ENDIAN;
 	}
-	public function jeashSetEndian( endian : Endian ) : Endian {
-		if ( endian == Endian.BIG_ENDIAN ) {
-			bigEndian = true;
-		} else {
-			bigEndian = false;
-		}
-
+	public function jeashSetEndian( endian : String ) : String {
+		littleEndian = (endian == Endian.LITTLE_ENDIAN);
 		return endian;
 	}
 
-	public static function jeashOfBuffer(buffer:ArrayBuffer) {
-		var bytes = new ByteArray(buffer.byteLength);
+	public static function jeashOfBuffer(buffer:ArrayBuffer):ByteArray {
+		var bytes:ByteArray = new ByteArray();
+		bytes.length = buffer.byteLength;
 		bytes.data = untyped __new__("DataView", buffer);
 		bytes.byteView = untyped __new__("Uint8Array", buffer);
 		return bytes;
 	}
 
-	public function jeashGetBuffer() return data.buffer
+	public function jeashGetBuffer() { return data.buffer; }
 }
