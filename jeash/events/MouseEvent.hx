@@ -52,6 +52,9 @@ class MouseEvent extends Event
 	public static var MOUSE_OVER : String = "mouseOver";
 	public static var MOUSE_UP : String = "mouseUp";
 	public static var MOUSE_WHEEL : String = "mouseWheel";
+	public static var RIGHT_CLICK : String = "rightClick";
+	public static var RIGHT_MOUSE_DOWN : String = "rightMouseDown";
+	public static var RIGHT_MOUSE_UP : String = "rightMouseUp";
 	public static var ROLL_OUT : String = "rollOut";
 	public static var ROLL_OVER : String = "rollOver";
 
