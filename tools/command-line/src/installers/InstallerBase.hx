@@ -166,6 +166,7 @@ class InstallerBase {
 		// Strip off 0x ....
 		setDefault ("WIN_FLASHBACKGROUND", defines.get ("WIN_BACKGROUND").substr (2));
 		setDefault ("APP_VERSION_SHORT", defines.get ("APP_VERSION").substr (2));
+		setDefault ("APP_FILE_SAFE", StringTools.replace (defines.get ("APP_FILE"), " ", ""));
 		setDefault ("XML_DIR", defines.get ("BUILD_DIR") + "/" + target);
 		setDefault ("KEY_STORE_TYPE", "pkcs12");
 		

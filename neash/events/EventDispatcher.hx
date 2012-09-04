@@ -130,7 +130,7 @@ class EventDispatcher implements IEventDispatcher
          if (list[i]!=null)
          {
             var li = list[i].get();
-            if (li.Is(listener, capture))
+            if (li != null && li.Is(listener, capture))
             {
                // Null-out here - remove on the dispatch event...
                list[i] = null;

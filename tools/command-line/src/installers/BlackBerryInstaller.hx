@@ -24,11 +24,11 @@ class BlackBerryInstaller extends InstallerBase {
 		
 		if (debug) {
 			
-			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain-debug", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain-debug", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE_SAFE"));
 			
 		} else {
 			
-			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE"));
+			FileHelper.copyIfNewer (buildDirectory + "/blackberry/obj/ApplicationMain", buildDirectory + "/blackberry/bin/" + defines.get ("APP_FILE_SAFE"));
 			
 		}
 		
