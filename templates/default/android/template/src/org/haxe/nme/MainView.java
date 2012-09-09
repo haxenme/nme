@@ -191,6 +191,7 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_UP: return 38;
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
+		  case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
 
           case KeyEvent.KEYCODE_DEL: return 8;
        }
