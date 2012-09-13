@@ -69,7 +69,7 @@ class BlackBerryInstaller extends InstallerBase {
 		super.generateContext ();
 		
 		context.CPP_DIR = buildDirectory + "/blackberry/obj";
-		context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.getAuthorID (buildDirectory + "/blackberry");
+		context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.processDebugToken (buildDirectory + "/blackberry").authorID;
 		
 		updateIcon ();
 		

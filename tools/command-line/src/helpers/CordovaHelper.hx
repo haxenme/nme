@@ -84,7 +84,7 @@ class CordovaHelper {
 			
 			case "blackberry":
 				
-				context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.getAuthorID (targetPath);
+				context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.processDebugToken (targetPath).authorID;
 				FileHelper.recursiveCopy (NME + "/templates/cordova/blackberry/template", targetPath, context);
 			
 		}

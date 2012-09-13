@@ -4,6 +4,7 @@ package setup;
 import haxe.Http;
 import haxe.io.Eof;
 import haxe.io.Path;
+import helpers.BlackBerryHelper;
 import helpers.PathHelper;
 import helpers.ProcessHelper;
 import installers.InstallerBase;
@@ -1146,7 +1147,31 @@ class PlatformSetup {
 						
 					}
 					
-					var deviceIDs = [ param ("Device PIN") ];
+					var deviceIDs = [];
+					var defines = getDefines ();
+					
+					BlackBerryHelper.initialize (defines, new Hash<String> ());
+					var token = BlackBerryHelper.processDebugToken ();
+					
+					if (token != null) {
+						
+						for (deviceID in token.deviceIDs) {
+							
+							if (ask ("Would you like to add existing device PIN \"" + deviceID + "\"?") != No) {
+								
+								deviceIDs.push (deviceID);
+								
+							}
+							
+						}
+						
+					}
+					
+					if (deviceIDs.length == 0) {
+						
+						deviceIDs.push (param ("Device PIN"));
+						
+					}
 					
 					while (ask ("Would you like to add another device PIN?") != No) {
 						
@@ -1224,16 +1249,26 @@ class PlatformSetup {
 				if (secondAnswer != No) {
 					
 					Lib.println ("Installing debug token...");
+					var done = false;
 					
-					try {
+					while (!done) {
 						
-						ProcessHelper.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
-						
-						Lib.println ("Done.");
-						
-					} catch (e:Dynamic) {
-						
-						Sys.exit (1);
+						try {
+							
+							ProcessHelper.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
+							
+							Lib.println ("Done.");
+							done = true;
+							
+						} catch (e:Dynamic) {
+							
+							if (ask ("Would you like to try again?") == No) {
+								
+								Sys.exit (1);
+								
+							}
+							
+						}
 						
 					}
 					

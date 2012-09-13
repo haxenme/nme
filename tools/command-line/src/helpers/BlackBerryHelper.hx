@@ -101,6 +101,12 @@ class BlackBerryHelper {
 		
 		var args = [ "-installApp" ];
 		
+		if (targetFlags.exists ("gdb")) {
+			
+			args.push ("-debugNative");
+			
+		}
+		
 		if (run) {
 			
 			args.push ("-launchApp");
@@ -122,14 +128,43 @@ class BlackBerryHelper {
 	}
 	
 	
-	public static function getAuthorID (workingDirectory:String):String {
+	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
+		
+		if (InstallTool.isWindows) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			
+		} else if (InstallTool.isMac) {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
+			
+		} else {
+			
+			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			
+		}
+		
+		BlackBerryHelper.defines = defines;
+		BlackBerryHelper.targetFlags = targetFlags;
+		
+	}
+	
+	
+	public static function processDebugToken (workingDirectory:String = ""):BlackBerryDebugToken {
+		
+		var data:BlackBerryDebugToken = { authorID: "", deviceIDs: new Array<String> () };
 		
 		if (defines.exists ("BLACKBERRY_DEBUG_TOKEN")) {
 			
 			PathHelper.mkdir (workingDirectory);
 			
 			var cacheCwd = Sys.getCwd ();
-			Sys.setCwd (workingDirectory);
+			
+			if (workingDirectory != "") {
+				
+				Sys.setCwd (workingDirectory);
+				
+			}
 			
 			var exe = binDirectory + "blackberry-nativepackager";
 			
@@ -155,7 +190,19 @@ class BlackBerryHelper {
 				if (index > -1) {
 					
 					var start = index + search.length;
-					return StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start));
+					data.authorID = StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start));
+					
+				}
+				
+				search = "Debug-Token-Device-Id: ";
+				var index = ret.indexOf (search);
+				
+				while (index > -1) {
+					
+					var start = index + search.length;
+					data.deviceIDs.push (StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start)));
+					
+					index = ret.indexOf (search, index + search.length);
 					
 				}
 				
@@ -163,37 +210,13 @@ class BlackBerryHelper {
 			
 		}
 		
-		if (targetFlags.exists ("simulator")) {
+		if (data.authorID == "" && targetFlags.exists ("simulator")) {
 			
-			return "gYAAgF-DMYiFsOQ3U6QvuW1fQDY";
-			
-		} else {
-			
-			return "";
+			data.authorID = "gYAAgF-DMYiFsOQ3U6QvuW1fQDY";
 			
 		}
 		
-	}
-	
-	
-	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
-		
-		if (InstallTool.isWindows) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
-			
-		} else if (InstallTool.isMac) {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
-			
-		} else {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
-			
-		}
-		
-		BlackBerryHelper.defines = defines;
-		BlackBerryHelper.targetFlags = targetFlags;
+		return data;
 		
 	}
 	
@@ -248,4 +271,12 @@ class BlackBerryHelper {
 	}
 		
 
+}
+
+
+typedef BlackBerryDebugToken = {
+	
+	var authorID:String;
+	var deviceIDs:Array<String>;
+	
 }
