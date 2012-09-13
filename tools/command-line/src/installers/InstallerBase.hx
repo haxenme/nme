@@ -532,17 +532,17 @@ class InstallerBase {
 				
 			}
 			
-			if (FileSystem.exists (base)) {
+		}
+		
+		if (FileSystem.exists (base)) {
+			
+			if (FileSystem.exists (base + "/include.nmml")) {
 				
-				if (FileSystem.exists (base + "/include.nmml")) {
-					
-					return base + "/include.nmml";
-					
-				} else {
-					
-					return base;
-					
-				}
+				return base + "/include.nmml";
+				
+			} else {
+				
+				return base;
 				
 			}
 			
@@ -1361,7 +1361,7 @@ class InstallerBase {
 						
 						if (name != "") {
 							
-							var xml:Fast = new Fast (Xml.parse (File.getContent (name)).firstElement ());
+							var xml = new Fast (Xml.parse (File.getContent (name)).firstElement ());
 							var path = Path.directory (name);
 							if (useFullClassPaths ()) {
                                                         	path = FileSystem.fullPath (path);
