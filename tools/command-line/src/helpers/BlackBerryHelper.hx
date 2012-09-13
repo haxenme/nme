@@ -101,6 +101,12 @@ class BlackBerryHelper {
 		
 		var args = [ "-installApp" ];
 		
+		if (targetFlags.exists ("gdb")) {
+			
+			args.push ("-debugNative");
+			
+		}
+		
 		if (run) {
 			
 			args.push ("-launchApp");
