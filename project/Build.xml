@@ -5,8 +5,8 @@
 	
 	<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 	
-	<set name="iphonesim" if="ios" />
-	<set name="iphoneos" if="ios" unless="simulator" />
+	<set name="iphonesim" value="1" if="ios" />
+	<set name="iphoneos" value="1" if="ios" unless="simulator" />
 	
 	<set name="sdl" value="1" if="linux"/>
 	<set name="sdl" value="1" if="macos"/>
@@ -211,8 +211,8 @@
 	
 	<set name="ndll-tool" value="dll" unless="iphone"/>
 	<set name="ndll-tool" value="static" if="iphone"/>
-	<set name="name_extra" value=".iphoneos${IOS_ARCH}" if="iphoneos"/>
 	<set name="name_extra" value=".iphonesim" if="iphonesim"/>
+	<set name="name_extra" value=".iphoneos${IOS_ARCH}" if="iphoneos"/>
 	
 	<set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
 	

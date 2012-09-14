@@ -703,7 +703,6 @@ class InstallerBase {
 		if (targetFlags.exists ("html5")) {
 			
 			defines.set ("html5", "1");
-			compilerFlags.push ("-D html5");
 			
 		}
 		
