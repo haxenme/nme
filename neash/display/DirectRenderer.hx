@@ -3,6 +3,12 @@ package neash.display;
 import neash.Loader;
 import nme.events.Event;
 
+typedef RenderInfo =
+{
+   rect : { x:Float, y:Float, width:Float, height:Float },
+   matrix : { a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float },
+}
+
 class DirectRenderer extends DisplayObject
 {
 
@@ -13,13 +19,14 @@ class DirectRenderer extends DisplayObject
      addEventListener(Event.REMOVED_FROM_STAGE,function(_) nme_direct_renderer_set(nmeHandle,null) );
    }
 
-   public dynamic function render( )
+   public dynamic function render(inInfo:RenderInfo)
    {
    }
 
-   function nmeOnRender()
+   function nmeOnRender(inInfo:RenderInfo)
    {
-      render();
+      if (render!=null)
+         render(inInfo);
    }
 
 	private static var nme_direct_renderer_create = Loader.load("nme_direct_renderer_create", 0);

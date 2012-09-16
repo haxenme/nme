@@ -113,6 +113,9 @@ static int _id_name;
 static int _id_contentType;
 static int _id_nmeBytes;
 
+static int _id_rect;
+static int _id_matrix;
+
 
 
 
@@ -198,6 +201,8 @@ extern "C" void InitIDs()
    _id_name = val_id("name");
    _id_contentType = val_id("contentType");
    _id_nmeBytes = val_id("nmeBytes");
+   _id_rect = val_id("rect");
+   _id_matrix = val_id("matrix");
 
    gObjectKind = alloc_kind();
 }
@@ -1742,12 +1747,20 @@ DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 
 // --- DirectRenderer -----------------------------------------------------
 
-void onDirectRender(void *inHandle)
+void onDirectRender(void *inHandle,const Rect &inRect, const Transform &inTransform)
 {
    if (inHandle)
    {
       AutoGCRoot *root = (AutoGCRoot *)inHandle;
-      val_call0(root->get());
+      value obj = alloc_empty_object();
+      value rect = alloc_empty_object();
+      ToValue(rect,inRect);
+      value matrix = alloc_empty_object();
+      ToValue(matrix,*inTransform.mMatrix);
+
+      alloc_field(obj,_id_rect, rect );
+      alloc_field(obj,_id_matrix, matrix );
+      val_call1(root->get(),obj);
    }
 }
 

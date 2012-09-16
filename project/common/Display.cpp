@@ -654,8 +654,8 @@ void DisplayObject::Unfocus()
 
 void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (inState.mPhase==rpRender)
-      onRender(renderHandle);
+   if (inState.mPhase==rpRender && inTarget.IsHardware())
+      onRender(renderHandle,inState.mClipRect,inState.mTransform);
 }
 
 

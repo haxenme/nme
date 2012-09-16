@@ -346,7 +346,8 @@ protected:
 
 class DirectRenderer : public DisplayObject
 {
-   typedef void (*RenderFunc)(void *);
+   typedef void (*RenderFunc)(void *,const Rect &inClipRect,const Transform &inTransform);
+
 public:
    DirectRenderer( RenderFunc inOnRender ) : onRender(inOnRender), renderHandle(0) { }
 
