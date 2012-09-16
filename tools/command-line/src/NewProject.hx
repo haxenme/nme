@@ -48,7 +48,7 @@ class NewProject
       for(key in defines.keys())
          Reflect.setField(context,key,defines.get(key));
  
-      transform(inNme + "/tools/command-line/project/template.nmml", inNmmlName, context );
+      transform(inNme + "/templates/default/project/template.nmml", inNmmlName, context );
 
       var mainParts = defines.get("main").split(".");
       var mainClass = mainParts.pop();
@@ -78,7 +78,7 @@ class NewProject
       }
       else
       {
-         transform(inNme + "/tools/command-line/project/Main.hx", classFile, context );
+         transform(inNme + "/templates/default/project/Main.hx", classFile, context );
       }
    }
 
