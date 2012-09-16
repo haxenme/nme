@@ -1740,6 +1740,56 @@ DO_DISPLAY_PROP(moves_for_soft_keyboard,MovesForSoftKeyboard,alloc_bool,val_bool
 DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
 DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
 
+// --- DirectRenderer -----------------------------------------------------
+
+void onDirectRender(void *inHandle)
+{
+   if (inHandle)
+   {
+      AutoGCRoot *root = (AutoGCRoot *)inHandle;
+      val_call0(root->get());
+   }
+}
+
+value nme_direct_renderer_create()
+{
+   return ObjectToAbstract( new DirectRenderer(onDirectRender) );
+}
+DEFINE_PRIM(nme_direct_renderer_create,0);
+
+value nme_direct_renderer_set(value inRenderer, value inCallback)
+{
+   DirectRenderer *renderer = 0;
+
+   if (AbstractToObject(inRenderer,renderer))
+   {
+      if (val_is_null(inCallback))
+      {
+         if (renderer->renderHandle)
+         {
+            AutoGCRoot *root = (AutoGCRoot *)renderer->renderHandle;
+            delete root;
+            renderer->renderHandle = 0;
+         }
+      }
+      else
+      {
+         if (renderer->renderHandle)
+         {
+            AutoGCRoot *root = (AutoGCRoot *)renderer->renderHandle;
+            root->set(inCallback);
+         }
+         else
+         {
+            renderer->renderHandle = new AutoGCRoot(inCallback);
+         }
+      }
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_direct_renderer_set,2);
+
 // --- SimpleButton -----------------------------------------------------
 
 value nme_simple_button_create()
@@ -1899,6 +1949,7 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
    }
    return alloc_null();
 }
+
 DEFINE_PRIM(nme_gfx_begin_fill,3);
 
 

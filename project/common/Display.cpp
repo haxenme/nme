@@ -650,6 +650,14 @@ void DisplayObject::Unfocus()
 #endif
 }
 
+// --- DirectRenderer ------------------------------------------------
+
+void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &inState )
+{
+   if (inState.mPhase==rpRender)
+      onRender(renderHandle);
+}
+
 
 // --- SimpleButton ------------------------------------------------
 SimpleButton::SimpleButton(bool inInitRef) : DisplayObject(inInitRef),

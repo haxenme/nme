@@ -344,6 +344,18 @@ protected:
    QuickVec<DisplayObject *> mChildren;
 };
 
+class DirectRenderer : public DisplayObject
+{
+   typedef void (*RenderFunc)(void *);
+public:
+   DirectRenderer( RenderFunc inOnRender ) : onRender(inOnRender), renderHandle(0) { }
+
+   void Render( const RenderTarget &inTarget, const RenderState &inState );
+
+   void *renderHandle;
+   RenderFunc onRender;
+};
+
 class SimpleButton : public DisplayObject
 {
 public:
