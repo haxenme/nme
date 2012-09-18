@@ -629,8 +629,13 @@ class InstallerBase {
 			var version:Int = 1;
 			
 			PathHelper.mkdir (buildDirectory);
+
+         // Please do not create these files by default
+         var wantDotBuild = false;
 			
 			if (FileSystem.exists (versionFile)) {
+
+            wantDotBuild = true;
 				
 				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
 				
@@ -650,14 +655,16 @@ class InstallerBase {
 			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
-			try {
+         if (wantDotBuild)
+         {
+			   try {
 				
-				var output = File.write (versionFile, false);
-				output.writeString (Std.string (version));
-				output.close ();
+				   var output = File.write (versionFile, false);
+				   output.writeString (Std.string (version));
+				   output.close ();
 				
-			} catch (e:Dynamic) {}
-			
+			   } catch (e:Dynamic) {}
+         }
 		}
 		
 	}
