@@ -15,7 +15,7 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
       if (floats!=null)
       {
          length = floats.length;
-         super(length);
+         super(length<<2);
       
          #if !cpp
          buffer.position = 0;

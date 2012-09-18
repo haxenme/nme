@@ -577,11 +577,18 @@ class GL
    public static function detachShader(program:Program, shader:Shader):Void { }
    public static function disable(cap:Int):Void { }
    public static function disableVertexAttribArray(index:Int):Void { }
-   public static function drawArrays(mode:Int, first:Int, count:Int):Void { }
+
+   static var nme_gl_draw_arrays = load("nme_gl_draw_arrays",3);
+   public static function drawArrays(mode:Int, first:Int, count:Int):Void
+      { nme_gl_draw_arrays(mode,first,count); }
+
    public static function drawElements(mode:Int, count:Int, type:Int, offset:Int):Void { }
 
    public static function enable(cap:Int):Void { }
-   public static function enableVertexAttribArray(index:Int):Void { }
+
+   static var nme_gl_enable_vertex_attrib_array = load("nme_gl_enable_vertex_attrib_array",1);
+   public static function enableVertexAttribArray(index:Int)
+      { nme_gl_enable_vertex_attrib_array(index); }
    public static function finish():Void { }
    public static function flush():Void { }
    public static function framebufferRenderbuffer(target:Int, attachment:Int, 
@@ -597,7 +604,9 @@ class GL
    public static function getActiveUniform(program:Program, index:Int) : ActiveInfo { return null; }
    public static function getAttachedShaders(program:Program) : Array<Shader> { return null; }
 
-   public static function getAttribLocation(program:Program, name:String) : Int { return 0; }
+   static var nme_gl_get_attrib_location = load("nme_gl_get_attrib_location",2);
+   public static function getAttribLocation(program:Program, name:String) : Int
+       { return nme_gl_get_attrib_location(program.id,name); }
 
    public static function getBufferParameter(target:Int, pname:Int) : Dynamic { return null; }
    public static function getParameter(pname:Int) : Dynamic { return null; }
@@ -708,7 +717,9 @@ class GL
    public static function uniformMatrix3fv(location:UniformLocation, transpose:Bool, v:Float32Array) : Void { }
    public static function uniformMatrix4fv(location:UniformLocation, transpose:Bool, v:Float32Array) : Void { }
 
-   public static function useProgram(program:Program):Void { }
+   static var nme_gl_use_program = load("nme_gl_use_program",1);
+   public static function useProgram(program:Program):Void
+      { nme_gl_use_program( program==null ? 0 : program.id ); }
    public static function validateProgram(program:Program):Void { }
 
    public static function vertexAttrib1f(indx:Int, x:Float):Void { }
@@ -719,8 +730,11 @@ class GL
    public static function vertexAttrib3fv(indx:Int, values:Float32Array ):Void { }
    public static function vertexAttrib4f(indx:Int, x:Float, y:Float, z:Float, w:Float):Void { }
    public static function vertexAttrib4fv(indx:Int, values:Float32Array ):Void { }
+
+   static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer",-1);
    public static function vertexAttribPointer(indx:Int, size:Int, type:Int, 
-                            normalized:Bool, stride:Int, offset:Int) : Void { }
+                            normalized:Bool, stride:Int, offset:Int) : Void
+      { nme_gl_vertex_attrib_pointer(indx, size, type, normalized, stride, offset); }
 
    public static function viewport(x:Int, y:Int, width:Int, height:Int):Void { }
 

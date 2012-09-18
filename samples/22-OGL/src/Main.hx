@@ -45,7 +45,7 @@ class Main extends Sprite
 
       var prog = createProgram(vertexSource,fragmentSource);
 
-      // todo - var vertexPosAttrib = GL.getAttribLocation(prog, 'pos');
+      var vertexPosAttrib = GL.getAttribLocation(prog, 'pos');
 
       var vertexPosBuffer = GL.createBuffer();
 
@@ -60,15 +60,18 @@ class Main extends Sprite
          GL.clearColor(1,0.2,0.5,1);
          GL.clear(GL.COLOR_BUFFER_BIT);
 
-         // todo - GL.useProgram(prog);
+         GL.useProgram(prog);
 
-         // todo - GL.vertexAttribPointer(vertexPosAttrib, 2, GL.FLOAT, false, 0, 0);
+         GL.enableVertexAttribArray(vertexPosAttrib);
 
          GL.bindBuffer(GL.ARRAY_BUFFER, vertexPosBuffer);
 
-         // todo - GL.drawArrays(GL.TRIANGLES, 0, 3);
+         GL.vertexAttribPointer(vertexPosAttrib, 2, GL.FLOAT, false, 0, 0);
+
+         GL.drawArrays(GL.TRIANGLES, 0, 3);
 
          GL.bindBuffer(GL.ARRAY_BUFFER, null);
+         GL.useProgram(null);
       }
       ogl.scrollRect = new nme.geom.Rectangle(100,100,200,300);
       ogl.x = 60;
