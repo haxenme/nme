@@ -18,13 +18,14 @@ import cpp.zip.Flush;
 #end
 
 
-class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInput
+class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInput, implements IMemoryRange
 {
 	
 	public var bigEndian:Bool;
 	public var bytesAvailable(nmeGetBytesAvailable, null):Int;
 	public var endian(nmeGetEndian, nmeSetEndian):String;
 	public var position:Int;
+   public var byteLength(getLength,null) : Int;
 	
 	#if neko
 	/** @private */ private var alloced:Int;
@@ -50,7 +51,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		}
 	}
 	
-	
 	inline public function __get(pos:Int):Int
 	{
 		// Neko/cpp pseudo array accessors...
@@ -61,6 +61,41 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		return get(pos);
 		#end
 	}
+
+   // ArrayBuffer interface
+   public function slice(inBegin:Int, ?inEnd:Int):ByteArray
+   {
+      var begin = inBegin;
+      if (begin<0)
+      {
+         begin += length;
+         if (begin<0)
+            begin = 0;
+      }
+      var end:Int = inEnd==null ? length : inEnd;
+      if (end<0)
+      {
+         end +=length;
+         if (end<0)
+            end = 0;
+      }
+      if (begin>=end)
+         return new ByteArray();
+
+      var result = new ByteArray(end-begin);
+
+		var opos = position;
+		result.blit(0, this, begin, end-begin);
+	
+      return result;
+   }
+
+   public function getLength() : Int { return length; }
+
+   // IMemoryRange
+   public function getByteBuffer() : ByteArray { return this; }
+   public function getStart():Int { return 0; }
+
 	
 	
 	#if !no_nme_io
