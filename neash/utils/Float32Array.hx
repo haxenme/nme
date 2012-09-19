@@ -4,13 +4,14 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
 {
 
    static public inline var SBYTES_PER_ELEMENT = 4;
-   public var BYTES_PER_ELEMENT(default,null) = 4;
+   public var BYTES_PER_ELEMENT(default,null):Int;
    public var length(default,null):Int;
 
 
    // Constrctor: length, array, float[], ArrayBuffer + start + len
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
    {
+      BYTES_PER_ELEMENT = 4;
       var floats:Array<Float> = inBufferOrArray;
       if (floats!=null)
       {
