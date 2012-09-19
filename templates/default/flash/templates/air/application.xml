@@ -15,9 +15,9 @@
         <minimizable>true</minimizable>
         <maximizable>false</maximizable>
         <resizable>::WIN_RESIZABLE::</resizable>
-        <width>::WIN_WIDTH::</width>
+        <!-- <width>::WIN_WIDTH::</width>
         <height>::WIN_HEIGHT::</height>
-        <!-- <minSize>320 240</minSize>
+        <minSize>320 240</minSize>
         <maxSize>1280 960</maxSize> -->
     </initialWindow> 
     <installFolder>::APP_COMPANY::/::APP_TITLE::</installFolder>
@@ -44,4 +44,16 @@
             </icon>
         </fileType>
     </fileTypes> -->
+	<android> 
+	    <manifestAdditions> 
+	        <![CDATA[ 
+	            <manifest> 
+					<uses-permission android:name="android.permission.WAKE_LOCK" />
+					<uses-permission android:name="android.permission.INTERNET" />
+					<uses-permission android:name="android.permission.VIBRATE" />
+					<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	            </manifest> 
+	        ]]> 
+	    </manifestAdditions> 
+	</android>
 </application>
