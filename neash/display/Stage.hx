@@ -66,7 +66,7 @@ class Stage extends DisplayObjectContainer
 	private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
 	private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 	
-	/** @private */ private var nmeJoyAxisData:IntHash <JoyAxisData>;
+	/** @private */ private var nmeJoyAxisData:IntHash <Array <Float>>;
 	/** @private */ private var nmeDragBounds:Rectangle;
 	/** @private */ private var nmeDragObject:Sprite;
 	/** @private */ private var nmeDragOffsetX:Float;
@@ -102,7 +102,7 @@ class Stage extends DisplayObjectContainer
 		nmeLastClickTime = 0.0;
 		nmeSetFrameRate(100);
 		nmeTouchInfo = new IntHash<TouchInfo>();
-		nmeJoyAxisData = new IntHash<JoyAxisData>();
+		nmeJoyAxisData = new IntHash <Array<Float>>();
 	}
 	
 	
@@ -444,20 +444,22 @@ class Stage extends DisplayObjectContainer
 				var data = nmeJoyAxisData.get (inEvent.id);
 				if (data == null)
 				{
-					data = { x: 0.0, y: 0.0, z: 0.0 };
+					data = [ 0.0, 0.0, 0.0 ];
 				}
 				
 				var value:Float = inEvent.value / 32767; // Range: -32768 to 32767
 				if (value < -1) value = -1;
 				
-				switch (inEvent.code)
-				{
-					case 0: data.x = value;
-					case 1: data.y = value;
-					case 2: data.z = value;
+				while (data.length < inEvent.code) {
+					
+					data.push (0);
+					
 				}
 				
-				evt = new JoystickEvent (inType, false, false, inEvent.id, 0, data.x, data.y, data.z);
+				data[inEvent.code] = value;
+				
+				evt = new JoystickEvent (inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+				evt.axis = data.copy ();
 				
 				nmeJoyAxisData.set (inEvent.id, data);
 			
@@ -907,14 +909,6 @@ class Stage extends DisplayObjectContainer
 
 }
 
-
-typedef JoyAxisData = {
-	
-	var x:Float;
-	var y:Float;
-	var z:Float;
-	
-}
 
 class TouchInfo
 {

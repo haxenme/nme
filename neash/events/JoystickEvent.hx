@@ -10,6 +10,7 @@ class JoystickEvent extends Event
 	public static var BUTTON_UP:String = "buttonUp";
 	public static var HAT_MOVE:String = "hatMove";
 	
+	public var axis:Array<Float>;
 	public var device:Int;
 	public var id:Int;
 	public var x:Float;
@@ -26,6 +27,8 @@ class JoystickEvent extends Event
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		
+		axis = [ x, y, z ];
 	}
 	
 	
