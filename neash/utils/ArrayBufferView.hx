@@ -40,6 +40,7 @@ class ArrayBufferView implements IMemoryRange
                throw("Invalid buffer length");
          }
       }
+      buffer.bigEndian = false;
 
       #if cpp
       bytes = buffer.getData();

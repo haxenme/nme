@@ -5,6 +5,7 @@ import neash.utils.ArrayBuffer;
 import neash.utils.ByteArray;
 import neash.utils.Float32Array;
 import neash.utils.IMemoryRange;
+import neash.geom.Matrix3D;
 
 class Object
 {
@@ -492,6 +493,8 @@ class GL
    public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void { }
    public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void { }
    public static function bindTexture(target:Int, texture:Texture):Void { }
+   public static function bindBitmapDataTexture(target:Int, texture:Texture):Void { }
+
    public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void { }
    public static function blendEquation(mode:Int):Void { }
    public static function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void { }
@@ -575,7 +578,10 @@ class GL
    public static function depthMask(flag:Bool):Void { }
    public static function depthRange(zNear:Float, zFar:Float):Void { }
    public static function detachShader(program:Program, shader:Shader):Void { }
-   public static function disable(cap:Int):Void { }
+
+   static var nme_gl_disable = load("nme_gl_disable",1);
+   public static function disable(cap:Int):Void
+      { nme_gl_disable(cap); }
    public static function disableVertexAttribArray(index:Int):Void { }
 
    static var nme_gl_draw_arrays = load("nme_gl_draw_arrays",3);
@@ -584,7 +590,9 @@ class GL
 
    public static function drawElements(mode:Int, count:Int, type:Int, offset:Int):Void { }
 
-   public static function enable(cap:Int):Void { }
+   static var nme_gl_enable = load("nme_gl_enable",1);
+   public static function enable(cap:Int):Void
+      { nme_gl_enable(cap); }
 
    static var nme_gl_enable_vertex_attrib_array = load("nme_gl_enable_vertex_attrib_array",1);
    public static function enableVertexAttribArray(index:Int)
@@ -636,7 +644,9 @@ class GL
 
    public static function getUniform(program:Program, location:UniformLocation) : Dynamic { return null; }
 
-   public static function getUniformLocation(program:Program, name:String) : UniformLocation { return null; }
+   static var nme_gl_get_uniform_location = load("nme_gl_get_uniform_location",2);
+   public static function getUniformLocation(program:Program, name:String)
+      { return nme_gl_get_uniform_location(program.id,name); }
 
    public static function getVertexAttrib(index:Int, pname:Int) : Dynamic { return null; }
 
@@ -666,7 +676,11 @@ class GL
    public static function renderbufferStorage(target:Int, internalformat:Int, 
                             width:Int, height:Int) : Void { }
    public static function sampleCoverage(value:Float, invert:Bool):Void { }
-   public static function scissor(x:Int, y:Int, width:Int, height:Int):Void { }
+
+   static var nme_gl_scissor = load("nme_gl_scissor",4);
+   public static function scissor(x:Int, y:Int, width:Int, height:Int):Void
+      { nme_gl_scissor(x,y,width,height); }
+
 
    static var nme_gl_shader_source = load("nme_gl_shader_source",2);
    public static function shaderSource(shader:Shader, source:String):Void
@@ -713,9 +727,16 @@ class GL
    public static function uniform4i( location:UniformLocation, x:Int, y:Int, z:Int, w:Int):Void { }
    public static function uniform4iv(location:UniformLocation, v:Array<Int>): Void { }
 
-   public static function uniformMatrix2fv(location:UniformLocation, transpose:Bool, v:Float32Array) : Void { }
-   public static function uniformMatrix3fv(location:UniformLocation, transpose:Bool, v:Float32Array) : Void { }
-   public static function uniformMatrix4fv(location:UniformLocation, transpose:Bool, v:Float32Array) : Void { }
+   static var nme_gl_uniform_matrix = load("nme_gl_uniform_matrix",4);
+   public static function uniformMatrix2fv(location:UniformLocation, transpose:Bool, v:Float32Array)
+      { nme_gl_uniform_matrix(location,transpose,v.getByteBuffer(),2); }
+   public static function uniformMatrix3fv(location:UniformLocation, transpose:Bool, v:Float32Array)
+      { nme_gl_uniform_matrix(location,transpose,v.getByteBuffer(),3); }
+   public static function uniformMatrix4fv(location:UniformLocation, transpose:Bool, v:Float32Array)
+      { nme_gl_uniform_matrix(location,transpose,v.getByteBuffer(),4); }
+   public static function uniformMatrix3D(location:UniformLocation, transpose:Bool, matrix:Matrix3D)
+      { nme_gl_uniform_matrix(location,transpose, Float32Array.fromMatrix(matrix).getByteBuffer() ,4); }
+     
 
    static var nme_gl_use_program = load("nme_gl_use_program",1);
    public static function useProgram(program:Program):Void
@@ -736,7 +757,9 @@ class GL
                             normalized:Bool, stride:Int, offset:Int) : Void
       { nme_gl_vertex_attrib_pointer(indx, size, type, normalized, stride, offset); }
 
-   public static function viewport(x:Int, y:Int, width:Int, height:Int):Void { }
+   static var nme_gl_viewport = load("nme_gl_viewport",4);
+   public static function viewport(x:Int, y:Int, width:Int, height:Int):Void
+      { nme_gl_viewport(x,y,width,height); }
 
 
    private static function load(inName:String,inArgCount:Int) : Dynamic

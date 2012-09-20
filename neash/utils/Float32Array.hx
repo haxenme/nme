@@ -1,5 +1,7 @@
 package neash.utils;
 
+import neash.geom.Matrix3D;
+
 class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
 {
 
@@ -40,6 +42,11 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
          if (length!=(byteLength<<2))
             throw "Invalid length multiple";
       }
+   }
+
+   public static function fromMatrix(inMatrix:Matrix3D)
+   {
+      return new Float32Array(inMatrix.rawData);
    }
 
 

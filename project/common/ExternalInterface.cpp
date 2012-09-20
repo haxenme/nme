@@ -1752,15 +1752,9 @@ void onDirectRender(void *inHandle,const Rect &inRect, const Transform &inTransf
    if (inHandle)
    {
       AutoGCRoot *root = (AutoGCRoot *)inHandle;
-      value obj = alloc_empty_object();
       value rect = alloc_empty_object();
       ToValue(rect,inRect);
-      value matrix = alloc_empty_object();
-      ToValue(matrix,*inTransform.mMatrix);
-
-      alloc_field(obj,_id_rect, rect );
-      alloc_field(obj,_id_matrix, matrix );
-      val_call1(root->get(),obj);
+      val_call1(root->get(),rect);
    }
 }
 

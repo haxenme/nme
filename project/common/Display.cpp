@@ -655,7 +655,11 @@ void DisplayObject::Unfocus()
 void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    if (inState.mPhase==rpRender && inTarget.IsHardware())
-      onRender(renderHandle,inState.mClipRect,inState.mTransform);
+   {
+      Rect clip = inState.mClipRect;
+      clip.y = inTarget.mHardware->Height() - clip.y - clip.h;
+      onRender(renderHandle,clip,inState.mTransform);
+   }
 }
 
 

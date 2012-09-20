@@ -17,6 +17,24 @@
 
 using namespace nme;
 
+// --- General -------------------------------------------
+
+value nme_gl_enable(value inCap)
+{
+   glEnable(val_int(inCap));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_enable,1);
+
+
+value nme_gl_disable(value inCap)
+{
+   glDisable(val_int(inCap));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_disable,1);
+
+
 
 // --- Program -------------------------------------------
 
@@ -65,6 +83,15 @@ value nme_gl_get_attrib_location(value inId,value inName)
 }
 DEFINE_PRIM(nme_gl_get_attrib_location,2);
 
+
+value nme_gl_get_uniform_location(value inId,value inName)
+{
+   int id = val_int(inId);
+   return alloc_int(glGetUniformLocation(id,val_string(inName)));
+}
+DEFINE_PRIM(nme_gl_get_uniform_location,2);
+
+
 value nme_gl_use_program(value inId)
 {
    int id = val_int(inId);
@@ -74,6 +101,28 @@ value nme_gl_use_program(value inId)
 DEFINE_PRIM(nme_gl_use_program,1);
 
 
+value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,value inCount)
+{
+   int loc = val_int(inLocation);
+   int count = val_int(inCount);
+   ByteArray bytes(inBytes);
+   int size = bytes.Size();
+
+   if (size>=count*4*4)
+   {
+      const float *data = (float *)bytes.Bytes();
+
+      bool trans = val_bool(inTranspose);
+      if (count==2)
+         glUniformMatrix2fv(loc,1,trans,data);
+      else if (count==3)
+         glUniformMatrix3fv(loc,1,trans,data);
+      else if (count==4)
+         glUniformMatrix4fv(loc,1,trans,data);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform_matrix,4);
 
 
 // --- Shader -------------------------------------------
@@ -208,7 +257,7 @@ value nme_gl_enable_vertex_attrib_array(value inIndex)
 
 DEFINE_PRIM(nme_gl_enable_vertex_attrib_array,1);
 
-// --- Clear -------------------------------
+// --- Drawing -------------------------------
 
 
 value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
@@ -221,8 +270,22 @@ DEFINE_PRIM(nme_gl_draw_arrays,3);
 
 
 
-// --- Clear -------------------------------
+// --- Windowing -------------------------------
 
+value nme_gl_viewport(value inX, value inY, value inW,value inH)
+{
+   glViewport(val_int(inX),val_int(inY),val_int(inW),val_int(inH));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_viewport,4);
+
+
+value nme_gl_scissor(value inX, value inY, value inW,value inH)
+{
+   glScissor(val_int(inX),val_int(inY),val_int(inW),val_int(inH));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_scissor,4);
 
 value nme_gl_clear(value inMask)
 {
