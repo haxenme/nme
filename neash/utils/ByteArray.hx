@@ -4,6 +4,7 @@ import haxe.io.Bytes;
 import haxe.io.BytesData;
 import neash.errors.EOFError; // Ensure that the neko->haxe callbacks are initialized
 import neash.Loader;
+import nme.utils.CompressionAlgorithm;
 
 #if neko
 import neko.Lib;
@@ -153,7 +154,17 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#else
 		var src = this;
 		#end
+		var windowBits = 15;
+		windowBits = switch (algorithm) {
+			case CompressionAlgorithm.DEFLATE: -15;
+			case CompressionAlgorithm.GZIP: 31;
+		}
+		
+		#if enable_deflate
+		var result = Compress.run(src, 8, windowBits);
+		#else
 		var result = Compress.run(src, 8);
+		#end
 		b = result.b;
 		length = result.length;
 		position = length;
@@ -162,6 +173,10 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#end
 	}
 	
+	public function deflate()
+	{
+		compress(CompressionAlgorithm.DEFLATE);
+	}
 	
 	/** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool)
 	{
@@ -368,7 +383,17 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		var src = this;
 		#end
 		
+		var windowBits = 15;
+		windowBits = switch (algorithm) {
+			case CompressionAlgorithm.DEFLATE: -15;
+			case CompressionAlgorithm.GZIP: 31;
+		}
+		
+		#if enable_deflate
+		var result = Uncompress.run(src, null, windowBits);
+		#else
 		var result = Uncompress.run(src, null);
+		#end
 		b = result.b;
 		length = result.length;
 		position = 0;
@@ -377,6 +402,10 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#end
 	}
 	
+	public function inflate()
+	{
+		uncompress(CompressionAlgorithm.DEFLATE);
+	}
 	
 	public function writeBoolean(value:Bool)
 	{
