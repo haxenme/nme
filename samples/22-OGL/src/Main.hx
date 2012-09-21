@@ -15,9 +15,12 @@ class Main extends Sprite
       var shader = GL.createShader(type);
       GL.shaderSource(shader, source);
       GL.compileShader(shader);
-      var err = GL.getShaderInfoLog(shader);
-      if (err!="")
-         throw err;
+      if (GL.getShaderParameter(shader, GL.COMPILE_STATUS)==0)
+      {
+         var err = GL.getShaderInfoLog(shader);
+         if (err!="")
+            throw err;
+      }
       return shader;
    }
 
@@ -29,9 +32,13 @@ class Main extends Sprite
       GL.attachShader(program, vshader);
       GL.attachShader(program, fshader);
       GL.linkProgram(program);
-      var result = GL.getProgramInfoLog(program);
-      if (result!="")
-         throw result;
+      if (GL.getProgramParameter(program, GL.LINK_STATUS)==0)
+      {
+         var result = GL.getProgramInfoLog(program);
+         if (result!="")
+            throw result;
+      }
+
       return program;
    }
 

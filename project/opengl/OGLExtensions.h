@@ -21,10 +21,9 @@
 #ifdef HX_WINDOWS
 #define OGL_EXT(func,ret,args) \
 {\
-   *(void **)&func = (void *)wglGetProcAddress(#func "ARB");\
+   *(void **)&func = (void *)wglGetProcAddress(#func);\
    if (!func) \
-      *(void **)&func = (void *)wglGetProcAddress(#func);\
-   /*printf("Loaded " #func " = %p\n", func );*/ \
+      *(void **)&func = (void *)wglGetProcAddress(#func "ARB");\
 }
 #endif
 
@@ -38,6 +37,8 @@ OGL_EXT(glBufferData,void,(GLenum,GLuint,const void *, GLenum))
 OGL_EXT(glCreateShader,GLuint,(GLenum))
 OGL_EXT(glGetUniformLocation,GLint,(GLuint,const char *))
 OGL_EXT(glUniform4f,void,(GLint,float,float,float,float))
+OGL_EXT(glUniformMatrix2fv,void,(GLint,GLsizei,GLboolean,const float *))
+OGL_EXT(glUniformMatrix3fv,void,(GLint,GLsizei,GLboolean,const float *))
 OGL_EXT(glUniformMatrix4fv,void,(GLint,GLsizei,GLboolean,const float *))
 OGL_EXT(glDeleteShader,void,(GLint))
 OGL_EXT(glDeleteProgram,void,(GLint))

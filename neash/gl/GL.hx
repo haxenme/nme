@@ -623,14 +623,21 @@ class GL
 
    public static function getFramebufferAttachmentParameter(target:Int, attachment:Int, 
                                          pname:Int) : Dynamic { return null; }
-   public static function getProgramParameter(program:Program, pname:Int) : Dynamic { return null; }
+
+   static var nme_gl_get_program_parameter = load("nme_gl_get_program_parameter",2);
+   public static function getProgramParameter(program:Program, pname:Int) : Int
+      { return nme_gl_get_program_parameter(program.id, pname); }
 
    static var nme_gl_get_program_info_log = load("nme_gl_get_program_info_log",1);
    public static function getProgramInfoLog(program:Program) : String
      { return nme_gl_get_program_info_log(program.id); }
 
    public static function getRenderbufferParameter(target:Int, pname:Int) : Dynamic { return null; }
-   public static function getShaderParameter(shader:Shader, pname:Int) : Dynamic { return null; }
+
+   static var nme_gl_get_shader_parameter = load("nme_gl_get_shader_parameter",2);
+   public static function getShaderParameter(shader:Shader, pname:Int) : Int
+      { return nme_gl_get_shader_parameter(shader.id,pname); }
+
    public static function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int) : Void { }
 
    static var nme_gl_get_shader_info_log = load("nme_gl_get_shader_info_log",1);

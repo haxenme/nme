@@ -5,7 +5,7 @@
 
 
 // Only tested on mac so far ...
-#ifdef HX_MACOS
+#if defined(HX_MACOS) || defined(HX_WINDOWS)
 
 
 #ifdef ANDROID
@@ -40,7 +40,8 @@ DEFINE_PRIM(nme_gl_disable,1);
 
 value nme_gl_create_program()
 {
-    return alloc_int(glCreateProgram());
+   int result = glCreateProgram();
+   return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_create_program,0);
 
@@ -90,6 +91,16 @@ value nme_gl_get_uniform_location(value inId,value inName)
    return alloc_int(glGetUniformLocation(id,val_string(inName)));
 }
 DEFINE_PRIM(nme_gl_get_uniform_location,2);
+
+
+value nme_gl_get_program_parameter(value inId,value inName)
+{
+   int id = val_int(inId);
+   int result = 0;
+   glGetProgramiv(id, val_int(inName), &result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_program_parameter,2);
 
 
 value nme_gl_use_program(value inId)
@@ -173,6 +184,16 @@ value nme_gl_compile_shader(value inId)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_compile_shader,1);
+
+
+value nme_gl_get_shader_parameter(value inId,value inName)
+{
+   int id = val_int(inId);
+   int result = 0;
+   glGetShaderiv(id,val_int(inName), & result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_shader_parameter,2);
 
 
 value nme_gl_get_shader_info_log(value inId)
