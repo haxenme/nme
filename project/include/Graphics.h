@@ -580,6 +580,8 @@ public:
    virtual void EndBitmapRender()=0;
 };
 
+extern HardwareContext *gDirectRenderContext;
+
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
                       HardwareData &ioData, HardwareContext &inHardware);
 

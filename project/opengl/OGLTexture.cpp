@@ -187,6 +187,10 @@ public:
 
    void Bind(class Surface *inSurface,int inSlot)
    {
+      if (inSlot>=0)
+      {
+         glActiveTexture(GL_TEXTURE0 + inSlot);
+      }
       glBindTexture(GL_TEXTURE_2D,mTextureID);
       if (gTextureContextVersion!=mContextVersion)
       {

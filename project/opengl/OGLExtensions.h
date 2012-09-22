@@ -58,6 +58,7 @@ OGL_EXT(glGetProgramInfoLog,void,(GLuint,GLsizei,GLsizei *,char *))
 OGL_EXT(glUseProgram,void,(GLuint))
 OGL_EXT(glUniform1i,void,(GLuint,GLint))
 OGL_EXT(glVertexAttribPointer,void,(GLuint,GLint,GLenum,GLboolean,GLsizei,const void *))
+OGL_EXT(glActiveTexture,void,(GLenum))
 
 #undef OGL_EXT
 #undef CALLING_CONVENTION

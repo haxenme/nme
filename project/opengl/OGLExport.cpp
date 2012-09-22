@@ -12,6 +12,7 @@
 #include <android/log.h>
 #endif
 
+#include <ExternalInterface.h>
 #include <ByteArray.h>
 #include "OGL.h"
 
@@ -135,6 +136,12 @@ value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,v
 }
 DEFINE_PRIM(nme_gl_uniform_matrix,4);
 
+value nme_gl_uniform1i(value inLocation, value inV0)
+{
+   glUniform1i(val_int(inLocation),val_int(inV0));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform1i,2);
 
 // --- Shader -------------------------------------------
 
@@ -323,6 +330,20 @@ value nme_gl_clear_color(value r,value g, value b, value a)
 }
 DEFINE_PRIM(nme_gl_clear_color,4);
 
+// --- Texture -------------------------------------------
+value nme_gl_bind_bitmap_data_texture(value inBitmapData)
+{
+   Surface  *surface;
+   if (AbstractToObject(inBitmapData,surface) )
+   {
+      Texture *texture = surface->GetOrCreateTexture(*gDirectRenderContext);
+      if (texture)
+         texture->Bind(surface,-1);
+   }
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_bitmap_data_texture,1);
 
 
 #endif // ifdef HX_MACOS

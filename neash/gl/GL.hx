@@ -493,7 +493,10 @@ class GL
    public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void { }
    public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void { }
    public static function bindTexture(target:Int, texture:Texture):Void { }
-   public static function bindBitmapDataTexture(target:Int, texture:Texture):Void { }
+
+   static var nme_gl_bind_bitmap_data_texture = load("nme_gl_bind_bitmap_data_texture",1);
+   public static function bindBitmapDataTexture(texture:BitmapData)
+      { nme_gl_bind_bitmap_data_texture(texture.nmeHandle); }
 
    public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void { }
    public static function blendEquation(mode:Int):Void { }
@@ -719,7 +722,10 @@ class GL
 
    public static function uniform1f( location:UniformLocation, x:Float):Void { }
    public static function uniform1fv(location:UniformLocation, x:Float32Array):Void { }
-   public static function uniform1i( location:UniformLocation, x:Int):Void { }
+
+   static var nme_gl_uniform1i = load("nme_gl_uniform1i",2);
+   public static function uniform1i( location:UniformLocation, x:Int)
+      { nme_gl_uniform1i(location,x); }
    public static function uniform1iv(location:UniformLocation, v:Array<Int>):Void { }
    public static function uniform2f( location:UniformLocation, x:Float, y:Float):Void { }
    public static function uniform2fv(location:UniformLocation, v:Float32Array):Void { }

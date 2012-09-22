@@ -90,6 +90,7 @@ typedef void *GLCtx;
 #define GL_SHADER_SOURCE_LENGTH       0x8B88
 #define GL_VERTEX_SHADER              0x8B31
 #define GL_FRAGMENT_SHADER            0x8B30
+#define GL_TEXTURE0                   0x84C0
 #endif
 
 

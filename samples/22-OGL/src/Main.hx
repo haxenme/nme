@@ -1,7 +1,9 @@
 package ;
 
 import nme.display.Sprite;
+import nme.RGB;
 import neash.display.OpenGLView;
+import neash.display.BitmapData;
 import neash.gl.GL;
 import neash.utils.Float32Array;
 import neash.geom.Matrix3D;
@@ -46,32 +48,82 @@ class Main extends Sprite
    {
       super();
 
+      var bmp = new BitmapData(64,64,false,RGB.WHITE);
+      var shape = new nme.display.Shape();
+      var gfx = shape.graphics;
+      gfx.beginFill(0xff0000);
+      gfx.drawCircle(32,32,30);
+      bmp.draw(shape);
+
       var ogl = new neash.display.OpenGLView();
 
-      var vertexSource = 'attribute vec2 pos;' +
-        'uniform mat4 uProj;' +
-        'uniform mat4 uMV;' +
-        'void main() { gl_Position = uProj * uMV * vec4(pos, 0.0, 1.0); }';
+      var vertexSource =
+        "attribute vec2 aPos;" +
+        "attribute vec4 aVertexColor;" +
+        "attribute vec2 aTexCoord;" +
+        "uniform mat4 uProj;" +
+        "uniform mat4 uMV;" +
+        "varying vec4 vColor;" +
+        "varying vec2 vTexCoord;" +
+        "void main() {" +
+        " gl_Position = uProj * uMV * vec4(aPos, 0.0, 1.0);" +
+        " vColor = aVertexColor;" +
+        " vTexCoord = aTexCoord;" +
+        "}";
 
       var fragmentSource = // - not on desktop ? 'precision mediump float;' +
-        'void main() { gl_FragColor = vec4(0,0.8,0,1); }';
+        "varying vec4 vColor;" +
+        "varying vec2 vTexCoord;" +
+        "uniform sampler2D uSampler;" +
+        "void main() {" +
+        "gl_FragColor = vColor * texture2D(uSampler, vTexCoord);"+
+        "}";
 
       var prog = createProgram(vertexSource,fragmentSource);
 
-      var vertexPosAttrib = GL.getAttribLocation(prog, 'pos');
-      var uProj = GL.getUniformLocation(prog, 'uProj');
-      var uMV = GL.getUniformLocation(prog, 'uMV');
+      var vertexPosAttrib = GL.getAttribLocation(prog, "aPos");
+      GL.enableVertexAttribArray(vertexPosAttrib);
 
-      var vertexPosBuffer = GL.createBuffer();
+      var uProj = GL.getUniformLocation(prog, "uProj");
+      var uMV = GL.getUniformLocation(prog, "uMV");
+      var uSampler = GL.getUniformLocation(prog, "uSampler");
+      var colourAttrib = GL.getAttribLocation(prog, "aVertexColor");
+      GL.enableVertexAttribArray(colourAttrib);
+      var texAttrib = GL.getAttribLocation(prog, "aTexCoord");
+      GL.enableVertexAttribArray(texAttrib);
+
 
       var posX = 200.0;
       var posY = 120.0;
       var rot  = 0.0;
 
+      var vertices = [
+         -100.0,-100,
+         200,20,
+         20,200 ];
+      var vertexPosBuffer = GL.createBuffer();
       GL.bindBuffer(GL.ARRAY_BUFFER, vertexPosBuffer);
-      var vertices = [ -100,-100,   200,20,  20,200 ];
-
       GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(vertices), GL.STATIC_DRAW);
+
+      var colours = [
+          1.0,  0.0,  0.0,  1.0,    // red
+          0.0,  1.0,  0.0,  1.0,    // green
+          0.0,  0.0,  1.0,  1.0     // blue
+        ];
+      var colourBuffer = GL.createBuffer();
+      GL.bindBuffer(GL.ARRAY_BUFFER, colourBuffer);
+      GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(colours), GL.STATIC_DRAW);
+
+      var texture = [
+          0.0,  0.0,
+          4.0,  0.0,
+          0.0,  4.0,
+        ];
+      var texBuffer = GL.createBuffer();
+      GL.bindBuffer(GL.ARRAY_BUFFER, texBuffer);
+      GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(texture), GL.STATIC_DRAW);
+
+
 
       addChild(ogl);
       ogl.render = function(rect:Rectangle)
@@ -95,12 +147,24 @@ class Main extends Sprite
 
          GL.uniformMatrix3D(uMV  , false, Matrix3D.create2D(posX, posY, 1, rot ) );
 
-         GL.enableVertexAttribArray(vertexPosAttrib);
-
+         // Setup position array
          GL.bindBuffer(GL.ARRAY_BUFFER, vertexPosBuffer);
-
          GL.vertexAttribPointer(vertexPosAttrib, 2, GL.FLOAT, false, 0, 0);
 
+         // Setup colour array
+         GL.bindBuffer(GL.ARRAY_BUFFER, colourBuffer);
+         GL.vertexAttribPointer(colourAttrib, 4, GL.FLOAT, false, 0, 0);
+
+         // Setup texure array
+         GL.bindBuffer(GL.ARRAY_BUFFER, texBuffer);
+         GL.vertexAttribPointer(texAttrib, 2, GL.FLOAT, false, 0, 0);
+
+         // Setup texure
+         GL.uniform1i(uSampler, 0);
+         GL.activeTexture(GL.TEXTURE0);
+         GL.bindBitmapDataTexture(bmp);
+
+         // Draw!
          GL.drawArrays(GL.TRIANGLES, 0, 3);
 
          GL.bindBuffer(GL.ARRAY_BUFFER, null);
