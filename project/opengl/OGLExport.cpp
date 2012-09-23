@@ -336,9 +336,15 @@ value nme_gl_bind_bitmap_data_texture(value inBitmapData)
    Surface  *surface;
    if (AbstractToObject(inBitmapData,surface) )
    {
-      Texture *texture = surface->GetOrCreateTexture(*gDirectRenderContext);
-      if (texture)
-         texture->Bind(surface,-1);
+      HardwareContext *ctx = gDirectRenderContext;
+      if (!ctx)
+         ctx = nme::HardwareContext::current;
+      if (ctx)
+      {
+         Texture *texture = surface->GetOrCreateTexture(*gDirectRenderContext);
+         if (texture)
+            texture->Bind(surface,-1);
+      }
    }
 
    return alloc_null();

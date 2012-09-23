@@ -2841,20 +2841,30 @@ TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
 
 
-value nme_bitmap_data_create(value inWidth, value inHeight, value inFlags, value inRGB, value inA)
+value nme_bitmap_data_create(value* arg, int nargs)
 {
-   uint32 flags = val_int(inFlags);
+   enum { aWidth, aHeight, aFlags, aRGB, aA, aGPU };
+
+   int w = val_number(arg[aWidth]);
+   int h = val_number(arg[aHeight]);
+   uint32 flags = val_int(arg[aFlags]);
+
    PixelFormat format = (flags & 0x01) ? pfARGB : pfXRGB;
-   Surface *result = new SimpleSurface( val_number(inWidth),val_number(inHeight), format );
-   if (val_is_int(inRGB))
+   int gpu = -1;
+   if (!val_is_null(arg[aGPU]))
+      gpu = val_int(arg[aGPU]);
+   
+   Surface *result = new SimpleSurface( w, h, format, 1, gpu );
+   if (gpu==-1 && val_is_int(arg[aRGB]))
    {
-      int rgb = val_int(inRGB);
+      int rgb = val_int(arg[aRGB]);
+      value inA = arg[aA];
       int alpha = val_is_int(inA) ? val_int(inA) : 255;
       result->Clear( rgb + (alpha<<24) );
    }
    return ObjectToAbstract(result);
 }
-DEFINE_PRIM(nme_bitmap_data_create,5);
+DEFINE_PRIM_MULT(nme_bitmap_data_create);
 
 value nme_bitmap_data_width(value inHandle)
 {
@@ -2931,9 +2941,9 @@ value nme_bitmap_data_load(value inFilename, value format)
       surface->DecRef();
       
       if ( val_int( format ) == 1 ) 
-         surface->setFormat( pfARGB4444 );
+         surface->setGPUFormat( pfARGB4444 );
       else if ( val_int( format ) == 2 ) 
-         surface->setFormat( pfRGB565 );
+         surface->setGPUFormat( pfRGB565 );
          
       return result;
    }
@@ -2947,9 +2957,9 @@ value nme_bitmap_data_set_format(value inHandle, value format)
    if (AbstractToObject(inHandle,surface))
    {
       if ( val_int( format ) == 1 ) 
-         surface->setFormat( pfARGB4444 );
+         surface->setGPUFormat( pfARGB4444 );
       else if ( val_int( format ) == 2 ) 
-         surface->setFormat( pfRGB565 );
+         surface->setGPUFormat( pfRGB565 );
    }
    return alloc_null();
 }
