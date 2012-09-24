@@ -60,7 +60,7 @@ class BitmapData implements IBitmapDrawable
 	public var nmeHandle:Dynamic; // Public, but only use if you know what you are doing
 	
 
-	public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32)
+	public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Bool>)
 	{
 		var fill_col:Int;
 		var fill_alpha:Int;
@@ -87,7 +87,7 @@ class BitmapData implements IBitmapDrawable
 			if (inTransparent)
 				flags |= TRANSPARENT;
 			
-			nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha);
+			nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inGPUMode);
 		}
 		
 	}
@@ -464,7 +464,7 @@ class BitmapData implements IBitmapDrawable
 	
 	
 	
-	private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", 5);
+	private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", -1);
 	private static var nme_bitmap_data_load = Loader.load("nme_bitmap_data_load", 2);
 	private static var nme_bitmap_data_from_bytes = Loader.load("nme_bitmap_data_from_bytes", 2);
 	private static var nme_bitmap_data_clear = Loader.load("nme_bitmap_data_clear", 2);

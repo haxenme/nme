@@ -54,6 +54,7 @@ public:
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
    virtual PixelFormat Format()  const = 0;
+   virtual int         GPUFormat() const { return Format(); }
    virtual const uint8 *GetBase() const = 0;
    virtual int GetStride() const = 0;
 
@@ -62,7 +63,7 @@ public:
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
    virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
-   virtual void setFormat( PixelFormat pf ) {}
+   virtual void setGPUFormat( PixelFormat pf ) {}
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
    const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
@@ -125,11 +126,12 @@ public:
 class SimpleSurface : public Surface
 {
 public:
-   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,int inGPUPixelFormat=-1);
 
    int Width() const  { return mWidth; }
    int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
+   int         GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
@@ -149,7 +151,7 @@ public:
 									 int inSrcChannel, int inDestChannel ) const;
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
-   virtual void setFormat( PixelFormat pf ) { mPixelFormat = pf; }
+   virtual void setGPUFormat( PixelFormat pf ) { mGPUPixelFormat = pf; }
    
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
@@ -165,20 +167,14 @@ public:
    void createHardwareSurface();
    void destroyHardwareSurface();
    
-   void dumpBits()
-   { 
-     if(mBase)
-     {
-       delete [] mBase;
-       mBase = NULL;
-     }
-   }
+   void dumpBits();
 
 
 protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
+   int           mGPUPixelFormat;
    int           mStride;
    uint8         *mBase;
    ~SimpleSurface();

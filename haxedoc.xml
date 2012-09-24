@@ -9776,6 +9776,7 @@
 		<x public="1"><c path="Float"/></x>
 		<id public="1"><c path="Int"/></id>
 		<device public="1"><c path="Int"/></device>
+		<axis public="1"><c path="Array"><c path="Float"/></c></axis>
 		<new public="1" set="method"><f a="type:?bubbles:?cancelable:?device:?id:?x:?y:?z">
 	<c path="String"/>
 	<e path="Bool"/>

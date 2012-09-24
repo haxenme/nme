@@ -4,13 +4,13 @@ package neash.text;
 class TextFormat
 {
 	
-	public var align:Null<String>;
+	public var align:String;
 	public var blockIndent:Dynamic;
 	public var bold:Dynamic;
 	public var bullet:Dynamic;
 	public var color:Dynamic;
-	public var display:Null<String>;
-	public var font:Null<String>;
+	public var display:String;
+	public var font:String;
 	public var indent:Dynamic;
 	public var italic:Dynamic;
 	public var kerning:Dynamic;

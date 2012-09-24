@@ -324,6 +324,8 @@ public:
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
    {
+      if (!mBase)
+         return;
       SetupMatrix(*inState.mTransform.mMatrix);
 
       bool swap =  (inTarget.mPixelFormat & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);

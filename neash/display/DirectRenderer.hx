@@ -2,12 +2,7 @@ package neash.display;
 
 import neash.Loader;
 import nme.events.Event;
-
-typedef RenderInfo =
-{
-   rect : { x:Float, y:Float, width:Float, height:Float },
-   matrix : { a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float },
-}
+import nme.geom.Rectangle;
 
 class DirectRenderer extends DisplayObject
 {
@@ -19,14 +14,14 @@ class DirectRenderer extends DisplayObject
      addEventListener(Event.REMOVED_FROM_STAGE,function(_) nme_direct_renderer_set(nmeHandle,null) );
    }
 
-   public dynamic function render(inInfo:RenderInfo)
+   public dynamic function render(inRect:Rectangle)
    {
    }
 
-   function nmeOnRender(inInfo:RenderInfo)
+   function nmeOnRender(inRect:Dynamic)
    {
       if (render!=null)
-         render(inInfo);
+         render(new Rectangle(inRect.x, inRect.y, inRect.width, inRect.height) );
    }
 
 	private static var nme_direct_renderer_create = Loader.load("nme_direct_renderer_create", 0);

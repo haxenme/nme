@@ -175,7 +175,9 @@ class InstallTool {
 			
 			for (file in files) {
 				
-				if (!FileSystem.isDirectory (PathHelper.combine (path, file))) {
+				var path = PathHelper.combine (path, file);
+				
+				if (FileSystem.exists (path) && !FileSystem.isDirectory (path)) {
 					
 					if (Path.extension (file) == "nmml" && file != "include.nmml") {
 						
