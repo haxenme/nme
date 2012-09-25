@@ -59,6 +59,18 @@ class IOSInstaller extends InstallerBase {
 		context.HAS_LAUNCH_IMAGE = false;
 		context.OBJC_ARC = false;
 		
+		context.linkedLibraries = [];
+		
+		for (dependencyName in dependencyNames) {
+			
+			if (!StringTools.endsWith (dependencyName, ".framework")) {
+				
+				context.linkedLibraries.push (dependencyName);
+				
+			}
+			
+		}
+		
 		var deployment = Std.parseFloat (iosDeployment);
 		var binaries = iosBinaries;
 		var devices = iosDevices;
@@ -78,7 +90,7 @@ class IOSInstaller extends InstallerBase {
 		var iphone = (devices == "universal" || devices == "iphone");
 		var ipad = (devices == "universal" || devices == "ipad");
 		
-		armv6 = (iphone && deployment < 5.0 && binaries != "armv7");
+		armv6 = ((iphone && deployment < 5.0 && Std.parseInt (defines.get ("IPHONE_VER")) < 6) || binaries == "armv7");
 		armv7 = (binaries != "armv6" || !armv6 || ipad);
 		
 		var valid_archs = new Array <String> ();
@@ -226,20 +238,24 @@ class IOSInstaller extends InstallerBase {
 			
 			for (ndll in ndlls) {
 				
-				var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
-				var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + "-debug" + libExt);
-				var releaseDest = projDestination + "lib/" + arch + "/lib" + ndll.name + ".a";
-				var debugDest = projDestination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
-				
-				FileHelper.copyIfNewer (releaseLib, releaseDest);
-				
-				if (FileSystem.exists (debugLib)) {
+				if (ndll.haxelib != null) {
 					
-					FileHelper.copyIfNewer (debugLib, debugDest);
+					var releaseLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name +  libExt);
+					var debugLib = ndll.getSourcePath ("iPhone", "lib" + ndll.name + "-debug" + libExt);
+					var releaseDest = projDestination + "lib/" + arch + "/lib" + ndll.name + ".a";
+					var debugDest = projDestination + "lib/" + arch + "-debug/lib" + ndll.name + ".a";
 					
-				} else if (FileSystem.exists (debugDest)) {
+					FileHelper.copyIfNewer (releaseLib, releaseDest);
 					
-					FileSystem.deleteFile (debugDest);
+					if (FileSystem.exists (debugLib)) {
+						
+						FileHelper.copyIfNewer (debugLib, debugDest);
+						
+					} else if (FileSystem.exists (debugDest)) {
+						
+						FileSystem.deleteFile (debugDest);
+						
+					}
 					
 				}
 				

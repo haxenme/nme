@@ -444,7 +444,7 @@ class Stage extends DisplayObjectContainer
 				var data = nmeJoyAxisData.get (inEvent.id);
 				if (data == null)
 				{
-					data = [ 0.0, 0.0, 0.0 ];
+					data = [ 0.0, 0.0, 0.0, 0.0 ];
 				}
 				
 				var value:Float = inEvent.value / 32767; // Range: -32768 to 32767

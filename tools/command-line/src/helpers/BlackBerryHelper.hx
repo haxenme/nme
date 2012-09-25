@@ -2,6 +2,7 @@ package helpers;
 
 
 import haxe.io.Eof;
+import sys.io.File;
 import sys.io.Process;
 
 
@@ -130,19 +131,61 @@ class BlackBerryHelper {
 	
 	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
 		
-		if (InstallTool.isWindows) {
+		if (defines.exists ("BLACKBERRY_NDK_ROOT") && (!defines.exists("QNX_HOST") || !defines.exists("QNX_TARGET"))) {
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			var fileName = defines.get ("BLACKBERRY_NDK_ROOT");
 			
-		} else if (InstallTool.isMac) {
+			if (InstallTool.isWindows) {
+				
+				fileName += "\\bbndk-env.bat";
+				
+			} else {
+				
+				fileName += "/bbndk-env.sh";
+				
+			}
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
+			var fin = File.read (fileName, false);
 			
-		} else {
+			try {
+				
+				while (true) {
+				
+					var str = fin.readLine();
+					var split = str.split ("=");
+					var name = StringTools.trim (split[0].substr (split[0].indexOf (" ") + 1));
+					
+					switch (name) {
+					
+						case "QNX_HOST", "QNX_TARGET":
+							
+							var value = split[1];
+							
+							if (StringTools.startsWith (value, "\"")) {
+							
+								value = value.substr (1);
+								
+							}
+							
+							if (StringTools.endsWith (value, "\"")) {
+							
+								value = value.substr (0, value.length - 1);
+								
+							}
+							
+							defines.set(name,value);
+							
+					}
+					
+				}
+				
+			} catch (ex:Eof) {}
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			fin.close();
 			
 		}
+		
+		binDirectory = defines.get ("QNX_HOST") + "/usr/bin/";
 		
 		BlackBerryHelper.defines = defines;
 		BlackBerryHelper.targetFlags = targetFlags;

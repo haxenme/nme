@@ -35,9 +35,8 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 				}
 				
-				// Need to wait for resize for the stage size to reflect properly
-				
-				nme.Lib.current.stage.addEventListener (nme.events.Event.RESIZE, initialize);
+				//nme.Lib.current.stage.addEventListener (nme.events.Event.RESIZE, initialize);
+				initialize ();
 			},
 			::WIN_WIDTH::, ::WIN_HEIGHT::,
 			::WIN_FPS::,
@@ -53,9 +52,9 @@ class ApplicationMain
 	}
 	
 	
-	private static function initialize (event:nme.events.Event):Void
+	private static function initialize ():Void
 	{
-		nme.Lib.current.stage.removeEventListener (nme.events.Event.RESIZE, initialize);
+		//nme.Lib.current.stage.removeEventListener (nme.events.Event.RESIZE, initialize);
 		
 		var hasMain = false;
 				

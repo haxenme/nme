@@ -1,6 +1,12 @@
 Changes
 =======
 
+3.4.4
+---------------
+* Added BlackBerry 10 support
+* Fixed issues with Xcode 4.5 on OS X
+* 
+
 
 3.4.3
 ---------------
