@@ -18,7 +18,18 @@
 
 using namespace nme;
 
+#define INT(a) val_int(arg[a])
+
 // --- General -------------------------------------------
+
+
+value nme_gl_get_error()
+{
+   return alloc_int( glGetError() );
+}
+DEFINE_PRIM(nme_gl_get_error,0);
+
+
 
 value nme_gl_enable(value inCap)
 {
@@ -331,6 +342,22 @@ value nme_gl_clear_color(value r,value g, value b, value a)
 DEFINE_PRIM(nme_gl_clear_color,4);
 
 // --- Texture -------------------------------------------
+
+value nme_gl_create_texture()
+{
+   unsigned int id = 0;
+   glGenTextures(1,&id);
+   return alloc_int(id);
+}
+DEFINE_PRIM(nme_gl_create_texture,0);
+
+value nme_gl_bind_texture(value inTarget, value inTexture)
+{
+   glBindTexture(val_int(inTarget), val_int(inTexture) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_texture,2);
+
 value nme_gl_bind_bitmap_data_texture(value inBitmapData)
 {
    Surface  *surface;
@@ -350,6 +377,84 @@ value nme_gl_bind_bitmap_data_texture(value inBitmapData)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_bitmap_data_texture,1);
+
+
+value nme_gl_tex_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aInternal, aWidth, aHeight, aBorder, aFormat, aType, aBuffer, aOffset };
+
+   unsigned char *data = 0;
+
+   ByteArray bytes( arg[aBuffer] );
+   if (!val_is_null(bytes.mValue))
+      data = bytes.Bytes() + val_int(arg[aOffset]);
+
+   glTexImage2D(INT(aTarget), INT(aLevel),  INT(aInternal),
+                INT(aWidth),  INT(aHeight), INT(aBorder),
+                INT(aFormat), INT(aType), data );
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_tex_image_2d);
+
+
+   
+value nme_gl_tex_sub_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aXOffset, aYOffset, aWidth, aHeight, aFormat, aType, aBuffer, aOffset };
+
+   unsigned char *data = 0;
+   ByteArray bytes( arg[aBuffer] );
+   if (bytes.mValue)
+      data = bytes.Bytes() + val_int(arg[aOffset]);
+ 
+   glTexSubImage2D( INT(aTarget),  INT(aLevel),
+                    INT(aXOffset), INT(aYOffset),
+                    INT(aWidth),   INT(aHeight),
+                    INT(aFormat),  INT(aType),
+                    data );
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_tex_sub_image_2d);
+
+
+value nme_gl_tex_parameterf(value inTarget, value inPName, value inVal)
+{
+   glTexParameterf(val_int(inTarget), val_int(inPName), val_number(inVal) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_tex_parameterf,3);
+
+
+value nme_gl_tex_parameteri(value inTarget, value inPName, value inVal)
+{
+   glTexParameterf(val_int(inTarget), val_int(inPName), val_int(inVal) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_tex_parameteri,3);
+
+
+value nme_gl_copy_tex_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aInternalFormat, aX, aY, aWidth, aHeight, aBorder };
+
+   glCopyTexImage2D( INT(aTarget), INT(aLevel), INT(aInternalFormat),
+                     INT(aX), INT(aY), INT(aWidth), INT(aHeight), INT(aBorder) );
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_copy_tex_image_2d);
+
+
+value nme_gl_copy_tex_sub_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aXOffset, aYOffset, aX, aY, aWidth, aHeight };
+
+   glCopyTexSubImage2D( INT(aTarget), INT(aLevel), INT(aXOffset), INT(aYOffset),
+                        INT(aX), INT(aY), INT(aWidth), INT(aHeight) );
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_copy_tex_sub_image_2d);
 
 
 #endif // ifdef HX_MACOS

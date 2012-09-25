@@ -2,6 +2,7 @@ package neash.gl;
 
 import neash.display.BitmapData;
 import neash.utils.ArrayBuffer;
+import neash.utils.ArrayBufferView;
 import neash.utils.ByteArray;
 import neash.utils.Float32Array;
 import neash.utils.IMemoryRange;
@@ -36,12 +37,17 @@ class Buffer extends Object
    public function new(inId:Int) { super(inId); }
    override function getType() { return "Buffer"; }
 }
+class Texture extends Object
+{
+   public function new(inId:Int) { super(inId); }
+   override function getType() { return "Texture"; }
+}
+
 
 
 
 // TODO:
 typedef ContextAttributes = Dynamic;
-typedef Texture = Dynamic;
 typedef Renderbuffer = Dynamic;
 typedef ActiveInfo = Dynamic;
 typedef UniformLocation = Dynamic;
@@ -492,7 +498,12 @@ class GL
    }
    public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void { }
    public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void { }
-   public static function bindTexture(target:Int, texture:Texture):Void { }
+
+   static var nme_gl_bind_texture = load("nme_gl_bind_texture",2);
+   public static function bindTexture(target:Int, texture:Texture):Void
+   {
+      nme_gl_bind_texture(target, texture==null ? 0 : texture.id );
+   }
 
    static var nme_gl_bind_bitmap_data_texture = load("nme_gl_bind_bitmap_data_texture",1);
    public static function bindBitmapDataTexture(texture:BitmapData)
@@ -539,11 +550,15 @@ class GL
                                 width:Int, height:Int, format:Int,
                                 data:ByteArray):Void { }
 
+   static var nme_gl_copy_tex_image_2d = load("nme_gl_copy_tex_image_2d",-1);
    public static function copyTexImage2D(target:Int, level:Int, internalformat:Int, 
-                       x:Int, y:Int, width:Int, height:Int, 
-                       border:Int):Void { }
+                       x:Int, y:Int, width:Int, height:Int, border:Int):Void
+      { nme_gl_copy_tex_image_2d(target, level, internalformat, x, y, width, height, border); }
+
+   static var nme_gl_copy_tex_sub_image_2d = load("nme_gl_copy_tex_sub_image_2d",-1);
    public static function copyTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, 
-                          x:Int, y:Int, width:Int, height:Int):Void { }
+                          x:Int, y:Int, width:Int, height:Int):Void
+      { nme_gl_copy_tex_sub_image_2d(target, level, xoffset, yoffset, x, y, width, height); }
 
    static var nme_gl_create_buffer = load("nme_gl_create_buffer",0);
    public static function createBuffer() : Buffer { return new Buffer(nme_gl_create_buffer()); }
@@ -558,7 +573,8 @@ class GL
    static var nme_gl_create_shader = load("nme_gl_create_shader",1);
    public static function createShader(type:Int) : Shader { return new Shader(nme_gl_create_shader(type)); }
 
-   public static function createTexture() : Texture { return null; }
+   static var nme_gl_create_texture = load("nme_gl_create_texture",0);
+   public static function createTexture() : Texture { return new Texture(nme_gl_create_texture()); }
 
    public static function cullFace(mode:Int):Void { }
 
@@ -622,7 +638,9 @@ class GL
    public static function getBufferParameter(target:Int, pname:Int) : Dynamic { return null; }
    public static function getParameter(pname:Int) : Dynamic { return null; }
 
-   public static function getError():Int { return 0; }
+   static var nme_gl_get_error = load("nme_gl_get_error",0);
+   public static function getError():Int
+      { return nme_gl_get_error(); }
 
    public static function getFramebufferAttachmentParameter(target:Int, attachment:Int, 
                                          pname:Int) : Dynamic { return null; }
@@ -705,20 +723,26 @@ class GL
    public static function stencilOp(fail:Int, zfail:Int, zpass:Int):Void { }
    public static function stencilOpSeparate(face:Int, fail:Int, zfail:Int, zpass:Int):Void { }
 
-   public static function texImage2DBytes(target:Int, level:Int, internalformat:Int, 
+   static var nme_gl_tex_image_2d = load("nme_gl_tex_image_2d",-1);
+   public static function texImage2D(target:Int, level:Int, internalformat:Int, 
                    width:Int, height:Int, border:Int, format:Int, 
-                   type:Int, pixels:ByteArray) : Void { }
+                   type:Int, pixels:ArrayBufferView) : Void
+    { nme_gl_tex_image_2d(target, level, internalformat, width, height, border, format, type,
+          pixels==null ? null : pixels.getByteBuffer(), pixels==null ? null : pixels.getStart() ); }
 
-   public static function texImage2D(target:Int, level:Int, internalformat:Int,
-                   format:Int, type:Int, image:BitmapData) : Void { } // May throw
+   static var nme_gl_tex_parameterf = load("nme_gl_tex_parameterf",3);
+   public static function texParameterf(target:Int, pname:Int, param:Float):Void
+       { nme_gl_tex_parameterf(target, pname, param); }
 
-   public static function texParameterf(target:Int, pname:Int, param:Float):Void { }
-   public static function texParameteri(target:Int, pname:Int, param:Int):Void { }
+   static var nme_gl_tex_parameteri = load("nme_gl_tex_parameteri",3);
+   public static function texParameteri(target:Int, pname:Int, param:Int):Void
+       { nme_gl_tex_parameteri(target, pname, param); }
 
-   public static function texSubImage2DBytes(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, 
-                      format:Int, type:Int, pixels:ByteArray):Void { }
-   public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, 
-                      format:Int, type:Int, pixels:BitmapData):Void { }
+   static var nme_gl_tex_sub_image_2d = load("nme_gl_tex_sub_image_2d",-1);
+   public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, 
+                      format:Int, type:Int, pixels:ByteArray):Void
+    { nme_gl_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format, type,
+          pixels==null ? null : pixels.getByteBuffer(), pixels==null ? null : pixels.getStart() ); }
 
    public static function uniform1f( location:UniformLocation, x:Float):Void { }
    public static function uniform1fv(location:UniformLocation, x:Float32Array):Void { }
