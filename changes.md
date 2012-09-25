@@ -4,8 +4,10 @@ Changes
 3.4.4
 ---------------
 * Added BlackBerry 10 support
-* Fixed issues with Xcode 4.5 on OS X
-* 
+* Fixed build issues with Xcode 4.5
+* Improved compatibility with Xbox 360 and PS3 gamepads
+* Initial work to expose low-level GL functions
+* Various small fixes
 
 
 3.4.3

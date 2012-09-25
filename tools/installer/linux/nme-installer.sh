@@ -185,7 +185,9 @@ echo "-----------------------------------"
 echo "    Installing HXCPP"
 echo "-----------------------------------"
 
-haxelib install hxcpp
+wget -c http://www.haxenme.org/builds/hxcpp-2.10.2.zip
+haxelib test hxcpp-2.10.2.zip
+rm hxcpp-2.10.2.zip
 
 
 echo ""
@@ -199,7 +201,9 @@ sudo apt-get install libssl0.9.8
 
 # Download and install NME
 
-haxelib install nme
+wget -c http://www.haxenme.org/builds/nme-3.4.4-r2087.zip
+haxelib test nme-3.4.4-r2087.zip
+rm nme-3.4.4-r2087.zip
 
 # Add "nme" command shortcut
 
