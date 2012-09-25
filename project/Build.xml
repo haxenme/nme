@@ -155,6 +155,7 @@
 		<compilerflag value="-DSDL_OGL" if="sdl"/>
 		<compilerflag value="-DNME_CURL_SSL" if="ssl"/>
 		<compilerflag value="-Wno-conversion" if="linux"/>
+		<compilerflag value="-DGL_GLEXT_PROTOTYPES" if="linux"/>
 		
 		<file name="common/Surface.cpp"/>
 		<file name="common/Utils.cpp"/>
