@@ -367,10 +367,11 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/i386\"",
 				);
 		        OTHER_LDFLAGS = (
-	               ::foreach ndlls:: "-l::name::",
-	                ::end::
-						"-lApplicationMain",
-
+					::foreach ndlls:: "-l::name::",
+					::end::
+					::foreach linkedLibraries:: "-l::__current__::",
+					::end::
+					"-lApplicationMain",
 				);
 			};
 			name = Debug;
@@ -396,9 +397,11 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/i386\"",
 				);
-	        	 OTHER_LDFLAGS = (
-              	 ::foreach ndlls:: "-l::name::",
-              	  ::end::
+				OTHER_LDFLAGS = (
+					::foreach ndlls:: "-l::name::",
+					::end::
+					::foreach linkedLibraries:: "-l::__current__::",
+					::end::
 					"-lApplicationMain",
 				);
 			};
