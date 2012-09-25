@@ -24,7 +24,10 @@
 // Mac/Linux....
 #include <SDL_opengl.h>
 #define FORCE_NON_PO2
+
+#ifndef HX_LINUX
 #define ALLOW_OGL2
+#endif
 
 #else
 

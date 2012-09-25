@@ -519,16 +519,16 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	{
 		if (getenv("XDG_CONFIG_HOME") != NULL)
 		{
-			outDir = getEnv ("XDG_CONFIG_HOME") + "/" + gPackage;
+			outDir = std::string(getenv ("XDG_CONFIG_HOME")) + "/" + gPackage;
 		}
 		else
 		{
-			outDir = getEnv ("HOME") + "/.config/" + gPackage;
+			outDir = std::string(getenv ("HOME")) + "/.config/" + gPackage;
 		}
 	}
 	else if (inDir == DIR_USER)
 	{
-		outDir = getEnv ("HOME");
+		outDir = getenv ("HOME");
 	}
 	else if (inDir == DIR_DOCS)
 	{
@@ -536,7 +536,7 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	}
 	else if (inDir == DIR_DESKTOP)
 	{
-		outDir = "$HOME/Desktop"
+		outDir = "$HOME/Desktop";
 	}
 #endif
 }
