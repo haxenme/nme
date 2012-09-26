@@ -97,20 +97,20 @@ class MpegAudioReader {
             var element = readNext();
 
             switch (element) {
-                case Frame(frame):
+                case Element.Frame(frame):
                 frames.push(frame);
 
-                case Info(info):
+                case Element.Info(info):
                 // Discard info tag.
 
-                case GaplessInfo(giEncoderDelay, giEndPadding):
+                case Element.GaplessInfo(giEncoderDelay, giEndPadding):
                 encoderDelay = giEncoderDelay;
                 endPadding = giEndPadding;
 
-                case Unknown(bytes):
+                case Element.Unknown(bytes):
                 // Discard unknown bytes
 
-                case End:
+                case Element.End:
                 break;
             }
         }
