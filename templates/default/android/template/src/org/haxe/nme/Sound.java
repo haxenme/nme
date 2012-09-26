@@ -100,8 +100,10 @@ class ManagedMediaPlayer
 	}
 
 	public void release() {
-		if (mp != null)
+		if (mp != null) {
 			mp.release();
+			mp = null;
+		}
 	}
 }
 
@@ -110,9 +112,9 @@ public class Sound
 	private static Context mContext;
 	private static Sound instance;
 
-	//private static Hashtable<String, ManagedMediaPlayer> mediaPlayers = new Hashtable<String, ManagedMediaPlayer>();
-	private static MediaPlayer mediaPlayer;
+	private static ManagedMediaPlayer mediaPlayer;
 	private static boolean mediaPlayerWasPlaying;
+	private static String mediaPlayerPath;
 	private static SoundPool mSoundPool;
 	private static int mSoundPoolID = 0;
 
@@ -143,11 +145,6 @@ public class Sound
 			mediaPlayerWasPlaying = mediaPlayer.isPlaying ();
 			mediaPlayer.pause();
 		}
-		
-		//for (ManagedMediaPlayer mediaPlayer : mediaPlayers.values()) {
-			//mediaPlayerWasPlaying = mediaPlayer.isPlaying();
-			//mediaPlayer.pause ();
-		//}
 	}
 
 	public void doResume()
@@ -158,12 +155,6 @@ public class Sound
 		if (mediaPlayer != null && mediaPlayerWasPlaying) {
 			mediaPlayer.start ();
 		}	
-		
-		//for (ManagedMediaPlayer mediaPlayer : mediaPlayers.values()) {
-			//if (mediaPlayer.wasPlaying) {
-				//mediaPlayer.start ();
-			//}
-		//}
 	}
 	
 	/*
@@ -260,10 +251,7 @@ public class Sound
     	Log.i("Sound", "playMusic");
 		
 		if (mediaPlayer != null) {
-			
 			mediaPlayer.stop ();
-			mediaPlayer.release ();
-			
 		}
 		
 		MediaPlayer mp = null;
@@ -300,18 +288,10 @@ public class Sound
 		
 	private static int playMediaPlayer(MediaPlayer mp, final String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
 	{	
-	
-		mediaPlayer = mp;
-	
-		//ManagedMediaPlayer mmp;
-		//if (mediaPlayers.containsKey(inPath))
-			//mmp = mediaPlayers.get(inPath).setMediaPlayer(mp);
-		//else
-			//mmp = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
-
-        //mediaPlayers.put(inPath, mmp);
+		mediaPlayer = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
+		mediaPlayerPath = inPath;
 		mp.seekTo((int)inStartTime);
-		mp.start();
+		mediaPlayer.start();
 
 		return 0;
 	}
@@ -320,72 +300,60 @@ public class Sound
 	{
 		Log.v("Sound", "stopMusic");
 		
-		if (mediaPlayer != null) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
 			mediaPlayer.stop ();
 		}
-		
-		//if (mediaPlayers.containsKey(inPath)) {
-			//mediaPlayers.get(inPath).stop();
-		//}
 	}
 	
 	public static int getDuration(String inPath)
 	{
-		if (mediaPlayer != null) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
 			return mediaPlayer.getDuration ();
 		}
-		
-		//if (mediaPlayers.containsKey(inPath))
-		//	return mediaPlayers.get(inPath).getDuration();
+
 		return -1;
 	}
 	
 	public static int getPosition(String inPath)
 	{
-		if (mediaPlayer != null) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
 			return mediaPlayer.getCurrentPosition ();
 		}
-		
-		//if (mediaPlayers.containsKey(inPath))
-		//	return mediaPlayers.get(inPath).getCurrentPosition();
 		return -1;
 	}
 	
 	public static double getLeft(String inPath)
 	{
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+			return mediaPlayer.leftVol;
+		}
+
 		return 0.5;
-		
-		//if (mediaPlayers.containsKey(inPath))
-		//	return mediaPlayers.get(inPath).leftVol;
-		//return -1;
 	}
 	
 	public static double getRight(String inPath)
 	{
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+			return mediaPlayer.rightVol;
+		}
+
 		return 0.5;
-		
-		//if (mediaPlayers.containsKey(inPath))
-		//	return mediaPlayers.get(inPath).rightVol;
-		//return -1;
 	}
 	
 	public static boolean getComplete(String inPath)
 	{
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+			return mediaPlayer.isComplete;
+		}
+
 		return true;
-		
-		//if (mediaPlayers.containsKey(inPath))
-		//	return mediaPlayers.get(inPath).isComplete;
-		//return true;
 	}
 
 	public static void setMusicTransform(String inPath, double inVolLeft, double inVolRight)
 	{
-		if (mediaPlayer != null) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
 			mediaPlayer.setVolume((float)inVolLeft, (float)inVolRight);
 		}
-			
-		//if (mediaPlayers.containsKey(inPath))
-		//	mediaPlayers.get(inPath).setVolume((float)inVolLeft, (float)inVolRight);
 	}
 }
 	
