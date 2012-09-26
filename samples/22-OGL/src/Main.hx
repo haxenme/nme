@@ -292,12 +292,7 @@ class Main extends Sprite
    {
       super();
 
-      var bmp = new BitmapData(64,64,false,RGB.WHITE);
-      var shape = new nme.display.Shape();
-      var gfx = shape.graphics;
-      gfx.beginFill(0xff0000);
-      gfx.drawCircle(32,32,30);
-      bmp.draw(shape);
+      //trace(GL.getSupportedExtensions());
 
       var ogl = new neash.display.OpenGLView();
       ogl.scrollRect = new nme.geom.Rectangle(0,0,400,300);
@@ -324,6 +319,33 @@ class Main extends Sprite
           0.0,  0.0,  1.0,  1.0     // blue
         ];
       colouredTriangle.setExtra(colours,4);
+
+      // create frame buffer...
+      var frameBuffer = GL.createFramebuffer();
+      GL.bindFramebuffer(GL.FRAMEBUFFER,frameBuffer);
+
+      // create empty texture
+      var tex = GL.createTexture();
+      GL.bindTexture(GL.TEXTURE_2D, tex);
+      GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+      GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_NEAREST);
+      GL.generateMipmap(GL.TEXTURE_2D);
+      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 512, 512, 0, GL.RGBA, GL.UNSIGNED_BYTE, null);
+
+      var renderbuffer = GL.createRenderbuffer();
+      GL.bindRenderbuffer(GL.RENDERBUFFER, renderbuffer);
+      GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, 512, 512);
+
+      GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, tex, 0);
+      GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, renderbuffer);
+
+      GL.bindTexture(GL.TEXTURE_2D, null);
+      GL.bindRenderbuffer(GL.RENDERBUFFER, null);
+      GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+
+      //gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+      //draw ...
+      //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 
       var posX = 200.0;

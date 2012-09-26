@@ -5,7 +5,8 @@
 
 
 // Only tested on mac so far ...
-#if defined(HX_MACOS) || defined(HX_WINDOWS)
+#if defined(HX_MACOS)
+//  need to test framebuffer extensions of windows... || defined(HX_WINDOWS)
 
 
 #ifdef ANDROID
@@ -30,6 +31,11 @@ value nme_gl_get_error()
 DEFINE_PRIM(nme_gl_get_error,0);
 
 
+value nme_gl_version()
+{
+   return alloc_int( gTextureContextVersion );
+}
+DEFINE_PRIM(nme_gl_version,0);
 
 value nme_gl_enable(value inCap)
 {
@@ -46,6 +52,39 @@ value nme_gl_disable(value inCap)
 }
 DEFINE_PRIM(nme_gl_disable,1);
 
+
+value nme_gl_get_context_attributes()
+{
+   value result = alloc_empty_object( );
+
+   // TODO:
+   alloc_field(result,val_id("alpha"),alloc_bool(true));
+   alloc_field(result,val_id("depth"),alloc_bool(true));
+   alloc_field(result,val_id("stencil"),alloc_bool(true));
+   alloc_field(result,val_id("antialias"),alloc_bool(true));
+   return result;
+}
+DEFINE_PRIM(nme_gl_get_context_attributes,0);
+
+value nme_gl_get_supported_extensions(value ioList)
+{
+   const char *ext = (const char *)glGetString(GL_EXTENSIONS);
+   if (ext && *ext)
+   {
+      while(true)
+      {
+         const char *next = ext;
+         while(*next && *next!=' ')
+            next++;
+         val_array_push( ioList, alloc_string_len(ext, next-ext) );
+         if (!*next || !next[1])
+           break;
+         ext = next+1;
+      }
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_get_supported_extensions,1);
 
 
 // --- Program -------------------------------------------
@@ -86,6 +125,15 @@ value nme_gl_delete_program(value inId)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_delete_program,1);
+
+
+value nme_gl_bind_attrib_location(value inId,value inSlot,value inName)
+{
+   int id = val_int(inId);
+   glBindAttribLocation(id,val_int(inSlot),val_string(inName));
+}
+DEFINE_PRIM(nme_gl_bind_attrib_location,3);
+
 
 
 
@@ -296,6 +344,60 @@ value nme_gl_enable_vertex_attrib_array(value inIndex)
 
 DEFINE_PRIM(nme_gl_enable_vertex_attrib_array,1);
 
+// --- Framebuffer -------------------------------
+
+value nme_gl_bind_framebuffer(value target, value framebuffer)
+{
+   glBindFramebuffer(val_int(target), val_int(framebuffer) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_framebuffer,2);
+
+value nme_gl_bind_renderbuffer(value target, value renderbuffer)
+{
+   glBindRenderbuffer(val_int(target),val_int(renderbuffer));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_renderbuffer,2);
+
+value nme_gl_create_framebuffer( )
+{
+   GLuint id = 0;
+   glGenFramebuffers(1,&id);
+   return alloc_int(id);
+}
+DEFINE_PRIM(nme_gl_create_framebuffer,0);
+
+value nme_gl_create_render_buffer( )
+{
+   GLuint id = 0;
+   glGenRenderbuffers(1,&id);
+   return alloc_int(id);
+}
+DEFINE_PRIM(nme_gl_create_render_buffer,0);
+
+value nme_gl_framebuffer_renderbuffer(value target, value attachment, value renderbuffertarget, value renderbuffer)
+{
+   glFramebufferRenderbuffer(val_int(target), val_int(attachment), val_int(renderbuffertarget), val_int(renderbuffer) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_framebuffer_renderbuffer,4);
+
+value nme_gl_framebuffer_texture2D(value target, value attachment, value textarget, value texture, value level)
+{
+   glFramebufferTexture2D( val_int(target), val_int(attachment), val_int(textarget), val_int(texture), val_int(level) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_framebuffer_texture2D,5);
+
+value nme_gl_renderbuffer_storage(value target, value internalFormat, value width, value height)
+{
+   glRenderbufferStorage( val_int(target), val_int(internalFormat), val_int(width), val_int(height) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_renderbuffer_storage,4);
+
+
 // --- Drawing -------------------------------
 
 
@@ -305,7 +407,6 @@ value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_arrays,3);
-
 
 
 
@@ -350,6 +451,23 @@ value nme_gl_create_texture()
    return alloc_int(id);
 }
 DEFINE_PRIM(nme_gl_create_texture,0);
+
+value nme_gl_active_texture(value inSlot)
+{
+   glActiveTexture( val_int(inSlot) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_active_texture,1);
+
+
+value nme_gl_delete_texture(value inId)
+{
+   GLuint id = val_int(inId);
+   glDeleteTextures(1,&id);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_delete_texture,1);
+
 
 value nme_gl_bind_texture(value inTarget, value inTexture)
 {

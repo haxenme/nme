@@ -10,45 +10,65 @@ import neash.geom.Matrix3D;
 
 class Object
 {
-   public var id(default,null):Int;
+   public var id(default,null):Dynamic;
+   public var invalidated(isInvalid,null):Bool;
+   public var valid(isValid,null):Bool;
 
-   function new(inId:Int) { id = inId; }
+   var version:Int;
+
+   function new(inVersion:Int,inId:Dynamic) { version=inVersion; id = inId; }
    function getType() : String { return "GLObject"; }
+   public function invalidate() { id=null; }
    public function toString() : String { return getType() + "(" + id + ")"; }
+   public function isValid():Bool { return id!=null && version==GL.version; }
+   public function isInvalid():Bool { return !isValid(); }
 }
 
 class Program extends Object
 {
-   public function new(inId:Int) { super(inId); }
+   public function new(inVersion:Int, inId:Dynamic) { super(inVersion,inId); }
    override function getType() { return "Program"; }
 }
 class Shader  extends Object
 {
-   public function new(inId:Int) { super(inId); }
+   public function new(inVersion:Int,inId:Dynamic) { super(inVersion,inId); }
    override function getType() { return "Shader"; }
 }
 class Framebuffer  extends Object
 {
-   public function new(inId:Int) { super(inId); }
+   public function new(inVersion:Int,inId:Dynamic) { super(inVersion,inId); }
    override function getType() { return "Framebuffer"; }
 }
 class Buffer extends Object
 {
-   public function new(inId:Int) { super(inId); }
+   public function new(inVersion:Int,inId:Dynamic) { super(inVersion,inId); }
    override function getType() { return "Buffer"; }
 }
 class Texture extends Object
 {
-   public function new(inId:Int) { super(inId); }
+   public function new(inVersion:Int,inId:Dynamic) { super(inVersion,inId); }
    override function getType() { return "Texture"; }
+}
+class Renderbuffer extends Object
+{
+   public function new(inVersion:Int,inId:Dynamic) { super(inVersion,inId); }
+   override function getType() { return "Renderbuffer"; }
 }
 
 
 
 
+
+typedef ContextAttributes = {
+    alpha:Bool, 
+    depth:Bool,
+    stencil:Bool,
+    antialias:Bool,
+    premultipliedAlpha:Bool,
+    preserveDrawingBuffer:Bool,
+};
+
 // TODO:
-typedef ContextAttributes = Dynamic;
-typedef Renderbuffer = Dynamic;
 typedef ActiveInfo = Dynamic;
 typedef UniformLocation = Dynamic;
 
@@ -469,35 +489,67 @@ class GL
    public static inline var UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
    public static inline var BROWSER_DEFAULT_WEBGL          = 0x9244;
 
+   public static var version(getVersion,null):Int;
+
+   static var nme_gl_version = load("nme_gl_version",0);
+   static function getVersion():Int { return nme_gl_version(); }
+
    public static var drawingBufferWidth(getDrawingBufferWidth,null):Int;
-   static function getDrawingBufferWidth() { return 0; }
+   static function getDrawingBufferWidth() { return nme.Lib.current.stage.stageWidth; }
 
    public static var drawingBufferHeight(getDrawingBufferHeight,null):Int;
-   static function getDrawingBufferHeight() { return 0; }
+   static function getDrawingBufferHeight() { return nme.Lib.current.stage.stageHeight; }
 
-   public static function getContextAttributes() : ContextAttributes { return null; }
+   static var nme_gl_get_context_attributes = load("nme_gl_get_context_attributes",0);
+   public static function getContextAttributes() : ContextAttributes
+   {
+      var base = nme_gl_get_context_attributes();
+      base.premultipliedAlpha = false;
+      base.preserveDrawingBuffer = false;
+      return base;
+   }
 
-   public static function isContextLost() : Bool { return false; }
+   // This is non-static
+   // public function isContextLost() : Bool { return false; }
    
-   public static function getSupportedExtensions() : Array<String> { return null; }
-   public static function getExtension(name:String) : Dynamic { return null; }
+   static var nme_gl_get_supported_extensions = load("nme_gl_get_supported_extensions",1);
+   public static function getSupportedExtensions() : Array<String>
+   {
+      var result = new Array<String>();
+      nme_gl_get_supported_extensions(result);
+      return result;
+   }
 
-   public static function activeTexture(texture:Int):Void { }
+   // Hmmm
+   public static function getExtension(name:String) : Dynamic
+   {  
+     return null;
+   }
+
+   static var nme_gl_active_texture = load("nme_gl_active_texture",1);
+   public static function activeTexture(texture:Int):Void {  nme_gl_active_texture(texture); }
 
    static var nme_gl_attach_shader = load("nme_gl_attach_shader",2);
    public static function attachShader(program:Program, shader:Shader):Void
       { nme_gl_attach_shader(program.id, shader.id); }
  
 
-   public static function bindAttribLocation(program:Program, index:Int, name:String):Void { }
+   static var nme_gl_bind_attrib_location = load("nme_gl_bind_attrib_location",3);
+   public static function bindAttribLocation(program:Program, index:Int, name:String):Void
+      { nme_gl_bind_attrib_location(program.id, index, name); }
 
    static var nme_gl_bind_buffer = load("nme_gl_bind_buffer",2);
    public static function bindBuffer(target:Int, buffer:Buffer):Void
    {
       nme_gl_bind_buffer(target, buffer==null ? 0 : buffer.id );
    }
-   public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void { }
-   public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void { }
+   static var nme_gl_bind_framebuffer = load("nme_gl_bind_framebuffer",2);
+   public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void
+      { nme_gl_bind_framebuffer(target,framebuffer==null ? 0 : framebuffer.id); }
+
+   static var nme_gl_bind_renderbuffer = load("nme_gl_bind_renderbuffer",2);
+   public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void
+      { nme_gl_bind_renderbuffer(target, renderbuffer==null ? 0 : renderbuffer.id); }
 
    static var nme_gl_bind_texture = load("nme_gl_bind_texture",2);
    public static function bindTexture(target:Int, texture:Texture):Void
@@ -561,37 +613,42 @@ class GL
       { nme_gl_copy_tex_sub_image_2d(target, level, xoffset, yoffset, x, y, width, height); }
 
    static var nme_gl_create_buffer = load("nme_gl_create_buffer",0);
-   public static function createBuffer() : Buffer { return new Buffer(nme_gl_create_buffer()); }
+   public static function createBuffer() : Buffer { return new Buffer(version,nme_gl_create_buffer()); }
 
-   public static function createFramebuffer() : Framebuffer { return null; }
+   static var nme_gl_create_framebuffer = load("nme_gl_create_framebuffer",0);
+   public static function createFramebuffer() : Framebuffer
+      { return new Framebuffer(version,nme_gl_create_framebuffer()); }
 
    static var nme_gl_create_program = load("nme_gl_create_program",0);
-   public static function createProgram() : Program { return new Program(nme_gl_create_program()); }
+   public static function createProgram() : Program { return new Program(version,nme_gl_create_program()); }
 
-   public static function createRenderbuffer() : Renderbuffer { return null; }
+   static var nme_gl_create_render_buffer = load("nme_gl_create_render_buffer",0);
+   public static function createRenderbuffer() : Renderbuffer
+      { return new Renderbuffer(version,nme_gl_create_render_buffer()); }
 
    static var nme_gl_create_shader = load("nme_gl_create_shader",1);
-   public static function createShader(type:Int) : Shader { return new Shader(nme_gl_create_shader(type)); }
+   public static function createShader(type:Int) : Shader { return new Shader(version,nme_gl_create_shader(type)); }
 
    static var nme_gl_create_texture = load("nme_gl_create_texture",0);
-   public static function createTexture() : Texture { return new Texture(nme_gl_create_texture()); }
+   public static function createTexture() : Texture { return new Texture(version,nme_gl_create_texture()); }
 
    public static function cullFace(mode:Int):Void { }
 
    static var nme_gl_delete_buffer = load("nme_gl_delete_buffer",1);
-   public static function deleteBuffer(buffer:Buffer):Void { nme_gl_delete_buffer(buffer.id); }
+   public static function deleteBuffer(buffer:Buffer):Void { nme_gl_delete_buffer(buffer.id); buffer.invalidate(); }
 
    public static function deleteFramebuffer(framebuffer:Framebuffer):Void { }
 
    static var nme_gl_delete_program = load("nme_gl_delete_program",1);
-   public static function deleteProgram(program:Program):Void { nme_gl_delete_program(program.id); }
+   public static function deleteProgram(program:Program):Void { nme_gl_delete_program(program.id); program.invalidate(); }
 
    public static function deleteRenderbuffer(renderbuffer:Renderbuffer):Void { }
 
    static var nme_gl_delete_shader = load("nme_gl_delete_shader",1);
-   public static function deleteShader(shader:Shader):Void { nme_gl_delete_shader(shader.id); }
+   public static function deleteShader(shader:Shader):Void { nme_gl_delete_shader(shader.id); shader.invalidate(); }
 
-   public static function deleteTexture(texture:Texture):Void { }
+   static var nme_gl_delete_texture = load("nme_gl_delete_texture",1);
+   public static function deleteTexture(texture:Texture):Void { nme_gl_delete_texture(texture.id); texture.invalidate(); }
 
    public static function depthFunc(func:Int):Void { }
    public static function depthMask(flag:Bool):Void { }
@@ -618,11 +675,17 @@ class GL
       { nme_gl_enable_vertex_attrib_array(index); }
    public static function finish():Void { }
    public static function flush():Void { }
+
+   static var nme_gl_framebuffer_renderbuffer = load("nme_gl_framebuffer_renderbuffer", 4);
    public static function framebufferRenderbuffer(target:Int, attachment:Int, 
-                                renderbuffertarget:Int, 
-                                renderbuffer:Renderbuffer):Void { }
+                                renderbuffertarget:Int, renderbuffer:Renderbuffer):Void
+      { nme_gl_framebuffer_renderbuffer(target, attachment, renderbuffertarget, renderbuffer.id); }
+ 
+   static var nme_gl_framebuffer_texture2D = load("nme_gl_framebuffer_texture2D", 5);
    public static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, 
-                             texture:Texture, level:Int) : Void { }
+                             texture:Texture, level:Int) : Void
+      { nme_gl_framebuffer_texture2D(target, attachment, textarget, texture.id, level); }
+
    public static function frontFace(mode:Int):Void { }
 
    public static function generateMipmap(target:Int):Void { }
@@ -701,8 +764,10 @@ class GL
    public static function readPixels(x:Int, y:Int, width:Int, height:Int, 
                    format:Int, type:Int, pixels:ByteArray) : Void { }
 
-   public static function renderbufferStorage(target:Int, internalformat:Int, 
-                            width:Int, height:Int) : Void { }
+   static var nme_gl_renderbuffer_storage = load("nme_gl_renderbuffer_storage",4);
+   public static function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int) : Void
+      { nme_gl_renderbuffer_storage(target, internalformat, width, height); }
+
    public static function sampleCoverage(value:Float, invert:Bool):Void { }
 
    static var nme_gl_scissor = load("nme_gl_scissor",4);
@@ -801,7 +866,15 @@ class GL
 
    private static function load(inName:String,inArgCount:Int) : Dynamic
    {
-      return neash.Loader.load(inName,inArgCount);
+      try
+      {
+         return neash.Loader.load(inName,inArgCount);
+      }
+      catch(e:Dynamic)
+      {
+         trace(e);
+         return null;
+      }
    }
 }
 

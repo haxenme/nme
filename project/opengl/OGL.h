@@ -29,6 +29,16 @@
 #define ALLOW_OGL2
 #endif
 
+  #ifdef HX_MACOS
+  #define glBindFramebuffer glBindFramebufferEXT
+  #define glBindRenderbuffer glBindRenderbufferEXT
+  #define glGenFramebuffers glGenFramebuffersEXT
+  #define glGenRenderbuffers glGenRenderbuffersEXT
+  #define glFramebufferRenderbuffer glFramebufferRenderbufferEXT
+  #define glFramebufferTexture2D glFramebufferTexture2DEXT
+  #define glRenderbufferStorage glRenderbufferStorageEXT
+  #endif
+
 #else
 
 // Windows ....
