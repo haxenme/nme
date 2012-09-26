@@ -23,12 +23,16 @@ namespace nme {
 	double CapabilitiesGetScreenDPI()
 	{
 		HDC screen = GetDC(NULL);
-		double hSize = GetDeviceCaps(hdc, HORZSIZE);
-		double vSize = GetDeviceCaps(hdc, VERTSIZE);
-		double hRes = GetDeviceCaps(hdc, HORZRES);
-		double vRes = GetDeviceCaps(hdc, VERTRES);
+		/* It reports 72... :(
+		double hSize = GetDeviceCaps(screen, HORZSIZE);
+		double vSize = GetDeviceCaps(screen, VERTSIZE);
+		double hRes = GetDeviceCaps(screen, HORZRES);
+		double vRes = GetDeviceCaps(screen, VERTRES);
 		double hPixelsPerInch = hRes / hSize * 25.4;
 		double vPixelsPerInch = vRes / vSize * 25.4;
+		*/
+		double hPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSX);
+		double vPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSY);
 		ReleaseDC(NULL, screen);
 		return (hPixelsPerInch + vPixelsPerInch) * 0.5;
 	}
