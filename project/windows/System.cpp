@@ -18,4 +18,21 @@ namespace nme {
 		return std::string(locale, lang_len);
 	}
 	
+	bool dpiAware = SetProcessDPIAware();
+
+	double CapabilitiesGetScreenDPI()
+	{
+		HDC screen = GetDC(NULL);
+		double hPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSX);
+		double vPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSY);
+		return (hPixelsPerInch + vPixelsPerInch) * 0.5;
+	}
+
+	double CapabilitiesGetPixelAspectRatio() {
+		HDC screen = GetDC(NULL);
+		double hPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSX);
+		double vPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSY);
+		return hPixelsPerInch / vPixelsPerInch;
+	}
+	
 }
