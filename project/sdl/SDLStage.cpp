@@ -902,6 +902,7 @@ double CapabilitiesGetScreenResolutionY() {
 	
 }
 
+#ifndef HX_MACOS
 double CapabilitiesGetScreenDPI() {
 
 	#ifdef WEBOS
@@ -935,6 +936,7 @@ double CapabilitiesGetPixelAspectRatio() {
 	#endif
 	
 }
+#endif
 
 #endif
 
