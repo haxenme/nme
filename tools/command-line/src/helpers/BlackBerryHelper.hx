@@ -243,8 +243,8 @@ class BlackBerryHelper {
 				while (index > -1) {
 					
 					var start = index + search.length;
-					data.deviceIDs.push (StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start)));
-					
+					var deviceIDs = StringTools.trim (ret.substr (start, ret.indexOf ("\n", index) - start)).split (",");
+					data.deviceIDs = data.deviceIDs.concat (deviceIDs);
 					index = ret.indexOf (search, index + search.length);
 					
 				}

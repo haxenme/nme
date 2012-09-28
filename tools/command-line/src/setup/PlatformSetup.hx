@@ -422,6 +422,13 @@ class PlatformSetup {
 			while ((c = getChar ()) != 13)
 				s.addChar (c);
 			Lib.print ("");
+			
+			if (!InstallTool.isWindows) {
+				
+				Sys.println ("");
+				
+			}
+			
 			return s.toString ();
 		}
 		
@@ -1086,7 +1093,7 @@ class PlatformSetup {
 						var pbdtFile = unescapePath (param ("Path to client-PBDT-*.csj file"));
 						var rdkFile = unescapePath (param ("Path to client-RDK-*.csj file"));
 						var cskPIN = param ("Code signing key PIN");
-						cskPassword = param ("Code signing key password");
+						cskPassword = param ("Code signing key password", true);
 						
 						Lib.println ("Registering code signing keys...");
 						
@@ -1105,7 +1112,7 @@ class PlatformSetup {
 							
 						} catch (e:Dynamic) {}
 						
-						keystorePassword = param ("Keystore password");
+						keystorePassword = param ("Keystore password", true);
 						var companyName = param ("Company name");
 						outputPath = unescapePath (param ("Output directory"));
 						keystorePath = outputPath + "/author.p12";
@@ -1131,7 +1138,7 @@ class PlatformSetup {
 					
 					if (cskPassword == null) {
 						
-						cskPassword = param ("Code signing key password");
+						cskPassword = param ("Code signing key password", true);
 						
 					}
 					
@@ -1143,7 +1150,7 @@ class PlatformSetup {
 					
 					if (keystorePassword == null) {
 						
-						keystorePassword = param ("Keystore password");
+						keystorePassword = param ("Keystore password", true);
 						
 					}
 					
@@ -1169,13 +1176,13 @@ class PlatformSetup {
 					
 					if (deviceIDs.length == 0) {
 						
-						deviceIDs.push (param ("Device PIN"));
+						deviceIDs.push ("0x" + param ("Device PIN"));
 						
 					}
 					
 					while (ask ("Would you like to add another device PIN?") != No) {
 						
-						deviceIDs.push (param ("Device PIN"));
+						deviceIDs.push ("0x" + param ("Device PIN"));
 						
 					}
 					
@@ -1196,7 +1203,7 @@ class PlatformSetup {
 						for (id in deviceIDs) {
 							
 							params.push ("-deviceId");
-							params.push ("0x" + id);
+							params.push (id);
 							
 						}
 						
