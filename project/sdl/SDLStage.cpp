@@ -902,42 +902,6 @@ double CapabilitiesGetScreenResolutionY() {
 	
 }
 
-#if !(defined (HX_MACOS) || defined(HX_WINDOWS) || defined (HX_LINUX))
-double CapabilitiesGetScreenDPI() {
-
-	#ifdef WEBOS
-
-	PDL_ScreenMetrics screenMetrics;
-	PDL_GetScreenMetrics (&screenMetrics);
-
-	return screenMetrics.horizontalDPI;
-
-	#else
-
-	return 72.0;
-
-	#endif
-	
-}
-
-double CapabilitiesGetPixelAspectRatio() {
-	
-	#ifdef WEBOS
-	
-	PDL_ScreenMetrics screenMetrics;
-	PDL_GetScreenMetrics (&screenMetrics);
-
-	return screenMetrics.aspectRatio;
-	
-	#else
-	
-	return 1;
-	
-	#endif
-	
-}
-#endif
-
 #endif
 
 void PauseAnimation() {}
