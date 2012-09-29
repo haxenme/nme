@@ -902,7 +902,7 @@ double CapabilitiesGetScreenResolutionY() {
 	
 }
 
-#ifndef HX_MACOS
+#if !(defined(HX_MACOS) || defined(HX_WINDOWS))
 double CapabilitiesGetScreenDPI() {
 
 	#ifdef WEBOS
