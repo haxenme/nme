@@ -333,7 +333,7 @@ class BitmapData implements IBitmapDrawable {
 	public function getPixels(rect:Rectangle):ByteArray {
 		var len = Math.round(4 * rect.width * rect.height);
 		var byteArray = new ByteArray();
-		byteArray.length = len;
+		//var byteArray = new ByteArray(len);
 
 		rect = clipRect (rect);
 		if (rect == null) return byteArray;

@@ -60,15 +60,13 @@ class URLLoader extends EventDispatcher
 	public function close() { }
 
 	public function load(request:URLRequest) {
-		if( request.contentType == null )
-			switch (dataFormat) {
-				case BINARY:
-					request.requestHeaders.push(new URLRequestHeader("Content-Type","application/octet-stream"));
-				default:
+		switch (dataFormat) {
+			case BINARY:
+				request.requestHeaders.push(new URLRequestHeader("Content-Type","application/octet-stream"));
+			default:
+				if (request.method != "GET")
 					request.requestHeaders.push(new URLRequestHeader("Content-Type","application/x-www-form-urlencoded"));
-			}
-		else
-			request.requestHeaders.push(new URLRequestHeader("Content-Type", request.contentType));
+		}
 
 		requestUrl(
 			request.url,
@@ -80,23 +78,11 @@ class URLLoader extends EventDispatcher
 
 	function onData (_) {
 		var content:Dynamic = getData();
-
-		if (Std.is(content, String)) {
-			this.data = Std.string(content);
-		} else if (Std.is(content, ByteArray)) {
-			this.data = ByteArray.jeashOfBuffer(content);
-		} else {
-			switch (dataFormat) {
-				case BINARY:
-					this.data = ByteArray.jeashOfBuffer(content);
-				default:
-					var bytes:nme.utils.ByteArray = ByteArray.jeashOfBuffer(content);
-					if (bytes != null && bytes.length > 0) {
-						this.data = Std.string(bytes.readUTFBytes(bytes.length));
-					} else {
-						this.data = Std.string(content);
-					}
-			}
+		switch (dataFormat) {
+			case BINARY:
+				this.data = ByteArray.jeashOfBuffer(content);
+			default:
+				this.data = Std.string(content);
 		}
 
 		var evt = new Event(Event.COMPLETE);
@@ -167,7 +153,6 @@ class URLLoader extends EventDispatcher
 
 		var uri:Dynamic = "";
 		switch (true) {
-			case (data == null):
 			case Std.is(data, ByteArray):
 				var data:ByteArray = cast data;
 				switch (dataFormat) {
@@ -190,10 +175,10 @@ class URLLoader extends EventDispatcher
 		try {
 			if (method == "GET" && uri != null && uri != "") {
 				var question = url.split("?").length <= 1;
-				xmlHttpRequest.open(method, url+(if( question ) "?" else "&")+uri,true);
+				xmlHttpRequest.open(method,url+(if( question ) "?" else "&")+uri,true);
 				uri = "";
 			} else 
-				xmlHttpRequest.open(method, url, true);
+				xmlHttpRequest.open(method,url,true);
 		} catch( e : Dynamic ) {
 			onError(e.toString());
 			return;
@@ -205,16 +190,19 @@ class URLLoader extends EventDispatcher
 			default:
 		}
 
-		for( header in requestHeaders ) {
+		for( header in requestHeaders )
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
-		}
-		
-		untyped __js__ ("// If you receive \"DOMException: NETWORK_ERR\", you most likely are testing");
-		untyped __js__ ("// locally, and AJAX calls are not allowed in your browser for security");
-		
+
 		xmlHttpRequest.send(uri);
+
 		onOpen();
-		getData = function () { return xmlHttpRequest.response; };
+
+		getData = function () { 
+			return if (xmlHttpRequest.response != null) 
+				xmlHttpRequest.response;
+			else 
+				xmlHttpRequest.responseText;
+		};
 
 	}
 

@@ -50,37 +50,31 @@ class ByteArray
 	public var objectEncoding : Int;
 
 	public var position : Int;
-	public var length(default, set_length): Int;
+	public var length : Int;
+	private var allocated : Int = 0;
 
 	public function new():Void {
+		var len:Int = 0;
 		this.position = 0;
-		
-		this.byteView = untyped __new__("Uint8Array", 0);
-		this.data = untyped __new__("DataView", this.byteView);
-		length = 0;
+		this.length = len;
+		this.allocated = len;
 
 		// NOTE: default ByteArray endian is BIG_ENDIAN
 		this.littleEndian = false;
-		
+
+		_jeashResizeBuffer(allocated);
 		//this.byteView = untyped __new__("Uint8Array", allocated);
 		//this.data = untyped __new__("DataView", this.byteView.buffer);
 	}
 
-	private function set_length(len:Int):Int {
-		if (len > length) {
-			var oldByteView:Uint8Array = this.byteView;
-			var newByteView:Uint8Array = untyped __new__("Uint8Array", len);
+	private function _jeashResizeBuffer(len:Int) {
+		var oldByteView:Uint8Array = this.byteView;
+		var newByteView:Uint8Array = untyped __new__("Uint8Array", len);
 
-			if (oldByteView != null) newByteView.set(oldByteView);
+		if (oldByteView != null) newByteView.set(oldByteView);
 
-			this.byteView = newByteView;
-			this.data = untyped __new__("DataView", newByteView.buffer);
-		} else if (len < length) {
-			this.byteView = this.byteView.subarray(0, len);
-			this.data = untyped __new__("DataView", newByteView.buffer);
-		}
-		
-		return length = len;
+		this.byteView = newByteView;
+		this.data = untyped __new__("DataView", newByteView.buffer);
 	}
 
 	function jeashGetBytesAvailable():Int { return length - position; }
@@ -106,9 +100,12 @@ class ByteArray
 			data.setInt8(this.position++, bytes.get(i));
 	}
 	
-	inline private function ensureWrite(lengthToEnsure:Int):Void {
-		if (lengthToEnsure > length) {
-			set_length(lengthToEnsure);
+	private function ensureWrite(lengthToEnsure:Int, updateLength:Bool= true):Void {
+		if (lengthToEnsure > allocated) {
+			_jeashResizeBuffer(Std.int(Math.max(lengthToEnsure, allocated * 2)));
+		}
+		if (updateLength) {
+			if (this.length < lengthToEnsure) this.length = lengthToEnsure;
 		}
 	}
 
