@@ -133,7 +133,7 @@ class ByteArray
 		ensureWrite(this.position + 1);
 		
 		data.setInt8(this.position, value);
-		this.position += length;
+		this.position += 1;
 	}
 
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) {
@@ -309,9 +309,9 @@ class ByteArray
 	public function uncompress() {
 		var bytes = haxe.io.Bytes.ofData(cast byteView);
 		var buf = format.tools.Inflate.run(bytes).getData();
-		this.byteView = new Uint8Array(buf);
+		this.byteView = untyped __new__("Uint8Array", buf);
 
-		this.data = new DataView(byteView.buffer);
+		this.data = untyped __new__("DataView", byteView.buffer);
 		this.length = byteView.buffer.byteLength;
 	}
 #end
