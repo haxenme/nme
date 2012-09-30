@@ -5,7 +5,7 @@
 
 
 // Only tested on mac so far ...
-#if !defined(HX_MACOS)
+#if defined(HX_MACOS) && false
 //  need to test framebuffer extensions of windows... || defined(HX_WINDOWS)
 
 
