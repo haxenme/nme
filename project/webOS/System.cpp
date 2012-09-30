@@ -18,6 +18,19 @@ namespace nme {
 		
 	}
 	
+	double CapabilitiesGetScreenDPI() {
+		PDL_ScreenMetrics screenMetrics;
+		PDL_GetScreenMetrics (&screenMetrics);
+
+		return (screenMetrics.horizontalDPI + screenMetrics.verticalDPI) * 0.5;
+	}
+	
+	double CapabilitiesGetPixelAspectRatio() {
+		PDL_ScreenMetrics screenMetrics;
+		PDL_GetScreenMetrics (&screenMetrics);
+
+		return screenMetrics.aspectRatio;
+	}
 	
 	bool LaunchBrowser (const char *inUtf8URL) {
 		
