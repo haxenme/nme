@@ -135,7 +135,7 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    defaultTextFormat = inFmt;
    mLinesDirty = true;
    mGfxDirty = true;
-   if (mCharGroups.empty())
+   if (mCharGroups.empty() || (mCharGroups.size() == 1 && mCharGroups[0]->Chars() == 0))
       setText(L"");
 }
 
