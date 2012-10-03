@@ -657,20 +657,16 @@ class TextField extends jeash.display.InteractiveObject
 		if (jeashGraphics.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(jeashGraphics);
 
-		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (!mHTMLMode && inMask != null) {
 			var m = getSurfaceTransform(jeashGraphics);
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, fullAlpha, clipRect);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(jeashGraphics);
 				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}
-			if (fullAlpha != _lastFullAlpha) {
-				Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, fullAlpha);
-				_lastFullAlpha = fullAlpha;
-			}
+			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 			/*if (clipRect != null) {
 				var rect = new Rectangle();
 				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
