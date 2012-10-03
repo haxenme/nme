@@ -93,7 +93,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public var accessibilityProperties:AccessibilityProperties;
 	public var alpha:Float;
-	private var _lastFullAlpha:Float;
 	public var name:String;
 	public var cacheAsBitmap:Bool;
 
@@ -393,20 +392,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
 
-		var fullAlpha = (parent != null ? parent.alpha : 1) * alpha;
 		if (inMask != null) {
 			var m = getSurfaceTransform(gfx);
-			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, fullAlpha, clipRect);
+			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
-			if (fullAlpha != _lastFullAlpha) {
-				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, fullAlpha);
-				_lastFullAlpha = fullAlpha;
-			}
+			Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 			/*if (clipRect != null) {
 				var rect = new Rectangle();
 				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
