@@ -1410,8 +1410,8 @@ class PlatformSetup {
 			
 		}
 		
-		requiredVariables = requiredVariables.concat ([ "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ]);
-		requiredVariableDescriptions = requiredVariableDescriptions.concat ([ "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
+		requiredVariables = requiredVariables.concat ([ "WEBWORKS_SDK", "WEBWORKS_SDK_BBOS", "WEBWORKS_SDK_PLAYBOOK" ]);
+		requiredVariableDescriptions = requiredVariableDescriptions.concat ([ "Path to WebWorks SDK for BlackBerry 10", "Path to WebWorks SDK for BBOS", "Path to WebWorks SDK for PlayBook" ]);
 		
 		defines = getDefines (requiredVariables, requiredVariableDescriptions);
 		

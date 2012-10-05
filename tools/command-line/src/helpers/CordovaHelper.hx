@@ -60,7 +60,8 @@ class CordovaHelper {
 		    		
 		    	} else {
 		    		
-					AntHelper.run (workingDirectory, [ "playbook", "build" ]);
+					//AntHelper.run (workingDirectory, [ "playbook", "build" ]);
+					AntHelper.run (workingDirectory, [ "qnx", "build" ]);
 					
 				}
 			
@@ -157,7 +158,17 @@ class CordovaHelper {
 		    	} else {
 					
 					var safePackageName = StringTools.replace (defines.get ("APP_TITLE"), " ", "");
-					BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
+					//BlackBerryHelper.deploy (workingDirectory, "build/" + safePackageName + ".bar");
+					
+					if (targetFlags.exists ("simulator")) {
+						
+						BlackBerryHelper.deploy (workingDirectory, "build/simulator/" + safePackageName + ".bar");
+						
+					} else {
+						
+						BlackBerryHelper.deploy (workingDirectory, "build/device/" + safePackageName + ".bar");
+						
+					}
 				
 				}
 			

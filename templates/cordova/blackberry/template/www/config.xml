@@ -33,6 +33,8 @@
   
   <publisher>::APP_COMPANY::</publisher>
   <author>::APP_COMPANY::</author>
+  
+  <authorId>::BLACKBERRY_AUTHOR_ID::</authorId>
 
   <description>::APP_DESCRIPTION::</description>
     
@@ -40,7 +42,7 @@
   </license>
 
   <!-- Cordova API -->
-  <feature id="blackberry.system" required="true" version="1.0.0.0" />
+  <!-- <feature id="blackberry.system" required="true" version="1.0.0.0" />
   <feature id="org.apache.cordova" required="true" version="1.0.0" />
   <feature id="blackberry.find" required="true" version="1.0.0.0" />
   <feature id="blackberry.identity" required="true" version="1.0.0.0" />
@@ -55,7 +57,7 @@
   <feature id="blackberry.widgetcache" required="true" version="1.0.0.0"/>
   <feature id="blackberry.media.camera" />
   <feature id="blackberry.ui.dialog" />
-  <feature id="blackberry.media.microphone" required="true" version="1.0.0.0"/>
+  <feature id="blackberry.media.microphone" required="true" version="1.0.0.0"/> -->
   
   <!-- Cordova API -->
   <access subdomains="true" uri="file:///store/home" />
