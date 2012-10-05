@@ -194,7 +194,7 @@ class InstallerBase {
 		}
 		
 		buildDirectory = defines.get ("BUILD_DIR");
-		getBuildNumber ((command == "build" || command == "test"));
+		getBuildNumber ((command == "build" || command == "test") && defines.exists ("KEY_STORE"));
 		
 		onCreate ();
 		
@@ -629,13 +629,8 @@ class InstallerBase {
 			var version:Int = 1;
 			
 			PathHelper.mkdir (buildDirectory);
-
-         // Please do not create these files by default
-         var wantDotBuild = false;
 			
 			if (FileSystem.exists (versionFile)) {
-
-            wantDotBuild = true;
 				
 				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
 				
@@ -653,18 +648,18 @@ class InstallerBase {
 				
 			}
 			
+			Sys.println (version);
+			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
-         if (wantDotBuild)
-         {
-			   try {
-				
-				   var output = File.write (versionFile, false);
-				   output.writeString (Std.string (version));
-				   output.close ();
-				
-			   } catch (e:Dynamic) {}
-         }
+			try {
+
+			   var output = File.write (versionFile, false);
+			   output.writeString (Std.string (version));
+			   output.close ();
+
+			} catch (e:Dynamic) {}
+			
 		}
 		
 	}

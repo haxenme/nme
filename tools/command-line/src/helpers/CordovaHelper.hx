@@ -3,6 +3,7 @@ package helpers;
 
 import data.Asset;
 import data.Icons;
+import haxe.io.Eof;
 import haxe.io.Path;
 import sys.io.File;
 import sys.FileSystem;
@@ -62,6 +63,8 @@ class CordovaHelper {
 		    		
 					//AntHelper.run (workingDirectory, [ "playbook", "build" ]);
 					
+					var args = [ "qnx", "build" ];
+					
 					if (!defines.exists ("KEY_STORE")) {
 						
 						var debugTokenPath = PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"));
@@ -83,9 +86,59 @@ class CordovaHelper {
 							
 						}
 						
+					} else {
+						
+						var keyStorePath = PathHelper.tryFullPath (defines.get ("KEY_STORE"));
+						var targetPath = "";
+						
+						if (InstallTool.isWindows) {
+							
+							targetPath = Sys.getEnv ("HOMEPATH") + "\\AppData\\Local\\Research In Motion";
+							
+						} else if (InstallTool.isMac) {
+						
+							targetPath = PathHelper.expand ("~/Library/Research In Motion");
+							
+						} else {
+							
+							targetPath = PathHelper.expand ("~/.rim");
+							
+						}
+						
+						targetPath += "/author.p12";
+						
+						if (FileSystem.exists (keyStorePath)) {
+							
+							try {
+								
+								PathHelper.mkdir (Path.directory (targetPath));
+								
+								if (FileSystem.exists (targetPath)) {
+									
+									FileSystem.deleteFile (targetPath);
+									
+								}
+								
+								File.copy (keyStorePath, targetPath);
+								
+							} catch (e:Dynamic) {}
+							
+						}
+						
+						if (defines.exists ("KEY_STORE") && !defines.exists ("KEY_STORE_PASSWORD")) {
+							
+							defines.set ("KEY_STORE_PASSWORD", prompt ("Keystore password", true));
+							Sys.println ("");
+							
+						}
+						
+						args.push ("-Dproperties.qnx.sigtool.password=" + defines.get ("KEY_STORE_PASSWORD"));
+						args.push ("-Dbuild.number=" + defines.get ("APP_BUILD_NUMBER"));
+						args.push ("-Dcode.sign=true");
+						
 					}
 					
-					AntHelper.run (workingDirectory, [ "qnx", "build" ]);
+					AntHelper.run (workingDirectory, args);
 					
 				}
 			
@@ -214,6 +267,31 @@ class CordovaHelper {
 	}
 	
 	
+	private static function prompt (name:String, ?passwd:Bool):String {
+		
+		Sys.print (name + ": ");
+		
+		if (passwd) {
+			var s = new StringBuf ();
+			var c;
+			while ((c = Sys.getChar(false)) != 13)
+				s.addChar (c);
+			return s.toString ();
+		}
+		
+		try {
+			
+			return Sys.stdin ().readLine ();
+			
+		} catch (e:Eof) {
+			
+			return "";
+			
+		}
+		
+	}
+	
+	
 	public static function updateIcon (buildDirectory:String, icons:Icons, assets:Array <Asset>, context:Dynamic):Void {
 		
 		var iconCount = 0;
@@ -226,8 +304,8 @@ class CordovaHelper {
 				
 				// 80 for BBOS?
 				
-				sizes = [ 150, 86 ];
-				targetPaths = [ "res/icon/icon.png", "res/icon/icon-86.png" ];
+				sizes = [ 86, 150 ];
+				targetPaths = [ "res/icon/icon-86.png", "res/icon/icon.png" ];
 			
 			case "ios":
 				
@@ -251,15 +329,9 @@ class CordovaHelper {
 				PathHelper.mkdir (tmpDir);
 				var tmp_name = tmpDir + "/icon";
 				
-				if (iconCount > 0) {
-					
-					tmp_name += iconCount;
-					
-				}
-				
 				tmp_name += ".png";
 				
-				if (icons.updateIcon (86, 86, tmp_name)) {
+				if (icons.updateIcon (i, i, tmp_name)) {
 					
 					icon_name = tmp_name;
 					iconCount++;

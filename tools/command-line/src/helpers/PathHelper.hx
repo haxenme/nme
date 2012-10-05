@@ -143,7 +143,7 @@ class PathHelper {
 			
 		} catch (e:Dynamic) {
 			
-			return path;
+			return expand (path);
 			
 		}
 		
