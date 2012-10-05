@@ -61,6 +61,30 @@ class CordovaHelper {
 		    	} else {
 		    		
 					//AntHelper.run (workingDirectory, [ "playbook", "build" ]);
+					
+					if (!defines.exists ("KEY_STORE")) {
+						
+						var debugTokenPath = PathHelper.tryFullPath (defines.get ("BLACKBERRY_DEBUG_TOKEN"));
+						var targetPath = defines.get ("WEBWORKS_SDK") + "/debugToken.bar";
+						
+						if (FileSystem.exists (debugTokenPath)) {
+							
+							try {
+								
+								if (FileSystem.exists (targetPath)) {
+									
+									FileSystem.deleteFile (targetPath);
+									
+								}
+								
+								File.copy (debugTokenPath, targetPath);
+								
+							} catch (e:Dynamic) {}
+							
+						}
+						
+					}
+					
 					AntHelper.run (workingDirectory, [ "qnx", "build" ]);
 					
 				}
@@ -202,8 +226,8 @@ class CordovaHelper {
 				
 				// 80 for BBOS?
 				
-				sizes = [ 86 ];
-				targetPaths = [ "res/icon/icon.png" ];
+				sizes = [ 150, 86 ];
+				targetPaths = [ "res/icon/icon.png", "res/icon/icon-86.png" ];
 			
 			case "ios":
 				
