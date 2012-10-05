@@ -62,7 +62,7 @@ class HTML5Installer extends InstallerBase {
 			
 		}
 		
-		if (target != "html5") {
+		if (target != "html5" && command != "update") {
 			
 			CordovaHelper.build (outputDirectory + "/bin", debug);
 			
@@ -222,6 +222,13 @@ class HTML5Installer extends InstallerBase {
 				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
 				
 			}
+			
+		}
+		
+		if (target == "ios" && command == "update") {
+			
+			build ();
+            ProcessHelper.runCommand ("", "open", [ destination + "../" + defines.get("APP_FILE") + ".xcodeproj" ] );
 			
 		}
 		

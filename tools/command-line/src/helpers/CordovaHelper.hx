@@ -25,13 +25,25 @@ class CordovaHelper {
 			
 			case "ios":
 				
-				// temporary hack
-				ProcessHelper.runCommand ("", "defaults", [ "write", "com.apple.dt.Xcode", "IDEApplicationwideBuildSettings", "-dict-add", "CORDOVALIB", defines.get ("CORDOVA_PATH") ]);
+				var directoryName = "Release";
 				
+				if (debug) {
+					
+					directoryName = "Debug";
+					
+				}
 				
-				var cordovaLib = defines.get ("CORDOVA_PATH") + "/lib/ios/CordovaLib";
+				if (targetFlags.exists ("simulator")) {
+					
+					directoryName += "-iphonesimulator";
+					
+				} else {
+					
+					directoryName += "-iphoneos";
+					
+				}
 				
-				IOSHelper.build (workingDirectory, debug, [ "CORDOVALIB=" + cordovaLib ]);
+				IOSHelper.build (workingDirectory, debug, [ "CONFIGURATION_BUILD_DIR=" + FileSystem.fullPath (workingDirectory) + "/build/" + directoryName ]);
 				
 				if (!targetFlags.exists ("simulator")) {
 		            

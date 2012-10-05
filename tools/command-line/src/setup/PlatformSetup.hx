@@ -33,6 +33,7 @@ class PlatformSetup {
 	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r20-windows.zip";
 	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.tar.gz";
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.8.4-bin.zip";
+	private static var apacheCordovaPath = "http://www.apache.org/dist/incubator/cordova/cordova-2.1.0-incubating-src.zip";
 	private static var appleXcodeURL = "http://developer.apple.com/xcode/";
 	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
 	private static var blackBerryLinuxNativeSDKPath = "https://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-beta1-linux-560-201206041807-201206052239.bin";
@@ -80,7 +81,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function createPath (path:String, defaultPath:String):String {
+	private static function createPath (path:String, defaultPath:String = ""):String {
 		
 		try {
 			
@@ -677,7 +678,7 @@ class PlatformSetup {
 			} else if (InstallTool.isMac) {
 				
 				downloadPath = airMacPath;
-				defaultInstallPath = "/opt/AIR SDK";
+				defaultInstallPath = "/opt/air-sdk";
 				
 			}
 
@@ -748,13 +749,13 @@ class PlatformSetup {
 			} else if (InstallTool.isLinux) {
 				
 				downloadPath = androidLinuxSDKPath;
-				defaultInstallPath = "/opt/Android SDK";
+				defaultInstallPath = "/opt/android-sdk";
 				ignoreRootFolder = "android-sdk-linux";
 				
 			} else if (InstallTool.isMac) {
 				
 				downloadPath = androidMacSDKPath;
-				defaultInstallPath = "/opt/Android SDK";
+				defaultInstallPath = "/opt/android-sdk";
 				ignoreRootFolder = "android-sdk-mac";
 				
 			}
@@ -823,12 +824,12 @@ class PlatformSetup {
 			} else if (InstallTool.isLinux) {
 				
 				downloadPath = androidLinuxNDKPath;
-				defaultInstallPath = "/opt/Android NDK";
+				defaultInstallPath = "/opt/android-ndk";
 				
 			} else {
 				
 				downloadPath = androidMacNDKPath;
-				defaultInstallPath = "/opt/Android NDK";
+				defaultInstallPath = "/opt/android-ndk";
 				
 			}
 			
@@ -872,7 +873,7 @@ class PlatformSetup {
 				} else {
 					
 					downloadPath = apacheAntUnixPath;
-					defaultInstallPath = "/opt/Apache Ant";
+					defaultInstallPath = "/opt/apache-ant";
 					
 				}
 				
@@ -1332,73 +1333,59 @@ class PlatformSetup {
 			
 			} else {
 				
-				defaultInstallPath = "/opt/Apache Cordova";
+				defaultInstallPath = "/opt/cordova";
 				
 			}
 			
 			var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
 			path = createPath (path, defaultInstallPath);
 			
-			/*if (InstallTool.isMac) {
-				
-				PathHelper.removeDirectory (path + "/lib/ios");
-				ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/jgranick/incubator-cordova-ios", "ios" ]);
-				ProcessHelper.runCommand (path + "/lib/ios", "./build.sh", []);
-				
-			}
+			downloadFile (apacheCordovaPath);
+			extractFile (Path.withoutDirectory (apacheCordovaPath), path, "*");
 			
-			PathHelper.removeDirectory (path + "/lib/blackberry");
-			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-blackberry-webworks", "blackberry" ]);
+			var childArchives = [];
 			
-			PathHelper.removeDirectory (path + "/lib/android");
-			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-android", "android" ]);
-			
-			if (InstallTool.isMac) {
+			for (file in FileSystem.readDirectory (path)) {
 				
-				PathHelper.removeDirectory (path + "/lib/mac");
-				ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-mac", "mac" ]);
+				if (Path.extension (file) == "zip") {
+					
+					childArchives.push (file);
+					
+				}
 				
 			}
 			
-			PathHelper.removeDirectory (path + "/lib/webos");
-			ProcessHelper.runCommand (path + "/lib", "git", [ "clone", "https://github.com/apache/incubator-cordova-webos", "webos" ]);*/
+			createPath (path + "/lib");
+			var libs = [ "android", "bada-wac", "bada", "blackberry", "ios", "mac", "qt", "tizen", "webos", "wp7" ];
 			
-			if (InstallTool.isMac) {
+			for (archive in childArchives) {
 				
-				downloadFile ("https://github.com/jgranick/incubator-cordova-ios/zipball/master", "cordova-ios.zip");
-				PathHelper.removeDirectory (path + "/lib/ios");
-				PathHelper.mkdir (path + "/lib/ios");
-				extractFile ("cordova-ios.zip", path + "/lib/ios", "*");
+				var name = Path.withoutExtension (archive);
+				name = StringTools.replace (name, "incubator-", "");
+				name = StringTools.replace (name, "cordova-", "");
 				
-				ProcessHelper.runCommand (path + "/lib/ios", "chmod", [ "+x", "./build.sh" ]);
-				ProcessHelper.runCommand (path + "/lib/ios", "./build.sh", []);
+				if (name == "blackberry-webworks") {
+					
+					name = "blackberry";
+					
+				}
 				
-			}
-			
-			downloadFile ("https://github.com/jgranick/incubator-cordova-blackberry-webworks/zipball/master", "cordova-blackberry.zip");
-			PathHelper.removeDirectory (path + "/lib/blackberry");
-			PathHelper.mkdir (path + "/lib/blackberry");
-			extractFile ("cordova-blackberry.zip", path + "/lib/blackberry", "*");
-			
-			downloadFile ("https://github.com/jgranick/incubator-cordova-android/zipball/master", "cordova-android.zip");
-			PathHelper.removeDirectory (path + "/lib/android");
-			PathHelper.mkdir (path + "/lib/android");
-			extractFile ("cordova-android.zip", path + "/lib/android", "*");
-			
-			if (InstallTool.isMac) {
+				var basePath = path + "/";
 				
-				downloadFile ("https://github.com/apache/incubator-cordova-mac/zipball/master", "cordova-mac.zip");
-				PathHelper.removeDirectory (path + "/lib/mac");
-				PathHelper.mkdir (path + "/lib/mac");
-				extractFile ("cordova-mac.zip", path + "/lib/mac", "*");
+				for (lib in libs) {
+					
+					if (name == lib) {
+						
+						basePath += "lib/";
+						
+					}
+					
+				}
+				
+				createPath (basePath + name);
+				extractFile (path + "/" + archive, basePath + name);
 				
 			}
-			
-			downloadFile ("https://github.com/apache/incubator-cordova-webos/zipball/master", "cordova-webos.zip");
-			PathHelper.removeDirectory (path + "/lib/webos");
-			PathHelper.mkdir (path + "/lib/webos");
-			extractFile ("cordova-webos.zip", path + "/lib/webos", "*");
-			
 			
 			if (!InstallTool.isWindows) {
 				
