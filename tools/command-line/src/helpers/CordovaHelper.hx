@@ -305,7 +305,7 @@ class CordovaHelper {
 				// 80 for BBOS?
 				
 				sizes = [ 86, 150 ];
-				targetPaths = [ "res/icon/icon-86.png", "res/icon/icon.png" ];
+				targetPaths = [ "res/icon/icon-86.png", "res/icon/icon-150.png" ];
 			
 			case "ios":
 				
@@ -319,6 +319,7 @@ class CordovaHelper {
 				
 		}
 		
+		context.ICONS = [];
 		for (i in 0...sizes.length) {
 			
 			var icon_name = icons.findIcon (sizes[i], sizes[i]);
@@ -327,14 +328,13 @@ class CordovaHelper {
 				
 				var tmpDir = buildDirectory + "/haxe";
 				PathHelper.mkdir (tmpDir);
-				var tmp_name = tmpDir + "/icon";
+				var tmp_name = tmpDir + "/icon-" + sizes[i] + ".png";
 				
-				tmp_name += ".png";
+				Sys.println (sizes[i]);
 				
-				if (icons.updateIcon (i, i, tmp_name)) {
+				if (icons.updateIcon (sizes[i], sizes[i], tmp_name)) {
 					
 					icon_name = tmp_name;
-					iconCount++;
 					
 				}
 				
@@ -344,6 +344,7 @@ class CordovaHelper {
 				
 				assets.push (new Asset (icon_name, targetPaths[i], Asset.TYPE_IMAGE, Path.withoutDirectory (icon_name), "1"));
 				context.APP_ICON = targetPaths[i];
+				context.ICONS.push (targetPaths[i]);
 				context.HAS_ICON = true;
 				
 			}
