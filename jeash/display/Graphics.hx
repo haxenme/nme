@@ -457,23 +457,8 @@ class Graphics
 		var ctx : CanvasRenderingContext2D = getContext();
 		if (ctx == null) return false;
 
-		ctx.save();
-		for(d in mDrawList) {
-			ctx.beginPath();
-			for (p in d.points) {
-				switch (p.type) {
-					case MOVE:
-						ctx.moveTo(p.x , p.y);
-					case CURVE:
-						ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
-					default:
-						ctx.lineTo(p.x, p.y);
-				}
-			}
-			ctx.closePath();
-			if (ctx.isPointInPath(inX, inY)) return true;
-		}
-		ctx.restore();
+		if (ctx.isPointInPath(inX, inY)) return true;
+		else if (mDrawList.length == 0 && jeashExtent.width > 0 && jeashExtent.height > 0) return true;
 		return false;
 	}
 
