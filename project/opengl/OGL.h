@@ -22,6 +22,7 @@
 
 #elif !defined(HX_WINDOWS)
 // Mac/Linux....
+#define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
 #define FORCE_NON_PO2
 
@@ -37,6 +38,7 @@
   #define glFramebufferRenderbuffer glFramebufferRenderbufferEXT
   #define glFramebufferTexture2D glFramebufferTexture2DEXT
   #define glRenderbufferStorage glRenderbufferStorageEXT
+  #define glCheckFramebufferStatus glCheckFramebufferStatusEXT
   #endif
 
 #else

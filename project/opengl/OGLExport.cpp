@@ -5,8 +5,7 @@
 
 
 // Only tested on mac so far ...
-#if defined(HX_MACOS) && false
-//  need to test framebuffer extensions of windows... || defined(HX_WINDOWS)
+#ifdef OGL_EXPORTS
 
 
 #ifdef ANDROID
@@ -86,6 +85,47 @@ value nme_gl_get_supported_extensions(value ioList)
 }
 DEFINE_PRIM(nme_gl_get_supported_extensions,1);
 
+// --- Blend -------------------------------------------
+
+value nme_gl_blend_color(value r, value g, value b, value a)
+{
+   glBlendColor(val_number(r),val_number(g),val_number(b), val_number(a));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_blend_color,4);
+
+value nme_gl_blend_equation(value mode)
+{
+   glBlendEquation(val_int(mode));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_blend_equation,1);
+
+
+value nme_gl_blend_equation_separate(value rgb, value a)
+{
+   glBlendEquationSeparate(val_int(rgb), val_int(a));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_blend_equation_separate,2);
+
+
+value nme_gl_blend_func(value s, value d)
+{
+   glBlendFunc(val_int(s), val_int(d));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_blend_func,2);
+
+
+value nme_gl_blend_func_separate(value srgb, value drgb, value sa, value da)
+{
+   glBlendFuncSeparate(val_int(srgb), val_int(drgb), val_int(sa), val_int(da) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_blend_func_separate,4);
+
+
 
 // --- Program -------------------------------------------
 
@@ -131,6 +171,7 @@ value nme_gl_bind_attrib_location(value inId,value inSlot,value inName)
 {
    int id = val_int(inId);
    glBindAttribLocation(id,val_int(inSlot),val_string(inName));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_attrib_location,3);
 
@@ -320,6 +361,28 @@ value nme_gl_buffer_data(value inTarget, value inByteBuffer, value inStart, valu
 DEFINE_PRIM(nme_gl_buffer_data,5);
 
 
+value nme_gl_buffer_sub_data(value inTarget, value inOffset, value inByteBuffer, value inStart, value inLen)
+{
+   int len = val_int(inLen);
+   int start = val_int(inStart);
+
+   ByteArray bytes(inByteBuffer);
+   const unsigned char *data = bytes.Bytes();
+   int size = bytes.Size();
+
+   if (len+start>size)
+      val_throw(alloc_string("Invalid byte length"));
+
+   glBufferSubData(val_int(inTarget), val_int(inOffset), len, data + start );
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_buffer_sub_data,5);
+
+
+
+
+
 value nme_gl_vertex_attrib_pointer(value *arg, int nargs)
 {
    enum { aIndex, aSize, aType, aNormalized, aStride, aOffset, aSIZE };
@@ -397,6 +460,11 @@ value nme_gl_renderbuffer_storage(value target, value internalFormat, value widt
 }
 DEFINE_PRIM(nme_gl_renderbuffer_storage,4);
 
+value nme_gl_check_framebuffer_status(value inTarget)
+{
+   return alloc_int( glCheckFramebufferStatus(val_int(inTarget)));
+}
+DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
 // --- Drawing -------------------------------
 
@@ -441,6 +509,35 @@ value nme_gl_clear_color(value r,value g, value b, value a)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_clear_color,4);
+
+
+
+value nme_gl_clear_depth(value depth)
+{
+   glClearDepth(val_number(depth));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_clear_depth,1);
+
+
+value nme_gl_clear_stencil(value stencil)
+{
+   glClearStencil(val_int(stencil));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_clear_stencil,1);
+
+
+value nme_gl_color_mask(value r,value g, value b, value a)
+{
+   glColorMask(val_bool(r),val_bool(g),val_bool(b),val_bool(a));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_color_mask,4);
+
+
+
+
 
 // --- Texture -------------------------------------------
 
@@ -535,6 +632,57 @@ value nme_gl_tex_sub_image_2d(value *arg, int argCount)
    return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_gl_tex_sub_image_2d);
+
+
+
+value nme_gl_compressed_tex_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aInternal, aWidth, aHeight, aBorder, aBuffer, aOffset };
+
+   unsigned char *data = 0;
+   int size = 0;
+
+   ByteArray bytes( arg[aBuffer] );
+   if (!val_is_null(bytes.mValue))
+   {
+      data = bytes.Bytes() + INT(aOffset);
+      size = bytes.Size() - INT(aOffset);
+   }
+
+   glCompressedTexImage2D(INT(aTarget), INT(aLevel),  INT(aInternal),
+                INT(aWidth),  INT(aHeight), INT(aBorder),
+                size, data );
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_compressed_tex_image_2d);
+
+
+value nme_gl_compressed_tex_sub_image_2d(value *arg, int argCount)
+{
+   enum { aTarget, aLevel, aXOffset, aYOffset, aWidth, aHeight, aFormat, aBuffer, aOffset };
+
+   unsigned char *data = 0;
+   int size = 0;
+
+   ByteArray bytes( arg[aBuffer] );
+   if (!val_is_null(bytes.mValue))
+   {
+      data = bytes.Bytes() + INT(aOffset);
+      size = bytes.Size() - INT(aOffset);
+   }
+
+   glCompressedTexSubImage2D(INT(aTarget), INT(aLevel),  INT(aXOffset), INT(aYOffset),
+                INT(aWidth),  INT(aHeight), INT(aFormat),
+                size, data );
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_compressed_tex_sub_image_2d);
+
+
+
+
 
 
 value nme_gl_tex_parameterf(value inTarget, value inPName, value inVal)

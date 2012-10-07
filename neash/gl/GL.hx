@@ -561,46 +561,76 @@ class GL
    public static function bindBitmapDataTexture(texture:BitmapData)
       { nme_gl_bind_bitmap_data_texture(texture.nmeHandle); }
 
-   public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void { }
-   public static function blendEquation(mode:Int):Void { }
-   public static function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void { }
-   public static function blendFunc(sfactor:Int, dfactor:Int):Void { }
-   public static function blendFuncSeparate(srcRGB:Int, dstRGB:Int, 
-                          srcAlpha:Int, dstAlpha:Int):Void { }
+   static var nme_gl_blend_color = load("nme_gl_blend_color",4);
+   public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void
+      { nme_gl_blend_color(red,green,blue,alpha); }
 
-   public static var nme_gl_buffer_data = load("nme_gl_buffer_data",5);
+   static var nme_gl_blend_equation = load("nme_gl_blend_equation",1);
+   public static function blendEquation(mode:Int):Void
+      { nme_gl_blend_equation(mode); }
+
+   static var nme_gl_blend_equation_separate = load("nme_gl_blend_equation_separate",2);
+   public static function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void
+      { nme_gl_blend_equation_separate(modeRGB,modeAlpha); }
+
+   static var nme_gl_blend_func = load("nme_gl_blend_func",2);
+   public static function blendFunc(sfactor:Int, dfactor:Int):Void
+      { nme_gl_blend_func(sfactor, dfactor); }
+
+   static var nme_gl_blend_func_separate = load("nme_gl_blend_func_separate",4);
+   public static function blendFuncSeparate(srcRGB:Int, dstRGB:Int, srcAlpha:Int, dstAlpha:Int):Void
+      { nme_gl_blend_func_separate(srcRGB, dstRGB, srcAlpha, dstAlpha); }
+
+   static var nme_gl_buffer_data = load("nme_gl_buffer_data",5);
    public static function bufferData(target:Int, data:IMemoryRange, usage:Int):Void
-   {
-      nme_gl_buffer_data(target,data.getByteBuffer(), data.getStart(),data.getLength(),usage);
-   }
+      { nme_gl_buffer_data(target,data.getByteBuffer(), data.getStart(),data.getLength(),usage); }
 
-   public static function bufferSubData(target:Int, offset:Int, data:ByteArray):Void { }
+   static var nme_gl_buffer_sub_data = load("nme_gl_buffer_sub_data",5);
+   public static function bufferSubData(target:Int, offset:Int, data:IMemoryRange):Void
+      { nme_gl_buffer_sub_data(target,offset,data.getByteBuffer(), data.getStart(),data.getLength()); }
 
-   public static function checkFramebufferStatus(target:Int):Int { return 0; }
+   static var nme_gl_check_framebuffer_status = load("nme_gl_check_framebuffer_status",1);
+   public static function checkFramebufferStatus(target:Int):Int
+      { return nme_gl_check_framebuffer_status(target); }
 
    static var nme_gl_clear = load("nme_gl_clear",1);
-   public static function clear(mask:Int):Void { nme_gl_clear(mask); }
+   public static function clear(mask:Int):Void
+      { nme_gl_clear(mask); }
 
    static var nme_gl_clear_color = load("nme_gl_clear_color",4);
    public static function clearColor(red:Float, green:Float, blue:Float, alpha:Float):Void
-   {
-      nme_gl_clear_color(red,green,blue,alpha);
-   }
+      { nme_gl_clear_color(red,green,blue,alpha); }
 
-   public static function clearDepth(depth:Float):Void { }
-   public static function clearStencil(s:Int):Void { }
-   public static function colorMask(red:Bool, green:Bool, blue:Bool, alpha:Bool):Void { }
+   static var nme_gl_clear_depth = load("nme_gl_clear_depth",1);
+   public static function clearDepth(depth:Float):Void
+      { nme_gl_clear_depth(depth); }
+
+   static var nme_gl_clear_stencil = load("nme_gl_clear_stencil",1);
+   public static function clearStencil(s:Int):Void
+      { nme_gl_clear_stencil(s); }
+
+   static var nme_gl_color_mask = load("nme_gl_color_mask",4);
+   public static function colorMask(red:Bool, green:Bool, blue:Bool, alpha:Bool):Void
+      { nme_gl_color_mask(red,green,blue,alpha); }
 
    static var nme_gl_compile_shader = load("nme_gl_compile_shader",1);
-   public static function compileShader(shader:Shader):Void { nme_gl_compile_shader(shader.id); }
+   public static function compileShader(shader:Shader):Void
+      { nme_gl_compile_shader(shader.id); }
 
+   static var nme_gl_compressed_tex_image_2d = load("nme_gl_compressed_tex_image_2d",-1);
    public static function compressedTexImage2D(target:Int, level:Int, internalformat:Int,
                              width:Int, height:Int, border:Int,
-                             data:ByteArray):Void { }
+                             data:IMemoryRange):Void
+      { nme_gl_compressed_tex_image_2d(target, level, internalformat, width, height, border,
+          data==null ? null : data.getByteBuffer(), data==null ? null : data.getStart() ); }
+
+   static var nme_gl_compressed_tex_sub_image_2d = load("nme_gl_compressed_tex_sub_image_2d",-1);
    public static function compressedTexSubImage2D(target:Int, level:Int,
                                 xoffset:Int, yoffset:Int,
                                 width:Int, height:Int, format:Int,
-                                data:ByteArray):Void { }
+                                data:IMemoryRange):Void
+      { nme_gl_compressed_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format,
+          data==null ? null : data.getByteBuffer(), data==null ? null : data.getStart() ); }
 
    static var nme_gl_copy_tex_image_2d = load("nme_gl_copy_tex_image_2d",-1);
    public static function copyTexImage2D(target:Int, level:Int, internalformat:Int, 
