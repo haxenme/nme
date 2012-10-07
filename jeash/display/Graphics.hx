@@ -310,12 +310,11 @@ class Graphics
 			nextDrawIndex = 0;
 			jeashClearCanvas();
 			jeashClearNextCycle = false;
+		} 
+
+		if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
+				|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
 			jeashAdjustSurface(sx, sy);
-		} else {	
-			if (jeashExtentWithFilters.width - jeashExtentWithFilters.x > jeashSurface.width 
-					|| jeashExtentWithFilters.height - jeashExtentWithFilters.y > jeashSurface.height) {
-				jeashAdjustSurface(sx, sy);
-			}
 		}
 
 		var ctx = getContext();
@@ -1007,7 +1006,7 @@ class Graphics
 		}
 	}
 
-	inline function jeashAdjustSurface(sx:Float=1.0, sy:Float=1.0):Void {
+	function jeashAdjustSurface(sx:Float=1.0, sy:Float=1.0):Void {
 		if (Reflect.field(jeashSurface, "getContext") != null) {
 			var width = Math.ceil((jeashExtentWithFilters.width - jeashExtentWithFilters.x)*sx);
 			var height = Math.ceil((jeashExtentWithFilters.height - jeashExtentWithFilters.y)*sy);
