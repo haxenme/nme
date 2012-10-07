@@ -126,7 +126,7 @@ class BitmapData implements IBitmapDrawable {
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
-	public var rect : Rectangle;
+	public var rect:Rectangle;
 
 	var jeashImageData:ImageData;
 	var jeashImageDataChanged:Bool;
@@ -280,29 +280,25 @@ class BitmapData implements IBitmapDrawable {
 		}
 	}
 
-	private function clipRect (r: Rectangle): Rectangle {
-		if (r.x < 0)
-		{
+	private function clipRect(r:Rectangle):Rectangle {
+		if (r.x < 0) {
 			r.width -= -r.x;
 			r.x = 0;
 			if (r.x + r.width <= 0)
 				return null;
 		}
-		if (r.y < 0)
-		{
+		if (r.y < 0) {
 			r.height -= -r.y;
 			r.y = 0;
 			if (r.y + r.height <= 0)
 				return null;
 		}
-		if (r.x + r.width >= getWidth ())
-		{
+		if (r.x + r.width >= getWidth ()) {
 			r.width -= r.x + r.width - getWidth ();
 			if (r.width <= 0)
 				return null;
 		}
-		if (r.y + r.height >= getHeight ())
-		{
+		if (r.y + r.height >= getHeight ()) {
 			r.height -= r.y + r.height - getHeight ();
 			if (r.height <= 0)
 				return null;
@@ -313,7 +309,6 @@ class BitmapData implements IBitmapDrawable {
 	inline public function jeashClearCanvas() _jeashTextureBuffer.width = _jeashTextureBuffer.width
 
 	function jeashFillRect(rect:Rectangle, color: UInt) {
-
 		jeashBuildLease();
 
 		var ctx: CanvasRenderingContext2D = _jeashTextureBuffer.getContext('2d');
