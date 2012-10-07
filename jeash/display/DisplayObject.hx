@@ -178,6 +178,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return null;
 	}
 
+	private function jeashIsOnStage() {
+		var gfx = jeashGetGraphics();
+		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface))
+			return true;
+		return false;
+	}
+
 	private function getScrollRect() : Rectangle {
 		if (jeashScrollRect == null) return null;
 		return jeashScrollRect.clone();
@@ -589,7 +596,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
-		var wasOnStage = (stage != null);
+		var wasOnStage = (jeashIsOnStage());
 		var gfx = jeashGetGraphics();
 		if (gfx == null) throw this + " tried to add to stage with null graphics context";
 
@@ -630,7 +637,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			}
 		}
 
-		if (!wasOnStage && stage != null) {
+		if (!wasOnStage && jeashIsOnStage()) {
 			var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
 			dispatchEvent(evt);
 		}

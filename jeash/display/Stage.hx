@@ -127,6 +127,8 @@ class Stage extends DisplayObjectContainer
 		return jeash.Lib.jeashGetStage();
 	}
 
+	override private function jeashIsOnStage() return true
+
 	// @r551
 	public function jeashStartDrag(sprite:Sprite, lockCenter:Bool = false, ?bounds:Rectangle) {
 		jeashDragBounds = (bounds==null) ? null : bounds.clone();

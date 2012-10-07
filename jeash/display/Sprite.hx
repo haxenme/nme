@@ -55,12 +55,12 @@ class Sprite extends DisplayObjectContainer
 	override public function toString() { return "[Sprite name=" + this.name + " id=" + _jeashId + "]"; }
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void {
-		if (stage != null)
+		if (jeashIsOnStage())
 			stage.jeashStartDrag(this, lockCenter, bounds);
 	}
 
 	public function stopDrag():Void {
-		if (stage != null) {
+		if (jeashIsOnStage()) {
 			stage.jeashStopDrag(this);
 			var l = parent.jeashChildren.length-1;
 			var obj:DisplayObject = stage;

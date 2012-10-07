@@ -110,7 +110,7 @@ class DisplayObjectContainer extends InteractiveObject
 	override private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
 		super.jeashAddToStage(newParent, beforeSibling);
 		for (child in jeashChildren) {
-			if (child.stage == null) {
+			if (!child.jeashIsOnStage()) {
 				child.jeashAddToStage(this);
 			}
 		}
@@ -142,7 +142,7 @@ class DisplayObjectContainer extends InteractiveObject
 		#end
 
 		object.parent = this;
-		if (stage != null) object.jeashAddToStage(this);
+		if (jeashIsOnStage()) object.jeashAddToStage(this);
 		jeashChildren.push(object);
 
 		return object;
@@ -161,7 +161,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (index == jeashChildren.length) {
 			return addChild(object);
 		} else {
-			if (stage != null) object.jeashAddToStage(this, jeashChildren[index]);
+			if (jeashIsOnStage()) object.jeashAddToStage(this, jeashChildren[index]);
 			jeashChildren.insert(index, object);
 			object.parent = this;
 		}
@@ -355,7 +355,7 @@ class DisplayObjectContainer extends InteractiveObject
 	override private function jeashSetVisible(visible:Bool) {
 		super.jeashSetVisible(visible);
 		for (child in jeashChildren) {
-			if (child.stage != null) child.visible = visible;
+			if (child.jeashIsOnStage()) child.visible = visible;
 		}
 		return visible;
 	}
