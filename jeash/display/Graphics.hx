@@ -72,19 +72,22 @@ class GfxPoint {
 
 typedef GfxPoints = Array<GfxPoint>;
 
-typedef GradPoint = {
-	var col:Int;
-	var alpha:Float;
-	var ratio:Int;
+class GradPoint {
+	public function new (inCol: Int, inAlpha: Float, inRatio: Int)
+	{ col=inCol; alpha=inAlpha; ratio=inRatio; }
+	public var col:Int;
+	public var alpha:Float;
+	public var ratio:Int;
 }
 
 typedef GradPoints = Array<GradPoint>;
 
-typedef Grad = {
-	var points:GradPoints;
-	var matrix:Matrix;
-	var flags:Int;
-	var focal:Float;
+class Grad {
+	public function new (inPoints: GradPoints, inMatrix: Matrix, inFlags: Int, inFocal: Float) { points=inPoints; matrix=inMatrix; flags=inFlags; focal=inFocal; }
+	public var points:GradPoints;
+	public var matrix:Matrix;
+	public var flags:Int;
+	public var focal:Float;
 }
 
 class LineJob
@@ -119,13 +122,16 @@ class LineJob
 	public var miter_limit:Float;
 }
 
-typedef Drawable = {
-	var points:GfxPoints;
-	var fillColour:Int;
-	var fillAlpha:Float;
-	var solidGradient:Grad;
-	var bitmap:Texture;
-	var lineJobs:LineJobs;
+class Drawable {
+	public function new (inPoints: GfxPoints, inFillColour: Int, inFillAlpha: Float, inSolidGradient: Grad, inBitmap: Texture, inLineJobs: LineJobs) { 
+		points=inPoints; fillColour=inFillColour; fillAlpha=inFillAlpha; solidGradient=inSolidGradient; bitmap=inBitmap; lineJobs=inLineJobs; 
+	}
+	public var points:GfxPoints;
+	public var fillColour:Int;
+	public var fillAlpha:Float;
+	public var solidGradient:Grad;
+	public var bitmap:Texture;
+	public var lineJobs:LineJobs;
 }
 
 typedef Texture = {
@@ -442,6 +448,7 @@ class Graphics
 
 		jeashChanged = false;
 		nextDrawIndex = len;
+		mDrawList = [];
 
 		return true;
 	}
@@ -660,7 +667,7 @@ class Graphics
 	{
 		var points = new GradPoints();
 		for (i in 0...colors.length)
-			points.push({col:colors[i], alpha:alphas[i], ratio:ratios[i]});
+			points.push(new GradPoint(colors[i], alphas[i], ratios[i]));
 
 		var flags = 0;
 
@@ -680,7 +687,7 @@ class Graphics
 			matrix = matrix.clone();
 
 		var focal : Float = focalPointRatio ==null ? 0 : focalPointRatio;
-		return  { points : points, matrix : matrix, flags : flags, focal:focal };
+		return new Grad(points, matrix, flags, focal);
 	}
 
 	public function beginGradientFill(type : GradientType,
@@ -907,14 +914,14 @@ class Graphics
 
 				addLineSegment();
 
-				var drawable : Drawable = { 
-					points: mPoints, 
-					fillColour: mFillColour, 
-					fillAlpha: mFillAlpha,
-					solidGradient: mSolidGradient, 
-					bitmap: mBitmap,
-					lineJobs: mLineJobs 
-				};
+				var drawable : Drawable = new Drawable ( 
+					mPoints, 
+					mFillColour, 
+					mFillAlpha,
+					mSolidGradient, 
+					mBitmap,
+					mLineJobs 
+				);
 				addDrawable(drawable);
 			}
 
