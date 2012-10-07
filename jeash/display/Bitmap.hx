@@ -65,7 +65,7 @@ class Bitmap extends jeash.display.DisplayObject
 		return inBitmapData;
 	}
 
-	override private function jeashGetGraphics() return jeashGraphics
+	override public function jeashGetGraphics() return jeashGraphics
 	
 	override function validateBounds() {
 		if (_boundsInvalid) {
@@ -114,7 +114,7 @@ class Bitmap extends jeash.display.DisplayObject
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}
 			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
-		}		
+		}
 	}
 
 	private inline function getBitmapSurfaceTransform(gfx:Graphics):Matrix {
@@ -124,12 +124,12 @@ class Bitmap extends jeash.display.DisplayObject
 		return fm;
 	}
 
-	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
 		if (!visible) return null; 
 		else if (this.bitmapData != null) {
 			var local = globalToLocal(point);
 			if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; else return cast this;
 		}
-		else return super.jeashGetObjectUnderPoint(point);
-	}
+		else return super.jeashGetObjectUnderPoint(point)
+
 }

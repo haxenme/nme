@@ -443,13 +443,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			smoothing:Bool):Void {
 		var oldAlpha = alpha;
 		alpha = 1;
-		jeashRender();
+		jeashRender(inSurface, clipRect);
 		alpha = oldAlpha;
-
-		// copy the surface before draw to new surface
-		var surfaceCopy = BitmapData.jeashCopySurface(jeashGetSurface());
-		BitmapData.jeashColorTransformSurface(surfaceCopy, inColorTransform);
-		Lib.jeashDrawToSurface(surfaceCopy, inSurface, matrix);
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {
