@@ -39,6 +39,10 @@
   #define glFramebufferTexture2D glFramebufferTexture2DEXT
   #define glRenderbufferStorage glRenderbufferStorageEXT
   #define glCheckFramebufferStatus glCheckFramebufferStatusEXT
+  #define glCheckFramebufferStatus glCheckFramebufferStatusEXT
+  #define glGenerateMipmap glGenerateMipmapEXT
+  #define glGetFramebufferAttachmentParameteriv glGetFramebufferAttachmentParameterivEXT
+  #define glGetRenderbufferParameteriv glGetRenderbufferParameterivEXT
   #endif
 
 #else

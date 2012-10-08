@@ -30,6 +30,23 @@ value nme_gl_get_error()
 DEFINE_PRIM(nme_gl_get_error,0);
 
 
+value nme_gl_finish()
+{
+   glFinish();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_finish,0);
+
+
+value nme_gl_flush()
+{
+   glFlush();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_flush,0);
+
+
+
 value nme_gl_version()
 {
    return alloc_int( gTextureContextVersion );
@@ -84,6 +101,184 @@ value nme_gl_get_supported_extensions(value ioList)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_get_supported_extensions,1);
+
+
+value nme_gl_front_face(value inFace)
+{
+   glFrontFace(val_int(inFace));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_front_face,1);
+
+
+value nme_gl_get_parameter(value pname_val)
+{
+   int floats = 0;
+   int ints = 0;
+   int strings = 1;
+   int pname = val_int(pname_val);
+
+   switch(pname)
+   {
+      case GL_ALIASED_LINE_WIDTH_RANGE:
+      case GL_ALIASED_POINT_SIZE_RANGE:
+      case GL_DEPTH_RANGE:
+         floats = 2;
+         break;
+
+      case GL_BLEND_COLOR:
+      case GL_COLOR_CLEAR_VALUE:
+         floats = 4;
+         break;
+
+      case GL_COLOR_WRITEMASK:
+         ints = 4;
+         break;
+
+      //case GL_COMPRESSED_TEXTURE_FORMATS	null
+
+      case GL_MAX_VIEWPORT_DIMS:
+         ints = 2;
+         break;
+      case GL_SCISSOR_BOX:
+      case GL_VIEWPORT:
+         ints = 4;
+         break;
+
+      // case GL_ARRAY_BUFFER_BINDING	WebGLBuffer
+      // case GL_CURRENT_PROGRAM	WebGLProgram
+      // case GL_ELEMENT_ARRAY_BUFFER_BINDING	WebGLBuffer
+      // case GL_FRAMEBUFFER_BINDING	WebGLFramebuffer
+      // case GL_RENDERBUFFER_BINDING	WebGLRenderbuffer
+      // case GL_TEXTURE_BINDING_2D	WebGLTexture
+      // case GL_TEXTURE_BINDING_CUBE_MAP	WebGLTexture
+
+      case GL_DEPTH_CLEAR_VALUE:
+      case GL_LINE_WIDTH:
+      case GL_POLYGON_OFFSET_FACTOR:
+      case GL_POLYGON_OFFSET_UNITS:
+      case GL_SAMPLE_COVERAGE_VALUE:
+         ints = 1;
+         break;
+
+      case GL_BLEND:
+      case GL_DEPTH_WRITEMASK:
+      case GL_DITHER:
+      case GL_CULL_FACE:
+      case GL_POLYGON_OFFSET_FILL:
+      case GL_SAMPLE_COVERAGE_INVERT:
+      case GL_STENCIL_TEST:
+      //case GL_UNPACK_FLIP_Y_WEBGL:
+      //case GL_UNPACK_PREMULTIPLY_ALPHA_WEBGL:
+         ints = 1;
+         break;
+
+      case GL_ALPHA_BITS:
+      case GL_ACTIVE_TEXTURE:
+      case GL_BLEND_DST_ALPHA:
+      case GL_BLEND_DST_RGB:
+      case GL_BLEND_EQUATION_ALPHA:
+      case GL_BLEND_EQUATION_RGB:
+      case GL_BLEND_SRC_ALPHA:
+      case GL_BLEND_SRC_RGB:
+      case GL_BLUE_BITS:
+      case GL_CULL_FACE_MODE:
+      case GL_DEPTH_BITS:
+      case GL_DEPTH_FUNC:
+      case GL_DEPTH_TEST:
+      case GL_FRONT_FACE:
+      case GL_GENERATE_MIPMAP_HINT:
+      case GL_GREEN_BITS:
+      case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+      case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+      //case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+      //case GL_MAX_RENDERBUFFER_SIZE:
+      case GL_MAX_TEXTURE_IMAGE_UNITS:
+      case GL_MAX_TEXTURE_SIZE:
+      //case GL_MAX_VARYING_VECTORS:
+      case GL_MAX_VERTEX_ATTRIBS:
+      case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+      //case GL_MAX_VERTEX_UNIFORM_VECTORS:
+      case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
+      case GL_PACK_ALIGNMENT:
+      case GL_RED_BITS:
+      case GL_SAMPLE_BUFFERS:
+      case GL_SAMPLES:
+      case GL_SCISSOR_TEST:
+      case GL_SHADING_LANGUAGE_VERSION:
+      case GL_STENCIL_BACK_FAIL:
+      case GL_STENCIL_BACK_FUNC:
+      case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+      case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+      case GL_STENCIL_BACK_REF:
+      case GL_STENCIL_BACK_VALUE_MASK:
+      case GL_STENCIL_BACK_WRITEMASK:
+      case GL_STENCIL_BITS:
+      case GL_STENCIL_CLEAR_VALUE:
+      case GL_STENCIL_FAIL:
+      case GL_STENCIL_FUNC:
+      case GL_STENCIL_PASS_DEPTH_FAIL:
+      case GL_STENCIL_PASS_DEPTH_PASS:
+      case GL_STENCIL_REF:
+      case GL_STENCIL_VALUE_MASK:
+      case GL_STENCIL_WRITEMASK:
+      case GL_SUBPIXEL_BITS:
+      case GL_UNPACK_ALIGNMENT:
+      //case GL_UNPACK_COLORSPACE_CONVERSION_WEBGL:
+         ints = 1;
+         break;
+
+      case GL_VENDOR:
+      case GL_VERSION:
+      case GL_RENDERER:
+         strings = 1;
+         break;
+   }
+   if (ints==1)
+   {
+      int val;
+      glGetIntegerv(pname,&val);
+      return alloc_int(val);
+   }
+   else if (strings==1)
+   {
+      return alloc_string((const char *)glGetString(pname));
+   }
+   else if (floats==1)
+   {
+      float f;
+      glGetFloatv(pname,&f);
+      return alloc_float(f);
+   }
+   else if (ints>0)
+   {
+      int vals[4];
+      glGetIntegerv(pname,vals);
+      value  result = alloc_array(ints);
+      for(int i=0;i<ints;i++)
+         val_array_set_i(result,i,alloc_int(vals[i]));
+      return result;
+   }
+   else if (floats>0)
+   {
+      float vals[4];
+      glGetFloatv(pname,vals);
+      value  result = alloc_array(ints);
+      for(int i=0;i<ints;i++)
+         val_array_set_i(result,i,alloc_int(vals[i]));
+      return result;
+   }
+
+
+
+
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_get_parameter,1);
+
+
+
 
 // --- Blend -------------------------------------------
 
@@ -213,6 +408,51 @@ value nme_gl_use_program(value inId)
 DEFINE_PRIM(nme_gl_use_program,1);
 
 
+value nme_gl_get_active_attrib(value inProg, value inIndex)
+{
+   int id = val_int(inProg);
+   value result = alloc_empty_object( );
+
+   char buf[1024];
+   GLsizei outLen = 1024;
+   GLsizei size = 0;
+   GLenum  type = 0;
+   
+   glGetActiveAttrib(id, val_int(inIndex), 1024, &outLen, &size, &type, buf);
+   
+   alloc_field(result,val_id("size"),alloc_int(size));
+   alloc_field(result,val_id("type"),alloc_int(type));
+   alloc_field(result,val_id("name"),alloc_string(buf));
+
+   return result;
+}
+DEFINE_PRIM(nme_gl_get_active_attrib,2);
+
+
+value nme_gl_get_active_uniform(value inProg, value inIndex)
+{
+   int id = val_int(inProg);
+   value result = alloc_empty_object( );
+
+   char buf[1024];
+   GLsizei outLen = 1024;
+   GLsizei size = 0;
+   GLenum  type = 0;
+   
+   glGetActiveUniform(id, val_int(inIndex), 1024, &outLen, &size, &type, buf);
+   
+   alloc_field(result,val_id("size"),alloc_int(size));
+   alloc_field(result,val_id("type"),alloc_int(type));
+   alloc_field(result,val_id("name"),alloc_string(buf));
+
+   return result;
+}
+DEFINE_PRIM(nme_gl_get_active_uniform,2);
+
+
+
+
+
 value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,value inCount)
 {
    int loc = val_int(inLocation);
@@ -280,6 +520,14 @@ value nme_gl_attach_shader(value inProg,value inShader)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_attach_shader,2);
+
+
+value nme_gl_detach_shader(value inProg,value inShader)
+{
+   glDetachShader(val_int(inProg),val_int(inShader));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_detach_shader,2);
 
 
 
@@ -407,6 +655,38 @@ value nme_gl_enable_vertex_attrib_array(value inIndex)
 
 DEFINE_PRIM(nme_gl_enable_vertex_attrib_array,1);
 
+
+value nme_gl_disable_vertex_attrib_array(value inIndex)
+{
+   glDisableVertexAttribArray(val_int(inIndex));
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_gl_disable_vertex_attrib_array,1);
+
+
+
+value nme_gl_get_buffer_paramerter(value inTarget, value inPname)
+{
+   int result = 0;
+   glGetBufferParameteriv(val_int(inTarget), val_int(inPname),&result);
+   return alloc_int(result);
+}
+
+DEFINE_PRIM(nme_gl_get_buffer_paramerter,2);
+
+value nme_gl_get_buffer_parameter(value inTarget, value inIndex)
+{
+   GLint data = 0;
+   glGetBufferParameteriv(val_int(inTarget), val_int(inIndex), &data);
+   return alloc_int(data);
+}
+DEFINE_PRIM(nme_gl_get_buffer_parameter,2);
+
+
+
+
+
 // --- Framebuffer -------------------------------
 
 value nme_gl_bind_framebuffer(value target, value framebuffer)
@@ -466,6 +746,22 @@ value nme_gl_check_framebuffer_status(value inTarget)
 }
 DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
+value nme_gl_get_framebuffer_attachement_parameter(value target, value attachement, value pname)
+{
+   GLint result = 0;
+   glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachement), val_int(pname), &result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_framebuffer_attachement_parameter,3);
+
+value nme_gl_get_render_buffer_parameter(value target, value pname)
+{
+   int result = 0;
+   glGetRenderbufferParameteriv(val_int(target), val_int(pname), &result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
+
 // --- Drawing -------------------------------
 
 
@@ -475,6 +771,15 @@ value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_arrays,3);
+
+
+value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOffset)
+{
+   glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)val_int(inOffset) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_draw_elements,4);
+
 
 
 
@@ -534,6 +839,24 @@ value nme_gl_color_mask(value r,value g, value b, value a)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_color_mask,4);
+
+
+
+value nme_gl_depth_func(value func)
+{
+   glDepthFunc(val_int(func));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_depth_func,1);
+
+
+value nme_gl_depth_range(value near, value far)
+{
+   glDepthRange(val_number(near), val_number(far));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_depth_range,2);
+
 
 
 
@@ -721,6 +1044,17 @@ value nme_gl_copy_tex_sub_image_2d(value *arg, int argCount)
    return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_gl_copy_tex_sub_image_2d);
+
+
+
+value nme_gl_generate_mipmap(value inTarget)
+{
+   glGenerateMipmap(val_int(inTarget));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_generate_mipmap,1);
+
+
 
 
 #endif // ifdef HX_MACOS
