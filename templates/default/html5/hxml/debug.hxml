@@ -2,6 +2,7 @@
 -js ::OUTPUT_FILE::
 -cp ::OUTPUT_DIR::/haxe
 -D html5
+-D html
 --remap flash:nme
 -debug
 --js-modern

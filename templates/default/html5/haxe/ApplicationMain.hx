@@ -185,7 +185,7 @@ class ApplicationMain {
 		
 		if (Reflect.field(::APP_MAIN::, "main") == null) {
 			
-			new ::APP_MAIN::();
+			Type.createInstance (::APP_MAIN::, []);
 			
 		} else {
 			
