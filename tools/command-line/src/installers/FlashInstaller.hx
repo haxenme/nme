@@ -204,9 +204,21 @@ class FlashInstaller extends InstallerBase {
 		FileHelper.recursiveCopy (templatePaths[0] + "flash/haxe", buildDirectory + "/flash/haxe", context);
 		SWFHelper.generateSWFClasses (NME, swfLibraries, buildDirectory + "/flash/haxe");
 		
+		var usesNME = false;
+		
+		for (compilerFlag in compilerFlags) {
+			
+			if (compilerFlag == "-lib nme") {
+				
+				usesNME = true;
+				
+			}
+			
+		}
+		
 		for (asset in assets) {
 			
-			if (asset.type == Asset.TYPE_TEMPLATE) {
+			if (asset.type == Asset.TYPE_TEMPLATE || !usesNME) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
 				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);

@@ -1,3 +1,5 @@
+#if nme
+
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 import nme.Assets;
 import nme.events.Event;
@@ -69,7 +71,10 @@ class ApplicationMain {
 		}
 		else
 		{
-			nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
+			var instance = Type.createInstance(::APP_MAIN::, []);
+			if (Std.is (instance, nme.display.DisplayObject)) {
+				nme.Lib.current.addChild(cast instance);
+			}	
 		}
 		
 	}
@@ -127,6 +132,42 @@ class ApplicationMain {
 	
 }
 
-
 ::foreach assets::::if (type == "image")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
 ::end::
+
+#else
+
+import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
+
+class ApplicationMain {
+	
+	public static function main () {
+		
+		var hasMain = false;
+		
+		for (methodName in Type.getClassFields(::APP_MAIN::))
+		{
+			if (methodName == "main")
+			{
+				hasMain = true;
+				break;
+			}
+		}
+		
+		if (hasMain)
+		{
+			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		}
+		else
+		{
+			var instance = Type.createInstance(::APP_MAIN::, []);
+			if (Std.is (instance, flash.display.DisplayObject)) {
+				flash.Lib.current.addChild(cast instance);
+			}
+		}
+		
+	}
+
+}
+
+#end
