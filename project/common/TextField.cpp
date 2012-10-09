@@ -1455,7 +1455,8 @@ void TextField::InsertString(WString &inString)
 
 static bool IsWord(int inCh)
 {
-  return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
+  return (!isspace(inCh));
+  //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
 }
 
 // Combine x,y scaling with rotation to calculate pixel coordinates for
