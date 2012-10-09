@@ -198,9 +198,9 @@ class BitmapData implements IBitmapDrawable
 	}
 	
 	
-	public function draw(source:IBitmapDrawable, matrix:Matrix = null, colorTransform:ColorTransform = null, blendMode:String = null, clipRect:Rectangle = null, smoothing:Bool = false):Void
+	public function draw(source:IBitmapDrawable, matrix:Matrix = null, colorTransform:ColorTransform = null, blendMode:BlendMode = null, clipRect:Rectangle = null, smoothing:Bool = false):Void
 	{
-		source.nmeDrawToSurface(nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
+		source.nmeDrawToSurface(nmeHandle, matrix, colorTransform, Std.string (blendMode), clipRect, smoothing);
 	}
 	
 	
