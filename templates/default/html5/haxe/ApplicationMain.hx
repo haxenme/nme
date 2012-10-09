@@ -1,4 +1,4 @@
-#if nme
+#if (nme && !flambe)
 
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
