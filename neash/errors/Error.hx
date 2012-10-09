@@ -4,9 +4,9 @@ package neash.errors;
 class Error
 {
 	
-	/** @private */ private var errorID:Int;
-	/** @private */ private var message:Dynamic;
-	/** @private */ private var name:Dynamic;
+	/** @private */ public var errorID:Int;
+	/** @private */ public var message:Dynamic;
+	/** @private */ public var name:Dynamic;
 
 	public function new(?inMessage:Dynamic, id:Dynamic = 0)
 	{
