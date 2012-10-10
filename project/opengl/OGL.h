@@ -43,6 +43,8 @@
   #define glGenerateMipmap glGenerateMipmapEXT
   #define glGetFramebufferAttachmentParameteriv glGetFramebufferAttachmentParameterivEXT
   #define glGetRenderbufferParameteriv glGetRenderbufferParameterivEXT
+  #define glIsFramebuffer glIsFramebufferEXT
+  #define glIsRenderbuffer glIsRenderbufferEXT
   #endif
 
 #else

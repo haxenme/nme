@@ -69,6 +69,24 @@ value nme_gl_disable(value inCap)
 DEFINE_PRIM(nme_gl_disable,1);
 
 
+value nme_gl_hint(value inTarget, value inValue)
+{
+   glHint(val_int(inTarget),val_int(inValue));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_hint,2);
+
+
+value nme_gl_line_width(value inWidth)
+{
+   glLineWidth(val_number(inWidth));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_line_width,1);
+
+
+
+
 value nme_gl_get_context_attributes()
 {
    value result = alloc_empty_object( );
@@ -278,6 +296,73 @@ value nme_gl_get_parameter(value pname_val)
 DEFINE_PRIM(nme_gl_get_parameter,1);
 
 
+// --- Is -------------------------------------------
+
+#define GL_IS(name,Name) \
+   value nme_gl_is_##name(value val) { return alloc_bool(glIs##Name(val_int(val))); } \
+   DEFINE_PRIM(nme_gl_is_##name,1);
+
+GL_IS(buffer,Buffer)
+GL_IS(enabled,Enabled)
+GL_IS(framebuffer,Framebuffer)
+GL_IS(program,Program)
+GL_IS(renderbuffer,Renderbuffer)
+GL_IS(shader,Shader)
+GL_IS(texture,Texture)
+
+// --- Stencil -------------------------------------------
+
+
+value nme_gl_stencil_func(value func, value ref, value mask)
+{
+   glStencilFunc(val_int(func),val_int(ref),val_int(mask));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_func,3);
+
+
+value nme_gl_stencil_func_separate(value face,value func, value ref, value mask)
+{
+   glStencilFuncSeparate(val_int(face),val_int(func),val_int(ref),val_int(mask));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_func_separate,4);
+
+
+
+
+value nme_gl_stencil_mask(value mask)
+{
+   glStencilMask(val_int(mask));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_mask,1);
+
+
+value nme_gl_stencil_mask_separate(value face,value mask)
+{
+   glStencilMaskSeparate(val_int(face),val_int(mask));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_mask_separate,2);
+
+
+value nme_gl_stencil_op(value fail,value zfail, value zpass)
+{
+   glStencilOp(val_int(fail),val_int(zfail),val_int(zpass));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_op,3);
+
+
+value nme_gl_stencil_op_separate(value face,value fail,value zfail, value zpass)
+{
+   glStencilOpSeparate(val_int(face),val_int(fail),val_int(zfail),val_int(zpass));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_stencil_op_separate,4);
+
+
 
 
 // --- Blend -------------------------------------------
@@ -342,6 +427,16 @@ value nme_gl_link_program(value inId)
 DEFINE_PRIM(nme_gl_link_program,1);
 
 
+value nme_gl_validate_program(value inId)
+{
+   int id = val_int(inId);
+   glValidateProgram(id);
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_validate_program,1);
+
+
 value nme_gl_get_program_info_log(value inId)
 {
    char buf[1024];
@@ -389,6 +484,95 @@ value nme_gl_get_uniform_location(value inId,value inName)
 DEFINE_PRIM(nme_gl_get_uniform_location,2);
 
 
+value nme_gl_get_uniform(value inId,value inLocation)
+{
+   int id = val_int(inId);
+   int loc = val_int(inLocation); 
+
+   char buf[1];
+   GLsizei outLen = 1;
+   GLsizei size = 0;
+   GLenum  type = 0;
+   
+   glGetActiveUniform(id, loc, 1, &outLen, &size, &type, buf);
+   int ints = 0;
+   int floats = 0;
+   int bools = 0;
+   switch(type)
+   {
+      case  GL_FLOAT:
+        {
+           float result = 0;
+           glGetUniformfv(id,loc,&result);
+           return alloc_float(result);
+        }
+ 
+      case  GL_FLOAT_VEC2: floats=2;
+      case  GL_FLOAT_VEC3:  floats++;
+      case  GL_FLOAT_VEC4:  floats++;
+           break;
+
+      case  GL_INT_VEC2: ints=2;
+      case  GL_INT_VEC3: ints++;
+      case  GL_INT_VEC4: ints++;
+           break;
+
+      case  GL_BOOL_VEC2: bools = 2;
+      case  GL_BOOL_VEC3: bools++;
+      case  GL_BOOL_VEC4: bools++;
+           break;
+
+      case  GL_FLOAT_MAT2: floats = 4; break;
+      case  GL_FLOAT_MAT3: floats = 9; break;
+      case  GL_FLOAT_MAT4: floats = 16; break;
+      case  GL_FLOAT_MAT2x3: floats = 4*3; break;
+      case  GL_FLOAT_MAT2x4: floats = 4*4; break;
+      case  GL_FLOAT_MAT3x2: floats = 9*2; break;
+      case  GL_FLOAT_MAT3x4: floats = 9*4; break;
+      case  GL_FLOAT_MAT4x2: floats = 16*2; break;
+      case  GL_FLOAT_MAT4x3: floats = 16*3; break;
+
+      case  GL_INT:
+      case  GL_BOOL:
+      case  GL_SAMPLER_1D:
+      case  GL_SAMPLER_2D:
+      case  GL_SAMPLER_3D:
+      case  GL_SAMPLER_CUBE:
+      case  GL_SAMPLER_1D_SHADOW:
+      case  GL_SAMPLER_2D_SHADOW:
+        {
+           int result = 0;
+           glGetUniformiv(id,loc,&result);
+           return alloc_int(result);
+        }
+   }
+
+   if (ints + bools > 0)
+   {
+      int buffer[4];
+      glGetUniformiv(id,loc,buffer);
+      value result = alloc_array( ints+bools );
+      for(int i=0;i<ints+bools;i++)
+         val_array_set_i(result,i,alloc_int(buffer[i]));
+      return result;
+   }
+   if (floats>0)
+   {
+      float buffer[16*3];
+      glGetUniformfv(id,loc,buffer);
+      value result = alloc_array( floats );
+      for(int i=0;i<floats;i++)
+         val_array_set_i(result,i,alloc_float(buffer[i]));
+      return result;
+ 
+   }
+ 
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_get_uniform,2);
+
+
+
 value nme_gl_get_program_parameter(value inId,value inName)
 {
    int id = val_int(inId);
@@ -432,7 +616,6 @@ DEFINE_PRIM(nme_gl_get_active_attrib,2);
 value nme_gl_get_active_uniform(value inProg, value inIndex)
 {
    int id = val_int(inProg);
-   value result = alloc_empty_object( );
 
    char buf[1024];
    GLsizei outLen = 1024;
@@ -441,6 +624,7 @@ value nme_gl_get_active_uniform(value inProg, value inIndex)
    
    glGetActiveUniform(id, val_int(inIndex), 1024, &outLen, &size, &type, buf);
    
+   value result = alloc_empty_object( );
    alloc_field(result,val_id("size"),alloc_int(size));
    alloc_field(result,val_id("type"),alloc_int(type));
    alloc_field(result,val_id("name"),alloc_string(buf));
@@ -476,12 +660,281 @@ value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,v
 }
 DEFINE_PRIM(nme_gl_uniform_matrix,4);
 
-value nme_gl_uniform1i(value inLocation, value inV0)
+
+#define GL_UNFORM_1(TYPE,GET) \
+value nme_gl_uniform1##TYPE(value inLocation, value inV0) \
+{ \
+   glUniform1##TYPE(val_int(inLocation),GET(inV0)); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_gl_uniform1##TYPE,2);
+
+#define GL_UNFORM_2(TYPE,GET) \
+value nme_gl_uniform2##TYPE(value inLocation, value inV0,value inV1) \
+{ \
+   glUniform2##TYPE(val_int(inLocation),GET(inV0),GET(inV1)); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_gl_uniform2##TYPE,3);
+
+#define GL_UNFORM_3(TYPE,GET) \
+value nme_gl_uniform3##TYPE(value inLocation, value inV0,value inV1,value inV2) \
+{ \
+   glUniform3##TYPE(val_int(inLocation),GET(inV0),GET(inV1),GET(inV2)); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_gl_uniform3##TYPE,4);
+
+#define GL_UNFORM_4(TYPE,GET) \
+value nme_gl_uniform4##TYPE(value inLocation, value inV0,value inV1,value inV2,value inV3) \
+{ \
+   glUniform4##TYPE(val_int(inLocation),GET(inV0),GET(inV1),GET(inV2),GET(inV3)); \
+   return alloc_null(); \
+} \
+DEFINE_PRIM(nme_gl_uniform4##TYPE,5);
+
+GL_UNFORM_1(i,val_int)
+GL_UNFORM_1(f,val_number)
+GL_UNFORM_2(i,val_int)
+GL_UNFORM_2(f,val_number)
+GL_UNFORM_3(i,val_int)
+GL_UNFORM_3(f,val_number)
+GL_UNFORM_4(i,val_int)
+GL_UNFORM_4(f,val_number)
+
+value nme_gl_uniform1iv(value inLocation,value inArray)
 {
-   glUniform1i(val_int(inLocation),val_int(inV0));
+   int *i = val_array_int(inArray);
+   if (i)
+      glUniform1iv(val_int(inLocation),1,i);
+   else
+      nme_gl_uniform1i(inLocation,val_array_i(inArray,0));
    return alloc_null();
 }
-DEFINE_PRIM(nme_gl_uniform1i,2);
+DEFINE_PRIM(nme_gl_uniform1iv,2);
+
+value nme_gl_uniform2iv(value inLocation,value inArray)
+{
+   int *i = val_array_int(inArray);
+   if (i)
+      glUniform2iv(val_int(inLocation),1,i);
+   else
+      nme_gl_uniform2i(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform2iv,2);
+
+value nme_gl_uniform3iv(value inLocation,value inArray)
+{
+   int *i = val_array_int(inArray);
+   if (i)
+      glUniform3iv(val_int(inLocation),1,i);
+   else
+      nme_gl_uniform3i(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform3iv,2);
+
+value nme_gl_uniform4iv(value inLocation,value inArray)
+{
+   int *i = val_array_int(inArray);
+   if (i)
+      glUniform4iv(val_int(inLocation),1,i);
+   else
+      nme_gl_uniform4i(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform4iv,2);
+
+
+
+
+value nme_gl_uniform1fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glUniform1fv(val_int(inLocation),1,f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glUniform1f(val_int(inLocation),d[0]);
+      else
+         nme_gl_uniform1f(inLocation,val_array_i(inArray,0));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform1fv,2);
+
+
+
+value nme_gl_uniform2fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glUniform2fv(val_int(inLocation),1,f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glUniform2f(val_int(inLocation),d[0],d[1]);
+      else
+         nme_gl_uniform2f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform2fv,2);
+
+
+
+value nme_gl_uniform3fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glUniform3fv(val_int(inLocation),1,f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glUniform3f(val_int(inLocation),d[0],d[1],d[2]);
+      else
+         nme_gl_uniform3f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform3fv,2);
+
+
+
+value nme_gl_uniform4fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glUniform4fv(val_int(inLocation),1,f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glUniform4f(val_int(inLocation),d[0],d[1],d[2],d[3]);
+      else
+         nme_gl_uniform4f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_uniform4fv,2);
+
+// Attrib
+
+value nme_gl_vertex_attrib1f(value inLocation, value inV0)
+{
+   glVertexAttrib1f(val_int(inLocation),val_number(inV0));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib1f,2);
+
+
+value nme_gl_vertex_attrib2f(value inLocation, value inV0,value inV1)
+{
+   glVertexAttrib2f(val_int(inLocation),val_number(inV0),val_number(inV1));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib2f,3);
+
+
+value nme_gl_vertex_attrib3f(value inLocation, value inV0,value inV1,value inV2)
+{
+   glVertexAttrib3f(val_int(inLocation),val_number(inV0),val_number(inV1),val_number(inV2));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib3f,4);
+
+
+value nme_gl_vertex_attrib4f(value inLocation, value inV0,value inV1,value inV2, value inV3)
+{
+   glVertexAttrib4f(val_int(inLocation),val_number(inV0),val_number(inV1),val_number(inV2),val_number(inV3));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib4f,5);
+
+
+
+
+value nme_gl_vertex_attrib1fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glVertexAttrib1fv(val_int(inLocation),f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glVertexAttrib1f(val_int(inLocation),d[0]);
+      else
+         nme_gl_vertex_attrib1f(inLocation,val_array_i(inArray,0));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib1fv,2);
+
+
+
+value nme_gl_vertex_attrib2fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glVertexAttrib2fv(val_int(inLocation),f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glVertexAttrib2f(val_int(inLocation),d[0],d[1]);
+      else
+         nme_gl_vertex_attrib2f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib2fv,2);
+
+
+
+value nme_gl_vertex_attrib3fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glVertexAttrib3fv(val_int(inLocation),f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glVertexAttrib3f(val_int(inLocation),d[0],d[1],d[2]);
+      else
+         nme_gl_vertex_attrib3f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib3fv,2);
+
+
+
+value nme_gl_vertex_attrib4fv(value inLocation,value inArray)
+{
+   float *f = val_array_float(inArray);
+   if (f)
+      glVertexAttrib4fv(val_int(inLocation),f);
+   else
+   {
+      double *d = val_array_double(inArray);
+      if (d)
+         glVertexAttrib4f(val_int(inLocation),d[0],d[1],d[2],d[3]);
+      else
+         nme_gl_vertex_attrib4f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_vertex_attrib4fv,2);
+
+
+
 
 // --- Shader -------------------------------------------
 
@@ -561,6 +1014,49 @@ value nme_gl_get_shader_info_log(value inId)
 }
 DEFINE_PRIM(nme_gl_get_shader_info_log,1);
 
+
+value nme_gl_get_shader_source(value inId)
+{
+   int id = val_int(inId);
+
+   int len = 0;
+   glGetShaderiv(id,GL_SHADER_SOURCE_LENGTH,&len);
+   if (len==0)
+      return alloc_null();
+   char *buf = new char[len+1];
+   glGetShaderSource(id,len+1,0,buf);
+   value result = alloc_string(buf);
+   delete [] buf;
+
+   return result;
+}
+DEFINE_PRIM(nme_gl_get_shader_source,1);
+
+
+
+
+value nme_gl_get_shader_precision_format(value inShader,value inPrec)
+{
+   #ifdef NME_GLES
+   int range[2];
+   int precision;
+   glGetShaderPrecisionFormat(val_int(inShader), val_int(inPrec), range, &precsion);
+
+   value result = alloc_empty_object( );
+   alloc_field(result,val_id("rangeMin"),alloc_int(range[0]));
+   alloc_field(result,val_id("rangeMax"),alloc_int(range[1]));
+   alloc_field(result,val_id("precision"),alloc_string(precision));
+
+   return result;
+   #else
+   return alloc_null();
+   #endif
+}
+DEFINE_PRIM(nme_gl_get_shader_precision_format,2);
+
+
+
+
 // --- Buffer -------------------------------------------
 
 
@@ -628,7 +1124,24 @@ value nme_gl_buffer_sub_data(value inTarget, value inOffset, value inByteBuffer,
 DEFINE_PRIM(nme_gl_buffer_sub_data,5);
 
 
+value nme_gl_get_vertex_attrib_offset(value index, value name)
+{
+   int result = 0;
+   glGetVertexAttribPointerv(val_int(index), val_int(name), (void **)&result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_vertex_attrib_offset,2);
 
+
+
+
+value nme_gl_get_vertex_attrib(value index, value name)
+{
+   int result = 0;
+   glGetVertexAttribiv(val_int(index), val_int(name), &result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_vertex_attrib,2);
 
 
 value nme_gl_vertex_attrib_pointer(value *arg, int nargs)
@@ -859,6 +1372,31 @@ DEFINE_PRIM(nme_gl_depth_range,2);
 
 
 
+value nme_gl_polygon_offset(value factor, value units)
+{
+   glPolygonOffset(val_number(factor), val_number(units));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_polygon_offset,2);
+
+
+value nme_gl_pixel_storei(value pname, value param)
+{
+   glPixelStorei(val_int(pname), val_int(param));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_pixel_storei,2);
+
+
+value nme_gl_sample_coverage(value f, value invert)
+{
+   glSampleCoverage(val_number(f), val_bool(invert));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_sample_coverage,2);
+
+
+
 
 
 
@@ -1053,6 +1591,17 @@ value nme_gl_generate_mipmap(value inTarget)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_generate_mipmap,1);
+
+
+
+value nme_gl_get_tex_parameter(value inTarget,value inPname)
+{
+   int result = 0;
+   glGetTexParameteriv(val_int(inTarget), val_int(inPname), &result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_tex_parameter,2);
+
 
 
 

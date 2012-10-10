@@ -82,6 +82,12 @@ typedef ActiveInfo = {
     name : String,
 };
 
+typedef ShaderPrecisionFormat = {
+   rangeMin : Int,
+   rangeMax : Int,
+   precision : Int,
+};
+
 
 typedef UniformLocation = Dynamic;
 
@@ -808,44 +814,86 @@ class GL
    public static function getShaderParameter(shader:Shader, pname:Int) : Int
       { return nme_gl_get_shader_parameter(shader.id,pname); }
 
-   public static function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int) : Void { }
+   static var nme_gl_get_shader_precision_format = load("nme_gl_get_shader_precision_format",2);
+   public static function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int) : ShaderPrecisionFormat
+      { return nme_gl_get_shader_precision_format(shadertype,precisiontype); }
 
    static var nme_gl_get_shader_info_log = load("nme_gl_get_shader_info_log",1);
    public static function getShaderInfoLog(shader:Shader) : String
       { return nme_gl_get_shader_info_log(shader.id); }
 
+   static var nme_gl_get_shader_source = load("nme_gl_get_shader_source",1);
+   public static function getShaderSource(shader:Shader) : String
+      { return nme_gl_get_shader_source(shader.id); }
 
-   public static function getShaderSource(shader:Shader) : String { return ""; }
+   static var nme_gl_get_tex_parameter = load("nme_gl_get_tex_parameter",2);
+   public static function getTexParameter(target:Int, pname:Int) : Dynamic
+      { return nme_gl_get_tex_parameter(target,pname); }
 
-   public static function getTexParameter(target:Int, pname:Int) : Dynamic { return null; }
-
-   public static function getUniform(program:Program, location:UniformLocation) : Dynamic { return null; }
+   static var nme_gl_get_uniform = load("nme_gl_get_uniform",2);
+   public static function getUniform(program:Program, location:UniformLocation) : Dynamic
+      { return nme_gl_get_uniform(program.id, location); }
 
    static var nme_gl_get_uniform_location = load("nme_gl_get_uniform_location",2);
    public static function getUniformLocation(program:Program, name:String)
       { return nme_gl_get_uniform_location(program.id,name); }
 
-   public static function getVertexAttrib(index:Int, pname:Int) : Dynamic { return null; }
+   static var nme_gl_get_vertex_attrib = load("nme_gl_get_vertex_attrib",2);
+   public static function getVertexAttrib(index:Int, pname:Int) : Dynamic
+      { return nme_gl_get_vertex_attrib(index,pname); }
 
-   public static function getVertexAttribOffset(index:Int, pname:Int) : Int { return 0; }
+   static var nme_gl_get_vertex_attrib_offset = load("nme_gl_get_vertex_attrib_offset",2);
+   public static function getVertexAttribOffset(index:Int, pname:Int) : Int
+      { return nme_gl_get_vertex_attrib_offset(index,pname); }
 
-   public static function hint(target:Int, mode:Int):Void { }
+   static var nme_gl_hint = load("nme_gl_hint",2);
+   public static function hint(target:Int, mode:Int):Void
+      { nme_gl_hint(target,mode); }
 
-   public static function isBuffer(buffer:Buffer) : Bool { return buffer.id>0; }
-   public static function isEnabled(cap:Int) : Bool { return false; }
-   public static function isFramebuffer(framebuffer:Framebuffer) : Bool { return false; }
-   public static function isProgram(program:Program) : Bool { return false; }
-   public static function isRenderbuffer(renderbuffer:Renderbuffer) : Bool { return false; }
-   public static function isShader(shader:Shader) : Bool { return false; }
-   public static function isTexture(texture:Texture) : Bool { return false; }
+   static var nme_gl_is_buffer = load("nme_gl_is_buffer",1);
+   public static function isBuffer(buffer:Buffer) : Bool
+       { return buffer!=null && buffer.id>0 && nme_gl_is_buffer(buffer.id); }
 
-   public static function lineWidth(width:Float):Void { }
+   static var nme_gl_is_enabled = load("nme_gl_is_enabled",1);
+   public static function isEnabled(cap:Int) : Bool
+       { return nme_gl_is_enabled(cap); }
+
+   static var nme_gl_is_framebuffer = load("nme_gl_is_framebuffer",1);
+   public static function isFramebuffer(framebuffer:Framebuffer) : Bool
+       { return framebuffer!=null && framebuffer.id>0 && nme_gl_is_framebuffer(framebuffer.id); }
+
+   static var nme_gl_is_program = load("nme_gl_is_program",1);
+   public static function isProgram(program:Program) : Bool
+       { return program!=null && program.id>0 && nme_gl_is_program(program.id); }
+
+   static var nme_gl_is_renderbuffer = load("nme_gl_is_renderbuffer",1);
+   public static function isRenderbuffer(renderbuffer:Renderbuffer) : Bool
+       { return renderbuffer!=null && renderbuffer.id>0 && nme_gl_is_renderbuffer(renderbuffer.id); }
+
+   static var nme_gl_is_shader = load("nme_gl_is_shader",1);
+   public static function isShader(shader:Shader) : Bool
+       { return shader!=null && shader.id>0 && nme_gl_is_shader(shader.id); }
+
+   static var nme_gl_is_texture = load("nme_gl_is_texture",1);
+   public static function isTexture(texture:Texture) : Bool
+       { return texture!=null && texture.id>0 && nme_gl_is_texture(texture.id); }
+
+   static var nme_gl_line_width = load("nme_gl_line_width",1);
+   public static function lineWidth(width:Float):Void
+       { nme_gl_line_width(width); }
 
    static var nme_gl_link_program = load("nme_gl_link_program",1);
-   public static function linkProgram(program:Program):Void { nme_gl_link_program(program.id); }
+   public static function linkProgram(program:Program):Void
+       { nme_gl_link_program(program.id); }
 
-   public static function pixelStorei(pname:Int, param:Int):Void { }
-   public static function polygonOffset(factor:Float, units:Float):Void { }
+
+   static var nme_gl_pixel_storei = load("nme_gl_pixel_storei",2);
+   public static function pixelStorei(pname:Int, param:Int):Void
+       { nme_gl_pixel_storei(pname,param); }
+
+   static var nme_gl_polygon_offset = load("nme_gl_polygon_offset",2);
+   public static function polygonOffset(factor:Float, units:Float):Void
+       { nme_gl_polygon_offset(factor,units); }
 
    public static function readPixels(x:Int, y:Int, width:Int, height:Int, 
                    format:Int, type:Int, pixels:ByteArray) : Void { }
@@ -854,7 +902,9 @@ class GL
    public static function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int) : Void
       { nme_gl_renderbuffer_storage(target, internalformat, width, height); }
 
-   public static function sampleCoverage(value:Float, invert:Bool):Void { }
+   static var nme_gl_sample_coverage = load("nme_gl_sample_coverage",2);
+   public static function sampleCoverage(value:Float, invert:Bool):Void
+      { nme_gl_sample_coverage(value,invert); }
 
    static var nme_gl_scissor = load("nme_gl_scissor",4);
    public static function scissor(x:Int, y:Int, width:Int, height:Int):Void
@@ -863,16 +913,31 @@ class GL
 
    static var nme_gl_shader_source = load("nme_gl_shader_source",2);
    public static function shaderSource(shader:Shader, source:String):Void
-   {
-     nme_gl_shader_source(shader.id, source);
-   }
+      { nme_gl_shader_source(shader.id, source); }
 
-   public static function stencilFunc(func:Int, ref:Int, mask:Int):Void { }
-   public static function stencilFuncSeparate(face:Int, func:Int, ref:Int, mask:Int):Void { }
-   public static function stencilMask(mask:Int):Void { }
-   public static function stencilMaskSeparate(face:Int, mask:Int):Void { }
-   public static function stencilOp(fail:Int, zfail:Int, zpass:Int):Void { }
-   public static function stencilOpSeparate(face:Int, fail:Int, zfail:Int, zpass:Int):Void { }
+   static var nme_gl_stencil_func = load("nme_gl_stencil_func",3);
+   public static function stencilFunc(func:Int, ref:Int, mask:Int):Void
+      { nme_gl_stencil_func(func,ref,mask); }
+
+   static var nme_gl_stencil_func_separate = load("nme_gl_stencil_func_separate",4);
+   public static function stencilFuncSeparate(face:Int, func:Int, ref:Int, mask:Int):Void
+      { nme_gl_stencil_func_separate(face,func,ref,mask); }
+
+   static var nme_gl_stencil_mask = load("nme_gl_stencil_mask",1);
+   public static function stencilMask(mask:Int):Void
+      { nme_gl_stencil_mask(mask); }
+
+   static var nme_gl_stencil_mask_separate = load("nme_gl_stencil_mask_separate",2);
+   public static function stencilMaskSeparate(face:Int, mask:Int):Void
+      { nme_gl_stencil_mask_separate(face,mask); }
+
+   static var nme_gl_stencil_op = load("nme_gl_stencil_op",3);
+   public static function stencilOp(fail:Int, zfail:Int, zpass:Int):Void
+      { nme_gl_stencil_op(fail,zfail,zpass); }
+
+   static var nme_gl_stencil_op_separate = load("nme_gl_stencil_op_separate",4);
+   public static function stencilOpSeparate(face:Int, fail:Int, zfail:Int, zpass:Int):Void
+      { nme_gl_stencil_op_separate(face,fail,zfail,zpass); }
 
    static var nme_gl_tex_image_2d = load("nme_gl_tex_image_2d",-1);
    public static function texImage2D(target:Int, level:Int, internalformat:Int, 
@@ -895,25 +960,59 @@ class GL
     { nme_gl_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format, type,
           pixels==null ? null : pixels.getByteBuffer(), pixels==null ? null : pixels.getStart() ); }
 
-   public static function uniform1f( location:UniformLocation, x:Float):Void { }
-   public static function uniform1fv(location:UniformLocation, x:Float32Array):Void { }
 
+   static var nme_gl_uniform1f = load("nme_gl_uniform1f",2);
+   public static function uniform1f( location:UniformLocation, x:Float):Void
+      { nme_gl_uniform1f(location,x); }
+   static var nme_gl_uniform1fv = load("nme_gl_uniform1fv",2);
+   public static function uniform1fv(location:UniformLocation, x:Array<Float>):Void
+      { nme_gl_uniform1fv(location,x); }
    static var nme_gl_uniform1i = load("nme_gl_uniform1i",2);
    public static function uniform1i( location:UniformLocation, x:Int)
       { nme_gl_uniform1i(location,x); }
-   public static function uniform1iv(location:UniformLocation, v:Array<Int>):Void { }
-   public static function uniform2f( location:UniformLocation, x:Float, y:Float):Void { }
-   public static function uniform2fv(location:UniformLocation, v:Float32Array):Void { }
-   public static function uniform2i( location:UniformLocation, x:Int, y:Int):Void { }
-   public static function uniform2iv(location:UniformLocation, v:Array<Int>):Void { }
-   public static function uniform3f( location:UniformLocation, x:Float, y:Float, z:Float):Void { }
-   public static function uniform3fv(location:UniformLocation, v:Float32Array):Void { }
-   public static function uniform3i( location:UniformLocation, x:Int, y:Int, z:Int):Void { }
-   public static function uniform3iv(location:UniformLocation, v:Array<Int>):Void { }
-   public static function uniform4f( location:UniformLocation, x:Float, y:Float, z:Float, w:Float):Void { }
-   public static function uniform4fv(location:UniformLocation, v:Float32Array):Void { }
-   public static function uniform4i( location:UniformLocation, x:Int, y:Int, z:Int, w:Int):Void { }
-   public static function uniform4iv(location:UniformLocation, v:Array<Int>): Void { }
+   static var nme_gl_uniform1iv = load("nme_gl_uniform1iv",2);
+   public static function uniform1iv(location:UniformLocation, v:Array<Int>):Void
+      { nme_gl_uniform1iv(location,v); }
+
+   static var nme_gl_uniform2f = load("nme_gl_uniform2f",3);
+   public static function uniform2f( location:UniformLocation, x:Float, y:Float):Void
+      { nme_gl_uniform2f(location,x,y); }
+   static var nme_gl_uniform2fv = load("nme_gl_uniform2fv",2);
+   public static function uniform2fv(location:UniformLocation, v:Array<Float>):Void
+      { nme_gl_uniform2fv(location,v); }
+   static var nme_gl_uniform2i = load("nme_gl_uniform2i",3);
+   public static function uniform2i( location:UniformLocation, x:Int, y:Int):Void
+      { nme_gl_uniform2i(location,x,y); }
+   static var nme_gl_uniform2iv = load("nme_gl_uniform2iv",2);
+   public static function uniform2iv(location:UniformLocation, v:Array<Int>):Void
+      { nme_gl_uniform2iv(location,v); }
+
+
+   static var nme_gl_uniform3f = load("nme_gl_uniform3f",4);
+   public static function uniform3f( location:UniformLocation, x:Float, y:Float, z:Float):Void
+      { nme_gl_uniform3f(location,x,y,z); }
+   static var nme_gl_uniform3fv = load("nme_gl_uniform3fv",2);
+   public static function uniform3fv(location:UniformLocation, v:Array<Float>):Void
+      { nme_gl_uniform3fv(location,v); }
+   static var nme_gl_uniform3i = load("nme_gl_uniform3i",4);
+   public static function uniform3i( location:UniformLocation, x:Int, y:Int, z:Int):Void
+      { nme_gl_uniform3i(location,x,y,z); }
+   static var nme_gl_uniform3iv = load("nme_gl_uniform3iv",2);
+   public static function uniform3iv(location:UniformLocation, v:Array<Int>):Void
+      { nme_gl_uniform3iv(location,v); }
+
+   static var nme_gl_uniform4f = load("nme_gl_uniform4f",5);
+   public static function uniform4f( location:UniformLocation, x:Float, y:Float, z:Float, w:Float):Void
+      { nme_gl_uniform4f(location,x,y,z,w); }
+   static var nme_gl_uniform4fv = load("nme_gl_uniform4fv",2);
+   public static function uniform4fv(location:UniformLocation, v:Array<Float>):Void
+      { nme_gl_uniform4fv(location,v); }
+   static var nme_gl_uniform4i = load("nme_gl_uniform4i",5);
+   public static function uniform4i( location:UniformLocation, x:Int, y:Int, z:Int, w:Int):Void
+      { nme_gl_uniform4i(location,x,y,z,w); }
+   static var nme_gl_uniform4iv = load("nme_gl_uniform4iv",2);
+   public static function uniform4iv(location:UniformLocation, v:Array<Int>): Void
+      { nme_gl_uniform4iv(location,v); }
 
    static var nme_gl_uniform_matrix = load("nme_gl_uniform_matrix",4);
    public static function uniformMatrix2fv(location:UniformLocation, transpose:Bool, v:Float32Array)
@@ -929,16 +1028,40 @@ class GL
    static var nme_gl_use_program = load("nme_gl_use_program",1);
    public static function useProgram(program:Program):Void
       { nme_gl_use_program( program==null ? 0 : program.id ); }
-   public static function validateProgram(program:Program):Void { }
 
-   public static function vertexAttrib1f(indx:Int, x:Float):Void { }
-   public static function vertexAttrib1fv(indx:Int, values:Float32Array ):Void { }
-   public static function vertexAttrib2f(indx:Int, x:Float, y:Float):Void { }
-   public static function vertexAttrib2fv(indx:Int, values:Float32Array ):Void { }
-   public static function vertexAttrib3f(indx:Int, x:Float, y:Float, z:Float):Void { }
-   public static function vertexAttrib3fv(indx:Int, values:Float32Array ):Void { }
-   public static function vertexAttrib4f(indx:Int, x:Float, y:Float, z:Float, w:Float):Void { }
-   public static function vertexAttrib4fv(indx:Int, values:Float32Array ):Void { }
+
+   static var nme_gl_validate_program = load("nme_gl_validate_program",1);
+   public static function validateProgram(program:Program):Void
+      { nme_gl_validate_program(program.id); }
+
+   static var nme_gl_vertex_attrib1f = load("nme_gl_vertex_attrib1f",2);
+   public static function vertexAttrib1f(indx:Int, x:Float):Void
+      { nme_gl_vertex_attrib1f(indx,x); }
+   static var nme_gl_vertex_attrib1fv = load("nme_gl_vertex_attrib1fv",2);
+   public static function vertexAttrib1fv(indx:Int, values:Array<Float> ):Void
+      { nme_gl_vertex_attrib1fv(indx,values); }
+
+   static var nme_gl_vertex_attrib2f = load("nme_gl_vertex_attrib2f",3);
+   public static function vertexAttrib2f(indx:Int, x:Float, y:Float):Void
+      { nme_gl_vertex_attrib2f(indx,x,y); }
+   static var nme_gl_vertex_attrib2fv = load("nme_gl_vertex_attrib2fv",2);
+   public static function vertexAttrib2fv(indx:Int, values:Array<Float> ):Void
+      { nme_gl_vertex_attrib2fv(indx,values); }
+
+   static var nme_gl_vertex_attrib3f = load("nme_gl_vertex_attrib3f",4);
+   public static function vertexAttrib3f(indx:Int, x:Float, y:Float, z:Float):Void
+      { nme_gl_vertex_attrib3f(indx,x,y,z); }
+   static var nme_gl_vertex_attrib3fv = load("nme_gl_vertex_attrib3fv",2);
+   public static function vertexAttrib3fv(indx:Int, values:Array<Float> ):Void
+      { nme_gl_vertex_attrib3fv(indx,values); }
+
+   static var nme_gl_vertex_attrib4f = load("nme_gl_vertex_attrib4f",5);
+   public static function vertexAttrib4f(indx:Int, x:Float, y:Float, z:Float, w:Float):Void
+      { nme_gl_vertex_attrib4f(indx,x,y,z,w); }
+   static var nme_gl_vertex_attrib4fv = load("nme_gl_vertex_attrib4fv",2);
+   public static function vertexAttrib4fv(indx:Int, values:Array<Float> ):Void
+      { nme_gl_vertex_attrib4fv(indx,values); }
+
 
    static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer",-1);
    public static function vertexAttribPointer(indx:Int, size:Int, type:Int, 
