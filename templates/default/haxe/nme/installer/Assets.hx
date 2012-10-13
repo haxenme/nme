@@ -41,7 +41,7 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id) == "image") {
+		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "image") {
 			
 			if (useCache && cachedBitmapData.exists (id)) {
 				
@@ -95,7 +95,7 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id) == "font") {
+		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "font") {
 			
 			return new Font (resourceNames.get (id));
 			
@@ -125,11 +125,11 @@ class Assets {
 		
 		if (resourceTypes.exists (id)) {
 			
-			if (resourceTypes.get (id) == "sound") {
+			if (resourceTypes.get (id).toLowerCase () == "sound") {
 				
 				return new Sound (new URLRequest (resourceNames.get (id)), null, false);
 				
-			} else if (resourceTypes.get (id) == "music") {
+			} else if (resourceTypes.get (id).toLowerCase () == "music") {
 				
 				return new Sound (new URLRequest (resourceNames.get (id)), null, true);
 				

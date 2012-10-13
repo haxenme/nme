@@ -648,8 +648,6 @@ class InstallerBase {
 				
 			}
 			
-			Sys.println (version);
-			
 			defines.set ("APP_BUILD_NUMBER", Std.string (version));
 			
 			try {
