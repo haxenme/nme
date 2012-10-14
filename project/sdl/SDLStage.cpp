@@ -57,7 +57,8 @@ static int sgDesktopHeight = 0;
 
 static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
-static bool sgAllowShaders = false;
+static int  sgShaderFlags = 0;
+static bool sgIsOGL2 = false;
 
 enum { NO_TOUCH = -1 };
 
@@ -237,7 +238,7 @@ public:
 
       if (mIsOpenGL)
       {
-         mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
+         mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
          mOpenGLContext->IncRef();
          mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
          mPrimarySurface = new HardwareSurface(mOpenGLContext);
@@ -295,7 +296,7 @@ public:
          {
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
+            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
             mOpenGLContext->SetWindowSize(inWidth, inHeight);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -338,7 +339,7 @@ public:
          {
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgAllowShaders);
+            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
             mOpenGLContext->SetWindowSize(w, h);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -626,7 +627,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool opengl = (inFlags & wfHardware) != 0;
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
-   sgAllowShaders = (inFlags & wfAllowShaders) != 0;
+   sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 
    Rect r(100,100,inWidth,inHeight);
 
@@ -712,65 +713,105 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    SDL_Surface* screen = 0;
    bool is_opengl = false;
-   int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
-   
-   //int bpp = info->vfmt->BitsPerPixel;
-   int startingPass = 0;
-   
-	#if defined (WEBOS) || defined (HX_WINDOWS) || defined (BLACKBERRY)
-	startingPass = 2;
-	#endif
+   sgIsOGL2 = false;
 
    if (opengl)
    {
-      for(int pass=startingPass;pass<3;pass++)
+      int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
+   
+      //int bpp = info->vfmt->BitsPerPixel;
+      int startingPass = 0;
+
+      // Try for 24:8  depth:stencil
+      if (inFlags & wfStencilBuffer)
+         startingPass = 1;
+ 
+	   #if defined (WEBOS) || defined (BLACKBERRY)
+      // Start at 16 bits...
+	   startingPass = 2;
+	   #endif
+
+      // No need to loop over depth
+      if (!(inFlags & wfDepthBuffer))
+         startingPass = 2;
+
+      int oglLevelPasses = 1;
+
+      #ifdef WEBOS
+      // Try 2 then 1 ?
+      if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
+         oglLevelPasses = 2;
+      #endif
+
+      // Find config...
+
+      for(int oglPass = 0; oglPass< oglLevelPasses && !is_opengl; oglPass++)
       {
-         /* Initialize the display */
-         for(int aa_pass = aa_tries; aa_pass>=0; --aa_pass)
+         int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
+        
+   
+         for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)
          {
-            SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
-            SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
-            SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
-			#ifdef WEBOS
-		 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, sgAllowShaders ? 2 : 1);
-         	#endif
-            SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - pass*8 );
-            SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-			
-			if (aa_tries > 0)
-			{
-               SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
-               SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
-			}
-
-            if ( inFlags & wfVSync )
+            /* Initialize the display */
+            for(int aa_pass = aa_tries; aa_pass>=0 && !is_opengl; --aa_pass)
             {
-               SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-            }
-
-            sdl_flags |= SDL_OPENGL;
-			
-			#if defined(BLACKBERRY) || defined(WEBOS)
-			if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
-			#else
-            if (!SDL_VideoModeOK( use_w, use_h, 32, sdl_flags) || !(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
-			#endif
-            {
-               if (pass==2 && aa_pass==0)
+               SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
+               SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
+               SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+   
+               #ifdef WEBOS
+               SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, level);
+               #endif
+               // try 32 24 or 16 bit depth...
+               if (inFlags & wfDepthBuffer)
+                  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - depthPass*8 );
+   
+               if (inFlags & wfStencilBuffer)
+                  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8 );
+   
+               SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+   			
+               if (aa_tries > 0)
                {
-                  sdl_flags &= ~SDL_OPENGL;
-                  fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
+                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
                }
-            }
-            else
-            {
-              is_opengl = true;
-              break;
+   
+               if ( inFlags & wfVSync )
+               {
+                  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+               }
+   
+               sdl_flags |= SDL_OPENGL;
+   			
+               #if defined(BLACKBERRY) || defined(WEBOS)
+               if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
+               #else
+               if (!SDL_VideoModeOK( use_w, use_h, 32, sdl_flags) || !(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
+               #endif
+               {
+                  if (depthPass==2 && aa_pass==0 && oglPass==oglLevelPasses-1)
+                  {
+                     sdl_flags &= ~SDL_OPENGL;
+                     fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+                  }
+               }
+               else
+               {
+                  is_opengl = true;
+                  #ifdef WEBOS
+                  sgIsOGL2 = level==2;
+                  #else
+                  // TODO: check extensions support
+                  sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
+                  #endif
+                  break;
+               }
             }
          }
       }
    }
-
+   
    if (!screen)
    {
       sdl_flags |= SDL_DOUBLEBUF;

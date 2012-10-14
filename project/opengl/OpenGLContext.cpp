@@ -282,7 +282,12 @@ public:
             last_col = -1;
             SetModulatingTransform(inState.mColourTransform);
             if (arrays.mFlags & HardwareArrays::RADIAL )
-               SetRadialGradient(true, ((arrays.mFlags & HardwareArrays::FOCAL_MASK)>>8) / 255.0 );
+            {
+               float focus = ((arrays.mFlags & HardwareArrays::FOCAL_MASK)>>8) / 256.0;
+               if (arrays.mFlags & HardwareArrays::FOCAL_SIGN)
+                  focus = -focus;
+               SetRadialGradient(true, focus );
+            }
             else
                SetRadialGradient(0,0);
          }
@@ -293,7 +298,7 @@ public:
             SetModulatingTransform(0);
          }
 
-         if (arrays.mColours.size() == vert.size())
+         if (arrays.mColours.size() == vert.size() )
          {
             SetColourArray(&arrays.mColours[0]);
             SetModulatingTransform(inState.mColourTransform);
@@ -712,7 +717,12 @@ public:
       if (mTexCoords)
       {
          if (mIsRadial)
-            id = gpuRadialGradient;
+         {
+            if (mRadialFocus!=0)
+               id = gpuRadialFocusGradient;
+            else
+               id = gpuRadialGradient;
+         }
          else if (mColourTransform && !mColourTransform->IsIdentity())
             id = gpuTextureTransform;
          else if (mColourArray)
@@ -750,13 +760,16 @@ public:
       if (mTexCoords)
       {
          prog->setTexCoordData(mTexCoords);
-         mTextureSurface->Bind(*this, prog->getTextureSlot() );
+         mTextureSurface->Bind(*this,0);
       }
       if (mColourArray)
          prog->setColourData(mColourArray);
       
       if (mColourTransform)
          prog->setColourTransform(mColourTransform);
+
+      if (id==gpuRadialFocusGradient)
+         prog->setGradientFocus(mRadialFocus);
 
       return true;
    }
@@ -799,7 +812,7 @@ public:
 
       mCurrentProg->bind();
       mCurrentProg->setTint(mTint);
-      mBitmapSurface->Bind(*this, mCurrentProg->getTextureSlot() );
+      mBitmapSurface->Bind(*this,0);
       mCurrentProg->setTransform(mBitmapTrans);
       // TODO: Need replacement call for GLES2
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);

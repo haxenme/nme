@@ -161,8 +161,15 @@ public:
             if (!grad->isLinear)
             {
                mGradFlags |= HardwareArrays::RADIAL;
-               if (grad->focalPointRatio>0)
-                  mGradFlags |= grad->focalPointRatio < 1 ? ((int)(grad->focalPointRatio*255.0) << 8) : 0;
+               if (grad->focalPointRatio!=0)
+               {
+                  int r = fabs(grad->focalPointRatio)*256.0;
+                  if (r>255) r = 255;
+                  
+                  mGradFlags |= (r << 8);
+                  if (grad->focalPointRatio<0)
+                     mGradFlags |= HardwareArrays::FOCAL_SIGN;
+               }
             }
             //return true;
          }

@@ -118,6 +118,9 @@ public:
       mTextureSlot = glGetUniformLocation(mProgramId, "uImage0");
       mColourOffsetSlot = glGetUniformLocation(mProgramId, "uColourOffset");
       mColourScaleSlot = glGetUniformLocation(mProgramId, "uColourScale");
+      mFXSlot = glGetUniformLocation(mProgramId, "mFX");
+      mASlot = glGetUniformLocation(mProgramId, "mA");
+      mOn2ASlot = glGetUniformLocation(mProgramId, "mOn2A");
    }
 
    virtual bool bind()
@@ -244,7 +247,25 @@ public:
                                 ((inColour >> 24) & 0xff) * one_on_255 );
    }
 
-   //virtual void setGradientFocus(float inFocus) = 0;
+   virtual void setGradientFocus(float inFocus)
+   {
+      if (mASlot>=0)
+      {
+	      double fx = inFocus;
+			if (fx < -0.99) fx = -0.99;
+			else if (fx > 0.99) fx = 0.99;
+			
+			// mFY = 0;	mFY can be set to zero, since rotating the matrix
+			//  can also compensate for this.
+			
+			double a = (fx * fx - 1.0);
+			double on2a = 1.0 / (2.0 * a);
+			a *= 4.0;
+         glUniform1f(mASlot,a);
+         glUniform1f(mFXSlot,fx);
+         glUniform1f(mOn2ASlot,on2a);
+      }
+   }
 
    const char *mVertProg;
    const char *mFragProg;
@@ -263,6 +284,9 @@ public:
    GLint     mColourOffsetSlot;
    GLint     mTransformSlot;
    GLint     mTintSlot;
+   GLint     mASlot;
+   GLint     mFXSlot;
+   GLint     mOn2ASlot;
 };
 
 const char *gSolidVert = 
@@ -373,6 +397,27 @@ const char *gRadialTextureFrag =
 "}\n";
 
 
+const char *gRadialFocusTextureFrag =
+"varying vec2 vTexCoord;\n"
+"uniform sampler2D uImage0;\n"
+"uniform float mA;\n"
+"uniform float mFX;\n"
+"uniform float mOn2A;\n"
+"void main(void)\n"
+"{\n"
+"   float GX = vTexCoord.x - mFX;\n"
+"   float C = GX*GX + vTexCoord.y*vTexCoord.y;\n"
+"   float B = 2.0*GX * mFX;\n"
+"   float det =B*B - mA*C;\n"
+"   float rad;\n"
+"   if (det<0.0)\n"
+"      rad = -B * mOn2A;\n"
+"   else\n"
+"      rad = (-B - sqrt(det)) * mOn2A;"
+"   gl_FragColor = texture2D(uImage0,vec2(rad,0));\n"
+"}\n";
+
+
 const char *gTextureColourFrag =
 "uniform sampler2D uImage0;\n"
 "varying vec2 vTexCoord;\n"
@@ -409,6 +454,8 @@ GPUProg *GPUProg::create(GPUProgID inID)
          return new OGLProg( gColourVert, gColourFrag );
       case gpuRadialGradient:
          return new OGLProg( gTextureVert, gRadialTextureFrag );
+      case gpuRadialFocusGradient:
+         return new OGLProg( gTextureVert, gRadialFocusTextureFrag );
       case gpuTexture:
          return new OGLProg( gTextureVert, gTextureFrag );
       case gpuTextureColourArray:

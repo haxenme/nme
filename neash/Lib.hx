@@ -20,14 +20,17 @@ import neko.Sys;
 class Lib
 {
    
-   static public var FULLSCREEN = 0x0001;
-   static public var BORDERLESS = 0x0002;
-   static public var RESIZABLE = 0x0004;
-   static public var HARDWARE = 0x0008;
-   static public var VSYNC = 0x0010;
-   static public var HW_AA = 0x0020;
-   static public var HW_AA_HIRES = 0x0060;
-   static public var ALLOW_SHADERS = 0x0080;
+   static public var FULLSCREEN      = 0x0001;
+   static public var BORDERLESS      = 0x0002;
+   static public var RESIZABLE       = 0x0004;
+   static public var HARDWARE        = 0x0008;
+   static public var VSYNC           = 0x0010;
+   static public var HW_AA           = 0x0020;
+   static public var HW_AA_HIRES     = 0x0060;
+   static public var ALLOW_SHADERS   = 0x0080;
+   static public var REQUIRE_SHADERS = 0x0100;
+   static public var DEPTH_BUFFER    = 0x0200;
+   static public var STENCIL_BUFFER  = 0x0400;
    
    public static var current(nmeGetCurrent, null):MovieClip;
    public static var initHeight(default, null):Int;
