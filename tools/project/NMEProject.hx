@@ -467,6 +467,11 @@ class NMEProject {
 			//Sys.println ("context." + field + " = " + Reflect.field (context, field));
 		}
 		
+		context.WIN_ALLOW_SHADERS = true;
+		context.WIN_REQUIRE_SHADERS = false;
+		context.WIN_DEPTH_BUFFER = false;
+		context.WIN_STENCIL_BUFFER = false;
+		
 		return context;
 		
 	}

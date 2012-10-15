@@ -18,6 +18,9 @@ class Lib
 	public static var HW_AA = 0x0020;
 	public static var HW_AA_HIRES = 0x0060;
 	public static var ALLOW_SHADERS = 0x0080;
+	public static var REQUIRE_SHADERS = 0x0100;
+	public static var DEPTH_BUFFER = 0x0200;
+	public static var STENCIL_BUFFER = 0x0400;
 	
 	public static var company(nmeGetCompany, null):String;
 	public static var current (nmeGetCurrent, null):MovieClip;
