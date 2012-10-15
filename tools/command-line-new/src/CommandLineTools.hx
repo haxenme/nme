@@ -424,8 +424,6 @@ class CommandLineTools {
 			
 		}
 		
-		try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
-		
 		var target = null;
 		
 		switch (targetName) {
@@ -469,11 +467,13 @@ class CommandLineTools {
 		NMEProject._targetFlags = targetFlags;
 		NMEProject._templatePaths = [ nme + "/templates/default", nme + "/tools/command-line" ];
 		
+		try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
+		
 		var project = null;
 		
 		if (Path.extension (projectFile) == "nmml" || Path.extension (projectFile) == "xml") {
 			
-			project = new NMMLParser (projectFile, userDefines, includePaths);
+			project = new NMMLParser (Path.withoutDirectory (projectFile), userDefines, includePaths);
 			
 		} else {
 			

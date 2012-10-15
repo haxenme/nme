@@ -97,6 +97,15 @@ class ApplicationMain
 	}
 	
 	
+	#if neko
+	public static function __init__ () {
+		
+		untyped $loader.path = $array ("@executable_path/", $loader.path);
+		
+	}
+	#end
+	
+	
 	public static function getAsset(inName:String):Dynamic
 	{
 		#if nme

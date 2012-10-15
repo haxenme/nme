@@ -13,6 +13,7 @@ class MacPlatform implements IPlatformTool {
 	private var executableDirectory:String;
 	private var executablePath:String;
 	private var targetDirectory:String;
+	private var useNeko:Bool;
 	
 	
 	public function build (project:NMEProject):Void {
@@ -24,7 +25,7 @@ class MacPlatform implements IPlatformTool {
 		PathHelper.mkdir (targetDirectory);
 		ProcessHelper.runCommand ("", "haxe", [ hxml ]);
 		
-		if (project.targetFlags.exists ("neko")) {
+		if (useNeko) {
 			
 			NekoHelper.createExecutable (project.templatePaths, "Mac", targetDirectory + "/obj/ApplicationMain.n", executablePath);
 			NekoHelper.copyLibraries (project.templatePaths, "Mac", executableDirectory);
@@ -35,7 +36,11 @@ class MacPlatform implements IPlatformTool {
 			
 		}
 		
-		ProcessHelper.runCommand ("", "chmod", [ "755", executablePath ]);
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS) {
+			
+			ProcessHelper.runCommand ("", "chmod", [ "755", executablePath ]);
+			
+		}
 		
 	}
 	
@@ -57,9 +62,10 @@ class MacPlatform implements IPlatformTool {
 		
 		targetDirectory = project.app.path + "/mac/cpp";
 		
-		if (project.targetFlags.exists ("neko")) {
+		if (project.targetFlags.exists ("neko") || project.target != PlatformHelper.hostPlatform) {
 			
 			targetDirectory = project.app.path + "/mac/neko";
+			useNeko = true;
 			
 		}
 		
@@ -73,9 +79,12 @@ class MacPlatform implements IPlatformTool {
 	
 	public function run (project:NMEProject, arguments:Array <String>):Void {
 		
-		initialize (project);
-		
-		ProcessHelper.runCommand (executableDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
+		if (project.target == PlatformHelper.hostPlatform) {
+			
+			initialize (project);
+			ProcessHelper.runCommand (executableDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
+			
+		}
 		
 	}
 	
@@ -97,7 +106,7 @@ class MacPlatform implements IPlatformTool {
 		SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
 		
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", targetDirectory + "/haxe", context);
-		FileHelper.recursiveCopyTemplate (project.templatePaths, (project.targetFlags.exists ("neko") ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
+		FileHelper.recursiveCopyTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
 		FileHelper.copyFileTemplate (project.templatePaths, "mac/Info.plist", targetDirectory + "/bin/" + project.app.file + ".app/Contents/Info.plist", context);
 		
 		for (ndll in project.ndlls) {
