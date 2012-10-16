@@ -26,8 +26,8 @@ class LinuxPlatform implements IPlatformTool {
 		
 		if (useNeko) {
 			
-			NekoHelper.createExecutable (project.templatePaths, "Linux" + (is64 ? "64" : ""), targetDirectory + "/obj/ApplicationMain.n", executablePath);
-			NekoHelper.copyLibraries (project.templatePaths, "Linux" + (is64 ? "64" : ""), applicationDirectory);
+			NekoHelper.createExecutable (project.templatePaths, "linux" + (is64 ? "64" : ""), targetDirectory + "/obj/ApplicationMain.n", executablePath);
+			NekoHelper.copyLibraries (project.templatePaths, "linux" + (is64 ? "64" : ""), applicationDirectory);
 			
 		} else {
 			
@@ -59,9 +59,9 @@ class LinuxPlatform implements IPlatformTool {
 	
 	private function initialize (project:NMEProject):Void {
 		
-		for (architecture in architectures) {
+		for (architecture in project.architectures) {
 			
-			if (architecture == Architecture.X64) {
+			if (architecture == Architecture.X86_64) {
 				
 				is64 = true;
 				
@@ -69,11 +69,11 @@ class LinuxPlatform implements IPlatformTool {
 			
 		}
 		
-		targetDirectory = project.app.path + "/linux/cpp";
+		targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/cpp";
 		
 		if (project.targetFlags.exists ("neko") || project.target != PlatformHelper.hostPlatform) {
 			
-			targetDirectory = project.app.path + "/linux/neko";
+			targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/neko";
 			useNeko = true;
 			
 		}
@@ -89,7 +89,7 @@ class LinuxPlatform implements IPlatformTool {
 		if (project.target == PlatformHelper.hostPlatform) {
 			
 			initialize (project);
-			ProcessHelper.runCommand (executableDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
+			ProcessHelper.runCommand (applicationDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
 			
 		}
 		
@@ -98,12 +98,20 @@ class LinuxPlatform implements IPlatformTool {
 	
 	public function update (project:NMEProject):Void {
 		
+		project = project.clone ();
 		initialize (project);
+		
+		if (is64) {
+			
+			project.haxedefs.push ("HXCPP_M64");
+			
+		}
 		
 		var context = project.templateContext;
 		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
 		context.CPP_DIR = targetDirectory + "/obj/";
-		context.BUILD_DIR = project.app.path + "/linux";
+		context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "");
+		context.WIN_ALLOW_SHADERS = false;
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");
@@ -116,7 +124,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		for (ndll in project.ndlls) {
 			
-			FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), executableDirectory, project.debug);
+			FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
 			
 		}
 		

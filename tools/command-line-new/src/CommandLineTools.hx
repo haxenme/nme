@@ -7,6 +7,7 @@ import platforms.AndroidPlatform;
 import platforms.BlackBerryPlatform;
 import platforms.IOSPlatform;
 import platforms.IPlatformTool;
+import platforms.LinuxPlatform;
 import platforms.MacPlatform;
 import sys.io.File;
 import sys.FileSystem;
@@ -70,7 +71,8 @@ class CommandLineTools {
 				
 			case Platform.LINUX:
 				
-				//
+				platform = new LinuxPlatform ();
+				metaFields = Meta.getFields (LinuxPlatform);
 				
 			case Platform.FLASH:
 				
@@ -484,6 +486,7 @@ class CommandLineTools {
 		var config = getHXCPPConfig ();
 		project.merge (config);
 		
+		project.architectures = project.architectures.concat (architectures);
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		project.haxedefs.push ("nme_install_tool");
 		

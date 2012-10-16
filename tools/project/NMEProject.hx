@@ -109,6 +109,75 @@ class NMEProject {
 	}
 	
 	
+	public function clone ():NMEProject {
+		
+		var project = new NMEProject ();
+		
+		ObjectHelper.copyFields (app, project.app);
+		project.architectures = architectures.copy ();
+		
+		for (asset in assets) {
+			
+			project.assets.push (asset.clone ());
+			
+		}
+		
+		ObjectHelper.copyFields (certificate, project.certificate);
+		project.command = command;
+		project.debug = debug;
+		project.dependencies = dependencies.copy ();
+		
+		for (key in environment.keys ()) {
+			
+			project.environment.set (key, environment.get (key));
+			
+		}
+		
+		project.haxedefs = haxedefs.copy ();
+		project.haxeflags = haxeflags.copy ();
+		project.haxelibs = haxelibs.copy ();
+		
+		for (icon in icons) {
+			
+			project.icons.push (icon.clone ());
+			
+		}
+		
+		project.javaPaths = javaPaths.copy ();
+		
+		for (library in libraries) {
+			
+			project.libraries.push (library.clone ());
+			
+		}
+		
+		ObjectHelper.copyFields (meta, project.meta);
+		
+		for (ndll in ndlls) {
+			
+			project.ndlls.push (ndll.clone ());
+			
+		}
+		
+		project.platformType = platformType;
+		project.sources = sources.copy ();
+		project.target = target;
+		
+		for (key in targetFlags.keys ()) {
+			
+			project.targetFlags.set (key, targetFlags.get (key));
+			
+		}
+		
+		project.templatePaths = templatePaths.copy ();
+		
+		ObjectHelper.copyFields (window, project.window);
+		
+		return project;
+		
+	}
+	
+	
 	private function filter (text:String, include:Array <String> = null, exclude:Array <String> = null):Bool {
 		
 		if (include == null) {
