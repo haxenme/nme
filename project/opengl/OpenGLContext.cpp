@@ -181,16 +181,21 @@ public:
       if (mQuality>=sqBest)
          glEnable(GL_LINE_SMOOTH);
       mLineWidth = 99999;
-      // TODO: Need replacement call for GLES2
-      glEnableClientState(GL_VERTEX_ARRAY);
+
       // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
       sgDrawCount = 0;
       sgDrawBitmap = 0;
       sgBufferCount = 0;
+      OnBeginRender();
    }
    void EndRender()
    {
 
+   }
+
+   virtual void OnBeginRender()
+   {
+      glEnableClientState(GL_VERTEX_ARRAY);
    }
 
 
@@ -216,9 +221,9 @@ public:
       glLoadMatrixf(matrix);
    }
 
+
    void Render(const RenderState &inState, const HardwareCalls &inCalls )
    {
-      
       glEnable( GL_BLEND );
       SetViewport(inState.mClipRect);
 
@@ -659,6 +664,11 @@ public:
          delete mProg[i];
    }
 
+   void OnBeginRender()
+   {
+      // Do nothing
+   }
+
    virtual void setOrtho(float x0,float x1, float y0, float y1)
    {
       mScaleX = 2.0/(x1-x0);
@@ -742,11 +752,13 @@ public:
          else
             id = gpuSolid;
       }
+
       if (id==gpuNone)
          return false;
 
       if (!mProg[id])
          mProg[id] = GPUProg::create(id);
+
       if (!mProg[id])
          return false;
 
@@ -879,9 +891,17 @@ void InitExtensions()
    }
 }
 
+
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
 {
    HardwareContext *ctx;
+
+   #ifdef ANDROID
+   const char *version = (const char *)glGetString(GL_VERSION);
+   if (version)
+      shaders = version[10] == '2';
+   ELOG("VERSION %s (%c), pipeline = %s", version, version==0 ? '?' : version[10], shaders ? "programmable" : "fixed");
+   #endif
    
    if (shaders)
    {

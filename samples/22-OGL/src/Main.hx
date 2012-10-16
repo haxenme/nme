@@ -21,6 +21,7 @@ class Utils
       GL.compileShader(shader);
       if (GL.getShaderParameter(shader, GL.COMPILE_STATUS)==0)
       {
+         trace("--- ERR ---\n" + source);
          var err = GL.getShaderInfoLog(shader);
          if (err!="")
             throw err;
@@ -383,7 +384,7 @@ class Main extends Sprite
 
          // Copy screen rect into different sized texture to create stretch/swirl effect....
          quad.bindTexture();
-         GL.copyTexImage2D(GL.TEXTURE_2D, 0, GL.RGBA,
+         GL.copyTexImage2D(GL.TEXTURE_2D, 0, GL.RGB,
              Std.int(rect.x), Std.int(rect.y), Std.int(rect.width-1), Std.int(rect.height-1), 0);
 
          GL.useProgram(null);
