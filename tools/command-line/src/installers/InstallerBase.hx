@@ -724,7 +724,8 @@ class InstallerBase {
 		setDefault ("WIN_FPS", "60");
 		setDefault ("WIN_BACKGROUND", "0xffffff");
 		setDefault ("WIN_HARDWARE", "true");
-		setDefault ("WIN_ALLOW_SHADERS", "true");
+      // Set this to false until the feature is fully debugged....
+		setDefault ("WIN_ALLOW_SHADERS", "false");
 		setDefault ("WIN_REQUIRE_SHADERS", "false");
 		setDefault ("WIN_DEPTH_BUFFER", "false");
 		setDefault ("WIN_STENCIL_BUFFER", "false");
