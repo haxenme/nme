@@ -15,14 +15,14 @@ class SoundChannel extends EventDispatcher
 	public var position(nmeGetPosition, null):Float;
 	public var soundTransform(nmeGetTransform, nmeSetTransform):SoundTransform;
 
-   public static var nmeDynamicSoundCount = 0;
+	public static var nmeDynamicSoundCount = 0;
 	
 	private static var nmeIncompleteList = new Array<SoundChannel>();
 	
 	/** @private */ private var nmeHandle:Dynamic;
 	/** @private */ private var nmeTransform:SoundTransform;
 	/** @private */ public var nmeDataProvider:EventDispatcher;
-	
+	/** @private */ private var nmeSoundComplete:Bool;	
 	
 	public function new(inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform)
 	{
@@ -32,11 +32,15 @@ class SoundChannel extends EventDispatcher
 			nmeTransform = sndTransform.clone();
 		}
 		
-	    if (inSoundHandle!=null)
-		   nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
+		if (inSoundHandle!=null) {
+			nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
+		}
 		
-		if (nmeHandle != null)
+		if (nmeHandle != null) {
 			nmeIncompleteList.push(this);	
+		}
+			
+		nmeSoundComplete = false;
 	}
 
 	public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher)
@@ -54,29 +58,39 @@ class SoundChannel extends EventDispatcher
 	
 	/** @private */ private function nmeCheckComplete():Bool
 	{
-		if (nmeHandle != null )
+		if (nmeSoundComplete == false) 
 		{
-         if (nmeDataProvider!=null && nme_sound_channel_needs_data(nmeHandle))
-         {
-            var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
-            request.position = nme_sound_channel_get_data_position(nmeHandle);
-            nmeDataProvider.dispatchEvent(request);
-            if (request.data.length > 0)
-               nme_sound_channel_add_data(nmeHandle,request.data);
-         }
+			if (nmeDataProvider != null && nme_sound_channel_needs_data(nmeHandle))
+			{
+				var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
+				request.position = nme_sound_channel_get_data_position(nmeHandle);
+				nmeDataProvider.dispatchEvent(request);
+				if (request.data.length > 0) {
+					nme_sound_channel_add_data(nmeHandle,request.data);
+				}
+			}
 
-         if (nme_sound_channel_is_complete(nmeHandle))
-         {
-			   nmeHandle = null;
-            if (nmeDataProvider!=null)
-               nmeDynamicSoundCount--;
-			   var complete = new Event(Event.SOUND_COMPLETE);
-			   dispatchEvent(complete);
-			   return true;
-         }
+			nmeSoundComplete = nme_sound_channel_is_complete(nmeHandle);
+			if (nmeSoundComplete == true)
+			{
+				#if android
+				if (nme_sound_channel_is_music(nmeHandle)) {
+					nmeHandle = null;
+				}
+				#else
+				nmeHandle = null;
+				#end
+			
+				if (nmeDataProvider != null) {
+					nmeDynamicSoundCount--;
+				}
+				
+				var complete = new Event(Event.SOUND_COMPLETE);
+				dispatchEvent(complete);
+			}
 		}
 		
-		return false;
+		return nmeSoundComplete;
 	}
 	
 	
@@ -107,7 +121,11 @@ class SoundChannel extends EventDispatcher
 	
 	public function stop()
 	{ 
-		nme_sound_channel_stop(nmeHandle);
+		if (nmeHandle != null) {
+			nme_sound_channel_stop(nmeHandle);
+			nmeHandle = null;
+			nmeSoundComplete = true;
+		}
 	}
 	
 	
@@ -145,6 +163,10 @@ class SoundChannel extends EventDispatcher
 	// Native Methods
 	
 	
+	
+	#if android
+	private static var nme_sound_channel_is_music = Loader.load("nme_sound_channel_is_music", 1);
+	#end
 	
 	private static var nme_sound_channel_is_complete = Loader.load ("nme_sound_channel_is_complete", 1);
 	private static var nme_sound_channel_get_left = Loader.load ("nme_sound_channel_get_left", 1);

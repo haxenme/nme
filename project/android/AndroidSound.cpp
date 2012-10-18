@@ -40,6 +40,11 @@ namespace nme
 		{
 			mSound->DecRef();
 		}
+		
+		bool isMusic() 
+		{
+			return false;
+		}
 
 		bool isComplete()
 		{
@@ -109,6 +114,11 @@ namespace nme
 		~AndroidMusicChannel()
 		{
 			mSound->DecRef();
+		}
+		
+		bool isMusic()
+		{
+			return true;
 		}
 
 		bool isComplete()
