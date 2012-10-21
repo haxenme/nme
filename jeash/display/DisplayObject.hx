@@ -630,6 +630,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					}
 				}
 			}
+			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, getSurfaceTransform(gfx));
 		} else {
 			if (newParent.name == Stage.NAME) { // only stage is allowed to add to a parent with no context
 				Lib.jeashAppendSurface(gfx.jeashSurface);
