@@ -83,7 +83,7 @@ class SimpleButton extends DisplayObjectContainer
 			addEventListener(MouseEvent.MOUSE_OVER, function (_) { if (overState != currentState) currentState = overState; });
 			addEventListener(MouseEvent.MOUSE_OUT, function (_) {  if (upState != currentState) currentState = upState; });
 			addEventListener(MouseEvent.MOUSE_DOWN, function (_) { currentState = downState; });
-			addEventListener(MouseEvent.MOUSE_UP, function (_) { currentState = upState; });
+			addEventListener(MouseEvent.MOUSE_UP, function (_) { currentState = overState; });
 
 			hitTestState.alpha = 0.0;
 			addChild(hitTestState);
