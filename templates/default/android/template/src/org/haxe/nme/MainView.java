@@ -57,6 +57,115 @@ class MainView extends GLSurfaceView {
 
     public MainView(Context context,Activity inActivity) {
         super(context);
+
+        int eglVersion = 1;
+
+        // See if version 2 is supported?
+        if (::WIN_ALLOW_SHADERS:: || ::WIN_REQUIRE_SHADERS:: )
+        {
+           EGL10 egl = (EGL10)EGLContext.getEGL();
+           EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+           int[] version = new int[2];
+           egl.eglInitialize(display, version);
+           EGLConfig[] v2_configs = new EGLConfig[1];
+           int[] num_config = new int[1];
+           int[] attrs = { EGL10.EGL_RENDERABLE_TYPE, 4 /*EGL_OPENGL_ES2_BIT*/, EGL10.EGL_NONE };
+           egl.eglChooseConfig(display, attrs, v2_configs, 1, num_config);
+           //Log.v("EGL","v2 configs : " + num_config[0]);
+           if (num_config[0]==1)
+           {
+              eglVersion = 2;
+              setEGLContextClientVersion(2); 
+           }
+        }
+
+        final int renderType = eglVersion==1 ? 0x01 : 0x04;
+
+
+        setEGLConfigChooser(new EGLConfigChooser() {
+             public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display) {
+                int depth = ::if WIN_DEPTH_BUFFER:: 16 ::else:: 0 ::end::;
+                int stencil = ::if WIN_STENCIL_BUFFER:: 8 ::else:: 0 ::end::;
+
+                EGLConfig[] configs = new EGLConfig[1];
+                int[] num_config = new int[1];
+
+
+                // Try as specified - aa
+                if (::WIN_ANTIALIASING:: > 1)
+                {
+                   int[] attrs = { EGL10.EGL_DEPTH_SIZE, depth,
+                                   EGL10.EGL_STENCIL_SIZE, stencil,
+                                   EGL10.EGL_SAMPLE_BUFFERS, 1 /* true */,
+                                   EGL10.EGL_SAMPLES, ::WIN_ANTIALIASING::,
+                                   EGL10.EGL_RENDERABLE_TYPE, renderType,
+                                   EGL10.EGL_NONE };
+
+                   egl.eglChooseConfig(display, attrs, configs, 1, num_config);
+                   Log.v("EGL","Match AA=::WIN_ANTIALIASING::, depth + stencil : " + num_config[0]);
+
+                   if (num_config[0]==1)
+                      return configs[0];
+
+                   // Try with just 2 specified - aa
+                   if (::WIN_ANTIALIASING:: > 2)
+                   {
+                      int[] attrs_aa2 = { EGL10.EGL_DEPTH_SIZE, depth,
+                                      EGL10.EGL_STENCIL_SIZE, stencil,
+                                      EGL10.EGL_SAMPLE_BUFFERS, 1 /* true */,
+                                      EGL10.EGL_SAMPLES, 2,
+                                      EGL10.EGL_RENDERABLE_TYPE, renderType,
+                                      EGL10.EGL_NONE };
+   
+                      egl.eglChooseConfig(display, attrs_aa2, configs, 1, num_config);
+                      Log.v("EGL","Match AA=2, depth + stencil : " + num_config[0]);
+
+                      if (num_config[0]==1)
+                        return configs[0];
+                   }
+
+                   // No normal multisampling config was found. Try to create a
+                   // converage multisampling configuration, for the nVidia Tegra2.
+                   // See the EGL_NV_coverage_sample documentation.
+
+                   final int EGL_COVERAGE_BUFFERS_NV = 0x30E0;
+                   final int EGL_COVERAGE_SAMPLES_NV = 0x30E1;
+
+                   int[] attrs_aanv = { EGL10.EGL_DEPTH_SIZE, depth,
+                                      EGL10.EGL_STENCIL_SIZE, stencil,
+                                      EGL_COVERAGE_BUFFERS_NV, 1 /* true */,
+                                      EGL_COVERAGE_SAMPLES_NV, 2,  // always 5 in practice on tegra 2
+                                      EGL10.EGL_RENDERABLE_TYPE, renderType,
+                                      EGL10.EGL_NONE };
+
+                   egl.eglChooseConfig(display, attrs_aanv, configs, 1, num_config);
+                   Log.v("EGL","Match AANV, depth + stencil : " + num_config[0]);
+
+                   if (num_config[0]==1)
+                       return configs[0];
+                }
+
+                // Try just specifying just depth and stencil
+                int[] attrs1 = { EGL10.EGL_DEPTH_SIZE, depth,
+                                EGL10.EGL_STENCIL_SIZE, stencil,
+                                EGL10.EGL_RENDERABLE_TYPE, renderType,
+                                EGL10.EGL_NONE };
+
+                egl.eglChooseConfig(display, attrs1, configs, 1, num_config);
+                Log.v("EGL","Matched depth + stencil : " + num_config[0]);
+                if (num_config[0]==1)
+                   return configs[0];
+
+                // Just give me whatever you've got
+                int[] attrs2 = { EGL10.EGL_NONE };
+                egl.eglChooseConfig(display, attrs2, configs, 1, num_config);
+                if (num_config[0]==1)
+                   return configs[0];
+                Log.v("EGL","Matched any : " + num_config[0]);
+
+                return null;
+             }
+        });
         mActivity = inActivity;
 		  mRefreshView = this;
         setFocusable(true);

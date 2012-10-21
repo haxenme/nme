@@ -29,8 +29,19 @@ public:
 
    GLuint createShader(GLuint inType, const char *inShader)
    {
+      const char *source = inShader;
       GLuint shader = glCreateShader(inType);
-      glShaderSource(shader,1,&inShader,0);
+
+      #ifdef NME_GLES
+      std::string sourceBuf;
+      if (inType == GL_FRAGMENT_SHADER)
+      {
+         sourceBuf = std::string("precision mediump float;\n") + inShader;
+         source = sourceBuf.c_str();
+      }
+      #endif
+
+      glShaderSource(shader,1,&source,0);
       glCompileShader(shader);
 
       GLint compiled = 0;
@@ -46,9 +57,13 @@ public:
       {
          char* compiler_log = (char*)malloc(blen);
          glGetShaderInfoLog(shader, blen, &slen, compiler_log);
-         printf("Error compiling shader : %s\n", compiler_log);
-         printf("%s\n", inShader);
+         ELOG("Error compiling shader : %s\n", compiler_log);
+         ELOG("%s\n", source);
          free (compiler_log);
+      }
+      else
+      {
+         ELOG("Unknown error compiling shader");
       }
       glDeleteShader(shader);
       return 0;
@@ -86,10 +101,10 @@ public:
           // Show any errors as appropriate
           char *log = new char[logLen];
           glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
-          printf("----\n");
-          printf("VERT: %s\n", mVertProg);
-          printf("FRAG: %s\n", mFragProg);
-          printf("ERROR:\n%s\n\n", mVertProg);
+          ELOG("----");
+          ELOG("VERT: %s", mVertProg);
+          ELOG("FRAG: %s", mFragProg);
+          ELOG("ERROR:\n%s\n", mVertProg);
           delete [] log;
       }
 
@@ -103,7 +118,7 @@ public:
       }
       else
       {
-         printf("Bad Link.\n");
+         ELOG("Bad Link.");
          glDeleteShader(mVertId);
          glDeleteShader(mFragId);
          glDeleteProgram(mProgramId);
@@ -111,7 +126,7 @@ public:
       }
 
 
-      mPositionSlot = glGetAttribLocation(mProgramId, "glPosition");
+      mVertexSlot = glGetAttribLocation(mProgramId, "aVertex");
       mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
       mTintSlot = glGetUniformLocation(mProgramId, "uTint");
       mColourArraySlot = glGetAttribLocation(mProgramId, "aColourArray");
@@ -137,33 +152,17 @@ public:
 
    void setPositionData(const float *inData, bool inIsPerspective)
    {
-      #ifdef NME_GLES
-      glVertexAttribPointer(mPositionSlot, inIsPerspective ? 4 : 2 , GL_FLOAT, GL_FALSE, 0, inData);
-      #else
-      glVertexPointer(inIsPerspective ? 4 : 2,GL_FLOAT,0,inData);
-      #endif
+      glVertexAttribPointer(mVertexSlot, inIsPerspective ? 4 : 2 , GL_FLOAT, GL_FALSE, 0, inData);
+      glEnableVertexAttribArray(mVertexSlot);
    }
 
    void setTexCoordData(const float *inData)
    {
       if (inData)
       {
-         #ifdef NME_GLES
-         //glEnableVertexAttribArray
-         #else
-         glEnable(GL_TEXTURE_2D);
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(2, GL_FLOAT, 0, inData);
+         glVertexAttribPointer(mTextureSlot, 2, GL_FLOAT, GL_FALSE, 0, inData);
+         glEnableVertexAttribArray(mTextureSlot);
          glUniform1i(mTextureSlot,0);
-         #endif
-      }
-      else
-      {
-         #ifdef NME_GLES
-         #else
-         glDisable(GL_TEXTURE_2D);
-         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-         #endif
       }
    }
 
@@ -183,9 +182,13 @@ public:
    void finishDrawing()
    {
       if (mColourArraySlot>=0)
-      {
          glDisableVertexAttribArray(mColourArraySlot);
-      }
+
+      if (mTextureSlot>=0)
+         glDisableVertexAttribArray(mTextureSlot);
+
+      if (mVertexSlot>=0)
+         glDisableVertexAttribArray(mVertexSlot);
    }
 
    void setColourTransform(const ColorTransform *inTransform)
@@ -275,10 +278,10 @@ public:
    int        mContextVersion;
    const ColorTransform *mColourTransform;
 
+   GLint     mVertexSlot;
    GLint     mTextureSlot;
    GLint     mTexCoordSlot;
 
-   GLint     mPositionSlot;
    GLint     mColourArraySlot;
    GLint     mColourScaleSlot;
    GLint     mColourOffsetSlot;
@@ -291,42 +294,46 @@ public:
 
 const char *gSolidVert = 
 "uniform mat4 uTransform;\n"
+"attribute vec4 aVertex;\n"
 "void main(void)\n"
 "{\n"
-"   gl_Position = gl_Vertex * uTransform;\n"
+"   gl_Position = aVertex * uTransform;\n"
 "}";
 
 const char *gColourVert =
 "uniform mat4 uTransform;\n"
+"attribute vec4 aVertex;\n"
 "attribute vec4 aColourArray;\n"
 "varying vec4 vColourArray;\n"
 "void main(void)\n"
 "{\n"
 "   vColourArray = aColourArray;\n"
-"   gl_Position = gl_Vertex * uTransform;\n"
+"   gl_Position = aVertex * uTransform;\n"
 "}";
 
 
 const char *gTextureVert =
 "uniform mat4 uTransform;\n"
+"attribute vec4 aVertex;\n"
 "varying vec2 vTexCoord;\n"
 "void main(void)\n"
 "{\n"
 "   vTexCoord = gl_MultiTexCoord0.xy;\n"
-"   gl_Position = gl_Vertex * uTransform;\n"
+"   gl_Position = aVertex * uTransform;\n"
 "}";
 
 
 const char *gTextureColourVert =
 "uniform mat4 uTransform;\n"
-"varying vec2 vTexCoord;\n"
 "attribute vec4 aColourArray;\n"
-"varying vec4 vColourArray;\n"
+"attribute vec4 aVertex;\n"
+"varying vec2   vTexCoord;\n"
+"varying vec4  vColourArray;\n"
 "void main(void)\n"
 "{\n"
 "   vColourArray = aColourArray;\n"
 "   vTexCoord = gl_MultiTexCoord0.xy;\n"
-"   gl_Position = gl_Vertex * uTransform;\n"
+"   gl_Position = aVertex * uTransform;\n"
 "}";
 
 

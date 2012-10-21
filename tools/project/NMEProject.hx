@@ -96,7 +96,7 @@ class NMEProject {
 		
 		assets = new Array <Asset> ();
 		dependencies = new Array <String> ();
-		environment = new Hash <String> ();
+		environment = Sys.environment ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
 		haxelibs = new Array <String> ();
@@ -536,7 +536,8 @@ class NMEProject {
 			//Sys.println ("context." + field + " = " + Reflect.field (context, field));
 		}
 		
-		context.WIN_ALLOW_SHADERS = true;
+		//context.WIN_ALLOW_SHADERS = true;
+		context.WIN_ALLOW_SHADERS = false;
 		context.WIN_REQUIRE_SHADERS = false;
 		context.WIN_DEPTH_BUFFER = false;
 		context.WIN_STENCIL_BUFFER = false;

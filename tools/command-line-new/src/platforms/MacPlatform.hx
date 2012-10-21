@@ -2,6 +2,8 @@ package platforms;
 
 
 import haxe.io.Path;
+import haxe.Template;
+import sys.io.File;
 import sys.FileSystem;
 
 
@@ -58,6 +60,32 @@ class MacPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+		
+		var hxml = PathHelper.findTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
+		
+		var context = generateContext (project);
+		var contents = File.getContent (hxml);
+		var template = new Template (contents);
+		
+		Sys.println (template.execute (project.templateContext));
+		Sys.println ("-D code_completion");
+		
+	}
+	
+	
+	private function generateContext (project:NMEProject):Dynamic {
+		
+		var context = project.templateContext;
+		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
+		context.CPP_DIR = targetDirectory + "/obj/";
+		context.BUILD_DIR = project.app.path + "/mac";
+		
+		return context;
+		
+	}
+	
+	
 	private function initialize (project:NMEProject):Void {
 		
 		targetDirectory = project.app.path + "/mac/cpp";
@@ -93,10 +121,7 @@ class MacPlatform implements IPlatformTool {
 		
 		initialize (project);
 		
-		var context = project.templateContext;
-		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
-		context.CPP_DIR = targetDirectory + "/obj/";
-		context.BUILD_DIR = project.app.path + "/mac";
+		var context = generateContext (project);
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");

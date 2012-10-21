@@ -1,6 +1,7 @@
 package;
 
 
+import haxe.Unserializer;
 import haxe.io.Path;
 import haxe.rtti.Meta;
 import platforms.AndroidPlatform;
@@ -9,6 +10,8 @@ import platforms.IOSPlatform;
 import platforms.IPlatformTool;
 import platforms.LinuxPlatform;
 import platforms.MacPlatform;
+import platforms.WebOSPlatform;
+import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.FileSystem;
 	
@@ -58,11 +61,13 @@ class CommandLineTools {
 			
 			case Platform.WEBOS:
 				
-				//
+				platform = new WebOSPlatform ();
+				metaFields = Meta.getFields (WebOSPlatform);
 			
 			case Platform.WINDOWS:
 				
-				//
+				platform = new WindowsPlatform ();
+				metaFields = Meta.getFields (WindowsPlatform);
 			
 			case Platform.MAC:
 				
@@ -87,6 +92,12 @@ class CommandLineTools {
 		if (platform != null) {
 			
 			var command = project.command.toLowerCase ();
+			
+			if (!Reflect.hasField (metaFields.display, "ignore") && (command == "display")) {
+				
+				platform.display (project);
+				
+			}
 			
 			if (!Reflect.hasField (metaFields.clean, "ignore") && (command == "clean" || targetFlags.exists ("clean"))) {
 				
@@ -224,7 +235,11 @@ class CommandLineTools {
 	
 	private static function findProjectFile (path:String):String {
 		
-		if (FileSystem.exists (PathHelper.combine (path, "project.nmml"))) {
+		if (FileSystem.exists (PathHelper.combine (path, "Project.hx"))) {
+			
+			return PathHelper.combine (path, "Project.hx");
+			
+		} else if (FileSystem.exists (PathHelper.combine (path, "project.nmml"))) {
 			
 			return PathHelper.combine (path, "project.nmml");
 			
@@ -243,7 +258,7 @@ class CommandLineTools {
 				
 				if (FileSystem.exists (path) && !FileSystem.isDirectory (path)) {
 					
-					if (Path.extension (file) == "nmml" && file != "include.nmml") {
+					if ((Path.extension (file) == "nmml" && file != "include.nmml") || Path.extension (file) == "hx") {
 						
 						matches.push (path);
 						
@@ -479,9 +494,42 @@ class CommandLineTools {
 			
 		} else {
 			
+			var path = FileSystem.fullPath (Path.withoutDirectory (projectFile));
+			var name = Path.withoutDirectory (Path.withoutExtension (projectFile));
+			
+			ProcessHelper.runCommand ("", "haxe", [ "-main", name, "-neko", "~/haxe.n", "-lib", "nme", "-cp", "/Users/joshua/Development/Haxe/nme/tools/project", "-cp", "/Users/joshua/Development/Haxe/nme/tools/helpers" ]);
+			
+			var process = new sys.io.Process ("neko", [ "/Users/joshua/haxe.n" ]);
+			var output = process.stdout.readAll ().toString ();
+			var error = process.stderr.readAll ().toString ();
+			process.exitCode ();
+			process.close ();
+			
+			var unserializer = new Unserializer (output);
+			unserializer.setResolver (cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass });
+			
+			project = unserializer.unserialize ();
+			
+			//Sys.println (output);
+			
 			//var project = NMEProject.main ("NMML
 			
 		}
+		
+		
+		//trace (project);
+		
+		
+		project.command = command;
+		project.debug = debug;
+		project.target = target;
+		project.targetFlags = targetFlags;
+		project.templatePaths = project.templatePaths.concat ([ nme + "/templates/default", nme + "/tools/command-line" ]);
+		
+		
+		
+		
+		
 		
 		var config = getHXCPPConfig ();
 		project.merge (config);
@@ -503,6 +551,21 @@ class CommandLineTools {
 		}
 		
 		return project;
+		
+	}
+	
+	
+	private static function resolveClass (name:String):Class <Dynamic> {
+		
+		if (name.toLowerCase ().indexOf ("project") > -1) {
+			
+			return NMEProject;
+			
+		} else {
+			
+			return Type.resolveClass (name);
+			
+		}
 		
 	}
 	

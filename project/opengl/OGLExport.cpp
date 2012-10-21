@@ -525,21 +525,25 @@ value nme_gl_get_uniform(value inId,value inLocation)
       case  GL_FLOAT_MAT2: floats = 4; break;
       case  GL_FLOAT_MAT3: floats = 9; break;
       case  GL_FLOAT_MAT4: floats = 16; break;
+      #ifndef ANDROID
       case  GL_FLOAT_MAT2x3: floats = 4*3; break;
       case  GL_FLOAT_MAT2x4: floats = 4*4; break;
       case  GL_FLOAT_MAT3x2: floats = 9*2; break;
       case  GL_FLOAT_MAT3x4: floats = 9*4; break;
       case  GL_FLOAT_MAT4x2: floats = 16*2; break;
       case  GL_FLOAT_MAT4x3: floats = 16*3; break;
+      #endif
 
       case  GL_INT:
       case  GL_BOOL:
-      case  GL_SAMPLER_1D:
       case  GL_SAMPLER_2D:
+      #ifndef ANDROID
+      case  GL_SAMPLER_1D:
       case  GL_SAMPLER_3D:
       case  GL_SAMPLER_CUBE:
       case  GL_SAMPLER_1D_SHADOW:
       case  GL_SAMPLER_2D_SHADOW:
+      #endif
         {
            int result = 0;
            glGetUniformiv(id,loc,&result);
@@ -960,6 +964,13 @@ value nme_gl_shader_source(value inId,value inSource)
 {
    int id = val_int(inId);
    const char *source = val_string(inSource);
+   #ifdef NME_GLES
+   // TODO - do something better here
+   std::string buffer;
+   buffer = std::string("precision mediump float;\n") + source;
+   source = buffer.c_str();
+   #endif
+
    glShaderSource(id,1,&source,0);
 
    return alloc_null();
@@ -1040,12 +1051,12 @@ value nme_gl_get_shader_precision_format(value inShader,value inPrec)
    #ifdef NME_GLES
    int range[2];
    int precision;
-   glGetShaderPrecisionFormat(val_int(inShader), val_int(inPrec), range, &precsion);
+   glGetShaderPrecisionFormat(val_int(inShader), val_int(inPrec), range, &precision);
 
    value result = alloc_empty_object( );
    alloc_field(result,val_id("rangeMin"),alloc_int(range[0]));
    alloc_field(result,val_id("rangeMax"),alloc_int(range[1]));
-   alloc_field(result,val_id("precision"),alloc_string(precision));
+   alloc_field(result,val_id("precision"),alloc_int(precision));
 
    return result;
    #else
@@ -1332,7 +1343,11 @@ DEFINE_PRIM(nme_gl_clear_color,4);
 
 value nme_gl_clear_depth(value depth)
 {
+   #ifdef NME_GLES
+   glClearDepthf(val_number(depth));
+   #else
    glClearDepth(val_number(depth));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_clear_depth,1);
@@ -1365,7 +1380,11 @@ DEFINE_PRIM(nme_gl_depth_func,1);
 
 value nme_gl_depth_range(value near, value far)
 {
+   #ifdef NME_GLES
+   glDepthRangef(val_number(near), val_number(far));
+   #else
    glDepthRange(val_number(near), val_number(far));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_depth_range,2);

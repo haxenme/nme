@@ -1,32 +1,48 @@
-package;
+
 
 
 class WebOSHelper {
 	
 	
-	private static var defines:Hash <String>;
-	private static var sdkDirectory:String;
-	
-	
-	public static function createPackage (workingDirectory:String, targetPath:String):Void {
+	public static function createPackage (project:NMEProject, workingDirectory:String, targetPath:String):Void {
 		
-		runPalmCommand (workingDirectory, "package" , [ targetPath ]);
+		runPalmCommand (project, workingDirectory, "package" , [ targetPath ]);
 		
 	}
 	
 	
-	public static function initialize (defines:Hash <String>):Void {
+	private static function getPackageName (project:NMEProject):String {
 		
-		WebOSHelper.defines = defines;
-		sdkDirectory = "";
+		return project.meta.packageName + "_" + project.meta.version + "_all.ipk";
 		
-		if (defines.exists ("PalmSDK")) {
+	}
+	
+	
+	public static function install (project:NMEProject, workingDirectory:String):Void {
+		
+		runPalmCommand (project, workingDirectory, "install", [ getPackageName (project) ]);
+		
+	}
+	
+	
+	public static function launch (project:NMEProject):Void {
+		
+		runPalmCommand (project, "", "launch", [ getPackageName (project) ]);
+		
+	}
+	
+	
+	private static function runPalmCommand (project:NMEProject, workingDirectory:String, command:String, args:Array<String>):Void {
+		
+		var sdkDirectory = "";
+		
+		if (project.environment.exists ("PalmSDK")) {
 			
-			sdkDirectory = defines.get ("PalmSDK");
+			sdkDirectory = project.environment.get ("PalmSDK");
 			
 		} else {
 			
-			if (InstallTool.isWindows) {
+			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
 				sdkDirectory = "c:\\Program Files (x86)\\HP webOS\\SDK\\";
 				
@@ -38,33 +54,14 @@ class WebOSHelper {
 			
 		}
 		
-	}
-	
-	
-	public static function install (workingDirectory:String, targetFile:String):Void {
-		
-		runPalmCommand (workingDirectory, "install", [ targetFile ]);
-		
-	}
-	
-	
-	public static function launch (packageName:String):Void {
-		
-		runPalmCommand ("", "launch", [ packageName ]);
-		
-	}
-	
-	
-	private static function runPalmCommand (workingDirectory:String, command:String, args:Array<String>):Void {
-		
 		ProcessHelper.runCommand (workingDirectory, sdkDirectory + "/bin/palm-" + command, args);
 		
 	}
 	
 	
-	public static function trace (packageName:String, follow:Bool = true):Void {
+	public static function trace (project:NMEProject, follow:Bool = true):Void {
 		
-		var args:Array <String> = [];
+		var args = [];
 		
 		if (follow) {
 			
@@ -72,9 +69,9 @@ class WebOSHelper {
 			
 		}
 		
-		args.push (packageName);
+		args.push (project.meta.packageName);
 		
-		runPalmCommand ("", "log", args);
+		runPalmCommand (project, "", "log", args);
 		
 	}
 		
