@@ -96,7 +96,7 @@ class NMEProject {
 		
 		assets = new Array <Asset> ();
 		dependencies = new Array <String> ();
-		environment = new Hash <String> ();
+		environment = Sys.environment ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
 		haxelibs = new Array <String> ();

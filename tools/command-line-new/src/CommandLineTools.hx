@@ -10,6 +10,8 @@ import platforms.IOSPlatform;
 import platforms.IPlatformTool;
 import platforms.LinuxPlatform;
 import platforms.MacPlatform;
+import platforms.WebOSPlatform;
+import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.FileSystem;
 	
@@ -59,11 +61,13 @@ class CommandLineTools {
 			
 			case Platform.WEBOS:
 				
-				//
+				platform = new WebOSPlatform ();
+				metaFields = Meta.getFields (WebOSPlatform);
 			
 			case Platform.WINDOWS:
 				
-				//
+				platform = new WindowsPlatform ();
+				metaFields = Meta.getFields (WindowsPlatform);
 			
 			case Platform.MAC:
 				
@@ -88,6 +92,12 @@ class CommandLineTools {
 		if (platform != null) {
 			
 			var command = project.command.toLowerCase ();
+			
+			if (!Reflect.hasField (metaFields.display, "ignore") && (command == "display")) {
+				
+				platform.display (project);
+				
+			}
 			
 			if (!Reflect.hasField (metaFields.clean, "ignore") && (command == "clean" || targetFlags.exists ("clean"))) {
 				
@@ -507,7 +517,7 @@ class CommandLineTools {
 		}
 		
 		
-		trace (project);
+		//trace (project);
 		
 		
 		project.command = command;

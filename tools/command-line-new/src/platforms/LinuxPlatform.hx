@@ -57,6 +57,12 @@ class LinuxPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+	
+	
+	}
+	
+	
 	private function initialize (project:NMEProject):Void {
 		
 		for (architecture in project.architectures) {

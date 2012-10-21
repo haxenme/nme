@@ -38,6 +38,12 @@ class IOSPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+	
+	
+	}
+	
+	
 	private function generateContext (project:NMEProject):Dynamic {
 		
 		var cache = new NMEProject ();

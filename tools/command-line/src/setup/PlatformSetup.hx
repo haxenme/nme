@@ -1168,7 +1168,7 @@ class PlatformSetup {
 							
 							if (ask ("Would you like to add existing device PIN \"" + deviceID + "\"?") != No) {
 								
-								deviceIDs.push (deviceID);
+								deviceIDs.push ("0x" + deviceID);
 								
 							}
 							
@@ -1184,7 +1184,13 @@ class PlatformSetup {
 					
 					while (ask ("Would you like to add another device PIN?") != No) {
 						
-						deviceIDs.push ("0x" + param ("Device PIN"));
+						var pin = param ("Device PIN");
+						
+						if (pin != null && pin != "") {
+							
+							deviceIDs.push ("0x" + pin);
+							
+						}
 						
 					}
 					
