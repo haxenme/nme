@@ -181,27 +181,43 @@ class AndroidInstaller extends InstallerBase {
 			}
 			
 		}
-		
-		for (javaPath in javaPaths) {
-			
-			//try {
-				
-				if (FileSystem.isDirectory (javaPath)) {
-					
-					FileHelper.recursiveCopy (javaPath, destination + "/src", context, true);
-					
+
+		var manifestPaths:Array<String> = [];
+
+		for (javaNode in javaNodes) {
+
+			if (javaNode.classpath != null) {
+				//try {
+				var javaClasspath = javaNode.classpath;
+
+				if (FileSystem.isDirectory (javaClasspath)) {
+
+					FileHelper.recursiveCopy (javaClasspath, destination + "/src", context, true);
+
 				} else {
-					
-					FileHelper.copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
-					
+
+					FileHelper.copyIfNewer (javaClasspath, destination + "/src/" + Path.withoutDirectory (javaClasspath));
+
 				}
-				
-			//} catch (e:Dynamic) {
-				
-			//	throw"Could not find javaPath " + javaPath +" required by extension."; 
-				
-			//}
-			
+
+				//} catch (e:Dynamic) {
+
+				//	throw"Could not find javaPath " + javaPath +" required by extension."; 
+
+				//}
+			}
+
+			if (javaNode.resources != null) {
+
+				FileHelper.recursiveCopy(javaNode.resources, destination + "/res", context, true);
+
+			}
+
+			if (javaNode.manifest != null) {
+
+				manifestPaths.push(javaNode.manifest);
+
+			}
 		}
 		
 		for (asset in assets) {
@@ -245,9 +261,80 @@ class AndroidInstaller extends InstallerBase {
 			}
 			
 		}
-		
+
+		var manifestPath = destination + "AndroidManifest.xml";
+		var mainManifest = Xml.parse(File.getContent(manifestPath));
+
+		mainManifest = updateManifest(mainManifest, manifestPaths);
+		File.saveContent(manifestPath, mainManifest.toString());		
 	}
-	
+
+	/**
+	Take the base manifest and supplement with any extension manifests.
+	*/
+	function updateManifest(mainManifest:Xml, manifestPaths:Array<String>) {
+
+		var MIN_SDK_LABEL = "android:minSdkVersion";
+		var MAX_SDK_LABEL = "android:maxSdkVersion";
+		var APP_NODE = "application";
+		var USES_SDK_NODE = "uses-sdk";
+
+		var root = mainManifest.firstElement();
+
+		var app = root.elementsNamed(APP_NODE).next();
+		var sdk = root.elementsNamed(USES_SDK_NODE).next();
+
+		var minSdkVersion:Int = sdk.exists(MIN_SDK_LABEL) ? Std.parseInt(sdk.get(MIN_SDK_LABEL)) : 8;
+		var maxSdkVersion:Int = sdk.exists(MAX_SDK_LABEL) ? Std.parseInt(sdk.get(MAX_SDK_LABEL)) : -1;
+
+		for (manifest in manifestPaths) {
+
+			if (FileSystem.exists(manifest)) {
+
+				var xml:Xml = Xml.parse(File.getContent(manifest)).firstElement();
+
+				for (e in xml.elements()) {
+
+					if (e.nodeName == APP_NODE) {
+
+						for (e2 in e.elements()) {
+
+							app.addChild(e2);
+
+						}
+					}
+					else if (e.nodeName == USES_SDK_NODE) {
+
+						// If this manifest requires a greater min or max sdk then we'll need to raise the overall version
+						var min = e.exists(MIN_SDK_LABEL) ? Std.parseInt(e.get(MIN_SDK_LABEL)) : minSdkVersion;
+						var max = e.exists(MAX_SDK_LABEL) ? Std.parseInt(e.get(MAX_SDK_LABEL)) : maxSdkVersion;
+
+						if (max != -1 && min > max)
+							min = max;
+
+						if (min != minSdkVersion)
+							sdk.set(MIN_SDK_LABEL, "" + min);
+
+						if (max != maxSdkVersion)
+							sdk.set(MAX_SDK_LABEL, "" + max);
+
+					}
+					else {
+
+						// For now we'll just add all other root nodes. Could look at removing duplicates if need be.
+						root.addChild(e);
+
+					}
+				}
+			}
+			else {
+
+				InstallTool.error("Could not find Android manifest extension at " + manifest, null);
+
+			}
+		}
+		return mainManifest;
+	}
 	
 	override function updateDevice ():Void {
 		

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.haxe.nme.sample21">
+
+	<application>
+       <activity android:name="nme.BrowserLauncher$BrowserActivity">
+			
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		
+		</activity>
+	</application>
+    
+    <uses-sdk android:minSdkVersion="9"/>
+</manifest> 
