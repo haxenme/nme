@@ -8,7 +8,7 @@ import sys.FileSystem;
 class WebOSPlatform implements IPlatformTool {
 	
 	
-	public function build (project:NMEProject):Void {f
+	public function build (project:NMEProject):Void {
 		
 		var hxml = project.app.path + "/webos/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
 		ProcessHelper.runCommand ("", "haxe", [ hxml ] );

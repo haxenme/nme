@@ -81,6 +81,8 @@ class MacPlatform implements IPlatformTool {
 		context.CPP_DIR = targetDirectory + "/obj/";
 		context.BUILD_DIR = project.app.path + "/mac";
 		
+		return context;
+		
 	}
 	
 	
