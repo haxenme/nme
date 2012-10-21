@@ -1024,4 +1024,6 @@ class Graphics
 			}
 		}
 	}
+
+	public function jeashMediaSurface(surface:HTMLMediaElement) this.jeashSurface = cast surface
 }
