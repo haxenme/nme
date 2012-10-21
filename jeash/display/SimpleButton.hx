@@ -58,10 +58,13 @@ class SimpleButton extends DisplayObjectContainer
 	override public function toString() { return "[SimpleButton name=" + this.name + " id=" + _jeashId + "]"; }
 
 	function switchState(state:DisplayObject) {
-		if (this.currentState != null && this.currentState.stage != null) {
+		if (this.currentState != null && this.currentState.jeashIsOnStage()) {
+			// hack: addChild currently does not add to document with empty jeashGraphics
+			state.jeashAddToStage(parent, this.currentState); 
 			removeChild(this.currentState);
 			addChild(state);
 		} else {
+			if (parent != null) state.jeashAddToStage(parent); 
 			addChild(state);
 		}
 	}
@@ -69,6 +72,7 @@ class SimpleButton extends DisplayObjectContainer
 	function jeashGenerateDefaultState () return new DisplayObject()
 
 	function jeashSetCurrentState (state:DisplayObject) {
+		if (currentState == state) return state;
 		switchState(state);
 		return currentState = state;
 	}
@@ -102,13 +106,11 @@ class SimpleButton extends DisplayObjectContainer
 		return this.upState = upState;
 	}
 
-	override function jeashSetParent(displayObject : DisplayObjectContainer):DisplayObjectContainer {
-		super.jeashSetParent(displayObject);
-		if (currentState != null) {
-			addChild(currentState);
-			if (hitTestState != null) addChild(hitTestState);
-			switchState(currentState);
+	override private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
+		for (child in jeashChildren) {
+			if (!child.jeashIsOnStage()) {
+				child.jeashAddToStage(newParent);
+			}
 		}
-		return displayObject;
 	}
 }

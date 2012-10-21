@@ -110,7 +110,7 @@ class DisplayObjectContainer extends InteractiveObject
 	override private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
 		super.jeashAddToStage(newParent, beforeSibling);
 		for (child in jeashChildren) {
-			if (!child.jeashIsOnStage()) {
+			if (child.jeashGetGraphics() == null || !child.jeashIsOnStage()) {
 				child.jeashAddToStage(this);
 			}
 		}
