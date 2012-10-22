@@ -63,6 +63,7 @@ class NetStream extends EventDispatcher {
 	public var jeashVideoElement(default, null):HTMLMediaElement;
 	
 	private var timer:Timer;
+	private var jeashConnection: NetConnection;
 
 	/* events */
 	public static inline var BUFFER_UPDATED:String = "jeash.net.NetStream.updated";
@@ -79,10 +80,15 @@ class NetStream extends EventDispatcher {
 		super();
 
 		jeashVideoElement = cast js.Lib.document.createElement("video");
+		jeashConnection = connection;
 
 		play = Reflect.makeVarArgs(jeashPlay);
-		
 	}
+
+	public function jeashBufferEmpty (e) jeashConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_EMPTY })) 
+	public function jeashBufferStop (e) jeashConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_STOP }))
+	public function jeashBufferStart (e) jeashConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_START })) 
+	public function jeashNotFound (e) jeashConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_PLAY_STREAMNOTFOUND })) 
 	
 	function jeashPlay(val:Array<Dynamic>) : Void
 	{

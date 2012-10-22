@@ -104,6 +104,11 @@ class Video extends DisplayObject {
 		ns.jeashVideoElement.style.setProperty("width", width + "px", "");
 		ns.jeashVideoElement.style.setProperty("height", height + "px", "");
 
+		ns.jeashVideoElement.addEventListener("error", ns.jeashNotFound, false);
+		ns.jeashVideoElement.addEventListener("waiting", ns.jeashBufferEmpty, false);
+		ns.jeashVideoElement.addEventListener("ended", ns.jeashBufferStop, false);
+		ns.jeashVideoElement.addEventListener("play", ns.jeashBufferStart, false);
+
 		ns.jeashVideoElement.play();
 	}
 	
