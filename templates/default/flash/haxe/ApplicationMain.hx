@@ -32,9 +32,11 @@ class ApplicationMain {
 		}
 		::end::
 		
+		::if (DONT_MESS_WITH_MY_TRACE==null)::
 		::if (web!=null)::
 		haxe.Log.trace = flashTrace; // ::WEB::
 		::else::
+		::end::
 		::end::
 
 		if (call_real)
