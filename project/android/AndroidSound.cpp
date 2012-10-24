@@ -1,3 +1,4 @@
+#include <Utils.h>
 #include <Sound.h>
 #include <Display.h>
 #include <jni.h>
@@ -32,6 +33,7 @@ namespace nme
 			   	{
 					// LOGV("Android Sound Channel found play method");
 					mStreamID = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
+					mTimeStamp = GetTimeStamp() * 1000;
 			   	}
 			}
 	    }
@@ -43,7 +45,10 @@ namespace nme
 
 		bool isComplete()
 		{
-			return true;
+			int old = mTimeStamp;
+			int now = GetTimeStamp() * 1000;
+			int max = static_cast<Sound*>(mSound)->getLength();
+			return ((now - old) >= max);
 		}
 
 		double getLeft()
@@ -58,6 +63,12 @@ namespace nme
 
 		double getPosition()
 		{
+			int cur = (GetTimeStamp() * 1000) - mTimeStamp;
+			int max = static_cast<Sound*>(mSound)->getLength();
+
+			LOGV("cur: %d, max: %d", cur, max);
+
+			return (cur > max) ? max : cur;
 		}
 
 		void stop()
@@ -79,6 +90,7 @@ namespace nme
 
 		Object *mSound;
 		int mStreamID;
+		int mTimeStamp;
 	};
 
 	SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
