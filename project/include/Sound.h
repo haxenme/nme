@@ -31,6 +31,10 @@ public:
    virtual double getDataPosition() { return 0.0; }
    virtual bool needsData() { return false; }
    virtual void addData(const ByteArray &inBytes) { }
+   
+#ifdef ANDROID
+   virtual bool isMusic() = 0;
+#endif
 };
 
 

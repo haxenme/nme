@@ -3603,6 +3603,21 @@ value nme_sound_channel_create(value inSound, value inStart, value inLoops, valu
 }
 DEFINE_PRIM(nme_sound_channel_create,4);
 
+#ifdef ANDROID
+value nme_sound_channel_is_music(value inChannel)
+{
+	bool isMusic = false;
+	SoundChannel* channel;
+	if (AbstractToObject(inChannel, channel))
+	{
+		isMusic = channel->isMusic();
+	}
+	
+	return alloc_bool(isMusic);
+}
+DEFINE_PRIM(nme_sound_channel_is_music, 1);
+#endif
+
 // --- dynamic sound ---
 
 
