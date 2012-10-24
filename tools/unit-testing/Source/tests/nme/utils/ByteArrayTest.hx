@@ -268,6 +268,36 @@ import nme.utils.Endian;
 		
 	}
 	
+	public function testReadSignedShort() {
+		var data:ByteArray = new ByteArray();
+		data.endian = Endian.LITTLE_ENDIAN;
+		data.writeByte(0x10); data.writeByte(0xAA);
+		data.writeByte(0x6B); data.writeByte(0xCF);
+		data.position = 0;
+		
+		assertEquals(-22000, data.readShort());
+		assertEquals(-12437, data.readShort());
+	}
+	
+	public function testReadSignedByte() {
+		var data:ByteArray = new ByteArray();
+		data.endian = Endian.LITTLE_ENDIAN;
+		data.writeByte(0xFF);
+		data.writeByte(0x80);
+		data.writeByte(0x81);
+		data.writeByte(0xE0);
+		data.writeByte(0x01);
+		data.writeByte(0x00);
+		data.position = 0;
+		
+		assertEquals( -1, data.readByte());
+		assertEquals( -128, data.readByte());
+		assertEquals( -127, data.readByte());
+		assertEquals( -32, data.readByte());
+		assertEquals( 1, data.readByte());
+		assertEquals(0, data.readByte());
+	}
+	
 	
 	public function testReadWriteUTF () {
 		

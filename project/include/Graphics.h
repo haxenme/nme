@@ -523,6 +523,7 @@ struct HardwareArrays
      RADIAL      = 0x00000004,
 
      FOCAL_MASK  = 0x0000ff00,
+     FOCAL_SIGN  = 0x00010000,
    };
 
    HardwareArrays(Surface *inSurface,unsigned int inFlags);

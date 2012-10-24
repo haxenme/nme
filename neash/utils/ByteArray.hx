@@ -219,7 +219,8 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public inline function readByte():Int
 	{
-		return (position < length) ? __get(position++) : ThrowEOFi();
+		var val:Int = readUnsignedByte();
+		return ((val & 0x80) != 0) ? (val - 0x100) : val;
 	}
 
 	
@@ -295,43 +296,43 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 
 	public function readInt():Int
 	{
-		var ch1 = readByte();
-		var ch2 = readByte();
-		var ch3 = readByte();
-		var ch4 = readByte();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		var ch3 = readUnsignedByte();
+		var ch4 = readUnsignedByte();
 		return bigEndian ? (ch1 << 24) | (ch2 << 16) | (ch3 << 8) | ch4 : (ch4 << 24) | (ch3 << 16) | (ch2 << 8) | ch1;
 	}
 	
 	
 	public function readShort():Int
 	{
-		var ch1 = readByte();
-		var ch2 = readByte();
-		var val = bigEndian ? (ch1 << 8) | ch2 : (ch2 << 8) + ch1;
-		return (val >= 0x8000 ) ? 65534 - val : val;
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		var val = bigEndian ? ((ch1 << 8) | ch2) : ((ch2 << 8) | ch1);
+		return ((val & 0x8000) != 0) ? (val - 0x10000) : val;
 	}
 	
 	
 	inline public function readUnsignedByte():Int
 	{
-		return readByte();
+		return (position < length) ? __get(position++) : ThrowEOFi();
 	}
 	
 	
 	public function readUnsignedInt():Int
 	{
-		var ch1 = readByte();
-		var ch2 = readByte();
-		var ch3 = readByte();
-		var ch4 = readByte();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		var ch3 = readUnsignedByte();
+		var ch4 = readUnsignedByte();
 		return bigEndian ? (ch1 << 24) | (ch2 << 16) | (ch3 << 8) | ch4 : (ch4 << 24) | (ch3 << 16) | (ch2 << 8) | ch1;
 	}
 	
 	
 	public function readUnsignedShort():Int
 	{
-		var ch1 = readByte();
-		var ch2 = readByte();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
 		return bigEndian ? (ch1 << 8) | ch2 : (ch2 << 8) + ch1;
 	}
 	

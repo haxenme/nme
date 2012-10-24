@@ -596,9 +596,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
-		var wasOnStage = (jeashIsOnStage());
 		var gfx = jeashGetGraphics();
-		if (gfx == null) throw this + " tried to add to stage with null graphics context";
+		if (gfx == null) return;
 
 		if (newParent.jeashGetGraphics() != null) {
 			Lib.jeashSetSurfaceId(gfx.jeashSurface, _jeashId);
@@ -631,13 +630,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					}
 				}
 			}
+			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, getSurfaceTransform(gfx));
 		} else {
 			if (newParent.name == Stage.NAME) { // only stage is allowed to add to a parent with no context
 				Lib.jeashAppendSurface(gfx.jeashSurface);
 			}
 		}
 
-		if (!wasOnStage && jeashIsOnStage()) {
+		if (jeashIsOnStage()) {
 			var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
 			dispatchEvent(evt);
 		}

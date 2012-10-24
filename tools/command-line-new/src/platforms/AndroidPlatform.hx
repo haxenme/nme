@@ -72,6 +72,12 @@ class AndroidPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+	
+	
+	}
+	
+	
 	public function install (project:NMEProject):Void {
 		
 		/*var build:String = "debug";

@@ -38,15 +38,18 @@ class IOSPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+	
+	
+	}
+	
+	
 	private function generateContext (project:NMEProject):Dynamic {
 		
-		var cache = new NMEProject ();
-		cache.sources = project.sources;
-		
+		project = project.clone ();
 		project.sources = PathHelper.relocatePaths (project.sources, PathHelper.combine (project.app.path, "ios/" + project.app.file + "/haxe"));
 		
 		var context = project.templateContext;
-		project.sources = cache.sources;
 		
 		context.HAS_ICON = false;
 		context.HAS_LAUNCH_IMAGE = false;

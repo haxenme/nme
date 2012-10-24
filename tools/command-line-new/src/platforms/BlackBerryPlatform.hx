@@ -41,6 +41,12 @@ class BlackBerryPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+	
+	
+	}
+	
+	
 	private function initialize (project:NMEProject):Void {
 		
 		if (!project.environment.exists ("BLACKBERRY_SETUP")) {
@@ -74,19 +80,12 @@ class BlackBerryPlatform implements IPlatformTool {
 	
 	public function update (project:NMEProject):Void {
 		
+		project = project.clone ();
 		initialize (project);
 		
-		var cache = new NMEProject ();
-		cache.haxeflags = project.haxeflags.copy ();
-		cache.assets = project.assets.copy ();
-		
-		project.assets = new Array <Asset> ();
-		
-		for (asset in cache.assets) {
+		for (asset in project.assets) {
 			
-			var clone = asset.clone ();
-			clone.resourceName = "app/native/" + clone.resourceName;
-			project.assets.push (clone);
+			asset.resourceName = "app/native/" + asset.resourceName;
 			
 		}
 		
@@ -97,9 +96,6 @@ class BlackBerryPlatform implements IPlatformTool {
 		}
 		
 		var context = project.templateContext;
-		
-		project.haxeflags = cache.haxeflags;
-		project.assets = cache.assets;
 		
 		context.CPP_DIR = project.app.path + "/blackberry/obj";
 		context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.processDebugToken (project, project.app.path + "/blackberry").authorID;

@@ -99,10 +99,15 @@ class Video extends DisplayObject {
 		this.netStream = ns;
 		var scope:Video = this;
 		
-		jeashGraphics.SetSurface(ns.jeashVideoElement);
+		jeashGraphics.jeashMediaSurface(ns.jeashVideoElement);
 
 		ns.jeashVideoElement.style.setProperty("width", width + "px", "");
 		ns.jeashVideoElement.style.setProperty("height", height + "px", "");
+
+		ns.jeashVideoElement.addEventListener("error", ns.jeashNotFound, false);
+		ns.jeashVideoElement.addEventListener("waiting", ns.jeashBufferEmpty, false);
+		ns.jeashVideoElement.addEventListener("ended", ns.jeashBufferStop, false);
+		ns.jeashVideoElement.addEventListener("play", ns.jeashBufferStart, false);
 
 		ns.jeashVideoElement.play();
 	}
@@ -115,16 +120,16 @@ class Video extends DisplayObject {
 		jeashGraphics.drawRect(0, 0, width, height);
 	}
 
-	override public function jeashRender(inMask:HTMLCanvasElement, ?clipRect:Rectangle)
+	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle)
 	{
-		if (mMtxDirty || mMtxChainDirty){
+		if (_matrixInvalid || _matrixChainInvalid){
 			jeashValidateMatrix();
 		}
 
 		var gfx = jeashGetGraphics();
 
 		if (gfx != null) {
-			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, mFullMatrix);
+			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, getSurfaceTransform(gfx));
 		}
 	}
 	

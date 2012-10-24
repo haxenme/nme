@@ -2,6 +2,8 @@ package platforms;
 
 
 import haxe.io.Path;
+import haxe.Template;
+import sys.io.File;
 import sys.FileSystem;
 
 
@@ -13,6 +15,7 @@ class MacPlatform implements IPlatformTool {
 	private var executableDirectory:String;
 	private var executablePath:String;
 	private var targetDirectory:String;
+	private var useNeko:Bool;
 	
 	
 	public function build (project:NMEProject):Void {
@@ -24,7 +27,7 @@ class MacPlatform implements IPlatformTool {
 		PathHelper.mkdir (targetDirectory);
 		ProcessHelper.runCommand ("", "haxe", [ hxml ]);
 		
-		if (project.targetFlags.exists ("neko")) {
+		if (useNeko) {
 			
 			NekoHelper.createExecutable (project.templatePaths, "Mac", targetDirectory + "/obj/ApplicationMain.n", executablePath);
 			NekoHelper.copyLibraries (project.templatePaths, "Mac", executableDirectory);
@@ -35,7 +38,11 @@ class MacPlatform implements IPlatformTool {
 			
 		}
 		
-		ProcessHelper.runCommand ("", "chmod", [ "755", executablePath ]);
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS) {
+			
+			ProcessHelper.runCommand ("", "chmod", [ "755", executablePath ]);
+			
+		}
 		
 	}
 	
@@ -53,13 +60,40 @@ class MacPlatform implements IPlatformTool {
 	}
 	
 	
+	public function display (project:NMEProject):Void {
+		
+		var hxml = PathHelper.findTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
+		
+		var context = generateContext (project);
+		var contents = File.getContent (hxml);
+		var template = new Template (contents);
+		
+		Sys.println (template.execute (project.templateContext));
+		Sys.println ("-D code_completion");
+		
+	}
+	
+	
+	private function generateContext (project:NMEProject):Dynamic {
+		
+		var context = project.templateContext;
+		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
+		context.CPP_DIR = targetDirectory + "/obj/";
+		context.BUILD_DIR = project.app.path + "/mac";
+		
+		return context;
+		
+	}
+	
+	
 	private function initialize (project:NMEProject):Void {
 		
 		targetDirectory = project.app.path + "/mac/cpp";
 		
-		if (project.targetFlags.exists ("neko")) {
+		if (project.targetFlags.exists ("neko") || project.target != PlatformHelper.hostPlatform) {
 			
 			targetDirectory = project.app.path + "/mac/neko";
+			useNeko = true;
 			
 		}
 		
@@ -73,9 +107,12 @@ class MacPlatform implements IPlatformTool {
 	
 	public function run (project:NMEProject, arguments:Array <String>):Void {
 		
-		initialize (project);
-		
-		ProcessHelper.runCommand (executableDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
+		if (project.target == PlatformHelper.hostPlatform) {
+			
+			initialize (project);
+			ProcessHelper.runCommand (executableDirectory, "./" + Path.withoutDirectory (executablePath), arguments);
+			
+		}
 		
 	}
 	
@@ -84,10 +121,7 @@ class MacPlatform implements IPlatformTool {
 		
 		initialize (project);
 		
-		var context = project.templateContext;
-		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
-		context.CPP_DIR = targetDirectory + "/obj/";
-		context.BUILD_DIR = project.app.path + "/mac";
+		var context = generateContext (project);
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");
@@ -97,7 +131,7 @@ class MacPlatform implements IPlatformTool {
 		SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
 		
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", targetDirectory + "/haxe", context);
-		FileHelper.recursiveCopyTemplate (project.templatePaths, (project.targetFlags.exists ("neko") ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
+		FileHelper.recursiveCopyTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
 		FileHelper.copyFileTemplate (project.templatePaths, "mac/Info.plist", targetDirectory + "/bin/" + project.app.file + ".app/Contents/Info.plist", context);
 		
 		for (ndll in project.ndlls) {

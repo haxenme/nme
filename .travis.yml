@@ -1,0 +1,22 @@
+language: node_js
+node_js:
+  - 0.6
+
+before_install:
+  - sudo apt-get install libgc1c2
+  - curl http://haxe.org/file/hxinst-linux.tgz | tar zxf -
+  - echo y | sudo ./hxinst-linux > /dev/null
+  - echo | haxelib setup
+  - haxelib install pdiff-hx 
+  - haxelib install tink_macros 
+  - haxelib install utest
+  - haxelib install format
+  - sudo apt-get install subversion
+  - sudo apt-get install xsltproc
+
+before_script:
+  - make clean all -C tools/smoke.jeash.com
+  - "cd tools/smoke.jeash.com && node webserver.js &"
+
+script:
+  - make test -C tools/smoke.jeash.com
