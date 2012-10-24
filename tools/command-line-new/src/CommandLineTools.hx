@@ -6,6 +6,7 @@ import haxe.io.Path;
 import haxe.rtti.Meta;
 import platforms.AndroidPlatform;
 import platforms.BlackBerryPlatform;
+import platforms.FlashPlatform;
 import platforms.IOSPlatform;
 import platforms.IPlatformTool;
 import platforms.LinuxPlatform;
@@ -81,7 +82,8 @@ class CommandLineTools {
 				
 			case Platform.FLASH:
 				
-				//
+				platform = new FlashPlatform ();
+				metaFields = Meta.getFields (FlashPlatform);
 				
 			case Platform.HTML5:
 				

@@ -42,7 +42,7 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id) == "image") {
+		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "image") {
 			
 			if (useCache && cachedBitmapData.exists (id)) {
 				
@@ -96,7 +96,7 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id) == "font") {
+		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "font") {
 			
 			return cast (Type.createInstance (resourceClasses.get (id), []), Font);
 			
@@ -117,7 +117,7 @@ class Assets {
 		
 		if (resourceTypes.exists (id)) {
 			
-			if (resourceTypes.get (id) == "sound" || resourceTypes.get (id) == "music") {
+			if (resourceTypes.get (id).toLowerCase () == "sound" || resourceTypes.get (id).toLowerCase () == "music") {
 				
 				return cast (Type.createInstance (resourceClasses.get (id), []), Sound);
 				
