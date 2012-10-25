@@ -83,8 +83,8 @@ class ApplicationMain {
 
 	static function onEnter (_) {
 		
-		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
-		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;
+		var loaded = nme.Lib.current.loaderInfo.bytesLoaded;
+		var total = nme.Lib.current.loaderInfo.bytesTotal;
 		mPreloader.onUpdate(loaded,total);
 		
 		if (loaded >= total) {

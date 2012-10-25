@@ -642,21 +642,25 @@ class Lib {
 
 	static public function jeashGetWidth() {
 		var tgt : HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
-		return tgt.clientWidth > 0 ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
+		return (tgt != null && tgt.clientWidth > 0) ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
 	}
 
 	static public function jeashGetHeight() {
 		var tgt : HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
-		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
+		return (tgt != null && tgt.clientHeight > 0) ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
 	}
 
 	public static function jeashBootstrap() {
 		if (mMe == null) {
-			var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
-			if (untyped navigator.userAgent.indexOf ("BlackBerry") > -1 && tgt.style.height == "100%") {
-				tgt.style.height = untyped screen.height + "px";
+			var target : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+			if (target == null) {
+				trace ("Error: Cannot find element ID \"" + JEASH_IDENTIFIER + "\"");
+				untyped __js__ ("target.id; // throw error");
 			}
-			Run(tgt, jeashGetWidth(), jeashGetHeight());
+			if (untyped navigator.userAgent.indexOf ("BlackBerry") > -1 && target.style.height == "100%") {
+				target.style.height = untyped screen.height + "px";
+			}
+			Run(target, jeashGetWidth(), jeashGetHeight());
 		}
 	}
 }

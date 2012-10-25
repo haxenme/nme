@@ -449,19 +449,21 @@ class NMEProject {
 			
 		}
 		
-		var embeddedAssets = new Array <Asset> ();
+		context.assets = new Array <Dynamic> ();
 		
 		for (asset in assets) {
 			
 			if (asset.type != AssetType.TEMPLATE) {
 				
-				embeddedAssets.push (asset);
+				var embeddedAsset:Dynamic = { };
+				ObjectHelper.copyFields (asset, embeddedAsset);
+				embeddedAsset.type = Std.string (asset.type).toLowerCase ();
+				context.assets.push (embeddedAsset);
 				
 			}
 			
 		}
 		
-		Reflect.setField (context, "assets", embeddedAssets);
 		Reflect.setField (context, "ndlls", ndlls);
 		//Reflect.setField (context, "sslCaCert", sslCaCert);
 		context.sslCaCert = "";
@@ -477,6 +479,7 @@ class NMEProject {
 		for (haxelib in haxelibs) {
 			
 			compilerFlags.push ("-lib " + haxelib);
+			Reflect.setField (context, "LIB_" + haxelib.toUpperCase (), true);
 			
 		}
 		
