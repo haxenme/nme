@@ -21,6 +21,7 @@
 #define NME_GLES
 
 #elif !defined(HX_WINDOWS)
+
 // Mac/Linux....
 #define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
@@ -55,6 +56,10 @@
 //#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
 #define NEED_EXTENSIONS
+
+
+#define ALLOW_OGL2
+#include <SDL_opengl.h>
 
 #endif
 
