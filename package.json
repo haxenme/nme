@@ -1,12 +1,12 @@
 {
-  "name": "smoke.jeash.com",
+  "name": "application-name",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node app"
   },
   "dependencies": {
-    "express": "3.x",
+    "express": "3.0.0alpha1",
     "jade": "*"
   }
 }
