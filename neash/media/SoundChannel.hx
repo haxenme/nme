@@ -56,26 +56,28 @@ class SoundChannel extends EventDispatcher
 	{
 		if (nmeHandle != null )
 		{
-         if (nmeDataProvider!=null && nme_sound_channel_needs_data(nmeHandle))
-         {
-            var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
-            request.position = nme_sound_channel_get_data_position(nmeHandle);
-            nmeDataProvider.dispatchEvent(request);
-            if (request.data.length > 0)
-               nme_sound_channel_add_data(nmeHandle,request.data);
-         }
+			if (nmeDataProvider!=null && nme_sound_channel_needs_data(nmeHandle))
+			{
+				var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
+				request.position = nme_sound_channel_get_data_position(nmeHandle);
+				nmeDataProvider.dispatchEvent(request);
+				if (request.data.length > 0) {
+					nme_sound_channel_add_data(nmeHandle,request.data);
+				}
+			}
 
-         if (nme_sound_channel_is_complete(nmeHandle))
-         {
-			   nmeHandle = null;
-            if (nmeDataProvider!=null)
-               nmeDynamicSoundCount--;
-			   var complete = new Event(Event.SOUND_COMPLETE);
-			   dispatchEvent(complete);
-			   return true;
-         }
+			if (nme_sound_channel_is_complete(nmeHandle))
+			{
+				nmeHandle = null;
+				if (nmeDataProvider!=null) {
+					nmeDynamicSoundCount--;
+				}
+				var complete = new Event(Event.SOUND_COMPLETE);
+				dispatchEvent(complete);
+				return true;
+			}
 		}
-		
+
 		return false;
 	}
 	
@@ -92,10 +94,8 @@ class SoundChannel extends EventDispatcher
 		{
 			var incomplete = new Array<SoundChannel>();
 			
-			for (channel in nmeIncompleteList)
-			{
-				if (!channel.nmeCheckComplete ())
-				{
+			for (channel in nmeIncompleteList) {
+				if (!channel.nmeCheckComplete()) {
 					incomplete.push (channel);
 				}
 			}
@@ -108,6 +108,7 @@ class SoundChannel extends EventDispatcher
 	public function stop()
 	{ 
 		nme_sound_channel_stop(nmeHandle);
+		nmeHandle = null;
 	}
 	
 	

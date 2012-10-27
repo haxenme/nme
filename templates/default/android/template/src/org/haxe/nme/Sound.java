@@ -169,18 +169,16 @@ public class Sound
 		
 		Log.v("Sound","Get sound handle ------" + inFilename + " = " + id);
 		
+		int index;
 		if (id > 0) {
-			int index = mSoundPool.load(mContext, id, 1);
+			index = mSoundPool.load(mContext, id, 1);
 			Log.v("Sound", "Loaded index: " + index);
-			return index;
 		} else {
 			Log.v("Sound", "Resource not found: " + (-id));
-			int index = mSoundPool.load(inFilename, 1);
+			index = mSoundPool.load(inFilename, 1);
 			Log.v("Sound", "Loaded index from path: " + index);
-			return index;
 		}
-		
-		//return -1;
+		return index;
     }
 	
 	public static String getSoundPathByByteArray(byte[] data) throws java.lang.Exception
@@ -246,14 +244,9 @@ public class Sound
 		return id;		
 	}
 
-	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
-    {
-    	Log.i("Sound", "playMusic");
-		
-		if (mediaPlayer != null) {
-			mediaPlayer.stop ();
-		}
-		
+	private static MediaPlayer createMediaPlayer(String inPath)
+	{
+		Log.v("Sound", "createMediaPlayer -------" + inPath);
 		MediaPlayer mp = null;
 		int resourceID = getMusicHandle(inPath); // check to see if this is a bundled resource
 		if (resourceID < 0) { // not in bundle, try to play from filesystem
@@ -266,10 +259,10 @@ public class Sound
 					mp.prepare();
 		        } catch(FileNotFoundException e) { 
 		            System.out.println(e.getMessage());
-		            return -1;
+		            return null;
 		        } catch(IOException e) { 
 		            System.out.println(e.getMessage());
-		            return -1;
+		            return null;
 		        }
 		    } else {
 				Uri uri = Uri.parse(inPath);
@@ -278,7 +271,18 @@ public class Sound
 		} else {
 			mp = MediaPlayer.create(mContext, resourceID);
 		}
+		return mp;
+	}
 
+	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
+    {
+    	Log.i("Sound", "playMusic");
+		
+		if (mediaPlayer != null) {
+			mediaPlayer.stop ();
+		}
+		
+		MediaPlayer mp = createMediaPlayer(inPath);
 		if (mp == null) {
 			return -1;
 		}
@@ -307,11 +311,19 @@ public class Sound
 	
 	public static int getDuration(String inPath)
 	{
+		int duration = -1;
 		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
-			return mediaPlayer.getDuration ();
+			duration = mediaPlayer.getDuration();
+		} else {
+			MediaPlayer mp = createMediaPlayer(inPath);
+			if (mp != null) {
+				duration = mp.getDuration();
+				mp.release();
+				mp = null;
+			}
 		}
 
-		return -1;
+		return duration;
 	}
 	
 	public static int getPosition(String inPath)
