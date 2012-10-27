@@ -57,13 +57,33 @@ class NMEPreloader extends Sprite
 	
 	public function getHeight():Float
 	{
-		return ::WIN_HEIGHT::;
+		var height = ::WIN_HEIGHT::;
+		
+		if (height > 0) {
+			
+			return height;
+			
+		} else {
+			
+			return nme.Lib.current.stage.stageHeight;
+			
+		}
 	}
 	
 	
 	public function getWidth():Float
 	{
-		return ::WIN_WIDTH::;
+		var width = ::WIN_WIDTH::;
+		
+		if (width > 0) {
+			
+			return width;
+			
+		} else {
+			
+			return nme.Lib.current.stage.stageWidth;
+			
+		}
 	}
 	
 	

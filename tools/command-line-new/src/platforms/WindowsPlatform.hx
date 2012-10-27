@@ -30,7 +30,7 @@ class WindowsPlatform implements IPlatformTool {
 			
 		} else {
 			
-			FileHelper.copyFile (targetDirectory + "/obj/ApplicationMain" + (project.debug ? "-debug" : ""), executablePath);
+			FileHelper.copyFile (targetDirectory + "/obj/ApplicationMain" + (project.debug ? "-debug" : "") + ".exe", executablePath);
 			
 		}
 		
@@ -68,7 +68,7 @@ class WindowsPlatform implements IPlatformTool {
 		}
 		
 		applicationDirectory = targetDirectory + "/bin/";
-		executablePath = applicationDirectory + "/" + project.app.file;
+		executablePath = applicationDirectory + "/" + project.app.file + ".exe";
 		
 	}
 	
@@ -92,9 +92,8 @@ class WindowsPlatform implements IPlatformTool {
 		
 		var context = project.templateContext;
 		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
-		context.CPP_DIR = targetDirectory + "/obj/";
+		context.CPP_DIR = targetDirectory + "/obj";
 		context.BUILD_DIR = project.app.path + "/windows";
-		context.WIN_ALLOW_SHADERS = false;
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");

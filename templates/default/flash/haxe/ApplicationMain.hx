@@ -32,9 +32,11 @@ class ApplicationMain {
 		}
 		::end::
 		
+		::if (DONT_MESS_WITH_MY_TRACE==null)::
 		::if (web!=null)::
 		haxe.Log.trace = flashTrace; // ::WEB::
 		::else::
+		::end::
 		::end::
 
 		if (call_real)
@@ -81,8 +83,8 @@ class ApplicationMain {
 
 	static function onEnter (_) {
 		
-		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
-		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;
+		var loaded = nme.Lib.current.loaderInfo.bytesLoaded;
+		var total = nme.Lib.current.loaderInfo.bytesTotal;
 		mPreloader.onUpdate(loaded,total);
 		
 		if (loaded >= total) {
@@ -132,7 +134,7 @@ class ApplicationMain {
 	
 }
 
-::foreach assets::::if (type == "image")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
+::foreach assets::::if (flashClass == "nme.display.BitmapData")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
 ::end::
 
 #else

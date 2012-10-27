@@ -340,7 +340,7 @@ class NMEProject {
 			
 			defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
 			defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: "11", minimumSWFVersion: "11", url: "" }
-			defaultWindow = { width: 800, height: 600, background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, shaders: false }
+			defaultWindow = { width: 0, height: 0, background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, shaders: false }
 			
 			initialized = true;
 			
@@ -449,19 +449,21 @@ class NMEProject {
 			
 		}
 		
-		var embeddedAssets = new Array <Asset> ();
+		context.assets = new Array <Dynamic> ();
 		
 		for (asset in assets) {
 			
 			if (asset.type != AssetType.TEMPLATE) {
 				
-				embeddedAssets.push (asset);
+				var embeddedAsset:Dynamic = { };
+				ObjectHelper.copyFields (asset, embeddedAsset);
+				embeddedAsset.type = Std.string (asset.type).toLowerCase ();
+				context.assets.push (embeddedAsset);
 				
 			}
 			
 		}
 		
-		Reflect.setField (context, "assets", embeddedAssets);
 		Reflect.setField (context, "ndlls", ndlls);
 		//Reflect.setField (context, "sslCaCert", sslCaCert);
 		context.sslCaCert = "";
@@ -477,6 +479,7 @@ class NMEProject {
 		for (haxelib in haxelibs) {
 			
 			compilerFlags.push ("-lib " + haxelib);
+			Reflect.setField (context, "LIB_" + haxelib.toUpperCase (), true);
 			
 		}
 		
@@ -535,6 +538,10 @@ class NMEProject {
 			
 			//Sys.println ("context." + field + " = " + Reflect.field (context, field));
 		}
+		
+		context.SWF_VERSION = app.swfVersion;
+		context.PRELOADER_NAME = app.preloader;
+		context.WIN_BACKGROUND = window.background;
 		
 		//context.WIN_ALLOW_SHADERS = true;
 		context.WIN_ALLOW_SHADERS = false;

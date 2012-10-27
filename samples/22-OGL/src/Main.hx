@@ -200,7 +200,7 @@ class ProgramPosTexExtra extends ProgramPosTex
    }
 
 
-   public function render()
+   override public function render()
    {
       GL.useProgram(prog);
 

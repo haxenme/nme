@@ -9,6 +9,7 @@ class Asset {
 	
 	public var data:Dynamic;
 	public var embed:Bool;
+	public var flatName:String;
 	public var glyphs:String;
 	public var id:String;
 	//public var path:String;
@@ -21,6 +22,7 @@ class Asset {
 	
 	public function new (path:String = "", rename:String = "", type:AssetType = null, embed:Bool = true) {
 		
+		this.embed = embed;
 		sourcePath = path;
 		
 		if (rename == "") {
@@ -35,6 +37,7 @@ class Asset {
 		
 		id = targetPath;
 		resourceName = targetPath;
+		flatName = StringHelper.getFlatName (targetPath);
 		
 		if (type == null) {
 			
@@ -67,6 +70,10 @@ class Asset {
 					this.type = AssetType.BINARY;
 				
 			}
+			
+		} else {
+			
+			this.type = type;
 			
 		}
 		

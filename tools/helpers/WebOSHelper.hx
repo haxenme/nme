@@ -11,23 +11,16 @@ class WebOSHelper {
 	}
 	
 	
-	private static function getPackageName (project:NMEProject):String {
-		
-		return project.meta.packageName + "_" + project.meta.version + "_all.ipk";
-		
-	}
-	
-	
 	public static function install (project:NMEProject, workingDirectory:String):Void {
 		
-		runPalmCommand (project, workingDirectory, "install", [ getPackageName (project) ]);
+		runPalmCommand (project, workingDirectory, "install", [ project.meta.packageName + "_" + project.meta.version + "_all.ipk" ]);
 		
 	}
 	
 	
 	public static function launch (project:NMEProject):Void {
 		
-		runPalmCommand (project, "", "launch", [ getPackageName (project) ]);
+		runPalmCommand (project, "", "launch", [ project.meta.packageName ]);
 		
 	}
 	
