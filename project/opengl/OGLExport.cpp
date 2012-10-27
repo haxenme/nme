@@ -525,7 +525,7 @@ value nme_gl_get_uniform(value inId,value inLocation)
       case  GL_FLOAT_MAT2: floats = 4; break;
       case  GL_FLOAT_MAT3: floats = 9; break;
       case  GL_FLOAT_MAT4: floats = 16; break;
-      #ifndef ANDROID
+      #ifdef HX_MACOS
       case  GL_FLOAT_MAT2x3: floats = 4*3; break;
       case  GL_FLOAT_MAT2x4: floats = 4*4; break;
       case  GL_FLOAT_MAT3x2: floats = 9*2; break;
@@ -537,7 +537,7 @@ value nme_gl_get_uniform(value inId,value inLocation)
       case  GL_INT:
       case  GL_BOOL:
       case  GL_SAMPLER_2D:
-      #ifndef ANDROID
+      #ifdef HX_MACOS
       case  GL_SAMPLER_1D:
       case  GL_SAMPLER_3D:
       case  GL_SAMPLER_CUBE:
@@ -1378,12 +1378,12 @@ value nme_gl_depth_func(value func)
 DEFINE_PRIM(nme_gl_depth_func,1);
 
 
-value nme_gl_depth_range(value near, value far)
+value nme_gl_depth_range(value inNear, value inFar)
 {
    #ifdef NME_GLES
-   glDepthRangef(val_number(near), val_number(far));
+   glDepthRangef(val_number(inNear), val_number(inFar));
    #else
-   glDepthRange(val_number(near), val_number(far));
+   glDepthRange(val_number(inNear), val_number(inFar));
    #endif
    return alloc_null();
 }

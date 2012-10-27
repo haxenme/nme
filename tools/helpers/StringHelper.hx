@@ -5,6 +5,7 @@ class StringHelper {
 	
 	
 	private static var seedNumber = 0;
+	private static var usedFlatNames = new Hash <String> ();
 	
 	
 	public static function formatArray (array:Array <Dynamic>):String {
@@ -86,10 +87,67 @@ class StringHelper {
 	}
 	
 	
+	public static function getFlatName (name:String):String {
+		
+		var chars = name.toLowerCase ();
+		var flatName = "";
+		
+		for (i in 0...chars.length) {
+			
+			var code = chars.charCodeAt (i);
+			
+			if ((i > 0 && code >= "0".charCodeAt (0) && code <= "9".charCodeAt (0)) || (code >= "a".charCodeAt (0) && code <= "z".charCodeAt (0)) || (code == "_".charCodeAt (0))) {
+				
+				flatName += chars.charAt (i);
+				
+			} else {
+				
+				flatName += "_";
+				
+			}
+			
+		}
+		
+		if (flatName == "") {
+			
+			flatName = "_";
+			
+		}
+		
+		if (flatName.substr (0, 1) == "_") {
+			
+			flatName = "file" + flatName;
+			
+		}
+		
+		while (usedFlatNames.exists (flatName)) {
+			
+			// Find last digit ...
+			var match = ~/(.*?)(\d+)/;
+			
+			if (match.match (flatName)) {
+				
+				flatName = match.matched (1) + (Std.parseInt (match.matched (2)) + 1);
+				
+			} else {
+				
+				flatName += "1";
+				
+			}
+			
+		}
+		
+		usedFlatNames.set (flatName, "1");
+		
+		return flatName;
+		
+	}
+	
+	
 	public static function getUniqueID ():String {
-
+		
 		return StringTools.hex (seedNumber++, 8);
-
+		
 	}
 	
 	

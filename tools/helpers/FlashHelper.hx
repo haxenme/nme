@@ -1,7 +1,6 @@
 package;
 
 
-import data.Asset;
 import haxe.io.Path;
 import format.swf.Data;
 import format.swf.Constants;
@@ -17,9 +16,7 @@ import sys.FileSystem;
 class FlashHelper {
 	
 	
-	private static var defines:Hash <String>;
 	private static var swfAssetID = 1000;
-	private static var targetFlags:Hash <String>;
 	
 	
 	private static function embedAsset (inAsset:Asset, outTags:Array<SWFTag>) {
@@ -37,7 +34,7 @@ class FlashHelper {
 		
 		var cid = nextAssetID ();
 		
-		if (type == "music" || type == "sound") {
+		if (type == AssetType.MUSIC || type == AssetType.SOUND) {
 			
 			var src = name;
 			var ext = Path.extension (src);
@@ -201,7 +198,7 @@ class FlashHelper {
 			
 			input.close ();
 			
-		} else if (type == "image") {
+		} else if (type == AssetType.IMAGE) {
 			
 			var src = name;
 			var ext = Path.extension (src).toLowerCase ();
@@ -209,14 +206,14 @@ class FlashHelper {
 			if (ext == "jpg" || ext == "png" || ext == "gif") {
 				
 				if (!FileSystem.exists (src)) {
-
+					
 					Sys.println ("Warning: Could not find image path \"" + src + "\"");
-
+					
 				} else {
-
+					
 					var bytes = File.getBytes (src);
 					outTags.push (TBitsJPEG (cid, JDJPEG2 (bytes)));
-
+					
 				}
 				
 			} else {
@@ -225,7 +222,7 @@ class FlashHelper {
 				
 			}
 			
-		} else if (type == "font") {
+		} else if (type == AssetType.FONT) {
 			
 			// More code ripped off from "samhaxe"
 			var src = name;
@@ -384,7 +381,7 @@ class FlashHelper {
 				
 				for (asset in assets) {
 					
-					if (asset.type != Asset.TYPE_TEMPLATE && embedAsset (asset, new_tags)) {
+					if (asset.type != AssetType.TEMPLATE && embedAsset (asset, new_tags)) {
 						
 						inserted = true;
 						
@@ -411,14 +408,6 @@ class FlashHelper {
 	}
 	
 	
-	public static function initialize (defines:Hash <String>, targetFlags:Hash <String>):Void {
-		
-		FlashHelper.defines = defines;
-		FlashHelper.targetFlags = targetFlags;
-		
-	}
-	
-	
 	private static function nextAssetID () {
 		
 		return swfAssetID++;
@@ -426,21 +415,21 @@ class FlashHelper {
 	}
 	
 	
-	public static function run (workingDirectory:String, targetPath:String):Void {
+	public static function run (project:NMEProject, workingDirectory:String, targetPath:String):Void {
 		
-		if (defines.exists ("APP_URL")) {
-				
-			ProcessHelper.openURL (defines.get ("APP_URL"));		
-				
+		if (project.app.url != "") {
+			
+			ProcessHelper.openURL (project.app.url);		
+			
 		} else {
 			
 			var player:String = null;
 			
 			if (!StringTools.endsWith (targetPath, ".html")) {
 				
-				if (defines.exists ("SWF_PLAYER")) {
+				if (project.environment.exists ("SWF_PLAYER")) {
 					
-					player = defines.get ("SWF_PLAYER");
+					player = project.environment.get ("SWF_PLAYER");
 					
 				} else {
 					

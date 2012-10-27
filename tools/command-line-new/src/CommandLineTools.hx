@@ -6,6 +6,8 @@ import haxe.io.Path;
 import haxe.rtti.Meta;
 import platforms.AndroidPlatform;
 import platforms.BlackBerryPlatform;
+import platforms.FlashPlatform;
+import platforms.HTML5Platform;
 import platforms.IOSPlatform;
 import platforms.IPlatformTool;
 import platforms.LinuxPlatform;
@@ -38,7 +40,6 @@ class CommandLineTools {
 		
 		var project = initializeProject ();
 		var platform:IPlatformTool = null;
-		var metaFields = null;
 		
 		LogHelper.info ("", "Using target platform: " + project.target);
 		
@@ -47,47 +48,42 @@ class CommandLineTools {
 			case Platform.ANDROID:
 				
 				platform = new AndroidPlatform ();
-				metaFields = Meta.getFields (AndroidPlatform);
 				
 			case Platform.BLACKBERRY:
 				
 				platform = new BlackBerryPlatform ();
-				metaFields = Meta.getFields (BlackBerryPlatform);
 			
 			case Platform.IOS:
 				
 				platform = new IOSPlatform ();
-				metaFields = Meta.getFields (IOSPlatform);
 			
 			case Platform.WEBOS:
 				
 				platform = new WebOSPlatform ();
-				metaFields = Meta.getFields (WebOSPlatform);
 			
 			case Platform.WINDOWS:
 				
 				platform = new WindowsPlatform ();
-				metaFields = Meta.getFields (WindowsPlatform);
 			
 			case Platform.MAC:
 				
 				platform = new MacPlatform ();
-				metaFields = Meta.getFields (MacPlatform);
 				
 			case Platform.LINUX:
 				
 				platform = new LinuxPlatform ();
-				metaFields = Meta.getFields (LinuxPlatform);
 				
 			case Platform.FLASH:
 				
-				//
+				platform = new FlashPlatform ();
 				
 			case Platform.HTML5:
 				
-				//
+				platform = new HTML5Platform ();
 			
 		}
+		
+		var metaFields = Meta.getFields (Type.getClass (platform));
 		
 		if (platform != null) {
 			

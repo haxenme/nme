@@ -84,7 +84,22 @@ class PathHelper {
 	
 	public static function findTemplate (templatePaths:Array <String>, path:String, warnIfNotFound:Bool = true):String {
 		
-		var found = null;
+		var matches = findTemplates (templatePaths, path, warnIfNotFound);
+		
+		if (matches.length > 0) {
+			
+			return matches[matches.length - 1];
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	public static function findTemplates (templatePaths:Array <String>, path:String, warnIfNotFound:Bool = true):Array <String> {
+		
+		var matches = [];
 		
 		for (templatePath in templatePaths) {
 			
@@ -92,19 +107,19 @@ class PathHelper {
 			
 			if (FileSystem.exists (targetPath)) {
 				
-				found = targetPath;
+				matches.push (targetPath);
 				
 			}
 			
 		}
 		
-		if (found == null && warnIfNotFound) {
+		if (matches.length == 0 && warnIfNotFound) {
 			
 			LogHelper.warn ("Could not find template file: " + path);
 			
 		}
 		
-		return found;
+		return matches;
 		
 	}
 	
