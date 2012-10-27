@@ -1,5 +1,5 @@
 package nme.errors;
-#if code_completion
+#if display
 
 
 @:native("TypeError") extern class TypeError extends Error {

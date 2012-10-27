@@ -65,11 +65,9 @@ class MacPlatform implements IPlatformTool {
 		var hxml = PathHelper.findTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 		
 		var context = generateContext (project);
-		var contents = File.getContent (hxml);
-		var template = new Template (contents);
+		var template = new Template (File.getContent (hxml));
 		
-		Sys.println (template.execute (project.templateContext));
-		Sys.println ("-D code_completion");
+		Sys.println (template.execute (context));
 		
 	}
 	

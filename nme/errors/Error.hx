@@ -1,5 +1,5 @@
 package nme.errors;
-#if code_completion
+#if display
 
 
 extern class Error #if !flash_strict implements Dynamic #end {

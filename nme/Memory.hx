@@ -1,5 +1,5 @@
 package nme;
-#if code_completion
+#if display
 
 
 import nme.utils.ByteArray;

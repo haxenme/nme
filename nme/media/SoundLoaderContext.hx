@@ -1,5 +1,5 @@
 package nme.media;
-#if code_completion
+#if display
 
 
 /**

@@ -1,5 +1,5 @@
 package nme.geom;
-#if code_completion
+#if display
 
 
 /**

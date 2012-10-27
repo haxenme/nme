@@ -1,5 +1,5 @@
 package nme.geom;
-#if code_completion
+#if display
 
 
 @:require(flash10) extern class Vector3D {

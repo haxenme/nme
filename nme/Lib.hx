@@ -38,7 +38,7 @@ class Lib
 	 */
 	public static function close():Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.close();
 		#end
@@ -61,7 +61,7 @@ class Lib
 	 */
 	public static function create(onLoaded:Void->Void, width:Int, height:Int, frameRate:Float = 60.0, color:Int = 0xffffff, flags:Int = 0x0f, title:String = "NME", icon:BitmapData = null):Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon);
 		#end
@@ -77,7 +77,7 @@ class Lib
 	 */
 	public static function createManagedStage(width:Int, height:Int)
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.createManagedStage(width, height);
 		#end
@@ -93,7 +93,7 @@ class Lib
 	 */
 	public static function exit():Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.exit();
 		#end
@@ -107,7 +107,7 @@ class Lib
 	 */
 	public static function forceClose():Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.forceClose();
 		#end
@@ -125,7 +125,7 @@ class Lib
 	 */
 	public inline static function getTimer():Int
 	{
-		#if code_completion
+		#if display
 		return 0;
 		#elseif (cpp || neko)
 		return neash.Lib.getTimer();
@@ -144,7 +144,7 @@ class Lib
 	 */
 	public static function getURL(url:URLRequest, target:String = null):Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.getURL(url, target);
 		#elseif js
@@ -163,7 +163,7 @@ class Lib
 	 */
 	public static function pause():Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.pause();
 		#end
@@ -181,7 +181,7 @@ class Lib
 	 */
 	public static function postUICallback(handler:Void->Void)
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.postUICallback(handler);
 		#else
@@ -198,7 +198,7 @@ class Lib
 	 */
 	public static function resume():Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.resume();
 		#end
@@ -217,7 +217,7 @@ class Lib
 	 */
 	public static function setPackage(company:String, file:String, packageName:String, version:String):Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		neash.Lib.setPackage(company, file, packageName, version);
 		#end
@@ -230,7 +230,7 @@ class Lib
 	 */
 	public static function trace(arg:Dynamic):Void
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		trace(arg);
 		#elseif js
@@ -249,7 +249,7 @@ class Lib
 	
 	private static function nmeGetCompany():String
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.company;
 		#end
@@ -259,7 +259,7 @@ class Lib
 	
 	private static function nmeGetCurrent ():MovieClip
 	{
-		#if code_completion
+		#if display
 		return null;
 		#elseif (cpp || neko)
 		return cast neash.Lib.current;
@@ -273,7 +273,7 @@ class Lib
 	
 	private static function nmeGetFile():String
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.file;
 		#end
@@ -283,7 +283,7 @@ class Lib
 	
 	private static function nmeGetInitHeight():Int
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.initHeight;
 		#end
@@ -293,7 +293,7 @@ class Lib
 	
 	private static function nmeGetInitWidth():Int
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.initWidth;
 		#end
@@ -303,7 +303,7 @@ class Lib
 	
 	private static function nmeGetPackageName():String
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.packageName;
 		#end
@@ -313,7 +313,7 @@ class Lib
 	
 	private static function nmeGetStage():Stage
 	{
-		#if code_completion
+		#if display
 		return null;
 		#elseif (cpp || neko)
 		return cast neash.Lib.stage;
@@ -325,7 +325,7 @@ class Lib
 	
 	private static function nmeGetVersion():String
 	{
-		#if code_completion
+		#if display
 		#elseif (cpp || neko)
 		return neash.Lib.version;
 		#end

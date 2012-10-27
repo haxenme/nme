@@ -1,5 +1,5 @@
 package nme.events;
-#if code_completion
+#if display
 
 
 extern interface IEventDispatcher {

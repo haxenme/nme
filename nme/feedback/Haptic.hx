@@ -1,5 +1,5 @@
 package nme.feedback;
-#if code_completion
+#if display
 
 
 extern class Haptic

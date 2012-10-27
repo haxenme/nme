@@ -1,5 +1,5 @@
 package nme.external;
-#if code_completion
+#if display
 
 
 /**

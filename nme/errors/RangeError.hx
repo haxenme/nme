@@ -1,5 +1,5 @@
 package nme.errors;
-#if code_completion
+#if display
 
 
 @:native("RangeError") extern class RangeError extends nme.errors.Error {

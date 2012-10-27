@@ -1,5 +1,5 @@
 package nme.sensors;
-#if code_completion
+#if display
 
 
 /**

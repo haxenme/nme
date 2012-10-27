@@ -1,5 +1,5 @@
 package nme.filters;
-#if code_completion
+#if display
 
 
 /**

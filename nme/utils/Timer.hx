@@ -1,5 +1,5 @@
 package nme.utils;
-#if code_completion
+#if display
 
 
 /**

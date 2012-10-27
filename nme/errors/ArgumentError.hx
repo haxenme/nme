@@ -1,5 +1,5 @@
 package nme.errors;
-#if code_completion
+#if display
 
 
 @:native("ArgumentError") extern class ArgumentError extends Error {

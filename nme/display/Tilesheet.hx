@@ -1,5 +1,5 @@
 package nme.display;
-#if code_completion
+#if display
 
 
 import nme.geom.Point;

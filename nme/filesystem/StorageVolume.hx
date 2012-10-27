@@ -1,5 +1,5 @@
 package nme.filesystem;
-#if code_completion
+#if display
 
 
 /**
