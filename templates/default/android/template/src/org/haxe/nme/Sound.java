@@ -246,17 +246,11 @@ public class Sound
 		return id;		
 	}
 
-	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
-    {
-    	Log.i("Sound", "playMusic");
-		
-		if (mediaPlayer != null) {
-			mediaPlayer.stop ();
-		}
-		
+	private static MediaPlayer createMediaPlayer(String inPath) 
+	{
 		MediaPlayer mp = null;
-		int resourceID = getMusicHandle(inPath); // check to see if this is a bundled resource
-		if (resourceID < 0) { // not in bundle, try to play from filesystem
+		int resId = getMusicHandle(inPath);
+		if (resId < 0) {
 			if (inPath.charAt(0) == File.separatorChar) {
 				try {
 		        	FileInputStream fis = new FileInputStream(new File(inPath));
@@ -266,19 +260,31 @@ public class Sound
 					mp.prepare();
 		        } catch(FileNotFoundException e) { 
 		            System.out.println(e.getMessage());
-		            return -1;
+		            return null;
 		        } catch(IOException e) { 
 		            System.out.println(e.getMessage());
-		            return -1;
+		            return null;
 		        }
 		    } else {
 				Uri uri = Uri.parse(inPath);
 				mp = MediaPlayer.create(mContext, uri);
 		    }
 		} else {
-			mp = MediaPlayer.create(mContext, resourceID);
+			mp = MediaPlayer.create(mContext, resId);
 		}
 
+		return mp;
+	}
+
+	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
+    {
+    	Log.i("Sound", "playMusic");
+		
+		if (mediaPlayer != null) {
+			mediaPlayer.stop ();
+		}
+		
+		MediaPlayer mp = createMediaPlayer(inPath);
 		if (mp == null) {
 			return -1;
 		}
@@ -307,11 +313,18 @@ public class Sound
 	
 	public static int getDuration(String inPath)
 	{
+		int duration = -1;
 		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
-			return mediaPlayer.getDuration ();
+			duration = mediaPlayer.getDuration ();
+		} else {
+			MediaPlayer mp = createMediaPlayer(inPath);
+			if (mp != null) {
+				duration = mp.getDuration();
+				mp.release();
+			}
 		}
 
-		return -1;
+		return duration;
 	}
 	
 	public static int getPosition(String inPath)
