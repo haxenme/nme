@@ -19,6 +19,11 @@ package nme.utils;
 	 * Defines the string to use for the zlib compression algorithm.
 	 */
 	ZLIB;
+	
+	/**
+	 * Defines the string to use for the lzma compression algorithm.
+	 */
+	LZMA;
 }
 
 

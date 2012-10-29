@@ -154,17 +154,24 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		#else
 		var src = this;
 		#end
-		var windowBits = 15;
-		windowBits = switch (algorithm) {
-			case CompressionAlgorithm.DEFLATE: -15;
-			case CompressionAlgorithm.GZIP: 31;
-		}
 		
-		#if enable_deflate
-		var result = Compress.run(src, 8, windowBits);
-		#else
-		var result = Compress.run(src, 8);
-		#end
+		var result:Bytes;
+		
+		if (algorithm == CompressionAlgorithm.LZMA) {
+			result = Bytes.ofData(nme_lzma_encode(src.getData()));
+		} else {
+			var windowBits = 15;
+			windowBits = switch (algorithm) {
+				case CompressionAlgorithm.DEFLATE: -15;
+				case CompressionAlgorithm.GZIP: 31;
+			}
+			
+			#if enable_deflate
+			result = Compress.run(src, 8, windowBits);
+			#else
+			result = Compress.run(src, 8);
+			#end
+		}
 		b = result.b;
 		length = result.length;
 		position = length;
@@ -376,7 +383,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function uncompress(algorithm:String = "")
+	public function uncompress(algorithm:String = ""):Void
 	{
 		#if neko
 		var src = alloced == length ? this : sub(0, length);
@@ -384,17 +391,23 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		var src = this;
 		#end
 		
-		var windowBits = 15;
-		windowBits = switch (algorithm) {
-			case CompressionAlgorithm.DEFLATE: -15;
-			case CompressionAlgorithm.GZIP: 31;
-		}
+		var result:Bytes;
 		
-		#if enable_deflate
-		var result = Uncompress.run(src, null, windowBits);
-		#else
-		var result = Uncompress.run(src, null);
-		#end
+		if (algorithm == CompressionAlgorithm.LZMA) {
+			result = Bytes.ofData(nme_lzma_decode(src.getData()));
+		} else {
+			var windowBits = 15;
+			windowBits = switch (algorithm) {
+				case CompressionAlgorithm.DEFLATE: -15;
+				case CompressionAlgorithm.GZIP: 31;
+			}
+			
+			#if enable_deflate
+			result = Uncompress.run(src, null, windowBits);
+			#else
+			result = Uncompress.run(src, null);
+			#end
+		}
 		b = result.b;
 		length = result.length;
 		position = 0;
@@ -567,4 +580,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
 	#end
 	
+	private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
+	private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
 }

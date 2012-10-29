@@ -3779,6 +3779,20 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
+value nme_lzma_encode(value input)
+{
+	// TODO
+	return buffer_val(alloc_buffer_len(0));
+}
+DEFINE_PRIM(nme_lzma_encode,1);
+
+value nme_lzma_decode(value input)
+{
+	// TODO
+	return buffer_val(alloc_buffer_len(0));
+}
+DEFINE_PRIM(nme_lzma_decode,1);
+
 
 // Reference this to bring in all the symbols for the static library
 extern "C" int nme_register_prims() { return 0; }
