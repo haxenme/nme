@@ -36,7 +36,7 @@ namespace nme
 					// LOGV("Android Sound Channel found play method");
 					mStreamID = env->CallStaticIntMethod(cls, mid, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), loops );
 					mPlayTime = (int)floor(GetTimeStamp() * 1000);
-					mDuration = static_cast<Sound*>(mSound)->getLength();
+					mDuration = static_cast<Sound*>(mSound)->getLength() * loops;
 			   	}
 			}
 	    }
