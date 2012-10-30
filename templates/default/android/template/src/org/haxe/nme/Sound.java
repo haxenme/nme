@@ -218,8 +218,9 @@ public class Sound
 	{
 		Log.v("Sound", "PlaySound -----" + inResourceID);
 		
-		if (inLoop > 0) {
-			inLoop--;
+		inLoop--;
+		if (inLoop < 0) {
+			inLoop = 0;
 		}
 		
 		return mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
