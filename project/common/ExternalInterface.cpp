@@ -3784,6 +3784,16 @@ DEFINE_PRIM(nme_curl_get_cookies,1);
 #include "../lzma/LzmaEnc.h"
 #include "../lzma/LzmaDec.h"
 
+inline void WRITE_LE8 (unsigned char *ptr, char value) { *ptr = value; }
+inline void WRITE_LE16(unsigned char *ptr, short value) { WRITE_LE8 ((ptr) + 0, ((value) >> 0)); WRITE_LE8 ((ptr) + 1, ((value) >>  8)); }
+inline void WRITE_LE32(unsigned char *ptr, int value) { WRITE_LE16((ptr) + 0, ((value) >> 0)); WRITE_LE16((ptr) + 2, ((value) >> 16)); }
+inline void WRITE_LE64(unsigned char *ptr, Int64 value) { WRITE_LE32((ptr) + 0, ((value) >> 0)); WRITE_LE32((ptr) + 4, ((value) >> 16)); }
+
+inline unsigned char  READ_LE8 (unsigned char *ptr) { return *ptr; }
+inline unsigned short READ_LE16(unsigned char *ptr) { return ((unsigned short)READ_LE8 (ptr + 0) << 0) | ((unsigned short)READ_LE8 (ptr + 1) <<  8); }
+inline unsigned int   READ_LE32(unsigned char *ptr) { return ((unsigned int)READ_LE16(ptr + 0) << 0) | ((unsigned int)READ_LE16(ptr + 2) << 16); }
+inline UInt64 READ_LE64(unsigned char *ptr) { return ((UInt64)READ_LE32(ptr + 0) << 0) | ((UInt64)READ_LE32(ptr + 4) << 32); }
+
 SRes lzma_Progress(void *p, UInt64 inSize, UInt64 outSize) {
 	return SZ_OK;
 }
@@ -3838,8 +3848,11 @@ value nme_lzma_encode(value input_value)
 		&progress, &alloc_small, &alloc_big
 	);
 	
+	unsigned char le_size[8];
+	WRITE_LE64(&le_size[0], uncompressed_length);
+	
 	buffer_append_sub(output_buffer, (const char *)props_data, props_size);
-	buffer_append_sub(output_buffer, (const char *)&uncompressed_length, sizeof(uncompressed_length));
+	buffer_append_sub(output_buffer, (const char *)le_size, 8);
 	buffer_append_sub(output_buffer, (const char *)output_buffer_data, output_buffer_size);
 	
 	free(props_data);
@@ -3863,7 +3876,9 @@ value nme_lzma_decode(value input_value)
 	CLzmaProps props = {0};
 	
 	LzmaProps_Decode(&props, input_buffer_data, LZMA_PROPS_SIZE);
-	uncompressed_length = *(Int64 *)(input_buffer_data + LZMA_PROPS_SIZE);
+	//uncompressed_length = *(Int64 *)(input_buffer_data + LZMA_PROPS_SIZE);
+	uncompressed_length = READ_LE64(input_buffer_data + LZMA_PROPS_SIZE);
+	
 	//printf("props: lc=%d, lp=%d, pb=%d, dicSize=%d\n", props.lc, props.lp, props.pb, props.dicSize);
 
 	/*
