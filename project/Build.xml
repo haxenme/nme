@@ -203,11 +203,11 @@
 		<file name="opengl/OGLShaders.cpp" if="ogl"/>
 		<file name="opengl/OGLExport.cpp" if="ogl"/>
 		
-		<file name="lzma/LzFind.c"/>
-		<file name="lzma/LzFindMt.c"/>
-		<file name="lzma/LzmaDec.c"/>
-		<file name="lzma/LzmaEnc.c"/>
-		<file name="lzma/Threads.c"/>
+		<file name="lzma/LzFind.c" if="windows" />
+		<file name="lzma/LzFindMt.c" if="windows"/>
+		<file name="lzma/LzmaDec.c" if="windows"/>
+		<file name="lzma/LzmaEnc.c" if="windows"/>
+		<file name="lzma/Threads.c" if="windows"/>
 		
 	</files>
 	

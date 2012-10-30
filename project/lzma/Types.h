@@ -6,6 +6,14 @@
 
 #include <stddef.h>
 
+#ifndef HANDLE
+typedef void* HANDLE;
+#endif
+
+#ifndef LPVOID
+typedef void* LPVOID;
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
