@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException; 
+import java.lang.System;
 import java.security.MessageDigest;
-import java.util.Hashtable;
+// import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.CRC32;
 
 import android.content.Context;
@@ -116,18 +119,24 @@ public class Sound
 	private static boolean mediaPlayerWasPlaying;
 	private static String mediaPlayerPath;
 	private static SoundPool mSoundPool;
-	private static int mSoundPoolID = 0;
+	// private static int mSoundPoolID = 0;
+	private static long mTimeStamp = 0;
+	private static HashMap<Integer, Long> mSoundProgress;
+	private static HashMap<Integer, Long> mSoundDuration;
 
     public Sound(Context context)
     {
     	if (instance == null) {
+    		mSoundProgress = new HashMap<Integer, Long>();
+    		mSoundDuration = new HashMap<Integer, Long>();
+    		mTimeStamp = System.currentTimeMillis();
 			mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
 
-			if (mSoundPoolID > 1) {
-				mSoundPoolID++;
-			} else {
-				mSoundPoolID = 1;
-			}
+			// if (mSoundPoolID > 1) {
+			// 	mSoundPoolID++;
+			// } else {
+			// 	mSoundPoolID = 1;
+			// }
 		}
 
     	instance = this;
@@ -137,9 +146,10 @@ public class Sound
 	public void doPause()
 	{
 		if (mSoundPool != null) {
-			mSoundPool.release();
+			// mSoundPool.release();
+			mSoundPool.autoPause();
 		}
-		mSoundPool = null;
+		// mSoundPool = null;
 		
 		if (mediaPlayer != null) {
 			mediaPlayerWasPlaying = mediaPlayer.isPlaying ();
@@ -149,8 +159,10 @@ public class Sound
 
 	public void doResume()
 	{
-		mSoundPoolID++;
-		mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
+		mTimeStamp = System.currentTimeMillis();
+		mSoundPool.autoResume();
+		// mSoundPoolID++;
+		// mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
 
 		if (mediaPlayer != null && mediaPlayerWasPlaying) {
 			mediaPlayer.start ();
@@ -166,21 +178,23 @@ public class Sound
 	public static int getSoundHandle(String inFilename)
 	{
 		int id = GameActivity.getResourceID(inFilename);
-		
 		Log.v("Sound","Get sound handle ------" + inFilename + " = " + id);
+
+		int index;		
 		
 		if (id > 0) {
-			int index = mSoundPool.load(mContext, id, 1);
+			index = mSoundPool.load(mContext, id, 1);
 			Log.v("Sound", "Loaded index: " + index);
-			return index;
 		} else {
 			Log.v("Sound", "Resource not found: " + (-id));
-			int index = mSoundPool.load(inFilename, 1);
+			index = mSoundPool.load(inFilename, 1);
 			Log.v("Sound", "Loaded index from path: " + index);
-			return index;
 		}
-		
-		//return -1;
+
+		int duration = getDuration(inFilename);
+		mSoundDuration.put(index, (long)duration);
+
+		return index;
     }
 	
 	public static String getSoundPathByByteArray(byte[] data) throws java.lang.Exception
@@ -209,10 +223,10 @@ public class Sound
 		return file.getAbsolutePath();
 	}
 	
-	public static int getSoundPoolID()
-	{
-		return mSoundPoolID;
-	}
+	// public static int getSoundPoolID()
+	// {
+	// 	return mSoundPoolID;
+	// }
 
 	public static int playSound(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
 	{
@@ -223,16 +237,48 @@ public class Sound
 			inLoop = 0;
 		}
 		
-		return mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
+		int streamId = mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
+		mSoundProgress.put(streamId, (long)0);
+		return streamId;
 	}
 	
 	static public void stopSound(int inStreamID)
 	{
 		if (mSoundPool != null) {
 			mSoundPool.stop(inStreamID);
+			mSoundProgress.remove(inStreamID);
 		}
 	}
 
+	static public void checkSoundCompletion() 
+	{
+		long delta = (System.currentTimeMillis() - mTimeStamp);
+		for (Map.Entry<Integer, Long> entry : mSoundProgress.entrySet()) {
+			long val = entry.getValue();
+			entry.setValue(val + (long)delta);
+		}
+
+		//Log.v("Sound", "checkSoundCompletion : " + delta);
+		mTimeStamp = System.currentTimeMillis();
+	}
+
+	static public boolean getSoundComplete(int inSoundID, int inStreamID) {
+		if (!mSoundProgress.containsKey(inStreamID) || !mSoundDuration.containsKey(inSoundID)) {
+			return true;
+		}
+
+		return mSoundProgress.get(inStreamID) >= mSoundDuration.get(inSoundID);
+	}
+
+	static public int getSoundPosition(int inSoundID, int inStreamID) {
+		if (!mSoundProgress.containsKey(inStreamID) || !mSoundDuration.containsKey(inSoundID)) {
+			return 0;
+		}
+
+		long progress = mSoundProgress.get(inStreamID);
+		long total = mSoundDuration.get(inSoundID);
+		return (int)(progress > total ? total : progress);
+	}
 
 	/*
 	 * Music using MediaPlayer
