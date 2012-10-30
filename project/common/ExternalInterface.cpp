@@ -3804,11 +3804,15 @@ value nme_lzma_encode(value input_value)
 	Byte*  output_buffer_data = (Byte *)malloc(output_buffer_size);
 	SizeT  props_size = 100;
 	Byte*  props_data = (Byte *)malloc(props_size);
+	Int64  uncompressed_length = input_buffer_size;
 	CLzmaEncProps props = {0};
 	LzmaEncProps_Init(&props);
 	//props.level = 9;
+	//props.dictSize = (1 << 24);
+	//props.dictSize = (1 << 16);
+	//props.dictSize = (1 << 10);
+	props.dictSize = (1 << 20);
 	/*
-	props.dictSize = (1 << 24);
 	props.lc = 8;
 	props.lp = 0;
 	props.pb = 2;
@@ -3818,7 +3822,7 @@ value nme_lzma_encode(value input_value)
 	props.numHashBytes = 4;
 	props.mc = 32;
 	*/
-	props.writeEndMark = 1;
+	props.writeEndMark = 0;
 	props.numThreads = 1;
 	
 	ICompressProgress progress = { lzma_Progress };
@@ -3833,6 +3837,7 @@ value nme_lzma_encode(value input_value)
 	);
 	
 	buffer_append_sub(output_buffer, (const char *)props_data, props_size);
+	buffer_append_sub(output_buffer, (const char *)&uncompressed_length, sizeof(uncompressed_length));
 	buffer_append_sub(output_buffer, (const char *)output_buffer_data, output_buffer_size);
 	
 	free(props_data);
@@ -3849,14 +3854,17 @@ value nme_lzma_decode(value input_value)
 	buffer output_buffer = alloc_buffer_len(0);
 	SizeT  input_buffer_size = buffer_size(input_buffer);
 	Byte*  input_buffer_data = (Byte *)buffer_data(input_buffer);
+	Int64  uncompressed_length = -1;
 
 	ELzmaStatus status = LZMA_STATUS_NOT_SPECIFIED;
 	ISzAlloc alloc = { lzma_Alloc, lzma_Free };
 	CLzmaProps props = {0};
 	
 	LzmaProps_Decode(&props, input_buffer_data, LZMA_PROPS_SIZE);
+	uncompressed_length = *(Int64 *)(input_buffer_data + LZMA_PROPS_SIZE);
 	//printf("props: lc=%d, lp=%d, pb=%d, dicSize=%d\n", props.lc, props.lp, props.pb, props.dicSize);
 
+	/*
 	CLzmaDec lzmaDec;
 	
 	LzmaDec_Construct(&lzmaDec);
@@ -3866,8 +3874,6 @@ value nme_lzma_decode(value input_value)
 	SizeT temp_length_init = 16 * 1024;
 	Byte* temp_data = (Byte *)malloc(temp_length_init);
 	
-	Byte *_input_buffer_data = input_buffer_data + LZMA_PROPS_SIZE;
-	SizeT _input_buffer_size = input_buffer_size - LZMA_PROPS_SIZE;
 	
 	do {
 		SizeT temp_length = temp_length_init;
@@ -3881,16 +3887,25 @@ value nme_lzma_decode(value input_value)
 	
 	free(temp_data);
 	LzmaDec_Free(&lzmaDec, &alloc);
+	*/
+	
+	//uncompressed_length
+	
+	SizeT output_buffer_size = (SizeT)uncompressed_length;
+	Byte *output_buffer_data = (Byte *)malloc(output_buffer_size);
 
-	/*
+	Byte *_input_buffer_data = input_buffer_data + LZMA_PROPS_SIZE + sizeof(uncompressed_length);
+	SizeT _input_buffer_size = input_buffer_size - LZMA_PROPS_SIZE - sizeof(uncompressed_length);
+
 	LzmaDecode(
 		output_buffer_data, &output_buffer_size,
-		input_buffer_data + LZMA_PROPS_SIZE, &input_buffer_size,
+		_input_buffer_data, &_input_buffer_size,
 		input_buffer_data, LZMA_PROPS_SIZE,
-		LZMA_FINISH_END,
+		LZMA_FINISH_ANY,
 		&status, &alloc
 	);
-	*/
+	
+	buffer_append_sub(output_buffer, (const char *)output_buffer_data, output_buffer_size);
 	
 	// TODO
 	return buffer_val(output_buffer);

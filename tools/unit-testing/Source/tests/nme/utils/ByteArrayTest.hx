@@ -350,16 +350,28 @@ import nme.utils.CompressionAlgorithm;
 		
 	}
 	
+	static private function serializeByteArray(ba:ByteArray):String {
+		var str:String = "";
+		for (n in 0 ... ba.length) str += ba[n] + ",";
+		return str.substr(0, str.length - 1);
+	}
+	
 	//#if (cpp || neko || flash11)
 	public function testCompressUncompressLzma() {
 		var data:ByteArray = new ByteArray();
 		var str:String = "Hello WorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorld!";
 		data.writeUTFBytes(str);
+		
 		assertEquals(str.length, data.length);
 
 		data.compress(
 			//CompressionAlgorithm.LZMA
 			cast "lzma"
+		);
+		
+		assertEquals(
+			"93,0,0,16,0,112,0,0,0,0,0,0,0,0,36,25,73,152,111,16,17,200,95,230,213,143,173,134,203,110,136,96,0",
+			serializeByteArray(data)
 		);
 		
 		//for (n in 0 ... data.length) TestRunner.print(data[n] + ",");
