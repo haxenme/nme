@@ -131,12 +131,6 @@ public class Sound
     		mSoundDuration = new HashMap<Integer, Long>();
     		mTimeStamp = System.currentTimeMillis();
 			mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
-
-			// if (mSoundPoolID > 1) {
-			// 	mSoundPoolID++;
-			// } else {
-			// 	mSoundPoolID = 1;
-			// }
 		}
 
     	instance = this;
@@ -146,10 +140,8 @@ public class Sound
 	public void doPause()
 	{
 		if (mSoundPool != null) {
-			// mSoundPool.release();
 			mSoundPool.autoPause();
 		}
-		// mSoundPool = null;
 		
 		if (mediaPlayer != null) {
 			mediaPlayerWasPlaying = mediaPlayer.isPlaying ();
@@ -161,8 +153,6 @@ public class Sound
 	{
 		mTimeStamp = System.currentTimeMillis();
 		mSoundPool.autoResume();
-		// mSoundPoolID++;
-		// mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
 
 		if (mediaPlayer != null && mediaPlayerWasPlaying) {
 			mediaPlayer.start ();
@@ -223,11 +213,6 @@ public class Sound
 		return file.getAbsolutePath();
 	}
 	
-	// public static int getSoundPoolID()
-	// {
-	// 	return mSoundPoolID;
-	// }
-
 	public static int playSound(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
 	{
 		Log.v("Sound", "PlaySound -----" + inResourceID);
@@ -258,26 +243,25 @@ public class Sound
 			entry.setValue(val + (long)delta);
 		}
 
-		//Log.v("Sound", "checkSoundCompletion : " + delta);
 		mTimeStamp = System.currentTimeMillis();
 	}
 
-	static public boolean getSoundComplete(int inSoundID, int inStreamID) {
+	static public boolean getSoundComplete(int inSoundID, int inStreamID, int inLoop) {
 		if (!mSoundProgress.containsKey(inStreamID) || !mSoundDuration.containsKey(inSoundID)) {
 			return true;
 		}
 
-		return mSoundProgress.get(inStreamID) >= mSoundDuration.get(inSoundID);
+		return mSoundProgress.get(inStreamID) >= (mSoundDuration.get(inSoundID) * inLoop);
 	}
 
-	static public int getSoundPosition(int inSoundID, int inStreamID) {
+	static public int getSoundPosition(int inSoundID, int inStreamID, int inLoop) {
 		if (!mSoundProgress.containsKey(inStreamID) || !mSoundDuration.containsKey(inSoundID)) {
 			return 0;
 		}
 
 		long progress = mSoundProgress.get(inStreamID);
 		long total = mSoundDuration.get(inSoundID);
-		return (int)(progress > total ? total : progress);
+		return (int)(progress > (total * inLoop) ? total : (progress % total));
 	}
 
 	/*
