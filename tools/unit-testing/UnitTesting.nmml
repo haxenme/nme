@@ -2,7 +2,9 @@
 <project>
 	
 	<meta title="Unit Testing" package="org.haxenme.unittesting" version="1.0.0" company="Joshua Granick" />
-	<app main="UnitTesting" file="UnitTesting" path="Export" />
+	<app main="UnitTesting" file="UnitTesting" path="Export" swf-version="11.3" />
+	
+	<set name="SWF_VERSION" value="11.3" if="flash" />
  	
 	<source path="Source" />
 	

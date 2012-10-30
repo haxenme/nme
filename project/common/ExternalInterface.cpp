@@ -3779,17 +3779,121 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
-value nme_lzma_encode(value input)
+#include "../lzma/LzmaEnc.h"
+#include "../lzma/LzmaDec.h"
+
+SRes lzma_Progress(void *p, UInt64 inSize, UInt64 outSize) {
+	return SZ_OK;
+}
+
+void *lzma_Alloc(void *p, size_t size) {
+	return malloc(size);
+}
+void lzma_Free(void *p, void *address) { /* address can be 0 */
+	if (address == NULL) return;
+	free(address);
+}
+
+value nme_lzma_encode(value input_value)
 {
+	buffer input_buffer = val_to_buffer(input_value);
+	buffer output_buffer = alloc_buffer_len(0);
+	SizeT  input_buffer_size = buffer_size(input_buffer);
+	Byte*  input_buffer_data = (Byte *)buffer_data(input_buffer);
+	SizeT  output_buffer_size = input_buffer_size + 1024;
+	Byte*  output_buffer_data = (Byte *)malloc(output_buffer_size);
+	SizeT  props_size = 100;
+	Byte*  props_data = (Byte *)malloc(props_size);
+	CLzmaEncProps props = {0};
+	LzmaEncProps_Init(&props);
+	//props.level = 9;
+	/*
+	props.dictSize = (1 << 24);
+	props.lc = 8;
+	props.lp = 0;
+	props.pb = 2;
+	props.algo = 1;
+	props.fb = 273;
+	props.btMode = 1;
+	props.numHashBytes = 4;
+	props.mc = 32;
+	*/
+	props.writeEndMark = 1;
+	props.numThreads = 1;
+	
+	ICompressProgress progress = { lzma_Progress };
+	ISzAlloc alloc_small = { lzma_Alloc, lzma_Free };
+	ISzAlloc alloc_big = { lzma_Alloc, lzma_Free };
+
+	LzmaEncode(
+		output_buffer_data, &output_buffer_size,
+		input_buffer_data, input_buffer_size,
+		&props, props_data, &props_size, props.writeEndMark,
+		&progress, &alloc_small, &alloc_big
+	);
+	
+	buffer_append_sub(output_buffer, (const char *)props_data, props_size);
+	buffer_append_sub(output_buffer, (const char *)output_buffer_data, output_buffer_size);
+	
+	free(props_data);
+	free(output_buffer_data);
+	
 	// TODO
-	return buffer_val(alloc_buffer_len(0));
+	return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_encode,1);
 
-value nme_lzma_decode(value input)
+value nme_lzma_decode(value input_value)
 {
+	buffer input_buffer = val_to_buffer(input_value);
+	buffer output_buffer = alloc_buffer_len(0);
+	SizeT  input_buffer_size = buffer_size(input_buffer);
+	Byte*  input_buffer_data = (Byte *)buffer_data(input_buffer);
+
+	ELzmaStatus status = LZMA_STATUS_NOT_SPECIFIED;
+	ISzAlloc alloc = { lzma_Alloc, lzma_Free };
+	CLzmaProps props = {0};
+	
+	LzmaProps_Decode(&props, input_buffer_data, LZMA_PROPS_SIZE);
+	//printf("props: lc=%d, lp=%d, pb=%d, dicSize=%d\n", props.lc, props.lp, props.pb, props.dicSize);
+
+	CLzmaDec lzmaDec;
+	
+	LzmaDec_Construct(&lzmaDec);
+	LzmaDec_Allocate(&lzmaDec, input_buffer_data, LZMA_PROPS_SIZE, &alloc);
+	LzmaDec_Init(&lzmaDec);
+	
+	SizeT temp_length_init = 16 * 1024;
+	Byte* temp_data = (Byte *)malloc(temp_length_init);
+	
+	Byte *_input_buffer_data = input_buffer_data + LZMA_PROPS_SIZE;
+	SizeT _input_buffer_size = input_buffer_size - LZMA_PROPS_SIZE;
+	
+	do {
+		SizeT temp_length = temp_length_init;
+		LzmaDec_DecodeToBuf(
+			&lzmaDec, temp_data, &temp_length,
+			_input_buffer_data, &_input_buffer_size, LZMA_FINISH_END, &status
+		);
+		//printf("status: %d\n", status);
+		buffer_append_sub(output_buffer, (const char *)temp_data, temp_length);
+	} while (status == LZMA_STATUS_NOT_FINISHED);
+	
+	free(temp_data);
+	LzmaDec_Free(&lzmaDec, &alloc);
+
+	/*
+	LzmaDecode(
+		output_buffer_data, &output_buffer_size,
+		input_buffer_data + LZMA_PROPS_SIZE, &input_buffer_size,
+		input_buffer_data, LZMA_PROPS_SIZE,
+		LZMA_FINISH_END,
+		&status, &alloc
+	);
+	*/
+	
 	// TODO
-	return buffer_val(alloc_buffer_len(0));
+	return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_decode,1);
 

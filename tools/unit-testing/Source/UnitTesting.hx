@@ -35,8 +35,12 @@ class UnitTesting extends Sprite {
 		#end
 		
 		fill (0xEEEEEE);
+
+		var runner:TestRunner = new TestRunner ();
 		
-		var runner = new TestRunner ();
+		#if flash
+		TestRunner.print("Flash Version: " + flash.system.Capabilities.version + "\n\n");
+		#end
 		
 		runner.add (new BitmapTest ());
 		runner.add (new BitmapDataTest ());

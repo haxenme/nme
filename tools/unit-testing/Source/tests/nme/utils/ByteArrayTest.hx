@@ -2,9 +2,10 @@ package tests.nme.utils;
 
 
 import haxe.unit.TestCase;
+import haxe.unit.TestRunner;
 import nme.utils.ByteArray;
 import nme.utils.Endian;
-
+import nme.utils.CompressionAlgorithm;
 
 @:keep class ByteArrayTest extends TestCase {
 
@@ -349,6 +350,32 @@ import nme.utils.Endian;
 		
 	}
 	
+	//#if (cpp || neko || flash11)
+	public function testCompressUncompressLzma() {
+		var data:ByteArray = new ByteArray();
+		var str:String = "Hello WorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorldWorld!";
+		data.writeUTFBytes(str);
+		assertEquals(str.length, data.length);
+
+		data.compress(
+			//CompressionAlgorithm.LZMA
+			cast "lzma"
+		);
+		
+		//for (n in 0 ... data.length) TestRunner.print(data[n] + ",");
+		//TestRunner.print(" :: " + data.length + "," + str.length + "\n\n");
+		
+		assertTrue(cast data.length != cast str.length);
+		
+		data.uncompress(
+			//CompressionAlgorithm.LZMA
+			cast "lzma"
+		);
+		data.position = 0;
+		assertEquals(str.length, data.length);
+		assertEquals(str, data.readUTFBytes(str.length));
+	}
+	//#end
 	
 	public function testUncompress () {
 	
