@@ -93,7 +93,7 @@ class Stage extends DisplayObjectContainer
 	private var jeashFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
 	static var jeashTouchChanges : Array<String> = [ jeash.events.TouchEvent.TOUCH_OUT, jeash.events.TouchEvent.TOUCH_OVER,	jeash.events.TouchEvent.TOUCH_ROLL_OUT, jeash.events.TouchEvent.TOUCH_ROLL_OVER ];
-	static inline var DEFAULT_FRAMERATE = 60.0;
+	static inline var DEFAULT_FRAMERATE = 0.0;
 	static inline var UI_EVENTS_QUEUE_MAX = 1000;
 
 	public function new(width:Int, height:Int) {
@@ -520,19 +520,42 @@ class Stage extends DisplayObjectContainer
 
 	function jeashGetFrameRate() { return jeashFrameRate; }
 	function jeashSetFrameRate(speed:Float):Float {
-		var window : Window = cast js.Lib.window;
-		jeashInterval = Std.int( 1000.0/speed );
-
-		jeashUpdateNextWake();
-
+		
+		if (speed == 0) {
+			
+			var jeashRequestAnimationFrame:Dynamic = untyped requestAnimationFrame || untyped webkitRequestAnimationFrame || untyped mozRequestAnimationFrame || untyped oRequestAnimationFrame || untyped msRequestAnimationFrame;
+			
+			if (jeashRequestAnimationFrame == null) {
+				
+				speed = 60;
+				
+			}
+			
+		}
+		
+		if (speed != 0) {
+			
+			var window : Window = cast js.Lib.window;
+			jeashInterval = Std.int( 1000.0/speed );
+			
+		}
+		
 		jeashFrameRate = speed;
+		jeashUpdateNextWake();
+		
 		return speed;
 	}
 
 	public function jeashUpdateNextWake () {
-		var window : Window = cast js.Lib.window;
-		window.clearInterval( jeashTimer );
-		jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
+		if (jeashFrameRate == 0) {
+			var jeashRequestAnimationFrame:Dynamic = untyped requestAnimationFrame || untyped webkitRequestAnimationFrame || untyped mozRequestAnimationFrame || untyped oRequestAnimationFrame || untyped msRequestAnimationFrame;
+			jeashRequestAnimationFrame (jeashUpdateNextWake);
+			jeashStageRender();
+		} else {
+			var window : Window = cast js.Lib.window;
+			window.clearInterval( jeashTimer );
+			jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
+		}
 	}
 
 	function jeashStageRender (?_) {
