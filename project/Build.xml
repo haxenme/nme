@@ -7,13 +7,14 @@
 	
 	<set name="iphonesim" value="1" if="ios" />
 	<set name="iphoneos" value="1" if="ios" unless="simulator" />
+	<set name="win_desktop" value="1" if="windows" unless="winrt"/>
 	
 	<set name="sdl" value="1" if="linux"/>
 	<set name="sdl" value="1" if="macos"/>
-	<set name="sdl" value="1" if="windows"/>
+	<set name="sdl" value="1" if="win_desktop" />
 	<set name="sdl" value="1" if="webos"/>
 	<set name="sdl" value="1" if="blackberry"/>
-	<set name="ogl" value="1" if="windows"/>
+	<set name="ogl" value="1" if="win_desktop" />
 	<set name="ogl" value="1" if="sdl"/>
 	<set name="ogl" value="1" if="gph"/>
 	<set name="ogl" value="1" if="iphone"/>
@@ -29,21 +30,25 @@
 	
 	<set name="ssl" value="1" unless="nossl"/>
 	<set name="ssl_extra" value="_ssl" if="ssl"/>
+
 	
 	
-	<files id="windows">
+	<files id="win_desktop">
 		
 		<compilerflag value="-Iinclude"/>
 		<compilerflag value="-I../../sdl-static/include"/>
 		<compilerflag value="-I../../sdl-static/include/SDL12"/>
 		<file name="windows/GDIFont.cpp"/>
-		<file name="windows/System.cpp"/>
+		<file name="windows/System.cpp" />
 		<!-- Use SDL on windows too ? -->
 		<file name="windows/SimpleFrame.cpp" unless="sdl"/>
 		<file name="sdl/SDLSound.cpp" unless="sdl"/>
 		
 	</files>
 	
+  	<files id="winrt">
+	</files>
+
 	
 	<files id="linux">
 		
@@ -178,7 +183,7 @@
 		<file name="common/Input.cpp" unless="iphone" />
 		<file name="common/SurfaceIO.cpp" />
 		<file name="common/ManagedStage.cpp"/>
-		<file name="common/CURL.cpp"/>
+		<file name="common/CURL.cpp" unless="winrt"/>
 		
 		<file name="common/XML/tinystr.cpp"/>
 		<file name="common/XML/tinyxml.cpp"/>
@@ -203,11 +208,11 @@
 		<file name="opengl/OGLShaders.cpp" if="ogl"/>
 		<file name="opengl/OGLExport.cpp" if="ogl"/>
 		
-		<file name="lzma/LzFind.c" if="windows" />
-		<file name="lzma/LzFindMt.c" if="windows"/>
-		<file name="lzma/LzmaDec.c" if="windows"/>
-		<file name="lzma/LzmaEnc.c" if="windows"/>
-		<file name="lzma/Threads.c" if="windows"/>
+		<file name="lzma/LzFind.c" if="win_desktop" />
+		<file name="lzma/LzFindMt.c" if="win_desktop"/>
+		<file name="lzma/LzmaDec.c" if="win_desktop"/>
+		<file name="lzma/LzmaEnc.c" if="win_desktop"/>
+		<file name="lzma/Threads.c" if="win_desktop"/>
 		
 	</files>
 	
@@ -288,7 +293,8 @@
 		<ext value=".ndll" if="gph"/>
 		
 		<files id="common"/>
-		<files id="windows" if="windows"/>
+		<files id="win_desktop" if="win_desktop"/>
+		<files id="winrt" if="winrt"/>
 		<files id="iphone" if="iphone"/>
 		<files id="mac" if="macos"/>
 		<files id="linux" if="linux"/>
@@ -363,16 +369,16 @@
 		<lib name="-lm" if="blackberry"/>
         <lib name="-lsocket" if="blackberry"/>
 		
-		<lib name="gdi32.lib" if="windows"/>
-		<lib name="opengl32.lib" if="windows"/>
-		<lib name="user32.lib" if="windows"/>
-		<lib name="kernel32.lib" if="windows"/>
-		<lib name="advapi32.lib" if="windows"/>
-		<lib name="${THIRDPARTY_LIBS}dxguid.lib" if="windows"/>
-		<lib name="winmm.lib" if="windows"/>
-		<lib name="ws2_32.lib" if="windows"/>
-		<lib name="wldap32.lib" if="windows"/>
-		<lib name="shell32.lib" if="windows"/>
+		<lib name="gdi32.lib" if="win_desktop"/>
+		<lib name="opengl32.lib" if="win_desktop"/>
+		<lib name="user32.lib" if="win_desktop"/>
+		<lib name="kernel32.lib" if="win_desktop"/>
+		<lib name="advapi32.lib" if="win_desktop"/>
+		<lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
+		<lib name="winmm.lib" if="win_desktop"/>
+		<lib name="ws2_32.lib" if="win_desktop"/>
+		<lib name="wldap32.lib" if="win_desktop"/>
+		<lib name="shell32.lib" if="win_desktop"/>
 		
 		<lib name="-ldl" if="linux"/>
 		<lib name="-lGL" if="linux"/>

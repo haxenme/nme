@@ -387,7 +387,9 @@ std::string ToStdString(const HFSUniStr255 &inStr)
 
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 {
-#ifdef HX_WINDOWS
+#ifdef HX_WINRT
+   // Do nothing
+#elif defined(HX_WINDOWS)
    DWORD drives = GetLogicalDrives();
    for(int i=0;i<26;i++)
    {
@@ -450,7 +452,34 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 #if !defined(HX_MACOS) && !defined(IPHONE)
 void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 {
-#if defined(HX_WINDOWS)
+#if defined(HX_WINRT)
+   std::wstring result;
+   Windows::Storage::StorageFolder ^folder = nullptr;
+
+   switch(inDir)
+   {
+      case DIR_APP:
+         folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
+         break;
+
+      case DIR_STORAGE:
+         folder = Windows::Storage::ApplicationData::Current->LocalFolder;
+         break;
+
+      case DIR_USER:
+         folder = Windows::Storage::ApplicationData::Current->RoamingFolder;
+         break;
+
+      case DIR_DESKTOP:
+         folder = Windows::Storage::KnownFolders::HomeGroup;
+         break;
+
+      case DIR_DOCS:
+         folder = Windows::Storage::KnownFolders::DocumentsLibrary;
+   }
+   if (folder!=nullptr)
+      outDir = WideToUTF8(folder->Path->Data());
+#elif defined(HX_WINDOWS)
    char result[MAX_PATH] = ""; 
    if (inDir==DIR_APP)
    {

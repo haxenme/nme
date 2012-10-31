@@ -3779,7 +3779,7 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
-#ifdef HX_WINDOWS
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
 
 #include "../lzma/LzmaEnc.h"
 #include "../lzma/LzmaDec.h"

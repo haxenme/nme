@@ -2,6 +2,10 @@
 #include <Utils.h>
 #include <map>
 
+#ifdef HX_WINRT
+#define generic userGeneric
+#endif
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
@@ -200,8 +204,14 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
 
 
 
+#ifdef HX_WINRT
 
-#ifdef HX_WINDOWS
+bool GetFontFile(const std::string& inName,std::string &outFile)
+{
+   return false;
+}
+
+#elif defined(HX_WINDOWS)
 #include <windows.h>
 #include <tchar.h>
 
