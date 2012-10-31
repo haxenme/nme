@@ -3780,8 +3780,6 @@ value nme_curl_get_cookies(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
 
-#if defined(HX_WINDOWS) && !defined(HX_WINRT)
-
 value nme_lzma_encode(value input_value)
 {
 	buffer input_buffer = val_to_buffer(input_value);
@@ -3799,8 +3797,6 @@ value nme_lzma_decode(value input_value)
 	return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_decode,1);
-
-#endif
 
 
 // Reference this to bring in all the symbols for the static library

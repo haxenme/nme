@@ -158,11 +158,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		var result:Bytes;
 		
 		if (algorithm == CompressionAlgorithm.LZMA) {
-			#if windows
 			result = Bytes.ofData(nme_lzma_encode(src.getData()));
-			#else
-			return;
-			#end
 		} else {
 			var windowBits = 15;
 			windowBits = switch (algorithm) {
@@ -584,8 +580,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
 	#end
 	
-	#if windows
 	private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
 	private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
-	#end
 }

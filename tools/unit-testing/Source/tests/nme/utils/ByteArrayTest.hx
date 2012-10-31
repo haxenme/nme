@@ -373,7 +373,7 @@ import nme.utils.CompressionAlgorithm;
 			"93,0,0,16,0,112,0,0,0,0,0,0,0,0,36,25,73,152,111,16,17,200,95,230,213,143,173,134,203,110,136,96,0",
 			serializeByteArray(data)
 		);
-		
+
 		//for (n in 0 ... data.length) TestRunner.print(data[n] + ",");
 		//TestRunner.print(" :: " + data.length + "," + str.length + "\n\n");
 		
