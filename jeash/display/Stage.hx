@@ -523,7 +523,8 @@ class Stage extends DisplayObjectContainer
 		
 		if (speed == 0) {
 			
-			var jeashRequestAnimationFrame:Dynamic = untyped requestAnimationFrame || untyped webkitRequestAnimationFrame || untyped mozRequestAnimationFrame || untyped oRequestAnimationFrame || untyped msRequestAnimationFrame;
+			var window : Window = cast js.Lib.window;
+			var jeashRequestAnimationFrame:Dynamic = untyped window.requestAnimationFrame || untyped window.webkitRequestAnimationFrame || untyped window.mozRequestAnimationFrame || untyped window.oRequestAnimationFrame || untyped window.msRequestAnimationFrame;
 			
 			if (jeashRequestAnimationFrame == null) {
 				
@@ -548,7 +549,8 @@ class Stage extends DisplayObjectContainer
 
 	public function jeashUpdateNextWake () {
 		if (jeashFrameRate == 0) {
-			var jeashRequestAnimationFrame:Dynamic = untyped requestAnimationFrame || untyped webkitRequestAnimationFrame || untyped mozRequestAnimationFrame || untyped oRequestAnimationFrame || untyped msRequestAnimationFrame;
+			var window : Window = cast js.Lib.window;
+			var jeashRequestAnimationFrame:Dynamic = untyped window.requestAnimationFrame || untyped window.webkitRequestAnimationFrame || untyped window.mozRequestAnimationFrame || untyped window.oRequestAnimationFrame || untyped window.msRequestAnimationFrame;
 			jeashRequestAnimationFrame (jeashUpdateNextWake);
 			jeashStageRender();
 		} else {
