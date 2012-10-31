@@ -184,6 +184,7 @@
 		<file name="common/SurfaceIO.cpp" />
 		<file name="common/ManagedStage.cpp"/>
 		<file name="common/CURL.cpp" unless="winrt"/>
+		<file name="common/Lzma.cpp"/>
 		
 		<file name="common/XML/tinystr.cpp"/>
 		<file name="common/XML/tinyxml.cpp"/>
@@ -207,15 +208,17 @@
 		<file name="opengl/OGLTexture.cpp" if="ogl"/>
 		<file name="opengl/OGLShaders.cpp" if="ogl"/>
 		<file name="opengl/OGLExport.cpp" if="ogl"/>
-		
-		<file name="lzma/LzFind.c" if="win_desktop" />
-		<file name="lzma/LzFindMt.c" if="win_desktop"/>
-		<file name="lzma/LzmaDec.c" if="win_desktop"/>
-		<file name="lzma/LzmaEnc.c" if="win_desktop"/>
-		<file name="lzma/Threads.c" if="win_desktop"/>
-		
 	</files>
 	
+	<files id="common_lzma">
+		<compilerflag value="-D_7ZIP_ST" unless="win_desktop"/>
+
+		<file name="lzma/LzFind.c" />
+		<file name="lzma/LzmaDec.c" />
+		<file name="lzma/LzmaEnc.c" />
+		<file name="lzma/LzFindMt.c" if="win_desktop" />
+		<file name="lzma/Threads.c" if="win_desktop" />
+	</files>
 	
 	<set name="tool" value="exe" unless="iphone"/>
 	<set name="tool" value="static_link" if="iphone"/>
@@ -293,6 +296,7 @@
 		<ext value=".ndll" if="gph"/>
 		
 		<files id="common"/>
+		<files id="common_lzma"/>
 		<files id="win_desktop" if="win_desktop"/>
 		<files id="winrt" if="winrt"/>
 		<files id="iphone" if="iphone"/>
