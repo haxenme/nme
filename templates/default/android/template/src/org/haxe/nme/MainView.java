@@ -356,6 +356,7 @@ class MainView extends GLSurfaceView {
         public void onDrawFrame(GL10 gl) {
             //Log.v("VIEW","onDrawFrame !");
             mMainView.HandleResult( NME.onRender() );
+            Sound.checkSoundCompletion();
             //Log.v("VIEW","onDrawFrame DONE!");
         }
 

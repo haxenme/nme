@@ -43,14 +43,6 @@ class GameActivity extends android.app.Activity
       return nme.JNI.callStatic(_getMusicHandle_func,[arg0]);
    }
 
-   static var _getSoundPoolID_func:Dynamic;
-   public static function getSoundPoolID() : Dynamic
-   {
-      if (_getSoundPoolID_func==null)
-         _getSoundPoolID_func=nme.JNI.createStaticMethod("org.haxe.nme.Sound","getSoundPoolID","()I");
-      return nme.JNI.callStatic(_getSoundPoolID_func,[]);
-   }
-
    static var _getContext_func:Dynamic;
    public static function getContext() : Dynamic
    {
