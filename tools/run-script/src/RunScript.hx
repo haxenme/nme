@@ -253,6 +253,13 @@ class RunScript {
 				
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
 				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
+				
+				if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwinrt" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug", "-Dwinrt" ].concat (defines));
+					
+				}
 			
 		}
 		
