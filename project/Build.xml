@@ -131,7 +131,8 @@
 	
 	
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Mac/" if="macos"/>
-	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows"/>
+	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Windows/" if="windows" unless="winrt"/>
+	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/WinRTx86/" if="winrt"/>
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/webOS/" if="webos" />
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Linux${M64}/" if="linux"/>
 	<set name="THIRDPARTY_LIBS" value="../../sdl-static/lib/Android/" if="android"/>
