@@ -33,19 +33,17 @@ class NMEProject {
 	public var templatePaths:Array <String>;
 	public var window:Window;
 	
+	private var defaultApp:ApplicationData;
+	private var defaultMeta:MetaData;
+	private var defaultWindow:Window;
+	
 	public static var _command:String;
 	public static var _debug:Bool;
 	public static var _target:Platform;
 	public static var _targetFlags:Hash <String>;
 	public static var _templatePaths:Array <String>;
 	
-	private static var defaultApp:ApplicationData;
-	private static var defaultMeta:MetaData;
-	private static var defaultWindow:Window;
 	private static var initialized:Bool;
-	
-	
-	// add pre-build, post-build hooks
 	
 	
 	public static function main (className:String) {
@@ -67,17 +65,31 @@ class NMEProject {
 		targetFlags = HashHelper.copy (_targetFlags);
 		templatePaths = _templatePaths.copy ();
 		
+		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
+		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: "11", minimumSWFVersion: "11", url: "" }
+		defaultWindow = { width: 800, height: 600, background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, shaders: false }
+		
 		switch (target) {
 			
-			case Platform.FLASH, Platform.HTML5:
+			case Platform.FLASH:
 				
 				platformType = PlatformType.WEB;
 				architectures = [];
+				
+			case Platform.HTML5:
+				
+				platformType = PlatformType.WEB;
+				architectures = [];
+				
+				defaultWindow.fps = 0;
 				
 			case Platform.ANDROID, Platform.BLACKBERRY, Platform.IOS, Platform.WEBOS:
 				
 				platformType = PlatformType.MOBILE;
 				architectures = [ Architecture.ARMV6 ];
+				
+				defaultWindow.width = 0;
+				defaultWindow.height = 0;
 				
 			case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
 				
@@ -338,10 +350,6 @@ class NMEProject {
 				
 			}
 			
-			defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
-			defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: "11", minimumSWFVersion: "11", url: "" }
-			defaultWindow = { width: 0, height: 0, background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, shaders: false }
-			
 			initialized = true;
 			
 		}
@@ -351,9 +359,9 @@ class NMEProject {
 	
 	public function merge (project:NMEProject):Void {
 		
-		ObjectHelper.copyUniqueFields (project.meta, meta, defaultMeta);
-		ObjectHelper.copyUniqueFields (project.app, app, defaultApp);
-		ObjectHelper.copyUniqueFields (project.window, window, defaultWindow);
+		ObjectHelper.copyUniqueFields (project.meta, meta, project.defaultMeta);
+		ObjectHelper.copyUniqueFields (project.app, app, project.defaultApp);
+		ObjectHelper.copyUniqueFields (project.window, window, project.defaultWindow);
 		
 		HashHelper.copyUniqueKeys (project.environment, environment);
 		

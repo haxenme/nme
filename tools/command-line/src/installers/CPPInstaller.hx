@@ -38,12 +38,12 @@ class CPPInstaller extends DesktopInstaller {
 				
 			}
 			
-			if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+			/*if (Sys.environment ().exists ("VS110COMNTOOLS")) {
 				
 				Lib.println ("Warning: Visual Studio 2012 is not supported. Trying Visual Studio 2010...");
 				Sys.putEnv ("VS110COMNTOOLS", Sys.getEnv ("VS100COMNTOOLS"));
 				
-			}
+			}*/
 			
 		} else if (targetName == "mac") {
 			
