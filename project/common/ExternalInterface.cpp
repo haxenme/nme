@@ -1291,6 +1291,8 @@ DEFINE_PRIM (nme_stage_get_normal_orientation, 0);
 
 // --- ManagedStage ----------------------------------------------------------------------
 
+#ifndef HX_WINRT
+
 value nme_managed_stage_create(value inW,value inH,value inFlags)
 {
    ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH),val_int(inFlags));
@@ -1313,7 +1315,7 @@ value nme_managed_stage_pump_event(value inStage,value inEvent)
 DEFINE_PRIM(nme_managed_stage_pump_event,2);
 
 
-
+#endif
 
 
 

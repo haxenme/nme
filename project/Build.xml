@@ -47,6 +47,13 @@
 	</files>
 	
   	<files id="winrt">
+		<compilerflag value="-Iinclude"/>
+		<file name="winrt/WinRTStage.cpp" />
+		<file name="winrt/DX11Context.cpp" />
+		<file name="winrt/DX11Font.cpp" />
+		<file name="winrt/System.cpp" />
+		<file name="winrt/MediaFoundation.cpp" />
+		<file name="winrt/URL.cpp" />
 	</files>
 
 	
@@ -183,7 +190,7 @@
 		<file name="common/Cursors.cpp"/>
 		<file name="common/Input.cpp" unless="iphone" />
 		<file name="common/SurfaceIO.cpp" />
-		<file name="common/ManagedStage.cpp"/>
+		<file name="common/ManagedStage.cpp" unless="winrt" />
 		<file name="common/CURL.cpp" unless="winrt"/>
 		<file name="common/Lzma.cpp"/>
 		
@@ -248,6 +255,7 @@
 	<set name="sdl_static" value="1" unless="mobile"/>
 	<set name="sdl_static" value="1" if="blackberry"/>
 	<unset name="sdl_static" if="dynamic_sdl"/>
+	<unset name="sdl_static" if="winrt"/>
 	<set name="no_thirdparty_extras" value="1" if="dynamic_sdl"/>
 	
 	<set name="sdl_dynamic_path" value="-L/opt/local/lib" if="macos" />
@@ -295,6 +303,8 @@
 		<outdir name="../ndll/${BINDIR}" />
 		<ext value=".ndll" unless="mobile"/>
 		<ext value=".ndll" if="gph"/>
+
+      <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
 		
 		<files id="common"/>
 		<files id="common_lzma"/>
@@ -312,7 +322,7 @@
 		<lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
 		<lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
 		<lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
-		<lib name="${THIRDPARTY_LIBS}zlib${name_extra}${SLIBEXT}" if="windows"/>
+		<lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="windows"/>
 		<lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
 		<lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
 		
@@ -384,7 +394,6 @@
 		<lib name="ws2_32.lib" if="win_desktop"/>
 		<lib name="wldap32.lib" if="win_desktop"/>
 		<lib name="shell32.lib" if="win_desktop"/>
-		
 		<lib name="-ldl" if="linux"/>
 		<lib name="-lGL" if="linux"/>
 		<lib name="-lpthread" if="linux"/>
