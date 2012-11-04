@@ -53,6 +53,7 @@
 		<file name="winrt/DX11Font.cpp" />
 		<file name="winrt/System.cpp" />
 		<file name="winrt/MediaFoundation.cpp" />
+		<file name="winrt/Direct3DBase.cpp" />
 		<file name="winrt/URL.cpp" />
 	</files>
 
@@ -397,6 +398,8 @@
 		<lib name="-ldl" if="linux"/>
 		<lib name="-lGL" if="linux"/>
 		<lib name="-lpthread" if="linux"/>
+
+		<lib name="D3D11.lib" if="winrt"/>
 		
 		<flag value="-L${GPH_ROOT}/DGE/lib/target" if="gph"/>
 		<lib name="-ldge20" if="gph"/>
