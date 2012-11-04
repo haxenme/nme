@@ -7,6 +7,7 @@
 #include <sys/platform.h>
 #include "bps/event.h"
 #include <string>
+#include <stdio.h>
 
 
 namespace nme {
@@ -88,6 +89,13 @@ namespace nme {
 		bps_free (err);
 		
 		return (result == BPS_SUCCESS);
+		
+	}
+	
+	
+	void ProcessBPSEvent (bps_event_t *event) {
+		
+		printf ("Received BPS event\n");
 		
 	}
 

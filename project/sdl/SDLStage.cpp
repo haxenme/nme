@@ -6,6 +6,11 @@
 #include <KeyCodes.h>
 #include <map>
 
+#ifdef BLACKBERRY
+#include <SDL_syswm.h>
+#include <bps/sensor.h>
+#endif
+
 #ifdef WEBOS
 #include "PDL.h"
 #include <syslog.h>
@@ -86,6 +91,20 @@ int initSDL () {
 		sgJoystickEnabled = true;
 		
 	}
+	
+	#ifdef BLACKBERRY
+	if (err == 0) {
+		
+		SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+		
+	}
+	#endif
+	
+sensor_set_rate(SENSOR_TYPE_ACCELEROMETER, 25000);
+sensor_set_skip_duplicates(SENSOR_TYPE_ACCELEROMETER, true);
+sensor_request_events(SENSOR_TYPE_ACCELEROMETER);
+
+
 
 	return err;
 	
@@ -1214,6 +1233,14 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(joystick);
          break;
 	  }
+	  
+	  #ifdef BLACKBERRY
+	  case SDL_SYSWMEVENT:
+	  {
+		  //exit(0);
+		  ProcessBPSEvent((inEvent.syswm.msg)->event);
+	  }
+	  #endif
 	  
    }
 }

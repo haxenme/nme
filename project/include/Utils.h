@@ -7,6 +7,10 @@
 #include <QuickVec.h>
 
 
+#ifdef BLACKBERRY
+#include <bps/event.h>
+#endif
+
 #ifdef ANDROID
 #include <android/log.h>
 
@@ -149,6 +153,10 @@ void HapticVibrate(int period, int duration);
 bool SetUserPreference(const char *inId, const char *inPreference);
 std::string GetUserPreference(const char *inId);
 bool ClearUserPreference(const char *inId);
+
+#ifdef BLACKBERRY
+void ProcessBPSEvent (bps_event_t *event);
+#endif
 
 #ifdef HX_WINDOWS
 typedef wchar_t OSChar;
