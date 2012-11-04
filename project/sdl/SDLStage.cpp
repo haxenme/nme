@@ -100,12 +100,6 @@ int initSDL () {
 	}
 	#endif
 	
-sensor_set_rate(SENSOR_TYPE_ACCELEROMETER, 25000);
-sensor_set_skip_duplicates(SENSOR_TYPE_ACCELEROMETER, true);
-sensor_request_events(SENSOR_TYPE_ACCELEROMETER);
-
-
-
 	return err;
 	
 }
@@ -1237,8 +1231,7 @@ void ProcessEvent(SDL_Event &inEvent)
 	  #ifdef BLACKBERRY
 	  case SDL_SYSWMEVENT:
 	  {
-		  //exit(0);
-		  ProcessBPSEvent((inEvent.syswm.msg)->event);
+         ProcessBPSEvent((inEvent.syswm.msg)->event);
 	  }
 	  #endif
 	  

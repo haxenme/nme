@@ -156,6 +156,7 @@ bool ClearUserPreference(const char *inId);
 
 #ifdef BLACKBERRY
 void ProcessBPSEvent (bps_event_t *event);
+bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain);
 #endif
 
 #ifdef HX_WINDOWS
