@@ -1205,7 +1205,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
       }
       else
       {
-         uint8 *a = src;
+         uint8 *a = src + 3;
          uint8 *pix = (uint8 *)outPixels;
 
          
@@ -1232,6 +1232,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          // Must output big-endian, while memory is stored little-endian
          else
          {
+            a = src;
             if (!swap)
             {
                for(int x=0;x<r.w;x++)
