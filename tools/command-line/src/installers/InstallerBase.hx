@@ -1295,6 +1295,10 @@ class InstallerBase {
 					case "unset":
 						
 						defines.remove (element.att.name);
+
+					case "templatePath":
+                  templatePaths.unshift( substitute(element.att.name) );
+
 					
 					case "setenv":
 						

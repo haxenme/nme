@@ -414,7 +414,16 @@
 	
 	<java path="path/to/java/classes" />
 	
+<!-- <templatePath />
+		
+		Use templatePath to prioritize your custom version of template files, or add additional files
+		If not found in your custom path, it will pull from the default path.
+	-->
 	
+   <templatePath name="look/here/first" />
+   <templatePath name="look/here/second" />
+	
+
 	
 	<!-- <certificate />
 		

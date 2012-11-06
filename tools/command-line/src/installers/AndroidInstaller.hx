@@ -230,10 +230,12 @@ class AndroidInstaller extends InstallerBase {
 			
 		}
 		
-		FileHelper.recursiveCopy (templatePaths[0] + "android/template", destination, context);
-		FileHelper.copyFile (templatePaths[0] + "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
-		FileHelper.recursiveCopy (templatePaths[0] + "haxe", buildDirectory + "/android/haxe", context);
-		FileHelper.recursiveCopy (templatePaths[0] + "android/hxml", buildDirectory + "/android/haxe", context);
+		FileHelper.recursiveCopyPath(templatePaths, "android/template", destination, context);
+
+		FileHelper.copyFilePath(templatePaths, "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
+
+		FileHelper.recursiveCopyPath(templatePaths,  "haxe", buildDirectory + "/android/haxe", context);
+		FileHelper.recursiveCopyPath(templatePaths,  "android/hxml", buildDirectory + "/android/haxe", context);
 		
 		for (asset in assets) {
 			

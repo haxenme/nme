@@ -64,6 +64,21 @@ class FileHelper {
 		}
 		
 	}
+
+   // Actually respect the path....
+	public static function copyFilePath(inPaths:Array<String>,inSource:String, inDest:String, inContext:Dynamic, inProcess:Bool = true)
+   {
+      for(path in inPaths)
+      {
+         var source = path +"/" + inSource;
+         if (FileSystem.exists(source))
+         {
+            copyFile(source,inDest, inContext, inProcess );
+            return;
+         }
+      }
+      InstallTool.error("Could not find template file " + inSource + " in template paths " + inPaths);
+   }
 	
 	
 	public static function copyIfNewer (source:String, destination:String) {
@@ -83,8 +98,45 @@ class FileHelper {
 		
 	}
 	
-	
-	public static function recursiveCopy (source:String, destination:String, context:Dynamic, process:Bool = true) {
+
+   // Actually respect the path....
+   public static function recursiveCopyPath(inPaths:Array<String>,source:String, destination:String, context:Dynamic, process:Bool = true)
+   {
+      PathHelper.mkdir(destination);
+
+      var fileMap = new Hash<Bool>();
+      for(path in inPaths)
+      {
+         try
+         {
+            var files = FileSystem.readDirectory(path + "/" + source);
+            for(file in files)
+               fileMap.set(file,FileSystem.isDirectory(path + "/" + source + "/" + file) );
+
+         } catch (e:Dynamic) { }
+      }
+
+      for (file in fileMap.keys())
+      {
+         if (file.substr (0, 1) != ".")
+         {
+            var itemDestination:String = destination + "/" + file;
+            var itemSource:String = source + "/" + file;
+
+            if (fileMap.get(file))
+            {
+               recursiveCopyPath(inPaths, itemSource, itemDestination, context, process);
+            }
+            else
+            {
+               copyFilePath(inPaths, itemSource, itemDestination, context, process);
+            }
+         }
+      }
+   }
+   
+   
+	public static function recursiveCopy(source:String, destination:String, context:Dynamic, process:Bool = true) {
 		
 		PathHelper.mkdir (destination);
 		
