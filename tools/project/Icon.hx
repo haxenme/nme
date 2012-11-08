@@ -7,7 +7,7 @@ class Icon {
 	public var width:Int;
 	
 	
-	public function new (path:String, size:Int = -1) {
+	public function new (path:String, size:Int = 0) {
 		
 		this.path = path;
 		this.size = height = width = size;

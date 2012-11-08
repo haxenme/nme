@@ -52,7 +52,9 @@ class URLRequest
 	}
 
 	public function nmePrepare() {
-		if (Std.is(data, ByteArray) || data == null) {
+		if (data == null) {
+			nmeBytes = new ByteArray ();
+		} else if (Std.is(data, ByteArray)) {
 			nmeBytes = data;
 		} else if (Std.is(data, URLVariables)) {
 			var vars:URLVariables = data;

@@ -1,6 +1,8 @@
--main InstallTool
+-main CommandLineTools
 -neko command-line.n
 -cp src
+-cp ../helpers
+-cp ../project
 -lib nme
 -lib swf
 -lib svg

@@ -9,18 +9,17 @@ class AndroidHelper {
 	
 	private static var adbName:String;
 	private static var adbPath:String;
-	private static var defines:Hash <String>;
 	
 	
-	public static function build (projectDirectory:String):Void {
+	public static function build (project:NMEProject, projectDirectory:String):Void {
 		
-		if (defines.exists ("ANDROID_SDK")) {
+		if (project.environment.exists ("ANDROID_SDK")) {
 			
-			Sys.putEnv ("ANDROID_SDK", defines.get ("ANDROID_SDK"));
+			Sys.putEnv ("ANDROID_SDK", project.environment.get ("ANDROID_SDK"));
 			
 		}
 		
-		var ant:String = defines.get ("ANT_HOME");
+		var ant = project.environment.get ("ANT_HOME");
 		
 		if (ant == null || ant == "") {
 			
@@ -32,9 +31,9 @@ class AndroidHelper {
 			
 		}
 		
-		var build:String = "debug";
+		var build = "debug";
 		
-		if (defines.exists ("KEY_STORE")) {
+		if (project.certificate != null) {
 			
 			build = "release";
 			
@@ -55,12 +54,12 @@ class AndroidHelper {
 	}
 	
 	
-	private static function getADB ():Void {
+	private static function getADB (project:NMEProject):Void {
 		
-		adbPath = defines.get ("ANDROID_SDK") + "/tools/";
+		adbPath = project.environment.get ("ANDROID_SDK") + "/tools/";
 		adbName = "adb";
 		
-		if (defines.get ("HOST") == "windows") {
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
 			adbName += ".exe";
 			
@@ -68,11 +67,11 @@ class AndroidHelper {
 		
 		if (!FileSystem.exists (adbPath + adbName)) {
 			
-			adbPath = defines.get ("ANDROID_SDK") + "/platform-tools/";
+			adbPath = project.environment.get ("ANDROID_SDK") + "/platform-tools/";
 			
 		}
 		
-		if (!InstallTool.isWindows) {
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS) {
 			
 			adbName = "./" + adbName;
 			
@@ -81,11 +80,15 @@ class AndroidHelper {
 	}
 	
 	
-	public static function initialize (defines:Hash <String>):Void {
+	public static function initialize (project:NMEProject):Void {
 		
-		AndroidHelper.defines = defines;
+		getADB (project);
 		
-		getADB ();
+		if (project.environment.exists ("JAVA_HOME")) {
+			
+			Sys.putEnv ("JAVA_HOME", project.environment.get ("JAVA_HOME"));
+			
+		}
 		
 	}
 	
@@ -104,11 +107,11 @@ class AndroidHelper {
 	}
 	
 	
-	public static function trace (debug:Bool):Void {
+	public static function trace (project:NMEProject, debug:Bool):Void {
 		
 		// Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> if you do not want to filter log messages
 		
-		if (defines.exists("FULL_LOGCAT")) {
+		if (project.environment.exists("FULL_LOGCAT")) {
 			
 			ProcessHelper.runCommand (adbPath, adbName, [ "logcat", "-c" ]);
 			ProcessHelper.runCommand (adbPath, adbName, [ "logcat" ]);

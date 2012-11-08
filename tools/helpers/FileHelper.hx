@@ -177,6 +177,54 @@ class FileHelper {
 		return true;
 		
 	}
+	
+	
+	public static function isText (source:String):Bool {
 		
+		if (!FileSystem.exists (source)) {
+			
+			return false;
+			
+		}
+		
+		var input = File.read (source, true);
+		
+		var numChars = 0;
+		var numBytes = 0;
+		
+		try {
+			
+			while (numBytes < 512) {
+				
+				var byte = input.readByte ();
+				
+				numBytes++;
+				
+				if (byte == 0) {
+					
+					return false;
+					
+				}
+				
+				if ((byte > 8 && byte < 16) || (byte > 32 && byte < 256) || byte > 287) {
+					
+					numChars++;
+					
+				}
+				
+			}
+			
+		} catch (e:Dynamic) { }
+		
+		if (numBytes == 0 || (numChars / numBytes) > 0.7) {
+			
+			return true;
+			
+		}
+		
+		return false;
+		
+	}
+	
 
 }

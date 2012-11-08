@@ -6,6 +6,7 @@ import haxe.xml.Fast;
 import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
+import PlatformConfig;
 
 
 class NMMLParser extends NMEProject {
@@ -1051,6 +1052,10 @@ class NMMLParser extends NMEProject {
 						
 						parseAssetsElement (element, extensionPath, true);
 					
+					case "templatePath":
+						
+						templatePaths.push (substitute(element.att.name));
+					
 					case "preloader":
 						
 						// deprecated
@@ -1136,18 +1141,52 @@ class NMMLParser extends NMEProject {
 					
 					case "ios":
 						
-						/*if (element.has.deployment)
-                  {
-                     var deploy = substitute(element.att.deployment);
-                     if (deploy>iosDeployment)
-                        iosDeployment = deploy;
-                  }
-						if (element.has.binaries)
-                     iosBinaries = substitute(element.att.binaries);
-						if (element.has.devices)
-                     iosDevices = substitute(element.att.devices);
-						if (element.has.compiler)
-                     iosCompiler = substitute(element.att.compiler);*/
+						if (element.has.deployment) {
+							
+							var deployment = Std.parseFloat (substitute (element.att.deployment));
+							
+							if (deployment > config.ios.deployment) {
+								
+								config.ios.deployment = deployment;
+								
+							}
+							
+						}
+						
+						if (element.has.binaries) {
+							
+							var binaries = substitute (element.att.binaries);
+							
+							switch (binaries) {
+								
+								case "fat":
+									
+									ArrayHelper.addUnique (architectures, Architecture.ARMV6);
+									ArrayHelper.addUnique (architectures, Architecture.ARMV7);
+								
+								case "armv6":
+									
+									ArrayHelper.addUnique (architectures, Architecture.ARMV6);
+								
+								case "armv7":
+									
+									ArrayHelper.addUnique (architectures, Architecture.ARMV7);
+								
+							}
+							
+						}
+						
+						if (element.has.devices) {
+							
+							config.ios.device = Reflect.field (IOSConfigDevice, substitute (element.att.devices).toUpperCase ());
+							
+						}
+						
+						if (element.has.compiler) {
+							
+							config.ios.compiler = substitute (element.att.compiler);
+							
+						}
 					
 				}
 				

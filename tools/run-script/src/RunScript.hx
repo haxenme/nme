@@ -56,15 +56,8 @@ class RunScript {
 			
 			if (target == "tools") {
 				
-				if (flags.exists ("new")) {
-					
-					runCommand (nmeDirectory + "/tools/command-line-new", "haxe", [ "CommandLine.hxml" ]);
-					
-				} else {
-				
-					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-					
-				}
+				runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
+				runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 				
 			} else if (target == "clean") {
 				
@@ -91,15 +84,8 @@ class RunScript {
 				
 				if (target == "all") {
 					
-					if (flags.exists ("new")) {
-						
-						runCommand (nmeDirectory + "/tools/command-line-new", "haxe", [ "CommandLine.hxml" ]);
-						
-					} else {
-						
-						runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-						
-					}
+					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
+					runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 					
 					if (isWindows) {
 						
@@ -716,21 +702,31 @@ class RunScript {
 				
 			}
 			
-			var useNew = false;
+			var useLegacyTools = false;
 			
-			for (arg in args) {
+			switch (command) {
 				
-				if (arg == "-new") {
+				case "setup", "document", "generate", "new":
 					
-					useNew = true;
+					useLegacyTools = true;
 					
-				}
+				default:
+					
+					for (arg in args) {
+						
+						if (arg == "-old") {
+							
+							useLegacyTools = true;
+							
+						}
+						
+					}
 				
 			}
 			
-			if (useNew) {
+			if (useLegacyTools) {
 				
-				args.unshift ("tools/command-line-new/command-line.n");
+				args.unshift ("tools/command-line-old/command-line.n");
 				
 			} else {
 				

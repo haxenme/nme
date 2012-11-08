@@ -13,6 +13,7 @@ class NMEProject {
 	public var assets:Array <Asset>;
 	public var certificate:Keystore;
 	public var command:String;
+	public var config:PlatformConfig;
 	public var debug:Bool;
 	public var dependencies:Array <String>;
 	public var environment:Hash <String>;
@@ -60,6 +61,7 @@ class NMEProject {
 		initialize ();
 		
 		command = _command;
+		config = new PlatformConfig ();
 		debug = _debug;
 		target = _target;
 		targetFlags = HashHelper.copy (_targetFlags);
@@ -136,6 +138,7 @@ class NMEProject {
 		
 		ObjectHelper.copyFields (certificate, project.certificate);
 		project.command = command;
+		project.config = config.clone ();
 		project.debug = debug;
 		project.dependencies = dependencies.copy ();
 		
@@ -365,6 +368,8 @@ class NMEProject {
 		
 		HashHelper.copyUniqueKeys (project.environment, environment);
 		
+		config.merge (project.config);
+		
 		assets = ArrayHelper.concatUnique (assets, project.assets);
 		dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
 		haxedefs = ArrayHelper.concatUnique (haxedefs, project.haxedefs);
@@ -423,6 +428,8 @@ class NMEProject {
 		ObjectHelper.copyMissingFields (app, defaultApp);
 		ObjectHelper.copyMissingFields (meta, defaultMeta);
 		ObjectHelper.copyMissingFields (window, defaultWindow);
+		
+		config.populate ();
 		
 		for (field in Reflect.fields (app)) {
 			

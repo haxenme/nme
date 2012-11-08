@@ -26,7 +26,7 @@ class PlatformHelper {
 					
 					if (architecture != null && architecture.indexOf ("64") > -1) {
 						
-						_hostArchitecture = Architecture.X86_64;
+						_hostArchitecture = Architecture.X64;
 						
 					} else {
 						
@@ -44,7 +44,7 @@ class PlatformHelper {
 					
 					if (output.indexOf ("64") > -1) {
 					
-						_hostArchitecture = Architecture.X86_64;
+						_hostArchitecture = Architecture.X64;
 					
 					} else {
 						

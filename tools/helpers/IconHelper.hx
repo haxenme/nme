@@ -5,6 +5,7 @@ import format.SVG;
 import haxe.io.Bytes;
 import haxe.io.BytesOutput;
 import haxe.io.Path;
+import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.display.BitmapInt32;
 import nme.display.Shape;
@@ -17,7 +18,34 @@ import sys.FileSystem;
 class IconHelper {
 	
 	
-	public static function createMacIcon (project:NMEProject, targetDirectory:String):String {
+	public static function createIcon (icons:Array <Icon>, width:Int, height:Int, targetPath:String):Bool {
+		
+		var icon = findMatch (icons, width, height);
+		
+		if (icon != null && Path.extension (icon.path) == "png") {
+			
+			FileHelper.copyFile (icon.path, targetPath);
+			return true;
+			
+		} else {
+			
+			var bitmapData = getIconBitmap (icons, width, height);
+			
+			if (bitmapData != null) {
+				
+				File.saveBytes (targetPath, bitmapData.encode ("png"));
+				return true;
+				
+			}
+			
+		}
+		
+		return false;
+		
+	}
+	
+	
+	public static function createMacIcon (icons:Array <Icon>, targetPath:String):Bool {
 		
 		var out = new BytesOutput ();
 		out.bigEndian = true;
@@ -28,7 +56,7 @@ class IconHelper {
 			
 			var s =  ([ 16, 32, 48, 128 ])[i];
 			var code =  ([ "is32", "il32", "ih32", "it32" ])[i];
-			var bmp = getIconBitmap (project, s, s);
+			var bmp = getIconBitmap (icons, s, s);
 			
 			if (bmp != null) {
 				
@@ -62,7 +90,7 @@ class IconHelper {
 			
 			var s =  ([ 32, 64, 256, 512, 1024 ])[i];
 			var code =  ([ "ic11", "ic12", "ic08", "ic09", "ic10" ])[i];
-			var bmp = getIconBitmap (project, s, s);
+			var bmp = getIconBitmap (icons, s, s);
 			
 			if (bmp != null) {
 				
@@ -81,8 +109,7 @@ class IconHelper {
 		
 		if (bytes.length > 0) {
 			
-			var filename = PathHelper.combine (targetDirectory, "icon.icns");
-			var file = File.write (filename, true);
+			var file = File.write (targetPath, true);
 			file.bigEndian = true;
 			
 			for (c in 0...4) file.writeByte ("icns".charCodeAt (c));
@@ -91,11 +118,128 @@ class IconHelper {
 			file.writeBytes (bytes, 0, bytes.length);
 			file.close ();
 			
-			return filename;
+			return true;
 			
 		}
 		
-		return "";
+		return false;
+		
+	}
+	
+	
+	public static function createWindowsIcon (icons:Array <Icon>, targetPath:String):Bool {
+		
+		var sizes = [ 16, 24, 32, 48, 64, 128, 256 ];
+		var bmps = new Array <BitmapData> ();
+		
+		var data_pos = 6;
+		
+		for (size in sizes) {
+			
+			var bmp = getIconBitmap (icons, size, size);
+			
+			if (bmp != null) {
+				
+				bmps.push (bmp);
+				data_pos += 16;
+				
+			}
+			
+		}
+		
+		var ico = new ByteArray ();
+		ico.bigEndian = false;
+		ico.writeShort (0);
+		ico.writeShort (1);
+		ico.writeShort (bmps.length);
+		
+		for (bmp in bmps) {
+			
+			var size = bmp.width;
+			var xor_size = size * size * 4;
+			var and_size = size * size >> 3;
+			ico.writeByte (size);
+			ico.writeByte (size);
+			ico.writeByte (0); // palette
+			ico.writeByte (0); // reserved
+			ico.writeShort (1); // planes
+			ico.writeShort (32); // bits per pixel
+			ico.writeInt (40 + xor_size + and_size); // Data size
+			ico.writeInt (data_pos); // Data offset
+			data_pos += 40 + xor_size + and_size;
+			
+		}
+		
+		for (bmp in bmps) {
+			
+			var size = bmp.width;
+			var xor_size = size * size * 4;
+			var and_size = size * size >> 3;
+			
+			ico.writeInt (40); // size (bytes)
+			ico.writeInt (size);
+			ico.writeInt (size * 2);
+			ico.writeShort (1);
+			ico.writeShort (32);
+			ico.writeInt (0); // Bit fields...
+			ico.writeInt (xor_size + and_size); // Size...
+			ico.writeInt (0); // res-x
+			ico.writeInt (0); // res-y
+			ico.writeInt (0); // cols
+			ico.writeInt (0); // important
+			
+			var bits = bmp.getPixels (new Rectangle (0, 0, size, size));
+			var and_mask = new ByteArray ();
+			
+			for (y in 0...size) {
+				
+				var mask = 0;
+				var bit = 128;
+				bits.position = (size-1 - y) * 4 * size;
+				
+				for (i in 0...size) {
+					
+					var a = bits.readByte ();
+					var r = bits.readByte ();
+					var g = bits.readByte ();
+					var b = bits.readByte ();
+					ico.writeByte (b);
+					ico.writeByte (g);
+					ico.writeByte (r);
+					ico.writeByte (a);
+					
+					if (a < 128)
+						mask |= bit;
+					
+					bit = bit >> 1;
+					
+					if (bit == 0) {
+						
+						and_mask.writeByte (mask);
+						bit = 128;
+						mask = 0;
+						
+					}
+					
+				}
+				
+			}
+			
+			ico.writeBytes (and_mask, 0, and_mask.length);
+			
+		}
+		
+		if (bmps.length > 0) {
+			
+			var file = File.write (targetPath, true);
+			file.writeBytes (ico, 0, ico.length);
+			file.close ();
+			
+			return true;
+			
+		}
+		
+		return false;
 		
 	}
 	
@@ -115,64 +259,108 @@ class IconHelper {
 	}
 	
 	
-	private static function getIconBitmap (project:NMEProject, width:Int, height:Int, /*targetPath:String="",*/ backgroundColor:BitmapInt32 = null):BitmapData {
+	public static function findMatch (icons:Array <Icon>, width:Int, height:Int):Icon {
 		
-		for (icon in project.icons) {
+		var match = null;
+		
+		for (icon in icons) {
 			
-			if (icon.width == width && icon.height == height) {
+			if (match == null && icon.width == 0 && icon.height == 0) {
 				
-				/*if (targetPath != "" && FileSystem.exists (targetPath) && !FileHelper.isNewer (icon.path, targetPath)) {
-					
-					return null;
-					
-				}*/
+				match = icon;
 				
-				return BitmapData.load (icon.path);
+			} else if (icon.width == width && icon.height == height) {
+				
+				match = icon;
 				
 			}
 			
 		}
 		
-		var matches = [];
+		return match;
 		
-		for (icon in project.icons) {
+	}
+	
+	
+	public static function findNearestMatch (icons:Array <Icon>, width:Int, height:Int):Icon {
+		
+		var match = null;
+		
+		for (icon in icons) {
 			
-			if ((icon.width == width || icon.width == -1) && (icon.height == height || icon.height == -1)) {
+			if (icon.width > width / 2 && icon.height > height / 2) {
 				
-				matches.push (icon);
-				
-				/*if (targetPath != "" && FileSystem.exists (targetPath) && !FileHelper.isNewer (icon.path, targetPath)) {
+				if (match == null) {
 					
-					return null;
+					match = icon;
 					
-				}*/
+				} else {
+					
+					if (icon.width > match.width && icon.height > match.height) {
+						
+						if (match.width < width || match.height < height) {
+							
+							match = icon;
+							
+						}
+						
+					} else {
+						
+						if (icon.width > width && icon.height > height) {
+							
+							match = icon;
+							
+						}
+						
+					}
+					
+				}
 				
 			}
 			
 		}
 		
-		matches.reverse ();
+		return match;
 		
-		for (match in matches) {
+	}
+	
+	
+	private static function getIconBitmap (icons:Array <Icon>, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData {
+		
+		var icon = findMatch (icons, width, height);
+		var exactMatch = true;
+		
+		if (icon == null) {
 			
-			switch (Path.extension (match.path)) {
-				
-				case "svg":
-					
-					var svg = new SVG (File.getContent (match.path));
-					var shape = new Shape ();
-					svg.render (shape.graphics, 0, 0, width, height);
-					
-					var bitmapData = new BitmapData (width, height, true, (backgroundColor == null ? #if neko { a: 0, rgb: 0xFFFFFF } #else 0xFFFFFFFF #end : backgroundColor));
-					bitmapData.draw (shape);
-					
-					return bitmapData;
-				
-			}
+			icon = findNearestMatch (icons, width, height);
+			exactMatch = false;
 			
 		}
 		
-		return null;
+		var extension = Path.extension (icon.path);
+		var bitmapData = null;
+		
+		switch (extension) {
+			
+			case "png", "jpg", "jpeg":
+				
+				if (exactMatch ) {
+					
+					bitmapData = BitmapData.load (icon.path);
+					
+				} else {
+					
+					bitmapData = ImageHelper.resizeBitmapData (BitmapData.load (icon.path), width, height);
+					
+				}
+			
+			case "svg":
+				
+				bitmapData = ImageHelper.rasterizeSVG (new SVG (File.getContent (icon.path)), width, height, backgroundColor);
+			
+		}
+		
+		return bitmapData;
 		
 	}
    

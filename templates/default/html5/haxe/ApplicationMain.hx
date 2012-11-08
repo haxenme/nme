@@ -31,8 +31,6 @@ class ApplicationMain {
 		urlLoaders = new Hash <URLLoader> ();
 		total = 0;
 		
-		trace ("...");
-		
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
 		jeash.Lib.preventDefaultTouchMove ();
 		::end::::end::
@@ -44,8 +42,6 @@ class ApplicationMain {
 		::end::
 		Lib.current.addChild (preloader);
 		preloader.onInit ();
-		
-		trace ("asdlfkj");
 		
 		::foreach assets::
 		::if (type=="image")::
@@ -63,8 +59,6 @@ class ApplicationMain {
 		urlLoaders.set ("::resourceName::", urlLoader);
 		total ++;
 		::end::::end::
-		
-		trace (total);
 		
 		if (total == 0) {
 			
@@ -134,7 +128,6 @@ class ApplicationMain {
    
 	private static function loader_onComplete (event:Event):Void {
 		
-		trace ("loaded");
 		completed ++;
 		
 		preloader.onUpdate (completed, total);

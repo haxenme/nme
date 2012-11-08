@@ -61,13 +61,21 @@ class Asset {
 					
 					this.type = AssetType.MUSIC;
 				
-				case "text", "txt", "json", "xml", "svg":
+				case "text", "txt", "json", "xml", "svg", "css":
 					
 					this.type = AssetType.TEXT;
 				
 				default:
 					
-					this.type = AssetType.BINARY;
+					if (path != "" && FileHelper.isText (path)) {
+						
+						this.type = AssetType.TEXT;
+						
+					} else {
+						
+						this.type = AssetType.BINARY;
+						
+					}
 				
 			}
 			

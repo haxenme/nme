@@ -75,6 +75,7 @@ public:
     curl_easy_setopt(mHandle, CURLOPT_WRITEFUNCTION, staticOnData);
     curl_easy_setopt(mHandle, CURLOPT_WRITEDATA, (void *)this);
 		curl_easy_setopt(mHandle, CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(mHandle, CURLOPT_FOLLOWLOCATION, 1);
     if (r.authType!=0)
     {
       curl_easy_setopt(mHandle, CURLOPT_HTTPAUTH, r.authType);
