@@ -398,31 +398,39 @@ class NMMLParser extends NMEProject {
 					
 				} else {
 					
-					switch (type) {
+					if (type == null) {
 						
-						case AssetType.IMAGE:
-							
-							include = "*.jpg|*.jpeg|*.png|*.gif";
+						include = "*";
 						
-						case AssetType.SOUND:
-							
-							include = "*.wav|*.ogg";
+					} else {
 						
-						case AssetType.MUSIC:
+						switch (type) {
 							
-							include = "*.mp2|*.mp3";
-						
-						case AssetType.FONT:
+							case AssetType.IMAGE:
+								
+								include = "*.jpg|*.jpeg|*.png|*.gif";
 							
-							include = "*.otf|*.ttf";
-						
-						case AssetType.TEMPLATE:
+							case AssetType.SOUND:
+								
+								include = "*.wav|*.ogg";
 							
-							include = "*";
-						
-						default:
+							case AssetType.MUSIC:
+								
+								include = "*.mp2|*.mp3";
 							
-							include = "*";
+							case AssetType.FONT:
+								
+								include = "*.otf|*.ttf";
+							
+							case AssetType.TEMPLATE:
+								
+								include = "*";
+							
+							default:
+								
+								include = "*";
+							
+						}
 						
 					}
 					

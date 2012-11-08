@@ -337,6 +337,12 @@ class IconHelper {
 			
 		}
 		
+		if (icon == null) {
+			
+			return null;
+			
+		}
+		
 		var extension = Path.extension (icon.path);
 		var bitmapData = null;
 		
