@@ -122,9 +122,23 @@ class LineJob
 	public var miter_limit:Float;
 }
 
+class TileJob
+{
+	public function new (sheet:Tilesheet, drawList:Array <Float>, flags:Int)
+	{
+		this.sheet = sheet;
+		this.drawList = drawList;
+		this.flags = flags;
+	}
+	
+	public var sheet:Tilesheet;
+	public var drawList:Array <Float>;
+	public var flags:Int;
+}
+
 class Drawable {
-	public function new (inPoints: GfxPoints, inFillColour: Int, inFillAlpha: Float, inSolidGradient: Grad, inBitmap: Texture, inLineJobs: LineJobs) { 
-		points=inPoints; fillColour=inFillColour; fillAlpha=inFillAlpha; solidGradient=inSolidGradient; bitmap=inBitmap; lineJobs=inLineJobs; 
+	public function new (inPoints: GfxPoints, inFillColour: Int, inFillAlpha: Float, inSolidGradient: Grad, inBitmap: Texture, inLineJobs: LineJobs, inTileJob:TileJob) { 
+		points = inPoints; fillColour = inFillColour; fillAlpha = inFillAlpha; solidGradient = inSolidGradient; bitmap = inBitmap; lineJobs = inLineJobs; tileJob = inTileJob;
 	}
 	public var points:GfxPoints;
 	public var fillColour:Int;
@@ -132,6 +146,7 @@ class Drawable {
 	public var solidGradient:Grad;
 	public var bitmap:Texture;
 	public var lineJobs:LineJobs;
+	public var tileJob:TileJob;
 }
 
 typedef Texture = {
@@ -184,10 +199,10 @@ class Graphics
 	private static inline var LINE 				= 1;
 	private static inline var CURVE 			= 2;
 
-	public static inline var TILE_SCALE    		= 0x0001;
-	public static inline var TILE_ROTATION 		= 0x0002;
-	public static inline var TILE_RGB      		= 0x0004;
-	public static inline var TILE_ALPHA    		= 0x0008;
+	public static inline var TILE_SCALE = 0x0001;
+	public static inline var TILE_ROTATION = 0x0002;
+	public static inline var TILE_RGB = 0x0004;
+	public static inline var TILE_ALPHA = 0x0008;
 
 	public var jeashSurface(default, null):HTMLCanvasElement;
 	private var jeashChanged:Bool;
@@ -357,41 +372,63 @@ class Graphics
 		var doStroke = false;
 		for (i in nextDrawIndex...len) {
 			var d = mDrawList[(len-1)-i];
-	
-			if (d.lineJobs.length > 0) {
-				for (lj in d.lineJobs) {
-					ctx.lineWidth = lj.thickness;
+			
+			if (d.tileJob != null) {
+				
+				jeashDrawTiles (d.tileJob.sheet, d.tileJob.drawList, d.tileJob.flags);
+				
+			} else {
+			
+				if (d.lineJobs.length > 0) {
+					for (lj in d.lineJobs) {
+						ctx.lineWidth = lj.thickness;
 
-					switch(lj.joints) {
-						case CORNER_ROUND:
-							ctx.lineJoin = ROUND;
-						case CORNER_MITER:
-							ctx.lineJoin = MITER;
-						case CORNER_BEVEL:
-							ctx.lineJoin = BEVEL;
+						switch(lj.joints) {
+							case CORNER_ROUND:
+								ctx.lineJoin = ROUND;
+							case CORNER_MITER:
+								ctx.lineJoin = MITER;
+							case CORNER_BEVEL:
+								ctx.lineJoin = BEVEL;
+						}
+
+						switch(lj.caps) {
+							case END_ROUND:
+								ctx.lineCap = ROUND;
+							case END_SQUARE:
+								ctx.lineCap = SQUARE;
+							case END_NONE:
+								ctx.lineCap = BUTT;
+						}
+
+						ctx.miterLimit = lj.miter_limit;
+
+						if (lj.grad != null) {
+							ctx.strokeStyle = createCanvasGradient(ctx, lj.grad);
+						} else {
+							ctx.strokeStyle = createCanvasColor(lj.colour, lj.alpha);
+						}
+
+						ctx.beginPath();
+						for (i in lj.point_idx0...lj.point_idx1 + 1) {
+							var p = d.points[i];
+
+							switch (p.type) {
+								case MOVE:
+									ctx.moveTo(p.x, p.y);
+								case CURVE:
+									ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
+								default:
+									ctx.lineTo(p.x, p.y);
+							}
+						}
+						ctx.closePath();
+						doStroke = true;
 					}
-
-					switch(lj.caps) {
-						case END_ROUND:
-							ctx.lineCap = ROUND;
-						case END_SQUARE:
-							ctx.lineCap = SQUARE;
-						case END_NONE:
-							ctx.lineCap = BUTT;
-					}
-
-					ctx.miterLimit = lj.miter_limit;
-
-					if (lj.grad != null) {
-						ctx.strokeStyle = createCanvasGradient(ctx, lj.grad);
-					} else {
-						ctx.strokeStyle = createCanvasColor(lj.colour, lj.alpha);
-					}
-
+				} else {
 					ctx.beginPath();
-					for (i in lj.point_idx0...lj.point_idx1 + 1) {
-						var p = d.points[i];
 
+					for (p in d.points) {
 						switch (p.type) {
 							case MOVE:
 								ctx.moveTo(p.x, p.y);
@@ -402,47 +439,33 @@ class Graphics
 						}
 					}
 					ctx.closePath();
-					doStroke = true;
 				}
-			} else {
-				ctx.beginPath();
 
-				for (p in d.points) {
-					switch (p.type) {
-						case MOVE:
-							ctx.moveTo(p.x, p.y);
-						case CURVE:
-							ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
-						default:
-							ctx.lineTo(p.x, p.y);
+				var fillColour = d.fillColour;
+				var fillAlpha = d.fillAlpha;
+				var g = d.solidGradient;
+				if (g != null)
+					ctx.fillStyle = createCanvasGradient(ctx, g);
+				else  // Alpha value gets clamped in [0;1] range.
+					ctx.fillStyle = createCanvasColor(fillColour, Math.min(1.0, Math.max(0.0, fillAlpha)));
+				ctx.fill();
+				if (doStroke) ctx.stroke();
+				ctx.save();
+
+				var bitmap = d.bitmap;
+				if (bitmap != null) {
+					//ctx.clip();
+
+					var img = bitmap.texture_buffer;
+					var m = bitmap.matrix;
+					if (m != null) {
+						ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
 					}
+					ctx.drawImage(img, 0, 0);
 				}
-				ctx.closePath();
+				ctx.restore();
+				
 			}
-
-			var fillColour = d.fillColour;
-			var fillAlpha = d.fillAlpha;
-			var g = d.solidGradient;
-			if (g != null)
-				ctx.fillStyle = createCanvasGradient(ctx, g);
-			else  // Alpha value gets clamped in [0;1] range.
-				ctx.fillStyle = createCanvasColor(fillColour, Math.min(1.0, Math.max(0.0, fillAlpha)));
-			ctx.fill();
-			if (doStroke) ctx.stroke();
-			ctx.save();
-
-			var bitmap = d.bitmap;
-			if (bitmap != null) {
-				//ctx.clip();
-
-				var img = bitmap.texture_buffer;
-				var m = bitmap.matrix;
-				if (m != null) {
-					ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-				}
-				ctx.drawImage(img, 0, 0);
-			}
-			ctx.restore();
 		}
 		ctx.restore();
 
@@ -640,6 +663,141 @@ class Graphics
 
 		closePolygon(false);
 	}
+	
+	/**
+	 * @private
+	 */
+	public function drawTiles(sheet:Tilesheet, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
+	{
+		var useScale = (flags & TILE_SCALE) > 0;
+		var useRotation = (flags & TILE_ROTATION) > 0;
+		var useRGB = (flags & TILE_RGB) > 0;
+		var useAlpha = (flags & TILE_ALPHA) > 0;
+		
+		var index = 0;
+		var numValues = 3;
+		
+		if (useScale)
+		{
+			numValues ++;
+		}
+		
+		if (useRotation)
+		{
+			numValues ++;
+		}
+		
+		if (useRGB)
+		{
+			numValues += 3;
+		}
+		
+		if (useAlpha)
+		{
+			numValues ++;
+		}
+		
+		while (index < tileData.length) {
+			
+			jeashExpandStandardExtent (tileData[index] + sheet.jeashBitmap.width, tileData[index + 1] + sheet.jeashBitmap.height);
+			index += numValues;
+			
+		}
+		
+		addDrawable (new Drawable (null, null, null, null, null, null, new TileJob (sheet, tileData, flags)));
+		jeashChanged = true;
+	}
+	
+	private function jeashDrawTiles(sheet:Tilesheet, tileData:Array<Float>, flags:Int = 0):Void {
+		
+		var useScale = (flags & TILE_SCALE) > 0;
+		var useRotation = (flags & TILE_ROTATION) > 0;
+		var useRGB = (flags & TILE_RGB) > 0;
+		var useAlpha = (flags & TILE_ALPHA) > 0;
+		
+		var scaleIndex = 0;
+		var rotationIndex = 0;
+		var rgbIndex = 0;
+		var alphaIndex = 0;
+		var numValues = 3;
+		
+		if (useScale)
+		{
+			scaleIndex = numValues;
+			numValues ++;
+		}
+		
+		if (useRotation)
+		{
+			rotationIndex = numValues;
+			numValues ++;
+		}
+		
+		if (useRGB)
+		{
+			rgbIndex = numValues;
+			numValues += 3;
+		}
+		
+		if (useAlpha)
+		{
+			alphaIndex = numValues;
+			numValues ++;
+		}
+		
+		var totalCount = tileData.length;
+		var itemCount = Std.int (totalCount / numValues);
+		var index = 0;
+		
+		var rect = null;
+		var center = null;
+		var previousTileID = -1;
+		
+		var surface = sheet.jeashBitmap.handle ();
+		var ctx = getContext ();
+		
+		if (ctx != null) {
+			
+			while (index < totalCount)
+			{
+				var tileID = Std.int(tileData[index + 2]);
+				
+				if (tileID != previousTileID) {
+					
+					rect = sheet.jeashTileRects[tileID];
+					center = sheet.jeashCenterPoints[tileID];
+					
+					previousTileID = tileID;
+					
+				}
+				
+				ctx.save ();
+				ctx.translate (tileData[index], tileData[index + 1]);
+				
+				if (useRotation) {
+					
+					ctx.rotate (-tileData[index + rotationIndex]);
+					
+				}
+				
+				var scale = 1.0;
+				
+				if (useScale) {
+					
+					scale = tileData[index + scaleIndex];
+					
+				}
+				
+				ctx.drawImage (surface, rect.x, rect.y, rect.width, rect.height, -center.x * scale, -center.y * scale, rect.width * scale, rect.height * scale);
+				
+				index += numValues;
+				ctx.restore ();
+				
+			}
+			
+		}
+		
+	}
 
 	function createGradient(type : GradientType,
 			colors : Array<Dynamic>,
@@ -723,8 +881,12 @@ class Graphics
 
 	inline public function jeashClearCanvas() {
 		if (jeashSurface != null) {
-			var w = jeashSurface.width;
-			jeashSurface.width = w;
+			var ctx = getContext ();
+			if (ctx != null) {
+				ctx.clearRect (0, 0, jeashSurface.width, jeashSurface.height);
+			}
+			//var w = jeashSurface.width;
+			//jeashSurface.width = w;
 		}
 	}
 
@@ -905,7 +1067,8 @@ class Graphics
 					mFillAlpha,
 					mSolidGradient, 
 					mBitmap,
-					mLineJobs 
+					mLineJobs,
+					null
 				);
 				addDrawable(drawable);
 			}
