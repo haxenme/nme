@@ -1212,9 +1212,20 @@ class NMMLParser extends NMEProject {
 			var name = formatAttributeName (attribute);
 			var value = substitute (element.att.resolve (attribute));
 			
-			if (Reflect.hasField (window, name)) {
+			if (name == "background") {
 				
-				Reflect.setField (window, name, value);
+				value = StringTools.replace (value, "0x", "");
+				value = StringTools.replace (value, "#", "");
+				
+				window.background = Std.parseInt (value);
+				
+			} else {
+				
+				if (Reflect.hasField (window, name)) {
+					
+					Reflect.setField (window, name, value);
+					
+				}
 				
 			}
 			//defines.set ("WIN_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
