@@ -756,7 +756,7 @@ class Graphics
 					ctx.save ();
 					ctx.translate (tileData[index], tileData[index + 1]);
 					
-					if (useRotation && !useTransform) {
+					if (useRotation) {
 						
 						ctx.rotate (-tileData[index + rotationIndex]);
 						
@@ -764,7 +764,7 @@ class Graphics
 					
 					var scale = 1.0;
 					
-					if (useScale && !useTransform) {
+					if (useScale) {
 						
 						scale = tileData[index + scaleIndex];
 						
@@ -773,6 +773,12 @@ class Graphics
 					if (useTransform) {
 						
 						ctx.transform (tileData[index + transformIndex], tileData[index + transformIndex + 1], tileData[index + transformIndex + 2], tileData[index + transformIndex + 3], 0, 0);
+						
+					}
+					
+					if (useAlpha) {
+						
+						ctx.globalAlpha = tileData[index + alphaIndex];
 						
 					}
 					
