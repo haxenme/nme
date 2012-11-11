@@ -203,7 +203,11 @@ class Graphics
 	public static inline var TILE_ROTATION = 0x0002;
 	public static inline var TILE_RGB = 0x0004;
 	public static inline var TILE_ALPHA = 0x0008;
-
+	public static inline var TILE_TRANS_2x2 = 0x0010;
+	
+	public static inline var TILE_BLEND_NORMAL   = 0x00000000;
+	public static inline var TILE_BLEND_ADD      = 0x00010000;
+	
 	public var jeashSurface(default, null):HTMLCanvasElement;
 	private var jeashChanged:Bool;
 
@@ -671,31 +675,20 @@ class Graphics
 	{
 		var useScale = (flags & TILE_SCALE) > 0;
 		var useRotation = (flags & TILE_ROTATION) > 0;
+		var useTransform = (flags & TILE_TRANS_2x2) > 0;
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
+		
+		if (useTransform) { useScale = false; useRotation = false; }
 		
 		var index = 0;
 		var numValues = 3;
 		
-		if (useScale)
-		{
-			numValues ++;
-		}
-		
-		if (useRotation)
-		{
-			numValues ++;
-		}
-		
-		if (useRGB)
-		{
-			numValues += 3;
-		}
-		
-		if (useAlpha)
-		{
-			numValues ++;
-		}
+		if (useScale) numValues ++;
+		if (useRotation) numValues ++;
+		if (useTransform) numValues += 4;
+		if (useRGB) numValues += 3;
+		if (useAlpha) numValues ++;
 		
 		while (index < tileData.length) {
 			
@@ -712,38 +705,25 @@ class Graphics
 		
 		var useScale = (flags & TILE_SCALE) > 0;
 		var useRotation = (flags & TILE_ROTATION) > 0;
+		var useTransform = (flags & TILE_TRANS_2x2) > 0;
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
+		
+		if (useTransform) { useScale = false; useRotation = false; }
 		
 		var scaleIndex = 0;
 		var rotationIndex = 0;
 		var rgbIndex = 0;
 		var alphaIndex = 0;
+		var transformIndex = 0;
+		
 		var numValues = 3;
 		
-		if (useScale)
-		{
-			scaleIndex = numValues;
-			numValues ++;
-		}
-		
-		if (useRotation)
-		{
-			rotationIndex = numValues;
-			numValues ++;
-		}
-		
-		if (useRGB)
-		{
-			rgbIndex = numValues;
-			numValues += 3;
-		}
-		
-		if (useAlpha)
-		{
-			alphaIndex = numValues;
-			numValues ++;
-		}
+		if (useScale) { scaleIndex = numValues; numValues ++; }
+		if (useRotation) { rotationIndex = numValues; numValues ++; }
+		if (useTransform) { transformIndex = numValues; numValues += 4; }
+		if (useRGB) { rgbIndex = numValues; numValues += 3; }
+		if (useAlpha) { alphaIndex = numValues; numValues ++; }
 		
 		var totalCount = tileData.length;
 		var itemCount = Std.int (totalCount / numValues);
@@ -771,27 +751,37 @@ class Graphics
 					
 				}
 				
-				ctx.save ();
-				ctx.translate (tileData[index], tileData[index + 1]);
-				
-				if (useRotation) {
+				if (rect != null && center != null) {
 					
-					ctx.rotate (-tileData[index + rotationIndex]);
+					ctx.save ();
+					ctx.translate (tileData[index], tileData[index + 1]);
+					
+					if (useRotation && !useTransform) {
+						
+						ctx.rotate (-tileData[index + rotationIndex]);
+						
+					}
+					
+					var scale = 1.0;
+					
+					if (useScale && !useTransform) {
+						
+						scale = tileData[index + scaleIndex];
+						
+					}
+					
+					if (useTransform) {
+						
+						ctx.transform (tileData[index + transformIndex], tileData[index + transformIndex + 1], tileData[index + transformIndex + 2], tileData[index + transformIndex + 3], 0, 0);
+						
+					}
+					
+					ctx.drawImage (surface, rect.x, rect.y, rect.width, rect.height, -center.x * scale, -center.y * scale, rect.width * scale, rect.height * scale);
+					ctx.restore ();
 					
 				}
-				
-				var scale = 1.0;
-				
-				if (useScale) {
-					
-					scale = tileData[index + scaleIndex];
-					
-				}
-				
-				ctx.drawImage (surface, rect.x, rect.y, rect.width, rect.height, -center.x * scale, -center.y * scale, rect.width * scale, rect.height * scale);
 				
 				index += numValues;
-				ctx.restore ();
 				
 			}
 			
