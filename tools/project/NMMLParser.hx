@@ -1214,8 +1214,13 @@ class NMMLParser extends NMEProject {
 			
 			if (name == "background") {
 				
-				value = StringTools.replace (value, "0x", "");
 				value = StringTools.replace (value, "#", "");
+				
+				if (value.indexOf ("0x") == -1) {
+					
+					value = "0x" + value;
+					
+				}
 				
 				window.background = Std.parseInt (value);
 				
