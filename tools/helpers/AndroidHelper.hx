@@ -111,7 +111,7 @@ class AndroidHelper {
 		
 		// Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> if you do not want to filter log messages
 		
-		if (project.environment.exists("FULL_LOGCAT")) {
+		if (project.environment.exists("FULL_LOGCAT") || LogHelper.verbose) {
 			
 			ProcessHelper.runCommand (adbPath, adbName, [ "logcat", "-c" ]);
 			ProcessHelper.runCommand (adbPath, adbName, [ "logcat" ]);
