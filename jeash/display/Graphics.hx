@@ -56,6 +56,7 @@ import jeash.display.InterpolationMethod;
 import jeash.display.BitmapData;
 import jeash.display.IGraphicsData;
 import jeash.display.IGraphicsFill;
+import jeash.Lib;
 
 typedef DrawList = Array<Drawable>;
 
@@ -673,29 +674,34 @@ class Graphics
 	 */
 	public function drawTiles(sheet:Tilesheet, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
 	{
-		var useScale = (flags & TILE_SCALE) > 0;
-		var useRotation = (flags & TILE_ROTATION) > 0;
-		var useTransform = (flags & TILE_TRANS_2x2) > 0;
-		var useRGB = (flags & TILE_RGB) > 0;
-		var useAlpha = (flags & TILE_ALPHA) > 0;
+		// Checking each tile for extents did not include rotation or scale, and could overflow the maximum canvas
+		// size of some mobile browsers. Always use the full stage size for drawTiles instead?
 		
-		if (useTransform) { useScale = false; useRotation = false; }
+		jeashExpandStandardExtent (Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		
-		var index = 0;
-		var numValues = 3;
+		//var useScale = (flags & TILE_SCALE) > 0;
+		//var useRotation = (flags & TILE_ROTATION) > 0;
+		//var useTransform = (flags & TILE_TRANS_2x2) > 0;
+		//var useRGB = (flags & TILE_RGB) > 0;
+		//var useAlpha = (flags & TILE_ALPHA) > 0;
 		
-		if (useScale) numValues ++;
-		if (useRotation) numValues ++;
-		if (useTransform) numValues += 4;
-		if (useRGB) numValues += 3;
-		if (useAlpha) numValues ++;
+		//if (useTransform) { useScale = false; useRotation = false; }
 		
-		while (index < tileData.length) {
+		//var index = 0;
+		//var numValues = 3;
+		
+		//if (useScale) numValues ++;
+		//if (useRotation) numValues ++;
+		//if (useTransform) numValues += 4;
+		//if (useRGB) numValues += 3;
+		//if (useAlpha) numValues ++;
+		
+		//while (index < tileData.length) {
 			
-			jeashExpandStandardExtent (tileData[index] + sheet.jeashBitmap.width, tileData[index + 1] + sheet.jeashBitmap.height);
-			index += numValues;
+			//jeashExpandStandardExtent (tileData[index] + sheet.jeashBitmap.width, tileData[index + 1] + sheet.jeashBitmap.height);
+			//index += numValues;
 			
-		}
+		//}
 		
 		addDrawable (new Drawable (null, null, null, null, null, null, new TileJob (sheet, tileData, flags)));
 		jeashChanged = true;
