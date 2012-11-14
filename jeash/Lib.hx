@@ -56,6 +56,7 @@ class Lib {
 	static var mStage:jeash.display.Stage;
 	static var mMainClassRoot:jeash.display.MovieClip;
 	static var mCurrent:jeash.display.MovieClip;
+	static var mForce2DTransform:Bool;
 
 	var __scr : HTMLDivElement;
 	var mArgs:Array<String>;
@@ -255,8 +256,17 @@ class Lib {
 			surface.style.left = "0px"; surface.style.top = "0px";
 			surface.style.setProperty("transform", matrix.toString(), "");
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
-			surface.style.setProperty("-webkit-transform", matrix.to3DString(), ""); // 3D matrix for 2D transform invokes hw acceleration
-			//surface.style.setProperty("-webkit-transform", matrix.toString(), "");
+			
+			if (!mForce2DTransform) {
+				
+				surface.style.setProperty("-webkit-transform", matrix.to3DString(), ""); 
+				
+			} else {
+				
+				surface.style.setProperty("-webkit-transform", matrix.toString(), "");
+				
+			}
+			
 			surface.style.setProperty("-o-transform", matrix.toString(), "");
 			surface.style.setProperty("-ms-transform", matrix.toString(), "");
 		}
@@ -657,8 +667,15 @@ class Lib {
 				trace ("Error: Cannot find element ID \"" + JEASH_IDENTIFIER + "\"");
 				untyped __js__ ("target.id; // throw error");
 			}
-			if (untyped navigator.userAgent.indexOf ("BlackBerry") > -1 && target.style.height == "100%") {
+			var agent:String = untyped navigator.userAgent;
+			if (agent.indexOf ("BlackBerry") > -1 && target.style.height == "100%") {
 				target.style.height = untyped screen.height + "px";
+			}
+			if (agent.indexOf ("Android") > -1) {
+				var version = Std.parseFloat (agent.substr (agent.indexOf ("Android") + 8, 3));
+				if (version <= 2.3) {
+					mForce2DTransform = true;
+				}
 			}
 			Run(target, jeashGetWidth(), jeashGetHeight());
 		}
