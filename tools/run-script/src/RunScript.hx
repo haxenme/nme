@@ -170,44 +170,89 @@ class RunScript {
 				
 				mkdir (nmeDirectory + "/ndll/Android");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7", "-Dfulldebug" ].concat (defines));
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-Dfulldebug" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dandroid", "-DHXCPP_ARMV7", "-DHXCPP_ARM7", "-Dfulldebug" ].concat (defines));
+					
+				}
 			
 			case "blackberry":
 				
 				mkdir (nmeDirectory + "/ndll/BlackBerry");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator", "-Dfulldebug" ].concat (defines));
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dfulldebug" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dblackberry", "-Dsimulator", "-Dfulldebug" ].concat (defines));
+					
+				}
 			
 			case "ios":
 				
 				mkdir (nmeDirectory + "/ndll/iPhone");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7", "-Dfulldebug" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim", "-Dfulldebug" ].concat (defines));
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-Dfulldebug" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphoneos", "-DHXCPP_ARMV7", "-Dfulldebug" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Diphonesim", "-Dfulldebug" ].concat (defines));
+					
+				}
 			
 			case "linux":
-				
-				mkdir (nmeDirectory + "/ndll/Linux");
-				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
 				
 				if (isRunning64 ()) {
 					
 					mkdir (nmeDirectory + "/ndll/Linux64");
 					
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines), false);
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines), false);
+					if (!flags.exists ("debug")) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines), false);
+						
+					}
+					
+					if (!flags.exists ("release")) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines), false);
+						
+					}
+					
+				}
+				
+				mkdir (nmeDirectory + "/ndll/Linux");
+				
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
 					
 				}
 			
@@ -215,15 +260,33 @@ class RunScript {
 				
 				mkdir (nmeDirectory + "/ndll/Mac");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
+					
+				}
 			
 			case "webos":
 				
 				mkdir (nmeDirectory + "/ndll/webOS");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ].concat (defines));
+				if (!flags.exists ("debug")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwebos", "-Dfulldebug" ].concat (defines));
+					
+				}
 			
 			case "windows":
 				
@@ -235,15 +298,31 @@ class RunScript {
 					
 				}*/
 				
+				var buildWinRT = Sys.environment ().exists ("VS110COMNTOOLS");
+				
 				mkdir (nmeDirectory + "/ndll/Windows");
 				
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
-				runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
-				
-				if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+				if (!flags.exists ("debug")) {
 					
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwinrt" ].concat (defines));
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug", "-Dwinrt" ].concat (defines));
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
+					
+					if (buildWinRT) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwinrt" ].concat (defines));
+						
+					}
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
+					
+					if (buildWinRT) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug", "-Dwinrt" ].concat (defines));
+						
+					}
 					
 				}
 			
