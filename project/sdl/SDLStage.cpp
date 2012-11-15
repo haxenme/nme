@@ -111,6 +111,7 @@ public:
    SDLSurf(SDL_Surface *inSurf,bool inDelete) : mSurf(inSurf)
    {
       mDelete = inDelete;
+      mLockedForHitTest = false;
    }
    ~SDLSurf()
    {
@@ -147,16 +148,17 @@ public:
             inColour>>16, inColour>>8, inColour, inColour>>24 )  );
    }
 
-   RenderTarget BeginRender(const Rect &inRect)
+   RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
-      if (SDL_MUSTLOCK(mSurf) )
+      mLockedForHitTest = inForHitTest;
+      if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
          SDL_LockSurface(mSurf);
       return RenderTarget(Rect(Width(),Height()), Format(),
          (uint8 *)mSurf->pixels, mSurf->pitch);
    }
    void EndRender()
    {
-      if (SDL_MUSTLOCK(mSurf) )
+      if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
          SDL_UnlockSurface(mSurf);
    }
 
@@ -179,6 +181,7 @@ public:
 
    SDL_Surface *mSurf;
    bool  mDelete;
+   bool  mLockedForHitTest;
 };
 
 SDL_Surface *SurfaceToSDL(Surface *inSurface)

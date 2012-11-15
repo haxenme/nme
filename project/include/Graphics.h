@@ -566,7 +566,8 @@ public:
 
    virtual void SetWindowSize(int inWidth,int inHeight)=0;
    virtual void SetQuality(StageQuality inQuality)=0;
-   virtual void BeginRender(const Rect &inRect)=0;
+   virtual void BeginRender(const Rect &inRect,bool inForHitTest)=0;
+   virtual void EndRender()=0;
    virtual void SetViewport(const Rect &inRect)=0;
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Flip() = 0;

@@ -840,7 +840,7 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
    const uint8 *t1 = inTransform.GetC1LUT();
    const uint8 *t2 = inTransform.GetC2LUT();
 
-   RenderTarget target = BeginRender(inRect);
+   RenderTarget target = BeginRender(inRect,false);
 
    Rect r = target.mRect;
    for(int y=0;y<r.h;y++)
@@ -1154,7 +1154,7 @@ void SimpleSurface::Zero()
       memset(mBase,0,mStride * mHeight);
 }
 
-RenderTarget SimpleSurface::BeginRender(const Rect &inRect)
+RenderTarget SimpleSurface::BeginRender(const Rect &inRect,bool inForHitTest)
 {
    if (!mBase)
       return RenderTarget();
@@ -1484,7 +1484,7 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
 
    int bpp = BytesPP();
 
-   RenderTarget t = BeginRender(dest);
+   RenderTarget t = BeginRender(dest,false);
    //printf("Copy back @ %d,%d %dx%d  + (%d,%d)\n", dest.x, dest.y, t.Width(), t.Height(), dx, dy);
    for(int y=0;y<t.Height();y++)
       memcpy((void *)(t.Row(y+dest.y)+(dest.x)*bpp), result->Row(y-dy)-dx*bpp, dest.w*bpp);
@@ -1554,7 +1554,7 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 
    MinstdGenerator generator(randomSeed);
 
-   RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight));
+   RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight),false);
    ARGB tmpRgb;
 
    for (int y=0;y<mHeight;y++)

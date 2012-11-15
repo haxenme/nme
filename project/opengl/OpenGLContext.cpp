@@ -154,39 +154,42 @@ public:
    }
 
 
-   void BeginRender(const Rect &inRect)
+   void BeginRender(const Rect &inRect,bool inForHitTest)
    {
-      #ifndef NME_GLES
-      #ifndef SDL_OGL
-      wglMakeCurrent(mDC,mOGLCtx);
-      #endif
-      #endif
-
-      // Force dirty
-      mViewport.w = -1;
-      SetViewport(inRect);
-
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
-      #ifdef WEBOS
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-      #endif
-
-      if (mQuality>=sqHigh)
+      if (!inForHitTest)
       {
-         if (mPointSmooth)
-            glEnable(GL_POINT_SMOOTH);
-      }
-      if (mQuality>=sqBest)
-         glEnable(GL_LINE_SMOOTH);
-      mLineWidth = 99999;
+         #ifndef NME_GLES
+         #ifndef SDL_OGL
+         wglMakeCurrent(mDC,mOGLCtx);
+         #endif
+         #endif
 
-      // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
-      sgDrawCount = 0;
-      sgDrawBitmap = 0;
-      sgBufferCount = 0;
-      OnBeginRender();
+         // Force dirty
+         mViewport.w = -1;
+         SetViewport(inRect);
+
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+         #ifdef WEBOS
+         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+         #endif
+
+         if (mQuality>=sqHigh)
+         {
+            if (mPointSmooth)
+               glEnable(GL_POINT_SMOOTH);
+         }
+         if (mQuality>=sqBest)
+            glEnable(GL_LINE_SMOOTH);
+         mLineWidth = 99999;
+
+         // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
+         sgDrawCount = 0;
+         sgDrawBitmap = 0;
+         sgBufferCount = 0;
+         OnBeginRender();
+      }
    }
    void EndRender()
    {

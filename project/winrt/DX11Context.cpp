@@ -23,9 +23,14 @@ public:
    {
    }
 
-   void BeginRender(const Rect &inRect)
+   void BeginRender(const Rect &inRect,bool inForHitTest)
    {
    }
+
+   void EndRender()
+   {
+   }
+
 
    void SetViewport(const Rect &inRect)
    {

@@ -68,7 +68,7 @@ public:
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
    const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
 
-   virtual RenderTarget BeginRender(const Rect &inRect)=0;
+   virtual RenderTarget BeginRender(const Rect &inRect,bool inForHitTest=false)=0;
    virtual void EndRender()=0;
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
@@ -115,9 +115,9 @@ class AutoSurfaceRender
    RenderTarget mTarget;
 public:
    AutoSurfaceRender(Surface *inSurface) : mSurface(inSurface),
-       mTarget(inSurface->BeginRender( Rect(inSurface->Width(),inSurface->Height()) ) ) { }
+       mTarget(inSurface->BeginRender( Rect(inSurface->Width(),inSurface->Height()),false ) ) { }
    AutoSurfaceRender(Surface *inSurface,const Rect &inRect) : mSurface(inSurface),
-       mTarget(inSurface->BeginRender(inRect)) { }
+       mTarget(inSurface->BeginRender(inRect,false)) { }
    ~AutoSurfaceRender() { mSurface->EndRender(); }
    const RenderTarget &Target() { return mTarget; }
 
@@ -136,7 +136,7 @@ public:
    void Zero();
 
 
-   RenderTarget BeginRender(const Rect &inRect);
+   RenderTarget BeginRender(const Rect &inRect,bool inForHitTest);
    void EndRender();
 
    virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
@@ -195,12 +195,15 @@ public:
    const uint8 *GetBase() const { return 0; }
    int GetStride() const { return 0; }
    void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }
-   RenderTarget BeginRender(const Rect &inRect)
+   RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
-      mHardware->BeginRender(inRect);
+      mHardware->BeginRender(inRect,inForHitTest);
       return RenderTarget(inRect,mHardware);
    }
-   void EndRender() { }
+   void EndRender()
+   {
+      mHardware->EndRender();
+   }
 
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
                        BlendMode inBlend, const BitmapCache *inMask,

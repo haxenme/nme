@@ -11,6 +11,7 @@ using namespace Windows::UI::Core;
 using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
+using namespace Microsoft::WRL;
 using namespace concurrency;
 
 namespace nme
@@ -23,6 +24,99 @@ static class WinRTFrame *sgWinRTFrame = 0;
 
 enum { NO_TOUCH = -1 };
 
+
+class WinRTSurface : public Surface
+{
+public:
+   int width,height;
+   ComPtr<ID3D11Device1> device;
+   ComPtr<ID3D11Texture2D> surface;
+   ComPtr<ID3D11DeviceContext1> context;
+   D3D11_MAPPED_SUBRESOURCE mapData;
+   bool mapped;
+
+   WinRTSurface( ComPtr<ID3D11Device1> inDevice,ComPtr<ID3D11DeviceContext1> inContext,
+                int inWidth, int inHeight)
+      : device(inDevice), context(inContext)
+   {
+      width = inWidth;
+      height = inHeight;
+
+      D3D11_TEXTURE2D_DESC desc;
+      desc.Width = width;
+      desc.Height = height;
+      desc.MipLevels = 0;
+      desc.ArraySize = 1;
+      desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      desc.SampleDesc.Count = 1;
+      desc.SampleDesc.Quality = 0;
+      desc.Usage = D3D11_USAGE_STAGING;
+      desc.BindFlags = 0;
+      desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+      desc.MiscFlags = 0;
+
+
+      //printf("Create WinRTSurface....\n");
+      DX::ThrowIfFailed(
+         device->CreateTexture2D( &desc, nullptr, &surface) );
+      //printf("Done\n");
+      //
+      mapped = false;
+   }
+
+
+   virtual int Width() const { return width; }
+   virtual int Height() const { return height; }
+   virtual PixelFormat Format()  const { return pfXRGB; }
+
+   virtual const uint8 *GetBase() const { return 0; }
+   virtual int GetStride() const { return 0; }
+
+   virtual void Clear(uint32 inColour,const Rect *inRect=0) { }
+
+   virtual RenderTarget BeginRender(const Rect &inRect,bool inForHitTest=false)
+   {
+      if (inForHitTest)
+         return RenderTarget( Rect(0,0,width,height), pfXRGB, 0, 0);
+
+      HRESULT hr=context->Map(surface.Get(), 0, D3D11_MAP_READ_WRITE, 0, &mapData);
+
+      // ???
+      if (hr!=S_OK)
+         return RenderTarget();
+
+      mapped = true;
+      return RenderTarget( Rect(0,0,width,height), pfXRGB, (uint8*)mapData.pData, mapData.RowPitch);
+   }
+
+   virtual void EndRender()
+   {
+      if (mapped)
+      {
+         context->Unmap(surface.Get(),0);
+         mapped = false;
+      }
+   }
+
+   virtual void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
+                       BlendMode inBlend, const BitmapCache *inMask,
+                       uint32 inTint=0xffffff ) const
+   {
+   }
+
+   virtual void StretchTo(const RenderTarget &outTarget,
+                          const Rect &inSrcRect, const DRect &inDestRect) const
+   {
+   }
+
+   virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+                            int inPosX, int inPosY,
+                            int inSrcChannel, int inDestChannel ) const
+   {
+   }
+};
+
+
 class WinRTStage : public Stage, public Direct3DBase
 {
 public:
@@ -33,10 +127,19 @@ public:
       mFlags = inFlags;
 
       mIsFullscreen = true;
+   }
+
+
+   void Initialize(Windows::UI::Core::CoreWindow^ window)
+   {
+      Direct3DBase::Initialize(window);
 
       mDXContext = HardwareContext::CreateDX11(0);
 
-      mPrimarySurface = new HardwareSurface(mDXContext);
+      //mPrimarySurface = new HardwareSurface(mDXContext);
+      mPrimarySurface = new WinRTSurface(m_d3dDevice,m_d3dContext, mWidth,mHeight);
+
+      mDXContext->SetWindowSize(mWidth, mHeight);
 
       mMultiTouch = true;
       mSingleTouchID = NO_TOUCH;
@@ -72,6 +175,25 @@ public:
 
    void Render()
    {
+      const float midnightBlue[] = { 0.098f, 0.098f, 0.439f, 1.000f };
+      m_d3dContext->ClearRenderTargetView(
+         m_renderTargetView.Get(),
+         midnightBlue
+         );
+
+       m_d3dContext->ClearDepthStencilView(
+          m_depthStencilView.Get(),
+          D3D11_CLEAR_DEPTH,
+          1.0f,
+          0
+          );
+
+     m_d3dContext->OMSetRenderTargets(
+      1,
+      m_renderTargetView.GetAddressOf(),
+      m_depthStencilView.Get()
+      );
+
       RenderStage();
    }
 

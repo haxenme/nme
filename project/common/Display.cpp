@@ -1444,7 +1444,7 @@ public:
    {
       mSurface = inStage->GetPrimarySurface();
       mToFlip = inStage;
-      mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()) );
+      mTarget = mSurface->BeginRender( Rect(mSurface->Width(),mSurface->Height()),false );
       mSurface->Clear(inRGB | 0xff000000 );
    }
    int Width() const { return mSurface->Width(); }
@@ -1941,8 +1941,7 @@ DisplayObject *Stage::HitTest(UserPoint inStage,DisplayObject *inRoot,bool inRec
 {
    Surface *surface = GetPrimarySurface();
 
-   // TODO: special version that does not actually do rendering...
-   RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()) );
+   RenderTarget target = surface->BeginRender( Rect(surface->Width(),surface->Height()),true );
 
    RenderState state(0, GetAA() );
    state.mClipRect = Rect( inStage.x, inStage.y, 1, 1 );
