@@ -1039,7 +1039,13 @@ class NMMLParser extends NMEProject {
 						swfLibraries.push (asset);*/
 						
 						var path = extensionPath + substitute (element.att.path);
-						var targetPath = "libraries/" + Path.withoutDirectory (path);
+						var targetPath = path;
+						
+						if (element.has.rename) {
+							
+							targetPath = substitute (element.att.rename);
+							
+						}
 						
 						var asset = new Asset (path, targetPath, AssetType.BINARY);
 						assets.push (asset);
