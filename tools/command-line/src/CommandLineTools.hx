@@ -284,6 +284,48 @@ class CommandLineTools {
 	}
 	
 	
+	private static function getBuildNumber (project:NMEProject, increment:Bool = true):Void {
+		
+		if (project.meta.buildNumber == "1") {
+			
+			var versionFile = PathHelper.combine (project.app.path, ".build");
+			var version = 1;
+			
+			PathHelper.mkdir (project.app.path);
+			
+			if (FileSystem.exists (versionFile)) {
+				
+				var previousVersion = Std.parseInt (File.getBytes (versionFile).toString ());
+				
+				if (previousVersion != null) {
+					
+					version = previousVersion;
+					
+					if (increment) {
+						
+						version ++;
+						
+					}
+					
+				}
+				
+			}
+			
+			project.meta.buildNumber = Std.string (version);
+			
+			try {
+				
+			   var output = File.write (versionFile, false);
+			   output.writeString (Std.string (version));
+			   output.close ();
+				
+			} catch (e:Dynamic) {}
+			
+		}
+		
+	}
+	
+	
 	public static function getHXCPPConfig ():NMEProject {
 		
 		var environment = Sys.environment ();
@@ -495,6 +537,8 @@ class CommandLineTools {
 			
 			ProcessHelper.runCommand ("", "haxe", [ "-main", name, "-neko", "~/haxe.n", "-lib", "nme", "-cp", "/Users/joshua/Development/Haxe/nme/tools/project", "-cp", "/Users/joshua/Development/Haxe/nme/tools/helpers" ]);
 			
+			// need to handle temp paths
+			
 			var process = new sys.io.Process ("neko", [ "/Users/joshua/haxe.n" ]);
 			var output = process.stdout.readAll ().toString ();
 			var error = process.stderr.readAll ().toString ();
@@ -506,26 +550,15 @@ class CommandLineTools {
 			
 			project = unserializer.unserialize ();
 			
-			//Sys.println (output);
-			
-			//var project = NMEProject.main ("NMML
-			
 		}
 		
-		
 		//trace (project);
-		
 		
 		project.command = command;
 		project.debug = debug;
 		project.target = target;
 		project.targetFlags = targetFlags;
 		project.templatePaths = project.templatePaths.concat ([ nme + "/templates/default", nme + "/tools/command-line" ]);
-		
-		
-		
-		
-		
 		
 		var config = getHXCPPConfig ();
 		project.merge (config);
@@ -543,6 +576,18 @@ class CommandLineTools {
 				project.haxedefs.push (key);
 				
 			}
+			
+		}
+		
+		// Better way to do this?
+		
+		switch (project.target) {
+			
+			case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY:
+				
+				getBuildNumber (project);
+				
+			default:
 			
 		}
 		
