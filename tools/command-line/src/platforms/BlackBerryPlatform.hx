@@ -111,7 +111,7 @@ class BlackBerryPlatform implements IPlatformTool {
 		context.ICONS = [];
 		context.HAS_ICON = false;
 		
-		for (size in [ 150, 86 ]) {
+		for (size in [ 114, 86 ]) {
 			
 			if (IconHelper.createIcon (project.icons, size, size, PathHelper.combine (destination, "icon-" + size + ".png"))) {
 				

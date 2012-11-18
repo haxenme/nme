@@ -17,23 +17,30 @@ class BlackBerryHelper {
 	public static function createPackage (project:NMEProject, workingDirectory:String, descriptorFile:String, targetPath:String):Void {
 		
 		var args = [ "-package", targetPath, descriptorFile ];
+		var password = null;
 		
-		if (project.environment.exists ("KEY_STORE") && !project.environment.exists ("KEY_STORE_PASSWORD")) {
+		if (project.certificate != null) {
 			
-			project.environment.set ("KEY_STORE_PASSWORD", prompt ("Keystore password", true));
-			Sys.println ("");
+			password = project.certificate.password;
+			
+			if (password == null) {
+				
+				password = prompt ("Keystore password", true);
+				Sys.println ("");
+				
+			}
 			
 		}
 		
-		if (project.environment.exists ("KEY_STORE")) {
+		if (project.certificate != null) {
 			
 			args.push ("-keystore");
-			args.push (PathHelper.tryFullPath (project.environment.get ("KEY_STORE")));
+			args.push (PathHelper.tryFullPath (project.certificate.path));
 			
-			if (project.environment.exists ("KEY_STORE_PASSWORD")) {
+			if (password != null) {
 				
 				args.push ("-storepass");
-				args.push (project.environment.get ("KEY_STORE_PASSWORD"));
+				args.push (password);
 				
 			}
 			
@@ -60,14 +67,14 @@ class BlackBerryHelper {
 		
 		ProcessHelper.runCommand (workingDirectory, exe, args);
 		
-		if (project.environment.exists ("KEY_STORE")) {
+		if (project.certificate != null) {
 			
-			args = [ "-keystore", PathHelper.tryFullPath (project.environment.get ("KEY_STORE")) ];
+			args = [ "-keystore", PathHelper.tryFullPath (project.certificate.path) ];
 			
-			if (project.environment.exists ("KEY_STORE_PASSWORD")) {
+			if (password != null) {
 				
 				args.push ("-storepass");
-				args.push (project.environment.get ("KEY_STORE_PASSWORD"));
+				args.push (password);
 				
 			}
 			

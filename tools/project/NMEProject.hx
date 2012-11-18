@@ -564,6 +564,15 @@ class NMEProject {
 		context.WIN_DEPTH_BUFFER = false;
 		context.WIN_STENCIL_BUFFER = false;
 		
+		if (certificate != null) {
+			
+			context.KEY_STORE = certificate.path;
+			context.KEY_STORE_PASSWORD = certificate.password;
+			context.KEY_STORE_ALIAS = certificate.alias;
+			context.KEY_STORE_ALIAS_PASSWORD = certificate.aliasPassword;
+			
+		}
+		
 		return context;
 		
 	}
