@@ -557,6 +557,13 @@ class NMEProject {
 		context.SWF_VERSION = app.swfVersion;
 		context.PRELOADER_NAME = app.preloader;
 		context.WIN_BACKGROUND = window.background;
+		context.WIN_ORIENTATION = "";
+		
+		if (window.orientation == Orientation.LANDSCAPE || window.orientation == Orientation.PORTRAIT) {
+			
+			context.WIN_ORIENTATION = Std.string (window.orientation).toLowerCase ();
+			
+		}
 		
 		//context.WIN_ALLOW_SHADERS = true;
 		context.WIN_ALLOW_SHADERS = false;
