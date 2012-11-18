@@ -1,18 +1,16 @@
 ﻿#pragma once
-
+#include "DirectXHelper.h"
 #include <wrl/client.h>
 #include <d3d11_1.h>
 #include <DirectXMath.h>
 #include <memory>
 #include <agile.h>
 
-#include "DirectXHelper.h"
-
 // Helper class that initializes DirectX APIs for 3D rendering.
 class Direct3DBase
 {
 public:
-   Direct3DBase();
+	Direct3DBase();
 
 	virtual void Initialize(Windows::UI::Core::CoreWindow^ window);
 	virtual void HandleDeviceLost();
@@ -23,7 +21,6 @@ public:
 	virtual void Present();
 	virtual float ConvertDipsToPixels(float dips);
 
-protected:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;

@@ -1,8 +1,16 @@
-#include <Display.h>
+﻿#include <Display.h>
 #include <Graphics.h>
 #include <Surface.h>
-#include "Direct3DBase.h"
+
+#include <wrl/client.h>
+#include <d3d11_1.h>
+#include <DirectXMath.h>
+#include <memory>
+#include <agile.h>
 #include "BasicTimer.h"
+#include "Direct3DBase.h"
+
+//using namespace nme;
 
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
@@ -13,16 +21,33 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace Microsoft::WRL;
 using namespace concurrency;
+using namespace DirectX;
+
 
 namespace nme
 {
+
 
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 static bool sgInitCalled = false;
 static class WinRTFrame *sgWinRTFrame = 0;
+static FrameCreationCallback sgOnFrame = 0;
 
 enum { NO_TOUCH = -1 };
+
+struct ModelViewProjectionConstantBuffer
+{
+   XMFLOAT4X4 model;
+   XMFLOAT4X4 view;
+   XMFLOAT4X4 projection;
+};
+
+struct VertexPositionColor
+{
+   XMFLOAT3 pos;
+   XMFLOAT3 color;
+};
 
 
 class WinRTSurface : public Surface
@@ -116,6 +141,201 @@ public:
    }
 };
 
+class Quad
+{
+public:
+   Quad( ComPtr<ID3D11Device1> inDevice, ComPtr<ID3D11DeviceContext1> inContext)
+      : device(inDevice), context(inContext)
+   {
+      valid = false;
+      auto loadVSTask = DX::ReadDataAsync("SimpleVertexShader.cso");
+      auto loadPSTask = DX::ReadDataAsync("SimplePixelShader.cso");
+
+      auto createVSTask = loadVSTask.then([this](Platform::Array<byte>^ fileData) {
+         DX::ThrowIfFailed(
+            device->CreateVertexShader(
+               fileData->Data,
+               fileData->Length,
+               nullptr,
+               &m_vertexShader
+               )
+            );
+
+         const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = 
+         {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+         };
+
+         DX::ThrowIfFailed(
+            device->CreateInputLayout(
+               vertexDesc,
+               ARRAYSIZE(vertexDesc),
+               fileData->Data,
+               fileData->Length,
+               &m_inputLayout
+               )
+            );
+      });
+
+     auto createPSTask = loadPSTask.then([this](Platform::Array<byte>^ fileData) {
+      DX::ThrowIfFailed(
+         device->CreatePixelShader(
+            fileData->Data,
+            fileData->Length,
+            nullptr,
+            &m_pixelShader
+            )
+         );
+
+      CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+      DX::ThrowIfFailed(
+         device->CreateBuffer(
+            &constantBufferDesc,
+            nullptr,
+            &m_constantBuffer
+            )
+         );
+   });
+
+   auto createCubeTask = (createPSTask && createVSTask).then([this] () {
+      VertexPositionColor cubeVertices[] = 
+      {
+         {XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f)},
+         {XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
+         {XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
+         {XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
+         {XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+         {XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+         {XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+         {XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+      };
+
+      D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+      vertexBufferData.pSysMem = cubeVertices;
+      vertexBufferData.SysMemPitch = 0;
+      vertexBufferData.SysMemSlicePitch = 0;
+      CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+      DX::ThrowIfFailed(
+         device->CreateBuffer(
+            &vertexBufferDesc,
+            &vertexBufferData,
+            &m_vertexBuffer
+            )
+         );
+
+      unsigned short cubeIndices[] = 
+      {
+         0,2,1, // -x
+         1,2,3,
+
+         4,5,6, // +x
+         5,7,6,
+
+         0,1,5, // -y
+         0,5,4,
+
+         2,6,7, // +y
+         2,7,3,
+
+         0,4,6, // -z
+         0,6,2,
+
+         1,3,7, // +z
+         1,7,5,
+      };
+
+      m_indexCount = ARRAYSIZE(cubeIndices);
+
+      D3D11_SUBRESOURCE_DATA indexBufferData = {0};
+      indexBufferData.pSysMem = cubeIndices;
+      indexBufferData.SysMemPitch = 0;
+      indexBufferData.SysMemSlicePitch = 0;
+      CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
+      DX::ThrowIfFailed(
+         device->CreateBuffer(
+            &indexBufferDesc,
+            &indexBufferData,
+            &m_indexBuffer
+            )
+         );
+   });
+
+   createCubeTask.then([this] () {
+      valid = true;
+   });
+
+   }
+
+   void SetRect(XMFLOAT4X4 &inOrientation,int inWidth, int inHeight)
+   {
+      float aspectRatio = (float)inWidth/inHeight;
+      float fovAngleY = 70.0f * XM_PI / 180.0f;
+
+      // Note that the m_orientationTransform3D matrix is post-multiplied here
+      // in order to correctly orient the scene to match the display orientation.
+      // This post-multiplication step is required for any draw calls that are
+      // made to the swap chain render target. For draw calls to other targets,
+      // this transform should not be applied.
+      XMStoreFloat4x4(
+         &m_constantBufferData.projection,
+         XMMatrixTranspose(
+            XMMatrixMultiply(
+               XMMatrixPerspectiveFovRH(
+                  fovAngleY,
+                  aspectRatio,
+                  0.01f,
+                  100.0f
+                  ),
+               XMLoadFloat4x4(&inOrientation)
+               )
+            )
+         );
+   }
+
+   void Update(float timeTotal, float timeDelta)
+   {
+      XMVECTOR eye = XMVectorSet(0.0f, 0.7f, 1.5f, 0.0f);
+      XMVECTOR at = XMVectorSet(0.0f, -0.1f, 0.0f, 0.0f);
+      XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+      XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+      XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(timeTotal * XM_PIDIV4)));
+   }
+
+   void Render()
+   {
+      context->UpdateSubresource( m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
+
+      UINT stride = sizeof(VertexPositionColor);
+      UINT offset = 0;
+      context->IASetVertexBuffers( 0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+      context->IASetIndexBuffer( m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+      context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+      context->IASetInputLayout(m_inputLayout.Get());
+      context->VSSetShader( m_vertexShader.Get(), nullptr, 0);
+      context->VSSetConstantBuffers( 0, 1, m_constantBuffer.GetAddressOf());
+      context->PSSetShader( m_pixelShader.Get(), nullptr, 0);
+      context->DrawIndexed( m_indexCount, 0, 0);
+   }
+
+   ComPtr<ID3D11Device1> device;
+   ComPtr<ID3D11DeviceContext1> context;
+
+   ComPtr<ID3D11InputLayout> m_inputLayout;
+   ComPtr<ID3D11Buffer> m_vertexBuffer;
+   ComPtr<ID3D11Buffer> m_indexBuffer;
+   ComPtr<ID3D11VertexShader> m_vertexShader;
+   ComPtr<ID3D11PixelShader> m_pixelShader;
+   ComPtr<ID3D11Buffer> m_constantBuffer;
+
+   uint32 m_indexCount;
+   bool   valid;
+   ModelViewProjectionConstantBuffer m_constantBufferData;
+};
+
+
+
 
 class WinRTStage : public Stage, public Direct3DBase
 {
@@ -129,12 +349,14 @@ public:
       mIsFullscreen = true;
    }
 
-
    void Initialize(Windows::UI::Core::CoreWindow^ window)
    {
       Direct3DBase::Initialize(window);
 
       mDXContext = HardwareContext::CreateDX11(0);
+
+      mQuad = new Quad(m_d3dDevice, m_d3dContext);
+      mQuad->SetRect(m_orientationTransform3D, mWidth, mHeight);
 
       //mPrimarySurface = new HardwareSurface(mDXContext);
       mPrimarySurface = new WinRTSurface(m_d3dDevice,m_d3dContext, mWidth,mHeight);
@@ -153,6 +375,7 @@ public:
 
    ~WinRTStage()
    {
+      delete mQuad;
       mPrimarySurface->DecRef();
    }
 
@@ -172,6 +395,13 @@ public:
       mPrimarySurface->DecRef();
       mPrimarySurface = new HardwareSurface(mDXContext);
    }
+
+    void Update(float timeTotal, float timeDelta)
+    {
+       if (mQuad && mQuad->valid)
+          mQuad->Update(timeTotal, timeDelta);
+    }
+
 
    void Render()
    {
@@ -194,7 +424,10 @@ public:
       m_depthStencilView.Get()
       );
 
-      RenderStage();
+     if (mQuad && mQuad->valid)
+        mQuad->Render();
+
+     RenderStage();
    }
 
    void SetFullscreen(bool inFullscreen)
@@ -263,6 +496,7 @@ public:
    }
 
    HardwareContext *mDXContext;
+   Quad            *mQuad;
    Surface     *mPrimarySurface;
    double       mFrameRate;
    Cursor       mCurrentCursor;
@@ -320,19 +554,22 @@ public:
 
 
 
+} // end namespace nme
 
-// --- The app class --------------------------------------------------------
 
-static FrameCreationCallback sgOnFrame = 0;
 
-ref class Direct3DApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
+
+
+// --- App interface ----------------------------------------------
+
+ref class D3DApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
 {
    int width;
    int height;
    unsigned int flags;
 
 public:
-   Direct3DApp(int inWidth, int inHeight, unsigned int inFlags)
+   D3DApp(int inWidth, int inHeight, unsigned int inFlags)
    {
       m_windowClosed = false;
       m_windowVisible = true;
@@ -341,46 +578,65 @@ public:
       flags = inFlags;
    }
 
+   D3DApp::D3DApp() : m_windowClosed(false), m_windowVisible(true)
+   {
+      mFrame = 0;
+   }
+   virtual ~D3DApp()
+   {
+      delete mFrame;
+   }
+
+   void bootNME()
+   {
+      mFrame = new nme::WinRTFrame(flags,width,height);
+      mStage = mFrame->mStage;
+      if (nme::sgOnFrame)
+      {
+         nme::sgOnFrame(mFrame);
+         nme::sgOnFrame = 0;
+      }
+   }
+   
    // IFrameworkView Methods.
    virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView)
    {
       applicationView->Activated +=
-           ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &Direct3DApp::OnActivated);
+        ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &D3DApp::OnActivated);
+
       CoreApplication::Suspending +=
-           ref new ::EventHandler<SuspendingEventArgs^>(this, &Direct3DApp::OnSuspending);
+        ref new ::EventHandler<SuspendingEventArgs^>(this, &D3DApp::OnSuspending);
+
       CoreApplication::Resuming +=
-           ref new ::EventHandler<Platform::Object^>(this, &Direct3DApp::OnResuming);
+        ref new ::EventHandler<Platform::Object^>(this, &D3DApp::OnResuming);
+
+      bootNME();
    }
 
    virtual void SetWindow(Windows::UI::Core::CoreWindow^ window)
    {
       window->SizeChanged += 
-           ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &Direct3DApp::OnWindowSizeChanged);
+           ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &D3DApp::OnWindowSizeChanged);
 
       window->VisibilityChanged +=
-         ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &Direct3DApp::OnVisibilityChanged);
+         ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &D3DApp::OnVisibilityChanged);
 
       window->Closed += 
-           ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &Direct3DApp::OnWindowClosed);
+           ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &D3DApp::OnWindowClosed);
 
       window->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
 
       window->PointerPressed +=
-         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &Direct3DApp::OnPointerPressed);
+         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3DApp::OnPointerPressed);
 
       window->PointerMoved +=
-         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &Direct3DApp::OnPointerMoved);
-
-      bootNME();
+         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3DApp::OnPointerMoved);
 
       mStage->Initialize(CoreWindow::GetForCurrentThread());
    }
 
-
-   virtual void Load(Platform::String^ entryPoint)
-   {
-   }
-
+   virtual void Load(Platform::String^ entryPoint) { }
+      
    virtual void Run()
    {
       BasicTimer^ timer = ref new BasicTimer();
@@ -391,9 +647,12 @@ public:
          {
             timer->Update();
             CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-            //mStage->Update(timer->Total, timer->Delta);
+
+            mStage->Update(timer->Total, timer->Delta);
+
             mStage->Render();
-            mStage->Present(); // This call is synchronized to the display frame rate.
+
+            mStage->Present();
          }
          else
          {
@@ -406,62 +665,107 @@ public:
    {
    }
 
-
 protected:
-
-   void bootNME()
-   {
-      mFrame = new WinRTFrame(flags,width,height);
-      mStage = mFrame->mStage;
-      if (sgOnFrame)
-      {
-         sgOnFrame(mFrame);
-         sgOnFrame = 0;
-      }
-   }
-
-
    // Event Handlers.
-   void OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
+   void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args)
    {
+      mStage->UpdateForWindowSizeChange();
    }
 
-   void OnLogicalDpiChanged(Platform::Object^ sender)
+   void OnLogicalDpiChanged(Platform::Object^ sender);
+   void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
    {
+      CoreWindow::GetForCurrentThread()->Activate();
    }
-   void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView,
-                    Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
-   {
-   }
+
    void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
    {
+      // Save app state asynchronously after requesting a deferral. Holding a deferral
+      // indicates that the application is busy performing suspending operations. Be
+      // aware that a deferral may not be held indefinitely. After about five seconds,
+      // the app will be forced to exit.
+      SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
+
+      create_task([this, deferral]()
+      {
+         // Insert your code here.
+
+         deferral->Complete();
+      });
    }
+
    void OnResuming(Platform::Object^ sender, Platform::Object^ args)
    {
+      // Restore any data or state that was unloaded on suspend. By default, data
+      // and state are persisted when resuming from suspend. Note that this event
+      // does not occur if the app was previously terminated.
    }
-   void OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
+
+   void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args)
+   {
+      m_windowClosed = true;
+   }
+   void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)
+   {
+      m_windowVisible = args->Visible;
+   }
+
+   void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
    {
    }
-   void OnVisibilityChanged(CoreWindow^ sender,VisibilityChangedEventArgs^ args)
-   {
-   }
-   void OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
-   {
-   }
-   void OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
+
+   void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
    {
    }
 
 private:
-   WinRTFrame  *mFrame;
-   WinRTStage  *mStage;
+   nme::WinRTFrame *mFrame;
+   nme::WinRTStage *mStage;
    bool m_windowClosed;
    bool m_windowVisible;
 };
 
 
+// --- AppSource ------------------------------------------
 
-// --- When using the simple window class -----------------------------------------------
+ref class D3DAppSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+{
+   int width;
+   int height;
+   unsigned int flags;
+
+public:
+   D3DAppSource(int inWidth, int inHeight, unsigned int inFlags)
+   {
+      width = inWidth;
+      height = inHeight;
+      flags = inFlags;
+   }
+
+   virtual IFrameworkView^ CreateView()
+   {
+      auto result = ref new D3DApp(width,height,flags);
+      return result;
+   }
+
+};
+
+
+// --- External NME code ---------------------------------
+
+
+namespace nme
+{
+
+
+void CreateMainFrame(nme::FrameCreationCallback inOnFrame,int inWidth,int inHeight,
+   unsigned int inFlags, const char *inTitle, nme::Surface *inIcon )
+{
+   sgOnFrame = inOnFrame;
+   auto appSource = ref new D3DAppSource(inWidth,inHeight,inFlags);
+   CoreApplication::Run(appSource);
+}
+
 
 bool sgDead = false;
 
@@ -477,7 +781,6 @@ QuickVec<int> *CapabilitiesGetScreenResolutions()
 }
 
 double CapabilitiesGetScreenResolutionX() { return sgDesktopWidth; }
-
 double CapabilitiesGetScreenResolutionY() { return sgDesktopHeight; }
 void PauseAnimation() {}
 void ResumeAnimation() {}
@@ -492,49 +795,4 @@ void StartAnimation()
 }
 
 
-
-// --- AppSource -------------------------------------------------------
-
-ref class Direct3DAppSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
-{
-   int width;
-   int height;
-   unsigned int flags;
-
-public:
-   Direct3DAppSource(int inWidth, int inHeight, unsigned int inFlags)
-   {
-      width = inWidth;
-      height = inHeight;
-      flags = inFlags;
-   }
-
-   virtual IFrameworkView^ Direct3DAppSource::CreateView()
-   {
-      auto result = ref new Direct3DApp(width,height,flags);
-      return result;
-   }
-};
-
-
-// --- External -------------------------------------------------------
-
-void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, Surface *inIcon )
-{
-   sgOnFrame = inOnFrame;
-
-   auto source = ref new Direct3DAppSource(inWidth,inHeight,inFlags);
-
-   CoreApplication::Run(source);
 }
-
-
-
-} // end namespace nme
-
-
-
-
-
-

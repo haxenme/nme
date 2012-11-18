@@ -1,5 +1,6 @@
 ﻿#include "Direct3DBase.h"
 
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
@@ -226,6 +227,8 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		m_swapChain->SetRotation(rotation)
 		);
 
+   //0
+   //
 	// Create a render target view of the swap chain back buffer.
 	ComPtr<ID3D11Texture2D> backBuffer;
 	DX::ThrowIfFailed(
