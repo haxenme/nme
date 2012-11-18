@@ -287,6 +287,12 @@ class NMMLParser extends NMEProject {
 					var name = formatAttributeName (attribute);
 					var value = substitute (element.att.resolve (attribute));
 					
+					if (attribute == "package") {
+						
+						name = "packageName";
+						
+					}
+					
 					if (Reflect.hasField (app, name)) {
 						
 						Reflect.setField (app, name, value);
