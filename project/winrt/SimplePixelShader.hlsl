@@ -1,10 +1,13 @@
+Texture2D tex0  :register( t0 );
+SamplerState sampleType : register( s0 );
+
+
 struct PixelShaderInput
 {
-	float4 pos : SV_POSITION;
-	float3 color : COLOR0;
+	float2 Texcoord  : TEXCOORD0;
 };
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	return float4(input.color,1.0f);
+   return tex0.Sample(sampleType, input.Texcoord);
 }

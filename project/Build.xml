@@ -45,6 +45,12 @@
 		<file name="sdl/SDLSound.cpp" unless="sdl"/>
 		
 	</files>
+
+  	<files id="winrt_shaders">
+		<hlsl name="winrt/SimplePixelShader.hlsl" profile="ps_2_0" variable="gPixelShader" target="winrt/shaders/SimplePixelShader.h"/>
+		<hlsl name="winrt/SimpleVertexShader.hlsl" profile="vs_2_0" variable="gVertexShader" target="winrt/shaders/SimpleVertexShader.h"/>
+		<file name="winrt/ShaderData.cpp" />
+	</files>
 	
   	<files id="winrt">
 		<compilerflag value="-Iinclude"/>
@@ -310,6 +316,7 @@
 		<files id="common"/>
 		<files id="common_lzma"/>
 		<files id="win_desktop" if="win_desktop"/>
+		<files id="winrt_shaders" if="winrt"/>
 		<files id="winrt" if="winrt"/>
 		<files id="iphone" if="iphone"/>
 		<files id="mac" if="macos"/>
