@@ -39,12 +39,14 @@ class DisplayObjectContainer extends InteractiveObject
 	public var numChildren(jeashGetNumChildren, never):Int;
 	public var mouseChildren:Bool;
 	public var tabChildren:Bool;
+	public var jeashCombinedAlpha:Float;
 
 	public function new() {
 		jeashChildren = new Array<DisplayObject>();
 		mouseChildren = true;
 		tabChildren = true;
 		super();
+		jeashCombinedAlpha = alpha;
 	}
 
 	override public function toString() { return "[DisplayObjectContainer name=" + this.name + " id=" + _jeashId + "]"; }
@@ -94,6 +96,7 @@ class DisplayObjectContainer extends InteractiveObject
 			clipRect = jeashScrollRect;
 		}
 		super.jeashRender(inMask, clipRect);
+		jeashCombinedAlpha = parent != null ? parent.jeashCombinedAlpha * alpha : alpha;
 		for (child in jeashChildren) {
 			if (child.jeashVisible) {
 				if (clipRect != null) {

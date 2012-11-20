@@ -401,14 +401,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		if (inMask != null) {
 			var m = getSurfaceTransform(gfx);
-			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
+			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
-			Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+			Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha);
 			/*if (clipRect != null) {
 				var rect = new Rectangle();
 				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
