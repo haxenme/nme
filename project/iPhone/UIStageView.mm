@@ -149,7 +149,7 @@ public:
       }
    }
 
-   RenderTarget BeginRender(const nme::Rect &inRect)
+   RenderTarget BeginRender(const nme::Rect &inRect, bool inForHitTest=false)
    {
       return RenderTarget(nme::Rect(Width(),Height()), Format(), (uint8 *)mBuffer, mWidth*4);
    }
