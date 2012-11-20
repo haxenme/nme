@@ -106,14 +106,14 @@ class Bitmap extends jeash.display.DisplayObject
 		if (inMask != null) {
 			jeashApplyFilters(jeashGraphics.jeashSurface);
 			var m = getBitmapSurfaceTransform(jeashGraphics);
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
 				var m = getBitmapSurfaceTransform(jeashGraphics);
 				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}
-			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha);
 		}
 	}
 
