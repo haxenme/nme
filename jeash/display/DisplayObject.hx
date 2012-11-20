@@ -369,7 +369,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!jeashVisible || (parent == null) || !parent.jeashCombinedVisible) return; 
+		if (!jeashVisible) return;
 
 		var gfx = jeashGetGraphics();
 		if (gfx == null) return;
@@ -455,7 +455,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashGetObjectUnderPoint(point:Point):DisplayObject {
-		if (!jeashVisible || (parent == null) || !parent.jeashCombinedVisible) return null; 
+		if (!visible) return null;
 		var gfx = jeashGetGraphics();
 		if (gfx != null) {
 			var extX = gfx.jeashExtent.x;
@@ -658,9 +658,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	private function jeashSetVisible(inValue:Bool) {
 		var gfx = jeashGetGraphics();
-		var drawAsVisible:Bool = (parent != null) &&  inValue && parent.jeashCombinedVisible;
 		if (gfx != null && gfx.jeashSurface != null)
-			Lib.jeashSetSurfaceVisible(gfx.jeashSurface, drawAsVisible ); 
+			Lib.jeashSetSurfaceVisible(gfx.jeashSurface, inValue);
 		jeashVisible = inValue;
 		return visible;
 	}
