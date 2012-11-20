@@ -36,6 +36,7 @@ import jeash.Lib;
 class DisplayObjectContainer extends InteractiveObject
 {
 	public var jeashChildren:Array<DisplayObject>;
+	public var jeashCombinedVisible:Bool;
 	public var numChildren(jeashGetNumChildren, never):Int;
 	public var mouseChildren:Bool;
 	public var tabChildren:Bool;
@@ -45,6 +46,7 @@ class DisplayObjectContainer extends InteractiveObject
 		jeashChildren = new Array<DisplayObject>();
 		mouseChildren = true;
 		tabChildren = true;
+		jeashCombinedVisible = true;
 		super();
 		jeashCombinedAlpha = alpha;
 	}
@@ -112,6 +114,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override private function jeashAddToStage(newParent:DisplayObjectContainer, ?beforeSibling:DisplayObject) {
 		super.jeashAddToStage(newParent, beforeSibling);
+		jeashCombinedVisible = jeashVisible && newParent.jeashCombinedVisible; 
 		for (child in jeashChildren) {
 			if (child.jeashGetGraphics() == null || !child.jeashIsOnStage()) {
 				child.jeashAddToStage(this);
@@ -320,10 +323,10 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 
 	override private function jeashGetObjectUnderPoint(point:Point) {
-		if (!visible) return null;
 		var l = jeashChildren.length-1;
 		for (i in 0...jeashChildren.length) {
 			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
+		if (!jeashCombinedVisible) return null; 
 			if (result != null)
 				return mouseChildren ? result : this;
 		}
@@ -357,8 +360,9 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override private function jeashSetVisible(visible:Bool) {
 		super.jeashSetVisible(visible);
+		jeashCombinedVisible = parent != null ? jeashVisible && parent.jeashCombinedVisible : jeashVisible; 
 		for (child in jeashChildren) {
-			if (child.jeashIsOnStage()) child.visible = visible;
+			if (child.jeashIsOnStage()) child.visible = child.visible; // Redraw the child.
 		}
 		return visible;
 	}
