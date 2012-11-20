@@ -358,7 +358,7 @@ class DisplayObjectContainer extends InteractiveObject
 	override private function jeashSetVisible(visible:Bool) {
 		super.jeashSetVisible(visible);
 		for (child in jeashChildren) {
-			if (child.jeashIsOnStage()) child.visible = visible;
+			child.visible = visible;
 		}
 		return visible;
 	}

@@ -66,7 +66,7 @@ class Bitmap extends jeash.display.DisplayObject
 	}
 
 	override private function jeashGetGraphics() return jeashGraphics
-	
+
 	override function validateBounds() {
 		if (_boundsInvalid) {
 			super.validateBounds();
@@ -92,7 +92,10 @@ class Bitmap extends jeash.display.DisplayObject
 			jeashValidateMatrix();
 
 		var imageDataLease = bitmapData.jeashGetLease();
-		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
+		if (imageDataLease != null 
+				&& (jeashCurrentLease == null 
+					|| imageDataLease.seed != jeashCurrentLease.seed 
+					|| imageDataLease.time != jeashCurrentLease.time)) {
 			var srcCanvas = bitmapData.handle();
 			jeashGraphics.jeashSurface.width = srcCanvas.width;
 			jeashGraphics.jeashSurface.height = srcCanvas.height;
