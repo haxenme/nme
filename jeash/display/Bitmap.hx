@@ -85,7 +85,8 @@ class Bitmap extends jeash.display.DisplayObject
 	}
 
 	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!jeashVisible) return;
+		if (!jeashCombinedVisible) return;
+
 		if (bitmapData == null) return;
 
 		if (_matrixInvalid || _matrixChainInvalid)

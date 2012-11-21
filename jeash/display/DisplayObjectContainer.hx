@@ -106,7 +106,7 @@ class DisplayObjectContainer extends InteractiveObject
 					}
 				}
 				child.jeashRender(inMask, clipRect);
-			} 
+			}
 		}
 	}
 
@@ -362,11 +362,17 @@ class DisplayObjectContainer extends InteractiveObject
 		return filters;
 	}
 
-	override private function jeashSetVisible(visible:Bool) {
-		super.jeashSetVisible(visible);
-		for (child in jeashChildren) {
-			child.visible = visible;
+	override private function jeashSetVisible(inVal:Bool):Bool {
+		jeashCombinedVisible = inVal;
+		return super.jeashSetVisible(inVal);
+	}
+
+	override private function jeashSetCombinedVisible(inVal:Bool):Bool {
+		if (inVal != jeashCombinedVisible) {
+			for (child in jeashChildren) {
+				child.jeashCombinedVisible = child.visible && inVal;
+			}
 		}
-		return visible;
+		return super.jeashSetCombinedVisible(inVal);
 	}
 }

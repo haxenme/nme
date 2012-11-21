@@ -98,6 +98,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private var jeashVisible:Bool;
 	public var visible(jeashGetVisible, jeashSetVisible):Bool;
+	public var jeashCombinedVisible(default, jeashSetCombinedVisible):Bool;
+
 	public var mouseX(jeashGetMouseX, never):Float;
 	public var mouseY(jeashGetMouseY, never):Float;
 	public var parent(default, jeashSetParent):DisplayObjectContainer;
@@ -140,6 +142,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		jeashScrollRect = null;
 		jeashMask = null;
 		jeashMaskingObj = null;
+		jeashCombinedVisible = visible;
 	}
 
 	override public function toString() { return "[DisplayObject name=" + this.name + " id=" + _jeashId + "]"; }
@@ -369,7 +372,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!jeashVisible) return;
+		if (!jeashCombinedVisible) return;
 
 		var gfx = jeashGetGraphics();
 		if (gfx == null) return;
@@ -399,16 +402,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
 
+		var fullAlpha:Float = (parent != null ? parent.jeashCombinedAlpha : 1) * alpha;
 		if (inMask != null) {
 			var m = getSurfaceTransform(gfx);
-			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
+			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, fullAlpha, clipRect);
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(gfx);
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				jeashClearFlag(TRANSFORM_INVALID);
 			}
-			Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha);
+			Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, fullAlpha);
 			/*if (clipRect != null) {
 				var rect = new Rectangle();
 				rect.topLeft = this.globalToLocal(this.parent.localToGlobal(clipRect.topLeft));
@@ -657,11 +661,25 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return jeashVisible;
 	}
 	private function jeashSetVisible(inValue:Bool) {
+		if (jeashVisible != inValue) {
+			jeashVisible = inValue;
+			setSurfaceVisible(inValue);
+		}
+		return jeashVisible;
+	}
+
+	private function jeashSetCombinedVisible(inValue:Bool):Bool {
+		if (jeashCombinedVisible != inValue) {
+			jeashCombinedVisible = inValue;
+			setSurfaceVisible(inValue);
+		}
+		return jeashCombinedVisible;
+	}
+
+	private function setSurfaceVisible(inValue:Bool):Void {
 		var gfx = jeashGetGraphics();
 		if (gfx != null && gfx.jeashSurface != null)
 			Lib.jeashSetSurfaceVisible(gfx.jeashSurface, inValue);
-		jeashVisible = inValue;
-		return visible;
 	}
 
 	private function jeashGetWidth():Float {

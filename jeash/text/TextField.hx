@@ -649,7 +649,7 @@ class TextField extends jeash.display.InteractiveObject
 
 
 	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!jeashVisible) return;
+		if (!jeashCombinedVisible) return;
 
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
