@@ -146,6 +146,13 @@ class DisplayObjectContainer extends InteractiveObject
 
 		object.parent = this;
 		if (jeashIsOnStage()) object.jeashAddToStage(this);
+		
+		if (jeashChildren == null) {
+			
+			jeashChildren = new Array <DisplayObject> ();
+			
+		}
+		
 		jeashChildren.push(object);
 
 		return object;
