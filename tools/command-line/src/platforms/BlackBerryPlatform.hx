@@ -126,7 +126,7 @@ class BlackBerryPlatform implements IPlatformTool {
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", project.app.path + "/blackberry/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "blackberry/hxml", project.app.path + "/blackberry/haxe", context);
 		
-		SWFHelper.generateSWFClasses (project, project.app.path + "/blackberry/haxe");
+		//SWFHelper.generateSWFClasses (project, project.app.path + "/blackberry/haxe");
 		
 		var arch = "";
 		
@@ -184,11 +184,11 @@ class BlackBerryPlatform implements IPlatformTool {
 				
 				// going to root directory now, but should it be a forced "assets" folder later?
 				
-				FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+				FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
 				
 			} else {
 				
-				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+				FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 				
 			}
 			

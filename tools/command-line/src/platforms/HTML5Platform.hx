@@ -211,7 +211,7 @@ class HTML5Platform implements IPlatformTool {
 					
 					//if (project.target == Platform.HTML5) {
 						
-						FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+						FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
 						
 					//} else {
 						
@@ -240,7 +240,7 @@ class HTML5Platform implements IPlatformTool {
 			if (asset.type == AssetType.TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+				FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 				
 			}
 			

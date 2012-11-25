@@ -140,13 +140,13 @@ class FlashPlatform implements IPlatformTool {
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/hxml", project.app.path + "/flash/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/haxe", project.app.path + "/flash/haxe", context);
 		
-		SWFHelper.generateSWFClasses (project, project.app.path + "/flash/haxe");
+		//SWFHelper.generateSWFClasses (project, project.app.path + "/flash/haxe");
 		
 		var usesNME = false;
 		
-		for (flag in project.haxeflags) {
+		for (lib in project.haxelibs) {
 			
-			if (flag == "-lib nme") {
+			if (lib == "nme") {
 				
 				usesNME = true;
 				
@@ -156,10 +156,10 @@ class FlashPlatform implements IPlatformTool {
 		
 		for (asset in project.assets) {
 			
-			if (asset.type == AssetType.TEMPLATE || !usesNME) {
+			if (asset.type == AssetType.TEMPLATE || asset.embed != true || !usesNME) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+				FileHelper.copyAsset (asset, destination, context);
 				
 			}
 			

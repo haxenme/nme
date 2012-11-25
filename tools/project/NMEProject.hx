@@ -23,7 +23,7 @@ class NMEProject {
 	public var host (getHost, null):Platform;
 	public var icons:Array <Icon>;
 	public var javaPaths:Array <String>;
-	public var libraries:Array <Asset>;
+	public var libraries:Array <Library>;
 	public var meta:MetaData;
 	public var ndlls:Array <NDLL>;
 	public var platformType:PlatformType;
@@ -116,7 +116,7 @@ class NMEProject {
 		haxelibs = new Array <String> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
-		libraries = new Array <Asset> ();
+		libraries = new Array <Library> ();
 		ndlls = new Array <NDLL> ();
 		sources = new Array <String> ();
 		
@@ -235,9 +235,9 @@ class NMEProject {
 				
 				var regexp = new EReg ("^" + filter, "i");
 				
-				if (!regexp.match (text)) {
+				if (regexp.match (text)) {
 					
-					return false;
+					return true;
 					
 				}
 				
@@ -476,6 +476,17 @@ class NMEProject {
 				context.assets.push (embeddedAsset);
 				
 			}
+			
+		}
+		
+		context.libraries = new Array <Dynamic> ();
+		
+		for (library in libraries) {
+			
+			var libraryData:Dynamic = { };
+			ObjectHelper.copyFields (library, libraryData);
+			libraryData.type = Std.string (library.type).toLowerCase ();
+			context.libraries.push (libraryData);
 			
 		}
 		

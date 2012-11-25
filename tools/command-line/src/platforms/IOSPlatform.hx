@@ -283,7 +283,7 @@ class IOSPlatform implements IPlatformTool {
 		FileHelper.copyFileTemplate (project.templatePaths, "iphone/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "iphone/PROJ.xcodeproj", targetDirectory + "/" + project.app.file + ".xcodeproj", context);
 		
-		SWFHelper.generateSWFClasses (project, projectDirectory + "/haxe");
+		//SWFHelper.generateSWFClasses (project, projectDirectory + "/haxe");
 		
 		PathHelper.mkdir (projectDirectory + "/lib");
 		
@@ -348,7 +348,7 @@ class IOSPlatform implements IPlatformTool {
 			} else {
 				
 				PathHelper.mkdir (Path.directory (projectDirectory + "/" + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, projectDirectory + "/" + asset.targetPath, context);
+				FileHelper.copyAsset (asset, projectDirectory + "/" + asset.targetPath, context);
 				
 			}
 			

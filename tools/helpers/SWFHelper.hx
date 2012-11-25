@@ -14,7 +14,9 @@ class SWFHelper {
 	
 	public static function generateSWFClasses (project:NMEProject, outputDirectory:String):Void {
 		
-		var movieClipTemplate = File.getContent (PathHelper.findTemplate (project.templatePaths, "resources/swf/MovieClip.mtt"));
+		return null;
+		
+		/*var movieClipTemplate = File.getContent (PathHelper.findTemplate (project.templatePaths, "resources/swf/MovieClip.mtt"));
 		var simpleButtonTemplate = File.getContent (PathHelper.findTemplate (project.templatePaths, "resources/swf/SimpleButton.mtt"));
 		
 		for (asset in project.libraries) {
@@ -103,9 +105,27 @@ class SWFHelper {
 				
 			}
 			
+		}*/
+		
+	}
+	
+	
+	public static function preprocess (project:NMEProject):Void {
+		
+		for (library in project.libraries) {
+			
+			if (library.type == LibraryType.SWF) {
+				
+				project.haxelibs.remove ("swf");
+				project.haxelibs.push ("swf");
+				
+				project.assets.push (new Asset (library.sourcePath, "libraries/" + library.name + ".swf", AssetType.BINARY));
+				
+			}
+			
 		}
 		
 	}
-		
+	
 
 }

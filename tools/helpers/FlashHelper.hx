@@ -1,6 +1,7 @@
 package;
 
 
+import haxe.io.Bytes;
 import haxe.io.Path;
 import format.swf.Data;
 import format.swf.Constants;
@@ -25,6 +26,7 @@ class FlashHelper {
 		var name = inAsset.sourcePath;
 		var type = inAsset.type;
 		var flatName = inAsset.flatName;
+		var ext = inAsset.format;
 		
 		if (!embed) {
 			
@@ -37,7 +39,6 @@ class FlashHelper {
 		if (type == AssetType.MUSIC || type == AssetType.SOUND) {
 			
 			var src = name;
-			var ext = Path.extension (src);
 			
 			if (ext != "mp3" && ext != "wav") {
 				
@@ -61,8 +62,6 @@ class FlashHelper {
 				return false;
 				
 			}
-			
-			var ext = Path.extension (src);
 
 			var input = File.read (src, true);
 			
@@ -201,7 +200,6 @@ class FlashHelper {
 		} else if (type == AssetType.IMAGE) {
 			
 			var src = name;
-			var ext = Path.extension (src).toLowerCase ();
 			
 			if (ext == "jpg" || ext == "png" || ext == "gif") {
 				
@@ -349,7 +347,28 @@ class FlashHelper {
 			
 		} else {
 			
-			var bytes = File.getBytes (name);
+			var bytes:Bytes = null;
+			
+			if (inAsset.data != null) {
+				
+				if (Std.is (inAsset.data, Bytes)) {
+					
+					bytes = cast inAsset.data;
+					
+				} else {
+					
+					bytes = Bytes.ofString (Std.string (inAsset.data));
+					
+				}
+				
+			}
+			
+			if (bytes == null) {
+				
+				bytes = File.getBytes (name);
+				
+			}
+			
 			outTags.push (TBinaryData (cid, bytes));
 			
 		}
