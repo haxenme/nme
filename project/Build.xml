@@ -47,8 +47,8 @@
 	</files>
 
   	<files id="winrt_shaders">
-		<hlsl name="winrt/SimplePixelShader.hlsl" profile="ps_2_0" variable="gPixelShader" target="winrt/shaders/SimplePixelShader.h"/>
-		<hlsl name="winrt/SimpleVertexShader.hlsl" profile="vs_2_0" variable="gVertexShader" target="winrt/shaders/SimpleVertexShader.h"/>
+		<hlsl name="winrt\\SimplePixelShader.hlsl" profile="ps_4_0" variable="gPixelShader" target="winrt\\shaders\\SimplePixelShader.h"/>
+		<hlsl name="winrt\\SimpleVertexShader.hlsl" profile="vs_4_0" variable="gVertexShader" target="winrt\\shaders\\SimpleVertexShader.h"/>
 		<file name="winrt/ShaderData.cpp" />
 	</files>
 	
