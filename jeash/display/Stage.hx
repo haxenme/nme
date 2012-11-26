@@ -286,40 +286,41 @@ class Stage extends DisplayObjectContainer
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.DOUBLE_CLICK);
 
 			case "keydown":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
+				var evt:KeyboardEvent = cast evt;
+
+				var keyCode = if (evt.keyIdentifier != null) evt.keyCode;
+					/*try {
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
 						#if debug
 						jeash.Lib.trace("keydown error: " + e);
 						#end
 						evt.keyCode;
-					}
+					}*/
 				else
 					Keyboard.jeashConvertMozillaCode(evt.keyCode);
 
 				jeashOnKey( keyCode, true,
-						evt.keyLocation,
+                        evt.charCode,
 						evt.ctrlKey, evt.altKey,
 						evt.shiftKey );
 
 			case "keyup":
 				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
+				var keyCode = if (evt.keyIdentifier != null) evt.keyCode;
+					/*try {
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
 						#if debug
 						jeash.Lib.trace("keyup error: " + e);
 						#end
 						evt.keyCode;
-					}
+					}*/
 				else
 					Keyboard.jeashConvertMozillaCode(evt.keyCode);
 
 				jeashOnKey( keyCode, false,
-						evt.keyLocation,
+						evt.charCode,
 						evt.ctrlKey, evt.altKey,
 						evt.shiftKey );
 					
