@@ -56,6 +56,7 @@ class Stage extends DisplayObjectContainer
 	var jeashDragBounds:Rectangle;
 	var jeashDragOffsetX:Float;
 	var jeashDragOffsetY:Float;
+	var jeashInvalid:Bool;
 	var jeashMouseOverObjects:Array<InteractiveObject>;
 	var jeashStageMatrix:Matrix;
 	var jeashStageActive:Bool;
@@ -125,6 +126,11 @@ class Stage extends DisplayObjectContainer
 
 	override private function getStage() {
 		return jeash.Lib.jeashGetStage();
+	}
+	
+	public function invalidate():Void
+	{
+		jeashInvalid = true;
 	}
 
 	override private function jeashIsOnStage() return true
@@ -579,11 +585,14 @@ class Stage extends DisplayObjectContainer
 
 		var event = new jeash.events.Event( jeash.events.Event.ENTER_FRAME );
 		this.jeashBroadcast(event);
+		
+		if (jeashInvalid)
+		{
+			var event = new jeash.events.Event( jeash.events.Event.RENDER );
+			this.jeashBroadcast(event);
+		}
 
 		this.jeashRenderAll();
-		
-		var event = new jeash.events.Event( jeash.events.Event.RENDER );
-		this.jeashBroadcast(event);
 	}
 
 	override function jeashGetMouseX() { return _mouseX; }
