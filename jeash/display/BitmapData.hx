@@ -124,6 +124,10 @@ class BitmapData implements IBitmapDrawable {
 	private var _jeashTextureBuffer:HTMLCanvasElement;
 	private var jeashTransparent:Bool;
 
+    public var transparent(jeashGetTransparent, null):Bool;
+
+    function jeashGetTransparent() {return jeashTransparent;}
+
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
 	public var rect:Rectangle;
