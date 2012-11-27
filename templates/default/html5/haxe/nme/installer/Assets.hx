@@ -161,7 +161,9 @@ class Assets {
 		
 		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "font") {
 			
-			return cast (new NME_::flatName:: (), Font); 
+			::if (flatName != null)::return cast (new NME_::flatName:: (), Font);::end::
+
+			return null; 
 			
 		} else {
 			
