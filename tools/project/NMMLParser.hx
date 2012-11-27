@@ -207,8 +207,6 @@ class NMMLParser extends NMEProject {
 					
 				}
 				
-				return "";
-				
 			}
 			
 		}
@@ -708,12 +706,13 @@ class NMMLParser extends NMEProject {
 						var name = "";
 						
 						if (element.has.path) {
-							
-							name = findIncludeFile (extensionPath + substitute (element.att.path));
+
+							var subPath = substitute (element.att.path);
+							if (subPath == "") subPath = element.att.path;
+							name = findIncludeFile (extensionPath + subPath);
 							
 						} else {
 							
-							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							
 						}
