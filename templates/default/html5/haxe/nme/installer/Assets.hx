@@ -142,15 +142,15 @@ class Assets {
 		
 		if (resourceNames.exists (id)) {
 			
+			::if (resourceName != null)::
 			return cast (ApplicationMain.urlLoaders.get ("::resourceName::").data, ByteArray);
-			
-		} else {
-			
-			trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
-			
-			return null;
+			::end::
 			
 		}
+			
+		trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			
+		return null;
 		
 	}
 	
@@ -165,13 +165,11 @@ class Assets {
 
 			return null; 
 			
-		} else {
-			
-			trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
-			
-			return null;
-			
 		}
+			
+		trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
+			
+		return null;
 		
 	}
 	
