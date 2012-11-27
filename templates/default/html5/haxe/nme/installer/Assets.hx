@@ -42,7 +42,8 @@ class Assets {
 		
 		if (!initialized) {
 			
-			::foreach assets::resourceNames.set ("::id::", "::resourceName::");
+			::foreach assets::
+			resourceNames.set ("::id::", "::resourceName::");
 			resourceTypes.set ("::id::", "::type::");
 			::end::
 			::foreach libraries::libraryTypes.set ("::name::", "::type::");::end::
@@ -57,7 +58,7 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "image") {
+		if (resourceNames.exists(id) && resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "image") {
 			
 			if (useCache && cachedBitmapData.exists (id)) {
 				
@@ -68,7 +69,7 @@ class Assets {
 				// Should be bitmapData.clone (), but stopped working in recent Jeash builds
 				// Without clone, BitmapData is already cached, so ignoring the hash table for now
 				
-				var data = cast (ApplicationMain.loaders.get ("::resourceName::").contentLoaderInfo.content, Bitmap).bitmapData;
+				var data = cast (ApplicationMain.loaders.get (resourceNames.get(id)).contentLoaderInfo.content, Bitmap).bitmapData;
 				
 				if (useCache) {
 					
@@ -137,14 +138,12 @@ class Assets {
 	
 	
 	public static function getBytes (id:String):ByteArray {
-		
+
 		initialize ();
 		
 		if (resourceNames.exists (id)) {
-			
-			::if (resourceName != null)::
-			return cast (ApplicationMain.urlLoaders.get ("::resourceName::").data, ByteArray);
-			::end::
+
+			return cast ApplicationMain.urlLoaders.get (getResourceName(id)).data;
 			
 		}
 			
@@ -157,6 +156,15 @@ class Assets {
 	
 	public static function getFont (id:String):Font {
 		
+		switch (id) {
+			
+			::foreach assets::::if (type == "font")::case "::id::": 
+			var font = cast (new NME_::flatName:: (), Font);
+			return font; 
+			::end::::end::
+		}
+
+		/*
 		initialize ();
 		
 		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "font") {
@@ -168,7 +176,7 @@ class Assets {
 		}
 			
 		trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
-			
+		*/	
 		return null;
 		
 	}
@@ -239,15 +247,15 @@ class Assets {
 		
 		initialize ();
 		
-		if (resourceTypes.exists (id)) {
+		if (resourceNames.exists(id) && resourceTypes.exists (id)) {
 			
 			if (resourceTypes.get (id).toLowerCase () == "sound") {
 				
-				return new Sound (new URLRequest ("::resourceName::"));
+				return new Sound (new URLRequest (resourceNames.get(id)));
 				
 			} else if (resourceTypes.get (id).toLowerCase () == "music") {
 				
-				return new Sound (new URLRequest ("::resourceName::"));
+				return new Sound (new URLRequest (resourceNames.get(id)));
 				
 			}
 			
@@ -262,17 +270,19 @@ class Assets {
 	
 	public static function getText (id:String):String {
 		
-		var bytes = getBytes (id);
-		
-		if (bytes == null) {
+		initialize ();
+
+		if (resourceNames.exists(id) && resourceTypes.exists (id)) {
 			
-			return null;
-			
-		} else {
-			
-			return ApplicationMain.urlLoaders.get ("::resourceName::").data;
-			
+			if (resourceTypes.get (id).toLowerCase () == "text") {
+
+				return ApplicationMain.urlLoaders.get (resourceNames.get(id)).data;
+
+			}
 		}
+		
+		var bytes = getBytes (id);
+		return null;
 		
 	}
 	
