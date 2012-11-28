@@ -289,18 +289,18 @@ class Stage extends DisplayObjectContainer
 				var evt:KeyboardEvent = cast evt;
 
 				var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
-                keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
+				keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, true,
-                        evt.charCode,
+						evt.charCode,
 						evt.ctrlKey, evt.altKey,
 						evt.shiftKey );
 
 			case "keyup":
 				var evt:KeyboardEvent = cast evt;
 
-                var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
-                keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
+				var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
+				keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, false,
 						evt.charCode,
