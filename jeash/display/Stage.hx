@@ -294,7 +294,7 @@ class Stage extends DisplayObjectContainer
 				jeashOnKey( keyCode, true,
 						evt.charCode,
 						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
+						evt.shiftKey, evt.keyLocation );
 
 			case "keyup":
 				var evt:KeyboardEvent = cast evt;
@@ -305,7 +305,7 @@ class Stage extends DisplayObjectContainer
 				jeashOnKey( keyCode, false,
 						evt.charCode,
 						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
+						evt.shiftKey, evt.keyLocation );
 					
 			case "touchstart":
 				var evt:TouchEvent = cast evt;
@@ -432,7 +432,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
-			ctrl:Bool, alt:Bool, shift:Bool )
+			ctrl:Bool, alt:Bool, shift:Bool, keyLocation:Int )
 	{
 		var event = new jeash.events.KeyboardEvent(
 				pressed ? jeash.events.KeyboardEvent.KEY_DOWN:
@@ -440,7 +440,7 @@ class Stage extends DisplayObjectContainer
 				true,false,
 				inChar,
 				code,
-				(shift || ctrl) ? 1 : 0, // TODO
+				keyLocation,
 				ctrl,alt,shift);
 
 		dispatchEvent(event);
