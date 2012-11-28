@@ -105,6 +105,11 @@ class DisplayObjectContainer extends InteractiveObject
 						child.jeashValidateMatrix();
 					}
 				}
+				if (inMask != null && overrideMatrix != null) {
+					// rendering to mask surface, be sure to account for current child transform
+					child.jeashValidateMatrix();
+					overrideMatrix = child.transform.matrix.mult(overrideMatrix);
+				}
 				child.jeashRender(inMask, clipRect, overrideMatrix);
 			}
 		}
