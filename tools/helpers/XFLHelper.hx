@@ -32,18 +32,13 @@ class XFLHelper {
 					if (Std.is (medium, DOMBitmapItem)) {
 						
 						var bitmapItem = cast (medium, DOMBitmapItem);
-						var asset = new Asset (path + "/bin/" + bitmapItem.bitmapDataHRef, targetPath + "/bin/" + bitmapItem.bitmapDataHRef, AssetType.IMAGE);
-						asset.id = path + "/bin/" + bitmapItem.bitmapDataHRef;
 						
-						if (bitmapItem.isJPEG) {
-							
-							asset.format = "jpg";
-							
-						} else {
-							
-							asset.format = "png";
-							
-						}
+						var source = path + "/bin/" + bitmapItem.bitmapDataHRef;
+						var target = targetPath + "/bin/" + bitmapItem.bitmapDataHRef + "." + (bitmapItem.isJPEG ? "jpg" : "png");
+						
+						var asset = new Asset (source, target, AssetType.IMAGE);
+						asset.id = source;
+						asset.format = (bitmapItem.isJPEG ? "jpg" : "png");
 						
 						project.assets.push (asset);
 						
