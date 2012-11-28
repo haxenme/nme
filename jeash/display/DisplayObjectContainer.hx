@@ -101,7 +101,7 @@ class DisplayObjectContainer extends InteractiveObject
 			if (child.jeashVisible) {
 				if (clipRect != null) {
 					if (child._matrixInvalid || child._matrixChainInvalid) {
-						child.invalidateGraphics();
+						//child.invalidateGraphics();
 						child.jeashValidateMatrix();
 					}
 				}

@@ -398,11 +398,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			clip3 = this.globalToLocal(this.parent.localToGlobal(bottomLeft));
 		}
 		*/
+		
 		if (gfx.jeashRender(inMask, jeashFilters, 1, 1))
 			handleGraphicsUpdated(gfx);
 
 		var fullAlpha:Float = (parent != null ? parent.jeashCombinedAlpha : 1) * alpha;
 		if (inMask != null) {
+			jeashApplyFilters(gfx.jeashSurface);
 			Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, overrideMatrix, fullAlpha, clipRect);
 		} else {
 			if (jeashTestFlag(TRANSFORM_INVALID)) {
