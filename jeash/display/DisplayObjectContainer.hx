@@ -89,13 +89,13 @@ class DisplayObjectContainer extends InteractiveObject
 		return jeashChildren.length;
 	}
 
-	override private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+	override private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle, ?overrideMatrix:Matrix) {
 		if (!jeashVisible) return;
 
 		if (clipRect == null && jeashScrollRect != null) {
 			clipRect = jeashScrollRect;
 		}
-		super.jeashRender(inMask, clipRect);
+		super.jeashRender(inMask, clipRect, overrideMatrix);
 		jeashCombinedAlpha = parent != null ? parent.jeashCombinedAlpha * alpha : alpha;
 		for (child in jeashChildren) {
 			if (child.jeashVisible) {
@@ -105,7 +105,7 @@ class DisplayObjectContainer extends InteractiveObject
 						child.jeashValidateMatrix();
 					}
 				}
-				child.jeashRender(inMask, clipRect);
+				child.jeashRender(inMask, clipRect, overrideMatrix);
 			}
 		}
 	}

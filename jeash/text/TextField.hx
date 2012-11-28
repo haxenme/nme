@@ -648,7 +648,7 @@ class TextField extends jeash.display.InteractiveObject
 		else return super.jeashGetObjectUnderPoint(point)
 
 
-	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle, ?overrideMatrix:Matrix) {
 		if (!jeashCombinedVisible) return;
 
 		if (_matrixInvalid || _matrixChainInvalid)
@@ -658,8 +658,7 @@ class TextField extends jeash.display.InteractiveObject
 			handleGraphicsUpdated(jeashGraphics);
 
 		if (!mHTMLMode && inMask != null) {
-			var m = getSurfaceTransform(jeashGraphics);
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, overrideMatrix, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
 				var m = getSurfaceTransform(jeashGraphics);
