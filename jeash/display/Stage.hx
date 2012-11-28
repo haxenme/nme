@@ -288,17 +288,8 @@ class Stage extends DisplayObjectContainer
 			case "keydown":
 				var evt:KeyboardEvent = cast evt;
 
-				var keyCode = if (evt.keyIdentifier != null) evt.keyCode;
-					/*try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keydown error: " + e);
-						#end
-						evt.keyCode;
-					}*/
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+				var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
+                keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, true,
                         evt.charCode,
@@ -306,18 +297,10 @@ class Stage extends DisplayObjectContainer
 						evt.shiftKey );
 
 			case "keyup":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null) evt.keyCode;
-					/*try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keyup error: " + e);
-						#end
-						evt.keyCode;
-					}*/
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+				var evt:KeyboardEvent = cast evt;
+
+                var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
+                keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, false,
 						evt.charCode,
