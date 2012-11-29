@@ -120,6 +120,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private var _matrixChainInvalid(getMatrixChainInvalid, never):Bool;
 	private var _matrixInvalid(getMatrixInvalid, never):Bool;
 
+	private var _topmostSurface(getTopmostSurface, null):HTMLElement;
+	private var _bottommostSurface(getBottommostSurface, null):HTMLElement;
+
 	public function new() {
 		super(null);
 
@@ -143,6 +146,20 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		jeashMask = null;
 		jeashMaskingObj = null;
 		jeashCombinedVisible = visible;
+	}
+
+	private function getTopmostSurface():HTMLElement {
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+			return gfx.jeashSurface;
+		return null;
+	}
+
+	private function getBottommostSurface():HTMLElement {
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+			return gfx.jeashSurface;
+		return null;
 	}
 
 	override public function toString() { return "[DisplayObject name=" + this.name + " id=" + _jeashId + "]"; }
@@ -607,7 +624,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			Lib.jeashSetSurfaceId(gfx.jeashSurface, _jeashId);
 
 			if (beforeSibling != null && beforeSibling.jeashGetGraphics() != null) {
-				Lib.jeashAppendSurface(gfx.jeashSurface, beforeSibling.jeashGetGraphics().jeashSurface);
+				Lib.jeashAppendSurface(gfx.jeashSurface, beforeSibling._bottommostSurface);
 			} else {
 				var stageChildren = [];
 				for (child in newParent.jeashChildren) {
@@ -616,7 +633,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				}
 
 				if (stageChildren.length < 1) {
-					Lib.jeashAppendSurface(gfx.jeashSurface, null, newParent.jeashGetGraphics().jeashSurface);
+					Lib.jeashAppendSurface(gfx.jeashSurface, null, newParent._topmostSurface);
 				} else {
 					var nextSibling = stageChildren[stageChildren.length-1];
 					var container;
@@ -628,7 +645,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 							break;
 					}
 					if (nextSibling.jeashGetGraphics() != gfx) {
-						Lib.jeashAppendSurface(gfx.jeashSurface, null, nextSibling.jeashGetGraphics().jeashSurface);
+						Lib.jeashAppendSurface(gfx.jeashSurface, null, nextSibling._topmostSurface);
 					} else {
 						Lib.jeashAppendSurface(gfx.jeashSurface);
 					}
