@@ -255,7 +255,7 @@ void Graphics::beginFill(unsigned int color, float alpha)
 
 void Graphics::endFill()
 {
-   Flush(false,true);
+   Flush(true,true);
    if (mFillJob.mFill)
    {
       mFillJob.mFill->DecRef();
@@ -444,6 +444,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 {
    int n = mPathData->commands.size();
    int d = mPathData->data.size();
+   bool wasFilled = false;
 
    if (inTile)
    {
@@ -455,8 +456,6 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          mTileJob.mIsTileJob = true;
          mJobs.push_back(mTileJob);
       }
-      mTileJob.mCommand0 = n;
-      mTileJob.mData0 = d;
    }
 
 
@@ -468,6 +467,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          mFillJob.mFill->IncRef();
          mFillJob.mCommandCount = n-mFillJob.mCommand0;
          mFillJob.mDataCount = d-mFillJob.mData0;
+         wasFilled = true;
 
          // Move the fill job up the list so it is "below" lines that start at the same
          // (or later) data point
@@ -487,9 +487,9 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          {
             mJobs.InsertAt(0,mFillJob);
          }
+         mFillJob.mCommand0 = n;
+         mFillJob.mData0 = d;
       }
-      mFillJob.mCommand0 = n;
-      mFillJob.mData0 = d;
    }
 
 
@@ -498,6 +498,14 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
       if (mLineJob.mStroke && mLineJob.mCommand0 <n-1)
       {
          mLineJob.mStroke->IncRef();
+
+         // Add closing segment...
+         if (wasFilled)
+         {
+            mPathData->closeLine(mLineJob.mCommand0,mLineJob.mData0);
+            n = mPathData->commands.size();
+            d = mPathData->data.size();
+         }
          mLineJob.mCommandCount = n-mLineJob.mCommand0;
          mLineJob.mDataCount = d-mLineJob.mData0;
          mJobs.push_back(mLineJob);
@@ -505,6 +513,20 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
       mLineJob.mCommand0 = n;
       mLineJob.mData0 = d;
    }
+
+
+   if (inTile)
+   {
+      mTileJob.mCommand0 = n;
+      mTileJob.mData0 = d;
+   }
+
+   if (inFill)
+   {
+      mFillJob.mCommand0 = n;
+      mFillJob.mData0 = d;
+   }
+
 }
 
 

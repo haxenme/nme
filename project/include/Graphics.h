@@ -289,6 +289,7 @@ public:
    void tile(float x, float y, const Rect &inTileRect, float *inTrans,float *inColour);
    void elementBlendMode(int inMode);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
+   void closeLine(int inCommand0, int inData0);
 };
 
 
