@@ -32,9 +32,18 @@ import jeash.net.SharedObjectFlushedStatus;
 import haxe.Serializer;
 import haxe.Unserializer;
 
+import js.Storage;
+
 class SharedObject extends EventDispatcher {
 	var jeashKey:String;
-	public var data:Dynamic;
+	public var data(default, null):Dynamic;
+	public var size(get_size, never):Int;
+
+	function get_size()
+	{
+		var d = Serializer.run(data);
+		return haxe.io.Bytes.ofString(d).length;
+	}
 
 	function new() super()
 
@@ -52,12 +61,17 @@ class SharedObject extends EventDispatcher {
 		return SharedObjectFlushedStatus.FLUSHED;
 	}
 
-	static function jeashGetLocalStorage ():Dynamic return untyped js.Lib.window.localStorage
+	static function jeashGetLocalStorage ():Storage {
+		var res = Storage.getLocal();
+		#if debug
+		if (res == null) throw "SharedObject not supported";
+		#end
+		return res;
+	}
 
 	static public function getLocal(name : String, ?localPath : String, secure : Bool = false /* note: unsupported */) {
 
-		var url = js.Lib.window.location.href;
-		if (localPath == null) localPath = url;
+		if (localPath == null) localPath = js.Lib.window.location.href;
 
 		var so = new SharedObject();
 		so.jeashKey = localPath + ":" + name;
