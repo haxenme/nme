@@ -16,6 +16,7 @@ clean:
 	make clean -C events
 	make clean -C net
 	make clean -C interop
+	make clean -C media
 
 all:
 	make all -C display
@@ -25,6 +26,7 @@ all:
 	make -C zjnue/jeash-rotate-scroll
 	make -C zjnue/scrolltest
 	make all -C interop
+	make all -C media
 
 test:
 	make -C phantomjs
