@@ -193,7 +193,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private function getStage() {
 		var gfx = jeashGetGraphics();
-		if (gfx != null && Lib.jeashIsOnStage(gfx.jeashSurface))
+		if (gfx != null)
 			return jeash.Lib.jeashGetStage();
 		return null;
 	}
