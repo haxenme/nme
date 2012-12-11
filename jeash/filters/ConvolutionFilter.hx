@@ -35,10 +35,10 @@ class ConvolutionFilter extends BitmapFilter {
 	public var color : UInt;
 	public var divisor : Float;
 	public var matrix : Array<Dynamic>;
-	public var matrixX : Int;
-	public var matrixY : Int;
+	public var matrixX : Float;
+	public var matrixY : Float;
 	public var preserveAlpha : Bool;
-	public function new(?matrixX : Int, ?matrixY : Int, ?matrix : Array<Dynamic>, ?divisor : Float, ?bias : Float, ?preserveAlpha : Bool, ?clamp : Bool, ?color : UInt, ?alpha : Float) 
+	public function new(matrixX : Float = 0, matrixY : Float = 0, ?matrix : Array<Dynamic>, divisor : Float = 1, bias : Float = 0, preserveAlpha : Bool = true, clamp : Bool = true, color : UInt = 0, alpha : Float = 0)
 	{
 		super("ConvolutionFilter");
 		this.matrixX = matrixX;
