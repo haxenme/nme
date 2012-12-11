@@ -39,12 +39,14 @@ class DisplayObjectContainer extends InteractiveObject
 	public var numChildren(jeashGetNumChildren, never):Int;
 	public var mouseChildren:Bool;
 	public var tabChildren:Bool;
+	public var jeashCombinedAlpha:Float;
 
 	public function new() {
 		jeashChildren = new Array<DisplayObject>();
 		mouseChildren = true;
 		tabChildren = true;
 		super();
+		jeashCombinedAlpha = alpha;
 	}
 
 	override public function toString() { return "[DisplayObjectContainer name=" + this.name + " id=" + _jeashId + "]"; }
@@ -87,23 +89,29 @@ class DisplayObjectContainer extends InteractiveObject
 		return jeashChildren.length;
 	}
 
-	override private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
+	override private function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle, ?overrideMatrix:Matrix) {
 		if (!jeashVisible) return;
 
 		if (clipRect == null && jeashScrollRect != null) {
 			clipRect = jeashScrollRect;
 		}
-		super.jeashRender(inMask, clipRect);
+		super.jeashRender(inMask, clipRect, overrideMatrix);
+		jeashCombinedAlpha = parent != null ? parent.jeashCombinedAlpha * alpha : alpha;
 		for (child in jeashChildren) {
 			if (child.jeashVisible) {
 				if (clipRect != null) {
 					if (child._matrixInvalid || child._matrixChainInvalid) {
-						child.invalidateGraphics();
+						//child.invalidateGraphics();
 						child.jeashValidateMatrix();
 					}
 				}
-				child.jeashRender(inMask, clipRect);
-			} 
+				if (inMask != null && overrideMatrix != null) {
+					// rendering to mask surface, be sure to account for current child transform
+					child.jeashValidateMatrix();
+					overrideMatrix = child.transform.matrix.mult(overrideMatrix);
+				}
+				child.jeashRender(inMask, clipRect, overrideMatrix);
+			}
 		}
 	}
 
@@ -143,6 +151,13 @@ class DisplayObjectContainer extends InteractiveObject
 
 		object.parent = this;
 		if (jeashIsOnStage()) object.jeashAddToStage(this);
+		
+		if (jeashChildren == null) {
+			
+			jeashChildren = new Array <DisplayObject> ();
+			
+		}
+		
 		jeashChildren.push(object);
 
 		return object;
@@ -352,11 +367,17 @@ class DisplayObjectContainer extends InteractiveObject
 		return filters;
 	}
 
-	override private function jeashSetVisible(visible:Bool) {
-		super.jeashSetVisible(visible);
-		for (child in jeashChildren) {
-			if (child.jeashIsOnStage()) child.visible = visible;
+	override private function jeashSetVisible(inVal:Bool):Bool {
+		jeashCombinedVisible = inVal;
+		return super.jeashSetVisible(inVal);
+	}
+
+	override private function jeashSetCombinedVisible(inVal:Bool):Bool {
+		if (inVal != jeashCombinedVisible) {
+			for (child in jeashChildren) {
+				child.jeashCombinedVisible = child.visible && inVal;
+			}
 		}
-		return visible;
+		return super.jeashSetCombinedVisible(inVal);
 	}
 }

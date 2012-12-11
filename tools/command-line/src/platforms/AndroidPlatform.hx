@@ -171,7 +171,7 @@ class AndroidPlatform implements IPlatformTool {
 					
 				}
 				
-				FileHelper.copyIfNewer (asset.sourcePath, targetPath);
+				FileHelper.copyAssetIfNewer (asset, targetPath);
 				
 			}
 			
@@ -206,7 +206,7 @@ class AndroidPlatform implements IPlatformTool {
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		PathHelper.mkdir (packageDirectory);
 		
-		SWFHelper.generateSWFClasses (project, project.app.path + "/android/haxe");
+		//SWFHelper.generateSWFClasses (project, project.app.path + "/android/haxe");
 		
 		for (ndll in project.ndlls) {
 			
@@ -248,7 +248,7 @@ class AndroidPlatform implements IPlatformTool {
 			if (asset.type == AssetType.TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+				FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 				
 			}
 			

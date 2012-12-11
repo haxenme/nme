@@ -289,6 +289,7 @@ public:
    void tile(float x, float y, const Rect &inTileRect, float *inTrans,float *inColour);
    void elementBlendMode(int inMode);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
+   void closeLine(int inCommand0, int inData0);
 };
 
 
@@ -559,7 +560,7 @@ class HardwareContext : public Object
 public:
    static HardwareContext *current;
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
-   static HardwareContext *CreateDX11(void *inWindow);
+   static HardwareContext *CreateDX11(void *inDevice, void *inContext);
 
    // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );

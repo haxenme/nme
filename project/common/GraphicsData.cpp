@@ -105,6 +105,39 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,
 	commands.push_back((PathCommand)command);
 }
 
+void GraphicsPath::closeLine(int inCommand0, int inData0)
+{
+   float *point = &data[inData0];
+   float *move = 0;
+   for(int c=inCommand0; c<commands.size(); c++)
+   {
+      switch(commands[c])
+      {
+         case pcWideMoveTo:
+            point+=2;
+         case pcBeginAt:
+         case pcMoveTo:
+            move = point;
+            break;
+
+         case pcWideLineTo:
+         case pcCurveTo:
+            point+=2;
+         case pcLineTo:
+            if (move && move[0]==point[0] && move[1]==point[1])
+            {
+               // Closed loop detected - no need to close.
+               move = 0;
+            }
+            break;
+      }
+      point+=2;
+   }
+   if (move)
+      lineTo(move[0], move[1]);
+}
+
+
 void GraphicsPath::drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs)
 {
    int n = inXYs.size()/2;

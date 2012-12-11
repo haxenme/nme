@@ -9,6 +9,7 @@
 #include <agile.h>
 #include "BasicTimer.h"
 #include "Direct3DBase.h"
+#include "Shaders.h"
 
 //using namespace nme;
 
@@ -43,22 +44,19 @@ struct ModelViewProjectionConstantBuffer
    XMFLOAT4X4 projection;
 };
 
-struct VertexPositionColor
+struct VertexPositionTex
 {
    XMFLOAT3 pos;
-   XMFLOAT3 color;
+   XMFLOAT2 tex;
 };
 
-
+#if 0
 class WinRTSurface : public Surface
 {
 public:
    int width,height;
    ComPtr<ID3D11Device1> device;
-   ComPtr<ID3D11Texture2D> surface;
-   ComPtr<ID3D11DeviceContext1> context;
-   D3D11_MAPPED_SUBRESOURCE mapData;
-   bool mapped;
+
 
    WinRTSurface( ComPtr<ID3D11Device1> inDevice,ComPtr<ID3D11DeviceContext1> inContext,
                 int inWidth, int inHeight)
@@ -67,26 +65,7 @@ public:
       width = inWidth;
       height = inHeight;
 
-      D3D11_TEXTURE2D_DESC desc;
-      desc.Width = width;
-      desc.Height = height;
-      desc.MipLevels = 0;
-      desc.ArraySize = 1;
-      desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-      desc.SampleDesc.Count = 1;
-      desc.SampleDesc.Quality = 0;
-      desc.Usage = D3D11_USAGE_STAGING;
-      desc.BindFlags = 0;
-      desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
-      desc.MiscFlags = 0;
 
-
-      //printf("Create WinRTSurface....\n");
-      DX::ThrowIfFailed(
-         device->CreateTexture2D( &desc, nullptr, &surface) );
-      //printf("Done\n");
-      //
-      mapped = false;
    }
 
 
@@ -140,6 +119,7 @@ public:
    {
    }
 };
+#endif
 
 class Quad
 {
@@ -147,48 +127,11 @@ public:
    Quad( ComPtr<ID3D11Device1> inDevice, ComPtr<ID3D11DeviceContext1> inContext)
       : device(inDevice), context(inContext)
    {
-      valid = false;
-      auto loadVSTask = DX::ReadDataAsync("SimpleVertexShader.cso");
-      auto loadPSTask = DX::ReadDataAsync("SimplePixelShader.cso");
+      m_vertexShader = nmeCreateVertexShader(inDevice,m_inputLayout,vsSimple);
+      m_pixelShader = nmeCreatePixelShader(inDevice,psSimple);
 
-      auto createVSTask = loadVSTask.then([this](Platform::Array<byte>^ fileData) {
-         DX::ThrowIfFailed(
-            device->CreateVertexShader(
-               fileData->Data,
-               fileData->Length,
-               nullptr,
-               &m_vertexShader
-               )
-            );
-
-         const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = 
-         {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-         };
-
-         DX::ThrowIfFailed(
-            device->CreateInputLayout(
-               vertexDesc,
-               ARRAYSIZE(vertexDesc),
-               fileData->Data,
-               fileData->Length,
-               &m_inputLayout
-               )
-            );
-      });
-
-     auto createPSTask = loadPSTask.then([this](Platform::Array<byte>^ fileData) {
-      DX::ThrowIfFailed(
-         device->CreatePixelShader(
-            fileData->Data,
-            fileData->Length,
-            nullptr,
-            &m_pixelShader
-            )
-         );
-
-      CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+      CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer),
+                                            D3D11_BIND_CONSTANT_BUFFER);
       DX::ThrowIfFailed(
          device->CreateBuffer(
             &constantBufferDesc,
@@ -196,19 +139,17 @@ public:
             &m_constantBuffer
             )
          );
-   });
 
-   auto createCubeTask = (createPSTask && createVSTask).then([this] () {
-      VertexPositionColor cubeVertices[] = 
+      VertexPositionTex cubeVertices[] = 
       {
-         {XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f)},
-         {XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
-         {XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
-         {XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
-         {XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
-         {XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
-         {XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
-         {XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+         {XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT2(0.0f, 0.0f)},
+         {XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT2(0.0f, 0.0f)},
+         {XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT2(0.0f, 1.0f)},
+         {XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT2(0.0f, 1.0f)},
+         {XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT2(1.0f, 0.0f)},
+         {XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT2(1.0f, 0.0f)},
+         {XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT2(1.0f, 1.0f)},
+         {XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT2(1.0f, 1.0f)},
       };
 
       D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
@@ -259,12 +200,8 @@ public:
             &m_indexBuffer
             )
          );
-   });
 
-   createCubeTask.then([this] () {
       valid = true;
-   });
-
    }
 
    void SetRect(XMFLOAT4X4 &inOrientation,int inWidth, int inHeight)
@@ -303,11 +240,11 @@ public:
       XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(timeTotal * XM_PIDIV4)));
    }
 
-   void Render()
+   void Render(HardwareContext *dx, Surface *inSurface)
    {
       context->UpdateSubresource( m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
 
-      UINT stride = sizeof(VertexPositionColor);
+      UINT stride = sizeof(VertexPositionTex);
       UINT offset = 0;
       context->IASetVertexBuffers( 0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
       context->IASetIndexBuffer( m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
@@ -316,6 +253,8 @@ public:
       context->VSSetShader( m_vertexShader.Get(), nullptr, 0);
       context->VSSetConstantBuffers( 0, 1, m_constantBuffer.GetAddressOf());
       context->PSSetShader( m_pixelShader.Get(), nullptr, 0);
+      inSurface->Bind(*dx,0);
+
       context->DrawIndexed( m_indexCount, 0, 0);
    }
 
@@ -353,13 +292,14 @@ public:
    {
       Direct3DBase::Initialize(window);
 
-      mDXContext = HardwareContext::CreateDX11(0);
+      mDXContext = HardwareContext::CreateDX11(m_d3dDevice.Get(), m_d3dContext.Get());
 
       mQuad = new Quad(m_d3dDevice, m_d3dContext);
       mQuad->SetRect(m_orientationTransform3D, mWidth, mHeight);
 
       //mPrimarySurface = new HardwareSurface(mDXContext);
-      mPrimarySurface = new WinRTSurface(m_d3dDevice,m_d3dContext, mWidth,mHeight);
+      //mPrimarySurface = new SimpleSurface(mWidth,mHeight,pfARGB);
+      mPrimarySurface = new SimpleSurface(mWidth,mHeight,pfARGB);
 
       mDXContext->SetWindowSize(mWidth, mHeight);
 
@@ -389,11 +329,12 @@ public:
 
       //nme_resize_id ++;
       mDXContext->DecRef();
-      mDXContext = HardwareContext::CreateDX11(0);
+      mDXContext = HardwareContext::CreateDX11(m_d3dDevice.Get(), m_d3dContext.Get());
       mDXContext->SetWindowSize(inWidth, inHeight);
       mDXContext->IncRef();
       mPrimarySurface->DecRef();
-      mPrimarySurface = new HardwareSurface(mDXContext);
+      //mPrimarySurface = new HardwareSurface(mDXContext);
+      mPrimarySurface = new SimpleSurface(mWidth,mHeight,pfXRGB);
    }
 
     void Update(float timeTotal, float timeDelta)
@@ -424,10 +365,10 @@ public:
       m_depthStencilView.Get()
       );
 
-     if (mQuad && mQuad->valid)
-        mQuad->Render();
-
      RenderStage();
+
+     if (mQuad && mQuad->valid)
+        mQuad->Render(mDXContext, mPrimarySurface);
    }
 
    void SetFullscreen(bool inFullscreen)
@@ -497,7 +438,7 @@ public:
 
    HardwareContext *mDXContext;
    Quad            *mQuad;
-   Surface     *mPrimarySurface;
+   SimpleSurface  *mPrimarySurface;
    double       mFrameRate;
    Cursor       mCurrentCursor;
    bool         mShowCursor;

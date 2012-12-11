@@ -1,11 +1,21 @@
 package nme.installer;
 
 
+import format.display.MovieClip;
+import haxe.Unserializer;
 import nme.display.BitmapData;
 import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
+
+#if swf
+import format.SWF;
+#end
+
+#if xfl
+import format.XFL;
+#end
 
 
 /**
@@ -17,8 +27,11 @@ class Assets {
 
 	
 	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	#if swf private static var cachedSWFLibraries:Hash <SWF> = new Hash <SWF> (); #end
+	#if xfl private static var cachedXFLLibraries:Hash <XFL> = new Hash <XFL> (); #end
 	
 	private static var initialized:Bool = false;
+	private static var libraryTypes:Hash <String> = new Hash <String> ();
 	private static var resourceNames:Hash <String> = new Hash <String> ();
 	private static var resourceTypes:Hash <String> = new Hash <String> ();
 	
@@ -30,6 +43,7 @@ class Assets {
 			::foreach assets::resourceNames.set ("::id::", "::resourceName::");
 			resourceTypes.set ("::id::", "::type::");
 			::end::
+			::foreach libraries::libraryTypes.set ("::name::", "::type::");::end::
 			initialized = true;
 			
 		}
@@ -61,13 +75,58 @@ class Assets {
 				
 			}
 			
+		}  else if (id.indexOf (":") > -1) {
+			
+			var libraryName = id.substr (0, id.indexOf (":"));
+			var symbolName = id.substr (id.indexOf (":") + 1);
+			
+			if (libraryTypes.exists (libraryName)) {
+				
+				#if swf
+				
+				if (libraryTypes.get (libraryName) == "swf") {
+					
+					if (!cachedSWFLibraries.exists (libraryName)) {
+						
+						cachedSWFLibraries.set (libraryName, new SWF (getBytes ("libraries/" + libraryName + ".swf")));
+						
+					}
+					
+					return cachedSWFLibraries.get (libraryName).getBitmapData (symbolName);
+					
+				}
+				
+				#end
+				
+				#if xfl
+				
+				if (libraryTypes.get (libraryName) == "xfl") {
+					
+					if (!cachedXFLLibraries.exists (libraryName)) {
+						
+						cachedXFLLibraries.set (libraryName, Unserializer.run (getText ("libraries/" + libraryName + "/" + libraryName + ".dat")));
+						
+					}
+					
+					return cachedXFLLibraries.get (libraryName).getBitmapData (symbolName);
+					
+				}
+				
+				#end
+				
+			} else {
+				
+				trace ("[nme.Assets] There is no asset library named \"" + libraryName + "\"");
+				
+			}
+			
 		} else {
 			
 			trace ("[nme.Assets] There is no BitmapData asset with an ID of \"" + id + "\"");
 			
-			return null;
-			
 		}
+		
+		return null;
 		
 	}
 	
@@ -106,6 +165,58 @@ class Assets {
 			return null;
 			
 		}
+		
+	}
+	
+	
+	public static function getMovieClip (id:String):MovieClip {
+		
+		initialize ();
+		
+		var libraryName = id.substr (0, id.indexOf (":"));
+		var symbolName = id.substr (id.indexOf (":") + 1);
+		
+		if (libraryTypes.exists (libraryName)) {
+			
+			#if swf
+			
+			if (libraryTypes.get (libraryName) == "swf") {
+				
+				if (!cachedSWFLibraries.exists (libraryName)) {
+					
+					cachedSWFLibraries.set (libraryName, new SWF (getBytes ("libraries/" + libraryName + ".swf")));
+					
+				}
+				
+				return cachedSWFLibraries.get (libraryName).createMovieClip (symbolName);
+				
+			}
+			
+			#end
+			
+			#if xfl
+			
+			if (libraryTypes.get (libraryName) == "xfl") {
+				
+				if (!cachedXFLLibraries.exists (libraryName)) {
+					
+					cachedXFLLibraries.set (libraryName, Unserializer.run (getText ("libraries/" + libraryName + "/" + libraryName + ".dat")));
+					
+				}
+				
+				return cachedXFLLibraries.get (libraryName).createMovieClip (symbolName);
+				
+			}
+			
+			#end
+			
+		} else {
+			
+			trace ("[nme.Assets] There is no asset library named \"" + libraryName + "\"");
+			
+		}
+		
+		return null;
 		
 	}
 	
@@ -158,6 +269,24 @@ class Assets {
 			
 		}
 		
+	}
+	
+	
+	public static function loadBitmapData(id:String, handler:BitmapData -> Void, useCache:Bool = true):BitmapData
+	{
+		return null;
+	}
+	
+	
+	public static function loadBytes(id:String, handler:ByteArray -> Void):ByteArray
+	{	
+		return null;
+	}
+	
+	
+	public static function loadText(id:String, handler:String -> Void):String
+	{
+		return null;
 	}
 	
 	

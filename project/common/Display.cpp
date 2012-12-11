@@ -1227,7 +1227,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
                if (rect.HasPixels())
                {
-                  if (inState.mPhase == rpHitTest)
+                  if (inState.mPhase == rpHitTest && obj->mouseEnabled)
                   {
                      inState.mHitResult = obj;
                      return;
@@ -1248,7 +1248,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj_state->mHitResult)
          {
-            inState.mHitResult = mouseChildren ? obj_state->mHitResult : this;
+            if(mouseChildren && obj_state->mHitResult->mouseEnabled)
+	            inState.mHitResult = obj_state->mHitResult;
+			else if(mouseEnabled)
+	            inState.mHitResult = this;
             return;
          }
       }

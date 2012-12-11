@@ -154,13 +154,12 @@ public:
                point++;
                p = *point;
             case pcLineTo:
-               if (first && prev && *point==unaligned_first)
-                  Align(unaligned_prev,*point,*prev,*first);
-               
-               if (prev)
+               if (first && *point==unaligned_first)
+                  *point = *first;
+               else if (prev)
                   Align(unaligned_prev,*point,*prev,*point);
                break;
-            
+
             case pcCurveTo:
                point++;
                p = *point;
@@ -335,6 +334,7 @@ public:
                   AddJoint(first,prev_perp,first_perp);
                   points = 1;
                }
+
                point++;
                }
                break;

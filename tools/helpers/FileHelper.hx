@@ -1,6 +1,7 @@
 package;
 
 
+import haxe.io.Bytes;
 import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
@@ -12,9 +13,59 @@ import neko.Lib;
 class FileHelper {
 	
 	
+	public static function copyAsset (asset:Asset, destination:String, context:Dynamic = null) {
+		
+		if (asset.sourcePath != "") {
+			
+			copyFile (asset.sourcePath, destination, context);
+			
+		} else {
+			
+			if (Std.is (asset.data, Bytes)) {
+				
+				File.saveBytes (destination, cast asset.data);
+				
+			} else {
+				
+				File.saveContent (destination, Std.string (asset.data));
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	public static function copyAssetIfNewer (asset:Asset, destination:String) {
+		
+		if (asset.sourcePath != "") {
+			
+			if (isNewer (asset.sourcePath, destination)) {
+				
+				copyFile (asset.sourcePath, destination);
+				
+			}
+			
+		} else {
+			
+			if (Std.is (asset.data, Bytes)) {
+				
+				File.saveBytes (destination, cast asset.data);
+				
+			} else {
+				
+				File.saveContent (destination, Std.string (asset.data));
+				
+			}
+			
+		}
+		
+	}
+	
+	
 	public static function copyFile (source:String, destination:String, context:Dynamic = null, process:Bool = true) {
 		
-		var extension:String = Path.extension (source);
+		var extension = Path.extension (source);
 		
 		if (process && context != null && 
             (extension == "xml" ||

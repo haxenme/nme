@@ -72,12 +72,13 @@ class Lib {
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
 
-	function new(title:String, width:Int, height:Int) {
+	function new(rootElement:HTMLDivElement, width:Int, height:Int) {
 		mKilled = false;
 
-		var document : HTMLDocument = cast js.Lib.document;
-		__scr = cast document.getElementById(title);
-		if ( __scr == null ) throw "Element with id '" + title + "' not found";
+		//var document : HTMLDocument = cast js.Lib.document;
+		//__scr = cast document.getElementById(title);
+		__scr = rootElement;
+		if ( __scr == null ) throw "Root element not found";
 		__scr.style.setProperty("overflow", "hidden", "");
 		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
 		if (__scr.style.getPropertyValue("width") != "100%")
@@ -570,7 +571,7 @@ class Lib {
 	}
 
 	static function Run(tgt:HTMLDivElement, width:Int, height:Int) {
-		mMe = new Lib( tgt.id, width, height );
+		mMe = new Lib( tgt, width, height );
 
 		for ( i in 0...tgt.attributes.length) {
 			var attr : Attr = cast tgt.attributes.item(i);
@@ -603,6 +604,45 @@ class Lib {
 		for (type in HTML_WINDOW_EVENT_TYPES) {
 			window.addEventListener(type, jeashGetStage().jeashQueueStageEvent, false);
 		}
+
+		#if interop
+
+		// search document for data-bindings
+		untyped {
+			if (js.Lib.document.querySelectorAll != null) {
+				var parser = new hscript.Parser();
+
+				for (type in HTML_DIV_EVENT_TYPES) {
+					var allElements = document.querySelectorAll("[data-jeash-binding-" + type.toLowerCase() + "]");
+					if (allElements != null) {
+						for (elIdx in 0...allElements.length) {
+							var el = allElements[elIdx];
+							var value = el.getAttribute("data-jeash-binding-" + type);
+
+							var program = try {
+								parser.parseString(value);
+							} catch (e: Dynamic) {
+								Lib.trace("'" + value + "' should be parseable by hscript: " + e);
+							}
+
+							if (program != null) {
+								var interp = new hscript.Interp();
+								interp.variables.set("stage", jeashGetStage());
+								interp.variables.set("Lib", Lib);
+								interp.variables.set("createDOMEvent", function (t, e) return new jeash.events.DOMEvent(t, e));
+
+								el.addEventListener(type, function (e) { 
+										interp.variables.set("event", e);
+										interp.execute(program);
+									});
+							}
+						}
+					}
+				}
+			}
+		} 
+
+		#end
 
 		jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
 			jeashParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 

@@ -10,4 +10,5 @@ struct PixelShaderInput
 float4 main(PixelShaderInput input) : SV_TARGET
 {
    return tex0.Sample(sampleType, input.Texcoord);
+   //return input.Texcoord.xyxy;
 }

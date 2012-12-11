@@ -122,9 +122,10 @@ class WindowsPlatform implements IPlatformTool {
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");
+		PathHelper.mkdir (targetDirectory + "/haxe");
 		PathHelper.mkdir (applicationDirectory);
 		
-		SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
+		//SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
 		
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", targetDirectory + "/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
@@ -147,12 +148,12 @@ class WindowsPlatform implements IPlatformTool {
 			if (asset.type != AssetType.TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (applicationDirectory + "/" + asset.targetPath));
-				FileHelper.copyIfNewer (asset.sourcePath, applicationDirectory + "/" + asset.targetPath);
+				FileHelper.copyAssetIfNewer (asset, applicationDirectory + "/" + asset.targetPath);
 				
 			} else {
 				
 				PathHelper.mkdir (Path.directory (applicationDirectory + "/" + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, applicationDirectory + "/" + asset.targetPath, context);
+				FileHelper.copyAsset (asset, applicationDirectory + "/" + asset.targetPath, context);
 				
 			}
 			

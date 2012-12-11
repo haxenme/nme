@@ -79,7 +79,7 @@ class EventDispatcher implements IEventDispatcher
 		untyped jeashEventMap[type] = list
 
 	private function existList(type:String) 
-		untyped return jeashEventMap[type] != __js__("undefined")
+	untyped return (jeashEventMap != null && jeashEventMap[type] != __js__("undefined"))
 
 	public function addEventListener(type:String, inListener:Dynamic->Void,
 			?useCapture:Bool /*= false*/, ?inPriority:Int /*= 0*/,

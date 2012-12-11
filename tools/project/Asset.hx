@@ -10,6 +10,7 @@ class Asset {
 	public var data:Dynamic;
 	public var embed:Bool;
 	public var flatName:String;
+	public var format:String;
 	public var glyphs:String;
 	public var id:String;
 	//public var path:String;
@@ -38,6 +39,7 @@ class Asset {
 		id = targetPath;
 		resourceName = targetPath;
 		flatName = StringHelper.getFlatName (targetPath);
+		format = Path.extension (path).toLowerCase ();
 		
 		if (type == null) {
 			

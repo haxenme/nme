@@ -579,6 +579,9 @@ class CommandLineTools {
 			
 		}
 		
+		SWFHelper.preprocess (project);
+		XFLHelper.preprocess (project);
+		
 		// Better way to do this?
 		
 		switch (project.target) {

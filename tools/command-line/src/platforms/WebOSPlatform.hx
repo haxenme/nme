@@ -81,7 +81,7 @@ class WebOSPlatform implements IPlatformTool {
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", project.app.path + "/webos/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "webos/hxml", project.app.path + "/webos/haxe", context);
 		
-		SWFHelper.generateSWFClasses (project, project.app.path + "/webos/haxe");
+		//SWFHelper.generateSWFClasses (project, project.app.path + "/webos/haxe");
 		
 		for (ndll in project.ndlls) {
 			
@@ -97,19 +97,19 @@ class WebOSPlatform implements IPlatformTool {
 				
 				if (asset.targetPath == "/appinfo.json") {
 					
-					FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+					FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 					
 				} else {
 					
 					// going to root directory now, but should it be a forced "assets" folder later?
 					
-					FileHelper.copyIfNewer (asset.sourcePath, destination + asset.targetPath);
+					FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
 					
 				}
 				
 			} else {
 				
-				FileHelper.copyFile (asset.sourcePath, destination + asset.targetPath, context);
+				FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 				
 			}
 			

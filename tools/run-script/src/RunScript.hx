@@ -57,7 +57,7 @@ class RunScript {
 			if (target == "tools") {
 				
 				runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-				runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
+				//runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 				
 			} else if (target == "clean") {
 				
@@ -85,7 +85,7 @@ class RunScript {
 				if (target == "all") {
 					
 					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-					runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
+					//runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 					
 					if (isWindows) {
 						

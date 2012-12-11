@@ -122,10 +122,11 @@ class MacPlatform implements IPlatformTool {
 		
 		PathHelper.mkdir (targetDirectory);
 		PathHelper.mkdir (targetDirectory + "/obj");
+		PathHelper.mkdir (targetDirectory + "/haxe");
 		PathHelper.mkdir (applicationDirectory);
 		PathHelper.mkdir (contentDirectory);
 		
-		SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
+		//SWFHelper.generateSWFClasses (project, targetDirectory + "/haxe");
 		
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", targetDirectory + "/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml", targetDirectory + "/haxe", context);
@@ -144,12 +145,12 @@ class MacPlatform implements IPlatformTool {
 			if (asset.type != AssetType.TEMPLATE) {
 				
 				PathHelper.mkdir (Path.directory (contentDirectory + "/" + asset.targetPath));
-				FileHelper.copyIfNewer (asset.sourcePath, contentDirectory + "/" + asset.targetPath);
+				FileHelper.copyAssetIfNewer (asset, contentDirectory + "/" + asset.targetPath);
 				
 			} else {
 				
 				PathHelper.mkdir (Path.directory (targetDirectory + "/" + asset.targetPath));
-				FileHelper.copyFile (asset.sourcePath, targetDirectory + "/" + asset.targetPath, context);
+				FileHelper.copyAsset (asset, targetDirectory + "/" + asset.targetPath, context);
 				
 			}
 			

@@ -2,6 +2,7 @@ package nme;
 #if (!nme_install_tool)
 
 
+import format.display.MovieClip;
 import nme.display.BitmapData;
 import nme.media.Sound;
 import nme.text.Font;
@@ -70,6 +71,18 @@ class Assets
 	
 	
 	/**
+	 * Gets an instance of a library MovieClip
+	 * @usage		var movieClip = Assets.getMovieClip ("library:BouncingBall");
+	 * @param	id		The library and ID for the MovieClip
+	 * @return		A new Sound object
+	 */
+	public static function getMovieClip(id:String):MovieClip
+	{
+		return null;
+	}
+	
+	
+	/**
 	 * Gets an instance of an embedded sound
 	 * @usage		var sound = Assets.getSound ("sound.wav");
 	 * @param	id		The ID or asset path for the sound
@@ -88,6 +101,25 @@ class Assets
 	 * @return		A new String object
 	 */
 	public static function getText(id:String):String
+	{
+		return null;
+	}
+	
+	
+	
+	public static function loadBitmapData(id:String, handler:BitmapData -> Void, useCache:Bool = true):BitmapData
+	{
+		return null;
+	}
+	
+	
+	public static function loadBytes(id:String, handler:ByteArray -> Void):ByteArray
+	{	
+		return null;
+	}
+	
+	
+	public static function loadText(id:String, handler:String -> Void):String
 	{
 		return null;
 	}

@@ -29,25 +29,26 @@ import jeash.Html5Dom;
 
 class TextFormat
 {
-   public var align : TextFormatAlign;
-   public var blockIndent : Float;
-   public var bold : Bool;
-   public var bullet : Bool;
-   public var color : UInt;
-   public var display : String;
    public var font : String;
-   public var indent : Float;
-   public var italic : Bool;
-   public var kerning : Bool;
-   public var leading : Float;
-   public var leftMargin : Float;
-   public var letterSpacing : Float;
-   public var rightMargin : Float;
    public var size : Float;
-   public var tabStops : UInt;
-   public var target : String;
+   public var color : UInt;
+   public var bold : Bool;
+   public var italic : Bool;
    public var underline : Bool;
    public var url : String;
+   public var target : String;
+   public var align : TextFormatAlign;
+   public var leftMargin : Float;
+   public var rightMargin : Float;
+   public var indent : Float;
+   public var leading : Float;
+
+   public var blockIndent : Float;
+   public var bullet : Bool;
+   public var display : String;
+   public var kerning : Bool;
+   public var letterSpacing : Float;
+   public var tabStops : UInt;
 
   public function new(?in_font : String,
                       ?in_size : Float,
@@ -78,6 +79,22 @@ class TextFormat
       leading = in_leading;
    }
 
+   public function clone():TextFormat {
+      var newFormat = new TextFormat(font, size, color, bold, italic, underline, url, target);
+      newFormat.align = align;
+      newFormat.leftMargin = leftMargin;
+      newFormat.rightMargin = rightMargin;
+      newFormat.indent = indent;
+      newFormat.leading = leading;
+
+      newFormat.blockIndent = blockIndent;
+      newFormat.bullet = bullet;
+      newFormat.display = display;
+      newFormat.kerning = kerning;
+      newFormat.letterSpacing = letterSpacing;
+      newFormat.tabStops = tabStops;
+      return newFormat;
+   }
 }
 
 

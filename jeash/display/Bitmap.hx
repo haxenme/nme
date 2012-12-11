@@ -66,7 +66,7 @@ class Bitmap extends jeash.display.DisplayObject
 	}
 
 	override private function jeashGetGraphics() return jeashGraphics
-	
+
 	override function validateBounds() {
 		if (_boundsInvalid) {
 			super.validateBounds();
@@ -84,15 +84,19 @@ class Bitmap extends jeash.display.DisplayObject
 		}
 	}
 
-	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle) {
-		if (!jeashVisible) return;
+	override public function jeashRender(?inMask:HTMLCanvasElement, ?clipRect:Rectangle, ?overrideMatrix:Matrix) {
+		if (!jeashCombinedVisible) return;
+
 		if (bitmapData == null) return;
 
 		if (_matrixInvalid || _matrixChainInvalid)
 			jeashValidateMatrix();
 
 		var imageDataLease = bitmapData.jeashGetLease();
-		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
+		if (imageDataLease != null 
+				&& (jeashCurrentLease == null 
+					|| imageDataLease.seed != jeashCurrentLease.seed 
+					|| imageDataLease.time != jeashCurrentLease.time)) {
 			var srcCanvas = bitmapData.handle();
 			jeashGraphics.jeashSurface.width = srcCanvas.width;
 			jeashGraphics.jeashSurface.height = srcCanvas.height;
@@ -105,15 +109,14 @@ class Bitmap extends jeash.display.DisplayObject
 
 		if (inMask != null) {
 			jeashApplyFilters(jeashGraphics.jeashSurface);
-			var m = getBitmapSurfaceTransform(jeashGraphics);
-			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha, clipRect);
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, overrideMatrix, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha, clipRect);
 		} else {
 			if (jeashTestFlag(DisplayObject.TRANSFORM_INVALID)) {
 				var m = getBitmapSurfaceTransform(jeashGraphics);
 				Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
 				jeashClearFlag(DisplayObject.TRANSFORM_INVALID);
 			}
-			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.jeashCombinedAlpha : 1) * alpha);
 		}
 	}
 

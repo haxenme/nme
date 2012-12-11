@@ -84,6 +84,12 @@ class Reader {
 			
 		}
 		
+		while (nextChunk != "data") {
+			
+			nextChunk = i.readString (4);
+			
+		}
+		
 		//
 		// data
 		//

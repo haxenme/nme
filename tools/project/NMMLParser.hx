@@ -1,6 +1,8 @@
 package;
 
 
+import format.xfl.dom.DOMBitmapItem;
+import format.XFL;
 import haxe.io.Path;
 import haxe.xml.Fast;
 import sys.io.File;
@@ -204,8 +206,6 @@ class NMMLParser extends NMEProject {
 					}
 					
 				}
-				
-				return "";
 				
 			}
 			
@@ -706,12 +706,13 @@ class NMMLParser extends NMEProject {
 						var name = "";
 						
 						if (element.has.path) {
-							
-							name = findIncludeFile (extensionPath + substitute (element.att.path));
+
+							var subPath = substitute (element.att.path);
+							if (subPath == "") subPath = element.att.path;
+							name = findIncludeFile (extensionPath + subPath);
 							
 						} else {
 							
-							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							name = findIncludeFile (extensionPath + substitute (element.att.name));
 							
 						}
@@ -1032,36 +1033,22 @@ class NMMLParser extends NMEProject {
 					
 					case "library", "swf":
 						
-						/*var path = extensionPath + substitute (element.att.path);
-						var targetPath = "libraries/" + Path.withoutDirectory (path);
-						
-						var asset = new Asset (path, targetPath, Asset.TYPE_BINARY, "", "");
-						
-						assets.push (asset);
-						
-						compilerFlags.remove ("-lib swf");
-						compilerFlags.push ("-lib swf");
-						
-						swfLibraries.push (asset);*/
-						
 						var path = extensionPath + substitute (element.att.path);
-						var targetPath = path;
+						var name = "";
 						
-						if (element.has.rename) {
+						if (element.has.name) {
 							
-							targetPath = substitute (element.att.rename);
+							name = element.att.name;
 							
 						}
 						
-						var asset = new Asset (path, targetPath, AssetType.BINARY);
-						assets.push (asset);
+						if (element.has.id) {
+							
+							name = element.att.id;
+							
+						}
 						
-						haxeflags.remove ("-lib swf");
-						haxeflags.push ("-lib swf");
-						
-						libraries.push (asset);
-						
-						//libraries.push (extensionPath + substitute (element.att.path));
+						libraries.push (new Library (path, name));
 					
 					case "ssl":
 						
