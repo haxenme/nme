@@ -102,6 +102,10 @@ class PhantomSuiteRunner {
 	public static function intTestPage(page: WebPage, expected: Int) {
 		Assert.equals(expected, page.evaluate(function () return untyped window.phantomTestResult));
 	}
+	public static function arrayTest(expected: Array<Dynamic>) return function (page) arrayTestPage(page, expected)
+	public static function arrayTestPage(page: WebPage, expected: Array<Dynamic>) {
+		Assert.same(expected, page.evaluate(function () return untyped window.phantomTestResult));
+	}
 	public static function imageTest(imageFileName: String) return function (page) imageTestPage(page, imageFileName)
 	public static function imageTestPage(page: WebPage, imageFileName: String) {
 #if js
@@ -119,11 +123,19 @@ class PhantomSuiteRunner {
 #end
 	}
 
-	public static function sendEvent(eventType: String, coords: Array<Int>) return function (page) sendEventPage(page, eventType, coords)
-	public static function sendEventPage(page: WebPage, eventType: String, coords: Array<Int>) {
+	public static function sendMouseEvent(eventType: String, coords: Array<Int>) return function (page) sendMouseEventPage(page, eventType, coords)
+	public static function sendMouseEventPage(page: WebPage, eventType: String, coords: Array<Int>) {
 		trace("sending event " + eventType + " to page at x,y = " + coords);
 #if js
 		page.sendEvent(eventType, coords[0], coords[1]);
+#end
+	}
+
+	public static function sendKeyboardEvent(eventType: String, keys: Array<Int>) return function (page) sendKeyboardEventPage(page, eventType, keys)
+	public static function sendKeyboardEventPage(page: WebPage, eventType: String, keys: Array<Int>) {
+		trace("sending event " + eventType + " to page with keys = " + keys);
+#if js
+		keys.map(function (key) page.sendEvent(eventType, key));
 #end
 	}
 
@@ -164,7 +176,11 @@ class PhantomSuiteRunner {
 		if (spec.events != null) {
 			spec.events.map(function (s) 
 				if (s.eventType != null && Std.is(s.coords, Array)) {
-					block.push("PhantomSuiteRunner.sendEvent".resolve().call([s.eventType.toExpr(), s.coords.toExpr()]));
+					if (s.eventType.startsWith("key")) {
+						block.push("PhantomSuiteRunner.sendKeyboardEvent".resolve().call([s.eventType.toExpr(), s.coords.toExpr()]));
+					} else {
+						block.push("PhantomSuiteRunner.sendMouseEvent".resolve().call([s.eventType.toExpr(), s.coords.toExpr()]));
+					}
 				} else {
 					Context.error(s + " should have attribute 'eventType' and array 'coords'", p);
 				}
@@ -181,6 +197,10 @@ class PhantomSuiteRunner {
 			case "INT":
 				var expected = spec.assrt;
 				"PhantomSuiteRunner.intTest".resolve().call([expected.toExpr()]);
+
+			case "ARRAY":
+				var expected = spec.assrt;
+				"PhantomSuiteRunner.arrayTest".resolve().call([expected.toExpr()]);
 
 			case "IMAGE":
 				var img = (basename + ".png");

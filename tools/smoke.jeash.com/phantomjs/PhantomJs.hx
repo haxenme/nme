@@ -12,6 +12,7 @@ extern class WebPage {
 	function release():Void;
 	function render(fileName:String):Void;
 	function renderBase64(format:String):String;
+	@:overload (function (type:String, key:Int):Void {})
 	function sendEvent(type:String, x:Int, y:Int):Void;
 	function uploadFile(selector:String, fileName:String):Void;
 	dynamic function onAlert(msg:String):Void;
