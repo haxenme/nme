@@ -124,6 +124,10 @@ class BitmapData implements IBitmapDrawable {
 	private var _jeashTextureBuffer:HTMLCanvasElement;
 	private var jeashTransparent:Bool;
 
+	public var transparent(jeashGetTransparent, null):Bool;
+
+	function jeashGetTransparent() {return jeashTransparent;}
+
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
 	public var rect:Rectangle;
@@ -171,8 +175,20 @@ class BitmapData implements IBitmapDrawable {
 
 	}
 
+	public function floodFill(x:Int, y:Int, color:Int):Void
+	{
+		trace("BitmapData.floodFill not implemented in Jeash");
+	}
+
+	public function threshold(sourceBitmapData : BitmapData, sourceRect : flash.geom.Rectangle, destPoint : flash.geom.Point, operation : String, threshold : Int, color : Int = 0, mask : UInt = 0xFFFFFFFF, copySource : Bool = false) : Int
+	{
+		trace("BitmapData.threshold not implemented in Jeash");
+		return 0;
+	}
+
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter) {
-		throw "BitmapData.applyFilter not implemented in Jeash";
+		//throw "BitmapData.applyFilter not implemented in Jeash";
+		trace("BitmapData.applyFilter not implemented in Jeash");
 	}
 
 	public function draw(source:IBitmapDrawable,

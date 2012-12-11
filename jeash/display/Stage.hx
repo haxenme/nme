@@ -292,42 +292,26 @@ class Stage extends DisplayObjectContainer
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.DOUBLE_CLICK);
 
 			case "keydown":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keydown error: " + e);
-						#end
-						evt.keyCode;
-					}
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+				var evt:KeyboardEvent = cast evt;
+
+				var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
+				keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, true,
-						evt.keyLocation,
+						evt.charCode,
 						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
+						evt.shiftKey, evt.keyLocation );
 
 			case "keyup":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keyup error: " + e);
-						#end
-						evt.keyCode;
-					}
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+				var evt:KeyboardEvent = cast evt;
+
+				var keyCode = evt.keyCode != null ? evt.keyCode : evt.which;
+				keyCode = Keyboard.jeashConvertMozillaCode(keyCode);
 
 				jeashOnKey( keyCode, false,
-						evt.keyLocation,
+						evt.charCode,
 						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
+						evt.shiftKey, evt.keyLocation );
 					
 			case "touchstart":
 				var evt:TouchEvent = cast evt;
@@ -454,7 +438,7 @@ class Stage extends DisplayObjectContainer
 	}
 
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
-			ctrl:Bool, alt:Bool, shift:Bool )
+			ctrl:Bool, alt:Bool, shift:Bool, keyLocation:Int )
 	{
 		var event = new jeash.events.KeyboardEvent(
 				pressed ? jeash.events.KeyboardEvent.KEY_DOWN:
@@ -462,7 +446,7 @@ class Stage extends DisplayObjectContainer
 				true,false,
 				inChar,
 				code,
-				(shift || ctrl) ? 1 : 0, // TODO
+				keyLocation,
 				ctrl,alt,shift);
 
 		dispatchEvent(event);
