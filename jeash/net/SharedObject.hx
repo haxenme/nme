@@ -63,9 +63,7 @@ class SharedObject extends EventDispatcher {
 
 	static function jeashGetLocalStorage ():Storage {
 		var res = Storage.getLocal();
-		#if debug
-		if (res == null) throw "SharedObject not supported";
-		#end
+		if (res == null) throw new jeash.errors.Error("SharedObject not supported");
 		return res;
 	}
 
