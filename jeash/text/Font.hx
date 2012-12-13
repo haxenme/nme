@@ -95,7 +95,7 @@ class Font
 			className.split(".").pop();
 	}
 
-	public function hasGlyph() { return false; }
+	public function hasGlyph(str : String) { return jeashGlyphData.exists(str.charCodeAt(0)); }
 
 	public function jeashSetScale(scale:Float)
 	{
