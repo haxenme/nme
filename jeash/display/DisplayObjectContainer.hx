@@ -330,7 +330,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (!visible) return null;
 		var l = jeashChildren.length-1;
 		for (i in 0...jeashChildren.length) {
-			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
+			var result = if (mouseEnabled) jeashChildren[l-i].jeashGetObjectUnderPoint(point); else null;
 			if (result != null)
 				return mouseChildren ? result : this;
 		}
