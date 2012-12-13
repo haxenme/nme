@@ -50,7 +50,7 @@ class ByteArray
 	public var objectEncoding : Int;
 
 	public var position : Int;
-	public var length : Int;
+	public var length(default, jeash_setLength) : Int;
 	private var allocated : Int = 0;
 
 	public function new():Void {
@@ -65,6 +65,14 @@ class ByteArray
 		_jeashResizeBuffer(allocated);
 		//this.byteView = untyped __new__("Uint8Array", allocated);
 		//this.data = untyped __new__("DataView", this.byteView.buffer);
+	}
+
+	private function jeash_setLength(value:Int):Int
+	{
+		_jeashResizeBuffer(value);
+		length = value;
+		allocated = value;
+		return value;
 	}
 
 	private function _jeashResizeBuffer(len:Int) {
@@ -101,11 +109,11 @@ class ByteArray
 	}
 	
 	private function ensureWrite(lengthToEnsure:Int, updateLength:Bool= true):Void {
-		if (lengthToEnsure > allocated) {
-			_jeashResizeBuffer(Std.int(Math.max(lengthToEnsure, allocated * 2)));
-		}
 		if (updateLength) {
 			if (this.length < lengthToEnsure) this.length = lengthToEnsure;
+		}
+		else if (lengthToEnsure > allocated) {
+			_jeashResizeBuffer(Std.int(Math.max(lengthToEnsure, allocated * 2)));
 		}
 	}
 
