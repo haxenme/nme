@@ -1,10 +1,10 @@
 package jeash.errors;
 
 
-class ArgumentError extends Error
+class IllegalOperationError extends Error
 {
 	public function new(inMessage:String = "")
 	{
-		super(inMessage);
+		super(inMessage, 0);
 	}
 }
