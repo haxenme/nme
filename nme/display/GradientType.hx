@@ -23,7 +23,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef GradientType = neash.display.GradientType;
+typedef GradientType = native.display.GradientType;
 #elseif js
 typedef GradientType = jeash.display.GradientType;
 #else

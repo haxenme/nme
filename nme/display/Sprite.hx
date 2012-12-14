@@ -189,7 +189,7 @@ extern class Sprite extends DisplayObjectContainer {
 
 
 #elseif (cpp || neko)
-typedef Sprite = neash.display.Sprite;
+typedef Sprite = native.display.Sprite;
 #elseif js
 typedef Sprite = jeash.display.Sprite;
 #else

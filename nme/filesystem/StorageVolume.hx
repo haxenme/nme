@@ -80,5 +80,5 @@ extern class StorageVolume
 
 
 #elseif (cpp || neko)
-typedef StorageVolume = neash.filesystem.StorageVolume;
+typedef StorageVolume = native.filesystem.StorageVolume;
 #end

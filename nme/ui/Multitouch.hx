@@ -104,7 +104,7 @@ package nme.ui;
 
 
 #elseif (cpp || neko)
-typedef Multitouch = neash.ui.Multitouch;
+typedef Multitouch = native.ui.Multitouch;
 #elseif js
 typedef Multitouch = jeash.ui.Multitouch;
 #else

@@ -36,5 +36,5 @@ extern class NMEFont
 
 
 #elseif (cpp || neko)
-typedef NMEFont = neash.text.NMEFont;
+typedef NMEFont = native.text.NMEFont;
 #end

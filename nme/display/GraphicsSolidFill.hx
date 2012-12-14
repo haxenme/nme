@@ -38,7 +38,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef GraphicsSolidFill = neash.display.GraphicsSolidFill;
+typedef GraphicsSolidFill = native.display.GraphicsSolidFill;
 #elseif js
 typedef GraphicsSolidFill = jeash.display.GraphicsSolidFill;
 #else

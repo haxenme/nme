@@ -956,7 +956,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 
 
 #elseif (cpp || neko)
-typedef DisplayObject = neash.display.DisplayObject;
+typedef DisplayObject = native.display.DisplayObject;
 #elseif js
 typedef DisplayObject = jeash.display.DisplayObject;
 #else

@@ -7,7 +7,7 @@ extern interface IBitmapDrawable {
 
 
 #elseif (cpp || neko)
-typedef IBitmapDrawable = neash.display.IBitmapDrawable;
+typedef IBitmapDrawable = native.display.IBitmapDrawable;
 #elseif js
 typedef IBitmapDrawable = jeash.display.IBitmapDrawable;
 #else

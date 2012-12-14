@@ -32,7 +32,7 @@ extern class Shape extends DisplayObject {
 
 
 #elseif (cpp || neko)
-typedef Shape = neash.display.Shape;
+typedef Shape = native.display.Shape;
 #elseif js
 typedef Shape = jeash.display.Shape;
 #else

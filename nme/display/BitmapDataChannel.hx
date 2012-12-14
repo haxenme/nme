@@ -48,7 +48,7 @@ extern class BitmapDataChannel {
 
 
 #elseif (cpp || neko)
-typedef BitmapDataChannel = neash.display.BitmapDataChannel;
+typedef BitmapDataChannel = native.display.BitmapDataChannel;
 #elseif js
 typedef BitmapDataChannel = jeash.display.BitmapDataChannel;
 #else

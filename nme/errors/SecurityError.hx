@@ -7,7 +7,7 @@ package nme.errors;
 
 
 #elseif (cpp || neko)
-typedef SecurityError = neash.errors.SecurityError;
+typedef SecurityError = native.errors.SecurityError;
 #elseif js
 typedef SecurityError = jeash.errors.SecurityError;
 #else

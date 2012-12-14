@@ -22,7 +22,7 @@ extern class Memory
 
 
 #elseif (cpp || neko)
-typedef Memory = neash.Memory;
+typedef Memory = native.Memory;
 #elseif (js)
 typedef Memory = jeash.Memory;
 #else

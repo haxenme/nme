@@ -7,7 +7,7 @@ extern interface IGraphicsData {
 
 
 #elseif (cpp || neko)
-typedef IGraphicsData = neash.display.IGraphicsData;
+typedef IGraphicsData = native.display.IGraphicsData;
 #elseif js
 typedef IGraphicsData = jeash.display.IGraphicsData;
 #else

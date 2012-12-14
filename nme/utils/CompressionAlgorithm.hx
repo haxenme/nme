@@ -28,7 +28,7 @@ package nme.utils;
 
 
 #elseif (cpp || neko)
-typedef CompressionAlgorithm = neash.utils.CompressionAlgorithm;
+typedef CompressionAlgorithm = native.utils.CompressionAlgorithm;
 #elseif js
 typedef CompressionAlgorithm = jeash.utils.CompressionAlgorithm;
 #else

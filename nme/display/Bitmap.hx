@@ -77,7 +77,7 @@ extern class Bitmap extends DisplayObject {
 
 
 #elseif (cpp || neko)
-typedef Bitmap = neash.display.Bitmap;
+typedef Bitmap = native.display.Bitmap;
 #elseif js
 typedef Bitmap = jeash.display.Bitmap;
 #else

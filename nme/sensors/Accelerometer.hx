@@ -93,7 +93,7 @@ package nme.sensors;
 
 
 #elseif (cpp || neko)
-typedef Accelerometer = neash.sensors.Accelerometer;
+typedef Accelerometer = native.sensors.Accelerometer;
 #elseif js
 typedef Accelerometer = jeash.sensors.Accelerometer;
 #else

@@ -361,7 +361,7 @@ extern class Capabilities {
 
 
 #elseif (cpp || neko)
-typedef Capabilities = neash.system.Capabilities;
+typedef Capabilities = native.system.Capabilities;
 #elseif js
 typedef Capabilities = jeash.system.Capabilities;
 #else

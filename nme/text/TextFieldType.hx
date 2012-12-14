@@ -21,7 +21,7 @@ package nme.text;
 
 
 #elseif (cpp || neko)
-typedef TextFieldType = neash.text.TextFieldType;
+typedef TextFieldType = native.text.TextFieldType;
 #elseif js
 typedef TextFieldType = jeash.text.TextFieldType;
 #else

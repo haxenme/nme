@@ -158,7 +158,7 @@ package nme.filters;
 
 
 #elseif (cpp || neko)
-typedef GlowFilter = neash.filters.GlowFilter;
+typedef GlowFilter = native.filters.GlowFilter;
 #elseif js
 typedef GlowFilter = jeash.filters.GlowFilter;
 #else

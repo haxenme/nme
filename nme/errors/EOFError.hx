@@ -20,7 +20,7 @@ extern class EOFError/* extends IOError*/ {
 
 
 #elseif (cpp || neko)
-typedef EOFError = neash.errors.EOFError;
+typedef EOFError = native.errors.EOFError;
 #elseif js
 typedef EOFError = jeash.errors.EOFError;
 #else

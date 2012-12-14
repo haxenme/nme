@@ -23,7 +23,7 @@ package nme.utils;
 
 
 #elseif (cpp || neko)
-typedef Endian = neash.utils.Endian;
+typedef Endian = native.utils.Endian;
 #elseif js
 typedef Endian = jeash.utils.Endian;
 #else

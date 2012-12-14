@@ -58,7 +58,7 @@ package nme.media;
 
 
 #elseif (cpp || neko)
-typedef SoundChannel = neash.media.SoundChannel;
+typedef SoundChannel = native.media.SoundChannel;
 #elseif js
 typedef SoundChannel = jeash.media.SoundChannel;
 #else

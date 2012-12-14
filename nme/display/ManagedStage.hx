@@ -44,5 +44,5 @@ extern class ManagedStage extends Stage
 
 
 #elseif (cpp || neko)
-typedef ManagedStage = neash.display.ManagedStage;
+typedef ManagedStage = native.display.ManagedStage;
 #end

@@ -133,7 +133,7 @@ package nme.geom;
 
 
 #elseif (cpp || neko)
-typedef Matrix3D = neash.geom.Matrix3D;
+typedef Matrix3D = native.geom.Matrix3D;
 #elseif js
 typedef Matrix3D = jeash.geom.Matrix3D;
 #else

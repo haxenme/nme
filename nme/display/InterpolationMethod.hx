@@ -42,7 +42,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef InterpolationMethod = neash.display.InterpolationMethod;
+typedef InterpolationMethod = native.display.InterpolationMethod;
 #elseif js
 typedef InterpolationMethod = jeash.display.InterpolationMethod;
 #else

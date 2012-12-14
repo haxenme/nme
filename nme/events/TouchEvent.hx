@@ -248,7 +248,7 @@ package nme.events;
 
 
 #elseif (cpp || neko)
-typedef TouchEvent = neash.events.TouchEvent;
+typedef TouchEvent = native.events.TouchEvent;
 #elseif js
 typedef TouchEvent = jeash.events.TouchEvent;
 #else

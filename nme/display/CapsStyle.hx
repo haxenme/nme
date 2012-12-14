@@ -32,7 +32,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef CapsStyle = neash.display.CapsStyle;
+typedef CapsStyle = native.display.CapsStyle;
 #elseif js
 typedef CapsStyle = jeash.display.CapsStyle;
 #else

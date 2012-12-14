@@ -64,7 +64,7 @@ extern class Font {
 
 
 #elseif (cpp || neko)
-typedef Font = neash.text.Font;
+typedef Font = native.text.Font;
 #elseif js
 typedef Font = jeash.text.Font;
 #else

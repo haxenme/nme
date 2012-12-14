@@ -21,7 +21,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef GraphicsPathCommand = neash.display.GraphicsPathCommand;
+typedef GraphicsPathCommand = native.display.GraphicsPathCommand;
 #elseif js
 typedef GraphicsPathCommand = jeash.display.GraphicsPathCommand;
 #else

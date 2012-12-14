@@ -10,7 +10,7 @@ typedef Acceleration =
 }
 
 #elseif (cpp || neko)
-typedef Acceleration = neash.ui.Acceleration;
+typedef Acceleration = native.ui.Acceleration;
 #elseif js
 typedef Acceleration = jeash.ui.Acceleration;
 #end

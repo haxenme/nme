@@ -20,7 +20,7 @@ extern class GraphicsEndFill implements IGraphicsData/*, implements IGraphicsFil
 
 
 #elseif (cpp || neko)
-typedef GraphicsEndFill = neash.display.GraphicsEndFill;
+typedef GraphicsEndFill = native.display.GraphicsEndFill;
 #elseif js
 typedef GraphicsEndFill = jeash.display.GraphicsEndFill;
 #else

@@ -7,7 +7,7 @@ package nme.errors;
 
 
 #elseif (cpp || neko)
-typedef ArgumentError = neash.errors.ArgumentError;
+typedef ArgumentError = native.errors.ArgumentError;
 #elseif js
 typedef ArgumentError = jeash.errors.ArgumentError;
 #else

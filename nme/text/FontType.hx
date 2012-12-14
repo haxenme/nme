@@ -49,7 +49,7 @@ package nme.text;
 
 
 #elseif (cpp || neko)
-typedef FontType = neash.text.FontType;
+typedef FontType = native.text.FontType;
 #elseif js
 typedef FontType = jeash.text.FontType;
 #else

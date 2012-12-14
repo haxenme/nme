@@ -8,7 +8,7 @@ extern class Accelerometer
 }
 
 #elseif (cpp || neko)
-typedef Accelerometer = neash.ui.Accelerometer;
+typedef Accelerometer = native.ui.Accelerometer;
 #elseif js
 typedef Accelerometer = jeash.ui.Accelerometer;
 #end

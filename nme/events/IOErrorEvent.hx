@@ -52,7 +52,7 @@ extern class IOErrorEvent extends ErrorEvent {
 
 
 #elseif (cpp || neko)
-typedef IOErrorEvent = neash.events.IOErrorEvent;
+typedef IOErrorEvent = native.events.IOErrorEvent;
 #elseif js
 typedef IOErrorEvent = jeash.events.IOErrorEvent;
 #else

@@ -36,7 +36,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef StageQuality = neash.display.StageQuality;
+typedef StageQuality = native.display.StageQuality;
 #elseif js
 typedef StageQuality = jeash.display.StageQuality;
 #else

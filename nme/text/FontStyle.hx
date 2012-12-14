@@ -38,7 +38,7 @@ package nme.text;
 
 
 #elseif (cpp || neko)
-typedef FontStyle = neash.text.FontStyle;
+typedef FontStyle = native.text.FontStyle;
 #elseif js
 typedef FontStyle = jeash.text.FontStyle;
 #else

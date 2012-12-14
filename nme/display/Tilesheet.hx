@@ -185,7 +185,7 @@ class Tilesheet
 	 * 
 	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
 	 * 
-	 * @param	graphics		The neash.display.Graphics object to use for drawing
+	 * @param	graphics		The native.display.Graphics object to use for drawing
 	 * @param	tileData		An array of all position, ID and optional values for use in drawing
 	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
 	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
@@ -401,7 +401,7 @@ class Tilesheet
 
 
 #elseif (cpp || neko)
-typedef Tilesheet = neash.display.Tilesheet;
+typedef Tilesheet = native.display.Tilesheet;
 #elseif js
 typedef Tilesheet = jeash.display.Tilesheet;
 #end

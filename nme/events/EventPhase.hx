@@ -14,7 +14,7 @@ package nme.events;
 
 
 #elseif (cpp || neko)
-typedef EventPhase = neash.events.EventPhase;
+typedef EventPhase = native.events.EventPhase;
 #elseif js
 typedef EventPhase = jeash.events.EventPhase;
 #else

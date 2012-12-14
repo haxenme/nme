@@ -44,7 +44,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef TriangleCulling = neash.display.TriangleCulling;
+typedef TriangleCulling = native.display.TriangleCulling;
 #elseif js
 typedef TriangleCulling = jeash.display.TriangleCulling;
 #else

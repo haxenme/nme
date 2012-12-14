@@ -157,7 +157,7 @@ extern class Transform {
 
 
 #elseif (cpp || neko)
-typedef Transform = neash.geom.Transform;
+typedef Transform = native.geom.Transform;
 #elseif js
 typedef Transform = jeash.geom.Transform;
 #else

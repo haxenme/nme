@@ -51,7 +51,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef StageAlign = neash.display.StageAlign;
+typedef StageAlign = native.display.StageAlign;
 #elseif js
 typedef StageAlign = jeash.display.StageAlign;
 #else

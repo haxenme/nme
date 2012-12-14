@@ -2,15 +2,15 @@ package ;
 
 import nme.display.Sprite;
 import nme.RGB;
-import neash.display.OpenGLView;
-import neash.display.BitmapData;
-import neash.gl.GL;
-import neash.utils.Float32Array;
-import neash.utils.ArrayBuffer;
-import neash.utils.ArrayBufferView;
-import neash.geom.Matrix3D;
-import neash.geom.Vector3D;
-import neash.geom.Rectangle;
+import native.display.OpenGLView;
+import native.display.BitmapData;
+import native.gl.GL;
+import native.utils.Float32Array;
+import native.utils.ArrayBuffer;
+import native.utils.ArrayBufferView;
+import native.geom.Matrix3D;
+import native.geom.Vector3D;
+import native.geom.Rectangle;
 
 class Utils
 {
@@ -295,7 +295,7 @@ class Main extends Sprite
 
       //trace(GL.getSupportedExtensions());
 
-      var ogl = new neash.display.OpenGLView();
+      var ogl = new native.display.OpenGLView();
       ogl.scrollRect = new nme.geom.Rectangle(0,0,400,300);
       ogl.x = 60;
       ogl.y = 70;

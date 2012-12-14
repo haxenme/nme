@@ -919,7 +919,7 @@ extern class TextField extends nme.display.InteractiveObject {
 
 
 #elseif (cpp || neko)
-typedef TextField = neash.text.TextField;
+typedef TextField = native.text.TextField;
 #elseif js
 typedef TextField = jeash.text.TextField;
 #else

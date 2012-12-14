@@ -36,7 +36,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef PixelSnapping = neash.display.PixelSnapping;
+typedef PixelSnapping = native.display.PixelSnapping;
 #elseif js
 typedef PixelSnapping = jeash.display.PixelSnapping;
 #else

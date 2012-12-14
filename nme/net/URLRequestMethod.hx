@@ -47,7 +47,7 @@ extern class URLRequestMethod {
 
 
 #elseif (cpp || neko)
-typedef URLRequestMethod = neash.net.URLRequestMethod;
+typedef URLRequestMethod = native.net.URLRequestMethod;
 #elseif js
 typedef URLRequestMethod = jeash.net.URLRequestMethod;
 #else

@@ -56,7 +56,7 @@ extern class SecurityErrorEvent extends ErrorEvent {
 
 
 #elseif (cpp || neko)
-typedef SecurityErrorEvent = neash.events.SecurityErrorEvent;
+typedef SecurityErrorEvent = native.events.SecurityErrorEvent;
 #elseif js
 typedef SecurityErrorEvent = jeash.events.SecurityErrorEvent;
 #else

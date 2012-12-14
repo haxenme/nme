@@ -175,7 +175,7 @@ package nme.filters;
 
 
 #elseif (cpp || neko)
-typedef DropShadowFilter = neash.filters.DropShadowFilter;
+typedef DropShadowFilter = native.filters.DropShadowFilter;
 #elseif js
 typedef DropShadowFilter = jeash.filters.DropShadowFilter;
 #else

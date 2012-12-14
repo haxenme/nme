@@ -7,7 +7,7 @@ package nme.errors;
 
 
 #elseif (cpp || neko)
-typedef RangeError = neash.errors.RangeError;
+typedef RangeError = native.errors.RangeError;
 #elseif js
 typedef RangeError = jeash.errors.RangeError;
 #else

@@ -353,7 +353,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 
 
 #elseif (cpp || neko)
-typedef DisplayObjectContainer = neash.display.DisplayObjectContainer;
+typedef DisplayObjectContainer = native.display.DisplayObjectContainer;
 #elseif js
 typedef DisplayObjectContainer = jeash.display.DisplayObjectContainer;
 #else

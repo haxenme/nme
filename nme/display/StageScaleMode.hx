@@ -15,7 +15,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef StageScaleMode = neash.display.StageScaleMode;
+typedef StageScaleMode = native.display.StageScaleMode;
 #elseif js
 typedef StageScaleMode = jeash.display.StageScaleMode;
 #else

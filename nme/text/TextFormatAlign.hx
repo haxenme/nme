@@ -35,7 +35,7 @@ package nme.text;
 
 
 #elseif (cpp || neko)
-typedef TextFormatAlign = neash.text.TextFormatAlign;
+typedef TextFormatAlign = native.text.TextFormatAlign;
 #elseif js
 typedef TextFormatAlign = jeash.text.TextFormatAlign;
 #else

@@ -707,7 +707,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef Graphics = neash.display.Graphics;
+typedef Graphics = native.display.Graphics;
 #elseif js
 typedef Graphics = jeash.display.Graphics;
 #else

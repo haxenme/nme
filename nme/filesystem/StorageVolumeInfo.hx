@@ -74,5 +74,5 @@ extern class StorageVolumeInfo extends nme.events.EventDispatcher
 
 
 #elseif (cpp || neko)
-typedef StorageVolumeInfo = neash.filesystem.StorageVolumeInfo;
+typedef StorageVolumeInfo = native.filesystem.StorageVolumeInfo;
 #end

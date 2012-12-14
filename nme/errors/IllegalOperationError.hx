@@ -36,7 +36,7 @@ extern class IllegalOperationError extends Error {
 
 
 #elseif (cpp || neko)
-typedef IllegalOperationError = neash.errors.IllegalOperationError;
+typedef IllegalOperationError = native.errors.IllegalOperationError;
 #elseif js
 typedef IllegalOperationError = jeash.errors.IllegalOperationError;
 #else

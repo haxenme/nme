@@ -143,7 +143,7 @@ extern class KeyboardEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef KeyboardEvent = neash.events.KeyboardEvent;
+typedef KeyboardEvent = native.events.KeyboardEvent;
 #elseif js
 typedef KeyboardEvent = jeash.events.KeyboardEvent;
 #else

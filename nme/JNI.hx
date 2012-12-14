@@ -27,5 +27,5 @@ extern class JNI
 
 
 #elseif android
-typedef JNI = neash.JNI;
+typedef JNI = native.JNI;
 #end

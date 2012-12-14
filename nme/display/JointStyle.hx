@@ -33,7 +33,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef JointStyle = neash.display.JointStyle;
+typedef JointStyle = native.display.JointStyle;
 #elseif js
 typedef JointStyle = jeash.display.JointStyle;
 #else

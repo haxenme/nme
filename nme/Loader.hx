@@ -11,5 +11,5 @@ extern class Loader
 
 
 #elseif (cpp || neko)
-typedef Loader = neash.Loader;
+typedef Loader = native.Loader;
 #end

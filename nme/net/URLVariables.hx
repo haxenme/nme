@@ -46,7 +46,7 @@ extern class URLVariables implements Dynamic {
 
 
 #elseif (cpp || neko)
-typedef URLVariables = neash.net.URLVariables;
+typedef URLVariables = native.net.URLVariables;
 #elseif js
 typedef URLVariables = jeash.net.URLVariables;
 #else

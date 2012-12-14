@@ -30,7 +30,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef SpreadMethod = neash.display.SpreadMethod;
+typedef SpreadMethod = native.display.SpreadMethod;
 #elseif js
 typedef SpreadMethod = jeash.display.SpreadMethod;
 #else

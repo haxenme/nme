@@ -12,7 +12,7 @@ extern interface IEventDispatcher {
 
 
 #elseif (cpp || neko)
-typedef IEventDispatcher = neash.events.IEventDispatcher;
+typedef IEventDispatcher = native.events.IEventDispatcher;
 #elseif js
 typedef IEventDispatcher = jeash.events.IEventDispatcher;
 #else

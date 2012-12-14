@@ -155,7 +155,7 @@ extern class SoundLoaderContext {
 
 
 #elseif (cpp || neko)
-typedef SoundLoaderContext = neash.media.SoundLoaderContext;
+typedef SoundLoaderContext = native.media.SoundLoaderContext;
 #elseif js
 typedef SoundLoaderContext = jeash.media.SoundLoaderContext;
 #else

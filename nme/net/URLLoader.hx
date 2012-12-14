@@ -255,7 +255,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 
 
 #elseif (cpp || neko)
-typedef URLLoader = neash.net.URLLoader;
+typedef URLLoader = native.net.URLLoader;
 #elseif js
 typedef URLLoader = jeash.net.URLLoader;
 #else

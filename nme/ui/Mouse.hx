@@ -90,7 +90,7 @@ extern class Mouse {
 
 
 #elseif (cpp || neko)
-typedef Mouse = neash.ui.Mouse;
+typedef Mouse = native.ui.Mouse;
 #elseif js
 typedef Mouse = jeash.ui.Mouse;
 #else

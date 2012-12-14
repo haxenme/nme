@@ -615,7 +615,7 @@ extern class Event {
 
 
 #elseif (cpp || neko)
-typedef Event = neash.events.Event;
+typedef Event = native.events.Event;
 #elseif js
 typedef Event = jeash.events.Event;
 #else

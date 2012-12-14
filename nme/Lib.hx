@@ -22,14 +22,14 @@ class Lib
 	public static var DEPTH_BUFFER = 0x0200;
 	public static var STENCIL_BUFFER = 0x0400;
 	
-	public static var company(nmeGetCompany, null):String;
-	public static var current (nmeGetCurrent, null):MovieClip;
-	public static var file(nmeGetFile, null):String;
-	public static var initHeight(nmeGetInitHeight, null):Int;
-	public static var initWidth(nmeGetInitWidth, null):Int;
-	public static var packageName(nmeGetPackageName, null):String;
-	public static var stage(nmeGetStage, null):Stage;
-	public static var version(nmeGetVersion, null):String;
+	public static var company(get_company, null):String;
+	public static var current (get_current, null):MovieClip;
+	public static var file(get_file, null):String;
+	public static var initHeight(get_initHeight, null):Int;
+	public static var initWidth(get_initWidth, null):Int;
+	public static var packageName(get_packageName, null):String;
+	public static var stage(get_stage, null):Stage;
+	public static var version(get_version, null):String;
 	
 	
 	/**
@@ -40,7 +40,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.close();
+		native.Lib.close();
 		#end
 	}
 	
@@ -63,7 +63,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon);
+		native.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon);
 		#end
 	}
 	
@@ -79,7 +79,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.createManagedStage(width, height);
+		return native.Lib.createManagedStage(width, height);
 		#end
 		return null;
 	}
@@ -95,7 +95,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.exit();
+		native.Lib.exit();
 		#end
 	}
 	
@@ -109,7 +109,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.forceClose();
+		native.Lib.forceClose();
 		#end
 	}
 	
@@ -128,7 +128,7 @@ class Lib
 		#if display
 		return 0;
 		#elseif (cpp || neko)
-		return neash.Lib.getTimer();
+		return native.Lib.getTimer();
 		#elseif js
 		return jeash.Lib.getTimer();
 		#else
@@ -146,7 +146,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.getURL(url, target);
+		native.Lib.getURL(url, target);
 		#elseif js
 		jeash.Lib.getURL(url, target);
 		#else
@@ -165,7 +165,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.pause();
+		native.Lib.pause();
 		#end
 	}
 	
@@ -183,7 +183,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.postUICallback(handler);
+		native.Lib.postUICallback(handler);
 		#else
 		handler();
 		#end
@@ -200,7 +200,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.resume();
+		native.Lib.resume();
 		#end
 	}
 	
@@ -219,7 +219,7 @@ class Lib
 	{
 		#if display
 		#elseif (cpp || neko)
-		neash.Lib.setPackage(company, file, packageName, version);
+		native.Lib.setPackage(company, file, packageName, version);
 		#end
 	}
 	
@@ -247,22 +247,22 @@ class Lib
 	
 	
 	
-	private static function nmeGetCompany():String
+	private static function get_company():String
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.company;
+		return native.Lib.company;
 		#end
 		return "";
 	}
 	
 	
-	private static function nmeGetCurrent ():MovieClip
+	private static function get_current ():MovieClip
 	{
 		#if display
 		return null;
 		#elseif (cpp || neko)
-		return cast neash.Lib.current;
+		return cast native.Lib.current;
 		#elseif js
 		return cast jeash.Lib.current;
 		#else
@@ -271,63 +271,63 @@ class Lib
 	}
 	
 	
-	private static function nmeGetFile():String
+	private static function get_file():String
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.file;
+		return native.Lib.file;
 		#end
 		return "";
 	}
 	
 	
-	private static function nmeGetInitHeight():Int
+	private static function get_initHeight():Int
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.initHeight;
+		return native.Lib.initHeight;
 		#end
 		return 0;
 	}
 	
 	
-	private static function nmeGetInitWidth():Int
+	private static function get_initWidth():Int
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.initWidth;
+		return native.Lib.initWidth;
 		#end
 		return 0;
 	}
 	
 	
-	private static function nmeGetPackageName():String
+	private static function get_packageName():String
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.packageName;
+		return native.Lib.packageName;
 		#end
 		return "";
 	}
 	
 	
-	private static function nmeGetStage():Stage
+	private static function get_stage():Stage
 	{
 		#if display
 		return null;
 		#elseif (cpp || neko)
-		return cast neash.Lib.stage;
+		return cast native.Lib.stage;
 		#else
 		return current.stage;
 		#end
 	}
 	
 	
-	private static function nmeGetVersion():String
+	private static function get_version():String
 	{
 		#if display
 		#elseif (cpp || neko)
-		return neash.Lib.version;
+		return native.Lib.version;
 		#end
 		return "";
 	}

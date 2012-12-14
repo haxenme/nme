@@ -122,7 +122,7 @@ extern class Stage extends DisplayObjectContainer {
 
 	/**
 	 * A value from the StageAlign class that specifies the alignment of the
-	 * stage in Flash Player or the browser. The following are valid values:
+	 * stage in Flash Player or the jeash. The following are valid values:
 	 *
 	 * <p>The <code>align</code> property is only available to an object that is
 	 * in the same security sandbox as the Stage owner (the main SWF file). To
@@ -778,7 +778,7 @@ extern class Stage extends DisplayObjectContainer {
 
 
 #elseif (cpp || neko)
-typedef Stage = neash.display.Stage;
+typedef Stage = native.display.Stage;
 #elseif js
 typedef Stage = jeash.display.Stage;
 #else

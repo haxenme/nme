@@ -28,7 +28,7 @@ package nme.ui;
 
 
 #elseif (cpp || neko)
-typedef MultitouchInputMode = neash.ui.MultitouchInputMode;
+typedef MultitouchInputMode = native.ui.MultitouchInputMode;
 #elseif js
 typedef MultitouchInputMode = jeash.ui.MultitouchInputMode;
 #else

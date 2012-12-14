@@ -19,7 +19,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef GraphicsPathWinding = neash.display.GraphicsPathWinding;
+typedef GraphicsPathWinding = native.display.GraphicsPathWinding;
 #elseif js
 typedef GraphicsPathWinding = jeash.display.GraphicsPathWinding;
 #else

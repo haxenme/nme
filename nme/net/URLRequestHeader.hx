@@ -98,7 +98,7 @@ package nme.net;
 
 
 #elseif (cpp || neko)
-typedef URLRequestHeader = neash.net.URLRequestHeader;
+typedef URLRequestHeader = native.net.URLRequestHeader;
 #elseif js
 typedef URLRequestHeader = jeash.net.URLRequestHeader;
 #else

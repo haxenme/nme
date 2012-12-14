@@ -52,7 +52,7 @@ extern class TimerEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef TimerEvent = neash.events.TimerEvent;
+typedef TimerEvent = native.events.TimerEvent;
 #elseif js
 typedef TimerEvent = jeash.events.TimerEvent;
 #else

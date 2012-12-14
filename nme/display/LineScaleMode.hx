@@ -46,7 +46,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef LineScaleMode = neash.display.LineScaleMode;
+typedef LineScaleMode = native.display.LineScaleMode;
 #elseif js
 typedef LineScaleMode = jeash.display.LineScaleMode;
 #else

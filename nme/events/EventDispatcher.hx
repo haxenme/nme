@@ -244,7 +244,7 @@ extern class EventDispatcher implements IEventDispatcher {
 
 
 #elseif (cpp || neko)
-typedef EventDispatcher = neash.events.EventDispatcher;
+typedef EventDispatcher = native.events.EventDispatcher;
 #elseif js
 typedef EventDispatcher = jeash.events.EventDispatcher;
 #else

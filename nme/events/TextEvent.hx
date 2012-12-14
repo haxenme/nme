@@ -63,7 +63,7 @@ extern class TextEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef TextEvent = neash.events.TextEvent;
+typedef TextEvent = native.events.TextEvent;
 #elseif js
 typedef TextEvent = jeash.events.TextEvent;
 #else

@@ -117,7 +117,7 @@ extern class FocusEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef FocusEvent = neash.events.FocusEvent;
+typedef FocusEvent = native.events.FocusEvent;
 #elseif js
 typedef FocusEvent = jeash.events.FocusEvent;
 #else

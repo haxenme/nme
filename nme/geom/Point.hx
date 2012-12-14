@@ -162,7 +162,7 @@ extern class Point {
 
 
 #elseif (cpp || neko)
-typedef Point = neash.geom.Point;
+typedef Point = native.geom.Point;
 #elseif js
 typedef Point = jeash.geom.Point;
 #else

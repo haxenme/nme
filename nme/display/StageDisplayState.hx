@@ -18,7 +18,7 @@ package nme.display;
 
 
 #elseif (cpp || neko)
-typedef StageDisplayState = neash.display.StageDisplayState;
+typedef StageDisplayState = native.display.StageDisplayState;
 #elseif js
 typedef StageDisplayState = jeash.display.StageDisplayState;
 #else

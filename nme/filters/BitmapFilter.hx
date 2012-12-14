@@ -26,7 +26,7 @@ extern class BitmapFilter {
 
 
 #elseif (cpp || neko)
-typedef BitmapFilter = neash.filters.BitmapFilter;
+typedef BitmapFilter = native.filters.BitmapFilter;
 #elseif js
 typedef BitmapFilter = jeash.filters.BitmapFilter;
 #else

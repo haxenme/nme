@@ -1270,13 +1270,13 @@ value nme_gl_check_framebuffer_status(value inTarget)
 }
 DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
-value nme_gl_get_framebuffer_attachement_parameter(value target, value attachement, value pname)
+value nme_gl_get_framebuffer_attachment_parameter(value target, value attachment, value pname)
 {
    GLint result = 0;
-   glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachement), val_int(pname), &result);
+   glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachment), val_int(pname), &result);
    return alloc_int(result);
 }
-DEFINE_PRIM(nme_gl_get_framebuffer_attachement_parameter,3);
+DEFINE_PRIM(nme_gl_get_framebuffer_attachment_parameter,3);
 
 value nme_gl_get_render_buffer_parameter(value target, value pname)
 {

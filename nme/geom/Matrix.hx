@@ -303,7 +303,7 @@ extern class Matrix {
 
 
 #elseif (cpp || neko)
-typedef Matrix = neash.geom.Matrix;
+typedef Matrix = native.geom.Matrix;
 #elseif js
 typedef Matrix = jeash.geom.Matrix;
 #else

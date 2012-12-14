@@ -660,7 +660,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 
 
 #elseif (cpp || neko)
-typedef SharedObject = neash.net.SharedObject;
+typedef SharedObject = native.net.SharedObject;
 #elseif js
 typedef SharedObject = jeash.net.SharedObject;
 #else

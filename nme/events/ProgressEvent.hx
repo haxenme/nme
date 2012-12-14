@@ -67,7 +67,7 @@ extern class ProgressEvent extends Event {
 
 
 #elseif (cpp || neko)
-typedef ProgressEvent = neash.events.ProgressEvent;
+typedef ProgressEvent = native.events.ProgressEvent;
 #elseif js
 typedef ProgressEvent = jeash.events.ProgressEvent;
 #else

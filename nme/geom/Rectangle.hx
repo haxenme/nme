@@ -340,7 +340,7 @@ extern class Rectangle {
 
 
 #elseif (cpp || neko)
-typedef Rectangle = neash.geom.Rectangle;
+typedef Rectangle = native.geom.Rectangle;
 #elseif js
 typedef Rectangle = jeash.geom.Rectangle;
 #else
