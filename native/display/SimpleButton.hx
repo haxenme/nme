@@ -14,17 +14,17 @@ class SimpleButton extends InteractiveObject {
 	//public var soundTransform:SoundTransform;
 	//public var trackAsMenu:Bool;
 	public var upState (default, set_upState):DisplayObject;
-	public var useHandCursor (get_handCursor, set_handCursor):Bool;
+	public var useHandCursor (get_useHandCursor, set_useHandCursor):Bool;
 	
 	
 	public function new (?upState:DisplayObject, ?overState:DisplayObject, ?downState:DisplayObject, ?hitTestState:DisplayObject) {
 		
 		super (nme_simple_button_create (), "SimpleButton");
 		
-		nmeSetUpState (upState);
-		nmeSetOverState (overState);
-		nmeSetDownState (downState);
-		nmeSetHitTestState (hitTestState);
+		this.upState = upState;
+		this.overState = overState;
+		this.downState = downState;
+		this.hitTestState = hitTestState;
 		
 	}
 	
@@ -54,8 +54,8 @@ class SimpleButton extends InteractiveObject {
 	}
 	
 	
-	private function get_handCursor ():Bool { return nme_simple_button_get_hand_cursor (nmeHandle); }
-	private function set_handCursor (inVal):Bool {
+	private function get_useHandCursor ():Bool { return nme_simple_button_get_hand_cursor (nmeHandle); }
+	private function set_useHandCursor (inVal):Bool {
 		
 		nme_simple_button_set_hand_cursor (nmeHandle, inVal);
 		return inVal;

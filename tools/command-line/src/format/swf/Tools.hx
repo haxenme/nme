@@ -45,8 +45,12 @@ class Tools {
 		return (i >> 16) + (i & 0xFFFF) / 65536.0;
 	}
 
-	public inline static function floatFixed( i : haxe.Int32 ) {
-		return haxe.Int32.toInt(haxe.Int32.shr(i,16)) + haxe.Int32.toInt(haxe.Int32.and(i,haxe.Int32.ofInt(0xFFFF))) / 65536.0;
+	public inline static function floatFixed( i : #if haxe3 Int #else haxe.Int32 #end ) {
+		#if haxe3
+		return (i >> 16) + (i & 0xFFFF) / 65536.0;
+		#else
+		return haxe.Int32.toInt(haxe.Int32.shr(i, 16)) + haxe.Int32.toInt(haxe.Int32.and(i, haxe.Int32.ofInt(0xFFFF))) / 65536.0;
+		#end
 	}
 
 	public inline static function floatFixed8( i : Int ) {
@@ -131,12 +135,12 @@ class Tools {
 		var infos:Array<Dynamic> = switch( t ) {
 		case TShowFrame: [];
 		case TBackgroundColor(color): [StringTools.hex(color,6)];
-		case TShape(id,sdata): ["id",id]; // TODO write when TShape final
-		case TMorphShape(id,data): ["id",id]; // TODO
-		case TFont(id,data): ["id",id]; // TODO
-		case TFontInfo(id,data): ["id",id]; // TODO
+		case TShape(id,_): ["id",id]; // TODO write when TShape final
+		case TMorphShape(id,_): ["id",id]; // TODO
+		case TFont(id,_): ["id",id]; // TODO
+		case TFontInfo(id,_): ["id",id]; // TODO
 		case TBinaryData(id,data): ["id",id,"data",hex(data,max)];
-		case TClip(id,frames,tags): ["id",id,"frames",frames];
+		case TClip(id,frames,_): ["id",id,"frames",frames];
 		case TPlaceObject2(po): [Std.string(po)];
 		case TPlaceObject3(po): [Std.string(po)];
 		case TRemoveObject2(d): ["depth",d];

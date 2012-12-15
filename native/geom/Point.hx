@@ -93,6 +93,13 @@ class Point {
 	}
 	
 	
+	public function toString ():String {
+		
+		return "(x=" + x + ", y=" + y + ")";
+		
+	}
+	
+	
 	
 	
 	// Getters & Setters

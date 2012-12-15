@@ -159,7 +159,7 @@ class AndroidPlatform implements IPlatformTool {
 				
 				switch (asset.type) {
 					
-					case AssetType.SOUND, AssetType.MUSIC:
+					case SOUND, MUSIC:
 						
 						asset.resourceName = asset.id;
 						targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension (asset.targetPath);

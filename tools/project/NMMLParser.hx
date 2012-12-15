@@ -59,15 +59,15 @@ class NMMLParser extends NMEProject {
 		
 		switch (platformType) {
 			
-			case PlatformType.MOBILE:
+			case MOBILE:
 				
 				localDefines.set ("mobile", "1");
 			
-			case PlatformType.DESKTOP:
+			case DESKTOP:
 				
 				localDefines.set ("desktop", "1");
 			
-			case PlatformType.WEB:
+			case WEB:
 				
 				localDefines.set ("web", "1");
 			
@@ -412,23 +412,23 @@ class NMMLParser extends NMEProject {
 						
 						switch (type) {
 							
-							case AssetType.IMAGE:
+							case IMAGE:
 								
 								include = "*.jpg|*.jpeg|*.png|*.gif";
 							
-							case AssetType.SOUND:
+							case SOUND:
 								
 								include = "*.wav|*.ogg";
 							
-							case AssetType.MUSIC:
+							case MUSIC:
 								
 								include = "*.mp2|*.mp3";
 							
-							case AssetType.FONT:
+							case FONT:
 								
 								include = "*.otf|*.ttf";
 							
-							case AssetType.TEMPLATE:
+							case TEMPLATE:
 								
 								include = "*";
 							
@@ -483,7 +483,7 @@ class NMMLParser extends NMEProject {
 					
 					switch (childElement.name) {
 						
-						case Type.enumConstructor (AssetType.IMAGE), Type.enumConstructor (AssetType.SOUND), Type.enumConstructor (AssetType.MUSIC), Type.enumConstructor (AssetType.FONT), Type.enumConstructor (AssetType.TEMPLATE):
+						case "image", "sound", "music", "font", "template":
 							
 							childType = Reflect.field (AssetType, childElement.name.toUpperCase ());
 						

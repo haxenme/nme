@@ -102,8 +102,8 @@ class FlashHelper {
 						encoderDelay = giEncoderDelay;
 						endPadding = giEndPadding;
 
-						case Info(info): // ignore
-						case Unknown(bytes): // ignore
+						case Info(_): // ignore
+						case Unknown(_): // ignore
 						case End: break;
 					}
 				}
@@ -129,7 +129,7 @@ class FlashHelper {
 					rate: flashSamplingFrequency,
 					is16bit: true,
 					isStereo: isStereo,
-					samples: haxe.Int32.ofInt(totalLengthSamples - endPadding - encoderDelay),
+					samples: #if !haxe3 haxe.Int32.ofInt( #end totalLengthSamples - endPadding - encoderDelay #if !haxe3 ) #end,
 					data: SDMp3(encoderDelay + decoderDelay, frameData)
 				};
 				
@@ -186,7 +186,7 @@ class FlashHelper {
 					rate : flashRate,
 					is16bit : is16bit,
 					isStereo : isStereo,
-					samples : haxe.Int32.ofInt (sampleCount),
+					samples : #if haxe3 sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
 					data : SDRaw (wav.data)
 					
 				}

@@ -29,7 +29,9 @@
  */
 package format.wav;
 import format.wav.Data;
+#if !haxe3
 import haxe.Int32;
+#end
 
 class Reader {
 
@@ -40,13 +42,21 @@ class Reader {
 		this.i = i;
 		i.bigEndian = false;
 	}
+	
+	private function toInt (value:#if haxe3 Int #else Int32#end):Int {
+		#if haxe3
+		return value;
+		#else
+		return Int32.toInt(value);
+		#end
+	}
 
 	public function read() : WAVE {
 
 		if (i.readString(4) != "RIFF")
 			throw "RIFF header expected";
 
-		var len = Int32.toInt(i.readInt32());
+		var len = toInt(i.readInt32());
 
 		if (i.readString(4) != "WAVE")
 			throw "WAVE signature not found";
@@ -57,15 +67,15 @@ class Reader {
 		if (i.readString(4) != "fmt ")
 			throw "expected fmt subchunk";
 
-		var fmtlen = Int32.toInt(i.readInt32());
+		var fmtlen = toInt(i.readInt32());
 		
 		var format = switch (i.readUInt16()) {
 			case 1: WF_PCM;
 			default: throw "only PCM (uncompressed) WAV files are supported";
 		}
 		var channels = i.readUInt16();
-		var samplingRate = Int32.toInt(i.readInt32());
-		var byteRate = Int32.toInt(i.readInt32());
+		var samplingRate = toInt(i.readInt32());
+		var byteRate = toInt(i.readInt32());
 		var blockAlign = i.readUInt16();
 		var bitsPerSample = i.readUInt16();
 		
@@ -78,7 +88,7 @@ class Reader {
 			
 			// ignore the cue chunk, if present before the data chunk
 			
-			var cuelen = Int32.toInt (i.readInt32 ());
+			var cuelen = toInt (i.readInt32 ());
 			var cues = i.read (cuelen);
 			nextChunk = i.readString (4);
 			
@@ -96,7 +106,7 @@ class Reader {
 		if (nextChunk != "data")
 			throw "expected data subchunk";
 		
-		var datalen = Int32.toInt(i.readInt32());
+		var datalen = toInt(i.readInt32());
 		var data = i.read(datalen);
 
 		return {

@@ -20,7 +20,7 @@ class NMEProject {
 	public var haxedefs:Array <String>;
 	public var haxeflags:Array <String>;
 	public var haxelibs:Array <String>;
-	public var host (getHost, null):Platform;
+	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
 	public var javaPaths:Array <String>;
 	public var libraries:Array <Library>;
@@ -30,7 +30,7 @@ class NMEProject {
 	public var sources:Array <String>;
 	public var target:Platform;
 	public var targetFlags:Hash <String>;
-	public var templateContext (getTemplateContext, null):Dynamic;
+	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
 	
@@ -73,19 +73,19 @@ class NMEProject {
 		
 		switch (target) {
 			
-			case Platform.FLASH:
+			case FLASH:
 				
 				platformType = PlatformType.WEB;
 				architectures = [];
 				
-			case Platform.HTML5:
+			case HTML5:
 				
 				platformType = PlatformType.WEB;
 				architectures = [];
 				
 				defaultWindow.fps = 0;
 				
-			case Platform.ANDROID, Platform.BLACKBERRY, Platform.IOS, Platform.WEBOS:
+			case ANDROID, BLACKBERRY, IOS, WEBOS:
 				
 				platformType = PlatformType.MOBILE;
 				architectures = [ Architecture.ARMV6 ];
@@ -93,7 +93,7 @@ class NMEProject {
 				defaultWindow.width = 0;
 				defaultWindow.height = 0;
 				
-			case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
+			case WINDOWS, MAC, LINUX:
 				
 				platformType = PlatformType.DESKTOP;
 				architectures = [ Architecture.X86 ];
@@ -414,14 +414,14 @@ class NMEProject {
 	
 	
 	
-	private function getHost ():Platform {
+	private function get_host ():Platform {
 		
 		return PlatformHelper.hostPlatform;
 		
 	}
 	
 	
-	private function getTemplateContext ():Dynamic {
+	private function get_templateContext ():Dynamic {
 		
 		var context:Dynamic = {};
 		

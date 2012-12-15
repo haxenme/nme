@@ -9,4 +9,5 @@
 -lib xfl
 --remap flash:nme
 -D haxe3
+-D neko-v2
 -D hxssl

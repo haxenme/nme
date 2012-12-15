@@ -22,6 +22,17 @@ class Lib
 	public static var DEPTH_BUFFER = 0x0200;
 	public static var STENCIL_BUFFER = 0x0400;
 	
+	#if flash
+	public static inline var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
+	public static inline var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
+	#elseif js
+	public static inline var MIN_FLOAT_VALUE:Float = untyped __js__ ("Number.MIN_VALUE");
+	public static inline var MAX_FLOAT_VALUE:Float = untyped __js__ ("Number.MAX_VALUE");
+	#else
+    public static inline var MIN_FLOAT_VALUE:Float = 2.2250738585072014e-308;
+    public static inline var MAX_FLOAT_VALUE:Float = 1.7976931348623158e+308;
+	#end
+	
 	public static var company(get_company, null):String;
 	public static var current (get_current, null):MovieClip;
 	public static var file(get_file, null):String;

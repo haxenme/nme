@@ -76,12 +76,14 @@ class FlashPlatform implements IPlatformTool {
 		
 		for (asset in assets) {
 			
-			switch (Reflect.field (AssetType, asset.type.toUpperCase ())) {
+			var assetType:AssetType = Reflect.field (AssetType, asset.type.toUpperCase ());
+			
+			switch (assetType) {
 				
-				case AssetType.MUSIC : asset.flashClass = "nme.media.Sound";
-				case AssetType.SOUND : asset.flashClass = "nme.media.Sound";
-				case AssetType.IMAGE : asset.flashClass = "nme.display.BitmapData";
-				case AssetType.FONT : asset.flashClass = "nme.text.Font";
+				case MUSIC : asset.flashClass = "nme.media.Sound";
+				case SOUND : asset.flashClass = "nme.media.Sound";
+				case IMAGE : asset.flashClass = "nme.display.BitmapData";
+				case FONT : asset.flashClass = "nme.text.Font";
 				default: asset.flashClass = "nme.utils.ByteArray";
 				
 			}

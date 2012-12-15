@@ -177,10 +177,19 @@ class Writer {
 		var all = 0;
 		for( e in events )
 			all |= e.eventsFlags;
+		#if haxe3
+		o.writeInt32(all);
+		#else
 		o.writeUInt30(all);
+		#end
 		for( e in events ) {
+			#if haxe3
+			o.writeInt32(e.eventsFlags);
+			o.writeInt32(e.data.length);
+			#else
 			o.writeUInt30(e.eventsFlags);
 			o.writeUInt30(e.data.length);
+			#end
 			o.write(e.data);
 		}
 		o.writeUInt16(0);
@@ -305,13 +314,21 @@ class Writer {
 			o.writeUInt16(h|len);
 		else {
 			o.writeUInt16(h|63);
+			#if haxe3
+			o.writeInt32(len);
+			#else
 			o.writeUInt30(len);
+			#end
 		}
 	}
 
 	function writeTIDExt( id : Int, len : Int ) {
 		o.writeUInt16((id << 6)|63);
+		#if haxe3
+		o.writeInt32(len);
+		#else
 		o.writeUInt30(len);
+		#end
 	}
 
 	function writeSymbols( sl : Array<SymData>, tagid : Int ) {
@@ -520,12 +537,12 @@ class Writer {
 				bits.writeBits(2, switch(data.join) {
 					case LJRound:					0;
 					case LJBevel:					1;
-					case LJMiter(limitFactor):	2;
+					case LJMiter(_):	2;
 				});
 
 				bits.writeBit(switch(data.fill) {
-					case LS2FColor(color):	false;
-					case LS2FStyle(style):	true;
+					case LS2FColor(_):	false;
+					case LS2FStyle(_):	true;
 				});
 
 				bits.writeBit(data.noHScale);
@@ -739,16 +756,16 @@ class Writer {
 		var shape_data = closeTMP(old);
 
 		switch(data) {
-			case SHDShape1(bounds, shapes):
+			case SHDShape1(_,_):
 				writeTID(TagId.DefineShape, shape_data.length);
 
-			case SHDShape2(bounds, shapes):
+			case SHDShape2(_,_):
 				writeTID(TagId.DefineShape2, shape_data.length);
 
-			case SHDShape3(bounds, shapes):
+			case SHDShape3(_,_):
 				writeTID(TagId.DefineShape3, shape_data.length);
 
-			case SHDShape4(data):
+			case SHDShape4(_):
 				writeTID(TagId.DefineShape4, shape_data.length);
 		}
 
@@ -850,10 +867,10 @@ class Writer {
 		var m2data: Morph2LineStyleData;
 
 		switch(style) {
-			case M2LSNoFill(startColor, endColor, data):
+			case M2LSNoFill(_, _, data):
 				m2data = data;
 
-			case M2LSFill(fill, data):
+			case M2LSFill(_, data):
 				m2data = data;
 		}
 
@@ -868,14 +885,14 @@ class Writer {
 		bits.writeBits(2, switch(m2data.joinStyle) {
 			case LJRound:					0;
 			case LJBevel:					1;
-			case LJMiter(limitFactor):	2;
+			case LJMiter(_):	2;
 		});
 
 		switch(style) {
-			case M2LSNoFill(startColor, endColor, data):
+			case M2LSNoFill(_, _, _):
 				bits.writeBit(false);
 
-			case M2LSFill(fill, data):
+			case M2LSFill(_, _):
 				bits.writeBit(true);
 		}
 
@@ -898,11 +915,11 @@ class Writer {
 		}
 
 		switch(style) {
-			case M2LSNoFill(startColor, endColor, data):
+			case M2LSNoFill(startColor, endColor, _):
 				writeRGBA(startColor);
 				writeRGBA(endColor);
 
-			case M2LSFill(fill, data):
+			case M2LSFill(fill, _):
 				writeMorphFillStyle(2, fill);
 		}
 	}
@@ -942,7 +959,11 @@ class Writer {
 				
 				var part_data = closeTMP(old);
 
+				#if haxe3
+				o.writeInt32(part_data.length);
+				#else
 				o.writeUInt30(part_data.length);
+				#end
 				o.write(part_data);
 				writeShapeWithoutStyle(3, sh1data.endEdges);
 
@@ -965,7 +986,11 @@ class Writer {
 				
 				var part_data = closeTMP(old);
 
+				#if haxe3
+				o.writeInt32(part_data.length);
+				#else
 				o.writeUInt30(part_data.length);
+				#end
 				o.write(part_data);
 				writeShapeWithoutStyle(4, sh2data.endEdges);
 		}
@@ -974,10 +999,10 @@ class Writer {
 		var morph_shape_data = closeTMP(old);
 
 		switch(data) {
-			case MSDShape1(sh1data):
+			case MSDShape1(_):
 				writeTID(TagId.DefineMorphShape, morph_shape_data.length);
 			
-			case MSDShape2(sh2data):
+			case MSDShape2(_):
 				writeTID(TagId.DefineMorphShape2, morph_shape_data.length);
 
 		}
@@ -1069,9 +1094,17 @@ class Writer {
 			var first_glyph_offset = num_glyphs * 4 + 4;
 			
 			for(offset in offset_table) {
+				#if haxe3
+				o.writeInt32(first_glyph_offset + offset);
+				#else
 				o.writeUInt30(first_glyph_offset + offset);
+				#end
 			}
+			#if haxe3
+			o.writeInt32(first_glyph_offset + shape_data.length);
+			#else
 			o.writeUInt30(first_glyph_offset + shape_data.length);
+			#end
 
 		} else {
 			// OffsetTable size + CodeTabbleOffset field (16bit version)
@@ -1146,13 +1179,13 @@ class Writer {
 		var font_data = closeTMP(old);
 
 		switch(data) {
-			case FDFont1(data):
+			case FDFont1(_):
 				writeTID(TagId.DefineFont, font_data.length);
 				
-			case FDFont2(hasWideChars, data):
+			case FDFont2(_, _):
 				writeTID(TagId.DefineFont2, font_data.length);
 
-			case FDFont3(data):
+			case FDFont3(_):
 				writeTID(TagId.DefineFont3, font_data.length);
 		}
 
@@ -1239,7 +1272,11 @@ class Writer {
 		case TBinaryData(id, data):
 			writeTID(TagId.DefineBinaryData, data.length + 6);
 			o.writeUInt16(id);
+			#if haxe3
+			o.writeInt32(0);
+			#else
 			o.writeUInt30(0);
+			#end
 			o.write(data);
 
 		case TBackgroundColor(color):
@@ -1295,7 +1332,11 @@ class Writer {
 			else {
 				var len = data.length + 4 + ctx.label.length + 1;
 				writeTID(TagId.DoABC,len);
+				#if haxe3
+				o.writeInt32(ctx.id);
+				#else
 				o.writeUInt30(ctx.id);
+				#end
 				o.writeString(ctx.label);
 				o.writeByte(0);
 			}
@@ -1364,7 +1405,11 @@ class Writer {
 			case JDJPEG3(data, mask):	
 				writeTIDExt(TagId.DefineBitsJPEG3, data.length + mask.length + 6);
 				o.writeUInt16(id);
+				#if haxe3
+				o.writeInt32(data.length);
+				#else
 				o.writeUInt30(data.length);
+				#end
 				o.write(data);
 				o.write(mask);
 			}
@@ -1380,7 +1425,11 @@ class Writer {
 		var bytes = o.getBytes();
 		var size = bytes.length;
 		if( compressed ) bytes = format.tools.Deflate.run(bytes);
+		#if haxe3
+		output.writeInt32(size + 8);
+		#else
 		output.writeUInt30(size + 8);
+		#end
 		output.write(bytes);
 	}
 

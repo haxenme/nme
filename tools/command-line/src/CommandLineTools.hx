@@ -45,39 +45,39 @@ class CommandLineTools {
 		
 		switch (project.target) {
 			
-			case Platform.ANDROID:
+			case ANDROID:
 				
 				platform = new AndroidPlatform ();
 				
-			case Platform.BLACKBERRY:
+			case BLACKBERRY:
 				
 				platform = new BlackBerryPlatform ();
 			
-			case Platform.IOS:
+			case IOS:
 				
 				platform = new IOSPlatform ();
 			
-			case Platform.WEBOS:
+			case WEBOS:
 				
 				platform = new WebOSPlatform ();
 			
-			case Platform.WINDOWS:
+			case WINDOWS:
 				
 				platform = new WindowsPlatform ();
 			
-			case Platform.MAC:
+			case MAC:
 				
 				platform = new MacPlatform ();
 				
-			case Platform.LINUX:
+			case LINUX:
 				
 				platform = new LinuxPlatform ();
 				
-			case Platform.FLASH:
+			case FLASH:
 				
 				platform = new FlashPlatform ();
 				
-			case Platform.HTML5:
+			case HTML5:
 				
 				platform = new HTML5Platform ();
 			
@@ -408,15 +408,15 @@ class CommandLineTools {
 		
 		switch (PlatformHelper.hostPlatform) {
 			
-			case Platform.WINDOWS:
+			case WINDOWS:
 				
 				untyped $loader.path = $array (path + "Windows/", $loader.path);
 				
-			case Platform.MAC:
+			case MAC:
 				
 				untyped $loader.path = $array (path + "Mac/", $loader.path);
 				
-			case Platform.LINUX:
+			case LINUX:
 				
 				if (PlatformHelper.hostArchitecture == Architecture.X64) {
 					
@@ -586,7 +586,7 @@ class CommandLineTools {
 		
 		switch (project.target) {
 			
-			case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY:
+			case ANDROID, IOS, BLACKBERRY:
 				
 				getBuildNumber (project);
 				

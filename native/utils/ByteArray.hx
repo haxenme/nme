@@ -127,7 +127,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function compress (algorithm:String = "") {
+	public function compress (algorithm:CompressionAlgorithm = null) {
 		
 		#if neko
 		var src = alloced == length ? this : sub (0, length);
@@ -143,11 +143,11 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			
 		} else {
 			
-			var windowBits = 15;
-			windowBits = switch (algorithm) {
+			var windowBits = switch (algorithm) {
 				
-				case CompressionAlgorithm.DEFLATE: -15;
-				case CompressionAlgorithm.GZIP: 31;
+				case DEFLATE: -15;
+				case GZIP: 31;
+				default: 15;
 				
 			}
 			
@@ -456,7 +456,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function uncompress (algorithm:String = ""):Void {
+	public function uncompress (algorithm:CompressionAlgorithm = null):Void {
 		
 		#if neko
 		var src = alloced == length ? this : sub (0, length);
@@ -472,11 +472,11 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			
 		} else {
 			
-			var windowBits = 15;
-			windowBits = switch (algorithm) {
+			var windowBits = switch (algorithm) {
 				
-				case CompressionAlgorithm.DEFLATE: -15;
-				case CompressionAlgorithm.GZIP: 31;
+				case DEFLATE: -15;
+				case GZIP: 31;
+				default: 15;
 				
 			}
 			

@@ -97,20 +97,20 @@ class MpegAudioReader {
             var element = readNext();
 
             switch (element) {
-                case Element.Frame(frame):
+                case Frame(frame):
                 frames.push(frame);
 
-                case Element.Info(info):
+                case Info(_):
                 // Discard info tag.
 
-                case Element.GaplessInfo(giEncoderDelay, giEndPadding):
+                case GaplessInfo(giEncoderDelay, giEndPadding):
                 encoderDelay = giEncoderDelay;
                 endPadding = giEndPadding;
 
-                case Element.Unknown(bytes):
+                case Unknown(_):
                 // Discard unknown bytes
 
-                case Element.End:
+                case End:
                 break;
             }
         }
@@ -281,13 +281,13 @@ class MpegAudioReader {
 
     function readInfo(header:FrameHeader, frameData:Bytes) {
         var sideInformationSize = switch (header.version) {
-            case MpegVersion.Version1: switch (header.mode) {
-                case Mode.Stereo, Mode.JointStereo, Mode.DualChannel: 32;
-                case Mode.SingleChannel: 17;
+            case Version1: switch (header.mode) {
+                case Stereo, JointStereo, DualChannel: 32;
+                case SingleChannel: 17;
             };
-            case MpegVersion.Version2, MpegVersion.Version25: switch (header.mode) {
-                case Mode.Stereo, Mode.JointStereo, Mode.DualChannel: 17;
-                case Mode.SingleChannel: 9;
+            case Version2, Version25: switch (header.mode) {
+                case Stereo, JointStereo, DualChannel: 17;
+                case SingleChannel: 9;
             }
         };
 

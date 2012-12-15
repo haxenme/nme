@@ -140,8 +140,8 @@ class IOSPlatform implements IPlatformTool {
 			
 			switch (architecture) {
 				
-				case Architecture.ARMV6: valid_archs.push ("armv6"); armv6 = true;
-				case Architecture.ARMV7: valid_archs.push ("armv7"); armv7 = true;
+				case ARMV6: valid_archs.push ("armv6"); armv6 = true;
+				case ARMV7: valid_archs.push ("armv7"); armv7 = true;
 				default:
 				
 			}
@@ -166,7 +166,7 @@ class IOSPlatform implements IPlatformTool {
 		context.REQUIRED_CAPABILITY = requiredCapabilities;
 		context.ARMV6 = armv6;
 		context.ARMV7 = armv7;
-		context.TARGET_DEVICES = switch(project.config.ios.device) { case IOSConfigDevice.UNIVERSAL: "1,2"; case IOSConfigDevice.IPHONE : "1"; case IOSConfigDevice.IPAD : "2"; }
+		context.TARGET_DEVICES = switch(project.config.ios.device) { case UNIVERSAL: "1,2"; case IPHONE : "1"; case IPAD : "2"; }
 		context.DEPLOYMENT = project.config.ios.deployment;
 		
 		if (project.config.ios.compiler == "llvm" || project.config.ios.compiler == "clang") {
@@ -179,11 +179,11 @@ class IOSPlatform implements IPlatformTool {
 		
 		switch (project.window.orientation) {
 			
-			case Orientation.PORTRAIT:
+			case PORTRAIT:
 				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
-			case Orientation.LANDSCAPE:
+			case LANDSCAPE:
 				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>";
-			case Orientation.ALL:
+			case ALL:
 				context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
 			//case "allButUpsideDown":
 				//context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string><string>UIInterfaceOrientationPortrait</string></array>";
