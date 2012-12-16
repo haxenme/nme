@@ -347,6 +347,11 @@ public:
 
          //printf("Set %dx%d %d\n", w,h,mFlags & SDL_FULLSCREEN);
          mSDLSurface = SDL_SetVideoMode(w, h, 32, mFlags);
+         if (!mSDLSurface && (mFlags & SDL_FULLSCREEN) )
+         {
+            // printf("Failed to set fillscreen, returning to windowed....\n");
+            mSDLSurface = SDL_SetVideoMode(w, h, 32, (mFlags & ~SDL_FULLSCREEN) );
+         }
 
 
          w = mSDLSurface->w;
