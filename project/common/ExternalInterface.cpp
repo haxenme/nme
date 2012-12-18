@@ -1298,7 +1298,7 @@ value nme_managed_stage_create(value inW,value inH,value inFlags)
    ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH),val_int(inFlags));
    return ObjectToAbstract(stage);
 }
-DEFINE_PRIM(nme_managed_stage_create,2);
+DEFINE_PRIM(nme_managed_stage_create,3);
 
 
 value nme_managed_stage_pump_event(value inStage,value inEvent)

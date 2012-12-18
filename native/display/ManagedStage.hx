@@ -115,7 +115,7 @@ class ManagedStage extends Stage {
 	
 	
 	
-	private static var nme_managed_stage_create = Loader.load ("nme_managed_stage_create", 2);
+	private static var nme_managed_stage_create = Loader.load ("nme_managed_stage_create", 3);
 	private static var nme_managed_stage_pump_event = Loader.load ("nme_managed_stage_pump_event", 2);
 	
 	
