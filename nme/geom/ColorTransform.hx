@@ -163,7 +163,7 @@ extern class ColorTransform {
 #elseif (cpp || neko)
 typedef ColorTransform = native.geom.ColorTransform;
 #elseif js
-typedef ColorTransform = jeash.geom.ColorTransform;
+typedef ColorTransform = browser.geom.ColorTransform;
 #else
 typedef ColorTransform = flash.geom.ColorTransform;
 #end

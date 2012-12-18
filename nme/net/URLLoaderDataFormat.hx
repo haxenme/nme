@@ -28,7 +28,7 @@ package nme.net;
 #elseif (cpp || neko)
 typedef URLLoaderDataFormat = native.net.URLLoaderDataFormat;
 #elseif js
-typedef URLLoaderDataFormat = jeash.net.URLLoaderDataFormat;
+typedef URLLoaderDataFormat = browser.net.URLLoaderDataFormat;
 #else
 typedef URLLoaderDataFormat = flash.net.URLLoaderDataFormat;
 #end

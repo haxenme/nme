@@ -9,7 +9,7 @@ package nme.errors;
 #elseif (cpp || neko)
 typedef RangeError = native.errors.RangeError;
 #elseif js
-typedef RangeError = jeash.errors.RangeError;
+typedef RangeError = browser.errors.RangeError;
 #else
 typedef RangeError = flash.errors.RangeError;
 #end

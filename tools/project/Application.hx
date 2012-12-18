@@ -169,7 +169,7 @@ class NMEProject {
 	
 	
 	
-	// Get & Set Methods
+	// Getters & Setters
 	
 	
 	

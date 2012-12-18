@@ -108,7 +108,7 @@ extern class Timer extends nme.events.EventDispatcher {
 #elseif (cpp || neko)
 typedef Timer = native.utils.Timer;
 #elseif js
-typedef Timer = jeash.utils.Timer;
+typedef Timer = browser.utils.Timer;
 #else
 typedef Timer = flash.utils.Timer;
 #end

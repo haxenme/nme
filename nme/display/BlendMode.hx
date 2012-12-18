@@ -195,7 +195,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef BlendMode = native.display.BlendMode;
 #elseif js
-typedef BlendMode = jeash.display.BlendMode;
+typedef BlendMode = browser.display.BlendMode;
 #else
 typedef BlendMode = flash.display.BlendMode;
 #end

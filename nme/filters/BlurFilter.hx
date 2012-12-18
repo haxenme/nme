@@ -127,7 +127,7 @@ package nme.filters;
 #elseif (cpp || neko)
 typedef BlurFilter = native.filters.BlurFilter;
 #elseif js
-typedef BlurFilter = jeash.filters.BlurFilter;
+typedef BlurFilter = browser.filters.BlurFilter;
 #else
 typedef BlurFilter = flash.filters.BlurFilter;
 #end

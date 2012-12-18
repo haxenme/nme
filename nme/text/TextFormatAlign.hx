@@ -37,7 +37,7 @@ package nme.text;
 #elseif (cpp || neko)
 typedef TextFormatAlign = native.text.TextFormatAlign;
 #elseif js
-typedef TextFormatAlign = jeash.text.TextFormatAlign;
+typedef TextFormatAlign = browser.text.TextFormatAlign;
 #else
 typedef TextFormatAlign = flash.text.TextFormatAlign;
 #end

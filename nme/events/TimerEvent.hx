@@ -54,7 +54,7 @@ extern class TimerEvent extends Event {
 #elseif (cpp || neko)
 typedef TimerEvent = native.events.TimerEvent;
 #elseif js
-typedef TimerEvent = jeash.events.TimerEvent;
+typedef TimerEvent = browser.events.TimerEvent;
 #else
 typedef TimerEvent = flash.events.TimerEvent;
 #end

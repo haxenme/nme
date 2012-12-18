@@ -80,7 +80,7 @@ package nme.events;
 #elseif (cpp || neko)
 typedef AccelerometerEvent = native.events.AccelerometerEvent;
 #elseif js
-typedef AccelerometerEvent = jeash.events.AccelerometerEvent;
+typedef AccelerometerEvent = browser.events.AccelerometerEvent;
 #else
 typedef AccelerometerEvent = flash.events.AccelerometerEvent;
 #end

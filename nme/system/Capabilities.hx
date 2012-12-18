@@ -363,7 +363,7 @@ extern class Capabilities {
 #elseif (cpp || neko)
 typedef Capabilities = native.system.Capabilities;
 #elseif js
-typedef Capabilities = jeash.system.Capabilities;
+typedef Capabilities = browser.system.Capabilities;
 #else
 typedef Capabilities = flash.system.Capabilities;
 #end

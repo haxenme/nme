@@ -107,7 +107,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef GraphicsPath = native.display.GraphicsPath;
 #elseif js
-typedef GraphicsPath = jeash.display.GraphicsPath;
+typedef GraphicsPath = browser.display.GraphicsPath;
 #else
 typedef GraphicsPath = flash.display.GraphicsPath;
 #end

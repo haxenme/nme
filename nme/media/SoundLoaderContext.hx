@@ -157,7 +157,7 @@ extern class SoundLoaderContext {
 #elseif (cpp || neko)
 typedef SoundLoaderContext = native.media.SoundLoaderContext;
 #elseif js
-typedef SoundLoaderContext = jeash.media.SoundLoaderContext;
+typedef SoundLoaderContext = browser.media.SoundLoaderContext;
 #else
 typedef SoundLoaderContext = flash.media.SoundLoaderContext;
 #end

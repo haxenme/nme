@@ -46,7 +46,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef TriangleCulling = native.display.TriangleCulling;
 #elseif js
-typedef TriangleCulling = jeash.display.TriangleCulling;
+typedef TriangleCulling = browser.display.TriangleCulling;
 #else
 typedef TriangleCulling = flash.display.TriangleCulling;
 #end

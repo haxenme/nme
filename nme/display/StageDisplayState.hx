@@ -20,7 +20,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef StageDisplayState = native.display.StageDisplayState;
 #elseif js
-typedef StageDisplayState = jeash.display.StageDisplayState;
+typedef StageDisplayState = browser.display.StageDisplayState;
 #else
 typedef StageDisplayState = flash.display.StageDisplayState;
 #end

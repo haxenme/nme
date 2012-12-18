@@ -26,7 +26,7 @@ extern interface IDataInput {
 #elseif (cpp || neko)
 typedef IDataInput = native.utils.IDataInput;
 #elseif js
-typedef IDataInput = jeash.utils.IDataInput;
+typedef IDataInput = browser.utils.IDataInput;
 #else
 typedef IDataInput = flash.utils.IDataInput;
 #end

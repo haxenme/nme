@@ -46,7 +46,7 @@ class StorageVolumeInfo extends EventDispatcher {
 	
 	
 	
-	// Get & Set Methods
+	// Getters & Setters
 	
 	
 	

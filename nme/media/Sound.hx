@@ -362,7 +362,7 @@ extern class Sound extends nme.events.EventDispatcher {
 #elseif (cpp || neko)
 typedef Sound = native.media.Sound;
 #elseif js
-typedef Sound = jeash.media.Sound;
+typedef Sound = browser.media.Sound;
 #else
 typedef Sound = flash.media.Sound;
 #end

@@ -250,7 +250,7 @@ package nme.events;
 #elseif (cpp || neko)
 typedef TouchEvent = native.events.TouchEvent;
 #elseif js
-typedef TouchEvent = jeash.events.TouchEvent;
+typedef TouchEvent = browser.events.TouchEvent;
 #else
 typedef TouchEvent = flash.events.TouchEvent;
 #end

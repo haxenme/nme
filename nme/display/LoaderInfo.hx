@@ -454,7 +454,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 #elseif (cpp || neko)
 typedef LoaderInfo = native.display.LoaderInfo;
 #elseif js
-typedef LoaderInfo = jeash.display.LoaderInfo;
+typedef LoaderInfo = browser.display.LoaderInfo;
 #else
 typedef LoaderInfo = flash.display.LoaderInfo;
 #end

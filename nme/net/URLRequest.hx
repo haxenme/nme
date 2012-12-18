@@ -292,7 +292,7 @@ package nme.net;
 #elseif (cpp || neko)
 typedef URLRequest = native.net.URLRequest;
 #elseif js
-typedef URLRequest = jeash.net.URLRequest;
+typedef URLRequest = browser.net.URLRequest;
 #else
 typedef URLRequest = flash.net.URLRequest;
 #end

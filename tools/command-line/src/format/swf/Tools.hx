@@ -45,8 +45,8 @@ class Tools {
 		return (i >> 16) + (i & 0xFFFF) / 65536.0;
 	}
 
-	public inline static function floatFixed( i : #if haxe3 Int #else haxe.Int32 #end ) {
-		#if haxe3
+	public inline static function floatFixed( i : #if haxe_211 Int #else haxe.Int32 #end ) {
+		#if haxe_211
 		return (i >> 16) + (i & 0xFFFF) / 65536.0;
 		#else
 		return haxe.Int32.toInt(haxe.Int32.shr(i, 16)) + haxe.Int32.toInt(haxe.Int32.and(i, haxe.Int32.ofInt(0xFFFF))) / 65536.0;

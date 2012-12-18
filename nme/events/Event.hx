@@ -617,7 +617,7 @@ extern class Event {
 #elseif (cpp || neko)
 typedef Event = native.events.Event;
 #elseif js
-typedef Event = jeash.events.Event;
+typedef Event = browser.events.Event;
 #else
 typedef Event = flash.events.Event;
 #end

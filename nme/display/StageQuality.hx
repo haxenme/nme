@@ -38,7 +38,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef StageQuality = native.display.StageQuality;
 #elseif js
-typedef StageQuality = jeash.display.StageQuality;
+typedef StageQuality = browser.display.StageQuality;
 #else
 typedef StageQuality = flash.display.StageQuality;
 #end

@@ -65,7 +65,7 @@ extern class TextEvent extends Event {
 #elseif (cpp || neko)
 typedef TextEvent = native.events.TextEvent;
 #elseif js
-typedef TextEvent = jeash.events.TextEvent;
+typedef TextEvent = browser.events.TextEvent;
 #else
 typedef TextEvent = flash.events.TextEvent;
 #end

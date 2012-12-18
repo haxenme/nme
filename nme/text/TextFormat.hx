@@ -231,7 +231,7 @@ extern class TextFormat {
 #elseif (cpp || neko)
 typedef TextFormat = native.text.TextFormat;
 #elseif js
-typedef TextFormat = jeash.text.TextFormat;
+typedef TextFormat = browser.text.TextFormat;
 #else
 typedef TextFormat = flash.text.TextFormat;
 #end

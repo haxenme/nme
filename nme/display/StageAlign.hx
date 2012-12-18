@@ -53,7 +53,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef StageAlign = native.display.StageAlign;
 #elseif js
-typedef StageAlign = jeash.display.StageAlign;
+typedef StageAlign = browser.display.StageAlign;
 #else
 typedef StageAlign = flash.display.StageAlign;
 #end

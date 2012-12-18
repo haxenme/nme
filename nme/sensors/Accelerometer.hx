@@ -95,7 +95,7 @@ package nme.sensors;
 #elseif (cpp || neko)
 typedef Accelerometer = native.sensors.Accelerometer;
 #elseif js
-typedef Accelerometer = jeash.sensors.Accelerometer;
+typedef Accelerometer = browser.sensors.Accelerometer;
 #else
 typedef Accelerometer = flash.sensors.Accelerometer;
 #end

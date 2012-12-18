@@ -14,7 +14,7 @@ extern interface IEventDispatcher {
 #elseif (cpp || neko)
 typedef IEventDispatcher = native.events.IEventDispatcher;
 #elseif js
-typedef IEventDispatcher = jeash.events.IEventDispatcher;
+typedef IEventDispatcher = browser.events.IEventDispatcher;
 #else
 typedef IEventDispatcher = flash.events.IEventDispatcher;
 #end

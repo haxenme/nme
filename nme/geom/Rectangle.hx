@@ -342,7 +342,7 @@ extern class Rectangle {
 #elseif (cpp || neko)
 typedef Rectangle = native.geom.Rectangle;
 #elseif js
-typedef Rectangle = jeash.geom.Rectangle;
+typedef Rectangle = browser.geom.Rectangle;
 #else
 typedef Rectangle = flash.geom.Rectangle;
 #end

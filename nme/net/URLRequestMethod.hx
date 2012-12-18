@@ -49,7 +49,7 @@ extern class URLRequestMethod {
 #elseif (cpp || neko)
 typedef URLRequestMethod = native.net.URLRequestMethod;
 #elseif js
-typedef URLRequestMethod = jeash.net.URLRequestMethod;
+typedef URLRequestMethod = browser.net.URLRequestMethod;
 #else
 typedef URLRequestMethod = flash.net.URLRequestMethod;
 #end

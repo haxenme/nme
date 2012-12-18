@@ -9,7 +9,7 @@ package nme.errors;
 #elseif (cpp || neko)
 typedef SecurityError = native.errors.SecurityError;
 #elseif js
-typedef SecurityError = jeash.errors.SecurityError;
+typedef SecurityError = browser.errors.SecurityError;
 #else
 typedef SecurityError = flash.errors.SecurityError;
 #end

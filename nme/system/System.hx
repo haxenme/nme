@@ -40,7 +40,7 @@ extern class System {
 	 * consumption of an application.</p>
 	 *
 	 * <p>For Flash Player, this includes the memory used by the container
-	 * application, such as the web jeash.</p>
+	 * application, such as the web browser.</p>
 	 */
 	//@:require(flash10_1) static var privateMemory(default,null) : Float;
 	//@:require(flash11) static var processCPUUsage(default,null) : Float;
@@ -202,7 +202,7 @@ extern class System {
 #elseif (cpp || neko)
 typedef System = native.system.System;
 #elseif js
-typedef System = jeash.system.System;
+typedef System = browser.system.System;
 #else
 typedef System = flash.system.System;
 #end

@@ -10,5 +10,5 @@ extern class Accelerometer
 #elseif (cpp || neko)
 typedef Accelerometer = native.ui.Accelerometer;
 #elseif js
-typedef Accelerometer = jeash.ui.Accelerometer;
+typedef Accelerometer = browser.ui.Accelerometer;
 #end

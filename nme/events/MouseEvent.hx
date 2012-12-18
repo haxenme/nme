@@ -254,7 +254,7 @@ extern class MouseEvent extends Event {
 #elseif (cpp || neko)
 typedef MouseEvent = native.events.MouseEvent;
 #elseif js
-typedef MouseEvent = jeash.events.MouseEvent;
+typedef MouseEvent = browser.events.MouseEvent;
 #else
 typedef MouseEvent = flash.events.MouseEvent;
 #end

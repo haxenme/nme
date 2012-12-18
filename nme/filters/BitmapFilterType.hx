@@ -28,7 +28,7 @@ package nme.filters;
 #elseif (cpp || neko)
 typedef BitmapFilterType = native.filters.BitmapFilterType;
 #elseif js
-typedef BitmapFilterType = jeash.filters.BitmapFilterType;
+typedef BitmapFilterType = browser.filters.BitmapFilterType;
 #else
 typedef BitmapFilterType = flash.filters.BitmapFilterType;
 #end

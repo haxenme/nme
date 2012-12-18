@@ -989,7 +989,7 @@ extern class BitmapData implements IBitmapDrawable {
 #elseif (cpp || neko)
 typedef BitmapData = native.display.BitmapData;
 #elseif js
-typedef BitmapData = jeash.display.BitmapData;
+typedef BitmapData = browser.display.BitmapData;
 #else
 typedef BitmapData = flash.display.BitmapData;
 #end

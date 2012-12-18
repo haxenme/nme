@@ -29,7 +29,7 @@
  */
 package format.wav;
 import format.wav.Data;
-#if !haxe3
+#if !haxe_211
 import haxe.Int32;
 #end
 
@@ -43,8 +43,8 @@ class Reader {
 		i.bigEndian = false;
 	}
 	
-	private function toInt (value:#if haxe3 Int #else Int32#end):Int {
-		#if haxe3
+	private function toInt (value:#if (haxe_211 && haxe3) Int #else Int32#end):Int {
+		#if (haxe_211 && haxe3)
 		return value;
 		#else
 		return Int32.toInt(value);

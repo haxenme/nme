@@ -709,7 +709,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef Graphics = native.display.Graphics;
 #elseif js
-typedef Graphics = jeash.display.Graphics;
+typedef Graphics = browser.display.Graphics;
 #else
 typedef Graphics = flash.display.Graphics;
 #end

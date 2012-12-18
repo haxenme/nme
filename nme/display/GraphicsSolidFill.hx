@@ -40,7 +40,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef GraphicsSolidFill = native.display.GraphicsSolidFill;
 #elseif js
-typedef GraphicsSolidFill = jeash.display.GraphicsSolidFill;
+typedef GraphicsSolidFill = browser.display.GraphicsSolidFill;
 #else
 typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
 #end

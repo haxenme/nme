@@ -1459,7 +1459,7 @@ extern class Keyboard {
 #elseif (cpp || neko)
 typedef Keyboard = native.ui.Keyboard;
 #elseif js
-typedef Keyboard = jeash.ui.Keyboard;
+typedef Keyboard = browser.ui.Keyboard;
 #else
 typedef Keyboard = flash.ui.Keyboard;
 #end

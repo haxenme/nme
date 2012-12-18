@@ -1425,7 +1425,7 @@ class GL {
 	
 	
 	
-	// Get & Set Methods
+	// Getters & Setters
 	
 	
 	

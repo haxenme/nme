@@ -40,7 +40,7 @@ package nme.text;
 #elseif (cpp || neko)
 typedef FontStyle = native.text.FontStyle;
 #elseif js
-typedef FontStyle = jeash.text.FontStyle;
+typedef FontStyle = browser.text.FontStyle;
 #else
 typedef FontStyle = flash.text.FontStyle;
 #end

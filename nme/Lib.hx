@@ -23,24 +23,24 @@ class Lib
 	public static var STENCIL_BUFFER = 0x0400;
 	
 	#if flash
-	public static inline var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
-	public static inline var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
+	public static var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
+	public static var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
 	#elseif js
-	public static inline var MIN_FLOAT_VALUE:Float = untyped __js__ ("Number.MIN_VALUE");
-	public static inline var MAX_FLOAT_VALUE:Float = untyped __js__ ("Number.MAX_VALUE");
+	public static var MIN_FLOAT_VALUE:Float = untyped __js__ ("Number.MIN_VALUE");
+	public static var MAX_FLOAT_VALUE:Float = untyped __js__ ("Number.MAX_VALUE");
 	#else
     public static inline var MIN_FLOAT_VALUE:Float = 2.2250738585072014e-308;
     public static inline var MAX_FLOAT_VALUE:Float = 1.7976931348623158e+308;
 	#end
 	
-	public static var company(get_company, null):String;
+	public static var company (get_company, null):String;
 	public static var current (get_current, null):MovieClip;
-	public static var file(get_file, null):String;
-	public static var initHeight(get_initHeight, null):Int;
-	public static var initWidth(get_initWidth, null):Int;
-	public static var packageName(get_packageName, null):String;
-	public static var stage(get_stage, null):Stage;
-	public static var version(get_version, null):String;
+	public static var file (get_file, null):String;
+	public static var initHeight (get_initHeight, null):Int;
+	public static var initWidth (get_initWidth, null):Int;
+	public static var packageName (get_packageName, null):String;
+	public static var stage (get_stage, null):Stage;
+	public static var version (get_version, null):String;
 	
 	
 	/**
@@ -141,7 +141,7 @@ class Lib
 		#elseif (cpp || neko)
 		return native.Lib.getTimer();
 		#elseif js
-		return jeash.Lib.getTimer();
+		return browser.Lib.getTimer();
 		#else
 		return flash.Lib.getTimer();
 		#end
@@ -159,7 +159,7 @@ class Lib
 		#elseif (cpp || neko)
 		native.Lib.getURL(url, target);
 		#elseif js
-		jeash.Lib.getURL(url, target);
+		browser.Lib.getURL(url, target);
 		#else
 		flash.Lib.getURL(url, target);
 		#end
@@ -245,7 +245,7 @@ class Lib
 		#elseif (cpp || neko)
 		trace(arg);
 		#elseif js
-		jeash.Lib.trace(arg);
+		browser.Lib.trace(arg);
 		#else
 		flash.Lib.trace(arg);
 		#end
@@ -254,7 +254,7 @@ class Lib
 	
 	
 	
-	// Get & Set Methods
+	// Getters & Setters
 	
 	
 	
@@ -275,7 +275,7 @@ class Lib
 		#elseif (cpp || neko)
 		return cast native.Lib.current;
 		#elseif js
-		return cast jeash.Lib.current;
+		return cast browser.Lib.current;
 		#else
 		return cast flash.Lib.current;
 		#end	

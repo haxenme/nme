@@ -17,7 +17,7 @@ extern class Error #if !flash_strict implements Dynamic #end {
 #elseif (cpp || neko)
 typedef Error = native.errors.Error;
 #elseif js
-typedef Error = jeash.errors.Error;
+typedef Error = browser.errors.Error;
 #else
 typedef Error = flash.errors.Error;
 #end

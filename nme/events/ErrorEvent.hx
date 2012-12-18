@@ -65,7 +65,7 @@ extern class ErrorEvent extends TextEvent {
 #elseif (cpp || neko)
 typedef ErrorEvent = native.events.ErrorEvent;
 #elseif js
-typedef ErrorEvent = jeash.events.ErrorEvent;
+typedef ErrorEvent = browser.events.ErrorEvent;
 #else
 typedef ErrorEvent = flash.events.ErrorEvent;
 #end

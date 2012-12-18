@@ -44,7 +44,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef InterpolationMethod = native.display.InterpolationMethod;
 #elseif js
-typedef InterpolationMethod = jeash.display.InterpolationMethod;
+typedef InterpolationMethod = browser.display.InterpolationMethod;
 #else
 typedef InterpolationMethod = flash.display.InterpolationMethod;
 #end

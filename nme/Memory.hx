@@ -24,7 +24,7 @@ extern class Memory
 #elseif (cpp || neko)
 typedef Memory = native.Memory;
 #elseif (js)
-typedef Memory = jeash.Memory;
+typedef Memory = browser.Memory;
 #else
 typedef Memory = flash.Memory;
 #end

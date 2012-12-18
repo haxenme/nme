@@ -177,13 +177,13 @@ class Writer {
 		var all = 0;
 		for( e in events )
 			all |= e.eventsFlags;
-		#if haxe3
+		#if (haxe_211 && haxe3)
 		o.writeInt32(all);
 		#else
 		o.writeUInt30(all);
 		#end
 		for( e in events ) {
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			o.writeInt32(e.eventsFlags);
 			o.writeInt32(e.data.length);
 			#else
@@ -314,7 +314,7 @@ class Writer {
 			o.writeUInt16(h|len);
 		else {
 			o.writeUInt16(h|63);
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			o.writeInt32(len);
 			#else
 			o.writeUInt30(len);
@@ -324,7 +324,7 @@ class Writer {
 
 	function writeTIDExt( id : Int, len : Int ) {
 		o.writeUInt16((id << 6)|63);
-		#if haxe3
+		#if (haxe_211 && haxe3)
 		o.writeInt32(len);
 		#else
 		o.writeUInt30(len);
@@ -959,7 +959,7 @@ class Writer {
 				
 				var part_data = closeTMP(old);
 
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				o.writeInt32(part_data.length);
 				#else
 				o.writeUInt30(part_data.length);
@@ -986,7 +986,7 @@ class Writer {
 				
 				var part_data = closeTMP(old);
 
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				o.writeInt32(part_data.length);
 				#else
 				o.writeUInt30(part_data.length);
@@ -1094,13 +1094,13 @@ class Writer {
 			var first_glyph_offset = num_glyphs * 4 + 4;
 			
 			for(offset in offset_table) {
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				o.writeInt32(first_glyph_offset + offset);
 				#else
 				o.writeUInt30(first_glyph_offset + offset);
 				#end
 			}
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			o.writeInt32(first_glyph_offset + shape_data.length);
 			#else
 			o.writeUInt30(first_glyph_offset + shape_data.length);
@@ -1272,7 +1272,7 @@ class Writer {
 		case TBinaryData(id, data):
 			writeTID(TagId.DefineBinaryData, data.length + 6);
 			o.writeUInt16(id);
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			o.writeInt32(0);
 			#else
 			o.writeUInt30(0);
@@ -1332,7 +1332,7 @@ class Writer {
 			else {
 				var len = data.length + 4 + ctx.label.length + 1;
 				writeTID(TagId.DoABC,len);
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				o.writeInt32(ctx.id);
 				#else
 				o.writeUInt30(ctx.id);
@@ -1405,7 +1405,7 @@ class Writer {
 			case JDJPEG3(data, mask):	
 				writeTIDExt(TagId.DefineBitsJPEG3, data.length + mask.length + 6);
 				o.writeUInt16(id);
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				o.writeInt32(data.length);
 				#else
 				o.writeUInt30(data.length);
@@ -1425,7 +1425,7 @@ class Writer {
 		var bytes = o.getBytes();
 		var size = bytes.length;
 		if( compressed ) bytes = format.tools.Deflate.run(bytes);
-		#if haxe3
+		#if (haxe_211 && haxe3)
 		output.writeInt32(size + 8);
 		#else
 		output.writeUInt30(size + 8);

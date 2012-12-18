@@ -305,7 +305,7 @@ extern class Matrix {
 #elseif (cpp || neko)
 typedef Matrix = native.geom.Matrix;
 #elseif js
-typedef Matrix = jeash.geom.Matrix;
+typedef Matrix = browser.geom.Matrix;
 #else
 typedef Matrix = flash.geom.Matrix;
 #end

@@ -21,7 +21,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef GraphicsPathWinding = native.display.GraphicsPathWinding;
 #elseif js
-typedef GraphicsPathWinding = jeash.display.GraphicsPathWinding;
+typedef GraphicsPathWinding = browser.display.GraphicsPathWinding;
 #else
 typedef GraphicsPathWinding = flash.display.GraphicsPathWinding;
 #end

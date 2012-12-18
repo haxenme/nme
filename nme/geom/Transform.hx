@@ -159,7 +159,7 @@ extern class Transform {
 #elseif (cpp || neko)
 typedef Transform = native.geom.Transform;
 #elseif js
-typedef Transform = jeash.geom.Transform;
+typedef Transform = browser.geom.Transform;
 #else
 typedef Transform = flash.geom.Transform;
 #end

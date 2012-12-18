@@ -77,7 +77,7 @@ class Timer extends EventDispatcher {
 	
 	
 	
-	// Get & Set Methods
+	// Getters & Setters
 	
 	
 	

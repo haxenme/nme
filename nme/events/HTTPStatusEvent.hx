@@ -104,7 +104,7 @@ extern class HTTPStatusEvent extends Event {
 #elseif (cpp || neko)
 typedef HTTPStatusEvent = native.events.HTTPStatusEvent;
 #elseif js
-typedef HTTPStatusEvent = jeash.events.HTTPStatusEvent;
+typedef HTTPStatusEvent = browser.events.HTTPStatusEvent;
 #else
 typedef HTTPStatusEvent = flash.events.HTTPStatusEvent;
 #end

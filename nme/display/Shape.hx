@@ -34,7 +34,7 @@ extern class Shape extends DisplayObject {
 #elseif (cpp || neko)
 typedef Shape = native.display.Shape;
 #elseif js
-typedef Shape = jeash.display.Shape;
+typedef Shape = browser.display.Shape;
 #else
 typedef Shape = flash.display.Shape;
 #end

@@ -25,7 +25,7 @@ package nme.display;
 #elseif (cpp || neko)
 typedef GradientType = native.display.GradientType;
 #elseif js
-typedef GradientType = jeash.display.GradientType;
+typedef GradientType = browser.display.GradientType;
 #else
 typedef GradientType = flash.display.GradientType;
 #end

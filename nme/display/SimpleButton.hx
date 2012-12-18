@@ -115,7 +115,7 @@ extern class SimpleButton extends InteractiveObject {
 #elseif (cpp || neko)
 typedef SimpleButton = native.display.SimpleButton;
 #elseif js
-typedef SimpleButton = jeash.display.SimpleButton;
+typedef SimpleButton = browser.display.SimpleButton;
 #else
 typedef SimpleButton = flash.display.SimpleButton;
 #end

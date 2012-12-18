@@ -32,7 +32,7 @@ class ApplicationMain {
 		total = 0;
 		
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
-		jeash.Lib.preventDefaultTouchMove ();
+		browser.Lib.preventDefaultTouchMove ();
 		::end::::end::
 		
 		::if (PRELOADER_NAME!="")::
@@ -151,7 +151,7 @@ class ApplicationMain {
 		if (Reflect.field(::APP_MAIN::, "main") == null)
 		{
 			var mainDisplayObj = new ::APP_MAIN::();
-			if (Std.is(mainDisplayObj, jeash.display.DisplayObject))
+			if (Std.is(mainDisplayObj, browser.display.DisplayObject))
 				nme.Lib.current.addChild(cast mainDisplayObj);
 		}
 		else

@@ -449,20 +449,20 @@ class Reader {
 
 	function readClipEvents() : Array<ClipEvent> {
 		if ( i.readUInt16() != 0 ) throw error();
-		#if haxe3
+		#if (haxe_211 && haxe3)
 		i.readInt32(); // all events flags
 		#else
 		i.readUInt30(); // all events flags
 		#end
 		var a = new Array();
 		while( true ) {
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			var code = i.readInt32();
 			#else
 			var code = i.readUInt30();
 			#end
 			if( code == 0 ) break;
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			var data = i.read(i.readInt32());
 			#else
 			var data = i.read(i.readUInt30());
@@ -529,8 +529,8 @@ class Reader {
 				color2 : null,
 				blurX : readFixed(),
 				blurY : readFixed(),
-				angle : #if haxe3 0 #else haxe.Int32.ofInt(0) #end,
-				distance : #if haxe3 0 #else haxe.Int32.ofInt(0) #end,
+				angle : #if (haxe_211 && haxe3) 0 #else haxe.Int32.ofInt(0) #end,
+				distance : #if (haxe_211 && haxe3) 0 #else haxe.Int32.ofInt(0) #end,
 				strength : readFixed8(),
 				flags : readFilterFlags(false),
 			});
@@ -581,7 +581,7 @@ class Reader {
 		else
 			throw error();
 		version = i.readByte();
-		#if haxe3
+		#if (haxe_211 && haxe3)
 		var size = i.readInt32();
 		#else
 		var size = i.readUInt30();
@@ -829,7 +829,7 @@ class Reader {
 		var endBounds = readRect();
 		switch(ver) {
 			case 1:
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				i.readInt32();
 				#else
 				i.readUInt30();
@@ -857,7 +857,7 @@ class Reader {
 				var useNonScalingStrokes = bits.read();
 				var useScalingStrokes = bits.read();
 				bits.reset();
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				i.readInt32();
 				#else
 				i.readUInt30();
@@ -1073,7 +1073,7 @@ class Reader {
 		if(hasWideOffsets) {
 			var first_glyph_offset = num_glyphs * 4 + 4;
 			
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			for(j in 0...num_glyphs)
 				offset_table.push(i.readInt32() - first_glyph_offset);
 			#else
@@ -1081,7 +1081,7 @@ class Reader {
 				offset_table.push(i.readUInt30() - first_glyph_offset);
 			#end
 			
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			var code_table_offset = i.readInt32();
 			#else
 			var code_table_offset = i.readUInt30();
@@ -1231,7 +1231,7 @@ class Reader {
 		var len = h & 63;
 		var ext = false;
 		if ( len == 63 ) {
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			len = i.readInt32();
 			#else
 			len = i.readUInt30();
@@ -1298,7 +1298,7 @@ class Reader {
 			TBitsJPEG(cid, JDJPEG2(i.read(len - 2)));
 		case TagId.DefineBitsJPEG3:
 			var cid = i.readUInt16();
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			var dataSize = i.readInt32();
 			#else
 			var dataSize = i.readUInt30();
@@ -1343,7 +1343,7 @@ class Reader {
 			TExportAssets(readSymbols());
 		case TagId.DoABC:
 			var infos = {
-				#if haxe3
+				#if (haxe_211 && haxe3)
 				id : i.readInt32(),
 				#else
 				id : i.readUInt30(),
@@ -1354,7 +1354,7 @@ class Reader {
 			TActionScript3(i.read(len),infos);
 		case TagId.DefineBinaryData:
 			var id = i.readUInt16();
-			#if haxe3
+			#if (haxe_211 && haxe3)
 			if ( i.readInt32() != 0 ) throw error();
 			#else
 			if ( i.readUInt30() != 0 ) throw error();

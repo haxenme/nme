@@ -16,7 +16,7 @@ package nme.events;
 #elseif (cpp || neko)
 typedef EventPhase = native.events.EventPhase;
 #elseif js
-typedef EventPhase = jeash.events.EventPhase;
+typedef EventPhase = browser.events.EventPhase;
 #else
 typedef EventPhase = flash.events.EventPhase;
 #end

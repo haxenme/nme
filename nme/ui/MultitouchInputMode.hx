@@ -30,7 +30,7 @@ package nme.ui;
 #elseif (cpp || neko)
 typedef MultitouchInputMode = native.ui.MultitouchInputMode;
 #elseif js
-typedef MultitouchInputMode = jeash.ui.MultitouchInputMode;
+typedef MultitouchInputMode = browser.ui.MultitouchInputMode;
 #else
 typedef MultitouchInputMode = flash.ui.MultitouchInputMode;
 #end

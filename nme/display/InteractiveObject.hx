@@ -1244,7 +1244,7 @@ extern class InteractiveObject extends DisplayObject {
 #elseif (cpp || neko)
 typedef InteractiveObject = native.display.InteractiveObject;
 #elseif js
-typedef InteractiveObject = jeash.display.InteractiveObject;
+typedef InteractiveObject = browser.display.InteractiveObject;
 #else
 typedef InteractiveObject = flash.display.InteractiveObject;
 #end

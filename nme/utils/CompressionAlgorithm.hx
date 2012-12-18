@@ -30,7 +30,7 @@ package nme.utils;
 #elseif (cpp || neko)
 typedef CompressionAlgorithm = native.utils.CompressionAlgorithm;
 #elseif js
-typedef CompressionAlgorithm = jeash.utils.CompressionAlgorithm;
+typedef CompressionAlgorithm = browser.utils.CompressionAlgorithm;
 #else
 typedef CompressionAlgorithm = flash.utils.CompressionAlgorithm;
 #end

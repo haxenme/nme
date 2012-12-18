@@ -12,5 +12,5 @@ typedef Acceleration =
 #elseif (cpp || neko)
 typedef Acceleration = native.ui.Acceleration;
 #elseif js
-typedef Acceleration = jeash.ui.Acceleration;
+typedef Acceleration = browser.ui.Acceleration;
 #end

@@ -160,7 +160,7 @@ package nme.filters;
 #elseif (cpp || neko)
 typedef GlowFilter = native.filters.GlowFilter;
 #elseif js
-typedef GlowFilter = jeash.filters.GlowFilter;
+typedef GlowFilter = browser.filters.GlowFilter;
 #else
 typedef GlowFilter = flash.filters.GlowFilter;
 #end

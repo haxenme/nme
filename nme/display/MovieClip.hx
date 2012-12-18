@@ -95,7 +95,7 @@ extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end
 	 * The number of frames that are loaded from a streaming SWF file. You can
 	 * use the <code>framesLoaded</code> property to determine whether the
 	 * contents of a specific frame and all the frames before it loaded and are
-	 * available locally in the jeash. You can also use it to monitor the
+	 * available locally in the browser. You can also use it to monitor the
 	 * downloading of large SWF files. For example, you might want to display a
 	 * message to users indicating that the SWF file is loading until a specified
 	 * frame in the SWF file finishes loading.
@@ -223,7 +223,7 @@ extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end
 #elseif (cpp || neko)
 typedef MovieClip = native.display.MovieClip;
 #elseif js
-typedef MovieClip = jeash.display.MovieClip;
+typedef MovieClip = browser.display.MovieClip;
 #else
 typedef MovieClip = flash.display.MovieClip;
 #end

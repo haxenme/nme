@@ -25,7 +25,7 @@ extern class SharedObjectFlushStatus {
 #elseif (cpp || neko)
 typedef SharedObjectFlushStatus = native.net.SharedObjectFlushStatus;
 #elseif js
-typedef SharedObjectFlushStatus = jeash.net.SharedObjectFlushStatus;
+typedef SharedObjectFlushStatus = browser.net.SharedObjectFlushStatus;
 #else
 typedef SharedObjectFlushStatus = flash.net.SharedObjectFlushStatus;
 #end

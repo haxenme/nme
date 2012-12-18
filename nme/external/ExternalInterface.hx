@@ -236,7 +236,7 @@ extern class ExternalInterface {
 #elseif (cpp || neko)
 typedef ExternalInterface = native.external.ExternalInterface;
 #elseif js
-typedef ExternalInterface = jeash.external.ExternalInterface;
+typedef ExternalInterface = browser.external.ExternalInterface;
 #else
 typedef ExternalInterface = flash.external.ExternalInterface;
 #end

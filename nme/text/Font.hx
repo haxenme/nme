@@ -66,7 +66,7 @@ extern class Font {
 #elseif (cpp || neko)
 typedef Font = native.text.Font;
 #elseif js
-typedef Font = jeash.text.Font;
+typedef Font = browser.text.Font;
 #else
 typedef Font = flash.text.Font;
 #end

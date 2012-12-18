@@ -9,7 +9,7 @@ package nme.errors;
 #elseif (cpp || neko)
 typedef ArgumentError = native.errors.ArgumentError;
 #elseif js
-typedef ArgumentError = jeash.errors.ArgumentError;
+typedef ArgumentError = browser.errors.ArgumentError;
 #else
 typedef ArgumentError = flash.errors.ArgumentError;
 #end

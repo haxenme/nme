@@ -164,7 +164,7 @@ extern class Point {
 #elseif (cpp || neko)
 typedef Point = native.geom.Point;
 #elseif js
-typedef Point = jeash.geom.Point;
+typedef Point = browser.geom.Point;
 #else
 typedef Point = flash.geom.Point;
 #end

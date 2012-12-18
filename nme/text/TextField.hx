@@ -921,7 +921,7 @@ extern class TextField extends nme.display.InteractiveObject {
 #elseif (cpp || neko)
 typedef TextField = native.text.TextField;
 #elseif js
-typedef TextField = jeash.text.TextField;
+typedef TextField = browser.text.TextField;
 #else
 typedef TextField = flash.text.TextField;
 #end

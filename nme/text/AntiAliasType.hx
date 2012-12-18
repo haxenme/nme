@@ -33,7 +33,7 @@ package nme.text;
 #elseif (cpp || neko)
 typedef AntiAliasType = native.text.AntiAliasType;
 #elseif js
-typedef AntiAliasType = jeash.text.AntiAliasType;
+typedef AntiAliasType = browser.text.AntiAliasType;
 #else
 typedef AntiAliasType = flash.text.AntiAliasType;
 #end
