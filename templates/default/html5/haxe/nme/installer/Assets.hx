@@ -88,21 +88,23 @@ class Assets {
 			
 			if (libraryTypes.exists (libraryName)) {
 				
-				//#if swf
-				//
-				//if (libraryTypes.get (libraryName) == "swf") {
-					//
-					//if (!cachedSWFLibraries.exists (libraryName)) {
-						//
-						//cachedSWFLibraries.set (libraryName, new SWF (getBytes ("libraries/" + libraryName + ".swf")));
-						//
-					//}
-					//
-					//return cachedSWFLibraries.get (libraryName).getBitmapData (symbolName);
-					//
-				//}
-				//
-				//#end
+				#if swf
+				
+				if (libraryTypes.get (libraryName) == "swf") {
+					
+					if (!cachedSWFLibraries.exists (libraryName)) {
+						
+						var unserializer = new Unserializer (getText ("libraries/" + libraryName + ".dat"));
+						unserializer.setResolver (cast { resolveEnum: resolveEnum, resolveClass: resolveClass });
+						cachedSWFLibraries.set (libraryName, unserializer.unserialize());
+						
+					}
+					
+					return cachedSWFLibraries.get (libraryName).getBitmapData (symbolName);
+					
+				}
+				
+				#end
 				
 				#if xfl
 				
@@ -201,7 +203,6 @@ class Assets {
 					
 					var unserializer = new Unserializer (getText ("libraries/" + libraryName + ".dat"));
 					unserializer.setResolver (cast { resolveEnum: resolveEnum, resolveClass: resolveClass });
-					
 					cachedSWFLibraries.set (libraryName, unserializer.unserialize());
 					
 				}
@@ -235,22 +236,6 @@ class Assets {
 		}
 		
 		return null;
-		
-	}
-	
-	
-	private static function resolveClass (name:String):Class <Dynamic> {
-		
-		name = StringTools.replace (name, "native.", "browser.");
-		return Type.resolveClass (name);
-		
-	}
-	
-	
-	private static function resolveEnum (name:String):Enum <Dynamic> {
-		
-		name = StringTools.replace (name, "native.", "browser.");
-		return Type.resolveEnum (name);
 		
 	}
 	
@@ -323,6 +308,22 @@ class Assets {
 	public static function loadText(id:String, handler:String -> Void):String
 	{
 		return null;
+	}
+	
+	
+	private static function resolveClass (name:String):Class <Dynamic> {
+		
+		name = StringTools.replace (name, "native.", "browser.");
+		return Type.resolveClass (name);
+		
+	}
+	
+	
+	private static function resolveEnum (name:String):Enum <Dynamic> {
+		
+		name = StringTools.replace (name, "native.", "browser.");
+		return Type.resolveEnum (name);
+		
 	}
 	
 	

@@ -3,6 +3,7 @@ package;
 
 import format.SWF;
 import format.swf.exporters.SWFLiteExporter;
+import format.swf.lite.symbols.BitmapSymbol;
 import haxe.io.Path;
 import haxe.Serializer;
 import haxe.Template;
@@ -126,9 +127,23 @@ class SWFHelper {
 					var bytes = ByteArray.readFile (library.sourcePath);
 					var swf = new SWF (bytes);
 					var exporter = new SWFLiteExporter (swf.data);
+					var swfLite = exporter.swfLite;
+					
+					for (id in exporter.bitmaps.keys ()) {
+						
+						var bitmapData = exporter.bitmaps.get (id);
+						var symbol:BitmapSymbol = cast swfLite.symbols.get (id);
+						symbol.path = "libraries/bin/" + id + ".png";
+						swfLite.symbols.set (id, symbol);
+						
+						var asset = new Asset ("", symbol.path, AssetType.IMAGE);
+						asset.data = bitmapData.encode ("png");
+						project.assets.push (asset);
+						
+					}
 					
 					var asset = new Asset ("", "libraries/" + library.name + ".dat", AssetType.TEXT);
-					asset.data = Serializer.run (exporter.swfLite);
+					asset.data = Serializer.run (swfLite);
 					project.assets.push (asset);
 					
 				} else {
