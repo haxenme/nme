@@ -3,11 +3,18 @@ package browser.net;
 
 import browser.errors.Error;
 import browser.events.EventDispatcher;
-import browser.net.SharedObjectFlushedStatus;
+import browser.net.SharedObjectFlushStatus;
+import browser.Lib;
 import haxe.io.Bytes;
 import haxe.Serializer;
 import haxe.Unserializer;
+
+#if haxe_211
+import js.html.Storage;
+import js.Browser;
+#else
 import js.Storage;
+#end
 
 
 class SharedObject extends EventDispatcher {
@@ -35,18 +42,18 @@ class SharedObject extends EventDispatcher {
 	}
 	
 	
-	public function flush ():SharedObjectFlushedStatus {
+	public function flush ():SharedObjectFlushStatus {
 		
 		var data = Serializer.run (data);
 		nmeGetLocalStorage ().setItem (nmeKey, data);
-		return SharedObjectFlushedStatus.FLUSHED;
+		return SharedObjectFlushStatus.FLUSHED;
 		
 	}
 	
 	
 	public static function getLocal (name:String, localPath:String = null, secure:Bool = false /* note: unsupported */) {
 		
-		if (localPath == null) localPath = js.Lib.window.location.href;
+		if (localPath == null) localPath = Lib.window.location.href;
 		
 		var so = new SharedObject ();
 		so.nmeKey = localPath + ":" + name;
@@ -67,7 +74,11 @@ class SharedObject extends EventDispatcher {
 	
 	private static function nmeGetLocalStorage ():Storage {
 		
+		#if haxe_211
+		var res = Browser.getLocalStorage ();
+		#else
 		var res = Storage.getLocal ();
+		#end
 		if (res == null) throw new Error ("SharedObject not supported");
 		return res;
 		
