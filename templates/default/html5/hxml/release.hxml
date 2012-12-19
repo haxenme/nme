@@ -4,4 +4,5 @@
 -D html5
 -D html
 --remap flash:nme
+--remap native:browser
 --js-modern

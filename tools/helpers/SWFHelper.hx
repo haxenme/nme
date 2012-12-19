@@ -2,7 +2,9 @@ package;
 
 
 import format.SWF;
+import format.swf.exporters.SWFLiteExporter;
 import haxe.io.Path;
+import haxe.Serializer;
 import haxe.Template;
 import nme.utils.ByteArray;
 import sys.io.File;
@@ -119,7 +121,21 @@ class SWFHelper {
 				project.haxelibs.remove ("swf");
 				project.haxelibs.push ("swf");
 				
-				project.assets.push (new Asset (library.sourcePath, "libraries/" + library.name + ".swf", AssetType.BINARY));
+				if (project.target == Platform.HTML5) {
+					
+					var bytes = ByteArray.readFile (library.sourcePath);
+					var swf = new SWF (bytes);
+					var exporter = new SWFLiteExporter (swf.data);
+					
+					var asset = new Asset ("", "libraries/" + library.name + ".dat", AssetType.TEXT);
+					asset.data = Serializer.run (exporter.swfLite);
+					project.assets.push (asset);
+					
+				} else {
+					
+					project.assets.push (new Asset (library.sourcePath, "libraries/" + library.name + ".swf", AssetType.BINARY));
+					
+				}
 				
 			}
 			

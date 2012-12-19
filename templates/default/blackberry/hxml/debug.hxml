@@ -2,5 +2,6 @@
 -cp ::BUILD_DIR::/blackberry/haxe
 -cpp ::CPP_DIR::
 --remap flash:nme
+--remap browser:native
 -D blackberry
 -debug

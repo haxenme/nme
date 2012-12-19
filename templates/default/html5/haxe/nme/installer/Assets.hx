@@ -11,9 +11,9 @@ import nme.text.Font;
 import nme.utils.ByteArray;
 import ApplicationMain;
 
-//#if swf
-//import format.SWF;
-//#end
+#if swf
+import format.swf.lite.SWFLite;
+#end
 
 #if xfl
 import format.XFL;
@@ -29,7 +29,7 @@ class Assets {
 	
 	
 	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
-	//#if swf private static var cachedSWFLibraries:Hash <SWF> = new Hash <SWF> (); #end
+	#if swf private static var cachedSWFLibraries:Hash <SWFLite> = new Hash <SWFLite> (); #end
 	#if xfl private static var cachedXFLLibraries:Hash <XFL> = new Hash <XFL> (); #end
 	
 	private static var initialized:Bool = false;
@@ -162,6 +162,8 @@ class Assets {
 			var font = cast (new NME_::flatName:: (), Font);
 			return font; 
 			::end::::end::
+			default:
+			
 		}
 
 		/*
@@ -191,21 +193,24 @@ class Assets {
 		
 		if (libraryTypes.exists (libraryName)) {
 			
-			//#if swf
-			//
-			//if (libraryTypes.get (libraryName) == "swf") {
-				//
-				//if (!cachedSWFLibraries.exists (libraryName)) {
-					//
-					//cachedSWFLibraries.set (libraryName, new SWF (getBytes ("libraries/" + libraryName + ".swf")));
-					//
-				//}
-				//
-				//return cachedSWFLibraries.get (libraryName).createMovieClip (symbolName);
-				//
-			//}
-			//
-			//#end
+			#if swf
+			
+			if (libraryTypes.get (libraryName) == "swf") {
+				
+				if (!cachedSWFLibraries.exists (libraryName)) {
+					
+					var unserializer = new Unserializer (getText ("libraries/" + libraryName + ".dat"));
+					unserializer.setResolver (cast { resolveEnum: resolveEnum, resolveClass: resolveClass });
+					
+					cachedSWFLibraries.set (libraryName, unserializer.unserialize());
+					
+				}
+				
+				return cachedSWFLibraries.get (libraryName).createMovieClip (symbolName);
+				
+			}
+			
+			#end
 			
 			#if xfl
 			
@@ -230,6 +235,22 @@ class Assets {
 		}
 		
 		return null;
+		
+	}
+	
+	
+	private static function resolveClass (name:String):Class <Dynamic> {
+		
+		name = StringTools.replace (name, "native.", "browser.");
+		return Type.resolveClass (name);
+		
+	}
+	
+	
+	private static function resolveEnum (name:String):Enum <Dynamic> {
+		
+		name = StringTools.replace (name, "native.", "browser.");
+		return Type.resolveEnum (name);
 		
 	}
 	

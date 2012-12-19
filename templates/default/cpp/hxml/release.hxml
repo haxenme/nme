@@ -2,3 +2,4 @@
 -cp ::BUILD_DIR::/cpp/haxe
 -cpp ::CPP_DIR::
 --remap flash:nme
+--remap browser:native

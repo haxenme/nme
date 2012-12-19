@@ -4,3 +4,4 @@
 -D android
 -debug
 --remap flash:nme
+--remap browser:native

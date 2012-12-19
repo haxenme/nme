@@ -2,3 +2,4 @@
 -cp ::BUILD_DIR::/neko/haxe
 -neko ::NEKO_FILE::
 --remap flash:nme
+--remap browser:native

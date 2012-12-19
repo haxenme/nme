@@ -2,6 +2,7 @@
 -cp ::BUILD_DIR::/webos/haxe
 -cpp ::CPP_DIR::
 --remap flash:nme
+--remap browser:native
 -D webos
 -D HXCPP_LOAD_DEBUG
 -D HXCPP_RTLD_LAZY

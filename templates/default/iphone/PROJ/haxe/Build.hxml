@@ -2,3 +2,4 @@
 -D iphone
 -D ios
 --remap flash:nme
+--remap browser:native
