@@ -293,22 +293,22 @@ class Assets {
 	}
 	
 	
-	public static function loadBitmapData(id:String, handler:BitmapData -> Void, useCache:Bool = true):BitmapData
-	{
-		return null;
-	}
-	
-	
-	public static function loadBytes(id:String, handler:ByteArray -> Void):ByteArray
-	{	
-		return null;
-	}
-	
-	
-	public static function loadText(id:String, handler:String -> Void):String
-	{
-		return null;
-	}
+	//public static function loadBitmapData(id:String, handler:BitmapData -> Void, useCache:Bool = true):BitmapData
+	//{
+		//return null;
+	//}
+	//
+	//
+	//public static function loadBytes(id:String, handler:ByteArray -> Void):ByteArray
+	//{	
+		//return null;
+	//}
+	//
+	//
+	//public static function loadText(id:String, handler:String -> Void):String
+	//{
+		//return null;
+	//}
 	
 	
 	private static function resolveClass (name:String):Class <Dynamic> {
