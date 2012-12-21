@@ -1053,13 +1053,14 @@ class Lib {
 			
 			nmeGetStage ().backgroundColor = nmeParseColor (tgt.style.backgroundColor, function (res, pos, cur) { 
 				
-				return switch (pos) {
-					
-					case 0: res | (cur << 16);
-					case 1: res | (cur << 8);
-					case 2: res | (cur);
-					
-				}
+				return if (pos == 0)
+					res | (cur << 16);
+				else if (pos == 1)
+					res | (cur << 8);
+				else if (pos == 2)
+					res | (cur);
+				else
+					throw "pos should be 0-2";
 				
 			}); 
 			
