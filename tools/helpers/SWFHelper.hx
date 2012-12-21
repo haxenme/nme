@@ -2,8 +2,10 @@ package;
 
 
 import format.SWF;
+#if swfdev
 import format.swf.exporters.SWFLiteExporter;
 import format.swf.lite.symbols.BitmapSymbol;
+#end
 import haxe.io.Path;
 import haxe.Serializer;
 import haxe.Template;
@@ -122,6 +124,7 @@ class SWFHelper {
 				project.haxelibs.remove ("swf");
 				project.haxelibs.push ("swf");
 				
+				#if swfdev
 				if (project.target == Platform.HTML5) {
 					
 					var bytes = ByteArray.readFile (library.sourcePath);
@@ -147,10 +150,13 @@ class SWFHelper {
 					project.assets.push (asset);
 					
 				} else {
+				#end
 					
 					project.assets.push (new Asset (library.sourcePath, "libraries/" + library.name + ".swf", AssetType.BINARY));
 					
+				#if swfdev
 				}
+				#end
 				
 			}
 			
