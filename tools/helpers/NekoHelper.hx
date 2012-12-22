@@ -23,6 +23,7 @@ class NekoHelper {
 		var output = File.write (target, true);
 		output.write (executable);
 		output.write (sourceContents);
+		output.writeString ("NEKO");
 		#if (haxe_211 && haxe3)
 		output.writeInt32 (executable.length);
 		#else

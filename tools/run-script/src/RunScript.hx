@@ -939,7 +939,17 @@ class RunScript {
 				case "zip":
 					
 					var tempPath = "../nme-release-zip";
-					var targetPath = "../nme-" + getVersion () + "-" + getRevision () + ".zip";
+					var targetPath = "";
+					
+					if (!isWindows) {
+						
+						targetPath = "../nme-" + getVersion () + "-" + getRevision () + ".zip";
+						
+					} else {
+						
+						targetPath = "../nme-" + getVersion () + ".zip";
+						
+					}
 					
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
 					
@@ -952,10 +962,9 @@ class RunScript {
 					if (!isWindows) {
 						
 						runCommand (nmeDirectory + tempPath, "zip", [ "-r", targetPath, "*" ]);
+						removeDirectory (nmeDirectory + tempPath);
 						
 					}
-					
-					removeDirectory (nmeDirectory + tempPath);
 				
 				case "installer":
 					

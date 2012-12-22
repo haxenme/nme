@@ -38,7 +38,7 @@ class WindowsPlatform implements IPlatformTool {
 			
 			if (IconHelper.createWindowsIcon (project.icons, iconPath)) {
 				
-				ProcessHelper.runCommand ("", PathHelper.findTemplate (project.templatePaths, "bin/ReplaceVistaIcon.exe"), [ executablePath, iconPath ], false);
+				ProcessHelper.runCommand ("", PathHelper.findTemplate (project.templatePaths, "bin/ReplaceVistaIcon.exe"), [ executablePath, iconPath ], true, true);
 				
 			}
 			
