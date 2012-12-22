@@ -1,6 +1,23 @@
 Changes
 =======
 
+3.5.0
+---------------
+* Updated to be compatible with Haxe 3 when it is available
+* New and completely rewritten command-line tools
+* Added direct renderer support, for custom OpenGL display objects
+* SWF libraries are now integrated with nme.Assets
+* "neash" and "jeash" code paths are now "native" and "browser"
+* Significant compatibility improvements with HTML5
+* Added fast drawTiles support for HTML5
+* Initial work to support DirectX and WinRT
+* BlackBerry native extensions can now receive system events
+* Improved Windows 8 support
+* Improvements to ByteArray support
+* Many small fixes and improvements
+* Removed integration for Adobe AIR
+* Removed integration for Apache Cordova
+
 3.4.4
 ---------------
 * Added BlackBerry 10 support

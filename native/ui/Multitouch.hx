@@ -46,7 +46,7 @@ class Multitouch {
 	private static function set_inputMode (inMode:MultitouchInputMode):MultitouchInputMode {
 		
 		if (inMode == MultitouchInputMode.GESTURE)
-			return nmeGetInputMode ();
+			return inputMode;
 		
 		// No gestures at the moment...
 		nme_stage_set_multitouch_active (Lib.current.stage.nmeHandle, inMode == MultitouchInputMode.TOUCH_POINT);

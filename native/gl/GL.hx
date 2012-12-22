@@ -1564,6 +1564,7 @@ class GL {
 	private static var nme_gl_vertex_attrib1f = load ("nme_gl_vertex_attrib1f", 2);
 	private static var nme_gl_vertex_attrib1fv = load ("nme_gl_vertex_attrib1fv", 2);
 	private static var nme_gl_vertex_attrib2f = load ("nme_gl_vertex_attrib2f", 3);
+	private static var nme_gl_vertex_attrib2fv = load ("nme_gl_vertex_attrib2fv", 3);
 	private static var nme_gl_vertex_attrib3f = load ("nme_gl_vertex_attrib3f", 4);
 	private static var nme_gl_vertex_attrib3fv = load ("nme_gl_vertex_attrib3fv", 2);
 	private static var nme_gl_vertex_attrib4f = load ("nme_gl_vertex_attrib4f", 5);
