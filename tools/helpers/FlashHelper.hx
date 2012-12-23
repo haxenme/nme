@@ -34,6 +34,8 @@ class FlashHelper {
 			
 		}
 		
+		LogHelper.info ("", " - Embedding asset: [" + type + "] " + name);
+		
 		var cid = nextAssetID ();
 		
 		if (type == AssetType.MUSIC || type == AssetType.SOUND) {
