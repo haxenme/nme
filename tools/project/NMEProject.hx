@@ -362,25 +362,29 @@ class NMEProject {
 	
 	public function merge (project:NMEProject):Void {
 		
-		ObjectHelper.copyUniqueFields (project.meta, meta, project.defaultMeta);
-		ObjectHelper.copyUniqueFields (project.app, app, project.defaultApp);
-		ObjectHelper.copyUniqueFields (project.window, window, project.defaultWindow);
-		
-		HashHelper.copyUniqueKeys (project.environment, environment);
-		
-		config.merge (project.config);
-		
-		assets = ArrayHelper.concatUnique (assets, project.assets);
-		dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
-		haxedefs = ArrayHelper.concatUnique (haxedefs, project.haxedefs);
-		haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
-		haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
-		icons = ArrayHelper.concatUnique (icons, project.icons);
-		javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
-		libraries = ArrayHelper.concatUnique (libraries, project.libraries);
-		ndlls = ArrayHelper.concatUnique (ndlls, project.ndlls);
-		sources = ArrayHelper.concatUnique (sources, project.sources);
-		templatePaths = ArrayHelper.concatUnique (templatePaths, project.templatePaths);
+		if (project != null) {
+			
+			ObjectHelper.copyUniqueFields (project.meta, meta, project.defaultMeta);
+			ObjectHelper.copyUniqueFields (project.app, app, project.defaultApp);
+			ObjectHelper.copyUniqueFields (project.window, window, project.defaultWindow);
+			
+			HashHelper.copyUniqueKeys (project.environment, environment);
+			
+			config.merge (project.config);
+			
+			assets = ArrayHelper.concatUnique (assets, project.assets);
+			dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
+			haxedefs = ArrayHelper.concatUnique (haxedefs, project.haxedefs);
+			haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
+			haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
+			icons = ArrayHelper.concatUnique (icons, project.icons);
+			javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
+			libraries = ArrayHelper.concatUnique (libraries, project.libraries);
+			ndlls = ArrayHelper.concatUnique (ndlls, project.ndlls);
+			sources = ArrayHelper.concatUnique (sources, project.sources);
+			templatePaths = ArrayHelper.concatUnique (templatePaths, project.templatePaths);
+			
+		}
 		
 	}
 	
