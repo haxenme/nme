@@ -273,7 +273,7 @@ class Matrix3D {
 		
 		var m = new Matrix3D ();
 		
-		for (i in new IntIter(0, 16)) {
+		for (i in 0...16) {
 			
 			m.rawData[i] = thisMat.rawData[i] + (toMat.rawData[i] - thisMat.rawData[i]) * percent;
 			
@@ -286,7 +286,7 @@ class Matrix3D {
 	
 	inline public function interpolateTo (toMat:Matrix3D, percent:Float):Void {
 		
-		for (i in new IntIter (0, 16)) {
+		for (i in 0...16) {
 			
 			rawData[i] = rawData[i] + (toMat.rawData[i] - rawData[i]) * percent;
 			
