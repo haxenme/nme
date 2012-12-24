@@ -5,7 +5,7 @@
 
 
 // Only tested on mac so far ...
-#ifdef OGL_EXPORTS
+//#ifdef OGL_EXPORTS
 
 
 #ifdef ANDROID
@@ -1625,6 +1625,6 @@ DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
 
-#endif // ifdef HX_MACOS
+//#endif // ifdef HX_MACOS
 
 

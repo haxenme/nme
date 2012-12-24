@@ -12,6 +12,7 @@ import nme.text.Font;
 import nme.utils.ByteArray;
 import sys.io.File;
 import sys.FileSystem;
+import sys.io.FileSeek;
 
 
 class FlashHelper {
@@ -139,61 +140,71 @@ class FlashHelper {
 				
 			} else {
 				
-				var r = new format.wav.Reader (input);
-				var wav = r.read ();
-				var hdr = wav.header;
-				
-				if (hdr.format != WF_PCM) {
+				if (input.readString (4) != "RIFF") {
 					
-					throw "Only PCM (uncompressed) wav files can be imported.";
+					Sys.println ("Warning: Could not embed unrecognized WAV file \"" + name + "\"");
 					
-				}
-				
-				// Check sampling rate
-				var flashRate = switch (hdr.samplingRate) {
+				} else {
 					
-					case  5512: SR5k;
-					case 11025: SR11k;
-					case 22050: SR22k;
-					case 44100: SR44k;
-					default:
-						throw "Only 5512, 11025, 22050 and 44100 Hz wav files are supported by flash. Sampling rate of '" + src + "' is: " + hdr.samplingRate;
+					input = File.read (src, true);
 					
-				}
+					var r = new format.wav.Reader (input);
+					var wav = r.read ();
+					var hdr = wav.header;
+					
+					if (hdr.format != WF_PCM) {
+						
+						throw "Only PCM (uncompressed) wav files can be imported.";
+						
+					}
+					
+					// Check sampling rate
+					var flashRate = switch (hdr.samplingRate) {
+						
+						case  5512: SR5k;
+						case 11025: SR11k;
+						case 22050: SR22k;
+						case 44100: SR44k;
+						default:
+							throw "Only 5512, 11025, 22050 and 44100 Hz wav files are supported by flash. Sampling rate of '" + src + "' is: " + hdr.samplingRate;
+						
+					}
 
-				var isStereo = switch (hdr.channels) {
-					
-					case 1: false;
-					case 2: true;
-					default: 
-						throw "Number of channels should be 1 or 2, but for '" + src + "' it is " + hdr.channels;
-					
-				}
+					var isStereo = switch (hdr.channels) {
+						
+						case 1: false;
+						case 2: true;
+						default: 
+							throw "Number of channels should be 1 or 2, but for '" + src + "' it is " + hdr.channels;
+						
+					}
 
-				var is16bit = switch (hdr.bitsPerSample) {
+					var is16bit = switch (hdr.bitsPerSample) {
+						
+						case 8: false;
+						case 16: true;
+						default: 
+							throw "Bits per sample should be 8 or 16, but for '" + src + "' it is " + hdr.bitsPerSample;
+						
+					}
 					
-					case 8: false;
-					case 16: true;
-					default: 
-						throw "Bits per sample should be 8 or 16, but for '" + src + "' it is " + hdr.bitsPerSample;
+					var sampleCount = Std.int (wav.data.length / (hdr.bitsPerSample / 8));
+					
+					var snd:format.swf.Sound = {
+						
+						sid : cid,
+						format : SFLittleEndianUncompressed,
+						rate : flashRate,
+						is16bit : is16bit,
+						isStereo : isStereo,
+						samples : #if (haxe_211 && haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
+						data : SDRaw (wav.data)
+						
+					}
+					
+					outTags.push (TSound (snd));
 					
 				}
-				
-				var sampleCount = Std.int (wav.data.length / (hdr.bitsPerSample / 8));
-				
-				var snd:format.swf.Sound = {
-					
-					sid : cid,
-					format : SFLittleEndianUncompressed,
-					rate : flashRate,
-					is16bit : is16bit,
-					isStereo : isStereo,
-					samples : #if (haxe_211 && haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
-					data : SDRaw (wav.data)
-					
-				}
-				
-				outTags.push (TSound (snd));
 				
 			}
 			
