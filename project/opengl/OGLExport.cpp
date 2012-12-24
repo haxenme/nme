@@ -304,9 +304,17 @@ DEFINE_PRIM(nme_gl_get_parameter,1);
 
 GL_IS(buffer,Buffer)
 GL_IS(enabled,Enabled)
-GL_IS(framebuffer,Framebuffer)
 GL_IS(program,Program)
+#ifndef HX_LINUX
+GL_IS(framebuffer,Framebuffer)
 GL_IS(renderbuffer,Renderbuffer)
+#else
+value nme_gl_is_framebuffer(value val) { return alloc_bool (0); }
+DEFINE_PRIM(nme_gl_is_framebuffer,1);
+
+value nme_gl_is_renderbuffer(value val) { return alloc_bool (0); }
+DEFINE_PRIM(nme_gl_is_renderbuffer,1);
+#endif
 GL_IS(shader,Shader)
 GL_IS(texture,Texture)
 
@@ -1215,14 +1223,18 @@ DEFINE_PRIM(nme_gl_get_buffer_parameter,2);
 
 value nme_gl_bind_framebuffer(value target, value framebuffer)
 {
+   #ifndef HX_LINUX
    glBindFramebuffer(val_int(target), val_int(framebuffer) );
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_framebuffer,2);
 
 value nme_gl_bind_renderbuffer(value target, value renderbuffer)
 {
+   #ifndef HX_LINUX
    glBindRenderbuffer(val_int(target),val_int(renderbuffer));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_renderbuffer,2);
@@ -1230,7 +1242,9 @@ DEFINE_PRIM(nme_gl_bind_renderbuffer,2);
 value nme_gl_create_framebuffer( )
 {
    GLuint id = 0;
+   #ifndef HX_LINUX
    glGenFramebuffers(1,&id);
+   #endif
    return alloc_int(id);
 }
 DEFINE_PRIM(nme_gl_create_framebuffer,0);
@@ -1238,42 +1252,56 @@ DEFINE_PRIM(nme_gl_create_framebuffer,0);
 value nme_gl_create_render_buffer( )
 {
    GLuint id = 0;
+   #ifndef HX_LINUX
    glGenRenderbuffers(1,&id);
+   #endif
    return alloc_int(id);
 }
 DEFINE_PRIM(nme_gl_create_render_buffer,0);
 
 value nme_gl_framebuffer_renderbuffer(value target, value attachment, value renderbuffertarget, value renderbuffer)
 {
+   #ifndef HX_LINUX
    glFramebufferRenderbuffer(val_int(target), val_int(attachment), val_int(renderbuffertarget), val_int(renderbuffer) );
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_framebuffer_renderbuffer,4);
 
 value nme_gl_framebuffer_texture2D(value target, value attachment, value textarget, value texture, value level)
 {
+   #ifndef HX_LINUX
    glFramebufferTexture2D( val_int(target), val_int(attachment), val_int(textarget), val_int(texture), val_int(level) );
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_framebuffer_texture2D,5);
 
 value nme_gl_renderbuffer_storage(value target, value internalFormat, value width, value height)
 {
+   #ifndef HX_LINUX
    glRenderbufferStorage( val_int(target), val_int(internalFormat), val_int(width), val_int(height) );
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_renderbuffer_storage,4);
 
 value nme_gl_check_framebuffer_status(value inTarget)
 {
+   #ifndef HX_LINUX
    return alloc_int( glCheckFramebufferStatus(val_int(inTarget)));
+   #else
+   return alloc_int(0);
+   #endif
 }
 DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
 value nme_gl_get_framebuffer_attachment_parameter(value target, value attachment, value pname)
 {
    GLint result = 0;
+   #ifndef HX_LINUX
    glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachment), val_int(pname), &result);
+   #endif
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_framebuffer_attachment_parameter,3);
@@ -1281,7 +1309,9 @@ DEFINE_PRIM(nme_gl_get_framebuffer_attachment_parameter,3);
 value nme_gl_get_render_buffer_parameter(value target, value pname)
 {
    int result = 0;
+   #ifndef HX_LINUX
    glGetRenderbufferParameteriv(val_int(target), val_int(pname), &result);
+   #endif
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
@@ -1606,7 +1636,9 @@ DEFINE_PRIM_MULT(nme_gl_copy_tex_sub_image_2d);
 
 value nme_gl_generate_mipmap(value inTarget)
 {
+   #ifndef HX_LINUX
    glGenerateMipmap(val_int(inTarget));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_generate_mipmap,1);
