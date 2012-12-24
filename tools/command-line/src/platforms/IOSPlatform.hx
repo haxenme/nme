@@ -215,7 +215,6 @@ class IOSPlatform implements IPlatformTool {
 		
 		context.HXML_PATH = PathHelper.findTemplate (project.templatePaths, "iphone/PROJ/haxe/Build.hxml");
 		context.PRERENDERED_ICON = false;
-		context.registerStatics = true;
 		
 		/*var assets = new Array <Asset> ();
 		
@@ -224,13 +223,6 @@ class IOSPlatform implements IPlatformTool {
 			var newAsset = asset.clone ();
 			
 			assets.push ();
-			
-		}*/
-		
-		
-		/*for (asset in assets) {
-			
-			asset.resourceName = asset.flatName;
 			
 		}*/
 		
@@ -250,6 +242,19 @@ class IOSPlatform implements IPlatformTool {
 	
 	
 	public function update (project:NMEProject):Void {
+		
+		project = project.clone ();
+		
+		project.ndlls.push (new NDLL ("curl_ssl", "nme", false));
+		project.ndlls.push (new NDLL ("png", "nme", false));
+		project.ndlls.push (new NDLL ("jpeg", "nme", false));
+		project.ndlls.push (new NDLL ("z", "nme", false));
+		
+		for (asset in project.assets) {
+			
+			asset.resourceName = asset.flatName;
+			
+		}
 		
 		var context = generateContext (project);
 		
@@ -288,13 +293,6 @@ class IOSPlatform implements IPlatformTool {
 		
 		PathHelper.mkdir (projectDirectory + "/lib");
 		
-		var ndlls = project.ndlls.copy ();
-		
-		ndlls.push (new NDLL ("curl_ssl", "nme"));
-		ndlls.push (new NDLL ("png", "nme"));
-		ndlls.push (new NDLL ("jpeg", "nme"));
-		ndlls.push (new NDLL ("z", "nme"));
-		
 		for (archID in 0...3) {
 			
 			var arch = [ "armv6", "armv7", "i386" ][archID];
@@ -310,7 +308,7 @@ class IOSPlatform implements IPlatformTool {
 			PathHelper.mkdir (projectDirectory + "/lib/" + arch);
 			PathHelper.mkdir (projectDirectory + "/lib/" + arch + "-debug");
 			
-			for (ndll in ndlls) {
+			for (ndll in project.ndlls) {
 				
 				if (ndll.haxelib != null) {
 					
@@ -343,8 +341,8 @@ class IOSPlatform implements IPlatformTool {
 			
 			if (asset.type != AssetType.TEMPLATE) {
 				
-				//PathHelper.mkdir (Path.directory (projectDirectory + "/assets/" + asset.flatName));
-				//FileHelper.copyIfNewer (asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
+				PathHelper.mkdir (Path.directory (projectDirectory + "/assets/" + asset.flatName));
+				FileHelper.copyIfNewer (asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
 				
 			} else {
 				
