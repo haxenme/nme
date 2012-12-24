@@ -64,13 +64,13 @@ class FlashHelper {
 				return false;
 				
 			}
-
+			
 			var input = File.read (src, true);
 			
 			if (ext == "mp3") {
-
+				
 				var reader = new mpeg.audio.MpegAudioReader(input);
-
+				
 				var frameDataWriter = new haxe.io.BytesOutput();
 				var totalLengthSamples = 0;
 				var samplingFrequency = -1;
@@ -78,7 +78,7 @@ class FlashHelper {
 				var encoderDelay = 0;
 				var endPadding = 0;
 				var decoderDelay = 529; // This is a constant delay caused by the Fraunhofer MP3 Decoder used in Flash Player.
-
+				
 				while (true) {
 					switch (reader.readNext()) {
 						case Frame(frame):
@@ -99,32 +99,32 @@ class FlashHelper {
 						}
 						frameDataWriter.write(frame.frameData);
 						totalLengthSamples += mpeg.audio.Utils.lookupSamplesPerFrame(frame.header.version, frame.header.layer);
-
+						
 						case GaplessInfo(giEncoderDelay, giEndPadding):
 						encoderDelay = giEncoderDelay;
 						endPadding = giEndPadding;
-
+						
 						case Info(_): // ignore
 						case Unknown(_): // ignore
 						case End: break;
 					}
 				}
-
+				
 				if (totalLengthSamples == 0) {
 					throw "File " + src + " does not contain any valid MP3 audio data!";
 				}
-
+				
 				var flashSamplingFrequency = switch (samplingFrequency) {
 					case 11025: SR11k;
 					case 22050: SR22k;
 					case 44100: SR44k;
-
+					
 					default: throw "Only 11025, 22050 and 44100kHz MP3 files are supported by Flash. "
 							+ "File " + src + " is: " + samplingFrequency + "kHz.";
 				}
-
+				
 				var frameData = frameDataWriter.getBytes();
-
+				
 				var snd = {
 					sid: cid,
 					format: SFMP3,
