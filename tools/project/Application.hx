@@ -366,20 +366,6 @@ typedef MetaData = {
 	
 }
 
-class NDLL {
-	
-	public var haxelib:String;
-	public var name:String;
-	
-	public function new (name:String, haxelib:String = "") {
-		
-		this.name = name;
-		this.haxelib = haxelib;
-		
-	}
-	
-}
-
 enum Platform {
 	
 	ANDROID;

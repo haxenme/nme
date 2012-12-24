@@ -138,7 +138,7 @@ class FileHelper {
 		
 		if (FileSystem.exists (path)) {
 			
-			var targetPath = targetDirectory + "/" + namePrefix + ndll.name + nameSuffix;
+			var targetPath = PathHelper.combine (targetDirectory, namePrefix + ndll.name + nameSuffix);
 			
 			PathHelper.mkdir (targetDirectory);
 			LogHelper.info ("", " - Copying library file: " + path + " -> " + targetPath);

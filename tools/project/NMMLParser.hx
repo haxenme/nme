@@ -706,7 +706,7 @@ class NMMLParser extends NMEProject {
 						var name = "";
 						
 						if (element.has.path) {
-
+							
 							var subPath = substitute (element.att.path);
 							if (subPath == "") subPath = element.att.path;
 							name = findIncludeFile (extensionPath + subPath);
@@ -830,7 +830,10 @@ class NMMLParser extends NMEProject {
 							
 						}
 						
-						ndlls.push (new NDLL (substitute (element.att.name), haxelib));
+						var ndll = new NDLL (substitute (element.att.name), haxelib);
+						ndll.extensionPath = extensionPath;
+						
+						ndlls.push (ndll);
 					
 					case "launchImage":
 						
