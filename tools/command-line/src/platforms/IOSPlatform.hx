@@ -281,6 +281,13 @@ class IOSPlatform implements IPlatformTool {
 			
 		}
 		
+		for (splashScreen in project.splashScreens) {
+			
+			FileHelper.copyFile (splashScreen.path, PathHelper.combine (projectDirectory, Path.withoutDirectory (splashScreen.path)));
+			context.HAS_LAUNCH_IMAGE = true;
+			
+		}
+		
 		FileHelper.copyFileTemplate (project.templatePaths, "haxe/nme/installer/Assets.hx", projectDirectory + "/haxe/nme/installer/Assets.hx", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "iphone/PROJ/haxe", projectDirectory + "/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "iphone/PROJ/Classes", projectDirectory + "/Classes", context);

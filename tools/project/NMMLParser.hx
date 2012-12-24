@@ -862,6 +862,35 @@ class NMMLParser extends NMEProject {
 						}
 						
 						launchImages.push (new LaunchImage(name, width, height));*/
+						
+						
+						var name:String = "";
+						
+						if (element.has.path) {
+							
+							name = substitute(element.att.path);
+							
+						} else {
+							
+							name = substitute(element.att.name);
+							
+						}
+						
+						var splashScreen = new SplashScreen (name);
+						
+						if (element.has.width) {
+							
+							splashScreen.width = Std.parseInt (substitute (element.att.width));
+							
+						}
+						
+						if (element.has.height) {
+							
+							splashScreen.height = Std.parseInt (substitute (element.att.height));
+							
+						}
+						
+						splashScreens.push (splashScreen);
 					
 					case "icon":
 						

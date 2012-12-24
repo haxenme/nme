@@ -28,6 +28,7 @@ class NMEProject {
 	public var ndlls:Array <NDLL>;
 	public var platformType:PlatformType;
 	public var sources:Array <String>;
+	public var splashScreens:Array <SplashScreen>;
 	public var target:Platform;
 	public var targetFlags:Hash <String>;
 	public var templateContext (get_templateContext, null):Dynamic;
@@ -119,6 +120,7 @@ class NMEProject {
 		libraries = new Array <Library> ();
 		ndlls = new Array <NDLL> ();
 		sources = new Array <String> ();
+		splashScreens = new Array <SplashScreen> ();
 		
 	}
 	
@@ -176,6 +178,13 @@ class NMEProject {
 		
 		project.platformType = platformType;
 		project.sources = sources.copy ();
+		
+		for (splashScreen in splashScreens) {
+			
+			project.splashScreens.push (splashScreen.clone ());
+			
+		}
+		
 		project.target = target;
 		
 		for (key in targetFlags.keys ()) {
@@ -382,6 +391,7 @@ class NMEProject {
 			libraries = ArrayHelper.concatUnique (libraries, project.libraries);
 			ndlls = ArrayHelper.concatUnique (ndlls, project.ndlls);
 			sources = ArrayHelper.concatUnique (sources, project.sources);
+			splashScreens = ArrayHelper.concatUnique (splashScreens, project.splashScreens);
 			templatePaths = ArrayHelper.concatUnique (templatePaths, project.templatePaths);
 			
 		}
