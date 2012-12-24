@@ -225,6 +225,13 @@ class TextField extends InteractiveObject {
 	}
 	
 	
+	private override function nmeGetGraphics ():Graphics {
+		
+		return nmeGraphics;
+		
+	}
+	
+	
 	override public function nmeGetObjectUnderPoint (point:Point):DisplayObject {
 		
 		if (!visible) {

@@ -11,7 +11,7 @@ import nme.text.Font;
 import nme.utils.ByteArray;
 import ApplicationMain;
 
-#if swf
+#if swfdev
 import format.swf.lite.SWFLite;
 #end
 
@@ -29,11 +29,12 @@ class Assets {
 	
 	
 	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
-	#if swf private static var cachedSWFLibraries:Hash <SWFLite> = new Hash <SWFLite> (); #end
+	#if swfdev private static var cachedSWFLibraries:Hash <SWFLite> = new Hash <SWFLite> (); #end
 	#if xfl private static var cachedXFLLibraries:Hash <XFL> = new Hash <XFL> (); #end
 	
 	private static var initialized:Bool = false;
 	private static var libraryTypes:Hash <String> = new Hash <String> ();
+	private static var resourceClasses:Hash <Dynamic> = new Hash <Dynamic> ();
 	private static var resourceNames:Hash <String> = new Hash <String> ();
 	private static var resourceTypes:Hash <String> = new Hash <String> ();
 	
@@ -43,6 +44,7 @@ class Assets {
 		if (!initialized) {
 			
 			::foreach assets::
+			::if (type == "font")::resourceClasses.set ("::id::", NME_::flatName::);::end::
 			resourceNames.set ("::id::", "::resourceName::");
 			resourceTypes.set ("::id::", "::type::");
 			::end::
@@ -88,7 +90,7 @@ class Assets {
 			
 			if (libraryTypes.exists (libraryName)) {
 				
-				#if swf
+				#if swfdev
 				
 				if (libraryTypes.get (libraryName) == "swf") {
 					
@@ -140,17 +142,17 @@ class Assets {
 	
 	
 	public static function getBytes (id:String):ByteArray {
-
+		
 		initialize ();
 		
 		if (resourceNames.exists (id)) {
-
+			
 			return cast ApplicationMain.urlLoaders.get (getResourceName(id)).data;
 			
 		}
-			
+		
 		trace ("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
-			
+		
 		return null;
 		
 	}
@@ -158,29 +160,20 @@ class Assets {
 	
 	public static function getFont (id:String):Font {
 		
-		switch (id) {
-			
-			::foreach assets::::if (type == "font")::case "::id::": 
-			var font = cast (new NME_::flatName:: (), Font);
-			return font; 
-			::end::::end::
-			default:
-			
-		}
-
-		/*
 		initialize ();
 		
-		if (resourceTypes.exists (id) && resourceTypes.get (id).toLowerCase () == "font") {
+		if (resourceNames.exists(id) && resourceTypes.exists (id)) {
 			
-			::if (flatName != null)::return cast (new NME_::flatName:: (), Font);::end::
-
-			return null; 
+			if (resourceTypes.get (id).toLowerCase () == "font") {
+				
+				return cast (Type.createInstance (resourceClasses.get (id), []), Font);
+				
+			}
 			
 		}
-			
+		
 		trace ("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
-		*/	
+		
 		return null;
 		
 	}
@@ -195,7 +188,7 @@ class Assets {
 		
 		if (libraryTypes.exists (libraryName)) {
 			
-			#if swf
+			#if swfdev
 			
 			if (libraryTypes.get (libraryName) == "swf") {
 				
@@ -277,14 +270,15 @@ class Assets {
 	public static function getText (id:String):String {
 		
 		initialize ();
-
+		
 		if (resourceNames.exists(id) && resourceTypes.exists (id)) {
 			
 			if (resourceTypes.get (id).toLowerCase () == "text") {
-
+				
 				return ApplicationMain.urlLoaders.get (resourceNames.get(id)).data;
-
+				
 			}
+			
 		}
 		
 		var bytes = getBytes (id);
