@@ -215,6 +215,7 @@ class IOSPlatform implements IPlatformTool {
 		
 		context.HXML_PATH = PathHelper.findTemplate (project.templatePaths, "iphone/PROJ/haxe/Build.hxml");
 		context.PRERENDERED_ICON = false;
+		context.registerStatics = true;
 		
 		/*var assets = new Array <Asset> ();
 		
