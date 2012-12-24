@@ -2768,22 +2768,22 @@
 	</class>
 	<class path="format.display.MovieClip" params="" file="C:\Development\Haxe\nme/format/display/MovieClip.hx">
 		<extends path="native.display.Sprite"/>
-		<unflatten public="1" set="method" line="91"><f a=""><e path="Void"/></f></unflatten>
-		<stop public="1" set="method" line="84"><f a=""><e path="Void"/></f></stop>
-		<prevFrame public="1" set="method" line="77"><f a=""><e path="Void"/></f></prevFrame>
-		<play public="1" set="method" line="70"><f a=""><e path="Void"/></f></play>
-		<nextFrame public="1" set="method" line="56"><f a=""><e path="Void"/></f></nextFrame>
-		<gotoAndStop public="1" set="method" line="49"><f a="frame:?scene">
+		<unflatten public="1" set="method" line="97"><f a=""><e path="Void"/></f></unflatten>
+		<stop public="1" set="method" line="90"><f a=""><e path="Void"/></f></stop>
+		<prevFrame public="1" set="method" line="83"><f a=""><e path="Void"/></f></prevFrame>
+		<play public="1" set="method" line="76"><f a=""><e path="Void"/></f></play>
+		<nextFrame public="1" set="method" line="62"><f a=""><e path="Void"/></f></nextFrame>
+		<gotoAndStop public="1" set="method" line="55"><f a="frame:?scene">
 	<d/>
 	<c path="String"/>
 	<e path="Void"/>
 </f></gotoAndStop>
-		<gotoAndPlay public="1" set="method" line="42"><f a="frame:?scene">
+		<gotoAndPlay public="1" set="method" line="48"><f a="frame:?scene">
 	<d/>
 	<c path="String"/>
 	<e path="Void"/>
 </f></gotoAndPlay>
-		<flatten public="1" set="method" line="35"><f a=""><e path="Void"/></f></flatten>
+		<flatten public="1" set="method" line="41"><f a=""><e path="Void"/></f></flatten>
 		<trackAsMenu public="1"><e path="Bool"/></trackAsMenu>
 		<totalFrames public="1" set="null"><c path="Int"/></totalFrames>
 		<framesLoaded public="1" set="null"><c path="Int"/></framesLoaded>
@@ -2792,7 +2792,7 @@
 		<currentLabel public="1" set="null"><c path="String"/></currentLabel>
 		<currentFrameLabel public="1" set="null"><c path="String"/></currentFrameLabel>
 		<currentFrame public="1" set="null"><c path="Int"/></currentFrame>
-		<new set="method" line="28"><f a=""><e path="Void"/></f></new>
+		<new set="method" line="34"><f a=""><e path="Void"/></f></new>
 		<haxe_doc>* Base class for MovieClip-related format libraries
  * 
  * Cannot use flash.display.MovieClip, because it does
@@ -3799,7 +3799,7 @@
 	<unknown/>
 </f></nme_direct_renderer_set>
 		<render public="1" set="dynamic" line="29"><f a="inRect">
-	<t path="nme.geom.Rectangle"/>
+	<c path="native.geom.Rectangle"/>
 	<e path="Void"/>
 </f></render>
 		<nmeOnRender set="method" line="22"><f a="inRect">
@@ -7115,7 +7115,7 @@
 		<getUniformLocation public="1" set="method" line="972" static="1"><f a="program:name">
 	<c path="native.gl.Program"/>
 	<c path="String"/>
-	<unknown/>
+	<d/>
 </f></getUniformLocation>
 		<getVertexAttrib public="1" set="method" line="979" static="1"><f a="index:pname">
 	<c path="Int"/>
@@ -9704,8 +9704,8 @@
 </f></new>
 	</class>
 	<class path="nme.Assets" params="" file="C:\Development\Haxe\nme/nme/Assets.hx">
-		<cachedBitmapData public="1" line="33" static="1"><c path="Hash"><t path="nme.display.BitmapData"/></c></cachedBitmapData>
-		<getBitmapData public="1" set="method" line="43" static="1">
+		<cachedBitmapData public="1" line="31" static="1"><c path="Hash"><t path="nme.display.BitmapData"/></c></cachedBitmapData>
+		<getBitmapData public="1" set="method" line="41" static="1">
 			<f a="id:?useCache">
 				<c path="String"/>
 				<e path="Bool"/>
@@ -9717,7 +9717,7 @@
 	 * @param	useCache		(Optional) Whether to use BitmapData from the cache (Default: true)
 	 * @return		A new BItmapData object</haxe_doc>
 		</getBitmapData>
-		<getBytes public="1" set="method" line="55" static="1">
+		<getBytes public="1" set="method" line="54" static="1">
 			<f a="id">
 				<c path="String"/>
 				<t path="nme.utils.ByteArray"/>
@@ -9737,7 +9737,7 @@
 	 * @param	id		The ID or asset path for the font
 	 * @return		A new Font object</haxe_doc>
 		</getFont>
-		<getMovieClip public="1" set="method" line="79" static="1">
+		<getMovieClip public="1" set="method" line="80" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="format.display.MovieClip"/>
@@ -9747,7 +9747,7 @@
 	 * @param	id		The library and ID for the MovieClip
 	 * @return		A new Sound object</haxe_doc>
 		</getMovieClip>
-		<getSound public="1" set="method" line="91" static="1">
+		<getSound public="1" set="method" line="93" static="1">
 			<f a="id">
 				<c path="String"/>
 				<t path="nme.media.Sound"/>
@@ -9757,7 +9757,7 @@
 	 * @param	id		The ID or asset path for the sound
 	 * @return		A new Sound object</haxe_doc>
 		</getSound>
-		<getText public="1" set="method" line="103" static="1">
+		<getText public="1" set="method" line="106" static="1">
 			<f a="id">
 				<c path="String"/>
 				<c path="String"/>
@@ -9780,9 +9780,7 @@
  * the start of the rest of the application. You can customize the 
  * preloader by extending the <code>NMEPreloader</code> class,
  * and specifying a custom preloader using <window preloader="" />
- * in the project file.</p>
- * 
- * @author Joshua Granick]]></haxe_doc>
+ * in the project file.</p>]]></haxe_doc>
 	</class>
 	<class path="nme.Lib" params="" file="C:\Development\Haxe\nme/nme/Lib.hx">
 		<FULLSCREEN public="1" line="13" static="1"><c path="Int"/></FULLSCREEN>
@@ -9997,6 +9995,7 @@
 	<typedef path="nme.display.BitmapInt32" params="" file="C:\Development\Haxe\nme/nme/display/BitmapInt32.hx"><c path="Int"/></typedef>
 	<typedef path="nme.display.BlendMode" params="" file="C:\Development\Haxe\nme/nme/display/BlendMode.hx"><e path="native.display.BlendMode"/></typedef>
 	<typedef path="nme.display.CapsStyle" params="" file="C:\Development\Haxe\nme/nme/display/CapsStyle.hx"><e path="native.display.CapsStyle"/></typedef>
+	<typedef path="nme.display.DirectRenderer" params="" file="C:\Development\Haxe\nme/nme/display/DirectRenderer.hx"><c path="native.display.DirectRenderer"/></typedef>
 	<typedef path="nme.display.DisplayObject" params="" file="C:\Development\Haxe\nme/nme/display/DisplayObject.hx"><c path="native.display.DisplayObject"/></typedef>
 	<typedef path="nme.display.DisplayObjectContainer" params="" file="C:\Development\Haxe\nme/nme/display/DisplayObjectContainer.hx"><c path="native.display.DisplayObjectContainer"/></typedef>
 	<class path="nme.display.FPS" params="" file="C:\Development\Haxe\nme/nme/display/FPS.hx">
@@ -10085,6 +10084,17 @@
 	<typedef path="nme.geom.Transform" params="" file="C:\Development\Haxe\nme/nme/geom/Transform.hx"><c path="native.geom.Transform"/></typedef>
 	<typedef path="nme.geom.Vector3D" params="" file="C:\Development\Haxe\nme/nme/geom/Vector3D.hx"><c path="native.geom.Vector3D"/></typedef>
 	<typedef path="nme.gl.GL" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx"><c path="native.gl.GL"/></typedef>
+	<typedef path="nme.gl.Object" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Object"/></typedef>
+	<typedef path="nme.gl.Buffer" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Buffer"/></typedef>
+	<typedef path="nme.gl.Framebuffer" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Framebuffer"/></typedef>
+	<typedef path="nme.gl.Program" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Program"/></typedef>
+	<typedef path="nme.gl.Renderbuffer" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Renderbuffer"/></typedef>
+	<typedef path="nme.gl.Shader" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Shader"/></typedef>
+	<typedef path="nme.gl.Texture" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><c path="native.gl.Texture"/></typedef>
+	<typedef path="nme.gl.ActiveInfo" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><t path="native.gl.ContextAttributes"/></typedef>
+	<typedef path="nme.gl.ContextAttributes" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><t path="native.gl.ContextAttributes"/></typedef>
+	<typedef path="nme.gl.ShaderPrecisionFormat" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><t path="native.gl.ShaderPrecisionFormat"/></typedef>
+	<typedef path="nme.gl.UniformLocation" params="" file="C:\Development\Haxe\nme/nme/gl/GL.hx" module="nme.gl.GL"><t path="native.gl.UniformLocation"/></typedef>
 	<typedef path="nme.media.ID3Info" params="" file="C:\Development\Haxe\nme/nme/media/ID3Info.hx"><c path="native.media.ID3Info"/></typedef>
 	<typedef path="nme.media.Sound" params="" file="C:\Development\Haxe\nme/nme/media/Sound.hx"><c path="native.media.Sound"/></typedef>
 	<typedef path="nme.media.SoundChannel" params="" file="C:\Development\Haxe\nme/nme/media/SoundChannel.hx"><c path="native.media.SoundChannel"/></typedef>

@@ -18,6 +18,7 @@ import nme.display.BitmapDataChannel;
 import nme.display.BitmapInt32;
 import nme.display.BlendMode;
 import nme.display.CapsStyle;
+import nme.display.DirectRenderer;
 import nme.display.DisplayObject;
 import nme.display.DisplayObjectContainer;
 import nme.display.FPS;

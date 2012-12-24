@@ -290,27 +290,17 @@ class RunScript {
 			
 			case "windows":
 				
-				/*if (Sys.environment ().exists ("VS110COMNTOOLS")) {
-					
-					Lib.println ("Warning: Visual Studio 2012 is not supported. Trying Visual Studio 2010...");
-					
-					Sys.putEnv ("VS110COMNTOOLS", Sys.getEnv ("VS100COMNTOOLS"));
-					
-				}*/
-				
-				var buildWinRT = Sys.environment ().exists ("VS110COMNTOOLS");
-				
 				mkdir (nmeDirectory + "/ndll/Windows");
+				
+				if (Sys.environment ().exists ("VS110COMNTOOLS") && Sys.environment ().exists ("VS100COMNTOOLS")) {
+					
+					Sys.putEnv ("HXCPP_MSVC", Sys.getEnv ("VS100COMNTOOLS"));
+					
+				}
 				
 				if (!flags.exists ("debug")) {
 					
 					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
-					
-					if (buildWinRT) {
-						
-						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwinrt" ].concat (defines));
-						
-					}
 					
 				}
 				
@@ -318,7 +308,31 @@ class RunScript {
 					
 					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
 					
-					if (buildWinRT) {
+				}
+				
+				if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+					
+					Sys.putEnv ("HXCPP_MSVC", Sys.getEnv ("VS110COMNTOOLS"));
+					
+					var conflictingFiles = [ nmeDirectory + "/project/obj/lib/nme-debug.pdb" ];
+					
+					for (file in conflictingFiles) {
+						
+						if (FileSystem.exists (file)) {
+							
+							FileSystem.deleteFile (file);
+							
+						}
+						
+					}
+					
+					if (!flags.exists ("debug")) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dwinrt" ].concat (defines));
+						
+					}
+				
+					if (!flags.exists ("release")) {
 						
 						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug", "-Dwinrt" ].concat (defines));
 						

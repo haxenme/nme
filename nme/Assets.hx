@@ -24,13 +24,11 @@ import nme.utils.ByteArray;
  * preloader by extending the <code>NMEPreloader</code> class,
  * and specifying a custom preloader using <window preloader="" />
  * in the project file.</p>
- * 
- * @author Joshua Granick
  */
-class Assets
-{
+class Assets {
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData> ();
 	
 	
 	/**
@@ -40,9 +38,10 @@ class Assets
 	 * @param	useCache		(Optional) Whether to use BitmapData from the cache (Default: true)
 	 * @return		A new BItmapData object
 	 */
-	public static function getBitmapData(id:String, useCache:Bool = true):BitmapData
-	{
-		return null;	
+	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
+		
+		return null;
+		
 	}
 	
 	
@@ -52,9 +51,10 @@ class Assets
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new ByteArray object
 	 */
-	public static function getBytes(id:String):ByteArray
-	{	
+	public static function getBytes (id:String):ByteArray {
+		
 		return null;
+		
 	}
 	
 	
@@ -64,9 +64,10 @@ class Assets
 	 * @param	id		The ID or asset path for the font
 	 * @return		A new Font object
 	 */
-	public static function getFont(id:String):Font
-	{
-		return null;	
+	public static function getFont (id:String):Font {
+		
+		return null;
+		
 	}
 	
 	
@@ -76,9 +77,10 @@ class Assets
 	 * @param	id		The library and ID for the MovieClip
 	 * @return		A new Sound object
 	 */
-	public static function getMovieClip(id:String):MovieClip
-	{
+	public static function getMovieClip (id:String):MovieClip {
+		
 		return null;
+		
 	}
 	
 	
@@ -88,9 +90,10 @@ class Assets
 	 * @param	id		The ID or asset path for the sound
 	 * @return		A new Sound object
 	 */
-	public static function getSound(id:String):Sound
-	{
+	public static function getSound (id:String):Sound {
+		
 		return null;
+		
 	}
 	
 	
@@ -100,9 +103,10 @@ class Assets
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new String object
 	 */
-	public static function getText(id:String):String
-	{
+	public static function getText (id:String):String {
+		
 		return null;
+		
 	}
 	
 	

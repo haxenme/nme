@@ -1,6 +1,10 @@
 Changes
 =======
 
+3.5.1
+---------------
+* Minor bug fixes
+
 3.5.0
 ---------------
 * Updated to be compatible with Haxe 3 when it is available

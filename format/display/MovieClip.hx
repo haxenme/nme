@@ -1,7 +1,13 @@
 package format.display;
+#if display
 
 
+typedef MovieClip = nme.display.MovieClip;
+
+
+#else
 import flash.display.Sprite;
+
 
 /**
  * Base class for MovieClip-related format libraries
@@ -96,3 +102,4 @@ class MovieClip extends Sprite {
 	
 	
 }
+#end

@@ -1,7 +1,7 @@
 package native.ui;
 
 
-import nme.Lib;
+import native.Lib;
 
 
 class Mouse {

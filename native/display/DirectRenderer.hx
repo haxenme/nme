@@ -2,8 +2,8 @@ package native.display;
 
 
 import native.Loader;
-import nme.events.Event;
-import nme.geom.Rectangle;
+import native.events.Event;
+import native.geom.Rectangle;
 
 
 class DirectRenderer extends DisplayObject {

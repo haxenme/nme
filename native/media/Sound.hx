@@ -7,9 +7,9 @@ import native.events.IOErrorEvent;
 import native.events.SampleDataEvent;
 import native.net.URLRequest;
 import native.Loader;
-import nme.errors.Error;
-import nme.utils.ByteArray;
-import nme.utils.Endian;
+import native.errors.Error;
+import native.utils.ByteArray;
+import native.utils.Endian;
 
 
 class Sound extends EventDispatcher {

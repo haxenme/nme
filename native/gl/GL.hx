@@ -774,7 +774,7 @@ class GL {
 	}
 	
 	
-	public static function enableVertexAttribArray (index:Int) {
+	public static function enableVertexAttribArray (index:Int):Void {
 		
 		nme_gl_enable_vertex_attrib_array (index);
 		
@@ -969,7 +969,7 @@ class GL {
 	}
 	
 	
-	public static function getUniformLocation (program:Program, name:String) {
+	public static function getUniformLocation (program:Program, name:String):Dynamic {
 		
 		return nme_gl_get_uniform_location(program.id, name);
 		
@@ -1213,7 +1213,7 @@ class GL {
 	}
 	
 	
-	public static function uniform1i (location:UniformLocation, x:Int) {
+	public static function uniform1i (location:UniformLocation, x:Int):Void {
 		
 		nme_gl_uniform1i (location, x);
 		
@@ -1311,28 +1311,28 @@ class GL {
 	}
 	
 	
-	public static function uniformMatrix2fv (location:UniformLocation, transpose:Bool, v:Float32Array) {
+	public static function uniformMatrix2fv (location:UniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix (location, transpose, v.getByteBuffer (), 2);
 		
 	}
 	
 	
-	public static function uniformMatrix3fv (location:UniformLocation, transpose:Bool, v:Float32Array) {
+	public static function uniformMatrix3fv (location:UniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix (location, transpose, v.getByteBuffer (), 3);
 		
 	}
 	
 	
-	public static function uniformMatrix4fv (location:UniformLocation, transpose:Bool, v:Float32Array) {
+	public static function uniformMatrix4fv (location:UniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix (location, transpose, v.getByteBuffer (), 4);
 		
 	}
 	
 	
-	public static function uniformMatrix3D (location:UniformLocation, transpose:Bool, matrix:Matrix3D) {
+	public static function uniformMatrix3D (location:UniformLocation, transpose:Bool, matrix:Matrix3D):Void {
 		
 		nme_gl_uniform_matrix (location, transpose, Float32Array.fromMatrix (matrix).getByteBuffer () , 4);
 		
@@ -1588,7 +1588,7 @@ class Object {
 	
 	function new (inVersion:Int, inId:Dynamic) { version = inVersion; id = inId; }
 	function getType ():String { return "GLObject"; }
-	public function invalidate () { id = null; }
+	public function invalidate ():Void { id = null; }
 	public function toString ():String { return getType () + "(" + id + ")"; }
 	public function isValid ():Bool { return id != null && version == GL.version; }
 	public function isInvalid ():Bool { return !isValid (); }
@@ -1604,7 +1604,7 @@ class Object {
 class Buffer extends Object {
 	
 	public function new (inVersion:Int, inId:Dynamic) { super (inVersion, inId); }
-	override function getType () { return "Buffer"; }
+	override function getType ():String { return "Buffer"; }
 	
 }
 
@@ -1612,7 +1612,7 @@ class Buffer extends Object {
 class Framebuffer extends Object {
 	
 	public function new (inVersion:Int, inId:Dynamic) { super (inVersion, inId); }
-	override function getType () { return "Framebuffer"; }
+	override function getType ():String { return "Framebuffer"; }
 	
 }
 
@@ -1631,9 +1631,9 @@ class Program extends Object {
 	}
 	
 	
-	public function attach (s:Shader) { shaders.push (s); }
-	override function getType () { return "Program"; }
-	public function getShaders () { return shaders.copy (); }
+	public function attach (s:Shader):Void { shaders.push (s); }
+	override function getType ():String { return "Program"; }
+	public function getShaders ():Array<Shader> { return shaders.copy (); }
 	
 	
 }
@@ -1642,7 +1642,7 @@ class Program extends Object {
 class Renderbuffer extends Object {
 	
 	public function new (inVersion:Int, inId:Dynamic) { super (inVersion, inId); }
-	override function getType () { return "Renderbuffer"; }
+	override function getType ():String { return "Renderbuffer"; }
 	
 }
 
@@ -1650,7 +1650,7 @@ class Renderbuffer extends Object {
 class Shader extends Object {
 	
 	public function new (inVersion:Int, inId:Dynamic) { super (inVersion, inId); }
-	override function getType () { return "Shader"; }
+	override function getType ():String { return "Shader"; }
 	
 }
 
@@ -1658,7 +1658,7 @@ class Shader extends Object {
 class Texture extends Object {
 	
 	public function new (inVersion:Int, inId:Dynamic) { super (inVersion, inId); }
-	override function getType () { return "Texture"; }
+	override function getType ():String { return "Texture"; }
 	
 }
 
