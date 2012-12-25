@@ -124,7 +124,7 @@ class Video extends DisplayObject {
 			
 		}
 		
-		var gfx = this.graphics;
+		var gfx = nmeGetGraphics();
 		if (gfx != null) {
 			
 			Lib.nmeSetSurfaceTransform (gfx.nmeSurface, getSurfaceTransform (gfx));
@@ -139,20 +139,4 @@ class Video extends DisplayObject {
 		return "[Video name=" + this.name + " id=" + _nmeId + "]";
 		
 	}
-	
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	
-	override function get_graphics ():Graphics { 
-		
-		return nmeGraphics;
-		
-	}
-	
-	
 }
