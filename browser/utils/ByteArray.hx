@@ -18,26 +18,19 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	public var bytesAvailable (get_bytesAvailable, null):Int;
 	public var endian (get_endian, set_endian):String;
-	public var length (default, set_length):Int;
+	public var length (default, set_length):Int = 0;
 	public var objectEncoding:Int;
-	public var position:Int;
+	public var position:Int = 0;
 	
-	private var allocated:Int;
+	private var allocated:Int = 0;
 	private var byteView:Uint8Array;
 	private var data:DataView;
-	private var littleEndian:Bool;
+	// NOTE: default ByteArray endian is BIG_ENDIAN
+	private var littleEndian:Bool = false;
 	
 	
 	public function new ():Void {
 		
-		var len = 0;
-		this.position = 0;
-		this.length = len;
-		this.allocated = len;
-
-		// NOTE: default ByteArray endian is BIG_ENDIAN
-		this.littleEndian = false;
-
 		_nmeResizeBuffer (allocated);
 		//this.byteView = untyped __new__("Uint8Array", allocated);
 		//this.data = untyped __new__("DataView", this.byteView.buffer);
@@ -90,37 +83,32 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 		var oldByteView:Uint8Array = this.byteView;
 		var newByteView:Uint8Array = untyped __new__("Uint8Array", len);
 		
-		if (oldByteView != null) newByteView.set (oldByteView);
-		
+		if (oldByteView != null)
+		{
+			if (oldByteView.length <= len) newByteView.set (oldByteView);
+			else newByteView.set(oldByteView.subarray(0, len));
+		}
+
 		this.byteView = newByteView;
 		this.data = untyped __new__("DataView", newByteView.buffer);
 		
 	}
-	
-	
-	private function ensureWrite (lengthToEnsure:Int, updateLength:Bool = true):Void {
+
+
+	@:extern private inline function ensureWrite (lengthToEnsure:Int):Void {
 		
-		if (updateLength) {
-			
-			if (this.length < lengthToEnsure) this.length = lengthToEnsure;
-			
-		} else if (lengthToEnsure > allocated) {
-			
-			_nmeResizeBuffer (Std.int (Math.max (lengthToEnsure, allocated * 2)));
-			
-		}
-		
+		if (this.length < lengthToEnsure) this.length = lengthToEnsure;
 	}
 	
 	
-	public function nmeGet (pos:Int):Int {
+	public inline function nmeGet (pos:Int):Int {
 		
 		return data.getUint8 (pos);
 		
 	}
 	
 	
-	public function nmeGetBuffer () {
+	public inline function nmeGetBuffer () {
 		
 		return data.buffer;
 		
@@ -130,7 +118,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	public static function nmeOfBuffer (buffer:ArrayBuffer):ByteArray {
 		
 		var bytes = new ByteArray ();
-		bytes.length = buffer.byteLength;
+		bytes.length = bytes.allocated = buffer.byteLength;
 		bytes.data = untyped __new__("DataView", buffer);
 		bytes.byteView = untyped __new__("Uint8Array", buffer);
 		return bytes;
@@ -138,21 +126,21 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	}
 	
 	
-	public function nmeSet (pos:Int, v:Int):Void {
+	public inline function nmeSet (pos:Int, v:Int):Void {
 		
 		data.setUint8 (pos, v);
 		
 	}
 	
 	
-	public function readBoolean ():Bool {
+	public inline function readBoolean ():Bool {
 		
 		return (this.readByte () != 0);
 		
 	}
 	
 	
-	public function readByte ():Int {
+	public inline function readByte ():Int {
 		
 		return data.getUint8 (this.position++);
 		
@@ -232,7 +220,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	}
 	
 	
-	public function readUnsignedByte ():Int {
+	public inline function readUnsignedByte ():Int {
 		
 		return data.getUint8 (this.position++);
 		
@@ -311,13 +299,13 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 		var buf = Inflate.run (bytes).getData ();
 		this.byteView = untyped __new__("Uint8Array", buf);
 		this.data = untyped __new__("DataView", byteView.buffer);
-		this.length = byteView.buffer.byteLength;
+		this.length = this.allocated = byteView.buffer.byteLength;
 		
 	}
 	#end
 	
 	
-	public function writeBoolean (value:Bool):Void {
+	public inline function writeBoolean (value:Bool):Void {
 		
 		this.writeByte (value ? 1 : 0);
 		
@@ -449,17 +437,17 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	
 	
-	private function get_bytesAvailable ():Int { return length - position; }
+	inline private function get_bytesAvailable ():Int { return length - position; }
 	
 	
-	public function get_endian ():String {
+	inline function get_endian ():String {
 		
-		return (littleEndian == true) ? Endian.LITTLE_ENDIAN : Endian.BIG_ENDIAN;
+		return littleEndian ? Endian.LITTLE_ENDIAN : Endian.BIG_ENDIAN;
 		
 	}
 	
 	
-	public function set_endian (endian:String):String {
+	inline function set_endian (endian:String):String {
 		
 		littleEndian = (endian == Endian.LITTLE_ENDIAN);
 		return endian;
@@ -467,13 +455,14 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	}
 	
 	
-	private function set_length (value:Int):Int {
-		
-		_nmeResizeBuffer (value);
+	private inline function set_length (value:Int):Int {
+
+		if (allocated < value)
+			_nmeResizeBuffer(allocated = Std.int (Math.max(value, allocated * 2)));
+		else if (allocated > value)
+			_nmeResizeBuffer(allocated = value);
 		length = value;
-		allocated = value;
 		return value;
-		
 	}
 	
 	
