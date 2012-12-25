@@ -3,5 +3,5 @@
 -main Test
 -resource assets/fonts/Arial.hash@Arial
 -cp ../../../..
---remap flash:jeash
+--remap flash:browser
 --no-traces

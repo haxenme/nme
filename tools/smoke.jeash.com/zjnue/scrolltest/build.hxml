@@ -16,7 +16,7 @@
 -main Test
 -js bin_jeash/Test.js
 -D jeash
---remap flash:jeash
+--remap flash:browser
 
 #--next
 
