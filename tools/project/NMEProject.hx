@@ -254,7 +254,7 @@ class NMEProject {
 			
 		}
 		
-		return true;
+		return false;
 		
 	}
 	

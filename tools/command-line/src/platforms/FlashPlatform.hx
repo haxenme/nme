@@ -20,6 +20,7 @@ class FlashPlatform implements IPlatformTool {
 		
 		if (project.targetFlags.exists ("web")) {
 			
+			PathHelper.mkdir (destination);
 			FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/templates/web", destination, generateContext (project));
 			
 		}
