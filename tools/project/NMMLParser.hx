@@ -1255,6 +1255,10 @@ class NMMLParser extends NMEProject {
 				
 				window.background = Std.parseInt (value);
 				
+			} else if (name == "orientation") {
+				
+				window.orientation = Reflect.field (Orientation, Std.string (value).toUpperCase ());
+				
 			} else {
 				
 				if (Reflect.hasField (window, name)) {

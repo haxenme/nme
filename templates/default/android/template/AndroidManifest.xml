@@ -3,13 +3,8 @@
 
 	<application android:label="::APP_TITLE::" android:debuggable="true"::if (HAS_ICON):: android:icon="@drawable/icon"::end::>
 		
-
-      ::if WIN_REQUIRE_SHADERS::
-      <uses-feature android:glEsVersion="0x00020000" android:required="true" />
-      ::elseif WIN_ALLOW_SHADERS::
-      <uses-feature android:glEsVersion="0x00020000" android:required="false" />
-      ::end::
-
+		::if WIN_REQUIRE_SHADERS::<uses-feature android:glEsVersion="0x00020000" android:required="true" />::elseif WIN_ALLOW_SHADERS::<uses-feature android:glEsVersion="0x00020000" android:required="false" />::end::
+		
 		<activity android:name="MainActivity" android:label="::APP_TITLE::" android:configChanges="keyboard|keyboardHidden|orientation"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::>
 			
 			<intent-filter>
