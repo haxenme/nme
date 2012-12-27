@@ -312,7 +312,7 @@ value nme_gl_is_framebuffer(value val) {
 	#ifndef HX_LINUX
 	if (glIsFramebuffer) return alloc_bool(glIsFramebuffer(val_int(val)));
 	#endif
-	return false;
+	return alloc_bool(false);
 }
 DEFINE_PRIM(nme_gl_is_framebuffer,1);
 
@@ -320,7 +320,7 @@ value nme_gl_is_renderbuffer(value val) {
 	#ifndef HX_LINUX
 	if (glIsRenderbuffer) return alloc_bool(glIsRenderbuffer(val_int(val)));
 	#endif
-	return false;
+	return alloc_bool(false);
 }
 DEFINE_PRIM(nme_gl_is_renderbuffer,1);
 
@@ -1300,7 +1300,7 @@ value nme_gl_check_framebuffer_status(value inTarget)
    #ifndef HX_LINUX
    if (glCheckFramebufferStatus) return alloc_int( glCheckFramebufferStatus(val_int(inTarget)));
    #endif
-   else return alloc_int(0);
+   return alloc_int(0);
 }
 DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
