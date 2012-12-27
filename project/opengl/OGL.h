@@ -76,6 +76,29 @@ typedef void *GLCtx;
 #endif
 
 
+#ifndef framebuffer
+#define framebuffer NULL
+#define glBindFramebuffer NULL
+#define glGenFramebuffers NULL
+#define glFramebufferRenderbuffer NULL
+#define glFramebufferTexture2D NULL
+#define glCheckFramebufferStatus NULL
+#define glGetFramebufferAttachmentParameteriv NULL
+#endif
+
+#ifndef renderbuffer
+#define renderbuffer NULL
+#define glBindRenderbuffer NULL
+#define glGenRenderbuffers NULL
+#define glRenderbufferStorage NULL
+#define glGetRenderbufferParameteriv NULL
+#endif
+
+#ifndef glGenerateMipmap
+#define glGenerateMipmap NULL
+#endif
+
+
 #ifndef GL_BUFFER_SIZE
 
 #define GL_BUFFER_SIZE                0x8764
