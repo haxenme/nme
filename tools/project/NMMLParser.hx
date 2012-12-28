@@ -822,6 +822,7 @@ class NMMLParser extends NMEProject {
 							
 						}*/
 						
+						var name = substitute (element.att.name);
 						var haxelib = "";
 						
 						if (element.has.haxelib) {
@@ -830,7 +831,13 @@ class NMMLParser extends NMEProject {
 							
 						}
 						
-						var ndll = new NDLL (substitute (element.att.name), haxelib);
+						if (haxelib == "" && (name == "std" || name == "regexp" || name == "zlib")) {
+							
+							haxelib = "hxcpp";
+							
+						}
+						
+						var ndll = new NDLL (name, haxelib);
 						ndll.extensionPath = extensionPath;
 						
 						ndlls.push (ndll);
