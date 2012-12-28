@@ -18,7 +18,16 @@ namespace nme {
 		return std::string(locale, lang_len);
 	}
 	
-	bool dpiAware = SetProcessDPIAware();
+	bool SetDPIAware()
+	{
+		HMODULE usr32 = LoadLibrary("user32.dll");
+		if(!usr32) return false;
+		
+		BOOL (*addr)() = (BOOL (*)())GetProcAddress(usr32, "SetProcessDPIAware");
+		return addr ? addr() : false;
+	}
+
+	bool dpiAware = SetDPIAware();
 
 	double CapabilitiesGetScreenDPI()
 	{
@@ -44,5 +53,5 @@ namespace nme {
 		ReleaseDC(NULL, screen);
 		return hPixelsPerInch / vPixelsPerInch;
 	}
-	
+
 }

@@ -62,7 +62,7 @@ class RunScript {
 			} else if (target == "clean") {
 				
 				var directories = [ nmeDirectory + "/project/obj" ];
-				var files = [ nmeDirectory + "/project/all_objs", nmeDirectory + "/project/vc100.pdb" ];
+				var files = [ nmeDirectory + "/project/all_objs", nmeDirectory + "/project/vc100.pdb", nmeDirectory + "/project/vc110.pdb" ];
 				
 				for (directory in directories) {
 					
