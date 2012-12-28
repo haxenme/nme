@@ -1582,7 +1582,7 @@ void TextField::Layout(const Matrix &inMatrix)
                mLines.push_back(line);
                line.Clear();
                g.UpdateMetrics(line.mMetrics);
-               y += g.Height();
+               y += g.Height() + g.mFormat->leading;
                continue;
             }
          }
@@ -1617,7 +1617,7 @@ void TextField::Layout(const Matrix &inMatrix)
                line.mMetrics.width = last_word_x;
             }
             mLines.push_back(line);
-            y += g.Height();
+            y += g.Height() + g.mFormat->leading;
             x = gap;
             line.Clear();
             g.UpdateMetrics(line.mMetrics);
