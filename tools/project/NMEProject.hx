@@ -89,7 +89,16 @@ class NMEProject {
 			case ANDROID, BLACKBERRY, IOS, WEBOS:
 				
 				platformType = PlatformType.MOBILE;
-				architectures = [ Architecture.ARMV6 ];
+				
+				if (target == Platform.IOS) {
+					
+					architectures = [ Architecture.ARMV7 ];
+					
+				} else {
+					
+					architectures = [ Architecture.ARMV6 ];
+					
+				}
 				
 				defaultWindow.width = 0;
 				defaultWindow.height = 0;

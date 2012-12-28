@@ -360,7 +360,7 @@ class IOSPlatform implements IPlatformTool {
 			
 		}
         
-        if (project.command == "update") {
+        if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) {
             
             ProcessHelper.runCommand ("", "open", [ targetDirectory + "/" + project.app.file + ".xcodeproj" ] );
             

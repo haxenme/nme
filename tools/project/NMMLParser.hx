@@ -1206,10 +1206,12 @@ class NMMLParser extends NMEProject {
 								case "armv6":
 									
 									ArrayHelper.addUnique (architectures, Architecture.ARMV6);
+									architectures.remove (Architecture.ARMV7);
 								
 								case "armv7":
 									
 									ArrayHelper.addUnique (architectures, Architecture.ARMV7);
+									architectures.remove (Architecture.ARMV6);
 								
 							}
 							
