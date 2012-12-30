@@ -494,7 +494,7 @@ class RunScript {
 			var cacheCwd = Sys.getCwd ();
 			Sys.setCwd (nmeDirectory);
 			
-			var proc = new Process ("git", [ "svn", "log", "--oneline", "-1" ]);
+			var proc = new Process ("svn", [ "info" ]);
 			
 			try {
 				
