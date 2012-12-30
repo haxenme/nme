@@ -1,6 +1,10 @@
 Changes
 =======
 
+3.5.2
+---------------
+* Minor impovements
+
 3.5.1
 ---------------
 * Minor bug fixes
