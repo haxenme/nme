@@ -899,6 +899,15 @@ class RunScript {
 						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme.ndll" ]);
 						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme-debug.ndll" ]);
 						
+						if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+							
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme.ndll" ]);
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme-debug.ndll" ]);
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme.ndll" ]);
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme-debug.ndll" ]);
+							
+						}
+						
 					} else if (isLinux) {
 						
 						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux/nme.ndll" ]);
@@ -918,14 +927,14 @@ class RunScript {
 						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphonesim.a" ]);
 						
 					}
-			
+				
 				case "download":
 					
 					if (!isWindows) {
-					
+						
 						downloadFile ("http://www.haxenme.org/builds/ndll/Windows/nme.ndll", nmeDirectory + "/ndll/Windows/nme.ndll");
 						downloadFile ("http://www.haxenme.org/builds/ndll/Windows/nme-debug.ndll", nmeDirectory + "/ndll/Windows/nme-debug.ndll");
-					
+						
 					}
 					
 					if (!isLinux) {
