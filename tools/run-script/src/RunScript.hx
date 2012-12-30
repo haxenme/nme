@@ -507,7 +507,7 @@ class RunScript {
 					
 					if (index > -1) {
 						
-						result = result.substr (checkString.length);
+						result = "r" + result.substr (checkString.length);
 						break;
 						
 					}
