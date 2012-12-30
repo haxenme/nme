@@ -932,8 +932,8 @@ class RunScript {
 						
 						if (Sys.environment ().exists ("VS110COMNTOOLS")) {
 							
-							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme.ndll" ]);
-							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme-debug.ndll" ]);
+							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme.ndll" ]);
+							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme-debug.ndll" ]);
 							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme.ndll" ]);
 							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme-debug.ndll" ]);
 							
@@ -965,6 +965,10 @@ class RunScript {
 						
 						downloadFile ("http://www.nme.io/builds/ndll/Windows/nme.ndll", nmeDirectory + "/ndll/Windows/nme.ndll");
 						downloadFile ("http://www.nme.io/builds/ndll/Windows/nme-debug.ndll", nmeDirectory + "/ndll/Windows/nme-debug.ndll");
+						//downloadFile ("http://www.nme.io/builds/ndll/WinRTx64/nme.ndll", nmeDirectory + "/ndll/WinRTx64/nme.ndll");
+						//downloadFile ("http://www.nme.io/builds/ndll/WinRTx64/nme-debug.ndll", nmeDirectory + "/ndll/WinRTx64/nme-debug.ndll");
+						downloadFile ("http://www.nme.io/builds/ndll/WinRTx86/nme.ndll", nmeDirectory + "/ndll/WinRTx86/nme.ndll");
+						downloadFile ("http://www.nme.io/builds/ndll/WinRTx86/nme-debug.ndll", nmeDirectory + "/ndll/WinRTx86/nme-debug.ndll");
 						
 					}
 					
