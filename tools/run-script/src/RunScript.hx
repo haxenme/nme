@@ -132,7 +132,15 @@ class RunScript {
 	
 	static private function buildDocumentation ():Void {
 		
-		runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile.hxml" ]);
+		if (isWindows) {
+			
+			runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile-win.hxml" ]);
+			
+		} else {
+			
+			runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile.hxml" ]);
+			
+		}
 		
 	}
 	

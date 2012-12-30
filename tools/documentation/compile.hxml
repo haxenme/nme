@@ -57,5 +57,5 @@ nme.ImportAll
 
 --next
 
-#-cmd ./chxdoc -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
--cmd chxdoc.exe -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
+-cmd ./chxdoc -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
+#-cmd chxdoc.exe -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.haxenme.org"
