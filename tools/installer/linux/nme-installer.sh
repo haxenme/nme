@@ -22,7 +22,7 @@ if [ $RESP = "y" ]; then
 		echo "    Downloading Neko (64-bit)"
 		echo "-----------------------------------"	
 	
-		wget -c http://www.haxenme.org/builds/neko-1.8.2-linux64.tar.gz
+		wget -c http://www.nme.io/builds/neko-1.8.2-linux64.tar.gz
 		
 		
 		echo ""
@@ -185,7 +185,7 @@ echo "-----------------------------------"
 echo "    Installing HXCPP"
 echo "-----------------------------------"
 
-wget -c http://www.haxenme.org/builds/hxcpp-2.10.3.zip
+wget -c http://www.nme.io/builds/hxcpp-2.10.3.zip
 haxelib test hxcpp-2.10.3.zip
 rm hxcpp-2.10.3.zip
 
