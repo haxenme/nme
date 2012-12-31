@@ -67,6 +67,12 @@ class PathHelper {
 	
 	public static function expand (path:String):String {
 		
+		if (path == null) {
+			
+			path = "";
+			
+		}
+		
 		if (PlatformHelper.hostPlatform != Platform.WINDOWS) {
 			
 			if (StringTools.startsWith (path, "~/")) {
