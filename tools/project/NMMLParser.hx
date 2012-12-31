@@ -20,7 +20,7 @@ class NMMLParser extends NMEProject {
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 	
 	
-	public function new (path:String = "", defines:Hash <String> = null, includePaths:Array <String> = null) {
+	public function new (path:String = "", defines:Hash <String> = null, includePaths:Array <String> = null, useExtensionPath:Bool = false) {
 		
 		super ();
 		
@@ -48,7 +48,7 @@ class NMMLParser extends NMEProject {
 		
 		if (path != "") {
 			
-			process (path);
+			process (path, useExtensionPath);
 			
 		}
 		
@@ -703,50 +703,30 @@ class NMMLParser extends NMEProject {
 					
 					case "include":
 						
-						var name = "";
+						var path = "";
 						
 						if (element.has.path) {
 							
 							var subPath = substitute (element.att.path);
 							if (subPath == "") subPath = element.att.path;
-							name = findIncludeFile (extensionPath + subPath);
+							path = findIncludeFile (extensionPath + subPath);
 							
 						} else {
 							
-							name = findIncludeFile (extensionPath + substitute (element.att.name));
+							path = findIncludeFile (extensionPath + substitute (element.att.name));
 							
 						}
 						
-						if (name != "") {
+						if (path != null && path != "" && FileSystem.exists (path)) {
 							
-							var xml = new Fast (Xml.parse (File.getContent (name)).firstElement ());
-							var path = Path.directory (name);
+							var includeProject = new NMMLParser (path);
+							includeProject.sources.push (Path.directory (path));
 							
-							/*if (useFullClassPaths ()) {
-								
-								path = FileSystem.fullPath (path);
-								
-							}
-							
-							compilerFlags.push ("-cp " + path);*/
-							
-							sources.push (path);
-							
-							if (element.has.section) {
-								
-								//parseXML (xml, element.att.section);
-								parseXML (xml, element.att.section, path + "/");
-								
-							} else {
-								
-								//parseXML (xml, "");
-								parseXML (xml, "", path + "/");
-								
-							}
+							merge (includeProject);
 							
 						} else if (!element.has.noerror) {
 							
-							LogHelper.error ("Could not find include file \"" + name + "\"");
+							LogHelper.error ("Could not find include file \"" + path + "\"");
 							
 						}
 					
@@ -792,6 +772,8 @@ class NMMLParser extends NMEProject {
 								}
 								
 							}
+							
+							includeProject.sources.push (path);
 							
 							merge (includeProject);
 							
@@ -1284,13 +1266,15 @@ class NMMLParser extends NMEProject {
 	}
 	
 	
-	public function process (projectFile:String):Void {
+	public function process (projectFile:String, useExtensionPath:Bool):Void {
 		
 		var xml = null;
+		var extensionPath = "";
 		
 		try {
 			
 			xml = new Fast (Xml.parse (File.getContent (projectFile)).firstElement ());
+			extensionPath = Path.directory (projectFile);
 			
 		} catch (e:Dynamic) {
 			
@@ -1298,7 +1282,7 @@ class NMMLParser extends NMEProject {
 			
 		}
 		
-		parseXML (xml, "");
+		parseXML (xml, "", extensionPath);
 		
 	}
 	
