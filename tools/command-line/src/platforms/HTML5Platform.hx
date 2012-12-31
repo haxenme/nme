@@ -27,8 +27,14 @@ class HTML5Platform implements IPlatformTool {
 		
 		if (project.targetFlags.exists ("minify")) {
 			
-			var sourceFile = project.app.path + "/bin/" + project.app.file + ".js";
-			var tempFile = project.app.path + "/bin/_" + project.app.file + ".js";
+			var sourceFile = outputDirectory + "/bin/" + project.app.file + ".js";
+			var tempFile = outputDirectory + "/bin/_" + project.app.file + ".js";
+			
+			if (FileSystem.exists (tempFile)) {
+				
+				FileSystem.deleteFile (tempFile);
+				
+			}
 			
 			FileSystem.rename (sourceFile, tempFile);
 			
