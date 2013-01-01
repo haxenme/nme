@@ -2,9 +2,10 @@ package native.events;
 
 
 class ErrorEvent extends TextEvent {
-
-    public static var ERROR = "error";
-
+	
+	
+	public static var ERROR:String = "error";
+	
 	public var errorID (default, null):Int;
 	
 	
