@@ -3,5 +3,5 @@
 	<user name="elyon"/>
 	<user name="leesylvester"/>
 	<description>NME provides an API that is similar to Flash, but available for C++ or Neko. Using the NME command-line tools, you can publish a single application for Windows, Mac, Linux, iOS, Android, webOS, Flash and HTML5. C++ targets require HXCPP, and HTML5 requires Jeash.</description>
-    <version name="3.5.2">Minor improvements.</version>
+    <version name="3.5.3">Minor improvements.</version>
 </project>

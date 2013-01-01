@@ -1169,52 +1169,56 @@ class NMMLParser extends NMEProject {
 					
 					case "ios":
 						
-						if (element.has.deployment) {
+						if (target == Platform.IOS) {
 							
-							var deployment = Std.parseFloat (substitute (element.att.deployment));
-							
-							if (deployment > config.ios.deployment) {
+							if (element.has.deployment) {
 								
-								config.ios.deployment = deployment;
+								var deployment = Std.parseFloat (substitute (element.att.deployment));
+								
+								if (deployment > config.ios.deployment) {
+									
+									config.ios.deployment = deployment;
+									
+								}
 								
 							}
 							
-						}
-						
-						if (element.has.binaries) {
-							
-							var binaries = substitute (element.att.binaries);
-							
-							switch (binaries) {
+							if (element.has.binaries) {
 								
-								case "fat":
-									
-									ArrayHelper.addUnique (architectures, Architecture.ARMV6);
-									ArrayHelper.addUnique (architectures, Architecture.ARMV7);
+								var binaries = substitute (element.att.binaries);
 								
-								case "armv6":
+								switch (binaries) {
 									
-									ArrayHelper.addUnique (architectures, Architecture.ARMV6);
-									architectures.remove (Architecture.ARMV7);
-								
-								case "armv7":
+									case "fat":
+										
+										ArrayHelper.addUnique (architectures, Architecture.ARMV6);
+										ArrayHelper.addUnique (architectures, Architecture.ARMV7);
 									
-									ArrayHelper.addUnique (architectures, Architecture.ARMV7);
-									architectures.remove (Architecture.ARMV6);
+									case "armv6":
+										
+										ArrayHelper.addUnique (architectures, Architecture.ARMV6);
+										architectures.remove (Architecture.ARMV7);
+									
+									case "armv7":
+										
+										ArrayHelper.addUnique (architectures, Architecture.ARMV7);
+										architectures.remove (Architecture.ARMV6);
+									
+								}
 								
 							}
 							
-						}
-						
-						if (element.has.devices) {
+							if (element.has.devices) {
+								
+								config.ios.device = Reflect.field (IOSConfigDevice, substitute (element.att.devices).toUpperCase ());
+								
+							}
 							
-							config.ios.device = Reflect.field (IOSConfigDevice, substitute (element.att.devices).toUpperCase ());
-							
-						}
-						
-						if (element.has.compiler) {
-							
-							config.ios.compiler = substitute (element.att.compiler);
+							if (element.has.compiler) {
+								
+								config.ios.compiler = substitute (element.att.compiler);
+								
+							}
 							
 						}
 					

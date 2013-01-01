@@ -37,7 +37,7 @@ class AndroidPlatform implements IPlatformTool {
 		
 		if (ArrayHelper.containsValue (project.architectures, Architecture.ARMV7)) {
 			
-			ProcessHelper.runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARM7" ] );
+			ProcessHelper.runCommand ("", "haxe", [ hxml, "-D", "HXCPP_ARMV7" ] );
 			FileHelper.copyIfNewer (project.app.path + "/android/obj/libApplicationMain-7" + (project.debug ? "-debug" : "") + ".so", arm7);
 			
 		} else {
