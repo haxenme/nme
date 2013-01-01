@@ -1,6 +1,7 @@
 package native.display;
 
 
+import nme.Vector;
 import haxe.Timer;
 import native.display.DisplayObjectContainer;
 import native.events.JoystickEvent;
@@ -15,6 +16,7 @@ import native.Lib;
 import native.media.SoundChannel;
 import native.net.URLLoader;
 import native.Loader;
+import native.display.Stage3D;
 
 
 class Stage extends DisplayObjectContainer {
@@ -51,6 +53,7 @@ class Stage extends DisplayObjectContainer {
 	public var stageFocusRect (get_stageFocusRect, set_stageFocusRect):Bool;
 	public var stageHeight (get_stageHeight, null):Int;
 	public var stageWidth (get_stageWidth, null):Int;
+    public var stage3Ds : Vector<Stage3D>;
 	
 	private static var efLeftDown = 0x0001;
 	private static var efShiftDown = 0x0002;
@@ -103,6 +106,9 @@ class Stage extends DisplayObjectContainer {
 		this.frameRate = 100;
 		nmeTouchInfo = new IntHash<TouchInfo> ();
 		nmeJoyAxisData = new IntHash<Array<Float>> ();
+
+        stage3Ds = new Vector();
+        stage3Ds.push(new Stage3D());
 		
 	}
 	
