@@ -532,6 +532,8 @@ class CommandLineTools {
 			
 		} else {
 			
+         throw "No unique project file found!";
+         // This code is confusing for everyone except Joshua...
 			var path = FileSystem.fullPath (Path.withoutDirectory (projectFile));
 			var name = Path.withoutDirectory (Path.withoutExtension (projectFile));
 			

@@ -171,6 +171,7 @@ class Reader {
 			case 1: SMReflect;
 			case 2: SMRepeat;
 			case 3: SMReserved;
+			default: throw error();
 		};
 
 		var interp = switch(bits.readBits(2)) {
@@ -178,6 +179,7 @@ class Reader {
 			case 1: IMLinearRGB;
 			case 2: IMReserved1;
 			case 3: IMReserved2;
+			default: throw error();
 		};
 
 		var nGrad = bits.readBits(4);
@@ -769,11 +771,13 @@ class Reader {
 				case 0: LCRound;
 				case 1: LCNone;
 				case 2: LCSquare;
+				default: throw error() + " in Morph2LineStyleData";
 			},
 			joinStyle: switch(joinStyle) {
 				case 0: LJRound;
 				case 1: LJBevel;
 				case 2: LJMiter(readFixed8(i));
+				default: throw error() + " in Morph2LineStyleData";
 			},
 			noHScale: noHScale,
 			noVScale: noVScale,
@@ -783,6 +787,7 @@ class Reader {
 				case 0: LCRound;
 				case 1: LCNone;
 				case 2: LCSquare;
+				default: throw error() + " in Morph2LineStyleData";
 			}
 		};
 
@@ -1166,6 +1171,7 @@ class Reader {
 		return switch(ver) {
 			case 2: FDFont2(hasWideCodes, f2data);
 			case 3: FDFont3(f2data);
+			default: throw error();
 		};
 	}
 
@@ -1181,6 +1187,9 @@ class Reader {
 
 			case 3:
 				readFont2Data(ver);
+
+			default:
+            throw error();
 		});
 	}
 
@@ -1222,6 +1231,7 @@ class Reader {
 		return TFontInfo(cid, switch(ver) {
 			case 1: FIDFont1(shiftJIS, isANSI, hasWideCodes, fi_data);
 			case 2: FIDFont2(language, fi_data);
+			default: throw error();
 		});
 	}
 
