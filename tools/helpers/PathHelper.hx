@@ -192,6 +192,33 @@ class PathHelper {
 	}
 	
 	
+	public static function getTemporaryFile (extension:String = ""):String {
+		
+		var path = "";
+		
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
+			
+			path = Sys.getEnv ("TEMP");
+			
+		} else {
+			
+			path = Sys.getEnv ("TMPDIR");
+			
+		}
+		
+		path += "/temp_" + Math.round (0xFFFFFF * Math.random ()) + extension;
+		
+		if (FileSystem.exists (path)) {
+			
+			return getTemporaryFile (extension);
+			
+		}
+		
+		return path;
+		
+	}
+	
+	
 	public static function isAbsolute (path:String):Bool {
 		
 		if (StringTools.startsWith (path, "/") || StringTools.startsWith (path, "\\")) {

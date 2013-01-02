@@ -2,6 +2,8 @@ package;
 
 
 import haxe.io.Path;
+import haxe.Serializer;
+import haxe.Unserializer;
 import sys.FileSystem;
 
 
@@ -48,11 +50,26 @@ class NMEProject {
 	private static var initialized:Bool;
 	
 	
-	public static function main (className:String) {
+	public static function main () {
+		
+		var args = Sys.args ();
+		
+		if (args.length > 1) {
+			
+			NMEProject._command = args[1];
+			NMEProject._debug = (args[2] == "true");
+			NMEProject._target = Type.createEnum (Platform, args[3]);
+			NMEProject._targetFlags = Unserializer.run (args[4]);
+			NMEProject._templatePaths = Unserializer.run (args[5]);
+			
+		}
 		
 		initialize ();
 		
-		return Type.createInstance (Type.resolveClass (className), []);
+		var classRef = Type.resolveClass (args[0]);
+		var instance = Type.createInstance (classRef, []);
+		
+		Sys.print (Serializer.run (instance));
 		
 	}
 	

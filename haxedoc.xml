@@ -4505,56 +4505,57 @@
 		<CLOSE public="1" line="12" static="1"><c path="String"/></CLOSE>
 		<COMPLETE public="1" line="13" static="1"><c path="String"/></COMPLETE>
 		<CONNECT public="1" line="14" static="1"><c path="String"/></CONNECT>
-		<DEACTIVATE public="1" line="15" static="1"><c path="String"/></DEACTIVATE>
-		<ENTER_FRAME public="1" line="16" static="1"><c path="String"/></ENTER_FRAME>
-		<ID3 public="1" line="17" static="1"><c path="String"/></ID3>
-		<INIT public="1" line="18" static="1"><c path="String"/></INIT>
-		<MOUSE_LEAVE public="1" line="19" static="1"><c path="String"/></MOUSE_LEAVE>
-		<OPEN public="1" line="20" static="1"><c path="String"/></OPEN>
-		<REMOVED public="1" line="21" static="1"><c path="String"/></REMOVED>
-		<REMOVED_FROM_STAGE public="1" line="22" static="1"><c path="String"/></REMOVED_FROM_STAGE>
-		<RENDER public="1" line="23" static="1"><c path="String"/></RENDER>
-		<RESIZE public="1" line="24" static="1"><c path="String"/></RESIZE>
-		<SCROLL public="1" line="25" static="1"><c path="String"/></SCROLL>
-		<SELECT public="1" line="26" static="1"><c path="String"/></SELECT>
-		<SOUND_COMPLETE public="1" line="27" static="1"><c path="String"/></SOUND_COMPLETE>
-		<TAB_CHILDREN_CHANGE public="1" line="28" static="1"><c path="String"/></TAB_CHILDREN_CHANGE>
-		<TAB_ENABLED_CHANGE public="1" line="29" static="1"><c path="String"/></TAB_ENABLED_CHANGE>
-		<TAB_INDEX_CHANGE public="1" line="30" static="1"><c path="String"/></TAB_INDEX_CHANGE>
-		<UNLOAD public="1" line="31" static="1"><c path="String"/></UNLOAD>
-		<get_type set="method" line="130"><f a=""><c path="String"/></f></get_type>
-		<set_target set="method" line="129"><f a="v">
+		<CONTEXT3D_CREATE public="1" line="15" static="1"><c path="String"/></CONTEXT3D_CREATE>
+		<DEACTIVATE public="1" line="16" static="1"><c path="String"/></DEACTIVATE>
+		<ENTER_FRAME public="1" line="17" static="1"><c path="String"/></ENTER_FRAME>
+		<ID3 public="1" line="18" static="1"><c path="String"/></ID3>
+		<INIT public="1" line="19" static="1"><c path="String"/></INIT>
+		<MOUSE_LEAVE public="1" line="20" static="1"><c path="String"/></MOUSE_LEAVE>
+		<OPEN public="1" line="21" static="1"><c path="String"/></OPEN>
+		<REMOVED public="1" line="22" static="1"><c path="String"/></REMOVED>
+		<REMOVED_FROM_STAGE public="1" line="23" static="1"><c path="String"/></REMOVED_FROM_STAGE>
+		<RENDER public="1" line="24" static="1"><c path="String"/></RENDER>
+		<RESIZE public="1" line="25" static="1"><c path="String"/></RESIZE>
+		<SCROLL public="1" line="26" static="1"><c path="String"/></SCROLL>
+		<SELECT public="1" line="27" static="1"><c path="String"/></SELECT>
+		<SOUND_COMPLETE public="1" line="28" static="1"><c path="String"/></SOUND_COMPLETE>
+		<TAB_CHILDREN_CHANGE public="1" line="29" static="1"><c path="String"/></TAB_CHILDREN_CHANGE>
+		<TAB_ENABLED_CHANGE public="1" line="30" static="1"><c path="String"/></TAB_ENABLED_CHANGE>
+		<TAB_INDEX_CHANGE public="1" line="31" static="1"><c path="String"/></TAB_INDEX_CHANGE>
+		<UNLOAD public="1" line="32" static="1"><c path="String"/></UNLOAD>
+		<get_type set="method" line="131"><f a=""><c path="String"/></f></get_type>
+		<set_target set="method" line="130"><f a="v">
 	<d/>
 	<d/>
 </f></set_target>
-		<get_target set="method" line="128"><f a=""><d/></f></get_target>
-		<get_eventPhase set="method" line="127"><f a=""><c path="Int"/></f></get_eventPhase>
-		<set_currentTarget set="method" line="126"><f a="v">
+		<get_target set="method" line="129"><f a=""><d/></f></get_target>
+		<get_eventPhase set="method" line="128"><f a=""><c path="Int"/></f></get_eventPhase>
+		<set_currentTarget set="method" line="127"><f a="v">
 	<d/>
 	<d/>
 </f></set_currentTarget>
-		<get_currentTarget set="method" line="125"><f a=""><d/></f></get_currentTarget>
-		<get_cancelable set="method" line="124"><f a=""><e path="Bool"/></f></get_cancelable>
-		<get_bubbles set="method" line="123"><f a=""><e path="Bool"/></f></get_bubbles>
-		<toString public="1" set="method" line="109"><f a=""><c path="String"/></f></toString>
-		<stopPropagation public="1" set="method" line="101"><f a=""><e path="Void"/></f></stopPropagation>
-		<stopImmediatePropagation public="1" set="method" line="93"><f a=""><e path="Void"/></f></stopImmediatePropagation>
-		<nmeSetPhase public="1" set="method" line="85">
+		<get_currentTarget set="method" line="126"><f a=""><d/></f></get_currentTarget>
+		<get_cancelable set="method" line="125"><f a=""><e path="Bool"/></f></get_cancelable>
+		<get_bubbles set="method" line="124"><f a=""><e path="Bool"/></f></get_bubbles>
+		<toString public="1" set="method" line="110"><f a=""><c path="String"/></f></toString>
+		<stopPropagation public="1" set="method" line="102"><f a=""><e path="Void"/></f></stopPropagation>
+		<stopImmediatePropagation public="1" set="method" line="94"><f a=""><e path="Void"/></f></stopImmediatePropagation>
+		<nmeSetPhase public="1" set="method" line="86">
 			<f a="inPhase">
 				<c path="Int"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeSetPhase>
-		<nmeGetIsCancelledNow public="1" set="method" line="78">
+		<nmeGetIsCancelledNow public="1" set="method" line="79">
 			<f a=""><e path="Bool"/></f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeGetIsCancelledNow>
-		<nmeGetIsCancelled public="1" set="method" line="71">
+		<nmeGetIsCancelled public="1" set="method" line="72">
 			<f a=""><e path="Bool"/></f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeGetIsCancelled>
-		<clone public="1" set="method" line="64"><f a=""><c path="native.events.Event"/></f></clone>
+		<clone public="1" set="method" line="65"><f a=""><c path="native.events.Event"/></f></clone>
 		<nmeIsCancelledNow>
 			<e path="Bool"/>
 			<haxe_doc>@private</haxe_doc>
@@ -4593,7 +4594,7 @@
 		<currentTarget public="1" get="get_currentTarget" set="set_currentTarget"><d/></currentTarget>
 		<cancelable public="1" get="get_cancelable" set="null"><e path="Bool"/></cancelable>
 		<bubbles public="1" get="get_bubbles" set="null"><e path="Bool"/></bubbles>
-		<new public="1" set="method" line="50"><f a="type:?bubbles:?cancelable">
+		<new public="1" set="method" line="51"><f a="type:?bubbles:?cancelable">
 	<c path="String"/>
 	<e path="Bool"/>
 	<e path="Bool"/>
@@ -4724,42 +4725,42 @@
 	</class>
 	<class path="native.display.Stage" params="" file="C:\Development\Haxe\nme/native/display/Stage.hx">
 		<extends path="native.display.DisplayObjectContainer"/>
-		<nmeEarlyWakeup public="1" line="29" static="1">
+		<nmeEarlyWakeup public="1" line="31" static="1">
 			<c path="Float"/>
 			<haxe_doc>* Time, in seconds, we wake up before the frame is due.  We then do a
 	 * "busy wait" to ensure the frame comes at the right time.  By increasing this number,
 	 * the frame rate will be more constant, but the busy wait will take more CPU.
 	 * @private</haxe_doc>
 		</nmeEarlyWakeup>
-		<OrientationPortrait public="1" line="31" static="1"><c path="Int"/></OrientationPortrait>
-		<OrientationPortraitUpsideDown public="1" line="32" static="1"><c path="Int"/></OrientationPortraitUpsideDown>
-		<OrientationLandscapeRight public="1" line="33" static="1"><c path="Int"/></OrientationLandscapeRight>
-		<OrientationLandscapeLeft public="1" line="34" static="1"><c path="Int"/></OrientationLandscapeLeft>
-		<OrientationFaceUp public="1" line="35" static="1"><c path="Int"/></OrientationFaceUp>
-		<OrientationFaceDown public="1" line="36" static="1"><c path="Int"/></OrientationFaceDown>
-		<efLeftDown line="55" static="1"><c path="Int"/></efLeftDown>
-		<efShiftDown line="56" static="1"><c path="Int"/></efShiftDown>
-		<efCtrlDown line="57" static="1"><c path="Int"/></efCtrlDown>
-		<efAltDown line="58" static="1"><c path="Int"/></efAltDown>
-		<efCommandDown line="59" static="1"><c path="Int"/></efCommandDown>
-		<efLocationRight line="60" static="1"><c path="Int"/></efLocationRight>
-		<efNoNativeClick line="61" static="1"><c path="Int"/></efNoNativeClick>
-		<nmeMouseChanges line="62" static="1"><c path="Array"><c path="String"/></c></nmeMouseChanges>
-		<nmeTouchChanges line="63" static="1"><c path="Array"><c path="String"/></c></nmeTouchChanges>
-		<sClickEvents line="64" static="1"><c path="Array"><c path="String"/></c></sClickEvents>
-		<sDownEvents line="65" static="1"><c path="Array"><c path="String"/></c></sDownEvents>
-		<sUpEvents line="66" static="1"><c path="Array"><c path="String"/></c></sUpEvents>
-		<getOrientation public="1" set="dynamic" line="110" static="1"><f a=""><c path="Int"/></f></getOrientation>
-		<getNormalOrientation public="1" set="dynamic" line="117" static="1"><f a=""><c path="Int"/></f></getNormalOrientation>
-		<setFixedOrientation public="1" set="method" line="817" static="1"><f a="inOrientation">
+		<OrientationPortrait public="1" line="33" static="1"><c path="Int"/></OrientationPortrait>
+		<OrientationPortraitUpsideDown public="1" line="34" static="1"><c path="Int"/></OrientationPortraitUpsideDown>
+		<OrientationLandscapeRight public="1" line="35" static="1"><c path="Int"/></OrientationLandscapeRight>
+		<OrientationLandscapeLeft public="1" line="36" static="1"><c path="Int"/></OrientationLandscapeLeft>
+		<OrientationFaceUp public="1" line="37" static="1"><c path="Int"/></OrientationFaceUp>
+		<OrientationFaceDown public="1" line="38" static="1"><c path="Int"/></OrientationFaceDown>
+		<efLeftDown line="58" static="1"><c path="Int"/></efLeftDown>
+		<efShiftDown line="59" static="1"><c path="Int"/></efShiftDown>
+		<efCtrlDown line="60" static="1"><c path="Int"/></efCtrlDown>
+		<efAltDown line="61" static="1"><c path="Int"/></efAltDown>
+		<efCommandDown line="62" static="1"><c path="Int"/></efCommandDown>
+		<efLocationRight line="63" static="1"><c path="Int"/></efLocationRight>
+		<efNoNativeClick line="64" static="1"><c path="Int"/></efNoNativeClick>
+		<nmeMouseChanges line="65" static="1"><c path="Array"><c path="String"/></c></nmeMouseChanges>
+		<nmeTouchChanges line="66" static="1"><c path="Array"><c path="String"/></c></nmeTouchChanges>
+		<sClickEvents line="67" static="1"><c path="Array"><c path="String"/></c></sClickEvents>
+		<sDownEvents line="68" static="1"><c path="Array"><c path="String"/></c></sDownEvents>
+		<sUpEvents line="69" static="1"><c path="Array"><c path="String"/></c></sUpEvents>
+		<getOrientation public="1" set="dynamic" line="116" static="1"><f a=""><c path="Int"/></f></getOrientation>
+		<getNormalOrientation public="1" set="dynamic" line="123" static="1"><f a=""><c path="Int"/></f></getNormalOrientation>
+		<setFixedOrientation public="1" set="method" line="823" static="1"><f a="inOrientation">
 	<c path="Int"/>
 	<e path="Void"/>
 </f></setFixedOrientation>
-		<shouldRotateInterface public="1" set="dynamic" line="825" static="1"><f a="inOrientation">
+		<shouldRotateInterface public="1" set="dynamic" line="831" static="1"><f a="inOrientation">
 	<c path="Int"/>
 	<e path="Bool"/>
 </f></shouldRotateInterface>
-		<nme_set_stage_handler line="990" static="1"><f a=":::">
+		<nme_set_stage_handler line="996" static="1"><f a=":::">
 	<d/>
 	<f a="inEvent">
 		<d/>
@@ -4769,153 +4770,153 @@
 	<c path="Int"/>
 	<unknown/>
 </f></nme_set_stage_handler>
-		<nme_render_stage line="991" static="1"><f a="">
+		<nme_render_stage line="997" static="1"><f a="">
 	<d/>
 	<unknown/>
 </f></nme_render_stage>
-		<nme_stage_get_focus_id line="992" static="1"><f a="">
+		<nme_stage_get_focus_id line="998" static="1"><f a="">
 	<d/>
 	<c path="Int"/>
 </f></nme_stage_get_focus_id>
-		<nme_stage_set_focus line="993" static="1"><f a="::">
+		<nme_stage_set_focus line="999" static="1"><f a="::">
 	<d/>
 	<unknown/>
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_focus>
-		<nme_stage_get_focus_rect line="994" static="1"><f a="">
+		<nme_stage_get_focus_rect line="1000" static="1"><f a="">
 	<d/>
 	<e path="Bool"/>
 </f></nme_stage_get_focus_rect>
-		<nme_stage_set_focus_rect line="995" static="1"><f a=":">
+		<nme_stage_set_focus_rect line="1001" static="1"><f a=":">
 	<d/>
 	<e path="Bool"/>
 	<unknown/>
 </f></nme_stage_set_focus_rect>
-		<nme_stage_is_opengl line="996" static="1"><f a="">
+		<nme_stage_is_opengl line="1002" static="1"><f a="">
 	<d/>
 	<e path="Bool"/>
 </f></nme_stage_is_opengl>
-		<nme_stage_get_stage_width line="997" static="1"><f a="">
+		<nme_stage_get_stage_width line="1003" static="1"><f a="">
 	<d/>
 	<unknown/>
 </f></nme_stage_get_stage_width>
-		<nme_stage_get_stage_height line="998" static="1"><f a="">
+		<nme_stage_get_stage_height line="1004" static="1"><f a="">
 	<d/>
 	<unknown/>
 </f></nme_stage_get_stage_height>
-		<nme_stage_get_dpi_scale line="999" static="1"><f a="">
+		<nme_stage_get_dpi_scale line="1005" static="1"><f a="">
 	<d/>
 	<c path="Float"/>
 </f></nme_stage_get_dpi_scale>
-		<nme_stage_get_scale_mode line="1000" static="1"><f a="">
+		<nme_stage_get_scale_mode line="1006" static="1"><f a="">
 	<d/>
 	<c path="Int"/>
 </f></nme_stage_get_scale_mode>
-		<nme_stage_set_scale_mode line="1001" static="1"><f a=":">
+		<nme_stage_set_scale_mode line="1007" static="1"><f a=":">
 	<d/>
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_scale_mode>
-		<nme_stage_get_align line="1002" static="1"><f a="">
+		<nme_stage_get_align line="1008" static="1"><f a="">
 	<d/>
 	<c path="Int"/>
 </f></nme_stage_get_align>
-		<nme_stage_set_align line="1003" static="1"><f a=":">
+		<nme_stage_set_align line="1009" static="1"><f a=":">
 	<d/>
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_align>
-		<nme_stage_get_quality line="1004" static="1"><f a="">
+		<nme_stage_get_quality line="1010" static="1"><f a="">
 	<d/>
 	<c path="Int"/>
 </f></nme_stage_get_quality>
-		<nme_stage_set_quality line="1005" static="1"><f a=":">
+		<nme_stage_set_quality line="1011" static="1"><f a=":">
 	<d/>
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_quality>
-		<nme_stage_get_display_state line="1006" static="1"><f a="">
+		<nme_stage_get_display_state line="1012" static="1"><f a="">
 	<d/>
 	<c path="Int"/>
 </f></nme_stage_get_display_state>
-		<nme_stage_set_display_state line="1007" static="1"><f a=":">
+		<nme_stage_set_display_state line="1013" static="1"><f a=":">
 	<d/>
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_display_state>
-		<nme_stage_set_next_wake line="1008" static="1"><f a=":">
+		<nme_stage_set_next_wake line="1014" static="1"><f a=":">
 	<d/>
 	<c path="Float"/>
 	<unknown/>
 </f></nme_stage_set_next_wake>
-		<nme_stage_request_render line="1009" static="1"><unknown/></nme_stage_request_render>
-		<nme_stage_show_cursor line="1010" static="1"><f a=":">
+		<nme_stage_request_render line="1015" static="1"><unknown/></nme_stage_request_render>
+		<nme_stage_show_cursor line="1016" static="1"><f a=":">
 	<d/>
 	<e path="Bool"/>
 	<unknown/>
 </f></nme_stage_show_cursor>
-		<nme_stage_set_fixed_orientation line="1011" static="1"><f a="">
+		<nme_stage_set_fixed_orientation line="1017" static="1"><f a="">
 	<c path="Int"/>
 	<unknown/>
 </f></nme_stage_set_fixed_orientation>
-		<nme_stage_get_orientation line="1012" static="1"><f a=""><c path="Int"/></f></nme_stage_get_orientation>
-		<nme_stage_get_normal_orientation line="1013" static="1"><f a=""><c path="Int"/></f></nme_stage_get_normal_orientation>
-		<get_stageWidth set="method" line="976"><f a=""><c path="Int"/></f></get_stageWidth>
-		<get_stageHeight set="method" line="969"><f a=""><c path="Int"/></f></get_stageHeight>
-		<set_stageFocusRect set="method" line="961"><f a="inVal">
+		<nme_stage_get_orientation line="1018" static="1"><f a=""><c path="Int"/></f></nme_stage_get_orientation>
+		<nme_stage_get_normal_orientation line="1019" static="1"><f a=""><c path="Int"/></f></nme_stage_get_normal_orientation>
+		<get_stageWidth set="method" line="982"><f a=""><c path="Int"/></f></get_stageWidth>
+		<get_stageHeight set="method" line="975"><f a=""><c path="Int"/></f></get_stageHeight>
+		<set_stageFocusRect set="method" line="967"><f a="inVal">
 	<e path="Bool"/>
 	<e path="Bool"/>
 </f></set_stageFocusRect>
-		<get_stageFocusRect set="method" line="960"><f a=""><e path="Bool"/></f></get_stageFocusRect>
-		<get_stage set="method" line="953" override="1"><f a=""><c path="native.display.Stage"/></f></get_stage>
-		<set_scaleMode set="method" line="945"><f a="inMode">
+		<get_stageFocusRect set="method" line="966"><f a=""><e path="Bool"/></f></get_stageFocusRect>
+		<get_stage set="method" line="959" override="1"><f a=""><c path="native.display.Stage"/></f></get_stage>
+		<set_scaleMode set="method" line="951"><f a="inMode">
 	<e path="native.display.StageScaleMode"/>
 	<e path="native.display.StageScaleMode"/>
 </f></set_scaleMode>
-		<get_scaleMode set="method" line="937"><f a=""><e path="native.display.StageScaleMode"/></f></get_scaleMode>
-		<set_quality set="method" line="929"><f a="inQuality">
+		<get_scaleMode set="method" line="943"><f a=""><e path="native.display.StageScaleMode"/></f></get_scaleMode>
+		<set_quality set="method" line="935"><f a="inQuality">
 	<e path="native.display.StageQuality"/>
 	<e path="native.display.StageQuality"/>
 </f></set_quality>
-		<get_quality set="method" line="921"><f a=""><e path="native.display.StageQuality"/></f></get_quality>
-		<get_isOpenGL set="method" line="914"><f a=""><e path="Bool"/></f></get_isOpenGL>
-		<set_frameRate set="method" line="905"><f a="inRate">
+		<get_quality set="method" line="927"><f a=""><e path="native.display.StageQuality"/></f></get_quality>
+		<get_isOpenGL set="method" line="920"><f a=""><e path="Bool"/></f></get_isOpenGL>
+		<set_frameRate set="method" line="911"><f a="inRate">
 	<c path="Float"/>
 	<c path="Float"/>
 </f></set_frameRate>
-		<set_focus set="method" line="894"><f a="inObject">
+		<set_focus set="method" line="900"><f a="inObject">
 	<c path="native.display.InteractiveObject"/>
 	<c path="native.display.InteractiveObject"/>
 </f></set_focus>
-		<get_focus set="method" line="885"><f a=""><c path="native.display.InteractiveObject"/></f></get_focus>
-		<get_dpiScale set="method" line="878"><f a=""><c path="Float"/></f></get_dpiScale>
-		<set_displayState set="method" line="870"><f a="inState">
+		<get_focus set="method" line="891"><f a=""><c path="native.display.InteractiveObject"/></f></get_focus>
+		<get_dpiScale set="method" line="884"><f a=""><c path="Float"/></f></get_dpiScale>
+		<set_displayState set="method" line="876"><f a="inState">
 	<e path="native.display.StageDisplayState"/>
 	<e path="native.display.StageDisplayState"/>
 </f></set_displayState>
-		<get_displayState set="method" line="862"><f a=""><e path="native.display.StageDisplayState"/></f></get_displayState>
-		<set_align set="method" line="854"><f a="inMode">
+		<get_displayState set="method" line="868"><f a=""><e path="native.display.StageDisplayState"/></f></get_displayState>
+		<set_align set="method" line="860"><f a="inMode">
 	<e path="native.display.StageAlign"/>
 	<e path="native.display.StageAlign"/>
 </f></set_align>
-		<get_align set="method" line="846"><f a=""><e path="native.display.StageAlign"/></f></get_align>
-		<showCursor public="1" set="method" line="832"><f a="inShow">
+		<get_align set="method" line="852"><f a=""><e path="native.display.StageAlign"/></f></get_align>
+		<showCursor public="1" set="method" line="838"><f a="inShow">
 	<e path="Bool"/>
 	<e path="Void"/>
 </f></showCursor>
-		<nmeUpdateNextWake public="1" set="method" line="795">
+		<nmeUpdateNextWake public="1" set="method" line="801">
 			<f a=""><c path="Float"/></f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeUpdateNextWake>
-		<nmeStopDrag public="1" set="method" line="787">
+		<nmeStopDrag public="1" set="method" line="793">
 			<f a="sprite">
 				<c path="native.display.Sprite"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeStopDrag>
-		<nmeStartDrag public="1" set="method" line="758">
+		<nmeStartDrag public="1" set="method" line="764">
 			<f a="sprite:lockCenter:bounds">
 				<c path="native.display.Sprite"/>
 				<e path="Bool"/>
@@ -4924,25 +4925,25 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeStartDrag>
-		<nmeSetActive public="1" set="method" line="739">
+		<nmeSetActive public="1" set="method" line="745">
 			<f a="inActive">
 				<e path="Bool"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeSetActive>
-		<nmeRender public="1" set="method" line="717">
+		<nmeRender public="1" set="method" line="723">
 			<f a="inSendEnterFrame">
 				<e path="Bool"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeRender>
-		<nmePollTimers public="1" set="method" line="706">
+		<nmePollTimers public="1" set="method" line="712">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>@private</haxe_doc>
 		</nmePollTimers>
-		<nmeOnTouch set="method" line="662">
+		<nmeOnTouch set="method" line="668">
 			<f a="inEvent:inType:touchInfo">
 				<d/>
 				<c path="String"/>
@@ -4951,7 +4952,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnTouch>
-		<nmeOnResize set="method" line="654">
+		<nmeOnResize set="method" line="660">
 			<f a="inW:inH">
 				<c path="Float"/>
 				<c path="Float"/>
@@ -4959,7 +4960,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnResize>
-		<nmeOnMouse set="method" line="556">
+		<nmeOnMouse set="method" line="562">
 			<f a="inEvent:inType:inFromMouse">
 				<d/>
 				<c path="String"/>
@@ -4968,7 +4969,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnMouse>
-		<nmeOnKey set="method" line="533">
+		<nmeOnKey set="method" line="539">
 			<f a="inEvent:inType">
 				<d/>
 				<c path="String"/>
@@ -4976,7 +4977,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnKey>
-		<nmeOnJoystick set="method" line="464">
+		<nmeOnJoystick set="method" line="470">
 			<f a="inEvent:inType">
 				<d/>
 				<c path="String"/>
@@ -4984,54 +4985,54 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnJoystick>
-		<nmeOnFocus set="method" line="434">
+		<nmeOnFocus set="method" line="440">
 			<f a="inEvent">
 				<d/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnFocus>
-		<nmeOnChange set="method" line="425">
+		<nmeOnChange set="method" line="431">
 			<f a="inEvent">
 				<a><id set="null"><c path="Int"/></id></a>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeOnChange>
-		<nmeNextFrameDue set="method" line="407">
+		<nmeNextFrameDue set="method" line="413">
 			<f a="inOtherTimers">
 				<c path="Float"/>
 				<c path="Float"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeNextFrameDue>
-		<nmeDrag set="method" line="382">
+		<nmeDrag set="method" line="388">
 			<f a="inMouse">
 				<c path="native.geom.Point"/>
 				<e path="Void"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeDrag>
-		<nmeProcessStageEvent set="method" line="374">
+		<nmeProcessStageEvent set="method" line="380">
 			<f a="inEvent">
 				<d/>
 				<d/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeProcessStageEvent>
-		<dummyTrace set="method" line="367"><f a=""><e path="Void"/></f></dummyTrace>
-		<nmeDoProcessStageEvent set="method" line="250">
+		<dummyTrace set="method" line="373"><f a=""><e path="Void"/></f></dummyTrace>
+		<nmeDoProcessStageEvent set="method" line="256">
 			<f a="inEvent">
 				<d/>
 				<c path="Float"/>
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeDoProcessStageEvent>
-		<nmeCheckRender set="method" line="229">
+		<nmeCheckRender set="method" line="235">
 			<f a=""><e path="Void"/></f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeCheckRender>
-		<nmeCheckInOuts set="method" line="173">
+		<nmeCheckInOuts set="method" line="179">
 			<f a="inEvent:inStack:?touchInfo">
 				<c path="native.events.MouseEvent"/>
 				<c path="Array"><c path="native.display.InteractiveObject"/></c>
@@ -5040,7 +5041,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeCheckInOuts>
-		<nmeCheckFocusInOuts set="method" line="131">
+		<nmeCheckFocusInOuts set="method" line="137">
 			<f a="inEvent:inStack">
 				<d/>
 				<c path="Array"><c path="native.display.InteractiveObject"/></c>
@@ -5048,7 +5049,7 @@
 			</f>
 			<haxe_doc>@private</haxe_doc>
 		</nmeCheckFocusInOuts>
-		<invalidate public="1" set="method" line="124"><f a=""><e path="Void"/></f></invalidate>
+		<invalidate public="1" set="method" line="130"><f a=""><e path="Void"/></f></invalidate>
 		<nmeTouchInfo>
 			<c path="IntHash"><c path="native.display.TouchInfo"/></c>
 			<haxe_doc>@private</haxe_doc>
@@ -5101,6 +5102,7 @@
 			<c path="IntHash"><c path="Array"><c path="Float"/></c></c>
 			<haxe_doc>@private</haxe_doc>
 		</nmeJoyAxisData>
+		<stage3Ds public="1"><t path="nme.Vector"><c path="native.display.Stage3D"/></t></stage3Ds>
 		<stageWidth public="1" get="get_stageWidth" set="null"><c path="Int"/></stageWidth>
 		<stageHeight public="1" get="get_stageHeight" set="null"><c path="Int"/></stageHeight>
 		<stageFocusRect public="1" get="get_stageFocusRect" set="set_stageFocusRect"><e path="Bool"/></stageFocusRect>
@@ -5123,7 +5125,7 @@
 		<displayState public="1" get="get_displayState" set="set_displayState"><e path="native.display.StageDisplayState"/></displayState>
 		<align public="1" get="get_align" set="set_align"><e path="native.display.StageAlign"/></align>
 		<active public="1" set="null"><e path="Bool"/></active>
-		<new public="1" set="method" line="83"><f a="inHandle:inWidth:inHeight">
+		<new public="1" set="method" line="86"><f a="inHandle:inWidth:inHeight">
 	<d/>
 	<c path="Int"/>
 	<c path="Int"/>
@@ -5339,7 +5341,19 @@
 	</enum>
 	<class path="native.display.TouchInfo" params="" file="C:\Development\Haxe\nme/native/display/Stage.hx" module="native.display.Stage">
 		<touchOverObjects public="1"><c path="Array"><c path="native.display.InteractiveObject"/></c></touchOverObjects>
-		<new public="1" set="method" line="1025"><f a=""><e path="Void"/></f></new>
+		<new public="1" set="method" line="1031"><f a=""><e path="Void"/></f></new>
+	</class>
+	<class path="native.display.Stage3D" params="" file="C:\Development\Haxe\nme/native/display/Stage3D.hx">
+		<extends path="native.events.EventDispatcher"/>
+		<requestContext3D public="1" set="method" line="26"><f a="?context3DRenderMode">
+	<c path="String"/>
+	<e path="Void"/>
+</f></requestContext3D>
+		<y public="1"><c path="Float"/></y>
+		<x public="1"><c path="Float"/></x>
+		<visible public="1"><e path="Bool"/></visible>
+		<context3D public="1"><c path="native.display3D.Context3D"/></context3D>
+		<new public="1" set="method" line="19"><f a=""><e path="Void"/></f></new>
 	</class>
 	<enum path="native.display.StageAlign" params="" file="C:\Development\Haxe\nme/native/display/StageAlign.hx">
 		<TOP_RIGHT/>
@@ -5416,6 +5430,325 @@
 		<NONE/>
 		<NEGATIVE/>
 	</enum>
+	<class path="native.display3D.Context3D" params="" file="C:\Development\Haxe\nme/native/display3D/Context3D.hx">
+		<updateBlendStatus set="method" line="373"><f a=""><e path="Void"/></f></updateBlendStatus>
+		<setVertexBufferAt public="1" set="method" line="322"><f a="index:buffer:?bufferOffset:?format">
+	<c path="Int"/>
+	<c path="native.display3D.VertexBuffer3D"/>
+	<c path="Int"/>
+	<e path="native.display3D.Context3DVertexBufferFormat"/>
+	<e path="Void"/>
+</f></setVertexBufferAt>
+		<setTextureAt public="1" set="method" line="298"><f a="sampler:texture">
+	<c path="Int"/>
+	<c path="native.display3D.textures.TextureBase"/>
+	<e path="Void"/>
+</f></setTextureAt>
+		<setStencilReferenceValue public="1" set="method" line="291"><f a="referenceValue:?readMask:?writeMask">
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setStencilReferenceValue>
+		<setStencilActions public="1" set="method" line="284"><f a="?triangleFace:?compareMode:?actionOnBothPass:?actionOnDepthFail:?actionOnDepthPassStencilFail">
+	<c path="native.display3D.Context3DTriangleFace"/>
+	<c path="native.display3D.Context3DCompareMode"/>
+	<e path="native.display3D.Context3DStencilAction"/>
+	<e path="native.display3D.Context3DStencilAction"/>
+	<e path="native.display3D.Context3DStencilAction"/>
+	<e path="Void"/>
+</f></setStencilActions>
+		<setScissorRectangle public="1" set="method" line="277"><f a="rectangle">
+	<c path="native.geom.Rectangle"/>
+	<e path="Void"/>
+</f></setScissorRectangle>
+		<setRenderToTexture public="1" set="method" line="270"><f a="texture:?enableDepthAndStencil:?antiAlias:?surfaceSelector">
+	<c path="native.display3D.textures.TextureBase"/>
+	<e path="Bool"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setRenderToTexture>
+		<setRenderToBackBuffer public="1" set="method" line="263"><f a=""><e path="Void"/></f></setRenderToBackBuffer>
+		<setRenderMethod public="1" set="method" line="256"><f a="func">
+	<f a="">
+		<c path="native.geom.Rectangle"/>
+		<e path="Void"/>
+	</f>
+	<e path="Void"/>
+</f></setRenderMethod>
+		<setProgramConstantsFromVector public="1" set="method" line="247"><f a="programType:firstRegister:data:?numRegisters">
+	<c path="native.display3D.Context3DProgramType"/>
+	<c path="Int"/>
+	<t path="nme.Vector"><c path="Float"/></t>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setProgramConstantsFromVector>
+		<setProgramConstantsFromMatrix public="1" set="method" line="231"><f a="programType:firstRegister:matrix:?transposedMatrix">
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="native.geom.Matrix3D"/>
+	<e path="Bool"/>
+	<e path="Void"/>
+</f></setProgramConstantsFromMatrix>
+		<setProgramConstantsFromByteArray public="1" set="method" line="222"><f a="programType:firstRegister:numRegisters:data:byteArrayOffset">
+	<c path="native.display3D.Context3DProgramType"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setProgramConstantsFromByteArray>
+		<setProgram public="1" set="method" line="206"><f a="program3D">
+	<c path="native.display3D.Program3D"/>
+	<e path="Void"/>
+</f></setProgram>
+		<setDepthTest public="1" set="method" line="193"><f a="depthMask:passCompareMode">
+	<e path="Bool"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setDepthTest>
+		<setCulling public="1" set="method" line="183"><f a="triangleFaceToCull">
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setCulling>
+		<setColorMask public="1" set="method" line="174"><f a="red:green:blue:alpha">
+	<e path="Bool"/>
+	<e path="Bool"/>
+	<e path="Bool"/>
+	<e path="Bool"/>
+	<e path="Void"/>
+</f></setColorMask>
+		<setBlendFactors public="1" set="method" line="163"><f a="sourceFactor:destinationFactor">
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></setBlendFactors>
+		<present public="1" set="method" line="153"><f a=""><e path="Void"/></f></present>
+		<drawTriangles public="1" set="method" line="128"><f a="indexBuffer:?firstIndex:?numTriangles">
+	<c path="native.display3D.IndexBuffer3D"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></drawTriangles>
+		<drawToBitmapData public="1" set="method" line="121"><f a="destination">
+	<c path="native.display.BitmapData"/>
+	<e path="Void"/>
+</f></drawToBitmapData>
+		<dispose public="1" set="method" line="114"><f a=""><e path="Void"/></f></dispose>
+		<createVertexBuffer public="1" set="method" line="107"><f a="numVertices:data32PerVertex">
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="native.display3D.VertexBuffer3D"/>
+</f></createVertexBuffer>
+		<createTexture public="1" set="method" line="100"><f a="width:height:format:optimizeForRenderToTexture:?streamingLevels">
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="native.display3D.Context3DTextureFormat"/>
+	<e path="Bool"/>
+	<c path="Int"/>
+	<c path="native.display3D.textures.Texture"/>
+</f></createTexture>
+		<createProgram public="1" set="method" line="93"><f a=""><c path="native.display3D.Program3D"/></f></createProgram>
+		<createIndexBuffer public="1" set="method" line="86"><f a="numIndices">
+	<c path="Int"/>
+	<c path="native.display3D.IndexBuffer3D"/>
+</f></createIndexBuffer>
+		<createCubeTexture public="1" set="method" line="77"><f a="size:format:optimizeForRenderToTexture:?streamingLevels">
+	<c path="Int"/>
+	<e path="native.display3D.Context3DTextureFormat"/>
+	<e path="Bool"/>
+	<c path="Int"/>
+	<c path="native.display3D.textures.CubeTexture"/>
+</f></createCubeTexture>
+		<configureBackBuffer public="1" set="method" line="70"><f a="width:height:antiAlias:?enableDepthAndStencil">
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Bool"/>
+	<e path="Void"/>
+</f></configureBackBuffer>
+		<clear public="1" set="method" line="50"><f a="?red:?green:?blue:?alpha:?depth:?stencil:?mask">
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Float"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></clear>
+		<drawing><e path="Bool"/></drawing>
+		<blendSourceFactor><c path="Int"/></blendSourceFactor>
+		<blendEnabled><e path="Bool"/></blendEnabled>
+		<blendDestinationFactor><c path="Int"/></blendDestinationFactor>
+		<ogl><c path="native.display.OpenGLView"/></ogl>
+		<currentProgram><c path="native.display3D.Program3D"/></currentProgram>
+		<enableErrorChecking public="1"><e path="Bool"/></enableErrorChecking>
+		<driverInfo public="1" set="null"><c path="String"/></driverInfo>
+		<new public="1" set="method" line="36"><f a=""><e path="Void"/></f></new>
+	</class>
+	<class path="native.display3D.Context3DClearMask" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DClearMask.hx">
+		<ALL public="1" get="inline" set="null" line="9" static="1"><c path="Int"/></ALL>
+		<COLOR public="1" get="inline" set="null" line="10" static="1"><c path="Int"/></COLOR>
+		<DEPTH public="1" get="inline" set="null" line="11" static="1"><c path="Int"/></DEPTH>
+		<STENCIL public="1" get="inline" set="null" line="12" static="1"><c path="Int"/></STENCIL>
+	</class>
+	<class path="native.display3D.Context3DCompareMode" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DCompareMode.hx">
+		<ALWAYS public="1" get="inline" set="null" line="9" static="1"><c path="Int"/></ALWAYS>
+		<EQUAL public="1" get="inline" set="null" line="10" static="1"><c path="Int"/></EQUAL>
+		<GREATER public="1" get="inline" set="null" line="11" static="1"><c path="Int"/></GREATER>
+		<GREATER_EQUAL public="1" get="inline" set="null" line="12" static="1"><c path="Int"/></GREATER_EQUAL>
+		<LESS public="1" get="inline" set="null" line="13" static="1"><c path="Int"/></LESS>
+		<LESS_EQUAL public="1" get="inline" set="null" line="14" static="1"><c path="Int"/></LESS_EQUAL>
+		<NEVER public="1" get="inline" set="null" line="15" static="1"><c path="Int"/></NEVER>
+		<NOT_EQUAL public="1" get="inline" set="null" line="16" static="1"><c path="Int"/></NOT_EQUAL>
+	</class>
+	<class path="native.display3D.Context3DProgramType" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DProgramType.hx">
+		<VERTEX public="1" get="inline" set="null" line="9" static="1"><c path="Int"/></VERTEX>
+		<FRAGMENT public="1" get="inline" set="null" line="10" static="1"><c path="Int"/></FRAGMENT>
+	</class>
+	<enum path="native.display3D.Context3DStencilAction" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DStencilAction.hx">
+		<ZERO/>
+		<SET/>
+		<KEEP/>
+		<INVERT/>
+		<INCREMENT_WRAP/>
+		<INCREMENT_SATURATE/>
+		<DECREMENT_WRAP/>
+		<DECREMENT_SATURATE/>
+	</enum>
+	<enum path="native.display3D.Context3DTextureFormat" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DTextureFormat.hx">
+		<COMPRESSED_ALPHA/>
+		<COMPRESSED/>
+		<BGRA/>
+	</enum>
+	<class path="native.display3D.Context3DTriangleFace" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DTriangleFace.hx">
+		<BACK public="1" get="inline" set="null" line="9" static="1"><c path="Int"/></BACK>
+		<FRONT public="1" get="inline" set="null" line="10" static="1"><c path="Int"/></FRONT>
+		<FRONT_AND_BACK public="1" get="inline" set="null" line="11" static="1"><c path="Int"/></FRONT_AND_BACK>
+		<NONE public="1" get="inline" set="null" line="12" static="1"><c path="Int"/></NONE>
+	</class>
+	<enum path="native.display3D.Context3DVertexBufferFormat" params="" file="C:\Development\Haxe\nme/native/display3D/Context3DVertexBufferFormat.hx">
+		<FLOAT_4/>
+		<FLOAT_3/>
+		<FLOAT_2/>
+		<FLOAT_1/>
+		<BYTES_4/>
+	</enum>
+	<class path="native.display3D.IndexBuffer3D" params="" file="C:\Development\Haxe\nme/native/display3D/IndexBuffer3D.hx">
+		<uploadFromVector public="1" set="method" line="34"><f a="data:startOffset:count">
+	<t path="nme.Vector"><c path="Int"/></t>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromVector>
+		<uploadFromByteArray public="1" set="method" line="24"><f a="byteArray:byteArrayOffset:startOffset:count">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromByteArray>
+		<numIndices public="1"><c path="Int"/></numIndices>
+		<glBuffer public="1"><c path="native.gl.Buffer"/></glBuffer>
+		<new public="1" set="method" line="16"><f a="glBuffer:numIndices">
+	<c path="native.gl.Buffer"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></new>
+	</class>
+	<class path="native.display3D.Program3D" params="" file="C:\Development\Haxe\nme/native/display3D/Program3D.hx">
+		<upload public="1" set="method" line="29"><f a="vertexShader:fragmentShader">
+	<t path="nme.gl.Shader"/>
+	<t path="nme.gl.Shader"/>
+	<e path="Void"/>
+</f></upload>
+		<dispose public="1" set="method" line="20"><f a=""><e path="Void"/></f></dispose>
+		<glProgram public="1"><t path="nme.gl.Program"/></glProgram>
+		<new public="1" set="method" line="13"><f a="program">
+	<t path="nme.gl.Program"/>
+	<e path="Void"/>
+</f></new>
+	</class>
+	<class path="native.display3D.VertexBuffer3D" params="" file="C:\Development\Haxe\nme/native/display3D/VertexBuffer3D.hx">
+		<uploadFromVector public="1" set="method" line="43"><f a="data:startVertex:numVertices">
+	<t path="nme.Vector"><c path="Float"/></t>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromVector>
+		<uploadFromByteArray public="1" set="method" line="33"><f a="byteArray:byteArrayOffset:startOffset:count">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromByteArray>
+		<dispose public="1" set="method" line="26"><f a=""><e path="Void"/></f></dispose>
+		<numVertices public="1"><c path="Int"/></numVertices>
+		<glBuffer public="1"><c path="native.gl.Buffer"/></glBuffer>
+		<data32PerVertex public="1"><c path="Int"/></data32PerVertex>
+		<new public="1" set="method" line="17"><f a="glBuffer:numVertices:data32PerVertex">
+	<c path="native.gl.Buffer"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></new>
+	</class>
+	<class path="native.display3D.textures.TextureBase" params="" file="C:\Development\Haxe\nme/native/display3D/textures/TextureBase.hx">
+		<extends path="native.events.EventDispatcher"/>
+		<dispose public="1" set="method" line="17"><f a=""><e path="Void"/></f></dispose>
+		<new public="1" set="method" line="10"><f a=""><e path="Void"/></f></new>
+	</class>
+	<class path="native.display3D.textures.CubeTexture" params="" file="C:\Development\Haxe\nme/native/display3D/textures/CubeTexture.hx">
+		<extends path="native.display3D.textures.TextureBase"/>
+		<uploadFromByteArray public="1" set="method" line="32"><f a="data:byteArrayOffset:side:?miplevel">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromByteArray>
+		<uploadFromBitmapData public="1" set="method" line="25"><f a="source:side:?miplevel">
+	<c path="native.display.BitmapData"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromBitmapData>
+		<uploadCompressedTextureFromByteArray public="1" set="method" line="18"><f a="data:byteArrayOffset:?async">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<e path="Bool"/>
+	<e path="Void"/>
+</f></uploadCompressedTextureFromByteArray>
+		<new public="1" set="method" line="11"><f a=""><e path="Void"/></f></new>
+	</class>
+	<class path="native.display3D.textures.Texture" params="" file="C:\Development\Haxe\nme/native/display3D/textures/Texture.hx">
+		<extends path="native.display3D.textures.TextureBase"/>
+		<uploadFromByteArray public="1" set="method" line="60"><f a="data:byteArrayOffset:?miplevel">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromByteArray>
+		<uploadFromBitmapData public="1" set="method" line="34"><f a="bitmapData:?miplevel">
+	<c path="native.display.BitmapData"/>
+	<c path="Int"/>
+	<e path="Void"/>
+</f></uploadFromBitmapData>
+		<uploadCompressedTextureFromByteArray public="1" set="method" line="27"><f a="data:byteArrayOffset:?async">
+	<c path="native.utils.ByteArray"/>
+	<c path="Int"/>
+	<e path="Bool"/>
+	<e path="Void"/>
+</f></uploadCompressedTextureFromByteArray>
+		<glTexture public="1"><c path="native.gl.Texture"/></glTexture>
+		<new public="1" set="method" line="18"><f a="glTexture">
+	<c path="native.gl.Texture"/>
+	<e path="Void"/>
+</f></new>
+	</class>
 	<class path="native.errors.Error" params="" file="C:\Development\Haxe\nme/native/errors/Error.hx">
 		<toString public="1" set="method" line="27"><f a=""><c path="String"/></f></toString>
 		<getStackTrace set="method" line="20"><f a=""><c path="String"/></f></getStackTrace>
@@ -5506,10 +5839,11 @@
 	</class>
 	<class path="native.events.ErrorEvent" params="" file="C:\Development\Haxe\nme/native/events/ErrorEvent.hx">
 		<extends path="native.events.TextEvent"/>
-		<toString public="1" set="method" line="25" override="1"><f a=""><c path="String"/></f></toString>
-		<clone public="1" set="method" line="18" override="1"><f a=""><c path="native.events.Event"/></f></clone>
+		<ERROR public="1" line="7" static="1"><c path="String"/></ERROR>
+		<toString public="1" set="method" line="27" override="1"><f a=""><c path="String"/></f></toString>
+		<clone public="1" set="method" line="20" override="1"><f a=""><c path="native.events.Event"/></f></clone>
 		<errorID public="1" set="null"><c path="Int"/></errorID>
-		<new public="1" set="method" line="10"><f a="type:?bubbles:?cancelable:?text:?id">
+		<new public="1" set="method" line="12"><f a="type:?bubbles:?cancelable:?text:?id">
 	<c path="String"/>
 	<e path="Bool"/>
 	<e path="Bool"/>

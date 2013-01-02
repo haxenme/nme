@@ -1,6 +1,7 @@
 package;
 
 
+import haxe.Serializer;
 import haxe.Unserializer;
 import haxe.io.Path;
 import haxe.rtti.Meta;
@@ -15,6 +16,7 @@ import platforms.MacPlatform;
 import platforms.WebOSPlatform;
 import platforms.WindowsPlatform;
 import sys.io.File;
+import sys.io.Process;
 import sys.FileSystem;
 	
 	
@@ -40,6 +42,12 @@ class CommandLineTools {
 		
 		var project = initializeProject ();
 		var platform:IPlatformTool = null;
+		
+		if (project == null) {
+			
+			return;
+			
+		}
 		
 		LogHelper.info ("", "Using target platform: " + project.target);
 		
@@ -513,7 +521,7 @@ class CommandLineTools {
 					LogHelper.error ("\"" + targetName + "\" is an unknown target");
 					
 				}
-		
+			
 		}
 		
 		NMEProject._command = command;
@@ -530,18 +538,16 @@ class CommandLineTools {
 			
 			project = new NMMLParser (Path.withoutDirectory (projectFile), userDefines, includePaths);
 			
-		} else {
+		} else if (Path.extension (projectFile) == "hx") {
 			
-         throw "No unique project file found!";
-         // This code is confusing for everyone except Joshua...
 			var path = FileSystem.fullPath (Path.withoutDirectory (projectFile));
 			var name = Path.withoutDirectory (Path.withoutExtension (projectFile));
 			
-			ProcessHelper.runCommand ("", "haxe", [ "-main", name, "-neko", "~/haxe.n", "-lib", "nme", "-cp", "/Users/joshua/Development/Haxe/nme/tools/project", "-cp", "/Users/joshua/Development/Haxe/nme/tools/helpers" ]);
+			var tempFile = PathHelper.getTemporaryFile (".n");
 			
-			// need to handle temp paths
+			ProcessHelper.runCommand ("", "haxe", [ "-main", "NMEProject", "-neko", tempFile, "-cp", nme + "/tools/project", "-cp", nme + "/tools/helpers", "-cp", nme + "/tools/command-line", "--macro", "include ('', false, null, [ '.' ])", "-lib", "nme", "-lib", "xfl", "-lib", "swf", "-lib", "svg", "--remap", "flash:nme" ]);
 			
-			var process = new sys.io.Process ("neko", [ "/Users/joshua/haxe.n" ]);
+			var process = new Process ("neko", [ FileSystem.fullPath (tempFile), name, NMEProject._command, Std.string (NMEProject._debug), Std.string (NMEProject._target), Serializer.run (NMEProject._targetFlags), Serializer.run (NMEProject._templatePaths) ]);
 			var output = process.stdout.readAll ().toString ();
 			var error = process.stderr.readAll ().toString ();
 			process.exitCode ();
@@ -551,6 +557,14 @@ class CommandLineTools {
 			unserializer.setResolver (cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass });
 			
 			project = unserializer.unserialize ();
+			
+			FileSystem.deleteFile (tempFile);
+			
+		}
+		
+		if (project == null) {
+			
+			return null;
 			
 		}
 		
