@@ -165,14 +165,26 @@ FILE *OpenOverwrite(const char *inName)
 {
     if (shouldChdir)
     {
-        char parentdir[MAXPATHLEN];
-		CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-		CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
-		if (CFURLGetFileSystemRepresentation(url2, true, (UInt8 *)parentdir, MAXPATHLEN)) {
-	        assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
+        //char parentdir[MAXPATHLEN];
+		//CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+		//CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
+		//if (CFURLGetFileSystemRepresentation(url2, true, (UInt8 *)parentdir, MAXPATHLEN)) {
+	        //assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
+		//}
+		//CFRelease(url);
+		//CFRelease(url2);
+		  
+		CFBundleRef mainBundle = CFBundleGetMainBundle();
+		CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+		char path[PATH_MAX];
+		if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+		{
+        	// error!
 		}
-		CFRelease(url);
-		CFRelease(url2);
+		CFRelease(resourcesURL);
+		
+		chdir(path);
+		
 	}
 
 }
@@ -469,7 +481,7 @@ void MacBoot()
         gFinderLaunch = NO;
     }
 */
-        gFinderLaunch = NO;
+        gFinderLaunch = YES;
 
 #if SDL_USE_NIB_FILE
     [SDLApplication poseAsClass:[NSApplication class]];
