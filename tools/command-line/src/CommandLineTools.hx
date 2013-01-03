@@ -43,12 +43,6 @@ class CommandLineTools {
 		var project = initializeProject ();
 		var platform:IPlatformTool = null;
 		
-		if (project == null) {
-			
-			return;
-			
-		}
-		
 		LogHelper.info ("", "Using target platform: " + project.target);
 		
 		switch (project.target) {
@@ -478,7 +472,7 @@ class CommandLineTools {
 		
 		if (projectFile == "") {
 			
-			LogHelper.error ("You must have a \"project.nmml\" file or specify another NMML file when using the '" + command + "' command");
+			LogHelper.error ("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
 			return null;
 			
 		} else {
@@ -553,10 +547,13 @@ class CommandLineTools {
 			process.exitCode ();
 			process.close ();
 			
-			var unserializer = new Unserializer (output);
-			unserializer.setResolver (cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass });
-			
-			project = unserializer.unserialize ();
+			try {
+				
+				var unserializer = new Unserializer (output);
+				unserializer.setResolver (cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass });
+				project = unserializer.unserialize ();
+				
+			} catch (e:Dynamic) {}
 			
 			FileSystem.deleteFile (tempFile);
 			
@@ -564,6 +561,7 @@ class CommandLineTools {
 		
 		if (project == null) {
 			
+			LogHelper.error ("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
 			return null;
 			
 		}

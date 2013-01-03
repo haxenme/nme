@@ -1,13 +1,22 @@
 Changes
 =======
 
+3.5.3
+---------------
+* Added support for a new Haxe-based project format
+* Added alpha feature support for Stage3D APIs
+* Restored Mac OS X 10.6.8 compatibility
+* Minor fixes
+
 3.5.2
 ---------------
-* Minor impovements
+* Improved support in OpenGLView for older graphics chipsets
+* Restored Windows XP compatibility
+* Multiple fixes and improvements
 
 3.5.1
 ---------------
-* Minor bug fixes
+* Post-release bug fixes
 
 3.5.0
 ---------------
