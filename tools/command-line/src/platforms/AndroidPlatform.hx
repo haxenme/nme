@@ -216,7 +216,7 @@ class AndroidPlatform implements IPlatformTool {
 		
 		for (javaPath in project.javaPaths) {
 			
-			//try {
+			try {
 				
 				if (FileSystem.isDirectory (javaPath)) {
 					
@@ -228,7 +228,7 @@ class AndroidPlatform implements IPlatformTool {
 					
 				}
 				
-			//} catch (e:Dynamic) {
+			} catch (e:Dynamic) {}
 				
 			//	throw"Could not find javaPath " + javaPath +" required by extension."; 
 				

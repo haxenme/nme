@@ -97,9 +97,9 @@ class Context3D {
 	}
 	
 	
-	public function createTexture (width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):Texture {
+	public function createTexture (width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):native.display3D.textures.Texture {
 		
-		return new Texture (GL.createTexture ());     // TODO use arguments ?
+		return new native.display3D.textures.Texture (GL.createTexture ());     // TODO use arguments ?
 		
 	}
 	
@@ -297,14 +297,14 @@ class Context3D {
 	
 	public function setTextureAt (sampler:Int, texture:TextureBase):Void {
 		
-		if (Std.is (texture, Texture)) {
+		if (Std.is (texture, native.display3D.textures.Texture)) {
 			
 			var location = GL.getUniformLocation (currentProgram.glProgram, "fs" + sampler);
 			
 			// TODO multiple active textures (get an id from the Texture Wrapper (native.display3D.textures.Texture) ? )
 			GL.activeTexture (GL.TEXTURE0);
 			
-			GL.bindTexture (GL.TEXTURE_2D, cast (texture, Texture).glTexture);
+			GL.bindTexture (GL.TEXTURE_2D, cast (texture, native.display3D.textures.Texture).glTexture);
 			GL.uniform1i (location, 0);
 			
 			// TODO : should this be defined in the shader ? in some way?
@@ -328,39 +328,39 @@ class Context3D {
 		var type = GL.FLOAT;
 		var numBytes = 4;
 		
-		switch (format) {
+		if (format == Context3DVertexBufferFormat.BYTES_4) {
 			
-			case BYTES_4:
-				
-				dimension = 4;
-				type = GL.FLOAT;
-				numBytes = 4;
+			dimension = 4;
+			type = GL.FLOAT;
+			numBytes = 4;
 			
-			case FLOAT_1:
-				
-				dimension = 1;
-				type = GL.FLOAT;
-				numBytes = 4;
+		} else if (format == Context3DVertexBufferFormat.FLOAT_1) {
 			
-			case FLOAT_2:
-				
-				dimension = 2;
-				type = GL.FLOAT;
-				numBytes = 4;
+			dimension = 1;
+			type = GL.FLOAT;
+			numBytes = 4;
 			
-			case FLOAT_3:
-				
-				dimension = 3;
-				type = GL.FLOAT;
-				numBytes = 4;
+		} else if (format == Context3DVertexBufferFormat.FLOAT_2) {
 			
-			case FLOAT_4:
-				
-				dimension = 4;
-				type = GL.FLOAT;
-				numBytes = 4;
+			dimension = 2;
+			type = GL.FLOAT;
+			numBytes = 4;
 			
-			default: throw "Buffer format " + format + " is not supported";
+		} else if (format == Context3DVertexBufferFormat.FLOAT_3) {
+			
+			dimension = 3;
+			type = GL.FLOAT;
+			numBytes = 4;
+			
+		} else if (format == Context3DVertexBufferFormat.FLOAT_4) {
+			
+			dimension = 4;
+			type = GL.FLOAT;
+			numBytes = 4;
+			
+		} else {
+			
+			throw "Buffer format " + format + " is not supported";
 			
 		}
 		

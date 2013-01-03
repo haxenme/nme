@@ -676,9 +676,9 @@ typedef UniformLocation = Dynamic;
 #elseif (cpp || neko)
 
 
-typedef GL = native.gl.GL;
-
 using native.gl.GL;
+
+typedef GL = native.gl.GL;
 
 typedef Object = native.gl.Object;
 typedef Buffer = native.gl.Buffer;

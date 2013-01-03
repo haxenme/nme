@@ -709,11 +709,11 @@ class NMMLParser extends NMEProject {
 							
 							var subPath = substitute (element.att.path);
 							if (subPath == "") subPath = element.att.path;
-							path = findIncludeFile (extensionPath + subPath);
+							path = findIncludeFile (PathHelper.combine (extensionPath, subPath));
 							
 						} else {
 							
-							path = findIncludeFile (extensionPath + substitute (element.att.name));
+							path = findIncludeFile (PathHelper.combine (extensionPath, substitute (element.att.name)));
 							
 						}
 						
@@ -740,7 +740,7 @@ class NMMLParser extends NMEProject {
 					
 					case "java":
 						
-						javaPaths.push (extensionPath + substitute (element.att.path));
+						javaPaths.push (PathHelper.combine (extensionPath, substitute (element.att.path)));
 					
 					case "haxelib":
 						
@@ -961,11 +961,11 @@ class NMMLParser extends NMEProject {
 						
 						if (element.has.path) {
 							
-							path = extensionPath + substitute (element.att.path);
+							path = PathHelper.combine (extensionPath, substitute (element.att.path));
 							
 						} else {
 							
-							path = extensionPath + substitute (element.att.name);
+							path = PathHelper.combine (extensionPath, substitute (element.att.name));
 							
 						}
 						
@@ -1054,7 +1054,7 @@ class NMMLParser extends NMEProject {
 					
 					case "library", "swf":
 						
-						var path = extensionPath + substitute (element.att.path);
+						var path = PathHelper.combine (extensionPath, substitute (element.att.path));
 						var name = "";
 						
 						if (element.has.name) {
