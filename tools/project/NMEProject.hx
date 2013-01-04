@@ -119,6 +119,7 @@ class NMEProject {
 				
 				defaultWindow.width = 0;
 				defaultWindow.height = 0;
+				defaultWindow.borderless = true;
 				
 			case WINDOWS, MAC, LINUX:
 				
