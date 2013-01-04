@@ -1252,7 +1252,13 @@ class NMMLParser extends NMEProject {
 				
 			} else if (name == "orientation") {
 				
-				window.orientation = Reflect.field (Orientation, Std.string (value).toUpperCase ());
+				var orientation = Reflect.field (Orientation, Std.string (value).toUpperCase ());
+				
+				if (orientation != null) {
+					
+					window.orientation = orientation;
+					
+				}
 				
 			} else {
 				
