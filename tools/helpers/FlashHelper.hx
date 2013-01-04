@@ -188,21 +188,29 @@ class FlashHelper {
 						
 					}
 					
-					var sampleCount = Std.int (wav.data.length / (hdr.bitsPerSample / 8));
-					
-					var snd:format.swf.Sound = {
+					if (wav.data != null) {
 						
-						sid : cid,
-						format : SFLittleEndianUncompressed,
-						rate : flashRate,
-						is16bit : is16bit,
-						isStereo : isStereo,
-						samples : #if (haxe_211 && haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
-						data : SDRaw (wav.data)
+						var sampleCount = Std.int (wav.data.length / (hdr.bitsPerSample / 8));
+						
+						var snd:format.swf.Sound = {
+							
+							sid : cid,
+							format : SFLittleEndianUncompressed,
+							rate : flashRate,
+							is16bit : is16bit,
+							isStereo : isStereo,
+							samples : #if (haxe_211 && haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
+							data : SDRaw (wav.data)
+							
+						}
+						
+						outTags.push (TSound (snd));
+						
+					} else {
+						
+						Sys.println ("Warning: Could not embed WAV file \"" + name + "\", the file may be corrupted");
 						
 					}
-					
-					outTags.push (TSound (snd));
 					
 				}
 				
