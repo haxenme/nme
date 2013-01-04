@@ -466,9 +466,13 @@ class NMEProject {
 		
 		var context:Dynamic = {};
 		
-		ObjectHelper.copyMissingFields (app, defaultApp);
-		ObjectHelper.copyMissingFields (meta, defaultMeta);
-		ObjectHelper.copyMissingFields (window, defaultWindow);
+		if (app == null) app = { };
+		if (meta == null) meta = { };
+		if (window == null) window = { };
+		
+		ObjectHelper.copyMissingFields (defaultApp, app);
+		ObjectHelper.copyMissingFields (defaultMeta, meta);
+		ObjectHelper.copyMissingFields (defaultWindow, window);
 		
 		config.populate ();
 		
