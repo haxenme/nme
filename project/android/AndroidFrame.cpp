@@ -432,7 +432,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * env, jobject obj, int orientation)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * env, jobject obj, jint orientation)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
@@ -442,7 +442,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * 
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, int orientation)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, jint orientation)
 {
    int top = 0;
    gc_set_top_of_stack(&top,true);
