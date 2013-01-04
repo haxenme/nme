@@ -119,7 +119,7 @@ class NMEProject {
 				
 				defaultWindow.width = 0;
 				defaultWindow.height = 0;
-				defaultWindow.borderless = true;
+				defaultWindow.fullscreen = true;
 				
 			case WINDOWS, MAC, LINUX:
 				
@@ -613,6 +613,7 @@ class NMEProject {
 		context.SWF_VERSION = app.swfVersion;
 		context.PRELOADER_NAME = app.preloader;
 		context.WIN_BACKGROUND = window.background;
+		context.WIN_FULLSCREEN = window.fullscreen;
 		context.WIN_ORIENTATION = "";
 		
 		if (window.orientation == Orientation.LANDSCAPE || window.orientation == Orientation.PORTRAIT) {
