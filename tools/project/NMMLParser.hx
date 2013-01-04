@@ -73,6 +73,16 @@ class NMMLParser extends NMEProject {
 			
 		}
 		
+		if (targetFlags.exists ("cpp")) {
+			
+			localDefines.set ("cpp", "1");
+			
+		} else if (targetFlags.exists ("neko")) {
+			
+			localDefines.set ("neko", "1");
+			
+		}
+		
 		localDefines.set (Type.enumConstructor (target).toLowerCase (), "1");
 		
 	}
