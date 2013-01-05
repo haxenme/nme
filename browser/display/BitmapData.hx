@@ -1046,7 +1046,7 @@ class BitmapData implements IBitmapDrawable {
 			
 		} else {
 			
-			ctx.createImageData (_nmeTextureBuffer.width, _nmeTextureBuffer.height);
+			imageData = ctx.createImageData (_nmeTextureBuffer.width, _nmeTextureBuffer.height);
 			
 		}
 		
