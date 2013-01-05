@@ -132,13 +132,23 @@ class FileHelper {
 	}
 	
 	
-	public static function copyLibrary (ndll:NDLL, directoryName:String, namePrefix:String, nameSuffix:String, targetDirectory:String, allowDebug:Bool = false) {
+	public static function copyLibrary (ndll:NDLL, directoryName:String, namePrefix:String, nameSuffix:String, targetDirectory:String, allowDebug:Bool = false, targetSuffix:String = null) {
 		
 		var path = PathHelper.getLibraryPath (ndll, directoryName, namePrefix, nameSuffix, allowDebug);
 		
 		if (FileSystem.exists (path)) {
 			
-			var targetPath = PathHelper.combine (targetDirectory, namePrefix + ndll.name + nameSuffix);
+			var targetPath = PathHelper.combine (targetDirectory, namePrefix + ndll.name);
+			
+			if (targetSuffix != null) {
+				
+				targetPath += targetSuffix;
+				
+			} else {
+				
+				targetPath += nameSuffix;
+				
+			}
 			
 			PathHelper.mkdir (targetDirectory);
 			LogHelper.info ("", " - Copying library file: " + path + " -> " + targetPath);

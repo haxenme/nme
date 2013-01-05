@@ -141,7 +141,7 @@ class BlackBerryPlatform implements IPlatformTool {
 		
 		for (ndll in ndlls) {
 			
-			FileHelper.copyLibrary (ndll, "BlackBerry", "", ".so", destination, project.debug);
+			FileHelper.copyLibrary (ndll, "BlackBerry", "", arch + ".so", destination, project.debug, ".so");
 			
 		}
 		

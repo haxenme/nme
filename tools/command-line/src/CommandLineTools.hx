@@ -518,6 +518,24 @@ class CommandLineTools {
 			
 		}
 		
+		var config = getHXCPPConfig ();
+		
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
+			
+			if (config.environment.exists ("JAVA_HOME")) {
+				
+				Sys.putEnv ("JAVA_HOME", config.environment.get ("JAVA_HOME"));
+				
+			}
+			
+			if (Sys.getEnv ("JAVA_HOME") != null) {
+				
+				config.path (PathHelper.combine (Sys.getEnv ("JAVA_HOME"), "bin"));
+				
+			}
+			
+		}
+		
 		NMEProject._command = command;
 		NMEProject._debug = debug;
 		NMEProject._target = target;
@@ -566,15 +584,12 @@ class CommandLineTools {
 			
 		}
 		
-		//trace (project);
-		
 		project.command = command;
 		project.debug = debug;
 		project.target = target;
 		project.targetFlags = targetFlags;
 		project.templatePaths = project.templatePaths.concat ([ nme + "/templates/default", nme + "/tools/command-line" ]);
 		
-		var config = getHXCPPConfig ();
 		project.merge (config);
 		
 		project.architectures = project.architectures.concat (architectures);
