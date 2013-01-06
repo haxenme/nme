@@ -12,17 +12,27 @@ class PathHelper {
 		
 		if (firstPath == null || firstPath == "") {
 			
-			if (secondPath != null && secondPath.substr (0, 1) == "/" || secondPath.substr (0, 1) == "\\") {
+			return secondPath;
+			
+		} else if (secondPath != null && secondPath != "") {
+			
+			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
-				return secondPath.substr (1);
+				if (secondPath.indexOf (":") == 1) {
+					
+					return secondPath;
+					
+				}
 				
 			} else {
 				
-				return secondPath;
+				if (secondPath.substr (0, 1) == "/") {
+					
+					return secondPath;
+					
+				}
 				
 			}
-			
-		} else if (secondPath != null && secondPath != "") {
 			
 			var firstSlash = (firstPath.substr (-1) == "/" || firstPath.substr (-1) == "\\");
 			var secondSlash = (secondPath.substr (0, 1) == "/" || secondPath.substr (0, 1) == "\\");
