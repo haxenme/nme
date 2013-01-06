@@ -365,7 +365,10 @@ class GL {
 	public static inline var VERTEX_ATTRIB_ARRAY_NORMALIZED     = 0x886A;
 	public static inline var VERTEX_ATTRIB_ARRAY_POINTER        = 0x8645;
 	public static inline var VERTEX_ATTRIB_ARRAY_BUFFER_BINDING = 0x889F;
-
+	
+	/* Point Size */
+	public static inline var VERTEX_PROGRAM_POINT_SIZE       = 0x8642;
+	
 	/* Shader Source */
 	public static inline var COMPILE_STATUS                 = 0x8B81;
 
