@@ -96,7 +96,6 @@ int initSDL () {
 	if (err == 0) {
 		
 		SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
-		SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
 		
 	}
 	#endif
@@ -1123,7 +1122,6 @@ void ProcessEvent(SDL_Event &inEvent)
 	   }
       case SDL_MOUSEMOTION:
       {
-		  printf("Mouse move");
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
 		 #if defined(WEBOS) || defined(BLACKBERRY)
 		 mouse.value = inEvent.motion.which;
@@ -1136,7 +1134,6 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_MOUSEBUTTONDOWN:
       {
-		  printf("Mouse down");
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          #if defined(WEBOS) || defined(BLACKBERRY)
 		 mouse.value = inEvent.motion.which;
