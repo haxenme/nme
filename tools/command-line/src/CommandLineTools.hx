@@ -575,6 +575,35 @@ class CommandLineTools {
 			
 			FileSystem.deleteFile (tempFile);
 			
+			if (project != null) {
+				
+				for (haxelib in project.haxelibs) {
+					
+					var path = PathHelper.getHaxelib (haxelib);
+					
+					if (FileSystem.exists (path + "/include.nmml")) {
+						
+						var includeProject = new NMMLParser (path + "/include.nmml");
+						
+						for (ndll in includeProject.ndlls) {
+							
+							if (ndll.haxelib == "") {
+								
+								ndll.haxelib = haxelib;
+								
+							}
+							
+						}
+						
+						includeProject.sources.push (path);
+						project.merge (includeProject);
+						
+					}
+					
+				}
+				
+			}
+			
 		}
 		
 		if (project == null) {
