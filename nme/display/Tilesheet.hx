@@ -6,8 +6,38 @@ import nme.geom.Point;
 import nme.geom.Rectangle;
 
 
-extern class Tilesheet
-{
+/**
+ * In order to optimize for faster performance than individual 
+ * drawing calls, the Tilesheet provides an alternative API with
+ * several constraints to play nicely with hardware rendering.
+ * 
+ * First, every Tilesheet can only use one BitmapData as a texture.
+ * This restriction provides the opportunity to copy only one texture
+ * to the GPU memory before rendering.
+ * 
+ * Second, the Tilesheet uses pre-defined geometry. You may make as 
+ * many calls as you want to "addTileRect" to add tile geometry. You
+ * can reference this geometry later when you perform batch rendering,
+ * using a zero-based ID for the tile.
+ * 
+ * When you are ready, the "drawTiles" method accepts a draw list with
+ * the ID of the tile, as well as additional values needed, depending
+ * on whether you are only rendering with the tile position, or if 
+ * you have enabled flags for TILE_SCALE, TILE_ROTATION, TILE_RGB,
+ * TILE_ALPHA or TILE_TRANS_2x2.
+ * 
+ * @example
+ * 
+ * var bitmapData = Assets.getBitmapData ("image.png");
+ * var tilesheet = new Tilesheet (bitmapData);
+ * 
+ * tilesheet.addTileRect (new Rectangle (0, 0, 100, 100));
+ * tilesheet.drawTiles (this, [ 0, 100, 100 ]);
+ * 
+ */
+extern class Tilesheet {
+	
+	
 	static var TILE_SCALE:Int;
 	static var TILE_ROTATION:Int;
 	static var TILE_RGB:Int;
@@ -19,28 +49,76 @@ extern class Tilesheet
 	
 	
 	function new(inImage:BitmapData):Void;
+	
+	/**
+	 * Add a new tile to the Tilesheet
+	 * 
+	 * Beginning with 0, each tile is assigned an indentifier internally, which you
+	 * can use to reference the geometry later while rendering.
+	 * 
+	 * For example, if you have only called "addTileRect" once on a Tilesheet, you
+	 * would reference that tile using a tile ID of 0. If you have called "addTileRect"
+	 * three times, the third tile would have an ID of 2.
+	 * 
+	 * Specify a rectangle within the bounds of the Tilesheet bitmap. This portion of the 
+	 * Tilesheet will be rendered when ever you request a draw of this tile ID.
+	 * 
+	 * You may also (optionally) specify a center point, which is used during positioning,
+	 * scale and rotation. The center point is not absolute, but a ratio. For example, if 
+	 * you want the center to be the middle of the tile image, use (0.5, 0.5)
+	 * 
+	 * @param	rectangle
+	 * @param	centerPoint
+	 */
 	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Void;
 	
 	/**
-	 * Fast method to draw a batch of tiles using a Tilesheet
+	 * Fast method to render a batch of tiles from the Tilesheet graphic
 	 * 
-	 * The input array accepts the x, y and tile ID for each tile you wish to draw.
-	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to (0, 0) and
-	 * tile 1 to (10, 10)
+	 * A standard "drawTiles" call expects a repeating set of three values: the X and Y
+	 * coordinates, followed by the tileID that should be rendered. You can repeat this
+	 * pattern for as many tiles you wish to render.
 	 * 
-	 * You can also set flags for TILE_SCALE, TILE_ROTATION, TILE_RGB and
-	 * TILE_ALPHA.
+	 * If you specify drawing flags, the draw list increases in size to accommodate the 
+	 * additional properties needed. You may specify TILE_SCALE, TILE_ROTATION, TILE_RGB 
+	 * and/or TILE_ALPHA.
 	 * 
-	 * Depending on which flags are active, this is the full order of the array:
+	 * This means that the draw list will increase from [ x, y, tileID ... ] to
+	 * [ x, y, tileID, scale, rotation, red, green, blue, alpha ... ] depending on which
+	 * flags are active.
 	 * 
-	 * [ x, y, tile ID, scale, rotation, red, green, blue, alpha, x, y ... ]
+	 * If you use the TILE_TRANS_2x2 flag, it means you wish to use a 2x2 Matrix transform
+	 * while rendering. If you use TILE_TRANS_2x2, the TILE_SCALE and TILE_ROTATION flags
+	 * will be ignored. Using this flag, the draw list will expect the following order:
+	 * 
+	 * [ x, y, tileID, a, b, c, d, red, green, blue, alpha ... ]
+	 * 
+	 * ...of course, if you are not using TILE_RGB or TILE_ALPHA, then you would repeat the
+	 * pattern directly following the matrix "a", "b", "c" and "d" values.
+	 * 
+	 * @example
+	 * 
+	 * var bitmapData = Assets.getBitmapData ("image.png");
+	 * var tilesheet = new Tilesheet (bitmapData);
+	 * 
+	 * tilesheet.addTileRect (new Rectangle (0, 0, 100, 100));
+	 * 
+	 * // x, y, tileID, scale, alpha
+	 * 
+	 * var drawList = [
+	 * 	100, 100, 0, 2, 0.5,
+	 * 	100, 200, 0, 2, 0.5
+	 * ];
+	 * 
+	 * tilesheet.drawTiles (this, drawList, true, Tilesheet.TILE_SCALE | Tilesheet.TILE_ALPHA);
 	 * 
 	 * @param	graphics		The nme.display.Graphics object to use for drawing
 	 * @param	tileData		An array of all position, ID and optional values for use in drawing
-	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
+	 * @param	smooth		(Optional) Whether tiles should be smoothed while drawing (Default: false)
 	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
 	 */
 	function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void;
+	
 }
 
 
