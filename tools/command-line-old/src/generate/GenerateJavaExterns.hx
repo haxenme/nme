@@ -34,6 +34,7 @@ class GenerateJavaExterns
 	
 	private var externPath:String;
 	private var extractedAndroidClasses:Bool;
+	private var extractedAndroidPaths:Array<String>;
 	private var javaPath:String;
 	private var mConstants : Array<Dynamic>;
 	private var mProcessed:Hash<Bool>;
@@ -110,12 +111,34 @@ class GenerateJavaExterns
 			var parser = new InstallerBase();
 			parser.parseHXCPPConfig();
 			
-			var androidJAR = parser.defines.get("ANDROID_SDK") + "/platforms/android-7/android.jar";
+			extractedAndroidPaths = [];
+			var platformsDirectory = parser.defines.get("ANDROID_SDK") + "/platforms";
 			
-			if (FileSystem.exists(androidJAR))
-			{
-				PathHelper.mkdir("android-7");
-				ProcessHelper.runCommand("android-7", "jar", [ "-xf", androidJAR ], false);
+			if (FileSystem.exists (platformsDirectory)) {
+				
+				for (path in FileSystem.readDirectory (platformsDirectory)) {
+					
+					var directory = platformsDirectory + "/" + path;
+					
+					if (path.indexOf ("android-") > -1 && FileSystem.isDirectory (directory)) {
+						
+						var androidJAR = directory + "/android.jar";
+						
+						if (FileSystem.exists(androidJAR))
+						{
+							PathHelper.mkdir (path);
+							extractedAndroidPaths.push (path);
+							ProcessHelper.runCommand (path, "jar", [ "-xf", androidJAR ], false);
+						}
+						
+					}
+					
+				}
+				
+			} else {
+				
+				throw "Could not find Android SDK directory. Check that ANDROID_SDK is defined in .hxcpp_config.xml";
+				
 			}
 		}
 		extractedAndroidClasses = true;
@@ -146,7 +169,29 @@ class GenerateJavaExterns
 		if (!FileSystem.exists(filename))
 		{
 			extractAndroidClasses();
-			filename = "android-7/" + inClass + ".class";
+			var foundFile = false;
+			
+			for (path in extractedAndroidPaths) {
+				
+				if (!foundFile) {
+					
+					filename = path + "/" + inClass + ".class";
+					
+					if (FileSystem.exists (filename)) {
+						
+						foundFile = true;
+						
+					}
+					
+				}
+				
+			}
+			
+			if (!foundFile) {
+				
+				throw "Could not find class file: \"" + inClass + "\"";
+				
+			}
 		}
 		
 		var source = File.read(filename, true);
