@@ -368,6 +368,7 @@ class GL {
 	
 	/* Point Size */
 	public static inline var VERTEX_PROGRAM_POINT_SIZE       = 0x8642;
+	public static inline var POINT_SPRITE                    = 0x8861;
 	
 	/* Shader Source */
 	public static inline var COMPILE_STATUS                 = 0x8B81;
