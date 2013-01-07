@@ -99,35 +99,35 @@ class CommandLineTools {
 			
 			if (!Reflect.hasField (metaFields.clean, "ignore") && (command == "clean" || targetFlags.exists ("clean"))) {
 				
-				LogHelper.info ("", "Running command: clean");
+				LogHelper.info ("", "\nRunning command: CLEAN");
 				platform.clean (project);
 				
 			}
 			
 			if (!Reflect.hasField (metaFields.update, "ignore") && (command == "update" || command == "build" || command == "test")) {
 				
-				LogHelper.info ("", "Running command: update");
+				LogHelper.info ("", "\nRunning command: UPDATE");
 				platform.update (project);
 				
 			}
 			
 			if (!Reflect.hasField (metaFields.build, "ignore") && (command == "build" || command == "test")) {
 				
-				LogHelper.info ("", "Running command: build");
+				LogHelper.info ("", "\nRunning command: BUILD");
 				platform.build (project);
 				
 			}
 			
 			if (!Reflect.hasField (metaFields.install, "ignore") && (command == "install" || command == "run" || command == "test")) {
 				
-				LogHelper.info ("", "Running command: install");
+				LogHelper.info ("", "\nRunning command: INSTALL");
 				platform.install (project);
 				
 			}
 		
 			if (!Reflect.hasField (metaFields.run, "ignore") && (command == "run" || command == "rerun" || command == "test")) {
 				
-				LogHelper.info ("", "Running command: run");
+				LogHelper.info ("", "\nRunning command: RUN");
 				platform.run (project, additionalArguments);
 				
 			}
@@ -136,7 +136,7 @@ class CommandLineTools {
 				
 				if (traceEnabled || command == "trace") {
 					
-					LogHelper.info ("", "Running command: trace");
+					LogHelper.info ("", "\nRunning command: TRACE");
 					platform.trace (project);
 					
 				}
@@ -163,7 +163,8 @@ class CommandLineTools {
 	
 	private static function displayHelp ():Void {
 		
-		Sys.println ("NME Command-Line Tools (" + version + ")");
+		displayInfo ();
+		
 		Sys.println ("");
 		Sys.println (" Usage : nme setup (target)");
 		Sys.println (" Usage : nme help");
@@ -223,10 +224,24 @@ class CommandLineTools {
 	}
 	
 	
-	private static function displayInfo ():Void {
+	private static function displayInfo (showHint:Bool = false):Void {
 		
+		Sys.println (" _____________");
+		Sys.println ("|             |");
+		Sys.println ("|__  _  __  __|");
+		Sys.println ("|  \\| \\/  ||__|");
+		Sys.println ("|\\  \\  \\ /||__|");
+		Sys.println ("|_|\\_|\\/|_||__|");
+		Sys.println ("|             |");
+		Sys.println ("|_____________|");
+		Sys.println ("");
 		Sys.println ("NME Command-Line Tools (" + version + ")");
-		Sys.println ("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
+		
+		if (showHint) {
+			
+			Sys.println ("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
+			
+		}
 		
 	}
 	
@@ -688,7 +703,12 @@ class CommandLineTools {
 		processArguments ();
 		version = getVersion ();
 		
-		LogHelper.info ("", StringHelper.underline ("NME Command-Line Tools (" + version + ")"));
+		if (LogHelper.verbose) {
+			
+			displayInfo ();
+			Sys.println ("");
+			
+		}
 		
 		/*if (userDefines.exists ("debug")) {
 			
@@ -714,7 +734,7 @@ class CommandLineTools {
 			
 			case "":
 				
-				displayInfo ();
+				displayInfo (true);
 				
 			case "help":
 				

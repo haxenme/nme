@@ -149,7 +149,7 @@ class ProcessHelper {
 		
 		if (path != "") {
 			
-			LogHelper.info ("", " - Changing directory: \"" + path + "\"");
+			LogHelper.info ("", " - Changing directory: " + path + "");
 			
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
