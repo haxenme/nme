@@ -85,9 +85,13 @@ class GenerateJavaExterns
 			generate(clazz, members);
 		}
 		
-		if (FileSystem.exists ("android-7"))
-		{
-			removeRecursive ("android-7");
+		for (path in extractedAndroidPaths) {
+			
+			if (FileSystem.exists (path))
+			{
+				removeRecursive (path);
+			}
+			
 		}
 	}
 	
@@ -754,7 +758,7 @@ class GenerateJavaExterns
 			
 			var class_name =  java_name.substr(0, java_name.length - 4) + "class";
 			
-			var dx = Sys.getEnv("ANDROID_SDK") + "/platforms/android-7/tools/dx";
+			var dx = Sys.getEnv("ANDROID_SDK") + "/platforms/" + extractedAndroidPaths[0] + "/tools/dx";
 			Sys.command(dx, [ "--dex", "--output=classes.jar", class_name ]);
 			
 			var class_def = File.getBytes("classes.jar");
