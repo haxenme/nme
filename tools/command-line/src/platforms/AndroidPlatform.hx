@@ -178,16 +178,41 @@ class AndroidPlatform implements IPlatformTool {
 		}
 		
 		var context = project.templateContext;
+		
 		context.CPP_DIR = project.app.path + "/android/obj";
 		context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
 		
-		//if (defines.exists ("KEY_STORE")) {
+		if (project.certificate != null) {
 			
-			//context.KEY_STORE = PathHelper.tryFullPath (defines.get ("KEY_STORE"));
+			context.KEY_STORE = project.certificate.path;
 			
-		//}
-		
-		
+			if (project.certificate.password != null) {
+				
+				context.KEY_STORE_PASSWORD = project.certificate.password;
+				
+			}
+			
+			if (project.certificate.alias != null) {
+				
+				context.KEY_STORE_ALIAS = project.certificate.alias;
+				
+			} else if (project.certificate.path != null) {
+				
+				context.KEY_STORE_ALIAS = Path.withoutExtension (Path.withoutDirectory (project.certificate.path));
+				
+			}
+			
+			if (project.certificate.aliasPassword != null) {
+				
+				context.KEY_STORE_ALIAS_PASSWORD = project.certificate.aliasPassword;
+				
+			} else if (project.certificate.password != null) {
+				
+				context.KEY_STORE_ALIAS_PASSWORD = project.certificate.password;
+				
+			}
+			
+		}
 		
 		var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
 		var iconSizes = [ 36, 48, 72, 96 ];
