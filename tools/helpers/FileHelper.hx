@@ -81,7 +81,8 @@ class FileHelper {
              extension == "json" ||
              extension == "cpp" ||
              extension == "mm" ||
-             extension == "properties")) {
+			 extension == "properties" ||
+			 extension == "nmml")) {
 			
 			LogHelper.info ("", " - Copying template file: " + source + " -> " + destination);
 			

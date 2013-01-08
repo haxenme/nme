@@ -150,7 +150,88 @@ class CommandLineTools {
 	
 	private static function createTemplate () {
 		
-		
+		if (words.length > 0) {
+			
+			if (words[0] == "project") {
+				
+				var id = [ "com", "example", "project" ];
+				
+				if (words.length > 1) {
+					
+					var name = words[1];
+					var customID = name.split (".");
+					
+					if (customID.length < 3) {
+						
+						customID = [ "com", "example" ].concat (customID);
+						
+					}
+					
+				}
+				
+				var context:Dynamic = { };
+				
+				var title = id[id.length - 1];
+				title = title.substr (0, 1).toUpperCase () + title.substr (1);
+				
+				var packageName = id.join (".").toLowerCase ();
+				
+				context.title = title;
+				context.packageName = packageName;
+				context.version = "1.0.0";
+				context.company = "Company Name";
+				context.file = StringTools.replace (title, " ", "");
+				
+				for (define in userDefines.keys ()) {
+					
+					Reflect.setField (context, define, userDefines.get (define));
+					
+				}
+				
+				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "project", Sys.getCwd (), context);
+				
+			} else {
+				
+				var sampleName = words[0];
+				
+				if (FileSystem.exists (nme + "/samples/" + sampleName)) {
+					
+					PathHelper.mkdir (sampleName);
+					FileHelper.recursiveCopy (nme + "/samples/" + sampleName, Sys.getCwd () + "/" + sampleName);
+					
+				} else {
+					
+					LogHelper.error ("Could not find sample project \"" + sampleName + "\"");
+					
+				}
+				
+			}
+			
+		} else {
+			
+			Sys.println ("You must specify 'project' or a sample name when using the 'create' command.");
+			Sys.println ("");
+			Sys.println ("Usage: ");
+			Sys.println ("");
+			Sys.println (" nme create project \"com.package.name\"");
+			Sys.println (" nme create SampleName");
+			Sys.println ("");
+			Sys.println ("");
+			Sys.println ("Available samples:");
+			Sys.println ("");
+			
+			for (name in FileSystem.readDirectory (nme + "/samples")) {
+				
+				if (FileSystem.isDirectory (nme + "/samples/" + name)) {
+					
+					Sys.println (" - " + name);
+					
+				}
+				
+			}
+			
+			
+		}
 		
 	}
 	
@@ -169,6 +250,8 @@ class CommandLineTools {
 		Sys.println (" Usage : nme setup (target)");
 		Sys.println (" Usage : nme help");
 		Sys.println (" Usage : nme [clean|update|build|run|test|display] <project> (target) [options]");
+		Sys.println (" Usage : nme create project <package> [options]");
+		Sys.println (" Usage : nme create <sample>");
 		//Sys.println (" Usage : nme document <project> (target)");
 		//Sys.println (" Usage : nme generate <args> [options]");
 		//Sys.println (" Usage : nme new file.nmml name1=value1 name2=value2 ...");
@@ -183,6 +266,7 @@ class CommandLineTools {
 		Sys.println ("  run : Install and run for the specified project/target");
 		Sys.println ("  test : Update, build and run in one command");
 		Sys.println ("  display : Display information for the specified project/target");
+		Sys.println ("  create : Create a new project, using templates");
 		//Sys.println ("  document : Generate documentation using haxedoc");
 		//Sys.println ("  generate : Tools to help create source code automatically");
 		Sys.println ("");
@@ -201,6 +285,7 @@ class CommandLineTools {
 		Sys.println ("");
 		Sys.println (" Options : ");
 		Sys.println ("");
+		Sys.println ("  -D : Specify a define to use when processing other commands");
 		Sys.println ("  -debug : Use debug configuration instead of release");
 		Sys.println ("  -verbose : Print additional information (when available)");
 		Sys.println ("  -clean : Add a \"clean\" action before running the current command");
