@@ -459,7 +459,7 @@ void BuildAlphaRuns(const SpanRect &inRect,Transitions &inTrans, AlphaRuns &outR
             outRuns.push_back(AlphaRun(last_x, t->x, alpha));
          
          last_x = std::max(t->x, inRect.mRect.x);
-         
+
          total += t->val;
          alpha = (total & inRect.mWinding) ? inFactor : 0;
       }

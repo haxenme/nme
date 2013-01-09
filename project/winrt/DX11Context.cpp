@@ -75,6 +75,11 @@ public:
    {
    }
 
+   void DestroyNativeTexture(void *)
+   {
+      // TODO
+   }
+
    int Width() const { return mWidth; }
 
    int Height() const { return mHeight; } 

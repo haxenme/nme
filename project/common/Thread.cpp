@@ -5,7 +5,11 @@ namespace nme
 
 ThreadId GetThreadId()
 {
+   #ifdef HX_WINDOWS
+   return GetCurrentThreadId();
+   #else
    return pthread_self();
+   #endif
 }
 
 
