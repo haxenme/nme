@@ -1,5 +1,5 @@
 #include "AlphaMask.h"
-
+#include <NMEThread.h>
 
 namespace nme
 {
@@ -183,10 +183,6 @@ struct Transitions
 };
 
 
-Lines sLineBuffer;
-AlphaRuns *sLines = 0;
-Transitions *sTransitions = 0;
-std::vector<Transitions> sTransitionsBuffer;
 
 template<int BITS>   struct AlphaIterator
 {
@@ -287,28 +283,42 @@ template<int BITS>   struct AlphaIterator
 
 
 
+std::vector<Transitions> sTransitionsBuffer;
+
 SpanRect::SpanRect(const Rect &inRect, int inAA)
 {
    mAA =  inAA;
    mAAMask = ~(mAA-1);
    mRect = inRect * inAA;
    mWinding = 0xffffffff;
+   mTransitions = 0;
    
-   if (sTransitionsBuffer.size() < mRect.h)
+   if (IsMainThread())
    {
-      sTransitionsBuffer.resize(mRect.h);
-      sTransitions = &sTransitionsBuffer[0];
+      if (sTransitionsBuffer.size() < mRect.h)
+         sTransitionsBuffer.resize(mRect.h);
+      mTransitions = &sTransitionsBuffer[0];
+   }
+   else
+   {
+      mTransitions = new Transitions[mRect.h];
    }
    
    for (int y = 0; y < mRect.h; y++)
    {
-      sTransitions[y].mLeft = 0;
-      sTransitions[y].mX.resize(0);
+      mTransitions[y].mLeft = 0;
+      mTransitions[y].mX.resize(0);
    }
    
    mMinX = (mRect.x - 1) << 10;
    mMaxX = (mRect.x1()) << 10;
    mLeftPos = mRect.x;
+}
+
+SpanRect::~SpanRect()
+{
+   if (mTransitions && mTransitions != &sTransitionsBuffer[0])
+      delete [] mTransitions;
 }
    
 
@@ -367,7 +377,7 @@ void SpanRect::Line(Fixed10 inP0, Fixed10 inP1)
       y1 = std::min(y1, mRect.h);
       
       for(; y0 < y1; y0++)
-         sTransitions[y0].mLeft += diff;
+         mTransitions[y0].mLeft += diff;
       
       return;
    }
@@ -401,7 +411,7 @@ void SpanRect::Line(Fixed10 inP0, Fixed10 inP1)
          if (x_val < mMaxX)
          {
             for (int a = 0; a < mAA; a++)
-               sTransitions[y0 + a].mX.push_back(Transition(x_val, diff));
+               mTransitions[y0 + a].mX.push_back(Transition(x_val, diff));
          }
          
          x += dx_dy; 
@@ -413,7 +423,7 @@ void SpanRect::Line(Fixed10 inP0, Fixed10 inP1)
       {
          // X is fixed-10, y is fixed-aa
          if (x < mMaxX)
-            sTransitions[y0].mX.push_back(Transition(x >> 10, diff));
+            mTransitions[y0].mX.push_back(Transition(x >> 10, diff));
          
          x += dx_dy; 
       }
@@ -463,108 +473,170 @@ void BuildAlphaRuns(const SpanRect &inRect,Transitions &inTrans, AlphaRuns &outR
 
 void BuildAlphaRuns2(const SpanRect &inRect,Transitions *inTrans, AlphaRuns &outRuns, int inFactor)
 {
-   static AlphaIterator<1> a0,a1;
-   a0.Reset();
-   a1.Reset();
-   
-   BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
-   BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
-   
    enum { MAX_X = 0x7fffffff };
-   
-   int x = inRect.mRect.x;
-   
-   a0.Init(x);
-   a1.Init(x);
-   int f = inFactor >> 2;
-   
-   while(x < MAX_X)
+
+   if (IsMainThread())
    {
-      int next_x = MAX_X;
-      int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x);
+      static AlphaIterator<1> a0,a1;
+      a0.Reset();
+      a1.Reset();
+   
+      BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
+   
+      enum { MAX_X = 0x7fffffff };
+   
+      int x = inRect.mRect.x;
+   
+      a0.Init(x);
+      a1.Init(x);
+      int f = inFactor >> 2;
+   
+      while(x < MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x);
       
-      if (next_x == MAX_X)
-         break;
-      if (alpha > 0)
-         outRuns.push_back(AlphaRun(x >> 1, next_x >> 1, alpha * f));
+         if (next_x == MAX_X)
+            break;
+         if (alpha > 0)
+            outRuns.push_back(AlphaRun(x >> 1, next_x >> 1, alpha * f));
       
-      x = next_x;
+         x = next_x;
+      }
+   }
+   else
+   {
+      AlphaIterator<1> a0,a1;
+   
+      BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
+   
+      int x = inRect.mRect.x;
+   
+      a0.Init(x);
+      a1.Init(x);
+      int f = inFactor >> 2;
+   
+      while(x < MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x);
+      
+         if (next_x == MAX_X)
+            break;
+         if (alpha > 0)
+            outRuns.push_back(AlphaRun(x >> 1, next_x >> 1, alpha * f));
+      
+         x = next_x;
+      }
    }
 }
 
 
 void BuildAlphaRuns4(const SpanRect &inRect,Transitions *inTrans, AlphaRuns &outRuns, int inFactor)
 {
-   static AlphaIterator<2> a0,a1,a2,a3;
-   a0.Reset();
-   a1.Reset();
-   a2.Reset();
-   a3.Reset();
-   
-   BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
-   BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
-   BuildAlphaRuns(inRect,inTrans[2], a2.mRuns, 256);
-   BuildAlphaRuns(inRect,inTrans[3], a3.mRuns, 256);
-   
    enum { MAX_X = 0x7fffffff };
-   
-   int x = inRect.mRect.x;
-   
-   a0.Init(x);
-   a1.Init(x);
-   a2.Init(x);
-   a3.Init(x);
-   
-   int f = inFactor >> 4;
-   
-   while(x < MAX_X)
+
+   if (IsMainThread())
    {
-      int next_x = MAX_X;
-      int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x) + a2.SetX(x, next_x) + a3.SetX(x, next_x);
+      static AlphaIterator<2> a0,a1,a2,a3;
+      a0.Reset();
+      a1.Reset();
+      a2.Reset();
+      a3.Reset();
+   
+      BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[2], a2.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[3], a3.mRuns, 256);
+   
+      int x = inRect.mRect.x;
+   
+      a0.Init(x);
+      a1.Init(x);
+      a2.Init(x);
+      a3.Init(x);
+   
+      int f = inFactor >> 4;
+   
+      while(x < MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x) + a2.SetX(x, next_x) + a3.SetX(x, next_x);
       
-      if (next_x == MAX_X)
-         break;
-      if (alpha > 0)
-         outRuns.push_back(AlphaRun(x >> 2, next_x >> 2, alpha * f));
+         if (next_x == MAX_X)
+            break;
+         if (alpha > 0)
+            outRuns.push_back(AlphaRun(x >> 2, next_x >> 2, alpha * f));
       
-      x = next_x;
+         x = next_x;
+      }
+   }
+   else
+   {
+      AlphaIterator<2> a0,a1,a2,a3;
+   
+      BuildAlphaRuns(inRect,inTrans[0], a0.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[1], a1.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[2], a2.mRuns, 256);
+      BuildAlphaRuns(inRect,inTrans[3], a3.mRuns, 256);
+   
+      int x = inRect.mRect.x;
+   
+      a0.Init(x);
+      a1.Init(x);
+      a2.Init(x);
+      a3.Init(x);
+   
+      int f = inFactor >> 4;
+   
+      while(x < MAX_X)
+      {
+         int next_x = MAX_X;
+         int alpha = a0.SetX(x, next_x) + a1.SetX(x, next_x) + a2.SetX(x, next_x) + a3.SetX(x, next_x);
+      
+         if (next_x == MAX_X)
+            break;
+         if (alpha > 0)
+            outRuns.push_back(AlphaRun(x >> 2, next_x >> 2, alpha * f));
+      
+         x = next_x;
+      }
    }
 }
 
 
-
-AlphaMask *SpanRect::CreateMask(const Transform &inTransform, int inAlpha)
+AlphaMask *SpanRect::CreateMask(const Transform &inTransform, int inAlpha, Lines &inLines)
 {
    Rect rect = mRect / mAA;
    
-   if (sLineBuffer.size() < rect.h)
-   {
-      sLineBuffer.resize(rect.h);
-      sLines = &sLineBuffer[0];
-   }
+   if (inLines.size() < rect.h)
+      inLines.resize(rect.h);
+   mLines = &inLines[0];
    
    AlphaMask *mask = AlphaMask::Create(rect, inTransform);
-   Transitions *t = &sTransitions[0];
+   Transitions *t = &mTransitions[0];
    int start = 0;
    
    for (int y = 0; y < rect.h; y++)
    {
-      sLines[y].resize(0);
+      mLines[y].resize(0);
       mask->mLineStarts[y] = start;
       
       switch(mAA)
       {
          case 1:
-            BuildAlphaRuns(*this,*t, sLines[y], inAlpha);
+            BuildAlphaRuns(*this,*t, mLines[y], inAlpha);
             break;
          case 2:
-            BuildAlphaRuns2(*this,t, sLines[y], inAlpha);
+            BuildAlphaRuns2(*this,t, mLines[y], inAlpha);
             break;
          case 4:
-            BuildAlphaRuns4(*this,t, sLines[y], inAlpha);
+            BuildAlphaRuns4(*this,t, mLines[y], inAlpha);
             break;
       }
-      start += sLines[y].size();
+      start += mLines[y].size();
       t += mAA;
    }
    
@@ -573,25 +645,28 @@ AlphaMask *SpanRect::CreateMask(const Transform &inTransform, int inAlpha)
    
    for (int y = 0; y < rect.h; y++)
    {
-      memcpy(&mask->mAlphaRuns[mask->mLineStarts[y]], &sLines[y][0], (mask->mLineStarts[y + 1] - mask->mLineStarts[y]) * sizeof(AlphaRun));
+      memcpy(&mask->mAlphaRuns[mask->mLineStarts[y]], &mLines[y][0], (mask->mLineStarts[y + 1] - mask->mLineStarts[y]) * sizeof(AlphaRun));
    }
-   
-   /*
-   static int last_total = 0;
-   int mem = 0;
-   for(int i=0;i<sLineBuffer.size();i++)
-      mem+=sLines[i].Mem();
-   for(int i=0;i<sTransitionsBuffer.size();i++)
-      mem+=sTransitionsBuffer[i].mX.Mem();
-   if (mem>last_total)
-   {
-      last_total = mem;
-      printf("Reserved(%d,%d) = %d\n", sLineBuffer.size(), sTransitionsBuffer.size(),last_total);
-   }
-   */
    
    return mask;
 }
+
+
+static Lines sLineBuffer;
+AlphaMask *SpanRect::CreateMask(const Transform &inTransform, int inAlpha)
+{
+   if (IsMainThread())
+   {
+      return CreateMask(inTransform, inAlpha, sLineBuffer);
+   }
+   else
+   {
+      Lines lineBuffer;
+      return CreateMask(inTransform, inAlpha, lineBuffer);
+   }
+}
+
+
 
    
 } // end namespace nme

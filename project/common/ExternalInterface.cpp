@@ -26,6 +26,7 @@
 #include <URL.h>
 #include <ByteArray.h>
 #include <Lzma.h>
+#include <NMEThread.h>
 
 
 #ifdef min
@@ -1029,6 +1030,7 @@ AutoGCRoot *sOnCreateCallback = 0;
 
 void OnMainFrameCreated(Frame *inFrame)
 {
+   SetMainThread();
    value frame = inFrame ? ObjectToAbstract(inFrame) : alloc_null();
    val_call1( sOnCreateCallback->get(),frame );
    delete sOnCreateCallback;
@@ -1295,6 +1297,7 @@ DEFINE_PRIM (nme_stage_get_normal_orientation, 0);
 
 value nme_managed_stage_create(value inW,value inH,value inFlags)
 {
+   SetMainThread();
    ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH),val_int(inFlags));
    return ObjectToAbstract(stage);
 }

@@ -582,6 +582,8 @@ public:
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
+
+   virtual void DestroyNativeTexture(void *inNativeTexture)=0;
 };
 
 extern HardwareContext *gDirectRenderContext;

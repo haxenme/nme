@@ -1,5 +1,5 @@
 #include "./OGL.h"
-
+#include <NMEThread.h>
 
 
 #ifdef NEED_EXTENSIONS
@@ -13,6 +13,7 @@
 int sgDrawCount = 0;
 int sgBufferCount = 0;
 int sgDrawBitmap = 0;
+
 
 namespace nme
 {
@@ -28,6 +29,8 @@ void ResetHardwareContext()
    //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
    gTextureContextVersion++;
 }
+
+
 
 // --- HardwareContext Interface ---------------------------------------------------------
 
@@ -55,6 +58,7 @@ public:
       mLineScaleH = -1;
       mPointSmooth = true;
       mColourArrayEnabled = false;
+      mThreadId = GetThreadId();
       const char *str = (const char *)glGetString(GL_VENDOR);
       if (str && !strncmp(str,"Intel",5))
          mPointSmooth = false;
@@ -67,6 +71,18 @@ public:
    ~OGLContext()
    {
    }
+
+   void DestroyNativeTexture(void *inNativeTexture)
+   {
+      GLuint tid = (GLuint)(size_t)inNativeTexture;
+      if ( !IsMainThread() )
+      {
+         printf("Warning - leaking texture %d", tid );
+      }
+      else
+         glDeleteTextures(1,&tid);
+   }
+
 
    void SetWindowSize(int inWidth,int inHeight)
    {
@@ -614,6 +630,7 @@ public:
    }
 
    Matrix mModelView;
+   ThreadId mThreadId;
 
    double mLineScaleV;
    double mLineScaleH;

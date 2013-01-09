@@ -77,8 +77,10 @@ public:
 struct SpanRect
 {
    SpanRect(const Rect &inRect, int inAA);
+   ~SpanRect();
 
    AlphaMask *CreateMask(const Transform &inTransform, int inAlpha);
+   inline AlphaMask *CreateMask(const Transform &inTransform, int inAlpha, Lines &inLineBuf);
 
    // first bit = X AA, second bit = Y AA
    void Line00(Fixed10 inP0, Fixed10 inP1);
@@ -92,6 +94,8 @@ struct SpanRect
    int mMaxX;
    int mMinX;
    int mWinding;
+   AlphaRuns *mLines;
+   struct Transitions *mTransitions;
    Rect   mRect;
 
 private:
