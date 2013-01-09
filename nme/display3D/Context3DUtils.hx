@@ -17,7 +17,7 @@ import nme.gl.GL;
 class Context3DUtils {
 	
 	
-	inline public static function createShader (type: #if flash Context3DProgramType #else Int #end, shaderSource:String): #if flash ByteArray #else Shader #end {
+	inline public static function createShader (type: Context3DProgramType, shaderSource:String): #if flash ByteArray #else Shader #end {
 		
 		#if flash
 		
@@ -25,9 +25,15 @@ class Context3DUtils {
 		assembler.assemble (type, shaderSource);
 		return assembler.agalcode ();
 		
-		#elseif !js
-		
-		var shader = GL.createShader (type);
+		#elseif cpp
+
+		var glType : Int;
+        switch(type){
+            case Context3DProgramType.VERTEX: glType = GL.VERTEX_SHADER;
+            case Context3DProgramType.FRAGMENT: glType = GL.FRAGMENT_SHADER;
+        }
+
+		var shader = GL.createShader (glType);
 		GL.shaderSource (shader, shaderSource);
 		GL.compileShader (shader);
 		

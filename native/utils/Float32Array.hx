@@ -20,9 +20,14 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 		var floats:Array<Float> = inBufferOrArray;
 		
 		if (floats != null) {
-			
-			length = floats.length;
-			
+
+            if(inLen != null){
+                length = inLen;
+            }else{
+                length = floats.length - inStart;
+            }
+
+            // 4 bytes per element -> shift it by two bits to get the lenght in bytes
 			super (length << 2);
 			
 			#if !cpp
@@ -34,7 +39,7 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 				#if cpp
 				untyped __global__.__hxcpp_memory_set_float (bytes, (i << 2), floats[i]);
 				#else
-				buffer.writeFloat (floats[i]);
+				buffer.writeFloat (floats[i + inStart]);
 				#end
 				
 			}
