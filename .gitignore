@@ -15,3 +15,6 @@ tools/documentation/obj
 tools/documentation/chxdoc
 *.userprefs
 *.swp
+.idea
+NME.iml
+out
