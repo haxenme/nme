@@ -371,10 +371,21 @@ public:
          mPlaying = true;
          sUsedMusic = this;
          sDoneMusic = false;
+		 mStartTime = SDL_GetTicks ();
+		 mLength = 0;
          IncRef();
          Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
          Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
-         // Mix_SetPanning
+         if (inStartTime > 0)
+		 {
+			 // this is causing crash errors
+			 
+			 //Mix_RewindMusic();
+			 //int seconds = inStartTime / 1000;
+			 //Mix_SetMusicPosition(seconds); 
+			 //mStartTime = SDL_GetTicks () - inStartTime;
+		 }
+         // Mix_SetPanning not available for music
       }
    }
    ~SDLMusicChannel()
@@ -386,6 +397,7 @@ public:
    {
       if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
       {
+		 mLength = SDL_GetTicks () - mStartTime;
          mPlaying = false;
          if (sUsedMusic == this)
          {
@@ -403,7 +415,7 @@ public:
    }
    double getLeft() { return 1; }
    double getRight() { return 1; }
-   double getPosition() { return 1; }
+   double getPosition() { return mPlaying ? SDL_GetTicks() - mStartTime : mLength; }
    void stop() 
    {
       if (mMusic)
@@ -417,6 +429,8 @@ public:
 
    bool      mPlaying;
    Object    *mSound;
+   int       mStartTime;
+   int       mLength;
    Mix_Music *mMusic;
 };
 
