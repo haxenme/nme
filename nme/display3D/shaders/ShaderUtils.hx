@@ -1,30 +1,24 @@
-package nme.display3D;
+package nme.display3D.shaders;
 
-
-import nme.display3D.textures.Texture;
-import nme.display3D.Context3DProgramType;
-import nme.display3D.Program3D;
-import nme.display.BitmapData;
-import nme.utils.ByteArray;
-
-#if flash
+#if cpp
+import native.gl.GL;
+#elseif flash
+import flash.utils.ByteArray;
 import com.adobe.utils.AGALMiniAssembler;
-#else
-import nme.gl.GL;
 #end
 
+import nme.display3D.Context3DProgramType;
 
-class Context3DUtils {
-	
-	
-	inline public static function createShader (type: Context3DProgramType, shaderSource:String): #if flash ByteArray #else Shader #end {
-		
-		#if flash
-		
+class ShaderUtils{
+
+    inline public static function createShader (type: Context3DProgramType, shaderSource:String): nme.display3D.shaders.Shader {
+
+        #if flash
+
 		var assembler = new AGALMiniAssembler ();
 		assembler.assemble (type, shaderSource);
 		return assembler.agalcode ();
-		
+
 		#elseif cpp
 
 		var glType : Int;
@@ -36,24 +30,22 @@ class Context3DUtils {
 		var shader = GL.createShader (glType);
 		GL.shaderSource (shader, shaderSource);
 		GL.compileShader (shader);
-		
+
 		if (GL.getShaderParameter (shader, GL.COMPILE_STATUS) == 0) {
-			
+
 			trace("--- ERR ---\n" + shaderSource);
 			var err = GL.getShaderInfoLog (shader);
 			if (err != "") throw err;
-			
+
 		}
-		
+
 		return shader;
-		
+
 		#else
-		
-		return null;
-		
-		#end
-		
-	}
-	
-	
+
+        return null;
+
+        #end
+
+    }
 }
