@@ -415,17 +415,15 @@ class PathHelper {
 			
 			return ndll.path;
 			
-		} else if (ndll.haxelib == "" || ndll.haxelib == "hxcpp") {
+		} else if (ndll.haxelib == "hxcpp") {
 			
-			var path = combine (getHaxelib ("hxcpp"), "/bin/" + directoryName + "/" + filename);
+			return combine (getHaxelib ("hxcpp"), "bin/" + directoryName + "/" + filename);
 			
-			if (FileSystem.exists (path)) {
+		} else if (ndll.haxelib == "") {
+			
+			if (ndll.extensionPath != null && ndll.extensionPath != "") {
 				
-				return path;
-				
-			} else if (ndll.extensionPath != null && ndll.extensionPath != "") {
-				
-				return combine (ndll.extensionPath, "/ndll/" + directoryName + "/" + filename);
+				return combine (ndll.extensionPath, "ndll/" + directoryName + "/" + filename);
 				
 			} else {
 				
@@ -435,7 +433,7 @@ class PathHelper {
 			
 		} else {
 			
-			return combine (getHaxelib (ndll.haxelib), "/ndll/" + directoryName + "/" + filename);
+			return combine (getHaxelib (ndll.haxelib), "ndll/" + directoryName + "/" + filename);
 			
 		}
 		
