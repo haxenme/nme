@@ -159,13 +159,21 @@ class CommandLineTools {
 				if (words.length > 1) {
 					
 					var name = words[1];
-					var customID = name.split (".");
+					id = name.split (".");
 					
-					if (customID.length < 3) {
+					if (id.length < 3) {
 						
-						customID = [ "com", "example" ].concat (customID);
+						id = [ "com", "example" ].concat (id);
 						
 					}
+					
+				}
+				
+				var company = "Company Name";
+				
+				if (words.length > 2) {
+					
+					company = words[2];
 					
 				}
 				
@@ -179,7 +187,7 @@ class CommandLineTools {
 				context.title = title;
 				context.packageName = packageName;
 				context.version = "1.0.0";
-				context.company = "Company Name";
+				context.company = company;
 				context.file = StringTools.replace (title, " ", "");
 				
 				for (define in userDefines.keys ()) {
@@ -213,7 +221,7 @@ class CommandLineTools {
 			Sys.println ("");
 			Sys.println ("Usage: ");
 			Sys.println ("");
-			Sys.println (" nme create project \"com.package.name\"");
+			Sys.println (" nme create project \"com.package.name\" \"Company Name\"");
 			Sys.println (" nme create SampleName");
 			Sys.println ("");
 			Sys.println ("");
