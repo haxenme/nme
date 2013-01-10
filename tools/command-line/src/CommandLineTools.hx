@@ -196,7 +196,14 @@ class CommandLineTools {
 					
 				}
 				
-				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "project", Sys.getCwd (), context);
+				PathHelper.mkdir (title);
+				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "project", title, context);
+				
+				if (FileSystem.exists (title + "/Project.hxproj")) {
+					
+					FileSystem.rename (title + "/Project.hxproj", title + "/" + title + ".hxproj");
+					
+				}
 				
 			} else {
 				
