@@ -634,7 +634,7 @@ class NMEProject {
 		
 		if (certificate != null) {
 			
-			context.KEY_STORE = certificate.path;
+			context.KEY_STORE = PathHelper.tryFullPath (certificate.path);
 			
 			if (certificate.password != null) {
 				
