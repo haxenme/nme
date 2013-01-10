@@ -11,6 +11,9 @@ typedef Window = {
 	@:optional var fullscreen:Bool;
 	@:optional var antialiasing:Int;
 	@:optional var orientation:Orientation;
-	@:optional var shaders:Bool;
+	@:optional var allowShaders:Bool;
+	@:optional var requireShaders:Bool;
+	@:optional var depthBuffer:Bool;
+	@:optional var stencilBuffer:Bool;
 	
 }

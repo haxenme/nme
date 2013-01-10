@@ -1257,37 +1257,48 @@ class NMMLParser extends NMEProject {
 			var name = formatAttributeName (attribute);
 			var value = substitute (element.att.resolve (attribute));
 			
-			if (name == "background") {
+			switch (name) {
 				
-				value = StringTools.replace (value, "#", "");
-				
-				if (value.indexOf ("0x") == -1) {
+				case "background":
 					
-					value = "0x" + value;
+					value = StringTools.replace (value, "#", "");
 					
-				}
-				
-				window.background = Std.parseInt (value);
-				
-			} else if (name == "orientation") {
-				
-				var orientation = Reflect.field (Orientation, Std.string (value).toUpperCase ());
-				
-				if (orientation != null) {
+					if (value.indexOf ("0x") == -1) {
+						
+						value = "0x" + value;
+						
+					}
 					
-					window.orientation = orientation;
-					
-				}
+					window.background = Std.parseInt (value);
 				
-			} else {
+				case "orientation":
+					
+					var orientation = Reflect.field (Orientation, Std.string (value).toUpperCase ());
+					
+					if (orientation != null) {
+						
+						window.orientation = orientation;
+						
+					}
 				
-				if (Reflect.hasField (window, name)) {
+				case "height", "width", "fps", "antialiasing":
 					
-					Reflect.setField (window, name, value);
+					if (Reflect.hasField (window, name)) {
+						
+						Reflect.setField (window, name, Std.parseInt (value));
+						
+					}
+				
+				default:
 					
-				}
+					if (Reflect.hasField (window, name)) {
+						
+						Reflect.setField (window, name, value == "true");
+						
+					}
 				
 			}
+			
 			//defines.set ("WIN_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
 			
 		}
