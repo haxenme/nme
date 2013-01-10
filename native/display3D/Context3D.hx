@@ -235,10 +235,12 @@ class Context3D {
 	// TODO: Type as Context3DTriangleFace instead of Int?
 	
 	public function setCulling (triangleFaceToCull:Int):Void {
-		
-		GL.cullFace (triangleFaceToCull);
-		GL.enable (GL.CULL_FACE);
-		
+		if(triangleFaceToCull == Context3DTriangleFace.NONE){
+            GL.disable (GL.CULL_FACE);
+        }else{
+            GL.cullFace (triangleFaceToCull);
+            GL.enable (GL.CULL_FACE);
+        }
 	}
 	
 	
@@ -265,40 +267,55 @@ class Context3D {
 		
 	}
 
-    private function getUniformLocationFromAgalRegisterIndex(programType : Context3DProgramType, firstRegister : Int) : UniformLocation{
-        var uniformPrefix = switch (programType) {
+    private function getUniformLocationNameFromAgalRegisterIndex(programType : Context3DProgramType, firstRegister : Int) : String{
+        return switch (programType) {
 
             case Context3DProgramType.VERTEX: "vc";
             case Context3DProgramType.FRAGMENT: "fc";
             default: throw "Program Type " + programType + " not supported";
 
         };
-
-        return GL.getUniformLocation (currentProgram.glProgram, uniformPrefix + firstRegister);
     }
 
     public function setProgramConstantsFromByteArray (programType:Context3DProgramType, firstRegister:Int, numRegisters:Int, data:ByteArray, byteArrayOffset:Int):Void {
         data.position = byteArrayOffset;
         for(i in 0...numRegisters){
-            var location = getUniformLocationFromAgalRegisterIndex(programType, firstRegister + i);
-            GL.uniform4f(location, data.readFloat(),data.readFloat(),data.readFloat(),data.readFloat());
+            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
+            setGLSLProgramConstantsFromByteArray(locationName,data);
         }
 	}
 
 	public function setProgramConstantsFromMatrix (programType:Context3DProgramType, firstRegister:Int, matrix:Matrix3D, transposedMatrix:Bool = false):Void {
-		var location = getUniformLocationFromAgalRegisterIndex(programType, firstRegister);
-		GL.uniformMatrix3D (location, !transposedMatrix, matrix);
+		var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister);
+		setGLSLProgramConstantsFromMatrix(locationName,matrix,transposedMatrix);
 	}
 
 	public function setProgramConstantsFromVector (programType:Context3DProgramType, firstRegister:Int, data:Vector<Float>, numRegisters:Int = -1):Void {
         for(i in 0...numRegisters){
             var currentIndex = i * 4;
-            var location = getUniformLocationFromAgalRegisterIndex(programType, firstRegister + i);
-            GL.uniform4f(location, data[currentIndex],data[currentIndex+1],data[currentIndex+1],data[currentIndex+3]);
+            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
+            setGLSLProgramConstantsFromVector4(locationName,data,currentIndex);
         }
 	}
 
+    public function setGLSLProgramConstantsFromByteArray (locationName : String, data:ByteArray):Void {
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniform4f(location, data.readFloat(),data.readFloat(),data.readFloat(),data.readFloat());
+    }
+
+    public function setGLSLProgramConstantsFromMatrix (locationName : String, matrix:Matrix3D, transposedMatrix:Bool = false):Void {
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniformMatrix3D (location, !transposedMatrix, matrix);
+    }
+
+    public function setGLSLProgramConstantsFromVector4(locationName : String, data:Vector<Float>, startIndex : Int = 0):Void {
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniform4f(location, data[startIndex],data[startIndex+1],data[startIndex+1],data[startIndex+3]);
+    }
+
+
 	// TODO: Conform to API?
+
 	
 	public function setRenderMethod (func:Rectangle -> Void):Void {
 		
@@ -341,13 +358,17 @@ class Context3D {
 		// TODO
 		
 	}
+
+    public function setTextureAt (sampler:Int, texture:TextureBase):Void {
+        var locationName =  "fs" + sampler;
+        setGLSLTextureAt(locationName, texture);
+    }
 	
-	
-	public function setTextureAt (sampler:Int, texture:TextureBase):Void {
-		
+	public function setGLSLTextureAt (locationName:String, texture:TextureBase):Void {
+
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+
 		if (Std.is (texture, native.display3D.textures.Texture)) {
-			
-			var location = GL.getUniformLocation (currentProgram.glProgram, "fs" + sampler);
 			
 			// TODO multiple active textures (get an id from the Texture Wrapper (native.display3D.textures.Texture) ? )
 			GL.activeTexture (GL.TEXTURE0);
@@ -368,11 +389,16 @@ class Context3D {
 		
 	}
 	
-	
-	public function setVertexBufferAt (index:Int, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
-		
-		var location = GL.getAttribLocation (currentProgram.glProgram, "va" + index);
-		GL.bindBuffer (GL.ARRAY_BUFFER, buffer.glBuffer);
+
+    public function setVertexBufferAt(index:Int,buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
+        var locationName = "va" + index;
+        setGLSLVertexBufferAt(locationName, buffer, bufferOffset, format);
+    }
+
+	public function setGLSLVertexBufferAt (locationName, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
+		var location = GL.getAttribLocation (currentProgram.glProgram,locationName);
+
+        GL.bindBuffer (GL.ARRAY_BUFFER, buffer.glBuffer);
 		
 		var dimension = 4;
 		var type = GL.FLOAT;

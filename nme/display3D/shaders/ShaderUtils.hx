@@ -16,8 +16,8 @@ class ShaderUtils{
         #if flash
 
 		var assembler = new AGALMiniAssembler ();
-		assembler.assemble (type, shaderSource);
-		return assembler.agalcode ();
+		assembler.assemble (cast(type,String), shaderSource);
+		return assembler.agalcode;
 
 		#elseif cpp
 
