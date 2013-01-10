@@ -165,7 +165,12 @@ class NMEProject {
 			
 		}
 		
-		project.certificate = certificate.clone ();
+		if (certificate != null) {
+			
+			project.certificate = certificate.clone ();
+			
+		}
+		
 		project.command = command;
 		project.config = config.clone ();
 		project.debug = debug;
