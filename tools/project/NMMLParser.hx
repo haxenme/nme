@@ -649,15 +649,12 @@ class NMMLParser extends NMEProject {
 							
 						}
 						
-						if (name == "BUILD_DIR") {
+						switch (name) {
 							
-							app.path = value;
-							
-						}
-						
-						if (name == "SWF_VERSION") {
-							
-							app.swfVersion = value;
+							case "BUILD_DIR": app.path = value;
+							case "SWF_VERSION": app.swfVersion = value;
+							case "PRERENDERED_ICON": config.ios.prerenderedIcon = (value == "true");
+							case "ANDROID_INSTALL_LOCATION": config.android.installLocation = value;
 							
 						}
 						
