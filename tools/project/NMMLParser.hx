@@ -649,6 +649,18 @@ class NMMLParser extends NMEProject {
 							
 						}
 						
+						if (name == "BUILD_DIR") {
+							
+							app.path = value;
+							
+						}
+						
+						if (name == "SWF_VERSION") {
+							
+							app.swfVersion = value;
+							
+						}
+						
 						localDefines.set (name, value);
 						environment.set (name, value);
 					
