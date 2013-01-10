@@ -12,7 +12,7 @@ class ImageHelper {
 		
 		if (backgroundColor == null) {
 			
-			backgroundColor = #if neko { a: 0, rgb: 0xFFFFFF }; #else backgroundColoor = 0x00FFFFFF; #end
+			backgroundColor = #if neko { a: 0, rgb: 0xFFFFFF }; #else backgroundColor = 0x00FFFFFF; #end
 			
 		}
 		

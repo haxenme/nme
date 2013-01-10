@@ -195,6 +195,8 @@ class AndroidPlatform implements IPlatformTool {
 			
 		}
 		
+		IconHelper.createIcon (project.icons, 732, 412, destination + "/res/drawable-xhdpi/ouya_icon.png");
+		
 		var packageDirectory = project.meta.packageName;
 		packageDirectory = destination + "/src/" + packageDirectory.split (".").join ("/");
 		PathHelper.mkdir (packageDirectory);
