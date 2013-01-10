@@ -119,6 +119,12 @@ class DisplayObjectContainer extends InteractiveObject {
 			nmeChildren.insert (index, object);
 			object.parent = this;
 			
+			if (Std.is (object, DisplayObjectContainer)) {
+				
+				object.nmeUnifyChildrenWithDOM ();
+				
+			}
+			
 		}
 		
 		return object;
