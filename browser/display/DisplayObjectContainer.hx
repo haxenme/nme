@@ -83,11 +83,11 @@ class DisplayObjectContainer extends InteractiveObject {
 		
 		nmeChildren.push (object);
 		
-		if (Std.is (object, DisplayObjectContainer)) {
+		//if (Std.is (object, DisplayObjectContainer)) {
 			
-			object.nmeUnifyChildrenWithDOM ();
+			//object.nmeUnifyChildrenWithDOM ();
 			
-		}
+		//}
 		
 		return object;
 		
@@ -119,11 +119,11 @@ class DisplayObjectContainer extends InteractiveObject {
 			nmeChildren.insert (index, object);
 			object.parent = this;
 			
-			if (Std.is (object, DisplayObjectContainer)) {
+			//if (Std.is (object, DisplayObjectContainer)) {
 				
-				object.nmeUnifyChildrenWithDOM ();
+				//object.nmeUnifyChildrenWithDOM ();
 				
-			}
+			//}
 			
 		}
 		
