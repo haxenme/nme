@@ -165,7 +165,7 @@ class NMEProject {
 			
 		}
 		
-		ObjectHelper.copyFields (certificate, project.certificate);
+		project.certificate = certificate.clone ();
 		project.command = command;
 		project.config = config.clone ();
 		project.debug = debug;
@@ -406,6 +406,7 @@ class NMEProject {
 			
 			HashHelper.copyUniqueKeys (project.environment, environment);
 			
+			ObjectHelper.copyUniqueFields (project.certificate, certificate, null);
 			config.merge (project.config);
 			
 			assets = ArrayHelper.concatUnique (assets, project.assets);
@@ -634,9 +635,32 @@ class NMEProject {
 		if (certificate != null) {
 			
 			context.KEY_STORE = certificate.path;
-			context.KEY_STORE_PASSWORD = certificate.password;
-			context.KEY_STORE_ALIAS = certificate.alias;
-			context.KEY_STORE_ALIAS_PASSWORD = certificate.aliasPassword;
+			
+			if (certificate.password != null) {
+				
+				context.KEY_STORE_PASSWORD = certificate.password;
+				
+			}
+			
+			if (certificate.alias != null) {
+				
+				context.KEY_STORE_ALIAS = certificate.alias;
+				
+			} else if (certificate.path != null) {
+				
+				context.KEY_STORE_ALIAS = Path.withoutExtension (Path.withoutDirectory (certificate.path));
+				
+			}
+			
+			if (certificate.aliasPassword != null) {
+				
+				context.KEY_STORE_ALIAS_PASSWORD = certificate.aliasPassword;
+				
+			} else if (certificate.password != null) {
+				
+				context.KEY_STORE_ALIAS_PASSWORD = certificate.password;
+				
+			}
 			
 		}
 		
