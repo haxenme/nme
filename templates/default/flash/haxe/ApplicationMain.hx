@@ -33,17 +33,16 @@ class ApplicationMain {
 		::end::
 		
 		::if (DONT_MESS_WITH_MY_TRACE==null)::
-		::if (web!=null)::
+		#if web
 		haxe.Log.trace = flashTrace; // ::WEB::
-		::else::
-		::end::
+		#end
 		::end::
 
 		if (call_real)
 			begin ();
 	}
 
-	::if (web!=null)::
+	#if web
 	private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
 		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
 		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
@@ -52,7 +51,7 @@ class ApplicationMain {
 			flash.external.ExternalInterface.call("console.log", message);
 		else untyped flash.Boot.__trace(v, pos);
     }
-	::end::
+	#end
 	
 	private static function begin () {
 		
