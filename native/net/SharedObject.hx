@@ -211,13 +211,28 @@ class SharedObject extends EventDispatcher {
 			
 		} else {
 			
-			loadedData = Unserializer.run (rawData);
+			var unserializer = new Unserializer (rawData);
+			unserializer.setResolver (cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass } );
+			loadedData = unserializer.unserialize ();
 			
 		}
 		
-		var so:SharedObject = new SharedObject (name, localPath, loadedData);
+		var so = new SharedObject (name, localPath, loadedData);
 		
 		return so;
+		
+	}
+	
+	
+	private static function resolveClass (name:String):Class <Dynamic> {
+		
+		if (name != null) {
+			
+			return Type.resolveClass (StringTools.replace (name, "neash.", "native."));
+			
+		}
+		
+		return null;
 		
 	}
 	
