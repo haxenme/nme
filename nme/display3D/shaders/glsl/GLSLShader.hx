@@ -67,8 +67,8 @@ class GLSLShader {
             nativeShader = ShaderUtils.createShader(type,glslSource);
         #elseif flash
             #if glsl2agal
-                var glsl2agal = new GLSL2AGAL(glslSource);
-                agalInfo = glsl2agal.convert();
+                var glsl2agal = new nme.display3D.shaders.GlslToAgal(glslSource, cast(type));
+                agalInfoJson = glsl2agal.compile();
             #end
 
             var agalInfoData : AgalInfoData = Json.parse(agalInfoJson);
