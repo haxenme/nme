@@ -470,19 +470,18 @@ class RunScript {
 	
 	private static function getRevision ():String {
 		
-		var result = "r0";
+		var result = getVersion () + "-r0";
 		
 		if (FileSystem.exists (nmeDirectory + "/.git")) {
 			
 			var cacheCwd = Sys.getCwd ();
 			Sys.setCwd (nmeDirectory);
 			
-			var proc = new Process ("git", [ "svn", "log", "--oneline", "-1" ]);
+			var proc = new Process ("git", [ "describe", "--tags" ]);
 			
 			try {
 				
 				result = proc.stdout.readLine ();
-				result = result.substr (0, result.indexOf (" |"));
 				
 			} catch (e:Dynamic) { };
 			
@@ -507,7 +506,7 @@ class RunScript {
 					
 					if (index > -1) {
 						
-						result = "r" + result.substr (checkString.length);
+						result = getVersion () + "-r" + result.substr (checkString.length);
 						break;
 						
 					}
@@ -999,15 +998,7 @@ class RunScript {
 					var tempPath = "../nme-release-zip";
 					var targetPath = "";
 					
-					if (!isWindows) {
-						
-						targetPath = "../nme-" + getVersion () + "-" + getRevision () + ".zip";
-						
-					} else {
-						
-						targetPath = "../nme-" + getVersion () + ".zip";
-						
-					}
+					targetPath = "../nme-" + getRevision () + ".zip";
 					
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
 					
