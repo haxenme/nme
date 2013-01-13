@@ -159,7 +159,7 @@ class Graphics {
 	}
 	
 	
-	public function beginBitmapFill (bitmap:BitmapData, matrix:Matrix = null, in_repeat:Bool = false, in_smooth:Bool = false):Void {
+	public function beginBitmapFill (bitmap:BitmapData, matrix:Matrix = null, in_repeat:Bool = true, in_smooth:Bool = false):Void {
 		
 		closePolygon (true);
 		var repeat:Bool = (in_repeat == null ? true : in_repeat);
@@ -1241,10 +1241,30 @@ class Graphics {
 				var fillColour = d.fillColour;
 				var fillAlpha = d.fillAlpha;
 				var g = d.solidGradient;
+				var bitmap = d.bitmap;
 				
 				if (g != null) {
 					
 					ctx.fillStyle = createCanvasGradient (ctx, g);
+					
+				} else if (bitmap != null && ((bitmap.flags & BMP_REPEAT) > 0)) {
+					
+					var m = bitmap.matrix;
+					
+					if (m != null) {
+						
+						ctx.transform (m.a, m.b, m.c, m.d, m.tx, m.ty);
+						
+					}
+					
+					if (bitmap.flags & BMP_SMOOTH == 0) {
+						
+						untyped ctx.mozImageSmoothingEnabled = false;
+						untyped ctx.webkitImageSmoothingEnabled = false;
+						
+					}
+					
+					ctx.fillStyle = ctx.createPattern (bitmap.texture_buffer, "repeat");
 					
 				} else {
 					
@@ -1257,9 +1277,7 @@ class Graphics {
 				if (doStroke) ctx.stroke ();
 				ctx.save();
 				
-				var bitmap = d.bitmap;
-				
-				if (bitmap != null) {
+				if (bitmap != null && ((bitmap.flags & BMP_REPEAT) == 0)) {
 					
 					//ctx.clip();
 					var img = bitmap.texture_buffer;
@@ -1270,6 +1288,13 @@ class Graphics {
 						ctx.transform (m.a, m.b, m.c, m.d, m.tx, m.ty);
 						
 					}
+					
+					//if (bitmap.flags & BMP_SMOOTH == 0) {
+						//
+						//untyped ctx.mozImageSmoothingEnabled = false;
+						//untyped ctx.webkitImageSmoothingEnabled = false;
+						//
+					//}
 					
 					ctx.drawImage (img, 0, 0);
 					
