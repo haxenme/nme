@@ -72,11 +72,29 @@ class LinuxPlatform implements IPlatformTool {
 	
 	private function generateContext (project:NMEProject):Dynamic {
 		
+		var project = project.clone ();
+		
+		if (project.targetFlags.exists ("rpi")) {
+			
+			project.haxedefs.push ("rpi");
+			
+		}
+		
 		var context = project.templateContext;
 		
 		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
 		context.CPP_DIR = targetDirectory + "/obj/";
-		context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "");
+		
+		if (project.targetFlags.exists ("rpi")) {
+			
+			context.BUILD_DIR = project.app.path + "/raspberrypi";
+			
+		} else {
+			
+			context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "");
+			
+		}
+		
 		context.WIN_ALLOW_SHADERS = false;
 		
 		return context;
@@ -96,12 +114,19 @@ class LinuxPlatform implements IPlatformTool {
 			
 		}
 		
-		targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/cpp";
-		
 		if (project.targetFlags.exists ("neko") || project.target != PlatformHelper.hostPlatform) {
 			
-			targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/neko";
 			useNeko = true;
+			
+		}
+		
+		if (project.targetFlags.exists ("rpi")) {
+			
+			targetDirectory = project.app.path + "/raspberrypi/" + (useNeko ? "neko" : "cpp");
+			
+		} else {
+			
+			targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/" + (useNeko ? "neko" : "cpp");
 			
 		}
 		
@@ -148,7 +173,15 @@ class LinuxPlatform implements IPlatformTool {
 		
 		for (ndll in project.ndlls) {
 			
-			FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
+			if (project.targetFlags.exists ("rpi")) {
+				
+				FileHelper.copyLibrary (ndll, "RPi", "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
+				
+			} else {
+				
+				FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
+				
+			}
 			
 		}
 		
