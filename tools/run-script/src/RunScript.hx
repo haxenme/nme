@@ -97,7 +97,7 @@ class RunScript {
 					} else if (isLinux) {
 						
 						buildLibrary ("linux", flags, defines);
-						buildLibrary ("linux", flags, defines.concat ([ "rpi" ]));
+						//buildLibrary ("linux", flags, defines.concat ([ "rpi" ]));
 						buildLibrary ("android", flags, defines);
 						buildLibrary ("blackberry", flags, defines);
 						buildLibrary ("webos", flags, defines);
