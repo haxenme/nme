@@ -219,7 +219,15 @@ class AndroidPlatform implements IPlatformTool {
 					
 				} else {
 					
-					FileHelper.copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
+					if (Path.extension (javaPath) == "jar") {
+						
+						FileHelper.copyIfNewer (javaPath, destination + "/libs/" + Path.withoutDirectory (javaPath));
+						
+					} else {
+						
+						FileHelper.copyIfNewer (javaPath, destination + "/src/" + Path.withoutDirectory (javaPath));
+						
+					}
 					
 				}
 				
