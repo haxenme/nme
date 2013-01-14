@@ -16,6 +16,11 @@
 #include <syslog.h>
 #endif
 
+#ifdef RASPBERRYPI
+#include <SDL_syswm.h>
+#include "../opengl/Egl.h"
+#endif
+
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
 #endif
@@ -248,6 +253,7 @@ public:
       mShowCursor = true;
       mCurrentCursor = curPointer;
 
+
       mIsFullscreen =  (mFlags & SDL_FULLSCREEN);
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
@@ -310,6 +316,16 @@ public:
   
          if (mIsOpenGL)
          {
+            #ifdef RASPBERRYPI
+            SDL_SysWMinfo sysInfo;
+            SDL_VERSION(&sysInfo.version);
+            if(SDL_GetWMInfo(&sysInfo)>0)
+            {
+               void *window = (void *)(size_t)sysInfo.info.x11.window;
+               nmeEGLResize(window, inWidth, inHeight);
+            }
+            #endif
+
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
             mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
@@ -329,6 +345,10 @@ public:
 
    void SetFullscreen(bool inFullscreen)
    {
+      #if RASPBERRYPI
+      if (mIsOpenGL)
+         return;
+      #endif
       if (inFullscreen != mIsFullscreen)
       {
          mIsFullscreen = inFullscreen;
@@ -349,7 +369,7 @@ public:
          mSDLSurface = SDL_SetVideoMode(w, h, 32, mFlags);
          if (!mSDLSurface && (mFlags & SDL_FULLSCREEN) )
          {
-            // printf("Failed to set fillscreen, returning to windowed....\n");
+            // printf("Failed to set fullscreen, returning to windowed....\n");
             mSDLSurface = SDL_SetVideoMode(w, h, 32, (mFlags & ~SDL_FULLSCREEN) );
          }
 
@@ -448,7 +468,11 @@ public:
    {
       if (mIsOpenGL)
       {
+         #ifdef RASPBERRYPI
+         nmeEGLSwapBuffers();
+         #else
          SDL_GL_SwapBuffers();
+         #endif
       }
       else
       {
@@ -701,7 +725,14 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    sgDesktopWidth = info->current_w;
    sgDesktopHeight = info->current_h;
 
+
+   #ifdef RASPBERRYPI
+   sdl_flags = SDL_SWSURFACE;
+   if (opengl)
+      fullscreen = true;
+   #else
    sdl_flags = SDL_HWSURFACE;
+   #endif
 
    if ( resizable )
       sdl_flags |= SDL_RESIZABLE;
@@ -713,6 +744,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    {
       sdl_flags |= SDL_FULLSCREEN;
    }
+
 
    int use_w = fullscreen ? 0 : inWidth;
    int use_h = fullscreen ? 0 : inHeight;
@@ -736,7 +768,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool is_opengl = false;
    sgIsOGL2 = false;
 
-   if (opengl)
+   #ifdef RASPBERRYPI
+   bool nmeEgl = true;
+   #else
+   bool nmeEgl = false;
+   #endif
+
+   if (opengl && !nmeEgl)
    {
       int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
    
@@ -814,7 +852,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                   if (depthPass==2 && aa_pass==0 && oglPass==oglLevelPasses-1)
                   {
                      sdl_flags &= ~SDL_OPENGL;
-                     fprintf(stderr, "Couldn't set OpenGL mode: %s\n", SDL_GetError());
+                     fprintf(stderr, "Couldn't set OpenGL mode32: %s\n", SDL_GetError());
                   }
                }
                else
@@ -832,12 +870,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
          }
       }
    }
-   
+ 
    if (!screen)
    {
-      sdl_flags |= SDL_DOUBLEBUF;
+      if (!opengl || !nmeEgl)
+         sdl_flags |= SDL_DOUBLEBUF;
+
       screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags );
-      //printf("Flags %p\n",sdl_flags);
       if (!screen)
       {
          fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
@@ -846,6 +885,26 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
          return;
       }
    }
+
+   #ifdef RASPBERRYPI
+   if (opengl)
+   {
+      sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
+         
+      use_w = screen->w;
+      use_h = screen->h;
+      bool ok = nmeEGLCreate( 0, use_w, use_h,
+                        sgIsOGL2,
+                        (inFlags & wfDepthBuffer) ? 16 : 0,
+                        (inFlags & wfStencilBuffer) ? 8 : 0,
+                        0 );
+      if (ok)
+         is_opengl = true;
+   }
+   #endif
+
+
+
 
    HintColourOrder( is_opengl || screen->format->Rmask==0xff );
 

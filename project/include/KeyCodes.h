@@ -1,6 +1,9 @@
 #ifndef KEY_CODES_H
 #define KEY_CODES_H
 
+namespace nme
+{
+
 enum KeyCode
 {
 
@@ -106,6 +109,8 @@ enum KeyCode
    keyUP = 38,
 
 };
+
+}
 
 
 #endif
