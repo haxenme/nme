@@ -359,6 +359,13 @@ class IconHelper {
 			
 		}
 		
+		if (!FileSystem.exists (icon.path)) {
+			
+			LogHelper.warn ("Could not find icon path: " + icon.path);
+			return null;
+			
+		}
+		
 		var extension = Path.extension (icon.path);
 		var bitmapData = null;
 		
