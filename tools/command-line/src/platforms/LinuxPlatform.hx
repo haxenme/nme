@@ -87,7 +87,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		if (project.targetFlags.exists ("rpi")) {
 			
-			context.BUILD_DIR = project.app.path + "/raspberrypi";
+			context.BUILD_DIR = project.app.path + "/linux64-rpi";
 			
 		} else {
 			
@@ -122,7 +122,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		if (project.targetFlags.exists ("rpi")) {
 			
-			targetDirectory = project.app.path + "/raspberrypi/" + (useNeko ? "neko" : "cpp");
+			targetDirectory = project.app.path + "/linux64-rpi/" + (useNeko ? "neko" : "cpp");
 			
 		} else {
 			
