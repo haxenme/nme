@@ -658,6 +658,11 @@ class Lib {
 			
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
+			surface.style.setProperty ("transform", "", "");
+			surface.style.setProperty ("-moz-transform", "", "");
+			surface.style.setProperty ("-webkit-transform", "", "");
+			surface.style.setProperty ("-o-transform", "", "");
+			surface.style.setProperty ("-ms-transform", "", "");
 			
 		} else {
 			
