@@ -470,7 +470,8 @@ class RunScript {
 	
 	private static function getRevision ():String {
 		
-		var result = getVersion () + "-r0";
+		var nmeVersion = getVersion ();
+		var result = nmeVersion + "-r0";
 		
 		if (FileSystem.exists (nmeDirectory + "/.git")) {
 			
@@ -481,7 +482,8 @@ class RunScript {
 			
 			try {
 				
-				result = proc.stdout.readLine ();
+				var description = proc.stdout.readLine ();
+				result = nmeVersion + description.substr (description.indexOf ("-"));
 				
 			} catch (e:Dynamic) { };
 			
@@ -506,7 +508,7 @@ class RunScript {
 					
 					if (index > -1) {
 						
-						result = getVersion () + "-r" + result.substr (checkString.length);
+						result = nmeVersion + "-r" + result.substr (checkString.length);
 						break;
 						
 					}
