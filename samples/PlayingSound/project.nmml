@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 	
-	<meta title="Playing Sound" package="io.nme.playingsound" version="1.0.0" company="NME" />
+	<meta title="Playing Sound" package="io.nme.samples.playingsound" version="1.0.0" company="NME" />
 	<app main="Main" path="Export" file="PlayingSound" />
 	
 	<window background="#777777" />

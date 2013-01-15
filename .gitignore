@@ -4,6 +4,9 @@ ndll/*/libnme*
 project/all_objs
 project/obj
 project/vc*.pdb
+project/winrt/shaders/
+samples/*/Export/*
+samples/*/bin/*
 tools/command-line/command-line.n
 tools/unit-testing/Export
 tools/installer/mac/*.dmg
@@ -15,3 +18,4 @@ tools/documentation/obj
 tools/documentation/chxdoc
 *.userprefs
 *.swp
+*.hash

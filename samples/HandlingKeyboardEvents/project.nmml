@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 	
-	<meta title="Handling Keyboard Events" package="io.nme.handlingkeyboardevents" version="1.0.0" company="NME" />
+	<meta title="Handling Keyboard Events" package="io.nme.samples.handlingkeyboardevents" version="1.0.0" company="NME" />
 	<app main="Main" path="Export" file="HandlingKeyboardEvents" />
 	
 	<source path="Source" />

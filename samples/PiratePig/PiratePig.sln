@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{319CB2C6-23BD-43E1-85B5-2AAFA3577041}") = "PiratePig", "PiratePig.nmeproj", "{4B226737-B02A-44DF-908A-64CC112FB388}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Android = Debug|Android
+		Debug|BlackBerry = Debug|BlackBerry
+		Debug|Flash = Debug|Flash
+		Debug|HTML5 = Debug|HTML5
+		Debug|iOS = Debug|iOS
+		Debug|Linux = Debug|Linux
+		Debug|Mac = Debug|Mac
+		Debug|webOS = Debug|webOS
+		Debug|Windows = Debug|Windows
+		Release|Android = Release|Android
+		Release|BlackBerry = Release|BlackBerry
+		Release|Flash = Release|Flash
+		Release|HTML5 = Release|HTML5
+		Release|iOS = Release|iOS
+		Release|Linux = Release|Linux
+		Release|Mac = Release|Mac
+		Release|webOS = Release|webOS
+		Release|Windows = Release|Windows
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Android.ActiveCfg = Debug|Android
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Android.Build.0 = Debug|Android
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|BlackBerry.ActiveCfg = Debug|BlackBerry
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|BlackBerry.Build.0 = Debug|BlackBerry
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Flash.ActiveCfg = Debug|Flash
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Flash.Build.0 = Debug|Flash
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|HTML5.ActiveCfg = Debug|HTML5
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|HTML5.Build.0 = Debug|HTML5
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|iOS.ActiveCfg = Debug|iOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|iOS.Build.0 = Debug|iOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Linux.ActiveCfg = Debug|Linux
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Linux.Build.0 = Debug|Linux
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Mac.ActiveCfg = Debug|Mac
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Mac.Build.0 = Debug|Mac
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|webOS.ActiveCfg = Debug|webOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|webOS.Build.0 = Debug|webOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Windows.ActiveCfg = Debug|Windows
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Debug|Windows.Build.0 = Debug|Windows
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Android.ActiveCfg = Release|Android
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Android.Build.0 = Release|Android
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|BlackBerry.ActiveCfg = Release|BlackBerry
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|BlackBerry.Build.0 = Release|BlackBerry
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Flash.ActiveCfg = Release|Flash
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Flash.Build.0 = Release|Flash
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|HTML5.ActiveCfg = Release|HTML5
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|HTML5.Build.0 = Release|HTML5
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|iOS.ActiveCfg = Release|iOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|iOS.Build.0 = Release|iOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Linux.ActiveCfg = Release|Linux
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Linux.Build.0 = Release|Linux
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Mac.ActiveCfg = Release|Mac
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Mac.Build.0 = Release|Mac
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|webOS.ActiveCfg = Release|webOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|webOS.Build.0 = Release|webOS
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Windows.ActiveCfg = Release|Windows
+		{4B226737-B02A-44DF-908A-64CC112FB388}.Release|Windows.Build.0 = Release|Windows
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = PiratePig.nmeproj
+	EndGlobalSection
+EndGlobal
