@@ -4,6 +4,7 @@ package platforms;
 import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
+import sys.io.Process;
 import sys.FileSystem;
 
 
@@ -13,6 +14,7 @@ class LinuxPlatform implements IPlatformTool {
 	private var applicationDirectory:String;
 	private var executablePath:String;
 	private var is64:Bool;
+	private var isRaspberryPi:Bool;
 	private var targetDirectory:String;
 	private var useNeko:Bool;
 	
@@ -74,7 +76,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		var project = project.clone ();
 		
-		if (project.targetFlags.exists ("rpi")) {
+		if (isRaspberryPi) {
 			
 			project.haxedefs.push ("rpi");
 			
@@ -84,17 +86,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
 		context.CPP_DIR = targetDirectory + "/obj/";
-		
-		if (project.targetFlags.exists ("rpi")) {
-			
-			context.BUILD_DIR = project.app.path + "/linux64-rpi";
-			
-		} else {
-			
-			context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "");
-			
-		}
-		
+		context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "") + (isRaspberryPi ? "-rpi" : "");
 		context.WIN_ALLOW_SHADERS = false;
 		
 		return context;
@@ -114,22 +106,35 @@ class LinuxPlatform implements IPlatformTool {
 			
 		}
 		
+		if (project.targetFlags.exists ("rpi")) {
+			
+			isRaspberryPi = true;
+			is64 = true;
+			
+		} else if (PlatformHelper.hostPlatform == Platform.LINUX) {
+			
+			var process = new Process ("uname", [ "-a" ]);
+			var output = process.stdout.readAll ().toString ();
+			var error = process.stderr.readAll ().toString ();
+			process.exitCode ();
+			process.close ();
+			
+			if (output.toLowerCase ().indexOf ("raspberrypi") > -1) {
+				
+				isRaspberryPi = true;
+				is64 = true;
+				
+			}
+			
+		}
+		
 		if (project.targetFlags.exists ("neko") || project.target != PlatformHelper.hostPlatform) {
 			
 			useNeko = true;
 			
 		}
 		
-		if (project.targetFlags.exists ("rpi")) {
-			
-			targetDirectory = project.app.path + "/linux64-rpi/" + (useNeko ? "neko" : "cpp");
-			
-		} else {
-			
-			targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + "/" + (useNeko ? "neko" : "cpp");
-			
-		}
-		
+		targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + (isRaspberryPi ? "-rpi" : "") + "/" + (useNeko ? "neko" : "cpp");
 		applicationDirectory = targetDirectory + "/bin/";
 		executablePath = applicationDirectory + "/" + project.app.file;
 		
@@ -173,7 +178,7 @@ class LinuxPlatform implements IPlatformTool {
 		
 		for (ndll in project.ndlls) {
 			
-			if (project.targetFlags.exists ("rpi")) {
+			if (isRaspberryPi) {
 				
 				FileHelper.copyLibrary (ndll, "RPi", "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
 				
