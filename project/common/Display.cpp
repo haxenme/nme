@@ -361,17 +361,18 @@ double DisplayObject::getMouseX()
 {
    Stage *s = getStage();
    if (!s)
-      return 0;
+      s = Stage::GetCurrent();
    UserPoint p = s->getMousePos();
    UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.x;
+   
 }
 
 double DisplayObject::getMouseY()
 {
    Stage *s = getStage();
    if (!s)
-      return 0;
+      s = Stage::GetCurrent();
    UserPoint p = s->getMousePos();
    UserPoint result = GetFullMatrix(true).ApplyInverse(p);
    return result.y;
