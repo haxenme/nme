@@ -63,9 +63,9 @@ extern class Tilesheet {
 	 * Specify a rectangle within the bounds of the Tilesheet bitmap. This portion of the 
 	 * Tilesheet will be rendered when ever you request a draw of this tile ID.
 	 * 
-	 * You may also(optionally) specify a center point, which is used during positioning,
-	 * scale and rotation. The center point is not absolute, but a ratio. For example, if 
-	 * you want the center to be the middle of the tile image, use(0.5, 0.5)
+	 * You may also (optionally) specify a center point, which is used during positioning,
+	 * scale and rotation. The center point should be a coordinate within the tile
+	 * rectangle.
 	 * 
 	 * @param	rectangle
 	 * @param	centerPoint
