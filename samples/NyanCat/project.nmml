@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="Nyan Cat" package="io.nme.samples.nyancat" version="1.0.0" company="NME" />
+	
+	<app file="NyanCat" main="io.nme.samples.nyancat.NyanCat" path="Export" />
+	<window width="400" height="400" fps="30" />
+	
+	<classpath name="Source" />
+	
+	<haxelib name="nme" />
+	<haxelib name="actuate" />
+	
+	<assets path="Assets" rename="assets" include="*" exclude="nme.svg" />
+	<library path="Source/library.swf" />
+	
+	<icon name="Assets/nme.svg" />
+	
+</project>
