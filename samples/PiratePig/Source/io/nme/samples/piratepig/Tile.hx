@@ -46,6 +46,9 @@ class Tile extends Sprite {
 		moving = false;
 		removed = false;
 		
+		mouseEnabled = true;
+		buttonMode = true;
+		
 		#if !js
 		scaleX = 1;
 		scaleY = 1;
