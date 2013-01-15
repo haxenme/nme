@@ -40,6 +40,7 @@ class Asset {
 		resourceName = targetPath;
 		flatName = StringHelper.getFlatName (targetPath);
 		format = Path.extension (path).toLowerCase ();
+		glyphs = "32-255";
 		
 		if (type == null) {
 			

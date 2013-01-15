@@ -102,11 +102,11 @@ class HTML5Platform implements IPlatformTool {
 		
 		var sourcePath = font.sourcePath;
 		
-		if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
+		//if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
 			
-			ProcessHelper.runCommand (Path.directory (sourcePath), "neko", [ PathHelper.findTemplate (project.templatePaths, "html5/hxswfml.n"), "ttf2hash", Path.withoutDirectory (sourcePath), "-glyphs", "32-255" ] );
+			ProcessHelper.runCommand (Path.directory (sourcePath), "neko", [ PathHelper.findTemplate (project.templatePaths, "html5/hxswfml.n"), "ttf2hash", Path.withoutDirectory (sourcePath), "-glyphs", font.glyphs ]);
 			
-		}
+		//}
 		
 		return "-resource " + FileSystem.fullPath (sourcePath) + ".hash@NME_" + font.flatName;
 		
