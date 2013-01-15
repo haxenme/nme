@@ -18,6 +18,8 @@ class DisplayObjectContainer extends InteractiveObject {
 	public var numChildren(get_numChildren, never):Int;
 	public var tabChildren:Bool;
 	
+	private var addedChildren:Bool;
+	
 	
 	public function new() {
 		
@@ -52,6 +54,8 @@ class DisplayObjectContainer extends InteractiveObject {
 			throw "Adding to self";
 			
 		}
+		
+		addedChildren = true;
 		
 		if (object.parent == this) {
 			
@@ -101,6 +105,8 @@ class DisplayObjectContainer extends InteractiveObject {
 			throw "Invalid index position " + index;
 			
 		}
+		
+		addedChildren = true;
 		
 		if (object.parent == this) {
 			
@@ -357,6 +363,13 @@ class DisplayObjectContainer extends InteractiveObject {
 				child.nmeRender(inMask, clipRect);
 				
 			}
+			
+		}
+		
+		if (addedChildren) {
+			
+			nmeUnifyChildrenWithDOM ();
+			addedChildren = false;
 			
 		}
 		

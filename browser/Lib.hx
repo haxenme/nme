@@ -710,13 +710,13 @@ class Lib {
 			
 		}
 		
-		if (c1 != -1 && c2 != -1) {
+		if (c1 != -1 && c2 != -1 && c1 < c2) {
 			
 			swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
 			
 			if (c2 < mMe.__scr.childNodes.length - 1) {
 				
-				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2++]);
+				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2 + 1]);
 				
 			} else {
 				
