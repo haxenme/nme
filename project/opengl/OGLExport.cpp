@@ -4,8 +4,7 @@
 #endif
 
 
-// Only tested on mac so far ...
-//#ifdef OGL_EXPORTS
+#define OGLEXPORT
 
 
 #ifdef ANDROID
@@ -1664,7 +1663,5 @@ DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
 
-
-//#endif // ifdef HX_MACOS
-
+extern "C" int nme_oglexport_register_prims() { return 0; }
 

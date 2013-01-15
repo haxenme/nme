@@ -3805,5 +3805,15 @@ DEFINE_PRIM(nme_lzma_decode,1);
 
 
 // Reference this to bring in all the symbols for the static library
-extern "C" int nme_register_prims() { return 0; }
+#ifdef IPHONE
+extern "C" int nme_oglexport_register_prims();
+#endif
+
+extern "C" int nme_register_prims()
+{
+   #ifdef IPHONE
+   nme_oglexport_register_prims();
+   #endif
+   return 0;
+}
 
