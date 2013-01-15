@@ -116,7 +116,7 @@ class ProcessHelper {
 			
 			try {
 				
-				if (path != "" && !FileSystem.exists (FileSystem.fullPath (path))) {
+				if (path != "" && !FileSystem.exists (FileSystem.fullPath (path)) && !FileSystem.exists (FileSystem.fullPath (new Path (path).dir))) {
 					
 					LogHelper.error ("The specified target path \"" + path + "\" does not exist");
 					
