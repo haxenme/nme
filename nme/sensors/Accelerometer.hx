@@ -55,7 +55,7 @@ package nme.sensors;
 
 	/**
 	 * Specifies whether the user has denied access to the accelerometer
-	 *(<code>true</code>) or allowed access(<code>false</code>). When this
+	 * (<code>true</code>) or allowed access(<code>false</code>). When this
 	 * value changes, a <code>status</code> event is dispatched.
 	 */
 	var muted(default,null) : Bool;

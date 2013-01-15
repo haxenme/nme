@@ -582,9 +582,9 @@ class OptimizedPerlin {
 					var y = _y * fFreq;
 					var z = _z * fFreq;
 					
-					var xf = x -(x % 1);
-					var yf = y -(y % 1);
-					var zf = z -(z % 1);
+					var xf = x - (x % 1);
+					var yf = y - (y % 1);
+					var zf = z - (z % 1);
 					
 					var X = Std.int(xf) & 255;
 					var Y = Std.int(yf) & 255;
@@ -594,9 +594,9 @@ class OptimizedPerlin {
 					y -= yf;
 					z -= zf;
 					
-					var u = x * x * x *(x *(x*6 - 15) + 10);
-					var v = y * y * y *(y *(y*6 - 15) + 10);
-					var w = z * z * z *(z *(z*6 - 15) + 10);
+					var u = x * x * x * (x * (x*6 - 15) + 10);
+					var v = y * y * y * (y * (y*6 - 15) + 10);
+					var w = z * z * z * (z * (z*6 - 15) + 10);
 					
 					var A  =(p[X]) + Y;
 					var AA =(p[A]) + Z;
@@ -610,38 +610,38 @@ class OptimizedPerlin {
 					var z1 = z-1;
 					
 					var hash =(p[BB+1]) & 15;
-					var g1 =((hash&1) == 0 ?(hash<8 ? x1 : y1) :(hash<8 ? -x1 : -y1)) +((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x1 : z1 ) : hash<4 ? -y1 :( hash==14 ? -x1 : -z1 ));
+					var g1 =((hash&1) == 0 ?(hash<8 ? x1 : y1) :(hash<8 ? -x1 : -y1)) + ((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x1 : z1 ) : hash<4 ? -y1 :( hash==14 ? -x1 : -z1 ));
 					
 					hash =(p[AB+1]) & 15;
-					var g2 =((hash&1) == 0 ?(hash<8 ? x  : y1) :(hash<8 ? -x  : -y1)) +((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x  : z1 ) : hash<4 ? -y1 :( hash==14 ? -x : -z1 ));
+					var g2 =((hash&1) == 0 ?(hash<8 ? x  : y1) :(hash<8 ? -x  : -y1)) + ((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x  : z1 ) : hash<4 ? -y1 :( hash==14 ? -x : -z1 ));
 					
 					hash =(p[BA+1]) & 15;
-					var g3 =((hash&1) == 0 ?(hash<8 ? x1 : y ) :(hash<8 ? -x1 : -y )) +((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x1 : z1 ) : hash<4 ? -y  :( hash==14 ? -x1 : -z1 ));
+					var g3 =((hash&1) == 0 ?(hash<8 ? x1 : y ) :(hash<8 ? -x1 : -y )) + ((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x1 : z1 ) : hash<4 ? -y  :( hash==14 ? -x1 : -z1 ));
 					
 					hash =(p[AA+1]) & 15;
-					var g4 =((hash&1) == 0 ?(hash<8 ? x  : y ) :(hash<8 ? -x  : -y )) +((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x  : z1 ) : hash<4 ? -y  :( hash==14 ? -x  : -z1 ));
+					var g4 =((hash&1) == 0 ?(hash<8 ? x  : y ) :(hash<8 ? -x  : -y )) + ((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x  : z1 ) : hash<4 ? -y  :( hash==14 ? -x  : -z1 ));
 					
 					hash =(p[BB]) & 15;
-					var g5 =((hash&1) == 0 ?(hash<8 ? x1 : y1) :(hash<8 ? -x1 : -y1)) +((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x1 : z  ) : hash<4 ? -y1 :( hash==14 ? -x1 : -z  ));
+					var g5 =((hash&1) == 0 ?(hash<8 ? x1 : y1) :(hash<8 ? -x1 : -y1)) + ((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x1 : z  ) : hash<4 ? -y1 :( hash==14 ? -x1 : -z  ));
 					
 					hash =(p[AB]) & 15;
-					var g6 =((hash&1) == 0 ?(hash<8 ? x  : y1) :(hash<8 ? -x  : -y1)) +((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x  : z  ) : hash<4 ? -y1 :( hash==14 ? -x  : -z  ));
+					var g6 =((hash&1) == 0 ?(hash<8 ? x  : y1) :(hash<8 ? -x  : -y1)) + ((hash&2) == 0 ? hash<4 ? y1 :( hash==12 ? x  : z  ) : hash<4 ? -y1 :( hash==14 ? -x  : -z  ));
 					
 					hash =(p[BA]) & 15;
-					var g7 =((hash&1) == 0 ?(hash<8 ? x1 : y ) :(hash<8 ? -x1 : -y )) +((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x1 : z  ) : hash<4 ? -y  :( hash==14 ? -x1 : -z  ));
+					var g7 =((hash&1) == 0 ?(hash<8 ? x1 : y ) :(hash<8 ? -x1 : -y )) + ((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x1 : z  ) : hash<4 ? -y  :( hash==14 ? -x1 : -z  ));
 					
 					hash =(p[AA]) & 15;
-					var g8 =((hash&1) == 0 ?(hash<8 ? x  : y ) :(hash<8 ? -x  : -y )) +((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x  : z  ) : hash<4 ? -y  :( hash==14 ? -x  : -z  ));
+					var g8 =((hash&1) == 0 ?(hash<8 ? x  : y ) :(hash<8 ? -x  : -y )) + ((hash&2) == 0 ? hash<4 ? y  :( hash==12 ? x  : z  ) : hash<4 ? -y  :( hash==14 ? -x  : -z  ));
 					
-					g2 += u *(g1 - g2);
-					g4 += u *(g3 - g4);
-					g6 += u *(g5 - g6);
-					g8 += u *(g7 - g8);
+					g2 += u * (g1 - g2);
+					g4 += u * (g3 - g4);
+					g6 += u * (g5 - g6);
+					g8 += u * (g7 - g8);
 					
-					g4 += v *(g2 - g4);
-					g8 += v *(g6 - g8);
+					g4 += v * (g2 - g4);
+					g8 += v * (g6 - g8);
 					
-					s +=( g8 + w *(g4 - g8)) * fPers;
+					s +=( g8 + w * (g4 - g8)) * fPers;
 					
 				}
 				

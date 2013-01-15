@@ -79,7 +79,7 @@ extern class HTTPStatusEvent extends Event {
 	 * <code>httpResponseStatus</code> event is delivered before any response
 	 * data. Also, the <code>httpResponseStatus</code> event includes values for
 	 * the <code>responseHeaders</code> and <code>responseURL</code> properties
-	 *(which are undefined for an <code>httpStatus</code> event. Note that the
+	 * (which are undefined for an <code>httpStatus</code> event. Note that the
 	 * <code>httpResponseStatus</code> event(if any) will be sent before(and in
 	 * addition to) any <code>complete</code> or <code>error</code> event.
 	 *

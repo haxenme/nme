@@ -518,7 +518,7 @@ class TextField extends InteractiveObject {
 					
 				} else if (insert_x > mLimitRenderX) {
 					
-					mScrollH +=  insert_x -((mLimitRenderX * 3) >> 2);
+					mScrollH +=  insert_x - ((mLimitRenderX * 3) >> 2);
 					
 				}
 				
@@ -591,7 +591,7 @@ class TextField extends InteractiveObject {
 					
 				}
 				
-				font.RenderChar(nmeGraphics, chr.chr, x, Std.int(inY +(h - chr.fh)));
+				font.RenderChar(nmeGraphics, chr.chr, x, Std.int(inY + (h - chr.fh)));
 				
 			}
 			

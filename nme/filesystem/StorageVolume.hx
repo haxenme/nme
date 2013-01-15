@@ -42,7 +42,7 @@ extern class StorageVolume
 
 	/**
 	 * Whether the operating system considers the storage volume to be removable
-	 *(<code>true</code>) or not(<code>false</code>).
+	 * (<code>true</code>) or not(<code>false</code>).
 	 *
 	 * <p>The following table lists the values
 	 * <code>StorageVolume.isRemovable</code> property for various types of
@@ -58,7 +58,7 @@ extern class StorageVolume
 
 	/**
 	 * Whether a volume is writable(<code>true</code>) or not
-	 *(<code>false</code>).
+	 * (<code>false</code>).
 	 *
 	 * <p><b>Note:</b> You can determine the amount of space available on a
 	 * volume by calling the <code>rootDirectory.spaceAvailble</code> property of

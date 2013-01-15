@@ -12,7 +12,7 @@ package nme.display;
  * method. </p>
  *
  * <p>The GraphicsPath class also has its own set of methods
- *(<code>curveTo()</code>, <code>lineTo()</code>, <code>moveTo()</code>
+ * (<code>curveTo()</code>, <code>lineTo()</code>, <code>moveTo()</code>
  * <code>wideLineTo()</code> and <code>wideMoveTo()</code>) similar to those
  * in the Graphics class for making adjustments to the
  * <code>GraphicsPath.commands</code> and <code>GraphicsPath.data</code>

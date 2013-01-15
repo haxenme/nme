@@ -49,7 +49,7 @@ class PerspectiveProjection {
 		var p_nFovY = fieldOfView * TO_RADIAN;
 		this.fieldOfView = p_nFovY;
 		var cotan = 1 / Math.tan(p_nFovY / 2);
-		this.focalLength = Lib.current.stage.stageWidth *(Lib.current.stage.stageWidth / Lib.current.stage.stageHeight) / 2 * cotan;
+		this.focalLength = Lib.current.stage.stageWidth * (Lib.current.stage.stageWidth / Lib.current.stage.stageHeight) / 2 * cotan;
 		return fieldOfView;
 		
 	}

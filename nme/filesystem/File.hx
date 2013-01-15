@@ -87,7 +87,7 @@ extern class File
 	 * <p>The <code>url</code> property for this object uses the <code>app</code>
 	 * URL scheme(not the <code>file</code> URL scheme). This means that the
 	 * <code>url</code> string is specified starting with <code>"app:"</code>
-	 *(not <code>"file:"</code>). Also, if you create a File object relative to
+	 * (not <code>"file:"</code>). Also, if you create a File object relative to
 	 * the <code>File.applicationDirectory</code> directory(by using the
 	 * <code>resolvePath()</code> method), the <code>url</code> property of the
 	 * File object also uses the <code>app</code> URL scheme. </p>
@@ -99,7 +99,7 @@ extern class File
 	 * for security reasons, and is blocked by the operating system on some
 	 * platforms. If you want to store application-specific data, consider using
 	 * the application storage directory
-	 *(<code>File.applicationStorageDirectory</code>). If you want any of the
+	 * (<code>File.applicationStorageDirectory</code>). If you want any of the
 	 * content in the application storage directory to have access to the
 	 * application-privileged functionality(AIR APIs), you can expose that
 	 * functionality by using a sandbox bridge.</p>

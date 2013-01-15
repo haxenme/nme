@@ -19,7 +19,7 @@ package nme.net;
  * domain, place a URL policy file on the server hosting the data.</p>
  *
  * <p> However, in Adobe AIR, content in the application security sandbox
- *(content installed with the AIR application) is not restricted by these
+ * (content installed with the AIR application) is not restricted by these
  * security limitations. For content running in Adobe AIR, files in the
  * application security sandbox can access URLs using any of the following URL
  * schemes:</p>
@@ -33,7 +33,7 @@ package nme.net;
  *
  * <p>Content running in Adobe AIR that is not in the application security
  * sandbox observes the same restrictions as content running in the browser
- *(in Flash Player), and loading is governed by the content's domain and any
+ * (in Flash Player), and loading is governed by the content's domain and any
  * permissions granted in URL policy files.</p>
  *
  * <p>For more information related to security, see the Flash Player Developer
@@ -88,7 +88,7 @@ package nme.net;
 	 * </ul>
 	 *
 	 * <p>Also, for any multipart Content-Type, the syntax must be valid
-	 *(according to the RFC2046 standards). If the syntax appears to be invalid,
+	 * (according to the RFC2046 standards). If the syntax appears to be invalid,
 	 * the POST operation is subject to the security rules applied to
 	 * uploads.</p>
 	 */

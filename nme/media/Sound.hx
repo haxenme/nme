@@ -299,12 +299,12 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * </ul>
 	 *
 	 * <p>Also, for any multipart Content-Type, the syntax must be valid
-	 *(according to the RFC2046 standards). If the syntax appears to be invalid,
+	 * (according to the RFC2046 standards). If the syntax appears to be invalid,
 	 * the POST operation is subject to the security rules applied to
 	 * uploads.</p>
 	 *
 	 * <p>In Adobe AIR, content in the <code>application</code> security sandbox
-	 *(content installed with the AIR application) are not restricted by these
+	 * (content installed with the AIR application) are not restricted by these
 	 * security limitations.</p>
 	 *
 	 * <p>For more information related to security, see the Flash Player

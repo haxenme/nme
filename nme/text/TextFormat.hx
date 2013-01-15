@@ -96,7 +96,7 @@ extern class TextFormat {
 
 	/**
 	 * A Boolean value that indicates whether kerning is enabled
-	 *(<code>true</code>) or disabled(<code>false</code>). Kerning adjusts the
+	 * (<code>true</code>) or disabled(<code>false</code>). Kerning adjusts the
 	 * pixels between certain character pairs to improve readability, and should
 	 * be used only when necessary, such as with headings in large fonts. Kerning
 	 * is supported for embedded fonts only.
@@ -146,7 +146,7 @@ extern class TextFormat {
 	/**
 	 * Specifies custom tab stops as an array of non-negative integers. Each tab
 	 * stop is specified in pixels. If custom tab stops are not specified
-	 *(<code>null</code>), the default tab stop is 4(average character width).
+	 * (<code>null</code>), the default tab stop is 4(average character width).
 	 */
 	var tabStops : Array<Int>;
 
@@ -166,7 +166,7 @@ extern class TextFormat {
 
 	/**
 	 * Indicates whether the text that uses this text format is underlined
-	 *(<code>true</code>) or not(<code>false</code>). This underlining is
+	 * (<code>true</code>) or not(<code>false</code>). This underlining is
 	 * similar to that produced by the <code><U></code> tag, but the latter is
 	 * not true underlining, because it does not skip descenders correctly. The
 	 * default value is <code>null</code>, which indicates that underlining is

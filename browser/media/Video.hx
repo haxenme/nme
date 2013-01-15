@@ -61,7 +61,7 @@ class Video extends DisplayObject {
 	
 	/*public function attachCamera(camera:browser.net.Camera):Void;
 	{
-		//(html5 <device/> 
+		// (html5 <device/> 
 		throw "not implemented";
 	}*/
 	

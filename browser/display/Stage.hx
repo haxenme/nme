@@ -460,8 +460,8 @@ class Stage extends DisplayObjectContainer {
 			if (lockCenter) {
 				
 				var bounds = sprite.getBounds(this);
-				nmeDragOffsetX = nmeDragObject.x -(bounds.width / 2 + bounds.x);
-				nmeDragOffsetY = nmeDragObject.y -(bounds.height / 2 + bounds.y);
+				nmeDragOffsetX = nmeDragObject.x - (bounds.width / 2 + bounds.x);
+				nmeDragOffsetY = nmeDragObject.y - (bounds.height / 2 + bounds.y);
 				
 			} else {
 				

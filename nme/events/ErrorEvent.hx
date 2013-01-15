@@ -14,7 +14,7 @@ package nme.events;
  *
  * <p>You can check for <code>error</code> events that do not have any
  * listeners by registering a listener for the <code>uncaughtError</code>
- *(UncaughtErrorEvent.UNCAUGHT_ERROR) event.</p>
+ * (UncaughtErrorEvent.UNCAUGHT_ERROR) event.</p>
  *
  * <p>An uncaught error also causes an error dialog box displaying the error
  * event to appear when content is running in the debugger version of Flash

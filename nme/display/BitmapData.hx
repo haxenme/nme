@@ -27,7 +27,7 @@ package nme.display;
  *
  * <p>Each 32-bit integer is a combination of four 8-bit channel values(from
  * 0 to 255) that describe the alpha transparency and the red, green, and blue
- *(ARGB) values of the pixel.(For ARGB values, the most significant byte
+ * (ARGB) values of the pixel.(For ARGB values, the most significant byte
  * represents the alpha channel value, followed by red, green, and blue.)</p>
  * 
  * <p>When you are targeting the Neko runtime, the pixel data is stored as an object
@@ -169,7 +169,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * ignored in this case. </li>
 	 *   <li>If only the alpha channel value is different, the pixel value is
 	 * 0x<i>ZZ</i>FFFFFF, where <i>ZZ</i> is the difference in the alpha values
-	 *(the alpha value in the source object minus the alpha value in the
+	 * (the alpha value in the source object minus the alpha value in the
 	 * <code>otherBitmapData</code> object).</li>
 	 * </ul>
 	 *
@@ -543,7 +543,7 @@ extern class BitmapData implements IBitmapDrawable {
 	/**
 	 * Computes a 256-value binary number histogram of a BitmapData object. This
 	 * method returns a Vector object containing four Vector.<Number> instances
-	 *(four Vector objects that contain Number objects). The four Vector
+	 * (four Vector objects that contain Number objects). The four Vector
 	 * instances represent the red, green, blue and alpha components in order.
 	 * Each Vector instance contains 256 values that represent the population
 	 * count of an individual component value, from 0 to 255.
@@ -612,7 +612,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * image and <code>redDest</code> is the red channel value at the
 	 * corresponding pixel of the destination image):
 	 *
-	 * <p> <code> new redDest = [(redSrc * redMultiplier) +(redDest *(256 -
+	 * <p> <code> new redDest = [(redSrc * redMultiplier) + (redDest * (256 -
 	 * redMultiplier))] / 256; </code> </p>
 	 *
 	 * <p>The <code>redMultiplier</code>, <code>greenMultiplier</code>,

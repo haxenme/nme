@@ -194,7 +194,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * shared object is written to disk, the <code>objectEncoding</code> property
 	 * indicates which Action Message Format version should be used: the
 	 * ActionScript 3.0 format(AMF3) or the ActionScript 1.0 or 2.0 format
-	 *(AMF0).
+	 * (AMF0).
 	 *
 	 * <p>Object encoding is handled differently depending if the shared object
 	 * is local or remote.</p>
@@ -508,7 +508,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * </p>
 	 *
 	 * <p>Suppose you publish SWF file content to be played back as local files
-	 *(either locally installed SWF files or EXE files), and you need to access
+	 * (either locally installed SWF files or EXE files), and you need to access
 	 * a specific shared object from more than one local SWF file. In this
 	 * situation, be aware that for local files, two different locations might be
 	 * used to store shared objects. The domain that is used depends on the

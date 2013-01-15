@@ -303,7 +303,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * filter object to the <code>filters</code> array.</p>
 	 *
 	 * <p>To add a filter by using ActionScript, perform the following steps
-	 *(assume that the target display object is named
+	 * (assume that the target display object is named
 	 * <code>myDisplayObject</code>):</p>
 	 *
 	 * <ol>
@@ -691,7 +691,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * An object with properties pertaining to a display object's matrix, color
 	 * transform, and pixel bounds. The specific properties  -  matrix,
 	 * colorTransform, and three read-only properties
-	 *(<code>concatenatedMatrix</code>, <code>concatenatedColorTransform</code>,
+	 * (<code>concatenatedMatrix</code>, <code>concatenatedColorTransform</code>,
 	 * and <code>pixelBounds</code>)  -  are described in the entry for the
 	 * Transform class.
 	 *
@@ -907,7 +907,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	/**
 	 * Converts a three-dimensional point of the three-dimensional display
 	 * object's(local) coordinates to a two-dimensional point in the Stage
-	 *(global) coordinates.
+	 * (global) coordinates.
 	 *
 	 * <p>For example, you can only use two-dimensional coordinates(x,y) to draw
 	 * with the <code>display.Graphics</code> methods. To draw a

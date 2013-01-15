@@ -232,7 +232,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	public inline function readBoolean():Bool {
 		
-		return(position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
+		return (position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
 		
 	}
 	
@@ -240,7 +240,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	public inline function readByte():Int {
 		
 		var val:Int = readUnsignedByte();
-		return((val & 0x80) != 0) ?(val - 0x100) : val;
+		return ((val & 0x80) != 0) ?(val - 0x100) : val;
 		
 	}
 	
@@ -341,14 +341,14 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		
 		var val = bigEndian ?((ch1 << 8) | ch2) :((ch2 << 8) | ch1);
 		
-		return((val & 0x8000) != 0) ?(val - 0x10000) : val;
+		return ((val & 0x8000) != 0) ?(val - 0x10000) : val;
 		
 	}
 	
 	
 	inline public function readUnsignedByte():Int {
 		
-		return(position < length) ? __get(position++) : ThrowEOFi();
+		return (position < length) ? __get(position++) : ThrowEOFi();
 		
 	}
 	

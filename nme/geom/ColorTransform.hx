@@ -30,7 +30,7 @@ package nme.geom;
  *   <li>In the <code>colorTransform</code> parameter of the
  * <code>colorTransform()</code> method of the BitmapData class</li>
  *   <li>As the <code>colorTransform</code> property of a Transform object
- *(which can be used as the <code>transform</code> property of a display
+ * (which can be used as the <code>transform</code> property of a display
  * object)</li>
  * </ul>
  *
@@ -77,7 +77,7 @@ extern class ColorTransform {
 	 * The RGB color value for a ColorTransform object.
 	 *
 	 * <p>When you set this property, it changes the three color offset values
-	 *(<code>redOffset</code>, <code>greenOffset</code>, and
+	 * (<code>redOffset</code>, <code>greenOffset</code>, and
 	 * <code>blueOffset</code>) accordingly, and it sets the three color
 	 * multiplier values(<code>redMultiplier</code>,
 	 * <code>greenMultiplier</code>, and <code>blueMultiplier</code>) to 0. The

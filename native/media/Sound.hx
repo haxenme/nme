@@ -241,7 +241,7 @@ class Sound extends EventDispatcher {
 	/** @private */ private function get_isBuffering():Bool {
 		
 		nmeCheckLoading();
-		return(nmeLoading && nmeHandle == null);
+		return (nmeLoading && nmeHandle == null);
 		
 	}
 	

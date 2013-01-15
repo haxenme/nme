@@ -1090,7 +1090,7 @@ class Graphics {
 			
 		}
 		
-		nmeExpandFilteredExtent( -(padding * sx) / 2, -(padding * sy) / 2);
+		nmeExpandFilteredExtent( - (padding * sx) / 2, - (padding * sy) / 2);
 		
 		if (nmeClearNextCycle) {
 			
@@ -1247,7 +1247,7 @@ class Graphics {
 					
 					ctx.fillStyle = createCanvasGradient(ctx, g);
 					
-				} else if (bitmap != null &&((bitmap.flags & BMP_REPEAT) > 0)) {
+				} else if (bitmap != null && ((bitmap.flags & BMP_REPEAT) > 0)) {
 					
 					var m = bitmap.matrix;
 					
@@ -1277,7 +1277,7 @@ class Graphics {
 				if (doStroke) ctx.stroke();
 				ctx.save();
 				
-				if (bitmap != null &&((bitmap.flags & BMP_REPEAT) == 0)) {
+				if (bitmap != null && ((bitmap.flags & BMP_REPEAT) == 0)) {
 					
 					//ctx.clip();
 					var img = bitmap.texture_buffer;

@@ -87,7 +87,7 @@ class Vector3D {
 	
 	inline public function equals(toCompare:Vector3D, ?allFour:Bool = false):Bool {
 		
-		return x == toCompare.x && y == toCompare.y && z == toCompare.z &&(!allFour || w == toCompare.w);
+		return x == toCompare.x && y == toCompare.y && z == toCompare.z && (!allFour || w == toCompare.w);
 		
 	}
 	
@@ -103,7 +103,7 @@ class Vector3D {
 	
 	inline public function nearEquals(toCompare:Vector3D, tolerance:Float, ?allFour:Bool = false):Bool {
 		
-		return Math.abs(x - toCompare.x) < tolerance && Math.abs(y - toCompare.y) < tolerance && Math.abs(z - toCompare.z) < tolerance &&(!allFour || Math.abs(w - toCompare.w) < tolerance);
+		return Math.abs(x - toCompare.x) < tolerance && Math.abs(y - toCompare.y) < tolerance && Math.abs(z - toCompare.z) < tolerance && (!allFour || Math.abs(w - toCompare.w) < tolerance);
 		
 	}
 	

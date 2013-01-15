@@ -99,7 +99,7 @@ class Bitmap extends DisplayObject {
 		
 		var imageDataLease = bitmapData.nmeGetLease();
 		
-		if (imageDataLease != null &&(nmeCurrentLease == null || imageDataLease.seed != nmeCurrentLease.seed || imageDataLease.time != nmeCurrentLease.time)) {
+		if (imageDataLease != null && (nmeCurrentLease == null || imageDataLease.seed != nmeCurrentLease.seed || imageDataLease.time != nmeCurrentLease.time)) {
 			
 			var srcCanvas = bitmapData.handle();
 			

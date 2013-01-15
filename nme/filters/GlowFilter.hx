@@ -79,7 +79,7 @@ package nme.filters;
 	/**
 	 * Specifies whether the glow is an inner glow. The value <code>true</code>
 	 * indicates an inner glow. The default is <code>false</code>, an outer glow
-	 *(a glow around the outer edges of the object).
+	 * (a glow around the outer edges of the object).
 	 */
 	var inner : Bool;
 
@@ -87,7 +87,7 @@ package nme.filters;
 	 * Specifies whether the object has a knockout effect. A value of
 	 * <code>true</code> makes the object's fill transparent and reveals the
 	 * background color of the document. The default value is <code>false</code>
-	 *(no knockout effect).
+	 * (no knockout effect).
 	 */
 	var knockout : Bool;
 

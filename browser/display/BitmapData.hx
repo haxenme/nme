@@ -170,7 +170,7 @@ class BitmapData implements IBitmapDrawable {
 			
 		} else {
 			
-			var s = 4 *(Math.round(rect.x) +(Math.round(rect.y) * nmeImageData.width));
+			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * nmeImageData.width));
 			var offsetY:Int;
 			var offsetX:Int;
 			
@@ -180,7 +180,7 @@ class BitmapData implements IBitmapDrawable {
 				
 				for (j in 0...Math.round(rect.width)) {
 					
-					offsetX = 4 *(j + offsetY);
+					offsetX = 4 * (j + offsetY);
 					nmeImageData.data[s + offsetX] = Std.int((nmeImageData.data[s + offsetX] * colorTransform.redMultiplier) + colorTransform.redOffset);
 					nmeImageData.data[s + offsetX + 1] = Std.int((nmeImageData.data[s + offsetX + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
 					nmeImageData.data[s + offsetX + 2] = Std.int((nmeImageData.data[s + offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
@@ -243,12 +243,12 @@ class BitmapData implements IBitmapDrawable {
 				
 			}
 			
-			var pos = 4 *(Math.round(destPoint.x) +(Math.round(destPoint.y) * imageData.width)) + destIdx;
-			var boundR = Math.round(4 *(destPoint.x + sourceRect.width));
+			var pos = 4 * (Math.round(destPoint.x) + (Math.round(destPoint.y) * imageData.width)) + destIdx;
+			var boundR = Math.round(4 * (destPoint.x + sourceRect.width));
 			
 			var setPos = function(val:Int) {
 				
-				if ((pos %(imageData.width * 4)) > boundR - 1) {
+				if ((pos % (imageData.width * 4)) > boundR - 1) {
 					
 					pos += imageData.width * 4 - boundR;
 					
@@ -485,8 +485,8 @@ class BitmapData implements IBitmapDrawable {
 					
 					if ((value & mask) == color) {
 						
-						var x = Math.round((i %(me.width * 4)) / 4);
-						var y = Math.round(i /(me.width * 4));
+						var x = Math.round((i % (me.width * 4)) / 4);
+						var y = Math.round(i / (me.width * 4));
 						
 						if (x < minX) minX = x;
 						if (x > maxX) maxX = x;
@@ -499,8 +499,8 @@ class BitmapData implements IBitmapDrawable {
 					
 					if ((value & mask) != color) {
 						
-						var x = Math.round((i %(me.width * 4)) / 4);
-						var y = Math.round(i /(me.width * 4));
+						var x = Math.round((i % (me.width * 4)) / 4);
+						var y = Math.round(i / (me.width * 4));
 						
 						if (x < minX) minX = x;
 						if (x > maxX) maxX = x;
@@ -572,13 +572,13 @@ class BitmapData implements IBitmapDrawable {
 			var ctx:CanvasRenderingContext2D = _nmeTextureBuffer.getContext('2d');
 			var imagedata = ctx.getImageData(x, y, 1, 1);
 			
-			return(imagedata.data[0] << 16) |(imagedata.data[1] << 8) |(imagedata.data[2]);
+			return (imagedata.data[0] << 16) |(imagedata.data[1] << 8) |(imagedata.data[2]);
 			
 		} else {
 			
 			var offset = (4 * y * width + x * 4);
 			
-			return(nmeImageData.data[offset] << 16) |(nmeImageData.data[offset + 1] << 8) |(nmeImageData.data[offset + 2]);
+			return (nmeImageData.data[offset] << 16) |(nmeImageData.data[offset + 1] << 8) |(nmeImageData.data[offset + 2]);
 			
 		}
 		
@@ -628,11 +628,11 @@ class BitmapData implements IBitmapDrawable {
 			
 			var offset = Math.round(4 * nmeImageData.width * rect.y + rect.x * 4);
 			var pos = offset;
-			var boundR = Math.round(4 *(rect.x + rect.width));
+			var boundR = Math.round(4 * (rect.x + rect.width));
 			
 			for (i in 0...len) {
 				
-				if (((pos) %(nmeImageData.width * 4)) > boundR - 1) {
+				if (((pos) % (nmeImageData.width * 4)) > boundR - 1) {
 					
 					pos += nmeImageData.width * 4 - boundR;
 					
@@ -684,13 +684,13 @@ class BitmapData implements IBitmapDrawable {
 					if (!rect.intersects(boundingBox)) return false;
 					
 					var diff = rect.intersection(boundingBox);
-					var offset = 4 *(Math.round(diff.x) +(Math.round(diff.y) * imageData.width)) + 3;
+					var offset = 4 * (Math.round(diff.x) + (Math.round(diff.y) * imageData.width)) + 3;
 					var pos = offset;
-					var boundR = Math.round(4 *(diff.x + diff.width));
+					var boundR = Math.round(4 * (diff.x + diff.width));
 					
-					while (pos < offset + Math.round(4 *(diff.width + imageData.width * diff.height))) {
+					while (pos < offset + Math.round(4 * (diff.width + imageData.width * diff.height))) {
 						
-						if ((pos %(imageData.width * 4)) > boundR - 1) {
+						if ((pos % (imageData.width * 4)) > boundR - 1) {
 							
 							pos += imageData.width * 4 - boundR;
 							
@@ -710,7 +710,7 @@ class BitmapData implements IBitmapDrawable {
 					var y = point.y - firstPoint.y;
 					
 					if (x < 0 || y < 0 || x >= me.width || y >= me.height) return false;
-					if (imageData.data[Math.round(4 *(y * me.width + x)) + 3] - firstAlphaThreshold > 0) return true;
+					if (imageData.data[Math.round(4 * (y * me.width + x)) + 3] - firstAlphaThreshold > 0) return true;
 					
 					return false;
 				
@@ -925,14 +925,14 @@ class BitmapData implements IBitmapDrawable {
 				
 			}
 			
-			var style = 'rgba(' + r + ', ' + g + ', ' + b + ', ' +(a / 255) + ')';
+			var style = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + (a / 255) + ')';
 			
 			ctx.fillStyle = style;
 			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 			
 		} else {
 			
-			var s = 4 *(Math.round(rect.x) +(Math.round(rect.y) * nmeImageData.width));
+			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * nmeImageData.width));
 			var offsetY:Int;
 			var offsetX:Int;
 			
@@ -942,7 +942,7 @@ class BitmapData implements IBitmapDrawable {
 				
 				for (j in 0...Math.round(rect.width)) {
 					
-					offsetX = 4 *(j + offsetY);
+					offsetX = 4 * (j + offsetY);
 					nmeImageData.data[s + offsetX] = r;
 					nmeImageData.data[s + offsetX + 1] = g;
 					nmeImageData.data[s + offsetX + 2] = b;
@@ -1006,7 +1006,7 @@ class BitmapData implements IBitmapDrawable {
 	private static function nmeIsPNG(bytes:ByteArray) {
 		
 		bytes.position = 0;
-		return(bytes.readByte() == 0x89 && bytes.readByte() == 0x50 && bytes.readByte() == 0x4E && bytes.readByte() == 0x47 && bytes.readByte() == 0x0D && bytes.readByte() == 0x0A && bytes.readByte() == 0x1A && bytes.readByte() == 0x0A);
+		return (bytes.readByte() == 0x89 && bytes.readByte() == 0x50 && bytes.readByte() == 0x4E && bytes.readByte() == 0x47 && bytes.readByte() == 0x0D && bytes.readByte() == 0x0A && bytes.readByte() == 0x1A && bytes.readByte() == 0x0A);
 		
 	}
 	
@@ -1027,7 +1027,7 @@ class BitmapData implements IBitmapDrawable {
 		image.src = inFilename;
 		
 		// Another IE9 bug: loading 20+ images fails unless this line is added.
-		//(issue #1019768)
+		// (issue #1019768)
 		if (image.complete) { }
 		
 	}
@@ -1054,17 +1054,17 @@ class BitmapData implements IBitmapDrawable {
 			
 			if (grayScale) {
 				
-				imageData.data[i * 4] = imageData.data[i * 4 + 1] = imageData.data[i * 4 + 2] = low + generator.nextValue() %(high - low + 1);
+				imageData.data[i * 4] = imageData.data[i * 4 + 1] = imageData.data[i * 4 + 2] = low + generator.nextValue() % (high - low + 1);
 				
 			} else {
 				
-				imageData.data[i * 4] = if (channelOptions & BitmapDataChannel.RED == 0) 0 else low + generator.nextValue() %(high - low + 1);
-				imageData.data[i * 4 + 1] = if (channelOptions & BitmapDataChannel.GREEN == 0) 0 else low + generator.nextValue() %(high - low + 1);
-				imageData.data[i * 4 + 2] = if (channelOptions & BitmapDataChannel.BLUE == 0) 0 else low + generator.nextValue() %(high - low + 1);
+				imageData.data[i * 4] = if (channelOptions & BitmapDataChannel.RED == 0) 0 else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i * 4 + 1] = if (channelOptions & BitmapDataChannel.GREEN == 0) 0 else low + generator.nextValue() % (high - low + 1);
+				imageData.data[i * 4 + 2] = if (channelOptions & BitmapDataChannel.BLUE == 0) 0 else low + generator.nextValue() % (high - low + 1);
 				
 			}
 			
-			imageData.data[i * 4 + 3] = if (channelOptions & BitmapDataChannel.ALPHA == 0) 255 else low + generator.nextValue() %(high - low + 1);
+			imageData.data[i * 4 + 3] = if (channelOptions & BitmapDataChannel.ALPHA == 0) 255 else low + generator.nextValue() % (high - low + 1);
 			
 		}
 		
@@ -1198,11 +1198,11 @@ class BitmapData implements IBitmapDrawable {
 			
 			var offset = Math.round(4 * nmeImageData.width * rect.y + rect.x * 4);
 			var pos = offset;
-			var boundR = Math.round(4 *(rect.x + rect.width));
+			var boundR = Math.round(4 * (rect.x + rect.width));
 			
 			for (i in 0...len) {
 				
-				if (((pos) %(nmeImageData.width * 4)) > boundR - 1) {
+				if (((pos) % (nmeImageData.width * 4)) > boundR - 1) {
 					
 					pos += nmeImageData.width * 4 - boundR;
 					
@@ -1442,8 +1442,8 @@ private class MinstdGenerator {
 	
 	public function nextValue():Int {
 		
-		var lo = a *(value & 0xffff);
-		var hi = a *(value >>> 16);
+		var lo = a * (value & 0xffff);
+		var hi = a * (value >>> 16);
 		lo += (hi & 0x7fff) << 16;
 		
 		if (lo < 0 || lo > m) {

@@ -7,7 +7,7 @@ package nme.media;
  * assigned to a sound channel, and the application can have multiple sound
  * channels that are mixed together. The SoundChannel class contains a
  * <code>stop()</code> method, properties for monitoring the amplitude
- *(volume) of the channel, and a property for assigning a SoundTransform
+ * (volume) of the channel, and a property for assigning a SoundTransform
  * object to the channel.
  * 
  * @event soundComplete Dispatched when a sound has finished playing.
@@ -16,7 +16,7 @@ package nme.media;
 
 	/**
 	 * The current amplitude(volume) of the left channel, from 0(silent) to 1
-	 *(full amplitude).
+	 * (full amplitude).
 	 */
 	var leftPeak(default,null) : Float;
 
@@ -37,7 +37,7 @@ package nme.media;
 
 	/**
 	 * The current amplitude(volume) of the right channel, from 0(silent) to 1
-	 *(full amplitude).
+	 * (full amplitude).
 	 */
 	var rightPeak(default,null) : Float;
 

@@ -273,7 +273,7 @@ class Lib {
 		
 		for (i in 0...data.length) {
 			
-			var perc = i /(data.length - 1) * 100;
+			var perc = i / (data.length - 1) * 100;
 			var frame = data[i];
 			keyframeStylesheetRule += perc + "% { " + template.execute(templateFunc(frame)) + " } ";
 			
@@ -490,7 +490,7 @@ class Lib {
 	public static function nmeGetHeight():Int {
 		
 		var tgt:HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast document.getElementById(NME_IDENTIFIER);
-		return(tgt != null && tgt.clientHeight > 0) ? tgt.clientHeight:Lib.DEFAULT_HEIGHT;
+		return (tgt != null && tgt.clientHeight > 0) ? tgt.clientHeight:Lib.DEFAULT_HEIGHT;
 		
 	}
 	
@@ -514,7 +514,7 @@ class Lib {
 	public static function nmeGetWidth():Int {
 		
 		var tgt:HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast document.getElementById(NME_IDENTIFIER);
-		return(tgt != null && tgt.clientWidth > 0) ? tgt.clientWidth:Lib.DEFAULT_WIDTH;
+		return (tgt != null && tgt.clientWidth > 0) ? tgt.clientWidth:Lib.DEFAULT_WIDTH;
 		
 	}
 	
@@ -1112,7 +1112,7 @@ class Lib {
 		
 		var meta:HTMLMetaElement = cast document.createElement("meta");
 		meta.name = "viewport";
-		meta.content = "user-scalable=" +(isScalable ? "yes" : "no");
+		meta.content = "user-scalable=" + (isScalable ? "yes" : "no");
 		
 	}
 	

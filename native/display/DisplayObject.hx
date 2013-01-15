@@ -599,7 +599,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private function get_scale9Grid():Rectangle { return(nmeScale9Grid == null) ? null : nmeScale9Grid.clone(); }
+	private function get_scale9Grid():Rectangle { return (nmeScale9Grid == null) ? null : nmeScale9Grid.clone(); }
 	private function set_scale9Grid(inRect:Rectangle):Rectangle {
 		
 		nmeScale9Grid =(inRect == null) ? null : inRect.clone();
@@ -627,7 +627,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private function get_scrollRect():Rectangle { return(nmeScrollRect == null) ? null : nmeScrollRect.clone(); }
+	private function get_scrollRect():Rectangle { return (nmeScrollRect == null) ? null : nmeScrollRect.clone(); }
 	private function set_scrollRect(inRect:Rectangle):Rectangle {
 		
 		nmeScrollRect =(inRect == null) ? null : inRect.clone();

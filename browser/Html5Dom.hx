@@ -1997,25 +1997,25 @@ extern interface CanvasRenderingContext2D {
     public function translate(x: Float, y: Float):Void;
     public function transform(m11: Float, m12: Float, m21: Float, m22: Float, dx: Float, dy: Float):Void;
     public function setTransform(m11: Float, m12: Float, m21: Float, m22: Float, dx: Float, dy: Float):Void;
-    public var globalAlpha:                 Float; //(default 1.0)
-    public var globalCompositeOperation:    DOMString; //(default source-over)
+    public var globalAlpha:                 Float; // (default 1.0)
+    public var globalCompositeOperation:    DOMString; // (default source-over)
 
-    public var strokeStyle:                 Dynamic; //(default black)
-    public var fillStyle:                   Dynamic; //(default black)
+    public var strokeStyle:                 Dynamic; // (default black)
+    public var fillStyle:                   Dynamic; // (default black)
     public function createLinearGradient(x0: Float, y0: Float, x1: Float, y1: Float):CanvasGradient;
     public function createRadialGradient(x0: Float, y0: Float, r0: Float, x1: Float, y1: Float, r1: Float):CanvasGradient;
     public function createPattern(image: HTMLImageElement, repetition: DOMString):CanvasPattern;
 
-    public var lineWidth:                   Float; //(default 1)
+    public var lineWidth:                   Float; // (default 1)
     public var lineCap:                     DOMString; // "butt", "round", "square"(default "butt")
     public var lineJoin:                    DOMString; // "round", "bevel", "miter"(default "miter")
-    public var miterLimit:                  Float; //(default 10)
+    public var miterLimit:                  Float; // (default 10)
 
 
-    public var shadowOffsetX:               Float; //(default 0)
-    public var shadowOffsetY:               Float; //(default 0)
-    public var shadowBlur:                  Float; //(default 0)
-    public var shadowColor:                 DOMString; //(default transparent black)
+    public var shadowOffsetX:               Float; // (default 0)
+    public var shadowOffsetY:               Float; // (default 0)
+    public var shadowBlur:                  Float; // (default 0)
+    public var shadowColor:                 DOMString; // (default transparent black)
 
 
     public function clearRect(x: Float, y: Float, w: Float, h: Float):Void;
@@ -2041,7 +2041,7 @@ extern interface CanvasRenderingContext2D {
     public function drawFocusRing(element: Element, xCaret: Float, yCaret: Float, canDrawCustom: Bool):Bool;
 
 
-    public var font:                    DOMString; //(default 10px sans-serif)
+    public var font:                    DOMString; // (default 10px sans-serif)
     public var textAlign:               DOMString; // "start", "end", "left", "right", "center"(default: "start")
     public var textBaseline:            DOMString; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom"(default: "alphabetic")
     public function fillText(text: DOMString, x: Float, y: Float, maxWidth: Float):Void;

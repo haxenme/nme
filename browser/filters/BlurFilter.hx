@@ -126,8 +126,8 @@ class BlurFilter extends BitmapFilter {
 	
 	private function nmeBoxBlur(dst:CanvasPixelArray, srcW:Int, srcH:Int, p:Vector<Int>, boxW:Int, boxH:Int):Void {
 		
-		var mul1 = 1.0 /((boxW * 2 + 1) *(boxH * 2 + 1)), i = 0, tot = [], h1 = 0, l1 = 0, h2 = 0, l2 = 0;
-		var mul2 = 1.7 /((boxW * 2 + 1) *(boxH * 2 + 1));
+		var mul1 = 1.0 / ((boxW * 2 + 1) * (boxH * 2 + 1)), i = 0, tot = [], h1 = 0, l1 = 0, h2 = 0, l2 = 0;
+		var mul2 = 1.7 / ((boxW * 2 + 1) * (boxH * 2 + 1));
 		
 		for (y in 0...srcH) {
 			

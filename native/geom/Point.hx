@@ -49,7 +49,7 @@ class Point {
 	
 	public static function interpolate(pt1:Point, pt2:Point, f:Float):Point {
 		
-		return new Point(pt2.x + f *(pt1.x - pt2.x), pt2.y + f *(pt1.y - pt2.y));
+		return new Point(pt2.x + f * (pt1.x - pt2.x), pt2.y + f * (pt1.y - pt2.y));
 		
 	}
 	

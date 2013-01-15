@@ -135,7 +135,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	public inline function readBoolean():Bool {
 		
-		return(this.readByte() != 0);
+		return (this.readByte() != 0);
 		
 	}
 	

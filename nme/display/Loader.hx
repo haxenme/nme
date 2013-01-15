@@ -228,7 +228,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * </ul>
 	 *
 	 * <p>Also, for any multipart Content-Type, the syntax must be valid
-	 *(according to the RFC2046 standard). If the syntax appears to be invalid,
+	 * (according to the RFC2046 standard). If the syntax appears to be invalid,
 	 * the POST operation is subject to the security rules applied to
 	 * uploads.</p>
 	 *
@@ -440,7 +440,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * </ul>
 	 *
 	 * <p>Also, for any multipart Content-Type, the syntax must be valid
-	 *(according to the RFC2046 standard). If the syntax appears to be invalid,
+	 * (according to the RFC2046 standard). If the syntax appears to be invalid,
 	 * the POST operation is subject to the security rules applied to
 	 * uploads.</p>
 	 *

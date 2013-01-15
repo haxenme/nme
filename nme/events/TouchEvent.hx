@@ -33,14 +33,14 @@ package nme.events;
 
 	/**
 	 * Indicates whether the Alt key is active(<code>true</code>) or inactive
-	 *(<code>false</code>). Supported for Windows and Linux operating systems
+	 * (<code>false</code>). Supported for Windows and Linux operating systems
 	 * only.
 	 */
 	var altKey : Bool;
 
 	/**
 	 * On Windows or Linux, indicates whether the Ctrl key is active
-	 *(<code>true</code>) or inactive(<code>false</code>). On Macintosh,
+	 * (<code>true</code>) or inactive(<code>false</code>). On Macintosh,
 	 * indicates whether either the Control key or the Command key is activated.
 	 */
 	var ctrlKey : Bool;
@@ -101,7 +101,7 @@ package nme.events;
 
 	/**
 	 * Indicates whether the Shift key is active(<code>true</code>) or inactive
-	 *(<code>false</code>).
+	 * (<code>false</code>).
 	 */
 	var shiftKey : Bool;
 

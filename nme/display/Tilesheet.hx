@@ -140,7 +140,7 @@ class Tilesheet
 	public static inline var TILE_ALPHA = 0x0008;
 	
 	// Will ignore scale and rotation....
-	//(not supported right now)
+	// (not supported right now)
 	public static inline var TILE_TRANS_2x2 = 0x0010;
 	
 	
@@ -379,14 +379,14 @@ class Tilesheet
 					var sa = Math.sin(rotation);
 					var xc = kx * ca, xs = kx * sa, yc = ky * ca, ys = ky * sa;
 					var axc = akx * ca, axs = akx * sa, ayc = aky * ca, ays = aky * sa;
-					vertices[offset8] = x -(xc + ys);
-					vertices[offset8 + 1] = y -(-xs + yc);
+					vertices[offset8] = x - (xc + ys);
+					vertices[offset8 + 1] = y - (-xs + yc);
 					vertices[offset8 + 2] = x + axc - ys;
-					vertices[offset8 + 3] = y -(axs + yc);
-					vertices[offset8 + 4] = x -(xc - ays);
+					vertices[offset8 + 3] = y - (axs + yc);
+					vertices[offset8 + 4] = x - (xc - ays);
 					vertices[offset8 + 5] = y + xs + ayc;
 					vertices[offset8 + 6] = x + axc + ays;
-					vertices[offset8 + 7] = y +(-axs + ayc);
+					vertices[offset8 + 7] = y + (-axs + ayc);
 				}
 				else 
 				{

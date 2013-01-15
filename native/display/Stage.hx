@@ -445,7 +445,7 @@ class Stage extends DisplayObjectContainer {
 		if (obj != null)
 			obj.nmeGetInteractiveObjectStack(stack);
 		
-		if (stack.length > 0 &&(inEvent.value == 1 || inEvent.value == 2)) {
+		if (stack.length > 0 && (inEvent.value == 1 || inEvent.value == 2)) {
 			
 			var obj = stack[0];
 			var evt = new FocusEvent(inEvent.value == 1 ? FocusEvent.MOUSE_FOCUS_CHANGE : FocusEvent.KEY_FOCUS_CHANGE, true, true, nmeFocusOverObjects.length == 0 ? null : nmeFocusOverObjects[0], inEvent.flags > 0, inEvent.code);
@@ -806,7 +806,7 @@ class Stage extends DisplayObjectContainer {
 		if (next_wake > 0.001 && nme.media.SoundChannel.nmeDynamicSoundCount > 0)
 			next_wake = 0.001;
 		
-		if (next_wake > 0.02 &&(nme.media.SoundChannel.nmeCompletePending() || nme.net.URLLoader.nmeLoadPending())) {
+		if (next_wake > 0.02 && (nme.media.SoundChannel.nmeCompletePending() || nme.net.URLLoader.nmeLoadPending())) {
 			
 			next_wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
 			

@@ -193,24 +193,24 @@ class Rectangle {
 		var ty0 = m.b * x + m.d * y;
 		var ty1 = tx0;
 
-		var tx = m.a *(x + width) + m.c * y;
-		var ty = m.b *(x + width) + m.d * y;
+		var tx = m.a * (x + width) + m.c * y;
+		var ty = m.b * (x + width) + m.d * y;
 		
 		if (tx < tx0) tx0 = tx;
 		if (ty < ty0) ty0 = ty;
 		if (tx > tx1) tx1 = tx;
 		if (ty > ty1) ty1 = ty;
 		
-		tx = m.a *(x + width) + m.c *(y + height);
-		ty = m.b *(x + width) + m.d *(y + height);
+		tx = m.a * (x + width) + m.c * (y + height);
+		ty = m.b * (x + width) + m.d * (y + height);
 		
 		if (tx < tx0) tx0 = tx;
 		if (ty < ty0) ty0 = ty;
 		if (tx > tx1) tx1 = tx;
 		if (ty > ty1) ty1 = ty;
 
-		tx = m.a * x + m.c *(y + height);
-		ty = m.b * x + m.d *(y + height);
+		tx = m.a * x + m.c * (y + height);
+		ty = m.b * x + m.d * (y + height);
 		
 		if (tx < tx0) tx0 = tx;
 		if (ty < ty0) ty0 = ty;

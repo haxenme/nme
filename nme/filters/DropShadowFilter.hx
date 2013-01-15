@@ -82,7 +82,7 @@ package nme.filters;
 
 	/**
 	 * The offset distance for the shadow, in pixels. The default value is 4.0
-	 *(floating point).
+	 * (floating point).
 	 */
 	var distance : Float;
 

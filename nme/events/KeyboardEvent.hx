@@ -19,7 +19,7 @@ extern class KeyboardEvent extends Event {
 
 	/**
 	 * Indicates whether the Alt key is active(<code>true</code>) or inactive
-	 *(<code>false</code>) on Windows; indicates whether the Option key is
+	 * (<code>false</code>) on Windows; indicates whether the Option key is
 	 * active on Mac OS.
 	 */
 	var altKey : Bool;
@@ -37,7 +37,7 @@ extern class KeyboardEvent extends Event {
 
 	/**
 	 * On Windows and Linux, indicates whether the Ctrl key is active
-	 *(<code>true</code>) or inactive(<code>false</code>); On Mac OS, indicates
+	 * (<code>true</code>) or inactive(<code>false</code>); On Mac OS, indicates
 	 * whether either the Ctrl key or the Command key is active.
 	 */
 	var ctrlKey : Bool;
@@ -57,8 +57,8 @@ extern class KeyboardEvent extends Event {
 	 * the value of this property: <code>KeyLocation.LEFT</code> for the left and
 	 * <code>KeyLocation.RIGHT</code> for the right. Another example is
 	 * differentiating between number keys pressed on the standard keyboard
-	 *(<code>KeyLocation.STANDARD</code>) versus the numeric keypad
-	 *(<code>KeyLocation.NUM_PAD</code>).
+	 * (<code>KeyLocation.STANDARD</code>) versus the numeric keypad
+	 * (<code>KeyLocation.NUM_PAD</code>).
 	 */
 	//var keyLocation : nme.ui.KeyLocation;
 

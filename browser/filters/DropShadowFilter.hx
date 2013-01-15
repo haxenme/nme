@@ -57,7 +57,7 @@ class DropShadowFilter extends BitmapFilter {
 			var distanceY = distance * Math.cos(2 * Math.PI * angle / DEGREES_FULL_RADIUS);
 			var blurRadius = Math.max(blurX, blurY); //if (distanceY == 0) blurX;
 			//else if (distanceX == 0) blurY;
-			//else(blurX *(distanceX/distanceY)/(distanceX+distanceY) + blurY *(distanceY/distanceX)/(distanceX+distanceY))/2;
+			//else(blurX * (distanceX/distanceY)/ (distanceX+distanceY) + blurY * (distanceY/distanceX)/ (distanceX+distanceY))/2;
 			
 			var context:CanvasRenderingContext2D = surface.getContext("2d");
 			context.shadowOffsetX = distanceX;

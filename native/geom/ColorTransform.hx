@@ -48,7 +48,7 @@ class ColorTransform {
 	
 	private function get_color():Int {
 		
-		return((Std.int(redOffset) << 16) |(Std.int(greenOffset) << 8) | Std.int(blueOffset));
+		return ((Std.int(redOffset) << 16) |(Std.int(greenOffset) << 8) | Std.int(blueOffset));
 		
 	}
 	

@@ -111,9 +111,9 @@ extern class URLLoader extends nme.events.EventDispatcher {
 
 	/**
 	 * Controls whether the downloaded data is received as text
-	 *(<code>URLLoaderDataFormat.TEXT</code>), raw binary data
-	 *(<code>URLLoaderDataFormat.BINARY</code>), or URL-encoded variables
-	 *(<code>URLLoaderDataFormat.VARIABLES</code>).
+	 * (<code>URLLoaderDataFormat.TEXT</code>), raw binary data
+	 * (<code>URLLoaderDataFormat.BINARY</code>), or URL-encoded variables
+	 * (<code>URLLoaderDataFormat.VARIABLES</code>).
 	 *
 	 * <p>If the value of the <code>dataFormat</code> property is
 	 * <code>URLLoaderDataFormat.TEXT</code>, the received data is a string
@@ -191,7 +191,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 * </ul>
 	 *
 	 * <p>Also, for any multipart Content-Type, the syntax must be valid
-	 *(according to the RFC2046 standards). If the syntax appears to be invalid,
+	 * (according to the RFC2046 standards). If the syntax appears to be invalid,
 	 * the POST operation is subject to the security rules applied to
 	 * uploads.</p>
 	 *

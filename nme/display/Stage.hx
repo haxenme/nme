@@ -172,9 +172,9 @@ extern class Stage extends DisplayObjectContainer {
 	 * because all SWF movies are considered documents with implicit sRGB
 	 * profiles. Use the <code>Stage.colorCorrectionSupport</code> property to
 	 * tell the Flash runtime to correct colors when displaying the SWF file
-	 *(document) to the display color space. Flash runtimes only compensates for
+	 * (document) to the display color space. Flash runtimes only compensates for
 	 * differences between monitors, not for differences between input devices
-	 *(camera/scanner/etc.). </p>
+	 * (camera/scanner/etc.). </p>
 	 *
 	 * <p>The three possible values are strings with corresponding constants in
 	 * the nme.display.ColorCorrection class:</p>
@@ -191,7 +191,7 @@ extern class Stage extends DisplayObjectContainer {
 	/**
 	 * Specifies whether the Flash runtime is running on an operating system that
 	 * supports color correction and whether the color profile of the main
-	 *(primary) monitor can be read and understood by the Flash runtime. This
+	 * (primary) monitor can be read and understood by the Flash runtime. This
 	 * property also returns the default state of color correction on the host
 	 * system(usually the browser). Currently the return values can be:
 	 *
@@ -249,7 +249,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * mode. Acceptable keys include keyboard shortcuts that terminate
 	 * full-screen mode and non-printing keys such as arrows, space, Shift, and
 	 * Tab keys. Keyboard shortcuts that terminate full-screen mode are: Escape
-	 *(Windows, Linux, and Mac), Control+W(Windows), Command+W(Mac), and
+	 * (Windows, Linux, and Mac), Control+W(Windows), Command+W(Mac), and
 	 * Alt+F4.
 	 *
 	 * <p>A Flash runtime dialog box appears over the movie when users enter
@@ -258,9 +258,9 @@ extern class Stage extends DisplayObjectContainer {
 	 * </li>
 	 *   <li>Starting with Flash Player 9.0.115.0, full-screen works the same in
 	 * windowless mode as it does in window mode. If you set the Window Mode
-	 *(<code>wmode</code> in the HTML) to Opaque Windowless
-	 *(<code>opaque</code>) or Transparent Windowless
-	 *(<code>transparent</code>), full-screen can be initiated, but the
+	 * (<code>wmode</code> in the HTML) to Opaque Windowless
+	 * (<code>opaque</code>) or Transparent Windowless
+	 * (<code>transparent</code>), full-screen can be initiated, but the
 	 * full-screen window will always be opaque.</li>
 	 * </ul>
 	 *
@@ -314,13 +314,13 @@ extern class Stage extends DisplayObjectContainer {
 	 * <p><b>Note:</b> An application might not be able to follow high frame rate
 	 * settings, either because the target platform is not fast enough or the
 	 * player is synchronized to the vertical blank timing of the display device
-	 *(usually 60 Hz on LCD devices). In some cases, a target platform might
+	 * (usually 60 Hz on LCD devices). In some cases, a target platform might
 	 * also choose to lower the maximum frame rate if it anticipates high CPU
 	 * usage.</p>
 	 *
 	 * <p>For content running in Adobe AIR, setting the <code>frameRate</code>
 	 * property of one Stage object changes the frame rate for all Stage objects
-	 *(used by different NativeWindow objects). </p>
+	 * (used by different NativeWindow objects). </p>
 	 * 
 	 * @throws SecurityError Calling the <code>frameRate</code> property of a
 	 *                       Stage object throws an exception for any caller that

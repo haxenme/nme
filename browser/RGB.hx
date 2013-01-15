@@ -17,7 +17,7 @@ class RGB {
 	
 	public static function Alpha(inRGBA:Int):Int {
 		
-		return(inRGBA >> 24) & 0xff;
+		return (inRGBA >> 24) & 0xff;
 		
 	}
 	
@@ -31,7 +31,7 @@ class RGB {
 	
 	public static function Green(inRGBA:Int):Int {
 		
-		return(inRGBA >> 8) & 0xff;
+		return (inRGBA >> 8) & 0xff;
 		
 	}
 	
@@ -45,21 +45,21 @@ class RGB {
 	
 	public static function Red(inRGBA:Int):Int {
 		
-		return(inRGBA >> 16) & 0xff;
+		return (inRGBA >> 16) & 0xff;
 		
 	}
 	
 	
 	public static function RGB(inR:Int, inG:Int, inB:Int):Int {
 		
-		return(inR << 16) |(inG << 8) | inB;
+		return (inR << 16) |(inG << 8) | inB;
 		
 	}
 	
 	
 	public static function RGBA(inR:Int, inG:Int, inB:Int, inA:Int = 255):Int {
 		
-		return(inA << 24) |(inR << 16) |(inG << 8) | inB;
+		return (inA << 24) |(inR << 16) |(inG << 8) | inB;
 		
 	}
 	

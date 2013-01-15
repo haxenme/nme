@@ -29,7 +29,7 @@ extern class Capabilities {
 	/**
 	 * Specifies whether access to the user's camera and microphone has been
 	 * administratively prohibited(<code>true</code>) or allowed
-	 *(<code>false</code>). The server string is <code>AVD</code>.
+	 * (<code>false</code>). The server string is <code>AVD</code>.
 	 *
 	 * <p>For content in Adobe AIR™, this property applies only to content in
 	 * security sandboxes other than the application security sandbox. Content in
@@ -61,7 +61,7 @@ extern class Capabilities {
 
 	/**
 	 * Specifies whether the system can(<code>true</code>) or cannot
-	 *(<code>false</code>) encode an audio stream, such as that coming from a
+	 * (<code>false</code>) encode an audio stream, such as that coming from a
 	 * microphone. The server string is <code>AE</code>.
 	 */
 	static var hasAudioEncoder(default,null) : Bool;
@@ -75,28 +75,28 @@ extern class Capabilities {
 
 	/**
 	 * Specifies whether the system does(<code>true</code>) or does not
-	 *(<code>false</code>) have an input method editor(IME) installed. The
+	 * (<code>false</code>) have an input method editor(IME) installed. The
 	 * server string is <code>IME</code>.
 	 */
 	static var hasIME(default,null) : Bool;
 
 	/**
 	 * Specifies whether the system does(<code>true</code>) or does not
-	 *(<code>false</code>) have an MP3 decoder. The server string is
+	 * (<code>false</code>) have an MP3 decoder. The server string is
 	 * <code>MP3</code>.
 	 */
 	static var hasMP3(default,null) : Bool;
 
 	/**
 	 * Specifies whether the system does(<code>true</code>) or does not
-	 *(<code>false</code>) support printing. The server string is
+	 * (<code>false</code>) support printing. The server string is
 	 * <code>PR</code>.
 	 */
 	static var hasPrinting(default,null) : Bool;
 
 	/**
 	 * Specifies whether the system does(<code>true</code>) or does not
-	 *(<code>false</code>) support the development of screen broadcast
+	 * (<code>false</code>) support the development of screen broadcast
 	 * applications to be run through Flash Media Server. The server string is
 	 * <code>SB</code>.
 	 */
@@ -104,7 +104,7 @@ extern class Capabilities {
 
 	/**
 	 * Specifies whether the system does(<code>true</code>) or does not
-	 *(<code>false</code>) support the playback of screen broadcast applications
+	 * (<code>false</code>) support the playback of screen broadcast applications
 	 * that are being run through Flash Media Server. The server string is
 	 * <code>SP</code>.
 	 */
@@ -112,14 +112,14 @@ extern class Capabilities {
 
 	/**
 	 * Specifies whether the system can(<code>true</code>) or cannot
-	 *(<code>false</code>) play streaming audio. The server string is
+	 * (<code>false</code>) play streaming audio. The server string is
 	 * <code>SA</code>.
 	 */
 	static var hasStreamingAudio(default,null) : Bool;
 
 	/**
 	 * Specifies whether the system can(<code>true</code>) or cannot
-	 *(<code>false</code>) play streaming video. The server string is
+	 * (<code>false</code>) play streaming video. The server string is
 	 * <code>SV</code>.
 	 */
 	static var hasStreamingVideo(default,null) : Bool;
@@ -133,15 +133,15 @@ extern class Capabilities {
 
 	/**
 	 * Specifies whether the system can(<code>true</code>) or cannot
-	 *(<code>false</code>) encode a video stream, such as that coming from a web
+	 * (<code>false</code>) encode a video stream, such as that coming from a web
 	 * camera. The server string is <code>VE</code>.
 	 */
 	static var hasVideoEncoder(default,null) : Bool;
 
 	/**
 	 * Specifies whether the system is a special debugging version
-	 *(<code>true</code>) or an officially released version
-	 *(<code>false</code>). The server string is <code>DEB</code>. This property
+	 * (<code>true</code>) or an officially released version
+	 * (<code>false</code>). The server string is <code>DEB</code>. This property
 	 * is set to <code>true</code> when running in the debug version of Flash
 	 * Player or the AIR Debug Launcher(ADL).
 	 */
@@ -162,7 +162,7 @@ extern class Capabilities {
 	 * example, <code>hu</code> specifies Hungarian.
 	 *
 	 * <p>On English systems, this property returns only the language code
-	 *(<code>en</code>), not the country code. On Microsoft Windows systems,
+	 * (<code>en</code>), not the country code. On Microsoft Windows systems,
 	 * this property returns the user interface(UI) language, which refers to
 	 * the language used for all menus, dialog boxes, error messages, and help
 	 * files. The following table lists the possible values: </p>
@@ -180,7 +180,7 @@ extern class Capabilities {
 	/**
 	 * Specifies whether read access to the user's hard disk has been
 	 * administratively prohibited(<code>true</code>) or allowed
-	 *(<code>false</code>). For content in Adobe AIR, this property applies only
+	 * (<code>false</code>). For content in Adobe AIR, this property applies only
 	 * to content in security sandboxes other than the application security
 	 * sandbox.(Content in the application security sandbox can always read from
 	 * the file system.) If this property is <code>true</code>, Flash Player

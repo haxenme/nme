@@ -21,7 +21,7 @@ extern class System {
 	 * The amount of memory(in bytes) that is allocated to Adobe<sup>®</sup>
 	 * Flash<sup>®</sup> Player or Adobe<sup>®</sup> AIR<sup>®</sup> and that
 	 * is not in use. This unused portion of allocated memory
-	 *(<code>System.totalMemory</code>) fluctuates as garbage collection takes
+	 * (<code>System.totalMemory</code>) fluctuates as garbage collection takes
 	 * place. Use this property to monitor garbage collection.
 	 */
 	//@:require(flash10_1) static var freeMemory(default,null) : Float;
@@ -165,7 +165,7 @@ extern class System {
 	 * events.
 	 *
 	 * <p><i>For the Flash Player debugger version or the AIR Debug Launcher
-	 *(ADL) only.</i></p>
+	 * (ADL) only.</i></p>
 	 * 
 	 */
 	//static function pause() : Void;
@@ -175,7 +175,7 @@ extern class System {
 	 * Resumes the application after calling <code>System.pause()</code>.
 	 *
 	 * <p><i>For the Flash Player debugger version or the AIR Debug Launcher
-	 *(ADL) only.</i></p>
+	 * (ADL) only.</i></p>
 	 * 
 	 */
 	//static function resume() : Void;

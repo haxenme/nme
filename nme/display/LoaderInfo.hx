@@ -111,7 +111,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 * <code>ActionScriptVersion.ACTIONSCRIPT2</code> or
 	 * <code>ActionScriptVersion.ACTIONSCRIPT3</code>. ActionScript 1.0 and 2.0
 	 * are both reported as <code>ActionScriptVersion.ACTIONSCRIPT2</code>
-	 *(version 2.0). This property only distinguishes ActionScript 1.0 and 2.0
+	 * (version 2.0). This property only distinguishes ActionScript 1.0 and 2.0
 	 * from ActionScript 3.0.</p>
 	 * 
 	 * @throws Error If the file is not downloaded sufficiently to retrieve the
@@ -181,7 +181,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 
 	/**
 	 * Expresses the trust relationship from content(child) to the Loader
-	 *(parent). If the child has allowed the parent access, <code>true</code>;
+	 * (parent). If the child has allowed the parent access, <code>true</code>;
 	 * otherwise, <code>false</code>. This property is set to <code>true</code>
 	 * if the child object has called the <code>allowDomain()</code> method to
 	 * grant permission to the parent domain or if a URL policy is loaded at the
@@ -328,7 +328,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 *
 	 * <p>The two sources of parameters are: the query string in the URL of the
 	 * main SWF file, and the value of the <code>FlashVars</code> HTML parameter
-	 *(this affects only the main SWF file).</p>
+	 * (this affects only the main SWF file).</p>
 	 *
 	 * <p>The <code>parameters</code> property replaces the ActionScript 1.0 and
 	 * 2.0 technique of providing SWF file parameters as properties of the main
@@ -343,7 +343,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 
 	/**
 	 * Expresses the trust relationship from Loader(parent) to the content
-	 *(child). If the parent has allowed the child access, <code>true</code>;
+	 * (child). If the parent has allowed the child access, <code>true</code>;
 	 * otherwise, <code>false</code>. This property is set to <code>true</code>
 	 * if the parent object called the <code>allowDomain()</code> method to grant
 	 * permission to the child domain or if a URL policy file is loaded at the

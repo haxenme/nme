@@ -13,7 +13,7 @@ package nme.net;
  * Adobe AIR that is in a different security sandbox, or for content running
  * in Flash<sup>®</sup> Player, using following request headers cause a
  * runtime error to be thrown, and the restricted terms are not case-sensitive
- *(for example, <code>Get</code>, <code>get</code>, and <code>GET</code> are
+ * (for example, <code>Get</code>, <code>get</code>, and <code>GET</code> are
  * each not allowed): </p>
  *
  * <p>In Flash Player and in Adobe AIR content outside of the application

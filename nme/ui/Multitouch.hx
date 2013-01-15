@@ -13,7 +13,7 @@ package nme.ui;
  * devices only have a single point of contact with an application. For
  * pointing devices with a single point of contact, user interaction events
  * can be handled as a mouse event, or using a basic set of touch events
- *(called "touch point" events). However, for pointing devices that have
+ * (called "touch point" events). However, for pointing devices that have
  * several points of contact and perform complex movement, such as the human
  * hand, Flash runtimes support an additional set of event handling API called
  * gesture events. The API for handling user interaction with these gesture
@@ -47,7 +47,7 @@ package nme.ui;
 	 * this property to manage whether or not events are dispatched as touch
 	 * events with multiple points of contact and specific events for different
 	 * gestures(such as rotation and pan), or only a single point of contact
-	 *(such as tap), or none at all(contact is handled as a mouse event). To
+	 * (such as tap), or none at all(contact is handled as a mouse event). To
 	 * set this property, use values from the nme.ui.MultitouchInputMode class.
 	 * 
 	 * @default gesture
@@ -72,7 +72,7 @@ package nme.ui;
 	 *
 	 * <p><b>Note:</b> For Mac OS 10.5.3 and later,
 	 * <code>Multitouch.supportedGestures</code> returns non-null values
-	 *(possibly indicating incorrectly that gesture events are supported) even
+	 * (possibly indicating incorrectly that gesture events are supported) even
 	 * if the current hardware does not support gesture input.</p>
 	 *
 	 * <p>Use this property to test for multi-touch gesture support. Then, use

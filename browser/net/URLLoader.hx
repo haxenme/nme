@@ -176,7 +176,7 @@ class URLLoader extends EventDispatcher {
 			if (method == "GET" && uri != null && uri != "") {
 				
 				var question = url.split("?").length <= 1;
-				xmlHttpRequest.open(method, url +(if (question) "?" else "&") + uri, true);
+				xmlHttpRequest.open(method, url + (if (question) "?" else "&") + uri, true);
 				uri = "";
 				
 			} else {

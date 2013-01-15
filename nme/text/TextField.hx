@@ -112,7 +112,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * and <code>TextFieldAutoSize.CENTER</code>.
 	 *
 	 * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.NONE</code>
-	 *(the default) no resizing occurs.</p>
+	 * (the default) no resizing occurs.</p>
 	 *
 	 * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.LEFT</code>,
 	 * the text is treated as left-justified text, meaning that the left margin
@@ -310,7 +310,7 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The number of characters in a text field. A character such as tab
-	 *(<code>\t</code>) counts as one character.
+	 * (<code>\t</code>) counts as one character.
 	 */
 	var length(default,null) : Int;
 
@@ -373,7 +373,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * of the <code>restrict</code> property is a string of characters, you can
 	 * enter only characters in the string into the text field. The string is
 	 * scanned from left to right. You can specify a range by using the hyphen
-	 *(-) character. Only user interaction is restricted; a script can put any
+	 * (-) character. Only user interaction is restricted; a script can put any
 	 * text into the text field. <ph outputclass="flashonly">This property does
 	 * not synchronize with the Embed font options in the Property inspector.
 	 *
@@ -615,7 +615,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * Appends the string specified by the <code>newText</code> parameter to the
 	 * end of the text of the text field. This method is more efficient than an
 	 * addition assignment(<code>+=</code>) on a <code>text</code> property
-	 *(such as <code>someTextField.text += moreText</code>), particularly for a
+	 * (such as <code>someTextField.text += moreText</code>), particularly for a
 	 * text field that contains a significant amount of content.
 	 * 
 	 * @param newText The string to append to the existing text.

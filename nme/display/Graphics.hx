@@ -143,7 +143,7 @@ package nme.display;
 
 	/**
 	 * Specifies a shader fill used by subsequent calls to other Graphics methods
-	 *(such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
+	 * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
 	 * object. The fill remains in effect until you call the
 	 * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
 	 * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
@@ -213,7 +213,7 @@ package nme.display;
 	/**
 	 * Draws a curve using the current line style from the current drawing
 	 * position to(anchorX, anchorY) and using the control point that
-	 *(<code>controlX</code>, <code>controlY</code>) specifies. The current
+	 * (<code>controlX</code>, <code>controlY</code>) specifies. The current
 	 * drawing position is then set to(<code>anchorX</code>,
 	 * <code>anchorY</code>). If the movie clip in which you are drawing contains
 	 * content created with the Flash drawing tools, calls to the
@@ -549,7 +549,7 @@ package nme.display;
 	 * style back to <code>undefined</code>.</p>
 	 *
 	 * <p><b>Note: </b>Flash Lite 4 supports only the first three parameters
-	 *(<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
+	 * (<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
 	 * 
 	 * @param thickness    An integer that indicates the thickness of the line in
 	 *                     points; valid values are 0-255. If a number is not

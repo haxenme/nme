@@ -246,7 +246,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 				var extY = gfx.nmeExtent.y;
 				var local = globalToLocal(new Point(x, y));
 				
-				if (local.x - extX < 0 || local.y - extY < 0 ||(local.x - extX) * scaleX > width ||(local.y - extY) * scaleY > height) {
+				if (local.x - extX < 0 || local.y - extY < 0 || (local.x - extX) * scaleX > width || (local.y - extY) * scaleY > height) {
 					
 					return false;
 					
@@ -531,7 +531,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			var extY = gfx.nmeExtent.y;
 			var local = globalToLocal(point);
 			
-			if (local.x - extX < 0 || local.y - extY < 0 ||(local.x - extX) * scaleX > width ||(local.y - extY) * scaleY > height) return null;
+			if (local.x - extX < 0 || local.y - extY < 0 || (local.x - extX) * scaleX > width || (local.y - extY) * scaleY > height) return null;
 			
 			switch (stage.nmePointInPathMode) {
 				
@@ -787,7 +787,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	
 	private inline function nmeTestFlag(mask:Int):Bool {
 		
-		return(_nmeRenderFlags & mask) != 0;
+		return (_nmeRenderFlags & mask) != 0;
 		
 	}
 	

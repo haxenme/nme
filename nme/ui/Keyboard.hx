@@ -18,7 +18,7 @@ extern class Keyboard {
 
 	/**
 	 * Constant associated with the key code value for the Alternate(Option) key
-	 *(18).
+	 * (18).
 	 */
 	@:require(flash10_1) static var ALTERNATE : Int;
 
@@ -1425,7 +1425,7 @@ extern class Keyboard {
 
 	/**
 	 * Specifies whether the Num Lock key is activated(<code>true</code>) or not
-	 *(<code>false</code>).
+	 * (<code>false</code>).
 	 */
 	//static var numLock(default,null) : Bool;
 

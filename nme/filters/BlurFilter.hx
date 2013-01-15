@@ -38,7 +38,7 @@ package nme.filters;
  *
  * <p>This filter supports Stage scaling. However, it does not support general
  * scaling, rotation, and skewing. If the object itself is scaled
- *(<code>scaleX</code> and <code>scaleY</code> are not set to 100%), the
+ * (<code>scaleX</code> and <code>scaleY</code> are not set to 100%), the
  * filter effect is not scaled. It is scaled only when the user zooms in on
  * the Stage.</p>
  *

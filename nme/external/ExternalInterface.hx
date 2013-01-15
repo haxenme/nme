@@ -164,7 +164,7 @@ extern class ExternalInterface {
 	 * <code>null</code>; otherwise it returns the value provided by the
 	 * function. Recursion is <i>not</i> permitted on Opera or Netscape browsers;
 	 * on these browsers a recursive call produces a <code>null</code> response.
-	 *(Recursion is supported on Internet Explorer and Firefox browsers.)
+	 * (Recursion is supported on Internet Explorer and Firefox browsers.)
 	 *
 	 * <p>If the container is an HTML page, this method invokes a JavaScript
 	 * function in a <code>script</code> element.</p>

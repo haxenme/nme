@@ -110,7 +110,7 @@ class EventDispatcher implements IEventDispatcher {
 	
 	private function existList(type:String):Bool { 
 		
-		untyped return(nmeEventMap != null && nmeEventMap[type] != __js__("undefined"));
+		untyped return (nmeEventMap != null && nmeEventMap[type] != __js__("undefined"));
 		
 	}
 	
