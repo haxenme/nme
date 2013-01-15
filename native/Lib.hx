@@ -48,19 +48,19 @@ class Lib {
 	static public var file(default,null):String;
 	
 	
-	public static function close () {
+	public static function close() {
 		
-		var close = Loader.load ("nme_close", 0);
-		close ();
+		var close = Loader.load("nme_close", 0);
+		close();
 		
 	}
 	
 	
-	public static function create (inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData) {
+	public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData) {
 		
 		if (sIsInit) {
 			
-			throw ("nme.Lib.create called multiple times. This function is automatically called by the project code.");
+			throw("nme.Lib.create called multiple times. This function is automatically called by the project code.");
 			
 		}
 		
@@ -68,24 +68,24 @@ class Lib {
 		initWidth = inWidth;
 		initHeight = inHeight;
 		
-		var create_main_frame = Loader.load ("nme_create_main_frame", -1);
+		var create_main_frame = Loader.load("nme_create_main_frame", -1);
 		
-		create_main_frame (function (inFrameHandle:Dynamic) {
+		create_main_frame(function(inFrameHandle:Dynamic) {
 			
 			#if android try { #end
 			nmeMainFrame = inFrameHandle;
-			var stage_handle = nme_get_frame_stage (nmeMainFrame);
+			var stage_handle = nme_get_frame_stage(nmeMainFrame);
 			
-			Lib.nmeStage = new Stage (stage_handle, inWidth, inHeight);
+			Lib.nmeStage = new Stage(stage_handle, inWidth, inHeight);
 			Lib.nmeStage.frameRate = inFrameRate;
 			Lib.nmeStage.opaqueBackground = inColour;
 			Lib.nmeStage.onQuit = close;
 			
 			if (nmeCurrent != null) // Already created...
-				Lib.nmeStage.addChild (nmeCurrent);
+				Lib.nmeStage.addChild(nmeCurrent);
 			
-			inOnLoaded ();
-			#if android } catch (e:Dynamic) { trace("ERROR: " +  e); } #end
+			inOnLoaded();
+			#if android } catch(e:Dynamic) { trace("ERROR: " +  e); } #end
 			
 		},
 		inWidth, inHeight, inFlags, inTitle, inIcon == null ? null : inIcon.nmeHandle);
@@ -93,12 +93,12 @@ class Lib {
 	}
 	
 	
-	public static function createManagedStage (inWidth:Int, inHeight:Int, inFlags:Int = 0) {
+	public static function createManagedStage(inWidth:Int, inHeight:Int, inFlags:Int = 0) {
 		
 		initWidth = inWidth;
 		initHeight = inHeight;
 		
-		var result = new ManagedStage (inWidth, inHeight, inFlags);
+		var result = new ManagedStage(inWidth, inHeight, inFlags);
 		nmeStage = result;
 		
 		return result;
@@ -106,7 +106,7 @@ class Lib {
 	}
    
    
-	public static function exit () {
+	public static function exit() {
 		
 		var quit = stage.onQuit;
 		
@@ -115,72 +115,72 @@ class Lib {
 			#if android
 			if (quit == close) {
 				
-				Sys.exit (0);
+				Sys.exit(0);
 				
 			}
 			#end
 			
-			quit ();
+			quit();
 			
 		}
 		
 	}
 	
 	
-	public static function forceClose () {
+	public static function forceClose() {
 		
 		// Terminates the process straight away, bypassing graceful shutdown
-		var terminate = Loader.load ("nme_terminate", 0);
-		terminate ();
+		var terminate = Loader.load("nme_terminate", 0);
+		terminate();
 		
 	}
 	
 	
-	static public function getTimer ():Int {
+	static public function getTimer():Int {
 		
 		// Be careful not to blow precision, since storing ms since 1970 can overflow...
-		return Std.int (Timer.stamp () * 1000.0);
+		return Std.int(Timer.stamp() * 1000.0);
 		
 	}
 	
 	
-	public static function getURL (url:URLRequest, ?target:String):Void {
+	public static function getURL(url:URLRequest, ?target:String):Void {
 		
-		nme_get_url (url.url);
+		nme_get_url(url.url);
 		
 	}
    
    
-   /** @private */ public static function nmeSetCurrentStage (inStage:Stage) {
+   /** @private */ public static function nmeSetCurrentStage(inStage:Stage) {
 	   
 		nmeStage = inStage;
 		
 	}
 	
 	
-	public static function pause () {
+	public static function pause() {
 		
-		nme_pause_animation ();
+		nme_pause_animation();
 		
 	}
 	
 	
-	public static function postUICallback (inCallback:Void->Void) {
+	public static function postUICallback(inCallback:Void->Void) {
 		
 		#if android
-		nme_post_ui_callback (inCallback);
+		nme_post_ui_callback(inCallback);
 		#else
 		// May still be worth posting event to come back with the next UI event loop...
-		//  (or use timer?)
-		inCallback ();
+		// (or use timer?)
+		inCallback();
 		#end
 		
 	}
 	
 	
-	public static function resume () {
+	public static function resume() {
 		
-		nme_resume_animation ();
+		nme_resume_animation();
 		
 	}
    
@@ -193,23 +193,23 @@ class Lib {
 	//private static var nme_set_asset_base = Loader.load("nme_set_asset_base", 1);
    
    
-	public static function setIcon (path:String) {
+	public static function setIcon(path:String) {
 		
 		//Useful only on SDL platforms. Sets the title bar's icon, based on the path given.
-		var set_icon = Loader.load ("nme_set_icon", 1);
-		set_icon (path);
+		var set_icon = Loader.load("nme_set_icon", 1);
+		set_icon(path);
 		
 	}
 	
 	
-	public static function setPackage (inCompany:String, inFile:String, inPack:String, inVersion:String) {
+	public static function setPackage(inCompany:String, inFile:String, inPack:String, inVersion:String) {
 		
 		company = inCompany;
 		file = inFile;
 		packageName = inPack;
 		version = inVersion;
 		
-		nme_set_package (inCompany, inFile, inPack, inVersion);
+		nme_set_package(inCompany, inFile, inPack, inVersion);
 		
 	}
 	
@@ -221,14 +221,14 @@ class Lib {
 	
 	
 	
-	static function get_current ():MovieClip {
+	static function get_current():MovieClip {
 		
 		if (nmeCurrent == null) {
 			
-			nmeCurrent = new MovieClip ();
+			nmeCurrent = new MovieClip();
 			
 			if (nmeStage != null)
-				nmeStage.addChild (nmeCurrent);
+				nmeStage.addChild(nmeCurrent);
 			
 		}
 		
@@ -237,10 +237,10 @@ class Lib {
 	}
 	
 	
-	private static function get_stage () {
+	private static function get_stage() {
 		
 		if (nmeStage == null)
-			throw ("Error : stage can't be accessed until init is called");
+			throw("Error : stage can't be accessed until init is called");
 		
 		return nmeStage;
 		
@@ -255,13 +255,13 @@ class Lib {
 	
 	
 	#if android
-	private static var nme_post_ui_callback = Loader.load ("nme_post_ui_callback", 1);
+	private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
 	#end
-	private static var nme_set_package = Loader.load ("nme_set_package", 4);
-	private static var nme_get_frame_stage = Loader.load ("nme_get_frame_stage", 1);
-	private static var nme_get_url = Loader.load ("nme_get_url", 1);
-	private static var nme_pause_animation = Loader.load ("nme_pause_animation", 0);
-	private static var nme_resume_animation = Loader.load ("nme_resume_animation", 0);
+	private static var nme_set_package = Loader.load("nme_set_package", 4);
+	private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+	private static var nme_get_url = Loader.load("nme_get_url", 1);
+	private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
+	private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
 	
 	
 }

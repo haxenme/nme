@@ -18,7 +18,7 @@ package nme.events;
  *
  * <p>An uncaught error also causes an error dialog box displaying the error
  * event to appear when content is running in the debugger version of Flash
- * Player or the AIR Debug Launcher (ADL) application.</p>
+ * Player or the AIR Debug Launcher(ADL) application.</p>
  * 
  */
 extern class ErrorEvent extends TextEvent {
@@ -48,7 +48,7 @@ extern class ErrorEvent extends TextEvent {
 	 *                   listeners can access this information through the
 	 *                   <code>text</code> property.
 	 * @param id         A reference number to associate with the specific error
-	 *                   (supported in Adobe AIR only).
+	 *                  (supported in Adobe AIR only).
 	 */
 	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
 

@@ -20,9 +20,9 @@ class DisplacementMapFilter extends BitmapFilter {
 	public var scaleY:Float;
 	
 	
-	public function new (mapBitmap:BitmapData = null, mapPoint:Point = null, componentX:Int = 0, componentY:Int = 0, scaleX:Float = 0, scaleY:Float = 0, mode:DisplacementMapFilterMode = null, color:Int = 0, alpha:Float = 0) {
+	public function new(mapBitmap:BitmapData = null, mapPoint:Point = null, componentX:Int = 0, componentY:Int = 0, scaleX:Float = 0, scaleY:Float = 0, mode:DisplacementMapFilterMode = null, color:Int = 0, alpha:Float = 0) {
 		
-		super ("DisplacementMapFilter");
+		super("DisplacementMapFilter");
 		
 		this.mapBitmap = mapBitmap;
 		this.mapPoint = mapPoint;

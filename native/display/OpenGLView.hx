@@ -16,9 +16,9 @@ class OpenGLView extends DirectRenderer {
 	//var context:GLInstance;
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ("OpenGLView");
+		super("OpenGLView");
 		
 	}
 	

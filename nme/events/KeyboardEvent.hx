@@ -18,7 +18,7 @@ package nme.events;
 extern class KeyboardEvent extends Event {
 
 	/**
-	 * Indicates whether the Alt key is active (<code>true</code>) or inactive
+	 * Indicates whether the Alt key is active(<code>true</code>) or inactive
 	 * (<code>false</code>) on Windows; indicates whether the Option key is
 	 * active on Mac OS.
 	 */
@@ -30,14 +30,14 @@ extern class KeyboardEvent extends Event {
 	 * press Shift+3, <code>charCode</code> is # on a Japanese keyboard, just as
 	 * it is on an English keyboard.
 	 *
-	 * <p><b>Note: </b>When an input method editor (IME) is running,
+	 * <p><b>Note: </b>When an input method editor(IME) is running,
 	 * <code>charCode</code> does not report accurate character codes.</p>
 	 */
 	var charCode : Int;
 
 	/**
 	 * On Windows and Linux, indicates whether the Ctrl key is active
-	 * (<code>true</code>) or inactive (<code>false</code>); On Mac OS, indicates
+	 * (<code>true</code>) or inactive(<code>false</code>); On Mac OS, indicates
 	 * whether either the Ctrl key or the Command key is active.
 	 */
 	var ctrlKey : Bool;
@@ -45,7 +45,7 @@ extern class KeyboardEvent extends Event {
 	/**
 	 * The key code value of the key pressed or released.
 	 *
-	 * <p><b>Note: </b>When an input method editor (IME) is running,
+	 * <p><b>Note: </b>When an input method editor(IME) is running,
 	 * <code>keyCode</code> does not report accurate key codes.</p>
 	 */
 	var keyCode : Int;
@@ -63,8 +63,8 @@ extern class KeyboardEvent extends Event {
 	//var keyLocation : nme.ui.KeyLocation;
 
 	/**
-	 * Indicates whether the Shift key modifier is active (<code>true</code>) or
-	 * inactive (<code>false</code>).
+	 * Indicates whether the Shift key modifier is active(<code>true</code>) or
+	 * inactive(<code>false</code>).
 	 */
 	var shiftKey : Bool;
 
@@ -91,7 +91,7 @@ extern class KeyboardEvent extends Event {
 	 *                         activated. On Mac, indicates whether either the
 	 *                         Ctrl key or the Command key is activated.
 	 * @param altKeyValue      Indicates whether the Alt key modifier is
-	 *                         activated (Windows only).
+	 *                         activated(Windows only).
 	 * @param shiftKeyValue    Indicates whether the Shift key modifier is
 	 *                         activated.
 	 */

@@ -46,7 +46,7 @@ package nme.media;
  * </ul>
  *
  * <p>However, in Adobe AIR, content in the <code>application</code> security
- * sandbox (content installed with the AIR application) are not restricted by
+ * sandbox(content installed with the AIR application) are not restricted by
  * these security limitations.</p>
  *
  * <p>For more information related to security, see the Flash Player Developer
@@ -111,7 +111,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * </ul>
 	 *
 	 * <p>However, in Adobe AIR, content in the <code>application</code> security
-	 * sandbox (content installed with the AIR application) are not restricted by
+	 * sandbox(content installed with the AIR application) are not restricted by
 	 * these security limitations.</p>
 	 *
 	 * <p>For more information related to security, see the Flash Player
@@ -213,7 +213,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * 
 	 * @param stream  The URL that points to an external MP3 file.
 	 * @param context An optional SoundLoader context object, which can define
-	 *                the buffer time (the minimum number of milliseconds of MP3
+	 *                the buffer time(the minimum number of milliseconds of MP3
 	 *                data to hold in the Sound object's buffer) and can specify
 	 *                whether the application should check for a cross-domain
 	 *                policy file prior to loading the sound.
@@ -283,8 +283,8 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * content.</li>
 	 * </ul>
 	 *
-	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type (for
-	 * example "multipart/form-data") that contains an upload (indicated by a
+	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type(for
+	 * example "multipart/form-data") that contains an upload(indicated by a
 	 * "filename" parameter in a "content-disposition" header within the POST
 	 * body), the POST operation is subject to the security rules applied to
 	 * uploads:</p>
@@ -292,7 +292,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * <ul>
 	 *   <li>The POST operation must be performed in response to a user-initiated
 	 * action, such as a mouse click or key press.</li>
-	 *   <li>If the POST operation is cross-domain (the POST target is not on the
+	 *   <li>If the POST operation is cross-domain(the POST target is not on the
 	 * same server as the SWF file that is sending the POST request), the target
 	 * server must provide a URL policy file that permits cross-domain
 	 * access.</li>
@@ -314,7 +314,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	 * 
 	 * @param stream  A URL that points to an external MP3 file.
 	 * @param context An optional SoundLoader context object, which can define
-	 *                the buffer time (the minimum number of milliseconds of MP3
+	 *                the buffer time(the minimum number of milliseconds of MP3
 	 *                data to hold in the Sound object's buffer) and can specify
 	 *                whether the application should check for a cross-domain
 	 *                policy file prior to loading the sound.
@@ -324,7 +324,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	 *                       You should only set the <code>digest</code> property
 	 *                       of a URLRequest object when calling the
 	 *                       <code>URLLoader.load()</code> method when loading a
-	 *                       SWZ file (an Adobe platform component).
+	 *                       SWZ file(an Adobe platform component).
 	 * @throws SecurityError Local untrusted files may not communicate with the
 	 *                       Internet. You can work around this by reclassifying
 	 *                       this file as local-with-networking or trusted.
@@ -340,7 +340,7 @@ extern class Sound extends nme.events.EventDispatcher {
 	/**
 	 * Generates a new SoundChannel object to play back the sound. This method
 	 * returns a SoundChannel object, which you access to stop the sound and to
-	 * monitor volume. (To control the volume, panning, and balance, access the
+	 * monitor volume.(To control the volume, panning, and balance, access the
 	 * SoundTransform object assigned to the sound channel.)
 	 * 
 	 * @param startTime    The initial position in milliseconds at which playback

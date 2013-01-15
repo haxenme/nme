@@ -8,12 +8,12 @@ import native.Loader;
 class Font {
 	
 	
-	public var fontName (default, null):String;
-	public var fontStyle (default, null):FontStyle;
-	public var fontType (default, null):FontType;
+	public var fontName(default, null):String;
+	public var fontStyle(default, null):FontStyle;
+	public var fontType(default, null):FontType;
 	
 	
-	public function new (inFilename:String):Void {
+	public function new(inFilename:String):Void {
 		
 		fontName = inFilename;
 		//fontStyle = FontStyle.REGULAR;
@@ -22,10 +22,10 @@ class Font {
 	}
 	
 	
-	public static function load (inFilename:String):NativeFontData {
+	public static function load(inFilename:String):NativeFontData {
 		
 		#if !iphone
-		var result = freetype_import_font (inFilename, null, 1024 * 20);
+		var result = freetype_import_font(inFilename, null, 1024 * 20);
 		return result;
 		#else
 		return null;
@@ -42,7 +42,7 @@ class Font {
 	
 	
 	#if !iphone
-	private static var freetype_import_font = Loader.load ("freetype_import_font", 3);
+	private static var freetype_import_font = Loader.load("freetype_import_font", 3);
 	#end
 	
 	

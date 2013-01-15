@@ -6,7 +6,7 @@ package nme.geom;
  * The Transform class provides access to color adjustment properties and two-
  * or three-dimensional transformation objects that can be applied to a
  * display object. During the transformation, the color or the orientation and
- * position of a display object is adjusted (offset) from the current values
+ * position of a display object is adjusted(offset) from the current values
  * or coordinates to new values or coordinates. The Transform class also
  * collects data about color and two-dimensional matrix transformations that
  * are applied to a display object and all of its parent objects. You can
@@ -92,10 +92,10 @@ extern class Transform {
 	 * A Matrix object containing values that alter the scaling, rotation, and
 	 * translation of the display object.
 	 *
-	 * <p>If the <code>matrix</code> property is set to a value (not
+	 * <p>If the <code>matrix</code> property is set to a value(not
 	 * <code>null</code>), the <code>matrix3D</code> property is
 	 * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	 * value (not <code>null</code>), the <code>matrix</code> property is
+	 * value(not <code>null</code>), the <code>matrix</code> property is
 	 * <code>null</code>.</p>
 	 * 
 	 * @throws TypeError The matrix is null when being set
@@ -108,10 +108,10 @@ extern class Transform {
 	 * determines the display object's position and orientation. A Matrix3D
 	 * object can also perform perspective projection.
 	 *
-	 * <p>If the <code>matrix</code> property is set to a value (not
+	 * <p>If the <code>matrix</code> property is set to a value(not
 	 * <code>null</code>), the <code>matrix3D</code> property is
 	 * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	 * value (not <code>null</code>), the <code>matrix</code> property is
+	 * value(not <code>null</code>), the <code>matrix</code> property is
 	 * <code>null</code>.</p>
 	 */
 	@:require(flash10) var matrix3D : Matrix3D;
@@ -122,7 +122,7 @@ extern class Transform {
 	 * perspective transformation of the stage or to assign a perspective
 	 * transformation to all the three-dimensional children of a display object.
 	 *
-	 * <p>Based on the field of view and aspect ratio (dimensions) of the stage,
+	 * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
 	 * a default PerspectiveProjection object is assigned to the root object.</p>
 	 */
 	//@:require(flash10) var perspectiveProjection : PerspectiveProjection;

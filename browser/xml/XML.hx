@@ -4,7 +4,7 @@ package browser.xml;
 class XML implements Dynamic<XMLList> {
 	
 	
-	function new (?value:Dynamic) {
+	function new(?value:Dynamic) {
 		
 		
 		

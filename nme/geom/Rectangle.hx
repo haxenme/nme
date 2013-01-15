@@ -4,7 +4,7 @@ package nme.geom;
 
 /**
  * A Rectangle object is an area defined by its position, as indicated by its
- * top-left corner point (<i>x</i>, <i>y</i>) and by its width and its height.
+ * top-left corner point(<i>x</i>, <i>y</i>) and by its width and its height.
  *
  *
  * <p>The <code>x</code>, <code>y</code>, <code>width</code>, and
@@ -168,8 +168,8 @@ extern class Rectangle {
 	 * Determines whether the specified point is contained within the rectangular
 	 * region defined by this Rectangle object.
 	 * 
-	 * @param x The <i>x</i> coordinate (horizontal position) of the point.
-	 * @param y The <i>y</i> coordinate (vertical position) of the point.
+	 * @param x The <i>x</i> coordinate(horizontal position) of the point.
+	 * @param y The <i>y</i> coordinate(vertical position) of the point.
 	 * @return A value of <code>true</code> if the Rectangle object contains the
 	 *         specified point; otherwise <code>false</code>.
 	 */

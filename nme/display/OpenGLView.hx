@@ -7,7 +7,7 @@ extern class OpenGLView extends DirectRenderer {
 	static inline var CONTEXT_LOST = "glcontextlost";
 	static inline var CONTEXT_RESTORED = "glcontextrestored";
 	
-	function new ():Void;
+	function new():Void;
 	
 }
 

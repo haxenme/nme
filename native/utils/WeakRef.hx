@@ -12,11 +12,11 @@ class WeakRef<T> {
 	/** @private */ private var weakRef:Int;
 	
 	
-	public function new (inObject:T, inMakeWeak:Bool = true) {
+	public function new(inObject:T, inMakeWeak:Bool = true) {
 		
 		if (inMakeWeak) {
 			
-			weakRef = nme_weak_ref_create (this, inObject);
+			weakRef = nme_weak_ref_create(this, inObject);
 			hardRef = null;
 			
 		} else {
@@ -29,7 +29,7 @@ class WeakRef<T> {
 	}
 	
 	
-	public function get ():T {
+	public function get():T {
 		
 		if (hardRef != null)
 			return hardRef;
@@ -37,7 +37,7 @@ class WeakRef<T> {
 		if (weakRef < 0)
 			return null;
 		
-		var result = nme_weak_ref_get (weakRef);
+		var result = nme_weak_ref_get(weakRef);
 		if (result == null)
 			weakRef = -1;
 		
@@ -46,7 +46,7 @@ class WeakRef<T> {
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
 		if (hardRef == null)
 			return "" + hardRef;
@@ -63,8 +63,8 @@ class WeakRef<T> {
 	
 	
 	
-	private static var nme_weak_ref_create = Loader.load ("nme_weak_ref_create", 2);
-	private static var nme_weak_ref_get = Loader.load ("nme_weak_ref_get", 1);
+	private static var nme_weak_ref_create = Loader.load("nme_weak_ref_create", 2);
+	private static var nme_weak_ref_get = Loader.load("nme_weak_ref_get", 1);
 	
 	
 }

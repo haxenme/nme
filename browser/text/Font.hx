@@ -18,9 +18,9 @@ class Font {
 	public static inline var DEFAULT_FONT_NAME = "Bitstream_Vera_Sans";
 	public static inline var DEFAULT_CLASS_NAME = "browser.text.Font";
 	
-	public var fontName (default, set_fontName):String;
-	public var fontStyle (default, null):FontStyle;
-	public var fontType (default, null):FontType;
+	public var fontName(default, set_fontName):String;
+	public var fontStyle(default, null):FontStyle;
+	public var fontType(default, null):FontType;
 	
 	private static var nmeFontData:Array<String>;
 	
@@ -29,11 +29,11 @@ class Font {
 	private var nmeMetrics:Array<Int>;
 	
 	
-	public function new () {
+	public function new() {
 		
 		nmeMetrics = [];
 		nmeFontScale = DEFAULT_FONT_SCALE;
-		var className = Type.getClassName (Type.getClass (this));
+		var className = Type.getClassName(Type.getClass(this));
 		
 		if (nmeFontData == null) {
 			
@@ -48,16 +48,16 @@ class Font {
 			
 		} else {
 			
-			fontName = className.split (".").pop ();
+			fontName = className.split(".").pop();
 			
 		}
 		
 	}
 	
 	
-	public static function enumerateFonts (enumerateDeviceFonts:Bool = false):Array<Font> {
+	public static function enumerateFonts(enumerateDeviceFonts:Bool = false):Array<Font> {
 		
-		var sans = new Font ();
+		var sans = new Font();
 		sans.fontName = DEFAULT_FONT_NAME;
 		sans.fontStyle = REGULAR;
 		sans.fontType = DEVICE;
@@ -66,22 +66,22 @@ class Font {
 	}
 	
 	
-	public function hasGlyph (str:String) {
+	public function hasGlyph(str:String) {
 		
-		return nmeGlyphData.exists (str.charCodeAt (0));
+		return nmeGlyphData.exists(str.charCodeAt(0));
 		
 	}
 	
 	
-	public function nmeGetAdvance (inGlyph:Int, height:Int):Int {
+	public function nmeGetAdvance(inGlyph:Int, height:Int):Int {
 		
 		var m = nmeMetrics[inGlyph];
 		
 		if (m == null) {
 			
-			var glyph = nmeGlyphData.get (inGlyph);
+			var glyph = nmeGlyphData.get(inGlyph);
 			if (glyph == null) return 0;
-			nmeMetrics[inGlyph] = m = Std.int (glyph._width * nmeFontScale);
+			nmeMetrics[inGlyph] = m = Std.int(glyph._width * nmeFontScale);
 			
 		}
 		
@@ -97,7 +97,7 @@ class Font {
 	
 	
 	// hxswfml ttf2hash myfont.ttf -glyphs [32-126] > myfont.hash; haxe -resource myfont.hash@myfont ...; Font.registerFont( Resource.get( "myfont" ) );
-	public static function nmeOfResource (name:String):Void {
+	public static function nmeOfResource(name:String):Void {
 		
 		var data = Resource.getString(name);
 		
@@ -116,10 +116,10 @@ class Font {
 	}
 	
 	
-	public function nmeRender (graphics:Graphics, inChar:Int, inX:Int, inY:Int, inOutline:Bool):Void {
+	public function nmeRender(graphics:Graphics, inChar:Int, inX:Int, inY:Int, inOutline:Bool):Void {
 		
 		var index = 0;
-		var glyph = nmeGlyphData.get (inChar);
+		var glyph = nmeGlyphData.get(inChar);
 		
 		if (glyph == null) return;
 		
@@ -130,9 +130,9 @@ class Font {
 			
 			switch (c) {
 				
-				case 1: graphics.moveTo (inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
-				case 2: graphics.lineTo (inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
-				case 3: graphics.curveTo (inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale, inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
+				case 1: graphics.moveTo(inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
+				case 2: graphics.lineTo(inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
+				case 3: graphics.curveTo(inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale, inX + data[index++] * nmeFontScale, inY + data[index++] * nmeFontScale);
 				
 			}
 			
@@ -141,14 +141,14 @@ class Font {
 	}
 	
 	
-	public function nmeSetScale (scale:Float):Void {
+	public function nmeSetScale(scale:Float):Void {
 		
 		nmeFontScale = scale / 1024;
 		
 	}
 	
 	
-	public static function registerFont (font:Class<Dynamic>) {
+	public static function registerFont(font:Class<Dynamic>) {
 		
 		
 		
@@ -162,7 +162,7 @@ class Font {
 	
 	
 	
-	private function set_fontName (name:String) {
+	private function set_fontName(name:String) {
 		
 		if (name == "_sans" || name == "_serif" || name == "_typewriter") {
 			
@@ -176,11 +176,11 @@ class Font {
 			
 			try {
 				
-				nmeOfResource (name);
+				nmeOfResource(name);
 				
-			} catch (e:Dynamic) {
+			} catch(e:Dynamic) {
 				
-				trace ("Glyph data for font '" + name + "' does not exist, defaulting to '" + DEFAULT_FONT_NAME + "'.");
+				trace("Glyph data for font '" + name + "' does not exist, defaulting to '" + DEFAULT_FONT_NAME + "'.");
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}
@@ -189,9 +189,9 @@ class Font {
 			
 			try {
 				
-				nmeGlyphData = Unserializer.run (nmeFontData[cast fontName]);
+				nmeGlyphData = Unserializer.run(nmeFontData[cast fontName]);
 				
-			} catch (e:Dynamic) {
+			} catch(e:Dynamic) {
 				
 				trace("Error decoding font '" + name + "', defaulting to '" + DEFAULT_FONT_NAME + "'.");
 				this.fontName = DEFAULT_FONT_NAME;

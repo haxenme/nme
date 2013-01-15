@@ -10,7 +10,7 @@ package nme.filters;
  * <code>quality</code> property of this filter is set to low, the result is a
  * softly unfocused look. When the <code>quality</code> property is set to
  * high, it approximates a Gaussian blur filter. You can apply the filter to
- * any display object (that is, objects that inherit from the DisplayObject
+ * any display object(that is, objects that inherit from the DisplayObject
  * class), such as MovieClip, SimpleButton, TextField, and Video objects, as
  * well as to BitmapData objects.
  *
@@ -20,7 +20,7 @@ package nme.filters;
  *
  * <ul>
  *   <li>To apply filters to movie clips, text fields, buttons, and video, use
- * the <code>filters</code> property (inherited from DisplayObject). Setting
+ * the <code>filters</code> property(inherited from DisplayObject). Setting
  * the <code>filters</code> property of an object does not modify the object,
  * and you can remove the filter by clearing the <code>filters</code>
  * property. </li>
@@ -45,7 +45,7 @@ package nme.filters;
  * <p>A filter is not applied if the resulting image exceeds the maximum
  * dimensions. In AIR 1.5 and Flash Player 10, the maximum is 8,191 pixels in
  * width or height, and the total number of pixels cannot exceed 16,777,215
- * pixels. (So, if an image is 8,191 pixels wide, it can only be 2,048 pixels
+ * pixels.(So, if an image is 8,191 pixels wide, it can only be 2,048 pixels
  * high.) In Flash Player 9 and earlier and AIR 1.1 and earlier, the
  * limitation is 2,880 pixels in height and 2,880 pixels in width. If, for
  * example, you zoom in on a large movie clip with a filter applied, the
@@ -55,15 +55,15 @@ package nme.filters;
 @:final extern class BlurFilter extends BitmapFilter {
 
 	/**
-	 * The amount of horizontal blur. Valid values are from 0 to 255 (floating
-	 * point). The default value is 4. Values that are a power of 2 (such as 2,
+	 * The amount of horizontal blur. Valid values are from 0 to 255(floating
+	 * point). The default value is 4. Values that are a power of 2(such as 2,
 	 * 4, 8, 16 and 32) are optimized to render more quickly than other values.
 	 */
 	var blurX : Float;
 
 	/**
-	 * The amount of vertical blur. Valid values are from 0 to 255 (floating
-	 * point). The default value is 4. Values that are a power of 2 (such as 2,
+	 * The amount of vertical blur. Valid values are from 0 to 255(floating
+	 * point). The default value is 4. Values that are a power of 2(such as 2,
 	 * 4, 8, 16 and 32) are optimized to render more quickly than other values.
 	 */
 	var blurY : Float;
@@ -100,9 +100,9 @@ package nme.filters;
 	 * create a soft, unfocused image.
 	 * 
 	 * @param blurX   The amount to blur horizontally. Valid values are from 0 to
-	 *                255.0 (floating-point value).
+	 *                255.0(floating-point value).
 	 * @param blurY   The amount to blur vertically. Valid values are from 0 to
-	 *                255.0 (floating-point value).
+	 *                255.0(floating-point value).
 	 * @param quality The number of times to apply the filter. You can specify
 	 *                the quality using the BitmapFilterQuality constants:
 	 *                <ul>

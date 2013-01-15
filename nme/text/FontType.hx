@@ -32,7 +32,7 @@ package nme.text;
 	 *
 	 * <p>Text fields that use embedded fonts are always displayed in the chosen
 	 * font, whether or not that font is installed on the playback system. Also,
-	 * text fields that use embedded fonts are always anti-aliased (smoothed).
+	 * text fields that use embedded fonts are always anti-aliased(smoothed).
 	 * You can select the amount of anti-aliasing you want by using the
 	 * <code>TextField.antiAliasType property</code>.</p>
 	 *

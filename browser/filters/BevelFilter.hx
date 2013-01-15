@@ -21,9 +21,9 @@ class BevelFilter extends BitmapFilter {
 	public var type:BitmapFilterType;
 	
 	
-	public function new (distance:Float = 0, angle:Float = 0, highlightColor:Int = 0xFF, highlightAlpha:Float = 1, shadowColor:Int = 0, shadowAlpha:Float = 1, blurX:Float = 4, blurY:Float = 4, strength:Float = 1, quality:Int = 1, type:BitmapFilterType = null, knockout:Bool = false) {
+	public function new(distance:Float = 0, angle:Float = 0, highlightColor:Int = 0xFF, highlightAlpha:Float = 1, shadowColor:Int = 0, shadowAlpha:Float = 1, blurX:Float = 4, blurY:Float = 4, strength:Float = 1, quality:Int = 1, type:BitmapFilterType = null, knockout:Bool = false) {
 		
-		super ("BevelFilter");
+		super("BevelFilter");
 		
 		this.distance = distance;
 		this.angle = angle;

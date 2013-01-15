@@ -7,7 +7,7 @@ package nme.geom;
  * system, where <i>x</i> represents the horizontal axis and <i>y</i>
  * represents the vertical axis.
  *
- * <p>The following code creates a point at (0,0):</p>
+ * <p>The following code creates a point at(0,0):</p>
  *
  * <p>Methods and properties of the following classes use Point objects:</p>
  *
@@ -27,7 +27,7 @@ package nme.geom;
 extern class Point {
 
 	/**
-	 * The length of the line segment from (0,0) to this point.
+	 * The length of the line segment from(0,0) to this point.
 	 */
 	var length(default,null) : Float;
 
@@ -43,7 +43,7 @@ extern class Point {
 
 	/**
 	 * Creates a new point. If you pass no parameters to this method, a point is
-	 * created at (0,0).
+	 * created at(0,0).
 	 * 
 	 * @param x The horizontal coordinate.
 	 * @param y The vertical coordinate.
@@ -78,12 +78,12 @@ extern class Point {
 	function equals(toCompare : Point) : Bool;
 
 	/**
-	 * Scales the line segment between (0,0) and the current point to a set
+	 * Scales the line segment between(0,0) and the current point to a set
 	 * length.
 	 * 
 	 * @param thickness The scaling value. For example, if the current point is
-	 *                  (0,5), and you normalize it to 1, the point returned is
-	 *                  at (0,1).
+	 *                 (0,5), and you normalize it to 1, the point returned is
+	 *                  at(0,1).
 	 * @return The normalized point.
 	 */
 	function normalize(thickness : Float) : Void;
@@ -135,9 +135,9 @@ extern class Point {
 	 * relative to the two end points specified by parameters <code>pt1</code>
 	 * and <code>pt2</code>. The closer the value of the parameter <code>f</code>
 	 * is to <code>1.0</code>, the closer the interpolated point is to the first
-	 * point (parameter <code>pt1</code>). The closer the value of the parameter
+	 * point(parameter <code>pt1</code>). The closer the value of the parameter
 	 * <code>f</code> is to 0, the closer the interpolated point is to the second
-	 * point (parameter <code>pt2</code>).
+	 * point(parameter <code>pt2</code>).
 	 * 
 	 * @param pt1 The first point.
 	 * @param pt2 The second point.

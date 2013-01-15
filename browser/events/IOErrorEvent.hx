@@ -9,9 +9,9 @@ class IOErrorEvent extends Event {
 	public var text:String;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, inText:String = "") {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, inText:String = "") {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		text = inText;
 		

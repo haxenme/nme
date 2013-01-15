@@ -32,7 +32,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 * <code>true</code>.
 	 *
 	 * <p>This property is useful when you create a button with an instance of
-	 * the Sprite class (instead of using the SimpleButton class). When you use a
+	 * the Sprite class(instead of using the SimpleButton class). When you use a
 	 * Sprite instance to create a button, you can choose to decorate the button
 	 * by using the <code>addChild()</code> method to add additional Sprite
 	 * instances. This process can cause unexpected behavior with mouse events
@@ -87,8 +87,8 @@ extern class DisplayObjectContainer extends InteractiveObject {
 
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
-	 * instance. The child is added to the front (top) of all other children in
-	 * this DisplayObjectContainer instance. (To add a child to a specific index
+	 * instance. The child is added to the front(top) of all other children in
+	 * this DisplayObjectContainer instance.(To add a child to a specific index
 	 * position, use the <code>addChildAt()</code> method.)
 	 *
 	 * <p>If you add a child object that already has a different display object
@@ -110,7 +110,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 * @return The DisplayObject instance that you pass in the <code>child</code>
 	 *         parameter.
 	 * @throws ArgumentError Throws if the child is the same as the parent. Also
-	 *                       throws if the caller is a child (or grandchild etc.)
+	 *                       throws if the caller is a child(or grandchild etc.)
 	 *                       of the child being added.
 	 * @event added Dispatched when a display object is added to the display
 	 *              list.
@@ -120,7 +120,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added at the index position specified. An index of
-	 * 0 represents the back (bottom) of the display list for this
+	 * 0 represents the back(bottom) of the display list for this
 	 * DisplayObjectContainer object.
 	 *
 	 * <p>For example, the following example shows three display objects, labeled
@@ -139,7 +139,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 * @return The DisplayObject instance that you pass in the <code>child</code>
 	 *         parameter.
 	 * @throws ArgumentError Throws if the child is the same as the parent. Also
-	 *                       throws if the caller is a child (or grandchild etc.)
+	 *                       throws if the caller is a child(or grandchild etc.)
 	 *                       of the child being added.
 	 * @throws RangeError    Throws if the index position does not exist in the
 	 *                       child list.
@@ -161,7 +161,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 *
 	 * <p>The <code>point</code> parameter is in the coordinate space of the
 	 * Stage, which may differ from the coordinate space of the display object
-	 * container (unless the display object container is the Stage). You can use
+	 * container(unless the display object container is the Stage). You can use
 	 * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
 	 * methods to convert points between these coordinate spaces.</p>
 	 * 
@@ -232,7 +232,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 
 	/**
 	 * Returns an array of objects that lie under the specified point and are
-	 * children (or grandchildren, and so on) of this DisplayObjectContainer
+	 * children(or grandchildren, and so on) of this DisplayObjectContainer
 	 * instance. Any child objects that are inaccessible for security reasons are
 	 * omitted from the returned array. To determine whether this security
 	 * restriction affects the returned array, call the
@@ -240,13 +240,13 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	 *
 	 * <p>The <code>point</code> parameter is in the coordinate space of the
 	 * Stage, which may differ from the coordinate space of the display object
-	 * container (unless the display object container is the Stage). You can use
+	 * container(unless the display object container is the Stage). You can use
 	 * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
 	 * methods to convert points between these coordinate spaces.</p>
 	 * 
 	 * @param point The point under which to look.
 	 * @return An array of objects that lie under the specified point and are
-	 *         children (or grandchildren, and so on) of this
+	 *         children(or grandchildren, and so on) of this
 	 *         DisplayObjectContainer instance.
 	 */
 	function getObjectsUnderPoint(point : nme.geom.Point) : Array<DisplayObject>;
@@ -328,7 +328,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	function setChildIndex(child : DisplayObject, index : Int) : Void;
 
 	/**
-	 * Swaps the z-order (front-to-back order) of the two specified child
+	 * Swaps the z-order(front-to-back order) of the two specified child
 	 * objects. All other child objects in the display object container remain in
 	 * the same index positions.
 	 * 
@@ -340,7 +340,7 @@ extern class DisplayObjectContainer extends InteractiveObject {
 	function swapChildren(child1 : DisplayObject, child2 : DisplayObject) : Void;
 
 	/**
-	 * Swaps the z-order (front-to-back order) of the child objects at the two
+	 * Swaps the z-order(front-to-back order) of the child objects at the two
 	 * specified index positions in the child list. All other child objects in
 	 * the display object container remain in the same index positions.
 	 * 

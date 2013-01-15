@@ -7,10 +7,10 @@ import native.Loader;
 class Haptic {
 	
 	
-	public static function vibrate (period:Int = 0, duration:Int = 1000):Void {
+	public static function vibrate(period:Int = 0, duration:Int = 1000):Void {
 		
 		#if cpp
-		nme_haptic_vibrate (period, duration);
+		nme_haptic_vibrate(period, duration);
 		#end
 		
 	}
@@ -24,7 +24,7 @@ class Haptic {
 	
 	
 	#if cpp
-	static var nme_haptic_vibrate = Loader.load ("nme_haptic_vibrate", 2);
+	static var nme_haptic_vibrate = Loader.load("nme_haptic_vibrate", 2);
 	#end
 	
 	

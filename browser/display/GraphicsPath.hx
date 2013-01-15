@@ -10,11 +10,11 @@ class GraphicsPath implements IGraphicsData, implements IGraphicsPath {
 	
 	public var commands:Vector<Int>;
 	public var data:Vector<Float>;
-	public var nmeGraphicsDataType (default, null):GraphicsDataType;
+	public var nmeGraphicsDataType(default, null):GraphicsDataType;
 	public var winding:GraphicsPathWinding; /* note: currently ignored */
 	
 	
-	public function new (commands:Vector<Int> = null, data:Vector<Float> = null, winding:GraphicsPathWinding = null) {
+	public function new(commands:Vector<Int> = null, data:Vector<Float> = null, winding:GraphicsPathWinding = null) {
 		
 		this.commands = commands;
 		this.data = data;
@@ -24,41 +24,41 @@ class GraphicsPath implements IGraphicsData, implements IGraphicsPath {
 	}
 	
 	
-	public function curveTo (controlX:Float, controlY:Float, anchorX:Float, anchorY:Float):Void {
+	public function curveTo(controlX:Float, controlY:Float, anchorX:Float, anchorY:Float):Void {
 		
 		if (this.commands != null && this.data != null) {
 			
-			this.commands.push (GraphicsPathCommand.CURVE_TO);
-			this.data.push (anchorX);
-			this.data.push (anchorY);
-			this.data.push (controlX);
-			this.data.push (controlY);
+			this.commands.push(GraphicsPathCommand.CURVE_TO);
+			this.data.push(anchorX);
+			this.data.push(anchorY);
+			this.data.push(controlX);
+			this.data.push(controlY);
 			
 		}
 		
 	}
 	
 	
-	public function lineTo (x:Float, y:Float):Void {
+	public function lineTo(x:Float, y:Float):Void {
 		
 		if (this.commands != null && this.data != null) {
 			
-			this.commands.push (GraphicsPathCommand.LINE_TO);
-			this.data.push (x);
-			this.data.push (y);
+			this.commands.push(GraphicsPathCommand.LINE_TO);
+			this.data.push(x);
+			this.data.push(y);
 			
 		}
 		
 	}
 	
 	
-	public function moveTo (x:Float, y:Float):Void {
+	public function moveTo(x:Float, y:Float):Void {
 		
 		if (this.commands != null && this.data != null) {
 			
-			this.commands.push (GraphicsPathCommand.MOVE_TO);
-			this.data.push (x);
-			this.data.push (y);
+			this.commands.push(GraphicsPathCommand.MOVE_TO);
+			this.data.push(x);
+			this.data.push(y);
 			
 		}
 		

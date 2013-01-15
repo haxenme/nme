@@ -5,7 +5,7 @@ package nme.display;
 /**
  * The Stage class represents the main drawing area.
  *
- * <p>For SWF content running in the browser (in Flash<sup>®</sup> Player),
+ * <p>For SWF content running in the browser(in Flash<sup>®</sup> Player),
  * the Stage represents the entire area where Flash content is shown. For
  * content running in AIR on desktop operating systems, each NativeWindow
  * object has a corresponding Stage object.</p>
@@ -125,7 +125,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * stage in Flash Player or the browser. The following are valid values:
 	 *
 	 * <p>The <code>align</code> property is only available to an object that is
-	 * in the same security sandbox as the Stage owner (the main SWF file). To
+	 * in the same security sandbox as the Stage owner(the main SWF file). To
 	 * avoid this, the Stage owner can grant permission to the domain of the
 	 * calling object by calling the <code>Security.allowDomain()</code> method
 	 * or the <code>Security.alowInsecureDomain()</code> method. For more
@@ -147,7 +147,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * Controls Flash runtime color correction for displays. Color correction
 	 * works only if the main monitor is assigned a valid ICC color profile,
 	 * which specifies the device's particular color attributes. By default, the
-	 * Flash runtime tries to match the color correction of its host (usually a
+	 * Flash runtime tries to match the color correction of its host(usually a
 	 * browser).
 	 *
 	 * <p>Use the <code>Stage.colorCorrectionSupport</code> property to determine
@@ -164,7 +164,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * does not provide perfect conversions due to devices having a different
 	 * gamut from each other or original images. Nor does color management
 	 * eliminate the need for custom or edited profiles. Color profiles are
-	 * dependent on browsers, operating systems (OS), OS extensions, output
+	 * dependent on browsers, operating systems(OS), OS extensions, output
 	 * devices, and application support.</p>
 	 *
 	 * <p>Applying color correction degrades the Flash runtime performance. A
@@ -193,7 +193,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * supports color correction and whether the color profile of the main
 	 * (primary) monitor can be read and understood by the Flash runtime. This
 	 * property also returns the default state of color correction on the host
-	 * system (usually the browser). Currently the return values can be:
+	 * system(usually the browser). Currently the return values can be:
 	 *
 	 * <p>The three possible values are strings with corresponding constants in
 	 * the nme.display.ColorCorrectionSupport class:</p>
@@ -216,14 +216,14 @@ extern class Stage extends DisplayObjectContainer {
 	 * keyboard input disabled.</li>
 	 *   <li><code>StageDisplayState.FULL_SCREEN_INTERACTIVE</code> Sets the AIR
 	 * application to expand the stage over the user's entire screen, with
-	 * keyboard input allowed. (Not available for content running in Flash
+	 * keyboard input allowed.(Not available for content running in Flash
 	 * Player.)</li>
 	 *   <li><code>StageDisplayState.NORMAL</code> Sets the Flash runtime back to
 	 * the standard stage display mode.</li>
 	 * </ul>
 	 *
 	 * <p>The scaling behavior of the movie in full-screen mode is determined by
-	 * the <code>scaleMode</code> setting (set using the
+	 * the <code>scaleMode</code> setting(set using the
 	 * <code>Stage.scaleMode</code> property or the SWF file's <code>embed</code>
 	 * tag settings in the HTML file). If the <code>scaleMode</code> property is
 	 * set to <code>noScale</code> while the application transitions to
@@ -235,7 +235,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * dispatch a <code>resize</code> event.</p>
 	 *
 	 * <p>The following restrictions apply to SWF files that play within an HTML
-	 * page (not those using the stand-alone Flash Player or not running in the
+	 * page(not those using the stand-alone Flash Player or not running in the
 	 * AIR runtime):</p>
 	 *
 	 * <ul>
@@ -249,7 +249,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * mode. Acceptable keys include keyboard shortcuts that terminate
 	 * full-screen mode and non-printing keys such as arrows, space, Shift, and
 	 * Tab keys. Keyboard shortcuts that terminate full-screen mode are: Escape
-	 * (Windows, Linux, and Mac), Control+W (Windows), Command+W (Mac), and
+	 * (Windows, Linux, and Mac), Control+W(Windows), Command+W(Mac), and
 	 * Alt+F4.
 	 *
 	 * <p>A Flash runtime dialog box appears over the movie when users enter
@@ -280,7 +280,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>displayState</code> property of a
 	 *                       Stage object throws an exception for any caller that
 	 *                       is not in the same security sandbox as the Stage
-	 *                       owner (the main SWF file). To avoid this, the Stage
+	 *                       owner(the main SWF file). To avoid this, the Stage
 	 *                       owner can grant permission to the domain of the
 	 *                       caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -325,7 +325,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>frameRate</code> property of a
 	 *                       Stage object throws an exception for any caller that
 	 *                       is not in the same security sandbox as the Stage
-	 *                       owner (the main SWF file). To avoid this, the Stage
+	 *                       owner(the main SWF file). To avoid this, the Stage
 	 *                       owner can grant permission to the domain of the
 	 *                       caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -422,7 +422,7 @@ extern class Stage extends DisplayObjectContainer {
 	 *   <li><code>StageQuality.BEST</code> - Very high rendering quality.
 	 * Graphics are anti-aliased using a 4 x 4 pixel grid. If
 	 * <code>Bitmap.smoothing</code> is <code>true</code> the runtime uses a high
-	 * quality downscale algorithm that produces fewer artifacts (however, using
+	 * quality downscale algorithm that produces fewer artifacts(however, using
 	 * <code>StageQuality.BEST</code> with <code>Bitmap.smoothing</code> set to
 	 * <code>true</code> slows performance significantly and is not a recommended
 	 * setting).</li>
@@ -434,22 +434,22 @@ extern class Stage extends DisplayObjectContainer {
 	 * reduce the frame rate. </p>
 	 *
 	 * <p>In the desktop profile of Adobe AIR, <code>quality</code> can be set to
-	 * <code>StageQuality.BEST</code> or <code>StageQuality.HIGH</code> (and the
+	 * <code>StageQuality.BEST</code> or <code>StageQuality.HIGH</code>(and the
 	 * default value is <code>StageQuality.HIGH</code>). Attempting to set it to
-	 * another value has no effect (and the property remains unchanged). In the
+	 * another value has no effect(and the property remains unchanged). In the
 	 * moble profile of AIR, all four quality settings are available. The default
 	 * value on mobile devices is <code>StageQuality.MEDIUM</code>.</p>
 	 *
 	 * <p>For content running in Adobe AIR, setting the <code>quality</code>
 	 * property of one Stage object changes the rendering quality for all Stage
-	 * objects (used by different NativeWindow objects). </p>
+	 * objects(used by different NativeWindow objects). </p>
 	 * <b><i>Note:</i></b> The operating system draws the device fonts, which are
 	 * therefore unaffected by the <code>quality</code> property.
 	 * 
 	 * @throws SecurityError Calling the <code>quality</code> property of a Stage
 	 *                       object throws an exception for any caller that is
 	 *                       not in the same security sandbox as the Stage owner
-	 *                       (the main SWF file). To avoid this, the Stage owner
+	 *                      (the main SWF file). To avoid this, the Stage owner
 	 *                       can grant permission to the domain of the caller by
 	 *                       calling the <code>Security.allowDomain()</code>
 	 *                       method or the
@@ -483,7 +483,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>scaleMode</code> property of a
 	 *                       Stage object throws an exception for any caller that
 	 *                       is not in the same security sandbox as the Stage
-	 *                       owner (the main SWF file). To avoid this, the Stage
+	 *                       owner(the main SWF file). To avoid this, the Stage
 	 *                       owner can grant permission to the domain of the
 	 *                       caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -498,14 +498,14 @@ extern class Stage extends DisplayObjectContainer {
 	 * context menu.
 	 *
 	 * <p>If the <code>showDefaultContextMenu</code> property is set to
-	 * <code>true</code> (the default), all context menu items appear. If the
+	 * <code>true</code>(the default), all context menu items appear. If the
 	 * <code>showDefaultContextMenu</code> property is set to <code>false</code>,
 	 * only the Settings and About... menu items appear.</p>
 	 * 
 	 * @throws SecurityError Calling the <code>showDefaultContextMenu</code>
 	 *                       property of a Stage object throws an exception for
 	 *                       any caller that is not in the same security sandbox
-	 *                       as the Stage owner (the main SWF file). To avoid
+	 *                       as the Stage owner(the main SWF file). To avoid
 	 *                       this, the Stage owner can grant permission to the
 	 *                       domain of the caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -518,7 +518,7 @@ extern class Stage extends DisplayObjectContainer {
 	/**
 	 * The area of the stage that is currently covered by the software keyboard.
 	 *
-	 * <p>The area has a size of zero (0,0,0,0) when the soft keyboard is not
+	 * <p>The area has a size of zero(0,0,0,0) when the soft keyboard is not
 	 * visible.</p>
 	 *
 	 * <p>When the keyboard opens, the <code>softKeyboardRect</code> is set at
@@ -543,7 +543,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>stageFocusRect</code> property of
 	 *                       a Stage object throws an exception for any caller
 	 *                       that is not in the same security sandbox as the
-	 *                       Stage owner (the main SWF file). To avoid this, the
+	 *                       Stage owner(the main SWF file). To avoid this, the
 	 *                       Stage owner can grant permission to the domain of
 	 *                       the caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -560,7 +560,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * <code>StageScaleMode.NO_SCALE</code> when the user resizes the window, the
 	 * Stage content maintains its size while the <code>stageHeight</code>
 	 * property changes to reflect the new height size of the screen area
-	 * occupied by the SWF file. (In the other scale modes, the
+	 * occupied by the SWF file.(In the other scale modes, the
 	 * <code>stageHeight</code> property always reflects the original height of
 	 * the SWF file.) You can add an event listener for the <code>resize</code>
 	 * event and then use the <code>stageHeight</code> property of the Stage
@@ -577,7 +577,7 @@ extern class Stage extends DisplayObjectContainer {
 	 *
 	 * <p><b>Note:</b> In an HTML page hosting the SWF file, both the
 	 * <code>object</code> and <code>embed</code> tags' <code>height</code>
-	 * attributes must be set to a percentage (such as <code>100%</code>), not
+	 * attributes must be set to a percentage(such as <code>100%</code>), not
 	 * pixels. If the settings are generated by JavaScript code, the
 	 * <code>height</code> parameter of the <code>AC_FL_RunContent() </code>
 	 * method must be set to a percentage, too. This percentage is applied to the
@@ -586,7 +586,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>stageHeight</code> property of a
 	 *                       Stage object throws an exception for any caller that
 	 *                       is not in the same security sandbox as the Stage
-	 *                       owner (the main SWF file). To avoid this, the Stage
+	 *                       owner(the main SWF file). To avoid this, the Stage
 	 *                       owner can grant permission to the domain of the
 	 *                       caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -634,7 +634,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * <code>StageScaleMode.NO_SCALE</code> when the user resizes the window, the
 	 * Stage content maintains its defined size while the <code>stageWidth</code>
 	 * property changes to reflect the new width size of the screen area occupied
-	 * by the SWF file. (In the other scale modes, the <code>stageWidth</code>
+	 * by the SWF file.(In the other scale modes, the <code>stageWidth</code>
 	 * property always reflects the original width of the SWF file.) You can add
 	 * an event listener for the <code>resize</code> event and then use the
 	 * <code>stageWidth</code> property of the Stage class to determine the
@@ -651,7 +651,7 @@ extern class Stage extends DisplayObjectContainer {
 	 *
 	 * <p><b>Note:</b> In an HTML page hosting the SWF file, both the
 	 * <code>object</code> and <code>embed</code> tags' <code>width</code>
-	 * attributes must be set to a percentage (such as <code>100%</code>), not
+	 * attributes must be set to a percentage(such as <code>100%</code>), not
 	 * pixels. If the settings are generated by JavaScript code, the
 	 * <code>width</code> parameter of the <code>AC_FL_RunContent() </code>
 	 * method must be set to a percentage, too. This percentage is applied to the
@@ -660,7 +660,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * @throws SecurityError Calling the <code>stageWidth</code> property of a
 	 *                       Stage object throws an exception for any caller that
 	 *                       is not in the same security sandbox as the Stage
-	 *                       owner (the main SWF file). To avoid this, the Stage
+	 *                       owner(the main SWF file). To avoid this, the Stage
 	 *                       owner can grant permission to the domain of the
 	 *                       caller by calling the
 	 *                       <code>Security.allowDomain()</code> method or the
@@ -690,11 +690,11 @@ extern class Stage extends DisplayObjectContainer {
 	 * <ol>
 	 *   <li>GPU compositing has not been requested or is unavailable. In this
 	 * case, the <code>wmodeGPU</code> property value is <code>false</code>.</li>
-	 *   <li>GPU compositing has been requested (if applicable and available),
-	 * but the environment is operating in "fallback mode" (not optimal
+	 *   <li>GPU compositing has been requested(if applicable and available),
+	 * but the environment is operating in "fallback mode"(not optimal
 	 * rendering) due to limitations of the content. In this case, the
 	 * <code>wmodeGPU</code> property value is <code>true</code>.</li>
-	 *   <li>GPU compositing has been requested (if applicable and available),
+	 *   <li>GPU compositing has been requested(if applicable and available),
 	 * and the environment is operating in the best mode. In this case, the
 	 * <code>wmodeGPU</code> property value is also <code>true</code>.</li>
 	 * </ol>
@@ -703,7 +703,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * <p>In other words, the <code>wmodeGPU</code> property identifies the
 	 * capability and state of the rendering environment. For runtimes that do
 	 * not support GPU compositing, such as AIR 1.5.2, the value is always
-	 * <code>false</code>, because (as stated above) the value is
+	 * <code>false</code>, because(as stated above) the value is
 	 * <code>true</code> only when GPU compositing has been requested, is
 	 * available, and is in use.</p>
 	 *
@@ -717,7 +717,7 @@ extern class Stage extends DisplayObjectContainer {
 	 * <p>For Flash Player in a browser, GPU compositing can be requested by the
 	 * value of <code>gpu</code> for the <code>wmode</code> HTML parameter in the
 	 * page hosting the SWF file. For other configurations, GPU compositing can
-	 * be requested in the header of a SWF file (set using SWF authoring
+	 * be requested in the header of a SWF file(set using SWF authoring
 	 * tools).</p>
 	 *
 	 * <p>However, the <code>wmodeGPU</code> property does not identify the
@@ -742,7 +742,7 @@ extern class Stage extends DisplayObjectContainer {
 	/**
 	 * Calling the <code>invalidate()</code> method signals Flash runtimes to
 	 * alert display objects on the next opportunity it has to render the display
-	 * list (for example, when the playhead advances to a new frame). After you
+	 * list(for example, when the playhead advances to a new frame). After you
 	 * call the <code>invalidate()</code> method, when the display list is next
 	 * rendered, the Flash runtime sends a <code>render</code> event to each
 	 * display object that has registered to listen for the <code>render</code>

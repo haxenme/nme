@@ -43,9 +43,9 @@ class PlatformHelper {
 					process.close ();
 					
 					if (output.indexOf ("64") > -1) {
-					
+						
 						_hostArchitecture = Architecture.X64;
-					
+						
 					} else {
 						
 						_hostArchitecture = Architecture.X86;

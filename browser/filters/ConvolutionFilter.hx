@@ -18,9 +18,9 @@ class ConvolutionFilter extends BitmapFilter {
 	public var preserveAlpha:Bool;
 	
 	
-	public function new (matrixX:Float = 0, matrixY:Float = 0, matrix:Array<Dynamic> = null, divisor:Float = 1, bias:Float = 0, preserveAlpha:Bool = true, clamp:Bool = true, color:Int = 0, alpha:Float = 0) {
+	public function new(matrixX:Float = 0, matrixY:Float = 0, matrix:Array<Dynamic> = null, divisor:Float = 1, bias:Float = 0, preserveAlpha:Bool = true, clamp:Bool = true, color:Int = 0, alpha:Float = 0) {
 		
-		super ("ConvolutionFilter");
+		super("ConvolutionFilter");
 		
 		this.matrixX = matrixX;
 		this.matrixY = matrixY;

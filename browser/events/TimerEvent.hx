@@ -11,14 +11,14 @@ class TimerEvent extends Event {
 	public static inline var TIMER_COMPLETE:String = "timerComplete";
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false):Void {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false):Void {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 	}
 	
 	
-	public function updateAfterEvent ():Void {
+	public function updateAfterEvent():Void {
 		
 		
 		

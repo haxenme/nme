@@ -4,7 +4,7 @@ package nme.display;
 
 /**
  * This class is used to create lightweight shapes using the ActionScript
- * drawing application program interface (API). The Shape class includes a
+ * drawing application program interface(API). The Shape class includes a
  * <code>graphics</code> property, which lets you access methods from the
  * Graphics class.
  *

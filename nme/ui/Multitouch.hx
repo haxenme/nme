@@ -5,7 +5,7 @@ package nme.ui;
 /**
  * The Multitouch class manages and provides information about the current
  * environment's support for handling contact from user input devices,
- * including contact that has two or more touch points (such as a user's
+ * including contact that has two or more touch points(such as a user's
  * fingers on a touch screen). When a user interacts with a device such as a
  * mobile phone or tablet with a touch screen, the user typically touches the
  * screen with his or her fingers or a pointing device. While there is a broad
@@ -46,8 +46,8 @@ package nme.ui;
 	 * Identifies the multi-touch mode for touch and gesture event handling. Use
 	 * this property to manage whether or not events are dispatched as touch
 	 * events with multiple points of contact and specific events for different
-	 * gestures (such as rotation and pan), or only a single point of contact
-	 * (such as tap), or none at all (contact is handled as a mouse event). To
+	 * gestures(such as rotation and pan), or only a single point of contact
+	 * (such as tap), or none at all(contact is handled as a mouse event). To
 	 * set this property, use values from the nme.ui.MultitouchInputMode class.
 	 * 
 	 * @default gesture
@@ -61,11 +61,11 @@ package nme.ui;
 	static var maxTouchPoints(default,null) : Int;
 
 	/**
-	 * A Vector array (a typed array of string values) of multi-touch contact
+	 * A Vector array(a typed array of string values) of multi-touch contact
 	 * types supported in the current environment. The array of strings can be
 	 * used as event types to register event listeners. Possible values are
 	 * constants from the GestureEvent, PressAndTapGestureEvent, and
-	 * TransformGestureEvent classes (such as <code>GESTURE_PAN</code>).
+	 * TransformGestureEvent classes(such as <code>GESTURE_PAN</code>).
 	 *
 	 * <p>If the Flash runtime is in an environment that does not support any
 	 * multi-touch gestures, the value is <code>null</code>.</p>

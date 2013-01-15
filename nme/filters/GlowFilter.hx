@@ -8,7 +8,7 @@ package nme.filters;
  * glow and knockout mode. The glow filter is similar to the drop shadow
  * filter with the <code>distance</code> and <code>angle</code> properties of
  * the drop shadow filter set to 0. You can apply the filter to any display
- * object (that is, objects that inherit from the DisplayObject class), such
+ * object(that is, objects that inherit from the DisplayObject class), such
  * as MovieClip, SimpleButton, TextField, and Video objects, as well as to
  * BitmapData objects.
  *
@@ -17,7 +17,7 @@ package nme.filters;
  *
  * <ul>
  *   <li>To apply filters to display objects, use the <code>filters</code>
- * property (inherited from DisplayObject). Setting the <code>filters</code>
+ * property(inherited from DisplayObject). Setting the <code>filters</code>
  * property of an object does not modify the object, and you can remove the
  * filter by clearing the <code>filters</code> property. </li>
  *   <li>To apply filters to BitmapData objects, use the
@@ -33,7 +33,7 @@ package nme.filters;
  * <code>cacheAsBitmap</code> is restored.</p>
  *
  * <p>This filter supports Stage scaling. However, it does not support general
- * scaling, rotation, and skewing. If the object itself is scaled (if
+ * scaling, rotation, and skewing. If the object itself is scaled(if
  * <code>scaleX</code> and <code>scaleY</code> are set to a value other than
  * 1.0), the filter is not scaled. It is scaled only when the user zooms in on
  * the Stage.</p>
@@ -41,7 +41,7 @@ package nme.filters;
  * <p>A filter is not applied if the resulting image exceeds the maximum
  * dimensions. In AIR 1.5 and Flash Player 10, the maximum is 8,191 pixels in
  * width or height, and the total number of pixels cannot exceed 16,777,215
- * pixels. (So, if an image is 8,191 pixels wide, it can only be 2,048 pixels
+ * pixels.(So, if an image is 8,191 pixels wide, it can only be 2,048 pixels
  * high.) In Flash Player 9 and earlier and AIR 1.1 and earlier, the
  * limitation is 2,880 pixels in height and 2,880 pixels in width. For
  * example, if you zoom in on a large movie clip with a filter applied, the
@@ -57,15 +57,15 @@ package nme.filters;
 	var alpha : Float;
 
 	/**
-	 * The amount of horizontal blur. Valid values are 0 to 255 (floating point).
-	 * The default value is 6. Values that are a power of 2 (such as 2, 4, 8, 16,
+	 * The amount of horizontal blur. Valid values are 0 to 255(floating point).
+	 * The default value is 6. Values that are a power of 2(such as 2, 4, 8, 16,
 	 * and 32) are optimized to render more quickly than other values.
 	 */
 	var blurX : Float;
 
 	/**
-	 * The amount of vertical blur. Valid values are 0 to 255 (floating point).
-	 * The default value is 6. Values that are a power of 2 (such as 2, 4, 8, 16,
+	 * The amount of vertical blur. Valid values are 0 to 255(floating point).
+	 * The default value is 6. Values that are a power of 2(such as 2, 4, 8, 16,
 	 * and 32) are optimized to render more quickly than other values.
 	 */
 	var blurY : Float;
@@ -123,11 +123,11 @@ package nme.filters;
 	 *                 are 0 to 1. For example, .25 sets a transparency value of
 	 *                 25%.
 	 * @param blurX    The amount of horizontal blur. Valid values are 0 to 255
-	 *                 (floating point). Values that are a power of 2 (such as 2,
+	 *                (floating point). Values that are a power of 2(such as 2,
 	 *                 4, 8, 16 and 32) are optimized to render more quickly than
 	 *                 other values.
 	 * @param blurY    The amount of vertical blur. Valid values are 0 to 255
-	 *                 (floating point). Values that are a power of 2 (such as 2,
+	 *                (floating point). Values that are a power of 2(such as 2,
 	 *                 4, 8, 16 and 32) are optimized to render more quickly than
 	 *                 other values.
 	 * @param strength The strength of the imprint or spread. The higher the
@@ -146,7 +146,7 @@ package nme.filters;
 	 *                 <code>quality</code> property.</p>
 	 * @param inner    Specifies whether the glow is an inner glow. The value
 	 *                 <code> true</code> specifies an inner glow. The value
-	 *                 <code>false</code> specifies an outer glow (a glow around
+	 *                 <code>false</code> specifies an outer glow(a glow around
 	 *                 the outer edges of the object).
 	 * @param knockout Specifies whether the object has a knockout effect. The
 	 *                 value <code>true</code> makes the object's fill

@@ -45,9 +45,9 @@ class MouseEvent extends Event {
 	private static var efCommandDown = 0x0010;
 	
 	
-	public function new (type:String, bubbles:Bool = true, cancelable:Bool = false, localX:Float = 0, localY:Float = 0, relatedObject:InteractiveObject = null, ctrlKey:Bool = false, altKey:Bool = false, shiftKey:Bool = false, buttonDown:Bool = false, delta:Int = 0, commandKey:Bool = false, clickCount:Int = 0) {
+	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, localX:Float = 0, localY:Float = 0, relatedObject:InteractiveObject = null, ctrlKey:Bool = false, altKey:Bool = false, shiftKey:Bool = false, buttonDown:Bool = false, delta:Int = 0, commandKey:Bool = false, clickCount:Int = 0) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		this.localX = localX;
 		this.localY = localY;
@@ -63,17 +63,17 @@ class MouseEvent extends Event {
 	}
 	
 	
-	public override function clone ():Event {
+	public override function clone():Event {
 		
-		return new MouseEvent (type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
+		return new MouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 		
 	}
 	
 	
-	/** @private */ public static function nmeCreate (inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject) {
+	/** @private */ public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject) {
 		
 		var flags : Int = inEvent.flags;
-		var evt = new MouseEvent (inType, true, false, inLocal.x, inLocal.y, null, (flags & efCtrlDown) != 0, (flags & efAltDown) != 0, (flags & efShiftDown) != 0, (flags & efLeftDown) != 0, 0, 0);
+		var evt = new MouseEvent(inType, true, false, inLocal.x, inLocal.y, null,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) != 0,(flags & efLeftDown) != 0, 0, 0);
 		evt.stageX = inEvent.x;
 		evt.stageY = inEvent.y;
 		evt.target = inTarget;
@@ -82,9 +82,9 @@ class MouseEvent extends Event {
 	}
 	
 	
-	/** @private */ public function nmeCreateSimilar (inType:String, ?related:InteractiveObject, ?targ:InteractiveObject) {
+	/** @private */ public function nmeCreateSimilar(inType:String, ?related:InteractiveObject, ?targ:InteractiveObject) {
 		
-		var result = new MouseEvent (inType, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
+		var result = new MouseEvent(inType, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 		
 		result.stageX = stageX;
 		result.stageY = stageY;
@@ -97,14 +97,14 @@ class MouseEvent extends Event {
 	}
 	
 	
-	public override function toString ():String {
+	public override function toString():String {
 		
 		return "[MouseEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " localX=" + localX + " localY=" + localY + " relatedObject=" + relatedObject + " ctrlKey=" + ctrlKey + " altKey=" + altKey + " shiftKey=" + shiftKey + " buttonDown=" + buttonDown + " delta=" + delta + "]";
 		
 	}
 	
 	
-	public function updateAfterEvent () {
+	public function updateAfterEvent() {
 		
 		
 		

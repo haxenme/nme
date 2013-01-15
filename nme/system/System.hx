@@ -18,7 +18,7 @@ extern class System {
 	static var deviceID(default, null):String;
 
 	/**
-	 * The amount of memory (in bytes) that is allocated to Adobe<sup>®</sup>
+	 * The amount of memory(in bytes) that is allocated to Adobe<sup>®</sup>
 	 * Flash<sup>®</sup> Player or Adobe<sup>®</sup> AIR<sup>®</sup> and that
 	 * is not in use. This unused portion of allocated memory
 	 * (<code>System.totalMemory</code>) fluctuates as garbage collection takes
@@ -33,7 +33,7 @@ extern class System {
 	//static var ime(default,null) : IME;
 
 	/**
-	 * The entire amount of memory (in bytes) used by an application. This is the
+	 * The entire amount of memory(in bytes) used by an application. This is the
 	 * amount of resident private memory for the entire process.
 	 *
 	 * <p>AIR developers should use this property to determine the entire memory
@@ -46,31 +46,31 @@ extern class System {
 	//@:require(flash11) static var processCPUUsage(default,null) : Float;
 
 	/**
-	 * The amount of memory (in bytes) currently in use that has been directly
+	 * The amount of memory(in bytes) currently in use that has been directly
 	 * allocated by Flash Player or AIR.
 	 *
 	 * <p>This property does not return <i>all</i> memory used by an Adobe AIR
-	 * application or by the application (such as a browser) containing Flash
+	 * application or by the application(such as a browser) containing Flash
 	 * Player content. The browser or operating system may consume other memory.
 	 * The <code>System.privateMemory</code> property reflects <i>all</i> memory
 	 * used by an application.</p>
 	 *
 	 * <p>If the amount of memory allocated is greater than the maximum value for
-	 * a uint object (<code>uint.MAX_VALUE</code>, or 4,294,967,295), then this
+	 * a uint object(<code>uint.MAX_VALUE</code>, or 4,294,967,295), then this
 	 * property is set to 0. The <code>System.totalMemoryNumber</code> property
 	 * allows larger values.</p>
 	 */
 	static var totalMemory(default, null):Int;
 
 	/**
-	 * The amount of memory (in bytes) currently in use that has been directly
+	 * The amount of memory(in bytes) currently in use that has been directly
 	 * allocated by Flash Player or AIR.
 	 *
 	 * <p>This property is expressed as a Number, which allows higher values than
 	 * the <code>System.totalMemory</code> property, which is of type int.</p>
 	 *
 	 * <p>This property does not return <i>all</i> memory used by an Adobe AIR
-	 * application or by the application (such as a browser) containing Flash
+	 * application or by the application(such as a browser) containing Flash
 	 * Player content. The browser or operating system may consume other memory.
 	 * The <code>System.privateMemory</code> property reflects <i>all</i> memory
 	 * used by an application.</p>
@@ -80,13 +80,13 @@ extern class System {
 	/**
 	 * A Boolean value that determines which code page to use to interpret
 	 * external text files. When the property is set to <code>false</code>,
-	 * external text files are interpretted as Unicode. (These files must be
+	 * external text files are interpretted as Unicode.(These files must be
 	 * encoded as Unicode when you save them.) When the property is set to
 	 * <code>true</code>, external text files are interpretted using the
 	 * traditional code page of the operating system running the application. The
 	 * default value of <code>useCodePage</code> is <code>false</code>.
 	 *
-	 * <p>Text that you load as an external file (using
+	 * <p>Text that you load as an external file(using
 	 * <code>Loader.load()</code>, the URLLoader class or URLStream) must have
 	 * been saved as Unicode in order for the application to recognize it as
 	 * Unicode. To encode external files as Unicode, save the files in an
@@ -94,7 +94,7 @@ extern class System {
 	 *
 	 * <p>If you load external text files that are not Unicode-encoded, set
 	 * <code>useCodePage</code> to <code>true</code>. Add the following as the
-	 * first line of code of the file that is loading the data (for Flash
+	 * first line of code of the file that is loading the data(for Flash
 	 * Professional, add it to the first frame):</p>
 	 * <pre xml:space="preserve"><code>System.useCodePage = true;</code></pre>
 	 *
@@ -104,7 +104,7 @@ extern class System {
 	 * for a Japanese operating system.</p>
 	 *
 	 * <p>If you set <code>useCodePage</code> to <code>true</code>, Flash Player
-	 * 6 and later treat text as Flash Player 5 does. (Flash Player 5 treated all
+	 * 6 and later treat text as Flash Player 5 does.(Flash Player 5 treated all
 	 * text as if it were in the traditional code page of the operating system
 	 * running the player.)</p>
 	 *
@@ -119,7 +119,7 @@ extern class System {
 	 * <p>To ensure that users on all platforms can view external text files used
 	 * in your application, you should encode all external text files as Unicode
 	 * and leave <code>useCodePage</code> set to <code>false</code>. This way,
-	 * the application (Flash Player 6 and later, or AIR) interprets the text as
+	 * the application(Flash Player 6 and later, or AIR) interprets the text as
 	 * Unicode.</p>
 	 */
 	//static var useCodePage : Bool;
@@ -153,14 +153,14 @@ extern class System {
 	 *
 	 * <p><i>For the Flash Player debugger version and AIR applications only.</i>
 	 * In an AIR application, the <code>System.gc()</code> method is only enabled
-	 * in content running in the AIR Debug Launcher (ADL) or, in an installed
+	 * in content running in the AIR Debug Launcher(ADL) or, in an installed
 	 * applcation, in content in the application security sandbox.</p>
 	 * 
 	 */
 	static function gc() : Void;
 
 	/**
-	 * Pauses Flash Player or the AIR Debug Launcher (ADL). After calling this
+	 * Pauses Flash Player or the AIR Debug Launcher(ADL). After calling this
 	 * method, nothing in the application continues except the delivery of Socket
 	 * events.
 	 *
@@ -183,7 +183,7 @@ extern class System {
 	/**
 	 * Replaces the contents of the Clipboard with a specified text string. This
 	 * method works from any security context when called as a result of a user
-	 * event (such as a keyboard or input device event handler).
+	 * event(such as a keyboard or input device event handler).
 	 *
 	 * <p>This method is provided for SWF content running in Flash Player 9. It
 	 * allows only adding String content to the Clipboard.</p>
@@ -193,7 +193,7 @@ extern class System {
 	 * method.</p>
 	 * 
 	 * @param string A plain-text string of characters to put on the system
-	 *               Clipboard, replacing its current contents (if any).
+	 *               Clipboard, replacing its current contents(if any).
 	 */
 	//static function setClipboard(string : String) : Void;
 }

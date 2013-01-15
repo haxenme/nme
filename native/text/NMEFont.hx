@@ -7,7 +7,7 @@ import native.display.BitmapData;
 class NMEFont {
 	
 	
-	static var factories = new Hash<NMEFontFactory> ();
+	static var factories = new Hash<NMEFontFactory>();
 	
 	var height:Int;
 	var ascent:Int;
@@ -15,7 +15,7 @@ class NMEFont {
 	var isRGB:Bool;
 	
 	
-	public function new (inHeight:Int, inAscent:Int, inDescent:Int, inIsRGB:Bool) {
+	public function new(inHeight:Int, inAscent:Int, inDescent:Int, inIsRGB:Bool) {
 		
 		height = inHeight;
 		ascent = inAscent;
@@ -25,10 +25,10 @@ class NMEFont {
 	}
 	
 	
-	static function createFont (inDef:NMEFontDef):NMEFont {
+	static function createFont(inDef:NMEFontDef):NMEFont {
 		
-		if (factories.exists (inDef.name))
-			return factories.get (inDef.name) (inDef);
+		if (factories.exists(inDef.name))
+			return factories.get(inDef.name)(inDef);
 		
 		return null;
 		
@@ -36,35 +36,35 @@ class NMEFont {
 	
 	
 	// Implementation should override
-	public function getGlyphInfo (inChar:Int):NMEGlyphInfo {
+	public function getGlyphInfo(inChar:Int):NMEGlyphInfo {
 		
-		trace ("getGlyphInfo");
+		trace("getGlyphInfo");
 		return null;
 		
 	}
 	
 	
-	static public function registerFont (inName:String, inFactory:NMEFontFactory) {
+	static public function registerFont(inName:String, inFactory:NMEFontFactory) {
 		
-		factories.set (inName, inFactory);
+		factories.set(inName, inFactory);
 		
-		var register = Loader.load ("nme_font_set_factory", 1);
-		register (createFont);
+		var register = Loader.load("nme_font_set_factory", 1);
+		register(createFont);
 		
 	}
 
 
 	// Implementation should override
-	public function renderGlyph (inChar:Int) : BitmapData {
+	public function renderGlyph(inChar:Int) : BitmapData {
 		
-		return new BitmapData (1, 1);
+		return new BitmapData(1, 1);
 		
 	}
 	
 	
-	private function renderGlyphInternal (inChar:Int):Dynamic {
+	private function renderGlyphInternal(inChar:Int):Dynamic {
 		
-		var result = renderGlyph (inChar);
+		var result = renderGlyph(inChar);
 		if (result != null)
 			return result.nmeHandle;
 		return null;

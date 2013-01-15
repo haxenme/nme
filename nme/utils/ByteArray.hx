@@ -9,14 +9,14 @@ package nme.utils;
  * <p><i>Note:</i> The ByteArray class is for advanced developers who need to
  * access data on the byte level.</p>
  *
- * <p>In-memory data is a packed array (the most compact representation for
+ * <p>In-memory data is a packed array(the most compact representation for
  * the data type) of bytes, but an instance of the ByteArray class can be
- * manipulated with the standard <code>[]</code> (array access) operators. It
+ * manipulated with the standard <code>[]</code>(array access) operators. It
  * also can be read and written to as an in-memory file, using methods similar
  * to those in the URLStream and Socket classes.</p>
  *
  * <p>In addition, zlib compression and decompression are supported, as well
- * as Action Message Format (AMF) object serialization.</p>
+ * as Action Message Format(AMF) object serialization.</p>
  *
  * <p>Possible uses of the ByteArray class include the following:
  * <ul>
@@ -90,7 +90,7 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	/**
 	 * Compresses the byte array. The entire byte array is compressed. For
 	 * content running in Adobe AIR, you can specify a compression algorithm by
-	 * passing a value (defined in the CompressionAlgorithm class) as the
+	 * passing a value(defined in the CompressionAlgorithm class) as the
 	 * <code>algorithm</code> parameter. Flash Player supports only the default
 	 * algorithm, zlib.
 	 *
@@ -110,7 +110,7 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	 * formats, such as zlib, gzip, some zip implementations, and others. When
 	 * data is compressed using one of those compression formats, in addition to
 	 * storing the compressed version of the original data, the compression
-	 * format data (for example, the .zip file) includes metadata information.
+	 * format data(for example, the .zip file) includes metadata information.
 	 * Some examples of the types of metadata included in various file formats
 	 * are file name, file modification date/time, original file size, optional
 	 * comments, checksum data, and more.</p>
@@ -119,7 +119,7 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	 * the resulting ByteArray is structured in a specific format. Certain bytes
 	 * contain metadata about the compressed data, while other bytes contain the
 	 * actual compressed version of the original ByteArray data. As defined by
-	 * the zlib compressed data format specification, those bytes (that is, the
+	 * the zlib compressed data format specification, those bytes(that is, the
 	 * portion containing the compressed version of the original data) are
 	 * compressed using the deflate algorithm. Consequently those bytes are
 	 * identical to the result of calling <code>compress(<ph
@@ -224,7 +224,7 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	 * by <code>offset</code>.
 	 * 
 	 * @param bytes  The ByteArray object to read data into.
-	 * @param offset The offset (position) in <code>bytes</code> at which the
+	 * @param offset The offset(position) in <code>bytes</code> at which the
 	 *               read data should be written.
 	 * @param length The number of bytes to read. The default value of 0 causes
 	 *               all available data to be read.
@@ -235,19 +235,19 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	function readBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
 
 	/**
-	 * Reads an IEEE 754 double-precision (64-bit) floating-point number from the
+	 * Reads an IEEE 754 double-precision(64-bit) floating-point number from the
 	 * byte stream.
 	 * 
-	 * @return A double-precision (64-bit) floating-point number.
+	 * @return A double-precision(64-bit) floating-point number.
 	 * @throws EOFError There is not sufficient data available to read.
 	 */
 	function readDouble() : Float;
 
 	/**
-	 * Reads an IEEE 754 single-precision (32-bit) floating-point number from the
+	 * Reads an IEEE 754 single-precision(32-bit) floating-point number from the
 	 * byte stream.
 	 * 
-	 * @return A single-precision (32-bit) floating-point number.
+	 * @return A single-precision(32-bit) floating-point number.
 	 * @throws EOFError There is not sufficient data available to read.
 	 */
 	function readFloat() : Float;
@@ -369,7 +369,7 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 
 	/**
 	 * Decompresses the byte array. For content running in Adobe AIR, you can
-	 * specify a compression algorithm by passing a value (defined in the
+	 * specify a compression algorithm by passing a value(defined in the
 	 * CompressionAlgorithm class) as the <code>algorithm</code> parameter. The
 	 * byte array must have been compressed using the same algorithm. Flash
 	 * Player supports only the default algorithm, zlib.
@@ -443,18 +443,18 @@ extern class ByteArray /*implements IDataOutput,*/ implements IDataInput, implem
 	function writeBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
 
 	/**
-	 * Writes an IEEE 754 double-precision (64-bit) floating-point number to the
+	 * Writes an IEEE 754 double-precision(64-bit) floating-point number to the
 	 * byte stream.
 	 * 
-	 * @param value A double-precision (64-bit) floating-point number.
+	 * @param value A double-precision(64-bit) floating-point number.
 	 */
 	function writeDouble(value : Float) : Void;
 
 	/**
-	 * Writes an IEEE 754 single-precision (32-bit) floating-point number to the
+	 * Writes an IEEE 754 single-precision(32-bit) floating-point number to the
 	 * byte stream.
 	 * 
-	 * @param value A single-precision (32-bit) floating-point number.
+	 * @param value A single-precision(32-bit) floating-point number.
 	 */
 	function writeFloat(value : Float) : Void;
 

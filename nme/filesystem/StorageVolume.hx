@@ -20,7 +20,7 @@ extern class StorageVolume
 
 	/**
 	 * The constructor function. Generally, you do not call this constructor
-	 * function directly (to create new StorageVolume objects). Rather, you
+	 * function directly(to create new StorageVolume objects). Rather, you
 	 * reference StorageVolume objects by accessing the
 	 * <code>storageVolume</code> property of a StorageVolumeChangeEvent object
 	 * or by calling
@@ -35,14 +35,14 @@ extern class StorageVolume
 	var drive(default,null) : String;
 
 	/**
-	 * The type of file system on the storage volume (such as <code>"FAT"</code>,
+	 * The type of file system on the storage volume(such as <code>"FAT"</code>,
 	 * <code>"NTFS"</code>, <code>"HFS"</code>, or <code>"UFS"</code>).
 	 */
 	var fileSystemType(default,null) : String;
 
 	/**
 	 * Whether the operating system considers the storage volume to be removable
-	 * (<code>true</code>) or not (<code>false</code>).
+	 * (<code>true</code>) or not(<code>false</code>).
 	 *
 	 * <p>The following table lists the values
 	 * <code>StorageVolume.isRemovable</code> property for various types of
@@ -57,7 +57,7 @@ extern class StorageVolume
 	var isRemovable(default,null) : Bool;
 
 	/**
-	 * Whether a volume is writable (<code>true</code>) or not
+	 * Whether a volume is writable(<code>true</code>) or not
 	 * (<code>false</code>).
 	 *
 	 * <p><b>Note:</b> You can determine the amount of space available on a

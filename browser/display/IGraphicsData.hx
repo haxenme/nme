@@ -3,7 +3,7 @@ package browser.display;
 
 interface IGraphicsData {
 	
-	var nmeGraphicsDataType (default, null):GraphicsDataType;
+	var nmeGraphicsDataType(default, null):GraphicsDataType;
 	
 }
 

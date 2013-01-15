@@ -14,9 +14,9 @@ class Sprite extends DisplayObjectContainer {
 	
 	
 	public var buttonMode:Bool;
-	public var dropTarget (get_dropTarget, never):DisplayObject;
-	public var graphics (get_graphics, never):Graphics;
-	public var useHandCursor (default, set_useHandCursor):Bool;
+	public var dropTarget(get_dropTarget, never):DisplayObject;
+	public var graphics(get_graphics, never):Graphics;
+	public var useHandCursor(default, set_useHandCursor):Bool;
 	
 	private var nmeCursorCallbackOut:Dynamic->Void;
 	private var nmeCursorCallbackOver:Dynamic->Void;
@@ -24,45 +24,45 @@ class Sprite extends DisplayObjectContainer {
 	private var nmeGraphics:Graphics;
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
-		nmeGraphics = new Graphics ();
+		nmeGraphics = new Graphics();
 		buttonMode = false;
 		
 	}
 	
 	
-	public override function nmeGetGraphics ():Graphics {
+	public override function nmeGetGraphics():Graphics {
 		
 		return nmeGraphics;
 		
 	}
 	
 	
-	public function startDrag (lockCenter:Bool = false, bounds:Rectangle = null):Void {
+	public function startDrag(lockCenter:Bool = false, bounds:Rectangle = null):Void {
 		
-		if (nmeIsOnStage ()) {
+		if (nmeIsOnStage()) {
 			
-			stage.nmeStartDrag (this, lockCenter, bounds);
+			stage.nmeStartDrag(this, lockCenter, bounds);
 			
 		}
 		
 	}
 	
 	
-	public function stopDrag ():Void {
+	public function stopDrag():Void {
 		
-		if (nmeIsOnStage ()) {
+		if (nmeIsOnStage()) {
 			
-			stage.nmeStopDrag (this);
+			stage.nmeStopDrag(this);
 			var l = parent.nmeChildren.length - 1;
 			var obj:DisplayObject = stage;
 			
 			for (i in 0...parent.nmeChildren.length) {
 				
-				var result = parent.nmeChildren[l - i].nmeGetObjectUnderPoint (new Point (stage.mouseX, stage.mouseY));
+				var result = parent.nmeChildren[l - i].nmeGetObjectUnderPoint(new Point(stage.mouseX, stage.mouseY));
 				if (result != null) obj = result;
 				
 			}
@@ -82,7 +82,7 @@ class Sprite extends DisplayObjectContainer {
 	}
 	
 	
-	override public function toString ():String {
+	override public function toString():String {
 		
 		return "[Sprite name=" + this.name + " id=" + _nmeId + "]";
 		
@@ -96,46 +96,46 @@ class Sprite extends DisplayObjectContainer {
 	
 	
 	
-	private function get_dropTarget ():DisplayObject {
+	private function get_dropTarget():DisplayObject {
 		
 		return nmeDropTarget;
 		
 	}
 	
 	
-	private function get_graphics ():Graphics {
+	private function get_graphics():Graphics {
 		
 		return nmeGraphics;
 		
 	}
 	
 	
-	private function set_useHandCursor (cursor:Bool):Bool {
+	private function set_useHandCursor(cursor:Bool):Bool {
 		
 		if (cursor == this.useHandCursor) return cursor;
 		
 		if (nmeCursorCallbackOver != null) {
 			
-			removeEventListener (MouseEvent.ROLL_OVER, nmeCursorCallbackOver);
+			removeEventListener(MouseEvent.ROLL_OVER, nmeCursorCallbackOver);
 			
 		}
 		
 		if (nmeCursorCallbackOut != null) {
 			
-			removeEventListener (MouseEvent.ROLL_OUT, nmeCursorCallbackOut);
+			removeEventListener(MouseEvent.ROLL_OUT, nmeCursorCallbackOut);
 			
 		}
 		
 		if (!cursor) {
 			
-			Lib.nmeSetCursor (Default);
+			Lib.nmeSetCursor(Default);
 			
 		} else {
 			
-			nmeCursorCallbackOver = function (_) { Lib.nmeSetCursor (Pointer); }
-			nmeCursorCallbackOut = function (_) { Lib.nmeSetCursor (Default); }
-			addEventListener (MouseEvent.ROLL_OVER, nmeCursorCallbackOver);
-			addEventListener (MouseEvent.ROLL_OUT, nmeCursorCallbackOut);
+			nmeCursorCallbackOver = function(_) { Lib.nmeSetCursor(Pointer); }
+			nmeCursorCallbackOut = function(_) { Lib.nmeSetCursor(Default); }
+			addEventListener(MouseEvent.ROLL_OVER, nmeCursorCallbackOver);
+			addEventListener(MouseEvent.ROLL_OUT, nmeCursorCallbackOut);
 			
 		}
 		

@@ -62,7 +62,7 @@ package nme.net;
  * available to individual domains or to all domains. When users decrease the
  * amount of disk space available, some local shared objects may be deleted.
  * Flash Player users also have privacy controls that can prevent third-party
- * domains (domains other than the domain in the current browser address bar)
+ * domains(domains other than the domain in the current browser address bar)
  * from reading or writing local shared objects.</p>
  *
  * <p><b>Note</b>: SWF files that are stored and run on a local computer, not
@@ -93,7 +93,7 @@ package nme.net;
  *
  * <p>If your SWF file attempts to create or modify local shared objects, make
  * sure that your SWF file is at least 215 pixels wide and at least 138 pixels
- * high (the minimum dimensions for displaying the dialog box that prompts
+ * high(the minimum dimensions for displaying the dialog box that prompts
  * users to increase their local shared object storage limit). If your SWF
  * file is smaller than these dimensions and an increase in the storage limit
  * is required, <code>SharedObject.flush()</code> fails, returning
@@ -190,10 +190,10 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	var fps(null,default) : Float;
 
 	/**
-	 * The object encoding (AMF version) for this shared object. When a local
+	 * The object encoding(AMF version) for this shared object. When a local
 	 * shared object is written to disk, the <code>objectEncoding</code> property
 	 * indicates which Action Message Format version should be used: the
-	 * ActionScript 3.0 format (AMF3) or the ActionScript 1.0 or 2.0 format
+	 * ActionScript 3.0 format(AMF3) or the ActionScript 1.0 or 2.0 format
 	 * (AMF0).
 	 *
 	 * <p>Object encoding is handled differently depending if the shared object
@@ -212,7 +212,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * shared objects created by ActionScript 2.0 or 1.0 SWF files. </li>
 	 *   <li><b>Remote shared objects</b>. When connected to the server, a remote
 	 * shared object inherits its <code>objectEncoding</code> setting from the
-	 * associated NetConnection instance (the instance used to connect to the
+	 * associated NetConnection instance(the instance used to connect to the
 	 * remote shared object). When not connected to the server, a remote shared
 	 * object inherits the <code>defaultObjectEncoding</code> setting from the
 	 * associated NetConnection instance. Because the value of a remote shared
@@ -282,7 +282,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * object, for example: </p>
 	 * 
 	 * @param myConnection A NetConnection object that uses the Real-Time
-	 *                     Messaging Protocol (RTMP), such as a NetConnection
+	 *                     Messaging Protocol(RTMP), such as a NetConnection
 	 *                     object used to communicate with Flash Media Server.
 	 * @param params       A string defining a message to pass to the remote
 	 *                     shared object on the server. Cannot be used with Flash
@@ -317,7 +317,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * <code>minDiskSpace</code>. If Flash asks the user to allot disk space for
 	 * the shared object, it asks for 500 bytes. After the user allots the
 	 * requested amount of space, Flash won't have to ask for more space on
-	 * future attempts to flush the object (as long as its size doesn't exceed
+	 * future attempts to flush the object(as long as its size doesn't exceed
 	 * 500 bytes). </p>
 	 *
 	 * <p>After the user responds to the dialog box, this method is called again.
@@ -345,7 +345,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 *               local information storage for objects from this domain.
 	 *
 	 *               <p><b>Note:</b> Local content can always write shared
-	 *               objects from third-party domains (domains other than the
+	 *               objects from third-party domains(domains other than the
 	 *               domain in the current browser address bar) to disk, even if
 	 *               writing of third-party shared objects to disk is
 	 *               disallowed.</p>
@@ -403,17 +403,17 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * subscribed clients.</p>
 	 * 
 	 * @param propertyName The name of the property in the shared object.
-	 * @param value        The value of the property (an ActionScript object), or
+	 * @param value        The value of the property(an ActionScript object), or
 	 *                     <code>null</code> to delete the property.
 	 */
 	function setProperty(propertyName : String, ?value : Dynamic) : Void;
 
 	/**
-	 * The default object encoding (AMF version) for all local shared objects
+	 * The default object encoding(AMF version) for all local shared objects
 	 * created in the SWF file. When local shared objects are written to disk,
 	 * the <code>SharedObject.defaultObjectEncoding</code> property indicates
 	 * which Action Message Format version should be used: the ActionScript 3.0
-	 * format (AMF3) or the ActionScript 1.0 or 2.0 format (AMF0).
+	 * format(AMF3) or the ActionScript 1.0 or 2.0 format(AMF0).
 	 *
 	 * <p>For more information about object encoding, including the difference
 	 * between encoding in local and remote shared objects, see the description
@@ -458,7 +458,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * this domain, the object is not saved locally, even if a value for
 	 * <code>localPath</code> is specified. The exception to this rule is local
 	 * content. Local content can always write shared objects from third-party
-	 * domains (domains other than the domain in the current browser address bar)
+	 * domains(domains other than the domain in the current browser address bar)
 	 * to disk, even if writing of third-party shared objects to disk is
 	 * disallowed. </p>
 	 *
@@ -485,7 +485,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 *
 	 * <p>To avoid inadvertently restricting access to a shared object, use the
 	 * <code>localpath</code> parameter. The most permissive approach is to set
-	 * <code>localPath</code> to <code>/</code> (slash), which makes the shared
+	 * <code>localPath</code> to <code>/</code>(slash), which makes the shared
 	 * object available to all SWF files in the domain, but increases the
 	 * likelihood of name conflicts with other shared objects in the domain. A
 	 * more restrictive approach is to append <code>localPath</code> with folder
@@ -521,9 +521,9 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * </ol>
 	 * </p>
 	 *
-	 * <p>Local files with access to the local filesystem (level 1 or 3) store
+	 * <p>Local files with access to the local filesystem(level 1 or 3) store
 	 * their shared objects in one location. Local files without access to the
-	 * local filesystem (level 2) store their shared objects in another
+	 * local filesystem(level 2) store their shared objects in another
 	 * location.</p>
 	 *
 	 * <p>You can prevent a SWF file from using this method by setting the
@@ -536,7 +536,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * scope="external">Security</a>.</p>
 	 * 
 	 * @param name      The name of the object. The name can include forward
-	 *                  slashes (<code>/</code>); for example,
+	 *                  slashes(<code>/</code>); for example,
 	 *                  <code>work/addresses</code> is a legal name. Spaces are
 	 *                  not allowed in a shared object name, nor are the
 	 *                  following characters: <pre xml:space="preserve"> ~ % & \
@@ -568,7 +568,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 *                  <p>If your SWF file is delivered over a non-HTTPS
 	 *                  connection and you try to set this parameter to
 	 *                  <code>true</code>, the creation of a new shared object
-	 *                  (or the access of a previously created secure shared
+	 *                 (or the access of a previously created secure shared
 	 *                  object) fails and <code>null</code> is returned.
 	 *                  Regardless of the value of this parameter, the created
 	 *                  shared objects count toward the total amount of disk
@@ -578,13 +578,13 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 *                  <code>secure</code> parameter:</p>
 	 * @return A reference to a shared object that is persistent locally and is
 	 *         available only to the current client. If Flash Player can't create
-	 *         or find the shared object (for example, if <code>localPath</code>
+	 *         or find the shared object(for example, if <code>localPath</code>
 	 *         was specified but no such directory exists), this method throws an
 	 *         exception.
 	 * @throws Error Flash Player cannot create the shared object for whatever
 	 *               reason. This error might occur is if persistent shared
 	 *               object creation and storage by third-party Flash content is
-	 *               prohibited (does not apply to local content). Users can
+	 *               prohibited(does not apply to local content). Users can
 	 *               prohibit third-party persistent shared objects on the Global
 	 *               Storage Settings panel of the Settings Manager, located at
 	 *               <a
@@ -611,7 +611,7 @@ extern class SharedObject extends nme.events.EventDispatcher {
 	 * use <code>SharedObject.getLocal()</code>. </p>
 	 * 
 	 * @param name        The name of the remote shared object. The name can
-	 *                    include forward slashes (/); for example,
+	 *                    include forward slashes(/); for example,
 	 *                    work/addresses is a legal name. Spaces are not allowed
 	 *                    in a shared object name, nor are the following
 	 *                    characters: <pre xml:space="preserve"> ~ % & \ ; : " '

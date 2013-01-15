@@ -19,7 +19,7 @@ class GradientGlowFilter extends BitmapFilter {
 	
 	public function new(?distance:Float, ?angle:Float, ?colors:Array<Dynamic>, ?alphas:Array<Dynamic>, ?ratios:Array<Dynamic>, ?blurX:Float, ?blurY:Float, ?strength:Float, ?quality:Int, ?type:BitmapFilterType, ?knockout:Bool) {
 		
-		super ("GradientGlowFilter");
+		super("GradientGlowFilter");
 		
 		this.distance = distance;
 		this.colors = colors;

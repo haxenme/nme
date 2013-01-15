@@ -15,27 +15,27 @@ class Texture extends TextureBase {
 	public var glTexture:native.gl.Texture;
 	
 	
-	public function new (glTexture:native.gl.Texture) {
+	public function new(glTexture:native.gl.Texture) {
 		
-		super ();
+		super();
 		
 		this.glTexture = glTexture;
 		
 	}
 	
 	
-	public function uploadCompressedTextureFromByteArray (data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
+	public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
 		
 		// TODO
 		
 	}
 	
 	
-	public function uploadFromBitmapData (bitmapData:BitmapData, miplevel:Int = 0):Void {
+	public function uploadFromBitmapData(bitmapData:BitmapData, miplevel:Int = 0):Void {
 		
-		GL.bindTexture (GL.TEXTURE_2D, glTexture);
+		GL.bindTexture(GL.TEXTURE_2D, glTexture);
 		
-		var p = bitmapData.getPixels (new Rectangle (0, 0, bitmapData.width, bitmapData.height));
+		var p = bitmapData.getPixels(new Rectangle(0, 0, bitmapData.width, bitmapData.height));
 		var num =  bitmapData.width * bitmapData.height;
 		
 		for (i in 0...num) {
@@ -52,12 +52,12 @@ class Texture extends TextureBase {
 			
 		}
 		
-		GL.texImage2D (GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView (p, 0));
+		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView(p, 0));
 		
 	}
 	
 	
-	public function uploadFromByteArray (data:ByteArray, byteArrayOffset:Int, miplevel:Int = 0):Void {
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, miplevel:Int = 0):Void {
 		
 		// TODO
 		

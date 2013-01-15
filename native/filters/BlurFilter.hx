@@ -9,9 +9,9 @@ class BlurFilter extends BitmapFilter {
 	/** @private */ private var quality:Int;
 	
 	
-	public function new (inBlurX:Float = 4.0, inBlurY:Float = 4.0, inQuality:Int = 1) {
+	public function new(inBlurX:Float = 4.0, inBlurY:Float = 4.0, inQuality:Int = 1) {
 		
-		super ("BlurFilter");
+		super("BlurFilter");
 		
 		blurX = inBlurX;
 		blurY = inBlurY;
@@ -20,9 +20,9 @@ class BlurFilter extends BitmapFilter {
 	}
 	
 	
-	override public function clone ():BitmapFilter {
+	override public function clone():BitmapFilter {
 		
-		return new BlurFilter (blurX, blurY, quality);
+		return new BlurFilter(blurX, blurY, quality);
 		
 	}
 	

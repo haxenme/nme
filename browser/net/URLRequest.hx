@@ -11,7 +11,7 @@ class URLRequest {
 	public var url:String;
 	
 	
-	public function new (inURL:String = null) {
+	public function new(inURL:String = null) {
 		
 		if (inURL != null) {
 			

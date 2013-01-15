@@ -4,9 +4,9 @@ package browser.errors;
 class ArgumentError extends Error {
 	
 	
-	public function new (inMessage:String = "") {
+	public function new(inMessage:String = "") {
 		
-		super (inMessage);
+		super(inMessage);
 		
 	}
 	

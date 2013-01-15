@@ -12,28 +12,28 @@ import native.utils.ByteArray;
 class LoaderInfo extends URLLoader {
 	
 	
-	public var bytes (get_bytes, null):ByteArray;
-	public var childAllowsParent (default, null):Bool;
+	public var bytes(get_bytes, null):ByteArray;
+	public var childAllowsParent(default, null):Bool;
 	public var content:DisplayObject;
 	public var contentType:String;
-	public var frameRate (default, null):Float;
-	public var height (default, null):Int;
-	public var loader (default, null):Loader;
-	public var loaderURL (default, null):String;
-	public var parameters (default, null):Dynamic <String>;
-	public var parentAllowsChild (default, null):Bool;
-	public var sameDomain (default, null):Bool;
-	public var sharedEvents (default, null):EventDispatcher;
-	public var url (default, null):String;
-	public var width (default, null):Int;
+	public var frameRate(default, null):Float;
+	public var height(default, null):Int;
+	public var loader(default, null):Loader;
+	public var loaderURL(default, null):String;
+	public var parameters(default, null):Dynamic <String>;
+	public var parentAllowsChild(default, null):Bool;
+	public var sameDomain(default, null):Bool;
+	public var sharedEvents(default, null):EventDispatcher;
+	public var url(default, null):String;
+	public var width(default, null):Int;
 	//static function getLoaderInfoByDefinition(object : Dynamic) : nme.display.LoaderInfo;
 
 	private var pendingURL:String;
 	
 	
-	private function new () {
+	private function new() {
 		
-		super ();
+		super();
 		
 		childAllowsParent = true;
 		frameRate = 0;
@@ -41,14 +41,14 @@ class LoaderInfo extends URLLoader {
 		loaderURL = null; // XXX : Don't know how to find the URL of the SWF file that initiated the loading.
 		// Set the url attribute before any other callbacks are made.
 		
-		addEventListener (Event.COMPLETE, onURLLoaded);
+		addEventListener(Event.COMPLETE, onURLLoaded);
 		
 	}
 	
 	
-	public static function create (ldr:Loader) {
+	public static function create(ldr:Loader) {
 		
-		var li = new LoaderInfo ();
+		var li = new LoaderInfo();
 		li.loader = ldr;
 		
 		return li;
@@ -56,12 +56,12 @@ class LoaderInfo extends URLLoader {
 	}
 	
 	
-	public override function load (request:URLRequest) {
+	public override function load(request:URLRequest) {
 		
 		// get the file extension for the content type
 		pendingURL = request.url;
-		var dot = pendingURL.lastIndexOf (".");
-		var extension = dot > 0 ? pendingURL.substr (dot + 1).toLowerCase () : "";
+		var dot = pendingURL.lastIndexOf(".");
+		var extension = dot > 0 ? pendingURL.substr(dot + 1).toLowerCase() : "";
 		
 		contentType = switch (extension) {
 			
@@ -76,7 +76,7 @@ class LoaderInfo extends URLLoader {
 		
 		url = null;
 		
-		super.load (request);
+		super.load(request);
 		
 	}
 	
@@ -88,7 +88,7 @@ class LoaderInfo extends URLLoader {
 	
 	
 	
-	private function onURLLoaded (event:Event) {
+	private function onURLLoaded(event:Event) {
 		
 		url = pendingURL;
 		
@@ -102,7 +102,7 @@ class LoaderInfo extends URLLoader {
 	
 	
 	
-	private function get_bytes ():ByteArray {
+	private function get_bytes():ByteArray {
 		
 		return data;
 		

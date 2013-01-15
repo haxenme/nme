@@ -9,11 +9,11 @@ class NetStatusEvent extends Event {
 	public var info:Dynamic;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, info:Dynamic = null):Void {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, info:Dynamic = null):Void {
 		
 		this.info = info;
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 	}
 	

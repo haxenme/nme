@@ -47,10 +47,10 @@ package nme.net;
  *                           Flash Player, this event is only dispatched if
  *                           the current Flash Player environment is able to
  *                           detect and return the status code for the
- *                           request. (Some browser environments may not be
+ *                           request.(Some browser environments may not be
  *                           able to provide this information.) Note that the
- *                           <code>httpStatus</code> event (if any) is sent
- *                           before (and in addition to) any
+ *                           <code>httpStatus</code> event(if any) is sent
+ *                           before(and in addition to) any
  *                           <code>complete</code> or <code>error</code>
  *                           event.
  * @event ioError            Dispatched if a call to URLLoader.load() results
@@ -136,7 +136,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 * 
 	 * @param request A URLRequest object specifying the URL to download. If this
 	 *                parameter is omitted, no load operation begins. If
-	 *                specified, the load operation begins immediately (see the
+	 *                specified, the load operation begins immediately(see the
 	 *                <code>load</code> entry for more information).
 	 */
 	function new(?request : URLRequest) : Void;
@@ -157,7 +157,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 * data to the specified URL, you can set the <code>data</code> property in
 	 * the URLRequest object.
 	 *
-	 * <p><b>Note:</b> If a file being loaded contains non-ASCII characters (as
+	 * <p><b>Note:</b> If a file being loaded contains non-ASCII characters(as
 	 * found in many non-English languages), it is recommended that you save the
 	 * file with UTF-8 or UTF-16 encoding as opposed to a non-Unicode format like
 	 * ASCII.</p>
@@ -175,8 +175,8 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 * blocked ports, see "Restricting Networking APIs" in the <i>ActionScript
 	 * 3.0 Developer's Guide</i>.</p>
 	 *
-	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type (for
-	 * example "multipart/form-data") that contains an upload (indicated by a
+	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type(for
+	 * example "multipart/form-data") that contains an upload(indicated by a
 	 * "filename" parameter in a "content-disposition" header within the POST
 	 * body), the POST operation is subject to the security rules applied to
 	 * uploads:</p>
@@ -184,7 +184,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 * <ul>
 	 *   <li>The POST operation must be performed in response to a user-initiated
 	 * action, such as a mouse click or key press.</li>
-	 *   <li>If the POST operation is cross-domain (the POST target is not on the
+	 *   <li>If the POST operation is cross-domain(the POST target is not on the
 	 * same server as the SWF file that is sending the POST request), the target
 	 * server must provide a URL policy file that permits cross-domain
 	 * access.</li>
@@ -245,7 +245,7 @@ extern class URLLoader extends nme.events.EventDispatcher {
 	 *                           a server outside the caller's security sandbox.
 	 *                           This may be worked around using a policy file on
 	 *                           the server.
-	 * @event securityError      A load operation attempted to load a SWZ file (a
+	 * @event securityError      A load operation attempted to load a SWZ file(a
 	 *                           Adobe platform component), but the certificate
 	 *                           is invalid or the digest does not match the
 	 *                           component.

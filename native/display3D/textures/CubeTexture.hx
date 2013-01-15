@@ -8,28 +8,28 @@ import native.utils.ByteArray;
 class CubeTexture extends TextureBase {
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 	}
 	
 	
-	public function uploadCompressedTextureFromByteArray (data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
+	public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
 		
 		// TODO
 		
 	}
 	
 	
-	public function uploadFromBitmapData (source:BitmapData, side:Int, miplevel:Int = 0):Void {
+	public function uploadFromBitmapData(source:BitmapData, side:Int, miplevel:Int = 0):Void {
 		
 		// TODO
 		
 	}
 	
 	
-	public function uploadFromByteArray (data:ByteArray, byteArrayOffset:Int, side:Int, miplevel:Int = 0):Void {
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, side:Int, miplevel:Int = 0):Void {
 		
 		// TODO
 		

@@ -9,33 +9,33 @@ import browser.events.EventDispatcher;
 class XMLSocket extends EventDispatcher {
 	
 	
-	public var connected (default, null):Bool;
+	public var connected(default, null):Bool;
 	public var timeout:Int;
 	
 	private var _socket:Dynamic;
 	
 	
-	public function new (host:String = null, port:Int = 80):Void {
+	public function new(host:String = null, port:Int = 80):Void {
 		
-		super ();
+		super();
 		
 		if (host != null) {
 			
-			connect (host, port);
+			connect(host, port);
 			
 		}
 		
 	}
 	
 	
-	public function close ():Void {
+	public function close():Void {
 		
-		_socket.close ();
+		_socket.close();
 		
 	}
 	
 	
-	public function connect (host: String, port:Int):Void {
+	public function connect(host: String, port:Int):Void {
 		
 		_socket = untyped __js__("new WebSocket(\"ws://\" + host + \":\" + port)");
 		_socket.onopen = onOpenHandler;
@@ -44,9 +44,9 @@ class XMLSocket extends EventDispatcher {
 	}
 	
 	
-	public function send (object:Dynamic):Void {
+	public function send(object:Dynamic):Void {
 		
-		_socket.send (object);
+		_socket.send(object);
 		
 	}
 	
@@ -58,16 +58,16 @@ class XMLSocket extends EventDispatcher {
 	
 	
 	
-	private function onMessageHandler (msg:Dynamic):Void {
+	private function onMessageHandler(msg:Dynamic):Void {
 		
-		dispatchEvent (new DataEvent (DataEvent.DATA, false, false, msg.data));
+		dispatchEvent(new DataEvent(DataEvent.DATA, false, false, msg.data));
 		
 	}
 	
 	
-	private function onOpenHandler (_):Void {
+	private function onOpenHandler(_):Void {
 		
-		dispatchEvent (new Event (Event.CONNECT));
+		dispatchEvent(new Event(Event.CONNECT));
 		
 	}
 	

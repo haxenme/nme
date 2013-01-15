@@ -18,21 +18,21 @@ package nme.events;
 extern class MouseEvent extends Event {
 
 	/**
-	 * Indicates whether the Alt key is active (<code>true</code>) or inactive
+	 * Indicates whether the Alt key is active(<code>true</code>) or inactive
 	 * (<code>false</code>). Supported for Windows only. On other operating
 	 * systems, this property is always set to <code>false</code>.
 	 */
 	var altKey : Bool;
 
 	/**
-	 * Indicates whether the primary mouse button is pressed (<code>true</code>)
-	 * or not (<code>false</code>).
+	 * Indicates whether the primary mouse button is pressed(<code>true</code>)
+	 * or not(<code>false</code>).
 	 */
 	var buttonDown : Bool;
 
 	/**
 	 * On Windows or Linux, indicates whether the Ctrl key is active
-	 * (<code>true</code>) or inactive (<code>false</code>). On Macintosh,
+	 * (<code>true</code>) or inactive(<code>false</code>). On Macintosh,
 	 * indicates whether either the Control key or the Command key is activated.
 	 */
 	var ctrlKey : Bool;
@@ -90,7 +90,7 @@ extern class MouseEvent extends Event {
 	var relatedObject : nme.display.InteractiveObject;
 
 	/**
-	 * Indicates whether the Shift key is active (<code>true</code>) or inactive
+	 * Indicates whether the Shift key is active(<code>true</code>) or inactive
 	 * (<code>false</code>).
 	 */
 	var shiftKey : Bool;
@@ -145,7 +145,7 @@ extern class MouseEvent extends Event {
 	 * @param ctrlKey       On Windows or Linux, indicates whether the Ctrl key
 	 *                      is activated. On Mac, indicates whether either the
 	 *                      Ctrl key or the Command key is activated.
-	 * @param altKey        Indicates whether the Alt key is activated (Windows
+	 * @param altKey        Indicates whether the Alt key is activated(Windows
 	 *                      or Linux only).
 	 * @param shiftKey      Indicates whether the Shift key is activated.
 	 * @param buttonDown    Indicates whether the primary mouse button is

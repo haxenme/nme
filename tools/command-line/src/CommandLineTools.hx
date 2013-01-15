@@ -535,7 +535,20 @@ class CommandLineTools {
 				
 			case LINUX:
 				
-				if (PlatformHelper.hostArchitecture == Architecture.X64) {
+				var arguments = Sys.args ();
+				var raspberryPi = false;
+				
+				for (argument in arguments) {
+					
+					if (argument == "-rpi") raspberryPi = true;
+					
+				}
+				
+				if (raspberryPi) {
+					
+					untyped $loader.path = $array (path + "RPi/", $loader.path);
+					
+				} else if (PlatformHelper.hostArchitecture == Architecture.X64) {
 					
 					untyped $loader.path = $array (path + "Linux64/", $loader.path);
 					

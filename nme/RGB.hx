@@ -16,7 +16,7 @@ class RGB
       #if neko
       return nme.display.BitmapData.createColor(inRGB,inA);
       #else
-      return inRGB | (inA<<24);
+      return inRGB |(inA<<24);
       #end
    }
 

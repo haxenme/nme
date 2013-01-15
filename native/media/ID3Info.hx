@@ -13,7 +13,7 @@ class ID3Info {
 	public var year:String;
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

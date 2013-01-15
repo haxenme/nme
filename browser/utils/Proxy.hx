@@ -4,7 +4,7 @@ package browser.utils;
 class Proxy {
 	
 	
-	function new () {
+	function new() {
 		
 		
 	}

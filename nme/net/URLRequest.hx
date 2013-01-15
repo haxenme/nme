@@ -65,15 +65,15 @@ package nme.net;
 	 * <code>application/x-www-form-urlencoded</code>. </li>
 	 *   <li> If the value of the <code>data</code> property is any other type,
 	 * the value of <code>contentType</code> should indicate the type of the POST
-	 * data that will be sent (which is the binary or string data contained in
+	 * data that will be sent(which is the binary or string data contained in
 	 * the value of the <code>data</code> property). </li>
 	 *   <li>For <code>FileReference.upload()</code>, the Content-Type of the
 	 * request is set automatically to <code>multipart/form-data</code>, and the
 	 * value of the <code>contentType</code> property is ignored.</li>
 	 * </ul>
 	 *
-	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type (for
-	 * example "multipart/form-data") that contains an upload (indicated by a
+	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type(for
+	 * example "multipart/form-data") that contains an upload(indicated by a
 	 * "filename" parameter in a "content-disposition" header within the POST
 	 * body), the POST operation is subject to the security rules applied to
 	 * uploads:</p>
@@ -81,7 +81,7 @@ package nme.net;
 	 * <ul>
 	 *   <li>The POST operation must be performed in response to a user-initiated
 	 * action, such as a mouse click or key press.</li>
-	 *   <li>If the POST operation is cross-domain (the POST target is not on the
+	 *   <li>If the POST operation is cross-domain(the POST target is not on the
 	 * same server as the SWF file that is sending the POST request), the target
 	 * server must provide a URL policy file that permits cross-domain
 	 * access.</li>
@@ -101,7 +101,7 @@ package nme.net;
 	 * property. When the value of <code>method</code> is <code>GET</code>, the
 	 * value of <code>data</code> is appended to the value of
 	 * <code>URLRequest.url</code>, using HTTP query-string syntax. When the
-	 * <code>method</code> value is <code>POST</code> (or any value other than
+	 * <code>method</code> value is <code>POST</code>(or any value other than
 	 * <code>GET</code>), the value of <code>data</code> is transmitted in the
 	 * body of the HTTP request.</p>
 	 *
@@ -143,25 +143,25 @@ package nme.net;
 
 	/**
 	 * A string that uniquely identifies the signed Adobe platform component to
-	 * be stored to (or retrieved from) the Flash Player cache. An Adobe platform
-	 * component is a signed file (a SWZ file) that contains SWF content that is
+	 * be stored to(or retrieved from) the Flash Player cache. An Adobe platform
+	 * component is a signed file(a SWZ file) that contains SWF content that is
 	 * cached persistently on a user's machine. All SWZ files are signed by
 	 * Adobe. A digest corresponds to a single cached file; if you change the
 	 * file in any way, its digest will change in an unpredictable way. By using
 	 * a digest, you can verify the cached file across multiple domains. Two
 	 * files with the same digest are the same file, and two files with different
-	 * digests are not the same file. A file cannot (practically) be created to
+	 * digests are not the same file. A file cannot(practically) be created to
 	 * "spoof" a digest and pretend to be another digest.
 	 *
-	 * <p>The digest is based on an SHA-256 message digest algorithm (64
+	 * <p>The digest is based on an SHA-256 message digest algorithm(64
 	 * characters long in hexadecimal format).</p>
 	 *
-	 * <p>For example, the Flex SDK includes a SWZ for the Flex framework (and it
+	 * <p>For example, the Flex SDK includes a SWZ for the Flex framework(and it
 	 * provides the digest string for that SWZ file). You can post this SWZ on
-	 * your web server and load it in your SWF file (using the
+	 * your web server and load it in your SWF file(using the
 	 * <code>load()</code> method of a URLLoader object). If the end user's
 	 * machine already has the matching SWZ file cached, the application uses the
-	 * cached SWZ file. (A SWZ file matches if its <code>digest</code> matches
+	 * cached SWZ file.(A SWZ file matches if its <code>digest</code> matches
 	 * the one you provide.) Otherwise, the application downloads the SWZ file
 	 * from the URL you specify. </p>
 	 *
@@ -176,14 +176,14 @@ package nme.net;
 	 *                       file or the signed file loaded out of the cache. The
 	 *                       application also throws this error if the provided
 	 *                       digest is the wrong length or contains invalid
-	 *                       (nonhexadecimal) characters.
+	 *                      (nonhexadecimal) characters.
 	 */
 	var digest : String;
 
 	/**
 	 * Controls the HTTP form submission method.
 	 *
-	 * <p>For SWF content running in Flash Player (in the browser), this property
+	 * <p>For SWF content running in Flash Player(in the browser), this property
 	 * is limited to GET or POST operations, and valid values are
 	 * <code>URLRequestMethod.GET</code> or
 	 * <code>URLRequestMethod.POST</code>.</p>
@@ -195,7 +195,7 @@ package nme.net;
 	 *
 	 * <p>For content running in Adobe AIR, when using the
 	 * <code>navigateToURL()</code> function, the runtime treats a URLRequest
-	 * that uses the POST method (one that has its <code>method</code> property
+	 * that uses the POST method(one that has its <code>method</code> property
 	 * set to <code>URLRequestMethod.POST</code>) as using the GET method.</p>
 	 *
 	 * <p><b>Note:</b> If running in Flash Player and the referenced form has no
@@ -238,11 +238,11 @@ package nme.net;
 	 * The URL to be requested.
 	 *
 	 * <p>Be sure to encode any characters that are either described as unsafe in
-	 * the Uniform Resource Locator specification (see
+	 * the Uniform Resource Locator specification(see
 	 * http://www.faqs.org/rfcs/rfc1738.html) or that are reserved in the URL
-	 * scheme of the URLRequest object (when not used for their reserved
-	 * purpose). For example, use <code>"%25"</code> for the percent (%) symbol
-	 * and <code>"%23"</code> for the number sign (#), as in
+	 * scheme of the URLRequest object(when not used for their reserved
+	 * purpose). For example, use <code>"%25"</code> for the percent(%) symbol
+	 * and <code>"%23"</code> for the number sign(#), as in
 	 * <code>"http://www.example.com/orderForm.cfm?item=%23B-3&discount=50%25"</code>.</p>
 	 *
 	 * <p>By default, the URL must be in the same domain as the calling file,
@@ -262,14 +262,14 @@ package nme.net;
 	 *   <li><code>app</code> </li>
 	 * </ul>
 	 *
-	 * <p><b>Note:</b> IPv6 (Internet Protocol version 6) is supported in AIR and
+	 * <p><b>Note:</b> IPv6(Internet Protocol version 6) is supported in AIR and
 	 * in Flash Player 9.0.115.0 and later. IPv6 is a version of Internet
-	 * Protocol that supports 128-bit addresses (an improvement on the earlier
+	 * Protocol that supports 128-bit addresses(an improvement on the earlier
 	 * IPv4 protocol that supports 32-bit addresses). You might need to activate
 	 * IPv6 on your networking interfaces. For more information, see the Help for
 	 * the operating system hosting the data. If IPv6 is supported on the hosting
 	 * system, you can specify numeric IPv6 literal addresses in URLs enclosed in
-	 * brackets ([]), as in the following. </p>
+	 * brackets([]), as in the following. </p>
 	 * <pre xml:space="preserve">
 	 * rtmp://[2001:db8:ccc3:ffff:0:444d:555e:666f]:1935/test </pre>
 	 */

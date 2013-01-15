@@ -22,7 +22,7 @@ extern class Mouse {
 	 * <p><b>Note:</b> For Flash Player 10.2 or AIR 2.6 and later versions, this
 	 * property sets or gets the cursor name when you are using a native cursor.
 	 * A native cursor name defined using <code>Mouse.registerCursor()</code>
-	 * overwrites currently predefined cursor types (such as
+	 * overwrites currently predefined cursor types(such as
 	 * <code>nme.ui.MouseCursor.IBEAM</code>).</p>
 	 * 
 	 * @throws ArgumentError If set to any value which is not a member of

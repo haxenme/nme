@@ -8,12 +8,12 @@ import browser.Html5Dom;
 class SoundChannel extends EventDispatcher {
 	
 	
-	public var ChannelId (default, null):Int;
-	public var leftPeak (default, null):Float;
-	public var nmeAudio (default, null):HTMLMediaElement;
-	public var position (default, null):Float;
-	public var rightPeak (default, null):Float;
-	public var soundTransform (default, set_soundTransform):SoundTransform;
+	public var ChannelId(default, null):Int;
+	public var leftPeak(default, null):Float;
+	public var nmeAudio(default, null):HTMLMediaElement;
+	public var position(default, null):Float;
+	public var rightPeak(default, null):Float;
+	public var soundTransform(default, set_soundTransform):SoundTransform;
 
 	private var nmeAudioCurrentLoop:Int;
 	private var nmeAudioTotalLoops:Int;
@@ -21,9 +21,9 @@ class SoundChannel extends EventDispatcher {
 	private var nmeStartTime:Float;
 	
 	
-	private function new ():Void {
+	private function new():Void {
 		
-		super (this);
+		super(this);
 		
 		ChannelId = -1;
 		leftPeak = 0.;
@@ -36,11 +36,11 @@ class SoundChannel extends EventDispatcher {
 	}
 	
 	
-	public static function nmeCreate (src:String, startTime:Float = 0.0, loops:Int = 0, sndTransform:SoundTransform = null, removeRef:Void->Void):SoundChannel {
+	public static function nmeCreate(src:String, startTime:Float = 0.0, loops:Int = 0, sndTransform:SoundTransform = null, removeRef:Void->Void):SoundChannel {
 		
-		var channel = new SoundChannel ();
+		var channel = new SoundChannel();
 		
-		channel.nmeAudio = cast Lib.document.createElement ("audio");
+		channel.nmeAudio = cast Lib.document.createElement("audio");
 		channel.nmeRemoveRef = removeRef;
 		channel.nmeAudio.addEventListener("ended", cast channel.__onSoundChannelFinished, false);
 		channel.nmeAudio.addEventListener("seeked", cast channel.__onSoundSeeked, false);
@@ -61,15 +61,15 @@ class SoundChannel extends EventDispatcher {
 			
 			var onLoad = null;
 			
-			onLoad = function (_) { 
+			onLoad = function(_) { 
 				
 				channel.nmeAudio.currentTime = channel.nmeStartTime; 
-				channel.nmeAudio.play ();
-				channel.nmeAudio.removeEventListener ("canplaythrough", cast onLoad, false);
+				channel.nmeAudio.play();
+				channel.nmeAudio.removeEventListener("canplaythrough", cast onLoad, false);
 				
 			}
 			
-			channel.nmeAudio.addEventListener ("canplaythrough", cast onLoad, false);
+			channel.nmeAudio.addEventListener("canplaythrough", cast onLoad, false);
 			
 		} else {
 			
@@ -89,13 +89,13 @@ class SoundChannel extends EventDispatcher {
 	}
 	
 	
-	public function stop ():Void {
+	public function stop():Void {
 		
 		if (nmeAudio != null) {
 			
-			nmeAudio.pause ();
+			nmeAudio.pause();
 			nmeAudio = null;
-			if (nmeRemoveRef != null) nmeRemoveRef ();
+			if (nmeRemoveRef != null) nmeRemoveRef();
 			
 		}
 		
@@ -109,30 +109,30 @@ class SoundChannel extends EventDispatcher {
 	
 	
 	
-	private function __onProgress (evt:Event):Void {
+	private function __onProgress(evt:Event):Void {
 		
 		trace("sound progress: " + evt);
 		
 	}
 	
 	
-	private function __onSoundChannelFinished (evt:Event):Void {
+	private function __onSoundChannelFinished(evt:Event):Void {
 		
 		if (nmeAudioCurrentLoop >= nmeAudioTotalLoops) {
 			
-			nmeAudio.removeEventListener ("ended", cast __onSoundChannelFinished, false);
-			nmeAudio.removeEventListener ("seeked", cast __onSoundSeeked, false);
-			nmeAudio.removeEventListener ("stalled", cast __onStalled, false);
-			nmeAudio.removeEventListener ("progress", cast __onProgress, false);
+			nmeAudio.removeEventListener("ended", cast __onSoundChannelFinished, false);
+			nmeAudio.removeEventListener("seeked", cast __onSoundSeeked, false);
+			nmeAudio.removeEventListener("stalled", cast __onStalled, false);
+			nmeAudio.removeEventListener("progress", cast __onProgress, false);
 			nmeAudio = null;
 			
-			var evt = new Event (Event.COMPLETE);
+			var evt = new Event(Event.COMPLETE);
 			evt.target = this;
-			dispatchEvent (evt);
+			dispatchEvent(evt);
 			
 			if (nmeRemoveRef != null) {
 				
-				nmeRemoveRef ();
+				nmeRemoveRef();
 				
 			}
 			
@@ -140,19 +140,19 @@ class SoundChannel extends EventDispatcher {
 			
 			// firefox-specific
 			nmeAudio.currentTime = nmeStartTime;
-			nmeAudio.play ();
+			nmeAudio.play();
 			
 		}
 		
 	}
 	
 	
-	private function __onSoundSeeked (evt:Event):Void {
+	private function __onSoundSeeked(evt:Event):Void {
 		
 		if (nmeAudioCurrentLoop >= nmeAudioTotalLoops) {
 			
 			nmeAudio.loop = false;
-			stop ();
+			stop();
 			
 		} else {
 			
@@ -169,7 +169,7 @@ class SoundChannel extends EventDispatcher {
 		
 		if (nmeAudio != null) {
 			
-			nmeAudio.load ();
+			nmeAudio.load();
 			
 		}
 		
@@ -183,7 +183,7 @@ class SoundChannel extends EventDispatcher {
 	
 	
 	
-	private function set_soundTransform (v:SoundTransform):SoundTransform {
+	private function set_soundTransform(v:SoundTransform):SoundTransform {
 		
 		nmeAudio.volume = v.volume;
 		return this.soundTransform = v;

@@ -15,7 +15,7 @@ package nme.media;
 @:final extern class SoundChannel extends nme.events.EventDispatcher {
 
 	/**
-	 * The current amplitude (volume) of the left channel, from 0 (silent) to 1
+	 * The current amplitude(volume) of the left channel, from 0(silent) to 1
 	 * (full amplitude).
 	 */
 	var leftPeak(default,null) : Float;
@@ -36,7 +36,7 @@ package nme.media;
 	var position(default,null) : Float;
 
 	/**
-	 * The current amplitude (volume) of the right channel, from 0 (silent) to 1
+	 * The current amplitude(volume) of the right channel, from 0(silent) to 1
 	 * (full amplitude).
 	 */
 	var rightPeak(default,null) : Float;

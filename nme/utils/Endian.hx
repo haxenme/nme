@@ -4,8 +4,8 @@ package nme.utils;
 
 /**
  * The Endian class contains values that denote the byte order used to
- * represent multibyte numbers. The byte order is either bigEndian (most
- * significant byte first) or littleEndian (least significant byte first).
+ * represent multibyte numbers. The byte order is either bigEndian(most
+ * significant byte first) or littleEndian(least significant byte first).
  *
  * <p>Content in Flash Player or Adobe<sup>®</sup> AIR™ can interface with
  * a server by using the binary protocol of that server, directly. Some

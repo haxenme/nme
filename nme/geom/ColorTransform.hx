@@ -39,7 +39,7 @@ package nme.geom;
  * ColorTransform object.</p>
  *
  * <p>Color transformations do not apply to the background color of a movie
- * clip (such as a loaded SWF object). They apply only to graphics and symbols
+ * clip(such as a loaded SWF object). They apply only to graphics and symbols
  * that are attached to the movie clip.</p>
  */
 extern class ColorTransform {
@@ -79,7 +79,7 @@ extern class ColorTransform {
 	 * <p>When you set this property, it changes the three color offset values
 	 * (<code>redOffset</code>, <code>greenOffset</code>, and
 	 * <code>blueOffset</code>) accordingly, and it sets the three color
-	 * multiplier values (<code>redMultiplier</code>,
+	 * multiplier values(<code>redMultiplier</code>,
 	 * <code>greenMultiplier</code>, and <code>blueMultiplier</code>) to 0. The
 	 * alpha transparency multiplier and offset values do not change.</p>
 	 *

@@ -10,7 +10,7 @@ class Timer extends EventDispatcher {
 	
 	
 	public var currentCount:Int;
-	public var delay (get_delay, set_delay):Float;
+	public var delay(get_delay, set_delay):Float;
 	public var repeatCount:Int;
 	public var running:Bool;
 	
@@ -18,15 +18,15 @@ class Timer extends EventDispatcher {
 	/** @private */ private var timer:haxe.Timer;
 	
 	
-	public function new (delay:Float, repeatCount:Int = 0) {
+	public function new(delay:Float, repeatCount:Int = 0) {
 		
-		if (Math.isNaN (delay) || delay < 0) {
+		if (Math.isNaN(delay) || delay < 0) {
 			
-			throw new Error ("The delay specified is negative or not a finite number");
+			throw new Error("The delay specified is negative or not a finite number");
 			
 		}
 		
-		super ();
+		super();
 		
 		_delay = delay;
 		this.repeatCount = repeatCount;
@@ -35,11 +35,11 @@ class Timer extends EventDispatcher {
 	}
 	
 	
-	public function reset () {
+	public function reset() {
 		
 		if (running) {
 			
-			stop ();
+			stop();
 			
 		}
 		
@@ -48,12 +48,12 @@ class Timer extends EventDispatcher {
 	}
 	
 	
-	public function start () {
+	public function start() {
 		
 		if (!running) {
 			
 			running = true;
-			timer = new haxe.Timer (_delay);
+			timer = new haxe.Timer(_delay);
 			timer.run = timer_onTimer;
 			
 		}
@@ -61,13 +61,13 @@ class Timer extends EventDispatcher {
 	}
 	
 	
-	public function stop () {
+	public function stop() {
 		
 		running = false;
 		
 		if (timer != null) {
 			
-			timer.stop ();
+			timer.stop();
 			timer = null;
 			
 		}
@@ -89,14 +89,14 @@ class Timer extends EventDispatcher {
 	}
 	
 	
-	private function set_delay (value:Float):Float {
+	private function set_delay(value:Float):Float {
 		
 		_delay = value;
 		
 		if (running) {
 			
-			stop ();
-			start ();
+			stop();
+			start();
 			
 		}
 		
@@ -112,19 +112,19 @@ class Timer extends EventDispatcher {
 	
 	
 	
-	/** @private */ private function timer_onTimer ():Void {
+	/** @private */ private function timer_onTimer():Void {
 		
 		currentCount ++;
 		
 		if (repeatCount > 0 && currentCount >= repeatCount) {
 			
-			stop ();
-			dispatchEvent (new TimerEvent (TimerEvent.TIMER));
-			dispatchEvent (new TimerEvent (TimerEvent.TIMER_COMPLETE));
+			stop();
+			dispatchEvent(new TimerEvent(TimerEvent.TIMER));
+			dispatchEvent(new TimerEvent(TimerEvent.TIMER_COMPLETE));
 			
 		} else {
 			
-			dispatchEvent (new TimerEvent (TimerEvent.TIMER));
+			dispatchEvent(new TimerEvent(TimerEvent.TIMER));
 			
 		}
 		

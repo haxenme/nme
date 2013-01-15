@@ -19,7 +19,7 @@ package nme.filesystem;
  * which is available in Flash<sup>®</sup> Player as well as
  * Adobe<sup>®</sup> AIR<sup>®</sup>, represents a pointer to a file, but
  * the File class adds properties and methods that are not exposed in Flash
- * Player (in a SWF running in a browser), due to security considerations.</p>
+ * Player(in a SWF running in a browser), due to security considerations.</p>
  *
  * <p>The File class includes static properties that let you reference
  * commonly used directory locations. These static properties include:</p>
@@ -28,7 +28,7 @@ package nme.filesystem;
  *   <li><code>File.applicationStorageDirectory</code> - a storage directory
  * unique to each installed AIR application</li>
  *   <li><code>File.applicationDirectory</code> - the read-only directory
- * where the application is installed (along with any installed assets)</li>
+ * where the application is installed(along with any installed assets)</li>
  *   <li><code>File.desktopDirectory</code> - the user's desktop
  * directory</li>
  *   <li><code>File.documentsDirectory</code> - the user's documents
@@ -51,7 +51,7 @@ package nme.filesystem;
  * application-specific storage directory for the AIR application. It is
  * defined by the <code>File.applicationStorageDirectory</code> property.</p>
  *
- * <p>Do not add or remove content from the application directory (where the
+ * <p>Do not add or remove content from the application directory(where the
  * AIR application is installed). Doing so can break an AIR application and
  * invalidate the application signature. AIR does not let you write to the
  * application directory by default, because the directory is not writable to
@@ -85,10 +85,10 @@ extern class File
 	 * The folder containing the application's installed files.
 	 *
 	 * <p>The <code>url</code> property for this object uses the <code>app</code>
-	 * URL scheme (not the <code>file</code> URL scheme). This means that the
+	 * URL scheme(not the <code>file</code> URL scheme). This means that the
 	 * <code>url</code> string is specified starting with <code>"app:"</code>
 	 * (not <code>"file:"</code>). Also, if you create a File object relative to
-	 * the <code>File.applicationDirectory</code> directory (by using the
+	 * the <code>File.applicationDirectory</code> directory(by using the
 	 * <code>resolvePath()</code> method), the <code>url</code> property of the
 	 * File object also uses the <code>app</code> URL scheme. </p>
 	 *
@@ -101,7 +101,7 @@ extern class File
 	 * the application storage directory
 	 * (<code>File.applicationStorageDirectory</code>). If you want any of the
 	 * content in the application storage directory to have access to the
-	 * application-privileged functionality (AIR APIs), you can expose that
+	 * application-privileged functionality(AIR APIs), you can expose that
 	 * functionality by using a sandbox bridge.</p>
 	 *
 	 * <p>The <code>applicationDirectory</code> property provides a way to
@@ -129,13 +129,13 @@ extern class File
 	 * platform.</p>
 	 *
 	 * <p>The <code>url</code> property for this object uses the
-	 * <code>app-storage</code> URL scheme (not the <code>file</code> URL
+	 * <code>app-storage</code> URL scheme(not the <code>file</code> URL
 	 * scheme). This means that the <code>url</code> string is specified starting
-	 * with <code>"app-storage:"</code> (not <code>"file:"</code>). Also, if you
+	 * with <code>"app-storage:"</code>(not <code>"file:"</code>). Also, if you
 	 * create a File object relative to the
-	 * <code>File.applicationStoreDirectory</code> directory (by using the
+	 * <code>File.applicationStoreDirectory</code> directory(by using the
 	 * <code>resolvePath()</code> method), the <code>url</code> of the File
-	 * object also uses the <code>app-storage</code> URL scheme (as in the
+	 * object also uses the <code>app-storage</code> URL scheme(as in the
 	 * example).</p>
 	 *
 	 * <p>The <code>applicationStorageDirectory</code> property provides a way to
@@ -168,10 +168,10 @@ extern class File
 	/**
 	 * The user's documents directory.
 	 *
-	 * <p>On Windows, this is the My Documents directory (for example,
+	 * <p>On Windows, this is the My Documents directory(for example,
 	 * C:\Documents and Settings\userName\My Documents). On Mac OS, the default
 	 * location is /Users/userName/Documents. On Linux, the default location is
-	 * /home/userName/Documents (on an English system), and the property observes
+	 * /home/userName/Documents(on an English system), and the property observes
 	 * the <code>xdg-user-dirs</code> setting.</p>
 	 *
 	 * <p>The <code>documentsDirectory</code> property provides a way to
@@ -193,7 +193,7 @@ extern class File
 	/**
 	 * The user's directory.
 	 *
-	 * <p>On Windows, this is the parent of the My Documents directory (for
+	 * <p>On Windows, this is the parent of the My Documents directory(for
 	 * example, C:\Documents and Settings\userName). On Mac OS, it is
 	 * /Users/userName. On Linux, it is /home/userName.</p>
 	 *
@@ -213,9 +213,9 @@ extern class File
 
 	/**
 	 * The full path in the host operating system representation. On Mac OS and
-	 * Linux, the forward slash (/) character is used as the path separator.
+	 * Linux, the forward slash(/) character is used as the path separator.
 	 * However, in Windows, you can <i>set</i> the <code>nativePath</code>
-	 * property by using the forward slash character or the backslash (\)
+	 * property by using the forward slash character or the backslash(\)
 	 * character as the path separator, and AIR automatically replaces forward
 	 * slashes with the appropriate backslash character.
 	 *
@@ -238,8 +238,8 @@ extern class File
 	 * relative to these directories.</p>
 	 *
 	 * <p>Some Flex APIs, such as the <code>source</code> property of the
-	 * SWFLoader class, use a URL (the <code>url</code> property of a File
-	 * object), not a native path (the <code>nativePath</code> property).</p>
+	 * SWFLoader class, use a URL(the <code>url</code> property of a File
+	 * object), not a native path(the <code>nativePath</code> property).</p>
 	 * 
 	 * @throws ArgumentError The syntax of the path is invalid.
 	 * @throws SecurityError The caller is not in the application security
@@ -255,9 +255,9 @@ extern class File
 	 * path in the application directory, the URL scheme is <code>"app"</code>;
 	 * otherwise the scheme is <code>"file"</code>. </p>
 	 *
-	 * <p>You can use blank space characters (rather than <code>"%20"</code>)
+	 * <p>You can use blank space characters(rather than <code>"%20"</code>)
 	 * when <i>assigning</i> a value to the <code>url</code> property; AIR
-	 * automatically encodes the strings (for instance, converting spaces to
+	 * automatically encodes the strings(for instance, converting spaces to
 	 * <code>"%20"</code>).</p>
 	 * 
 	 * @throws ArgumentError The URL syntax is invalid.
@@ -296,7 +296,7 @@ extern class File
 	 * directory:</p>
 	 * 
 	 * @param path The path to the file. You can specify the path by using either
-	 *             a URL or native path (platform-specific) notation.
+	 *             a URL or native path(platform-specific) notation.
 	 *
 	 *             <p>If you specify a URL, you can use any of the following URL
 	 *             schemes: <code>file</code>, <code>app</code>, or
@@ -308,8 +308,8 @@ extern class File
 	 *               <li><code>"app-storage:/preferences.xml"</code></li>
 	 *
 	 *             <li><code>"file:///C:/Documents%20and%20Settings/bob/Desktop"</code>
-	 *             (the desktop on Bob's Windows computer)</li>
-	 *               <li><code>"file:///Users/bob/Desktop"</code> (the desktop on
+	 *            (the desktop on Bob's Windows computer)</li>
+	 *               <li><code>"file:///Users/bob/Desktop"</code>(the desktop on
 	 *             Bob's Mac computer)</li>
 	 *             </ul>
 	 *

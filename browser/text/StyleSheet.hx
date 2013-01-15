@@ -7,10 +7,10 @@ import browser.events.EventDispatcher;
 class StyleSheet extends EventDispatcher, implements Dynamic {
 	
 	
-	public var styleNames (default, null):Array<Dynamic>;
+	public var styleNames(default, null):Array<Dynamic>;
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

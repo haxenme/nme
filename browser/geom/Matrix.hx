@@ -11,14 +11,14 @@ class Matrix {
 	public var b:Float;
 	public var c:Float;
 	public var d:Float;
-	public var tx (default, set_tx):Float;
-	public var ty (default, set_ty):Float;
+	public var tx(default, set_tx):Float;
+	public var ty(default, set_ty):Float;
 	
 	public var _sx:Float;
 	public var _sy:Float;
 	
 	
-	public function new (in_a:Float = 1, in_b:Float = 0, in_c:Float = 0, in_d:Float = 1, in_tx:Float = 0, in_ty:Float = 0) {
+	public function new(in_a:Float = 1, in_b:Float = 0, in_c:Float = 0, in_d:Float = 1, in_tx:Float = 0, in_ty:Float = 0) {
 		
 		a = in_a;
 		b = in_b;
@@ -32,21 +32,21 @@ class Matrix {
 	}
 	
 	
-	private inline function cleanValues ():Void {
+	private inline function cleanValues():Void {
 		
-		a = Math.round (a * 1000) / 1000;
-		b = Math.round (b * 1000) / 1000;
-		c = Math.round (c * 1000) / 1000;
-		d = Math.round (d * 1000) / 1000;
-		tx = Math.round (tx * 10) / 10;
-		ty = Math.round (ty * 10) / 10;
+		a = Math.round(a * 1000) / 1000;
+		b = Math.round(b * 1000) / 1000;
+		c = Math.round(c * 1000) / 1000;
+		d = Math.round(d * 1000) / 1000;
+		tx = Math.round(tx * 10) / 10;
+		ty = Math.round(ty * 10) / 10;
 		
 	}
 	
 	
-	public inline function clone ():Matrix {
+	public inline function clone():Matrix {
 		
-		var m = new Matrix (a, b, c, d, tx, ty);
+		var m = new Matrix(a, b, c, d, tx, ty);
 		m._sx = _sx;
 		m._sy = _sy;
 		return m;
@@ -54,7 +54,7 @@ class Matrix {
 	}
 	
 	
-	public function concat (m:Matrix):Void {
+	public function concat(m:Matrix):Void {
 		
 		var a1 = a * m.a + b * m.c;
 		b = a * m.b + b * m.d;
@@ -71,12 +71,12 @@ class Matrix {
 		_sx *= m._sx;
 		_sy *= m._sy;
 		
-		cleanValues ();
+		cleanValues();
 		
 	}
 	
 	
-	public function copy (m:Matrix):Void {
+	public function copy(m:Matrix):Void {
 		
 		a = m.a;
 		b = m.b;
@@ -90,7 +90,7 @@ class Matrix {
 	}
 	
 	
-	public function createGradientBox (in_width:Float, in_height:Float, rotation:Float = 0, in_tx:Float = 0, in_ty:Float = 0):Void {
+	public function createGradientBox(in_width:Float, in_height:Float, rotation:Float = 0, in_tx:Float = 0, in_ty:Float = 0):Void {
 		
 		a = in_width / 1638.4;
 		d = in_height / 1638.4;
@@ -98,8 +98,8 @@ class Matrix {
 		// rotation is clockwise
 		if (rotation != null && rotation != 0.0) {
 			
-			var cos = Math.cos (rotation);
-			var sin = Math.sin (rotation);
+			var cos = Math.cos(rotation);
+			var sin = Math.sin(rotation);
 			
 			b = sin * d;
 			c = -sin * a;
@@ -119,7 +119,7 @@ class Matrix {
 	}
 	
 	
-	public function identity ():Void {
+	public function identity():Void {
 		
 		a = 1;
 		b = 0;
@@ -133,7 +133,7 @@ class Matrix {
 	}
 	
 	
-	public function invert ():Matrix {
+	public function invert():Matrix {
 		
 		var norm = a * d - b * c;
 		
@@ -161,46 +161,46 @@ class Matrix {
 		_sx /= _sx;
 		_sy /= _sy;
 		
-		cleanValues ();
+		cleanValues();
 		return this;
 		
 	}
 	
 	
-	public inline function mult (m:Matrix) {
+	public inline function mult(m:Matrix) {
 		
-		var result = clone ();
-		result.concat (m);
+		var result = clone();
+		result.concat(m);
 		return result;
 		
 	}
 	
 	
-	public inline function nmeTransformX (inPos:Point):Float {
+	public inline function nmeTransformX(inPos:Point):Float {
 		
 		return inPos.x * a + inPos.y * c + tx;
 		
 	}
 	
 	
-	public inline function nmeTransformY (inPos:Point):Float {
+	public inline function nmeTransformY(inPos:Point):Float {
 		
 		return inPos.x * b + inPos.y * d + ty;
 		
 	}
 	
 	
-	public inline function nmeTranslateTransformed (inPos:Point):Void {
+	public inline function nmeTranslateTransformed(inPos:Point):Void {
 		
-		tx = nmeTransformX (inPos);
-		ty = nmeTransformY (inPos);
+		tx = nmeTransformX(inPos);
+		ty = nmeTransformY(inPos);
 		
-		cleanValues ();
+		cleanValues();
 		
 	}
 	
 	
-	public function rotate (inTheta:Float):Void {
+	public function rotate(inTheta:Float):Void {
 		
 		/*
 		   Rotate object "after" other transforms
@@ -216,8 +216,8 @@ class Matrix {
 			
 		 */
 		
-		var cos = Math.cos (inTheta);
-		var sin = Math.sin (inTheta);
+		var cos = Math.cos(inTheta);
+		var sin = Math.sin(inTheta);
 		
 		var a1 = a * cos - b * sin;
 		b = a * sin + b * cos;
@@ -231,12 +231,12 @@ class Matrix {
 		ty = tx * sin + ty * cos;
 		tx = tx1;
 		
-		cleanValues ();
+		cleanValues();
 		
 	}
 	
 	
-	public function scale (inSX:Float, inSY:Float) {
+	public function scale(inSX:Float, inSY:Float) {
 		
 		/*
 			
@@ -256,26 +256,26 @@ class Matrix {
 		tx *= inSX;
 		ty *= inSY;
 		
-		cleanValues ();
+		cleanValues();
 		
 	}
 	
 	
-	private inline function setRotation (inTheta:Float, inScale:Float = 1) {
+	private inline function setRotation(inTheta:Float, inScale:Float = 1) {
 		
 		var scale:Float = inScale;
 		
-		a = Math.cos (inTheta) * scale;
-		c = Math.sin (inTheta) * scale;
+		a = Math.cos(inTheta) * scale;
+		c = Math.sin(inTheta) * scale;
 		b = -c;
 		d = a;
 		
-		cleanValues ();
+		cleanValues();
 		
 	}
 	
 	
-	public inline function to3DString ():String {
+	public inline function to3DString():String {
 		
 		// identityMatrix
 		//  [a,b,tx,0],
@@ -290,33 +290,33 @@ class Matrix {
 	}
 	
 	
-	public inline function toMozString () {
+	public inline function toMozString() {
 		
 		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + "px, " + ty + "px)";
 		
 	}
 	
 	
-	public inline function toString ():String {
+	public inline function toString():String {
 		
 		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + ", " + ty + ")";
 		
 	}
 	
 	
-	public function transformPoint (inPos:Point) {
+	public function transformPoint(inPos:Point) {
 		
-		return new Point (nmeTransformX (inPos), nmeTransformY (inPos));
+		return new Point(nmeTransformX(inPos), nmeTransformY(inPos));
 		
 	}
 	
 	
-	public function translate (inDX:Float, inDY:Float) {
+	public function translate(inDX:Float, inDY:Float) {
 		
-		var m = new Matrix ();
+		var m = new Matrix();
 		m.tx = inDX;
 		m.ty = inDY;
-		this.concat (m);
+		this.concat(m);
 		
 	}
 	
@@ -328,7 +328,7 @@ class Matrix {
 	
 	
 	
-	private function set_tx (inValue:Float):Float {
+	private function set_tx(inValue:Float):Float {
 		
 		tx = inValue;// * _sx;
 		return tx;
@@ -336,7 +336,7 @@ class Matrix {
 	}
 	
 	
-	private function set_ty (inValue:Float):Float {
+	private function set_ty(inValue:Float):Float {
 		
 		ty = inValue;// * _sy;
 		return ty;

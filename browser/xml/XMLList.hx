@@ -4,7 +4,7 @@ package browser.xml;
 class XMLList implements ArrayAccess<XML> {
 	
 	
-	function new (?value:Dynamic) {
+	function new(?value:Dynamic) {
 		
 		
 		

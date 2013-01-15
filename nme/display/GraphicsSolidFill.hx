@@ -14,14 +14,14 @@ package nme.display;
 
 	/**
 	 * Indicates the alpha transparency value of the fill. Valid values are 0
-	 * (fully transparent) to 1 (fully opaque). The default value is 1. Display
+	 * (fully transparent) to 1(fully opaque). The default value is 1. Display
 	 * objects with alpha set to 0 are active, even though they are invisible.
 	 */
 	var alpha : Float;
 
 	/**
 	 * The color of the fill. Valid values are in the hexadecimal format
-	 * 0xRRGGBB. The default value is 0xFF0000 (or the uint 0).
+	 * 0xRRGGBB. The default value is 0xFF0000(or the uint 0).
 	 */
 	var color : Int;
 
@@ -30,8 +30,8 @@ package nme.display;
 	 * 
 	 * @param color The color value. Valid values are in the hexadecimal format
 	 *              0xRRGGBB.
-	 * @param alpha The alpha transparency value. Valid values are 0 (fully
-	 *              transparent) to 1 (fully opaque).
+	 * @param alpha The alpha transparency value. Valid values are 0(fully
+	 *              transparent) to 1(fully opaque).
 	 */
 	function new(color : Int = 0, alpha : Float = 1) : Void;
 }

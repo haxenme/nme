@@ -17,7 +17,7 @@ package nme.display;
  * rendering content onscreen, such as the Sprite, SimpleButton, TextField, or
  * MovieClip classes.</p>
  * 
- * @event clear                  Dispatched when the user selects 'Clear' (or
+ * @event clear                  Dispatched when the user selects 'Clear'(or
  *                               'Delete') from the text context menu. This
  *                               event is dispatched to the object that
  *                               currently has focus. If the object that
@@ -128,7 +128,7 @@ package nme.display;
  *                               object.
  * @event gesturePan             Dispatched when the user moves a point of
  *                               contact over the InteractiveObject instance
- *                               on a touch-enabled device (such as moving a
+ *                               on a touch-enabled device(such as moving a
  *                               finger from left to right over a display
  *                               object on a mobile phone or tablet with a
  *                               touch screen). Some devices might also
@@ -145,7 +145,7 @@ package nme.display;
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
  *                               the nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -165,7 +165,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event gesturePressAndTap     Dispatched when the user creates a point of
  *                               contact with an InteractiveObject instance,
- *                               then taps on a touch-enabled device (such as
+ *                               then taps on a touch-enabled device(such as
  *                               placing several fingers over a display object
  *                               to open a menu and then taps one finger to
  *                               select a menu item on a mobile phone or
@@ -179,13 +179,13 @@ package nme.display;
  *                               a secondary tap, the InteractiveObject
  *                               instance can dispatch a
  *                               <code>mouseOver</code> event and a
- *                               <code>click</code> event (among others) as
+ *                               <code>click</code> event(among others) as
  *                               well as the <code>gesturePressAndTap</code>
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
  *                               nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -205,13 +205,13 @@ package nme.display;
  *                               <p>When handling the properties of the event
  *                               object, note that the <code>localX</code> and
  *                               <code>localY</code> properties are set to the
- *                               primary point of contact (the "push"). The
+ *                               primary point of contact(the "push"). The
  *                               <code>offsetX</code> and <code>offsetY</code>
  *                               properties are the distance to the secondary
- *                               point of contact (the "tap").</p>
+ *                               point of contact(the "tap").</p>
  * @event gestureRotate          Dispatched when the user performs a rotation
  *                               gesture at a point of contact with an
- *                               InteractiveObject instance (such as touching
+ *                               InteractiveObject instance(such as touching
  *                               two fingers and rotating them over a display
  *                               object on a mobile phone or tablet with a
  *                               touch screen). Two-finger rotation is a
@@ -226,13 +226,13 @@ package nme.display;
  *                               over an InteractiveObject, the
  *                               InteractiveObject instance can dispatch a
  *                               <code>mouseOver</code> event and a
- *                               <code>click</code> event (among others), in
+ *                               <code>click</code> event(among others), in
  *                               addition to the <code>gestureRotate</code>
  *                               event, or all if the current environment
  *                               supports it. Choose how you want to handle
  *                               the user interaction. Use the
  *                               nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -261,7 +261,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event gestureSwipe           Dispatched when the user performs a swipe
  *                               gesture at a point of contact with an
- *                               InteractiveObject instance (such as touching
+ *                               InteractiveObject instance(such as touching
  *                               three fingers to a screen and then moving
  *                               them in parallel over a display object on a
  *                               mobile phone or tablet with a touch screen).
@@ -276,7 +276,7 @@ package nme.display;
  *                               over an InteractiveObject, and then moves the
  *                               fingers together, the InteractiveObject
  *                               instance can dispatch a <code>rollOver</code>
- *                               event and a <code>rollOut</code> event (among
+ *                               event and a <code>rollOut</code> event(among
  *                               others), in addition to the
  *                               <code>gestureSwipe</code> event, or all if
  *                               the current environment supports it. Choose
@@ -309,7 +309,7 @@ package nme.display;
  *                               three-finger swipe.</p>
  * @event gestureTwoFingerTap    Dispatched when the user presses two points
  *                               of contact over the same InteractiveObject
- *                               instance on a touch-enabled device (such as
+ *                               instance on a touch-enabled device(such as
  *                               presses and releases two fingers over a
  *                               display object on a mobile phone or tablet
  *                               with a touch screen). Some devices might also
@@ -324,7 +324,7 @@ package nme.display;
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
  *                               interaction. Use the nme.ui.Multitouch
- *                               class to manage touch event handling (enable
+ *                               class to manage touch event handling(enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
  *                               so only mouse events are dispatched). If you
@@ -345,7 +345,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event gestureZoom            Dispatched when the user performs a zoom
  *                               gesture at a point of contact with an
- *                               InteractiveObject instance (such as touching
+ *                               InteractiveObject instance(such as touching
  *                               two fingers to a screen and then quickly
  *                               spreading the fingers apart over a display
  *                               object on a mobile phone or tablet with a
@@ -361,13 +361,13 @@ package nme.display;
  *                               over an InteractiveObject, and then moves the
  *                               fingers apart, the InteractiveObject instance
  *                               can dispatch a <code>mouseOver</code> event
- *                               and a <code>click</code> event (among
+ *                               and a <code>click</code> event(among
  *                               others), in addition to the
  *                               <code>gestureZoom</code> event, or all if the
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
  *                               the nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -401,7 +401,7 @@ package nme.display;
  *                               vary by device and operating system. This
  *                               event type is generated after such a mapping
  *                               occurs but before the processing of an input
- *                               method editor (IME). IMEs are used to enter
+ *                               method editor(IME). IMEs are used to enter
  *                               characters, such as Chinese ideographs, that
  *                               the standard QWERTY keyboard is ill-equipped
  *                               to produce. This event occurs before the
@@ -434,7 +434,7 @@ package nme.display;
  *                               vary by device and operating system. This
  *                               event type is generated after such a mapping
  *                               occurs but before the processing of an input
- *                               method editor (IME). IMEs are used to enter
+ *                               method editor(IME). IMEs are used to enter
  *                               characters, such as Chinese ideographs, that
  *                               the standard QWERTY keyboard is ill-equipped
  *                               to produce. This event occurs after a
@@ -576,14 +576,14 @@ package nme.display;
  *                               <p>The event's dropAction property indicates
  *                               the action set by the drag target object; a
  *                               value of "none"
- *                               (<code>DragActions.NONE</code>) indicates
+ *                              (<code>DragActions.NONE</code>) indicates
  *                               that the drop was canceled or was not
  *                               accepted.</p>
  *
  *                               <p>The <code>nativeDragComplete</code> event
  *                               handler is a convenient place to update the
  *                               state of the initiating display object, for
- *                               example, by removing an item from a list (on
+ *                               example, by removing an item from a list(on
  *                               a drag action of "move"), or by changing the
  *                               visual properties.</p>
  * @event nativeDragDrop         Dispatched by the target InteractiveObject
@@ -765,11 +765,11 @@ package nme.display;
  *                               characters of text. Various text input
  *                               methods can generate this event, including
  *                               standard keyboards, input method editors
- *                               (IMEs), voice or speech recognition systems,
+ *                              (IMEs), voice or speech recognition systems,
  *                               and even the act of pasting plain text with
  *                               no formatting or style information.
  * @event touchBegin             Dispatched when the user first contacts a
- *                               touch-enabled device (such as touches a
+ *                               touch-enabled device(such as touches a
  *                               finger to a mobile phone or tablet with a
  *                               touch screen). Some devices might also
  *                               interpret this contact as a
@@ -783,7 +783,7 @@ package nme.display;
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
  *                               the nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -802,7 +802,7 @@ package nme.display;
  *                               <p><b>Note:</b> See the Multitouch class for
  *                               environment compatibility information.</p>
  * @event touchEnd               Dispatched when the user removes contact with
- *                               a touch-enabled device (such as lifts a
+ *                               a touch-enabled device(such as lifts a
  *                               finger off a mobile phone or tablet with a
  *                               touch screen). Some devices might also
  *                               interpret this contact as a
@@ -815,7 +815,7 @@ package nme.display;
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
  *                               interaction. Use the nme.ui.Multitouch
- *                               class to manage touch event handling (enable
+ *                               class to manage touch event handling(enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
  *                               so only mouse events are dispatched). If you
@@ -834,7 +834,7 @@ package nme.display;
  *                               <p><b>Note:</b> See the Multitouch class for
  *                               environment compatibility information.</p>
  * @event touchMove              Dispatched when the user moves the point of
- *                               contact with a touch-enabled device (such as
+ *                               contact with a touch-enabled device(such as
  *                               drags a finger across a mobile phone or
  *                               tablet with a touch screen). Some devices
  *                               might also interpret this contact as a
@@ -848,7 +848,7 @@ package nme.display;
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
  *                               the nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -868,7 +868,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event touchOut               Dispatched when the user moves the point of
  *                               contact away from InteractiveObject instance
- *                               on a touch-enabled device (such as drags a
+ *                               on a touch-enabled device(such as drags a
  *                               finger from one display object to another on
  *                               a mobile phone or tablet with a touch
  *                               screen). Some devices might also interpret
@@ -882,7 +882,7 @@ package nme.display;
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
  *                               interaction. Use the nme.ui.Multitouch
- *                               class to manage touch event handling (enable
+ *                               class to manage touch event handling(enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
  *                               so only mouse events are dispatched). If you
@@ -902,7 +902,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event touchOver              Dispatched when the user moves the point of
  *                               contact over an InteractiveObject instance on
- *                               a touch-enabled device (such as drags a
+ *                               a touch-enabled device(such as drags a
  *                               finger from a point outside a display object
  *                               to a point over a display object on a mobile
  *                               phone or tablet with a touch screen). Some
@@ -917,7 +917,7 @@ package nme.display;
  *                               current environment supports it. Choose how
  *                               you want to handle the user interaction. Use
  *                               the nme.ui.Multitouch class to manage touch
- *                               event handling (enable touch gesture event
+ *                               event handling(enable touch gesture event
  *                               handling, simple touch point event handling,
  *                               or disable touch events so only mouse events
  *                               are dispatched). If you choose to handle the
@@ -937,7 +937,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event touchRollOut           Dispatched when the user moves the point of
  *                               contact away from an InteractiveObject
- *                               instance on a touch-enabled device (such as
+ *                               instance on a touch-enabled device(such as
  *                               drags a finger from over a display object to
  *                               a point outside the display object on a
  *                               mobile phone or tablet with a touch screen).
@@ -952,7 +952,7 @@ package nme.display;
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
  *                               Use the nme.ui.Multitouch class to manage
- *                               touch event handling (enable touch gesture
+ *                               touch event handling(enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
  *                               mouse events are dispatched). If you choose
@@ -972,7 +972,7 @@ package nme.display;
  *                               environment compatibility information.</p>
  * @event touchRollOver          Dispatched when the user moves the point of
  *                               contact over an InteractiveObject instance on
- *                               a touch-enabled device (such as drags a
+ *                               a touch-enabled device(such as drags a
  *                               finger from a point outside a display object
  *                               to a point over a display object on a mobile
  *                               phone or tablet with a touch screen). Some
@@ -987,7 +987,7 @@ package nme.display;
  *                               the current environment supports it. Choose
  *                               how you want to handle the user interaction.
  *                               Use the nme.ui.Multitouch class to manage
- *                               touch event handling (enable touch gesture
+ *                               touch event handling(enable touch gesture
  *                               event handling, simple touch point event
  *                               handling, or disable touch events so only
  *                               mouse events are dispatched). If you choose
@@ -1008,7 +1008,7 @@ package nme.display;
  * @event touchTap               Dispatched when the user lifts the point of
  *                               contact over the same InteractiveObject
  *                               instance on which the contact was initiated
- *                               on a touch-enabled device (such as presses
+ *                               on a touch-enabled device(such as presses
  *                               and releases a finger from a single point
  *                               over a display object on a mobile phone or
  *                               tablet with a touch screen). Some devices
@@ -1022,7 +1022,7 @@ package nme.display;
  *                               both if the current environment supports it.
  *                               Choose how you want to handle the user
  *                               interaction. Use the nme.ui.Multitouch
- *                               class to manage touch event handling (enable
+ *                               class to manage touch event handling(enable
  *                               touch gesture event handling, simple touch
  *                               point event handling, or disable touch events
  *                               so only mouse events are dispatched). If you
@@ -1044,7 +1044,7 @@ package nme.display;
 extern class InteractiveObject extends DisplayObject {
 
 	/**
-	 * The current accessibility implementation (AccessibilityImplementation) for
+	 * The current accessibility implementation(AccessibilityImplementation) for
 	 * this InteractiveObject instance.
 	 */
 	//var accessibilityImplementation : nme.accessibility.AccessibilityImplementation;
@@ -1061,7 +1061,7 @@ extern class InteractiveObject extends DisplayObject {
 	 * context menu. The clipboard menu contains Cut, Copy, Paste, Clear, and
 	 * Select All commands. You cannot remove these commands from the context
 	 * menu for TextField objects. For TextField objects, selecting these
-	 * commands (or their keyboard equivalents) does not generate
+	 * commands(or their keyboard equivalents) does not generate
 	 * <code>clear</code>, <code>copy</code>, <code>cut</code>,
 	 * <code>paste</code>, or <code>selectAll</code> events.</p>
 	 */
@@ -1099,7 +1099,7 @@ extern class InteractiveObject extends DisplayObject {
 	 * default any InteractiveObject instance that is on the display list
 	 * receives mouse events or other user input events. If
 	 * <code>mouseEnabled</code> is set to <code>false</code>, the instance does
-	 * not receive any mouse events (or other user input events like keyboard
+	 * not receive any mouse events(or other user input events like keyboard
 	 * events). Any children of this instance on the display list are not
 	 * affected. To change the <code>mouseEnabled</code> behavior for all
 	 * children of an object on the display list, use
@@ -1112,7 +1112,7 @@ extern class InteractiveObject extends DisplayObject {
 	var mouseEnabled : Bool;
 
 	/**
-	 * Specifies whether a virtual keyboard (an on-screen, software keyboard)
+	 * Specifies whether a virtual keyboard(an on-screen, software keyboard)
 	 * should display when this InteractiveObject instance receives focus.
 	 *
 	 * <p>By default, the value is <code>false</code> and focusing an
@@ -1199,7 +1199,7 @@ extern class InteractiveObject extends DisplayObject {
 	 * xml:space="preserve">
 	 * InteractiveObject(tlfInstance.getChildAt(1)).tabIndex = 3; </pre> To
 	 * reverse the tab order from the default setting for three instances of a
-	 * TLFTextField object (<code>tlfInstance1</code>, <code>tlfInstance2</code>
+	 * TLFTextField object(<code>tlfInstance1</code>, <code>tlfInstance2</code>
 	 * and <code>tlfInstance3</code>), use: <pre xml:space="preserve">
 	 * InteractiveObject(tlfInstance1.getChildAt(1)).tabIndex = 3;
 	 * InteractiveObject(tlfInstance2.getChildAt(1)).tabIndex = 2;

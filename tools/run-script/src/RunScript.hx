@@ -97,6 +97,7 @@ class RunScript {
 					} else if (isLinux) {
 						
 						buildLibrary ("linux", flags, defines);
+						//buildLibrary ("linux", flags, defines.concat ([ "rpi" ]));
 						buildLibrary ("android", flags, defines);
 						buildLibrary ("blackberry", flags, defines);
 						buildLibrary ("webos", flags, defines);
@@ -232,35 +233,55 @@ class RunScript {
 			
 			case "linux":
 				
-				if (isRunning64 ()) {
+				if (!flags.exists ("rpi")) {
 					
-					mkdir (nmeDirectory + "/ndll/Linux64");
+					if (isRunning64 ()) {
+						
+						mkdir (nmeDirectory + "/ndll/Linux64");
+						
+						if (!flags.exists ("debug")) {
+							
+							runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines), false);
+							
+						}
+						
+						if (!flags.exists ("release")) {
+							
+							runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines), false);
+							
+						}
+						
+					}
+					
+					mkdir (nmeDirectory + "/ndll/Linux");
 					
 					if (!flags.exists ("debug")) {
 						
-						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines), false);
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
 						
 					}
 					
 					if (!flags.exists ("release")) {
 						
-						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines), false);
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
 						
 					}
 					
-				}
-				
-				mkdir (nmeDirectory + "/ndll/Linux");
-				
-				if (!flags.exists ("debug")) {
+				} else {
 					
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
+					mkdir (nmeDirectory + "/ndll/RPi");
 					
-				}
-				
-				if (!flags.exists ("release")) {
+					if (!flags.exists ("debug")) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi" ].concat (defines), false);
+						
+					}
 					
-					runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
+					if (!flags.exists ("release")) {
+						
+						runCommand (projectDirectory, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi", "-Dfulldebug" ].concat (defines), false);
+						
+					}
 					
 				}
 			
@@ -470,7 +491,8 @@ class RunScript {
 	
 	private static function getRevision ():String {
 		
-		var result = getVersion () + "-r0";
+		var nmeVersion = getVersion ();
+		var result = nmeVersion + "-r0";
 		
 		if (FileSystem.exists (nmeDirectory + "/.git")) {
 			
@@ -481,7 +503,8 @@ class RunScript {
 			
 			try {
 				
-				result = proc.stdout.readLine ();
+				var description = proc.stdout.readLine ();
+				result = nmeVersion + description.substr (description.indexOf ("-"));
 				
 			} catch (e:Dynamic) { };
 			
@@ -506,7 +529,7 @@ class RunScript {
 					
 					if (index > -1) {
 						
-						result = getVersion () + "-r" + result.substr (checkString.length);
+						result = nmeVersion + "-r" + result.substr (checkString.length);
 						break;
 						
 					}

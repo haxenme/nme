@@ -3,7 +3,7 @@ package nme.display;
 
 
 /**
- * The Loader class is used to load SWF files or image (JPG, PNG, or GIF)
+ * The Loader class is used to load SWF files or image(JPG, PNG, or GIF)
  * files. Use the <code>load()</code> method to initiate loading. The loaded
  * display object is added as a child of the Loader object.
  *
@@ -35,8 +35,8 @@ package nme.display;
  * <code>System.allowDomain()</code> or the
  * <code>System.allowInsecureDomain()</code> method in the loaded content
  * file.</li>
- *   <li>If the loaded content is an AVM1 SWF file (written using ActionScript
- * 1.0 or 2.0), it cannot be cross-scripted by an AVM2 SWF file (written using
+ *   <li>If the loaded content is an AVM1 SWF file(written using ActionScript
+ * 1.0 or 2.0), it cannot be cross-scripted by an AVM2 SWF file(written using
  * ActionScript 3.0). However, you can communicate between the two SWF files
  * by using the LocalConnection class.</li>
  *   <li>If the loaded content is an image, its data cannot be accessed by a
@@ -52,23 +52,23 @@ package nme.display;
  * </ul>
  *
  * <p>However, in AIR, content in the <code>application</code> security
- * sandbox (content installed with the AIR application) are not restricted by
+ * sandbox(content installed with the AIR application) are not restricted by
  * these security limitations.</p>
  *
  * <p>For more information related to security, see the Flash Player Developer
  * Center Topic: <a href="http://www.adobe.com/go/devnet_security_en"
  * scope="external">Security</a>.</p>
  *
- * <p>When loading a SWF file from an untrusted source (such as a domain other
+ * <p>When loading a SWF file from an untrusted source(such as a domain other
  * than that of the Loader object's root SWF file), you may want to define a
- * mask for the Loader object, to prevent the loaded content (which is a child
+ * mask for the Loader object, to prevent the loaded content(which is a child
  * of the Loader object) from drawing to portions of the Stage outside of that
  * mask, as shown in the following code:</p>
  */
 extern class Loader extends DisplayObjectContainer {
 
 	/**
-	 * Contains the root display object of the SWF file or image (JPG, PNG, or
+	 * Contains the root display object of the SWF file or image(JPG, PNG, or
 	 * GIF) file that was loaded by using the <code>load()</code> or
 	 * <code>loadBytes()</code> methods.
 	 * 
@@ -115,11 +115,11 @@ extern class Loader extends DisplayObjectContainer {
 	 * dispatches events that bubble through it, not events that it dispatches
 	 * directly. It never dispatches an <code>uncaughtErrorEvent</code> in the
 	 * target phase. It only dispatches the event in the capture and bubbling
-	 * phases. To detect an uncaught error in the current SWF (the SWF in which
+	 * phases. To detect an uncaught error in the current SWF(the SWF in which
 	 * the Loader object is defined) use the
 	 * <code>LoaderInfo.uncaughtErrorEvents</code> property instead.</p>
 	 *
-	 * <p>If the content loaded by the Loader object is an AVM1 (ActionScript 2)
+	 * <p>If the content loaded by the Loader object is an AVM1(ActionScript 2)
 	 * SWF file, uncaught errors in the AVM1 SWF file do not result in an
 	 * <code>uncaughtError</code> event.</p>
 	 */
@@ -129,7 +129,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * Creates a Loader object that you can use to load files, such as SWF, JPEG,
 	 * GIF, or PNG files. Call the <code>load()</code> method to load the asset
 	 * as a child of the Loader instance. You can then add the Loader object to
-	 * the display list (for instance, by using the <code>addChild()</code>
+	 * the display list(for instance, by using the <code>addChild()</code>
 	 * method of a DisplayObjectContainer instance). The asset appears on the
 	 * Stage as it loads.
 	 *
@@ -192,7 +192,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *
 	 * <p><b>Note</b>: In AIR 1.5 and Flash Player 10, the maximum size for a
 	 * loaded image is 8,191 pixels in width or height, and the total number of
-	 * pixels cannot exceed 16,777,215 pixels. (So, if an loaded image is 8,191
+	 * pixels cannot exceed 16,777,215 pixels.(So, if an loaded image is 8,191
 	 * pixels wide, it can only be 2,048 pixels high.) In Flash Player 9 and
 	 * earlier and AIR 1.1 and earlier, the limitation is 2,880 pixels in height
 	 * and 2,880 pixels in width.</p>
@@ -212,8 +212,8 @@ extern class Loader extends DisplayObjectContainer {
 	 * <p>When you use this method, consider the Flash Player security model,
 	 * which is described in the Loader class description. </p>
 	 *
-	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type (for
-	 * example "multipart/form-data") that contains an upload (indicated by a
+	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type(for
+	 * example "multipart/form-data") that contains an upload(indicated by a
 	 * "filename" parameter in a "content-disposition" header within the POST
 	 * body), the POST operation is subject to the security rules applied to
 	 * uploads:</p>
@@ -221,7 +221,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * <ul>
 	 *   <li>The POST operation must be performed in response to a user-initiated
 	 * action, such as a mouse click or key press.</li>
-	 *   <li>If the POST operation is cross-domain (the POST target is not on the
+	 *   <li>If the POST operation is cross-domain(the POST target is not on the
 	 * same server as the SWF file that is sending the POST request), the target
 	 * server must provide a URL policy file that permits cross-domain
 	 * access.</li>
@@ -248,7 +248,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                               <code>digest</code> property of a URLRequest
 	 *                               object when calling the
 	 *                               <code>URLLoader.load()</code> method when
-	 *                               loading a SWZ file (an Adobe platform
+	 *                               loading a SWZ file(an Adobe platform
 	 *                               component).
 	 * @throws IllegalOperationError If the <code>requestedContentParent</code>
 	 *                               property of the <code>context</code>
@@ -262,7 +262,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                               <code>SecurityDomain.currentDomain</code>.
 	 *                               This reflects the fact that you can only
 	 *                               place the loaded media in its natural
-	 *                               security sandbox or your own (the latter
+	 *                               security sandbox or your own(the latter
 	 *                               requires a policy file).
 	 * @throws SecurityError         Local SWF files may not set
 	 *                               LoaderContext.securityDomain to anything
@@ -404,7 +404,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *
 	 * <p><b>Note</b>: In AIR 1.5 and Flash Player 10, the maximum size for a
 	 * loaded image is 8,191 pixels in width or height, and the total number of
-	 * pixels cannot exceed 16,777,215 pixels. (So, if an loaded image is 8,191
+	 * pixels cannot exceed 16,777,215 pixels.(So, if an loaded image is 8,191
 	 * pixels wide, it can only be 2,048 pixels high.) In Flash Player 9 and
 	 * earlier and AIR 1.1 and earlier, the limitation is 2,880 pixels in height
 	 * and 2,880 pixels in width.</p>
@@ -424,8 +424,8 @@ extern class Loader extends DisplayObjectContainer {
 	 * <p>When you use this method, consider the Flash Player security model,
 	 * which is described in the Loader class description. </p>
 	 *
-	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type (for
-	 * example "multipart/form-data") that contains an upload (indicated by a
+	 * <p> In Flash Player 10 and later, if you use a multipart Content-Type(for
+	 * example "multipart/form-data") that contains an upload(indicated by a
 	 * "filename" parameter in a "content-disposition" header within the POST
 	 * body), the POST operation is subject to the security rules applied to
 	 * uploads:</p>
@@ -433,7 +433,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * <ul>
 	 *   <li>The POST operation must be performed in response to a user-initiated
 	 * action, such as a mouse click or key press.</li>
-	 *   <li>If the POST operation is cross-domain (the POST target is not on the
+	 *   <li>If the POST operation is cross-domain(the POST target is not on the
 	 * same server as the SWF file that is sending the POST request), the target
 	 * server must provide a URL policy file that permits cross-domain
 	 * access.</li>
@@ -479,7 +479,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                               <code>digest</code> property of a URLRequest
 	 *                               object when calling the
 	 *                               <code>URLLoader.load()</code> method when
-	 *                               loading a SWZ file (an Adobe platform
+	 *                               loading a SWZ file(an Adobe platform
 	 *                               component).
 	 * @throws IllegalOperationError If the <code>requestedContentParent</code>
 	 *                               property of the <code>context</code>
@@ -493,7 +493,7 @@ extern class Loader extends DisplayObjectContainer {
 	 *                               <code>SecurityDomain.currentDomain</code>.
 	 *                               This reflects the fact that you can only
 	 *                               place the loaded media in its natural
-	 *                               security sandbox or your own (the latter
+	 *                               security sandbox or your own(the latter
 	 *                               requires a policy file).
 	 * @throws SecurityError         Local SWF files may not set
 	 *                               LoaderContext.securityDomain to anything
@@ -690,7 +690,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * </ul>
 	 * 
 	 * @param gc Provides a hint to the garbage collector to run on the child SWF
-	 *           objects (<code>true</code>) or not (<code>false</code>). If you
+	 *           objects(<code>true</code>) or not(<code>false</code>). If you
 	 *           are unloading many objects asynchronously, setting the
 	 *           <code>gc</code> paramter to <code>false</code> might improve
 	 *           application performance. However, if the parameter is set to

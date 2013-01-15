@@ -28,7 +28,7 @@ package nme.display;
 	/**
 	 * With this setting used as the <code>scaleMode</code> parameter of the
 	 * <code>lineStyle()</code> method, the thickness of the line always scales
-	 * when the object is scaled (the default).
+	 * when the object is scaled(the default).
 	 */
 	NORMAL;
 

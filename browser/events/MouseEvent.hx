@@ -37,9 +37,9 @@ class MouseEvent extends Event {
 	public var stageY:Float;
 	
 	
-	public function new (type:String, bubbles:Bool = true, cancelable:Bool = false, localX:Float = 0, localY:Float = 0, relatedObject:InteractiveObject = null, ctrlKey:Bool = false, altKey:Bool = false, shiftKey:Bool = false, buttonDown:Bool = false, delta:Int = 0, commandKey:Bool = false, clickCount:Int = 0) {
+	public function new(type:String, bubbles:Bool = true, cancelable:Bool = false, localX:Float = 0, localY:Float = 0, relatedObject:InteractiveObject = null, ctrlKey:Bool = false, altKey:Bool = false, shiftKey:Bool = false, buttonDown:Bool = false, delta:Int = 0, commandKey:Bool = false, clickCount:Int = 0) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		this.shiftKey = shiftKey;
 		this.altKey = altKey;
@@ -56,7 +56,7 @@ class MouseEvent extends Event {
 	}
 	
 	
-	public static function nmeCreate (type:String, event:Html5DomMouseEvent, local:Point, target:InteractiveObject):MouseEvent {
+	public static function nmeCreate(type:String, event:Html5DomMouseEvent, local:Point, target:InteractiveObject):MouseEvent {
 		
 		var nmeMouseDown = false;
 		var delta = 2;
@@ -67,13 +67,13 @@ class MouseEvent extends Event {
 			if (mouseEvent.wheelDelta) { /* IE/Opera. */
 				#if !haxe_210
 				if (js.Lib.isOpera)
-					delta = Std.int (mouseEvent.wheelDelta / 40);
+					delta = Std.int(mouseEvent.wheelDelta / 40);
 				else
 				#end
-					delta = Std.int (mouseEvent.wheelDelta / 120);
+					delta = Std.int(mouseEvent.wheelDelta / 120);
 			} else if (mouseEvent.detail) { /** Mozilla case. */
 				
-				Std.int ( -mouseEvent.detail);
+				Std.int( -mouseEvent.detail);
 				
 			}
 			
@@ -109,7 +109,7 @@ class MouseEvent extends Event {
 			
 		}
 		
-		var pseudoEvent = new MouseEvent (type, true, false, local.x, local.y, null, event.ctrlKey, event.altKey, event.shiftKey, nmeMouseDown, delta);
+		var pseudoEvent = new MouseEvent(type, true, false, local.x, local.y, null, event.ctrlKey, event.altKey, event.shiftKey, nmeMouseDown, delta);
 		pseudoEvent.stageX = Lib.current.stage.mouseX;
 		pseudoEvent.stageY = Lib.current.stage.mouseY;
 		pseudoEvent.target = target;
@@ -119,9 +119,9 @@ class MouseEvent extends Event {
 	}
 	
 	
-	override public function nmeCreateSimilar (type:String, related:InteractiveObject = null, targ:InteractiveObject = null):Event {
+	override public function nmeCreateSimilar(type:String, related:InteractiveObject = null, targ:InteractiveObject = null):Event {
 		
-		var result = new MouseEvent (type, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
+		var result = new MouseEvent(type, bubbles, cancelable, localX, localY, related == null ? relatedObject : related, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
 		
 		if (targ != null) {
 			
@@ -134,7 +134,7 @@ class MouseEvent extends Event {
 	}
 	
 	
-	public function updateAfterEvent ():Void {
+	public function updateAfterEvent():Void {
 		
 		
 		

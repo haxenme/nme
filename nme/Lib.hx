@@ -26,21 +26,21 @@ class Lib
 	public static var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
 	public static var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
 	#elseif js
-	public static var MIN_FLOAT_VALUE:Float = untyped __js__ ("Number.MIN_VALUE");
-	public static var MAX_FLOAT_VALUE:Float = untyped __js__ ("Number.MAX_VALUE");
+	public static var MIN_FLOAT_VALUE:Float = untyped __js__("Number.MIN_VALUE");
+	public static var MAX_FLOAT_VALUE:Float = untyped __js__("Number.MAX_VALUE");
 	#else
     public static inline var MIN_FLOAT_VALUE:Float = 2.2250738585072014e-308;
     public static inline var MAX_FLOAT_VALUE:Float = 1.7976931348623158e+308;
 	#end
 	
-	public static var company (get_company, null):String;
-	public static var current (get_current, null):MovieClip;
-	public static var file (get_file, null):String;
-	public static var initHeight (get_initHeight, null):Int;
-	public static var initWidth (get_initWidth, null):Int;
-	public static var packageName (get_packageName, null):String;
-	public static var stage (get_stage, null):Stage;
-	public static var version (get_version, null):String;
+	public static var company(get_company, null):String;
+	public static var current(get_current, null):MovieClip;
+	public static var file(get_file, null):String;
+	public static var initHeight(get_initHeight, null):Int;
+	public static var initWidth(get_initWidth, null):Int;
+	public static var packageName(get_packageName, null):String;
+	public static var stage(get_stage, null):Stage;
+	public static var version(get_version, null):String;
 	
 	
 	/**
@@ -268,7 +268,7 @@ class Lib
 	}
 	
 	
-	private static function get_current ():MovieClip
+	private static function get_current():MovieClip
 	{
 		#if display
 		return null;

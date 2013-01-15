@@ -22,12 +22,12 @@ package nme.text;
  *
  * <p>ActionScript provides several ways to format your text at runtime. The
  * TextFormat class lets you set character and paragraph formatting for
- * TextField objects. You can apply Cascading Style Sheets (CSS) styles to
+ * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
  * text fields by using the <code>TextField.styleSheet</code> property and the
  * StyleSheet class. You can use CSS to style built-in HTML tags, define new
  * formatting tags, or apply styles. You can assign HTML formatted text, which
  * optionally uses CSS styles, directly to a text field. HTML text that you
- * assign to a text field can contain embedded media (movie clips, SWF files,
+ * assign to a text field can contain embedded media(movie clips, SWF files,
  * GIF files, PNG files, and JPEG files). The text wraps around the embedded
  * media in the same way that a web browser wraps text around media embedded
  * in an HTML document. </p>
@@ -69,7 +69,7 @@ package nme.text;
  *                                  enters one or more characters of text.
  *                                  Various text input methods can generate
  *                                  this event, including standard keyboards,
- *                                  input method editors (IMEs), voice or
+ *                                  input method editors(IMEs), voice or
  *                                  speech recognition systems, and even the
  *                                  act of pasting plain text with no
  *                                  formatting or style information.
@@ -96,7 +96,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * The type of anti-aliasing used for this text field. Use
 	 * <code>nme.text.AntiAliasType</code> constants for this property. You can
-	 * control this setting only if the font is embedded (with the
+	 * control this setting only if the font is embedded(with the
 	 * <code>embedFonts</code> property set to <code>true</code>). The default
 	 * setting is <code>nme.text.AntiAliasType.NORMAL</code>.
 	 *
@@ -107,7 +107,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Controls automatic sizing and alignment of text fields. Acceptable values
 	 * for the <code>TextFieldAutoSize</code> constants:
-	 * <code>TextFieldAutoSize.NONE</code> (the default),
+	 * <code>TextFieldAutoSize.NONE</code>(the default),
 	 * <code>TextFieldAutoSize.LEFT</code>, <code>TextFieldAutoSize.RIGHT</code>,
 	 * and <code>TextFieldAutoSize.CENTER</code>.
 	 *
@@ -117,7 +117,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.LEFT</code>,
 	 * the text is treated as left-justified text, meaning that the left margin
 	 * of the text field remains fixed and any resizing of a single line of the
-	 * text field is on the right margin. If the text includes a line break (for
+	 * text field is on the right margin. If the text includes a line break(for
 	 * example, <code>"\n"</code> or <code>"\r"</code>), the bottom is also
 	 * resized to fit the next line of text. If <code>wordWrap</code> is also set
 	 * to <code>true</code>, only the bottom of the text field is resized and the
@@ -127,7 +127,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <code>TextFieldAutoSize.RIGHT</code>, the text is treated as
 	 * right-justified text, meaning that the right margin of the text field
 	 * remains fixed and any resizing of a single line of the text field is on
-	 * the left margin. If the text includes a line break (for example,
+	 * the left margin. If the text includes a line break(for example,
 	 * <code>"\n" or "\r")</code>, the bottom is also resized to fit the next
 	 * line of text. If <code>wordWrap</code> is also set to <code>true</code>,
 	 * only the bottom of the text field is resized and the left side remains
@@ -137,7 +137,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <code>TextFieldAutoSize.CENTER</code>, the text is treated as
 	 * center-justified text, meaning that any resizing of a single line of the
 	 * text field is equally distributed to both the right and left margins. If
-	 * the text includes a line break (for example, <code>"\n"</code> or
+	 * the text includes a line break(for example, <code>"\n"</code> or
 	 * <code>"\r"</code>), the bottom is also resized to fit the next line of
 	 * text. If <code>wordWrap</code> is also set to <code>true</code>, only the
 	 * bottom of the text field is resized and the left and right sides remain
@@ -161,7 +161,7 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The color of the text field background. The default value is
-	 * <code>0xFFFFFF</code> (white). This property can be retrieved or set, even
+	 * <code>0xFFFFFF</code>(white). This property can be retrieved or set, even
 	 * if there currently is no background, but the color is visible only if the
 	 * text field has the <code>background</code> property set to
 	 * <code>true</code>.
@@ -179,14 +179,14 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * The color of the text field border. The default value is
-	 * <code>0x000000</code> (black). This property can be retrieved or set, even
+	 * <code>0x000000</code>(black). This property can be retrieved or set, even
 	 * if there currently is no border, but the color is visible only if the text
 	 * field has the <code>border</code> property set to <code>true</code>.
 	 */
 	var borderColor : Int;
 
 	/**
-	 * An integer (1-based index) that indicates the bottommost line that is
+	 * An integer(1-based index) that indicates the bottommost line that is
 	 * currently visible in the specified text field. Think of the text field as
 	 * a window onto a block of text. The <code>scrollV</code> property is the
 	 * 1-based index of the topmost visible line in the window.
@@ -197,18 +197,18 @@ extern class TextField extends nme.display.InteractiveObject {
 	var bottomScrollV(default,null) : Int;
 
 	/**
-	 * The index of the insertion point (caret) position. If no insertion point
+	 * The index of the insertion point(caret) position. If no insertion point
 	 * is displayed, the value is the position the insertion point would be if
-	 * you restored focus to the field (typically where the insertion point last
+	 * you restored focus to the field(typically where the insertion point last
 	 * was, or 0 if the field has not had focus).
 	 *
-	 * <p>Selection span indexes are zero-based (for example, the first position
+	 * <p>Selection span indexes are zero-based(for example, the first position
 	 * is 0, the second position is 1, and so on).</p>
 	 */
 	var caretIndex(default,null) : Int;
 
 	/**
-	 * A Boolean value that specifies whether extra white space (spaces, line
+	 * A Boolean value that specifies whether extra white space(spaces, line
 	 * breaks, and so on) in a text field with HTML text is removed. The default
 	 * value is <code>false</code>. The <code>condenseWhite</code> property only
 	 * affects text set with the <code>htmlText</code> property, not the
@@ -304,7 +304,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <p>Flash Player supports the following HTML tags:</p>
 	 *
 	 * <p>Flash Player and AIR also support explicit character codes, such as
-	 * &#38; (ASCII ampersand) and &#x20AC; (Unicode € symbol). </p>
+	 * &#38;(ASCII ampersand) and &#x20AC;(Unicode € symbol). </p>
 	 */
 	var htmlText : String;
 
@@ -349,7 +349,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <code>true</code>, the text field is multiline; if the value is
 	 * <code>false</code>, the text field is a single-line text field. In a field
 	 * of type <code>TextFieldType.INPUT</code>, the <code>multiline</code> value
-	 * determines whether the <code>Enter</code> key creates a new line (a value
+	 * determines whether the <code>Enter</code> key creates a new line(a value
 	 * of <code>false</code>, and the <code>Enter</code> key is ignored). If you
 	 * paste text into a <code>TextField</code> with a <code>multiline</code>
 	 * value of <code>false</code>, newlines are stripped out of the text.
@@ -377,10 +377,10 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * text into the text field. <ph outputclass="flashonly">This property does
 	 * not synchronize with the Embed font options in the Property inspector.
 	 *
-	 * <p>If the string begins with a caret (^) character, all characters are
+	 * <p>If the string begins with a caret(^) character, all characters are
 	 * initially accepted and succeeding characters in the string are excluded
 	 * from the set of accepted characters. If the string does not begin with a
-	 * caret (^) character, no characters are initially accepted and succeeding
+	 * caret(^) character, no characters are initially accepted and succeeding
 	 * characters in the string are included in the set of accepted
 	 * characters.</p>
 	 *
@@ -396,7 +396,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * backslash sequences are \-, \^ or \\. The backslash must be an actual
 	 * character in the string, so when specified in ActionScript, a double
 	 * backslash must be used. For example, the following code includes only the
-	 * dash (-) and caret (^):</p>
+	 * dash(-) and caret(^):</p>
 	 * <pre xml:space="preserve"> my_txt.restrict = "\\-\\^"; </pre>
 	 *
 	 * <p>The ^ can be used anywhere in the string to toggle between including
@@ -406,7 +406,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 *
 	 * <p>You can use the <code>\u</code> escape sequence to construct
 	 * <code>restrict</code> strings. The following code includes only the
-	 * characters from ASCII 32 (space) to ASCII 126 (tilde).</p>
+	 * characters from ASCII 32(space) to ASCII 126(tilde).</p>
 	 * <pre xml:space="preserve"> my_txt.restrict = "\u0020-\u007E"; </pre>
 	 * 
 	 * @default null
@@ -438,7 +438,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 *
 	 * <p>The units of vertical scrolling are lines, whereas the units of
 	 * horizontal scrolling are pixels. If the first line displayed is the first
-	 * line in the text field, scrollV is set to 1 (not 0). Horizontal scrolling
+	 * line in the text field, scrollV is set to 1(not 0). Horizontal scrolling
 	 * is measured in pixels because most fonts are proportionally spaced; that
 	 * is, the characters can have different widths. Flash performs vertical
 	 * scrolling by line because users usually want to see a complete line of
@@ -490,7 +490,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * field is set to <code>nme.text.AntiAliasType.ADVANCED</code>. The range
 	 * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
 	 * set <code>sharpness</code> to a value outside that range, Flash sets the
-	 * property to the nearest value in the range (either -400 or 400).
+	 * property to the nearest value in the range(either -400 or 400).
 	 * 
 	 * @default 0
 	 */
@@ -518,7 +518,7 @@ extern class TextField extends nme.display.InteractiveObject {
 
 	/**
 	 * A string that is the current text in the text field. Lines are separated
-	 * by the carriage return character (<code>'\r'</code>, ASCII 13). This
+	 * by the carriage return character(<code>'\r'</code>, ASCII 13). This
 	 * property contains unformatted text in the text field, without HTML tags.
 	 *
 	 * <p>To get the text in HTML form, use the <code>htmlText</code>
@@ -533,7 +533,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * and then A-F. For example, black is <code>0x000000</code>; white is
 	 * <code>0xFFFFFF</code>.
 	 * 
-	 * @default 0 (0x000000)
+	 * @default 0(0x000000)
 	 */
 	var textColor : Int;
 
@@ -564,7 +564,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 *
 	 * <p>The range for <code>thickness</code> is a number from -200 to 200. If
 	 * you attempt to set <code>thickness</code> to a value outside that range,
-	 * the property is set to the nearest value in the range (either -200 or
+	 * the property is set to the nearest value in the range(either -200 or
 	 * 200).</p>
 	 * 
 	 * @default 0
@@ -586,7 +586,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Specifies whether to copy and paste the text formatting along with the
 	 * text. When set to <code>true</code>, Flash Player copies and pastes
-	 * formatting (such as alignment, bold, and italics) when you copy and paste
+	 * formatting(such as alignment, bold, and italics) when you copy and paste
 	 * between text fields. Both the origin and destination text fields for the
 	 * copy and paste procedure must have <code>useRichTextClipboard</code> set
 	 * to <code>true</code>. The default value is <code>false</code>.
@@ -614,7 +614,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
 	 * end of the text of the text field. This method is more efficient than an
-	 * addition assignment (<code>+=</code>) on a <code>text</code> property
+	 * addition assignment(<code>+=</code>) on a <code>text</code> property
 	 * (such as <code>someTextField.text += moreText</code>), particularly for a
 	 * text field that contains a significant amount of content.
 	 * 
@@ -626,7 +626,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Returns a rectangle that is the bounding box of the character.
 	 * 
-	 * @param charIndex The zero-based index value for the character (for
+	 * @param charIndex The zero-based index value for the character(for
 	 *                  example, the first position is 0, the second position is
 	 *                  1, and so on).
 	 * @return A rectangle with <code>x</code> and <code>y</code> minimum and
@@ -640,7 +640,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * 
 	 * @param x The <i>x</i> coordinate of the character.
 	 * @param y The <i>y</i> coordinate of the character.
-	 * @return The zero-based index value of the character (for example, the
+	 * @return The zero-based index value of the character(for example, the
 	 *         first position is 0, the second position is 1, and so on). Returns
 	 *         -1 if the point is not over any character.
 	 */
@@ -650,7 +650,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * Given a character index, returns the index of the first character in the
 	 * same paragraph.
 	 * 
-	 * @param charIndex The zero-based index value of the character (for example,
+	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
 	 * @return The zero-based index value of the first character in the same
@@ -668,7 +668,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
 	 * 'instanceName' ></code></pre></p>
 	 * 
-	 * @param id The <code>id</code> to match (in the <code>id</code> attribute
+	 * @param id The <code>id</code> to match(in the <code>id</code> attribute
 	 *           of the <code><img></code> tag).
 	 * @return The display object corresponding to the image or SWF file with the
 	 *         matching <code>id</code> attribute in the <code><img></code> tag
@@ -687,7 +687,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * 
 	 * @param x The <i>x</i> coordinate of the line.
 	 * @param y The <i>y</i> coordinate of the line.
-	 * @return The zero-based index value of the line (for example, the first
+	 * @return The zero-based index value of the line(for example, the first
 	 *         line is 0, the second line is 1, and so on). Returns -1 if the
 	 *         point is not over any line.
 	 */
@@ -697,7 +697,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * Returns the zero-based index value of the line containing the character
 	 * specified by the <code>charIndex</code> parameter.
 	 * 
-	 * @param charIndex The zero-based index value of the character (for example,
+	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
 	 * @return The zero-based index value of the line.
@@ -727,7 +727,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * Returns the character index of the first character in the line that the
 	 * <code>lineIndex</code> parameter specifies.
 	 * 
-	 * @param lineIndex The zero-based index value of the line (for example, the
+	 * @param lineIndex The zero-based index value of the line(for example, the
 	 *                  first line is 0, the second line is 1, and so on).
 	 * @return The zero-based index value of the first character in the line.
 	 * @throws RangeError The line number specified is out of range.
@@ -738,7 +738,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * Returns the text of the line specified by the <code>lineIndex</code>
 	 * parameter.
 	 * 
-	 * @param lineIndex The zero-based index value of the line (for example, the
+	 * @param lineIndex The zero-based index value of the line(for example, the
 	 *                  first line is 0, the second line is 1, and so on).
 	 * @return The text string contained in the specified line.
 	 * @throws RangeError The line number specified is out of range.
@@ -748,10 +748,10 @@ extern class TextField extends nme.display.InteractiveObject {
 	/**
 	 * Given a character index, returns the length of the paragraph containing
 	 * the given character. The length is relative to the first character in the
-	 * paragraph (as returned by <code>getFirstCharInParagraph()</code>), not to
+	 * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
 	 * the character index passed in.
 	 * 
-	 * @param charIndex The zero-based index value of the character (for example,
+	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
 	 * @return Returns the number of characters in the paragraph.
@@ -831,7 +831,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * <code>caretIndex</code> property.
 	 * 
 	 * @param beginIndex The zero-based index value of the first character in the
-	 *                   selection (for example, the first character is 0, the
+	 *                   selection(for example, the first character is 0, the
 	 *                   second character is 1, and so on).
 	 * @param endIndex   The zero-based index value of the last character in the
 	 *                   selection.

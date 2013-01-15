@@ -17,9 +17,9 @@ class KeyboardEvent extends Event {
 	public var shiftKey:Bool;
 
 
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, charCodeValue:Int = 0, keyCodeValue:Int = 0, keyLocationValue:Int = 0, ctrlKeyValue:Bool = false, altKeyValue:Bool = false, shiftKeyValue:Bool = false, controlKeyValue:Bool = false, commandKeyValue:Bool = false) {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, charCodeValue:Int = 0, keyCodeValue:Int = 0, keyLocationValue:Int = 0, ctrlKeyValue:Bool = false, altKeyValue:Bool = false, shiftKeyValue:Bool = false, controlKeyValue:Bool = false, commandKeyValue:Bool = false) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		keyCode = keyCodeValue;
 		keyLocation = keyLocationValue;
@@ -34,14 +34,14 @@ class KeyboardEvent extends Event {
 	}
 	
 	
-	public override function clone ():Event {
+	public override function clone():Event {
 		
-		return new KeyboardEvent (type, bubbles, cancelable, charCode, keyCode, keyLocation, ctrlKey, altKey, shiftKey, controlKey, commandKey);
+		return new KeyboardEvent(type, bubbles, cancelable, charCode, keyCode, keyLocation, ctrlKey, altKey, shiftKey, controlKey, commandKey);
 		
 	}
 	
 	
-	public override function toString ():String {
+	public override function toString():String {
 		
 		return "[KeyboardEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " charCode=" + charCode + " keyCode=" + keyCode + " keyLocation=" + keyLocation + " ctrlKey=" + ctrlKey + " altKey=" + altKey + " shiftKey=" + shiftKey + "]";
 		

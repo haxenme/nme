@@ -15,31 +15,31 @@ class DisplayObjectContainer extends InteractiveObject {
 	public var mouseChildren:Bool;
 	public var nmeChildren:Array<DisplayObject>;
 	public var nmeCombinedAlpha:Float;
-	public var numChildren (get_numChildren, never):Int;
+	public var numChildren(get_numChildren, never):Int;
 	public var tabChildren:Bool;
 	
 	
-	public function new () {
+	public function new() {
 		
-		nmeChildren = new Array<DisplayObject> ();
+		nmeChildren = new Array<DisplayObject>();
 		mouseChildren = true;
 		tabChildren = true;
 		
-		super ();
+		super();
 		
 		nmeCombinedAlpha = alpha;
 		
 	}
 	
 	
-	public inline function __removeChild (child:DisplayObject):Void {
+	public inline function __removeChild(child:DisplayObject):Void {
 		
-		nmeChildren.remove (child);
+		nmeChildren.remove(child);
 		
 	}
 	
 	
-	public function addChild (object:DisplayObject):DisplayObject {
+	public function addChild(object:DisplayObject):DisplayObject {
 		
 		if (object == null) {
 			
@@ -55,7 +55,7 @@ class DisplayObjectContainer extends InteractiveObject {
 		
 		if (object.parent == this) {
 			
-			setChildIndex (object, nmeChildren.length - 1);
+			setChildIndex(object, nmeChildren.length - 1);
 			return object;
 			
 		}
@@ -65,7 +65,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			if (child == object) {
 				
-				throw "Internal error: child already existed at index " + getChildIndex (object);
+				throw "Internal error: child already existed at index " + getChildIndex(object);
 				
 			}
 			
@@ -73,19 +73,19 @@ class DisplayObjectContainer extends InteractiveObject {
 		#end
 		
 		object.parent = this;
-		if (nmeIsOnStage ()) object.nmeAddToStage (this);
+		if (nmeIsOnStage()) object.nmeAddToStage(this);
 		
 		if (nmeChildren == null) {
 			
-			nmeChildren = new Array <DisplayObject> ();
+			nmeChildren = new Array <DisplayObject>();
 			
 		}
 		
-		nmeChildren.push (object);
+		nmeChildren.push(object);
 		
-		//if (Std.is (object, DisplayObjectContainer)) {
+		//if (Std.is(object, DisplayObjectContainer)) {
 			
-			//object.nmeUnifyChildrenWithDOM ();
+			//object.nmeUnifyChildrenWithDOM();
 			
 		//}
 		
@@ -94,7 +94,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function addChildAt (object:DisplayObject, index:Int):DisplayObject {
+	public function addChildAt(object:DisplayObject, index:Int):DisplayObject {
 		
 		if (index > nmeChildren.length || index < 0) {
 			
@@ -104,24 +104,24 @@ class DisplayObjectContainer extends InteractiveObject {
 		
 		if (object.parent == this) {
 			
-			setChildIndex (object, index);
+			setChildIndex(object, index);
 			return object;
 			
 		}
 		
 		if (index == nmeChildren.length) {
 			
-			return addChild (object);
+			return addChild(object);
 			
 		} else {
 			
-			if (nmeIsOnStage ()) object.nmeAddToStage (this, nmeChildren[index]);
-			nmeChildren.insert (index, object);
+			if (nmeIsOnStage()) object.nmeAddToStage(this, nmeChildren[index]);
+			nmeChildren.insert(index, object);
 			object.parent = this;
 			
-			//if (Std.is (object, DisplayObjectContainer)) {
+			//if (Std.is(object, DisplayObjectContainer)) {
 				
-				//object.nmeUnifyChildrenWithDOM ();
+				//object.nmeUnifyChildrenWithDOM();
 				
 			//}
 			
@@ -132,7 +132,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function contains (child:DisplayObject):Bool {
+	public function contains(child:DisplayObject):Bool {
 		
 		if (child == null) return false;
 		if (this == child) return true;
@@ -148,7 +148,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function getChildAt (index:Int):DisplayObject {
+	public function getChildAt(index:Int):DisplayObject {
 		
 		if (index >= 0 && index < nmeChildren.length) {
 			
@@ -162,7 +162,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function getChildByName (inName:String):DisplayObject {
+	public function getChildByName(inName:String):DisplayObject {
 		
 		for (child in nmeChildren) {
 			
@@ -175,7 +175,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function getChildIndex (inChild:DisplayObject):Int {
+	public function getChildIndex(inChild:DisplayObject):Int {
 		
 		for (i in 0...nmeChildren.length) {
 			
@@ -188,24 +188,24 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function getObjectsUnderPoint (point:Point):Array<DisplayObject> {
+	public function getObjectsUnderPoint(point:Point):Array<DisplayObject> {
 		
-		var result = new Array<DisplayObject> ();
-		nmeGetObjectsUnderPoint (point, result);
+		var result = new Array<DisplayObject>();
+		nmeGetObjectsUnderPoint(point, result);
 		return result;
 		
 	}
 	
 	
-	override private function nmeAddToStage (newParent:DisplayObjectContainer, beforeSibling:DisplayObject = null):Void {
+	override private function nmeAddToStage(newParent:DisplayObjectContainer, beforeSibling:DisplayObject = null):Void {
 		
-		super.nmeAddToStage (newParent, beforeSibling);
+		super.nmeAddToStage(newParent, beforeSibling);
 		
 		for (child in nmeChildren) {
 			
-			if (child.nmeGetGraphics () == null || !child.nmeIsOnStage ()) {
+			if (child.nmeGetGraphics() == null || !child.nmeIsOnStage()) {
 				
-				child.nmeAddToStage (this);
+				child.nmeAddToStage(this);
 				
 			}
 			
@@ -214,20 +214,20 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override public function nmeBroadcast (event:Event):Void {
+	override public function nmeBroadcast(event:Event):Void {
 		
 		for (child in nmeChildren) {
 			
-			child.nmeBroadcast (event);
+			child.nmeBroadcast(event);
 			
 		}
 		
-		dispatchEvent (event);
+		dispatchEvent(event);
 		
 	}
 	
 	
-	override private function nmeGetObjectUnderPoint (point:Point):DisplayObject {
+	override private function nmeGetObjectUnderPoint(point:Point):DisplayObject {
 		
 		if (!visible) return null;
 		
@@ -239,7 +239,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			if (mouseEnabled) {
 				
-				result = nmeChildren[l - i].nmeGetObjectUnderPoint (point);
+				result = nmeChildren[l - i].nmeGetObjectUnderPoint(point);
 				
 			}
 			
@@ -251,22 +251,22 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		return super.nmeGetObjectUnderPoint (point);
+		return super.nmeGetObjectUnderPoint(point);
 		
 	}
 	
 	
-	private function nmeGetObjectsUnderPoint (point:Point, stack:Array<DisplayObject>):Void {
+	private function nmeGetObjectsUnderPoint(point:Point, stack:Array<DisplayObject>):Void {
 		
 		var l = nmeChildren.length - 1;
 		
 		for (i in 0...nmeChildren.length) {
 			
-			var result = nmeChildren[l - i].nmeGetObjectUnderPoint (point);
+			var result = nmeChildren[l - i].nmeGetObjectUnderPoint(point);
 			
 			if (result != null) {
 				
-				stack.push (result);
+				stack.push(result);
 				
 			}
 			
@@ -275,7 +275,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override public function nmeInvalidateMatrix (local:Bool = false):Void {
+	override public function nmeInvalidateMatrix(local:Bool = false):Void {
 		
 		//** FINAL **//	
 		
@@ -283,24 +283,24 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			for (child in nmeChildren) {
 				
-				child.nmeInvalidateMatrix ();
+				child.nmeInvalidateMatrix();
 				
 			}
 			
 		}
 		
-		super.nmeInvalidateMatrix (local);
+		super.nmeInvalidateMatrix(local);
 		
 	}
 	
 	
-	public inline function nmeRemoveChild (child:DisplayObject):DisplayObject {
+	public inline function nmeRemoveChild(child:DisplayObject):DisplayObject {
 		
-		child.nmeRemoveFromStage ();
+		child.nmeRemoveFromStage();
 		child.parent = null;
 		
 		#if debug
-		if (getChildIndex (child) >= 0) {
+		if (getChildIndex(child) >= 0) {
 			
 			throw "Not removed properly";
 			
@@ -312,20 +312,20 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override private function nmeRemoveFromStage ():Void {
+	override private function nmeRemoveFromStage():Void {
 		
-		super.nmeRemoveFromStage ();
+		super.nmeRemoveFromStage();
 		
 		for (child in nmeChildren) {
 			
-			child.nmeRemoveFromStage ();
+			child.nmeRemoveFromStage();
 			
 		}
 		
 	}
 	
 	
-	override private function nmeRender (inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
+	override private function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
 		
 		if (!nmeVisible) return;
 		
@@ -335,7 +335,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		super.nmeRender (inMask, clipRect);
+		super.nmeRender(inMask, clipRect);
 		
 		nmeCombinedAlpha = (parent != null ? parent.nmeCombinedAlpha * alpha : alpha);
 		
@@ -348,13 +348,13 @@ class DisplayObjectContainer extends InteractiveObject {
 					if (child._matrixInvalid || child._matrixChainInvalid) {
 						
 						//child.invalidateGraphics();
-						child.nmeValidateMatrix ();
+						child.nmeValidateMatrix();
 						
 					}
 					
 				}
 				
-				child.nmeRender (inMask, clipRect);
+				child.nmeRender(inMask, clipRect);
 				
 			}
 			
@@ -368,21 +368,21 @@ class DisplayObjectContainer extends InteractiveObject {
 		if (nmeChildren[c1] == null) throw "Null element at index " + c1 + " length " + nmeChildren.length;
 		if (nmeChildren[c2] == null) throw "Null element at index " + c2 + " length " + nmeChildren.length;
 		
-		var gfx1 = nmeChildren[c1].nmeGetGraphics ();
-		var gfx2 = nmeChildren[c2].nmeGetGraphics ();
+		var gfx1 = nmeChildren[c1].nmeGetGraphics();
+		var gfx2 = nmeChildren[c2].nmeGetGraphics();
 		
 		if (gfx1 != null && gfx2 != null) {
 			
-			Lib.nmeSwapSurface (gfx1.nmeSurface, gfx2.nmeSurface);
+			Lib.nmeSwapSurface(gfx1.nmeSurface, gfx2.nmeSurface);
 			
 		}
 		
 	}
 	
 	
-	override private function nmeUnifyChildrenWithDOM (lastMoveGfx:Graphics = null):Void {
+	override private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null):Void {
 		
-		var gfx1 = nmeGetGraphics ();
+		var gfx1 = nmeGetGraphics();
 		
 		if (gfx1 != null) {
 			
@@ -390,16 +390,16 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			for (child in nmeChildren) {
 				
-				var gfx2 = child.nmeGetGraphics ();
+				var gfx2 = child.nmeGetGraphics();
 				
 				if (gfx2 != null) {
 					
-					Lib.nmeSetSurfaceZIndexAfter (gfx2.nmeSurface, lastMoveGfx.nmeSurface);
+					Lib.nmeSetSurfaceZIndexAfter(gfx2.nmeSurface, lastMoveGfx.nmeSurface);
 					lastMoveGfx = gfx2;
 					
 				}
 				
-				child.nmeUnifyChildrenWithDOM (lastMoveGfx);
+				child.nmeUnifyChildrenWithDOM(lastMoveGfx);
 				
 			}
 			
@@ -408,13 +408,13 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function removeChild (inChild:DisplayObject):DisplayObject {
+	public function removeChild(inChild:DisplayObject):DisplayObject {
 		
 		for (child in nmeChildren) {
 			
 			if (child == inChild) {
 				
-				return nmeRemoveChild (child);
+				return nmeRemoveChild(child);
 				
 			}
 			
@@ -425,11 +425,11 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function removeChildAt (index:Int):DisplayObject {
+	public function removeChildAt(index:Int):DisplayObject {
 		
 		if (index >= 0 && index < nmeChildren.length) {
 			
-			return nmeRemoveChild (nmeChildren[index]);
+			return nmeRemoveChild(nmeChildren[index]);
 			
 		}
 		
@@ -446,7 +446,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		var oldIndex = getChildIndex (child);
+		var oldIndex = getChildIndex(child);
 		
 		if (oldIndex < 0) {
 			
@@ -469,7 +469,7 @@ class DisplayObjectContainer extends InteractiveObject {
 				
 				if (realindex != -1) {
 					
-					msg += "Internal error: Real child index was " + Std.string (realindex);
+					msg += "Internal error: Real child index was " + Std.string(realindex);
 					
 				} else {
 					
@@ -489,7 +489,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			while (i > index) {
 				
-				swapChildren (nmeChildren[i], nmeChildren[i - 1]);
+				swapChildren(nmeChildren[i], nmeChildren[i - 1]);
 				i--;
 				
 			}
@@ -500,7 +500,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 			while (i < index) {
 				
-				swapChildren (nmeChildren[i], nmeChildren[i + 1]);
+				swapChildren(nmeChildren[i], nmeChildren[i + 1]);
 				i++;
 				
 			}
@@ -510,7 +510,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function swapChildren (child1:DisplayObject, child2:DisplayObject):Void {
+	public function swapChildren(child1:DisplayObject, child2:DisplayObject):Void {
 		
 		var c1 = -1;
 		var c2 = -1;
@@ -536,7 +536,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			nmeChildren[c1] = nmeChildren[c2];
 			nmeChildren[c2] = swap;
 			swap = null;
-			nmeSwapSurface (c1, c2);
+			nmeSwapSurface(c1, c2);
 			
 			//child1.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
 			//child2.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
@@ -546,7 +546,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	public function swapChildrenAt (child1:Int, child2:Int):Void {
+	public function swapChildrenAt(child1:Int, child2:Int):Void {
 		
 		var swap:DisplayObject = nmeChildren[child1];
 		nmeChildren[child1] = nmeChildren[child2];
@@ -556,24 +556,24 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override public function toString ():String {
+	override public function toString():String {
 		
 		return "[DisplayObjectContainer name=" + this.name + " id=" + _nmeId + "]";
 		
 	}
 	
 	
-	override function validateBounds ():Void {
+	override function validateBounds():Void {
 		
 		if (_boundsInvalid) {
 			
-			super.validateBounds ();
+			super.validateBounds();
 			
 			for (obj in nmeChildren) {
 				
 				if (obj.visible) {
 					
-					var r = obj.getBounds (this);
+					var r = obj.getBounds(this);
 					
 					if (r.width != 0 || r.height != 0) {
 						
@@ -583,7 +583,7 @@ class DisplayObjectContainer extends InteractiveObject {
 							
 						} else {
 							
-							nmeBoundsRect.extendBounds (r);
+							nmeBoundsRect.extendBounds(r);
 							
 						}
 						
@@ -593,7 +593,7 @@ class DisplayObjectContainer extends InteractiveObject {
 				
 			}
 			
-			nmeSetDimensions ();
+			nmeSetDimensions();
 			
 		}
 		
@@ -607,9 +607,9 @@ class DisplayObjectContainer extends InteractiveObject {
 	
 	
 	
-	override private function set_filters (filters:Array<Dynamic>):Array<Dynamic> {
+	override private function set_filters(filters:Array<Dynamic>):Array<Dynamic> {
 		
-		super.set_filters (filters);
+		super.set_filters(filters);
 		
 		// TODO: check if we need to merge filters with children.
 		for (child in nmeChildren) {
@@ -623,7 +623,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override private function set_nmeCombinedVisible (inVal:Bool):Bool {
+	override private function set_nmeCombinedVisible(inVal:Bool):Bool {
 		
 		if (inVal != nmeCombinedVisible) {
 			
@@ -635,22 +635,22 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		return super.set_nmeCombinedVisible (inVal);
+		return super.set_nmeCombinedVisible(inVal);
 		
 	}
 	
 	
-	private inline function get_numChildren ():Int {
+	private inline function get_numChildren():Int {
 		
 		return nmeChildren.length;
 		
 	}
 	
 	
-	override private function set_visible (inVal:Bool):Bool {
+	override private function set_visible(inVal:Bool):Bool {
 		
 		nmeCombinedVisible = inVal;
-		return super.set_visible (inVal);
+		return super.set_visible(inVal);
 		
 	}
 	

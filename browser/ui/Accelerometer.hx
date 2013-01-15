@@ -7,7 +7,7 @@ import browser.display.Stage;
 class Accelerometer {
 	
 	
-	public static function get ():Acceleration {
+	public static function get():Acceleration {
 		
 		return Stage.nmeAcceleration;
 		

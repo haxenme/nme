@@ -11,9 +11,9 @@ class ProgressEvent extends Event {
 	public var bytesTotal:Float;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, bytesLoaded:Float = 0, bytesTotal:Float = 0) {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, bytesLoaded:Float = 0, bytesTotal:Float = 0) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		this.bytesLoaded = bytesLoaded;
 		this.bytesTotal = bytesTotal;

@@ -7,8 +7,8 @@ import nme.geom.Rectangle;
 
 extern class DirectRenderer extends DisplayObject {
 
-	function new (inType:String = "DirectRenderer"):Void;
-	dynamic function render (inRect:Rectangle):Void;
+	function new(inType:String = "DirectRenderer"):Void;
+	dynamic function render(inRect:Rectangle):Void;
 	
 }
 
