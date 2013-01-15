@@ -49,6 +49,8 @@ class GLSLProgram {
         fragmentShader.setUniformFromMatrix(context3D,name,matrix, transposedMatrix);
     }
 
+    // TODO set from vector and byte array
+
     //AGAL only allow texture for fragment shader
     // TODO add a function in cpp to set texture on vertex shader
     public function setTextureAt(name : String , texture : Texture){

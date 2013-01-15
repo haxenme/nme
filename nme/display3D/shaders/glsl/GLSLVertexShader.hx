@@ -10,7 +10,13 @@ import nme.display3D.Context3DProgramType;
 
 class GLSLVertexShader extends GLSLShader{
 
-    public function new(glslSource : String, agalInfo : String) {
+    public function new(glslSource : String,
+    #if cpp
+    ?
+    #elseif glsl2agal
+    ?
+    #end
+    agalInfo : String) {
         super(Context3DProgramType.VERTEX, glslSource, agalInfo);
     }
 

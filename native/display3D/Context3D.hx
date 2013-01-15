@@ -298,7 +298,10 @@ class Context3D {
         }
 	}
 
-    public function setGLSLProgramConstantsFromByteArray (locationName : String, data:ByteArray):Void {
+    public function setGLSLProgramConstantsFromByteArray (locationName : String, data:ByteArray, byteArrayOffset : Int = -1):Void {
+        if(byteArrayOffset != -1){
+            data.position = byteArrayOffset;
+        }
         var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
         GL.uniform4f(location, data.readFloat(),data.readFloat(),data.readFloat(),data.readFloat());
     }

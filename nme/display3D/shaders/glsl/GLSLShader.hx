@@ -1,6 +1,7 @@
 package nme.display3D.shaders.glsl;
 
 
+import nme.utils.ByteArray;
 import nme.display3D.Program3D;
 using nme.Vector;
 import nme.display3D.textures.Texture;
@@ -59,16 +60,24 @@ class GLSLShader {
     public var nativeShader : nme.display3D.shaders.Shader;
 
 
-    // TODO make agalInfo optional for cpp or when glsl2agal is enabled (TODO in subclass as well)
-    public function new(type : Context3DProgramType, glslSource : String, agalInfoJson : String) {
+    public function new(type : Context3DProgramType, glslSource : String,
+    #if cpp
+    ?
+    #elseif glsl2agal
+    ?
+    #end
+    agalInfoJson : String) {
 
         this.type = type;
         #if cpp
             nativeShader = ShaderUtils.createShader(type,glslSource);
         #elseif flash
+
             #if glsl2agal
-                var glsl2agal = new nme.display3D.shaders.GlslToAgal(glslSource, cast(type));
-                agalInfoJson = glsl2agal.compile();
+                if(agalInfoJson == null){ // compute agal from glsl only if no agalInfo are provided
+                    var glsl2agal = new nme.display3D.shaders.GlslToAgal(glslSource, cast(type));
+                    agalInfoJson = glsl2agal.compile();
+                }
             #end
 
             var agalInfoData : AgalInfoData = Json.parse(agalInfoJson);
@@ -90,7 +99,16 @@ class GLSLShader {
         #end
     }
 
-    //TODO add setUniformFromByteArray
+    // expect 4 values
+    public function setUniformFromByteArray(context3D, name : String, data:ByteArray, byteArrayOffset:Int) : Void{
+        #if flash
+        var registerIndex = getRegisterIndexForUniform(name);
+        context3D.setProgramConstantsFromByteArray(type, registerIndex, 1, data, byteArrayOffset);
+        #elseif cpp
+        context3D.setGLSLProgramConstantsFromByteArray(name, data, byteArrayOffset);
+        #end
+
+    }
 
     // TODO do not use vector but use 4 float arguments ?
     // for now it only use the first 4 float in the vector
