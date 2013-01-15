@@ -15,51 +15,51 @@ class RGB {
 	public static var BLUE = 0xff0000ff;
 	
 	
-	public static function Alpha (inRGBA:Int):Int {
+	public static function Alpha(inRGBA:Int):Int {
 		
-		return (inRGBA >> 24) & 0xff;
+		return(inRGBA >> 24) & 0xff;
 		
 	}
 	
 	
-	public static function Blue (inRGBA:Int):Int {
+	public static function Blue(inRGBA:Int):Int {
 		
 		return inRGBA & 0xff;
 		
 	}
 	
 	
-	public static function Green (inRGBA:Int):Int {
+	public static function Green(inRGBA:Int):Int {
 		
-		return (inRGBA >> 8) & 0xff;
+		return(inRGBA >> 8) & 0xff;
 		
 	}
 	
 	
-	public static function IRGB (inRGBA:Int):Int {
+	public static function IRGB(inRGBA:Int):Int {
 		
 		return inRGBA & 0xffffff;
 		
 	}
 	
 	
-	public static function Red (inRGBA:Int):Int {
+	public static function Red(inRGBA:Int):Int {
 		
-		return (inRGBA >> 16) & 0xff;
-		
-	}
-	
-	
-	public static function RGB (inR:Int, inG:Int, inB:Int):Int {
-		
-		return (inR << 16) | (inG << 8) | inB;
+		return(inRGBA >> 16) & 0xff;
 		
 	}
 	
 	
-	public static function RGBA (inR:Int, inG:Int, inB:Int, inA:Int = 255):Int {
+	public static function RGB(inR:Int, inG:Int, inB:Int):Int {
 		
-		return (inA << 24) | (inR << 16) | (inG << 8) | inB;
+		return(inR << 16) |(inG << 8) | inB;
+		
+	}
+	
+	
+	public static function RGBA(inR:Int, inG:Int, inB:Int, inA:Int = 255):Int {
+		
+		return(inA << 24) |(inR << 16) |(inG << 8) | inB;
 		
 	}
 	

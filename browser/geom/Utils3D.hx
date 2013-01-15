@@ -7,10 +7,10 @@ class Utils3D {
 	//static function pointTowards(percent : Float, mat : Matrix3D, pos : Vector3D, ?at : Vector3D, ?up : Vector3D) : Matrix3D;
 	
 	
-	public static function projectVector (m:Matrix3D, v:Vector3D):Vector3D {
+	public static function projectVector(m:Matrix3D, v:Vector3D):Vector3D {
 		
 		var n = m.rawData;
-		var l_oProj = new Vector3D ();
+		var l_oProj = new Vector3D();
 		
 		l_oProj.x = v.x * n[0] + v.y * n[4] + v.z * n[8] + n[12];
 		l_oProj.y = v.x * n[1] + v.y * n[5] + v.z * n[9] + n[13];

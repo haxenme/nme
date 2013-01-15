@@ -8,19 +8,19 @@ package nme.net;
  * <code>requestHeaders</code> property of the URLRequest class.
  *
  * <p>In Adobe<sup>®</sup> AIR<sup>®</sup>, content in the application
- * security sandbox (such as content installed with the AIR application) can
+ * security sandbox(such as content installed with the AIR application) can
  * use any request headers, without error. However, for content running in
  * Adobe AIR that is in a different security sandbox, or for content running
  * in Flash<sup>®</sup> Player, using following request headers cause a
  * runtime error to be thrown, and the restricted terms are not case-sensitive
- * (for example, <code>Get</code>, <code>get</code>, and <code>GET</code> are
+ *(for example, <code>Get</code>, <code>get</code>, and <code>GET</code> are
  * each not allowed): </p>
  *
  * <p>In Flash Player and in Adobe AIR content outside of the application
  * security sandbox, the following request headers cannot be used, and the
- * restricted terms are not case-sensitive (for example, <code>Get</code>,
+ * restricted terms are not case-sensitive(for example, <code>Get</code>,
  * <code>get</code>, and <code>GET</code> are all not allowed). Also,
- * hyphenated terms apply if an underscore character is used (for example,
+ * hyphenated terms apply if an underscore character is used(for example,
  * both <code>Content-Length</code> and <code>Content_Length</code> are not
  * allowed): </p>
  *
@@ -45,7 +45,7 @@ package nme.net;
  * <code>x-flash-version</code>.</p>
  *
  * <p>URLRequestHeader objects are restricted in length. If the cumulative
- * length of a URLRequestHeader object (the length of the <code>name</code>
+ * length of a URLRequestHeader object(the length of the <code>name</code>
  * property plus the <code>value</code> property) or an array of
  * URLRequestHeader objects used in the <code>URLRequest.requestHeaders</code>
  * property exceeds the acceptable length, an exception is thrown.</p>
@@ -72,13 +72,13 @@ package nme.net;
 @:final extern class URLRequestHeader {
 
 	/**
-	 * An HTTP request header name (such as <code>Content-Type</code> or
+	 * An HTTP request header name(such as <code>Content-Type</code> or
 	 * <code>SOAPAction</code>).
 	 */
 	var name : String;
 
 	/**
-	 * The value associated with the <code>name</code> property (such as
+	 * The value associated with the <code>name</code> property(such as
 	 * <code>text/plain</code>).
 	 */
 	var value : String;
@@ -88,10 +88,10 @@ package nme.net;
 	 * request header. URLRequestHeader objects are used in the
 	 * <code>requestHeaders</code> property of the URLRequest class.
 	 * 
-	 * @param name  An HTTP request header name (such as
+	 * @param name  An HTTP request header name(such as
 	 *              <code>Content-Type</code> or <code>SOAPAction</code>).
 	 * @param value The value associated with the <code>name</code> property
-	 *              (such as <code>text/plain</code>).
+	 *             (such as <code>text/plain</code>).
 	 */
 	function new(?name : String, ?value : String):Void;
 }

@@ -31,12 +31,12 @@ class Event {
 	public static var TAB_INDEX_CHANGE = "tabIndexChange";
 	public static var UNLOAD = "unload";
 	
-	public var bubbles (get_bubbles, never):Bool;
-	public var cancelable (get_cancelable, never):Bool;
-	public var currentTarget (get_currentTarget, set_currentTarget):Dynamic;
-	public var eventPhase (get_eventPhase, never):Int;
-	public var target (get_target, set_target):Dynamic;
-	public var type (get_type, never):String;
+	public var bubbles(get_bubbles, never):Bool;
+	public var cancelable(get_cancelable, never):Bool;
+	public var currentTarget(get_currentTarget, set_currentTarget):Dynamic;
+	public var eventPhase(get_eventPhase, never):Int;
+	public var target(get_target, set_target):Dynamic;
+	public var type(get_type, never):String;
 
 	/** @private */ private var _bubbles : Bool;
 	/** @private */ private var _cancelable : Bool;
@@ -48,7 +48,7 @@ class Event {
 	/** @private */ private var nmeIsCancelledNow:Bool;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false) {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) {
 		
 		_type = type;
 		_bubbles = bubbles;
@@ -62,28 +62,28 @@ class Event {
 	}
 	
 	
-	public function clone ():Event {
+	public function clone():Event {
 		
-		return new Event (type, bubbles, cancelable);
+		return new Event(type, bubbles, cancelable);
 		
 	}
 	
 	
-	/** @private */ public function nmeGetIsCancelled () {
+	/** @private */ public function nmeGetIsCancelled() {
 		
 		return nmeIsCancelled;
 		
 	}
 	
 	
-	/** @private */ public function nmeGetIsCancelledNow () {
+	/** @private */ public function nmeGetIsCancelledNow() {
 		
 		return nmeIsCancelledNow;
 		
 	}
 	
 	
-	/** @private */ public function nmeSetPhase (inPhase:Int) {
+	/** @private */ public function nmeSetPhase(inPhase:Int) {
 		
 		// For internal use only...
 		_eventPhase = inPhase;
@@ -91,7 +91,7 @@ class Event {
 	}
 	
 	
-	public function stopImmediatePropagation () {
+	public function stopImmediatePropagation() {
 		
 		if (cancelable)
 			nmeIsCancelledNow = nmeIsCancelled = true;
@@ -99,7 +99,7 @@ class Event {
 	}
 	
 	
-	public function stopPropagation () {
+	public function stopPropagation() {
 		
 		if (cancelable)
 			nmeIsCancelled = true;
@@ -107,7 +107,7 @@ class Event {
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
 		return "[Event type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + "]";
 		
@@ -121,14 +121,14 @@ class Event {
 	
 	
 	
-	private function get_bubbles ():Bool { return _bubbles; }
-	private function get_cancelable ():Bool { return _cancelable; }
-	private function get_currentTarget ():Dynamic { return _currentTarget; }
-	private function set_currentTarget (v:Dynamic):Dynamic { _currentTarget = v; return v; }
-	private function get_eventPhase ():Int { return _eventPhase; }
-	private function get_target ():Dynamic { return _target; }
-	private function set_target (v:Dynamic):Dynamic { _target = v; return v; }
-	private function get_type ():String { return _type; }
+	private function get_bubbles():Bool { return _bubbles; }
+	private function get_cancelable():Bool { return _cancelable; }
+	private function get_currentTarget():Dynamic { return _currentTarget; }
+	private function set_currentTarget(v:Dynamic):Dynamic { _currentTarget = v; return v; }
+	private function get_eventPhase():Int { return _eventPhase; }
+	private function get_target():Dynamic { return _target; }
+	private function set_target(v:Dynamic):Dynamic { _target = v; return v; }
+	private function get_type():String { return _type; }
 	
 	
 }

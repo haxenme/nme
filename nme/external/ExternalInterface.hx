@@ -33,23 +33,23 @@ package nme.external;
  * <pre xml:space="preserve"> . - + ~~ / \ </pre>
  *
  * <p><b>Note for Flash Player applications:</b> Flash Player version
- * 9.0.115.0 and later allows the <code>.</code> (period) character within the
+ * 9.0.115.0 and later allows the <code>.</code>(period) character within the
  * <code>id</code> and <code>name</code> attributes.</p>
  *
  * <p><b>Note for Flash Player applications:</b> In Flash Player 10 and later
  * running in a browser, using this class programmatically to open a pop-up
- * window may not be successful. Various browsers (and browser configurations)
+ * window may not be successful. Various browsers(and browser configurations)
  * may block pop-up windows at any time; it is not possible to guarantee any
  * pop-up window will appear. However, for the best chance of success, use
  * this class to open a pop-up window only in code that executes as a direct
- * result of a user action (for example, in an event handler for a mouse click
+ * result of a user action(for example, in an event handler for a mouse click
  * or key-press event.)</p>
  *
  * <p>From ActionScript, you can do the following on the HTML page:
  * <ul>
  *   <li>Call any JavaScript function.</li>
  *   <li>Pass any number of arguments, with any names.</li>
- *   <li>Pass various data types (Boolean, Number, String, and so on).</li>
+ *   <li>Pass various data types(Boolean, Number, String, and so on).</li>
  *   <li>Receive a return value from the JavaScript function.</li>
  * </ul>
  * </p>
@@ -164,7 +164,7 @@ extern class ExternalInterface {
 	 * <code>null</code>; otherwise it returns the value provided by the
 	 * function. Recursion is <i>not</i> permitted on Opera or Netscape browsers;
 	 * on these browsers a recursive call produces a <code>null</code> response.
-	 * (Recursion is supported on Internet Explorer and Firefox browsers.)
+	 *(Recursion is supported on Internet Explorer and Firefox browsers.)
 	 *
 	 * <p>If the container is an HTML page, this method invokes a JavaScript
 	 * function in a <code>script</code> element.</p>
@@ -181,7 +181,7 @@ extern class ExternalInterface {
 	 *
 	 * <p><b>Note:</b> For <i>local</i> content running in a browser, calls to
 	 * the <code>ExternalInterface.call()</code> method are permitted only if the
-	 * SWF file and the containing web page (if there is one) are in the
+	 * SWF file and the containing web page(if there is one) are in the
 	 * local-trusted security sandbox. Also, you can prevent a SWF file from
 	 * using this method by setting the <code>allowNetworking</code> parameter of
 	 * the <code>object</code> and <code>embed</code> tags in the HTML page that
@@ -193,16 +193,16 @@ extern class ExternalInterface {
 	 * <p><b>Note for Flash Player applications:</b> In Flash Player 10 and Flash
 	 * Player 9 Update 5, some web browsers restrict this method if a pop-up
 	 * blocker is enabled. In this scenario, you can only call this method
-	 * successfully in response to a user event (for example, in an event handler
+	 * successfully in response to a user event(for example, in an event handler
 	 * for a mouse click or keypress event).</p>
 	 * 
 	 * @param functionName The alphanumeric name of the function to call in the
 	 *                     container. Using a non-alphanumeric function name
-	 *                     causes a runtime error (error 2155). You can use a
+	 *                     causes a runtime error(error 2155). You can use a
 	 *                     <code>try..catch</code> block to handle the error.
 	 * @return The response received from the container. If the call failed–
 	 *         for example, if there is no such function in the container, the
-	 *         interface is not available, a recursion occurred (with a Netscape
+	 *         interface is not available, a recursion occurred(with a Netscape
 	 *         or Opera browser), or there is a security issue–
 	 *         <code>null</code> is returned and an error is thrown.
 	 * @throws Error         The container does not support outgoing calls.

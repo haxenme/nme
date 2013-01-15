@@ -17,24 +17,24 @@ import nme.gl.GL;
 class Context3DUtils {
 	
 	
-	inline public static function createShader (type: #if flash Context3DProgramType #else Int #end, shaderSource:String): #if flash ByteArray #else Shader #end {
+	inline public static function createShader(type: #if flash Context3DProgramType #else Int #end, shaderSource:String): #if flash ByteArray #else Shader #end {
 		
 		#if flash
 		
-		var assembler = new AGALMiniAssembler ();
-		assembler.assemble (type, shaderSource);
-		return assembler.agalcode ();
+		var assembler = new AGALMiniAssembler();
+		assembler.assemble(type, shaderSource);
+		return assembler.agalcode();
 		
 		#elseif !js
 		
-		var shader = GL.createShader (type);
-		GL.shaderSource (shader, shaderSource);
-		GL.compileShader (shader);
+		var shader = GL.createShader(type);
+		GL.shaderSource(shader, shaderSource);
+		GL.compileShader(shader);
 		
-		if (GL.getShaderParameter (shader, GL.COMPILE_STATUS) == 0) {
+		if (GL.getShaderParameter(shader, GL.COMPILE_STATUS) == 0) {
 			
 			trace("--- ERR ---\n" + shaderSource);
-			var err = GL.getShaderInfoLog (shader);
+			var err = GL.getShaderInfoLog(shader);
 			if (err != "") throw err;
 			
 		}

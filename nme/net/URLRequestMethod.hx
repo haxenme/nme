@@ -34,7 +34,7 @@ extern class URLRequestMethod {
 	 *
 	 * <p><i>Note:</i> For content running in Adobe AIR, when using the
 	 * <code>navigateToURL()</code> function, the runtime treats a URLRequest
-	 * that uses the POST method (one that has its <code>method</code> property
+	 * that uses the POST method(one that has its <code>method</code> property
 	 * set to <code>URLRequestMethod.POST</code>) as using the GET method.</p>
 	 */
 	static var POST : String;

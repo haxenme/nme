@@ -14,9 +14,9 @@ class KeyboardEvent extends Event {
 	public var keyLocation:Int;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, inCharCode:Int = 0, inKeyCode:Int = 0, inKeyLocation:Int = 0, inCtrlKey:Bool = false, inAltKey:Bool = false, inShiftKey:Bool = false) {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, inCharCode:Int = 0, inKeyCode:Int = 0, inKeyLocation:Int = 0, inCtrlKey:Bool = false, inAltKey:Bool = false, inShiftKey:Bool = false) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		keyCode = inKeyCode;
 		keyLocation = (inKeyLocation == null ? 0 : inKeyLocation);

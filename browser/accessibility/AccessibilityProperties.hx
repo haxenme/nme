@@ -12,7 +12,7 @@ class AccessibilityProperties {
 	public var silent:Bool;
 	
 	
-	public function new () {
+	public function new() {
 		
 		description = "";
 		forceSimple = false;

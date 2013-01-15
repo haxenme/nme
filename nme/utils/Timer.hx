@@ -10,9 +10,9 @@ package nme.utils;
  *
  * <p>You can create Timer objects to run once or repeat at specified
  * intervals to execute code on a schedule. Depending on the SWF file's
- * framerate or the runtime environment (available memory and other factors),
+ * framerate or the runtime environment(available memory and other factors),
  * the runtime may dispatch events at slightly offset intervals. For example,
- * if a SWF file is set to play at 10 frames per second (fps), which is 100
+ * if a SWF file is set to play at 10 frames per second(fps), which is 100
  * millisecond intervals, but your timer is set to fire an event at 80
  * milliseconds, the event will be dispatched close to the 100 millisecond
  * interval. Memory-intensive scripts may also offset the events.</p>

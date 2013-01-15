@@ -22,7 +22,7 @@ package nme.text;
  * the <code>TextField</code>. The TextFormat properties are <code>null</code>
  * by default because if you don't provide values for the properties, Flash
  * Player uses its own default formatting. The default formatting that Flash
- * Player uses for each property (if property's value is <code>null</code>) is
+ * Player uses for each property(if property's value is <code>null</code>) is
  * as follows:</p>
  *
  * <p>The default formatting for each property is also described in each
@@ -43,9 +43,9 @@ extern class TextFormat {
 	/**
 	 * Indicates the block indentation in pixels. Block indentation is applied to
 	 * an entire block of text; that is, to all lines of the text. In contrast,
-	 * normal indentation (<code>TextFormat.indent</code>) affects only the first
+	 * normal indentation(<code>TextFormat.indent</code>) affects only the first
 	 * line of each paragraph. If this property is <code>null</code>, the
-	 * TextFormat object does not specify block indentation (block indentation is
+	 * TextFormat object does not specify block indentation(block indentation is
 	 * 0).
 	 */
 	var blockIndent : Null<Float>;
@@ -69,7 +69,7 @@ extern class TextFormat {
 	 * Indicates the color of the text. A number containing three 8-bit RGB
 	 * components; for example, 0xFF0000 is red, and 0x00FF00 is green. The
 	 * default value is <code>null</code>, which means that Flash Player uses the
-	 * color black (0x000000).
+	 * color black(0x000000).
 	 */
 	var color : Null<Int>;
 	//var display : TextFormatDisplay;
@@ -96,7 +96,7 @@ extern class TextFormat {
 
 	/**
 	 * A Boolean value that indicates whether kerning is enabled
-	 * (<code>true</code>) or disabled (<code>false</code>). Kerning adjusts the
+	 *(<code>true</code>) or disabled(<code>false</code>). Kerning adjusts the
 	 * pixels between certain character pairs to improve readability, and should
 	 * be used only when necessary, such as with headings in large fonts. Kerning
 	 * is supported for embedded fonts only.
@@ -110,7 +110,7 @@ extern class TextFormat {
 	var kerning : Null<Bool>;
 
 	/**
-	 * An integer representing the amount of vertical space (called
+	 * An integer representing the amount of vertical space(called
 	 * <i>leading</i>) between lines. The default value is <code>null</code>,
 	 * which indicates that the amount of leading used is 0.
 	 */
@@ -146,7 +146,7 @@ extern class TextFormat {
 	/**
 	 * Specifies custom tab stops as an array of non-negative integers. Each tab
 	 * stop is specified in pixels. If custom tab stops are not specified
-	 * (<code>null</code>), the default tab stop is 4 (average character width).
+	 *(<code>null</code>), the default tab stop is 4(average character width).
 	 */
 	var tabStops : Array<Int>;
 
@@ -166,7 +166,7 @@ extern class TextFormat {
 
 	/**
 	 * Indicates whether the text that uses this text format is underlined
-	 * (<code>true</code>) or not (<code>false</code>). This underlining is
+	 *(<code>true</code>) or not(<code>false</code>). This underlining is
 	 * similar to that produced by the <code><U></code> tag, but the latter is
 	 * not true underlining, because it does not skip descenders correctly. The
 	 * default value is <code>null</code>, which indicates that underlining is

@@ -46,7 +46,7 @@ package nme.sensors;
  *                 <li>Whenever accelerometer updates are obtained from the
  *               platform at device determined intervals.</li>
  *                 <li>Whenever the application misses a change in the
- *               accelerometer (for example, the runtime is resuming after
+ *               accelerometer(for example, the runtime is resuming after
  *               being idle).</li>
  *               </ul>
  *               </p>
@@ -55,7 +55,7 @@ package nme.sensors;
 
 	/**
 	 * Specifies whether the user has denied access to the accelerometer
-	 * (<code>true</code>) or allowed access (<code>false</code>). When this
+	 *(<code>true</code>) or allowed access(<code>false</code>). When this
 	 * value changes, a <code>status</code> event is dispatched.
 	 */
 	var muted(default,null) : Bool;

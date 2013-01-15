@@ -90,9 +90,9 @@ extern class Event {
 	 * The current phase in the event flow. This property can contain the
 	 * following numeric values:
 	 * <ul>
-	 *   <li> The capture phase (<code>EventPhase.CAPTURING_PHASE</code>).</li>
-	 *   <li> The target phase (<code>EventPhase.AT_TARGET</code>).</li>
-	 *   <li> The bubbling phase (<code>EventPhase.BUBBLING_PHASE</code>).</li>
+	 *   <li> The capture phase(<code>EventPhase.CAPTURING_PHASE</code>).</li>
+	 *   <li> The target phase(<code>EventPhase.AT_TARGET</code>).</li>
+	 *   <li> The bubbling phase(<code>EventPhase.BUBBLING_PHASE</code>).</li>
 	 * </ul>
 	 */
 	var eventPhase(default,null) : EventPhase;
@@ -187,7 +187,7 @@ extern class Event {
 	 * <p>An example of a behavior that is not cancelable is the default behavior
 	 * associated with the <code>Event.REMOVED</code> event, which is generated
 	 * whenever Flash Player is about to remove a display object from the display
-	 * list. The default behavior (removing the element) cannot be canceled, so
+	 * list. The default behavior(removing the element) cannot be canceled, so
 	 * the <code>preventDefault()</code> method has no effect on this default
 	 * behavior. </p>
 	 *
@@ -216,7 +216,7 @@ extern class Event {
 	/**
 	 * Prevents processing of any event listeners in nodes subsequent to the
 	 * current node in the event flow. This method does not affect any event
-	 * listeners in the current node (<code>currentTarget</code>). In contrast,
+	 * listeners in the current node(<code>currentTarget</code>). In contrast,
 	 * the <code>stopImmediatePropagation()</code> method prevents processing of
 	 * event listeners in both the current node and subsequent nodes. Additional
 	 * calls to this method have no effect. This method can be called in any
@@ -297,12 +297,12 @@ extern class Event {
 	 * <code>paste</code>, or <code>selectAll</code> events. TextField objects
 	 * always include Cut, Copy, Paste, Clear, and Select All commands in the
 	 * context menu. You cannot remove these commands from the context menu for
-	 * TextField objects. For TextField objects, selecting these commands (or
+	 * TextField objects. For TextField objects, selecting these commands(or
 	 * their keyboard equivalents) does not generate <code>clear</code>,
 	 * <code>copy</code>, <code>cut</code>, <code>paste</code>, or
 	 * <code>selectAll</code> events. However, other classes that extend the
 	 * InteractiveObject class, including components built using the Flash Text
-	 * Engine (FTE), will dispatch these events in response to user actions such
+	 * Engine(FTE), will dispatch these events in response to user actions such
 	 * as keyboard shortcuts and context menus.</p>
 	 */
 	@:require(flash10) static var CLEAR : String;
@@ -343,12 +343,12 @@ extern class Event {
 	 * <code>paste</code>, or <code>selectAll</code> events. TextField objects
 	 * always include Cut, Copy, Paste, Clear, and Select All commands in the
 	 * context menu. You cannot remove these commands from the context menu for
-	 * TextField objects. For TextField objects, selecting these commands (or
+	 * TextField objects. For TextField objects, selecting these commands(or
 	 * their keyboard equivalents) does not generate <code>clear</code>,
 	 * <code>copy</code>, <code>cut</code>, <code>paste</code>, or
 	 * <code>selectAll</code> events. However, other classes that extend the
 	 * InteractiveObject class, including components built using the Flash Text
-	 * Engine (FTE), will dispatch these events in response to user actions such
+	 * Engine(FTE), will dispatch these events in response to user actions such
 	 * as keyboard shortcuts and context menus.</p>
 	 */
 	@:require(flash10) static var COPY : String;
@@ -364,12 +364,12 @@ extern class Event {
 	 * <code>paste</code>, or <code>selectAll</code> events. TextField objects
 	 * always include Cut, Copy, Paste, Clear, and Select All commands in the
 	 * context menu. You cannot remove these commands from the context menu for
-	 * TextField objects. For TextField objects, selecting these commands (or
+	 * TextField objects. For TextField objects, selecting these commands(or
 	 * their keyboard equivalents) does not generate <code>clear</code>,
 	 * <code>copy</code>, <code>cut</code>, <code>paste</code>, or
 	 * <code>selectAll</code> events. However, other classes that extend the
 	 * InteractiveObject class, including components built using the Flash Text
-	 * Engine (FTE), will dispatch these events in response to user actions such
+	 * Engine(FTE), will dispatch these events in response to user actions such
 	 * as keyboard shortcuts and context menus.</p>
 	 */
 	@:require(flash10) static var CUT : String;
@@ -477,12 +477,12 @@ extern class Event {
 	 * <code>paste</code>, or <code>selectAll</code> events. TextField objects
 	 * always include Cut, Copy, Paste, Clear, and Select All commands in the
 	 * context menu. You cannot remove these commands from the context menu for
-	 * TextField objects. For TextField objects, selecting these commands (or
+	 * TextField objects. For TextField objects, selecting these commands(or
 	 * their keyboard equivalents) does not generate <code>clear</code>,
 	 * <code>copy</code>, <code>cut</code>, <code>paste</code>, or
 	 * <code>selectAll</code> events. However, other classes that extend the
 	 * InteractiveObject class, including components built using the Flash Text
-	 * Engine (FTE), will dispatch these events in response to user actions such
+	 * Engine(FTE), will dispatch these events in response to user actions such
 	 * as keyboard shortcuts and context menus.</p>
 	 */
 	@:require(flash10) static var PASTE : String;
@@ -551,12 +551,12 @@ extern class Event {
 	 * <code>paste</code>, or <code>selectAll</code> events. TextField objects
 	 * always include Cut, Copy, Paste, Clear, and Select All commands in the
 	 * context menu. You cannot remove these commands from the context menu for
-	 * TextField objects. For TextField objects, selecting these commands (or
+	 * TextField objects. For TextField objects, selecting these commands(or
 	 * their keyboard equivalents) does not generate <code>clear</code>,
 	 * <code>copy</code>, <code>cut</code>, <code>paste</code>, or
 	 * <code>selectAll</code> events. However, other classes that extend the
 	 * InteractiveObject class, including components built using the Flash Text
-	 * Engine (FTE), will dispatch these events in response to user actions such
+	 * Engine(FTE), will dispatch these events in response to user actions such
 	 * as keyboard shortcuts and context menus.</p>
 	 */
 	@:require(flash10) static var SELECT_ALL : String;

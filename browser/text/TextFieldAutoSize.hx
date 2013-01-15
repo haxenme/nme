@@ -10,7 +10,7 @@ class TextFieldAutoSize {
 	public static inline var RIGHT:String = "RIGHT";
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

@@ -37,22 +37,22 @@ class Stage extends DisplayObjectContainer {
 	public static var OrientationFaceUp = 5;
 	public static var OrientationFaceDown = 6;
 	
-	public var active (default, null):Bool;
-	public var align (get_align, set_align):StageAlign;
-	public var displayState (get_displayState, set_displayState):StageDisplayState;
-	public var dpiScale (get_dpiScale, null):Float;
-	public var focus (get_focus, set_focus):InteractiveObject;
-	public var frameRate (default, set_frameRate): Float;
-	public var isOpenGL (get_isOpenGL, null):Bool;
+	public var active(default, null):Bool;
+	public var align(get_align, set_align):StageAlign;
+	public var displayState(get_displayState, set_displayState):StageDisplayState;
+	public var dpiScale(get_dpiScale, null):Float;
+	public var focus(get_focus, set_focus):InteractiveObject;
+	public var frameRate(default, set_frameRate): Float;
+	public var isOpenGL(get_isOpenGL, null):Bool;
 	public var onKey:Int -> Bool -> Int -> Int -> Void; 
 	public var onQuit:Void -> Void; 
 	public var pauseWhenDeactivated:Bool;
-	public var quality (get_quality, set_quality):StageQuality;
+	public var quality(get_quality, set_quality):StageQuality;
 	public var renderRequest:Void -> Void; 
-	public var scaleMode (get_scaleMode, set_scaleMode):StageScaleMode;
-	public var stageFocusRect (get_stageFocusRect, set_stageFocusRect):Bool;
-	public var stageHeight (get_stageHeight, null):Int;
-	public var stageWidth (get_stageWidth, null):Int;
+	public var scaleMode(get_scaleMode, set_scaleMode):StageScaleMode;
+	public var stageFocusRect(get_stageFocusRect, set_stageFocusRect):Bool;
+	public var stageHeight(get_stageHeight, null):Int;
+	public var stageWidth(get_stageWidth, null):Int;
 	public var stage3Ds:Vector<Stage3D>;
 	
 	private static var efLeftDown = 0x0001;
@@ -83,9 +83,9 @@ class Stage extends DisplayObjectContainer {
 	/** @private */ private var nmeTouchInfo:IntHash<TouchInfo>;
 	
 	
-	public function new (inHandle:Dynamic, inWidth:Int, inHeight:Int) {
+	public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) {
 		
-		super (inHandle, "Stage");
+		super(inHandle, "Stage");
 		
 		nmeMouseOverObjects = [];
 		nmeFocusOverObjects = [];
@@ -98,43 +98,43 @@ class Stage extends DisplayObjectContainer {
 		renderRequest = null;
 		#end
 		
-		nme_set_stage_handler (nmeHandle, nmeProcessStageEvent, inWidth, inHeight);
+		nme_set_stage_handler(nmeHandle, nmeProcessStageEvent, inWidth, inHeight);
 		nmeInvalid = false;
 		nmeLastRender = 0;
 		nmeLastDown = [];
 		nmeLastClickTime = 0.0;
 		this.frameRate = 100;
-		nmeTouchInfo = new IntHash<TouchInfo> ();
-		nmeJoyAxisData = new IntHash<Array<Float>> ();
+		nmeTouchInfo = new IntHash<TouchInfo>();
+		nmeJoyAxisData = new IntHash<Array<Float>>();
 		
 		stage3Ds = new Vector();
-		stage3Ds.push (new Stage3D());
+		stage3Ds.push(new Stage3D());
 		
 	}
 	
 	
-	public static dynamic function getOrientation ():Int {
+	public static dynamic function getOrientation():Int {
 		
-		return nme_stage_get_orientation ();
-		
-	}
-	
-	
-	public static dynamic function getNormalOrientation ():Int {
-		
-		return nme_stage_get_normal_orientation ();
+		return nme_stage_get_orientation();
 		
 	}
 	
 	
-	public function invalidate ():Void {
+	public static dynamic function getNormalOrientation():Int {
+		
+		return nme_stage_get_normal_orientation();
+		
+	}
+	
+	
+	public function invalidate():Void {
 		
 		nmeInvalid = true;
 		
 	}
 	
 	
-	/** @private */ private function nmeCheckFocusInOuts (inEvent:Dynamic, inStack:Array<InteractiveObject>) {
+	/** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>) {
 		
 		// Exit ...
 		var new_n = inStack.length;
@@ -149,22 +149,22 @@ class Stage extends DisplayObjectContainer {
 			while (common < new_n && common < old_n && inStack[common] == nmeFocusOverObjects[common])
 				common++;
 			
-			var focusOut = new FocusEvent (FocusEvent.FOCUS_OUT, false, false, new_obj, inEvent.flags > 0, inEvent.code);
+			var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, false, false, new_obj, inEvent.flags > 0, inEvent.code);
 			
 			var i = old_n - 1;
 			while (i >= common) {
 				
-				nmeFocusOverObjects[i].nmeDispatchEvent (focusOut);
+				nmeFocusOverObjects[i].nmeDispatchEvent(focusOut);
 				i--;
 				
 			}
 			
-			var focusIn = new FocusEvent (FocusEvent.FOCUS_IN, false, false, old_obj, inEvent.flags > 0, inEvent.code);
+			var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, false, false, old_obj, inEvent.flags > 0, inEvent.code);
 			var i = new_n - 1;
 			
 			while (i >= common) {
 				
-				inStack[i].nmeDispatchEvent (focusIn);
+				inStack[i].nmeDispatchEvent(focusIn);
 				i--;
 				
 			}
@@ -176,7 +176,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeCheckInOuts (inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
+	/** @private */ private function nmeCheckInOuts(inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
 		
 		var prev = touchInfo == null ? nmeMouseOverObjects : touchInfo.touchOverObjects;
 		var events = touchInfo == null ? nmeMouseChanges : nmeTouchChanges;
@@ -190,30 +190,30 @@ class Stage extends DisplayObjectContainer {
 			
 			// mouseOut/MouseOver goes up the object tree...
 			if (old_obj != null)
-				old_obj.nmeFireEvent (inEvent.nmeCreateSimilar (events[0], new_obj, old_obj));
+				old_obj.nmeFireEvent(inEvent.nmeCreateSimilar(events[0], new_obj, old_obj));
 			
 			if (new_obj != null)
-				new_obj.nmeFireEvent (inEvent.nmeCreateSimilar (events[1], old_obj));
+				new_obj.nmeFireEvent(inEvent.nmeCreateSimilar(events[1], old_obj));
 			
 			// rollOver/rollOut goes only over the non-common objects in the tree...
 			var common = 0;
 			while (common < new_n && common < old_n && inStack[common] == prev[common])
 				common++;
 			
-			var rollOut = inEvent.nmeCreateSimilar (events[2], new_obj, old_obj);
+			var rollOut = inEvent.nmeCreateSimilar(events[2], new_obj, old_obj);
 			var i = old_n - 1;
 			while (i >= common) {
 				
-				prev[i].nmeDispatchEvent (rollOut);
+				prev[i].nmeDispatchEvent(rollOut);
 				i--;
 				
 			}
 			
-			var rollOver = inEvent.nmeCreateSimilar (events[3], old_obj);
+			var rollOver = inEvent.nmeCreateSimilar(events[3], old_obj);
 			var i = new_n - 1;
 			while (i >= common) {
 				
-				inStack[i].nmeDispatchEvent (rollOver);
+				inStack[i].nmeDispatchEvent(rollOver);
 				i--;
 				
 			}
@@ -232,19 +232,19 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeCheckRender () {
+	/** @private */ private function nmeCheckRender() {
 		
 		//trace("nmeCheckRender " + frameRate);
 		if (frameRate > 0) {
 			
-			var now = Timer.stamp ();
+			var now = Timer.stamp();
 			if (now >= nmeLastRender + nmeFramePeriod) {
 				
 				nmeLastRender = now;
 				if (renderRequest != null)
-					renderRequest ();
+					renderRequest();
 				else
-					nmeRender (true);
+					nmeRender(true);
 				
 			}
 			
@@ -253,143 +253,143 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeDoProcessStageEvent (inEvent:Dynamic):Float {
+	/** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
 		
 		var result = 0.0;
 		//if (inEvent.type!=9) trace("Stage Event : " + inEvent);
-		var type:Int = Std.int (Reflect.field (inEvent, "type"));
+		var type:Int = Std.int(Reflect.field(inEvent, "type"));
 		
 		switch (type) {
 			
 			case 2: // etChar
 				if (onKey != null)
-					untyped onKey (inEvent.code, inEvent.down, inEvent.char, inEvent.flags);
+					untyped onKey(inEvent.code, inEvent.down, inEvent.char, inEvent.flags);
 			
 			case 1: // etKeyDown
-				nmeOnKey (inEvent, KeyboardEvent.KEY_DOWN);
+				nmeOnKey(inEvent, KeyboardEvent.KEY_DOWN);
 			
 			case 3: // etKeyUp
-				nmeOnKey (inEvent, KeyboardEvent.KEY_UP);
+				nmeOnKey(inEvent, KeyboardEvent.KEY_UP);
 			
 			case 4: // etMouseMove
-				nmeOnMouse (inEvent, MouseEvent.MOUSE_MOVE, true);
+				nmeOnMouse(inEvent, MouseEvent.MOUSE_MOVE, true);
 			
 			case 5: // etMouseDown
-				nmeOnMouse (inEvent, MouseEvent.MOUSE_DOWN, true);
+				nmeOnMouse(inEvent, MouseEvent.MOUSE_DOWN, true);
 			
 			case 6: // etMouseClick
-				nmeOnMouse (inEvent, MouseEvent.CLICK, true);
+				nmeOnMouse(inEvent, MouseEvent.CLICK, true);
 			
 			case 7: // etMouseUp
-				nmeOnMouse (inEvent, MouseEvent.MOUSE_UP, true);
+				nmeOnMouse(inEvent, MouseEvent.MOUSE_UP, true);
 			
 			case 8: // etResize
-				nmeOnResize (inEvent.x, inEvent.y);
+				nmeOnResize(inEvent.x, inEvent.y);
 				if (renderRequest == null)
-					nmeRender (false);
+					nmeRender(false);
 			
 			case 9: // etPoll
-				nmePollTimers ();
+				nmePollTimers();
 			
 			case 10: // etQuit
 				if (onQuit != null)
-					untyped onQuit ();
+					untyped onQuit();
 			
 			case 11: // etFocus
-				nmeOnFocus (inEvent);
+				nmeOnFocus(inEvent);
 			
 			case 12: // etShouldRotate
-				if (shouldRotateInterface (inEvent.value))
+				if (shouldRotateInterface(inEvent.value))
 					inEvent.result = 2;
 			
 			case 14: // etRedraw
-				nmeRender (true);
+				nmeRender(true);
 			
 			case 15: // etTouchBegin
-				var touchInfo = new TouchInfo ();
-				nmeTouchInfo.set (inEvent.value, touchInfo);
-				nmeOnTouch (inEvent, TouchEvent.TOUCH_BEGIN, touchInfo);
+				var touchInfo = new TouchInfo();
+				nmeTouchInfo.set(inEvent.value, touchInfo);
+				nmeOnTouch(inEvent, TouchEvent.TOUCH_BEGIN, touchInfo);
 				// trace("etTouchBegin : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y+ " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
 				if ((inEvent.flags & 0x8000) > 0)
 					nmeOnMouse(inEvent, MouseEvent.MOUSE_DOWN, false);
 			
 			case 16: // etTouchMove
-				var touchInfo = nmeTouchInfo.get (inEvent.value);
-				nmeOnTouch (inEvent, TouchEvent.TOUCH_MOVE, touchInfo);
+				var touchInfo = nmeTouchInfo.get(inEvent.value);
+				nmeOnTouch(inEvent, TouchEvent.TOUCH_MOVE, touchInfo);
 			
 			case 17: // etTouchEnd
-				var touchInfo = nmeTouchInfo.get (inEvent.value);
-				nmeOnTouch (inEvent, TouchEvent.TOUCH_END, touchInfo);
-				nmeTouchInfo.remove (inEvent.value);
+				var touchInfo = nmeTouchInfo.get(inEvent.value);
+				nmeOnTouch(inEvent, TouchEvent.TOUCH_END, touchInfo);
+				nmeTouchInfo.remove(inEvent.value);
 				// trace("etTouchEnd : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y + " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
 				if ((inEvent.flags & 0x8000) > 0)
-					nmeOnMouse (inEvent, MouseEvent.MOUSE_UP, false);
+					nmeOnMouse(inEvent, MouseEvent.MOUSE_UP, false);
 			
 			case 18: // etTouchTap
 				//nmeOnTouchTap(inEvent.TouchEvent.TOUCH_TAP);
 			
 			case 19: // etChange
-				nmeOnChange (inEvent);
+				nmeOnChange(inEvent);
 			
 			case 20: // etActivate
-				nmeSetActive (true);
+				nmeSetActive(true);
 			
 			case 21: // etDeactivate
-				nmeSetActive (false);
+				nmeSetActive(false);
 			
 			case 22: // etGotInputFocus
-				var evt = new Event (FocusEvent.FOCUS_IN);
-				nmeBroadcast (evt);
+				var evt = new Event(FocusEvent.FOCUS_IN);
+				nmeBroadcast(evt);
 			
 			case 23: // etLostInputFocus
-				var evt = new Event (FocusEvent.FOCUS_OUT);
-				nmeBroadcast (evt);
+				var evt = new Event(FocusEvent.FOCUS_OUT);
+				nmeBroadcast(evt);
 			
 			case 24: // etJoyAxisMove
-				nmeOnJoystick (inEvent, JoystickEvent.AXIS_MOVE);
+				nmeOnJoystick(inEvent, JoystickEvent.AXIS_MOVE);
 			
 			case 25: // etJoyBallMove
-				nmeOnJoystick (inEvent, JoystickEvent.BALL_MOVE);
+				nmeOnJoystick(inEvent, JoystickEvent.BALL_MOVE);
 			
 			case 26: // etJoyHatMove
-				nmeOnJoystick (inEvent, JoystickEvent.HAT_MOVE);
+				nmeOnJoystick(inEvent, JoystickEvent.HAT_MOVE);
 			
 			case 27: // etJoyButtonDown
-				nmeOnJoystick (inEvent, JoystickEvent.BUTTON_DOWN);
+				nmeOnJoystick(inEvent, JoystickEvent.BUTTON_DOWN);
 			
 			case 28: // etJoyButtonUp
-				nmeOnJoystick (inEvent, JoystickEvent.BUTTON_UP);
+				nmeOnJoystick(inEvent, JoystickEvent.BUTTON_UP);
 			
 			// TODO: user, sys_wm, sound_finished
 		}
 		
-		result = nmeUpdateNextWake ();
+		result = nmeUpdateNextWake();
 		
 		return result;
 		
 	}
 	
 	
-	private function dummyTrace () { trace(""); }
+	private function dummyTrace() { trace(""); }
 	
 	
 	#if android
 	@:functionCode("try {") 
 	@:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
 	#end
-	/** @private */ private function nmeProcessStageEvent (inEvent:Dynamic):Dynamic {
+	/** @private */ private function nmeProcessStageEvent(inEvent:Dynamic):Dynamic {
 		
-		nmeDoProcessStageEvent (inEvent);
+		nmeDoProcessStageEvent(inEvent);
 		return null;
 		
 	}
 	
 	
-	/** @private */ private function nmeDrag (inMouse:Point) {
+	/** @private */ private function nmeDrag(inMouse:Point) {
 		
 		var p = nmeDragObject.parent;
 		if (p != null)
-			inMouse = p.globalToLocal (inMouse);
+			inMouse = p.globalToLocal(inMouse);
 		
 		var x = inMouse.x + nmeDragOffsetX;
 		var y = inMouse.y + nmeDragOffsetY;
@@ -410,14 +410,14 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeNextFrameDue (inOtherTimers:Float) {
+	/** @private */ private function nmeNextFrameDue(inOtherTimers:Float) {
 		
 		if (!active && pauseWhenDeactivated)
 			return inOtherTimers;
 		
 		if (frameRate > 0) {
 			
-			var next = nmeLastRender + nmeFramePeriod - Timer.stamp () - nmeEarlyWakeup;
+			var next = nmeLastRender + nmeFramePeriod - Timer.stamp() - nmeEarlyWakeup;
 			if (next < inOtherTimers)
 				return next;
 			
@@ -428,30 +428,30 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeOnChange (inEvent) {
+	/** @private */ private function nmeOnChange(inEvent) {
 		
-		var obj:DisplayObject = nmeFindByID (inEvent.id);
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		if (obj != null)
-			obj.nmeFireEvent (new Event (Event.CHANGE));
+			obj.nmeFireEvent(new Event(Event.CHANGE));
 		
 	}
 	
 	
-	/** @private */ private function nmeOnFocus (inEvent:Dynamic) {
+	/** @private */ private function nmeOnFocus(inEvent:Dynamic) {
 		
-		var stack = new Array<InteractiveObject> ();
-		var obj:DisplayObject = nmeFindByID (inEvent.id);
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		
 		if (obj != null)
-			obj.nmeGetInteractiveObjectStack (stack);
+			obj.nmeGetInteractiveObjectStack(stack);
 		
-		if (stack.length > 0 && (inEvent.value == 1 || inEvent.value == 2)) {
+		if (stack.length > 0 &&(inEvent.value == 1 || inEvent.value == 2)) {
 			
 			var obj = stack[0];
-			var evt = new FocusEvent (inEvent.value == 1 ? FocusEvent.MOUSE_FOCUS_CHANGE : FocusEvent.KEY_FOCUS_CHANGE, true, true, nmeFocusOverObjects.length == 0 ? null : nmeFocusOverObjects[0], inEvent.flags > 0, inEvent.code);
-			obj.nmeFireEvent (evt);
+			var evt = new FocusEvent(inEvent.value == 1 ? FocusEvent.MOUSE_FOCUS_CHANGE : FocusEvent.KEY_FOCUS_CHANGE, true, true, nmeFocusOverObjects.length == 0 ? null : nmeFocusOverObjects[0], inEvent.flags > 0, inEvent.code);
+			obj.nmeFireEvent(evt);
 			
-			if (evt.nmeGetIsCancelled ()) {
+			if (evt.nmeGetIsCancelled()) {
 				
 				inEvent.result = 1;
 				return;
@@ -460,21 +460,21 @@ class Stage extends DisplayObjectContainer {
 			
 		}
 		
-		stack.reverse ();
+		stack.reverse();
 		
-		nmeCheckFocusInOuts (inEvent, stack);
+		nmeCheckFocusInOuts(inEvent, stack);
 		
 	}
 	
 	
-	/** @private */ private function nmeOnJoystick (inEvent:Dynamic, inType:String) {
+	/** @private */ private function nmeOnJoystick(inEvent:Dynamic, inType:String) {
 		
 		var evt:JoystickEvent = null;
 		
 		switch (inType) {
 			
 			case JoystickEvent.AXIS_MOVE:
-				var data = nmeJoyAxisData.get (inEvent.id);
+				var data = nmeJoyAxisData.get(inEvent.id);
 				if (data == null) {
 					
 					data = [ 0.0, 0.0, 0.0, 0.0 ];
@@ -486,19 +486,19 @@ class Stage extends DisplayObjectContainer {
 				
 				while (data.length < inEvent.code) {
 					
-					data.push (0);
+					data.push(0);
 					
 				}
 				
 				data[inEvent.code] = value;
 				
-				evt = new JoystickEvent (inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
-				evt.axis = data.copy ();
+				evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+				evt.axis = data.copy();
 				
-				nmeJoyAxisData.set (inEvent.id, data);
+				nmeJoyAxisData.set(inEvent.id, data);
 			
 			case JoystickEvent.BALL_MOVE:
-				evt = new JoystickEvent (inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
+				evt = new JoystickEvent(inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
 			
 			case JoystickEvent.HAT_MOVE:
 				var x = 0;
@@ -524,34 +524,34 @@ class Stage extends DisplayObjectContainer {
 					
 				}
 				
-				evt = new JoystickEvent (inType, false, false, inEvent.id, inEvent.code, x, y);
+				evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, x, y);
 			
 			default:
-				evt = new JoystickEvent (inType, false, false, inEvent.id, inEvent.code);
+				evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code);
 			
 		}
 		
-		nmeDispatchEvent (evt);
+		nmeDispatchEvent(evt);
 		
 	}
 	
 	
-	/** @private */ private function nmeOnKey (inEvent:Dynamic, inType:String) {
+	/** @private */ private function nmeOnKey(inEvent:Dynamic, inType:String) {
 		
-		var stack = new Array<InteractiveObject> ();
-		var obj:DisplayObject = nmeFindByID (inEvent.id);
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		
 		if (obj != null)
-			obj.nmeGetInteractiveObjectStack (stack);
+			obj.nmeGetInteractiveObjectStack(stack);
 		
 		if (stack.length > 0) {
 			
 			var obj = stack[0];
 			var flags:Int = inEvent.flags;
-			var evt = new KeyboardEvent (inType, true, true, inEvent.code, inEvent.value, ((flags & efLocationRight) == 0) ? 1 : 0, (flags & efCtrlDown) != 0, (flags & efAltDown) != 0, (flags & efShiftDown) !=0);
-			obj.nmeFireEvent (evt);
+			var evt = new KeyboardEvent(inType, true, true, inEvent.code, inEvent.value,((flags & efLocationRight) == 0) ? 1 : 0,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) !=0);
+			obj.nmeFireEvent(evt);
 			
-			if (evt.nmeGetIsCancelled ())
+			if (evt.nmeGetIsCancelled())
 				inEvent.result = 1;
 			
 		}
@@ -559,7 +559,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeOnMouse (inEvent:Dynamic, inType:String, inFromMouse:Bool) {
+	/** @private */ private function nmeOnMouse(inEvent:Dynamic, inType:String, inFromMouse:Bool) {
 		
 		var type = inType;
 		var button:Int = inEvent.value;
@@ -591,34 +591,34 @@ class Stage extends DisplayObjectContainer {
 		}
 		
 		if (nmeDragObject != null)
-			nmeDrag (new Point (inEvent.x, inEvent.y));
+			nmeDrag(new Point(inEvent.x, inEvent.y));
 		
-		var stack = new Array<InteractiveObject> ();
-		var obj:DisplayObject = nmeFindByID (inEvent.id);
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		
 		if (obj != null)
-			obj.nmeGetInteractiveObjectStack (stack);
+			obj.nmeGetInteractiveObjectStack(stack);
 		
 		var local:Point = null;
 		if (stack.length > 0) {
 			
 			var obj = stack[0];
-			stack.reverse ();
-			local = obj.globalToLocal (new Point (inEvent.x, inEvent.y));
-			var evt = MouseEvent.nmeCreate (type, inEvent, local, obj);
+			stack.reverse();
+			local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+			var evt = MouseEvent.nmeCreate(type, inEvent, local, obj);
 			evt.delta = wheel;
 			if (inFromMouse)
-				nmeCheckInOuts (evt, stack);
-			obj.nmeFireEvent (evt);
+				nmeCheckInOuts(evt, stack);
+			obj.nmeFireEvent(evt);
 			
 		} else {
 			
 			//trace("No obj?");
-			local = new Point (inEvent.x, inEvent.y);
-			var evt = MouseEvent.nmeCreate (type, inEvent, local, null);
+			local = new Point(inEvent.x, inEvent.y);
+			var evt = MouseEvent.nmeCreate(type, inEvent, local, null);
 			evt.delta = wheel;
 			if (inFromMouse)
-				nmeCheckInOuts (evt, stack);
+				nmeCheckInOuts(evt, stack);
 			
 		}
 		
@@ -631,16 +631,16 @@ class Stage extends DisplayObjectContainer {
 			
 			if (click_obj == nmeLastDown[button]) {
 				
-				var evt = MouseEvent.nmeCreate (sClickEvents[button], inEvent, local, click_obj);
+				var evt = MouseEvent.nmeCreate(sClickEvents[button], inEvent, local, click_obj);
 				click_obj.nmeFireEvent(evt);
 				
 				if (button == 0 && click_obj.doubleClickEnabled) {
 					
-					var now = Timer.stamp ();
+					var now = Timer.stamp();
 					if (now - nmeLastClickTime < 0.25) {
 						
-						var evt = MouseEvent.nmeCreate (MouseEvent.DOUBLE_CLICK, inEvent, local, click_obj);
-						click_obj.nmeFireEvent (evt);
+						var evt = MouseEvent.nmeCreate(MouseEvent.DOUBLE_CLICK, inEvent, local, click_obj);
+						click_obj.nmeFireEvent(evt);
 						
 					}
 					
@@ -657,70 +657,70 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ private function nmeOnResize (inW:Float, inH:Float) {
+	/** @private */ private function nmeOnResize(inW:Float, inH:Float) {
 		
-		var evt = new Event (Event.RESIZE);
-		nmeDispatchEvent (evt);
+		var evt = new Event(Event.RESIZE);
+		nmeDispatchEvent(evt);
 		
 	}
 	
 	
-	/** @private */ private function nmeOnTouch (inEvent:Dynamic, inType:String, touchInfo:TouchInfo) {
+	/** @private */ private function nmeOnTouch(inEvent:Dynamic, inType:String, touchInfo:TouchInfo) {
 		
-		var stack = new Array<InteractiveObject> ();
-		var obj:DisplayObject = nmeFindByID (inEvent.id);
+		var stack = new Array<InteractiveObject>();
+		var obj:DisplayObject = nmeFindByID(inEvent.id);
 		
 		if (obj != null)
-			obj.nmeGetInteractiveObjectStack (stack);
+			obj.nmeGetInteractiveObjectStack(stack);
 		
 		if (stack.length > 0) {
 			
 			var obj = stack[0];
-			stack.reverse ();
-			var local = obj.globalToLocal (new Point (inEvent.x, inEvent.y));
-			var evt = TouchEvent.nmeCreate (inType, inEvent, local, obj, inEvent.sx, inEvent.sy);
+			stack.reverse();
+			var local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+			var evt = TouchEvent.nmeCreate(inType, inEvent, local, obj, inEvent.sx, inEvent.sy);
 			evt.touchPointID = inEvent.value;
-			evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
+			evt.isPrimaryTouchPoint =(inEvent.flags & 0x8000) > 0;
 			//if (evt.isPrimaryTouchPoint)
-			nmeCheckInOuts (evt, stack, touchInfo);
-			obj.nmeFireEvent (evt);
+			nmeCheckInOuts(evt, stack, touchInfo);
+			obj.nmeFireEvent(evt);
 			
 			if (evt.isPrimaryTouchPoint && inType == TouchEvent.TOUCH_MOVE) {
 				
 				if (nmeDragObject != null)
-					nmeDrag (new Point (inEvent.x, inEvent.y));
+					nmeDrag(new Point(inEvent.x, inEvent.y));
 				
-				var evt = MouseEvent.nmeCreate (MouseEvent.MOUSE_MOVE, inEvent, local, obj);
-				obj.nmeFireEvent (evt);
+				var evt = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE, inEvent, local, obj);
+				obj.nmeFireEvent(evt);
 				
 			}
 			
 		} else {
 			
 			//trace("No object?");
-			var evt = TouchEvent.nmeCreate (inType, inEvent, new Point (inEvent.x, inEvent.y), null, inEvent.sx, inEvent.sy);
+			var evt = TouchEvent.nmeCreate(inType, inEvent, new Point(inEvent.x, inEvent.y), null, inEvent.sx, inEvent.sy);
 			evt.touchPointID = inEvent.value;
-			evt.isPrimaryTouchPoint = (inEvent.flags & 0x8000) > 0;
+			evt.isPrimaryTouchPoint =(inEvent.flags & 0x8000) > 0;
 			//if (evt.isPrimaryTouchPoint)
-			nmeCheckInOuts (evt, stack, touchInfo);
+			nmeCheckInOuts(evt, stack, touchInfo);
 			
 		}
 		
 	}
 	
 	
-	/** @private */ public function nmePollTimers () {
+	/** @private */ public function nmePollTimers() {
 		
 		//trace("poll");
-		Timer.nmeCheckTimers ();
-		SoundChannel.nmePollComplete ();
-		URLLoader.nmePollData ();
-		nmeCheckRender ();
+		Timer.nmeCheckTimers();
+		SoundChannel.nmePollComplete();
+		URLLoader.nmePollData();
+		nmeCheckRender();
 		
 	}
 	
 	
-	/** @private */ public function nmeRender (inSendEnterFrame:Bool) {
+	/** @private */ public function nmeRender(inSendEnterFrame:Bool) {
 		
 		if (!active)
 			return;
@@ -728,42 +728,42 @@ class Stage extends DisplayObjectContainer {
 		//trace("Render");
 		if (inSendEnterFrame) {
 			
-			nmeBroadcast (new Event (Event.ENTER_FRAME));
+			nmeBroadcast(new Event(Event.ENTER_FRAME));
 			
 		} if (nmeInvalid) {
 			
 			nmeInvalid = false;
-			nmeBroadcast (new Event (Event.RENDER));
+			nmeBroadcast(new Event(Event.RENDER));
 			
 		}
 		
-		nme_render_stage (nmeHandle);
+		nme_render_stage(nmeHandle);
 		
 	}
 	
 	
-	/** @private */ public function nmeSetActive (inActive:Bool) {
+	/** @private */ public function nmeSetActive(inActive:Bool) {
 		
 		// trace("nmeSetActive : " + inActive);
 		if (inActive != active) {
 			
 			active = inActive;
 			if (!active)
-				nmeLastRender = Timer.stamp ();
+				nmeLastRender = Timer.stamp();
 			
-			var evt = new Event (inActive ? Event.ACTIVATE : Event.DEACTIVATE);
-			nmeBroadcast (evt);
+			var evt = new Event(inActive ? Event.ACTIVATE : Event.DEACTIVATE);
+			nmeBroadcast(evt);
 			if (inActive)
-				nmePollTimers ();
+				nmePollTimers();
 			
 		}
 		
 	}
 	
 	
-	/** @private */ public function nmeStartDrag (sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void {
+	/** @private */ public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void {
 		
-		nmeDragBounds = (bounds == null) ? null : bounds.clone ();
+		nmeDragBounds =(bounds == null) ? null : bounds.clone();
 		nmeDragObject = sprite;
 		
 		if (nmeDragObject != null) {
@@ -775,10 +775,10 @@ class Stage extends DisplayObjectContainer {
 				
 			} else {
 				
-				var mouse = new Point (mouseX, mouseY);
+				var mouse = new Point(mouseX, mouseY);
 				var p = nmeDragObject.parent;
 				if (p != null)
-					mouse = p.globalToLocal (mouse);
+					mouse = p.globalToLocal(mouse);
 				
 				nmeDragOffsetX = nmeDragObject.x - mouse.x;
 				nmeDragOffsetY = nmeDragObject.y - mouse.y;
@@ -790,7 +790,7 @@ class Stage extends DisplayObjectContainer {
 	}
 
 	
-	/** @private */ public function nmeStopDrag (sprite:Sprite):Void {
+	/** @private */ public function nmeStopDrag(sprite:Sprite):Void {
 		
 		nmeDragBounds = null;
 		nmeDragObject = null;
@@ -798,46 +798,46 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	/** @private */ public function nmeUpdateNextWake () {
+	/** @private */ public function nmeUpdateNextWake() {
 		
 		// TODO: In a multi-stage environment, may need to handle this better...
-		var next_wake = Timer.nmeNextWake (315000000.0);
+		var next_wake = Timer.nmeNextWake(315000000.0);
 		
 		if (next_wake > 0.001 && nme.media.SoundChannel.nmeDynamicSoundCount > 0)
 			next_wake = 0.001;
 		
-		if (next_wake > 0.02 && (nme.media.SoundChannel.nmeCompletePending () || nme.net.URLLoader.nmeLoadPending ())) {
+		if (next_wake > 0.02 &&(nme.media.SoundChannel.nmeCompletePending() || nme.net.URLLoader.nmeLoadPending())) {
 			
-			next_wake = (active || !pauseWhenDeactivated) ? 0.020 : 0.500;
+			next_wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
 			
 		}
 		
-		next_wake = nmeNextFrameDue (next_wake);
-		nme_stage_set_next_wake (nmeHandle, next_wake);
+		next_wake = nmeNextFrameDue(next_wake);
+		nme_stage_set_next_wake(nmeHandle, next_wake);
 		
 		return next_wake;
 		
 	}
 	
 	
-	public static function setFixedOrientation (inOrientation:Int) {
+	public static function setFixedOrientation(inOrientation:Int) {
 		
 		// If you set this, you don't need to set the 'shouldRotateInterface' function.
-		nme_stage_set_fixed_orientation (inOrientation);
+		nme_stage_set_fixed_orientation(inOrientation);
 		
 	}
 	
 	
-	public static dynamic function shouldRotateInterface (inOrientation:Int):Bool {
+	public static dynamic function shouldRotateInterface(inOrientation:Int):Bool {
 		
 		return inOrientation == OrientationPortrait;
 		
 	}
 	
 	
-	public function showCursor (inShow:Bool) {
+	public function showCursor(inShow:Bool) {
 		
-		nme_stage_show_cursor (nmeHandle, inShow);
+		nme_stage_show_cursor(nmeHandle, inShow);
 		
 	}
 	
@@ -849,66 +849,66 @@ class Stage extends DisplayObjectContainer {
 	
 	
 	
-	private function get_align ():StageAlign {
+	private function get_align():StageAlign {
 		
-		var i:Int = nme_stage_get_align (nmeHandle);
-		return Type.createEnumIndex (StageAlign, i);
+		var i:Int = nme_stage_get_align(nmeHandle);
+		return Type.createEnumIndex(StageAlign, i);
 		
 	}
 	
 	
-	private function set_align (inMode:StageAlign):StageAlign {
+	private function set_align(inMode:StageAlign):StageAlign {
 		
-		nme_stage_set_align (nmeHandle, Type.enumIndex (inMode));
+		nme_stage_set_align(nmeHandle, Type.enumIndex(inMode));
 		return inMode;
 		
 	}
 	
 	
-	private function get_displayState ():StageDisplayState {
+	private function get_displayState():StageDisplayState {
 		
-		var i:Int = nme_stage_get_display_state (nmeHandle);
-		return Type.createEnumIndex (StageDisplayState, i);
+		var i:Int = nme_stage_get_display_state(nmeHandle);
+		return Type.createEnumIndex(StageDisplayState, i);
 		
 	}
 	
 	
-	private function set_displayState (inState:StageDisplayState):StageDisplayState {
+	private function set_displayState(inState:StageDisplayState):StageDisplayState {
 		
-		nme_stage_set_display_state (nmeHandle, Type.enumIndex (inState));
+		nme_stage_set_display_state(nmeHandle, Type.enumIndex(inState));
 		return inState;
 		
 	}
 	
 	
-	private function get_dpiScale ():Float {
+	private function get_dpiScale():Float {
 		
-		return nme_stage_get_dpi_scale (nmeHandle);
+		return nme_stage_get_dpi_scale(nmeHandle);
 		
 	}
 	
 	
-	private function get_focus ():InteractiveObject {
+	private function get_focus():InteractiveObject {
 		
-		var id = nme_stage_get_focus_id (nmeHandle);
-		var obj:DisplayObject = nmeFindByID (id);
+		var id = nme_stage_get_focus_id(nmeHandle);
+		var obj:DisplayObject = nmeFindByID(id);
 		return cast obj;
 		
 	}
 	
 	
-	private function set_focus (inObject:InteractiveObject):InteractiveObject {
+	private function set_focus(inObject:InteractiveObject):InteractiveObject {
 		
 		if (inObject == null)
-			nme_stage_set_focus (nmeHandle, null, 0);
+			nme_stage_set_focus(nmeHandle, null, 0);
 		else
-			nme_stage_set_focus (nmeHandle, inObject.nmeHandle, 0);
+			nme_stage_set_focus(nmeHandle, inObject.nmeHandle, 0);
 		return inObject;
 		
 	}
 	
 	
-	private function set_frameRate (inRate:Float):Float {
+	private function set_frameRate(inRate:Float):Float {
 		
 		frameRate = inRate;
 		nmeFramePeriod = frameRate <= 0 ? frameRate : 1.0 / frameRate;
@@ -917,71 +917,71 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	private function get_isOpenGL ():Bool {
+	private function get_isOpenGL():Bool {
 		
-		return nme_stage_is_opengl (nmeHandle);
-		
-	}
-	
-	
-	private function get_quality ():StageQuality {
-		
-		var i:Int = nme_stage_get_quality (nmeHandle);
-		return Type.createEnumIndex (StageQuality, i);
+		return nme_stage_is_opengl(nmeHandle);
 		
 	}
 	
 	
-	private function set_quality (inQuality:StageQuality):StageQuality {
+	private function get_quality():StageQuality {
 		
-		nme_stage_set_quality (nmeHandle, Type.enumIndex (inQuality));
+		var i:Int = nme_stage_get_quality(nmeHandle);
+		return Type.createEnumIndex(StageQuality, i);
+		
+	}
+	
+	
+	private function set_quality(inQuality:StageQuality):StageQuality {
+		
+		nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality));
 		return inQuality;
 		
 	}
 	
 	
-	private function get_scaleMode ():StageScaleMode {
+	private function get_scaleMode():StageScaleMode {
 		
-		var i:Int = nme_stage_get_scale_mode (nmeHandle);
-		return Type.createEnumIndex (StageScaleMode, i);
+		var i:Int = nme_stage_get_scale_mode(nmeHandle);
+		return Type.createEnumIndex(StageScaleMode, i);
 		
 	}
 	
 	
-	private function set_scaleMode (inMode:StageScaleMode):StageScaleMode {
+	private function set_scaleMode(inMode:StageScaleMode):StageScaleMode {
 		
-		nme_stage_set_scale_mode (nmeHandle, Type.enumIndex (inMode));
+		nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode));
 		return inMode;
 		
 	}
 	
 	
-	private override function get_stage ():Stage {
+	private override function get_stage():Stage {
 		
 		return this;
 		
 	}
 	
 	
-	private function get_stageFocusRect ():Bool { return nme_stage_get_focus_rect (nmeHandle); }
-	private function set_stageFocusRect (inVal:Bool):Bool {
+	private function get_stageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
+	private function set_stageFocusRect(inVal:Bool):Bool {
 		
-		nme_stage_set_focus_rect (nmeHandle, inVal);
+		nme_stage_set_focus_rect(nmeHandle, inVal);
 		return inVal;
 		
 	}
 	
 	
-	private function get_stageHeight ():Int {
+	private function get_stageHeight():Int {
 		
-		return Std.int (cast (nme_stage_get_stage_height(nmeHandle), Float));
+		return Std.int(cast(nme_stage_get_stage_height(nmeHandle), Float));
 		
 	}
 	
 	
-	private function get_stageWidth ():Int {
+	private function get_stageWidth():Int {
 		
-		return Std.int (cast (nme_stage_get_stage_width(nmeHandle), Float));
+		return Std.int(cast(nme_stage_get_stage_width(nmeHandle), Float));
 		
 	}
 	
@@ -993,30 +993,30 @@ class Stage extends DisplayObjectContainer {
 	
 	
 	
-	private static var nme_set_stage_handler = Loader.load ("nme_set_stage_handler", 4);
-	private static var nme_render_stage = Loader.load ("nme_render_stage", 1);
-	private static var nme_stage_get_focus_id = Loader.load ("nme_stage_get_focus_id", 1);
-	private static var nme_stage_set_focus = Loader.load ("nme_stage_set_focus", 3);
-	private static var nme_stage_get_focus_rect = Loader.load ("nme_stage_get_focus_rect", 1);
-	private static var nme_stage_set_focus_rect = Loader.load ("nme_stage_set_focus_rect", 2);
-	private static var nme_stage_is_opengl = Loader.load ("nme_stage_is_opengl", 1);
-	private static var nme_stage_get_stage_width = Loader.load ("nme_stage_get_stage_width", 1);
-	private static var nme_stage_get_stage_height = Loader.load ("nme_stage_get_stage_height", 1);
-	private static var nme_stage_get_dpi_scale = Loader.load ("nme_stage_get_dpi_scale", 1);
-	private static var nme_stage_get_scale_mode = Loader.load ("nme_stage_get_scale_mode", 1);
-	private static var nme_stage_set_scale_mode = Loader.load ("nme_stage_set_scale_mode", 2);
-	private static var nme_stage_get_align = Loader.load ("nme_stage_get_align", 1);
-	private static var nme_stage_set_align = Loader.load ("nme_stage_set_align", 2);
-	private static var nme_stage_get_quality = Loader.load ("nme_stage_get_quality", 1);
-	private static var nme_stage_set_quality = Loader.load ("nme_stage_set_quality", 2);
-	private static var nme_stage_get_display_state = Loader.load ("nme_stage_get_display_state", 1);
-	private static var nme_stage_set_display_state = Loader.load ("nme_stage_set_display_state", 2);
-	private static var nme_stage_set_next_wake = Loader.load ("nme_stage_set_next_wake", 2);
-	private static var nme_stage_request_render = Loader.load ("nme_stage_request_render", 0);
-	private static var nme_stage_show_cursor = Loader.load ("nme_stage_show_cursor", 2);
-	private static var nme_stage_set_fixed_orientation = Loader.load ("nme_stage_set_fixed_orientation", 1);
-	private static var nme_stage_get_orientation = Loader.load ("nme_stage_get_orientation", 0);
-	private static var nme_stage_get_normal_orientation = Loader.load ("nme_stage_get_normal_orientation", 0);
+	private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);
+	private static var nme_render_stage = Loader.load("nme_render_stage", 1);
+	private static var nme_stage_get_focus_id = Loader.load("nme_stage_get_focus_id", 1);
+	private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
+	private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);
+	private static var nme_stage_set_focus_rect = Loader.load("nme_stage_set_focus_rect", 2);
+	private static var nme_stage_is_opengl = Loader.load("nme_stage_is_opengl", 1);
+	private static var nme_stage_get_stage_width = Loader.load("nme_stage_get_stage_width", 1);
+	private static var nme_stage_get_stage_height = Loader.load("nme_stage_get_stage_height", 1);
+	private static var nme_stage_get_dpi_scale = Loader.load("nme_stage_get_dpi_scale", 1);
+	private static var nme_stage_get_scale_mode = Loader.load("nme_stage_get_scale_mode", 1);
+	private static var nme_stage_set_scale_mode = Loader.load("nme_stage_set_scale_mode", 2);
+	private static var nme_stage_get_align = Loader.load("nme_stage_get_align", 1);
+	private static var nme_stage_set_align = Loader.load("nme_stage_set_align", 2);
+	private static var nme_stage_get_quality = Loader.load("nme_stage_get_quality", 1);
+	private static var nme_stage_set_quality = Loader.load("nme_stage_set_quality", 2);
+	private static var nme_stage_get_display_state = Loader.load("nme_stage_get_display_state", 1);
+	private static var nme_stage_set_display_state = Loader.load("nme_stage_set_display_state", 2);
+	private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
+	private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
+	private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
+	private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
+	private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
+	private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
 	
 	
 }
@@ -1028,7 +1028,7 @@ class TouchInfo {
 	public var touchOverObjects:Array<InteractiveObject>;
 	
 	
-	public function new () {
+	public function new() {
 		
 		touchOverObjects = [];
 		

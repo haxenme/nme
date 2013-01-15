@@ -4,58 +4,58 @@ package browser.display;
 class MovieClip extends Sprite, implements Dynamic<Dynamic> {
 	
 	
-	public var currentFrame (get_currentFrame, null):Int;
+	public var currentFrame(get_currentFrame, null):Int;
 	public var enabled:Bool;
-	public var framesLoaded (get_framesLoaded, null):Int;
+	public var framesLoaded(get_framesLoaded, null):Int;
 	public var loaderInfo:LoaderInfo;
-	public var totalFrames (get_totalFrames, null):Int;
+	public var totalFrames(get_totalFrames, null):Int;
 	
 	private var mCurrentFrame:Int;
 	private var mTotalFrames:Int;
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 		enabled = true;
 		mCurrentFrame = 0;
 		mTotalFrames = 0;
 		
-		this.loaderInfo = LoaderInfo.create (null);
+		this.loaderInfo = LoaderInfo.create(null);
 		
 	}
 	
 	
-	public function gotoAndPlay (frame:Dynamic, scene:String = ""):Void {
-		
-		
-		
-	}
-	
-	
-	public function gotoAndStop (frame:Dynamic, scene:String = ""):Void {
+	public function gotoAndPlay(frame:Dynamic, scene:String = ""):Void {
 		
 		
 		
 	}
 	
 	
-	public function play ():Void {
+	public function gotoAndStop(frame:Dynamic, scene:String = ""):Void {
 		
 		
 		
 	}
 	
 	
-	public function stop ():Void {
+	public function play():Void {
 		
 		
 		
 	}
 	
 	
-	override public function toString ():String {
+	public function stop():Void {
+		
+		
+		
+	}
+	
+	
+	override public function toString():String {
 		
 		return "[MovieClip name=" + this.name + " id=" + _nmeId + "]";
 		
@@ -69,9 +69,9 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic> {
 	
 	
 	
-	private function get_currentFrame ():Int { return mCurrentFrame; }
-	private function get_framesLoaded ():Int { return mTotalFrames; }
-	private function get_totalFrames ():Int { return mTotalFrames; }
+	private function get_currentFrame():Int { return mCurrentFrame; }
+	private function get_framesLoaded():Int { return mTotalFrames; }
+	private function get_totalFrames():Int { return mTotalFrames; }
 	
 	
 }

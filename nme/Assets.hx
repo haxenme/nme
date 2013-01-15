@@ -28,17 +28,17 @@ import nme.utils.ByteArray;
 class Assets {
 	
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData> ();
+	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
 	
 	
 	/**
 	 * Gets an instance of an embedded bitmap
-	 * @usage		var bitmap = new Bitmap (Assets.getBitmapData ("image.jpg"));
+	 * @usage		var bitmap = new Bitmap(Assets.getBitmapData("image.jpg"));
 	 * @param	id		The ID or asset path for the bitmap
-	 * @param	useCache		(Optional) Whether to use BitmapData from the cache (Default: true)
+	 * @param	useCache		(Optional) Whether to use BitmapData from the cache(Default: true)
 	 * @return		A new BItmapData object
 	 */
-	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
+	public static function getBitmapData(id:String, useCache:Bool = true):BitmapData {
 		
 		return null;
 		
@@ -47,11 +47,11 @@ class Assets {
 	
 	/**
 	 * Gets an instance of an embedded binary asset
-	 * @usage		var bytes = Assets.getBytes ("file.zip");
+	 * @usage		var bytes = Assets.getBytes("file.zip");
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new ByteArray object
 	 */
-	public static function getBytes (id:String):ByteArray {
+	public static function getBytes(id:String):ByteArray {
 		
 		return null;
 		
@@ -60,11 +60,11 @@ class Assets {
 	
 	/**
 	 * Gets an instance of an embedded font
-	 * @usage		var fontName = Assets.getFont ("font.ttf").fontName;
+	 * @usage		var fontName = Assets.getFont("font.ttf").fontName;
 	 * @param	id		The ID or asset path for the font
 	 * @return		A new Font object
 	 */
-	public static function getFont (id:String):Font {
+	public static function getFont(id:String):Font {
 		
 		return null;
 		
@@ -73,11 +73,11 @@ class Assets {
 	
 	/**
 	 * Gets an instance of a library MovieClip
-	 * @usage		var movieClip = Assets.getMovieClip ("library:BouncingBall");
+	 * @usage		var movieClip = Assets.getMovieClip("library:BouncingBall");
 	 * @param	id		The library and ID for the MovieClip
 	 * @return		A new Sound object
 	 */
-	public static function getMovieClip (id:String):MovieClip {
+	public static function getMovieClip(id:String):MovieClip {
 		
 		return null;
 		
@@ -86,11 +86,11 @@ class Assets {
 	
 	/**
 	 * Gets an instance of an embedded sound
-	 * @usage		var sound = Assets.getSound ("sound.wav");
+	 * @usage		var sound = Assets.getSound("sound.wav");
 	 * @param	id		The ID or asset path for the sound
 	 * @return		A new Sound object
 	 */
-	public static function getSound (id:String):Sound {
+	public static function getSound(id:String):Sound {
 		
 		return null;
 		
@@ -99,11 +99,11 @@ class Assets {
 	
 	/**
 	 * Gets an instance of an embedded text asset
-	 * @usage		var text = Assets.getText ("text.txt");
+	 * @usage		var text = Assets.getText("text.txt");
 	 * @param	id		The ID or asset path for the file
 	 * @return		A new String object
 	 */
-	public static function getText (id:String):String {
+	public static function getText(id:String):String {
 		
 		return null;
 		

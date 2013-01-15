@@ -12,7 +12,7 @@ package nme.text;
 	 * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
 	 * allows font faces to be rendered at very high quality at small sizes. It
 	 * is best used with applications that have a lot of small text. Advanced
-	 * anti-aliasing is not recommended for very large fonts (larger than 48
+	 * anti-aliasing is not recommended for very large fonts(larger than 48
 	 * points). This constant is used for the <code>antiAliasType</code> property
 	 * in the TextField class. Use the syntax
 	 * <code>AntiAliasType.ADVANCED</code>.

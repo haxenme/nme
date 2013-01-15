@@ -9,14 +9,14 @@ class HTTPStatusEvent extends Event {
 	
 	public var responseHeaders:Array<Dynamic>;
 	public var responseURL:String;
-	public var status (default, null):Int;
+	public var status(default, null):Int;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, status:Int = 0):Void {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, status:Int = 0):Void {
 		
 		this.status = status;
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 	}
 	

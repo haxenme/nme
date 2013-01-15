@@ -9,7 +9,7 @@ package nme.geom;
  * a Matrix object, applying that Matrix object to the <code>matrix</code>
  * property of a Transform object, and then applying that Transform object as
  * the <code>transform</code> property of the display object. These
- * transformation functions include translation (<i>x</i> and <i>y</i>
+ * transformation functions include translation(<i>x</i> and <i>y</i>
  * repositioning), rotation, scaling, and skewing.
  *
  * <p>Together these types of transformations are known as <i>affine
@@ -51,7 +51,7 @@ package nme.geom;
  * <p>Each transformation function alters the current matrix properties so
  * that you can effectively combine multiple transformations. To do this, you
  * call more than one transformation function before applying the matrix to
- * its display object target (by using the <code>transform</code> property of
+ * its display object target(by using the <code>transform</code> property of
  * that display object).</p>
  *
  * <p>Use the <code>new Matrix()</code> constructor to create a Matrix object
@@ -133,7 +133,7 @@ extern class Matrix {
 	 *
 	 * <p>For example, if matrix <code>m1</code> scales an object by a factor of
 	 * four, and matrix <code>m2</code> rotates an object by 1.5707963267949
-	 * radians (<code>Math.PI/2</code>), then <code>m1.concat(m2)</code>
+	 * radians(<code>Math.PI/2</code>), then <code>m1.concat(m2)</code>
 	 * transforms <code>m1</code> into a matrix that scales an object by a factor
 	 * of four and rotates the object by <code>Math.PI/2</code> radians. </p>
 	 *
@@ -164,9 +164,9 @@ extern class Matrix {
 	 * @param scaleX   The factor by which to scale horizontally.
 	 * @param scaleY   The factor by which scale vertically.
 	 * @param rotation The amount to rotate, in radians.
-	 * @param tx       The number of pixels to translate (move) to the right
+	 * @param tx       The number of pixels to translate(move) to the right
 	 *                 along the <i>x</i> axis.
-	 * @param ty       The number of pixels to translate (move) down along the
+	 * @param ty       The number of pixels to translate(move) down along the
 	 *                 <i>y</i> axis.
 	 */
 	function createBox(scaleX : Float, scaleY : Float, rotation : Float = 0, tx : Float = 0, ty : Float = 0) : Void;

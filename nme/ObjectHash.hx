@@ -19,57 +19,57 @@ class ObjectHash <K, T> {
 	/** @private */ private static var nextObjectID:Int = 0;
 	
 	
-	public function new () {
+	public function new() {
 		
 		#if flash
 		
-		dictionary = new TypedDictionary <K, T> ();
+		dictionary = new TypedDictionary <K, T>();
 		
 		#else
 		
-		hashKeys = new IntHash <K> ();
-		hashValues = new IntHash <T> ();
+		hashKeys = new IntHash <K>();
+		hashValues = new IntHash <T>();
 		
 		#end
 		
 	}
 	
 	
-	public inline function exists (key:K):Bool {
+	public inline function exists(key:K):Bool {
 		
 		#if flash
 		
-		return dictionary.exists (key);
+		return dictionary.exists(key);
 		
 		#else
 		
-		return hashValues.exists (getID (key));
+		return hashValues.exists(getID(key));
 		
 		#end
 		
 	}
 	
 	
-	public inline function get (key:K):T {
+	public inline function get(key:K):T {
 		
 		#if flash
 		
-		return dictionary.get (key);
+		return dictionary.get(key);
 		
 		#else
 		
-		return hashValues.get (getID (key));
+		return hashValues.get(getID(key));
 		
 		#end
 		
 	}
 	
 	
-	/** @private */ private inline function getID (key:K):Int {
+	/** @private */ private inline function getID(key:K):Int {
 		
 		#if cpp
 		
-		return untyped __global__.__hxcpp_obj_id (key);
+		return untyped __global__.__hxcpp_obj_id(key);
 		
 		#elseif !flash
 		
@@ -96,74 +96,74 @@ class ObjectHash <K, T> {
 	}
 	
 	
-	public inline function iterator ():Iterator <T> {
+	public inline function iterator():Iterator <T> {
 		
 		#if flash
 		
-		var values:Array <T> = new Array <T> ();
+		var values:Array <T> = new Array <T>();
 		
-		for (key in dictionary.iterator ()) {
+		for (key in dictionary.iterator()) {
 			
-			values.push (dictionary.get (key));
+			values.push(dictionary.get(key));
 			
 		}
 		
-		return values.iterator ();
+		return values.iterator();
 		
 		#else
 		
-		return hashValues.iterator ();
+		return hashValues.iterator();
 		
 		#end
 		
 	}
 	
 	
-	public inline function keys ():Iterator <K> {
+	public inline function keys():Iterator <K> {
 		
 		#if flash
 		
-		return dictionary.iterator ();
+		return dictionary.iterator();
 		
 		#else
 		
-		return hashKeys.iterator ();
+		return hashKeys.iterator();
 		
 		#end
 		
 	}
 	
 	
-	public inline function remove (key:K):Void {
+	public inline function remove(key:K):Void {
 		
 		#if flash
 		
-		dictionary.delete (key);
+		dictionary.delete(key);
 		
 		#else
 		
-		var id = getID (key);
+		var id = getID(key);
 		
-		hashKeys.remove (id);
-		hashValues.remove (id);
+		hashKeys.remove(id);
+		hashValues.remove(id);
 		
 		#end
 		
 	}
 	
 	
-	public inline function set (key:K, value:T):Void {
+	public inline function set(key:K, value:T):Void {
 		
 		#if flash
 		
-		dictionary.set (key, value);
+		dictionary.set(key, value);
 		
 		#else
 		
-		var id = getID (key);
+		var id = getID(key);
 		
-		hashKeys.set (id, key);
-		hashValues.set (id, value);
+		hashKeys.set(id, key);
+		hashValues.set(id, value);
 		
 		#end
 		

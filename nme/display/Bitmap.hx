@@ -71,7 +71,7 @@ extern class Bitmap extends DisplayObject {
 	 */
 	var smoothing:Bool;
 	
-	function new (?bitmapData:BitmapData, ?pixelSnapping:PixelSnapping, smoothing:Bool = false):Void;
+	function new(?bitmapData:BitmapData, ?pixelSnapping:PixelSnapping, smoothing:Bool = false):Void;
 	
 }
 

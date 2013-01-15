@@ -16,17 +16,17 @@ class Stage3D extends EventDispatcher {
 	public var y:Float; // TODO
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 	}
 	
 	
-	public function requestContext3D (context3DRenderMode:String = ""):Void {
+	public function requestContext3D(context3DRenderMode:String = ""):Void {
 		
-		context3D = new Context3D ();
-		dispatchEvent (new Event (Event.CONTEXT3D_CREATE));
+		context3D = new Context3D();
+		dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
 		
 		// TODO ErrorEvent ?
 		

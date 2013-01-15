@@ -7,18 +7,18 @@ import native.Lib;
 class Mouse {
 	
 	
-	public static function hide () {
+	public static function hide() {
 		
 		if (Lib.stage != null)
-			Lib.stage.showCursor (false);
+			Lib.stage.showCursor(false);
 		
 	}
 	
 	
-	public static function show () {
+	public static function show() {
 		
 		if (Lib.stage != null)
-			Lib.stage.showCursor (true);
+			Lib.stage.showCursor(true);
 		
 	}
 	

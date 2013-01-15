@@ -4,9 +4,9 @@ package native.errors;
 class RangeError extends Error {
 	
 	
-	public function new (inMessage:String = "") {
+	public function new(inMessage:String = "") {
 		
-		super (inMessage, 0);
+		super(inMessage, 0);
 		
 	}
 	

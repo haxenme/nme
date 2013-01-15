@@ -7,7 +7,7 @@ package nme.events;
  * operations to fail.
  *
  * <p>You can check for error events that do not have any listeners by using
- * the debugger version of Flash Player or the AIR Debug Launcher (ADL). The
+ * the debugger version of Flash Player or the AIR Debug Launcher(ADL). The
  * string defined by the <code>text</code> parameter of the IOErrorEvent
  * constructor is displayed.</p>
  * 
@@ -34,7 +34,7 @@ extern class IOErrorEvent extends ErrorEvent {
 	 *                   listeners can access this information through the
 	 *                   <code>text</code> property.
 	 * @param id         A reference number to associate with the specific error
-	 *                   (supported in Adobe AIR only).
+	 *                  (supported in Adobe AIR only).
 	 */
 	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?text : String, id : Int = 0) : Void;
 	static var DISK_ERROR : String;

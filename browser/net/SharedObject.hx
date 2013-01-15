@@ -20,50 +20,50 @@ import js.Storage;
 class SharedObject extends EventDispatcher {
 	
 	
-	public var data (default, null):Dynamic;
-	public var size (get_size, never):Int;
+	public var data(default, null):Dynamic;
+	public var size(get_size, never):Int;
 	
 	private var nmeKey:String;
 	
 
-	private function new () {
+	private function new() {
 		
-		super ();
+		super();
 		
 	}
 	
 	
-	public function clear ():Void {
+	public function clear():Void {
 		
 		data = {};
-		nmeGetLocalStorage ().removeItem (nmeKey);
-		flush ();
+		nmeGetLocalStorage().removeItem(nmeKey);
+		flush();
 		
 	}
 	
 	
-	public function flush ():SharedObjectFlushStatus {
+	public function flush():SharedObjectFlushStatus {
 		
-		var data = Serializer.run (data);
-		nmeGetLocalStorage ().setItem (nmeKey, data);
+		var data = Serializer.run(data);
+		nmeGetLocalStorage().setItem(nmeKey, data);
 		return SharedObjectFlushStatus.FLUSHED;
 		
 	}
 	
 	
-	public static function getLocal (name:String, localPath:String = null, secure:Bool = false /* note: unsupported */) {
+	public static function getLocal(name:String, localPath:String = null, secure:Bool = false /* note: unsupported */) {
 		
 		if (localPath == null) localPath = Lib.window.location.href;
 		
-		var so = new SharedObject ();
+		var so = new SharedObject();
 		so.nmeKey = localPath + ":" + name;
-		var rawData = nmeGetLocalStorage ().getItem (so.nmeKey);
+		var rawData = nmeGetLocalStorage().getItem(so.nmeKey);
 		
 		so.data = { };
 		
 		if (rawData != null && rawData != "") {
 			
-			so.data = Unserializer.run (rawData);
+			so.data = Unserializer.run(rawData);
 			
 		}
 		
@@ -72,14 +72,14 @@ class SharedObject extends EventDispatcher {
 	}
 	
 	
-	private static function nmeGetLocalStorage ():Storage {
+	private static function nmeGetLocalStorage():Storage {
 		
 		#if haxe_211
-		var res = Browser.getLocalStorage ();
+		var res = Browser.getLocalStorage();
 		#else
-		var res = Storage.getLocal ();
+		var res = Storage.getLocal();
 		#end
-		if (res == null) throw new Error ("SharedObject not supported");
+		if (res == null) throw new Error("SharedObject not supported");
 		return res;
 		
 	}
@@ -92,10 +92,10 @@ class SharedObject extends EventDispatcher {
 	
 	
 	
-	private function get_size ():Int {
+	private function get_size():Int {
 		
-		var d = Serializer.run (data);
-		return Bytes.ofString (d).length;
+		var d = Serializer.run(data);
+		return Bytes.ofString(d).length;
 		
 	}
 	

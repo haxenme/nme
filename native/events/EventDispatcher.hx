@@ -13,7 +13,7 @@ class EventDispatcher implements IEventDispatcher {
 	/** @private */ private var nmeTarget:IEventDispatcher;
 	
 	
-	public function new (?target:IEventDispatcher):Void {
+	public function new(?target:IEventDispatcher):Void {
 		
 		nmeTarget = target == null ? this : target;
 		nmeEventMap = null;
@@ -21,32 +21,32 @@ class EventDispatcher implements IEventDispatcher {
 	}
 	
 	
-	public function addEventListener (type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void {
+	public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void {
 		
 		if (nmeEventMap == null)
-			nmeEventMap = new EventMap ();
+			nmeEventMap = new EventMap();
 		
-		var list = nmeEventMap.get (type);
+		var list = nmeEventMap.get(type);
 		if (list == null) {
-			list = new ListenerList ();
-			nmeEventMap.set (type, list);
+			list = new ListenerList();
+			nmeEventMap.set(type, list);
 		}
 		
-		var l = new Listener (listener, useCapture, priority);
-		list.push (new WeakRef<Listener> (l, useWeakReference));
+		var l = new Listener(listener, useCapture, priority);
+		list.push(new WeakRef<Listener>(l, useWeakReference));
 		
 	}
 	
 	
-	public function DispatchCompleteEvent () {
+	public function DispatchCompleteEvent() {
 		
-		var evt = new Event (Event.COMPLETE);
-		dispatchEvent (evt);
+		var evt = new Event(Event.COMPLETE);
+		dispatchEvent(evt);
 		
 	}
 	
 	
-	public function dispatchEvent (event:Event):Bool {
+	public function dispatchEvent(event:Event):Bool {
 		
 		if (nmeEventMap == null)
 			return false;
@@ -57,7 +57,7 @@ class EventDispatcher implements IEventDispatcher {
 		if (event.currentTarget == null)
 			event.currentTarget = nmeTarget;
 		
-		var list = nmeEventMap.get (event.type);
+		var list = nmeEventMap.get(event.type);
 		var capture = event.eventPhase == EventPhase.CAPTURING_PHASE;
 		
 		if (list != null) {
@@ -66,19 +66,19 @@ class EventDispatcher implements IEventDispatcher {
 			while (idx < list.length) {
 				
 				var list_item = list[idx];
-				var listener = list_item!=null ? list_item.get () : null;
+				var listener = list_item!=null ? list_item.get() : null;
 				
 				if (listener == null) {
 					
 					// Lost reference - so we can remove listener. No need to move idx...
-					list.splice (idx, 1);
+					list.splice(idx, 1);
 					
 				} else {
 					
 					if (listener.mUseCapture == capture) {
 						
 						listener.dispatchEvent(event);
-						if (event.nmeGetIsCancelledNow ())
+						if (event.nmeGetIsCancelledNow())
 							return true;
 						
 					}
@@ -98,20 +98,20 @@ class EventDispatcher implements IEventDispatcher {
 	}
 
 	
-	public function DispatchIOErrorEvent () {
+	public function DispatchIOErrorEvent() {
 		
-		var evt = new IOErrorEvent (IOErrorEvent.IO_ERROR);
-		dispatchEvent (evt);
+		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+		dispatchEvent(evt);
 		
 	}
 	
 	
-	public function hasEventListener (type:String):Bool {
+	public function hasEventListener(type:String):Bool {
 		
 		if (nmeEventMap == null)
 			return false;
 		
-		var h = nmeEventMap.get (type);
+		var h = nmeEventMap.get(type);
 		if (h != null) {
 			
 			for (item in h) {
@@ -127,19 +127,19 @@ class EventDispatcher implements IEventDispatcher {
 	}
 	
 	
-	public function removeEventListener (type:String, listener:Function, capture:Bool = false):Void {
+	public function removeEventListener(type:String, listener:Function, capture:Bool = false):Void {
 		
 		if (nmeEventMap == null)
 			return;
 		
-		if (!nmeEventMap.exists (type)) return;
+		if (!nmeEventMap.exists(type)) return;
 		
-		var list = nmeEventMap.get (type);
+		var list = nmeEventMap.get(type);
 		for (i in 0...list.length) {
 			
 			if (list[i] != null) {
 				
-				var li = list[i].get ();
+				var li = list[i].get();
 				if (li != null && li.Is(listener, capture)) {
 					
 					// Null-out here - remove on the dispatch event...
@@ -155,19 +155,19 @@ class EventDispatcher implements IEventDispatcher {
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
-		return "[object " + Type.getClassName (Type.getClass (this)) + "]";
+		return "[object " + Type.getClassName(Type.getClass(this)) + "]";
 		
 	}
 	
 	
-	public function willTrigger (type:String):Bool {
+	public function willTrigger(type:String):Bool {
 		
 		if (nmeEventMap == null)
 			return false;
 		
-		return nmeEventMap.exists (type);
+		return nmeEventMap.exists(type);
 		
 	}
 	
@@ -186,7 +186,7 @@ class Listener {
 	private static var sIDs = 1;
 	
 	
-	public function new (inListener, inUseCapture, inPriority) {
+	public function new(inListener, inUseCapture, inPriority) {
 		
 		mListner = inListener;
 		mUseCapture = inUseCapture;
@@ -196,16 +196,16 @@ class Listener {
 	}
 	
 	
-	public function dispatchEvent (event:Event) {
+	public function dispatchEvent(event:Event) {
 		
-		mListner (event);
+		mListner(event);
 		
 	}
 	
 	
-	public function Is (inListener, inCapture) {
+	public function Is(inListener, inCapture) {
 		
-		return Reflect.compareMethods (mListner, inListener) && mUseCapture == inCapture;
+		return Reflect.compareMethods(mListner, inListener) && mUseCapture == inCapture;
 		
 	}
 	

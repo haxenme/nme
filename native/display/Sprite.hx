@@ -11,34 +11,34 @@ class Sprite extends DisplayObjectContainer {
 	public var useHandCursor:Bool; // ignored right now
 	
 	
-	public function new () {
+	public function new() {
 		
-		super (DisplayObjectContainer.nme_create_display_object_container (), nmeGetType ());
-		
-	}
-	
-	
-	/** @private */ private function nmeGetType () {
-		
-		var type = Type.getClassName (Type.getClass (this));
-		var pos = type.lastIndexOf (".");
-		return pos >= 0 ? type.substr (pos + 1) : type;
+		super(DisplayObjectContainer.nme_create_display_object_container(), nmeGetType());
 		
 	}
 	
 	
-	public function startDrag (lockCenter:Bool = false, ?bounds:Rectangle):Void {
+	/** @private */ private function nmeGetType() {
+		
+		var type = Type.getClassName(Type.getClass(this));
+		var pos = type.lastIndexOf(".");
+		return pos >= 0 ? type.substr(pos + 1) : type;
+		
+	}
+	
+	
+	public function startDrag(lockCenter:Bool = false, ?bounds:Rectangle):Void {
 		
 		if (stage != null)
-			stage.nmeStartDrag (this, lockCenter, bounds);
+			stage.nmeStartDrag(this, lockCenter, bounds);
 		
 	}
 	
 	
-	public function stopDrag ():Void {
+	public function stopDrag():Void {
 		
 		if (stage != null)
-			stage.nmeStopDrag (this);
+			stage.nmeStopDrag(this);
 		
 	}
 	

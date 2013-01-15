@@ -8,21 +8,21 @@ import native.utils.ByteArray;
 class RectangleTexture extends TextureBase {
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 	}
 	
 	
-	public function uploadFromBitmapData (source:BitmapData):Void {
+	public function uploadFromBitmapData(source:BitmapData):Void {
 		
 		// TODO
 		
 	}
 	
 	
-	public function uploadFromByteArray (data:ByteArray, byteArrayOffset:Int):Void {
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int):Void {
 		
 		// TODO
 		

@@ -9,38 +9,38 @@ class Transform {
 	
 	public static var DEG_TO_RAD:Float = Math.PI / 180.0;
 	
-	public var colorTransform (default, set_colorTransform):ColorTransform;
-	public var matrix (get_matrix, set_matrix):Matrix;
-	public var pixelBounds (get_pixelBounds, never):Rectangle;
+	public var colorTransform(default, set_colorTransform):ColorTransform;
+	public var matrix(get_matrix, set_matrix):Matrix;
+	public var pixelBounds(get_pixelBounds, never):Rectangle;
 	
 	private var _displayObject:DisplayObject;
 	private var _fullMatrix:Matrix;
 	private var _matrix:Matrix;
 	
 	
-	public function new (displayObject:DisplayObject) {
+	public function new(displayObject:DisplayObject) {
 		
 		if (displayObject == null) throw "Cannot create Transform with no DisplayObject.";
 		_displayObject = displayObject;
 		
-		_matrix = new Matrix ();
-		_fullMatrix = new Matrix ();
-		this.colorTransform = new ColorTransform ();
+		_matrix = new Matrix();
+		_fullMatrix = new Matrix();
+		this.colorTransform = new ColorTransform();
 		
 	}
 	
 	
-	public inline function nmeGetFullMatrix (localMatrix:Matrix = null):Matrix {
+	public inline function nmeGetFullMatrix(localMatrix:Matrix = null):Matrix {
 		
 		var m;
 		
 		if (localMatrix != null) {
 			
-			m = localMatrix.mult (_fullMatrix);
+			m = localMatrix.mult(_fullMatrix);
 			
 		} else {
 			
-			m = _fullMatrix.clone ();
+			m = _fullMatrix.clone();
 			
 		}
 		
@@ -49,17 +49,17 @@ class Transform {
 	}
 	
 	
-	public inline function nmeSetFullMatrix (inValue:Matrix):Matrix {
+	public inline function nmeSetFullMatrix(inValue:Matrix):Matrix {
 		
-		_fullMatrix.copy (inValue);
+		_fullMatrix.copy(inValue);
 		return _fullMatrix;
 		
 	}
 	
 	
-	public inline function nmeSetMatrix (inValue:Matrix):Void {
+	public inline function nmeSetMatrix(inValue:Matrix):Void {
 		
-		_matrix.copy (inValue);
+		_matrix.copy(inValue);
 		
 	}
 	
@@ -71,7 +71,7 @@ class Transform {
 	
 	
 	
-	private function set_colorTransform (inValue:ColorTransform):ColorTransform {
+	private function set_colorTransform(inValue:ColorTransform):ColorTransform {
 		
 		this.colorTransform = inValue;
 		return inValue;
@@ -79,25 +79,25 @@ class Transform {
 	}
 	
 	
-	private function get_matrix ():Matrix {
+	private function get_matrix():Matrix {
 		
-		return _matrix.clone ();
+		return _matrix.clone();
 		
 	}
 	
 	
-	private function set_matrix (inValue:Matrix):Matrix {
+	private function set_matrix(inValue:Matrix):Matrix {
 		
-		nmeSetMatrix (inValue);
-		_displayObject.nmeMatrixOverridden ();
+		nmeSetMatrix(inValue);
+		_displayObject.nmeMatrixOverridden();
 		return _matrix;
 		
 	}
 	
 	
-	private function get_pixelBounds ():Rectangle {
+	private function get_pixelBounds():Rectangle {
 		
-		return _displayObject.getBounds (null);
+		return _displayObject.getBounds(null);
 		
 	}
 	

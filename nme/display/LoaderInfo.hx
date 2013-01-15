@@ -4,7 +4,7 @@ package nme.display;
 
 /**
  * The LoaderInfo class provides information about a loaded SWF file or a
- * loaded image file (JPEG, GIF, or PNG). LoaderInfo objects are available for
+ * loaded image file(JPEG, GIF, or PNG). LoaderInfo objects are available for
  * any display object. The information provided includes load progress, the
  * URLs of the loader and loaded content, the number of bytes total for the
  * media, and the nominal height and width of the media.
@@ -26,10 +26,10 @@ package nme.display;
  * the <code>loaderInfo</code> property of a DisplayObject provides
  * information about the root SWF file for that display object. </p>
  *
- * <p>When you use a Loader object to load a display object (such as a SWF
+ * <p>When you use a Loader object to load a display object(such as a SWF
  * file or a bitmap), the <code>loaderInfo</code> property of the display
  * object is the same as the <code>contentLoaderInfo</code> property of the
- * Loader object (<code>DisplayObject.loaderInfo =
+ * Loader object(<code>DisplayObject.loaderInfo =
  * Loader.contentLoaderInfo</code>). Because the instance of the main class of
  * the SWF file has no Loader object, the <code>loaderInfo</code> property is
  * the only way to access the LoaderInfo for the instance of the main class of
@@ -111,7 +111,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 * <code>ActionScriptVersion.ACTIONSCRIPT2</code> or
 	 * <code>ActionScriptVersion.ACTIONSCRIPT3</code>. ActionScript 1.0 and 2.0
 	 * are both reported as <code>ActionScriptVersion.ACTIONSCRIPT2</code>
-	 * (version 2.0). This property only distinguishes ActionScript 1.0 and 2.0
+	 *(version 2.0). This property only distinguishes ActionScript 1.0 and 2.0
 	 * from ActionScript 3.0.</p>
 	 * 
 	 * @throws Error If the file is not downloaded sufficiently to retrieve the
@@ -180,8 +180,8 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	var bytesTotal(default,null) : Int;
 
 	/**
-	 * Expresses the trust relationship from content (child) to the Loader
-	 * (parent). If the child has allowed the parent access, <code>true</code>;
+	 * Expresses the trust relationship from content(child) to the Loader
+	 *(parent). If the child has allowed the parent access, <code>true</code>;
 	 * otherwise, <code>false</code>. This property is set to <code>true</code>
 	 * if the child object has called the <code>allowDomain()</code> method to
 	 * grant permission to the parent domain or if a URL policy is loaded at the
@@ -273,7 +273,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 * permission to access the content. Permission is granted to access the
 	 * content the same way permission is granted for
 	 * <code>BitmapData.draw()</code>: call <code>Security.allowDomain()</code>
-	 * to access a SWF file (or for non-SWF file content, establish a policy file
+	 * to access a SWF file(or for non-SWF file content, establish a policy file
 	 * and use the <code>LoaderContext.checkPolicyFile</code> property).</li>
 	 * </ul>
 	 *
@@ -328,7 +328,7 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 *
 	 * <p>The two sources of parameters are: the query string in the URL of the
 	 * main SWF file, and the value of the <code>FlashVars</code> HTML parameter
-	 * (this affects only the main SWF file).</p>
+	 *(this affects only the main SWF file).</p>
 	 *
 	 * <p>The <code>parameters</code> property replaces the ActionScript 1.0 and
 	 * 2.0 technique of providing SWF file parameters as properties of the main
@@ -342,8 +342,8 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	var parameters(default,null) : Dynamic<String>;
 
 	/**
-	 * Expresses the trust relationship from Loader (parent) to the content
-	 * (child). If the parent has allowed the child access, <code>true</code>;
+	 * Expresses the trust relationship from Loader(parent) to the content
+	 *(child). If the parent has allowed the child access, <code>true</code>;
 	 * otherwise, <code>false</code>. This property is set to <code>true</code>
 	 * if the parent object called the <code>allowDomain()</code> method to grant
 	 * permission to the child domain or if a URL policy file is loaded at the
@@ -440,9 +440,9 @@ extern class LoaderInfo extends nme.events.EventDispatcher {
 	 * @param object The object for which you want to get an associated
 	 *               LoaderInfo object.
 	 * @return The associated LoaderInfo object. Returns <code>null</code> when
-	 *         called in non-debugger builds (or when debugging is not enabled)
+	 *         called in non-debugger builds(or when debugging is not enabled)
 	 *         or if the referenced <code>object</code> does not have an
-	 *         associated LoaderInfo object (such as some objects used by the AIR
+	 *         associated LoaderInfo object(such as some objects used by the AIR
 	 *         runtime).
 	 * @throws SecurityError The caller is not running in the local trusted
 	 *                       sandbox.

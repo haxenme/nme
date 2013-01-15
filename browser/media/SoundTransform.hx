@@ -12,7 +12,7 @@ class SoundTransform {
 	public var volume:Float;
 	
 	
-	public function new (vol:Float = 1, panning:Float = 0):Void {
+	public function new(vol:Float = 1, panning:Float = 0):Void {
 		
 		
 		

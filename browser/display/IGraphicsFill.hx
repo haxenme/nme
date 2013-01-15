@@ -3,7 +3,7 @@ package browser.display;
 
 interface IGraphicsFill {
 	
-	var nmeGraphicsFillType (default, null):GraphicsFillType;
+	var nmeGraphicsFillType(default, null):GraphicsFillType;
 	
 }
 

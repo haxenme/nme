@@ -10,7 +10,7 @@ class LoaderContext {
 	private var securityDomain:Dynamic;
 	
 	
-	public function new (checkPolicyFile:Bool = false, ?applicationDomain, ?securityDomain) {
+	public function new(checkPolicyFile:Bool = false, ?applicationDomain, ?securityDomain) {
 		
 		this.checkPolicyFile = checkPolicyFile;
 		

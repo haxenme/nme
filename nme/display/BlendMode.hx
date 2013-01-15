@@ -21,7 +21,7 @@ package nme.display;
 	 *
 	 * <p>For example, if the display object has a pixel with an RGB value of
 	 * 0xAAA633, and the background pixel has an RGB value of 0xDD2200, the
-	 * resulting RGB value for the displayed pixel is 0xFFC833 (because 0xAA +
+	 * resulting RGB value for the displayed pixel is 0xFFC833(because 0xAA +
 	 * 0xDD > 0xFF, 0xA6 + 0x22 = 0xC8, and 0x33 + 0x00 = 0x33).</p>
 	 */
 	ADD;
@@ -38,12 +38,12 @@ package nme.display;
 
 	/**
 	 * Selects the darker of the constituent colors of the display object and the
-	 * colors of the background (the colors with the smaller values). This
+	 * colors of the background(the colors with the smaller values). This
 	 * setting is commonly used for superimposing type.
 	 *
 	 * <p>For example, if the display object has a pixel with an RGB value of
 	 * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-	 * resulting RGB value for the displayed pixel is 0xDDCC00 (because 0xFF >
+	 * resulting RGB value for the displayed pixel is 0xDDCC00(because 0xFF >
 	 * 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33).</p>
 	 *
 	 * <p>Not supported under GPU rendering.</p>
@@ -58,7 +58,7 @@ package nme.display;
 	 *
 	 * <p>For example, if the display object has a pixel with an RGB value of
 	 * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-	 * resulting RGB value for the displayed pixel is 0x222C33 (because 0xFF -
+	 * resulting RGB value for the displayed pixel is 0x222C33(because 0xFF -
 	 * 0xDD = 0x22, 0xF8 - 0xCC = 0x2C, and 0x33 - 0x00 = 0x33).</p>
 	 */
 	DIFFERENCE;
@@ -103,12 +103,12 @@ package nme.display;
 
 	/**
 	 * Selects the lighter of the constituent colors of the display object and
-	 * the colors of the background (the colors with the larger values). This
+	 * the colors of the background(the colors with the larger values). This
 	 * setting is commonly used for superimposing type.
 	 *
 	 * <p>For example, if the display object has a pixel with an RGB value of
 	 * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-	 * resulting RGB value for the displayed pixel is 0xFFF833 (because 0xFF >
+	 * resulting RGB value for the displayed pixel is 0xFFF833(because 0xFF >
 	 * 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33).</p>
 	 *
 	 * <p>Not supported under GPU rendering.</p>
@@ -121,7 +121,7 @@ package nme.display;
 	 * 0xFF, resulting in darker colors. This setting is commonly used for
 	 * shadows and depth effects.
 	 *
-	 * <p>For example, if a constituent color (such as red) of one pixel in the
+	 * <p>For example, if a constituent color(such as red) of one pixel in the
 	 * display object and the corresponding color of the pixel in the background
 	 * both have the value 0x88, the multiplied result is 0x4840. Dividing by
 	 * 0xFF yields a value of 0x48 for that constituent color, which is a darker
@@ -150,7 +150,7 @@ package nme.display;
 	OVERLAY;
 
 	/**
-	 * Multiplies the complement (inverse) of the display object color by the
+	 * Multiplies the complement(inverse) of the display object color by the
 	 * complement of the background color, resulting in a bleaching effect. This
 	 * setting is commonly used for highlights or to remove black areas of the
 	 * display object.
@@ -166,7 +166,7 @@ package nme.display;
 	 * set to <code>BlendMode.SHADER</code> without first setting the
 	 * <code>blendShader</code> property, the <code>blendMode</code> property is
 	 * set to <code>BlendMode.NORMAL</code> instead. If the
-	 * <code>blendShader</code> property is set (which sets the
+	 * <code>blendShader</code> property is set(which sets the
 	 * <code>blendMode</code> property to <code>BlendMode.SHADER</code>), then
 	 * later the value of the <code>blendMode</code> property is changed, the
 	 * blend mode can be reset to use the blend shader simply by setting the
@@ -185,7 +185,7 @@ package nme.display;
 	 *
 	 * <p>For example, if the display object has a pixel with an RGB value of
 	 * 0xAA2233, and the background pixel has an RGB value of 0xDDA600, the
-	 * resulting RGB value for the displayed pixel is 0x338400 (because 0xDD -
+	 * resulting RGB value for the displayed pixel is 0x338400(because 0xDD -
 	 * 0xAA = 0x33, 0xA6 - 0x22 = 0x84, and 0x00 - 0x33 < 0x00).</p>
 	 */
 	SUBTRACT;

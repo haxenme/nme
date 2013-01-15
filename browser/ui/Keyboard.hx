@@ -228,11 +228,11 @@ class Keyboard {
 	public static inline var DOM_VK_EXECUTE = 43;
 	public static inline var DOM_VK_SLEEP = 95;
 	
-	public static var capsLock (default, null):Bool;
-	public static var numLock (default, null):Bool;
+	public static var capsLock(default, null):Bool;
+	public static var numLock(default, null):Bool;
 	
 	
-	public static function isAccessible ():Bool {
+	public static function isAccessible():Bool {
 		
 		// default browser security restrictions are always enforced
 		return false;
@@ -240,7 +240,7 @@ class Keyboard {
 	}
 	
 	
-	public static function nmeConvertMozillaCode (code:Int):Int {
+	public static function nmeConvertMozillaCode(code:Int):Int {
 		
 		switch (code) {
 			
@@ -271,9 +271,9 @@ class Keyboard {
 	}
 	
 	
-	public static function nmeConvertWebkitCode (code:String):Int {
+	public static function nmeConvertWebkitCode(code:String):Int {
 		
-		switch (code.toLowerCase ()) {
+		switch (code.toLowerCase()) {
 			
 			case "backspace": return BACKSPACE;
 			case "tab": return TAB;
@@ -298,9 +298,9 @@ class Keyboard {
 			
 		}
 		
-		if (code.indexOf ("U+") == 0) {
+		if (code.indexOf("U+") == 0) {
 			
-			return Std.parseInt ('0x' + code.substr (3));
+			return Std.parseInt('0x' + code.substr(3));
 			
 		}
 		

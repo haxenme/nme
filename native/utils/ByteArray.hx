@@ -24,17 +24,17 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	public var bigEndian:Bool;
-	public var bytesAvailable (get_bytesAvailable, null):Int;
-	public var endian (get_endian, set_endian):String;
+	public var bytesAvailable(get_bytesAvailable, null):Int;
+	public var endian(get_endian, set_endian):String;
 	public var position:Int;
-	public var byteLength (get_byteLength,null):Int;
+	public var byteLength(get_byteLength,null):Int;
 	
 	#if neko
 	/** @private */ private var alloced:Int;
 	#end
 	
 	
-	public function new (inSize = 0) {
+	public function new(inSize = 0) {
 		
 		bigEndian = true;
 		position = 0;
@@ -43,13 +43,13 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			
 			#if neko
 			alloced = inSize < 16 ? 16 : inSize;
-			var bytes = untyped __dollar__smake (alloced);
-			super (inSize, bytes);
+			var bytes = untyped __dollar__smake(alloced);
+			super(inSize, bytes);
 			#else
-			var data = new BytesData ();
+			var data = new BytesData();
 			if (inSize > 0)
 				untyped data[inSize - 1] = 0;
-			super (inSize, data);
+			super(inSize, data);
 			#end
 			
 		}
@@ -57,69 +57,69 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	inline public function __get (pos:Int):Int {
+	inline public function __get(pos:Int):Int {
 		
 		// Neko/cpp pseudo array accessors...
 		// No bounds checking is done in the cpp case
 		#if cpp
 		return untyped b[pos];
 		#else
-		return get (pos);
+		return get(pos);
 		#end
 		
 	}
 	
 	
 	#if !no_nme_io
-	/** @private */ static function __init__ () {
+	/** @private */ static function __init__() {
 		
-		var factory = function (inLen:Int) { return new ByteArray (inLen); };
-		var resize = function (inArray:ByteArray, inLen:Int) {
+		var factory = function(inLen:Int) { return new ByteArray(inLen); };
+		var resize = function(inArray:ByteArray, inLen:Int) {
 			
 			if (inLen > 0)
-				inArray.ensureElem (inLen - 1, true);
+				inArray.ensureElem(inLen - 1, true);
 			inArray.length = inLen;
 			
 		};
 		
-		var bytes = function (inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
-		var slen = function (inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
+		var bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
+		var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 		
-		var init = Loader.load ("nme_byte_array_init", 4);
-		init (factory, slen, resize, bytes);
+		var init = Loader.load("nme_byte_array_init", 4);
+		init(factory, slen, resize, bytes);
 		
 	}
 	#end
 	
 	
-	inline public function __set (pos:Int, v:Int):Void {
+	inline public function __set(pos:Int, v:Int):Void {
 		
 		// No bounds checking is done in the cpp case
 		#if cpp
 		untyped b[pos] = v;
 		#else
-		set (pos, v);
+		set(pos, v);
 		#end
 		
 	}
 	
 	
-	public function asString ():String {
+	public function asString():String {
 		
 		return readUTFBytes(length);
 		
 	}
 	
 	
-	public function checkData (inLength:Int) {
+	public function checkData(inLength:Int) {
 		
 		if (inLength + position > length)
-			ThrowEOFi ();
+			ThrowEOFi();
 		
 	}
 	
 	
-	public function clear () {
+	public function clear() {
 		
 		position = 0;
 		length = 0;
@@ -127,10 +127,10 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function compress (algorithm:CompressionAlgorithm = null) {
+	public function compress(algorithm:CompressionAlgorithm = null) {
 		
 		#if neko
-		var src = alloced == length ? this : sub (0, length);
+		var src = alloced == length ? this : sub(0, length);
 		#else
 		var src = this;
 		#end
@@ -139,7 +139,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		
 		if (algorithm == CompressionAlgorithm.LZMA) {
 			
-			result = Bytes.ofData (nme_lzma_encode (src.getData ()));
+			result = Bytes.ofData(nme_lzma_encode(src.getData()));
 			
 		} else {
 			
@@ -152,9 +152,9 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			}
 			
 			#if enable_deflate
-			result = Compress.run (src, 8, windowBits);
+			result = Compress.run(src, 8, windowBits);
 			#else
-			result = Compress.run (src, 8);
+			result = Compress.run(src, 8);
 			#end
 			
 		}
@@ -169,29 +169,29 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function deflate () {
+	public function deflate() {
 		
-		compress (CompressionAlgorithm.DEFLATE);
+		compress(CompressionAlgorithm.DEFLATE);
 		
 	}
 	
 	
-	/** @private */ private function ensureElem (inSize:Int, inUpdateLenght:Bool) {
+	/** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool) {
 		
 		var len = inSize + 1;
 		
 		#if neko
 		if (alloced < len) {
 			
-			alloced = ((len+1) * 3) >> 1;
-			var new_b = untyped __dollar__smake (alloced);
-			untyped __dollar__sblit (new_b, 0, b, 0, length);
+			alloced =((len+1) * 3) >> 1;
+			var new_b = untyped __dollar__smake(alloced);
+			untyped __dollar__sblit(new_b, 0, b, 0, length);
 			b = new_b;
 			
 		}
 		#else
 		if (b.length < len)
-			untyped b.__SetSize (len);
+			untyped b.__SetSize(len);
 		#end
 		
 		if (inUpdateLenght && length < len)
@@ -200,9 +200,9 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	static public function fromBytes (inBytes:Bytes) {
+	static public function fromBytes(inBytes:Bytes) {
 		
-		var result = new ByteArray (-1);
+		var result = new ByteArray(-1);
 		result.b = inBytes.b;
 		result.length = inBytes.length;
 		
@@ -215,49 +215,49 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function getLength ():Int { return length; }
+	public function getLength():Int { return length; }
 	
 	
 	// IMemoryRange
-	public function getByteBuffer ():ByteArray { return this; }
-	public function getStart ():Int { return 0; }
+	public function getByteBuffer():ByteArray { return this; }
+	public function getStart():Int { return 0; }
 	
 	
-	public function inflate () {
+	public function inflate() {
 		
-		uncompress (CompressionAlgorithm.DEFLATE);
-		
-	}
-	
-	
-	public inline function readBoolean ():Bool {
-		
-		return (position + 1 < length) ? __get (position++) != 0 : ThrowEOFi () != 0;
+		uncompress(CompressionAlgorithm.DEFLATE);
 		
 	}
 	
 	
-	public inline function readByte ():Int {
+	public inline function readBoolean():Bool {
 		
-		var val:Int = readUnsignedByte ();
-		return ((val & 0x80) != 0) ? (val - 0x100) : val;
+		return(position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
 		
 	}
 	
 	
-	public function readBytes (outData:ByteArray, inOffset:Int = 0, inLen:Int = 0):Void {
+	public inline function readByte():Int {
+		
+		var val:Int = readUnsignedByte();
+		return((val & 0x80) != 0) ?(val - 0x100) : val;
+		
+	}
+	
+	
+	public function readBytes(outData:ByteArray, inOffset:Int = 0, inLen:Int = 0):Void {
 		
 		if (inLen == 0)
 			inLen = length - position;
 		
 		if (position + inLen > length)
-			ThrowEOFi ();
+			ThrowEOFi();
 		
 		if (outData.length < inOffset + inLen)
-			outData.ensureElem (inOffset + inLen - 1, true);
+			outData.ensureElem(inOffset + inLen - 1, true);
 		
 		#if neko
-		outData.blit (inOffset, this, position, inLen);
+		outData.blit(inOffset, this, position, inLen);
 		#else
 		var b1 = b;
 		var b2 = outData.b;
@@ -271,62 +271,62 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function readDouble ():Float {
+	public function readDouble():Float {
 		
 		if (position + 8 > length)
-			ThrowEOFi ();
+			ThrowEOFi();
 		
 		#if neko
-		var bytes = new Bytes (8, untyped __dollar__ssub (b, position, 8));
+		var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
 		#elseif cpp
-		var bytes = new Bytes (8, b.slice (position, position + 8));
+		var bytes = new Bytes(8, b.slice(position, position + 8));
 		#end
 		
 		position += 8;
-		return _double_of_bytes (bytes.b, bigEndian);
+		return _double_of_bytes(bytes.b, bigEndian);
 		
 	}
 	
 	
 	#if !no_nme_io
-	static public function readFile (inString:String):ByteArray {
+	static public function readFile(inString:String):ByteArray {
 		
-		return nme_byte_array_read_file (inString);
+		return nme_byte_array_read_file(inString);
 		
 	}
 	#end
 	
 	
-	public function readFloat ():Float {
+	public function readFloat():Float {
 		
 		if (position + 4 > length)
-			ThrowEOFi ();
+			ThrowEOFi();
 		
 		#if neko
-		var bytes = new Bytes (4, untyped __dollar__ssub (b, position, 4));
+		var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
 		#elseif cpp
-		var bytes = new Bytes (4, b.slice (position, position + 4));
+		var bytes = new Bytes(4, b.slice(position, position + 4));
 		#end
 		
 		position += 4;
-		return _float_of_bytes (bytes.b, bigEndian);
+		return _float_of_bytes(bytes.b, bigEndian);
 		
 	}
 	
 	
-	public function readInt ():Int {
+	public function readInt():Int {
 		
-		var ch1 = readUnsignedByte ();
-		var ch2 = readUnsignedByte ();
-		var ch3 = readUnsignedByte ();
-		var ch4 = readUnsignedByte ();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		var ch3 = readUnsignedByte();
+		var ch4 = readUnsignedByte();
 		
-		return bigEndian ? (ch1 << 24) | (ch2 << 16) | (ch3 << 8) | ch4 : (ch4 << 24) | (ch3 << 16) | (ch2 << 8) | ch1;
+		return bigEndian ?(ch1 << 24) |(ch2 << 16) |(ch3 << 8) | ch4 :(ch4 << 24) |(ch3 << 16) |(ch2 << 8) | ch1;
 		
 	}
 	
 	
-	public inline function readMultiByte (inLen:Int, charSet:String):String {
+	public inline function readMultiByte(inLen:Int, charSet:String):String {
 		
 		// TODO - use code page
 		return readUTFBytes(inLen);
@@ -334,85 +334,85 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	public function readShort ():Int {
+	public function readShort():Int {
 		
-		var ch1 = readUnsignedByte ();
-		var ch2 = readUnsignedByte ();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
 		
-		var val = bigEndian ? ((ch1 << 8) | ch2) : ((ch2 << 8) | ch1);
+		var val = bigEndian ?((ch1 << 8) | ch2) :((ch2 << 8) | ch1);
 		
-		return ((val & 0x8000) != 0) ? (val - 0x10000) : val;
-		
-	}
-	
-	
-	inline public function readUnsignedByte ():Int {
-		
-		return (position < length) ? __get (position++) : ThrowEOFi ();
+		return((val & 0x8000) != 0) ?(val - 0x10000) : val;
 		
 	}
 	
 	
-	public function readUnsignedInt ():Int {
+	inline public function readUnsignedByte():Int {
 		
-		var ch1 = readUnsignedByte ();
-		var ch2 = readUnsignedByte ();
-		var ch3 = readUnsignedByte ();
-		var ch4 = readUnsignedByte ();
-		
-		return bigEndian ? (ch1 << 24) | (ch2 << 16) | (ch3 << 8) | ch4 : (ch4 << 24) | (ch3 << 16) | (ch2 << 8) | ch1;
+		return(position < length) ? __get(position++) : ThrowEOFi();
 		
 	}
 	
 	
-	public function readUnsignedShort ():Int {
+	public function readUnsignedInt():Int {
 		
-		var ch1 = readUnsignedByte ();
-		var ch2 = readUnsignedByte ();
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		var ch3 = readUnsignedByte();
+		var ch4 = readUnsignedByte();
 		
-		return bigEndian ? (ch1 << 8) | ch2 : (ch2 << 8) + ch1;
-		
-	}
-	
-	
-	public function readUTF ():String {
-		
-		var len = readUnsignedShort ();
-		return readUTFBytes (len);
+		return bigEndian ?(ch1 << 24) |(ch2 << 16) |(ch3 << 8) | ch4 :(ch4 << 24) |(ch3 << 16) |(ch2 << 8) | ch1;
 		
 	}
 	
 	
-	public function readUTFBytes (inLen:Int):String {
+	public function readUnsignedShort():Int {
+		
+		var ch1 = readUnsignedByte();
+		var ch2 = readUnsignedByte();
+		
+		return bigEndian ?(ch1 << 8) | ch2 :(ch2 << 8) + ch1;
+		
+	}
+	
+	
+	public function readUTF():String {
+		
+		var len = readUnsignedShort();
+		return readUTFBytes(len);
+		
+	}
+	
+	
+	public function readUTFBytes(inLen:Int):String {
 		
 		if (position + inLen > length)
-			ThrowEOFi ();
+			ThrowEOFi();
 		
 		var p = position;
 		position += inLen;
 		
 		#if neko
-		return new String (untyped __dollar__ssub (b, p, inLen));
+		return new String(untyped __dollar__ssub(b, p, inLen));
 		#elseif cpp
 		var result:String="";
-		untyped __global__.__hxcpp_string_of_bytes (b, result, p, inLen);
+		untyped __global__.__hxcpp_string_of_bytes(b, result, p, inLen);
 		return result;
 		#end
 		
 	}
 	
 	
-	public function setLength (inLength:Int):Void {
+	public function setLength(inLength:Int):Void {
 		
 		if (inLength > 0)
-			ensureElem (inLength - 1, false);
+			ensureElem(inLength - 1, false);
 		length = inLength;
 		
 	}
 	
 	
 	// ArrayBuffer interface
-	public function slice (inBegin:Int, ?inEnd:Int):ByteArray {
+	public function slice(inBegin:Int, ?inEnd:Int):ByteArray {
 		
 		var begin = inBegin;
 		
@@ -436,32 +436,32 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		}
 		
 		if (begin >= end)
-			return new ByteArray ();
+			return new ByteArray();
 		
-		var result = new ByteArray (end - begin);
+		var result = new ByteArray(end - begin);
 		
 		var opos = position;
-		result.blit (0, this, begin, end - begin);
+		result.blit(0, this, begin, end - begin);
 		
 		return result;
 		
 	}
 	
 	
-	/** @private */ private function ThrowEOFi ():Int {
+	/** @private */ private function ThrowEOFi():Int {
 		
-		throw new EOFError ();
+		throw new EOFError();
 		return 0;
 		
 	}
 	
 	
-	public function uncompress (algorithm:CompressionAlgorithm = null):Void {
+	public function uncompress(algorithm:CompressionAlgorithm = null):Void {
 		
 		if (algorithm == null) algorithm = CompressionAlgorithm.GZIP;
 		
 		#if neko
-		var src = alloced == length ? this : sub (0, length);
+		var src = alloced == length ? this : sub(0, length);
 		#else
 		var src = this;
 		#end
@@ -470,7 +470,7 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 		
 		if (algorithm == CompressionAlgorithm.LZMA) {
 			
-			result = Bytes.ofData (nme_lzma_decode (src.getData ()));
+			result = Bytes.ofData(nme_lzma_decode(src.getData()));
 			
 		} else {
 			
@@ -483,9 +483,9 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 			}
 			
 			#if enable_deflate
-			result = Uncompress.run (src, null, windowBits);
+			result = Uncompress.run(src, null, windowBits);
 			#else
-			result = Uncompress.run (src, null);
+			result = Uncompress.run(src, null);
 			#end
 			
 		}
@@ -500,100 +500,100 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	}
 	
 	
-	/** @private */ inline function write_uncheck (inByte:Int) {
+	/** @private */ inline function write_uncheck(inByte:Int) {
 		
 		#if cpp
-		untyped b.__unsafe_set (position++, inByte);
+		untyped b.__unsafe_set(position++, inByte);
 		#else
-		untyped __dollar__sset (b, position++, inByte & 0xff);
+		untyped __dollar__sset(b, position++, inByte & 0xff);
 		#end
 		
 	}
 	
 	
-	public function writeBoolean (value:Bool) {
+	public function writeBoolean(value:Bool) {
 		
-		writeByte (value ? 1 : 0);
+		writeByte(value ? 1 : 0);
 		
 	}
 	
 	
-	inline public function writeByte (value:Int) {
+	inline public function writeByte(value:Int) {
 		
-		ensureElem (position, true);
+		ensureElem(position, true);
 		
 		#if cpp
 		b[position++] = untyped value;
 		#else
-		untyped __dollar__sset (b, position++, value & 0xff);
+		untyped __dollar__sset(b, position++, value & 0xff);
 		#end
 		
 	}
 	
 	
-	public function writeBytes (bytes:Bytes, inOffset:Int = 0, inLength:Int = 0) {
+	public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0) {
 		
 		if (inLength == 0) inLength = bytes.length - inOffset;
-		ensureElem (position + inLength - 1, true);
+		ensureElem(position + inLength - 1, true);
 		var opos = position;
 		position += inLength;
-		blit (opos, bytes, inOffset, inLength);
+		blit(opos, bytes, inOffset, inLength);
 		
 	}
 	
 	
-	public function writeDouble (x:Float) {
+	public function writeDouble(x:Float) {
 		
 		#if neko
-		var bytes = new Bytes (8, _double_bytes (x, bigEndian));
+		var bytes = new Bytes(8, _double_bytes(x, bigEndian));
 		#elseif cpp
-		var bytes = Bytes.ofData (_double_bytes (x, bigEndian));
+		var bytes = Bytes.ofData(_double_bytes(x, bigEndian));
 		#end
 		
-		writeBytes (bytes);
+		writeBytes(bytes);
 		
 	}
 	
 	
 	#if !no_nme_io
-	public function writeFile (inString:String):Void {
+	public function writeFile(inString:String):Void {
 		
-		nme_byte_array_overwrite_file (inString, this);
+		nme_byte_array_overwrite_file(inString, this);
 		
 	}
 	#end
 	
 	
-	public function writeFloat (x:Float) {
+	public function writeFloat(x:Float) {
 		
 		#if neko
-		var bytes = new Bytes (4, _float_bytes (x, bigEndian));
+		var bytes = new Bytes(4, _float_bytes(x, bigEndian));
 		#elseif cpp
-		var bytes = Bytes.ofData (_float_bytes (x, bigEndian));
+		var bytes = Bytes.ofData(_float_bytes(x, bigEndian));
 		#end
 		
-		writeBytes (bytes);
+		writeBytes(bytes);
 		
 	}
 	
 	
-	public function writeInt (value:Int) {
+	public function writeInt(value:Int) {
 		
-		ensureElem (position + 3, true);
+		ensureElem(position + 3, true);
 		
 		if (bigEndian) {
 			
-			write_uncheck (value >> 24);
-			write_uncheck (value >> 16);
-			write_uncheck (value >> 8);
-			write_uncheck (value);
+			write_uncheck(value >> 24);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 			
 		} else {
 			
-			write_uncheck (value);
-			write_uncheck (value >> 8);
-			write_uncheck (value >> 16);
-			write_uncheck (value >> 24);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
+			write_uncheck(value >> 16);
+			write_uncheck(value >> 24);
 			
 		}
 		
@@ -604,55 +604,55 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	// public function writeObject(object:*)
 	
 	
-	public function writeShort (value:Int) {
+	public function writeShort(value:Int) {
 		
-		ensureElem (position + 1, true);
+		ensureElem(position + 1, true);
 		
 		if (bigEndian) {
 			
-			write_uncheck (value >> 8);
-			write_uncheck (value);
+			write_uncheck(value >> 8);
+			write_uncheck(value);
 			
 		} else {
 			
-			write_uncheck (value);
-			write_uncheck (value >> 8);
+			write_uncheck(value);
+			write_uncheck(value >> 8);
 			
 		}
 		
 	}
 	
 	
-	public function writeUnsignedInt (value:Int) {
+	public function writeUnsignedInt(value:Int) {
 		
-		writeInt (value);
-		
-	}
-	
-	
-	public function writeUTF (s:String) {
-		
-		#if neko
-		var bytes = new Bytes (s.length, untyped s.__s);
-		#else
-		var bytes = Bytes.ofString (s);
-		#end
-		
-		writeShort (bytes.length);
-		writeBytes (bytes);
+		writeInt(value);
 		
 	}
 	
 	
-	public function writeUTFBytes (s:String) {
+	public function writeUTF(s:String) {
 		
 		#if neko
-		var bytes = new Bytes (s.length, untyped s.__s);
+		var bytes = new Bytes(s.length, untyped s.__s);
 		#else
-		var bytes = Bytes.ofString (s);
+		var bytes = Bytes.ofString(s);
 		#end
 		
-		writeBytes (bytes);
+		writeShort(bytes.length);
+		writeBytes(bytes);
+		
+	}
+	
+	
+	public function writeUTFBytes(s:String) {
+		
+		#if neko
+		var bytes = new Bytes(s.length, untyped s.__s);
+		#else
+		var bytes = Bytes.ofString(s);
+		#end
+		
+		writeBytes(bytes);
 		
 	}
 	
@@ -664,10 +664,10 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	
-	private function get_bytesAvailable ():Int { return length - position; }
-	private function get_byteLength ():Int { return length; }
-	private function get_endian ():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
-	private function set_endian (s:String):String { bigEndian = (s == Endian.BIG_ENDIAN); return s; }
+	private function get_bytesAvailable():Int { return length - position; }
+	private function get_byteLength():Int { return length; }
+	private function get_endian():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
+	private function set_endian(s:String):String { bigEndian =(s == Endian.BIG_ENDIAN); return s; }
 	
 	
 	
@@ -677,17 +677,17 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 	
-	/** @private */ private static var _double_bytes = Lib.load ("std", "double_bytes", 2);
-	/** @private */ private static var _double_of_bytes = Lib.load ("std", "double_of_bytes", 2);
-	/** @private */ private static var _float_bytes = Lib.load ("std", "float_bytes", 2);
-	/** @private */ private static var _float_of_bytes = Lib.load ("std", "float_of_bytes", 2);
+	/** @private */ private static var _double_bytes = Lib.load("std", "double_bytes", 2);
+	/** @private */ private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
+	/** @private */ private static var _float_bytes = Lib.load("std", "float_bytes", 2);
+	/** @private */ private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
 	
 	#if !no_nme_io
-	private static var nme_byte_array_overwrite_file = Loader.load ("nme_byte_array_overwrite_file", 2);
-	private static var nme_byte_array_read_file = Loader.load ("nme_byte_array_read_file", 1);
+	private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
+	private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
 	#end
-	private static var nme_lzma_encode = Loader.load ("nme_lzma_encode", 1);
-	private static var nme_lzma_decode = Loader.load ("nme_lzma_decode", 1);
+	private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
+	private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
 	
 	
 }

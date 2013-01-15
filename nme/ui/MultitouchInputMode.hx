@@ -13,7 +13,7 @@ package nme.ui;
 	/**
 	 * Specifies that TransformGestureEvent, PressAndTapGestureEvent, and
 	 * GestureEvent events are dispatched for the related user interaction
-	 * supported by the current environment, and other touch events (such as a
+	 * supported by the current environment, and other touch events(such as a
 	 * simple tap) are interpreted as mouse events.
 	 */
 	GESTURE;

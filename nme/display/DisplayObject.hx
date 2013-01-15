@@ -42,11 +42,11 @@ package nme.display;
  * <code>activate</code> and <code>deactivate</code>.</p>
  *
  * <p>Some properties previously used in the ActionScript 1.0 and 2.0
- * MovieClip, TextField, and Button classes (such as <code>_alpha</code>,
+ * MovieClip, TextField, and Button classes(such as <code>_alpha</code>,
  * <code>_height</code>, <code>_name</code>, <code>_width</code>,
  * <code>_x</code>, <code>_y</code>, and others) have equivalents in the
  * ActionScript 3.0 DisplayObject class that are renamed so that they no
- * longer begin with the underscore (_) character.</p>
+ * longer begin with the underscore(_) character.</p>
  *
  * <p>For more information, see the "Display Programming" chapter of the
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
@@ -148,7 +148,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 
 	/**
 	 * Indicates the alpha transparency value of the object specified. Valid
-	 * values are 0 (fully transparent) to 1 (fully opaque). The default value is
+	 * values are 0(fully transparent) to 1(fully opaque). The default value is
 	 * 1. Display objects with <code>alpha</code> set to 0 <i>are</i> active,
 	 * even though they are invisible.
 	 */
@@ -163,7 +163,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <code>BlendMode.NORMAL</code>.
 	 *
 	 * <p>The <code>blendMode</code> property affects each pixel of the display
-	 * object. Each pixel is composed of three constituent colors (red, green,
+	 * object. Each pixel is composed of three constituent colors(red, green,
 	 * and blue), and each constituent color has a value between 0x00 and 0xFF.
 	 * Flash Player or Adobe AIR compares each constituent color of one pixel in
 	 * the movie clip with the corresponding color of the pixel in the
@@ -176,7 +176,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <p>The following table describes the <code>blendMode</code> settings. The
 	 * BlendMode class defines string values you can use. The illustrations in
 	 * the table show <code>blendMode</code> values applied to a circular display
-	 * object (2) superimposed on another display object (1).</p>
+	 * object(2) superimposed on another display object(1).</p>
 	 */
 	var blendMode : BlendMode;
 
@@ -189,7 +189,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <p>Setting the <code>blendShader</code> property of a display object to a
 	 * Shader instance automatically sets the display object's
 	 * <code>blendMode</code> property to <code>BlendMode.SHADER</code>. If the
-	 * <code>blendShader</code> property is set (which sets the
+	 * <code>blendShader</code> property is set(which sets the
 	 * <code>blendMode</code> property to <code>BlendMode.SHADER</code>), then
 	 * the value of the <code>blendMode</code> property is changed, the blend
 	 * mode can be reset to use the blend shader simply by setting the
@@ -201,8 +201,8 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * specify at least two <code>image4</code> inputs. The inputs <b>do not</b>
 	 * need to be specified in code using the associated ShaderInput objects'
 	 * <code>input</code> properties. The background display object is
-	 * automatically used as the first input (the input with <code>index</code>
-	 * 0). The foreground display object is used as the second input (the input
+	 * automatically used as the first input(the input with <code>index</code>
+	 * 0). The foreground display object is used as the second input(the input
 	 * with <code>index</code> 1). A shader used as a blend shader can specify
 	 * more than two inputs. In that case, any additional input must be specified
 	 * by setting its ShaderInput instance's <code>input</code> property.</p>
@@ -214,7 +214,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * that's used for the blend mode.</p>
 	 * 
 	 * @throws ArgumentError When the shader output type is not compatible with
-	 *                       this operation (the shader must specify a
+	 *                       this operation(the shader must specify a
 	 *                       <code>pixel4</code> output).
 	 * @throws ArgumentError When the shader specifies fewer than two image
 	 *                       inputs or the first two inputs are not
@@ -261,7 +261,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * </p>
 	 *
 	 * <p>The <code>cacheAsBitmap</code> property is automatically set to
-	 * <code>true</code> whenever you apply a filter to a display object (when
+	 * <code>true</code> whenever you apply a filter to a display object(when
 	 * its <code>filter</code> array is not empty), and if a display object has a
 	 * filter applied to it, <code>cacheAsBitmap</code> is reported as
 	 * <code>true</code> for that display object, even if you set the property to
@@ -275,17 +275,17 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <ul>
 	 *   <li>The bitmap is too large. In AIR 1.5 and Flash Player 10, the maximum
 	 * size for a bitmap image is 8,191 pixels in width or height, and the total
-	 * number of pixels cannot exceed 16,777,215 pixels. (So, if a bitmap image
+	 * number of pixels cannot exceed 16,777,215 pixels.(So, if a bitmap image
 	 * is 8,191 pixels wide, it can only be 2,048 pixels high.) In Flash Player 9
 	 * and earlier, the limitation is is 2880 pixels in height and 2,880 pixels
 	 * in width.</li>
-	 *   <li>The bitmap fails to allocate (out of memory error). </li>
+	 *   <li>The bitmap fails to allocate(out of memory error). </li>
 	 * </ul>
 	 *
 	 * <p>The <code>cacheAsBitmap</code> property is best used with movie clips
 	 * that have mostly static content and that do not scale and rotate
 	 * frequently. With such movie clips, <code>cacheAsBitmap</code> can lead to
-	 * performance increases when the movie clip is translated (when its <i>x</i>
+	 * performance increases when the movie clip is translated(when its <i>x</i>
 	 * and <i>y</i> position is changed).</p>
 	 */
 	var cacheAsBitmap : Bool;
@@ -303,7 +303,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * filter object to the <code>filters</code> array.</p>
 	 *
 	 * <p>To add a filter by using ActionScript, perform the following steps
-	 * (assume that the target display object is named
+	 *(assume that the target display object is named
 	 * <code>myDisplayObject</code>):</p>
 	 *
 	 * <ol>
@@ -352,7 +352,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * 
 	 * @throws ArgumentError When <code>filters</code> includes a ShaderFilter
 	 *                       and the shader output type is not compatible with
-	 *                       this operation (the shader must specify a
+	 *                       this operation(the shader must specify a
 	 *                       <code>pixel4</code> output).
 	 * @throws ArgumentError When <code>filters</code> includes a ShaderFilter
 	 *                       and the shader doesn't specify any image input or
@@ -378,7 +378,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * is adjusted accordingly, as shown in the following code:
 	 *
 	 * <p>Except for TextField and Video objects, a display object with no
-	 * content (such as an empty sprite) has a height of 0, even if you try to
+	 * content(such as an empty sprite) has a height of 0, even if you try to
 	 * set <code>height</code> to a different value.</p>
 	 */
 	var height : Float;
@@ -387,7 +387,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * Returns a LoaderInfo object containing information about loading the file
 	 * to which this display object belongs. The <code>loaderInfo</code> property
 	 * is defined only for the root display object of a SWF file or for a loaded
-	 * Bitmap (not for a Bitmap that is drawn with ActionScript). To find the
+	 * Bitmap(not for a Bitmap that is drawn with ActionScript). To find the
 	 * <code>loaderInfo</code> object associated with the SWF file that contains
 	 * a display object named <code>myDisplayObject</code>, use
 	 * <code>myDisplayObject.root.loaderInfo</code>.
@@ -406,7 +406,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <code>mask</code> to <code>null</code> to remove the mask.
 	 *
 	 * <p>To be able to scale a mask object, it must be on the display list. To
-	 * be able to drag a mask Sprite object (by calling its
+	 * be able to drag a mask Sprite object(by calling its
 	 * <code>startDrag()</code> method), it must be on the display list. To call
 	 * the <code>startDrag()</code> method for a mask sprite based on a
 	 * <code>mouseDown</code> event being dispatched by the sprite, set the
@@ -464,13 +464,13 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	/**
 	 * Specifies whether the display object is opaque with a certain background
 	 * color. A transparent bitmap contains alpha channel data and is drawn
-	 * transparently. An opaque bitmap has no alpha channel (and renders faster
+	 * transparently. An opaque bitmap has no alpha channel(and renders faster
 	 * than a transparent bitmap). If the bitmap is opaque, you specify its own
 	 * background color to use.
 	 *
-	 * <p>If set to a number value, the surface is opaque (not transparent) with
+	 * <p>If set to a number value, the surface is opaque(not transparent) with
 	 * the RGB background color that the number specifies. If set to
-	 * <code>null</code> (the default value), the display object has a
+	 * <code>null</code>(the default value), the display object has a
 	 * transparent background.</p>
 	 *
 	 * <p>The <code>opaqueBackground</code> property is intended mainly for use
@@ -518,7 +518,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 *
 	 * <p>For example, if you create a new Sprite object by calling the
 	 * <code>Sprite()</code> constructor method, its <code>root</code> property
-	 * is <code>null</code> until you add it to the display list (or to a display
+	 * is <code>null</code> until you add it to the display list(or to a display
 	 * object container that is off the display list but that is a child of the
 	 * top-most display object in a SWF file).</p>
 	 *
@@ -589,7 +589,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 *   <li>The lower-right corner outside of the rectangle</li>
 	 * </ul>
 	 *
-	 * <p>You can think of the eight regions outside of the center (defined by
+	 * <p>You can think of the eight regions outside of the center(defined by
 	 * the rectangle) as being like a picture frame that has special rules
 	 * applied to it when scaled.</p>
 	 *
@@ -602,11 +602,11 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 *   <li>Content in the corners is not scaled. </li>
 	 *   <li>Content in the top and bottom regions is scaled horizontally only.
 	 * Content in the left and right regions is scaled vertically only.</li>
-	 *   <li>All fills (including bitmaps, video, and gradients) are stretched to
+	 *   <li>All fills(including bitmaps, video, and gradients) are stretched to
 	 * fit their shapes.</li>
 	 * </ul>
 	 *
-	 * <p>If a display object is rotated, all subsequent scaling is normal (and
+	 * <p>If a display object is rotated, all subsequent scaling is normal(and
 	 * the <code>scale9Grid</code> property is ignored).</p>
 	 *
 	 * <p>For example, consider the following display object and a rectangle that
@@ -621,8 +621,8 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	var scale9Grid : nme.geom.Rectangle;
 
 	/**
-	 * Indicates the horizontal scale (percentage) of the object as applied from
-	 * the registration point. The default registration point is (0,0). 1.0
+	 * Indicates the horizontal scale(percentage) of the object as applied from
+	 * the registration point. The default registration point is(0,0). 1.0
 	 * equals 100% scale.
 	 *
 	 * <p>Scaling the local coordinate system changes the <code>x</code> and
@@ -631,8 +631,8 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	var scaleX : Float;
 
 	/**
-	 * Indicates the vertical scale (percentage) of an object as applied from the
-	 * registration point of the object. The default registration point is (0,0).
+	 * Indicates the vertical scale(percentage) of an object as applied from the
+	 * registration point of the object. The default registration point is(0,0).
 	 * 1.0 is 100% scale.
 	 *
 	 * <p>Scaling the local coordinate system changes the <code>x</code> and
@@ -641,8 +641,8 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	var scaleY : Float;
 
 	/**
-	 * Indicates the depth scale (percentage) of an object as applied from the
-	 * registration point of the object. The default registration point is (0,0).
+	 * Indicates the depth scale(percentage) of an object as applied from the
+	 * registration point of the object. The default registration point is(0,0).
 	 * 1.0 is 100% scale.
 	 *
 	 * <p>Scaling the local coordinate system changes the <code>x</code>,
@@ -660,7 +660,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * <p>The properties of the <code>scrollRect</code> Rectangle object use the
 	 * display object's coordinate space and are scaled just like the overall
 	 * display object. The corner bounds of the cropped window on the scrolling
-	 * display object are the origin of the display object (0,0) and the point
+	 * display object are the origin of the display object(0,0) and the point
 	 * defined by the width and height of the rectangle. They are not centered
 	 * around the origin, but use the origin to define the upper-left corner of
 	 * the area. A scrolled display object always scrolls in whole pixel
@@ -679,7 +679,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * The Stage of the display object. A Flash runtime application has only one
 	 * Stage object. For example, you can create and load multiple display
 	 * objects into the display list, and the <code>stage</code> property of each
-	 * display object refers to the same Stage object (even if the display object
+	 * display object refers to the same Stage object(even if the display object
 	 * belongs to a loaded SWF file).
 	 *
 	 * <p>If a display object is not added to the display list, its
@@ -691,7 +691,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * An object with properties pertaining to a display object's matrix, color
 	 * transform, and pixel bounds. The specific properties  -  matrix,
 	 * colorTransform, and three read-only properties
-	 * (<code>concatenatedMatrix</code>, <code>concatenatedColorTransform</code>,
+	 *(<code>concatenatedMatrix</code>, <code>concatenatedColorTransform</code>,
 	 * and <code>pixelBounds</code>)  -  are described in the entry for the
 	 * Transform class.
 	 *
@@ -741,7 +741,7 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * is adjusted accordingly, as shown in the following code:
 	 *
 	 * <p>Except for TextField and Video objects, a display object with no
-	 * content (such as an empty sprite) has a width of 0, even if you try to set
+	 * content(such as an empty sprite) has a width of 0, even if you try to set
 	 * <code>width</code> to a different value.</p>
 	 */
 	var width : Float;
@@ -783,10 +783,10 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * pixel coordinates to positions relative to the 3D parent container.</p>
 	 *
 	 * <p>For example, a child of the <code>_root</code> at position x = 100, y =
-	 * 100, z = 200 is not drawn at pixel location (100,100). The child is drawn
+	 * 100, z = 200 is not drawn at pixel location(100,100). The child is drawn
 	 * wherever the 3D projection calculation puts it. The calculation is:</p>
 	 *
-	 * <p><code> (x~~cameraFocalLength/cameraRelativeZPosition,
+	 * <p><code>(x~~cameraFocalLength/cameraRelativeZPosition,
 	 * y~~cameraFocalLength/cameraRelativeZPosition)</code></p>
 	 */
 	//@:require(flash10) var z : Float;
@@ -838,12 +838,12 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	function getRect(targetCoordinateSpace : DisplayObject) : nme.geom.Rectangle;
 
 	/**
-	 * Converts the <code>point</code> object from the Stage (global) coordinates
-	 * to the display object's (local) coordinates.
+	 * Converts the <code>point</code> object from the Stage(global) coordinates
+	 * to the display object's(local) coordinates.
 	 *
 	 * <p>To use this method, first create an instance of the Point class. The
 	 * <i>x</i> and <i>y</i> values that you assign represent global coordinates
-	 * because they relate to the origin (0,0) of the main display area. Then
+	 * because they relate to the origin(0,0) of the main display area. Then
 	 * pass the Point instance as the parameter to the
 	 * <code>globalToLocal()</code> method. The method returns a new Point object
 	 * with <i>x</i> and <i>y</i> values that relate to the origin of the display
@@ -857,12 +857,12 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	function globalToLocal(point : nme.geom.Point) : nme.geom.Point;
 
 	/**
-	 * Converts a two-dimensional point from the Stage (global) coordinates to a
-	 * three-dimensional display object's (local) coordinates.
+	 * Converts a two-dimensional point from the Stage(global) coordinates to a
+	 * three-dimensional display object's(local) coordinates.
 	 *
 	 * <p>To use this method, first create an instance of the Point class. The x
 	 * and y values that you assign to the Point object represent global
-	 * coordinates because they are relative to the origin (0,0) of the main
+	 * coordinates because they are relative to the origin(0,0) of the main
 	 * display area. Then pass the Point object to the
 	 * <code>globalToLocal3D()</code> method as the <code>point</code> parameter.
 	 * The method returns three-dimensional coordinates as a Vector3D object
@@ -891,14 +891,14 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The
 	 * <code>x</code> and <code>y</code> parameters specify a point in the
 	 * coordinate space of the Stage, not the display object container that
-	 * contains the display object (unless that display object container is the
+	 * contains the display object(unless that display object container is the
 	 * Stage).
 	 * 
 	 * @param x         The <i>x</i> coordinate to test against this object.
 	 * @param y         The <i>y</i> coordinate to test against this object.
 	 * @param shapeFlag Whether to check against the actual pixels of the object
-	 *                  (<code>true</code>) or the bounding box
-	 *                  (<code>false</code>).
+	 *                 (<code>true</code>) or the bounding box
+	 *                 (<code>false</code>).
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
@@ -906,10 +906,10 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 
 	/**
 	 * Converts a three-dimensional point of the three-dimensional display
-	 * object's (local) coordinates to a two-dimensional point in the Stage
-	 * (global) coordinates.
+	 * object's(local) coordinates to a two-dimensional point in the Stage
+	 *(global) coordinates.
 	 *
-	 * <p>For example, you can only use two-dimensional coordinates (x,y) to draw
+	 * <p>For example, you can only use two-dimensional coordinates(x,y) to draw
 	 * with the <code>display.Graphics</code> methods. To draw a
 	 * three-dimensional object, you need to map the three-dimensional
 	 * coordinates of a display object to two-dimensional coordinates. First,
@@ -929,13 +929,13 @@ extern class DisplayObject extends nme.events.EventDispatcher, implements IBitma
 	//@:require(flash10) function local3DToGlobal(point3d : nme.geom.Vector3D) : nme.geom.Point;
 
 	/**
-	 * Converts the <code>point</code> object from the display object's (local)
-	 * coordinates to the Stage (global) coordinates.
+	 * Converts the <code>point</code> object from the display object's(local)
+	 * coordinates to the Stage(global) coordinates.
 	 *
 	 * <p>This method allows you to convert any given <i>x</i> and <i>y</i>
-	 * coordinates from values that are relative to the origin (0,0) of a
-	 * specific display object (local coordinates) to values that are relative to
-	 * the origin of the Stage (global coordinates).</p>
+	 * coordinates from values that are relative to the origin(0,0) of a
+	 * specific display object(local coordinates) to values that are relative to
+	 * the origin of the Stage(global coordinates).</p>
 	 *
 	 * <p>To use this method, first create an instance of the Point class. The
 	 * <i>x</i> and <i>y</i> values that you assign represent local coordinates

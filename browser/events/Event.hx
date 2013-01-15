@@ -33,18 +33,18 @@ class Event {
 	public static var UNLOAD = "unload";
 	public static var SOUND_COMPLETE = "soundComplete";
 	
-	public var bubbles (default, null):Bool;
-	public var cancelable (default, null):Bool;
+	public var bubbles(default, null):Bool;
+	public var cancelable(default, null):Bool;
 	public var currentTarget:Dynamic;
-	public var eventPhase (default, null):Int;
+	public var eventPhase(default, null):Int;
 	public var target:Dynamic;
-	public var type (default, null):String;
+	public var type(default, null):String;
 	
 	private var nmeIsCancelled:Bool;
 	private var nmeIsCancelledNow:Bool;
 	
 	
-	public function new (inType:String, inBubbles:Bool = false, inCancelable:Bool = false) {
+	public function new(inType:String, inBubbles:Bool = false, inCancelable:Bool = false) {
 		
 		type = inType;
 		bubbles = inBubbles;
@@ -58,16 +58,16 @@ class Event {
 	}
 	
 	
-	public function clone ():Event {
+	public function clone():Event {
 		
-		return new Event (type, bubbles, cancelable);
+		return new Event(type, bubbles, cancelable);
 		
 	}
 	
 	
-	public function nmeCreateSimilar (type:String, related:InteractiveObject = null, targ:InteractiveObject = null):Event {
+	public function nmeCreateSimilar(type:String, related:InteractiveObject = null, targ:InteractiveObject = null):Event {
 		
-		var result = new Event (type, bubbles, cancelable);
+		var result = new Event(type, bubbles, cancelable);
 		
 		if (targ != null) {
 			
@@ -80,28 +80,28 @@ class Event {
 	}
 	
 	
-	public function nmeGetIsCancelled ():Bool {
+	public function nmeGetIsCancelled():Bool {
 		
 		return nmeIsCancelled;
 		
 	}
 	
 	
-	public function nmeGetIsCancelledNow ():Bool {
+	public function nmeGetIsCancelledNow():Bool {
 		
 		return nmeIsCancelledNow;
 		
 	}
 	
 	
-	public function nmeSetPhase (phase:Int):Void {
+	public function nmeSetPhase(phase:Int):Void {
 		
 		eventPhase = phase;
 		
 	}
 	
 	
-	public function stopImmediatePropagation ():Void {
+	public function stopImmediatePropagation():Void {
 		
 		nmeIsCancelled = true;
 		nmeIsCancelledNow = true;
@@ -109,14 +109,14 @@ class Event {
 	}
 	
 	
-	public function stopPropagation ():Void {
+	public function stopPropagation():Void {
 		
 		nmeIsCancelled = true;
 		
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
 		return "[Event type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + "]";
 		

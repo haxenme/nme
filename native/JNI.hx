@@ -14,26 +14,26 @@ class JNI {
 	static var isInit = false;
 	
    
-	static function init () {
+	static function init() {
 		
 		if (!isInit) {
 			
 			isInit = true;
-			var func = Loader.load ("nme_jni_init_callback", 1);
-			func (onCallback);
+			var func = Loader.load("nme_jni_init_callback", 1);
+			func(onCallback);
 			
 		}
 		
 	}
 	
 	
-	static function onCallback (inObj:Dynamic, inFunc:Dynamic, inArgs:Dynamic):Dynamic {
+	static function onCallback(inObj:Dynamic, inFunc:Dynamic, inArgs:Dynamic):Dynamic {
 		
 		//trace("onCallback " + inObj + "," + inFunc + "," + inArgs );
-		var field = Reflect.field (inObj, inFunc);
+		var field = Reflect.field(inObj, inFunc);
 		
 		if (field != null)
-			return Reflect.callMethod (inObj, field, inArgs);
+			return Reflect.callMethod(inObj, field, inArgs);
 		
 		trace("onCallback - unknown field " + inFunc);
 		
@@ -50,12 +50,12 @@ class JNI {
 	 * @param	useArray		Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
 	 * @return		A method that calls Java. The first parameter is a handle for the Java object instance, the rest are passed into the method as arguments
 	 */
-	public static function createMemberMethod (className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic {
+	public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic {
 		
-		init ();
+		init();
 		
-		var method = new JNIMethod (nme_jni_create_method (className, memberName, signature, false));
-		return method.getMemberMethod (useArray);
+		var method = new JNIMethod(nme_jni_create_method(className, memberName, signature, false));
+		return method.getMemberMethod(useArray);
 		
 	}
 	
@@ -68,12 +68,12 @@ class JNI {
 	 * @param	useArray		Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
 	 * @return		A method that calls Java. Each argument is passed into the Java method as arguments
 	 */
-	public static function createStaticMethod (className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic {
+	public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic {
 		
-		init ();
+		init();
 		
-		var method = new JNIMethod (nme_jni_create_method (className, memberName, signature, true));
-		return method.getStaticMethod (useArray);
+		var method = new JNIMethod(nme_jni_create_method(className, memberName, signature, true));
+		return method.getStaticMethod(useArray);
 		
 	}
 	
@@ -85,7 +85,7 @@ class JNI {
 	
 	
 	
-	private static var nme_jni_create_method = Loader.load ("nme_jni_create_method", 4);
+	private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 4);
 	
 	
 }
@@ -97,29 +97,29 @@ class JNIMethod {
 	private var method:Dynamic;
 	
 	
-	public function new (method:Dynamic) {
+	public function new(method:Dynamic) {
 		
 		this.method = method;
 		
 	}
 	
 	
-	public function callMember (args:Array<Dynamic>):Dynamic {
+	public function callMember(args:Array<Dynamic>):Dynamic {
 		
-		var jobject = args.shift ();
-		return nme_jni_call_member (method, jobject, args);
-		
-	}
-	
-	
-	public function callStatic (args:Array<Dynamic>):Dynamic {
-		
-		return nme_jni_call_static (method, args);
+		var jobject = args.shift();
+		return nme_jni_call_member(method, jobject, args);
 		
 	}
 	
 	
-	public function getMemberMethod (useArray:Bool):Dynamic {
+	public function callStatic(args:Array<Dynamic>):Dynamic {
+		
+		return nme_jni_call_static(method, args);
+		
+	}
+	
+	
+	public function getMemberMethod(useArray:Bool):Dynamic {
 		
 		if (useArray) {
 			
@@ -127,14 +127,14 @@ class JNIMethod {
 			
 		} else {
 			
-			return Reflect.makeVarArgs (callMember);
+			return Reflect.makeVarArgs(callMember);
 			
 		}
 		
 	}
 	
 	
-	public function getStaticMethod (useArray:Bool):Dynamic {
+	public function getStaticMethod(useArray:Bool):Dynamic {
 		
 		if (useArray) {
 			
@@ -142,7 +142,7 @@ class JNIMethod {
 			
 		} else {
 			
-			return  Reflect.makeVarArgs (callStatic);
+			return  Reflect.makeVarArgs(callStatic);
 			
 		}
 		
@@ -156,8 +156,8 @@ class JNIMethod {
 	
 	
 	
-	private static var nme_jni_call_member = Loader.load ("nme_jni_call_member", 3);
-	private static var nme_jni_call_static = Loader.load ("nme_jni_call_static", 2);
+	private static var nme_jni_call_member = Loader.load("nme_jni_call_member", 3);
+	private static var nme_jni_call_static = Loader.load("nme_jni_call_static", 2);
 	
 	
 }

@@ -11,15 +11,15 @@ class InteractiveObject extends DisplayObject {
 	public var focusRect:Dynamic;
 	public var mouseEnabled:Bool;
 	public var tabEnabled:Bool;
-	public var tabIndex (get_tabIndex, set_tabIndex):Int;
+	public var tabIndex(get_tabIndex, set_tabIndex):Int;
 	
 	private var nmeDoubleClickEnabled:Bool;
 	private var nmeTabIndex:Int;
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 		tabEnabled = false;
 		mouseEnabled = true;
@@ -29,7 +29,7 @@ class InteractiveObject extends DisplayObject {
 	}
 	
 	
-	override private function nmeGetObjectUnderPoint (point:Point):DisplayObject {
+	override private function nmeGetObjectUnderPoint(point:Point):DisplayObject {
 		
 		if (!mouseEnabled) {
 			
@@ -37,14 +37,14 @@ class InteractiveObject extends DisplayObject {
 			
 		} else {
 			
-			return super.nmeGetObjectUnderPoint (point);
+			return super.nmeGetObjectUnderPoint(point);
 			
 		}
 		
 	}
 	
 	
-	override public function toString ():String {
+	override public function toString():String {
 		
 		return "[InteractiveObject name=" + this.name + " id=" + _nmeId + "]";
 		
@@ -58,8 +58,8 @@ class InteractiveObject extends DisplayObject {
 	
 	
 	
-	public function get_tabIndex ():Int { return nmeTabIndex; }
-	public function set_tabIndex (inIndex:Int):Int { return nmeTabIndex = inIndex; }
+	public function get_tabIndex():Int { return nmeTabIndex; }
+	public function set_tabIndex(inIndex:Int):Int { return nmeTabIndex = inIndex; }
 	
 
 }

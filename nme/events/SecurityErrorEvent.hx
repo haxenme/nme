@@ -10,7 +10,7 @@ package nme.events;
  * access the object's <code>text</code> property to determine what operation
  * was attempted and any URLs that were involved. If there are no event
  * listeners, the debugger version of Flash Player or the AIR Debug Launcher
- * (ADL) application automatically displays an error message that contains the
+ *(ADL) application automatically displays an error message that contains the
  * contents of the <code>text</code> property. There is one type of security
  * error event: <code>SecurityErrorEvent.SECURITY_ERROR</code>.
  *

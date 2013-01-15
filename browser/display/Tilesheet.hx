@@ -21,33 +21,33 @@ class Tilesheet {
 	/** @private */ public var nmeTileRects:Array <Rectangle>;
 	
 	
-	public function new (image:BitmapData) {
+	public function new(image:BitmapData) {
 		
 		nmeBitmap = image;
-		nmeCenterPoints = new Array <Point> ();
-		nmeTileRects = new Array <Rectangle> ();
+		nmeCenterPoints = new Array <Point>();
+		nmeTileRects = new Array <Rectangle>();
 		
 	}
 	
 	
-	public function addTileRect (rectangle:Rectangle, centerPoint:Point = null) {
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null) {
 		
-		nmeTileRects.push (rectangle);
+		nmeTileRects.push(rectangle);
 		
 		if (centerPoint == null) {
 			
-			centerPoint = new Point ();
+			centerPoint = new Point();
 			
 		}
 		
-		nmeCenterPoints.push (centerPoint);
+		nmeCenterPoints.push(centerPoint);
 		
 	}
 	
 	
-	public function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void {
+	public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void {
 		
-		graphics.drawTiles (this, tileData, smooth, flags);
+		graphics.drawTiles(this, tileData, smooth, flags);
 		
 	}
 	

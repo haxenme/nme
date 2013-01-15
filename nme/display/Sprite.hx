@@ -9,7 +9,7 @@ package nme.display;
  * <p>A Sprite object is similar to a movie clip, but does not have a
  * timeline. Sprite is an appropriate base class for objects that do not
  * require timelines. For example, Sprite would be a logical base class for
- * user interface (UI) components that typically do not use the timeline.</p>
+ * user interface(UI) components that typically do not use the timeline.</p>
  *
  * <p>The Sprite class is new in ActionScript 3.0. It provides an alternative
  * to the functionality of the MovieClip class, which retains all the
@@ -30,19 +30,19 @@ extern class Sprite extends DisplayObjectContainer {
 	 * <p>Although it is better to use the SimpleButton class to create buttons,
 	 * you can use the <code>buttonMode</code> property to give a sprite some
 	 * button-like functionality. To include a sprite in the tab order, set the
-	 * <code>tabEnabled</code> property (inherited from the InteractiveObject
+	 * <code>tabEnabled</code> property(inherited from the InteractiveObject
 	 * class and <code>false</code> by default) to <code>true</code>.
 	 * Additionally, consider whether you want the children of your sprite to be
 	 * user input enabled. Most buttons do not enable user input interactivity
 	 * for their child objects because it confuses the event flow. To disable
 	 * user input interactivity for all child objects, you must set the
-	 * <code>mouseChildren</code> property (inherited from the
+	 * <code>mouseChildren</code> property(inherited from the
 	 * DisplayObjectContainer class) to <code>false</code>.</p>
 	 *
 	 * <p>If you use the <code>buttonMode</code> property with the MovieClip
-	 * class (which is a subclass of the Sprite class), your button might have
+	 * class(which is a subclass of the Sprite class), your button might have
 	 * some added functionality. If you include frames labeled _up, _over, and
-	 * _down, Flash Player provides automatic state changes (functionality
+	 * _down, Flash Player provides automatic state changes(functionality
 	 * similar to that provided in previous versions of ActionScript for movie
 	 * clips used as buttons). These automatic state changes are not available
 	 * for sprites, which have no timeline, and thus no frames to label. </p>
@@ -85,12 +85,12 @@ extern class Sprite extends DisplayObjectContainer {
 	 * Controls sound within this sprite.
 	 *
 	 * <p><b>Note:</b> This property does not affect HTML content in an
-	 * HTMLControl object (in Adobe AIR).</p>
+	 * HTMLControl object(in Adobe AIR).</p>
 	 */
 	var soundTransform : nme.media.SoundTransform;
 
 	/**
-	 * A Boolean value that indicates whether the pointing hand (hand cursor)
+	 * A Boolean value that indicates whether the pointing hand(hand cursor)
 	 * appears when the pointer rolls over a sprite in which the
 	 * <code>buttonMode</code> property is set to <code>true</code>. The default
 	 * value of the <code>useHandCursor</code> property is <code>true</code>. If
@@ -133,9 +133,9 @@ extern class Sprite extends DisplayObjectContainer {
 	 * plane defined by the three-dimensional parent object.</p>
 	 * 
 	 * @param lockCenter Specifies whether the draggable sprite is locked to the
-	 *                   center of the pointer position (<code>true</code>), or
+	 *                   center of the pointer position(<code>true</code>), or
 	 *                   locked to the point where the user first clicked the
-	 *                   sprite (<code>false</code>).
+	 *                   sprite(<code>false</code>).
 	 * @param bounds     Value relative to the coordinates of the Sprite's parent
 	 *                   that specify a constraint rectangle for the Sprite.
 	 */
@@ -157,8 +157,8 @@ extern class Sprite extends DisplayObjectContainer {
 	 * @param touchPointID An integer to assign to the touch point.
 	 * @param lockCenter   Specifies whether the draggable sprite is locked to
 	 *                     the center of the pointer position
-	 *                     (<code>true</code>), or locked to the point where the
-	 *                     user first clicked the sprite (<code>false</code>).
+	 *                    (<code>true</code>), or locked to the point where the
+	 *                     user first clicked the sprite(<code>false</code>).
 	 * @param bounds       Value relative to the coordinates of the Sprite's
 	 *                     parent that specify a constraint rectangle for the
 	 *                     Sprite.

@@ -7,9 +7,9 @@ class ColorMatrixFilter extends BitmapFilter {
 	public var matrix:Array<Dynamic>;
 	
 	
-	public function new (matrix:Array<Dynamic> = null) {
+	public function new(matrix:Array<Dynamic> = null) {
 		
-		super ("ColorMatrixFilter");
+		super("ColorMatrixFilter");
 		
 		this.matrix = matrix;
 		

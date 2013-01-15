@@ -31,19 +31,19 @@ package nme.display;
 	 * 
 	 * @param bitmap A transparent or opaque bitmap image that contains the bits
 	 *               to be displayed.
-	 * @param matrix A matrix object (of the nme.geom.Matrix class), which you
+	 * @param matrix A matrix object(of the nme.geom.Matrix class), which you
 	 *               can use to define transformations on the bitmap. For
 	 *               example, you can use the following matrix to rotate a bitmap
-	 *               by 45 degrees (pi/4 radians):
+	 *               by 45 degrees(pi/4 radians):
 	 * @param repeat If <code>true</code>, the bitmap image repeats in a tiled
 	 *               pattern. If <code>false</code>, the bitmap image does not
 	 *               repeat, and the edges of the bitmap are used for any fill
 	 *               area that extends beyond the bitmap.
 	 *
-	 *               <p>For example, consider the following bitmap (a 20 x
+	 *               <p>For example, consider the following bitmap(a 20 x
 	 *               20-pixel checkerboard pattern):</p>
 	 *
-	 *               <p>When <code>repeat</code> is set to <code>true</code> (as
+	 *               <p>When <code>repeat</code> is set to <code>true</code>(as
 	 *               in the following example), the bitmap fill repeats the
 	 *               bitmap:</p>
 	 *
@@ -60,7 +60,7 @@ package nme.display;
 
 	/**
 	 * Specifies a simple one-color fill that subsequent calls to other Graphics
-	 * methods (such as <code>lineTo()</code> or <code>drawCircle()</code>) use
+	 * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) use
 	 * when drawing. The fill remains in effect until you call the
 	 * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
 	 * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
@@ -69,14 +69,14 @@ package nme.display;
 	 * <p>The application renders the fill whenever three or more points are
 	 * drawn, or when the <code>endFill()</code> method is called.</p>
 	 * 
-	 * @param color The color of the fill (0xRRGGBB).
-	 * @param alpha The alpha value of the fill (0.0 to 1.0).
+	 * @param color The color of the fill(0xRRGGBB).
+	 * @param alpha The alpha value of the fill(0.0 to 1.0).
 	 */
 	function beginFill(color : Int, alpha : Float = 1) : Void;
 
 	/**
 	 * Specifies a gradient fill used by subsequent calls to other Graphics
-	 * methods (such as <code>lineTo()</code> or <code>drawCircle()</code>) for
+	 * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) for
 	 * the object. The fill remains in effect until you call the
 	 * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
 	 * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
@@ -123,7 +123,7 @@ package nme.display;
 	 *                            <code>InterpolationMethod.RGB</code>
 	 *
 	 *                            <p>For example, consider a simple linear
-	 *                            gradient between two colors (with the
+	 *                            gradient between two colors(with the
 	 *                            <code>spreadMethod</code> parameter set to
 	 *                            <code>SpreadMethod.REFLECT</code>). The
 	 *                            different interpolation methods affect the
@@ -143,7 +143,7 @@ package nme.display;
 
 	/**
 	 * Specifies a shader fill used by subsequent calls to other Graphics methods
-	 * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
+	 *(such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
 	 * object. The fill remains in effect until you call the
 	 * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
 	 * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
@@ -168,18 +168,18 @@ package nme.display;
 	 *               changes made to the shader, such as changing a parameter
 	 *               value, input, or bytecode, are not applied to the copied
 	 *               shader that's used for the fill.</p>
-	 * @param matrix A matrix object (of the nme.geom.Matrix class), which you
+	 * @param matrix A matrix object(of the nme.geom.Matrix class), which you
 	 *               can use to define transformations on the shader. For
 	 *               example, you can use the following matrix to rotate a shader
-	 *               by 45 degrees (pi/4 radians):
+	 *               by 45 degrees(pi/4 radians):
 	 *
 	 *               <p>The coordinates received in the shader are based on the
 	 *               matrix that is specified for the <code>matrix</code>
-	 *               parameter. For a default (<code>null</code>) matrix, the
+	 *               parameter. For a default(<code>null</code>) matrix, the
 	 *               coordinates in the shader are local pixel coordinates which
 	 *               can be used to sample an input.</p>
 	 * @throws ArgumentError When the shader output type is not compatible with
-	 *                       this operation (the shader must specify a
+	 *                       this operation(the shader must specify a
 	 *                       <code>pixel3</code> or <code>pixel4</code> output).
 	 * @throws ArgumentError When the shader specifies an image input that isn't
 	 *                       provided.
@@ -212,15 +212,15 @@ package nme.display;
 
 	/**
 	 * Draws a curve using the current line style from the current drawing
-	 * position to (anchorX, anchorY) and using the control point that
-	 * (<code>controlX</code>, <code>controlY</code>) specifies. The current
-	 * drawing position is then set to (<code>anchorX</code>,
+	 * position to(anchorX, anchorY) and using the control point that
+	 *(<code>controlX</code>, <code>controlY</code>) specifies. The current
+	 * drawing position is then set to(<code>anchorX</code>,
 	 * <code>anchorY</code>). If the movie clip in which you are drawing contains
 	 * content created with the Flash drawing tools, calls to the
 	 * <code>curveTo()</code> method are drawn underneath this content. If you
 	 * call the <code>curveTo()</code> method before any calls to the
 	 * <code>moveTo()</code> method, the default of the current drawing position
-	 * is (0, 0). If any of the parameters are missing, this method fails and the
+	 * is(0, 0). If any of the parameters are missing, this method fails and the
 	 * current drawing position is not changed.
 	 *
 	 * <p>The curve drawn is a quadratic Bezier curve. Quadratic Bezier curves
@@ -250,12 +250,12 @@ package nme.display;
 	 * method.
 	 * 
 	 * @param x      The <i>x</i> location of the center of the circle relative
-	 *               to the registration point of the parent display object (in
+	 *               to the registration point of the parent display object(in
 	 *               pixels).
 	 * @param y      The <i>y</i> location of the center of the circle relative
-	 *               to the registration point of the parent display object (in
+	 *               to the registration point of the parent display object(in
 	 *               pixels).
-	 * @param radius The radius of the circle (in pixels).
+	 * @param radius The radius of the circle(in pixels).
 	 */
 	function drawCircle(x : Float, y : Float, radius : Float) : Void;
 
@@ -268,12 +268,12 @@ package nme.display;
 	 * 
 	 * @param x      The <i>x</i> location of the top-left of the bounding-box of
 	 *               the ellipse relative to the registration point of the parent
-	 *               display object (in pixels).
+	 *               display object(in pixels).
 	 * @param y      The <i>y</i> location of the top left of the bounding-box of
 	 *               the ellipse relative to the registration point of the parent
-	 *               display object (in pixels).
-	 * @param width  The width of the ellipse (in pixels).
-	 * @param height The height of the ellipse (in pixels).
+	 *               display object(in pixels).
+	 * @param width  The width of the ellipse(in pixels).
+	 * @param height The height of the ellipse(in pixels).
 	 */
 	function drawEllipse(x : Float, y : Float, width : Float, height : Float) : Void;
 
@@ -318,10 +318,10 @@ package nme.display;
 	 * <ul>
 	 *   <li>When a fill is applied to rendering a path:
 	 * <ul>
-	 *   <li>A sub-path of less than 3 points is not rendered. (But note that the
+	 *   <li>A sub-path of less than 3 points is not rendered.(But note that the
 	 * stroke rendering will still occur, consistent with the rules for strokes
 	 * below.)</li>
-	 *   <li>A sub-path that isn't closed (the end point is not equal to the
+	 *   <li>A sub-path that isn't closed(the end point is not equal to the
 	 * begin point) is implicitly closed.</li>
 	 * </ul>
 	 * </li>
@@ -346,14 +346,14 @@ package nme.display;
 	 * method.
 	 * 
 	 * @param x      A number indicating the horizontal position relative to the
-	 *               registration point of the parent display object (in pixels).
+	 *               registration point of the parent display object(in pixels).
 	 * @param y      A number indicating the vertical position relative to the
-	 *               registration point of the parent display object (in pixels).
-	 * @param width  The width of the rectangle (in pixels).
-	 * @param height The height of the rectangle (in pixels).
+	 *               registration point of the parent display object(in pixels).
+	 * @param width  The width of the rectangle(in pixels).
+	 * @param height The height of the rectangle(in pixels).
 	 * @throws ArgumentError If the <code>width</code> or <code>height</code>
 	 *                       parameters are not a number
-	 *                       (<code>Number.NaN</code>).
+	 *                      (<code>Number.NaN</code>).
 	 */
 	function drawRect(x : Float, y : Float, width : Float, height : Float) : Void;
 
@@ -366,22 +366,22 @@ package nme.display;
 	 * 
 	 * @param x             A number indicating the horizontal position relative
 	 *                      to the registration point of the parent display
-	 *                      object (in pixels).
+	 *                      object(in pixels).
 	 * @param y             A number indicating the vertical position relative to
 	 *                      the registration point of the parent display object
-	 *                      (in pixels).
-	 * @param width         The width of the round rectangle (in pixels).
-	 * @param height        The height of the round rectangle (in pixels).
+	 *                     (in pixels).
+	 * @param width         The width of the round rectangle(in pixels).
+	 * @param height        The height of the round rectangle(in pixels).
 	 * @param ellipseWidth  The width of the ellipse used to draw the rounded
-	 *                      corners (in pixels).
+	 *                      corners(in pixels).
 	 * @param ellipseHeight The height of the ellipse used to draw the rounded
-	 *                      corners (in pixels). Optional; if no value is
+	 *                      corners(in pixels). Optional; if no value is
 	 *                      specified, the default value matches that provided
 	 *                      for the <code>ellipseWidth</code> parameter.
 	 * @throws ArgumentError If the <code>width</code>, <code>height</code>,
 	 *                       <code>ellipseWidth</code> or
 	 *                       <code>ellipseHeight</code> parameters are not a
-	 *                       number (<code>Number.NaN</code>).
+	 *                       number(<code>Number.NaN</code>).
 	 */
 	function drawRoundRect(x : Float, y : Float, width : Float, height : Float, ellipseWidth : Float, ?ellipseHeight : Float) : Void;
 	function drawRoundRectComplex(x : Float, y : Float, width : Float, height : Float, topLeftRadius : Float, topRightRadius : Float, bottomLeftRadius : Float, bottomRightRadius : Float) : Void;
@@ -390,7 +390,7 @@ package nme.display;
 	 * Renders a set of triangles, typically to distort bitmaps and give them a
 	 * three-dimensional appearance. The <code>drawTriangles()</code> method maps
 	 * either the current fill, or a bitmap fill, to the triangle faces using a
-	 * set of (u,v) coordinates.
+	 * set of(u,v) coordinates.
 	 *
 	 * <p> Any type of fill can be used, but if the fill has a transform matrix
 	 * that transform matrix is ignored. </p>
@@ -486,7 +486,7 @@ package nme.display;
 	 * @param interpolationMethod A value from the InterpolationMethod class that
 	 *                            specifies which value to use. For example,
 	 *                            consider a simple linear gradient between two
-	 *                            colors (with the <code>spreadMethod</code>
+	 *                            colors(with the <code>spreadMethod</code>
 	 *                            parameter set to
 	 *                            <code>SpreadMethod.REFLECT</code>). The
 	 *                            different interpolation methods affect the
@@ -549,7 +549,7 @@ package nme.display;
 	 * style back to <code>undefined</code>.</p>
 	 *
 	 * <p><b>Note: </b>Flash Lite 4 supports only the first three parameters
-	 * (<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
+	 *(<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
 	 * 
 	 * @param thickness    An integer that indicates the thickness of the line in
 	 *                     points; valid values are 0-255. If a number is not
@@ -561,13 +561,13 @@ package nme.display;
 	 * @param color        A hexadecimal color value of the line; for example,
 	 *                     red is 0xFF0000, blue is 0x0000FF, and so on. If a
 	 *                     value is not indicated, the default is 0x000000
-	 *                     (black). Optional.
+	 *                    (black). Optional.
 	 * @param alpha        A number that indicates the alpha value of the color
 	 *                     of the line; valid values are 0 to 1. If a value is
-	 *                     not indicated, the default is 1 (solid). If the value
+	 *                     not indicated, the default is 1(solid). If the value
 	 *                     is less than 0, the default is 0. If the value is
 	 *                     greater than 1, the default is 1.
-	 * @param pixelHinting (Not supported in Flash Lite 4) A Boolean value that
+	 * @param pixelHinting(Not supported in Flash Lite 4) A Boolean value that
 	 *                     specifies whether to hint strokes to full pixels. This
 	 *                     affects both the position of anchors of a curve and
 	 *                     the line stroke size itself. With
@@ -580,18 +580,18 @@ package nme.display;
 	 *                     rectangles that are identical, except that the
 	 *                     <code>pixelHinting</code> parameter used in the
 	 *                     <code>lineStyle()</code> method is set differently
-	 *                     (the images are scaled by 200%, to emphasize the
+	 *                    (the images are scaled by 200%, to emphasize the
 	 *                     difference):
 	 *
 	 *                     <p>If a value is not supplied, the line does not use
 	 *                     pixel hinting.</p>
-	 * @param scaleMode    (Not supported in Flash Lite 4) A value from the
+	 * @param scaleMode   (Not supported in Flash Lite 4) A value from the
 	 *                     LineScaleMode class that specifies which scale mode to
 	 *                     use:
 	 *                     <ul>
 	 *                       <li> <code>LineScaleMode.NORMAL</code> - Always
 	 *                     scale the line thickness when the object is scaled
-	 *                     (the default). </li>
+	 *                    (the default). </li>
 	 *                       <li> <code>LineScaleMode.NONE</code> - Never scale
 	 *                     the line thickness. </li>
 	 *                       <li> <code>LineScaleMode.VERTICAL</code> - Do not
@@ -613,7 +613,7 @@ package nme.display;
 	 *                     on the right is scaled both vertically and
 	 *                     horizontally:   </li>
 	 *                     </ul>
-	 * @param caps         (Not supported in Flash Lite 4) A value from the
+	 * @param caps        (Not supported in Flash Lite 4) A value from the
 	 *                     CapsStyle class that specifies the type of caps at the
 	 *                     end of lines. Valid values are:
 	 *                     <code>CapsStyle.NONE</code>,
@@ -624,11 +624,11 @@ package nme.display;
 	 *                     <p>For example, the following illustrations show the
 	 *                     different <code>capsStyle</code> settings. For each
 	 *                     setting, the illustration shows a blue line with a
-	 *                     thickness of 30 (for which the <code>capsStyle</code>
+	 *                     thickness of 30(for which the <code>capsStyle</code>
 	 *                     applies), and a superimposed black line with a
-	 *                     thickness of 1 (for which no <code>capsStyle</code>
+	 *                     thickness of 1(for which no <code>capsStyle</code>
 	 *                     applies): </p>
-	 * @param joints       (Not supported in Flash Lite 4) A value from the
+	 * @param joints      (Not supported in Flash Lite 4) A value from the
 	 *                     JointStyle class that specifies the type of joint
 	 *                     appearance used at angles. Valid values are:
 	 *                     <code>JointStyle.BEVEL</code>,
@@ -639,18 +639,18 @@ package nme.display;
 	 *                     <p>For example, the following illustrations show the
 	 *                     different <code>joints</code> settings. For each
 	 *                     setting, the illustration shows an angled blue line
-	 *                     with a thickness of 30 (for which the
+	 *                     with a thickness of 30(for which the
 	 *                     <code>jointStyle</code> applies), and a superimposed
-	 *                     angled black line with a thickness of 1 (for which no
+	 *                     angled black line with a thickness of 1(for which no
 	 *                     <code>jointStyle</code> applies): </p>
 	 *
 	 *                     <p><b>Note:</b> For <code>joints</code> set to
 	 *                     <code>JointStyle.MITER</code>, you can use the
 	 *                     <code>miterLimit</code> parameter to limit the length
 	 *                     of the miter.</p>
-	 * @param miterLimit   (Not supported in Flash Lite 4) A number that
+	 * @param miterLimit  (Not supported in Flash Lite 4) A number that
 	 *                     indicates the limit at which a miter is cut off. Valid
-	 *                     values range from 1 to 255 (and values outside that
+	 *                     values range from 1 to 255(and values outside that
 	 *                     range are rounded to 1 or 255). This value is only
 	 *                     used if the <code>jointStyle</code> is set to
 	 *                     <code>"miter"</code>. The <code>miterLimit</code>
@@ -676,31 +676,31 @@ package nme.display;
 
 	/**
 	 * Draws a line using the current line style from the current drawing
-	 * position to (<code>x</code>, <code>y</code>); the current drawing position
-	 * is then set to (<code>x</code>, <code>y</code>). If the display object in
+	 * position to(<code>x</code>, <code>y</code>); the current drawing position
+	 * is then set to(<code>x</code>, <code>y</code>). If the display object in
 	 * which you are drawing contains content that was created with the Flash
 	 * drawing tools, calls to the <code>lineTo()</code> method are drawn
 	 * underneath the content. If you call <code>lineTo()</code> before any calls
 	 * to the <code>moveTo()</code> method, the default position for the current
-	 * drawing is (<i>0, 0</i>). If any of the parameters are missing, this
+	 * drawing is(<i>0, 0</i>). If any of the parameters are missing, this
 	 * method fails and the current drawing position is not changed.
 	 * 
 	 * @param x A number that indicates the horizontal position relative to the
-	 *          registration point of the parent display object (in pixels).
+	 *          registration point of the parent display object(in pixels).
 	 * @param y A number that indicates the vertical position relative to the
-	 *          registration point of the parent display object (in pixels).
+	 *          registration point of the parent display object(in pixels).
 	 */
 	function lineTo(x : Float, y : Float) : Void;
 
 	/**
-	 * Moves the current drawing position to (<code>x</code>, <code>y</code>). If
+	 * Moves the current drawing position to(<code>x</code>, <code>y</code>). If
 	 * any of the parameters are missing, this method fails and the current
 	 * drawing position is not changed.
 	 * 
 	 * @param x A number that indicates the horizontal position relative to the
-	 *          registration point of the parent display object (in pixels).
+	 *          registration point of the parent display object(in pixels).
 	 * @param y A number that indicates the vertical position relative to the
-	 *          registration point of the parent display object (in pixels).
+	 *          registration point of the parent display object(in pixels).
 	 */
 	function moveTo(x : Float, y : Float) : Void;
 }

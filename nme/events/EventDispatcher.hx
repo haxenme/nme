@@ -25,7 +25,7 @@ package nme.events;
  *
  * <p>In general, the easiest way for a user-defined class to gain event
  * dispatching capabilities is to extend EventDispatcher. If this is
- * impossible (that is, if the class is already extending another class), you
+ * impossible(that is, if the class is already extending another class), you
  * can instead implement the IEventDispatcher interface, create an
  * EventDispatcher member, and write simple hooks to route calls into the
  * aggregated EventDispatcher.</p>
@@ -98,11 +98,11 @@ extern class EventDispatcher implements IEventDispatcher {
 	 * <code>removeEventListener()</code>, or memory problems could result. Event
 	 * listeners are not automatically removed from memory because the garbage
 	 * collector does not remove the listener as long as the dispatching object
-	 * exists (unless the <code>useWeakReference</code> parameter is set to
+	 * exists(unless the <code>useWeakReference</code> parameter is set to
 	 * <code>true</code>).</p>
 	 *
 	 * <p>Copying an EventDispatcher instance does not copy the event listeners
-	 * attached to it. (If your newly created node needs an event listener, you
+	 * attached to it.(If your newly created node needs an event listener, you
 	 * must attach the listener after creating the node.) However, if you move an
 	 * EventDispatcher instance, the event listeners attached to it move along
 	 * with it.</p>
@@ -114,7 +114,7 @@ extern class EventDispatcher implements IEventDispatcher {
 	 *
 	 * <p>If an event listener is removed from a node while an event is being
 	 * processed on the node, it is still triggered by the current actions. After
-	 * it is removed, the event listener is never invoked again (unless
+	 * it is removed, the event listener is never invoked again(unless
 	 * registered again for future processing). </p>
 	 * 
 	 * @param type             The type of event.
@@ -141,7 +141,7 @@ extern class EventDispatcher implements IEventDispatcher {
 	 *                         processed in the order in which they were added.
 	 *                         The default priority is 0.
 	 * @param useWeakReference Determines whether the reference to the listener
-	 *                         is strong or weak. A strong reference (the
+	 *                         is strong or weak. A strong reference(the
 	 *                         default) prevents your listener from being
 	 *                         garbage-collected. A weak reference does not.
 	 *
@@ -154,7 +154,7 @@ extern class EventDispatcher implements IEventDispatcher {
 	 *                         for a listener that is a nested inner function,
 	 *                         the function will be garbage-collected and no
 	 *                         longer persistent. If you create references to the
-	 *                         inner function (save it in another variable) then
+	 *                         inner function(save it in another variable) then
 	 *                         it is not garbage-collected and stays
 	 *                         persistent.</p>
 	 * @throws ArgumentError The <code>listener</code> specified is not a

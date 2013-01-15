@@ -8,7 +8,7 @@ class TextFieldType {
 	public static var INPUT = "INPUT";
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

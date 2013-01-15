@@ -14,9 +14,9 @@ class Bitmap extends DisplayObject {
 	private var mGraphics:Graphics;
 	
 	
-	public function new (bitmapData:BitmapData = null, pixelSnapping:PixelSnapping = null, smoothing:Bool = false):Void {
+	public function new(bitmapData:BitmapData = null, pixelSnapping:PixelSnapping = null, smoothing:Bool = false):Void {
 		
-		super (DisplayObject.nme_create_display_object (), "Bitmap");
+		super(DisplayObject.nme_create_display_object(), "Bitmap");
 		
 		this.pixelSnapping = pixelSnapping == null ? PixelSnapping.AUTO : pixelSnapping;
 		this.smoothing = smoothing;
@@ -27,25 +27,25 @@ class Bitmap extends DisplayObject {
 			
 		} else if (this.bitmapData != null) {
 			
-			nmeRebuild ();
+			nmeRebuild();
 			
 		}
 		
 	}
 	
 	
-	private function nmeRebuild () {
+	private function nmeRebuild() {
 		
 		if (nmeHandle != null && bitmapData != null) {
 			
 			var gfx = graphics;
-			gfx.clear ();
+			gfx.clear();
 			
 			if (bitmapData != null) {
 				
-				gfx.beginBitmapFill (bitmapData, false, smoothing);
-				gfx.drawRect (0, 0, bitmapData.width, bitmapData.height);
-				gfx.endFill ();
+				gfx.beginBitmapFill(bitmapData, false, smoothing);
+				gfx.drawRect(0, 0, bitmapData.width, bitmapData.height);
+				gfx.endFill();
 				
 			}
 			
@@ -61,10 +61,10 @@ class Bitmap extends DisplayObject {
 	
 	
 	
-	private function set_bitmapData (inBitmapData:BitmapData):BitmapData {
+	private function set_bitmapData(inBitmapData:BitmapData):BitmapData {
 		
 		bitmapData = inBitmapData;
-		nmeRebuild ();
+		nmeRebuild();
 		
 		return inBitmapData;
 		
@@ -74,7 +74,7 @@ class Bitmap extends DisplayObject {
 	private function set_smoothing(inSmooth:Bool):Bool {
 		
 		smoothing = inSmooth;
-		nmeRebuild ();
+		nmeRebuild();
 		
 		return inSmooth;
 		

@@ -26,11 +26,11 @@ class Video extends DisplayObject {
 	private var netStream:NetStream;
 	private var nmeGraphics:Graphics;
 	private var renderHandler:Event->Void;
-	private var videoElement (default, null):HTMLMediaElement;
+	private var videoElement(default, null):HTMLMediaElement;
 	private var windowHack:Bool;
 	
 	
-	public function new (width:Int = 320, height:Int = 240):Void {
+	public function new(width:Int = 320, height:Int = 240):Void {
 		
 		super();
 		
@@ -39,8 +39,8 @@ class Video extends DisplayObject {
 		 * 			check compat with flash events
 		 */
 		
-		nmeGraphics = new Graphics ();
-		nmeGraphics.drawRect (0, 0, width, height);
+		nmeGraphics = new Graphics();
+		nmeGraphics.drawRect(0, 0, width, height);
 		
 		this.width = width;
 		this.height = height;
@@ -61,46 +61,46 @@ class Video extends DisplayObject {
 	
 	/*public function attachCamera(camera:browser.net.Camera):Void;
 	{
-		// (html5 <device/> 
+		//(html5 <device/> 
 		throw "not implemented";
 	}*/
 	
 	
-	public function attachNetStream (ns:NetStream):Void {
+	public function attachNetStream(ns:NetStream):Void {
 		
 		this.netStream = ns;
 		var scope:Video = this;
 		
-		nmeGraphics.nmeMediaSurface (ns.nmeVideoElement);
+		nmeGraphics.nmeMediaSurface(ns.nmeVideoElement);
 		
-		ns.nmeVideoElement.style.setProperty ("width", width + "px", "");
-		ns.nmeVideoElement.style.setProperty ("height", height + "px", "");
-		ns.nmeVideoElement.addEventListener ("error", ns.nmeNotFound, false);
-		ns.nmeVideoElement.addEventListener ("waiting", ns.nmeBufferEmpty, false);
-		ns.nmeVideoElement.addEventListener ("ended", ns.nmeBufferStop, false);
-		ns.nmeVideoElement.addEventListener ("play", ns.nmeBufferStart, false);	
-		ns.nmeVideoElement.play ();
+		ns.nmeVideoElement.style.setProperty("width", width + "px", "");
+		ns.nmeVideoElement.style.setProperty("height", height + "px", "");
+		ns.nmeVideoElement.addEventListener("error", ns.nmeNotFound, false);
+		ns.nmeVideoElement.addEventListener("waiting", ns.nmeBufferEmpty, false);
+		ns.nmeVideoElement.addEventListener("ended", ns.nmeBufferStop, false);
+		ns.nmeVideoElement.addEventListener("play", ns.nmeBufferStart, false);	
+		ns.nmeVideoElement.play();
 		
 	}
 	
 	
-	public function clear ():Void {
+	public function clear():Void {
 		
 		if (nmeGraphics != null) {
 			
-			Lib.nmeRemoveSurface (nmeGraphics.nmeSurface);
+			Lib.nmeRemoveSurface(nmeGraphics.nmeSurface);
 			
 		}
 		
-		nmeGraphics = new Graphics ();
-		nmeGraphics.drawRect (0, 0, width, height);
+		nmeGraphics = new Graphics();
+		nmeGraphics.drawRect(0, 0, width, height);
 		
 	}
 	
 	
-	override public function nmeGetObjectUnderPoint (point:Point):InteractiveObject {
+	override public function nmeGetObjectUnderPoint(point:Point):InteractiveObject {
 		
-		var local = globalToLocal (point);
+		var local = globalToLocal(point);
 		
 		if (local.x >= 0 && local.y >= 0 && local.x <= width && local.y <= height) {
 			
@@ -116,25 +116,25 @@ class Video extends DisplayObject {
 	}
 	
 	
-	override public function nmeRender (inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
+	override public function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
 		
 		if (_matrixInvalid || _matrixChainInvalid) {
 			
-			nmeValidateMatrix ();
+			nmeValidateMatrix();
 			
 		}
 		
 		var gfx = nmeGetGraphics();
 		if (gfx != null) {
 			
-			Lib.nmeSetSurfaceTransform (gfx.nmeSurface, getSurfaceTransform (gfx));
+			Lib.nmeSetSurfaceTransform(gfx.nmeSurface, getSurfaceTransform(gfx));
 			
 		}
 		
 	}
 	
 	
-	override public function toString ():String {
+	override public function toString():String {
 		
 		return "[Video name=" + this.name + " id=" + _nmeId + "]";
 		

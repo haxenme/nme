@@ -14,9 +14,9 @@ class ContextMenuEvent extends Event {
 	public var mouseTarget:InteractiveObject;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, mouseTarget:InteractiveObject = null, contextMenuOwner:InteractiveObject = null) {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, mouseTarget:InteractiveObject = null, contextMenuOwner:InteractiveObject = null) {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		this.mouseTarget = mouseTarget;
 		this.contextMenuOwner = contextMenuOwner;

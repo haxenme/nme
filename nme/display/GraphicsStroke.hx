@@ -23,8 +23,8 @@ package nme.display;
 	 *
 	 * <p>For example, the following illustrations show the different
 	 * <code>capsStyle</code> settings. For each setting, the illustration shows
-	 * a blue line with a thickness of 30 (for which the <code>capsStyle</code>
-	 * applies), and a superimposed black line with a thickness of 1 (for which
+	 * a blue line with a thickness of 30(for which the <code>capsStyle</code>
+	 * applies), and a superimposed black line with a thickness of 1(for which
 	 * no <code>capsStyle</code> applies): </p>
 	 */
 	var caps : CapsStyle;
@@ -43,9 +43,9 @@ package nme.display;
 	 *
 	 * <p>For example, the following illustrations show the different
 	 * <code>joints</code> settings. For each setting, the illustration shows an
-	 * angled blue line with a thickness of 30 (for which the
+	 * angled blue line with a thickness of 30(for which the
 	 * <code>jointStyle</code> applies), and a superimposed angled black line
-	 * with a thickness of 1 (for which no <code>jointStyle</code> applies): </p>
+	 * with a thickness of 1(for which no <code>jointStyle</code> applies): </p>
 	 *
 	 * <p><b>Note:</b> For <code>joints</code> set to
 	 * <code>JointStyle.MITER</code>, you can use the <code>miterLimit</code>
@@ -55,7 +55,7 @@ package nme.display;
 
 	/**
 	 * Indicates the limit at which a miter is cut off. Valid values range from 1
-	 * to 255 (and values outside that range are rounded to 1 or 255). This value
+	 * to 255(and values outside that range are rounded to 1 or 255). This value
 	 * is only used if the <code>jointStyle</code> is set to
 	 * <code>"miter"</code>. The <code>miterLimit</code> value represents the
 	 * length that a miter can extend beyond the point at which the lines meet to
@@ -84,7 +84,7 @@ package nme.display;
 	 * For example, the following illustrations show how Flash Player renders two
 	 * rounded rectangles that are identical, except that the
 	 * <code>pixelHinting</code> parameter used in the <code>lineStyle()</code>
-	 * method is set differently (the images are scaled by 200%, to emphasize the
+	 * method is set differently(the images are scaled by 200%, to emphasize the
 	 * difference):
 	 */
 	var pixelHinting : Bool;
@@ -93,7 +93,7 @@ package nme.display;
 	 * Specifies the stroke thickness scaling. Valid values are:
 	 * <ul>
 	 *   <li> <code>LineScaleMode.NORMAL</code> - Always scale the line thickness
-	 * when the object is scaled (the default). </li>
+	 * when the object is scaled(the default). </li>
 	 *   <li> <code>LineScaleMode.NONE</code> - Never scale the line thickness.
 	 * </li>
 	 *   <li> <code>LineScaleMode.VERTICAL</code> - Do not scale the line
@@ -138,7 +138,7 @@ package nme.display;
 	 *                     rounded rectangles that are identical, except that the
 	 *                     <code>pixelHinting</code> parameter used in the
 	 *                     <code>lineStyle()</code> method is set differently
-	 *                     (the images are scaled by 200%, to emphasize the
+	 *                    (the images are scaled by 200%, to emphasize the
 	 *                     difference):
 	 *
 	 *                     <p>If a value is not supplied, the line does not use
@@ -148,7 +148,7 @@ package nme.display;
 	 *                     <ul>
 	 *                       <li> <code>LineScaleMode.NORMAL</code> - Always
 	 *                     scale the line thickness when the object is scaled
-	 *                     (the default). </li>
+	 *                    (the default). </li>
 	 *                       <li> <code>LineScaleMode.NONE</code> - Never scale
 	 *                     the line thickness. </li>
 	 *                       <li> <code>LineScaleMode.VERTICAL</code> - Do not
@@ -180,9 +180,9 @@ package nme.display;
 	 *                     <p>For example, the following illustrations show the
 	 *                     different <code>capsStyle</code> settings. For each
 	 *                     setting, the illustration shows a blue line with a
-	 *                     thickness of 30 (for which the <code>capsStyle</code>
+	 *                     thickness of 30(for which the <code>capsStyle</code>
 	 *                     applies), and a superimposed black line with a
-	 *                     thickness of 1 (for which no <code>capsStyle</code>
+	 *                     thickness of 1(for which no <code>capsStyle</code>
 	 *                     applies): </p>
 	 * @param joints       A value from the JointStyle class that specifies the
 	 *                     type of joint appearance used at angles. Valid values
@@ -194,9 +194,9 @@ package nme.display;
 	 *                     <p>For example, the following illustrations show the
 	 *                     different <code>joints</code> settings. For each
 	 *                     setting, the illustration shows an angled blue line
-	 *                     with a thickness of 30 (for which the
+	 *                     with a thickness of 30(for which the
 	 *                     <code>jointStyle</code> applies), and a superimposed
-	 *                     angled black line with a thickness of 1 (for which no
+	 *                     angled black line with a thickness of 1(for which no
 	 *                     <code>jointStyle</code> applies): </p>
 	 *
 	 *                     <p><b>Note:</b> For <code>joints</code> set to

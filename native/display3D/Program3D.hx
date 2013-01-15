@@ -10,14 +10,14 @@ class Program3D {
 	public var glProgram:Program;
 	
 	
-    public function new (program:Program) {
+    public function new(program:Program) {
 		
         this.glProgram = program;
 		
     }
 	
 	
-	public function dispose ():Void {
+	public function dispose():Void {
 		
 		// TODO
 		
@@ -26,15 +26,15 @@ class Program3D {
 	
 	// TODO: Use ByteArray instead of Shader?
 	
-    public function upload (vertexShader:Shader, fragmentShader:Shader):Void {
+    public function upload(vertexShader:Shader, fragmentShader:Shader):Void {
 		
-        GL.attachShader (glProgram, vertexShader);
-		GL.attachShader (glProgram, fragmentShader);
-		GL.linkProgram (glProgram);
+        GL.attachShader(glProgram, vertexShader);
+		GL.attachShader(glProgram, fragmentShader);
+		GL.linkProgram(glProgram);
 		
-		if (GL.getProgramParameter (glProgram, GL.LINK_STATUS) == 0) {
+		if (GL.getProgramParameter(glProgram, GL.LINK_STATUS) == 0) {
 			
-			var result = GL.getProgramInfoLog (glProgram);
+			var result = GL.getProgramInfoLog(glProgram);
 			if (result != "") throw result;
 			
 		}

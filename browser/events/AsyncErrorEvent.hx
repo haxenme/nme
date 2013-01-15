@@ -12,9 +12,9 @@ class AsyncErrorEvent extends ErrorEvent {
 	public var error:Error;
 	
 	
-	public function new (type:String, bubbles:Bool = false, cancelable:Bool = false, text:String = "", error:Error = null):Void {
+	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, text:String = "", error:Error = null):Void {
 		
-		super (type, bubbles, cancelable);
+		super(type, bubbles, cancelable);
 		
 		this.text = text;
 		this.error = error;

@@ -25,7 +25,7 @@ package nme.media;
  * </ul>
  *
  * <p>However, in Adobe AIR, content in the <code>application</code> security
- * sandbox (content installed with the AIR application) are not restricted by
+ * sandbox(content installed with the AIR application) are not restricted by
  * these security limitations.</p>
  *
  * <p>For more information related to security, see the Flash Player Developer
@@ -43,7 +43,7 @@ extern class SoundLoaderContext {
 	 * <code>SoundMixer.bufferTime</code> property. The
 	 * <code>SoundMixer.bufferTime</code> property affects the buffer time for
 	 * embedded streaming sounds in a SWF file and is independent of dynamically
-	 * created Sound objects (that is, Sound objects created in
+	 * created Sound objects(that is, Sound objects created in
 	 * ActionScript).</p>
 	 */
 	var bufferTime : Float;
@@ -86,7 +86,7 @@ extern class SoundLoaderContext {
 	 *   <li>Flash Player or AIR tries to download a policy file from the default
 	 * location that corresponds to the sound's URL, which is
 	 * <code>/crossdomain.xml</code> on the same server as
-	 * <code>URLRequest.url</code>. (The sound's URL is specified in the
+	 * <code>URLRequest.url</code>.(The sound's URL is specified in the
 	 * <code>url</code> property of the URLRequest object passed to
 	 * <code>Sound.load()</code> or the Sound() constructor function.)</li>
 	 * </ul>
@@ -148,7 +148,7 @@ extern class SoundLoaderContext {
 	 *                        into a buffer before the sound starts to stream.
 	 * @param checkPolicyFile Specifies whether the existence of a URL policy
 	 *                        file should be checked upon loading the object
-	 *                        (<code>true</code>) or not.
+	 *                       (<code>true</code>) or not.
 	 */
 	function new(bufferTime : Float = 1000, checkPolicyFile : Bool = false) : Void;
 }

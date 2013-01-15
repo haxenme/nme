@@ -11,7 +11,7 @@ class BitmapFilter {
 	private var _nmeCached:Bool;
 	
 
-	public function new (inType:String) {
+	public function new(inType:String) {
 		
 		_mType = inType;
 		
@@ -26,14 +26,14 @@ class BitmapFilter {
 	}
 	
 	
-	public function nmePreFilter (surface:HTMLCanvasElement) {
+	public function nmePreFilter(surface:HTMLCanvasElement) {
 		
 		
 		
 	}
 	
 	
-	public function nmeApplyFilter (surface:HTMLCanvasElement, refreshCache:Bool = false) {
+	public function nmeApplyFilter(surface:HTMLCanvasElement, refreshCache:Bool = false) {
 		
 		
 		

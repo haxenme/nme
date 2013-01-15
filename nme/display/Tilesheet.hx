@@ -28,11 +28,11 @@ import nme.geom.Rectangle;
  * 
  * @example
  * 
- * var bitmapData = Assets.getBitmapData ("image.png");
- * var tilesheet = new Tilesheet (bitmapData);
+ * var bitmapData = Assets.getBitmapData("image.png");
+ * var tilesheet = new Tilesheet(bitmapData);
  * 
- * tilesheet.addTileRect (new Rectangle (0, 0, 100, 100));
- * tilesheet.drawTiles (this, [ 0, 100, 100 ]);
+ * tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
+ * tilesheet.drawTiles(this, [ 0, 100, 100 ]);
  * 
  */
 extern class Tilesheet {
@@ -63,9 +63,9 @@ extern class Tilesheet {
 	 * Specify a rectangle within the bounds of the Tilesheet bitmap. This portion of the 
 	 * Tilesheet will be rendered when ever you request a draw of this tile ID.
 	 * 
-	 * You may also (optionally) specify a center point, which is used during positioning,
+	 * You may also(optionally) specify a center point, which is used during positioning,
 	 * scale and rotation. The center point is not absolute, but a ratio. For example, if 
-	 * you want the center to be the middle of the tile image, use (0.5, 0.5)
+	 * you want the center to be the middle of the tile image, use(0.5, 0.5)
 	 * 
 	 * @param	rectangle
 	 * @param	centerPoint
@@ -98,10 +98,10 @@ extern class Tilesheet {
 	 * 
 	 * @example
 	 * 
-	 * var bitmapData = Assets.getBitmapData ("image.png");
-	 * var tilesheet = new Tilesheet (bitmapData);
+	 * var bitmapData = Assets.getBitmapData("image.png");
+	 * var tilesheet = new Tilesheet(bitmapData);
 	 * 
-	 * tilesheet.addTileRect (new Rectangle (0, 0, 100, 100));
+	 * tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
 	 * 
 	 * // x, y, tileID, scale, alpha
 	 * 
@@ -110,14 +110,14 @@ extern class Tilesheet {
 	 * 	100, 200, 0, 2, 0.5
 	 * ];
 	 * 
-	 * tilesheet.drawTiles (this, drawList, true, Tilesheet.TILE_SCALE | Tilesheet.TILE_ALPHA);
+	 * tilesheet.drawTiles(this, drawList, true, Tilesheet.TILE_SCALE | Tilesheet.TILE_ALPHA);
 	 * 
 	 * @param	graphics		The nme.display.Graphics object to use for drawing
 	 * @param	tileData		An array of all position, ID and optional values for use in drawing
-	 * @param	smooth		(Optional) Whether tiles should be smoothed while drawing (Default: false)
-	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
+	 * @param	smooth		(Optional) Whether tiles should be smoothed while drawing(Default: false)
+	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing(Default: 0)
 	 */
-	function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void;
+	function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void;
 	
 }
 
@@ -140,7 +140,7 @@ class Tilesheet
 	public static inline var TILE_ALPHA = 0x0008;
 	
 	// Will ignore scale and rotation....
-	// (not supported right now)
+	//(not supported right now)
 	public static inline var TILE_TRANS_2x2 = 0x0010;
 	
 	
@@ -199,7 +199,7 @@ class Tilesheet
 			vec.fixed = false;
 			vec.length = len;
 			vec.fixed = true;
-			for(i in prevLen...len)
+			for (i in prevLen...len)
 				vec[i] = -1;
 		}
 		return vec;
@@ -253,8 +253,8 @@ class Tilesheet
 	 * Fast method to draw a batch of tiles using a Tilesheet
 	 * 
 	 * The input array accepts the x, y and tile ID for each tile you wish to draw.
-	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to (0, 0) and
-	 * tile 1 to (10, 10)
+	 * For example, an array of [ 0, 0, 0, 10, 10, 1 ] would draw tile 0 to(0, 0) and
+	 * tile 1 to(10, 10)
 	 * 
 	 * You can also set flags for TILE_SCALE, TILE_ROTATION, TILE_RGB and
 	 * TILE_ALPHA.
@@ -265,10 +265,10 @@ class Tilesheet
 	 * 
 	 * @param	graphics		The native.display.Graphics object to use for drawing
 	 * @param	tileData		An array of all position, ID and optional values for use in drawing
-	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed (Default: false)
-	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing (Default: 0)
+	 * @param	smooth		(Optional) Whether drawn tiles should be smoothed(Default: false)
+	 * @param	flags		(Optional) Flags to enable scale, rotation, RGB and/or alpha when drawing(Default: 0)
 	 */
-	public function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
+	public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
 	{
 		var useScale = (flags & TILE_SCALE) > 0;
 		var useRotation = (flags & TILE_ROTATION) > 0;
@@ -308,7 +308,7 @@ class Tilesheet
 			}
 			
 			var totalCount = tileData.length;
-			var itemCount = Std.int (totalCount / numValues);
+			var itemCount = Std.int(totalCount / numValues);
 			
 			var ids = adjustIDs(_ids, itemCount);
 			var vertices = adjustLen(_vertices, itemCount * 8); 
@@ -379,14 +379,14 @@ class Tilesheet
 					var sa = Math.sin(rotation);
 					var xc = kx * ca, xs = kx * sa, yc = ky * ca, ys = ky * sa;
 					var axc = akx * ca, axs = akx * sa, ayc = aky * ca, ays = aky * sa;
-					vertices[offset8] = x - (xc + ys);
-					vertices[offset8 + 1] = y - (-xs + yc);
+					vertices[offset8] = x -(xc + ys);
+					vertices[offset8 + 1] = y -(-xs + yc);
 					vertices[offset8 + 2] = x + axc - ys;
-					vertices[offset8 + 3] = y - (axs + yc);
-					vertices[offset8 + 4] = x - (xc - ays);
+					vertices[offset8 + 3] = y -(axs + yc);
+					vertices[offset8 + 4] = x -(xc - ays);
 					vertices[offset8 + 5] = y + xs + ayc;
 					vertices[offset8 + 6] = x + axc + ays;
-					vertices[offset8 + 7] = y + (-axs + ayc);
+					vertices[offset8 + 7] = y +(-axs + ayc);
 				}
 				else 
 				{
@@ -412,21 +412,21 @@ class Tilesheet
 				tileIndex++;
 			}
 			
-			graphics.beginBitmapFill (nmeBitmap, null, false, smooth);
-			graphics.drawTriangles (vertices, indices, uvtData);
+			graphics.beginBitmapFill(nmeBitmap, null, false, smooth);
+			graphics.drawTriangles(vertices, indices, uvtData);
 			
 		}
 		else
 		{
 			
 			var index = 0;
-			var matrix = new Matrix ();
+			var matrix = new Matrix();
 			
 			while (index < tileData.length)
 			{
 				var x = tileData[index];
 				var y = tileData[index + 1];
-				var tileID = Std.int (tileData[index + 2]);
+				var tileID = Std.int(tileData[index + 2]);
 				index += 3;
 				
 				var tile = tiles[tileID];
@@ -466,13 +466,13 @@ class Tilesheet
 				
 				// need to add support for rotation, alpha, scale and RGB
 				
-				graphics.beginBitmapFill (nmeBitmap, matrix, false, smooth);
-				graphics.drawRect (x - ox, y - oy, tile.width, tile.height);
+				graphics.beginBitmapFill(nmeBitmap, matrix, false, smooth);
+				graphics.drawRect(x - ox, y - oy, tile.width, tile.height);
 			}
 			
 		}
 		
-		graphics.endFill ();
+		graphics.endFill();
 	}
 	
 }

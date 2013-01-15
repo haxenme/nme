@@ -43,7 +43,7 @@ class NetStream extends EventDispatcher {
 	
 	public var bufferTime:Float;
 	public var client:Dynamic;
-	public var nmeVideoElement (default, null):HTMLMediaElement;
+	public var nmeVideoElement(default, null):HTMLMediaElement;
 	public var play:Dynamic;
 	
 	private static inline var fps:Int = 30;
@@ -52,21 +52,21 @@ class NetStream extends EventDispatcher {
 	private var timer:Timer;
 	
 	
-	public function new (connection:NetConnection):Void {
+	public function new(connection:NetConnection):Void {
 		
-		super ();
+		super();
 		
-		nmeVideoElement = cast js.Lib.document.createElement ("video");
+		nmeVideoElement = cast js.Lib.document.createElement("video");
 		nmeConnection = connection;
 		
-		play = Reflect.makeVarArgs (nmePlay);
+		play = Reflect.makeVarArgs(nmePlay);
 		
 	}
 	
 	
-	private function nmePlay (val:Array<Dynamic>):Void {
+	private function nmePlay(val:Array<Dynamic>):Void {
 		
-		var url = Std.string (val[0]);
+		var url = Std.string(val[0]);
 		nmeVideoElement.src = url;
 		
 	}
@@ -79,30 +79,30 @@ class NetStream extends EventDispatcher {
 	
 	
 	
-	public function nmeBufferEmpty (e) {
+	public function nmeBufferEmpty(e) {
 		
-		nmeConnection.dispatchEvent (new NetStatusEvent (NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_EMPTY } ));
-		
-	}
-	
-	
-	public function nmeBufferStop (e) {
-		
-		nmeConnection.dispatchEvent (new NetStatusEvent (NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_STOP } ));
+		nmeConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_EMPTY } ));
 		
 	}
 	
 	
-	public function nmeBufferStart (e) {
+	public function nmeBufferStop(e) {
 		
-		nmeConnection.dispatchEvent (new NetStatusEvent (NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_START } ));
+		nmeConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_STOP } ));
 		
 	}
 	
 	
-	public function nmeNotFound (e) {
+	public function nmeBufferStart(e) {
 		
-		nmeConnection.dispatchEvent (new NetStatusEvent (NetStatusEvent.NET_STATUS, false, false, { code : CODE_PLAY_STREAMNOTFOUND } ));
+		nmeConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_BUFFER_START } ));
+		
+	}
+	
+	
+	public function nmeNotFound(e) {
+		
+		nmeConnection.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code : CODE_PLAY_STREAMNOTFOUND } ));
 		
 	}
 	

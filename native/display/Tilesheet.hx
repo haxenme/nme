@@ -22,24 +22,24 @@ class Tilesheet {
 	/** @private */ public var nmeHandle:Dynamic;
 	
 	
-	public function new (inImage:BitmapData) {
+	public function new(inImage:BitmapData) {
 		
 		nmeBitmap = inImage;
-		nmeHandle = nme_tilesheet_create (inImage.nmeHandle);
+		nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
 		
 	}
 	
 	
-	public function addTileRect (rectangle:Rectangle, centerPoint:Point = null) {
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null) {
 		
-		nme_tilesheet_add_rect (nmeHandle, rectangle, centerPoint);
+		nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
 		
 	}
 	
 	
-	public function drawTiles (graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void {
+	public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void {
 		
-		graphics.drawTiles (this, tileData, smooth, flags);
+		graphics.drawTiles(this, tileData, smooth, flags);
 		
 	}
 	
@@ -51,8 +51,8 @@ class Tilesheet {
 	
 	
 	
-	private static var nme_tilesheet_create = Loader.load ("nme_tilesheet_create", 1);
-	private static var nme_tilesheet_add_rect = Loader.load ("nme_tilesheet_add_rect", 3);
+	private static var nme_tilesheet_create = Loader.load("nme_tilesheet_create", 1);
+	private static var nme_tilesheet_add_rect = Loader.load("nme_tilesheet_add_rect", 3);
 	
 	
 }

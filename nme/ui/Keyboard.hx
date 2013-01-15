@@ -12,13 +12,13 @@ package nme.ui;
 extern class Keyboard {
 
 	/**
-	 * Constant associated with the key code value for the A key (65).
+	 * Constant associated with the key code value for the A key(65).
 	 */
 	@:require(flash10_1) static var A : Int;
 
 	/**
-	 * Constant associated with the key code value for the Alternate (Option) key
-	 * (18).
+	 * Constant associated with the key code value for the Alternate(Option) key
+	 *(18).
 	 */
 	@:require(flash10_1) static var ALTERNATE : Int;
 
@@ -28,7 +28,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var AUDIO : Int;
 
 	/**
-	 * Constant associated with the key code value for the B key (66).
+	 * Constant associated with the key code value for the B key(66).
 	 */
 	@:require(flash10_1) static var B : Int;
 
@@ -38,17 +38,17 @@ extern class Keyboard {
 	//@:require(flash10_2) static var BACK : Int;
 
 	/**
-	 * Constant associated with the key code value for the ` key (192).
+	 * Constant associated with the key code value for the ` key(192).
 	 */
 	@:require(flash10_1) static var BACKQUOTE : Int;
 
 	/**
-	 * Constant associated with the key code value for the \ key (220).
+	 * Constant associated with the key code value for the \ key(220).
 	 */
 	@:require(flash10_1) static var BACKSLASH : Int;
 
 	/**
-	 * Constant associated with the key code value for the Backspace key (8).
+	 * Constant associated with the key code value for the Backspace key(8).
 	 */
 	static var BACKSPACE : Int;
 
@@ -58,12 +58,12 @@ extern class Keyboard {
 	//@:require(flash10_2) static var BLUE : Int;
 
 	/**
-	 * Constant associated with the key code value for the C key (67).
+	 * Constant associated with the key code value for the C key(67).
 	 */
 	@:require(flash10_1) static var C : Int;
 
 	/**
-	 * Constant associated with the key code value for the Caps Lock key (20).
+	 * Constant associated with the key code value for the Caps Lock key(20).
 	 */
 	static var CAPS_LOCK : Int;
 
@@ -78,18 +78,18 @@ extern class Keyboard {
 	//@:require(flash10_2) static var CHANNEL_UP : Int;
 
 	/**
-	 * Constant associated with the key code value for the , key (188).
+	 * Constant associated with the key code value for the , key(188).
 	 */
 	@:require(flash10_1) static var COMMA : Int;
 
 	/**
-	 * Constant associated with the Mac command key (15). This constant is
+	 * Constant associated with the Mac command key(15). This constant is
 	 * currently only used for setting menu key equivalents.
 	 */
 	@:require(flash10_1) static var COMMAND : Int;
 
 	/**
-	 * Constant associated with the key code value for the Control key (17).
+	 * Constant associated with the key code value for the Control key(17).
 	 */
 	static var CONTROL : Int;
 
@@ -99,17 +99,17 @@ extern class Keyboard {
 	//@:require(flash10_1) static var CharCodeStrings : Array<Dynamic>;
 
 	/**
-	 * Constant associated with the key code value for the D key (68).
+	 * Constant associated with the key code value for the D key(68).
 	 */
 	@:require(flash10_1) static var D : Int;
 
 	/**
-	 * Constant associated with the key code value for the Delete key (46).
+	 * Constant associated with the key code value for the Delete key(46).
 	 */
 	static var DELETE : Int;
 
 	/**
-	 * Constant associated with the key code value for the Down Arrow key (40).
+	 * Constant associated with the key code value for the Down Arrow key(40).
 	 */
 	static var DOWN : Int;
 
@@ -119,27 +119,27 @@ extern class Keyboard {
 	//@:require(flash10_2) static var DVR : Int;
 
 	/**
-	 * Constant associated with the key code value for the E key (69).
+	 * Constant associated with the key code value for the E key(69).
 	 */
 	@:require(flash10_1) static var E : Int;
 
 	/**
-	 * Constant associated with the key code value for the End key (35).
+	 * Constant associated with the key code value for the End key(35).
 	 */
 	static var END : Int;
 
 	/**
-	 * Constant associated with the key code value for the Enter key (13).
+	 * Constant associated with the key code value for the Enter key(13).
 	 */
 	static var ENTER : Int;
 
 	/**
-	 * Constant associated with the key code value for the = key (187).
+	 * Constant associated with the key code value for the = key(187).
 	 */
 	@:require(flash10_1) static var EQUAL : Int;
 
 	/**
-	 * Constant associated with the key code value for the Escape key (27).
+	 * Constant associated with the key code value for the Escape key(27).
 	 */
 	static var ESCAPE : Int;
 
@@ -149,82 +149,82 @@ extern class Keyboard {
 	//@:require(flash10_2) static var EXIT : Int;
 
 	/**
-	 * Constant associated with the key code value for the F key (70).
+	 * Constant associated with the key code value for the F key(70).
 	 */
 	@:require(flash10_1) static var F : Int;
 
 	/**
-	 * Constant associated with the key code value for the F1 key (112).
+	 * Constant associated with the key code value for the F1 key(112).
 	 */
 	static var F1 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F10 key (121).
+	 * Constant associated with the key code value for the F10 key(121).
 	 */
 	static var F10 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F11 key (122).
+	 * Constant associated with the key code value for the F11 key(122).
 	 */
 	static var F11 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F12 key (123).
+	 * Constant associated with the key code value for the F12 key(123).
 	 */
 	static var F12 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F13 key (124).
+	 * Constant associated with the key code value for the F13 key(124).
 	 */
 	static var F13 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F14 key (125).
+	 * Constant associated with the key code value for the F14 key(125).
 	 */
 	static var F14 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F15 key (126).
+	 * Constant associated with the key code value for the F15 key(126).
 	 */
 	static var F15 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F2 key (113).
+	 * Constant associated with the key code value for the F2 key(113).
 	 */
 	static var F2 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F3 key (114).
+	 * Constant associated with the key code value for the F3 key(114).
 	 */
 	static var F3 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F4 key (115).
+	 * Constant associated with the key code value for the F4 key(115).
 	 */
 	static var F4 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F5 key (116).
+	 * Constant associated with the key code value for the F5 key(116).
 	 */
 	static var F5 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F6 key (117).
+	 * Constant associated with the key code value for the F6 key(117).
 	 */
 	static var F6 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F7 key (118).
+	 * Constant associated with the key code value for the F7 key(118).
 	 */
 	static var F7 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F8 key (119).
+	 * Constant associated with the key code value for the F8 key(119).
 	 */
 	static var F8 : Int;
 
 	/**
-	 * Constant associated with the key code value for the F9 key (120).
+	 * Constant associated with the key code value for the F9 key(120).
 	 */
 	static var F9 : Int;
 
@@ -234,7 +234,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var FAST_FORWARD : Int;
 
 	/**
-	 * Constant associated with the key code value for the G key (71).
+	 * Constant associated with the key code value for the G key(71).
 	 */
 	@:require(flash10_1) static var G : Int;
 
@@ -249,7 +249,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var GUIDE : Int;
 
 	/**
-	 * Constant associated with the key code value for the H key (72).
+	 * Constant associated with the key code value for the H key(72).
 	 */
 	@:require(flash10_1) static var H : Int;
 
@@ -259,12 +259,12 @@ extern class Keyboard {
 	//@:require(flash10_2) static var HELP : Int;
 
 	/**
-	 * Constant associated with the key code value for the Home key (36).
+	 * Constant associated with the key code value for the Home key(36).
 	 */
 	static var HOME : Int;
 
 	/**
-	 * Constant associated with the key code value for the I key (73).
+	 * Constant associated with the key code value for the I key(73).
 	 */
 	@:require(flash10_1) static var I : Int;
 
@@ -279,17 +279,17 @@ extern class Keyboard {
 	//@:require(flash10_2) static var INPUT : Int;
 
 	/**
-	 * Constant associated with the key code value for the Insert key (45).
+	 * Constant associated with the key code value for the Insert key(45).
 	 */
 	static var INSERT : Int;
 
 	/**
-	 * Constant associated with the key code value for the J key (74).
+	 * Constant associated with the key code value for the J key(74).
 	 */
 	@:require(flash10_1) static var J : Int;
 
 	/**
-	 * Constant associated with the key code value for the K key (75).
+	 * Constant associated with the key code value for the K key(75).
 	 */
 	@:require(flash10_1) static var K : Int;
 
@@ -654,7 +654,7 @@ extern class Keyboard {
 	//@:require(flash10_1) static var KEYNAME_USER : String;
 
 	/**
-	 * Constant associated with the key code value for the L key (76).
+	 * Constant associated with the key code value for the L key(76).
 	 */
 	@:require(flash10_1) static var L : Int;
 
@@ -664,12 +664,12 @@ extern class Keyboard {
 	//@:require(flash10_2) static var LAST : Int;
 
 	/**
-	 * Constant associated with the key code value for the Left Arrow key (37).
+	 * Constant associated with the key code value for the Left Arrow key(37).
 	 */
 	static var LEFT : Int;
 
 	/**
-	 * Constant associated with the key code value for the [ key (219).
+	 * Constant associated with the key code value for the [ key(219).
 	 */
 	@:require(flash10_1) static var LEFTBRACKET : Int;
 
@@ -679,7 +679,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var LIVE : Int;
 
 	/**
-	 * Constant associated with the key code value for the M key (77).
+	 * Constant associated with the key code value for the M key(77).
 	 */
 	@:require(flash10_1) static var M : Int;
 
@@ -694,12 +694,12 @@ extern class Keyboard {
 	//@:require(flash10_2) static var MENU : Int;
 
 	/**
-	 * Constant associated with the key code value for the - key (189).
+	 * Constant associated with the key code value for the - key(189).
 	 */
 	@:require(flash10_1) static var MINUS : Int;
 
 	/**
-	 * Constant associated with the key code value for the N key (78).
+	 * Constant associated with the key code value for the N key(78).
 	 */
 	@:require(flash10_1) static var N : Int;
 
@@ -709,174 +709,174 @@ extern class Keyboard {
 	//@:require(flash10_2) static var NEXT : Int;
 
 	/**
-	 * Constant associated with the key code value for the 0 key (48).
+	 * Constant associated with the key code value for the 0 key(48).
 	 */
 	@:require(flash10_1) static var NUMBER_0 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 1 key (49).
+	 * Constant associated with the key code value for the 1 key(49).
 	 */
 	@:require(flash10_1) static var NUMBER_1 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 2 key (50).
+	 * Constant associated with the key code value for the 2 key(50).
 	 */
 	@:require(flash10_1) static var NUMBER_2 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 3 key (51).
+	 * Constant associated with the key code value for the 3 key(51).
 	 */
 	@:require(flash10_1) static var NUMBER_3 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 4 key (52).
+	 * Constant associated with the key code value for the 4 key(52).
 	 */
 	@:require(flash10_1) static var NUMBER_4 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 5 key (53).
+	 * Constant associated with the key code value for the 5 key(53).
 	 */
 	@:require(flash10_1) static var NUMBER_5 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 6 key (54).
+	 * Constant associated with the key code value for the 6 key(54).
 	 */
 	@:require(flash10_1) static var NUMBER_6 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 7 key (55).
+	 * Constant associated with the key code value for the 7 key(55).
 	 */
 	@:require(flash10_1) static var NUMBER_7 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 8 key (56).
+	 * Constant associated with the key code value for the 8 key(56).
 	 */
 	@:require(flash10_1) static var NUMBER_8 : Int;
 
 	/**
-	 * Constant associated with the key code value for the 9 key (57).
+	 * Constant associated with the key code value for the 9 key(57).
 	 */
 	@:require(flash10_1) static var NUMBER_9 : Int;
 
 	/**
-	 * Constant associated with the pseudo-key code for the the number pad (21).
+	 * Constant associated with the pseudo-key code for the the number pad(21).
 	 * Use to set numpad modifier on key equivalents
 	 */
 	@:require(flash10_1) static var NUMPAD : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 0 key on the
-	 * number pad (96).
+	 * number pad(96).
 	 */
 	static var NUMPAD_0 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 1 key on the
-	 * number pad (97).
+	 * number pad(97).
 	 */
 	static var NUMPAD_1 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 2 key on the
-	 * number pad (98).
+	 * number pad(98).
 	 */
 	static var NUMPAD_2 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 3 key on the
-	 * number pad (99).
+	 * number pad(99).
 	 */
 	static var NUMPAD_3 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 4 key on the
-	 * number pad (100).
+	 * number pad(100).
 	 */
 	static var NUMPAD_4 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 5 key on the
-	 * number pad (101).
+	 * number pad(101).
 	 */
 	static var NUMPAD_5 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 6 key on the
-	 * number pad (102).
+	 * number pad(102).
 	 */
 	static var NUMPAD_6 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 7 key on the
-	 * number pad (103).
+	 * number pad(103).
 	 */
 	static var NUMPAD_7 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 8 key on the
-	 * number pad (104).
+	 * number pad(104).
 	 */
 	static var NUMPAD_8 : Int;
 
 	/**
 	 * Constant associated with the key code value for the number 9 key on the
-	 * number pad (105).
+	 * number pad(105).
 	 */
 	static var NUMPAD_9 : Int;
 
 	/**
 	 * Constant associated with the key code value for the addition key on the
-	 * number pad (107).
+	 * number pad(107).
 	 */
 	static var NUMPAD_ADD : Int;
 
 	/**
 	 * Constant associated with the key code value for the decimal key on the
-	 * number pad (110).
+	 * number pad(110).
 	 */
 	static var NUMPAD_DECIMAL : Int;
 
 	/**
 	 * Constant associated with the key code value for the division key on the
-	 * number pad (111).
+	 * number pad(111).
 	 */
 	static var NUMPAD_DIVIDE : Int;
 
 	/**
 	 * Constant associated with the key code value for the Enter key on the
-	 * number pad (108).
+	 * number pad(108).
 	 */
 	static var NUMPAD_ENTER : Int;
 
 	/**
 	 * Constant associated with the key code value for the multiplication key on
-	 * the number pad (106).
+	 * the number pad(106).
 	 */
 	static var NUMPAD_MULTIPLY : Int;
 
 	/**
 	 * Constant associated with the key code value for the subtraction key on the
-	 * number pad (109).
+	 * number pad(109).
 	 */
 	static var NUMPAD_SUBTRACT : Int;
 
 	/**
-	 * Constant associated with the key code value for the O key (79).
+	 * Constant associated with the key code value for the O key(79).
 	 */
 	@:require(flash10_1) static var O : Int;
 
 	/**
-	 * Constant associated with the key code value for the P key (80).
+	 * Constant associated with the key code value for the P key(80).
 	 */
 	@:require(flash10_1) static var P : Int;
 
 	/**
-	 * Constant associated with the key code value for the Page Down key (34).
+	 * Constant associated with the key code value for the Page Down key(34).
 	 */
 	static var PAGE_DOWN : Int;
 
 	/**
-	 * Constant associated with the key code value for the Page Up key (33).
+	 * Constant associated with the key code value for the Page Up key(33).
 	 */
 	static var PAGE_UP : Int;
 
@@ -886,7 +886,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var PAUSE : Int;
 
 	/**
-	 * Constant associated with the key code value for the . key (190).
+	 * Constant associated with the key code value for the . key(190).
 	 */
 	@:require(flash10_1) static var PERIOD : Int;
 
@@ -901,17 +901,17 @@ extern class Keyboard {
 	//@:require(flash10_2) static var PREVIOUS : Int;
 
 	/**
-	 * Constant associated with the key code value for the Q key (81).
+	 * Constant associated with the key code value for the Q key(81).
 	 */
 	@:require(flash10_1) static var Q : Int;
 
 	/**
-	 * Constant associated with the key code value for the ' key (222).
+	 * Constant associated with the key code value for the ' key(222).
 	 */
 	@:require(flash10_1) static var QUOTE : Int;
 
 	/**
-	 * Constant associated with the key code value for the R key (82).
+	 * Constant associated with the key code value for the R key(82).
 	 */
 	@:require(flash10_1) static var R : Int;
 
@@ -931,17 +931,17 @@ extern class Keyboard {
 	//@:require(flash10_2) static var REWIND : Int;
 
 	/**
-	 * Constant associated with the key code value for the Right Arrow key (39).
+	 * Constant associated with the key code value for the Right Arrow key(39).
 	 */
 	static var RIGHT : Int;
 
 	/**
-	 * Constant associated with the key code value for the ] key (221).
+	 * Constant associated with the key code value for the ] key(221).
 	 */
 	@:require(flash10_1) static var RIGHTBRACKET : Int;
 
 	/**
-	 * Constant associated with the key code value for the S key (83).
+	 * Constant associated with the key code value for the S key(83).
 	 */
 	@:require(flash10_1) static var S : Int;
 
@@ -951,7 +951,7 @@ extern class Keyboard {
 	//@:require(flash10_2) static var SEARCH : Int;
 
 	/**
-	 * Constant associated with the key code value for the ; key (186).
+	 * Constant associated with the key code value for the ; key(186).
 	 */
 	@:require(flash10_1) static var SEMICOLON : Int;
 
@@ -961,27 +961,27 @@ extern class Keyboard {
 	@:require(flash10_2) static var SETUP : Int;
 
 	/**
-	 * Constant associated with the key code value for the Shift key (16).
+	 * Constant associated with the key code value for the Shift key(16).
 	 */
 	static var SHIFT : Int;
 
 	/**
-	 * Quick skip backward (usually 7-10 seconds)
+	 * Quick skip backward(usually 7-10 seconds)
 	 */
 	//@:require(flash10_2) static var SKIP_BACKWARD : Int;
 
 	/**
-	 * Quick skip ahead (usually 30 seconds)
+	 * Quick skip ahead(usually 30 seconds)
 	 */
 	//@:require(flash10_2) static var SKIP_FORWARD : Int;
 
 	/**
-	 * Constant associated with the key code value for the / key (191).
+	 * Constant associated with the key code value for the / key(191).
 	 */
 	@:require(flash10_1) static var SLASH : Int;
 
 	/**
-	 * Constant associated with the key code value for the Spacebar (32).
+	 * Constant associated with the key code value for the Spacebar(32).
 	 */
 	static var SPACE : Int;
 
@@ -1356,27 +1356,27 @@ extern class Keyboard {
 	//@:require(flash10_2) static var SUBTITLE : Int;
 
 	/**
-	 * Constant associated with the key code value for the T key (84).
+	 * Constant associated with the key code value for the T key(84).
 	 */
 	@:require(flash10_1) static var T : Int;
 
 	/**
-	 * Constant associated with the key code value for the Tab key (9).
+	 * Constant associated with the key code value for the Tab key(9).
 	 */
 	static var TAB : Int;
 
 	/**
-	 * Constant associated with the key code value for the U key (85).
+	 * Constant associated with the key code value for the U key(85).
 	 */
 	@:require(flash10_1) static var U : Int;
 
 	/**
-	 * Constant associated with the key code value for the Up Arrow key (38).
+	 * Constant associated with the key code value for the Up Arrow key(38).
 	 */
 	static var UP : Int;
 
 	/**
-	 * Constant associated with the key code value for the V key (86).
+	 * Constant associated with the key code value for the V key(86).
 	 */
 	@:require(flash10_1) static var V : Int;
 
@@ -1386,17 +1386,17 @@ extern class Keyboard {
 	//@:require(flash10_2) static var VOD : Int;
 
 	/**
-	 * Constant associated with the key code value for the W key (87).
+	 * Constant associated with the key code value for the W key(87).
 	 */
 	@:require(flash10_1) static var W : Int;
 
 	/**
-	 * Constant associated with the key code value for the X key (88).
+	 * Constant associated with the key code value for the X key(88).
 	 */
 	@:require(flash10_1) static var X : Int;
 
 	/**
-	 * Constant associated with the key code value for the Y key (89).
+	 * Constant associated with the key code value for the Y key(89).
 	 */
 	@:require(flash10_1) static var Y : Int;
 
@@ -1406,13 +1406,13 @@ extern class Keyboard {
 	//@:require(flash10_2) static var YELLOW : Int;
 
 	/**
-	 * Constant associated with the key code value for the Z key (90).
+	 * Constant associated with the key code value for the Z key(90).
 	 */
 	@:require(flash10_1) static var Z : Int;
 
 	/**
-	 * Specifies whether the Caps Lock key is activated (<code>true</code>) or
-	 * not (<code>false</code>).
+	 * Specifies whether the Caps Lock key is activated(<code>true</code>) or
+	 * not(<code>false</code>).
 	 */
 	//static var capsLock(default,null) : Bool;
 
@@ -1424,8 +1424,8 @@ extern class Keyboard {
 	//@:require(flash10_1) static var hasVirtualKeyboard(default,null) : Bool;
 
 	/**
-	 * Specifies whether the Num Lock key is activated (<code>true</code>) or not
-	 * (<code>false</code>).
+	 * Specifies whether the Num Lock key is activated(<code>true</code>) or not
+	 *(<code>false</code>).
 	 */
 	//static var numLock(default,null) : Bool;
 

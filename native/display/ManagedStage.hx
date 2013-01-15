@@ -38,70 +38,70 @@ class ManagedStage extends Stage {
 	static inline public var efPrimaryTouch   = 0x8000;
 	
 	
-	public function new (inWidth:Int, inHeight:Int, inFlags:Int = 0) {
+	public function new(inWidth:Int, inHeight:Int, inFlags:Int = 0) {
 		
-		super (nme_managed_stage_create (inWidth, inHeight, inFlags), inWidth, inHeight);
-		
-	}
-	
-	
-	dynamic public function beginRender () {
-		
-		
+		super(nme_managed_stage_create(inWidth, inHeight, inFlags), inWidth, inHeight);
 		
 	}
 	
 	
-	dynamic public function endRender () {
+	dynamic public function beginRender() {
 		
 		
 		
 	}
 	
 	
-	override function nmeDoProcessStageEvent (inEvent:Dynamic):Float {
+	dynamic public function endRender() {
 		
-		nmePollTimers ();
 		
-		var wake = super.nmeDoProcessStageEvent (inEvent);
-		setNextWake (wake);
+		
+	}
+	
+	
+	override function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
+		
+		nmePollTimers();
+		
+		var wake = super.nmeDoProcessStageEvent(inEvent);
+		setNextWake(wake);
 		
 		return wake;
 		
 	}
 	
 	
-	/** @private */ override public function nmeRender (inSendEnterFrame:Bool) {
+	/** @private */ override public function nmeRender(inSendEnterFrame:Bool) {
 		
-		beginRender ();
-		super.nmeRender (inSendEnterFrame);
-		endRender ();
-		
-	}
-	
-	
-	public function pumpEvent (inEvent:Dynamic) {
-		
-		nme_managed_stage_pump_event (nmeHandle, inEvent);
+		beginRender();
+		super.nmeRender(inSendEnterFrame);
+		endRender();
 		
 	}
 	
 	
-	public function resize (inWidth:Int, inHeight:Int) {
+	public function pumpEvent(inEvent:Dynamic) {
 		
-		pumpEvent ( { type: etResize, x: inWidth, y: inHeight } );
-		
-	}
-	
-	
-	public function sendQuit () {
-		
-		pumpEvent ({ type: etQuit });
+		nme_managed_stage_pump_event(nmeHandle, inEvent);
 		
 	}
 	
 	
-	dynamic public function setNextWake (inDelay:Float) {
+	public function resize(inWidth:Int, inHeight:Int) {
+		
+		pumpEvent( { type: etResize, x: inWidth, y: inHeight } );
+		
+	}
+	
+	
+	public function sendQuit() {
+		
+		pumpEvent({ type: etQuit });
+		
+	}
+	
+	
+	dynamic public function setNextWake(inDelay:Float) {
 		
 		
 		
@@ -115,8 +115,8 @@ class ManagedStage extends Stage {
 	
 	
 	
-	private static var nme_managed_stage_create = Loader.load ("nme_managed_stage_create", 3);
-	private static var nme_managed_stage_pump_event = Loader.load ("nme_managed_stage_pump_event", 2);
+	private static var nme_managed_stage_create = Loader.load("nme_managed_stage_create", 3);
+	private static var nme_managed_stage_pump_event = Loader.load("nme_managed_stage_pump_event", 2);
 	
 	
 }

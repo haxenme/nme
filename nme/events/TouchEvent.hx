@@ -4,13 +4,13 @@ package nme.events;
 
 /**
  * The TouchEvent class lets you handle events on devices that detect user
- * contact with the device (such as a finger on a touch screen). When a user
+ * contact with the device(such as a finger on a touch screen). When a user
  * interacts with a device such as a mobile phone or tablet with a touch
  * screen, the user typically touches the screen with his or her fingers or a
  * pointing device. You can develop applications that respond to basic touch
- * events (such as a single finger tap) with the TouchEvent class. Create
+ * events(such as a single finger tap) with the TouchEvent class. Create
  * event listeners using the event types defined in this class. For user
- * interaction with multiple points of contact (such as several fingers moving
+ * interaction with multiple points of contact(such as several fingers moving
  * across a touch screen at the same time) use the related GestureEvent,
  * PressAndTapGestureEvent, and TransformGestureEvent classes. And, use the
  * properties and methods of these classes to construct event handlers that
@@ -23,7 +23,7 @@ package nme.events;
  * <p><b>Note:</b> When objects are nested on the display list, touch events
  * target the deepest possible nested object that is visible in the display
  * list. This object is called the target node. To have a target node's
- * ancestor (an object containing the target node in the display list) receive
+ * ancestor(an object containing the target node in the display list) receive
  * notification of a touch event, use
  * <code>EventDispatcher.addEventListener()</code> on the ancestor node with
  * the type parameter set to the specific touch event you want to detect.</p>
@@ -32,15 +32,15 @@ package nme.events;
 @:require(flash10_1) extern class TouchEvent extends Event {
 
 	/**
-	 * Indicates whether the Alt key is active (<code>true</code>) or inactive
-	 * (<code>false</code>). Supported for Windows and Linux operating systems
+	 * Indicates whether the Alt key is active(<code>true</code>) or inactive
+	 *(<code>false</code>). Supported for Windows and Linux operating systems
 	 * only.
 	 */
 	var altKey : Bool;
 
 	/**
 	 * On Windows or Linux, indicates whether the Ctrl key is active
-	 * (<code>true</code>) or inactive (<code>false</code>). On Macintosh,
+	 *(<code>true</code>) or inactive(<code>false</code>). On Macintosh,
 	 * indicates whether either the Control key or the Command key is activated.
 	 */
 	var ctrlKey : Bool;
@@ -100,20 +100,20 @@ package nme.events;
 	var relatedObject : nme.display.InteractiveObject;
 
 	/**
-	 * Indicates whether the Shift key is active (<code>true</code>) or inactive
-	 * (<code>false</code>).
+	 * Indicates whether the Shift key is active(<code>true</code>) or inactive
+	 *(<code>false</code>).
 	 */
 	var shiftKey : Bool;
 
 	/**
 	 * Width of the contact area.
-	 * Only supported on Android (C++ target), in the range of 0-1.
+	 * Only supported on Android(C++ target), in the range of 0-1.
 	 */
 	var sizeX : Float;
 
 	/**
 	 * Height of the contact area.
-	 * Only supported on Android (C++ target), in the range of 0-1.
+	 * Only supported on Android(C++ target), in the range of 0-1.
 	 */
 	var sizeY : Float;
 
@@ -132,7 +132,7 @@ package nme.events;
 	var stageY(default,null) : Float;
 
 	/**
-	 * A unique identification number (as an int) assigned to the touch point.
+	 * A unique identification number(as an int) assigned to the touch point.
 	 */
 	var touchPointID : Int;
 
@@ -154,7 +154,7 @@ package nme.events;
 	 *                            flow.
 	 * @param cancelable          Determines whether the Event object can be
 	 *                            canceled.
-	 * @param touchPointID        A unique identification number (as an int)
+	 * @param touchPointID        A unique identification number(as an int)
 	 *                            assigned to the touch point.
 	 * @param isPrimaryTouchPoint Indicates whether the first point of contact is
 	 *                            mapped to mouse events.
@@ -169,7 +169,7 @@ package nme.events;
 	 *                            either the Ctrl key or the Command key is
 	 *                            activated.
 	 * @param altKey              Indicates whether the Alt key is activated
-	 *                            (Windows or Linux only).
+	 *                           (Windows or Linux only).
 	 * @param shiftKey            Indicates whether the Shift key is activated.
 	 */
 	function new(type : String, bubbles : Bool = true, cancelable : Bool = false, touchPointID : Int = 0, isPrimaryTouchPoint : Bool = false, localX : Float = 0./*NaN*/, localY : Float = 0./*NaN*/, sizeX : Float = 0./*NaN*/, sizeY : Float = 0./*NaN*/, pressure : Float = 0./*NaN*/, ?relatedObject : nme.display.InteractiveObject, ctrlKey : Bool = false, altKey : Bool = false, shiftKey : Bool = false) : Void;

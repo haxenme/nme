@@ -4,7 +4,7 @@ package browser.text;
 class TextSnapshot {
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

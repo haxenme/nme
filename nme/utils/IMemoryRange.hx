@@ -4,9 +4,9 @@ package nme.utils;
 
 extern interface IMemoryRange {
 	
-	function getByteBuffer ():ByteArray;
-	function getStart ():Int;
-	function getLength ():Int;
+	function getByteBuffer():ByteArray;
+	function getStart():Int;
+	function getLength():Int;
    
 }
 

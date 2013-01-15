@@ -18,7 +18,7 @@ class Error {
 	public var name:String;
 	
 	
-	public function new (message:String = "", id:Int = 0) {
+	public function new(message:String = "", id:Int = 0) {
 		
 		this.message = message;
 		this.errorID = id;
@@ -26,18 +26,18 @@ class Error {
 	}
 	
 	
-	public function getStackTrace ():String {
+	public function getStackTrace():String {
 		
 		#if haxe_211
-		return CallStack.toString (CallStack.exceptionStack ());
+		return CallStack.toString(CallStack.exceptionStack());
 		#else
-		return Stack.toString (Stack.exceptionStack ());
+		return Stack.toString(Stack.exceptionStack());
 		#end
 		
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
 		if (message != null) {
 			

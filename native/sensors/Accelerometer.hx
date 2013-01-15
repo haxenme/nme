@@ -11,33 +11,33 @@ import haxe.Timer;
 class Accelerometer extends EventDispatcher {
 	
 	
-	public static var isSupported (get_isSupported, null):Bool;
+	public static var isSupported(get_isSupported, null):Bool;
 	
-	public var muted (default, null):Bool;
+	public var muted(default, null):Bool;
 	
 	private static var defaultInterval:Int = 34;
 	
 	/** @private */ private var timer:Timer;
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
-		setRequestedUpdateInterval (defaultInterval);
-		
-	}
-	
-	
-	override public function addEventListener (type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void {
-		
-		super.addEventListener (type, listener, useCapture, priority, useWeakReference);
-		update ();
+		setRequestedUpdateInterval(defaultInterval);
 		
 	}
 	
 	
-	public function setRequestedUpdateInterval (interval:Float):Void {
+	override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void {
+		
+		super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		update();
+		
+	}
+	
+	
+	public function setRequestedUpdateInterval(interval:Float):Void {
 		
 		if (interval < 0) {
 			
@@ -51,13 +51,13 @@ class Accelerometer extends EventDispatcher {
 		
 		if (timer != null) {
 			
-			timer.stop ();
+			timer.stop();
 			
 		}
 		
 		if (isSupported) {
 			
-			timer = new Timer (interval);
+			timer = new Timer(interval);
 			timer.run = update;
 			
 		}
@@ -65,18 +65,18 @@ class Accelerometer extends EventDispatcher {
 	}
 	
 	
-	/** @private */ private function update ():Void {
+	/** @private */ private function update():Void {
 		
-		var event = new AccelerometerEvent (AccelerometerEvent.UPDATE);
+		var event = new AccelerometerEvent(AccelerometerEvent.UPDATE);
 		
-		var data = nme_input_get_acceleration ();
+		var data = nme_input_get_acceleration();
 		
-		event.timestamp = Timer.stamp ();
+		event.timestamp = Timer.stamp();
 		event.accelerationX = data.x;
 		event.accelerationY = data.y;
 		event.accelerationZ = data.z;
 		
-		dispatchEvent (event);
+		dispatchEvent(event);
 		
 	}
 	
@@ -88,7 +88,7 @@ class Accelerometer extends EventDispatcher {
 	
 	
 	
-	/** @private */ private static function get_isSupported ():Bool { return nme_input_get_acceleration () != null; }
+	/** @private */ private static function get_isSupported():Bool { return nme_input_get_acceleration() != null; }
 	
 	
 	
@@ -98,7 +98,7 @@ class Accelerometer extends EventDispatcher {
 	
 	
 	
-	private static var nme_input_get_acceleration = Loader.load ("nme_input_get_acceleration", 0);
+	private static var nme_input_get_acceleration = Loader.load("nme_input_get_acceleration", 0);
 	
 	
 }

@@ -25,7 +25,7 @@ class TextFormat {
 	public var url:String;
 	
 	
-	public function new (?in_font:String, ?in_size:Dynamic, ?in_color:Dynamic, ?in_bold:Dynamic, ?in_italic:Dynamic, ?in_underline:Dynamic, ?in_url:String, ?in_target:String, ?in_align:String, ?in_leftMargin:Dynamic, ?in_rightMargin:Dynamic, ?in_indent:Dynamic, ?in_leading:Dynamic) {
+	public function new(?in_font:String, ?in_size:Dynamic, ?in_color:Dynamic, ?in_bold:Dynamic, ?in_italic:Dynamic, ?in_underline:Dynamic, ?in_url:String, ?in_target:String, ?in_align:String, ?in_leftMargin:Dynamic, ?in_rightMargin:Dynamic, ?in_indent:Dynamic, ?in_leading:Dynamic) {
 		
 		font = in_font;
 		size = in_size;

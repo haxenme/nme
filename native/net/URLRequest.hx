@@ -27,7 +27,7 @@ class URLRequest {
 	/** @private */ public var nmeBytes:ByteArray;
 	
 	
-	public function new (?inURL:String) {
+	public function new(?inURL:String) {
 		
 		if (inURL != null)
 			url = inURL;
@@ -44,7 +44,7 @@ class URLRequest {
 	}
 	
 	
-	public function basicAuth (inUser:String, inPasswd:String) {
+	public function basicAuth(inUser:String, inPasswd:String) {
 		
 		authType = AUTH_BASIC;
 		credentials = inUser + ":" + inPasswd;
@@ -52,7 +52,7 @@ class URLRequest {
 	}
 	
 	
-	public function digestAuth (inUser:String, inPasswd:String) {
+	public function digestAuth(inUser:String, inPasswd:String) {
 		
 		authType = AUTH_DIGEST;
 		credentials = inUser + ":" + inPasswd;
@@ -60,39 +60,39 @@ class URLRequest {
 	}
 	
 	
-	/** @private */ public function nmePrepare () {
+	/** @private */ public function nmePrepare() {
 		
 		if (data == null) {
 			
-			nmeBytes = new ByteArray ();
+			nmeBytes = new ByteArray();
 			
-		} else if (Std.is (data, ByteArray)) {
+		} else if (Std.is(data, ByteArray)) {
 			
 			nmeBytes = data;
 			
-		} else if (Std.is (data, URLVariables)) {
+		} else if (Std.is(data, URLVariables)) {
 			
 			var vars:URLVariables = data;
-			var str = vars.toString ();
-			nmeBytes = new ByteArray ();
-			nmeBytes.writeUTFBytes (str);
+			var str = vars.toString();
+			nmeBytes = new ByteArray();
+			nmeBytes.writeUTFBytes(str);
 			
-		} else if (Std.is (data, String)) {
+		} else if (Std.is(data, String)) {
 			
 			var str:String = data;
-			nmeBytes = new ByteArray ();
-			nmeBytes.writeUTFBytes (str);
+			nmeBytes = new ByteArray();
+			nmeBytes.writeUTFBytes(str);
 			
-		} else if (Std.is (data, Dynamic)) {
+		} else if (Std.is(data, Dynamic)) {
 			
-			var vars:URLVariables = new URLVariables ();
+			var vars:URLVariables = new URLVariables();
 			
-			for (i in Reflect.fields (data))
-				Reflect.setField (vars, i, Reflect.field (data, i));
+			for (i in Reflect.fields(data))
+				Reflect.setField(vars, i, Reflect.field(data, i));
 			
-			var str = vars.toString ();
-			nmeBytes = new ByteArray ();
-			nmeBytes.writeUTFBytes (str);
+			var str = vars.toString();
+			nmeBytes = new ByteArray();
+			nmeBytes.writeUTFBytes(str);
 			
 		} else {
 			

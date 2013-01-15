@@ -6,22 +6,22 @@ class PerspectiveProjection {
 	
 	public static inline var TO_RADIAN:Float = 0.01745329251994329577; // Math.PI / 180
 	
-	public var fieldOfView (default, set_fieldOfView):Float;
+	public var fieldOfView(default, set_fieldOfView):Float;
 	public var focalLength:Float;
 	public var projectionCenter:Point; // FIXME: does this do anything at all?
 	
 	private var matrix3D:Matrix3D;
 	
 	
-	public function new () {
+	public function new() {
 		
-		matrix3D = new Matrix3D ();
-		projectionCenter = new Point (Lib.current.stage.stageWidth / 2, Lib.current.stage.stageHeight / 2);
+		matrix3D = new Matrix3D();
+		projectionCenter = new Point(Lib.current.stage.stageWidth / 2, Lib.current.stage.stageHeight / 2);
 		
 	}
 	
 	
-	public function toMatrix3D ():Matrix3D {
+	public function toMatrix3D():Matrix3D {
 		
 		if (fieldOfView == null || projectionCenter == null) return null;
 		
@@ -44,12 +44,12 @@ class PerspectiveProjection {
 	
 	
 	
-	private function set_fieldOfView (fieldOfView:Float):Float {
+	private function set_fieldOfView(fieldOfView:Float):Float {
 		
 		var p_nFovY = fieldOfView * TO_RADIAN;
 		this.fieldOfView = p_nFovY;
-		var cotan = 1 / Math.tan (p_nFovY / 2);
-		this.focalLength = Lib.current.stage.stageWidth * (Lib.current.stage.stageWidth / Lib.current.stage.stageHeight) / 2 * cotan;
+		var cotan = 1 / Math.tan(p_nFovY / 2);
+		this.focalLength = Lib.current.stage.stageWidth *(Lib.current.stage.stageWidth / Lib.current.stage.stageHeight) / 2 * cotan;
 		return fieldOfView;
 		
 	}

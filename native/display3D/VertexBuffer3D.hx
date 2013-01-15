@@ -14,7 +14,7 @@ class VertexBuffer3D {
 	public var numVertices:Int;
 	
 	
-	public function new (glBuffer:Buffer, numVertices:Int, data32PerVertex:Int) {
+	public function new(glBuffer:Buffer, numVertices:Int, data32PerVertex:Int) {
 		
 		this.glBuffer = glBuffer;
 		this.numVertices = numVertices;
@@ -23,24 +23,24 @@ class VertexBuffer3D {
 	}
 	
 	
-	public function dispose ():Void {
+	public function dispose():Void {
 		
 		// TODO
 		
 	}
 	
 	
-	public function uploadFromByteArray (byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
+	public function uploadFromByteArray(byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
 		
         // TODO deal with other arguments   ?
 		
-        GL.bindBuffer (GL.ARRAY_BUFFER, glBuffer);
-        GL.bufferData (GL.ARRAY_BUFFER, byteArray, GL.STATIC_DRAW);
+        GL.bindBuffer(GL.ARRAY_BUFFER, glBuffer);
+        GL.bufferData(GL.ARRAY_BUFFER, byteArray, GL.STATIC_DRAW);
 		
 	}
 	
 	
-	public function uploadFromVector (data:Vector<Float>, startVertex:Int, numVertices:Int):Void {
+	public function uploadFromVector(data:Vector<Float>, startVertex:Int, numVertices:Int):Void {
 		
 		// TODO
 		

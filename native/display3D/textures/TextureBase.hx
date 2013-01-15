@@ -7,14 +7,14 @@ import native.events.EventDispatcher;
 class TextureBase extends EventDispatcher {
 	
 	
-	public function new () {
+	public function new() {
 		
-		super ();
+		super();
 		
 	}
 	
 	
-	public function dispose ():Void {
+	public function dispose():Void {
 		
 		// TODO
 		

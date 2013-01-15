@@ -97,13 +97,13 @@ extern interface XPathException {
 }
 
 extern interface XPathEvaluator {
-	public function createExpression(expression:DOMString, resolver:XPathNSResolver):XPathExpression; // raises (XPathException, DOMException)
+	public function createExpression(expression:DOMString, resolver:XPathNSResolver):XPathExpression; // raises(XPathException, DOMException)
 	public function createNSResolver(nodeResolver:Node):XPathNSResolver;
-	public function evaluate(expression:DOMString, contextNode:Node, resolver:XPathNSResolver, type:Int, result:DOMObject):DOMObject; // raises (XPathException, DOMException)
+	public function evaluate(expression:DOMString, contextNode:Node, resolver:XPathNSResolver, type:Int, result:DOMObject):DOMObject; // raises(XPathException, DOMException)
 }
 
 extern interface XPathExpression {
-	public function evaluate(contextNode:Node, type:Int, result:DOMObject):DOMObject; // raises (XPathException, DOMException)
+	public function evaluate(contextNode:Node, type:Int, result:DOMObject):DOMObject; // raises(XPathException, DOMException)
 }
 
 extern interface XPathNSResolver {
@@ -130,8 +130,8 @@ extern class XPathResult {
 	public var invalidIteratorState(default,null):Bool;
 	public var snapshotLength(default,null):Int;
 
-	public function iterateNext():Node; // raises (XPathException, DOMException)
-	public function snapshotItem(index:Int):Node; // raises (XPathException, DOMException)
+	public function iterateNext():Node; // raises(XPathException, DOMException)
+	public function snapshotItem(index:Int):Node; // raises(XPathException, DOMException)
 }
 
 extern interface XPathNamespace
@@ -175,7 +175,7 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var length(default,null):Int;
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	@:overload( function (index:ArrayAccess<Int>, ?offset:Int):Void {} )
+	@:overload( function(index:ArrayAccess<Int>, ?offset:Int):Void {} )
 	function set(index:Int8Array, ?offset:Int):Void;
 	function subarray(offset:Int, length:Int):Int8Array;
 }
@@ -189,7 +189,7 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	var length(default,null):Int;
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	@:overload( function (index:ArrayAccess<Int>, ?offset:Int):Void {} )
+	@:overload( function(index:ArrayAccess<Int>, ?offset:Int):Void {} )
 	function set(index:Uint8Array, ?offset:Int):Void;
 	function subarray(offset:Int, length:Int):Uint8Array;
 }
@@ -369,7 +369,7 @@ extern interface WebGLRenderingContext
     public var TRIANGLE_STRIP                : GLenum;
     public var TRIANGLE_FAN                  : GLenum;
     
-    /* AlphaFunction (not supported in ES20) */
+    /* AlphaFunction(not supported in ES20) */
     /*      NEVER */
     /*      LESS */
     /*      EQUAL */
@@ -1088,10 +1088,10 @@ typedef DOMObject = Dynamic;
 typedef DOMUserData = Dynamic //any
 
 extern class DomCollection<T> implements ArrayAccess<T>, implements Dynamic<T> {
-	var length (default, null) : Int;
+	var length(default, null) : Int;
 }
 
-// [\t]*readonly attribute long (\w+)
+// [\t]*readonly attribute long(\w+)
 //
 /*
 * <----------------- Core IDL Port ------------------>
@@ -1109,7 +1109,7 @@ extern interface DOMStringMap {
 }
 
 extern interface DOMTokenList {
-    public var length       (default, null): Int;
+    public var length      (default, null): Int;
     
     public function item(index: Int): DOMString;
     
@@ -1137,7 +1137,7 @@ extern interface DOMStringList {
     
     public function contains(str: DOMString): Bool;
     
-    public var length       (default,null): Int;
+    public var length      (default,null): Int;
     
 }
 
@@ -1150,7 +1150,7 @@ extern interface NameList {
     
     public function containsNS(namespaceURI: DOMString, name: DOMString): Bool;
     
-    public var length       (default,null): Int;
+    public var length      (default,null): Int;
 }
 // Unable to Test
 extern interface DOMImplementationSource {
@@ -1184,17 +1184,17 @@ extern interface EventTarget {
 
 //Tested
 extern interface Node implements EventTarget {
-    public var nodeName         (default,null): DOMString;
+    public var nodeName        (default,null): DOMString;
     public var nodeValue:       DOMString;  // raises(DOMException) on setting & raises(DOMException) on retrieval
-    public var nodeType         (default,null): Int;
-    public var parentNode       (default,null): Node;
-    public var childNodes       (default,null): DomCollection<Node>;
-    public var firstChild       (default,null): Node;
-    public var lastChild        (default,null): Node;
-    public var previousSibling  (default,null): Node;
-    public var nextSibling      (default,null): Node;
-    public var attributes       (default,null): NamedNodeMap;
-    public var ownerDocument    (default,null): Document;
+    public var nodeType        (default,null): Int;
+    public var parentNode      (default,null): Node;
+    public var childNodes      (default,null): DomCollection<Node>;
+    public var firstChild      (default,null): Node;
+    public var lastChild       (default,null): Node;
+    public var previousSibling (default,null): Node;
+    public var nextSibling     (default,null): Node;
+    public var attributes      (default,null): NamedNodeMap;
+    public var ownerDocument   (default,null): Document;
     
     public function hasChildNodes(): Bool;
     
@@ -1212,10 +1212,10 @@ extern interface Node implements EventTarget {
     
     public function hasAttributes(): Bool;
     
-    public var namespaceURI     (default,null): DOMString;
-    public var prefix           (default,null): DOMString;                      
-    public var localName        (default,null): DOMString;
-    public var baseURI          (default,null): DOMString;
+    public var namespaceURI    (default,null): DOMString;
+    public var prefix          (default,null): DOMString;                      
+    public var localName       (default,null): DOMString;
+    public var baseURI         (default,null): DOMString;
     public var textContent:     DOMString;
     
     
@@ -1253,12 +1253,12 @@ extern interface NamedNodeMap {
     
     public function removeNamedItemNS(namespaceURI: DOMString, localName: DOMString): Node;
     
-    public var length (default,null): Int;
+    public var length(default,null): Int;
 }
 //Tested throuh Text
 extern interface CharacterData implements Node {
     public var data:    DOMString;
-    public var length   (default,null): Int;
+    public var length  (default,null): Int;
     
     public function substringData(offset: Int, count: Int): DOMString;
     
@@ -1272,26 +1272,26 @@ extern interface CharacterData implements Node {
 }
 //Tested
 extern interface Attr implements Node {
-    public var name             (default,null): DOMString;
-    public var specified        (default,null): Bool;
-    public var value            (default,null): DOMString;
-    public var ownerElement     (default,null): Element;
-    public var schemaTypeInfo   (default,null): TypeInfo;
-    public var isID             (default,null): Bool;
+    public var name            (default,null): DOMString;
+    public var specified       (default,null): Bool;
+    public var value           (default,null): DOMString;
+    public var ownerElement    (default,null): Element;
+    public var schemaTypeInfo  (default,null): TypeInfo;
+    public var isID            (default,null): Bool;
 }
 //Tested
 extern interface Element implements Node {
-    public var schemaTypeInfo   (default,null): TypeInfo;
-    public var tagName          (default, null): DOMString;
+    public var schemaTypeInfo  (default,null): TypeInfo;
+    public var tagName         (default, null): DOMString;
     public var scrollTop:       Int;  
     public var scrollLeft:      Int; 
-    public var scrollWidth      (default, null): Int;
-    public var scrollHeight     (default, null): Int;
-    public var clientTop        (default, null): Int;
-    public var clientLeft       (default, null): Int;
-    public var clientWidth      (default, null): Int;
-    public var clientHeight     (default, null): Int;
-    public var offsetParent     (default, null): HTMLElement;
+    public var scrollWidth     (default, null): Int;
+    public var scrollHeight    (default, null): Int;
+    public var clientTop       (default, null): Int;
+    public var clientLeft      (default, null): Int;
+    public var clientWidth     (default, null): Int;
+    public var clientHeight    (default, null): Int;
+    public var offsetParent    (default, null): HTMLElement;
     
     public function getAttribute(name: DOMString): DOMString;
     
@@ -1339,8 +1339,8 @@ extern interface Text implements CharacterData {
     
     public function replaceWholeText(content: DOMString): Text;
     
-    public var isElementContentWhitespace   (default,null): Bool;
-    public var wholeText                    (default,null): DOMString;
+    public var isElementContentWhitespace  (default,null): Bool;
+    public var wholeText                   (default,null): DOMString;
 }
 
 extern interface Comment implements CharacterData {
@@ -1349,8 +1349,8 @@ extern interface Comment implements CharacterData {
 
 //Unable to Test
 extern interface TypeInfo {
-    public var typeName         (default,null): DOMString;
-    public var typeNamespace    (default,null): DOMString;
+    public var typeName        (default,null): DOMString;
+    public var typeNamespace   (default,null): DOMString;
     
     public function isDerivedFrom(typeNamespaceArg: DOMString, typeNameArg: DOMString, derivationMethod: Int): Bool;
 }
@@ -1362,12 +1362,12 @@ extern interface UserDataHandler {
 
 //Unable to Test
 extern interface DOMError {
-    public var severity         (default,null): Int;
-    public var message          (default,null): DOMString;
-    public var type             (default,null): DOMString;
-    public var relatedException (default,null): DOMObject;
-    public var relatedData      (default,null): DOMObject;
-    public var location         (default,null): DOMLocator;
+    public var severity        (default,null): Int;
+    public var message         (default,null): DOMString;
+    public var type            (default,null): DOMString;
+    public var relatedException(default,null): DOMObject;
+    public var relatedData     (default,null): DOMObject;
+    public var location        (default,null): DOMLocator;
 }
 //Unable to Test
 extern interface DOMErrorHandler {
@@ -1375,12 +1375,12 @@ extern interface DOMErrorHandler {
 }
 //Unable to Test
 extern interface DOMLocator {
-    public var lineNumber   (default,null): Int;
-    public var columnNumber (default,null): Int;
-    public var byteOffset   (default,null): Int;
-    public var utf16Offset  (default,null): Int;
-    public var relatedNode  (default,null): Node;
-    public var uri          (default,null): DOMString;
+    public var lineNumber  (default,null): Int;
+    public var columnNumber(default,null): Int;
+    public var byteOffset  (default,null): Int;
+    public var utf16Offset (default,null): Int;
+    public var relatedNode (default,null): Node;
+    public var uri         (default,null): DOMString;
 }
 //Unable to Test
 extern interface DOMConfiguration {
@@ -1398,26 +1398,26 @@ extern interface CDATASection implements Text {
 }
 //Tested
 extern interface DocumentType implements Node {
-    public var name             (default,null): DOMString;
-    public var entities         (default,null): NamedNodeMap;
-    public var notations        (default,null): NamedNodeMap;
-    public var publicId         (default,null): DOMString;
-    public var systemId         (default,null): DOMString;
-    public var internalSubset   (default,null): DOMString;
+    public var name            (default,null): DOMString;
+    public var entities        (default,null): NamedNodeMap;
+    public var notations       (default,null): NamedNodeMap;
+    public var publicId        (default,null): DOMString;
+    public var systemId        (default,null): DOMString;
+    public var internalSubset  (default,null): DOMString;
 }
 //Unagle to Test
 extern interface Notation implements Node {
-    public var publicId         (default,null): DOMString;
-    public var systemId         (default,null): DOMString;
+    public var publicId        (default,null): DOMString;
+    public var systemId        (default,null): DOMString;
 }
 //Unable to Test
 extern interface Entity implements Node {
-    public var publicId         (default,null): DOMString;
-    public var systemId         (default,null): DOMString;
-    public var notationName     (default,null): DOMString;
-    public var inputEncoding    (default,null): DOMString;
-    public var xmlEncoding      (default,null): DOMString;
-    public var xmlVersion       (default,null): DOMString;
+    public var publicId        (default,null): DOMString;
+    public var systemId        (default,null): DOMString;
+    public var notationName    (default,null): DOMString;
+    public var inputEncoding   (default,null): DOMString;
+    public var xmlEncoding     (default,null): DOMString;
+    public var xmlVersion      (default,null): DOMString;
 }
 
 extern interface EntityReference implements Node {
@@ -1425,7 +1425,7 @@ extern interface EntityReference implements Node {
 }
 //XML Only
 extern interface ProcessingInstruction implements Node {
-    public var target           (default, null):      DOMString;
+    public var target          (default, null):      DOMString;
     public var data:        DOMString;
 }
 
@@ -1435,12 +1435,12 @@ extern interface DocumentFragment implements Node {
 
 //Tested
 extern interface Document implements Node {
-    public var doctype                  (default, null): DocumentType;
-    public var implementation           (default, null): DOMImplementation;
-    public var documentElement          (default, null): Element;
-    public var inputEncoding            (default, null): DOMString;
-    public var xmlEncoding              (default, null): DOMString;
-    public var domConfig                (default, null): DOMConfiguration;
+    public var doctype                 (default, null): DocumentType;
+    public var implementation          (default, null): DOMImplementation;
+    public var documentElement         (default, null): Element;
+    public var inputEncoding           (default, null): DOMString;
+    public var xmlEncoding             (default, null): DOMString;
+    public var domConfig               (default, null): DOMConfiguration;
     
     public var xmlStandalone:           Bool;
     public var xmlVersion:              DOMString;
@@ -1449,13 +1449,13 @@ extern interface Document implements Node {
     
     public var styleSheets:             DomCollection<StyleSheet>;
     public var selectedStyleSheetSet:   DOMStringList;
-    public var lastStyleSheetSet        (default, null): DOMString;
-    public var preferredStyleSheetSet   (default, null): DOMString;
-    public var styleSheetSets           (default, null): DOMStringList;
+    public var lastStyleSheetSet       (default, null): DOMString;
+    public var preferredStyleSheetSet  (default, null): DOMString;
+    public var styleSheetSets          (default, null): DOMStringList;
     
     public function enableStyleSheetsForSet(name: DOMString):Void;    
     
-    public var defaultView  (default, null): Window;    
+    public var defaultView (default, null): Window;    
     
     public function createElement(tagName: DOMString): Element;
     
@@ -1495,7 +1495,7 @@ extern interface Document implements Node {
 }
 
 extern interface Storage {
-    public var length       (default, null): Int;
+    public var length      (default, null): Int;
     
     public function key(index: Int): DOMString;
     
@@ -1514,7 +1514,7 @@ extern interface Storage {
 */
 //Tested
 extern interface HTMLCollection {
-    public var length (default,null): Int;
+    public var length(default,null): Int;
     
     public function item(index: Int): Node;
     
@@ -1522,21 +1522,21 @@ extern interface HTMLCollection {
 }
 
 extern interface MediaError {
-    public var code                     (default, null): Int;
+    public var code                    (default, null): Int;
 }
 
 extern interface TimedTrack {
-    public var kind                 (default, null): DOMString;
-    public var label                (default, null): DOMString;
-    public var language             (default, null): DOMString;
-    public var readyState           (default, null): Int;
-    public var onload               (default, null): EventListener<Html5DomEvent>;
-    public var onerror              (default, null): EventListener<Html5DomEvent>;
+    public var kind                (default, null): DOMString;
+    public var label               (default, null): DOMString;
+    public var language            (default, null): DOMString;
+    public var readyState          (default, null): Int;
+    public var onload              (default, null): EventListener<Html5DomEvent>;
+    public var onerror             (default, null): EventListener<Html5DomEvent>;
     public var mode                 : Int;
-    public var cues                 (default, null): TimedTrackCueList;
-    public var activeCues           (default, null): TimedTrackCueList;
-    public var onentercue           (default, null): EventListener<Html5DomEvent>;
-    public var onexitcue            (default, null): EventListener<Html5DomEvent>;
+    public var cues                (default, null): TimedTrackCueList;
+    public var activeCues          (default, null): TimedTrackCueList;
+    public var onentercue          (default, null): EventListener<Html5DomEvent>;
+    public var onexitcue           (default, null): EventListener<Html5DomEvent>;
 }
 
 extern interface MutableTimedTrack implements TimedTrack {
@@ -1546,7 +1546,7 @@ extern interface MutableTimedTrack implements TimedTrack {
 }
 
 extern interface TimedTrackCueList {
-    public var length               (default, null): Int;
+    public var length              (default, null): Int;
     
     public function getter(index: Int): TimedTrackCue;
     
@@ -1554,18 +1554,18 @@ extern interface TimedTrackCueList {
 }
 
 extern interface TimedTrackCue {
-    public var track                (default, null): TimedTrack;
-    public var id                   (default, null): DOMString;
-    public var startTime            (default, null): Float;
-    public var endTime              (default, null): Float;
-    public var pauseOnExit          (default, null): Bool;
-    public var direction            (default, null): DOMString;
-    public var snapToLines          (default, null): Bool;
-    public var linePosition         (default, null): Int;
-    public var textPosition         (default, null): Int;
-    public var size                 (default, null): Int;
-    public var alignment            (default, null): DOMString;
-    public var voice                (default, null): DOMString;
+    public var track               (default, null): TimedTrack;
+    public var id                  (default, null): DOMString;
+    public var startTime           (default, null): Float;
+    public var endTime             (default, null): Float;
+    public var pauseOnExit         (default, null): Bool;
+    public var direction           (default, null): DOMString;
+    public var snapToLines         (default, null): Bool;
+    public var linePosition        (default, null): Int;
+    public var textPosition        (default, null): Int;
+    public var size                (default, null): Int;
+    public var alignment           (default, null): DOMString;
+    public var voice               (default, null): DOMString;
     
     public function getCueAsSource(): DOMString;
     
@@ -1573,27 +1573,27 @@ extern interface TimedTrackCue {
 }
 
 extern interface HTMLMediaElement implements HTMLElement {
-    public var tracks                   (default, null): TimedTrack;
-    public var error                    (default, null): MediaError;
+    public var tracks                  (default, null): TimedTrack;
+    public var error                   (default, null): MediaError;
     public var src                      : DOMString;
-    public var currentSrc               (default, null): DOMString;
+    public var currentSrc              (default, null): DOMString;
     public var controls                 : Bool;
     public var volume                   : Float;
     public var muted                    : Bool;
-    public var networkState             (default, null): Int;
+    public var networkState            (default, null): Int;
     public var preload                  : DOMString;
-    public var buffered                 (default, null): TimeRanges;
-    public var readyState               (default, null): Int;
-    public var seeking                  (default, null): Bool;
+    public var buffered                (default, null): TimeRanges;
+    public var readyState              (default, null): Int;
+    public var seeking                 (default, null): Bool;
     public var currentTime: Float;
-    public var startTime                (default, null): Float;
-    public var duration                 (default, null): Float;
-    public var paused                   (default, null): Bool;
+    public var startTime               (default, null): Float;
+    public var duration                (default, null): Float;
+    public var paused                  (default, null): Bool;
     public var defaultPlaybackRate      : Float;
     public var playbackRate             : Float;
-    public var played (default, null)   : TimeRanges;
-    public var seekable                 (default, null): TimeRanges;
-    public var ended                    (default, null): Bool;
+    public var played(default, null)   : TimeRanges;
+    public var seekable                (default, null): TimeRanges;
+    public var ended                   (default, null): Bool;
     public var autoplay                 : Bool;
     public var loop                     : Bool;
     
@@ -1616,7 +1616,7 @@ extern interface RadioNodeList implements DomCollection<Node> {
 }
 
 extern interface HTMLOptionsCollection {
-    public var length (default,null): Int;
+    public var length(default,null): Int;
     
     public function item(index: Int): Node;
     
@@ -1624,12 +1624,12 @@ extern interface HTMLOptionsCollection {
 }
 //Tested
 interface Selection {
-    public var anchorNode (default, null): Node;
-    public var anchorOffset (default, null): Int;
-    public var focusNode (default, null): Node;
-    public var focusOffset (default, null): Int;
-    public var isCollapsed (default, null): Bool;
-    public var rangeCount (default, null): Int;
+    public var anchorNode(default, null): Node;
+    public var anchorOffset(default, null): Int;
+    public var focusNode(default, null): Node;
+    public var focusOffset(default, null): Int;
+    public var isCollapsed(default, null): Bool;
+    public var rangeCount(default, null): Int;
     
     public function collapse(parentNode: Node, offset: Int): Void;
     
@@ -1654,33 +1654,33 @@ interface Selection {
 
 extern interface HTMLDocument implements Document, implements XPathEvaluator {
     public var title:       DOMString;
-    public var referrer     (default, null): DOMString;
-    public var domain       (default, null): DOMString;
-    public var URL          (default, null): DOMString;
+    public var referrer    (default, null): DOMString;
+    public var domain      (default, null): DOMString;
+    public var URL         (default, null): DOMString;
     public var body:        HTMLElement;
-    public var images       (default, null): HTMLCollection;
-    public var applets      (default, null): HTMLCollection;
-    public var links        (default, null): HTMLCollection;
-    public var forms        (default, null): HTMLCollection;
-    public var anchors      (default, null): HTMLCollection;
+    public var images      (default, null): HTMLCollection;
+    public var applets     (default, null): HTMLCollection;
+    public var links       (default, null): HTMLCollection;
+    public var forms       (default, null): HTMLCollection;
+    public var anchors     (default, null): HTMLCollection;
     public var cookie:      DOMString;
     
     public function getElementsByName(elementName: DOMString): DomCollection<Node>;
     
-    public var location (default, null): Location;
-    public var lastModified (default, null): DOMString;
-    public var compatMode (default, null): DOMString;
+    public var location(default, null): Location;
+    public var lastModified(default, null): DOMString;
+    public var compatMode(default, null): DOMString;
     public var charset: DOMString;
-    public var characterSet (default, null): DOMString;
-    public var defaultCharset (default, null): DOMString;
-    public var readyState (default, null): DOMString;
+    public var characterSet(default, null): DOMString;
+    public var defaultCharset(default, null): DOMString;
+    public var readyState(default, null): DOMString;
 
     // DOM tree accessors
     public var dir: DOMString;
-    public var head (default, null): HTMLHeadElement;
-    public var embeds (default, null): HTMLCollection;
-    public var plugins (default, null): HTMLCollection;
-    public var scripts (default, null): HTMLCollection;
+    public var head(default, null): HTMLHeadElement;
+    public var embeds(default, null): HTMLCollection;
+    public var plugins(default, null): HTMLCollection;
+    public var scripts(default, null): HTMLCollection;
     
     public function getter(name: DOMString): Dynamic;
     
@@ -1699,7 +1699,7 @@ extern interface HTMLDocument implements Document, implements XPathEvaluator {
     public function writeln(text: DOMString): Void;
 
     // user interaction  
-    public var activeElement    (default, null): Element;
+    public var activeElement   (default, null): Element;
     public var designMode       :DOMString;
     public var commands         :HTMLCollection;
     
@@ -1790,20 +1790,20 @@ extern interface HTMLElement implements Element {
     public var style:           CSSInlineStyleDeclaration;
     public var hidden:          Bool;
     
-    public var accessKey            (default, null): DOMString;
-    public var accessKeyLabel       (default, null): DOMString;
-    public var draggable            (default, null): Bool;
-    public var contentEditable      (default, null): DOMString;
-    public var isContentEditable    (default, null): Bool;
-    public var contextMenu          (default, null): HTMLMenuElement;
-    public var spellcheck           (default, null): DOMString;
+    public var accessKey           (default, null): DOMString;
+    public var accessKeyLabel      (default, null): DOMString;
+    public var draggable           (default, null): Bool;
+    public var contentEditable     (default, null): DOMString;
+    public var isContentEditable   (default, null): Bool;
+    public var contextMenu         (default, null): HTMLMenuElement;
+    public var spellcheck          (default, null): DOMString;
     
     //command API
-    public var commandType      (default, null): DOMString;
-    public var label            (default, null): DOMString;
-    public var icon             (default, null): DOMString;
-    public var disabled         (default, null): Bool;
-    public var checked          (default, null): Bool;
+    public var commandType     (default, null): DOMString;
+    public var label           (default, null): DOMString;
+    public var icon            (default, null): DOMString;
+    public var disabled        (default, null): Bool;
+    public var checked         (default, null): Bool;
     
     // dynamic markup insertion
     public var outerHTML: DOMString;
@@ -1811,10 +1811,10 @@ extern interface HTMLElement implements Element {
     public function insertAdjacentHTML(position: DOMString, text: DOMString): Void;
         
     
-	public var offsetLeft       (default,null): Int;
-    public var offsetTop        (default,null): Int;
-    public var offsetWidth      (default,null): Int;
-    public var offsetHeight     (default,null): Int;
+	public var offsetLeft      (default,null): Int;
+    public var offsetTop       (default,null): Int;
+    public var offsetWidth     (default,null): Int;
+    public var offsetHeight    (default,null): Int;
     
     public function scrollIntoView(?top: Bool): Void;
     
@@ -1889,7 +1889,7 @@ extern interface HTMLHeadElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLLinkElement implements HTMLElement {
-    public var disabled (default, null):        Bool;
+    public var disabled(default, null):        Bool;
     public var charset:         DOMString;
     public var href:            DOMString;
     public var hreflang:        DOMString;
@@ -1920,7 +1920,7 @@ extern interface HTMLBaseElement implements HTMLElement {
 }
 //Unable to Test
 extern interface HTMLIsIndexElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
+    public var form            (default, null): HTMLFormElement;
     public var prompt:          DOMString;
 }
 //Tested
@@ -1941,8 +1941,8 @@ extern interface HTMLBodyElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLFormElement implements HTMLElement {
-    public var elements         (default, null): HTMLCollection;
-    public var length           (default, null): Int;
+    public var elements        (default, null): HTMLCollection;
+    public var length          (default, null): Int;
     public var name:            DOMString;
     public var acceptCharset:   DOMString;
     public var action:          DOMString;
@@ -1956,13 +1956,13 @@ extern interface HTMLFormElement implements HTMLElement {
 }
 //Unable to Test
 extern interface HTMLSelectElement implements HTMLElement {
-    public var type             (default, null): DOMString;
+    public var type            (default, null): DOMString;
     public var selectedIndex:   Int;
     public var value:           DOMString;
-    public var length           (default, null): Int;
-    public var form             (default, null): HTMLFormElement;
-    public var options          (default, null): HTMLOptionsCollection;
-    public var disabled (default, null):        Bool;
+    public var length          (default, null): Int;
+    public var form            (default, null): HTMLFormElement;
+    public var options         (default, null): HTMLOptionsCollection;
+    public var disabled(default, null):        Bool;
     public var multiple:        Bool;
     public var name:            DOMString;
     public var size:            Int;
@@ -1997,25 +1997,25 @@ extern interface CanvasRenderingContext2D {
     public function translate(x: Float, y: Float):Void;
     public function transform(m11: Float, m12: Float, m21: Float, m22: Float, dx: Float, dy: Float):Void;
     public function setTransform(m11: Float, m12: Float, m21: Float, m22: Float, dx: Float, dy: Float):Void;
-    public var globalAlpha:                 Float; // (default 1.0)
-    public var globalCompositeOperation:    DOMString; // (default source-over)
+    public var globalAlpha:                 Float; //(default 1.0)
+    public var globalCompositeOperation:    DOMString; //(default source-over)
 
-    public var strokeStyle:                 Dynamic; // (default black)
-    public var fillStyle:                   Dynamic; // (default black)
+    public var strokeStyle:                 Dynamic; //(default black)
+    public var fillStyle:                   Dynamic; //(default black)
     public function createLinearGradient(x0: Float, y0: Float, x1: Float, y1: Float):CanvasGradient;
     public function createRadialGradient(x0: Float, y0: Float, r0: Float, x1: Float, y1: Float, r1: Float):CanvasGradient;
     public function createPattern(image: HTMLImageElement, repetition: DOMString):CanvasPattern;
 
-    public var lineWidth:                   Float; // (default 1)
-    public var lineCap:                     DOMString; // "butt", "round", "square" (default "butt")
-    public var lineJoin:                    DOMString; // "round", "bevel", "miter" (default "miter")
-    public var miterLimit:                  Float; // (default 10)
+    public var lineWidth:                   Float; //(default 1)
+    public var lineCap:                     DOMString; // "butt", "round", "square"(default "butt")
+    public var lineJoin:                    DOMString; // "round", "bevel", "miter"(default "miter")
+    public var miterLimit:                  Float; //(default 10)
 
 
-    public var shadowOffsetX:               Float; // (default 0)
-    public var shadowOffsetY:               Float; // (default 0)
-    public var shadowBlur:                  Float; // (default 0)
-    public var shadowColor:                 DOMString; // (default transparent black)
+    public var shadowOffsetX:               Float; //(default 0)
+    public var shadowOffsetY:               Float; //(default 0)
+    public var shadowBlur:                  Float; //(default 0)
+    public var shadowColor:                 DOMString; //(default transparent black)
 
 
     public function clearRect(x: Float, y: Float, w: Float, h: Float):Void;
@@ -2041,14 +2041,14 @@ extern interface CanvasRenderingContext2D {
     public function drawFocusRing(element: Element, xCaret: Float, yCaret: Float, canDrawCustom: Bool):Bool;
 
 
-    public var font:                    DOMString; // (default 10px sans-serif)
-    public var textAlign:               DOMString; // "start", "end", "left", "right", "center" (default: "start")
-    public var textBaseline:            DOMString; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
+    public var font:                    DOMString; //(default 10px sans-serif)
+    public var textAlign:               DOMString; // "start", "end", "left", "right", "center"(default: "start")
+    public var textBaseline:            DOMString; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom"(default: "alphabetic")
     public function fillText(text: DOMString, x: Float, y: Float, maxWidth: Float):Void;
     public function strokeText(text: DOMString, x: Float, y: Float, maxWidth: Float):Void;
     public function measureText(text: DOMString):TextMetrics;
 
-    //@:overload( function (image: Dynamic, dx: Float, dy: Float):Void {} )
+    //@:overload( function(image: Dynamic, dx: Float, dy: Float):Void {} )
 	public function drawImage(image: Dynamic, sx: Float, sy: Float, ?sw: Float, ?sh: Float, ?dx: Float, ?dy: Float, ?dw: Float, ?dh: Float):Void;
 
     public function createImageData(sw: Float, sh: Float):ImageData;
@@ -2065,13 +2065,13 @@ extern interface CanvasPattern {
 }
 //Tested
 extern interface TextMetrics {
-    public var width            (default, null): Int;
+    public var width           (default, null): Int;
 }
 //Tested
 extern interface ImageData {
-    public var width              (default, null): Int;
-    public var height             (default, null): Int;
-    public var data               (default, null): CanvasPixelArray;
+    public var width             (default, null): Int;
+    public var height            (default, null): Int;
+    public var data              (default, null): CanvasPixelArray;
 }
 
 extern interface CanvasPixelArray implements ArrayAccess<Int> {
@@ -2082,17 +2082,17 @@ extern interface Octet {}
 
 //Unable to Test
 extern interface HTMLOptGroupElement implements HTMLElement {
-    public var disabled (default, null):        Bool;
-    public var label (default, null):           DOMString;
+    public var disabled(default, null):        Bool;
+    public var label(default, null):           DOMString;
 }
 //Tested
 extern interface HTMLOptionElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
+    public var form            (default, null): HTMLFormElement;
     public var defaultSelected: Bool;
-    public var text             (default, null): DOMString;
-    public var index            (default, null): Int;
-    public var disabled (default, null):        Bool;
-    public var label (default, null):           DOMString;
+    public var text            (default, null): DOMString;
+    public var index           (default, null): Int;
+    public var disabled(default, null):        Bool;
+    public var label(default, null):           DOMString;
     public var selected:        Bool;
     public var value:           DOMString;
 }
@@ -2100,13 +2100,13 @@ extern interface HTMLOptionElement implements HTMLElement {
 extern interface HTMLInputElement implements HTMLElement {
     public var defaultValue:    DOMString;
     public var defaultChecked:  Bool;
-    public var form             (default, null): HTMLFormElement;
+    public var form            (default, null): HTMLFormElement;
     public var accept:          DOMString;
-    public var accessKey (default, null):       DOMString;
+    public var accessKey(default, null):       DOMString;
     public var align:           DOMString;
     public var alt:             DOMString;
-    public var checked (default, null):         Bool;
-    public var disabled (default, null):        Bool;
+    public var checked(default, null):         Bool;
+    public var disabled(default, null):        Bool;
     public var maxLength:       Int;
     public var name:            DOMString;
     public var readOnly:        Bool;
@@ -2128,15 +2128,15 @@ extern interface HTMLInputElement implements HTMLElement {
 //Tested
 extern interface HTMLTextAreaElement implements HTMLElement {
     public var defaultValue:    DOMString;
-    public var form             (default, null): HTMLFormElement;
-    public var accessKey (default, null):       DOMString;
+    public var form            (default, null): HTMLFormElement;
+    public var accessKey(default, null):       DOMString;
     public var cols:            Int;
-    public var disabled (default, null):        Bool;
+    public var disabled(default, null):        Bool;
     public var name:            DOMString;
     public var readOnly:        Bool;
     public var rows:            Int;
     public var tabIndex:        Int;
-    public var type             (default, null): DOMString;
+    public var type            (default, null): DOMString;
     public var value:           DOMString;
     
     public function blur(): Void;
@@ -2147,28 +2147,28 @@ extern interface HTMLTextAreaElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLButtonElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
-    public var accessKey (default, null):       DOMString;
-    public var disabled (default, null):        Bool;
+    public var form            (default, null): HTMLFormElement;
+    public var accessKey(default, null):       DOMString;
+    public var disabled(default, null):        Bool;
     public var name:            DOMString;
     public var tabIndex:        Int;
-    public var type             (default, null): DOMString;
+    public var type            (default, null): DOMString;
     public var value:           DOMString;
 }
 //Tested
 extern interface HTMLLabelElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
-    public var accessKey (default, null):       DOMString;
+    public var form            (default, null): HTMLFormElement;
+    public var accessKey(default, null):       DOMString;
     public var htmlFor:         DOMString;
 }
 //Tested
 extern interface HTMLFieldSetElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
+    public var form            (default, null): HTMLFormElement;
 }
 //Tested
 extern interface HTMLLegendElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
-    public var accessKey (default, null):       DOMString;
+    public var form            (default, null): HTMLFormElement;
+    public var accessKey(default, null):       DOMString;
     public var align:           DOMString;
 }
 //Tested
@@ -2249,7 +2249,7 @@ extern interface HTMLModElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLAnchorElement implements HTMLElement {
-    public var accessKey (default, null):       DOMString;
+    public var accessKey(default, null):       DOMString;
     public var charset:         DOMString;
     public var coords:          DOMString;
     public var href:            DOMString;
@@ -2284,7 +2284,7 @@ extern interface HTMLImageElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLObjectElement implements HTMLElement {
-    public var form             (default, null): HTMLFormElement;
+    public var form            (default, null): HTMLFormElement;
     public var code:            DOMString;
     public var align:           DOMString;
     public var archive:         DOMString;
@@ -2302,7 +2302,7 @@ extern interface HTMLObjectElement implements HTMLElement {
     public var useMap:          DOMString;
     public var vspace:          Int;
     public var width:           DOMString;
-    public var contentDocument  (default, null): Document;
+    public var contentDocument (default, null): Document;
 }
 //Tested
 extern interface HTMLParamElement implements HTMLElement {
@@ -2327,12 +2327,12 @@ extern interface HTMLAppletElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLMapElement implements HTMLElement {
-    public var areas            (default, null): HTMLCollection;
+    public var areas           (default, null): HTMLCollection;
     public var name:            DOMString;
 }
 //Tested
 extern interface HTMLAreaElement implements HTMLElement {
-    public var accessKey (default, null):       DOMString;
+    public var accessKey(default, null):       DOMString;
     public var alt:             DOMString;
     public var coords:          DOMString;
     public var href:            DOMString;
@@ -2356,8 +2356,8 @@ extern interface HTMLTableElement implements HTMLElement {
     public var caption:         HTMLTableCaptionElement;
     public var tHead:           HTMLTableSectionElement;
     public var tFoot:           HTMLTableSectionElement;
-    public var rows             (default, null): HTMLCollection;
-    public var tBodies          (default, null): HTMLCollection;
+    public var rows            (default, null): HTMLCollection;
+    public var tBodies         (default, null): HTMLCollection;
     public var align:           DOMString;
     public var bgColor:         DOMString;
     public var border:          DOMString;
@@ -2403,7 +2403,7 @@ extern interface HTMLTableSectionElement implements HTMLElement {
     public var ch:              DOMString;
     public var chOff:           DOMString;
     public var vAlign:          DOMString;
-    public var rows             (default, null): HTMLCollection;
+    public var rows            (default, null): HTMLCollection;
     
     public function insertRow(index: Int): HTMLElement;
     
@@ -2411,9 +2411,9 @@ extern interface HTMLTableSectionElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLTableRowElement implements HTMLElement {
-    public var rowIndex         (default, null): Int;
-    public var sectionRowIndex  (default, null): Int;
-    public var cells            (default, null): HTMLCollection;
+    public var rowIndex        (default, null): Int;
+    public var sectionRowIndex (default, null): Int;
+    public var cells           (default, null): HTMLCollection;
     public var align:           DOMString;
     public var bgColor:         DOMString;
     public var ch:              DOMString;
@@ -2426,7 +2426,7 @@ extern interface HTMLTableRowElement implements HTMLElement {
 }
 //Tested
 extern interface HTMLTableCellElement implements HTMLElement {
-    public var cellIndex        (default, null): Int;
+    public var cellIndex       (default, null): Int;
     public var abbr:            DOMString;
     public var align:           DOMString;
     public var axis:            DOMString;
@@ -2457,8 +2457,8 @@ extern interface HTMLFrameElement implements HTMLElement {
     public var noResize:        Bool;
     public var scrolling:       DOMString;
     public var src:             DOMString;
-    public var contentDocument  (default, null): HTMLDocument;
-    public var contentWindow    (default, null): Window;
+    public var contentDocument (default, null): HTMLDocument;
+    public var contentWindow   (default, null): Window;
 }
 //Tested
 extern interface HTMLIFrameElement implements HTMLElement {
@@ -2472,17 +2472,17 @@ extern interface HTMLIFrameElement implements HTMLElement {
     public var scrolling:       DOMString;
     public var src:             DOMString;
     public var width:           DOMString;
-    public var contentDocument  (default, null): HTMLDocument;
-    public var contentWindow    (default, null): Window;
+    public var contentDocument (default, null): HTMLDocument;
+    public var contentWindow   (default, null): Window;
 }
 //Unable to Test
 extern interface ClientRect {
-    public var top              (default, null): Float;
-    public var right            (default, null): Float;
-    public var bottom           (default, null): Float;
-    public var left             (default, null): Float;
-    public var width            (default, null): Float;
-    public var height           (default, null): Float;
+    public var top             (default, null): Float;
+    public var right           (default, null): Float;
+    public var bottom          (default, null): Float;
+    public var left            (default, null): Float;
+    public var width           (default, null): Float;
+    public var height          (default, null): Float;
 }
 
 /*
@@ -2491,14 +2491,14 @@ extern interface ClientRect {
 */
 //Unable to Test
 extern interface AbstractView {
-    public var document     (default, null): Document;
+    public var document    (default, null): Document;
     
-    public var media        (default, null): Media;
+    public var media       (default, null): Media;
 }
 
 //Unable To Test
 extern interface Media {
-    public var type         (default, null): DOMString;
+    public var type        (default, null): DOMString;
     
     public function matchMedium(mediaquery: DOMString): Bool;
 }
@@ -2509,11 +2509,11 @@ extern interface Media {
 */
 
 extern interface MessageEvent implements Html5DomEvent {
-  public var data           (default, null): Dynamic;
-  public var origin         (default, null): DOMString;
-  public var lastEventId    (default, null): DOMString;
-  public var source         (default, null): WindowProxy;
-  public var ports          (default, null): MessagePortArray;
+  public var data          (default, null): Dynamic;
+  public var origin        (default, null): DOMString;
+  public var lastEventId   (default, null): DOMString;
+  public var source        (default, null): WindowProxy;
+  public var ports         (default, null): MessagePortArray;
   
   public function initMessageEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, dataArg: Dynamic, originArg: DOMString, lastEventIdArg: DOMString, sourceArg: WindowProxy, portsArg: MessagePortArray): Void;
   
@@ -2521,11 +2521,11 @@ extern interface MessageEvent implements Html5DomEvent {
 }
 
 extern interface StorageEvent implements Html5DomEvent {
-    public var key          (default, null): DOMString;
-    public var oldValue     (default, null): Dynamic;
-    public var newValue     (default, null): Dynamic;
-    public var url          (default, null): DOMString;
-    public var storageArea  (default, null): Storage;
+    public var key         (default, null): DOMString;
+    public var oldValue    (default, null): Dynamic;
+    public var newValue    (default, null): Dynamic;
+    public var url         (default, null): DOMString;
+    public var storageArea (default, null): Storage;
     
     public function initStorageEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, keyArg: DOMString, oldValueArg: Dynamic, newValueArg: Dynamic, urlArg: DOMString, storageAreaArg: Storage): Void;
 }
@@ -2535,8 +2535,8 @@ extern interface EventException {
 }
 
 extern interface EventSource implements EventTarget  {
-  public var URL        (default, null): DOMString;
-  public var readyState (default, null): Int;
+  public var URL       (default, null): DOMString;
+  public var readyState(default, null): Int;
   
   public var onopen:    EventListener<Html5DomEvent>;
   public var onmessage: EventListener<Html5DomEvent>;
@@ -2546,10 +2546,10 @@ extern interface EventSource implements EventTarget  {
 }
 
 extern interface WheelEvent implements Html5DomMouseEvent {
-    public var deltaX       (default, null): Int;
-    public var deltaY       (default, null): Int;
-    public var deltaZ       (default, null): Int;
-    public var deltaMode    (default, null): Int;
+    public var deltaX      (default, null): Int;
+    public var deltaY      (default, null): Int;
+    public var deltaZ      (default, null): Int;
+    public var deltaMode   (default, null): Int;
             
     public function initWheelEvent(
         typeArg             : DOMString, 
@@ -2592,8 +2592,8 @@ extern interface WheelEvent implements Html5DomMouseEvent {
 }
 
 extern interface TextEvent implements UIEvent {
-    public var data         (default, null): DOMString;
-    public var inputMode    (default, null): Int;
+    public var data        (default, null): DOMString;
+    public var inputMode   (default, null): Int;
     
     public function initTextEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, viewArg: AbstractView, dataArg: DOMString, inputMode: Int): Void;
     
@@ -2601,16 +2601,16 @@ extern interface TextEvent implements UIEvent {
 }
 
 extern interface Html5DomKeyboardEvent implements UIEvent {
-    public var keyIdentifier        (default, null): DOMString;                
-    public var keyLocation          (default, null): Int;
-    public var ctrlKey              (default, null): Bool;
-    public var shiftKey             (default, null): Bool;
-    public var altKey               (default, null): Bool;
-    public var metaKey              (default, null): Bool;
-    public var repeat               (default, null): Bool;
-    public var keyCode              (default, null): Int; // Note: W3C non-conformant
-    public var charCode             (default, null): Int; // Note: W3C non-conformant
-    public var which                (default, null): Int; // Note: W3C non-conformant
+    public var keyIdentifier       (default, null): DOMString;                
+    public var keyLocation         (default, null): Int;
+    public var ctrlKey             (default, null): Bool;
+    public var shiftKey            (default, null): Bool;
+    public var altKey              (default, null): Bool;
+    public var metaKey             (default, null): Bool;
+    public var repeat              (default, null): Bool;
+    public var keyCode             (default, null): Int; // Note: W3C non-conformant
+    public var charCode            (default, null): Int; // Note: W3C non-conformant
+    public var which               (default, null): Int; // Note: W3C non-conformant
     
     public function getModifierState(keyIdentifierArg: DOMString): Bool;
     
@@ -2640,7 +2640,7 @@ extern interface Html5DomKeyboardEvent implements UIEvent {
 }
 
 extern interface CompositionEvent implements UIEvent {
-    public var data             (default, null): DOMString;
+    public var data            (default, null): DOMString;
     
     public function initCompositionEvent(
         typeArg:                DOMString, 
@@ -2661,7 +2661,7 @@ extern interface CompositionEvent implements UIEvent {
 }
 
 extern interface MouseWheelEvent implements Html5DomMouseEvent {
-    public var wheelDelta       (default, null): Int;
+    public var wheelDelta      (default, null): Int;
     
     public function initMouseWheelEvent(
         typeArg         : DOMString, 
@@ -2724,15 +2724,15 @@ interface MessagePort {
 
 
 extern interface Html5DomEvent {
-    public var type             (default, null): DOMString;
-    public var target           (default, null): EventTarget;
-    public var currentTarget    (default, null): EventTarget;
-    public var eventPhase       (default, null): Int;
-    public var bubbles          (default, null): Bool;
-    public var cancelable       (default, null): Bool;
-    public var timeStamp        (default, null): DOMTimeStamp;
-    public var defaultPrevented (default, null): Bool;
-    public var trusted          (default, null): Bool;
+    public var type            (default, null): DOMString;
+    public var target          (default, null): EventTarget;
+    public var currentTarget   (default, null): EventTarget;
+    public var eventPhase      (default, null): Int;
+    public var bubbles         (default, null): Bool;
+    public var cancelable      (default, null): Bool;
+    public var timeStamp       (default, null): DOMTimeStamp;
+    public var defaultPrevented(default, null): Bool;
+    public var trusted         (default, null): Bool;
     
     public function stopPropagation(): Void;
     
@@ -2744,7 +2744,7 @@ extern interface Html5DomEvent {
 }
 
 extern interface CustomEvent implements Html5DomEvent {
-    public var detail           (default, null): DOMObject;
+    public var detail          (default, null): DOMObject;
     
     public function initCustomEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, detailArg: DOMObject): Void;
     
@@ -2752,7 +2752,7 @@ extern interface CustomEvent implements Html5DomEvent {
 }
 
 extern interface Html5DomFocusEvent implements UIEvent {
-    public var relatedTarget        (default, null): EventTarget;
+    public var relatedTarget       (default, null): EventTarget;
     
     public function initFocusEvent(
         typeArg:        DOMString, 
@@ -2771,8 +2771,8 @@ extern interface DocumentEvent {
 }
 
 extern interface UIEvent implements Html5DomEvent {
-    public var detail       (default, null): Int;
-    public var view         (default, null): AbstractView;
+    public var detail      (default, null): Int;
+    public var view        (default, null): AbstractView;
     
     public function initUIEvent(
         typeArg:        DOMString, 
@@ -2793,24 +2793,24 @@ extern interface UIEvent implements Html5DomEvent {
 }
 
 extern interface Html5DomMouseEvent implements UIEvent {
-    public var screenX          (default, null): Int;
-    public var screenY          (default, null): Int;
-    public var pageX            (default, null): Int;
-    public var pageY            (default, null): Int;
-    public var x                (default, null): Int;
-    public var y                (default, null): Int;
-    public var offsetX          (default, null): Int;
-    public var offsetY          (default, null): Int;
-    public var clientX          (default, null): Int;
-    public var clientY          (default, null): Int;
+    public var screenX         (default, null): Int;
+    public var screenY         (default, null): Int;
+    public var pageX           (default, null): Int;
+    public var pageY           (default, null): Int;
+    public var x               (default, null): Int;
+    public var y               (default, null): Int;
+    public var offsetX         (default, null): Int;
+    public var offsetY         (default, null): Int;
+    public var clientX         (default, null): Int;
+    public var clientY         (default, null): Int;
     
-    public var ctrlKey          (default, null): Bool;
-    public var shiftKey         (default, null): Bool;
-    public var altKey           (default, null): Bool;
-    public var metaKey          (default, null): Bool;
-    public var button           (default, null): Int;
-    public var which            (default, null): Int; // Note: W3C non-conformant
-    public var relatedTarget    (default, null): EventTarget;
+    public var ctrlKey         (default, null): Bool;
+    public var shiftKey        (default, null): Bool;
+    public var altKey          (default, null): Bool;
+    public var metaKey         (default, null): Bool;
+    public var button          (default, null): Int;
+    public var which           (default, null): Int; // Note: W3C non-conformant
+    public var relatedTarget   (default, null): EventTarget;
     
     public function getModifierState(keyIdentifierArg: DOMString): Bool;
     
@@ -2892,7 +2892,7 @@ extern interface Html5DomAccelerationEvent {
 }
 
 extern interface PopStateEvent implements Html5DomEvent {
-    public var state        (default, null): Dynamic;
+    public var state       (default, null): Dynamic;
     
     public function initPopStateEvent(
         typeArg:            DOMString, 
@@ -2907,7 +2907,7 @@ extern interface BeforeUnloadEvent implements Html5DomEvent {
 }
 
 extern interface PageTransitionEvent implements Html5DomEvent {
-    public var persisted    (default, null): Dynamic;
+    public var persisted   (default, null): Dynamic;
     
     public function initPageTransitionEvent(
         typeArg:            DOMString, 
@@ -2918,8 +2918,8 @@ extern interface PageTransitionEvent implements Html5DomEvent {
 }
 
 extern interface HashChangeEvent implements Html5DomEvent {
-    public var oldURL       (default, null): DOMString;
-    public var newURL       (default, null): DOMString;
+    public var oldURL      (default, null): DOMString;
+    public var newURL      (default, null): DOMString;
     
     public function initHashChangeEvent(
         typeArg:        DOMString, 
@@ -2931,7 +2931,7 @@ extern interface HashChangeEvent implements Html5DomEvent {
 }
 
 extern interface DragEvent implements Html5DomMouseEvent {
-  public var dataTransfer       (default, null): DataTransfer;
+  public var dataTransfer      (default, null): DataTransfer;
   
     public function initDragEvent(
         typeArg: DOMString, 
@@ -2956,8 +2956,8 @@ extern interface DragEvent implements Html5DomMouseEvent {
 extern interface DataTransfer {
     public var dropEffect:      DOMString;
     public var effectAllowed:   DOMString;
-    public var types            (default, null): DOMStringList;
-    public var files            (default, null): DomCollection<File>;
+    public var types           (default, null): DOMStringList;
+    public var files           (default, null): DomCollection<File>;
     
     public function clearData(?format: DOMString): Void;
     
@@ -2971,24 +2971,24 @@ extern interface DataTransfer {
 }
 
 extern interface Blob {
-      public var size           (default, null): Int;
+      public var size          (default, null): Int;
       
       public function slice(start: Int, length: Int): Blob;
 }
 
 extern interface File implements Blob {
 
-      public var name      (default, null): DOMString;
-      public var type      (default, null): DOMString;
-      public var urn       (default, null): DOMString;
+      public var name     (default, null): DOMString;
+      public var type     (default, null): DOMString;
+      public var urn      (default, null): DOMString;
 }
 
 extern interface MutationEvent implements Html5DomEvent {
-    public var relatedNode      (default, null): Node;
-    public var prevValue        (default, null): DOMString;
-    public var newValue         (default, null): DOMString;
-    public var attrName         (default, null): DOMString;
-    public var attrChange       (default, null): Int;
+    public var relatedNode     (default, null): Node;
+    public var prevValue       (default, null): DOMString;
+    public var newValue        (default, null): DOMString;
+    public var attrName        (default, null): DOMString;
+    public var attrChange      (default, null): Int;
     
     public function initMutationEvent(
         typeArg:                DOMString, 
@@ -3015,8 +3015,8 @@ extern interface MutationEvent implements Html5DomEvent {
 }
 
 extern interface MutationNameEvent implements MutationEvent {
-    public var prevNamespaceURI (default, null): DOMString;
-    public var prevNodeName     (default, null): DOMString;
+    public var prevNamespaceURI(default, null): DOMString;
+    public var prevNodeName    (default, null): DOMString;
     
     public function initMutationNameEvent(
         typeArg:                DOMString, 
@@ -3044,10 +3044,10 @@ extern interface MutationNameEvent implements MutationEvent {
 *
 */
 extern interface NodeIterator {
-    public var root                     (default, null): Node;
-    public var whatToShow               (default, null): Int;
-    public var filter                   (default, null): NodeFilter;
-    public var expandEntityReferences   (default, null): Bool;
+    public var root                    (default, null): Node;
+    public var whatToShow              (default, null): Int;
+    public var filter                  (default, null): NodeFilter;
+    public var expandEntityReferences  (default, null): Bool;
 
     public function nextNode(): Node;
 
@@ -3061,11 +3061,11 @@ extern interface NodeFilter {
 }
 
 extern interface TreeWalker {
-    public var root                     (default, null): Node;
-    public var whatToShow               (default, null): Int;
-    public var filter                   (default, null): NodeFilter;
-    public var expandEntityReferences   (default, null): Bool;
-    public var currentNode              (default, null): Node;
+    public var root                    (default, null): Node;
+    public var whatToShow              (default, null): Int;
+    public var filter                  (default, null): NodeFilter;
+    public var expandEntityReferences  (default, null): Bool;
+    public var currentNode             (default, null): Node;
 
     public function parentNode():       Node;
     
@@ -3094,7 +3094,7 @@ extern interface DocumentTraversal {
 */
 
 extern interface TimeRanges {
-  public var length         (default, null): Int;
+  public var length        (default, null): Int;
   
   public function Float(index: Int): Float;
   
@@ -3110,12 +3110,12 @@ extern interface RangeException {
 }
 
 extern interface Range {
-    public var startContainer           (default, null): Node;
-    public var startOffset              (default, null): Int;
-    public var endContainer             (default, null): Node;
-    public var endOffset                (default, null): Int;
-    public var collapsed                (default, null): Bool;
-    public var commonAncestorContainer  (default, null): Node;
+    public var startContainer          (default, null): Node;
+    public var startOffset             (default, null): Int;
+    public var endContainer            (default, null): Node;
+    public var endOffset               (default, null): Int;
+    public var collapsed               (default, null): Bool;
+    public var commonAncestorContainer (default, null): Node;
     
     public function setStart(refNode: Node, offset: Int): Void;
     
@@ -3164,18 +3164,18 @@ extern interface DocumentRange {
 */
 
 extern interface StyleSheet {
-    public var type             (default, null): DOMString;
-    public var disabled         (default, null): Bool;
-    public var ownerNode        (default, null): Node;
-    public var parentStyleSheet (default, null): StyleSheet;
-    public var href             (default, null): DOMString;
-    public var title            (default, null): DOMString;
-    public var media            (default, null): MediaList;
+    public var type            (default, null): DOMString;
+    public var disabled        (default, null): Bool;
+    public var ownerNode       (default, null): Node;
+    public var parentStyleSheet(default, null): StyleSheet;
+    public var href            (default, null): DOMString;
+    public var title           (default, null): DOMString;
+    public var media           (default, null): MediaList;
 }
 
 extern interface MediaList {
     public var mediaText:   DOMString;
-    public var length       (default,null): Int;
+    public var length      (default,null): Int;
     
     public function item(index: Int): DOMString;
     
@@ -3185,7 +3185,7 @@ extern interface MediaList {
 }
 
 extern interface LinkStyle {
-    public var sheet            (default, null): StyleSheet;
+    public var sheet           (default, null): StyleSheet;
 }
 
 /*
@@ -3195,20 +3195,20 @@ extern interface LinkStyle {
 
 //Tested
 extern interface CSSRule {
-    public var type             (default, null): Int;
+    public var type            (default, null): Int;
     public var cssText:         DOMString;
-    public var parentStyleSheet (default, null): CSSStyleSheet;
-    public var parentRule       (default, null): CSSRule;
+    public var parentStyleSheet(default, null): CSSStyleSheet;
+    public var parentRule      (default, null): CSSRule;
 }
 //Unable to Test
 extern interface CSSStyleRule implements CSSRule {
     public var selectorText:    DOMString;
-    public var style            (default, null): CSSStyleDeclaration;
+    public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
 extern interface CSSMediaRule implements CSSRule {
-    public var stylesheets      (default, null): MediaList;
-    public var cssRules         (default, null): DomCollection<CSSRule>;
+    public var stylesheets     (default, null): MediaList;
+    public var cssRules        (default, null): DomCollection<CSSRule>;
     
     public function insertRule(rule: DOMString, index: Int): Int;
     
@@ -3216,18 +3216,18 @@ extern interface CSSMediaRule implements CSSRule {
 }
 //Unable to Test
 extern interface CSSFontFaceRule implements CSSRule {
-    public var style            (default, null): CSSStyleDeclaration;
+    public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
 extern interface CSSPageRule implements CSSRule {
     public var selectorText:    DOMString;
-    public var style            (default, null): CSSStyleDeclaration;
+    public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
 extern interface CSSImportRule implements CSSRule {
-    public var href             (default, null): DOMString;
-    public var media            (default, null): MediaList;
-    public var styleSheet       (default, null): CSSStyleSheet;
+    public var href            (default, null): DOMString;
+    public var media           (default, null): MediaList;
+    public var styleSheet      (default, null): CSSStyleSheet;
 }
 //Unable to Test
 extern interface CSSCharsetRule implements CSSRule {
@@ -3363,8 +3363,8 @@ extern interface CSS2Properties {
 }
 //Tested
 extern interface CSSStyleDeclaration {
-    public var length       (default,null): Int;
-    public var parentRule   (default, null): CSSRule;
+    public var length      (default,null): Int;
+    public var parentRule  (default, null): CSSRule;
     
     public var cssText:     DOMString;
     
@@ -3386,8 +3386,8 @@ extern interface CSSStyleDeclaration {
 }
 //Unable to Test
 extern interface CSSInlineStyleDeclaration implements CSS2Properties {
-    public var length       (default, null): Int;
-    public var parentRule   (default, null): CSSRule;
+    public var length      (default, null): Int;
+    public var parentRule  (default, null): CSSRule;
     
     public var cssText:     DOMString;
     
@@ -3405,12 +3405,12 @@ extern interface CSSInlineStyleDeclaration implements CSS2Properties {
 //Unable to Test
 extern interface CSSValue {
     public var cssText:             DOMString;
-    public var cssValueType         (default, null): Int;
+    public var cssValueType        (default, null): Int;
 }
 
 //Unable to Test
 extern interface CSSPrimitiveValue implements CSSValue {
-    public var primitiveType    (default, null): Int;
+    public var primitiveType   (default, null): Int;
     
     public function setFloatValue(unitType: Int, FloatValue: Float): Void;
     
@@ -3428,27 +3428,27 @@ extern interface CSSPrimitiveValue implements CSSValue {
 }
 //Unable to Test
 extern interface RGBColor {
-    public var red          (default, null): CSSPrimitiveValue;
-    public var green        (default, null): CSSPrimitiveValue;
-    public var blue         (default, null): CSSPrimitiveValue;
+    public var red         (default, null): CSSPrimitiveValue;
+    public var green       (default, null): CSSPrimitiveValue;
+    public var blue        (default, null): CSSPrimitiveValue;
 }
 //Unable to Test
 extern interface Rect {
-    public var top          (default, null): CSSPrimitiveValue;
-    public var right        (default, null): CSSPrimitiveValue;
-    public var bottom       (default, null): CSSPrimitiveValue;
-    public var left         (default, null): CSSPrimitiveValue;
+    public var top         (default, null): CSSPrimitiveValue;
+    public var right       (default, null): CSSPrimitiveValue;
+    public var bottom      (default, null): CSSPrimitiveValue;
+    public var left        (default, null): CSSPrimitiveValue;
 }
 //Unable to Test
 extern interface Counter {
-    public var identifier   (default, null): DOMString;
-    public var listStyle    (default, null): DOMString;
-    public var separator    (default, null): DOMString;
+    public var identifier  (default, null): DOMString;
+    public var listStyle   (default, null): DOMString;
+    public var separator   (default, null): DOMString;
 }
 //Tested
 extern interface CSSStyleSheet implements StyleSheet {
-    public var ownerRule    (default, null): CSSRule;
-    public var cssRules     (default, null): DomCollection<CSSRule>;
+    public var ownerRule   (default, null): CSSRule;
+    public var cssRules    (default, null): DomCollection<CSSRule>;
     
     public function insertRule(rule: DOMString, index: Int): Int;
     
@@ -3464,16 +3464,16 @@ extern interface DOMImplementationCSS implements DOMImplementation {
 }
 //Tested
 extern interface Navigator {
-    public var appCodeName      (default, null): DOMString;
-    public var cookieEnabled    (default, null): DOMString;
-    public var geolocation      (default, null): DOMString;
-    public var language         (default, null): DOMString;
-    public var appName          (default, null): DOMString;
-    public var appVersion       (default, null): DOMString;
-    public var platform         (default, null): DOMString;
-    public var userAgent        (default, null): DOMString;
-    public var plugins          (default, null): DomCollection<Plugin>;
-    public var onLine           (default, null): Bool;
+    public var appCodeName     (default, null): DOMString;
+    public var cookieEnabled   (default, null): DOMString;
+    public var geolocation     (default, null): DOMString;
+    public var language        (default, null): DOMString;
+    public var appName         (default, null): DOMString;
+    public var appVersion      (default, null): DOMString;
+    public var platform        (default, null): DOMString;
+    public var userAgent       (default, null): DOMString;
+    public var plugins         (default, null): DomCollection<Plugin>;
+    public var onLine          (default, null): Bool;
     public var productSub       : DOMString;
     public var product          : DOMString;
     public var mimeTypes        : MimeTypeArray;
@@ -3494,10 +3494,10 @@ extern interface Navigator {
 }
 //Tested
 extern interface Plugin {
-    public var length           (default, null): Int;
-    public var name             (default, null):DOMString;
-    public var filename         (default, null):DOMString;
-    public var description      (default, null):DOMString;
+    public var length          (default, null): Int;
+    public var name            (default, null):DOMString;
+    public var filename        (default, null):DOMString;
+    public var description     (default, null):DOMString;
     
     public function item(index:Int): Plugin;
     
@@ -3505,11 +3505,11 @@ extern interface Plugin {
 }
 
 extern interface MimeTypeArray {
-    public var length           (default, null): Int;
+    public var length          (default, null): Int;
 }
 //Tested
 extern interface History {
-    public var length           (default, null): Int;
+    public var length          (default, null): Int;
     
     public function back(): Void;
     
@@ -3523,14 +3523,14 @@ extern interface History {
 }
 //Tested
 extern interface Location {
-    public var hash             (default, default): String;
-    public var host             (default, default): String;
-    public var hostname         (default, default): String;
-    public var href             (default, default): String;
-    public var pathname         (default, default): String;
-    public var port             (default, default): String;
-    public var protocol         (default, default): String;
-    public var search           (default, default): String;
+    public var hash            (default, default): String;
+    public var host            (default, default): String;
+    public var hostname        (default, default): String;
+    public var href            (default, default): String;
+    public var pathname        (default, default): String;
+    public var port            (default, default): String;
+    public var protocol        (default, default): String;
+    public var search          (default, default): String;
     
     public function assign(url: String): Void;
     
@@ -3543,28 +3543,28 @@ extern interface Location {
 
 //Tested
 extern interface Screen {
-    public var availHeight  (default, null): String;	
-    public var availWidth   (default, null): String;
-    public var availTop     (default, null): String;
-    public var availLeft    (default, null): String;		
-    public var colorDepth   (default, null): String;	
-    public var height       (default, null): String;	
-    public var pixelDepth   (default, null): String;	
-    public var width        (default, null): String;
-    public var left         (default, null): String;
-    public var top          (default, null): String;		
+    public var availHeight (default, null): String;	
+    public var availWidth  (default, null): String;
+    public var availTop    (default, null): String;
+    public var availLeft   (default, null): String;		
+    public var colorDepth  (default, null): String;	
+    public var height      (default, null): String;	
+    public var pixelDepth  (default, null): String;	
+    public var width       (default, null): String;
+    public var left        (default, null): String;
+    public var top         (default, null): String;		
 }
 
 extern interface ScreenView implements AbstractView {
-    public var innerWidth       (default, null): Int;
-    public var innerHeight      (default, null): Int;
-    public var pageXOffset      (default, null): Int;
-    public var pageYOffset      (default, null): Int;
-    public var screenX          (default, null): Int;
-    public var screenY          (default, null): Int;
-    public var outerWidth       (default, null): Int;
-    public var outerHeight      (default, null): Int;
-    public var screen           (default, null): Screen;
+    public var innerWidth      (default, null): Int;
+    public var innerHeight     (default, null): Int;
+    public var pageXOffset     (default, null): Int;
+    public var pageYOffset     (default, null): Int;
+    public var screenX         (default, null): Int;
+    public var screenY         (default, null): Int;
+    public var outerWidth      (default, null): Int;
+    public var outerHeight     (default, null): Int;
+    public var screen          (default, null): Screen;
 
     public function scroll(x: Int, y: Int): Void;
     
@@ -3579,47 +3579,47 @@ extern interface Crypto {
 
 //Tested
 extern interface Window implements ArrayAccess<WindowProxy>, implements EventTarget {
-    public var closed           (default, null): Bool;
+    public var closed          (default, null): Bool;
     public var defaultStatus:   DOMString;
-    public var frames           (default, null): DomCollection<Frame>;
+    public var frames          (default, null): DomCollection<Frame>;
     public var innerHeight:     Int;
     public var innerWidth:      Int;
-    public var length           (default, null): Int;
-    public var navigator        (default, null): Navigator;
-    public var opener           (default, null): Window;
+    public var length          (default, null): Int;
+    public var navigator       (default, null): Navigator;
+    public var opener          (default, null): Window;
     public var outerHeight:     Int;
     public var outerWidth:      Int;
-    public var pageXOffset      (default, null): Int;
-    public var pageYOffset      (default, null): Int;
-    public var parent           (default, null): Window;
-    public var screen           (default, null): Screen;
-    public var screenLeft       (default, null): Int;
-    public var screenTop        (default, null): Int;
-    public var screenX          (default, null): Int;
-    public var screenY          (default, null): Int;
+    public var pageXOffset     (default, null): Int;
+    public var pageYOffset     (default, null): Int;
+    public var parent          (default, null): Window;
+    public var screen          (default, null): Screen;
+    public var screenLeft      (default, null): Int;
+    public var screenTop       (default, null): Int;
+    public var screenX         (default, null): Int;
+    public var screenY         (default, null): Int;
     public var status:          DOMString;
     public var scrollY:         Int;
-    public var top              (default, null): Window;
-    public var window           (default, null): WindowProxy;
-    public var self             (default, null): WindowProxy;
-    public var document         (default, null): HTMLDocument;
+    public var top             (default, null): Window;
+    public var window          (default, null): WindowProxy;
+    public var self            (default, null): WindowProxy;
+    public var document        (default, null): HTMLDocument;
     public var name:            DOMString;
-    public var location         (default, null): Location;
-    public var history          (default, null): History;
-    public var undoManager      (default, null): UndoManager;
-    public var locationbar      (default, null): BarProp;
-    public var menubar          (default, null): BarProp;
-    public var personalbar      (default, null): BarProp;
-    public var scrollbars       (default, null): BarProp;
-    public var statusbar        (default, null): BarProp;
-    public var toolbar          (default, null): BarProp;
-    public var frameElement     (default, null): Element;
-    public var applicationCache (default, null): ApplicationCache;
-    public var localStorage     (default, null): Storage;
-    public var dialogArguments  (default, null): Dynamic;
+    public var location        (default, null): Location;
+    public var history         (default, null): History;
+    public var undoManager     (default, null): UndoManager;
+    public var locationbar     (default, null): BarProp;
+    public var menubar         (default, null): BarProp;
+    public var personalbar     (default, null): BarProp;
+    public var scrollbars      (default, null): BarProp;
+    public var statusbar       (default, null): BarProp;
+    public var toolbar         (default, null): BarProp;
+    public var frameElement    (default, null): Element;
+    public var applicationCache(default, null): ApplicationCache;
+    public var localStorage    (default, null): Storage;
+    public var dialogArguments (default, null): Dynamic;
     public var returnValue      : DOMString;
-    public var sessionStorage   (default, null): Storage;
-    public var crypto           (default, null): Crypto;
+    public var sessionStorage  (default, null): Storage;
+    public var crypto          (default, null): Crypto;
     public var orientation 		(default, null): Int;
     
     public var onabort: EventListener<Html5DomEvent>;
@@ -3706,9 +3706,9 @@ extern interface Window implements ArrayAccess<WindowProxy>, implements EventTar
     
     public function btoa(unencodedString: DOMString): DOMString;
     
-    public var getComputedStyle (default, null): Element -> DOMString -> CSSStyleDeclaration;
+    public var getComputedStyle(default, null): Element -> DOMString -> CSSStyleDeclaration;
     
-    public var postMessage (default, null): DOMString -> DOMString -> Void;
+    public var postMessage(default, null): DOMString -> DOMString -> Void;
     
     public function getSelection(): Selection;
     
@@ -3761,8 +3761,8 @@ extern interface BarProp {
 
 //Tested, but many fields and methods unavailable
 extern interface ApplicationCache {
-    public var status           (default, null): Int;
-    public var length           (default, null): Int;
+    public var status          (default, null): Int;
+    public var length          (default, null): Int;
     public var onchecking:      EventListener<Html5DomEvent>;
     public var onerror:         EventListener<Html5DomEvent>;
     public var onnoupdate:      EventListener<Html5DomEvent>;
@@ -3787,10 +3787,10 @@ extern interface ApplicationCache {
 
     public function removeEventListener(type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
 }
-//Not widely supported yet (HTML5 Spec)
+//Not widely supported yet(HTML5 Spec)
 extern interface UndoManager {
-    public var length      (default, null): Int;
-    public var position    (default, null): Int;
+    public var length     (default, null): Int;
+    public var position   (default, null): Int;
     
     public function add(data: DOMObject, title: DOMString): Int;
     
@@ -3802,9 +3802,9 @@ extern interface UndoManager {
     
     public function item(index: Int): DOMObject;
 }
-//Not widely supported yet (HTML5 Spec)
+//Not widely supported yet(HTML5 Spec)
 extern interface UndoManagerEvent implements Html5DomEvent {
-  public var date           (default, null): Dynamic;
+  public var date          (default, null): Dynamic;
   
   public function initUndoManagerEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, dataArg: Dynamic): Void;
 }
@@ -3816,12 +3816,12 @@ extern interface XMLHttpRequestEventTarget implements EventTarget {
 //Tested
 extern interface XMLHttpRequest implements XMLHttpRequestEventTarget {
 	
-    public var readyState           (default, null): Int;
-    public var status           (default, null): Int;
-    public var statusText       (default, null): DOMString;
-    public var responseText     (default, null): DOMString;
-    public var responseXML      (default, null): Document;
-    public var response      (default, null): Dynamic;
+    public var readyState          (default, null): Int;
+    public var status          (default, null): Int;
+    public var statusText      (default, null): DOMString;
+    public var responseText    (default, null): DOMString;
+    public var responseXML     (default, null): Document;
+    public var response     (default, null): Dynamic;
     
     public var onreadystatechange: Void -> Void;
     

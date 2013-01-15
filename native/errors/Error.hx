@@ -9,7 +9,7 @@ class Error {
 	public var name:Dynamic;
 	
 	
-	public function new (?inMessage:Dynamic, id:Dynamic = 0) {
+	public function new(?inMessage:Dynamic, id:Dynamic = 0) {
 		
 		message = inMessage;
 		errorID = id;
@@ -17,14 +17,14 @@ class Error {
 	}
 	
 	
-	private function getStackTrace ():String {
+	private function getStackTrace():String {
 		
 		return "";
 		
 	}
 	
 	
-	public function toString ():String {
+	public function toString():String {
 		
 		return message;
 		

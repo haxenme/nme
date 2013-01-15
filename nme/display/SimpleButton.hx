@@ -29,7 +29,7 @@ extern class SimpleButton extends InteractiveObject {
 
 	/**
 	 * A Boolean value that specifies whether a button is enabled. When a button
-	 * is disabled (the enabled property is set to <code>false</code>), the
+	 * is disabled(the enabled property is set to <code>false</code>), the
 	 * button is visible but cannot be clicked. The default value is
 	 * <code>true</code>. This property is useful if you want to disable part of
 	 * your navigation; for example, you might want to disable a button in the

@@ -18,7 +18,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	public var ty:Float;
 	
 	
-	public function new (?in_a:Float, ?in_b:Float, ?in_c:Float, ?in_d:Float, ?in_tx:Float, ?in_ty:Float) {
+	public function new(?in_a:Float, ?in_b:Float, ?in_c:Float, ?in_d:Float, ?in_tx:Float, ?in_ty:Float) {
 		
 		a = in_a == null ? 1.0 : in_a;
 		b = in_b == null ? 0.0 : in_b;
@@ -30,9 +30,9 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function clone ():Matrix {
+	public function clone():Matrix {
 		
-		return new Matrix (a, b, c, d, tx, ty);
+		return new Matrix(a, b, c, d, tx, ty);
 		
 	}
 	
@@ -51,7 +51,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 		[  c  d   0 ][  mc md  0 ]
 		[  tx ty  1 ][  mtx mty 1 ]
 	*/
-	public function concat (m:Matrix):Void {
+	public function concat(m:Matrix):Void {
 		
 		var a1 = a * m.a + b * m.c;
 		b = a * m.b + b * m.d;
@@ -69,7 +69,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function createBox (scaleX:Float, scaleY:Float, ?rotation:Float, ?tx:Float, ?ty:Float):Void {
+	public function createBox(scaleX:Float, scaleY:Float, ?rotation:Float, ?tx:Float, ?ty:Float):Void {
 		
 		a = scaleX;
 		d = scaleY;
@@ -80,7 +80,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function createGradientBox (in_width:Float, in_height:Float, ?rotation:Float, ?in_tx:Float, ?in_ty:Float):Void {
+	public function createGradientBox(in_width:Float, in_height:Float, ?rotation:Float, ?in_tx:Float, ?in_ty:Float):Void {
 		
 		a = in_width / 1638.4;
 		d = in_height / 1638.4;
@@ -88,8 +88,8 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 		// rotation is clockwise
 		if (rotation != null && rotation != 0.0) {
 			
-			var cos = Math.cos (rotation);
-			var sin = Math.sin (rotation);
+			var cos = Math.cos(rotation);
+			var sin = Math.sin(rotation);
 			b = sin * d;
 			c = -sin * a;
 			a *= cos;
@@ -107,14 +107,14 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function deltaTransformPoint (point:Point):Point {
+	public function deltaTransformPoint(point:Point):Point {
 		
-		return new Point (point.x * a + point.y * c, point.x * b + point.y * d);
+		return new Point(point.x * a + point.y * c, point.x * b + point.y * d);
 		
 	}
 	
 	
-	public function identity ():Void {
+	public function identity():Void {
 		
 		a = 1;
 		b = 0;
@@ -126,7 +126,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function invert ():Matrix {
+	public function invert():Matrix {
 		
 		var norm = a * d - b * c;
 		
@@ -156,9 +156,9 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function mult (m:Matrix):Matrix {	
+	public function mult(m:Matrix):Matrix {	
 		
-		var result = new Matrix ();
+		var result = new Matrix();
 		
 		result.a = a * m.a + b * m.c;
 		result.b = a * m.b + b * m.d;
@@ -185,10 +185,10 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 		mc = sin
 		mtx = my = 0
 	*/
-	public function rotate (inTheta:Float):Void {
+	public function rotate(inTheta:Float):Void {
 		
-		var cos = Math.cos (inTheta);
-		var sin = Math.sin (inTheta);
+		var cos = Math.cos(inTheta);
+		var sin = Math.sin(inTheta);
 		
 		var a1 = a * cos - b * sin;
 		b = a * sin + b * cos;
@@ -212,7 +212,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 		[  c  d   0 ][  0   sy  0 ]
 		[  tx ty  1 ][  0   0   1 ]
 	*/
-	public function scale (inSX:Float, inSY:Float):Void {
+	public function scale(inSX:Float, inSY:Float):Void {
 		
 		a *= inSX;
 		b *= inSY;
@@ -226,7 +226,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function setRotation (inTheta:Float, ?inScale:Float):Void {
+	public function setRotation(inTheta:Float, ?inScale:Float):Void {
 		
 		var scale:Float = inScale == null ? 1.0 : inScale;
 		a = Math.cos(inTheta) * scale;
@@ -237,14 +237,14 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	}
 	
 	
-	public function transformPoint (inPos:Point):Point {
+	public function transformPoint(inPos:Point):Point {
 		
-		return new Point (inPos.x * a + inPos.y * c + tx, inPos.x * b + inPos.y * d + ty);
+		return new Point(inPos.x * a + inPos.y * c + tx, inPos.x * b + inPos.y * d + ty);
 		
 	}
 	
 	
-	public function translate (inDX:Float, inDY:Float):Void {	
+	public function translate(inDX:Float, inDY:Float):Void {	
 		
 		tx += inDX;
 		ty += inDY;

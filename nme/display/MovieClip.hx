@@ -80,7 +80,7 @@ extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end
 	 * default value of <code>enabled</code> is <code>true</code>. If
 	 * <code>enabled</code> is set to <code>false</code>, the movie clip's Over,
 	 * Down, and Up frames are disabled. The movie clip continues to receive
-	 * events (for example, <code>mouseDown</code>, <code>mouseUp</code>,
+	 * events(for example, <code>mouseDown</code>, <code>mouseUp</code>,
 	 * <code>keyDown</code>, and <code>keyUp</code>).
 	 *
 	 * <p>The <code>enabled</code> property governs only the button-like

@@ -9,7 +9,7 @@ class GridFitType {
 	public static var SUBPIXEL = "SUBPIXEL";
 	
 	
-	public function new () {
+	public function new() {
 		
 		
 		

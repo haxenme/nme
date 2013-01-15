@@ -7,12 +7,12 @@ import nme.Vector;
 class Matrix3D {
 	
 	
-	public var determinant (get_determinant, null):Float;
-	public var position (get_position, set_position):Vector3D;
+	public var determinant(get_determinant, null):Float;
+	public var position(get_position, set_position):Vector3D;
 	public var rawData:Vector<Float>;
 	
 	
-	public function new (?v:Vector<Float>) {
+	public function new(?v:Vector<Float>) {
 		
 		if (v != null && v.length == 16) {
 			
@@ -27,7 +27,7 @@ class Matrix3D {
 	}
 	
 	
-	public function append (lhs:Matrix3D):Void {
+	public function append(lhs:Matrix3D):Void {
 		
 		var m111:Float = this.rawData[0], m121:Float = this.rawData[4], m131:Float = this.rawData[8], m141:Float = this.rawData[12],
 			m112:Float = this.rawData[1], m122:Float = this.rawData[5], m132:Float = this.rawData[9], m142:Float = this.rawData[13],
@@ -61,30 +61,30 @@ class Matrix3D {
 	}
 	
 	
-	public function appendRotation (degrees:Float, axis:Vector3D, ?pivotPoint:Vector3D):Void {
+	public function appendRotation(degrees:Float, axis:Vector3D, ?pivotPoint:Vector3D):Void {
 		
-		var m = getAxisRotation (axis.x, axis.y, axis.z, degrees);
+		var m = getAxisRotation(axis.x, axis.y, axis.z, degrees);
 		
 		if (pivotPoint != null) {
 			
 			var p = pivotPoint;
-			m.appendTranslation (p.x, p.y, p.z);
+			m.appendTranslation(p.x, p.y, p.z);
 			
 		}
 		
-		this.append (m);
+		this.append(m);
 		
 	}
 	
 	
-	inline public function appendScale (xScale:Float, yScale:Float, zScale:Float):Void {
+	inline public function appendScale(xScale:Float, yScale:Float, zScale:Float):Void {
 		
-		this.append (new Matrix3D ([xScale, 0.0, 0.0, 0.0, 0.0, yScale, 0.0, 0.0, 0.0, 0.0, zScale, 0.0, 0.0, 0.0, 0.0, 1.0]));
+		this.append(new Matrix3D([xScale, 0.0, 0.0, 0.0, 0.0, yScale, 0.0, 0.0, 0.0, 0.0, zScale, 0.0, 0.0, 0.0, 0.0, 1.0]));
 		
 	}
 	
 	
-	inline public function appendTranslation (x:Float, y:Float, z:Float):Void {
+	inline public function appendTranslation(x:Float, y:Float, z:Float):Void {
 		
 		rawData[12] += x;
 		rawData[13] += y;
@@ -93,9 +93,9 @@ class Matrix3D {
 	}
 	
 	
-	inline public function clone ():Matrix3D {
+	inline public function clone():Matrix3D {
 		
-		return new Matrix3D (this.rawData.copy ());
+		return new Matrix3D(this.rawData.copy());
 		
 	}
 	
@@ -103,10 +103,10 @@ class Matrix3D {
 	public static function create2D(x:Float, y:Float, scale:Float = 1, rotation:Float = 0) {
 		
 		var theta = rotation * Math.PI / 180.0;
-		var c = Math.cos (theta);
-		var s = Math.sin (theta);
+		var c = Math.cos(theta);
+		var s = Math.sin(theta);
 		
-		return new Matrix3D ([
+		return new Matrix3D([
 			c*scale,  -s*scale, 0,  0,
 			s*scale,  c*scale, 0,  0,
 			0,        0,        1,  0,
@@ -116,9 +116,9 @@ class Matrix3D {
 	}
    
    
-	public static function createABCD (a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float) {
+	public static function createABCD(a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float) {
 		
-		return new Matrix3D ([
+		return new Matrix3D([
 			a, b, 0, 0,
 			c, d, 0, 0,
 			0, 0, 1, 0,
@@ -128,13 +128,13 @@ class Matrix3D {
 	}
 	
 	
-	public static function createOrtho (x0:Float, x1:Float,  y0:Float, y1:Float, zNear:Float, zFar:Float) {
+	public static function createOrtho(x0:Float, x1:Float,  y0:Float, y1:Float, zNear:Float, zFar:Float) {
 		
-		var sx = 1.0 / (x1 - x0);
-		var sy = 1.0 / (y1 - y0);
-		var sz = 1.0 / (zFar - zNear);
+		var sx = 1.0 /(x1 - x0);
+		var sy = 1.0 /(y1 - y0);
+		var sz = 1.0 /(zFar - zNear);
 		
-		return new Matrix3D ([
+		return new Matrix3D([
 			2.0*sx,       0,          0,                 0,
 			0,            2.0*sy,     0,                 0,
 			0,            0,          -2.0*sz,           0,
@@ -144,24 +144,24 @@ class Matrix3D {
 	}
 	
 	
-	public function decompose ():Vector<Vector3D> {
+	public function decompose():Vector<Vector3D> {
 		
-		var vec = new Vector<Vector3D> ();
-		var m = this.clone ();
+		var vec = new Vector<Vector3D>();
+		var m = this.clone();
 		var mr = m.rawData;
 		
-		var pos = new Vector3D (mr[12], mr[13], mr[14]);
+		var pos = new Vector3D(mr[12], mr[13], mr[14]);
 		mr[12] = 0;
 		mr[13] = 0;
 		mr[14] = 0;
 		
-		var scale = new Vector3D ();
+		var scale = new Vector3D();
 		
-		scale.x = Math.sqrt (mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
-		scale.y = Math.sqrt (mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
-		scale.z = Math.sqrt (mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+		scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
+		scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
+		scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
 		
-		if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0) {
+		if (mr[0] *(mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] *(mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] *(mr[4] * mr[9] - mr[5] * mr[8]) < 0) {
 			
 			scale.z = -scale.z;
 			
@@ -177,33 +177,33 @@ class Matrix3D {
 		mr[9] /= scale.z; 
 		mr[10] /= scale.z;
 		
-		var rot = new Vector3D ();
+		var rot = new Vector3D();
 		
-		rot.y = Math.asin ( -mr[2]);
+		rot.y = Math.asin( -mr[2]);
 		
-		var C = Math.cos (rot.y);		
+		var C = Math.cos(rot.y);		
 		if (C > 0) {
 			
-			rot.x = Math.atan2 (mr[6], mr[10]);
-			rot.z = Math.atan2 (mr[1], mr[0]);
+			rot.x = Math.atan2(mr[6], mr[10]);
+			rot.z = Math.atan2(mr[1], mr[0]);
 			
 		} else {
 			
 			rot.z = 0;
-			rot.x = Math.atan2 (mr[4], mr[5]);
+			rot.x = Math.atan2(mr[4], mr[5]);
 			
 		} 
 		
-		vec.push (pos);
-		vec.push (rot);
-		vec.push (scale);
+		vec.push(pos);
+		vec.push(rot);
+		vec.push(scale);
 		
 		return vec;
 		
 	}
 	
 	
-	inline public function deltaTransformVector (v:Vector3D):Vector3D {
+	inline public function deltaTransformVector(v:Vector3D):Vector3D {
 		
 		var x:Float = v.x, y:Float = v.y, z:Float = v.z;
 		return new Vector3D(
@@ -215,14 +215,14 @@ class Matrix3D {
 	}
 	
 	
-	inline static public function getAxisRotation (x:Float, y:Float, z:Float, degrees:Float):Matrix3D {
+	inline static public function getAxisRotation(x:Float, y:Float, z:Float, degrees:Float):Matrix3D {
 		
-		var m = new Matrix3D ();
+		var m = new Matrix3D();
 		
-		var a1 = new Vector3D (x, y, z);
-		var rad = -degrees * (Math.PI / 180);
-		var c:Float = Math.cos (rad);
-		var s:Float = Math.sin (rad);
+		var a1 = new Vector3D(x, y, z);
+		var rad = -degrees *(Math.PI / 180);
+		var c:Float = Math.cos(rad);
+		var s:Float = Math.sin(rad);
 		var t:Float = 1.0 - c;
 		
 		m.rawData[0] = c + a1.x * a1.x * t;
@@ -247,7 +247,7 @@ class Matrix3D {
 	}
 	
 	
-	inline public function identity ():Void {
+	inline public function identity():Void {
 		
 		rawData[0] = 1;
 		rawData[1] = 0;
@@ -269,13 +269,13 @@ class Matrix3D {
 	}
 	
 	
-	inline public static function interpolate (thisMat:Matrix3D, toMat:Matrix3D, percent:Float):Matrix3D {
+	inline public static function interpolate(thisMat:Matrix3D, toMat:Matrix3D, percent:Float):Matrix3D {
 		
-		var m = new Matrix3D ();
+		var m = new Matrix3D();
 		
 		for (i in 0...16) {
 			
-			m.rawData[i] = thisMat.rawData[i] + (toMat.rawData[i] - thisMat.rawData[i]) * percent;
+			m.rawData[i] = thisMat.rawData[i] +(toMat.rawData[i] - thisMat.rawData[i]) * percent;
 			
 		}
 		
@@ -284,21 +284,21 @@ class Matrix3D {
 	}
 	
 	
-	inline public function interpolateTo (toMat:Matrix3D, percent:Float):Void {
+	inline public function interpolateTo(toMat:Matrix3D, percent:Float):Void {
 		
 		for (i in 0...16) {
 			
-			rawData[i] = rawData[i] + (toMat.rawData[i] - rawData[i]) * percent;
+			rawData[i] = rawData[i] +(toMat.rawData[i] - rawData[i]) * percent;
 			
 		}
 		
 	}
 	
 	
-	inline public function invert ():Bool {
+	inline public function invert():Bool {
 		
 		var d = determinant;
-		var invertable = Math.abs (d) > 0.00000000001;
+		var invertable = Math.abs(d) > 0.00000000001;
 		
 		if (invertable) {
 			
@@ -308,22 +308,22 @@ class Matrix3D {
 			var m13:Float = rawData[2]; var m23:Float = rawData[6]; var m33:Float = rawData[10]; var m43:Float = rawData[14];
 			var m14:Float = rawData[3]; var m24:Float = rawData[7]; var m34:Float = rawData[11]; var m44:Float = rawData[15];
 			
-			rawData[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
-			rawData[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
-			rawData[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
-			rawData[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
-			rawData[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
-			rawData[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
-			rawData[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
-			rawData[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
-			rawData[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
-			rawData[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
-			rawData[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
-			rawData[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
-			rawData[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
-			rawData[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
-			rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
-			rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+			rawData[0] = d *(m22 *(m33 * m44 - m43 * m34) - m32 *(m23 * m44 - m43 * m24) + m42 *(m23 * m34 - m33 * m24));
+			rawData[1] = -d *(m12 *(m33 * m44 - m43 * m34) - m32 *(m13 * m44 - m43 * m14) + m42 *(m13 * m34 - m33 * m14));
+			rawData[2] = d *(m12 *(m23 * m44 - m43 * m24) - m22 *(m13 * m44 - m43 * m14) + m42 *(m13 * m24 - m23 * m14));
+			rawData[3] = -d *(m12 *(m23 * m34 - m33 * m24) - m22 *(m13 * m34 - m33 * m14) + m32 *(m13 * m24 - m23 * m14));
+			rawData[4] = -d *(m21 *(m33 * m44 - m43 * m34) - m31 *(m23 * m44 - m43 * m24) + m41 *(m23 * m34 - m33 * m24));
+			rawData[5] = d *(m11 *(m33 * m44 - m43 * m34) - m31 *(m13 * m44 - m43 * m14) + m41 *(m13 * m34 - m33 * m14));
+			rawData[6] = -d *(m11 *(m23 * m44 - m43 * m24) - m21 *(m13 * m44 - m43 * m14) + m41 *(m13 * m24 - m23 * m14));
+			rawData[7] = d *(m11 *(m23 * m34 - m33 * m24) - m21 *(m13 * m34 - m33 * m14) + m31 *(m13 * m24 - m23 * m14));
+			rawData[8] = d *(m21 *(m32 * m44 - m42 * m34) - m31 *(m22 * m44 - m42 * m24) + m41 *(m22 * m34 - m32 * m24));
+			rawData[9] = -d *(m11 *(m32 * m44 - m42 * m34) - m31 *(m12 * m44 - m42 * m14) + m41 *(m12 * m34 - m32 * m14));
+			rawData[10] = d *(m11 *(m22 * m44 - m42 * m24) - m21 *(m12 * m44 - m42 * m14) + m41 *(m12 * m24 - m22 * m14));
+			rawData[11] = -d *(m11 *(m22 * m34 - m32 * m24) - m21 *(m12 * m34 - m32 * m14) + m31 *(m12 * m24 - m22 * m14));
+			rawData[12] = -d *(m21 *(m32 * m43 - m42 * m33) - m31 *(m22 * m43 - m42 * m23) + m41 *(m22 * m33 - m32 * m23));
+			rawData[13] = d *(m11 *(m32 * m43 - m42 * m33) - m31 *(m12 * m43 - m42 * m13) + m41 *(m12 * m33 - m32 * m13));
+			rawData[14] = -d *(m11 *(m22 * m43 - m42 * m23) - m21 *(m12 * m43 - m42 * m13) + m41 *(m12 * m23 - m22 * m13));
+			rawData[15] = d *(m11 *(m22 * m33 - m32 * m23) - m21 *(m12 * m33 - m32 * m13) + m31 *(m12 * m23 - m22 * m13));
 			
 		}
 		
@@ -386,7 +386,7 @@ class Matrix3D {
 	}*/
 	
 	
-	inline public function prepend (rhs:Matrix3D):Void {
+	inline public function prepend(rhs:Matrix3D):Void {
 		
 		var m111:Float = rhs.rawData[0], m121:Float = rhs.rawData[4], m131:Float = rhs.rawData[8], m141:Float = rhs.rawData[12],
 			m112:Float = rhs.rawData[1], m122:Float = rhs.rawData[5], m132:Float = rhs.rawData[9], m142:Float = rhs.rawData[13],
@@ -420,52 +420,52 @@ class Matrix3D {
 	}
 	
 	
-	inline public function prependRotation (degrees:Float, axis:Vector3D, ?pivotPoint:Vector3D):Void {
+	inline public function prependRotation(degrees:Float, axis:Vector3D, ?pivotPoint:Vector3D):Void {
 		
-		var m = getAxisRotation (axis.x, axis.y, axis.z, degrees);
+		var m = getAxisRotation(axis.x, axis.y, axis.z, degrees);
 		
 		if (pivotPoint != null) {
 			
 			var p = pivotPoint;
-			m.appendTranslation (p.x, p.y, p.z);
+			m.appendTranslation(p.x, p.y, p.z);
 			
 		}
 		
-		this.prepend (m);
+		this.prepend(m);
 		
 	}
 	
 	
-	inline public function prependScale (xScale:Float, yScale:Float, zScale:Float):Void {
+	inline public function prependScale(xScale:Float, yScale:Float, zScale:Float):Void {
 		
-		this.prepend (new Matrix3D ([xScale, 0.0, 0.0, 0.0, 0.0, yScale, 0.0, 0.0, 0.0, 0.0, zScale, 0.0, 0.0, 0.0, 0.0, 1.0]));
-		
-	}
-	
-	
-	inline public function prependTranslation (x:Float, y:Float, z:Float):Void {
-		
-		var m = new Matrix3D ();
-		m.position = new Vector3D (x, y, z);
-		this.prepend (m);
+		this.prepend(new Matrix3D([xScale, 0.0, 0.0, 0.0, 0.0, yScale, 0.0, 0.0, 0.0, 0.0, zScale, 0.0, 0.0, 0.0, 0.0, 1.0]));
 		
 	}
 	
 	
-	public function recompose (components:Vector<Vector3D>):Bool {
+	inline public function prependTranslation(x:Float, y:Float, z:Float):Void {
+		
+		var m = new Matrix3D();
+		m.position = new Vector3D(x, y, z);
+		this.prepend(m);
+		
+	}
+	
+	
+	public function recompose(components:Vector<Vector3D>):Bool {
 		
 		if (components.length < 3 || components[2].x == 0 || components[2].y == 0 || components[2].z == 0) return false;
 		
-		this.identity ();
-		this.appendScale (components[2].x, components[2].y, components[2].z);
+		this.identity();
+		this.appendScale(components[2].x, components[2].y, components[2].z);
 		
 		var angle:Float;
 		angle = -components[1].x;
-		this.append (new Matrix3D ([1, 0, 0, 0, 0, Math.cos (angle), -Math.sin (angle), 0, 0, Math.sin (angle), Math.cos (angle), 0, 0, 0, 0 , 0]));
+		this.append(new Matrix3D([1, 0, 0, 0, 0, Math.cos(angle), -Math.sin(angle), 0, 0, Math.sin(angle), Math.cos(angle), 0, 0, 0, 0 , 0]));
 		angle = -components[1].y;
-		this.append (new Matrix3D ([Math.cos (angle), 0, Math.sin (angle), 0, 0, 1, 0, 0, -Math.sin (angle), 0, Math.cos (angle), 0, 0, 0, 0, 0]));
+		this.append(new Matrix3D([Math.cos(angle), 0, Math.sin(angle), 0, 0, 1, 0, 0, -Math.sin(angle), 0, Math.cos(angle), 0, 0, 0, 0, 0]));
 		angle = -components[1].z;
-		this.append (new Matrix3D ([Math.cos (angle), -Math.sin (angle), 0, 0, Math.sin (angle), Math.cos (angle), 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]));
+		this.append(new Matrix3D([Math.cos(angle), -Math.sin(angle), 0, 0, Math.sin(angle), Math.cos(angle), 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]));
 		
 		this.position = components[0];
 		this.rawData[15] = 1;
@@ -475,7 +475,7 @@ class Matrix3D {
 	}
 	
 	
-	inline public function transformVector (v:Vector3D):Vector3D {
+	inline public function transformVector(v:Vector3D):Vector3D {
 		
 		var x:Float = v.x, y:Float = v.y, z:Float = v.z;
 		return new Vector3D(
@@ -487,7 +487,7 @@ class Matrix3D {
 	}
 	
 	
-	public function transformVectors (vin:Vector<Float>, vout:Vector<Float>):Void {
+	public function transformVectors(vin:Vector<Float>, vout:Vector<Float>):Void {
 		
 		var i = 0;
 		while (i + 3 <= vin.length) {
@@ -503,9 +503,9 @@ class Matrix3D {
 	}
 	
 	
-	inline public function transpose ():Void {
+	inline public function transpose():Void {
 		
-		var oRawData = rawData.copy ();
+		var oRawData = rawData.copy();
 		rawData[1] = oRawData[4];
 		rawData[2] = oRawData[8];
 		rawData[3] = oRawData[12];
@@ -531,24 +531,24 @@ class Matrix3D {
 	
 	/** @private */ inline public function get_determinant():Float {
 		
-		return	-1 * ((rawData[0] * rawData[5] - rawData[4] * rawData[1]) * (rawData[10] * rawData[15] - rawData[14] * rawData[11])
-			- (rawData[0] * rawData[9] - rawData[8] * rawData[1]) * (rawData[6] * rawData[15] - rawData[14] * rawData[7])
-			+ (rawData[0] * rawData[13] - rawData[12] * rawData[1]) * (rawData[6] * rawData[11] - rawData[10] * rawData[7])
-			+ (rawData[4] * rawData[9] - rawData[8] * rawData[5]) * (rawData[2] * rawData[15] - rawData[14] * rawData[3])
-			- (rawData[4] * rawData[13] - rawData[12] * rawData[5]) * (rawData[2] * rawData[11] - rawData[10] * rawData[3])
-			+ (rawData[8] * rawData[13] - rawData[12] * rawData[9]) * (rawData[2] * rawData[7] - rawData[6] * rawData[3]));
+		return	-1 *((rawData[0] * rawData[5] - rawData[4] * rawData[1]) *(rawData[10] * rawData[15] - rawData[14] * rawData[11])
+			-(rawData[0] * rawData[9] - rawData[8] * rawData[1]) *(rawData[6] * rawData[15] - rawData[14] * rawData[7])
+			+(rawData[0] * rawData[13] - rawData[12] * rawData[1]) *(rawData[6] * rawData[11] - rawData[10] * rawData[7])
+			+(rawData[4] * rawData[9] - rawData[8] * rawData[5]) *(rawData[2] * rawData[15] - rawData[14] * rawData[3])
+			-(rawData[4] * rawData[13] - rawData[12] * rawData[5]) *(rawData[2] * rawData[11] - rawData[10] * rawData[3])
+			+(rawData[8] * rawData[13] - rawData[12] * rawData[9]) *(rawData[2] * rawData[7] - rawData[6] * rawData[3]));
 		
 	}
 	
 	
-	/** @private */ inline public function get_position ():Vector3D {
+	/** @private */ inline public function get_position():Vector3D {
 		
-		return new Vector3D (rawData[12], rawData[13], rawData[14]);
+		return new Vector3D(rawData[12], rawData[13], rawData[14]);
 		
 	}
 	
 	
-	/** @private */ inline public function set_position (val:Vector3D):Vector3D {
+	/** @private */ inline public function set_position(val:Vector3D):Vector3D {
 		
 		rawData[12] = val.x;
 		rawData[13] = val.y;
