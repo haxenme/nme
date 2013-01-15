@@ -185,19 +185,7 @@ class SharedObject extends EventDispatcher {
 			
 			if (FileSystem.exists(filePath)) {
 				
-				var input:FileInput = File.read(filePath, false);
-				
-				try {
-					
-					while (true) {
-						
-						rawData += input.readLine();
-						
-					}
-					
-				} catch(ex:Eof) { }
-				
-				input.close();
+				rawData = File.getContent (filePath);
 				
 			}
 			
@@ -211,9 +199,18 @@ class SharedObject extends EventDispatcher {
 			
 		} else {
 			
-			var unserializer = new Unserializer(rawData);
-			unserializer.setResolver(cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass } );
-			loadedData = unserializer.unserialize();
+			try {
+				
+				var unserializer = new Unserializer(rawData);
+				unserializer.setResolver(cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass } );
+				loadedData = unserializer.unserialize();
+				
+			} catch (e:Dynamic) {
+				
+				trace ("Could not unserialize SharedObject");
+				loadedData = { };
+				
+			}
 			
 		}
 		
