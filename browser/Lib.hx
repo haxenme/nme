@@ -32,8 +32,9 @@ class Lib {
 	
 	private static inline var DEFAULT_HEIGHT = 500;
 	private static inline var DEFAULT_WIDTH = 500;
-	private static var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'dblclick', 'click' ];
+	private static var HTML_DIV_EVENT_TYPES = [ 'resize', /*'mouseup',*/ 'mouseover', 'mouseout', /*'mousemove', 'mousedown',*/ 'mousewheel', 'dblclick', 'click' ];
 	private static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ];
+	private static var HTML_TOUCH_ALT_EVENT_TYPES = [ 'mousedown', 'mousemove', 'mouseup' ];
 	private static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
 	private static inline var NME_IDENTIFIER = 'haxe:jeash';
 	private static inline var VENDOR_HTML_TAG = "data-";
@@ -966,6 +967,14 @@ class Lib {
 		if (Reflect.hasField (tgt, "on" + HTML_TOUCH_EVENT_TYPES[0])) {
 			
 			for (type in HTML_TOUCH_EVENT_TYPES) {
+				
+				tgt.addEventListener (type, nmeGetStage ().nmeQueueStageEvent, true);
+				
+			}
+			
+		} else {
+			
+			for (type in HTML_TOUCH_ALT_EVENT_TYPES) {
 				
 				tgt.addEventListener (type, nmeGetStage ().nmeQueueStageEvent, true);
 				
