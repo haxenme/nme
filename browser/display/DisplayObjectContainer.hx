@@ -381,30 +381,17 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null):Void {
+	override private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null):Graphics {
 		
-		var gfx1 = nmeGetGraphics();
+		var gfx = super.nmeUnifyChildrenWithDOM ();
 		
-		if (gfx1 != null) {
+		for (child in nmeChildren) {
 			
-			lastMoveGfx = gfx1;
-			
-			for (child in nmeChildren) {
-				
-				var gfx2 = child.nmeGetGraphics();
-				
-				if (gfx2 != null) {
-					
-					Lib.nmeSetSurfaceZIndexAfter(gfx2.nmeSurface, lastMoveGfx.nmeSurface);
-					lastMoveGfx = gfx2;
-					
-				}
-				
-				child.nmeUnifyChildrenWithDOM(lastMoveGfx);
-				
-			}
+			gfx = child.nmeUnifyChildrenWithDOM(gfx);
 			
 		}
+		
+		return gfx;
 		
 	}
 	
