@@ -1,6 +1,20 @@
 Changes
 =======
 
+3.5.4
+---------------
+* Multiple improvements to the command-line tools
+* Added the "nme create" command for sample and template projects
+* Added PiratePig, NyanCat and six new sample projects
+* Added initial support for Raspberry Pi
+* Made improvements to support OUYA
+* Fixed z-order errors on HTML5
+* Fixed disappearing and out-of-place issues on HTML5
+* Improved sleep on SDL targets to reduce CPU usage
+* Improvements to support current Haxe development builds
+* Continued improvement to the Stage3D compatibility layer
+* Minor fixes and improvements
+
 3.5.3
 ---------------
 * Added support for a new Haxe-based project format
