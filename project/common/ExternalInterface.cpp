@@ -2980,6 +2980,27 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
    Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
    if (surface)
    {
+      if (inAlphaBytes)
+      {
+         ByteData alphabytes;
+         if (!FromValue(alphabytes,inAlphaBytes))
+            return alloc_null();
+            
+         if(alphabytes.length > 0)
+         {
+            int index = 0;
+            for (int y=0; y < surface->Height(); y++)
+            {
+               for (int x=0; x < surface->Width(); x++)
+			   {
+                  uint32 alpha = alphabytes.data[index++] << 24;
+                  uint32 pixel = surface->getPixel(x, y) << 8;
+                  surface->setPixel(x, y, (pixel >> 8) + alpha, true);
+               }
+            } 
+         }
+      } 
+	  
       value result = ObjectToAbstract(surface);
       surface->DecRef();
       return result;
