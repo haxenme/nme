@@ -1,6 +1,8 @@
 package native.display3D;
 
 
+import native.utils.Float32Array;
+import native.utils.ArrayBufferView;
 import native.gl.GL;
 import native.utils.ByteArray;
 import nme.Vector;
@@ -21,29 +23,22 @@ class VertexBuffer3D {
 		this.data32PerVertex = data32PerVertex;
 		
 	}
-	
-	
-	public function dispose():Void {
-		
-		// TODO
-		
+
+	public function dispose ():Void {
+		GL.deleteBuffer(glBuffer);
 	}
 	
 	
-	public function uploadFromByteArray(byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
-		
-        // TODO deal with other arguments   ?
-		
-        GL.bindBuffer(GL.ARRAY_BUFFER, glBuffer);
-        GL.bufferData(GL.ARRAY_BUFFER, byteArray, GL.STATIC_DRAW);
-		
+	public function uploadFromByteArray (byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
+		var bytesPerVertex = data32PerVertex * 4;
+        GL.bindBuffer (GL.ARRAY_BUFFER, glBuffer);
+        GL.bufferData (GL.ARRAY_BUFFER, new ArrayBufferView(byteArray,byteArrayOffset + startOffset * bytesPerVertex, count * bytesPerVertex), GL.STATIC_DRAW);
 	}
 	
 	
-	public function uploadFromVector(data:Vector<Float>, startVertex:Int, numVertices:Int):Void {
-		
-		// TODO
-		
+	public function uploadFromVector (data:Vector<Float>, startVertex:Int, numVertices:Int):Void {
+        GL.bindBuffer (GL.ARRAY_BUFFER, glBuffer);
+        GL.bufferData (GL.ARRAY_BUFFER, new Float32Array(data, startVertex, numVertices * data32PerVertex), GL.STATIC_DRAW);
 	}
 	
 	

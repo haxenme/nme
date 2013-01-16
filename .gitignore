@@ -19,3 +19,6 @@ tools/documentation/chxdoc
 *.userprefs
 *.swp
 *.hash
+.idea
+NME.iml
+out

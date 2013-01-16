@@ -1,7 +1,7 @@
 package native.display3D;
 
 
-import nme.gl.GL;
+import native.gl.GL;
 
 
 class Program3D {
@@ -19,7 +19,7 @@ class Program3D {
 	
 	public function dispose():Void {
 		
-		// TODO
+		GL.deleteProgram(glProgram);
 		
 	}
 	
