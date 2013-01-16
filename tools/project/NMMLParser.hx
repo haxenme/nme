@@ -1273,6 +1273,18 @@ class NMMLParser extends NMEProject {
 								
 							}
 							
+							if (element.has.resolve ("prerendered-icon")) {
+								
+								config.ios.prerenderedIcon = (substitute (element.att.resolve ("prerendered-icon")) == "true");
+								
+							}
+							
+							if (element.has.resolve ("linker-flags")) {
+								
+								config.ios.linkerFlags = substitute (element.att.resolve ("linker-flags"));
+								
+							}
+							
 						}
 					
 				}

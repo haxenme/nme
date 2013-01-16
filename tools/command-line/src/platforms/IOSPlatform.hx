@@ -176,6 +176,7 @@ class IOSPlatform implements IPlatformTool {
 		}
 		
 		context.IOS_COMPILER = project.config.ios.compiler;
+		context.IOS_LINKER_FLAGS = project.config.ios.linkerFlags.split (" ").join (", ");
 		
 		switch (project.window.orientation) {
 			
@@ -248,7 +249,6 @@ class IOSPlatform implements IPlatformTool {
 		project.ndlls.push (new NDLL ("curl_ssl", "nme", false));
 		project.ndlls.push (new NDLL ("png", "nme", false));
 		project.ndlls.push (new NDLL ("jpeg", "nme", false));
-		project.ndlls.push (new NDLL ("z", "nme", false));
 		
 		for (asset in project.assets) {
 			
