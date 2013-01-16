@@ -1321,54 +1321,55 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 void StartAnimation()
 {
+   bool firstTime = true;  
    SDL_Event event;
    while(!sgDead)
    {
-      while (!sgDead && SDL_PollEvent(&event) )
+      while (!sgDead && (firstTime || SDL_WaitEvent(&event)))
       {
-         ProcessEvent(event);
-         event.type = -1;
-         if (sgDead) break;
-      }
-
-     
-      if (sgDead)
-         break;
-
-      Event poll(etPoll);
-      sgSDLFrame->ProcessEvent(poll);
-
-      // Sleep if required...
-      double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
-      if (next > 0.001)
-      {
-         int snooze = next*1000.0;
-         sgTimerActive = true;
-         sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
-
-         event.type = -1;
-         SDL_WaitEvent(&event);
-
+         firstTime = false;
          if (sgTimerActive && sgTimerID)
          {
             SDL_RemoveTimer(sgTimerID);
             sgTimerActive = false;
             sgTimerID = 0;
          }
+         
          ProcessEvent(event);
+         if (sgDead) break;
+         event.type = -1;
+         
+		 while (SDL_PollEvent(&event)) {
+            ProcessEvent (event);
+            if (sgDead) break;
+            event.type = -1;
+         }
+         
+         Event poll(etPoll);
+         sgSDLFrame->ProcessEvent(poll);
+         if (sgDead) break;
+         
+         double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
+		 if (next > 0.001) {
+			 int snooze = next*1000.0;
+			 sgTimerActive = true;
+			 sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
+		 } else {
+			 OnTimer(0, 0);
+		 }
       }
    }
-
+   
    Event deactivate( etDeactivate );
    sgSDLFrame->ProcessEvent(deactivate);
- 
+   
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
-
-	#if HX_WINDOWS
-		done_win32();
-	#endif
+   
+   #if HX_WINDOWS
+   done_win32();
+   #endif
 }
 
 
