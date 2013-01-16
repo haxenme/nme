@@ -824,7 +824,7 @@ class TextField extends InteractiveObject {
 	
 	public function set_text(inText:String):String {
 		
-		mText = inText;
+		mText = Std.string(inText);
 		//mHTMLText = inText;
 		mHTMLMode = false;
 		RebuildText();
