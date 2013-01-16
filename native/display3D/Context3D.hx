@@ -323,21 +323,66 @@ class Context3D {
 	public function setRenderMethod (func:Rectangle -> Void):Void {
 		
 		ogl.render = func;
-		
+
 	}
 	
-	
+
 	public function setRenderToBackBuffer ():Void {
-		
-		// TODO
-		
+
+		// TODO : check
+        // Render to the screen
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
 	}
-	
-	
+
+
 	public function setRenderToTexture (texture:TextureBase, enableDepthAndStencil:Bool = false, antiAlias:Int = 0, surfaceSelector:Int = 0):Void {
-		
-		// TODO
-		
+
+        // TODO antiAlias (could this be achieved using a texture multiple of the screensize ?)
+        // TODO surfaceSelector
+
+		// TODO : cache the framebuffer and renderbuffer. in other words this function should only bind the framebuffer and associate it with the texture
+        // TODO at texture creation this could also be done (if optimizeForRenderToTexture is set to true)
+
+        var frameBuffer = GL.createFramebuffer();
+
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
+        GL.bindTexture(GL.TEXTURE_2D, texture.glTexture);
+
+        // this should be done by default when no call to texture.uploadFrom.. are performed
+        //GL.texImage2D(GL.TEXTURE_2D,0, GL.RGB, texture.width, texture.height, 0, GL.RGB, GL.UNSIGNED_BYTE, 0); // last zero means empty texture
+
+        // poor filterring needed  (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)?
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+
+        // TODO enable depth buffer according to "enableDepthAndStencil"
+        // The depth buffer
+        var depthRenderBuffer = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GL.RENDERBUFFER, depthRenderBuffer);
+        //TODO
+        //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+        //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+        //TODO
+        // Set "renderedTexture" as our colour attachement #0
+        //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+        // Set the list of draw buffers.
+        //GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
+        //glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+        //TODO
+        // Render to our framebuffer
+        //glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+
+        //TODO : check whether the following is required in the fragment shader:
+        // layout(location = 0) out vec3 color;
+
 	}
 	
 	
