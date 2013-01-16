@@ -796,7 +796,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 		
 		var gfx = nmeGetGraphics();
 		
-		if (gfx != null && lastMoveGfx != null) {
+		if (gfx != null && lastMoveGfx != null && gfx != lastMoveGfx) {
 			
 			Lib.nmeSetSurfaceZIndexAfter(gfx.nmeSurface, lastMoveGfx.nmeSurface);
 			

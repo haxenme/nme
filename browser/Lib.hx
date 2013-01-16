@@ -710,7 +710,7 @@ class Lib {
 			
 		}
 		
-		if (c1 != -1 && c2 != -1 && c1 < c2) {
+		if (c1 != -1 && c2 != -1 && c1 != (c2 - 1)) {
 			
 			swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
 			
