@@ -269,13 +269,19 @@ class Context3D {
 
 
     private function getUniformLocationNameFromAgalRegisterIndex(programType : Context3DProgramType, firstRegister : Int) : String{
-        return switch (programType) {
-
-            case Context3DProgramType.VERTEX: "vc";
-            case Context3DProgramType.FRAGMENT: "fc";
-            default: throw "Program Type " + programType + " not supported";
-
-        };
+        
+		if (programType == Context3DProgramType.VERTEX) {
+			
+			return "vc";
+			
+		} else if (programType == Context3DProgramType.FRAGMENT) {
+			
+			return "fc";
+			
+		}
+		
+        throw "Program Type " + programType + " not supported";
+		
     }
 
     public function setProgramConstantsFromByteArray (programType:Context3DProgramType, firstRegister:Int, numRegisters:Int, data:ByteArray, byteArrayOffset:Int):Void {

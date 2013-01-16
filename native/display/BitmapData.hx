@@ -28,26 +28,6 @@ class BitmapData implements IBitmapDrawable {
 	public static var FORMAT_8888:Int = 0;
 	public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
 	public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
-
-    inline public static function getRGBAPixels(bitmapData : BitmapData) : ByteArray{
-        var p = bitmapData.getPixels (new Rectangle (0, 0, bitmapData.width, bitmapData.height));
-        var num =  bitmapData.width * bitmapData.height;
-
-        for (i in 0...num) {
-
-            var alpha = p[i * 4];
-            var red = p[i * 4 + 1];
-            var green = p[i * 4 + 2];
-            var blue = p[i * 4 + 3];
-
-            p[i * 4] = red;
-            p[i * 4 + 1] = green;
-            p[i * 4 + 2] = blue;
-            p[i * 4 + 3] = alpha;
-
-        }
-        return p;
-    }
 	
 	public var height(get_height, null):Int;
 	public var rect(get_rect, null):Rectangle;
@@ -270,6 +250,29 @@ class BitmapData implements IBitmapDrawable {
 		if (result != null) result.position = result.length;
 		return result;
 		
+	}
+	
+	
+	inline public static function getRGBAPixels(bitmapData:BitmapData):ByteArray {
+		
+		var p = bitmapData.getPixels(new Rectangle(0, 0, bitmapData.width, bitmapData.height));
+		var num = bitmapData.width * bitmapData.height;
+		
+		for (i in 0...num) {
+			
+			var alpha = p[i * 4];
+			var red = p[i * 4 + 1];
+			var green = p[i * 4 + 2];
+			var blue = p[i * 4 + 3];
+			
+			p[i * 4] = red;
+			p[i * 4 + 1] = green;
+			p[i * 4 + 2] = blue;
+			p[i * 4 + 3] = alpha;
+			
+		}
+		
+		return p;
 	}
 	
 	

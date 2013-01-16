@@ -27,8 +27,8 @@ class Lib {
 	public static inline var HTML_ORIENTATION_EVENT_TYPE = 'orientationchange';
 	
 	public static var current(get_current, null):MovieClip;
-	public static inline var document(get_document, null):HTMLDocument;
-	public static inline var window(get_window, null):Window;
+	public static var document(get_document, null):HTMLDocument;
+	public static var window(get_window, null):Window;
 	
 	private static inline var DEFAULT_HEIGHT = 500;
 	private static inline var DEFAULT_WIDTH = 500;
