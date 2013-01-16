@@ -692,39 +692,61 @@ class Lib {
 	
 	public static function nmeSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement):Void {
 		
-		var c1:Int = -1;
-		var c2:Int = -1;
-		var swap:Node;
-		
-		for (i in 0...mMe.__scr.childNodes.length) {
+		if (surface1.parentNode == mMe.__scr && surface2.parentNode == mMe.__scr) {
 			
-			if (mMe.__scr.childNodes[i] == surface1) {
+			var nextSibling = surface2.nextSibling;
+			
+			if (surface1.previousSibling != surface2) {
 				
-				c1 = i;
+				var swap = nmeRemoveSurface(cast surface1);
 				
-			} else if (mMe.__scr.childNodes[i] == surface2) {
-				
-				c2 = i;
+				if (nextSibling == null) {
+					
+					mMe.__scr.appendChild(swap);
+					
+				} else {
+					
+					mMe.__scr.insertBefore(swap, nextSibling); 
+					
+				}
 				
 			}
 			
 		}
 		
-		if (c1 != -1 && c2 != -1 && c1 != (c2 - 1)) {
-			
-			swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
-			
-			if (c2 < mMe.__scr.childNodes.length - 1) {
-				
-				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2 + 1]);
-				
-			} else {
-				
-				mMe.__scr.appendChild(swap);
-				
-			}
-			
-		}
+		//var c1:Int = -1;
+		//var c2:Int = -1;
+		//var swap:Node;
+		//
+		//for (i in 0...mMe.__scr.childNodes.length) {
+			//
+			//if (mMe.__scr.childNodes[i] == surface1) {
+				//
+				//c1 = i;
+				//
+			//} else if (mMe.__scr.childNodes[i] == surface2) {
+				//
+				//c2 = i;
+				//
+			//}
+			//
+		//}
+		//
+		//if (c1 != -1 && c2 != -1 && c1 != (c2 - 1)) {
+			//
+			//swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
+			//
+			//if (c2 < mMe.__scr.childNodes.length - 1) {
+				//
+				//mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2 + 1]);
+				//
+			//} else {
+				//
+				//mMe.__scr.appendChild(swap);
+				//
+			//}
+			//
+		//}
 		
 	}
 	
