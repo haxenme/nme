@@ -63,7 +63,15 @@ class SharedObject extends EventDispatcher {
 		
 		if (rawData != null && rawData != "") {
 			
-			so.data = Unserializer.run(rawData);
+			var unserializer = new Unserializer(rawData);
+			unserializer.setResolver(cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass } );
+			so.data = unserializer.unserialize();
+			
+		}
+		
+		if (so.data == null) {
+			
+			so.data = { };
 			
 		}
 		
@@ -81,6 +89,19 @@ class SharedObject extends EventDispatcher {
 		#end
 		if (res == null) throw new Error("SharedObject not supported");
 		return res;
+		
+	}
+	
+	
+	private static function resolveClass(name:String):Class <Dynamic> {
+		
+		if (name != null) {
+			
+			return Type.resolveClass(StringTools.replace(name, "jeash.", "browser."));
+			
+		}
+		
+		return null;
 		
 	}
 	
