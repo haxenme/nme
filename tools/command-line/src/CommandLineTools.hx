@@ -672,7 +672,7 @@ class CommandLineTools {
 		
 		try { Sys.setCwd (Path.directory (projectFile)); } catch (e:Dynamic) {}
 		
-		var project = null;
+		var project:NMEProject = null;
 		
 		if (Path.extension (projectFile) == "nmml" || Path.extension (projectFile) == "xml") {
 			

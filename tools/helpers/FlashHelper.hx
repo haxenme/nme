@@ -126,13 +126,13 @@ class FlashHelper {
 				
 				var frameData = frameDataWriter.getBytes();
 				
-				var snd = {
+				var snd:format.swf.Sound = {
 					sid: cid,
 					format: SFMP3,
 					rate: flashSamplingFrequency,
 					is16bit: true,
 					isStereo: isStereo,
-					samples: #if !haxe_211 haxe.Int32.ofInt( #end totalLengthSamples - endPadding - encoderDelay #if !haxe_211 ) #end,
+					samples: #if !haxe3 haxe.Int32.ofInt( #end totalLengthSamples - endPadding - encoderDelay #if !haxe3 ) #end,
 					data: SDMp3(encoderDelay + decoderDelay, frameData)
 				};
 				

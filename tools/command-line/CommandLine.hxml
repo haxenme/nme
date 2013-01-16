@@ -10,4 +10,3 @@
 -lib format
 --remap flash:nme
 -D hxssl
--D haxe3
