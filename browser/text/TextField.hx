@@ -542,7 +542,6 @@ class TextField extends InteractiveObject {
 				align_x = Math.round(mWidth)-w;
 				
 			}
-			trace("doing, align_x: "+align_x);
 		}
 		
 		var x_list = new Array<Int>();
