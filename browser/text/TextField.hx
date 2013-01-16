@@ -533,17 +533,16 @@ class TextField extends InteractiveObject {
 		}
 		
 		if (autoSize == TextFieldAutoSize.NONE && w <= mLimitRenderX) {
-			
 			if (inAlign == TextFormatAlign.CENTER) {
-				
-				align_x = (mLimitRenderX - w) >> 1;
-				
+
+				align_x = (Math.round(mWidth)-w)>>1;
+
 			} else if (inAlign == TextFormatAlign.RIGHT) {
 				
-				align_x = (mLimitRenderX - w);
+				align_x = Math.round(mWidth)-w;
 				
 			}
-			
+			trace("doing, align_x: "+align_x);
 		}
 		
 		var x_list = new Array<Int>();
