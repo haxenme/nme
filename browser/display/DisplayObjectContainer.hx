@@ -18,7 +18,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	public var numChildren(get_numChildren, never):Int;
 	public var tabChildren:Bool;
 	
-	private var addedChildren:Bool;
+	private var nmeAddedChildren:Bool;
 	
 	
 	public function new() {
@@ -55,7 +55,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		addedChildren = true;
+		nmeAddedChildren = true;
 		
 		if (object.parent == this) {
 			
@@ -106,7 +106,7 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		addedChildren = true;
+		nmeAddedChildren = true;
 		
 		if (object.parent == this) {
 			
@@ -366,10 +366,10 @@ class DisplayObjectContainer extends InteractiveObject {
 			
 		}
 		
-		if (addedChildren) {
+		if (nmeAddedChildren) {
 			
 			nmeUnifyChildrenWithDOM ();
-			addedChildren = false;
+			nmeAddedChildren = false;
 			
 		}
 		

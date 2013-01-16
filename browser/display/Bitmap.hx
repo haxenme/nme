@@ -19,6 +19,7 @@ class Bitmap extends DisplayObject {
 
 	public var nmeGraphics(default, null):Graphics;
 	private var nmeCurrentLease:ImageDataLease;
+	private var nmeInit:Bool;
 	
 	
 	public function new(inBitmapData:BitmapData = null, inPixelSnapping:PixelSnapping = null, inSmoothing:Bool = false):Void {
@@ -130,7 +131,16 @@ class Bitmap extends DisplayObject {
 				
 			}
 			
-			Lib.nmeSetSurfaceOpacity(nmeGraphics.nmeSurface,(parent != null ? parent.nmeCombinedAlpha : 1) * alpha);
+			if (!nmeInit) {
+				
+				Lib.nmeSetSurfaceOpacity(nmeGraphics.nmeSurface, 0);
+				nmeInit = true;
+				
+			} else {
+				
+				Lib.nmeSetSurfaceOpacity(nmeGraphics.nmeSurface, (parent != null ? parent.nmeCombinedAlpha : 1) * alpha);
+				
+			}
 			
 		}
 		
