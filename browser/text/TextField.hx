@@ -311,11 +311,11 @@ class TextField extends InteractiveObject {
 		if (background) {
 			
 			nmeGraphics.beginFill(backgroundColor);
-			nmeGraphics.drawRect( -2, -2, width + 4, height + 4);
+			nmeGraphics.drawRect( 0, 0, width, height );
 			nmeGraphics.endFill();
 			
 		}
-		
+
 		nmeGraphics.lineStyle(mTextColour);
 		var insert_x:Null<Int> = null;
 		mMaxWidth = 0;
@@ -443,8 +443,8 @@ class TextField extends InteractiveObject {
 		if (border) {
 			
 			nmeGraphics.endFill();
-			nmeGraphics.lineStyle(1, borderColor);
-			nmeGraphics.drawRect( -2, -2, width + 4, height + 4);
+			nmeGraphics.lineStyle(1, borderColor, 1, true);
+			nmeGraphics.drawRect(.5, .5, width-.5, height-.5);
 			
 		}
 		
@@ -668,7 +668,6 @@ class TextField extends InteractiveObject {
 	
 	
 	private function set_background(inBack:Bool):Bool {
-		
 		background = inBack;
 		Rebuild();
 		return inBack;
