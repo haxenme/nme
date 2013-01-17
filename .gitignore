@@ -16,6 +16,10 @@ tools/documentation/output
 tools/documentation/bin
 tools/documentation/obj
 tools/documentation/chxdoc
+tools/smoke.jeash.com/display/*.html
+tools/smoke.jeash.com/display/*.swf
+tools/smoke.jeash.com/display/*.js
+tools/smoke.jeash.com/display/*.js.map
 *.userprefs
 *.swp
 *.hash
