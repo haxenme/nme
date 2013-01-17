@@ -728,7 +728,7 @@ class TextField extends InteractiveObject {
 	
 	private override function get_height():Float {
 		
-		return getBounds(this.stage).height;
+		return Math.max(mHeight,getBounds(this.stage).height);
 		
 	}
 	
