@@ -884,7 +884,7 @@ class TextField extends InteractiveObject {
 	
 	override public function get_width():Float {
 		
-		return getBounds(this.stage).width;
+		return Math.max(mWidth,getBounds(this.stage).width);
 		
 	}
 	
