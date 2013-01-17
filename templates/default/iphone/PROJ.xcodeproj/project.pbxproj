@@ -404,6 +404,7 @@
 					::foreach linkedLibraries:: "-l::__current__::",
 					::end::
 					"-lApplicationMain",
+					::IOS_LINKER_FLAGS::
 				);
 			};
 			name = Release;
