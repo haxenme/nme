@@ -1,3 +1,5 @@
+package;
+
 import flash.display.Sprite;
 import flash.text.TextField;
 import flash.text.TextFormat;
@@ -7,26 +9,24 @@ import flash.Lib;
 
 import haxe.Resource;
 
-/*#if flash
-@:font("hobbyofnight.ttf") class HobbyOfNight extends Font {}
-#end*/
+class BasicTextField extends Sprite {
+	static function main () Lib.current.addChild(new BasicTextField())
 
-class TextFieldTest extends Sprite {
 	public function new() {
 		super();
 
 		var fieldDatas:Array<Dynamic>=[
 			{y:0, text: "Left", align:TextFormatAlign.LEFT},
-			{y:40, text: "Center", align:TextFormatAlign.CENTER},
-			{y:80, text: "Right", align:TextFormatAlign.RIGHT},
+			{y:50, text: "Center", align:TextFormatAlign.CENTER},
+			{y:100, text: "Right", align:TextFormatAlign.RIGHT},
 		];
 
 		for (fieldData in fieldDatas) {
 			var t:TextField;
 			var tf:TextFormat;
 
-			graphics.beginFill(0xff0000);
-			graphics.drawRect(0,fieldData.y,200,30);
+			graphics.beginFill(0x00ff00);
+			graphics.drawRect(0,fieldData.y,200,40);
 			graphics.endFill();
 
 			t=new TextField();
@@ -46,9 +46,7 @@ class TextFieldTest extends Sprite {
 			t.defaultTextFormat=tf;
 			t.text=fieldData.text;
 			t.setTextFormat(tf);
-			addChild(t);
+//			addChild(t);
 		}
 	}
-
-	static function main () Lib.current.addChild(new TextFieldTest())
 }
