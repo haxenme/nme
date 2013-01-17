@@ -339,11 +339,11 @@ class Stage extends DisplayObjectContainer {
 			
 			case 22: // etGotInputFocus
 				var evt = new Event(FocusEvent.FOCUS_IN);
-				nmeBroadcast(evt);
+				nmeDispatchEvent(evt);
 			
 			case 23: // etLostInputFocus
 				var evt = new Event(FocusEvent.FOCUS_OUT);
-				nmeBroadcast(evt);
+				nmeDispatchEvent(evt);
 			
 			case 24: // etJoyAxisMove
 				nmeOnJoystick(inEvent, JoystickEvent.AXIS_MOVE);

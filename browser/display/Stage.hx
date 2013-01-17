@@ -554,12 +554,12 @@ class Stage extends DisplayObjectContainer {
 		if (hasFocus) {
 			
 			dispatchEvent (new FocusEvent (FocusEvent.FOCUS_IN));
-			dispatchEvent (new Event (Event.ACTIVATE));
+			nmeBroadcast (new Event (Event.ACTIVATE));
 			
 		} else {
 			
 			dispatchEvent (new FocusEvent (FocusEvent.FOCUS_OUT));
-			dispatchEvent (new Event (Event.DEACTIVATE));
+			nmeBroadcast (new Event (Event.DEACTIVATE));
 			
 		}
 		
