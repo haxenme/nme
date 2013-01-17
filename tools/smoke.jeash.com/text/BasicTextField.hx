@@ -46,7 +46,7 @@ class BasicTextField extends Sprite {
 			t.defaultTextFormat=tf;
 			t.text=fieldData.text;
 			t.setTextFormat(tf);
-//			addChild(t);
+			addChild(t);
 		}
 	}
 }
