@@ -15,12 +15,6 @@ class TextFieldTest extends Sprite {
 	public function new() {
 		super();
 
-		#if flash
-			Font.registerFont(HobbyOfNight);
-			var useFont:Font=new HobbyOfNight();
-			trace("font: "+useFont+" name: "+useFont.fontName);
-		#end
-
 		var fieldDatas:Array<Dynamic>=[
 			{y:0, text: "Left", align:TextFormatAlign.LEFT},
 			{y:40, text: "Center", align:TextFormatAlign.CENTER},
@@ -39,11 +33,11 @@ class TextFieldTest extends Sprite {
 			t.y=fieldData.y;
 			t.width=200;
 			tf=new TextFormat();
+			t.embedFonts=true;
 			tf.align=fieldData.align;
 
 			#if flash
-				trace("using font: "+useFont.fontName);
-				tf.font=useFont.fontName;
+				tf.font=new HobbyOfNight().fontName;
 			#else
 				tf.font="HobbyOfNight";
 			#end
