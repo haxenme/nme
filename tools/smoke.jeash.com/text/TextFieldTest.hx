@@ -5,34 +5,55 @@ import flash.text.TextFormatAlign;
 import flash.text.Font;
 import flash.Lib;
 
+import haxe.Resource;
+
+/*#if flash
+@:font("hobbyofnight.ttf") class HobbyOfNight extends Font {}
+#end*/
+
 class TextFieldTest extends Sprite {
 	public function new() {
 		super();
 
-		graphics.beginFill(0xff0000);
-		graphics.drawRect(0,0,200,20);
-		graphics.drawRect(0,40,200,20);
-		graphics.endFill();
+		#if flash
+			Font.registerFont(HobbyOfNight);
+			var useFont:Font=new HobbyOfNight();
+			trace("font: "+useFont+" name: "+useFont.fontName);
+		#end
 
-		var t:TextField;
-		var tf:TextFormat;
+		var fieldDatas:Array<Dynamic>=[
+			{y:0, text: "Left", align:TextFormatAlign.LEFT},
+			{y:40, text: "Center", align:TextFormatAlign.CENTER},
+			{y:80, text: "Right", align:TextFormatAlign.RIGHT},
+		];
 
-		t=new TextField();
-		t.width=200;
-		tf=new TextFormat();
-		tf.align=TextFormatAlign.CENTER;
-		t.defaultTextFormat=tf;
-		t.text="Hello Center World";
-		addChild(t);
+		for (fieldData in fieldDatas) {
+			var t:TextField;
+			var tf:TextFormat;
 
-		t=new TextField();
-		t.width=200;
-		t.y=40;
-		tf=new TextFormat();
-		tf.align=TextFormatAlign.RIGHT;
-		t.defaultTextFormat=tf;
-		t.text="Hello Right World";
-		addChild(t);
+			graphics.beginFill(0xff0000);
+			graphics.drawRect(0,fieldData.y,200,30);
+			graphics.endFill();
+
+			t=new TextField();
+			t.y=fieldData.y;
+			t.width=200;
+			tf=new TextFormat();
+			tf.align=fieldData.align;
+
+			#if flash
+				trace("using font: "+useFont.fontName);
+				tf.font=useFont.fontName;
+			#else
+				tf.font="HobbyOfNight";
+			#end
+
+			tf.size=30;
+			t.defaultTextFormat=tf;
+			t.text=fieldData.text;
+			t.setTextFormat(tf);
+			addChild(t);
+		}
 	}
 
 	static function main () Lib.current.addChild(new TextFieldTest())

@@ -7,10 +7,10 @@ HTML := $(patsubst %.hx,%.html,$(wildcard *.hx))
 all: $(JS) $(SWF) $(HTML)
 
 %.js: %.hx
-	haxe -debug -js $*.js -cp ../../../ --remap flash:browser -main $* 
+	haxe -resource hobbyofnight.ttf.hash@HobbyOfNight -debug -js $*.js -cp ../../../ --remap flash:browser -main $* 
 
 %.swf: %.hx
-	haxe -cp ~/projects/stax/src/main/haxe -swf-header 400:400:8:ffffff -swf9 $*.swf -main $* 
+	haxe -swf-lib hobbyofnight.ttf.swf -cp ~/projects/stax/src/main/haxe -swf-header 400:400:8:ffffff -swf9 $*.swf -main $* 
 
 %.html: %.hx
 	xsltproc --stringparam jsfile "$*.js" -o $*.html template.xsl main.xml
