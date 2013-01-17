@@ -20,6 +20,10 @@ tools/smoke.jeash.com/display/*.html
 tools/smoke.jeash.com/display/*.swf
 tools/smoke.jeash.com/display/*.js
 tools/smoke.jeash.com/display/*.js.map
+tools/smoke.jeash.com/text/*.html
+tools/smoke.jeash.com/text/*.swf
+tools/smoke.jeash.com/text/*.js
+tools/smoke.jeash.com/text/*.js.map
 *.userprefs
 *.swp
 *.hash
