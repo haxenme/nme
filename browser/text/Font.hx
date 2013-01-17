@@ -105,6 +105,7 @@ class Font {
 			trace("Resource data for string '" + name + "' not found.");
 			
 		} else { 
+
 			nmeFontData[cast name] = data;
 			
 		}
@@ -158,7 +159,7 @@ class Font {
 	
 	
 	private function set_fontName(name:String) {
-		//trace("setfont:"+name);
+
 		if (name == "_sans" || name == "_serif" || name == "_typewriter") {
 			
 			name = DEFAULT_FONT_NAME; // just avoid crash for "device" fonts with default until they are specifically supported
@@ -182,7 +183,9 @@ class Font {
 		} 
 
 		if (nmeFontData[cast fontName] != null) {
+
 			try {
+
 				nmeGlyphData = Unserializer.run(nmeFontData[cast fontName]);
 				
 			} catch(e:Dynamic) {
