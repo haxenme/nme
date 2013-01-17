@@ -21,7 +21,7 @@
   <build>
     <option directives="" />
     <option flashStrict="False" />
-    <option mainClass="com.joshuagranick.nyancat.NyanCat" />
+    <option mainClass="io.nme.samples.nyancat.NyanCat" />
     <option enabledebug="False" />
     <option additional="" />
   </build>

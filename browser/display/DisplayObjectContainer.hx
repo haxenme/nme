@@ -383,7 +383,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	
 	override private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null):Graphics {
 		
-		var gfx = super.nmeUnifyChildrenWithDOM ();
+		var gfx = super.nmeUnifyChildrenWithDOM (lastMoveGfx);
 		
 		for (child in nmeChildren) {
 			

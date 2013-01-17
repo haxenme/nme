@@ -9,5 +9,5 @@
 -lib xfl
 -lib format
 --remap flash:nme
+--remap browser:native
 -D hxssl
--D haxe3

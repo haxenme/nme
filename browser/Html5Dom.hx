@@ -111,16 +111,16 @@ extern interface XPathNSResolver {
 }
 
 extern class XPathResult {
-	public static var ANY_TYPE:Int = 0; 
-	public static var NUMBER_TYPE:Int = 1; 
-	public static var STRING_TYPE:Int = 2;
-	public static var BOOLEAN_TYPE:Int = 3;
-	public static var UNORDERED_NODE_ITERATOR_TYPE:Int = 4;
-	public static var ORDERED_NODE_ITERATOR_TYPE:Int = 5;
-	public static var UNORDERED_NODE_SNAPSHOT_TYPE:Int = 6;
-	public static var ORDERED_NODE_SNAPSHOT_TYPE:Int = 7;
-	public static var ANY_UNORDERED_NODE_TYPE:Int = 8;
-	public static var FIRST_ORDERED_NODE_TYPE:Int = 9;
+	public static inline var ANY_TYPE:Int = 0; 
+	public static inline var NUMBER_TYPE:Int = 1; 
+	public static inline var STRING_TYPE:Int = 2;
+	public static inline var BOOLEAN_TYPE:Int = 3;
+	public static inline var UNORDERED_NODE_ITERATOR_TYPE:Int = 4;
+	public static inline var ORDERED_NODE_ITERATOR_TYPE:Int = 5;
+	public static inline var UNORDERED_NODE_SNAPSHOT_TYPE:Int = 6;
+	public static inline var ORDERED_NODE_SNAPSHOT_TYPE:Int = 7;
+	public static inline var ANY_UNORDERED_NODE_TYPE:Int = 8;
+	public static inline var FIRST_ORDERED_NODE_TYPE:Int = 9;
 
 	public var resultType(default,null):Int;
 	public var numberValue(default,null):Float;

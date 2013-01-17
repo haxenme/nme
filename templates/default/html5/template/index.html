@@ -10,7 +10,7 @@
 	
 	::if (LIB_FLAMBE)::
 	
-	<div id="haxe:flambe" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == "0")::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == "0")::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div>
+	<div id="haxe:flambe" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == 0)::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == 0)::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div>
 	
 	<script>
 		
@@ -49,7 +49,7 @@
 	
 	::elseif (LIB_NME)::
 	
-	<div id="haxe:jeash" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == "0")::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == "0")::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div>
+	<div id="haxe:jeash" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == 0)::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == 0)::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div>
 	
 	<script>function winParameters () { return ::WIN_PARAMETERS::; }</script>
 	<script id="haxe:jeash:script" type="text/javascript" src="./::APP_FILE::.js"></script>

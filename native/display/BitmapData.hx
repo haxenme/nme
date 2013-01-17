@@ -253,6 +253,29 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
+	inline public static function getRGBAPixels(bitmapData:BitmapData):ByteArray {
+		
+		var p = bitmapData.getPixels(new Rectangle(0, 0, bitmapData.width, bitmapData.height));
+		var num = bitmapData.width * bitmapData.height;
+		
+		for (i in 0...num) {
+			
+			var alpha = p[i * 4];
+			var red = p[i * 4 + 1];
+			var green = p[i * 4 + 2];
+			var blue = p[i * 4 + 3];
+			
+			p[i * 4] = red;
+			p[i * 4 + 1] = green;
+			p[i * 4 + 2] = blue;
+			p[i * 4 + 3] = alpha;
+			
+		}
+		
+		return p;
+	}
+	
+	
 	public function getVector(rect:Rectangle):Array<Int> {
 		
 		var pixels = Std.int(rect.width * rect.height);

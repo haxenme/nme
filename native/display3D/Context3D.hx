@@ -1,6 +1,7 @@
 package native.display3D;
 
 
+import native.utils.Float32Array;
 import native.display3D.textures.CubeTexture;
 import native.display3D.textures.Texture;
 import native.display3D.textures.TextureBase;
@@ -31,10 +32,23 @@ class Context3D {
 	
 	// to mimic Stage3d behavior of not allowing calls to drawTriangles between present and clear
 	private var drawing:Bool;
-	
-	
-	public function new() {
-		
+
+    private var disposed : Bool;
+
+    // to keep track of stuff to dispose when calling dispose
+    private var vertexBuffersCreated : Array<VertexBuffer3D>;
+    private var indexBuffersCreated : Array<IndexBuffer3D>;
+    private var programsCreated : Array<Program3D>;
+    private var texturesCreated : Array<TextureBase>;
+
+	public function new () {
+
+        disposed = false;
+        vertexBuffersCreated = new Array();
+        indexBuffersCreated = new Array();
+        programsCreated = new Array();
+        texturesCreated = new Array();
+
 		var stage = Lib.current.stage;
 		
 		ogl = new OpenGLView();
@@ -67,54 +81,93 @@ class Context3D {
 	}
 	
 	
-	public function configureBackBuffer(width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true):Void {
-		
-		ogl.scrollRect = new Rectangle(0, 0, width, height);   // TODO use other arguments
+
+	public function configureBackBuffer (width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true):Void {
+
+        if(enableDepthAndStencil){
+            // TODO check whether this is keep across frame
+            GL.enable(GL.DEPTH_STENCIL);
+            GL.enable(GL.DEPTH_TEST);
+        }
+
+
+        // TODO use antiAlias parameter
+        //GL.enable(GL.)
+
+
+		ogl.scrollRect = new Rectangle (0, 0, width, height);
 		
 	}
 	
-	
-	public function createCubeTexture(size:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):CubeTexture {
-		
-		// TODO
-		
-		return null;
-		
+
+	public function createCubeTexture (size:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):CubeTexture {
+
+        var texture = new native.display3D.textures.CubeTexture (GL.createTexture());     // TODO use arguments ?
+        texturesCreated.push(texture);
+        return texture;
+
 	}
 	
 	
 	public function createIndexBuffer(numIndices:Int):IndexBuffer3D {
-		
-		return new IndexBuffer3D(GL.createBuffer(), numIndices);  // TODO use arguments ?
+
+		var indexBuffer = new IndexBuffer3D (GL.createBuffer (), numIndices);
+        indexBuffersCreated.push(indexBuffer);
+        return indexBuffer;
 		
 	}
 	
 	
 	public function createProgram():Program3D {
 		
-		return new Program3D(GL.createProgram());
+
+		var program = new Program3D (GL.createProgram ());
+        programsCreated.push(program);
+        return program;
 		
 	}
 	
 	
 	public function createTexture(width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):native.display3D.textures.Texture {
-		
-		return new native.display3D.textures.Texture(GL.createTexture());     // TODO use arguments ?
-		
+
+		var texture = new native.display3D.textures.Texture (GL.createTexture ());     // TODO use arguments ?
+	    texturesCreated.push(texture);
+        return texture;
 	}
 	
 	
 	public function createVertexBuffer(numVertices:Int, data32PerVertex:Int):VertexBuffer3D {
-		
-		return new VertexBuffer3D(GL.createBuffer(), numVertices, data32PerVertex);      // TODO use arguments ?
+
+		var vertexBuffer = new VertexBuffer3D (GL.createBuffer (), numVertices, data32PerVertex);
+        vertexBuffersCreated.push(vertexBuffer);
+        return vertexBuffer;
 		
 	}
 	
-	
-	public function dispose():Void {
-		
-		// TODO
-		
+	// TODO simulate context loss by recreating a context3d and dispatch event on Stage3d (see Adobe Doc)
+    // TODO add error on other method when context3d is disposed
+	public function dispose ():Void {
+        for(vertexBuffer in vertexBuffersCreated){
+            vertexBuffer.dispose();
+        }
+        vertexBuffersCreated = null;
+
+        for(indexBuffer in indexBuffersCreated){
+            indexBuffer.dispose();
+        }
+        indexBuffersCreated = null;
+
+        for(program in programsCreated){
+            program.dispose();
+        }
+        programsCreated = null;
+
+        for(texture in texturesCreated){
+            texture.dispose();
+        }
+        texturesCreated = null;
+
+        disposed = true;
 	}
 	
 	
@@ -180,26 +233,22 @@ class Context3D {
 	
 	// TODO: Type as Context3DTriangleFace instead of Int?
 	
-	public function setCulling(triangleFaceToCull:Int):Void {
-		
-		GL.cullFace(triangleFaceToCull);
-		GL.enable(GL.CULL_FACE);
-		
+
+	public function setCulling (triangleFaceToCull:Int):Void {
+		if(triangleFaceToCull == Context3DTriangleFace.NONE){
+            GL.disable (GL.CULL_FACE);
+        }else{
+            GL.cullFace (triangleFaceToCull);
+            GL.enable (GL.CULL_FACE);
+        }
 	}
 	
 	
 	// TODO: Type as Context3DCompareMode insteaad of Int?
-	
-	public function setDepthTest(depthMask:Bool, passCompareMode:Int):Void {
-		
-		// TODO but currently Context3DCompare has wrong value for Depth Test(see native.gl.GL)
-		//passCompareMode should be enum  Context3DCompareMode
-		
-		//GL.depthFunc(passCompareMode);
-		//GL.enable(GL.DEPTH_TEST);
-		//GL.enable(GL.STENCIL_TEST);
-		//GL.depthMask(depthMask);
-		
+
+	public function setDepthTest (depthMask:Bool, passCompareMode:Int):Void {
+		GL.depthFunc(passCompareMode);
+		GL.depthMask(depthMask);
 	}
 	
 	
@@ -217,74 +266,145 @@ class Context3D {
 		currentProgram = program3D;
 		
 	}
-	
-	
-	public function setProgramConstantsFromByteArray(programType:Context3DProgramType, firstRegister:Int, numRegisters:Int, data:ByteArray, byteArrayOffset:Int):Void {
-		
-		// TODO
-		
-	}
-	
-	
-	// TODO: Use Context3DProgramType instead of Int?
-	
-	public function setProgramConstantsFromMatrix(programType:Int, firstRegister:Int, matrix:Matrix3D, transposedMatrix:Bool = false):Void {
-		
-		var uniformPrefix = switch (programType) {
+
+
+    private function getUniformLocationNameFromAgalRegisterIndex(programType : Context3DProgramType, firstRegister : Int) : String{
+        
+		if (programType == Context3DProgramType.VERTEX) {
 			
-			case Context3DProgramType.VERTEX: "vc";
-			case Context3DProgramType.FRAGMENT: "fc";
-			default: throw "Program Type " + programType + " not supported";
+			return "vc";
 			
-		};
+		} else if (programType == Context3DProgramType.FRAGMENT) {
+			
+			return "fc";
+			
+		}
 		
-		var location = GL.getUniformLocation(currentProgram.glProgram, uniformPrefix + firstRegister);
-		GL.uniformMatrix3D(location, !transposedMatrix, matrix);
+        throw "Program Type " + programType + " not supported";
 		
+    }
+
+    public function setProgramConstantsFromByteArray (programType:Context3DProgramType, firstRegister:Int, numRegisters:Int, data:ByteArray, byteArrayOffset:Int):Void {
+        data.position = byteArrayOffset;
+        for(i in 0...numRegisters){
+            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
+            setGLSLProgramConstantsFromByteArray(locationName,data);
+        }
 	}
-	
-	
-	public function setProgramConstantsFromVector(programType:Context3DProgramType, firstRegister:Int, data:Vector<Float>, numRegisters:Int = -1):Void {
-		
-		// TODO
-		
+
+	public function setProgramConstantsFromMatrix (programType:Context3DProgramType, firstRegister:Int, matrix:Matrix3D, transposedMatrix:Bool = false):Void {
+		var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister);
+		setGLSLProgramConstantsFromMatrix(locationName,matrix,transposedMatrix);
 	}
-	
-	
+
+	public function setProgramConstantsFromVector (programType:Context3DProgramType, firstRegister:Int, data:Vector<Float>, numRegisters:Int = -1):Void {
+        for(i in 0...numRegisters){
+            var currentIndex = i * 4;
+            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
+            setGLSLProgramConstantsFromVector4(locationName,data,currentIndex);
+        }
+	}
+
+    public function setGLSLProgramConstantsFromByteArray (locationName : String, data:ByteArray, byteArrayOffset : Int = -1):Void {
+        if(byteArrayOffset != -1){
+            data.position = byteArrayOffset;
+        }
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniform4f(location, data.readFloat(),data.readFloat(),data.readFloat(),data.readFloat());
+    }
+
+    public function setGLSLProgramConstantsFromMatrix (locationName : String, matrix:Matrix3D, transposedMatrix:Bool = false):Void {
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniformMatrix3D (location, !transposedMatrix, matrix);
+    }
+
+    public function setGLSLProgramConstantsFromVector4(locationName : String, data:Vector<Float>, startIndex : Int = 0):Void {
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+        GL.uniform4f(location, data[startIndex],data[startIndex+1],data[startIndex+1],data[startIndex+3]);
+    }
+
+
 	// TODO: Conform to API?
+
 	
 	public function setRenderMethod(func:Rectangle -> Void):Void {
 		
 		ogl.render = func;
-		
+
+	}
+
+
+	public function setRenderToBackBuffer ():Void {
+
+		// TODO : check
+        // Render to the screen
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+	}
+
+
+	public function setRenderToTexture (texture:TextureBase, enableDepthAndStencil:Bool = false, antiAlias:Int = 0, surfaceSelector:Int = 0):Void {
+
+        // TODO antiAlias (could this be achieved using a texture multiple of the screensize ?)
+        // TODO surfaceSelector
+
+		// TODO : cache the framebuffer and renderbuffer. in other words this function should only bind the framebuffer and associate it with the texture
+        // TODO at texture creation this could also be done (if optimizeForRenderToTexture is set to true)
+
+        var frameBuffer = GL.createFramebuffer();
+
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
+        GL.bindTexture(GL.TEXTURE_2D, texture.glTexture);
+
+        // this should be done by default when no call to texture.uploadFrom.. are performed
+        //GL.texImage2D(GL.TEXTURE_2D,0, GL.RGB, texture.width, texture.height, 0, GL.RGB, GL.UNSIGNED_BYTE, 0); // last zero means empty texture
+
+        // poor filterring needed  (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)?
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+
+        // TODO enable depth buffer according to "enableDepthAndStencil"
+        // The depth buffer
+        var depthRenderBuffer = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GL.RENDERBUFFER, depthRenderBuffer);
+        //TODO
+        //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+        //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+        //TODO
+        // Set "renderedTexture" as our colour attachement #0
+        //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+        // Set the list of draw buffers.
+        //GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
+        //glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+        //TODO
+        // Render to our framebuffer
+        //glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+
+        //TODO : check whether the following is required in the fragment shader:
+        // layout(location = 0) out vec3 color;
+
 	}
 	
 	
-	public function setRenderToBackBuffer():Void {
-		
-		// TODO
-		
-	}
-	
-	
-	public function setRenderToTexture(texture:TextureBase, enableDepthAndStencil:Bool = false, antiAlias:Int = 0, surfaceSelector:Int = 0):Void {
-		
-		// TODO
-		
-	}
-	
-	
-	public function setScissorRectangle(rectangle:Rectangle):Void {
-		
-		// TODO
-		
+	public function setScissorRectangle (rectangle:Rectangle):Void {
+
+        // TODO test it
+        GL.scissor(Std.int(rectangle.x), Std.int(rectangle.y), Std.int(rectangle.width), Std.int(rectangle.height));
+
 	}
 	
 	
 	public function setStencilActions(?triangleFace:Context3DTriangleFace, ?compareMode:Context3DCompareMode, ?actionOnBothPass:Context3DStencilAction, ?actionOnDepthFail:Context3DStencilAction, ?actionOnDepthPassStencilFail:Context3DStencilAction):Void {
 		
 		// TODO
-		
+
 	}
 	
 	
@@ -293,16 +413,21 @@ class Context3D {
 		// TODO
 		
 	}
+
+    public function setTextureAt (sampler:Int, texture:TextureBase):Void {
+        var locationName =  "fs" + sampler;
+        setGLSLTextureAt(locationName, texture);
+    }
 	
-	
-	public function setTextureAt(sampler:Int, texture:TextureBase):Void {
-		
-		if (Std.is(texture, native.display3D.textures.Texture)) {
+
+	public function setGLSLTextureAt (locationName:String, texture:TextureBase):Void {
+
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
+
+		if (Std.is (texture, native.display3D.textures.Texture)) {
 			
-			var location = GL.getUniformLocation(currentProgram.glProgram, "fs" + sampler);
-			
-			// TODO multiple active textures(get an id from the Texture Wrapper(native.display3D.textures.Texture) ? )
-			GL.activeTexture(GL.TEXTURE0);
+			// TODO multiple active textures (get an id from the Texture Wrapper (native.display3D.textures.Texture) ? )
+			GL.activeTexture (GL.TEXTURE0);
 			
 			GL.bindTexture(GL.TEXTURE_2D, cast(texture, native.display3D.textures.Texture).glTexture);
 			GL.uniform1i(location, 0);
@@ -313,16 +438,23 @@ class Context3D {
 			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
 			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
 			/////////////////////////////////////////////////////////////////
-			
-		}
+
+		}else{
+            throw "Texture of type " + Type.getClassName(Type.getClass(texture)) + " not supported yet";
+        }
 		
 	}
-	
-	
-	public function setVertexBufferAt(index:Int, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
-		
-		var location = GL.getAttribLocation(currentProgram.glProgram, "va" + index);
-		GL.bindBuffer(GL.ARRAY_BUFFER, buffer.glBuffer);
+
+
+    public function setVertexBufferAt(index:Int,buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
+        var locationName = "va" + index;
+        setGLSLVertexBufferAt(locationName, buffer, bufferOffset, format);
+    }
+
+	public function setGLSLVertexBufferAt (locationName, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void {
+		var location = GL.getAttribLocation (currentProgram.glProgram,locationName);
+
+        GL.bindBuffer (GL.ARRAY_BUFFER, buffer.glBuffer);
 		
 		var dimension = 4;
 		var type = GL.FLOAT;
@@ -368,9 +500,11 @@ class Context3D {
 		GL.enableVertexAttribArray(location);
 		
 	}
-	
-	
-	private function updateBlendStatus():Void {
+
+
+
+    //TODO do the same for other states ?
+	private function updateBlendStatus ():Void {
 		
 		if (blendEnabled) {
 			

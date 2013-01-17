@@ -27,15 +27,15 @@ class Lib {
 	public static inline var HTML_ORIENTATION_EVENT_TYPE = 'orientationchange';
 	
 	public static var current(get_current, null):MovieClip;
-	public static inline var document(get_document, null):HTMLDocument;
-	public static inline var window(get_window, null):Window;
+	public static var document(get_document, null):HTMLDocument;
+	public static var window(get_window, null):Window;
 	
 	private static inline var DEFAULT_HEIGHT = 500;
 	private static inline var DEFAULT_WIDTH = 500;
 	private static var HTML_DIV_EVENT_TYPES = [ 'resize', /*'mouseup',*/ 'mouseover', 'mouseout', /*'mousemove', 'mousedown',*/ 'mousewheel', 'dblclick', 'click' ];
 	private static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ];
 	private static var HTML_TOUCH_ALT_EVENT_TYPES = [ 'mousedown', 'mousemove', 'mouseup' ];
-	private static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
+	private static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize', 'blur', 'focus' ];
 	private static inline var NME_IDENTIFIER = 'haxe:jeash';
 	private static inline var VENDOR_HTML_TAG = "data-";
 	

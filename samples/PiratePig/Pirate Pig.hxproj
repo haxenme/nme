@@ -16,16 +16,14 @@
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
     <class path="Source" />
-    <class path="C:\Development\Haxe\nme/" />
-    <class path="Export/windows/neko/haxe" />
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="nme_install_tool" />
+    <option directives="" />
     <option flashStrict="False" />
-    <option mainClass="ApplicationMain" />
+    <option mainClass="io.nme.samples.piratepig.PiratePig" />
     <option enabledebug="False" />
-    <option additional="--remap flash:nme&#xA;--remap browser:native" />
+    <option additional="" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

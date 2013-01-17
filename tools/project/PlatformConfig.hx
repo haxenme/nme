@@ -8,7 +8,7 @@ class PlatformConfig {
 	public var ios:IOSConfig;
 	
 	private static var defaultAndroid:AndroidConfig = { installLocation: "preferExternal" };
-	private static var defaultIOS:IOSConfig = { compiler: "clang", deployment: /*3.2*/ 5, device: IOSConfigDevice.UNIVERSAL, prerenderedIcon: false };
+	private static var defaultIOS:IOSConfig = { compiler: "clang", deployment: /*3.2*/ 5, device: IOSConfigDevice.UNIVERSAL, linkerFlags: "", prerenderedIcon: false };
 	
 	
 	public function new () {
@@ -65,6 +65,7 @@ typedef IOSConfig = {
 	@:optional var compiler:String;
 	@:optional var deployment:Float;
 	@:optional var device:IOSConfigDevice;
+	@:optional var linkerFlags:String;
 	@:optional var prerenderedIcon:Bool;
 	
 }

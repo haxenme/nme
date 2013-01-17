@@ -802,6 +802,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			
 		}
 		
+		if (gfx == null) {
+			
+			gfx = lastMoveGfx;
+			
+		}
+		
 		return gfx;
 		
 	}

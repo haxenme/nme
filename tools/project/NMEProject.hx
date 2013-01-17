@@ -572,9 +572,13 @@ class NMEProject {
 			
 		}
 		
-		compilerFlags.push ("-D " + Std.string (target).toLowerCase ());
-		compilerFlags.push ("-D " + Std.string (platformType).toLowerCase ());
+		if (target != Platform.FLASH) {
+			
+			compilerFlags.push ("-D " + Std.string (target).toLowerCase ());
+			
+		}
 		
+		compilerFlags.push ("-D " + Std.string (platformType).toLowerCase ());
 		compilerFlags = compilerFlags.concat (haxeflags);
 		
 		if (compilerFlags.length == 0) {
