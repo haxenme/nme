@@ -302,6 +302,14 @@ class Stage extends DisplayObjectContainer {
 				
 				nmeOnResize(Lib.nmeGetWidth(), Lib.nmeGetHeight());
 			
+			case "focus":
+				
+				nmeOnFocus(cast evt, true);
+			
+			case "blur":
+				
+				nmeOnFocus(cast evt, false);
+			
 			case "mousemove":
 				
 				nmeOnMouse(cast evt, MouseEvent.MOUSE_MOVE);
@@ -537,6 +545,23 @@ class Stage extends DisplayObjectContainer {
 		
 		var event = new KeyboardEvent(pressed ? KeyboardEvent.KEY_DOWN : KeyboardEvent.KEY_UP, true, false, inChar, code, keyLocation, ctrl, alt, shift);
 		dispatchEvent(event);
+		
+	}
+	
+	
+	private function nmeOnFocus(event:Html5DomFocusEvent, hasFocus:Bool) {
+		
+		if (hasFocus) {
+			
+			dispatchEvent (new FocusEvent (FocusEvent.FOCUS_IN));
+			dispatchEvent (new Event (Event.ACTIVATE));
+			
+		} else {
+			
+			dispatchEvent (new FocusEvent (FocusEvent.FOCUS_OUT));
+			dispatchEvent (new Event (Event.DEACTIVATE));
+			
+		}
 		
 	}
 	

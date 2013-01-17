@@ -35,7 +35,7 @@ class Lib {
 	private static var HTML_DIV_EVENT_TYPES = [ 'resize', /*'mouseup',*/ 'mouseover', 'mouseout', /*'mousemove', 'mousedown',*/ 'mousewheel', 'dblclick', 'click' ];
 	private static var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ];
 	private static var HTML_TOUCH_ALT_EVENT_TYPES = [ 'mousedown', 'mousemove', 'mouseup' ];
-	private static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
+	private static var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize', 'blur', 'focus' ];
 	private static inline var NME_IDENTIFIER = 'haxe:jeash';
 	private static inline var VENDOR_HTML_TAG = "data-";
 	
