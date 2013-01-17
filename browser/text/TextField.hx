@@ -533,17 +533,15 @@ class TextField extends InteractiveObject {
 		}
 		
 		if (autoSize == TextFieldAutoSize.NONE && w <= mLimitRenderX) {
-			
 			if (inAlign == TextFormatAlign.CENTER) {
-				
-				align_x = (mLimitRenderX - w) >> 1;
-				
+
+				align_x = (Math.round(mWidth)-w)>>1;
+
 			} else if (inAlign == TextFormatAlign.RIGHT) {
 				
-				align_x = (mLimitRenderX - w);
+				align_x = Math.round(mWidth)-w;
 				
 			}
-			
 		}
 		
 		var x_list = new Array<Int>();
@@ -824,7 +822,7 @@ class TextField extends InteractiveObject {
 	
 	public function set_text(inText:String):String {
 		
-		mText = inText;
+		mText = Std.string(inText);
 		//mHTMLText = inText;
 		mHTMLMode = false;
 		RebuildText();
