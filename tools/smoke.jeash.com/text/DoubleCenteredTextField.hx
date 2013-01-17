@@ -28,7 +28,7 @@ class DoubleCenteredTextField extends Sprite {
 		vTest();
 	}
 
-	private function vTest():Void {
+	private function hTest():Void {
 		var holder:Sprite=new Sprite();
 		holder.graphics.beginFill(0xff0000);
 		holder.graphics.drawRect(0,0,200,40);
@@ -53,7 +53,7 @@ class DoubleCenteredTextField extends Sprite {
 		t.x=holder.x+holder.width/2-t.width/2;
 	}
 
-	private function hTest():Void {
+	private function vTest():Void {
 		var holder:Sprite=new Sprite();
 		holder.graphics.beginFill(0xff8080);
 		holder.graphics.drawRect(0,0,200,80);
