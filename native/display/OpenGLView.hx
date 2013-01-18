@@ -14,6 +14,8 @@ class OpenGLView extends DirectRenderer {
 	public static inline var CONTEXT_LOST = "glcontextlost";
 	public static inline var CONTEXT_RESTORED = "glcontextrestored";
 	
+	public static var isSupported(get_isSupported, null):Bool;
+	
 	//var context:GLInstance;
 	
 	
@@ -22,6 +24,21 @@ class OpenGLView extends DirectRenderer {
 		super("OpenGLView");
 		
 	}
+	
+	
+	
+	
+	// Getters & Setters
+	
+	
+	
+	
+	private inline function get_isSupported():Bool {
+		
+		return true;
+		
+	}
+	
 	
 }
 
