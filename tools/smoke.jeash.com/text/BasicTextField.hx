@@ -37,9 +37,9 @@ class BasicTextField extends Sprite {
 			tf.align=fieldData.align;
 
 			#if flash
-				tf.font=new HobbyOfNight().fontName;
+				tf.font=new BasicTextFieldFont().fontName;
 			#else
-				tf.font="HobbyOfNight";
+				tf.font="BasicTextFieldFont";
 			#end
 
 			tf.size=30;

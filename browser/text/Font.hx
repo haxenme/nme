@@ -98,6 +98,7 @@ class Font {
 	
 	// hxswfml ttf2hash myfont.ttf -glyphs [32-126] > myfont.hash; haxe -resource myfont.hash@myfont ...; Font.registerFont( Resource.get( "myfont" ) );
 	public static function nmeOfResource(name:String):Void {
+
 		var data = Resource.getString(name);
 		
 		if (data == null) {
@@ -190,6 +191,7 @@ class Font {
 				
 			} catch(e:Dynamic) {
 				
+
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}

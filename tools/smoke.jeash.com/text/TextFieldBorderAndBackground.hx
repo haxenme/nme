@@ -72,9 +72,9 @@ class TextFieldBorderAndBackground extends Sprite {
 		tf.align=TextFormatAlign.CENTER;
 
 		#if flash
-			tf.font=new HobbyOfNight().fontName;
+			tf.font=new TextFieldBorderAndBackgroundFont().fontName;
 		#else
-			tf.font="HobbyOfNight";
+			tf.font="TextFieldBorderAndBackgroundFont";
 		#end
 
 		tf.size=12;
