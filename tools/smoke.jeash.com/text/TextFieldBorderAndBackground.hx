@@ -30,25 +30,34 @@ class TextFieldBorderAndBackground extends Sprite {
 		hGrid(150);
 		hGrid(200);
 
-		makeTextField(50,50,false,false,"I am just plain");
-		makeTextField(50,100,true,false,"I have a border");
-		makeTextField(50,150,false,true,"I have a background");
-		makeTextField(50,200,true,true,"I have border and background");
+		makeTextField(50,0,false,false,".text",false);
+		makeTextField(300,0,false,false,".htmlText",false);
+
+
+		makeTextField(50,50,false,false,"I am just plain",false);
+		makeTextField(50,100,true,false,"I have a border",false);
+		makeTextField(50,150,false,true,"I have a background",false);
+		makeTextField(50,200,true,true,"I have border and background",false);
+
+		makeTextField(300,50,false,false,"I am just <b>plain</b>",true);
+		makeTextField(300,100,true,false,"I have a <b>border</b>",true);
+		makeTextField(300,150,false,true,"I have a <b>background</b>",true);
+		makeTextField(300,200,true,true,"I have <b>border<b> and <b>background</b>",true);
 	}
 
 	private function vGrid(xPos:Int):Void {
 		gridHolder.graphics.lineStyle(1,0xff8000,.25);
-		gridHolder.graphics.moveTo(xPos,0);
-		gridHolder.graphics.lineTo(xPos,300);
+		gridHolder.graphics.moveTo(xPos,25);
+		gridHolder.graphics.lineTo(xPos,260);
 	}
 
 	private function hGrid(yPos:Int):Void {
 		gridHolder.graphics.lineStyle(1,0xff8000,.25);
-		gridHolder.graphics.moveTo(0,yPos);
-		gridHolder.graphics.lineTo(300,yPos);
+		gridHolder.graphics.moveTo(25,yPos);
+		gridHolder.graphics.lineTo(275,yPos);
 	}
 
-	private function makeTextField(xPos:Int, yPos:Int, border:Bool, background:Bool, text:String):Void {
+	private function makeTextField(xPos:Int, yPos:Int, border:Bool, background:Bool, text:String, html:Bool):Void {
 		var t:TextField=new TextField();
 		t.background=background;
 		t.backgroundColor=0xc0c0ff;
@@ -70,7 +79,13 @@ class TextFieldBorderAndBackground extends Sprite {
 
 		tf.size=12;
 		t.defaultTextFormat=tf;
-		t.text=text;
+
+		if (html)
+			t.htmlText=text;
+
+		else
+			t.text=text;
+
 		t.setTextFormat(tf);
 		holder.addChild(t);
 	}

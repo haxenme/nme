@@ -771,8 +771,29 @@ class TextField extends InteractiveObject {
 		mHTMLText = inHTMLText;
 		
 		if (!mHTMLMode) {
-			
-			var wrapper:HTMLCanvasElement = cast Lib.document.createElement("div");
+			var domElement:Dynamic = Lib.document.createElement("div");
+
+			if (background || border) {
+
+				domElement.style.width=mWidth+"px";
+				domElement.style.height=mHeight+"px";
+
+			}
+
+			if (background) {
+
+				domElement.style.backgroundColor="#"+StringTools.hex(backgroundColor,6);
+
+			}
+
+			if (border) {
+
+				domElement.style.border="1px solid #"+StringTools.hex(borderColor,6);
+
+			}
+
+
+			var wrapper:HTMLCanvasElement = cast domElement;
 			wrapper.innerHTML = inHTMLText;
 			
 			var destination = new Graphics(wrapper);
@@ -792,11 +813,10 @@ class TextField extends InteractiveObject {
 			nmeGraphics.nmeExtent.height = wrapper.height;
 			
 		} else {
-			
 			nmeGraphics.nmeSurface.innerHTML = inHTMLText;
 			
 		}
-		
+
 		mHTMLMode = true;
 		RebuildText();
 		nmeInvalidateBounds();
