@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 import native.geom.Matrix3D;
@@ -72,3 +73,6 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 	
 	
 }
+
+
+#end

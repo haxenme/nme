@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 import native.display.DisplayObject;
@@ -40,3 +41,6 @@ class Transform {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 import native.ui.MultitouchInputMode;
@@ -71,3 +72,6 @@ class Multitouch {
 	
 	
 }
+
+
+#end

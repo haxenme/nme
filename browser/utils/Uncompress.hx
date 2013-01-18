@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class Uncompress {
@@ -64,3 +65,6 @@ class Uncompress {
 	
 	
 }
+
+
+#end

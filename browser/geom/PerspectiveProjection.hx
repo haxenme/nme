@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class PerspectiveProjection {
@@ -56,3 +57,6 @@ class PerspectiveProjection {
 	
 	
 }
+
+
+#end

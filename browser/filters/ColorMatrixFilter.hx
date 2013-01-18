@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 class ColorMatrixFilter extends BitmapFilter {
@@ -17,3 +18,6 @@ class ColorMatrixFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

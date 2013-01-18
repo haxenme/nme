@@ -1,4 +1,5 @@
 package browser.external;
+#if js
 
 
 class ExternalInterface {
@@ -27,3 +28,6 @@ class ExternalInterface {
 	
 	
 }
+
+
+#end

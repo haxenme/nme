@@ -1,4 +1,5 @@
 package native.feedback;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -29,3 +30,6 @@ class Haptic {
 	
 	
 }
+
+
+#end

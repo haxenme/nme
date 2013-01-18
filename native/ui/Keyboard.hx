@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 class Keyboard {
@@ -110,3 +111,6 @@ class Keyboard {
 	//public static function isAccessible() : Bool;
 	
 }
+
+
+#end

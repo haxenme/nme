@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class IOErrorEvent extends Event {
@@ -19,3 +20,6 @@ class IOErrorEvent extends Event {
 	
 	
 }
+
+
+#end

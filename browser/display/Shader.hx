@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.utils.ByteArray;
@@ -20,3 +21,6 @@ class Shader {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class BitmapDataChannel {
@@ -9,3 +10,6 @@ class BitmapDataChannel {
 	static public inline var RED = 0x0001;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.system;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -110,3 +111,6 @@ class Capabilities {
 	
 	
 }
+
+
+#end

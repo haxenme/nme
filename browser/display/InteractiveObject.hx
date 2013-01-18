@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.geom.Point;
@@ -63,3 +64,6 @@ class InteractiveObject extends DisplayObject {
 	
 
 }
+
+
+#end

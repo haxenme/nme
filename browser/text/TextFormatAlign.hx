@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 enum TextFormatAlign {
@@ -9,3 +10,6 @@ enum TextFormatAlign {
 	CENTER;
 	
 }
+
+
+#end

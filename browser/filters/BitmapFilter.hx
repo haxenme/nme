@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 import browser.Html5Dom;
@@ -41,3 +42,6 @@ class BitmapFilter {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 class Point {
@@ -111,3 +112,6 @@ class Point {
 	
 	
 }
+
+
+#end

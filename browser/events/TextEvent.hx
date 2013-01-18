@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class TextEvent extends Event {
@@ -20,3 +21,6 @@ class TextEvent extends Event {
 	
 	
 }
+
+
+#end

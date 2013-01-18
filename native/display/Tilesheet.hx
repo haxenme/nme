@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.geom.Matrix;
@@ -56,3 +57,6 @@ class Tilesheet {
 	
 	
 }
+
+
+#end

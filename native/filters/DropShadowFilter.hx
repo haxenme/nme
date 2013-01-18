@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class DropShadowFilter extends BitmapFilter {
@@ -44,3 +45,6 @@ class DropShadowFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class ProgressEvent extends Event {
@@ -36,3 +37,6 @@ class ProgressEvent extends Event {
 	
 	
 }
+
+
+#end

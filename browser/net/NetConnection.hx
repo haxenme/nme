@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 import browser.events.EventDispatcher;
@@ -39,3 +40,6 @@ class NetConnection extends EventDispatcher {
 	
 	
 }
+
+
+#end

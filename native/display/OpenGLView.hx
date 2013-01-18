@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -23,3 +24,6 @@ class OpenGLView extends DirectRenderer {
 	}
 	
 }
+
+
+#end

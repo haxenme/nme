@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class Event {
@@ -132,3 +133,6 @@ class Event {
 	
 	
 }
+
+
+#end

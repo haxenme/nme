@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 class TextFieldType {
@@ -16,3 +17,6 @@ class TextFieldType {
 	
 	
 }
+
+
+#end

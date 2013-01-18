@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum JointStyle {
@@ -8,3 +9,6 @@ enum JointStyle {
 	BEVEL;
 	
 }
+
+
+#end

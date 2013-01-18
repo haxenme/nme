@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class Endian {
@@ -7,3 +8,6 @@ class Endian {
 	public static inline var LITTLE_ENDIAN:String = "littleEndian";
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum StageDisplayState {
@@ -7,3 +8,6 @@ enum StageDisplayState {
 	NORMAL;
 	
 }
+
+
+#end

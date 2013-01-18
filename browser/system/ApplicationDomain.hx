@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 class ApplicationDomain {
@@ -29,3 +30,6 @@ class ApplicationDomain {
 	
 	
 }
+
+
+#end

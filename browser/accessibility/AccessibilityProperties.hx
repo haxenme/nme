@@ -1,4 +1,5 @@
 package browser.accessibility;
+#if js
 
 
 class AccessibilityProperties {
@@ -24,3 +25,6 @@ class AccessibilityProperties {
 	}
 	
 }
+
+
+#end

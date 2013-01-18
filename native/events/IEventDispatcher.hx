@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 interface IEventDispatcher {
@@ -13,3 +14,6 @@ interface IEventDispatcher {
 
 
 typedef Function = Dynamic -> Void;
+
+
+#end

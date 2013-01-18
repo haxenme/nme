@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.utils.ByteArray;
@@ -15,3 +16,6 @@ class ShaderData implements Dynamic {
 	
 	
 }
+
+
+#end

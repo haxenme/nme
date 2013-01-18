@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum PixelSnapping {
@@ -8,3 +9,6 @@ enum PixelSnapping {
 	ALWAYS;
 	
 }
+
+
+#end

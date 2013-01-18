@@ -1,4 +1,5 @@
 package native;
+#if (cpp || neko)
 
 
 #if neko
@@ -194,3 +195,6 @@ class Loader {
 	
 	
 }
+
+
+#end

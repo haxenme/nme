@@ -1,4 +1,5 @@
 package native.errors;
+#if (cpp || neko)
 
 
 class SecurityError extends Error {
@@ -12,3 +13,6 @@ class SecurityError extends Error {
 	
 	
 }
+
+
+#end

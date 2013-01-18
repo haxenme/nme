@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import nme.gl.GL;
@@ -12,3 +13,6 @@ class Context3DTriangleFace {
 	inline public static var NONE = 0;
 	
 }
+
+
+#end

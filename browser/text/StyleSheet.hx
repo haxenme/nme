@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 import browser.events.EventDispatcher;
@@ -27,3 +28,6 @@ class StyleSheet extends EventDispatcher, implements Dynamic {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class HTTPStatusEvent extends Event {
@@ -22,3 +23,6 @@ class HTTPStatusEvent extends Event {
 	
 	
 }
+
+
+#end

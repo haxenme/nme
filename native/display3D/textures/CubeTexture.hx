@@ -1,17 +1,19 @@
 package native.display3D.textures;
+#if (cpp || neko)
 
 
 import nme.geom.Rectangle;
 using native.display.BitmapData;
 import native.utils.ByteArray;
 import native.gl.GL;
+import native.gl.GLTexture;
 
 
 class CubeTexture extends TextureBase {
 
 
 
-    public function new (glTexture:native.gl.Texture) {
+    public function new (glTexture:GLTexture) {
 
         super (glTexture);
 
@@ -45,3 +47,6 @@ class CubeTexture extends TextureBase {
 	
 	
 }
+
+
+#end

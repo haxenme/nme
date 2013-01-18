@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class JoystickEvent extends Event {
@@ -48,3 +49,6 @@ class JoystickEvent extends Event {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 @:fakeEnum(String) enum SharedObjectFlushStatus {
@@ -7,3 +8,6 @@ package native.net;
 	PENDING;
 	
 }
+
+
+#end

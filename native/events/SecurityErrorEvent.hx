@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class SecurityErrorEvent extends ErrorEvent {
@@ -29,3 +30,6 @@ class SecurityErrorEvent extends ErrorEvent {
 	
 	
 }
+
+
+#end

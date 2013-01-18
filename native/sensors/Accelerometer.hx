@@ -1,4 +1,5 @@
 package native.sensors;
+#if (cpp || neko)
 
 
 import native.errors.ArgumentError;
@@ -105,3 +106,6 @@ class Accelerometer extends EventDispatcher {
 
 
 typedef Function = Dynamic -> Void;
+
+
+#end

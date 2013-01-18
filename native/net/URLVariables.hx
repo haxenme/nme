@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 class URLVariables implements Dynamic {
@@ -49,3 +50,6 @@ class URLVariables implements Dynamic {
 	
 	
 }
+
+
+#end

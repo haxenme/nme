@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -102,3 +103,6 @@ class InteractiveObject extends DisplayObject {
 	
 	
 }
+
+
+#end

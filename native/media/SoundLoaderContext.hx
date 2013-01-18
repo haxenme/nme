@@ -1,4 +1,5 @@
 package native.media;
+#if (cpp || neko)
 
 
 class SoundLoaderContext {
@@ -12,3 +13,6 @@ class SoundLoaderContext {
 	
 	
 }
+
+
+#end

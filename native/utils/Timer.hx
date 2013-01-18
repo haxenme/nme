@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 import native.errors.Error;
@@ -132,3 +133,6 @@ class Timer extends EventDispatcher {
 	
 	
 }
+
+
+#end

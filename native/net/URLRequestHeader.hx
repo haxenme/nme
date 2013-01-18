@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 class URLRequestHeader {
@@ -17,3 +18,6 @@ class URLRequestHeader {
 	
 	
 }
+
+
+#end

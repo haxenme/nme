@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 enum FontType {
@@ -7,3 +8,6 @@ enum FontType {
 	DEVICE;
 	
 }
+
+
+#end

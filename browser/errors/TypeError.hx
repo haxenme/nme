@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 class TypeError extends Error {
@@ -12,3 +13,6 @@ class TypeError extends Error {
 	
 	
 }
+
+
+#end

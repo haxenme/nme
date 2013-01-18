@@ -1,4 +1,5 @@
 package browser.xml;
+#if js
 
 
 class XMLNode {
@@ -31,3 +32,6 @@ class XMLNode {
 	
 	
 }
+
+
+#end

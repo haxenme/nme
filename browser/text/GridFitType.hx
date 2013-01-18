@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 class GridFitType {
@@ -17,3 +18,6 @@ class GridFitType {
 	
 	
 }
+
+
+#end

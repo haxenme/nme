@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum InterpolationMethod {
@@ -7,3 +8,6 @@ enum InterpolationMethod {
 	LINEAR_RGB;
 	
 }
+
+
+#end

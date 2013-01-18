@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.events.Event;
@@ -42,3 +43,6 @@ class AccelerometerEvent extends Event {
 	
 	
 }
+
+
+#end

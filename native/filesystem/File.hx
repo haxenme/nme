@@ -1,4 +1,5 @@
 package native.filesystem;
+#if (cpp || neko)
 
 
 import StringTools;
@@ -117,3 +118,6 @@ class File {
 	
 	
 }
+
+
+#end

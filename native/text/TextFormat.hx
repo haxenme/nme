@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 class TextFormat {
@@ -45,3 +46,6 @@ class TextFormat {
 	
 	
 }
+
+
+#end

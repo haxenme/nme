@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 enum CompressionAlgorithm {
@@ -9,3 +10,6 @@ enum CompressionAlgorithm {
 	GZIP;
 	
 }
+
+
+#end

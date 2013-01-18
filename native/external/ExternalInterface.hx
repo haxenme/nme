@@ -1,4 +1,5 @@
 package native.external;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -91,3 +92,6 @@ class ExternalInterface {
 	
 	
 }
+
+
+#end

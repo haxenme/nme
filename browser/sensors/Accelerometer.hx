@@ -1,4 +1,5 @@
 package browser.sensors;
+#if js
 
 
 import browser.display.Stage;
@@ -110,3 +111,6 @@ class Accelerometer extends EventDispatcher {
 	
 	
 }
+
+
+#end

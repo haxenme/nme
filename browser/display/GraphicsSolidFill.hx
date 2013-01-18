@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.IGraphicsData;
@@ -26,3 +27,6 @@ class GraphicsSolidFill implements IGraphicsData, implements IGraphicsFill {
 	
 	
 }
+
+
+#end

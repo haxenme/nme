@@ -1,7 +1,9 @@
 package native.events;
+#if (cpp || neko)
 
 
 import native.utils.ByteArray;
+
 
 class SampleDataEvent extends Event {
 	
@@ -38,3 +40,6 @@ class SampleDataEvent extends Event {
 	
 	
 }
+
+
+#end

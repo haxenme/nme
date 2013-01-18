@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 class TextFieldAutoSize {
@@ -18,3 +19,6 @@ class TextFieldAutoSize {
 	
 	
 }
+
+
+#end

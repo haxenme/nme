@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.events.Event;
@@ -13,3 +14,6 @@ interface IEventDispatcher {
 	public function willTrigger(type:String):Bool;
 	
 }
+
+
+#end

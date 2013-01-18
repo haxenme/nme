@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class BlurFilter extends BitmapFilter {
@@ -28,3 +29,6 @@ class BlurFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum StageAlign {
@@ -13,3 +14,6 @@ enum StageAlign {
    BOTTOM;
    
 }
+
+
+#end

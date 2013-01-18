@@ -1,4 +1,5 @@
 package native;
+#if (cpp || neko)
 
 
 import haxe.io.BytesData;
@@ -230,3 +231,6 @@ class Memory {
 	
 	
 }
+
+
+#end

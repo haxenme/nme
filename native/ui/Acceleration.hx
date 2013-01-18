@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 typedef Acceleration = {
@@ -8,3 +9,6 @@ typedef Acceleration = {
 	z:Float 
 	
 }
+
+
+#end

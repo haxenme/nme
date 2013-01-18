@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class SecurityErrorEvent extends ErrorEvent {
@@ -17,3 +18,6 @@ class SecurityErrorEvent extends ErrorEvent {
 	
 	
 }
+
+
+#end

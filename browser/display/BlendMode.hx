@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum BlendMode {
@@ -19,3 +20,6 @@ enum BlendMode {
 	SUBTRACT;
 	
 }
+
+
+#end

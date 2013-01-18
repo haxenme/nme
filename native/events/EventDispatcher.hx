@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 import native.events.IEventDispatcher;
@@ -215,3 +216,6 @@ class Listener {
 
 typedef ListenerList = Array<WeakRef<Listener>>;
 typedef EventMap = Hash<ListenerList>;
+
+
+#end

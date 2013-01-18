@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 class Security {
@@ -21,3 +22,6 @@ class Security {
 	
 	
 }
+
+
+#end

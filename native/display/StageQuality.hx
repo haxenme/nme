@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum StageQuality {
@@ -9,3 +10,6 @@ enum StageQuality {
 	BEST;
 	
 }
+
+
+#end

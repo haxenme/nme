@@ -1,4 +1,5 @@
 package native.media;
+#if (cpp || neko)
 
 
 import native.events.Event;
@@ -190,3 +191,6 @@ class SoundChannel extends EventDispatcher {
 	
 	
 }
+
+
+#end

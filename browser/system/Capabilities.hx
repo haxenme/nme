@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 import browser.Html5Dom;
@@ -63,3 +64,6 @@ class Capabilities {
 	
 	
 }
+
+
+#end

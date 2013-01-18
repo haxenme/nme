@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 interface IMemoryRange {
@@ -8,3 +9,6 @@ interface IMemoryRange {
 	public function getLength():Int;
    
 }
+
+
+#end

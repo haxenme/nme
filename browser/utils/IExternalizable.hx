@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 interface IExternalizable {
@@ -7,3 +8,6 @@ interface IExternalizable {
 	function writeExternal(output:IDataOutput):Void;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class IOErrorEvent extends ErrorEvent {
@@ -29,3 +30,6 @@ class IOErrorEvent extends ErrorEvent {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 @:fakeEnum(String) enum SharedObjectFlushStatus {
@@ -7,3 +8,6 @@ package browser.net;
 	PENDING;
 	
 }
+
+
+#end

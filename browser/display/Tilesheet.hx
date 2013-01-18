@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.geom.Point;
@@ -53,3 +54,6 @@ class Tilesheet {
 	
 	
 }
+
+
+#end

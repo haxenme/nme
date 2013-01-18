@@ -1,4 +1,5 @@
 package native.errors;
+#if (cpp || neko)
 
 
 class Error {
@@ -32,3 +33,6 @@ class Error {
 	
 	
 }
+
+
+#end

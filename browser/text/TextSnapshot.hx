@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 class TextSnapshot {
@@ -25,3 +26,6 @@ class TextSnapshot {
 	
 	
 }
+
+
+#end

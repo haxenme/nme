@@ -1,4 +1,5 @@
 package native.system;
+#if (cpp || neko)
 
 
 import native.Lib;
@@ -70,3 +71,6 @@ class System {
 	
 	
 }
+
+
+#end

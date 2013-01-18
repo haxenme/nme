@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 import native.Lib;
@@ -24,3 +25,6 @@ class Mouse {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 import browser.display.BitmapData;
@@ -178,3 +179,6 @@ class BlurFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

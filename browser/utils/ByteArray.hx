@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 import browser.errors.IOError;
@@ -467,3 +468,6 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	
 }
+
+
+#end

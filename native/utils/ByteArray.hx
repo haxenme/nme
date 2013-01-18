@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 import haxe.io.Bytes;
@@ -691,3 +692,6 @@ class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInpu
 	
 	
 }
+
+
+#end

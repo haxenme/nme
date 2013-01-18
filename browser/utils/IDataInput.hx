@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 import browser.Html5Dom;
@@ -26,3 +27,6 @@ interface IDataInput {
 	function readUnsignedShort():Int;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import native.utils.Float32Array;
@@ -11,6 +12,7 @@ import native.errors.Error;
 import native.geom.Matrix3D;
 import native.geom.Rectangle;
 import native.gl.GL;
+import native.gl.GLProgram;
 import native.utils.ByteArray;
 import native.Lib;
 import nme.Vector;
@@ -254,7 +256,7 @@ class Context3D {
 	
 	public function setProgram(program3D:Program3D):Void {
 		
-		var glProgram:Program = null;
+		var glProgram:GLProgram = null;
 		
 		if (program3D != null) {
 			
@@ -522,3 +524,6 @@ class Context3D {
 	
 	
 }
+
+
+#end

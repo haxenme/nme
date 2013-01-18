@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 #if haxe_211
@@ -53,3 +54,6 @@ class Error {
 	
 	
 }
+
+
+#end

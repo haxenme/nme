@@ -1,4 +1,6 @@
 package browser.events;
+#if js
+
 
 class KeyboardEvent extends Event {
 	
@@ -29,3 +31,6 @@ class KeyboardEvent extends Event {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 class SecurityError extends Error {
@@ -12,3 +13,6 @@ class SecurityError extends Error {
 	
 
 }
+
+
+#end

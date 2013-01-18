@@ -1,9 +1,11 @@
 package native.display3D;
+#if (cpp || neko)
 
 
+import native.gl.GL;
+import native.gl.GLBuffer;
 import native.utils.Float32Array;
 import native.utils.ArrayBufferView;
-import native.gl.GL;
 import native.utils.ByteArray;
 import nme.Vector;
 
@@ -11,12 +13,12 @@ import nme.Vector;
 class IndexBuffer3D {
 	
 	
-	public var glBuffer:Buffer;
+	public var glBuffer:GLBuffer;
 	public var numIndices:Int;
 	
 	
 
-	public function new (glBuffer:Buffer, numIndices:Int) {
+	public function new (glBuffer:GLBuffer, numIndices:Int) {
 
 		this.glBuffer = glBuffer;
 		this.numIndices = numIndices;
@@ -41,3 +43,6 @@ class IndexBuffer3D {
     }
 
 }
+
+
+#end

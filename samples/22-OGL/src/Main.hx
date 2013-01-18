@@ -5,6 +5,9 @@ import nme.RGB;
 import nme.display.OpenGLView;
 import nme.display.BitmapData;
 import nme.gl.GL;
+import nme.gl.GLBuffer;
+import nme.gl.GLProgram;
+import nme.gl.GLTexture;
 import nme.utils.Float32Array;
 import nme.utils.ArrayBuffer;
 import nme.utils.ArrayBufferView;
@@ -50,7 +53,7 @@ class Utils
 
 class ProgramPosTex
 {
-   var prog:Program;
+   var prog:GLProgram;
 
    var posLocation:Dynamic;
    var texLocation:Dynamic;
@@ -58,10 +61,10 @@ class ProgramPosTex
    var type:Int;
    public var posDims:Int;
    public var texDims:Int;
-   var posBuffer:Buffer;
-   var texBuffer:Buffer;
+   var posBuffer:GLBuffer;
+   var texBuffer:GLBuffer;
    var samplerLocation:Dynamic;
-   public var texture(default,null):Texture;
+   public var texture(default,null):GLTexture;
 
    public function new(vertShader:String, posName:String, texName,
                        fragShader:String, samplerName:String )

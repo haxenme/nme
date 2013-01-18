@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 class URLRequestMethod {
@@ -11,3 +12,6 @@ class URLRequestMethod {
 	public static inline var PUT:String = "PUT";
 	
 }
+
+
+#end

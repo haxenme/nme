@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -18,3 +19,6 @@ class GraphicsSolidFill extends IGraphicsData {
 	
 	
 }
+
+
+#end

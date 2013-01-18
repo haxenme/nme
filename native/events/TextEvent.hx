@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class TextEvent extends Event {
@@ -34,3 +35,6 @@ class TextEvent extends Event {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,8 @@
 package browser.display;
+#if js
 
 
-interface IGraphicsPath {}
+interface IGraphicsPath { }
+
+
+#end

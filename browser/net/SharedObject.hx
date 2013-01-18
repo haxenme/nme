@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 import browser.errors.Error;
@@ -151,3 +152,6 @@ class SharedObject extends EventDispatcher {
 	
 	
 }
+
+
+#end

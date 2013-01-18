@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 class URLRequest {
@@ -27,3 +28,6 @@ class URLRequest {
 	
 	
 }
+
+
+#end

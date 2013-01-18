@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 enum Context3DVertexBufferFormat {
@@ -10,3 +11,6 @@ enum Context3DVertexBufferFormat {
     FLOAT_4;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 import browser.display.DisplayObject;
@@ -103,3 +104,6 @@ class Transform {
 	
 	
 }
+
+
+#end

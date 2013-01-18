@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class KeyboardEvent extends Event {
@@ -49,3 +50,6 @@ class KeyboardEvent extends Event {
 	
 	
 }
+
+
+#end

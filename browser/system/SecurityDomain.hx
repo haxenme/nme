@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 class SecurityDomain {
@@ -8,3 +9,6 @@ class SecurityDomain {
 	
 	
 }
+
+
+#end

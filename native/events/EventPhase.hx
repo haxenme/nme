@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class EventPhase {
@@ -8,3 +9,6 @@ class EventPhase {
 	public static var BUBBLING_PHASE = 2;
    
 }
+
+
+#end

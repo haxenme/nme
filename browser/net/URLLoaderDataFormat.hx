@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 enum URLLoaderDataFormat {
@@ -8,3 +9,6 @@ enum URLLoaderDataFormat {
 	VARIABLES;
 	
 }
+
+
+#end

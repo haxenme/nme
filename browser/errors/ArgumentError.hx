@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 class ArgumentError extends Error {
@@ -12,3 +13,6 @@ class ArgumentError extends Error {
 	
 	
 }
+
+
+#end

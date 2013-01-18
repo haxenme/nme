@@ -1,16 +1,19 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import native.gl.GL;
+import native.gl.GLProgram;
+import native.gl.GLShader;
 
 
 class Program3D {
 	
 	
-	public var glProgram:Program;
+	public var glProgram:GLProgram;
 	
 	
-    public function new(program:Program) {
+    public function new(program:GLProgram) {
 		
         this.glProgram = program;
 		
@@ -26,7 +29,7 @@ class Program3D {
 	
 	// TODO: Use ByteArray instead of Shader?
 	
-    public function upload(vertexShader:Shader, fragmentShader:Shader):Void {
+    public function upload(vertexShader:GLShader, fragmentShader:GLShader):Void {
 		
         GL.attachShader(glProgram, vertexShader);
 		GL.attachShader(glProgram, fragmentShader);
@@ -43,3 +46,6 @@ class Program3D {
 	
 	
 }
+
+
+#end

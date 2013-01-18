@@ -1,4 +1,5 @@
 package native.filesystem;
+#if (cpp || neko)
 
 
 import native.events.EventDispatcher;
@@ -65,3 +66,6 @@ class StorageVolumeInfo extends EventDispatcher {
 	
 	
 }
+
+
+#end

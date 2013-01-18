@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class IGraphicsData {	
@@ -15,3 +16,6 @@ class IGraphicsData {
 	
 	
 }
+
+
+#end

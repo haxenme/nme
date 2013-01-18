@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum GradientType {
@@ -7,3 +8,6 @@ enum GradientType {
 	LINEAR;
 	
 }
+
+
+#end

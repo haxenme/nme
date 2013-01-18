@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class BitmapFilterType {
@@ -8,3 +9,6 @@ class BitmapFilterType {
 	public static var OUTER = "outer";
 	
 }
+
+
+#end

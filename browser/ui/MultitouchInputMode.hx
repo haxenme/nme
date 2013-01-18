@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 enum MultitouchInputMode {
@@ -8,3 +9,6 @@ enum MultitouchInputMode {
 	GESTURE;
 	
 }
+
+
+#end

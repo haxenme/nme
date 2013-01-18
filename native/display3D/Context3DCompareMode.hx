@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import native.gl.GL;
@@ -16,3 +17,6 @@ class Context3DCompareMode {
 	inline static public var NOT_EQUAL = GL.NOTEQUAL;
 	
 }
+
+
+#end

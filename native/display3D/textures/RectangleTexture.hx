@@ -1,14 +1,17 @@
 package native.display3D.textures;
+#if (cpp || neko)
 
 
 import native.display.BitmapData;
-import native.utils.ByteArray;
 import native.gl.GL;
+import native.gl.GLTexture;
+import native.utils.ByteArray;
+
 
 class RectangleTexture extends TextureBase {
 
 
-    public function new (glTexture:native.gl.Texture) {
+    public function new (glTexture:GLTexture) {
 
         super (glTexture);
 
@@ -31,3 +34,6 @@ class RectangleTexture extends TextureBase {
 	
 	
 }
+
+
+#end

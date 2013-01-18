@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 import browser.text.FontStyle;
@@ -243,3 +244,6 @@ typedef GlyphData = {
 	var data:Array<Float>;
 	
 }
+
+
+#end

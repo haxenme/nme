@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class TimerEvent extends Event {
@@ -37,3 +38,6 @@ class TimerEvent extends Event {
 	
 	
 }
+
+
+#end

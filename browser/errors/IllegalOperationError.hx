@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 class IllegalOperationError extends Error {
@@ -12,3 +13,6 @@ class IllegalOperationError extends Error {
 	
 	
 }
+
+
+#end

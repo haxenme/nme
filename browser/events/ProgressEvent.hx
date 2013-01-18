@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class ProgressEvent extends Event {
@@ -22,3 +23,6 @@ class ProgressEvent extends Event {
 	
 	
 }
+
+
+#end

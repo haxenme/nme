@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 class KeyLocation {
@@ -9,3 +10,6 @@ class KeyLocation {
 	public static var STANDARD = 4;
 	
 }
+
+
+#end

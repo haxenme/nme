@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.display.DisplayObject;
@@ -82,3 +83,6 @@ class Bitmap extends DisplayObject {
 	
 	
 }
+
+
+#end

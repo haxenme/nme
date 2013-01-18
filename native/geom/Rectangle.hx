@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 class Rectangle {
@@ -232,3 +233,6 @@ class Rectangle {
 	
 	
 }
+
+
+#end

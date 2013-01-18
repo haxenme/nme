@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class Dictionary implements ArrayAccess<Dynamic> {
@@ -12,3 +13,6 @@ class Dictionary implements ArrayAccess<Dynamic> {
 	
 	
 }
+
+
+#end

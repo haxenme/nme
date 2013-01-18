@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 class GraphicsPathCommand {
@@ -11,3 +12,6 @@ class GraphicsPathCommand {
 	public static inline var NO_OP = 0;
 	
 }
+
+
+#end

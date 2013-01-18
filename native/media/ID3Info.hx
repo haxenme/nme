@@ -1,4 +1,5 @@
 package native.media;
+#if (cpp || neko)
 
 
 class ID3Info {
@@ -21,3 +22,6 @@ class ID3Info {
 	
 	
 }
+
+
+#end

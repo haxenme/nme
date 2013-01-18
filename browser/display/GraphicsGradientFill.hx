@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.IGraphicsData;
@@ -39,3 +40,6 @@ class GraphicsGradientFill implements IGraphicsData, implements IGraphicsFill {
 	
 	
 }
+
+
+#end

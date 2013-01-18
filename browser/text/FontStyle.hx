@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 enum FontStyle {
@@ -9,3 +10,6 @@ enum FontStyle {
 	BOLD;
 	
 }
+
+
+#end

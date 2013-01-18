@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 import native.events.Event;
@@ -42,3 +43,6 @@ class AccelerometerEvent extends Event {
 	
 	
 }
+
+
+#end

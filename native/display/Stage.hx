@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import haxe.Timer;
@@ -1036,3 +1037,6 @@ class TouchInfo {
 	
 	
 }
+
+
+#end

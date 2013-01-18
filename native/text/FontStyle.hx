@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 @:fakeEnum(String) extern enum FontStyle {
@@ -9,3 +10,6 @@ package native.text;
 	REGULAR;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class TypedDictionary<K,T> extends Dictionary {
@@ -103,3 +104,6 @@ class TypedDictionary<K,T> extends Dictionary {
 	
 	
 }
+
+
+#end

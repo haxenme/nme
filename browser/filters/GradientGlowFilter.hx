@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 class GradientGlowFilter extends BitmapFilter {
@@ -36,3 +37,6 @@ class GradientGlowFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

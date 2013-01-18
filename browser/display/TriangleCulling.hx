@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum TriangleCulling {
@@ -8,3 +9,6 @@ enum TriangleCulling {
 	POSITIVE;
 	
 }
+
+
+#end

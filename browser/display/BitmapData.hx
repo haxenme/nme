@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.BlendMode;
@@ -17,6 +18,7 @@ import browser.utils.Uuid;
 import browser.Html5Dom;
 import browser.Lib;
 import haxe.xml.Check;
+
 
 
 class BitmapData implements IBitmapDrawable {
@@ -1468,3 +1470,6 @@ private class MinstdGenerator {
 	
 	
 }
+
+
+#end

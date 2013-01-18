@@ -1,4 +1,5 @@
 package browser.media;
+#if js
 
 
 class SoundTransform {
@@ -20,3 +21,6 @@ class SoundTransform {
 	
 	
 }
+
+
+#end

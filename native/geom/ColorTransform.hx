@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 class ColorTransform {
@@ -69,3 +70,6 @@ class ColorTransform {
 	
 	
 }
+
+
+#end

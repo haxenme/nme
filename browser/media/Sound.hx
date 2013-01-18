@@ -1,4 +1,5 @@
 package browser.media;
+#if js
 
 
 import browser.events.Event;
@@ -219,3 +220,6 @@ class Sound extends EventDispatcher {
 	
 	
 }
+
+
+#end

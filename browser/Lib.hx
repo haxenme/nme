@@ -1,4 +1,5 @@
 package browser;
+#if js
 
 
 import browser.display.DisplayObject;
@@ -1200,3 +1201,6 @@ private enum CursorType {
 	Default;
 	
 }
+
+
+#end

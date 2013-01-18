@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 import browser.display.BitmapData;
@@ -37,3 +38,6 @@ class DisplacementMapFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

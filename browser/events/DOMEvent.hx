@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 #if interop
@@ -18,4 +19,7 @@ class DOMEvent extends Event {
 	
 	
 }
+#end
+
+
 #end

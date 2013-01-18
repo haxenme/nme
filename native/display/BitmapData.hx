@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import haxe.io.Bytes;
@@ -728,3 +729,6 @@ class OptimizedPerlin {
 	
 	
 }
+
+
+#end

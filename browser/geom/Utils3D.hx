@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class Utils3D {
@@ -30,3 +31,6 @@ class Utils3D {
 	
 	
 }
+
+
+#end

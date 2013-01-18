@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class Shape extends DisplayObject {
@@ -12,3 +13,6 @@ class Shape extends DisplayObject {
 	
 	
 }
+
+
+#end

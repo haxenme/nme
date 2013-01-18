@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 import browser.Html5Dom;
@@ -23,3 +24,6 @@ interface IDataOutput {
 	function writeUnsignedInt(value:Int):Void;
 	
 }
+
+
+#end

@@ -13,4 +13,6 @@ extern interface IMemoryRange {
 
 #elseif (cpp || neko)
 typedef IMemoryRange = native.utils.IMemoryRange;
+#elseif js
+typedef IMemoryRange = browser.utils.IMemoryRange;
 #end

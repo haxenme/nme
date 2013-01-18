@@ -1,4 +1,5 @@
 package browser.media;
+#if js
 
 
 class SoundLoaderContext {
@@ -17,3 +18,6 @@ class SoundLoaderContext {
 	
 	
 }
+
+
+#end

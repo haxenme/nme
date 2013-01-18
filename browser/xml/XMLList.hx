@@ -1,4 +1,5 @@
 package browser.xml;
+#if js
 
 
 class XMLList implements ArrayAccess<XML> {
@@ -53,3 +54,6 @@ class XMLList implements ArrayAccess<XML> {
 	
 	
 }
+
+
+#end

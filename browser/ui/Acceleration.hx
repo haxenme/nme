@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 typedef Acceleration = {
@@ -8,3 +9,6 @@ typedef Acceleration = {
 	z:Float 
 	
 }
+
+
+#end

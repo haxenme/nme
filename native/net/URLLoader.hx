@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 import native.events.Event;
@@ -275,3 +276,6 @@ class URLLoader extends EventDispatcher {
 	
 	
 }
+
+
+#end

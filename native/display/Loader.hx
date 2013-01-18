@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.net.URLRequest;
@@ -127,3 +128,6 @@ class Loader extends Sprite {
 	
 	
 }
+
+
+#end

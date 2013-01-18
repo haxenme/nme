@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -114,3 +115,6 @@ class GraphicsPath extends IGraphicsData {
 	
 	
 }
+
+
+#end

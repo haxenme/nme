@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 enum MultitouchInputMode {
@@ -8,3 +9,6 @@ enum MultitouchInputMode {
 	GESTURE;
 	
 }
+
+
+#end

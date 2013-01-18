@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 class TextFormatAlign {
@@ -9,3 +10,6 @@ class TextFormatAlign {
 	public static var JUSTIFY = "justify";
 
 }
+
+
+#end

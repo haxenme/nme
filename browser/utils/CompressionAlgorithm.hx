@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 enum CompressionAlgorithm {
@@ -9,3 +10,6 @@ enum CompressionAlgorithm {
 	GZIP;
 	
 }
+
+
+#end

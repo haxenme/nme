@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.display.InteractiveObject;
@@ -29,3 +30,6 @@ class FocusEvent extends Event {
 	
 	
 }
+
+
+#end

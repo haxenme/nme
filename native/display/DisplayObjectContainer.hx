@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.errors.ArgumentError;
@@ -414,3 +415,6 @@ class DisplayObjectContainer extends InteractiveObject {
 	
 	
 }
+
+
+#end

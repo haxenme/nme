@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 import browser.Html5Dom;
@@ -35,3 +36,6 @@ class ConvolutionFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

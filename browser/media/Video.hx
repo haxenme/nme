@@ -1,4 +1,5 @@
 package browser.media;
+#if js
 
 
 import browser.display.BitmapData;
@@ -140,3 +141,6 @@ class Video extends DisplayObject {
 		
 	}
 }
+
+
+#end

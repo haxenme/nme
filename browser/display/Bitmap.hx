@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.DisplayObject;
@@ -204,3 +205,6 @@ class Bitmap extends DisplayObject {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.errors;
+#if (cpp || neko)
 
 
 class RangeError extends Error {
@@ -12,3 +13,6 @@ class RangeError extends Error {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.errors;
+#if (cpp || neko)
 
 
 class EOFError extends Error {
@@ -12,3 +13,6 @@ class EOFError extends Error {
 	
 	
 }
+
+
+#end

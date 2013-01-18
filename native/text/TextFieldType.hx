@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 enum TextFieldType {
@@ -7,3 +8,6 @@ enum TextFieldType {
 	INPUT;
 
 }
+
+
+#end

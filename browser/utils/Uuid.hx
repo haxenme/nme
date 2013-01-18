@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class Uuid {
@@ -34,3 +35,6 @@ class Uuid {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 class URLRequestMethod {
@@ -11,3 +12,6 @@ class URLRequestMethod {
 	public static var PUT : String = "PUT";
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 enum URLLoaderDataFormat {
@@ -8,3 +9,6 @@ enum URLLoaderDataFormat {
 	VARIABLES;
 	
 }
+
+
+#end

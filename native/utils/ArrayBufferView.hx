@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 #if cpp
@@ -103,3 +104,6 @@ class ArrayBufferView implements IMemoryRange {
 	
 	
 }
+
+
+#end

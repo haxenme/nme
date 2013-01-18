@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum BlendMode {
@@ -19,3 +20,6 @@ enum BlendMode {
 	HARDLIGHT;
 	
 }
+
+
+#end

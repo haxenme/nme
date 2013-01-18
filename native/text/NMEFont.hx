@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 import native.display.BitmapData;
@@ -97,3 +98,6 @@ typedef NMEGlyphInfo = {
 	offsetY:Int,
 	
 };
+
+
+#end

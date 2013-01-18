@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class Vector3D {
@@ -210,3 +211,6 @@ class Vector3D {
 	
 	
 }
+
+
+#end

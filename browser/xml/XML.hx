@@ -1,4 +1,5 @@
 package browser.xml;
+#if js
 
 
 class XML implements Dynamic<XMLList> {
@@ -63,3 +64,6 @@ class XML implements Dynamic<XMLList> {
 	
 	
 }
+
+
+#end

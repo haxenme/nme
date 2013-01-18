@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 interface IGraphicsFill {
@@ -14,3 +15,6 @@ interface IGraphicsFill {
 	GRADIENT_FILL;
 	
 }
+
+
+#end

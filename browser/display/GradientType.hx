@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum GradientType {
@@ -7,3 +8,6 @@ enum GradientType {
 	LINEAR;
 	
 }
+
+
+#end

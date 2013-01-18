@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 class StageQuality {
@@ -9,3 +10,6 @@ class StageQuality {
 	public static var LOW = "low";
 	
 }
+
+
+#end

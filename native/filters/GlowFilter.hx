@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class GlowFilter extends DropShadowFilter {
@@ -12,3 +13,6 @@ class GlowFilter extends DropShadowFilter {
 	
 	
 }
+
+
+#end

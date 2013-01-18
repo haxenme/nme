@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 class URLRequestHeader {
@@ -17,3 +18,6 @@ class URLRequestHeader {
 	
 	
 }
+
+
+#end

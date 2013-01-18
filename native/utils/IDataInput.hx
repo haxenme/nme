@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 interface IDataInput {
@@ -32,3 +33,6 @@ interface IDataInput {
 	
 	
 }
+
+
+#end

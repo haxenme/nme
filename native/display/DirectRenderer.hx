@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -45,3 +46,6 @@ class DirectRenderer extends DisplayObject {
 	
 	
 }
+
+
+#end

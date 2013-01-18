@@ -1,4 +1,5 @@
 package native.gl;
+#if (cpp || neko)
 
 
 import native.display.BitmapData;
@@ -81,7 +82,7 @@ class GL {
 	public static inline var ONE_MINUS_CONSTANT_ALPHA       = 0x8004;
 	public static inline var BLEND_COLOR                    = 0x8005;
 
-	/* Buffer Objects */
+	/* GLBuffer Objects */
 	public static inline var ARRAY_BUFFER                   = 0x8892;
 	public static inline var ELEMENT_ARRAY_BUFFER           = 0x8893;
 	public static inline var ARRAY_BUFFER_BINDING           = 0x8894;
@@ -370,10 +371,10 @@ class GL {
 	public static inline var VERTEX_PROGRAM_POINT_SIZE       = 0x8642;
 	public static inline var POINT_SPRITE                    = 0x8861;
 	
-	/* Shader Source */
+	/* GLShader Source */
 	public static inline var COMPILE_STATUS                 = 0x8B81;
 
-	/* Shader Precision-Specified Types */
+	/* GLShader Precision-Specified Types */
 	public static inline var LOW_FLOAT                      = 0x8DF0;
 	public static inline var MEDIUM_FLOAT                   = 0x8DF1;
 	public static inline var HIGH_FLOAT                     = 0x8DF2;
@@ -381,7 +382,7 @@ class GL {
 	public static inline var MEDIUM_INT                     = 0x8DF4;
 	public static inline var HIGH_INT                       = 0x8DF5;
 
-	/* Framebuffer Object. */
+	/* GLFramebuffer Object. */
 	public static inline var FRAMEBUFFER                    = 0x8D40;
 	public static inline var RENDERBUFFER                   = 0x8D41;
 
@@ -444,7 +445,7 @@ class GL {
 	public static function activeTexture(texture:Int):Void { nme_gl_active_texture(texture); }
 	
 	
-	public static function attachShader(program:Program, shader:Shader):Void {
+	public static function attachShader(program:GLProgram, shader:GLShader):Void {
 		
 		program.attach(shader);
 		nme_gl_attach_shader(program.id, shader.id);
@@ -452,7 +453,7 @@ class GL {
 	}
 	
 	
-	public static function bindAttribLocation(program:Program, index:Int, name:String):Void {
+	public static function bindAttribLocation(program:GLProgram, index:Int, name:String):Void {
 		
 		nme_gl_bind_attrib_location(program.id, index, name);
 		
@@ -466,28 +467,28 @@ class GL {
 	}
 	
 	
-	public static function bindBuffer(target:Int, buffer:Buffer):Void {
+	public static function bindBuffer(target:Int, buffer:GLBuffer):Void {
 		
 		nme_gl_bind_buffer(target, buffer == null ? 0 : buffer.id);
 		
 	}
 	
 	
-	public static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void {
+	public static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void {
 		
 		nme_gl_bind_framebuffer(target, framebuffer == null ? 0 : framebuffer.id);
 		
 	}
 	
 	
-	public static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void {
+	public static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void {
 		
 		nme_gl_bind_renderbuffer(target, renderbuffer == null ? 0 : renderbuffer.id);
 		
 	}
 	
 	
-	public static function bindTexture(target:Int, texture:Texture):Void {
+	public static function bindTexture(target:Int, texture:GLTexture):Void {
 		
 		nme_gl_bind_texture(target, texture == null ? 0 : texture.id);
 		
@@ -585,7 +586,7 @@ class GL {
 	}
 	
 	
-	public static function compileShader(shader:Shader):Void {
+	public static function compileShader(shader:GLShader):Void {
 		
 		nme_gl_compile_shader(shader.id);
 		
@@ -620,44 +621,44 @@ class GL {
 	}
 	
 	
-	public static function createBuffer():Buffer {
+	public static function createBuffer():GLBuffer {
 		
-		return new Buffer(version, nme_gl_create_buffer());
-		
-	}
-	
-	
-	public static function createFramebuffer():Framebuffer {
-		
-		return new Framebuffer(version, nme_gl_create_framebuffer());
+		return new GLBuffer(version, nme_gl_create_buffer());
 		
 	}
 	
 	
-	public static function createProgram():Program {
+	public static function createFramebuffer():GLFramebuffer {
 		
-		return new Program(version, nme_gl_create_program());
-		
-	}
-	
-	
-	public static function createRenderbuffer():Renderbuffer {
-		
-		return new Renderbuffer(version, nme_gl_create_render_buffer());
+		return new GLFramebuffer(version, nme_gl_create_framebuffer());
 		
 	}
 	
 	
-	public static function createShader(type:Int):Shader {
+	public static function createProgram():GLProgram {
 		
-		return new Shader(version, nme_gl_create_shader(type));
+		return new GLProgram(version, nme_gl_create_program());
 		
 	}
 	
 	
-	public static function createTexture():Texture {
+	public static function createRenderbuffer():GLRenderbuffer {
 		
-		return new Texture(version, nme_gl_create_texture());
+		return new GLRenderbuffer(version, nme_gl_create_render_buffer());
+		
+	}
+	
+	
+	public static function createShader(type:Int):GLShader {
+		
+		return new GLShader(version, nme_gl_create_shader(type));
+		
+	}
+	
+	
+	public static function createTexture():GLTexture {
+		
+		return new GLTexture(version, nme_gl_create_texture());
 		
 	}
 	
@@ -669,7 +670,7 @@ class GL {
 	}
 	
 	
-	public static function deleteBuffer(buffer:Buffer):Void {
+	public static function deleteBuffer(buffer:GLBuffer):Void {
 		
 		nme_gl_delete_buffer(buffer.id);
 		buffer.invalidate();
@@ -677,14 +678,14 @@ class GL {
 	}
 	
 	
-	public static function deleteFramebuffer(framebuffer:Framebuffer):Void {
+	public static function deleteFramebuffer(framebuffer:GLFramebuffer):Void {
 		
 		
 		
 	}
 	
 	
-	public static function deleteProgram(program:Program):Void {
+	public static function deleteProgram(program:GLProgram):Void {
 		
 		nme_gl_delete_program(program.id);
 		program.invalidate();
@@ -692,14 +693,14 @@ class GL {
 	}
 	
 	
-	public static function deleteRenderbuffer(renderbuffer:Renderbuffer):Void {
+	public static function deleteRenderbuffer(renderbuffer:GLRenderbuffer):Void {
 		
 		
 		
 	}
 	
 	
-	public static function deleteShader(shader:Shader):Void {
+	public static function deleteShader(shader:GLShader):Void {
 		
 		nme_gl_delete_shader(shader.id);
 		shader.invalidate();
@@ -707,7 +708,7 @@ class GL {
 	}
 	
 	
-	public static function deleteTexture(texture:Texture):Void {
+	public static function deleteTexture(texture:GLTexture):Void {
 		
 		nme_gl_delete_texture(texture.id);
 		texture.invalidate();
@@ -736,7 +737,7 @@ class GL {
 	}
 	
 	
-	public static function detachShader(program:Program, shader:Shader):Void {
+	public static function detachShader(program:GLProgram, shader:GLShader):Void {
 		
 		nme_gl_detach_shader(program.id, shader.id);
 		
@@ -799,14 +800,14 @@ class GL {
 	}
 	
 	
-	public static function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:Renderbuffer):Void {
+	public static function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:GLRenderbuffer):Void {
 		
 		nme_gl_framebuffer_renderbuffer(target, attachment, renderbuffertarget, renderbuffer.id);
 		
 	}
 	
 	
-	public static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:Texture, level:Int):Void {
+	public static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:GLTexture, level:Int):Void {
 		
 		nme_gl_framebuffer_texture2D(target, attachment, textarget, texture.id, level);
 		
@@ -827,28 +828,28 @@ class GL {
 	}
 	
 	
-	public static function getActiveAttrib(program:Program, index:Int):ActiveInfo {
+	public static function getActiveAttrib(program:GLProgram, index:Int):GLActiveInfo {
 		
 		return nme_gl_get_active_attrib(program.id, index);
 		
 	}
 	
 	
-	public static function getActiveUniform(program:Program, index:Int):ActiveInfo {
+	public static function getActiveUniform(program:GLProgram, index:Int):GLActiveInfo {
 		
 		return nme_gl_get_active_uniform(program.id, index);
 		
 	}
 	
 	
-	public static function getAttachedShaders(program:Program):Array<Shader> {
+	public static function getAttachedShaders(program:GLProgram):Array<GLShader> {
 		
 		return program.getShaders();
 		
 	}
 	
 	
-	public static function getAttribLocation(program:Program, name:String):Int {
+	public static function getAttribLocation(program:GLProgram, name:String):Int {
 		
 		return nme_gl_get_attrib_location(program.id, name);
 		
@@ -862,7 +863,7 @@ class GL {
 	}
 	
 	
-	public static function getContextAttributes():ContextAttributes {
+	public static function getContextAttributes():GLContextAttributes {
 		
 		var base = nme_gl_get_context_attributes();
 		base.premultipliedAlpha = false;
@@ -901,14 +902,14 @@ class GL {
 	}
 	
 	
-	public static function getProgramInfoLog(program:Program):String {
+	public static function getProgramInfoLog(program:GLProgram):String {
 		
 		return nme_gl_get_program_info_log(program.id);
 		
 	}
 	
 	
-	public static function getProgramParameter(program:Program, pname:Int):Int {
+	public static function getProgramParameter(program:GLProgram, pname:Int):Int {
 		
 		return nme_gl_get_program_parameter(program.id, pname);
 		
@@ -922,14 +923,14 @@ class GL {
 	}
 	
 	
-	public static function getShaderInfoLog(shader:Shader):String {
+	public static function getShaderInfoLog(shader:GLShader):String {
 		
 		return nme_gl_get_shader_info_log(shader.id);
 		
 	}
 	
 	
-	public static function getShaderParameter(shader:Shader, pname:Int):Int {
+	public static function getShaderParameter(shader:GLShader, pname:Int):Int {
 		
 		return nme_gl_get_shader_parameter(shader.id, pname);
 		
@@ -943,7 +944,7 @@ class GL {
 	}
 	
 	
-	public static function getShaderSource(shader:Shader):String {
+	public static function getShaderSource(shader:GLShader):String {
 		
 		return nme_gl_get_shader_source(shader.id);
 		
@@ -966,14 +967,14 @@ class GL {
 	}
 	
 	
-	public static function getUniform(program:Program, location:UniformLocation):Dynamic { 
+	public static function getUniform(program:GLProgram, location:GLUniformLocation):Dynamic { 
 		
 		return nme_gl_get_uniform(program.id, location);
 		
 	}
 	
 	
-	public static function getUniformLocation(program:Program, name:String):Dynamic {
+	public static function getUniformLocation(program:GLProgram, name:String):Dynamic {
 		
 		return nme_gl_get_uniform_location(program.id, name);
 		
@@ -1001,7 +1002,7 @@ class GL {
 	}
 	
 	
-	public static function isBuffer(buffer:Buffer):Bool {
+	public static function isBuffer(buffer:GLBuffer):Bool {
 		
 		return buffer != null && buffer.id > 0 && nme_gl_is_buffer(buffer.id);
 		
@@ -1019,35 +1020,35 @@ class GL {
 	}
 	
 	
-	public static function isFramebuffer(framebuffer:Framebuffer):Bool {
+	public static function isFramebuffer(framebuffer:GLFramebuffer):Bool {
 		
 		return framebuffer != null && framebuffer.id > 0 && nme_gl_is_framebuffer(framebuffer.id);
 		
 	}
 	
 	
-	public static function isProgram(program:Program):Bool {
+	public static function isProgram(program:GLProgram):Bool {
 		
 		return program != null && program.id > 0 && nme_gl_is_program(program.id);
 		
 	}
 	
 	
-	public static function isRenderbuffer(renderbuffer:Renderbuffer):Bool {
+	public static function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool {
 		
 		return renderbuffer != null && renderbuffer.id > 0 && nme_gl_is_renderbuffer(renderbuffer.id);
 		
 	}
 	
 	
-	public static function isShader(shader:Shader):Bool {
+	public static function isShader(shader:GLShader):Bool {
 		
 		return shader != null && shader.id > 0 && nme_gl_is_shader(shader.id);
 		
 	}
 	
 	
-	public static function isTexture(texture:Texture):Bool {
+	public static function isTexture(texture:GLTexture):Bool {
 		
 		return texture != null && texture.id > 0 && nme_gl_is_texture(texture.id);
 		
@@ -1061,7 +1062,7 @@ class GL {
 	}
 	
 	
-	public static function linkProgram(program:Program):Void {
+	public static function linkProgram(program:GLProgram):Void {
 		
 		nme_gl_link_program(program.id);
 		
@@ -1126,7 +1127,7 @@ class GL {
 	}
 	
 	
-	public static function shaderSource(shader:Shader, source:String):Void {
+	public static function shaderSource(shader:GLShader, source:String):Void {
 		
 		nme_gl_shader_source(shader.id, source);
 		
@@ -1203,154 +1204,154 @@ class GL {
 	}
 	
 	
-	public static function uniform1f(location:UniformLocation, x:Float):Void {
+	public static function uniform1f(location:GLUniformLocation, x:Float):Void {
 		
 		nme_gl_uniform1f(location, x);
 		
 	}
 	
 	
-	public static function uniform1fv(location:UniformLocation, x:Array<Float>):Void {
+	public static function uniform1fv(location:GLUniformLocation, x:Array<Float>):Void {
 		
 		nme_gl_uniform1fv(location, x);
 		
 	}
 	
 	
-	public static function uniform1i(location:UniformLocation, x:Int):Void {
+	public static function uniform1i(location:GLUniformLocation, x:Int):Void {
 		
 		nme_gl_uniform1i(location, x);
 		
 	}
 	
 	
-	public static function uniform1iv(location:UniformLocation, v:Array<Int>):Void {
+	public static function uniform1iv(location:GLUniformLocation, v:Array<Int>):Void {
 		
 		nme_gl_uniform1iv(location, v);
 		
 	}
 	
 	
-	public static function uniform2f(location:UniformLocation, x:Float, y:Float):Void {
+	public static function uniform2f(location:GLUniformLocation, x:Float, y:Float):Void {
 		
 		nme_gl_uniform2f(location, x, y);
 		
 	}
 	
 	
-	public static function uniform2fv(location:UniformLocation, v:Array<Float>):Void {
+	public static function uniform2fv(location:GLUniformLocation, v:Array<Float>):Void {
 		
 		nme_gl_uniform2fv(location, v);
 		
 	}
 	
 	
-	public static function uniform2i(location:UniformLocation, x:Int, y:Int):Void {
+	public static function uniform2i(location:GLUniformLocation, x:Int, y:Int):Void {
 		
 		nme_gl_uniform2i(location, x, y);
 		
 	}
 	
 	
-	public static function uniform2iv(location:UniformLocation, v:Array<Int>):Void {
+	public static function uniform2iv(location:GLUniformLocation, v:Array<Int>):Void {
 		
 		nme_gl_uniform2iv(location, v);
 		
 	}
 	
 	
-	public static function uniform3f(location:UniformLocation, x:Float, y:Float, z:Float):Void {
+	public static function uniform3f(location:GLUniformLocation, x:Float, y:Float, z:Float):Void {
 		
 		nme_gl_uniform3f(location, x, y, z);
 		
 	}
 	
 	
-	public static function uniform3fv(location:UniformLocation, v:Array<Float>):Void {
+	public static function uniform3fv(location:GLUniformLocation, v:Array<Float>):Void {
 		
 		nme_gl_uniform3fv(location, v);
 		
 	}
 	
 	
-	public static function uniform3i(location:UniformLocation, x:Int, y:Int, z:Int):Void {
+	public static function uniform3i(location:GLUniformLocation, x:Int, y:Int, z:Int):Void {
 		
 		nme_gl_uniform3i(location, x, y, z);
 		
 	}
 	
 	
-	public static function uniform3iv(location:UniformLocation, v:Array<Int>):Void {
+	public static function uniform3iv(location:GLUniformLocation, v:Array<Int>):Void {
 		
 		nme_gl_uniform3iv(location, v);
 		
 	}
 	
 	
-	public static function uniform4f(location:UniformLocation, x:Float, y:Float, z:Float, w:Float):Void {
+	public static function uniform4f(location:GLUniformLocation, x:Float, y:Float, z:Float, w:Float):Void {
 		
 		nme_gl_uniform4f(location, x, y, z, w);
 		
 	}
 	
 	
-	public static function uniform4fv(location:UniformLocation, v:Array<Float>):Void {
+	public static function uniform4fv(location:GLUniformLocation, v:Array<Float>):Void {
 		
 		nme_gl_uniform4fv(location, v);
 		
 	}
 	
 	
-	public static function uniform4i(location:UniformLocation, x:Int, y:Int, z:Int, w:Int):Void {
+	public static function uniform4i(location:GLUniformLocation, x:Int, y:Int, z:Int, w:Int):Void {
 		
 		nme_gl_uniform4i(location, x, y, z, w);
 		
 	}
 	
 	
-	public static function uniform4iv(location:UniformLocation, v:Array<Int>):Void {
+	public static function uniform4iv(location:GLUniformLocation, v:Array<Int>):Void {
 		
 		nme_gl_uniform4iv(location, v);
 		
 	}
 	
 	
-	public static function uniformMatrix2fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void {
+	public static function uniformMatrix2fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 2);
 		
 	}
 	
 	
-	public static function uniformMatrix3fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void {
+	public static function uniformMatrix3fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 3);
 		
 	}
 	
 	
-	public static function uniformMatrix4fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void {
+	public static function uniformMatrix4fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void {
 		
 		nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 4);
 		
 	}
 	
 	
-	public static function uniformMatrix3D(location:UniformLocation, transpose:Bool, matrix:Matrix3D):Void {
+	public static function uniformMatrix3D(location:GLUniformLocation, transpose:Bool, matrix:Matrix3D):Void {
 		
 		nme_gl_uniform_matrix(location, transpose, Float32Array.fromMatrix(matrix).getByteBuffer() , 4);
 		
 	}
 	
 	
-	public static function useProgram(program:Program):Void {
+	public static function useProgram(program:GLProgram):Void {
 		
 		nme_gl_use_program(program == null ? 0 : program.id);
 		
 	}
 	
 	
-	public static function validateProgram(program:Program):Void {
+	public static function validateProgram(program:GLProgram):Void {
 		
 		nme_gl_validate_program(program.id);
 		
@@ -1580,114 +1581,6 @@ class GL {
 }
 
 
-class Object {
-	
-	
-	public var id(default, null):Dynamic;
-	public var invalidated(get_invalidated, null):Bool;
-	public var valid(get_valid, null):Bool;
-	
-	var version:Int;
-	
-	
-	function new(inVersion:Int, inId:Dynamic) { version = inVersion; id = inId; }
-	function getType():String { return "GLObject"; }
-	public function invalidate():Void { id = null; }
-	public function toString():String { return getType() + "(" + id + ")"; }
-	public function isValid():Bool { return id != null && version == GL.version; }
-	public function isInvalid():Bool { return !isValid(); }
-	
-	
-	private function get_invalidated():Bool { return isInvalid(); }
-	private function get_valid():Bool { return isValid(); }
-	
-	
-}
-
-
-class Buffer extends Object {
-	
-	public function new(inVersion:Int, inId:Dynamic) { super(inVersion, inId); }
-	override function getType():String { return "Buffer"; }
-	
-}
-
-
-class Framebuffer extends Object {
-	
-	public function new(inVersion:Int, inId:Dynamic) { super(inVersion, inId); }
-	override function getType():String { return "Framebuffer"; }
-	
-}
-
-
-class Program extends Object {
-	
-	
-	public var shaders:Array<Shader>;
-	
-	
-	public function new(inVersion:Int, inId:Dynamic) {
-		
-		super(inVersion, inId);
-		shaders = new Array<Shader>();
-		
-	}
-	
-	
-	public function attach(s:Shader):Void { shaders.push(s); }
-	override function getType():String { return "Program"; }
-	public function getShaders():Array<Shader> { return shaders.copy(); }
-	
-	
-}
-
-
-class Renderbuffer extends Object {
-	
-	public function new(inVersion:Int, inId:Dynamic) { super(inVersion, inId); }
-	override function getType():String { return "Renderbuffer"; }
-	
-}
-
-
-class Shader extends Object {
-	
-	public function new(inVersion:Int, inId:Dynamic) { super(inVersion, inId); }
-	override function getType():String { return "Shader"; }
-	
-}
-
-
-class Texture extends Object {
-	
-	public function new(inVersion:Int, inId:Dynamic) { super(inVersion, inId); }
-	override function getType():String { return "Texture"; }
-	
-}
-
-
-typedef ActiveInfo = {
-	
-    size : Int,
-    type : Int,
-    name : String,
-	
-};
-
-
-typedef ContextAttributes = {
-	
-    alpha:Bool, 
-    depth:Bool,
-    stencil:Bool,
-    antialias:Bool,
-    premultipliedAlpha:Bool,
-    preserveDrawingBuffer:Bool,
-	
-};
-
-
 typedef ShaderPrecisionFormat = {
 	
    rangeMin : Int,
@@ -1697,4 +1590,4 @@ typedef ShaderPrecisionFormat = {
 };
 
 
-typedef UniformLocation = Dynamic;
+#end

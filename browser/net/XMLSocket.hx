@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 import browser.events.DataEvent;
@@ -73,3 +74,6 @@ class XMLSocket extends EventDispatcher {
 	
 	
 }
+
+
+#end

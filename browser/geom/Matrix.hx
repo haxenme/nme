@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 import browser.geom.Point;
@@ -345,3 +346,6 @@ class Matrix {
 	
 	
 }
+
+
+#end

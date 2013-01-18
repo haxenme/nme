@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 class GlowFilter extends DropShadowFilter {
@@ -12,3 +13,6 @@ class GlowFilter extends DropShadowFilter {
 	
 
 }
+
+
+#end

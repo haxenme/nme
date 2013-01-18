@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 class MovieClip extends Sprite, implements Dynamic<Dynamic> {
@@ -75,3 +76,6 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic> {
 	
 	
 }
+
+
+#end

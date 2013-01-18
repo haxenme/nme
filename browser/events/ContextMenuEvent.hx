@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.display.InteractiveObject;
@@ -25,3 +26,6 @@ class ContextMenuEvent extends Event {
 	
 	
 }
+
+
+#end

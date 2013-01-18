@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum StageDisplayState {
@@ -8,3 +9,6 @@ enum StageDisplayState {
 	FULL_SCREEN_INTERACTIVE;
 	
 }
+
+
+#end

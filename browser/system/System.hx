@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 class System {
@@ -66,3 +67,6 @@ class System {
 	
 	
 }
+
+
+#end

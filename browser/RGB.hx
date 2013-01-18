@@ -1,4 +1,5 @@
 package browser;
+#if js
 
 
 class RGB {
@@ -65,3 +66,6 @@ class RGB {
 	
 	
 }
+
+
+#end

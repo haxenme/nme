@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 import native.display.InteractiveObject;
@@ -43,3 +44,6 @@ class FocusEvent extends Event {
 	
 	
 }
+
+
+#end

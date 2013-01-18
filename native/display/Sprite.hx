@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.geom.Rectangle;
@@ -44,3 +45,6 @@ class Sprite extends DisplayObjectContainer {
 	
 	
 }
+
+
+#end

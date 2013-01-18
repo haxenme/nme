@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.events.EventPhase;
@@ -214,3 +215,6 @@ class Listener {
 
 typedef ListenerList = Array<Listener>;
 typedef EventMap = Array<ListenerList>;
+
+
+#end

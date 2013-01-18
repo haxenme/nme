@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum CapsStyle {
@@ -8,3 +9,6 @@ enum CapsStyle {
 	SQUARE;
 	
 }
+
+
+#end

@@ -1,4 +1,6 @@
 package browser.media;
+#if js
+
 
 import browser.events.Event;
 import browser.events.EventDispatcher;
@@ -192,3 +194,6 @@ class SoundChannel extends EventDispatcher {
 	
 	
 }
+
+
+#end

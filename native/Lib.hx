@@ -1,4 +1,5 @@
 package native;
+#if (cpp || neko)
 
 
 import haxe.Timer;
@@ -265,3 +266,6 @@ class Lib {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class Rectangle {
@@ -258,3 +259,6 @@ class Rectangle {
 	
 	
 }
+
+
+#end

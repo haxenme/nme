@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum LineScaleMode {
@@ -10,3 +11,6 @@ enum LineScaleMode {
 	OPENGL;
 	
 }
+
+
+#end

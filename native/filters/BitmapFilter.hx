@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class BitmapFilter {
@@ -23,3 +24,6 @@ class BitmapFilter {
 	
 	
 }
+
+
+#end

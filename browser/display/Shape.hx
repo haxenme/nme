@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.Graphics;
@@ -71,3 +72,6 @@ class Shape extends DisplayObject {
 	
 	
 }
+
+
+#end

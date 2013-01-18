@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 interface IGraphicsData {
@@ -16,3 +17,6 @@ interface IGraphicsData {
 	PATH;
 	
 }
+
+
+#end

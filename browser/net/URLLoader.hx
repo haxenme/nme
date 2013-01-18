@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 import browser.events.Event;
@@ -293,3 +294,6 @@ class URLLoader extends EventDispatcher {
 
 
 typedef XMLHttpRequestProgressEvent = Dynamic;
+
+
+#end

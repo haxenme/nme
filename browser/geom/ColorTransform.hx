@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class ColorTransform {
@@ -69,3 +70,6 @@ class ColorTransform {
 	
 	
 }
+
+
+#end

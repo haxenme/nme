@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.BlendMode;
@@ -12,3 +13,6 @@ interface IBitmapDrawable {
 	function drawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:BlendMode, clipRect:Rectangle, smoothing:Bool):Void;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 class NetStatusEvent extends Event {
@@ -19,3 +20,6 @@ class NetStatusEvent extends Event {
 	
 	
 }
+
+
+#end

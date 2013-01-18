@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class Proxy {
@@ -23,3 +24,6 @@ class Proxy {
 	*/
 	
 }
+
+
+#end

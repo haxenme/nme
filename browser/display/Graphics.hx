@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.BitmapData;
@@ -1497,3 +1498,6 @@ class TileJob {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 enum Context3DTextureFormat {
@@ -8,3 +9,6 @@ enum Context3DTextureFormat {
     COMPRESSED_ALPHA;
 
 }
+
+
+#end

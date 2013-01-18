@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import nme.gl.GL;
@@ -12,3 +13,6 @@ class Context3DClearMask {
 	inline static public var STENCIL:Int = GL.STENCIL_BUFFER_BIT;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 class Mouse {
@@ -26,3 +27,6 @@ class Mouse {
 	
 	
 }
+
+
+#end

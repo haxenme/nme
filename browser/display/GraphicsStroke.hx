@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.IGraphicsData;
@@ -32,3 +33,6 @@ class GraphicsStroke implements IGraphicsData, implements IGraphicsStroke {
 	
 	
 }
+
+
+#end

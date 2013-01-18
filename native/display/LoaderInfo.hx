@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.events.Event;
@@ -110,3 +111,6 @@ class LoaderInfo extends URLLoader {
 	
 	
 }
+
+
+#end

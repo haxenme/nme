@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.events.Event;
@@ -752,3 +753,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	
 	
 }
+
+
+#end

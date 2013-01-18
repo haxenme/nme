@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 class AVM1Movie extends DisplayObject {
@@ -12,3 +13,6 @@ class AVM1Movie extends DisplayObject {
 	
 	
 }
+
+
+#end

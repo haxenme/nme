@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 import native.display.InteractiveObject;
@@ -183,3 +184,6 @@ class TextField extends InteractiveObject {
 	
 	
 }
+
+
+#end

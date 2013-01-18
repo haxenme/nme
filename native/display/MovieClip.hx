@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class MovieClip extends Sprite {
@@ -71,3 +72,6 @@ class MovieClip extends Sprite {
 	
 	
 }
+
+
+#end

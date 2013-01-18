@@ -1,4 +1,5 @@
 package native.filesystem;
+#if (cpp || neko)
 
 
 class StorageVolume {
@@ -27,3 +28,6 @@ class StorageVolume {
 	
 	
 }
+
+
+#end

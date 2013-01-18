@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 /*
@@ -253,3 +254,6 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.events.Event;
@@ -644,3 +645,6 @@ class DisplayObjectContainer extends InteractiveObject {
 	
 	
 }
+
+
+#end

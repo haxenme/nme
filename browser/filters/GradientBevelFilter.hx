@@ -1,4 +1,5 @@
 package browser.filters;
+#if js
 
 
 class GradientBevelFilter extends BitmapFilter {
@@ -37,3 +38,6 @@ class GradientBevelFilter extends BitmapFilter {
 	
 	
 }
+
+
+#end

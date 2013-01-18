@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 import native.display.Stage;
@@ -90,3 +91,6 @@ typedef NativeKerningData = {
 	var y:Int;
 	
 }
+
+
+#end

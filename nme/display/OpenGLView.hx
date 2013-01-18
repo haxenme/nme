@@ -14,4 +14,6 @@ extern class OpenGLView extends DirectRenderer {
 
 #elseif (cpp || neko)
 typedef OpenGLView = native.display.OpenGLView;
+#elseif js
+typedef OpenGLView = browser.display.OpenGLView;
 #end

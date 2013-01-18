@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.display.InteractiveObject;
@@ -85,3 +86,6 @@ class TouchEvent extends Event {
 	
 	
 }
+
+
+#end

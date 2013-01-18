@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 import native.display3D.Context3D;
@@ -34,3 +35,6 @@ class Stage3D extends EventDispatcher {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 import browser.events.EventDispatcher;
@@ -134,3 +135,6 @@ class Timer extends EventDispatcher {
 	
 	
 }
+
+
+#end

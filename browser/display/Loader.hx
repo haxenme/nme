@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.Bitmap;
@@ -174,3 +175,6 @@ class Loader extends DisplayObjectContainer {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum PixelSnapping {
@@ -8,3 +9,6 @@ enum PixelSnapping {
 	ALWAYS;
 	
 }
+
+
+#end

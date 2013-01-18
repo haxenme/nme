@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.accessibility.AccessibilityProperties;
@@ -1358,3 +1359,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.errors;
+#if js
 
 
 class IOError extends Error {
@@ -12,3 +13,6 @@ class IOError extends Error {
 	
 	
 }
+
+
+#end

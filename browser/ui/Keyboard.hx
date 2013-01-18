@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 class Keyboard {
@@ -312,3 +313,6 @@ class Keyboard {
 	
 	
 }
+
+
+#end

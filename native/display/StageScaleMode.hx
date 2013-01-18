@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 enum StageScaleMode {
@@ -9,3 +10,6 @@ enum StageScaleMode {
 	EXACT_FIT;
 	
 }
+
+
+#end

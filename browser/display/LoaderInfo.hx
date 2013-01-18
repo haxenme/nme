@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.events.EventDispatcher;
@@ -55,3 +56,6 @@ class LoaderInfo extends EventDispatcher {
 	
 	
 }
+
+
+#end

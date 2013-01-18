@@ -1,4 +1,5 @@
 package native.media;
+#if (cpp || neko)
 
 
 class SoundTransform {
@@ -24,3 +25,6 @@ class SoundTransform {
 	
 	
 }
+
+
+#end

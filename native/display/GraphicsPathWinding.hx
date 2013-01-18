@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class GraphicsPathWinding {
@@ -7,3 +8,6 @@ class GraphicsPathWinding {
 	public static inline var NON_ZERO:String = "nonZero";
 	
 }
+
+
+#end

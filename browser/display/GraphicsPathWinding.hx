@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 @:fakeEnum(String) enum GraphicsPathWinding {
@@ -7,3 +8,6 @@ package browser.display;
 	NON_ZERO;
 	
 }
+
+
+#end

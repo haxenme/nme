@@ -1,4 +1,6 @@
 package browser.media;
+#if js
+
 
 extern class ID3Info {
 	
@@ -13,3 +15,6 @@ extern class ID3Info {
 	public function new():Void;
 	
 }
+
+
+#end

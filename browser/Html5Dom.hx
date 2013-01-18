@@ -1,4 +1,5 @@
 package browser;
+#if js
 
 
 import StdTypes;
@@ -3841,3 +3842,5 @@ extern interface XMLHttpRequest implements XMLHttpRequestEventTarget {
 	
 }
 
+
+#end

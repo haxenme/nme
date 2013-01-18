@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.IGraphicsData;
@@ -70,3 +71,6 @@ class GraphicsPath implements IGraphicsData, implements IGraphicsPath {
 	
 	
 }
+
+
+#end

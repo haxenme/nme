@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 enum AntiAliasType {
@@ -7,3 +8,6 @@ enum AntiAliasType {
 	NORMAL;
 	
 }
+
+
+#end

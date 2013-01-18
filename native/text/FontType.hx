@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 @:fakeEnum(String) extern enum FontType {
@@ -8,3 +9,6 @@ package native.text;
 	EMBEDDED_CFF;
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 class HTTPStatusEvent extends Event {
@@ -33,3 +34,6 @@ class HTTPStatusEvent extends Event {
 	
 	
 }
+
+
+#end

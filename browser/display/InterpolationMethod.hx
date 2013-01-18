@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum InterpolationMethod {
@@ -7,3 +8,6 @@ enum InterpolationMethod {
 	LINEAR_RGB;
 	
 }
+
+
+#end

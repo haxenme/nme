@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 import nme.Vector;
@@ -559,3 +560,6 @@ class Matrix3D {
 	
 	
 }
+
+
+#end

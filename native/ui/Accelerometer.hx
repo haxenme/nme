@@ -1,4 +1,5 @@
 package native.ui;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -19,3 +20,6 @@ class Accelerometer {
 	
 	
 }
+
+
+#end

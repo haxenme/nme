@@ -1,4 +1,5 @@
 package browser.net;
+#if js
 
 
 //import haxe.remoting.Connection;
@@ -138,3 +139,6 @@ class NetStream extends EventDispatcher {
 	
 	
 }
+
+
+#end

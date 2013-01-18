@@ -1,4 +1,5 @@
 package native.errors;
+#if (cpp || neko)
 
 
 class TypeError extends Error {
@@ -12,3 +13,6 @@ class TypeError extends Error {
 	
 	
 }
+
+
+#end

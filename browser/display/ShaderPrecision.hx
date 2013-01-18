@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum ShaderPrecision {
@@ -7,3 +8,6 @@ enum ShaderPrecision {
 	FULL;
 	
 }
+
+
+#end

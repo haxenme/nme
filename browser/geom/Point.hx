@@ -1,4 +1,5 @@
 package browser.geom;
+#if js
 
 
 class Point {
@@ -108,3 +109,6 @@ class Point {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 import browser.display.BitmapData;
@@ -1108,3 +1109,6 @@ typedef RowChar = {
 
 
 typedef RowChars = Array<RowChar>;
+
+
+#end

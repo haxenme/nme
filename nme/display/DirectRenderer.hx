@@ -15,4 +15,6 @@ extern class DirectRenderer extends DisplayObject {
 
 #elseif (cpp || neko)
 typedef DirectRenderer = native.display.DirectRenderer;
+#elseif js
+typedef DirectRenderer = browser.display.DirectRenderer;
 #end

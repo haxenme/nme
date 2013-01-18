@@ -1,4 +1,5 @@
 package native.text;
+#if (cpp || neko)
 
 
 enum TextFieldAutoSize {
@@ -9,3 +10,6 @@ enum TextFieldAutoSize {
 	RIGHT;
    
 }
+
+
+#end

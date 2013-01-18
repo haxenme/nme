@@ -1,4 +1,5 @@
 package browser.utils;
+#if js
 
 
 class QName {
@@ -16,3 +17,6 @@ class QName {
 	
 	
 }
+
+
+#end

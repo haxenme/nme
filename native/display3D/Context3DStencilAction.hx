@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 enum Context3DStencilAction {
@@ -13,3 +14,6 @@ enum Context3DStencilAction {
 	ZERO;
 	
 }
+
+
+#end

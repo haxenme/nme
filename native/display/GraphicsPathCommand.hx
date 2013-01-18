@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 
 class GraphicsPathCommand {	
@@ -12,3 +13,6 @@ class GraphicsPathCommand {
 	public static inline var CUBIC_CURVE_TO = 6;
 	
 }
+
+
+#end

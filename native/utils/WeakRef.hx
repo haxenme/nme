@@ -1,4 +1,5 @@
 package native.utils;
+#if (cpp || neko)
 
 
 import native.Loader;
@@ -68,3 +69,6 @@ class WeakRef<T> {
 	
 	
 }
+
+
+#end

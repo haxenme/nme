@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.Graphics;
@@ -146,3 +147,6 @@ class Sprite extends DisplayObjectContainer {
 	
 	
 }
+
+
+#end

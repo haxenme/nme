@@ -1,4 +1,5 @@
 package native.geom;
+#if (cpp || neko)
 
 
 class Vector3D {
@@ -179,3 +180,6 @@ class Vector3D {
 	
 	
 }
+
+
+#end

@@ -1,4 +1,5 @@
 package browser.ui;
+#if js
 
 
 import browser.ui.MultitouchInputMode;
@@ -62,3 +63,6 @@ class Multitouch {
 	
 	
 }
+
+
+#end

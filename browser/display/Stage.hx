@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 import browser.display.Graphics;
@@ -806,3 +807,6 @@ private class TouchInfo {
 	
 	
 }
+
+
+#end

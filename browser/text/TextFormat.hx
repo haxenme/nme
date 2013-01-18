@@ -1,4 +1,5 @@
 package browser.text;
+#if js
 
 
 import browser.Html5Dom;
@@ -70,3 +71,6 @@ class TextFormat {
 	
 	
 }
+
+
+#end

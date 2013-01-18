@@ -1,4 +1,5 @@
 package native.display3D;
+#if (cpp || neko)
 
 
 import nme.gl.GL;
@@ -18,3 +19,6 @@ class Context3DBlendFactor {
 	inline public static var ZERO:Int = GL.ZERO;
 	
 }
+
+
+#end

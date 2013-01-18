@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 #if cpp
@@ -249,3 +250,6 @@ class SharedObject extends EventDispatcher {
 	
 	
 }
+
+
+#end

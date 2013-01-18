@@ -1,4 +1,5 @@
 package browser.system;
+#if js
 
 
 class LoaderContext {
@@ -18,3 +19,6 @@ class LoaderContext {
 	
 	
 }
+
+
+#end

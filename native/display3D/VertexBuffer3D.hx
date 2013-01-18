@@ -1,9 +1,11 @@
 package native.display3D;
+#if (cpp || neko)
 
 
+import native.gl.GL;
+import native.gl.GLBuffer;
 import native.utils.Float32Array;
 import native.utils.ArrayBufferView;
-import native.gl.GL;
 import native.utils.ByteArray;
 import nme.Vector;
 
@@ -12,11 +14,11 @@ class VertexBuffer3D {
 	
 	
 	public var data32PerVertex:Int;
-	public var glBuffer:Buffer;
+	public var glBuffer:GLBuffer;
 	public var numVertices:Int;
 	
 	
-	public function new(glBuffer:Buffer, numVertices:Int, data32PerVertex:Int) {
+	public function new(glBuffer:GLBuffer, numVertices:Int, data32PerVertex:Int) {
 		
 		this.glBuffer = glBuffer;
 		this.numVertices = numVertices;
@@ -43,3 +45,6 @@ class VertexBuffer3D {
 	
 	
 }
+
+
+#end

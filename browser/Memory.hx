@@ -1,4 +1,5 @@
 package browser;
+#if js
 
 
 import browser.utils.ByteArray;
@@ -155,3 +156,6 @@ class Memory {
 	
 	
 }
+
+
+#end

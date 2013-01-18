@@ -1,4 +1,5 @@
 package native.filters;
+#if (cpp || neko)
 
 
 class BitmapFilterQuality {
@@ -8,3 +9,6 @@ class BitmapFilterQuality {
 	public static var LOW = 1;
 	
 }
+
+
+#end

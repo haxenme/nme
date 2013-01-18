@@ -1,4 +1,5 @@
 package native.events;
+#if (cpp || neko)
 
 
 import native.display.InteractiveObject;
@@ -112,3 +113,6 @@ class MouseEvent extends Event {
 	
 	
 }
+
+
+#end

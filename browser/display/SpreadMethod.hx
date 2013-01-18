@@ -1,4 +1,5 @@
 package browser.display;
+#if js
 
 
 enum SpreadMethod {
@@ -8,3 +9,6 @@ enum SpreadMethod {
 	PAD;
 	
 }
+
+
+#end

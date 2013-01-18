@@ -1,4 +1,5 @@
 package native.net;
+#if (cpp || neko)
 
 
 import native.utils.ByteArray;
@@ -104,3 +105,6 @@ class URLRequest {
 	
 	
 }
+
+
+#end

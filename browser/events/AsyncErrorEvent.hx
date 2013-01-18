@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import haxe.io.Error;
@@ -23,3 +24,6 @@ class AsyncErrorEvent extends ErrorEvent {
 	
 	
 }
+
+
+#end

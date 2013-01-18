@@ -1,4 +1,5 @@
 package browser.events;
+#if js
 
 
 import browser.events.Event;
@@ -26,3 +27,6 @@ class TimerEvent extends Event {
 	
 	
 }
+
+
+#end
