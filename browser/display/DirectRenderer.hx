@@ -6,6 +6,7 @@ import browser.geom.Rectangle;
 import browser.geom.Matrix;
 import browser.gl.GL;
 import browser.Html5Dom;
+import browser.Lib;
 
 
 class DirectRenderer extends DisplayObject {
@@ -50,29 +51,14 @@ class DirectRenderer extends DisplayObject {
 		var gfx = nmeGetGraphics();
 		if (gfx == null) return;
 		
-		if (_matrixInvalid || _matrixChainInvalid) nmeValidateMatrix();
-		
-		nmeInvalidateBounds();
-		validateBounds();
-		
-		var fullAlpha:Float = (parent != null ? parent.nmeCombinedAlpha : 1) * alpha;
-		
-		if (nmeBoundsRect.width == 0 || nmeBoundsRect.height == 0) fullAlpha = 0;
-		
-		Lib.nmeSetSurfaceOpacity(gfx.nmeSurface, fullAlpha);
-		
-		// handle transform, don't apply transform to each frame?
-		
-		gfx.nmeSurface.width = Math.ceil (nmeBoundsRect.width);
-		gfx.nmeSurface.height = Math.ceil (nmeBoundsRect.height);
-		gfx.nmeSurface.style.left = (nmeBoundsRect.x) + "px";
-		gfx.nmeSurface.style.top = (nmeBoundsRect.y) + "px";
+		gfx.nmeSurface.width = stage.stageWidth;
+		gfx.nmeSurface.height = stage.stageHeight;
 		
 		if (nmeContext != null) {
 			
 			GL.nmeContext = nmeContext;
 			
-			if (render != null) render(nmeBoundsRect);
+			if (render != null) render(new Rectangle(0, 0, stage.stageWidth, stage.stageHeight));
 			
 		}
 		
@@ -82,45 +68,6 @@ class DirectRenderer extends DisplayObject {
 	public dynamic function render(inRect:Rectangle) {
 		
 		
-		
-	}
-	
-	
-	private override function validateBounds():Void {
-		
-		if (_boundsInvalid) {
-			
-			nmeBoundsRect = new Rectangle (nmeX, nmeY, nmeWidth, nmeHeight);
-			nmeSetDimensions();
-			
-			nmeClearFlag(DisplayObject.BOUNDS_INVALID);
-			
-		}
-		
-	}
-	
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	
-	private override function set_height(inValue:Float):Float {
-		
-		nmeSetFlag(DisplayObject.TRANSFORM_INVALID);
-		
-		return nmeHeight = inValue;
-		
-	}
-	
-	
-	private override function set_width(inValue:Float):Float {
-		
-		nmeSetFlag(DisplayObject.TRANSFORM_INVALID);
-		
-		return nmeWidth = inValue;
 		
 	}
 	

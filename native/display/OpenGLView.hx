@@ -33,7 +33,7 @@ class OpenGLView extends DirectRenderer {
 	
 	
 	
-	private inline function get_isSupported():Bool {
+	private static inline function get_isSupported():Bool {
 		
 		return true;
 		

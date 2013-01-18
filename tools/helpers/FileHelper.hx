@@ -82,7 +82,9 @@ class FileHelper {
              extension == "cpp" ||
              extension == "mm" ||
 			 extension == "properties" ||
-			 extension == "nmml")) {
+			 extension == "hxproj" ||
+			 extension == "nmml" ||
+			 isText(source))) {
 			
 			LogHelper.info ("", " - Copying template file: " + source + " -> " + destination);
 			
