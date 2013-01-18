@@ -12,13 +12,13 @@ all: $(TTFHASH) $(JS) $(TTFSWF) $(SWF) $(HTML)
 	neko ../../../templates/default/html5/hxswfml.n ttf2hash $*.ttf
 
 %.ttf.swf: %.hx
-	#	neko ../../../templates/default/html5/hxswfml.n ttf2swf $*.ttf $*.ttf.swf -class $*Font
+	neko ../../../templates/default/html5/hxswfml.n ttf2swf $*.ttf $*.ttf.swf -class $*Font
 
 %.js: %.hx
 	haxe -resource $*.ttf.hash@$*Font -debug -js $*.js -cp ../../../ --remap flash:browser -main $* 
 
 %.swf: %.hx
-	#	haxe -swf-lib $*.ttf.swf -cp ../../../ -swf-header 400:400:8:ffffff -swf9 $*.swf -main $* 
+	haxe -swf-lib $*.ttf.swf -cp ../../../ -swf-header 400:400:8:ffffff -swf9 $*.swf -main $* 
 
 %.html: %.hx
 	xsltproc --stringparam jsfile "$*.js" -o $*.html template.xsl main.xml

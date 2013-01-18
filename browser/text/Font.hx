@@ -98,17 +98,15 @@ class Font {
 	
 	// hxswfml ttf2hash myfont.ttf -glyphs [32-126] > myfont.hash; haxe -resource myfont.hash@myfont ...; Font.registerFont( Resource.get( "myfont" ) );
 	public static function nmeOfResource(name:String):Void {
-		//trace("nme of resource: "+name);
+
 		var data = Resource.getString(name);
-		
-		//if (data == null) throw "Resource data for string '" + name + "' not found.";
 		
 		if (data == null) {
 			
-			//trace("Resource data for string '" + name + "' not found.");
+			trace("Resource data for string '" + name + "' not found.");
 			
 		} else { 
-			//trace("setting nmeFontData "+cast name);
+
 			nmeFontData[cast name] = data;
 			
 		}
@@ -119,11 +117,6 @@ class Font {
 	public function nmeRender(graphics:Graphics, inChar:Int, inX:Int, inY:Int, inOutline:Bool):Void {
 		var index = 0;
 		var glyph = nmeGlyphData.get(inChar);
-
-		/*if (glyph!=null && glyph.commands.length!=0) {
-			trace("render.."+this.fontName+" char: "+inChar); //+" cmds: "+nmeGlyphData.get(inChar).commands.length);
-			trace("glyph: "+glyph);
-		}*/
 		
 		if (glyph == null) return;
 		
@@ -167,7 +160,7 @@ class Font {
 	
 	
 	private function set_fontName(name:String) {
-		//trace("setfont:"+name);
+
 		if (name == "_sans" || name == "_serif" || name == "_typewriter") {
 			
 			name = DEFAULT_FONT_NAME; // just avoid crash for "device" fonts with default until they are specifically supported
@@ -177,7 +170,6 @@ class Font {
 		this.fontName = name;
 		
 		if (nmeFontData[cast fontName] == null) {
-			//trace("nmeFontData is null, decoding..");
 			
 			try {
 				
@@ -185,7 +177,6 @@ class Font {
 				
 			} catch(e:Dynamic) {
 				
-				//trace("Glyph data for font '" + name + "' does not exist, defaulting to '" + DEFAULT_FONT_NAME + "'.");
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}
@@ -193,13 +184,14 @@ class Font {
 		} 
 
 		if (nmeFontData[cast fontName] != null) {
+
 			try {
-				//trace("running unser: "+name);
+
 				nmeGlyphData = Unserializer.run(nmeFontData[cast fontName]);
 				
 			} catch(e:Dynamic) {
 				
-				//trace("Error decoding font '" + name + "', defaulting to '" + DEFAULT_FONT_NAME + "'.");
+
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}

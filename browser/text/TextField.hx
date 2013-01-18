@@ -311,11 +311,11 @@ class TextField extends InteractiveObject {
 		if (background) {
 			
 			nmeGraphics.beginFill(backgroundColor);
-			nmeGraphics.drawRect( -2, -2, width + 4, height + 4);
+			nmeGraphics.drawRect( 0, 0, width, height );
 			nmeGraphics.endFill();
 			
 		}
-		
+
 		nmeGraphics.lineStyle(mTextColour);
 		var insert_x:Null<Int> = null;
 		mMaxWidth = 0;
@@ -443,8 +443,8 @@ class TextField extends InteractiveObject {
 		if (border) {
 			
 			nmeGraphics.endFill();
-			nmeGraphics.lineStyle(1, borderColor);
-			nmeGraphics.drawRect( -2, -2, width + 4, height + 4);
+			nmeGraphics.lineStyle(1, borderColor, 1, true);
+			nmeGraphics.drawRect(.5, .5, width-.5, height-.5);
 			
 		}
 		
@@ -668,7 +668,6 @@ class TextField extends InteractiveObject {
 	
 	
 	private function set_background(inBack:Bool):Bool {
-		
 		background = inBack;
 		Rebuild();
 		return inBack;
@@ -728,7 +727,7 @@ class TextField extends InteractiveObject {
 	
 	private override function get_height():Float {
 		
-		return getBounds(this.stage).height;
+		return Math.max(mHeight,getBounds(this.stage).height);
 		
 	}
 	
@@ -772,8 +771,29 @@ class TextField extends InteractiveObject {
 		mHTMLText = inHTMLText;
 		
 		if (!mHTMLMode) {
-			
-			var wrapper:HTMLCanvasElement = cast Lib.document.createElement("div");
+			var domElement:Dynamic = Lib.document.createElement("div");
+
+			if (background || border) {
+
+				domElement.style.width=mWidth+"px";
+				domElement.style.height=mHeight+"px";
+
+			}
+
+			if (background) {
+
+				domElement.style.backgroundColor="#"+StringTools.hex(backgroundColor,6);
+
+			}
+
+			if (border) {
+
+				domElement.style.border="1px solid #"+StringTools.hex(borderColor,6);
+
+			}
+
+
+			var wrapper:HTMLCanvasElement = cast domElement;
 			wrapper.innerHTML = inHTMLText;
 			
 			var destination = new Graphics(wrapper);
@@ -793,11 +813,10 @@ class TextField extends InteractiveObject {
 			nmeGraphics.nmeExtent.height = wrapper.height;
 			
 		} else {
-			
 			nmeGraphics.nmeSurface.innerHTML = inHTMLText;
 			
 		}
-		
+
 		mHTMLMode = true;
 		RebuildText();
 		nmeInvalidateBounds();
@@ -884,7 +903,7 @@ class TextField extends InteractiveObject {
 	
 	override public function get_width():Float {
 		
-		return getBounds(this.stage).width;
+		return Math.max(mWidth,getBounds(this.stage).width);
 		
 	}
 	
