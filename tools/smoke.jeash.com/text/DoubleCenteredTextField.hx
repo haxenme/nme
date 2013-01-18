@@ -18,10 +18,10 @@ class DoubleCenteredTextField extends Sprite {
 	public function new() {
 		super();
 
-		fontName="HobbyOfNight";
+		fontName="DoubleCenteredTextFieldFont";
 
 		#if flash
-			fontName=new HobbyOfNight().fontName;
+			fontName=new DoubleCenteredTextFieldFont().fontName;
 		#end
 
 		hTest();
