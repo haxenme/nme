@@ -155,6 +155,7 @@ extern class DOMParser
 * <----------------- TypedArray IDL Port ------------------>
 */
 
+@:native("ArrayBuffer")
 extern class ArrayBuffer {
 	var byteLength(default,null):Int;
 	function new(length:Int):Void;
@@ -247,6 +248,7 @@ extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int>
 	function subarray(offset:Int, length:Int):Uint32Array;
 }
 
+@:native("Float32Array")
 extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Float> {
 	var BYTES_PER_ELEMENT:Int;
 

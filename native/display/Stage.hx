@@ -4,7 +4,11 @@ package native.display;
 
 import haxe.Timer;
 import native.display.DisplayObjectContainer;
+
+#if stage3d
 import native.display.Stage3D;
+#end
+
 import native.events.JoystickEvent;
 import native.events.MouseEvent;
 import native.events.FocusEvent;
@@ -54,7 +58,10 @@ class Stage extends DisplayObjectContainer {
 	public var stageFocusRect(get_stageFocusRect, set_stageFocusRect):Bool;
 	public var stageHeight(get_stageHeight, null):Int;
 	public var stageWidth(get_stageWidth, null):Int;
+	
+	#if stage3d
 	public var stage3Ds:Vector<Stage3D>;
+	#end
 	
 	private static var efLeftDown = 0x0001;
 	private static var efShiftDown = 0x0002;
@@ -108,8 +115,10 @@ class Stage extends DisplayObjectContainer {
 		nmeTouchInfo = new IntHash<TouchInfo>();
 		nmeJoyAxisData = new IntHash<Array<Float>>();
 		
+		#if stage3d
 		stage3Ds = new Vector();
 		stage3Ds.push(new Stage3D());
+		#end
 		
 	}
 	

@@ -109,10 +109,11 @@ class ProgramPosTex
 
    public function fillTexture()
    {
-      var pixels = new ArrayBuffer(256*256*4);
+      var pixels = new Float32Array (new ArrayBuffer(256*256*4));
+	  
       for(i in 0...256*256*4)
          pixels[i] = Std.random(256);
-      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView(pixels));
+      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, pixels);
    }
 
    public function bindTexture()
@@ -155,7 +156,10 @@ class TextureRect extends ProgramPosTex
         " vTexCoord = aTexCoord;" +
         "}";
 
-      var texShader = // - not on desktop ? 'precision mediump float;' +
+      var texShader = // - not on desktop ? 
+	  #if !desktop
+	  'precision mediump float;' +
+	  #end
         "varying vec2 vTexCoord;" +
         "uniform sampler2D uSampler;" +
         "void main() {" +
@@ -172,10 +176,10 @@ class TextureRect extends ProgramPosTex
 
    override public function fillTexture()
    {
-      var pixels = new ArrayBuffer(256*256*4);
+      var pixels = new Float32Array (new ArrayBuffer(256*256*4));
       for(i in 0...256*256*4)
          pixels[i] = Std.random(256);
-      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView(pixels));
+      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, pixels);
    }
 }
 
@@ -252,7 +256,10 @@ class ColourBlend extends ProgramPosTexExtra
         " vTexCoord = aTexCoord;" +
         "}";
 
-      var fragShader = // - not on desktop ? 'precision mediump float;' +
+      var fragShader = // - not on desktop ? 
+	  #if !desktop
+	  'precision mediump float;' +
+	  #end
         "varying vec4 vColor;" +
         "varying vec2 vTexCoord;" +
         "uniform sampler2D uSampler;" +
@@ -298,7 +305,7 @@ class Main extends Sprite
 
       //trace(GL.getSupportedExtensions());
 
-      var ogl = new native.display.OpenGLView();
+      var ogl = new OpenGLView();
       ogl.scrollRect = new nme.geom.Rectangle(0,0,400,300);
       ogl.x = 60;
       ogl.y = 70;

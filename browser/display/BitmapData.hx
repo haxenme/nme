@@ -31,7 +31,7 @@ class BitmapData implements IBitmapDrawable {
 	
 	private var nmeAssignedBitmaps:Int;
 	private var nmeCopyPixelList:Array<CopyPixelAtom>;
-	private var nmeImageData:ImageData;
+	public var nmeImageData:ImageData;
 	private var nmeImageDataChanged:Bool;
 	private var nmeInitColor:Int;
 	private var nmeLease:ImageDataLease;

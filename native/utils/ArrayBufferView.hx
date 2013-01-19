@@ -21,7 +21,7 @@ class ArrayBufferView implements IMemoryRange {
 	#end
 
 
-	public function new(inLengthOrBuffer:Dynamic, inByteOffset:Int = 0, ?inLength:Int) {
+	private function new(inLengthOrBuffer:Dynamic, inByteOffset:Int = 0, ?inLength:Int) {
 		
 		if (Std.is(inLengthOrBuffer, Int)) {
 			

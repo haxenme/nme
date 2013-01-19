@@ -467,6 +467,13 @@ class GL {
 		
 		// create webgl texture?
 		
+		var glTexture = nmeContext.createTexture ();
+		nmeContext.bindTexture (TEXTURE_2D, glTexture);
+		nmeContext.texImage2D (TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, texture.nmeImageData);
+		//nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR);
+		//nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_NEAREST);
+		//nmeContext.generateMipmap(TEXTURE_2D);
+			
 		//nme_gl_bind_bitmap_data_texture(texture.nmeHandle);
 		
 	}
@@ -535,7 +542,8 @@ class GL {
 	}
 	
 	
-	public static function bufferData(target:Int, data:IMemoryRange, usage:Int):Void {
+	//public static function bufferData(target:Int, data:IMemoryRange, usage:Int):Void {
+	public static function bufferData(target:Int, data:Dynamic, usage:Int):Void {
 		
 		// TODO
 		
@@ -1328,7 +1336,7 @@ class GL {
 	
 	public static function uniformMatrix3D(location:GLUniformLocation, transpose:Bool, matrix:Matrix3D):Void {
 		
-		// TODO
+		nmeContext.uniformMatrix4fv(location, transpose, new Float32Array(matrix.rawData));
 		
 	}
 	

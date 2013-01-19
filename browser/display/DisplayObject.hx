@@ -552,8 +552,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 						//return cast this;
 						//
 					//}
-				
-			}
+				//
+			//}
 			
 		}
 		
