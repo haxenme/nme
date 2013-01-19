@@ -23,6 +23,8 @@ class OpenGLView extends DirectRenderer {
 		
 		super("OpenGLView");
 		
+		GL.nmeContext = nmeContext;
+		
 	}
 	
 	

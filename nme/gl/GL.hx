@@ -82,7 +82,7 @@ extern class GL {
 	static inline var ONE_MINUS_CONSTANT_ALPHA       = 0x8004;
 	static inline var BLEND_COLOR                    = 0x8005;
 
-	/* Buffer Objects */
+	/* GLBuffer Objects */
 	static inline var ARRAY_BUFFER                   = 0x8892;
 	static inline var ELEMENT_ARRAY_BUFFER           = 0x8893;
 	static inline var ARRAY_BUFFER_BINDING           = 0x8894;
@@ -371,10 +371,10 @@ extern class GL {
 	static inline var VERTEX_PROGRAM_POINT_SIZE       = 0x8642;
 	static inline var POINT_SPRITE                    = 0x8861;
 
-	/* Shader Source */
+	/* GLShader Source */
 	static inline var COMPILE_STATUS                 = 0x8B81;
 
-	/* Shader Precision-Specified Types */
+	/* GLShader Precision-Specified Types */
 	static inline var LOW_FLOAT                      = 0x8DF0;
 	static inline var MEDIUM_FLOAT                   = 0x8DF1;
 	static inline var HIGH_FLOAT                     = 0x8DF2;
@@ -382,7 +382,7 @@ extern class GL {
 	static inline var MEDIUM_INT                     = 0x8DF4;
 	static inline var HIGH_INT                       = 0x8DF5;
 
-	/* Framebuffer Object. */
+	/* GLFramebuffer Object. */
 	static inline var FRAMEBUFFER                    = 0x8D40;
 	static inline var RENDERBUFFER                   = 0x8D41;
 
@@ -442,13 +442,13 @@ extern class GL {
 	
 	
 	static function activeTexture(texture:Int):Void;
-	static function attachShader(program:Program, shader:Shader):Void;
-	static function bindAttribLocation(program:Program, index:Int, name:String):Void;
+	static function attachShader(program:GLProgram, shader:GLShader):Void;
+	static function bindAttribLocation(program:GLProgram, index:Int, name:String):Void;
 	static function bindBitmapDataTexture(texture:BitmapData):Void;
-	static function bindBuffer(target:Int, buffer:Buffer):Void;
-	static function bindFramebuffer(target:Int, framebuffer:Framebuffer):Void;
-	static function bindRenderbuffer(target:Int, renderbuffer:Renderbuffer):Void;
-	static function bindTexture(target:Int, texture:Texture):Void;
+	static function bindBuffer(target:Int, buffer:GLBuffer):Void;
+	static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void;
+	static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void;
+	static function bindTexture(target:Int, texture:GLTexture):Void;
 	static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void;
 	static function blendEquation(mode:Int):Void;
 	static function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void;
@@ -462,28 +462,28 @@ extern class GL {
 	static function clearDepth(depth:Float):Void;
 	static function clearStencil(s:Int):Void;
 	static function colorMask(red:Bool, green:Bool, blue:Bool, alpha:Bool):Void;
-	static function compileShader(shader:Shader):Void;
+	static function compileShader(shader:GLShader):Void;
 	static function compressedTexImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, data:IMemoryRange):Void;
 	static function compressedTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, data:IMemoryRange):Void;
 	static function copyTexImage2D(target:Int, level:Int, internalformat:Int, x:Int, y:Int, width:Int, height:Int, border:Int):Void;
 	static function copyTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, x:Int, y:Int, width:Int, height:Int):Void;
-	static function createBuffer():Buffer;
-	static function createFramebuffer():Framebuffer;
-	static function createProgram():Program;
-	static function createRenderbuffer():Renderbuffer;
-	static function createShader(type:Int):Shader;
-	static function createTexture():Texture;
+	static function createBuffer():GLBuffer;
+	static function createFramebuffer():GLFramebuffer;
+	static function createProgram():GLProgram;
+	static function createRenderbuffer():GLRenderbuffer;
+	static function createShader(type:Int):GLShader;
+	static function createTexture():GLTexture;
 	static function cullFace(mode:Int):Void;
-	static function deleteBuffer(buffer:Buffer):Void;
-	static function deleteFramebuffer(framebuffer:Framebuffer):Void;
-	static function deleteProgram(program:Program):Void;
-	static function deleteRenderbuffer(renderbuffer:Renderbuffer):Void;
-	static function deleteShader(shader:Shader):Void;
-	static function deleteTexture(texture:Texture):Void;
+	static function deleteBuffer(buffer:GLBuffer):Void;
+	static function deleteFramebuffer(framebuffer:GLFramebuffer):Void;
+	static function deleteProgram(program:GLProgram):Void;
+	static function deleteRenderbuffer(renderbuffer:GLRenderbuffer):Void;
+	static function deleteShader(shader:GLShader):Void;
+	static function deleteTexture(texture:GLTexture):Void;
 	static function depthFunc(func:Int):Void;
 	static function depthMask(flag:Bool):Void;
 	static function depthRange(zNear:Float, zFar:Float):Void;
-	static function detachShader(program:Program, shader:Shader):Void;
+	static function detachShader(program:GLProgram, shader:GLShader):Void;
 	static function disable(cap:Int):Void;
 	static function disableVertexAttribArray(index:Int):Void;
 	static function drawArrays(mode:Int, first:Int, count:Int):Void;
@@ -492,51 +492,51 @@ extern class GL {
 	static function enableVertexAttribArray(index:Int):Void;
 	static function finish():Void;
 	static function flush():Void;
-	static function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:Renderbuffer):Void;
-	static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:Texture, level:Int):Void;
+	static function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:GLRenderbuffer):Void;
+	static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:GLTexture, level:Int):Void;
 	static function frontFace(mode:Int):Void;
 	static function generateMipmap(target:Int):Void;
-	static function getActiveAttrib(program:Program, index:Int):ActiveInfo;
-	static function getActiveUniform(program:Program, index:Int):ActiveInfo;
-	static function getAttachedShaders(program:Program):Array<Shader>;
-	static function getAttribLocation(program:Program, name:String):Int;
+	static function getActiveAttrib(program:GLProgram, index:Int):GLActiveInfo;
+	static function getActiveUniform(program:GLProgram, index:Int):GLActiveInfo;
+	static function getAttachedShaders(program:GLProgram):Array<GLShader>;
+	static function getAttribLocation(program:GLProgram, name:String):Int;
 	static function getBufferParameter(target:Int, pname:Int):Dynamic;
-	static function getContextAttributes():ContextAttributes;
+	static function getContextAttributes():GLContextAttributes;
 	static function getError():Int;
 	static function getExtension(name:String):Dynamic;
 	static function getFramebufferAttachmentParameter(target:Int, attachment:Int, pname:Int):Dynamic;
 	static function getParameter(pname:Int):Dynamic;
-	static function getProgramInfoLog(program:Program):String;
-	static function getProgramParameter(program:Program, pname:Int):Int;
+	static function getProgramInfoLog(program:GLProgram):String;
+	static function getProgramParameter(program:GLProgram, pname:Int):Int;
 	static function getRenderbufferParameter(target:Int, pname:Int):Dynamic;
-	static function getShaderInfoLog(shader:Shader):String;
-	static function getShaderParameter(shader:Shader, pname:Int):Int;
+	static function getShaderInfoLog(shader:GLShader):String;
+	static function getShaderParameter(shader:GLShader, pname:Int):Int;
 	static function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int):ShaderPrecisionFormat;
-	static function getShaderSource(shader:Shader):String;
+	static function getShaderSource(shader:GLShader):String;
 	static function getSupportedExtensions():Array<String>;
 	static function getTexParameter(target:Int, pname:Int):Dynamic;
-	static function getUniform(program:Program, location:UniformLocation):Dynamic;
-	static function getUniformLocation(program:Program, name:String):Dynamic;
+	static function getUniform(program:GLProgram, location:GLUniformLocation):Dynamic;
+	static function getUniformLocation(program:GLProgram, name:String):Dynamic;
 	static function getVertexAttrib(index:Int, pname:Int):Dynamic;
 	static function getVertexAttribOffset(index:Int, pname:Int):Int;
 	static function hint(target:Int, mode:Int):Void;
-	static function isBuffer(buffer:Buffer):Bool;
+	static function isBuffer(buffer:GLBuffer):Bool;
 	// function isContextLost():Bool;
 	static function isEnabled(cap:Int):Bool;
-	static function isFramebuffer(framebuffer:Framebuffer):Bool;
-	static function isProgram(program:Program):Bool;
-	static function isRenderbuffer(renderbuffer:Renderbuffer):Bool;
-	static function isShader(shader:Shader):Bool;
-	static function isTexture(texture:Texture):Bool;
+	static function isFramebuffer(framebuffer:GLFramebuffer):Bool;
+	static function isProgram(program:GLProgram):Bool;
+	static function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool;
+	static function isShader(shader:GLShader):Bool;
+	static function isTexture(texture:GLTexture):Bool;
 	static function lineWidth(width:Float):Void;
-	static function linkProgram(program:Program):Void;
+	static function linkProgram(program:GLProgram):Void;
 	static function pixelStorei(pname:Int, param:Int):Void;
 	static function polygonOffset(factor:Float, units:Float):Void;
 	static function readPixels(x:Int, y:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void;
 	static function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int):Void;
 	static function sampleCoverage(value:Float, invert:Bool):Void;
 	static function scissor(x:Int, y:Int, width:Int, height:Int):Void;
-	static function shaderSource(shader:Shader, source:String):Void;
+	static function shaderSource(shader:GLShader, source:String):Void;
 	static function stencilFunc(func:Int, ref:Int, mask:Int):Void;
 	static function stencilFuncSeparate(face:Int, func:Int, ref:Int, mask:Int):Void;
 	static function stencilMask(mask:Int):Void;
@@ -547,28 +547,28 @@ extern class GL {
 	static function texParameterf(target:Int, pname:Int, param:Float):Void;
 	static function texParameteri(target:Int, pname:Int, param:Int):Void;
 	static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void;
-	static function uniform1f(location:UniformLocation, x:Float):Void;
-	static function uniform1fv(location:UniformLocation, x:Array<Float>):Void;
-	static function uniform1i(location:UniformLocation, x:Int):Void;
-	static function uniform1iv(location:UniformLocation, v:Array<Int>):Void;
-	static function uniform2f(location:UniformLocation, x:Float, y:Float):Void;
-	static function uniform2fv(location:UniformLocation, v:Array<Float>):Void;
-	static function uniform2i(location:UniformLocation, x:Int, y:Int):Void;
-	static function uniform2iv(location:UniformLocation, v:Array<Int>):Void;
-	static function uniform3f(location:UniformLocation, x:Float, y:Float, z:Float):Void;
-	static function uniform3fv(location:UniformLocation, v:Array<Float>):Void;
-	static function uniform3i(location:UniformLocation, x:Int, y:Int, z:Int):Void;
-	static function uniform3iv(location:UniformLocation, v:Array<Int>):Void;
-	static function uniform4f(location:UniformLocation, x:Float, y:Float, z:Float, w:Float):Void;
-	static function uniform4fv(location:UniformLocation, v:Array<Float>):Void;
-	static function uniform4i(location:UniformLocation, x:Int, y:Int, z:Int, w:Int):Void;
-	static function uniform4iv(location:UniformLocation, v:Array<Int>):Void;
-	static function uniformMatrix2fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void;
-	static function uniformMatrix3fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void;
-	static function uniformMatrix4fv(location:UniformLocation, transpose:Bool, v:Float32Array):Void;
-	static function uniformMatrix3D(location:UniformLocation, transpose:Bool, matrix:Matrix3D):Void;
-	static function useProgram(program:Program):Void;
-	static function validateProgram(program:Program):Void;
+	static function uniform1f(location:GLUniformLocation, x:Float):Void;
+	static function uniform1fv(location:GLUniformLocation, x:Array<Float>):Void;
+	static function uniform1i(location:GLUniformLocation, x:Int):Void;
+	static function uniform1iv(location:GLUniformLocation, v:Array<Int>):Void;
+	static function uniform2f(location:GLUniformLocation, x:Float, y:Float):Void;
+	static function uniform2fv(location:GLUniformLocation, v:Array<Float>):Void;
+	static function uniform2i(location:GLUniformLocation, x:Int, y:Int):Void;
+	static function uniform2iv(location:GLUniformLocation, v:Array<Int>):Void;
+	static function uniform3f(location:GLUniformLocation, x:Float, y:Float, z:Float):Void;
+	static function uniform3fv(location:GLUniformLocation, v:Array<Float>):Void;
+	static function uniform3i(location:GLUniformLocation, x:Int, y:Int, z:Int):Void;
+	static function uniform3iv(location:GLUniformLocation, v:Array<Int>):Void;
+	static function uniform4f(location:GLUniformLocation, x:Float, y:Float, z:Float, w:Float):Void;
+	static function uniform4fv(location:GLUniformLocation, v:Array<Float>):Void;
+	static function uniform4i(location:GLUniformLocation, x:Int, y:Int, z:Int, w:Int):Void;
+	static function uniform4iv(location:GLUniformLocation, v:Array<Int>):Void;
+	static function uniformMatrix2fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void;
+	static function uniformMatrix3fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void;
+	static function uniformMatrix4fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void;
+	static function uniformMatrix3D(location:GLUniformLocation, transpose:Bool, matrix:Matrix3D):Void;
+	static function useProgram(program:GLProgram):Void;
+	static function validateProgram(program:GLProgram):Void;
 	static function vertexAttrib1f(indx:Int, x:Float):Void;
 	static function vertexAttrib1fv(indx:Int, values:Array<Float>):Void;
 	static function vertexAttrib2f(indx:Int, x:Float, y:Float):Void;
@@ -582,6 +582,15 @@ extern class GL {
 	
    
 }
+
+
+typedef ShaderPrecisionFormat = {
+	
+   rangeMin : Int,
+   rangeMax : Int,
+   precision : Int,
+   
+};
 
 
 #elseif (cpp || neko)
