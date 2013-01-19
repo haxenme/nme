@@ -534,9 +534,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			
 			if (local.x - extX < 0 || local.y - extY < 0 || (local.x - extX) * scaleX > width || (local.y - extY) * scaleY > height) return null;
 			
-			switch (stage.nmePointInPathMode) {
-				
-				case USER_SPACE:
+			//switch (stage.nmePointInPathMode) {
+				//
+				//case USER_SPACE:
 					
 					if (gfx.nmeHitTest(local.x, local.y)) {
 						
@@ -544,13 +544,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 						
 					}
 				
-				case DEVICE_SPACE:
-					
-					if (gfx.nmeHitTest(local.x * scaleX, local.y * scaleY)) {
-						
-						return cast this;
-						
-					}
+				//case DEVICE_SPACE:
+					//
+					//if (gfx.nmeHitTest(local.x * scaleX, local.y * scaleY)) {
+					//if (gfx.nmeHitTest(local.x, local.y)) {
+						//
+						//return cast this;
+						//
+					//}
 				
 			}
 			
