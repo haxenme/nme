@@ -4,7 +4,11 @@ package native;
 
 import cpp.zip.Uncompress;
 import haxe.io.Bytes;
+#if haxe_211
+import haxe.crypto.BaseCode;
+#else
 import haxe.BaseCode;
+#end
 import native.Loader;
 
 

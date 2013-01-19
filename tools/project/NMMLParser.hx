@@ -773,7 +773,10 @@ class NMMLParser extends NMEProject {
 						if (path != null && path != "" && FileSystem.exists (path)) {
 							
 							var includeProject = new NMMLParser (path);
-							includeProject.sources.push (Path.directory (path));
+							
+							var dir = Path.directory (path);
+							if (dir != "")
+								includeProject.sources.push (dir);
 							
 							merge (includeProject);
 							
