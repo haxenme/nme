@@ -574,6 +574,10 @@ void TextField::OnKey(Event &inEvent)
 
       if ( (multiline && code=='\n') || (code>27 && code<63000))
       {
+         if (shift && code > 96 && code < 123)
+         {
+            code -= 32;
+         }
          DeleteSelection();
          wchar_t str[2] = {code,0};
          WString ws(str);
