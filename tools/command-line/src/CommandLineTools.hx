@@ -650,7 +650,7 @@ class CommandLineTools {
 		
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
-			if (config.environment.exists ("JAVA_HOME")) {
+			if (config != null && config.environment.exists ("JAVA_HOME")) {
 				
 				Sys.putEnv ("JAVA_HOME", config.environment.get ("JAVA_HOME"));
 				
