@@ -650,7 +650,7 @@ class CommandLineTools {
 		
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
-			if (config.environment.exists ("JAVA_HOME")) {
+			if (config != null && config.environment.exists ("JAVA_HOME")) {
 				
 				Sys.putEnv ("JAVA_HOME", config.environment.get ("JAVA_HOME"));
 				
@@ -658,7 +658,17 @@ class CommandLineTools {
 			
 			if (Sys.getEnv ("JAVA_HOME") != null) {
 				
-				config.path (PathHelper.combine (Sys.getEnv ("JAVA_HOME"), "bin"));
+				var javaPath = PathHelper.combine (Sys.getEnv ("JAVA_HOME"), "bin");
+				
+				if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
+					
+					Sys.putEnv ("PATH", javaPath + ";" + Sys.getEnv ("PATH"));
+					
+				} else {
+					
+					Sys.putEnv ("PATH", javaPath + ":" + Sys.getEnv ("PATH"));
+					
+				}
 				
 			}
 			

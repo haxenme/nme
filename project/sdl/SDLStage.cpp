@@ -9,6 +9,7 @@
 #ifdef BLACKBERRY
 #include <SDL_syswm.h>
 #include <bps/sensor.h>
+#include <bps/virtualkeyboard.h>
 #endif
 
 #ifdef WEBOS
@@ -424,6 +425,15 @@ public:
 	   
 	   #endif
 	   
+      #if defined(HX_WINDOWS) || defined(HX_LINUX)
+      
+      if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
+      {
+          inEvent.type = etQuit;
+      }
+      
+      #endif
+	   
 	  #if defined(WEBOS) || defined(BLACKBERRY)
 	   
 	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
@@ -547,6 +557,20 @@ public:
       	
       }
       
+      #endif
+	  
+	  #ifdef BLACKBERRY
+      
+      if (enabled) {
+         
+         virtualkeyboard_show();
+         
+      } else {
+         
+         virtualkeyboard_hide();
+         
+      }
+	  
       #endif
       
    }
@@ -685,6 +709,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       // SDL_GetError()
       return;
    }
+   
+   #ifdef BLACKBERRY
+   virtualkeyboard_request_events(0);
+   #endif
 
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);

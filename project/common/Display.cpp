@@ -629,7 +629,7 @@ void DisplayObject::ClearFilters()
 
 void DisplayObject::Focus()
 {
-#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();
@@ -641,7 +641,7 @@ void DisplayObject::Focus()
 
 void DisplayObject::Unfocus()
 {
-#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();

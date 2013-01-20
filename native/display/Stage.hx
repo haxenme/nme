@@ -556,9 +556,13 @@ class Stage extends DisplayObjectContainer {
 		
 		if (stack.length > 0) {
 			
+			var value = inEvent.value;
+			
+			if (value >= 96 && value <= 122) value -= 32;
+			
 			var obj = stack[0];
 			var flags:Int = inEvent.flags;
-			var evt = new KeyboardEvent(inType, true, true, inEvent.code, inEvent.value,((flags & efLocationRight) == 0) ? 1 : 0,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) !=0);
+			var evt = new KeyboardEvent(inType, true, true, inEvent.code, value,((flags & efLocationRight) == 0) ? 1 : 0,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) !=0);
 			obj.nmeFireEvent(evt);
 			
 			if (evt.nmeGetIsCancelled())

@@ -470,10 +470,14 @@ class GL {
 		var glTexture = nmeContext.createTexture ();
 		nmeContext.bindTexture (TEXTURE_2D, glTexture);
 		nmeContext.texImage2D (TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, texture.nmeImageData);
-		//nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR);
-		//nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_NEAREST);
-		//nmeContext.generateMipmap(TEXTURE_2D);
-			
+		nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR);
+		nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_NEAREST);
+		nmeContext.generateMipmap(TEXTURE_2D);
+		nmeContext.bindTexture (TEXTURE_2D, null);
+		
+		nmeContext.activeTexture(TEXTURE0);
+		nmeContext.bindTexture(TEXTURE_2D, glTexture);
+		
 		//nme_gl_bind_bitmap_data_texture(texture.nmeHandle);
 		
 	}
