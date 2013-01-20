@@ -425,6 +425,15 @@ public:
 	   
 	   #endif
 	   
+      #if defined(HX_WINDOWS) || defined(HX_LINUX)
+      
+      if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
+      {
+          inEvent.type = etQuit;
+      }
+      
+      #endif
+	   
 	  #if defined(WEBOS) || defined(BLACKBERRY)
 	   
 	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
@@ -1239,10 +1248,12 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          Event key(inEvent.type==SDL_KEYDOWN ? etKeyDown : etKeyUp );
          bool right;
+		 
          key.value = SDLKeyToFlash(inEvent.key.keysym.sym,right);
+		 printf ("value: %d\n", key.value);
          if (inEvent.type==SDL_KEYDOWN)
          {
-            key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
+			key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
             sLastUnicode[inEvent.key.keysym.scancode] = key.code;
          }
          else
