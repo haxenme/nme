@@ -125,7 +125,7 @@ class TextField extends InteractiveObject {
 	private function get_textWidth():Float { return nme_text_field_get_text_width(nmeHandle); }
 	private function get_textHeight():Float { return nme_text_field_get_text_height(nmeHandle); }
 	private function get_type():TextFieldType { return nme_text_field_get_type(nmeHandle) ? TextFieldType.INPUT : TextFieldType.DYNAMIC; }
-	private function set_type(inType:TextFieldType):TextFieldType { nme_text_field_set_type(nmeHandle, inType == TextFieldType.INPUT); return inType; }
+	private function set_type(inType:TextFieldType):TextFieldType { nme_text_field_set_type(nmeHandle, inType == TextFieldType.INPUT); needsSoftKeyboard = (inType == TextFieldType.INPUT); return inType; }
 	private function get_wordWrap():Bool { return nme_text_field_get_word_wrap(nmeHandle); }
 	private function set_wordWrap(inVal:Bool):Bool { nme_text_field_set_word_wrap(nmeHandle, inVal); return inVal; }
 	
