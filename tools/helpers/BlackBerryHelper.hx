@@ -63,10 +63,6 @@ class BlackBerryHelper {
 			
 			exe += ".bat";
 			
-		} else {
-			
-			exe += ".sh";
-			
 		}
 		
 		ProcessHelper.runCommand (workingDirectory, exe, args);
@@ -89,10 +85,6 @@ class BlackBerryHelper {
 			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
 				exe += ".bat";
-				
-			} else {
-				
-				exe += ".sh";
 				
 			}
 			
@@ -136,10 +128,6 @@ class BlackBerryHelper {
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
 			exe += ".bat";
-			
-		} else {
-			
-			exe += ".sh";
 			
 		}
 		
@@ -204,7 +192,7 @@ class BlackBerryHelper {
 			
 		}
 		
-		binDirectory = project.environment.get ("QNX_HOST") + "/usr/bin/";
+		binDirectory = PathHelper.combine (project.environment.get ("QNX_HOST"), "usr/bin/");
 		
 	}
 	
@@ -230,10 +218,6 @@ class BlackBerryHelper {
 			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
 				exe += ".bat";
-				
-			} else {
-				
-				exe += ".sh";
 				
 			}
 			
@@ -333,10 +317,6 @@ class BlackBerryHelper {
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
 			exe += ".bat";
-			
-		} else {
-			
-			exe += ".sh";
 			
 		}
 		
