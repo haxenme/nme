@@ -268,7 +268,7 @@ class NMMLParser extends NMEProject {
 				
 				case "min-swf-version":
 					
-					var version = substitute (element.att.resolve ("swf-version"));
+					var version = substitute (element.att.resolve ("min-swf-version"));
 					
 					/*if (!defines.exists ("SWF_VERSION") || Std.parseInt (defines.get ("SWF_VERSION")) <= Std.parseInt (version)) {
 						

@@ -423,12 +423,7 @@ class PlatformSetup {
 			while ((c = getChar ()) != 13)
 				s.addChar (c);
 			Lib.print ("");
-			
-			if (!InstallTool.isWindows) {
-				
-				Sys.println ("");
-				
-			}
+			Sys.println ("");
 			
 			return s.toString ();
 		}
@@ -1032,19 +1027,69 @@ class PlatformSetup {
 		
 		var binDirectory = "";
 		
-		if (InstallTool.isWindows) {
+		try {
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			if (defines.exists ("BLACKBERRY_NDK_ROOT") && (!defines.exists("QNX_HOST") || !defines.exists("QNX_TARGET"))) {
+				
+				var fileName = defines.get ("BLACKBERRY_NDK_ROOT");
+				
+				if (InstallTool.isWindows) {
+					
+					fileName += "\\bbndk-env.bat";
+					
+				} else {
+					
+					fileName += "/bbndk-env.sh";
+					
+				}
+				
+				var fin = File.read (fileName, false);
+				
+				try {
+					
+					while (true) {
+					
+						var str = fin.readLine();
+						var split = str.split ("=");
+						var name = StringTools.trim (split[0].substr (split[0].indexOf (" ") + 1));
+						
+						switch (name) {
+						
+							case "QNX_HOST", "QNX_TARGET":
+								
+								var value = split[1];
+								
+								if (StringTools.startsWith (value, "\"")) {
+								
+									value = value.substr (1);
+									
+								}
+								
+								if (StringTools.endsWith (value, "\"")) {
+								
+									value = value.substr (0, value.length - 1);
+									
+								}
+								
+								defines.set(name,value);
+								
+						}
+						
+					}
+					
+				} catch (ex:Eof) {}
+				
+				fin.close();
+				
+			}
 			
-		} else if (InstallTool.isMac) {
+		} catch (e:Dynamic) {
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
-			
-		} else {
-			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			Lib.println ("Error: Path to BlackBerry Native SDK appears to be invalid");
 			
 		}
+		
+		binDirectory = defines.get ("QNX_HOST") + "/usr/bin/";
 		
 		if (answer == Always) {
 			
@@ -1217,7 +1262,7 @@ class PlatformSetup {
 						
 						params.push (debugTokenPath);
 						
-						ProcessHelper.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params, false);
+						ProcessHelper.runCommand ("", binDirectory + "blackberry-debugtokenrequest", params, false);
 						
 						Lib.println ("Done.");
 						
@@ -1270,7 +1315,7 @@ class PlatformSetup {
 						
 						try {
 							
-							ProcessHelper.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
 							
 							Lib.println ("Done.");
 							done = true;

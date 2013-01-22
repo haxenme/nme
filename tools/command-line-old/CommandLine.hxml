@@ -5,5 +5,4 @@
 -lib swf
 -lib svg
 --remap flash:nme
--D haxe3
 -D hxssl
