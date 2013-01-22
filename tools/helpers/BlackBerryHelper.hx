@@ -63,6 +63,10 @@ class BlackBerryHelper {
 			
 			exe += ".bat";
 			
+		} else {
+			
+			exe += ".sh";
+			
 		}
 		
 		ProcessHelper.runCommand (workingDirectory, exe, args);
@@ -85,6 +89,10 @@ class BlackBerryHelper {
 			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
 				exe += ".bat";
+				
+			} else {
+				
+				exe += ".sh";
 				
 			}
 			
@@ -128,6 +136,10 @@ class BlackBerryHelper {
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
 			exe += ".bat";
+			
+		} else {
+			
+			exe += ".sh";
 			
 		}
 		
@@ -218,6 +230,10 @@ class BlackBerryHelper {
 			if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 				
 				exe += ".bat";
+				
+			} else {
+				
+				exe += ".sh";
 				
 			}
 			
@@ -317,6 +333,10 @@ class BlackBerryHelper {
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
 			exe += ".bat";
+			
+		} else {
+			
+			exe += ".sh";
 			
 		}
 		
