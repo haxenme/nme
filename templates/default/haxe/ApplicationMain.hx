@@ -42,7 +42,7 @@ class ApplicationMain
 		
 		nme.Lib.create(function()
 			{ 
-				if (::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0)
+				if ((::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0) || ::WIN_FULLSCREEN::)
 				{
 					nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
