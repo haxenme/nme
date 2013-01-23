@@ -38,7 +38,9 @@ class PlatformSetup {
 	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
 	private static var blackBerryLinuxNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-linux-1032-201209271809-201209280007.bin";
 	private static var blackBerryMacNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-macosx-1032-201209271809-201209280007.dmg";
+	private static var blackBerryMacWebWorksSDKPath = "https://developer.blackberry.com/html5/downloads/fetch/BB10-WebWorks-SDK_1.0.4.7.zip";
 	private static var blackBerryWindowsNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-win32-1032-201209271809-201209280007.exe";
+	private static var blackBerryWindowsWebWorksSDKPath = "https://developer.blackberry.com/html5/downloads/fetch/BB10-WebWorks-SDK_1.0.4.7.exe";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk6u37-downloads-1859587.html";
 	private static var linuxX64Packages = "ia32-libs-multiarch gcc-multilib g++-multilib";
@@ -1022,6 +1024,66 @@ class PlatformSetup {
 		if (defines != null) {
 			
 			writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+			
+		}
+		
+		if (InstallTool.isWindows) {
+			
+			if (answer == Always) {
+				
+				Lib.println ("Download and install the BlackBerry WebWorks SDK? [y/n/a] a");
+			
+			} else {
+				
+				answer = ask ("Download and install the BlackBerry WebWorks SDK?");
+			
+			}
+			
+			if (answer == Always || answer == Yes) {
+				
+				var downloadPath = "";
+				var defaultInstallPath = "";
+				
+				if (InstallTool.isWindows) {
+					
+					downloadPath = blackBerryWindowsWebWorksSDKPath;
+					//defaultInstallPath = "C:\\Development\\Android NDK";
+					
+				} else if (InstallTool.isLinux) {
+					
+					//downloadPath = blackBerryLinuxWebWorksSDKPath;
+					//defaultInstallPath = "/opt/Android NDK";
+					
+				} else {
+					
+					downloadPath = blackBerryMacWebWorksSDKPath;
+					//defaultInstallPath = "/opt/Android NDK";
+					
+				}
+				
+				downloadFile (downloadPath);
+				runInstaller (Path.withoutDirectory (downloadPath));
+				Lib.println ("");
+				
+				/*var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
+				path = createPath (path, defaultInstallPath);
+				
+				extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+				
+				setAndroidNDK = true;
+				defines.set ("ANDROID_NDK_ROOT", path);
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				Lib.println ("");*/
+				
+			}
+			
+			var defines = getDefines ([ "BLACKBERRY_WEBWORKS_SDK" ], [ "Path to BlackBerry WebWorks SDK" ]);
+			
+			if (defines != null) {
+				
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				
+			}
 			
 		}
 		

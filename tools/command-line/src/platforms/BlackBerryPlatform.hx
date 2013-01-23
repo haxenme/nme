@@ -10,15 +10,37 @@ import sys.FileSystem;
 class BlackBerryPlatform implements IPlatformTool {
 	
 	
+	private var outputDirectory:String;
+	private var outputFile:String;
+	
+	
 	public function build (project:NMEProject):Void {
 		
 		initialize (project);
 		
-		var hxml = project.app.path + "/blackberry/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
+		if (project.app.main != null) {
+			
+			var hxml = outputDirectory + "/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
+			ProcessHelper.runCommand ("", "haxe", [ hxml ] );
+			
+		}
 		
-		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
-		FileHelper.copyIfNewer (project.app.path + "/blackberry/obj/ApplicationMain" + (project.debug ? "-debug" : ""), project.app.path + "/blackberry/bin/" + PathHelper.safeFileName (project.app.file));
-		BlackBerryHelper.createPackage (project, project.app.path + "/blackberry", "bin/bar-descriptor.xml", project.meta.packageName + "_" + project.meta.version + ".bar");
+		if (!project.targetFlags.exists ("html5")) {
+			
+			FileHelper.copyIfNewer (outputDirectory + "/obj/ApplicationMain" + (project.debug ? "-debug" : ""), outputFile);
+			BlackBerryHelper.createPackage (project, outputDirectory, "bin/bar-descriptor.xml", project.meta.packageName + "_" + project.meta.version + ".bar");
+			
+		} else {
+			
+			if (project.targetFlags.exists ("minify")) {
+				
+				HTML5Helper.minify (project, project.app.path + "/blackberry/html5/src/" + project.app.file + ".js");
+				
+			}
+			
+			BlackBerryHelper.createWebWorksPackage (project, outputDirectory + "/src", outputDirectory + "/bin");
+			
+		}
 		
 	}
 	
@@ -27,11 +49,9 @@ class BlackBerryPlatform implements IPlatformTool {
 		
 		initialize (project);
 		
-		var targetPath = project.app.path + "/blackberry";
-		
-		if (FileSystem.exists (targetPath)) {
+		if (FileSystem.exists (outputDirectory)) {
 			
-			PathHelper.removeDirectory (targetPath);
+			PathHelper.removeDirectory (outputDirectory);
 			
 		}
 		
@@ -40,10 +60,23 @@ class BlackBerryPlatform implements IPlatformTool {
 	
 	public function display (project:NMEProject):Void {
 		
-		var hxml = PathHelper.findTemplate (project.templatePaths, "blackberry/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
-		
+		var hxml = "";
 		var context = project.templateContext;
-		context.CPP_DIR = project.app.path + "/blackberry/obj";
+		
+		if (!project.targetFlags.exists ("html5")) {
+			
+			hxml = PathHelper.findTemplate (project.templatePaths, "blackberry/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
+			
+			context.CPP_DIR = outputDirectory + "/obj";
+			
+		} else {
+			
+			hxml = PathHelper.findTemplate (project.templatePaths, "html5/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
+			
+			context.OUTPUT_DIR = outputDirectory;
+			context.OUTPUT_FILE = outputFile;
+			
+		}
 		
 		var template = new Template (File.getContent (hxml));
 		Sys.println (template.execute (context));
@@ -59,6 +92,18 @@ class BlackBerryPlatform implements IPlatformTool {
 			
 		}
 		
+		if (!project.targetFlags.exists ("html5")) {
+			
+			outputDirectory = project.app.path + "/blackberry/cpp";
+			outputFile = outputDirectory + "/bin/" + PathHelper.safeFileName (project.app.file);
+			
+		} else {
+			
+			outputDirectory = project.app.path + "/blackberry/html5";
+			outputFile = outputDirectory + "/src/" + project.app.file + ".js";
+			
+		}
+		
 		BlackBerryHelper.initialize (project);
 		
 	}
@@ -68,7 +113,15 @@ class BlackBerryPlatform implements IPlatformTool {
 		
 		initialize (project);
 		
-		BlackBerryHelper.deploy (project, project.app.path + "/blackberry", project.meta.packageName + "_" + project.meta.version + ".bar");
+		if (!project.targetFlags.exists ("html5")) {
+			
+			BlackBerryHelper.deploy (project, outputDirectory, project.meta.packageName + "_" + project.meta.version + ".bar");
+			
+		} else {
+			
+			BlackBerryHelper.deploy (project, outputDirectory + "/bin/" + (project.targetFlags.exists ("simulator") ? "simulator" : "device"), PathHelper.safeFileName (project.app.file) + ".bar");
+			
+		}
 		
 	}
 	
@@ -77,7 +130,15 @@ class BlackBerryPlatform implements IPlatformTool {
 		
 		initialize (project);
 		
-		BlackBerryHelper.trace (project, project.app.path + "/blackberry", project.meta.packageName + "_" + project.meta.version + ".bar");
+		if (!project.targetFlags.exists ("html5")) {
+			
+			BlackBerryHelper.trace (project, outputDirectory, project.meta.packageName + "_" + project.meta.version + ".bar");
+		
+		} else {
+			
+			BlackBerryHelper.trace (project, outputDirectory + "/bin/" + (project.targetFlags.exists ("simulator") ? "simulator" : "device"), PathHelper.safeFileName (project.app.file) + ".bar");
+			
+		}
 		
 	}
 	
@@ -87,25 +148,56 @@ class BlackBerryPlatform implements IPlatformTool {
 		project = project.clone ();
 		initialize (project);
 		
-		for (asset in project.assets) {
+		if (!project.targetFlags.exists ("html5")) {
 			
-			asset.resourceName = "app/native/" + asset.resourceName;
+			for (asset in project.assets) {
+				
+				asset.resourceName = "app/native/" + asset.resourceName;
+				
+			}
+			
+		} else {
+			
+			for (asset in project.assets) {
+				
+				if (asset.type == AssetType.FONT) {
+					
+					project.haxeflags.push (HTML5Helper.generateFontData (project, asset));
+					
+				}
+				
+			}
+			
+			project.haxedefs.push ("html5");
 			
 		}
 		
 		if (project.targetFlags.exists ("simulator")) {
 			
-			project.haxeflags.push ("-D simulator");
+			project.haxedefs.push ("simulator");
 			
 		}
 		
 		var context = project.templateContext;
+		var destination = outputDirectory + "/bin/";
 		
-		context.CPP_DIR = project.app.path + "/blackberry/obj";
+		if (!project.targetFlags.exists ("html5")) {
+			
+			context.CPP_DIR = outputDirectory + "/obj";
+			
+		} else {
+			
+			destination = outputDirectory + "/src/";
+			
+			context.WIN_FLASHBACKGROUND = StringTools.hex (project.window.background);
+			context.OUTPUT_DIR = outputDirectory;
+			context.OUTPUT_FILE = outputFile;
+			
+		}
+		
 		context.BLACKBERRY_AUTHOR_ID = BlackBerryHelper.processDebugToken (project, project.app.path + "/blackberry").authorID;
 		context.APP_FILE_SAFE = PathHelper.safeFileName (project.app.file);
 		
-		var destination = project.app.path + "/blackberry/bin/";
 		PathHelper.mkdir (destination);
 		
 		context.ICONS = [];
@@ -122,59 +214,75 @@ class BlackBerryPlatform implements IPlatformTool {
 			
 		}
 		
-		FileHelper.recursiveCopyTemplate (project.templatePaths, "blackberry/template", destination, context);
-		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", project.app.path + "/blackberry/haxe", context);
-		FileHelper.recursiveCopyTemplate (project.templatePaths, "blackberry/hxml", project.app.path + "/blackberry/haxe", context);
-		
-		//SWFHelper.generateSWFClasses (project, project.app.path + "/blackberry/haxe");
-		
-		var arch = "";
-		
-		if (project.targetFlags.exists ("simulator")) {
+		if (!project.targetFlags.exists ("html5")) {
 			
-			arch = "-x86";
+			FileHelper.copyFileTemplate (project.templatePaths, "blackberry/template/bar-descriptor.xml", destination + "/bar-descriptor.xml", context);
+			FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", outputDirectory + "/haxe", context);
+			FileHelper.recursiveCopyTemplate (project.templatePaths, "blackberry/hxml", outputDirectory + "/haxe", context);
 			
-		}
-		
-		var ndlls = project.ndlls.copy ();
-		ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
-		
-		for (ndll in ndlls) {
-			
-			FileHelper.copyLibrary (ndll, "BlackBerry", "", arch + ".so", destination, project.debug, ".so");
-			
-		}
-		
-		var linkedLibraries = [ new NDLL ("libSDL", "nme") ];
-		
-		for (ndll in linkedLibraries) {
-			
-			var deviceLib = ndll.name + ".so";
-			var simulatorLib = ndll.name + "-x86.so";
+			var arch = "";
 			
 			if (project.targetFlags.exists ("simulator")) {
 				
-				if (FileSystem.exists (destination + deviceLib)) {
+				arch = "-x86";
+				
+			}
+			
+			var ndlls = project.ndlls.copy ();
+			ndlls.push (new NDLL ("libTouchControlOverlay", "nme"));
+			
+			for (ndll in ndlls) {
+				
+				FileHelper.copyLibrary (ndll, "BlackBerry", "", arch + ".so", destination, project.debug, ".so");
+				
+			}
+			
+			var linkedLibraries = [ new NDLL ("libSDL", "nme") ];
+			
+			for (ndll in linkedLibraries) {
+				
+				var deviceLib = ndll.name + ".so";
+				var simulatorLib = ndll.name + "-x86.so";
+				
+				if (project.targetFlags.exists ("simulator")) {
 					
-					FileSystem.deleteFile (destination + deviceLib);
+					if (FileSystem.exists (destination + deviceLib)) {
+						
+						FileSystem.deleteFile (destination + deviceLib);
+						
+					}
+					
+					FileHelper.copyIfNewer (PathHelper.getLibraryPath (ndll, "BlackBerry", "", "-x86.so"), destination + simulatorLib);
+					
+				} else {
+					
+					if (FileSystem.exists (destination + simulatorLib)) {
+						
+						FileSystem.deleteFile (destination + simulatorLib);
+						
+					}
+					
+					FileHelper.copyIfNewer (PathHelper.getLibraryPath (ndll, "BlackBerry", "", ".so"), destination + deviceLib);
 					
 				}
 				
-				FileHelper.copyIfNewer (PathHelper.getLibraryPath (ndll, "BlackBerry", "", "-x86.so"), destination + simulatorLib);
+			}
+			
+		} else {
+			
+			FileHelper.recursiveCopyTemplate (project.templatePaths, "html5/template", destination, context);
+			FileHelper.copyFileTemplate (project.templatePaths, "blackberry/template/config.xml", destination + "/config.xml", context);
+			
+			if (project.app.main != null) {
 				
-			} else {
-				
-				if (FileSystem.exists (destination + simulatorLib)) {
-					
-					FileSystem.deleteFile (destination + simulatorLib);
-					
-				}
-				
-				FileHelper.copyIfNewer (PathHelper.getLibraryPath (ndll, "BlackBerry", "", ".so"), destination + deviceLib);
+				FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", outputDirectory + "/haxe", context);
+				FileHelper.recursiveCopyTemplate (project.templatePaths, "html5/haxe", outputDirectory + "/haxe", context);
+				FileHelper.recursiveCopyTemplate (project.templatePaths, "html5/hxml", outputDirectory + "/haxe", context);
 				
 			}
 			
 		}
+		
 		
 		for (asset in project.assets) {
 			
@@ -182,9 +290,11 @@ class BlackBerryPlatform implements IPlatformTool {
 			
 			if (asset.type != AssetType.TEMPLATE) {
 				
-				// going to root directory now, but should it be a forced "assets" folder later?
-				
-				FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
+				if (asset.type != AssetType.FONT || !project.targetFlags.exists ("html5")) {
+					
+					FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
+					
+				}
 				
 			} else {
 				
