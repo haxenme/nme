@@ -12,8 +12,11 @@ import browser.Lib;
 class DirectRenderer extends DisplayObject {
 	
 	
+	public var render(get_render, set_render):Dynamic;
+	
 	private var nmeContext:WebGLRenderingContext;
 	private var nmeGraphics:Graphics;
+	private var nmeRenderMethod:Dynamic;
 	
 	
 	public function new(inType:String = "DirectRenderer") {
@@ -72,9 +75,24 @@ class DirectRenderer extends DisplayObject {
 	}
 	
 	
-	public dynamic function render(inRect:Rectangle) {
+	
+	
+	// Getters & Setters
+	
+	
+	
+	
+	private function get_render():Dynamic {
 		
+		return nmeRenderMethod;
 		
+	}
+	
+	
+	private function set_render(value:Dynamic):Dynamic {
+		
+		nmeRenderMethod = value;
+		nmeRender();
 		
 	}
 	
