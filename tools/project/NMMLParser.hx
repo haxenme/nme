@@ -1338,6 +1338,14 @@ class NMMLParser extends NMEProject {
 						
 					}
 				
+				case "parameters":
+					
+					if (Reflect.hasField (window, name)) {
+						
+						Reflect.setField (window, name, Std.string (value));
+						
+					}
+				
 				default:
 					
 					if (Reflect.hasField (window, name)) {
@@ -1347,7 +1355,6 @@ class NMMLParser extends NMEProject {
 					}
 				
 			}
-			
 			//defines.set ("WIN_" + attribute.toUpperCase (), substitute (element.att.resolve (attribute)));
 			
 		}
