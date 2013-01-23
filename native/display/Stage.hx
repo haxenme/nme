@@ -4,6 +4,7 @@ package native.display;
 
 import haxe.Timer;
 import native.display.DisplayObjectContainer;
+import native.ui.Keyboard;
 
 #if stage3d
 import native.display.Stage3D;
@@ -567,6 +568,22 @@ class Stage extends DisplayObjectContainer {
 			
 			if (evt.nmeGetIsCancelled())
 				inEvent.result = 1;
+			
+			#if (windows || linux)
+			if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER) {
+				
+				if (displayState == StageDisplayState.NORMAL) {
+					
+					displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+					
+				} else {
+					
+					displayState = StageDisplayState.NORMAL;
+					
+				}
+				
+			}
+			#end
 			
 		}
 		

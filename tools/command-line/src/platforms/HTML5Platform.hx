@@ -27,44 +27,9 @@ class HTML5Platform implements IPlatformTool {
 		
 		if (project.targetFlags.exists ("minify")) {
 			
-			var sourceFile = outputDirectory + "/bin/" + project.app.file + ".js";
-			var tempFile = outputDirectory + "/bin/_" + project.app.file + ".js";
-			
-			if (FileSystem.exists (tempFile)) {
-				
-				FileSystem.deleteFile (tempFile);
-				
-			}
-			
-			FileSystem.rename (sourceFile, tempFile);
-			
-			if (project.targetFlags.exists ("yui")) {
-				
-				ProcessHelper.runCommand ("", "java", [ "-jar", PathHelper.findTemplate (project.templatePaths, "bin/yuicompressor-2.4.7.jar"), "-o", sourceFile, tempFile ]);
-				
-			} else {
-				
-				var args = [ "-jar", PathHelper.findTemplate (project.templatePaths, "bin/compiler.jar"), "--js", tempFile, "--js_output_file", sourceFile ];
-				
-				if (!LogHelper.verbose) {
-					
-					args.push ("--jscomp_off=uselessCode");
-					
-				}
-				
-				ProcessHelper.runCommand ("", "java", args);
-				
-			}
-			
-			FileSystem.deleteFile (tempFile);
+			HTML5Helper.minify (project, outputDirectory + "/bin/" + project.app.file + ".js");
 			
 		}
-		
-		//if (project.target != Platform.HTML5 && project.command != "update") {
-			
-			//CordovaHelper.build (project, outputDirectory + "/bin", project.debug);
-			
-		//}
 		
 	}
 	
@@ -98,43 +63,10 @@ class HTML5Platform implements IPlatformTool {
 	}
 	
 	
-	private function generateFontData (project:NMEProject, font:Asset):String {
-		
-		var sourcePath = font.sourcePath;
-		
-		//if (!FileSystem.exists (FileSystem.fullPath (sourcePath) + ".hash")) {
-			
-			ProcessHelper.runCommand (Path.directory (sourcePath), "neko", [ PathHelper.findTemplate (project.templatePaths, "html5/hxswfml.n"), "ttf2hash", Path.withoutDirectory (sourcePath), "-glyphs", font.glyphs ]);
-			
-		//}
-		
-		return "-resource " + FileSystem.fullPath (sourcePath) + ".hash@NME_" + font.flatName;
-		
-	}
-	
-	
 	private function initialize (project:NMEProject):Void {
 		
-		//outputDirectory = project.app.path + "/html5/";
 		outputDirectory = project.app.path + "/html5";
-		
-		//if (project.target == Platform.HTML5) {
-			
-			//outputDirectory += "web";
-			
-		//} else {
-			
-			//outputDirectory += Std.string (project.target).toLowerCase ();
-			
-		//}
-		
 		outputFile = outputDirectory + "/bin/" + project.app.file + ".js";
-		
-		//if (project.target != Platform.HTML5) {
-			
-			//outputFile = outputDirectory + "/bin/" + CordovaHelper.contentPath + defines.get ("APP_FILE") + ".js";
-			
-		//}
 		
 	}
 	
@@ -143,23 +75,15 @@ class HTML5Platform implements IPlatformTool {
 		
 		initialize (project);
 		
-		//if (project.target == Platform.HTML5) {
+		if (project.app.url != "") {
 			
-			if (project.app.url != "") {
-				
-				ProcessHelper.openURL (project.app.url);		
-				
-			} else {
-				
-				ProcessHelper.openFile (project.app.path + "/html5/bin", "index.html");
-				
-			}
+			ProcessHelper.openURL (project.app.url);
 			
-		//} else {
+		} else {
 			
-			//CordovaHelper.launch (outputDirectory + "/html5/" + Std.string (project.target).toLowerCase () + "/bin", project.debug);
+			ProcessHelper.openFile (project.app.path + "/html5/bin", "index.html");
 			
-		//}
+		}
 		
 	}
 	
@@ -170,13 +94,6 @@ class HTML5Platform implements IPlatformTool {
 		
 		project = project.clone ();
 		
-		//if (project.targetFlags.exists ("html5")) {
-			
-			//project.haxeflags.push ("-lib cordova");
-			//CordovaHelper.initialize (defines, targetFlags, target, NME);
-			
-		//}
-		
 		var destination = outputDirectory + "/bin/";
 		PathHelper.mkdir (destination);
 		
@@ -184,7 +101,7 @@ class HTML5Platform implements IPlatformTool {
 			
 			if (asset.type == AssetType.FONT) {
 				
-				project.haxeflags.push (generateFontData (project, asset));
+				project.haxeflags.push (HTML5Helper.generateFontData (project, asset));
 				
 			}
 			
@@ -196,15 +113,6 @@ class HTML5Platform implements IPlatformTool {
 		context.OUTPUT_DIR = outputDirectory;
 		context.OUTPUT_FILE = outputFile;
 		
-		//CordovaHelper.updateIcon (buildDirectory + "/html5/" + target, icons, assets, context);
-		
-		if (project.target != Platform.HTML5) {
-			
-			//CordovaHelper.create ("", destination, context);
-			//destination += CordovaHelper.contentPath;
-			
-		}
-		
 		for (asset in project.assets) {
 			
 			if (asset.type != AssetType.TEMPLATE) {
@@ -213,17 +121,7 @@ class HTML5Platform implements IPlatformTool {
 				
 				if (asset.type != AssetType.FONT) {
 					
-					// going to root directory now, but should it be a forced "assets" folder later?
-					
-					//if (project.target == Platform.HTML5) {
-						
-						FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
-						
-					//} else {
-						
-						//File.copy (asset.sourcePath, destination + asset.targetPath);
-						
-					//}
+					FileHelper.copyAssetIfNewer (asset, destination + asset.targetPath);
 					
 				}
 				
@@ -251,13 +149,6 @@ class HTML5Platform implements IPlatformTool {
 			}
 			
 		}
-		
-		//if (project.target == Platform.IOS && project.command == "update") {
-			
-			//build (project);
-            //ProcessHelper.runCommand ("", "open", [ destination + "../" + project.app.file + ".xcodeproj" ] );
-			
-		//}
 		
 	}
 	

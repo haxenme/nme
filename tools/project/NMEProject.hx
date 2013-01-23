@@ -623,6 +623,7 @@ class NMEProject {
 			//Sys.println ("context." + field + " = " + Reflect.field (context, field));
 		}
 		
+		context.DEBUG = debug;
 		context.SWF_VERSION = app.swfVersion;
 		context.PRELOADER_NAME = app.preloader;
 		context.WIN_BACKGROUND = window.background;

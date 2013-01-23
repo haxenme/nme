@@ -5,7 +5,7 @@ package native.display3D;
 import native.gl.GL;
 import native.gl.GLBuffer;
 import native.utils.Float32Array;
-import native.utils.ArrayBufferView;
+import native.utils.ByteArrayView;
 import native.utils.ByteArray;
 import nme.Vector;
 
@@ -34,7 +34,7 @@ class VertexBuffer3D {
 	public function uploadFromByteArray (byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
 		var bytesPerVertex = data32PerVertex * 4;
         GL.bindBuffer (GL.ARRAY_BUFFER, glBuffer);
-        GL.bufferData (GL.ARRAY_BUFFER, new ArrayBufferView(byteArray,byteArrayOffset + startOffset * bytesPerVertex, count * bytesPerVertex), GL.STATIC_DRAW);
+        GL.bufferData (GL.ARRAY_BUFFER, new ByteArrayView(byteArray,byteArrayOffset + startOffset * bytesPerVertex, count * bytesPerVertex), GL.STATIC_DRAW);
 	}
 	
 	

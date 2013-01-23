@@ -38,7 +38,9 @@ class PlatformSetup {
 	private static var blackBerryCodeSigningURL = "https://www.blackberry.com/SignedKeys/";
 	private static var blackBerryLinuxNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-linux-1032-201209271809-201209280007.bin";
 	private static var blackBerryMacNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-macosx-1032-201209271809-201209280007.dmg";
+	private static var blackBerryMacWebWorksSDKPath = "https://developer.blackberry.com/html5/downloads/fetch/BB10-WebWorks-SDK_1.0.4.7.zip";
 	private static var blackBerryWindowsNativeSDKPath = "http://developer.blackberry.com/native/downloads/fetch/installer-bbndk-2.1.0-win32-1032-201209271809-201209280007.exe";
+	private static var blackBerryWindowsWebWorksSDKPath = "https://developer.blackberry.com/html5/downloads/fetch/BB10-WebWorks-SDK_1.0.4.7.exe";
 	private static var codeSourceryWindowsPath = "http://sourcery.mentor.com/public/gnu_toolchain/arm-none-linux-gnueabi/arm-2009q1-203-arm-none-linux-gnueabi.exe";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk6u37-downloads-1859587.html";
 	private static var linuxX64Packages = "ia32-libs-multiarch gcc-multilib g++-multilib";
@@ -423,12 +425,7 @@ class PlatformSetup {
 			while ((c = getChar ()) != 13)
 				s.addChar (c);
 			Lib.print ("");
-			
-			if (!InstallTool.isWindows) {
-				
-				Sys.println ("");
-				
-			}
+			Sys.println ("");
 			
 			return s.toString ();
 		}
@@ -1030,21 +1027,131 @@ class PlatformSetup {
 			
 		}
 		
-		var binDirectory = "";
-		
 		if (InstallTool.isWindows) {
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/win32/x86/usr/bin/";
+			if (answer == Always) {
+				
+				Lib.println ("Download and install the BlackBerry WebWorks SDK? [y/n/a] a");
 			
-		} else if (InstallTool.isMac) {
+			} else {
+				
+				answer = ask ("Download and install the BlackBerry WebWorks SDK?");
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/macosx/x86/usr/bin/";
+			}
 			
-		} else {
+			if (answer == Always || answer == Yes) {
+				
+				var downloadPath = "";
+				var defaultInstallPath = "";
+				
+				if (InstallTool.isWindows) {
+					
+					downloadPath = blackBerryWindowsWebWorksSDKPath;
+					//defaultInstallPath = "C:\\Development\\Android NDK";
+					
+				} else if (InstallTool.isLinux) {
+					
+					//downloadPath = blackBerryLinuxWebWorksSDKPath;
+					//defaultInstallPath = "/opt/Android NDK";
+					
+				} else {
+					
+					downloadPath = blackBerryMacWebWorksSDKPath;
+					//defaultInstallPath = "/opt/Android NDK";
+					
+				}
+				
+				downloadFile (downloadPath);
+				runInstaller (Path.withoutDirectory (downloadPath));
+				Lib.println ("");
+				
+				/*var path = unescapePath (param ("Output directory [" + defaultInstallPath + "]"));
+				path = createPath (path, defaultInstallPath);
+				
+				extractFile (Path.withoutDirectory (downloadPath), path, ignoreRootFolder);
+				
+				setAndroidNDK = true;
+				defines.set ("ANDROID_NDK_ROOT", path);
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				Lib.println ("");*/
+				
+			}
 			
-			binDirectory = defines.get ("BLACKBERRY_NDK_ROOT") + "/host/linux/x86/usr/bin/";
+			var defines = getDefines ([ "BLACKBERRY_WEBWORKS_SDK" ], [ "Path to BlackBerry WebWorks SDK" ]);
+			
+			if (defines != null) {
+				
+				writeConfig (defines.get ("HXCPP_CONFIG"), defines);
+				
+			}
 			
 		}
+		
+		var binDirectory = "";
+		
+		try {
+			
+			if (defines.exists ("BLACKBERRY_NDK_ROOT") && (!defines.exists("QNX_HOST") || !defines.exists("QNX_TARGET"))) {
+				
+				var fileName = defines.get ("BLACKBERRY_NDK_ROOT");
+				
+				if (InstallTool.isWindows) {
+					
+					fileName += "\\bbndk-env.bat";
+					
+				} else {
+					
+					fileName += "/bbndk-env.sh";
+					
+				}
+				
+				var fin = File.read (fileName, false);
+				
+				try {
+					
+					while (true) {
+					
+						var str = fin.readLine();
+						var split = str.split ("=");
+						var name = StringTools.trim (split[0].substr (split[0].indexOf (" ") + 1));
+						
+						switch (name) {
+						
+							case "QNX_HOST", "QNX_TARGET":
+								
+								var value = split[1];
+								
+								if (StringTools.startsWith (value, "\"")) {
+								
+									value = value.substr (1);
+									
+								}
+								
+								if (StringTools.endsWith (value, "\"")) {
+								
+									value = value.substr (0, value.length - 1);
+									
+								}
+								
+								defines.set(name,value);
+								
+						}
+						
+					}
+					
+				} catch (ex:Eof) {}
+				
+				fin.close();
+				
+			}
+			
+		} catch (e:Dynamic) {
+			
+			Lib.println ("Error: Path to BlackBerry Native SDK appears to be invalid");
+			
+		}
+		
+		binDirectory = defines.get ("QNX_HOST") + "/usr/bin/";
 		
 		if (answer == Always) {
 			
@@ -1217,7 +1324,7 @@ class PlatformSetup {
 						
 						params.push (debugTokenPath);
 						
-						ProcessHelper.runCommand ("", binDirectory + "/blackberry-debugtokenrequest", params, false);
+						ProcessHelper.runCommand ("", binDirectory + "blackberry-debugtokenrequest", params, false);
 						
 						Lib.println ("Done.");
 						
@@ -1270,7 +1377,7 @@ class PlatformSetup {
 						
 						try {
 							
-							ProcessHelper.runCommand ("", binDirectory + "/blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
+							ProcessHelper.runCommand ("", binDirectory + "blackberry-deploy", [ "-installDebugToken", defines.get ("BLACKBERRY_DEBUG_TOKEN"), "-device", defines.get ("BLACKBERRY_DEVICE_IP"), "-password", defines.get ("BLACKBERRY_DEVICE_PASSWORD") ], false);
 							
 							Lib.println ("Done.");
 							done = true;

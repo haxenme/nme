@@ -24,13 +24,17 @@ class DirectRenderer extends DisplayObject {
 		
 		if (inType == "OpenGLView" && nmeGraphics != null) {
 			
-			nmeContext = nmeGraphics.nmeSurface.getContext ("webgl");
+			nmeContext = nmeGraphics.nmeSurface.getContext("webgl");
 			
 			if (nmeContext == null) {
 				
-				nmeContext = nmeGraphics.nmeSurface.getContext ("experimental-webgl");
+				nmeContext = nmeGraphics.nmeSurface.getContext("experimental-webgl");
 				
 			}
+			
+			#if debug
+			nmeContext = untyped WebGLDebugUtils.makeDebugContext(nmeContext);
+			#end
 			
 		}
 		

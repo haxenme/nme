@@ -2,6 +2,7 @@ package;
 
 
 import haxe.io.Eof;
+import sys.FileSystem;
 import sys.io.File;
 import sys.io.Process;
 
@@ -91,6 +92,82 @@ class BlackBerryHelper {
 			ProcessHelper.runCommand (workingDirectory, exe, args);
 			
 		}
+		
+	}
+	
+	
+	public static function createWebWorksPackage (project:NMEProject, sourceDirectory:String, targetPath:String):Void {
+		
+		var zipPath = PathHelper.combine (targetPath, PathHelper.safeFileName (project.app.file) + ".zip");
+		
+		ZipHelper.compress (sourceDirectory, zipPath);
+		
+		var exe = "bbwp.bat";
+		var args = [ zipPath ];
+		var params = "";
+		
+		if (project.certificate != null) {
+			
+			var password = project.certificate.password;
+			
+			if (password == null) {
+				
+				password = prompt ("Keystore password", true);
+				Sys.println ("");
+				
+			}
+			
+			args = args.concat ([ "--password", password, "--buildId", project.meta.buildNumber ]);
+			
+			//params = "{\n\t\"blackberry-nativepackager\": {\n\t\t\"-keystore\": \"" + PathHelper.tryFullPath (project.certificate.path) + "\"\n\t}\n}";
+			
+			try {
+				
+				FileHelper.copyFile (PathHelper.tryFullPath (project.certificate.path), PathHelper.combine (project.environment.get ("BLACKBERRY_WEBWORKS_SDK"), "author.p12"));
+				
+			} catch (e:Dynamic) {}
+			
+		} else {
+			
+			args.push ("--debug");
+			
+			//params = "{\n\t\"blackberry-nativepackager\": {\n\t\t\"-debugToken\": \"" + PathHelper.tryFullPath (project.environment.get ("BLACKBERRY_DEBUG_TOKEN")) + "\"\n\t}\n}";
+			
+			try {
+				
+				FileHelper.copyFile (PathHelper.tryFullPath (project.environment.get ("BLACKBERRY_DEBUG_TOKEN")), PathHelper.combine (project.environment.get ("BLACKBERRY_WEBWORKS_SDK"), "debugToken.bar"));
+				
+			} catch (e:Dynamic) {}
+			
+		}
+		
+		args = args.concat ([ "--output", targetPath ]);
+		
+		//if (!project.targetFlags.exists ("simulator")) {
+				//
+				//args.push ("-debugToken");
+				//args.push (PathHelper.tryFullPath (project.environment.get ("BLACKBERRY_DEBUG_TOKEN")));
+				//
+			//}
+		
+		if (LogHelper.verbose) {
+			
+			args.push ("--verbose");
+			
+		}
+		
+		//var paramsFile = PathHelper.getTemporaryFile (".json");
+		//File.saveContent (paramsFile, params);
+		
+		//args = args.concat ([ "--params", paramsFile ]);
+		
+		ProcessHelper.runCommand ("", PathHelper.combine (project.environment.get ("BLACKBERRY_WEBWORKS_SDK"), exe), args);
+		
+		//if (FileSystem.exists (paramsFile)) {
+			
+			//FileSystem.deleteFile (paramsFile);
+			
+		//}
 		
 	}
 	
@@ -192,7 +269,7 @@ class BlackBerryHelper {
 			
 		}
 		
-		binDirectory = project.environment.get ("QNX_HOST") + "/usr/bin/";
+		binDirectory = PathHelper.combine (project.environment.get ("QNX_HOST"), "usr/bin/");
 		
 	}
 	

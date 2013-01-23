@@ -13,31 +13,28 @@ import sys.FileSystem;
 class ZipHelper {
 	
 	
-	public static function compress (path:String):Void {
+	public static function compress (path:String, targetPath:String = ""):Void {
 		
 		var files = new Array <Dynamic> ();
 		
-		var directory = Path.directory (path);
-		
-		for (file in FileSystem.readDirectory (directory)) {
+		if (FileSystem.isDirectory (path)) {
 			
-			if (Path.extension (file) != "zip" && Path.extension (file) != "crx" && Path.extension (file) != "wgt") {
-				
-				var name = file;
-				//var date = FileSystem.stat (directory + "/" + file).ctime;
-				var date = Date.now ();
-				
-				var input = File.read (directory + "/" + file, true);
-				var data = input.readAll ();
-				input.close ();
-				
-				files.push ( { fileName: name, fileTime: date, data: data } );
-				
-			}
+			readDirectory (path, "", files);
+			
+		} else {
+			
+			readFile (path, "", files);
 			
 		}
 		
-		var output = File.write (path, true);
+		if (targetPath == "") {
+			
+			targetPath = path;
+			
+		}
+		
+		PathHelper.mkdir (Path.directory (targetPath));
+		var output = File.write (targetPath, true);
 		
 		/*if (Path.extension (path) == "crx") {
 			
@@ -59,10 +56,59 @@ class ZipHelper {
 			
 		}*/
 		
+		LogHelper.info ("", " - Writing file: " + targetPath);
+		
 		Writer.writeZip (output, files, 1);
 		output.close ();
 		
 	}
+	
+	
+	private static function readDirectory (basePath:String, path:String, files:Array<Dynamic>):Void {
 		
+		var directory = PathHelper.combine (basePath, path);
+		
+		for (file in FileSystem.readDirectory (directory)) {
+			
+			var fullPath = PathHelper.combine (directory, file);
+			var childPath = PathHelper.combine (path, file);
+			
+			if (FileSystem.isDirectory (fullPath)) {
+				
+				readDirectory (basePath, childPath, files);
+				
+			} else {
+				
+				readFile (basePath, childPath, files);
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	private static function readFile (basePath:String, path:String, files:Array<Dynamic>):Void {
+		
+		if (Path.extension (path) != "zip" && Path.extension (path) != "crx" && Path.extension (path) != "wgt") {
+			
+			var fullPath = PathHelper.combine (basePath, path);
+			
+			var name = path;
+			//var date = FileSystem.stat (directory + "/" + file).ctime;
+			var date = Date.now ();
+			
+			LogHelper.info ("", " - Compressing file: " + fullPath);
+			
+			var input = File.read (fullPath, true);
+			var data = input.readAll ();
+			input.close ();
+			
+			files.push ( { fileName: name, fileTime: date, data: data } );
+			
+		}
+		
+	}
+	
 
 }

@@ -475,7 +475,7 @@ class GL {
 		nmeContext.generateMipmap(TEXTURE_2D);
 		nmeContext.bindTexture (TEXTURE_2D, null);
 		
-		nmeContext.activeTexture(TEXTURE0);
+		//nmeContext.activeTexture(TEXTURE0);
 		nmeContext.bindTexture(TEXTURE_2D, glTexture);
 		
 		//nme_gl_bind_bitmap_data_texture(texture.nmeHandle);
@@ -549,14 +549,14 @@ class GL {
 	//public static function bufferData(target:Int, data:IMemoryRange, usage:Int):Void {
 	public static function bufferData(target:Int, data:Dynamic, usage:Int):Void {
 		
-		// TODO
+		nmeContext.bufferData(target, data, usage);
 		
 	}
 	
 	
 	public static function bufferSubData(target:Int, offset:Int, data:IMemoryRange):Void {
 		
-		// TODO
+		nmeContext.bufferSubData(target, offset, data);
 		
 	}
 	
