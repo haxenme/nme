@@ -8,7 +8,7 @@ import native.geom.Rectangle;
 import native.gl.GL;
 import native.gl.GLTexture;
 import native.utils.ArrayBuffer;
-import native.utils.ArrayBufferView;
+import native.utils.ByteArrayView;
 import native.utils.ByteArray;
 
 
@@ -35,7 +35,7 @@ class Texture extends TextureBase {
 
         var p = bitmapData.getRGBAPixels();
 		
-		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView(p, 0));
+		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ByteArrayView(p, 0));
 		
 	}
 	

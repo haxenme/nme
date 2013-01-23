@@ -4,5 +4,5 @@ package nme.display3D.shaders;
 typedef Shader = flash.utils.ByteArray;
 #elseif cpp
 import native.gl.GL;
-typedef Shader = native.gl.Shader;
+typedef Shader = native.gl.GLShader;
 #end

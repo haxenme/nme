@@ -58,12 +58,6 @@ class FlashPlatform implements IPlatformTool {
 		
 		project = project.clone ();
 		
-		if (project.app.url != "") {
-			
-			project.targetFlags.set ("web", "1");
-			
-		}
-		
 		//if (project.targetFlags.exists ("air")) {
 			
 			//AIRHelper.initialize (defines, targetFlags, target, NME);
@@ -139,6 +133,10 @@ class FlashPlatform implements IPlatformTool {
 		
 		var context = generateContext (project);
 		
+		if (project.app.url != "") {
+			project.targetFlags.set ("web", "1");			
+		}
+
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", project.app.path + "/flash/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/hxml", project.app.path + "/flash/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/haxe", project.app.path + "/flash/haxe", context);
