@@ -22,6 +22,9 @@ class DirectRenderer extends DisplayObject {
 		
 		nmeGraphics = new Graphics();
 		
+		nmeGraphics.nmeSurface.width = Lib.current.stage.stageWidth;
+		nmeGraphics.nmeSurface.height = Lib.current.stage.stageHeight;
+		
 		if (inType == "OpenGLView" && nmeGraphics != null) {
 			
 			nmeContext = nmeGraphics.nmeSurface.getContext("webgl");
