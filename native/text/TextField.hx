@@ -63,7 +63,14 @@ class TextField extends InteractiveObject {
 		return nme_text_field_get_line_text(nmeHandle, lineIndex);
 		
 	}
-	
+
+        public function getLineMetrics (lineIndex:Int):TextLineMetrics {
+
+                var result: TextLineMetrics = new TextLineMetrics ();
+                nme_text_field_get_line_metrics (nmeHandle, lineIndex, result);
+                return result;
+
+	}	
 	
 	public function setSelection(beginIndex:Int, endIndex:Int):Void {
 		
@@ -180,6 +187,7 @@ class TextField extends InteractiveObject {
 	private static var nme_text_field_get_max_chars = Loader.load("nme_text_field_get_max_chars", 1);
 	private static var nme_text_field_set_max_chars = Loader.load("nme_text_field_set_max_chars", 2);
 	private static var nme_text_field_get_line_text = Loader.load("nme_text_field_get_line_text", 2);
+ 	private static var nme_text_field_get_line_metrics = Loader.load ("nme_text_field_get_line_metrics", 3);
 	private static var nme_text_field_get_line_offset = Loader.load("nme_text_field_get_line_offset", 2);
 	
 	

@@ -1092,6 +1092,17 @@ WString TextField::getLineText(int inLine)
    return result;
 }
 
+TextLineMetrics *TextField::getLineMetrics(int inLine)
+{
+   Layout();
+   if (inLine<0 || inLine>=mLines.size())
+   {
+      //val_throw(alloc_string("The supplied index is out of bounds."));
+      return NULL;
+   }
+   Line &line = mLines[inLine];
+   return &line.mMetrics;
+}
 
 ImagePoint TextField::GetScrollPos()
 {
