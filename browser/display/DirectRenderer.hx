@@ -68,7 +68,19 @@ class DirectRenderer extends DisplayObject {
 			
 			GL.nmeContext = nmeContext;
 			
-			if (render != null) render(new Rectangle(0, 0, stage.stageWidth, stage.stageHeight));
+			var rect = null;
+			
+			if (scrollRect == null) {
+				
+				rect = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
+				
+			} else {
+				
+				rect = new Rectangle(x + scrollRect.x, y + scrollRect.y, scrollRect.width, scrollRect.height);
+				
+			}
+			
+			if (render != null) render(rect);
 			
 		}
 		
