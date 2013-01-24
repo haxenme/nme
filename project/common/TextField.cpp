@@ -94,7 +94,7 @@ double TextField::getWidth()
    if (autoSize != asNone)
    {
       if (mLinesDirty)
-         Layout( GetFullMatrix(true) );
+         Layout();
       return textWidth;
    }
    return boundsWidth;
@@ -105,7 +105,7 @@ double TextField::getHeight()
    if (autoSize != asNone)
    {
       if (mLinesDirty)
-         Layout( GetFullMatrix(true) );
+         Layout();
       return textHeight;
    }
    return boundsHeight;
@@ -159,8 +159,8 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
       return;
-
-   Layout(GetFullMatrix(true));
+   
+   Layout();
 
    if (inStart<0) inStart = 0;
    int max = mCharPos.size();

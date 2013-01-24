@@ -51,7 +51,7 @@ public:
    void  setScrollH(int inScrollH);
    int   getScrollV() { return scrollV; }
    void  setScrollV(int inScrollV);
-   int   getNumLines() { Layout(GetFullMatrix(true)); return mLines.size(); }
+   int   getNumLines() { Layout(); return mLines.size(); }
    int   getSelectionBeginIndex();
    int   getSelectionEndIndex();
 
