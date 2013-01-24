@@ -457,33 +457,25 @@ class FlashHelper {
 	
 	public static function run (project:NMEProject, workingDirectory:String, targetPath:String):Void {
 		
-		if (project.app.url != "") {
+		var player:String = null;
+		
+		if (!StringTools.endsWith (targetPath, ".html")) {
 			
-			ProcessHelper.openURL (project.app.url);		
-			
-		} else {
-			
-			var player:String = null;
-			
-			if (!StringTools.endsWith (targetPath, ".html")) {
+			if (project.environment.exists ("SWF_PLAYER")) {
 				
-				if (project.environment.exists ("SWF_PLAYER")) {
-					
-					player = project.environment.get ("SWF_PLAYER");
-					
-				} else {
-					
-					player = Sys.getEnv ("FLASH_PLAYER_EXE");
-					
-				}
+				player = project.environment.get ("SWF_PLAYER");
+				
+			} else {
+				
+				player = Sys.getEnv ("FLASH_PLAYER_EXE");
 				
 			}
 			
-			ProcessHelper.openFile (workingDirectory, targetPath, player);
-			
 		}
 		
-	}
+		ProcessHelper.openFile (workingDirectory, targetPath, player);
 		
+	}
+	
 
 }
