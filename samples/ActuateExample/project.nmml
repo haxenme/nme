@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="Actuate Example" package="io.nme.samples.actuateexample" version="1.0.0" company="NME" />
+	<app main="Main" path="Export" file="ActuateExample" />
+	
+	<source path="Source" />
+	
+	<haxelib name="nme" />
+	<haxelib name="actuate" />
+	
+	<assets path="Assets" rename="assets" exclude="nme.svg" />
+	<icon path="Assets/nme.svg" />
+	
+</project>
