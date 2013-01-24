@@ -13,6 +13,7 @@ import browser.geom.ColorTransform;
 import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
+import browser.gl.GLTexture;
 import browser.utils.ByteArray;
 import browser.utils.Uuid;
 import browser.Html5Dom;
@@ -32,6 +33,7 @@ class BitmapData implements IBitmapDrawable {
 	private var nmeAssignedBitmaps:Int;
 	private var nmeCopyPixelList:Array<CopyPixelAtom>;
 	public var nmeImageData:ImageData;
+	public var nmeGLTexture:GLTexture;
 	private var nmeImageDataChanged:Bool;
 	private var nmeInitColor:Int;
 	private var nmeLease:ImageDataLease;

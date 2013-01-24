@@ -465,20 +465,25 @@ class GL {
 	
 	public static function bindBitmapDataTexture(texture:BitmapData):Void {
 		
-		// create webgl texture?
-		
-		var glTexture = nmeContext.createTexture ();
-		nmeContext.bindTexture (TEXTURE_2D, glTexture);
-		nmeContext.texImage2D (TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, texture.nmeImageData);
-		nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR);
-		nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_NEAREST);
-		nmeContext.generateMipmap(TEXTURE_2D);
-		nmeContext.bindTexture (TEXTURE_2D, null);
-		
-		//nmeContext.activeTexture(TEXTURE0);
-		nmeContext.bindTexture(TEXTURE_2D, glTexture);
-		
-		//nme_gl_bind_bitmap_data_texture(texture.nmeHandle);
+		if (texture.nmeGLTexture == null) {
+			
+			texture.nmeGLTexture = nmeContext.createTexture();
+			nmeContext.bindTexture(TEXTURE_2D, texture.nmeGLTexture);
+			
+			nmeContext.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE);
+			nmeContext.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE);
+			nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
+			nmeContext.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
+			
+			texture.lock();
+			nmeContext.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, texture.nmeImageData);
+			texture.unlock();
+			
+		} else {
+			
+			nmeContext.bindTexture(TEXTURE_2D, texture.nmeGLTexture);
+			
+		}
 		
 	}
 	
