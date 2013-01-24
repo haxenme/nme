@@ -26,10 +26,12 @@ class Stage3D extends EventDispatcher {
 	
 	public function requestContext3D(context3DRenderMode:String = ""):Void {
 		
-		context3D = new Context3D();
-		dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
-		
-		// TODO ErrorEvent ?
+		if (OpenGLView.isSupported) {
+		    context3D = new Context3D();
+		    dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
+		}else{
+            dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+		}
 		
 	}
 	

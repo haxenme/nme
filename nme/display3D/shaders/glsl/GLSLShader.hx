@@ -61,7 +61,7 @@ class GLSLShader {
 
 
     public function new(type : Context3DProgramType, glslSource : String,
-    #if cpp
+    #if (cpp || neko || js)
     ?
     #elseif glsl2agal
     ?
@@ -104,7 +104,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromByteArray(type, registerIndex, 1, data, byteArrayOffset);
-        #elseif cpp
+        #elseif (cpp || neko || js)
         context3D.setGLSLProgramConstantsFromByteArray(name, data, byteArrayOffset);
         #end
 

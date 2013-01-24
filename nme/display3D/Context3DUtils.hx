@@ -7,11 +7,7 @@ class Context3DUtils {
     * Common API for both cpp and flash to set the render callback
     **/
     inline static public function setRenderCallback(context3D : Context3D, func : Void -> Void) : Void{
-        function render(rect : Dynamic):Void{
-//            #if (cpp || neko || js)
-//            nme.gl.GL.viewport (Std.int (rect.x), Std.int (rect.y), Std.int (rect.width), Std.int (rect.height));
-//            #end
-            func();}
+        function render(rect : Dynamic):Void{func();}
         #if flash
         nme.Lib.current.addEventListener(nme.events.Event.ENTER_FRAME, render);
         #elseif (cpp || neko || js)
