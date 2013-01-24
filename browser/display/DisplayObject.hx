@@ -224,6 +224,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	
 	public function hitTestObject(obj:DisplayObject):Bool {
 		
+		if (obj != null && obj.parent != null && parent != null) {
+			
+			var currentBounds = getBounds(this);
+			var targetBounds = obj.getBounds(this);
+			
+			return currentBounds.intersects(targetBounds);
+			
+		}
+		
 		return false;
 		
 	}
