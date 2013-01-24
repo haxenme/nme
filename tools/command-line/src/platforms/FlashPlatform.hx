@@ -160,7 +160,7 @@ class FlashPlatform implements IPlatformTool {
 			if (asset.type == AssetType.TEMPLATE || asset.embed != true || !usesNME) {
 				
 				PathHelper.mkdir (Path.directory (destination + asset.targetPath));
-				FileHelper.copyAsset (asset, destination, context);
+				FileHelper.copyAsset (asset, destination + asset.targetPath, context);
 				
 			}
 			
