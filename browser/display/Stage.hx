@@ -18,6 +18,10 @@ import browser.ui.Keyboard;
 import browser.Html5Dom;
 import browser.Lib;
 
+#if stage3d
+import browser.display.Stage3D;
+#end
+
 
 class Stage extends DisplayObjectContainer {
 	
@@ -44,6 +48,10 @@ class Stage extends DisplayObjectContainer {
 	public var stageFocusRect:Bool;
 	public var stageHeight(get_stageHeight, null):Int;
 	public var stageWidth(get_stageWidth, null):Int;
+
+	#if stage3d
+	public var stage3Ds:Vector<Stage3D>;
+	#end
 	
 	private static inline var DEFAULT_FRAMERATE = 0.0;
 	private static inline var UI_EVENTS_QUEUE_MAX = 1000;
@@ -100,7 +108,11 @@ class Stage extends DisplayObjectContainer {
 		nmeFocusOverObjects = [];
 		nmeUIEventsQueue = untyped __new__("Array", UI_EVENTS_QUEUE_MAX);
 		nmeUIEventsQueueIndex = 0;
-		
+
+		#if stage3d
+		stage3Ds = new Vector();
+		stage3Ds.push(new Stage3D());
+		#end
 	}
 	
 	

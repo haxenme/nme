@@ -1,5 +1,5 @@
-package native.display3D;
-#if (cpp || neko)
+package browser.display3D;
+#if js
 
 
 import nme.gl.GL;

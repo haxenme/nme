@@ -16,6 +16,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DCompareMode = native.display3D.Context3DCompareMode;
-#elseif !js
+#elseif js
+typedef Context3DCompareMode = browser.display3D.Context3DCompareMode;
+#elseif flash
 typedef Context3DCompareMode = flash.display3D.Context3DCompareMode;
 #end

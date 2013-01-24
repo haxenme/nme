@@ -18,6 +18,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DBlendFactor = native.display3D.Context3DBlendFactor;
-#elseif !js
+#elseif js
+typedef Context3DBlendFactor = browser.display3D.Context3DBlendFactor;
+#elseif flash
 typedef Context3DBlendFactor = flash.display3D.Context3DBlendFactor;
 #end

@@ -10,6 +10,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DTextureFormat = native.display3D.Context3DTextureFormat;
-#elseif !js
+#elseif js
+typedef Context3DTextureFormat = browser.display3D.Context3DTextureFormat;
+#elseif flash
 typedef Context3DTextureFormat = flash.display3D.Context3DTextureFormat;
 #end

@@ -75,6 +75,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3D = native.display3D.Context3D;
-#elseif !js
+#elseif js
+typedef Context3D = browser.display3D.Context3D;
+#elseif flash
 typedef Context3D = flash.display3D.Context3D;
 #end

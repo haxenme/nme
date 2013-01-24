@@ -1,9 +1,10 @@
-package native.display3D;
-#if (cpp || neko)
+package browser.display3D;
+#if js
 
 
 import nme.gl.GL;
 import nme.gl.GLBuffer;
+import nme.utils.Float32Array;
 import nme.utils.Float32Array;
 import nme.utils.ByteArray;
 import nme.Vector;

@@ -196,6 +196,7 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	function subarray(offset:Int, length:Int):Uint8Array;
 }
 
+@:native("Int16Array")
 extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 

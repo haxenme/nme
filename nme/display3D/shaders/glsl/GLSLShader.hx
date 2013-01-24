@@ -69,7 +69,7 @@ class GLSLShader {
     agalInfoJson : String) {
 
         this.type = type;
-        #if cpp
+        #if (cpp || neko || js)
             nativeShader = ShaderUtils.createShader(type,glslSource);
         #elseif flash
 
@@ -94,7 +94,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromMatrix(type, registerIndex, matrix, transposedMatrix);
-        #elseif cpp
+        #elseif (cpp || neko || js)
         context3D.setGLSLProgramConstantsFromMatrix(name, matrix, transposedMatrix);
         #end
     }
@@ -116,7 +116,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromVector(type, registerIndex, vector, 1);
-        #elseif cpp
+        #elseif (cpp || neko || js)
         context3D.setGLSLProgramConstantsFromVector4(name, vector);
         #end
     }

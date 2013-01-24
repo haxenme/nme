@@ -1,5 +1,5 @@
-package native.display3D.textures;
-#if (cpp || neko)
+package browser.display3D.textures;
+#if js
 
 
 using nme.display.BitmapData;
@@ -8,8 +8,8 @@ import nme.geom.Rectangle;
 import nme.gl.GL;
 import nme.gl.GLTexture;
 import nme.utils.ArrayBuffer;
-import nme.utils.ByteArray;
 import nme.utils.Float32Array;
+import nme.utils.ByteArray;
 
 
 class Texture extends TextureBase {
