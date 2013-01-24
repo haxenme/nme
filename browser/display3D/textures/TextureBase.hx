@@ -1,5 +1,5 @@
-package native.display3D.textures;
-#if (cpp || neko)
+package browser.display3D.textures;
+#if js
 
 
 import nme.geom.Rectangle;

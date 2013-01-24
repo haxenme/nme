@@ -1,9 +1,7 @@
 package browser.utils;
 #if js
 
-
 import browser.Html5Dom;
 
-typedef Float32Array = browser.Float32Array;
-
+typedef Int16Array = browser.Int16Array;
 #end

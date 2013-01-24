@@ -13,6 +13,8 @@ extern class Stage3D extends nme.events.EventDispatcher {
 
 #elseif (cpp || neko)
 typedef Stage3D = native.display.Stage3D;
-#elseif !js
+#elseif js
+typedef Stage3D = browser.display.Stage3D;
+#elseif flash
 typedef Stage3D = flash.display.Stage3D;
 #end

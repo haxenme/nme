@@ -12,6 +12,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DTriangleFace = native.display3D.Context3DTriangleFace;
-#elseif !js
+#elseif js
+typedef Context3DTriangleFace = browser.display3D.Context3DTriangleFace;
+#elseif flash
 typedef Context3DTriangleFace = flash.display3D.Context3DTriangleFace;
 #end

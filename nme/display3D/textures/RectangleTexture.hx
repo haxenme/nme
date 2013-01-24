@@ -11,6 +11,8 @@ package nme.display3D.textures;
 
 #elseif (cpp || neko)
 typedef RectangleTexture = native.display3D.textures.RectangleTexture;
-#elseif !js
+#elseif js
+typedef RectangleTexture = browser.display3D.textures.RectangleTexture;
+#elseif flash
 typedef RectangleTexture = flash.display3D.textures.RectangleTexture;
 #end

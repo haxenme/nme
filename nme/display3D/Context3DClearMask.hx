@@ -12,6 +12,8 @@ extern class Context3DClearMask {
 
 #elseif (cpp || neko)
 typedef Context3DClearMask = native.display3D.Context3DClearMask;
-#elseif !js
+#elseif js
+typedef Context3DClearMask = browser.display3D.Context3DClearMask;
+#elseif flash
 typedef Context3DClearMask = flash.display3D.Context3DClearMask;
 #end

@@ -101,6 +101,27 @@ class ArrayBufferView implements IMemoryRange {
 		#end
 		
 	}
+
+	inline public function getInt16(bytePos:Int):Float {
+		#if cpp
+		untyped return __global__.__hxcpp_memory_get_ui16(bytes, bytePos + byteOffset);
+		#else
+		buffer.position = bytePos + byteOffset;
+		return buffer.readShort();
+		#end
+
+	}
+
+
+	inline public function setInt16(bytePos:Int, v:Float):Void {
+		#if cpp
+		untyped __global__.__hxcpp_memory_set_i16(bytes, bytePos + byteOffset, v);
+		#else
+		buffer.position = bytePos + byteOffset;
+		buffer.writeShort(v);
+		#end
+
+	}
 	
 	
 }

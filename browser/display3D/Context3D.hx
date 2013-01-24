@@ -1,5 +1,5 @@
-package native.display3D;
-#if (cpp || neko)
+package browser.display3D;
+#if js
 
 
 import nme.utils.Float32Array;
@@ -54,9 +54,9 @@ class Context3D {
 		var stage = Lib.current.stage;
 		
 		ogl = new OpenGLView();
-		ogl.scrollRect = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
-		ogl.width = stage.stageWidth;
-		ogl.height = stage.stageHeight;
+		//ogl.scrollRect = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
+		//ogl.width = stage.stageWidth;
+		//ogl.height = stage.stageHeight;
 		
 		stage.addChildAt(ogl, 0);
 		

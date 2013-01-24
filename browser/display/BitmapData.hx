@@ -653,6 +653,31 @@ class BitmapData implements IBitmapDrawable {
 		return byteArray;
 		
 	}
+
+	inline public static function getRGBAPixels(bitmapData:BitmapData):ByteArray {
+
+		var p = bitmapData.getPixels(new Rectangle(0, 0, bitmapData.width, bitmapData.height));
+		var num = bitmapData.width * bitmapData.height;
+
+        p.position = 0;
+		for (i in 0...num) {
+            var pos = p.position;
+
+			var alpha = p.readByte();
+			var red = p.readByte();
+			var green = p.readByte();
+			var blue = p.readByte();
+
+            p.position = pos;
+			p.writeByte(red);
+			p.writeByte(green);
+			p.writeByte(blue);
+			p.writeByte(alpha);
+
+		}
+
+		return p;
+	}
 	
 	
 	public inline function handle() {

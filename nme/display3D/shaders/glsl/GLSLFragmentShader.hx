@@ -9,7 +9,7 @@ import nme.display3D.Context3DProgramType;
 class GLSLFragmentShader extends GLSLShader{
 
     public function new(glslSource : String,
-        #if cpp
+        #if (cpp || neko || js)
         ?
         #elseif glsl2agal
         ?
@@ -22,7 +22,7 @@ class GLSLFragmentShader extends GLSLShader{
         #if flash
         var registerIndex = getRegisterIndexForSampler(name);
         context3D.setTextureAt( registerIndex, texture);
-        #elseif cpp
+        #elseif (cpp || neko || js)
         context3D.setGLSLTextureAt(name, texture);
         #end
     }

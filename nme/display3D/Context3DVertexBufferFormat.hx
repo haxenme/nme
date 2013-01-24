@@ -13,6 +13,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DVertexBufferFormat = native.display3D.Context3DVertexBufferFormat;
-#elseif !js
+#elseif js
+typedef Context3DVertexBufferFormat = browser.display3D.Context3DVertexBufferFormat;
+#elseif flash
 typedef Context3DVertexBufferFormat = flash.display3D.Context3DVertexBufferFormat;
 #end
