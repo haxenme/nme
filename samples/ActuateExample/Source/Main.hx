@@ -21,8 +21,8 @@ class ActuateExample extends Sprite {
 	private function animateCircle (circle:Sprite):Void {
 		
 		var duration = 1.5 + Math.random () * 4.5;
-		var targetX = Math.random () * stage.stageWidth;
-		var targetY = Math.random () * stage.stageHeight;
+		var targetX = Math.random () * Lib.current.stage.stageWidth;
+		var targetY = Math.random () * Lib.current.stage.stageHeight;
 		
 		Actuate.tween (circle, duration, { x: targetX, y: targetY }, false).ease (Quad.easeOut).onComplete (animateCircle, [ circle ]);
 		
@@ -49,8 +49,8 @@ class ActuateExample extends Sprite {
 		circle.graphics.beginFill (Std.int (Math.random () * 0xFFFFFF));
 		circle.graphics.drawCircle (0, 0, size);
 		circle.alpha = 0.2 + Math.random () * 0.6;
-		circle.x = Math.random () * stage.stageWidth;
-		circle.y = Math.random () * stage.stageHeight;
+		circle.x = Math.random () * Lib.current.stage.stageWidth;
+		circle.y = Math.random () * Lib.current.stage.stageHeight;
 		
 		addChildAt (circle, 0);
 		animateCircle (circle);
@@ -60,9 +60,8 @@ class ActuateExample extends Sprite {
 	
 	private function initialize ():Void {
 		
-		stage = Lib.current.stage;
-		stage.addEventListener (Event.ACTIVATE, stage_onActivate);
-		stage.addEventListener (Event.DEACTIVATE, stage_onDeactivate);
+		Lib.current.stage.addEventListener (Event.ACTIVATE, stage_onActivate);
+		Lib.current.stage.addEventListener (Event.DEACTIVATE, stage_onDeactivate);
 		
 	}
 	
