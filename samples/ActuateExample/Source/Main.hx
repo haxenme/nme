@@ -5,7 +5,7 @@ import nme.events.Event;
 import nme.Lib;
 
 
-class ActuateExample extends Sprite {
+class Main extends Sprite {
 	
 	
 	public function new () {
