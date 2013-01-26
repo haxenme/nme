@@ -7,7 +7,6 @@
 -lib swf
 -lib svg
 -lib xfl
--lib format
 --remap flash:nme
 --remap browser:native
 -D hxssl
