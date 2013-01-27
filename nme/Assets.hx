@@ -1,5 +1,5 @@
 package nme;
-#if (!nme_install_tool)
+#if (!nme_install_tool || display)
 
 
 import format.display.MovieClip;

@@ -18,7 +18,7 @@ class FlashPlatform implements IPlatformTool {
 		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
 		FlashHelper.embedAssets (destination + "/" + project.app.file + ".swf", project.assets);
 		
-		if (project.targetFlags.exists ("web")) {
+		if (project.targetFlags.exists ("web") || project.app.url != "") {
 			
 			PathHelper.mkdir (destination);
 			FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/templates/web", destination, generateContext (project));
@@ -92,14 +92,13 @@ class FlashPlatform implements IPlatformTool {
 	
 	public function run (project:NMEProject, arguments:Array <String>):Void {
 		
-		var destination = project.app.path + "/flash/bin";
-		
-		/*if (targetFlags.exists ("air")) {
+		if (project.app.url != "") {
 			
-			AIRHelper.run (destination, debug);
+			ProcessHelper.openURL (project.app.url);
 			
-		} else {*/
+		} else {
 			
+			var destination = project.app.path + "/flash/bin";
 			var targetPath = project.app.file + ".swf";
 			
 			if (project.targetFlags.exists ("web")) {
@@ -110,7 +109,7 @@ class FlashPlatform implements IPlatformTool {
 			
 			FlashHelper.run (project, destination, targetPath);
 			
-		//}
+		}
 		
 	}
 	
@@ -133,10 +132,6 @@ class FlashPlatform implements IPlatformTool {
 		
 		var context = generateContext (project);
 		
-		if (project.app.url != "") {
-			project.targetFlags.set ("web", "1");			
-		}
-
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "haxe", project.app.path + "/flash/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/hxml", project.app.path + "/flash/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "flash/haxe", project.app.path + "/flash/haxe", context);
