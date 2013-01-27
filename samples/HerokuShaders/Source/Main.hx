@@ -59,6 +59,9 @@ class Main extends Sprite {
 			
 			view = new OpenGLView ();
 			
+			fragmentShaders = randomizeArray (fragmentShaders);
+			currentIndex = 0;
+			
 			buffer = GL.createBuffer ();
 			GL.bindBuffer (GL.ARRAY_BUFFER, buffer);
 			GL.bufferData (GL.ARRAY_BUFFER, new Float32Array ([ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]), GL.STATIC_DRAW);
@@ -84,24 +87,7 @@ class Main extends Sprite {
 		var fragment = "precision mediump float;";
 		#end
 		
-		if (fragmentShaders.length > 1) {
-			
-			var index = currentIndex;
-			
-			while (index == currentIndex) {
-				
-				index = Math.round (Math.random () * (fragmentShaders.length - 1));
-				
-			}
-			
-			currentIndex = index;
-			fragment += fragmentShaders[index].source;
-			
-		} else {
-			
-			fragment += fragmentShaders[0].source;
-			
-		}
+		fragment += fragmentShaders[currentIndex].source;
 		
 		var vs = createShader (vertex, GL.VERTEX_SHADER);
 		var fs = createShader (fragment, GL.FRAGMENT_SHADER);
@@ -169,6 +155,23 @@ class Main extends Sprite {
 	}
 	
 	
+	private function randomizeArray<T> (array:Array<T>):Array<T> {
+		
+		var arrayCopy = array.copy ();
+		var randomArray = new Array<T> ();
+		
+		while (arrayCopy.length > 0) {
+			
+			var randomIndex = Math.round (Math.random () * (arrayCopy.length - 1));
+			randomArray.push (arrayCopy.splice (randomIndex, 1)[0]);
+			
+		}
+		
+		return randomArray;
+		
+	}
+	
+	
 	private function renderView (rect:Rectangle):Void {
 		
 		GL.viewport (Std.int (rect.x), Std.int (rect.y), Std.int (rect.width), Std.int (rect.height));
@@ -195,6 +198,14 @@ class Main extends Sprite {
 		GL.drawArrays (GL.TRIANGLES, 0, 6);
 		
 		if (time > maxTime && fragmentShaders.length > 1) {
+			
+			currentIndex++;
+			
+			if (currentIndex > fragmentShaders.length - 1) {
+				
+				currentIndex = 0;
+				
+			}
 			
 			compile ();
 			
