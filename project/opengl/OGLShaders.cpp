@@ -160,10 +160,22 @@ public:
    {
       if (inData)
       {
+         #ifndef NME_GLES
+         glEnable(GL_TEXTURE_2D);
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glTexCoordPointer(2, GL_FLOAT, 0, inData);
+         #endif
          glVertexAttribPointer(mTextureSlot, 2, GL_FLOAT, GL_FALSE, 0, inData);
          glEnableVertexAttribArray(mTextureSlot);
          glUniform1i(mTextureSlot,0);
-      }
+      } 
+      else
+      {
+         #ifndef NME_GLES
+         glDisable(GL_TEXTURE_2D);
+         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+         #endif
+	  }
    }
 
    void setColourData(const int *inData)
