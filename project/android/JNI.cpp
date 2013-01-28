@@ -274,17 +274,16 @@ struct JNIObject : public nme::Object
    {
       mObject = inObject;
       if (mObject)
-         globalClass = reinterpret_cast<jclass>(GetEnv()->NewGlobalRef(mObject));
+         mObject = (GetEnv()->NewGlobalRef(mObject));
    }
    ~JNIObject()
    {
-      if (globalClass)
-         GetEnv()->DeleteGlobalRef(globalClass);
+      if (mObject)
+         GetEnv()->DeleteGlobalRef(mObject);
    }
    operator jobject() { return mObject; }
    jobject GetJObject() { return mObject; }
    jobject mObject;
-   jclass globalClass;
 };
 
 
