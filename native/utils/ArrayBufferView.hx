@@ -118,7 +118,7 @@ class ArrayBufferView implements IMemoryRange {
 		untyped __global__.__hxcpp_memory_set_i16(bytes, bytePos + byteOffset, v);
 		#else
 		buffer.position = bytePos + byteOffset;
-		buffer.writeShort(v);
+		buffer.writeShort(Std.int (v));
 		#end
 
 	}
