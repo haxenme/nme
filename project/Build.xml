@@ -379,7 +379,7 @@
       <vflag name="-framework" value="AppKit" if="macos"/>
       
       <lib name="-ldl" if="android"/>
-      <lib name="-lGLESv1_CM" if="android"/>
+      <!-- <lib name="-lGLESv1_CM" if="android"/> -->
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
       
