@@ -274,7 +274,7 @@ struct JNIObject : public nme::Object
    {
       mObject = inObject;
       if (mObject)
-         GetEnv()->NewGlobalRef(mObject);
+         mObject = (GetEnv()->NewGlobalRef(mObject));
    }
    ~JNIObject()
    {
