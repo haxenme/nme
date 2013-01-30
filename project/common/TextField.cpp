@@ -842,11 +842,11 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars->mFormat = inFormat->IncRef();
          chars->mFont = 0;
          chars->mFontHeight = 0;
-         UTF8ToWideVec(chars->mString,text->Value());
+         chars->mString.Set(text->Value(), wcslen( text->Value() ));
          ioCharCount += chars->Chars();
 
          mCharGroups.push_back(chars);
-         //printf(" %s %d\n", text->Value(), inLineSkips );
+         //printf("text: %s\n", text->Value());
       }
       else
       {
@@ -855,30 +855,30 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          {
             TextFormat *fmt = inFormat->IncRef();
 
-            if (el->ValueTStr()=="font")
+            if (el->ValueTStr()==L"font")
             {
                for (const TiXmlAttribute *att = el->FirstAttribute(); att;
                           att = att->Next())
                {
-                  const char *val = att->Value();
-                  if (att->NameTStr()=="color" && val[0]=='#')
+                  const wchar_t *val = att->Value();
+                  if (att->NameTStr()==L"color" && val[0]=='#')
                   {
                      int col;
-                     if (sscanf(val+1,"%x",&col))
+                     if (TIXML_SSCANF(val+1,L"%x",&col))
                      {
                         fmt = fmt->COW();
                         fmt->color = col;
                      }
                   }
-                  else if (att->NameTStr()=="face")
+                  else if (att->NameTStr()==L"face")
                   {
                      fmt = fmt->COW();
-                     fmt->font = UTF8ToWide(val);
+                     fmt->font = val;
                   }
-                  else if (att->NameTStr()=="size")
+                  else if (att->NameTStr()==L"size")
                   {
                      int size;
-                     if (sscanf(att->Value(),"%d",&size))
+                     if (TIXML_SSCANF(att->Value(),L"%d",&size))
                      {
                         fmt = fmt->COW();
                         if (val[0]=='-' || val[0]=='+')
@@ -889,7 +889,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   }
                }
             }
-            else if (el->ValueTStr()=="b")
+            else if (el->ValueTStr()==L"b")
             {
                if (!fmt->bold)
                {
@@ -897,7 +897,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   fmt->bold = true;
                }
             }
-            else if (el->ValueTStr()=="i")
+            else if (el->ValueTStr()==L"i")
             {
                if (!fmt->italic)
                {
@@ -905,7 +905,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   fmt->italic = true;
                }
             }
-            else if (el->ValueTStr()=="u")
+            else if (el->ValueTStr()==L"u")
             {
                if (!fmt->underline)
                {
@@ -913,7 +913,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   fmt->underline = true;
                }
             }
-            else if (el->ValueTStr()=="br")
+            else if (el->ValueTStr()==L"br")
             {
                if (mCharGroups.size())
                {
@@ -932,23 +932,22 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   mCharGroups.push_back(chars);
                }
             }
-            else if (el->ValueTStr()=="p")
+            else if (el->ValueTStr()==L"p")
             {
             }
 
             for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())
             {
-               //const char *val = att->Value();
-               if (att->NameTStr()=="align")
+               if (att->NameTStr()==L"align")
                {
                   fmt = fmt->COW();
-                  if (att->ValueTStr()=="left")
+                  if (att->ValueStr()==L"left")
                      fmt->align = tfaLeft;
-                  else if (att->ValueTStr()=="right")
+                  else if (att->ValueStr()==L"right")
                      fmt->align = tfaRight;
-                  else if (att->ValueTStr()=="center")
+                  else if (att->ValueStr()==L"center")
                      fmt->align = tfaCenter;
-                  else if (att->ValueTStr()=="justify")
+                  else if (att->ValueStr()==L"justify")
                      fmt->align = tfaJustify;
                }
             }
@@ -968,14 +967,17 @@ void TextField::setHTMLText(const WString &inString)
    Clear();
    mLinesDirty = true;
    mFontsDirty = true;
-   std::string str = "<top>" + WideToUTF8(inString) + "</top>";
+
+   WString str;
+   str += L"<top>";
+   str += inString;
+   str += L"</top>";
 
    TiXmlNode::SetCondenseWhiteSpace(condenseWhite);
    TiXmlDocument doc;
-   const char *err = doc.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
-   if (err != NULL) {
+   const wchar_t *err = doc.Parse(str.c_str(),0,TIXML_ENCODING_LEGACY);
+   if (err != NULL)
       ELOG("Error parsing HTML input");
-   }
    const TiXmlNode *top =  doc.FirstChild();
    if (top)
    {
