@@ -174,7 +174,7 @@
       <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
       <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
       <compilerflag value="-I${QNX_TARGET}/usr/include" if="blackberry"/>
-      <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/>
+      <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <compilerflag value="-DNME_CURL_SSL" if="ssl"/>
@@ -379,7 +379,7 @@
       <vflag name="-framework" value="AppKit" if="macos"/>
       
       <lib name="-ldl" if="android"/>
-      <lib name="-lGLESv1_CM" if="android"/>
+      <!-- <lib name="-lGLESv1_CM" if="android"/> -->
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
       
@@ -393,7 +393,7 @@
       <lib name="-lscreen" if="blackberry"/>
       <lib name="-lEGL" if="blackberry"/>
       
-      <lib name="-lGLESv1_CM" if="blackberry"/>
+      <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
       <lib name="-lGLESv2" if="blackberry" />
       
       <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi"/>
