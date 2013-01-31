@@ -509,6 +509,9 @@ public:
 
    void RenderGlyph(int inChar,const RenderTarget &outTarget)
    {
+      if(outTarget.mRect.w <= 0 || outTarget.mRect.h <= 0)
+          return;
+
       #ifndef OBJC_ARC
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
       #endif
