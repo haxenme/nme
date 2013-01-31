@@ -1472,7 +1472,7 @@ void TextField::InsertString(WString &inString)
 
 static bool IsWord(int inCh)
 {
-  return (!isspace(inCh));
+  return (!iswspace(inCh));
   //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
 }
 
@@ -1538,22 +1538,6 @@ void TextField::Layout(const Matrix &inMatrix)
       int last_word_cid = 0;
       int last_word_x = x;
       int last_word_line_chars = line.mChars;
-      /*
-      if ( g.mBeginParagraph && line.mChars && multiline )
-      {
-         g.UpdateMetrics(line.mMetrics);
-         mLines.push_back(line);
-         y += line.mMetrics.height;
-         line.Clear();
-
-         x = gap;
-         line.mY0 = y;
-         line.mChar0 = char_count;
-         line.mCharGroup0 = i;
-         line.mCharInGroup0 = cid;
-      }
-      */
-
 
       g.UpdateMetrics(line.mMetrics);
       while(cid<g.Chars())
@@ -1580,7 +1564,7 @@ void TextField::Layout(const Matrix &inMatrix)
          {
             if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
             {
-               if ( (ch<255 && isspace(ch)) || line.mChars==1)
+               if ( (ch<255 && iswspace(ch)) || line.mChars==1)
                {
                   last_word_cid = cid;
                   last_word_line_chars = line.mChars;
