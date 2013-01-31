@@ -285,14 +285,14 @@ protected:
 	static const wchar_t* SkipWhiteSpace( const wchar_t*, TiXmlEncoding encoding );
 	inline static bool IsWhiteSpace( wchar_t c )		
 	{ 
-		return ( isspace( (wchar_t) c ) || c == '\n' || c == '\r' ); 
+		return ( iswspace( (wchar_t) c ) || c == '\n' || c == '\r' );
 	}
-	inline static bool IsWhiteSpace( int c )
+	/*inline static bool IsWhiteSpace( int c )
 	{
 		if ( c < 256 )
 			return IsWhiteSpace( (wchar_t) c );
 		return false;	// Again, only truly correct for English/Latin...but usually works.
-	}
+	}*/
 
 	#ifdef TIXML_USE_STL
 	static bool	StreamWhiteSpace( std::wistream * in, TIXML_STRING * tag );
