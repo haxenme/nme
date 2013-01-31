@@ -59,13 +59,13 @@ class URLLoader extends EventDispatcher {
 			
 			case BINARY:
 				
-				request.requestHeaders.push(new URLRequestHeader("Content-Type", "application/octet-stream"));
+				request.requestHeaders.unshift(new URLRequestHeader("Content-Type", "application/octet-stream"));
 			
 			default:
 				
 				if (request.method != "GET") {
 					
-					request.requestHeaders.push(new URLRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
+					request.requestHeaders.unshift(new URLRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
 					
 				}
 			
