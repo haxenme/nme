@@ -115,6 +115,7 @@ public:
       {
          // TODO: Clear with a rect
          // TODO: Need replacement call for GLES2
+         #ifndef NME_GLES
          glColor4f((GLclampf)( ((inColour >>16) & 0xff) /255.0),
                    (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
                    (GLclampf)( ((inColour     ) & 0xff) /255.0),
@@ -127,7 +128,6 @@ public:
          glPushMatrix();
          glLoadIdentity();
 
-
          glDisable(GL_TEXTURE_2D);
          static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };
          glVertexPointer(2, GL_FLOAT, 0, rect[0]);
@@ -136,6 +136,7 @@ public:
          glPopMatrix();
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
+         #endif
       }
 
 
@@ -145,6 +146,7 @@ public:
 
    virtual void setOrtho(float x0,float x1, float y0, float y1)
    {
+      #ifndef NME_GLES
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       #if defined(NME_GLES)
@@ -156,6 +158,7 @@ public:
          (x0,x1,y0,y1, -1, 1);
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
+      #endif
       mModelView = Matrix();
    }
 
@@ -214,7 +217,9 @@ public:
 
    virtual void OnBeginRender()
    {
+      #ifndef NME_GLES
       glEnableClientState(GL_VERTEX_ARRAY);
+      #endif
    }
 
 
@@ -237,7 +242,9 @@ public:
          0,           0,           1, 0,
          mModelView.mtx, mModelView.mty, 0, 1
       };
+      #ifndef NME_GLES
       glLoadMatrixf(matrix);
+      #endif
    }
 
 
@@ -277,7 +284,7 @@ public:
            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
          }
          
-         #ifdef NME_USE_VBO
+         #if defined(NME_USE_VBO) && !defined(NME_GLES)
          {
             if (!arrays.mVertexBO)
             {
@@ -426,15 +433,18 @@ public:
 
    virtual void SetSolidColour(unsigned int col)
    {
+      #ifndef NME_GLES
        glColor4f(
          (float) ((col >> 16) & 0xFF) *  one_on_255,
          (float) ((col >> 8) & 0xFF) * one_on_255,
          (float) (col & 0xFF) * one_on_255,
          (float) ((col >> 24) & 0xFF) * one_on_255);
+      #endif
    }
 
    virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
    {
+      #ifndef NME_GLES
       if (!inSurface)
       {
          glDisable(GL_TEXTURE_2D);
@@ -447,24 +457,30 @@ public:
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glTexCoordPointer(2,GL_FLOAT,0,inTexCoords);
       }
+      #endif
    }
 
    virtual void SetPositionData(const float *inData,bool inPerspective)
    {
+      #ifndef NME_GLES
       glVertexPointer(inPerspective ? 4 : 2,GL_FLOAT,0,inData);
+	  #endif
    }
 
    virtual void SetModulatingTransform(const ColorTransform *inTransform)
    {
+      #ifndef NME_GLES
       if (inTransform)
          glColor4f( inTransform->redMultiplier,
                     inTransform->greenMultiplier,
                     inTransform->blueMultiplier,
                     inTransform->alphaMultiplier);
+      #endif
    }
 
    virtual void SetColourArray(const int *inData)
    {
+      #ifndef NME_GLES
       if (inData)
       {
          mColourArrayEnabled = true;
@@ -476,21 +492,27 @@ public:
          mColourArrayEnabled = false;
          glDisableClientState(GL_COLOR_ARRAY);
       }
+      #endif
    }
 
    virtual void PushBitmapMatrix()
    {
+      #ifndef NME_GLES
       glPushMatrix();
       glLoadIdentity();
+      #endif
    }
 
    virtual void PopBitmapMatrix()
    {
+      #ifndef NME_GLES
       glPopMatrix();
+      #endif
    }
 
    virtual void PrepareBitmapRender()
    {
+      #ifndef NME_GLES
       glColor4f(
         (float) ((mTint >> 16) & 0xFF) *one_on_255,
         (float) ((mTint >> 8) & 0xFF) *one_on_255,
@@ -501,6 +523,7 @@ public:
       #ifdef NME_DITHER
       if (!inSmooth)
         glDisable(GL_DITHER);
+      #endif
       #endif
    }
 
@@ -553,8 +576,10 @@ public:
    
    virtual void SetBitmapData(const float *inPos, const float *inTex)
    {
+      #ifndef NME_GLES
       glVertexPointer(2,GL_FLOAT,0,inPos);
       glTexCoordPointer(2,GL_FLOAT,0,inTex);
+      #endif
    }
 
    void EndBitmapRender()
@@ -595,8 +620,10 @@ public:
          glLineWidth(w);
          
          // TODO: Need replacement call for GLES2?
+         #ifndef NME_GLES
          if (mPointsToo)
             glPointSize(inWidth);
+         #endif
       }
    }
 
@@ -847,13 +874,17 @@ public:
       mBitmapSurface->Bind(*this,0);
       mCurrentProg->setTransform(mBitmapTrans);
       // TODO: Need replacement call for GLES2
+      #ifndef NME_GLES
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      #endif
    }
 
    virtual void FinishBitmapRender()
    {
       // TODO: Need replacement call for GLES2
+      #ifndef NME_GLES
       glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      #endif
    }
 
    virtual void SetRadialGradient(bool inIsRadial, float inFocus)
