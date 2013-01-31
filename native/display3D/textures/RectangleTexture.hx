@@ -2,10 +2,10 @@ package native.display3D.textures;
 #if (cpp || neko)
 
 
-import native.display.BitmapData;
-import native.gl.GL;
-import native.gl.GLTexture;
-import native.utils.ByteArray;
+import nme.display.BitmapData;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.utils.ByteArray;
 
 
 class RectangleTexture extends TextureBase {

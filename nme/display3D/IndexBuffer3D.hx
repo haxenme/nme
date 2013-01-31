@@ -11,6 +11,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef IndexBuffer3D = native.display3D.IndexBuffer3D;
-#elseif !js
+#elseif js
+typedef IndexBuffer3D = browser.display3D.IndexBuffer3D;
+#elseif flash
 typedef IndexBuffer3D = flash.display3D.IndexBuffer3D;
 #end

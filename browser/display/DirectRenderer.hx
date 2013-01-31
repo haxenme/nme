@@ -12,8 +12,11 @@ import browser.Lib;
 class DirectRenderer extends DisplayObject {
 	
 	
+	public var render(get_render, set_render):Dynamic;
+	
 	private var nmeContext:WebGLRenderingContext;
 	private var nmeGraphics:Graphics;
+	private var nmeRenderMethod:Dynamic;
 	
 	
 	public function new(inType:String = "DirectRenderer") {
@@ -21,6 +24,9 @@ class DirectRenderer extends DisplayObject {
 		super();
 		
 		nmeGraphics = new Graphics();
+		
+		nmeGraphics.nmeSurface.width = Lib.current.stage.stageWidth;
+		nmeGraphics.nmeSurface.height = Lib.current.stage.stageHeight;
 		
 		if (inType == "OpenGLView" && nmeGraphics != null) {
 			
@@ -62,16 +68,43 @@ class DirectRenderer extends DisplayObject {
 			
 			GL.nmeContext = nmeContext;
 			
-			if (render != null) render(new Rectangle(0, 0, stage.stageWidth, stage.stageHeight));
+			var rect = null;
+			
+			if (scrollRect == null) {
+				
+				rect = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
+				
+			} else {
+				
+				rect = new Rectangle(x + scrollRect.x, y + scrollRect.y, scrollRect.width, scrollRect.height);
+				
+			}
+			
+			if (render != null) render(rect);
 			
 		}
 		
 	}
 	
 	
-	public dynamic function render(inRect:Rectangle) {
+	
+	
+	// Getters & Setters
+	
+	
+	
+	
+	private function get_render():Dynamic {
 		
+		return nmeRenderMethod;
 		
+	}
+	
+	
+	private function set_render(value:Dynamic):Dynamic {
+		
+		nmeRenderMethod = value;
+		nmeRender();
 		
 	}
 	

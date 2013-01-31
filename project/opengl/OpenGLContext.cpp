@@ -937,4 +937,3 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
 }
 
 } // end namespace nme
-

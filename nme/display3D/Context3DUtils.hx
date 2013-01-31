@@ -10,7 +10,7 @@ class Context3DUtils {
         function render(rect : Dynamic):Void{func();}
         #if flash
         nme.Lib.current.addEventListener(nme.events.Event.ENTER_FRAME, render);
-        #elseif cpp
+        #elseif (cpp || neko || js)
         context3D.setRenderMethod(render);
         #end
     }

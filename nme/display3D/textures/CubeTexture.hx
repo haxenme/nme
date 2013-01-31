@@ -11,6 +11,8 @@ package nme.display3D.textures;
 
 #elseif (cpp || neko)
 typedef CubeTexture = native.display3D.textures.CubeTexture;
-#elseif !js
+#elseif js
+typedef CubeTexture = browser.display3D.textures.CubeTexture;
+#elseif flash
 typedef CubeTexture = flash.display3D.textures.CubeTexture;
 #end

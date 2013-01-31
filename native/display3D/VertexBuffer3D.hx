@@ -2,11 +2,10 @@ package native.display3D;
 #if (cpp || neko)
 
 
-import native.gl.GL;
-import native.gl.GLBuffer;
-import native.utils.Float32Array;
-import native.utils.ByteArrayView;
-import native.utils.ByteArray;
+import nme.gl.GL;
+import nme.gl.GLBuffer;
+import nme.utils.Float32Array;
+import nme.utils.ByteArray;
 import nme.Vector;
 
 
@@ -34,7 +33,7 @@ class VertexBuffer3D {
 	public function uploadFromByteArray (byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
 		var bytesPerVertex = data32PerVertex * 4;
         GL.bindBuffer (GL.ARRAY_BUFFER, glBuffer);
-        GL.bufferData (GL.ARRAY_BUFFER, new ByteArrayView(byteArray,byteArrayOffset + startOffset * bytesPerVertex, count * bytesPerVertex), GL.STATIC_DRAW);
+        GL.bufferData (GL.ARRAY_BUFFER, new Float32Array(byteArray,byteArrayOffset + startOffset * bytesPerVertex, count * bytesPerVertex), GL.STATIC_DRAW);
 	}
 	
 	

@@ -10,6 +10,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DProgramType = native.display3D.Context3DProgramType;
-#elseif !js
+#elseif js
+typedef Context3DProgramType = browser.display3D.Context3DProgramType;
+#elseif flash
 typedef Context3DProgramType = flash.display3D.Context3DProgramType;
 #end

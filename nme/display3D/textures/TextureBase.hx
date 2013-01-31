@@ -9,6 +9,8 @@ extern class TextureBase extends nme.events.EventDispatcher {
 
 #elseif (cpp || neko)
 typedef TextureBase = native.display3D.textures.TextureBase;
-#elseif !js
+#elseif js
+typedef TextureBase = browser.display3D.textures.TextureBase;
+#elseif flash
 typedef TextureBase = flash.display3D.textures.TextureBase;
 #end

@@ -10,6 +10,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Program3D = native.display3D.Program3D;
-#elseif !js
+#elseif js
+typedef Program3D = browser.display3D.Program3D;
+#elseif flash
 typedef Program3D = flash.display3D.Program3D;
 #end

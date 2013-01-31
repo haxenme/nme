@@ -5,9 +5,9 @@ package native.display3D.textures;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
 import nme.display.BitmapData;
-import native.gl.GL;
-import native.gl.GLTexture;
-import native.events.EventDispatcher;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.events.EventDispatcher;
 
 
 class TextureBase extends EventDispatcher {

@@ -16,6 +16,8 @@ package nme.display3D;
 
 #elseif (cpp || neko)
 typedef Context3DStencilAction = native.display3D.Context3DStencilAction;
-#elseif !js
+#elseif js
+typedef Context3DStencilAction = browser.display3D.Context3DStencilAction;
+#elseif flash
 typedef Context3DStencilAction = flash.display3D.Context3DStencilAction;
 #end

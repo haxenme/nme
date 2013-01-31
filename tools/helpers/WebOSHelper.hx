@@ -47,7 +47,7 @@ class WebOSHelper {
 			
 		}
 		
-		ProcessHelper.runCommand (workingDirectory, sdkDirectory + "/bin/palm-" + command, args);
+		ProcessHelper.runCommand (workingDirectory, PathHelper.combine (sdkDirectory, "bin/palm-" + command), args);
 		
 	}
 	

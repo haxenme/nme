@@ -16,6 +16,7 @@ class Event {
 	public static var CLOSE = "close";
 	public static var COMPLETE = "complete";
 	public static var CONNECT = "connect";
+	public static var CONTEXT3D_CREATE = "context3DCreate";
 	public static var DEACTIVATE = "deactivate";
 	public static var ENTER_FRAME = "enterFrame";
 	public static var ID3 = "id3";

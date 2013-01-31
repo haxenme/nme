@@ -3,10 +3,10 @@ package native.display3D.textures;
 
 
 import nme.geom.Rectangle;
-using native.display.BitmapData;
-import native.utils.ByteArray;
-import native.gl.GL;
-import native.gl.GLTexture;
+using nme.display.BitmapData;
+import nme.utils.ByteArray;
+import nme.gl.GL;
+import nme.gl.GLTexture;
 
 
 class CubeTexture extends TextureBase {

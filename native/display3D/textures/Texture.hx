@@ -2,14 +2,14 @@ package native.display3D.textures;
 #if (cpp || neko)
 
 
-using native.display.BitmapData;
+using nme.display.BitmapData;
 
-import native.geom.Rectangle;
-import native.gl.GL;
-import native.gl.GLTexture;
-import native.utils.ArrayBuffer;
-import native.utils.ByteArrayView;
-import native.utils.ByteArray;
+import nme.geom.Rectangle;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.utils.ArrayBuffer;
+import nme.utils.ByteArray;
+import nme.utils.Float32Array;
 
 
 class Texture extends TextureBase {
@@ -35,7 +35,7 @@ class Texture extends TextureBase {
 
         var p = bitmapData.getRGBAPixels();
 		
-		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ByteArrayView(p, 0));
+		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new Float32Array(p));
 		
 	}
 	

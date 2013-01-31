@@ -2,7 +2,7 @@ package native.display3D;
 #if (cpp || neko)
 
 
-import native.gl.GL;
+import nme.gl.GL;
 
 
 class Context3DCompareMode {

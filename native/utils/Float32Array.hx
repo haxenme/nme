@@ -19,8 +19,8 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 		
 		BYTES_PER_ELEMENT = 4;
 		var floats:Array<Float> = inBufferOrArray;
-		
-		if (floats != null) {
+
+		if (!Std.is(inBufferOrArray,ArrayBuffer) && floats != null) {
 
             if(inLen != null){
                 length = inLen;
@@ -30,32 +30,32 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 
             // 4 bytes per element -> shift it by two bits to get the lenght in bytes
 			super (length << 2);
-			
+
 			#if !cpp
 			buffer.position = 0;
 			#end
-			
+
 			for (i in 0...length) {
-				
+
 				#if cpp
 				untyped __global__.__hxcpp_memory_set_float(bytes,(i << 2), floats[i]);
 				#else
 				buffer.writeFloat (floats[i + inStart]);
 				#end
-				
+
 			}
-			
+
 		} else {
 			
 			super(inBufferOrArray, inStart, inLen);
-			
+
 			if ((byteLength & 0x03) > 0)
 				throw("Invalid array size");
-			
+
 			length = byteLength >> 2;
-			if (length !=(byteLength << 2))
+			if ((length << 2) !=(byteLength))
 				throw "Invalid length multiple";
-			
+
 		}
 		
 	}

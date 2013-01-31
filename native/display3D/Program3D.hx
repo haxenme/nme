@@ -2,9 +2,9 @@ package native.display3D;
 #if (cpp || neko)
 
 
-import native.gl.GL;
-import native.gl.GLProgram;
-import native.gl.GLShader;
+import nme.gl.GL;
+import nme.gl.GLProgram;
+import nme.gl.GLShader;
 
 
 class Program3D {

@@ -13,6 +13,7 @@ import browser.geom.ColorTransform;
 import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
+import browser.gl.GLTexture;
 import browser.utils.ByteArray;
 import browser.utils.Uuid;
 import browser.Html5Dom;
@@ -32,6 +33,7 @@ class BitmapData implements IBitmapDrawable {
 	private var nmeAssignedBitmaps:Int;
 	private var nmeCopyPixelList:Array<CopyPixelAtom>;
 	public var nmeImageData:ImageData;
+	public var nmeGLTexture:GLTexture;
 	private var nmeImageDataChanged:Bool;
 	private var nmeInitColor:Int;
 	private var nmeLease:ImageDataLease;
@@ -650,6 +652,31 @@ class BitmapData implements IBitmapDrawable {
 		byteArray.position = 0;
 		return byteArray;
 		
+	}
+
+	inline public static function getRGBAPixels(bitmapData:BitmapData):ByteArray {
+
+		var p = bitmapData.getPixels(new Rectangle(0, 0, bitmapData.width, bitmapData.height));
+		var num = bitmapData.width * bitmapData.height;
+
+        p.position = 0;
+		for (i in 0...num) {
+            var pos = p.position;
+
+			var alpha = p.readByte();
+			var red = p.readByte();
+			var green = p.readByte();
+			var blue = p.readByte();
+
+            p.position = pos;
+			p.writeByte(red);
+			p.writeByte(green);
+			p.writeByte(blue);
+			p.writeByte(alpha);
+
+		}
+
+		return p;
 	}
 	
 	

@@ -4,11 +4,9 @@ package native.display3D;
 
 import nme.gl.GL;
 import nme.gl.GLBuffer;
-import nme.utils.Float32Array;
+import nme.utils.Int16Array;
 import nme.utils.ByteArray;
 import nme.Vector;
-
-import native.utils.ByteArrayView;
 
 
 class IndexBuffer3D {
@@ -28,15 +26,16 @@ class IndexBuffer3D {
 	
 
 	public function uploadFromByteArray (byteArray:ByteArray, byteArrayOffset:Int, startOffset:Int, count:Int):Void {
-        var bytesPerIndex = 2;
+	    var bytesPerIndex = 2;
 		GL.bindBuffer (GL.ELEMENT_ARRAY_BUFFER, glBuffer);
-		GL.bufferData (GL.ELEMENT_ARRAY_BUFFER, new ByteArrayView(byteArray,byteArrayOffset + startOffset * bytesPerIndex, count * bytesPerIndex), GL.STATIC_DRAW);
+		var indices = new Int16Array(byteArray,byteArrayOffset + startOffset* bytesPerIndex, count* bytesPerIndex);
+		GL.bufferData (GL.ELEMENT_ARRAY_BUFFER, indices, GL.STATIC_DRAW);
 	}
 	
 	
 	public function uploadFromVector (data:Vector<Int>, startOffset:Int, count:Int):Void {
         GL.bindBuffer (GL.ELEMENT_ARRAY_BUFFER, glBuffer);
-        GL.bufferData (GL.ELEMENT_ARRAY_BUFFER, new Float32Array(data, startOffset, count), GL.STATIC_DRAW);
+        GL.bufferData (GL.ELEMENT_ARRAY_BUFFER, new Int16Array(data, startOffset, count), GL.STATIC_DRAW);
 	}
 
     public function dispose ():Void {
