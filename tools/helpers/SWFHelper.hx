@@ -121,8 +121,7 @@ class SWFHelper {
 			
 			if (library.type == LibraryType.SWF) {
 				
-				project.haxelibs.remove ("swf");
-				project.haxelibs.push ("swf");
+				project.haxelibs.set("swf", {name:"swf"});
 				
 				#if swfdev
 				if (project.target == Platform.HTML5) {

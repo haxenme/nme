@@ -104,33 +104,27 @@ class NMMLParser extends NMEProject {
 			
 			var value = element.x.get ("if");
 			var optionalDefines = value.split ("||");
+			var isValid = true;
 			
 			for (optional in optionalDefines) {
 				
 				var requiredDefines = optional.split (" ");
-				var match = true;
 				
 				for (required in requiredDefines) {
 					
 					var check = StringTools.trim (required);
 					
 					if (check != "" && !localDefines.exists (check)) {
-						
-						match = false;
+
+						isValid = false;
 						
 					}
 					
 				}
 				
-				if (match) {
-					
-					return true;
-					
-				}
-				
 			}
 			
-			return false;
+			return isValid;
 			
 		}
 		
@@ -138,33 +132,27 @@ class NMMLParser extends NMEProject {
 			
 			var value = element.att.unless;
 			var optionalDefines = value.split ("||");
+			var isValid = true;
 			
 			for (optional in optionalDefines) {
 				
 				var requiredDefines = optional.split (" ");
-				var match = true;
 				
 				for (required in requiredDefines) {
 					
 					var check = StringTools.trim (required);
-					
-					if (check != "" && !localDefines.exists (check)) {
+
+					if (check != "" && localDefines.exists (check)) {
 						
-						match = false;
+						isValid = false;
 						
 					}
-					
-				}
-				
-				if (match) {
-					
-					return false;
-					
+
 				}
 				
 			}
 			
-			return true;
+			return isValid;
 			
 		}
 		
@@ -268,7 +256,7 @@ class NMMLParser extends NMEProject {
 	private function parseAppElement (element:Fast):Void {
 		
 		for (attribute in element.x.attributes ()) {
-			
+
 			switch (attribute) {
 				
 				case "path":
@@ -313,6 +301,7 @@ class NMMLParser extends NMEProject {
 						
 					}
 					
+
 					if (Reflect.hasField (app, name)) {
 						
 						Reflect.setField (app, name, value);
@@ -495,7 +484,9 @@ class NMMLParser extends NMEProject {
 			
 			for (childElement in element.elements) {
 				
-				if (isValidElement (childElement, "")) {
+				var isValid = isValidElement (childElement, "");
+
+				if (isValid) {
 					
 					var childPath = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
 					var childTargetPath = childPath;
@@ -678,7 +669,8 @@ class NMMLParser extends NMEProject {
 		
 		for (element in xml.elements) {
 			
-			if (isValidElement (element, section)) {
+			var isValid = isValidElement (element, section);
+			if (isValid) {
 				
 				switch (element.name) {
 					
@@ -823,7 +815,10 @@ class NMMLParser extends NMEProject {
 						}*/
 						
 						var name = substitute (element.att.name);
-						var path = PathHelper.getHaxelib (name);
+						var version:String = null;
+						if (element.has.version && element.att.version != "")
+							version = element.att.version;
+						var path = PathHelper.getHaxelib (name, version);
 						
 						if (FileSystem.exists (path + "/include.nmml")) {
 							
@@ -845,7 +840,7 @@ class NMMLParser extends NMEProject {
 							
 						}
 						
-						haxelibs.push (name);
+						haxelibs.set(name, {name:name, version:version});
 					
 					case "ndll":
 						

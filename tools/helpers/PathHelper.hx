@@ -140,9 +140,12 @@ class PathHelper {
 	}
 	
 	
-	public static function getHaxelib (name:String):String {
+	public static function getHaxelib (name:String, ?version:String):String {
 		
-		var proc = new Process ("haxelib", ["path", name ]);
+		var searchPath = name;
+		if (version != null)
+			searchPath += ":" + version;
+		var proc = new Process ("haxelib", ["path", searchPath ]);
 		var result = "";
 		
 		try {

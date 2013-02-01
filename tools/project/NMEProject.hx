@@ -21,7 +21,7 @@ class NMEProject {
 	public var environment:Hash <String>;
 	public var haxedefs:Array <String>;
 	public var haxeflags:Array <String>;
-	public var haxelibs:Array <String>;
+	public var haxelibs:Hash <Haxelib>;
 	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
 	public var javaPaths:Array <String>;
@@ -141,7 +141,7 @@ class NMEProject {
 		environment = Sys.environment ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
-		haxelibs = new Array <String> ();
+		haxelibs = new Hash <Haxelib> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
 		libraries = new Array <Library> ();
@@ -184,7 +184,11 @@ class NMEProject {
 		
 		project.haxedefs = haxedefs.copy ();
 		project.haxeflags = haxeflags.copy ();
-		project.haxelibs = haxelibs.copy ();
+		for (key in haxelibs.keys ()) {
+			
+			project.haxelibs.set (key, haxelibs.get (key));
+			
+		}
 		
 		for (icon in icons) {
 			
@@ -418,7 +422,7 @@ class NMEProject {
 			dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
 			haxedefs = ArrayHelper.concatUnique (haxedefs, project.haxedefs);
 			haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
-			haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
+			HashHelper.copyUniqueKeys (project.haxelibs, haxelibs);
 			icons = ArrayHelper.concatUnique (icons, project.icons);
 			javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
 			libraries = ArrayHelper.concatUnique (libraries, project.libraries);
@@ -553,10 +557,14 @@ class NMEProject {
 		
 		var compilerFlags = [];
 		
-		for (haxelib in haxelibs) {
-			
-			compilerFlags.push ("-lib " + haxelib);
-			Reflect.setField (context, "LIB_" + haxelib.toUpperCase (), true);
+		for (key in haxelibs.keys()) {
+
+			var haxelib = haxelibs.get(key);
+			var libAppendage = "-lib " + haxelib.name;
+			if (haxelib.version != null)
+				libAppendage += ":" + haxelib.version;
+			compilerFlags.push (libAppendage);
+			Reflect.setField (context, "LIB_" + haxelib.name.toUpperCase (), true);
 			
 		}
 		

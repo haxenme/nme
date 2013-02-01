@@ -717,7 +717,7 @@ class CommandLineTools {
 				
 				for (haxelib in project.haxelibs) {
 					
-					var path = PathHelper.getHaxelib (haxelib);
+					var path = PathHelper.getHaxelib (haxelib.name, haxelib.version);
 					
 					if (FileSystem.exists (path + "/include.nmml")) {
 						
@@ -727,7 +727,7 @@ class CommandLineTools {
 							
 							if (ndll.haxelib == "") {
 								
-								ndll.haxelib = haxelib;
+								ndll.haxelib = haxelib.name;
 								
 							}
 							

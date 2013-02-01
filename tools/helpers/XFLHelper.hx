@@ -112,8 +112,8 @@ class XFLHelper {
 					
 				}
 				
-				project.haxelibs.remove ("xfl");
-				project.haxelibs.push ("xfl");
+				project.haxelibs.set("xfl", {name:"xfl"});
+
 				
 			}
 			
