@@ -1148,7 +1148,7 @@ const wchar_t* TiXmlElement::ReadValue( const wchar_t* p, TiXmlParsingData* data
 				p = textNode->Parse( pWithWhiteSpace, data, encoding );
 			}
 
-			if ( !textNode->Blank() )
+			if ( !textNode->Blank() || !TiXmlBase::IsWhiteSpaceCondensed() )
 				LinkEndChild( textNode );
 			else
 				delete textNode;
