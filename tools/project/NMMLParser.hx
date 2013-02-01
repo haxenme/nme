@@ -266,20 +266,24 @@ class NMMLParser extends NMEProject {
 				
 				case "min-swf-version":
 					
-					var version = substitute (element.att.resolve ("min-swf-version"));
+					var version = Std.parseFloat (substitute (element.att.resolve ("min-swf-version")));
+					
+					if (version > app.swfVersion) {
+						
+						app.swfVersion = version;
+						
+					}
 					
 					/*if (!defines.exists ("SWF_VERSION") || Std.parseInt (defines.get ("SWF_VERSION")) <= Std.parseInt (version)) {
 						
 						defines.set ("SWF_VERSION", version);
 						
 					}*/
-					
-					app.minimumSWFVersion = version;
 				
 				case "swf-version":
 					
 					//defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
-					app.swfVersion = substitute (element.att.resolve ("swf-version"));
+					app.swfVersion = Std.parseFloat (substitute (element.att.resolve ("swf-version")));
 				
 				case "preloader":
 					
@@ -301,7 +305,6 @@ class NMMLParser extends NMEProject {
 						
 					}
 					
-
 					if (Reflect.hasField (app, name)) {
 						
 						Reflect.setField (app, name, value);
@@ -657,7 +660,7 @@ class NMMLParser extends NMEProject {
 		
 		if (element.has.resolve ("swf-version")) {
 			
-			app.swfVersion = substitute (element.att.resolve ("swf-version"));
+			app.swfVersion = Std.parseFloat (substitute (element.att.resolve ("swf-version")));
 			//defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
 			
 		}
@@ -688,7 +691,7 @@ class NMMLParser extends NMEProject {
 						switch (name) {
 							
 							case "BUILD_DIR": app.path = value;
-							case "SWF_VERSION": app.swfVersion = value;
+							case "SWF_VERSION": app.swfVersion = Std.parseFloat (value);
 							case "PRERENDERED_ICON": config.ios.prerenderedIcon = (value == "true");
 							case "ANDROID_INSTALL_LOCATION": config.android.installLocation = value;
 							
