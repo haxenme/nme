@@ -815,10 +815,16 @@ class NMMLParser extends NMEProject {
 						}*/
 						
 						var name = substitute (element.att.name);
-						var version:String = null;
-						if (element.has.version && element.att.version != "")
-							version = element.att.version;
-						var path = PathHelper.getHaxelib (name, version);
+						var version = "";
+						
+						if (element.has.version) {
+							
+							version = substitute (element.att.version);
+							
+						}
+						
+						var haxelib = new Haxelib (name, version);
+						var path = PathHelper.getHaxelib (haxelib);
 						
 						if (FileSystem.exists (path + "/include.nmml")) {
 							
@@ -826,21 +832,20 @@ class NMMLParser extends NMEProject {
 							
 							for (ndll in includeProject.ndlls) {
 								
-								if (ndll.haxelib == "") {
+								if (ndll.haxelib == null) {
 									
-									ndll.haxelib = name;
+									ndll.haxelib = haxelib;
 									
 								}
 								
 							}
 							
 							includeProject.sources.push (path);
-							
 							merge (includeProject);
 							
 						}
 						
-						haxelibs.set(name, {name:name, version:version});
+						haxelibs.push (haxelib);
 					
 					case "ndll":
 						
@@ -866,23 +871,22 @@ class NMMLParser extends NMEProject {
 						}*/
 						
 						var name = substitute (element.att.name);
-						var haxelib = "";
+						var haxelib = null;
 						
 						if (element.has.haxelib) {
 							
-							haxelib = substitute (element.att.haxelib);
+							haxelib = new Haxelib (substitute (element.att.haxelib));
 							
 						}
 						
-						if (haxelib == "" && (name == "std" || name == "regexp" || name == "zlib")) {
+						if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib")) {
 							
-							haxelib = "hxcpp";
+							haxelib = new Haxelib ("hxcpp");
 							
 						}
 						
 						var ndll = new NDLL (name, haxelib);
 						ndll.extensionPath = extensionPath;
-						
 						ndlls.push (ndll);
 					
 					case "launchImage":

@@ -180,11 +180,11 @@ class LinuxPlatform implements IPlatformTool {
 			
 			if (isRaspberryPi) {
 				
-				FileHelper.copyLibrary (ndll, "RPi", "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
+				FileHelper.copyLibrary (ndll, "RPi", "", (ndll.haxelib != null && ndll.haxelib.name == "hxcpp") ? ".dso" : ".ndll", applicationDirectory, project.debug);
 				
 			} else {
 				
-				FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", ((ndll.haxelib == "" || ndll.haxelib == "hxcpp") ? ".dso" : ".ndll"), applicationDirectory, project.debug);
+				FileHelper.copyLibrary (ndll, "Linux" + (is64 ? "64" : ""), "", (ndll.haxelib != null && ndll.haxelib.name == "hxcpp") ? ".dso" : ".ndll", applicationDirectory, project.debug);
 				
 			}
 			
