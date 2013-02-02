@@ -521,7 +521,7 @@ class CommandLineTools {
 		
 		// Fix for library search paths
 		
-		var path = PathHelper.getHaxelib ("nme") + "ndll/";
+		var path = PathHelper.getHaxelib (new Haxelib ("nme")) + "ndll/";
 		
 		switch (PlatformHelper.hostPlatform) {
 			
@@ -725,7 +725,7 @@ class CommandLineTools {
 						
 						for (ndll in includeProject.ndlls) {
 							
-							if (ndll.haxelib == "") {
+							if (ndll.haxelib == null) {
 								
 								ndll.haxelib = haxelib;
 								

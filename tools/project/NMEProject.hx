@@ -21,7 +21,7 @@ class NMEProject {
 	public var environment:Hash <String>;
 	public var haxedefs:Array <String>;
 	public var haxeflags:Array <String>;
-	public var haxelibs:Array <String>;
+	public var haxelibs:Array <Haxelib>;
 	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
 	public var javaPaths:Array <String>;
@@ -86,8 +86,8 @@ class NMEProject {
 		templatePaths = _templatePaths.copy ();
 		
 		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
-		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: "11", minimumSWFVersion: "11", url: "" }
-		defaultWindow = { width: 800, height: 600, parameters: "", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: false, requireShaders: false, depthBuffer: false, stencilBuffer: false }
+		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
+		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: false, requireShaders: false, depthBuffer: false, stencilBuffer: false }
 		
 		switch (target) {
 			
@@ -141,7 +141,7 @@ class NMEProject {
 		environment = Sys.environment ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
-		haxelibs = new Array <String> ();
+		haxelibs = new Array <Haxelib> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
 		libraries = new Array <Library> ();
@@ -184,7 +184,12 @@ class NMEProject {
 		
 		project.haxedefs = haxedefs.copy ();
 		project.haxeflags = haxeflags.copy ();
-		project.haxelibs = haxelibs.copy ();
+		
+		for (haxelib in haxelibs) {
+			
+			project.haxelibs.push (haxelib.clone ());
+			
+		}
 		
 		for (icon in icons) {
 			
@@ -555,8 +560,17 @@ class NMEProject {
 		
 		for (haxelib in haxelibs) {
 			
-			compilerFlags.push ("-lib " + haxelib);
-			Reflect.setField (context, "LIB_" + haxelib.toUpperCase (), true);
+			var name = haxelib.name;
+			
+			if (haxelib.version != "") {
+				
+				name += ":" + haxelib.version;
+				
+			}
+			
+			compilerFlags.push ("-lib " + name);
+			
+			Reflect.setField (context, "LIB_" + haxelib.name.toUpperCase (), true);
 			
 		}
 		

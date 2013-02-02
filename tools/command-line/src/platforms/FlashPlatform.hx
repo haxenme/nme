@@ -140,9 +140,9 @@ class FlashPlatform implements IPlatformTool {
 		
 		var usesNME = false;
 		
-		for (lib in project.haxelibs) {
+		for (haxelib in project.haxelibs) {
 			
-			if (lib == "nme") {
+			if (haxelib.name == "nme") {
 				
 				usesNME = true;
 				

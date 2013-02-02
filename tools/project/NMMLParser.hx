@@ -104,33 +104,27 @@ class NMMLParser extends NMEProject {
 			
 			var value = element.x.get ("if");
 			var optionalDefines = value.split ("||");
+			var isValid = true;
 			
 			for (optional in optionalDefines) {
 				
 				var requiredDefines = optional.split (" ");
-				var match = true;
 				
 				for (required in requiredDefines) {
 					
 					var check = StringTools.trim (required);
 					
 					if (check != "" && !localDefines.exists (check)) {
-						
-						match = false;
+
+						isValid = false;
 						
 					}
 					
 				}
 				
-				if (match) {
-					
-					return true;
-					
-				}
-				
 			}
 			
-			return false;
+			return isValid;
 			
 		}
 		
@@ -138,33 +132,27 @@ class NMMLParser extends NMEProject {
 			
 			var value = element.att.unless;
 			var optionalDefines = value.split ("||");
+			var isValid = true;
 			
 			for (optional in optionalDefines) {
 				
 				var requiredDefines = optional.split (" ");
-				var match = true;
 				
 				for (required in requiredDefines) {
 					
 					var check = StringTools.trim (required);
-					
-					if (check != "" && !localDefines.exists (check)) {
+
+					if (check != "" && localDefines.exists (check)) {
 						
-						match = false;
+						isValid = false;
 						
 					}
-					
-				}
-				
-				if (match) {
-					
-					return false;
-					
+
 				}
 				
 			}
 			
-			return true;
+			return isValid;
 			
 		}
 		
@@ -268,7 +256,7 @@ class NMMLParser extends NMEProject {
 	private function parseAppElement (element:Fast):Void {
 		
 		for (attribute in element.x.attributes ()) {
-			
+
 			switch (attribute) {
 				
 				case "path":
@@ -278,20 +266,24 @@ class NMMLParser extends NMEProject {
 				
 				case "min-swf-version":
 					
-					var version = substitute (element.att.resolve ("min-swf-version"));
+					var version = Std.parseFloat (substitute (element.att.resolve ("min-swf-version")));
+					
+					if (version > app.swfVersion) {
+						
+						app.swfVersion = version;
+						
+					}
 					
 					/*if (!defines.exists ("SWF_VERSION") || Std.parseInt (defines.get ("SWF_VERSION")) <= Std.parseInt (version)) {
 						
 						defines.set ("SWF_VERSION", version);
 						
 					}*/
-					
-					app.minimumSWFVersion = version;
 				
 				case "swf-version":
 					
 					//defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
-					app.swfVersion = substitute (element.att.resolve ("swf-version"));
+					app.swfVersion = Std.parseFloat (substitute (element.att.resolve ("swf-version")));
 				
 				case "preloader":
 					
@@ -495,7 +487,9 @@ class NMMLParser extends NMEProject {
 			
 			for (childElement in element.elements) {
 				
-				if (isValidElement (childElement, "")) {
+				var isValid = isValidElement (childElement, "");
+
+				if (isValid) {
 					
 					var childPath = substitute (childElement.has.name ? childElement.att.name : childElement.att.path);
 					var childTargetPath = childPath;
@@ -666,7 +660,7 @@ class NMMLParser extends NMEProject {
 		
 		if (element.has.resolve ("swf-version")) {
 			
-			app.swfVersion = substitute (element.att.resolve ("swf-version"));
+			app.swfVersion = Std.parseFloat (substitute (element.att.resolve ("swf-version")));
 			//defines.set ("SWF_VERSION", substitute (element.att.resolve ("swf-version")));
 			
 		}
@@ -678,7 +672,8 @@ class NMMLParser extends NMEProject {
 		
 		for (element in xml.elements) {
 			
-			if (isValidElement (element, section)) {
+			var isValid = isValidElement (element, section);
+			if (isValid) {
 				
 				switch (element.name) {
 					
@@ -696,7 +691,7 @@ class NMMLParser extends NMEProject {
 						switch (name) {
 							
 							case "BUILD_DIR": app.path = value;
-							case "SWF_VERSION": app.swfVersion = value;
+							case "SWF_VERSION": app.swfVersion = Std.parseFloat (value);
 							case "PRERENDERED_ICON": config.ios.prerenderedIcon = (value == "true");
 							case "ANDROID_INSTALL_LOCATION": config.android.installLocation = value;
 							
@@ -823,7 +818,16 @@ class NMMLParser extends NMEProject {
 						}*/
 						
 						var name = substitute (element.att.name);
-						var path = PathHelper.getHaxelib (name);
+						var version = "";
+						
+						if (element.has.version) {
+							
+							version = substitute (element.att.version);
+							
+						}
+						
+						var haxelib = new Haxelib (name, version);
+						var path = PathHelper.getHaxelib (haxelib);
 						
 						if (FileSystem.exists (path + "/include.nmml")) {
 							
@@ -831,21 +835,20 @@ class NMMLParser extends NMEProject {
 							
 							for (ndll in includeProject.ndlls) {
 								
-								if (ndll.haxelib == "") {
+								if (ndll.haxelib == null) {
 									
-									ndll.haxelib = name;
+									ndll.haxelib = haxelib;
 									
 								}
 								
 							}
 							
 							includeProject.sources.push (path);
-							
 							merge (includeProject);
 							
 						}
 						
-						haxelibs.push (name);
+						haxelibs.push (haxelib);
 					
 					case "ndll":
 						
@@ -871,23 +874,22 @@ class NMMLParser extends NMEProject {
 						}*/
 						
 						var name = substitute (element.att.name);
-						var haxelib = "";
+						var haxelib = null;
 						
 						if (element.has.haxelib) {
 							
-							haxelib = substitute (element.att.haxelib);
+							haxelib = new Haxelib (substitute (element.att.haxelib));
 							
 						}
 						
-						if (haxelib == "" && (name == "std" || name == "regexp" || name == "zlib")) {
+						if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib")) {
 							
-							haxelib = "hxcpp";
+							haxelib = new Haxelib ("hxcpp");
 							
 						}
 						
 						var ndll = new NDLL (name, haxelib);
 						ndll.extensionPath = extensionPath;
-						
 						ndlls.push (ndll);
 					
 					case "launchImage":

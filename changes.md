@@ -1,6 +1,20 @@
 Changes
 =======
 
+3.5.5
+---------------
+* Added OpenGLView for HTML5
+* Integrated HTML5 publishing to BlackBerry 10
+* Added virtual keyboard support for BlackBerry
+* Key codes for A-Z are now capitalized, like Flash
+* Improvements to HTML5 TextFields
+* Added Event.ACTIVATE/DEACTIVATE for the stage in HTML5
+* Added FocusEvent.FOCUS_IN/FOCUS_OUT for the stage in HTML5
+* Added a FlashDevelop project for the "nme create project" template
+* Added ActuateExample, SimpleOpenGLView and HerokuShaders samples
+* Minor command-line tool fixes
+* Various other improvements
+
 3.5.4
 ---------------
 * Multiple improvements to the command-line tools
