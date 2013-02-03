@@ -30,7 +30,7 @@ distribution.
  * - fixed reserve() to work as per specification.
  * - fixed buggy compares operator==(), operator<(), and operator>()
  * - fixed operator+=() to take a const ref argument, following spec.
- * - added "copy" constructor with length, and most compare operators.
+ * - added L"copy" constructor with length, and most compare operators.
  * - added swap(), clear(), size(), capacity(), operator+().
  */
 
@@ -41,6 +41,7 @@ distribution.
 
 #include <assert.h>
 #include <string.h>
+#include <wchar.h> //for mac
 
 /*	The support for explicit isn't that universal, and it isn't really
 	required - it is used to check that the TiXmlString class isn't incorrectly
@@ -58,7 +59,7 @@ distribution.
 
 
 /*
-   TiXmlString is an emulation of a subset of the std::string template.
+   TiXmlString is an emulation of a subset of the std::wstring template.
    Its purpose is to allow compiling TinyXML on compilers with no or poor STL support.
    Only the member functions relevant to the TinyXML project have been implemented.
    The buffer allocation is made by a simplistic power of 2 like mechanism : if we increase
@@ -70,7 +71,7 @@ class TiXmlString
 	// The size type used
   	typedef size_t size_type;
 
-	// Error value for find primitive
+	// Error fvalue for find primitive
 	static const size_type npos; // = -1;
 
 
@@ -87,14 +88,14 @@ class TiXmlString
 	}
 
 	// TiXmlString constructor, based on a string
-	TIXML_EXPLICIT TiXmlString ( const char * copy) : rep_(0)
+	TIXML_EXPLICIT TiXmlString ( const wchar_t * copy) : rep_(0)
 	{
-		init( static_cast<size_type>( strlen(copy) ));
+		init( static_cast<size_type>( wcslen(copy) ));
 		memcpy(start(), copy, length());
 	}
 
 	// TiXmlString constructor, based on a string
-	TIXML_EXPLICIT TiXmlString ( const char * str, size_type len) : rep_(0)
+	TIXML_EXPLICIT TiXmlString ( const wchar_t * str, size_type len) : rep_(0)
 	{
 		init(len);
 		memcpy(start(), str, len);
@@ -107,9 +108,9 @@ class TiXmlString
 	}
 
 	// = operator
-	TiXmlString& operator = (const char * copy)
+	TiXmlString& operator = (const wchar_t * copy)
 	{
-		return assign( copy, (size_type)strlen(copy));
+		return assign( copy, (size_type)wcslen(copy));
 	}
 
 	// = operator
@@ -120,13 +121,13 @@ class TiXmlString
 
 
 	// += operator. Maps to append
-	TiXmlString& operator += (const char * suffix)
+	TiXmlString& operator += (const wchar_t * suffix)
 	{
-		return append(suffix, static_cast<size_type>( strlen(suffix) ));
+		return append(suffix, static_cast<size_type>( wcslen(suffix) ));
 	}
 
 	// += operator. Maps to append
-	TiXmlString& operator += (char single)
+	TiXmlString& operator += (wchar_t single)
 	{
 		return append(&single, 1);
 	}
@@ -138,11 +139,11 @@ class TiXmlString
 	}
 
 
-	// Convert a TiXmlString into a null-terminated char *
-	const char * c_str () const { return rep_->str; }
+	// Convert a TiXmlString into a null-terminated wchar_t *
+	const wchar_t * c_str () const { return rep_->str; }
 
-	// Convert a TiXmlString into a char * (need not be null terminated).
-	const char * data () const { return rep_->str; }
+	// Convert a TiXmlString into a wchar_t * (need not be null terminated).
+	const wchar_t * data () const { return rep_->str; }
 
 	// Return the length of a TiXmlString
 	size_type length () const { return rep_->size; }
@@ -157,32 +158,32 @@ class TiXmlString
 	size_type capacity () const { return rep_->capacity; }
 
 
-	// single char extraction
-	const char& at (size_type index) const
+	// single wchar_t extraction
+	const wchar_t& at (size_type index) const
 	{
 		assert( index < length() );
 		return rep_->str[ index ];
 	}
 
 	// [] operator
-	char& operator [] (size_type index) const
+	wchar_t& operator [] (size_type index) const
 	{
 		assert( index < length() );
 		return rep_->str[ index ];
 	}
 
-	// find a char in a string. Return TiXmlString::npos if not found
-	size_type find (char lookup) const
+	// find a wchar_t in a string. Return TiXmlString::npos if not found
+	size_type find (wchar_t lookup) const
 	{
 		return find(lookup, 0);
 	}
 
-	// find a char in a string from an offset. Return TiXmlString::npos if not found
-	size_type find (char tofind, size_type offset) const
+	// find a wchar_t in a string from an offset. Return TiXmlString::npos if not found
+	size_type find (wchar_t tofind, size_type offset) const
 	{
 		if (offset >= length()) return npos;
 
-		for (const char* p = c_str() + offset; *p != '\0'; ++p)
+		for (const wchar_t* p = c_str() + offset; *p != '\0'; ++p)
 		{
 		   if (*p == tofind) return static_cast< size_type >( p - c_str() );
 		}
@@ -204,9 +205,9 @@ class TiXmlString
 	*/
 	void reserve (size_type cap);
 
-	TiXmlString& assign (const char* str, size_type len);
+	TiXmlString& assign (const wchar_t* str, size_type len);
 
-	TiXmlString& append (const char* str, size_type len);
+	TiXmlString& append (const wchar_t* str, size_type len);
 
 	void swap (TiXmlString& other)
 	{
@@ -219,13 +220,13 @@ class TiXmlString
 
 	void init(size_type sz) { init(sz, sz); }
 	void set_size(size_type sz) { rep_->str[ rep_->size = sz ] = '\0'; }
-	char* start() const { return rep_->str; }
-	char* finish() const { return rep_->str + rep_->size; }
+	wchar_t* start() const { return rep_->str; }
+	wchar_t* finish() const { return rep_->str + rep_->size; }
 
 	struct Rep
 	{
 		size_type size, capacity;
-		char str[1];
+		wchar_t str[1];
 	};
 
 	void init(size_type sz, size_type cap)
@@ -269,11 +270,11 @@ class TiXmlString
 inline bool operator == (const TiXmlString & a, const TiXmlString & b)
 {
 	return    ( a.length() == b.length() )				// optimization on some platforms
-	       && ( strcmp(a.c_str(), b.c_str()) == 0 );	// actual compare
+	       && ( wcscmp(a.c_str(), b.c_str()) == 0 );	// actual compare
 }
 inline bool operator < (const TiXmlString & a, const TiXmlString & b)
 {
-	return strcmp(a.c_str(), b.c_str()) < 0;
+	return wcscmp(a.c_str(), b.c_str()) < 0;
 }
 
 inline bool operator != (const TiXmlString & a, const TiXmlString & b) { return !(a == b); }
@@ -281,14 +282,14 @@ inline bool operator >  (const TiXmlString & a, const TiXmlString & b) { return 
 inline bool operator <= (const TiXmlString & a, const TiXmlString & b) { return !(b < a); }
 inline bool operator >= (const TiXmlString & a, const TiXmlString & b) { return !(a < b); }
 
-inline bool operator == (const TiXmlString & a, const char* b) { return strcmp(a.c_str(), b) == 0; }
-inline bool operator == (const char* a, const TiXmlString & b) { return b == a; }
-inline bool operator != (const TiXmlString & a, const char* b) { return !(a == b); }
-inline bool operator != (const char* a, const TiXmlString & b) { return !(b == a); }
+inline bool operator == (const TiXmlString & a, const wchar_t* b) { return wcscmp(a.c_str(), b) == 0; }
+inline bool operator == (const wchar_t* a, const TiXmlString & b) { return b == a; }
+inline bool operator != (const TiXmlString & a, const wchar_t* b) { return !(a == b); }
+inline bool operator != (const wchar_t* a, const TiXmlString & b) { return !(b == a); }
 
 TiXmlString operator + (const TiXmlString & a, const TiXmlString & b);
-TiXmlString operator + (const TiXmlString & a, const char* b);
-TiXmlString operator + (const char* a, const TiXmlString & b);
+TiXmlString operator + (const TiXmlString & a, const wchar_t* b);
+TiXmlString operator + (const wchar_t* a, const TiXmlString & b);
 
 
 /*
@@ -307,7 +308,7 @@ public :
 	}
 
 	// TiXmlOutStream << operator.
-	TiXmlOutStream & operator << (const char * in)
+	TiXmlOutStream & operator << (const wchar_t * in)
 	{
 		*this += in;
 		return *this;

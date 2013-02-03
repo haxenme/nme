@@ -189,13 +189,6 @@ namespace nme {
 
 std::string WideToUTF8(const WString &inWideString);
 
-// You should delete[] the result
-wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen);
-
-void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
-
-WString UTF8ToWide(const char *inStr);
-
 double GetTimeStamp();
 
 struct VolumeInfo
