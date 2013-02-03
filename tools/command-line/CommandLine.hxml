@@ -4,6 +4,7 @@
 -cp ../helpers
 -cp ../project
 -lib nme
+-lib format
 -lib swf
 -lib svg
 -lib xfl
