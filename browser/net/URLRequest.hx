@@ -1,6 +1,8 @@
 package browser.net;
+
 #if js
 
+import browser.utils.ByteArray;
 
 class URLRequest {
 	
@@ -22,8 +24,25 @@ class URLRequest {
 		
 		requestHeaders = [];
 		method = URLRequestMethod.GET;
-		contentType = "application/x-www-form-urlencoded";
+		contentType = null; // "application/x-www-form-urlencoded";
 		
+	}
+	
+	public function formatRequestHeaders():Array<URLRequestHeader>
+	{
+		var res = requestHeaders;
+		if (res == null) res = [];
+		
+		if (method == URLRequestMethod.GET || data == null) return res;
+		
+
+		if (Std.is(data, String) || Std.is(data, ByteArray))
+		{
+			res = res.copy();
+			res.push(new URLRequestHeader("Content-Type", contentType != null ? contentType : "application/x-www-form-urlencoded"));
+		}
+		
+		return res;
 	}
 	
 	
