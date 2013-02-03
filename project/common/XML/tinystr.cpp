@@ -31,7 +31,7 @@ distribution.
 
 #include "tinystr.h"
 
-// Error value for find primitive
+// Error fvalue for find primitive
 const TiXmlString::size_type TiXmlString::npos = static_cast< TiXmlString::size_type >(-1);
 
 
@@ -51,7 +51,7 @@ void TiXmlString::reserve (size_type cap)
 }
 
 
-TiXmlString& TiXmlString::assign(const char* str, size_type len)
+TiXmlString& TiXmlString::assign(const wchar_t* str, size_type len)
 {
 	size_type cap = capacity();
 	if (len > cap || cap > 3*(len + 8))
@@ -70,7 +70,7 @@ TiXmlString& TiXmlString::assign(const char* str, size_type len)
 }
 
 
-TiXmlString& TiXmlString::append(const char* str, size_type len)
+TiXmlString& TiXmlString::append(const wchar_t* str, size_type len)
 {
 	size_type newsize = length() + len;
 	if (newsize > capacity())
@@ -92,20 +92,20 @@ TiXmlString operator + (const TiXmlString & a, const TiXmlString & b)
 	return tmp;
 }
 
-TiXmlString operator + (const TiXmlString & a, const char* b)
+TiXmlString operator + (const TiXmlString & a, const wchar_t* b)
 {
 	TiXmlString tmp;
-	TiXmlString::size_type b_len = static_cast<TiXmlString::size_type>( strlen(b) );
+	TiXmlString::size_type b_len = static_cast<TiXmlString::size_type>( wcslen(b) );
 	tmp.reserve(a.length() + b_len);
 	tmp += a;
 	tmp.append(b, b_len);
 	return tmp;
 }
 
-TiXmlString operator + (const char* a, const TiXmlString & b)
+TiXmlString operator + (const wchar_t* a, const TiXmlString & b)
 {
 	TiXmlString tmp;
-	TiXmlString::size_type a_len = static_cast<TiXmlString::size_type>( strlen(a) );
+	TiXmlString::size_type a_len = static_cast<TiXmlString::size_type>( wcslen(a) );
 	tmp.reserve(a_len + b.length());
 	tmp.append(a, a_len);
 	tmp += b;

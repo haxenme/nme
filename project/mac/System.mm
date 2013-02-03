@@ -35,21 +35,28 @@ std::string CapabilitiesGetLanguage()
 
 double CapabilitiesGetScreenDPI()
 {
-	#ifndef OBJC_ARC
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	#endif
-	
-	NSScreen *screen = [NSScreen mainScreen];
-	NSDictionary *description = [screen deviceDescription];
-	NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
-	CGSize displayPhysicalSize = CGDisplayScreenSize(
-	            [[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-	double result = ((displayPixelSize.width / displayPhysicalSize.width) + (displayPixelSize.height / displayPhysicalSize.height)) * 0.5 * 25.4;
-	
-	#ifndef OBJC_ARC
-	[pool drain];
-	#endif
-	return result;
+    #ifndef OBJC_ARC
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    #endif
+        
+    double result = 72.0f;
+        
+    NSScreen *screen = [NSScreen mainScreen];
+        
+    if (screen)
+    {
+        CGFloat scaleFactor = [screen userSpaceScaleFactor];
+        NSDictionary* deviceDescription = [screen deviceDescription];
+        NSSize resolution = [[deviceDescription objectForKey:NSDeviceResolution] sizeValue];
+        //printf("size.width: %f size.height: %f sf: %f\n", resolution.width, resolution.height, scaleFactor);
+            
+        result = scaleFactor * (resolution.width + resolution.height)/2.0;
+    }
+        
+    #ifndef OBJC_ARC
+    [pool drain];
+    #endif
+    return result;
 }
 
 double CapabilitiesGetPixelAspectRatio() {
