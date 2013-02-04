@@ -48,7 +48,7 @@ namespace nme
 		   	jclass cls = env->FindClass("org/haxe/nme/Sound");
          	jmethodID mid = env->GetStaticMethodID(cls, "getSoundComplete", "(III)Z");
          	if (mid > 0) {
-				return env->CallStaticIntMethod(cls, mid, mSoundHandle, mStreamID, mLoop);
+				return env->CallStaticBooleanMethod(cls, mid, mSoundHandle, mStreamID, mLoop);
 		   	}
 		}
 
