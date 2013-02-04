@@ -1069,4 +1069,9 @@ class TouchInfo {
 }
 
 
+#if haxe_211
+typedef IntHash<T> = haxe.ds.IntMap<T>;
+#end
+
+
 #end

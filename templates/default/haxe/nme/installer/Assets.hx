@@ -291,3 +291,8 @@ class Assets {
 	
 	
 }
+
+
+#if haxe_211
+typedef Hash<T> = haxe.ds.StringMap<T>;
+#end
