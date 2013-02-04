@@ -1148,7 +1148,7 @@ const wchar_t* TiXmlElement::ReadValue( const wchar_t* p, TiXmlParsingData* data
 				p = textNode->Parse( pWithWhiteSpace, data, encoding );
 			}
 
-			if ( !textNode->Blank() || !TiXmlBase::IsWhiteSpaceCondensed() )
+			if ( !textNode->Blank() )
 				LinkEndChild( textNode );
 			else
 				delete textNode;
@@ -1177,7 +1177,7 @@ const wchar_t* TiXmlElement::ReadValue( const wchar_t* p, TiXmlParsingData* data
 			}
 		}
 		pWithWhiteSpace = p;
-		//p = SkipWhiteSpace( p, encoding );
+		p = SkipWhiteSpace( p, encoding );
 	}
 
 	if ( !p )
@@ -1477,8 +1477,10 @@ const wchar_t* TiXmlText::Parse( const wchar_t* p, TiXmlParsingData* data, TiXml
 	}
 	else
 	{
+		bool ignoreWhite = true;
+
 		const wchar_t* end = L"<";
-		p = ReadText( p, &fvalue, TiXmlBase::IsWhiteSpaceCondensed(), end, false, encoding );
+		p = ReadText( p, &fvalue, ignoreWhite, end, false, encoding );
 		if ( p )
 			return p-1;	// don't truncate the '<'
 		return 0;
