@@ -276,7 +276,10 @@
    <set name="sdl_dynamic_include1" value="-I${PalmPDK}/include/SDL" if="webos" />
    <set name="sdl_dynamic_include1" value="-I/usr/include/SDL" if="linux" />
    
-   
+
+      <!-- Toggle this for openal experimental osx code -->
+   <set name="openal" value="1" if="macos"/>
+
    <files id="sdl">
       
       <compilerflag value="-Iinclude"/>
@@ -289,7 +292,7 @@
       <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
       <compilerflag value="-DNME_MIXER" />
       <file name="sdl/SDLStage.cpp"/>
-      <file name="sdl/SDLSound.cpp"/>
+      <file name="sdl/SDLSound.cpp" unless="openal"/>
       
    </files>
    
@@ -303,6 +306,7 @@
       <file name="mac/MacBoot.m"/>
       <file name="mac/System.mm"/>
       <file name="cocoa/FileManager.mm"/>
+      <file name="openal/OpenALSound.mm" if="openal"/>
       
    </files>
    
@@ -368,6 +372,8 @@
       <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
       
       <vflag name="-framework" value="IOKit" if="macos"/>
+      <vflag name="-framework" value="Foundation" if="macos"/>
+      <vflag name="-framework" value="AVFoundation" if="macos"/>
       <vflag name="-framework" value="CoreAudio" if="macos"/>
       <vflag name="-framework" value="Carbon" if="macos"/>
       <vflag name="-framework" value="AudioToolbox" if="macos"/>
@@ -377,6 +383,7 @@
       <vflag name="-framework" value="OpenGL" if="macos"/>
       <vflag name="-framework" value="QuickTime" if="macos"/>
       <vflag name="-framework" value="AppKit" if="macos"/>
+      <vflag name="-framework" value="OpenAL" if="macos"/>
       
       <lib name="-ldl" if="android"/>
       <lib name="-lGLESv1_CM" if="android"/>
