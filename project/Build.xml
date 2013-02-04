@@ -23,6 +23,10 @@
    <set name="ogl" value="1" if="blackberry"/>
    <set name="nmeegl" value="1" if="rpi"/>
    
+   <!-- Toggle this for openal experimental osx code -->
+   <set name="openal" value="1" if="macos"/>
+   <!-- <set name="openal" value="1" if="win_desktop"/> -->
+	
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
    <set name="mobile" value="1" if="webos"/>
@@ -39,11 +43,13 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I../../sdl-static/include"/>
       <compilerflag value="-I../../sdl-static/include/SDL12"/>
+      <compilerflag value="-I../../sdl-static/include/openal"/>
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
       <file name="windows/SimpleFrame.cpp" unless="sdl"/>
       <file name="sdl/SDLSound.cpp" unless="sdl"/>
+	  <file name="openal/OpenALSound.cpp" if="openal"/>
       
    </files>
 
@@ -277,9 +283,6 @@
    <set name="sdl_dynamic_include1" value="-I/usr/include/SDL" if="linux" />
    
 
-      <!-- Toggle this for openal experimental osx code -->
-   <set name="openal" value="1" if="macos"/>
-
    <files id="sdl">
       
       <compilerflag value="-Iinclude"/>
@@ -413,6 +416,7 @@
       
       <lib name="gdi32.lib" if="win_desktop"/>
       <lib name="opengl32.lib" if="win_desktop"/>
+	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="win_desktop"/>
       <lib name="user32.lib" if="win_desktop"/>
       <lib name="kernel32.lib" if="win_desktop"/>
       <lib name="advapi32.lib" if="win_desktop"/>
