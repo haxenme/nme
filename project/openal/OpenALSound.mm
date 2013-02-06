@@ -231,10 +231,10 @@ namespace nme
             }
             return 0.5;
         }
-        bool setPosition(const float &inFloat) {
+        double setPosition(const float &inFloat) {
             LOG_SOUND("AVAudioPlayerChannel setPosition()");
             theActualPlayer.currentTime = inFloat / 1000;
-            return true;
+            return inFloat;
         }
         double getPosition()   {
             LOG_SOUND("AVAudioPlayerChannel getPosition()");
@@ -659,9 +659,9 @@ namespace nme
             return (panX+1)/2;
         }
         
-        bool setPosition(const float &inFloat) {
+        double setPosition(const float &inFloat) {
             alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);            
-            return true;
+            return inFloat;
         }
 
         double getPosition()  

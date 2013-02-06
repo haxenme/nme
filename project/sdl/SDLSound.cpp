@@ -224,6 +224,7 @@ public:
    double getLeft() { return 1; }
    double getRight() { return 1; }
    double getPosition() { return 1; }
+   double setPosition(const float &inFloat) { return 1; }
    void stop() 
    {
       if (mChannel>=0)
@@ -416,6 +417,8 @@ public:
    double getLeft() { return 1; }
    double getRight() { return 1; }
    double getPosition() { return mPlaying ? SDL_GetTicks() - mStartTime : mLength; }
+   double setPosition(const float &inFloat) { return 1; }
+
    void stop() 
    {
       if (mMusic)
