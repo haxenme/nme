@@ -6,10 +6,9 @@
 #include <map>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 using namespace nme;
-
-extern JNIEnv *GetEnv();
 
 enum JNIElement
 {
