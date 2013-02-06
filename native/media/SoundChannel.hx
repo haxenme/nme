@@ -146,7 +146,7 @@ class SoundChannel extends EventDispatcher {
 	private function get_leftPeak():Float { return nme_sound_channel_get_left(nmeHandle); }
 	private function get_rightPeak():Float { return nme_sound_channel_get_right(nmeHandle); }
 	private function get_position():Float { return nme_sound_channel_get_position(nmeHandle); }
-	private function set_position(position : Float):Float { return nme_sound_channel_set_position(nmeHandle,position); }
+	private function set_position(value:Float):Float { return nme_sound_channel_set_position(nmeHandle, position); }
 	
 	
 	private function get_soundTransform():SoundTransform {

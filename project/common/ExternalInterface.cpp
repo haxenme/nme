@@ -3615,12 +3615,14 @@ DEFINE_PRIM(nme_sound_channel_get_position,1);
 
 value nme_sound_channel_set_position(value inChannel, value inFloat)
 {
+   #ifdef HX_MACOS
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {    
       float position = val_number(inFloat);
       channel->setPosition(position);
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_channel_set_position,2);
