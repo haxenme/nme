@@ -231,6 +231,11 @@ namespace nme
             }
             return 0.5;
         }
+        bool setPosition(const float &inFloat) {
+            LOG_SOUND("AVAudioPlayerChannel setPosition()");
+            theActualPlayer.currentTime = inFloat / 1000;
+            return true;
+        }
         double getPosition()   {
             LOG_SOUND("AVAudioPlayerChannel getPosition()");
             return [theActualPlayer currentTime] * 1000;
@@ -654,6 +659,11 @@ namespace nme
             return (panX+1)/2;
         }
         
+        bool setPosition(const float &inFloat) {
+            alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);            
+            return true;
+        }
+
         double getPosition()  
         {
             float pos = 0;
@@ -755,6 +765,12 @@ namespace nme
                     
                     // load the awaiting data blob into the openAL buffer.
                     alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
+
+                    // once we have all our information loaded, get some extra flags
+                    alGetBufferi(mBufferID, AL_SIZE, &bufferSize);
+                    alGetBufferi(mBufferID, AL_FREQUENCY, &frequency);
+                    alGetBufferi(mBufferID, AL_CHANNELS, &channels);    
+                    alGetBufferi(mBufferID, AL_BITS, &bitsPerSample);  
                 }
             }
             #ifndef OBJC_ARC
@@ -891,10 +907,12 @@ namespace nme
         
         
         double getLength()
-        {
-            double toBeReturned = ok() ? 1 : 0;
-            LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
-            return toBeReturned;
+        {  
+            double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
+
+            LOG_SOUND("OpenALSound getLength returning %f", result);
+            
+            return result;
         }
         
         void getID3Value(const std::string &inKey, std::string &outValue)
@@ -937,6 +955,11 @@ namespace nme
             return new OpenALChannel(this,mBufferID,loops,inTransform);
         }
         
+        ALint bufferSize;
+        ALint frequency;
+        ALint bitsPerSample;
+        ALint channels;
+
         unsigned int mBufferID;
         std::string mError;
     };
