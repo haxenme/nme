@@ -77,7 +77,8 @@ public:
       GLuint tid = (GLuint)(size_t)inNativeTexture;
       if ( !IsMainThread() )
       {
-         printf("Warning - leaking texture %d", tid );
+         //printf("Warning - leaking texture %d", tid );
+		 mZombieTextures.push_back(tid);
       }
       else
          glDeleteTextures(1,&tid);
@@ -179,6 +180,12 @@ public:
          wglMakeCurrent(mDC,mOGLCtx);
          #endif
          #endif
+		 
+         if (mZombieTextures.size())
+         {
+            glDeleteTextures(mZombieTextures.size(),&mZombieTextures[0]);
+            mZombieTextures.resize(0);
+         }
 
          // Force dirty
          mViewport.w = -1;
@@ -650,6 +657,8 @@ public:
    double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;
+   
+   QuickVec<GLuint> mZombieTextures;
 };
 
 #ifdef NME_USE_VBO

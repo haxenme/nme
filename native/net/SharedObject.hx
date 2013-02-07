@@ -2,7 +2,17 @@ package native.net;
 #if (cpp || neko)
 
 
-#if cpp
+#if haxe3
+
+import sys.FileSystem;
+import sys.io.File;
+import sys.io.FileInput;
+import sys.io.FileOutput;
+import haxe.io.Path;
+import Sys;
+import native.Loader;
+
+#elseif cpp
 
 import cpp.FileSystem;
 import cpp.io.File;
