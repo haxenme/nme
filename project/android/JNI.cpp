@@ -6,10 +6,9 @@
 #include <map>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 using namespace nme;
-
-extern JNIEnv *GetEnv();
 
 enum JNIElement
 {
@@ -185,7 +184,7 @@ void JNIInit(JNIEnv *env)
 {
    if (sInit)
       return;
-   GameActivity = env->FindClass("org/haxe/nme/GameActivity");
+   GameActivity = (jclass)env->NewGlobalRef(env->FindClass("org/haxe/nme/GameActivity"));
    postUICallback = env->GetStaticMethodID(GameActivity, "postUICallback", "(J)V");
 
    ObjectClass = env->FindClass("java/lang/Object");

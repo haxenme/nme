@@ -7,15 +7,17 @@
 #include <ByteArray.h>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 JavaVM *gJVM=0;
+/*
 JNIEnv *GetEnv()
 {
    JNIEnv *env = 0;
    gJVM->AttachCurrentThread(&env, NULL);
    return env;
 }
-
+*/
 
 namespace nme
 {
