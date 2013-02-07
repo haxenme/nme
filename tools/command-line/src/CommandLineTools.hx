@@ -205,6 +205,34 @@ class CommandLineTools {
 					
 				}
 				
+			} else if (words[0] == "extension") {
+				
+				var title = "Extension";
+				
+				if (words.length > 1) {
+					
+					title = words[1];
+					
+				}
+				
+				title = title.substr (0, 1).toUpperCase () + title.substr (1);
+				title = StringTools.replace (title, " ", "");
+				
+				PathHelper.mkdir (title);
+				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "extension", title, { title: title, name: title.toLowerCase () });
+				
+				if (FileSystem.exists (title + "/Extension.hx")) {
+					
+					FileSystem.rename (title + "/Extension.hx", title + "/" + title + ".hx");
+					
+				}
+				
+				if (FileSystem.exists (title + "/project/common/Extension.cpp")) {
+					
+					FileSystem.rename (title + "/project/common/Extension.cpp", title + "/project/common/" + title + ".cpp");
+					
+				}
+				
 			} else {
 				
 				var sampleName = words[0];
@@ -229,6 +257,7 @@ class CommandLineTools {
 			Sys.println ("Usage: ");
 			Sys.println ("");
 			Sys.println (" nme create project \"com.package.name\" \"Company Name\"");
+			Sys.println (" nme create extension \"ExtensionName\"");
 			Sys.println (" nme create SampleName");
 			Sys.println ("");
 			Sys.println ("");
@@ -266,7 +295,9 @@ class CommandLineTools {
 		Sys.println (" Usage : nme help");
 		Sys.println (" Usage : nme [clean|update|build|run|test|display] <project> (target) [options]");
 		Sys.println (" Usage : nme create project <package> [options]");
+		Sys.println (" Usage : nme create extension <name>");
 		Sys.println (" Usage : nme create <sample>");
+		Sys.println (" Usage : nme rebuild <extension> (targets)");
 		//Sys.println (" Usage : nme document <project> (target)");
 		//Sys.println (" Usage : nme generate <args> [options]");
 		//Sys.println (" Usage : nme new file.nmml name1=value1 name2=value2 ...");
@@ -281,7 +312,8 @@ class CommandLineTools {
 		Sys.println ("  run : Install and run for the specified project/target");
 		Sys.println ("  test : Update, build and run in one command");
 		Sys.println ("  display : Display information for the specified project/target");
-		Sys.println ("  create : Create a new project, using templates");
+		Sys.println ("  create : Create a new project or extension using templates");
+		Sys.println ("  rebuild : Recompile native binaries for extensions");
 		//Sys.println ("  document : Generate documentation using haxedoc");
 		//Sys.println ("  generate : Tools to help create source code automatically");
 		Sys.println ("");
@@ -928,7 +960,7 @@ class CommandLineTools {
 				var lastCharacter = nme.substr (-1, 1);
 				
 				if (lastCharacter == "/" || lastCharacter == "\\") {
-						
+					
 					nme = nme.substr (0, -1);
 					
 				}
