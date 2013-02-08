@@ -71,6 +71,11 @@ namespace nme
 		   	}
 		}
 
+		double setPosition(const float &inFloat) {
+				//not implemented yet.
+			return -1;
+		}
+
 		void stop()
 		{
 			if (mStreamID > -1) {	
@@ -142,6 +147,17 @@ namespace nme
 			jclass cls = env->FindClass("org/haxe/nme/Sound");
 			jstring path = env->NewStringUTF(mSoundPath.c_str());
 			jmethodID mid = env->GetStaticMethodID(cls, "getPosition", "(Ljava/lang/String;)I");
+			if (mid > 0) {
+				return env->CallStaticIntMethod(cls, mid, path);
+			}
+			return -1;
+		}
+
+		double setPosition(const float &inFloat) {
+			JNIEnv *env = GetEnv();
+			jclass cls = env->FindClass("org/haxe/nme/Sound");
+			jstring path = env->NewStringUTF(mSoundPath.c_str());
+			jmethodID mid = env->GetStaticMethodID(cls, "setPosition", "(Ljava/lang/String;)I");
 			if (mid > 0) {
 				return env->CallStaticIntMethod(cls, mid, path);
 			}
