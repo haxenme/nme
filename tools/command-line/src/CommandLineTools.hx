@@ -215,27 +215,35 @@ class CommandLineTools {
 					
 				}
 				
-				title = title.substr (0, 1).toUpperCase () + title.substr (1);
-				title = StringTools.replace (title, " ", "");
+				var file = StringTools.replace (title, " ", "");
+				var extension = StringTools.replace (file, "-", "_");
+				var className = extension.substr (0, 1).toUpperCase () + extension.substr (1);
+				
+				var context:Dynamic = { };
+				context.file = file;
+				context.extension = extension;
+				context.className = className;
+				context.extensionLowerCase = extension.toLowerCase ();
+				context.extensionUpperCase = extension.toUpperCase ();
 				
 				PathHelper.mkdir (title);
-				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "extension", title, { title: title, name: title.toLowerCase (), nameUpperCase: title.toUpperCase () });
+				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "extension", title, context);
 				
 				if (FileSystem.exists (title + "/Extension.hx")) {
 					
-					FileSystem.rename (title + "/Extension.hx", title + "/" + title + ".hx");
+					FileSystem.rename (title + "/Extension.hx", title + "/" + className + ".hx");
 					
 				}
 				
 				if (FileSystem.exists (title + "/project/common/Extension.cpp")) {
 					
-					FileSystem.rename (title + "/project/common/Extension.cpp", title + "/project/common/" + title + ".cpp");
+					FileSystem.rename (title + "/project/common/Extension.cpp", title + "/project/common/" + file + ".cpp");
 					
 				}
 				
 				if (FileSystem.exists (title + "/project/include/Extension.h")) {
 					
-					FileSystem.rename (title + "/project/include/Extension.h", title + "/project/include/" + title + ".h");
+					FileSystem.rename (title + "/project/include/Extension.h", title + "/project/include/" + file + ".h");
 					
 				}
 				

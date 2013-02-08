@@ -6,14 +6,14 @@ import cpp.Lib;
 import neko.Lib;
 #end
 
-class ::title:: {
+class ::className:: {
 	
 	public static function sampleMethod (inputValue:Int):Int {
 		
-		return ::name::_sample_method(inputValue);
+		return ::extensionLowerCase::_sample_method(inputValue);
 		
 	}
 	
-	private static var ::name::_sample_method = Lib.load ("::title::", "::name::_sample_method", 1);
+	private static var ::extensionLowerCase::_sample_method = Lib.load ("::file::", "::extensionLowerCase::_sample_method", 1);
 	
 }

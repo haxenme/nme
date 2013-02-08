@@ -1,10 +1,10 @@
-#ifndef ::nameUpperCase::_H
-#define ::nameUpperCase::_H
+#ifndef ::extensionUpperCase::_H
+#define ::extensionUpperCase::_H
 
 #include <NME/extension.h>
 
 
-namespace ::name:: {
+namespace ::extensionLowerCase:: {
 	
 	int SampleMethod(int inputValue);
 	

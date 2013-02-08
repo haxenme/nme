@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-namespace ::name:: {
+namespace ::extensionLowerCase:: {
 	
 	int SampleMethod(int inputValue) {
 		
