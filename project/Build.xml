@@ -110,6 +110,7 @@
    <files id="android">
       
       <compilerflag value="-Iinclude"/>
+      <file name="android/AndroidCommon.cpp" />
       <file name="android/AndroidSound.cpp"/>
       <file name="android/AndroidFont.cpp"/>
       <file name="android/AndroidFrame.cpp"/>
@@ -338,8 +339,6 @@
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
-      
-      <file name="common/Extension.cpp"/>
       
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>

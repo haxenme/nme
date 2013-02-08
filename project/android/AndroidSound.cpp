@@ -4,14 +4,13 @@
 #include <jni.h>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 #undef LOGV
 #undef LOGE
 
 #define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
 #define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
-
-extern JNIEnv *GetEnv();
 
 namespace nme
 {
