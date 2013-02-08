@@ -850,11 +850,17 @@ class RunScript {
 			
 			if (args.length == 2 - ignoreLength) {
 				
-				if (FileSystem.exists (FileSystem.fullPath ("include.nmml"))) {
+				try {
+					
+					if (FileSystem.exists (FileSystem.fullPath ("include.nmml"))) {
 					
 					path = FileSystem.fullPath ("project");
 					
-				} else {
+					}
+					
+				}
+				
+				if (path != "") {
 					
 					if (nmeDirectory.indexOf ("C:\\Motion-Twin") != -1 || nmeDirectory.indexOf ("/usr/lib/haxe/lib") != -1) {
 						

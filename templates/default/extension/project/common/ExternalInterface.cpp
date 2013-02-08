@@ -8,7 +8,7 @@
 
 
 #include <hx/CFFI.h>
-#include "::file::.h"
+#include "Utils.h"
 
 
 using namespace ::extensionLowerCase::;
@@ -25,11 +25,7 @@ DEFINE_PRIM (::extensionLowerCase::_sample_method, 1);
 
 
 
-extern "C" void ::extensionLowerCase::_main () {
-	
-	// This is an optional method used for initialization
-	
-}
+extern "C" void ::extensionLowerCase::_main () {}
 DEFINE_ENTRY_POINT (::extensionLowerCase::_main);
 
 
