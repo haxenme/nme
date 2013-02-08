@@ -8,16 +8,9 @@
 #include "bps/event.h"
 #include <string>
 #include <stdio.h>
-#include <QuickVec.h>
 
 
 namespace nme {
-	
-	
-	QuickVec<int> bpsEventDomains;
-	
-	typedef void (*bpsEventHandler) (bps_event_t *event);
-	QuickVec <bpsEventHandler> bpsEventHandlers;
 	
 	
 	std::string CapabilitiesGetLanguage () {
@@ -96,33 +89,6 @@ namespace nme {
 		bps_free (err);
 		
 		return (result == BPS_SUCCESS);
-		
-	}
-	
-	
-	void ProcessBPSEvent (bps_event_t *event) {
-		
-		for (int i = 0; i < bpsEventDomains.size (); i++) {
-			
-			if (bps_event_get_domain (event) == bpsEventDomains[i]) {
-				
-				(*(bpsEventHandlers[i])) (event);
-				
-			}
-			
-		}
-		
-		//printf ("Received BPS event\n");
-		
-	}
-	
-	
-	bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain) {
-		
-		bpsEventDomains.push_back (domain);
-		bpsEventHandlers.push_back (handler);
-		
-		return true;
 		
 	}
 

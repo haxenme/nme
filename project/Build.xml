@@ -211,7 +211,6 @@
       <file name="common/CURL.cpp" unless="winrt"/>
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
-	  <file name="common/Extension.cpp"/>
       
       <file name="common/XML/tinystr.cpp"/>
       <file name="common/XML/tinyxml.cpp"/>

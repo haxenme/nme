@@ -57,6 +57,8 @@ enum EventType
    etJoyHatMove, // 26
    etJoyButtonDown, // 27
    etJoyButtonUp, // 28
+   
+   etSysWM, //29
 };
 
 enum EventFlags
