@@ -191,7 +191,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustIDs(vec:Vector<Int>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustIDs(vec:Vector<Int>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{
@@ -206,7 +206,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustIndices(vec:Vector<Int>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustIndices(vec:Vector<Int>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{
@@ -237,7 +237,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustLen(vec:Vector<Float>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustLen(vec:Vector<Float>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{

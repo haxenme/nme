@@ -19,6 +19,12 @@ import format.swf.lite.SWFLite;
 import format.XFL;
 #end
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 /**
  * ...
@@ -28,15 +34,15 @@ import format.XFL;
 class Assets {
 	
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
-	#if swfdev private static var cachedSWFLibraries:Hash <SWFLite> = new Hash <SWFLite> (); #end
-	#if xfl private static var cachedXFLLibraries:Hash <XFL> = new Hash <XFL> (); #end
+	public static var cachedBitmapData:StringMap<BitmapData> = new StringMap<BitmapData>();
+	#if swfdev private static var cachedSWFLibraries:StringMap <SWFLite> = new StringMap <SWFLite> (); #end
+	#if xfl private static var cachedXFLLibraries:StringMap <XFL> = new StringMap <XFL> (); #end
 	
 	private static var initialized:Bool = false;
-	private static var libraryTypes:Hash <String> = new Hash <String> ();
-	private static var resourceClasses:Hash <Dynamic> = new Hash <Dynamic> ();
-	private static var resourceNames:Hash <String> = new Hash <String> ();
-	private static var resourceTypes:Hash <String> = new Hash <String> ();
+	private static var libraryTypes:StringMap <String> = new StringMap <String> ();
+	private static var resourceClasses:StringMap <Dynamic> = new StringMap <Dynamic> ();
+	private static var resourceNames:StringMap <String> = new StringMap <String> ();
+	private static var resourceTypes:StringMap <String> = new StringMap <String> ();
 	
 	
 	private static function initialize ():Void {

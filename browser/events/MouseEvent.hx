@@ -66,7 +66,7 @@ class MouseEvent extends Event {
 			
 			var mouseEvent:Dynamic = event;
 			if (mouseEvent.wheelDelta) { /* IE/Opera. */
-				#if !haxe_210
+				#if (!haxe_210 && !haxe3)
 				if (js.Lib.isOpera)
 					delta = Std.int(mouseEvent.wheelDelta / 40);
 				else
@@ -86,7 +86,7 @@ class MouseEvent extends Event {
 			nmeMouseDown = if (event.which != null) 
 				event.which == 1
 			else if (event.button != null) 
-				#if haxe_210
+				#if (haxe_210 || haxe3)
 				(event.button == 0) 
 				#else
 				(js.Lib.isIE && event.button == 1 || event.button == 0) 
@@ -99,7 +99,7 @@ class MouseEvent extends Event {
 				if (event.which == 1)
 					nmeMouseDown = false;
 			else if (event.button != null) 
-				#if haxe_210
+				#if (haxe_210 || haxe3)
 				if (event.button == 0)
 				#else
 				if (js.Lib.isIE && event.button == 1 || event.button == 0) 

@@ -6,7 +6,7 @@ import browser.display.IGraphicsData;
 import browser.Html5Dom;
 
 
-class GraphicsPath implements IGraphicsData, implements IGraphicsPath {
+class GraphicsPath implements IGraphicsData #if !haxe3 , #end implements IGraphicsPath {
 	
 	
 	public var commands:Vector<Int>;

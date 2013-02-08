@@ -12,6 +12,12 @@ import nme.net.URLLoaderDataFormat;
 import nme.Assets;
 import nme.Lib;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class ApplicationMain {
 	
@@ -20,15 +26,15 @@ class ApplicationMain {
 	private static var preloader:NMEPreloader;
 	private static var total:Int;
 	
-	public static var loaders:Hash <Loader>;
-	public static var urlLoaders:Hash <URLLoader>;
+	public static var loaders:StringMap <Loader>;
+	public static var urlLoaders:StringMap <URLLoader>;
 	
 	
 	public static function main () {
 		
 		completed = 0;
-		loaders = new Hash <Loader> ();
-		urlLoaders = new Hash <URLLoader> ();
+		loaders = new StringMap <Loader> ();
+		urlLoaders = new StringMap <URLLoader> ();
 		total = 0;
 		
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::

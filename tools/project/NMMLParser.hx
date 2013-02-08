@@ -10,17 +10,23 @@ import sys.FileSystem;
 import NMEProject;
 import PlatformConfig;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class NMMLParser extends NMEProject {
 	
 	
-	public var localDefines:Hash <String>;
+	public var localDefines:StringMap <String>;
 	public var includePaths:Array <String>;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 	
 	
-	public function new (path:String = "", defines:Hash <String> = null, includePaths:Array <String> = null, useExtensionPath:Bool = false) {
+	public function new (path:String = "", defines:StringMap <String> = null, includePaths:Array <String> = null, useExtensionPath:Bool = false) {
 		
 		super ();
 		
@@ -30,7 +36,7 @@ class NMMLParser extends NMEProject {
 			
 		} else {
 			
-			localDefines = new Hash <String> ();
+			localDefines = new StringMap <String> ();
 			
 		}
 		
