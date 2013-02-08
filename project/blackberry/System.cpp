@@ -8,13 +8,16 @@
 #include "bps/event.h"
 #include <string>
 #include <stdio.h>
+#include <QuickVec.h>
 
 
 namespace nme {
 	
 	
-	int bpsEventDomains[1];
-	void (*bpsEventHandlers[1]) (bps_event_t *event);
+	QuickVec<int> bpsEventDomains;
+	
+	typedef void (*bpsEventHandler) (bps_event_t *event);
+	QuickVec <bpsEventHandler> bpsEventHandlers;
 	
 	
 	std::string CapabilitiesGetLanguage () {
@@ -99,7 +102,7 @@ namespace nme {
 	
 	void ProcessBPSEvent (bps_event_t *event) {
 		
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < bpsEventDomains.size (); i++) {
 			
 			if (bps_event_get_domain (event) == bpsEventDomains[i]) {
 				
@@ -116,8 +119,8 @@ namespace nme {
 	
 	bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain) {
 		
-		bpsEventDomains[0] = domain;
-		bpsEventHandlers[0] = handler;
+		bpsEventDomains.push_back (domain);
+		bpsEventHandlers.push_back (handler);
 		
 		return true;
 		

@@ -7,8 +7,7 @@
 #endif
 
 #include <hx/CFFI.h>
-#include "Utils.h"
-#include <stdio.h>
+#include "::title::.h"
 
 using namespace ::name::;
 

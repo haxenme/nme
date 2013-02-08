@@ -1,3 +1,5 @@
+#include "Utils.h"
+
 namespace ::name:: {
 	
 	int SampleMethod(int inputValue) {

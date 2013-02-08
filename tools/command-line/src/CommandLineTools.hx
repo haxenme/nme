@@ -219,7 +219,7 @@ class CommandLineTools {
 				title = StringTools.replace (title, " ", "");
 				
 				PathHelper.mkdir (title);
-				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "extension", title, { title: title, name: title.toLowerCase () });
+				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "extension", title, { title: title, name: title.toLowerCase (), nameUpperCase: title.toUpperCase () });
 				
 				if (FileSystem.exists (title + "/Extension.hx")) {
 					
@@ -230,6 +230,12 @@ class CommandLineTools {
 				if (FileSystem.exists (title + "/project/common/Extension.cpp")) {
 					
 					FileSystem.rename (title + "/project/common/Extension.cpp", title + "/project/common/" + title + ".cpp");
+					
+				}
+				
+				if (FileSystem.exists (title + "/project/include/Extension.h")) {
+					
+					FileSystem.rename (title + "/project/include/Extension.h", title + "/project/include/" + title + ".h");
 					
 				}
 				

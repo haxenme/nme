@@ -7,9 +7,13 @@
 	<set name="mobile" value="1" if="blackberry"/>
 	<set name="mobile" value="1" if="webos"/>
 	
+	<set name="NME" value="${haxelib:nme}" />
+	
 	<files id="common">
 		
 		<compilerflag value="-Iinclude"/>
+		<compilerflag value="-I${NME}/project/include"/>
+		
 		<file name="common/ExternalInterface.cpp"/>
 		<file name="common/::title::.cpp"/>
 		
