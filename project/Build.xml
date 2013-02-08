@@ -340,8 +340,6 @@
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
       
-      <file name="common/Extension.cpp"/>
-      
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>

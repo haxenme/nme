@@ -1322,7 +1322,9 @@ void ProcessEvent(SDL_Event &inEvent)
 	  #ifdef BLACKBERRY
 	  case SDL_SYSWMEVENT:
 	  {
-         ProcessBPSEvent((inEvent.syswm.msg)->event);
+         Event syswm(etSysWM);
+		 syswm.value = (int)inEvent.syswm.msg->event;
+		 sgSDLFrame->ProcessEvent(syswm);
 	  }
 	  #endif
 	  

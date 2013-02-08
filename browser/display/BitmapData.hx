@@ -26,14 +26,15 @@ class BitmapData implements IBitmapDrawable {
 	
 	
 	public var height(get_height, null):Int;
+	public var nmeImageData:ImageData;
+	public var nmeGLTexture:GLTexture;
+	public var nmeReferenceCount:Int;
 	public var rect:Rectangle;
 	public var transparent(get_transparent, null):Bool;
 	public var width(get_width,null):Int;
 	
 	private var nmeAssignedBitmaps:Int;
 	private var nmeCopyPixelList:Array<CopyPixelAtom>;
-	public var nmeImageData:ImageData;
-	public var nmeGLTexture:GLTexture;
 	private var nmeImageDataChanged:Bool;
 	private var nmeInitColor:Int;
 	private var nmeLease:ImageDataLease;
@@ -49,6 +50,7 @@ class BitmapData implements IBitmapDrawable {
 	public function new(width:Int, height:Int, transparent:Bool = true, inFillColor:Int = 0xFFFFFFFF) {
 		
 		nmeLocked = false;
+		nmeReferenceCount = 0;
 		nmeLeaseNum = 0;
 		nmeLease = new ImageDataLease();
 		nmeBuildLease();

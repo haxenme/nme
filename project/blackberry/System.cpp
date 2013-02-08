@@ -15,10 +15,6 @@
 namespace nme {
 	
 	
-	int bpsEventDomains[1];
-	void (*bpsEventHandlers[1]) (bps_event_t *event);
-	
-	
 	std::string CapabilitiesGetLanguage () {
 		
 		char* country = NULL;
@@ -97,7 +93,7 @@ namespace nme {
 		return (result == BPS_SUCCESS);
 		
 	}
-	
+
     int GetDeviceOrientation() {
         int orientation_angle = 0;
         orientation_direction_t direction;
@@ -112,32 +108,5 @@ namespace nme {
                 return 0;
         }
     }
-	
-	void ProcessBPSEvent (bps_event_t *event) {
-		
-		for (int i = 0; i < 1; i++) {
-			
-			if (bps_event_get_domain (event) == bpsEventDomains[i]) {
-				
-				(*(bpsEventHandlers[i])) (event);
-				
-			}
-			
-		}
-		
-		//printf ("Received BPS event\n");
-		
-	}
-	
-	
-	bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain) {
-		
-		bpsEventDomains[0] = domain;
-		bpsEventHandlers[0] = handler;
-		
-		return true;
-		
-	}
-
 
 }

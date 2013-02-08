@@ -2,7 +2,10 @@ package;
 
 
 import neko.Lib;
+
+#if nme
 import nme.Loader;
+#end
 
 
 class LogHelper {
@@ -16,6 +19,7 @@ class LogHelper {
 	
 	public static function error (message:String, verboseMessage:String = "", e:Dynamic = null):Void {
 		
+		#if nme
 		if (message != "") {
 			
 			try {
@@ -30,9 +34,10 @@ class LogHelper {
 					
 				}
 				
-			} catch (e:Dynamic) {}
+			} catch (e:Dynamic) { }
 			
 		}
+		#end
 		
 		if (verbose && e != null) {
 			
@@ -86,7 +91,8 @@ class LogHelper {
 	}
 	
 	
+	#if nme
 	private static var nme_error_output = Loader.load ("nme_error_output", 1);
-		
+	#end
 
 }

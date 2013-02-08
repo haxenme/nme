@@ -21,7 +21,11 @@ import cpp.zip.Flush;
 #end
 
 
+#if haxe3
+class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange {
+#else
 class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInput, implements IMemoryRange {
+#end
 	
 	
 	public var bigEndian:Bool;

@@ -1,4 +1,6 @@
 -main RunScript
 -neko ../../run.n
 -cp src
+-cp ../helpers
+-cp ../project
 -D haxe3
