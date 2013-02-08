@@ -1,7 +1,6 @@
 package;
 
 
-import haxe.ds.StringMap;
 import haxe.Serializer;
 import haxe.Unserializer;
 import haxe.io.Path;
@@ -23,7 +22,7 @@ import sys.FileSystem;
 #if haxe3
 import haxe.ds.StringMap;
 #else
-typedef StringMap<T> = Hash<T>;
+import NMEProject;
 #end
 	
 	

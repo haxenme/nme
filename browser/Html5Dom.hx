@@ -1631,7 +1631,7 @@ extern interface HTMLMediaElement #if haxe3 extends #else implements #end HTMLEl
 extern interface HTMLFormControlsCollection #if haxe3 extends #else implements #end HTMLCollection {
 }
 
-extern class RadioNodeList #if haxe3 extends #else implements #end DomCollection<Node> {
+extern class RadioNodeList extends DomCollection<Node> {
     public var value: DOMString;
 }
 
