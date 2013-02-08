@@ -6,10 +6,13 @@
 #define NEKO_COMPATIBLE
 #endif
 
+
 #include <hx/CFFI.h>
 #include "::file::.h"
 
+
 using namespace ::extensionLowerCase::;
+
 
 
 static value ::extensionLowerCase::_sample_method (value inputValue) {
@@ -21,12 +24,14 @@ static value ::extensionLowerCase::_sample_method (value inputValue) {
 DEFINE_PRIM (::extensionLowerCase::_sample_method, 1);
 
 
+
 extern "C" void ::extensionLowerCase::_main () {
 	
 	// This is an optional method used for initialization
 	
 }
 DEFINE_ENTRY_POINT (::extensionLowerCase::_main);
+
 
 
 extern "C" int ::extensionLowerCase::_register_prims () { return 0; }

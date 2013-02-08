@@ -211,6 +211,7 @@
       <file name="common/CURL.cpp" unless="winrt"/>
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
+	  <file name="common/Extension.cpp"/>
       
       <file name="common/XML/tinystr.cpp"/>
       <file name="common/XML/tinyxml.cpp"/>
@@ -339,8 +340,6 @@
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
-      
-      <file name="common/Extension.cpp"/>
       
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>

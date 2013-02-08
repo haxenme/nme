@@ -6,7 +6,9 @@ import cpp.Lib;
 import neko.Lib;
 #end
 
+
 class ::className:: {
+	
 	
 	public static function sampleMethod (inputValue:Int):Int {
 		
@@ -14,6 +16,8 @@ class ::className:: {
 		
 	}
 	
+	
 	private static var ::extensionLowerCase::_sample_method = Lib.load ("::file::", "::extensionLowerCase::_sample_method", 1);
+	
 	
 }

@@ -6,7 +6,9 @@
 
 namespace ::extensionLowerCase:: {
 	
+	
 	int SampleMethod(int inputValue);
+	
 	
 }
 
