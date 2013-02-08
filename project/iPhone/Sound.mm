@@ -229,6 +229,12 @@ namespace nme
             LOG_SOUND("AVAudioPlayerChannel getPosition()");
             return [theActualPlayer currentTime] * 1000;
         }
+        double setPosition(const float &inFloat) {
+            LOG_SOUND("AVAudioPlayerChannel setPosition()");
+            theActualPlayer.currentTime = inFloat / 1000;
+            return inFloat;
+        }
+
         void setTransform(const SoundTransform &inTransform) {
             LOG_SOUND("AVAudioPlayerChannel setTransform()");
             if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
@@ -646,6 +652,11 @@ namespace nme
             float panZ=0;
             alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
             return (panX+1)/2;
+        }
+
+        double setPosition(const float &inFloat) {
+            alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);            
+            return inFloat;
         }
         
         double getPosition()  
