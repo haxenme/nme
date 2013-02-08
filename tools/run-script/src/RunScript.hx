@@ -853,12 +853,12 @@ class RunScript {
 				try {
 					
 					if (FileSystem.exists (FileSystem.fullPath ("include.nmml"))) {
-					
-					path = FileSystem.fullPath ("project");
-					
+						
+						path = FileSystem.fullPath ("project");
+						
 					}
 					
-				}
+				} catch (e:Dynamic) {}
 				
 				if (path != "") {
 					
