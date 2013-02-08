@@ -850,17 +850,11 @@ class RunScript {
 			
 			if (args.length == 2 - ignoreLength) {
 				
-				try {
+				if (FileSystem.exists (PathHelper.tryFullPath ("include.nmml"))) {
 					
-					if (FileSystem.exists (FileSystem.fullPath ("include.nmml"))) {
-						
-						path = FileSystem.fullPath ("project");
-						
-					}
+					path = PathHelper.tryFullPath ("project");
 					
-				} catch (e:Dynamic) {}
-				
-				if (path != "") {
+				} else {
 					
 					if (nmeDirectory.indexOf ("C:\\Motion-Twin") != -1 || nmeDirectory.indexOf ("/usr/lib/haxe/lib") != -1) {
 						
@@ -888,9 +882,9 @@ class RunScript {
 				
 				if (!FileSystem.exists (path)) {
 					
-					if (FileSystem.exists (FileSystem.fullPath (path))) {
+					if (FileSystem.exists (PathHelper.tryFullPath (path))) {
 						
-						path = PathHelper.combine (FileSystem.fullPath (path), "project");
+						path = PathHelper.combine (PathHelper.tryFullPath (path), "project");
 						
 					} else {
 						
