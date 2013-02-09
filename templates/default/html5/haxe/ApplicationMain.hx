@@ -20,27 +20,27 @@ typedef StringMap<T> = Hash<T>;
 
 
 class ApplicationMain {
-	
-	
+
+
 	private static var completed:Int;
 	private static var preloader:NMEPreloader;
 	private static var total:Int;
-	
+
 	public static var loaders:StringMap <Loader>;
 	public static var urlLoaders:StringMap <URLLoader>;
-	
-	
+
+
 	public static function main () {
-		
+
 		completed = 0;
 		loaders = new StringMap <Loader> ();
 		urlLoaders = new StringMap <URLLoader> ();
 		total = 0;
-		
+
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
 		browser.Lib.preventDefaultTouchMove ();
 		::end::::end::
-		
+
 		::if (PRELOADER_NAME!="")::
 		preloader = new ::PRELOADER_NAME:: ();
 		::else::
@@ -48,7 +48,7 @@ class ApplicationMain {
 		::end::
 		Lib.current.addChild (preloader);
 		preloader.onInit ();
-		
+
 		::foreach assets::
 		::if (type=="image")::
 		var loader:Loader = new Loader ();
@@ -65,44 +65,44 @@ class ApplicationMain {
 		urlLoaders.set ("::resourceName::", urlLoader);
 		total ++;
 		::end::::end::
-		
+
 		if (total == 0) {
-			
+
 			begin ();
-			
+
 		} else {
-			
+
 			for (path in loaders.keys ()) {
-				
+
 				var loader:Loader = loaders.get (path);
 				loader.contentLoaderInfo.addEventListener ("complete", loader_onComplete);
 				loader.load (new URLRequest (path));
-				
+
 			}
-			
+
 			for (path in urlLoaders.keys ()) {
-				
+
 				var urlLoader:URLLoader = urlLoaders.get (path);
 				urlLoader.addEventListener ("complete", loader_onComplete);
 				urlLoader.load (new URLRequest (path));
-				
+
 			}
-			
+
 		}
-		
+
 	}
-	
-	
+
+
 	private static function begin ():Void {
-		
+
 		preloader.addEventListener (Event.COMPLETE, preloader_onComplete);
 		preloader.onLoaded ();
-		
+
 	}
-	
+
 
    public static function getAsset(inName:String):Dynamic {
-	   
+
 		::foreach assets::
 		if (inName=="::id::") {
 			::if (type == "image")::
@@ -121,39 +121,39 @@ class ApplicationMain {
 		}
 		::end::
 		return null;
-		
+
    }
-   
-   
-   
-   
+
+
+
+
    // Event Handlers
-   
-   
-   
-   
+
+
+
+
 	private static function loader_onComplete (event:Event):Void {
-		
+
 		completed ++;
-		
+
 		preloader.onUpdate (completed, total);
-		
+
 		if (completed == total) {
-			
+
 			begin ();
-			
+
 		}
-	   
+
 	}
-	
-	
+
+
 	private static function preloader_onComplete (event:Event):Void {
-		
+
 		preloader.removeEventListener (Event.COMPLETE, preloader_onComplete);
-		
+
 		Lib.current.removeChild(preloader);
 		preloader = null;
-		
+
 		if (Reflect.field(::APP_MAIN::, "main") == null)
 		{
 			var mainDisplayObj = new ::APP_MAIN::();
@@ -164,10 +164,10 @@ class ApplicationMain {
 		{
 			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 		}
-		
+
 	}
-   
-   
+
+
 }
 
 
@@ -185,23 +185,23 @@ import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 
 
 class ApplicationMain {
-	
-	
+
+
 	public static function main () {
-		
+
 		if (Reflect.field(::APP_MAIN::, "main") == null) {
-			
+
 			Type.createInstance (::APP_MAIN::, []);
-			
+
 		} else {
-			
+
 			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-			
+
 		}
-		
+
 	}
-	
-	
+
+
 }
 
 
