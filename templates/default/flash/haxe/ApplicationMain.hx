@@ -8,8 +8,7 @@ class ApplicationMain {
 
 	static var mPreloader:NMEPreloader;
 
-	public static function main () {
-
+	public static function main() {
 		var call_real = true;
 
 		::if (PRELOADER_NAME!="")::
@@ -20,14 +19,12 @@ class ApplicationMain {
 		nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 
 		if (loaded < total || true) /* Always wait for event */ {
-
 			call_real = false;
 			mPreloader = new ::PRELOADER_NAME::();
 			nme.Lib.current.addChild(mPreloader);
 			mPreloader.onInit();
 			mPreloader.onUpdate(loaded,total);
-			nme.Lib.current.addEventListener (nme.events.Event.ENTER_FRAME, onEnter);
-
+			nme.Lib.current.addEventListener(nme.events.Event.ENTER_FRAME, onEnter);
 		}
 		::end::
 
@@ -36,7 +33,7 @@ class ApplicationMain {
 		#end
 
 		if (call_real)
-			begin ();
+			begin();
 	}
 
 	#if !fdb
@@ -44,16 +41,14 @@ class ApplicationMain {
 		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
 		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
 
-        if (flash.external.ExternalInterface.available)
+    if (flash.external.ExternalInterface.available)
 			flash.external.ExternalInterface.call("console.log", message);
 		else untyped flash.Boot.__trace(v, pos);
     }
 	#end
 
-	private static function begin () {
-
+	private static function begin() {
 		var hasMain = false;
-
 		for (methodName in Type.getClassFields(::APP_MAIN::))
 		{
 			if (methodName == "main")
@@ -70,64 +65,50 @@ class ApplicationMain {
 		else
 		{
 			var instance = Type.createInstance(::APP_MAIN::, []);
-			if (Std.is (instance, nme.display.DisplayObject)) {
+			if (Std.is(instance, nme.display.DisplayObject)) {
 				nme.Lib.current.addChild(cast instance);
 			}
 		}
-
 	}
 
-	static function onEnter (_) {
-
+	static function onEnter(_) {
 		var loaded = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total = nme.Lib.current.loaderInfo.bytesTotal;
 		mPreloader.onUpdate(loaded,total);
 
 		if (loaded >= total) {
-
 			nme.Lib.current.removeEventListener(nme.events.Event.ENTER_FRAME, onEnter);
 			mPreloader.addEventListener (Event.COMPLETE, preloader_onComplete);
 			mPreloader.onLoaded();
-
 		}
-
 	}
 
-	public static function getAsset (inName:String):Dynamic {
-
+	public static function getAsset(inName:String):Dynamic {
 		::foreach assets::
 		if (inName=="::id::")
 			 ::if (type=="image")::
-            return Assets.getBitmapData ("::id::");
+            return Assets.getBitmapData("::id::");
          ::elseif (type=="sound")::
-            return Assets.getSound ("::id::");
+            return Assets.getSound("::id::");
          ::elseif (type=="music")::
-            return Assets.getSound ("::id::");
-		 ::elseif (type== "font")::
-			 return Assets.getFont ("::id::");
+            return Assets.getSound("::id::");
+		 ::elseif (type=="font")::
+			 return Assets.getFont("::id::");
 		 ::elseif (type=="text")::
-			 return Assets.getText ("::id::");
+			 return Assets.getText("::id::");
          ::else::
-            return Assets.getBytes ("::id::");
+            return Assets.getBytes("::id::");
          ::end::
 		::end::
-
 		return null;
-
 	}
 
-
-	private static function preloader_onComplete (event:Event):Void {
-
+	private static function preloader_onComplete(event:Event):Void {
 		mPreloader.removeEventListener (Event.COMPLETE, preloader_onComplete);
-
 		nme.Lib.current.removeChild(mPreloader);
 		mPreloader = null;
-
-		begin ();
-
+		begin();
 	}
-
 }
 
 ::foreach assets::::if (type == "image")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
@@ -139,7 +120,7 @@ import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 
 class ApplicationMain {
 
-	public static function main () {
+	public static function main() {
 
 		var hasMain = false;
 
@@ -154,18 +135,16 @@ class ApplicationMain {
 
 		if (hasMain)
 		{
-			Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+			Reflect.callMethod(::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 		}
 		else
 		{
 			var instance = Type.createInstance(::APP_MAIN::, []);
-			if (Std.is (instance, flash.display.DisplayObject)) {
+			if (Std.is(instance, flash.display.DisplayObject)) {
 				flash.Lib.current.addChild(cast instance);
 			}
 		}
-
 	}
-
 }
 
 #end
