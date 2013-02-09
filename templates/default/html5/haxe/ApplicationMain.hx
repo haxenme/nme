@@ -23,7 +23,7 @@ class ApplicationMain {
 
 
 	private static var completed:Int;
-	private static var preloader:NMEPreloader;
+	private static var preloader:::PRELOADER_NAME::;
 	private static var total:Int;
 
 	public static var loaders:StringMap <Loader>;
