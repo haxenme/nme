@@ -6,7 +6,7 @@ import nme.events.Event;
 
 class ApplicationMain {
 
-	static var mPreloader:NMEPreloader;
+	static var mPreloader:::PRELOADER_NAME::;
 
 	public static function main() {
 		var call_real = true;
