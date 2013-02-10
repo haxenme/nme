@@ -383,8 +383,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			dispatchEvent(evt);
 			
 		}
-
-		this.nmeUpdateParentNode();		
 	}
 	
 	
@@ -828,7 +826,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 		var gfx = nmeGetGraphics();		
 
 		if (gfx != null && lastMoveObj != null && this != lastMoveObj) {
-			
+
 			var ogfx = lastMoveObj.nmeGetGraphics();
 			if (ogfx != null) {
 				Lib.nmeSetSurfaceZIndexAfter(
@@ -1463,40 +1461,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			gfx.nmeSurface.parentNode.insertBefore(this._srWindow, gfx.nmeSurface);
 			Lib.nmeRemoveSurface(gfx.nmeSurface);
 			this._srAxes.appendChild(gfx.nmeSurface);
-
-			// this.nmeUpdateParentNode();
 		}
-		// this.nmeUnifyChildrenWithDOM();
 	}//function nmeSrUpdateDivs()	
-
-
-
-	/**
-	* Set parentNode for this object according to parent's parent node
-	*
-	*/
-	private function nmeUpdateParentNode () : Void {
-		if ( this.parent != null ) {
-			
-			var pgfx = this.parent.nmeGetGraphics();
-			if ( pgfx != null && pgfx.nmeSurface.parentNode != null ) {
-				
-				// var idx   = this.parent.getChildIndex(this);
-				// var total = this.parent.numChildren();
-
-		    	if ( this.nmeScrollRect != null && this._srWindow != null ) {
-				    pgfx.nmeSurface.parentNode.appendChild(this._srWindow);
-
-				}else{
-					var gfx = this.nmeGetGraphics();
-					if ( gfx != null ) {
-						pgfx.nmeSurface.parentNode.appendChild( gfx.nmeSurface );
-					}
-				}
-
-			}
-		}//if( this.parent != null )
-	}//function nmeSetParentNode()
 
 }
 

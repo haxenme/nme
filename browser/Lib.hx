@@ -681,7 +681,7 @@ class Lib {
 	
 	
 	public static function nmeSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement):Void {
-		
+
 		if ( surface1.parentNode != surface2.parentNode && surface2.parentNode != null ) {
 			surface2.parentNode.appendChild(surface1);
 		}

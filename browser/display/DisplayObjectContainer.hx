@@ -388,7 +388,6 @@ class DisplayObjectContainer extends InteractiveObject {
 	override private function nmeUnifyChildrenWithDOM(lastMoveObj:DisplayObject = null):DisplayObject {
 		var obj = super.nmeUnifyChildrenWithDOM (lastMoveObj);
 		
-
 		for (child in nmeChildren) {
 			
 			obj = child.nmeUnifyChildrenWithDOM(obj);
@@ -661,18 +660,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 
 
-	/**
-	* Set parentNode for this object according to parent's parent node
-	*
-	*/
-	override private function nmeUpdateParentNode () : Void {
-		super.nmeUpdateParentNode();
-
-		for(i in 0...this.numChildren){
-			this.getChildAt(i).nmeUpdateParentNode();
-		}
-	}//function nmeSetParentNode()
-	
+		
 }
 
 
