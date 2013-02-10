@@ -681,31 +681,32 @@ class Lib {
 	
 	
 	public static function nmeSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement):Void {
+		if ( surface1 != null && surface2 != null ) {
+			if ( surface1.parentNode != surface2.parentNode && surface2.parentNode != null ) {
+				surface2.parentNode.appendChild(surface1);
+			}
 
-		if ( surface1.parentNode != surface2.parentNode && surface2.parentNode != null ) {
-			surface2.parentNode.appendChild(surface1);
-		}
-
-		if ( surface2.parentNode != null ) {
-			
-			var nextSibling = surface2.nextSibling;
-			
-			if (surface1.previousSibling != surface2) {
+			if ( surface2.parentNode != null ) {
 				
-				var swap = nmeRemoveSurface(cast surface1);
+				var nextSibling = surface2.nextSibling;
 				
-				if (nextSibling == null) {
+				if (surface1.previousSibling != surface2) {
 					
-					surface2.parentNode.appendChild(swap);
+					var swap = nmeRemoveSurface(cast surface1);
 					
-				} else {
-					
-					surface2.parentNode.insertBefore(swap, nextSibling); 
+					if (nextSibling == null) {
+						
+						surface2.parentNode.appendChild(swap);
+						
+					} else {
+						
+						surface2.parentNode.insertBefore(swap, nextSibling); 
+						
+					}
 					
 				}
 				
 			}
-			
 		}
 		
 	}
