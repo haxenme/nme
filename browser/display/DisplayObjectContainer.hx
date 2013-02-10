@@ -375,24 +375,31 @@ class DisplayObjectContainer extends InteractiveObject {
 		
 		if (gfx1 != null && gfx2 != null) {
 			
-			Lib.nmeSwapSurface(gfx1.nmeSurface, gfx2.nmeSurface);
+			Lib.nmeSwapSurface(
+				(nmeChildren[c1].nmeScrollRect == null ? gfx1.nmeSurface : nmeChildren[c1].nmeGetSrWindow()),
+				(nmeChildren[c2].nmeScrollRect == null ? gfx2.nmeSurface : nmeChildren[c2].nmeGetSrWindow())
+			);
 			
 		}
 		
 	}
 	
 	
-	override private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null):Graphics {
+	override private function nmeUnifyChildrenWithDOM(lastMoveObj:DisplayObject = null):DisplayObject {
+		var obj = super.nmeUnifyChildrenWithDOM (lastMoveObj);
 		
-		var gfx = super.nmeUnifyChildrenWithDOM (lastMoveGfx);
-		
+
 		for (child in nmeChildren) {
 			
-			gfx = child.nmeUnifyChildrenWithDOM(gfx);
+			obj = child.nmeUnifyChildrenWithDOM(obj);
+
+			if ( child.scrollRect != null ) {
+				obj = child;
+			}
 			
 		}
 		
-		return gfx;
+		return obj;
 		
 	}
 	
@@ -527,8 +534,8 @@ class DisplayObjectContainer extends InteractiveObject {
 			swap = null;
 			nmeSwapSurface(c1, c2);
 			
-			//child1.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
-			//child2.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
+			child1.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
+			child2.nmeUnifyChildrenWithDOM(); // possibly no longer necessary?
 			
 		}
 		
@@ -643,6 +650,28 @@ class DisplayObjectContainer extends InteractiveObject {
 		
 	}
 	
+
+	override private function set_scrollRect(inValue:Rectangle):Rectangle {
+		inValue = super.set_scrollRect(inValue);
+		
+		this.nmeUnifyChildrenWithDOM();
+		
+		return inValue;
+		
+	}
+
+
+	/**
+	* Set parentNode for this object according to parent's parent node
+	*
+	*/
+	override private function nmeUpdateParentNode () : Void {
+		super.nmeUpdateParentNode();
+
+		for(i in 0...this.numChildren){
+			this.getChildAt(i).nmeUpdateParentNode();
+		}
+	}//function nmeSetParentNode()
 	
 }
 

@@ -141,20 +141,15 @@ class Lib {
 				} catch(e:Dynamic) { }
 				
 			}
-			
-			var rootNode = mMe.__scr;
-			
+						
 			if (before != null) {
-				
-				rootNode.insertBefore(surface, before);
+				before.parentNode.insertBefore(surface, before);
 				
 			} else if (after != null && after.nextSibling != null) {
-				
-				rootNode.insertBefore(surface, after.nextSibling);
+				after.parentNode.insertBefore(surface, after.nextSibling);
 				
 			} else {
-				
-				rootNode.appendChild(surface);
+				mMe.__scr.appendChild(surface);
 				
 			}
 			
@@ -522,21 +517,13 @@ class Lib {
 	
 	public static inline function nmeIsOnStage(surface:HTMLElement):Bool {
 		
-		var success = false;
-		var nodes = mMe.__scr.childNodes;
-		
-		for (i in 0...nodes.length) {
-			
-			if (nodes[i] == surface) {
-				
-				success = true;
-				break;
-				
-			}
-			
+		var p : HTMLElement = cast surface;
+
+		while (p != null && p != mMe.__scr) {
+			p = cast p.parentNode;
 		}
-		
-		return success;
+
+		return p == mMe.__scr;
 		
 	}
 	
@@ -594,7 +581,9 @@ class Lib {
 				
 			}
 			
-			mMe.__scr.removeChild(surface);
+			if ( surface.parentNode != null ) {
+				surface.parentNode.removeChild(surface);
+			}
 			
 		}
 		
@@ -693,7 +682,11 @@ class Lib {
 	
 	public static function nmeSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement):Void {
 		
-		if (surface1.parentNode == mMe.__scr && surface2.parentNode == mMe.__scr) {
+		if ( surface1.parentNode != surface2.parentNode && surface2.parentNode != null ) {
+			surface2.parentNode.appendChild(surface1);
+		}
+
+		if ( surface2.parentNode != null ) {
 			
 			var nextSibling = surface2.nextSibling;
 			
@@ -703,11 +696,11 @@ class Lib {
 				
 				if (nextSibling == null) {
 					
-					mMe.__scr.appendChild(swap);
+					surface2.parentNode.appendChild(swap);
 					
 				} else {
 					
-					mMe.__scr.insertBefore(swap, nextSibling); 
+					surface2.parentNode.insertBefore(swap, nextSibling); 
 					
 				}
 				
@@ -715,93 +708,47 @@ class Lib {
 			
 		}
 		
-		//var c1:Int = -1;
-		//var c2:Int = -1;
-		//var swap:Node;
-		//
-		//for (i in 0...mMe.__scr.childNodes.length) {
-			//
-			//if (mMe.__scr.childNodes[i] == surface1) {
-				//
-				//c1 = i;
-				//
-			//} else if (mMe.__scr.childNodes[i] == surface2) {
-				//
-				//c2 = i;
-				//
-			//}
-			//
-		//}
-		//
-		//if (c1 != -1 && c2 != -1 && c1 != (c2 - 1)) {
-			//
-			//swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
-			//
-			//if (c2 < mMe.__scr.childNodes.length - 1) {
-				//
-				//mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2 + 1]);
-				//
-			//} else {
-				//
-				//mMe.__scr.appendChild(swap);
-				//
-			//}
-			//
-		//}
-		
 	}
 	
 	
 	public static function nmeSwapSurface(surface1:HTMLElement, surface2:HTMLElement):Void {
 		
-		var c1:Int = -1;
-		var c2:Int = -1;
-		var swap:Node;
-		
-		for (i in 0...mMe.__scr.childNodes.length) {
-			
-			if (mMe.__scr.childNodes[i] == surface1) {
-				
-				c1 = i;
-				
-			} else if (mMe.__scr.childNodes[i] == surface2) {
-				
-				c2 = i;
-				
-			}
-			
-		}
-		
-		if (c1 != -1 && c2 != -1) {
-			
-			swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c1]);
-			
-			if (c2 > c1) c2--;
-			
-			if (c2 < mMe.__scr.childNodes.length - 1) {
-				
-				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2++]);
-				
+		var parent1 = surface1.parentNode;
+		var parent2 = surface2.parentNode;
+
+		if (parent1 != null && parent2 != null) {
+			//they have one parent
+			if (parent1 == parent2) {
+
+				var next1 = surface1.nextSibling;
+				var next2 = surface2.nextSibling;
+
+				//if surface2 goes right after surface1
+				if (next1 == surface2) {
+					parent1.insertBefore(surface2, surface1);
+				//if surface1 goes right after surface2
+				} else if (next2 == surface1) {
+					parent1.insertBefore(surface1, surface2);
+				//another case
+				} else {
+					parent1.replaceChild(surface2, surface1);
+					if (next2 != null) {
+						parent1.insertBefore(surface1, next2);
+					}else{
+						parent1.appendChild(surface1);
+					}
+				}
+
+			//they have different parents
 			} else {
-				
-				mMe.__scr.appendChild(swap);
-				
+				var next2 = surface2.nextSibling;
+				parent1.replaceChild(surface2, surface1);
+				if (next2 != null) {
+					parent2.insertBefore(surface1, next2);
+				}else{
+					parent2.appendChild(surface1);
+				}
 			}
-			
-			swap = nmeRemoveSurface(cast mMe.__scr.childNodes[c2]);
-			
-			if (c1 > c2) c1--;
-			
-			if (c1 < mMe.__scr.childNodes.length - 1) {
-				
-				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c1++]);
-				
-			} else {
-				
-				mMe.__scr.appendChild(swap);
-				
-			}
-			
 		}
 		
 	}
