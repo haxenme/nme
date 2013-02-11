@@ -3,11 +3,14 @@ package;
 
 import haxe.io.Bytes;
 import haxe.io.Path;
-import haxe.Int32;
-import haxe.SHA1;
-import neko.zip.Writer;
 import sys.io.File;
 import sys.FileSystem;
+
+#if haxe3
+import haxe.zip.Writer;
+#else
+import neko.zip.Writer;
+#end
 
 
 class ZipHelper {
@@ -58,7 +61,12 @@ class ZipHelper {
 		
 		LogHelper.info ("", " - Writing file: " + targetPath);
 		
+		#if haxe3
+		var writer = new Writer (output);
+		writer.write (cast files);
+		#else
 		Writer.writeZip (output, files, 1);
+		#end
 		output.close ();
 		
 	}

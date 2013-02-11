@@ -8,6 +8,12 @@ import nme.media.Sound;
 import nme.text.Font;
 import nme.utils.ByteArray;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 /**
  * <p>The Assets class provides a cross-platform interface to access 
@@ -28,7 +34,7 @@ import nme.utils.ByteArray;
 class Assets {
 	
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	public static var cachedBitmapData:StringMap<BitmapData> = new StringMap<BitmapData>();
 	
 	
 	/**

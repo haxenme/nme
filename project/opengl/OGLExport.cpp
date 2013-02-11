@@ -400,7 +400,9 @@ DEFINE_PRIM(nme_gl_blend_equation,1);
 
 value nme_gl_blend_equation_separate(value rgb, value a)
 {
+   #ifndef HX_LINUX
    glBlendEquationSeparate(val_int(rgb), val_int(a));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_blend_equation_separate,2);
@@ -416,7 +418,9 @@ DEFINE_PRIM(nme_gl_blend_func,2);
 
 value nme_gl_blend_func_separate(value srgb, value drgb, value sa, value da)
 {
+   #ifndef HX_LINUX   
    glBlendFuncSeparate(val_int(srgb), val_int(drgb), val_int(sa), val_int(da) );
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_blend_func_separate,4);

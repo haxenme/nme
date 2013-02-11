@@ -2,7 +2,16 @@ package;
 
 
 import neko.Lib;
+
+#if nme
 import nme.Loader;
+#end
+
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
 
 
 class LogHelper {
@@ -10,12 +19,12 @@ class LogHelper {
 	
 	public static var mute:Bool;
 	public static var verbose:Bool = false;
-	
-	private static var sentWarnings:Hash <Bool> = new Hash <Bool> ();
+	private static var sentWarnings:StringMap <Bool> = new StringMap <Bool> ();
 	
 	
 	public static function error (message:String, verboseMessage:String = "", e:Dynamic = null):Void {
 		
+		#if nme
 		if (message != "") {
 			
 			try {
@@ -30,9 +39,10 @@ class LogHelper {
 					
 				}
 				
-			} catch (e:Dynamic) {}
+			} catch (e:Dynamic) { }
 			
 		}
+		#end
 		
 		if (verbose && e != null) {
 			
@@ -86,7 +96,8 @@ class LogHelper {
 	}
 	
 	
+	#if nme
 	private static var nme_error_output = Loader.load ("nme_error_output", 1);
-		
+	#end
 
 }

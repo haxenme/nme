@@ -5,7 +5,11 @@ package native.utils;
 import native.geom.Matrix3D;
 
 
+#if haxe3
+class Float32Array extends ArrayBufferView implements ArrayAccess<Float> {
+#else
 class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
+#end
 	
 	
 	static public inline var SBYTES_PER_ELEMENT = 4;

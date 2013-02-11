@@ -1,11 +1,18 @@
 package;
 
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
+
+
 class StringHelper {
 	
 	
 	private static var seedNumber = 0;
-	private static var usedFlatNames = new Hash <String> ();
+	private static var usedFlatNames = new StringMap <String> ();
 	
 	
 	public static function formatArray (array:Array <Dynamic>):String {
