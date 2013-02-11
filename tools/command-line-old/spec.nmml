@@ -81,10 +81,12 @@
 		Similar to include nodes, the base path is updated to begin with the
 		location of the file. If the "include.nmml" file specified a path as
 		"assets", it would become "path/to/haxelib/assets" when processed.
+
+		version attribute is optional.
 		
 	-->
 	
-	<haxelib name="actuate" />
+	<haxelib name="actuate" version="1.2.7" />
 	
 	
 	

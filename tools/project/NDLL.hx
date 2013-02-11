@@ -8,13 +8,13 @@ class NDLL {
 	
 	
 	public var extensionPath:String;
-	public var haxelib:String;
+	public var haxelib:Haxelib;
 	public var name:String;
 	public var path:String;
 	public var registerStatics:Bool;
 	
 	
-	public function new (name:String, haxelib:String = "", registerStatics:Bool = true) {
+	public function new (name:String, haxelib:Haxelib = null, registerStatics:Bool = true) {
 		
 		this.name = name;
 		this.haxelib = haxelib;

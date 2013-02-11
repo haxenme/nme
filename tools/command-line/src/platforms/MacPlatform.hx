@@ -134,7 +134,7 @@ class MacPlatform implements IPlatformTool {
 		
 		for (ndll in project.ndlls) {
 			
-			FileHelper.copyLibrary (ndll, "Mac", "", ((ndll.haxelib == "hxcpp") ? ".dylib" : ".ndll"), executableDirectory, project.debug);
+			FileHelper.copyLibrary (ndll, "Mac", "", (ndll.haxelib != null && ndll.haxelib.name == "hxcpp") ? ".dylib" : ".ndll", executableDirectory, project.debug);
 			
 		}
 		

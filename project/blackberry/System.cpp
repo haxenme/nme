@@ -13,10 +13,6 @@
 namespace nme {
 	
 	
-	int bpsEventDomains[1];
-	void (*bpsEventHandlers[1]) (bps_event_t *event);
-	
-	
 	std::string CapabilitiesGetLanguage () {
 		
 		char* country = NULL;
@@ -93,33 +89,6 @@ namespace nme {
 		bps_free (err);
 		
 		return (result == BPS_SUCCESS);
-		
-	}
-	
-	
-	void ProcessBPSEvent (bps_event_t *event) {
-		
-		for (int i = 0; i < 1; i++) {
-			
-			if (bps_event_get_domain (event) == bpsEventDomains[i]) {
-				
-				(*(bpsEventHandlers[i])) (event);
-				
-			}
-			
-		}
-		
-		//printf ("Received BPS event\n");
-		
-	}
-	
-	
-	bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain) {
-		
-		bpsEventDomains[0] = domain;
-		bpsEventHandlers[0] = handler;
-		
-		return true;
 		
 	}
 

@@ -13,7 +13,7 @@ class SoundChannel extends EventDispatcher {
 	
 	public var leftPeak(get_leftPeak, null):Float;
 	public var rightPeak(get_rightPeak, null):Float;
-	public var position(get_position, null):Float;
+	public var position(get_position, set_position):Float;
 	public var soundTransform(get_soundTransform, set_soundTransform):SoundTransform;
 	
 	/** @private */ public static var nmeDynamicSoundCount = 0;
@@ -146,6 +146,7 @@ class SoundChannel extends EventDispatcher {
 	private function get_leftPeak():Float { return nme_sound_channel_get_left(nmeHandle); }
 	private function get_rightPeak():Float { return nme_sound_channel_get_right(nmeHandle); }
 	private function get_position():Float { return nme_sound_channel_get_position(nmeHandle); }
+	private function set_position(value:Float):Float { return nme_sound_channel_set_position(nmeHandle, position); }
 	
 	
 	private function get_soundTransform():SoundTransform {
@@ -182,6 +183,7 @@ class SoundChannel extends EventDispatcher {
 	private static var nme_sound_channel_get_left = Loader.load("nme_sound_channel_get_left", 1);
 	private static var nme_sound_channel_get_right = Loader.load("nme_sound_channel_get_right", 1);
 	private static var nme_sound_channel_get_position = Loader.load("nme_sound_channel_get_position", 1);
+	private static var nme_sound_channel_set_position = Loader.load("nme_sound_channel_set_position", 2);
 	private static var nme_sound_channel_get_data_position = Loader.load("nme_sound_channel_get_data_position", 1);
 	private static var nme_sound_channel_stop = Loader.load("nme_sound_channel_stop", 1);
 	private static var nme_sound_channel_create = Loader.load("nme_sound_channel_create", 4);

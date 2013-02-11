@@ -183,16 +183,15 @@ class Font {
 			}
 			
 		} 
-
+		
 		if (nmeFontData[cast fontName] != null) {
-
+			
 			try {
-
+				
 				nmeGlyphData = Unserializer.run(nmeFontData[cast fontName]);
 				
 			} catch(e:Dynamic) {
 				
-
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}

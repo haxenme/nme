@@ -26,7 +26,6 @@ public:
    int getLineIndexAtPoint(double x,double y);
    int getLineIndexOfChar(int inCharIndex);
    int getLineLength(int inLineIndex);
-   const TextLineMetrics &getLineMetrics(int inLineIndex);
    WString getLineText();
    int getParagraphLength(int inCharIndex);
    TextFormat *getTextFormat(int inFirstChar=-1, int inEndChar=-1);
@@ -52,7 +51,7 @@ public:
    void  setScrollH(int inScrollH);
    int   getScrollV() { return scrollV; }
    void  setScrollV(int inScrollV);
-   int   getNumLines() { Layout(GetFullMatrix(true)); return mLines.size(); }
+   int   getNumLines() { Layout(); return mLines.size(); }
    int   getSelectionBeginIndex();
    int   getSelectionEndIndex();
 
@@ -77,7 +76,7 @@ public:
    void  setDisplayAsPassword(bool inValue) { displayAsPassword = inValue; }
    int   getLineOffset(int inLine);
    WString getLineText(int inLine);
-
+   TextLineMetrics *getLineMetrics(int inLine);
 
    double getWidth();
    void setWidth(double inWidth);

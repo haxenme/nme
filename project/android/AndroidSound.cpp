@@ -4,14 +4,13 @@
 #include <jni.h>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 #undef LOGV
 #undef LOGE
 
 #define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
 #define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::AndroidSound", msg, ## args)
-
-extern JNIEnv *GetEnv();
 
 namespace nme
 {
@@ -48,7 +47,7 @@ namespace nme
 		   	jclass cls = env->FindClass("org/haxe/nme/Sound");
          	jmethodID mid = env->GetStaticMethodID(cls, "getSoundComplete", "(III)Z");
          	if (mid > 0) {
-				return env->CallStaticIntMethod(cls, mid, mSoundHandle, mStreamID, mLoop);
+				return env->CallStaticBooleanMethod(cls, mid, mSoundHandle, mStreamID, mLoop);
 		   	}
 		}
 

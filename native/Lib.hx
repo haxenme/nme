@@ -11,10 +11,14 @@ import native.net.URLRequest;
 import native.Lib;
 import native.Loader;
 
+#if haxe3
+import Sys;
+#else
 #if cpp
 import cpp.Sys;
 #else
 import neko.Sys;
+#end
 #end
 
 

@@ -118,7 +118,8 @@ static int _id_nmeBytes;
 static int _id_rect;
 static int _id_matrix;
 
-
+static int _id_ascent;
+static int _id_descent;
 
 
 vkind gObjectKind;
@@ -205,6 +206,9 @@ extern "C" void InitIDs()
    _id_nmeBytes = val_id("nmeBytes");
    _id_rect = val_id("rect");
    _id_matrix = val_id("matrix");
+
+   _id_ascent = val_id("ascent");
+   _id_descent = val_id("descent");
 
    gObjectKind = alloc_kind();
 }
@@ -2788,6 +2792,27 @@ value nme_text_field_get_def_text_format(value inText,value outFormat)
 DEFINE_PRIM(nme_text_field_get_def_text_format,2);
 
 
+void GetTextLineMetrics(const TextLineMetrics &inMetrics, value &outValue)
+{
+   alloc_field(outValue,_id_x, alloc_float(inMetrics.x));
+   alloc_field(outValue,_id_width, alloc_float(inMetrics.width));
+   alloc_field(outValue,_id_height, alloc_float(inMetrics.height));
+   alloc_field(outValue,_id_ascent, alloc_float(inMetrics.ascent));
+   alloc_field(outValue,_id_descent, alloc_float(inMetrics.descent));
+   alloc_field(outValue,_id_leading, alloc_float(inMetrics.leading));
+}
+
+void nme_text_field_get_line_metrics(value inText,value inIndex,value outMetrics)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      const TextLineMetrics *mts = text->getLineMetrics(val_int(inIndex));
+      GetTextLineMetrics(*mts, outMetrics);
+   }
+}
+DEFINE_PRIM(nme_text_field_get_line_metrics,3);
+
 
 #define TEXT_PROP_GET(prop,Prop,to_val) \
 value nme_text_field_get_##prop(value inHandle) \
@@ -3587,6 +3612,20 @@ value nme_sound_channel_get_position(value inChannel)
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_channel_get_position,1);
+
+value nme_sound_channel_set_position(value inChannel, value inFloat)
+{
+   #ifdef HX_MACOS
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {    
+      float position = val_number(inFloat);
+      channel->setPosition(position);
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_set_position,2);
 
 value nme_sound_channel_stop(value inChannel)
 {

@@ -154,11 +154,6 @@ bool SetUserPreference(const char *inId, const char *inPreference);
 std::string GetUserPreference(const char *inId);
 bool ClearUserPreference(const char *inId);
 
-#ifdef BLACKBERRY
-void ProcessBPSEvent (bps_event_t *event);
-bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain);
-#endif
-
 #ifdef HX_WINDOWS
 typedef wchar_t OSChar;
 #define val_os_string val_wstring
@@ -188,13 +183,6 @@ namespace nme {
 #endif
 
 std::string WideToUTF8(const WString &inWideString);
-
-// You should delete[] the result
-wchar_t *UTF8ToWideCStr(const char *inStr, int &outLen);
-
-void UTF8ToWideVec(QuickVec<wchar_t,0> &outString,const char *inStr);
-
-WString UTF8ToWide(const char *inStr);
 
 double GetTimeStamp();
 

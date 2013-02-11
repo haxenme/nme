@@ -824,7 +824,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
       int oglLevelPasses = 1;
 
-      #ifdef WEBOS
+      #if defined(WEBOS) || defined(BLACKBERRY)
       // Try 2 then 1 ?
       if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
          oglLevelPasses = 2;
@@ -846,7 +846,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
                SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
    
-               #ifdef WEBOS
+               #if defined(WEBOS) || defined(BLACKBERRY)
                SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, level);
                #endif
                // try 32 24 or 16 bit depth...
@@ -882,7 +882,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                else
                {
                   is_opengl = true;
-                  #ifdef WEBOS
+                  #if defined(WEBOS) || defined(BLACKBERRY)
                   sgIsOGL2 = level==2;
                   #else
                   // TODO: check extensions support
@@ -1322,7 +1322,9 @@ void ProcessEvent(SDL_Event &inEvent)
 	  #ifdef BLACKBERRY
 	  case SDL_SYSWMEVENT:
 	  {
-         ProcessBPSEvent((inEvent.syswm.msg)->event);
+         Event syswm(etSysWM);
+		 syswm.value = (int)inEvent.syswm.msg->event;
+		 sgSDLFrame->ProcessEvent(syswm);
 	  }
 	  #endif
 	  

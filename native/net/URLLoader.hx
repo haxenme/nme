@@ -10,12 +10,16 @@ import native.events.HTTPStatusEvent;
 import native.utils.ByteArray;
 import native.Loader;
 
+#if haxe3
+import sys.FileSystem;
+import sys.io.File;
 #if neko
 import neko.FileSystem;
 import neko.io.File;
 #else
 import cpp.FileSystem;
 import cpp.io.File;
+#end
 #end
 
 

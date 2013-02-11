@@ -3,6 +3,7 @@
 	
 	<meta title="Heroku Shaders" package="io.nme.samples.herokushaders" version="1.0.0" company="NME" />
 	<app main="Main" path="Export" file="HerokuShaders" />
+	<window require-shaders="true" />
 	
 	<source path="Source" />
 	
