@@ -31,7 +31,7 @@ class Tilesheet {
 	}
 	
 	
-	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null) {
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int {
 		
 		nmeTileRects.push(rectangle);
 		
@@ -42,6 +42,8 @@ class Tilesheet {
 		}
 		
 		nmeCenterPoints.push(centerPoint);
+		
+		return nmeTileRects.length - 1;
 		
 	}
 	
