@@ -4,6 +4,10 @@ package native.external;
 
 import native.Loader;
 
+#if haxe3
+typedef Hash<T> = haxe.ds.StringMap<T>;
+#end
+
 
 class ExternalInterface {
 	
