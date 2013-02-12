@@ -846,7 +846,6 @@ class RunScript {
 			}
 			
 			var path = "";
-			var targets = new Array<String> ();
 			
 			if (args.length == 2 - ignoreLength) {
 				
