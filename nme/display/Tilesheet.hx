@@ -31,8 +31,8 @@ import nme.geom.Rectangle;
  * var bitmapData = Assets.getBitmapData("image.png");
  * var tilesheet = new Tilesheet(bitmapData);
  * 
- * tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
- * tilesheet.drawTiles(this, [ 0, 100, 100 ]);
+ * var tile = tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
+ * tilesheet.drawTiles(this, [ tile, 100, 100 ]);
  * 
  */
 extern class Tilesheet {
@@ -70,7 +70,7 @@ extern class Tilesheet {
 	 * @param	rectangle
 	 * @param	centerPoint
 	 */
-	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Void;
+	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int;
 	
 	/**
 	 * Fast method to render a batch of tiles from the Tilesheet graphic
@@ -182,12 +182,13 @@ class Tilesheet
 	}
 	
 	
-	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null)
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int
 	{
 		tiles.push(rectangle);
 		if (centerPoint == null) tilePoints.push(defaultRatio);
 		else tilePoints.push(new Point(centerPoint.x / rectangle.width, centerPoint.y / rectangle.height));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
+		return tiles.length - 1;
 	}
 	
 	

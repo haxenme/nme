@@ -31,9 +31,9 @@ class Tilesheet {
 	}
 	
 	
-	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null) {
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int {
 		
-		nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
+		return nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
 		
 	}
 	
