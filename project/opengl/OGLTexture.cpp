@@ -171,7 +171,9 @@ public:
       // TODO: Need replacement call for GLES2?
       #ifdef GPH
       glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-      #else
+      #endif
+	  
+	  #ifndef NME_GLES2
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       #endif
 

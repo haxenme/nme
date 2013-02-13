@@ -230,6 +230,8 @@
       <file name="software-renderer/TileRenderer.cpp"/>
       <file name="software-renderer/TriangleRender.cpp"/>
       
+	  <compilerflag value="-DNME_GLES2" if="NME_GLES2"/>
+	  
       <file name="opengl/OpenGLContext.cpp" if="ogl"/>
       <file name="opengl/OGLTexture.cpp" if="ogl"/>
       <file name="opengl/OGLShaders.cpp" if="ogl"/>
@@ -388,11 +390,11 @@
       <vflag name="-framework" value="OpenAL" if="macos"/>
       
       <lib name="-ldl" if="android"/>
-      <lib name="-lGLESv1_CM" if="android"/>
+      <lib name="-lGLESv1_CM" if="android" unless="NME_GLES2"/>
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
       
-      <lib name="-lGLES_CM" if="webos"/>
+      <lib name="-lGLES_CM" if="webos" unless="NME_GLES2"/>
       <lib name="-lGLESv2" if="webos"/>
       <lib name="-lpdl" if="webos"/>
       
@@ -405,7 +407,7 @@
       <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
       <lib name="-lGLESv2" if="blackberry" />
       
-      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi"/>
+      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi" unless="NME_GLES2"/>
       <lib name="/opt/vc/lib/libGLESv2.so" if="rpi"/>
       <lib name="/opt/vc/lib/libEGL.so" if="rpi"/>
       <lib name="/opt/vc/lib/libbcm_host.so" if="rpi"/>
