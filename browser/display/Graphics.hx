@@ -956,7 +956,7 @@ class Graphics {
 					
 					if (useTransform) {
 						
-						ctx.transform(tileData[index + transformIndex], tileData[index + transformIndex + 1], tileData[index + transformIndex + 2], tileData[index + transformIndex + 3], 0, 0);
+						ctx.transform(tileData[index + transformIndex], tileData[index + transformIndex + 2], tileData[index + transformIndex + 1], tileData[index + transformIndex + 3], 0, 0);
 						
 					}
 					
