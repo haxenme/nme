@@ -19,6 +19,7 @@ public:
       mFragProg = inFragProg;
       mVertId = 0;
       mFragId = 0;
+	  mTexCoordSlot = -1;
       mTextureSlot = -1;
       mColourTransform = 0;
       recreate();
@@ -53,7 +54,7 @@ public:
       GLsizei slen = 0;
 
       glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);       
-      if (blen > 1)
+      if (blen > 0)
       {
          char* compiler_log = (char*)malloc(blen);
          glGetShaderInfoLog(shader, blen, &slen, compiler_log);
@@ -63,7 +64,8 @@ public:
       }
       else
       {
-         ELOG("Unknown error compiling shader");
+         ELOG("Unknown error compiling shader : \n");
+		 ELOG("%s\n", source);
       }
       glDeleteShader(shader);
       return 0;
@@ -93,21 +95,6 @@ public:
       // Validate program
       glValidateProgram(mProgramId);
 
-      // Check the status of the compile/link
-		int logLen = 0;
-		glGetProgramiv(mProgramId, GL_INFO_LOG_LENGTH, &logLen);
-      if(logLen > 0)
-      {
-          // Show any errors as appropriate
-          char *log = new char[logLen];
-          glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
-          ELOG("----");
-          ELOG("VERT: %s", mVertProg);
-          ELOG("FRAG: %s", mFragProg);
-          ELOG("ERROR:\n%s\n", mVertProg);
-          delete [] log;
-      }
-
 
       GLint linked;
       glGetProgramiv(mProgramId, GL_LINK_STATUS, &linked);
@@ -119,6 +106,22 @@ public:
       else
       {
          ELOG("Bad Link.");
+		 
+		 // Check the status of the compile/link
+		int logLen = 0;
+		glGetProgramiv(mProgramId, GL_INFO_LOG_LENGTH, &logLen);
+      if(logLen > 0)
+      {
+          // Show any errors as appropriate
+          char *log = new char[logLen];
+          glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
+          ELOG("----");
+          ELOG("VERT: %s", mVertProg);
+          ELOG("FRAG: %s", mFragProg);
+          ELOG("ERROR:\n%s\n", log);
+          delete [] log;
+      }
+	  
          glDeleteShader(mVertId);
          glDeleteShader(mFragId);
          glDeleteProgram(mProgramId);
@@ -127,6 +130,7 @@ public:
 
 
       mVertexSlot = glGetAttribLocation(mProgramId, "aVertex");
+      mTexCoordSlot = glGetAttribLocation(mProgramId, "aTexCoord");
       mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
       mTintSlot = glGetUniformLocation(mProgramId, "uTint");
       mColourArraySlot = glGetAttribLocation(mProgramId, "aColourArray");
@@ -160,22 +164,10 @@ public:
    {
       if (inData)
       {
-         #ifndef NME_GLES
-         glEnable(GL_TEXTURE_2D);
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(2, GL_FLOAT, 0, inData);
-         #endif
-         glVertexAttribPointer(mTextureSlot, 2, GL_FLOAT, GL_FALSE, 0, inData);
-         glEnableVertexAttribArray(mTextureSlot);
+		 glVertexAttribPointer(mTexCoordSlot, 2, GL_FLOAT, GL_FALSE, 0, inData);
+		 glEnableVertexAttribArray(mTexCoordSlot);
          glUniform1i(mTextureSlot,0);
-      } 
-      else
-      {
-         #ifndef NME_GLES
-         glDisable(GL_TEXTURE_2D);
-         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-         #endif
-	  }
+      }
    }
 
    void setColourData(const int *inData)
@@ -195,10 +187,10 @@ public:
    {
       if (mColourArraySlot>=0)
          glDisableVertexAttribArray(mColourArraySlot);
-
-      if (mTextureSlot>=0)
-         glDisableVertexAttribArray(mTextureSlot);
-
+      
+      if (mTexCoordSlot>=0)
+         glDisableVertexAttribArray(mTexCoordSlot);
+      
       if (mVertexSlot>=0)
          glDisableVertexAttribArray(mVertexSlot);
    }
@@ -327,10 +319,11 @@ const char *gColourVert =
 const char *gTextureVert =
 "uniform mat4 uTransform;\n"
 "attribute vec4 aVertex;\n"
+"attribute vec2 aTexCoord;\n"
 "varying vec2 vTexCoord;\n"
 "void main(void)\n"
 "{\n"
-"   vTexCoord = gl_MultiTexCoord0.xy;\n"
+"   vTexCoord = aTexCoord;\n"
 "   gl_Position = aVertex * uTransform;\n"
 "}";
 
@@ -339,12 +332,13 @@ const char *gTextureColourVert =
 "uniform mat4 uTransform;\n"
 "attribute vec4 aColourArray;\n"
 "attribute vec4 aVertex;\n"
+"attribute vec2 aTexCoord;\n"
 "varying vec2   vTexCoord;\n"
 "varying vec4  vColourArray;\n"
 "void main(void)\n"
 "{\n"
 "   vColourArray = aColourArray;\n"
-"   vTexCoord = gl_MultiTexCoord0.xy;\n"
+"   vTexCoord = aTexCoord;\n"
 "   gl_Position = aVertex * uTransform;\n"
 "}";
 

@@ -829,12 +829,20 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
          oglLevelPasses = 2;
       #endif
+	  
+	  #ifdef NME_GLES2
+	  oglLevelPasses = 2;
+	  #endif
 
       // Find config...
 
       for(int oglPass = 0; oglPass< oglLevelPasses && !is_opengl; oglPass++)
       {
+         #ifdef NME_GLES2
+         int level = 2;
+         #else
          int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
+         #endif
         
    
          for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)

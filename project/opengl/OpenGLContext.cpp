@@ -970,6 +970,10 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
    ELOG("VERSION %s (%c), pipeline = %s", version, version==0 ? '?' : version[10], shaders ? "programmable" : "fixed");
    #endif
    
+   #ifdef NME_GLES2
+   shaders = true;
+   #endif
+   
    if (shaders)
    {
       ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );

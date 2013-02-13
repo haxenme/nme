@@ -6,8 +6,13 @@
 #define NME_GLES
 #define ALLOW_OGL2
 
+#ifndef NME_GLES2
+
 #include <GLES/gl.h>
 #include <GLES/glext.h>
+
+#endif
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
