@@ -6,6 +6,12 @@ import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class NMEProject {
 	
@@ -18,7 +24,7 @@ class NMEProject {
 	public var config:PlatformConfig;
 	public var debug:Bool;
 	public var dependencies:Array <String>;
-	public var environment:Hash <String>;
+	public var environment:StringMap <String>;
 	public var haxedefs:Array <String>;
 	public var haxeflags:Array <String>;
 	public var haxelibs:Array <Haxelib>;
@@ -32,7 +38,7 @@ class NMEProject {
 	public var sources:Array <String>;
 	public var splashScreens:Array <SplashScreen>;
 	public var target:Platform;
-	public var targetFlags:Hash <String>;
+	public var targetFlags:StringMap <String>;
 	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
@@ -44,7 +50,7 @@ class NMEProject {
 	public static var _command:String;
 	public static var _debug:Bool;
 	public static var _target:Platform;
-	public static var _targetFlags:Hash <String>;
+	public static var _targetFlags:StringMap <String>;
 	public static var _templatePaths:Array <String>;
 	
 	private static var initialized:Bool;
@@ -87,7 +93,7 @@ class NMEProject {
 		
 		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
 		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
-		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: false, requireShaders: false, depthBuffer: false, stencilBuffer: false }
+		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: true, requireShaders: false, depthBuffer: false, stencilBuffer: false }
 		
 		switch (target) {
 			
@@ -389,7 +395,7 @@ class NMEProject {
 			
 			if (_targetFlags == null) {
 				
-				_targetFlags = new Hash <String> ();
+				_targetFlags = new StringMap <String> ();
 				
 			}
 			

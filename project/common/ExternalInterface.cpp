@@ -1268,7 +1268,7 @@ DEFINE_PRIM(nme_stage_show_cursor,2);
 
 value nme_stage_get_orientation() {
 
-	#if defined(IPHONE) || defined(ANDROID)
+	#if defined(IPHONE) || defined(ANDROID) || defined(BLACKBERRY)
 		return alloc_int( GetDeviceOrientation() );
 	
 	#else
@@ -3751,7 +3751,8 @@ value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
       UserPoint p(0,0);
       if (!val_is_null(inHotSpot))
          FromValue(p,inHotSpot);
-      sheet->addTileRect(rect,p.x,p.y);
+      int tile = sheet->addTileRect(rect,p.x,p.y);
+	  return alloc_int(tile);
    }
    return alloc_null();
 }

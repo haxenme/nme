@@ -85,7 +85,7 @@ class SharedObject extends EventDispatcher {
 		try {
 			
 			// user may have privacy settings which prevent reading
-			var rawData = nmeGetLocalStorage().getItem(so.nmeKey);
+			rawData = nmeGetLocalStorage().getItem(so.nmeKey);
 			
 		} catch (e:Dynamic) {}
 		

@@ -2,7 +2,7 @@ package browser.display;
 #if js
 
 
-class MovieClip extends Sprite, implements Dynamic<Dynamic> {
+class MovieClip extends Sprite #if !haxe3 , #end implements Dynamic<Dynamic> {
 	
 	
 	public var currentFrame(get_currentFrame, null):Int;

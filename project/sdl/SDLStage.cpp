@@ -824,7 +824,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
       int oglLevelPasses = 1;
 
-      #if defined(WEBOS) || defined(BLACKBERRY)
+      #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY))
       // Try 2 then 1 ?
       if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
          oglLevelPasses = 2;
@@ -834,7 +834,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
       for(int oglPass = 0; oglPass< oglLevelPasses && !is_opengl; oglPass++)
       {
+         #ifdef NME_FORCE_GLES1
+         int level = 1;
+         #else
          int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
+         #endif
         
    
          for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)

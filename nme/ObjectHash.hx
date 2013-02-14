@@ -5,6 +5,10 @@ package nme;
 import flash.utils.TypedDictionary;
 #end
 
+#if haxe3
+typedef IntHash<T> = haxe.ds.IntMap<T>;
+#end
+
 
 class ObjectHash <K, T> {
 	

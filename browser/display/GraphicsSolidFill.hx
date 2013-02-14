@@ -7,7 +7,7 @@ import browser.display.IGraphicsFill;
 import browser.Html5Dom;
 
 
-class GraphicsSolidFill implements IGraphicsData, implements IGraphicsFill {
+class GraphicsSolidFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {
 	
 	
 	public var alpha:Float;

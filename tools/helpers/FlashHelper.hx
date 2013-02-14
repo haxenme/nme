@@ -199,7 +199,7 @@ class FlashHelper {
 							rate : flashRate,
 							is16bit : is16bit,
 							isStereo : isStereo,
-							samples : #if (haxe_211 && haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
+							samples : #if (haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
 							data : SDRaw (wav.data)
 							
 						}

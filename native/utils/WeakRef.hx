@@ -64,8 +64,8 @@ class WeakRef<T> {
 	
 	
 	
-	private static var nme_weak_ref_create = Loader.load("nme_weak_ref_create", 2);
-	private static var nme_weak_ref_get = Loader.load("nme_weak_ref_get", 1);
+	private static var nme_weak_ref_create:Dynamic = Loader.load("nme_weak_ref_create", 2);
+	private static var nme_weak_ref_get:Dynamic = Loader.load("nme_weak_ref_get", 1);
 	
 	
 }

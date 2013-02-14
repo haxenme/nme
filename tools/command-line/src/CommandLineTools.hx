@@ -18,6 +18,12 @@ import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
 	
 	
 class CommandLineTools {
@@ -31,9 +37,9 @@ class CommandLineTools {
 	public static var includePaths:Array <String>;
 	public static var nme:String;
 	public static var project:NMEProject;
-	public static var targetFlags:Hash <String>;
+	public static var targetFlags:StringMap <String>;
 	public static var traceEnabled:Bool;
-	public static var userDefines:Hash <String>;
+	public static var userDefines:StringMap <String>;
 	public static var version:String;
 	public static var words:Array <String>;
 	
@@ -864,9 +870,9 @@ class CommandLineTools {
 		debug = false;
 		haxeflags = new Array <String> ();
 		includePaths = new Array <String> ();
-		targetFlags = new Hash <String> ();
+		targetFlags = new StringMap <String> ();
 		traceEnabled = true;
-		userDefines = new Hash <String> ();
+		userDefines = new StringMap <String> ();
 		words = new Array <String> ();
 		
 		processArguments ();

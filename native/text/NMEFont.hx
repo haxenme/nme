@@ -4,6 +4,10 @@ package native.text;
 
 import native.display.BitmapData;
 
+#if haxe3
+typedef Hash<T> = haxe.ds.StringMap<T>;
+#end
+
 
 class NMEFont {
 	

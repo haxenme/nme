@@ -7,14 +7,19 @@ import neko.Lib;
 import nme.Loader;
 #end
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
+
 
 class LogHelper {
 	
 	
 	public static var mute:Bool;
 	public static var verbose:Bool = false;
-	
-	private static var sentWarnings:Hash <Bool> = new Hash <Bool> ();
+	private static var sentWarnings:StringMap <Bool> = new StringMap <Bool> ();
 	
 	
 	public static function error (message:String, verboseMessage:String = "", e:Dynamic = null):Void {

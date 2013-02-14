@@ -41,6 +41,11 @@ public:
    {
       return 0;
    }
+   
+   double setPosition(const float &inFloat)
+   {
+      return 0;
+   }
 
    void stop()
    {
@@ -85,6 +90,11 @@ public:
    double getPosition()
    {
       return -1;
+   }
+   
+   double setPosition(const float &inFloat)
+   {
+      return 0;
    }
 
    double getLeft()

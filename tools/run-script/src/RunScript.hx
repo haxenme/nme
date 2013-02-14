@@ -846,9 +846,8 @@ class RunScript {
 			}
 			
 			var path = "";
-			var targets = new Array<String> ();
 			
-			if (args.length == 2 - ignoreLength) {
+			if (args.length == 2 + ignoreLength) {
 				
 				if (FileSystem.exists (PathHelper.tryFullPath ("include.nmml"))) {
 					
@@ -869,7 +868,7 @@ class RunScript {
 				
 				targets = args[1].split (",");
 				
-			} else if (args.length > 2 - ignoreLength) {
+			} else if (args.length > 2 + ignoreLength) {
 				
 				path = args[1];
 				targets = args[2].split (",");

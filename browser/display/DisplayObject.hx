@@ -24,7 +24,11 @@ import browser.Html5Dom;
 import browser.Lib;
 
 
+#if haxe3
+class DisplayObject extends EventDispatcher implements IBitmapDrawable {
+#else
 class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
+#end
 	
 	
 	private static inline var GRAPHICS_INVALID:Int = 1 << 1;
@@ -83,7 +87,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	private var _nmeId:String;
 	private var _nmeRenderFlags:Int;
 	private var _topmostSurface(get__topmostSurface, null):HTMLElement;
-	
+		
+	//scrollRect divs
+	private var _srWindow : HTMLDivElement;
+	private var _srAxes   : HTMLDivElement;
+
 	
 	public function new() {
 		
@@ -370,12 +378,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 		}
 		
 		if (nmeIsOnStage()) {
-			
+			this.nmeSrUpdateDivs();			
 			var evt = new Event(Event.ADDED_TO_STAGE, false, false);
 			dispatchEvent(evt);
 			
 		}
-		
 	}
 	
 	
@@ -724,6 +731,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 				Lib.nmeSetSurfaceTransform(gfx.nmeSurface, m);
 				nmeClearFlag(TRANSFORM_INVALID);
 				
+
+				this.nmeSrUpdateDivs();
+				// this.nmeUpdateParentNode();
 			}
 			
 			Lib.nmeSetSurfaceOpacity(gfx.nmeSurface, fullAlpha);
@@ -736,6 +746,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 			}*/
 			
 		}
+
+		// this.nmeUpdateParentNode();
+		// if (this.nmeScrollRect == null) {
+		// 	var pgfx = this.parent.nmeGetGraphics();
+		// 	if (pgfx != null && pgfx.nmeSurface.parentNode != gfx.nmeSurface.parentNode) {
+		// 		pgfx.nmeSurface.parentNode.appendChild(gfx.nmeSurface);
+		// 	}
+		// }
 		
 	}
 	
@@ -803,23 +821,38 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private function nmeUnifyChildrenWithDOM(lastMoveGfx:Graphics = null) {
+	private function nmeUnifyChildrenWithDOM(lastMoveObj:DisplayObject = null) {
 		
-		var gfx = nmeGetGraphics();
-		
-		if (gfx != null && lastMoveGfx != null && gfx != lastMoveGfx) {
-			
-			Lib.nmeSetSurfaceZIndexAfter(gfx.nmeSurface, lastMoveGfx.nmeSurface);
+		var gfx = nmeGetGraphics();		
+
+		if (gfx != null && lastMoveObj != null && this != lastMoveObj) {
+
+			var ogfx = lastMoveObj.nmeGetGraphics();
+			if (ogfx != null) {
+				Lib.nmeSetSurfaceZIndexAfter(
+					(this.nmeScrollRect == null ? gfx.nmeSurface : this._srWindow), 
+					(
+						lastMoveObj.nmeScrollRect == null
+							? ogfx.nmeSurface 
+							: (
+								lastMoveObj == this.parent
+									? ogfx.nmeSurface
+									: lastMoveObj._srWindow
+							)
+					)
+				);
+			}
 			
 		}
 		
 		if (gfx == null) {
 			
-			gfx = lastMoveGfx;
+			return lastMoveObj;
 			
-		}
+		} else {
 		
-		return gfx;
+			return this;
+		}
 		
 	}
 	
@@ -1217,6 +1250,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	private function set_scrollRect(inValue:Rectangle):Rectangle {
 		
 		nmeScrollRect = inValue;
+		this.nmeSrUpdateDivs();
 		return inValue;
 		
 	}
@@ -1367,7 +1401,69 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 		
 	}
 	
-	
+	/**
+	* Get this._srWindow
+	*
+	*/
+	public function nmeGetSrWindow () : HTMLDivElement {
+	    return this._srWindow;
+	}//function nmeGetSrWindow()
+
+
+	/**
+	* Update scrollRect divs
+	*
+	*/
+	private function nmeSrUpdateDivs () : Void {
+	    var gfx = nmeGetGraphics();
+	    if ( gfx == null || parent == null ) return;
+
+	    if (nmeScrollRect == null){
+	    	if ( this._srAxes != null && gfx.nmeSurface.parentNode == this._srAxes && this._srWindow.parentNode != null  ) {
+	    		this._srWindow.parentNode.replaceChild(gfx.nmeSurface, this._srWindow);
+	    	}
+	    	return;
+    	}
+
+		//create divs
+		if ( this._srWindow == null ) {
+			this._srWindow = cast Lib.document.createElement('div');
+			this._srAxes   = cast Lib.document.createElement('div');
+
+			this._srWindow.style.setProperty("position", "absolute", "");
+			this._srWindow.style.setProperty("left", "0px", "");
+			this._srWindow.style.setProperty("top", "0px", "");
+			this._srWindow.style.setProperty("width", "0px", "");
+			this._srWindow.style.setProperty("height", "0px", "");
+			this._srWindow.style.setProperty("overflow", "hidden", "");
+
+			this._srAxes.style.setProperty("position", "absolute", "");
+			this._srAxes.style.setProperty("left", "0px", "");
+			this._srAxes.style.setProperty("top", "0px", "");
+
+			this._srWindow.appendChild(this._srAxes);
+		}//if ( divs does not exist )
+
+		var pnt = this.parent.localToGlobal(new Point(this.x, this.y));
+
+		//update div positions
+		this._srWindow.style.left   = pnt.x + "px";
+		this._srWindow.style.top    = pnt.y + "px";
+		this._srWindow.style.width  = nmeScrollRect.width + "px";
+		this._srWindow.style.height = nmeScrollRect.height + "px";
+
+		//scroll axes div
+		this._srAxes.style.left = (-pnt.x - nmeScrollRect.x) + "px";
+		this._srAxes.style.top  = (-pnt.y - nmeScrollRect.y) + "px";
+
+		//add surface to axes div
+		if( gfx.nmeSurface.parentNode != this._srAxes && gfx.nmeSurface.parentNode != null ){
+			gfx.nmeSurface.parentNode.insertBefore(this._srWindow, gfx.nmeSurface);
+			Lib.nmeRemoveSurface(gfx.nmeSurface);
+			this._srAxes.appendChild(gfx.nmeSurface);
+		}
+	}//function nmeSrUpdateDivs()	
+
 }
 
 

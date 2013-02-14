@@ -13,6 +13,7 @@ import native.Loader;
 #if haxe3
 import sys.FileSystem;
 import sys.io.File;
+#else
 #if neko
 import neko.FileSystem;
 import neko.io.File;
