@@ -173,7 +173,7 @@ public:
       glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       #endif
 	  
-	  #ifndef NME_GLES2
+	  #ifndef NME_FORCE_GLES2
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       #endif
 
