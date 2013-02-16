@@ -428,44 +428,6 @@ class RunScript {
 	}
 	
 	
-	public static function getHaxelib (library:String):String {
-		
-		var proc = new Process ("haxelib", ["path", library ]);
-		var result = "";
-		
-		try {
-			
-			while (true) {
-				
-				var line = proc.stdout.readLine ();
-				
-				if (line.substr (0,1) != "-") {
-					
-					result = line;
-					break;
-					
-				}
-				
-			}
-			
-		} catch (e:Dynamic) { };
-		
-		proc.close();
-		
-		//Lib.println ("Found " + library + " at " + result );
-		//trace("Found " + haxelib + " at " + srcDir );
-		
-		if (result == "") {
-			
-			throw ("Could not find haxelib path  " + library + " - perhaps you need to install it?");
-			
-		}
-		
-		return result;
-		
-	}
-	
-	
 	private static function getHostname ():String {
 		
 		var result = "";
@@ -549,12 +511,11 @@ class RunScript {
 	
 	
 	private static function getVersion (library:String = "nme", haxelibFormat:Bool = false):String {
-		
 		var libraryPath = nmeDirectory;
 		
 		if (library != "nme") {
 			
-			libraryPath = getHaxelib (library);
+			libraryPath = PathHelper.getHaxelib (library);
 			
 		}
 		
@@ -732,19 +693,19 @@ class RunScript {
 		
 		if (path != "") {
 			
-			//Lib.println ("cd " + path);
+			//trace ("cd " + path);
 			
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
 			
 		}
 		
-		//Lib.println (command + (args==null ? "": " " + args.join(" ")) );
+		//trace (command + (args==null ? "": " " + args.join(" ")) );
 		
 		var result:Dynamic = Sys.command (command, args);
 		
 		//if (result == 0)
-			//print("Ok.");
+		//	trace("Ok.");
 			
 		
 		if (oldPath != "") {
@@ -767,7 +728,7 @@ class RunScript {
 	
 	public static function main () {
 		
-		nmeDirectory = getHaxelib ("nme");
+		nmeDirectory = PathHelper.getNMEPath();
 		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
@@ -841,7 +802,7 @@ class RunScript {
 			}
 			
 		} else {
-			
+
 			if (!FileSystem.exists (nmeDirectory + "/tools/command-line/command-line.n")) {
 				
 				build ();
@@ -1040,11 +1001,11 @@ class RunScript {
 				
 				case "installer":
 					
-					var hxcppPath = getHaxelib ("hxcpp");
-					var nmePath = getHaxelib ("nme");
-					var swfPath = getHaxelib ("swf");
-					var actuatePath = getHaxelib ("actuate");
-					var svgPath = getHaxelib ("svg");
+					var hxcppPath = PathHelper.getHaxelib ("hxcpp");
+					var nmePath = PathHelper.getNMEPath();
+					var swfPath = PathHelper.getHaxelib ("swf");
+					var actuatePath = PathHelper.getHaxelib ("actuate");
+					var svgPath = PathHelper.getHaxelib ("svg");
 					
 					var hxcppVersion = getVersion ("hxcpp", true);
 					var nmeVersion = getVersion ("nme", true);

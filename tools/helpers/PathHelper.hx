@@ -6,8 +6,30 @@ import sys.FileSystem;
 
 
 class PathHelper {
+
+	private static var _nmePath:String = null;
+	private static var _haxePath(getHaxePath, never):String;
 	
+	public static function getNMEPath():String {
+		if (_nmePath == null) {
+			_nmePath = Sys.getEnv("NMEPATH");
+  			if (_nmePath == null || _nmePath == "") {
+  				_nmePath = getHaxelib("nme");
+  			}
+  			if (_nmePath == null || _nmePath == "") {
+  				_nmePath = Sys.getCwd();
+  			}
+		}
+		return _nmePath;
+	}
 	
+	private static function getHaxePath():String {
+		var path = Sys.getEnv ("HAXEPATH");
+		if (path == null) path = "";
+		if (path.length > 0) path += "/";
+		return path;
+	}
+
 	public static function combine (firstPath:String, secondPath:String):String {
 		
 		if (firstPath == null || firstPath == "") {
@@ -145,7 +167,8 @@ class PathHelper {
 		var searchPath = name;
 		if (version != null)
 			searchPath += ":" + version;
-		var proc = new Process ("haxelib", ["path", searchPath ]);
+		var haxelibPath = _haxePath + "haxelib";
+		var proc = new Process (haxelibPath, ["path", searchPath ]);
 		var result = "";
 		
 		try {

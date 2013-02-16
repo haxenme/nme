@@ -48,7 +48,7 @@ class ProcessHelper {
 			
 			if (executable == "") {
 				
-				executable = "open";
+				executable = "/usr/bin/open";
 				
 			}
 			
@@ -66,7 +66,7 @@ class ProcessHelper {
 			
 			if (executable == "") {
 				
-				executable = "xdg-open";
+				executable = "/usr/bin/xdg-open";
 				
 			}
 			
