@@ -40,7 +40,7 @@ class Assets {
 		
 		if (!initialized) {
 			
-			::if (assests!=null)::
+			::if (assets!=null)::
 			::foreach assets::resourceNames.set ("::id::", "::resourceName::");
 			resourceTypes.set ("::id::", "::type::");
 			::end::
