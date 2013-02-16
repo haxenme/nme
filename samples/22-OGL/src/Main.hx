@@ -8,6 +8,7 @@ import nme.gl.GL;
 import nme.gl.GLBuffer;
 import nme.gl.GLProgram;
 import nme.gl.GLTexture;
+import nme.utils.UInt8Array;
 import nme.utils.Float32Array;
 import nme.utils.ArrayBuffer;
 import nme.utils.ArrayBufferView;
@@ -109,7 +110,7 @@ class ProgramPosTex
 
    public function fillTexture()
    {
-      var pixels = new Float32Array (new ArrayBuffer(256*256*4));
+      var pixels = new UInt8Array(new ArrayBuffer(256*256*4));
 	  
       for(i in 0...256*256*4)
          pixels[i] = Std.random(256);
@@ -176,7 +177,7 @@ class TextureRect extends ProgramPosTex
 
    override public function fillTexture()
    {
-      var pixels = new Float32Array (new ArrayBuffer(256*256*4));
+      var pixels = new UInt8Array(new ArrayBuffer(256*256*4));
       for(i in 0...256*256*4)
          pixels[i] = Std.random(256);
       GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, pixels);
@@ -304,6 +305,7 @@ class Main extends Sprite
       super();
 
       //trace(GL.getSupportedExtensions());
+      trace(GL.getParameter(GL.VENDOR));
 
       var ogl = new OpenGLView();
       ogl.scrollRect = new nme.geom.Rectangle(0,0,400,300);
