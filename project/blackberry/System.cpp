@@ -9,12 +9,10 @@
 #include <string>
 #include <stdio.h>
 
+#include <bps/orientation.h>
+#include <bps/bps.h>
 
 namespace nme {
-	
-	
-	int bpsEventDomains[1];
-	void (*bpsEventHandlers[1]) (bps_event_t *event);
 	
 	
 	std::string CapabilitiesGetLanguage () {
@@ -95,33 +93,20 @@ namespace nme {
 		return (result == BPS_SUCCESS);
 		
 	}
-	
-	
-	void ProcessBPSEvent (bps_event_t *event) {
-		
-		for (int i = 0; i < 1; i++) {
-			
-			if (bps_event_get_domain (event) == bpsEventDomains[i]) {
-				
-				(*(bpsEventHandlers[i])) (event);
-				
-			}
-			
-		}
-		
-		//printf ("Received BPS event\n");
-		
-	}
-	
-	
-	bool RegisterBPSEventHandler (void (*handler)(bps_event_t *event), int domain) {
-		
-		bpsEventDomains[0] = domain;
-		bpsEventHandlers[0] = handler;
-		
-		return true;
-		
-	}
 
+    int GetDeviceOrientation() {
+        int orientation_angle = 0;
+        orientation_direction_t direction;
+        orientation_get(&direction, &orientation_angle);
+        switch (direction) {
+            case ORIENTATION_TOP_UP:        return 1; break;
+            case ORIENTATION_BOTTOM_UP:     return 2; break;
+            case ORIENTATION_LEFT_UP:       return 3; break;
+            case ORIENTATION_RIGHT_UP:      return 4; break;
+                
+            default:
+                return 0;
+        }
+    }
 
 }

@@ -26,14 +26,15 @@ class BitmapData implements IBitmapDrawable {
 	
 	
 	public var height(get_height, null):Int;
+	public var nmeImageData:ImageData;
+	public var nmeGLTexture:GLTexture;
+	public var nmeReferenceCount:Int;
 	public var rect:Rectangle;
 	public var transparent(get_transparent, null):Bool;
 	public var width(get_width,null):Int;
 	
 	private var nmeAssignedBitmaps:Int;
 	private var nmeCopyPixelList:Array<CopyPixelAtom>;
-	public var nmeImageData:ImageData;
-	public var nmeGLTexture:GLTexture;
 	private var nmeImageDataChanged:Bool;
 	private var nmeInitColor:Int;
 	private var nmeLease:ImageDataLease;
@@ -49,6 +50,7 @@ class BitmapData implements IBitmapDrawable {
 	public function new(width:Int, height:Int, transparent:Bool = true, inFillColor:Int = 0xFFFFFFFF) {
 		
 		nmeLocked = false;
+		nmeReferenceCount = 0;
 		nmeLeaseNum = 0;
 		nmeLease = new ImageDataLease();
 		nmeBuildLease();
@@ -828,7 +830,7 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 		img.addEventListener("load", drawImage, false);
-		#if (haxe_211 && haxe3)
+		#if haxe3
 		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
 		#else
 		img.src = Std.format("data:$type;base64,${nmeBase64Encode(bytes)}");
@@ -1047,7 +1049,11 @@ class BitmapData implements IBitmapDrawable {
 		if (inLoader != null) {
 			
 			var data:LoadData = { image: image, texture: _nmeTextureBuffer, inLoader: inLoader, bitmapData: this };
+			#if haxe3
+			image.addEventListener("load", nmeOnLoad.bind (data), false);
+			#else
 			image.addEventListener("load", callback(nmeOnLoad, data), false);
+			#end
 			// IE9 bug, force a load, if error called and complete is false.
 			image.addEventListener("error", function(e) { if (!image.complete) nmeOnLoad(data, e); }, false);
 			

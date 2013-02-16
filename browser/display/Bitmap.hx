@@ -30,11 +30,27 @@ class Bitmap extends DisplayObject {
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
 		
-		nmeGraphics = new Graphics();
-		
 		if (inBitmapData != null) {
 			
 			this.bitmapData = inBitmapData;
+			bitmapData.nmeReferenceCount++;
+			
+			if (bitmapData.nmeReferenceCount == 1) {
+				
+				nmeGraphics = new Graphics(bitmapData.handle());
+				
+			}
+			
+		}
+		
+		if (nmeGraphics == null) {
+			
+			nmeGraphics = new Graphics();
+			
+		}
+		
+		if (bitmapData != null) {
+			
 			nmeRender();
 			
 		}
@@ -99,20 +115,24 @@ class Bitmap extends DisplayObject {
 			
 		}
 		
-		var imageDataLease = bitmapData.nmeGetLease();
-		
-		if (imageDataLease != null && (nmeCurrentLease == null || imageDataLease.seed != nmeCurrentLease.seed || imageDataLease.time != nmeCurrentLease.time)) {
+		if (bitmapData.handle() != nmeGraphics.nmeSurface) {
 			
-			var srcCanvas = bitmapData.handle();
+			var imageDataLease = bitmapData.nmeGetLease();
 			
-			nmeGraphics.nmeSurface.width = srcCanvas.width;
-			nmeGraphics.nmeSurface.height = srcCanvas.height;
-			nmeGraphics.clear();
-			
-			Lib.nmeDrawToSurface(srcCanvas, nmeGraphics.nmeSurface);
-			nmeCurrentLease = imageDataLease.clone();
-			
-			handleGraphicsUpdated(nmeGraphics);
+			if (imageDataLease != null && (nmeCurrentLease == null || imageDataLease.seed != nmeCurrentLease.seed || imageDataLease.time != nmeCurrentLease.time)) {
+				
+				var srcCanvas = bitmapData.handle();
+				
+				nmeGraphics.nmeSurface.width = srcCanvas.width;
+				nmeGraphics.nmeSurface.height = srcCanvas.height;
+				nmeGraphics.clear();
+				
+				Lib.nmeDrawToSurface(srcCanvas, nmeGraphics.nmeSurface);
+				nmeCurrentLease = imageDataLease.clone();
+				
+				handleGraphicsUpdated(nmeGraphics);
+				
+			}
 			
 		}
 		
@@ -196,6 +216,28 @@ class Bitmap extends DisplayObject {
 	
 	
 	private function set_bitmapData(inBitmapData:BitmapData):BitmapData {
+		
+		if (inBitmapData != bitmapData) {
+			
+			if (bitmapData != null) {
+				
+				bitmapData.nmeReferenceCount--;
+				
+				if (nmeGraphics.nmeSurface == bitmapData.handle()) {
+					
+					Lib.nmeSetSurfaceOpacity(bitmapData.handle(), 0);
+					
+				}
+				
+			}
+			
+			if (inBitmapData != null) {
+				
+				inBitmapData.nmeReferenceCount++;
+				
+			}
+			
+		}
 		
 		nmeInvalidateBounds();
 		bitmapData = inBitmapData;

@@ -14,6 +14,7 @@ import native.events.JoystickEvent;
 import native.events.MouseEvent;
 import native.events.FocusEvent;
 import native.events.KeyboardEvent;
+import native.events.SystemEvent;
 import native.events.TouchEvent;
 import native.events.Event;
 import native.geom.Point;
@@ -371,6 +372,9 @@ class Stage extends DisplayObjectContainer {
 			case 28: // etJoyButtonUp
 				nmeOnJoystick(inEvent, JoystickEvent.BUTTON_UP);
 			
+			case 29: // etSysWM
+				nmeOnSysWM(inEvent);
+			
 			// TODO: user, sys_wm, sound_finished
 		}
 		
@@ -691,6 +695,14 @@ class Stage extends DisplayObjectContainer {
 	/** @private */ private function nmeOnResize(inW:Float, inH:Float) {
 		
 		var evt = new Event(Event.RESIZE);
+		nmeDispatchEvent(evt);
+		
+	}
+	
+	
+	private function nmeOnSysWM(inEvent:Dynamic) {
+		
+		var evt = new SystemEvent(SystemEvent.SYSTEM, false, false, inEvent.value);
 		nmeDispatchEvent(evt);
 		
 	}
@@ -1067,6 +1079,11 @@ class TouchInfo {
 	
 	
 }
+
+
+#if haxe3
+typedef IntHash<T> = haxe.ds.IntMap<T>
+#end
 
 
 #end

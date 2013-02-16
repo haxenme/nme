@@ -33,7 +33,7 @@ package nme.media;
 	 * <p>If the sound is looped, <code>position</code> is reset to 0 at the
 	 * beginning of each loop.</p>
 	 */
-	var position(default,null) : Float;
+	var position : Float;
 
 	/**
 	 * The current amplitude(volume) of the right channel, from 0(silent) to 1

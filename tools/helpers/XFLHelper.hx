@@ -112,7 +112,7 @@ class XFLHelper {
 					
 				}
 				
-				project.haxelibs.set("xfl", {name:"xfl"});
+				project.haxelibs.push (new Haxelib ("xfl"));
 
 				
 			}

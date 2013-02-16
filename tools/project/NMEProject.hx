@@ -6,6 +6,12 @@ import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class NMEProject {
 	
@@ -18,10 +24,10 @@ class NMEProject {
 	public var config:PlatformConfig;
 	public var debug:Bool;
 	public var dependencies:Array <String>;
-	public var environment:Hash <String>;
+	public var environment:StringMap <String>;
 	public var haxedefs:Array <String>;
 	public var haxeflags:Array <String>;
-	public var haxelibs:Hash <Haxelib>;
+	public var haxelibs:Array <Haxelib>;
 	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
 	public var javaPaths:Array <String>;
@@ -32,7 +38,7 @@ class NMEProject {
 	public var sources:Array <String>;
 	public var splashScreens:Array <SplashScreen>;
 	public var target:Platform;
-	public var targetFlags:Hash <String>;
+	public var targetFlags:StringMap <String>;
 	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
@@ -44,7 +50,7 @@ class NMEProject {
 	public static var _command:String;
 	public static var _debug:Bool;
 	public static var _target:Platform;
-	public static var _targetFlags:Hash <String>;
+	public static var _targetFlags:StringMap <String>;
 	public static var _templatePaths:Array <String>;
 	
 	private static var initialized:Bool;
@@ -86,8 +92,8 @@ class NMEProject {
 		templatePaths = _templatePaths.copy ();
 		
 		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
-		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: "11", minimumSWFVersion: "11", url: "" }
-		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: false, requireShaders: false, depthBuffer: false, stencilBuffer: false }
+		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
+		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: true, requireShaders: false, depthBuffer: false, stencilBuffer: false }
 		
 		switch (target) {
 			
@@ -141,7 +147,7 @@ class NMEProject {
 		environment = Sys.environment ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
-		haxelibs = new Hash <Haxelib> ();
+		haxelibs = new Array <Haxelib> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
 		libraries = new Array <Library> ();
@@ -184,9 +190,10 @@ class NMEProject {
 		
 		project.haxedefs = haxedefs.copy ();
 		project.haxeflags = haxeflags.copy ();
-		for (key in haxelibs.keys ()) {
+		
+		for (haxelib in haxelibs) {
 			
-			project.haxelibs.set (key, haxelibs.get (key));
+			project.haxelibs.push (haxelib.clone ());
 			
 		}
 		
@@ -388,7 +395,7 @@ class NMEProject {
 			
 			if (_targetFlags == null) {
 				
-				_targetFlags = new Hash <String> ();
+				_targetFlags = new StringMap <String> ();
 				
 			}
 			
@@ -422,7 +429,7 @@ class NMEProject {
 			dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
 			haxedefs = ArrayHelper.concatUnique (haxedefs, project.haxedefs);
 			haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
-			HashHelper.copyUniqueKeys (project.haxelibs, haxelibs);
+			haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
 			icons = ArrayHelper.concatUnique (icons, project.icons);
 			javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
 			libraries = ArrayHelper.concatUnique (libraries, project.libraries);
@@ -557,13 +564,18 @@ class NMEProject {
 		
 		var compilerFlags = [];
 		
-		for (key in haxelibs.keys()) {
-
-			var haxelib = haxelibs.get(key);
-			var libAppendage = "-lib " + haxelib.name;
-			if (haxelib.version != null)
-				libAppendage += ":" + haxelib.version;
-			compilerFlags.push (libAppendage);
+		for (haxelib in haxelibs) {
+			
+			var name = haxelib.name;
+			
+			if (haxelib.version != "") {
+				
+				name += ":" + haxelib.version;
+				
+			}
+			
+			compilerFlags.push ("-lib " + name);
+			
 			Reflect.setField (context, "LIB_" + haxelib.name.toUpperCase (), true);
 			
 		}

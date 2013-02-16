@@ -161,14 +161,17 @@ class PathHelper {
 		
 	}
 	
-	
+
 	public static function getHaxelib (name:String, ?version:String):String {
+		var name = haxelib.name;
 		
-		var searchPath = name;
-		if (version != null)
-			searchPath += ":" + version;
-		var haxelibPath = _haxePath + "haxelib";
-		var proc = new Process (haxelibPath, ["path", searchPath ]);
+		if (haxelib.version != "") {
+			
+			name += ":" + haxelib.version;
+			
+		}
+		
+		var proc = new Process ("haxelib", [ "path", name ]);
 		var result = "";
 		
 		try {
@@ -192,7 +195,7 @@ class PathHelper {
 		
 		if (result == "") {
 			
-			LogHelper.error ("Could not find haxelib \"" + name + "\", does it need to be installed?");
+			LogHelper.error ("Could not find haxelib \"" + haxelib.name + "\", does it need to be installed?");
 			
 		} else {
 			
@@ -441,11 +444,7 @@ class PathHelper {
 			
 			return ndll.path;
 			
-		} else if (ndll.haxelib == "hxcpp") {
-			
-			return combine (getHaxelib ("hxcpp"), "bin/" + directoryName + "/" + filename);
-			
-		} else if (ndll.haxelib == "") {
+		} else if (ndll.haxelib == null) {
 			
 			if (ndll.extensionPath != null && ndll.extensionPath != "") {
 				
@@ -456,6 +455,10 @@ class PathHelper {
 				return filename;
 				
 			}
+			
+		} else if (ndll.haxelib.name == "hxcpp") {
+			
+			return combine (getHaxelib (ndll.haxelib), "bin/" + directoryName + "/" + filename);
 			
 		} else {
 			

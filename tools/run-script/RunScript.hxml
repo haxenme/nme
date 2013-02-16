@@ -1,7 +1,7 @@
 -main RunScript
 -neko ../../run.n
--cp ../helpers
--cp ../project
 -cp src
 -lib nme
 -D haxe3
+-cp ../helpers
+-cp ../project

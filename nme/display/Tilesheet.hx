@@ -31,8 +31,8 @@ import nme.geom.Rectangle;
  * var bitmapData = Assets.getBitmapData("image.png");
  * var tilesheet = new Tilesheet(bitmapData);
  * 
- * tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
- * tilesheet.drawTiles(this, [ 0, 100, 100 ]);
+ * var tile = tilesheet.addTileRect(new Rectangle(0, 0, 100, 100));
+ * tilesheet.drawTiles(this, [ tile, 100, 100 ]);
  * 
  */
 extern class Tilesheet {
@@ -70,7 +70,7 @@ extern class Tilesheet {
 	 * @param	rectangle
 	 * @param	centerPoint
 	 */
-	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Void;
+	function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int;
 	
 	/**
 	 * Fast method to render a batch of tiles from the Tilesheet graphic
@@ -182,16 +182,17 @@ class Tilesheet
 	}
 	
 	
-	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null)
+	public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int
 	{
 		tiles.push(rectangle);
 		if (centerPoint == null) tilePoints.push(defaultRatio);
 		else tilePoints.push(new Point(centerPoint.x / rectangle.width, centerPoint.y / rectangle.height));	
 		tileUVs.push(new Rectangle(rectangle.left / bitmapWidth, rectangle.top / bitmapHeight, rectangle.right / bitmapWidth, rectangle.bottom / bitmapHeight));
+		return tiles.length - 1;
 	}
 	
 	
-	private function adjustIDs(vec:Vector<Int>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustIDs(vec:Vector<Int>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{
@@ -206,7 +207,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustIndices(vec:Vector<Int>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustIndices(vec:Vector<Int>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{
@@ -237,7 +238,7 @@ class Tilesheet
 	}
 	
 	
-	private function adjustLen(vec:Vector<Float>, len:#if haxe_211 Int #else UInt #end)
+	private function adjustLen(vec:Vector<Float>, len:#if haxe3 Int #else UInt #end)
 	{
 		if (vec.length != len)
 		{
@@ -274,38 +275,22 @@ class Tilesheet
 		var useRotation = (flags & TILE_ROTATION) > 0;
 		var useRGB = (flags & TILE_RGB) > 0;
 		var useAlpha = (flags & TILE_ALPHA) > 0;
+		var useTransform = (flags & TILE_TRANS_2x2) > 0;
 		
-		if (useScale || useRotation || useRGB || useAlpha)
+		if (useTransform || useScale || useRotation || useRGB || useAlpha)
 		{
 			var scaleIndex = 0;
 			var rotationIndex = 0;
 			var rgbIndex = 0;
 			var alphaIndex = 0;
+			var transformIndex = 0;
 			var numValues = 3;
 			
-			if (useScale)
-			{
-				scaleIndex = numValues;
-				numValues ++;
-			}
-			
-			if (useRotation)
-			{
-				rotationIndex = numValues;
-				numValues ++;
-			}
-			
-			if (useRGB)
-			{
-				rgbIndex = numValues;
-				numValues += 3;
-			}
-			
-			if (useAlpha)
-			{
-				alphaIndex = numValues;
-				numValues ++;
-			}
+			if (useScale) { scaleIndex = numValues; numValues ++; }
+			if (useRotation) { rotationIndex = numValues; numValues ++; }
+			if (useTransform) { transformIndex = numValues; numValues += 4; }
+			if (useRGB) { rgbIndex = numValues; numValues += 3; }
+			if (useAlpha) { alphaIndex = numValues; numValues ++; }
 			
 			var totalCount = tileData.length;
 			var itemCount = Std.int(totalCount / numValues);
@@ -366,36 +351,61 @@ class Tilesheet
 					tilePoint = tilePoints[tileID];
 				}
 				
-				var tileWidth = tile.width * scale;
-				var tileHeight = tile.height * scale;
-				
-				if (rotation != 0)
+				if (useTransform) 
 				{
-					var kx = tilePoint.x * tileWidth;
-					var ky = tilePoint.y * tileHeight;
-					var akx = (1 - tilePoint.x) * tileWidth;
-					var aky = (1 - tilePoint.y) * tileHeight;
-					var ca = Math.cos(rotation);
-					var sa = Math.sin(rotation);
-					var xc = kx * ca, xs = kx * sa, yc = ky * ca, ys = ky * sa;
-					var axc = akx * ca, axs = akx * sa, ayc = aky * ca, ays = aky * sa;
-					vertices[offset8] = x - (xc + ys);
-					vertices[offset8 + 1] = y - (-xs + yc);
-					vertices[offset8 + 2] = x + axc - ys;
-					vertices[offset8 + 3] = y - (axs + yc);
-					vertices[offset8 + 4] = x - (xc - ays);
-					vertices[offset8 + 5] = y + xs + ayc;
-					vertices[offset8 + 6] = x + axc + ays;
-					vertices[offset8 + 7] = y + (-axs + ayc);
+					var tw = tile.width;
+					var th = tile.height;
+					var t0 = tileData[index + transformIndex];
+					var t1 = tileData[index + transformIndex + 1];
+					var t2 = tileData[index + transformIndex + 2];
+					var t3 = tileData[index + transformIndex + 3];
+					var ox = tilePoint.x * tw;
+					var oy = tilePoint.y * th;
+					var ox_ = ox * t0 + oy * t1;
+					oy = ox * t2 + oy * t3;
+					x -= ox_;
+					y -= oy;
+					vertices[offset8] = x;
+					vertices[offset8 + 1] = y;
+					vertices[offset8 + 2] = x + tw * t0;
+					vertices[offset8 + 3] = y + tw * t2;
+					vertices[offset8 + 4] = x + th * t1;
+					vertices[offset8 + 5] = y + th * t3;
+					vertices[offset8 + 6] = x + tw * t0 + th * t1;
+					vertices[offset8 + 7] = y + tw * t2 + th * t3;
 				}
-				else 
+				else
 				{
-					x -= tilePoint.x * tileWidth;
-					y -= tilePoint.y * tileHeight;
-					vertices[offset8] = vertices[offset8 + 4] = x;
-					vertices[offset8 + 1] = vertices[offset8 + 3] = y;
-					vertices[offset8 + 2] = vertices[offset8 + 6] = x + tileWidth;
-					vertices[offset8 + 5] = vertices[offset8 + 7] = y + tileHeight;
+					var tileWidth = tile.width * scale;
+					var tileHeight = tile.height * scale;
+					if (rotation != 0)
+					{
+						var kx = tilePoint.x * tileWidth;
+						var ky = tilePoint.y * tileHeight;
+						var akx = (1 - tilePoint.x) * tileWidth;
+						var aky = (1 - tilePoint.y) * tileHeight;
+						var ca = Math.cos(rotation);
+						var sa = Math.sin(rotation);
+						var xc = kx * ca, xs = kx * sa, yc = ky * ca, ys = ky * sa;
+						var axc = akx * ca, axs = akx * sa, ayc = aky * ca, ays = aky * sa;
+						vertices[offset8] = x - (xc + ys);
+						vertices[offset8 + 1] = y - (-xs + yc);
+						vertices[offset8 + 2] = x + axc - ys;
+						vertices[offset8 + 3] = y - (axs + yc);
+						vertices[offset8 + 4] = x - (xc - ays);
+						vertices[offset8 + 5] = y + xs + ayc;
+						vertices[offset8 + 6] = x + axc + ays;
+						vertices[offset8 + 7] = y + (-axs + ayc);
+					}
+					else 
+					{
+						x -= tilePoint.x * tileWidth;
+						y -= tilePoint.y * tileHeight;
+						vertices[offset8] = vertices[offset8 + 4] = x;
+						vertices[offset8 + 1] = vertices[offset8 + 3] = y;
+						vertices[offset8 + 2] = vertices[offset8 + 6] = x + tileWidth;
+						vertices[offset8 + 5] = vertices[offset8 + 7] = y + tileHeight;
+					}
 				}
 				
 				if (ids[tileIndex] != tileID)

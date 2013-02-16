@@ -10,6 +10,12 @@ import browser.Html5Dom;
 import haxe.Unserializer;
 import haxe.Resource;
 
+#if haxe3
+import haxe.ds.IntMap;
+#else
+typedef IntMap<T> = IntHash<T>;
+#end
+
 
 class Font {
 	
@@ -26,7 +32,7 @@ class Font {
 	private static var nmeFontData:Array<String>;
 	
 	private var nmeFontScale:Float;
-	private var nmeGlyphData:IntHash<GlyphData>;
+	private var nmeGlyphData:IntMap<GlyphData>;
 	private var nmeMetrics:Array<Int>;
 	
 	
@@ -183,16 +189,15 @@ class Font {
 			}
 			
 		} 
-
+		
 		if (nmeFontData[cast fontName] != null) {
-
+			
 			try {
-
+				
 				nmeGlyphData = Unserializer.run(nmeFontData[cast fontName]);
 				
 			} catch(e:Dynamic) {
 				
-
 				this.fontName = DEFAULT_FONT_NAME;
 				
 			}

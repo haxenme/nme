@@ -22,7 +22,12 @@
    <set name="ogl" value="1" if="webos"/>
    <set name="ogl" value="1" if="blackberry"/>
    <set name="nmeegl" value="1" if="rpi"/>
+   <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
+   <!-- Toggle this for openal experimental osx code -->
+   <set name="openal" value="1" if="macos"/>
+   <!-- <set name="openal" value="1" if="win_desktop"/> -->
+	
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
    <set name="mobile" value="1" if="webos"/>
@@ -39,11 +44,13 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I../../sdl-static/include"/>
       <compilerflag value="-I../../sdl-static/include/SDL12"/>
+      <compilerflag value="-I../../sdl-static/include/openal"/>
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
       <file name="windows/SimpleFrame.cpp" unless="sdl"/>
       <file name="sdl/SDLSound.cpp" unless="sdl"/>
+	  <file name="openal/OpenALSound.cpp" if="openal"/>
       
    </files>
 
@@ -104,6 +111,7 @@
    <files id="android">
       
       <compilerflag value="-Iinclude"/>
+      <file name="android/AndroidCommon.cpp" />
       <file name="android/AndroidSound.cpp"/>
       <file name="android/AndroidFont.cpp"/>
       <file name="android/AndroidFrame.cpp"/>
@@ -178,6 +186,7 @@
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <compilerflag value="-DNME_CURL_SSL" if="ssl"/>
+	  <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <compilerflag value="-Wno-conversion" if="linux"/>
       
       <file name="common/Surface.cpp"/>
@@ -222,7 +231,7 @@
       <file name="software-renderer/SolidRender.cpp"/>
       <file name="software-renderer/TileRenderer.cpp"/>
       <file name="software-renderer/TriangleRender.cpp"/>
-      
+	  
       <file name="opengl/OpenGLContext.cpp" if="ogl"/>
       <file name="opengl/OGLTexture.cpp" if="ogl"/>
       <file name="opengl/OGLShaders.cpp" if="ogl"/>
@@ -276,7 +285,7 @@
    <set name="sdl_dynamic_include1" value="-I${PalmPDK}/include/SDL" if="webos" />
    <set name="sdl_dynamic_include1" value="-I/usr/include/SDL" if="linux" />
    
-   
+
    <files id="sdl">
       
       <compilerflag value="-Iinclude"/>
@@ -289,7 +298,7 @@
       <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
       <compilerflag value="-DNME_MIXER" />
       <file name="sdl/SDLStage.cpp"/>
-      <file name="sdl/SDLSound.cpp"/>
+      <file name="sdl/SDLSound.cpp" unless="openal"/>
       
    </files>
    
@@ -303,6 +312,7 @@
       <file name="mac/MacBoot.m"/>
       <file name="mac/System.mm"/>
       <file name="cocoa/FileManager.mm"/>
+      <file name="openal/OpenALSound.mm" if="openal"/>
       
    </files>
    
@@ -331,8 +341,6 @@
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
-      
-      <file name="common/Extension.cpp"/>
       
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
@@ -368,6 +376,8 @@
       <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
       
       <vflag name="-framework" value="IOKit" if="macos"/>
+      <vflag name="-framework" value="Foundation" if="macos"/>
+      <vflag name="-framework" value="AVFoundation" if="macos"/>
       <vflag name="-framework" value="CoreAudio" if="macos"/>
       <vflag name="-framework" value="Carbon" if="macos"/>
       <vflag name="-framework" value="AudioToolbox" if="macos"/>
@@ -377,13 +387,14 @@
       <vflag name="-framework" value="OpenGL" if="macos"/>
       <vflag name="-framework" value="QuickTime" if="macos"/>
       <vflag name="-framework" value="AppKit" if="macos"/>
+      <vflag name="-framework" value="OpenAL" if="macos"/>
       
       <lib name="-ldl" if="android"/>
-      <lib name="-lGLESv1_CM" if="android"/>
+      <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
       
-      <lib name="-lGLES_CM" if="webos"/>
+      <lib name="-lGLES_CM" if="webos" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="webos"/>
       <lib name="-lpdl" if="webos"/>
       
@@ -396,7 +407,7 @@
       <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
       <lib name="-lGLESv2" if="blackberry" />
       
-      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi"/>
+      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi" unless="ogl_shaders"/>
       <lib name="/opt/vc/lib/libGLESv2.so" if="rpi"/>
       <lib name="/opt/vc/lib/libEGL.so" if="rpi"/>
       <lib name="/opt/vc/lib/libbcm_host.so" if="rpi"/>
@@ -406,6 +417,7 @@
       
       <lib name="gdi32.lib" if="win_desktop"/>
       <lib name="opengl32.lib" if="win_desktop"/>
+	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="win_desktop"/>
       <lib name="user32.lib" if="win_desktop"/>
       <lib name="kernel32.lib" if="win_desktop"/>
       <lib name="advapi32.lib" if="win_desktop"/>

@@ -69,7 +69,7 @@ class IconHelper {
 				var bytes_g = packBits (pixels, 2, s * s);
 				var bytes_b = packBits (pixels, 3, s * s);
 				
-				#if (haxe_211 && haxe3)
+				#if haxe3
 				out.writeInt32 (bytes_r.length + bytes_g.length + bytes_b.length + 8);
 				#else
 				out.writeInt31 (bytes_r.length + bytes_g.length + bytes_b.length + 8);
@@ -83,7 +83,7 @@ class IconHelper {
 				for (c in 0...4) out.writeByte (code.charCodeAt (c));
 				
 				var bytes_a = extractBits (pixels, 0, s * s);
-				#if (haxe_211 && haxe3)
+				#if haxe3
 				out.writeInt32 (bytes_a.length + 8);
 				#else
 				out.writeInt31 (bytes_a.length + 8);
@@ -106,7 +106,7 @@ class IconHelper {
 				
 				var bytes = bmp.encode ("png");
 				
-				#if (haxe_211 && haxe3)
+				#if haxe3
 				out.writeInt32 (bytes.length + 8);
 				#else
 				out.writeInt31 (bytes.length + 8);
@@ -126,7 +126,7 @@ class IconHelper {
 			
 			for (c in 0...4) file.writeByte ("icns".charCodeAt (c));
 			
-			#if (haxe_211 && haxe3)
+			#if haxe3
 			file.writeInt32 (bytes.length + 8);
 			#else
 			file.writeInt31 (bytes.length + 8);

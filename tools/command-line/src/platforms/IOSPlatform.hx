@@ -246,9 +246,11 @@ class IOSPlatform implements IPlatformTool {
 		
 		project = project.clone ();
 		
-		project.ndlls.push (new NDLL ("curl_ssl", "nme", false));
-		project.ndlls.push (new NDLL ("png", "nme", false));
-		project.ndlls.push (new NDLL ("jpeg", "nme", false));
+		var nmeLib = new Haxelib ("nme");
+		
+		project.ndlls.push (new NDLL ("curl_ssl", nmeLib, false));
+		project.ndlls.push (new NDLL ("png", nmeLib, false));
+		project.ndlls.push (new NDLL ("jpeg", nmeLib, false));
 		
 		for (asset in project.assets) {
 			

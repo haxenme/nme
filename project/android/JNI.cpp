@@ -6,10 +6,9 @@
 #include <map>
 
 #include <android/log.h>
+#include "AndroidCommon.h"
 
 using namespace nme;
-
-extern JNIEnv *GetEnv();
 
 enum JNIElement
 {
@@ -185,7 +184,7 @@ void JNIInit(JNIEnv *env)
 {
    if (sInit)
       return;
-   GameActivity = env->FindClass("org/haxe/nme/GameActivity");
+   GameActivity = (jclass)env->NewGlobalRef(env->FindClass("org/haxe/nme/GameActivity"));
    postUICallback = env->GetStaticMethodID(GameActivity, "postUICallback", "(J)V");
 
    ObjectClass = env->FindClass("java/lang/Object");
@@ -641,7 +640,7 @@ struct JNIMethod : public nme::Object
       mIsConstructor = !strncmp(method,"<init>",6);
 
 
-      mClass = env->FindClass(val_string(inClass));
+      mClass = (jclass)env->NewGlobalRef(env->FindClass(val_string(inClass)));
       const char *signature = val_string(inSignature);
       if (mClass)
       {
@@ -661,6 +660,10 @@ struct JNIMethod : public nme::Object
       }
    }
 
+   ~JNIMethod()
+   {
+      GetEnv()->DeleteGlobalRef(mClass);
+   }
 
    bool HaxeToJNIArgs(JNIEnv *inEnv, value inArray, jvalue *outValues)
    {

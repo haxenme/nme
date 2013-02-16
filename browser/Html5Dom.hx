@@ -12,7 +12,11 @@ typedef Vector<T> = Array<T>;
 * <----------------- WebWorkers ------------------>
 */
 
+#if haxe3
+extern interface WorkerGlobalScope #if haxe3 extends #else implements #end WorkerUtils #if haxe3 extends #else implements #end EventTarget {
+#else
 extern interface WorkerGlobalScope implements WorkerUtils, implements EventTarget {
+#end
 	public var self(default,null):WorkerGlobalScope;
 	public var location(default,null):WorkerLocation;
 	public var onerror:Html5DomEvent->Void;
@@ -20,7 +24,7 @@ extern interface WorkerGlobalScope implements WorkerUtils, implements EventTarge
 	public function close():Void;
 }
 
-extern interface AbstractWorker implements EventTarget {
+extern interface AbstractWorker #if haxe3 extends #else implements #end EventTarget {
 	public var onError:Html5DomEvent->Void;
 }
 
@@ -44,12 +48,16 @@ extern class Worker implements AbstractWorker {
 	public function removeEventListenerNS(namespaceURI: DOMString, type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
 }
 
-extern interface WorkerUtils implements WindowTimers {
+extern interface WorkerUtils #if haxe3 extends #else implements #end WindowTimers {
 	public function importScripts(url: Array<String>):Void;
 	public var navigator(default,null):WorkerNavigator;
 }
 
-extern interface WorkerNavigator implements NavigatorID, implements NavigatorOnLine { } 
+#if haxe3
+extern interface WorkerNavigator #if haxe3 extends #else implements #end NavigatorID #if haxe3 extends #else implements #end NavigatorOnLine { } 
+#else
+extern interface WorkerNavigator #if haxe3 extends #else implements #end NavigatorID, #if haxe3 extends #else implements #end NavigatorOnLine { } 
+#end
 
 extern interface WorkerLocation {
 	public var href(default,null):DOMString;
@@ -168,7 +176,11 @@ extern interface ArrayBufferView {
 	var byteLength(default,null):ArrayBuffer;
 }
 
+#if haxe3
+extern class Int8Array implements ArrayBufferView implements ArrayAccess<Int> {
+#else
 extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
+#end
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -182,7 +194,11 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	function subarray(offset:Int, length:Int):Int8Array;
 }
 
+#if haxe3
+extern class Uint8Array implements ArrayBufferView implements ArrayAccess<Int> {
+#else
 extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> {
+#end
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -197,7 +213,7 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 }
 
 @:native("Int16Array")
-extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Int16Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -210,7 +226,7 @@ extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	function subarray(offset:Int, length:Int):Int16Array;
 }
 
-extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Uint16Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -223,7 +239,7 @@ extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int>
 	function subarray(offset:Int, length:Int):Uint16Array;
 }
 
-extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Int32Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -236,7 +252,7 @@ extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	function subarray(offset:Int, length:Int):Int32Array;
 }
 
-extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Uint32Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -250,7 +266,7 @@ extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int>
 }
 
 @:native("Float32Array")
-extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Float> {
+extern class Float32Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Float> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -263,7 +279,7 @@ extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Flo
 	function subarray(offset:Int, length:Int):Float32Array;
 }
 
-extern class Float64Array implements ArrayBufferView, implements ArrayAccess<Float> {
+extern class Float64Array implements ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Float> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -329,22 +345,22 @@ extern interface WebGLContextAttributes {
 extern interface WebGLObject {
 }
 
-extern interface WebGLBuffer implements WebGLObject {
+extern interface WebGLBuffer #if haxe3 extends #else implements #end WebGLObject {
 }
 
-extern interface WebGLFramebuffer implements WebGLObject {
+extern interface WebGLFramebuffer #if haxe3 extends #else implements #end WebGLObject {
 }
 
-extern interface WebGLProgram implements WebGLObject {
+extern interface WebGLProgram #if haxe3 extends #else implements #end WebGLObject {
 }
 
-extern interface WebGLRenderbuffer implements WebGLObject {
+extern interface WebGLRenderbuffer #if haxe3 extends #else implements #end WebGLObject {
 }
 
-extern interface WebGLShader implements WebGLObject {
+extern interface WebGLShader #if haxe3 extends #else implements #end WebGLObject {
 }
 
-extern interface WebGLTexture implements WebGLObject {
+extern interface WebGLTexture #if haxe3 extends #else implements #end WebGLObject {
 }
 
 extern interface WebGLUniformLocation {
@@ -1091,7 +1107,7 @@ typedef DOMObject = Dynamic;
 
 typedef DOMUserData = Dynamic //any
 
-extern class DomCollection<T> implements ArrayAccess<T>, implements Dynamic<T> {
+extern class DomCollection<T> implements ArrayAccess<T> #if !haxe3 , #end implements Dynamic<T> {
 	var length(default, null) : Int;
 }
 
@@ -1128,7 +1144,7 @@ extern interface DOMTokenList {
     public function stringifier(): DOMString;
 }
 
-extern interface DOMSettableTokenList implements DOMTokenList {
+extern interface DOMSettableTokenList #if haxe3 extends #else implements #end DOMTokenList {
     public var value:       DOMString;
 }
 
@@ -1187,7 +1203,7 @@ extern interface EventTarget {
 }
 
 //Tested
-extern interface Node implements EventTarget {
+extern interface Node #if haxe3 extends #else implements #end EventTarget {
     public var nodeName        (default,null): DOMString;
     public var nodeValue:       DOMString;  // raises(DOMException) on setting & raises(DOMException) on retrieval
     public var nodeType        (default,null): Int;
@@ -1260,7 +1276,7 @@ extern interface NamedNodeMap {
     public var length(default,null): Int;
 }
 //Tested throuh Text
-extern interface CharacterData implements Node {
+extern interface CharacterData #if haxe3 extends #else implements #end Node {
     public var data:    DOMString;
     public var length  (default,null): Int;
     
@@ -1275,7 +1291,7 @@ extern interface CharacterData implements Node {
     public function replaceData(offset: Int, count: Int, arg: DOMString): Void;
 }
 //Tested
-extern interface Attr implements Node {
+extern interface Attr #if haxe3 extends #else implements #end Node {
     public var name            (default,null): DOMString;
     public var specified       (default,null): Bool;
     public var value           (default,null): DOMString;
@@ -1284,7 +1300,7 @@ extern interface Attr implements Node {
     public var isID            (default,null): Bool;
 }
 //Tested
-extern interface Element implements Node {
+extern interface Element #if haxe3 extends #else implements #end Node {
     public var schemaTypeInfo  (default,null): TypeInfo;
     public var tagName         (default, null): DOMString;
     public var scrollTop:       Int;  
@@ -1338,7 +1354,7 @@ extern interface Element implements Node {
     public function getBoundingClientRect(): ClientRect;
 }
 //Tested
-extern interface Text implements CharacterData {
+extern interface Text #if haxe3 extends #else implements #end CharacterData {
     public function splitText(offset: Int): Text;
     
     public function replaceWholeText(content: DOMString): Text;
@@ -1347,7 +1363,7 @@ extern interface Text implements CharacterData {
     public var wholeText                   (default,null): DOMString;
 }
 
-extern interface Comment implements CharacterData {
+extern interface Comment #if haxe3 extends #else implements #end CharacterData {
     
 }
 
@@ -1397,11 +1413,11 @@ extern interface DOMConfiguration {
     public var parameterNames(default, null): DOMStringList;
 }
 
-extern interface CDATASection implements Text {
+extern interface CDATASection #if haxe3 extends #else implements #end Text {
     
 }
 //Tested
-extern interface DocumentType implements Node {
+extern interface DocumentType #if haxe3 extends #else implements #end Node {
     public var name            (default,null): DOMString;
     public var entities        (default,null): NamedNodeMap;
     public var notations       (default,null): NamedNodeMap;
@@ -1410,12 +1426,12 @@ extern interface DocumentType implements Node {
     public var internalSubset  (default,null): DOMString;
 }
 //Unagle to Test
-extern interface Notation implements Node {
+extern interface Notation #if haxe3 extends #else implements #end Node {
     public var publicId        (default,null): DOMString;
     public var systemId        (default,null): DOMString;
 }
 //Unable to Test
-extern interface Entity implements Node {
+extern interface Entity #if haxe3 extends #else implements #end Node {
     public var publicId        (default,null): DOMString;
     public var systemId        (default,null): DOMString;
     public var notationName    (default,null): DOMString;
@@ -1424,21 +1440,21 @@ extern interface Entity implements Node {
     public var xmlVersion      (default,null): DOMString;
 }
 
-extern interface EntityReference implements Node {
+extern interface EntityReference #if haxe3 extends #else implements #end Node {
     
 }
 //XML Only
-extern interface ProcessingInstruction implements Node {
+extern interface ProcessingInstruction #if haxe3 extends #else implements #end Node {
     public var target          (default, null):      DOMString;
     public var data:        DOMString;
 }
 
-extern interface DocumentFragment implements Node {
+extern interface DocumentFragment #if haxe3 extends #else implements #end Node {
     
 }
 
 //Tested
-extern interface Document implements Node {
+extern interface Document #if haxe3 extends #else implements #end Node {
     public var doctype                 (default, null): DocumentType;
     public var implementation          (default, null): DOMImplementation;
     public var documentElement         (default, null): Element;
@@ -1543,7 +1559,7 @@ extern interface TimedTrack {
     public var onexitcue           (default, null): EventListener<Html5DomEvent>;
 }
 
-extern interface MutableTimedTrack implements TimedTrack {
+extern interface MutableTimedTrack #if haxe3 extends #else implements #end TimedTrack {
     public function addCue(cue: TimedTrackCue): Void;
     
     public function removeCue(cue: TimedTrackCue): Void;
@@ -1576,7 +1592,7 @@ extern interface TimedTrackCue {
     public function getCueAsHTML(): DocumentFragment;
 }
 
-extern interface HTMLMediaElement implements HTMLElement {
+extern interface HTMLMediaElement #if haxe3 extends #else implements #end HTMLElement {
     public var tracks                  (default, null): TimedTrack;
     public var error                   (default, null): MediaError;
     public var src                      : DOMString;
@@ -1612,10 +1628,10 @@ extern interface HTMLMediaElement implements HTMLElement {
     public function addTrack(label: DOMString, kind: DOMString, language: DOMString): MutableTimedTrack;
 }
 
-extern interface HTMLFormControlsCollection implements HTMLCollection {
+extern interface HTMLFormControlsCollection #if haxe3 extends #else implements #end HTMLCollection {
 }
 
-extern interface RadioNodeList implements DomCollection<Node> {
+extern class RadioNodeList extends DomCollection<Node> {
     public var value: DOMString;
 }
 
@@ -1656,7 +1672,7 @@ interface Selection {
     public function stringifier(): DOMString;
 }
 
-extern interface HTMLDocument implements Document, implements XPathEvaluator {
+extern interface HTMLDocument #if haxe3 extends #else implements #end Document #if !haxe3 , #end #if haxe3 extends #else implements #end XPathEvaluator {
     public var title:       DOMString;
     public var referrer    (default, null): DOMString;
     public var domain      (default, null): DOMString;
@@ -1779,12 +1795,12 @@ extern interface HTMLDocument implements Document, implements XPathEvaluator {
     
 }
 
-extern interface HTMLUnknownElement implements HTMLElement {
+extern interface HTMLUnknownElement #if haxe3 extends #else implements #end HTMLElement {
     
 }
 
 //Tested
-extern interface HTMLElement implements Element {
+extern interface HTMLElement #if haxe3 extends #else implements #end Element {
     public var id:              DOMString;
     public var title:           DOMString;
     public var lang:            DOMString;
@@ -1884,15 +1900,15 @@ extern interface HTMLElement implements Element {
     public var onwaiting: EventListener<Html5DomEvent>;
 }
 //Tested
-extern interface HTMLHtmlElement implements HTMLElement {
+extern interface HTMLHtmlElement #if haxe3 extends #else implements #end HTMLElement {
     public var version:     DOMString;
 }
 //Tested
-extern interface HTMLHeadElement implements HTMLElement {
+extern interface HTMLHeadElement #if haxe3 extends #else implements #end HTMLElement {
     public var profile:     DOMString;
 }
 //Tested
-extern interface HTMLLinkElement implements HTMLElement {
+extern interface HTMLLinkElement #if haxe3 extends #else implements #end HTMLElement {
     public var disabled(default, null):        Bool;
     public var charset:         DOMString;
     public var href:            DOMString;
@@ -1904,11 +1920,11 @@ extern interface HTMLLinkElement implements HTMLElement {
     public var type:            DOMString;
 }
 //Tested
-extern interface HTMLTitleElement implements HTMLElement {
+extern interface HTMLTitleElement #if haxe3 extends #else implements #end HTMLElement {
     public var text:            DOMString;
 }
 //Tested
-extern interface HTMLMetaElement implements HTMLElement {
+extern interface HTMLMetaElement #if haxe3 extends #else implements #end HTMLElement {
     public var content:         DOMString;
     public var httpEquiv:       DOMString;
     public var lang:            DOMString;
@@ -1918,24 +1934,24 @@ extern interface HTMLMetaElement implements HTMLElement {
     public var scheme:          DOMString;
 }
 //Tested
-extern interface HTMLBaseElement implements HTMLElement {
+extern interface HTMLBaseElement #if haxe3 extends #else implements #end HTMLElement {
     public var href:            DOMString;
     public var target:          DOMString;
 }
 //Unable to Test
-extern interface HTMLIsIndexElement implements HTMLElement {
+extern interface HTMLIsIndexElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var prompt:          DOMString;
 }
 //Tested
-extern interface HTMLStyleElement implements HTMLElement {
+extern interface HTMLStyleElement #if haxe3 extends #else implements #end HTMLElement {
     public var disabled:        Bool;
     public var media:           DOMString;
     public var type:            DOMString;
     public var scoped:          Bool;
 }
 //Tested
-extern interface HTMLBodyElement implements HTMLElement {
+extern interface HTMLBodyElement #if haxe3 extends #else implements #end HTMLElement {
     public var aLink:           DOMString;
     public var background:      DOMString;
     public var bgColor:         DOMString;
@@ -1944,7 +1960,7 @@ extern interface HTMLBodyElement implements HTMLElement {
     public var vLink:           DOMString;
 }
 //Tested
-extern interface HTMLFormElement implements HTMLElement {
+extern interface HTMLFormElement #if haxe3 extends #else implements #end HTMLElement {
     public var elements        (default, null): HTMLCollection;
     public var length          (default, null): Int;
     public var name:            DOMString;
@@ -1959,7 +1975,7 @@ extern interface HTMLFormElement implements HTMLElement {
     public function reset(): Void;
 }
 //Unable to Test
-extern interface HTMLSelectElement implements HTMLElement {
+extern interface HTMLSelectElement #if haxe3 extends #else implements #end HTMLElement {
     public var type            (default, null): DOMString;
     public var selectedIndex:   Int;
     public var value:           DOMString;
@@ -1981,7 +1997,7 @@ extern interface HTMLSelectElement implements HTMLElement {
     public function focus(): Void;
 }
 //Tested
-extern interface HTMLCanvasElement implements HTMLElement {
+extern interface HTMLCanvasElement #if haxe3 extends #else implements #end HTMLElement {
     public var width:                      Int;
     public var height:                     Int;
     
@@ -2085,12 +2101,12 @@ extern interface CanvasPixelArray implements ArrayAccess<Int> {
 extern interface Octet {}
 
 //Unable to Test
-extern interface HTMLOptGroupElement implements HTMLElement {
+extern interface HTMLOptGroupElement #if haxe3 extends #else implements #end HTMLElement {
     public var disabled(default, null):        Bool;
     public var label(default, null):           DOMString;
 }
 //Tested
-extern interface HTMLOptionElement implements HTMLElement {
+extern interface HTMLOptionElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var defaultSelected: Bool;
     public var text            (default, null): DOMString;
@@ -2101,7 +2117,7 @@ extern interface HTMLOptionElement implements HTMLElement {
     public var value:           DOMString;
 }
 //Tested
-extern interface HTMLInputElement implements HTMLElement {
+extern interface HTMLInputElement #if haxe3 extends #else implements #end HTMLElement {
     public var defaultValue:    DOMString;
     public var defaultChecked:  Bool;
     public var form            (default, null): HTMLFormElement;
@@ -2130,7 +2146,7 @@ extern interface HTMLInputElement implements HTMLElement {
     public function click(): Void;
 }
 //Tested
-extern interface HTMLTextAreaElement implements HTMLElement {
+extern interface HTMLTextAreaElement #if haxe3 extends #else implements #end HTMLElement {
     public var defaultValue:    DOMString;
     public var form            (default, null): HTMLFormElement;
     public var accessKey(default, null):       DOMString;
@@ -2150,7 +2166,7 @@ extern interface HTMLTextAreaElement implements HTMLElement {
     public function select(): Void;
 }
 //Tested
-extern interface HTMLButtonElement implements HTMLElement {
+extern interface HTMLButtonElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var accessKey(default, null):       DOMString;
     public var disabled(default, null):        Bool;
@@ -2160,99 +2176,99 @@ extern interface HTMLButtonElement implements HTMLElement {
     public var value:           DOMString;
 }
 //Tested
-extern interface HTMLLabelElement implements HTMLElement {
+extern interface HTMLLabelElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var accessKey(default, null):       DOMString;
     public var htmlFor:         DOMString;
 }
 //Tested
-extern interface HTMLFieldSetElement implements HTMLElement {
+extern interface HTMLFieldSetElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
 }
 //Tested
-extern interface HTMLLegendElement implements HTMLElement {
+extern interface HTMLLegendElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var accessKey(default, null):       DOMString;
     public var align:           DOMString;
 }
 //Tested
-extern interface HTMLUListElement implements HTMLElement {
+extern interface HTMLUListElement #if haxe3 extends #else implements #end HTMLElement {
     public var compact:         Bool;
     public var type:            DOMString;
 }
 //Tested
-extern interface HTMLOListElement implements HTMLElement {
+extern interface HTMLOListElement #if haxe3 extends #else implements #end HTMLElement {
     public var compact:         Bool;
     public var start:           Int;
     public var type:            DOMString;
 }
 //Tested
-extern interface HTMLDListElement implements HTMLElement {
+extern interface HTMLDListElement #if haxe3 extends #else implements #end HTMLElement {
     public var compact:         Bool;
 }
 //Tested
-extern interface HTMLDirectoryElement implements HTMLElement {
+extern interface HTMLDirectoryElement #if haxe3 extends #else implements #end HTMLElement {
     public var compact:         Bool;
 }
 //Tested
-extern interface HTMLMenuElement implements HTMLElement {
+extern interface HTMLMenuElement #if haxe3 extends #else implements #end HTMLElement {
     public var compact:         Bool;
 }
 //Tested
-extern interface HTMLLIElement implements HTMLElement {
+extern interface HTMLLIElement #if haxe3 extends #else implements #end HTMLElement {
     public var type:            DOMString;
     public var value:           Int;
 }
 //Tested
-extern interface HTMLDivElement implements HTMLElement {
+extern interface HTMLDivElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
 }
 //Tested
-extern interface HTMLParagraphElement implements HTMLElement {
+extern interface HTMLParagraphElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
 }
 //Tested
-extern interface HTMLHeadingElement implements HTMLElement {
+extern interface HTMLHeadingElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
 }
 //Tested
-extern interface HTMLQuoteElement implements HTMLElement {
+extern interface HTMLQuoteElement #if haxe3 extends #else implements #end HTMLElement {
     public var cite:            DOMString;
 }
 //Tested
-extern interface HTMLPreElement implements HTMLElement {
+extern interface HTMLPreElement #if haxe3 extends #else implements #end HTMLElement {
     public var width:           Int;
 }
 //Tested
-extern interface HTMLBRElement implements HTMLElement {
+extern interface HTMLBRElement #if haxe3 extends #else implements #end HTMLElement {
     public var clear:           DOMString;
 }
 //Tested -- only supported by Internet Explorer
-extern interface HTMLBaseFontElement implements HTMLElement {
+extern interface HTMLBaseFontElement #if haxe3 extends #else implements #end HTMLElement {
     public var color:           DOMString;
     public var face:            DOMString;
     public var size:            Int;
 }
 //Tested
-extern interface HTMLFontElement implements HTMLElement {
+extern interface HTMLFontElement #if haxe3 extends #else implements #end HTMLElement {
     public var color:           DOMString;
     public var face:            DOMString;
     public var size:            DOMString;
 }
 //Tested
-extern interface HTMLHRElement implements HTMLElement {
+extern interface HTMLHRElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
     public var noShade:         Bool;
     public var size:            DOMString;
     public var width:           DOMString;
 }
 //Tested
-extern interface HTMLModElement implements HTMLElement {
+extern interface HTMLModElement #if haxe3 extends #else implements #end HTMLElement {
     public var cite:            DOMString;
     public var dateTime:        DOMString;
 }
 //Tested
-extern interface HTMLAnchorElement implements HTMLElement {
+extern interface HTMLAnchorElement #if haxe3 extends #else implements #end HTMLElement {
     public var accessKey(default, null):       DOMString;
     public var charset:         DOMString;
     public var coords:          DOMString;
@@ -2271,7 +2287,7 @@ extern interface HTMLAnchorElement implements HTMLElement {
     public function focus(): Void;
 }
 //Tested
-extern interface HTMLImageElement implements HTMLElement {
+extern interface HTMLImageElement #if haxe3 extends #else implements #end HTMLElement {
     public var name:            DOMString;
     public var align:           DOMString;
     public var alt:             DOMString;
@@ -2287,7 +2303,7 @@ extern interface HTMLImageElement implements HTMLElement {
     public var complete:	Bool; // not w3c
 }
 //Tested
-extern interface HTMLObjectElement implements HTMLElement {
+extern interface HTMLObjectElement #if haxe3 extends #else implements #end HTMLElement {
     public var form            (default, null): HTMLFormElement;
     public var code:            DOMString;
     public var align:           DOMString;
@@ -2309,14 +2325,14 @@ extern interface HTMLObjectElement implements HTMLElement {
     public var contentDocument (default, null): Document;
 }
 //Tested
-extern interface HTMLParamElement implements HTMLElement {
+extern interface HTMLParamElement #if haxe3 extends #else implements #end HTMLElement {
     public var name:            DOMString;
     public var type:            DOMString;
     public var value:           DOMString;
     public var valueType:       DOMString;
 }
 //Tested
-extern interface HTMLAppletElement implements HTMLElement {
+extern interface HTMLAppletElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
     public var alt:             DOMString;
     public var archive:         DOMString;
@@ -2330,12 +2346,12 @@ extern interface HTMLAppletElement implements HTMLElement {
     public var width:           DOMString;
 }
 //Tested
-extern interface HTMLMapElement implements HTMLElement {
+extern interface HTMLMapElement #if haxe3 extends #else implements #end HTMLElement {
     public var areas           (default, null): HTMLCollection;
     public var name:            DOMString;
 }
 //Tested
-extern interface HTMLAreaElement implements HTMLElement {
+extern interface HTMLAreaElement #if haxe3 extends #else implements #end HTMLElement {
     public var accessKey(default, null):       DOMString;
     public var alt:             DOMString;
     public var coords:          DOMString;
@@ -2346,7 +2362,7 @@ extern interface HTMLAreaElement implements HTMLElement {
     public var target:          DOMString;
 }
 //Tested
-extern interface HTMLScriptElement implements HTMLElement {
+extern interface HTMLScriptElement #if haxe3 extends #else implements #end HTMLElement {
     public var text:            DOMString;
     public var htmlFor:         DOMString;
     public var event:           DOMString;
@@ -2356,7 +2372,7 @@ extern interface HTMLScriptElement implements HTMLElement {
     public var type:            DOMString;
 }
 //Tested
-extern interface HTMLTableElement implements HTMLElement {
+extern interface HTMLTableElement #if haxe3 extends #else implements #end HTMLElement {
     public var caption:         HTMLTableCaptionElement;
     public var tHead:           HTMLTableSectionElement;
     public var tFoot:           HTMLTableSectionElement;
@@ -2389,11 +2405,11 @@ extern interface HTMLTableElement implements HTMLElement {
     public function deleteRow(index: Int): Void;
 }
 //Tested
-extern interface HTMLTableCaptionElement implements HTMLElement {
+extern interface HTMLTableCaptionElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
 }
 //Tested
-extern interface HTMLTableColElement implements HTMLElement {
+extern interface HTMLTableColElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
     public var ch:              DOMString;
     public var chOff:           DOMString;
@@ -2402,7 +2418,7 @@ extern interface HTMLTableColElement implements HTMLElement {
     public var width:           DOMString;
 }
 //Tested
-extern interface HTMLTableSectionElement implements HTMLElement {
+extern interface HTMLTableSectionElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
     public var ch:              DOMString;
     public var chOff:           DOMString;
@@ -2414,7 +2430,7 @@ extern interface HTMLTableSectionElement implements HTMLElement {
     public function deleteRow(index: Int): Void;
 }
 //Tested
-extern interface HTMLTableRowElement implements HTMLElement {
+extern interface HTMLTableRowElement #if haxe3 extends #else implements #end HTMLElement {
     public var rowIndex        (default, null): Int;
     public var sectionRowIndex (default, null): Int;
     public var cells           (default, null): HTMLCollection;
@@ -2429,7 +2445,7 @@ extern interface HTMLTableRowElement implements HTMLElement {
     public function deleteCell(index: Int): Void;
 }
 //Tested
-extern interface HTMLTableCellElement implements HTMLElement {
+extern interface HTMLTableCellElement #if haxe3 extends #else implements #end HTMLElement {
     public var cellIndex       (default, null): Int;
     public var abbr:            DOMString;
     public var align:           DOMString;
@@ -2447,12 +2463,12 @@ extern interface HTMLTableCellElement implements HTMLElement {
     public var width:           DOMString;
 }
 //Unable to Test
-extern interface HTMLFrameSetElement implements HTMLElement {
+extern interface HTMLFrameSetElement #if haxe3 extends #else implements #end HTMLElement {
     public var cols:            DOMString;
     public var rows:            DOMString;
 }
 //Unable to Test
-extern interface HTMLFrameElement implements HTMLElement {
+extern interface HTMLFrameElement #if haxe3 extends #else implements #end HTMLElement {
     public var frameBorder:     DOMString;
     public var longDesc:        DOMString;
     public var marginHeight:    DOMString;
@@ -2465,7 +2481,7 @@ extern interface HTMLFrameElement implements HTMLElement {
     public var contentWindow   (default, null): Window;
 }
 //Tested
-extern interface HTMLIFrameElement implements HTMLElement {
+extern interface HTMLIFrameElement #if haxe3 extends #else implements #end HTMLElement {
     public var align:           DOMString;
     public var frameBorder:     DOMString;
     public var height:          DOMString;
@@ -2512,7 +2528,7 @@ extern interface Media {
 *  *** Unable to Automate testing for all Events ***
 */
 
-extern interface MessageEvent implements Html5DomEvent {
+extern interface MessageEvent #if haxe3 extends #else implements #end Html5DomEvent {
   public var data          (default, null): Dynamic;
   public var origin        (default, null): DOMString;
   public var lastEventId   (default, null): DOMString;
@@ -2524,7 +2540,7 @@ extern interface MessageEvent implements Html5DomEvent {
   public function initMessageEventNS(namespaceURI: DOMString, typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, dataArg: Dynamic, originArg: DOMString, lastEventIdArg: DOMString, sourceArg: WindowProxy, portsArg: MessagePortArray): Void;
 }
 
-extern interface StorageEvent implements Html5DomEvent {
+extern interface StorageEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var key         (default, null): DOMString;
     public var oldValue    (default, null): Dynamic;
     public var newValue    (default, null): Dynamic;
@@ -2538,7 +2554,7 @@ extern interface EventException {
     public var code:    Int;
 }
 
-extern interface EventSource implements EventTarget  {
+extern interface EventSource #if haxe3 extends #else implements #end EventTarget  {
   public var URL       (default, null): DOMString;
   public var readyState(default, null): Int;
   
@@ -2549,7 +2565,7 @@ extern interface EventSource implements EventTarget  {
   public function close(): Void;
 }
 
-extern interface WheelEvent implements Html5DomMouseEvent {
+extern interface WheelEvent #if haxe3 extends #else implements #end Html5DomMouseEvent {
     public var deltaX      (default, null): Int;
     public var deltaY      (default, null): Int;
     public var deltaZ      (default, null): Int;
@@ -2595,7 +2611,7 @@ extern interface WheelEvent implements Html5DomMouseEvent {
     ): Void;
 }
 
-extern interface TextEvent implements UIEvent {
+extern interface TextEvent #if haxe3 extends #else implements #end UIEvent {
     public var data        (default, null): DOMString;
     public var inputMode   (default, null): Int;
     
@@ -2604,7 +2620,7 @@ extern interface TextEvent implements UIEvent {
     public function initTextEventNS(namespaceURIArg: DOMString, typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, viewArg: AbstractView, dataArg: DOMString, inputMode: Int): Void;
 }
 
-extern interface Html5DomKeyboardEvent implements UIEvent {
+extern interface Html5DomKeyboardEvent #if haxe3 extends #else implements #end UIEvent {
     public var keyIdentifier       (default, null): DOMString;                
     public var keyLocation         (default, null): Int;
     public var ctrlKey             (default, null): Bool;
@@ -2643,7 +2659,7 @@ extern interface Html5DomKeyboardEvent implements UIEvent {
     ): Void;
 }
 
-extern interface CompositionEvent implements UIEvent {
+extern interface CompositionEvent #if haxe3 extends #else implements #end UIEvent {
     public var data            (default, null): DOMString;
     
     public function initCompositionEvent(
@@ -2664,7 +2680,7 @@ extern interface CompositionEvent implements UIEvent {
     ): Void;
 }
 
-extern interface MouseWheelEvent implements Html5DomMouseEvent {
+extern interface MouseWheelEvent #if haxe3 extends #else implements #end Html5DomMouseEvent {
     public var wheelDelta      (default, null): Int;
     
     public function initMouseWheelEvent(
@@ -2747,7 +2763,7 @@ extern interface Html5DomEvent {
     public function stopImmediatePropagation(): Void;
 }
 
-extern interface CustomEvent implements Html5DomEvent {
+extern interface CustomEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var detail          (default, null): DOMObject;
     
     public function initCustomEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, detailArg: DOMObject): Void;
@@ -2755,7 +2771,7 @@ extern interface CustomEvent implements Html5DomEvent {
     public function initCustomEventNS(namespaceURIArg: DOMString, typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, detailArg: DOMObject): Void;
 }
 
-extern interface Html5DomFocusEvent implements UIEvent {
+extern interface Html5DomFocusEvent #if haxe3 extends #else implements #end UIEvent {
     public var relatedTarget       (default, null): EventTarget;
     
     public function initFocusEvent(
@@ -2774,7 +2790,7 @@ extern interface DocumentEvent {
     public function canDispatch(namespaceURI: DOMString, type: DOMString): Bool;
 }
 
-extern interface UIEvent implements Html5DomEvent {
+extern interface UIEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var detail      (default, null): Int;
     public var view        (default, null): AbstractView;
     
@@ -2796,7 +2812,7 @@ extern interface UIEvent implements Html5DomEvent {
     ): Void;
 }
 
-extern interface Html5DomMouseEvent implements UIEvent {
+extern interface Html5DomMouseEvent #if haxe3 extends #else implements #end UIEvent {
     public var screenX         (default, null): Int;
     public var screenY         (default, null): Int;
     public var pageX           (default, null): Int;
@@ -2869,7 +2885,7 @@ extern interface TouchList implements ArrayAccess<Touch> {
 	public var identifiedTouch:		Touch;
 }
 
-extern interface Html5DomTouchEvent implements UIEvent {
+extern interface Html5DomTouchEvent #if haxe3 extends #else implements #end UIEvent {
 	public var touches		(default, null):TouchList;
 	public var targetTouches	(default, null):TouchList;
 	public var changedTouches	(default, null):TouchList;
@@ -2895,7 +2911,7 @@ extern interface Html5DomAccelerationEvent {
 	public var rotationRate 					(default, null):RotationRate;
 }
 
-extern interface PopStateEvent implements Html5DomEvent {
+extern interface PopStateEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var state       (default, null): Dynamic;
     
     public function initPopStateEvent(
@@ -2906,11 +2922,11 @@ extern interface PopStateEvent implements Html5DomEvent {
     ): Void;
 }
 
-extern interface BeforeUnloadEvent implements Html5DomEvent {
+extern interface BeforeUnloadEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var returnValue: DOMString;
 }
 
-extern interface PageTransitionEvent implements Html5DomEvent {
+extern interface PageTransitionEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var persisted   (default, null): Dynamic;
     
     public function initPageTransitionEvent(
@@ -2921,7 +2937,7 @@ extern interface PageTransitionEvent implements Html5DomEvent {
     ): Void;
 }
 
-extern interface HashChangeEvent implements Html5DomEvent {
+extern interface HashChangeEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var oldURL      (default, null): DOMString;
     public var newURL      (default, null): DOMString;
     
@@ -2934,7 +2950,7 @@ extern interface HashChangeEvent implements Html5DomEvent {
     ): Void;
 }
 
-extern interface DragEvent implements Html5DomMouseEvent {
+extern interface DragEvent #if haxe3 extends #else implements #end Html5DomMouseEvent {
   public var dataTransfer      (default, null): DataTransfer;
   
     public function initDragEvent(
@@ -2980,14 +2996,14 @@ extern interface Blob {
       public function slice(start: Int, length: Int): Blob;
 }
 
-extern interface File implements Blob {
+extern interface File #if haxe3 extends #else implements #end Blob {
 
       public var name     (default, null): DOMString;
       public var type     (default, null): DOMString;
       public var urn      (default, null): DOMString;
 }
 
-extern interface MutationEvent implements Html5DomEvent {
+extern interface MutationEvent #if haxe3 extends #else implements #end Html5DomEvent {
     public var relatedNode     (default, null): Node;
     public var prevValue       (default, null): DOMString;
     public var newValue        (default, null): DOMString;
@@ -3018,7 +3034,7 @@ extern interface MutationEvent implements Html5DomEvent {
     ): Void;
 }
 
-extern interface MutationNameEvent implements MutationEvent {
+extern interface MutationNameEvent #if haxe3 extends #else implements #end MutationEvent {
     public var prevNamespaceURI(default, null): DOMString;
     public var prevNodeName    (default, null): DOMString;
     
@@ -3205,12 +3221,12 @@ extern interface CSSRule {
     public var parentRule      (default, null): CSSRule;
 }
 //Unable to Test
-extern interface CSSStyleRule implements CSSRule {
+extern interface CSSStyleRule #if haxe3 extends #else implements #end CSSRule {
     public var selectorText:    DOMString;
     public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
-extern interface CSSMediaRule implements CSSRule {
+extern interface CSSMediaRule #if haxe3 extends #else implements #end CSSRule {
     public var stylesheets     (default, null): MediaList;
     public var cssRules        (default, null): DomCollection<CSSRule>;
     
@@ -3219,26 +3235,26 @@ extern interface CSSMediaRule implements CSSRule {
     public function deleteRule(index: Int): Void;
 }
 //Unable to Test
-extern interface CSSFontFaceRule implements CSSRule {
+extern interface CSSFontFaceRule #if haxe3 extends #else implements #end CSSRule {
     public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
-extern interface CSSPageRule implements CSSRule {
+extern interface CSSPageRule #if haxe3 extends #else implements #end CSSRule {
     public var selectorText:    DOMString;
     public var style           (default, null): CSSStyleDeclaration;
 }
 //Unable to Test
-extern interface CSSImportRule implements CSSRule {
+extern interface CSSImportRule #if haxe3 extends #else implements #end CSSRule {
     public var href            (default, null): DOMString;
     public var media           (default, null): MediaList;
     public var styleSheet      (default, null): CSSStyleSheet;
 }
 //Unable to Test
-extern interface CSSCharsetRule implements CSSRule {
+extern interface CSSCharsetRule #if haxe3 extends #else implements #end CSSRule {
     public var encoding:  DOMString;
 }
 //Unable to Test
-extern interface CSSUnknownRule implements CSSRule {
+extern interface CSSUnknownRule #if haxe3 extends #else implements #end CSSRule {
 }
 //UnableToTest
 extern interface CSS2Properties {
@@ -3389,7 +3405,7 @@ extern interface CSSStyleDeclaration {
     public function item(index: Int): DOMString;
 }
 //Unable to Test
-extern interface CSSInlineStyleDeclaration implements CSS2Properties {
+extern interface CSSInlineStyleDeclaration #if haxe3 extends #else implements #end CSS2Properties {
     public var length      (default, null): Int;
     public var parentRule  (default, null): CSSRule;
     
@@ -3413,7 +3429,7 @@ extern interface CSSValue {
 }
 
 //Unable to Test
-extern interface CSSPrimitiveValue implements CSSValue {
+extern interface CSSPrimitiveValue #if haxe3 extends #else implements #end CSSValue {
     public var primitiveType   (default, null): Int;
     
     public function setFloatValue(unitType: Int, FloatValue: Float): Void;
@@ -3450,7 +3466,7 @@ extern interface Counter {
     public var separator   (default, null): DOMString;
 }
 //Tested
-extern interface CSSStyleSheet implements StyleSheet {
+extern interface CSSStyleSheet #if haxe3 extends #else implements #end StyleSheet {
     public var ownerRule   (default, null): CSSRule;
     public var cssRules    (default, null): DomCollection<CSSRule>;
     
@@ -3459,11 +3475,11 @@ extern interface CSSStyleSheet implements StyleSheet {
     public function deleteRule(index: Int): Void;
 }
 //Unable to Test
-extern interface ViewCSS implements AbstractView {
+extern interface ViewCSS #if haxe3 extends #else implements #end AbstractView {
     public function getComputedStyle(elt: Element, pseudoElt: DOMString): CSSStyleDeclaration;
 }
 //Unable to Test
-extern interface DOMImplementationCSS implements DOMImplementation {
+extern interface DOMImplementationCSS #if haxe3 extends #else implements #end DOMImplementation {
     public function createCSSStyleSheet(title: DOMString, media: DOMString): CSSStyleSheet;
 }
 //Tested
@@ -3559,7 +3575,7 @@ extern interface Screen {
     public var top         (default, null): String;		
 }
 
-extern interface ScreenView implements AbstractView {
+extern interface ScreenView #if haxe3 extends #else implements #end AbstractView {
     public var innerWidth      (default, null): Int;
     public var innerHeight     (default, null): Int;
     public var pageXOffset     (default, null): Int;
@@ -3582,7 +3598,7 @@ extern interface Crypto {
 }
 
 //Tested
-extern interface Window implements ArrayAccess<WindowProxy>, implements EventTarget {
+extern interface Window #if haxe3 extends #else implements #end ArrayAccess<WindowProxy> #if !haxe3 , #end #if haxe3 extends #else implements #end EventTarget {
     public var closed          (default, null): Bool;
     public var defaultStatus:   DOMString;
     public var frames          (default, null): DomCollection<Frame>;
@@ -3751,11 +3767,11 @@ extern interface Window implements ArrayAccess<WindowProxy>, implements EventTar
     public function clearInterval(handle: Int): Void;
 }
 
-extern interface WindowProxy implements Window {
+extern interface WindowProxy #if haxe3 extends #else implements #end Window {
     
 }
 
-extern interface Frame implements Window {
+extern interface Frame #if haxe3 extends #else implements #end Window {
     
 }
 //Tested
@@ -3807,18 +3823,18 @@ extern interface UndoManager {
     public function item(index: Int): DOMObject;
 }
 //Not widely supported yet(HTML5 Spec)
-extern interface UndoManagerEvent implements Html5DomEvent {
+extern interface UndoManagerEvent #if haxe3 extends #else implements #end Html5DomEvent {
   public var date          (default, null): Dynamic;
   
   public function initUndoManagerEvent(typeArg: DOMString, canBubbleArg: Bool, cancelableArg: Bool, dataArg: Dynamic): Void;
 }
 
-extern interface XMLHttpRequestEventTarget implements EventTarget {
+extern interface XMLHttpRequestEventTarget #if haxe3 extends #else implements #end EventTarget {
   // for future use
 }
 
 //Tested
-extern interface XMLHttpRequest implements XMLHttpRequestEventTarget {
+extern interface XMLHttpRequest #if haxe3 extends #else implements #end XMLHttpRequestEventTarget {
 	
     public var readyState          (default, null): Int;
     public var status          (default, null): Int;

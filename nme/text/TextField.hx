@@ -721,7 +721,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * @return A TextLineMetrics object.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	//function getLineMetrics(lineIndex : Int) : TextLineMetrics;
+	function getLineMetrics(lineIndex : Int) : TextLineMetrics;
 
 	/**
 	 * Returns the character index of the first character in the line that the

@@ -11,10 +11,14 @@ import native.net.URLRequest;
 import native.Lib;
 import native.Loader;
 
+#if haxe3
+import Sys;
+#else
 #if cpp
 import cpp.Sys;
 #else
 import neko.Sys;
+#end
 #end
 
 
@@ -43,10 +47,11 @@ class Lib {
 	private static var nmeStage:Stage = null;
 	private static var sIsInit = false;
 
-	static public var company(default,null):String;
-	static public var version(default,null):String;
-	static public var packageName(default,null):String;
-	static public var file(default,null):String;
+	static public var company(default, null):String;
+	static public var version(default, null):String;
+	static public var packageName(default, null):String;
+	static public var file(default, null):String;
+	static public var silentRecreate:Bool = false;
 	
 	
 	public static function close() {
@@ -60,6 +65,13 @@ class Lib {
 	public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData) {
 		
 		if (sIsInit) {
+			
+			if (silentRecreate) {
+				
+				inOnLoaded();
+				return;
+				
+			}
 			
 			throw("nme.Lib.create called multiple times. This function is automatically called by the project code.");
 			

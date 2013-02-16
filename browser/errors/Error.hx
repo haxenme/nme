@@ -2,7 +2,7 @@ package browser.errors;
 #if js
 
 
-#if haxe_211
+#if haxe3
 import haxe.CallStack;
 #else
 import haxe.Stack;
@@ -29,7 +29,7 @@ class Error {
 	
 	public function getStackTrace():String {
 		
-		#if haxe_211
+		#if haxe3
 		return CallStack.toString(CallStack.exceptionStack());
 		#else
 		return Stack.toString(Stack.exceptionStack());
