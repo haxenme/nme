@@ -40,10 +40,14 @@ class Assets {
 		
 		if (!initialized) {
 			
+			::if (assests!=null)::
 			::foreach assets::resourceNames.set ("::id::", "::resourceName::");
 			resourceTypes.set ("::id::", "::type::");
 			::end::
+			::end::
+			::if (libraries!=null)::
 			::foreach libraries::libraryTypes.set ("::name::", "::type::");::end::
+			::end::
 			initialized = true;
 			
 		}
