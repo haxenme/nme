@@ -2,6 +2,5 @@
 -neko ../../run.n
 -cp src
 -lib nme
--D haxe3
 -cp ../helpers
 -cp ../project

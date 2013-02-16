@@ -14,7 +14,7 @@ class PathHelper {
 		if (_nmePath == null) {
 			_nmePath = Sys.getEnv("NMEPATH");
   			if (_nmePath == null || _nmePath == "") {
-  				_nmePath = getHaxelib("nme");
+  				_nmePath = getHaxelib(new Haxelib("nme"));
   			}
   			if (_nmePath == null || _nmePath == "") {
   				_nmePath = Sys.getCwd();
@@ -162,7 +162,7 @@ class PathHelper {
 	}
 	
 
-	public static function getHaxelib (name:String, ?version:String):String {
+	public static function getHaxelib (haxelib:Haxelib):String {
 		var name = haxelib.name;
 		
 		if (haxelib.version != "") {

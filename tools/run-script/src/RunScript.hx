@@ -525,7 +525,7 @@ class RunScript {
 		
 		if (library != "nme") {
 			
-			libraryPath = PathHelper.getHaxelib (library);
+			libraryPath = PathHelper.getHaxelib (new Haxelib(library));
 			
 		}
 		
@@ -848,7 +848,7 @@ class RunScript {
 						
 					} else {
 						
-						path = PathHelper.combine (getHaxelib (path), "project");
+						path = PathHelper.combine (PathHelper.getHaxelib (new Haxelib(path)), "project");
 						
 					}
 					
@@ -1086,11 +1086,11 @@ class RunScript {
 				
 				case "installer":
 					
-					var hxcppPath = PathHelper.getHaxelib ("hxcpp");
+					var hxcppPath = PathHelper.getHaxelib(new Haxelib("hxcpp"));
 					var nmePath = PathHelper.getNMEPath();
-					var swfPath = PathHelper.getHaxelib ("swf");
-					var actuatePath = PathHelper.getHaxelib ("actuate");
-					var svgPath = PathHelper.getHaxelib ("svg");
+					var swfPath = PathHelper.getHaxelib (new Haxelib("swf"));
+					var actuatePath = PathHelper.getHaxelib (new Haxelib("actuate"));
+					var svgPath = PathHelper.getHaxelib (new Haxelib("svg"));
 					
 					var hxcppVersion = getVersion ("hxcpp", true);
 					var nmeVersion = getVersion ("nme", true);
