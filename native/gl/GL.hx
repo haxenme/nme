@@ -4,7 +4,6 @@ package native.gl;
 
 import native.display.BitmapData;
 import native.utils.ArrayBuffer;
-import native.utils.ArrayBufferView;
 import native.utils.ByteArray;
 import native.utils.Float32Array;
 import native.utils.IMemoryRange;
@@ -1176,7 +1175,7 @@ class GL {
 	}
 	
 	
-	public static function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:ArrayBufferView):Void {
+	public static function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:IMemoryRange):Void {
 		
 		nme_gl_tex_image_2d(target, level, internalformat, width, height, border, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? null : pixels.getStart());
 		
@@ -1484,7 +1483,7 @@ class GL {
 	private static var nme_gl_delete_shader = load("nme_gl_delete_shader", 1);
 	private static var nme_gl_delete_texture = load("nme_gl_delete_texture", 1);
 	private static var nme_gl_depth_func = load("nme_gl_depth_func", 1);
-	private static var nme_gl_depth_mask = load("nme_gl_depth_func", 1);
+	private static var nme_gl_depth_mask = load("nme_gl_depth_mask", 1);
 	private static var nme_gl_depth_range = load("nme_gl_depth_range", 2);
 	private static var nme_gl_detach_shader = load("nme_gl_detach_shader", 2);
 	private static var nme_gl_disable = load("nme_gl_disable", 1);

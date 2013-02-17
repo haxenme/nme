@@ -1418,6 +1418,14 @@ value nme_gl_depth_func(value func)
 }
 DEFINE_PRIM(nme_gl_depth_func,1);
 
+value nme_gl_depth_mask(value mask)
+{
+   glDepthMask(val_bool(mask));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_depth_mask,1);
+
+
 
 value nme_gl_depth_range(value inNear, value inFar)
 {
