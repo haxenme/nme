@@ -15,9 +15,13 @@
 #include <KeyCodes.h>
 #include <Utils.h>
 
+#ifdef NME_FORCE_GLES1
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
-
+#else
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+#endif
 
 using namespace nme;
 
@@ -201,11 +205,15 @@ public:
 
       if (sgHardwareRendering)
       {
+         #ifdef NME_FORCE_GLES1
          mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+         #else
+         mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+         #endif
         
          if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
          {
-            throw "Could not initilize OpenL";
+            throw "Could not initilize OpenGL";
          }
  
          CreateOGLFramebuffer();

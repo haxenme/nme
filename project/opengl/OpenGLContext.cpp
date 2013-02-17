@@ -971,21 +971,21 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
    #endif
    
    #ifdef NME_FORCE_GLES2
-   printf ("Force GLES2\n");
+   //printf ("Force GLES2\n");
    shaders = true;
    #elif NME_FORCE_GLES1
-   printf ("Force GLES1\n");
+   //printf ("Force GLES1\n");
    shaders = false;
    #endif
    
    if (shaders)
    {
-	   printf("Using OGL2\n");
+	  //printf("Using OGL2\n");
       ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
    }
    else
    {
-	   printf("Using OGL1\n");
+	  //printf("Using OGL1\n");
       ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
    }
 
