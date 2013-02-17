@@ -1,6 +1,5 @@
 -main RunScript
 -neko ../../run.n
 -cp src
--lib nme
 -cp ../helpers
 -cp ../project
