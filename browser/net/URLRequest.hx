@@ -1,9 +1,8 @@
 package browser.net;
+
 #if js
 
-
 import browser.utils.ByteArray;
-
 
 class URLRequest {
 	
