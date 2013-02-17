@@ -2,7 +2,7 @@ package native.text;
 #if (cpp || neko)
 
 
-@:fakeEnum(String) extern enum FontStyle {
+@:fakeEnum(String) enum FontStyle {
 	
 	BOLD;
 	BOLD_ITALIC;

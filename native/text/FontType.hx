@@ -2,7 +2,7 @@ package native.text;
 #if (cpp || neko)
 
 
-@:fakeEnum(String) extern enum FontType {
+@:fakeEnum(String) enum FontType {
 	
 	DEVICE;
 	EMBEDDED;
