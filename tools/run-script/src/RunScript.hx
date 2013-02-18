@@ -1,4 +1,3 @@
-import neko.zip.Writer;
 import haxe.io.Eof;
 import haxe.Http;
 import haxe.io.Path;
@@ -6,6 +5,12 @@ import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>
+#end
 
 
 class RunScript {
@@ -18,7 +23,7 @@ class RunScript {
 	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools/documentation/bin" ];
 	
 	
-	private static function build (path:String = "", targets:Array<String> = null, flags:Hash <String> = null, defines:Array<String> = null):Void {
+	private static function build (path:String = "", targets:Array<String> = null, flags:StringMap <String> = null, defines:Array<String> = null):Void {
 		
 		if (path == "") {
 			
@@ -48,7 +53,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new Hash <String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -152,7 +157,7 @@ class RunScript {
 	}
 	
 	
-	static private function buildLibrary (target:String, flags:Hash <String> = null, defines:Array<String> = null, path:String = ""):Void {
+	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
 		
 		if (!FileSystem.exists (nmeDirectory + "/../sdl-static")) {
 			
@@ -163,7 +168,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new Hash <String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -738,7 +743,7 @@ class RunScript {
 	
 	public static function main () {
 		
-		nmeDirectory = PathHelper.getNMEPath();
+		nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
 		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
@@ -786,7 +791,7 @@ class RunScript {
 			}
 			
 			var targets:Array <String> = null;
-			var flags = new Hash <String> ();
+			var flags = new StringMap <String> ();
 			var ignoreLength = 0;
 			var defines = [];
 			
@@ -848,7 +853,7 @@ class RunScript {
 						
 					} else {
 						
-						path = PathHelper.combine (PathHelper.getHaxelib (new Haxelib(path)), "project");
+						path = PathHelper.combine (PathHelper.getHaxelib (new Haxelib (path)), "project");
 						
 					}
 					
@@ -1086,11 +1091,11 @@ class RunScript {
 				
 				case "installer":
 					
-					var hxcppPath = PathHelper.getHaxelib(new Haxelib("hxcpp"));
-					var nmePath = PathHelper.getNMEPath();
-					var swfPath = PathHelper.getHaxelib (new Haxelib("swf"));
-					var actuatePath = PathHelper.getHaxelib (new Haxelib("actuate"));
-					var svgPath = PathHelper.getHaxelib (new Haxelib("svg"));
+					var hxcppPath = PathHelper.getHaxelib (new Haxelib ("hxcpp"));
+					var nmePath = PathHelper.getHaxelib (new Haxelib ("nme"));
+					var swfPath = PathHelper.getHaxelib (new Haxelib ("swf"));
+					var actuatePath = PathHelper.getHaxelib (new Haxelib ("actuate"));
+					var svgPath = PathHelper.getHaxelib (new Haxelib ("svg"));
 					
 					var hxcppVersion = getVersion ("hxcpp", true);
 					var nmeVersion = getVersion ("nme", true);

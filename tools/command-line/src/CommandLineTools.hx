@@ -573,7 +573,7 @@ class CommandLineTools {
 		
 		// Fix for library search paths
 		
-		var path = PathHelper.getNMEPath() + "ndll/";
+		var path = PathHelper.getHaxelib (new Haxelib ("nme")) + "ndll/";
 		
 		switch (PlatformHelper.hostPlatform) {
 			
@@ -959,11 +959,14 @@ class CommandLineTools {
 
 		var arguments = Sys.args ();
 
-		nme = PathHelper.getNMEPath();
+		nme = PathHelper.getHaxelib (new Haxelib ("nme"));
 
-		var lastCharacter = nme.substr (-1, 1);
+		var lastCharacter = nme.substr ( -1, 1);
+		
 		if (lastCharacter == "/" || lastCharacter == "\\") {
+			
 			nme = nme.substr (0, -1);
+			
 		}
 
 		if (arguments.length > 0) {
@@ -973,11 +976,15 @@ class CommandLineTools {
 			// path to NME is the current working directory 
 			
 			var lastArgument = "";
-			for( i in 0...(arguments.length)) {
-				lastArgument = arguments.pop();
+			
+			for (i in 0...arguments.length) {
+				
+				lastArgument = arguments.pop ();
 				if (lastArgument.length > 0) break;
+				
 			}
-			var lastArgument = new Path (lastArgument).toString ();
+			
+			lastArgument = new Path (lastArgument).toString ();
 			
 			if (((StringTools.endsWith (lastArgument, "/") && lastArgument != "/") || StringTools.endsWith (lastArgument, "\\")) && !StringTools.endsWith (lastArgument, ":\\")) {
 				
