@@ -35,9 +35,9 @@ class Main extends Sprite {
 	
 	
 	#if !mobile
-	private static var fragmentShaders = [ FragmentShader_6286, FragmentShader_6288_1, FragmentShader_6284_1, FragmentShader_6238, FragmentShader_6223_2, FragmentShader_6175, FragmentShader_6162, FragmentShader_6147_1, FragmentShader_6049, FragmentShader_6043_1, FragmentShader_6022, FragmentShader_5891_5, FragmentShader_5805_18, FragmentShader_5812, FragmentShader_5733, FragmentShader_5454_21, FragmentShader_5492, FragmentShader_5359_8, FragmentShader_5398_8, FragmentShader_4278_1 ];
+	private static var fragmentShaders:Array<Dynamic> = [ FragmentShader_6286, FragmentShader_6288_1, FragmentShader_6284_1, FragmentShader_6238, FragmentShader_6223_2, FragmentShader_6175, FragmentShader_6162, FragmentShader_6147_1, FragmentShader_6049, FragmentShader_6043_1, FragmentShader_6022, FragmentShader_5891_5, FragmentShader_5805_18, FragmentShader_5812, FragmentShader_5733, FragmentShader_5454_21, FragmentShader_5492, FragmentShader_5359_8, FragmentShader_5398_8, FragmentShader_4278_1 ];
 	#else
-	private static var fragmentShaders = [ FragmentShader_6284_1, FragmentShader_6238, FragmentShader_6147_1, FragmentShader_5891_5, FragmentShader_5805_18, FragmentShader_5492, FragmentShader_5398_8 ];
+	private static var fragmentShaders:Array<Dynamic> = [ FragmentShader_6284_1, FragmentShader_6238, FragmentShader_6147_1, FragmentShader_5891_5, FragmentShader_5805_18, FragmentShader_5492, FragmentShader_5398_8 ];
 	#end
 	
 	private static var maxTime = 7000;
