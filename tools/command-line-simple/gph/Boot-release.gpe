@@ -1,0 +1,7 @@
+#!/bin/sh
+
+./::APP_FILE::.gpe
+
+cd /usr/gp2x
+exec ./gp2xmenu
+
