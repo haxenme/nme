@@ -15,6 +15,7 @@ import neash.geom.Rectangle;
 import neash.Lib;
 import neash.media.SoundChannel;
 import neash.net.URLLoader;
+import neash.net.XMLSocket;
 import neash.Loader;
 
 
@@ -650,6 +651,7 @@ class Stage extends DisplayObjectContainer
 		Timer.nmeCheckTimers();
 		SoundChannel.nmePollComplete();
 		URLLoader.nmePollData();
+		XMLSocket.nmePollData ();
 		nmeCheckRender();
 	}
 	
