@@ -990,18 +990,18 @@ namespace nme {}
 
 - (void) mainLoop {
    isRunning = YES;
-   while (isRunning) {
+   /*while (isRunning) {
       while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
 
-      /*if (paused) {
-         usleep(250000); // Sleep for a quarter of a second (250,000 microseconds) so that the framerate is 4 fps.
-      }*/
+      //if (paused) {
+         //usleep(250000); // Sleep for a quarter of a second (250,000 microseconds) so that the framerate is 4 fps.
+      //}
       
       sgMainView->mStage->OnPoll();
       
       while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
-   }
-   /*while(!sgTerminated)
+   }*/
+   while(isRunning /*&& !sgTerminated*/)
    {
        double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
        if (delta<0) delta = 0;
@@ -1009,7 +1009,7 @@ namespace nme {}
        {
           sgMainView->mStage->OnPoll();
        }
-   }*/
+   }
 }
 
 - (void) startAnimation
