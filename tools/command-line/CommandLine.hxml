@@ -1,5 +1,5 @@
 -main CommandLineTools
--neko command-line.n
+-neko ../../command-line.n
 -cp src
 -cp ../helpers
 -cp ../project

@@ -20,7 +20,7 @@ class RunScript {
 	private static var isMac:Bool;
 	private static var isWindows:Bool;
 	private static var nmeDirectory:String;
-	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools/documentation/bin" ];
+	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools", "project" ];
 	
 	
 	private static function build (path:String = "", targets:Array<String> = null, flags:StringMap <String> = null, defines:Array<String> = null):Void {
@@ -893,7 +893,7 @@ class RunScript {
 			
 		} else {
 
-			if (!FileSystem.exists (nmeDirectory + "/tools/command-line/command-line.n")) {
+			if (!FileSystem.exists (nmeDirectory + "/command-line.n")) {
 				
 				build ();
 				
@@ -927,7 +927,7 @@ class RunScript {
 				
 			} else {
 				
-				args.unshift ("tools/command-line/command-line.n");
+				args.unshift ("command-line.n");
 				
 			}
 			
@@ -938,7 +938,13 @@ class RunScript {
 	}
 	
 	
-	public static function recursiveCopy (source:String, destination:String, ignore:Array <String>) {
+	public static function recursiveCopy (source:String, destination:String, ignore:Array <String> = null) {
+		
+		if (ignore == null) {
+			
+			ignore = [];
+			
+		}
 		
 		mkdir (destination);
 		
@@ -950,7 +956,15 @@ class RunScript {
 			
 			for (ignoreName in ignore) {
 				
-				if (file == ignoreName || StringTools.endsWith (source + "/" + file, "/" + ignoreName)) {
+				if (StringTools.endsWith (ignoreName, "/")) {
+					
+					if (FileSystem.isDirectory (source + "/" + file) && file == ignoreName.substr (0, file.length - 1)) {
+						
+						ignoreFile = true;
+						
+					}
+					
+				} else if (file == ignoreName || StringTools.endsWith (source + "/" + file, "/" + ignoreName)) {
 					
 					ignoreFile = true;
 					
@@ -1075,6 +1089,7 @@ class RunScript {
 					targetPath = "../nme-" + getRevision () + ".zip";
 					
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
+					recursiveCopy (nmeDirectory + "/tools/project", nmeDirectory + tempPath + "/nme/tools/project");
 					
 					if (FileSystem.exists (nmeDirectory + targetPath)) {
 						
@@ -1120,6 +1135,7 @@ class RunScript {
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, nmeFilters);
+						recursiveCopy (nmePath + "/tools/project", nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion + "/tools/project");
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/" + actuateVersion, [ ".git", ".svn" ]);
 						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/usr/lib/haxe/lib/svg/" + svgVersion, [ ".git", ".svn" ]);
@@ -1149,6 +1165,7 @@ class RunScript {
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/" + nmeVersion, nmeFilters);
+						recursiveCopy (nmePath + "/tools/project", nmeDirectory + tempPath + "/resources/nme/" + nmeVersion + "/tools/project");
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/" + actuateVersion, [ ".git", ".svn" ]);
 						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/" + svgVersion, [ ".git", ".svn" ]);
