@@ -1,23 +1,21 @@
 package native.utils;
 #if (cpp || neko)
 
-
 import native.geom.Matrix3D;
 
-
 #if haxe3
-class Float32Array extends ArrayBufferView implements ArrayAccess<Float> {
+class Float32Array extends ArrayBufferView implements ArrayAccess<Float> 
+{
 #else
-class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
+class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> 
+{
 #end
-   
-   
+
    static public inline var SBYTES_PER_ELEMENT = 4;
-   
+
    public var BYTES_PER_ELEMENT(default, null):Int;
    public var length(default, null):Int;
-   
-   
+
    // Constrctor: length, array, float[], ArrayBuffer + start + len
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
    {
@@ -26,7 +24,7 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
 
       if (!Std.is(inBufferOrArray,ArrayBuffer) && floats != null)
       {
-         if(inLen != null)
+         if (inLen != null)
             length = inLen;
          else
             length = floats.length - inStart;
@@ -57,16 +55,14 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> {
             throw "Invalid length multiple";
       }
    }
-   
-   
+
    public static function fromMatrix(inMatrix:Matrix3D)
    {
       return new Float32Array(inMatrix.rawData);
    }
-   
+
    inline public function __get(index:Int):Float { return getFloat32(index << 2); }
    inline public function __set(index:Int, v:Float):Void { setFloat32(index << 2, v); }
 }
-
 
 #end

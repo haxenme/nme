@@ -3,17 +3,18 @@ package native.utils;
 #if (cpp || neko)
 
 #if haxe3
-class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> {
+class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> 
+{
 #else
-class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> {
+class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> 
+{
 #end
-   
+
    static public inline var SBYTES_PER_ELEMENT = 1;
-   
+
    public var BYTES_PER_ELEMENT(default, null):Int;
    public var length(default, null):Int;
-   
-   
+
    // Constrctor: length, array, int[], ArrayBuffer + start + len
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
    {
@@ -22,7 +23,7 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> {
 
       if (!Std.is(inBufferOrArray,ArrayBuffer) && ints != null)
       {
-         if(inLen != null)
+         if (inLen != null)
             length = inLen;
          else
             length = ints.length - inStart;
@@ -48,10 +49,9 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> {
          length = byteLength;
       }
    }
-   
+
    inline public function __get(index:Int):Int { return getUInt8(index); }
    inline public function __set(index:Int, v:Int):Void { setUInt8(index, v); }
 }
-
 
 #end
