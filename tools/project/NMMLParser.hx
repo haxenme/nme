@@ -1,7 +1,6 @@
 package;
 
 
-import format.xfl.dom.DOMBitmapItem;
 import format.XFL;
 import haxe.io.Path;
 import haxe.xml.Fast;
@@ -1247,12 +1246,8 @@ class NMMLParser extends NMEProject {
 								
 								var deployment = Std.parseFloat (substitute (element.att.deployment));
 								
-								if (deployment > config.ios.deployment) {
-									
-									config.ios.deployment = deployment;
-									
-								}
-								
+								// If it is specified, assume the dev knows what he is doing!
+								config.ios.deployment = deployment;
 							}
 							
 							if (element.has.binaries) {
