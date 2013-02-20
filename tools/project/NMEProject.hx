@@ -6,11 +6,7 @@ import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-typedef StringMap<T> = Hash<T>;
-#end
+import StringMap;
 
 
 class NMEProject {
