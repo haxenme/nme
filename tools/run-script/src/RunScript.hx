@@ -821,9 +821,9 @@ class RunScript {
 					
 				} else {
 					
-					if (nmeDirectory.indexOf ("C:\\Motion-Twin") != -1 || nmeDirectory.indexOf ("/usr/lib/haxe/lib") != -1) {
+					if (!FileSystem.exists (nmeDirectory + "/project")) {
 						
-						Sys.println ("This command can only be run from a development build of NME");
+						Sys.println ("This command must be run from a development checkout of NME");
 						return;
 						
 					}
