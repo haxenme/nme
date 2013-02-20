@@ -37,7 +37,7 @@ package nme.display;
  * MovieClip.opaqueBackground property for a suitable device, define
  * FEATURE_BITMAPCACHE in your project.</p>
  */
-extern class MovieClip extends Sprite #if !flash_strict, implements Dynamic #end {
+extern class MovieClip extends Sprite #if !flash_strict #if !haxe3 , #end implements Dynamic #end {
 
 	/**
 	 * Specifies the number of the frame in which the playhead is located in the
