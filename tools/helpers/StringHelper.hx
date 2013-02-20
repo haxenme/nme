@@ -1,11 +1,7 @@
 package;
 
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-import NMEProject;
-#end
+import StringMap;
 
 
 class StringHelper {

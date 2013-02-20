@@ -7,11 +7,7 @@ import neko.Lib;
 import nme.Loader;
 #end
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-import NMEProject;
-#end
+import StringMap;
 
 
 class LogHelper {

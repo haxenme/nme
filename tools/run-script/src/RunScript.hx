@@ -6,11 +6,7 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-typedef StringMap<T> = Hash<T>;
-#end
+import StringMap;
 
 
 class RunScript {
