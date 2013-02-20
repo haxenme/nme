@@ -159,13 +159,6 @@ class RunScript {
 	
 	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
 		
-		if (!FileSystem.exists (nmeDirectory + "/../sdl-static")) {
-			
-			error ("You must have \"sdl-static\" checked out next to NME to build libraries");
-			return;
-			
-		}
-		
 		if (flags == null) {
 			
 			flags = new StringMap <String> ();
