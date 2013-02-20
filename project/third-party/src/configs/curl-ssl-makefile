@@ -1,0 +1,154 @@
+CURL_SRC := \
+   axtls.c \
+   base64.c \
+   connect.c \
+   content_encoding.c \
+   cookie.c \
+   curl_addrinfo.c \
+   curl_fnmatch.c \
+   curl_gethostname.c \
+   curl_memrchr.c \
+   curl_rand.c \
+   curl_rtmp.c \
+   curl_sspi.c \
+   curl_threads.c \
+   dict.c \
+   easy.c \
+   escape.c \
+   file.c \
+   fileinfo.c \
+   formdata.c \
+   ftp.c \
+   ftplistparser.c \
+   getenv.c \
+   getinfo.c \
+   gopher.c \
+   gtls.c \
+   hash.c \
+   hmac.c \
+   hostares.c \
+   hostasyn.c \
+   hostip.c \
+   hostip4.c \
+   hostip6.c \
+   hostsyn.c \
+   hostthre.c \
+   http.c \
+   http_chunks.c \
+   http_digest.c \
+   http_negotiate.c \
+   http_negotiate_sspi.c \
+   http_ntlm.c \
+   idn_win32.c \
+   if2ip.c \
+   imap.c \
+   inet_ntop.c \
+   inet_pton.c \
+   krb4.c \
+   krb5.c \
+   ldap.c \
+   llist.c \
+   md4.c \
+   md5.c \
+   memdebug.c \
+   mprintf.c \
+   multi.c \
+   netrc.c \
+   nonblock.c \
+   nss.c \
+   nwlib.c \
+   nwos.c \
+   openldap.c \
+   parsedate.c \
+   pingpong.c \
+   polarssl.c \
+   pop3.c \
+   progress.c \
+   qssl.c \
+   rawstr.c \
+   rtsp.c \
+   security.c \
+   select.c \
+   sendf.c \
+   share.c \
+   slist.c \
+   smtp.c \
+   socks.c \
+   socks_gssapi.c \
+   socks_sspi.c \
+   speedcheck.c \
+   splay.c \
+   ssh.c \
+   sslgen.c \
+   ssluse.c \
+   strdup.c \
+   strequal.c \
+   strerror.c \
+   strtok.c \
+   strtoofft.c \
+   telnet.c \
+   tftp.c \
+   timeval.c \
+   transfer.c \
+   url.c \
+   version.c \
+   warnless.c \
+   wildcard.c
+
+AXTLS := ../../axTLS
+
+CURL_SRC += \
+   $(AXTLS)/crypto/aes.c \
+   $(AXTLS)/crypto/bigint.c \
+   $(AXTLS)/crypto/crypto_misc.c \
+   $(AXTLS)/crypto/hmac.c \
+   $(AXTLS)/crypto/md2.c \
+   $(AXTLS)/crypto/md5.c \
+   $(AXTLS)/crypto/rc4.c \
+   $(AXTLS)/crypto/rsa.c \
+   $(AXTLS)/crypto/sha1.c \
+   $(AXTLS)/ssl/asn1.c \
+   $(AXTLS)/ssl/gen_cert.c \
+   $(AXTLS)/ssl/loader.c \
+   $(AXTLS)/ssl/openssl.c \
+   $(AXTLS)/ssl/os_port.c \
+   $(AXTLS)/ssl/p12.c \
+   $(AXTLS)/ssl/tls1.c \
+   $(AXTLS)/ssl/tls1_clnt.c \
+   $(AXTLS)/ssl/tls1_svr.c \
+   $(AXTLS)/ssl/x509.c
+
+# $(AXTLS)/ssl/tls1_svr.c \
+
+CURL_OBJS := $(CURL_SRC:%.c=%$(SS_OBJEXT))
+
+ifdef SS_LINUX
+CONFIG_FLAGS += -DSS_LINUX
+endif
+
+VPATH = $(AXTLS)
+
+
+ifdef SS_WINDOWS
+CONFIG_FLAGS += -DCURL_STATICLIB -DALLOW_MSVC6_WITHOUT_PSDK
+else
+CONFIG_FLAGS += -DHAVE_CONFIG_H -DCURL_STATICLIB 
+endif
+
+ifdef SS_BLACKBERRY
+CONFIG_FLAGS += -DFD_SETSIZE=64
+endif
+
+
+CONFIG_FLAGS += -I../.. -I$(AXTLS)/crypto -I$(AXTLS)/ssl -I$(AXTLS)/config -DUSE_AXTLS=1
+
+libcurl$(SS_LIBEXT):$(CURL_OBJS)
+	$(SS_CREATELIB)$@ $(CURL_OBJS)
+
+%$(SS_OBJEXT):%.c
+	$(SS_CC) $< -c $(SS_OBJOUT)$@ -I../include -I../../../include -Ilib  $(CONFIG_FLAGS)
+
+clean:
+	rm -f $(CURL_OBJS)
+
+

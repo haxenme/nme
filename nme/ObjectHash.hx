@@ -1,4 +1,5 @@
 package nme;
+#if !haxe3
 
 
 #if flash
@@ -175,3 +176,8 @@ class ObjectHash <K, T> {
 	
 	
 }
+
+
+#else
+typedef ObjectHash<K,T> = haxe.ds.ObjectMap<K,T>;
+#end

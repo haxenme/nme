@@ -6,7 +6,11 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 
-import StringMap;
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
 
 
 class RunScript {
@@ -154,13 +158,6 @@ class RunScript {
 	
 	
 	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
-		
-		if (!FileSystem.exists (nmeDirectory + "/../sdl-static")) {
-			
-			error ("You must have \"sdl-static\" checked out next to NME to build libraries");
-			return;
-			
-		}
 		
 		if (flags == null) {
 			
@@ -817,9 +814,9 @@ class RunScript {
 					
 				} else {
 					
-					if (nmeDirectory.indexOf ("C:\\Motion-Twin") != -1 || nmeDirectory.indexOf ("/usr/lib/haxe/lib") != -1) {
+					if (!FileSystem.exists (nmeDirectory + "/project")) {
 						
-						Sys.println ("This command can only be run from a development build of NME");
+						Sys.println ("This command must be run from a development checkout of NME");
 						return;
 						
 					}

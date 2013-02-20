@@ -1,0 +1,74 @@
+
+all:libsmpeg$(SS_LIBEXT)
+
+SOURCE := \
+	MPEG.cpp		\
+	MPEGring.cpp		\
+	MPEGlist.cpp		\
+	MPEGstream.cpp		\
+	MPEGsystem.cpp		\
+	MPEGfilter.c		\
+	smpeg.cpp		\
+	audio/MPEGaudio.cpp	\
+	audio/bitwindow.cpp	\
+	audio/filter.cpp	\
+	audio/filter_2.cpp	\
+	audio/hufftable.cpp	\
+	audio/mpeglayer1.cpp	\
+	audio/mpeglayer2.cpp	\
+	audio/mpeglayer3.cpp	\
+	audio/mpegtable.cpp	\
+	audio/mpegtoraw.cpp	\
+	video/MPEGvideo.cpp	\
+	video/decoders.cpp	\
+	video/floatdct.cpp	\
+	video/gdith.cpp		\
+	video/jrevdct.cpp	\
+	video/motionvec.cpp	\
+	video/parseblock.cpp	\
+	video/readfile.cpp	\
+	video/util.cpp		\
+	video/video.cpp		\
+	video/vhar128.cpp
+
+SOURCE_MMX := \
+	video/mmxflags_asm.S	\
+	video/mmxidct_asm.S
+
+HEADERS : \
+	video/vhar128.h		\
+	video/video.h		\
+	video/util.h		\
+	video/proto.h		\
+	video/decoders.h	\
+	video/dither.h
+
+OBJS := $(SOURCE:%.cpp=%$(SS_OBJEXT))
+OBJS := $(OBJS:%.S=%$(SS_OBJEXT))
+OBJS := $(OBJS:%.c=%$(SS_OBJEXT))
+
+DEFINES := -DNOCONTROLS -DTHREADED_AUDIO
+ifdef SS_WINDOWS
+DEFINES += -DWIN32 -D_CRT_SECURE_NO_DEPRECATE
+endif
+
+ifdef SS_MAC
+DEFINES += -DLITTLE_ENDIAN_ARCHITECTURE=1
+endif
+
+libsmpeg$(SS_LIBEXT): $(OBJS)
+	$(SS_CREATELIB)libsmpeg$(SS_LIBEXT) $(OBJS)
+
+%$(SS_OBJEXT):%.cpp
+	$(SS_CC) $(DEFINES) -I../../include -I. -I../$(SDL_INC) $< -c $(SS_OBJOUT)$@
+
+%$(SS_OBJEXT):%.c
+	$(SS_CC) -O2 $(DEFINES) -I../../include -I. -I../$(SDL_INC) $< -c $(SS_OBJOUT)$@
+
+audio/%$(SS_OBJEXT):%.cpp
+	$(SS_CC) -O2 $(DEFINES) -I../../include -I. -I../$(SDL_INC) $< -c $(SS_OBJOUT)$@
+
+video/%$(SS_OBJEXT):%.cpp
+	$(SS_CC) -O2 $(DEFINES) -I../../include -I. -I../$(SDL_INC) $< -c $(SS_OBJOUT)$@
+
+

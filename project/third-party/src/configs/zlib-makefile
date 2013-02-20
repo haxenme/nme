@@ -1,0 +1,22 @@
+OBJS = \
+  adler32$(SS_OBJEXT)  \
+  compress$(SS_OBJEXT)  \
+  crc32$(SS_OBJEXT)  \
+  gzio$(SS_OBJEXT)  \
+  uncompr$(SS_OBJEXT)  \
+  deflate$(SS_OBJEXT)  \
+  trees$(SS_OBJEXT)  \
+  zutil$(SS_OBJEXT)  \
+  inflate$(SS_OBJEXT)  \
+  infback$(SS_OBJEXT)  \
+  inftrees$(SS_OBJEXT)  \
+  inffast$(SS_OBJEXT)
+
+
+libz$(SS_LIBEXT): $(OBJS)
+	$(SS_CREATELIB)$@ $(OBJS)
+
+%$(SS_OBJEXT):%.c
+	$(SS_CC)  $< -c
+
+
