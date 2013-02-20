@@ -1554,7 +1554,7 @@ std::wostream& operator<< (std::wostream & out, const TiXmlNode & base)
 	TiXmlPrinter printer;
 	printer.SetStreamPrinting();
 	base.Accept( &printer );
-	out << printer.Str();
+	out << printer.Str().c_str();
 
 	return out;
 }

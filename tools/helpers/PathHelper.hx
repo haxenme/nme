@@ -6,30 +6,8 @@ import sys.FileSystem;
 
 
 class PathHelper {
-
-	private static var _nmePath:String = null;
-	private static var _haxePath(getHaxePath, never):String;
 	
-	public static function getNMEPath():String {
-		if (_nmePath == null) {
-			_nmePath = Sys.getEnv("NMEPATH");
-  			if (_nmePath == null || _nmePath == "") {
-  				_nmePath = getHaxelib(new Haxelib("nme"));
-  			}
-  			if (_nmePath == null || _nmePath == "") {
-  				_nmePath = Sys.getCwd();
-  			}
-		}
-		return _nmePath;
-	}
 	
-	private static function getHaxePath():String {
-		var path = Sys.getEnv ("HAXEPATH");
-		if (path == null) path = "";
-		if (path.length > 0) path += "/";
-		return path;
-	}
-
 	public static function combine (firstPath:String, secondPath:String):String {
 		
 		if (firstPath == null || firstPath == "") {
@@ -163,6 +141,7 @@ class PathHelper {
 	
 
 	public static function getHaxelib (haxelib:Haxelib):String {
+		
 		var name = haxelib.name;
 		
 		if (haxelib.version != "") {
@@ -171,7 +150,19 @@ class PathHelper {
 			
 		}
 		
-		var proc = new Process ("haxelib", [ "path", name ]);
+		if (name == "nme") {
+			
+			var nmePath = Sys.getEnv ("NMEPATH");
+			
+			if (nmePath != null && nmePath != "") {
+				
+				return nmePath;
+				
+			}
+			
+		}
+		
+		var proc = new Process (combine (Sys.getEnv ("HAXEPATH"), "haxelib"), [ "path", name ]);
 		var result = "";
 		
 		try {
@@ -482,6 +473,6 @@ class PathHelper {
 		}
 		
 	}
-		
+	
 
 }

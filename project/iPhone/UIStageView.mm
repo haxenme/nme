@@ -15,9 +15,13 @@
 #include <KeyCodes.h>
 #include <Utils.h>
 
+#ifdef NME_FORCE_GLES1
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
-
+#else
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+#endif
 
 using namespace nme;
 
@@ -201,11 +205,15 @@ public:
 
       if (sgHardwareRendering)
       {
+         #ifdef NME_FORCE_GLES1
          mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+         #else
+         mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+         #endif
         
          if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
          {
-            throw "Could not initilize OpenL";
+            throw "Could not initilize OpenGL";
          }
  
          CreateOGLFramebuffer();
@@ -982,18 +990,18 @@ namespace nme {}
 
 - (void) mainLoop {
    isRunning = YES;
-   while (isRunning) {
+   /*while (isRunning) {
       while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
 
-      /*if (paused) {
-         usleep(250000); // Sleep for a quarter of a second (250,000 microseconds) so that the framerate is 4 fps.
-      }*/
+      //if (paused) {
+         //usleep(250000); // Sleep for a quarter of a second (250,000 microseconds) so that the framerate is 4 fps.
+      //}
       
       sgMainView->mStage->OnPoll();
       
       while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
-   }
-   /*while(!sgTerminated)
+   }*/
+   while(isRunning /*&& !sgTerminated*/)
    {
        double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
        if (delta<0) delta = 0;
@@ -1001,7 +1009,7 @@ namespace nme {}
        {
           sgMainView->mStage->OnPoll();
        }
-   }*/
+   }
 }
 
 - (void) startAnimation

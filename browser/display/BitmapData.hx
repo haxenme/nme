@@ -1015,9 +1015,10 @@ class BitmapData implements IBitmapDrawable {
 	private static function nmeIsJPG(bytes:ByteArray) {
 		
 		bytes.position = 0;
-		
-		if (bytes.readByte() == 0xFF && bytes.readByte() == 0xD8 && bytes.readByte() == 0xFF && bytes.readByte() == 0xE0) {
+		return bytes.readByte() == 0xFF && bytes.readByte() == 0xD8;
+		/*if (bytes.readByte() == 0xFF && bytes.readByte() == 0xD8 && bytes.readByte() == 0xFF) {
 			
+			bytes.readByte();
 			bytes.readByte();
 			bytes.readByte();
 			
@@ -1030,7 +1031,7 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 		return false;
-		
+        */
 	}
 	
 	

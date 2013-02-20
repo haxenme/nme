@@ -1,4 +1,3 @@
-import neko.zip.Writer;
 import haxe.io.Eof;
 import haxe.Http;
 import haxe.io.Path;
@@ -6,6 +5,12 @@ import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
 
 
 class RunScript {
@@ -15,10 +20,10 @@ class RunScript {
 	private static var isMac:Bool;
 	private static var isWindows:Bool;
 	private static var nmeDirectory:String;
-	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools/documentation/bin" ];
+	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools", "project" ];
 	
 	
-	private static function build (path:String = "", targets:Array<String> = null, flags:Hash <String> = null, defines:Array<String> = null):Void {
+	private static function build (path:String = "", targets:Array<String> = null, flags:StringMap <String> = null, defines:Array<String> = null):Void {
 		
 		if (path == "") {
 			
@@ -48,7 +53,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new Hash <String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -152,7 +157,7 @@ class RunScript {
 	}
 	
 	
-	static private function buildLibrary (target:String, flags:Hash <String> = null, defines:Array<String> = null, path:String = ""):Void {
+	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
 		
 		if (!FileSystem.exists (nmeDirectory + "/../sdl-static")) {
 			
@@ -163,7 +168,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new Hash <String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -738,7 +743,7 @@ class RunScript {
 	
 	public static function main () {
 		
-		nmeDirectory = PathHelper.getNMEPath();
+		nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
 		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
@@ -786,7 +791,7 @@ class RunScript {
 			}
 			
 			var targets:Array <String> = null;
-			var flags = new Hash <String> ();
+			var flags = new StringMap <String> ();
 			var ignoreLength = 0;
 			var defines = [];
 			
@@ -848,7 +853,7 @@ class RunScript {
 						
 					} else {
 						
-						path = PathHelper.combine (PathHelper.getHaxelib (new Haxelib(path)), "project");
+						path = PathHelper.combine (PathHelper.getHaxelib (new Haxelib (path)), "project");
 						
 					}
 					
@@ -888,7 +893,7 @@ class RunScript {
 			
 		} else {
 
-			if (!FileSystem.exists (nmeDirectory + "/tools/command-line/command-line.n")) {
+			if (!FileSystem.exists (nmeDirectory + "/command-line.n")) {
 				
 				build ();
 				
@@ -922,7 +927,7 @@ class RunScript {
 				
 			} else {
 				
-				args.unshift ("tools/command-line/command-line.n");
+				args.unshift ("command-line.n");
 				
 			}
 			
@@ -933,7 +938,13 @@ class RunScript {
 	}
 	
 	
-	public static function recursiveCopy (source:String, destination:String, ignore:Array <String>) {
+	public static function recursiveCopy (source:String, destination:String, ignore:Array <String> = null) {
+		
+		if (ignore == null) {
+			
+			ignore = [];
+			
+		}
 		
 		mkdir (destination);
 		
@@ -945,7 +956,15 @@ class RunScript {
 			
 			for (ignoreName in ignore) {
 				
-				if (file == ignoreName || StringTools.endsWith (source + "/" + file, "/" + ignoreName)) {
+				if (StringTools.endsWith (ignoreName, "/")) {
+					
+					if (FileSystem.isDirectory (source + "/" + file) && file == ignoreName.substr (0, file.length - 1)) {
+						
+						ignoreFile = true;
+						
+					}
+					
+				} else if (file == ignoreName || StringTools.endsWith (source + "/" + file, "/" + ignoreName)) {
 					
 					ignoreFile = true;
 					
@@ -1070,6 +1089,7 @@ class RunScript {
 					targetPath = "../nme-" + getRevision () + ".zip";
 					
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
+					recursiveCopy (nmeDirectory + "/tools/project", nmeDirectory + tempPath + "/nme/tools/project");
 					
 					if (FileSystem.exists (nmeDirectory + targetPath)) {
 						
@@ -1086,11 +1106,11 @@ class RunScript {
 				
 				case "installer":
 					
-					var hxcppPath = PathHelper.getHaxelib(new Haxelib("hxcpp"));
-					var nmePath = PathHelper.getNMEPath();
-					var swfPath = PathHelper.getHaxelib (new Haxelib("swf"));
-					var actuatePath = PathHelper.getHaxelib (new Haxelib("actuate"));
-					var svgPath = PathHelper.getHaxelib (new Haxelib("svg"));
+					var hxcppPath = PathHelper.getHaxelib (new Haxelib ("hxcpp"));
+					var nmePath = PathHelper.getHaxelib (new Haxelib ("nme"));
+					var swfPath = PathHelper.getHaxelib (new Haxelib ("swf"));
+					var actuatePath = PathHelper.getHaxelib (new Haxelib ("actuate"));
+					var svgPath = PathHelper.getHaxelib (new Haxelib ("svg"));
 					
 					var hxcppVersion = getVersion ("hxcpp", true);
 					var nmeVersion = getVersion ("nme", true);
@@ -1115,6 +1135,7 @@ class RunScript {
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/usr/lib/haxe/lib/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion, nmeFilters);
+						recursiveCopy (nmePath + "/tools/project", nmeDirectory + tempPath + "/resources/nme/usr/lib/haxe/lib/nme/" + nmeVersion + "/tools/project");
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/usr/lib/haxe/lib/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/usr/lib/haxe/lib/actuate/" + actuateVersion, [ ".git", ".svn" ]);
 						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/usr/lib/haxe/lib/svg/" + svgVersion, [ ".git", ".svn" ]);
@@ -1144,6 +1165,7 @@ class RunScript {
 						
 						recursiveCopy (hxcppPath, nmeDirectory + tempPath + "/resources/hxcpp/" + hxcppVersion, [ "obj", "all_objs", ".git", ".svn" ]);
 						recursiveCopy (nmePath, nmeDirectory + tempPath + "/resources/nme/" + nmeVersion, nmeFilters);
+						recursiveCopy (nmePath + "/tools/project", nmeDirectory + tempPath + "/resources/nme/" + nmeVersion + "/tools/project");
 						recursiveCopy (swfPath, nmeDirectory + tempPath + "/resources/swf/" + swfVersion, [ ".git", ".svn" ]);
 						recursiveCopy (actuatePath, nmeDirectory + tempPath + "/resources/actuate/" + actuateVersion, [ ".git", ".svn" ]);
 						recursiveCopy (svgPath, nmeDirectory + tempPath + "/resources/svg/" + svgVersion, [ ".git", ".svn" ]);

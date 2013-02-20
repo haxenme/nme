@@ -1,0 +1,18 @@
+#!/bin/sh
+echo "-----------" > /mnt/sd/log.txt
+date >> /mnt/sd/log.txt
+echo "-----------" >> /mnt/sd/log.txt
+
+LD_DEBUG="files"
+export LD_DEBUG
+
+HAXE_DEBUG_LOAD=1
+export HAXE_DEBUG_LOAD
+
+./::APP_FILE::.gpe >> /mnt/sd/log.txt 2>&1
+
+echo "------------" >> /mnt/sd/log.txt
+
+cd /usr/gp2x
+exec ./gp2xmenu
+

@@ -22,6 +22,9 @@
    <set name="ogl" value="1" if="webos"/>
    <set name="ogl" value="1" if="blackberry"/>
    <set name="nmeegl" value="1" if="rpi"/>
+   
+   <set name="NME_FORCE_GLES1" value="1" if="iphone" />
+   
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
    <!-- Toggle this for openal experimental osx code -->
@@ -98,6 +101,7 @@
    <files id="iphone">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
       <file name="iPhone/Sound.mm"/>
