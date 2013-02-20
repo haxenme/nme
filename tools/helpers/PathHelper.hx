@@ -139,7 +139,7 @@ class PathHelper {
 		
 	}
 	
-	
+
 	public static function getHaxelib (haxelib:Haxelib):String {
 		
 		var name = haxelib.name;
@@ -150,7 +150,19 @@ class PathHelper {
 			
 		}
 		
-		var proc = new Process ("haxelib", [ "path", name ]);
+		if (name == "nme") {
+			
+			var nmePath = Sys.getEnv ("NMEPATH");
+			
+			if (nmePath != null && nmePath != "") {
+				
+				return nmePath;
+				
+			}
+			
+		}
+		
+		var proc = new Process (combine (Sys.getEnv ("HAXEPATH"), "haxelib"), [ "path", name ]);
 		var result = "";
 		
 		try {
@@ -461,6 +473,6 @@ class PathHelper {
 		}
 		
 	}
-		
+	
 
 }

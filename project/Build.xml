@@ -23,6 +23,10 @@
    <set name="ogl" value="1" if="blackberry"/>
    <set name="nmeegl" value="1" if="rpi"/>
    
+   <set name="NME_FORCE_GLES1" value="1" if="iphone" />
+   
+   <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
+   
    <!-- Toggle this for openal experimental osx code -->
    <set name="openal" value="1" if="macos"/>
    <!-- <set name="openal" value="1" if="win_desktop"/> -->
@@ -97,6 +101,7 @@
    <files id="iphone">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
       <file name="iPhone/Sound.mm"/>
@@ -185,6 +190,7 @@
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <compilerflag value="-DNME_CURL_SSL" if="ssl"/>
+	  <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <compilerflag value="-Wno-conversion" if="linux"/>
       
       <file name="common/Surface.cpp"/>
@@ -229,7 +235,7 @@
       <file name="software-renderer/SolidRender.cpp"/>
       <file name="software-renderer/TileRenderer.cpp"/>
       <file name="software-renderer/TriangleRender.cpp"/>
-      
+	  
       <file name="opengl/OpenGLContext.cpp" if="ogl"/>
       <file name="opengl/OGLTexture.cpp" if="ogl"/>
       <file name="opengl/OGLShaders.cpp" if="ogl"/>
@@ -388,11 +394,11 @@
       <vflag name="-framework" value="OpenAL" if="macos"/>
       
       <lib name="-ldl" if="android"/>
-      <lib name="-lGLESv1_CM" if="android"/>
+      <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
       
-      <lib name="-lGLES_CM" if="webos"/>
+      <lib name="-lGLES_CM" if="webos" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="webos"/>
       <lib name="-lpdl" if="webos"/>
       
@@ -405,7 +411,7 @@
       <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
       <lib name="-lGLESv2" if="blackberry" />
       
-      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi"/>
+      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi" unless="ogl_shaders"/>
       <lib name="/opt/vc/lib/libGLESv2.so" if="rpi"/>
       <lib name="/opt/vc/lib/libEGL.so" if="rpi"/>
       <lib name="/opt/vc/lib/libbcm_host.so" if="rpi"/>

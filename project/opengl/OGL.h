@@ -1,15 +1,23 @@
 #ifndef INCLUDED_OGL_H
 #define INCLUDED_OGL_H
 
-#if defined(WEBOS) || defined(BLACKBERRY) || defined(ANDROID) || defined(GPH) || defined(RASPBERRYPI)
+#if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI)
 
 #define NME_GLES
 
+#ifdef NME_FORCE_GLES1
+
 #include <GLES/gl.h>
 #include <GLES/glext.h>
+
+#else
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #define ALLOW_OGL2
+#define NME_FORCE_GLES2
+
+#endif
 
 #elif defined(IPHONE)
 

@@ -54,24 +54,8 @@ class URLLoader extends EventDispatcher {
 	
 	
 	public function load(request:URLRequest):Void {
-		
-		switch (dataFormat) {
-			
-			case BINARY:
 				
-				request.requestHeaders.push(new URLRequestHeader("Content-Type", "application/octet-stream"));
-			
-			default:
-				
-				if (request.method != "GET") {
-					
-					request.requestHeaders.push(new URLRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
-					
-				}
-			
-		}
-		
-		requestUrl(request.url, request.method, request.data, request.requestHeaders);
+		requestUrl(request.url, request.method, request.data, request.formatRequestHeaders());
 		
 	}
 	

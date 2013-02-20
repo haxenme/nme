@@ -1,15 +1,12 @@
 package native.text;
 #if (cpp || neko)
 
-
-enum TextFieldAutoSize {
-	
-	CENTER;
-	LEFT;
-	NONE;
-	RIGHT;
-   
+enum TextFieldAutoSize 
+{
+   CENTER;
+   LEFT;
+   NONE;
+   RIGHT;
 }
-
 
 #end

@@ -6,11 +6,7 @@ import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-typedef StringMap<T> = Hash<T>;
-#end
+import StringMap;
 
 
 class NMEProject {
@@ -93,7 +89,7 @@ class NMEProject {
 		
 		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
 		defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
-		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: false, requireShaders: false, depthBuffer: false, stencilBuffer: false }
+		defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: true, requireShaders: false, depthBuffer: false, stencilBuffer: false }
 		
 		switch (target) {
 			

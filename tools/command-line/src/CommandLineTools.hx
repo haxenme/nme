@@ -956,16 +956,35 @@ class CommandLineTools {
 	
 	
 	private static function processArguments ():Void {
-		
+
 		var arguments = Sys.args ();
+
+		nme = PathHelper.getHaxelib (new Haxelib ("nme"));
+
+		var lastCharacter = nme.substr ( -1, 1);
 		
+		if (lastCharacter == "/" || lastCharacter == "\\") {
+			
+			nme = nme.substr (0, -1);
+			
+		}
+
 		if (arguments.length > 0) {
 			
 			// When the command-line tools are called from haxelib, 
 			// the last argument is the project directory and the
 			// path to NME is the current working directory 
 			
-			var lastArgument = new Path (arguments[arguments.length - 1]).toString ();
+			var lastArgument = "";
+			
+			for (i in 0...arguments.length) {
+				
+				lastArgument = arguments.pop ();
+				if (lastArgument.length > 0) break;
+				
+			}
+			
+			lastArgument = new Path (lastArgument).toString ();
 			
 			if (((StringTools.endsWith (lastArgument, "/") && lastArgument != "/") || StringTools.endsWith (lastArgument, "\\")) && !StringTools.endsWith (lastArgument, ":\\")) {
 				
@@ -975,18 +994,7 @@ class CommandLineTools {
 			
 			if (FileSystem.exists (lastArgument) && FileSystem.isDirectory (lastArgument)) {
 				
-				nme = Sys.getCwd ();
-				
-				var lastCharacter = nme.substr (-1, 1);
-				
-				if (lastCharacter == "/" || lastCharacter == "\\") {
-					
-					nme = nme.substr (0, -1);
-					
-				}
-				
 				Sys.setCwd (lastArgument);
-				arguments.pop ();
 				
 			}
 			

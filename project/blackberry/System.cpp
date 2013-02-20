@@ -9,6 +9,8 @@
 #include <string>
 #include <stdio.h>
 
+#include <bps/orientation.h>
+#include <bps/bps.h>
 
 namespace nme {
 	
@@ -92,5 +94,19 @@ namespace nme {
 		
 	}
 
+    int GetDeviceOrientation() {
+        int orientation_angle = 0;
+        orientation_direction_t direction;
+        orientation_get(&direction, &orientation_angle);
+        switch (direction) {
+            case ORIENTATION_TOP_UP:        return 1; break;
+            case ORIENTATION_BOTTOM_UP:     return 2; break;
+            case ORIENTATION_LEFT_UP:       return 3; break;
+            case ORIENTATION_RIGHT_UP:      return 4; break;
+                
+            default:
+                return 0;
+        }
+    }
 
 }
