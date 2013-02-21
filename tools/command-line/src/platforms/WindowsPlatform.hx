@@ -116,6 +116,13 @@ class WindowsPlatform implements IPlatformTool {
 	public function update (project:NMEProject):Void {
 		
 		project = project.clone ();
+		
+		if (!project.environment.exists ("SHOW_CONSOLE")) {
+			
+			project.haxedefs.push ("no_console");
+			
+		}
+		
 		initialize (project);
 		
 		var context = generateContext (project);
