@@ -8,6 +8,11 @@ import nme.display3D.Context3DProgramType;
 
 class GLSLFragmentShader extends GLSLShader{
 
+    #if (cpp || neko || js)
+    private var textureCounter : Int;
+    #end
+
+
     public function new(glslSource : String,
         #if (cpp || neko || js)
         ?
@@ -18,12 +23,21 @@ class GLSLFragmentShader extends GLSLShader{
         super(Context3DProgramType.FRAGMENT, glslSource, agalInfo);
     }
 
+    #if (cpp || neko || js)
+    override public function setup(context3D : Context3D) : Void{
+        super.setup(context3D);
+        textureCounter = 0;
+    }
+    #end
+
+
     public function setTextureAt(context3D : Context3D, name : String , texture : Texture){
         #if flash
         var registerIndex = getRegisterIndexForSampler(name);
         context3D.setTextureAt( registerIndex, texture);
         #elseif (cpp || neko || js)
-        context3D.setGLSLTextureAt(name, texture);
+        context3D.setGLSLTextureAt(name, texture, textureCounter);
+        textureCounter ++;
         #end
     }
 

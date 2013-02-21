@@ -6,6 +6,7 @@ import native.utils.ArrayBuffer;
 import native.utils.ByteArray;
 import native.utils.Float32Array;
 import native.utils.IMemoryRange;
+import browser.utils.ArrayBufferView;
 import native.geom.Matrix3D;
 import native.Lib;
 import native.Loader;
@@ -955,7 +956,7 @@ class GL
       nme_gl_stencil_op_separate(face, fail, zfail, zpass);
    }
 
-   public static function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:IMemoryRange):Void 
+   public static function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
    {
       nme_gl_tex_image_2d(target, level, internalformat, width, height, border, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? null : pixels.getStart());
    }
@@ -970,7 +971,7 @@ class GL
       nme_gl_tex_parameteri(target, pname, param);
    }
 
-   public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void 
+   public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
    {
       nme_gl_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? null : pixels.getStart());
    }

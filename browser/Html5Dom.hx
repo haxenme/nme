@@ -194,6 +194,7 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	function subarray(offset:Int, length:Int):Int8Array;
 }
 
+@:native("Uint8Array")
 #if haxe3
 extern class Uint8Array implements ArrayBufferView implements ArrayAccess<Int> {
 #else

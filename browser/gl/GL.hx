@@ -1203,7 +1203,7 @@ class GL {
 	}
 	
 	
-	public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void {
+	public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ArrayBufferView):Void {
 		
 		nmeContext.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 		
