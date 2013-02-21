@@ -1,0 +1,335 @@
+LIBNAME:= libSDL
+
+all : $(LIBNAME)$(SS_LIBEXT)
+
+SOURCES_12 := \
+   src/SDL.c \
+   src/events/SDL_active.c \
+   src/audio/SDL_audio.c \
+   src/audio/SDL_audiocvt.c \
+   src/video/SDL_blit.c \
+   src/video/SDL_blit_0.c \
+   src/video/SDL_blit_1.c \
+   src/video/SDL_blit_A.c \
+   src/video/SDL_blit_N.c \
+   src/video/SDL_bmp.c \
+   src/cdrom/SDL_cdrom.c \
+   src/cpuinfo/SDL_cpuinfo.c \
+   src/video/SDL_cursor.c \
+   src/audio/dummy/SDL_dummyaudio.c \
+   src/SDL_error.c \
+   src/events/SDL_events.c \
+   src/events/SDL_expose.c \
+   src/SDL_fatal.c \
+   src/video/SDL_gamma.c \
+   src/stdlib/SDL_getenv.c \
+   src/stdlib/SDL_iconv.c \
+   src/joystick/SDL_joystick.c \
+   src/events/SDL_keyboard.c \
+   src/stdlib/SDL_malloc.c \
+   src/audio/SDL_mixer.c \
+   src/audio/SDL_mixer_MMX_VC.c \
+   src/joystick/win32/SDL_mmjoystick.c \
+   src/events/SDL_mouse.c \
+   src/video/dummy/SDL_nullevents.c \
+   src/video/dummy/SDL_nullmouse.c \
+   src/video/dummy/SDL_nullvideo.c \
+   src/video/SDL_pixels.c \
+   src/stdlib/SDL_qsort.c \
+   src/events/SDL_quit.c \
+   src/events/SDL_resize.c \
+   src/video/SDL_RLEaccel.c \
+   src/file/SDL_rwops.c \
+   src/stdlib/SDL_stdlib.c \
+   src/video/SDL_stretch.c \
+   src/stdlib/SDL_string.c \
+   src/video/SDL_surface.c \
+   src/thread/generic/SDL_syscond.c \
+   src/thread/SDL_thread.c \
+   src/timer/SDL_timer.c \
+   src/video/SDL_video.c \
+   src/audio/SDL_wave.c \
+   src/video/SDL_yuv.c \
+   src/video/SDL_yuv_sw.c
+
+
+
+ifdef SS_WINDOWS
+SOURCES_12 := src/audio/windib/SDL_dibaudio.c \
+   src/video/wincommon/SDL_wingl.c \
+   src/video/wincommon/SDL_sysevents.c \
+   src/video/windib/SDL_dibevents.c \
+   src/video/windib/SDL_dibvideo.c \
+   src/audio/disk/SDL_diskaudio.c \
+   src/audio/windx5/SDL_dx5audio.c \
+   src/video/Windx5/SDL_dx5events.c \
+   src/video/Windx5/SDL_dx5video.c \
+   src/video/windx5/SDL_dx5yuv.c \
+   src/cdrom/win32/SDL_syscdrom.c \
+   src/loadso/win32/SDL_sysloadso.c \
+   src/video/wincommon/SDL_sysmouse.c \
+   src/thread/win32/SDL_sysmutex.c \
+   src/thread/win32/SDL_syssem.c \
+   src/thread/win32/SDL_systhread.c \
+   src/timer/win32/SDL_systimer.c \
+   src/video/wincommon/SDL_syswm.c \
+	$(SOURCES_12)
+
+endif
+
+SOURCES_LIBM := \
+   src/libm/e_log.c \
+   src/libm/e_pow.c \
+   src/libm/e_rem_pio2.c \
+   src/libm/e_sqrt.c \
+   src/libm/k_cos.c \
+   src/libm/k_rem_pio2.c \
+   src/libm/k_sin.c \
+   src/libm/s_copysign.c \
+   src/libm/s_cos.c \
+   src/libm/s_fabs.c \
+   src/libm/s_floor.c \
+   src/libm/s_scalbn.c \
+   src/libm/s_sin.c
+
+SOURCE_WIN_13 = \
+   src/video/win32/SDL_d3drender.c \
+   src/audio/windib/SDL_dibaudio.c \
+   src/audio/windx5/SDL_dx5audio.c \
+   src/joystick/win32/SDL_dxjoystick.c \
+   src/video/win32/SDL_gdirender.c \
+   src/joystick/win32/SDL_mmjoystick.c \
+   src/cdrom/win32/SDL_syscdrom.c \
+   src/haptic/win32/SDL_syshaptic.c \
+   src/loadso/win32/SDL_sysloadso.c \
+   src/thread/win32/SDL_sysmutex.c \
+   src/thread/win32/SDL_syssem.c \
+   src/thread/win32/SDL_systhread.c \
+   src/timer/win32/SDL_systimer.c \
+   src/video/win32/SDL_win32events.c \
+   src/video/win32/SDL_win32gamma.c \
+   src/video/win32/SDL_win32keyboard.c \
+   src/video/win32/SDL_win32modes.c \
+   src/video/win32/SDL_win32mouse.c \
+   src/video/win32/SDL_win32opengl.c \
+   src/video/win32/SDL_win32video.c \
+   src/video/win32/SDL_win32window.c
+
+IPHONEOS_SOURCE := \
+   src/thread/pthread/SDL_syscond.c \
+   src/thread/pthread/SDL_sysmutex.c \
+   src/thread/pthread/SDL_syssem.c \
+   src/thread/pthread/SDL_systhread.c \
+   src/joystick/iphoneos/SDL_sysjoystick.m \
+   src/joystick/iphoneos/SDLUIAccelerationDelegate.m \
+   src/audio/iphoneos/SDL_coreaudio_iphone.c \
+   src/video/uikit/SDL_uikitvideo.m \
+   src/video/uikit/SDL_uikitappdelegate.m \
+   src/video/uikit/SDL_uikitevents.m \
+   src/video/uikit/SDL_uikitopengles.m \
+   src/video/uikit/SDL_uikitopenglview.m \
+   src/video/uikit/SDL_uikitvideo.m \
+   src/video/uikit/SDL_uikitview.m \
+   src/video/uikit/SDL_uikitwindow.m \
+   src/video/uikit/jumphack.c \
+   src/loadso/dummy/SDL_sysloadso.c \
+   src/video/SDL_renderer_gles.c
+
+
+SOURCES_13 := \
+   src/SDL.c \
+   src/video/SDL_alphamult.c \
+   src/audio/SDL_audio.c \
+   src/audio/SDL_audiocvt.c \
+   src/audio/SDL_audiodev.c \
+   src/audio/SDL_audiotypecvt.c \
+   src/video/SDL_blendline.c \
+   src/video/SDL_blendpoint.c \
+   src/video/SDL_blendrect.c \
+   src/video/SDL_blit.c \
+   src/video/SDL_blit_0.c \
+   src/video/SDL_blit_1.c \
+   src/video/SDL_blit_A.c \
+   src/video/SDL_blit_auto.c \
+   src/video/SDL_blit_copy.c \
+   src/video/SDL_blit_N.c \
+   src/video/SDL_blit_slow.c \
+   src/video/SDL_bmp.c \
+   src/SDL_compat.c \
+   src/cpuinfo/SDL_cpuinfo.c \
+   src/audio/disk/SDL_diskaudio.c \
+   src/video/SDL_drawline.c \
+   src/video/SDL_drawpoint.c \
+   src/video/SDL_drawrect.c \
+   src/video/SDL_blendfillrect.c \
+   src/audio/dummy/SDL_dummyaudio.c \
+   src/SDL_error.c \
+   src/events/SDL_events.c \
+   src/SDL_fatal.c \
+   src/video/SDL_fillrect.c \
+   src/video/SDL_gamma.c \
+   src/stdlib/SDL_getenv.c \
+   src/haptic/SDL_haptic.c \
+   src/stdlib/SDL_iconv.c \
+   src/joystick/SDL_joystick.c \
+   src/events/SDL_keyboard.c \
+   src/stdlib/SDL_malloc.c \
+   src/audio/SDL_mixer.c \
+   src/audio/SDL_mixer_m68k.c \
+   src/audio/SDL_mixer_MMX.c \
+   src/audio/SDL_mixer_MMX_VC.c \
+   src/events/SDL_mouse.c \
+   src/video/dummy/SDL_nullevents.c \
+   src/video/dummy/SDL_nullrender.c \
+   src/video/dummy/SDL_nullvideo.c \
+   src/video/SDL_pixels.c \
+   src/stdlib/SDL_qsort.c \
+   src/events/SDL_quit.c \
+   src/video/SDL_rect.c \
+   src/video/SDL_renderer_gl.c \
+   src/video/SDL_renderer_sw.c \
+   src/video/SDL_RLEaccel.c \
+   src/file/SDL_rwops.c \
+   src/stdlib/SDL_stdlib.c \
+   src/video/SDL_stretch.c \
+   src/stdlib/SDL_string.c \
+   src/video/SDL_surface.c \
+   src/thread/SDL_thread.c \
+   src/timer/SDL_timer.c \
+   src/timer/unix/SDL_systimer.c \
+   src/video/SDL_video.c \
+   src/audio/SDL_wave.c \
+   src/events/SDL_windowevents.c \
+   src/video/SDL_yuv_mmx.c \
+   src/video/SDL_yuv_sw.c
+
+SYS := dummy
+
+ifdef SS_LINUX
+SYS := linux
+endif
+
+ifdef SS_MAC
+SYS := darwin
+endif
+
+
+
+SOURCES_UNIX = \
+	$(wildcard src/*.c) \
+	$(wildcard src/audio/*.c) \
+	$(wildcard src/cdrom/*.c) \
+	$(wildcard src/cpuinfo/*.c) \
+	$(wildcard src/events/*.c) \
+	$(wildcard src/file/*.c) \
+	$(wildcard src/joystick/*.c) \
+	$(wildcard src/haptic/*.c) \
+	$(wildcard src/stdlib/*.c) \
+	$(wildcard src/thread/*.c) \
+	$(wildcard src/timer/*.c) \
+	$(wildcard src/video/*.c) \
+	$(wildcard src/power/*.c) \
+	$(wildcard src/timer/unix/*.c) \
+	$(wildcard src/thread/pthread/*.c) \
+	$(wildcard src/audio/$(SYS)/*.c) \
+	$(wildcard src/video/$(SYS)/*.c) \
+	$(wildcard src/joystick/$(SYS)/*.c) \
+	$(wildcard src/haptic/$(SYS)/*.c) \
+	$(wildcard src/cdrom/$(SYS)/*.c) \
+	$(wildcard src/timer/$(SYS)/*.c) \
+	$(wildcard src/loadso/$(SYS)/*.c) \
+	$(wildcard src/audio/dummy/*.c) \
+	$(wildcard src/video/dummy/*.c) \
+
+ifdef SS_LINUX
+SOURCES_UNIX += $(wildcard src/video/x11/*.c) \
+                $(wildcard src/video/Xext/*.c) \
+                $(wildcard src/video/Xext/*/*.c) \
+                $(wildcard src/video/dga/*.c) \
+                $(wildcard src/video/fbcon/*.c) \
+	        $(wildcard src/audio/dma/*.c) \
+	        $(wildcard src/audio/dsp/*.c) \
+	        $(wildcard src/audio/disk/*.c) \
+	        $(wildcard src/audio/pulse/*.c) \
+	        $(wildcard src/audio/alsa/*.c) \
+	        $(wildcard src/loadso/dlopen/*.c)
+endif
+
+ifdef SS_MAC
+SOURCES_UNIX += \
+           $(wildcard src/video/quartz/*.m) \
+           $(wildcard src/video/x11/*.c) \
+           $(wildcard src/video/dga/*.c) \
+           $(wildcard src/video/Xext/Xxf86dga/*.c) \
+           $(wildcard src/video/Xext/Xxf86vm/*.c) \
+           $(wildcard src/video/Xext/Xv/*.c) \
+           $(wildcard src/video/Xext/Xinerama/*.c) \
+           $(wildcard src/video/Xext/XME/*.c) \
+	        $(wildcard src/audio/macosx/*.c) \
+	        $(wildcard src/audio/macrom/*.c) \
+	        $(wildcard src/audio/disk/*.c) \
+	        $(wildcard src/cdrom/macosx/*.c) \
+	        $(wildcard src/joystick/darwin/*.c) \
+	        $(wildcard src/loadso/dlopen/*.c)
+
+endif
+
+
+ifdef SS_WINDOWS
+SOURCES := $(SOURCES_12)
+MAIN_SOURCES := src/main/win32/SDL_win32_main.c
+all:libSDLMain$(SS_LIBEXT)
+DEFINES := -D_WINDOWS -D_WIN32_WINNT=0x0400 -D__MMX__ -D__3dNOW__ -D__SSE__ -D__SSE2__  -DHAVE_LIBC -DNO_STDIO_REDIRECT
+endif
+ifdef SS_MAC
+SOURCES := $(SOURCES_UNIX)
+DEFINES := -DHAVE_LIBC -DNO_STDIO_REDIRECT
+endif
+ifdef SS_IPHONEOS
+SOURCES := $(SOURCES_13) $(IPHONEOS_SOURCE)
+DEFINES := -DHAVE_LIBC -DNO_STDIO_REDIRECT
+endif
+ifdef SS_IPHONESIM
+SOURCES := $(SOURCES_13) $(IPHONEOS_SOURCE)
+DEFINES := -DHAVE_LIBC -DNO_STDIO_REDIRECT
+endif
+ifdef SS_LINUX
+SOURCES := $(SOURCES_UNIX)
+DEFINES := -DHAVE_LIBC -D_GNU_SOURCE -D_XOPEN_SOURCE=600 -DNO_STDIO_REDIRECT
+endif
+
+
+MAIN_OBJS := $(notdir $(MAIN_SOURCES:%.c=%$(SS_OBJEXT)))
+MAIN_OBJS := $(MAIN_OBJS:%.m=%$(SS_OBJEXT))
+
+VPATH:=$(dir $(SOURCES) $(MAIN_SOURCES) )
+
+OBJS := $(notdir $(SOURCES:%.c=%$(SS_OBJEXT)))
+OBJS := $(OBJS:%.m=%$(SS_OBJEXT))
+OBJS := $(OBJS:%=obj/%)
+
+$(LIBNAME)$(SS_LIBEXT):$(OBJS)
+	$(SS_CREATELIB)$@ $(OBJS)
+
+
+libSDLMain$(SS_LIBEXT):$(MAIN_OBJS)
+	$(SS_CREATELIB)$@ $(MAIN_OBJS)
+
+
+SDL_INCLUDES := -Iinclude -Isrc/events -Isrc/video -I../../include
+
+%$(SS_OBJEXT):%.c
+	-mkdir -p obj
+	$(SS_CC) $< -c $(SS_OBJOUT)$@ $(DEFINES) $(SDL_INCLUDES)
+
+obj/%$(SS_OBJEXT):%.c
+	-mkdir -p obj
+	$(SS_CC) $< -c $(SS_OBJOUT)$@ $(DEFINES) $(SDL_INCLUDES)
+
+obj/%$(SS_OBJEXT):%.m
+	-mkdir -p obj
+	$(SS_CC) $< -c $(SS_OBJOUT)$@ $(DEFINES) $(SDL_INCLUDES)
+
+clean:
+	rm -f $(OBJS)
+

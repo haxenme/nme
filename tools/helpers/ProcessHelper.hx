@@ -7,9 +7,7 @@ import sys.FileSystem;
 
 class ProcessHelper {
 	
-	private static inline var OPEN:String = "/usr/bin/open";
-	private static inline var XDG_OPEN:String = "/usr/bin/xdg-open";
-
+	
 	public static function openFile (workingDirectory:String, targetPath:String, executable:String = ""):Void {
 		
 		if (executable == null) { 
@@ -50,7 +48,7 @@ class ProcessHelper {
 			
 			if (executable == "") {
 				
-				executable = OPEN;
+				executable = "/usr/bin/open";
 				
 			}
 			
@@ -68,7 +66,7 @@ class ProcessHelper {
 			
 			if (executable == "") {
 				
-				executable = XDG_OPEN;
+				executable = "/usr/bin/xdg-open";
 				
 			}
 			
@@ -95,11 +93,11 @@ class ProcessHelper {
 			
 		} else if (PlatformHelper.hostPlatform == Platform.MAC) {
 			
-			runCommand ("", OPEN, [ url ]);
+			runCommand ("", "/usr/bin/open", [ url ]);
 			
 		} else {
 			
-			runCommand ("", XDG_OPEN, [ url ]);
+			runCommand ("", "/usr/bin/xdg-open", [ url ]);
 			
 		}
 		
@@ -198,6 +196,6 @@ class ProcessHelper {
 		}
 		
 	}
-		
+	
 
 }

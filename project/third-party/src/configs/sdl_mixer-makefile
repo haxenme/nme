@@ -1,0 +1,66 @@
+all:libSDL_mixer$(SS_LIBEXT)
+ 
+SOURCE := \
+   ./effect_position.c \
+   ./effect_stereoreverse.c \
+   music_ogg.c \
+   dynamic_ogg.c \
+   dynamic_mod.c \
+   music_mod.c \
+   load_ogg.c \
+   ./effects_internal.c \
+   ./load_aiff.c \
+   ./load_voc.c \
+   ./mixer.c \
+   ./music.c \
+   ./music_cmd.c \
+   ./wavestream.c \
+   ./dynamic_mp3.c \
+   $(MIKMOD).patched/drivers/drv_wav.c \
+   $(MIKMOD).patched/drivers/drv_nos.c \
+   $(wildcard $(MIKMOD).patched/playercode/*.c) \
+   $(wildcard $(MIKMOD).patched/loaders/*.c) \
+   $(wildcard $(MIKMOD).patched/mmio/*.c) \
+   $(wildcard ./timidity/*.c) \
+   $(wildcard ./native_midi/*.c)
+
+ifdef SS_WINDOWS
+   SOURCE += $(wildcard $(MIKMOD).patched/win32/*.c)
+else
+   #SOURCE += $(wildcard $(MIKMOD).patched/posix/*.c)
+endif
+
+
+  #$(wildcard $(MIKMOD).patched/loaders/*.c) \
+
+OBJS := $(SOURCE:%.c=%$(SS_OBJEXT))
+
+libSDL_mixer$(SS_LIBEXT): $(OBJS)
+	$(SS_CREATELIB)libSDL_mixer$(SS_LIBEXT) $(OBJS)
+
+ifndef SS_IPHONE
+   MP3_FILES := -DMP3_MUSIC
+ifndef SS_LINUX
+ifndef SS_BLACKBERRY
+   MIDI_FILES := -DUSE_NATIVE_MIDI
+endif
+endif
+endif
+
+CONFIG := \
+   -Imikmod \
+   -DOGG_MUSIC \
+	-DHAVE_LIBC=1 \
+	-DMID_MUSIC \
+	-DWAV_MUSIC \
+	 $(MIDI_FILES) \
+	-DMOD_MUSIC \
+         $(MP3_FILES) \
+	-D__STDC__
+
+%$(SS_OBJEXT):%.c
+	$(SS_CC) $(CONFIG) -I../../include -Inative_midi -I../$(SDL_INC) -I$(MIKMOD).patched/include $< -c $(SS_OBJOUT)$@
+
+
+clean:
+	rm -f $(OBJS)
