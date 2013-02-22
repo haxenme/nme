@@ -106,7 +106,7 @@ class Context3D {
 
 	public function createCubeTexture (size:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):CubeTexture {
 
-        var texture = new native.display3D.textures.CubeTexture (GL.createTexture (), size);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
+        var texture = new CubeTexture (GL.createTexture (), size);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
         texturesCreated.push(texture);
         return texture;
 
@@ -132,9 +132,9 @@ class Context3D {
 	}
 	
 	
-	public function createTexture(width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):native.display3D.textures.Texture {
+	public function createTexture(width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):Texture {
 
-        var texture = new native.display3D.textures.Texture (GL.createTexture (), width, height);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
+        var texture = new Texture (GL.createTexture (), width, height);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
 	    texturesCreated.push(texture);
         return texture;
 	}
@@ -434,7 +434,7 @@ class Context3D {
 
         var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
 
-		if (Std.is (texture, native.display3D.textures.Texture)) {
+		if (Std.is (texture, Texture)) {
 
             switch(textureIndex){
                 case 0 : GL.activeTexture (GL.TEXTURE0);
@@ -450,7 +450,7 @@ class Context3D {
             }
 			
 
-			GL.bindTexture(GL.TEXTURE_2D, cast(texture, native.display3D.textures.Texture).glTexture);
+			GL.bindTexture(GL.TEXTURE_2D, cast(texture, Texture).glTexture);
 			GL.uniform1i(location, textureIndex);
 			
 			// TODO : should this be defined in the shader ? in some way?
