@@ -449,9 +449,9 @@ class PlatformSetup {
 			
 			switch (target) {
 				
-				case "air":
+				//case "air":
 					
-					setupAIR ();
+					//setupAIR ();
 				
 				case "android":
 					
@@ -461,9 +461,9 @@ class PlatformSetup {
 					
 					setupBlackBerry ();
 				
-				case "html5":
+				//case "html5":
 					
-					setupHTML5 ();
+					//setupHTML5 ();
 				
 				case "ios":
 					
