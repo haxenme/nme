@@ -131,7 +131,7 @@ package nme.display;
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-extern class DisplayObject extends nme.events.EventDispatcher, implements IBitmapDrawable {
+extern class DisplayObject extends nme.events.EventDispatcher #if !haxe3 , #end implements IBitmapDrawable {
 
 	/**
 	 * The current accessibility options for this display object. If you modify

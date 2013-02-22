@@ -12,10 +12,12 @@ import nme.gl.GLTexture;
 class CubeTexture extends TextureBase {
 
 
+    public var size : Int;
 
-    public function new (glTexture:GLTexture) {
+    public function new (glTexture:GLTexture, size : Int) {
 
         super (glTexture);
+        this.size = size;
 
     }
 
@@ -29,10 +31,9 @@ class CubeTexture extends TextureBase {
 
 	public function uploadFromBitmapData (source:BitmapData, side:Int, miplevel:Int = 0):Void {
 
-        GL.bindTexture (GL.TEXTURE_CUBE_MAP, glTexture);
-
         var p = source.getRGBAPixels();
 
+        GL.bindTexture (GL.TEXTURE_CUBE_MAP, glTexture);
         // TODO
         //GL.texImage2D (GL.TEXTURE_CUBE_MAP, 0, GL.RGBA, source.width, source.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView (source, 0));
 		

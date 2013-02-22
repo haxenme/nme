@@ -112,6 +112,7 @@ class Stage extends DisplayObjectContainer {
 		#if stage3d
 		stage3Ds = new Vector();
 		stage3Ds.push(new Stage3D());
+		alpha = 0;   // so that the stage itself does not preclude to see Stage3D OpenGLView
 		#end
 	}
 	

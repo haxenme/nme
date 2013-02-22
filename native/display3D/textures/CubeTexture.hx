@@ -9,9 +9,13 @@ import nme.gl.GLTexture;
 
 class CubeTexture extends TextureBase 
 {
-    public function new(glTexture:GLTexture) 
-    {
-        super(glTexture);
+    public var size : Int;
+
+    public function new (glTexture:GLTexture, size : Int) {
+
+        super (glTexture);
+        this.size = size;
+
     }
 
    public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void 
@@ -19,20 +23,23 @@ class CubeTexture extends TextureBase
       // TODO
    }
 
-   public function uploadFromBitmapData(source:BitmapData, side:Int, miplevel:Int = 0):Void 
-   {
-        GL.bindTexture(GL.TEXTURE_CUBE_MAP, glTexture);
+   public function uploadFromBitmapData (source:BitmapData, side:Int, miplevel:Int = 0):Void {
 
         var p = source.getRGBAPixels();
 
+        GL.bindTexture (GL.TEXTURE_CUBE_MAP, glTexture);
         // TODO
-        //GL.texImage2D(GL.TEXTURE_CUBE_MAP, 0, GL.RGBA, source.width, source.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView(source, 0));
-   }
+        //GL.texImage2D (GL.TEXTURE_CUBE_MAP, 0, GL.RGBA, source.width, source.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView (source, 0));
 
-   public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, side:Int, miplevel:Int = 0):Void 
-   {
-      // TODO
-   }
+	}
+
+
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, side:Int, miplevel:Int = 0):Void {
+
+		// TODO
+
+	}
+
 }
 
 #end

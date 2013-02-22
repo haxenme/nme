@@ -11,6 +11,7 @@ import nme.errors.Error;
 import nme.geom.Matrix3D;
 import nme.geom.Rectangle;
 import nme.gl.GL;
+import nme.gl.GLFramebuffer;
 import nme.gl.GLProgram;
 import nme.utils.ByteArray;
 import nme.Lib;
@@ -19,7 +20,7 @@ import nme.Vector;
 class Context3D 
 {
    public var driverInfo(default, null):String; // TODO
-   public var enableErrorChecking:Bool; // TODO
+   public var enableErrorChecking:Bool; // TODO   ( use GL.getError() and GL.validateProgram(program) )
 
    private var currentProgram : Program3D;
    private var ogl:OpenGLView;
@@ -39,6 +40,8 @@ class Context3D
     private var indexBuffersCreated : Array<IndexBuffer3D>;
     private var programsCreated : Array<Program3D>;
     private var texturesCreated : Array<TextureBase>;
+
+    private var tmpFrameBuffer : GLFramebuffer;
 
    public function new() 
    {
@@ -66,7 +69,7 @@ class Context3D
          drawing = true;
       }
 
-      // TODO do not set clear color if not necessary ?
+
       GL.clearColor(red, green, blue, alpha);
       GL.clearDepth(depth);
       GL.clearStencil(stencil);
@@ -90,7 +93,7 @@ class Context3D
 
    public function createCubeTexture(size:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):CubeTexture 
    {
-        var texture = new native.display3D.textures.CubeTexture(GL.createTexture());     // TODO use arguments ?
+        var texture = new native.display3D.textures.CubeTexture (GL.createTexture (), size);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
         texturesCreated.push(texture);
         return texture;
    }
@@ -111,7 +114,7 @@ class Context3D
 
    public function createTexture(width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool, streamingLevels:Int = 0):native.display3D.textures.Texture 
    {
-      var texture = new native.display3D.textures.Texture(GL.createTexture());     // TODO use arguments ?
+       var texture = new native.display3D.textures.Texture (GL.createTexture (), width, height);     // TODO use format, optimizeForRenderToTexture and  streamingLevels?
        texturesCreated.push(texture);
         return texture;
    }
@@ -150,6 +153,12 @@ class Context3D
             texture.dispose();
         }
         texturesCreated = null;
+
+        if(tmpFrameBuffer != null){
+            GL.deleteFramebuffer(tmpFrameBuffer);
+            tmpFrameBuffer = null;
+        }
+
 
         disposed = true;
    }
@@ -302,51 +311,63 @@ class Context3D
       ogl.render = func;
    }
 
-   public function setRenderToBackBuffer():Void 
-   {
-      // TODO : check
-        // Render to the screen
+   public function setRenderToBackBuffer ():Void {
+
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
-        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-   }
+        //GL.viewport(Std.int(ogl.scrollRect.x),Std.int(ogl.scrollRect.y),Std.int(ogl.scrollRect.width),Std.int(ogl.scrollRect.height));
 
-   public function setRenderToTexture(texture:TextureBase, enableDepthAndStencil:Bool = false, antiAlias:Int = 0, surfaceSelector:Int = 0):Void 
-   {
-        // TODO antiAlias(could this be achieved using a texture multiple of the screensize ?)
+	}
+
+    // TODO : currently does not work (frameBufferStatus always return zero)
+	public function setRenderToTexture (texture:TextureBase, enableDepthAndStencil:Bool = false, antiAlias:Int = 0, surfaceSelector:Int = 0):Void {
+
+        // TODO antiAlias (could this be achieved using a texture multiple of the screensize ?)
         // TODO surfaceSelector
-      // TODO : cache the framebuffer and renderbuffer. in other words this function should only bind the framebuffer and associate it with the texture
-        // TODO at texture creation this could also be done(if optimizeForRenderToTexture is set to true)
-        var frameBuffer = GL.createFramebuffer();
 
-        GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
+        if(tmpFrameBuffer == null){
+            tmpFrameBuffer = GL.createFramebuffer();
+        }
+        GL.bindFramebuffer(GL.FRAMEBUFFER, tmpFrameBuffer);
+
+
         GL.bindTexture(GL.TEXTURE_2D, texture.glTexture);
 
-        // this should be done by default when no call to texture.uploadFrom.. are performed
-        //GL.texImage2D(GL.TEXTURE_2D,0, GL.RGB, texture.width, texture.height, 0, GL.RGB, GL.UNSIGNED_BYTE, 0); // last zero means empty texture
-        // poor filterring needed  (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)?
+
+        //TODO ? poor filterring needed  (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)?
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
 
-        // TODO enable depth buffer according to "enableDepthAndStencil"
-        // The depth buffer
-        var depthRenderBuffer = GL.createRenderbuffer();
-        GL.bindRenderbuffer(GL.RENDERBUFFER, depthRenderBuffer);
-        //TODO
-        //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
-        //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-        //TODO
-        // Set "renderedTexture" as our colour attachement #0
-        //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
-        // Set the list of draw buffers.
-        //GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
-        //glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-        //TODO
+
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, texture.glTexture, 0);
+
+        //TODO :
+        //        if(enableDepthAndStencil){
+        //            var depthRenderBuffer = GL.createRenderbuffer();
+        //            GL.bindRenderbuffer(GL.RENDERBUFFER, depthRenderBuffer);
+        //            GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH_COMPONENT, texture.width, texture.heigth);
+        //            GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, depthRenderBuffer);
+        //        }
+
+        var frameBufferStatus = GL.checkFramebufferStatus(GL.FRAMEBUFFER);
+        switch(frameBufferStatus){
+            case GL.FRAMEBUFFER_COMPLETE: trace("FRAMEBUFFER_COMPLETE");
+            case GL.FRAMEBUFFER_INCOMPLETE_ATTACHMENT: trace("FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+            case GL.FRAMEBUFFER_INCOMPLETE_DIMENSIONS: trace("FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+            case GL.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: trace("FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+            case GL.FRAMEBUFFER_UNSUPPORTED : trace("FRAMEBUFFER_UNSUPPORTED");
+            default : trace("frameBufferStatus " + frameBufferStatus);
+        }
+
+
         // Render to our framebuffer
-        //glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-        //glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-        //TODO : check whether the following is required in the fragment shader:
-        // layout(location = 0) out vec3 color;
-   }
+        //GL.bindFramebuffer(GL.FRAMEBUFFER, tmpFrameBuffer);
+
+        //TODO viewport ? with other textures type
+        //var texture2d : Texture= cast(texture);
+        //GL.viewport(0,0,texture2d.width,texture2d.height);
+
+
+	}
 
    public function setScissorRectangle(rectangle:Rectangle):Void 
    {
@@ -364,35 +385,47 @@ class Context3D
       // TODO
    }
 
-    public function setTextureAt(sampler:Int, texture:TextureBase):Void 
-    {
+     public function setTextureAt (sampler:Int, texture:TextureBase):Void {
         var locationName =  "fs" + sampler;
-        setGLSLTextureAt(locationName, texture);
+        setGLSLTextureAt(locationName, texture, sampler);
     }
 
-   public function setGLSLTextureAt(locationName:String, texture:TextureBase):Void 
-   {
-        var location = GL.getUniformLocation(currentProgram.glProgram, locationName);
 
-      if (Std.is(texture, native.display3D.textures.Texture)) 
-      {
-         // TODO multiple active textures(get an id from the Texture Wrapper(native.display3D.textures.Texture) ? )
-         GL.activeTexture(GL.TEXTURE0);
+	public function setGLSLTextureAt (locationName:String, texture:TextureBase, textureIndex : Int):Void {
 
-         GL.bindTexture(GL.TEXTURE_2D, cast(texture, native.display3D.textures.Texture).glTexture);
-         GL.uniform1i(location, 0);
+        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
 
-         // TODO : should this be defined in the shader ? in some way?
-         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
-         /////////////////////////////////////////////////////////////////
-      }else
-      {
+		if (Std.is (texture, native.display3D.textures.Texture)) {
+
+            switch(textureIndex){
+                case 0 : GL.activeTexture (GL.TEXTURE0);
+                case 1 : GL.activeTexture (GL.TEXTURE1);
+                case 2 : GL.activeTexture (GL.TEXTURE2);
+                case 3 : GL.activeTexture (GL.TEXTURE3);
+                case 4 : GL.activeTexture (GL.TEXTURE4);
+                case 5 : GL.activeTexture (GL.TEXTURE5);
+                case 6 : GL.activeTexture (GL.TEXTURE6);
+                case 7 : GL.activeTexture (GL.TEXTURE7);
+                // TODO more?
+                default: throw "Does not support texture8 or more";
+            }
+
+
+			GL.bindTexture(GL.TEXTURE_2D, cast(texture, native.display3D.textures.Texture).glTexture);
+			GL.uniform1i(location, textureIndex);
+
+			// TODO : should this be defined in the shader ? in some way?
+			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+			GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+			/////////////////////////////////////////////////////////////////
+
+		}else{
             throw "Texture of type " + Type.getClassName(Type.getClass(texture)) + " not supported yet";
         }
-   }
+
+	}
 
     public function setVertexBufferAt(index:Int,buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void 
     {

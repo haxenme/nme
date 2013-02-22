@@ -814,6 +814,10 @@ class CommandLineTools {
 		project.architectures = project.architectures.concat (architectures);
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		project.haxedefs.push ("nme_install_tool");
+
+		if (userDefines.exists("BUILD_DIR")) {
+			project.app.path = userDefines.get("BUILD_DIR");
+		}
 		
 		for (key in userDefines.keys ()) {
 			

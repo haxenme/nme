@@ -8,33 +8,47 @@ import nme.gl.GL;
 import nme.gl.GLTexture;
 import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
-import nme.utils.Float32Array;
+import nme.utils.UInt8Array;
 
 class Texture extends TextureBase 
 {
-   public function new(glTexture:GLTexture) 
-   {
-      super(glTexture);
-   }
+   public var width : Int;
+    public var height : Int;
 
-   public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void 
-   {
-      // TODO
-   }
+	public function new(glTexture:GLTexture, width : Int, height : Int) {
 
-   public function uploadFromBitmapData(bitmapData:BitmapData, miplevel:Int = 0):Void 
-   {
-        GL.bindTexture(GL.TEXTURE_2D, glTexture);
+		super (glTexture);
+		this.width = width;
+		this.height = height;
+
+        GL.bindTexture (GL.TEXTURE_2D, glTexture);
+        GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width, height, 0, GL.RGBA, GL.UNSIGNED_BYTE, null);
+
+
+	}
+
+
+	public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
+
+		// TODO
+
+	}
+
+
+	public function uploadFromBitmapData (bitmapData:BitmapData, miplevel:Int = 0):Void {
 
         var p = bitmapData.getRGBAPixels();
+        uploadFromByteArray(p, 0, miplevel);
 
-      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, bitmapData.width, bitmapData.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new Float32Array(p));
-   }
+	}
 
-   public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, miplevel:Int = 0):Void 
-   {
-      // TODO
-   }
+
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, miplevel:Int = 0):Void {
+
+        GL.bindTexture (GL.TEXTURE_2D, glTexture);
+        GL.texSubImage2D(GL.TEXTURE_2D, miplevel, 0, 0, width, height, GL.RGBA, GL.UNSIGNED_BYTE, new UInt8Array(data));
+
+	}
 }
 
 #end
