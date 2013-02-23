@@ -156,6 +156,9 @@ else
 endif
 
 IPHONE_VER := 6.0
+ifneq ("$(VER)","")
+   IPHONE_VER := $(VER)
+endif
 
 IPHONE_ARCH := armv6
 ifeq ("$(ARM)","v7")
@@ -566,7 +569,7 @@ clean::
 
 # --- FREETYPE ------------------------
 
-FREETYPE := freetype-2.4.4
+FREETYPE := freetype-2.4.11
 
 freetype:$(FREETYPE)
 
