@@ -341,7 +341,7 @@ public:
          mFont = [UIFont fontWithName:str size:inHeight];
          //printf("Font name : %s = %p\n", name.c_str(), str);
 
-         if (!mFont)
+         /*if (!mFont)
          {
              //printf("Trying font from file %s ...\n", [str UTF8String]);
              // Could not find installed font - try one in file...
@@ -362,7 +362,7 @@ public:
 
                 }
              }
-         }
+         }*/
       }
 
       if (mFont)

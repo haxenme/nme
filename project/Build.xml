@@ -202,7 +202,7 @@
       <file name="common/CachedExtent.cpp"/>
       <file name="common/TextField.cpp"/>
       <file name="common/Font.cpp"/>
-      <file name="common/FreeType.cpp" unless="iphone"/>
+      <file name="common/FreeType.cpp" />
       <file name="common/Tilesheet.cpp"/>
       <file name="common/Display.cpp"/>
       <file name="common/ColorTransform.cpp"/>
@@ -346,6 +346,7 @@
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
       
+      <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" if="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
