@@ -885,12 +885,6 @@ class RunScript {
 			}
 			
 		} else {
-
-			if (!FileSystem.exists (nmeDirectory + "/command-line.n")) {
-				
-				build ();
-				
-			}
 			
 			var useLegacyTools = false;
 			
@@ -920,7 +914,15 @@ class RunScript {
 				
 			} else {
 				
-				args.unshift ("command-line.n");
+				if (FileSystem.exists (nmeDirectory + "/command-line.n")) {
+					
+					args.unshift ("command-line.n");
+					
+				} else {
+					
+					args.unshift (PathHelper.getHaxelib (new Haxelib ("nmedev")) + "/command-line.n");
+					
+				}
 				
 			}
 			
