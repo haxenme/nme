@@ -202,6 +202,8 @@ class CommandLineTools {
 					
 				}
 				
+				userDefines.set ("nme_ver", version);
+				
 				PathHelper.mkdir (title);
 				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "project", title, context);
 				

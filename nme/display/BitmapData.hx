@@ -29,12 +29,6 @@ package nme.display;
  * 0 to 255) that describe the alpha transparency and the red, green, and blue
  * (ARGB) values of the pixel.(For ARGB values, the most significant byte
  * represents the alpha channel value, followed by red, green, and blue.)</p>
- * 
- * <p>When you are targeting the Neko runtime, the pixel data is stored as an object
- * with separate red, green, blue(RGB) and alpha(A) values. Unlike other targets, 
- * Neko uses 31-bit integers, so this necessary in order to store the full data for each 
- * pixel. You can use the <code>nme.display.BitmapInt32</class> object to represent
- * either data format.</p>
  *
  * <p>The four channels(alpha, red, green, and blue) are represented as
  * numbers when you use them with the <code>BitmapData.copyChannel()</code>
@@ -109,7 +103,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param	transparent		Specifies whether the bitmap image supports per-pixel transparency. The default value is <code>true</code>(transparent). To create a fully transparent bitmap, set the value of the <code>transparent</code> parameter to <code>true</code> and the value of the <code>fillColor</code> parameter to 0x00000000(or to 0). Setting the <code>transparent</code> property to <code>false</code> can result in minor improvements in rendering performance.
 	 * @param	fillColor		A 32-bit ARGB color value that you use to fill the bitmap image area. The default value is 0xFFFFFFFF(solid white).
 	 */
-	function new(width:Int, height:Int, transparent:Bool = true, fillColor:BitmapInt32 = 0xFFFFFFFF):Void;
+	function new(width:Int, height:Int, transparent:Bool = true, fillColor:Int = 0xFFFFFFFF):Void;
 	
 	/**
 	 * Takes a source image and a filter object and generates the filtered image. 

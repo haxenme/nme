@@ -11,3 +11,4 @@
 --remap flash:nme
 --remap browser:native
 -D hxssl
+-D nme_ver=3.6.0

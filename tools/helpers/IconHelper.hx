@@ -7,7 +7,6 @@ import haxe.io.BytesOutput;
 import haxe.io.Path;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
-import nme.display.BitmapInt32;
 import nme.display.Shape;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
@@ -341,7 +340,7 @@ class IconHelper {
 	}
 	
 	
-	private static function getIconBitmap (icons:Array <Icon>, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData {
+	private static function getIconBitmap (icons:Array <Icon>, width:Int, height:Int, backgroundColor:Int = null):BitmapData {
 		
 		var icon = findMatch (icons, width, height);
 		var exactMatch = true;
