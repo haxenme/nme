@@ -139,4 +139,3 @@ import nme.utils.Float32Array;
 import nme.utils.IDataInput;
 import nme.utils.Timer;
 import nme.utils.WeakRef;
-import nme.Vector;

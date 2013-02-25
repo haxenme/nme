@@ -22,7 +22,8 @@ import native.Lib;
 import native.media.SoundChannel;
 import native.net.URLLoader;
 import native.Loader;
-import nme.Vector;
+import haxe.ds.Vector;
+
 
 class Stage extends DisplayObjectContainer 
 {

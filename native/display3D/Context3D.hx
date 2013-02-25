@@ -15,7 +15,7 @@ import nme.gl.GLFramebuffer;
 import nme.gl.GLProgram;
 import nme.utils.ByteArray;
 import nme.Lib;
-import nme.Vector;
+import haxe.ds.Vector;
 
 class Context3D 
 {

@@ -2,6 +2,9 @@ package browser.geom;
 #if js
 
 
+import haxe.ds.Vector;
+
+
 class Utils3D {
 	
 	

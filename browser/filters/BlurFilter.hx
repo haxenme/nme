@@ -6,6 +6,7 @@ import browser.display.BitmapData;
 import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.Html5Dom;
+import haxe.ds.Vector;
 
 
 class BlurFilter extends BitmapFilter {

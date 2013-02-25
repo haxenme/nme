@@ -6,7 +6,6 @@ import StdTypes;
 
 
 typedef UInt = Int;
-typedef Vector<T> = Array<T>;
 
 /*
 * <----------------- WebWorkers ------------------>

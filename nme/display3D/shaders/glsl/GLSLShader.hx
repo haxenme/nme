@@ -3,7 +3,7 @@ package nme.display3D.shaders.glsl;
 
 import nme.utils.ByteArray;
 import nme.display3D.Program3D;
-using nme.Vector;
+import haxe.ds.Vector;
 import nme.display3D.textures.Texture;
 import nme.display3D.Context3DVertexBufferFormat;
 import nme.display3D.VertexBuffer3D;

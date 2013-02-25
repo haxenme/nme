@@ -3,6 +3,7 @@ package browser.geom;
 
 
 import browser.Html5Dom;
+import haxe.ds.Vector;
 
 
 class Matrix3D {

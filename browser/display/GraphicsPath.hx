@@ -4,6 +4,7 @@ package browser.display;
 
 import browser.display.IGraphicsData;
 import browser.Html5Dom;
+import haxe.ds.Vector;
 
 
 class GraphicsPath implements IGraphicsData #if !haxe3 , #end implements IGraphicsPath {
