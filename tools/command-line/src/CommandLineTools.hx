@@ -202,8 +202,6 @@ class CommandLineTools {
 					
 				}
 				
-				userDefines.set ("nme_ver", version);
-				
 				PathHelper.mkdir (title);
 				FileHelper.recursiveCopyTemplate ([ nme + "/templates/default" ], "project", title, context);
 				
@@ -816,6 +814,7 @@ class CommandLineTools {
 		project.architectures = project.architectures.concat (architectures);
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		project.haxedefs.push ("nme_install_tool");
+		project.haxedefs.push ("nme_ver=" + version);
 
 		if (userDefines.exists("BUILD_DIR")) {
 			project.app.path = userDefines.get("BUILD_DIR");
