@@ -2,7 +2,7 @@ package browser.geom;
 #if js
 
 
-import haxe.ds.Vector;
+import nme.Vector;
 
 
 class Utils3D {

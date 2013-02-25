@@ -5,7 +5,7 @@ import nme.gl.GL;
 import nme.gl.GLBuffer;
 import nme.utils.Int16Array;
 import nme.utils.ByteArray;
-import haxe.ds.Vector;
+import nme.Vector;
 
 class IndexBuffer3D 
 {

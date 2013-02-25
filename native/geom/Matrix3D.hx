@@ -1,7 +1,7 @@
 package native.geom;
 #if (cpp || neko)
 
-import haxe.ds.Vector;
+import nme.Vector;
 
 class Matrix3D 
 {

@@ -131,11 +131,11 @@ class Sample extends Sprite
                     ?tex:Array<Float>, ?cull:TriangleCulling, ? cols:Array<Int> )
    {
       #if flash
-      var verts_v = new haxe.ds.Vector<Float>(verts.length);
+      var verts_v = new nme.Vector<Float>(verts.length);
       for(i in 0...verts.length) verts_v[i] = verts[i];
-      var indices_v = new haxe.ds.Vector<Int>(indices.length);
+      var indices_v = new nme.Vector<Int>(indices.length);
       for(i in 0...indices.length) indices_v[i] = indices[i];
-      var tex_v = new haxe.ds.Vector<Float>(tex.length);
+      var tex_v = new nme.Vector<Float>(tex.length);
       for(i in 0...tex.length) tex_v[i] = tex[i];
 
       inGfx.drawTriangles(verts_v, indices_v, tex_v, cull);

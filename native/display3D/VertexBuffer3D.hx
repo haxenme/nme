@@ -5,7 +5,7 @@ import nme.gl.GL;
 import nme.gl.GLBuffer;
 import nme.utils.Float32Array;
 import nme.utils.ByteArray;
-import haxe.ds.Vector;
+import nme.Vector;
 
 class VertexBuffer3D 
 {

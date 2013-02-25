@@ -1,6 +1,6 @@
 package nme.display3D.shaders.glsl;
 
-import haxe.ds.Vector;
+import nme.Vector;
 import nme.display3D.textures.Texture;
 import nme.geom.Matrix3D;
 import nme.display3D.Context3D;
