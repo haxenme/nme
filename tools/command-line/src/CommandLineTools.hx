@@ -18,6 +18,7 @@ import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+import utils.PlatformSetup;
 
 #if haxe3
 import haxe.ds.StringMap;
@@ -962,11 +963,11 @@ class CommandLineTools {
 	
 	
 	private static function processArguments ():Void {
-
+		
 		var arguments = Sys.args ();
-
+		
 		nme = PathHelper.getHaxelib (new Haxelib ("nme"));
-
+		
 		var lastCharacter = nme.substr ( -1, 1);
 		
 		if (lastCharacter == "/" || lastCharacter == "\\") {
@@ -1108,7 +1109,20 @@ class CommandLineTools {
 	
 	private static function platformSetup ():Void {
 		
-		
+		if (words.length == 0) {
+			
+			PlatformSetup.run ();
+			
+		} else if (words.length == 1) {
+			
+			PlatformSetup.run (words[0]);
+			
+		} else {
+			
+			LogHelper.error ("Incorrect number of arguments for command 'setup'");
+			return;
+			
+		}
 		
 	}
 	
