@@ -383,7 +383,7 @@
       
       <vflag name="-framework" value="IOKit" if="macos"/>
       <vflag name="-framework" value="Foundation" if="macos"/>
-      <vflag name="-framework" value="AVFoundation" if="macos"/>
+      <!-- <vflag name="-framework" value="AVFoundation" if="macos"/> -->
       <vflag name="-framework" value="CoreAudio" if="macos"/>
       <vflag name="-framework" value="Carbon" if="macos"/>
       <vflag name="-framework" value="AudioToolbox" if="macos"/>
