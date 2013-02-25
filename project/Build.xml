@@ -30,7 +30,7 @@
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
    <!-- Toggle this for openal experimental osx code -->
-   <set name="openal" value="1" if="macos"/>
+   <!-- <set name="openal" value="1" if="macos"/> -->
    <!-- <set name="openal" value="1" if="win_desktop"/> -->
 	
    <set name="mobile" value="1" if="iphone"/>
