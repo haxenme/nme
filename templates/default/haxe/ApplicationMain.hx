@@ -106,32 +106,6 @@ class ApplicationMain
 	#end
 	
 	
-	public static function getAsset(inName:String):Dynamic
-	{
-		#if nme
-		::foreach assets::
-		if (inName == "::id::")
-		{
-			::if (type=="image")::
-			return nme.Assets.getBitmapData ("::id::");
-			::elseif (type=="sound")::
-			return nme.Assets.getSound ("::id::");
-			::elseif (type=="music")::
-			return nme.Assets.getSound ("::id::");
-			::elseif (type== "font")::
-			return nme.Assets.getFont ("::id::");
-			::elseif (type== "text")::
-			return nme.Assets.getText ("::id::");
-			::else::
-			return nme.Assets.getBytes ("::id::");
-			::end::
-		}
-		::end::
-		#end
-		return null;
-	}
-	
-	
 }
 
 

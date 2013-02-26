@@ -83,26 +83,6 @@ class ApplicationMain {
 		}
 	}
 
-	public static function getAsset(inName:String):Dynamic {
-		::foreach assets::
-		if (inName=="::id::")
-			 ::if (type=="image")::
-            return Assets.getBitmapData("::id::");
-         ::elseif (type=="sound")::
-            return Assets.getSound("::id::");
-         ::elseif (type=="music")::
-            return Assets.getSound("::id::");
-		 ::elseif (type=="font")::
-			 return Assets.getFont("::id::");
-		 ::elseif (type=="text")::
-			 return Assets.getText("::id::");
-         ::else::
-            return Assets.getBytes("::id::");
-         ::end::
-		::end::
-		return null;
-	}
-
 	private static function preloader_onComplete(event:Event):Void {
 		mPreloader.removeEventListener (Event.COMPLETE, preloader_onComplete);
 		nme.Lib.current.removeChild(mPreloader);

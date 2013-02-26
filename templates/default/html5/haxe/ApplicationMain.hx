@@ -84,27 +84,6 @@ class ApplicationMain {
 		preloader.onLoaded ();
 	}
 
-   public static function getAsset(inName:String):Dynamic {
-		::foreach assets::
-		if (inName=="::id::") {
-			::if (type == "image")::
-			return Assets.getBitmapData("::id::");
-			::elseif (type=="sound")::
-			return Assets.getSound("::id::");
-			::elseif (type=="music")::
-			return Assets.getSound("::id::");
-			::elseif (type== "font")::
-			return Assets.getFont("::id::");
-			::elseif (type== "text")::
-			return Assets.getText("::id::");
-			::else::
-			return Assets.getBytes("::id::");
-			::end::
-		}
-		::end::
-		return null;
-   }
-
 	private static function loader_onComplete(event:Event):Void {
 		completed ++;
 		preloader.onUpdate (completed, total);
