@@ -20,7 +20,6 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
@@ -56,7 +55,6 @@ class MainView extends GLSurfaceView {
    Activity mActivity;
 	static MainView mRefreshView;
 
-  private InputDevice device;
     public MainView(Context context,Activity inActivity) {
         super(context);
 
@@ -174,11 +172,6 @@ class MainView extends GLSurfaceView {
         setFocusableInTouchMode(true);
         setRenderer(new Renderer(this));
 		  setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-       Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
-      for (int i = 0; i < 4; i++) {
-        device = InputDevice.getDevice(i);
-        if (device != null) { Log.v("VIEW", "id of controller is: " + i + " and identification is: " + device.getName());}
-      }
     }
 
    static final int etTouchBegin = 15;
@@ -308,13 +301,6 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
 		  case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
-          case KeyEvent.KEYCODE_DPAD_CENTER: return 13; // Fake ENTER
-          case KeyEvent.KEYCODE_DPAD_LEFT: return 1;//37;
-          case KeyEvent.KEYCODE_DPAD_RIGHT: return 2;//39;
-          case KeyEvent.KEYCODE_DPAD_UP: return 3;//38;
-          case KeyEvent.KEYCODE_DPAD_DOWN: return 4;//40;
-          case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
-          case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
 
           case KeyEvent.KEYCODE_DEL: return 8;
        }
@@ -331,17 +317,13 @@ class MainView extends GLSurfaceView {
     @Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event) {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
-          Log.v("VIEW", "device of event is " + event.getDeviceId());
-          Log.v("VIEW","onKeyDown " + inKeyCode);
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event);
-         final int deviceId = event.getDeviceId();
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
                      me.HandleResult(NME.onKeyChange(keyCode,true));
-                     me.HandleResult(NME.onJoyChange(deviceId,keyCode,true));
                  }});
              return true;
          }
@@ -352,17 +334,13 @@ class MainView extends GLSurfaceView {
     @Override
     public boolean onKeyUp(final int inKeyCode, KeyEvent event) {
          //Log.v("VIEW","onKeyUp " + inKeyCode);
-          Log.v("VIEW", "device of event is " + event.getDeviceId());
-         Log.v("VIEW","onKeyUp " + inKeyCode);
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event);
-         final int deviceId = event.getDeviceId();
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
                      me.HandleResult(NME.onKeyChange(keyCode,false));
-                     me.HandleResult(NME.onJoyChange(deviceId,keyCode,false));
                  }});
              return true;
          }
