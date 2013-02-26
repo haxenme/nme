@@ -21,6 +21,8 @@ It is recommended that you install a release version of NME before working from 
 
 You may clone or fork this repository. Next, you should run "haxelib dev nme (path to checkout directory)" in order to tell haxelib where your development version is located.
 
+Additional libraries for compiling NME are located in the "nmedev" haxelib. Run "haxelib install nmedev" to install on your system.
+
 Source distributions do not include the binaries for the NME command-line tools or native libraries. You will need to compile them first.
 
 NME includes a "rebuild" command to make this more convenient. Use "nme rebuild tools" to compile the command-line tools, or "nme rebuild windows" to compile the platform binary for Windows.
