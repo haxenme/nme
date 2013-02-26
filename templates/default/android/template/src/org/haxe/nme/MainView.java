@@ -340,7 +340,7 @@ class MainView extends GLSurfaceView {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
-                     me.HandleResult(NME.onKeyChange(keyCode,true));
+                     //me.HandleResult(NME.onKeyChange(keyCode,true));
                      me.HandleResult(NME.onJoyChange(deviceId,keyCode,true));
                  }});
              return true;
@@ -361,7 +361,7 @@ class MainView extends GLSurfaceView {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
-                     me.HandleResult(NME.onKeyChange(keyCode,false));
+                     //me.HandleResult(NME.onKeyChange(keyCode,false));
                      me.HandleResult(NME.onJoyChange(deviceId,keyCode,false));
                  }});
              return true;
