@@ -68,7 +68,6 @@ class RunScript {
 			if (target == "tools") {
 				
 				runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-				//runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 				
 			} else if (target == "clean") {
 				
@@ -96,7 +95,6 @@ class RunScript {
 				if (target == "all") {
 					
 					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
-					//runCommand (nmeDirectory + "/tools/command-line-old", "haxe", [ "CommandLine.hxml" ]);
 					
 					if (isWindows) {
 						
@@ -885,42 +883,14 @@ class RunScript {
 			}
 			
 		} else {
-
-			if (!FileSystem.exists (nmeDirectory + "/command-line.n")) {
 				
-				build ();
+			if (FileSystem.exists (nmeDirectory + "/command-line.n")) {
 				
-			}
-			
-			var useLegacyTools = false;
-			
-			switch (command) {
-				
-				case "setup", "document", "generate", "new":
-					
-					useLegacyTools = true;
-					
-				default:
-					
-					for (arg in args) {
-						
-						if (arg == "-old") {
-							
-							useLegacyTools = true;
-							
-						}
-						
-					}
-				
-			}
-			
-			if (useLegacyTools) {
-				
-				args.unshift ("tools/command-line-old/command-line.n");
+				args.unshift ("command-line.n");
 				
 			} else {
 				
-				args.unshift ("command-line.n");
+				args.unshift (PathHelper.getHaxelib (new Haxelib ("nmedev")) + "/command-line.n");
 				
 			}
 			

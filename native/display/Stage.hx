@@ -24,6 +24,7 @@ import native.net.URLLoader;
 import native.Loader;
 import nme.Vector;
 
+
 class Stage extends DisplayObjectContainer 
 {
    /**

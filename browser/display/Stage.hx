@@ -17,6 +17,7 @@ import browser.ui.Acceleration;
 import browser.ui.Keyboard;
 import browser.Html5Dom;
 import browser.Lib;
+import nme.Vector;
 
 #if stage3d
 import browser.display.Stage3D;

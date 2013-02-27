@@ -18,6 +18,7 @@ import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.Html5Dom;
 import browser.Lib;
+import nme.Vector;
 
 
 class Graphics {

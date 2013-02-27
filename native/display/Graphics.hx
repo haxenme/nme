@@ -82,9 +82,9 @@ class Graphics
       nme_gfx_draw_datum(nmeHandle, graphicsDatum.nmeHandle);
    }
 
-   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = #if neko 0x3fffffff #else 0xffffffff #end, inSize:Float = -1.0) 
+   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = 0xffffffff, inSize:Float = -1.0) 
    {
-      nme_gfx_draw_points(nmeHandle, inXY, inPointRGBA, inDefaultRGBA, #if neko true #else false #end, inSize);
+      nme_gfx_draw_points(nmeHandle, inXY, inPointRGBA, inDefaultRGBA, false, inSize);
    }
 
    public function drawRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float) 
@@ -155,11 +155,7 @@ class Graphics
 
    inline static public function RGBA(inRGB:Int, inA:Int = 0xff):Int 
    {
-      #if neko   
-      return inRGB |((inA & 0xfc) << 22);
-      #else
       return inRGB |(inA << 24);
-      #end
    }
 
    // Native Methods

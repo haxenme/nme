@@ -2,6 +2,9 @@ package browser.geom;
 #if js
 
 
+import nme.Vector;
+
+
 class Utils3D {
 	
 	

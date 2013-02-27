@@ -18,6 +18,7 @@ import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+import utils.PlatformSetup;
 
 #if haxe3
 import haxe.ds.StringMap;
@@ -814,7 +815,9 @@ class CommandLineTools {
 		project.architectures = project.architectures.concat (architectures);
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		project.haxedefs.push ("nme_install_tool");
-
+		project.haxedefs.push ("nme_ver=" + version);
+		project.haxedefs.push ("nme" + version.split (".")[0]);
+		
 		if (userDefines.exists("BUILD_DIR")) {
 			project.app.path = userDefines.get("BUILD_DIR");
 		}
@@ -960,11 +963,11 @@ class CommandLineTools {
 	
 	
 	private static function processArguments ():Void {
-
+		
 		var arguments = Sys.args ();
-
+		
 		nme = PathHelper.getHaxelib (new Haxelib ("nme"));
-
+		
 		var lastCharacter = nme.substr ( -1, 1);
 		
 		if (lastCharacter == "/" || lastCharacter == "\\") {
@@ -1106,7 +1109,20 @@ class CommandLineTools {
 	
 	private static function platformSetup ():Void {
 		
-		
+		if (words.length == 0) {
+			
+			PlatformSetup.run ();
+			
+		} else if (words.length == 1) {
+			
+			PlatformSetup.run (words[0]);
+			
+		} else {
+			
+			LogHelper.error ("Incorrect number of arguments for command 'setup'");
+			return;
+			
+		}
 		
 	}
 	

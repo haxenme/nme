@@ -4,6 +4,7 @@ package nme.display;
 
 import nme.geom.Point;
 import nme.geom.Rectangle;
+import nme.Vector;
 
 
 /**

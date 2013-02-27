@@ -28,7 +28,7 @@
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
    <!-- Toggle this for openal experimental osx code -->
-   <set name="openal" value="1" if="macos"/>
+   <!-- <set name="openal" value="1" if="macos"/> -->
    <!-- <set name="openal" value="1" if="win_desktop"/> -->
 	
    <set name="mobile" value="1" if="iphone"/>
@@ -382,7 +382,7 @@
       
       <vflag name="-framework" value="IOKit" if="macos"/>
       <vflag name="-framework" value="Foundation" if="macos"/>
-      <vflag name="-framework" value="AVFoundation" if="macos"/>
+      <!-- <vflag name="-framework" value="AVFoundation" if="macos"/> -->
       <vflag name="-framework" value="CoreAudio" if="macos"/>
       <vflag name="-framework" value="Carbon" if="macos"/>
       <vflag name="-framework" value="AudioToolbox" if="macos"/>

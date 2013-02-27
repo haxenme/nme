@@ -93,6 +93,20 @@ class Loader
                result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "64" + slash + "nme", func, args);
          }
       }
+	  
+	  if (result == null)
+	  {
+		  var slash =(sysName().substr(7).toLowerCase() == "windows") ? "\\" : "/";
+         var haxelib = findHaxeLib("nmedev");
+
+         if (haxelib != "") 
+         {
+            result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + slash + "nme", func, args);
+            // Try haxelib64 ...
+            if (result == null)
+               result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "64" + slash + "nme", func, args);
+         }
+	  }
 
       loaderTrace("Result : " + result );
 
