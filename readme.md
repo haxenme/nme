@@ -17,18 +17,29 @@ You can get an installer for Windows, Mac or Linux at http://www.nme.io/download
 Source
 ======
 
-It is recommended that you install a release version of NME before working from the source.
+If you would like to use NME from the source, follow these steps:
 
-You may clone or fork this repository. Next, you should run "haxelib dev nme (path to checkout directory)" in order to tell haxelib where your development version is located.
+ 1. Clone NME to a new directory (like "C:\Development\Haxe\nme")
 
-Additional libraries for compiling NME are located in the "nmedev" haxelib. Run "haxelib install nmedev" to install on your system.
+ 2. Run "haxelib dev nme path/to/your/clone"
 
-Source distributions do not include the binaries for the NME command-line tools or native libraries. You will need to compile them first.
+ 3. Run "haxelib git nmedev https://github.com/haxenme/nmedev.git"
 
-NME includes a "rebuild" command to make this more convenient. Use "nme rebuild tools" to compile the command-line tools, or "nme rebuild windows" to compile the platform binary for Windows.
+ 4. Run "haxelib install" for format, hxcpp, svg, swf and xfl
 
 
-The "rebuild" command accepts a comma-delimited list of targets, including "android", "blackberry", "clean", "ios", "linux", "mac", "tools", "webos" and "windows"
+To use the development builds, you must have Haxe 3 and Neko 2 installed.
+
+We will attemp to keep nmedev up-to-date with binaries so you can get started without compiling. However, to be current (or if you contributing), you may need to recompile the tools or platform binaries from time-to-time.
+
+NME includes a "rebuild" command to make this simple:
+
+	nme rebuild tools,windows
+
+
+The "rebuild" command accepts a comma-delimited list of targets among the following: "android", "blackberry", "clean", "ios", "linux", "mac", "tools", "webos" and "windows"
+
+The requirements to build for one of these platforms will be similar to when you target the platform from a release build. You can find more details on the [download page](http://www.nme.io/download).
 
 
 License
