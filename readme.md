@@ -23,12 +23,12 @@ If you would like to use NME from the source, follow these steps:
 
  2. Run "haxelib dev nme path/to/your/clone"
 
- 3. Run "haxelib git nmedev https://github.com/haxenme/nmedev.git"
+ 3. If you are on Windows, use the above steps to also clone the "nmedev" repository. Otherwise use "haxelib git nmedev https://github.com/haxenme/nmedev.git"
 
  4. Run "haxelib install" for format, hxcpp, svg, swf and xfl
 
 
-To use the development builds, you must have Haxe 3 and Neko 2 installed.
+You must have Haxe 3 and Neko 2 installed.
 
 We will attemp to keep nmedev up-to-date with binaries so you can get started without compiling. However, to be current (or if you contributing), you may need to recompile the tools or platform binaries from time-to-time.
 
