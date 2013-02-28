@@ -241,7 +241,7 @@ class RunScript {
 				
 				if (!flags.exists ("rpi")) {
 					
-					if (isRunning64 ()) {
+					if (!flags.exists ("32") && isRunning64 ()) {
 						
 						//mkdir (nmeDirectory + "/ndll/Linux64");
 						
@@ -261,15 +261,19 @@ class RunScript {
 					
 					//mkdir (nmeDirectory + "/ndll/Linux");
 					
-					if (!flags.exists ("debug")) {
+					if (!flags.exists ("64")) {
 						
-						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
+						if (!flags.exists ("debug")) {
+							
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
+							
+						}
 						
-					}
-					
-					if (!flags.exists ("release")) {
-						
-						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
+						if (!flags.exists ("release")) {
+							
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
+							
+						}
 						
 					}
 					

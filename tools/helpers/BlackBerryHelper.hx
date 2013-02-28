@@ -6,19 +6,13 @@ import sys.FileSystem;
 import sys.io.File;
 import sys.io.Process;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-import NMEProject;
-#end
-
 
 class BlackBerryHelper {
 	
 	
 	private static var binDirectory:String;
-	private static var defines:StringMap <String>;
-	private static var targetFlags:StringMap <String>;
+	private static var defines:Map <String, String>;
+	private static var targetFlags:Map <String, String>;
 	
 	
 	public static function createPackage (project:NMEProject, workingDirectory:String, descriptorFile:String, targetPath:String):Void {

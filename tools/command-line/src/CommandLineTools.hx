@@ -19,12 +19,6 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 import utils.PlatformSetup;
-
-#if haxe3
-import haxe.ds.StringMap;
-#else
-import NMEProject;
-#end
 	
 	
 class CommandLineTools {
@@ -38,9 +32,9 @@ class CommandLineTools {
 	public static var includePaths:Array <String>;
 	public static var nme:String;
 	public static var project:NMEProject;
-	public static var targetFlags:StringMap <String>;
+	public static var targetFlags:Map <String, String>;
 	public static var traceEnabled:Bool;
-	public static var userDefines:StringMap <String>;
+	public static var userDefines:Map <String, Dynamic>;
 	public static var version:String;
 	public static var words:Array <String>;
 	
@@ -814,25 +808,15 @@ class CommandLineTools {
 		
 		project.architectures = project.architectures.concat (architectures);
 		project.haxeflags = project.haxeflags.concat (haxeflags);
-		project.haxedefs.push ("nme_install_tool");
-		project.haxedefs.push ("nme_ver=" + version);
-		project.haxedefs.push ("nme" + version.split (".")[0]);
+		project.haxedefs.set ("nme_install_tool", true);
+		project.haxedefs.set ("nme_ver", version);
+		project.haxedefs.set ("nme" + version.split (".")[0], true);
 		
 		if (userDefines.exists("BUILD_DIR")) {
 			project.app.path = userDefines.get("BUILD_DIR");
 		}
 		
-		for (key in userDefines.keys ()) {
-			
-			var value = userDefines.get (key);
-			
-			if (value == "") {
-				
-				project.haxedefs.push (key);
-				
-			}
-			
-		}
+		MapHelper.copyKeys (userDefines, project.haxedefs);
 		
 		SWFHelper.preprocess (project);
 		XFLHelper.preprocess (project);
@@ -877,9 +861,9 @@ class CommandLineTools {
 		debug = false;
 		haxeflags = new Array <String> ();
 		includePaths = new Array <String> ();
-		targetFlags = new StringMap <String> ();
+		targetFlags = new Map <String, String> ();
 		traceEnabled = true;
-		userDefines = new StringMap <String> ();
+		userDefines = new Map <String, Dynamic> ();
 		words = new Array <String> ();
 		
 		processArguments ();

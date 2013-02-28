@@ -24,11 +24,7 @@ class NekoHelper {
 		output.write (executable);
 		output.write (sourceContents);
 		output.writeString ("NEKO");
-		#if haxe3
 		output.writeInt32 (executable.length);
-		#else
-		output.writeUInt30 (executable.length);
-		#end
 		output.close ();
 		
 	}

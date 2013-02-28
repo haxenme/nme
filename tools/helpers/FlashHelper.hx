@@ -132,7 +132,7 @@ class FlashHelper {
 					rate: flashSamplingFrequency,
 					is16bit: true,
 					isStereo: isStereo,
-					samples: #if !haxe3 haxe.Int32.ofInt( #end totalLengthSamples - endPadding - encoderDelay #if !haxe3 ) #end,
+					samples: totalLengthSamples - endPadding - encoderDelay,
 					data: SDMp3(encoderDelay + decoderDelay, frameData)
 				};
 				
@@ -199,7 +199,7 @@ class FlashHelper {
 							rate : flashRate,
 							is16bit : is16bit,
 							isStereo : isStereo,
-							samples : #if (haxe3) sampleCount #else haxe.Int32.ofInt (sampleCount) #end,
+							samples : sampleCount,
 							data : SDRaw (wav.data)
 							
 						}
