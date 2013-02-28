@@ -124,7 +124,16 @@ class NMEProject {
 			case WINDOWS, MAC, LINUX:
 				
 				platformType = PlatformType.DESKTOP;
-				architectures = [ Architecture.X86 ];
+				
+				if (target == Platform.LINUX) {
+					
+					architectures = [ PlatformHelper.hostArchitecture ];
+					
+				} else {
+					
+					architectures = [ Architecture.X86 ];
+					
+				}
 			
 		}
 		

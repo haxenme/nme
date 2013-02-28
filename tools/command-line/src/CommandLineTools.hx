@@ -806,7 +806,12 @@ class CommandLineTools {
 		
 		project.merge (config);
 		
-		project.architectures = project.architectures.concat (architectures);
+		if (architectures.length > 0) {
+			
+			project.architectures = architectures;
+			
+		}
+		
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		project.haxedefs.set ("nme_install_tool", true);
 		project.haxedefs.set ("nme_ver", version);
@@ -1033,6 +1038,10 @@ class CommandLineTools {
 			} else if (argument == "-64") {
 				
 				architectures.push (Architecture.X64);
+				
+			} else if (argument == "-32") {
+				
+				architectures.push (Architecture.X86);
 				
 			} else if (argument.substr (0, 2) == "-D") {
 				
