@@ -9,6 +9,8 @@
    <set name="iphoneos" value="1" if="ios" unless="simulator" />
    <set name="win_desktop" value="1" if="windows" unless="winrt"/>
    
+   <set name="SDL_STATIC" value="${haxelib:nmedev}sdl-static" unless="SDL_STATIC" />
+   
    <set name="sdl" value="1" if="linux"/>
    <set name="sdl" value="1" if="macos"/>
    <set name="sdl" value="1" if="win_desktop" />
@@ -45,9 +47,9 @@
    <files id="win_desktop">
       
       <compilerflag value="-Iinclude"/>
-      <compilerflag value="-Ithird-party/include"/>
-      <compilerflag value="-Ithird-party/include/SDL12"/>
-      <compilerflag value="-Ithird-party/include/openal"/>
+      <compilerflag value="-I${SDL_STATIC}/include"/>
+      <compilerflag value="-I${SDL_STATIC}/include/SDL12"/>
+      <compilerflag value="-I${SDL_STATIC}/include/openal"/>
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
@@ -131,7 +133,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${PalmPDK}/include/SDL" />
-      <compilerflag value="-Ithird-party/include"/>
+      <compilerflag value="-I${SDL_STATIC}/include"/>
       <file name="linux/NativeFont.cpp"/>
       <file name="webOS/System.cpp"/>
       
@@ -142,7 +144,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${QNX_TARGET}/usr/include" />
-      <compilerflag value="-Ithird-party/include"/>
+      <compilerflag value="-I${SDL_STATIC}/include"/>
       <file name="linux/NativeFont.cpp"/>
       <file name="blackberry/System.cpp"/>
       
@@ -157,15 +159,15 @@
    </files>
    
    
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/Mac/" if="macos"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/Windows/" if="windows" unless="winrt"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/WinRTx86/" if="winrt"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/webOS/" if="webos" />
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/Linux${M64}/" if="linux"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/RPi/" if="rpi"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/Android/" if="android"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/iPhone/" if="iphone"/>
-   <set name="THIRDPARTY_LIBS" value="third-party/lib/BlackBerry/" if="blackberry"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Mac/" if="macos"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Windows/" if="windows" unless="winrt"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/WinRTx86/" if="winrt"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/webOS/" if="webos" />
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Linux${M64}/" if="linux"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/RPi/" if="rpi"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Android/" if="android"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/iPhone/" if="iphone"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/BlackBerry/" if="blackberry"/>
    <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
    
    <set name="SLIBEXT" value=".lib" if="windows"/>
@@ -177,9 +179,9 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-Ithird-party/include" unless="gph"/>
+      <compilerflag value="-I${SDL_STATIC}/include" unless="gph"/>
       <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-Ithird-party/include/SDL12" if="sdl" unless="dynamic_sdl"/>
+      <compilerflag value="-I${SDL_STATIC}/include/SDL12" if="sdl" unless="dynamic_sdl"/>
       <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
       <compilerflag value="-I/opt/vc/include" if="rpi"/>
       <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" if="rpi"/>
@@ -294,9 +296,9 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-Ithird-party/include" if="sdl_static"/>
-      <compilerflag value="-Ithird-party/include/SDL12" if="sdl_static"/>
-      <compilerflag value="-Ithird-party/include" if="webos"/>
+      <compilerflag value="-I${SDL_STATIC}/include" if="sdl_static"/>
+      <compilerflag value="-I${SDL_STATIC}/include/SDL12" if="sdl_static"/>
+      <compilerflag value="-I${SDL_STATIC}/include" if="webos"/>
       <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
@@ -310,7 +312,7 @@
    <files id="mac">
       
       <compilerflag value="-Iinclude"/>
-      <compilerflag value="-Ithird-party/include/SDL12" if="sdl_static" />
+      <compilerflag value="-I${SDL_STATIC}/include/SDL12" if="sdl_static" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m"/>
@@ -361,6 +363,8 @@
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
+      
+      <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
       <lib name="-L../ndll/BlackBerry" if="blackberry"/>

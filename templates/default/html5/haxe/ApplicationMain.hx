@@ -32,6 +32,8 @@ class ApplicationMain {
 		urlLoaders = new StringMap <URLLoader>();
 		total = 0;
 
+		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
 		browser.Lib.preventDefaultTouchMove();
 		::end::::end::

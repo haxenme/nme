@@ -11,6 +11,8 @@ class ApplicationMain {
 	public static function main() {
 		var call_real = true;
 
+		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+
 		::if (PRELOADER_NAME!="")::
 		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;

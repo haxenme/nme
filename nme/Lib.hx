@@ -42,6 +42,13 @@ class Lib
 	public static var stage(get_stage, null):Stage;
 	public static var version(get_version, null):String;
 	
+	#if (flash || js)
+	private static var _company:String;
+	private static var _packageName:String;
+	private static var _version:String;
+	private static var _file:String;
+	#end
+	
 	
 	/**
 	 * Closes the application.
@@ -231,6 +238,11 @@ class Lib
 		#if display
 		#elseif (cpp || neko)
 		native.Lib.setPackage(company, file, packageName, version);
+		#else
+		_company = company;
+		_file = file;
+		_packageName = packageName;
+		_version = version;
 		#end
 	}
 	
@@ -263,6 +275,8 @@ class Lib
 		#if display
 		#elseif (cpp || neko)
 		return native.Lib.company;
+		#else
+		return _company;
 		#end
 		return "";
 	}
@@ -287,6 +301,8 @@ class Lib
 		#if display
 		#elseif (cpp || neko)
 		return native.Lib.file;
+		#else
+		return _file;
 		#end
 		return "";
 	}
@@ -317,6 +333,8 @@ class Lib
 		#if display
 		#elseif (cpp || neko)
 		return native.Lib.packageName;
+		#else
+		return _packageName;
 		#end
 		return "";
 	}
@@ -339,6 +357,8 @@ class Lib
 		#if display
 		#elseif (cpp || neko)
 		return native.Lib.version;
+		#else
+		return _version;
 		#end
 		return "";
 	}
