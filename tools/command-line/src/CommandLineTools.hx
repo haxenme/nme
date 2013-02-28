@@ -820,6 +820,10 @@ class CommandLineTools {
 		if (userDefines.exists("BUILD_DIR")) {
 			project.app.path = userDefines.get("BUILD_DIR");
 		}
+
+		if (project.targetFlags.exists ("xml")) {
+			project.haxeflags.push ("-xml " + project.app.path + "/types.xml");
+		}
 		
 		StringMapHelper.copyKeys (userDefines, project.haxedefs);
 		
