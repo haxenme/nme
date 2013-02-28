@@ -821,7 +821,7 @@ class CommandLineTools {
 			project.app.path = userDefines.get("BUILD_DIR");
 		}
 		
-		MapHelper.copyKeys (userDefines, project.haxedefs);
+		StringMapHelper.copyKeys (userDefines, project.haxedefs);
 		
 		SWFHelper.preprocess (project);
 		XFLHelper.preprocess (project);

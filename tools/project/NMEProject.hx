@@ -82,7 +82,7 @@ class NMEProject {
 		config = new PlatformConfig ();
 		debug = _debug;
 		target = _target;
-		targetFlags = MapHelper.copy (_targetFlags);
+		targetFlags = StringMapHelper.copy (_targetFlags);
 		templatePaths = _templatePaths.copy ();
 		
 		defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
@@ -428,8 +428,8 @@ class NMEProject {
 			ObjectHelper.copyUniqueFields (project.app, app, project.defaultApp);
 			ObjectHelper.copyUniqueFields (project.window, window, project.defaultWindow);
 			
-			MapHelper.copyUniqueKeys (project.environment, environment);
-			MapHelper.copyUniqueKeys (project.haxedefs, haxedefs);
+			StringMapHelper.copyUniqueKeys (project.environment, environment);
+			StringMapHelper.copyUniqueKeys (project.haxedefs, haxedefs);
 			
 			ObjectHelper.copyUniqueFields (project.certificate, certificate, null);
 			config.merge (project.config);

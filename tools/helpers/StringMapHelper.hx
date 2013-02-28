@@ -4,10 +4,7 @@ package;
 import haxe.ds.StringMap;
 
 
-class MapHelper {
-	
-	
-	// Should be Map, but will use StringMap for now to avoid a compile error
+class StringMapHelper {
 	
 	
 	public static function copy <T> (source:StringMap <T>):StringMap <T> {
@@ -25,7 +22,7 @@ class MapHelper {
 	}
 	
 	
-	public static function copyKeys <T, U> (source:Map <T, U>, target:Map <T, U>):Void {
+	public static function copyKeys <T> (source:StringMap <T>, target:StringMap <T>):Void {
 		
 		for (key in source.keys ()) {
 			
@@ -36,7 +33,7 @@ class MapHelper {
 	}
 	
 	
-	public static function copyUniqueKeys <T, U> (source:Map <T, U>, target:Map <T, U>):Void {
+	public static function copyUniqueKeys <T> (source:StringMap <T>, target:StringMap <T>):Void {
 		
 		for (key in source.keys ()) {
 			
