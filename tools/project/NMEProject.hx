@@ -564,12 +564,6 @@ class NMEProject {
 		//Reflect.setField (context, "sslCaCert", sslCaCert);
 		context.sslCaCert = "";
 		
-		/*if (targetFlags.exists ("xml")) {
-			
-			compilerFlags.push ("-xml " + defines.get ("XML_DIR") + "/types.xml");
-			
-		}*/
-		
 		var compilerFlags = [];
 		
 		for (haxelib in haxelibs) {
