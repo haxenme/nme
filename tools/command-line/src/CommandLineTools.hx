@@ -817,12 +817,12 @@ class CommandLineTools {
 		project.haxedefs.set ("nme_ver", version);
 		project.haxedefs.set ("nme" + version.split (".")[0], true);
 		
-		if (userDefines.exists("BUILD_DIR")) {
-			project.app.path = userDefines.get("BUILD_DIR");
+		if (userDefines.exists("APP_PATH")) {
+			project.app.path = userDefines.get("APP_PATH");
 		}
 
-		if (userDefines.exists("TYPES_FILE")) {
-			project.haxeflags.push ("-xml " + userDefines.get("TYPES_FILE"));
+		if (userDefines.exists("XML_FILENAME")) {
+			project.haxeflags.push ("-xml " + userDefines.get("XML_FILENAME"));
 		} else {
 			if (project.targetFlags.exists ("xml")) {
 				project.haxeflags.push ("-xml " + project.app.path + "/types.xml");
