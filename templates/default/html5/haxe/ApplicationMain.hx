@@ -111,12 +111,6 @@ class ApplicationMain {
 	}
 }
 
-::foreach assets::
-	::if (type=="font")::
-		class NME_::flatName:: extends nme.text.Font { }
-	::end::
-::end::
-
 #else
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;

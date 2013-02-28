@@ -290,7 +290,7 @@ class IOSPlatform implements IPlatformTool {
 			
 		}
 		
-		FileHelper.copyFileTemplate (project.templatePaths, "haxe/nme/installer/Assets.hx", projectDirectory + "/haxe/nme/installer/Assets.hx", context);
+		FileHelper.copyFileTemplate (project.templatePaths, "haxe/nme/AssetData.hx", projectDirectory + "/haxe/nme/AssetData.hx", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "iphone/PROJ/haxe", projectDirectory + "/haxe", context);
 		FileHelper.recursiveCopyTemplate (project.templatePaths, "iphone/PROJ/Classes", projectDirectory + "/Classes", context);
         FileHelper.copyFileTemplate (project.templatePaths, "iphone/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist", context);

@@ -1,17 +1,27 @@
 package nme;
-#if (!nme_install_tool || display)
 
 
 import format.display.MovieClip;
+import haxe.Unserializer;
+import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.media.Sound;
+import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-typedef StringMap<T> = Hash<T>;
+#if nme_install_tool
+import nme.AssetData;
+#end
+
+#if (js && swfdev)
+import format.swf.lite.SWFLite;
+#elseif swf
+import format.SWF;
+#end
+
+#if xfl
+import format.XFL;
 #end
 
 
@@ -32,9 +42,31 @@ typedef StringMap<T> = Hash<T>;
  * in the project file.</p>
  */
 class Assets {
+
+	
+	public static var cachedBitmapData = new Map<String, BitmapData>();
+	#if (swf && !js) private static var cachedSWFLibraries = new Map<String, SWF>(); #end
+	#if (swfdev && js) private static var cachedSWFLibraries = new Map<String, SWFLite>(); #end
+	#if xfl private static var cachedXFLLibraries = new Map<String, XFL>(); #end
+	
+	private static var initialized = false;
 	
 	
-	public static var cachedBitmapData:StringMap<BitmapData> = new StringMap<BitmapData>();
+	private static function initialize():Void {
+		
+		if (!initialized) {
+			
+			#if nme_install_tool
+			
+			AssetData.initialize();
+			
+			#end
+			
+			initialized = true;
+			
+		}
+		
+	}
 	
 	
 	/**
@@ -45,6 +77,105 @@ class Assets {
 	 * @return		A new BItmapData object
 	 */
 	public static function getBitmapData(id:String, useCache:Bool = true):BitmapData {
+		
+		initialize();
+		
+		#if nme_install_tool
+		
+		if (AssetData.type.exists(id) && AssetData.type.get(id).toLowerCase() == "image") {
+			
+			if (useCache && cachedBitmapData.exists(id)) {
+				
+				return cachedBitmapData.get(id);
+				
+			} else {
+				
+				#if flash
+				
+				var data = cast(Type.createInstance(AssetData.className.get(id), []), BitmapData);
+				
+				#elseif js
+				
+				var data = cast(ApplicationMain.loaders.get(AssetData.path.get(id)).contentLoaderInfo.content, Bitmap).bitmapData;
+				
+				#else
+				
+				var data = BitmapData.load(AssetData.path.get(id));
+				
+				#end
+				
+				if (useCache) {
+					
+					cachedBitmapData.set(id, data);
+					
+				}
+				
+				return data;
+				
+			}
+			
+		}  else if (id.indexOf(":") > -1) {
+			
+			var libraryName = id.substr(0, id.indexOf(":"));
+			var symbolName = id.substr(id.indexOf(":") + 1);
+			
+			if (AssetData.library.exists(libraryName)) {
+				
+				#if (swf && !js) ||(swfdev && js)
+				
+				if (AssetData.library.get(libraryName) == "swf") {
+					
+					if (!cachedSWFLibraries.exists(libraryName)) {
+						
+						#if js
+						
+						var unserializer = new Unserializer(getText("libraries/" + libraryName + ".dat"));
+						unserializer.setResolver(cast { resolveEnum: resolveEnum, resolveClass: resolveClass });
+						cachedSWFLibraries.set(libraryName, unserializer.unserialize());
+						
+						#else
+						
+						cachedSWFLibraries.set(libraryName, new SWF(getBytes("libraries/" + libraryName + ".swf")));
+						
+						#end
+						
+					}
+					
+					return cachedSWFLibraries.get(libraryName).getBitmapData(symbolName);
+					
+				}
+				
+				#end
+				
+				#if xfl
+				
+				if (AssetData.library.get(libraryName) == "xfl") {
+					
+					if (!cachedXFLLibraries.exists(libraryName)) {
+						
+						cachedXFLLibraries.set(libraryName, Unserializer.run(getText("libraries/" + libraryName + "/" + libraryName + ".dat")));
+						
+					}
+					
+					return cachedXFLLibraries.get(libraryName).getBitmapData(symbolName);
+					
+				}
+				
+				#end
+				
+			} else {
+				
+				trace("[nme.Assets] There is no asset library named \"" + libraryName + "\"");
+				
+			}
+			
+		} else {
+			
+			trace("[nme.Assets] There is no BitmapData asset with an ID of \"" + id + "\"");
+			
+		}
+		
+		#end
 		
 		return null;
 		
@@ -59,6 +190,34 @@ class Assets {
 	 */
 	public static function getBytes(id:String):ByteArray {
 		
+		initialize();
+		
+		#if nme_install_tool
+		
+		if (AssetData.type.exists(id)) {
+			
+			#if flash
+			
+			return Type.createInstance(AssetData.className.get(id), []);
+			
+			#elseif js
+			
+			return cast ApplicationMain.urlLoaders.get(AssetData.path.get (id)).data;
+			
+			#else
+			
+			return ByteArray.readFile(AssetData.path.get(id));
+			
+			#end
+			
+		} else {
+			
+			trace("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+			
+		}
+		
+		#end
+		
 		return null;
 		
 	}
@@ -71,6 +230,30 @@ class Assets {
 	 * @return		A new Font object
 	 */
 	public static function getFont(id:String):Font {
+		
+		initialize();
+		
+		#if nme_install_tool
+		
+		if (AssetData.type.exists(id) && AssetData.type.get(id).toLowerCase() == "font") {
+			
+			#if (flash || js)
+			
+			return cast(Type.createInstance(AssetData.className.get(id), []), Font);
+			
+			#else
+			
+			return new Font(AssetData.path.get(id));
+			
+			#end
+			
+		} else {
+			
+			trace("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
+			
+		}
+		
+		#end
 		
 		return null;
 		
@@ -85,7 +268,83 @@ class Assets {
 	 */
 	public static function getMovieClip(id:String):MovieClip {
 		
+		initialize();
+		
+		#if nme_install_tool
+		
+		var libraryName = id.substr(0, id.indexOf(":"));
+		var symbolName = id.substr(id.indexOf(":") + 1);
+		
+		if (AssetData.library.exists(libraryName)) {
+			
+			#if (swf && !js) ||(swfdev && js)
+			
+			if (AssetData.library.get(libraryName) == "swf") {
+				
+				if (!cachedSWFLibraries.exists(libraryName)) {
+					
+					#if js
+					
+					var unserializer = new Unserializer(getText("libraries/" + libraryName + ".dat"));
+					unserializer.setResolver(cast { resolveEnum: resolveEnum, resolveClass: resolveClass });
+					cachedSWFLibraries.set(libraryName, unserializer.unserialize());
+					
+					#else
+					
+					cachedSWFLibraries.set(libraryName, new SWF(getBytes("libraries/" + libraryName + ".swf")));
+					
+					#end
+					
+				}
+				
+				return cachedSWFLibraries.get(libraryName).createMovieClip(symbolName);
+				
+			}
+			
+			#end
+			
+			#if xfl
+			
+			if (AssetData.library.get(libraryName) == "xfl") {
+				
+				if (!cachedXFLLibraries.exists(libraryName)) {
+					
+					cachedXFLLibraries.set(libraryName, Unserializer.run(getText("libraries/" + libraryName + "/" + libraryName + ".dat")));
+					
+				}
+				
+				return cachedXFLLibraries.get(libraryName).createMovieClip(symbolName);
+				
+			}
+			
+			#end
+			
+		} else {
+			
+			trace("[nme.Assets] There is no asset library named \"" + libraryName + "\"");
+			
+		}
+		
+		#end
+		
 		return null;
+		
+	}
+	
+	
+	public static function getResourceName(id:String):String {
+		
+		initialize();
+		
+		#if (nme_install_tool && !flash)
+		
+		return AssetData.path.get (id);
+		
+		#else
+		
+		return null;
+		
+		#end
 		
 	}
 	
@@ -97,6 +356,38 @@ class Assets {
 	 * @return		A new Sound object
 	 */
 	public static function getSound(id:String):Sound {
+		
+		initialize();
+		
+		#if nme_install_tool
+		
+		if (AssetData.type.exists(id)) {
+			
+			var type = AssetData.type.get(id).toLowerCase();
+			
+			if (type == "sound" || type == "music") {
+				
+				#if flash
+				
+				return cast(Type.createInstance(AssetData.className.get(id), []), Sound);
+				
+				#elseif js
+				
+				return new Sound(new URLRequest(AssetData.path.get(id)));
+				
+				#else
+				
+				return new Sound(new URLRequest(AssetData.path.get(id)), null, type == "music");
+				
+				#end
+				
+			}
+			
+		}
+		
+		trace("[nme.Assets] There is no Sound asset with an ID of \"" + id + "\"");
+		
+		#end
 		
 		return null;
 		
@@ -111,10 +402,29 @@ class Assets {
 	 */
 	public static function getText(id:String):String {
 		
-		return null;
+		#if js
+		
+		if (AssetData.path.exists(id) && AssetData.path.get(id).toLowerCase() == "test") {
+			
+			return ApplicationMain.urlLoaders.get(AssetData.path.get(id)).data;
+			
+		}
+		
+		#end
+		
+		var bytes = getBytes(id);
+		
+		if (bytes == null) {
+			
+			return null;
+			
+		} else {
+			
+			return bytes.readUTFBytes(bytes.length);
+			
+		}
 		
 	}
-	
 	
 	
 	//public static function loadBitmapData(id:String, handler:BitmapData -> Void, useCache:Bool = true):BitmapData
@@ -134,9 +444,25 @@ class Assets {
 		//return null;
 	//}
 	
+	
+	#if js
+	
+	private static function resolveClass(name:String):Class <Dynamic> {
+		
+		name = StringTools.replace(name, "native.", "browser.");
+		return Type.resolveClass(name);
+		
+	}
+	
+	
+	private static function resolveEnum(name:String):Enum <Dynamic> {
+		
+		name = StringTools.replace(name, "native.", "browser.");
+		return Type.resolveEnum(name);
+		
+	}
+	
+	#end
+	
+	
 }
-
-
-#else
-typedef Assets = nme.installer.Assets;
-#end
