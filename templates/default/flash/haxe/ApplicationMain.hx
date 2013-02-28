@@ -93,9 +93,6 @@ class ApplicationMain {
 	}
 }
 
-::foreach assets::::if (type == "image")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
-::end::
-
 #else
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;

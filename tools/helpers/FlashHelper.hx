@@ -21,7 +21,7 @@ class FlashHelper {
 	private static var swfAssetID = 1000;
 	
 	
-	private static function embedAsset (inAsset:Asset, outTags:Array<SWFTag>) {
+	private static function embedAsset (inAsset:Asset, packageName:String, outTags:Array<SWFTag>) {
 		
 		var embed = inAsset.embed;
 		var name = inAsset.sourcePath;
@@ -394,14 +394,14 @@ class FlashHelper {
 			
 		}
 		
-		outTags.push (TSymbolClass ( [ { cid:cid, className:"NME_" + flatName } ] ));
+		outTags.push (TSymbolClass ( [ { cid:cid, className: packageName + "NME_" + flatName } ] ));
 		
 		return true;
 		
 	}
 	
 	
-	public static function embedAssets (targetPath:String, assets:Array <Asset>):Void {
+	public static function embedAssets (targetPath:String, assets:Array <Asset>, packageName:String = ""):Void {
 		
 		var input = File.read (targetPath, true);
 		var reader = new Reader (input);
@@ -421,7 +421,7 @@ class FlashHelper {
 				
 				for (asset in assets) {
 					
-					if (asset.type != AssetType.TEMPLATE && embedAsset (asset, new_tags)) {
+					if (asset.type != AssetType.TEMPLATE && embedAsset (asset, packageName, new_tags)) {
 						
 						inserted = true;
 						
