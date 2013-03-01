@@ -10,7 +10,7 @@ import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
 
-#if nme_install_tool
+#if (nme_install_tool && !display)
 import nme.AssetData;
 #end
 
@@ -42,13 +42,17 @@ import format.XFL;
  * in the project file.</p>
  */
 class Assets {
-
+	
 	
 	public static var cachedBitmapData = new Map<String, BitmapData>();
+	public static var id(get, null):Array<String>;
+	public static var library(get, null):Map<String, LibraryType>;
+	public static var path(get, null):Map<String, String>;
+	public static var type(get, null):Map<String, AssetType>;
+	
 	#if (swf && !js) private static var cachedSWFLibraries = new Map<String, SWF>(); #end
 	#if (swfdev && js) private static var cachedSWFLibraries = new Map<String, SWFLite>(); #end
 	#if xfl private static var cachedXFLLibraries = new Map<String, XFL>(); #end
-	
 	private static var initialized = false;
 	
 	
@@ -56,7 +60,7 @@ class Assets {
 		
 		if (!initialized) {
 			
-			#if nme_install_tool
+			#if (nme_install_tool && !display)
 			
 			AssetData.initialize();
 			
@@ -80,9 +84,9 @@ class Assets {
 		
 		initialize();
 		
-		#if nme_install_tool
+		#if (nme_install_tool && !display)
 		
-		if (AssetData.type.exists(id) && AssetData.type.get(id).toLowerCase() == "image") {
+		if (AssetData.type.exists(id) && AssetData.type.get(id) == IMAGE) {
 			
 			if (useCache && cachedBitmapData.exists(id)) {
 				
@@ -123,7 +127,7 @@ class Assets {
 				
 				#if ((swf && !js) || (swfdev && js))
 				
-				if (AssetData.library.get(libraryName) == "swf") {
+				if (AssetData.library.get(libraryName) == SWF) {
 					
 					if (!cachedSWFLibraries.exists(libraryName)) {
 						
@@ -149,7 +153,7 @@ class Assets {
 				
 				#if xfl
 				
-				if (AssetData.library.get(libraryName) == "xfl") {
+				if (AssetData.library.get(libraryName) == XFL) {
 					
 					if (!cachedXFLLibraries.exists(libraryName)) {
 						
@@ -192,7 +196,7 @@ class Assets {
 		
 		initialize();
 		
-		#if nme_install_tool
+		#if (nme_install_tool && !display)
 		
 		if (AssetData.type.exists(id)) {
 			
@@ -233,9 +237,9 @@ class Assets {
 		
 		initialize();
 		
-		#if nme_install_tool
+		#if (nme_install_tool && !display)
 		
-		if (AssetData.type.exists(id) && AssetData.type.get(id).toLowerCase() == "font") {
+		if (AssetData.type.exists(id) && AssetData.type.get(id) == FONT) {
 			
 			#if (flash || js)
 			
@@ -270,7 +274,7 @@ class Assets {
 		
 		initialize();
 		
-		#if nme_install_tool
+		#if (nme_install_tool && !display)
 		
 		var libraryName = id.substr(0, id.indexOf(":"));
 		var symbolName = id.substr(id.indexOf(":") + 1);
@@ -279,7 +283,7 @@ class Assets {
 			
 			#if ((swf && !js) || (swfdev && js))
 			
-			if (AssetData.library.get(libraryName) == "swf") {
+			if (AssetData.library.get(libraryName) == SWF) {
 				
 				if (!cachedSWFLibraries.exists(libraryName)) {
 					
@@ -305,7 +309,7 @@ class Assets {
 			
 			#if xfl
 			
-			if (AssetData.library.get(libraryName) == "xfl") {
+			if (AssetData.library.get(libraryName) == XFL) {
 				
 				if (!cachedXFLLibraries.exists(libraryName)) {
 					
@@ -332,23 +336,6 @@ class Assets {
 	}
 	
 	
-	public static function getResourceName(id:String):String {
-		
-		initialize();
-		
-		#if (nme_install_tool && !flash)
-		
-		return AssetData.path.get (id);
-		
-		#else
-		
-		return null;
-		
-		#end
-		
-	}
-	
-	
 	/**
 	 * Gets an instance of an embedded sound
 	 * @usage		var sound = Assets.getSound("sound.wav");
@@ -359,13 +346,13 @@ class Assets {
 		
 		initialize();
 		
-		#if nme_install_tool
+		#if (nme_install_tool && !display)
 		
 		if (AssetData.type.exists(id)) {
 			
-			var type = AssetData.type.get(id).toLowerCase();
+			var type = AssetData.type.get(id);
 			
-			if (type == "sound" || type == "music") {
+			if (type == SOUND || type == MUSIC) {
 				
 				#if flash
 				
@@ -377,7 +364,7 @@ class Assets {
 				
 				#else
 				
-				return new Sound(new URLRequest(AssetData.path.get(id)), null, type == "music");
+				return new Sound(new URLRequest(AssetData.path.get(id)), null, type == MUSIC);
 				
 				#end
 				
@@ -464,5 +451,104 @@ class Assets {
 	
 	#end
 	
+	
+	
+	
+	// Getters & Setters
+	
+	
+	
+	
+	private static function get_id():Array<String> {
+		
+		initialize ();
+		
+		var ids = [];
+		
+		#if (nme_install_tool && !display)
+		
+		for (key in AssetData.type.keys ()) {
+			
+			ids.push (key);
+			
+		}
+		
+		#end
+		
+		return ids;
+		
+	}
+	
+	
+	private static function get_library():Map<String, LibraryType> {
+		
+		initialize ();
+		
+		#if (nme_install_tool && !display)
+		
+		return AssetData.library;
+		
+		#else
+		
+		return new Map<String, LibraryType> ();
+		
+		#end
+		
+	}
+	
+	
+	private static function get_path():Map<String, String> {
+		
+		initialize ();
+		
+		#if ((nme_install_tool && !display) && !flash)
+		
+		return AssetData.path;
+		
+		#else
+		
+		return new Map<String, String> ();
+		
+		#end
+		
+	}
+	
+	
+	private static function get_type():Map<String, AssetType> {
+		
+		initialize ();
+		
+		#if (nme_install_tool && !display)
+		
+		return AssetData.type;
+		
+		#else
+		
+		return new Map<String, AssetType> ();
+		
+		#end
+		
+	}
+	
+	
+}
+
+
+enum AssetType {
+	
+	BINARY;
+	FONT;
+	IMAGE;
+	MUSIC;
+	SOUND;
+	TEXT;
+	
+}
+
+
+enum LibraryType {
+	
+	SWF;
+	XFL;
 	
 }
