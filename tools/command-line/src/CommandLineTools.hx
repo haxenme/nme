@@ -352,7 +352,7 @@ class CommandLineTools {
 		Sys.println ("  -debug : Use debug configuration instead of release");
 		Sys.println ("  -verbose : Print additional information (when available)");
 		Sys.println ("  -clean : Add a \"clean\" action before running the current command");
-		//Sys.println ("  -xml : Generate XML type information, can be used with \"document\"");
+		//Sys.println ("  -xml : Generate XML type information, for use with haxedoc");
 		Sys.println ("  [windows|mac|linux] -neko : Build with Neko instead of C++");
 		Sys.println ("  [linux] -64 : Compile for 64-bit instead of 32-bit");
 		Sys.println ("  [android] -arm7 : Compile for arm-7a and arm5");
@@ -860,10 +860,6 @@ class CommandLineTools {
 						
 					}
 					
-				} else if (parentField == "xml") {
-					
-					project.haxeflags.push ("-xml " + projectDefines.get (key));
-					
 				}
 				
 			}
@@ -1107,11 +1103,11 @@ class CommandLineTools {
 			
 			} else if (argument.substr (0, 1) == "-") {
 				
-				if (argument.substr (1, 1) == "-") {
+				if (argument.substr (1, 1) == "-" || argument == "-xml") {
 					
 					haxeflags.push (argument);
 					
-					if (argument == "--remap" || argument == "--connect") {
+					if (argument == "--remap" || argument == "--connect" || argument == "-xml") {
 						
 						catchHaxeFlag = true;
 						
