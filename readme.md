@@ -8,38 +8,62 @@ Developers can create applications for all supported platforms with the same sou
 More information is available at http://www.nme.io
 
 
-Download
-========
+Release Version
+===============
 
-You can get an installer for Windows, Mac or Linux at http://www.nme.io/download
-
-
-Source
-======
-
-If you would like to use NME from the source, follow these steps:
-
- 1. Clone NME to a new directory (like "C:\Development\Haxe\nme")
-
- 2. Run "haxelib dev nme path/to/your/clone"
-
- 3. If you are on Windows, use the above steps to also clone the "nmedev" repository. Otherwise use "haxelib git nmedev https://github.com/haxenme/nmedev.git"
-
- 4. Run "haxelib install" for format, hxcpp, svg, swf and xfl
+You can get a release installer for Windows, Mac or Linux at http://www.nme.io/download
 
 
-You must have Haxe 3 and Neko 2 installed.
+Source Builds
+=============
 
-We will attemp to keep nmedev up-to-date with binaries so you can get started without compiling. However, to be current (or if you contributing), you may need to recompile the tools or platform binaries from time-to-time.
+To use NME from the source, follow these steps:
 
-NME includes a "rebuild" command to make this simple:
+ 1. Install Haxe 3 and Neko 2, available [here](http://haxe.org/manual/haxe3).
 
-	nme rebuild tools,windows
+ 2. Clone this repository, then tell haxelib where it is located
+ 
+ <pre>haxelib dev nme C:\Development\Haxe\nme</pre>
 
+ 3. Install additional Haxe libraries
+ 
+ <pre>haxelib install format
+haxelib install hxcpp
+haxelib install svg
+haxelib install swf
+haxelib install xfl</pre>
 
-The "rebuild" command accepts a comma-delimited list of targets among the following: "android", "blackberry", "clean", "ios", "linux", "mac", "tools", "webos" and "windows"
+ 4. For Mac or Linux, install "nmedev"
 
-The requirements to build for one of these platforms will be similar to when you target the platform from a release build. You can find more details on the [download page](http://www.nme.io/download).
+ <pre>haxelib git nmedev https://github.com/haxenme/nmedev.git</pre>
+
+ 5. For Windows, clone https://github.com/haxenme/nmedev and tell haxelib
+
+ <pre>haxelib dev nmedev C:\Development\Haxe\nmedev</pre>
+
+If you need to build the command-line tools, use this command:
+
+	nme rebuild tools
+
+If you need to build a native library, use one of these commands:
+
+	nme rebuild clean
+	nme rebuild windows
+	nme rebuild mac
+	nme rebuild linux -32
+	nme rebuild linux -64
+	nme rebuild android
+	nme rebuild blackberry
+	nme rebuild ios
+	nme rebuild webos
+
+You can combine "rebuild" commands using commas, as well
+
+	nme rebuild tools,clean,windows
+
+The native libraries do not need to be built often, only if changes have occurred in the "project" directory. Improvements to the command-line tools may occur more often.
+
+The requirements to build the native libraries is similar to using a release version of NME. You can find more detail on the [download](http://www.nme.io/download) page.
 
 
 License
