@@ -37,7 +37,7 @@ haxelib install xfl</pre>
 
  <pre>haxelib git nmedev https://github.com/haxenme/nmedev.git</pre>
 
- 5. For Windows, clone https://github.com/haxenme/nmedev and tell haxelib where it is located
+ 5. For Windows, clone https://github.com/haxenme/nmedev, then tell haxelib where it is located
 
  <pre>haxelib dev nmedev C:\Development\Haxe\nmedev</pre>
 
@@ -57,11 +57,11 @@ If you need to build a native library, use one of these commands:
 	nme rebuild ios
 	nme rebuild webos
 
-You can combine "rebuild" commands using commas, as well
+You can also combine "rebuild" commands, using commas:
 
 	nme rebuild tools,clean,windows
 
-The native libraries do not need to be built often, only if changes have occurred in the "project" directory. Improvements to the command-line tools may occur more often.
+The native libraries do not need to be built often... only if changes have occurred in the "project" directory. Improvements to the command-line tools tend to occur more often.
 
 The requirements to build the native libraries is similar to using a release version of NME. You can find more detail on the [download](http://www.nme.io/download) page.
 
