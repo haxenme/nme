@@ -821,10 +821,10 @@ class CommandLineTools {
 		for (key in projectDefines.keys ()) {
 			
 			var components = key.split ("-");
+			var field = components.shift ().toLowerCase ();
+			var attribute = "";
 			
 			if (components.length > 1) {
-				
-				var parentField = components.shift ().toLowerCase ();
 				
 				if (components.length > 1) {
 					
@@ -836,25 +836,63 @@ class CommandLineTools {
 					
 				}
 				
-				var childField = components.join ("");
+				attribute = components.join ("");
 				
-				if (Reflect.hasField (project, parentField)) {
+			}
+			
+			if (field == "haxedef") {
+				
+				if (!project.haxedefs.exists (key)) {
 					
-					var parentValue = Reflect.field (project, parentField);
+					project.haxedefs.set (key, 1);
 					
-					if (Reflect.hasField (parentValue, childField)) {
+				}
+				
+			} else if (field == "haxeflag") {
+				
+				project.haxeflags.push (projectDefines.get (key));
+				
+			} else if (field == "haxelib") {
+				
+				var name = projectDefines.get (key);
+				var version = "";
+				
+				if (name.indexOf (":") > -1) {
+					
+					version = name.substr (name.indexOf (":") + 1);
+					name = name.substr (0, name.indexOf (":"));
+					
+				}
+				
+				project.haxelibs.push (new Haxelib (name, version));
+				
+			} else if (field == "source") {
+				
+				project.sources.push (projectDefines.get (key));
+				
+			} else if (field == "template" && attribute == "path") {
+				
+				project.templatePaths.push (projectDefines.get (key));
+				
+			} else {
+				
+				if (Reflect.hasField (project, field)) {
+					
+					var fieldValue = Reflect.field (project, field);
+					
+					if (Reflect.hasField (fieldValue, attribute)) {
 						
-						if (Std.is (Reflect.field (parentValue, childField), String)) {
+						if (Std.is (Reflect.field (fieldValue, attribute), String)) {
 							
-							Reflect.setField (parentValue, childField, projectDefines.get (key));
+							Reflect.setField (fieldValue, attribute, projectDefines.get (key));
 							
-						} else if (Std.is (Reflect.field (parentValue, childField), Float)) {
+						} else if (Std.is (Reflect.field (fieldValue, attribute), Float)) {
 							
-							Reflect.setField (parentValue, childField, Std.parseFloat (projectDefines.get (key)));
+							Reflect.setField (fieldValue, attribute, Std.parseFloat (projectDefines.get (key)));
 							
-						} else if (Std.is (Reflect.field (parentValue, childField), Bool)) {
+						} else if (Std.is (Reflect.field (fieldValue, attribute), Bool)) {
 							
-							Reflect.setField (parentValue, childField, (projectDefines.get (key).toLowerCase () == "true" || projectDefines.get (key) == "1"));
+							Reflect.setField (fieldValue, attribute, (projectDefines.get (key).toLowerCase () == "true" || projectDefines.get (key) == "1"));
 							
 						}
 						
