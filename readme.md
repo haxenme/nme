@@ -37,7 +37,7 @@ haxelib install xfl</pre>
 
  <pre>haxelib git nmedev https://github.com/haxenme/nmedev.git</pre>
 
- 5. For Windows, clone https://github.com/haxenme/nmedev and tell haxelib
+ 5. For Windows, clone https://github.com/haxenme/nmedev and tell haxelib where it is located
 
  <pre>haxelib dev nmedev C:\Development\Haxe\nmedev</pre>
 
