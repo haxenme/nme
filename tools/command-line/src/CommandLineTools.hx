@@ -32,6 +32,7 @@ class CommandLineTools {
 	public static var includePaths:Array <String>;
 	public static var nme:String;
 	public static var project:NMEProject;
+	public static var projectDefines:Map <String, String>;
 	public static var targetFlags:Map <String, String>;
 	public static var traceEnabled:Bool;
 	public static var userDefines:Map <String, Dynamic>;
@@ -813,20 +814,60 @@ class CommandLineTools {
 		}
 		
 		project.haxeflags = project.haxeflags.concat (haxeflags);
-		project.haxedefs.set ("nme_install_tool", true);
+		project.haxedefs.set ("nme_install_tool", 1);
 		project.haxedefs.set ("nme_ver", version);
-		project.haxedefs.set ("nme" + version.split (".")[0], true);
+		project.haxedefs.set ("nme" + version.split (".")[0], 1);
 		
-		if (userDefines.exists("BUILD_DIR")) {
-			project.app.path = userDefines.get("BUILD_DIR");
-		}
-
-		if (userDefines.exists("TYPES_FILE")) {
-			project.haxeflags.push ("-xml " + userDefines.get("TYPES_FILE"));
-		} else {
-			if (project.targetFlags.exists ("xml")) {
-				project.haxeflags.push ("-xml " + project.app.path + "/types.xml");
+		for (key in projectDefines.keys ()) {
+			
+			var components = key.split ("-");
+			
+			if (components.length > 1) {
+				
+				var parentField = components.shift ().toLowerCase ();
+				
+				if (components.length > 1) {
+					
+					for (i in 1...components.length) {
+						
+						components[i] = components[i].substr (0, 1).toUpperCase () + components[i].substr (1).toLowerCase ();
+						
+					}
+					
+				}
+				
+				var childField = components.join ("");
+				
+				if (Reflect.hasField (project, parentField)) {
+					
+					var parentValue = Reflect.field (project, parentField);
+					
+					if (Reflect.hasField (parentValue, childField)) {
+						
+						if (Std.is (Reflect.field (parentValue, childField), String)) {
+							
+							Reflect.setField (parentValue, childField, projectDefines.get (key));
+							
+						} else if (Std.is (Reflect.field (parentValue, childField), Float)) {
+							
+							Reflect.setField (parentValue, childField, Std.parseFloat (projectDefines.get (key)));
+							
+						} else if (Std.is (Reflect.field (parentValue, childField), Bool)) {
+							
+							Reflect.setField (parentValue, childField, (projectDefines.get (key).toLowerCase () == "true" || projectDefines.get (key) == "1"));
+							
+						}
+						
+					}
+					
+				} else if (parentField == "xml") {
+					
+					project.haxeflags.push ("-xml " + projectDefines.get (key));
+					
+				}
+				
 			}
+			
 		}
 		
 		StringMapHelper.copyKeys (userDefines, project.haxedefs);
@@ -874,6 +915,7 @@ class CommandLineTools {
 		debug = false;
 		haxeflags = new Array <String> ();
 		includePaths = new Array <String> ();
+		projectDefines = new Map <String, String> ();
 		targetFlags = new Map <String, String> ();
 		traceEnabled = true;
 		userDefines = new Map <String, Dynamic> ();
@@ -888,26 +930,6 @@ class CommandLineTools {
 			Sys.println ("");
 			
 		}
-		
-		/*if (userDefines.exists ("debug")) {
-			
-			debug = true;
-			
-		}
-		
-		if (Sys.environment ().exists ("HOME")) {
-			
-			includePaths.push (Sys.getEnv ("HOME"));
-			
-		}
-		
-		if (Sys.environment ().exists ("USERPROFILE")) {
-			
-			includePaths.push (Sys.getEnv ("USERPROFILE"));
-			
-		}
-		
-		includePaths.push (nme + "/tools/command-line");*/
 		
 		switch (command) {
 			
@@ -1025,6 +1047,10 @@ class CommandLineTools {
 				if (argument.substr (0, 2) == "-D") {
 					
 					userDefines.set (argument.substr (2, equals - 2), argument.substr (equals + 1));
+					
+				} else if (argument.substr (0, 2) == "--") {
+					
+					projectDefines.set (argument.substr (2, equals - 2), argument.substr (equals + 1));
 					
 				} else {
 					

@@ -119,7 +119,7 @@ class WindowsPlatform implements IPlatformTool {
 		
 		if (!project.environment.exists ("SHOW_CONSOLE")) {
 			
-			project.haxedefs.set ("no_console", true);
+			project.haxedefs.set ("no_console", 1);
 			
 		}
 		

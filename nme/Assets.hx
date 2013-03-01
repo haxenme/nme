@@ -121,7 +121,7 @@ class Assets {
 			
 			if (AssetData.library.exists(libraryName)) {
 				
-				#if (swf && !js) ||(swfdev && js)
+				#if ((swf && !js) || (swfdev && js))
 				
 				if (AssetData.library.get(libraryName) == "swf") {
 					
@@ -277,7 +277,7 @@ class Assets {
 		
 		if (AssetData.library.exists(libraryName)) {
 			
-			#if (swf && !js) ||(swfdev && js)
+			#if ((swf && !js) || (swfdev && js))
 			
 			if (AssetData.library.get(libraryName) == "swf") {
 				

@@ -25,7 +25,7 @@ class NMMLParser extends NMEProject {
 		
 		if (defines != null) {
 			
-			localDefines = defines;
+			localDefines = StringMapHelper.copy (defines);
 			
 		} else {
 			
@@ -114,7 +114,7 @@ class NMMLParser extends NMEProject {
 					var check = StringTools.trim (required);
 					
 					if (check != "" && !localDefines.exists (check)) {
-
+						
 						isValid = false;
 						
 					}
@@ -140,13 +140,13 @@ class NMMLParser extends NMEProject {
 				for (required in requiredDefines) {
 					
 					var check = StringTools.trim (required);
-
+					
 					if (check != "" && localDefines.exists (check)) {
 						
 						isValid = false;
 						
 					}
-
+					
 				}
 				
 			}
