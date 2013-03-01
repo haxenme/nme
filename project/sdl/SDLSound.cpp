@@ -229,6 +229,8 @@ public:
    {
       if (mChannel>=0)
          Mix_HaltChannel(mChannel);
+      
+      CheckDone();
    }
    void setTransform(const SoundTransform &inTransform) 
    {
