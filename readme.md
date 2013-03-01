@@ -3,9 +3,9 @@ NME
 
 NME is a game and application framework that currently targets Windows, Mac, Linux, iOS, Android, BlackBerry, Flash, HTML5, while providing legacy support for webOS.
 
-Developers can create applications for all supported platforms with the same source code. The mobile and desktop targets are fully native -- no scripting language or virtual machine is used. This allows for greater compatibility with additional libraries and for ideal performance.
+Developers can create applications for all supported platforms with the same source code. The mobile and desktop targets are fully native -- no scripting language or virtual machine is used. This allows for greater compatibility with additional libraries and gives ideal performance.
 
-More information is available at http://www.nme.io
+Learn more about NME at http://www.nme.io
 
 
 Release Version
@@ -61,9 +61,9 @@ You can also combine "rebuild" commands, using commas:
 
 	nme rebuild tools,clean,windows
 
-The native libraries do not need to be built often... only if changes have occurred in the "project" directory. Improvements to the command-line tools tend to occur more often.
+The native libraries do not need to be built often -- only if changes have occurred in the "project" directory. Improvements to the command-line tools tend to occur more often.
 
-The requirements to build the native libraries is similar to using a release version of NME. You can find more detail on the [download](http://www.nme.io/download) page.
+The requirements to build a native library is similar to building an NME application for that platform. You can learn more on the [download](http://www.nme.io/download) page.
 
 
 License
