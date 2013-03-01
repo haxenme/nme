@@ -65,8 +65,15 @@ class WebOSPlatform implements IPlatformTool {
 	
 	public function update (project:NMEProject):Void {
 		
+		project = project.clone ();
 		var destination = project.app.path + "/webos/bin/";
 		PathHelper.mkdir (destination);
+		
+		if (project.targetFlags.exists ("xml")) {
+			
+			project.haxeflags.push ("-xml " + project.app.path + "/webos/types.xml");
+			
+		}
 		
 		var context = project.templateContext;
 		context.CPP_DIR = project.app.path + "/webos/obj";

@@ -164,6 +164,12 @@ class LinuxPlatform implements IPlatformTool {
 			
 		}
 		
+		if (project.targetFlags.exists ("xml")) {
+			
+			project.haxeflags.push ("-xml " + targetDirectory + "/types.xml");
+			
+		}
+		
 		var context = generateContext (project);
 		
 		PathHelper.mkdir (targetDirectory);

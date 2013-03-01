@@ -123,6 +123,12 @@ class WindowsPlatform implements IPlatformTool {
 			
 		}
 		
+		if (project.targetFlags.exists ("xml")) {
+			
+			project.haxeflags.push ("-xml " + targetDirectory + "/types.xml");
+			
+		}
+		
 		initialize (project);
 		
 		var context = generateContext (project);

@@ -58,12 +58,11 @@ class FlashPlatform implements IPlatformTool {
 		
 		project = project.clone ();
 		
-		//if (project.targetFlags.exists ("air")) {
+		if (project.targetFlags.exists ("xml")) {
 			
-			//AIRHelper.initialize (defines, targetFlags, target, NME);
-			//project.haxeflags.push ("-lib air3");
+			project.haxeflags.push ("-xml " + project.app.path + "/flash/types.xml");
 			
-		//}
+		}
 		
 		var context = project.templateContext;
 		context.WIN_FLASHBACKGROUND = StringTools.hex (project.window.background);

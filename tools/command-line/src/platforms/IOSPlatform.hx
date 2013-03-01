@@ -55,6 +55,12 @@ class IOSPlatform implements IPlatformTool {
 		project = project.clone ();
 		project.sources = PathHelper.relocatePaths (project.sources, PathHelper.combine (project.app.path, "ios/" + project.app.file + "/haxe"));
 		
+		if (project.targetFlags.exists ("xml")) {
+			
+			project.haxeflags.push ("-xml " + project.app.path + "/ios/types.xml");
+			
+		}
+		
 		var context = project.templateContext;
 		
 		context.HAS_ICON = false;

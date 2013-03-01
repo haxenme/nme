@@ -178,6 +178,12 @@ class BlackBerryPlatform implements IPlatformTool {
 			
 		}
 		
+		if (project.targetFlags.exists ("xml")) {
+			
+			project.haxeflags.push ("-xml " + outputDirectory + "/types.xml");
+			
+		}
+		
 		var context = project.templateContext;
 		var destination = outputDirectory + "/bin/";
 		
