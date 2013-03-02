@@ -20,7 +20,7 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.InputDevice;
+//import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
@@ -56,7 +56,7 @@ class MainView extends GLSurfaceView {
    Activity mActivity;
 	static MainView mRefreshView;
 
-  private InputDevice device;
+  //private InputDevice device;
     public MainView(Context context,Activity inActivity) {
         super(context);
 
@@ -174,10 +174,10 @@ class MainView extends GLSurfaceView {
         setFocusableInTouchMode(true);
         setRenderer(new Renderer(this));
 		  setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-       Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
+       //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
       for (int i = 0; i < 4; i++) {
-        device = InputDevice.getDevice(i);
-        if (device != null) { Log.v("VIEW", "id of controller is: " + i + " and identification is: " + device.getName());}
+        //device = InputDevice.getDevice(i);
+        //if (device != null) { Log.v("VIEW", "id of controller is: " + i + " and identification is: " + device.getName());}
       }
     }
 
@@ -308,13 +308,13 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
 		  case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
-          case KeyEvent.KEYCODE_DPAD_CENTER: return 13; // Fake ENTER
-          case KeyEvent.KEYCODE_DPAD_LEFT: return 1;//37;
-          case KeyEvent.KEYCODE_DPAD_RIGHT: return 2;//39;
-          case KeyEvent.KEYCODE_DPAD_UP: return 3;//38;
-          case KeyEvent.KEYCODE_DPAD_DOWN: return 4;//40;
-          case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
-          case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
+          //case KeyEvent.KEYCODE_DPAD_CENTER: return 13; // Fake ENTER
+          //case KeyEvent.KEYCODE_DPAD_LEFT: return 1;//37;
+          //case KeyEvent.KEYCODE_DPAD_RIGHT: return 2;//39;
+          //case KeyEvent.KEYCODE_DPAD_UP: return 3;//38;
+          //case KeyEvent.KEYCODE_DPAD_DOWN: return 4;//40;
+          //case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
+          //case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
 
           case KeyEvent.KEYCODE_DEL: return 8;
        }

@@ -41,6 +41,11 @@ haxelib install xfl</pre>
 
  <pre>haxelib dev nmedev C:\Development\Haxe\nmedev</pre>
 
+ 6. Install the "nme" command alias (use "sudo" for Mac or Linux)
+
+ <pre>haxelib run nme setup</pre>
+
+
 If you need to build the command-line tools, use this command:
 
 	nme rebuild tools
