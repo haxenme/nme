@@ -106,6 +106,8 @@ class DirectRenderer extends DisplayObject {
 		nmeRenderMethod = value;
 		nmeRender();
 		
+		return value;
+		
 	}
 	
 	
