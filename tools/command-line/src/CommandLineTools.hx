@@ -815,12 +815,6 @@ class CommandLineTools {
 		
 		project.haxeflags = project.haxeflags.concat (haxeflags);
 		
-		// haxe 3 compatibility
-		project.haxeflags.push ("-D no-pattern-matching");
-		if (debug) {
-			project.haxeflags.push ("-D log");
-		}
-
 		project.haxedefs.set ("nme_install_tool", 1);
 		project.haxedefs.set ("nme_ver", version);
 		project.haxedefs.set ("nme" + version.split (".")[0], 1);

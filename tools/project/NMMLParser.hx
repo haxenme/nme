@@ -92,6 +92,7 @@ class NMMLParser extends NMEProject {
 			
 		}
 		
+		localDefines.set ("haxe3", "1");
 		localDefines.set (Type.enumConstructor (target).toLowerCase (), "1");
 		
 	}
