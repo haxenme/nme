@@ -6,6 +6,7 @@
 	
 	<source path="Source" />
 
+	<haxedef name="stage3d" />
     <!-- TODO add this only if you use glsl2agal directive -->
     <haxeflag name="-swf-lib" value="glsl2agal.swf" if="flash" />
     <haxedef name="glsl2agal" if="flash" />
