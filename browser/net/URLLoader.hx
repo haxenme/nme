@@ -8,6 +8,7 @@ import browser.events.HTTPStatusEvent;
 import browser.events.IOErrorEvent;
 import browser.events.ProgressEvent;
 import browser.errors.IOError;
+import browser.events.SecurityErrorEvent;
 import browser.utils.ByteArray;
 import browser.Html5Dom;
 import js.Lib;
@@ -54,7 +55,7 @@ class URLLoader extends EventDispatcher {
 	
 	
 	public function load(request:URLRequest):Void {
-				
+		
 		requestUrl(request.url, request.method, request.data, request.formatRequestHeaders());
 		
 	}
@@ -87,6 +88,8 @@ class URLLoader extends EventDispatcher {
 				
 			}
 			
+			js.Lib.alert (s);
+			
 			if (s != null && s >= 200 && s < 400) {
 				
 				self.onData(subject.response);
@@ -104,6 +107,11 @@ class URLLoader extends EventDispatcher {
 				} else if (s == 12007) {
 					
 					self.onError("Unknown host");
+					
+				} else if (s == 0) {
+					
+					self.onError("Unable to make request (may be blocked due to cross-domain permissions)");
+					self.onSecurityError("Unable to make request (may be blocked due to cross-domain permissions)");
 					
 				} else {
 					
@@ -166,6 +174,7 @@ class URLLoader extends EventDispatcher {
 				
 			} else {
 				
+				js.Lib.alert ("open: " + method + ", " + url + ", true");
 				xmlHttpRequest.open(method, url, true);
 				
 			}
@@ -177,6 +186,8 @@ class URLLoader extends EventDispatcher {
 			
 		}
 		
+		js.Lib.alert ("dataFormat: " + dataFormat);
+		
 		switch (dataFormat) {
 			
 			case BINARY: untyped xmlHttpRequest.responseType = 'arraybuffer';
@@ -186,9 +197,12 @@ class URLLoader extends EventDispatcher {
 		
 		for (header in requestHeaders) {
 			
+			js.Lib.alert ("setRequestHeader: " + header.name + ", " + header.value);
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
 			
 		}
+		
+		js.Lib.alert ("uri: " + uri);
 		
 		xmlHttpRequest.send(uri);
 		onOpen();
@@ -260,6 +274,16 @@ class URLLoader extends EventDispatcher {
 		evt.currentTarget = this;
 		evt.bytesLoaded = event.loaded;
 		evt.bytesTotal = event.total;
+		dispatchEvent(evt);
+		
+	}
+	
+	
+	private function onSecurityError(msg:String):Void {
+		
+		var evt = new SecurityErrorEvent(SecurityErrorEvent.SECURITY_ERROR);
+		evt.text = msg;
+		evt.currentTarget = this;
 		dispatchEvent(evt);
 		
 	}
