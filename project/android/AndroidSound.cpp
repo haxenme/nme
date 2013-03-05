@@ -65,7 +65,7 @@ namespace nme
 		{
 			JNIEnv *env = GetEnv();
 		   	jclass cls = env->FindClass("org/haxe/nme/Sound");
-         	jmethodID mid = env->GetStaticMethodID(cls, "getSoundPosition", "(II)I");
+         	jmethodID mid = env->GetStaticMethodID(cls, "getSoundPosition", "(III)I");
          	if (mid > 0) {
 				return env->CallStaticIntMethod(cls, mid, mSoundHandle, mStreamID, mLoop);
 		   	}
