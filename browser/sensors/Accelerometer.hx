@@ -95,7 +95,7 @@ class Accelerometer extends EventDispatcher {
 	
 	private static function get_isSupported():Bool { 
 		
-		var supported = Reflect.hasField(js.Lib.window, "on" + Lib.HTML_ACCELEROMETER_EVENT_TYPE);
+		var supported = Reflect.hasField(Lib.window, "on" + Lib.HTML_ACCELEROMETER_EVENT_TYPE);
 		return supported;
 		
 	}
