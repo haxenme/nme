@@ -88,7 +88,7 @@ class URLLoader extends EventDispatcher {
 				
 			}
 			
-			js.Lib.alert (s);
+			//js.Lib.alert (s);
 			
 			if (s != null && s >= 200 && s < 400) {
 				
@@ -174,7 +174,7 @@ class URLLoader extends EventDispatcher {
 				
 			} else {
 				
-				js.Lib.alert ("open: " + method + ", " + url + ", true");
+				//js.Lib.alert ("open: " + method + ", " + url + ", true");
 				xmlHttpRequest.open(method, url, true);
 				
 			}
@@ -186,7 +186,7 @@ class URLLoader extends EventDispatcher {
 			
 		}
 		
-		js.Lib.alert ("dataFormat: " + dataFormat);
+		//js.Lib.alert ("dataFormat: " + dataFormat);
 		
 		switch (dataFormat) {
 			
@@ -197,12 +197,12 @@ class URLLoader extends EventDispatcher {
 		
 		for (header in requestHeaders) {
 			
-			js.Lib.alert ("setRequestHeader: " + header.name + ", " + header.value);
+			//js.Lib.alert ("setRequestHeader: " + header.name + ", " + header.value);
 			xmlHttpRequest.setRequestHeader(header.name, header.value);
 			
 		}
 		
-		js.Lib.alert ("uri: " + uri);
+		//js.Lib.alert ("uri: " + uri);
 		
 		xmlHttpRequest.send(uri);
 		onOpen();
