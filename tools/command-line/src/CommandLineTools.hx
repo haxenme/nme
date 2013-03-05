@@ -826,15 +826,15 @@ class CommandLineTools {
 			var attribute = "";
 			
 			if (components.length > 0) {
-					
+				
 				for (i in 1...components.length) {
-						
+					
 					components[i] = components[i].substr (0, 1).toUpperCase () + components[i].substr (1).toLowerCase ();
-						
+					
 				}
 				
 				attribute = components.join ("");
-
+				
 			}
 			
 			if (field == "haxedef") {

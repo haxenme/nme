@@ -232,7 +232,7 @@ package nme.net;
 	 * supported for <code>POST</code> requests, not for <code>GET</code>
 	 * requests.</p>
 	 */
-	//var requestHeaders : Array<URLRequestHeader>;
+	var requestHeaders : Array<URLRequestHeader>;
 
 	/**
 	 * The URL to be requested.
