@@ -58,7 +58,7 @@ class ApplicationMain {
 		total ++;
 		::elseif (type == "text")::
 		var urlLoader:URLLoader = new URLLoader();
-		urlLoader.dataFormat = TEXT;
+		urlLoader.dataFormat = BINARY;
 		urlLoaders.set("::resourceName::", urlLoader);
 		total ++;
 		::end::::end::

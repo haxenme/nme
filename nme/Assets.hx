@@ -205,8 +205,24 @@ class Assets {
 			return Type.createInstance(AssetData.className.get(id), []);
 			
 			#elseif js
-			
-			return cast ApplicationMain.urlLoaders.get(AssetData.path.get (id)).data;
+
+			var bytes:ByteArray = null;
+			var data = ApplicationMain.urlLoaders.get(AssetData.path.get(id)).data;
+			if (Std.is(data, String)) {
+				var bytes = new ByteArray();
+				bytes.writeUTFBytes(data);
+			} else if (Std.is(data, ByteArray)) {
+				bytes = cast data;
+			} else {
+				bytes = null;
+			}
+
+			if (bytes != null) {
+				bytes.position = 0;
+				return bytes;
+			} else {
+				return null;
+			}
 			
 			#else
 			
@@ -389,16 +405,6 @@ class Assets {
 	 */
 	public static function getText(id:String):String {
 		
-		#if js
-		
-		if (AssetData.path.exists(id) && AssetData.path.get(id).toLowerCase() == "test") {
-			
-			return ApplicationMain.urlLoaders.get(AssetData.path.get(id)).data;
-			
-		}
-		
-		#end
-		
 		var bytes = getBytes(id);
 		
 		if (bytes == null) {
@@ -406,9 +412,9 @@ class Assets {
 			return null;
 			
 		} else {
-			
+
 			return bytes.readUTFBytes(bytes.length);
-			
+	
 		}
 		
 	}
