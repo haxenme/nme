@@ -1074,18 +1074,26 @@ class CommandLineTools {
 				additionalArguments.push (argument);
 				
 			} else if (equals > 0) {
+
+				var def = argument.substr (equals + 1);
+				// if quotes remain on the def we need to strip them off
+				// otherwise the compiler really dislikes the result!
+				var r = ~/^['"](.*)['"]$/;
+				if (r.match(def)) {
+					def = r.matched(1);
+				}
 				
 				if (argument.substr (0, 2) == "-D") {
 					
-					userDefines.set (argument.substr (2, equals - 2), argument.substr (equals + 1));
+					userDefines.set (argument.substr (2, equals - 2), def);
 					
 				} else if (argument.substr (0, 2) == "--") {
 					
-					projectDefines.set (argument.substr (2, equals - 2), argument.substr (equals + 1));
+					projectDefines.set (argument.substr (2, equals - 2), def);
 					
 				} else {
 					
-					userDefines.set (argument.substr (0, equals), argument.substr (equals + 1));
+					userDefines.set (argument.substr (0, equals), def);
 					
 				}
 				
