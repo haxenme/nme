@@ -402,47 +402,55 @@ class FlashHelper {
 	
 	
 	public static function embedAssets (targetPath:String, assets:Array <Asset>, packageName:String = ""):Void {
-		
-		var input = File.read (targetPath, true);
-		var reader = new Reader (input);
-		var swf = reader.read ();
-		input.close();
-		
-		var new_tags = new Array <SWFTag> ();
-		var inserted = false;
-		
-		for (tag in swf.tags) {
-			
-			var name = Type.enumConstructor(tag);
-			
-			if (name == "TShowFrame" && !inserted && assets.length > 0) {
+
+		try {
+			var input = File.read (targetPath, true);
+			if (input != null) {
+				var reader = new Reader (input);
+				var swf = reader.read ();
+				input.close();
 				
-				new_tags.push (TShowFrame);
+				var new_tags = new Array <SWFTag> ();
+				var inserted = false;
 				
-				for (asset in assets) {
+				for (tag in swf.tags) {
 					
-					if (asset.type != AssetType.TEMPLATE && embedAsset (asset, packageName, new_tags)) {
+					var name = Type.enumConstructor(tag);
+					
+					if (name == "TShowFrame" && !inserted && assets.length > 0) {
 						
-						inserted = true;
+						new_tags.push (TShowFrame);
+						
+						for (asset in assets) {
+							
+							if (asset.type != AssetType.TEMPLATE && embedAsset (asset, packageName, new_tags)) {
+								
+								inserted = true;
+								
+							}
+							
+						}
 						
 					}
 					
+					new_tags.push (tag);
+					
 				}
-				
-			}
-			
-			new_tags.push (tag);
-			
-		}
 
-		if (inserted) {
-			
-			swf.tags = new_tags;
-			var output = File.write (targetPath, true);
-			var writer = new Writer (output);
-			writer.write (swf);
-			output.close ();
-			
+				if (inserted) {
+					
+					swf.tags = new_tags;
+					var output = File.write (targetPath, true);
+					var writer = new Writer (output);
+					writer.write (swf);
+					output.close ();
+					
+				}
+			} else {
+				trace("Embedding assets failed! We encountered an error. Does '"+targetPath+"' exist?");
+			}
+		} catch (e:Dynamic) {
+			trace("Embedding assets failed! We encountered an error accessing '"+targetPath+"': " + e);
 		}
 		
 	}
