@@ -22,22 +22,25 @@ import utils.PlatformSetup;
 	
 	
 class CommandLineTools {
-	
-	
-	public static var additionalArguments:Array <String>;
-	public static var architectures:Array <Architecture>;
-	public static var command:String;
-	public static var debug:Bool;
-	public static var haxeflags:Array <String>;
-	public static var includePaths:Array <String>;
+
 	public static var nme:String;
-	public static var project:NMEProject;
-	public static var projectDefines:Map <String, String>;
-	public static var targetFlags:Map <String, String>;
-	public static var traceEnabled:Bool;
-	public static var userDefines:Map <String, Dynamic>;
-	public static var version:String;
-	public static var words:Array <String>;
+	
+	private static var additionalArguments:Array <String>;
+	private static var architectures:Array <Architecture>;
+	private static var command:String;
+	private static var debug:Bool;
+	private static var sources:Array <String>;
+	private static var haxelibs:Array <Haxelib>;
+	private static var haxedefs:Array <String>;
+	private static var haxeflags:Array <String>;
+	private static var includePaths:Array <String>;
+	private static var project:NMEProject;
+	private static var projectDefines:Map <String, String>;
+	private static var targetFlags:Map <String, String>;
+	private static var traceEnabled:Bool;
+	private static var userDefines:Map <String, Dynamic>;
+	private static var version:String;
+	private static var words:Array <String>;
 	
 	
 	private static function buildProject () {
@@ -814,11 +817,23 @@ class CommandLineTools {
 		}
 		
 		project.haxeflags = project.haxeflags.concat (haxeflags);
+		project.haxelibs = project.haxelibs.concat(haxelibs);
+		project.sources = project.sources.concat(sources);
 		
 		project.haxedefs.set ("nme_install_tool", 1);
 		project.haxedefs.set ("nme_ver", version);
 		project.haxedefs.set ("nme" + version.split (".")[0], 1);
 		
+		for (haxedef in haxedefs) {
+
+			if (!project.haxedefs.exists (haxedef)) {
+				
+				project.haxedefs.set (haxedef, 1);
+				
+			}
+
+		}
+
 		for (key in projectDefines.keys ()) {
 			
 			var components = key.split ("-");
@@ -836,41 +851,12 @@ class CommandLineTools {
 				attribute = components.join ("");
 				
 			}
-			
-			if (field == "haxedef") {
-				
-				if (!project.haxedefs.exists (key)) {
-					
-					project.haxedefs.set (key, 1);
-					
-				}
-				
-			} else if (field == "haxeflag") {
-				
-				project.haxeflags.push (projectDefines.get (key));
-				
-			} else if (field == "haxelib") {
-				
-				var name = projectDefines.get (key);
-				var version = "";
-				
-				if (name.indexOf (":") > -1) {
-					
-					version = name.substr (name.indexOf (":") + 1);
-					name = name.substr (0, name.indexOf (":"));
-					
-				}
-				
-				project.haxelibs.push (new Haxelib (name, version));
-				
-			} else if (field == "source") {
-				
-				project.sources.push (projectDefines.get (key));
-				
-			} else if (field == "template" && attribute == "path") {
-				
+
+
+			if (field == "template" && attribute == "path") {
+						
 				project.templatePaths.push (projectDefines.get (key));
-				
+						
 			} else {
 				
 				if (Reflect.hasField (project, field)) {
@@ -944,6 +930,9 @@ class CommandLineTools {
 		architectures = new Array <Architecture> ();
 		command = "";
 		debug = false;
+		sources = new Array <String> ();
+		haxelibs = new Array <Haxelib> ();
+		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
 		includePaths = new Array <String> ();
 		projectDefines = new Map <String, String> ();
@@ -1061,7 +1050,7 @@ class CommandLineTools {
 		var catchHaxeFlag = false;
 		
 		for (argument in arguments) {
-			
+
 			var equals = argument.indexOf ("=");
 			
 			if (catchHaxeFlag) {
@@ -1075,25 +1064,59 @@ class CommandLineTools {
 				
 			} else if (equals > 0) {
 
-				var def = argument.substr (equals + 1);
-				// if quotes remain on the def we need to strip them off
+				var argValue = argument.substr (equals + 1);
+				// if quotes remain on the argValue we need to strip them off
 				// otherwise the compiler really dislikes the result!
 				var r = ~/^['"](.*)['"]$/;
-				if (r.match(def)) {
-					def = r.matched(1);
+				if (r.match(argValue)) {
+					argValue = r.matched(1);
 				}
 				
 				if (argument.substr (0, 2) == "-D") {
 					
-					userDefines.set (argument.substr (2, equals - 2), def);
+					userDefines.set (argument.substr (2, equals - 2), argValue);
 					
 				} else if (argument.substr (0, 2) == "--") {
 					
-					projectDefines.set (argument.substr (2, equals - 2), def);
+					// this won't work because it assumes there is only ever one of these.
+					//projectDefines.set (argument.substr (2, equals - 2), argValue);
 					
+					var field = argument.substr (2, equals - 2);
+
+					if (field == "haxedef") {
+
+						haxedefs.push(argValue);
+						
+					} else if (field == "haxeflag") {
+						
+						haxeflags.push (argValue);
+						
+					} else if (field == "haxelib") {
+						
+						var name = argValue;
+						var version = "";
+						
+						if (name.indexOf (":") > -1) {
+							
+							version = name.substr (name.indexOf (":") + 1);
+							name = name.substr (0, name.indexOf (":"));
+							
+						}
+
+						haxelibs.push (new Haxelib (name, version));
+						
+					} else if (field == "source") {
+						
+						sources.push (argValue);
+						
+					} else {
+
+						projectDefines.set (field, argValue);
+					}
+
 				} else {
 					
-					userDefines.set (argument.substr (0, equals), def);
+					userDefines.set (argument.substr (0, equals), argValue);
 					
 				}
 				
