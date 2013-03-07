@@ -420,11 +420,17 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    result = new SimpleSurface(width,height,has_alpha ? pfARGB : pfXRGB);
    result->IncRef();
    target = result->BeginRender(Rect(width,height));
-
-   for (int i = 0; i < height; i++)
+   
+   /* if the image is interlaced, run multiple passes */
+   int number_of_passes = png_set_interlace_handling(png_ptr);
+   
+   for (int pass = 0; pass < number_of_passes; pass++)
    {
-      png_bytep anAddr = (png_bytep) target.Row(i);
-      png_read_rows(png_ptr, (png_bytepp) &anAddr, NULL, 1);
+      for (int i = 0; i < height; i++)
+      {
+         png_bytep anAddr = (png_bytep) target.Row(i);
+         png_read_rows(png_ptr, (png_bytepp) &anAddr, NULL, 1);
+      }
    }
 
    result->EndRender();
