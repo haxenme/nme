@@ -121,12 +121,14 @@ public class Sound
 	private static SoundPool mSoundPool;
 	// private static int mSoundPoolID = 0;
 	private static long mTimeStamp = 0;
+	private static HashMap<Integer, Integer> mSoundId;
 	private static HashMap<Integer, Long> mSoundProgress;
 	private static HashMap<Integer, Long> mSoundDuration;
 
     public Sound(Context context)
     {
     	if (instance == null) {
+    		mSoundId = new HashMap<Integer, Integer>();
     		mSoundProgress = new HashMap<Integer, Long>();
     		mSoundDuration = new HashMap<Integer, Long>();
     		mTimeStamp = System.currentTimeMillis();
@@ -221,8 +223,17 @@ public class Sound
 		if (inLoop < 0) {
 			inLoop = 0;
 		}
+
+		if (mSoundId.get(inResourceID) != null) {
+			//Log.v("VIEW", "Found existing sound " + inResourceID + ", stopping and removing it from progress and id check");	
+			int a = mSoundId.get(inResourceID);
+			mSoundPool.stop(a);
+			mSoundProgress.remove(a);
+			mSoundId.remove(inResourceID);
+		}
 		
 		int streamId = mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
+		mSoundId.put(inResourceID, streamId);
 		mSoundProgress.put(streamId, (long)0);
 		return streamId;
 	}
@@ -232,6 +243,7 @@ public class Sound
 		if (mSoundPool != null) {
 			mSoundPool.stop(inStreamID);
 			mSoundProgress.remove(inStreamID);
+			mSoundId.values().remove(inStreamID);
 		}
 	}
 
