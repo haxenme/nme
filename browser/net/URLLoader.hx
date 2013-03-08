@@ -20,7 +20,18 @@ class URLLoader extends EventDispatcher {
 	public var bytesLoaded:Int;
 	public var bytesTotal:Int;
 	public var data:Dynamic;
-	public var dataFormat:URLLoaderDataFormat;
+	public var dataFormat(default, set):URLLoaderDataFormat;
+	private function set_dataFormat(inputVal:URLLoaderDataFormat):URLLoaderDataFormat {
+		// prevent inadvertently using typed arrays when they are unsupported
+		// @todo move these sorts of tests somewhere common in the vein of Modernizr
+		if (inputVal == URLLoaderDataFormat.BINARY
+				&& !Reflect.hasField(browser.Lib.window, "ArrayBuffer")) {
+			dataFormat = URLLoaderDataFormat.TEXT;
+		} else {
+			dataFormat = inputVal;
+		}
+		return dataFormat;
+	}
 	
 	
 	public function new(request:URLRequest = null) {
