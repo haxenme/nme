@@ -7,6 +7,7 @@ import browser.display.BitmapData;
 import browser.display.DisplayObject;
 import browser.display.LoaderInfo;
 import browser.display.Shape;
+import browser.display.Sprite;
 import browser.events.Event;
 import browser.events.IOErrorEvent;
 import browser.geom.Rectangle;
@@ -15,7 +16,7 @@ import browser.system.LoaderContext;
 import browser.utils.ByteArray;
 
 
-class Loader extends DisplayObjectContainer {
+class Loader extends Sprite {
 	
 	
 	public var content(default, null):DisplayObject;
