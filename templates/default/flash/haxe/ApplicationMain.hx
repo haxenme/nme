@@ -1,6 +1,7 @@
 #if nme
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
+import flash.display.DisplayObject;
 import nme.Assets;
 import nme.events.Event;
 
@@ -12,14 +13,14 @@ class ApplicationMain {
 		var call_real = true;
 		
 		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
-
+		
 		::if (PRELOADER_NAME!="")::
 		var loaded:Int = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total:Int = nme.Lib.current.loaderInfo.bytesTotal;
-
+		
 		nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
 		nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
-
+		
 		if (loaded < total || true) /* Always wait for event */ {
 			call_real = false;
 			mPreloader = new ::PRELOADER_NAME::();
@@ -29,11 +30,11 @@ class ApplicationMain {
 			nme.Lib.current.addEventListener(nme.events.Event.ENTER_FRAME, onEnter);
 		}
 		::end::
-
+		
 		#if !fdb
 		haxe.Log.trace = flashTrace;
 		#end
-
+		
 		if (call_real)
 			begin();
 	}
@@ -42,8 +43,8 @@ class ApplicationMain {
 	private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
 		var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
 		var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
-
-    if (flash.external.ExternalInterface.available)
+		
+		if (flash.external.ExternalInterface.available)
 			flash.external.ExternalInterface.call("console.log", message);
 		else untyped flash.Boot.__trace(v, pos);
     }
@@ -77,7 +78,7 @@ class ApplicationMain {
 		var loaded = nme.Lib.current.loaderInfo.bytesLoaded;
 		var total = nme.Lib.current.loaderInfo.bytesTotal;
 		mPreloader.onUpdate(loaded,total);
-
+		
 		if (loaded >= total) {
 			nme.Lib.current.removeEventListener(nme.events.Event.ENTER_FRAME, onEnter);
 			mPreloader.addEventListener (Event.COMPLETE, preloader_onComplete);
@@ -98,11 +99,11 @@ class ApplicationMain {
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
 
 class ApplicationMain {
-
+	
 	public static function main() {
-
+		
 		var hasMain = false;
-
+		
 		for (methodName in Type.getClassFields(::APP_MAIN::))
 		{
 			if (methodName == "main")
@@ -111,14 +112,14 @@ class ApplicationMain {
 				break;
 			}
 		}
-
+		
 		if (hasMain)
 		{
 			Reflect.callMethod(::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 		}
 		else
 		{
-			var instance = Type.createInstance(::APP_MAIN::, []);
+			var instance = Type.createInstance(DocumentClass, []);
 			if (Std.is(instance, flash.display.DisplayObject)) {
 				flash.Lib.current.addChild(cast instance);
 			}
@@ -127,3 +128,14 @@ class ApplicationMain {
 }
 
 #end
+
+
+class DocumentClass extends ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS:: {
+	
+	@:getter(stage) private function get_stage ():flash.display.Stage {
+		
+		return flash.Lib.current.stage;
+		
+	}
+	
+}

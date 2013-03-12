@@ -100,7 +100,7 @@ class ApplicationMain {
 		preloader = null;
 		if (Reflect.field(::APP_MAIN::, "main") == null)
 		{
-			var mainDisplayObj = new ::APP_MAIN::();
+			var mainDisplayObj = new DocumentClass();
 			if (Std.is(mainDisplayObj, browser.display.DisplayObject))
 				nme.Lib.current.addChild(cast mainDisplayObj);
 		}
@@ -109,6 +109,16 @@ class ApplicationMain {
 			Reflect.callMethod(::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
 		}
 	}
+}
+
+class DocumentClass extends ::APP_MAIN:: {
+	
+	private override function get_stage ():nme.display.Stage {
+		
+		return nme.Lib.current.stage;
+		
+	}
+	
 }
 
 #else

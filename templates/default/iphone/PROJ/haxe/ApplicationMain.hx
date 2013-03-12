@@ -1,3 +1,6 @@
+import nme.Assets;
+
+
 class ApplicationMain
 {
 	
@@ -60,7 +63,7 @@ class ApplicationMain
 		//nme.Lib.current.stage.removeEventListener (nme.events.Event.RESIZE, initialize);
 		
 		var hasMain = false;
-				
+		
 		for (methodName in Type.getClassFields(::APP_MAIN::))
 		{
 			if (methodName == "main")
@@ -76,32 +79,19 @@ class ApplicationMain
 		}
 		else
 		{
-			nme.Lib.current.addChild(cast (Type.createInstance(::APP_MAIN::, []), nme.display.DisplayObject));	
+			nme.Lib.current.addChild(cast (Type.createInstance(DocumentClass, []), nme.display.DisplayObject));	
 		}
 	}
 	
+}
+
+
+class DocumentClass extends ::APP_MAIN:: {
 	
-	public static function getAsset(inName:String):Dynamic
-	{
-		::foreach assets::
-		if (inName == "::id::")
-		{
-			::if (type == "image")::
-			return nme.Assets.getBitmapData ("::id::");
-			::elseif (type == "sound")::
-			return nme.Assets.getSound ("::id::");
-			::elseif (type == "music")::
-			return nme.Assets.getSound ("::id::");
-			::elseif (type == "font")::
-			return nme.Assets.getFont ("::id::");
-			::elseif (type == "text")::
-			return nme.Assets.getText ("::id::");
-			::else::
-			return nme.Assets.getBytes ("::id::");
-			::end::
-		}
-		::end::
-		return null;
+	private override function get_stage ():nme.display.Stage {
+		
+		return nme.Lib.current.stage;
+		
 	}
 	
 }

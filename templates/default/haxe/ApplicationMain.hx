@@ -65,7 +65,7 @@ class ApplicationMain
 				}
 				else
 				{
-					var instance = Type.createInstance(::APP_MAIN::, []);
+					var instance = Type.createInstance(DocumentClass, []);
 					#if nme
 					if (Std.is (instance, nme.display.DisplayObject)) {
 						nme.Lib.current.addChild(cast instance);
@@ -105,6 +105,17 @@ class ApplicationMain
 	}
 	#end
 	
+	
+}
+
+
+class DocumentClass extends ::APP_MAIN:: {
+	
+	private override function get_stage ():nme.display.Stage {
+		
+		return nme.Lib.current.stage;
+		
+	}
 	
 }
 
