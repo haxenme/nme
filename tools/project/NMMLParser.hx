@@ -82,6 +82,15 @@ class NMMLParser extends NMEProject {
 			
 		}
 		
+		localDefines.set ("haxe3", "1");
+		
+		if (command != null) {
+			
+			Sys.println ("command: " + command);
+			localDefines.set (command.toLowerCase (), "1");
+			
+		}
+		
 		if (localDefines.exists ("SWF_PLAYER")) {
 			
 			environment.set ("SWF_PLAYER", localDefines.get ("SWF_PLAYER"));
