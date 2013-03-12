@@ -16,7 +16,24 @@ class FlashPlatform implements IPlatformTool {
 		var hxml = project.app.path + "/flash/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
 		
 		ProcessHelper.runCommand ("", "haxe", [ hxml ] );
-		FlashHelper.embedAssets (destination + "/" + project.app.file + ".swf", project.assets, "nme.");
+		
+		var usesNME = false;
+		
+		for (haxelib in project.haxelibs) {
+			
+			if (haxelib.name == "nme") {
+				
+				usesNME = true;
+				
+			}
+			
+		}
+		
+		if (usesNME) {
+			
+			FlashHelper.embedAssets (destination + "/" + project.app.file + ".swf", project.assets, "nme.");
+			
+		}
 		
 		if (project.targetFlags.exists ("web") || project.app.url != "") {
 			

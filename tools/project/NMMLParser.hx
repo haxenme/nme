@@ -86,7 +86,6 @@ class NMMLParser extends NMEProject {
 		
 		if (command != null) {
 			
-			Sys.println ("command: " + command);
 			localDefines.set (command.toLowerCase (), "1");
 			
 		}
@@ -1093,11 +1092,29 @@ class NMMLParser extends NMEProject {
 					
 					case "template":
 						
-						parseAssetsElement (element, extensionPath, true);
+						if (element.has.path) {
+							
+							var path = PathHelper.combine (extensionPath, substitute (element.att.path));
+							
+							if (FileSystem.exists (path) && !FileSystem.isDirectory (path)) {
+								
+								parseAssetsElement (element, extensionPath, true);
+								
+							} else {
+								
+								templatePaths.push (path);
+								
+							}
+							
+						} else {
+							
+							parseAssetsElement (element, extensionPath, true);
+							
+						}
 					
 					case "templatePath":
 						
-						templatePaths.push (substitute(element.att.name));
+						templatePaths.push (PathHelper.combine (extensionPath, substitute (element.att.name)));
 					
 					case "preloader":
 						

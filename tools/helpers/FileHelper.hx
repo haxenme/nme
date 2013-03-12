@@ -212,6 +212,8 @@ class FileHelper {
 		
 		for (path in paths) {
 			
+			Sys.println ("Path: " + path);
+			
 			recursiveCopy (path, destination, context, process);
 			
 		}
