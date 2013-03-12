@@ -148,6 +148,11 @@ class BitmapData implements IBitmapDrawable
    {
       nme_bitmap_data_fill(nmeHandle, rect, inColour, inAlpha);
    }
+   
+   public function floodFill(x:Int, y:Int, color:Int):Void
+   {
+	   nmeFloodFill (x, y, color, getPixel32(x, y));
+   }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
    {
@@ -248,6 +253,23 @@ class BitmapData implements IBitmapDrawable
    /** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void {
       // IBitmapDrawable interface...
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
+   }
+   
+   private function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   {
+	   if (getPixel32(x, y) == replaceColor) {
+		   
+		   setPixel32(x, y, color);
+		   nmeFloodFill(x + 1, y, color, replaceColor);
+		   nmeFloodFill(x + 1, y + 1, color, replaceColor);
+		   nmeFloodFill(x + 1, y - 1, color, replaceColor);
+		   nmeFloodFill(x - 1, y, color, replaceColor);
+		   nmeFloodFill(x - 1, y + 1, color, replaceColor);
+		   nmeFloodFill(x - 1, y - 1, color, replaceColor);
+		   nmeFloodFill(x, y + 1, color, replaceColor);
+		   nmeFloodFill(x, y - 1, color, replaceColor);
+		   
+	   }
    }
 
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 

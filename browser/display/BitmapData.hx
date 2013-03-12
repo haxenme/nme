@@ -468,11 +468,10 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
-	public function floodFill(x:Int, y:Int, color:Int):Void {
-		
-		trace("BitmapData.floodFill not implemented");
-		
-	}
+	public function floodFill(x:Int, y:Int, color:Int):Void
+   {
+	   nmeFloodFill (x, y, color, getPixel32(x, y));
+   }
 	
 	
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true):Rectangle {
@@ -989,6 +988,24 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 	}
+	
+	
+	private function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   {
+	   if (getPixel32(x, y) == replaceColor) {
+		   
+		   setPixel32(x, y, color);
+		   nmeFloodFill(x + 1, y, color, replaceColor);
+		   nmeFloodFill(x + 1, y + 1, color, replaceColor);
+		   nmeFloodFill(x + 1, y - 1, color, replaceColor);
+		   nmeFloodFill(x - 1, y, color, replaceColor);
+		   nmeFloodFill(x - 1, y + 1, color, replaceColor);
+		   nmeFloodFill(x - 1, y - 1, color, replaceColor);
+		   nmeFloodFill(x, y + 1, color, replaceColor);
+		   nmeFloodFill(x, y - 1, color, replaceColor);
+		   
+	   }
+   }
 	
 	
 	public inline function nmeGetLease():ImageDataLease {

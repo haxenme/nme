@@ -396,7 +396,7 @@ extern class BitmapData implements IBitmapDrawable {
 	 * @param y     The <i>y</i> coordinate of the image.
 	 * @param color The ARGB color to use as a fill.
 	 */
-	//function floodFill(x : Int, y : Int, color : Int) : Void;
+	function floodFill(x : Int, y : Int, color : Int) : Void;
 
 	/**
 	 * Determines the destination rectangle that the <code>applyFilter()</code>
