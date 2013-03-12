@@ -40,7 +40,7 @@ class TextField extends InteractiveObject {
 	public var defaultTextFormat(get_defaultTextFormat, set_defaultTextFormat):TextFormat;
 	public var displayAsPassword:Bool;
 	public var embedFonts:Bool;
-	public var gridFitType:String;
+	public var gridFitType:GridFitType;
 	public var htmlText(get_htmlText, set_htmlText):String;
 	public var length(default, null):Int;
 	public var maxChars:Int;

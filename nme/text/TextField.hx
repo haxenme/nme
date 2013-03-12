@@ -296,7 +296,7 @@ extern class TextField extends nme.display.InteractiveObject {
 	 * 
 	 * @default pixel
 	 */
-	//var gridFitType : GridFitType;
+	var gridFitType : GridFitType;
 
 	/**
 	 * Contains the HTML representation of the text field contents.

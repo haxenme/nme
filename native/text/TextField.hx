@@ -16,6 +16,7 @@ class TextField extends InteractiveObject
    public var defaultTextFormat(get_defaultTextFormat, set_defaultTextFormat):TextFormat;
    public var displayAsPassword(get_displayAsPassword, set_displayAsPassword):Bool;
    public var embedFonts(get_embedFonts, set_embedFonts):Bool;
+   public var gridFitType:GridFitType;
    public var htmlText(get_htmlText, set_htmlText):String;
    public var maxChars(get_maxChars, set_maxChars):Int;
    public var maxScrollH(get_maxScrollH, null):Int;
