@@ -77,6 +77,7 @@ class Loader extends DisplayObjectContainer {
 			
 			trace("Error " + e);
 			var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+			evt.currentTarget = this;
 			contentLoaderInfo.dispatchEvent(evt);
 			return;
 			
@@ -103,7 +104,9 @@ class Loader extends DisplayObjectContainer {
 				content = new Bitmap(bmd);
 				Reflect.setField(contentLoaderInfo, "content", this.content);
 				addChild(content);
-				contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+				var evt = new Event(Event.COMPLETE);
+				evt.currentTarget = this;
+				contentLoaderInfo.dispatchEvent(evt);
 				
 			});
 			
@@ -111,6 +114,7 @@ class Loader extends DisplayObjectContainer {
 			
 			trace("Error " + e);
 			var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+			evt.currentTarget = this;
 			contentLoaderInfo.dispatchEvent(evt);
 			
 		}
@@ -167,6 +171,7 @@ class Loader extends DisplayObjectContainer {
 	
 	private function handleLoad(e:Event):Void {
 		
+		e.currentTarget = this;
 		content.nmeInvalidateBounds();
 		content.nmeRender(null, null);
 		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);

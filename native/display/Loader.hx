@@ -64,10 +64,13 @@ class Loader extends Sprite
    public function loadBytes(bytes:ByteArray) 
    {
       // No "loader context" in nme
-      if (doLoad(bytes))
-         contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
-      else
+      if (doLoad(bytes)) {
+		 var event = new Event(Event.COMPLETE);
+		 event.currentTarget = this;
+         contentLoaderInfo.dispatchEvent(event);
+      } else {
          contentLoaderInfo.DispatchIOErrorEvent();
+	  }
    }
 
    public function unload() 
@@ -88,8 +91,9 @@ class Loader extends Sprite
             contentLoaderInfo.width = 0;
             contentLoaderInfo.height = 0;   
          }
-
-         dispatchEvent(new Event(Event.UNLOAD));
+         var event = new Event(Event.UNLOAD);
+		 event.currentTarget = this;
+         dispatchEvent(event);
       }
    }
 
