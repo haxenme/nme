@@ -128,6 +128,8 @@ class TextField extends InteractiveObject {
 		border = false;
 		backgroundColor = 0xffffff;
 		background = false;
+		gridFitType = GridFitType.PIXEL;
+		sharpness = 0;
 		
 	}
 	

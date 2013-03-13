@@ -782,58 +782,9 @@ class BitmapData implements IBitmapDrawable {
 	
 	public static function loadFromBytes(bytes:ByteArray, inRawAlpha:ByteArray = null, onload:BitmapData -> Void) {
 		
-		var type = "";
-		
-		if (nmeIsPNG(bytes)) {
-			
-			type = "image/png";
-			
-		} else if (nmeIsJPG(bytes)) {
-			
-			type = "image/jpeg";
-			
-		} else {
-			
-			throw new IOError("BitmapData tried to read a PNG/JPG ByteArray, but found an invalid header.");
-			
-		}
-		
-		var img:HTMLImageElement = cast Lib.document.createElement("img");
 		var bitmapData = new BitmapData(0, 0);
-		var canvas = bitmapData._nmeTextureBuffer;
-		
-		var drawImage = function(_) {
-			
-			canvas.width = img.width;
-			canvas.height = img.height;
-			
-			var ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0);
-			
-			if (inRawAlpha != null) {
-				
-				var pixels = ctx.getImageData(0, 0, img.width, img.height);
-				
-				for (i in 0...inRawAlpha.length) {
-					
-					pixels.data[i * 4 + 3] = inRawAlpha.readUnsignedByte();
-					
-				}
-				
-				ctx.putImageData(pixels, 0, 0);
-				
-			}
-			
-			onload(bitmapData);
-			
-		}
-		
-		img.addEventListener("load", drawImage, false);
-		#if haxe3
-		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
-		#else
-		img.src = Std.format("data:$type;base64,${nmeBase64Encode(bytes)}");
-		#end
+		bitmapData.nmeLoadFromBytes(bytes, inRawAlpha, onload);
+		return bitmapData;
 		
 	}
 	
@@ -1011,6 +962,67 @@ class BitmapData implements IBitmapDrawable {
 	public inline function nmeGetLease():ImageDataLease {
 		
 		return nmeLease;
+		
+	}
+	
+	
+	private inline function nmeLoadFromBytes(bytes:ByteArray, inRawAlpha:ByteArray = null, ?onload:BitmapData -> Void) {
+		
+		var type = "";
+		
+		if (nmeIsPNG(bytes)) {
+			
+			type = "image/png";
+			
+		} else if (nmeIsJPG(bytes)) {
+			
+			type = "image/jpeg";
+			
+		} else {
+			
+			throw new IOError("BitmapData tried to read a PNG/JPG ByteArray, but found an invalid header.");
+			
+		}
+		
+		var img:HTMLImageElement = cast Lib.document.createElement("img");
+		var canvas = _nmeTextureBuffer;
+		
+		var drawImage = function(_) {
+			
+			canvas.width = img.width;
+			canvas.height = img.height;
+			
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, 0, 0);
+			
+			if (inRawAlpha != null) {
+				
+				var pixels = ctx.getImageData(0, 0, img.width, img.height);
+				
+				for (i in 0...inRawAlpha.length) {
+					
+					pixels.data[i * 4 + 3] = inRawAlpha.readUnsignedByte();
+					
+				}
+				
+				ctx.putImageData(pixels, 0, 0);
+				
+			}
+			
+			if (onload != null) {
+				
+				onload(this);
+				
+			}
+			
+		}
+		
+		img.addEventListener("load", drawImage, false);
+		#if haxe3
+		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
+		#else
+		img.src = Std.format("data:$type;base64,${nmeBase64Encode(bytes)}");
+		#end
 		
 	}
 	

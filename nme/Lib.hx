@@ -50,6 +50,11 @@ class Lib
 	#end
 	
 	
+	public inline static function as<T>( v : Dynamic, c : Class<T> ) : Null<T> {
+		return cast v;
+	}
+	
+	
 	/**
 	 * Closes the application.
 	 * This is method is ignored in the Flash and HTML5 targets.
