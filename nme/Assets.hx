@@ -575,6 +575,31 @@ class Assets {
 	
 	macro public static function embedBitmap ():Array<Field> {
 		
+		var fields = embedData (":bitmap");
+		
+		if (fields != null) {
+			
+			var constructor = macro { 
+				
+				super(0, 0);
+				
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
+				nmeLoadFromBytes(byteArray);
+				
+			};
+			
+			var args = [ { name: "width", opt: false, type: macro :Int, value: null }, { name: "height", opt: false, type: macro :Int, value: null }, { name: "transparent", opt: true, type: macro :Bool, value: macro true }, { name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF }, { name: "gpuMode", opt: true, type: macro :Bool, value: macro false } ];
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
+			
+		}
+		
+		return fields;
+		
+	}
+	
+	
+	private static function embedData (metaName:String):Array<Field> {
+		
 		var currentClass = Context.getLocalClass();
 		var classType = currentClass.get();
 		var metaData = classType.meta.get();
@@ -584,7 +609,7 @@ class Assets {
 		
 		for (meta in metaData) {
 			
-			if (meta.name == ":bitmap") {
+			if (meta.name == metaName) {
 				
 				if (meta.params.length > 0) {
 					
@@ -595,46 +620,10 @@ class Assets {
 							var path = Context.resolvePath (filePath);
 							var bytes = File.getBytes (path);
 							
-							#if neko // C++ has a compile error right now with the ByteArray String value
+							#if !cpp // C++ has a compile error right now with the ByteArray String value
 							
 							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
 							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
-							
-							fields.push ({
-								
-								kind: FFun({
-									
-									args: [
-										
-										{ name: "width", opt: false, type: macro :Int, value: null },
-										{ name: "height", opt: false, type: macro :Int, value: null },
-										{ name: "transparent", opt: true, type: macro :Bool, value: macro true },
-										{ name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF },
-										{ name: "gpuMode", opt: true, type: macro :Bool, value: macro false }
-										
-									],
-									
-									expr: macro {
-										
-										super(0, 0);
-										
-										var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
-										nmeHandle = BitmapData.nme_bitmap_data_from_bytes (byteArray, null);
-										
-									},
-									
-									params: [],
-									ret: null
-									
-								}),
-								
-								meta: [],
-								name: "new",
-								doc: null,
-								pos: position,
-								access: [ APublic ]
-								
-							});
 							
 							return fields;
 							
@@ -657,180 +646,68 @@ class Assets {
 	
 	macro public static function embedFile ():Array<Field> {
 		
-		var currentClass = Context.getLocalClass();
-		var classType = currentClass.get();
-		var metaData = classType.meta.get();
+		var fields = embedData (":file");
 		
-		var position = Context.currentPos();
-        var fields = Context.getBuildFields();
-		
-		for (meta in metaData) {
+		if (fields != null) {
 			
-			if (meta.name == ":file") {
+			var constructor = macro { 
 				
-				if (meta.params.length > 0) {
-					
-					switch (meta.params[0].expr) {
-						
-						case EConst(CString(filePath)):
-							
-							var path = Context.resolvePath (filePath);
-							var bytes = File.getBytes (path);
-							
-							#if neko // C++ has a compile error right now with the ByteArray String value, and Neko can't load Sound from bytes ("CFFILoader.h(248) : NOT Implemented:api_buffer_data")
-							
-							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
-							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
-							
-							fields.push ({
-								
-								kind: FFun({
-									
-									args: [
-										
-										{ name: "size", opt: true, type: macro :Int, value: macro 0 }
-										
-									],
-									
-									expr: macro {
-										
-										super();
-										
-										var bytes = haxe.io.Bytes.ofString (embeddedData);
-										b = bytes.b;
-										length = bytes.length;
-										
-										#if neko
-										alloced = length;
-										#end
-										
-									},
-									
-									params: [],
-									ret: null
-									
-								}),
-								
-								meta: [],
-								name: "new",
-								doc: null,
-								pos: position,
-								access: [ APublic ]
-								
-							});
-							
-							return fields;
-							
-							#end
-							
-						default:
-						
-					}
-					
-				}
+				super();
 				
-			}
+				nmeFromBytes (haxe.io.Bytes.ofString (embeddedData));
+				
+			};
+			
+			var args = [ { name: "size", opt: true, type: macro :Int, value: macro 0 } ];
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
 			
 		}
 		
-		return null;
+		return fields;
 		
 	}
 	
 	
 	macro public static function embedFont ():Array<Field> {
 		
-		var currentClass = Context.getLocalClass();
-		var classType = currentClass.get();
-		var metaData = classType.meta.get();
+		var fields = embedData (":font");
 		
-		for (meta in metaData) {
+		if (fields != null) {
 			
-			Sys.println (meta.name);
+			
 			
 		}
 		
-		return null;
+		return fields;
 		
 	}
 	
 	
 	macro public static function embedSound ():Array<Field> {
 		
-		var currentClass = Context.getLocalClass();
-		var classType = currentClass.get();
-		var metaData = classType.meta.get();
+		var fields = embedData (":sound");
 		
-		var position = Context.currentPos();
-        var fields = Context.getBuildFields();
-		
-		for (meta in metaData) {
+		if (fields != null) {
 			
-			if (meta.name == ":sound") {
+			#if !neko // CFFILoader.h(248) : NOT Implemented:api_buffer_data
+			
+			var constructor = macro { 
 				
-				if (meta.params.length > 0) {
-					
-					switch (meta.params[0].expr) {
-						
-						case EConst(CString(filePath)):
-							
-							var path = Context.resolvePath (filePath);
-							var bytes = File.getBytes (path);
-							
-							#if false // C++ has a compile error right now with the ByteArray String value, and Neko can't load Sound from bytes ("CFFILoader.h(248) : NOT Implemented:api_buffer_data")
-							
-							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
-							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
-							
-							fields.push ({
-								
-								kind: FFun({
-									
-									args: [
-										
-										{ name: "stream", opt: true, type: macro :nme.net.URLRequest, value: null },
-										{ name: "context", opt: true, type: macro :nme.media.SoundLoaderContext, value: null },
-										{ name: "forcePlayAsMusic", opt: true, type: macro :Bool, value: macro false }
-										
-									],
-									
-									expr: macro {
-										
-										super();
-										
-										var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
-										loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
-										
-									},
-									
-									params: [],
-									ret: null
-									
-								}),
-								
-								meta: [],
-								name: "new",
-								doc: null,
-								pos: position,
-								access: [ APublic ]
-								
-							});
-							
-							return fields;
-							
-							#end
-							
-						default:
-						
-					}
-					
-				}
+				super();
 				
-			}
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
+				loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
+				
+			};
+			
+			var args = [ { name: "stream", opt: true, type: macro :nme.net.URLRequest, value: null }, { name: "context", opt: true, type: macro :nme.media.SoundLoaderContext, value: null }, { name: "forcePlayAsMusic", opt: true, type: macro :Bool, value: macro false } ];
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
+			
+			#end
 			
 		}
 		
-		return null;
+		return fields;
 		
 	}
 	

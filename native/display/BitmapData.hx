@@ -237,7 +237,7 @@ class BitmapData implements IBitmapDrawable
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
+	  result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
 
@@ -271,6 +271,11 @@ class BitmapData implements IBitmapDrawable
 		   nmeFloodFill(x, y - 1, color, replaceColor);
 		   
 	   }
+   }
+   
+   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
+   {
+      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
    }
 
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 
