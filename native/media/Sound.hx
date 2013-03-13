@@ -11,6 +11,7 @@ import native.errors.Error;
 import native.utils.ByteArray;
 import native.utils.Endian;
 
+@:autoBuild(nme.Assets.embedSound())
 class Sound extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;

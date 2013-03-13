@@ -10,6 +10,7 @@ import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
 
+@:autoBuild(nme.Assets.embedBitmap())
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = 0x000000;

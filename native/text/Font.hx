@@ -4,6 +4,7 @@ package native.text;
 import native.display.Stage;
 import native.Loader;
 
+@:autoBuild(nme.Assets.embedFont())
 class Font 
 {
    public var fontName(default, null):String;

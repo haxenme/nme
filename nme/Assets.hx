@@ -1,4 +1,5 @@
 package nme;
+#if !macro
 
 
 import format.display.MovieClip;
@@ -558,3 +559,154 @@ enum LibraryType {
 	XFL;
 	
 }
+
+
+#else
+
+
+import haxe.macro.Context;
+import haxe.macro.Expr;
+import haxe.macro.Type;
+import sys.io.File;
+
+
+class Assets {
+	
+	
+	macro public static function embedBitmap ():Array<Field> {
+		
+		var currentClass = Context.getLocalClass();
+		var classType = currentClass.get();
+		var metaData = classType.meta.get();
+		
+		var position = Context.currentPos();
+        var fields = Context.getBuildFields();
+		
+		for (meta in metaData) {
+			
+			if (meta.name == ":bitmap") {
+				
+				if (meta.params.length > 0) {
+					
+					switch (meta.params[0].expr) {
+						
+						case EConst(CString(filePath)):
+							
+							var path = Context.resolvePath (filePath);
+							var bytes = File.getBytes (path);
+							
+							#if neko // C++ has a compile error right now with the ByteArray String value
+							
+							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
+							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
+							
+							fields.push ({
+								
+								kind: FFun({
+									
+									args: [
+										
+										{ name: "width", opt: false, type: macro :Int, value: null },
+										{ name: "height", opt: false, type: macro :Int, value: null },
+										{ name: "transparent", opt: true, type: macro :Bool, value: macro true },
+										{ name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF },
+										{ name: "gpuMode", opt: true, type: macro :Bool, value: macro false }
+										
+									],
+									
+									expr: macro {
+										
+										super(0, 0);
+										
+										var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
+										nmeHandle = BitmapData.nme_bitmap_data_from_bytes (byteArray, null);
+										
+									},
+									
+									params: [],
+									ret: null
+									
+								}),
+								
+								meta: [],
+								name: "new",
+								doc: null,
+								pos: position,
+								access: [ APublic ]
+								
+							});
+							
+							return fields;
+							
+							#end
+							
+						default:
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	macro public static function embedFile ():Array<Field> {
+		
+		var currentClass = Context.getLocalClass();
+		var classType = currentClass.get();
+		var metaData = classType.meta.get();
+		
+		for (meta in metaData) {
+			
+			Sys.println (meta.name);
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	macro public static function embedFont ():Array<Field> {
+		
+		var currentClass = Context.getLocalClass();
+		var classType = currentClass.get();
+		var metaData = classType.meta.get();
+		
+		for (meta in metaData) {
+			
+			Sys.println (meta.name);
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	macro public static function embedSound ():Array<Field> {
+		
+		var currentClass = Context.getLocalClass();
+		var classType = currentClass.get();
+		var metaData = classType.meta.get();
+		
+		for (meta in metaData) {
+			
+			Sys.println (meta.name);
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+}
+
+
+#end

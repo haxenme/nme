@@ -6,7 +6,7 @@ typedef MovieClip = nme.display.MovieClip;
 
 
 #else
-import flash.display.Sprite;
+import nme.display.Sprite;
 
 
 /**

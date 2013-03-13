@@ -17,6 +17,7 @@ typedef IntMap<T> = IntHash<T>;
 #end
 
 
+@:autoBuild(nme.Assets.embedFont())
 class Font {
 	
 	

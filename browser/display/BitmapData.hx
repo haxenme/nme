@@ -21,7 +21,7 @@ import browser.Lib;
 import haxe.xml.Check;
 
 
-
+@:autoBuild(nme.Assets.embedBitmap())
 class BitmapData implements IBitmapDrawable {
 	
 	

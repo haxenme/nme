@@ -19,13 +19,9 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-#if haxe3
+@:autoBuild(nme.Assets.embedFile())
 class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange 
 {
-#else
-class ByteArray extends Bytes, implements ArrayAccess<Int>, implements IDataInput, implements IMemoryRange 
-{
-#end
 
    public var bigEndian:Bool;
    public var bytesAvailable(get_bytesAvailable, null):Int;
