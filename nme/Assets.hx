@@ -661,9 +661,75 @@ class Assets {
 		var classType = currentClass.get();
 		var metaData = classType.meta.get();
 		
+		var position = Context.currentPos();
+        var fields = Context.getBuildFields();
+		
 		for (meta in metaData) {
 			
-			Sys.println (meta.name);
+			if (meta.name == ":file") {
+				
+				if (meta.params.length > 0) {
+					
+					switch (meta.params[0].expr) {
+						
+						case EConst(CString(filePath)):
+							
+							var path = Context.resolvePath (filePath);
+							var bytes = File.getBytes (path);
+							
+							#if neko // C++ has a compile error right now with the ByteArray String value, and Neko can't load Sound from bytes ("CFFILoader.h(248) : NOT Implemented:api_buffer_data")
+							
+							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
+							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
+							
+							fields.push ({
+								
+								kind: FFun({
+									
+									args: [
+										
+										{ name: "size", opt: true, type: macro :Int, value: macro 0 }
+										
+									],
+									
+									expr: macro {
+										
+										super();
+										
+										var bytes = haxe.io.Bytes.ofString (embeddedData);
+										b = bytes.b;
+										length = bytes.length;
+										
+										#if neko
+										alloced = length;
+										#end
+										
+									},
+									
+									params: [],
+									ret: null
+									
+								}),
+								
+								meta: [],
+								name: "new",
+								doc: null,
+								pos: position,
+								access: [ APublic ]
+								
+							});
+							
+							return fields;
+							
+							#end
+							
+						default:
+						
+					}
+					
+				}
+				
+			}
 			
 		}
 		
@@ -765,7 +831,6 @@ class Assets {
 		}
 		
 		return null;
-		
 		
 	}
 	
