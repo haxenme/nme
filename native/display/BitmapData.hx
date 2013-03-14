@@ -152,7 +152,7 @@ class BitmapData implements IBitmapDrawable
    
    public function floodFill(x:Int, y:Int, color:Int):Void
    {
-	   nmeFloodFill (x, y, color, getPixel32(x, y));
+	   nmeFloodFill(x, y, color, getPixel32(x, y));
    }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -256,20 +256,30 @@ class BitmapData implements IBitmapDrawable
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
    }
    
-   private function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   // need to build a better way to do this
+   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
    {
-	   if (getPixel32(x, y) == replaceColor) {
-		   
+	   if (getPixel32(x, y) == replaceColor)
+	   {  
 		   setPixel32(x, y, color);
-		   nmeFloodFill(x + 1, y, color, replaceColor);
-		   nmeFloodFill(x + 1, y + 1, color, replaceColor);
-		   nmeFloodFill(x + 1, y - 1, color, replaceColor);
-		   nmeFloodFill(x - 1, y, color, replaceColor);
-		   nmeFloodFill(x - 1, y + 1, color, replaceColor);
-		   nmeFloodFill(x - 1, y - 1, color, replaceColor);
-		   nmeFloodFill(x, y + 1, color, replaceColor);
-		   nmeFloodFill(x, y - 1, color, replaceColor);
 		   
+		   var safeLeft = (x > 0);
+		   var safeRight = (x < width - 1);
+		   var safeBottom = (y < height - 1);
+		   var safeTop = (y > 0);
+		   
+		   try { 
+				
+			   if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
+			   if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
+			   if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
+			   if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
+			   if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
+			   if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
+			   if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
+			   if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
+			   
+		   } catch (e:Dynamic) {}
 	   }
    }
    

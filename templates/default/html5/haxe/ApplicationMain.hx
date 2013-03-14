@@ -114,11 +114,11 @@ class ApplicationMain {
 
 class DocumentClass extends ::APP_MAIN:: {
 	
-	private override function get_stage ():nme.display.Stage {
-		
-		return nme.Lib.current.stage;
-		
-	}
+	//private override function get_stage ():nme.display.Stage {
+		//
+		//return nme.Lib.current.stage;
+		//
+	//}
 	
 }
 
