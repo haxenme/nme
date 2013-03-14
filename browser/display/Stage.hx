@@ -41,7 +41,6 @@ class Stage extends DisplayObjectContainer {
 	public var frameRate(get_frameRate, set_frameRate):Float;
 	public var fullScreenHeight(get_fullScreenHeight, null):Int;
 	public var fullScreenWidth(get_fullScreenWidth, null):Int;
-	public var loaderInfo:LoaderInfo;
 	public var nmePointInPathMode(default, null):PointInPathMode;
 	@:isVar public var quality(get_quality, set_quality):String;
 	public var scaleMode:StageScaleMode;

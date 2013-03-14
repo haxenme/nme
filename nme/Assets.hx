@@ -567,6 +567,7 @@ enum LibraryType {
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
+import haxe.Serializer;
 import sys.io.File;
 
 
@@ -585,7 +586,7 @@ class Assets {
 				
 				super(0, 0);
 				
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData));
 				nmeLoadFromBytes(byteArray);
 				
 			};
@@ -626,7 +627,7 @@ class Assets {
 							
 							#if !cpp // C++ has a compile error right now with the ByteArray String value
 							
-							var fieldValue = { pos: position, expr: EConst(CString(bytes.toString())) };
+							var fieldValue = { pos: position, expr: EConst(CString(Serializer.run (bytes))) };
 							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
 							
 							return fields;
@@ -660,7 +661,7 @@ class Assets {
 				
 				super();
 				
-				nmeFromBytes (haxe.io.Bytes.ofString (embeddedData));
+				nmeFromBytes (haxe.Unserializer.run (embeddedData));
 				
 			};
 			
@@ -703,7 +704,7 @@ class Assets {
 				
 				super();
 				
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.io.Bytes.ofString (embeddedData));
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData));
 				loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
 				
 			};
