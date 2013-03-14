@@ -580,8 +580,6 @@ class Assets {
 		
 		if (fields != null) {
 			
-			#if !html5 // How do we populate an HTML5 ByteArray from a String?
-			
 			var constructor = macro { 
 				
 				super(0, 0);
@@ -593,8 +591,6 @@ class Assets {
 			
 			var args = [ { name: "width", opt: false, type: macro :Int, value: null }, { name: "height", opt: false, type: macro :Int, value: null }, { name: "transparent", opt: true, type: macro :Bool, value: macro true }, { name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF }, { name: "gpuMode", opt: true, type: macro :Bool, value: macro false } ];
 			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
-			
-			#end
 			
 		}
 		
@@ -661,8 +657,6 @@ class Assets {
 		
 		if (fields != null) {
 			
-			#if !html5 // How do we populate an HTML5 ByteArray from a String?
-			
 			var constructor = macro { 
 				
 				super();
@@ -673,8 +667,6 @@ class Assets {
 			
 			var args = [ { name: "size", opt: true, type: macro :Int, value: macro 0 } ];
 			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
-			
-			#end
 			
 		}
 		

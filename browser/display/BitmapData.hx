@@ -1026,6 +1026,7 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 		img.addEventListener("load", drawImage, false);
+		
 		#if haxe3
 		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
 		#else

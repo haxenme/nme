@@ -103,6 +103,29 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	}
 	
 	
+	static public function fromBytes(inBytes:Bytes) 
+   {
+      var result = new ByteArray();
+	  result.nmeFromBytes(inBytes);
+      return result;
+   }
+   
+   
+   private inline function nmeFromBytes(inBytes:Bytes):Void
+   {
+	  length = inBytes.length;
+	  position = 0;
+	  
+	  for (i in 0...inBytes.length) {
+		  
+		  writeByte (inBytes.get (i));
+		  
+	  }
+	  
+	  position = 0;
+   }
+	
+	
 	public inline function nmeGet(pos:Int):Int {
 		
 		return data.getUint8(pos);
