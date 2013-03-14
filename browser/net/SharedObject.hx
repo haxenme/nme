@@ -136,6 +136,16 @@ class SharedObject extends EventDispatcher {
 	}
 	
 	
+	public function setProperty(propertyName:String, ?value:Dynamic):Void {
+		
+		if (data != null) {
+			
+			Reflect.setField (data, propertyName, value);
+		}
+		
+	}
+	
+	
 	
 	
 	// Getters & Setters

@@ -50,8 +50,15 @@ class Lib
 	#end
 	
 	
-	public inline static function as<T>( v : Dynamic, c : Class<T> ) : Null<T> {
+	public inline static function as<T>(v:Dynamic, c:Class<T>):Null<T>
+	{
 		return cast v;
+	}
+	
+	
+	public static function attach(name:String):MovieClip
+	{
+		return new MovieClip ();
 	}
 	
 	

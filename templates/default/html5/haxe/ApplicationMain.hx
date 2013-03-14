@@ -33,6 +33,7 @@ class ApplicationMain {
 		total = 0;
 		
 		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+		nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
 
 		::if (WIN_WIDTH == "0")::::if (WIN_HEIGHT == "0")::
 		browser.Lib.preventDefaultTouchMove();

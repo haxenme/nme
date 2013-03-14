@@ -43,6 +43,12 @@ class LoaderInfo extends URLLoader
    {
       var li = new LoaderInfo();
       li.loader = ldr;
+	  
+	  if (ldr == null) {
+		  
+		  li.url = "";
+		  
+	  }
 
       return li;
    }

@@ -46,6 +46,7 @@ class ApplicationMain
 				//{
 					nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+					nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
 				//}
 				
 				var hasMain = false;
