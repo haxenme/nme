@@ -152,7 +152,8 @@ class BitmapData implements IBitmapDrawable
    
    public function floodFill(x:Int, y:Int, color:Int):Void
    {
-	   nmeFloodFill(x, y, color, getPixel32(x, y));
+	   //nmeFloodFill(x, y, color, getPixel32(x, y)); // causing crashes, switching to clear() for now
+	   clear(color);
    }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -259,8 +260,8 @@ class BitmapData implements IBitmapDrawable
    // need to build a better way to do this
    private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
    {
-	   if (getPixel32(x, y) == replaceColor)
-	   {  
+	   if (getPixel32(x, y) == replaceColor) {
+		   
 		   setPixel32(x, y, color);
 		   
 		   var safeLeft = (x > 0);
