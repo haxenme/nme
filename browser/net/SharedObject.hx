@@ -10,7 +10,7 @@ import haxe.io.Bytes;
 import haxe.Serializer;
 import haxe.Unserializer;
 
-#if haxe_211
+#if haxe3
 import js.html.Storage;
 import js.Browser;
 #else
@@ -112,7 +112,7 @@ class SharedObject extends EventDispatcher {
 	
 	private static function nmeGetLocalStorage():Storage {
 		
-		#if haxe_211
+		#if haxe3
 		var res = Browser.getLocalStorage();
 		#else
 		var res = Storage.getLocal();

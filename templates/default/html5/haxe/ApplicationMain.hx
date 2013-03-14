@@ -101,7 +101,7 @@ class ApplicationMain {
 		preloader = null;
 		if (Reflect.field(::APP_MAIN::, "main") == null)
 		{
-			var mainDisplayObj = new DocumentClass();
+			var mainDisplayObj = Type.createInstance(DocumentClass, []);
 			if (Std.is(mainDisplayObj, browser.display.DisplayObject))
 				nme.Lib.current.addChild(cast mainDisplayObj);
 		}

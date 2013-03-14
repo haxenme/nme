@@ -710,8 +710,10 @@ class Assets {
 				
 				super();
 				
+				//#if !neko
 				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData.join("")));
 				loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
+				//#end
 				
 			};
 			

@@ -95,6 +95,13 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
+	public function clear (color:Int):Void {
+		
+		fillRect (rect, color);
+		
+	}
+	
+	
 	private function clipRect(r:Rectangle):Rectangle {
 		
 		if (r.x < 0) {
@@ -470,7 +477,8 @@ class BitmapData implements IBitmapDrawable {
 	
 	public function floodFill(x:Int, y:Int, color:Int):Void
    {
-	   nmeFloodFill (x, y, color, getPixel32(x, y));
+	   //nmeFloodFill (x, y, color, getPixel32(x, y));
+	   clear(color);
    }
 	
 	
