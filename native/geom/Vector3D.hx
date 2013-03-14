@@ -104,7 +104,13 @@ class Vector3D
 
       return l;
    }
-
+	
+   inline public function setTo(nx:Float, ny:Float, nz:Float):Void {
+	   x = nx;
+	   y = ny;
+	   z = nz;
+   }
+   
    inline public function project():Void 
    {
       x /= w;
