@@ -586,7 +586,7 @@ class Assets {
 				
 				super(0, 0);
 				
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData));
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData.join("")));
 				nmeLoadFromBytes(byteArray);
 				
 			};
@@ -624,15 +624,21 @@ class Assets {
 							
 							var path = Context.resolvePath (filePath);
 							var bytes = File.getBytes (path);
+							var data = Serializer.run (bytes);
+							var values:Array<Expr> = [];
 							
-							#if !cpp // C++ has a compile error right now with the ByteArray String value
+							while (data.length > 0) {
+								
+								var length = data.length > 1024 ? 1024 : data.length;
+								values.push ({ pos: position, expr: EConst(CString(data.substring (0, length))) });
+								data = data.substring (length);
+								
+							}
 							
-							var fieldValue = { pos: position, expr: EConst(CString(Serializer.run (bytes))) };
-							fields.push ({ kind: FVar(macro :String, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
+							var fieldValue = { pos: position, expr: EArrayDecl(values) };
+							fields.push ({ kind: FVar(macro :Array<String>, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
 							
 							return fields;
-							
-							#end
 							
 						default:
 						
@@ -661,7 +667,7 @@ class Assets {
 				
 				super();
 				
-				nmeFromBytes (haxe.Unserializer.run (embeddedData));
+				nmeFromBytes (haxe.Unserializer.run (embeddedData.join("")));
 				
 			};
 			
@@ -704,7 +710,7 @@ class Assets {
 				
 				super();
 				
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData));
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData.join("")));
 				loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
 				
 			};
