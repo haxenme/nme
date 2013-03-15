@@ -564,6 +564,7 @@ enum LibraryType {
 #else
 
 
+import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
@@ -584,13 +585,50 @@ class Assets {
 				
 				super(0, 0);
 				
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData.join("")));
+				#if html5
+				
+				var currentType = Type.getClass (this);
+				
+				if (preload != null) {
+					
+					_nmeTextureBuffer.width = Std.int (preload.rect.width);
+					_nmeTextureBuffer.height = Std.int (preload.rect.height);
+					setPixels(preload.rect, preload.getPixels(preload.rect));
+					nmeBuildLease();
+					
+				} else {
+					
+					var byteArray = nme.utils.ByteArray.fromBytes (haxe.Resource.getBytes(resourceName));
+					
+					if (onload != null && !Std.is (onload, Bool)) {
+						
+						nmeLoadFromBytes(byteArray, null, onload);
+						
+					} else {
+						
+						nmeLoadFromBytes(byteArray);
+						
+					}
+					
+				}
+				
+				#else
+				
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Resource.getBytes(resourceName));
 				nmeLoadFromBytes(byteArray);
+				
+				#end
 				
 			};
 			
-			var args = [ { name: "width", opt: false, type: macro :Int, value: null }, { name: "height", opt: false, type: macro :Int, value: null }, { name: "transparent", opt: true, type: macro :Bool, value: macro true }, { name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF }, { name: "gpuMode", opt: true, type: macro :Bool, value: macro false } ];
-			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
+			var args = [ { name: "width", opt: false, type: macro :Int, value: null }, { name: "height", opt: false, type: macro :Int, value: null }, { name: "transparent", opt: true, type: macro :Bool, value: macro true }, { name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF } ];
+			
+			#if html5
+			args.push ({ name: "onload", opt: true, type: macro :Dynamic, value: null });
+			fields.push ({ kind: FVar(macro :nme.display.BitmapData, null), name: "preload", doc: null, meta: [], access: [ APublic, AStatic ], pos: Context.currentPos() });
+			#end
+			
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), pos: Context.currentPos() });
 			
 		}
 		
@@ -601,12 +639,10 @@ class Assets {
 	
 	private static function embedData (metaName:String):Array<Field> {
 		
-		var currentClass = Context.getLocalClass();
-		var classType = currentClass.get();
+		var classType = Context.getLocalClass().get();
 		var metaData = classType.meta.get();
-		
 		var position = Context.currentPos();
-        var fields = Context.getBuildFields();
+		var fields = Context.getBuildFields();
 		
 		for (meta in metaData) {
 			
@@ -620,19 +656,12 @@ class Assets {
 							
 							var path = Context.resolvePath (filePath);
 							var bytes = File.getBytes (path);
-							var data = Serializer.run (bytes);
-							var values:Array<Expr> = [];
+							var resourceName = "NME_" + metaName + "_" + (classType.pack.length > 0 ? classType.pack.join ("_") + "_" : "") + classType.name;
 							
-							while (data.length > 0) {
-								
-								var length = data.length > 1024 ? 1024 : data.length;
-								values.push ({ pos: position, expr: EConst(CString(data.substring (0, length))) });
-								data = data.substring (length);
-								
-							}
+							Context.addResource (resourceName, bytes);
 							
-							var fieldValue = { pos: position, expr: EArrayDecl(values) };
-							fields.push ({ kind: FVar(macro :Array<String>, fieldValue), name: "embeddedData", doc: null, meta: [], access: [ APrivate, AStatic ], pos: position });
+							var fieldValue = { pos: position, expr: EConst(CString(resourceName)) };
+							fields.push ({ kind: FVar(macro :String, fieldValue), name: "resourceName", access: [ APrivate, AStatic ], pos: position });
 							
 							return fields;
 							
@@ -661,12 +690,12 @@ class Assets {
 				
 				super();
 				
-				nmeFromBytes (haxe.Unserializer.run (embeddedData.join("")));
+				nmeFromBytes (haxe.Resource.getBytes(resourceName));
 				
 			};
 			
 			var args = [ { name: "size", opt: true, type: macro :Int, value: macro 0 } ];
-			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), pos: Context.currentPos() });
 			
 		}
 		
@@ -702,15 +731,13 @@ class Assets {
 				
 				super();
 				
-				//#if !neko
-				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Unserializer.run (embeddedData.join("")));
+				var byteArray = nme.utils.ByteArray.fromBytes (haxe.Resource.getBytes(resourceName));
 				loadCompressedDataFromByteArray(byteArray, byteArray.length, forcePlayAsMusic);
-				//#end
 				
 			};
 			
 			var args = [ { name: "stream", opt: true, type: macro :nme.net.URLRequest, value: null }, { name: "context", opt: true, type: macro :nme.media.SoundLoaderContext, value: null }, { name: "forcePlayAsMusic", opt: true, type: macro :Bool, value: macro false } ];
-			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), meta: [], doc: null, pos: Context.currentPos() });
+			fields.push ({ name: "new", access: [ APublic ], kind: FFun({ args: args, expr: constructor, params: [], ret: null }), pos: Context.currentPos() });
 			
 			#end
 			

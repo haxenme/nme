@@ -1017,6 +1017,8 @@ class BitmapData implements IBitmapDrawable {
 				
 			}
 			
+			rect = new Rectangle (0, 0, canvas.width, canvas.height);
+			
 			if (onload != null) {
 				
 				onload(this);

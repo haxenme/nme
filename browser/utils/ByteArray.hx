@@ -113,16 +113,9 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
    
    private inline function nmeFromBytes(inBytes:Bytes):Void
    {
-	  length = inBytes.length;
-	  position = 0;
-	  
-	  for (i in 0...inBytes.length) {
-		  
-		  writeByte (inBytes.get (i));
-		  
-	  }
-	  
-	  position = 0;
+	  byteView = untyped __new__("Uint8Array", inBytes.getData());
+	  length = byteView.length;
+	  allocated = length;
    }
 	
 	

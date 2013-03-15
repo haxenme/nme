@@ -1,3 +1,4 @@
+#if !macro
 import nme.Assets;
 
 
@@ -88,12 +89,32 @@ class ApplicationMain
 }
 
 
-class DocumentClass extends ::APP_MAIN:: {
+@:build(DocumentClass.build())
+class DocumentClass extends ::APP_MAIN:: { }
+
+#else
+
+import haxe.macro.Context;
+import haxe.macro.Expr;
+
+class DocumentClass {
 	
-	//private override function get_stage ():nme.display.Stage {
-		//
-		//return nme.Lib.current.stage;
-		//
-	//}
+	macro public static function build ():Array<Field> {
+		var classType = Context.getLocalClass().get();
+		var searchTypes = classType;
+		while (searchTypes.superClass != null) {
+			if (searchTypes.pack.length == 2 && searchTypes.pack[1] == "display" && searchTypes.name == "DisplayObject") {
+				var fields = Context.getBuildFields();
+				var method = macro {
+					return nme.Lib.current.stage;
+				}
+				fields.push ({ name: "get_stage", access: [ APrivate, AOverride ], kind: FFun({ args: [], expr: method, params: [], ret: macro :nme.display.Stage }), pos: Context.currentPos() });
+				return fields;
+			}
+			searchTypes = searchTypes.superClass.t.get();
+		}
+		return null;
+	}
 	
 }
+#end
