@@ -9,15 +9,13 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
+#undef LOGV
+#undef LOGE
+
+#define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::System", msg, ## args)
+#define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::System", msg, ## args)
+
 JavaVM *gJVM=0;
-/*
-JNIEnv *GetEnv()
-{
-   JNIEnv *env = 0;
-   gJVM->AttachCurrentThread(&env, NULL);
-   return env;
-}
-*/
 
 namespace nme
 {
@@ -45,6 +43,7 @@ int GetResult()
 
 class AndroidStage : public Stage
 {
+    
 public:
    AndroidStage(int inWidth,int inHeight,int inFlags) : Stage(true)
    {
@@ -63,6 +62,7 @@ public:
       mDownY = 0;
 
       normalOrientation = 0;
+       
    }
    ~AndroidStage()
    {
@@ -221,7 +221,7 @@ public:
    void EnablePopupKeyboard(bool inEnable)
    {
       JNIEnv *env = GetEnv();
-      jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
       jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
       if (mid == 0)
         return;
@@ -339,7 +339,7 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
 {
     JNIEnv *env = GetEnv();
 
-    jclass cls = env->FindClass("org/haxe/nme/GameActivity");
+    jclass cls = FindClass("org/haxe/nme/GameActivity");
     jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
     if (mid == 0)
         return 0;
@@ -360,11 +360,11 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
 
 void AndroidRequestRender()
 {
-   JNIEnv *env = GetEnv();
-	jclass cls =env->FindClass("org/haxe/nme/MainView");
-   jmethodID mid = env->GetStaticMethodID(cls, "renderNow", "()V");
-   if (mid == 0)
-       return;
+    JNIEnv *env = GetEnv();
+    jclass cls = FindClass("org/haxe/nme/MainView");
+    jmethodID mid = env->GetStaticMethodID(cls, "renderNow", "()V");
+    if (mid == 0)
+        return;
     env->CallStaticVoidMethod(cls, mid);
 }
 
@@ -428,11 +428,9 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 }
 
 
-
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
    env->GetJavaVM(&gJVM);
-
    int top = 0;
    gc_set_top_of_stack(&top,true);
    //double t0 = nme::GetTimeStamp();
@@ -476,7 +474,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onOrientationUpdate(JNIEnv * env, 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
 {
-
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -487,7 +484,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id, jfloat sizeX, jfloat sizeY)
 {
-
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -498,7 +494,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj,
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
 {
-
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -556,7 +551,6 @@ JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobje
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject obj, int inVal)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -564,10 +558,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
-
-
-
-
 
 
 } // end extern C
