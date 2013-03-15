@@ -1,4 +1,4 @@
-package nme.installer;
+package nme;
 
 
 import nme.display.BitmapData;
@@ -9,19 +9,16 @@ import nme.utils.ByteArray;
 import ApplicationMain;
 
 
-/**
- * ...
- * @author Joshua Granick
- */
+import haxe.ds.StringMap;
 
 class Assets {
 
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	public static var cachedBitmapData:StringMap<BitmapData> = new StringMap<BitmapData>();
 	
 	private static var initialized:Bool = false;
-	private static var resourceClasses:Hash <Dynamic> = new Hash <Dynamic> ();
-	private static var resourceTypes:Hash <String> = new Hash <String> ();
+	private static var resourceClasses:StringMap <Dynamic> = new StringMap <Dynamic> ();
+	private static var resourceTypes:StringMap <String> = new StringMap <String> ();
 	
 	
 	private static function initialize ():Void {
@@ -38,7 +35,7 @@ class Assets {
 	}
 	
 	
-	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
+	public static function getBitmapData (id:String, useCache:Bool = false):BitmapData {
 		
 		initialize ();
 		

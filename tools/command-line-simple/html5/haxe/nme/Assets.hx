@@ -1,4 +1,4 @@
-package nme.installer;
+package nme;
 
 
 import nme.display.Bitmap;
@@ -8,7 +8,7 @@ import nme.net.URLRequest;
 import nme.text.Font;
 import nme.utils.ByteArray;
 import ApplicationMain;
-
+import haxe.ds.StringMap;
 
 /**
  * ...
@@ -18,13 +18,13 @@ import ApplicationMain;
 class Assets {
 	
 	
-	public static var cachedBitmapData:Hash<BitmapData> = new Hash<BitmapData>();
+	public static var cachedBitmapData:StringMap<BitmapData> = new StringMap<BitmapData>();
 	
 	
-	public static function getBitmapData (id:String, useCache:Bool = true):BitmapData {
+	public static function getBitmapData (id:String, useCache:Bool = false):BitmapData {
 		
 		// Should be bitmapData.clone (), but stopped working in recent Jeash builds
-		// Without clone, BitmapData is already cached, so ignoring the hash table for now
+		// Without clone, BitmapData is already cached, so ignoring the StringMap table for now
 		
 		switch (id) {
 			
