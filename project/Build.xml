@@ -324,6 +324,9 @@
    
    
    <set name="name_prefix" value="lib" if="iphone" />
+
+	<set name="openal_link" value="1" if="win_desktop"/>
+	<unset name="openal_link" unless="openal"/>
    
    
    <target id="NDLL" output="${name_prefix}nme${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
@@ -425,7 +428,7 @@
       
       <lib name="gdi32.lib" if="win_desktop"/>
       <lib name="opengl32.lib" if="win_desktop"/>
-	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="win_desktop"/>
+	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="openal_link"/>
       <lib name="user32.lib" if="win_desktop"/>
       <lib name="kernel32.lib" if="win_desktop"/>
       <lib name="advapi32.lib" if="win_desktop"/>
