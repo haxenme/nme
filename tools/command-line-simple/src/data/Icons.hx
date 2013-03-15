@@ -336,7 +336,7 @@ class Icons
       }
 
       var command = "ReplaceVistaIcon.exe";
-      InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
+      InstallTool.runCommand (InstallTool.nme + "\\tools\\command-line-simple\\bin\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
 	  
    }
 
