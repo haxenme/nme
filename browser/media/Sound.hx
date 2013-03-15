@@ -10,12 +10,6 @@ import browser.net.URLLoader;
 import browser.Html5Dom;
 import browser.Lib;
 
-#if haxe3
-import haxe.ds.IntMap;
-#else
-typedef IntMap<T> = IntHash<T>;
-#end
-
 
 @:autoBuild(nme.Assets.embedSound())
 class Sound extends EventDispatcher {
@@ -38,7 +32,7 @@ class Sound extends EventDispatcher {
 	public var url(default, null):String;
 	
 	private var nmeSoundCache:URLLoader;
-	private var nmeSoundChannels:IntMap<SoundChannel>;
+	private var nmeSoundChannels:Map<Int, SoundChannel>;
 	private var nmeSoundIdx:Int;
 	private var nmeStreamUrl:String;
 
@@ -54,7 +48,7 @@ class Sound extends EventDispatcher {
 		length = 0;
 		url = null;
 		
-		nmeSoundChannels = new IntMap<SoundChannel>();
+		nmeSoundChannels = new Map<Int, SoundChannel>();
 		nmeSoundIdx = 0;
 		
 		if (stream != null) {

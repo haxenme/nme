@@ -1028,12 +1028,7 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 		img.addEventListener("load", drawImage, false);
-		
-		#if haxe3
 		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
-		#else
-		img.src = Std.format("data:$type;base64,${nmeBase64Encode(bytes)}");
-		#end
 		
 	}
 	
@@ -1090,11 +1085,8 @@ class BitmapData implements IBitmapDrawable {
 		if (inLoader != null) {
 			
 			var data:LoadData = { image: image, texture: _nmeTextureBuffer, inLoader: inLoader, bitmapData: this };
-			#if haxe3
+			
 			image.addEventListener("load", nmeOnLoad.bind (data), false);
-			#else
-			image.addEventListener("load", callback(nmeOnLoad, data), false);
-			#end
 			// IE9 bug, force a load, if error called and complete is false.
 			image.addEventListener("error", function(e) { if (!image.complete) nmeOnLoad(data, e); }, false);
 			

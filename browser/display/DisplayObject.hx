@@ -24,11 +24,7 @@ import browser.Html5Dom;
 import browser.Lib;
 
 
-#if haxe3
 class DisplayObject extends EventDispatcher implements IBitmapDrawable {
-#else
-class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
-#end
 	
 	
 	private static inline var GRAPHICS_INVALID:Int = 1 << 1;

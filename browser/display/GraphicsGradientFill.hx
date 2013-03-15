@@ -8,7 +8,7 @@ import  browser.geom.Matrix;
 import browser.Html5Dom;
 
 
-class GraphicsGradientFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {
+class GraphicsGradientFill implements IGraphicsData implements IGraphicsFill {
 	
 	
 	public var alphas:Array<Float>;

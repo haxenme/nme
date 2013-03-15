@@ -10,12 +10,6 @@ import browser.Html5Dom;
 import haxe.Unserializer;
 import haxe.Resource;
 
-#if haxe3
-import haxe.ds.IntMap;
-#else
-typedef IntMap<T> = IntHash<T>;
-#end
-
 
 @:autoBuild(nme.Assets.embedFont())
 class Font {
@@ -33,7 +27,7 @@ class Font {
 	private static var nmeFontData:Array<String>;
 	
 	private var nmeFontScale:Float;
-	private var nmeGlyphData:IntMap<GlyphData>;
+	private var nmeGlyphData:Map<Int, GlyphData>;
 	private var nmeMetrics:Array<Int>;
 	
 	

@@ -3,17 +3,13 @@ package native.external;
 
 import native.Loader;
 
-#if haxe3
-typedef Hash<T> = haxe.ds.StringMap<T>;
-#end
-
 class ExternalInterface 
 {
    public static var available(get_available, null):Bool;
    public static var marshallExceptions:Bool;
    public static var objectID:String;
 
-   private static var callbacks:Hash<Dynamic> = new Hash<Dynamic>();
+   private static var callbacks = new Map<String, Dynamic>();
 
    public static function addCallback(functionName:String, closure:Dynamic):Void 
    {

@@ -1119,22 +1119,14 @@ class Lib {
 	
 	private static inline function get_document():HTMLDocument {
 		
-		#if haxe3
 		return cast js.Browser.document;
-		#else
-		return cast js.Lib.document;
-		#end
 		
 	}
 	
 	
 	private static inline function get_window():Window {
 		
-		#if haxe3
 		return cast js.Browser.window;
-		#else
-		return cast js.Lib.window;
-		#end
 		
 	}
 	

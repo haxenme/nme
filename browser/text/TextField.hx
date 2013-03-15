@@ -17,12 +17,6 @@ import browser.ui.Keyboard;
 import browser.Html5Dom;
 import browser.Lib;
 
-#if haxe3
-import haxe.ds.StringMap;
-#else
-typedef StringMap<T> = Hash<T>;
-#end
-
 
 class TextField extends InteractiveObject {
 	
@@ -955,13 +949,6 @@ class TextField extends InteractiveObject {
 }
 
 
-#if !haxe3
-import browser.geom.Matrix;
-import browser.display.Graphics;
-import browser.display.BitmapData;
-#end
-
-
 enum FontInstanceMode {
 	
 	fimSolid;
@@ -975,7 +962,7 @@ class FontInstance {
 	public var height(get_height, null):Int;
 	public var mTryFreeType:Bool;
 	
-	private static var mSolidFonts = new StringMap<FontInstance>();
+	private static var mSolidFonts = new Map<String, FontInstance>();
 	
 	private var mMode:FontInstanceMode;
 	private var mColour:Int;

@@ -5,7 +5,7 @@ package browser.display;
 import browser.display.IGraphicsData;
 
 
-class GraphicsStroke implements IGraphicsData #if !haxe3 , #end implements IGraphicsStroke {
+class GraphicsStroke implements IGraphicsData implements IGraphicsStroke {
 	
 	
 	public var caps:CapsStyle;

@@ -18,7 +18,7 @@ package nme.display;
  * <code>GraphicsPath.commands</code> and <code>GraphicsPath.data</code>
  * vector arrays.</p>
  */
-@:final extern class GraphicsPath implements IGraphicsData/* #if !haxe3 , #end implements IGraphicsPath*/ {
+@:final extern class GraphicsPath implements IGraphicsData/* implements IGraphicsPath*/ {
 
 	/**
 	 * The Vector of drawing commands as integers representing the path. Each
