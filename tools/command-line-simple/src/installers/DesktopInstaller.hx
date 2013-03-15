@@ -265,7 +265,7 @@ class DesktopInstaller extends InstallerBase {
 			var extension:String = ".ndll";
 			
 			// This messes with the exe when neko is appended to the exe
-			if (ndll.haxelib=="" || ndll.haxelib=="hxcpp") {
+			if (!data.NDLL.nekoMode && ( ndll.haxelib=="" || ndll.haxelib=="hxcpp")) {
 				
 				if (targetName == "windows") {
 					

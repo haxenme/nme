@@ -10,10 +10,17 @@ import Sys;
 
 class NekoInstaller extends DesktopInstaller {
 	
+   public function new()
+   {
+      data.NDLL.nekoMode = true;
+      super();
+   }
+
 	
 	override function copyResultTo (inExe:String) {
 		
-		var nekoExecutablePath = NME + "/tools/command-line-simple/neko/bin/neko-" + targetName;
+      var ext= targetName == "windows" ? ".exe" : "";
+		var nekoExecutablePath = Sys.getEnv("NEKO_INSTPATH") + "/neko" + ext;
 		var nekoExecutableContents = File.getBytes (nekoExecutablePath);
 		
 		var applicationFilePath = getBuildDir () + "/ApplicationMain.n";
@@ -26,7 +33,7 @@ class NekoInstaller extends DesktopInstaller {
 		output.writeInt32 (nekoExecutableContents.length);
 		output.close ();
 		
-		recursiveCopy (NME + "/tools/command-line-simple/neko/ndll/" + targetName + "/", getExeDir (), false);
+		//recursiveCopy (NME + "simple/neko/ndll/" + targetName + "/", getExeDir (), false);
 		
 		/*
 		

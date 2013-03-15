@@ -6,6 +6,7 @@ import Sys;
 
 
 class NDLL {
+   public static var nekoMode = true;
 	
 	
 	public var extension:String;
@@ -29,8 +30,8 @@ class NDLL {
 			
 		} else {
 
-         if (inName=="std" || inName=="regex" || inName=="zlib")
-            haxelib = "hxcpp";
+         if (inName=="std" || inName=="regexp" || inName=="zlib")
+            haxelib = "";
          else
 			   haxelib = inHaxelib;
 			
@@ -53,9 +54,12 @@ class NDLL {
 			
 			return extension + "/ndll/" + directoryName + "/" + filename;
 			
-		} else if (haxelib == "" || haxelib == "hxcpp") {
+		} else if (haxelib == "" ) {
 			
-			var path:String = Utils.getHaxelib ("hxcpp") + "/bin/" + directoryName + "/" + filename;
+			var path:String =
+           (nekoMode ? Sys.getEnv("NEKO_INSTPATH") :
+            Utils.getHaxelib ("hxcpp") + "/bin/" +directoryName) 
+          + "/" + filename;
 			
 			if (FileSystem.exists (path)) {
 				

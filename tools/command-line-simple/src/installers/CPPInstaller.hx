@@ -9,6 +9,12 @@ import Sys;
 
 class CPPInstaller extends DesktopInstaller {
 
+   public function new()
+   {
+      data.NDLL.nekoMode = false;
+      super();
+   }
+
 
 	override function getVM ():String { 
 		
