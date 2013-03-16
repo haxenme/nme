@@ -4,6 +4,7 @@ package browser.ui;
 
 import browser.ui.MultitouchInputMode;
 import browser.Lib;
+import js.Browser;
 
 
 class Multitouch {
@@ -56,7 +57,7 @@ class Multitouch {
 	private static function get_supportsTouchEvents():Bool {
 		
 		// just one of many possible tests from http://modernizr.github.com/Modernizr/touch.html
-		var supported = Reflect.hasField(Lib.window, "ontouchstart");
+		var supported = Reflect.hasField(Browser.window, "ontouchstart");
 		return supported;
 		
 	}

@@ -2,7 +2,6 @@ package browser.geom;
 #if js
 
 
-import browser.Html5Dom;
 import nme.Vector;
 
 

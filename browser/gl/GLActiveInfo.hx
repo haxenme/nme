@@ -2,9 +2,7 @@ package browser.gl;
 #if js
 
 
-import browser.Html5Dom;
-
-typedef GLActiveInfo = WebGLActiveInfo;
+typedef GLActiveInfo = js.html.webgl.ActiveInfo;
 
 
 #end

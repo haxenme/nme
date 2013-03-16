@@ -15,9 +15,11 @@ import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.ui.Acceleration;
 import browser.ui.Keyboard;
-import browser.Html5Dom;
 import browser.Lib;
 import nme.Vector;
+import js.html.CanvasElement;
+import js.html.DeviceMotionEvent;
+import js.Browser;
 
 #if stage3d
 import browser.display.Stage3D;
@@ -75,7 +77,7 @@ class Stage extends DisplayObjectContainer {
 	private var nmeStageMatrix:Matrix;
 	private var nmeTimer:Dynamic;
 	private var nmeTouchInfo:Array<TouchInfo>;
-	private var nmeUIEventsQueue:Array<Html5DomEvent>;
+	private var nmeUIEventsQueue:Array<js.html.Event>;
 	private var nmeUIEventsQueueIndex:Int;
 	private var nmeWindowWidth:Int;
 	private var nmeWindowHeight:Int;
@@ -306,7 +308,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	public function nmeProcessStageEvent(evt:Html5DomEvent):Void {
+	public function nmeProcessStageEvent(evt:js.html.Event):Void {
 		
 		evt.stopPropagation();
 		
@@ -322,7 +324,7 @@ class Stage extends DisplayObjectContainer {
 			
 			case "blur":
 				
-				nmeOnFocus(cast evt, false);
+				nmeOnFocus(evt, false);
 			
 			case "mousemove":
 				
@@ -350,7 +352,7 @@ class Stage extends DisplayObjectContainer {
 			
 			case "keydown":
 				
-				var evt:Html5DomKeyboardEvent = cast evt;
+				var evt:js.html.KeyboardEvent = cast evt;
 				var keyCode = (evt.keyCode != null ? evt.keyCode : evt.which);
 				keyCode = Keyboard.nmeConvertMozillaCode(keyCode);
 				
@@ -358,7 +360,7 @@ class Stage extends DisplayObjectContainer {
 			
 			case "keyup":
 				
-				var evt:Html5DomKeyboardEvent = cast evt;
+				var evt:js.html.KeyboardEvent = cast evt;
 				var keyCode = (evt.keyCode != null ? evt.keyCode : evt.which);
 				keyCode = Keyboard.nmeConvertMozillaCode(keyCode);
 				
@@ -366,7 +368,7 @@ class Stage extends DisplayObjectContainer {
 			
 			case "touchstart":
 				
-				var evt:Html5DomTouchEvent = cast evt;
+				var evt:js.html.TouchEvent = cast evt;
 				evt.preventDefault();
 				var touchInfo = new TouchInfo();
 				nmeTouchInfo[evt.changedTouches[0].identifier] = touchInfo;
@@ -374,20 +376,20 @@ class Stage extends DisplayObjectContainer {
 			
 			case "touchmove":
 				
-				var evt:Html5DomTouchEvent = cast evt;
+				var evt:js.html.TouchEvent = cast evt;
 				var touchInfo = nmeTouchInfo[evt.changedTouches[0].identifier];
 				nmeOnTouch(evt, evt.changedTouches[0], TouchEvent.TOUCH_MOVE, touchInfo, true);
 			
 			case "touchend":
 				
-				var evt:Html5DomTouchEvent = cast evt;
+				var evt:js.html.TouchEvent = cast evt;
 				var touchInfo = nmeTouchInfo[evt.changedTouches[0].identifier];
 				nmeOnTouch(evt, evt.changedTouches[0], TouchEvent.TOUCH_END, touchInfo, true);
 				nmeTouchInfo[evt.changedTouches[0].identifier] = null;
 			
 			case Lib.HTML_ACCELEROMETER_EVENT_TYPE:
 				
-				var evt:Html5DomAccelerationEvent = cast evt;
+				var evt:DeviceMotionEvent = cast evt;
 				nmeHandleAccelerometer(evt);
 			
 			case Lib.HTML_ORIENTATION_EVENT_TYPE:
@@ -401,9 +403,9 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	public function nmeQueueStageEvent(evt:Html5DomEvent):Void {
+	public function nmeQueueStageEvent(evt:js.html.Event):Void {
 		
-		nmeUIEventsQueue[nmeUIEventsQueueIndex++] = cast evt;
+		nmeUIEventsQueue[nmeUIEventsQueueIndex++] = evt;
 		
 	}
 	
@@ -415,7 +417,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	public function nmeRenderToCanvas(canvas:HTMLCanvasElement):Void {
+	public function nmeRenderToCanvas(canvas:CanvasElement):Void {
 		
 		canvas.width = canvas.width;
 		nmeRender(canvas);
@@ -509,16 +511,15 @@ class Stage extends DisplayObjectContainer {
 		
 		if (nmeFrameRate == 0) {
 			
-			var window:Window = cast Lib.window;
 			var nmeRequestAnimationFrame:Dynamic = untyped __js__("window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame");
 			nmeRequestAnimationFrame(nmeUpdateNextWake);
 			nmeStageRender();
 			
 		} else {
 			
-			var window:Window = cast Lib.window;
-			window.clearInterval(nmeTimer);
-			nmeTimer = window.setInterval(nmeStageRender, nmeInterval, []);
+			Browser.window.clearInterval(nmeTimer);
+			//nmeTimer = Browser.window.setInterval(cast nmeStageRender, nmeInterval, []);
+			nmeTimer = Browser.window.setInterval(cast nmeStageRender, nmeInterval);
 			
 		}
 		
@@ -539,7 +540,7 @@ class Stage extends DisplayObjectContainer {
 	
 	
 	
-	private function nmeHandleAccelerometer(evt:Html5DomAccelerationEvent):Void {
+	private function nmeHandleAccelerometer(evt:DeviceMotionEvent):Void {
 		
 		nmeAcceleration.x = evt.accelerationIncludingGravity.x;
 		nmeAcceleration.y = evt.accelerationIncludingGravity.y;
@@ -563,7 +564,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	private function nmeOnFocus(event:Html5DomFocusEvent, hasFocus:Bool) {
+	private function nmeOnFocus(event:Dynamic, hasFocus:Bool) {
 		
 		if (hasFocus) {
 			
@@ -580,7 +581,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	private function nmeOnMouse(event:Html5DomMouseEvent, type:String) {
+	private function nmeOnMouse(event:js.html.MouseEvent, type:String) {
 		
 		var point:Point = untyped new Point(event.clientX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, event.clientY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
 		
@@ -636,7 +637,7 @@ class Stage extends DisplayObjectContainer {
 	}
 	
 	
-	private function nmeOnTouch(event:Html5DomTouchEvent, touch:Touch, type:String, touchInfo:TouchInfo, isPrimaryTouchPoint:Bool):Void {
+	private function nmeOnTouch(event:js.html.TouchEvent, touch:js.html.Touch, type:String, touchInfo:TouchInfo, isPrimaryTouchPoint:Bool):Void {
 		
 		var point:Point = untyped new Point(touch.pageX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, touch.pageY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
 		var obj = nmeGetObjectUnderPoint(point);
@@ -732,7 +733,7 @@ class Stage extends DisplayObjectContainer {
 		
 		if (speed == 0) {
 			
-			var window : Window = cast Lib.window;
+			var window = Browser.window;
 			var nmeRequestAnimationFrame:Dynamic = untyped __js__("window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame");
 			
 			if (nmeRequestAnimationFrame == null) {
@@ -745,7 +746,6 @@ class Stage extends DisplayObjectContainer {
 		
 		if (speed != 0) {
 			
-			var window : Window = cast Lib.window;
 			nmeInterval = Std.int( 1000.0/speed );
 			
 		}

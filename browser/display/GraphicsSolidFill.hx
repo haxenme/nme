@@ -4,7 +4,6 @@ package browser.display;
 
 import browser.display.IGraphicsData;
 import browser.display.IGraphicsFill;
-import browser.Html5Dom;
 
 
 class GraphicsSolidFill implements IGraphicsData implements IGraphicsFill {

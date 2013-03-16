@@ -2,9 +2,7 @@ package browser.gl;
 #if js
 
 
-import browser.Html5Dom;
-
-typedef GLShader = WebGLShader;
+typedef GLShader = js.html.webgl.Shader;
 
 
 #end

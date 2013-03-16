@@ -5,8 +5,8 @@ package browser.display;
 import browser.geom.Rectangle;
 import browser.geom.Matrix;
 import browser.gl.GL;
-import browser.Html5Dom;
 import browser.Lib;
+import js.html.CanvasElement;
 
 
 class DirectRenderer extends DisplayObject {
@@ -54,7 +54,7 @@ class DirectRenderer extends DisplayObject {
 	}
 	
 	
-	private override function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null) {
+	private override function nmeRender(inMask:CanvasElement = null, clipRect:Rectangle = null) {
 		
 		if (!nmeCombinedVisible) return;
 		

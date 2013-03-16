@@ -2,8 +2,9 @@ package browser.system;
 #if js
 
 
-import browser.Html5Dom;
 import browser.Lib;
+import js.html.Element;
+import js.Browser;
 
 
 class Capabilities {
@@ -31,8 +32,8 @@ class Capabilities {
 		
 		//little trick of measuring the width of a 1 inch div
 		//but sadly most browsers/OSs still return wrong result...
-		var body = Lib.document.getElementsByTagName("body")[0];
-		var testDiv:HTMLElement = cast Lib.document.createElement("div");
+		var body = Browser.document.getElementsByTagName("body")[0];
+		var testDiv:Element = cast Browser.document.createElement("div");
 		testDiv.style.width = testDiv.style.height = "1in";
 		testDiv.style.padding = testDiv.style.margin = "0px";
 		testDiv.style.position = "absolute";
@@ -48,14 +49,14 @@ class Capabilities {
 	
 	private static function get_screenResolutionX():Float { 
 		
-		return Std.parseFloat(Lib.window.screen.width);
+		return Std.parseFloat(Browser.window.screen.width);
 		
 	}
 	
 	
 	private static function get_screenResolutionY():Float {
 		
-		return Std.parseFloat(Lib.window.screen.height);
+		return Std.parseFloat(Browser.window.screen.height);
 		
 	}
 	

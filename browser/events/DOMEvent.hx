@@ -6,10 +6,10 @@ package browser.events;
 class DOMEvent extends Event {
 	
 	
-	public var domEvent:browser.Html5Dom.Html5DomEvent;
+	public var domEvent:js.html.Event;
 	
 	
-	public function new(type:String, domEvent:browser.Html5Dom.Html5DomEvent = null) {
+	public function new(type:String, domEvent:js.html.Event = null) {
 		
 		super(type, false, false);
 		

@@ -7,6 +7,7 @@ import browser.errors.ArgumentError;
 import browser.events.AccelerometerEvent;
 import browser.events.EventDispatcher;
 import haxe.Timer;
+import js.Browser;
 
 
 class Accelerometer extends EventDispatcher {
@@ -95,7 +96,7 @@ class Accelerometer extends EventDispatcher {
 	
 	private static function get_isSupported():Bool { 
 		
-		var supported = Reflect.hasField(Lib.window, "on" + Lib.HTML_ACCELEROMETER_EVENT_TYPE);
+		var supported = Reflect.hasField(Browser.window, "on" + Lib.HTML_ACCELEROMETER_EVENT_TYPE);
 		return supported;
 		
 	}

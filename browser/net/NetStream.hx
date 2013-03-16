@@ -8,9 +8,10 @@ import browser.events.Event;
 import browser.events.EventDispatcher;
 import browser.events.NetStatusEvent;
 import browser.media.VideoElement;
-import browser.Html5Dom;
 import browser.Lib;
 import haxe.Timer;
+import js.html.MediaElement;
+import js.Browser;
 
 
 class NetStream extends EventDispatcher {
@@ -44,7 +45,7 @@ class NetStream extends EventDispatcher {
 	
 	public var bufferTime:Float;
 	public var client:Dynamic;
-	public var nmeVideoElement(default, null):HTMLMediaElement;
+	public var nmeVideoElement(default, null):MediaElement;
 	public var play:Dynamic;
 	
 	private static inline var fps:Int = 30;
@@ -57,7 +58,7 @@ class NetStream extends EventDispatcher {
 		
 		super();
 		
-		nmeVideoElement = cast js.Lib.document.createElement("video");
+		nmeVideoElement = cast Browser.document.createElement("video");
 		nmeConnection = connection;
 		
 		play = Reflect.makeVarArgs(nmePlay);

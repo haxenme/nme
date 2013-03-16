@@ -8,7 +8,6 @@ import browser.utils.ArrayBuffer;
 import browser.utils.ArrayBufferView;
 import browser.utils.ByteArray;
 import browser.utils.IMemoryRange;
-import browser.Html5Dom;
 
 
 class GL {
