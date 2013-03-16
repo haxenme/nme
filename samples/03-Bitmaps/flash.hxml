@@ -1,4 +1,4 @@
 -main Sample
--swf9 Sample.swf
+-swf Sample.swf
 -swf-header 480:320:30:ffffff
 -cp ../..

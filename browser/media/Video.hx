@@ -15,7 +15,11 @@ import browser.media.VideoElement;
 import browser.net.NetStream;
 import browser.Html5Dom;
 import browser.Lib;
+#if !haxe3
 import js.Dom;
+#else
+import js.html.*;
+#end
 
 
 class Video extends DisplayObject {

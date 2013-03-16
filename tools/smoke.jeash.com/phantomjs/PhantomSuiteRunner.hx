@@ -12,9 +12,6 @@ import utest.ui.text.PrintReport;
 
 using haxe.io.Path;
 
-using tink.macro.tools.MacroTools;
-using tink.core.types.Outcome;
-
 using Lambda;
 using Std;
 using StringTools;
@@ -76,7 +73,7 @@ class PhantomSuiteRunner {
 			trace("-- done -- " + address); 
 		}, ASYNC_WAIT );
 
-		trace("Loading ${address}".format());
+		trace('Loading ${address}');
 		page.open(address, executeAfterPageLoad(async));	
 	}
 
@@ -88,25 +85,25 @@ class PhantomSuiteRunner {
 				cb();
 			}
 
-	public static function stringTest(expected: String) return function (page) stringTestPage(page, expected)
+	public static function stringTest(expected: String) {return function (page) stringTestPage(page, expected);}
 	public static function stringTestPage(page: WebPage, expected: String) {
 		Assert.equals(expected, page.evaluate(function () return untyped window.phantomTestResult));
 	}
-	public static function boolTest() return function (page) boolTestPage(page)
+	public static function boolTest() {return function (page) boolTestPage(page);}
 	public static function boolTestPage(page: WebPage) {
 #if js
 		Assert.isTrue(page.evaluate(function () return untyped window.phantomTestResult));
 #end
 	}
-	public static function intTest(expected: Int) return function (page) intTestPage(page, expected)
+	public static function intTest(expected: Int) {return function (page) intTestPage(page, expected);}
 	public static function intTestPage(page: WebPage, expected: Int) {
 		Assert.equals(expected, page.evaluate(function () return untyped window.phantomTestResult));
 	}
-	public static function arrayTest(expected: Array<Dynamic>) return function (page) arrayTestPage(page, expected)
+	public static function arrayTest(expected: Array<Dynamic>) {return function (page) arrayTestPage(page, expected);}
 	public static function arrayTestPage(page: WebPage, expected: Array<Dynamic>) {
 		Assert.same(expected, page.evaluate(function () return untyped window.phantomTestResult));
 	}
-	public static function imageTest(imageFileName: String) return function (page) imageTestPage(page, imageFileName)
+	public static function imageTest(imageFileName: String) {return function (page) imageTestPage(page, imageFileName);}
 	public static function imageTestPage(page: WebPage, imageFileName: String) {
 #if js
 			var compareFileName = "/" + imageFileName.withoutDirectory().withoutExtension() + "_compare.png";
@@ -116,14 +113,14 @@ class PhantomSuiteRunner {
 #end
 	}
 
-	public static function imageDump(imageFileName: String) return function (page) imageDumpPage(page, imageFileName)
+	public static function imageDump(imageFileName: String) {return function (page) imageDumpPage(page, imageFileName);}
 	public static function imageDumpPage(page: WebPage, imageFileName: String) {
 #if js
 		page.render(ROOT_PATH + imageFileName);
 #end
 	}
 
-	public static function sendMouseEvent(eventType: String, coords: Array<Int>) return function (page) sendMouseEventPage(page, eventType, coords)
+	public static function sendMouseEvent(eventType: String, coords: Array<Int>) {return function (page) sendMouseEventPage(page, eventType, coords);}
 	public static function sendMouseEventPage(page: WebPage, eventType: String, coords: Array<Int>) {
 		trace("sending event " + eventType + " to page at x,y = " + coords);
 #if js
@@ -131,7 +128,7 @@ class PhantomSuiteRunner {
 #end
 	}
 
-	public static function sendKeyboardEvent(eventType: String, keys: Array<Int>) return function (page) sendKeyboardEventPage(page, eventType, keys)
+	public static function sendKeyboardEvent(eventType: String, keys: Array<Int>) {return function (page) sendKeyboardEventPage(page, eventType, keys);}
 	public static function sendKeyboardEventPage(page: WebPage, eventType: String, keys: Array<Int>) {
 		trace("sending event " + eventType + " to page with keys = " + keys);
 #if js
@@ -139,14 +136,14 @@ class PhantomSuiteRunner {
 #end
 	}
 
-	@:macro public static function rootPath() {
+	macro public static function rootPath() {
 #if neko
-		return sys.FileSystem.fullPath(Sys.getCwd() + "/../").toExpr();
+		return macro $v{sys.FileSystem.fullPath(Sys.getCwd() + "/../")};
 #end
 	}
 
 #if macro
-	@:macro public static function build () : Array<Field> {
+	macro public static function build () : Array<Field> {
 		var fields = [];
 		for (spec in findSpecs(ROOT_PATH, []))
 			for (test in PhantomSuiteRunner.loadSpec(spec)) 
@@ -169,7 +166,7 @@ class PhantomSuiteRunner {
 		var p = Context.makePosition({min: 0, max: 0, file: fileName });
 
 		var spec : TestSpec = try Json.parse(content) catch ( e : Dynamic ) Context.error(Std.string(e), p);
-		var url = BASE_URL + if (spec.target != null) basename.directory() + '/' + spec.target; else basename + ".html"; 
+		var url = BASE_URL + if (spec.target != null) basename.directory() + '/' + spec.target; else basename + ".html";
 
 		var fields = Context.getBuildFields();
 		var block = [];
@@ -177,44 +174,45 @@ class PhantomSuiteRunner {
 			spec.events.map(function (s) 
 				if (s.eventType != null && Std.is(s.coords, Array)) {
 					if (s.eventType.startsWith("key")) {
-						block.push("PhantomSuiteRunner.sendKeyboardEvent".resolve().call([s.eventType.toExpr(), s.coords.toExpr()]));
+						block.push(macro PhantomSuiteRunner.sendKeyboardEvent($v{s.eventType}, $v{s.coords}));
 					} else {
-						block.push("PhantomSuiteRunner.sendMouseEvent".resolve().call([s.eventType.toExpr(), s.coords.toExpr()]));
+						block.push(macro PhantomSuiteRunner.sendMouseEvent($v{s.eventType}, $v{s.coords}));
 					}
 				} else {
 					Context.error(s + " should have attribute 'eventType' and array 'coords'", p);
 				}
 			);
 		}
+		
 		block.push(switch (spec.testType) {
 			case "STRING": 
 				var expected = spec.assrt;
-				"PhantomSuiteRunner.stringTest".resolve().call([expected.toExpr()]);
+				macro PhantomSuiteRunner.stringTest($v{expected});
 
 			case "BOOL": 
-				"PhantomSuiteRunner.boolTest".resolve().call([]);
+				macro PhantomSuiteRunner.boolTest();
 
 			case "INT":
 				var expected = spec.assrt;
-				"PhantomSuiteRunner.intTest".resolve().call([expected.toExpr()]);
+				macro PhantomSuiteRunner.intTest($v{expected});
 
 			case "ARRAY":
 				var expected = spec.assrt;
-				"PhantomSuiteRunner.arrayTest".resolve().call([expected.toExpr()]);
+				macro PhantomSuiteRunner.arrayTest($v{expected});
 
 			case "IMAGE":
 				var img = (basename + ".png");
 				if (sys.FileSystem.exists(ROOT_PATH + img)) {
-					"PhantomSuiteRunner.imageTest".resolve().call([img.toExpr()]);
+					macro PhantomSuiteRunner.imageTest($v{img});
 				} else {
-					"PhantomSuiteRunner.imageDump".resolve().call([img.toExpr()]);
-					
+					macro PhantomSuiteRunner.imageDump($v{img});
 				}
 
 			default: Context.error(fileName + " should have a valid testType attribute", p);
 		});	
-		var test = "PhantomSuiteRunner.loadPage".resolve().call([url.toExpr(), block.toArray()]);
-		fields.push({ name : "test" + basename.withoutDirectory(), doc: null, meta: [], access : [APublic], kind: FFun(test.func()), pos : p });
+		var test = macro function() PhantomSuiteRunner.loadPage($v{url}, $a{block});
+		var testFunc = switch(test.expr){ case EFunction(_, f): f; case _: throw "test is not a function"; }
+		fields.push({ name : "test" + basename.withoutDirectory(), doc: null, meta: [], access : [APublic], kind: FFun(testFunc), pos : Context.currentPos() });
 		return fields;
 
 	}

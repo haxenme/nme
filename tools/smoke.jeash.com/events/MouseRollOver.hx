@@ -3,7 +3,9 @@ import flash.events.MouseEvent;
 import flash.Lib;
 
 class MouseRollOver {
-	static function main () new MouseRollOver()
+	static function main () {
+		new MouseRollOver();
+	}
 
 	public function new () {
 		var s = new Sprite();

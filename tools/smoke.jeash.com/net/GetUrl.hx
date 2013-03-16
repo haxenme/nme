@@ -34,6 +34,8 @@ class GetUrl {
 		#if js untyped window.phantomTestResult = tgt.data; #end
 	}
 
-	static function main () new GetUrl()
+	static function main () {
+		new GetUrl();
+	}
 }
 

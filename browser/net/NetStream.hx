@@ -57,7 +57,7 @@ class NetStream extends EventDispatcher {
 		
 		super();
 		
-		nmeVideoElement = cast js.Lib.document.createElement("video");
+		nmeVideoElement = cast #if !haxe3 js.Lib.document #else js.Browser.document #end .createElement("video");
 		nmeConnection = connection;
 		
 		play = Reflect.makeVarArgs(nmePlay);

@@ -38,6 +38,4 @@
 		<certificate path="path/to/author.p12" if="blackberry" />
 	</section>
 	
-	<haxeflag name="--dead-code-elimination" if="html5" />
-	
 </project>

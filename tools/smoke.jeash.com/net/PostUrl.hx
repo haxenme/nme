@@ -68,5 +68,7 @@ class PostUrl extends Sprite {
 		Lib.trace(event);
 	}
 
-	static function main () Lib.current.addChild(new PostUrl())
+	static function main () {
+		Lib.current.addChild(new PostUrl());
+	}
 }

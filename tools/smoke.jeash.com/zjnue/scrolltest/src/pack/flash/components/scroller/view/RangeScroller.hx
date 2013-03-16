@@ -80,7 +80,7 @@ class RangeScroller extends Scroller {
 		if( clickedTab == tabLeft )
 			model.sizeThumbLeft(clickThumbPosition.x + delta);
 		else
-			model.setThumbWidth( clickThumbSize.x + delta );
+			model.set_thumbWidth( clickThumbSize.x + delta );
 	}
 	
 	override public function destroy() : Void {
