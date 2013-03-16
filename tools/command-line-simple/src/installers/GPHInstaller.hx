@@ -5,13 +5,11 @@ package nekonme.install-tool.install-tool.targets;
  * @author Joshua Granick
  */
 
-class GPH {
-
+class GPH 
+{
 }
 
-
  // --- GPH ---------------------------------------------------------------
-
    function updateGph()
    {
       var dest = mBuildDir + "/gph/game/bin/";
@@ -53,5 +51,4 @@ class GPH {
       if (!neko.FileSystem.exists(drive + "/game"))
          throw "Drive " + drive + " does not appear to be a Caanoo drive.";
       cp_recurse(mBuildDir + "/gph/game", drive + "/game",false);
-
    }
