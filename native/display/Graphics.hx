@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 import native.geom.Matrix;
 import native.Loader;
@@ -185,3 +186,4 @@ class Graphics
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
 }
 
+#end

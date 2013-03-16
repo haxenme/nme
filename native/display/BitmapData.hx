@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 import haxe.io.Bytes;
 import native.geom.Rectangle;
@@ -9,6 +10,7 @@ import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
 
+@:autoBuild(nme.Assets.embedBitmap())
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -164,6 +166,12 @@ class BitmapData implements IBitmapDrawable
    {
       nme_bitmap_data_fill(nmeHandle, rect, inColour, inAlpha);
    }
+   
+   public function floodFill(x:Int, y:Int, color:Int):Void
+   {
+	   //nmeFloodFill(x, y, color, getPixel32(x, y)); // causing crashes, switching to clear() for now
+	   clear(color);
+   }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
    {
@@ -251,7 +259,7 @@ class BitmapData implements IBitmapDrawable
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
+	  result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
 
@@ -268,6 +276,38 @@ class BitmapData implements IBitmapDrawable
    /** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void {
       // IBitmapDrawable interface...
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
+   }
+   
+   // need to build a better way to do this
+   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   {
+	   if (getPixel32(x, y) == replaceColor) {
+		   
+		   setPixel32(x, y, color);
+		   
+		   var safeLeft = (x > 0);
+		   var safeRight = (x < width - 1);
+		   var safeBottom = (y < height - 1);
+		   var safeTop = (y > 0);
+		   
+		   try { 
+				
+			   if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
+			   if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
+			   if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
+			   if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
+			   if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
+			   if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
+			   if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
+			   if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
+			   
+		   } catch (e:Dynamic) {}
+	   }
+   }
+   
+   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
+   {
+      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
    }
 
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 
@@ -610,3 +650,4 @@ class OptimizedPerlin
    }
 }
 
+#end
