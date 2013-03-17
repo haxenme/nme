@@ -2,7 +2,10 @@ import flash.events.KeyboardEvent;
 import flash.Lib;
 
 class KeyCodeTest {
-	static function main () new KeyCodeTest()
+	static function main () {
+		new KeyCodeTest();
+	}
+	
 	public function new () {
 		Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyPress);
 	}

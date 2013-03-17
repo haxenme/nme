@@ -4,7 +4,9 @@ import flash.Lib;
 
 
 class OneWayBinding {
-	static function main () new OneWayBinding()
+	static function main () {
+		new OneWayBinding();
+	}
 
 	public function new () {
 		var s = new Sprite();

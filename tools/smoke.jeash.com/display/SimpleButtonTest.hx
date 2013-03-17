@@ -11,7 +11,9 @@ class SimpleButtonTest extends Sprite {
 		var button:CustomSimpleButton = new CustomSimpleButton();
 		addChild(button);
 	}
-	static function main () Lib.current.addChild(new SimpleButtonTest())
+	static function main () {
+		Lib.current.addChild(new SimpleButtonTest());
+	}
 }
 
 class CustomSimpleButton extends SimpleButton {

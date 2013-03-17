@@ -38,5 +38,7 @@ class GetUrlBinary {
 #end
 	}
 
-	static function main () new GetUrlBinary()
+	static function main () {
+		new GetUrlBinary();
+	}
 }

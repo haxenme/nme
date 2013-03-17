@@ -3,6 +3,7 @@ package browser.utils;
 
 
 import browser.errors.IOError;
+import browser.utils.UInt;
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
 import haxe.io.BytesData;
