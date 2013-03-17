@@ -10,7 +10,7 @@ all: $(JS) $(SWF) $(HTML)
 	haxe -debug -js $*.js -cp ../../../ --remap flash:browser -main $* 
 
 %.swf: %.hx
-	haxe -cp ~/projects/stax/src/main/haxe -swf-header 400:400:8:ffffff -swf9 $*.swf -main $* 
+	haxe -cp ~/projects/stax/src/main/haxe -swf-header 400:400:8:ffffff -swf $*.swf -main $* 
 
 %.html: %.hx
 	xsltproc --stringparam jsfile "$*.js" -o $*.html template.xsl main.xml

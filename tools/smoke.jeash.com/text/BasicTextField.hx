@@ -10,7 +10,9 @@ import flash.Lib;
 import haxe.Resource;
 
 class BasicTextField extends Sprite {
-	static function main () Lib.current.addChild(new BasicTextField())
+	static function main () {
+		Lib.current.addChild(new BasicTextField());
+	}
 
 	public function new() {
 		super();

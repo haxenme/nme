@@ -8,7 +8,9 @@ import flash.text.Font;
 import flash.Lib;
 
 class TextFieldBorderAndBackground extends Sprite {
-	static function main () Lib.current.addChild(new TextFieldBorderAndBackground())
+	static function main () {
+		Lib.current.addChild(new TextFieldBorderAndBackground());
+	}
 
 	private var holder:Sprite;
 	private var gridHolder:Sprite;

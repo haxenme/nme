@@ -10,7 +10,8 @@ import browser.events.ProgressEvent;
 import browser.errors.IOError;
 import browser.events.SecurityErrorEvent;
 import browser.utils.ByteArray;
-import browser.Html5Dom;
+import js.html.EventTarget;
+import js.html.XMLHttpRequest;
 import js.Browser;
 import js.Lib;
 

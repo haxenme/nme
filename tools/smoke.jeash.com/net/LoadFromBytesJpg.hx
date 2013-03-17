@@ -38,6 +38,8 @@ class LoadFromBytesJpg {
 #end
 	}
 
-	static function main () new LoadFromBytesJpg()
+	static function main () {
+		new LoadFromBytesJpg();
+	}
 }
 

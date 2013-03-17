@@ -11,7 +11,9 @@ class DisplayAddChildTransform extends Sprite {
 	
 	private var _mcMess:Sprite;
 
-	static function main () flash.Lib.current.addChild(new DisplayAddChildTransform())
+	static function main () {
+		flash.Lib.current.addChild(new DisplayAddChildTransform());
+	}
 	
 	public function new () {
 		

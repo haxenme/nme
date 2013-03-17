@@ -1,6 +1,7 @@
 package browser.utils;
 #if js
 
+import browser.utils.UInt;
 
 interface IDataInput {
 	

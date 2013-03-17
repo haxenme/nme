@@ -4,6 +4,7 @@ package browser.display;
 
 import browser.display.IGraphicsData;
 import browser.display.IGraphicsFill;
+import browser.utils.UInt;
 
 
 class GraphicsSolidFill implements IGraphicsData implements IGraphicsFill {

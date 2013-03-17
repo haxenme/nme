@@ -3,17 +3,20 @@ node_js:
   - 0.6
 
 before_install:
-  - sudo apt-get install libgc1c2
-  - curl http://haxe.org/file/hxinst-linux.tgz | tar zxf -
-  - echo y | sudo ./hxinst-linux > /dev/null
-  - echo | haxelib setup
-  - haxelib install pdiff-hx 
-  - haxelib install tink_macros 
-  - haxelib install utest
-  - haxelib install format
-  - haxelib install hscript
-  - sudo apt-get install subversion
-  - sudo apt-get install xsltproc
+  - sudo apt-get install python-software-properties -y #for the next command
+  - sudo add-apt-repository ppa:eyecreate/haxe -y
+  - sudo apt-get update
+  - sudo apt-get install haxe -y
+  - sudo apt-get install gcc-multilib g++-multilib -y #for hxcpp
+  - mkdir ~/haxelib
+  - haxelib setup ~/haxelib
+  - haxelib install pdiff-hx || true
+  - haxelib install tink_macros || true
+  - haxelib install utest || true
+  - haxelib install format || true
+  - haxelib install hscript || true
+  - sudo apt-get install subversion -y
+  - sudo apt-get install xsltproc -y
 
 before_script:
   - make clean all -C tools/smoke.jeash.com
