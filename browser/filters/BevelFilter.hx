@@ -1,6 +1,7 @@
 package browser.filters;
 #if js
 
+import browser.utils.UInt;
 
 class BevelFilter extends BitmapFilter {
 	

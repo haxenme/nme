@@ -3,6 +3,7 @@ package browser.net;
 
 
 //import haxe.remoting.Connection;
+import browser.utils.UInt;
 import browser.display.Graphics;
 import browser.events.Event;
 import browser.events.EventDispatcher;
