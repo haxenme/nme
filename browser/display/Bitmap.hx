@@ -8,7 +8,7 @@ import browser.display.PixelSnapping;
 import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
-import browser.Html5Dom;
+import js.html.CanvasElement;
 
 
 class Bitmap extends DisplayObject {
@@ -104,7 +104,7 @@ class Bitmap extends DisplayObject {
 	}
 	
 	
-	override public function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
+	override public function nmeRender(inMask:CanvasElement = null, clipRect:Rectangle = null):Void {
 		
 		if (!nmeCombinedVisible) return;
 		if (bitmapData == null) return;

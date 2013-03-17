@@ -1,5 +1,6 @@
 -main InstallTool
 -neko ../../run.n
+-D neko-v1
 -cp src
 -lib gm2d
 -lib nme

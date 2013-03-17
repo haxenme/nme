@@ -4,7 +4,8 @@ package browser.media;
 
 import browser.events.Event;
 import browser.events.EventDispatcher;
-import browser.Html5Dom;
+import js.html.MediaElement;
+import js.Browser;
 
 
 class SoundChannel extends EventDispatcher {
@@ -12,7 +13,7 @@ class SoundChannel extends EventDispatcher {
 	
 	public var ChannelId(default, null):Int;
 	public var leftPeak(default, null):Float;
-	public var nmeAudio(default, null):HTMLMediaElement;
+	public var nmeAudio(default, null):MediaElement;
 	public var position(default, null):Float;
 	public var rightPeak(default, null):Float;
 	public var soundTransform(default, set_soundTransform):SoundTransform;
@@ -42,7 +43,7 @@ class SoundChannel extends EventDispatcher {
 		
 		var channel = new SoundChannel();
 		
-		channel.nmeAudio = cast Lib.document.createElement("audio");
+		channel.nmeAudio = cast Browser.document.createElement("audio");
 		channel.nmeRemoveRef = removeRef;
 		channel.nmeAudio.addEventListener("ended", cast channel.__onSoundChannelFinished, false);
 		channel.nmeAudio.addEventListener("seeked", cast channel.__onSoundSeeked, false);

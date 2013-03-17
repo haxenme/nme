@@ -4,7 +4,6 @@ package browser.events;
 
 import browser.display.InteractiveObject;
 import browser.geom.Point;
-import browser.Html5Dom;
 
 
 class MouseEvent extends Event {
@@ -57,7 +56,7 @@ class MouseEvent extends Event {
 	}
 	
 	
-	public static function nmeCreate(type:String, event:Html5DomMouseEvent, local:Point, target:InteractiveObject):MouseEvent {
+	public static function nmeCreate(type:String, event:js.html.MouseEvent, local:Point, target:InteractiveObject):MouseEvent {
 		
 		var nmeMouseDown = false;
 		var delta = 2;

@@ -13,12 +13,12 @@ import native.Loader;
 @:autoBuild(nme.Assets.embedBitmap())
 class BitmapData implements IBitmapDrawable 
 {
-   public static var CLEAR = 0x000000;
-   public static var BLACK = 0x000000;
-   public static var WHITE = 0x000000;
-   public static var RED = 0xff0000;
-   public static var GREEN = 0x00ff00;
-   public static var BLUE = 0x0000ff;
+   public static var CLEAR = createColor(0, 0);
+   public static var BLACK = createColor(0x000000);
+   public static var WHITE = createColor(0x000000);
+   public static var RED = createColor(0xff0000);
+   public static var GREEN = createColor(0x00ff00);
+   public static var BLUE = createColor(0x0000ff);
    public inline static var PNG = "png";
    public inline static var JPG = "jpg";
 
@@ -34,7 +34,7 @@ class BitmapData implements IBitmapDrawable
    public var width(get_width, null):Int;
 
    /** @private */ public var nmeHandle:Dynamic;
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:Int, ?inGPUMode:Null<Bool>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Bool>) 
    {
       var fill_col:Int;
       var fill_alpha:Int;
@@ -96,6 +96,15 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_copy(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint, mergeAlpha);
    }
 
+   public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
+   {
+      #if (neko && !neko_v2)
+      return { rgb: inRGB, a: inAlpha };
+      #else
+      return inRGB |(inAlpha << 24);
+      #end
+   }
+
    #if cpp
    public function createHardwareSurface() 
    {
@@ -128,17 +137,25 @@ class BitmapData implements IBitmapDrawable
       return nme_bitmap_data_encode(nmeHandle, inFormat, inQuality);
    }
 
-   public static inline function extractAlpha(v:Int):Int 
+   public static inline function extractAlpha(v:BitmapInt32):Int 
    {
+      #if (neko && !neko_v2)
+      return v.a;
+      #else
       return v >>> 24;
+      #end
    }
 
-   public static inline function extractColor(v:Int):Int 
+   public static inline function extractColor(v:BitmapInt32):Int 
    {
+      #if (neko && !neko_v2)
+      return v.rgb;
+      #else
       return v & 0xFFFFFF;
+      #end
    }
 
-   public function fillRect(rect:Rectangle, inColour:Int):Void 
+   public function fillRect(rect:Rectangle, inColour:BitmapInt32):Void 
    {
       var a = extractAlpha(inColour);
       var c = extractColor(inColour);
@@ -163,7 +180,7 @@ class BitmapData implements IBitmapDrawable
       return result;
    }
 
-   public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true):Rectangle 
+   public function getColorBoundsRect(mask:BitmapInt32, color:BitmapInt32, findColor:Bool = true):Rectangle 
    {
       var result = new Rectangle();
       nme_bitmap_data_get_color_bounds_rect(nmeHandle, mask, color, findColor, result);
@@ -175,9 +192,13 @@ class BitmapData implements IBitmapDrawable
       return nme_bitmap_data_get_pixel(nmeHandle, x, y);
    }
 
-   public function getPixel32(x:Int, y:Int):Int 
+   public function getPixel32(x:Int, y:Int):BitmapInt32 
    {
+      #if (neko && !neko_v2)
+      return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
+      #else
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
+      #end
    }
 
    public function getPixels(rect:Rectangle):ByteArray 
@@ -311,9 +332,13 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
    }
 
-   public function setPixel32(inX:Int, inY:Int, inColour:Int):Void 
+   public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
    {
+      #if (neko && !neko_v2)
+      nme_bitmap_data_set_pixel_rgba(nmeHandle, inX, inY, inColour);
+      #else
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
+      #end
    }
 
    public function setPixels(rect:Rectangle, pixels:ByteArray):Void 
@@ -576,7 +601,11 @@ class OptimizedPerlin
 
             var color = Std.int(( s * fPersMax + 1 ) * 128);
 
+            #if (neko && !neko_v2)
+            var pixel = { a: 0xFF, rgb: color };
+            #else
             var pixel = 0xff000000 | color << 16 | color << 8 | color;
+            #end
 
             bitmap.setPixel32(px, py, pixel);
 
@@ -609,9 +638,15 @@ class OptimizedPerlin
 
    private function seedOffset(iSeed:Int) 
    {
+      #if (neko && !neko_v2)
+      iXoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      iYoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      iZoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      #else
       iXoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
       iYoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
       iZoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
+      #end
    }
 }
 

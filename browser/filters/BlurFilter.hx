@@ -5,7 +5,9 @@ package browser.filters;
 import browser.display.BitmapData;
 import browser.geom.Point;
 import browser.geom.Rectangle;
-import browser.Html5Dom;
+import js.html.CanvasElement;
+import js.html.CanvasRenderingContext2D;
+import js.html.Uint8ClampedArray;
 import nme.Vector;
 
 
@@ -53,7 +55,7 @@ class BlurFilter extends BitmapFilter {
 	}
 	
 	
-	override public function nmePreFilter(surface:HTMLCanvasElement):Void {
+	override public function nmePreFilter(surface:CanvasElement):Void {
 		
 		var ctx:CanvasRenderingContext2D = surface.getContext('2d');
 		nmeKernel = new Vector();
@@ -69,7 +71,7 @@ class BlurFilter extends BitmapFilter {
 	}
 	
 	
-	private function nmeBuildKernel(src:CanvasPixelArray, srcW:Int, srcH:Int, dst:Vector<Int>):Void {
+	private function nmeBuildKernel(src:Uint8ClampedArray, srcW:Int, srcH:Int, dst:Vector<Int>):Void {
 		
 		// Implementation reference: http://www.gamasutra.com/features/20010209/Listing2.cpp
 		
@@ -126,7 +128,7 @@ class BlurFilter extends BitmapFilter {
 	}
 	
 	
-	private function nmeBoxBlur(dst:CanvasPixelArray, srcW:Int, srcH:Int, p:Vector<Int>, boxW:Int, boxH:Int):Void {
+	private function nmeBoxBlur(dst:Uint8ClampedArray, srcW:Int, srcH:Int, p:Vector<Int>, boxW:Int, boxH:Int):Void {
 		
 		var mul1 = 1.0 / ((boxW * 2 + 1) * (boxH * 2 + 1)), i = 0, tot = [], h1 = 0, l1 = 0, h2 = 0, l2 = 0;
 		var mul2 = 1.7 / ((boxW * 2 + 1) * (boxH * 2 + 1));
@@ -159,7 +161,7 @@ class BlurFilter extends BitmapFilter {
 	}
 	
 	
-	override public function nmeApplyFilter(surface:HTMLCanvasElement, refreshCache:Bool = false):Void {
+	override public function nmeApplyFilter(surface:CanvasElement, refreshCache:Bool = false):Void {
 		
 		if (surface.width > 0 && surface.height > 0) {
 			

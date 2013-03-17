@@ -69,7 +69,7 @@ class SharedObject extends EventDispatcher {
 		
 		if (localPath == null) {
 			
-			localPath = Lib.window.location.href;
+			localPath = Browser.window.location.href;
 			
 		}
 		
