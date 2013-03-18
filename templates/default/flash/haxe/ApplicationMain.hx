@@ -149,7 +149,7 @@ class DocumentClass {
 				var method = macro {
 					return flash.Lib.current.stage;
 				}
-				fields.push ({ name: "get_stage", access: [ APrivate #if nme, AOverride #end ], meta: [ { name: ":getter", params: [ macro stage ], pos: Context.currentPos() } ], kind: FFun({ args: [], expr: method, params: [], ret: macro :flash.display.Stage }), pos: Context.currentPos() });
+				//fields.push ({ name: "get_stage", access: [ APrivate #if nme, AOverride #end ], meta: [ { name: ":getter", params: [ macro stage ], pos: Context.currentPos() } ], kind: FFun({ args: [], expr: method, params: [], ret: macro :flash.display.Stage }), pos: Context.currentPos() });
 				return fields;
 			}
 			searchTypes = searchTypes.superClass.t.get();
