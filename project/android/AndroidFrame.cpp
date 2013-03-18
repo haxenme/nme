@@ -9,12 +9,6 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
-#undef LOGV
-#undef LOGE
-
-#define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::System", msg, ## args)
-#define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "NME::System", msg, ## args)
-
 JavaVM *gJVM=0;
 
 namespace nme
